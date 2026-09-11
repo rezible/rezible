@@ -31,7 +31,7 @@
 		route: Route,
 		params: ViewRailEntry<Route>["params"]
 	) => ResolvedPathname;
-	
+
 	const paths = $derived(entries.map((entry) => resolvePath(route, entry.params)));
 	const activeIndex = $derived.by(() => {
 		if (page.route.id !== route) return undefined;

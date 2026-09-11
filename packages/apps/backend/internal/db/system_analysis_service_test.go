@@ -390,6 +390,34 @@ func (s *SystemAnalysisServiceSuite) TestEntrySubjectRequiresExactlyOneGraphRefe
 	s.Require().NoError(addErr)
 	s.Require().NotNil(evidenceSubject.KnowledgeEvidenceID)
 
+	createNormalizedEvent := tdb.Client(ctx).NormalizedEvent.Create().
+		SetProvider("test").SetProviderNamespace("analysis").SetProviderResourceRef(uuid.NewString()).
+		SetKind("log").SetProviderEventSource("analysis").SetProviderEventRef(uuid.NewString()).
+		SetAttributes([]byte(`{"message":"connection timeout"}`)).SetOccurredAt(time.Now()).SetReceivedAt(time.Now())
+	normalizedEvent, normalizedEventErr := createNormalizedEvent.Save(ctx)
+	s.Require().NoError(normalizedEventErr)
+	observationSubject, observationSubjectErr := svc.SetSystemAnalysisEntrySubject(ctx, uuid.Nil, func(m *ent.SystemAnalysisEntrySubjectMutation) {
+		m.SetEntryID(entry.ID)
+		m.SetRole("observation")
+		m.SetNormalizedEventID(normalizedEvent.ID)
+	})
+	s.Require().NoError(observationSubjectErr)
+	s.Equal(normalizedEvent.ID, *observationSubject.NormalizedEventID)
+	_, duplicateObservationErr := svc.SetSystemAnalysisEntrySubject(ctx, uuid.Nil, func(m *ent.SystemAnalysisEntrySubjectMutation) {
+		m.SetEntryID(entry.ID)
+		m.SetRole("observation")
+		m.SetNormalizedEventID(normalizedEvent.ID)
+	})
+	s.Error(duplicateObservationErr)
+
+	_, multipleObservationErr := svc.SetSystemAnalysisEntrySubject(ctx, uuid.Nil, func(m *ent.SystemAnalysisEntrySubjectMutation) {
+		m.SetEntryID(entry.ID)
+		m.SetRole("invalid")
+		m.SetKnowledgeEntityID(fixture.Source.ID)
+		m.SetNormalizedEventID(normalizedEvent.ID)
+	})
+	s.ErrorIs(multipleObservationErr, rez.ErrInvalidInput)
+
 	_, retargetErr := svc.SetSystemAnalysisEntrySubject(ctx, entitySubject.ID, func(m *ent.SystemAnalysisEntrySubjectMutation) {
 		m.SetKnowledgeRelationshipID(fixture.Relationship.ID)
 	})
@@ -562,6 +590,30 @@ func (s *SystemAnalysisServiceSuite) TestEntrySubjectDatabaseRequiresExactlyOneG
 		SetKnowledgeRelationshipID(fixture.Relationship.ID).
 		Save(ctx)
 	s.Require().Error(multipleErr)
+}
+
+func (s *SystemAnalysisServiceSuite) TestEntrySubjectDatabaseRequiresExactlyOneIncludingNormalizedEvent() {
+	ctx := s.SeedTenantContext()
+	tdb := s.CreateTestDatabase()
+	client := tdb.Client(ctx)
+	fixture := s.createGraphFixture(tdb)
+	analysis := s.createAnalysis(tdb)
+	createEntry := client.SystemAnalysisEntry.Create().SetAnalysisID(analysis.ID).SetKind(sae.KindObservation).SetTitle("Observation")
+	entry := createEntry.SaveX(ctx)
+	createEvidence := client.NormalizedEvent.Create().SetProvider("test").SetProviderNamespace("analysis").SetProviderResourceRef(uuid.NewString()).SetKind("log").SetProviderEventSource("analysis").SetProviderEventRef(uuid.NewString()).SetAttributes([]byte(`{"message":"timeout"}`)).SetOccurredAt(time.Now()).SetReceivedAt(time.Now())
+	evidence, evidenceErr := createEvidence.Save(ctx)
+	s.Require().NoError(evidenceErr)
+
+	missingCreate := client.SystemAnalysisEntrySubject.Create().SetEntryID(entry.ID).SetRole("missing")
+	_, missingErr := missingCreate.Save(ctx)
+	s.Require().Error(missingErr)
+	multipleCreate := client.SystemAnalysisEntrySubject.Create().SetEntryID(entry.ID).SetRole("multiple").SetKnowledgeEvidenceID(fixture.Evidence.ID).SetNormalizedEventID(evidence.ID)
+	_, multipleErr := multipleCreate.Save(ctx)
+	s.Require().Error(multipleErr)
+	validCreate := client.SystemAnalysisEntrySubject.Create().SetEntryID(entry.ID).SetRole("observation").SetNormalizedEventID(evidence.ID)
+	valid, validErr := validCreate.Save(ctx)
+	s.Require().NoError(validErr)
+	s.Equal(evidence.ID, *valid.NormalizedEventID)
 }
 
 func (s *SystemAnalysisServiceSuite) TestSetSystemAnalysisEntryCreatesSubjectsAtomicallyAndAppends() {

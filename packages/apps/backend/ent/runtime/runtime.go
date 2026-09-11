@@ -18,6 +18,8 @@ import (
 	"github.com/rezible/rezible/ent/alertfeedback"
 	"github.com/rezible/rezible/ent/alertinstance"
 	"github.com/rezible/rezible/ent/alertmetrics"
+	"github.com/rezible/rezible/ent/discussioncomment"
+	"github.com/rezible/rezible/ent/discussionthread"
 	"github.com/rezible/rezible/ent/document"
 	"github.com/rezible/rezible/ent/documentaccess"
 	"github.com/rezible/rezible/ent/eventannotation"
@@ -63,12 +65,12 @@ import (
 	"github.com/rezible/rezible/ent/organizationrole"
 	"github.com/rezible/rezible/ent/playbook"
 	"github.com/rezible/rezible/ent/retrospective"
-	"github.com/rezible/rezible/ent/retrospectivecomment"
-	"github.com/rezible/rezible/ent/retrospectivereview"
+	"github.com/rezible/rezible/ent/review"
 	"github.com/rezible/rezible/ent/schema"
 	"github.com/rezible/rezible/ent/situation"
 	"github.com/rezible/rezible/ent/situationhazardassessment"
 	"github.com/rezible/rezible/ent/situationinvestigation"
+	"github.com/rezible/rezible/ent/situationobservationgroup"
 	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/systemanalysisentity"
 	"github.com/rezible/rezible/ent/systemanalysisentry"
@@ -377,6 +379,62 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
+	discussioncommentMixin := schema.DiscussionComment{}.Mixin()
+	discussioncomment.Policy = privacy.NewPolicies(discussioncommentMixin[0], discussioncommentMixin[1], schema.DiscussionComment{})
+	discussioncomment.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := discussioncomment.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	discussioncommentMixinFields2 := discussioncommentMixin[2].Fields()
+	_ = discussioncommentMixinFields2
+	discussioncommentFields := schema.DiscussionComment{}.Fields()
+	_ = discussioncommentFields
+	// discussioncommentDescCreatedAt is the schema descriptor for created_at field.
+	discussioncommentDescCreatedAt := discussioncommentMixinFields2[0].Descriptor()
+	// discussioncomment.DefaultCreatedAt holds the default value on creation for the created_at field.
+	discussioncomment.DefaultCreatedAt = discussioncommentDescCreatedAt.Default.(func() time.Time)
+	// discussioncommentDescUpdatedAt is the schema descriptor for updated_at field.
+	discussioncommentDescUpdatedAt := discussioncommentMixinFields2[1].Descriptor()
+	// discussioncomment.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	discussioncomment.DefaultUpdatedAt = discussioncommentDescUpdatedAt.Default.(func() time.Time)
+	// discussioncomment.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	discussioncomment.UpdateDefaultUpdatedAt = discussioncommentDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// discussioncommentDescID is the schema descriptor for id field.
+	discussioncommentDescID := discussioncommentFields[0].Descriptor()
+	// discussioncomment.DefaultID holds the default value on creation for the id field.
+	discussioncomment.DefaultID = discussioncommentDescID.Default.(func() uuid.UUID)
+	discussionthreadMixin := schema.DiscussionThread{}.Mixin()
+	discussionthread.Policy = privacy.NewPolicies(discussionthreadMixin[0], discussionthreadMixin[1], schema.DiscussionThread{})
+	discussionthread.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := discussionthread.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	discussionthreadMixinFields2 := discussionthreadMixin[2].Fields()
+	_ = discussionthreadMixinFields2
+	discussionthreadFields := schema.DiscussionThread{}.Fields()
+	_ = discussionthreadFields
+	// discussionthreadDescCreatedAt is the schema descriptor for created_at field.
+	discussionthreadDescCreatedAt := discussionthreadMixinFields2[0].Descriptor()
+	// discussionthread.DefaultCreatedAt holds the default value on creation for the created_at field.
+	discussionthread.DefaultCreatedAt = discussionthreadDescCreatedAt.Default.(func() time.Time)
+	// discussionthreadDescUpdatedAt is the schema descriptor for updated_at field.
+	discussionthreadDescUpdatedAt := discussionthreadMixinFields2[1].Descriptor()
+	// discussionthread.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	discussionthread.DefaultUpdatedAt = discussionthreadDescUpdatedAt.Default.(func() time.Time)
+	// discussionthread.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	discussionthread.UpdateDefaultUpdatedAt = discussionthreadDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// discussionthreadDescID is the schema descriptor for id field.
+	discussionthreadDescID := discussionthreadFields[0].Descriptor()
+	// discussionthread.DefaultID holds the default value on creation for the id field.
+	discussionthread.DefaultID = discussionthreadDescID.Default.(func() uuid.UUID)
 	documentMixin := schema.Document{}.Mixin()
 	document.Policy = privacy.NewPolicies(documentMixin[0], documentMixin[1], schema.Document{})
 	document.Hooks[0] = func(next ent.Mutator) ent.Mutator {
@@ -1400,38 +1458,34 @@ func init() {
 	retrospectiveDescID := retrospectiveFields[0].Descriptor()
 	// retrospective.DefaultID holds the default value on creation for the id field.
 	retrospective.DefaultID = retrospectiveDescID.Default.(func() uuid.UUID)
-	retrospectivecommentMixin := schema.RetrospectiveComment{}.Mixin()
-	retrospectivecomment.Policy = privacy.NewPolicies(retrospectivecommentMixin[0], retrospectivecommentMixin[1], schema.RetrospectiveComment{})
-	retrospectivecomment.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+	reviewMixin := schema.Review{}.Mixin()
+	review.Policy = privacy.NewPolicies(reviewMixin[0], reviewMixin[1], schema.Review{})
+	review.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-			if err := retrospectivecomment.Policy.EvalMutation(ctx, m); err != nil {
+			if err := review.Policy.EvalMutation(ctx, m); err != nil {
 				return nil, err
 			}
 			return next.Mutate(ctx, m)
 		})
 	}
-	retrospectivecommentFields := schema.RetrospectiveComment{}.Fields()
-	_ = retrospectivecommentFields
-	// retrospectivecommentDescID is the schema descriptor for id field.
-	retrospectivecommentDescID := retrospectivecommentFields[0].Descriptor()
-	// retrospectivecomment.DefaultID holds the default value on creation for the id field.
-	retrospectivecomment.DefaultID = retrospectivecommentDescID.Default.(func() uuid.UUID)
-	retrospectivereviewMixin := schema.RetrospectiveReview{}.Mixin()
-	retrospectivereview.Policy = privacy.NewPolicies(retrospectivereviewMixin[0], retrospectivereviewMixin[1], schema.RetrospectiveReview{})
-	retrospectivereview.Hooks[0] = func(next ent.Mutator) ent.Mutator {
-		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-			if err := retrospectivereview.Policy.EvalMutation(ctx, m); err != nil {
-				return nil, err
-			}
-			return next.Mutate(ctx, m)
-		})
-	}
-	retrospectivereviewFields := schema.RetrospectiveReview{}.Fields()
-	_ = retrospectivereviewFields
-	// retrospectivereviewDescID is the schema descriptor for id field.
-	retrospectivereviewDescID := retrospectivereviewFields[0].Descriptor()
-	// retrospectivereview.DefaultID holds the default value on creation for the id field.
-	retrospectivereview.DefaultID = retrospectivereviewDescID.Default.(func() uuid.UUID)
+	reviewMixinFields2 := reviewMixin[2].Fields()
+	_ = reviewMixinFields2
+	reviewFields := schema.Review{}.Fields()
+	_ = reviewFields
+	// reviewDescCreatedAt is the schema descriptor for created_at field.
+	reviewDescCreatedAt := reviewMixinFields2[0].Descriptor()
+	// review.DefaultCreatedAt holds the default value on creation for the created_at field.
+	review.DefaultCreatedAt = reviewDescCreatedAt.Default.(func() time.Time)
+	// reviewDescUpdatedAt is the schema descriptor for updated_at field.
+	reviewDescUpdatedAt := reviewMixinFields2[1].Descriptor()
+	// review.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	review.DefaultUpdatedAt = reviewDescUpdatedAt.Default.(func() time.Time)
+	// review.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	review.UpdateDefaultUpdatedAt = reviewDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// reviewDescID is the schema descriptor for id field.
+	reviewDescID := reviewFields[0].Descriptor()
+	// review.DefaultID holds the default value on creation for the id field.
+	review.DefaultID = reviewDescID.Default.(func() uuid.UUID)
 	situationMixin := schema.Situation{}.Mixin()
 	situation.Policy = privacy.NewPolicies(situationMixin[0], situationMixin[1], schema.Situation{})
 	situation.Hooks[0] = func(next ent.Mutator) ent.Mutator {
@@ -1546,6 +1600,38 @@ func init() {
 	situationinvestigationDescID := situationinvestigationFields[0].Descriptor()
 	// situationinvestigation.DefaultID holds the default value on creation for the id field.
 	situationinvestigation.DefaultID = situationinvestigationDescID.Default.(func() uuid.UUID)
+	situationobservationgroupMixin := schema.SituationObservationGroup{}.Mixin()
+	situationobservationgroup.Policy = privacy.NewPolicies(situationobservationgroupMixin[0], situationobservationgroupMixin[1], schema.SituationObservationGroup{})
+	situationobservationgroup.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := situationobservationgroup.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	situationobservationgroupMixinFields2 := situationobservationgroupMixin[2].Fields()
+	_ = situationobservationgroupMixinFields2
+	situationobservationgroupFields := schema.SituationObservationGroup{}.Fields()
+	_ = situationobservationgroupFields
+	// situationobservationgroupDescCreatedAt is the schema descriptor for created_at field.
+	situationobservationgroupDescCreatedAt := situationobservationgroupMixinFields2[0].Descriptor()
+	// situationobservationgroup.DefaultCreatedAt holds the default value on creation for the created_at field.
+	situationobservationgroup.DefaultCreatedAt = situationobservationgroupDescCreatedAt.Default.(func() time.Time)
+	// situationobservationgroupDescUpdatedAt is the schema descriptor for updated_at field.
+	situationobservationgroupDescUpdatedAt := situationobservationgroupMixinFields2[1].Descriptor()
+	// situationobservationgroup.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	situationobservationgroup.DefaultUpdatedAt = situationobservationgroupDescUpdatedAt.Default.(func() time.Time)
+	// situationobservationgroup.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	situationobservationgroup.UpdateDefaultUpdatedAt = situationobservationgroupDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// situationobservationgroupDescTitle is the schema descriptor for title field.
+	situationobservationgroupDescTitle := situationobservationgroupFields[2].Descriptor()
+	// situationobservationgroup.TitleValidator is a validator for the "title" field. It is called by the builders before save.
+	situationobservationgroup.TitleValidator = situationobservationgroupDescTitle.Validators[0].(func(string) error)
+	// situationobservationgroupDescID is the schema descriptor for id field.
+	situationobservationgroupDescID := situationobservationgroupFields[0].Descriptor()
+	// situationobservationgroup.DefaultID holds the default value on creation for the id field.
+	situationobservationgroup.DefaultID = situationobservationgroupDescID.Default.(func() uuid.UUID)
 	systemanalysisMixin := schema.SystemAnalysis{}.Mixin()
 	systemanalysis.Policy = privacy.NewPolicies(systemanalysisMixin[0], systemanalysisMixin[1], schema.SystemAnalysis{})
 	systemanalysis.Hooks[0] = func(next ent.Mutator) ent.Mutator {
@@ -1667,7 +1753,7 @@ func init() {
 	// systemanalysisentrysubject.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	systemanalysisentrysubject.UpdateDefaultUpdatedAt = systemanalysisentrysubjectDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// systemanalysisentrysubjectDescRole is the schema descriptor for role field.
-	systemanalysisentrysubjectDescRole := systemanalysisentrysubjectFields[5].Descriptor()
+	systemanalysisentrysubjectDescRole := systemanalysisentrysubjectFields[6].Descriptor()
 	// systemanalysisentrysubject.RoleValidator is a validator for the "role" field. It is called by the builders before save.
 	systemanalysisentrysubject.RoleValidator = systemanalysisentrysubjectDescRole.Validators[0].(func(string) error)
 	// systemanalysisentrysubjectDescID is the schema descriptor for id field.
@@ -1792,8 +1878,20 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
+	taskMixinFields2 := taskMixin[2].Fields()
+	_ = taskMixinFields2
 	taskFields := schema.Task{}.Fields()
 	_ = taskFields
+	// taskDescCreatedAt is the schema descriptor for created_at field.
+	taskDescCreatedAt := taskMixinFields2[0].Descriptor()
+	// task.DefaultCreatedAt holds the default value on creation for the created_at field.
+	task.DefaultCreatedAt = taskDescCreatedAt.Default.(func() time.Time)
+	// taskDescUpdatedAt is the schema descriptor for updated_at field.
+	taskDescUpdatedAt := taskMixinFields2[1].Descriptor()
+	// task.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	task.DefaultUpdatedAt = taskDescUpdatedAt.Default.(func() time.Time)
+	// task.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	task.UpdateDefaultUpdatedAt = taskDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// taskDescID is the schema descriptor for id field.
 	taskDescID := taskFields[0].Descriptor()
 	// task.DefaultID holds the default value on creation for the id field.
@@ -1855,8 +1953,20 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
+	ticketMixinFields2 := ticketMixin[2].Fields()
+	_ = ticketMixinFields2
 	ticketFields := schema.Ticket{}.Fields()
 	_ = ticketFields
+	// ticketDescCreatedAt is the schema descriptor for created_at field.
+	ticketDescCreatedAt := ticketMixinFields2[0].Descriptor()
+	// ticket.DefaultCreatedAt holds the default value on creation for the created_at field.
+	ticket.DefaultCreatedAt = ticketDescCreatedAt.Default.(func() time.Time)
+	// ticketDescUpdatedAt is the schema descriptor for updated_at field.
+	ticketDescUpdatedAt := ticketMixinFields2[1].Descriptor()
+	// ticket.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	ticket.DefaultUpdatedAt = ticketDescUpdatedAt.Default.(func() time.Time)
+	// ticket.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	ticket.UpdateDefaultUpdatedAt = ticketDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// ticketDescID is the schema descriptor for id field.
 	ticketDescID := ticketFields[0].Descriptor()
 	// ticket.DefaultID holds the default value on creation for the id field.

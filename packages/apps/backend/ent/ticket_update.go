@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -31,6 +32,26 @@ func (_u *TicketUpdate) Where(ps ...predicate.Ticket) *TicketUpdate {
 	return _u
 }
 
+// SetCreatedAt sets the "created_at" field.
+func (_u *TicketUpdate) SetCreatedAt(v time.Time) *TicketUpdate {
+	_u.mutation.SetCreatedAt(v)
+	return _u
+}
+
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (_u *TicketUpdate) SetNillableCreatedAt(v *time.Time) *TicketUpdate {
+	if v != nil {
+		_u.SetCreatedAt(*v)
+	}
+	return _u
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (_u *TicketUpdate) SetUpdatedAt(v time.Time) *TicketUpdate {
+	_u.mutation.SetUpdatedAt(v)
+	return _u
+}
+
 // SetTitle sets the "title" field.
 func (_u *TicketUpdate) SetTitle(v string) *TicketUpdate {
 	_u.mutation.SetTitle(v)
@@ -42,6 +63,106 @@ func (_u *TicketUpdate) SetNillableTitle(v *string) *TicketUpdate {
 	if v != nil {
 		_u.SetTitle(*v)
 	}
+	return _u
+}
+
+// SetReference sets the "reference" field.
+func (_u *TicketUpdate) SetReference(v string) *TicketUpdate {
+	_u.mutation.SetReference(v)
+	return _u
+}
+
+// SetNillableReference sets the "reference" field if the given value is not nil.
+func (_u *TicketUpdate) SetNillableReference(v *string) *TicketUpdate {
+	if v != nil {
+		_u.SetReference(*v)
+	}
+	return _u
+}
+
+// ClearReference clears the value of the "reference" field.
+func (_u *TicketUpdate) ClearReference() *TicketUpdate {
+	_u.mutation.ClearReference()
+	return _u
+}
+
+// SetURL sets the "url" field.
+func (_u *TicketUpdate) SetURL(v string) *TicketUpdate {
+	_u.mutation.SetURL(v)
+	return _u
+}
+
+// SetNillableURL sets the "url" field if the given value is not nil.
+func (_u *TicketUpdate) SetNillableURL(v *string) *TicketUpdate {
+	if v != nil {
+		_u.SetURL(*v)
+	}
+	return _u
+}
+
+// ClearURL clears the value of the "url" field.
+func (_u *TicketUpdate) ClearURL() *TicketUpdate {
+	_u.mutation.ClearURL()
+	return _u
+}
+
+// SetProvider sets the "provider" field.
+func (_u *TicketUpdate) SetProvider(v string) *TicketUpdate {
+	_u.mutation.SetProvider(v)
+	return _u
+}
+
+// SetNillableProvider sets the "provider" field if the given value is not nil.
+func (_u *TicketUpdate) SetNillableProvider(v *string) *TicketUpdate {
+	if v != nil {
+		_u.SetProvider(*v)
+	}
+	return _u
+}
+
+// ClearProvider clears the value of the "provider" field.
+func (_u *TicketUpdate) ClearProvider() *TicketUpdate {
+	_u.mutation.ClearProvider()
+	return _u
+}
+
+// SetProviderNamespace sets the "provider_namespace" field.
+func (_u *TicketUpdate) SetProviderNamespace(v string) *TicketUpdate {
+	_u.mutation.SetProviderNamespace(v)
+	return _u
+}
+
+// SetNillableProviderNamespace sets the "provider_namespace" field if the given value is not nil.
+func (_u *TicketUpdate) SetNillableProviderNamespace(v *string) *TicketUpdate {
+	if v != nil {
+		_u.SetProviderNamespace(*v)
+	}
+	return _u
+}
+
+// ClearProviderNamespace clears the value of the "provider_namespace" field.
+func (_u *TicketUpdate) ClearProviderNamespace() *TicketUpdate {
+	_u.mutation.ClearProviderNamespace()
+	return _u
+}
+
+// SetProviderResourceRef sets the "provider_resource_ref" field.
+func (_u *TicketUpdate) SetProviderResourceRef(v string) *TicketUpdate {
+	_u.mutation.SetProviderResourceRef(v)
+	return _u
+}
+
+// SetNillableProviderResourceRef sets the "provider_resource_ref" field if the given value is not nil.
+func (_u *TicketUpdate) SetNillableProviderResourceRef(v *string) *TicketUpdate {
+	if v != nil {
+		_u.SetProviderResourceRef(*v)
+	}
+	return _u
+}
+
+// ClearProviderResourceRef clears the value of the "provider_resource_ref" field.
+func (_u *TicketUpdate) ClearProviderResourceRef() *TicketUpdate {
+	_u.mutation.ClearProviderResourceRef()
 	return _u
 }
 
@@ -88,6 +209,9 @@ func (_u *TicketUpdate) RemoveTasks(v ...*Task) *TicketUpdate {
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (_u *TicketUpdate) Save(ctx context.Context) (int, error) {
+	if err := _u.defaults(); err != nil {
+		return 0, err
+	}
 	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
@@ -111,6 +235,18 @@ func (_u *TicketUpdate) ExecX(ctx context.Context) {
 	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
+}
+
+// defaults sets the default values of the builder before save.
+func (_u *TicketUpdate) defaults() error {
+	if _, ok := _u.mutation.UpdatedAt(); !ok {
+		if ticket.UpdateDefaultUpdatedAt == nil {
+			return fmt.Errorf("ent: uninitialized ticket.UpdateDefaultUpdatedAt (forgotten import ent/runtime?)")
+		}
+		v := ticket.UpdateDefaultUpdatedAt()
+		_u.mutation.SetUpdatedAt(v)
+	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -139,8 +275,44 @@ func (_u *TicketUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			}
 		}
 	}
+	if value, ok := _u.mutation.CreatedAt(); ok {
+		_spec.SetField(ticket.FieldCreatedAt, field.TypeTime, value)
+	}
+	if value, ok := _u.mutation.UpdatedAt(); ok {
+		_spec.SetField(ticket.FieldUpdatedAt, field.TypeTime, value)
+	}
 	if value, ok := _u.mutation.Title(); ok {
 		_spec.SetField(ticket.FieldTitle, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.Reference(); ok {
+		_spec.SetField(ticket.FieldReference, field.TypeString, value)
+	}
+	if _u.mutation.ReferenceCleared() {
+		_spec.ClearField(ticket.FieldReference, field.TypeString)
+	}
+	if value, ok := _u.mutation.URL(); ok {
+		_spec.SetField(ticket.FieldURL, field.TypeString, value)
+	}
+	if _u.mutation.URLCleared() {
+		_spec.ClearField(ticket.FieldURL, field.TypeString)
+	}
+	if value, ok := _u.mutation.Provider(); ok {
+		_spec.SetField(ticket.FieldProvider, field.TypeString, value)
+	}
+	if _u.mutation.ProviderCleared() {
+		_spec.ClearField(ticket.FieldProvider, field.TypeString)
+	}
+	if value, ok := _u.mutation.ProviderNamespace(); ok {
+		_spec.SetField(ticket.FieldProviderNamespace, field.TypeString, value)
+	}
+	if _u.mutation.ProviderNamespaceCleared() {
+		_spec.ClearField(ticket.FieldProviderNamespace, field.TypeString)
+	}
+	if value, ok := _u.mutation.ProviderResourceRef(); ok {
+		_spec.SetField(ticket.FieldProviderResourceRef, field.TypeString, value)
+	}
+	if _u.mutation.ProviderResourceRefCleared() {
+		_spec.ClearField(ticket.FieldProviderResourceRef, field.TypeString)
 	}
 	if _u.mutation.TasksCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -214,6 +386,26 @@ type TicketUpdateOne struct {
 	modifiers []func(*sql.UpdateBuilder)
 }
 
+// SetCreatedAt sets the "created_at" field.
+func (_u *TicketUpdateOne) SetCreatedAt(v time.Time) *TicketUpdateOne {
+	_u.mutation.SetCreatedAt(v)
+	return _u
+}
+
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (_u *TicketUpdateOne) SetNillableCreatedAt(v *time.Time) *TicketUpdateOne {
+	if v != nil {
+		_u.SetCreatedAt(*v)
+	}
+	return _u
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (_u *TicketUpdateOne) SetUpdatedAt(v time.Time) *TicketUpdateOne {
+	_u.mutation.SetUpdatedAt(v)
+	return _u
+}
+
 // SetTitle sets the "title" field.
 func (_u *TicketUpdateOne) SetTitle(v string) *TicketUpdateOne {
 	_u.mutation.SetTitle(v)
@@ -225,6 +417,106 @@ func (_u *TicketUpdateOne) SetNillableTitle(v *string) *TicketUpdateOne {
 	if v != nil {
 		_u.SetTitle(*v)
 	}
+	return _u
+}
+
+// SetReference sets the "reference" field.
+func (_u *TicketUpdateOne) SetReference(v string) *TicketUpdateOne {
+	_u.mutation.SetReference(v)
+	return _u
+}
+
+// SetNillableReference sets the "reference" field if the given value is not nil.
+func (_u *TicketUpdateOne) SetNillableReference(v *string) *TicketUpdateOne {
+	if v != nil {
+		_u.SetReference(*v)
+	}
+	return _u
+}
+
+// ClearReference clears the value of the "reference" field.
+func (_u *TicketUpdateOne) ClearReference() *TicketUpdateOne {
+	_u.mutation.ClearReference()
+	return _u
+}
+
+// SetURL sets the "url" field.
+func (_u *TicketUpdateOne) SetURL(v string) *TicketUpdateOne {
+	_u.mutation.SetURL(v)
+	return _u
+}
+
+// SetNillableURL sets the "url" field if the given value is not nil.
+func (_u *TicketUpdateOne) SetNillableURL(v *string) *TicketUpdateOne {
+	if v != nil {
+		_u.SetURL(*v)
+	}
+	return _u
+}
+
+// ClearURL clears the value of the "url" field.
+func (_u *TicketUpdateOne) ClearURL() *TicketUpdateOne {
+	_u.mutation.ClearURL()
+	return _u
+}
+
+// SetProvider sets the "provider" field.
+func (_u *TicketUpdateOne) SetProvider(v string) *TicketUpdateOne {
+	_u.mutation.SetProvider(v)
+	return _u
+}
+
+// SetNillableProvider sets the "provider" field if the given value is not nil.
+func (_u *TicketUpdateOne) SetNillableProvider(v *string) *TicketUpdateOne {
+	if v != nil {
+		_u.SetProvider(*v)
+	}
+	return _u
+}
+
+// ClearProvider clears the value of the "provider" field.
+func (_u *TicketUpdateOne) ClearProvider() *TicketUpdateOne {
+	_u.mutation.ClearProvider()
+	return _u
+}
+
+// SetProviderNamespace sets the "provider_namespace" field.
+func (_u *TicketUpdateOne) SetProviderNamespace(v string) *TicketUpdateOne {
+	_u.mutation.SetProviderNamespace(v)
+	return _u
+}
+
+// SetNillableProviderNamespace sets the "provider_namespace" field if the given value is not nil.
+func (_u *TicketUpdateOne) SetNillableProviderNamespace(v *string) *TicketUpdateOne {
+	if v != nil {
+		_u.SetProviderNamespace(*v)
+	}
+	return _u
+}
+
+// ClearProviderNamespace clears the value of the "provider_namespace" field.
+func (_u *TicketUpdateOne) ClearProviderNamespace() *TicketUpdateOne {
+	_u.mutation.ClearProviderNamespace()
+	return _u
+}
+
+// SetProviderResourceRef sets the "provider_resource_ref" field.
+func (_u *TicketUpdateOne) SetProviderResourceRef(v string) *TicketUpdateOne {
+	_u.mutation.SetProviderResourceRef(v)
+	return _u
+}
+
+// SetNillableProviderResourceRef sets the "provider_resource_ref" field if the given value is not nil.
+func (_u *TicketUpdateOne) SetNillableProviderResourceRef(v *string) *TicketUpdateOne {
+	if v != nil {
+		_u.SetProviderResourceRef(*v)
+	}
+	return _u
+}
+
+// ClearProviderResourceRef clears the value of the "provider_resource_ref" field.
+func (_u *TicketUpdateOne) ClearProviderResourceRef() *TicketUpdateOne {
+	_u.mutation.ClearProviderResourceRef()
 	return _u
 }
 
@@ -284,6 +576,9 @@ func (_u *TicketUpdateOne) Select(field string, fields ...string) *TicketUpdateO
 
 // Save executes the query and returns the updated Ticket entity.
 func (_u *TicketUpdateOne) Save(ctx context.Context) (*Ticket, error) {
+	if err := _u.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
@@ -307,6 +602,18 @@ func (_u *TicketUpdateOne) ExecX(ctx context.Context) {
 	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
+}
+
+// defaults sets the default values of the builder before save.
+func (_u *TicketUpdateOne) defaults() error {
+	if _, ok := _u.mutation.UpdatedAt(); !ok {
+		if ticket.UpdateDefaultUpdatedAt == nil {
+			return fmt.Errorf("ent: uninitialized ticket.UpdateDefaultUpdatedAt (forgotten import ent/runtime?)")
+		}
+		v := ticket.UpdateDefaultUpdatedAt()
+		_u.mutation.SetUpdatedAt(v)
+	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -352,8 +659,44 @@ func (_u *TicketUpdateOne) sqlSave(ctx context.Context) (_node *Ticket, err erro
 			}
 		}
 	}
+	if value, ok := _u.mutation.CreatedAt(); ok {
+		_spec.SetField(ticket.FieldCreatedAt, field.TypeTime, value)
+	}
+	if value, ok := _u.mutation.UpdatedAt(); ok {
+		_spec.SetField(ticket.FieldUpdatedAt, field.TypeTime, value)
+	}
 	if value, ok := _u.mutation.Title(); ok {
 		_spec.SetField(ticket.FieldTitle, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.Reference(); ok {
+		_spec.SetField(ticket.FieldReference, field.TypeString, value)
+	}
+	if _u.mutation.ReferenceCleared() {
+		_spec.ClearField(ticket.FieldReference, field.TypeString)
+	}
+	if value, ok := _u.mutation.URL(); ok {
+		_spec.SetField(ticket.FieldURL, field.TypeString, value)
+	}
+	if _u.mutation.URLCleared() {
+		_spec.ClearField(ticket.FieldURL, field.TypeString)
+	}
+	if value, ok := _u.mutation.Provider(); ok {
+		_spec.SetField(ticket.FieldProvider, field.TypeString, value)
+	}
+	if _u.mutation.ProviderCleared() {
+		_spec.ClearField(ticket.FieldProvider, field.TypeString)
+	}
+	if value, ok := _u.mutation.ProviderNamespace(); ok {
+		_spec.SetField(ticket.FieldProviderNamespace, field.TypeString, value)
+	}
+	if _u.mutation.ProviderNamespaceCleared() {
+		_spec.ClearField(ticket.FieldProviderNamespace, field.TypeString)
+	}
+	if value, ok := _u.mutation.ProviderResourceRef(); ok {
+		_spec.SetField(ticket.FieldProviderResourceRef, field.TypeString, value)
+	}
+	if _u.mutation.ProviderResourceRefCleared() {
+		_spec.ClearField(ticket.FieldProviderResourceRef, field.TypeString)
 	}
 	if _u.mutation.TasksCleared() {
 		edge := &sqlgraph.EdgeSpec{

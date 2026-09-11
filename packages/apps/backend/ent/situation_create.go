@@ -20,6 +20,7 @@ import (
 	"github.com/rezible/rezible/ent/situation"
 	"github.com/rezible/rezible/ent/situationhazardassessment"
 	"github.com/rezible/rezible/ent/situationinvestigation"
+	"github.com/rezible/rezible/ent/situationobservationgroup"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
@@ -220,6 +221,21 @@ func (_c *SituationCreate) AddHazardAssessments(v ...*SituationHazardAssessment)
 		ids[i] = v[i].ID
 	}
 	return _c.AddHazardAssessmentIDs(ids...)
+}
+
+// AddObservationGroupIDs adds the "observation_groups" edge to the SituationObservationGroup entity by IDs.
+func (_c *SituationCreate) AddObservationGroupIDs(ids ...uuid.UUID) *SituationCreate {
+	_c.mutation.AddObservationGroupIDs(ids...)
+	return _c
+}
+
+// AddObservationGroups adds the "observation_groups" edges to the SituationObservationGroup entity.
+func (_c *SituationCreate) AddObservationGroups(v ...*SituationObservationGroup) *SituationCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddObservationGroupIDs(ids...)
 }
 
 // AddIncidentIDs adds the "incidents" edge to the Incident entity by IDs.
@@ -535,6 +551,23 @@ func (_c *SituationCreate) createSpec() (*Situation, *sqlgraph.CreateSpec) {
 			},
 		}
 		edge.Schema = _c.schemaConfig.SituationHazardAssessment
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.ObservationGroupsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   situation.ObservationGroupsTable,
+			Columns: []string{situation.ObservationGroupsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(situationobservationgroup.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.SituationObservationGroup
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

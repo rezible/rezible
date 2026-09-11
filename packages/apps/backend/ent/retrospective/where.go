@@ -282,27 +282,56 @@ func HasDocumentWith(preds ...predicate.Document) predicate.Retrospective {
 	})
 }
 
-// HasComments applies the HasEdge predicate on the "comments" edge.
-func HasComments() predicate.Retrospective {
+// HasDiscussionThreads applies the HasEdge predicate on the "discussion_threads" edge.
+func HasDiscussionThreads() predicate.Retrospective {
 	return predicate.Retrospective(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, CommentsTable, CommentsColumn),
+			sqlgraph.Edge(sqlgraph.O2M, true, DiscussionThreadsTable, DiscussionThreadsColumn),
 		)
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.RetrospectiveComment
-		step.Edge.Schema = schemaConfig.RetrospectiveComment
+		step.To.Schema = schemaConfig.DiscussionThread
+		step.Edge.Schema = schemaConfig.DiscussionThread
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasCommentsWith applies the HasEdge predicate on the "comments" edge with a given conditions (other predicates).
-func HasCommentsWith(preds ...predicate.RetrospectiveComment) predicate.Retrospective {
+// HasDiscussionThreadsWith applies the HasEdge predicate on the "discussion_threads" edge with a given conditions (other predicates).
+func HasDiscussionThreadsWith(preds ...predicate.DiscussionThread) predicate.Retrospective {
 	return predicate.Retrospective(func(s *sql.Selector) {
-		step := newCommentsStep()
+		step := newDiscussionThreadsStep()
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.RetrospectiveComment
-		step.Edge.Schema = schemaConfig.RetrospectiveComment
+		step.To.Schema = schemaConfig.DiscussionThread
+		step.Edge.Schema = schemaConfig.DiscussionThread
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasReviews applies the HasEdge predicate on the "reviews" edge.
+func HasReviews() predicate.Retrospective {
+	return predicate.Retrospective(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, ReviewsTable, ReviewsColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Review
+		step.Edge.Schema = schemaConfig.Review
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasReviewsWith applies the HasEdge predicate on the "reviews" edge with a given conditions (other predicates).
+func HasReviewsWith(preds ...predicate.Review) predicate.Retrospective {
+	return predicate.Retrospective(func(s *sql.Selector) {
+		step := newReviewsStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Review
+		step.Edge.Schema = schemaConfig.Review
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

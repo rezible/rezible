@@ -41,6 +41,8 @@ var (
 	ErrAuthSessionInvalid   = fmt.Errorf("auth session invalid")
 	ErrConflict             = fmt.Errorf("conflict")
 	ErrInvalidInput         = fmt.Errorf("invalid input")
+	ErrNotFound             = fmt.Errorf("not found")
+	ErrNotImplemented       = fmt.Errorf("not implemented")
 )
 
 type (
@@ -483,6 +485,8 @@ type (
 		Kind                 string
 		From                 time.Time
 		To                   time.Time
+		SituationID          uuid.UUID
+		AnalysisID           uuid.UUID
 		Predicates           []predicate.NormalizedEvent
 		WithProjection       bool
 		WithAnnotations      bool
@@ -920,25 +924,42 @@ type (
 )
 
 type (
-	ListRetrospectiveCommentsParams struct {
+	ListReviewsParams struct {
 		ent.ListParams
 		RetrospectiveID uuid.UUID
-		WithReplies     bool
+		AnalysisEntryID uuid.UUID
 	}
 
-	ListRetrospectiveReviewsParams struct {
+	ListDiscussionThreadsParams struct {
 		ent.ListParams
+		AnalysisID      uuid.UUID
 		RetrospectiveID uuid.UUID
-		WithReplies     bool
+		Kind            string
+		TargetKind      string
+		TargetID        uuid.UUID
+		ResolutionState string
+	}
+
+	ListDiscussionCommentsParams struct {
+		ent.ListParams
+		ThreadID uuid.UUID
+		ParentID uuid.UUID
+	}
+
+	DiscussionService interface {
+		ListThreads(context.Context, ListDiscussionThreadsParams) (*ent.ListResult[ent.DiscussionThread], error)
+		GetThread(context.Context, uuid.UUID) (*ent.DiscussionThread, error)
+
+		ListComments(context.Context, ListDiscussionCommentsParams) (*ent.ListResult[ent.DiscussionComment], error)
+		GetComment(context.Context, uuid.UUID) (*ent.DiscussionComment, error)
+
+		ListReviews(context.Context, ListReviewsParams) (*ent.ListResult[ent.Review], error)
+		GetReview(context.Context, uuid.UUID) (*ent.Review, error)
 	}
 
 	RetrospectiveService interface {
 		Get(context.Context, predicate.Retrospective) (*ent.Retrospective, error)
 		Set(context.Context, uuid.UUID, func(*ent.RetrospectiveMutation)) (*ent.Retrospective, error)
-
-		ListComments(context.Context, ListRetrospectiveCommentsParams) (*ent.ListResult[ent.RetrospectiveComment], error)
-		GetComment(context.Context, uuid.UUID) (*ent.RetrospectiveComment, error)
-		SetComment(context.Context, *ent.RetrospectiveComment) (*ent.RetrospectiveComment, error)
 	}
 )
 

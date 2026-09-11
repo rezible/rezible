@@ -30,6 +30,8 @@ const (
 	FieldKnowledgeRelationshipID = "knowledge_relationship_id"
 	// FieldKnowledgeEvidenceID holds the string denoting the knowledge_evidence_id field in the database.
 	FieldKnowledgeEvidenceID = "knowledge_evidence_id"
+	// FieldNormalizedEventID holds the string denoting the normalized_event_id field in the database.
+	FieldNormalizedEventID = "normalized_event_id"
 	// FieldRole holds the string denoting the role field in the database.
 	FieldRole = "role"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
@@ -42,6 +44,8 @@ const (
 	EdgeKnowledgeRelationship = "knowledge_relationship"
 	// EdgeKnowledgeEvidence holds the string denoting the knowledge_evidence edge name in mutations.
 	EdgeKnowledgeEvidence = "knowledge_evidence"
+	// EdgeNormalizedEvent holds the string denoting the normalized_event edge name in mutations.
+	EdgeNormalizedEvent = "normalized_event"
 	// Table holds the table name of the systemanalysisentrysubject in the database.
 	Table = "system_analysis_entry_subjects"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -79,6 +83,13 @@ const (
 	KnowledgeEvidenceInverseTable = "knowledge_evidences"
 	// KnowledgeEvidenceColumn is the table column denoting the knowledge_evidence relation/edge.
 	KnowledgeEvidenceColumn = "knowledge_evidence_id"
+	// NormalizedEventTable is the table that holds the normalized_event relation/edge.
+	NormalizedEventTable = "system_analysis_entry_subjects"
+	// NormalizedEventInverseTable is the table name for the NormalizedEvent entity.
+	// It exists in this package in order to avoid circular dependency with the "normalizedevent" package.
+	NormalizedEventInverseTable = "normalized_events"
+	// NormalizedEventColumn is the table column denoting the normalized_event relation/edge.
+	NormalizedEventColumn = "normalized_event_id"
 )
 
 // Columns holds all SQL columns for systemanalysisentrysubject fields.
@@ -91,6 +102,7 @@ var Columns = []string{
 	FieldKnowledgeEntityID,
 	FieldKnowledgeRelationshipID,
 	FieldKnowledgeEvidenceID,
+	FieldNormalizedEventID,
 	FieldRole,
 }
 
@@ -167,6 +179,11 @@ func ByKnowledgeEvidenceID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldKnowledgeEvidenceID, opts...).ToFunc()
 }
 
+// ByNormalizedEventID orders the results by the normalized_event_id field.
+func ByNormalizedEventID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldNormalizedEventID, opts...).ToFunc()
+}
+
 // ByRole orders the results by the role field.
 func ByRole(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldRole, opts...).ToFunc()
@@ -206,6 +223,13 @@ func ByKnowledgeEvidenceField(field string, opts ...sql.OrderTermOption) OrderOp
 		sqlgraph.OrderByNeighborTerms(s, newKnowledgeEvidenceStep(), sql.OrderByField(field, opts...))
 	}
 }
+
+// ByNormalizedEventField orders the results by normalized_event field.
+func ByNormalizedEventField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newNormalizedEventStep(), sql.OrderByField(field, opts...))
+	}
+}
 func newTenantStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -239,5 +263,12 @@ func newKnowledgeEvidenceStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(KnowledgeEvidenceInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, false, KnowledgeEvidenceTable, KnowledgeEvidenceColumn),
+	)
+}
+func newNormalizedEventStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(NormalizedEventInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, NormalizedEventTable, NormalizedEventColumn),
 	)
 }

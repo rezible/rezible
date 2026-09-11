@@ -16,23 +16,27 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/review"
 	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/systemanalysisentry"
 	"github.com/rezible/rezible/ent/systemanalysisentrysubject"
+	"github.com/rezible/rezible/ent/task"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
 // SystemAnalysisEntryQuery is the builder for querying SystemAnalysisEntry entities.
 type SystemAnalysisEntryQuery struct {
 	config
-	ctx          *QueryContext
-	order        []systemanalysisentry.OrderOption
-	inters       []Interceptor
-	predicates   []predicate.SystemAnalysisEntry
-	withTenant   *TenantQuery
-	withAnalysis *SystemAnalysisQuery
-	withSubjects *SystemAnalysisEntrySubjectQuery
-	modifiers    []func(*sql.Selector)
+	ctx             *QueryContext
+	order           []systemanalysisentry.OrderOption
+	inters          []Interceptor
+	predicates      []predicate.SystemAnalysisEntry
+	withTenant      *TenantQuery
+	withAnalysis    *SystemAnalysisQuery
+	withSubjects    *SystemAnalysisEntrySubjectQuery
+	withOriginTasks *TaskQuery
+	withReviews     *ReviewQuery
+	modifiers       []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -138,6 +142,56 @@ func (_q *SystemAnalysisEntryQuery) QuerySubjects() *SystemAnalysisEntrySubjectQ
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.SystemAnalysisEntrySubject
 		step.Edge.Schema = schemaConfig.SystemAnalysisEntrySubject
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryOriginTasks chains the current query on the "origin_tasks" edge.
+func (_q *SystemAnalysisEntryQuery) QueryOriginTasks() *TaskQuery {
+	query := (&TaskClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(systemanalysisentry.Table, systemanalysisentry.FieldID, selector),
+			sqlgraph.To(task.Table, task.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, systemanalysisentry.OriginTasksTable, systemanalysisentry.OriginTasksColumn),
+		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.Task
+		step.Edge.Schema = schemaConfig.Task
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryReviews chains the current query on the "reviews" edge.
+func (_q *SystemAnalysisEntryQuery) QueryReviews() *ReviewQuery {
+	query := (&ReviewClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(systemanalysisentry.Table, systemanalysisentry.FieldID, selector),
+			sqlgraph.To(review.Table, review.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, systemanalysisentry.ReviewsTable, systemanalysisentry.ReviewsColumn),
+		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.Review
+		step.Edge.Schema = schemaConfig.Review
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -331,14 +385,16 @@ func (_q *SystemAnalysisEntryQuery) Clone() *SystemAnalysisEntryQuery {
 		return nil
 	}
 	return &SystemAnalysisEntryQuery{
-		config:       _q.config,
-		ctx:          _q.ctx.Clone(),
-		order:        append([]systemanalysisentry.OrderOption{}, _q.order...),
-		inters:       append([]Interceptor{}, _q.inters...),
-		predicates:   append([]predicate.SystemAnalysisEntry{}, _q.predicates...),
-		withTenant:   _q.withTenant.Clone(),
-		withAnalysis: _q.withAnalysis.Clone(),
-		withSubjects: _q.withSubjects.Clone(),
+		config:          _q.config,
+		ctx:             _q.ctx.Clone(),
+		order:           append([]systemanalysisentry.OrderOption{}, _q.order...),
+		inters:          append([]Interceptor{}, _q.inters...),
+		predicates:      append([]predicate.SystemAnalysisEntry{}, _q.predicates...),
+		withTenant:      _q.withTenant.Clone(),
+		withAnalysis:    _q.withAnalysis.Clone(),
+		withSubjects:    _q.withSubjects.Clone(),
+		withOriginTasks: _q.withOriginTasks.Clone(),
+		withReviews:     _q.withReviews.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
 		path:      _q.path,
@@ -376,6 +432,28 @@ func (_q *SystemAnalysisEntryQuery) WithSubjects(opts ...func(*SystemAnalysisEnt
 		opt(query)
 	}
 	_q.withSubjects = query
+	return _q
+}
+
+// WithOriginTasks tells the query-builder to eager-load the nodes that are connected to
+// the "origin_tasks" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *SystemAnalysisEntryQuery) WithOriginTasks(opts ...func(*TaskQuery)) *SystemAnalysisEntryQuery {
+	query := (&TaskClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withOriginTasks = query
+	return _q
+}
+
+// WithReviews tells the query-builder to eager-load the nodes that are connected to
+// the "reviews" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *SystemAnalysisEntryQuery) WithReviews(opts ...func(*ReviewQuery)) *SystemAnalysisEntryQuery {
+	query := (&ReviewClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withReviews = query
 	return _q
 }
 
@@ -463,10 +541,12 @@ func (_q *SystemAnalysisEntryQuery) sqlAll(ctx context.Context, hooks ...queryHo
 	var (
 		nodes       = []*SystemAnalysisEntry{}
 		_spec       = _q.querySpec()
-		loadedTypes = [3]bool{
+		loadedTypes = [5]bool{
 			_q.withTenant != nil,
 			_q.withAnalysis != nil,
 			_q.withSubjects != nil,
+			_q.withOriginTasks != nil,
+			_q.withReviews != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -510,6 +590,20 @@ func (_q *SystemAnalysisEntryQuery) sqlAll(ctx context.Context, hooks ...queryHo
 			func(n *SystemAnalysisEntry, e *SystemAnalysisEntrySubject) {
 				n.Edges.Subjects = append(n.Edges.Subjects, e)
 			}); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withOriginTasks; query != nil {
+		if err := _q.loadOriginTasks(ctx, query, nodes,
+			func(n *SystemAnalysisEntry) { n.Edges.OriginTasks = []*Task{} },
+			func(n *SystemAnalysisEntry, e *Task) { n.Edges.OriginTasks = append(n.Edges.OriginTasks, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withReviews; query != nil {
+		if err := _q.loadReviews(ctx, query, nodes,
+			func(n *SystemAnalysisEntry) { n.Edges.Reviews = []*Review{} },
+			func(n *SystemAnalysisEntry, e *Review) { n.Edges.Reviews = append(n.Edges.Reviews, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -599,6 +693,72 @@ func (_q *SystemAnalysisEntryQuery) loadSubjects(ctx context.Context, query *Sys
 		node, ok := nodeids[fk]
 		if !ok {
 			return fmt.Errorf(`unexpected referenced foreign-key "entry_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *SystemAnalysisEntryQuery) loadOriginTasks(ctx context.Context, query *TaskQuery, nodes []*SystemAnalysisEntry, init func(*SystemAnalysisEntry), assign func(*SystemAnalysisEntry, *Task)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*SystemAnalysisEntry)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(task.FieldOriginEntryID)
+	}
+	query.Where(predicate.Task(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(systemanalysisentry.OriginTasksColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.OriginEntryID
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "origin_entry_id" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "origin_entry_id" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *SystemAnalysisEntryQuery) loadReviews(ctx context.Context, query *ReviewQuery, nodes []*SystemAnalysisEntry, init func(*SystemAnalysisEntry), assign func(*SystemAnalysisEntry, *Review)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*SystemAnalysisEntry)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(review.FieldAnalysisEntryID)
+	}
+	query.Where(predicate.Review(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(systemanalysisentry.ReviewsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.AnalysisEntryID
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "analysis_entry_id" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "analysis_entry_id" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}

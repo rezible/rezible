@@ -4,6 +4,20 @@ export type ClientOptions = {
     baseUrl: `${string}://${string}/v1` | (string & {});
 };
 
+export type ActivityRecord = {
+    attributes: ActivityRecordAttributes;
+    id: string;
+};
+
+export type ActivityRecordAttributes = {
+    explanation: string;
+    incidentId?: string;
+    occurredAt: string;
+    recordId: string;
+    recordKind: 'incident-update' | 'situation-investigation' | 'inbox-item';
+    scope: string;
+};
+
 export type AddIncidentDebriefUserMessageAttributes = {
     messageContent: string;
 };
@@ -29,7 +43,7 @@ export type AddSituationHazardAssessmentRequestBody = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    attributes: AttributesStruct;
+    attributes: AttributesStruct2;
 };
 
 export type AddSituationHazardAssessmentResponseBody = {
@@ -67,6 +81,7 @@ export type AddSystemAnalysisEntrySubjectAttributes = {
     knowledgeEntityId?: string;
     knowledgeEvidenceId?: string;
     knowledgeRelationshipId?: string;
+    normalizedEventId?: string;
     role: string;
 };
 
@@ -290,6 +305,14 @@ export type AlertMetrics = {
 };
 
 export type AttributesStruct = {
+    situationId: string;
+};
+
+export type AttributesStruct1 = {
+    body: string;
+};
+
+export type AttributesStruct2 = {
     status: 'suspected' | 'confirmed' | 'disproven';
     summary: string;
     systemHazardId: string;
@@ -407,14 +430,6 @@ export type CollectionResponseBodyOncallRoster = {
     data: Array<OncallRoster>;
 };
 
-export type CollectionResponseBodyRetrospectiveReview = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<RetrospectiveReview>;
-};
-
 export type CompleteIntegrationOAuthFlowRequestAttributes = {
     client_verifier?: string;
     code: string;
@@ -458,6 +473,52 @@ export type CreateAgentSessionResponseBody = {
     data: AgentSession;
 };
 
+export type CreateDiscussionCommentAttributes = {
+    content: string;
+    parentId?: string;
+};
+
+export type CreateDiscussionCommentRequestBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    attributes: CreateDiscussionCommentAttributes;
+};
+
+export type CreateDiscussionCommentResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: DiscussionComment;
+};
+
+export type CreateDiscussionThreadAttributes = {
+    analysisId?: string;
+    initialMessage: string;
+    kind: 'comment' | 'question';
+    retrospectiveId?: string;
+    targetId?: string;
+    targetKind?: 'finding' | 'knowledge_entity' | 'knowledge_relationship' | 'normalized_event';
+};
+
+export type CreateDiscussionThreadRequestBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    attributes: CreateDiscussionThreadAttributes;
+};
+
+export type CreateDiscussionThreadResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: DiscussionThread;
+};
+
 export type CreateEventAnnotationRequestAttributes = {
     eventId: string;
     minutesOccupied: number;
@@ -484,6 +545,7 @@ export type CreateEventAnnotationResponseBody = {
 export type CreateIncidentAttributes = {
     fieldSelectionIds?: Array<string>;
     severityId: string;
+    situationIds?: Array<string>;
     summary?: string;
     tagIds?: Array<string>;
     title: string;
@@ -660,6 +722,22 @@ export type CreateIncidentTypeResponseBody = {
     data: IncidentType;
 };
 
+export type CreateIncidentUpdateRequestBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    attributes: AttributesStruct1;
+};
+
+export type CreateIncidentUpdateResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: IncidentUpdate;
+};
+
 export type CreateMeetingScheduleAttributes = {
     attendees: MeetingAttendees;
     description?: string;
@@ -756,40 +834,29 @@ export type CreatePlaybookResponseBody = {
     data: Playbook;
 };
 
-export type CreateRetrospectiveCommentAttributes = {
-    content: unknown;
+export type CreateReviewAttributes = {
+    analysisEntryId?: string;
+    commentId?: string;
+    requesterId: string;
+    retrospectiveId?: string;
+    reviewerId: string;
+    state: 'waiting' | 'request_changes' | 'approved';
 };
 
-export type CreateRetrospectiveCommentRequestBody = {
+export type CreateReviewRequestBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    attributes: CreateRetrospectiveCommentAttributes;
+    attributes: CreateReviewAttributes;
 };
 
-export type CreateRetrospectiveCommentResponseBody = {
+export type CreateReviewResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: RetrospectiveComment;
-};
-
-export type CreateRetrospectiveReviewRequestBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    attributes: RetrospectiveReviewAttributes;
-};
-
-export type CreateRetrospectiveReviewResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: RetrospectiveReview;
+    data: Review;
 };
 
 export type CreateSystemAnalysisEntryAttributes = {
@@ -820,6 +887,11 @@ export type CreateSystemAnalysisEntryResponseBody = {
 };
 
 export type CreateTaskAttributes = {
+    dueAt?: string;
+    incidentId?: string;
+    originEntryId?: string;
+    ownerId?: string;
+    state: 'open' | 'completed' | 'cancelled';
     title: string;
 };
 
@@ -879,6 +951,40 @@ export type CreateTeamResponseBody = {
      */
     readonly $schema?: string;
     data: Team;
+};
+
+export type DiscussionComment = {
+    attributes: DiscussionCommentAttributes;
+    id: string;
+};
+
+export type DiscussionCommentAttributes = {
+    content: string;
+    createdAt: string;
+    parentId?: string;
+    threadId: string;
+    updatedAt: string;
+    userId: string;
+};
+
+export type DiscussionThread = {
+    attributes: DiscussionThreadAttributes;
+    id: string;
+};
+
+export type DiscussionThreadAttributes = {
+    analysisId?: string;
+    createdAt: string;
+    kind: 'comment' | 'question';
+    resolutionNote?: string;
+    resolutionState?: 'open' | 'resolved';
+    resolvedAt?: string;
+    resolvedById?: string;
+    retrospectiveId?: string;
+    targetId?: string;
+    targetKind?: 'finding' | 'knowledge_entity' | 'knowledge_relationship' | 'normalized_event';
+    updatedAt: string;
+    userId: string;
 };
 
 export type DocumentAccess = {
@@ -999,16 +1105,6 @@ export type ExpandableOncallRosterAttributes = {
     id: string;
 };
 
-export type ExpandableRetrospectiveCommentAttributes = {
-    attributes?: RetrospectiveCommentAttributes;
-    id: string;
-};
-
-export type ExpandableUser = {
-    attributes?: User;
-    id: string;
-};
-
 export type ExpandableUserAttributes = {
     attributes?: UserAttributes;
     id: string;
@@ -1050,6 +1146,22 @@ export type GetAlertMetricsResponseBody = {
     data: AlertMetrics;
 };
 
+export type GetDiscussionCommentResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: DiscussionComment;
+};
+
+export type GetDiscussionThreadResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: DiscussionThread;
+};
+
 export type GetDocumentSessionResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
@@ -1064,6 +1176,14 @@ export type GetEventResponseBody = {
      */
     readonly $schema?: string;
     data: Event;
+};
+
+export type GetInboxItemResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: InboxItem;
 };
 
 export type GetIncidentDebriefQuestionResponseBody = {
@@ -1266,14 +1386,6 @@ export type GetPlaybookResponseBody = {
     data: Playbook;
 };
 
-export type GetRetrospectiveCommentResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: RetrospectiveComment;
-};
-
 export type GetRetrospectiveResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
@@ -1282,12 +1394,36 @@ export type GetRetrospectiveResponseBody = {
     data: Retrospective;
 };
 
+export type GetReviewResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Review;
+};
+
+export type GetSituationInvestigationResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: SituationInvestigation;
+};
+
 export type GetSituationResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
     data: Situation;
+};
+
+export type GetSystemAnalysisEntryResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: SystemAnalysisEntry;
 };
 
 export type GetSystemAnalysisResponseBody = {
@@ -1346,6 +1482,26 @@ export type GetUserSessionResponseBody = {
     data: UserSession;
 };
 
+export type InboxItem = {
+    attributes: InboxItemAttributes;
+    id: string;
+};
+
+export type InboxItemAttributes = {
+    analysisId?: string;
+    context: string;
+    dueAt?: string;
+    incidentId?: string;
+    kind: 'question' | 'annotation' | 'task' | 'maintenance';
+    proposedChange?: string;
+    reason: string;
+    recipientId?: string;
+    state: 'open' | 'completed' | 'dismissed';
+    targetId: string;
+    targetKind: 'discussion-thread' | 'normalized-event' | 'task' | 'maintenance-request';
+    teamId?: string;
+};
+
 export type Incident = {
     attributes: IncidentAttributes;
     id: string;
@@ -1357,8 +1513,10 @@ export type IncidentAttributes = {
     currentStatus: 'started' | 'mitigated' | 'resolved';
     fieldSelections: Array<IncidentFieldSelection>;
     linkedIncidents: Array<IncidentLink>;
+    linkedSituationIds: Array<string>;
     openedAt: string;
     primaryVideoConference?: VideoConference;
+    relatedTaskIds: Array<string>;
     retrospectiveId?: string;
     roles: Array<IncidentRoleAssignment>;
     severity: IncidentSeverity;
@@ -1456,7 +1614,7 @@ export type IncidentLink = {
     incidentId: string;
     incidentSummary: string;
     incidentTitle: string;
-    linkType: 'duplicate_of' | 'parent' | 'sibling' | 'child';
+    linkType: 'parent' | 'child' | 'similar';
 };
 
 export type IncidentMetadata = {
@@ -1511,6 +1669,17 @@ export type IncidentSeverityAttributes = {
     rank: number;
 };
 
+export type IncidentSituationLink = {
+    attributes: IncidentSituationLinkAttributes;
+    id: string;
+};
+
+export type IncidentSituationLinkAttributes = {
+    createdAt: string;
+    incidentId: string;
+    situationId: string;
+};
+
 export type IncidentTag = {
     attributes: IncidentTagAttributes;
     id: string;
@@ -1539,6 +1708,18 @@ export type IncidentTypeAttributes = {
     archived: boolean;
     description: string;
     name: string;
+};
+
+export type IncidentUpdate = {
+    attributes: IncidentUpdateAttributes;
+    id: string;
+};
+
+export type IncidentUpdateAttributes = {
+    authorId?: string;
+    body: string;
+    createdAt: string;
+    incidentId: string;
 };
 
 export type InstallIntegrationFromTargetsRequestAttributes = {
@@ -1682,6 +1863,22 @@ export type KnowledgeGraphView = {
     relationships: Array<KnowledgeGraphRelationship>;
     rootId: string;
     truncated: boolean;
+};
+
+export type LinkIncidentSituationRequestBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    attributes: AttributesStruct;
+};
+
+export type LinkIncidentSituationResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: IncidentSituationLink;
 };
 
 export type ListIntegrationInstallationsResponseBody = {
@@ -1867,6 +2064,15 @@ export type OrganizationPreferences = {
     enableIncidentManagement: boolean;
 };
 
+export type PaginatedResponseBodyActivityRecord = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<ActivityRecord>;
+    pagination: Pagination;
+};
+
 export type PaginatedResponseBodyAgentArtifact = {
     /**
      * A URL to the JSON Schema for this object.
@@ -1912,6 +2118,24 @@ export type PaginatedResponseBodyAlertDefinition = {
     pagination: Pagination;
 };
 
+export type PaginatedResponseBodyDiscussionComment = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<DiscussionComment>;
+    pagination: Pagination;
+};
+
+export type PaginatedResponseBodyDiscussionThread = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<DiscussionThread>;
+    pagination: Pagination;
+};
+
 export type PaginatedResponseBodyEvent = {
     /**
      * A URL to the JSON Schema for this object.
@@ -1927,6 +2151,15 @@ export type PaginatedResponseBodyEventAnnotation = {
      */
     readonly $schema?: string;
     data: Array<EventAnnotation>;
+    pagination: Pagination;
+};
+
+export type PaginatedResponseBodyInboxItem = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<InboxItem>;
     pagination: Pagination;
 };
 
@@ -1972,6 +2205,15 @@ export type PaginatedResponseBodyIncidentType = {
      */
     readonly $schema?: string;
     data: Array<IncidentType>;
+    pagination: Pagination;
+};
+
+export type PaginatedResponseBodyIncidentUpdate = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<IncidentUpdate>;
     pagination: Pagination;
 };
 
@@ -2029,12 +2271,12 @@ export type PaginatedResponseBodyRetrospective = {
     pagination: Pagination;
 };
 
-export type PaginatedResponseBodyRetrospectiveComment = {
+export type PaginatedResponseBodyReview = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<RetrospectiveComment>;
+    data: Array<Review>;
     pagination: Pagination;
 };
 
@@ -2053,6 +2295,15 @@ export type PaginatedResponseBodySituationHazardAssessment = {
      */
     readonly $schema?: string;
     data: Array<SituationHazardAssessment>;
+    pagination: Pagination;
+};
+
+export type PaginatedResponseBodySituationInvestigation = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<SituationInvestigation>;
     pagination: Pagination;
 };
 
@@ -2218,20 +2469,10 @@ export type Retrospective = {
 export type RetrospectiveAttributes = {
     documentId: string;
     reportSections: Array<RetrospectiveReportSection>;
-    state: 'draft' | 'in_review' | 'meeting_scheduled' | 'completed';
+    reviews: Array<Review>;
+    state: 'draft' | 'in_review' | 'meeting' | 'closed';
     systemAnalysisId: string;
     type: 'simple' | 'full';
-};
-
-export type RetrospectiveComment = {
-    attributes: RetrospectiveCommentAttributes;
-    id: string;
-};
-
-export type RetrospectiveCommentAttributes = {
-    content: string;
-    replies: Array<RetrospectiveComment>;
-    user: User;
 };
 
 export type RetrospectiveReportSection = {
@@ -2241,15 +2482,20 @@ export type RetrospectiveReportSection = {
     title: string;
 };
 
-export type RetrospectiveReview = {
-    attributes: RetrospectiveReviewAttributes;
+export type Review = {
+    attributes: ReviewAttributes;
     id: string;
 };
 
-export type RetrospectiveReviewAttributes = {
-    comment: ExpandableRetrospectiveCommentAttributes;
-    requester: ExpandableUser;
-    reviewer: ExpandableUser;
+export type ReviewAttributes = {
+    analysisEntryId?: string;
+    commentId?: string;
+    createdAt: string;
+    requesterId: string;
+    retrospectiveId?: string;
+    reviewerId: string;
+    state: 'waiting' | 'request_changes' | 'approved';
+    updatedAt: string;
 };
 
 export type SendOncallShiftHandoverAttributes = {
@@ -2284,6 +2530,9 @@ export type SituationAttributes = {
     evidenceRevision: number;
     investigations: Array<SituationInvestigation>;
     knowledgeEntityId: string;
+    linkedIncidentIds: Array<string>;
+    observationEvents: Array<Event>;
+    observationGroups: Array<SituationObservationGroup>;
     openedAt: string;
     status: 'open' | 'closed';
     summary: string;
@@ -2312,10 +2561,14 @@ export type SituationInvestigation = {
 };
 
 export type SituationInvestigationAttrs = {
+    analysisId: string;
     completedRevision: number;
     evidenceRevision: number;
+    query?: string;
     report?: SituationInvestigationReport;
     requestedRevision: number;
+    sessionId: string;
+    situationId: string;
     updatedAt: string;
 };
 
@@ -2328,12 +2581,44 @@ export type SituationInvestigationReport = {
     text: string;
 };
 
+export type SituationObservationGroup = {
+    attributes: SituationObservationGroupAttributes;
+    id: string;
+};
+
+export type SituationObservationGroupAttributes = {
+    body?: string;
+    events: Array<Event>;
+    situationId: string;
+    title: string;
+};
+
 export type StartIntegrationOAuthFlowResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
     data: IntegrationOAuthFlow;
+};
+
+export type StartSituationInvestigationAttributes = {
+    query?: string;
+};
+
+export type StartSituationInvestigationRequestBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    attributes: StartSituationInvestigationAttributes;
+};
+
+export type StartSituationInvestigationResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: SituationInvestigation;
 };
 
 export type SystemAnalysis = {
@@ -2365,6 +2650,7 @@ export type SystemAnalysisEntry = {
 };
 
 export type SystemAnalysisEntryAttributes = {
+    analysisId: string;
     body?: string;
     kind: 'observation' | 'context' | 'decision' | 'action' | 'finding' | 'recommendation';
     occurredAt?: string;
@@ -2372,6 +2658,7 @@ export type SystemAnalysisEntryAttributes = {
         [key: string]: unknown;
     };
     reference?: string;
+    reviews: Array<Review>;
     sequence: number;
     subjects: Array<SystemAnalysisEntrySubject>;
     title: string;
@@ -2386,6 +2673,7 @@ export type SystemAnalysisEntrySubjectAttributes = {
     knowledgeEntityId?: string;
     knowledgeEvidenceId?: string;
     knowledgeRelationshipId?: string;
+    normalizedEventId?: string;
     role: string;
 };
 
@@ -2413,8 +2701,27 @@ export type Task = {
 };
 
 export type TaskAttributes = {
+    createdAt: string;
     description: string;
+    dueAt?: string;
+    incidentId?: string;
     name: string;
+    originEntryId?: string;
+    ownerId?: string;
+    state: 'open' | 'completed' | 'cancelled';
+    ticketIds: Array<string>;
+    tickets: Array<TaskTicket>;
+    updatedAt: string;
+};
+
+export type TaskTicket = {
+    id: string;
+    provider?: string;
+    providerNamespace?: string;
+    providerResourceRef?: string;
+    reference?: string;
+    title: string;
+    url?: string;
 };
 
 export type Team = {
@@ -2452,6 +2759,55 @@ export type ToolResponse = {
     name?: string;
     output?: unknown;
     ref?: string;
+};
+
+export type UnlinkIncidentSituationResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: IncidentSituationLink;
+};
+
+export type UpdateDiscussionCommentAttributes = {
+    content: string;
+};
+
+export type UpdateDiscussionCommentRequestBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    attributes: UpdateDiscussionCommentAttributes;
+};
+
+export type UpdateDiscussionCommentResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: DiscussionComment;
+};
+
+export type UpdateDiscussionThreadAttributes = {
+    resolutionNote?: string;
+    resolutionState: 'open' | 'resolved';
+};
+
+export type UpdateDiscussionThreadRequestBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    attributes: UpdateDiscussionThreadAttributes;
+};
+
+export type UpdateDiscussionThreadResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: DiscussionThread;
 };
 
 export type UpdateEventAnnotationRequestAttributes = {
@@ -2827,28 +3183,8 @@ export type UpdatePlaybookResponseBody = {
 };
 
 export type UpdateRetrospectiveAttributes = {
-    [key: string]: never;
-};
-
-export type UpdateRetrospectiveCommentAttributes = {
-    content?: string;
-    resolved?: boolean;
-};
-
-export type UpdateRetrospectiveCommentRequestBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    attributes: UpdateRetrospectiveCommentAttributes;
-};
-
-export type UpdateRetrospectiveCommentResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: RetrospectiveComment;
+    kind?: 'simple' | 'full';
+    state?: 'draft' | 'in_review' | 'meeting' | 'closed';
 };
 
 export type UpdateRetrospectiveRequestBody = {
@@ -2867,24 +3203,25 @@ export type UpdateRetrospectiveResponseBody = {
     data: Retrospective;
 };
 
-export type UpdateRetrospectiveReviewRequestAttributes = {
-    [key: string]: never;
+export type UpdateReviewAttributes = {
+    commentId?: string;
+    state?: 'waiting' | 'request_changes' | 'approved';
 };
 
-export type UpdateRetrospectiveReviewRequestBody = {
+export type UpdateReviewRequestBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    attributes: UpdateRetrospectiveReviewRequestAttributes;
+    attributes: UpdateReviewAttributes;
 };
 
-export type UpdateRetrospectiveReviewResponseBody = {
+export type UpdateReviewResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: RetrospectiveReview;
+    data: Review;
 };
 
 export type UpdateSystemAnalysisAttributes = {
@@ -3002,7 +3339,11 @@ export type UpdateSystemAnalysisResponseBody = {
 };
 
 export type UpdateTaskAttributes = {
+    dueAt?: string;
     name?: string;
+    originEntryId?: string;
+    ownerId?: string;
+    state?: 'open' | 'completed' | 'cancelled';
 };
 
 export type UpdateTaskRequestBody = {
@@ -3157,6 +3498,57 @@ export type VideoConferenceAttributes = {
     provider: string;
     status: string;
 };
+
+export type ListActivityData = {
+    body?: never;
+    path?: never;
+    query?: {
+        page?: number;
+        pageSize?: number;
+        from?: string;
+        to?: string;
+        scope?: 'team';
+    };
+    url: '/activity';
+};
+
+export type ListActivityErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type ListActivityError = ListActivityErrors[keyof ListActivityErrors];
+
+export type ListActivityResponses = {
+    /**
+     * OK
+     */
+    200: PaginatedResponseBodyActivityRecord;
+};
+
+export type ListActivityResponse = ListActivityResponses[keyof ListActivityResponses];
 
 export type ListAgentSessionsData = {
     body?: never;
@@ -4202,6 +4594,407 @@ export type UpdateDebriefQuestionResponses = {
 
 export type UpdateDebriefQuestionResponse = UpdateDebriefQuestionResponses[keyof UpdateDebriefQuestionResponses];
 
+export type GetDiscussionCommentData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/discussion-comments/{id}';
+};
+
+export type GetDiscussionCommentErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type GetDiscussionCommentError = GetDiscussionCommentErrors[keyof GetDiscussionCommentErrors];
+
+export type GetDiscussionCommentResponses = {
+    /**
+     * OK
+     */
+    200: GetDiscussionCommentResponseBody;
+};
+
+export type GetDiscussionCommentResponse = GetDiscussionCommentResponses[keyof GetDiscussionCommentResponses];
+
+export type UpdateDiscussionCommentData = {
+    body: UpdateDiscussionCommentRequestBody;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/discussion-comments/{id}';
+};
+
+export type UpdateDiscussionCommentErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+    /**
+     * Not Implemented
+     */
+    501: ErrorModel;
+};
+
+export type UpdateDiscussionCommentError = UpdateDiscussionCommentErrors[keyof UpdateDiscussionCommentErrors];
+
+export type UpdateDiscussionCommentResponses = {
+    /**
+     * OK
+     */
+    200: UpdateDiscussionCommentResponseBody;
+};
+
+export type UpdateDiscussionCommentResponse = UpdateDiscussionCommentResponses[keyof UpdateDiscussionCommentResponses];
+
+export type ListDiscussionThreadsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        page?: number;
+        pageSize?: number;
+        analysisId?: string;
+        retrospectiveId?: string;
+        targetKind?: 'finding' | 'knowledge_entity' | 'knowledge_relationship' | 'normalized_event';
+        targetId?: string;
+        kind?: 'comment' | 'question';
+        resolutionState?: 'open' | 'resolved';
+    };
+    url: '/discussion-threads';
+};
+
+export type ListDiscussionThreadsErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type ListDiscussionThreadsError = ListDiscussionThreadsErrors[keyof ListDiscussionThreadsErrors];
+
+export type ListDiscussionThreadsResponses = {
+    /**
+     * OK
+     */
+    200: PaginatedResponseBodyDiscussionThread;
+};
+
+export type ListDiscussionThreadsResponse = ListDiscussionThreadsResponses[keyof ListDiscussionThreadsResponses];
+
+export type CreateDiscussionThreadData = {
+    body: CreateDiscussionThreadRequestBody;
+    path?: never;
+    query?: never;
+    url: '/discussion-threads';
+};
+
+export type CreateDiscussionThreadErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+    /**
+     * Not Implemented
+     */
+    501: ErrorModel;
+};
+
+export type CreateDiscussionThreadError = CreateDiscussionThreadErrors[keyof CreateDiscussionThreadErrors];
+
+export type CreateDiscussionThreadResponses = {
+    /**
+     * OK
+     */
+    200: CreateDiscussionThreadResponseBody;
+};
+
+export type CreateDiscussionThreadResponse = CreateDiscussionThreadResponses[keyof CreateDiscussionThreadResponses];
+
+export type GetDiscussionThreadData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/discussion-threads/{id}';
+};
+
+export type GetDiscussionThreadErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type GetDiscussionThreadError = GetDiscussionThreadErrors[keyof GetDiscussionThreadErrors];
+
+export type GetDiscussionThreadResponses = {
+    /**
+     * OK
+     */
+    200: GetDiscussionThreadResponseBody;
+};
+
+export type GetDiscussionThreadResponse = GetDiscussionThreadResponses[keyof GetDiscussionThreadResponses];
+
+export type UpdateDiscussionThreadData = {
+    body: UpdateDiscussionThreadRequestBody;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/discussion-threads/{id}';
+};
+
+export type UpdateDiscussionThreadErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+    /**
+     * Not Implemented
+     */
+    501: ErrorModel;
+};
+
+export type UpdateDiscussionThreadError = UpdateDiscussionThreadErrors[keyof UpdateDiscussionThreadErrors];
+
+export type UpdateDiscussionThreadResponses = {
+    /**
+     * OK
+     */
+    200: UpdateDiscussionThreadResponseBody;
+};
+
+export type UpdateDiscussionThreadResponse = UpdateDiscussionThreadResponses[keyof UpdateDiscussionThreadResponses];
+
+export type ListDiscussionCommentsData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: {
+        page?: number;
+        pageSize?: number;
+        parentId?: string;
+    };
+    url: '/discussion-threads/{id}/comments';
+};
+
+export type ListDiscussionCommentsErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type ListDiscussionCommentsError = ListDiscussionCommentsErrors[keyof ListDiscussionCommentsErrors];
+
+export type ListDiscussionCommentsResponses = {
+    /**
+     * OK
+     */
+    200: PaginatedResponseBodyDiscussionComment;
+};
+
+export type ListDiscussionCommentsResponse = ListDiscussionCommentsResponses[keyof ListDiscussionCommentsResponses];
+
+export type CreateDiscussionCommentData = {
+    body: CreateDiscussionCommentRequestBody;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/discussion-threads/{id}/comments';
+};
+
+export type CreateDiscussionCommentErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+    /**
+     * Not Implemented
+     */
+    501: ErrorModel;
+};
+
+export type CreateDiscussionCommentError = CreateDiscussionCommentErrors[keyof CreateDiscussionCommentErrors];
+
+export type CreateDiscussionCommentResponses = {
+    /**
+     * OK
+     */
+    200: CreateDiscussionCommentResponseBody;
+};
+
+export type CreateDiscussionCommentResponse = CreateDiscussionCommentResponses[keyof CreateDiscussionCommentResponses];
+
 export type GetDocumentSessionData = {
     body?: never;
     path: {
@@ -4495,6 +5288,8 @@ export type ListEventsData = {
         page?: number;
         pageSize?: number;
         kind?: string;
+        situationId?: string;
+        analysisId?: string;
         from?: string;
         to?: string;
         withProjection?: boolean;
@@ -6223,6 +7018,10 @@ export type CreateIncidentErrors = {
      * Internal Server Error
      */
     500: ErrorModel;
+    /**
+     * Not Implemented
+     */
+    501: ErrorModel;
 };
 
 export type CreateIncidentError = CreateIncidentErrors[keyof CreateIncidentErrors];
@@ -6517,6 +7316,211 @@ export type CreateIncidentMilestoneResponses = {
 };
 
 export type CreateIncidentMilestoneResponse = CreateIncidentMilestoneResponses[keyof CreateIncidentMilestoneResponses];
+
+export type UnlinkIncidentSituationData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: {
+        situationId?: string;
+    };
+    url: '/incidents/{id}/situations';
+};
+
+export type UnlinkIncidentSituationErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+    /**
+     * Not Implemented
+     */
+    501: ErrorModel;
+};
+
+export type UnlinkIncidentSituationError = UnlinkIncidentSituationErrors[keyof UnlinkIncidentSituationErrors];
+
+export type UnlinkIncidentSituationResponses = {
+    /**
+     * OK
+     */
+    200: UnlinkIncidentSituationResponseBody;
+};
+
+export type UnlinkIncidentSituationResponse = UnlinkIncidentSituationResponses[keyof UnlinkIncidentSituationResponses];
+
+export type LinkIncidentSituationData = {
+    body: LinkIncidentSituationRequestBody;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/incidents/{id}/situations';
+};
+
+export type LinkIncidentSituationErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+    /**
+     * Not Implemented
+     */
+    501: ErrorModel;
+};
+
+export type LinkIncidentSituationError = LinkIncidentSituationErrors[keyof LinkIncidentSituationErrors];
+
+export type LinkIncidentSituationResponses = {
+    /**
+     * OK
+     */
+    200: LinkIncidentSituationResponseBody;
+};
+
+export type LinkIncidentSituationResponse = LinkIncidentSituationResponses[keyof LinkIncidentSituationResponses];
+
+export type ListIncidentUpdatesData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: {
+        page?: number;
+        pageSize?: number;
+    };
+    url: '/incidents/{id}/updates';
+};
+
+export type ListIncidentUpdatesErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type ListIncidentUpdatesError = ListIncidentUpdatesErrors[keyof ListIncidentUpdatesErrors];
+
+export type ListIncidentUpdatesResponses = {
+    /**
+     * OK
+     */
+    200: PaginatedResponseBodyIncidentUpdate;
+};
+
+export type ListIncidentUpdatesResponse = ListIncidentUpdatesResponses[keyof ListIncidentUpdatesResponses];
+
+export type CreateIncidentUpdateData = {
+    body: CreateIncidentUpdateRequestBody;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/incidents/{id}/updates';
+};
+
+export type CreateIncidentUpdateErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+    /**
+     * Not Implemented
+     */
+    501: ErrorModel;
+};
+
+export type CreateIncidentUpdateError = CreateIncidentUpdateErrors[keyof CreateIncidentUpdateErrors];
+
+export type CreateIncidentUpdateResponses = {
+    /**
+     * OK
+     */
+    200: CreateIncidentUpdateResponseBody;
+};
+
+export type CreateIncidentUpdateResponse = CreateIncidentUpdateResponses[keyof CreateIncidentUpdateResponses];
 
 export type GetInstallableIntegrationsData = {
     body?: never;
@@ -9013,194 +10017,6 @@ export type UpdatePlaybookResponses = {
 
 export type UpdatePlaybookResponse = UpdatePlaybookResponses[keyof UpdatePlaybookResponses];
 
-export type GetRetrospectiveCommentData = {
-    body?: never;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/retrospective_comments/{id}';
-};
-
-export type GetRetrospectiveCommentErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type GetRetrospectiveCommentError = GetRetrospectiveCommentErrors[keyof GetRetrospectiveCommentErrors];
-
-export type GetRetrospectiveCommentResponses = {
-    /**
-     * OK
-     */
-    200: GetRetrospectiveCommentResponseBody;
-};
-
-export type GetRetrospectiveCommentResponse = GetRetrospectiveCommentResponses[keyof GetRetrospectiveCommentResponses];
-
-export type UpdateRetrospectiveCommentData = {
-    body: UpdateRetrospectiveCommentRequestBody;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/retrospective_comments/{id}';
-};
-
-export type UpdateRetrospectiveCommentErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type UpdateRetrospectiveCommentError = UpdateRetrospectiveCommentErrors[keyof UpdateRetrospectiveCommentErrors];
-
-export type UpdateRetrospectiveCommentResponses = {
-    /**
-     * OK
-     */
-    200: UpdateRetrospectiveCommentResponseBody;
-};
-
-export type UpdateRetrospectiveCommentResponse = UpdateRetrospectiveCommentResponses[keyof UpdateRetrospectiveCommentResponses];
-
-export type ArchiveRetrospectiveReviewData = {
-    body?: never;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/retrospective_reviews/{id}';
-};
-
-export type ArchiveRetrospectiveReviewErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type ArchiveRetrospectiveReviewError = ArchiveRetrospectiveReviewErrors[keyof ArchiveRetrospectiveReviewErrors];
-
-export type ArchiveRetrospectiveReviewResponses = {
-    /**
-     * No Content
-     */
-    204: void;
-};
-
-export type ArchiveRetrospectiveReviewResponse = ArchiveRetrospectiveReviewResponses[keyof ArchiveRetrospectiveReviewResponses];
-
-export type UpdateRetrospectiveReviewData = {
-    body: UpdateRetrospectiveReviewRequestBody;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/retrospective_reviews/{id}';
-};
-
-export type UpdateRetrospectiveReviewErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type UpdateRetrospectiveReviewError = UpdateRetrospectiveReviewErrors[keyof UpdateRetrospectiveReviewErrors];
-
-export type UpdateRetrospectiveReviewResponses = {
-    /**
-     * OK
-     */
-    200: UpdateRetrospectiveReviewResponseBody;
-};
-
-export type UpdateRetrospectiveReviewResponse = UpdateRetrospectiveReviewResponses[keyof UpdateRetrospectiveReviewResponses];
-
 export type ListRetrospectivesData = {
     body?: never;
     path?: never;
@@ -9330,6 +10146,10 @@ export type UpdateRetrospectiveErrors = {
      * Internal Server Error
      */
     500: ErrorModel;
+    /**
+     * Not Implemented
+     */
+    501: ErrorModel;
 };
 
 export type UpdateRetrospectiveError = UpdateRetrospectiveErrors[keyof UpdateRetrospectiveErrors];
@@ -9343,19 +10163,19 @@ export type UpdateRetrospectiveResponses = {
 
 export type UpdateRetrospectiveResponse = UpdateRetrospectiveResponses[keyof UpdateRetrospectiveResponses];
 
-export type ListRetrospectiveCommentsData = {
+export type ListReviewsData = {
     body?: never;
-    path: {
-        id: string;
-    };
+    path?: never;
     query?: {
         page?: number;
         pageSize?: number;
+        retrospectiveId?: string;
+        analysisEntryId?: string;
     };
-    url: '/retrospectives/{id}/comments';
+    url: '/reviews';
 };
 
-export type ListRetrospectiveCommentsErrors = {
+export type ListReviewsErrors = {
     /**
      * Bad Request
      */
@@ -9382,72 +10202,25 @@ export type ListRetrospectiveCommentsErrors = {
     500: ErrorModel;
 };
 
-export type ListRetrospectiveCommentsError = ListRetrospectiveCommentsErrors[keyof ListRetrospectiveCommentsErrors];
+export type ListReviewsError = ListReviewsErrors[keyof ListReviewsErrors];
 
-export type ListRetrospectiveCommentsResponses = {
+export type ListReviewsResponses = {
     /**
      * OK
      */
-    200: PaginatedResponseBodyRetrospectiveComment;
+    200: PaginatedResponseBodyReview;
 };
 
-export type ListRetrospectiveCommentsResponse = ListRetrospectiveCommentsResponses[keyof ListRetrospectiveCommentsResponses];
+export type ListReviewsResponse = ListReviewsResponses[keyof ListReviewsResponses];
 
-export type CreateRetrospectiveCommentData = {
-    body: CreateRetrospectiveCommentRequestBody;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/retrospectives/{id}/comments';
-};
-
-export type CreateRetrospectiveCommentErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type CreateRetrospectiveCommentError = CreateRetrospectiveCommentErrors[keyof CreateRetrospectiveCommentErrors];
-
-export type CreateRetrospectiveCommentResponses = {
-    /**
-     * OK
-     */
-    200: CreateRetrospectiveCommentResponseBody;
-};
-
-export type CreateRetrospectiveCommentResponse = CreateRetrospectiveCommentResponses[keyof CreateRetrospectiveCommentResponses];
-
-export type ListRetrospectiveReviewsData = {
-    body?: never;
+export type CreateReviewData = {
+    body: CreateReviewRequestBody;
     path?: never;
     query?: never;
-    url: '/retrospectives/{id}/reviews';
+    url: '/reviews';
 };
 
-export type ListRetrospectiveReviewsErrors = {
+export type CreateReviewErrors = {
     /**
      * Bad Request
      */
@@ -9472,29 +10245,84 @@ export type ListRetrospectiveReviewsErrors = {
      * Internal Server Error
      */
     500: ErrorModel;
+    /**
+     * Not Implemented
+     */
+    501: ErrorModel;
 };
 
-export type ListRetrospectiveReviewsError = ListRetrospectiveReviewsErrors[keyof ListRetrospectiveReviewsErrors];
+export type CreateReviewError = CreateReviewErrors[keyof CreateReviewErrors];
 
-export type ListRetrospectiveReviewsResponses = {
+export type CreateReviewResponses = {
     /**
      * OK
      */
-    200: CollectionResponseBodyRetrospectiveReview;
+    200: CreateReviewResponseBody;
 };
 
-export type ListRetrospectiveReviewsResponse = ListRetrospectiveReviewsResponses[keyof ListRetrospectiveReviewsResponses];
+export type CreateReviewResponse = CreateReviewResponses[keyof CreateReviewResponses];
 
-export type CreateRetrospectiveReviewData = {
-    body: CreateRetrospectiveReviewRequestBody;
+export type ArchiveReviewData = {
+    body?: never;
     path: {
         id: string;
     };
     query?: never;
-    url: '/retrospectives/{id}/reviews';
+    url: '/reviews/{id}';
 };
 
-export type CreateRetrospectiveReviewErrors = {
+export type ArchiveReviewErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+    /**
+     * Not Implemented
+     */
+    501: ErrorModel;
+};
+
+export type ArchiveReviewError = ArchiveReviewErrors[keyof ArchiveReviewErrors];
+
+export type ArchiveReviewResponses = {
+    /**
+     * No Content
+     */
+    204: void;
+};
+
+export type ArchiveReviewResponse = ArchiveReviewResponses[keyof ArchiveReviewResponses];
+
+export type GetReviewData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/reviews/{id}';
+};
+
+export type GetReviewErrors = {
     /**
      * Bad Request
      */
@@ -9521,16 +10349,114 @@ export type CreateRetrospectiveReviewErrors = {
     500: ErrorModel;
 };
 
-export type CreateRetrospectiveReviewError = CreateRetrospectiveReviewErrors[keyof CreateRetrospectiveReviewErrors];
+export type GetReviewError = GetReviewErrors[keyof GetReviewErrors];
 
-export type CreateRetrospectiveReviewResponses = {
+export type GetReviewResponses = {
     /**
      * OK
      */
-    200: CreateRetrospectiveReviewResponseBody;
+    200: GetReviewResponseBody;
 };
 
-export type CreateRetrospectiveReviewResponse = CreateRetrospectiveReviewResponses[keyof CreateRetrospectiveReviewResponses];
+export type GetReviewResponse = GetReviewResponses[keyof GetReviewResponses];
+
+export type UpdateReviewData = {
+    body: UpdateReviewRequestBody;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/reviews/{id}';
+};
+
+export type UpdateReviewErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+    /**
+     * Not Implemented
+     */
+    501: ErrorModel;
+};
+
+export type UpdateReviewError = UpdateReviewErrors[keyof UpdateReviewErrors];
+
+export type UpdateReviewResponses = {
+    /**
+     * OK
+     */
+    200: UpdateReviewResponseBody;
+};
+
+export type UpdateReviewResponse = UpdateReviewResponses[keyof UpdateReviewResponses];
+
+export type GetSituationInvestigationData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/situation-investigations/{id}';
+};
+
+export type GetSituationInvestigationErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type GetSituationInvestigationError = GetSituationInvestigationErrors[keyof GetSituationInvestigationErrors];
+
+export type GetSituationInvestigationResponses = {
+    /**
+     * OK
+     */
+    200: GetSituationInvestigationResponseBody;
+};
+
+export type GetSituationInvestigationResponse = GetSituationInvestigationResponses[keyof GetSituationInvestigationResponses];
 
 export type ListSituationsData = {
     body?: never;
@@ -9726,6 +10652,103 @@ export type AddSituationHazardAssessmentResponses = {
 };
 
 export type AddSituationHazardAssessmentResponse = AddSituationHazardAssessmentResponses[keyof AddSituationHazardAssessmentResponses];
+
+export type ListSituationInvestigationsData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: {
+        page?: number;
+        pageSize?: number;
+    };
+    url: '/situations/{id}/investigations';
+};
+
+export type ListSituationInvestigationsErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type ListSituationInvestigationsError = ListSituationInvestigationsErrors[keyof ListSituationInvestigationsErrors];
+
+export type ListSituationInvestigationsResponses = {
+    /**
+     * OK
+     */
+    200: PaginatedResponseBodySituationInvestigation;
+};
+
+export type ListSituationInvestigationsResponse = ListSituationInvestigationsResponses[keyof ListSituationInvestigationsResponses];
+
+export type StartSituationInvestigationData = {
+    body: StartSituationInvestigationRequestBody;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/situations/{id}/investigations';
+};
+
+export type StartSituationInvestigationErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type StartSituationInvestigationError = StartSituationInvestigationErrors[keyof StartSituationInvestigationErrors];
+
+export type StartSituationInvestigationResponses = {
+    /**
+     * OK
+     */
+    200: StartSituationInvestigationResponseBody;
+};
+
+export type StartSituationInvestigationResponse = StartSituationInvestigationResponses[keyof StartSituationInvestigationResponses];
 
 export type GetSystemAnalysisData = {
     body?: never;
@@ -10253,6 +11276,53 @@ export type DeleteSystemAnalysisEntryResponses = {
 
 export type DeleteSystemAnalysisEntryResponse = DeleteSystemAnalysisEntryResponses[keyof DeleteSystemAnalysisEntryResponses];
 
+export type GetSystemAnalysisEntryData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/system_analysis_entries/{id}';
+};
+
+export type GetSystemAnalysisEntryErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type GetSystemAnalysisEntryError = GetSystemAnalysisEntryErrors[keyof GetSystemAnalysisEntryErrors];
+
+export type GetSystemAnalysisEntryResponses = {
+    /**
+     * OK
+     */
+    200: GetSystemAnalysisEntryResponseBody;
+};
+
+export type GetSystemAnalysisEntryResponse = GetSystemAnalysisEntryResponses[keyof GetSystemAnalysisEntryResponses];
+
 export type UpdateSystemAnalysisEntryData = {
     body: UpdateSystemAnalysisEntryRequestBody;
     path: {
@@ -10542,6 +11612,10 @@ export type ListTasksData = {
         page?: number;
         pageSize?: number;
         archived?: boolean;
+        incidentId?: string;
+        ownerId?: string;
+        originEntryId?: string;
+        state?: 'open' | 'completed' | 'cancelled';
     };
     url: '/tasks';
 };
@@ -10616,6 +11690,10 @@ export type CreateTaskErrors = {
      * Internal Server Error
      */
     500: ErrorModel;
+    /**
+     * Not Implemented
+     */
+    501: ErrorModel;
 };
 
 export type CreateTaskError = CreateTaskErrors[keyof CreateTaskErrors];
@@ -10757,6 +11835,10 @@ export type UpdateTaskErrors = {
      * Internal Server Error
      */
     500: ErrorModel;
+    /**
+     * Not Implemented
+     */
+    501: ErrorModel;
 };
 
 export type UpdateTaskError = UpdateTaskErrors[keyof UpdateTaskErrors];
@@ -11239,6 +12321,106 @@ export type GetUserSessionResponses = {
 };
 
 export type GetUserSessionResponse = GetUserSessionResponses[keyof GetUserSessionResponses];
+
+export type ListInboxItemsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        page?: number;
+        pageSize?: number;
+        recipientId?: string;
+        kind?: 'question' | 'annotation' | 'task' | 'maintenance';
+        state?: 'open' | 'completed' | 'dismissed';
+        scope?: 'mine' | 'team';
+        teamId?: string;
+    };
+    url: '/user_session/inbox';
+};
+
+export type ListInboxItemsErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type ListInboxItemsError = ListInboxItemsErrors[keyof ListInboxItemsErrors];
+
+export type ListInboxItemsResponses = {
+    /**
+     * OK
+     */
+    200: PaginatedResponseBodyInboxItem;
+};
+
+export type ListInboxItemsResponse = ListInboxItemsResponses[keyof ListInboxItemsResponses];
+
+export type GetInboxItemData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/user_session/inbox/{id}';
+};
+
+export type GetInboxItemErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type GetInboxItemError = GetInboxItemErrors[keyof GetInboxItemErrors];
+
+export type GetInboxItemResponses = {
+    /**
+     * OK
+     */
+    200: GetInboxItemResponseBody;
+};
+
+export type GetInboxItemResponse = GetInboxItemResponses[keyof GetInboxItemResponses];
 
 export type DeleteUserNotificationData = {
     body?: never;

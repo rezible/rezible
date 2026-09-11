@@ -2,16 +2,18 @@ package v1
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
-
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/schema/schematypes"
 	"github.com/rezible/rezible/ent/situation"
 	"github.com/rezible/rezible/ent/situationhazardassessment"
+	rezai "github.com/rezible/rezible/pkg/ai"
 	"github.com/rezible/rezible/pkg/openapi"
 )
 
@@ -21,6 +23,10 @@ type SituationsHandler interface {
 
 	ListSituationHazardAssessments(context.Context, *ListSituationHazardAssessmentsRequest) (*ListSituationHazardAssessmentsResponse, error)
 	AddSituationHazardAssessment(context.Context, *AddSituationHazardAssessmentRequest) (*AddSituationHazardAssessmentResponse, error)
+
+	ListSituationInvestigations(context.Context, *ListSituationInvestigationsRequest) (*ListSituationInvestigationsResponse, error)
+	GetSituationInvestigation(context.Context, *GetSituationInvestigationRequest) (*GetSituationInvestigationResponse, error)
+	StartSituationInvestigation(context.Context, *StartSituationInvestigationRequest) (*StartSituationInvestigationResponse, error)
 }
 
 func (o operations) RegisterSituations(api huma.API) {
@@ -29,6 +35,10 @@ func (o operations) RegisterSituations(api huma.API) {
 
 	huma.Register(api, ListSituationHazardAssessments, o.ListSituationHazardAssessments)
 	huma.Register(api, AddSituationHazardAssessment, o.AddSituationHazardAssessment)
+
+	huma.Register(api, ListSituationInvestigations, o.ListSituationInvestigations)
+	huma.Register(api, GetSituationInvestigation, o.GetSituationInvestigation)
+	huma.Register(api, StartSituationInvestigation, o.StartSituationInvestigation)
 }
 
 type (
@@ -38,19 +48,20 @@ type (
 	}
 
 	SituationAttributes struct {
-		Title             string                   `json:"title"`
-		Summary           string                   `json:"summary"`
-		Status            string                   `json:"status" enum:"open,closed"`
-		CloseReason       *string                  `json:"closeReason,omitempty" enum:"stabilized,dismissed"`
-		EvidenceRevision  int                      `json:"evidenceRevision"`
-		KnowledgeEntityId uuid.UUID                `json:"knowledgeEntityId"`
-		AlertEpisodes     []AlertEpisode           `json:"alertEpisodes"`
-		Investigations    []SituationInvestigation `json:"investigations"`
-		OpenedAt          time.Time                `json:"openedAt"`
-		ClosedAt          *time.Time               `json:"closedAt,omitempty"`
-		UpdatedAt         time.Time                `json:"updatedAt"`
+		Title             string                      `json:"title"`
+		Summary           string                      `json:"summary"`
+		Status            string                      `json:"status" enum:"open,closed"`
+		CloseReason       *string                     `json:"closeReason,omitempty" enum:"stabilized,dismissed"`
+		EvidenceRevision  int                         `json:"evidenceRevision"`
+		KnowledgeEntityId uuid.UUID                   `json:"knowledgeEntityId"`
+		AlertEpisodes     []AlertEpisode              `json:"alertEpisodes"`
+		LinkedIncidentIds []uuid.UUID                 `json:"linkedIncidentIds"`
+		Investigations    []SituationInvestigation    `json:"investigations"`
+		ObservationGroups []SituationObservationGroup `json:"observationGroups"`
+		OpenedAt          time.Time                   `json:"openedAt"`
+		ClosedAt          *time.Time                  `json:"closedAt,omitempty"`
+		UpdatedAt         time.Time                   `json:"updatedAt"`
 	}
-
 	SituationInvestigationReport struct {
 		Text               string   `json:"text"`
 		LikelyCause        string   `json:"likelyCause,omitempty"`
@@ -66,6 +77,10 @@ type (
 	}
 
 	SituationInvestigationAttrs struct {
+		Query             *string                       `json:"query,omitempty"`
+		SituationId       uuid.UUID                     `json:"situationId"`
+		AnalysisId        uuid.UUID                     `json:"analysisId"`
+		SessionId         uuid.UUID                     `json:"sessionId"`
 		RequestedRevision int                           `json:"requestedRevision"`
 		CompletedRevision int                           `json:"completedRevision"`
 		EvidenceRevision  int                           `json:"evidenceRevision"`
@@ -87,19 +102,56 @@ type (
 		UserId         *uuid.UUID `json:"userId,omitempty"`
 		AgentTurnId    *uuid.UUID `json:"agentTurnId,omitempty"`
 	}
+
+	SituationObservationGroup struct {
+		Id         uuid.UUID                           `json:"id"`
+		Attributes SituationObservationGroupAttributes `json:"attributes"`
+	}
+	SituationObservationGroupAttributes struct {
+		SituationId uuid.UUID `json:"situationId"`
+		Title       string    `json:"title"`
+		Body        string    `json:"body,omitempty"`
+		Events      []Event   `json:"events"`
+	}
 )
 
-func SituationInvestigationFromEnt(inv *ent.SituationInvestigation, evidenceRevision int) *SituationInvestigation {
+func SituationObservationGroupFromEnt(group *ent.SituationObservationGroup) SituationObservationGroup {
+	events := make([]Event, 0, len(group.Edges.Events))
+	for _, event := range group.Edges.Events {
+		events = append(events, EventFromEnt(event))
+	}
+	return SituationObservationGroup{
+		Id: group.ID,
+		Attributes: SituationObservationGroupAttributes{
+			SituationId: group.SituationID,
+			Title:       group.Title,
+			Body:        group.Body,
+			Events:      events,
+		},
+	}
+}
+
+func SituationInvestigationFromEnt(inv *ent.SituationInvestigation, evidenceRevision int) (*SituationInvestigation, error) {
 	attrs := SituationInvestigationAttrs{
+		SituationId:       inv.SituationID,
+		AnalysisId:        inv.SystemAnalysisID,
+		SessionId:         inv.AgentSessionID,
 		RequestedRevision: inv.RequestedRevision,
 		CompletedRevision: inv.CompletedRevision,
 		EvidenceRevision:  evidenceRevision,
 		UpdatedAt:         inv.UpdatedAt,
 	}
+	if session := inv.Edges.AgentSession; session != nil {
+		var input rezai.InvestigationAgentSessionInput
+		if decodeErr := json.Unmarshal(session.Input, &input); decodeErr != nil {
+			return nil, fmt.Errorf("decode investigation %s input: %w", inv.ID, decodeErr)
+		}
+		attrs.Query = input.Query
+	}
 	if inv.Report != nil {
 		attrs.Report = SituationInvestigationReportFromSchema(inv.Report)
 	}
-	return &SituationInvestigation{Id: inv.ID, Attributes: attrs}
+	return &SituationInvestigation{Id: inv.ID, Attributes: attrs}, nil
 }
 
 func SituationInvestigationReportFromSchema(report *schematypes.SituationInvestigationReport) *SituationInvestigationReport {
@@ -131,7 +183,7 @@ func SituationHazardAssessmentFromEnt(a *ent.SituationHazardAssessment) Situatio
 	}
 }
 
-func SituationFromEnt(s *ent.Situation) Situation {
+func SituationFromEnt(s *ent.Situation) (Situation, error) {
 	attrs := SituationAttributes{
 		Title:             s.Title,
 		Summary:           s.Summary,
@@ -139,9 +191,17 @@ func SituationFromEnt(s *ent.Situation) Situation {
 		EvidenceRevision:  s.EvidenceRevision,
 		KnowledgeEntityId: s.KnowledgeEntityID,
 		AlertEpisodes:     ConvertSlice(s.Edges.AlertEpisodes, AlertEpisodeFromEnt),
+		LinkedIncidentIds: make([]uuid.UUID, 0),
+		ObservationGroups: make([]SituationObservationGroup, 0, len(s.Edges.ObservationGroups)),
 		OpenedAt:          s.OpenedAt,
 		ClosedAt:          s.ClosedAt,
 		UpdatedAt:         s.UpdatedAt,
+	}
+	for _, incident := range s.Edges.Incidents {
+		attrs.LinkedIncidentIds = append(attrs.LinkedIncidentIds, incident.ID)
+	}
+	for _, group := range s.Edges.ObservationGroups {
+		attrs.ObservationGroups = append(attrs.ObservationGroups, SituationObservationGroupFromEnt(group))
 	}
 	if s.CloseReason != nil {
 		reason := string(*s.CloseReason)
@@ -149,9 +209,13 @@ func SituationFromEnt(s *ent.Situation) Situation {
 	}
 	attrs.Investigations = make([]SituationInvestigation, 0, len(s.Edges.Investigations))
 	for _, inv := range s.Edges.Investigations {
-		attrs.Investigations = append(attrs.Investigations, *SituationInvestigationFromEnt(inv, s.EvidenceRevision))
+		investigation, conversionErr := SituationInvestigationFromEnt(inv, s.EvidenceRevision)
+		if conversionErr != nil {
+			return Situation{}, conversionErr
+		}
+		attrs.Investigations = append(attrs.Investigations, *investigation)
 	}
-	return Situation{Id: s.ID, Attributes: attrs}
+	return Situation{Id: s.ID, Attributes: attrs}, nil
 }
 
 var situationsTags = []string{"Situations"}
@@ -171,6 +235,7 @@ type ListSituationsRequest struct {
 	Status      situation.Status `query:"status" required:"false" enum:"open,closed"`
 	OpenedAfter time.Time        `query:"openedAfter" required:"false" format:"date-time"`
 }
+
 type ListSituationsResponse PaginatedResponse[Situation]
 
 var GetSituation = openapi.Operation{
@@ -185,6 +250,51 @@ var GetSituation = openapi.Operation{
 type GetSituationRequest IdRequest
 type GetSituationResponse ItemResponse[Situation]
 
+var ListSituationInvestigations = openapi.Operation{
+	OperationID: "list-situation-investigations",
+	Method:      http.MethodGet,
+	Path:        "/situations/{id}/investigations",
+	Summary:     "List Situation Investigations",
+	Tags:        situationsTags,
+	Errors:      ErrorCodes(),
+}
+
+type ListSituationInvestigationsRequest struct {
+	PaginationRequest
+	Id uuid.UUID `path:"id"`
+}
+type ListSituationInvestigationsResponse PaginatedResponse[SituationInvestigation]
+
+var GetSituationInvestigation = openapi.Operation{
+	OperationID: "get-situation-investigation",
+	Method:      http.MethodGet,
+	Path:        "/situation-investigations/{id}",
+	Summary:     "Get Situation Investigation",
+	Tags:        situationsTags,
+	Errors:      ErrorCodes(),
+}
+
+type GetSituationInvestigationRequest IdRequest
+type GetSituationInvestigationResponse ItemResponse[SituationInvestigation]
+
+var StartSituationInvestigation = openapi.Operation{
+	OperationID: "start-situation-investigation",
+	Method:      http.MethodPost,
+	Path:        "/situations/{id}/investigations",
+	Summary:     "Start Situation Investigation",
+	Tags:        situationsTags,
+	Errors:      ErrorCodes(),
+}
+
+type StartSituationInvestigationAttributes struct {
+	Query *string `json:"query,omitempty"`
+}
+type StartSituationInvestigationRequest struct {
+	Id uuid.UUID `path:"id"`
+	RequestWithBodyAttributes[StartSituationInvestigationAttributes]
+}
+type StartSituationInvestigationResponse ItemResponse[SituationInvestigation]
+
 var ListSituationHazardAssessments = openapi.Operation{
 	OperationID: "list-situation-hazard-assessments",
 	Method:      http.MethodGet,
@@ -198,6 +308,7 @@ type ListSituationHazardAssessmentsRequest struct {
 	IdRequest
 	PaginationRequest
 }
+
 type ListSituationHazardAssessmentsResponse PaginatedResponse[SituationHazardAssessment]
 
 var AddSituationHazardAssessment = openapi.Operation{
@@ -219,4 +330,5 @@ type AddSituationHazardAssessmentRequest struct {
 		} `json:"attributes"`
 	}
 }
+
 type AddSituationHazardAssessmentResponse ItemResponse[SituationHazardAssessment]

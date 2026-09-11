@@ -5,11 +5,13 @@ package ent
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/incident"
+	"github.com/rezible/rezible/ent/systemanalysisentry"
 	"github.com/rezible/rezible/ent/task"
 	"github.com/rezible/rezible/ent/tenant"
 	"github.com/rezible/rezible/ent/user"
@@ -22,12 +24,22 @@ type Task struct {
 	ID uuid.UUID `json:"id,omitempty"`
 	// TenantID holds the value of the "tenant_id" field.
 	TenantID int `json:"tenant_id,omitempty"`
+	// CreatedAt holds the value of the "created_at" field.
+	CreatedAt time.Time `json:"created_at,omitempty"`
+	// UpdatedAt holds the value of the "updated_at" field.
+	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// Type holds the value of the "type" field.
 	Type task.Type `json:"type,omitempty"`
 	// Title holds the value of the "title" field.
 	Title string `json:"title,omitempty"`
+	// State holds the value of the "state" field.
+	State task.State `json:"state,omitempty"`
+	// DueAt holds the value of the "due_at" field.
+	DueAt *time.Time `json:"due_at,omitempty"`
 	// IncidentID holds the value of the "incident_id" field.
 	IncidentID uuid.UUID `json:"incident_id,omitempty"`
+	// OriginEntryID holds the value of the "origin_entry_id" field.
+	OriginEntryID *uuid.UUID `json:"origin_entry_id,omitempty"`
 	// AssigneeID holds the value of the "assignee_id" field.
 	AssigneeID uuid.UUID `json:"assignee_id,omitempty"`
 	// CreatorID holds the value of the "creator_id" field.
@@ -46,13 +58,15 @@ type TaskEdges struct {
 	Tickets []*Ticket `json:"tickets,omitempty"`
 	// Incident holds the value of the incident edge.
 	Incident *Incident `json:"incident,omitempty"`
+	// OriginEntry holds the value of the origin_entry edge.
+	OriginEntry *SystemAnalysisEntry `json:"origin_entry,omitempty"`
 	// Assignee holds the value of the assignee edge.
 	Assignee *User `json:"assignee,omitempty"`
 	// Creator holds the value of the creator edge.
 	Creator *User `json:"creator,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [5]bool
+	loadedTypes [6]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -86,12 +100,23 @@ func (e TaskEdges) IncidentOrErr() (*Incident, error) {
 	return nil, &NotLoadedError{edge: "incident"}
 }
 
+// OriginEntryOrErr returns the OriginEntry value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e TaskEdges) OriginEntryOrErr() (*SystemAnalysisEntry, error) {
+	if e.OriginEntry != nil {
+		return e.OriginEntry, nil
+	} else if e.loadedTypes[3] {
+		return nil, &NotFoundError{label: systemanalysisentry.Label}
+	}
+	return nil, &NotLoadedError{edge: "origin_entry"}
+}
+
 // AssigneeOrErr returns the Assignee value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
 func (e TaskEdges) AssigneeOrErr() (*User, error) {
 	if e.Assignee != nil {
 		return e.Assignee, nil
-	} else if e.loadedTypes[3] {
+	} else if e.loadedTypes[4] {
 		return nil, &NotFoundError{label: user.Label}
 	}
 	return nil, &NotLoadedError{edge: "assignee"}
@@ -102,7 +127,7 @@ func (e TaskEdges) AssigneeOrErr() (*User, error) {
 func (e TaskEdges) CreatorOrErr() (*User, error) {
 	if e.Creator != nil {
 		return e.Creator, nil
-	} else if e.loadedTypes[4] {
+	} else if e.loadedTypes[5] {
 		return nil, &NotFoundError{label: user.Label}
 	}
 	return nil, &NotLoadedError{edge: "creator"}
@@ -113,10 +138,14 @@ func (*Task) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case task.FieldOriginEntryID:
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case task.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case task.FieldType, task.FieldTitle:
+		case task.FieldType, task.FieldTitle, task.FieldState:
 			values[i] = new(sql.NullString)
+		case task.FieldCreatedAt, task.FieldUpdatedAt, task.FieldDueAt:
+			values[i] = new(sql.NullTime)
 		case task.FieldID, task.FieldIncidentID, task.FieldAssigneeID, task.FieldCreatorID:
 			values[i] = new(uuid.UUID)
 		default:
@@ -146,6 +175,18 @@ func (_m *Task) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.TenantID = int(value.Int64)
 			}
+		case task.FieldCreatedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field created_at", values[i])
+			} else if value.Valid {
+				_m.CreatedAt = value.Time
+			}
+		case task.FieldUpdatedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
+			} else if value.Valid {
+				_m.UpdatedAt = value.Time
+			}
 		case task.FieldType:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field type", values[i])
@@ -158,11 +199,31 @@ func (_m *Task) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.Title = value.String
 			}
+		case task.FieldState:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field state", values[i])
+			} else if value.Valid {
+				_m.State = task.State(value.String)
+			}
+		case task.FieldDueAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field due_at", values[i])
+			} else if value.Valid {
+				_m.DueAt = new(time.Time)
+				*_m.DueAt = value.Time
+			}
 		case task.FieldIncidentID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field incident_id", values[i])
 			} else if value != nil {
 				_m.IncidentID = *value
+			}
+		case task.FieldOriginEntryID:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field origin_entry_id", values[i])
+			} else if value.Valid {
+				_m.OriginEntryID = new(uuid.UUID)
+				*_m.OriginEntryID = *value.S.(*uuid.UUID)
 			}
 		case task.FieldAssigneeID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
@@ -204,6 +265,11 @@ func (_m *Task) QueryIncident() *IncidentQuery {
 	return NewTaskClient(_m.config).QueryIncident(_m)
 }
 
+// QueryOriginEntry queries the "origin_entry" edge of the Task entity.
+func (_m *Task) QueryOriginEntry() *SystemAnalysisEntryQuery {
+	return NewTaskClient(_m.config).QueryOriginEntry(_m)
+}
+
 // QueryAssignee queries the "assignee" edge of the Task entity.
 func (_m *Task) QueryAssignee() *UserQuery {
 	return NewTaskClient(_m.config).QueryAssignee(_m)
@@ -240,14 +306,33 @@ func (_m *Task) String() string {
 	builder.WriteString("tenant_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
 	builder.WriteString(", ")
+	builder.WriteString("created_at=")
+	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("updated_at=")
+	builder.WriteString(_m.UpdatedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
 	builder.WriteString("type=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Type))
 	builder.WriteString(", ")
 	builder.WriteString("title=")
 	builder.WriteString(_m.Title)
 	builder.WriteString(", ")
+	builder.WriteString("state=")
+	builder.WriteString(fmt.Sprintf("%v", _m.State))
+	builder.WriteString(", ")
+	if v := _m.DueAt; v != nil {
+		builder.WriteString("due_at=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
+	builder.WriteString(", ")
 	builder.WriteString("incident_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.IncidentID))
+	builder.WriteString(", ")
+	if v := _m.OriginEntryID; v != nil {
+		builder.WriteString("origin_entry_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
 	builder.WriteString(", ")
 	builder.WriteString("assignee_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.AssigneeID))

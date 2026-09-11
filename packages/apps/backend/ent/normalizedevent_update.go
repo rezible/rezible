@@ -16,6 +16,8 @@ import (
 	"github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/ent/normalizedeventprojection"
 	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/situationobservationgroup"
+	"github.com/rezible/rezible/ent/systemanalysisentrysubject"
 )
 
 // NormalizedEventUpdate is the builder for updating NormalizedEvent entities.
@@ -76,6 +78,36 @@ func (_u *NormalizedEventUpdate) SetProjection(v *NormalizedEventProjection) *No
 	return _u.SetProjectionID(v.ID)
 }
 
+// AddSituationObservationGroupIDs adds the "situation_observation_groups" edge to the SituationObservationGroup entity by IDs.
+func (_u *NormalizedEventUpdate) AddSituationObservationGroupIDs(ids ...uuid.UUID) *NormalizedEventUpdate {
+	_u.mutation.AddSituationObservationGroupIDs(ids...)
+	return _u
+}
+
+// AddSituationObservationGroups adds the "situation_observation_groups" edges to the SituationObservationGroup entity.
+func (_u *NormalizedEventUpdate) AddSituationObservationGroups(v ...*SituationObservationGroup) *NormalizedEventUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddSituationObservationGroupIDs(ids...)
+}
+
+// AddAnalysisEntrySubjectIDs adds the "analysis_entry_subjects" edge to the SystemAnalysisEntrySubject entity by IDs.
+func (_u *NormalizedEventUpdate) AddAnalysisEntrySubjectIDs(ids ...uuid.UUID) *NormalizedEventUpdate {
+	_u.mutation.AddAnalysisEntrySubjectIDs(ids...)
+	return _u
+}
+
+// AddAnalysisEntrySubjects adds the "analysis_entry_subjects" edges to the SystemAnalysisEntrySubject entity.
+func (_u *NormalizedEventUpdate) AddAnalysisEntrySubjects(v ...*SystemAnalysisEntrySubject) *NormalizedEventUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddAnalysisEntrySubjectIDs(ids...)
+}
+
 // Mutation returns the NormalizedEventMutation object of the builder.
 func (_u *NormalizedEventUpdate) Mutation() *NormalizedEventMutation {
 	return _u.mutation
@@ -91,6 +123,48 @@ func (_u *NormalizedEventUpdate) ClearIntegration() *NormalizedEventUpdate {
 func (_u *NormalizedEventUpdate) ClearProjection() *NormalizedEventUpdate {
 	_u.mutation.ClearProjection()
 	return _u
+}
+
+// ClearSituationObservationGroups clears all "situation_observation_groups" edges to the SituationObservationGroup entity.
+func (_u *NormalizedEventUpdate) ClearSituationObservationGroups() *NormalizedEventUpdate {
+	_u.mutation.ClearSituationObservationGroups()
+	return _u
+}
+
+// RemoveSituationObservationGroupIDs removes the "situation_observation_groups" edge to SituationObservationGroup entities by IDs.
+func (_u *NormalizedEventUpdate) RemoveSituationObservationGroupIDs(ids ...uuid.UUID) *NormalizedEventUpdate {
+	_u.mutation.RemoveSituationObservationGroupIDs(ids...)
+	return _u
+}
+
+// RemoveSituationObservationGroups removes "situation_observation_groups" edges to SituationObservationGroup entities.
+func (_u *NormalizedEventUpdate) RemoveSituationObservationGroups(v ...*SituationObservationGroup) *NormalizedEventUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveSituationObservationGroupIDs(ids...)
+}
+
+// ClearAnalysisEntrySubjects clears all "analysis_entry_subjects" edges to the SystemAnalysisEntrySubject entity.
+func (_u *NormalizedEventUpdate) ClearAnalysisEntrySubjects() *NormalizedEventUpdate {
+	_u.mutation.ClearAnalysisEntrySubjects()
+	return _u
+}
+
+// RemoveAnalysisEntrySubjectIDs removes the "analysis_entry_subjects" edge to SystemAnalysisEntrySubject entities by IDs.
+func (_u *NormalizedEventUpdate) RemoveAnalysisEntrySubjectIDs(ids ...uuid.UUID) *NormalizedEventUpdate {
+	_u.mutation.RemoveAnalysisEntrySubjectIDs(ids...)
+	return _u
+}
+
+// RemoveAnalysisEntrySubjects removes "analysis_entry_subjects" edges to SystemAnalysisEntrySubject entities.
+func (_u *NormalizedEventUpdate) RemoveAnalysisEntrySubjects(v ...*SystemAnalysisEntrySubject) *NormalizedEventUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveAnalysisEntrySubjectIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -208,6 +282,102 @@ func (_u *NormalizedEventUpdate) sqlSave(ctx context.Context) (_node int, err er
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.SituationObservationGroupsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   normalizedevent.SituationObservationGroupsTable,
+			Columns: normalizedevent.SituationObservationGroupsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(situationobservationgroup.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SituationObservationGroupEvents
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedSituationObservationGroupsIDs(); len(nodes) > 0 && !_u.mutation.SituationObservationGroupsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   normalizedevent.SituationObservationGroupsTable,
+			Columns: normalizedevent.SituationObservationGroupsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(situationobservationgroup.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SituationObservationGroupEvents
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.SituationObservationGroupsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   normalizedevent.SituationObservationGroupsTable,
+			Columns: normalizedevent.SituationObservationGroupsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(situationobservationgroup.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SituationObservationGroupEvents
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.AnalysisEntrySubjectsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   normalizedevent.AnalysisEntrySubjectsTable,
+			Columns: []string{normalizedevent.AnalysisEntrySubjectsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemanalysisentrysubject.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SystemAnalysisEntrySubject
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedAnalysisEntrySubjectsIDs(); len(nodes) > 0 && !_u.mutation.AnalysisEntrySubjectsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   normalizedevent.AnalysisEntrySubjectsTable,
+			Columns: []string{normalizedevent.AnalysisEntrySubjectsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemanalysisentrysubject.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SystemAnalysisEntrySubject
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.AnalysisEntrySubjectsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   normalizedevent.AnalysisEntrySubjectsTable,
+			Columns: []string{normalizedevent.AnalysisEntrySubjectsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemanalysisentrysubject.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SystemAnalysisEntrySubject
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	_spec.Node.Schema = _u.schemaConfig.NormalizedEvent
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
 	_spec.AddModifiers(_u.modifiers...)
@@ -276,6 +446,36 @@ func (_u *NormalizedEventUpdateOne) SetProjection(v *NormalizedEventProjection) 
 	return _u.SetProjectionID(v.ID)
 }
 
+// AddSituationObservationGroupIDs adds the "situation_observation_groups" edge to the SituationObservationGroup entity by IDs.
+func (_u *NormalizedEventUpdateOne) AddSituationObservationGroupIDs(ids ...uuid.UUID) *NormalizedEventUpdateOne {
+	_u.mutation.AddSituationObservationGroupIDs(ids...)
+	return _u
+}
+
+// AddSituationObservationGroups adds the "situation_observation_groups" edges to the SituationObservationGroup entity.
+func (_u *NormalizedEventUpdateOne) AddSituationObservationGroups(v ...*SituationObservationGroup) *NormalizedEventUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddSituationObservationGroupIDs(ids...)
+}
+
+// AddAnalysisEntrySubjectIDs adds the "analysis_entry_subjects" edge to the SystemAnalysisEntrySubject entity by IDs.
+func (_u *NormalizedEventUpdateOne) AddAnalysisEntrySubjectIDs(ids ...uuid.UUID) *NormalizedEventUpdateOne {
+	_u.mutation.AddAnalysisEntrySubjectIDs(ids...)
+	return _u
+}
+
+// AddAnalysisEntrySubjects adds the "analysis_entry_subjects" edges to the SystemAnalysisEntrySubject entity.
+func (_u *NormalizedEventUpdateOne) AddAnalysisEntrySubjects(v ...*SystemAnalysisEntrySubject) *NormalizedEventUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddAnalysisEntrySubjectIDs(ids...)
+}
+
 // Mutation returns the NormalizedEventMutation object of the builder.
 func (_u *NormalizedEventUpdateOne) Mutation() *NormalizedEventMutation {
 	return _u.mutation
@@ -291,6 +491,48 @@ func (_u *NormalizedEventUpdateOne) ClearIntegration() *NormalizedEventUpdateOne
 func (_u *NormalizedEventUpdateOne) ClearProjection() *NormalizedEventUpdateOne {
 	_u.mutation.ClearProjection()
 	return _u
+}
+
+// ClearSituationObservationGroups clears all "situation_observation_groups" edges to the SituationObservationGroup entity.
+func (_u *NormalizedEventUpdateOne) ClearSituationObservationGroups() *NormalizedEventUpdateOne {
+	_u.mutation.ClearSituationObservationGroups()
+	return _u
+}
+
+// RemoveSituationObservationGroupIDs removes the "situation_observation_groups" edge to SituationObservationGroup entities by IDs.
+func (_u *NormalizedEventUpdateOne) RemoveSituationObservationGroupIDs(ids ...uuid.UUID) *NormalizedEventUpdateOne {
+	_u.mutation.RemoveSituationObservationGroupIDs(ids...)
+	return _u
+}
+
+// RemoveSituationObservationGroups removes "situation_observation_groups" edges to SituationObservationGroup entities.
+func (_u *NormalizedEventUpdateOne) RemoveSituationObservationGroups(v ...*SituationObservationGroup) *NormalizedEventUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveSituationObservationGroupIDs(ids...)
+}
+
+// ClearAnalysisEntrySubjects clears all "analysis_entry_subjects" edges to the SystemAnalysisEntrySubject entity.
+func (_u *NormalizedEventUpdateOne) ClearAnalysisEntrySubjects() *NormalizedEventUpdateOne {
+	_u.mutation.ClearAnalysisEntrySubjects()
+	return _u
+}
+
+// RemoveAnalysisEntrySubjectIDs removes the "analysis_entry_subjects" edge to SystemAnalysisEntrySubject entities by IDs.
+func (_u *NormalizedEventUpdateOne) RemoveAnalysisEntrySubjectIDs(ids ...uuid.UUID) *NormalizedEventUpdateOne {
+	_u.mutation.RemoveAnalysisEntrySubjectIDs(ids...)
+	return _u
+}
+
+// RemoveAnalysisEntrySubjects removes "analysis_entry_subjects" edges to SystemAnalysisEntrySubject entities.
+func (_u *NormalizedEventUpdateOne) RemoveAnalysisEntrySubjects(v ...*SystemAnalysisEntrySubject) *NormalizedEventUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveAnalysisEntrySubjectIDs(ids...)
 }
 
 // Where appends a list predicates to the NormalizedEventUpdate builder.
@@ -433,6 +675,102 @@ func (_u *NormalizedEventUpdateOne) sqlSave(ctx context.Context) (_node *Normali
 			},
 		}
 		edge.Schema = _u.schemaConfig.NormalizedEvent
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.SituationObservationGroupsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   normalizedevent.SituationObservationGroupsTable,
+			Columns: normalizedevent.SituationObservationGroupsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(situationobservationgroup.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SituationObservationGroupEvents
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedSituationObservationGroupsIDs(); len(nodes) > 0 && !_u.mutation.SituationObservationGroupsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   normalizedevent.SituationObservationGroupsTable,
+			Columns: normalizedevent.SituationObservationGroupsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(situationobservationgroup.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SituationObservationGroupEvents
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.SituationObservationGroupsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   normalizedevent.SituationObservationGroupsTable,
+			Columns: normalizedevent.SituationObservationGroupsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(situationobservationgroup.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SituationObservationGroupEvents
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.AnalysisEntrySubjectsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   normalizedevent.AnalysisEntrySubjectsTable,
+			Columns: []string{normalizedevent.AnalysisEntrySubjectsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemanalysisentrysubject.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SystemAnalysisEntrySubject
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedAnalysisEntrySubjectsIDs(); len(nodes) > 0 && !_u.mutation.AnalysisEntrySubjectsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   normalizedevent.AnalysisEntrySubjectsTable,
+			Columns: []string{normalizedevent.AnalysisEntrySubjectsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemanalysisentrysubject.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SystemAnalysisEntrySubject
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.AnalysisEntrySubjectsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   normalizedevent.AnalysisEntrySubjectsTable,
+			Columns: []string{normalizedevent.AnalysisEntrySubjectsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemanalysisentrysubject.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SystemAnalysisEntrySubject
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

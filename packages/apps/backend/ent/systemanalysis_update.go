@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/discussionthread"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/predicate"
@@ -171,6 +172,21 @@ func (_u *SystemAnalysisUpdate) AddEntries(v ...*SystemAnalysisEntry) *SystemAna
 	return _u.AddEntryIDs(ids...)
 }
 
+// AddDiscussionThreadIDs adds the "discussion_threads" edge to the DiscussionThread entity by IDs.
+func (_u *SystemAnalysisUpdate) AddDiscussionThreadIDs(ids ...uuid.UUID) *SystemAnalysisUpdate {
+	_u.mutation.AddDiscussionThreadIDs(ids...)
+	return _u
+}
+
+// AddDiscussionThreads adds the "discussion_threads" edges to the DiscussionThread entity.
+func (_u *SystemAnalysisUpdate) AddDiscussionThreads(v ...*DiscussionThread) *SystemAnalysisUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddDiscussionThreadIDs(ids...)
+}
+
 // SetSituationInvestigationID sets the "situation_investigation" edge to the SituationInvestigation entity by ID.
 func (_u *SystemAnalysisUpdate) SetSituationInvestigationID(id uuid.UUID) *SystemAnalysisUpdate {
 	_u.mutation.SetSituationInvestigationID(id)
@@ -268,6 +284,27 @@ func (_u *SystemAnalysisUpdate) RemoveEntries(v ...*SystemAnalysisEntry) *System
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveEntryIDs(ids...)
+}
+
+// ClearDiscussionThreads clears all "discussion_threads" edges to the DiscussionThread entity.
+func (_u *SystemAnalysisUpdate) ClearDiscussionThreads() *SystemAnalysisUpdate {
+	_u.mutation.ClearDiscussionThreads()
+	return _u
+}
+
+// RemoveDiscussionThreadIDs removes the "discussion_threads" edge to DiscussionThread entities by IDs.
+func (_u *SystemAnalysisUpdate) RemoveDiscussionThreadIDs(ids ...uuid.UUID) *SystemAnalysisUpdate {
+	_u.mutation.RemoveDiscussionThreadIDs(ids...)
+	return _u
+}
+
+// RemoveDiscussionThreads removes "discussion_threads" edges to DiscussionThread entities.
+func (_u *SystemAnalysisUpdate) RemoveDiscussionThreads(v ...*DiscussionThread) *SystemAnalysisUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveDiscussionThreadIDs(ids...)
 }
 
 // ClearSituationInvestigation clears the "situation_investigation" edge to the SituationInvestigation entity.
@@ -562,6 +599,54 @@ func (_u *SystemAnalysisUpdate) sqlSave(ctx context.Context) (_node int, err err
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.DiscussionThreadsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   systemanalysis.DiscussionThreadsTable,
+			Columns: []string{systemanalysis.DiscussionThreadsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(discussionthread.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.DiscussionThread
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedDiscussionThreadsIDs(); len(nodes) > 0 && !_u.mutation.DiscussionThreadsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   systemanalysis.DiscussionThreadsTable,
+			Columns: []string{systemanalysis.DiscussionThreadsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(discussionthread.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.DiscussionThread
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.DiscussionThreadsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   systemanalysis.DiscussionThreadsTable,
+			Columns: []string{systemanalysis.DiscussionThreadsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(discussionthread.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.DiscussionThread
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _u.mutation.SituationInvestigationCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
@@ -752,6 +837,21 @@ func (_u *SystemAnalysisUpdateOne) AddEntries(v ...*SystemAnalysisEntry) *System
 	return _u.AddEntryIDs(ids...)
 }
 
+// AddDiscussionThreadIDs adds the "discussion_threads" edge to the DiscussionThread entity by IDs.
+func (_u *SystemAnalysisUpdateOne) AddDiscussionThreadIDs(ids ...uuid.UUID) *SystemAnalysisUpdateOne {
+	_u.mutation.AddDiscussionThreadIDs(ids...)
+	return _u
+}
+
+// AddDiscussionThreads adds the "discussion_threads" edges to the DiscussionThread entity.
+func (_u *SystemAnalysisUpdateOne) AddDiscussionThreads(v ...*DiscussionThread) *SystemAnalysisUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddDiscussionThreadIDs(ids...)
+}
+
 // SetSituationInvestigationID sets the "situation_investigation" edge to the SituationInvestigation entity by ID.
 func (_u *SystemAnalysisUpdateOne) SetSituationInvestigationID(id uuid.UUID) *SystemAnalysisUpdateOne {
 	_u.mutation.SetSituationInvestigationID(id)
@@ -849,6 +949,27 @@ func (_u *SystemAnalysisUpdateOne) RemoveEntries(v ...*SystemAnalysisEntry) *Sys
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveEntryIDs(ids...)
+}
+
+// ClearDiscussionThreads clears all "discussion_threads" edges to the DiscussionThread entity.
+func (_u *SystemAnalysisUpdateOne) ClearDiscussionThreads() *SystemAnalysisUpdateOne {
+	_u.mutation.ClearDiscussionThreads()
+	return _u
+}
+
+// RemoveDiscussionThreadIDs removes the "discussion_threads" edge to DiscussionThread entities by IDs.
+func (_u *SystemAnalysisUpdateOne) RemoveDiscussionThreadIDs(ids ...uuid.UUID) *SystemAnalysisUpdateOne {
+	_u.mutation.RemoveDiscussionThreadIDs(ids...)
+	return _u
+}
+
+// RemoveDiscussionThreads removes "discussion_threads" edges to DiscussionThread entities.
+func (_u *SystemAnalysisUpdateOne) RemoveDiscussionThreads(v ...*DiscussionThread) *SystemAnalysisUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveDiscussionThreadIDs(ids...)
 }
 
 // ClearSituationInvestigation clears the "situation_investigation" edge to the SituationInvestigation entity.
@@ -1168,6 +1289,54 @@ func (_u *SystemAnalysisUpdateOne) sqlSave(ctx context.Context) (_node *SystemAn
 			},
 		}
 		edge.Schema = _u.schemaConfig.SystemAnalysisEntry
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.DiscussionThreadsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   systemanalysis.DiscussionThreadsTable,
+			Columns: []string{systemanalysis.DiscussionThreadsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(discussionthread.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.DiscussionThread
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedDiscussionThreadsIDs(); len(nodes) > 0 && !_u.mutation.DiscussionThreadsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   systemanalysis.DiscussionThreadsTable,
+			Columns: []string{systemanalysis.DiscussionThreadsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(discussionthread.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.DiscussionThread
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.DiscussionThreadsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   systemanalysis.DiscussionThreadsTable,
+			Columns: []string{systemanalysis.DiscussionThreadsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(discussionthread.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.DiscussionThread
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

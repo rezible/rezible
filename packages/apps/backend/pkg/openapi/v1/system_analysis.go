@@ -25,6 +25,7 @@ type SystemAnalysisHandler interface {
 	DeleteSystemAnalysisEdge(context.Context, *DeleteSystemAnalysisEdgeRequest) (*DeleteSystemAnalysisEdgeResponse, error)
 
 	ListSystemAnalysisEntries(context.Context, *ListSystemAnalysisEntriesRequest) (*ListSystemAnalysisEntriesResponse, error)
+	GetSystemAnalysisEntry(context.Context, *GetSystemAnalysisEntryRequest) (*GetSystemAnalysisEntryResponse, error)
 	CreateSystemAnalysisEntry(context.Context, *CreateSystemAnalysisEntryRequest) (*CreateSystemAnalysisEntryResponse, error)
 	UpdateSystemAnalysisEntry(context.Context, *UpdateSystemAnalysisEntryRequest) (*UpdateSystemAnalysisEntryResponse, error)
 	DeleteSystemAnalysisEntry(context.Context, *DeleteSystemAnalysisEntryRequest) (*DeleteSystemAnalysisEntryResponse, error)
@@ -49,6 +50,7 @@ func (o operations) RegisterSystemAnalysis(api huma.API) {
 	huma.Register(api, DeleteSystemAnalysisEdge, o.DeleteSystemAnalysisEdge)
 
 	huma.Register(api, ListSystemAnalysisEntries, o.ListSystemAnalysisEntries)
+	huma.Register(api, GetSystemAnalysisEntry, o.GetSystemAnalysisEntry)
 	huma.Register(api, CreateSystemAnalysisEntry, o.CreateSystemAnalysisEntry)
 	huma.Register(api, UpdateSystemAnalysisEntry, o.UpdateSystemAnalysisEntry)
 	huma.Register(api, DeleteSystemAnalysisEntry, o.DeleteSystemAnalysisEntry)
@@ -104,6 +106,7 @@ type (
 		Attributes SystemAnalysisEntryAttributes `json:"attributes"`
 	}
 	SystemAnalysisEntryAttributes struct {
+		AnalysisId uuid.UUID                    `json:"analysisId"`
 		Reference  *string                      `json:"reference,omitempty"`
 		Kind       string                       `json:"kind" enum:"observation,context,decision,action,finding,recommendation"`
 		OccurredAt *time.Time                   `json:"occurredAt,omitempty"`
@@ -112,6 +115,7 @@ type (
 		Body       string                       `json:"body,omitempty"`
 		Properties map[string]any               `json:"properties"`
 		Subjects   []SystemAnalysisEntrySubject `json:"subjects"`
+		Reviews    []Review                     `json:"reviews"`
 	}
 
 	SystemAnalysisEntrySubject struct {
@@ -123,6 +127,7 @@ type (
 		KnowledgeEntityID       *uuid.UUID `json:"knowledgeEntityId,omitempty"`
 		KnowledgeRelationshipID *uuid.UUID `json:"knowledgeRelationshipId,omitempty"`
 		KnowledgeEvidenceID     *uuid.UUID `json:"knowledgeEvidenceId,omitempty"`
+		NormalizedEventID       *uuid.UUID `json:"normalizedEventId,omitempty"`
 	}
 )
 
@@ -175,6 +180,8 @@ func SystemAnalysisEntryFromEnt(entry *ent.SystemAnalysisEntry) SystemAnalysisEn
 		properties = map[string]any{}
 	}
 	attrs := SystemAnalysisEntryAttributes{
+		AnalysisId: entry.AnalysisID,
+		Reviews:    ConvertSlice(entry.Edges.Reviews, ReviewFromEnt),
 		Reference:  entry.Reference,
 		Kind:       entry.Kind.String(),
 		OccurredAt: entry.OccurredAt,
@@ -193,6 +200,7 @@ func SystemAnalysisEntrySubjectFromEnt(subject *ent.SystemAnalysisEntrySubject) 
 		KnowledgeEntityID:       subject.KnowledgeEntityID,
 		KnowledgeRelationshipID: subject.KnowledgeRelationshipID,
 		KnowledgeEvidenceID:     subject.KnowledgeEvidenceID,
+		NormalizedEventID:       subject.NormalizedEventID,
 	}
 	return SystemAnalysisEntrySubject{Id: subject.ID, Attributes: attrs}
 }
@@ -360,6 +368,18 @@ var ListSystemAnalysisEntries = huma.Operation{
 type ListSystemAnalysisEntriesRequest PaginatedIdRequest
 type ListSystemAnalysisEntriesResponse PaginatedResponse[SystemAnalysisEntry]
 
+var GetSystemAnalysisEntry = huma.Operation{
+	OperationID: "get-system-analysis-entry",
+	Method:      http.MethodGet,
+	Path:        "/system_analysis_entries/{id}",
+	Summary:     "Get System Analysis Entry",
+	Tags:        systemAnalysisTags,
+	Errors:      ErrorCodes(),
+}
+
+type GetSystemAnalysisEntryRequest IdRequest
+type GetSystemAnalysisEntryResponse ItemResponse[SystemAnalysisEntry]
+
 var CreateSystemAnalysisEntry = huma.Operation{
 	OperationID: "create-system-analysis-entry",
 	Method:      http.MethodPost,
@@ -426,6 +446,7 @@ type AddSystemAnalysisEntrySubjectAttributes struct {
 	KnowledgeEntityId       *uuid.UUID `json:"knowledgeEntityId,omitempty"`
 	KnowledgeRelationshipId *uuid.UUID `json:"knowledgeRelationshipId,omitempty"`
 	KnowledgeEvidenceId     *uuid.UUID `json:"knowledgeEvidenceId,omitempty"`
+	NormalizedEventId       *uuid.UUID `json:"normalizedEventId,omitempty"`
 }
 type AddSystemAnalysisEntrySubjectRequest IdRequestWithBody[AddSystemAnalysisEntrySubjectAttributes]
 type AddSystemAnalysisEntrySubjectResponse ItemResponse[SystemAnalysisEntrySubject]

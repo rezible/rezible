@@ -47,13 +47,15 @@ type RetrospectiveEdges struct {
 	Incident *Incident `json:"incident,omitempty"`
 	// Document holds the value of the document edge.
 	Document *Document `json:"document,omitempty"`
-	// Comments holds the value of the comments edge.
-	Comments []*RetrospectiveComment `json:"comments,omitempty"`
+	// DiscussionThreads holds the value of the discussion_threads edge.
+	DiscussionThreads []*DiscussionThread `json:"discussion_threads,omitempty"`
+	// Reviews holds the value of the reviews edge.
+	Reviews []*Review `json:"reviews,omitempty"`
 	// SystemAnalysis holds the value of the system_analysis edge.
 	SystemAnalysis *SystemAnalysis `json:"system_analysis,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [5]bool
+	loadedTypes [6]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -89,13 +91,22 @@ func (e RetrospectiveEdges) DocumentOrErr() (*Document, error) {
 	return nil, &NotLoadedError{edge: "document"}
 }
 
-// CommentsOrErr returns the Comments value or an error if the edge
+// DiscussionThreadsOrErr returns the DiscussionThreads value or an error if the edge
 // was not loaded in eager-loading.
-func (e RetrospectiveEdges) CommentsOrErr() ([]*RetrospectiveComment, error) {
+func (e RetrospectiveEdges) DiscussionThreadsOrErr() ([]*DiscussionThread, error) {
 	if e.loadedTypes[3] {
-		return e.Comments, nil
+		return e.DiscussionThreads, nil
 	}
-	return nil, &NotLoadedError{edge: "comments"}
+	return nil, &NotLoadedError{edge: "discussion_threads"}
+}
+
+// ReviewsOrErr returns the Reviews value or an error if the edge
+// was not loaded in eager-loading.
+func (e RetrospectiveEdges) ReviewsOrErr() ([]*Review, error) {
+	if e.loadedTypes[4] {
+		return e.Reviews, nil
+	}
+	return nil, &NotLoadedError{edge: "reviews"}
 }
 
 // SystemAnalysisOrErr returns the SystemAnalysis value or an error if the edge
@@ -103,7 +114,7 @@ func (e RetrospectiveEdges) CommentsOrErr() ([]*RetrospectiveComment, error) {
 func (e RetrospectiveEdges) SystemAnalysisOrErr() (*SystemAnalysis, error) {
 	if e.SystemAnalysis != nil {
 		return e.SystemAnalysis, nil
-	} else if e.loadedTypes[4] {
+	} else if e.loadedTypes[5] {
 		return nil, &NotFoundError{label: systemanalysis.Label}
 	}
 	return nil, &NotLoadedError{edge: "system_analysis"}
@@ -205,9 +216,14 @@ func (_m *Retrospective) QueryDocument() *DocumentQuery {
 	return NewRetrospectiveClient(_m.config).QueryDocument(_m)
 }
 
-// QueryComments queries the "comments" edge of the Retrospective entity.
-func (_m *Retrospective) QueryComments() *RetrospectiveCommentQuery {
-	return NewRetrospectiveClient(_m.config).QueryComments(_m)
+// QueryDiscussionThreads queries the "discussion_threads" edge of the Retrospective entity.
+func (_m *Retrospective) QueryDiscussionThreads() *DiscussionThreadQuery {
+	return NewRetrospectiveClient(_m.config).QueryDiscussionThreads(_m)
+}
+
+// QueryReviews queries the "reviews" edge of the Retrospective entity.
+func (_m *Retrospective) QueryReviews() *ReviewQuery {
+	return NewRetrospectiveClient(_m.config).QueryReviews(_m)
 }
 
 // QuerySystemAnalysis queries the "system_analysis" edge of the Retrospective entity.

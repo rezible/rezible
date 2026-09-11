@@ -16,6 +16,8 @@ import (
 	"github.com/rezible/rezible/ent/integration"
 	"github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/ent/normalizedeventprojection"
+	"github.com/rezible/rezible/ent/situationobservationgroup"
+	"github.com/rezible/rezible/ent/systemanalysisentrysubject"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
@@ -156,6 +158,36 @@ func (_c *NormalizedEventCreate) SetNillableProjectionID(id *uuid.UUID) *Normali
 // SetProjection sets the "projection" edge to the NormalizedEventProjection entity.
 func (_c *NormalizedEventCreate) SetProjection(v *NormalizedEventProjection) *NormalizedEventCreate {
 	return _c.SetProjectionID(v.ID)
+}
+
+// AddSituationObservationGroupIDs adds the "situation_observation_groups" edge to the SituationObservationGroup entity by IDs.
+func (_c *NormalizedEventCreate) AddSituationObservationGroupIDs(ids ...uuid.UUID) *NormalizedEventCreate {
+	_c.mutation.AddSituationObservationGroupIDs(ids...)
+	return _c
+}
+
+// AddSituationObservationGroups adds the "situation_observation_groups" edges to the SituationObservationGroup entity.
+func (_c *NormalizedEventCreate) AddSituationObservationGroups(v ...*SituationObservationGroup) *NormalizedEventCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddSituationObservationGroupIDs(ids...)
+}
+
+// AddAnalysisEntrySubjectIDs adds the "analysis_entry_subjects" edge to the SystemAnalysisEntrySubject entity by IDs.
+func (_c *NormalizedEventCreate) AddAnalysisEntrySubjectIDs(ids ...uuid.UUID) *NormalizedEventCreate {
+	_c.mutation.AddAnalysisEntrySubjectIDs(ids...)
+	return _c
+}
+
+// AddAnalysisEntrySubjects adds the "analysis_entry_subjects" edges to the SystemAnalysisEntrySubject entity.
+func (_c *NormalizedEventCreate) AddAnalysisEntrySubjects(v ...*SystemAnalysisEntrySubject) *NormalizedEventCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddAnalysisEntrySubjectIDs(ids...)
 }
 
 // Mutation returns the NormalizedEventMutation object of the builder.
@@ -404,6 +436,40 @@ func (_c *NormalizedEventCreate) createSpec() (*NormalizedEvent, *sqlgraph.Creat
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.normalized_event_projection = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.SituationObservationGroupsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   normalizedevent.SituationObservationGroupsTable,
+			Columns: normalizedevent.SituationObservationGroupsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(situationobservationgroup.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.SituationObservationGroupEvents
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.AnalysisEntrySubjectsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   normalizedevent.AnalysisEntrySubjectsTable,
+			Columns: []string{normalizedevent.AnalysisEntrySubjectsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemanalysisentrysubject.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.SystemAnalysisEntrySubject
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

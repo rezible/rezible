@@ -13,6 +13,7 @@ import (
 	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/knowledgeevidence"
 	"github.com/rezible/rezible/ent/knowledgerelationship"
+	"github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/ent/systemanalysisentry"
 	"github.com/rezible/rezible/ent/systemanalysisentrysubject"
 	"github.com/rezible/rezible/ent/tenant"
@@ -37,6 +38,8 @@ type SystemAnalysisEntrySubject struct {
 	KnowledgeRelationshipID *uuid.UUID `json:"knowledge_relationship_id,omitempty"`
 	// KnowledgeEvidenceID holds the value of the "knowledge_evidence_id" field.
 	KnowledgeEvidenceID *uuid.UUID `json:"knowledge_evidence_id,omitempty"`
+	// NormalizedEventID holds the value of the "normalized_event_id" field.
+	NormalizedEventID *uuid.UUID `json:"normalized_event_id,omitempty"`
 	// How the graph subject participates in the analysis entry, e.g. primary, affected, contributing, evidence_for.
 	Role string `json:"role,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -57,9 +60,11 @@ type SystemAnalysisEntrySubjectEdges struct {
 	KnowledgeRelationship *KnowledgeRelationship `json:"knowledge_relationship,omitempty"`
 	// KnowledgeEvidence holds the value of the knowledge_evidence edge.
 	KnowledgeEvidence *KnowledgeEvidence `json:"knowledge_evidence,omitempty"`
+	// NormalizedEvent holds the value of the normalized_event edge.
+	NormalizedEvent *NormalizedEvent `json:"normalized_event,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [5]bool
+	loadedTypes [6]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -117,12 +122,23 @@ func (e SystemAnalysisEntrySubjectEdges) KnowledgeEvidenceOrErr() (*KnowledgeEvi
 	return nil, &NotLoadedError{edge: "knowledge_evidence"}
 }
 
+// NormalizedEventOrErr returns the NormalizedEvent value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e SystemAnalysisEntrySubjectEdges) NormalizedEventOrErr() (*NormalizedEvent, error) {
+	if e.NormalizedEvent != nil {
+		return e.NormalizedEvent, nil
+	} else if e.loadedTypes[5] {
+		return nil, &NotFoundError{label: normalizedevent.Label}
+	}
+	return nil, &NotLoadedError{edge: "normalized_event"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*SystemAnalysisEntrySubject) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case systemanalysisentrysubject.FieldKnowledgeEntityID, systemanalysisentrysubject.FieldKnowledgeRelationshipID, systemanalysisentrysubject.FieldKnowledgeEvidenceID:
+		case systemanalysisentrysubject.FieldKnowledgeEntityID, systemanalysisentrysubject.FieldKnowledgeRelationshipID, systemanalysisentrysubject.FieldKnowledgeEvidenceID, systemanalysisentrysubject.FieldNormalizedEventID:
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case systemanalysisentrysubject.FieldTenantID:
 			values[i] = new(sql.NullInt64)
@@ -198,6 +214,13 @@ func (_m *SystemAnalysisEntrySubject) assignValues(columns []string, values []an
 				_m.KnowledgeEvidenceID = new(uuid.UUID)
 				*_m.KnowledgeEvidenceID = *value.S.(*uuid.UUID)
 			}
+		case systemanalysisentrysubject.FieldNormalizedEventID:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field normalized_event_id", values[i])
+			} else if value.Valid {
+				_m.NormalizedEventID = new(uuid.UUID)
+				*_m.NormalizedEventID = *value.S.(*uuid.UUID)
+			}
 		case systemanalysisentrysubject.FieldRole:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field role", values[i])
@@ -240,6 +263,11 @@ func (_m *SystemAnalysisEntrySubject) QueryKnowledgeRelationship() *KnowledgeRel
 // QueryKnowledgeEvidence queries the "knowledge_evidence" edge of the SystemAnalysisEntrySubject entity.
 func (_m *SystemAnalysisEntrySubject) QueryKnowledgeEvidence() *KnowledgeEvidenceQuery {
 	return NewSystemAnalysisEntrySubjectClient(_m.config).QueryKnowledgeEvidence(_m)
+}
+
+// QueryNormalizedEvent queries the "normalized_event" edge of the SystemAnalysisEntrySubject entity.
+func (_m *SystemAnalysisEntrySubject) QueryNormalizedEvent() *NormalizedEventQuery {
+	return NewSystemAnalysisEntrySubjectClient(_m.config).QueryNormalizedEvent(_m)
 }
 
 // Update returns a builder for updating this SystemAnalysisEntrySubject.
@@ -289,6 +317,11 @@ func (_m *SystemAnalysisEntrySubject) String() string {
 	builder.WriteString(", ")
 	if v := _m.KnowledgeEvidenceID; v != nil {
 		builder.WriteString("knowledge_evidence_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	if v := _m.NormalizedEventID; v != nil {
+		builder.WriteString("normalized_event_id=")
 		builder.WriteString(fmt.Sprintf("%v", *v))
 	}
 	builder.WriteString(", ")

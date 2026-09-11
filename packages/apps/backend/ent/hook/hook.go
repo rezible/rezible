@@ -129,6 +129,30 @@ func (f AlertInstanceFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Valu
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AlertInstanceMutation", m)
 }
 
+// The DiscussionCommentFunc type is an adapter to allow the use of ordinary
+// function as DiscussionComment mutator.
+type DiscussionCommentFunc func(context.Context, *ent.DiscussionCommentMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f DiscussionCommentFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.DiscussionCommentMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.DiscussionCommentMutation", m)
+}
+
+// The DiscussionThreadFunc type is an adapter to allow the use of ordinary
+// function as DiscussionThread mutator.
+type DiscussionThreadFunc func(context.Context, *ent.DiscussionThreadMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f DiscussionThreadFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.DiscussionThreadMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.DiscussionThreadMutation", m)
+}
+
 // The DocumentFunc type is an adapter to allow the use of ordinary
 // function as Document mutator.
 type DocumentFunc func(context.Context, *ent.DocumentMutation) (ent.Value, error)
@@ -669,28 +693,16 @@ func (f RetrospectiveFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Valu
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.RetrospectiveMutation", m)
 }
 
-// The RetrospectiveCommentFunc type is an adapter to allow the use of ordinary
-// function as RetrospectiveComment mutator.
-type RetrospectiveCommentFunc func(context.Context, *ent.RetrospectiveCommentMutation) (ent.Value, error)
+// The ReviewFunc type is an adapter to allow the use of ordinary
+// function as Review mutator.
+type ReviewFunc func(context.Context, *ent.ReviewMutation) (ent.Value, error)
 
 // Mutate calls f(ctx, m).
-func (f RetrospectiveCommentFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.RetrospectiveCommentMutation); ok {
+func (f ReviewFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.ReviewMutation); ok {
 		return f(ctx, mv)
 	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.RetrospectiveCommentMutation", m)
-}
-
-// The RetrospectiveReviewFunc type is an adapter to allow the use of ordinary
-// function as RetrospectiveReview mutator.
-type RetrospectiveReviewFunc func(context.Context, *ent.RetrospectiveReviewMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f RetrospectiveReviewFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.RetrospectiveReviewMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.RetrospectiveReviewMutation", m)
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ReviewMutation", m)
 }
 
 // The SituationFunc type is an adapter to allow the use of ordinary
@@ -727,6 +739,18 @@ func (f SituationInvestigationFunc) Mutate(ctx context.Context, m ent.Mutation) 
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SituationInvestigationMutation", m)
+}
+
+// The SituationObservationGroupFunc type is an adapter to allow the use of ordinary
+// function as SituationObservationGroup mutator.
+type SituationObservationGroupFunc func(context.Context, *ent.SituationObservationGroupMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f SituationObservationGroupFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.SituationObservationGroupMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SituationObservationGroupMutation", m)
 }
 
 // The SystemAnalysisFunc type is an adapter to allow the use of ordinary

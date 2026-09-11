@@ -49,6 +49,8 @@ const (
 	EdgeAlertEpisodes = "alert_episodes"
 	// EdgeHazardAssessments holds the string denoting the hazard_assessments edge name in mutations.
 	EdgeHazardAssessments = "hazard_assessments"
+	// EdgeObservationGroups holds the string denoting the observation_groups edge name in mutations.
+	EdgeObservationGroups = "observation_groups"
 	// EdgeIncidents holds the string denoting the incidents edge name in mutations.
 	EdgeIncidents = "incidents"
 	// EdgeAlertEpisodeLinks holds the string denoting the alert_episode_links edge name in mutations.
@@ -88,6 +90,13 @@ const (
 	HazardAssessmentsInverseTable = "situation_hazard_assessments"
 	// HazardAssessmentsColumn is the table column denoting the hazard_assessments relation/edge.
 	HazardAssessmentsColumn = "situation_id"
+	// ObservationGroupsTable is the table that holds the observation_groups relation/edge.
+	ObservationGroupsTable = "situation_observation_groups"
+	// ObservationGroupsInverseTable is the table name for the SituationObservationGroup entity.
+	// It exists in this package in order to avoid circular dependency with the "situationobservationgroup" package.
+	ObservationGroupsInverseTable = "situation_observation_groups"
+	// ObservationGroupsColumn is the table column denoting the observation_groups relation/edge.
+	ObservationGroupsColumn = "situation_id"
 	// IncidentsTable is the table that holds the incidents relation/edge. The primary key declared below.
 	IncidentsTable = "incident_situations"
 	// IncidentsInverseTable is the table name for the Incident entity.
@@ -329,6 +338,20 @@ func ByHazardAssessments(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption
 	}
 }
 
+// ByObservationGroupsCount orders the results by observation_groups count.
+func ByObservationGroupsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newObservationGroupsStep(), opts...)
+	}
+}
+
+// ByObservationGroups orders the results by observation_groups terms.
+func ByObservationGroups(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newObservationGroupsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
 // ByIncidentsCount orders the results by incidents count.
 func ByIncidentsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -389,6 +412,13 @@ func newHazardAssessmentsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(HazardAssessmentsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, HazardAssessmentsTable, HazardAssessmentsColumn),
+	)
+}
+func newObservationGroupsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ObservationGroupsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, ObservationGroupsTable, ObservationGroupsColumn),
 	)
 }
 func newIncidentsStep() *sqlgraph.Step {

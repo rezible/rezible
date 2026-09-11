@@ -538,6 +538,112 @@ var (
 			},
 		},
 	}
+	// DiscussionCommentsColumns holds the columns for the "discussion_comments" table.
+	DiscussionCommentsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "content", Type: field.TypeString, Size: 2147483647},
+		{Name: "tenant_id", Type: field.TypeInt},
+		{Name: "thread_id", Type: field.TypeUUID},
+		{Name: "user_id", Type: field.TypeUUID},
+		{Name: "parent_id", Type: field.TypeUUID, Nullable: true},
+	}
+	// DiscussionCommentsTable holds the schema information for the "discussion_comments" table.
+	DiscussionCommentsTable = &schema.Table{
+		Name:       "discussion_comments",
+		Columns:    DiscussionCommentsColumns,
+		PrimaryKey: []*schema.Column{DiscussionCommentsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "discussion_comments_tenants_tenant",
+				Columns:    []*schema.Column{DiscussionCommentsColumns[4]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "discussion_comments_discussion_threads_thread",
+				Columns:    []*schema.Column{DiscussionCommentsColumns[5]},
+				RefColumns: []*schema.Column{DiscussionThreadsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "discussion_comments_users_user",
+				Columns:    []*schema.Column{DiscussionCommentsColumns[6]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "discussion_comments_discussion_comments_parent",
+				Columns:    []*schema.Column{DiscussionCommentsColumns[7]},
+				RefColumns: []*schema.Column{DiscussionCommentsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "discussioncomment_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{DiscussionCommentsColumns[4]},
+			},
+		},
+	}
+	// DiscussionThreadsColumns holds the columns for the "discussion_threads" table.
+	DiscussionThreadsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "kind", Type: field.TypeEnum, Enums: []string{"comment", "question"}},
+		{Name: "target_kind", Type: field.TypeEnum, Nullable: true, Enums: []string{"finding", "knowledge_entity", "knowledge_relationship", "normalized_event"}},
+		{Name: "target_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "resolution_state", Type: field.TypeEnum, Nullable: true, Enums: []string{"open", "resolved"}},
+		{Name: "resolved_by_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "resolved_at", Type: field.TypeTime, Nullable: true},
+		{Name: "resolution_note", Type: field.TypeString, Nullable: true, Size: 2147483647},
+		{Name: "tenant_id", Type: field.TypeInt},
+		{Name: "analysis_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "retrospective_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "user_id", Type: field.TypeUUID},
+	}
+	// DiscussionThreadsTable holds the schema information for the "discussion_threads" table.
+	DiscussionThreadsTable = &schema.Table{
+		Name:       "discussion_threads",
+		Columns:    DiscussionThreadsColumns,
+		PrimaryKey: []*schema.Column{DiscussionThreadsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "discussion_threads_tenants_tenant",
+				Columns:    []*schema.Column{DiscussionThreadsColumns[10]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "discussion_threads_system_analyses_analysis",
+				Columns:    []*schema.Column{DiscussionThreadsColumns[11]},
+				RefColumns: []*schema.Column{SystemAnalysesColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "discussion_threads_retrospectives_retrospective",
+				Columns:    []*schema.Column{DiscussionThreadsColumns[12]},
+				RefColumns: []*schema.Column{RetrospectivesColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "discussion_threads_users_user",
+				Columns:    []*schema.Column{DiscussionThreadsColumns[13]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "discussionthread_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{DiscussionThreadsColumns[10]},
+			},
+		},
+	}
 	// DocumentsColumns holds the columns for the "documents" table.
 	DocumentsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -2424,113 +2530,67 @@ var (
 			},
 		},
 	}
-	// RetrospectiveCommentsColumns holds the columns for the "retrospective_comments" table.
-	RetrospectiveCommentsColumns = []*schema.Column{
+	// ReviewsColumns holds the columns for the "reviews" table.
+	ReviewsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
-		{Name: "content", Type: field.TypeBytes},
-		{Name: "tenant_id", Type: field.TypeInt},
-		{Name: "retrospective_id", Type: field.TypeUUID},
-		{Name: "user_id", Type: field.TypeUUID},
-		{Name: "retrospective_review_id", Type: field.TypeUUID, Nullable: true},
-		{Name: "parent_reply_id", Type: field.TypeUUID, Nullable: true},
-	}
-	// RetrospectiveCommentsTable holds the schema information for the "retrospective_comments" table.
-	RetrospectiveCommentsTable = &schema.Table{
-		Name:       "retrospective_comments",
-		Columns:    RetrospectiveCommentsColumns,
-		PrimaryKey: []*schema.Column{RetrospectiveCommentsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "retrospective_comments_tenants_tenant",
-				Columns:    []*schema.Column{RetrospectiveCommentsColumns[2]},
-				RefColumns: []*schema.Column{TenantsColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-			{
-				Symbol:     "retrospective_comments_retrospectives_retrospective",
-				Columns:    []*schema.Column{RetrospectiveCommentsColumns[3]},
-				RefColumns: []*schema.Column{RetrospectivesColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-			{
-				Symbol:     "retrospective_comments_users_user",
-				Columns:    []*schema.Column{RetrospectiveCommentsColumns[4]},
-				RefColumns: []*schema.Column{UsersColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-			{
-				Symbol:     "retrospective_comments_retrospective_reviews_review",
-				Columns:    []*schema.Column{RetrospectiveCommentsColumns[5]},
-				RefColumns: []*schema.Column{RetrospectiveReviewsColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-			{
-				Symbol:     "retrospective_comments_retrospective_comments_replies",
-				Columns:    []*schema.Column{RetrospectiveCommentsColumns[6]},
-				RefColumns: []*schema.Column{RetrospectiveCommentsColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-		},
-		Indexes: []*schema.Index{
-			{
-				Name:    "retrospectivecomment_tenant_id",
-				Unique:  false,
-				Columns: []*schema.Column{RetrospectiveCommentsColumns[2]},
-			},
-		},
-	}
-	// RetrospectiveReviewsColumns holds the columns for the "retrospective_reviews" table.
-	RetrospectiveReviewsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "state", Type: field.TypeEnum, Enums: []string{"waiting", "request_changes", "approved"}},
 		{Name: "tenant_id", Type: field.TypeInt},
-		{Name: "retrospective_id", Type: field.TypeUUID},
+		{Name: "retrospective_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "analysis_entry_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "requester_id", Type: field.TypeUUID},
 		{Name: "reviewer_id", Type: field.TypeUUID},
-		{Name: "comment_id", Type: field.TypeUUID},
+		{Name: "comment_id", Type: field.TypeUUID, Nullable: true},
 	}
-	// RetrospectiveReviewsTable holds the schema information for the "retrospective_reviews" table.
-	RetrospectiveReviewsTable = &schema.Table{
-		Name:       "retrospective_reviews",
-		Columns:    RetrospectiveReviewsColumns,
-		PrimaryKey: []*schema.Column{RetrospectiveReviewsColumns[0]},
+	// ReviewsTable holds the schema information for the "reviews" table.
+	ReviewsTable = &schema.Table{
+		Name:       "reviews",
+		Columns:    ReviewsColumns,
+		PrimaryKey: []*schema.Column{ReviewsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "retrospective_reviews_tenants_tenant",
-				Columns:    []*schema.Column{RetrospectiveReviewsColumns[2]},
+				Symbol:     "reviews_tenants_tenant",
+				Columns:    []*schema.Column{ReviewsColumns[4]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "retrospective_reviews_retrospectives_retrospective",
-				Columns:    []*schema.Column{RetrospectiveReviewsColumns[3]},
+				Symbol:     "reviews_retrospectives_retrospective",
+				Columns:    []*schema.Column{ReviewsColumns[5]},
 				RefColumns: []*schema.Column{RetrospectivesColumns[0]},
-				OnDelete:   schema.NoAction,
+				OnDelete:   schema.SetNull,
 			},
 			{
-				Symbol:     "retrospective_reviews_users_requester",
-				Columns:    []*schema.Column{RetrospectiveReviewsColumns[4]},
+				Symbol:     "reviews_system_analysis_entries_analysis_entry",
+				Columns:    []*schema.Column{ReviewsColumns[6]},
+				RefColumns: []*schema.Column{SystemAnalysisEntriesColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "reviews_users_requester",
+				Columns:    []*schema.Column{ReviewsColumns[7]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "retrospective_reviews_users_reviewer",
-				Columns:    []*schema.Column{RetrospectiveReviewsColumns[5]},
+				Symbol:     "reviews_users_reviewer",
+				Columns:    []*schema.Column{ReviewsColumns[8]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "retrospective_reviews_retrospective_comments_comment",
-				Columns:    []*schema.Column{RetrospectiveReviewsColumns[6]},
-				RefColumns: []*schema.Column{RetrospectiveCommentsColumns[0]},
-				OnDelete:   schema.NoAction,
+				Symbol:     "reviews_discussion_comments_comment",
+				Columns:    []*schema.Column{ReviewsColumns[9]},
+				RefColumns: []*schema.Column{DiscussionCommentsColumns[0]},
+				OnDelete:   schema.SetNull,
 			},
 		},
 		Indexes: []*schema.Index{
 			{
-				Name:    "retrospectivereview_tenant_id",
+				Name:    "review_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{RetrospectiveReviewsColumns[2]},
+				Columns: []*schema.Column{ReviewsColumns[4]},
 			},
 		},
 	}
@@ -2735,6 +2795,43 @@ var (
 			},
 		},
 	}
+	// SituationObservationGroupsColumns holds the columns for the "situation_observation_groups" table.
+	SituationObservationGroupsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "title", Type: field.TypeString},
+		{Name: "body", Type: field.TypeString, Nullable: true, Size: 2147483647},
+		{Name: "tenant_id", Type: field.TypeInt},
+		{Name: "situation_id", Type: field.TypeUUID},
+	}
+	// SituationObservationGroupsTable holds the schema information for the "situation_observation_groups" table.
+	SituationObservationGroupsTable = &schema.Table{
+		Name:       "situation_observation_groups",
+		Columns:    SituationObservationGroupsColumns,
+		PrimaryKey: []*schema.Column{SituationObservationGroupsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "situation_observation_groups_tenants_tenant",
+				Columns:    []*schema.Column{SituationObservationGroupsColumns[5]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "situation_observation_groups_situations_situation",
+				Columns:    []*schema.Column{SituationObservationGroupsColumns[6]},
+				RefColumns: []*schema.Column{SituationsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "situationobservationgroup_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{SituationObservationGroupsColumns[5]},
+			},
+		},
+	}
 	// SystemAnalysesColumns holds the columns for the "system_analyses" table.
 	SystemAnalysesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -2914,6 +3011,7 @@ var (
 		{Name: "knowledge_entity_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "knowledge_relationship_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "knowledge_evidence_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "normalized_event_id", Type: field.TypeUUID, Nullable: true},
 	}
 	// SystemAnalysisEntrySubjectsTable holds the schema information for the "system_analysis_entry_subjects" table.
 	SystemAnalysisEntrySubjectsTable = &schema.Table{
@@ -2951,6 +3049,12 @@ var (
 				RefColumns: []*schema.Column{KnowledgeEvidencesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
+			{
+				Symbol:     "system_analysis_entry_subjects_normalized_events_normalized_event",
+				Columns:    []*schema.Column{SystemAnalysisEntrySubjectsColumns[9]},
+				RefColumns: []*schema.Column{NormalizedEventsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
 		},
 		Indexes: []*schema.Index{
 			{
@@ -2974,6 +3078,11 @@ var (
 				Columns: []*schema.Column{SystemAnalysisEntrySubjectsColumns[4], SystemAnalysisEntrySubjectsColumns[5], SystemAnalysisEntrySubjectsColumns[8], SystemAnalysisEntrySubjectsColumns[3]},
 			},
 			{
+				Name:    "systemanalysisentrysubject_tenant_id_entry_id_normalized_event_id_role",
+				Unique:  true,
+				Columns: []*schema.Column{SystemAnalysisEntrySubjectsColumns[4], SystemAnalysisEntrySubjectsColumns[5], SystemAnalysisEntrySubjectsColumns[9], SystemAnalysisEntrySubjectsColumns[3]},
+			},
+			{
 				Name:    "systemanalysisentrysubject_tenant_id_knowledge_entity_id",
 				Unique:  false,
 				Columns: []*schema.Column{SystemAnalysisEntrySubjectsColumns[4], SystemAnalysisEntrySubjectsColumns[6]},
@@ -2987,6 +3096,11 @@ var (
 				Name:    "systemanalysisentrysubject_tenant_id_knowledge_evidence_id",
 				Unique:  false,
 				Columns: []*schema.Column{SystemAnalysisEntrySubjectsColumns[4], SystemAnalysisEntrySubjectsColumns[8]},
+			},
+			{
+				Name:    "systemanalysisentrysubject_tenant_id_normalized_event_id",
+				Unique:  false,
+				Columns: []*schema.Column{SystemAnalysisEntrySubjectsColumns[4], SystemAnalysisEntrySubjectsColumns[9]},
 			},
 		},
 	}
@@ -3150,10 +3264,15 @@ var (
 	// TasksColumns holds the columns for the "tasks" table.
 	TasksColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "type", Type: field.TypeEnum, Enums: []string{"cleanup", "detect", "mitigate", "prevent"}},
 		{Name: "title", Type: field.TypeString},
+		{Name: "state", Type: field.TypeEnum, Enums: []string{"open", "completed", "cancelled"}, Default: "open"},
+		{Name: "due_at", Type: field.TypeTime, Nullable: true},
 		{Name: "incident_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "tenant_id", Type: field.TypeInt},
+		{Name: "origin_entry_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "assignee_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "creator_id", Type: field.TypeUUID, Nullable: true},
 	}
@@ -3165,25 +3284,31 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "tasks_incidents_tasks",
-				Columns:    []*schema.Column{TasksColumns[3]},
+				Columns:    []*schema.Column{TasksColumns[7]},
 				RefColumns: []*schema.Column{IncidentsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "tasks_tenants_tenant",
-				Columns:    []*schema.Column{TasksColumns[4]},
+				Columns:    []*schema.Column{TasksColumns[8]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
+				Symbol:     "tasks_system_analysis_entries_origin_entry",
+				Columns:    []*schema.Column{TasksColumns[9]},
+				RefColumns: []*schema.Column{SystemAnalysisEntriesColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
 				Symbol:     "tasks_users_assigned_tasks",
-				Columns:    []*schema.Column{TasksColumns[5]},
+				Columns:    []*schema.Column{TasksColumns[10]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "tasks_users_created_tasks",
-				Columns:    []*schema.Column{TasksColumns[6]},
+				Columns:    []*schema.Column{TasksColumns[11]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -3192,7 +3317,7 @@ var (
 			{
 				Name:    "task_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{TasksColumns[4]},
+				Columns: []*schema.Column{TasksColumns[8]},
 			},
 		},
 	}
@@ -3310,7 +3435,14 @@ var (
 	// TicketsColumns holds the columns for the "tickets" table.
 	TicketsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "title", Type: field.TypeString},
+		{Name: "reference", Type: field.TypeString, Nullable: true},
+		{Name: "url", Type: field.TypeString, Nullable: true},
+		{Name: "provider", Type: field.TypeString, Nullable: true},
+		{Name: "provider_namespace", Type: field.TypeString, Nullable: true},
+		{Name: "provider_resource_ref", Type: field.TypeString, Nullable: true},
 		{Name: "tenant_id", Type: field.TypeInt},
 	}
 	// TicketsTable holds the schema information for the "tickets" table.
@@ -3321,7 +3453,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "tickets_tenants_tenant",
-				Columns:    []*schema.Column{TicketsColumns[2]},
+				Columns:    []*schema.Column{TicketsColumns[9]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -3330,7 +3462,7 @@ var (
 			{
 				Name:    "ticket_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{TicketsColumns[2]},
+				Columns: []*schema.Column{TicketsColumns[9]},
 			},
 		},
 	}
@@ -3791,6 +3923,31 @@ var (
 			},
 		},
 	}
+	// SituationObservationGroupEventsColumns holds the columns for the "situation_observation_group_events" table.
+	SituationObservationGroupEventsColumns = []*schema.Column{
+		{Name: "situation_observation_group_id", Type: field.TypeUUID},
+		{Name: "normalized_event_id", Type: field.TypeUUID},
+	}
+	// SituationObservationGroupEventsTable holds the schema information for the "situation_observation_group_events" table.
+	SituationObservationGroupEventsTable = &schema.Table{
+		Name:       "situation_observation_group_events",
+		Columns:    SituationObservationGroupEventsColumns,
+		PrimaryKey: []*schema.Column{SituationObservationGroupEventsColumns[0], SituationObservationGroupEventsColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "situation_observation_group_events_situation_observation_group_id",
+				Columns:    []*schema.Column{SituationObservationGroupEventsColumns[0]},
+				RefColumns: []*schema.Column{SituationObservationGroupsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "situation_observation_group_events_normalized_event_id",
+				Columns:    []*schema.Column{SituationObservationGroupEventsColumns[1]},
+				RefColumns: []*schema.Column{NormalizedEventsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
 	// TaskTicketsColumns holds the columns for the "task_tickets" table.
 	TaskTicketsColumns = []*schema.Column{
 		{Name: "task_id", Type: field.TypeUUID},
@@ -3878,6 +4035,8 @@ var (
 		AlertEpisodeSituationsTable,
 		AlertFeedbacksTable,
 		AlertInstancesTable,
+		DiscussionCommentsTable,
+		DiscussionThreadsTable,
 		DocumentsTable,
 		DocumentAccessesTable,
 		EventAnnotationsTable,
@@ -3923,11 +4082,11 @@ var (
 		OrganizationRolesTable,
 		PlaybooksTable,
 		RetrospectivesTable,
-		RetrospectiveCommentsTable,
-		RetrospectiveReviewsTable,
+		ReviewsTable,
 		SituationsTable,
 		SituationHazardAssessmentsTable,
 		SituationInvestigationsTable,
+		SituationObservationGroupsTable,
 		SystemAnalysesTable,
 		SystemAnalysisEntitiesTable,
 		SystemAnalysisEntriesTable,
@@ -3955,6 +4114,7 @@ var (
 		MeetingScheduleOwningTeamTable,
 		OncallShiftHandoverPinnedAnnotationsTable,
 		PlaybookAlertDefinitionsTable,
+		SituationObservationGroupEventsTable,
 		TaskTicketsTable,
 		TeamOncallRostersTable,
 		UserWatchedOncallRostersTable,
@@ -3988,6 +4148,18 @@ func init() {
 	AlertInstancesTable.ForeignKeys[0].RefTable = AlertEpisodesTable
 	AlertInstancesTable.ForeignKeys[1].RefTable = TenantsTable
 	AlertInstancesTable.ForeignKeys[2].RefTable = NormalizedEventsTable
+	DiscussionCommentsTable.ForeignKeys[0].RefTable = TenantsTable
+	DiscussionCommentsTable.ForeignKeys[1].RefTable = DiscussionThreadsTable
+	DiscussionCommentsTable.ForeignKeys[2].RefTable = UsersTable
+	DiscussionCommentsTable.ForeignKeys[3].RefTable = DiscussionCommentsTable
+	DiscussionThreadsTable.ForeignKeys[0].RefTable = TenantsTable
+	DiscussionThreadsTable.ForeignKeys[1].RefTable = SystemAnalysesTable
+	DiscussionThreadsTable.ForeignKeys[2].RefTable = RetrospectivesTable
+	DiscussionThreadsTable.ForeignKeys[3].RefTable = UsersTable
+	DiscussionThreadsTable.Annotation = &entsql.Annotation{}
+	DiscussionThreadsTable.Annotation.Checks = map[string]string{
+		"discussion_thread_exactly_one_owner": "(analysis_id IS NOT NULL AND retrospective_id IS NULL) OR (analysis_id IS NULL AND retrospective_id IS NOT NULL)",
+	}
 	DocumentsTable.ForeignKeys[0].RefTable = TenantsTable
 	DocumentAccessesTable.ForeignKeys[0].RefTable = TenantsTable
 	DocumentAccessesTable.ForeignKeys[1].RefTable = DocumentsTable
@@ -4091,16 +4263,16 @@ func init() {
 	RetrospectivesTable.ForeignKeys[1].RefTable = IncidentsTable
 	RetrospectivesTable.ForeignKeys[2].RefTable = TenantsTable
 	RetrospectivesTable.ForeignKeys[3].RefTable = SystemAnalysesTable
-	RetrospectiveCommentsTable.ForeignKeys[0].RefTable = TenantsTable
-	RetrospectiveCommentsTable.ForeignKeys[1].RefTable = RetrospectivesTable
-	RetrospectiveCommentsTable.ForeignKeys[2].RefTable = UsersTable
-	RetrospectiveCommentsTable.ForeignKeys[3].RefTable = RetrospectiveReviewsTable
-	RetrospectiveCommentsTable.ForeignKeys[4].RefTable = RetrospectiveCommentsTable
-	RetrospectiveReviewsTable.ForeignKeys[0].RefTable = TenantsTable
-	RetrospectiveReviewsTable.ForeignKeys[1].RefTable = RetrospectivesTable
-	RetrospectiveReviewsTable.ForeignKeys[2].RefTable = UsersTable
-	RetrospectiveReviewsTable.ForeignKeys[3].RefTable = UsersTable
-	RetrospectiveReviewsTable.ForeignKeys[4].RefTable = RetrospectiveCommentsTable
+	ReviewsTable.ForeignKeys[0].RefTable = TenantsTable
+	ReviewsTable.ForeignKeys[1].RefTable = RetrospectivesTable
+	ReviewsTable.ForeignKeys[2].RefTable = SystemAnalysisEntriesTable
+	ReviewsTable.ForeignKeys[3].RefTable = UsersTable
+	ReviewsTable.ForeignKeys[4].RefTable = UsersTable
+	ReviewsTable.ForeignKeys[5].RefTable = DiscussionCommentsTable
+	ReviewsTable.Annotation = &entsql.Annotation{}
+	ReviewsTable.Annotation.Checks = map[string]string{
+		"review_exactly_one_subject": "num_nonnulls(retrospective_id, analysis_entry_id) = 1",
+	}
 	SituationsTable.ForeignKeys[0].RefTable = TenantsTable
 	SituationsTable.ForeignKeys[1].RefTable = KnowledgeEntitiesTable
 	SituationsTable.Annotation = &entsql.Annotation{}
@@ -4122,6 +4294,8 @@ func init() {
 	SituationInvestigationsTable.ForeignKeys[2].RefTable = TenantsTable
 	SituationInvestigationsTable.ForeignKeys[3].RefTable = AgentTurnsTable
 	SituationInvestigationsTable.ForeignKeys[4].RefTable = SystemAnalysesTable
+	SituationObservationGroupsTable.ForeignKeys[0].RefTable = TenantsTable
+	SituationObservationGroupsTable.ForeignKeys[1].RefTable = SituationsTable
 	SystemAnalysesTable.ForeignKeys[0].RefTable = TenantsTable
 	SystemAnalysesTable.ForeignKeys[1].RefTable = KnowledgeEntitiesTable
 	SystemAnalysesTable.ForeignKeys[2].RefTable = KnowledgeEntitiesTable
@@ -4135,9 +4309,10 @@ func init() {
 	SystemAnalysisEntrySubjectsTable.ForeignKeys[2].RefTable = KnowledgeEntitiesTable
 	SystemAnalysisEntrySubjectsTable.ForeignKeys[3].RefTable = KnowledgeRelationshipsTable
 	SystemAnalysisEntrySubjectsTable.ForeignKeys[4].RefTable = KnowledgeEvidencesTable
+	SystemAnalysisEntrySubjectsTable.ForeignKeys[5].RefTable = NormalizedEventsTable
 	SystemAnalysisEntrySubjectsTable.Annotation = &entsql.Annotation{}
 	SystemAnalysisEntrySubjectsTable.Annotation.Checks = map[string]string{
-		"system_analysis_entry_subject_exactly_one_reference": "num_nonnulls(knowledge_entity_id, knowledge_relationship_id, knowledge_evidence_id) = 1",
+		"system_analysis_entry_subject_exactly_one_reference": "num_nonnulls(knowledge_entity_id, knowledge_relationship_id, knowledge_evidence_id, normalized_event_id) = 1",
 	}
 	SystemAnalysisRelationshipsTable.ForeignKeys[0].RefTable = TenantsTable
 	SystemAnalysisRelationshipsTable.ForeignKeys[1].RefTable = SystemAnalysesTable
@@ -4148,8 +4323,9 @@ func init() {
 	SystemHazardRiskAssessmentsTable.ForeignKeys[1].RefTable = TenantsTable
 	TasksTable.ForeignKeys[0].RefTable = IncidentsTable
 	TasksTable.ForeignKeys[1].RefTable = TenantsTable
-	TasksTable.ForeignKeys[2].RefTable = UsersTable
+	TasksTable.ForeignKeys[2].RefTable = SystemAnalysisEntriesTable
 	TasksTable.ForeignKeys[3].RefTable = UsersTable
+	TasksTable.ForeignKeys[4].RefTable = UsersTable
 	TeamsTable.ForeignKeys[0].RefTable = TenantsTable
 	TeamsTable.ForeignKeys[1].RefTable = KnowledgeEntitiesTable
 	TeamMembershipsTable.ForeignKeys[0].RefTable = TenantsTable
@@ -4189,6 +4365,8 @@ func init() {
 	OncallShiftHandoverPinnedAnnotationsTable.ForeignKeys[1].RefTable = EventAnnotationsTable
 	PlaybookAlertDefinitionsTable.ForeignKeys[0].RefTable = PlaybooksTable
 	PlaybookAlertDefinitionsTable.ForeignKeys[1].RefTable = AlertDefinitionsTable
+	SituationObservationGroupEventsTable.ForeignKeys[0].RefTable = SituationObservationGroupsTable
+	SituationObservationGroupEventsTable.ForeignKeys[1].RefTable = NormalizedEventsTable
 	TaskTicketsTable.ForeignKeys[0].RefTable = TasksTable
 	TaskTicketsTable.ForeignKeys[1].RefTable = TicketsTable
 	TeamOncallRostersTable.ForeignKeys[0].RefTable = TeamsTable

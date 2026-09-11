@@ -23,6 +23,7 @@ import (
 	"github.com/rezible/rezible/ent/situation"
 	"github.com/rezible/rezible/ent/situationhazardassessment"
 	"github.com/rezible/rezible/ent/situationinvestigation"
+	"github.com/rezible/rezible/ent/situationobservationgroup"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
@@ -38,6 +39,7 @@ type SituationQuery struct {
 	withInvestigations    *SituationInvestigationQuery
 	withAlertEpisodes     *AlertEpisodeQuery
 	withHazardAssessments *SituationHazardAssessmentQuery
+	withObservationGroups *SituationObservationGroupQuery
 	withIncidents         *IncidentQuery
 	withAlertEpisodeLinks *AlertEpisodeSituationQuery
 	modifiers             []func(*sql.Selector)
@@ -196,6 +198,31 @@ func (_q *SituationQuery) QueryHazardAssessments() *SituationHazardAssessmentQue
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.SituationHazardAssessment
 		step.Edge.Schema = schemaConfig.SituationHazardAssessment
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryObservationGroups chains the current query on the "observation_groups" edge.
+func (_q *SituationQuery) QueryObservationGroups() *SituationObservationGroupQuery {
+	query := (&SituationObservationGroupClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(situation.Table, situation.FieldID, selector),
+			sqlgraph.To(situationobservationgroup.Table, situationobservationgroup.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, situation.ObservationGroupsTable, situation.ObservationGroupsColumn),
+		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.SituationObservationGroup
+		step.Edge.Schema = schemaConfig.SituationObservationGroup
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -449,6 +476,7 @@ func (_q *SituationQuery) Clone() *SituationQuery {
 		withInvestigations:    _q.withInvestigations.Clone(),
 		withAlertEpisodes:     _q.withAlertEpisodes.Clone(),
 		withHazardAssessments: _q.withHazardAssessments.Clone(),
+		withObservationGroups: _q.withObservationGroups.Clone(),
 		withIncidents:         _q.withIncidents.Clone(),
 		withAlertEpisodeLinks: _q.withAlertEpisodeLinks.Clone(),
 		// clone intermediate query.
@@ -510,6 +538,17 @@ func (_q *SituationQuery) WithHazardAssessments(opts ...func(*SituationHazardAss
 		opt(query)
 	}
 	_q.withHazardAssessments = query
+	return _q
+}
+
+// WithObservationGroups tells the query-builder to eager-load the nodes that are connected to
+// the "observation_groups" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *SituationQuery) WithObservationGroups(opts ...func(*SituationObservationGroupQuery)) *SituationQuery {
+	query := (&SituationObservationGroupClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withObservationGroups = query
 	return _q
 }
 
@@ -619,12 +658,13 @@ func (_q *SituationQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Si
 	var (
 		nodes       = []*Situation{}
 		_spec       = _q.querySpec()
-		loadedTypes = [7]bool{
+		loadedTypes = [8]bool{
 			_q.withTenant != nil,
 			_q.withKnowledgeEntity != nil,
 			_q.withInvestigations != nil,
 			_q.withAlertEpisodes != nil,
 			_q.withHazardAssessments != nil,
+			_q.withObservationGroups != nil,
 			_q.withIncidents != nil,
 			_q.withAlertEpisodeLinks != nil,
 		}
@@ -685,6 +725,15 @@ func (_q *SituationQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Si
 			func(n *Situation) { n.Edges.HazardAssessments = []*SituationHazardAssessment{} },
 			func(n *Situation, e *SituationHazardAssessment) {
 				n.Edges.HazardAssessments = append(n.Edges.HazardAssessments, e)
+			}); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withObservationGroups; query != nil {
+		if err := _q.loadObservationGroups(ctx, query, nodes,
+			func(n *Situation) { n.Edges.ObservationGroups = []*SituationObservationGroup{} },
+			func(n *Situation, e *SituationObservationGroup) {
+				n.Edges.ObservationGroups = append(n.Edges.ObservationGroups, e)
 			}); err != nil {
 			return nil, err
 		}
@@ -873,6 +922,36 @@ func (_q *SituationQuery) loadHazardAssessments(ctx context.Context, query *Situ
 	}
 	query.Where(predicate.SituationHazardAssessment(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(situation.HazardAssessmentsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.SituationID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "situation_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *SituationQuery) loadObservationGroups(ctx context.Context, query *SituationObservationGroupQuery, nodes []*Situation, init func(*Situation), assign func(*Situation, *SituationObservationGroup)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Situation)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(situationobservationgroup.FieldSituationID)
+	}
+	query.Where(predicate.SituationObservationGroup(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(situation.ObservationGroupsColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {

@@ -5,6 +5,7 @@ package ent
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
@@ -20,8 +21,22 @@ type Ticket struct {
 	ID uuid.UUID `json:"id,omitempty"`
 	// TenantID holds the value of the "tenant_id" field.
 	TenantID int `json:"tenant_id,omitempty"`
+	// CreatedAt holds the value of the "created_at" field.
+	CreatedAt time.Time `json:"created_at,omitempty"`
+	// UpdatedAt holds the value of the "updated_at" field.
+	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// Title holds the value of the "title" field.
 	Title string `json:"title,omitempty"`
+	// Reference holds the value of the "reference" field.
+	Reference *string `json:"reference,omitempty"`
+	// URL holds the value of the "url" field.
+	URL *string `json:"url,omitempty"`
+	// Provider holds the value of the "provider" field.
+	Provider *string `json:"provider,omitempty"`
+	// ProviderNamespace holds the value of the "provider_namespace" field.
+	ProviderNamespace *string `json:"provider_namespace,omitempty"`
+	// ProviderResourceRef holds the value of the "provider_resource_ref" field.
+	ProviderResourceRef *string `json:"provider_resource_ref,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the TicketQuery when eager-loading is set.
 	Edges        TicketEdges `json:"edges"`
@@ -66,8 +81,10 @@ func (*Ticket) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case ticket.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case ticket.FieldTitle:
+		case ticket.FieldTitle, ticket.FieldReference, ticket.FieldURL, ticket.FieldProvider, ticket.FieldProviderNamespace, ticket.FieldProviderResourceRef:
 			values[i] = new(sql.NullString)
+		case ticket.FieldCreatedAt, ticket.FieldUpdatedAt:
+			values[i] = new(sql.NullTime)
 		case ticket.FieldID:
 			values[i] = new(uuid.UUID)
 		default:
@@ -97,11 +114,58 @@ func (_m *Ticket) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.TenantID = int(value.Int64)
 			}
+		case ticket.FieldCreatedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field created_at", values[i])
+			} else if value.Valid {
+				_m.CreatedAt = value.Time
+			}
+		case ticket.FieldUpdatedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
+			} else if value.Valid {
+				_m.UpdatedAt = value.Time
+			}
 		case ticket.FieldTitle:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field title", values[i])
 			} else if value.Valid {
 				_m.Title = value.String
+			}
+		case ticket.FieldReference:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field reference", values[i])
+			} else if value.Valid {
+				_m.Reference = new(string)
+				*_m.Reference = value.String
+			}
+		case ticket.FieldURL:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field url", values[i])
+			} else if value.Valid {
+				_m.URL = new(string)
+				*_m.URL = value.String
+			}
+		case ticket.FieldProvider:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field provider", values[i])
+			} else if value.Valid {
+				_m.Provider = new(string)
+				*_m.Provider = value.String
+			}
+		case ticket.FieldProviderNamespace:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field provider_namespace", values[i])
+			} else if value.Valid {
+				_m.ProviderNamespace = new(string)
+				*_m.ProviderNamespace = value.String
+			}
+		case ticket.FieldProviderResourceRef:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field provider_resource_ref", values[i])
+			} else if value.Valid {
+				_m.ProviderResourceRef = new(string)
+				*_m.ProviderResourceRef = value.String
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -152,8 +216,39 @@ func (_m *Ticket) String() string {
 	builder.WriteString("tenant_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
 	builder.WriteString(", ")
+	builder.WriteString("created_at=")
+	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("updated_at=")
+	builder.WriteString(_m.UpdatedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
 	builder.WriteString("title=")
 	builder.WriteString(_m.Title)
+	builder.WriteString(", ")
+	if v := _m.Reference; v != nil {
+		builder.WriteString("reference=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.URL; v != nil {
+		builder.WriteString("url=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.Provider; v != nil {
+		builder.WriteString("provider=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.ProviderNamespace; v != nil {
+		builder.WriteString("provider_namespace=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.ProviderResourceRef; v != nil {
+		builder.WriteString("provider_resource_ref=")
+		builder.WriteString(*v)
+	}
 	builder.WriteByte(')')
 	return builder.String()
 }

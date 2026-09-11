@@ -60,12 +60,14 @@ const (
 	EdgeAssignedTasks = "assigned_tasks"
 	// EdgeCreatedTasks holds the string denoting the created_tasks edge name in mutations.
 	EdgeCreatedTasks = "created_tasks"
-	// EdgeRetrospectiveReviewRequests holds the string denoting the retrospective_review_requests edge name in mutations.
-	EdgeRetrospectiveReviewRequests = "retrospective_review_requests"
-	// EdgeRetrospectiveReviewResponses holds the string denoting the retrospective_review_responses edge name in mutations.
-	EdgeRetrospectiveReviewResponses = "retrospective_review_responses"
-	// EdgeRetrospectiveComments holds the string denoting the retrospective_comments edge name in mutations.
-	EdgeRetrospectiveComments = "retrospective_comments"
+	// EdgeReviewRequests holds the string denoting the review_requests edge name in mutations.
+	EdgeReviewRequests = "review_requests"
+	// EdgeReviewResponses holds the string denoting the review_responses edge name in mutations.
+	EdgeReviewResponses = "review_responses"
+	// EdgeDiscussionThreads holds the string denoting the discussion_threads edge name in mutations.
+	EdgeDiscussionThreads = "discussion_threads"
+	// EdgeDiscussionComments holds the string denoting the discussion_comments edge name in mutations.
+	EdgeDiscussionComments = "discussion_comments"
 	// EdgeDocumentAccesses holds the string denoting the document_accesses edge name in mutations.
 	EdgeDocumentAccesses = "document_accesses"
 	// EdgeTeamMemberships holds the string denoting the team_memberships edge name in mutations.
@@ -173,27 +175,34 @@ const (
 	CreatedTasksInverseTable = "tasks"
 	// CreatedTasksColumn is the table column denoting the created_tasks relation/edge.
 	CreatedTasksColumn = "creator_id"
-	// RetrospectiveReviewRequestsTable is the table that holds the retrospective_review_requests relation/edge.
-	RetrospectiveReviewRequestsTable = "retrospective_reviews"
-	// RetrospectiveReviewRequestsInverseTable is the table name for the RetrospectiveReview entity.
-	// It exists in this package in order to avoid circular dependency with the "retrospectivereview" package.
-	RetrospectiveReviewRequestsInverseTable = "retrospective_reviews"
-	// RetrospectiveReviewRequestsColumn is the table column denoting the retrospective_review_requests relation/edge.
-	RetrospectiveReviewRequestsColumn = "requester_id"
-	// RetrospectiveReviewResponsesTable is the table that holds the retrospective_review_responses relation/edge.
-	RetrospectiveReviewResponsesTable = "retrospective_reviews"
-	// RetrospectiveReviewResponsesInverseTable is the table name for the RetrospectiveReview entity.
-	// It exists in this package in order to avoid circular dependency with the "retrospectivereview" package.
-	RetrospectiveReviewResponsesInverseTable = "retrospective_reviews"
-	// RetrospectiveReviewResponsesColumn is the table column denoting the retrospective_review_responses relation/edge.
-	RetrospectiveReviewResponsesColumn = "reviewer_id"
-	// RetrospectiveCommentsTable is the table that holds the retrospective_comments relation/edge.
-	RetrospectiveCommentsTable = "retrospective_comments"
-	// RetrospectiveCommentsInverseTable is the table name for the RetrospectiveComment entity.
-	// It exists in this package in order to avoid circular dependency with the "retrospectivecomment" package.
-	RetrospectiveCommentsInverseTable = "retrospective_comments"
-	// RetrospectiveCommentsColumn is the table column denoting the retrospective_comments relation/edge.
-	RetrospectiveCommentsColumn = "user_id"
+	// ReviewRequestsTable is the table that holds the review_requests relation/edge.
+	ReviewRequestsTable = "reviews"
+	// ReviewRequestsInverseTable is the table name for the Review entity.
+	// It exists in this package in order to avoid circular dependency with the "review" package.
+	ReviewRequestsInverseTable = "reviews"
+	// ReviewRequestsColumn is the table column denoting the review_requests relation/edge.
+	ReviewRequestsColumn = "requester_id"
+	// ReviewResponsesTable is the table that holds the review_responses relation/edge.
+	ReviewResponsesTable = "reviews"
+	// ReviewResponsesInverseTable is the table name for the Review entity.
+	// It exists in this package in order to avoid circular dependency with the "review" package.
+	ReviewResponsesInverseTable = "reviews"
+	// ReviewResponsesColumn is the table column denoting the review_responses relation/edge.
+	ReviewResponsesColumn = "reviewer_id"
+	// DiscussionThreadsTable is the table that holds the discussion_threads relation/edge.
+	DiscussionThreadsTable = "discussion_threads"
+	// DiscussionThreadsInverseTable is the table name for the DiscussionThread entity.
+	// It exists in this package in order to avoid circular dependency with the "discussionthread" package.
+	DiscussionThreadsInverseTable = "discussion_threads"
+	// DiscussionThreadsColumn is the table column denoting the discussion_threads relation/edge.
+	DiscussionThreadsColumn = "user_id"
+	// DiscussionCommentsTable is the table that holds the discussion_comments relation/edge.
+	DiscussionCommentsTable = "discussion_comments"
+	// DiscussionCommentsInverseTable is the table name for the DiscussionComment entity.
+	// It exists in this package in order to avoid circular dependency with the "discussioncomment" package.
+	DiscussionCommentsInverseTable = "discussion_comments"
+	// DiscussionCommentsColumn is the table column denoting the discussion_comments relation/edge.
+	DiscussionCommentsColumn = "user_id"
 	// DocumentAccessesTable is the table that holds the document_accesses relation/edge.
 	DocumentAccessesTable = "document_accesses"
 	// DocumentAccessesInverseTable is the table name for the DocumentAccess entity.
@@ -498,45 +507,59 @@ func ByCreatedTasks(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
-// ByRetrospectiveReviewRequestsCount orders the results by retrospective_review_requests count.
-func ByRetrospectiveReviewRequestsCount(opts ...sql.OrderTermOption) OrderOption {
+// ByReviewRequestsCount orders the results by review_requests count.
+func ByReviewRequestsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newRetrospectiveReviewRequestsStep(), opts...)
+		sqlgraph.OrderByNeighborsCount(s, newReviewRequestsStep(), opts...)
 	}
 }
 
-// ByRetrospectiveReviewRequests orders the results by retrospective_review_requests terms.
-func ByRetrospectiveReviewRequests(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+// ByReviewRequests orders the results by review_requests terms.
+func ByReviewRequests(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newRetrospectiveReviewRequestsStep(), append([]sql.OrderTerm{term}, terms...)...)
+		sqlgraph.OrderByNeighborTerms(s, newReviewRequestsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
 
-// ByRetrospectiveReviewResponsesCount orders the results by retrospective_review_responses count.
-func ByRetrospectiveReviewResponsesCount(opts ...sql.OrderTermOption) OrderOption {
+// ByReviewResponsesCount orders the results by review_responses count.
+func ByReviewResponsesCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newRetrospectiveReviewResponsesStep(), opts...)
+		sqlgraph.OrderByNeighborsCount(s, newReviewResponsesStep(), opts...)
 	}
 }
 
-// ByRetrospectiveReviewResponses orders the results by retrospective_review_responses terms.
-func ByRetrospectiveReviewResponses(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+// ByReviewResponses orders the results by review_responses terms.
+func ByReviewResponses(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newRetrospectiveReviewResponsesStep(), append([]sql.OrderTerm{term}, terms...)...)
+		sqlgraph.OrderByNeighborTerms(s, newReviewResponsesStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
 
-// ByRetrospectiveCommentsCount orders the results by retrospective_comments count.
-func ByRetrospectiveCommentsCount(opts ...sql.OrderTermOption) OrderOption {
+// ByDiscussionThreadsCount orders the results by discussion_threads count.
+func ByDiscussionThreadsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newRetrospectiveCommentsStep(), opts...)
+		sqlgraph.OrderByNeighborsCount(s, newDiscussionThreadsStep(), opts...)
 	}
 }
 
-// ByRetrospectiveComments orders the results by retrospective_comments terms.
-func ByRetrospectiveComments(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+// ByDiscussionThreads orders the results by discussion_threads terms.
+func ByDiscussionThreads(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newRetrospectiveCommentsStep(), append([]sql.OrderTerm{term}, terms...)...)
+		sqlgraph.OrderByNeighborTerms(s, newDiscussionThreadsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByDiscussionCommentsCount orders the results by discussion_comments count.
+func ByDiscussionCommentsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newDiscussionCommentsStep(), opts...)
+	}
+}
+
+// ByDiscussionComments orders the results by discussion_comments terms.
+func ByDiscussionComments(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newDiscussionCommentsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
 
@@ -686,25 +709,32 @@ func newCreatedTasksStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.O2M, false, CreatedTasksTable, CreatedTasksColumn),
 	)
 }
-func newRetrospectiveReviewRequestsStep() *sqlgraph.Step {
+func newReviewRequestsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(RetrospectiveReviewRequestsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, RetrospectiveReviewRequestsTable, RetrospectiveReviewRequestsColumn),
+		sqlgraph.To(ReviewRequestsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, ReviewRequestsTable, ReviewRequestsColumn),
 	)
 }
-func newRetrospectiveReviewResponsesStep() *sqlgraph.Step {
+func newReviewResponsesStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(RetrospectiveReviewResponsesInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, RetrospectiveReviewResponsesTable, RetrospectiveReviewResponsesColumn),
+		sqlgraph.To(ReviewResponsesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, ReviewResponsesTable, ReviewResponsesColumn),
 	)
 }
-func newRetrospectiveCommentsStep() *sqlgraph.Step {
+func newDiscussionThreadsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(RetrospectiveCommentsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, RetrospectiveCommentsTable, RetrospectiveCommentsColumn),
+		sqlgraph.To(DiscussionThreadsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, DiscussionThreadsTable, DiscussionThreadsColumn),
+	)
+}
+func newDiscussionCommentsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(DiscussionCommentsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, DiscussionCommentsTable, DiscussionCommentsColumn),
 	)
 }
 func newDocumentAccessesStep() *sqlgraph.Step {

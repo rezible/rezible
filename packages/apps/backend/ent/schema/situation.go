@@ -58,6 +58,8 @@ func (Situation) Edges() []ent.Edge {
 			Ref("situations").
 			Through("alert_episode_links", AlertEpisodeSituation.Type),
 		edge.To("hazard_assessments", SituationHazardAssessment.Type),
+		edge.From("observation_groups", SituationObservationGroup.Type).
+			Ref("situation"),
 		edge.From("incidents", Incident.Type).
 			Ref("situations"),
 	}
@@ -67,6 +69,37 @@ func (Situation) Indexes() []ent.Index {
 	return []ent.Index{
 		index.Fields("tenant_id", "knowledge_entity_id").Unique(),
 		index.Fields("tenant_id", "status", "opened_at"),
+	}
+}
+
+type SituationObservationGroup struct {
+	ent.Schema
+}
+
+func (SituationObservationGroup) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		BaseMixin{},
+		TenantMixin{},
+		TimestampsMixin{},
+	}
+}
+
+func (SituationObservationGroup) Fields() []ent.Field {
+	return []ent.Field{
+		field.UUID("id", uuid.UUID{}).Default(uuid.New),
+		field.UUID("situation_id", uuid.UUID{}),
+		field.String("title").NotEmpty(),
+		field.Text("body").Optional(),
+	}
+}
+
+func (SituationObservationGroup) Edges() []ent.Edge {
+	return []ent.Edge{
+		edge.To("situation", Situation.Type).
+			Field("situation_id").
+			Required().
+			Unique(),
+		edge.To("events", NormalizedEvent.Type),
 	}
 }
 

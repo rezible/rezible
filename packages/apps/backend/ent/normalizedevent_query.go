@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"database/sql/driver"
 	"errors"
 	"fmt"
 	"math"
@@ -18,21 +19,25 @@ import (
 	"github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/ent/normalizedeventprojection"
 	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/situationobservationgroup"
+	"github.com/rezible/rezible/ent/systemanalysisentrysubject"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
 // NormalizedEventQuery is the builder for querying NormalizedEvent entities.
 type NormalizedEventQuery struct {
 	config
-	ctx             *QueryContext
-	order           []normalizedevent.OrderOption
-	inters          []Interceptor
-	predicates      []predicate.NormalizedEvent
-	withTenant      *TenantQuery
-	withIntegration *IntegrationQuery
-	withProjection  *NormalizedEventProjectionQuery
-	withFKs         bool
-	modifiers       []func(*sql.Selector)
+	ctx                            *QueryContext
+	order                          []normalizedevent.OrderOption
+	inters                         []Interceptor
+	predicates                     []predicate.NormalizedEvent
+	withTenant                     *TenantQuery
+	withIntegration                *IntegrationQuery
+	withProjection                 *NormalizedEventProjectionQuery
+	withSituationObservationGroups *SituationObservationGroupQuery
+	withAnalysisEntrySubjects      *SystemAnalysisEntrySubjectQuery
+	withFKs                        bool
+	modifiers                      []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -138,6 +143,56 @@ func (_q *NormalizedEventQuery) QueryProjection() *NormalizedEventProjectionQuer
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.NormalizedEventProjection
 		step.Edge.Schema = schemaConfig.NormalizedEvent
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QuerySituationObservationGroups chains the current query on the "situation_observation_groups" edge.
+func (_q *NormalizedEventQuery) QuerySituationObservationGroups() *SituationObservationGroupQuery {
+	query := (&SituationObservationGroupClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(normalizedevent.Table, normalizedevent.FieldID, selector),
+			sqlgraph.To(situationobservationgroup.Table, situationobservationgroup.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, normalizedevent.SituationObservationGroupsTable, normalizedevent.SituationObservationGroupsPrimaryKey...),
+		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.SituationObservationGroup
+		step.Edge.Schema = schemaConfig.SituationObservationGroupEvents
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryAnalysisEntrySubjects chains the current query on the "analysis_entry_subjects" edge.
+func (_q *NormalizedEventQuery) QueryAnalysisEntrySubjects() *SystemAnalysisEntrySubjectQuery {
+	query := (&SystemAnalysisEntrySubjectClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(normalizedevent.Table, normalizedevent.FieldID, selector),
+			sqlgraph.To(systemanalysisentrysubject.Table, systemanalysisentrysubject.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, normalizedevent.AnalysisEntrySubjectsTable, normalizedevent.AnalysisEntrySubjectsColumn),
+		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.SystemAnalysisEntrySubject
+		step.Edge.Schema = schemaConfig.SystemAnalysisEntrySubject
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -331,14 +386,16 @@ func (_q *NormalizedEventQuery) Clone() *NormalizedEventQuery {
 		return nil
 	}
 	return &NormalizedEventQuery{
-		config:          _q.config,
-		ctx:             _q.ctx.Clone(),
-		order:           append([]normalizedevent.OrderOption{}, _q.order...),
-		inters:          append([]Interceptor{}, _q.inters...),
-		predicates:      append([]predicate.NormalizedEvent{}, _q.predicates...),
-		withTenant:      _q.withTenant.Clone(),
-		withIntegration: _q.withIntegration.Clone(),
-		withProjection:  _q.withProjection.Clone(),
+		config:                         _q.config,
+		ctx:                            _q.ctx.Clone(),
+		order:                          append([]normalizedevent.OrderOption{}, _q.order...),
+		inters:                         append([]Interceptor{}, _q.inters...),
+		predicates:                     append([]predicate.NormalizedEvent{}, _q.predicates...),
+		withTenant:                     _q.withTenant.Clone(),
+		withIntegration:                _q.withIntegration.Clone(),
+		withProjection:                 _q.withProjection.Clone(),
+		withSituationObservationGroups: _q.withSituationObservationGroups.Clone(),
+		withAnalysisEntrySubjects:      _q.withAnalysisEntrySubjects.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
 		path:      _q.path,
@@ -376,6 +433,28 @@ func (_q *NormalizedEventQuery) WithProjection(opts ...func(*NormalizedEventProj
 		opt(query)
 	}
 	_q.withProjection = query
+	return _q
+}
+
+// WithSituationObservationGroups tells the query-builder to eager-load the nodes that are connected to
+// the "situation_observation_groups" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *NormalizedEventQuery) WithSituationObservationGroups(opts ...func(*SituationObservationGroupQuery)) *NormalizedEventQuery {
+	query := (&SituationObservationGroupClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withSituationObservationGroups = query
+	return _q
+}
+
+// WithAnalysisEntrySubjects tells the query-builder to eager-load the nodes that are connected to
+// the "analysis_entry_subjects" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *NormalizedEventQuery) WithAnalysisEntrySubjects(opts ...func(*SystemAnalysisEntrySubjectQuery)) *NormalizedEventQuery {
+	query := (&SystemAnalysisEntrySubjectClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withAnalysisEntrySubjects = query
 	return _q
 }
 
@@ -464,10 +543,12 @@ func (_q *NormalizedEventQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 		nodes       = []*NormalizedEvent{}
 		withFKs     = _q.withFKs
 		_spec       = _q.querySpec()
-		loadedTypes = [3]bool{
+		loadedTypes = [5]bool{
 			_q.withTenant != nil,
 			_q.withIntegration != nil,
 			_q.withProjection != nil,
+			_q.withSituationObservationGroups != nil,
+			_q.withAnalysisEntrySubjects != nil,
 		}
 	)
 	if _q.withProjection != nil {
@@ -514,6 +595,24 @@ func (_q *NormalizedEventQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 	if query := _q.withProjection; query != nil {
 		if err := _q.loadProjection(ctx, query, nodes, nil,
 			func(n *NormalizedEvent, e *NormalizedEventProjection) { n.Edges.Projection = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withSituationObservationGroups; query != nil {
+		if err := _q.loadSituationObservationGroups(ctx, query, nodes,
+			func(n *NormalizedEvent) { n.Edges.SituationObservationGroups = []*SituationObservationGroup{} },
+			func(n *NormalizedEvent, e *SituationObservationGroup) {
+				n.Edges.SituationObservationGroups = append(n.Edges.SituationObservationGroups, e)
+			}); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withAnalysisEntrySubjects; query != nil {
+		if err := _q.loadAnalysisEntrySubjects(ctx, query, nodes,
+			func(n *NormalizedEvent) { n.Edges.AnalysisEntrySubjects = []*SystemAnalysisEntrySubject{} },
+			func(n *NormalizedEvent, e *SystemAnalysisEntrySubject) {
+				n.Edges.AnalysisEntrySubjects = append(n.Edges.AnalysisEntrySubjects, e)
+			}); err != nil {
 			return nil, err
 		}
 	}
@@ -610,6 +709,101 @@ func (_q *NormalizedEventQuery) loadProjection(ctx context.Context, query *Norma
 		for i := range nodes {
 			assign(nodes[i], n)
 		}
+	}
+	return nil
+}
+func (_q *NormalizedEventQuery) loadSituationObservationGroups(ctx context.Context, query *SituationObservationGroupQuery, nodes []*NormalizedEvent, init func(*NormalizedEvent), assign func(*NormalizedEvent, *SituationObservationGroup)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[uuid.UUID]*NormalizedEvent)
+	nids := make(map[uuid.UUID]map[*NormalizedEvent]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
+		}
+	}
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(normalizedevent.SituationObservationGroupsTable)
+		joinT.Schema(_q.schemaConfig.SituationObservationGroupEvents)
+		s.Join(joinT).On(s.C(situationobservationgroup.FieldID), joinT.C(normalizedevent.SituationObservationGroupsPrimaryKey[0]))
+		s.Where(sql.InValues(joinT.C(normalizedevent.SituationObservationGroupsPrimaryKey[1]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(normalizedevent.SituationObservationGroupsPrimaryKey[1]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(uuid.UUID)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := *values[0].(*uuid.UUID)
+				inValue := *values[1].(*uuid.UUID)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*NormalizedEvent]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*SituationObservationGroup](ctx, query, qr, query.inters)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected "situation_observation_groups" node returned %v`, n.ID)
+		}
+		for kn := range nodes {
+			assign(kn, n)
+		}
+	}
+	return nil
+}
+func (_q *NormalizedEventQuery) loadAnalysisEntrySubjects(ctx context.Context, query *SystemAnalysisEntrySubjectQuery, nodes []*NormalizedEvent, init func(*NormalizedEvent), assign func(*NormalizedEvent, *SystemAnalysisEntrySubject)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*NormalizedEvent)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(systemanalysisentrysubject.FieldNormalizedEventID)
+	}
+	query.Where(predicate.SystemAnalysisEntrySubject(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(normalizedevent.AnalysisEntrySubjectsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.NormalizedEventID
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "normalized_event_id" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "normalized_event_id" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
 	}
 	return nil
 }

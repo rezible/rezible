@@ -35,19 +35,6 @@ func NewIncidentService(db rez.Database, msgs rez.MessageService, situations rez
 	return svc, nil
 }
 
-func (s *IncidentService) onIncidentUpdate(ctx context.Context, ev *rez.EventOnIncidentUpdated) error {
-	//msQuery := s.db.IncidentMilestone.Query().
-	//	Where(incidentmilestone.IncidentID(ev.IncidentId))
-	//milestones, msErr := msQuery.All(ctx)
-	//if msErr != nil {
-	//	return fmt.Errorf("incident milestone query: %w", msErr)
-	//}
-	//for _, m := range milestones {
-	//	slog.Debug("Incident milestone", "milestone", m.String())
-	//}
-	return nil
-}
-
 func (s *IncidentService) allQueryEdges(q *ent.IncidentQuery) {
 	q.WithRetrospective(func(rq *ent.RetrospectiveQuery) {
 		rq.Select(retrospective.FieldID)
@@ -66,6 +53,8 @@ func (s *IncidentService) allQueryEdges(q *ent.IncidentQuery) {
 		mq.WithUser()
 	})
 	q.WithVideoConferences()
+	q.WithSituations()
+	q.WithTasks()
 }
 
 func (s *IncidentService) incidentQuery(ctx context.Context, pred predicate.Incident, edgesFn func(*ent.IncidentQuery)) *ent.IncidentQuery {

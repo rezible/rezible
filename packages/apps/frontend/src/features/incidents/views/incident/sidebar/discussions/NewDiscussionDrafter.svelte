@@ -1,40 +1,23 @@
 <script lang="ts">
 	import { onMount } from "svelte";
-	import { createMutation } from "@tanstack/svelte-query";
 	import TiptapEditor, { Editor as SvelteEditor } from "$src/components/tiptap-editor/TiptapEditor.svelte";
-	import { draft } from "$features/incidents/views/incident/discussions.svelte";
+	import { draft, type DiscussionsController } from "$features/incidents/views/incident/discussions.svelte";
 	import ConfirmChangeButtons from "$components/forms/confirm-buttons/ConfirmButtons.svelte";
-	import { createRetrospectiveCommentMutation, type RetrospectiveComment } from "$lib/api";
 	import Header from "$src/components/layout/header/Header.svelte";
 	import { createDiscussionEditor } from "$src/components/tiptap-editor/editors";
 
 	type Props = {
-		retrospectiveId: string;
-		onDiscussionCreated: (discussion: RetrospectiveComment) => void;
+		controller: DiscussionsController;
 	};
-	const { retrospectiveId, onDiscussionCreated }: Props = $props();
+	const { controller }: Props = $props();
 
 	let draftEditor = $state<SvelteEditor>();
 	let contentSize = $state(0);
 
-	const createDiscussion = createMutation(() => ({
-		...createRetrospectiveCommentMutation(),
-		onSuccess({ data }) {
-			onDiscussionCreated(data);
-		},
-		onError(error, variables, context) {
-			console.error(error);
-		},
-	}));
-
 	const saveDraft = async () => {
 		if (!draft.open || !draftEditor) return;
 
-		const content = draftEditor.getJSON();
-		createDiscussion.mutate({
-			path: { id: retrospectiveId },
-			body: { attributes: { content } },
-		});
+		controller.saveDraft(draftEditor);
 	};
 
 	const cancelDraft = () => {
@@ -47,8 +30,6 @@
 			contentSize = editor.$doc.content.size;
 		});
 		return () => {
-			console.log("clearing");
-			// draft.clear(false);
 			if (draftEditor) draftEditor.destroy();
 		};
 	});
@@ -67,12 +48,12 @@
 		alignRight
 		confirmText="Save"
 		saveEnabled={contentSize > 1}
-		loading={createDiscussion.isPending}
+		loading={controller.createDiscussion.isPending}
 		onClose={cancelDraft}
 		onConfirm={saveDraft}
 	/>
 
-	{#if createDiscussion.isError}
-		<span>error: {createDiscussion.error}</span>
+	{#if controller.createDiscussion.isError}
+		<span>error: {controller.createDiscussion.error}</span>
 	{/if}
 </div>

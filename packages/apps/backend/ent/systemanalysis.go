@@ -53,11 +53,13 @@ type SystemAnalysisEdges struct {
 	AnalysisRelationships []*SystemAnalysisRelationship `json:"analysis_relationships,omitempty"`
 	// Entries holds the value of the entries edge.
 	Entries []*SystemAnalysisEntry `json:"entries,omitempty"`
+	// DiscussionThreads holds the value of the discussion_threads edge.
+	DiscussionThreads []*DiscussionThread `json:"discussion_threads,omitempty"`
 	// SituationInvestigation holds the value of the situation_investigation edge.
 	SituationInvestigation *SituationInvestigation `json:"situation_investigation,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [7]bool
+	loadedTypes [8]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -120,12 +122,21 @@ func (e SystemAnalysisEdges) EntriesOrErr() ([]*SystemAnalysisEntry, error) {
 	return nil, &NotLoadedError{edge: "entries"}
 }
 
+// DiscussionThreadsOrErr returns the DiscussionThreads value or an error if the edge
+// was not loaded in eager-loading.
+func (e SystemAnalysisEdges) DiscussionThreadsOrErr() ([]*DiscussionThread, error) {
+	if e.loadedTypes[6] {
+		return e.DiscussionThreads, nil
+	}
+	return nil, &NotLoadedError{edge: "discussion_threads"}
+}
+
 // SituationInvestigationOrErr returns the SituationInvestigation value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
 func (e SystemAnalysisEdges) SituationInvestigationOrErr() (*SituationInvestigation, error) {
 	if e.SituationInvestigation != nil {
 		return e.SituationInvestigation, nil
-	} else if e.loadedTypes[6] {
+	} else if e.loadedTypes[7] {
 		return nil, &NotFoundError{label: situationinvestigation.Label}
 	}
 	return nil, &NotLoadedError{edge: "situation_investigation"}
@@ -245,6 +256,11 @@ func (_m *SystemAnalysis) QueryAnalysisRelationships() *SystemAnalysisRelationsh
 // QueryEntries queries the "entries" edge of the SystemAnalysis entity.
 func (_m *SystemAnalysis) QueryEntries() *SystemAnalysisEntryQuery {
 	return NewSystemAnalysisClient(_m.config).QueryEntries(_m)
+}
+
+// QueryDiscussionThreads queries the "discussion_threads" edge of the SystemAnalysis entity.
+func (_m *SystemAnalysis) QueryDiscussionThreads() *DiscussionThreadQuery {
+	return NewSystemAnalysisClient(_m.config).QueryDiscussionThreads(_m)
 }
 
 // QuerySituationInvestigation queries the "situation_investigation" edge of the SystemAnalysis entity.

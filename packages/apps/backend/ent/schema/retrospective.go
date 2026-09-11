@@ -1,11 +1,12 @@
 package schema
 
 import (
-	"github.com/google/uuid"
-
 	"entgo.io/ent"
+	"entgo.io/ent/dialect/entsql"
+	entschema "entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
+	"github.com/google/uuid"
 )
 
 // Retrospective holds the schema definition for the Retrospective entity.
@@ -45,8 +46,9 @@ func (Retrospective) Edges() []ent.Edge {
 			Field("document_id").
 			Unique().
 			Required(),
-		edge.From("comments", RetrospectiveComment.Type).
+		edge.From("discussion_threads", DiscussionThread.Type).
 			Ref("retrospective"),
+		edge.From("reviews", Review.Type).Ref("retrospective"),
 		edge.To("system_analysis", SystemAnalysis.Type).
 			Field("system_analysis_id").
 			Unique().
@@ -54,78 +56,130 @@ func (Retrospective) Edges() []ent.Edge {
 	}
 }
 
-type RetrospectiveComment struct {
+type DiscussionThread struct {
 	ent.Schema
 }
 
-func (RetrospectiveComment) Mixin() []ent.Mixin {
+func (DiscussionThread) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
 		TenantMixin{},
+		TimestampsMixin{},
 	}
 }
 
-func (RetrospectiveComment) Fields() []ent.Field {
+func (DiscussionThread) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.New()).Default(uuid.New),
-		field.UUID("retrospective_id", uuid.UUID{}),
+		field.UUID("analysis_id", uuid.UUID{}).Optional().Nillable(),
+		field.UUID("retrospective_id", uuid.UUID{}).Optional().Nillable(),
 		field.UUID("user_id", uuid.UUID{}),
-		field.UUID("retrospective_review_id", uuid.UUID{}).Optional(),
-		field.UUID("parent_reply_id", uuid.UUID{}).Optional(),
-		field.Bytes("content"),
+		field.Enum("kind").Values("comment", "question"),
+		field.Enum("target_kind").Values("finding", "knowledge_entity", "knowledge_relationship", "normalized_event").Optional().Nillable(),
+		field.UUID("target_id", uuid.UUID{}).Optional().Nillable(),
+		field.Enum("resolution_state").Values("open", "resolved").Optional().Nillable(),
+		field.UUID("resolved_by_id", uuid.UUID{}).Optional().Nillable(),
+		field.Time("resolved_at").Optional().Nillable(),
+		field.Text("resolution_note").Optional().Nillable(),
 	}
 }
 
-func (RetrospectiveComment) Edges() []ent.Edge {
+func (DiscussionThread) Annotations() []entschema.Annotation {
+	return []entschema.Annotation{
+		entsql.Annotation{
+			Checks: map[string]string{
+				"discussion_thread_exactly_one_owner": "(analysis_id IS NOT NULL AND retrospective_id IS NULL) OR (analysis_id IS NULL AND retrospective_id IS NOT NULL)",
+			},
+		},
+	}
+}
+
+func (DiscussionThread) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("retrospective", Retrospective.Type).
-			Field("retrospective_id").
-			Required().
-			Unique(),
+		edge.To("analysis", SystemAnalysis.Type).Field("analysis_id").Unique(),
+		edge.To("retrospective", Retrospective.Type).Field("retrospective_id").Unique(),
 		edge.To("user", User.Type).
 			Field("user_id").
 			Required().
 			Unique(),
-		edge.To("review", RetrospectiveReview.Type).
-			Field("retrospective_review_id").
-			Unique(),
-		edge.To("replies", RetrospectiveComment.Type).
-			From("parent").
-			Field("parent_reply_id").
-			Unique(),
+		edge.From("comments", DiscussionComment.Type).Ref("thread"),
 	}
 }
 
-// RetrospectiveReview holds the schema definition for the RetrospectiveReview entity.
-type RetrospectiveReview struct {
+type DiscussionComment struct {
 	ent.Schema
 }
 
-func (RetrospectiveReview) Mixin() []ent.Mixin {
+func (DiscussionComment) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
 		TenantMixin{},
+		TimestampsMixin{},
 	}
 }
 
-// Fields of the RetrospectiveReview.
-func (RetrospectiveReview) Fields() []ent.Field {
+func (DiscussionComment) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.New()).Default(uuid.New),
-		field.UUID("retrospective_id", uuid.UUID{}),
-		field.UUID("comment_id", uuid.UUID{}),
+		field.UUID("thread_id", uuid.UUID{}),
+		field.UUID("user_id", uuid.UUID{}),
+		field.Text("content"),
+		field.UUID("parent_id", uuid.UUID{}).Optional().Nillable(),
+	}
+}
+
+func (DiscussionComment) Edges() []ent.Edge {
+	return []ent.Edge{
+		edge.To("thread", DiscussionThread.Type).Field("thread_id").Required().Unique(),
+		edge.To("user", User.Type).Field("user_id").Required().Unique(),
+		edge.To("parent", DiscussionComment.Type).Field("parent_id").Unique(),
+		edge.From("replies", DiscussionComment.Type).Ref("parent"),
+		edge.From("reviews", Review.Type).Ref("comment"),
+	}
+}
+
+// Review holds review metadata for a retrospective or system-analysis entry.
+type Review struct {
+	ent.Schema
+}
+
+func (Review) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		BaseMixin{},
+		TenantMixin{},
+		TimestampsMixin{},
+	}
+}
+
+func (Review) Annotations() []entschema.Annotation {
+	return []entschema.Annotation{
+		entsql.Annotation{
+			Checks: map[string]string{
+				"review_exactly_one_subject": "num_nonnulls(retrospective_id, analysis_entry_id) = 1",
+			},
+		},
+	}
+}
+
+func (Review) Fields() []ent.Field {
+	return []ent.Field{
+		field.UUID("id", uuid.New()).Default(uuid.New),
+		field.UUID("retrospective_id", uuid.UUID{}).Optional().Nillable(),
+		field.UUID("analysis_entry_id", uuid.UUID{}).Optional().Nillable(),
+		field.UUID("comment_id", uuid.UUID{}).Optional().Nillable(),
 		field.UUID("requester_id", uuid.UUID{}),
 		field.UUID("reviewer_id", uuid.UUID{}),
 		field.Enum("state").Values("waiting", "request_changes", "approved"),
 	}
 }
 
-// Edges of the RetrospectiveReview.
-func (RetrospectiveReview) Edges() []ent.Edge {
+func (Review) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("retrospective", Retrospective.Type).
 			Field("retrospective_id").
-			Required().
+			Unique(),
+		edge.To("analysis_entry", SystemAnalysisEntry.Type).
+			Field("analysis_entry_id").
 			Unique(),
 		edge.To("requester", User.Type).
 			Field("requester_id").
@@ -135,9 +189,8 @@ func (RetrospectiveReview) Edges() []ent.Edge {
 			Field("reviewer_id").
 			Required().
 			Unique(),
-		edge.To("comment", RetrospectiveComment.Type).
+		edge.To("comment", DiscussionComment.Type).
 			Field("comment_id").
-			Unique().
-			Required(),
+			Unique(),
 	}
 }

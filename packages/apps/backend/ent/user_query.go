@@ -14,6 +14,8 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/discussioncomment"
+	"github.com/rezible/rezible/ent/discussionthread"
 	"github.com/rezible/rezible/ent/documentaccess"
 	"github.com/rezible/rezible/ent/eventannotation"
 	"github.com/rezible/rezible/ent/incident"
@@ -28,8 +30,7 @@ import (
 	"github.com/rezible/rezible/ent/oncallshift"
 	"github.com/rezible/rezible/ent/organizationrole"
 	"github.com/rezible/rezible/ent/predicate"
-	"github.com/rezible/rezible/ent/retrospectivecomment"
-	"github.com/rezible/rezible/ent/retrospectivereview"
+	"github.com/rezible/rezible/ent/review"
 	"github.com/rezible/rezible/ent/situationhazardassessment"
 	"github.com/rezible/rezible/ent/task"
 	"github.com/rezible/rezible/ent/team"
@@ -41,32 +42,33 @@ import (
 // UserQuery is the builder for querying User entities.
 type UserQuery struct {
 	config
-	ctx                              *QueryContext
-	order                            []user.OrderOption
-	inters                           []Interceptor
-	predicates                       []predicate.User
-	withTenant                       *TenantQuery
-	withKnowledgeEntity              *KnowledgeEntityQuery
-	withOrganizationRole             *OrganizationRoleQuery
-	withTeams                        *TeamQuery
-	withWatchedOncallRosters         *OncallRosterQuery
-	withOncallSchedules              *OncallScheduleParticipantQuery
-	withOncallShifts                 *OncallShiftQuery
-	withEventAnnotations             *EventAnnotationQuery
-	withSituationHazardAssessments   *SituationHazardAssessmentQuery
-	withIntegrationOauthStates       *IntegrationUserInstallStateQuery
-	withIncidents                    *IncidentQuery
-	withIncidentMilestones           *IncidentMilestoneQuery
-	withIncidentDebriefs             *IncidentDebriefQuery
-	withAssignedTasks                *TaskQuery
-	withCreatedTasks                 *TaskQuery
-	withRetrospectiveReviewRequests  *RetrospectiveReviewQuery
-	withRetrospectiveReviewResponses *RetrospectiveReviewQuery
-	withRetrospectiveComments        *RetrospectiveCommentQuery
-	withDocumentAccesses             *DocumentAccessQuery
-	withTeamMemberships              *TeamMembershipQuery
-	withRoleAssignments              *IncidentRoleAssignmentQuery
-	modifiers                        []func(*sql.Selector)
+	ctx                            *QueryContext
+	order                          []user.OrderOption
+	inters                         []Interceptor
+	predicates                     []predicate.User
+	withTenant                     *TenantQuery
+	withKnowledgeEntity            *KnowledgeEntityQuery
+	withOrganizationRole           *OrganizationRoleQuery
+	withTeams                      *TeamQuery
+	withWatchedOncallRosters       *OncallRosterQuery
+	withOncallSchedules            *OncallScheduleParticipantQuery
+	withOncallShifts               *OncallShiftQuery
+	withEventAnnotations           *EventAnnotationQuery
+	withSituationHazardAssessments *SituationHazardAssessmentQuery
+	withIntegrationOauthStates     *IntegrationUserInstallStateQuery
+	withIncidents                  *IncidentQuery
+	withIncidentMilestones         *IncidentMilestoneQuery
+	withIncidentDebriefs           *IncidentDebriefQuery
+	withAssignedTasks              *TaskQuery
+	withCreatedTasks               *TaskQuery
+	withReviewRequests             *ReviewQuery
+	withReviewResponses            *ReviewQuery
+	withDiscussionThreads          *DiscussionThreadQuery
+	withDiscussionComments         *DiscussionCommentQuery
+	withDocumentAccesses           *DocumentAccessQuery
+	withTeamMemberships            *TeamMembershipQuery
+	withRoleAssignments            *IncidentRoleAssignmentQuery
+	modifiers                      []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -478,9 +480,9 @@ func (_q *UserQuery) QueryCreatedTasks() *TaskQuery {
 	return query
 }
 
-// QueryRetrospectiveReviewRequests chains the current query on the "retrospective_review_requests" edge.
-func (_q *UserQuery) QueryRetrospectiveReviewRequests() *RetrospectiveReviewQuery {
-	query := (&RetrospectiveReviewClient{config: _q.config}).Query()
+// QueryReviewRequests chains the current query on the "review_requests" edge.
+func (_q *UserQuery) QueryReviewRequests() *ReviewQuery {
+	query := (&ReviewClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -491,21 +493,21 @@ func (_q *UserQuery) QueryRetrospectiveReviewRequests() *RetrospectiveReviewQuer
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(user.Table, user.FieldID, selector),
-			sqlgraph.To(retrospectivereview.Table, retrospectivereview.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, user.RetrospectiveReviewRequestsTable, user.RetrospectiveReviewRequestsColumn),
+			sqlgraph.To(review.Table, review.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, user.ReviewRequestsTable, user.ReviewRequestsColumn),
 		)
 		schemaConfig := _q.schemaConfig
-		step.To.Schema = schemaConfig.RetrospectiveReview
-		step.Edge.Schema = schemaConfig.RetrospectiveReview
+		step.To.Schema = schemaConfig.Review
+		step.Edge.Schema = schemaConfig.Review
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
-// QueryRetrospectiveReviewResponses chains the current query on the "retrospective_review_responses" edge.
-func (_q *UserQuery) QueryRetrospectiveReviewResponses() *RetrospectiveReviewQuery {
-	query := (&RetrospectiveReviewClient{config: _q.config}).Query()
+// QueryReviewResponses chains the current query on the "review_responses" edge.
+func (_q *UserQuery) QueryReviewResponses() *ReviewQuery {
+	query := (&ReviewClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -516,21 +518,21 @@ func (_q *UserQuery) QueryRetrospectiveReviewResponses() *RetrospectiveReviewQue
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(user.Table, user.FieldID, selector),
-			sqlgraph.To(retrospectivereview.Table, retrospectivereview.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, user.RetrospectiveReviewResponsesTable, user.RetrospectiveReviewResponsesColumn),
+			sqlgraph.To(review.Table, review.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, user.ReviewResponsesTable, user.ReviewResponsesColumn),
 		)
 		schemaConfig := _q.schemaConfig
-		step.To.Schema = schemaConfig.RetrospectiveReview
-		step.Edge.Schema = schemaConfig.RetrospectiveReview
+		step.To.Schema = schemaConfig.Review
+		step.Edge.Schema = schemaConfig.Review
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
-// QueryRetrospectiveComments chains the current query on the "retrospective_comments" edge.
-func (_q *UserQuery) QueryRetrospectiveComments() *RetrospectiveCommentQuery {
-	query := (&RetrospectiveCommentClient{config: _q.config}).Query()
+// QueryDiscussionThreads chains the current query on the "discussion_threads" edge.
+func (_q *UserQuery) QueryDiscussionThreads() *DiscussionThreadQuery {
+	query := (&DiscussionThreadClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -541,12 +543,37 @@ func (_q *UserQuery) QueryRetrospectiveComments() *RetrospectiveCommentQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(user.Table, user.FieldID, selector),
-			sqlgraph.To(retrospectivecomment.Table, retrospectivecomment.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, user.RetrospectiveCommentsTable, user.RetrospectiveCommentsColumn),
+			sqlgraph.To(discussionthread.Table, discussionthread.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, user.DiscussionThreadsTable, user.DiscussionThreadsColumn),
 		)
 		schemaConfig := _q.schemaConfig
-		step.To.Schema = schemaConfig.RetrospectiveComment
-		step.Edge.Schema = schemaConfig.RetrospectiveComment
+		step.To.Schema = schemaConfig.DiscussionThread
+		step.Edge.Schema = schemaConfig.DiscussionThread
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryDiscussionComments chains the current query on the "discussion_comments" edge.
+func (_q *UserQuery) QueryDiscussionComments() *DiscussionCommentQuery {
+	query := (&DiscussionCommentClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, selector),
+			sqlgraph.To(discussioncomment.Table, discussioncomment.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, user.DiscussionCommentsTable, user.DiscussionCommentsColumn),
+		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.DiscussionComment
+		step.Edge.Schema = schemaConfig.DiscussionComment
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -815,32 +842,33 @@ func (_q *UserQuery) Clone() *UserQuery {
 		return nil
 	}
 	return &UserQuery{
-		config:                           _q.config,
-		ctx:                              _q.ctx.Clone(),
-		order:                            append([]user.OrderOption{}, _q.order...),
-		inters:                           append([]Interceptor{}, _q.inters...),
-		predicates:                       append([]predicate.User{}, _q.predicates...),
-		withTenant:                       _q.withTenant.Clone(),
-		withKnowledgeEntity:              _q.withKnowledgeEntity.Clone(),
-		withOrganizationRole:             _q.withOrganizationRole.Clone(),
-		withTeams:                        _q.withTeams.Clone(),
-		withWatchedOncallRosters:         _q.withWatchedOncallRosters.Clone(),
-		withOncallSchedules:              _q.withOncallSchedules.Clone(),
-		withOncallShifts:                 _q.withOncallShifts.Clone(),
-		withEventAnnotations:             _q.withEventAnnotations.Clone(),
-		withSituationHazardAssessments:   _q.withSituationHazardAssessments.Clone(),
-		withIntegrationOauthStates:       _q.withIntegrationOauthStates.Clone(),
-		withIncidents:                    _q.withIncidents.Clone(),
-		withIncidentMilestones:           _q.withIncidentMilestones.Clone(),
-		withIncidentDebriefs:             _q.withIncidentDebriefs.Clone(),
-		withAssignedTasks:                _q.withAssignedTasks.Clone(),
-		withCreatedTasks:                 _q.withCreatedTasks.Clone(),
-		withRetrospectiveReviewRequests:  _q.withRetrospectiveReviewRequests.Clone(),
-		withRetrospectiveReviewResponses: _q.withRetrospectiveReviewResponses.Clone(),
-		withRetrospectiveComments:        _q.withRetrospectiveComments.Clone(),
-		withDocumentAccesses:             _q.withDocumentAccesses.Clone(),
-		withTeamMemberships:              _q.withTeamMemberships.Clone(),
-		withRoleAssignments:              _q.withRoleAssignments.Clone(),
+		config:                         _q.config,
+		ctx:                            _q.ctx.Clone(),
+		order:                          append([]user.OrderOption{}, _q.order...),
+		inters:                         append([]Interceptor{}, _q.inters...),
+		predicates:                     append([]predicate.User{}, _q.predicates...),
+		withTenant:                     _q.withTenant.Clone(),
+		withKnowledgeEntity:            _q.withKnowledgeEntity.Clone(),
+		withOrganizationRole:           _q.withOrganizationRole.Clone(),
+		withTeams:                      _q.withTeams.Clone(),
+		withWatchedOncallRosters:       _q.withWatchedOncallRosters.Clone(),
+		withOncallSchedules:            _q.withOncallSchedules.Clone(),
+		withOncallShifts:               _q.withOncallShifts.Clone(),
+		withEventAnnotations:           _q.withEventAnnotations.Clone(),
+		withSituationHazardAssessments: _q.withSituationHazardAssessments.Clone(),
+		withIntegrationOauthStates:     _q.withIntegrationOauthStates.Clone(),
+		withIncidents:                  _q.withIncidents.Clone(),
+		withIncidentMilestones:         _q.withIncidentMilestones.Clone(),
+		withIncidentDebriefs:           _q.withIncidentDebriefs.Clone(),
+		withAssignedTasks:              _q.withAssignedTasks.Clone(),
+		withCreatedTasks:               _q.withCreatedTasks.Clone(),
+		withReviewRequests:             _q.withReviewRequests.Clone(),
+		withReviewResponses:            _q.withReviewResponses.Clone(),
+		withDiscussionThreads:          _q.withDiscussionThreads.Clone(),
+		withDiscussionComments:         _q.withDiscussionComments.Clone(),
+		withDocumentAccesses:           _q.withDocumentAccesses.Clone(),
+		withTeamMemberships:            _q.withTeamMemberships.Clone(),
+		withRoleAssignments:            _q.withRoleAssignments.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
 		path:      _q.path,
@@ -1013,36 +1041,47 @@ func (_q *UserQuery) WithCreatedTasks(opts ...func(*TaskQuery)) *UserQuery {
 	return _q
 }
 
-// WithRetrospectiveReviewRequests tells the query-builder to eager-load the nodes that are connected to
-// the "retrospective_review_requests" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *UserQuery) WithRetrospectiveReviewRequests(opts ...func(*RetrospectiveReviewQuery)) *UserQuery {
-	query := (&RetrospectiveReviewClient{config: _q.config}).Query()
+// WithReviewRequests tells the query-builder to eager-load the nodes that are connected to
+// the "review_requests" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *UserQuery) WithReviewRequests(opts ...func(*ReviewQuery)) *UserQuery {
+	query := (&ReviewClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	_q.withRetrospectiveReviewRequests = query
+	_q.withReviewRequests = query
 	return _q
 }
 
-// WithRetrospectiveReviewResponses tells the query-builder to eager-load the nodes that are connected to
-// the "retrospective_review_responses" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *UserQuery) WithRetrospectiveReviewResponses(opts ...func(*RetrospectiveReviewQuery)) *UserQuery {
-	query := (&RetrospectiveReviewClient{config: _q.config}).Query()
+// WithReviewResponses tells the query-builder to eager-load the nodes that are connected to
+// the "review_responses" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *UserQuery) WithReviewResponses(opts ...func(*ReviewQuery)) *UserQuery {
+	query := (&ReviewClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	_q.withRetrospectiveReviewResponses = query
+	_q.withReviewResponses = query
 	return _q
 }
 
-// WithRetrospectiveComments tells the query-builder to eager-load the nodes that are connected to
-// the "retrospective_comments" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *UserQuery) WithRetrospectiveComments(opts ...func(*RetrospectiveCommentQuery)) *UserQuery {
-	query := (&RetrospectiveCommentClient{config: _q.config}).Query()
+// WithDiscussionThreads tells the query-builder to eager-load the nodes that are connected to
+// the "discussion_threads" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *UserQuery) WithDiscussionThreads(opts ...func(*DiscussionThreadQuery)) *UserQuery {
+	query := (&DiscussionThreadClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	_q.withRetrospectiveComments = query
+	_q.withDiscussionThreads = query
+	return _q
+}
+
+// WithDiscussionComments tells the query-builder to eager-load the nodes that are connected to
+// the "discussion_comments" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *UserQuery) WithDiscussionComments(opts ...func(*DiscussionCommentQuery)) *UserQuery {
+	query := (&DiscussionCommentClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withDiscussionComments = query
 	return _q
 }
 
@@ -1163,7 +1202,7 @@ func (_q *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 	var (
 		nodes       = []*User{}
 		_spec       = _q.querySpec()
-		loadedTypes = [21]bool{
+		loadedTypes = [22]bool{
 			_q.withTenant != nil,
 			_q.withKnowledgeEntity != nil,
 			_q.withOrganizationRole != nil,
@@ -1179,9 +1218,10 @@ func (_q *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 			_q.withIncidentDebriefs != nil,
 			_q.withAssignedTasks != nil,
 			_q.withCreatedTasks != nil,
-			_q.withRetrospectiveReviewRequests != nil,
-			_q.withRetrospectiveReviewResponses != nil,
-			_q.withRetrospectiveComments != nil,
+			_q.withReviewRequests != nil,
+			_q.withReviewResponses != nil,
+			_q.withDiscussionThreads != nil,
+			_q.withDiscussionComments != nil,
 			_q.withDocumentAccesses != nil,
 			_q.withTeamMemberships != nil,
 			_q.withRoleAssignments != nil,
@@ -1320,29 +1360,32 @@ func (_q *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 			return nil, err
 		}
 	}
-	if query := _q.withRetrospectiveReviewRequests; query != nil {
-		if err := _q.loadRetrospectiveReviewRequests(ctx, query, nodes,
-			func(n *User) { n.Edges.RetrospectiveReviewRequests = []*RetrospectiveReview{} },
-			func(n *User, e *RetrospectiveReview) {
-				n.Edges.RetrospectiveReviewRequests = append(n.Edges.RetrospectiveReviewRequests, e)
-			}); err != nil {
+	if query := _q.withReviewRequests; query != nil {
+		if err := _q.loadReviewRequests(ctx, query, nodes,
+			func(n *User) { n.Edges.ReviewRequests = []*Review{} },
+			func(n *User, e *Review) { n.Edges.ReviewRequests = append(n.Edges.ReviewRequests, e) }); err != nil {
 			return nil, err
 		}
 	}
-	if query := _q.withRetrospectiveReviewResponses; query != nil {
-		if err := _q.loadRetrospectiveReviewResponses(ctx, query, nodes,
-			func(n *User) { n.Edges.RetrospectiveReviewResponses = []*RetrospectiveReview{} },
-			func(n *User, e *RetrospectiveReview) {
-				n.Edges.RetrospectiveReviewResponses = append(n.Edges.RetrospectiveReviewResponses, e)
-			}); err != nil {
+	if query := _q.withReviewResponses; query != nil {
+		if err := _q.loadReviewResponses(ctx, query, nodes,
+			func(n *User) { n.Edges.ReviewResponses = []*Review{} },
+			func(n *User, e *Review) { n.Edges.ReviewResponses = append(n.Edges.ReviewResponses, e) }); err != nil {
 			return nil, err
 		}
 	}
-	if query := _q.withRetrospectiveComments; query != nil {
-		if err := _q.loadRetrospectiveComments(ctx, query, nodes,
-			func(n *User) { n.Edges.RetrospectiveComments = []*RetrospectiveComment{} },
-			func(n *User, e *RetrospectiveComment) {
-				n.Edges.RetrospectiveComments = append(n.Edges.RetrospectiveComments, e)
+	if query := _q.withDiscussionThreads; query != nil {
+		if err := _q.loadDiscussionThreads(ctx, query, nodes,
+			func(n *User) { n.Edges.DiscussionThreads = []*DiscussionThread{} },
+			func(n *User, e *DiscussionThread) { n.Edges.DiscussionThreads = append(n.Edges.DiscussionThreads, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withDiscussionComments; query != nil {
+		if err := _q.loadDiscussionComments(ctx, query, nodes,
+			func(n *User) { n.Edges.DiscussionComments = []*DiscussionComment{} },
+			func(n *User, e *DiscussionComment) {
+				n.Edges.DiscussionComments = append(n.Edges.DiscussionComments, e)
 			}); err != nil {
 			return nil, err
 		}
@@ -1918,7 +1961,7 @@ func (_q *UserQuery) loadCreatedTasks(ctx context.Context, query *TaskQuery, nod
 	}
 	return nil
 }
-func (_q *UserQuery) loadRetrospectiveReviewRequests(ctx context.Context, query *RetrospectiveReviewQuery, nodes []*User, init func(*User), assign func(*User, *RetrospectiveReview)) error {
+func (_q *UserQuery) loadReviewRequests(ctx context.Context, query *ReviewQuery, nodes []*User, init func(*User), assign func(*User, *Review)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*User)
 	for i := range nodes {
@@ -1929,10 +1972,10 @@ func (_q *UserQuery) loadRetrospectiveReviewRequests(ctx context.Context, query 
 		}
 	}
 	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(retrospectivereview.FieldRequesterID)
+		query.ctx.AppendFieldOnce(review.FieldRequesterID)
 	}
-	query.Where(predicate.RetrospectiveReview(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(user.RetrospectiveReviewRequestsColumn), fks...))
+	query.Where(predicate.Review(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(user.ReviewRequestsColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {
@@ -1948,7 +1991,7 @@ func (_q *UserQuery) loadRetrospectiveReviewRequests(ctx context.Context, query 
 	}
 	return nil
 }
-func (_q *UserQuery) loadRetrospectiveReviewResponses(ctx context.Context, query *RetrospectiveReviewQuery, nodes []*User, init func(*User), assign func(*User, *RetrospectiveReview)) error {
+func (_q *UserQuery) loadReviewResponses(ctx context.Context, query *ReviewQuery, nodes []*User, init func(*User), assign func(*User, *Review)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*User)
 	for i := range nodes {
@@ -1959,10 +2002,10 @@ func (_q *UserQuery) loadRetrospectiveReviewResponses(ctx context.Context, query
 		}
 	}
 	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(retrospectivereview.FieldReviewerID)
+		query.ctx.AppendFieldOnce(review.FieldReviewerID)
 	}
-	query.Where(predicate.RetrospectiveReview(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(user.RetrospectiveReviewResponsesColumn), fks...))
+	query.Where(predicate.Review(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(user.ReviewResponsesColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {
@@ -1978,7 +2021,7 @@ func (_q *UserQuery) loadRetrospectiveReviewResponses(ctx context.Context, query
 	}
 	return nil
 }
-func (_q *UserQuery) loadRetrospectiveComments(ctx context.Context, query *RetrospectiveCommentQuery, nodes []*User, init func(*User), assign func(*User, *RetrospectiveComment)) error {
+func (_q *UserQuery) loadDiscussionThreads(ctx context.Context, query *DiscussionThreadQuery, nodes []*User, init func(*User), assign func(*User, *DiscussionThread)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*User)
 	for i := range nodes {
@@ -1989,10 +2032,40 @@ func (_q *UserQuery) loadRetrospectiveComments(ctx context.Context, query *Retro
 		}
 	}
 	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(retrospectivecomment.FieldUserID)
+		query.ctx.AppendFieldOnce(discussionthread.FieldUserID)
 	}
-	query.Where(predicate.RetrospectiveComment(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(user.RetrospectiveCommentsColumn), fks...))
+	query.Where(predicate.DiscussionThread(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(user.DiscussionThreadsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.UserID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "user_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *UserQuery) loadDiscussionComments(ctx context.Context, query *DiscussionCommentQuery, nodes []*User, init func(*User), assign func(*User, *DiscussionComment)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*User)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(discussioncomment.FieldUserID)
+	}
+	query.Where(predicate.DiscussionComment(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(user.DiscussionCommentsColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {

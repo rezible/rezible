@@ -37,6 +37,8 @@ func (h *eventsHandler) ListEvents(ctx context.Context, req *oapi.ListEventsRequ
 	params := rez.ListEventsParams{
 		ListParams:     req.ListParams(),
 		Kind:           req.Kind,
+		SituationID:    req.SituationId,
+		AnalysisID:     req.AnalysisId,
 		From:           req.From,
 		To:             req.To,
 		WithProjection: req.WithProjection,
@@ -47,9 +49,7 @@ func (h *eventsHandler) ListEvents(ctx context.Context, req *oapi.ListEventsRequ
 		return nil, oapi.Error(ctx, "failed to query events", eventsErr)
 	}
 
-	return &oapi.ListEventsResponse{
-		Body: oapi.ConvertPaginatedResultBody(results, oapi.EventFromEnt),
-	}, nil
+	return &oapi.ListEventsResponse{Body: oapi.ConvertPaginatedResultBody(results, oapi.EventFromEnt)}, nil
 }
 
 func (h *eventsHandler) ListEventAnnotations(ctx context.Context, req *oapi.ListEventAnnotationsRequest) (*oapi.ListEventAnnotationsResponse, error) {

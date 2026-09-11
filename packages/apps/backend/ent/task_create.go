@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
@@ -13,6 +14,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/incident"
+	"github.com/rezible/rezible/ent/systemanalysisentry"
 	"github.com/rezible/rezible/ent/task"
 	"github.com/rezible/rezible/ent/tenant"
 	"github.com/rezible/rezible/ent/ticket"
@@ -33,6 +35,34 @@ func (_c *TaskCreate) SetTenantID(v int) *TaskCreate {
 	return _c
 }
 
+// SetCreatedAt sets the "created_at" field.
+func (_c *TaskCreate) SetCreatedAt(v time.Time) *TaskCreate {
+	_c.mutation.SetCreatedAt(v)
+	return _c
+}
+
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (_c *TaskCreate) SetNillableCreatedAt(v *time.Time) *TaskCreate {
+	if v != nil {
+		_c.SetCreatedAt(*v)
+	}
+	return _c
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (_c *TaskCreate) SetUpdatedAt(v time.Time) *TaskCreate {
+	_c.mutation.SetUpdatedAt(v)
+	return _c
+}
+
+// SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
+func (_c *TaskCreate) SetNillableUpdatedAt(v *time.Time) *TaskCreate {
+	if v != nil {
+		_c.SetUpdatedAt(*v)
+	}
+	return _c
+}
+
 // SetType sets the "type" field.
 func (_c *TaskCreate) SetType(v task.Type) *TaskCreate {
 	_c.mutation.SetType(v)
@@ -42,6 +72,34 @@ func (_c *TaskCreate) SetType(v task.Type) *TaskCreate {
 // SetTitle sets the "title" field.
 func (_c *TaskCreate) SetTitle(v string) *TaskCreate {
 	_c.mutation.SetTitle(v)
+	return _c
+}
+
+// SetState sets the "state" field.
+func (_c *TaskCreate) SetState(v task.State) *TaskCreate {
+	_c.mutation.SetState(v)
+	return _c
+}
+
+// SetNillableState sets the "state" field if the given value is not nil.
+func (_c *TaskCreate) SetNillableState(v *task.State) *TaskCreate {
+	if v != nil {
+		_c.SetState(*v)
+	}
+	return _c
+}
+
+// SetDueAt sets the "due_at" field.
+func (_c *TaskCreate) SetDueAt(v time.Time) *TaskCreate {
+	_c.mutation.SetDueAt(v)
+	return _c
+}
+
+// SetNillableDueAt sets the "due_at" field if the given value is not nil.
+func (_c *TaskCreate) SetNillableDueAt(v *time.Time) *TaskCreate {
+	if v != nil {
+		_c.SetDueAt(*v)
+	}
 	return _c
 }
 
@@ -55,6 +113,20 @@ func (_c *TaskCreate) SetIncidentID(v uuid.UUID) *TaskCreate {
 func (_c *TaskCreate) SetNillableIncidentID(v *uuid.UUID) *TaskCreate {
 	if v != nil {
 		_c.SetIncidentID(*v)
+	}
+	return _c
+}
+
+// SetOriginEntryID sets the "origin_entry_id" field.
+func (_c *TaskCreate) SetOriginEntryID(v uuid.UUID) *TaskCreate {
+	_c.mutation.SetOriginEntryID(v)
+	return _c
+}
+
+// SetNillableOriginEntryID sets the "origin_entry_id" field if the given value is not nil.
+func (_c *TaskCreate) SetNillableOriginEntryID(v *uuid.UUID) *TaskCreate {
+	if v != nil {
+		_c.SetOriginEntryID(*v)
 	}
 	return _c
 }
@@ -126,6 +198,11 @@ func (_c *TaskCreate) SetIncident(v *Incident) *TaskCreate {
 	return _c.SetIncidentID(v.ID)
 }
 
+// SetOriginEntry sets the "origin_entry" edge to the SystemAnalysisEntry entity.
+func (_c *TaskCreate) SetOriginEntry(v *SystemAnalysisEntry) *TaskCreate {
+	return _c.SetOriginEntryID(v.ID)
+}
+
 // SetAssignee sets the "assignee" edge to the User entity.
 func (_c *TaskCreate) SetAssignee(v *User) *TaskCreate {
 	return _c.SetAssigneeID(v.ID)
@@ -173,6 +250,24 @@ func (_c *TaskCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (_c *TaskCreate) defaults() error {
+	if _, ok := _c.mutation.CreatedAt(); !ok {
+		if task.DefaultCreatedAt == nil {
+			return fmt.Errorf("ent: uninitialized task.DefaultCreatedAt (forgotten import ent/runtime?)")
+		}
+		v := task.DefaultCreatedAt()
+		_c.mutation.SetCreatedAt(v)
+	}
+	if _, ok := _c.mutation.UpdatedAt(); !ok {
+		if task.DefaultUpdatedAt == nil {
+			return fmt.Errorf("ent: uninitialized task.DefaultUpdatedAt (forgotten import ent/runtime?)")
+		}
+		v := task.DefaultUpdatedAt()
+		_c.mutation.SetUpdatedAt(v)
+	}
+	if _, ok := _c.mutation.State(); !ok {
+		v := task.DefaultState
+		_c.mutation.SetState(v)
+	}
 	if _, ok := _c.mutation.ID(); !ok {
 		if task.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized task.DefaultID (forgotten import ent/runtime?)")
@@ -188,6 +283,12 @@ func (_c *TaskCreate) check() error {
 	if _, ok := _c.mutation.TenantID(); !ok {
 		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "Task.tenant_id"`)}
 	}
+	if _, ok := _c.mutation.CreatedAt(); !ok {
+		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Task.created_at"`)}
+	}
+	if _, ok := _c.mutation.UpdatedAt(); !ok {
+		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "Task.updated_at"`)}
+	}
 	if _, ok := _c.mutation.GetType(); !ok {
 		return &ValidationError{Name: "type", err: errors.New(`ent: missing required field "Task.type"`)}
 	}
@@ -198,6 +299,14 @@ func (_c *TaskCreate) check() error {
 	}
 	if _, ok := _c.mutation.Title(); !ok {
 		return &ValidationError{Name: "title", err: errors.New(`ent: missing required field "Task.title"`)}
+	}
+	if _, ok := _c.mutation.State(); !ok {
+		return &ValidationError{Name: "state", err: errors.New(`ent: missing required field "Task.state"`)}
+	}
+	if v, ok := _c.mutation.State(); ok {
+		if err := task.StateValidator(v); err != nil {
+			return &ValidationError{Name: "state", err: fmt.Errorf(`ent: validator failed for field "Task.state": %w`, err)}
+		}
 	}
 	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "Task.tenant"`)}
@@ -239,6 +348,14 @@ func (_c *TaskCreate) createSpec() (*Task, *sqlgraph.CreateSpec) {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
+	if value, ok := _c.mutation.CreatedAt(); ok {
+		_spec.SetField(task.FieldCreatedAt, field.TypeTime, value)
+		_node.CreatedAt = value
+	}
+	if value, ok := _c.mutation.UpdatedAt(); ok {
+		_spec.SetField(task.FieldUpdatedAt, field.TypeTime, value)
+		_node.UpdatedAt = value
+	}
 	if value, ok := _c.mutation.GetType(); ok {
 		_spec.SetField(task.FieldType, field.TypeEnum, value)
 		_node.Type = value
@@ -246,6 +363,14 @@ func (_c *TaskCreate) createSpec() (*Task, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.Title(); ok {
 		_spec.SetField(task.FieldTitle, field.TypeString, value)
 		_node.Title = value
+	}
+	if value, ok := _c.mutation.State(); ok {
+		_spec.SetField(task.FieldState, field.TypeEnum, value)
+		_node.State = value
+	}
+	if value, ok := _c.mutation.DueAt(); ok {
+		_spec.SetField(task.FieldDueAt, field.TypeTime, value)
+		_node.DueAt = &value
 	}
 	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -298,6 +423,24 @@ func (_c *TaskCreate) createSpec() (*Task, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.IncidentID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.OriginEntryIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   task.OriginEntryTable,
+			Columns: []string{task.OriginEntryColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemanalysisentry.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.Task
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.OriginEntryID = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := _c.mutation.AssigneeIDs(); len(nodes) > 0 {
@@ -388,6 +531,30 @@ type (
 	}
 )
 
+// SetCreatedAt sets the "created_at" field.
+func (u *TaskUpsert) SetCreatedAt(v time.Time) *TaskUpsert {
+	u.Set(task.FieldCreatedAt, v)
+	return u
+}
+
+// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
+func (u *TaskUpsert) UpdateCreatedAt() *TaskUpsert {
+	u.SetExcluded(task.FieldCreatedAt)
+	return u
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *TaskUpsert) SetUpdatedAt(v time.Time) *TaskUpsert {
+	u.Set(task.FieldUpdatedAt, v)
+	return u
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *TaskUpsert) UpdateUpdatedAt() *TaskUpsert {
+	u.SetExcluded(task.FieldUpdatedAt)
+	return u
+}
+
 // SetType sets the "type" field.
 func (u *TaskUpsert) SetType(v task.Type) *TaskUpsert {
 	u.Set(task.FieldType, v)
@@ -412,6 +579,36 @@ func (u *TaskUpsert) UpdateTitle() *TaskUpsert {
 	return u
 }
 
+// SetState sets the "state" field.
+func (u *TaskUpsert) SetState(v task.State) *TaskUpsert {
+	u.Set(task.FieldState, v)
+	return u
+}
+
+// UpdateState sets the "state" field to the value that was provided on create.
+func (u *TaskUpsert) UpdateState() *TaskUpsert {
+	u.SetExcluded(task.FieldState)
+	return u
+}
+
+// SetDueAt sets the "due_at" field.
+func (u *TaskUpsert) SetDueAt(v time.Time) *TaskUpsert {
+	u.Set(task.FieldDueAt, v)
+	return u
+}
+
+// UpdateDueAt sets the "due_at" field to the value that was provided on create.
+func (u *TaskUpsert) UpdateDueAt() *TaskUpsert {
+	u.SetExcluded(task.FieldDueAt)
+	return u
+}
+
+// ClearDueAt clears the value of the "due_at" field.
+func (u *TaskUpsert) ClearDueAt() *TaskUpsert {
+	u.SetNull(task.FieldDueAt)
+	return u
+}
+
 // SetIncidentID sets the "incident_id" field.
 func (u *TaskUpsert) SetIncidentID(v uuid.UUID) *TaskUpsert {
 	u.Set(task.FieldIncidentID, v)
@@ -427,6 +624,24 @@ func (u *TaskUpsert) UpdateIncidentID() *TaskUpsert {
 // ClearIncidentID clears the value of the "incident_id" field.
 func (u *TaskUpsert) ClearIncidentID() *TaskUpsert {
 	u.SetNull(task.FieldIncidentID)
+	return u
+}
+
+// SetOriginEntryID sets the "origin_entry_id" field.
+func (u *TaskUpsert) SetOriginEntryID(v uuid.UUID) *TaskUpsert {
+	u.Set(task.FieldOriginEntryID, v)
+	return u
+}
+
+// UpdateOriginEntryID sets the "origin_entry_id" field to the value that was provided on create.
+func (u *TaskUpsert) UpdateOriginEntryID() *TaskUpsert {
+	u.SetExcluded(task.FieldOriginEntryID)
+	return u
+}
+
+// ClearOriginEntryID clears the value of the "origin_entry_id" field.
+func (u *TaskUpsert) ClearOriginEntryID() *TaskUpsert {
+	u.SetNull(task.FieldOriginEntryID)
 	return u
 }
 
@@ -517,6 +732,34 @@ func (u *TaskUpsertOne) Update(set func(*TaskUpsert)) *TaskUpsertOne {
 	return u
 }
 
+// SetCreatedAt sets the "created_at" field.
+func (u *TaskUpsertOne) SetCreatedAt(v time.Time) *TaskUpsertOne {
+	return u.Update(func(s *TaskUpsert) {
+		s.SetCreatedAt(v)
+	})
+}
+
+// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
+func (u *TaskUpsertOne) UpdateCreatedAt() *TaskUpsertOne {
+	return u.Update(func(s *TaskUpsert) {
+		s.UpdateCreatedAt()
+	})
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *TaskUpsertOne) SetUpdatedAt(v time.Time) *TaskUpsertOne {
+	return u.Update(func(s *TaskUpsert) {
+		s.SetUpdatedAt(v)
+	})
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *TaskUpsertOne) UpdateUpdatedAt() *TaskUpsertOne {
+	return u.Update(func(s *TaskUpsert) {
+		s.UpdateUpdatedAt()
+	})
+}
+
 // SetType sets the "type" field.
 func (u *TaskUpsertOne) SetType(v task.Type) *TaskUpsertOne {
 	return u.Update(func(s *TaskUpsert) {
@@ -545,6 +788,41 @@ func (u *TaskUpsertOne) UpdateTitle() *TaskUpsertOne {
 	})
 }
 
+// SetState sets the "state" field.
+func (u *TaskUpsertOne) SetState(v task.State) *TaskUpsertOne {
+	return u.Update(func(s *TaskUpsert) {
+		s.SetState(v)
+	})
+}
+
+// UpdateState sets the "state" field to the value that was provided on create.
+func (u *TaskUpsertOne) UpdateState() *TaskUpsertOne {
+	return u.Update(func(s *TaskUpsert) {
+		s.UpdateState()
+	})
+}
+
+// SetDueAt sets the "due_at" field.
+func (u *TaskUpsertOne) SetDueAt(v time.Time) *TaskUpsertOne {
+	return u.Update(func(s *TaskUpsert) {
+		s.SetDueAt(v)
+	})
+}
+
+// UpdateDueAt sets the "due_at" field to the value that was provided on create.
+func (u *TaskUpsertOne) UpdateDueAt() *TaskUpsertOne {
+	return u.Update(func(s *TaskUpsert) {
+		s.UpdateDueAt()
+	})
+}
+
+// ClearDueAt clears the value of the "due_at" field.
+func (u *TaskUpsertOne) ClearDueAt() *TaskUpsertOne {
+	return u.Update(func(s *TaskUpsert) {
+		s.ClearDueAt()
+	})
+}
+
 // SetIncidentID sets the "incident_id" field.
 func (u *TaskUpsertOne) SetIncidentID(v uuid.UUID) *TaskUpsertOne {
 	return u.Update(func(s *TaskUpsert) {
@@ -563,6 +841,27 @@ func (u *TaskUpsertOne) UpdateIncidentID() *TaskUpsertOne {
 func (u *TaskUpsertOne) ClearIncidentID() *TaskUpsertOne {
 	return u.Update(func(s *TaskUpsert) {
 		s.ClearIncidentID()
+	})
+}
+
+// SetOriginEntryID sets the "origin_entry_id" field.
+func (u *TaskUpsertOne) SetOriginEntryID(v uuid.UUID) *TaskUpsertOne {
+	return u.Update(func(s *TaskUpsert) {
+		s.SetOriginEntryID(v)
+	})
+}
+
+// UpdateOriginEntryID sets the "origin_entry_id" field to the value that was provided on create.
+func (u *TaskUpsertOne) UpdateOriginEntryID() *TaskUpsertOne {
+	return u.Update(func(s *TaskUpsert) {
+		s.UpdateOriginEntryID()
+	})
+}
+
+// ClearOriginEntryID clears the value of the "origin_entry_id" field.
+func (u *TaskUpsertOne) ClearOriginEntryID() *TaskUpsertOne {
+	return u.Update(func(s *TaskUpsert) {
+		s.ClearOriginEntryID()
 	})
 }
 
@@ -826,6 +1125,34 @@ func (u *TaskUpsertBulk) Update(set func(*TaskUpsert)) *TaskUpsertBulk {
 	return u
 }
 
+// SetCreatedAt sets the "created_at" field.
+func (u *TaskUpsertBulk) SetCreatedAt(v time.Time) *TaskUpsertBulk {
+	return u.Update(func(s *TaskUpsert) {
+		s.SetCreatedAt(v)
+	})
+}
+
+// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
+func (u *TaskUpsertBulk) UpdateCreatedAt() *TaskUpsertBulk {
+	return u.Update(func(s *TaskUpsert) {
+		s.UpdateCreatedAt()
+	})
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *TaskUpsertBulk) SetUpdatedAt(v time.Time) *TaskUpsertBulk {
+	return u.Update(func(s *TaskUpsert) {
+		s.SetUpdatedAt(v)
+	})
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *TaskUpsertBulk) UpdateUpdatedAt() *TaskUpsertBulk {
+	return u.Update(func(s *TaskUpsert) {
+		s.UpdateUpdatedAt()
+	})
+}
+
 // SetType sets the "type" field.
 func (u *TaskUpsertBulk) SetType(v task.Type) *TaskUpsertBulk {
 	return u.Update(func(s *TaskUpsert) {
@@ -854,6 +1181,41 @@ func (u *TaskUpsertBulk) UpdateTitle() *TaskUpsertBulk {
 	})
 }
 
+// SetState sets the "state" field.
+func (u *TaskUpsertBulk) SetState(v task.State) *TaskUpsertBulk {
+	return u.Update(func(s *TaskUpsert) {
+		s.SetState(v)
+	})
+}
+
+// UpdateState sets the "state" field to the value that was provided on create.
+func (u *TaskUpsertBulk) UpdateState() *TaskUpsertBulk {
+	return u.Update(func(s *TaskUpsert) {
+		s.UpdateState()
+	})
+}
+
+// SetDueAt sets the "due_at" field.
+func (u *TaskUpsertBulk) SetDueAt(v time.Time) *TaskUpsertBulk {
+	return u.Update(func(s *TaskUpsert) {
+		s.SetDueAt(v)
+	})
+}
+
+// UpdateDueAt sets the "due_at" field to the value that was provided on create.
+func (u *TaskUpsertBulk) UpdateDueAt() *TaskUpsertBulk {
+	return u.Update(func(s *TaskUpsert) {
+		s.UpdateDueAt()
+	})
+}
+
+// ClearDueAt clears the value of the "due_at" field.
+func (u *TaskUpsertBulk) ClearDueAt() *TaskUpsertBulk {
+	return u.Update(func(s *TaskUpsert) {
+		s.ClearDueAt()
+	})
+}
+
 // SetIncidentID sets the "incident_id" field.
 func (u *TaskUpsertBulk) SetIncidentID(v uuid.UUID) *TaskUpsertBulk {
 	return u.Update(func(s *TaskUpsert) {
@@ -872,6 +1234,27 @@ func (u *TaskUpsertBulk) UpdateIncidentID() *TaskUpsertBulk {
 func (u *TaskUpsertBulk) ClearIncidentID() *TaskUpsertBulk {
 	return u.Update(func(s *TaskUpsert) {
 		s.ClearIncidentID()
+	})
+}
+
+// SetOriginEntryID sets the "origin_entry_id" field.
+func (u *TaskUpsertBulk) SetOriginEntryID(v uuid.UUID) *TaskUpsertBulk {
+	return u.Update(func(s *TaskUpsert) {
+		s.SetOriginEntryID(v)
+	})
+}
+
+// UpdateOriginEntryID sets the "origin_entry_id" field to the value that was provided on create.
+func (u *TaskUpsertBulk) UpdateOriginEntryID() *TaskUpsertBulk {
+	return u.Update(func(s *TaskUpsert) {
+		s.UpdateOriginEntryID()
+	})
+}
+
+// ClearOriginEntryID clears the value of the "origin_entry_id" field.
+func (u *TaskUpsertBulk) ClearOriginEntryID() *TaskUpsertBulk {
+	return u.Update(func(s *TaskUpsert) {
+		s.ClearOriginEntryID()
 	})
 }
 

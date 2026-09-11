@@ -14,8 +14,10 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/review"
 	"github.com/rezible/rezible/ent/systemanalysisentry"
 	"github.com/rezible/rezible/ent/systemanalysisentrysubject"
+	"github.com/rezible/rezible/ent/task"
 )
 
 // SystemAnalysisEntryUpdate is the builder for updating SystemAnalysisEntry entities.
@@ -168,6 +170,36 @@ func (_u *SystemAnalysisEntryUpdate) AddSubjects(v ...*SystemAnalysisEntrySubjec
 	return _u.AddSubjectIDs(ids...)
 }
 
+// AddOriginTaskIDs adds the "origin_tasks" edge to the Task entity by IDs.
+func (_u *SystemAnalysisEntryUpdate) AddOriginTaskIDs(ids ...uuid.UUID) *SystemAnalysisEntryUpdate {
+	_u.mutation.AddOriginTaskIDs(ids...)
+	return _u
+}
+
+// AddOriginTasks adds the "origin_tasks" edges to the Task entity.
+func (_u *SystemAnalysisEntryUpdate) AddOriginTasks(v ...*Task) *SystemAnalysisEntryUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddOriginTaskIDs(ids...)
+}
+
+// AddReviewIDs adds the "reviews" edge to the Review entity by IDs.
+func (_u *SystemAnalysisEntryUpdate) AddReviewIDs(ids ...uuid.UUID) *SystemAnalysisEntryUpdate {
+	_u.mutation.AddReviewIDs(ids...)
+	return _u
+}
+
+// AddReviews adds the "reviews" edges to the Review entity.
+func (_u *SystemAnalysisEntryUpdate) AddReviews(v ...*Review) *SystemAnalysisEntryUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddReviewIDs(ids...)
+}
+
 // Mutation returns the SystemAnalysisEntryMutation object of the builder.
 func (_u *SystemAnalysisEntryUpdate) Mutation() *SystemAnalysisEntryMutation {
 	return _u.mutation
@@ -192,6 +224,48 @@ func (_u *SystemAnalysisEntryUpdate) RemoveSubjects(v ...*SystemAnalysisEntrySub
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveSubjectIDs(ids...)
+}
+
+// ClearOriginTasks clears all "origin_tasks" edges to the Task entity.
+func (_u *SystemAnalysisEntryUpdate) ClearOriginTasks() *SystemAnalysisEntryUpdate {
+	_u.mutation.ClearOriginTasks()
+	return _u
+}
+
+// RemoveOriginTaskIDs removes the "origin_tasks" edge to Task entities by IDs.
+func (_u *SystemAnalysisEntryUpdate) RemoveOriginTaskIDs(ids ...uuid.UUID) *SystemAnalysisEntryUpdate {
+	_u.mutation.RemoveOriginTaskIDs(ids...)
+	return _u
+}
+
+// RemoveOriginTasks removes "origin_tasks" edges to Task entities.
+func (_u *SystemAnalysisEntryUpdate) RemoveOriginTasks(v ...*Task) *SystemAnalysisEntryUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveOriginTaskIDs(ids...)
+}
+
+// ClearReviews clears all "reviews" edges to the Review entity.
+func (_u *SystemAnalysisEntryUpdate) ClearReviews() *SystemAnalysisEntryUpdate {
+	_u.mutation.ClearReviews()
+	return _u
+}
+
+// RemoveReviewIDs removes the "reviews" edge to Review entities by IDs.
+func (_u *SystemAnalysisEntryUpdate) RemoveReviewIDs(ids ...uuid.UUID) *SystemAnalysisEntryUpdate {
+	_u.mutation.RemoveReviewIDs(ids...)
+	return _u
+}
+
+// RemoveReviews removes "reviews" edges to Review entities.
+func (_u *SystemAnalysisEntryUpdate) RemoveReviews(v ...*Review) *SystemAnalysisEntryUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveReviewIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -362,6 +436,102 @@ func (_u *SystemAnalysisEntryUpdate) sqlSave(ctx context.Context) (_node int, er
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.OriginTasksCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   systemanalysisentry.OriginTasksTable,
+			Columns: []string{systemanalysisentry.OriginTasksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.Task
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedOriginTasksIDs(); len(nodes) > 0 && !_u.mutation.OriginTasksCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   systemanalysisentry.OriginTasksTable,
+			Columns: []string{systemanalysisentry.OriginTasksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.Task
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.OriginTasksIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   systemanalysisentry.OriginTasksTable,
+			Columns: []string{systemanalysisentry.OriginTasksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.Task
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.ReviewsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   systemanalysisentry.ReviewsTable,
+			Columns: []string{systemanalysisentry.ReviewsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(review.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.Review
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedReviewsIDs(); len(nodes) > 0 && !_u.mutation.ReviewsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   systemanalysisentry.ReviewsTable,
+			Columns: []string{systemanalysisentry.ReviewsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(review.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.Review
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ReviewsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   systemanalysisentry.ReviewsTable,
+			Columns: []string{systemanalysisentry.ReviewsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(review.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.Review
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	_spec.Node.Schema = _u.schemaConfig.SystemAnalysisEntry
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
 	_spec.AddModifiers(_u.modifiers...)
@@ -522,6 +692,36 @@ func (_u *SystemAnalysisEntryUpdateOne) AddSubjects(v ...*SystemAnalysisEntrySub
 	return _u.AddSubjectIDs(ids...)
 }
 
+// AddOriginTaskIDs adds the "origin_tasks" edge to the Task entity by IDs.
+func (_u *SystemAnalysisEntryUpdateOne) AddOriginTaskIDs(ids ...uuid.UUID) *SystemAnalysisEntryUpdateOne {
+	_u.mutation.AddOriginTaskIDs(ids...)
+	return _u
+}
+
+// AddOriginTasks adds the "origin_tasks" edges to the Task entity.
+func (_u *SystemAnalysisEntryUpdateOne) AddOriginTasks(v ...*Task) *SystemAnalysisEntryUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddOriginTaskIDs(ids...)
+}
+
+// AddReviewIDs adds the "reviews" edge to the Review entity by IDs.
+func (_u *SystemAnalysisEntryUpdateOne) AddReviewIDs(ids ...uuid.UUID) *SystemAnalysisEntryUpdateOne {
+	_u.mutation.AddReviewIDs(ids...)
+	return _u
+}
+
+// AddReviews adds the "reviews" edges to the Review entity.
+func (_u *SystemAnalysisEntryUpdateOne) AddReviews(v ...*Review) *SystemAnalysisEntryUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddReviewIDs(ids...)
+}
+
 // Mutation returns the SystemAnalysisEntryMutation object of the builder.
 func (_u *SystemAnalysisEntryUpdateOne) Mutation() *SystemAnalysisEntryMutation {
 	return _u.mutation
@@ -546,6 +746,48 @@ func (_u *SystemAnalysisEntryUpdateOne) RemoveSubjects(v ...*SystemAnalysisEntry
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveSubjectIDs(ids...)
+}
+
+// ClearOriginTasks clears all "origin_tasks" edges to the Task entity.
+func (_u *SystemAnalysisEntryUpdateOne) ClearOriginTasks() *SystemAnalysisEntryUpdateOne {
+	_u.mutation.ClearOriginTasks()
+	return _u
+}
+
+// RemoveOriginTaskIDs removes the "origin_tasks" edge to Task entities by IDs.
+func (_u *SystemAnalysisEntryUpdateOne) RemoveOriginTaskIDs(ids ...uuid.UUID) *SystemAnalysisEntryUpdateOne {
+	_u.mutation.RemoveOriginTaskIDs(ids...)
+	return _u
+}
+
+// RemoveOriginTasks removes "origin_tasks" edges to Task entities.
+func (_u *SystemAnalysisEntryUpdateOne) RemoveOriginTasks(v ...*Task) *SystemAnalysisEntryUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveOriginTaskIDs(ids...)
+}
+
+// ClearReviews clears all "reviews" edges to the Review entity.
+func (_u *SystemAnalysisEntryUpdateOne) ClearReviews() *SystemAnalysisEntryUpdateOne {
+	_u.mutation.ClearReviews()
+	return _u
+}
+
+// RemoveReviewIDs removes the "reviews" edge to Review entities by IDs.
+func (_u *SystemAnalysisEntryUpdateOne) RemoveReviewIDs(ids ...uuid.UUID) *SystemAnalysisEntryUpdateOne {
+	_u.mutation.RemoveReviewIDs(ids...)
+	return _u
+}
+
+// RemoveReviews removes "reviews" edges to Review entities.
+func (_u *SystemAnalysisEntryUpdateOne) RemoveReviews(v ...*Review) *SystemAnalysisEntryUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveReviewIDs(ids...)
 }
 
 // Where appends a list predicates to the SystemAnalysisEntryUpdate builder.
@@ -741,6 +983,102 @@ func (_u *SystemAnalysisEntryUpdateOne) sqlSave(ctx context.Context) (_node *Sys
 			},
 		}
 		edge.Schema = _u.schemaConfig.SystemAnalysisEntrySubject
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.OriginTasksCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   systemanalysisentry.OriginTasksTable,
+			Columns: []string{systemanalysisentry.OriginTasksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.Task
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedOriginTasksIDs(); len(nodes) > 0 && !_u.mutation.OriginTasksCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   systemanalysisentry.OriginTasksTable,
+			Columns: []string{systemanalysisentry.OriginTasksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.Task
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.OriginTasksIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   systemanalysisentry.OriginTasksTable,
+			Columns: []string{systemanalysisentry.OriginTasksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.Task
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.ReviewsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   systemanalysisentry.ReviewsTable,
+			Columns: []string{systemanalysisentry.ReviewsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(review.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.Review
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedReviewsIDs(); len(nodes) > 0 && !_u.mutation.ReviewsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   systemanalysisentry.ReviewsTable,
+			Columns: []string{systemanalysisentry.ReviewsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(review.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.Review
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ReviewsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   systemanalysisentry.ReviewsTable,
+			Columns: []string{systemanalysisentry.ReviewsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(review.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.Review
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

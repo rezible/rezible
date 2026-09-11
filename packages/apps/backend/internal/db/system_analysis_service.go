@@ -318,6 +318,7 @@ func (s *SystemAnalysisService) ListSystemAnalysisEntries(ctx context.Context, p
 	query := s.db.Client(ctx).SystemAnalysisEntry.Query().
 		Where(params.Predicates...).
 		Order(ent.Asc(sae.FieldOccurredAt), ent.Asc(sae.FieldSequence), ent.Asc(sae.FieldID)).
+		WithReviews().
 		WithSubjects(s.systemAnalysisEntrySubjectsQuery)
 	return ent.DoListQuery[ent.SystemAnalysisEntry, *ent.SystemAnalysisEntryQuery](ctx, query, params.ListParams)
 }
@@ -403,6 +404,7 @@ func (s *SystemAnalysisService) SetSystemAnalysisEntry(
 func (s *SystemAnalysisService) GetSystemAnalysisEntry(ctx context.Context, id uuid.UUID) (*ent.SystemAnalysisEntry, error) {
 	return s.db.Client(ctx).SystemAnalysisEntry.Query().
 		Where(sae.ID(id)).
+		WithReviews().
 		WithSubjects().
 		Only(ctx)
 }
@@ -410,6 +412,8 @@ func (s *SystemAnalysisService) GetSystemAnalysisEntry(ctx context.Context, id u
 func (s *SystemAnalysisService) LookupSystemAnalysisEntry(ctx context.Context, pred predicate.SystemAnalysisEntry) (*ent.SystemAnalysisEntry, error) {
 	return s.db.Client(ctx).SystemAnalysisEntry.Query().
 		Where(pred).
+		WithReviews().
+		WithSubjects().
 		Only(ctx)
 }
 
@@ -449,6 +453,9 @@ func (s *SystemAnalysisService) SetSystemAnalysisEntrySubject(ctx context.Contex
 		numTargetsChanged++
 	}
 	if _, evIdSet := mut.KnowledgeEvidenceID(); evIdSet || mut.KnowledgeEvidenceCleared() {
+		numTargetsChanged++
+	}
+	if _, normalizedEventIDSet := mut.NormalizedEventID(); normalizedEventIDSet || mut.NormalizedEventCleared() {
 		numTargetsChanged++
 	}
 	if numTargetsChanged != allowedTargets {

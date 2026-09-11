@@ -75,12 +75,14 @@ type UserEdges struct {
 	AssignedTasks []*Task `json:"assigned_tasks,omitempty"`
 	// CreatedTasks holds the value of the created_tasks edge.
 	CreatedTasks []*Task `json:"created_tasks,omitempty"`
-	// RetrospectiveReviewRequests holds the value of the retrospective_review_requests edge.
-	RetrospectiveReviewRequests []*RetrospectiveReview `json:"retrospective_review_requests,omitempty"`
-	// RetrospectiveReviewResponses holds the value of the retrospective_review_responses edge.
-	RetrospectiveReviewResponses []*RetrospectiveReview `json:"retrospective_review_responses,omitempty"`
-	// RetrospectiveComments holds the value of the retrospective_comments edge.
-	RetrospectiveComments []*RetrospectiveComment `json:"retrospective_comments,omitempty"`
+	// ReviewRequests holds the value of the review_requests edge.
+	ReviewRequests []*Review `json:"review_requests,omitempty"`
+	// ReviewResponses holds the value of the review_responses edge.
+	ReviewResponses []*Review `json:"review_responses,omitempty"`
+	// DiscussionThreads holds the value of the discussion_threads edge.
+	DiscussionThreads []*DiscussionThread `json:"discussion_threads,omitempty"`
+	// DiscussionComments holds the value of the discussion_comments edge.
+	DiscussionComments []*DiscussionComment `json:"discussion_comments,omitempty"`
 	// DocumentAccesses holds the value of the document_accesses edge.
 	DocumentAccesses []*DocumentAccess `json:"document_accesses,omitempty"`
 	// TeamMemberships holds the value of the team_memberships edge.
@@ -89,7 +91,7 @@ type UserEdges struct {
 	RoleAssignments []*IncidentRoleAssignment `json:"role_assignments,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [21]bool
+	loadedTypes [22]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -233,37 +235,46 @@ func (e UserEdges) CreatedTasksOrErr() ([]*Task, error) {
 	return nil, &NotLoadedError{edge: "created_tasks"}
 }
 
-// RetrospectiveReviewRequestsOrErr returns the RetrospectiveReviewRequests value or an error if the edge
+// ReviewRequestsOrErr returns the ReviewRequests value or an error if the edge
 // was not loaded in eager-loading.
-func (e UserEdges) RetrospectiveReviewRequestsOrErr() ([]*RetrospectiveReview, error) {
+func (e UserEdges) ReviewRequestsOrErr() ([]*Review, error) {
 	if e.loadedTypes[15] {
-		return e.RetrospectiveReviewRequests, nil
+		return e.ReviewRequests, nil
 	}
-	return nil, &NotLoadedError{edge: "retrospective_review_requests"}
+	return nil, &NotLoadedError{edge: "review_requests"}
 }
 
-// RetrospectiveReviewResponsesOrErr returns the RetrospectiveReviewResponses value or an error if the edge
+// ReviewResponsesOrErr returns the ReviewResponses value or an error if the edge
 // was not loaded in eager-loading.
-func (e UserEdges) RetrospectiveReviewResponsesOrErr() ([]*RetrospectiveReview, error) {
+func (e UserEdges) ReviewResponsesOrErr() ([]*Review, error) {
 	if e.loadedTypes[16] {
-		return e.RetrospectiveReviewResponses, nil
+		return e.ReviewResponses, nil
 	}
-	return nil, &NotLoadedError{edge: "retrospective_review_responses"}
+	return nil, &NotLoadedError{edge: "review_responses"}
 }
 
-// RetrospectiveCommentsOrErr returns the RetrospectiveComments value or an error if the edge
+// DiscussionThreadsOrErr returns the DiscussionThreads value or an error if the edge
 // was not loaded in eager-loading.
-func (e UserEdges) RetrospectiveCommentsOrErr() ([]*RetrospectiveComment, error) {
+func (e UserEdges) DiscussionThreadsOrErr() ([]*DiscussionThread, error) {
 	if e.loadedTypes[17] {
-		return e.RetrospectiveComments, nil
+		return e.DiscussionThreads, nil
 	}
-	return nil, &NotLoadedError{edge: "retrospective_comments"}
+	return nil, &NotLoadedError{edge: "discussion_threads"}
+}
+
+// DiscussionCommentsOrErr returns the DiscussionComments value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) DiscussionCommentsOrErr() ([]*DiscussionComment, error) {
+	if e.loadedTypes[18] {
+		return e.DiscussionComments, nil
+	}
+	return nil, &NotLoadedError{edge: "discussion_comments"}
 }
 
 // DocumentAccessesOrErr returns the DocumentAccesses value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) DocumentAccessesOrErr() ([]*DocumentAccess, error) {
-	if e.loadedTypes[18] {
+	if e.loadedTypes[19] {
 		return e.DocumentAccesses, nil
 	}
 	return nil, &NotLoadedError{edge: "document_accesses"}
@@ -272,7 +283,7 @@ func (e UserEdges) DocumentAccessesOrErr() ([]*DocumentAccess, error) {
 // TeamMembershipsOrErr returns the TeamMemberships value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) TeamMembershipsOrErr() ([]*TeamMembership, error) {
-	if e.loadedTypes[19] {
+	if e.loadedTypes[20] {
 		return e.TeamMemberships, nil
 	}
 	return nil, &NotLoadedError{edge: "team_memberships"}
@@ -281,7 +292,7 @@ func (e UserEdges) TeamMembershipsOrErr() ([]*TeamMembership, error) {
 // RoleAssignmentsOrErr returns the RoleAssignments value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) RoleAssignmentsOrErr() ([]*IncidentRoleAssignment, error) {
-	if e.loadedTypes[20] {
+	if e.loadedTypes[21] {
 		return e.RoleAssignments, nil
 	}
 	return nil, &NotLoadedError{edge: "role_assignments"}
@@ -462,19 +473,24 @@ func (_m *User) QueryCreatedTasks() *TaskQuery {
 	return NewUserClient(_m.config).QueryCreatedTasks(_m)
 }
 
-// QueryRetrospectiveReviewRequests queries the "retrospective_review_requests" edge of the User entity.
-func (_m *User) QueryRetrospectiveReviewRequests() *RetrospectiveReviewQuery {
-	return NewUserClient(_m.config).QueryRetrospectiveReviewRequests(_m)
+// QueryReviewRequests queries the "review_requests" edge of the User entity.
+func (_m *User) QueryReviewRequests() *ReviewQuery {
+	return NewUserClient(_m.config).QueryReviewRequests(_m)
 }
 
-// QueryRetrospectiveReviewResponses queries the "retrospective_review_responses" edge of the User entity.
-func (_m *User) QueryRetrospectiveReviewResponses() *RetrospectiveReviewQuery {
-	return NewUserClient(_m.config).QueryRetrospectiveReviewResponses(_m)
+// QueryReviewResponses queries the "review_responses" edge of the User entity.
+func (_m *User) QueryReviewResponses() *ReviewQuery {
+	return NewUserClient(_m.config).QueryReviewResponses(_m)
 }
 
-// QueryRetrospectiveComments queries the "retrospective_comments" edge of the User entity.
-func (_m *User) QueryRetrospectiveComments() *RetrospectiveCommentQuery {
-	return NewUserClient(_m.config).QueryRetrospectiveComments(_m)
+// QueryDiscussionThreads queries the "discussion_threads" edge of the User entity.
+func (_m *User) QueryDiscussionThreads() *DiscussionThreadQuery {
+	return NewUserClient(_m.config).QueryDiscussionThreads(_m)
+}
+
+// QueryDiscussionComments queries the "discussion_comments" edge of the User entity.
+func (_m *User) QueryDiscussionComments() *DiscussionCommentQuery {
+	return NewUserClient(_m.config).QueryDiscussionComments(_m)
 }
 
 // QueryDocumentAccesses queries the "document_accesses" edge of the User entity.

@@ -45,6 +45,10 @@ const (
 	EdgeAnalysis = "analysis"
 	// EdgeSubjects holds the string denoting the subjects edge name in mutations.
 	EdgeSubjects = "subjects"
+	// EdgeOriginTasks holds the string denoting the origin_tasks edge name in mutations.
+	EdgeOriginTasks = "origin_tasks"
+	// EdgeReviews holds the string denoting the reviews edge name in mutations.
+	EdgeReviews = "reviews"
 	// Table holds the table name of the systemanalysisentry in the database.
 	Table = "system_analysis_entries"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -68,6 +72,20 @@ const (
 	SubjectsInverseTable = "system_analysis_entry_subjects"
 	// SubjectsColumn is the table column denoting the subjects relation/edge.
 	SubjectsColumn = "entry_id"
+	// OriginTasksTable is the table that holds the origin_tasks relation/edge.
+	OriginTasksTable = "tasks"
+	// OriginTasksInverseTable is the table name for the Task entity.
+	// It exists in this package in order to avoid circular dependency with the "task" package.
+	OriginTasksInverseTable = "tasks"
+	// OriginTasksColumn is the table column denoting the origin_tasks relation/edge.
+	OriginTasksColumn = "origin_entry_id"
+	// ReviewsTable is the table that holds the reviews relation/edge.
+	ReviewsTable = "reviews"
+	// ReviewsInverseTable is the table name for the Review entity.
+	// It exists in this package in order to avoid circular dependency with the "review" package.
+	ReviewsInverseTable = "reviews"
+	// ReviewsColumn is the table column denoting the reviews relation/edge.
+	ReviewsColumn = "analysis_entry_id"
 )
 
 // Columns holds all SQL columns for systemanalysisentry fields.
@@ -230,6 +248,34 @@ func BySubjects(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newSubjectsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByOriginTasksCount orders the results by origin_tasks count.
+func ByOriginTasksCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newOriginTasksStep(), opts...)
+	}
+}
+
+// ByOriginTasks orders the results by origin_tasks terms.
+func ByOriginTasks(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newOriginTasksStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByReviewsCount orders the results by reviews count.
+func ByReviewsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newReviewsStep(), opts...)
+	}
+}
+
+// ByReviews orders the results by reviews terms.
+func ByReviews(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newReviewsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newTenantStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -249,5 +295,19 @@ func newSubjectsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(SubjectsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, true, SubjectsTable, SubjectsColumn),
+	)
+}
+func newOriginTasksStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(OriginTasksInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, OriginTasksTable, OriginTasksColumn),
+	)
+}
+func newReviewsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ReviewsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, ReviewsTable, ReviewsColumn),
 	)
 }

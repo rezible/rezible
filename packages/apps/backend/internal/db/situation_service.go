@@ -16,6 +16,7 @@ import (
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/situation"
 	si "github.com/rezible/rezible/ent/situationinvestigation"
+	sog "github.com/rezible/rezible/ent/situationobservationgroup"
 	"github.com/rezible/rezible/pkg/messages"
 	"github.com/rezible/rezible/pkg/projections"
 )
@@ -50,7 +51,11 @@ func (s *SituationService) ListSituations(ctx context.Context, params rez.ListSi
 	query := s.db.Client(ctx).Situation.Query().
 		WithKnowledgeEntity().
 		WithAlertEpisodes().
-		WithInvestigations().
+		WithInvestigations(func(q *ent.SituationInvestigationQuery) { q.WithAgentSession() }).
+		WithObservationGroups(func(q *ent.SituationObservationGroupQuery) {
+			q.WithEvents().Order(sog.ByID())
+		}).
+		WithIncidents().
 		Order(situation.ByOpenedAt(params.GetOrder()), situation.ByID(params.GetOrder()))
 	if search := strings.TrimSpace(params.Search); search != "" {
 		query = query.Where(situation.TitleContainsFold(search))
@@ -65,14 +70,18 @@ func (s *SituationService) ListSituations(ctx context.Context, params rez.ListSi
 }
 
 func (s *SituationService) GetSituation(ctx context.Context, id uuid.UUID) (*ent.Situation, error) {
-	query := s.db.Client(ctx).Situation.Query().
+	return s.db.Client(ctx).Situation.Query().
 		Where(situation.ID(id)).
 		WithKnowledgeEntity().
 		WithAlertEpisodes(func(q *ent.AlertEpisodeQuery) {
 			q.WithAlertDefinition().Order(ale.ByStartedAt(), ale.ByID())
 		}).
-		WithInvestigations()
-	return query.Only(ctx)
+		WithInvestigations(func(q *ent.SituationInvestigationQuery) { q.WithAgentSession() }).
+		WithObservationGroups(func(q *ent.SituationObservationGroupQuery) {
+			q.WithEvents().Order(sog.ByID())
+		}).
+		WithIncidents().
+		Only(ctx)
 }
 
 func (s *SituationService) CreateSituation(ctx context.Context, params rez.CreateSituationParams) (*ent.Situation, error) {

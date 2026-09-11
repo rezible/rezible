@@ -363,6 +363,54 @@ func (f AlertMetricsQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) e
 	return Denyf("ent/privacy: unexpected query type %T, expect *ent.AlertMetricsQuery", q)
 }
 
+// The DiscussionCommentQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type DiscussionCommentQueryRuleFunc func(context.Context, *ent.DiscussionCommentQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f DiscussionCommentQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.DiscussionCommentQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.DiscussionCommentQuery", q)
+}
+
+// The DiscussionCommentMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type DiscussionCommentMutationRuleFunc func(context.Context, *ent.DiscussionCommentMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f DiscussionCommentMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.DiscussionCommentMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.DiscussionCommentMutation", m)
+}
+
+// The DiscussionThreadQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type DiscussionThreadQueryRuleFunc func(context.Context, *ent.DiscussionThreadQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f DiscussionThreadQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.DiscussionThreadQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.DiscussionThreadQuery", q)
+}
+
+// The DiscussionThreadMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type DiscussionThreadMutationRuleFunc func(context.Context, *ent.DiscussionThreadMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f DiscussionThreadMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.DiscussionThreadMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.DiscussionThreadMutation", m)
+}
+
 // The DocumentQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
 type DocumentQueryRuleFunc func(context.Context, *ent.DocumentQuery) error
@@ -1443,52 +1491,28 @@ func (f RetrospectiveMutationRuleFunc) EvalMutation(ctx context.Context, m ent.M
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.RetrospectiveMutation", m)
 }
 
-// The RetrospectiveCommentQueryRuleFunc type is an adapter to allow the use of ordinary
+// The ReviewQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
-type RetrospectiveCommentQueryRuleFunc func(context.Context, *ent.RetrospectiveCommentQuery) error
+type ReviewQueryRuleFunc func(context.Context, *ent.ReviewQuery) error
 
 // EvalQuery return f(ctx, q).
-func (f RetrospectiveCommentQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.RetrospectiveCommentQuery); ok {
+func (f ReviewQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.ReviewQuery); ok {
 		return f(ctx, q)
 	}
-	return Denyf("ent/privacy: unexpected query type %T, expect *ent.RetrospectiveCommentQuery", q)
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.ReviewQuery", q)
 }
 
-// The RetrospectiveCommentMutationRuleFunc type is an adapter to allow the use of ordinary
+// The ReviewMutationRuleFunc type is an adapter to allow the use of ordinary
 // functions as a mutation rule.
-type RetrospectiveCommentMutationRuleFunc func(context.Context, *ent.RetrospectiveCommentMutation) error
+type ReviewMutationRuleFunc func(context.Context, *ent.ReviewMutation) error
 
 // EvalMutation calls f(ctx, m).
-func (f RetrospectiveCommentMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
-	if m, ok := m.(*ent.RetrospectiveCommentMutation); ok {
+func (f ReviewMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.ReviewMutation); ok {
 		return f(ctx, m)
 	}
-	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.RetrospectiveCommentMutation", m)
-}
-
-// The RetrospectiveReviewQueryRuleFunc type is an adapter to allow the use of ordinary
-// functions as a query rule.
-type RetrospectiveReviewQueryRuleFunc func(context.Context, *ent.RetrospectiveReviewQuery) error
-
-// EvalQuery return f(ctx, q).
-func (f RetrospectiveReviewQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.RetrospectiveReviewQuery); ok {
-		return f(ctx, q)
-	}
-	return Denyf("ent/privacy: unexpected query type %T, expect *ent.RetrospectiveReviewQuery", q)
-}
-
-// The RetrospectiveReviewMutationRuleFunc type is an adapter to allow the use of ordinary
-// functions as a mutation rule.
-type RetrospectiveReviewMutationRuleFunc func(context.Context, *ent.RetrospectiveReviewMutation) error
-
-// EvalMutation calls f(ctx, m).
-func (f RetrospectiveReviewMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
-	if m, ok := m.(*ent.RetrospectiveReviewMutation); ok {
-		return f(ctx, m)
-	}
-	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.RetrospectiveReviewMutation", m)
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.ReviewMutation", m)
 }
 
 // The SituationQueryRuleFunc type is an adapter to allow the use of ordinary
@@ -1561,6 +1585,30 @@ func (f SituationInvestigationMutationRuleFunc) EvalMutation(ctx context.Context
 		return f(ctx, m)
 	}
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.SituationInvestigationMutation", m)
+}
+
+// The SituationObservationGroupQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type SituationObservationGroupQueryRuleFunc func(context.Context, *ent.SituationObservationGroupQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f SituationObservationGroupQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.SituationObservationGroupQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.SituationObservationGroupQuery", q)
+}
+
+// The SituationObservationGroupMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type SituationObservationGroupMutationRuleFunc func(context.Context, *ent.SituationObservationGroupMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f SituationObservationGroupMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.SituationObservationGroupMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.SituationObservationGroupMutation", m)
 }
 
 // The SystemAnalysisQueryRuleFunc type is an adapter to allow the use of ordinary
@@ -1980,6 +2028,10 @@ func queryFilter(q ent.Query) (Filter, error) {
 		return q.Filter(), nil
 	case *ent.AlertMetricsQuery:
 		return q.Filter(), nil
+	case *ent.DiscussionCommentQuery:
+		return q.Filter(), nil
+	case *ent.DiscussionThreadQuery:
+		return q.Filter(), nil
 	case *ent.DocumentQuery:
 		return q.Filter(), nil
 	case *ent.DocumentAccessQuery:
@@ -2070,15 +2122,15 @@ func queryFilter(q ent.Query) (Filter, error) {
 		return q.Filter(), nil
 	case *ent.RetrospectiveQuery:
 		return q.Filter(), nil
-	case *ent.RetrospectiveCommentQuery:
-		return q.Filter(), nil
-	case *ent.RetrospectiveReviewQuery:
+	case *ent.ReviewQuery:
 		return q.Filter(), nil
 	case *ent.SituationQuery:
 		return q.Filter(), nil
 	case *ent.SituationHazardAssessmentQuery:
 		return q.Filter(), nil
 	case *ent.SituationInvestigationQuery:
+		return q.Filter(), nil
+	case *ent.SituationObservationGroupQuery:
 		return q.Filter(), nil
 	case *ent.SystemAnalysisQuery:
 		return q.Filter(), nil
@@ -2136,6 +2188,10 @@ func mutationFilter(m ent.Mutation) (Filter, error) {
 	case *ent.AlertFeedbackMutation:
 		return m.Filter(), nil
 	case *ent.AlertInstanceMutation:
+		return m.Filter(), nil
+	case *ent.DiscussionCommentMutation:
+		return m.Filter(), nil
+	case *ent.DiscussionThreadMutation:
 		return m.Filter(), nil
 	case *ent.DocumentMutation:
 		return m.Filter(), nil
@@ -2227,15 +2283,15 @@ func mutationFilter(m ent.Mutation) (Filter, error) {
 		return m.Filter(), nil
 	case *ent.RetrospectiveMutation:
 		return m.Filter(), nil
-	case *ent.RetrospectiveCommentMutation:
-		return m.Filter(), nil
-	case *ent.RetrospectiveReviewMutation:
+	case *ent.ReviewMutation:
 		return m.Filter(), nil
 	case *ent.SituationMutation:
 		return m.Filter(), nil
 	case *ent.SituationHazardAssessmentMutation:
 		return m.Filter(), nil
 	case *ent.SituationInvestigationMutation:
+		return m.Filter(), nil
+	case *ent.SituationObservationGroupMutation:
 		return m.Filter(), nil
 	case *ent.SystemAnalysisMutation:
 		return m.Filter(), nil

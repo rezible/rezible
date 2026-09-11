@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
@@ -31,9 +32,107 @@ func (_c *TicketCreate) SetTenantID(v int) *TicketCreate {
 	return _c
 }
 
+// SetCreatedAt sets the "created_at" field.
+func (_c *TicketCreate) SetCreatedAt(v time.Time) *TicketCreate {
+	_c.mutation.SetCreatedAt(v)
+	return _c
+}
+
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (_c *TicketCreate) SetNillableCreatedAt(v *time.Time) *TicketCreate {
+	if v != nil {
+		_c.SetCreatedAt(*v)
+	}
+	return _c
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (_c *TicketCreate) SetUpdatedAt(v time.Time) *TicketCreate {
+	_c.mutation.SetUpdatedAt(v)
+	return _c
+}
+
+// SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
+func (_c *TicketCreate) SetNillableUpdatedAt(v *time.Time) *TicketCreate {
+	if v != nil {
+		_c.SetUpdatedAt(*v)
+	}
+	return _c
+}
+
 // SetTitle sets the "title" field.
 func (_c *TicketCreate) SetTitle(v string) *TicketCreate {
 	_c.mutation.SetTitle(v)
+	return _c
+}
+
+// SetReference sets the "reference" field.
+func (_c *TicketCreate) SetReference(v string) *TicketCreate {
+	_c.mutation.SetReference(v)
+	return _c
+}
+
+// SetNillableReference sets the "reference" field if the given value is not nil.
+func (_c *TicketCreate) SetNillableReference(v *string) *TicketCreate {
+	if v != nil {
+		_c.SetReference(*v)
+	}
+	return _c
+}
+
+// SetURL sets the "url" field.
+func (_c *TicketCreate) SetURL(v string) *TicketCreate {
+	_c.mutation.SetURL(v)
+	return _c
+}
+
+// SetNillableURL sets the "url" field if the given value is not nil.
+func (_c *TicketCreate) SetNillableURL(v *string) *TicketCreate {
+	if v != nil {
+		_c.SetURL(*v)
+	}
+	return _c
+}
+
+// SetProvider sets the "provider" field.
+func (_c *TicketCreate) SetProvider(v string) *TicketCreate {
+	_c.mutation.SetProvider(v)
+	return _c
+}
+
+// SetNillableProvider sets the "provider" field if the given value is not nil.
+func (_c *TicketCreate) SetNillableProvider(v *string) *TicketCreate {
+	if v != nil {
+		_c.SetProvider(*v)
+	}
+	return _c
+}
+
+// SetProviderNamespace sets the "provider_namespace" field.
+func (_c *TicketCreate) SetProviderNamespace(v string) *TicketCreate {
+	_c.mutation.SetProviderNamespace(v)
+	return _c
+}
+
+// SetNillableProviderNamespace sets the "provider_namespace" field if the given value is not nil.
+func (_c *TicketCreate) SetNillableProviderNamespace(v *string) *TicketCreate {
+	if v != nil {
+		_c.SetProviderNamespace(*v)
+	}
+	return _c
+}
+
+// SetProviderResourceRef sets the "provider_resource_ref" field.
+func (_c *TicketCreate) SetProviderResourceRef(v string) *TicketCreate {
+	_c.mutation.SetProviderResourceRef(v)
+	return _c
+}
+
+// SetNillableProviderResourceRef sets the "provider_resource_ref" field if the given value is not nil.
+func (_c *TicketCreate) SetNillableProviderResourceRef(v *string) *TicketCreate {
+	if v != nil {
+		_c.SetProviderResourceRef(*v)
+	}
 	return _c
 }
 
@@ -108,6 +207,20 @@ func (_c *TicketCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (_c *TicketCreate) defaults() error {
+	if _, ok := _c.mutation.CreatedAt(); !ok {
+		if ticket.DefaultCreatedAt == nil {
+			return fmt.Errorf("ent: uninitialized ticket.DefaultCreatedAt (forgotten import ent/runtime?)")
+		}
+		v := ticket.DefaultCreatedAt()
+		_c.mutation.SetCreatedAt(v)
+	}
+	if _, ok := _c.mutation.UpdatedAt(); !ok {
+		if ticket.DefaultUpdatedAt == nil {
+			return fmt.Errorf("ent: uninitialized ticket.DefaultUpdatedAt (forgotten import ent/runtime?)")
+		}
+		v := ticket.DefaultUpdatedAt()
+		_c.mutation.SetUpdatedAt(v)
+	}
 	if _, ok := _c.mutation.ID(); !ok {
 		if ticket.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized ticket.DefaultID (forgotten import ent/runtime?)")
@@ -122,6 +235,12 @@ func (_c *TicketCreate) defaults() error {
 func (_c *TicketCreate) check() error {
 	if _, ok := _c.mutation.TenantID(); !ok {
 		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "Ticket.tenant_id"`)}
+	}
+	if _, ok := _c.mutation.CreatedAt(); !ok {
+		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Ticket.created_at"`)}
+	}
+	if _, ok := _c.mutation.UpdatedAt(); !ok {
+		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "Ticket.updated_at"`)}
 	}
 	if _, ok := _c.mutation.Title(); !ok {
 		return &ValidationError{Name: "title", err: errors.New(`ent: missing required field "Ticket.title"`)}
@@ -166,9 +285,37 @@ func (_c *TicketCreate) createSpec() (*Ticket, *sqlgraph.CreateSpec) {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
+	if value, ok := _c.mutation.CreatedAt(); ok {
+		_spec.SetField(ticket.FieldCreatedAt, field.TypeTime, value)
+		_node.CreatedAt = value
+	}
+	if value, ok := _c.mutation.UpdatedAt(); ok {
+		_spec.SetField(ticket.FieldUpdatedAt, field.TypeTime, value)
+		_node.UpdatedAt = value
+	}
 	if value, ok := _c.mutation.Title(); ok {
 		_spec.SetField(ticket.FieldTitle, field.TypeString, value)
 		_node.Title = value
+	}
+	if value, ok := _c.mutation.Reference(); ok {
+		_spec.SetField(ticket.FieldReference, field.TypeString, value)
+		_node.Reference = &value
+	}
+	if value, ok := _c.mutation.URL(); ok {
+		_spec.SetField(ticket.FieldURL, field.TypeString, value)
+		_node.URL = &value
+	}
+	if value, ok := _c.mutation.Provider(); ok {
+		_spec.SetField(ticket.FieldProvider, field.TypeString, value)
+		_node.Provider = &value
+	}
+	if value, ok := _c.mutation.ProviderNamespace(); ok {
+		_spec.SetField(ticket.FieldProviderNamespace, field.TypeString, value)
+		_node.ProviderNamespace = &value
+	}
+	if value, ok := _c.mutation.ProviderResourceRef(); ok {
+		_spec.SetField(ticket.FieldProviderResourceRef, field.TypeString, value)
+		_node.ProviderResourceRef = &value
 	}
 	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -257,6 +404,30 @@ type (
 	}
 )
 
+// SetCreatedAt sets the "created_at" field.
+func (u *TicketUpsert) SetCreatedAt(v time.Time) *TicketUpsert {
+	u.Set(ticket.FieldCreatedAt, v)
+	return u
+}
+
+// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
+func (u *TicketUpsert) UpdateCreatedAt() *TicketUpsert {
+	u.SetExcluded(ticket.FieldCreatedAt)
+	return u
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *TicketUpsert) SetUpdatedAt(v time.Time) *TicketUpsert {
+	u.Set(ticket.FieldUpdatedAt, v)
+	return u
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *TicketUpsert) UpdateUpdatedAt() *TicketUpsert {
+	u.SetExcluded(ticket.FieldUpdatedAt)
+	return u
+}
+
 // SetTitle sets the "title" field.
 func (u *TicketUpsert) SetTitle(v string) *TicketUpsert {
 	u.Set(ticket.FieldTitle, v)
@@ -266,6 +437,96 @@ func (u *TicketUpsert) SetTitle(v string) *TicketUpsert {
 // UpdateTitle sets the "title" field to the value that was provided on create.
 func (u *TicketUpsert) UpdateTitle() *TicketUpsert {
 	u.SetExcluded(ticket.FieldTitle)
+	return u
+}
+
+// SetReference sets the "reference" field.
+func (u *TicketUpsert) SetReference(v string) *TicketUpsert {
+	u.Set(ticket.FieldReference, v)
+	return u
+}
+
+// UpdateReference sets the "reference" field to the value that was provided on create.
+func (u *TicketUpsert) UpdateReference() *TicketUpsert {
+	u.SetExcluded(ticket.FieldReference)
+	return u
+}
+
+// ClearReference clears the value of the "reference" field.
+func (u *TicketUpsert) ClearReference() *TicketUpsert {
+	u.SetNull(ticket.FieldReference)
+	return u
+}
+
+// SetURL sets the "url" field.
+func (u *TicketUpsert) SetURL(v string) *TicketUpsert {
+	u.Set(ticket.FieldURL, v)
+	return u
+}
+
+// UpdateURL sets the "url" field to the value that was provided on create.
+func (u *TicketUpsert) UpdateURL() *TicketUpsert {
+	u.SetExcluded(ticket.FieldURL)
+	return u
+}
+
+// ClearURL clears the value of the "url" field.
+func (u *TicketUpsert) ClearURL() *TicketUpsert {
+	u.SetNull(ticket.FieldURL)
+	return u
+}
+
+// SetProvider sets the "provider" field.
+func (u *TicketUpsert) SetProvider(v string) *TicketUpsert {
+	u.Set(ticket.FieldProvider, v)
+	return u
+}
+
+// UpdateProvider sets the "provider" field to the value that was provided on create.
+func (u *TicketUpsert) UpdateProvider() *TicketUpsert {
+	u.SetExcluded(ticket.FieldProvider)
+	return u
+}
+
+// ClearProvider clears the value of the "provider" field.
+func (u *TicketUpsert) ClearProvider() *TicketUpsert {
+	u.SetNull(ticket.FieldProvider)
+	return u
+}
+
+// SetProviderNamespace sets the "provider_namespace" field.
+func (u *TicketUpsert) SetProviderNamespace(v string) *TicketUpsert {
+	u.Set(ticket.FieldProviderNamespace, v)
+	return u
+}
+
+// UpdateProviderNamespace sets the "provider_namespace" field to the value that was provided on create.
+func (u *TicketUpsert) UpdateProviderNamespace() *TicketUpsert {
+	u.SetExcluded(ticket.FieldProviderNamespace)
+	return u
+}
+
+// ClearProviderNamespace clears the value of the "provider_namespace" field.
+func (u *TicketUpsert) ClearProviderNamespace() *TicketUpsert {
+	u.SetNull(ticket.FieldProviderNamespace)
+	return u
+}
+
+// SetProviderResourceRef sets the "provider_resource_ref" field.
+func (u *TicketUpsert) SetProviderResourceRef(v string) *TicketUpsert {
+	u.Set(ticket.FieldProviderResourceRef, v)
+	return u
+}
+
+// UpdateProviderResourceRef sets the "provider_resource_ref" field to the value that was provided on create.
+func (u *TicketUpsert) UpdateProviderResourceRef() *TicketUpsert {
+	u.SetExcluded(ticket.FieldProviderResourceRef)
+	return u
+}
+
+// ClearProviderResourceRef clears the value of the "provider_resource_ref" field.
+func (u *TicketUpsert) ClearProviderResourceRef() *TicketUpsert {
+	u.SetNull(ticket.FieldProviderResourceRef)
 	return u
 }
 
@@ -320,6 +581,34 @@ func (u *TicketUpsertOne) Update(set func(*TicketUpsert)) *TicketUpsertOne {
 	return u
 }
 
+// SetCreatedAt sets the "created_at" field.
+func (u *TicketUpsertOne) SetCreatedAt(v time.Time) *TicketUpsertOne {
+	return u.Update(func(s *TicketUpsert) {
+		s.SetCreatedAt(v)
+	})
+}
+
+// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
+func (u *TicketUpsertOne) UpdateCreatedAt() *TicketUpsertOne {
+	return u.Update(func(s *TicketUpsert) {
+		s.UpdateCreatedAt()
+	})
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *TicketUpsertOne) SetUpdatedAt(v time.Time) *TicketUpsertOne {
+	return u.Update(func(s *TicketUpsert) {
+		s.SetUpdatedAt(v)
+	})
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *TicketUpsertOne) UpdateUpdatedAt() *TicketUpsertOne {
+	return u.Update(func(s *TicketUpsert) {
+		s.UpdateUpdatedAt()
+	})
+}
+
 // SetTitle sets the "title" field.
 func (u *TicketUpsertOne) SetTitle(v string) *TicketUpsertOne {
 	return u.Update(func(s *TicketUpsert) {
@@ -331,6 +620,111 @@ func (u *TicketUpsertOne) SetTitle(v string) *TicketUpsertOne {
 func (u *TicketUpsertOne) UpdateTitle() *TicketUpsertOne {
 	return u.Update(func(s *TicketUpsert) {
 		s.UpdateTitle()
+	})
+}
+
+// SetReference sets the "reference" field.
+func (u *TicketUpsertOne) SetReference(v string) *TicketUpsertOne {
+	return u.Update(func(s *TicketUpsert) {
+		s.SetReference(v)
+	})
+}
+
+// UpdateReference sets the "reference" field to the value that was provided on create.
+func (u *TicketUpsertOne) UpdateReference() *TicketUpsertOne {
+	return u.Update(func(s *TicketUpsert) {
+		s.UpdateReference()
+	})
+}
+
+// ClearReference clears the value of the "reference" field.
+func (u *TicketUpsertOne) ClearReference() *TicketUpsertOne {
+	return u.Update(func(s *TicketUpsert) {
+		s.ClearReference()
+	})
+}
+
+// SetURL sets the "url" field.
+func (u *TicketUpsertOne) SetURL(v string) *TicketUpsertOne {
+	return u.Update(func(s *TicketUpsert) {
+		s.SetURL(v)
+	})
+}
+
+// UpdateURL sets the "url" field to the value that was provided on create.
+func (u *TicketUpsertOne) UpdateURL() *TicketUpsertOne {
+	return u.Update(func(s *TicketUpsert) {
+		s.UpdateURL()
+	})
+}
+
+// ClearURL clears the value of the "url" field.
+func (u *TicketUpsertOne) ClearURL() *TicketUpsertOne {
+	return u.Update(func(s *TicketUpsert) {
+		s.ClearURL()
+	})
+}
+
+// SetProvider sets the "provider" field.
+func (u *TicketUpsertOne) SetProvider(v string) *TicketUpsertOne {
+	return u.Update(func(s *TicketUpsert) {
+		s.SetProvider(v)
+	})
+}
+
+// UpdateProvider sets the "provider" field to the value that was provided on create.
+func (u *TicketUpsertOne) UpdateProvider() *TicketUpsertOne {
+	return u.Update(func(s *TicketUpsert) {
+		s.UpdateProvider()
+	})
+}
+
+// ClearProvider clears the value of the "provider" field.
+func (u *TicketUpsertOne) ClearProvider() *TicketUpsertOne {
+	return u.Update(func(s *TicketUpsert) {
+		s.ClearProvider()
+	})
+}
+
+// SetProviderNamespace sets the "provider_namespace" field.
+func (u *TicketUpsertOne) SetProviderNamespace(v string) *TicketUpsertOne {
+	return u.Update(func(s *TicketUpsert) {
+		s.SetProviderNamespace(v)
+	})
+}
+
+// UpdateProviderNamespace sets the "provider_namespace" field to the value that was provided on create.
+func (u *TicketUpsertOne) UpdateProviderNamespace() *TicketUpsertOne {
+	return u.Update(func(s *TicketUpsert) {
+		s.UpdateProviderNamespace()
+	})
+}
+
+// ClearProviderNamespace clears the value of the "provider_namespace" field.
+func (u *TicketUpsertOne) ClearProviderNamespace() *TicketUpsertOne {
+	return u.Update(func(s *TicketUpsert) {
+		s.ClearProviderNamespace()
+	})
+}
+
+// SetProviderResourceRef sets the "provider_resource_ref" field.
+func (u *TicketUpsertOne) SetProviderResourceRef(v string) *TicketUpsertOne {
+	return u.Update(func(s *TicketUpsert) {
+		s.SetProviderResourceRef(v)
+	})
+}
+
+// UpdateProviderResourceRef sets the "provider_resource_ref" field to the value that was provided on create.
+func (u *TicketUpsertOne) UpdateProviderResourceRef() *TicketUpsertOne {
+	return u.Update(func(s *TicketUpsert) {
+		s.UpdateProviderResourceRef()
+	})
+}
+
+// ClearProviderResourceRef clears the value of the "provider_resource_ref" field.
+func (u *TicketUpsertOne) ClearProviderResourceRef() *TicketUpsertOne {
+	return u.Update(func(s *TicketUpsert) {
+		s.ClearProviderResourceRef()
 	})
 }
 
@@ -552,6 +946,34 @@ func (u *TicketUpsertBulk) Update(set func(*TicketUpsert)) *TicketUpsertBulk {
 	return u
 }
 
+// SetCreatedAt sets the "created_at" field.
+func (u *TicketUpsertBulk) SetCreatedAt(v time.Time) *TicketUpsertBulk {
+	return u.Update(func(s *TicketUpsert) {
+		s.SetCreatedAt(v)
+	})
+}
+
+// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
+func (u *TicketUpsertBulk) UpdateCreatedAt() *TicketUpsertBulk {
+	return u.Update(func(s *TicketUpsert) {
+		s.UpdateCreatedAt()
+	})
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *TicketUpsertBulk) SetUpdatedAt(v time.Time) *TicketUpsertBulk {
+	return u.Update(func(s *TicketUpsert) {
+		s.SetUpdatedAt(v)
+	})
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *TicketUpsertBulk) UpdateUpdatedAt() *TicketUpsertBulk {
+	return u.Update(func(s *TicketUpsert) {
+		s.UpdateUpdatedAt()
+	})
+}
+
 // SetTitle sets the "title" field.
 func (u *TicketUpsertBulk) SetTitle(v string) *TicketUpsertBulk {
 	return u.Update(func(s *TicketUpsert) {
@@ -563,6 +985,111 @@ func (u *TicketUpsertBulk) SetTitle(v string) *TicketUpsertBulk {
 func (u *TicketUpsertBulk) UpdateTitle() *TicketUpsertBulk {
 	return u.Update(func(s *TicketUpsert) {
 		s.UpdateTitle()
+	})
+}
+
+// SetReference sets the "reference" field.
+func (u *TicketUpsertBulk) SetReference(v string) *TicketUpsertBulk {
+	return u.Update(func(s *TicketUpsert) {
+		s.SetReference(v)
+	})
+}
+
+// UpdateReference sets the "reference" field to the value that was provided on create.
+func (u *TicketUpsertBulk) UpdateReference() *TicketUpsertBulk {
+	return u.Update(func(s *TicketUpsert) {
+		s.UpdateReference()
+	})
+}
+
+// ClearReference clears the value of the "reference" field.
+func (u *TicketUpsertBulk) ClearReference() *TicketUpsertBulk {
+	return u.Update(func(s *TicketUpsert) {
+		s.ClearReference()
+	})
+}
+
+// SetURL sets the "url" field.
+func (u *TicketUpsertBulk) SetURL(v string) *TicketUpsertBulk {
+	return u.Update(func(s *TicketUpsert) {
+		s.SetURL(v)
+	})
+}
+
+// UpdateURL sets the "url" field to the value that was provided on create.
+func (u *TicketUpsertBulk) UpdateURL() *TicketUpsertBulk {
+	return u.Update(func(s *TicketUpsert) {
+		s.UpdateURL()
+	})
+}
+
+// ClearURL clears the value of the "url" field.
+func (u *TicketUpsertBulk) ClearURL() *TicketUpsertBulk {
+	return u.Update(func(s *TicketUpsert) {
+		s.ClearURL()
+	})
+}
+
+// SetProvider sets the "provider" field.
+func (u *TicketUpsertBulk) SetProvider(v string) *TicketUpsertBulk {
+	return u.Update(func(s *TicketUpsert) {
+		s.SetProvider(v)
+	})
+}
+
+// UpdateProvider sets the "provider" field to the value that was provided on create.
+func (u *TicketUpsertBulk) UpdateProvider() *TicketUpsertBulk {
+	return u.Update(func(s *TicketUpsert) {
+		s.UpdateProvider()
+	})
+}
+
+// ClearProvider clears the value of the "provider" field.
+func (u *TicketUpsertBulk) ClearProvider() *TicketUpsertBulk {
+	return u.Update(func(s *TicketUpsert) {
+		s.ClearProvider()
+	})
+}
+
+// SetProviderNamespace sets the "provider_namespace" field.
+func (u *TicketUpsertBulk) SetProviderNamespace(v string) *TicketUpsertBulk {
+	return u.Update(func(s *TicketUpsert) {
+		s.SetProviderNamespace(v)
+	})
+}
+
+// UpdateProviderNamespace sets the "provider_namespace" field to the value that was provided on create.
+func (u *TicketUpsertBulk) UpdateProviderNamespace() *TicketUpsertBulk {
+	return u.Update(func(s *TicketUpsert) {
+		s.UpdateProviderNamespace()
+	})
+}
+
+// ClearProviderNamespace clears the value of the "provider_namespace" field.
+func (u *TicketUpsertBulk) ClearProviderNamespace() *TicketUpsertBulk {
+	return u.Update(func(s *TicketUpsert) {
+		s.ClearProviderNamespace()
+	})
+}
+
+// SetProviderResourceRef sets the "provider_resource_ref" field.
+func (u *TicketUpsertBulk) SetProviderResourceRef(v string) *TicketUpsertBulk {
+	return u.Update(func(s *TicketUpsert) {
+		s.SetProviderResourceRef(v)
+	})
+}
+
+// UpdateProviderResourceRef sets the "provider_resource_ref" field to the value that was provided on create.
+func (u *TicketUpsertBulk) UpdateProviderResourceRef() *TicketUpsertBulk {
+	return u.Update(func(s *TicketUpsert) {
+		s.UpdateProviderResourceRef()
+	})
+}
+
+// ClearProviderResourceRef clears the value of the "provider_resource_ref" field.
+func (u *TicketUpsertBulk) ClearProviderResourceRef() *TicketUpsertBulk {
+	return u.Update(func(s *TicketUpsert) {
+		s.ClearProviderResourceRef()
 	})
 }
 

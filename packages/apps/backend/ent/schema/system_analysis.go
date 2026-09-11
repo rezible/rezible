@@ -56,6 +56,8 @@ func (SystemAnalysis) Edges() []ent.Edge {
 		edge.From("entries", SystemAnalysisEntry.Type).
 			Ref("analysis"),
 
+		edge.From("discussion_threads", DiscussionThread.Type).Ref("analysis"),
+
 		edge.To("situation_investigation", SituationInvestigation.Type).Unique(),
 	}
 }
@@ -232,6 +234,10 @@ func (SystemAnalysisEntry) Edges() []ent.Edge {
 			Field("analysis_id"),
 		edge.From("subjects", SystemAnalysisEntrySubject.Type).
 			Ref("entry"),
+		edge.From("origin_tasks", Task.Type).
+			Ref("origin_entry"),
+		edge.From("reviews", Review.Type).
+			Ref("analysis_entry"),
 	}
 }
 
@@ -272,6 +278,10 @@ func (SystemAnalysisEntrySubject) Fields() []ent.Field {
 			Optional().
 			Nillable().
 			Immutable(),
+		field.UUID("normalized_event_id", uuid.UUID{}).
+			Optional().
+			Nillable().
+			Immutable(),
 		field.String("role").NotEmpty().
 			Comment("How the graph subject participates in the analysis entry, e.g. primary, affected, contributing, evidence_for."),
 	}
@@ -280,7 +290,7 @@ func (SystemAnalysisEntrySubject) Fields() []ent.Field {
 func (SystemAnalysisEntrySubject) Annotations() []entschema.Annotation {
 	return []entschema.Annotation{
 		entsql.Annotation{Checks: map[string]string{
-			"system_analysis_entry_subject_exactly_one_reference": "num_nonnulls(knowledge_entity_id, knowledge_relationship_id, knowledge_evidence_id) = 1",
+			"system_analysis_entry_subject_exactly_one_reference": "num_nonnulls(knowledge_entity_id, knowledge_relationship_id, knowledge_evidence_id, normalized_event_id) = 1",
 		}},
 	}
 }
@@ -304,6 +314,10 @@ func (SystemAnalysisEntrySubject) Edges() []ent.Edge {
 			Unique().
 			Immutable().
 			Field("knowledge_evidence_id"),
+		edge.To("normalized_event", NormalizedEvent.Type).
+			Unique().
+			Immutable().
+			Field("normalized_event_id"),
 	}
 }
 
@@ -313,8 +327,10 @@ func (SystemAnalysisEntrySubject) Indexes() []ent.Index {
 		index.Fields("tenant_id", "entry_id", "knowledge_entity_id", "role").Unique(),
 		index.Fields("tenant_id", "entry_id", "knowledge_relationship_id", "role").Unique(),
 		index.Fields("tenant_id", "entry_id", "knowledge_evidence_id", "role").Unique(),
+		index.Fields("tenant_id", "entry_id", "normalized_event_id", "role").Unique(),
 		index.Fields("tenant_id", "knowledge_entity_id"),
 		index.Fields("tenant_id", "knowledge_relationship_id"),
 		index.Fields("tenant_id", "knowledge_evidence_id"),
+		index.Fields("tenant_id", "normalized_event_id"),
 	}
 }

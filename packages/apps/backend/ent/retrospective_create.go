@@ -12,10 +12,11 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/discussionthread"
 	"github.com/rezible/rezible/ent/document"
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/retrospective"
-	"github.com/rezible/rezible/ent/retrospectivecomment"
+	"github.com/rezible/rezible/ent/review"
 	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/tenant"
 )
@@ -93,19 +94,34 @@ func (_c *RetrospectiveCreate) SetDocument(v *Document) *RetrospectiveCreate {
 	return _c.SetDocumentID(v.ID)
 }
 
-// AddCommentIDs adds the "comments" edge to the RetrospectiveComment entity by IDs.
-func (_c *RetrospectiveCreate) AddCommentIDs(ids ...uuid.UUID) *RetrospectiveCreate {
-	_c.mutation.AddCommentIDs(ids...)
+// AddDiscussionThreadIDs adds the "discussion_threads" edge to the DiscussionThread entity by IDs.
+func (_c *RetrospectiveCreate) AddDiscussionThreadIDs(ids ...uuid.UUID) *RetrospectiveCreate {
+	_c.mutation.AddDiscussionThreadIDs(ids...)
 	return _c
 }
 
-// AddComments adds the "comments" edges to the RetrospectiveComment entity.
-func (_c *RetrospectiveCreate) AddComments(v ...*RetrospectiveComment) *RetrospectiveCreate {
+// AddDiscussionThreads adds the "discussion_threads" edges to the DiscussionThread entity.
+func (_c *RetrospectiveCreate) AddDiscussionThreads(v ...*DiscussionThread) *RetrospectiveCreate {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _c.AddCommentIDs(ids...)
+	return _c.AddDiscussionThreadIDs(ids...)
+}
+
+// AddReviewIDs adds the "reviews" edge to the Review entity by IDs.
+func (_c *RetrospectiveCreate) AddReviewIDs(ids ...uuid.UUID) *RetrospectiveCreate {
+	_c.mutation.AddReviewIDs(ids...)
+	return _c
+}
+
+// AddReviews adds the "reviews" edges to the Review entity.
+func (_c *RetrospectiveCreate) AddReviews(v ...*Review) *RetrospectiveCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddReviewIDs(ids...)
 }
 
 // SetSystemAnalysis sets the "system_analysis" edge to the SystemAnalysis entity.
@@ -301,18 +317,35 @@ func (_c *RetrospectiveCreate) createSpec() (*Retrospective, *sqlgraph.CreateSpe
 		_node.DocumentID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := _c.mutation.CommentsIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.DiscussionThreadsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   retrospective.CommentsTable,
-			Columns: []string{retrospective.CommentsColumn},
+			Table:   retrospective.DiscussionThreadsTable,
+			Columns: []string{retrospective.DiscussionThreadsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(retrospectivecomment.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(discussionthread.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _c.schemaConfig.RetrospectiveComment
+		edge.Schema = _c.schemaConfig.DiscussionThread
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.ReviewsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   retrospective.ReviewsTable,
+			Columns: []string{retrospective.ReviewsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(review.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.Review
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

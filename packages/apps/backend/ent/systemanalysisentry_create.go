@@ -13,9 +13,11 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/review"
 	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/systemanalysisentry"
 	"github.com/rezible/rezible/ent/systemanalysisentrysubject"
+	"github.com/rezible/rezible/ent/task"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
@@ -178,6 +180,36 @@ func (_c *SystemAnalysisEntryCreate) AddSubjects(v ...*SystemAnalysisEntrySubjec
 		ids[i] = v[i].ID
 	}
 	return _c.AddSubjectIDs(ids...)
+}
+
+// AddOriginTaskIDs adds the "origin_tasks" edge to the Task entity by IDs.
+func (_c *SystemAnalysisEntryCreate) AddOriginTaskIDs(ids ...uuid.UUID) *SystemAnalysisEntryCreate {
+	_c.mutation.AddOriginTaskIDs(ids...)
+	return _c
+}
+
+// AddOriginTasks adds the "origin_tasks" edges to the Task entity.
+func (_c *SystemAnalysisEntryCreate) AddOriginTasks(v ...*Task) *SystemAnalysisEntryCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddOriginTaskIDs(ids...)
+}
+
+// AddReviewIDs adds the "reviews" edge to the Review entity by IDs.
+func (_c *SystemAnalysisEntryCreate) AddReviewIDs(ids ...uuid.UUID) *SystemAnalysisEntryCreate {
+	_c.mutation.AddReviewIDs(ids...)
+	return _c
+}
+
+// AddReviews adds the "reviews" edges to the Review entity.
+func (_c *SystemAnalysisEntryCreate) AddReviews(v ...*Review) *SystemAnalysisEntryCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddReviewIDs(ids...)
 }
 
 // Mutation returns the SystemAnalysisEntryMutation object of the builder.
@@ -405,6 +437,40 @@ func (_c *SystemAnalysisEntryCreate) createSpec() (*SystemAnalysisEntry, *sqlgra
 			},
 		}
 		edge.Schema = _c.schemaConfig.SystemAnalysisEntrySubject
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.OriginTasksIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   systemanalysisentry.OriginTasksTable,
+			Columns: []string{systemanalysisentry.OriginTasksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.Task
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.ReviewsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   systemanalysisentry.ReviewsTable,
+			Columns: []string{systemanalysisentry.ReviewsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(review.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.Review
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

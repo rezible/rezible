@@ -61,9 +61,11 @@ func (User) Edges() []ent.Edge {
 		edge.To("assigned_tasks", Task.Type),
 		edge.To("created_tasks", Task.Type),
 
-		edge.From("retrospective_review_requests", RetrospectiveReview.Type).Ref("requester"),
-		edge.From("retrospective_review_responses", RetrospectiveReview.Type).Ref("reviewer"),
-		edge.From("retrospective_comments", RetrospectiveComment.Type).Ref("user"),
+		edge.From("review_requests", Review.Type).Ref("requester"),
+		edge.From("review_responses", Review.Type).Ref("reviewer"),
+
+		edge.From("discussion_threads", DiscussionThread.Type).Ref("user"),
+		edge.From("discussion_comments", DiscussionComment.Type).Ref("user"),
 
 		edge.From("document_accesses", DocumentAccess.Type).Ref("user"),
 	}

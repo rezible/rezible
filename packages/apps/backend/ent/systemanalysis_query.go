@@ -14,6 +14,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/discussionthread"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/predicate"
@@ -38,6 +39,7 @@ type SystemAnalysisQuery struct {
 	withAnalysisEntities       *SystemAnalysisEntityQuery
 	withAnalysisRelationships  *SystemAnalysisRelationshipQuery
 	withEntries                *SystemAnalysisEntryQuery
+	withDiscussionThreads      *DiscussionThreadQuery
 	withSituationInvestigation *SituationInvestigationQuery
 	modifiers                  []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
@@ -220,6 +222,31 @@ func (_q *SystemAnalysisQuery) QueryEntries() *SystemAnalysisEntryQuery {
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.SystemAnalysisEntry
 		step.Edge.Schema = schemaConfig.SystemAnalysisEntry
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryDiscussionThreads chains the current query on the "discussion_threads" edge.
+func (_q *SystemAnalysisQuery) QueryDiscussionThreads() *DiscussionThreadQuery {
+	query := (&DiscussionThreadClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(systemanalysis.Table, systemanalysis.FieldID, selector),
+			sqlgraph.To(discussionthread.Table, discussionthread.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, systemanalysis.DiscussionThreadsTable, systemanalysis.DiscussionThreadsColumn),
+		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.DiscussionThread
+		step.Edge.Schema = schemaConfig.DiscussionThread
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -449,6 +476,7 @@ func (_q *SystemAnalysisQuery) Clone() *SystemAnalysisQuery {
 		withAnalysisEntities:       _q.withAnalysisEntities.Clone(),
 		withAnalysisRelationships:  _q.withAnalysisRelationships.Clone(),
 		withEntries:                _q.withEntries.Clone(),
+		withDiscussionThreads:      _q.withDiscussionThreads.Clone(),
 		withSituationInvestigation: _q.withSituationInvestigation.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
@@ -520,6 +548,17 @@ func (_q *SystemAnalysisQuery) WithEntries(opts ...func(*SystemAnalysisEntryQuer
 		opt(query)
 	}
 	_q.withEntries = query
+	return _q
+}
+
+// WithDiscussionThreads tells the query-builder to eager-load the nodes that are connected to
+// the "discussion_threads" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *SystemAnalysisQuery) WithDiscussionThreads(opts ...func(*DiscussionThreadQuery)) *SystemAnalysisQuery {
+	query := (&DiscussionThreadClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withDiscussionThreads = query
 	return _q
 }
 
@@ -618,13 +657,14 @@ func (_q *SystemAnalysisQuery) sqlAll(ctx context.Context, hooks ...queryHook) (
 	var (
 		nodes       = []*SystemAnalysis{}
 		_spec       = _q.querySpec()
-		loadedTypes = [7]bool{
+		loadedTypes = [8]bool{
 			_q.withTenant != nil,
 			_q.withScopeEntity != nil,
 			_q.withSubjectEntity != nil,
 			_q.withAnalysisEntities != nil,
 			_q.withAnalysisRelationships != nil,
 			_q.withEntries != nil,
+			_q.withDiscussionThreads != nil,
 			_q.withSituationInvestigation != nil,
 		}
 	)
@@ -691,6 +731,15 @@ func (_q *SystemAnalysisQuery) sqlAll(ctx context.Context, hooks ...queryHook) (
 		if err := _q.loadEntries(ctx, query, nodes,
 			func(n *SystemAnalysis) { n.Edges.Entries = []*SystemAnalysisEntry{} },
 			func(n *SystemAnalysis, e *SystemAnalysisEntry) { n.Edges.Entries = append(n.Edges.Entries, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withDiscussionThreads; query != nil {
+		if err := _q.loadDiscussionThreads(ctx, query, nodes,
+			func(n *SystemAnalysis) { n.Edges.DiscussionThreads = []*DiscussionThread{} },
+			func(n *SystemAnalysis, e *DiscussionThread) {
+				n.Edges.DiscussionThreads = append(n.Edges.DiscussionThreads, e)
+			}); err != nil {
 			return nil, err
 		}
 	}
@@ -881,6 +930,39 @@ func (_q *SystemAnalysisQuery) loadEntries(ctx context.Context, query *SystemAna
 		node, ok := nodeids[fk]
 		if !ok {
 			return fmt.Errorf(`unexpected referenced foreign-key "analysis_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *SystemAnalysisQuery) loadDiscussionThreads(ctx context.Context, query *DiscussionThreadQuery, nodes []*SystemAnalysis, init func(*SystemAnalysis), assign func(*SystemAnalysis, *DiscussionThread)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*SystemAnalysis)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(discussionthread.FieldAnalysisID)
+	}
+	query.Where(predicate.DiscussionThread(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(systemanalysis.DiscussionThreadsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.AnalysisID
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "analysis_id" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "analysis_id" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}

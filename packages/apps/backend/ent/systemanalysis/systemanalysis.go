@@ -40,6 +40,8 @@ const (
 	EdgeAnalysisRelationships = "analysis_relationships"
 	// EdgeEntries holds the string denoting the entries edge name in mutations.
 	EdgeEntries = "entries"
+	// EdgeDiscussionThreads holds the string denoting the discussion_threads edge name in mutations.
+	EdgeDiscussionThreads = "discussion_threads"
 	// EdgeSituationInvestigation holds the string denoting the situation_investigation edge name in mutations.
 	EdgeSituationInvestigation = "situation_investigation"
 	// Table holds the table name of the systemanalysis in the database.
@@ -86,6 +88,13 @@ const (
 	EntriesInverseTable = "system_analysis_entries"
 	// EntriesColumn is the table column denoting the entries relation/edge.
 	EntriesColumn = "analysis_id"
+	// DiscussionThreadsTable is the table that holds the discussion_threads relation/edge.
+	DiscussionThreadsTable = "discussion_threads"
+	// DiscussionThreadsInverseTable is the table name for the DiscussionThread entity.
+	// It exists in this package in order to avoid circular dependency with the "discussionthread" package.
+	DiscussionThreadsInverseTable = "discussion_threads"
+	// DiscussionThreadsColumn is the table column denoting the discussion_threads relation/edge.
+	DiscussionThreadsColumn = "analysis_id"
 	// SituationInvestigationTable is the table that holds the situation_investigation relation/edge.
 	SituationInvestigationTable = "situation_investigations"
 	// SituationInvestigationInverseTable is the table name for the SituationInvestigation entity.
@@ -235,6 +244,20 @@ func ByEntries(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
+// ByDiscussionThreadsCount orders the results by discussion_threads count.
+func ByDiscussionThreadsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newDiscussionThreadsStep(), opts...)
+	}
+}
+
+// ByDiscussionThreads orders the results by discussion_threads terms.
+func ByDiscussionThreads(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newDiscussionThreadsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
 // BySituationInvestigationField orders the results by situation_investigation field.
 func BySituationInvestigationField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -281,6 +304,13 @@ func newEntriesStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(EntriesInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, true, EntriesTable, EntriesColumn),
+	)
+}
+func newDiscussionThreadsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(DiscussionThreadsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, DiscussionThreadsTable, DiscussionThreadsColumn),
 	)
 }
 func newSituationInvestigationStep() *sqlgraph.Step {

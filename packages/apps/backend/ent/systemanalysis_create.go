@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/discussionthread"
 	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/situationinvestigation"
 	"github.com/rezible/rezible/ent/systemanalysis"
@@ -178,6 +179,21 @@ func (_c *SystemAnalysisCreate) AddEntries(v ...*SystemAnalysisEntry) *SystemAna
 		ids[i] = v[i].ID
 	}
 	return _c.AddEntryIDs(ids...)
+}
+
+// AddDiscussionThreadIDs adds the "discussion_threads" edge to the DiscussionThread entity by IDs.
+func (_c *SystemAnalysisCreate) AddDiscussionThreadIDs(ids ...uuid.UUID) *SystemAnalysisCreate {
+	_c.mutation.AddDiscussionThreadIDs(ids...)
+	return _c
+}
+
+// AddDiscussionThreads adds the "discussion_threads" edges to the DiscussionThread entity.
+func (_c *SystemAnalysisCreate) AddDiscussionThreads(v ...*DiscussionThread) *SystemAnalysisCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddDiscussionThreadIDs(ids...)
 }
 
 // SetSituationInvestigationID sets the "situation_investigation" edge to the SituationInvestigation entity by ID.
@@ -423,6 +439,23 @@ func (_c *SystemAnalysisCreate) createSpec() (*SystemAnalysis, *sqlgraph.CreateS
 			},
 		}
 		edge.Schema = _c.schemaConfig.SystemAnalysisEntry
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.DiscussionThreadsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   systemanalysis.DiscussionThreadsTable,
+			Columns: []string{systemanalysis.DiscussionThreadsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(discussionthread.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.DiscussionThread
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

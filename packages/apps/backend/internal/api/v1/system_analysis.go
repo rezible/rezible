@@ -237,6 +237,16 @@ func (h *systemAnalysisHandler) ListSystemAnalysisEntries(ctx context.Context, r
 	return &resp, nil
 }
 
+func (h *systemAnalysisHandler) GetSystemAnalysisEntry(ctx context.Context, request *oapi.GetSystemAnalysisEntryRequest) (*oapi.GetSystemAnalysisEntryResponse, error) {
+	entry, getErr := h.analysis.LookupSystemAnalysisEntry(ctx, sae.ID(request.Id))
+	if getErr != nil {
+		return nil, oapi.Error(ctx, "get system analysis entry", getErr)
+	}
+	var response oapi.GetSystemAnalysisEntryResponse
+	response.Body.Data = oapi.SystemAnalysisEntryFromEnt(entry)
+	return &response, nil
+}
+
 func (h *systemAnalysisHandler) CreateSystemAnalysisEntry(ctx context.Context, request *oapi.CreateSystemAnalysisEntryRequest) (*oapi.CreateSystemAnalysisEntryResponse, error) {
 	var resp oapi.CreateSystemAnalysisEntryResponse
 	attrs := request.Body.Attributes
@@ -318,6 +328,9 @@ func (h *systemAnalysisHandler) AddSystemAnalysisEntrySubject(ctx context.Contex
 		}
 		if attrs.KnowledgeEvidenceId != nil {
 			m.SetKnowledgeEvidenceID(*attrs.KnowledgeEvidenceId)
+		}
+		if attrs.NormalizedEventId != nil {
+			m.SetNormalizedEventID(*attrs.NormalizedEventId)
 		}
 	}
 	subject, createErr := h.analysis.SetSystemAnalysisEntrySubject(ctx, uuid.Nil, setFn)

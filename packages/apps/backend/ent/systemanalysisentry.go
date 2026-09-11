@@ -57,9 +57,13 @@ type SystemAnalysisEntryEdges struct {
 	Analysis *SystemAnalysis `json:"analysis,omitempty"`
 	// Subjects holds the value of the subjects edge.
 	Subjects []*SystemAnalysisEntrySubject `json:"subjects,omitempty"`
+	// OriginTasks holds the value of the origin_tasks edge.
+	OriginTasks []*Task `json:"origin_tasks,omitempty"`
+	// Reviews holds the value of the reviews edge.
+	Reviews []*Review `json:"reviews,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes [5]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -91,6 +95,24 @@ func (e SystemAnalysisEntryEdges) SubjectsOrErr() ([]*SystemAnalysisEntrySubject
 		return e.Subjects, nil
 	}
 	return nil, &NotLoadedError{edge: "subjects"}
+}
+
+// OriginTasksOrErr returns the OriginTasks value or an error if the edge
+// was not loaded in eager-loading.
+func (e SystemAnalysisEntryEdges) OriginTasksOrErr() ([]*Task, error) {
+	if e.loadedTypes[3] {
+		return e.OriginTasks, nil
+	}
+	return nil, &NotLoadedError{edge: "origin_tasks"}
+}
+
+// ReviewsOrErr returns the Reviews value or an error if the edge
+// was not loaded in eager-loading.
+func (e SystemAnalysisEntryEdges) ReviewsOrErr() ([]*Review, error) {
+	if e.loadedTypes[4] {
+		return e.Reviews, nil
+	}
+	return nil, &NotLoadedError{edge: "reviews"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -225,6 +247,16 @@ func (_m *SystemAnalysisEntry) QueryAnalysis() *SystemAnalysisQuery {
 // QuerySubjects queries the "subjects" edge of the SystemAnalysisEntry entity.
 func (_m *SystemAnalysisEntry) QuerySubjects() *SystemAnalysisEntrySubjectQuery {
 	return NewSystemAnalysisEntryClient(_m.config).QuerySubjects(_m)
+}
+
+// QueryOriginTasks queries the "origin_tasks" edge of the SystemAnalysisEntry entity.
+func (_m *SystemAnalysisEntry) QueryOriginTasks() *TaskQuery {
+	return NewSystemAnalysisEntryClient(_m.config).QueryOriginTasks(_m)
+}
+
+// QueryReviews queries the "reviews" edge of the SystemAnalysisEntry entity.
+func (_m *SystemAnalysisEntry) QueryReviews() *ReviewQuery {
+	return NewSystemAnalysisEntryClient(_m.config).QueryReviews(_m)
 }
 
 // Update returns a builder for updating this SystemAnalysisEntry.

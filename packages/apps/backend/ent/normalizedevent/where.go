@@ -804,6 +804,64 @@ func HasProjectionWith(preds ...predicate.NormalizedEventProjection) predicate.N
 	})
 }
 
+// HasSituationObservationGroups applies the HasEdge predicate on the "situation_observation_groups" edge.
+func HasSituationObservationGroups() predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, SituationObservationGroupsTable, SituationObservationGroupsPrimaryKey...),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SituationObservationGroup
+		step.Edge.Schema = schemaConfig.SituationObservationGroupEvents
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasSituationObservationGroupsWith applies the HasEdge predicate on the "situation_observation_groups" edge with a given conditions (other predicates).
+func HasSituationObservationGroupsWith(preds ...predicate.SituationObservationGroup) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(func(s *sql.Selector) {
+		step := newSituationObservationGroupsStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SituationObservationGroup
+		step.Edge.Schema = schemaConfig.SituationObservationGroupEvents
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasAnalysisEntrySubjects applies the HasEdge predicate on the "analysis_entry_subjects" edge.
+func HasAnalysisEntrySubjects() predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, AnalysisEntrySubjectsTable, AnalysisEntrySubjectsColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SystemAnalysisEntrySubject
+		step.Edge.Schema = schemaConfig.SystemAnalysisEntrySubject
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasAnalysisEntrySubjectsWith applies the HasEdge predicate on the "analysis_entry_subjects" edge with a given conditions (other predicates).
+func HasAnalysisEntrySubjectsWith(preds ...predicate.SystemAnalysisEntrySubject) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(func(s *sql.Selector) {
+		step := newAnalysisEntrySubjectsStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SystemAnalysisEntrySubject
+		step.Edge.Schema = schemaConfig.SystemAnalysisEntrySubject
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.NormalizedEvent) predicate.NormalizedEvent {
 	return predicate.NormalizedEvent(sql.AndPredicates(predicates...))

@@ -687,6 +687,35 @@ func HasHazardAssessmentsWith(preds ...predicate.SituationHazardAssessment) pred
 	})
 }
 
+// HasObservationGroups applies the HasEdge predicate on the "observation_groups" edge.
+func HasObservationGroups() predicate.Situation {
+	return predicate.Situation(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, ObservationGroupsTable, ObservationGroupsColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SituationObservationGroup
+		step.Edge.Schema = schemaConfig.SituationObservationGroup
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasObservationGroupsWith applies the HasEdge predicate on the "observation_groups" edge with a given conditions (other predicates).
+func HasObservationGroupsWith(preds ...predicate.SituationObservationGroup) predicate.Situation {
+	return predicate.Situation(func(s *sql.Selector) {
+		step := newObservationGroupsStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SituationObservationGroup
+		step.Edge.Schema = schemaConfig.SituationObservationGroup
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // HasIncidents applies the HasEdge predicate on the "incidents" edge.
 func HasIncidents() predicate.Situation {
 	return predicate.Situation(func(s *sql.Selector) {

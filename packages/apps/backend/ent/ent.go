@@ -23,6 +23,8 @@ import (
 	"github.com/rezible/rezible/ent/alertfeedback"
 	"github.com/rezible/rezible/ent/alertinstance"
 	"github.com/rezible/rezible/ent/alertmetrics"
+	"github.com/rezible/rezible/ent/discussioncomment"
+	"github.com/rezible/rezible/ent/discussionthread"
 	"github.com/rezible/rezible/ent/document"
 	"github.com/rezible/rezible/ent/documentaccess"
 	"github.com/rezible/rezible/ent/eventannotation"
@@ -68,11 +70,11 @@ import (
 	"github.com/rezible/rezible/ent/organizationrole"
 	"github.com/rezible/rezible/ent/playbook"
 	"github.com/rezible/rezible/ent/retrospective"
-	"github.com/rezible/rezible/ent/retrospectivecomment"
-	"github.com/rezible/rezible/ent/retrospectivereview"
+	"github.com/rezible/rezible/ent/review"
 	"github.com/rezible/rezible/ent/situation"
 	"github.com/rezible/rezible/ent/situationhazardassessment"
 	"github.com/rezible/rezible/ent/situationinvestigation"
+	"github.com/rezible/rezible/ent/situationobservationgroup"
 	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/systemanalysisentity"
 	"github.com/rezible/rezible/ent/systemanalysisentry"
@@ -159,6 +161,8 @@ func checkColumn(t, c string) error {
 			alertfeedback.Table:                   alertfeedback.ValidColumn,
 			alertinstance.Table:                   alertinstance.ValidColumn,
 			alertmetrics.Table:                    alertmetrics.ValidColumn,
+			discussioncomment.Table:               discussioncomment.ValidColumn,
+			discussionthread.Table:                discussionthread.ValidColumn,
 			document.Table:                        document.ValidColumn,
 			documentaccess.Table:                  documentaccess.ValidColumn,
 			eventannotation.Table:                 eventannotation.ValidColumn,
@@ -204,11 +208,11 @@ func checkColumn(t, c string) error {
 			organizationrole.Table:                organizationrole.ValidColumn,
 			playbook.Table:                        playbook.ValidColumn,
 			retrospective.Table:                   retrospective.ValidColumn,
-			retrospectivecomment.Table:            retrospectivecomment.ValidColumn,
-			retrospectivereview.Table:             retrospectivereview.ValidColumn,
+			review.Table:                          review.ValidColumn,
 			situation.Table:                       situation.ValidColumn,
 			situationhazardassessment.Table:       situationhazardassessment.ValidColumn,
 			situationinvestigation.Table:          situationinvestigation.ValidColumn,
+			situationobservationgroup.Table:       situationobservationgroup.ValidColumn,
 			systemanalysis.Table:                  systemanalysis.ValidColumn,
 			systemanalysisentity.Table:            systemanalysisentity.ValidColumn,
 			systemanalysisentry.Table:             systemanalysisentry.ValidColumn,

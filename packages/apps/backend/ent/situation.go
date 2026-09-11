@@ -60,13 +60,15 @@ type SituationEdges struct {
 	AlertEpisodes []*AlertEpisode `json:"alert_episodes,omitempty"`
 	// HazardAssessments holds the value of the hazard_assessments edge.
 	HazardAssessments []*SituationHazardAssessment `json:"hazard_assessments,omitempty"`
+	// ObservationGroups holds the value of the observation_groups edge.
+	ObservationGroups []*SituationObservationGroup `json:"observation_groups,omitempty"`
 	// Incidents holds the value of the incidents edge.
 	Incidents []*Incident `json:"incidents,omitempty"`
 	// AlertEpisodeLinks holds the value of the alert_episode_links edge.
 	AlertEpisodeLinks []*AlertEpisodeSituation `json:"alert_episode_links,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [7]bool
+	loadedTypes [8]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -118,10 +120,19 @@ func (e SituationEdges) HazardAssessmentsOrErr() ([]*SituationHazardAssessment, 
 	return nil, &NotLoadedError{edge: "hazard_assessments"}
 }
 
+// ObservationGroupsOrErr returns the ObservationGroups value or an error if the edge
+// was not loaded in eager-loading.
+func (e SituationEdges) ObservationGroupsOrErr() ([]*SituationObservationGroup, error) {
+	if e.loadedTypes[5] {
+		return e.ObservationGroups, nil
+	}
+	return nil, &NotLoadedError{edge: "observation_groups"}
+}
+
 // IncidentsOrErr returns the Incidents value or an error if the edge
 // was not loaded in eager-loading.
 func (e SituationEdges) IncidentsOrErr() ([]*Incident, error) {
-	if e.loadedTypes[5] {
+	if e.loadedTypes[6] {
 		return e.Incidents, nil
 	}
 	return nil, &NotLoadedError{edge: "incidents"}
@@ -130,7 +141,7 @@ func (e SituationEdges) IncidentsOrErr() ([]*Incident, error) {
 // AlertEpisodeLinksOrErr returns the AlertEpisodeLinks value or an error if the edge
 // was not loaded in eager-loading.
 func (e SituationEdges) AlertEpisodeLinksOrErr() ([]*AlertEpisodeSituation, error) {
-	if e.loadedTypes[6] {
+	if e.loadedTypes[7] {
 		return e.AlertEpisodeLinks, nil
 	}
 	return nil, &NotLoadedError{edge: "alert_episode_links"}
@@ -274,6 +285,11 @@ func (_m *Situation) QueryAlertEpisodes() *AlertEpisodeQuery {
 // QueryHazardAssessments queries the "hazard_assessments" edge of the Situation entity.
 func (_m *Situation) QueryHazardAssessments() *SituationHazardAssessmentQuery {
 	return NewSituationClient(_m.config).QueryHazardAssessments(_m)
+}
+
+// QueryObservationGroups queries the "observation_groups" edge of the Situation entity.
+func (_m *Situation) QueryObservationGroups() *SituationObservationGroupQuery {
+	return NewSituationClient(_m.config).QueryObservationGroups(_m)
 }
 
 // QueryIncidents queries the "incidents" edge of the Situation entity.

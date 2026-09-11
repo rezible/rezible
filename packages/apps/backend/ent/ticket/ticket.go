@@ -3,6 +3,8 @@
 package ticket
 
 import (
+	"time"
+
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -16,8 +18,22 @@ const (
 	FieldID = "id"
 	// FieldTenantID holds the string denoting the tenant_id field in the database.
 	FieldTenantID = "tenant_id"
+	// FieldCreatedAt holds the string denoting the created_at field in the database.
+	FieldCreatedAt = "created_at"
+	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
+	FieldUpdatedAt = "updated_at"
 	// FieldTitle holds the string denoting the title field in the database.
 	FieldTitle = "title"
+	// FieldReference holds the string denoting the reference field in the database.
+	FieldReference = "reference"
+	// FieldURL holds the string denoting the url field in the database.
+	FieldURL = "url"
+	// FieldProvider holds the string denoting the provider field in the database.
+	FieldProvider = "provider"
+	// FieldProviderNamespace holds the string denoting the provider_namespace field in the database.
+	FieldProviderNamespace = "provider_namespace"
+	// FieldProviderResourceRef holds the string denoting the provider_resource_ref field in the database.
+	FieldProviderResourceRef = "provider_resource_ref"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
 	// EdgeTasks holds the string denoting the tasks edge name in mutations.
@@ -42,7 +58,14 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldTenantID,
+	FieldCreatedAt,
+	FieldUpdatedAt,
 	FieldTitle,
+	FieldReference,
+	FieldURL,
+	FieldProvider,
+	FieldProviderNamespace,
+	FieldProviderResourceRef,
 }
 
 var (
@@ -69,6 +92,12 @@ func ValidColumn(column string) bool {
 var (
 	Hooks  [1]ent.Hook
 	Policy ent.Policy
+	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
+	DefaultCreatedAt func() time.Time
+	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.
+	DefaultUpdatedAt func() time.Time
+	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
+	UpdateDefaultUpdatedAt func() time.Time
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
@@ -86,9 +115,44 @@ func ByTenantID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTenantID, opts...).ToFunc()
 }
 
+// ByCreatedAt orders the results by the created_at field.
+func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCreatedAt, opts...).ToFunc()
+}
+
+// ByUpdatedAt orders the results by the updated_at field.
+func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
+}
+
 // ByTitle orders the results by the title field.
 func ByTitle(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTitle, opts...).ToFunc()
+}
+
+// ByReference orders the results by the reference field.
+func ByReference(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldReference, opts...).ToFunc()
+}
+
+// ByURL orders the results by the url field.
+func ByURL(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldURL, opts...).ToFunc()
+}
+
+// ByProvider orders the results by the provider field.
+func ByProvider(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldProvider, opts...).ToFunc()
+}
+
+// ByProviderNamespace orders the results by the provider_namespace field.
+func ByProviderNamespace(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldProviderNamespace, opts...).ToFunc()
+}
+
+// ByProviderResourceRef orders the results by the provider_resource_ref field.
+func ByProviderResourceRef(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldProviderResourceRef, opts...).ToFunc()
 }
 
 // ByTenantField orders the results by tenant field.

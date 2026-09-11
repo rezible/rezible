@@ -16,6 +16,7 @@ import (
 	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/knowledgeevidence"
 	"github.com/rezible/rezible/ent/knowledgerelationship"
+	"github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/ent/systemanalysisentry"
 	"github.com/rezible/rezible/ent/systemanalysisentrysubject"
 	"github.com/rezible/rezible/ent/tenant"
@@ -111,6 +112,20 @@ func (_c *SystemAnalysisEntrySubjectCreate) SetNillableKnowledgeEvidenceID(v *uu
 	return _c
 }
 
+// SetNormalizedEventID sets the "normalized_event_id" field.
+func (_c *SystemAnalysisEntrySubjectCreate) SetNormalizedEventID(v uuid.UUID) *SystemAnalysisEntrySubjectCreate {
+	_c.mutation.SetNormalizedEventID(v)
+	return _c
+}
+
+// SetNillableNormalizedEventID sets the "normalized_event_id" field if the given value is not nil.
+func (_c *SystemAnalysisEntrySubjectCreate) SetNillableNormalizedEventID(v *uuid.UUID) *SystemAnalysisEntrySubjectCreate {
+	if v != nil {
+		_c.SetNormalizedEventID(*v)
+	}
+	return _c
+}
+
 // SetRole sets the "role" field.
 func (_c *SystemAnalysisEntrySubjectCreate) SetRole(v string) *SystemAnalysisEntrySubjectCreate {
 	_c.mutation.SetRole(v)
@@ -154,6 +169,11 @@ func (_c *SystemAnalysisEntrySubjectCreate) SetKnowledgeRelationship(v *Knowledg
 // SetKnowledgeEvidence sets the "knowledge_evidence" edge to the KnowledgeEvidence entity.
 func (_c *SystemAnalysisEntrySubjectCreate) SetKnowledgeEvidence(v *KnowledgeEvidence) *SystemAnalysisEntrySubjectCreate {
 	return _c.SetKnowledgeEvidenceID(v.ID)
+}
+
+// SetNormalizedEvent sets the "normalized_event" edge to the NormalizedEvent entity.
+func (_c *SystemAnalysisEntrySubjectCreate) SetNormalizedEvent(v *NormalizedEvent) *SystemAnalysisEntrySubjectCreate {
+	return _c.SetNormalizedEventID(v.ID)
 }
 
 // Mutation returns the SystemAnalysisEntrySubjectMutation object of the builder.
@@ -384,6 +404,24 @@ func (_c *SystemAnalysisEntrySubjectCreate) createSpec() (*SystemAnalysisEntrySu
 		_node.KnowledgeEvidenceID = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
+	if nodes := _c.mutation.NormalizedEventIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   systemanalysisentrysubject.NormalizedEventTable,
+			Columns: []string{systemanalysisentrysubject.NormalizedEventColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(normalizedevent.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.SystemAnalysisEntrySubject
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.NormalizedEventID = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	return _node, _spec
 }
 
@@ -503,6 +541,9 @@ func (u *SystemAnalysisEntrySubjectUpsertOne) UpdateNewValues() *SystemAnalysisE
 		}
 		if _, exists := u.create.mutation.KnowledgeEvidenceID(); exists {
 			s.SetIgnore(systemanalysisentrysubject.FieldKnowledgeEvidenceID)
+		}
+		if _, exists := u.create.mutation.NormalizedEventID(); exists {
+			s.SetIgnore(systemanalysisentrysubject.FieldNormalizedEventID)
 		}
 	}))
 	return u
@@ -774,6 +815,9 @@ func (u *SystemAnalysisEntrySubjectUpsertBulk) UpdateNewValues() *SystemAnalysis
 			}
 			if _, exists := b.mutation.KnowledgeEvidenceID(); exists {
 				s.SetIgnore(systemanalysisentrysubject.FieldKnowledgeEvidenceID)
+			}
+			if _, exists := b.mutation.NormalizedEventID(); exists {
+				s.SetIgnore(systemanalysisentrysubject.FieldNormalizedEventID)
 			}
 		}
 	}))

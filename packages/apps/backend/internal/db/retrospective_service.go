@@ -10,7 +10,6 @@ import (
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/retrospective"
-	"github.com/rezible/rezible/ent/retrospectivecomment"
 )
 
 type RetrospectiveService struct {
@@ -30,7 +29,10 @@ func NewRetrospectiveService(
 }
 
 func (s *RetrospectiveService) Get(ctx context.Context, p predicate.Retrospective) (*ent.Retrospective, error) {
-	return s.db.Client(ctx).Retrospective.Query().Where(p).Only(ctx)
+	return s.db.Client(ctx).Retrospective.Query().
+		Where(p).
+		WithReviews().
+		Only(ctx)
 }
 
 func (s *RetrospectiveService) Set(ctx context.Context, id uuid.UUID, setFn func(*ent.RetrospectiveMutation)) (*ent.Retrospective, error) {
@@ -46,20 +48,14 @@ func (s *RetrospectiveService) Set(ctx context.Context, id uuid.UUID, setFn func
 	return updated, nil
 }
 
-func (s *RetrospectiveService) getRetrospectiveKind(ctx context.Context, inc *ent.Incident) (retrospective.Kind, error) {
-	// TODO: base on severity?
-	return retrospective.KindFull, nil
-}
-
 func (s *RetrospectiveService) createForIncident(ctx context.Context, inc *ent.Incident) (*ent.Retrospective, error) {
 	exists, queryErr := s.db.Client(ctx).Retrospective.Query().Where(retrospective.IncidentID(inc.ID)).Exist(ctx)
 	if exists || queryErr != nil {
 		return nil, queryErr
 	}
-	kind, kindErr := s.getRetrospectiveKind(ctx, inc)
-	if kindErr != nil {
-		return nil, fmt.Errorf("get retrospective kind: %w", kindErr)
-	}
+
+	// TODO: base on severity?
+	kind := retrospective.KindFull
 
 	var retro *ent.Retrospective
 	createTxFn := func(txCtx context.Context, tx *ent.Client) error {
@@ -93,39 +89,8 @@ func (s *RetrospectiveService) createForIncident(ctx context.Context, inc *ent.I
 }
 
 func (s *RetrospectiveService) GetForIncident(ctx context.Context, inc *ent.Incident) (*ent.Retrospective, error) {
-	return s.db.Client(ctx).Retrospective.Query().Where(retrospective.IncidentID(inc.ID)).Only(ctx)
-}
-
-func (s *RetrospectiveService) GetComment(ctx context.Context, id uuid.UUID) (*ent.RetrospectiveComment, error) {
-	return s.db.Client(ctx).RetrospectiveComment.Get(ctx, id)
-}
-
-func (s *RetrospectiveService) SetComment(ctx context.Context, cmt *ent.RetrospectiveComment) (*ent.RetrospectiveComment, error) {
-	var m *ent.RetrospectiveCommentMutation
-	if cmt.ID != uuid.Nil {
-		m = s.db.Client(ctx).RetrospectiveComment.UpdateOneID(cmt.ID).Mutation()
-	} else {
-		m = s.db.Client(ctx).RetrospectiveComment.Create().Mutation()
-	}
-	v, setErr := s.db.Client(ctx).Mutate(ctx, m)
-	if setErr != nil {
-		return nil, fmt.Errorf("failed to %s comment: %w", m.Op(), setErr)
-	}
-	updated, ok := v.(*ent.RetrospectiveComment)
-	if !ok {
-		return nil, fmt.Errorf("invalid ")
-	}
-	return updated, nil
-}
-
-func (s *RetrospectiveService) ListComments(ctx context.Context, params rez.ListRetrospectiveCommentsParams) (*ent.ListResult[ent.RetrospectiveComment], error) {
-	query := s.db.Client(ctx).RetrospectiveComment.Query().
-		Where(retrospectivecomment.RetrospectiveID(params.RetrospectiveID)).
-		Order(retrospectivecomment.ByID(params.GetOrder()))
-
-	if params.WithReplies {
-		query = query.WithReplies()
-	}
-
-	return ent.DoListQuery[ent.RetrospectiveComment, *ent.RetrospectiveCommentQuery](ctx, query, params.ListParams)
+	return s.db.Client(ctx).Retrospective.Query().
+		Where(retrospective.IncidentID(inc.ID)).
+		WithReviews().
+		Only(ctx)
 }

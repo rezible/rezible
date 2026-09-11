@@ -3,6 +3,8 @@
 package task
 
 import (
+	"time"
+
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
@@ -60,14 +62,34 @@ func TenantID(v int) predicate.Task {
 	return predicate.Task(sql.FieldEQ(FieldTenantID, v))
 }
 
+// CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
+func CreatedAt(v time.Time) predicate.Task {
+	return predicate.Task(sql.FieldEQ(FieldCreatedAt, v))
+}
+
+// UpdatedAt applies equality check predicate on the "updated_at" field. It's identical to UpdatedAtEQ.
+func UpdatedAt(v time.Time) predicate.Task {
+	return predicate.Task(sql.FieldEQ(FieldUpdatedAt, v))
+}
+
 // Title applies equality check predicate on the "title" field. It's identical to TitleEQ.
 func Title(v string) predicate.Task {
 	return predicate.Task(sql.FieldEQ(FieldTitle, v))
 }
 
+// DueAt applies equality check predicate on the "due_at" field. It's identical to DueAtEQ.
+func DueAt(v time.Time) predicate.Task {
+	return predicate.Task(sql.FieldEQ(FieldDueAt, v))
+}
+
 // IncidentID applies equality check predicate on the "incident_id" field. It's identical to IncidentIDEQ.
 func IncidentID(v uuid.UUID) predicate.Task {
 	return predicate.Task(sql.FieldEQ(FieldIncidentID, v))
+}
+
+// OriginEntryID applies equality check predicate on the "origin_entry_id" field. It's identical to OriginEntryIDEQ.
+func OriginEntryID(v uuid.UUID) predicate.Task {
+	return predicate.Task(sql.FieldEQ(FieldOriginEntryID, v))
 }
 
 // AssigneeID applies equality check predicate on the "assignee_id" field. It's identical to AssigneeIDEQ.
@@ -98,6 +120,86 @@ func TenantIDIn(vs ...int) predicate.Task {
 // TenantIDNotIn applies the NotIn predicate on the "tenant_id" field.
 func TenantIDNotIn(vs ...int) predicate.Task {
 	return predicate.Task(sql.FieldNotIn(FieldTenantID, vs...))
+}
+
+// CreatedAtEQ applies the EQ predicate on the "created_at" field.
+func CreatedAtEQ(v time.Time) predicate.Task {
+	return predicate.Task(sql.FieldEQ(FieldCreatedAt, v))
+}
+
+// CreatedAtNEQ applies the NEQ predicate on the "created_at" field.
+func CreatedAtNEQ(v time.Time) predicate.Task {
+	return predicate.Task(sql.FieldNEQ(FieldCreatedAt, v))
+}
+
+// CreatedAtIn applies the In predicate on the "created_at" field.
+func CreatedAtIn(vs ...time.Time) predicate.Task {
+	return predicate.Task(sql.FieldIn(FieldCreatedAt, vs...))
+}
+
+// CreatedAtNotIn applies the NotIn predicate on the "created_at" field.
+func CreatedAtNotIn(vs ...time.Time) predicate.Task {
+	return predicate.Task(sql.FieldNotIn(FieldCreatedAt, vs...))
+}
+
+// CreatedAtGT applies the GT predicate on the "created_at" field.
+func CreatedAtGT(v time.Time) predicate.Task {
+	return predicate.Task(sql.FieldGT(FieldCreatedAt, v))
+}
+
+// CreatedAtGTE applies the GTE predicate on the "created_at" field.
+func CreatedAtGTE(v time.Time) predicate.Task {
+	return predicate.Task(sql.FieldGTE(FieldCreatedAt, v))
+}
+
+// CreatedAtLT applies the LT predicate on the "created_at" field.
+func CreatedAtLT(v time.Time) predicate.Task {
+	return predicate.Task(sql.FieldLT(FieldCreatedAt, v))
+}
+
+// CreatedAtLTE applies the LTE predicate on the "created_at" field.
+func CreatedAtLTE(v time.Time) predicate.Task {
+	return predicate.Task(sql.FieldLTE(FieldCreatedAt, v))
+}
+
+// UpdatedAtEQ applies the EQ predicate on the "updated_at" field.
+func UpdatedAtEQ(v time.Time) predicate.Task {
+	return predicate.Task(sql.FieldEQ(FieldUpdatedAt, v))
+}
+
+// UpdatedAtNEQ applies the NEQ predicate on the "updated_at" field.
+func UpdatedAtNEQ(v time.Time) predicate.Task {
+	return predicate.Task(sql.FieldNEQ(FieldUpdatedAt, v))
+}
+
+// UpdatedAtIn applies the In predicate on the "updated_at" field.
+func UpdatedAtIn(vs ...time.Time) predicate.Task {
+	return predicate.Task(sql.FieldIn(FieldUpdatedAt, vs...))
+}
+
+// UpdatedAtNotIn applies the NotIn predicate on the "updated_at" field.
+func UpdatedAtNotIn(vs ...time.Time) predicate.Task {
+	return predicate.Task(sql.FieldNotIn(FieldUpdatedAt, vs...))
+}
+
+// UpdatedAtGT applies the GT predicate on the "updated_at" field.
+func UpdatedAtGT(v time.Time) predicate.Task {
+	return predicate.Task(sql.FieldGT(FieldUpdatedAt, v))
+}
+
+// UpdatedAtGTE applies the GTE predicate on the "updated_at" field.
+func UpdatedAtGTE(v time.Time) predicate.Task {
+	return predicate.Task(sql.FieldGTE(FieldUpdatedAt, v))
+}
+
+// UpdatedAtLT applies the LT predicate on the "updated_at" field.
+func UpdatedAtLT(v time.Time) predicate.Task {
+	return predicate.Task(sql.FieldLT(FieldUpdatedAt, v))
+}
+
+// UpdatedAtLTE applies the LTE predicate on the "updated_at" field.
+func UpdatedAtLTE(v time.Time) predicate.Task {
+	return predicate.Task(sql.FieldLTE(FieldUpdatedAt, v))
 }
 
 // TypeEQ applies the EQ predicate on the "type" field.
@@ -185,6 +287,76 @@ func TitleContainsFold(v string) predicate.Task {
 	return predicate.Task(sql.FieldContainsFold(FieldTitle, v))
 }
 
+// StateEQ applies the EQ predicate on the "state" field.
+func StateEQ(v State) predicate.Task {
+	return predicate.Task(sql.FieldEQ(FieldState, v))
+}
+
+// StateNEQ applies the NEQ predicate on the "state" field.
+func StateNEQ(v State) predicate.Task {
+	return predicate.Task(sql.FieldNEQ(FieldState, v))
+}
+
+// StateIn applies the In predicate on the "state" field.
+func StateIn(vs ...State) predicate.Task {
+	return predicate.Task(sql.FieldIn(FieldState, vs...))
+}
+
+// StateNotIn applies the NotIn predicate on the "state" field.
+func StateNotIn(vs ...State) predicate.Task {
+	return predicate.Task(sql.FieldNotIn(FieldState, vs...))
+}
+
+// DueAtEQ applies the EQ predicate on the "due_at" field.
+func DueAtEQ(v time.Time) predicate.Task {
+	return predicate.Task(sql.FieldEQ(FieldDueAt, v))
+}
+
+// DueAtNEQ applies the NEQ predicate on the "due_at" field.
+func DueAtNEQ(v time.Time) predicate.Task {
+	return predicate.Task(sql.FieldNEQ(FieldDueAt, v))
+}
+
+// DueAtIn applies the In predicate on the "due_at" field.
+func DueAtIn(vs ...time.Time) predicate.Task {
+	return predicate.Task(sql.FieldIn(FieldDueAt, vs...))
+}
+
+// DueAtNotIn applies the NotIn predicate on the "due_at" field.
+func DueAtNotIn(vs ...time.Time) predicate.Task {
+	return predicate.Task(sql.FieldNotIn(FieldDueAt, vs...))
+}
+
+// DueAtGT applies the GT predicate on the "due_at" field.
+func DueAtGT(v time.Time) predicate.Task {
+	return predicate.Task(sql.FieldGT(FieldDueAt, v))
+}
+
+// DueAtGTE applies the GTE predicate on the "due_at" field.
+func DueAtGTE(v time.Time) predicate.Task {
+	return predicate.Task(sql.FieldGTE(FieldDueAt, v))
+}
+
+// DueAtLT applies the LT predicate on the "due_at" field.
+func DueAtLT(v time.Time) predicate.Task {
+	return predicate.Task(sql.FieldLT(FieldDueAt, v))
+}
+
+// DueAtLTE applies the LTE predicate on the "due_at" field.
+func DueAtLTE(v time.Time) predicate.Task {
+	return predicate.Task(sql.FieldLTE(FieldDueAt, v))
+}
+
+// DueAtIsNil applies the IsNil predicate on the "due_at" field.
+func DueAtIsNil() predicate.Task {
+	return predicate.Task(sql.FieldIsNull(FieldDueAt))
+}
+
+// DueAtNotNil applies the NotNil predicate on the "due_at" field.
+func DueAtNotNil() predicate.Task {
+	return predicate.Task(sql.FieldNotNull(FieldDueAt))
+}
+
 // IncidentIDEQ applies the EQ predicate on the "incident_id" field.
 func IncidentIDEQ(v uuid.UUID) predicate.Task {
 	return predicate.Task(sql.FieldEQ(FieldIncidentID, v))
@@ -213,6 +385,36 @@ func IncidentIDIsNil() predicate.Task {
 // IncidentIDNotNil applies the NotNil predicate on the "incident_id" field.
 func IncidentIDNotNil() predicate.Task {
 	return predicate.Task(sql.FieldNotNull(FieldIncidentID))
+}
+
+// OriginEntryIDEQ applies the EQ predicate on the "origin_entry_id" field.
+func OriginEntryIDEQ(v uuid.UUID) predicate.Task {
+	return predicate.Task(sql.FieldEQ(FieldOriginEntryID, v))
+}
+
+// OriginEntryIDNEQ applies the NEQ predicate on the "origin_entry_id" field.
+func OriginEntryIDNEQ(v uuid.UUID) predicate.Task {
+	return predicate.Task(sql.FieldNEQ(FieldOriginEntryID, v))
+}
+
+// OriginEntryIDIn applies the In predicate on the "origin_entry_id" field.
+func OriginEntryIDIn(vs ...uuid.UUID) predicate.Task {
+	return predicate.Task(sql.FieldIn(FieldOriginEntryID, vs...))
+}
+
+// OriginEntryIDNotIn applies the NotIn predicate on the "origin_entry_id" field.
+func OriginEntryIDNotIn(vs ...uuid.UUID) predicate.Task {
+	return predicate.Task(sql.FieldNotIn(FieldOriginEntryID, vs...))
+}
+
+// OriginEntryIDIsNil applies the IsNil predicate on the "origin_entry_id" field.
+func OriginEntryIDIsNil() predicate.Task {
+	return predicate.Task(sql.FieldIsNull(FieldOriginEntryID))
+}
+
+// OriginEntryIDNotNil applies the NotNil predicate on the "origin_entry_id" field.
+func OriginEntryIDNotNil() predicate.Task {
+	return predicate.Task(sql.FieldNotNull(FieldOriginEntryID))
 }
 
 // AssigneeIDEQ applies the EQ predicate on the "assignee_id" field.
@@ -353,6 +555,35 @@ func HasIncidentWith(preds ...predicate.Incident) predicate.Task {
 		step := newIncidentStep()
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.Incident
+		step.Edge.Schema = schemaConfig.Task
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasOriginEntry applies the HasEdge predicate on the "origin_entry" edge.
+func HasOriginEntry() predicate.Task {
+	return predicate.Task(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, OriginEntryTable, OriginEntryColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SystemAnalysisEntry
+		step.Edge.Schema = schemaConfig.Task
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasOriginEntryWith applies the HasEdge predicate on the "origin_entry" edge with a given conditions (other predicates).
+func HasOriginEntryWith(preds ...predicate.SystemAnalysisEntry) predicate.Task {
+	return predicate.Task(func(s *sql.Selector) {
+		step := newOriginEntryStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SystemAnalysisEntry
 		step.Edge.Schema = schemaConfig.Task
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

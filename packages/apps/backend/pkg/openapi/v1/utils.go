@@ -73,6 +73,19 @@ type (
 	}
 )
 
+var _ huma.Resolver = (*PaginationRequest)(nil)
+
+func (p *PaginationRequest) Resolve(_ huma.Context) []error {
+	if p.Page <= 0 || p.PageSize <= 0 {
+		return nil
+	}
+	maxInt := int(^uint(0) >> 1)
+	if p.Page > maxInt/p.PageSize {
+		return []error{&huma.ErrorDetail{Message: "page and pageSize are too large", Location: "query.page", Value: p.Page}}
+	}
+	return nil
+}
+
 func (p PaginationRequest) ListParams() ent.ListParams {
 	return ent.ListParams{
 		Page:     p.Page,

@@ -34,8 +34,10 @@ const (
 	EdgeIncident = "incident"
 	// EdgeDocument holds the string denoting the document edge name in mutations.
 	EdgeDocument = "document"
-	// EdgeComments holds the string denoting the comments edge name in mutations.
-	EdgeComments = "comments"
+	// EdgeDiscussionThreads holds the string denoting the discussion_threads edge name in mutations.
+	EdgeDiscussionThreads = "discussion_threads"
+	// EdgeReviews holds the string denoting the reviews edge name in mutations.
+	EdgeReviews = "reviews"
 	// EdgeSystemAnalysis holds the string denoting the system_analysis edge name in mutations.
 	EdgeSystemAnalysis = "system_analysis"
 	// Table holds the table name of the retrospective in the database.
@@ -61,13 +63,20 @@ const (
 	DocumentInverseTable = "documents"
 	// DocumentColumn is the table column denoting the document relation/edge.
 	DocumentColumn = "document_id"
-	// CommentsTable is the table that holds the comments relation/edge.
-	CommentsTable = "retrospective_comments"
-	// CommentsInverseTable is the table name for the RetrospectiveComment entity.
-	// It exists in this package in order to avoid circular dependency with the "retrospectivecomment" package.
-	CommentsInverseTable = "retrospective_comments"
-	// CommentsColumn is the table column denoting the comments relation/edge.
-	CommentsColumn = "retrospective_id"
+	// DiscussionThreadsTable is the table that holds the discussion_threads relation/edge.
+	DiscussionThreadsTable = "discussion_threads"
+	// DiscussionThreadsInverseTable is the table name for the DiscussionThread entity.
+	// It exists in this package in order to avoid circular dependency with the "discussionthread" package.
+	DiscussionThreadsInverseTable = "discussion_threads"
+	// DiscussionThreadsColumn is the table column denoting the discussion_threads relation/edge.
+	DiscussionThreadsColumn = "retrospective_id"
+	// ReviewsTable is the table that holds the reviews relation/edge.
+	ReviewsTable = "reviews"
+	// ReviewsInverseTable is the table name for the Review entity.
+	// It exists in this package in order to avoid circular dependency with the "review" package.
+	ReviewsInverseTable = "reviews"
+	// ReviewsColumn is the table column denoting the reviews relation/edge.
+	ReviewsColumn = "retrospective_id"
 	// SystemAnalysisTable is the table that holds the system_analysis relation/edge.
 	SystemAnalysisTable = "retrospectives"
 	// SystemAnalysisInverseTable is the table name for the SystemAnalysis entity.
@@ -217,17 +226,31 @@ func ByDocumentField(field string, opts ...sql.OrderTermOption) OrderOption {
 	}
 }
 
-// ByCommentsCount orders the results by comments count.
-func ByCommentsCount(opts ...sql.OrderTermOption) OrderOption {
+// ByDiscussionThreadsCount orders the results by discussion_threads count.
+func ByDiscussionThreadsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newCommentsStep(), opts...)
+		sqlgraph.OrderByNeighborsCount(s, newDiscussionThreadsStep(), opts...)
 	}
 }
 
-// ByComments orders the results by comments terms.
-func ByComments(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+// ByDiscussionThreads orders the results by discussion_threads terms.
+func ByDiscussionThreads(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newCommentsStep(), append([]sql.OrderTerm{term}, terms...)...)
+		sqlgraph.OrderByNeighborTerms(s, newDiscussionThreadsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByReviewsCount orders the results by reviews count.
+func ByReviewsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newReviewsStep(), opts...)
+	}
+}
+
+// ByReviews orders the results by reviews terms.
+func ByReviews(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newReviewsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
 
@@ -258,11 +281,18 @@ func newDocumentStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.O2O, true, DocumentTable, DocumentColumn),
 	)
 }
-func newCommentsStep() *sqlgraph.Step {
+func newDiscussionThreadsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(CommentsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, CommentsTable, CommentsColumn),
+		sqlgraph.To(DiscussionThreadsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, DiscussionThreadsTable, DiscussionThreadsColumn),
+	)
+}
+func newReviewsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ReviewsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, ReviewsTable, ReviewsColumn),
 	)
 }
 func newSystemAnalysisStep() *sqlgraph.Step {

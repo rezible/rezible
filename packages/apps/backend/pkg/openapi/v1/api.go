@@ -14,6 +14,7 @@ const VersionPrefix = "/v1"
 type Handler interface {
 	// GetMiddleware() []Middleware
 
+	ActivityHandler
 	UserSessionsHandler
 	OrganizationsHandler
 	UsersHandler
@@ -28,6 +29,7 @@ type Handler interface {
 	SituationsHandler
 
 	IncidentsHandler
+	ReviewsHandler
 	IncidentMetadataHandler
 	IncidentMilestonesHandler
 	IncidentDebriefsHandler
@@ -42,6 +44,7 @@ type Handler interface {
 	EventAnnotationsHandler
 
 	AlertsHandler
+	DiscussionHandler
 
 	OncallRostersHandler
 	OncallShiftsHandler

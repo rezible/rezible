@@ -471,6 +471,35 @@ func HasEntriesWith(preds ...predicate.SystemAnalysisEntry) predicate.SystemAnal
 	})
 }
 
+// HasDiscussionThreads applies the HasEdge predicate on the "discussion_threads" edge.
+func HasDiscussionThreads() predicate.SystemAnalysis {
+	return predicate.SystemAnalysis(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, DiscussionThreadsTable, DiscussionThreadsColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.DiscussionThread
+		step.Edge.Schema = schemaConfig.DiscussionThread
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasDiscussionThreadsWith applies the HasEdge predicate on the "discussion_threads" edge with a given conditions (other predicates).
+func HasDiscussionThreadsWith(preds ...predicate.DiscussionThread) predicate.SystemAnalysis {
+	return predicate.SystemAnalysis(func(s *sql.Selector) {
+		step := newDiscussionThreadsStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.DiscussionThread
+		step.Edge.Schema = schemaConfig.DiscussionThread
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // HasSituationInvestigation applies the HasEdge predicate on the "situation_investigation" edge.
 func HasSituationInvestigation() predicate.SystemAnalysis {
 	return predicate.SystemAnalysis(func(s *sql.Selector) {

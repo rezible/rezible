@@ -11,12 +11,13 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/discussionthread"
 	"github.com/rezible/rezible/ent/document"
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/retrospective"
-	"github.com/rezible/rezible/ent/retrospectivecomment"
+	"github.com/rezible/rezible/ent/review"
 	"github.com/rezible/rezible/ent/systemanalysis"
 )
 
@@ -114,19 +115,34 @@ func (_u *RetrospectiveUpdate) SetDocument(v *Document) *RetrospectiveUpdate {
 	return _u.SetDocumentID(v.ID)
 }
 
-// AddCommentIDs adds the "comments" edge to the RetrospectiveComment entity by IDs.
-func (_u *RetrospectiveUpdate) AddCommentIDs(ids ...uuid.UUID) *RetrospectiveUpdate {
-	_u.mutation.AddCommentIDs(ids...)
+// AddDiscussionThreadIDs adds the "discussion_threads" edge to the DiscussionThread entity by IDs.
+func (_u *RetrospectiveUpdate) AddDiscussionThreadIDs(ids ...uuid.UUID) *RetrospectiveUpdate {
+	_u.mutation.AddDiscussionThreadIDs(ids...)
 	return _u
 }
 
-// AddComments adds the "comments" edges to the RetrospectiveComment entity.
-func (_u *RetrospectiveUpdate) AddComments(v ...*RetrospectiveComment) *RetrospectiveUpdate {
+// AddDiscussionThreads adds the "discussion_threads" edges to the DiscussionThread entity.
+func (_u *RetrospectiveUpdate) AddDiscussionThreads(v ...*DiscussionThread) *RetrospectiveUpdate {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _u.AddCommentIDs(ids...)
+	return _u.AddDiscussionThreadIDs(ids...)
+}
+
+// AddReviewIDs adds the "reviews" edge to the Review entity by IDs.
+func (_u *RetrospectiveUpdate) AddReviewIDs(ids ...uuid.UUID) *RetrospectiveUpdate {
+	_u.mutation.AddReviewIDs(ids...)
+	return _u
+}
+
+// AddReviews adds the "reviews" edges to the Review entity.
+func (_u *RetrospectiveUpdate) AddReviews(v ...*Review) *RetrospectiveUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddReviewIDs(ids...)
 }
 
 // SetSystemAnalysis sets the "system_analysis" edge to the SystemAnalysis entity.
@@ -151,25 +167,46 @@ func (_u *RetrospectiveUpdate) ClearDocument() *RetrospectiveUpdate {
 	return _u
 }
 
-// ClearComments clears all "comments" edges to the RetrospectiveComment entity.
-func (_u *RetrospectiveUpdate) ClearComments() *RetrospectiveUpdate {
-	_u.mutation.ClearComments()
+// ClearDiscussionThreads clears all "discussion_threads" edges to the DiscussionThread entity.
+func (_u *RetrospectiveUpdate) ClearDiscussionThreads() *RetrospectiveUpdate {
+	_u.mutation.ClearDiscussionThreads()
 	return _u
 }
 
-// RemoveCommentIDs removes the "comments" edge to RetrospectiveComment entities by IDs.
-func (_u *RetrospectiveUpdate) RemoveCommentIDs(ids ...uuid.UUID) *RetrospectiveUpdate {
-	_u.mutation.RemoveCommentIDs(ids...)
+// RemoveDiscussionThreadIDs removes the "discussion_threads" edge to DiscussionThread entities by IDs.
+func (_u *RetrospectiveUpdate) RemoveDiscussionThreadIDs(ids ...uuid.UUID) *RetrospectiveUpdate {
+	_u.mutation.RemoveDiscussionThreadIDs(ids...)
 	return _u
 }
 
-// RemoveComments removes "comments" edges to RetrospectiveComment entities.
-func (_u *RetrospectiveUpdate) RemoveComments(v ...*RetrospectiveComment) *RetrospectiveUpdate {
+// RemoveDiscussionThreads removes "discussion_threads" edges to DiscussionThread entities.
+func (_u *RetrospectiveUpdate) RemoveDiscussionThreads(v ...*DiscussionThread) *RetrospectiveUpdate {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _u.RemoveCommentIDs(ids...)
+	return _u.RemoveDiscussionThreadIDs(ids...)
+}
+
+// ClearReviews clears all "reviews" edges to the Review entity.
+func (_u *RetrospectiveUpdate) ClearReviews() *RetrospectiveUpdate {
+	_u.mutation.ClearReviews()
+	return _u
+}
+
+// RemoveReviewIDs removes the "reviews" edge to Review entities by IDs.
+func (_u *RetrospectiveUpdate) RemoveReviewIDs(ids ...uuid.UUID) *RetrospectiveUpdate {
+	_u.mutation.RemoveReviewIDs(ids...)
+	return _u
+}
+
+// RemoveReviews removes "reviews" edges to Review entities.
+func (_u *RetrospectiveUpdate) RemoveReviews(v ...*Review) *RetrospectiveUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveReviewIDs(ids...)
 }
 
 // ClearSystemAnalysis clears the "system_analysis" edge to the SystemAnalysis entity.
@@ -318,49 +355,97 @@ func (_u *RetrospectiveUpdate) sqlSave(ctx context.Context) (_node int, err erro
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if _u.mutation.CommentsCleared() {
+	if _u.mutation.DiscussionThreadsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   retrospective.CommentsTable,
-			Columns: []string{retrospective.CommentsColumn},
+			Table:   retrospective.DiscussionThreadsTable,
+			Columns: []string{retrospective.DiscussionThreadsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(retrospectivecomment.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(discussionthread.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.RetrospectiveComment
+		edge.Schema = _u.schemaConfig.DiscussionThread
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.RemovedCommentsIDs(); len(nodes) > 0 && !_u.mutation.CommentsCleared() {
+	if nodes := _u.mutation.RemovedDiscussionThreadsIDs(); len(nodes) > 0 && !_u.mutation.DiscussionThreadsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   retrospective.CommentsTable,
-			Columns: []string{retrospective.CommentsColumn},
+			Table:   retrospective.DiscussionThreadsTable,
+			Columns: []string{retrospective.DiscussionThreadsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(retrospectivecomment.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(discussionthread.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.RetrospectiveComment
+		edge.Schema = _u.schemaConfig.DiscussionThread
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.CommentsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.DiscussionThreadsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   retrospective.CommentsTable,
-			Columns: []string{retrospective.CommentsColumn},
+			Table:   retrospective.DiscussionThreadsTable,
+			Columns: []string{retrospective.DiscussionThreadsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(retrospectivecomment.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(discussionthread.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.RetrospectiveComment
+		edge.Schema = _u.schemaConfig.DiscussionThread
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.ReviewsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   retrospective.ReviewsTable,
+			Columns: []string{retrospective.ReviewsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(review.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.Review
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedReviewsIDs(); len(nodes) > 0 && !_u.mutation.ReviewsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   retrospective.ReviewsTable,
+			Columns: []string{retrospective.ReviewsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(review.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.Review
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ReviewsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   retrospective.ReviewsTable,
+			Columns: []string{retrospective.ReviewsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(review.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.Review
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -501,19 +586,34 @@ func (_u *RetrospectiveUpdateOne) SetDocument(v *Document) *RetrospectiveUpdateO
 	return _u.SetDocumentID(v.ID)
 }
 
-// AddCommentIDs adds the "comments" edge to the RetrospectiveComment entity by IDs.
-func (_u *RetrospectiveUpdateOne) AddCommentIDs(ids ...uuid.UUID) *RetrospectiveUpdateOne {
-	_u.mutation.AddCommentIDs(ids...)
+// AddDiscussionThreadIDs adds the "discussion_threads" edge to the DiscussionThread entity by IDs.
+func (_u *RetrospectiveUpdateOne) AddDiscussionThreadIDs(ids ...uuid.UUID) *RetrospectiveUpdateOne {
+	_u.mutation.AddDiscussionThreadIDs(ids...)
 	return _u
 }
 
-// AddComments adds the "comments" edges to the RetrospectiveComment entity.
-func (_u *RetrospectiveUpdateOne) AddComments(v ...*RetrospectiveComment) *RetrospectiveUpdateOne {
+// AddDiscussionThreads adds the "discussion_threads" edges to the DiscussionThread entity.
+func (_u *RetrospectiveUpdateOne) AddDiscussionThreads(v ...*DiscussionThread) *RetrospectiveUpdateOne {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _u.AddCommentIDs(ids...)
+	return _u.AddDiscussionThreadIDs(ids...)
+}
+
+// AddReviewIDs adds the "reviews" edge to the Review entity by IDs.
+func (_u *RetrospectiveUpdateOne) AddReviewIDs(ids ...uuid.UUID) *RetrospectiveUpdateOne {
+	_u.mutation.AddReviewIDs(ids...)
+	return _u
+}
+
+// AddReviews adds the "reviews" edges to the Review entity.
+func (_u *RetrospectiveUpdateOne) AddReviews(v ...*Review) *RetrospectiveUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddReviewIDs(ids...)
 }
 
 // SetSystemAnalysis sets the "system_analysis" edge to the SystemAnalysis entity.
@@ -538,25 +638,46 @@ func (_u *RetrospectiveUpdateOne) ClearDocument() *RetrospectiveUpdateOne {
 	return _u
 }
 
-// ClearComments clears all "comments" edges to the RetrospectiveComment entity.
-func (_u *RetrospectiveUpdateOne) ClearComments() *RetrospectiveUpdateOne {
-	_u.mutation.ClearComments()
+// ClearDiscussionThreads clears all "discussion_threads" edges to the DiscussionThread entity.
+func (_u *RetrospectiveUpdateOne) ClearDiscussionThreads() *RetrospectiveUpdateOne {
+	_u.mutation.ClearDiscussionThreads()
 	return _u
 }
 
-// RemoveCommentIDs removes the "comments" edge to RetrospectiveComment entities by IDs.
-func (_u *RetrospectiveUpdateOne) RemoveCommentIDs(ids ...uuid.UUID) *RetrospectiveUpdateOne {
-	_u.mutation.RemoveCommentIDs(ids...)
+// RemoveDiscussionThreadIDs removes the "discussion_threads" edge to DiscussionThread entities by IDs.
+func (_u *RetrospectiveUpdateOne) RemoveDiscussionThreadIDs(ids ...uuid.UUID) *RetrospectiveUpdateOne {
+	_u.mutation.RemoveDiscussionThreadIDs(ids...)
 	return _u
 }
 
-// RemoveComments removes "comments" edges to RetrospectiveComment entities.
-func (_u *RetrospectiveUpdateOne) RemoveComments(v ...*RetrospectiveComment) *RetrospectiveUpdateOne {
+// RemoveDiscussionThreads removes "discussion_threads" edges to DiscussionThread entities.
+func (_u *RetrospectiveUpdateOne) RemoveDiscussionThreads(v ...*DiscussionThread) *RetrospectiveUpdateOne {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _u.RemoveCommentIDs(ids...)
+	return _u.RemoveDiscussionThreadIDs(ids...)
+}
+
+// ClearReviews clears all "reviews" edges to the Review entity.
+func (_u *RetrospectiveUpdateOne) ClearReviews() *RetrospectiveUpdateOne {
+	_u.mutation.ClearReviews()
+	return _u
+}
+
+// RemoveReviewIDs removes the "reviews" edge to Review entities by IDs.
+func (_u *RetrospectiveUpdateOne) RemoveReviewIDs(ids ...uuid.UUID) *RetrospectiveUpdateOne {
+	_u.mutation.RemoveReviewIDs(ids...)
+	return _u
+}
+
+// RemoveReviews removes "reviews" edges to Review entities.
+func (_u *RetrospectiveUpdateOne) RemoveReviews(v ...*Review) *RetrospectiveUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveReviewIDs(ids...)
 }
 
 // ClearSystemAnalysis clears the "system_analysis" edge to the SystemAnalysis entity.
@@ -735,49 +856,97 @@ func (_u *RetrospectiveUpdateOne) sqlSave(ctx context.Context) (_node *Retrospec
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if _u.mutation.CommentsCleared() {
+	if _u.mutation.DiscussionThreadsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   retrospective.CommentsTable,
-			Columns: []string{retrospective.CommentsColumn},
+			Table:   retrospective.DiscussionThreadsTable,
+			Columns: []string{retrospective.DiscussionThreadsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(retrospectivecomment.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(discussionthread.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.RetrospectiveComment
+		edge.Schema = _u.schemaConfig.DiscussionThread
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.RemovedCommentsIDs(); len(nodes) > 0 && !_u.mutation.CommentsCleared() {
+	if nodes := _u.mutation.RemovedDiscussionThreadsIDs(); len(nodes) > 0 && !_u.mutation.DiscussionThreadsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   retrospective.CommentsTable,
-			Columns: []string{retrospective.CommentsColumn},
+			Table:   retrospective.DiscussionThreadsTable,
+			Columns: []string{retrospective.DiscussionThreadsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(retrospectivecomment.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(discussionthread.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.RetrospectiveComment
+		edge.Schema = _u.schemaConfig.DiscussionThread
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.CommentsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.DiscussionThreadsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   retrospective.CommentsTable,
-			Columns: []string{retrospective.CommentsColumn},
+			Table:   retrospective.DiscussionThreadsTable,
+			Columns: []string{retrospective.DiscussionThreadsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(retrospectivecomment.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(discussionthread.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.RetrospectiveComment
+		edge.Schema = _u.schemaConfig.DiscussionThread
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.ReviewsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   retrospective.ReviewsTable,
+			Columns: []string{retrospective.ReviewsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(review.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.Review
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedReviewsIDs(); len(nodes) > 0 && !_u.mutation.ReviewsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   retrospective.ReviewsTable,
+			Columns: []string{retrospective.ReviewsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(review.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.Review
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ReviewsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   retrospective.ReviewsTable,
+			Columns: []string{retrospective.ReviewsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(review.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.Review
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

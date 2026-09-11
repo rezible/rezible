@@ -19,6 +19,8 @@ type SchemaConfig struct {
 	AlertFeedback                             string // AlertFeedback table.
 	AlertInstance                             string // AlertInstance table.
 	AlertMetrics                              string // AlertMetrics table.
+	DiscussionComment                         string // DiscussionComment table.
+	DiscussionThread                          string // DiscussionThread table.
 	Document                                  string // Document table.
 	DocumentAccess                            string // DocumentAccess table.
 	EventAnnotation                           string // EventAnnotation table.
@@ -77,11 +79,12 @@ type SchemaConfig struct {
 	Playbook                                  string // Playbook table.
 	PlaybookAlertDefinitions                  string // Playbook-alert_definitions->AlertDefinition table.
 	Retrospective                             string // Retrospective table.
-	RetrospectiveComment                      string // RetrospectiveComment table.
-	RetrospectiveReview                       string // RetrospectiveReview table.
+	Review                                    string // Review table.
 	Situation                                 string // Situation table.
 	SituationHazardAssessment                 string // SituationHazardAssessment table.
 	SituationInvestigation                    string // SituationInvestigation table.
+	SituationObservationGroup                 string // SituationObservationGroup table.
+	SituationObservationGroupEvents           string // SituationObservationGroup-events->NormalizedEvent table.
 	SystemAnalysis                            string // SystemAnalysis table.
 	SystemAnalysisEntity                      string // SystemAnalysisEntity table.
 	SystemAnalysisEntry                       string // SystemAnalysisEntry table.

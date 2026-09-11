@@ -17,6 +17,7 @@ import (
 	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/knowledgeevidence"
 	"github.com/rezible/rezible/ent/knowledgerelationship"
+	"github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/systemanalysisentry"
 	"github.com/rezible/rezible/ent/systemanalysisentrysubject"
@@ -35,6 +36,7 @@ type SystemAnalysisEntrySubjectQuery struct {
 	withKnowledgeEntity       *KnowledgeEntityQuery
 	withKnowledgeRelationship *KnowledgeRelationshipQuery
 	withKnowledgeEvidence     *KnowledgeEvidenceQuery
+	withNormalizedEvent       *NormalizedEventQuery
 	modifiers                 []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -190,6 +192,31 @@ func (_q *SystemAnalysisEntrySubjectQuery) QueryKnowledgeEvidence() *KnowledgeEv
 		)
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.KnowledgeEvidence
+		step.Edge.Schema = schemaConfig.SystemAnalysisEntrySubject
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryNormalizedEvent chains the current query on the "normalized_event" edge.
+func (_q *SystemAnalysisEntrySubjectQuery) QueryNormalizedEvent() *NormalizedEventQuery {
+	query := (&NormalizedEventClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(systemanalysisentrysubject.Table, systemanalysisentrysubject.FieldID, selector),
+			sqlgraph.To(normalizedevent.Table, normalizedevent.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, systemanalysisentrysubject.NormalizedEventTable, systemanalysisentrysubject.NormalizedEventColumn),
+		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.NormalizedEvent
 		step.Edge.Schema = schemaConfig.SystemAnalysisEntrySubject
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -394,6 +421,7 @@ func (_q *SystemAnalysisEntrySubjectQuery) Clone() *SystemAnalysisEntrySubjectQu
 		withKnowledgeEntity:       _q.withKnowledgeEntity.Clone(),
 		withKnowledgeRelationship: _q.withKnowledgeRelationship.Clone(),
 		withKnowledgeEvidence:     _q.withKnowledgeEvidence.Clone(),
+		withNormalizedEvent:       _q.withNormalizedEvent.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
 		path:      _q.path,
@@ -453,6 +481,17 @@ func (_q *SystemAnalysisEntrySubjectQuery) WithKnowledgeEvidence(opts ...func(*K
 		opt(query)
 	}
 	_q.withKnowledgeEvidence = query
+	return _q
+}
+
+// WithNormalizedEvent tells the query-builder to eager-load the nodes that are connected to
+// the "normalized_event" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *SystemAnalysisEntrySubjectQuery) WithNormalizedEvent(opts ...func(*NormalizedEventQuery)) *SystemAnalysisEntrySubjectQuery {
+	query := (&NormalizedEventClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withNormalizedEvent = query
 	return _q
 }
 
@@ -540,12 +579,13 @@ func (_q *SystemAnalysisEntrySubjectQuery) sqlAll(ctx context.Context, hooks ...
 	var (
 		nodes       = []*SystemAnalysisEntrySubject{}
 		_spec       = _q.querySpec()
-		loadedTypes = [5]bool{
+		loadedTypes = [6]bool{
 			_q.withTenant != nil,
 			_q.withEntry != nil,
 			_q.withKnowledgeEntity != nil,
 			_q.withKnowledgeRelationship != nil,
 			_q.withKnowledgeEvidence != nil,
+			_q.withNormalizedEvent != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -598,6 +638,12 @@ func (_q *SystemAnalysisEntrySubjectQuery) sqlAll(ctx context.Context, hooks ...
 	if query := _q.withKnowledgeEvidence; query != nil {
 		if err := _q.loadKnowledgeEvidence(ctx, query, nodes, nil,
 			func(n *SystemAnalysisEntrySubject, e *KnowledgeEvidence) { n.Edges.KnowledgeEvidence = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withNormalizedEvent; query != nil {
+		if err := _q.loadNormalizedEvent(ctx, query, nodes, nil,
+			func(n *SystemAnalysisEntrySubject, e *NormalizedEvent) { n.Edges.NormalizedEvent = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -758,6 +804,38 @@ func (_q *SystemAnalysisEntrySubjectQuery) loadKnowledgeEvidence(ctx context.Con
 	}
 	return nil
 }
+func (_q *SystemAnalysisEntrySubjectQuery) loadNormalizedEvent(ctx context.Context, query *NormalizedEventQuery, nodes []*SystemAnalysisEntrySubject, init func(*SystemAnalysisEntrySubject), assign func(*SystemAnalysisEntrySubject, *NormalizedEvent)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*SystemAnalysisEntrySubject)
+	for i := range nodes {
+		if nodes[i].NormalizedEventID == nil {
+			continue
+		}
+		fk := *nodes[i].NormalizedEventID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(normalizedevent.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "normalized_event_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
 
 func (_q *SystemAnalysisEntrySubjectQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := _q.querySpec()
@@ -803,6 +881,9 @@ func (_q *SystemAnalysisEntrySubjectQuery) querySpec() *sqlgraph.QuerySpec {
 		}
 		if _q.withKnowledgeEvidence != nil {
 			_spec.Node.AddColumnOnce(systemanalysisentrysubject.FieldKnowledgeEvidenceID)
+		}
+		if _q.withNormalizedEvent != nil {
+			_spec.Node.AddColumnOnce(systemanalysisentrysubject.FieldNormalizedEventID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {

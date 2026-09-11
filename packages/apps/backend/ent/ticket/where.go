@@ -3,6 +3,8 @@
 package ticket
 
 import (
+	"time"
+
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
@@ -60,9 +62,44 @@ func TenantID(v int) predicate.Ticket {
 	return predicate.Ticket(sql.FieldEQ(FieldTenantID, v))
 }
 
+// CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
+func CreatedAt(v time.Time) predicate.Ticket {
+	return predicate.Ticket(sql.FieldEQ(FieldCreatedAt, v))
+}
+
+// UpdatedAt applies equality check predicate on the "updated_at" field. It's identical to UpdatedAtEQ.
+func UpdatedAt(v time.Time) predicate.Ticket {
+	return predicate.Ticket(sql.FieldEQ(FieldUpdatedAt, v))
+}
+
 // Title applies equality check predicate on the "title" field. It's identical to TitleEQ.
 func Title(v string) predicate.Ticket {
 	return predicate.Ticket(sql.FieldEQ(FieldTitle, v))
+}
+
+// Reference applies equality check predicate on the "reference" field. It's identical to ReferenceEQ.
+func Reference(v string) predicate.Ticket {
+	return predicate.Ticket(sql.FieldEQ(FieldReference, v))
+}
+
+// URL applies equality check predicate on the "url" field. It's identical to URLEQ.
+func URL(v string) predicate.Ticket {
+	return predicate.Ticket(sql.FieldEQ(FieldURL, v))
+}
+
+// Provider applies equality check predicate on the "provider" field. It's identical to ProviderEQ.
+func Provider(v string) predicate.Ticket {
+	return predicate.Ticket(sql.FieldEQ(FieldProvider, v))
+}
+
+// ProviderNamespace applies equality check predicate on the "provider_namespace" field. It's identical to ProviderNamespaceEQ.
+func ProviderNamespace(v string) predicate.Ticket {
+	return predicate.Ticket(sql.FieldEQ(FieldProviderNamespace, v))
+}
+
+// ProviderResourceRef applies equality check predicate on the "provider_resource_ref" field. It's identical to ProviderResourceRefEQ.
+func ProviderResourceRef(v string) predicate.Ticket {
+	return predicate.Ticket(sql.FieldEQ(FieldProviderResourceRef, v))
 }
 
 // TenantIDEQ applies the EQ predicate on the "tenant_id" field.
@@ -83,6 +120,86 @@ func TenantIDIn(vs ...int) predicate.Ticket {
 // TenantIDNotIn applies the NotIn predicate on the "tenant_id" field.
 func TenantIDNotIn(vs ...int) predicate.Ticket {
 	return predicate.Ticket(sql.FieldNotIn(FieldTenantID, vs...))
+}
+
+// CreatedAtEQ applies the EQ predicate on the "created_at" field.
+func CreatedAtEQ(v time.Time) predicate.Ticket {
+	return predicate.Ticket(sql.FieldEQ(FieldCreatedAt, v))
+}
+
+// CreatedAtNEQ applies the NEQ predicate on the "created_at" field.
+func CreatedAtNEQ(v time.Time) predicate.Ticket {
+	return predicate.Ticket(sql.FieldNEQ(FieldCreatedAt, v))
+}
+
+// CreatedAtIn applies the In predicate on the "created_at" field.
+func CreatedAtIn(vs ...time.Time) predicate.Ticket {
+	return predicate.Ticket(sql.FieldIn(FieldCreatedAt, vs...))
+}
+
+// CreatedAtNotIn applies the NotIn predicate on the "created_at" field.
+func CreatedAtNotIn(vs ...time.Time) predicate.Ticket {
+	return predicate.Ticket(sql.FieldNotIn(FieldCreatedAt, vs...))
+}
+
+// CreatedAtGT applies the GT predicate on the "created_at" field.
+func CreatedAtGT(v time.Time) predicate.Ticket {
+	return predicate.Ticket(sql.FieldGT(FieldCreatedAt, v))
+}
+
+// CreatedAtGTE applies the GTE predicate on the "created_at" field.
+func CreatedAtGTE(v time.Time) predicate.Ticket {
+	return predicate.Ticket(sql.FieldGTE(FieldCreatedAt, v))
+}
+
+// CreatedAtLT applies the LT predicate on the "created_at" field.
+func CreatedAtLT(v time.Time) predicate.Ticket {
+	return predicate.Ticket(sql.FieldLT(FieldCreatedAt, v))
+}
+
+// CreatedAtLTE applies the LTE predicate on the "created_at" field.
+func CreatedAtLTE(v time.Time) predicate.Ticket {
+	return predicate.Ticket(sql.FieldLTE(FieldCreatedAt, v))
+}
+
+// UpdatedAtEQ applies the EQ predicate on the "updated_at" field.
+func UpdatedAtEQ(v time.Time) predicate.Ticket {
+	return predicate.Ticket(sql.FieldEQ(FieldUpdatedAt, v))
+}
+
+// UpdatedAtNEQ applies the NEQ predicate on the "updated_at" field.
+func UpdatedAtNEQ(v time.Time) predicate.Ticket {
+	return predicate.Ticket(sql.FieldNEQ(FieldUpdatedAt, v))
+}
+
+// UpdatedAtIn applies the In predicate on the "updated_at" field.
+func UpdatedAtIn(vs ...time.Time) predicate.Ticket {
+	return predicate.Ticket(sql.FieldIn(FieldUpdatedAt, vs...))
+}
+
+// UpdatedAtNotIn applies the NotIn predicate on the "updated_at" field.
+func UpdatedAtNotIn(vs ...time.Time) predicate.Ticket {
+	return predicate.Ticket(sql.FieldNotIn(FieldUpdatedAt, vs...))
+}
+
+// UpdatedAtGT applies the GT predicate on the "updated_at" field.
+func UpdatedAtGT(v time.Time) predicate.Ticket {
+	return predicate.Ticket(sql.FieldGT(FieldUpdatedAt, v))
+}
+
+// UpdatedAtGTE applies the GTE predicate on the "updated_at" field.
+func UpdatedAtGTE(v time.Time) predicate.Ticket {
+	return predicate.Ticket(sql.FieldGTE(FieldUpdatedAt, v))
+}
+
+// UpdatedAtLT applies the LT predicate on the "updated_at" field.
+func UpdatedAtLT(v time.Time) predicate.Ticket {
+	return predicate.Ticket(sql.FieldLT(FieldUpdatedAt, v))
+}
+
+// UpdatedAtLTE applies the LTE predicate on the "updated_at" field.
+func UpdatedAtLTE(v time.Time) predicate.Ticket {
+	return predicate.Ticket(sql.FieldLTE(FieldUpdatedAt, v))
 }
 
 // TitleEQ applies the EQ predicate on the "title" field.
@@ -148,6 +265,381 @@ func TitleEqualFold(v string) predicate.Ticket {
 // TitleContainsFold applies the ContainsFold predicate on the "title" field.
 func TitleContainsFold(v string) predicate.Ticket {
 	return predicate.Ticket(sql.FieldContainsFold(FieldTitle, v))
+}
+
+// ReferenceEQ applies the EQ predicate on the "reference" field.
+func ReferenceEQ(v string) predicate.Ticket {
+	return predicate.Ticket(sql.FieldEQ(FieldReference, v))
+}
+
+// ReferenceNEQ applies the NEQ predicate on the "reference" field.
+func ReferenceNEQ(v string) predicate.Ticket {
+	return predicate.Ticket(sql.FieldNEQ(FieldReference, v))
+}
+
+// ReferenceIn applies the In predicate on the "reference" field.
+func ReferenceIn(vs ...string) predicate.Ticket {
+	return predicate.Ticket(sql.FieldIn(FieldReference, vs...))
+}
+
+// ReferenceNotIn applies the NotIn predicate on the "reference" field.
+func ReferenceNotIn(vs ...string) predicate.Ticket {
+	return predicate.Ticket(sql.FieldNotIn(FieldReference, vs...))
+}
+
+// ReferenceGT applies the GT predicate on the "reference" field.
+func ReferenceGT(v string) predicate.Ticket {
+	return predicate.Ticket(sql.FieldGT(FieldReference, v))
+}
+
+// ReferenceGTE applies the GTE predicate on the "reference" field.
+func ReferenceGTE(v string) predicate.Ticket {
+	return predicate.Ticket(sql.FieldGTE(FieldReference, v))
+}
+
+// ReferenceLT applies the LT predicate on the "reference" field.
+func ReferenceLT(v string) predicate.Ticket {
+	return predicate.Ticket(sql.FieldLT(FieldReference, v))
+}
+
+// ReferenceLTE applies the LTE predicate on the "reference" field.
+func ReferenceLTE(v string) predicate.Ticket {
+	return predicate.Ticket(sql.FieldLTE(FieldReference, v))
+}
+
+// ReferenceContains applies the Contains predicate on the "reference" field.
+func ReferenceContains(v string) predicate.Ticket {
+	return predicate.Ticket(sql.FieldContains(FieldReference, v))
+}
+
+// ReferenceHasPrefix applies the HasPrefix predicate on the "reference" field.
+func ReferenceHasPrefix(v string) predicate.Ticket {
+	return predicate.Ticket(sql.FieldHasPrefix(FieldReference, v))
+}
+
+// ReferenceHasSuffix applies the HasSuffix predicate on the "reference" field.
+func ReferenceHasSuffix(v string) predicate.Ticket {
+	return predicate.Ticket(sql.FieldHasSuffix(FieldReference, v))
+}
+
+// ReferenceIsNil applies the IsNil predicate on the "reference" field.
+func ReferenceIsNil() predicate.Ticket {
+	return predicate.Ticket(sql.FieldIsNull(FieldReference))
+}
+
+// ReferenceNotNil applies the NotNil predicate on the "reference" field.
+func ReferenceNotNil() predicate.Ticket {
+	return predicate.Ticket(sql.FieldNotNull(FieldReference))
+}
+
+// ReferenceEqualFold applies the EqualFold predicate on the "reference" field.
+func ReferenceEqualFold(v string) predicate.Ticket {
+	return predicate.Ticket(sql.FieldEqualFold(FieldReference, v))
+}
+
+// ReferenceContainsFold applies the ContainsFold predicate on the "reference" field.
+func ReferenceContainsFold(v string) predicate.Ticket {
+	return predicate.Ticket(sql.FieldContainsFold(FieldReference, v))
+}
+
+// URLEQ applies the EQ predicate on the "url" field.
+func URLEQ(v string) predicate.Ticket {
+	return predicate.Ticket(sql.FieldEQ(FieldURL, v))
+}
+
+// URLNEQ applies the NEQ predicate on the "url" field.
+func URLNEQ(v string) predicate.Ticket {
+	return predicate.Ticket(sql.FieldNEQ(FieldURL, v))
+}
+
+// URLIn applies the In predicate on the "url" field.
+func URLIn(vs ...string) predicate.Ticket {
+	return predicate.Ticket(sql.FieldIn(FieldURL, vs...))
+}
+
+// URLNotIn applies the NotIn predicate on the "url" field.
+func URLNotIn(vs ...string) predicate.Ticket {
+	return predicate.Ticket(sql.FieldNotIn(FieldURL, vs...))
+}
+
+// URLGT applies the GT predicate on the "url" field.
+func URLGT(v string) predicate.Ticket {
+	return predicate.Ticket(sql.FieldGT(FieldURL, v))
+}
+
+// URLGTE applies the GTE predicate on the "url" field.
+func URLGTE(v string) predicate.Ticket {
+	return predicate.Ticket(sql.FieldGTE(FieldURL, v))
+}
+
+// URLLT applies the LT predicate on the "url" field.
+func URLLT(v string) predicate.Ticket {
+	return predicate.Ticket(sql.FieldLT(FieldURL, v))
+}
+
+// URLLTE applies the LTE predicate on the "url" field.
+func URLLTE(v string) predicate.Ticket {
+	return predicate.Ticket(sql.FieldLTE(FieldURL, v))
+}
+
+// URLContains applies the Contains predicate on the "url" field.
+func URLContains(v string) predicate.Ticket {
+	return predicate.Ticket(sql.FieldContains(FieldURL, v))
+}
+
+// URLHasPrefix applies the HasPrefix predicate on the "url" field.
+func URLHasPrefix(v string) predicate.Ticket {
+	return predicate.Ticket(sql.FieldHasPrefix(FieldURL, v))
+}
+
+// URLHasSuffix applies the HasSuffix predicate on the "url" field.
+func URLHasSuffix(v string) predicate.Ticket {
+	return predicate.Ticket(sql.FieldHasSuffix(FieldURL, v))
+}
+
+// URLIsNil applies the IsNil predicate on the "url" field.
+func URLIsNil() predicate.Ticket {
+	return predicate.Ticket(sql.FieldIsNull(FieldURL))
+}
+
+// URLNotNil applies the NotNil predicate on the "url" field.
+func URLNotNil() predicate.Ticket {
+	return predicate.Ticket(sql.FieldNotNull(FieldURL))
+}
+
+// URLEqualFold applies the EqualFold predicate on the "url" field.
+func URLEqualFold(v string) predicate.Ticket {
+	return predicate.Ticket(sql.FieldEqualFold(FieldURL, v))
+}
+
+// URLContainsFold applies the ContainsFold predicate on the "url" field.
+func URLContainsFold(v string) predicate.Ticket {
+	return predicate.Ticket(sql.FieldContainsFold(FieldURL, v))
+}
+
+// ProviderEQ applies the EQ predicate on the "provider" field.
+func ProviderEQ(v string) predicate.Ticket {
+	return predicate.Ticket(sql.FieldEQ(FieldProvider, v))
+}
+
+// ProviderNEQ applies the NEQ predicate on the "provider" field.
+func ProviderNEQ(v string) predicate.Ticket {
+	return predicate.Ticket(sql.FieldNEQ(FieldProvider, v))
+}
+
+// ProviderIn applies the In predicate on the "provider" field.
+func ProviderIn(vs ...string) predicate.Ticket {
+	return predicate.Ticket(sql.FieldIn(FieldProvider, vs...))
+}
+
+// ProviderNotIn applies the NotIn predicate on the "provider" field.
+func ProviderNotIn(vs ...string) predicate.Ticket {
+	return predicate.Ticket(sql.FieldNotIn(FieldProvider, vs...))
+}
+
+// ProviderGT applies the GT predicate on the "provider" field.
+func ProviderGT(v string) predicate.Ticket {
+	return predicate.Ticket(sql.FieldGT(FieldProvider, v))
+}
+
+// ProviderGTE applies the GTE predicate on the "provider" field.
+func ProviderGTE(v string) predicate.Ticket {
+	return predicate.Ticket(sql.FieldGTE(FieldProvider, v))
+}
+
+// ProviderLT applies the LT predicate on the "provider" field.
+func ProviderLT(v string) predicate.Ticket {
+	return predicate.Ticket(sql.FieldLT(FieldProvider, v))
+}
+
+// ProviderLTE applies the LTE predicate on the "provider" field.
+func ProviderLTE(v string) predicate.Ticket {
+	return predicate.Ticket(sql.FieldLTE(FieldProvider, v))
+}
+
+// ProviderContains applies the Contains predicate on the "provider" field.
+func ProviderContains(v string) predicate.Ticket {
+	return predicate.Ticket(sql.FieldContains(FieldProvider, v))
+}
+
+// ProviderHasPrefix applies the HasPrefix predicate on the "provider" field.
+func ProviderHasPrefix(v string) predicate.Ticket {
+	return predicate.Ticket(sql.FieldHasPrefix(FieldProvider, v))
+}
+
+// ProviderHasSuffix applies the HasSuffix predicate on the "provider" field.
+func ProviderHasSuffix(v string) predicate.Ticket {
+	return predicate.Ticket(sql.FieldHasSuffix(FieldProvider, v))
+}
+
+// ProviderIsNil applies the IsNil predicate on the "provider" field.
+func ProviderIsNil() predicate.Ticket {
+	return predicate.Ticket(sql.FieldIsNull(FieldProvider))
+}
+
+// ProviderNotNil applies the NotNil predicate on the "provider" field.
+func ProviderNotNil() predicate.Ticket {
+	return predicate.Ticket(sql.FieldNotNull(FieldProvider))
+}
+
+// ProviderEqualFold applies the EqualFold predicate on the "provider" field.
+func ProviderEqualFold(v string) predicate.Ticket {
+	return predicate.Ticket(sql.FieldEqualFold(FieldProvider, v))
+}
+
+// ProviderContainsFold applies the ContainsFold predicate on the "provider" field.
+func ProviderContainsFold(v string) predicate.Ticket {
+	return predicate.Ticket(sql.FieldContainsFold(FieldProvider, v))
+}
+
+// ProviderNamespaceEQ applies the EQ predicate on the "provider_namespace" field.
+func ProviderNamespaceEQ(v string) predicate.Ticket {
+	return predicate.Ticket(sql.FieldEQ(FieldProviderNamespace, v))
+}
+
+// ProviderNamespaceNEQ applies the NEQ predicate on the "provider_namespace" field.
+func ProviderNamespaceNEQ(v string) predicate.Ticket {
+	return predicate.Ticket(sql.FieldNEQ(FieldProviderNamespace, v))
+}
+
+// ProviderNamespaceIn applies the In predicate on the "provider_namespace" field.
+func ProviderNamespaceIn(vs ...string) predicate.Ticket {
+	return predicate.Ticket(sql.FieldIn(FieldProviderNamespace, vs...))
+}
+
+// ProviderNamespaceNotIn applies the NotIn predicate on the "provider_namespace" field.
+func ProviderNamespaceNotIn(vs ...string) predicate.Ticket {
+	return predicate.Ticket(sql.FieldNotIn(FieldProviderNamespace, vs...))
+}
+
+// ProviderNamespaceGT applies the GT predicate on the "provider_namespace" field.
+func ProviderNamespaceGT(v string) predicate.Ticket {
+	return predicate.Ticket(sql.FieldGT(FieldProviderNamespace, v))
+}
+
+// ProviderNamespaceGTE applies the GTE predicate on the "provider_namespace" field.
+func ProviderNamespaceGTE(v string) predicate.Ticket {
+	return predicate.Ticket(sql.FieldGTE(FieldProviderNamespace, v))
+}
+
+// ProviderNamespaceLT applies the LT predicate on the "provider_namespace" field.
+func ProviderNamespaceLT(v string) predicate.Ticket {
+	return predicate.Ticket(sql.FieldLT(FieldProviderNamespace, v))
+}
+
+// ProviderNamespaceLTE applies the LTE predicate on the "provider_namespace" field.
+func ProviderNamespaceLTE(v string) predicate.Ticket {
+	return predicate.Ticket(sql.FieldLTE(FieldProviderNamespace, v))
+}
+
+// ProviderNamespaceContains applies the Contains predicate on the "provider_namespace" field.
+func ProviderNamespaceContains(v string) predicate.Ticket {
+	return predicate.Ticket(sql.FieldContains(FieldProviderNamespace, v))
+}
+
+// ProviderNamespaceHasPrefix applies the HasPrefix predicate on the "provider_namespace" field.
+func ProviderNamespaceHasPrefix(v string) predicate.Ticket {
+	return predicate.Ticket(sql.FieldHasPrefix(FieldProviderNamespace, v))
+}
+
+// ProviderNamespaceHasSuffix applies the HasSuffix predicate on the "provider_namespace" field.
+func ProviderNamespaceHasSuffix(v string) predicate.Ticket {
+	return predicate.Ticket(sql.FieldHasSuffix(FieldProviderNamespace, v))
+}
+
+// ProviderNamespaceIsNil applies the IsNil predicate on the "provider_namespace" field.
+func ProviderNamespaceIsNil() predicate.Ticket {
+	return predicate.Ticket(sql.FieldIsNull(FieldProviderNamespace))
+}
+
+// ProviderNamespaceNotNil applies the NotNil predicate on the "provider_namespace" field.
+func ProviderNamespaceNotNil() predicate.Ticket {
+	return predicate.Ticket(sql.FieldNotNull(FieldProviderNamespace))
+}
+
+// ProviderNamespaceEqualFold applies the EqualFold predicate on the "provider_namespace" field.
+func ProviderNamespaceEqualFold(v string) predicate.Ticket {
+	return predicate.Ticket(sql.FieldEqualFold(FieldProviderNamespace, v))
+}
+
+// ProviderNamespaceContainsFold applies the ContainsFold predicate on the "provider_namespace" field.
+func ProviderNamespaceContainsFold(v string) predicate.Ticket {
+	return predicate.Ticket(sql.FieldContainsFold(FieldProviderNamespace, v))
+}
+
+// ProviderResourceRefEQ applies the EQ predicate on the "provider_resource_ref" field.
+func ProviderResourceRefEQ(v string) predicate.Ticket {
+	return predicate.Ticket(sql.FieldEQ(FieldProviderResourceRef, v))
+}
+
+// ProviderResourceRefNEQ applies the NEQ predicate on the "provider_resource_ref" field.
+func ProviderResourceRefNEQ(v string) predicate.Ticket {
+	return predicate.Ticket(sql.FieldNEQ(FieldProviderResourceRef, v))
+}
+
+// ProviderResourceRefIn applies the In predicate on the "provider_resource_ref" field.
+func ProviderResourceRefIn(vs ...string) predicate.Ticket {
+	return predicate.Ticket(sql.FieldIn(FieldProviderResourceRef, vs...))
+}
+
+// ProviderResourceRefNotIn applies the NotIn predicate on the "provider_resource_ref" field.
+func ProviderResourceRefNotIn(vs ...string) predicate.Ticket {
+	return predicate.Ticket(sql.FieldNotIn(FieldProviderResourceRef, vs...))
+}
+
+// ProviderResourceRefGT applies the GT predicate on the "provider_resource_ref" field.
+func ProviderResourceRefGT(v string) predicate.Ticket {
+	return predicate.Ticket(sql.FieldGT(FieldProviderResourceRef, v))
+}
+
+// ProviderResourceRefGTE applies the GTE predicate on the "provider_resource_ref" field.
+func ProviderResourceRefGTE(v string) predicate.Ticket {
+	return predicate.Ticket(sql.FieldGTE(FieldProviderResourceRef, v))
+}
+
+// ProviderResourceRefLT applies the LT predicate on the "provider_resource_ref" field.
+func ProviderResourceRefLT(v string) predicate.Ticket {
+	return predicate.Ticket(sql.FieldLT(FieldProviderResourceRef, v))
+}
+
+// ProviderResourceRefLTE applies the LTE predicate on the "provider_resource_ref" field.
+func ProviderResourceRefLTE(v string) predicate.Ticket {
+	return predicate.Ticket(sql.FieldLTE(FieldProviderResourceRef, v))
+}
+
+// ProviderResourceRefContains applies the Contains predicate on the "provider_resource_ref" field.
+func ProviderResourceRefContains(v string) predicate.Ticket {
+	return predicate.Ticket(sql.FieldContains(FieldProviderResourceRef, v))
+}
+
+// ProviderResourceRefHasPrefix applies the HasPrefix predicate on the "provider_resource_ref" field.
+func ProviderResourceRefHasPrefix(v string) predicate.Ticket {
+	return predicate.Ticket(sql.FieldHasPrefix(FieldProviderResourceRef, v))
+}
+
+// ProviderResourceRefHasSuffix applies the HasSuffix predicate on the "provider_resource_ref" field.
+func ProviderResourceRefHasSuffix(v string) predicate.Ticket {
+	return predicate.Ticket(sql.FieldHasSuffix(FieldProviderResourceRef, v))
+}
+
+// ProviderResourceRefIsNil applies the IsNil predicate on the "provider_resource_ref" field.
+func ProviderResourceRefIsNil() predicate.Ticket {
+	return predicate.Ticket(sql.FieldIsNull(FieldProviderResourceRef))
+}
+
+// ProviderResourceRefNotNil applies the NotNil predicate on the "provider_resource_ref" field.
+func ProviderResourceRefNotNil() predicate.Ticket {
+	return predicate.Ticket(sql.FieldNotNull(FieldProviderResourceRef))
+}
+
+// ProviderResourceRefEqualFold applies the EqualFold predicate on the "provider_resource_ref" field.
+func ProviderResourceRefEqualFold(v string) predicate.Ticket {
+	return predicate.Ticket(sql.FieldEqualFold(FieldProviderResourceRef, v))
+}
+
+// ProviderResourceRefContainsFold applies the ContainsFold predicate on the "provider_resource_ref" field.
+func ProviderResourceRefContainsFold(v string) predicate.Ticket {
+	return predicate.Ticket(sql.FieldContainsFold(FieldProviderResourceRef, v))
 }
 
 // HasTenant applies the HasEdge predicate on the "tenant" edge.

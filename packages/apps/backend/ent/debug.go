@@ -92,6 +92,22 @@ func (c *AlertMetricsClient) Debug() *AlertMetricsClient {
 	return &AlertMetricsClient{config: cfg}
 }
 
+func (c *DiscussionCommentClient) Debug() *DiscussionCommentClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &DiscussionCommentClient{config: cfg}
+}
+
+func (c *DiscussionThreadClient) Debug() *DiscussionThreadClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &DiscussionThreadClient{config: cfg}
+}
+
 func (c *DocumentClient) Debug() *DocumentClient {
 	if c.debug {
 		return c
@@ -452,20 +468,12 @@ func (c *RetrospectiveClient) Debug() *RetrospectiveClient {
 	return &RetrospectiveClient{config: cfg}
 }
 
-func (c *RetrospectiveCommentClient) Debug() *RetrospectiveCommentClient {
+func (c *ReviewClient) Debug() *ReviewClient {
 	if c.debug {
 		return c
 	}
 	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
-	return &RetrospectiveCommentClient{config: cfg}
-}
-
-func (c *RetrospectiveReviewClient) Debug() *RetrospectiveReviewClient {
-	if c.debug {
-		return c
-	}
-	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
-	return &RetrospectiveReviewClient{config: cfg}
+	return &ReviewClient{config: cfg}
 }
 
 func (c *SituationClient) Debug() *SituationClient {
@@ -490,6 +498,14 @@ func (c *SituationInvestigationClient) Debug() *SituationInvestigationClient {
 	}
 	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
 	return &SituationInvestigationClient{config: cfg}
+}
+
+func (c *SituationObservationGroupClient) Debug() *SituationObservationGroupClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &SituationObservationGroupClient{config: cfg}
 }
 
 func (c *SystemAnalysisClient) Debug() *SystemAnalysisClient {

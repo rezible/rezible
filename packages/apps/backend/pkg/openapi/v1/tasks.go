@@ -3,6 +3,7 @@ package v1
 import (
 	"context"
 	"net/http"
+	"time"
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
@@ -32,14 +33,33 @@ type (
 	}
 
 	TaskAttributes struct {
-		Name        string `json:"name"`
-		Description string `json:"description"`
+		Name          string       `json:"name"`
+		Description   string       `json:"description"`
+		IncidentId    *uuid.UUID   `json:"incidentId,omitempty"`
+		OwnerId       *uuid.UUID   `json:"ownerId,omitempty"`
+		State         string       `json:"state" enum:"open,completed,cancelled"`
+		DueAt         *time.Time   `json:"dueAt,omitempty"`
+		OriginEntryId *uuid.UUID   `json:"originEntryId,omitempty"`
+		TicketIds     []uuid.UUID  `json:"ticketIds"`
+		Tickets       []TaskTicket `json:"tickets"`
+		CreatedAt     time.Time    `json:"createdAt"`
+		UpdatedAt     time.Time    `json:"updatedAt"`
 	}
 
 	ExternalTicketProvider string
 
 	ExternalTicket struct {
 		Provider ExternalTicketProvider `json:"provider"`
+	}
+
+	TaskTicket struct {
+		Id                  uuid.UUID `json:"id"`
+		Title               string    `json:"title"`
+		Reference           *string   `json:"reference,omitempty"`
+		URL                 *string   `json:"url,omitempty"`
+		Provider            *string   `json:"provider,omitempty"`
+		ProviderNamespace   *string   `json:"providerNamespace,omitempty"`
+		ProviderResourceRef *string   `json:"providerResourceRef,omitempty"`
 	}
 )
 
@@ -48,9 +68,46 @@ var (
 )
 
 func TaskFromEnt(task *ent.Task) Task {
+	var incidentID *uuid.UUID
+	if task.IncidentID != uuid.Nil {
+		incidentID = &task.IncidentID
+	}
+	var ownerID *uuid.UUID
+	if task.AssigneeID != uuid.Nil {
+		ownerID = &task.AssigneeID
+	}
+	var originEntryID *uuid.UUID
+	if task.OriginEntryID != nil {
+		originEntryID = task.OriginEntryID
+	}
+	ticketIDs := make([]uuid.UUID, 0, len(task.Edges.Tickets))
+	tickets := make([]TaskTicket, 0, len(task.Edges.Tickets))
+	for _, ticket := range task.Edges.Tickets {
+		ticketIDs = append(ticketIDs, ticket.ID)
+		tickets = append(tickets, TaskTicket{
+			Id:                  ticket.ID,
+			Title:               ticket.Title,
+			Reference:           ticket.Reference,
+			URL:                 ticket.URL,
+			Provider:            ticket.Provider,
+			ProviderNamespace:   ticket.ProviderNamespace,
+			ProviderResourceRef: ticket.ProviderResourceRef,
+		})
+	}
 	return Task{
-		Id:         task.ID,
-		Attributes: TaskAttributes{},
+		Id: task.ID,
+		Attributes: TaskAttributes{
+			Name:          task.Title,
+			IncidentId:    incidentID,
+			OwnerId:       ownerID,
+			State:         task.State.String(),
+			DueAt:         task.DueAt,
+			OriginEntryId: originEntryID,
+			TicketIds:     ticketIDs,
+			Tickets:       tickets,
+			CreatedAt:     task.CreatedAt,
+			UpdatedAt:     task.UpdatedAt,
+		},
 	}
 }
 
@@ -69,8 +126,13 @@ var ListTasks = huma.Operation{
 
 type ListTasksRequest struct {
 	PaginationRequest
-	IncludeArchived bool `query:"archived" required:"false" nullable:"false" default:"false"`
+	IncludeArchived bool      `query:"archived" required:"false" nullable:"false" default:"false"`
+	IncidentId      uuid.UUID `query:"incidentId" required:"false"`
+	OwnerId         uuid.UUID `query:"ownerId" required:"false"`
+	OriginEntryId   uuid.UUID `query:"originEntryId" required:"false"`
+	State           string    `query:"state" required:"false" enum:"open,completed,cancelled"`
 }
+
 type ListTasksResponse PaginatedResponse[Task]
 
 var GetTask = huma.Operation{
@@ -91,12 +153,18 @@ var CreateTask = huma.Operation{
 	Path:        "/tasks",
 	Summary:     "Create a Task",
 	Tags:        tasksTags,
-	Errors:      ErrorCodes(),
+	Errors:      ErrorCodes(http.StatusNotImplemented),
 }
 
 type CreateTaskAttributes struct {
-	Name string `json:"title"`
+	Name          string     `json:"title"`
+	IncidentId    *uuid.UUID `json:"incidentId,omitempty"`
+	OwnerId       *uuid.UUID `json:"ownerId,omitempty"`
+	OriginEntryId *uuid.UUID `json:"originEntryId,omitempty"`
+	State         string     `json:"state" enum:"open,completed,cancelled"`
+	DueAt         *time.Time `json:"dueAt,omitempty"`
 }
+
 type CreateTaskRequest RequestWithBodyAttributes[CreateTaskAttributes]
 type CreateTaskResponse ItemResponse[Task]
 
@@ -106,12 +174,17 @@ var UpdateTask = huma.Operation{
 	Path:        "/tasks/{id}",
 	Summary:     "Update a Task",
 	Tags:        tasksTags,
-	Errors:      ErrorCodes(),
+	Errors:      ErrorCodes(http.StatusNotImplemented),
 }
 
 type UpdateTaskAttributes struct {
-	Name OmittableNullable[string] `json:"name,omitempty"`
+	Name          OmittableNullable[string]    `json:"name,omitempty"`
+	OwnerId       OmittableNullable[uuid.UUID] `json:"ownerId,omitempty"`
+	State         OmittableNullable[string]    `json:"state,omitempty" enum:"open,completed,cancelled"`
+	DueAt         OmittableNullable[time.Time] `json:"dueAt,omitempty"`
+	OriginEntryId OmittableNullable[uuid.UUID] `json:"originEntryId,omitempty"`
 }
+
 type UpdateTaskRequest IdRequestWithBody[UpdateTaskAttributes]
 type UpdateTaskResponse ItemResponse[Task]
 

@@ -6,8 +6,9 @@ import (
 )
 
 type Handler struct {
+	*activityHandler
 	*alertsHandler
-	*userSessionsHandler
+	*discussionHandler
 	*documentsHandler
 	*tasksHandler
 	*incidentsHandler
@@ -29,6 +30,7 @@ type Handler struct {
 	*situationsHandler
 	*teamsHandler
 	*usersHandler
+	*userSessionsHandler
 }
 
 var _ oapi.Handler = (*Handler)(nil)
@@ -51,6 +53,7 @@ func NewHandler(
 	oncallMetrics rez.OncallMetricsService,
 	playbooks rez.PlaybookService,
 	retros rez.RetrospectiveService,
+	discussions rez.DiscussionService,
 	systemAnalysis rez.SystemAnalysisService,
 	knowledge rez.KnowledgeGraphService,
 	situations rez.SituationService,
@@ -65,6 +68,7 @@ func NewHandler(
 		incidentMilestonesHandler: newIncidentMilestonesHandler(db),
 		tasksHandler:              newTasksHandler(db),
 		incidentsHandler:          newIncidentsHandler(incidents),
+		activityHandler:           &activityHandler{},
 		integrationsHandler:       newIntegrationsHandler(integrations),
 		meetingsHandler:           newMeetingsHandler(),
 		eventsHandler:             newEventsHandler(events),
@@ -77,6 +81,7 @@ func NewHandler(
 		systemAnalysisHandler:     newSystemAnalysisHandler(systemAnalysis),
 		knowledgeGraphHandler:     newKnowledgeGraphHandler(knowledge),
 		situationsHandler:         newSituationsHandler(situations, users),
+		discussionHandler:         newDiscussionHandler(discussions),
 		teamsHandler:              newTeamsHandler(db),
 		usersHandler:              newUsersHandler(users),
 	}

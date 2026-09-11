@@ -14,12 +14,13 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/discussionthread"
 	"github.com/rezible/rezible/ent/document"
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/retrospective"
-	"github.com/rezible/rezible/ent/retrospectivecomment"
+	"github.com/rezible/rezible/ent/review"
 	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/tenant"
 )
@@ -27,16 +28,17 @@ import (
 // RetrospectiveQuery is the builder for querying Retrospective entities.
 type RetrospectiveQuery struct {
 	config
-	ctx                *QueryContext
-	order              []retrospective.OrderOption
-	inters             []Interceptor
-	predicates         []predicate.Retrospective
-	withTenant         *TenantQuery
-	withIncident       *IncidentQuery
-	withDocument       *DocumentQuery
-	withComments       *RetrospectiveCommentQuery
-	withSystemAnalysis *SystemAnalysisQuery
-	modifiers          []func(*sql.Selector)
+	ctx                   *QueryContext
+	order                 []retrospective.OrderOption
+	inters                []Interceptor
+	predicates            []predicate.Retrospective
+	withTenant            *TenantQuery
+	withIncident          *IncidentQuery
+	withDocument          *DocumentQuery
+	withDiscussionThreads *DiscussionThreadQuery
+	withReviews           *ReviewQuery
+	withSystemAnalysis    *SystemAnalysisQuery
+	modifiers             []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -148,9 +150,9 @@ func (_q *RetrospectiveQuery) QueryDocument() *DocumentQuery {
 	return query
 }
 
-// QueryComments chains the current query on the "comments" edge.
-func (_q *RetrospectiveQuery) QueryComments() *RetrospectiveCommentQuery {
-	query := (&RetrospectiveCommentClient{config: _q.config}).Query()
+// QueryDiscussionThreads chains the current query on the "discussion_threads" edge.
+func (_q *RetrospectiveQuery) QueryDiscussionThreads() *DiscussionThreadQuery {
+	query := (&DiscussionThreadClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -161,12 +163,37 @@ func (_q *RetrospectiveQuery) QueryComments() *RetrospectiveCommentQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(retrospective.Table, retrospective.FieldID, selector),
-			sqlgraph.To(retrospectivecomment.Table, retrospectivecomment.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, retrospective.CommentsTable, retrospective.CommentsColumn),
+			sqlgraph.To(discussionthread.Table, discussionthread.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, retrospective.DiscussionThreadsTable, retrospective.DiscussionThreadsColumn),
 		)
 		schemaConfig := _q.schemaConfig
-		step.To.Schema = schemaConfig.RetrospectiveComment
-		step.Edge.Schema = schemaConfig.RetrospectiveComment
+		step.To.Schema = schemaConfig.DiscussionThread
+		step.Edge.Schema = schemaConfig.DiscussionThread
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryReviews chains the current query on the "reviews" edge.
+func (_q *RetrospectiveQuery) QueryReviews() *ReviewQuery {
+	query := (&ReviewClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(retrospective.Table, retrospective.FieldID, selector),
+			sqlgraph.To(review.Table, review.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, retrospective.ReviewsTable, retrospective.ReviewsColumn),
+		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.Review
+		step.Edge.Schema = schemaConfig.Review
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -385,16 +412,17 @@ func (_q *RetrospectiveQuery) Clone() *RetrospectiveQuery {
 		return nil
 	}
 	return &RetrospectiveQuery{
-		config:             _q.config,
-		ctx:                _q.ctx.Clone(),
-		order:              append([]retrospective.OrderOption{}, _q.order...),
-		inters:             append([]Interceptor{}, _q.inters...),
-		predicates:         append([]predicate.Retrospective{}, _q.predicates...),
-		withTenant:         _q.withTenant.Clone(),
-		withIncident:       _q.withIncident.Clone(),
-		withDocument:       _q.withDocument.Clone(),
-		withComments:       _q.withComments.Clone(),
-		withSystemAnalysis: _q.withSystemAnalysis.Clone(),
+		config:                _q.config,
+		ctx:                   _q.ctx.Clone(),
+		order:                 append([]retrospective.OrderOption{}, _q.order...),
+		inters:                append([]Interceptor{}, _q.inters...),
+		predicates:            append([]predicate.Retrospective{}, _q.predicates...),
+		withTenant:            _q.withTenant.Clone(),
+		withIncident:          _q.withIncident.Clone(),
+		withDocument:          _q.withDocument.Clone(),
+		withDiscussionThreads: _q.withDiscussionThreads.Clone(),
+		withReviews:           _q.withReviews.Clone(),
+		withSystemAnalysis:    _q.withSystemAnalysis.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
 		path:      _q.path,
@@ -435,14 +463,25 @@ func (_q *RetrospectiveQuery) WithDocument(opts ...func(*DocumentQuery)) *Retros
 	return _q
 }
 
-// WithComments tells the query-builder to eager-load the nodes that are connected to
-// the "comments" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *RetrospectiveQuery) WithComments(opts ...func(*RetrospectiveCommentQuery)) *RetrospectiveQuery {
-	query := (&RetrospectiveCommentClient{config: _q.config}).Query()
+// WithDiscussionThreads tells the query-builder to eager-load the nodes that are connected to
+// the "discussion_threads" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *RetrospectiveQuery) WithDiscussionThreads(opts ...func(*DiscussionThreadQuery)) *RetrospectiveQuery {
+	query := (&DiscussionThreadClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	_q.withComments = query
+	_q.withDiscussionThreads = query
+	return _q
+}
+
+// WithReviews tells the query-builder to eager-load the nodes that are connected to
+// the "reviews" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *RetrospectiveQuery) WithReviews(opts ...func(*ReviewQuery)) *RetrospectiveQuery {
+	query := (&ReviewClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withReviews = query
 	return _q
 }
 
@@ -541,11 +580,12 @@ func (_q *RetrospectiveQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([
 	var (
 		nodes       = []*Retrospective{}
 		_spec       = _q.querySpec()
-		loadedTypes = [5]bool{
+		loadedTypes = [6]bool{
 			_q.withTenant != nil,
 			_q.withIncident != nil,
 			_q.withDocument != nil,
-			_q.withComments != nil,
+			_q.withDiscussionThreads != nil,
+			_q.withReviews != nil,
 			_q.withSystemAnalysis != nil,
 		}
 	)
@@ -590,10 +630,19 @@ func (_q *RetrospectiveQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([
 			return nil, err
 		}
 	}
-	if query := _q.withComments; query != nil {
-		if err := _q.loadComments(ctx, query, nodes,
-			func(n *Retrospective) { n.Edges.Comments = []*RetrospectiveComment{} },
-			func(n *Retrospective, e *RetrospectiveComment) { n.Edges.Comments = append(n.Edges.Comments, e) }); err != nil {
+	if query := _q.withDiscussionThreads; query != nil {
+		if err := _q.loadDiscussionThreads(ctx, query, nodes,
+			func(n *Retrospective) { n.Edges.DiscussionThreads = []*DiscussionThread{} },
+			func(n *Retrospective, e *DiscussionThread) {
+				n.Edges.DiscussionThreads = append(n.Edges.DiscussionThreads, e)
+			}); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withReviews; query != nil {
+		if err := _q.loadReviews(ctx, query, nodes,
+			func(n *Retrospective) { n.Edges.Reviews = []*Review{} },
+			func(n *Retrospective, e *Review) { n.Edges.Reviews = append(n.Edges.Reviews, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -693,7 +742,7 @@ func (_q *RetrospectiveQuery) loadDocument(ctx context.Context, query *DocumentQ
 	}
 	return nil
 }
-func (_q *RetrospectiveQuery) loadComments(ctx context.Context, query *RetrospectiveCommentQuery, nodes []*Retrospective, init func(*Retrospective), assign func(*Retrospective, *RetrospectiveComment)) error {
+func (_q *RetrospectiveQuery) loadDiscussionThreads(ctx context.Context, query *DiscussionThreadQuery, nodes []*Retrospective, init func(*Retrospective), assign func(*Retrospective, *DiscussionThread)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*Retrospective)
 	for i := range nodes {
@@ -704,10 +753,10 @@ func (_q *RetrospectiveQuery) loadComments(ctx context.Context, query *Retrospec
 		}
 	}
 	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(retrospectivecomment.FieldRetrospectiveID)
+		query.ctx.AppendFieldOnce(discussionthread.FieldRetrospectiveID)
 	}
-	query.Where(predicate.RetrospectiveComment(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(retrospective.CommentsColumn), fks...))
+	query.Where(predicate.DiscussionThread(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(retrospective.DiscussionThreadsColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {
@@ -715,9 +764,45 @@ func (_q *RetrospectiveQuery) loadComments(ctx context.Context, query *Retrospec
 	}
 	for _, n := range neighbors {
 		fk := n.RetrospectiveID
-		node, ok := nodeids[fk]
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "retrospective_id" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "retrospective_id" returned %v for node %v`, fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "retrospective_id" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *RetrospectiveQuery) loadReviews(ctx context.Context, query *ReviewQuery, nodes []*Retrospective, init func(*Retrospective), assign func(*Retrospective, *Review)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Retrospective)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(review.FieldRetrospectiveID)
+	}
+	query.Where(predicate.Review(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(retrospective.ReviewsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.RetrospectiveID
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "retrospective_id" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "retrospective_id" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}

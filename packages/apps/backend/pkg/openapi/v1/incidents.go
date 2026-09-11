@@ -17,6 +17,12 @@ type IncidentsHandler interface {
 	GetIncident(context.Context, *GetIncidentRequest) (*GetIncidentResponse, error)
 	UpdateIncident(context.Context, *UpdateIncidentRequest) (*UpdateIncidentResponse, error)
 	ArchiveIncident(context.Context, *ArchiveIncidentRequest) (*ArchiveIncidentResponse, error)
+
+	LinkIncidentSituation(context.Context, *LinkIncidentSituationRequest) (*LinkIncidentSituationResponse, error)
+	UnlinkIncidentSituation(context.Context, *UnlinkIncidentSituationRequest) (*UnlinkIncidentSituationResponse, error)
+
+	ListIncidentUpdates(context.Context, *ListIncidentUpdatesRequest) (*ListIncidentUpdatesResponse, error)
+	CreateIncidentUpdate(context.Context, *CreateIncidentUpdateRequest) (*CreateIncidentUpdateResponse, error)
 }
 
 func (o operations) RegisterIncidents(api huma.API) {
@@ -25,6 +31,12 @@ func (o operations) RegisterIncidents(api huma.API) {
 	huma.Register(api, GetIncident, o.GetIncident)
 	huma.Register(api, UpdateIncident, o.UpdateIncident)
 	huma.Register(api, ArchiveIncident, o.ArchiveIncident)
+
+	huma.Register(api, LinkIncidentSituation, o.LinkIncidentSituation)
+	huma.Register(api, UnlinkIncidentSituation, o.UnlinkIncidentSituation)
+
+	huma.Register(api, ListIncidentUpdates, o.ListIncidentUpdates)
+	huma.Register(api, CreateIncidentUpdate, o.CreateIncidentUpdate)
 }
 
 type (
@@ -50,6 +62,8 @@ type (
 		TeamAssignments        []IncidentTeamAssignment `json:"teams"`
 		FieldSelections        []IncidentFieldSelection `json:"fieldSelections"`
 		LinkedIncidents        []IncidentLink           `json:"linkedIncidents"`
+		LinkedSituationIds     []uuid.UUID              `json:"linkedSituationIds"`
+		RelatedTaskIds         []uuid.UUID              `json:"relatedTaskIds"`
 		ChatChannel            IncidentChatChannel      `json:"chatChannel"`
 		PrimaryVideoConference *VideoConference         `json:"primaryVideoConference,omitempty"`
 	}
@@ -58,7 +72,7 @@ type (
 		IncidentId      uuid.UUID        `json:"incidentId"`
 		IncidentTitle   string           `json:"incidentTitle"`
 		IncidentSummary string           `json:"incidentSummary"`
-		LinkType        IncidentLinkType `json:"linkType" enum:"duplicate_of,parent,sibling,child"`
+		LinkType        IncidentLinkType `json:"linkType" enum:"parent,child,similar"`
 	}
 	IncidentLinkType string
 
@@ -101,13 +115,21 @@ type (
 
 func IncidentFromEnt(inc *ent.Incident) Incident {
 	attr := IncidentAttributes{
-		Slug:            inc.Slug,
-		Title:           inc.Title,
-		Summary:         inc.Summary,
-		OpenedAt:        inc.OpenedAt,
-		Tags:            make([]IncidentTag, 0),
-		FieldSelections: make([]IncidentFieldSelection, 0),
-		LinkedIncidents: make([]IncidentLink, 0),
+		Slug:               inc.Slug,
+		Title:              inc.Title,
+		Summary:            inc.Summary,
+		OpenedAt:           inc.OpenedAt,
+		Tags:               make([]IncidentTag, 0),
+		FieldSelections:    make([]IncidentFieldSelection, 0),
+		LinkedIncidents:    make([]IncidentLink, 0),
+		LinkedSituationIds: make([]uuid.UUID, 0),
+		RelatedTaskIds:     make([]uuid.UUID, 0),
+	}
+	for _, situation := range inc.Edges.Situations {
+		attr.LinkedSituationIds = append(attr.LinkedSituationIds, situation.ID)
+	}
+	for _, task := range inc.Edges.Tasks {
+		attr.RelatedTaskIds = append(attr.RelatedTaskIds, task.ID)
 	}
 
 	if inc.Edges.Retrospective != nil {
@@ -194,6 +216,7 @@ type ListIncidentsRequest struct {
 	Statuses   []string  `query:"statuses" required:"false" enum:"started,mitigated,resolved"`
 	SeverityId uuid.UUID `query:"severityId" required:"false"`
 }
+
 type ListIncidentsResponse PaginatedResponse[Incident]
 
 var CreateIncident = huma.Operation{
@@ -202,7 +225,7 @@ var CreateIncident = huma.Operation{
 	Path:        "/incidents",
 	Summary:     "Create an Incident",
 	Tags:        incidentsTags,
-	Errors:      ErrorCodes(),
+	Errors:      ErrorCodes(http.StatusNotImplemented),
 }
 
 type CreateIncidentAttributes struct {
@@ -212,7 +235,9 @@ type CreateIncidentAttributes struct {
 	TypeId            uuid.UUID   `json:"typeId"`
 	TagIds            []uuid.UUID `json:"tagIds,omitempty"`
 	FieldSelectionIds []uuid.UUID `json:"fieldSelectionIds,omitempty"`
+	SituationIds      []uuid.UUID `json:"situationIds,omitempty"`
 }
+
 type CreateIncidentRequest RequestWithBodyAttributes[CreateIncidentAttributes]
 type CreateIncidentResponse ItemResponse[Incident]
 
@@ -243,6 +268,7 @@ type UpdateIncidentAttributes struct {
 	SeverityId uuid.UUID `json:"severityId,omitempty" required:"false"`
 	TypeId     uuid.UUID `json:"typeId,omitempty" required:"false"`
 }
+
 type UpdateIncidentRequest IdRequestWithBody[UpdateIncidentAttributes]
 type UpdateIncidentResponse ItemResponse[Incident]
 
@@ -257,3 +283,98 @@ var ArchiveIncident = huma.Operation{
 
 type ArchiveIncidentRequest IdRequest
 type ArchiveIncidentResponse EmptyResponse
+
+type IncidentSituationLink struct {
+	Id         uuid.UUID                       `json:"id"`
+	Attributes IncidentSituationLinkAttributes `json:"attributes"`
+}
+
+type IncidentSituationLinkAttributes struct {
+	IncidentId  uuid.UUID `json:"incidentId"`
+	SituationId uuid.UUID `json:"situationId"`
+	CreatedAt   time.Time `json:"createdAt"`
+}
+
+type IncidentUpdate struct {
+	Id         uuid.UUID                `json:"id"`
+	Attributes IncidentUpdateAttributes `json:"attributes"`
+}
+
+type IncidentUpdateAttributes struct {
+	IncidentId uuid.UUID  `json:"incidentId"`
+	AuthorId   *uuid.UUID `json:"authorId,omitempty"`
+	CreatedAt  time.Time  `json:"createdAt"`
+	Body       string     `json:"body"`
+}
+
+var LinkIncidentSituation = huma.Operation{
+	OperationID: "link-incident-situation",
+	Method:      http.MethodPost,
+	Path:        "/incidents/{id}/situations",
+	Summary:     "Link Incident Situation",
+	Tags:        incidentsTags,
+	Errors:      ErrorCodes(http.StatusNotImplemented),
+}
+
+type LinkIncidentSituationRequest struct {
+	Id   uuid.UUID `path:"id"`
+	Body struct {
+		Attributes struct {
+			SituationId uuid.UUID `json:"situationId"`
+		} `json:"attributes"`
+	}
+}
+
+type LinkIncidentSituationResponse ItemResponse[IncidentSituationLink]
+
+var UnlinkIncidentSituation = huma.Operation{
+	OperationID: "unlink-incident-situation",
+	Method:      http.MethodDelete,
+	Path:        "/incidents/{id}/situations",
+	Summary:     "Unlink Incident Situation",
+	Tags:        incidentsTags,
+	Errors:      ErrorCodes(http.StatusNotImplemented),
+}
+
+type UnlinkIncidentSituationRequest struct {
+	Id          uuid.UUID `path:"id"`
+	SituationId uuid.UUID `query:"situationId"`
+}
+
+type UnlinkIncidentSituationResponse ItemResponse[IncidentSituationLink]
+
+var ListIncidentUpdates = huma.Operation{
+	OperationID: "list-incident-updates",
+	Method:      http.MethodGet,
+	Path:        "/incidents/{id}/updates",
+	Summary:     "List Incident Updates",
+	Tags:        incidentsTags,
+	Errors:      ErrorCodes(),
+}
+
+type ListIncidentUpdatesRequest struct {
+	PaginationRequest
+	Id uuid.UUID `path:"id"`
+}
+
+type ListIncidentUpdatesResponse PaginatedResponse[IncidentUpdate]
+
+var CreateIncidentUpdate = huma.Operation{
+	OperationID: "create-incident-update",
+	Method:      http.MethodPost,
+	Path:        "/incidents/{id}/updates",
+	Summary:     "Create Incident Update",
+	Tags:        incidentsTags,
+	Errors:      ErrorCodes(http.StatusNotImplemented),
+}
+
+type CreateIncidentUpdateRequest struct {
+	Id   uuid.UUID `path:"id"`
+	Body struct {
+		Attributes struct {
+			Body string `json:"body"`
+		} `json:"attributes"`
+	}
+}
+
+type CreateIncidentUpdateResponse ItemResponse[IncidentUpdate]

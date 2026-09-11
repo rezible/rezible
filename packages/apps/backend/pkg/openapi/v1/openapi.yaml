@@ -1,5 +1,43 @@
 components:
   schemas:
+    ActivityRecord:
+      additionalProperties: false
+      properties:
+        attributes:
+          $ref: "#/components/schemas/ActivityRecordAttributes"
+        id:
+          type: string
+      required:
+        - id
+        - attributes
+      type: object
+    ActivityRecordAttributes:
+      additionalProperties: false
+      properties:
+        explanation:
+          type: string
+        incidentId:
+          type: string
+        occurredAt:
+          format: date-time
+          type: string
+        recordId:
+          type: string
+        recordKind:
+          enum:
+            - incident-update
+            - situation-investigation
+            - inbox-item
+          type: string
+        scope:
+          type: string
+      required:
+        - occurredAt
+        - explanation
+        - recordKind
+        - recordId
+        - scope
+      type: object
     AddIncidentDebriefUserMessageAttributes:
       additionalProperties: false
       properties:
@@ -49,7 +87,7 @@ components:
           readOnly: true
           type: string
         attributes:
-          $ref: "#/components/schemas/AttributesStruct"
+          $ref: "#/components/schemas/AttributesStruct2"
       required:
         - attributes
       type: object
@@ -120,6 +158,8 @@ components:
         knowledgeEvidenceId:
           type: string
         knowledgeRelationshipId:
+          type: string
+        normalizedEventId:
           type: string
         role:
           type: string
@@ -648,6 +688,22 @@ components:
     AttributesStruct:
       additionalProperties: false
       properties:
+        situationId:
+          type: string
+      required:
+        - situationId
+      type: object
+    AttributesStruct1:
+      additionalProperties: false
+      properties:
+        body:
+          type: string
+      required:
+        - body
+      type: object
+    AttributesStruct2:
+      additionalProperties: false
+      properties:
         status:
           enum:
             - suspected
@@ -901,23 +957,6 @@ components:
       required:
         - data
       type: object
-    CollectionResponseBodyRetrospectiveReview:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/CollectionResponseBodyRetrospectiveReview.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          items:
-            $ref: "#/components/schemas/RetrospectiveReview"
-          type: array
-      required:
-        - data
-      type: object
     CompleteIntegrationOAuthFlowRequestAttributes:
       additionalProperties: false
       properties:
@@ -1003,6 +1042,103 @@ components:
       required:
         - data
       type: object
+    CreateDiscussionCommentAttributes:
+      additionalProperties: false
+      properties:
+        content:
+          type: string
+        parentId:
+          type: string
+      required:
+        - content
+      type: object
+    CreateDiscussionCommentRequestBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/CreateDiscussionCommentRequestBody.json
+          format: uri
+          readOnly: true
+          type: string
+        attributes:
+          $ref: "#/components/schemas/CreateDiscussionCommentAttributes"
+      required:
+        - attributes
+      type: object
+    CreateDiscussionCommentResponseBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/CreateDiscussionCommentResponseBody.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          $ref: "#/components/schemas/DiscussionComment"
+      required:
+        - data
+      type: object
+    CreateDiscussionThreadAttributes:
+      additionalProperties: false
+      properties:
+        analysisId:
+          type: string
+        initialMessage:
+          type: string
+        kind:
+          enum:
+            - comment
+            - question
+          type: string
+        retrospectiveId:
+          type: string
+        targetId:
+          type: string
+        targetKind:
+          enum:
+            - finding
+            - knowledge_entity
+            - knowledge_relationship
+            - normalized_event
+          type: string
+      required:
+        - kind
+        - initialMessage
+      type: object
+    CreateDiscussionThreadRequestBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/CreateDiscussionThreadRequestBody.json
+          format: uri
+          readOnly: true
+          type: string
+        attributes:
+          $ref: "#/components/schemas/CreateDiscussionThreadAttributes"
+      required:
+        - attributes
+      type: object
+    CreateDiscussionThreadResponseBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/CreateDiscussionThreadResponseBody.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          $ref: "#/components/schemas/DiscussionThread"
+      required:
+        - data
+      type: object
     CreateEventAnnotationRequestAttributes:
       additionalProperties: false
       properties:
@@ -1062,6 +1198,10 @@ components:
           type: array
         severityId:
           type: string
+        situationIds:
+          items:
+            type: string
+          type: array
         summary:
           type: string
         tagIds:
@@ -1423,6 +1563,36 @@ components:
       required:
         - data
       type: object
+    CreateIncidentUpdateRequestBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/CreateIncidentUpdateRequestBody.json
+          format: uri
+          readOnly: true
+          type: string
+        attributes:
+          $ref: "#/components/schemas/AttributesStruct1"
+      required:
+        - attributes
+      type: object
+    CreateIncidentUpdateResponseBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/CreateIncidentUpdateResponseBody.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          $ref: "#/components/schemas/IncidentUpdate"
+      required:
+        - data
+      type: object
     CreateMeetingScheduleAttributes:
       additionalProperties: false
       properties:
@@ -1633,70 +1803,57 @@ components:
       required:
         - data
       type: object
-    CreateRetrospectiveCommentAttributes:
+    CreateReviewAttributes:
       additionalProperties: false
       properties:
-        content: {}
+        analysisEntryId:
+          type: string
+        commentId:
+          type: string
+        requesterId:
+          type: string
+        retrospectiveId:
+          type: string
+        reviewerId:
+          type: string
+        state:
+          enum:
+            - waiting
+            - request_changes
+            - approved
+          type: string
       required:
-        - content
+        - requesterId
+        - reviewerId
+        - state
       type: object
-    CreateRetrospectiveCommentRequestBody:
+    CreateReviewRequestBody:
       additionalProperties: false
       properties:
         $schema:
           description: A URL to the JSON Schema for this object.
           examples:
-            - /v1/schemas/CreateRetrospectiveCommentRequestBody.json
+            - /v1/schemas/CreateReviewRequestBody.json
           format: uri
           readOnly: true
           type: string
         attributes:
-          $ref: "#/components/schemas/CreateRetrospectiveCommentAttributes"
+          $ref: "#/components/schemas/CreateReviewAttributes"
       required:
         - attributes
       type: object
-    CreateRetrospectiveCommentResponseBody:
+    CreateReviewResponseBody:
       additionalProperties: false
       properties:
         $schema:
           description: A URL to the JSON Schema for this object.
           examples:
-            - /v1/schemas/CreateRetrospectiveCommentResponseBody.json
+            - /v1/schemas/CreateReviewResponseBody.json
           format: uri
           readOnly: true
           type: string
         data:
-          $ref: "#/components/schemas/RetrospectiveComment"
-      required:
-        - data
-      type: object
-    CreateRetrospectiveReviewRequestBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/CreateRetrospectiveReviewRequestBody.json
-          format: uri
-          readOnly: true
-          type: string
-        attributes:
-          $ref: "#/components/schemas/RetrospectiveReviewAttributes"
-      required:
-        - attributes
-      type: object
-    CreateRetrospectiveReviewResponseBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/CreateRetrospectiveReviewResponseBody.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          $ref: "#/components/schemas/RetrospectiveReview"
+          $ref: "#/components/schemas/Review"
       required:
         - data
       type: object
@@ -1762,10 +1919,26 @@ components:
     CreateTaskAttributes:
       additionalProperties: false
       properties:
+        dueAt:
+          format: date-time
+          type: string
+        incidentId:
+          type: string
+        originEntryId:
+          type: string
+        ownerId:
+          type: string
+        state:
+          enum:
+            - open
+            - completed
+            - cancelled
+          type: string
         title:
           type: string
       required:
         - title
+        - state
       type: object
     CreateTaskRequestBody:
       additionalProperties: false
@@ -1881,6 +2054,99 @@ components:
           $ref: "#/components/schemas/Team"
       required:
         - data
+      type: object
+    DiscussionComment:
+      additionalProperties: false
+      properties:
+        attributes:
+          $ref: "#/components/schemas/DiscussionCommentAttributes"
+        id:
+          type: string
+      required:
+        - id
+        - attributes
+      type: object
+    DiscussionCommentAttributes:
+      additionalProperties: false
+      properties:
+        content:
+          type: string
+        createdAt:
+          format: date-time
+          type: string
+        parentId:
+          type: string
+        threadId:
+          type: string
+        updatedAt:
+          format: date-time
+          type: string
+        userId:
+          type: string
+      required:
+        - threadId
+        - userId
+        - content
+        - createdAt
+        - updatedAt
+      type: object
+    DiscussionThread:
+      additionalProperties: false
+      properties:
+        attributes:
+          $ref: "#/components/schemas/DiscussionThreadAttributes"
+        id:
+          type: string
+      required:
+        - id
+        - attributes
+      type: object
+    DiscussionThreadAttributes:
+      additionalProperties: false
+      properties:
+        analysisId:
+          type: string
+        createdAt:
+          format: date-time
+          type: string
+        kind:
+          enum:
+            - comment
+            - question
+          type: string
+        resolutionNote:
+          type: string
+        resolutionState:
+          enum:
+            - open
+            - resolved
+          type: string
+        resolvedAt:
+          format: date-time
+          type: string
+        resolvedById:
+          type: string
+        retrospectiveId:
+          type: string
+        targetId:
+          type: string
+        targetKind:
+          enum:
+            - finding
+            - knowledge_entity
+            - knowledge_relationship
+            - normalized_event
+          type: string
+        updatedAt:
+          format: date-time
+          type: string
+        userId:
+          type: string
+      required:
+        - userId
+        - kind
+        - createdAt
+        - updatedAt
       type: object
     DocumentAccess:
       additionalProperties: false
@@ -2112,26 +2378,6 @@ components:
       required:
         - id
       type: object
-    ExpandableRetrospectiveCommentAttributes:
-      additionalProperties: false
-      properties:
-        attributes:
-          $ref: "#/components/schemas/RetrospectiveCommentAttributes"
-        id:
-          type: string
-      required:
-        - id
-      type: object
-    ExpandableUser:
-      additionalProperties: false
-      properties:
-        attributes:
-          $ref: "#/components/schemas/User"
-        id:
-          type: string
-      required:
-        - id
-      type: object
     ExpandableUserAttributes:
       additionalProperties: false
       properties:
@@ -2210,6 +2456,36 @@ components:
       required:
         - data
       type: object
+    GetDiscussionCommentResponseBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/GetDiscussionCommentResponseBody.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          $ref: "#/components/schemas/DiscussionComment"
+      required:
+        - data
+      type: object
+    GetDiscussionThreadResponseBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/GetDiscussionThreadResponseBody.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          $ref: "#/components/schemas/DiscussionThread"
+      required:
+        - data
+      type: object
     GetDocumentSessionResponseBody:
       additionalProperties: false
       properties:
@@ -2237,6 +2513,21 @@ components:
           type: string
         data:
           $ref: "#/components/schemas/Event"
+      required:
+        - data
+      type: object
+    GetInboxItemResponseBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/GetInboxItemResponseBody.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          $ref: "#/components/schemas/InboxItem"
       required:
         - data
       type: object
@@ -2615,21 +2906,6 @@ components:
       required:
         - data
       type: object
-    GetRetrospectiveCommentResponseBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/GetRetrospectiveCommentResponseBody.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          $ref: "#/components/schemas/RetrospectiveComment"
-      required:
-        - data
-      type: object
     GetRetrospectiveResponseBody:
       additionalProperties: false
       properties:
@@ -2645,6 +2921,36 @@ components:
       required:
         - data
       type: object
+    GetReviewResponseBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/GetReviewResponseBody.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          $ref: "#/components/schemas/Review"
+      required:
+        - data
+      type: object
+    GetSituationInvestigationResponseBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/GetSituationInvestigationResponseBody.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          $ref: "#/components/schemas/SituationInvestigation"
+      required:
+        - data
+      type: object
     GetSituationResponseBody:
       additionalProperties: false
       properties:
@@ -2657,6 +2963,21 @@ components:
           type: string
         data:
           $ref: "#/components/schemas/Situation"
+      required:
+        - data
+      type: object
+    GetSystemAnalysisEntryResponseBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/GetSystemAnalysisEntryResponseBody.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          $ref: "#/components/schemas/SystemAnalysisEntry"
       required:
         - data
       type: object
@@ -2765,6 +3086,67 @@ components:
       required:
         - data
       type: object
+    InboxItem:
+      additionalProperties: false
+      properties:
+        attributes:
+          $ref: "#/components/schemas/InboxItemAttributes"
+        id:
+          type: string
+      required:
+        - id
+        - attributes
+      type: object
+    InboxItemAttributes:
+      additionalProperties: false
+      properties:
+        analysisId:
+          type: string
+        context:
+          type: string
+        dueAt:
+          format: date-time
+          type: string
+        incidentId:
+          type: string
+        kind:
+          enum:
+            - question
+            - annotation
+            - task
+            - maintenance
+          type: string
+        proposedChange:
+          type: string
+        reason:
+          type: string
+        recipientId:
+          type: string
+        state:
+          enum:
+            - open
+            - completed
+            - dismissed
+          type: string
+        targetId:
+          type: string
+        targetKind:
+          enum:
+            - discussion-thread
+            - normalized-event
+            - task
+            - maintenance-request
+          type: string
+        teamId:
+          type: string
+      required:
+        - kind
+        - reason
+        - targetKind
+        - targetId
+        - state
+        - context
+      type: object
     Incident:
       additionalProperties: false
       properties:
@@ -2798,11 +3180,19 @@ components:
           items:
             $ref: "#/components/schemas/IncidentLink"
           type: array
+        linkedSituationIds:
+          items:
+            type: string
+          type: array
         openedAt:
           format: date-time
           type: string
         primaryVideoConference:
           $ref: "#/components/schemas/VideoConference"
+        relatedTaskIds:
+          items:
+            type: string
+          type: array
         retrospectiveId:
           type: string
         roles:
@@ -2848,6 +3238,8 @@ components:
         - teams
         - fieldSelections
         - linkedIncidents
+        - linkedSituationIds
+        - relatedTaskIds
         - chatChannel
       type: object
     IncidentChatChannel:
@@ -3058,10 +3450,9 @@ components:
           type: string
         linkType:
           enum:
-            - duplicate_of
             - parent
-            - sibling
             - child
+            - similar
           type: string
       required:
         - incidentId
@@ -3213,6 +3604,32 @@ components:
         - archived
         - description
       type: object
+    IncidentSituationLink:
+      additionalProperties: false
+      properties:
+        attributes:
+          $ref: "#/components/schemas/IncidentSituationLinkAttributes"
+        id:
+          type: string
+      required:
+        - id
+        - attributes
+      type: object
+    IncidentSituationLinkAttributes:
+      additionalProperties: false
+      properties:
+        createdAt:
+          format: date-time
+          type: string
+        incidentId:
+          type: string
+        situationId:
+          type: string
+      required:
+        - incidentId
+        - situationId
+        - createdAt
+      type: object
     IncidentTag:
       additionalProperties: false
       properties:
@@ -3284,6 +3701,34 @@ components:
         - name
         - archived
         - description
+      type: object
+    IncidentUpdate:
+      additionalProperties: false
+      properties:
+        attributes:
+          $ref: "#/components/schemas/IncidentUpdateAttributes"
+        id:
+          type: string
+      required:
+        - id
+        - attributes
+      type: object
+    IncidentUpdateAttributes:
+      additionalProperties: false
+      properties:
+        authorId:
+          type: string
+        body:
+          type: string
+        createdAt:
+          format: date-time
+          type: string
+        incidentId:
+          type: string
+      required:
+        - incidentId
+        - createdAt
+        - body
       type: object
     InstallIntegrationFromTargetsRequestAttributes:
       additionalProperties: false
@@ -3624,6 +4069,36 @@ components:
         - entities
         - relationships
         - truncated
+      type: object
+    LinkIncidentSituationRequestBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/LinkIncidentSituationRequestBody.json
+          format: uri
+          readOnly: true
+          type: string
+        attributes:
+          $ref: "#/components/schemas/AttributesStruct"
+      required:
+        - attributes
+      type: object
+    LinkIncidentSituationResponseBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/LinkIncidentSituationResponseBody.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          $ref: "#/components/schemas/IncidentSituationLink"
+      required:
+        - data
       type: object
     ListIntegrationInstallationsResponseBody:
       additionalProperties: false
@@ -4106,6 +4581,26 @@ components:
       required:
         - enableIncidentManagement
       type: object
+    PaginatedResponseBodyActivityRecord:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/PaginatedResponseBodyActivityRecord.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          items:
+            $ref: "#/components/schemas/ActivityRecord"
+          type: array
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+      required:
+        - data
+        - pagination
+      type: object
     PaginatedResponseBodyAgentArtifact:
       additionalProperties: false
       properties:
@@ -4206,6 +4701,46 @@ components:
         - data
         - pagination
       type: object
+    PaginatedResponseBodyDiscussionComment:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/PaginatedResponseBodyDiscussionComment.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          items:
+            $ref: "#/components/schemas/DiscussionComment"
+          type: array
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+      required:
+        - data
+        - pagination
+      type: object
+    PaginatedResponseBodyDiscussionThread:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/PaginatedResponseBodyDiscussionThread.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          items:
+            $ref: "#/components/schemas/DiscussionThread"
+          type: array
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+      required:
+        - data
+        - pagination
+      type: object
     PaginatedResponseBodyEvent:
       additionalProperties: false
       properties:
@@ -4239,6 +4774,26 @@ components:
         data:
           items:
             $ref: "#/components/schemas/EventAnnotation"
+          type: array
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+      required:
+        - data
+        - pagination
+      type: object
+    PaginatedResponseBodyInboxItem:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/PaginatedResponseBodyInboxItem.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          items:
+            $ref: "#/components/schemas/InboxItem"
           type: array
         pagination:
           $ref: "#/components/schemas/Pagination"
@@ -4339,6 +4894,26 @@ components:
         data:
           items:
             $ref: "#/components/schemas/IncidentType"
+          type: array
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+      required:
+        - data
+        - pagination
+      type: object
+    PaginatedResponseBodyIncidentUpdate:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/PaginatedResponseBodyIncidentUpdate.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          items:
+            $ref: "#/components/schemas/IncidentUpdate"
           type: array
         pagination:
           $ref: "#/components/schemas/Pagination"
@@ -4466,19 +5041,19 @@ components:
         - data
         - pagination
       type: object
-    PaginatedResponseBodyRetrospectiveComment:
+    PaginatedResponseBodyReview:
       additionalProperties: false
       properties:
         $schema:
           description: A URL to the JSON Schema for this object.
           examples:
-            - /v1/schemas/PaginatedResponseBodyRetrospectiveComment.json
+            - /v1/schemas/PaginatedResponseBodyReview.json
           format: uri
           readOnly: true
           type: string
         data:
           items:
-            $ref: "#/components/schemas/RetrospectiveComment"
+            $ref: "#/components/schemas/Review"
           type: array
         pagination:
           $ref: "#/components/schemas/Pagination"
@@ -4519,6 +5094,26 @@ components:
         data:
           items:
             $ref: "#/components/schemas/SituationHazardAssessment"
+          type: array
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+      required:
+        - data
+        - pagination
+      type: object
+    PaginatedResponseBodySituationInvestigation:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/PaginatedResponseBodySituationInvestigation.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          items:
+            $ref: "#/components/schemas/SituationInvestigation"
           type: array
         pagination:
           $ref: "#/components/schemas/Pagination"
@@ -4864,12 +5459,16 @@ components:
           items:
             $ref: "#/components/schemas/RetrospectiveReportSection"
           type: array
+        reviews:
+          items:
+            $ref: "#/components/schemas/Review"
+          type: array
         state:
           enum:
             - draft
             - in_review
-            - meeting_scheduled
-            - completed
+            - meeting
+            - closed
           type: string
         systemAnalysisId:
           type: string
@@ -4883,34 +5482,8 @@ components:
         - systemAnalysisId
         - type
         - state
+        - reviews
         - reportSections
-      type: object
-    RetrospectiveComment:
-      additionalProperties: false
-      properties:
-        attributes:
-          $ref: "#/components/schemas/RetrospectiveCommentAttributes"
-        id:
-          type: string
-      required:
-        - id
-        - attributes
-      type: object
-    RetrospectiveCommentAttributes:
-      additionalProperties: false
-      properties:
-        content:
-          type: string
-        replies:
-          items:
-            $ref: "#/components/schemas/RetrospectiveComment"
-          type: array
-        user:
-          $ref: "#/components/schemas/User"
-      required:
-        - user
-        - content
-        - replies
       type: object
     RetrospectiveReportSection:
       additionalProperties: false
@@ -4931,30 +5504,48 @@ components:
         - field
         - description
       type: object
-    RetrospectiveReview:
+    Review:
       additionalProperties: false
       properties:
         attributes:
-          $ref: "#/components/schemas/RetrospectiveReviewAttributes"
+          $ref: "#/components/schemas/ReviewAttributes"
         id:
           type: string
       required:
         - id
         - attributes
       type: object
-    RetrospectiveReviewAttributes:
+    ReviewAttributes:
       additionalProperties: false
       properties:
-        comment:
-          $ref: "#/components/schemas/ExpandableRetrospectiveCommentAttributes"
-        requester:
-          $ref: "#/components/schemas/ExpandableUser"
-        reviewer:
-          $ref: "#/components/schemas/ExpandableUser"
+        analysisEntryId:
+          type: string
+        commentId:
+          type: string
+        createdAt:
+          format: date-time
+          type: string
+        requesterId:
+          type: string
+        retrospectiveId:
+          type: string
+        reviewerId:
+          type: string
+        state:
+          enum:
+            - waiting
+            - request_changes
+            - approved
+          type: string
+        updatedAt:
+          format: date-time
+          type: string
       required:
-        - requester
-        - reviewer
-        - comment
+        - createdAt
+        - updatedAt
+        - requesterId
+        - reviewerId
+        - state
       type: object
     SendOncallShiftHandoverAttributes:
       additionalProperties: false
@@ -5024,6 +5615,18 @@ components:
           type: array
         knowledgeEntityId:
           type: string
+        linkedIncidentIds:
+          items:
+            type: string
+          type: array
+        observationEvents:
+          items:
+            $ref: "#/components/schemas/Event"
+          type: array
+        observationGroups:
+          items:
+            $ref: "#/components/schemas/SituationObservationGroup"
+          type: array
         openedAt:
           format: date-time
           type: string
@@ -5046,7 +5649,10 @@ components:
         - evidenceRevision
         - knowledgeEntityId
         - alertEpisodes
+        - linkedIncidentIds
         - investigations
+        - observationGroups
+        - observationEvents
         - openedAt
         - updatedAt
       type: object
@@ -5105,21 +5711,32 @@ components:
     SituationInvestigationAttrs:
       additionalProperties: false
       properties:
+        analysisId:
+          type: string
         completedRevision:
           format: int64
           type: integer
         evidenceRevision:
           format: int64
           type: integer
+        query:
+          type: string
         report:
           $ref: "#/components/schemas/SituationInvestigationReport"
         requestedRevision:
           format: int64
           type: integer
+        sessionId:
+          type: string
+        situationId:
+          type: string
         updatedAt:
           format: date-time
           type: string
       required:
+        - situationId
+        - analysisId
+        - sessionId
         - requestedRevision
         - completedRevision
         - evidenceRevision
@@ -5149,6 +5766,35 @@ components:
       required:
         - text
       type: object
+    SituationObservationGroup:
+      additionalProperties: false
+      properties:
+        attributes:
+          $ref: "#/components/schemas/SituationObservationGroupAttributes"
+        id:
+          type: string
+      required:
+        - id
+        - attributes
+      type: object
+    SituationObservationGroupAttributes:
+      additionalProperties: false
+      properties:
+        body:
+          type: string
+        events:
+          items:
+            $ref: "#/components/schemas/Event"
+          type: array
+        situationId:
+          type: string
+        title:
+          type: string
+      required:
+        - situationId
+        - title
+        - events
+      type: object
     StartIntegrationOAuthFlowResponseBody:
       additionalProperties: false
       properties:
@@ -5161,6 +5807,42 @@ components:
           type: string
         data:
           $ref: "#/components/schemas/IntegrationOAuthFlow"
+      required:
+        - data
+      type: object
+    StartSituationInvestigationAttributes:
+      additionalProperties: false
+      properties:
+        query:
+          type: string
+      type: object
+    StartSituationInvestigationRequestBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/StartSituationInvestigationRequestBody.json
+          format: uri
+          readOnly: true
+          type: string
+        attributes:
+          $ref: "#/components/schemas/StartSituationInvestigationAttributes"
+      required:
+        - attributes
+      type: object
+    StartSituationInvestigationResponseBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/StartSituationInvestigationResponseBody.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          $ref: "#/components/schemas/SituationInvestigation"
       required:
         - data
       type: object
@@ -5226,6 +5908,8 @@ components:
     SystemAnalysisEntryAttributes:
       additionalProperties: false
       properties:
+        analysisId:
+          type: string
         body:
           type: string
         kind:
@@ -5245,6 +5929,10 @@ components:
           type: object
         reference:
           type: string
+        reviews:
+          items:
+            $ref: "#/components/schemas/Review"
+          type: array
         sequence:
           format: int64
           type: integer
@@ -5255,11 +5943,13 @@ components:
         title:
           type: string
       required:
+        - analysisId
         - kind
         - sequence
         - title
         - properties
         - subjects
+        - reviews
       type: object
     SystemAnalysisEntrySubject:
       additionalProperties: false
@@ -5280,6 +5970,8 @@ components:
         knowledgeEvidenceId:
           type: string
         knowledgeRelationshipId:
+          type: string
+        normalizedEventId:
           type: string
         role:
           type: string
@@ -5342,13 +6034,68 @@ components:
     TaskAttributes:
       additionalProperties: false
       properties:
+        createdAt:
+          format: date-time
+          type: string
         description:
           type: string
+        dueAt:
+          format: date-time
+          type: string
+        incidentId:
+          type: string
         name:
+          type: string
+        originEntryId:
+          type: string
+        ownerId:
+          type: string
+        state:
+          enum:
+            - open
+            - completed
+            - cancelled
+          type: string
+        ticketIds:
+          items:
+            type: string
+          type: array
+        tickets:
+          items:
+            $ref: "#/components/schemas/TaskTicket"
+          type: array
+        updatedAt:
+          format: date-time
           type: string
       required:
         - name
         - description
+        - state
+        - ticketIds
+        - tickets
+        - createdAt
+        - updatedAt
+      type: object
+    TaskTicket:
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+        provider:
+          type: string
+        providerNamespace:
+          type: string
+        providerResourceRef:
+          type: string
+        reference:
+          type: string
+        title:
+          type: string
+        url:
+          type: string
+      required:
+        - id
+        - title
       type: object
     Team:
       additionalProperties: false
@@ -5427,6 +6174,102 @@ components:
         output: {}
         ref:
           type: string
+      type: object
+    UnlinkIncidentSituationResponseBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/UnlinkIncidentSituationResponseBody.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          $ref: "#/components/schemas/IncidentSituationLink"
+      required:
+        - data
+      type: object
+    UpdateDiscussionCommentAttributes:
+      additionalProperties: false
+      properties:
+        content:
+          type: string
+      required:
+        - content
+      type: object
+    UpdateDiscussionCommentRequestBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/UpdateDiscussionCommentRequestBody.json
+          format: uri
+          readOnly: true
+          type: string
+        attributes:
+          $ref: "#/components/schemas/UpdateDiscussionCommentAttributes"
+      required:
+        - attributes
+      type: object
+    UpdateDiscussionCommentResponseBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/UpdateDiscussionCommentResponseBody.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          $ref: "#/components/schemas/DiscussionComment"
+      required:
+        - data
+      type: object
+    UpdateDiscussionThreadAttributes:
+      additionalProperties: false
+      properties:
+        resolutionNote:
+          type: string
+        resolutionState:
+          enum:
+            - open
+            - resolved
+          type: string
+      required:
+        - resolutionState
+      type: object
+    UpdateDiscussionThreadRequestBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/UpdateDiscussionThreadRequestBody.json
+          format: uri
+          readOnly: true
+          type: string
+        attributes:
+          $ref: "#/components/schemas/UpdateDiscussionThreadAttributes"
+      required:
+        - attributes
+      type: object
+    UpdateDiscussionThreadResponseBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/UpdateDiscussionThreadResponseBody.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          $ref: "#/components/schemas/DiscussionThread"
+      required:
+        - data
       type: object
     UpdateEventAnnotationRequestAttributes:
       additionalProperties: false
@@ -6130,44 +6973,19 @@ components:
       type: object
     UpdateRetrospectiveAttributes:
       additionalProperties: false
-      type: object
-    UpdateRetrospectiveCommentAttributes:
-      additionalProperties: false
       properties:
-        content:
+        kind:
+          enum:
+            - simple
+            - full
           type: string
-        resolved:
-          type: boolean
-      type: object
-    UpdateRetrospectiveCommentRequestBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/UpdateRetrospectiveCommentRequestBody.json
-          format: uri
-          readOnly: true
+        state:
+          enum:
+            - draft
+            - in_review
+            - meeting
+            - closed
           type: string
-        attributes:
-          $ref: "#/components/schemas/UpdateRetrospectiveCommentAttributes"
-      required:
-        - attributes
-      type: object
-    UpdateRetrospectiveCommentResponseBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/UpdateRetrospectiveCommentResponseBody.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          $ref: "#/components/schemas/RetrospectiveComment"
-      required:
-        - data
       type: object
     UpdateRetrospectiveRequestBody:
       additionalProperties: false
@@ -6199,36 +7017,47 @@ components:
       required:
         - data
       type: object
-    UpdateRetrospectiveReviewRequestAttributes:
+    UpdateReviewAttributes:
       additionalProperties: false
+      properties:
+        commentId:
+          nullable: true
+          type: string
+        state:
+          enum:
+            - waiting
+            - request_changes
+            - approved
+          nullable: true
+          type: string
       type: object
-    UpdateRetrospectiveReviewRequestBody:
+    UpdateReviewRequestBody:
       additionalProperties: false
       properties:
         $schema:
           description: A URL to the JSON Schema for this object.
           examples:
-            - /v1/schemas/UpdateRetrospectiveReviewRequestBody.json
+            - /v1/schemas/UpdateReviewRequestBody.json
           format: uri
           readOnly: true
           type: string
         attributes:
-          $ref: "#/components/schemas/UpdateRetrospectiveReviewRequestAttributes"
+          $ref: "#/components/schemas/UpdateReviewAttributes"
       required:
         - attributes
       type: object
-    UpdateRetrospectiveReviewResponseBody:
+    UpdateReviewResponseBody:
       additionalProperties: false
       properties:
         $schema:
           description: A URL to the JSON Schema for this object.
           examples:
-            - /v1/schemas/UpdateRetrospectiveReviewResponseBody.json
+            - /v1/schemas/UpdateReviewResponseBody.json
           format: uri
           readOnly: true
           type: string
         data:
-          $ref: "#/components/schemas/RetrospectiveReview"
+          $ref: "#/components/schemas/Review"
       required:
         - data
       type: object
@@ -6452,7 +7281,24 @@ components:
     UpdateTaskAttributes:
       additionalProperties: false
       properties:
+        dueAt:
+          format: date-time
+          nullable: true
+          type: string
         name:
+          nullable: true
+          type: string
+        originEntryId:
+          nullable: true
+          type: string
+        ownerId:
+          nullable: true
+          type: string
+        state:
+          enum:
+            - open
+            - completed
+            - cancelled
           nullable: true
           type: string
       type: object
@@ -6807,6 +7653,90 @@ info:
   version: 0.0.1
 openapi: 3.1.0
 paths:
+  /activity:
+    get:
+      operationId: list-activity
+      parameters:
+        - explode: false
+          in: query
+          name: page
+          schema:
+            default: 1
+            format: int64
+            minimum: 1
+            type: integer
+        - explode: false
+          in: query
+          name: pageSize
+          schema:
+            default: 25
+            format: int64
+            maximum: 50
+            minimum: 1
+            type: integer
+        - explode: false
+          in: query
+          name: from
+          schema:
+            format: date-time
+            type: string
+        - explode: false
+          in: query
+          name: to
+          schema:
+            format: date-time
+            type: string
+        - explode: false
+          in: query
+          name: scope
+          schema:
+            enum:
+              - team
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedResponseBodyActivityRecord"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: List Activity
   /ai/agent_sessions:
     get:
       operationId: list-agent-sessions
@@ -8135,6 +9065,543 @@ paths:
       summary: Update an Incident Debrief Question
       tags:
         - Incident Debriefs
+  /discussion-comments/{id}:
+    get:
+      operationId: get-discussion-comment
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetDiscussionCommentResponseBody"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: Get discussion comment
+    patch:
+      operationId: update-discussion-comment
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateDiscussionCommentRequestBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UpdateDiscussionCommentResponseBody"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+        "501":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Implemented
+      summary: Update discussion comment
+  /discussion-threads:
+    get:
+      operationId: list-discussion-threads
+      parameters:
+        - explode: false
+          in: query
+          name: page
+          schema:
+            default: 1
+            format: int64
+            minimum: 1
+            type: integer
+        - explode: false
+          in: query
+          name: pageSize
+          schema:
+            default: 25
+            format: int64
+            maximum: 50
+            minimum: 1
+            type: integer
+        - explode: false
+          in: query
+          name: analysisId
+          schema:
+            type: string
+        - explode: false
+          in: query
+          name: retrospectiveId
+          schema:
+            type: string
+        - explode: false
+          in: query
+          name: targetKind
+          schema:
+            enum:
+              - finding
+              - knowledge_entity
+              - knowledge_relationship
+              - normalized_event
+            type: string
+        - explode: false
+          in: query
+          name: targetId
+          schema:
+            type: string
+        - explode: false
+          in: query
+          name: kind
+          schema:
+            enum:
+              - comment
+              - question
+            type: string
+        - explode: false
+          in: query
+          name: resolutionState
+          schema:
+            enum:
+              - open
+              - resolved
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedResponseBodyDiscussionThread"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: List discussion threads
+    post:
+      operationId: create-discussion-thread
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateDiscussionThreadRequestBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreateDiscussionThreadResponseBody"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+        "501":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Implemented
+      summary: Create discussion thread
+  /discussion-threads/{id}:
+    get:
+      operationId: get-discussion-thread
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetDiscussionThreadResponseBody"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: Get discussion thread
+    patch:
+      operationId: update-discussion-thread
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateDiscussionThreadRequestBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UpdateDiscussionThreadResponseBody"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+        "501":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Implemented
+      summary: Update discussion thread
+  /discussion-threads/{id}/comments:
+    get:
+      operationId: list-discussion-comments
+      parameters:
+        - explode: false
+          in: query
+          name: page
+          schema:
+            default: 1
+            format: int64
+            minimum: 1
+            type: integer
+        - explode: false
+          in: query
+          name: pageSize
+          schema:
+            default: 25
+            format: int64
+            maximum: 50
+            minimum: 1
+            type: integer
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+        - explode: false
+          in: query
+          name: parentId
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedResponseBodyDiscussionComment"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: List discussion comments
+    post:
+      operationId: create-discussion-comment
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateDiscussionCommentRequestBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreateDiscussionCommentResponseBody"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+        "501":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Implemented
+      summary: Create discussion comment
   /documents/{id}/session:
     get:
       operationId: get-document-session
@@ -8531,6 +9998,16 @@ paths:
         - explode: false
           in: query
           name: kind
+          schema:
+            type: string
+        - explode: false
+          in: query
+          name: situationId
+          schema:
+            type: string
+        - explode: false
+          in: query
+          name: analysisId
           schema:
             type: string
         - explode: false
@@ -10698,6 +12175,12 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
+        "501":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Implemented
       summary: Create an Incident
       tags:
         - Incidents
@@ -11037,6 +12520,276 @@ paths:
       summary: Create an Incident Milestone
       tags:
         - Incident Milestones
+  /incidents/{id}/situations:
+    delete:
+      operationId: unlink-incident-situation
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+        - explode: false
+          in: query
+          name: situationId
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnlinkIncidentSituationResponseBody"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+        "501":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Implemented
+      summary: Unlink Incident Situation
+      tags:
+        - Incidents
+    post:
+      operationId: link-incident-situation
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LinkIncidentSituationRequestBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LinkIncidentSituationResponseBody"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+        "501":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Implemented
+      summary: Link Incident Situation
+      tags:
+        - Incidents
+  /incidents/{id}/updates:
+    get:
+      operationId: list-incident-updates
+      parameters:
+        - explode: false
+          in: query
+          name: page
+          schema:
+            default: 1
+            format: int64
+            minimum: 1
+            type: integer
+        - explode: false
+          in: query
+          name: pageSize
+          schema:
+            default: 25
+            format: int64
+            maximum: 50
+            minimum: 1
+            type: integer
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedResponseBodyIncidentUpdate"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: List Incident Updates
+      tags:
+        - Incidents
+    post:
+      operationId: create-incident-update
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateIncidentUpdateRequestBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreateIncidentUpdateResponseBody"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+        "501":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Implemented
+      summary: Create Incident Update
+      tags:
+        - Incidents
   /integrations:
     get:
       operationId: get-installable-integrations
@@ -14127,232 +15880,6 @@ paths:
       summary: Update a Playbook
       tags:
         - Playbooks
-  /retrospective_comments/{id}:
-    get:
-      operationId: get-retrospective-comment
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/GetRetrospectiveCommentResponseBody"
-          description: OK
-        "400":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Bad Request
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unauthorized
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Forbidden
-        "404":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Not Found
-        "422":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unprocessable Entity
-        "500":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Internal Server Error
-      summary: Get a Retrospective Comment
-      tags:
-        - Retrospectives
-    patch:
-      operationId: update-retrospective-comment
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/UpdateRetrospectiveCommentRequestBody"
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/UpdateRetrospectiveCommentResponseBody"
-          description: OK
-        "400":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Bad Request
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unauthorized
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Forbidden
-        "404":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Not Found
-        "422":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unprocessable Entity
-        "500":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Internal Server Error
-      summary: Update a Retrospective Comment
-      tags:
-        - Retrospectives
-  /retrospective_reviews/{id}:
-    delete:
-      operationId: archive-retrospective-review
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-      responses:
-        "204":
-          description: No Content
-        "400":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Bad Request
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unauthorized
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Forbidden
-        "404":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Not Found
-        "422":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unprocessable Entity
-        "500":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Internal Server Error
-      summary: Archive a Retrospective Review
-      tags:
-        - Retrospectives
-    patch:
-      operationId: update-retrospective-review
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/UpdateRetrospectiveReviewRequestBody"
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/UpdateRetrospectiveReviewResponseBody"
-          description: OK
-        "400":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Bad Request
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unauthorized
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Forbidden
-        "404":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Not Found
-        "422":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unprocessable Entity
-        "500":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Internal Server Error
-      summary: Update a Retrospective Review
-      tags:
-        - Retrospectives
   /retrospectives:
     get:
       operationId: list-retrospectives
@@ -14532,18 +16059,19 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
+        "501":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Implemented
       summary: Create an Incident Retrospective
       tags:
         - Retrospectives
-  /retrospectives/{id}/comments:
+  /reviews:
     get:
-      operationId: list-retrospective-comments
+      operationId: list-reviews
       parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
         - explode: false
           in: query
           name: page
@@ -14561,12 +16089,22 @@ paths:
             maximum: 50
             minimum: 1
             type: integer
+        - explode: false
+          in: query
+          name: retrospectiveId
+          schema:
+            type: string
+        - explode: false
+          in: query
+          name: analysisEntryId
+          schema:
+            type: string
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/PaginatedResponseBodyRetrospectiveComment"
+                $ref: "#/components/schemas/PaginatedResponseBodyReview"
           description: OK
         "400":
           content:
@@ -14604,29 +16142,23 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
-      summary: List Comments For a Retrospective
+      summary: List Reviews
       tags:
-        - Retrospectives
+        - Reviews
     post:
-      operationId: create-retrospective-comment
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
+      operationId: create-review
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/CreateRetrospectiveCommentRequestBody"
+              $ref: "#/components/schemas/CreateReviewRequestBody"
         required: true
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/CreateRetrospectiveCommentResponseBody"
+                $ref: "#/components/schemas/CreateReviewResponseBody"
           description: OK
         "400":
           content:
@@ -14664,18 +16196,86 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
-      summary: Create a Retrospective Comment
+        "501":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Implemented
+      summary: Create Review
       tags:
-        - Retrospectives
-  /retrospectives/{id}/reviews:
+        - Reviews
+  /reviews/{id}:
+    delete:
+      operationId: archive-review
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+        "501":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Implemented
+      summary: Archive Review
+      tags:
+        - Reviews
     get:
-      operationId: list-retrospective-reviews
+      operationId: get-review
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/CollectionResponseBodyRetrospectiveReview"
+                $ref: "#/components/schemas/GetReviewResponseBody"
           description: OK
         "400":
           content:
@@ -14713,11 +16313,11 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
-      summary: List Retrospective Reviews
+      summary: Get Review
       tags:
-        - Retrospectives
-    post:
-      operationId: create-retrospective-review
+        - Reviews
+    patch:
+      operationId: update-review
       parameters:
         - in: path
           name: id
@@ -14728,14 +16328,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/CreateRetrospectiveReviewRequestBody"
+              $ref: "#/components/schemas/UpdateReviewRequestBody"
         required: true
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/CreateRetrospectiveReviewResponseBody"
+                $ref: "#/components/schemas/UpdateReviewResponseBody"
           description: OK
         "400":
           content:
@@ -14773,9 +16373,70 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
-      summary: Create a Retrospective Review
+        "501":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Implemented
+      summary: Update Review
       tags:
-        - Retrospectives
+        - Reviews
+  /situation-investigations/{id}:
+    get:
+      operationId: get-situation-investigation
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetSituationInvestigationResponseBody"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: Get Situation Investigation
+      tags:
+        - Situations
   /situations:
     get:
       operationId: list-situations
@@ -15047,6 +16708,138 @@ paths:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
       summary: Add Situation Hazard Assessment
+      tags:
+        - Situations
+  /situations/{id}/investigations:
+    get:
+      operationId: list-situation-investigations
+      parameters:
+        - explode: false
+          in: query
+          name: page
+          schema:
+            default: 1
+            format: int64
+            minimum: 1
+            type: integer
+        - explode: false
+          in: query
+          name: pageSize
+          schema:
+            default: 25
+            format: int64
+            maximum: 50
+            minimum: 1
+            type: integer
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedResponseBodySituationInvestigation"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: List Situation Investigations
+      tags:
+        - Situations
+    post:
+      operationId: start-situation-investigation
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StartSituationInvestigationRequestBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StartSituationInvestigationResponseBody"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: Start Situation Investigation
       tags:
         - Situations
   /system_analysis/{id}:
@@ -15722,6 +17515,60 @@ paths:
       summary: Delete System Analysis Entry
       tags:
         - System Analysis
+    get:
+      operationId: get-system-analysis-entry
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetSystemAnalysisEntryResponseBody"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: Get System Analysis Entry
+      tags:
+        - System Analysis
     patch:
       operationId: update-system-analysis-entry
       parameters:
@@ -16092,6 +17939,30 @@ paths:
           schema:
             default: false
             type: boolean
+        - explode: false
+          in: query
+          name: incidentId
+          schema:
+            type: string
+        - explode: false
+          in: query
+          name: ownerId
+          schema:
+            type: string
+        - explode: false
+          in: query
+          name: originEntryId
+          schema:
+            type: string
+        - explode: false
+          in: query
+          name: state
+          schema:
+            enum:
+              - open
+              - completed
+              - cancelled
+            type: string
       responses:
         "200":
           content:
@@ -16189,6 +18060,12 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
+        "501":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Implemented
       summary: Create a Task
       tags:
         - Tasks
@@ -16354,6 +18231,12 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
+        "501":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Implemented
       summary: Update a Task
       tags:
         - Tasks
@@ -16943,6 +18826,165 @@ paths:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
       summary: Get the current User Session
+      tags:
+        - User Session
+  /user_session/inbox:
+    get:
+      operationId: list-inbox-items
+      parameters:
+        - explode: false
+          in: query
+          name: page
+          schema:
+            default: 1
+            format: int64
+            minimum: 1
+            type: integer
+        - explode: false
+          in: query
+          name: pageSize
+          schema:
+            default: 25
+            format: int64
+            maximum: 50
+            minimum: 1
+            type: integer
+        - explode: false
+          in: query
+          name: recipientId
+          schema:
+            type: string
+        - explode: false
+          in: query
+          name: kind
+          schema:
+            enum:
+              - question
+              - annotation
+              - task
+              - maintenance
+            type: string
+        - explode: false
+          in: query
+          name: state
+          schema:
+            enum:
+              - open
+              - completed
+              - dismissed
+            type: string
+        - explode: false
+          in: query
+          name: scope
+          schema:
+            enum:
+              - mine
+              - team
+            type: string
+        - explode: false
+          in: query
+          name: teamId
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedResponseBodyInboxItem"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: List Inbox Items
+      tags:
+        - User Session
+  /user_session/inbox/{id}:
+    get:
+      operationId: get-inbox-item
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetInboxItemResponseBody"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: Get Inbox Item
       tags:
         - User Session
   /user_session/notifications/{id}:

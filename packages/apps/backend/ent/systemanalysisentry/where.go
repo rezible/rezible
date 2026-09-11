@@ -644,6 +644,64 @@ func HasSubjectsWith(preds ...predicate.SystemAnalysisEntrySubject) predicate.Sy
 	})
 }
 
+// HasOriginTasks applies the HasEdge predicate on the "origin_tasks" edge.
+func HasOriginTasks() predicate.SystemAnalysisEntry {
+	return predicate.SystemAnalysisEntry(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, OriginTasksTable, OriginTasksColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Task
+		step.Edge.Schema = schemaConfig.Task
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasOriginTasksWith applies the HasEdge predicate on the "origin_tasks" edge with a given conditions (other predicates).
+func HasOriginTasksWith(preds ...predicate.Task) predicate.SystemAnalysisEntry {
+	return predicate.SystemAnalysisEntry(func(s *sql.Selector) {
+		step := newOriginTasksStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Task
+		step.Edge.Schema = schemaConfig.Task
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasReviews applies the HasEdge predicate on the "reviews" edge.
+func HasReviews() predicate.SystemAnalysisEntry {
+	return predicate.SystemAnalysisEntry(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, ReviewsTable, ReviewsColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Review
+		step.Edge.Schema = schemaConfig.Review
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasReviewsWith applies the HasEdge predicate on the "reviews" edge with a given conditions (other predicates).
+func HasReviewsWith(preds ...predicate.Review) predicate.SystemAnalysisEntry {
+	return predicate.SystemAnalysisEntry(func(s *sql.Selector) {
+		step := newReviewsStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Review
+		step.Edge.Schema = schemaConfig.Review
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.SystemAnalysisEntry) predicate.SystemAnalysisEntry {
 	return predicate.SystemAnalysisEntry(sql.AndPredicates(predicates...))

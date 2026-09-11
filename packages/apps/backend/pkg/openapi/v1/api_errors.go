@@ -51,11 +51,22 @@ func asStatusError(msg string, err error) huma.StatusError {
 	if ent.IsNotFound(err) {
 		return huma.Error404NotFound("not found", err)
 	}
+	if errors.Is(err, rez.ErrNotFound) {
+		return huma.Error404NotFound("not found", err)
+	}
 	if errors.Is(err, rez.ErrConflict) {
 		return huma.Error409Conflict("conflict", err)
 	}
 	if errors.Is(err, rez.ErrInvalidInput) {
 		return huma.Error400BadRequest("invalid input", err)
+	}
+	if errors.Is(err, rez.ErrAuthSessionMissing) ||
+		errors.Is(err, rez.ErrAuthSessionExpired) ||
+		errors.Is(err, rez.ErrAuthSessionInvalid) {
+		return huma.Error401Unauthorized("unauthorized", err)
+	}
+	if errors.Is(err, rez.ErrNotImplemented) {
+		return huma.Error501NotImplemented("not implemented", err)
 	}
 
 	if enumValidationErrFieldRe.MatchString(err.Error()) {

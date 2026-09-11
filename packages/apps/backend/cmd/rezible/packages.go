@@ -380,6 +380,10 @@ var pkgDatabase = do.Package(
 		)
 	}),
 
+	do.Lazy(func(i do.Injector) (rez.DiscussionService, error) {
+		return db.NewDiscussionService(do.MustInvoke[rez.Database](i)), nil
+	}),
+
 	do.Lazy(func(i do.Injector) (rez.AlertService, error) {
 		return db.NewAlertService(
 			do.MustInvoke[rez.Database](i),
@@ -480,6 +484,7 @@ var pkgOpenApi = do.Package(
 			do.MustInvoke[rez.OncallMetricsService](i),
 			do.MustInvoke[rez.PlaybookService](i),
 			do.MustInvoke[rez.RetrospectiveService](i),
+			do.MustInvoke[rez.DiscussionService](i),
 			do.MustInvoke[rez.SystemAnalysisService](i),
 			do.MustInvoke[rez.KnowledgeGraphService](i),
 			do.MustInvoke[rez.SituationService](i),

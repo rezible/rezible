@@ -20,6 +20,7 @@ import (
 	"github.com/rezible/rezible/ent/situation"
 	"github.com/rezible/rezible/ent/situationhazardassessment"
 	"github.com/rezible/rezible/ent/situationinvestigation"
+	"github.com/rezible/rezible/ent/situationobservationgroup"
 )
 
 // SituationUpdate is the builder for updating Situation entities.
@@ -224,6 +225,21 @@ func (_u *SituationUpdate) AddHazardAssessments(v ...*SituationHazardAssessment)
 	return _u.AddHazardAssessmentIDs(ids...)
 }
 
+// AddObservationGroupIDs adds the "observation_groups" edge to the SituationObservationGroup entity by IDs.
+func (_u *SituationUpdate) AddObservationGroupIDs(ids ...uuid.UUID) *SituationUpdate {
+	_u.mutation.AddObservationGroupIDs(ids...)
+	return _u
+}
+
+// AddObservationGroups adds the "observation_groups" edges to the SituationObservationGroup entity.
+func (_u *SituationUpdate) AddObservationGroups(v ...*SituationObservationGroup) *SituationUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddObservationGroupIDs(ids...)
+}
+
 // AddIncidentIDs adds the "incidents" edge to the Incident entity by IDs.
 func (_u *SituationUpdate) AddIncidentIDs(ids ...uuid.UUID) *SituationUpdate {
 	_u.mutation.AddIncidentIDs(ids...)
@@ -320,6 +336,27 @@ func (_u *SituationUpdate) RemoveHazardAssessments(v ...*SituationHazardAssessme
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveHazardAssessmentIDs(ids...)
+}
+
+// ClearObservationGroups clears all "observation_groups" edges to the SituationObservationGroup entity.
+func (_u *SituationUpdate) ClearObservationGroups() *SituationUpdate {
+	_u.mutation.ClearObservationGroups()
+	return _u
+}
+
+// RemoveObservationGroupIDs removes the "observation_groups" edge to SituationObservationGroup entities by IDs.
+func (_u *SituationUpdate) RemoveObservationGroupIDs(ids ...uuid.UUID) *SituationUpdate {
+	_u.mutation.RemoveObservationGroupIDs(ids...)
+	return _u
+}
+
+// RemoveObservationGroups removes "observation_groups" edges to SituationObservationGroup entities.
+func (_u *SituationUpdate) RemoveObservationGroups(v ...*SituationObservationGroup) *SituationUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveObservationGroupIDs(ids...)
 }
 
 // ClearIncidents clears all "incidents" edges to the Incident entity.
@@ -659,6 +696,54 @@ func (_u *SituationUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.ObservationGroupsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   situation.ObservationGroupsTable,
+			Columns: []string{situation.ObservationGroupsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(situationobservationgroup.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SituationObservationGroup
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedObservationGroupsIDs(); len(nodes) > 0 && !_u.mutation.ObservationGroupsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   situation.ObservationGroupsTable,
+			Columns: []string{situation.ObservationGroupsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(situationobservationgroup.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SituationObservationGroup
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ObservationGroupsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   situation.ObservationGroupsTable,
+			Columns: []string{situation.ObservationGroupsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(situationobservationgroup.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SituationObservationGroup
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _u.mutation.IncidentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
@@ -967,6 +1052,21 @@ func (_u *SituationUpdateOne) AddHazardAssessments(v ...*SituationHazardAssessme
 	return _u.AddHazardAssessmentIDs(ids...)
 }
 
+// AddObservationGroupIDs adds the "observation_groups" edge to the SituationObservationGroup entity by IDs.
+func (_u *SituationUpdateOne) AddObservationGroupIDs(ids ...uuid.UUID) *SituationUpdateOne {
+	_u.mutation.AddObservationGroupIDs(ids...)
+	return _u
+}
+
+// AddObservationGroups adds the "observation_groups" edges to the SituationObservationGroup entity.
+func (_u *SituationUpdateOne) AddObservationGroups(v ...*SituationObservationGroup) *SituationUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddObservationGroupIDs(ids...)
+}
+
 // AddIncidentIDs adds the "incidents" edge to the Incident entity by IDs.
 func (_u *SituationUpdateOne) AddIncidentIDs(ids ...uuid.UUID) *SituationUpdateOne {
 	_u.mutation.AddIncidentIDs(ids...)
@@ -1063,6 +1163,27 @@ func (_u *SituationUpdateOne) RemoveHazardAssessments(v ...*SituationHazardAsses
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveHazardAssessmentIDs(ids...)
+}
+
+// ClearObservationGroups clears all "observation_groups" edges to the SituationObservationGroup entity.
+func (_u *SituationUpdateOne) ClearObservationGroups() *SituationUpdateOne {
+	_u.mutation.ClearObservationGroups()
+	return _u
+}
+
+// RemoveObservationGroupIDs removes the "observation_groups" edge to SituationObservationGroup entities by IDs.
+func (_u *SituationUpdateOne) RemoveObservationGroupIDs(ids ...uuid.UUID) *SituationUpdateOne {
+	_u.mutation.RemoveObservationGroupIDs(ids...)
+	return _u
+}
+
+// RemoveObservationGroups removes "observation_groups" edges to SituationObservationGroup entities.
+func (_u *SituationUpdateOne) RemoveObservationGroups(v ...*SituationObservationGroup) *SituationUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveObservationGroupIDs(ids...)
 }
 
 // ClearIncidents clears all "incidents" edges to the Incident entity.
@@ -1427,6 +1548,54 @@ func (_u *SituationUpdateOne) sqlSave(ctx context.Context) (_node *Situation, er
 			},
 		}
 		edge.Schema = _u.schemaConfig.SituationHazardAssessment
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.ObservationGroupsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   situation.ObservationGroupsTable,
+			Columns: []string{situation.ObservationGroupsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(situationobservationgroup.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SituationObservationGroup
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedObservationGroupsIDs(); len(nodes) > 0 && !_u.mutation.ObservationGroupsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   situation.ObservationGroupsTable,
+			Columns: []string{situation.ObservationGroupsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(situationobservationgroup.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SituationObservationGroup
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ObservationGroupsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   situation.ObservationGroupsTable,
+			Columns: []string{situation.ObservationGroupsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(situationobservationgroup.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SituationObservationGroup
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

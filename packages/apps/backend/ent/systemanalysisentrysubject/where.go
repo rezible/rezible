@@ -92,6 +92,11 @@ func KnowledgeEvidenceID(v uuid.UUID) predicate.SystemAnalysisEntrySubject {
 	return predicate.SystemAnalysisEntrySubject(sql.FieldEQ(FieldKnowledgeEvidenceID, v))
 }
 
+// NormalizedEventID applies equality check predicate on the "normalized_event_id" field. It's identical to NormalizedEventIDEQ.
+func NormalizedEventID(v uuid.UUID) predicate.SystemAnalysisEntrySubject {
+	return predicate.SystemAnalysisEntrySubject(sql.FieldEQ(FieldNormalizedEventID, v))
+}
+
 // Role applies equality check predicate on the "role" field. It's identical to RoleEQ.
 func Role(v string) predicate.SystemAnalysisEntrySubject {
 	return predicate.SystemAnalysisEntrySubject(sql.FieldEQ(FieldRole, v))
@@ -307,6 +312,36 @@ func KnowledgeEvidenceIDNotNil() predicate.SystemAnalysisEntrySubject {
 	return predicate.SystemAnalysisEntrySubject(sql.FieldNotNull(FieldKnowledgeEvidenceID))
 }
 
+// NormalizedEventIDEQ applies the EQ predicate on the "normalized_event_id" field.
+func NormalizedEventIDEQ(v uuid.UUID) predicate.SystemAnalysisEntrySubject {
+	return predicate.SystemAnalysisEntrySubject(sql.FieldEQ(FieldNormalizedEventID, v))
+}
+
+// NormalizedEventIDNEQ applies the NEQ predicate on the "normalized_event_id" field.
+func NormalizedEventIDNEQ(v uuid.UUID) predicate.SystemAnalysisEntrySubject {
+	return predicate.SystemAnalysisEntrySubject(sql.FieldNEQ(FieldNormalizedEventID, v))
+}
+
+// NormalizedEventIDIn applies the In predicate on the "normalized_event_id" field.
+func NormalizedEventIDIn(vs ...uuid.UUID) predicate.SystemAnalysisEntrySubject {
+	return predicate.SystemAnalysisEntrySubject(sql.FieldIn(FieldNormalizedEventID, vs...))
+}
+
+// NormalizedEventIDNotIn applies the NotIn predicate on the "normalized_event_id" field.
+func NormalizedEventIDNotIn(vs ...uuid.UUID) predicate.SystemAnalysisEntrySubject {
+	return predicate.SystemAnalysisEntrySubject(sql.FieldNotIn(FieldNormalizedEventID, vs...))
+}
+
+// NormalizedEventIDIsNil applies the IsNil predicate on the "normalized_event_id" field.
+func NormalizedEventIDIsNil() predicate.SystemAnalysisEntrySubject {
+	return predicate.SystemAnalysisEntrySubject(sql.FieldIsNull(FieldNormalizedEventID))
+}
+
+// NormalizedEventIDNotNil applies the NotNil predicate on the "normalized_event_id" field.
+func NormalizedEventIDNotNil() predicate.SystemAnalysisEntrySubject {
+	return predicate.SystemAnalysisEntrySubject(sql.FieldNotNull(FieldNormalizedEventID))
+}
+
 // RoleEQ applies the EQ predicate on the "role" field.
 func RoleEQ(v string) predicate.SystemAnalysisEntrySubject {
 	return predicate.SystemAnalysisEntrySubject(sql.FieldEQ(FieldRole, v))
@@ -508,6 +543,35 @@ func HasKnowledgeEvidenceWith(preds ...predicate.KnowledgeEvidence) predicate.Sy
 		step := newKnowledgeEvidenceStep()
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.KnowledgeEvidence
+		step.Edge.Schema = schemaConfig.SystemAnalysisEntrySubject
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasNormalizedEvent applies the HasEdge predicate on the "normalized_event" edge.
+func HasNormalizedEvent() predicate.SystemAnalysisEntrySubject {
+	return predicate.SystemAnalysisEntrySubject(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, NormalizedEventTable, NormalizedEventColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.NormalizedEvent
+		step.Edge.Schema = schemaConfig.SystemAnalysisEntrySubject
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasNormalizedEventWith applies the HasEdge predicate on the "normalized_event" edge with a given conditions (other predicates).
+func HasNormalizedEventWith(preds ...predicate.NormalizedEvent) predicate.SystemAnalysisEntrySubject {
+	return predicate.SystemAnalysisEntrySubject(func(s *sql.Selector) {
+		step := newNormalizedEventStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.NormalizedEvent
 		step.Edge.Schema = schemaConfig.SystemAnalysisEntrySubject
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

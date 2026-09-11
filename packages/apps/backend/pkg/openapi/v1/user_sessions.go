@@ -17,6 +17,9 @@ type UserSessionsHandler interface {
 
 	ListNotifications(context.Context, *ListNotificationsRequest) (*ListNotificationsResponse, error)
 	DeleteNotification(context.Context, *DeleteNotificationRequest) (*DeleteNotificationResponse, error)
+
+	ListInboxItems(context.Context, *ListInboxItemsRequest) (*ListInboxItemsResponse, error)
+	GetInboxItem(context.Context, *GetInboxItemRequest) (*GetInboxItemResponse, error)
 }
 
 func (o operations) RegisterUserSessions(api huma.API) {
@@ -26,6 +29,9 @@ func (o operations) RegisterUserSessions(api huma.API) {
 
 	huma.Register(api, ListNotifications, o.ListNotifications)
 	huma.Register(api, DeleteNotification, o.DeleteNotification)
+
+	huma.Register(api, ListInboxItems, o.ListInboxItems)
+	huma.Register(api, GetInboxItem, o.GetInboxItem)
 }
 
 type (
@@ -61,6 +67,26 @@ type (
 		IncidentRoleAssignments bool `json:"incidentRoleAssignments"`
 		AgentRunResults         bool `json:"agentRunResults"`
 		IntegrationSyncFailures bool `json:"integrationSyncFailures"`
+	}
+
+	InboxItem struct {
+		Id         uuid.UUID           `json:"id"`
+		Attributes InboxItemAttributes `json:"attributes"`
+	}
+
+	InboxItemAttributes struct {
+		Kind           string     `json:"kind" enum:"question,annotation,task,maintenance"`
+		Reason         string     `json:"reason"`
+		RecipientId    *uuid.UUID `json:"recipientId,omitempty"`
+		TargetKind     string     `json:"targetKind" enum:"discussion-thread,normalized-event,task,maintenance-request"`
+		TargetId       uuid.UUID  `json:"targetId"`
+		State          string     `json:"state" enum:"open,completed,dismissed"`
+		Context        string     `json:"context"`
+		TeamId         *uuid.UUID `json:"teamId,omitempty"`
+		DueAt          *time.Time `json:"dueAt,omitempty"`
+		AnalysisId     *uuid.UUID `json:"analysisId,omitempty"`
+		IncidentId     *uuid.UUID `json:"incidentId,omitempty"`
+		ProposedChange string     `json:"proposedChange,omitempty"`
 	}
 )
 
@@ -146,7 +172,7 @@ var ListNotifications = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type ListNotificationsRequest PaginationRequest
+type ListNotificationsRequest = PaginationRequest
 type ListNotificationsResponse PaginatedResponse[UserNotification]
 
 var DeleteNotification = huma.Operation{
@@ -160,3 +186,35 @@ var DeleteNotification = huma.Operation{
 
 type DeleteNotificationRequest IdRequest
 type DeleteNotificationResponse EmptyResponse
+
+var ListInboxItems = huma.Operation{
+	OperationID: "list-inbox-items",
+	Method:      http.MethodGet,
+	Path:        "/user_session/inbox",
+	Summary:     "List Inbox Items",
+	Tags:        userSessionsTags,
+	Errors:      ErrorCodes(),
+}
+
+type ListInboxItemsRequest struct {
+	PaginationRequest
+	RecipientId uuid.UUID `query:"recipientId,omitempty"`
+	Kind        string    `query:"kind,omitempty" enum:"question,annotation,task,maintenance"`
+	State       string    `query:"state,omitempty" enum:"open,completed,dismissed"`
+	Scope       string    `query:"scope,omitempty" enum:"mine,team"`
+	TeamId      uuid.UUID `query:"teamId,omitempty"`
+}
+
+type ListInboxItemsResponse PaginatedResponse[InboxItem]
+
+var GetInboxItem = huma.Operation{
+	OperationID: "get-inbox-item",
+	Method:      http.MethodGet,
+	Path:        "/user_session/inbox/{id}",
+	Summary:     "Get Inbox Item",
+	Tags:        userSessionsTags,
+	Errors:      ErrorCodes(),
+}
+
+type GetInboxItemRequest IdRequest
+type GetInboxItemResponse ItemResponse[InboxItem]

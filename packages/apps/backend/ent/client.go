@@ -26,6 +26,8 @@ import (
 	"github.com/rezible/rezible/ent/alertepisodesituation"
 	"github.com/rezible/rezible/ent/alertfeedback"
 	"github.com/rezible/rezible/ent/alertinstance"
+	"github.com/rezible/rezible/ent/discussioncomment"
+	"github.com/rezible/rezible/ent/discussionthread"
 	"github.com/rezible/rezible/ent/document"
 	"github.com/rezible/rezible/ent/documentaccess"
 	"github.com/rezible/rezible/ent/eventannotation"
@@ -71,11 +73,11 @@ import (
 	"github.com/rezible/rezible/ent/organizationrole"
 	"github.com/rezible/rezible/ent/playbook"
 	"github.com/rezible/rezible/ent/retrospective"
-	"github.com/rezible/rezible/ent/retrospectivecomment"
-	"github.com/rezible/rezible/ent/retrospectivereview"
+	"github.com/rezible/rezible/ent/review"
 	"github.com/rezible/rezible/ent/situation"
 	"github.com/rezible/rezible/ent/situationhazardassessment"
 	"github.com/rezible/rezible/ent/situationinvestigation"
+	"github.com/rezible/rezible/ent/situationobservationgroup"
 	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/systemanalysisentity"
 	"github.com/rezible/rezible/ent/systemanalysisentry"
@@ -122,6 +124,10 @@ type Client struct {
 	AlertInstance *AlertInstanceClient
 	// AlertMetrics is the client for interacting with the AlertMetrics builders.
 	AlertMetrics *AlertMetricsClient
+	// DiscussionComment is the client for interacting with the DiscussionComment builders.
+	DiscussionComment *DiscussionCommentClient
+	// DiscussionThread is the client for interacting with the DiscussionThread builders.
+	DiscussionThread *DiscussionThreadClient
 	// Document is the client for interacting with the Document builders.
 	Document *DocumentClient
 	// DocumentAccess is the client for interacting with the DocumentAccess builders.
@@ -212,16 +218,16 @@ type Client struct {
 	Playbook *PlaybookClient
 	// Retrospective is the client for interacting with the Retrospective builders.
 	Retrospective *RetrospectiveClient
-	// RetrospectiveComment is the client for interacting with the RetrospectiveComment builders.
-	RetrospectiveComment *RetrospectiveCommentClient
-	// RetrospectiveReview is the client for interacting with the RetrospectiveReview builders.
-	RetrospectiveReview *RetrospectiveReviewClient
+	// Review is the client for interacting with the Review builders.
+	Review *ReviewClient
 	// Situation is the client for interacting with the Situation builders.
 	Situation *SituationClient
 	// SituationHazardAssessment is the client for interacting with the SituationHazardAssessment builders.
 	SituationHazardAssessment *SituationHazardAssessmentClient
 	// SituationInvestigation is the client for interacting with the SituationInvestigation builders.
 	SituationInvestigation *SituationInvestigationClient
+	// SituationObservationGroup is the client for interacting with the SituationObservationGroup builders.
+	SituationObservationGroup *SituationObservationGroupClient
 	// SystemAnalysis is the client for interacting with the SystemAnalysis builders.
 	SystemAnalysis *SystemAnalysisClient
 	// SystemAnalysisEntity is the client for interacting with the SystemAnalysisEntity builders.
@@ -274,6 +280,8 @@ func (c *Client) init() {
 	c.AlertFeedback = NewAlertFeedbackClient(c.config)
 	c.AlertInstance = NewAlertInstanceClient(c.config)
 	c.AlertMetrics = NewAlertMetricsClient(c.config)
+	c.DiscussionComment = NewDiscussionCommentClient(c.config)
+	c.DiscussionThread = NewDiscussionThreadClient(c.config)
 	c.Document = NewDocumentClient(c.config)
 	c.DocumentAccess = NewDocumentAccessClient(c.config)
 	c.EventAnnotation = NewEventAnnotationClient(c.config)
@@ -319,11 +327,11 @@ func (c *Client) init() {
 	c.OrganizationRole = NewOrganizationRoleClient(c.config)
 	c.Playbook = NewPlaybookClient(c.config)
 	c.Retrospective = NewRetrospectiveClient(c.config)
-	c.RetrospectiveComment = NewRetrospectiveCommentClient(c.config)
-	c.RetrospectiveReview = NewRetrospectiveReviewClient(c.config)
+	c.Review = NewReviewClient(c.config)
 	c.Situation = NewSituationClient(c.config)
 	c.SituationHazardAssessment = NewSituationHazardAssessmentClient(c.config)
 	c.SituationInvestigation = NewSituationInvestigationClient(c.config)
+	c.SituationObservationGroup = NewSituationObservationGroupClient(c.config)
 	c.SystemAnalysis = NewSystemAnalysisClient(c.config)
 	c.SystemAnalysisEntity = NewSystemAnalysisEntityClient(c.config)
 	c.SystemAnalysisEntry = NewSystemAnalysisEntryClient(c.config)
@@ -445,6 +453,8 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		AlertFeedback:                   NewAlertFeedbackClient(cfg),
 		AlertInstance:                   NewAlertInstanceClient(cfg),
 		AlertMetrics:                    NewAlertMetricsClient(cfg),
+		DiscussionComment:               NewDiscussionCommentClient(cfg),
+		DiscussionThread:                NewDiscussionThreadClient(cfg),
 		Document:                        NewDocumentClient(cfg),
 		DocumentAccess:                  NewDocumentAccessClient(cfg),
 		EventAnnotation:                 NewEventAnnotationClient(cfg),
@@ -490,11 +500,11 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		OrganizationRole:                NewOrganizationRoleClient(cfg),
 		Playbook:                        NewPlaybookClient(cfg),
 		Retrospective:                   NewRetrospectiveClient(cfg),
-		RetrospectiveComment:            NewRetrospectiveCommentClient(cfg),
-		RetrospectiveReview:             NewRetrospectiveReviewClient(cfg),
+		Review:                          NewReviewClient(cfg),
 		Situation:                       NewSituationClient(cfg),
 		SituationHazardAssessment:       NewSituationHazardAssessmentClient(cfg),
 		SituationInvestigation:          NewSituationInvestigationClient(cfg),
+		SituationObservationGroup:       NewSituationObservationGroupClient(cfg),
 		SystemAnalysis:                  NewSystemAnalysisClient(cfg),
 		SystemAnalysisEntity:            NewSystemAnalysisEntityClient(cfg),
 		SystemAnalysisEntry:             NewSystemAnalysisEntryClient(cfg),
@@ -540,6 +550,8 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		AlertFeedback:                   NewAlertFeedbackClient(cfg),
 		AlertInstance:                   NewAlertInstanceClient(cfg),
 		AlertMetrics:                    NewAlertMetricsClient(cfg),
+		DiscussionComment:               NewDiscussionCommentClient(cfg),
+		DiscussionThread:                NewDiscussionThreadClient(cfg),
 		Document:                        NewDocumentClient(cfg),
 		DocumentAccess:                  NewDocumentAccessClient(cfg),
 		EventAnnotation:                 NewEventAnnotationClient(cfg),
@@ -585,11 +597,11 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		OrganizationRole:                NewOrganizationRoleClient(cfg),
 		Playbook:                        NewPlaybookClient(cfg),
 		Retrospective:                   NewRetrospectiveClient(cfg),
-		RetrospectiveComment:            NewRetrospectiveCommentClient(cfg),
-		RetrospectiveReview:             NewRetrospectiveReviewClient(cfg),
+		Review:                          NewReviewClient(cfg),
 		Situation:                       NewSituationClient(cfg),
 		SituationHazardAssessment:       NewSituationHazardAssessmentClient(cfg),
 		SituationInvestigation:          NewSituationInvestigationClient(cfg),
+		SituationObservationGroup:       NewSituationObservationGroupClient(cfg),
 		SystemAnalysis:                  NewSystemAnalysisClient(cfg),
 		SystemAnalysisEntity:            NewSystemAnalysisEntityClient(cfg),
 		SystemAnalysisEntry:             NewSystemAnalysisEntryClient(cfg),
@@ -636,13 +648,14 @@ func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
 		c.AgentArtifact, c.AgentMessage, c.AgentSession, c.AgentSessionBinding,
 		c.AgentTurn, c.AlertDefinition, c.AlertEpisode, c.AlertEpisodeSituation,
-		c.AlertFeedback, c.AlertInstance, c.Document, c.DocumentAccess,
-		c.EventAnnotation, c.Incident, c.IncidentDebrief, c.IncidentDebriefMessage,
-		c.IncidentDebriefQuestion, c.IncidentDebriefSuggestion, c.IncidentField,
-		c.IncidentFieldOption, c.IncidentImpact, c.IncidentLink, c.IncidentMilestone,
-		c.IncidentRole, c.IncidentRoleAssignment, c.IncidentSeverity, c.IncidentTag,
-		c.IncidentType, c.Integration, c.IntegrationEventSyncCursor,
-		c.IntegrationEventSyncRun, c.IntegrationUserInstallState, c.KnowledgeEntity,
+		c.AlertFeedback, c.AlertInstance, c.DiscussionComment, c.DiscussionThread,
+		c.Document, c.DocumentAccess, c.EventAnnotation, c.Incident, c.IncidentDebrief,
+		c.IncidentDebriefMessage, c.IncidentDebriefQuestion,
+		c.IncidentDebriefSuggestion, c.IncidentField, c.IncidentFieldOption,
+		c.IncidentImpact, c.IncidentLink, c.IncidentMilestone, c.IncidentRole,
+		c.IncidentRoleAssignment, c.IncidentSeverity, c.IncidentTag, c.IncidentType,
+		c.Integration, c.IntegrationEventSyncCursor, c.IntegrationEventSyncRun,
+		c.IntegrationUserInstallState, c.KnowledgeEntity,
 		c.KnowledgeEntityLinkingAttribute, c.KnowledgeEvidence,
 		c.KnowledgeRelationship, c.KnowledgeSubjectAlias, c.MeetingSchedule,
 		c.MeetingSession, c.NormalizedEvent, c.NormalizedEventProjection,
@@ -650,9 +663,9 @@ func (c *Client) Use(hooks ...Hook) {
 		c.OncallRosterMetrics, c.OncallSchedule, c.OncallScheduleParticipant,
 		c.OncallShift, c.OncallShiftHandover, c.OncallShiftMetrics, c.Organization,
 		c.OrganizationPreferences, c.OrganizationRole, c.Playbook, c.Retrospective,
-		c.RetrospectiveComment, c.RetrospectiveReview, c.Situation,
-		c.SituationHazardAssessment, c.SituationInvestigation, c.SystemAnalysis,
-		c.SystemAnalysisEntity, c.SystemAnalysisEntry, c.SystemAnalysisEntrySubject,
+		c.Review, c.Situation, c.SituationHazardAssessment, c.SituationInvestigation,
+		c.SituationObservationGroup, c.SystemAnalysis, c.SystemAnalysisEntity,
+		c.SystemAnalysisEntry, c.SystemAnalysisEntrySubject,
 		c.SystemAnalysisRelationship, c.SystemHazard, c.SystemHazardRiskAssessment,
 		c.Task, c.Team, c.TeamMembership, c.Tenant, c.Ticket, c.User,
 		c.UserAuthSession, c.VideoConference,
@@ -667,8 +680,9 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
 		c.AgentArtifact, c.AgentMessage, c.AgentSession, c.AgentSessionBinding,
 		c.AgentTurn, c.AlertDefinition, c.AlertEpisode, c.AlertEpisodeSituation,
-		c.AlertFeedback, c.AlertInstance, c.AlertMetrics, c.Document, c.DocumentAccess,
-		c.EventAnnotation, c.Incident, c.IncidentDebrief, c.IncidentDebriefMessage,
+		c.AlertFeedback, c.AlertInstance, c.AlertMetrics, c.DiscussionComment,
+		c.DiscussionThread, c.Document, c.DocumentAccess, c.EventAnnotation,
+		c.Incident, c.IncidentDebrief, c.IncidentDebriefMessage,
 		c.IncidentDebriefQuestion, c.IncidentDebriefSuggestion, c.IncidentField,
 		c.IncidentFieldOption, c.IncidentImpact, c.IncidentLink, c.IncidentMilestone,
 		c.IncidentRole, c.IncidentRoleAssignment, c.IncidentSeverity, c.IncidentTag,
@@ -681,9 +695,9 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 		c.OncallRosterMetrics, c.OncallSchedule, c.OncallScheduleParticipant,
 		c.OncallShift, c.OncallShiftHandover, c.OncallShiftMetrics, c.Organization,
 		c.OrganizationPreferences, c.OrganizationRole, c.Playbook, c.Retrospective,
-		c.RetrospectiveComment, c.RetrospectiveReview, c.Situation,
-		c.SituationHazardAssessment, c.SituationInvestigation, c.SystemAnalysis,
-		c.SystemAnalysisEntity, c.SystemAnalysisEntry, c.SystemAnalysisEntrySubject,
+		c.Review, c.Situation, c.SituationHazardAssessment, c.SituationInvestigation,
+		c.SituationObservationGroup, c.SystemAnalysis, c.SystemAnalysisEntity,
+		c.SystemAnalysisEntry, c.SystemAnalysisEntrySubject,
 		c.SystemAnalysisRelationship, c.SystemHazard, c.SystemHazardRiskAssessment,
 		c.Task, c.Team, c.TeamMembership, c.Tenant, c.Ticket, c.User,
 		c.UserAuthSession, c.VideoConference,
@@ -715,6 +729,10 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.AlertFeedback.mutate(ctx, m)
 	case *AlertInstanceMutation:
 		return c.AlertInstance.mutate(ctx, m)
+	case *DiscussionCommentMutation:
+		return c.DiscussionComment.mutate(ctx, m)
+	case *DiscussionThreadMutation:
+		return c.DiscussionThread.mutate(ctx, m)
 	case *DocumentMutation:
 		return c.Document.mutate(ctx, m)
 	case *DocumentAccessMutation:
@@ -805,16 +823,16 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Playbook.mutate(ctx, m)
 	case *RetrospectiveMutation:
 		return c.Retrospective.mutate(ctx, m)
-	case *RetrospectiveCommentMutation:
-		return c.RetrospectiveComment.mutate(ctx, m)
-	case *RetrospectiveReviewMutation:
-		return c.RetrospectiveReview.mutate(ctx, m)
+	case *ReviewMutation:
+		return c.Review.mutate(ctx, m)
 	case *SituationMutation:
 		return c.Situation.mutate(ctx, m)
 	case *SituationHazardAssessmentMutation:
 		return c.SituationHazardAssessment.mutate(ctx, m)
 	case *SituationInvestigationMutation:
 		return c.SituationInvestigation.mutate(ctx, m)
+	case *SituationObservationGroupMutation:
+		return c.SituationObservationGroup.mutate(ctx, m)
 	case *SystemAnalysisMutation:
 		return c.SystemAnalysis.mutate(ctx, m)
 	case *SystemAnalysisEntityMutation:
@@ -2978,6 +2996,483 @@ func (c *AlertMetricsClient) Query() *AlertMetricsQuery {
 // Interceptors returns the client interceptors.
 func (c *AlertMetricsClient) Interceptors() []Interceptor {
 	return c.inters.AlertMetrics
+}
+
+// DiscussionCommentClient is a client for the DiscussionComment schema.
+type DiscussionCommentClient struct {
+	config
+}
+
+// NewDiscussionCommentClient returns a client for the DiscussionComment from the given config.
+func NewDiscussionCommentClient(c config) *DiscussionCommentClient {
+	return &DiscussionCommentClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `discussioncomment.Hooks(f(g(h())))`.
+func (c *DiscussionCommentClient) Use(hooks ...Hook) {
+	c.hooks.DiscussionComment = append(c.hooks.DiscussionComment, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `discussioncomment.Intercept(f(g(h())))`.
+func (c *DiscussionCommentClient) Intercept(interceptors ...Interceptor) {
+	c.inters.DiscussionComment = append(c.inters.DiscussionComment, interceptors...)
+}
+
+// Create returns a builder for creating a DiscussionComment entity.
+func (c *DiscussionCommentClient) Create() *DiscussionCommentCreate {
+	mutation := newDiscussionCommentMutation(c.config, OpCreate)
+	return &DiscussionCommentCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of DiscussionComment entities.
+func (c *DiscussionCommentClient) CreateBulk(builders ...*DiscussionCommentCreate) *DiscussionCommentCreateBulk {
+	return &DiscussionCommentCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *DiscussionCommentClient) MapCreateBulk(slice any, setFunc func(*DiscussionCommentCreate, int)) *DiscussionCommentCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &DiscussionCommentCreateBulk{err: fmt.Errorf("calling to DiscussionCommentClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*DiscussionCommentCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &DiscussionCommentCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for DiscussionComment.
+func (c *DiscussionCommentClient) Update() *DiscussionCommentUpdate {
+	mutation := newDiscussionCommentMutation(c.config, OpUpdate)
+	return &DiscussionCommentUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *DiscussionCommentClient) UpdateOne(_m *DiscussionComment) *DiscussionCommentUpdateOne {
+	mutation := newDiscussionCommentMutation(c.config, OpUpdateOne, withDiscussionComment(_m))
+	return &DiscussionCommentUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *DiscussionCommentClient) UpdateOneID(id uuid.UUID) *DiscussionCommentUpdateOne {
+	mutation := newDiscussionCommentMutation(c.config, OpUpdateOne, withDiscussionCommentID(id))
+	return &DiscussionCommentUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for DiscussionComment.
+func (c *DiscussionCommentClient) Delete() *DiscussionCommentDelete {
+	mutation := newDiscussionCommentMutation(c.config, OpDelete)
+	return &DiscussionCommentDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *DiscussionCommentClient) DeleteOne(_m *DiscussionComment) *DiscussionCommentDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *DiscussionCommentClient) DeleteOneID(id uuid.UUID) *DiscussionCommentDeleteOne {
+	builder := c.Delete().Where(discussioncomment.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &DiscussionCommentDeleteOne{builder}
+}
+
+// Query returns a query builder for DiscussionComment.
+func (c *DiscussionCommentClient) Query() *DiscussionCommentQuery {
+	return &DiscussionCommentQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeDiscussionComment},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a DiscussionComment entity by its id.
+func (c *DiscussionCommentClient) Get(ctx context.Context, id uuid.UUID) (*DiscussionComment, error) {
+	return c.Query().Where(discussioncomment.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *DiscussionCommentClient) GetX(ctx context.Context, id uuid.UUID) *DiscussionComment {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryTenant queries the tenant edge of a DiscussionComment.
+func (c *DiscussionCommentClient) QueryTenant(_m *DiscussionComment) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(discussioncomment.Table, discussioncomment.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, discussioncomment.TenantTable, discussioncomment.TenantColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.DiscussionComment
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryThread queries the thread edge of a DiscussionComment.
+func (c *DiscussionCommentClient) QueryThread(_m *DiscussionComment) *DiscussionThreadQuery {
+	query := (&DiscussionThreadClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(discussioncomment.Table, discussioncomment.FieldID, id),
+			sqlgraph.To(discussionthread.Table, discussionthread.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, discussioncomment.ThreadTable, discussioncomment.ThreadColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.DiscussionThread
+		step.Edge.Schema = schemaConfig.DiscussionComment
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryUser queries the user edge of a DiscussionComment.
+func (c *DiscussionCommentClient) QueryUser(_m *DiscussionComment) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(discussioncomment.Table, discussioncomment.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, discussioncomment.UserTable, discussioncomment.UserColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.User
+		step.Edge.Schema = schemaConfig.DiscussionComment
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryParent queries the parent edge of a DiscussionComment.
+func (c *DiscussionCommentClient) QueryParent(_m *DiscussionComment) *DiscussionCommentQuery {
+	query := (&DiscussionCommentClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(discussioncomment.Table, discussioncomment.FieldID, id),
+			sqlgraph.To(discussioncomment.Table, discussioncomment.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, discussioncomment.ParentTable, discussioncomment.ParentColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.DiscussionComment
+		step.Edge.Schema = schemaConfig.DiscussionComment
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryReplies queries the replies edge of a DiscussionComment.
+func (c *DiscussionCommentClient) QueryReplies(_m *DiscussionComment) *DiscussionCommentQuery {
+	query := (&DiscussionCommentClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(discussioncomment.Table, discussioncomment.FieldID, id),
+			sqlgraph.To(discussioncomment.Table, discussioncomment.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, discussioncomment.RepliesTable, discussioncomment.RepliesColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.DiscussionComment
+		step.Edge.Schema = schemaConfig.DiscussionComment
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryReviews queries the reviews edge of a DiscussionComment.
+func (c *DiscussionCommentClient) QueryReviews(_m *DiscussionComment) *ReviewQuery {
+	query := (&ReviewClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(discussioncomment.Table, discussioncomment.FieldID, id),
+			sqlgraph.To(review.Table, review.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, discussioncomment.ReviewsTable, discussioncomment.ReviewsColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.Review
+		step.Edge.Schema = schemaConfig.Review
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *DiscussionCommentClient) Hooks() []Hook {
+	hooks := c.hooks.DiscussionComment
+	return append(hooks[:len(hooks):len(hooks)], discussioncomment.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *DiscussionCommentClient) Interceptors() []Interceptor {
+	return c.inters.DiscussionComment
+}
+
+func (c *DiscussionCommentClient) mutate(ctx context.Context, m *DiscussionCommentMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&DiscussionCommentCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&DiscussionCommentUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&DiscussionCommentUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&DiscussionCommentDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown DiscussionComment mutation op: %q", m.Op())
+	}
+}
+
+// DiscussionThreadClient is a client for the DiscussionThread schema.
+type DiscussionThreadClient struct {
+	config
+}
+
+// NewDiscussionThreadClient returns a client for the DiscussionThread from the given config.
+func NewDiscussionThreadClient(c config) *DiscussionThreadClient {
+	return &DiscussionThreadClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `discussionthread.Hooks(f(g(h())))`.
+func (c *DiscussionThreadClient) Use(hooks ...Hook) {
+	c.hooks.DiscussionThread = append(c.hooks.DiscussionThread, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `discussionthread.Intercept(f(g(h())))`.
+func (c *DiscussionThreadClient) Intercept(interceptors ...Interceptor) {
+	c.inters.DiscussionThread = append(c.inters.DiscussionThread, interceptors...)
+}
+
+// Create returns a builder for creating a DiscussionThread entity.
+func (c *DiscussionThreadClient) Create() *DiscussionThreadCreate {
+	mutation := newDiscussionThreadMutation(c.config, OpCreate)
+	return &DiscussionThreadCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of DiscussionThread entities.
+func (c *DiscussionThreadClient) CreateBulk(builders ...*DiscussionThreadCreate) *DiscussionThreadCreateBulk {
+	return &DiscussionThreadCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *DiscussionThreadClient) MapCreateBulk(slice any, setFunc func(*DiscussionThreadCreate, int)) *DiscussionThreadCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &DiscussionThreadCreateBulk{err: fmt.Errorf("calling to DiscussionThreadClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*DiscussionThreadCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &DiscussionThreadCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for DiscussionThread.
+func (c *DiscussionThreadClient) Update() *DiscussionThreadUpdate {
+	mutation := newDiscussionThreadMutation(c.config, OpUpdate)
+	return &DiscussionThreadUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *DiscussionThreadClient) UpdateOne(_m *DiscussionThread) *DiscussionThreadUpdateOne {
+	mutation := newDiscussionThreadMutation(c.config, OpUpdateOne, withDiscussionThread(_m))
+	return &DiscussionThreadUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *DiscussionThreadClient) UpdateOneID(id uuid.UUID) *DiscussionThreadUpdateOne {
+	mutation := newDiscussionThreadMutation(c.config, OpUpdateOne, withDiscussionThreadID(id))
+	return &DiscussionThreadUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for DiscussionThread.
+func (c *DiscussionThreadClient) Delete() *DiscussionThreadDelete {
+	mutation := newDiscussionThreadMutation(c.config, OpDelete)
+	return &DiscussionThreadDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *DiscussionThreadClient) DeleteOne(_m *DiscussionThread) *DiscussionThreadDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *DiscussionThreadClient) DeleteOneID(id uuid.UUID) *DiscussionThreadDeleteOne {
+	builder := c.Delete().Where(discussionthread.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &DiscussionThreadDeleteOne{builder}
+}
+
+// Query returns a query builder for DiscussionThread.
+func (c *DiscussionThreadClient) Query() *DiscussionThreadQuery {
+	return &DiscussionThreadQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeDiscussionThread},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a DiscussionThread entity by its id.
+func (c *DiscussionThreadClient) Get(ctx context.Context, id uuid.UUID) (*DiscussionThread, error) {
+	return c.Query().Where(discussionthread.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *DiscussionThreadClient) GetX(ctx context.Context, id uuid.UUID) *DiscussionThread {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryTenant queries the tenant edge of a DiscussionThread.
+func (c *DiscussionThreadClient) QueryTenant(_m *DiscussionThread) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(discussionthread.Table, discussionthread.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, discussionthread.TenantTable, discussionthread.TenantColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.DiscussionThread
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryAnalysis queries the analysis edge of a DiscussionThread.
+func (c *DiscussionThreadClient) QueryAnalysis(_m *DiscussionThread) *SystemAnalysisQuery {
+	query := (&SystemAnalysisClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(discussionthread.Table, discussionthread.FieldID, id),
+			sqlgraph.To(systemanalysis.Table, systemanalysis.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, discussionthread.AnalysisTable, discussionthread.AnalysisColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.SystemAnalysis
+		step.Edge.Schema = schemaConfig.DiscussionThread
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryRetrospective queries the retrospective edge of a DiscussionThread.
+func (c *DiscussionThreadClient) QueryRetrospective(_m *DiscussionThread) *RetrospectiveQuery {
+	query := (&RetrospectiveClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(discussionthread.Table, discussionthread.FieldID, id),
+			sqlgraph.To(retrospective.Table, retrospective.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, discussionthread.RetrospectiveTable, discussionthread.RetrospectiveColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.Retrospective
+		step.Edge.Schema = schemaConfig.DiscussionThread
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryUser queries the user edge of a DiscussionThread.
+func (c *DiscussionThreadClient) QueryUser(_m *DiscussionThread) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(discussionthread.Table, discussionthread.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, discussionthread.UserTable, discussionthread.UserColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.User
+		step.Edge.Schema = schemaConfig.DiscussionThread
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryComments queries the comments edge of a DiscussionThread.
+func (c *DiscussionThreadClient) QueryComments(_m *DiscussionThread) *DiscussionCommentQuery {
+	query := (&DiscussionCommentClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(discussionthread.Table, discussionthread.FieldID, id),
+			sqlgraph.To(discussioncomment.Table, discussioncomment.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, discussionthread.CommentsTable, discussionthread.CommentsColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.DiscussionComment
+		step.Edge.Schema = schemaConfig.DiscussionComment
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *DiscussionThreadClient) Hooks() []Hook {
+	hooks := c.hooks.DiscussionThread
+	return append(hooks[:len(hooks):len(hooks)], discussionthread.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *DiscussionThreadClient) Interceptors() []Interceptor {
+	return c.inters.DiscussionThread
+}
+
+func (c *DiscussionThreadClient) mutate(ctx context.Context, m *DiscussionThreadMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&DiscussionThreadCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&DiscussionThreadUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&DiscussionThreadUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&DiscussionThreadDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown DiscussionThread mutation op: %q", m.Op())
+	}
 }
 
 // DocumentClient is a client for the Document schema.
@@ -9128,6 +9623,44 @@ func (c *NormalizedEventClient) QueryProjection(_m *NormalizedEvent) *Normalized
 	return query
 }
 
+// QuerySituationObservationGroups queries the situation_observation_groups edge of a NormalizedEvent.
+func (c *NormalizedEventClient) QuerySituationObservationGroups(_m *NormalizedEvent) *SituationObservationGroupQuery {
+	query := (&SituationObservationGroupClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(normalizedevent.Table, normalizedevent.FieldID, id),
+			sqlgraph.To(situationobservationgroup.Table, situationobservationgroup.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, normalizedevent.SituationObservationGroupsTable, normalizedevent.SituationObservationGroupsPrimaryKey...),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.SituationObservationGroup
+		step.Edge.Schema = schemaConfig.SituationObservationGroupEvents
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryAnalysisEntrySubjects queries the analysis_entry_subjects edge of a NormalizedEvent.
+func (c *NormalizedEventClient) QueryAnalysisEntrySubjects(_m *NormalizedEvent) *SystemAnalysisEntrySubjectQuery {
+	query := (&SystemAnalysisEntrySubjectClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(normalizedevent.Table, normalizedevent.FieldID, id),
+			sqlgraph.To(systemanalysisentrysubject.Table, systemanalysisentrysubject.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, normalizedevent.AnalysisEntrySubjectsTable, normalizedevent.AnalysisEntrySubjectsColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.SystemAnalysisEntrySubject
+		step.Edge.Schema = schemaConfig.SystemAnalysisEntrySubject
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *NormalizedEventClient) Hooks() []Hook {
 	hooks := c.hooks.NormalizedEvent
@@ -12014,19 +12547,38 @@ func (c *RetrospectiveClient) QueryDocument(_m *Retrospective) *DocumentQuery {
 	return query
 }
 
-// QueryComments queries the comments edge of a Retrospective.
-func (c *RetrospectiveClient) QueryComments(_m *Retrospective) *RetrospectiveCommentQuery {
-	query := (&RetrospectiveCommentClient{config: c.config}).Query()
+// QueryDiscussionThreads queries the discussion_threads edge of a Retrospective.
+func (c *RetrospectiveClient) QueryDiscussionThreads(_m *Retrospective) *DiscussionThreadQuery {
+	query := (&DiscussionThreadClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(retrospective.Table, retrospective.FieldID, id),
-			sqlgraph.To(retrospectivecomment.Table, retrospectivecomment.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, retrospective.CommentsTable, retrospective.CommentsColumn),
+			sqlgraph.To(discussionthread.Table, discussionthread.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, retrospective.DiscussionThreadsTable, retrospective.DiscussionThreadsColumn),
 		)
 		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.RetrospectiveComment
-		step.Edge.Schema = schemaConfig.RetrospectiveComment
+		step.To.Schema = schemaConfig.DiscussionThread
+		step.Edge.Schema = schemaConfig.DiscussionThread
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryReviews queries the reviews edge of a Retrospective.
+func (c *RetrospectiveClient) QueryReviews(_m *Retrospective) *ReviewQuery {
+	query := (&ReviewClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(retrospective.Table, retrospective.FieldID, id),
+			sqlgraph.To(review.Table, review.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, retrospective.ReviewsTable, retrospective.ReviewsColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.Review
+		step.Edge.Schema = schemaConfig.Review
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
 	}
@@ -12078,107 +12630,107 @@ func (c *RetrospectiveClient) mutate(ctx context.Context, m *RetrospectiveMutati
 	}
 }
 
-// RetrospectiveCommentClient is a client for the RetrospectiveComment schema.
-type RetrospectiveCommentClient struct {
+// ReviewClient is a client for the Review schema.
+type ReviewClient struct {
 	config
 }
 
-// NewRetrospectiveCommentClient returns a client for the RetrospectiveComment from the given config.
-func NewRetrospectiveCommentClient(c config) *RetrospectiveCommentClient {
-	return &RetrospectiveCommentClient{config: c}
+// NewReviewClient returns a client for the Review from the given config.
+func NewReviewClient(c config) *ReviewClient {
+	return &ReviewClient{config: c}
 }
 
 // Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `retrospectivecomment.Hooks(f(g(h())))`.
-func (c *RetrospectiveCommentClient) Use(hooks ...Hook) {
-	c.hooks.RetrospectiveComment = append(c.hooks.RetrospectiveComment, hooks...)
+// A call to `Use(f, g, h)` equals to `review.Hooks(f(g(h())))`.
+func (c *ReviewClient) Use(hooks ...Hook) {
+	c.hooks.Review = append(c.hooks.Review, hooks...)
 }
 
 // Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `retrospectivecomment.Intercept(f(g(h())))`.
-func (c *RetrospectiveCommentClient) Intercept(interceptors ...Interceptor) {
-	c.inters.RetrospectiveComment = append(c.inters.RetrospectiveComment, interceptors...)
+// A call to `Intercept(f, g, h)` equals to `review.Intercept(f(g(h())))`.
+func (c *ReviewClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Review = append(c.inters.Review, interceptors...)
 }
 
-// Create returns a builder for creating a RetrospectiveComment entity.
-func (c *RetrospectiveCommentClient) Create() *RetrospectiveCommentCreate {
-	mutation := newRetrospectiveCommentMutation(c.config, OpCreate)
-	return &RetrospectiveCommentCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Create returns a builder for creating a Review entity.
+func (c *ReviewClient) Create() *ReviewCreate {
+	mutation := newReviewMutation(c.config, OpCreate)
+	return &ReviewCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// CreateBulk returns a builder for creating a bulk of RetrospectiveComment entities.
-func (c *RetrospectiveCommentClient) CreateBulk(builders ...*RetrospectiveCommentCreate) *RetrospectiveCommentCreateBulk {
-	return &RetrospectiveCommentCreateBulk{config: c.config, builders: builders}
+// CreateBulk returns a builder for creating a bulk of Review entities.
+func (c *ReviewClient) CreateBulk(builders ...*ReviewCreate) *ReviewCreateBulk {
+	return &ReviewCreateBulk{config: c.config, builders: builders}
 }
 
 // MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
 // a builder and applies setFunc on it.
-func (c *RetrospectiveCommentClient) MapCreateBulk(slice any, setFunc func(*RetrospectiveCommentCreate, int)) *RetrospectiveCommentCreateBulk {
+func (c *ReviewClient) MapCreateBulk(slice any, setFunc func(*ReviewCreate, int)) *ReviewCreateBulk {
 	rv := reflect.ValueOf(slice)
 	if rv.Kind() != reflect.Slice {
-		return &RetrospectiveCommentCreateBulk{err: fmt.Errorf("calling to RetrospectiveCommentClient.MapCreateBulk with wrong type %T, need slice", slice)}
+		return &ReviewCreateBulk{err: fmt.Errorf("calling to ReviewClient.MapCreateBulk with wrong type %T, need slice", slice)}
 	}
-	builders := make([]*RetrospectiveCommentCreate, rv.Len())
+	builders := make([]*ReviewCreate, rv.Len())
 	for i := 0; i < rv.Len(); i++ {
 		builders[i] = c.Create()
 		setFunc(builders[i], i)
 	}
-	return &RetrospectiveCommentCreateBulk{config: c.config, builders: builders}
+	return &ReviewCreateBulk{config: c.config, builders: builders}
 }
 
-// Update returns an update builder for RetrospectiveComment.
-func (c *RetrospectiveCommentClient) Update() *RetrospectiveCommentUpdate {
-	mutation := newRetrospectiveCommentMutation(c.config, OpUpdate)
-	return &RetrospectiveCommentUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Update returns an update builder for Review.
+func (c *ReviewClient) Update() *ReviewUpdate {
+	mutation := newReviewMutation(c.config, OpUpdate)
+	return &ReviewUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOne returns an update builder for the given entity.
-func (c *RetrospectiveCommentClient) UpdateOne(_m *RetrospectiveComment) *RetrospectiveCommentUpdateOne {
-	mutation := newRetrospectiveCommentMutation(c.config, OpUpdateOne, withRetrospectiveComment(_m))
-	return &RetrospectiveCommentUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *ReviewClient) UpdateOne(_m *Review) *ReviewUpdateOne {
+	mutation := newReviewMutation(c.config, OpUpdateOne, withReview(_m))
+	return &ReviewUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *RetrospectiveCommentClient) UpdateOneID(id uuid.UUID) *RetrospectiveCommentUpdateOne {
-	mutation := newRetrospectiveCommentMutation(c.config, OpUpdateOne, withRetrospectiveCommentID(id))
-	return &RetrospectiveCommentUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *ReviewClient) UpdateOneID(id uuid.UUID) *ReviewUpdateOne {
+	mutation := newReviewMutation(c.config, OpUpdateOne, withReviewID(id))
+	return &ReviewUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// Delete returns a delete builder for RetrospectiveComment.
-func (c *RetrospectiveCommentClient) Delete() *RetrospectiveCommentDelete {
-	mutation := newRetrospectiveCommentMutation(c.config, OpDelete)
-	return &RetrospectiveCommentDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Delete returns a delete builder for Review.
+func (c *ReviewClient) Delete() *ReviewDelete {
+	mutation := newReviewMutation(c.config, OpDelete)
+	return &ReviewDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // DeleteOne returns a builder for deleting the given entity.
-func (c *RetrospectiveCommentClient) DeleteOne(_m *RetrospectiveComment) *RetrospectiveCommentDeleteOne {
+func (c *ReviewClient) DeleteOne(_m *Review) *ReviewDeleteOne {
 	return c.DeleteOneID(_m.ID)
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *RetrospectiveCommentClient) DeleteOneID(id uuid.UUID) *RetrospectiveCommentDeleteOne {
-	builder := c.Delete().Where(retrospectivecomment.ID(id))
+func (c *ReviewClient) DeleteOneID(id uuid.UUID) *ReviewDeleteOne {
+	builder := c.Delete().Where(review.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
-	return &RetrospectiveCommentDeleteOne{builder}
+	return &ReviewDeleteOne{builder}
 }
 
-// Query returns a query builder for RetrospectiveComment.
-func (c *RetrospectiveCommentClient) Query() *RetrospectiveCommentQuery {
-	return &RetrospectiveCommentQuery{
+// Query returns a query builder for Review.
+func (c *ReviewClient) Query() *ReviewQuery {
+	return &ReviewQuery{
 		config: c.config,
-		ctx:    &QueryContext{Type: TypeRetrospectiveComment},
+		ctx:    &QueryContext{Type: TypeReview},
 		inters: c.Interceptors(),
 	}
 }
 
-// Get returns a RetrospectiveComment entity by its id.
-func (c *RetrospectiveCommentClient) Get(ctx context.Context, id uuid.UUID) (*RetrospectiveComment, error) {
-	return c.Query().Where(retrospectivecomment.ID(id)).Only(ctx)
+// Get returns a Review entity by its id.
+func (c *ReviewClient) Get(ctx context.Context, id uuid.UUID) (*Review, error) {
+	return c.Query().Where(review.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *RetrospectiveCommentClient) GetX(ctx context.Context, id uuid.UUID) *RetrospectiveComment {
+func (c *ReviewClient) GetX(ctx context.Context, id uuid.UUID) *Review {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -12186,114 +12738,114 @@ func (c *RetrospectiveCommentClient) GetX(ctx context.Context, id uuid.UUID) *Re
 	return obj
 }
 
-// QueryTenant queries the tenant edge of a RetrospectiveComment.
-func (c *RetrospectiveCommentClient) QueryTenant(_m *RetrospectiveComment) *TenantQuery {
+// QueryTenant queries the tenant edge of a Review.
+func (c *ReviewClient) QueryTenant(_m *Review) *TenantQuery {
 	query := (&TenantClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
-			sqlgraph.From(retrospectivecomment.Table, retrospectivecomment.FieldID, id),
+			sqlgraph.From(review.Table, review.FieldID, id),
 			sqlgraph.To(tenant.Table, tenant.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, retrospectivecomment.TenantTable, retrospectivecomment.TenantColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, review.TenantTable, review.TenantColumn),
 		)
 		schemaConfig := _m.schemaConfig
 		step.To.Schema = schemaConfig.Tenant
-		step.Edge.Schema = schemaConfig.RetrospectiveComment
+		step.Edge.Schema = schemaConfig.Review
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
 	}
 	return query
 }
 
-// QueryRetrospective queries the retrospective edge of a RetrospectiveComment.
-func (c *RetrospectiveCommentClient) QueryRetrospective(_m *RetrospectiveComment) *RetrospectiveQuery {
+// QueryRetrospective queries the retrospective edge of a Review.
+func (c *ReviewClient) QueryRetrospective(_m *Review) *RetrospectiveQuery {
 	query := (&RetrospectiveClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
-			sqlgraph.From(retrospectivecomment.Table, retrospectivecomment.FieldID, id),
+			sqlgraph.From(review.Table, review.FieldID, id),
 			sqlgraph.To(retrospective.Table, retrospective.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, retrospectivecomment.RetrospectiveTable, retrospectivecomment.RetrospectiveColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, review.RetrospectiveTable, review.RetrospectiveColumn),
 		)
 		schemaConfig := _m.schemaConfig
 		step.To.Schema = schemaConfig.Retrospective
-		step.Edge.Schema = schemaConfig.RetrospectiveComment
+		step.Edge.Schema = schemaConfig.Review
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
 	}
 	return query
 }
 
-// QueryUser queries the user edge of a RetrospectiveComment.
-func (c *RetrospectiveCommentClient) QueryUser(_m *RetrospectiveComment) *UserQuery {
+// QueryAnalysisEntry queries the analysis_entry edge of a Review.
+func (c *ReviewClient) QueryAnalysisEntry(_m *Review) *SystemAnalysisEntryQuery {
+	query := (&SystemAnalysisEntryClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(review.Table, review.FieldID, id),
+			sqlgraph.To(systemanalysisentry.Table, systemanalysisentry.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, review.AnalysisEntryTable, review.AnalysisEntryColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.SystemAnalysisEntry
+		step.Edge.Schema = schemaConfig.Review
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryRequester queries the requester edge of a Review.
+func (c *ReviewClient) QueryRequester(_m *Review) *UserQuery {
 	query := (&UserClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
-			sqlgraph.From(retrospectivecomment.Table, retrospectivecomment.FieldID, id),
+			sqlgraph.From(review.Table, review.FieldID, id),
 			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, retrospectivecomment.UserTable, retrospectivecomment.UserColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, review.RequesterTable, review.RequesterColumn),
 		)
 		schemaConfig := _m.schemaConfig
 		step.To.Schema = schemaConfig.User
-		step.Edge.Schema = schemaConfig.RetrospectiveComment
+		step.Edge.Schema = schemaConfig.Review
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
 	}
 	return query
 }
 
-// QueryReview queries the review edge of a RetrospectiveComment.
-func (c *RetrospectiveCommentClient) QueryReview(_m *RetrospectiveComment) *RetrospectiveReviewQuery {
-	query := (&RetrospectiveReviewClient{config: c.config}).Query()
+// QueryReviewer queries the reviewer edge of a Review.
+func (c *ReviewClient) QueryReviewer(_m *Review) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
-			sqlgraph.From(retrospectivecomment.Table, retrospectivecomment.FieldID, id),
-			sqlgraph.To(retrospectivereview.Table, retrospectivereview.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, retrospectivecomment.ReviewTable, retrospectivecomment.ReviewColumn),
+			sqlgraph.From(review.Table, review.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, review.ReviewerTable, review.ReviewerColumn),
 		)
 		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.RetrospectiveReview
-		step.Edge.Schema = schemaConfig.RetrospectiveComment
+		step.To.Schema = schemaConfig.User
+		step.Edge.Schema = schemaConfig.Review
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
 	}
 	return query
 }
 
-// QueryParent queries the parent edge of a RetrospectiveComment.
-func (c *RetrospectiveCommentClient) QueryParent(_m *RetrospectiveComment) *RetrospectiveCommentQuery {
-	query := (&RetrospectiveCommentClient{config: c.config}).Query()
+// QueryComment queries the comment edge of a Review.
+func (c *ReviewClient) QueryComment(_m *Review) *DiscussionCommentQuery {
+	query := (&DiscussionCommentClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
-			sqlgraph.From(retrospectivecomment.Table, retrospectivecomment.FieldID, id),
-			sqlgraph.To(retrospectivecomment.Table, retrospectivecomment.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, retrospectivecomment.ParentTable, retrospectivecomment.ParentColumn),
+			sqlgraph.From(review.Table, review.FieldID, id),
+			sqlgraph.To(discussioncomment.Table, discussioncomment.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, review.CommentTable, review.CommentColumn),
 		)
 		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.RetrospectiveComment
-		step.Edge.Schema = schemaConfig.RetrospectiveComment
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryReplies queries the replies edge of a RetrospectiveComment.
-func (c *RetrospectiveCommentClient) QueryReplies(_m *RetrospectiveComment) *RetrospectiveCommentQuery {
-	query := (&RetrospectiveCommentClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(retrospectivecomment.Table, retrospectivecomment.FieldID, id),
-			sqlgraph.To(retrospectivecomment.Table, retrospectivecomment.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, retrospectivecomment.RepliesTable, retrospectivecomment.RepliesColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.RetrospectiveComment
-		step.Edge.Schema = schemaConfig.RetrospectiveComment
+		step.To.Schema = schemaConfig.DiscussionComment
+		step.Edge.Schema = schemaConfig.Review
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
 	}
@@ -12301,257 +12853,28 @@ func (c *RetrospectiveCommentClient) QueryReplies(_m *RetrospectiveComment) *Ret
 }
 
 // Hooks returns the client hooks.
-func (c *RetrospectiveCommentClient) Hooks() []Hook {
-	hooks := c.hooks.RetrospectiveComment
-	return append(hooks[:len(hooks):len(hooks)], retrospectivecomment.Hooks[:]...)
+func (c *ReviewClient) Hooks() []Hook {
+	hooks := c.hooks.Review
+	return append(hooks[:len(hooks):len(hooks)], review.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
-func (c *RetrospectiveCommentClient) Interceptors() []Interceptor {
-	return c.inters.RetrospectiveComment
+func (c *ReviewClient) Interceptors() []Interceptor {
+	return c.inters.Review
 }
 
-func (c *RetrospectiveCommentClient) mutate(ctx context.Context, m *RetrospectiveCommentMutation) (Value, error) {
+func (c *ReviewClient) mutate(ctx context.Context, m *ReviewMutation) (Value, error) {
 	switch m.Op() {
 	case OpCreate:
-		return (&RetrospectiveCommentCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&ReviewCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpUpdate:
-		return (&RetrospectiveCommentUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&ReviewUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpUpdateOne:
-		return (&RetrospectiveCommentUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&ReviewUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpDelete, OpDeleteOne:
-		return (&RetrospectiveCommentDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+		return (&ReviewDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
-		return nil, fmt.Errorf("ent: unknown RetrospectiveComment mutation op: %q", m.Op())
-	}
-}
-
-// RetrospectiveReviewClient is a client for the RetrospectiveReview schema.
-type RetrospectiveReviewClient struct {
-	config
-}
-
-// NewRetrospectiveReviewClient returns a client for the RetrospectiveReview from the given config.
-func NewRetrospectiveReviewClient(c config) *RetrospectiveReviewClient {
-	return &RetrospectiveReviewClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `retrospectivereview.Hooks(f(g(h())))`.
-func (c *RetrospectiveReviewClient) Use(hooks ...Hook) {
-	c.hooks.RetrospectiveReview = append(c.hooks.RetrospectiveReview, hooks...)
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `retrospectivereview.Intercept(f(g(h())))`.
-func (c *RetrospectiveReviewClient) Intercept(interceptors ...Interceptor) {
-	c.inters.RetrospectiveReview = append(c.inters.RetrospectiveReview, interceptors...)
-}
-
-// Create returns a builder for creating a RetrospectiveReview entity.
-func (c *RetrospectiveReviewClient) Create() *RetrospectiveReviewCreate {
-	mutation := newRetrospectiveReviewMutation(c.config, OpCreate)
-	return &RetrospectiveReviewCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of RetrospectiveReview entities.
-func (c *RetrospectiveReviewClient) CreateBulk(builders ...*RetrospectiveReviewCreate) *RetrospectiveReviewCreateBulk {
-	return &RetrospectiveReviewCreateBulk{config: c.config, builders: builders}
-}
-
-// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
-// a builder and applies setFunc on it.
-func (c *RetrospectiveReviewClient) MapCreateBulk(slice any, setFunc func(*RetrospectiveReviewCreate, int)) *RetrospectiveReviewCreateBulk {
-	rv := reflect.ValueOf(slice)
-	if rv.Kind() != reflect.Slice {
-		return &RetrospectiveReviewCreateBulk{err: fmt.Errorf("calling to RetrospectiveReviewClient.MapCreateBulk with wrong type %T, need slice", slice)}
-	}
-	builders := make([]*RetrospectiveReviewCreate, rv.Len())
-	for i := 0; i < rv.Len(); i++ {
-		builders[i] = c.Create()
-		setFunc(builders[i], i)
-	}
-	return &RetrospectiveReviewCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for RetrospectiveReview.
-func (c *RetrospectiveReviewClient) Update() *RetrospectiveReviewUpdate {
-	mutation := newRetrospectiveReviewMutation(c.config, OpUpdate)
-	return &RetrospectiveReviewUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *RetrospectiveReviewClient) UpdateOne(_m *RetrospectiveReview) *RetrospectiveReviewUpdateOne {
-	mutation := newRetrospectiveReviewMutation(c.config, OpUpdateOne, withRetrospectiveReview(_m))
-	return &RetrospectiveReviewUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *RetrospectiveReviewClient) UpdateOneID(id uuid.UUID) *RetrospectiveReviewUpdateOne {
-	mutation := newRetrospectiveReviewMutation(c.config, OpUpdateOne, withRetrospectiveReviewID(id))
-	return &RetrospectiveReviewUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for RetrospectiveReview.
-func (c *RetrospectiveReviewClient) Delete() *RetrospectiveReviewDelete {
-	mutation := newRetrospectiveReviewMutation(c.config, OpDelete)
-	return &RetrospectiveReviewDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *RetrospectiveReviewClient) DeleteOne(_m *RetrospectiveReview) *RetrospectiveReviewDeleteOne {
-	return c.DeleteOneID(_m.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *RetrospectiveReviewClient) DeleteOneID(id uuid.UUID) *RetrospectiveReviewDeleteOne {
-	builder := c.Delete().Where(retrospectivereview.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &RetrospectiveReviewDeleteOne{builder}
-}
-
-// Query returns a query builder for RetrospectiveReview.
-func (c *RetrospectiveReviewClient) Query() *RetrospectiveReviewQuery {
-	return &RetrospectiveReviewQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypeRetrospectiveReview},
-		inters: c.Interceptors(),
-	}
-}
-
-// Get returns a RetrospectiveReview entity by its id.
-func (c *RetrospectiveReviewClient) Get(ctx context.Context, id uuid.UUID) (*RetrospectiveReview, error) {
-	return c.Query().Where(retrospectivereview.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *RetrospectiveReviewClient) GetX(ctx context.Context, id uuid.UUID) *RetrospectiveReview {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryTenant queries the tenant edge of a RetrospectiveReview.
-func (c *RetrospectiveReviewClient) QueryTenant(_m *RetrospectiveReview) *TenantQuery {
-	query := (&TenantClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(retrospectivereview.Table, retrospectivereview.FieldID, id),
-			sqlgraph.To(tenant.Table, tenant.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, retrospectivereview.TenantTable, retrospectivereview.TenantColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.Tenant
-		step.Edge.Schema = schemaConfig.RetrospectiveReview
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryRetrospective queries the retrospective edge of a RetrospectiveReview.
-func (c *RetrospectiveReviewClient) QueryRetrospective(_m *RetrospectiveReview) *RetrospectiveQuery {
-	query := (&RetrospectiveClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(retrospectivereview.Table, retrospectivereview.FieldID, id),
-			sqlgraph.To(retrospective.Table, retrospective.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, retrospectivereview.RetrospectiveTable, retrospectivereview.RetrospectiveColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.Retrospective
-		step.Edge.Schema = schemaConfig.RetrospectiveReview
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryRequester queries the requester edge of a RetrospectiveReview.
-func (c *RetrospectiveReviewClient) QueryRequester(_m *RetrospectiveReview) *UserQuery {
-	query := (&UserClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(retrospectivereview.Table, retrospectivereview.FieldID, id),
-			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, retrospectivereview.RequesterTable, retrospectivereview.RequesterColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.User
-		step.Edge.Schema = schemaConfig.RetrospectiveReview
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryReviewer queries the reviewer edge of a RetrospectiveReview.
-func (c *RetrospectiveReviewClient) QueryReviewer(_m *RetrospectiveReview) *UserQuery {
-	query := (&UserClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(retrospectivereview.Table, retrospectivereview.FieldID, id),
-			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, retrospectivereview.ReviewerTable, retrospectivereview.ReviewerColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.User
-		step.Edge.Schema = schemaConfig.RetrospectiveReview
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryComment queries the comment edge of a RetrospectiveReview.
-func (c *RetrospectiveReviewClient) QueryComment(_m *RetrospectiveReview) *RetrospectiveCommentQuery {
-	query := (&RetrospectiveCommentClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(retrospectivereview.Table, retrospectivereview.FieldID, id),
-			sqlgraph.To(retrospectivecomment.Table, retrospectivecomment.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, retrospectivereview.CommentTable, retrospectivereview.CommentColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.RetrospectiveComment
-		step.Edge.Schema = schemaConfig.RetrospectiveReview
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *RetrospectiveReviewClient) Hooks() []Hook {
-	hooks := c.hooks.RetrospectiveReview
-	return append(hooks[:len(hooks):len(hooks)], retrospectivereview.Hooks[:]...)
-}
-
-// Interceptors returns the client interceptors.
-func (c *RetrospectiveReviewClient) Interceptors() []Interceptor {
-	return c.inters.RetrospectiveReview
-}
-
-func (c *RetrospectiveReviewClient) mutate(ctx context.Context, m *RetrospectiveReviewMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&RetrospectiveReviewCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&RetrospectiveReviewUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&RetrospectiveReviewUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&RetrospectiveReviewDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("ent: unknown RetrospectiveReview mutation op: %q", m.Op())
+		return nil, fmt.Errorf("ent: unknown Review mutation op: %q", m.Op())
 	}
 }
 
@@ -12752,6 +13075,25 @@ func (c *SituationClient) QueryHazardAssessments(_m *Situation) *SituationHazard
 		schemaConfig := _m.schemaConfig
 		step.To.Schema = schemaConfig.SituationHazardAssessment
 		step.Edge.Schema = schemaConfig.SituationHazardAssessment
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryObservationGroups queries the observation_groups edge of a Situation.
+func (c *SituationClient) QueryObservationGroups(_m *Situation) *SituationObservationGroupQuery {
+	query := (&SituationObservationGroupClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(situation.Table, situation.FieldID, id),
+			sqlgraph.To(situationobservationgroup.Table, situationobservationgroup.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, situation.ObservationGroupsTable, situation.ObservationGroupsColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.SituationObservationGroup
+		step.Edge.Schema = schemaConfig.SituationObservationGroup
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
 	}
@@ -13280,6 +13622,197 @@ func (c *SituationInvestigationClient) mutate(ctx context.Context, m *SituationI
 	}
 }
 
+// SituationObservationGroupClient is a client for the SituationObservationGroup schema.
+type SituationObservationGroupClient struct {
+	config
+}
+
+// NewSituationObservationGroupClient returns a client for the SituationObservationGroup from the given config.
+func NewSituationObservationGroupClient(c config) *SituationObservationGroupClient {
+	return &SituationObservationGroupClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `situationobservationgroup.Hooks(f(g(h())))`.
+func (c *SituationObservationGroupClient) Use(hooks ...Hook) {
+	c.hooks.SituationObservationGroup = append(c.hooks.SituationObservationGroup, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `situationobservationgroup.Intercept(f(g(h())))`.
+func (c *SituationObservationGroupClient) Intercept(interceptors ...Interceptor) {
+	c.inters.SituationObservationGroup = append(c.inters.SituationObservationGroup, interceptors...)
+}
+
+// Create returns a builder for creating a SituationObservationGroup entity.
+func (c *SituationObservationGroupClient) Create() *SituationObservationGroupCreate {
+	mutation := newSituationObservationGroupMutation(c.config, OpCreate)
+	return &SituationObservationGroupCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of SituationObservationGroup entities.
+func (c *SituationObservationGroupClient) CreateBulk(builders ...*SituationObservationGroupCreate) *SituationObservationGroupCreateBulk {
+	return &SituationObservationGroupCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *SituationObservationGroupClient) MapCreateBulk(slice any, setFunc func(*SituationObservationGroupCreate, int)) *SituationObservationGroupCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &SituationObservationGroupCreateBulk{err: fmt.Errorf("calling to SituationObservationGroupClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*SituationObservationGroupCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &SituationObservationGroupCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for SituationObservationGroup.
+func (c *SituationObservationGroupClient) Update() *SituationObservationGroupUpdate {
+	mutation := newSituationObservationGroupMutation(c.config, OpUpdate)
+	return &SituationObservationGroupUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *SituationObservationGroupClient) UpdateOne(_m *SituationObservationGroup) *SituationObservationGroupUpdateOne {
+	mutation := newSituationObservationGroupMutation(c.config, OpUpdateOne, withSituationObservationGroup(_m))
+	return &SituationObservationGroupUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *SituationObservationGroupClient) UpdateOneID(id uuid.UUID) *SituationObservationGroupUpdateOne {
+	mutation := newSituationObservationGroupMutation(c.config, OpUpdateOne, withSituationObservationGroupID(id))
+	return &SituationObservationGroupUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for SituationObservationGroup.
+func (c *SituationObservationGroupClient) Delete() *SituationObservationGroupDelete {
+	mutation := newSituationObservationGroupMutation(c.config, OpDelete)
+	return &SituationObservationGroupDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *SituationObservationGroupClient) DeleteOne(_m *SituationObservationGroup) *SituationObservationGroupDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *SituationObservationGroupClient) DeleteOneID(id uuid.UUID) *SituationObservationGroupDeleteOne {
+	builder := c.Delete().Where(situationobservationgroup.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &SituationObservationGroupDeleteOne{builder}
+}
+
+// Query returns a query builder for SituationObservationGroup.
+func (c *SituationObservationGroupClient) Query() *SituationObservationGroupQuery {
+	return &SituationObservationGroupQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeSituationObservationGroup},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a SituationObservationGroup entity by its id.
+func (c *SituationObservationGroupClient) Get(ctx context.Context, id uuid.UUID) (*SituationObservationGroup, error) {
+	return c.Query().Where(situationobservationgroup.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *SituationObservationGroupClient) GetX(ctx context.Context, id uuid.UUID) *SituationObservationGroup {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryTenant queries the tenant edge of a SituationObservationGroup.
+func (c *SituationObservationGroupClient) QueryTenant(_m *SituationObservationGroup) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(situationobservationgroup.Table, situationobservationgroup.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, situationobservationgroup.TenantTable, situationobservationgroup.TenantColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.SituationObservationGroup
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QuerySituation queries the situation edge of a SituationObservationGroup.
+func (c *SituationObservationGroupClient) QuerySituation(_m *SituationObservationGroup) *SituationQuery {
+	query := (&SituationClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(situationobservationgroup.Table, situationobservationgroup.FieldID, id),
+			sqlgraph.To(situation.Table, situation.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, situationobservationgroup.SituationTable, situationobservationgroup.SituationColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.Situation
+		step.Edge.Schema = schemaConfig.SituationObservationGroup
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryEvents queries the events edge of a SituationObservationGroup.
+func (c *SituationObservationGroupClient) QueryEvents(_m *SituationObservationGroup) *NormalizedEventQuery {
+	query := (&NormalizedEventClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(situationobservationgroup.Table, situationobservationgroup.FieldID, id),
+			sqlgraph.To(normalizedevent.Table, normalizedevent.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, situationobservationgroup.EventsTable, situationobservationgroup.EventsPrimaryKey...),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.NormalizedEvent
+		step.Edge.Schema = schemaConfig.SituationObservationGroupEvents
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *SituationObservationGroupClient) Hooks() []Hook {
+	hooks := c.hooks.SituationObservationGroup
+	return append(hooks[:len(hooks):len(hooks)], situationobservationgroup.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *SituationObservationGroupClient) Interceptors() []Interceptor {
+	return c.inters.SituationObservationGroup
+}
+
+func (c *SituationObservationGroupClient) mutate(ctx context.Context, m *SituationObservationGroupMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&SituationObservationGroupCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&SituationObservationGroupUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&SituationObservationGroupUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&SituationObservationGroupDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown SituationObservationGroup mutation op: %q", m.Op())
+	}
+}
+
 // SystemAnalysisClient is a client for the SystemAnalysis schema.
 type SystemAnalysisClient struct {
 	config
@@ -13496,6 +14029,25 @@ func (c *SystemAnalysisClient) QueryEntries(_m *SystemAnalysis) *SystemAnalysisE
 		schemaConfig := _m.schemaConfig
 		step.To.Schema = schemaConfig.SystemAnalysisEntry
 		step.Edge.Schema = schemaConfig.SystemAnalysisEntry
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryDiscussionThreads queries the discussion_threads edge of a SystemAnalysis.
+func (c *SystemAnalysisClient) QueryDiscussionThreads(_m *SystemAnalysis) *DiscussionThreadQuery {
+	query := (&DiscussionThreadClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(systemanalysis.Table, systemanalysis.FieldID, id),
+			sqlgraph.To(discussionthread.Table, discussionthread.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, systemanalysis.DiscussionThreadsTable, systemanalysis.DiscussionThreadsColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.DiscussionThread
+		step.Edge.Schema = schemaConfig.DiscussionThread
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
 	}
@@ -13903,6 +14455,44 @@ func (c *SystemAnalysisEntryClient) QuerySubjects(_m *SystemAnalysisEntry) *Syst
 	return query
 }
 
+// QueryOriginTasks queries the origin_tasks edge of a SystemAnalysisEntry.
+func (c *SystemAnalysisEntryClient) QueryOriginTasks(_m *SystemAnalysisEntry) *TaskQuery {
+	query := (&TaskClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(systemanalysisentry.Table, systemanalysisentry.FieldID, id),
+			sqlgraph.To(task.Table, task.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, systemanalysisentry.OriginTasksTable, systemanalysisentry.OriginTasksColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.Task
+		step.Edge.Schema = schemaConfig.Task
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryReviews queries the reviews edge of a SystemAnalysisEntry.
+func (c *SystemAnalysisEntryClient) QueryReviews(_m *SystemAnalysisEntry) *ReviewQuery {
+	query := (&ReviewClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(systemanalysisentry.Table, systemanalysisentry.FieldID, id),
+			sqlgraph.To(review.Table, review.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, systemanalysisentry.ReviewsTable, systemanalysisentry.ReviewsColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.Review
+		step.Edge.Schema = schemaConfig.Review
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *SystemAnalysisEntryClient) Hooks() []Hook {
 	hooks := c.hooks.SystemAnalysisEntry
@@ -14125,6 +14715,25 @@ func (c *SystemAnalysisEntrySubjectClient) QueryKnowledgeEvidence(_m *SystemAnal
 		)
 		schemaConfig := _m.schemaConfig
 		step.To.Schema = schemaConfig.KnowledgeEvidence
+		step.Edge.Schema = schemaConfig.SystemAnalysisEntrySubject
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryNormalizedEvent queries the normalized_event edge of a SystemAnalysisEntrySubject.
+func (c *SystemAnalysisEntrySubjectClient) QueryNormalizedEvent(_m *SystemAnalysisEntrySubject) *NormalizedEventQuery {
+	query := (&NormalizedEventClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(systemanalysisentrysubject.Table, systemanalysisentrysubject.FieldID, id),
+			sqlgraph.To(normalizedevent.Table, normalizedevent.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, systemanalysisentrysubject.NormalizedEventTable, systemanalysisentrysubject.NormalizedEventColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.NormalizedEvent
 		step.Edge.Schema = schemaConfig.SystemAnalysisEntrySubject
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -14889,6 +15498,25 @@ func (c *TaskClient) QueryIncident(_m *Task) *IncidentQuery {
 		)
 		schemaConfig := _m.schemaConfig
 		step.To.Schema = schemaConfig.Incident
+		step.Edge.Schema = schemaConfig.Task
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryOriginEntry queries the origin_entry edge of a Task.
+func (c *TaskClient) QueryOriginEntry(_m *Task) *SystemAnalysisEntryQuery {
+	query := (&SystemAnalysisEntryClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(task.Table, task.FieldID, id),
+			sqlgraph.To(systemanalysisentry.Table, systemanalysisentry.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, task.OriginEntryTable, task.OriginEntryColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.SystemAnalysisEntry
 		step.Edge.Schema = schemaConfig.Task
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -16137,57 +16765,76 @@ func (c *UserClient) QueryCreatedTasks(_m *User) *TaskQuery {
 	return query
 }
 
-// QueryRetrospectiveReviewRequests queries the retrospective_review_requests edge of a User.
-func (c *UserClient) QueryRetrospectiveReviewRequests(_m *User) *RetrospectiveReviewQuery {
-	query := (&RetrospectiveReviewClient{config: c.config}).Query()
+// QueryReviewRequests queries the review_requests edge of a User.
+func (c *UserClient) QueryReviewRequests(_m *User) *ReviewQuery {
+	query := (&ReviewClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(user.Table, user.FieldID, id),
-			sqlgraph.To(retrospectivereview.Table, retrospectivereview.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, user.RetrospectiveReviewRequestsTable, user.RetrospectiveReviewRequestsColumn),
+			sqlgraph.To(review.Table, review.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, user.ReviewRequestsTable, user.ReviewRequestsColumn),
 		)
 		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.RetrospectiveReview
-		step.Edge.Schema = schemaConfig.RetrospectiveReview
+		step.To.Schema = schemaConfig.Review
+		step.Edge.Schema = schemaConfig.Review
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
 	}
 	return query
 }
 
-// QueryRetrospectiveReviewResponses queries the retrospective_review_responses edge of a User.
-func (c *UserClient) QueryRetrospectiveReviewResponses(_m *User) *RetrospectiveReviewQuery {
-	query := (&RetrospectiveReviewClient{config: c.config}).Query()
+// QueryReviewResponses queries the review_responses edge of a User.
+func (c *UserClient) QueryReviewResponses(_m *User) *ReviewQuery {
+	query := (&ReviewClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(user.Table, user.FieldID, id),
-			sqlgraph.To(retrospectivereview.Table, retrospectivereview.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, user.RetrospectiveReviewResponsesTable, user.RetrospectiveReviewResponsesColumn),
+			sqlgraph.To(review.Table, review.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, user.ReviewResponsesTable, user.ReviewResponsesColumn),
 		)
 		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.RetrospectiveReview
-		step.Edge.Schema = schemaConfig.RetrospectiveReview
+		step.To.Schema = schemaConfig.Review
+		step.Edge.Schema = schemaConfig.Review
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
 	}
 	return query
 }
 
-// QueryRetrospectiveComments queries the retrospective_comments edge of a User.
-func (c *UserClient) QueryRetrospectiveComments(_m *User) *RetrospectiveCommentQuery {
-	query := (&RetrospectiveCommentClient{config: c.config}).Query()
+// QueryDiscussionThreads queries the discussion_threads edge of a User.
+func (c *UserClient) QueryDiscussionThreads(_m *User) *DiscussionThreadQuery {
+	query := (&DiscussionThreadClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(user.Table, user.FieldID, id),
-			sqlgraph.To(retrospectivecomment.Table, retrospectivecomment.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, user.RetrospectiveCommentsTable, user.RetrospectiveCommentsColumn),
+			sqlgraph.To(discussionthread.Table, discussionthread.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, user.DiscussionThreadsTable, user.DiscussionThreadsColumn),
 		)
 		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.RetrospectiveComment
-		step.Edge.Schema = schemaConfig.RetrospectiveComment
+		step.To.Schema = schemaConfig.DiscussionThread
+		step.Edge.Schema = schemaConfig.DiscussionThread
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryDiscussionComments queries the discussion_comments edge of a User.
+func (c *UserClient) QueryDiscussionComments(_m *User) *DiscussionCommentQuery {
+	query := (&DiscussionCommentClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(discussioncomment.Table, discussioncomment.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, user.DiscussionCommentsTable, user.DiscussionCommentsColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.DiscussionComment
+		step.Edge.Schema = schemaConfig.DiscussionComment
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
 	}
@@ -16664,46 +17311,47 @@ type (
 	hooks struct {
 		AgentArtifact, AgentMessage, AgentSession, AgentSessionBinding, AgentTurn,
 		AlertDefinition, AlertEpisode, AlertEpisodeSituation, AlertFeedback,
-		AlertInstance, Document, DocumentAccess, EventAnnotation, Incident,
-		IncidentDebrief, IncidentDebriefMessage, IncidentDebriefQuestion,
-		IncidentDebriefSuggestion, IncidentField, IncidentFieldOption, IncidentImpact,
-		IncidentLink, IncidentMilestone, IncidentRole, IncidentRoleAssignment,
-		IncidentSeverity, IncidentTag, IncidentType, Integration,
-		IntegrationEventSyncCursor, IntegrationEventSyncRun,
+		AlertInstance, DiscussionComment, DiscussionThread, Document, DocumentAccess,
+		EventAnnotation, Incident, IncidentDebrief, IncidentDebriefMessage,
+		IncidentDebriefQuestion, IncidentDebriefSuggestion, IncidentField,
+		IncidentFieldOption, IncidentImpact, IncidentLink, IncidentMilestone,
+		IncidentRole, IncidentRoleAssignment, IncidentSeverity, IncidentTag,
+		IncidentType, Integration, IntegrationEventSyncCursor, IntegrationEventSyncRun,
 		IntegrationUserInstallState, KnowledgeEntity, KnowledgeEntityLinkingAttribute,
 		KnowledgeEvidence, KnowledgeRelationship, KnowledgeSubjectAlias,
 		MeetingSchedule, MeetingSession, NormalizedEvent, NormalizedEventProjection,
 		NormalizedEventProjectionEntity, OncallHandoverTemplate, OncallRoster,
 		OncallRosterMetrics, OncallSchedule, OncallScheduleParticipant, OncallShift,
 		OncallShiftHandover, OncallShiftMetrics, Organization, OrganizationPreferences,
-		OrganizationRole, Playbook, Retrospective, RetrospectiveComment,
-		RetrospectiveReview, Situation, SituationHazardAssessment,
-		SituationInvestigation, SystemAnalysis, SystemAnalysisEntity,
-		SystemAnalysisEntry, SystemAnalysisEntrySubject, SystemAnalysisRelationship,
-		SystemHazard, SystemHazardRiskAssessment, Task, Team, TeamMembership, Tenant,
-		Ticket, User, UserAuthSession, VideoConference []ent.Hook
+		OrganizationRole, Playbook, Retrospective, Review, Situation,
+		SituationHazardAssessment, SituationInvestigation, SituationObservationGroup,
+		SystemAnalysis, SystemAnalysisEntity, SystemAnalysisEntry,
+		SystemAnalysisEntrySubject, SystemAnalysisRelationship, SystemHazard,
+		SystemHazardRiskAssessment, Task, Team, TeamMembership, Tenant, Ticket, User,
+		UserAuthSession, VideoConference []ent.Hook
 	}
 	inters struct {
 		AgentArtifact, AgentMessage, AgentSession, AgentSessionBinding, AgentTurn,
 		AlertDefinition, AlertEpisode, AlertEpisodeSituation, AlertFeedback,
-		AlertInstance, AlertMetrics, Document, DocumentAccess, EventAnnotation,
-		Incident, IncidentDebrief, IncidentDebriefMessage, IncidentDebriefQuestion,
-		IncidentDebriefSuggestion, IncidentField, IncidentFieldOption, IncidentImpact,
-		IncidentLink, IncidentMilestone, IncidentRole, IncidentRoleAssignment,
-		IncidentSeverity, IncidentTag, IncidentType, Integration,
-		IntegrationEventSyncCursor, IntegrationEventSyncRun,
-		IntegrationUserInstallState, KnowledgeEntity, KnowledgeEntityLinkingAttribute,
-		KnowledgeEvidence, KnowledgeRelationship, KnowledgeSubjectAlias,
-		MeetingSchedule, MeetingSession, NormalizedEvent, NormalizedEventProjection,
-		NormalizedEventProjectionEntity, OncallHandoverTemplate, OncallRoster,
-		OncallRosterMetrics, OncallSchedule, OncallScheduleParticipant, OncallShift,
-		OncallShiftHandover, OncallShiftMetrics, Organization, OrganizationPreferences,
-		OrganizationRole, Playbook, Retrospective, RetrospectiveComment,
-		RetrospectiveReview, Situation, SituationHazardAssessment,
-		SituationInvestigation, SystemAnalysis, SystemAnalysisEntity,
-		SystemAnalysisEntry, SystemAnalysisEntrySubject, SystemAnalysisRelationship,
-		SystemHazard, SystemHazardRiskAssessment, Task, Team, TeamMembership, Tenant,
-		Ticket, User, UserAuthSession, VideoConference []ent.Interceptor
+		AlertInstance, AlertMetrics, DiscussionComment, DiscussionThread, Document,
+		DocumentAccess, EventAnnotation, Incident, IncidentDebrief,
+		IncidentDebriefMessage, IncidentDebriefQuestion, IncidentDebriefSuggestion,
+		IncidentField, IncidentFieldOption, IncidentImpact, IncidentLink,
+		IncidentMilestone, IncidentRole, IncidentRoleAssignment, IncidentSeverity,
+		IncidentTag, IncidentType, Integration, IntegrationEventSyncCursor,
+		IntegrationEventSyncRun, IntegrationUserInstallState, KnowledgeEntity,
+		KnowledgeEntityLinkingAttribute, KnowledgeEvidence, KnowledgeRelationship,
+		KnowledgeSubjectAlias, MeetingSchedule, MeetingSession, NormalizedEvent,
+		NormalizedEventProjection, NormalizedEventProjectionEntity,
+		OncallHandoverTemplate, OncallRoster, OncallRosterMetrics, OncallSchedule,
+		OncallScheduleParticipant, OncallShift, OncallShiftHandover,
+		OncallShiftMetrics, Organization, OrganizationPreferences, OrganizationRole,
+		Playbook, Retrospective, Review, Situation, SituationHazardAssessment,
+		SituationInvestigation, SituationObservationGroup, SystemAnalysis,
+		SystemAnalysisEntity, SystemAnalysisEntry, SystemAnalysisEntrySubject,
+		SystemAnalysisRelationship, SystemHazard, SystemHazardRiskAssessment, Task,
+		Team, TeamMembership, Tenant, Ticket, User, UserAuthSession,
+		VideoConference []ent.Interceptor
 	}
 )
 
@@ -16721,6 +17369,8 @@ var (
 		AlertFeedback:                         tableSchemas[0],
 		AlertInstance:                         tableSchemas[0],
 		AlertMetrics:                          tableSchemas[0],
+		DiscussionComment:                     tableSchemas[0],
+		DiscussionThread:                      tableSchemas[0],
 		Document:                              tableSchemas[0],
 		DocumentAccess:                        tableSchemas[0],
 		EventAnnotation:                       tableSchemas[0],
@@ -16778,11 +17428,12 @@ var (
 		Playbook:                                  tableSchemas[0],
 		PlaybookAlertDefinitions:                  tableSchemas[0],
 		Retrospective:                             tableSchemas[0],
-		RetrospectiveComment:                      tableSchemas[0],
-		RetrospectiveReview:                       tableSchemas[0],
+		Review:                                    tableSchemas[0],
 		Situation:                                 tableSchemas[0],
 		SituationHazardAssessment:                 tableSchemas[0],
 		SituationInvestigation:                    tableSchemas[0],
+		SituationObservationGroup:                 tableSchemas[0],
+		SituationObservationGroupEvents:           tableSchemas[0],
 		SystemAnalysis:                            tableSchemas[0],
 		SystemAnalysisEntity:                      tableSchemas[0],
 		SystemAnalysisEntry:                       tableSchemas[0],

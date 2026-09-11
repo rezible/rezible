@@ -34,6 +34,10 @@ type Tx struct {
 	AlertInstance *AlertInstanceClient
 	// AlertMetrics is the client for interacting with the AlertMetrics builders.
 	AlertMetrics *AlertMetricsClient
+	// DiscussionComment is the client for interacting with the DiscussionComment builders.
+	DiscussionComment *DiscussionCommentClient
+	// DiscussionThread is the client for interacting with the DiscussionThread builders.
+	DiscussionThread *DiscussionThreadClient
 	// Document is the client for interacting with the Document builders.
 	Document *DocumentClient
 	// DocumentAccess is the client for interacting with the DocumentAccess builders.
@@ -124,16 +128,16 @@ type Tx struct {
 	Playbook *PlaybookClient
 	// Retrospective is the client for interacting with the Retrospective builders.
 	Retrospective *RetrospectiveClient
-	// RetrospectiveComment is the client for interacting with the RetrospectiveComment builders.
-	RetrospectiveComment *RetrospectiveCommentClient
-	// RetrospectiveReview is the client for interacting with the RetrospectiveReview builders.
-	RetrospectiveReview *RetrospectiveReviewClient
+	// Review is the client for interacting with the Review builders.
+	Review *ReviewClient
 	// Situation is the client for interacting with the Situation builders.
 	Situation *SituationClient
 	// SituationHazardAssessment is the client for interacting with the SituationHazardAssessment builders.
 	SituationHazardAssessment *SituationHazardAssessmentClient
 	// SituationInvestigation is the client for interacting with the SituationInvestigation builders.
 	SituationInvestigation *SituationInvestigationClient
+	// SituationObservationGroup is the client for interacting with the SituationObservationGroup builders.
+	SituationObservationGroup *SituationObservationGroupClient
 	// SystemAnalysis is the client for interacting with the SystemAnalysis builders.
 	SystemAnalysis *SystemAnalysisClient
 	// SystemAnalysisEntity is the client for interacting with the SystemAnalysisEntity builders.
@@ -306,6 +310,8 @@ func (tx *Tx) init() {
 	tx.AlertFeedback = NewAlertFeedbackClient(tx.config)
 	tx.AlertInstance = NewAlertInstanceClient(tx.config)
 	tx.AlertMetrics = NewAlertMetricsClient(tx.config)
+	tx.DiscussionComment = NewDiscussionCommentClient(tx.config)
+	tx.DiscussionThread = NewDiscussionThreadClient(tx.config)
 	tx.Document = NewDocumentClient(tx.config)
 	tx.DocumentAccess = NewDocumentAccessClient(tx.config)
 	tx.EventAnnotation = NewEventAnnotationClient(tx.config)
@@ -351,11 +357,11 @@ func (tx *Tx) init() {
 	tx.OrganizationRole = NewOrganizationRoleClient(tx.config)
 	tx.Playbook = NewPlaybookClient(tx.config)
 	tx.Retrospective = NewRetrospectiveClient(tx.config)
-	tx.RetrospectiveComment = NewRetrospectiveCommentClient(tx.config)
-	tx.RetrospectiveReview = NewRetrospectiveReviewClient(tx.config)
+	tx.Review = NewReviewClient(tx.config)
 	tx.Situation = NewSituationClient(tx.config)
 	tx.SituationHazardAssessment = NewSituationHazardAssessmentClient(tx.config)
 	tx.SituationInvestigation = NewSituationInvestigationClient(tx.config)
+	tx.SituationObservationGroup = NewSituationObservationGroupClient(tx.config)
 	tx.SystemAnalysis = NewSystemAnalysisClient(tx.config)
 	tx.SystemAnalysisEntity = NewSystemAnalysisEntityClient(tx.config)
 	tx.SystemAnalysisEntry = NewSystemAnalysisEntryClient(tx.config)
