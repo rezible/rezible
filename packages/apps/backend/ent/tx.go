@@ -26,8 +26,6 @@ type Tx struct {
 	AlertDefinition *AlertDefinitionClient
 	// AlertEpisode is the client for interacting with the AlertEpisode builders.
 	AlertEpisode *AlertEpisodeClient
-	// AlertEpisodeSituation is the client for interacting with the AlertEpisodeSituation builders.
-	AlertEpisodeSituation *AlertEpisodeSituationClient
 	// AlertFeedback is the client for interacting with the AlertFeedback builders.
 	AlertFeedback *AlertFeedbackClient
 	// AlertInstance is the client for interacting with the AlertInstance builders.
@@ -306,7 +304,6 @@ func (tx *Tx) init() {
 	tx.AgentTurn = NewAgentTurnClient(tx.config)
 	tx.AlertDefinition = NewAlertDefinitionClient(tx.config)
 	tx.AlertEpisode = NewAlertEpisodeClient(tx.config)
-	tx.AlertEpisodeSituation = NewAlertEpisodeSituationClient(tx.config)
 	tx.AlertFeedback = NewAlertFeedbackClient(tx.config)
 	tx.AlertInstance = NewAlertInstanceClient(tx.config)
 	tx.AlertMetrics = NewAlertMetricsClient(tx.config)

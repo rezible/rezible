@@ -54,7 +54,6 @@ type (
 		CloseReason       *string                     `json:"closeReason,omitempty" enum:"stabilized,dismissed"`
 		EvidenceRevision  int                         `json:"evidenceRevision"`
 		KnowledgeEntityId uuid.UUID                   `json:"knowledgeEntityId"`
-		AlertEpisodes     []AlertEpisode              `json:"alertEpisodes"`
 		LinkedIncidentIds []uuid.UUID                 `json:"linkedIncidentIds"`
 		Investigations    []SituationInvestigation    `json:"investigations"`
 		ObservationGroups []SituationObservationGroup `json:"observationGroups"`
@@ -108,29 +107,26 @@ type (
 		Attributes SituationObservationGroupAttributes `json:"attributes"`
 	}
 	SituationObservationGroupAttributes struct {
-		SituationId uuid.UUID `json:"situationId"`
-		Title       string    `json:"title"`
-		Body        string    `json:"body,omitempty"`
-		Events      []Event   `json:"events"`
+		SituationId   uuid.UUID      `json:"situationId"`
+		Title         string         `json:"title"`
+		Body          string         `json:"body,omitempty"`
+		Events        []Event        `json:"events"`
+		AlertEpisodes []AlertEpisode `json:"alertEpisodes"`
 	}
 )
 
-func SituationObservationGroupFromEnt(group *ent.SituationObservationGroup) SituationObservationGroup {
-	events := make([]Event, 0, len(group.Edges.Events))
-	for _, event := range group.Edges.Events {
-		events = append(events, EventFromEnt(event))
+func SituationObservationGroupFromEnt(g *ent.SituationObservationGroup) SituationObservationGroup {
+	attrs := SituationObservationGroupAttributes{
+		SituationId:   g.SituationID,
+		Title:         g.Title,
+		Body:          g.Body,
+		Events:        ConvertSlice(g.Edges.Events, EventFromEnt),
+		AlertEpisodes: ConvertSlice(g.Edges.AlertEpisodes, AlertEpisodeFromEnt),
 	}
-	return SituationObservationGroup{
-		Id: group.ID,
-		Attributes: SituationObservationGroupAttributes{
-			SituationId: group.SituationID,
-			Title:       group.Title,
-			Body:        group.Body,
-			Events:      events,
-		},
-	}
+	return SituationObservationGroup{Id: g.ID, Attributes: attrs}
 }
 
+// TODO: don't require evidenceRevision
 func SituationInvestigationFromEnt(inv *ent.SituationInvestigation, evidenceRevision int) (*SituationInvestigation, error) {
 	attrs := SituationInvestigationAttrs{
 		SituationId:       inv.SituationID,
@@ -190,22 +186,17 @@ func SituationFromEnt(s *ent.Situation) (Situation, error) {
 		Status:            string(s.Status),
 		EvidenceRevision:  s.EvidenceRevision,
 		KnowledgeEntityId: s.KnowledgeEntityID,
-		AlertEpisodes:     ConvertSlice(s.Edges.AlertEpisodes, AlertEpisodeFromEnt),
-		LinkedIncidentIds: make([]uuid.UUID, 0),
-		ObservationGroups: make([]SituationObservationGroup, 0, len(s.Edges.ObservationGroups)),
+		ObservationGroups: ConvertSlice(s.Edges.ObservationGroups, SituationObservationGroupFromEnt),
 		OpenedAt:          s.OpenedAt,
 		ClosedAt:          s.ClosedAt,
 		UpdatedAt:         s.UpdatedAt,
 	}
-	for _, incident := range s.Edges.Incidents {
-		attrs.LinkedIncidentIds = append(attrs.LinkedIncidentIds, incident.ID)
-	}
-	for _, group := range s.Edges.ObservationGroups {
-		attrs.ObservationGroups = append(attrs.ObservationGroups, SituationObservationGroupFromEnt(group))
+	attrs.LinkedIncidentIds = make([]uuid.UUID, len(s.Edges.Incidents))
+	for i, incident := range s.Edges.Incidents {
+		attrs.LinkedIncidentIds[i] = incident.ID
 	}
 	if s.CloseReason != nil {
-		reason := string(*s.CloseReason)
-		attrs.CloseReason = &reason
+		attrs.CloseReason = new(string(*s.CloseReason))
 	}
 	attrs.Investigations = make([]SituationInvestigation, 0, len(s.Edges.Investigations))
 	for _, inv := range s.Edges.Investigations {

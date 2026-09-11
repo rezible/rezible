@@ -513,64 +513,6 @@ func HasInstancesWith(preds ...predicate.AlertInstance) predicate.AlertEpisode {
 	})
 }
 
-// HasSituations applies the HasEdge predicate on the "situations" edge.
-func HasSituations() predicate.AlertEpisode {
-	return predicate.AlertEpisode(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, SituationsTable, SituationsPrimaryKey...),
-		)
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.Situation
-		step.Edge.Schema = schemaConfig.AlertEpisodeSituation
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasSituationsWith applies the HasEdge predicate on the "situations" edge with a given conditions (other predicates).
-func HasSituationsWith(preds ...predicate.Situation) predicate.AlertEpisode {
-	return predicate.AlertEpisode(func(s *sql.Selector) {
-		step := newSituationsStep()
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.Situation
-		step.Edge.Schema = schemaConfig.AlertEpisodeSituation
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasSituationLinks applies the HasEdge predicate on the "situation_links" edge.
-func HasSituationLinks() predicate.AlertEpisode {
-	return predicate.AlertEpisode(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, SituationLinksTable, SituationLinksColumn),
-		)
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.AlertEpisodeSituation
-		step.Edge.Schema = schemaConfig.AlertEpisodeSituation
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasSituationLinksWith applies the HasEdge predicate on the "situation_links" edge with a given conditions (other predicates).
-func HasSituationLinksWith(preds ...predicate.AlertEpisodeSituation) predicate.AlertEpisode {
-	return predicate.AlertEpisode(func(s *sql.Selector) {
-		step := newSituationLinksStep()
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.AlertEpisodeSituation
-		step.Edge.Schema = schemaConfig.AlertEpisodeSituation
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.AlertEpisode) predicate.AlertEpisode {
 	return predicate.AlertEpisode(sql.AndPredicates(predicates...))

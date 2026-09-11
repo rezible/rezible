@@ -14,6 +14,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/alertepisode"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/ent/predicate"
@@ -25,14 +26,15 @@ import (
 // SituationObservationGroupQuery is the builder for querying SituationObservationGroup entities.
 type SituationObservationGroupQuery struct {
 	config
-	ctx           *QueryContext
-	order         []situationobservationgroup.OrderOption
-	inters        []Interceptor
-	predicates    []predicate.SituationObservationGroup
-	withTenant    *TenantQuery
-	withSituation *SituationQuery
-	withEvents    *NormalizedEventQuery
-	modifiers     []func(*sql.Selector)
+	ctx               *QueryContext
+	order             []situationobservationgroup.OrderOption
+	inters            []Interceptor
+	predicates        []predicate.SituationObservationGroup
+	withTenant        *TenantQuery
+	withSituation     *SituationQuery
+	withEvents        *NormalizedEventQuery
+	withAlertEpisodes *AlertEpisodeQuery
+	modifiers         []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -138,6 +140,31 @@ func (_q *SituationObservationGroupQuery) QueryEvents() *NormalizedEventQuery {
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.NormalizedEvent
 		step.Edge.Schema = schemaConfig.SituationObservationGroupEvents
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryAlertEpisodes chains the current query on the "alert_episodes" edge.
+func (_q *SituationObservationGroupQuery) QueryAlertEpisodes() *AlertEpisodeQuery {
+	query := (&AlertEpisodeClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(situationobservationgroup.Table, situationobservationgroup.FieldID, selector),
+			sqlgraph.To(alertepisode.Table, alertepisode.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, situationobservationgroup.AlertEpisodesTable, situationobservationgroup.AlertEpisodesColumn),
+		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.AlertEpisode
+		step.Edge.Schema = schemaConfig.AlertEpisode
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -331,14 +358,15 @@ func (_q *SituationObservationGroupQuery) Clone() *SituationObservationGroupQuer
 		return nil
 	}
 	return &SituationObservationGroupQuery{
-		config:        _q.config,
-		ctx:           _q.ctx.Clone(),
-		order:         append([]situationobservationgroup.OrderOption{}, _q.order...),
-		inters:        append([]Interceptor{}, _q.inters...),
-		predicates:    append([]predicate.SituationObservationGroup{}, _q.predicates...),
-		withTenant:    _q.withTenant.Clone(),
-		withSituation: _q.withSituation.Clone(),
-		withEvents:    _q.withEvents.Clone(),
+		config:            _q.config,
+		ctx:               _q.ctx.Clone(),
+		order:             append([]situationobservationgroup.OrderOption{}, _q.order...),
+		inters:            append([]Interceptor{}, _q.inters...),
+		predicates:        append([]predicate.SituationObservationGroup{}, _q.predicates...),
+		withTenant:        _q.withTenant.Clone(),
+		withSituation:     _q.withSituation.Clone(),
+		withEvents:        _q.withEvents.Clone(),
+		withAlertEpisodes: _q.withAlertEpisodes.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
 		path:      _q.path,
@@ -376,6 +404,17 @@ func (_q *SituationObservationGroupQuery) WithEvents(opts ...func(*NormalizedEve
 		opt(query)
 	}
 	_q.withEvents = query
+	return _q
+}
+
+// WithAlertEpisodes tells the query-builder to eager-load the nodes that are connected to
+// the "alert_episodes" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *SituationObservationGroupQuery) WithAlertEpisodes(opts ...func(*AlertEpisodeQuery)) *SituationObservationGroupQuery {
+	query := (&AlertEpisodeClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withAlertEpisodes = query
 	return _q
 }
 
@@ -463,10 +502,11 @@ func (_q *SituationObservationGroupQuery) sqlAll(ctx context.Context, hooks ...q
 	var (
 		nodes       = []*SituationObservationGroup{}
 		_spec       = _q.querySpec()
-		loadedTypes = [3]bool{
+		loadedTypes = [4]bool{
 			_q.withTenant != nil,
 			_q.withSituation != nil,
 			_q.withEvents != nil,
+			_q.withAlertEpisodes != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -508,6 +548,15 @@ func (_q *SituationObservationGroupQuery) sqlAll(ctx context.Context, hooks ...q
 		if err := _q.loadEvents(ctx, query, nodes,
 			func(n *SituationObservationGroup) { n.Edges.Events = []*NormalizedEvent{} },
 			func(n *SituationObservationGroup, e *NormalizedEvent) { n.Edges.Events = append(n.Edges.Events, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withAlertEpisodes; query != nil {
+		if err := _q.loadAlertEpisodes(ctx, query, nodes,
+			func(n *SituationObservationGroup) { n.Edges.AlertEpisodes = []*AlertEpisode{} },
+			func(n *SituationObservationGroup, e *AlertEpisode) {
+				n.Edges.AlertEpisodes = append(n.Edges.AlertEpisodes, e)
+			}); err != nil {
 			return nil, err
 		}
 	}
@@ -631,6 +680,37 @@ func (_q *SituationObservationGroupQuery) loadEvents(ctx context.Context, query 
 		for kn := range nodes {
 			assign(kn, n)
 		}
+	}
+	return nil
+}
+func (_q *SituationObservationGroupQuery) loadAlertEpisodes(ctx context.Context, query *AlertEpisodeQuery, nodes []*SituationObservationGroup, init func(*SituationObservationGroup), assign func(*SituationObservationGroup, *AlertEpisode)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*SituationObservationGroup)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.AlertEpisode(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(situationobservationgroup.AlertEpisodesColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.situation_observation_group_alert_episodes
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "situation_observation_group_alert_episodes" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "situation_observation_group_alert_episodes" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
 	}
 	return nil
 }

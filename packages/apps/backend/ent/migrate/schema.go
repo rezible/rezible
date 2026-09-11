@@ -354,6 +354,7 @@ var (
 		{Name: "alert_definition_id", Type: field.TypeUUID},
 		{Name: "tenant_id", Type: field.TypeInt},
 		{Name: "knowledge_entity_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "situation_observation_group_alert_episodes", Type: field.TypeUUID, Nullable: true},
 	}
 	// AlertEpisodesTable holds the schema information for the "alert_episodes" table.
 	AlertEpisodesTable = &schema.Table{
@@ -379,6 +380,12 @@ var (
 				RefColumns: []*schema.Column{KnowledgeEntitiesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
+			{
+				Symbol:     "alert_episodes_situation_observation_groups_alert_episodes",
+				Columns:    []*schema.Column{AlertEpisodesColumns[10]},
+				RefColumns: []*schema.Column{SituationObservationGroupsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
 		},
 		Indexes: []*schema.Index{
 			{
@@ -398,61 +405,6 @@ var (
 				Annotation: &entsql.IndexAnnotation{
 					Where: "status = 'open'",
 				},
-			},
-		},
-	}
-	// AlertEpisodeSituationsColumns holds the columns for the "alert_episode_situations" table.
-	AlertEpisodeSituationsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID},
-		{Name: "tenant_id", Type: field.TypeInt},
-		{Name: "alert_episode_id", Type: field.TypeUUID},
-		{Name: "situation_id", Type: field.TypeUUID},
-	}
-	// AlertEpisodeSituationsTable holds the schema information for the "alert_episode_situations" table.
-	AlertEpisodeSituationsTable = &schema.Table{
-		Name:       "alert_episode_situations",
-		Columns:    AlertEpisodeSituationsColumns,
-		PrimaryKey: []*schema.Column{AlertEpisodeSituationsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "alert_episode_situations_tenants_tenant",
-				Columns:    []*schema.Column{AlertEpisodeSituationsColumns[1]},
-				RefColumns: []*schema.Column{TenantsColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-			{
-				Symbol:     "alert_episode_situations_alert_episodes_alert_episode",
-				Columns:    []*schema.Column{AlertEpisodeSituationsColumns[2]},
-				RefColumns: []*schema.Column{AlertEpisodesColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-			{
-				Symbol:     "alert_episode_situations_situations_situation",
-				Columns:    []*schema.Column{AlertEpisodeSituationsColumns[3]},
-				RefColumns: []*schema.Column{SituationsColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-		},
-		Indexes: []*schema.Index{
-			{
-				Name:    "alertepisodesituation_tenant_id",
-				Unique:  false,
-				Columns: []*schema.Column{AlertEpisodeSituationsColumns[1]},
-			},
-			{
-				Name:    "alertepisodesituation_tenant_id_alert_episode_id_situation_id",
-				Unique:  true,
-				Columns: []*schema.Column{AlertEpisodeSituationsColumns[1], AlertEpisodeSituationsColumns[2], AlertEpisodeSituationsColumns[3]},
-			},
-			{
-				Name:    "alertepisodesituation_tenant_id_situation_id",
-				Unique:  false,
-				Columns: []*schema.Column{AlertEpisodeSituationsColumns[1], AlertEpisodeSituationsColumns[3]},
-			},
-			{
-				Name:    "alertepisodesituation_alert_episode_id_situation_id",
-				Unique:  true,
-				Columns: []*schema.Column{AlertEpisodeSituationsColumns[2], AlertEpisodeSituationsColumns[3]},
 			},
 		},
 	}
@@ -4032,7 +3984,6 @@ var (
 		AgentTurnsTable,
 		AlertDefinitionsTable,
 		AlertEpisodesTable,
-		AlertEpisodeSituationsTable,
 		AlertFeedbacksTable,
 		AlertInstancesTable,
 		DiscussionCommentsTable,
@@ -4140,9 +4091,7 @@ func init() {
 	AlertEpisodesTable.ForeignKeys[0].RefTable = AlertDefinitionsTable
 	AlertEpisodesTable.ForeignKeys[1].RefTable = TenantsTable
 	AlertEpisodesTable.ForeignKeys[2].RefTable = KnowledgeEntitiesTable
-	AlertEpisodeSituationsTable.ForeignKeys[0].RefTable = TenantsTable
-	AlertEpisodeSituationsTable.ForeignKeys[1].RefTable = AlertEpisodesTable
-	AlertEpisodeSituationsTable.ForeignKeys[2].RefTable = SituationsTable
+	AlertEpisodesTable.ForeignKeys[3].RefTable = SituationObservationGroupsTable
 	AlertFeedbacksTable.ForeignKeys[0].RefTable = TenantsTable
 	AlertFeedbacksTable.ForeignKeys[1].RefTable = AlertInstancesTable
 	AlertInstancesTable.ForeignKeys[0].RefTable = AlertEpisodesTable

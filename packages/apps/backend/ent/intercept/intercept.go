@@ -15,7 +15,6 @@ import (
 	"github.com/rezible/rezible/ent/agentturn"
 	"github.com/rezible/rezible/ent/alertdefinition"
 	"github.com/rezible/rezible/ent/alertepisode"
-	"github.com/rezible/rezible/ent/alertepisodesituation"
 	"github.com/rezible/rezible/ent/alertfeedback"
 	"github.com/rezible/rezible/ent/alertinstance"
 	"github.com/rezible/rezible/ent/alertmetrics"
@@ -332,33 +331,6 @@ func (f TraverseAlertEpisode) Traverse(ctx context.Context, q ent.Query) error {
 		return f(ctx, q)
 	}
 	return fmt.Errorf("unexpected query type %T. expect *ent.AlertEpisodeQuery", q)
-}
-
-// The AlertEpisodeSituationFunc type is an adapter to allow the use of ordinary function as a Querier.
-type AlertEpisodeSituationFunc func(context.Context, *ent.AlertEpisodeSituationQuery) (ent.Value, error)
-
-// Query calls f(ctx, q).
-func (f AlertEpisodeSituationFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
-	if q, ok := q.(*ent.AlertEpisodeSituationQuery); ok {
-		return f(ctx, q)
-	}
-	return nil, fmt.Errorf("unexpected query type %T. expect *ent.AlertEpisodeSituationQuery", q)
-}
-
-// The TraverseAlertEpisodeSituation type is an adapter to allow the use of ordinary function as Traverser.
-type TraverseAlertEpisodeSituation func(context.Context, *ent.AlertEpisodeSituationQuery) error
-
-// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
-func (f TraverseAlertEpisodeSituation) Intercept(next ent.Querier) ent.Querier {
-	return next
-}
-
-// Traverse calls f(ctx, q).
-func (f TraverseAlertEpisodeSituation) Traverse(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.AlertEpisodeSituationQuery); ok {
-		return f(ctx, q)
-	}
-	return fmt.Errorf("unexpected query type %T. expect *ent.AlertEpisodeSituationQuery", q)
 }
 
 // The AlertFeedbackFunc type is an adapter to allow the use of ordinary function as a Querier.
@@ -2268,8 +2240,6 @@ func NewQuery(q ent.Query) (Query, error) {
 		return &query[*ent.AlertDefinitionQuery, predicate.AlertDefinition, alertdefinition.OrderOption]{typ: ent.TypeAlertDefinition, tq: q}, nil
 	case *ent.AlertEpisodeQuery:
 		return &query[*ent.AlertEpisodeQuery, predicate.AlertEpisode, alertepisode.OrderOption]{typ: ent.TypeAlertEpisode, tq: q}, nil
-	case *ent.AlertEpisodeSituationQuery:
-		return &query[*ent.AlertEpisodeSituationQuery, predicate.AlertEpisodeSituation, alertepisodesituation.OrderOption]{typ: ent.TypeAlertEpisodeSituation, tq: q}, nil
 	case *ent.AlertFeedbackQuery:
 		return &query[*ent.AlertFeedbackQuery, predicate.AlertFeedback, alertfeedback.OrderOption]{typ: ent.TypeAlertFeedback, tq: q}, nil
 	case *ent.AlertInstanceQuery:

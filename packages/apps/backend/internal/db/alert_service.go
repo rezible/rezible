@@ -13,9 +13,9 @@ import (
 	"github.com/rezible/rezible/ent"
 	ald "github.com/rezible/rezible/ent/alertdefinition"
 	ale "github.com/rezible/rezible/ent/alertepisode"
-	ales "github.com/rezible/rezible/ent/alertepisodesituation"
 	ali "github.com/rezible/rezible/ent/alertinstance"
 	kne "github.com/rezible/rezible/ent/knowledgeentity"
+	sog "github.com/rezible/rezible/ent/situationobservationgroup"
 	"github.com/rezible/rezible/pkg/execution"
 	"github.com/rezible/rezible/pkg/jobs"
 )
@@ -193,15 +193,16 @@ func (s *AlertService) closeInactiveEpisode(ctx context.Context, id uuid.UUID, i
 }
 
 func (s *AlertService) notifyEpisodeLinkedSituations(ctx context.Context, epId uuid.UUID) error {
-	queryEpSituationLinks := s.db.Client(ctx).AlertEpisodeSituation.Query().
-		Where(ales.ID(epId))
+	queryEpSituationLinks := s.db.Client(ctx).SituationObservationGroup.Query().
+		Where(sog.HasAlertEpisodesWith(ale.ID(epId))).
+		WithSituation()
 	sitLinks, querySitLinksErr := queryEpSituationLinks.All(ctx)
 	if querySitLinksErr != nil {
 		return fmt.Errorf("query episode situation links: %w", querySitLinksErr)
 	}
 	sitEvParams := rez.SituationEvidenceItemParams{AlertEpisodeID: &epId}
 	for _, link := range sitLinks {
-		if evErr := s.situations.NotifySituationEvidenceItemUpdated(ctx, link.ID, sitEvParams); evErr != nil {
+		if evErr := s.situations.NotifySituationEvidenceItemUpdated(ctx, link.Edges.Situation.ID, sitEvParams); evErr != nil {
 			return fmt.Errorf("notify: %w", evErr)
 		}
 	}
@@ -280,7 +281,7 @@ func (w *CloseInactiveAlertEpisodesWorker) Work(ctx context.Context, job *jobs.J
 	systemCtx := execution.NewSystemContext(ctx)
 	now := time.Now().UTC()
 	query := w.db.Client(systemCtx).AlertEpisode.Query().
-		Where(ale.StatusEQ(ale.StatusOpen), ale.LastObservedAtLT(now.Add(-alertEpisodeInactivity))).WithSituations()
+		Where(ale.StatusEQ(ale.StatusOpen), ale.LastObservedAtLT(now.Add(-alertEpisodeInactivity)))
 	openEpisodes, queryOpenErr := query.All(systemCtx)
 	if queryOpenErr != nil {
 		return fmt.Errorf("querying open alert episodes: %w", queryOpenErr)
@@ -313,16 +314,12 @@ func (w *CloseInactiveAlertEpisodesWorker) maybeCloseOpenEpisode(ctx context.Con
 		update := tx.AlertEpisode.UpdateOneID(id).
 			SetStatus(ale.StatusClosed).
 			SetClosedAt(now)
-		updated, updateErr := update.Save(ctx)
-		if updateErr != nil {
+		if updateErr := update.Exec(ctx); updateErr != nil {
 			return fmt.Errorf("failed to update episode %s: %w", id, updateErr)
 		}
-		for _, sit := range updated.Edges.Situations {
-			params := rez.SituationEvidenceItemParams{AlertEpisodeID: &id}
-			if evidenceErr := w.situations.NotifySituationEvidenceItemUpdated(ctx, sit.ID, params); evidenceErr != nil {
-				return fmt.Errorf("situation evidence: %w", evidenceErr)
-			}
-		}
+
+		// TODO: notify situations service that observation group has changed
+
 		return nil
 	})
 }

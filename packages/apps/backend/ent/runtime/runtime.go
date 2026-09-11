@@ -14,7 +14,6 @@ import (
 	"github.com/rezible/rezible/ent/agentturn"
 	"github.com/rezible/rezible/ent/alertdefinition"
 	"github.com/rezible/rezible/ent/alertepisode"
-	"github.com/rezible/rezible/ent/alertepisodesituation"
 	"github.com/rezible/rezible/ent/alertfeedback"
 	"github.com/rezible/rezible/ent/alertinstance"
 	"github.com/rezible/rezible/ent/alertmetrics"
@@ -321,22 +320,6 @@ func init() {
 	alertepisodeDescID := alertepisodeFields[0].Descriptor()
 	// alertepisode.DefaultID holds the default value on creation for the id field.
 	alertepisode.DefaultID = alertepisodeDescID.Default.(func() uuid.UUID)
-	alertepisodesituationMixin := schema.AlertEpisodeSituation{}.Mixin()
-	alertepisodesituation.Policy = privacy.NewPolicies(alertepisodesituationMixin[0], alertepisodesituationMixin[1], schema.AlertEpisodeSituation{})
-	alertepisodesituation.Hooks[0] = func(next ent.Mutator) ent.Mutator {
-		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-			if err := alertepisodesituation.Policy.EvalMutation(ctx, m); err != nil {
-				return nil, err
-			}
-			return next.Mutate(ctx, m)
-		})
-	}
-	alertepisodesituationFields := schema.AlertEpisodeSituation{}.Fields()
-	_ = alertepisodesituationFields
-	// alertepisodesituationDescID is the schema descriptor for id field.
-	alertepisodesituationDescID := alertepisodesituationFields[0].Descriptor()
-	// alertepisodesituation.DefaultID holds the default value on creation for the id field.
-	alertepisodesituation.DefaultID = alertepisodesituationDescID.Default.(func() uuid.UUID)
 	alertfeedbackMixin := schema.AlertFeedback{}.Mixin()
 	alertfeedback.Policy = privacy.NewPolicies(alertfeedbackMixin[0], alertfeedbackMixin[1], schema.AlertFeedback{})
 	alertfeedback.Hooks[0] = func(next ent.Mutator) ent.Mutator {

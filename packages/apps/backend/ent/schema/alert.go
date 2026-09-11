@@ -113,8 +113,6 @@ func (AlertEpisode) Edges() []ent.Edge {
 			Immutable().
 			Field("alert_definition_id"),
 		edge.To("instances", AlertInstance.Type),
-		edge.To("situations", Situation.Type).
-			Through("situation_links", AlertEpisodeSituation.Type),
 	}
 }
 

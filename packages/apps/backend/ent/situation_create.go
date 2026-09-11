@@ -13,8 +13,6 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/alertepisode"
-	"github.com/rezible/rezible/ent/alertepisodesituation"
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/situation"
@@ -193,21 +191,6 @@ func (_c *SituationCreate) AddInvestigations(v ...*SituationInvestigation) *Situ
 	return _c.AddInvestigationIDs(ids...)
 }
 
-// AddAlertEpisodeIDs adds the "alert_episodes" edge to the AlertEpisode entity by IDs.
-func (_c *SituationCreate) AddAlertEpisodeIDs(ids ...uuid.UUID) *SituationCreate {
-	_c.mutation.AddAlertEpisodeIDs(ids...)
-	return _c
-}
-
-// AddAlertEpisodes adds the "alert_episodes" edges to the AlertEpisode entity.
-func (_c *SituationCreate) AddAlertEpisodes(v ...*AlertEpisode) *SituationCreate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _c.AddAlertEpisodeIDs(ids...)
-}
-
 // AddHazardAssessmentIDs adds the "hazard_assessments" edge to the SituationHazardAssessment entity by IDs.
 func (_c *SituationCreate) AddHazardAssessmentIDs(ids ...uuid.UUID) *SituationCreate {
 	_c.mutation.AddHazardAssessmentIDs(ids...)
@@ -251,21 +234,6 @@ func (_c *SituationCreate) AddIncidents(v ...*Incident) *SituationCreate {
 		ids[i] = v[i].ID
 	}
 	return _c.AddIncidentIDs(ids...)
-}
-
-// AddAlertEpisodeLinkIDs adds the "alert_episode_links" edge to the AlertEpisodeSituation entity by IDs.
-func (_c *SituationCreate) AddAlertEpisodeLinkIDs(ids ...uuid.UUID) *SituationCreate {
-	_c.mutation.AddAlertEpisodeLinkIDs(ids...)
-	return _c
-}
-
-// AddAlertEpisodeLinks adds the "alert_episode_links" edges to the AlertEpisodeSituation entity.
-func (_c *SituationCreate) AddAlertEpisodeLinks(v ...*AlertEpisodeSituation) *SituationCreate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _c.AddAlertEpisodeLinkIDs(ids...)
 }
 
 // Mutation returns the SituationMutation object of the builder.
@@ -515,30 +483,6 @@ func (_c *SituationCreate) createSpec() (*Situation, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := _c.mutation.AlertEpisodesIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   situation.AlertEpisodesTable,
-			Columns: situation.AlertEpisodesPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(alertepisode.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _c.schemaConfig.AlertEpisodeSituation
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		createE := &AlertEpisodeSituationCreate{config: _c.config, mutation: newAlertEpisodeSituationMutation(_c.config, OpCreate)}
-		_ = createE.defaults()
-		_, specE := createE.createSpec()
-		edge.Target.Fields = specE.Fields
-		if specE.ID.Value != nil {
-			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
 	if nodes := _c.mutation.HazardAssessmentsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -585,23 +529,6 @@ func (_c *SituationCreate) createSpec() (*Situation, *sqlgraph.CreateSpec) {
 			},
 		}
 		edge.Schema = _c.schemaConfig.IncidentSituations
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := _c.mutation.AlertEpisodeLinksIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   situation.AlertEpisodeLinksTable,
-			Columns: []string{situation.AlertEpisodeLinksColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(alertepisodesituation.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _c.schemaConfig.AlertEpisodeSituation
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

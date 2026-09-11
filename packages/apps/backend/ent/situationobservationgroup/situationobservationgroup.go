@@ -34,6 +34,8 @@ const (
 	EdgeSituation = "situation"
 	// EdgeEvents holds the string denoting the events edge name in mutations.
 	EdgeEvents = "events"
+	// EdgeAlertEpisodes holds the string denoting the alert_episodes edge name in mutations.
+	EdgeAlertEpisodes = "alert_episodes"
 	// Table holds the table name of the situationobservationgroup in the database.
 	Table = "situation_observation_groups"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -55,6 +57,13 @@ const (
 	// EventsInverseTable is the table name for the NormalizedEvent entity.
 	// It exists in this package in order to avoid circular dependency with the "normalizedevent" package.
 	EventsInverseTable = "normalized_events"
+	// AlertEpisodesTable is the table that holds the alert_episodes relation/edge.
+	AlertEpisodesTable = "alert_episodes"
+	// AlertEpisodesInverseTable is the table name for the AlertEpisode entity.
+	// It exists in this package in order to avoid circular dependency with the "alertepisode" package.
+	AlertEpisodesInverseTable = "alert_episodes"
+	// AlertEpisodesColumn is the table column denoting the alert_episodes relation/edge.
+	AlertEpisodesColumn = "situation_observation_group_alert_episodes"
 )
 
 // Columns holds all SQL columns for situationobservationgroup fields.
@@ -169,6 +178,20 @@ func ByEvents(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newEventsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByAlertEpisodesCount orders the results by alert_episodes count.
+func ByAlertEpisodesCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newAlertEpisodesStep(), opts...)
+	}
+}
+
+// ByAlertEpisodes orders the results by alert_episodes terms.
+func ByAlertEpisodes(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newAlertEpisodesStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newTenantStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -188,5 +211,12 @@ func newEventsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(EventsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2M, false, EventsTable, EventsPrimaryKey...),
+	)
+}
+func newAlertEpisodesStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(AlertEpisodesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, AlertEpisodesTable, AlertEpisodesColumn),
 	)
 }

@@ -279,30 +279,6 @@ func (f AlertEpisodeMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mu
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.AlertEpisodeMutation", m)
 }
 
-// The AlertEpisodeSituationQueryRuleFunc type is an adapter to allow the use of ordinary
-// functions as a query rule.
-type AlertEpisodeSituationQueryRuleFunc func(context.Context, *ent.AlertEpisodeSituationQuery) error
-
-// EvalQuery return f(ctx, q).
-func (f AlertEpisodeSituationQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.AlertEpisodeSituationQuery); ok {
-		return f(ctx, q)
-	}
-	return Denyf("ent/privacy: unexpected query type %T, expect *ent.AlertEpisodeSituationQuery", q)
-}
-
-// The AlertEpisodeSituationMutationRuleFunc type is an adapter to allow the use of ordinary
-// functions as a mutation rule.
-type AlertEpisodeSituationMutationRuleFunc func(context.Context, *ent.AlertEpisodeSituationMutation) error
-
-// EvalMutation calls f(ctx, m).
-func (f AlertEpisodeSituationMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
-	if m, ok := m.(*ent.AlertEpisodeSituationMutation); ok {
-		return f(ctx, m)
-	}
-	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.AlertEpisodeSituationMutation", m)
-}
-
 // The AlertFeedbackQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
 type AlertFeedbackQueryRuleFunc func(context.Context, *ent.AlertFeedbackQuery) error
@@ -2020,8 +1996,6 @@ func queryFilter(q ent.Query) (Filter, error) {
 		return q.Filter(), nil
 	case *ent.AlertEpisodeQuery:
 		return q.Filter(), nil
-	case *ent.AlertEpisodeSituationQuery:
-		return q.Filter(), nil
 	case *ent.AlertFeedbackQuery:
 		return q.Filter(), nil
 	case *ent.AlertInstanceQuery:
@@ -2182,8 +2156,6 @@ func mutationFilter(m ent.Mutation) (Filter, error) {
 	case *ent.AlertDefinitionMutation:
 		return m.Filter(), nil
 	case *ent.AlertEpisodeMutation:
-		return m.Filter(), nil
-	case *ent.AlertEpisodeSituationMutation:
 		return m.Filter(), nil
 	case *ent.AlertFeedbackMutation:
 		return m.Filter(), nil

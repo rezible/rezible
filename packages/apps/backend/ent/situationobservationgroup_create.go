@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/alertepisode"
 	"github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/ent/situation"
 	"github.com/rezible/rezible/ent/situationobservationgroup"
@@ -124,6 +125,21 @@ func (_c *SituationObservationGroupCreate) AddEvents(v ...*NormalizedEvent) *Sit
 		ids[i] = v[i].ID
 	}
 	return _c.AddEventIDs(ids...)
+}
+
+// AddAlertEpisodeIDs adds the "alert_episodes" edge to the AlertEpisode entity by IDs.
+func (_c *SituationObservationGroupCreate) AddAlertEpisodeIDs(ids ...uuid.UUID) *SituationObservationGroupCreate {
+	_c.mutation.AddAlertEpisodeIDs(ids...)
+	return _c
+}
+
+// AddAlertEpisodes adds the "alert_episodes" edges to the AlertEpisode entity.
+func (_c *SituationObservationGroupCreate) AddAlertEpisodes(v ...*AlertEpisode) *SituationObservationGroupCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddAlertEpisodeIDs(ids...)
 }
 
 // Mutation returns the SituationObservationGroupMutation object of the builder.
@@ -316,6 +332,23 @@ func (_c *SituationObservationGroupCreate) createSpec() (*SituationObservationGr
 			},
 		}
 		edge.Schema = _c.schemaConfig.SituationObservationGroupEvents
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.AlertEpisodesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   situationobservationgroup.AlertEpisodesTable,
+			Columns: []string{situationobservationgroup.AlertEpisodesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(alertepisode.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.AlertEpisode
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

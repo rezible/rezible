@@ -43,10 +43,6 @@ const (
 	EdgeAlertDefinition = "alert_definition"
 	// EdgeInstances holds the string denoting the instances edge name in mutations.
 	EdgeInstances = "instances"
-	// EdgeSituations holds the string denoting the situations edge name in mutations.
-	EdgeSituations = "situations"
-	// EdgeSituationLinks holds the string denoting the situation_links edge name in mutations.
-	EdgeSituationLinks = "situation_links"
 	// Table holds the table name of the alertepisode in the database.
 	Table = "alert_episodes"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -77,18 +73,6 @@ const (
 	InstancesInverseTable = "alert_instances"
 	// InstancesColumn is the table column denoting the instances relation/edge.
 	InstancesColumn = "alert_episode_id"
-	// SituationsTable is the table that holds the situations relation/edge. The primary key declared below.
-	SituationsTable = "alert_episode_situations"
-	// SituationsInverseTable is the table name for the Situation entity.
-	// It exists in this package in order to avoid circular dependency with the "situation" package.
-	SituationsInverseTable = "situations"
-	// SituationLinksTable is the table that holds the situation_links relation/edge.
-	SituationLinksTable = "alert_episode_situations"
-	// SituationLinksInverseTable is the table name for the AlertEpisodeSituation entity.
-	// It exists in this package in order to avoid circular dependency with the "alertepisodesituation" package.
-	SituationLinksInverseTable = "alert_episode_situations"
-	// SituationLinksColumn is the table column denoting the situation_links relation/edge.
-	SituationLinksColumn = "alert_episode_id"
 )
 
 // Columns holds all SQL columns for alertepisode fields.
@@ -105,16 +89,21 @@ var Columns = []string{
 	FieldClosedAt,
 }
 
-var (
-	// SituationsPrimaryKey and SituationsColumn2 are the table columns denoting the
-	// primary key for the situations relation (M2M).
-	SituationsPrimaryKey = []string{"alert_episode_id", "situation_id"}
-)
+// ForeignKeys holds the SQL foreign-keys that are owned by the "alert_episodes"
+// table and are not defined as standalone fields in the schema.
+var ForeignKeys = []string{
+	"situation_observation_group_alert_episodes",
+}
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
+			return true
+		}
+	}
+	for i := range ForeignKeys {
+		if column == ForeignKeys[i] {
 			return true
 		}
 	}
@@ -252,34 +241,6 @@ func ByInstances(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newInstancesStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
-
-// BySituationsCount orders the results by situations count.
-func BySituationsCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newSituationsStep(), opts...)
-	}
-}
-
-// BySituations orders the results by situations terms.
-func BySituations(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newSituationsStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
-
-// BySituationLinksCount orders the results by situation_links count.
-func BySituationLinksCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newSituationLinksStep(), opts...)
-	}
-}
-
-// BySituationLinks orders the results by situation_links terms.
-func BySituationLinks(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newSituationLinksStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
 func newTenantStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -306,19 +267,5 @@ func newInstancesStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(InstancesInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, InstancesTable, InstancesColumn),
-	)
-}
-func newSituationsStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(SituationsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2M, false, SituationsTable, SituationsPrimaryKey...),
-	)
-}
-func newSituationLinksStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(SituationLinksInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, SituationLinksTable, SituationLinksColumn),
 	)
 }

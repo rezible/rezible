@@ -46,9 +46,11 @@ type SituationObservationGroupEdges struct {
 	Situation *Situation `json:"situation,omitempty"`
 	// Events holds the value of the events edge.
 	Events []*NormalizedEvent `json:"events,omitempty"`
+	// AlertEpisodes holds the value of the alert_episodes edge.
+	AlertEpisodes []*AlertEpisode `json:"alert_episodes,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes [4]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -80,6 +82,15 @@ func (e SituationObservationGroupEdges) EventsOrErr() ([]*NormalizedEvent, error
 		return e.Events, nil
 	}
 	return nil, &NotLoadedError{edge: "events"}
+}
+
+// AlertEpisodesOrErr returns the AlertEpisodes value or an error if the edge
+// was not loaded in eager-loading.
+func (e SituationObservationGroupEdges) AlertEpisodesOrErr() ([]*AlertEpisode, error) {
+	if e.loadedTypes[3] {
+		return e.AlertEpisodes, nil
+	}
+	return nil, &NotLoadedError{edge: "alert_episodes"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -178,6 +189,11 @@ func (_m *SituationObservationGroup) QuerySituation() *SituationQuery {
 // QueryEvents queries the "events" edge of the SituationObservationGroup entity.
 func (_m *SituationObservationGroup) QueryEvents() *NormalizedEventQuery {
 	return NewSituationObservationGroupClient(_m.config).QueryEvents(_m)
+}
+
+// QueryAlertEpisodes queries the "alert_episodes" edge of the SituationObservationGroup entity.
+func (_m *SituationObservationGroup) QueryAlertEpisodes() *AlertEpisodeQuery {
+	return NewSituationObservationGroupClient(_m.config).QueryAlertEpisodes(_m)
 }
 
 // Update returns a builder for updating this SituationObservationGroup.

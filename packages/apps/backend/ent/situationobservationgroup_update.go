@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/alertepisode"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/ent/predicate"
@@ -121,6 +122,21 @@ func (_u *SituationObservationGroupUpdate) AddEvents(v ...*NormalizedEvent) *Sit
 	return _u.AddEventIDs(ids...)
 }
 
+// AddAlertEpisodeIDs adds the "alert_episodes" edge to the AlertEpisode entity by IDs.
+func (_u *SituationObservationGroupUpdate) AddAlertEpisodeIDs(ids ...uuid.UUID) *SituationObservationGroupUpdate {
+	_u.mutation.AddAlertEpisodeIDs(ids...)
+	return _u
+}
+
+// AddAlertEpisodes adds the "alert_episodes" edges to the AlertEpisode entity.
+func (_u *SituationObservationGroupUpdate) AddAlertEpisodes(v ...*AlertEpisode) *SituationObservationGroupUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddAlertEpisodeIDs(ids...)
+}
+
 // Mutation returns the SituationObservationGroupMutation object of the builder.
 func (_u *SituationObservationGroupUpdate) Mutation() *SituationObservationGroupMutation {
 	return _u.mutation
@@ -151,6 +167,27 @@ func (_u *SituationObservationGroupUpdate) RemoveEvents(v ...*NormalizedEvent) *
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveEventIDs(ids...)
+}
+
+// ClearAlertEpisodes clears all "alert_episodes" edges to the AlertEpisode entity.
+func (_u *SituationObservationGroupUpdate) ClearAlertEpisodes() *SituationObservationGroupUpdate {
+	_u.mutation.ClearAlertEpisodes()
+	return _u
+}
+
+// RemoveAlertEpisodeIDs removes the "alert_episodes" edge to AlertEpisode entities by IDs.
+func (_u *SituationObservationGroupUpdate) RemoveAlertEpisodeIDs(ids ...uuid.UUID) *SituationObservationGroupUpdate {
+	_u.mutation.RemoveAlertEpisodeIDs(ids...)
+	return _u
+}
+
+// RemoveAlertEpisodes removes "alert_episodes" edges to AlertEpisode entities.
+func (_u *SituationObservationGroupUpdate) RemoveAlertEpisodes(v ...*AlertEpisode) *SituationObservationGroupUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveAlertEpisodeIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -323,6 +360,54 @@ func (_u *SituationObservationGroupUpdate) sqlSave(ctx context.Context) (_node i
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.AlertEpisodesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   situationobservationgroup.AlertEpisodesTable,
+			Columns: []string{situationobservationgroup.AlertEpisodesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(alertepisode.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AlertEpisode
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedAlertEpisodesIDs(); len(nodes) > 0 && !_u.mutation.AlertEpisodesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   situationobservationgroup.AlertEpisodesTable,
+			Columns: []string{situationobservationgroup.AlertEpisodesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(alertepisode.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AlertEpisode
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.AlertEpisodesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   situationobservationgroup.AlertEpisodesTable,
+			Columns: []string{situationobservationgroup.AlertEpisodesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(alertepisode.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AlertEpisode
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	_spec.Node.Schema = _u.schemaConfig.SituationObservationGroup
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
 	_spec.AddModifiers(_u.modifiers...)
@@ -435,6 +520,21 @@ func (_u *SituationObservationGroupUpdateOne) AddEvents(v ...*NormalizedEvent) *
 	return _u.AddEventIDs(ids...)
 }
 
+// AddAlertEpisodeIDs adds the "alert_episodes" edge to the AlertEpisode entity by IDs.
+func (_u *SituationObservationGroupUpdateOne) AddAlertEpisodeIDs(ids ...uuid.UUID) *SituationObservationGroupUpdateOne {
+	_u.mutation.AddAlertEpisodeIDs(ids...)
+	return _u
+}
+
+// AddAlertEpisodes adds the "alert_episodes" edges to the AlertEpisode entity.
+func (_u *SituationObservationGroupUpdateOne) AddAlertEpisodes(v ...*AlertEpisode) *SituationObservationGroupUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddAlertEpisodeIDs(ids...)
+}
+
 // Mutation returns the SituationObservationGroupMutation object of the builder.
 func (_u *SituationObservationGroupUpdateOne) Mutation() *SituationObservationGroupMutation {
 	return _u.mutation
@@ -465,6 +565,27 @@ func (_u *SituationObservationGroupUpdateOne) RemoveEvents(v ...*NormalizedEvent
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveEventIDs(ids...)
+}
+
+// ClearAlertEpisodes clears all "alert_episodes" edges to the AlertEpisode entity.
+func (_u *SituationObservationGroupUpdateOne) ClearAlertEpisodes() *SituationObservationGroupUpdateOne {
+	_u.mutation.ClearAlertEpisodes()
+	return _u
+}
+
+// RemoveAlertEpisodeIDs removes the "alert_episodes" edge to AlertEpisode entities by IDs.
+func (_u *SituationObservationGroupUpdateOne) RemoveAlertEpisodeIDs(ids ...uuid.UUID) *SituationObservationGroupUpdateOne {
+	_u.mutation.RemoveAlertEpisodeIDs(ids...)
+	return _u
+}
+
+// RemoveAlertEpisodes removes "alert_episodes" edges to AlertEpisode entities.
+func (_u *SituationObservationGroupUpdateOne) RemoveAlertEpisodes(v ...*AlertEpisode) *SituationObservationGroupUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveAlertEpisodeIDs(ids...)
 }
 
 // Where appends a list predicates to the SituationObservationGroupUpdate builder.
@@ -662,6 +783,54 @@ func (_u *SituationObservationGroupUpdateOne) sqlSave(ctx context.Context) (_nod
 			},
 		}
 		edge.Schema = _u.schemaConfig.SituationObservationGroupEvents
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.AlertEpisodesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   situationobservationgroup.AlertEpisodesTable,
+			Columns: []string{situationobservationgroup.AlertEpisodesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(alertepisode.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AlertEpisode
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedAlertEpisodesIDs(); len(nodes) > 0 && !_u.mutation.AlertEpisodesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   situationobservationgroup.AlertEpisodesTable,
+			Columns: []string{situationobservationgroup.AlertEpisodesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(alertepisode.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AlertEpisode
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.AlertEpisodesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   situationobservationgroup.AlertEpisodesTable,
+			Columns: []string{situationobservationgroup.AlertEpisodesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(alertepisode.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AlertEpisode
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

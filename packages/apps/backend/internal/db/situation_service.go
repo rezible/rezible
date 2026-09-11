@@ -11,7 +11,6 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	ale "github.com/rezible/rezible/ent/alertepisode"
-	ales "github.com/rezible/rezible/ent/alertepisodesituation"
 	kne "github.com/rezible/rezible/ent/knowledgeentity"
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/situation"
@@ -50,10 +49,13 @@ func (s *SituationService) GetMessageHandlers() []rez.MessageEventHandler {
 func (s *SituationService) ListSituations(ctx context.Context, params rez.ListSituationsParams) (*ent.ListResult[ent.Situation], error) {
 	query := s.db.Client(ctx).Situation.Query().
 		WithKnowledgeEntity().
-		WithAlertEpisodes().
-		WithInvestigations(func(q *ent.SituationInvestigationQuery) { q.WithAgentSession() }).
+		WithInvestigations(func(q *ent.SituationInvestigationQuery) {
+			q.WithAgentSession()
+		}).
 		WithObservationGroups(func(q *ent.SituationObservationGroupQuery) {
-			q.WithEvents().Order(sog.ByID())
+			q.WithEvents()
+			q.WithAlertEpisodes()
+			q.Order(sog.ByID())
 		}).
 		WithIncidents().
 		Order(situation.ByOpenedAt(params.GetOrder()), situation.ByID(params.GetOrder()))
@@ -73,12 +75,11 @@ func (s *SituationService) GetSituation(ctx context.Context, id uuid.UUID) (*ent
 	return s.db.Client(ctx).Situation.Query().
 		Where(situation.ID(id)).
 		WithKnowledgeEntity().
-		WithAlertEpisodes(func(q *ent.AlertEpisodeQuery) {
-			q.WithAlertDefinition().Order(ale.ByStartedAt(), ale.ByID())
-		}).
 		WithInvestigations(func(q *ent.SituationInvestigationQuery) { q.WithAgentSession() }).
 		WithObservationGroups(func(q *ent.SituationObservationGroupQuery) {
-			q.WithEvents().Order(sog.ByID())
+			q.WithEvents().WithAlertEpisodes(func(eq *ent.AlertEpisodeQuery) {
+				eq.WithAlertDefinition().Order(ale.ByStartedAt(), ale.ByID())
+			}).Order(sog.ByID())
 		}).
 		WithIncidents().
 		Only(ctx)
@@ -120,14 +121,6 @@ func (s *SituationService) CreateSituation(ctx context.Context, params rez.Creat
 		for _, item := range params.EvidenceItems {
 			if item.AlertEpisodeID == nil && item.IncidentID == nil {
 				return fmt.Errorf("invalid evidence item")
-			}
-			if item.AlertEpisodeID != nil {
-				createLink := tx.AlertEpisodeSituation.Create().
-					SetAlertEpisodeID(*item.AlertEpisodeID).
-					SetSituationID(situationId)
-				if createLinkErr := createLink.Exec(ctx); createLinkErr != nil {
-					return fmt.Errorf("create alert episode situation link: %w", createLinkErr)
-				}
 			}
 			evRelEnt := s.makeSituationEvidenceRelationshipEntity(item)
 			if relErr := s.ingestKnowledgeRelationship(ctx, created.ID, *evRelEnt); relErr != nil {
@@ -206,22 +199,6 @@ func (s *SituationService) AddSituationEvidenceItem(ctx context.Context, id uuid
 		relEnt := s.makeSituationEvidenceRelationshipEntity(params)
 		if relEnt == nil {
 			return fmt.Errorf("invalid evidence item")
-		}
-		if params.AlertEpisodeID != nil {
-			queryEpLink := tx.AlertEpisodeSituation.Query().
-				Where(ales.AlertEpisodeID(*params.AlertEpisodeID), ales.SituationID(id))
-			linkExists, queryExistsErr := queryEpLink.Exist(ctx)
-			if queryExistsErr != nil {
-				return fmt.Errorf("check situation evidence link: %w", queryExistsErr)
-			}
-			if !linkExists {
-				createLink := tx.AlertEpisodeSituation.Create().
-					SetAlertEpisodeID(*params.AlertEpisodeID).
-					SetSituationID(id)
-				if createLinkErr := createLink.Exec(ctx); createLinkErr != nil {
-					return fmt.Errorf("create situation evidence link: %w", createLinkErr)
-				}
-			}
 		}
 		if knrErr := s.ingestKnowledgeRelationship(ctx, sit.ID, *relEnt); knrErr != nil {
 			return fmt.Errorf("ingest situation evidence item knowledge relationship: %w", knrErr)
@@ -326,13 +303,6 @@ func (s *SituationService) RemoveSituationEvidenceItem(ctx context.Context, id u
 		relRef := s.makeSituationEvidenceRelationshipEntity(params)
 		if relRef == nil {
 			return fmt.Errorf("invalid evidence item")
-		}
-		if params.AlertEpisodeID != nil {
-			deleteEpisodeLink := tx.AlertEpisodeSituation.Delete().
-				Where(ales.AlertEpisodeID(*params.AlertEpisodeID), ales.SituationID(id))
-			if _, delErr := deleteEpisodeLink.Exec(ctx); delErr != nil {
-				return fmt.Errorf("remove situation evidence link: %w", delErr)
-			}
 		}
 		slog.Debug("todo: remove evidence item relationship", "ref", relRef)
 
@@ -481,17 +451,6 @@ func (s *SituationService) RebuildSituationProjection(ctx context.Context) error
 		}
 		if removeErr := s.knowledge.RemoveInternalSubject(ctx, ref); removeErr != nil {
 			return fmt.Errorf("remove situation projection %q: %w", alias.ProviderResourceRef, removeErr)
-		}
-	}
-
-	episodeQuery := client.AlertEpisode.Query().Where(ae.SituationIDNotNil())
-	episodes, episodesErr := episodeQuery.All(ctx)
-	if episodesErr != nil {
-		return fmt.Errorf("load linked alert episodes: %w", episodesErr)
-	}
-	for _, episode := range episodes {
-		if ingestErr := s.ingestAlertEpisodeIndicatesSituation(ctx, episode.ID, *episode.SituationID); ingestErr != nil {
-			return fmt.Errorf("rebuild alert episode situation link: %w", ingestErr)
 		}
 	}
 

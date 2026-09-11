@@ -60,14 +60,6 @@ func (c *AlertEpisodeClient) Debug() *AlertEpisodeClient {
 	return &AlertEpisodeClient{config: cfg}
 }
 
-func (c *AlertEpisodeSituationClient) Debug() *AlertEpisodeSituationClient {
-	if c.debug {
-		return c
-	}
-	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
-	return &AlertEpisodeSituationClient{config: cfg}
-}
-
 func (c *AlertFeedbackClient) Debug() *AlertFeedbackClient {
 	if c.debug {
 		return c

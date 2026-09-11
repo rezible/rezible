@@ -22,7 +22,6 @@ import (
 	"github.com/rezible/rezible/ent/agentturn"
 	"github.com/rezible/rezible/ent/alertdefinition"
 	"github.com/rezible/rezible/ent/alertepisode"
-	"github.com/rezible/rezible/ent/alertepisodesituation"
 	"github.com/rezible/rezible/ent/alertfeedback"
 	"github.com/rezible/rezible/ent/alertinstance"
 	"github.com/rezible/rezible/ent/discussioncomment"
@@ -111,7 +110,6 @@ const (
 	TypeAgentTurn                       = "AgentTurn"
 	TypeAlertDefinition                 = "AlertDefinition"
 	TypeAlertEpisode                    = "AlertEpisode"
-	TypeAlertEpisodeSituation           = "AlertEpisodeSituation"
 	TypeAlertFeedback                   = "AlertFeedback"
 	TypeAlertInstance                   = "AlertInstance"
 	TypeAlertMetrics                    = "AlertMetrics"
@@ -6726,12 +6724,6 @@ type AlertEpisodeMutation struct {
 	instances               map[uuid.UUID]struct{}
 	removedinstances        map[uuid.UUID]struct{}
 	clearedinstances        bool
-	situations              map[uuid.UUID]struct{}
-	removedsituations       map[uuid.UUID]struct{}
-	clearedsituations       bool
-	situation_links         map[uuid.UUID]struct{}
-	removedsituation_links  map[uuid.UUID]struct{}
-	clearedsituation_links  bool
 	done                    bool
 	oldValue                func(context.Context) (*AlertEpisode, error)
 	predicates              []predicate.AlertEpisode
@@ -7326,114 +7318,6 @@ func (m *AlertEpisodeMutation) ResetInstances() {
 	m.removedinstances = nil
 }
 
-// AddSituationIDs adds the "situations" edge to the Situation entity by ids.
-func (m *AlertEpisodeMutation) AddSituationIDs(ids ...uuid.UUID) {
-	if m.situations == nil {
-		m.situations = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.situations[ids[i]] = struct{}{}
-	}
-}
-
-// ClearSituations clears the "situations" edge to the Situation entity.
-func (m *AlertEpisodeMutation) ClearSituations() {
-	m.clearedsituations = true
-}
-
-// SituationsCleared reports if the "situations" edge to the Situation entity was cleared.
-func (m *AlertEpisodeMutation) SituationsCleared() bool {
-	return m.clearedsituations
-}
-
-// RemoveSituationIDs removes the "situations" edge to the Situation entity by IDs.
-func (m *AlertEpisodeMutation) RemoveSituationIDs(ids ...uuid.UUID) {
-	if m.removedsituations == nil {
-		m.removedsituations = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.situations, ids[i])
-		m.removedsituations[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedSituations returns the removed IDs of the "situations" edge to the Situation entity.
-func (m *AlertEpisodeMutation) RemovedSituationsIDs() (ids []uuid.UUID) {
-	for id := range m.removedsituations {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// SituationsIDs returns the "situations" edge IDs in the mutation.
-func (m *AlertEpisodeMutation) SituationsIDs() (ids []uuid.UUID) {
-	for id := range m.situations {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetSituations resets all changes to the "situations" edge.
-func (m *AlertEpisodeMutation) ResetSituations() {
-	m.situations = nil
-	m.clearedsituations = false
-	m.removedsituations = nil
-}
-
-// AddSituationLinkIDs adds the "situation_links" edge to the AlertEpisodeSituation entity by ids.
-func (m *AlertEpisodeMutation) AddSituationLinkIDs(ids ...uuid.UUID) {
-	if m.situation_links == nil {
-		m.situation_links = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.situation_links[ids[i]] = struct{}{}
-	}
-}
-
-// ClearSituationLinks clears the "situation_links" edge to the AlertEpisodeSituation entity.
-func (m *AlertEpisodeMutation) ClearSituationLinks() {
-	m.clearedsituation_links = true
-}
-
-// SituationLinksCleared reports if the "situation_links" edge to the AlertEpisodeSituation entity was cleared.
-func (m *AlertEpisodeMutation) SituationLinksCleared() bool {
-	return m.clearedsituation_links
-}
-
-// RemoveSituationLinkIDs removes the "situation_links" edge to the AlertEpisodeSituation entity by IDs.
-func (m *AlertEpisodeMutation) RemoveSituationLinkIDs(ids ...uuid.UUID) {
-	if m.removedsituation_links == nil {
-		m.removedsituation_links = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.situation_links, ids[i])
-		m.removedsituation_links[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedSituationLinks returns the removed IDs of the "situation_links" edge to the AlertEpisodeSituation entity.
-func (m *AlertEpisodeMutation) RemovedSituationLinksIDs() (ids []uuid.UUID) {
-	for id := range m.removedsituation_links {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// SituationLinksIDs returns the "situation_links" edge IDs in the mutation.
-func (m *AlertEpisodeMutation) SituationLinksIDs() (ids []uuid.UUID) {
-	for id := range m.situation_links {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetSituationLinks resets all changes to the "situation_links" edge.
-func (m *AlertEpisodeMutation) ResetSituationLinks() {
-	m.situation_links = nil
-	m.clearedsituation_links = false
-	m.removedsituation_links = nil
-}
-
 // Where appends a list predicates to the AlertEpisodeMutation builder.
 func (m *AlertEpisodeMutation) Where(ps ...predicate.AlertEpisode) {
 	m.predicates = append(m.predicates, ps...)
@@ -7721,7 +7605,7 @@ func (m *AlertEpisodeMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *AlertEpisodeMutation) AddedEdges() []string {
-	edges := make([]string, 0, 6)
+	edges := make([]string, 0, 4)
 	if m.tenant != nil {
 		edges = append(edges, alertepisode.EdgeTenant)
 	}
@@ -7733,12 +7617,6 @@ func (m *AlertEpisodeMutation) AddedEdges() []string {
 	}
 	if m.instances != nil {
 		edges = append(edges, alertepisode.EdgeInstances)
-	}
-	if m.situations != nil {
-		edges = append(edges, alertepisode.EdgeSituations)
-	}
-	if m.situation_links != nil {
-		edges = append(edges, alertepisode.EdgeSituationLinks)
 	}
 	return edges
 }
@@ -7765,33 +7643,15 @@ func (m *AlertEpisodeMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case alertepisode.EdgeSituations:
-		ids := make([]ent.Value, 0, len(m.situations))
-		for id := range m.situations {
-			ids = append(ids, id)
-		}
-		return ids
-	case alertepisode.EdgeSituationLinks:
-		ids := make([]ent.Value, 0, len(m.situation_links))
-		for id := range m.situation_links {
-			ids = append(ids, id)
-		}
-		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *AlertEpisodeMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 6)
+	edges := make([]string, 0, 4)
 	if m.removedinstances != nil {
 		edges = append(edges, alertepisode.EdgeInstances)
-	}
-	if m.removedsituations != nil {
-		edges = append(edges, alertepisode.EdgeSituations)
-	}
-	if m.removedsituation_links != nil {
-		edges = append(edges, alertepisode.EdgeSituationLinks)
 	}
 	return edges
 }
@@ -7806,25 +7666,13 @@ func (m *AlertEpisodeMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case alertepisode.EdgeSituations:
-		ids := make([]ent.Value, 0, len(m.removedsituations))
-		for id := range m.removedsituations {
-			ids = append(ids, id)
-		}
-		return ids
-	case alertepisode.EdgeSituationLinks:
-		ids := make([]ent.Value, 0, len(m.removedsituation_links))
-		for id := range m.removedsituation_links {
-			ids = append(ids, id)
-		}
-		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *AlertEpisodeMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 6)
+	edges := make([]string, 0, 4)
 	if m.clearedtenant {
 		edges = append(edges, alertepisode.EdgeTenant)
 	}
@@ -7836,12 +7684,6 @@ func (m *AlertEpisodeMutation) ClearedEdges() []string {
 	}
 	if m.clearedinstances {
 		edges = append(edges, alertepisode.EdgeInstances)
-	}
-	if m.clearedsituations {
-		edges = append(edges, alertepisode.EdgeSituations)
-	}
-	if m.clearedsituation_links {
-		edges = append(edges, alertepisode.EdgeSituationLinks)
 	}
 	return edges
 }
@@ -7858,10 +7700,6 @@ func (m *AlertEpisodeMutation) EdgeCleared(name string) bool {
 		return m.clearedalert_definition
 	case alertepisode.EdgeInstances:
 		return m.clearedinstances
-	case alertepisode.EdgeSituations:
-		return m.clearedsituations
-	case alertepisode.EdgeSituationLinks:
-		return m.clearedsituation_links
 	}
 	return false
 }
@@ -7899,603 +7737,8 @@ func (m *AlertEpisodeMutation) ResetEdge(name string) error {
 	case alertepisode.EdgeInstances:
 		m.ResetInstances()
 		return nil
-	case alertepisode.EdgeSituations:
-		m.ResetSituations()
-		return nil
-	case alertepisode.EdgeSituationLinks:
-		m.ResetSituationLinks()
-		return nil
 	}
 	return fmt.Errorf("unknown AlertEpisode edge %s", name)
-}
-
-// AlertEpisodeSituationMutation represents an operation that mutates the AlertEpisodeSituation nodes in the graph.
-type AlertEpisodeSituationMutation struct {
-	config
-	op                   Op
-	typ                  string
-	id                   *uuid.UUID
-	clearedFields        map[string]struct{}
-	tenant               *int
-	clearedtenant        bool
-	alert_episode        *uuid.UUID
-	clearedalert_episode bool
-	situation            *uuid.UUID
-	clearedsituation     bool
-	done                 bool
-	oldValue             func(context.Context) (*AlertEpisodeSituation, error)
-	predicates           []predicate.AlertEpisodeSituation
-}
-
-var _ ent.Mutation = (*AlertEpisodeSituationMutation)(nil)
-
-// alertepisodesituationOption allows management of the mutation configuration using functional options.
-type alertepisodesituationOption func(*AlertEpisodeSituationMutation)
-
-// newAlertEpisodeSituationMutation creates new mutation for the AlertEpisodeSituation entity.
-func newAlertEpisodeSituationMutation(c config, op Op, opts ...alertepisodesituationOption) *AlertEpisodeSituationMutation {
-	m := &AlertEpisodeSituationMutation{
-		config:        c,
-		op:            op,
-		typ:           TypeAlertEpisodeSituation,
-		clearedFields: make(map[string]struct{}),
-	}
-	for _, opt := range opts {
-		opt(m)
-	}
-	return m
-}
-
-// withAlertEpisodeSituationID sets the ID field of the mutation.
-func withAlertEpisodeSituationID(id uuid.UUID) alertepisodesituationOption {
-	return func(m *AlertEpisodeSituationMutation) {
-		var (
-			err   error
-			once  sync.Once
-			value *AlertEpisodeSituation
-		)
-		m.oldValue = func(ctx context.Context) (*AlertEpisodeSituation, error) {
-			once.Do(func() {
-				if m.done {
-					err = errors.New("querying old values post mutation is not allowed")
-				} else {
-					value, err = m.Client().AlertEpisodeSituation.Get(ctx, id)
-				}
-			})
-			return value, err
-		}
-		m.id = &id
-	}
-}
-
-// withAlertEpisodeSituation sets the old AlertEpisodeSituation of the mutation.
-func withAlertEpisodeSituation(node *AlertEpisodeSituation) alertepisodesituationOption {
-	return func(m *AlertEpisodeSituationMutation) {
-		m.oldValue = func(context.Context) (*AlertEpisodeSituation, error) {
-			return node, nil
-		}
-		m.id = &node.ID
-	}
-}
-
-// Client returns a new `ent.Client` from the mutation. If the mutation was
-// executed in a transaction (ent.Tx), a transactional client is returned.
-func (m AlertEpisodeSituationMutation) Client() *Client {
-	client := &Client{config: m.config}
-	client.init()
-	return client
-}
-
-// Tx returns an `ent.Tx` for mutations that were executed in transactions;
-// it returns an error otherwise.
-func (m AlertEpisodeSituationMutation) Tx() (*Tx, error) {
-	if _, ok := m.driver.(*txDriver); !ok {
-		return nil, errors.New("ent: mutation is not running in a transaction")
-	}
-	tx := &Tx{config: m.config}
-	tx.init()
-	return tx, nil
-}
-
-// SetID sets the value of the id field. Note that this
-// operation is only accepted on creation of AlertEpisodeSituation entities.
-func (m *AlertEpisodeSituationMutation) SetID(id uuid.UUID) {
-	m.id = &id
-}
-
-// ID returns the ID value in the mutation. Note that the ID is only available
-// if it was provided to the builder or after it was returned from the database.
-func (m *AlertEpisodeSituationMutation) ID() (id uuid.UUID, exists bool) {
-	if m.id == nil {
-		return
-	}
-	return *m.id, true
-}
-
-// IDs queries the database and returns the entity ids that match the mutation's predicate.
-// That means, if the mutation is applied within a transaction with an isolation level such
-// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
-// or updated by the mutation.
-func (m *AlertEpisodeSituationMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
-	switch {
-	case m.op.Is(OpUpdateOne | OpDeleteOne):
-		id, exists := m.ID()
-		if exists {
-			return []uuid.UUID{id}, nil
-		}
-		fallthrough
-	case m.op.Is(OpUpdate | OpDelete):
-		return m.Client().AlertEpisodeSituation.Query().Where(m.predicates...).IDs(ctx)
-	default:
-		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
-	}
-}
-
-// SetTenantID sets the "tenant_id" field.
-func (m *AlertEpisodeSituationMutation) SetTenantID(i int) {
-	m.tenant = &i
-}
-
-// TenantID returns the value of the "tenant_id" field in the mutation.
-func (m *AlertEpisodeSituationMutation) TenantID() (r int, exists bool) {
-	v := m.tenant
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldTenantID returns the old "tenant_id" field's value of the AlertEpisodeSituation entity.
-// If the AlertEpisodeSituation object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AlertEpisodeSituationMutation) OldTenantID(ctx context.Context) (v int, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldTenantID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldTenantID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldTenantID: %w", err)
-	}
-	return oldValue.TenantID, nil
-}
-
-// ResetTenantID resets all changes to the "tenant_id" field.
-func (m *AlertEpisodeSituationMutation) ResetTenantID() {
-	m.tenant = nil
-}
-
-// SetAlertEpisodeID sets the "alert_episode_id" field.
-func (m *AlertEpisodeSituationMutation) SetAlertEpisodeID(u uuid.UUID) {
-	m.alert_episode = &u
-}
-
-// AlertEpisodeID returns the value of the "alert_episode_id" field in the mutation.
-func (m *AlertEpisodeSituationMutation) AlertEpisodeID() (r uuid.UUID, exists bool) {
-	v := m.alert_episode
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldAlertEpisodeID returns the old "alert_episode_id" field's value of the AlertEpisodeSituation entity.
-// If the AlertEpisodeSituation object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AlertEpisodeSituationMutation) OldAlertEpisodeID(ctx context.Context) (v uuid.UUID, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldAlertEpisodeID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldAlertEpisodeID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldAlertEpisodeID: %w", err)
-	}
-	return oldValue.AlertEpisodeID, nil
-}
-
-// ResetAlertEpisodeID resets all changes to the "alert_episode_id" field.
-func (m *AlertEpisodeSituationMutation) ResetAlertEpisodeID() {
-	m.alert_episode = nil
-}
-
-// SetSituationID sets the "situation_id" field.
-func (m *AlertEpisodeSituationMutation) SetSituationID(u uuid.UUID) {
-	m.situation = &u
-}
-
-// SituationID returns the value of the "situation_id" field in the mutation.
-func (m *AlertEpisodeSituationMutation) SituationID() (r uuid.UUID, exists bool) {
-	v := m.situation
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldSituationID returns the old "situation_id" field's value of the AlertEpisodeSituation entity.
-// If the AlertEpisodeSituation object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AlertEpisodeSituationMutation) OldSituationID(ctx context.Context) (v uuid.UUID, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldSituationID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldSituationID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldSituationID: %w", err)
-	}
-	return oldValue.SituationID, nil
-}
-
-// ResetSituationID resets all changes to the "situation_id" field.
-func (m *AlertEpisodeSituationMutation) ResetSituationID() {
-	m.situation = nil
-}
-
-// ClearTenant clears the "tenant" edge to the Tenant entity.
-func (m *AlertEpisodeSituationMutation) ClearTenant() {
-	m.clearedtenant = true
-	m.clearedFields[alertepisodesituation.FieldTenantID] = struct{}{}
-}
-
-// TenantCleared reports if the "tenant" edge to the Tenant entity was cleared.
-func (m *AlertEpisodeSituationMutation) TenantCleared() bool {
-	return m.clearedtenant
-}
-
-// TenantIDs returns the "tenant" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// TenantID instead. It exists only for internal usage by the builders.
-func (m *AlertEpisodeSituationMutation) TenantIDs() (ids []int) {
-	if id := m.tenant; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetTenant resets all changes to the "tenant" edge.
-func (m *AlertEpisodeSituationMutation) ResetTenant() {
-	m.tenant = nil
-	m.clearedtenant = false
-}
-
-// ClearAlertEpisode clears the "alert_episode" edge to the AlertEpisode entity.
-func (m *AlertEpisodeSituationMutation) ClearAlertEpisode() {
-	m.clearedalert_episode = true
-	m.clearedFields[alertepisodesituation.FieldAlertEpisodeID] = struct{}{}
-}
-
-// AlertEpisodeCleared reports if the "alert_episode" edge to the AlertEpisode entity was cleared.
-func (m *AlertEpisodeSituationMutation) AlertEpisodeCleared() bool {
-	return m.clearedalert_episode
-}
-
-// AlertEpisodeIDs returns the "alert_episode" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// AlertEpisodeID instead. It exists only for internal usage by the builders.
-func (m *AlertEpisodeSituationMutation) AlertEpisodeIDs() (ids []uuid.UUID) {
-	if id := m.alert_episode; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetAlertEpisode resets all changes to the "alert_episode" edge.
-func (m *AlertEpisodeSituationMutation) ResetAlertEpisode() {
-	m.alert_episode = nil
-	m.clearedalert_episode = false
-}
-
-// ClearSituation clears the "situation" edge to the Situation entity.
-func (m *AlertEpisodeSituationMutation) ClearSituation() {
-	m.clearedsituation = true
-	m.clearedFields[alertepisodesituation.FieldSituationID] = struct{}{}
-}
-
-// SituationCleared reports if the "situation" edge to the Situation entity was cleared.
-func (m *AlertEpisodeSituationMutation) SituationCleared() bool {
-	return m.clearedsituation
-}
-
-// SituationIDs returns the "situation" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// SituationID instead. It exists only for internal usage by the builders.
-func (m *AlertEpisodeSituationMutation) SituationIDs() (ids []uuid.UUID) {
-	if id := m.situation; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetSituation resets all changes to the "situation" edge.
-func (m *AlertEpisodeSituationMutation) ResetSituation() {
-	m.situation = nil
-	m.clearedsituation = false
-}
-
-// Where appends a list predicates to the AlertEpisodeSituationMutation builder.
-func (m *AlertEpisodeSituationMutation) Where(ps ...predicate.AlertEpisodeSituation) {
-	m.predicates = append(m.predicates, ps...)
-}
-
-// WhereP appends storage-level predicates to the AlertEpisodeSituationMutation builder. Using this method,
-// users can use type-assertion to append predicates that do not depend on any generated package.
-func (m *AlertEpisodeSituationMutation) WhereP(ps ...func(*sql.Selector)) {
-	p := make([]predicate.AlertEpisodeSituation, len(ps))
-	for i := range ps {
-		p[i] = ps[i]
-	}
-	m.Where(p...)
-}
-
-// Op returns the operation name.
-func (m *AlertEpisodeSituationMutation) Op() Op {
-	return m.op
-}
-
-// SetOp allows setting the mutation operation.
-func (m *AlertEpisodeSituationMutation) SetOp(op Op) {
-	m.op = op
-}
-
-// Type returns the node type of this mutation (AlertEpisodeSituation).
-func (m *AlertEpisodeSituationMutation) Type() string {
-	return m.typ
-}
-
-// Fields returns all fields that were changed during this mutation. Note that in
-// order to get all numeric fields that were incremented/decremented, call
-// AddedFields().
-func (m *AlertEpisodeSituationMutation) Fields() []string {
-	fields := make([]string, 0, 3)
-	if m.tenant != nil {
-		fields = append(fields, alertepisodesituation.FieldTenantID)
-	}
-	if m.alert_episode != nil {
-		fields = append(fields, alertepisodesituation.FieldAlertEpisodeID)
-	}
-	if m.situation != nil {
-		fields = append(fields, alertepisodesituation.FieldSituationID)
-	}
-	return fields
-}
-
-// Field returns the value of a field with the given name. The second boolean
-// return value indicates that this field was not set, or was not defined in the
-// schema.
-func (m *AlertEpisodeSituationMutation) Field(name string) (ent.Value, bool) {
-	switch name {
-	case alertepisodesituation.FieldTenantID:
-		return m.TenantID()
-	case alertepisodesituation.FieldAlertEpisodeID:
-		return m.AlertEpisodeID()
-	case alertepisodesituation.FieldSituationID:
-		return m.SituationID()
-	}
-	return nil, false
-}
-
-// OldField returns the old value of the field from the database. An error is
-// returned if the mutation operation is not UpdateOne, or the query to the
-// database failed.
-func (m *AlertEpisodeSituationMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
-	switch name {
-	case alertepisodesituation.FieldTenantID:
-		return m.OldTenantID(ctx)
-	case alertepisodesituation.FieldAlertEpisodeID:
-		return m.OldAlertEpisodeID(ctx)
-	case alertepisodesituation.FieldSituationID:
-		return m.OldSituationID(ctx)
-	}
-	return nil, fmt.Errorf("unknown AlertEpisodeSituation field %s", name)
-}
-
-// SetField sets the value of a field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *AlertEpisodeSituationMutation) SetField(name string, value ent.Value) error {
-	switch name {
-	case alertepisodesituation.FieldTenantID:
-		v, ok := value.(int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetTenantID(v)
-		return nil
-	case alertepisodesituation.FieldAlertEpisodeID:
-		v, ok := value.(uuid.UUID)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetAlertEpisodeID(v)
-		return nil
-	case alertepisodesituation.FieldSituationID:
-		v, ok := value.(uuid.UUID)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetSituationID(v)
-		return nil
-	}
-	return fmt.Errorf("unknown AlertEpisodeSituation field %s", name)
-}
-
-// AddedFields returns all numeric fields that were incremented/decremented during
-// this mutation.
-func (m *AlertEpisodeSituationMutation) AddedFields() []string {
-	var fields []string
-	return fields
-}
-
-// AddedField returns the numeric value that was incremented/decremented on a field
-// with the given name. The second boolean return value indicates that this field
-// was not set, or was not defined in the schema.
-func (m *AlertEpisodeSituationMutation) AddedField(name string) (ent.Value, bool) {
-	switch name {
-	}
-	return nil, false
-}
-
-// AddField adds the value to the field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *AlertEpisodeSituationMutation) AddField(name string, value ent.Value) error {
-	switch name {
-	}
-	return fmt.Errorf("unknown AlertEpisodeSituation numeric field %s", name)
-}
-
-// ClearedFields returns all nullable fields that were cleared during this
-// mutation.
-func (m *AlertEpisodeSituationMutation) ClearedFields() []string {
-	return nil
-}
-
-// FieldCleared returns a boolean indicating if a field with the given name was
-// cleared in this mutation.
-func (m *AlertEpisodeSituationMutation) FieldCleared(name string) bool {
-	_, ok := m.clearedFields[name]
-	return ok
-}
-
-// ClearField clears the value of the field with the given name. It returns an
-// error if the field is not defined in the schema.
-func (m *AlertEpisodeSituationMutation) ClearField(name string) error {
-	return fmt.Errorf("unknown AlertEpisodeSituation nullable field %s", name)
-}
-
-// ResetField resets all changes in the mutation for the field with the given name.
-// It returns an error if the field is not defined in the schema.
-func (m *AlertEpisodeSituationMutation) ResetField(name string) error {
-	switch name {
-	case alertepisodesituation.FieldTenantID:
-		m.ResetTenantID()
-		return nil
-	case alertepisodesituation.FieldAlertEpisodeID:
-		m.ResetAlertEpisodeID()
-		return nil
-	case alertepisodesituation.FieldSituationID:
-		m.ResetSituationID()
-		return nil
-	}
-	return fmt.Errorf("unknown AlertEpisodeSituation field %s", name)
-}
-
-// AddedEdges returns all edge names that were set/added in this mutation.
-func (m *AlertEpisodeSituationMutation) AddedEdges() []string {
-	edges := make([]string, 0, 3)
-	if m.tenant != nil {
-		edges = append(edges, alertepisodesituation.EdgeTenant)
-	}
-	if m.alert_episode != nil {
-		edges = append(edges, alertepisodesituation.EdgeAlertEpisode)
-	}
-	if m.situation != nil {
-		edges = append(edges, alertepisodesituation.EdgeSituation)
-	}
-	return edges
-}
-
-// AddedIDs returns all IDs (to other nodes) that were added for the given edge
-// name in this mutation.
-func (m *AlertEpisodeSituationMutation) AddedIDs(name string) []ent.Value {
-	switch name {
-	case alertepisodesituation.EdgeTenant:
-		if id := m.tenant; id != nil {
-			return []ent.Value{*id}
-		}
-	case alertepisodesituation.EdgeAlertEpisode:
-		if id := m.alert_episode; id != nil {
-			return []ent.Value{*id}
-		}
-	case alertepisodesituation.EdgeSituation:
-		if id := m.situation; id != nil {
-			return []ent.Value{*id}
-		}
-	}
-	return nil
-}
-
-// RemovedEdges returns all edge names that were removed in this mutation.
-func (m *AlertEpisodeSituationMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 3)
-	return edges
-}
-
-// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
-// the given name in this mutation.
-func (m *AlertEpisodeSituationMutation) RemovedIDs(name string) []ent.Value {
-	return nil
-}
-
-// ClearedEdges returns all edge names that were cleared in this mutation.
-func (m *AlertEpisodeSituationMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 3)
-	if m.clearedtenant {
-		edges = append(edges, alertepisodesituation.EdgeTenant)
-	}
-	if m.clearedalert_episode {
-		edges = append(edges, alertepisodesituation.EdgeAlertEpisode)
-	}
-	if m.clearedsituation {
-		edges = append(edges, alertepisodesituation.EdgeSituation)
-	}
-	return edges
-}
-
-// EdgeCleared returns a boolean which indicates if the edge with the given name
-// was cleared in this mutation.
-func (m *AlertEpisodeSituationMutation) EdgeCleared(name string) bool {
-	switch name {
-	case alertepisodesituation.EdgeTenant:
-		return m.clearedtenant
-	case alertepisodesituation.EdgeAlertEpisode:
-		return m.clearedalert_episode
-	case alertepisodesituation.EdgeSituation:
-		return m.clearedsituation
-	}
-	return false
-}
-
-// ClearEdge clears the value of the edge with the given name. It returns an error
-// if that edge is not defined in the schema.
-func (m *AlertEpisodeSituationMutation) ClearEdge(name string) error {
-	switch name {
-	case alertepisodesituation.EdgeTenant:
-		m.ClearTenant()
-		return nil
-	case alertepisodesituation.EdgeAlertEpisode:
-		m.ClearAlertEpisode()
-		return nil
-	case alertepisodesituation.EdgeSituation:
-		m.ClearSituation()
-		return nil
-	}
-	return fmt.Errorf("unknown AlertEpisodeSituation unique edge %s", name)
-}
-
-// ResetEdge resets all changes to the edge with the given name in this mutation.
-// It returns an error if the edge is not defined in the schema.
-func (m *AlertEpisodeSituationMutation) ResetEdge(name string) error {
-	switch name {
-	case alertepisodesituation.EdgeTenant:
-		m.ResetTenant()
-		return nil
-	case alertepisodesituation.EdgeAlertEpisode:
-		m.ResetAlertEpisode()
-		return nil
-	case alertepisodesituation.EdgeSituation:
-		m.ResetSituation()
-		return nil
-	}
-	return fmt.Errorf("unknown AlertEpisodeSituation edge %s", name)
 }
 
 // AlertFeedbackMutation represents an operation that mutates the AlertFeedback nodes in the graph.
@@ -52720,45 +51963,39 @@ func (m *ReviewMutation) ResetEdge(name string) error {
 // SituationMutation represents an operation that mutates the Situation nodes in the graph.
 type SituationMutation struct {
 	config
-	op                         Op
-	typ                        string
-	id                         *uuid.UUID
-	created_at                 *time.Time
-	updated_at                 *time.Time
-	title                      *string
-	evidence_revision          *int
-	addevidence_revision       *int
-	summary                    *string
-	status                     *situation.Status
-	opened_at                  *time.Time
-	closed_at                  *time.Time
-	close_reason               *situation.CloseReason
-	clearedFields              map[string]struct{}
-	tenant                     *int
-	clearedtenant              bool
-	knowledge_entity           *uuid.UUID
-	clearedknowledge_entity    bool
-	investigations             map[uuid.UUID]struct{}
-	removedinvestigations      map[uuid.UUID]struct{}
-	clearedinvestigations      bool
-	alert_episodes             map[uuid.UUID]struct{}
-	removedalert_episodes      map[uuid.UUID]struct{}
-	clearedalert_episodes      bool
-	hazard_assessments         map[uuid.UUID]struct{}
-	removedhazard_assessments  map[uuid.UUID]struct{}
-	clearedhazard_assessments  bool
-	observation_groups         map[uuid.UUID]struct{}
-	removedobservation_groups  map[uuid.UUID]struct{}
-	clearedobservation_groups  bool
-	incidents                  map[uuid.UUID]struct{}
-	removedincidents           map[uuid.UUID]struct{}
-	clearedincidents           bool
-	alert_episode_links        map[uuid.UUID]struct{}
-	removedalert_episode_links map[uuid.UUID]struct{}
-	clearedalert_episode_links bool
-	done                       bool
-	oldValue                   func(context.Context) (*Situation, error)
-	predicates                 []predicate.Situation
+	op                        Op
+	typ                       string
+	id                        *uuid.UUID
+	created_at                *time.Time
+	updated_at                *time.Time
+	title                     *string
+	evidence_revision         *int
+	addevidence_revision      *int
+	summary                   *string
+	status                    *situation.Status
+	opened_at                 *time.Time
+	closed_at                 *time.Time
+	close_reason              *situation.CloseReason
+	clearedFields             map[string]struct{}
+	tenant                    *int
+	clearedtenant             bool
+	knowledge_entity          *uuid.UUID
+	clearedknowledge_entity   bool
+	investigations            map[uuid.UUID]struct{}
+	removedinvestigations     map[uuid.UUID]struct{}
+	clearedinvestigations     bool
+	hazard_assessments        map[uuid.UUID]struct{}
+	removedhazard_assessments map[uuid.UUID]struct{}
+	clearedhazard_assessments bool
+	observation_groups        map[uuid.UUID]struct{}
+	removedobservation_groups map[uuid.UUID]struct{}
+	clearedobservation_groups bool
+	incidents                 map[uuid.UUID]struct{}
+	removedincidents          map[uuid.UUID]struct{}
+	clearedincidents          bool
+	done                      bool
+	oldValue                  func(context.Context) (*Situation, error)
+	predicates                []predicate.Situation
 }
 
 var _ ent.Mutation = (*SituationMutation)(nil)
@@ -53428,60 +52665,6 @@ func (m *SituationMutation) ResetInvestigations() {
 	m.removedinvestigations = nil
 }
 
-// AddAlertEpisodeIDs adds the "alert_episodes" edge to the AlertEpisode entity by ids.
-func (m *SituationMutation) AddAlertEpisodeIDs(ids ...uuid.UUID) {
-	if m.alert_episodes == nil {
-		m.alert_episodes = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.alert_episodes[ids[i]] = struct{}{}
-	}
-}
-
-// ClearAlertEpisodes clears the "alert_episodes" edge to the AlertEpisode entity.
-func (m *SituationMutation) ClearAlertEpisodes() {
-	m.clearedalert_episodes = true
-}
-
-// AlertEpisodesCleared reports if the "alert_episodes" edge to the AlertEpisode entity was cleared.
-func (m *SituationMutation) AlertEpisodesCleared() bool {
-	return m.clearedalert_episodes
-}
-
-// RemoveAlertEpisodeIDs removes the "alert_episodes" edge to the AlertEpisode entity by IDs.
-func (m *SituationMutation) RemoveAlertEpisodeIDs(ids ...uuid.UUID) {
-	if m.removedalert_episodes == nil {
-		m.removedalert_episodes = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.alert_episodes, ids[i])
-		m.removedalert_episodes[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedAlertEpisodes returns the removed IDs of the "alert_episodes" edge to the AlertEpisode entity.
-func (m *SituationMutation) RemovedAlertEpisodesIDs() (ids []uuid.UUID) {
-	for id := range m.removedalert_episodes {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// AlertEpisodesIDs returns the "alert_episodes" edge IDs in the mutation.
-func (m *SituationMutation) AlertEpisodesIDs() (ids []uuid.UUID) {
-	for id := range m.alert_episodes {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetAlertEpisodes resets all changes to the "alert_episodes" edge.
-func (m *SituationMutation) ResetAlertEpisodes() {
-	m.alert_episodes = nil
-	m.clearedalert_episodes = false
-	m.removedalert_episodes = nil
-}
-
 // AddHazardAssessmentIDs adds the "hazard_assessments" edge to the SituationHazardAssessment entity by ids.
 func (m *SituationMutation) AddHazardAssessmentIDs(ids ...uuid.UUID) {
 	if m.hazard_assessments == nil {
@@ -53642,60 +52825,6 @@ func (m *SituationMutation) ResetIncidents() {
 	m.incidents = nil
 	m.clearedincidents = false
 	m.removedincidents = nil
-}
-
-// AddAlertEpisodeLinkIDs adds the "alert_episode_links" edge to the AlertEpisodeSituation entity by ids.
-func (m *SituationMutation) AddAlertEpisodeLinkIDs(ids ...uuid.UUID) {
-	if m.alert_episode_links == nil {
-		m.alert_episode_links = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.alert_episode_links[ids[i]] = struct{}{}
-	}
-}
-
-// ClearAlertEpisodeLinks clears the "alert_episode_links" edge to the AlertEpisodeSituation entity.
-func (m *SituationMutation) ClearAlertEpisodeLinks() {
-	m.clearedalert_episode_links = true
-}
-
-// AlertEpisodeLinksCleared reports if the "alert_episode_links" edge to the AlertEpisodeSituation entity was cleared.
-func (m *SituationMutation) AlertEpisodeLinksCleared() bool {
-	return m.clearedalert_episode_links
-}
-
-// RemoveAlertEpisodeLinkIDs removes the "alert_episode_links" edge to the AlertEpisodeSituation entity by IDs.
-func (m *SituationMutation) RemoveAlertEpisodeLinkIDs(ids ...uuid.UUID) {
-	if m.removedalert_episode_links == nil {
-		m.removedalert_episode_links = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.alert_episode_links, ids[i])
-		m.removedalert_episode_links[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedAlertEpisodeLinks returns the removed IDs of the "alert_episode_links" edge to the AlertEpisodeSituation entity.
-func (m *SituationMutation) RemovedAlertEpisodeLinksIDs() (ids []uuid.UUID) {
-	for id := range m.removedalert_episode_links {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// AlertEpisodeLinksIDs returns the "alert_episode_links" edge IDs in the mutation.
-func (m *SituationMutation) AlertEpisodeLinksIDs() (ids []uuid.UUID) {
-	for id := range m.alert_episode_links {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetAlertEpisodeLinks resets all changes to the "alert_episode_links" edge.
-func (m *SituationMutation) ResetAlertEpisodeLinks() {
-	m.alert_episode_links = nil
-	m.clearedalert_episode_links = false
-	m.removedalert_episode_links = nil
 }
 
 // Where appends a list predicates to the SituationMutation builder.
@@ -54037,7 +53166,7 @@ func (m *SituationMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *SituationMutation) AddedEdges() []string {
-	edges := make([]string, 0, 8)
+	edges := make([]string, 0, 6)
 	if m.tenant != nil {
 		edges = append(edges, situation.EdgeTenant)
 	}
@@ -54047,9 +53176,6 @@ func (m *SituationMutation) AddedEdges() []string {
 	if m.investigations != nil {
 		edges = append(edges, situation.EdgeInvestigations)
 	}
-	if m.alert_episodes != nil {
-		edges = append(edges, situation.EdgeAlertEpisodes)
-	}
 	if m.hazard_assessments != nil {
 		edges = append(edges, situation.EdgeHazardAssessments)
 	}
@@ -54058,9 +53184,6 @@ func (m *SituationMutation) AddedEdges() []string {
 	}
 	if m.incidents != nil {
 		edges = append(edges, situation.EdgeIncidents)
-	}
-	if m.alert_episode_links != nil {
-		edges = append(edges, situation.EdgeAlertEpisodeLinks)
 	}
 	return edges
 }
@@ -54083,12 +53206,6 @@ func (m *SituationMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case situation.EdgeAlertEpisodes:
-		ids := make([]ent.Value, 0, len(m.alert_episodes))
-		for id := range m.alert_episodes {
-			ids = append(ids, id)
-		}
-		return ids
 	case situation.EdgeHazardAssessments:
 		ids := make([]ent.Value, 0, len(m.hazard_assessments))
 		for id := range m.hazard_assessments {
@@ -54107,24 +53224,15 @@ func (m *SituationMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case situation.EdgeAlertEpisodeLinks:
-		ids := make([]ent.Value, 0, len(m.alert_episode_links))
-		for id := range m.alert_episode_links {
-			ids = append(ids, id)
-		}
-		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *SituationMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 8)
+	edges := make([]string, 0, 6)
 	if m.removedinvestigations != nil {
 		edges = append(edges, situation.EdgeInvestigations)
-	}
-	if m.removedalert_episodes != nil {
-		edges = append(edges, situation.EdgeAlertEpisodes)
 	}
 	if m.removedhazard_assessments != nil {
 		edges = append(edges, situation.EdgeHazardAssessments)
@@ -54134,9 +53242,6 @@ func (m *SituationMutation) RemovedEdges() []string {
 	}
 	if m.removedincidents != nil {
 		edges = append(edges, situation.EdgeIncidents)
-	}
-	if m.removedalert_episode_links != nil {
-		edges = append(edges, situation.EdgeAlertEpisodeLinks)
 	}
 	return edges
 }
@@ -54148,12 +53253,6 @@ func (m *SituationMutation) RemovedIDs(name string) []ent.Value {
 	case situation.EdgeInvestigations:
 		ids := make([]ent.Value, 0, len(m.removedinvestigations))
 		for id := range m.removedinvestigations {
-			ids = append(ids, id)
-		}
-		return ids
-	case situation.EdgeAlertEpisodes:
-		ids := make([]ent.Value, 0, len(m.removedalert_episodes))
-		for id := range m.removedalert_episodes {
 			ids = append(ids, id)
 		}
 		return ids
@@ -54175,19 +53274,13 @@ func (m *SituationMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case situation.EdgeAlertEpisodeLinks:
-		ids := make([]ent.Value, 0, len(m.removedalert_episode_links))
-		for id := range m.removedalert_episode_links {
-			ids = append(ids, id)
-		}
-		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *SituationMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 8)
+	edges := make([]string, 0, 6)
 	if m.clearedtenant {
 		edges = append(edges, situation.EdgeTenant)
 	}
@@ -54197,9 +53290,6 @@ func (m *SituationMutation) ClearedEdges() []string {
 	if m.clearedinvestigations {
 		edges = append(edges, situation.EdgeInvestigations)
 	}
-	if m.clearedalert_episodes {
-		edges = append(edges, situation.EdgeAlertEpisodes)
-	}
 	if m.clearedhazard_assessments {
 		edges = append(edges, situation.EdgeHazardAssessments)
 	}
@@ -54208,9 +53298,6 @@ func (m *SituationMutation) ClearedEdges() []string {
 	}
 	if m.clearedincidents {
 		edges = append(edges, situation.EdgeIncidents)
-	}
-	if m.clearedalert_episode_links {
-		edges = append(edges, situation.EdgeAlertEpisodeLinks)
 	}
 	return edges
 }
@@ -54225,16 +53312,12 @@ func (m *SituationMutation) EdgeCleared(name string) bool {
 		return m.clearedknowledge_entity
 	case situation.EdgeInvestigations:
 		return m.clearedinvestigations
-	case situation.EdgeAlertEpisodes:
-		return m.clearedalert_episodes
 	case situation.EdgeHazardAssessments:
 		return m.clearedhazard_assessments
 	case situation.EdgeObservationGroups:
 		return m.clearedobservation_groups
 	case situation.EdgeIncidents:
 		return m.clearedincidents
-	case situation.EdgeAlertEpisodeLinks:
-		return m.clearedalert_episode_links
 	}
 	return false
 }
@@ -54266,9 +53349,6 @@ func (m *SituationMutation) ResetEdge(name string) error {
 	case situation.EdgeInvestigations:
 		m.ResetInvestigations()
 		return nil
-	case situation.EdgeAlertEpisodes:
-		m.ResetAlertEpisodes()
-		return nil
 	case situation.EdgeHazardAssessments:
 		m.ResetHazardAssessments()
 		return nil
@@ -54277,9 +53357,6 @@ func (m *SituationMutation) ResetEdge(name string) error {
 		return nil
 	case situation.EdgeIncidents:
 		m.ResetIncidents()
-		return nil
-	case situation.EdgeAlertEpisodeLinks:
-		m.ResetAlertEpisodeLinks()
 		return nil
 	}
 	return fmt.Errorf("unknown Situation edge %s", name)
@@ -56641,24 +55718,27 @@ func (m *SituationInvestigationMutation) ResetEdge(name string) error {
 // SituationObservationGroupMutation represents an operation that mutates the SituationObservationGroup nodes in the graph.
 type SituationObservationGroupMutation struct {
 	config
-	op               Op
-	typ              string
-	id               *uuid.UUID
-	created_at       *time.Time
-	updated_at       *time.Time
-	title            *string
-	body             *string
-	clearedFields    map[string]struct{}
-	tenant           *int
-	clearedtenant    bool
-	situation        *uuid.UUID
-	clearedsituation bool
-	events           map[uuid.UUID]struct{}
-	removedevents    map[uuid.UUID]struct{}
-	clearedevents    bool
-	done             bool
-	oldValue         func(context.Context) (*SituationObservationGroup, error)
-	predicates       []predicate.SituationObservationGroup
+	op                    Op
+	typ                   string
+	id                    *uuid.UUID
+	created_at            *time.Time
+	updated_at            *time.Time
+	title                 *string
+	body                  *string
+	clearedFields         map[string]struct{}
+	tenant                *int
+	clearedtenant         bool
+	situation             *uuid.UUID
+	clearedsituation      bool
+	events                map[uuid.UUID]struct{}
+	removedevents         map[uuid.UUID]struct{}
+	clearedevents         bool
+	alert_episodes        map[uuid.UUID]struct{}
+	removedalert_episodes map[uuid.UUID]struct{}
+	clearedalert_episodes bool
+	done                  bool
+	oldValue              func(context.Context) (*SituationObservationGroup, error)
+	predicates            []predicate.SituationObservationGroup
 }
 
 var _ ent.Mutation = (*SituationObservationGroupMutation)(nil)
@@ -57102,6 +56182,60 @@ func (m *SituationObservationGroupMutation) ResetEvents() {
 	m.removedevents = nil
 }
 
+// AddAlertEpisodeIDs adds the "alert_episodes" edge to the AlertEpisode entity by ids.
+func (m *SituationObservationGroupMutation) AddAlertEpisodeIDs(ids ...uuid.UUID) {
+	if m.alert_episodes == nil {
+		m.alert_episodes = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.alert_episodes[ids[i]] = struct{}{}
+	}
+}
+
+// ClearAlertEpisodes clears the "alert_episodes" edge to the AlertEpisode entity.
+func (m *SituationObservationGroupMutation) ClearAlertEpisodes() {
+	m.clearedalert_episodes = true
+}
+
+// AlertEpisodesCleared reports if the "alert_episodes" edge to the AlertEpisode entity was cleared.
+func (m *SituationObservationGroupMutation) AlertEpisodesCleared() bool {
+	return m.clearedalert_episodes
+}
+
+// RemoveAlertEpisodeIDs removes the "alert_episodes" edge to the AlertEpisode entity by IDs.
+func (m *SituationObservationGroupMutation) RemoveAlertEpisodeIDs(ids ...uuid.UUID) {
+	if m.removedalert_episodes == nil {
+		m.removedalert_episodes = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.alert_episodes, ids[i])
+		m.removedalert_episodes[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedAlertEpisodes returns the removed IDs of the "alert_episodes" edge to the AlertEpisode entity.
+func (m *SituationObservationGroupMutation) RemovedAlertEpisodesIDs() (ids []uuid.UUID) {
+	for id := range m.removedalert_episodes {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// AlertEpisodesIDs returns the "alert_episodes" edge IDs in the mutation.
+func (m *SituationObservationGroupMutation) AlertEpisodesIDs() (ids []uuid.UUID) {
+	for id := range m.alert_episodes {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetAlertEpisodes resets all changes to the "alert_episodes" edge.
+func (m *SituationObservationGroupMutation) ResetAlertEpisodes() {
+	m.alert_episodes = nil
+	m.clearedalert_episodes = false
+	m.removedalert_episodes = nil
+}
+
 // Where appends a list predicates to the SituationObservationGroupMutation builder.
 func (m *SituationObservationGroupMutation) Where(ps ...predicate.SituationObservationGroup) {
 	m.predicates = append(m.predicates, ps...)
@@ -57332,7 +56466,7 @@ func (m *SituationObservationGroupMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *SituationObservationGroupMutation) AddedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.tenant != nil {
 		edges = append(edges, situationobservationgroup.EdgeTenant)
 	}
@@ -57341,6 +56475,9 @@ func (m *SituationObservationGroupMutation) AddedEdges() []string {
 	}
 	if m.events != nil {
 		edges = append(edges, situationobservationgroup.EdgeEvents)
+	}
+	if m.alert_episodes != nil {
+		edges = append(edges, situationobservationgroup.EdgeAlertEpisodes)
 	}
 	return edges
 }
@@ -57363,15 +56500,24 @@ func (m *SituationObservationGroupMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case situationobservationgroup.EdgeAlertEpisodes:
+		ids := make([]ent.Value, 0, len(m.alert_episodes))
+		for id := range m.alert_episodes {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *SituationObservationGroupMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.removedevents != nil {
 		edges = append(edges, situationobservationgroup.EdgeEvents)
+	}
+	if m.removedalert_episodes != nil {
+		edges = append(edges, situationobservationgroup.EdgeAlertEpisodes)
 	}
 	return edges
 }
@@ -57386,13 +56532,19 @@ func (m *SituationObservationGroupMutation) RemovedIDs(name string) []ent.Value 
 			ids = append(ids, id)
 		}
 		return ids
+	case situationobservationgroup.EdgeAlertEpisodes:
+		ids := make([]ent.Value, 0, len(m.removedalert_episodes))
+		for id := range m.removedalert_episodes {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *SituationObservationGroupMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.clearedtenant {
 		edges = append(edges, situationobservationgroup.EdgeTenant)
 	}
@@ -57401,6 +56553,9 @@ func (m *SituationObservationGroupMutation) ClearedEdges() []string {
 	}
 	if m.clearedevents {
 		edges = append(edges, situationobservationgroup.EdgeEvents)
+	}
+	if m.clearedalert_episodes {
+		edges = append(edges, situationobservationgroup.EdgeAlertEpisodes)
 	}
 	return edges
 }
@@ -57415,6 +56570,8 @@ func (m *SituationObservationGroupMutation) EdgeCleared(name string) bool {
 		return m.clearedsituation
 	case situationobservationgroup.EdgeEvents:
 		return m.clearedevents
+	case situationobservationgroup.EdgeAlertEpisodes:
+		return m.clearedalert_episodes
 	}
 	return false
 }
@@ -57445,6 +56602,9 @@ func (m *SituationObservationGroupMutation) ResetEdge(name string) error {
 		return nil
 	case situationobservationgroup.EdgeEvents:
 		m.ResetEvents()
+		return nil
+	case situationobservationgroup.EdgeAlertEpisodes:
+		m.ResetAlertEpisodes()
 		return nil
 	}
 	return fmt.Errorf("unknown SituationObservationGroup edge %s", name)

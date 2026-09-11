@@ -41,8 +41,9 @@ type AlertEpisode struct {
 	ClosedAt *time.Time `json:"closed_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the AlertEpisodeQuery when eager-loading is set.
-	Edges        AlertEpisodeEdges `json:"edges"`
-	selectValues sql.SelectValues
+	Edges                                      AlertEpisodeEdges `json:"edges"`
+	situation_observation_group_alert_episodes *uuid.UUID
+	selectValues                               sql.SelectValues
 }
 
 // AlertEpisodeEdges holds the relations/edges for other nodes in the graph.
@@ -55,13 +56,9 @@ type AlertEpisodeEdges struct {
 	AlertDefinition *AlertDefinition `json:"alert_definition,omitempty"`
 	// Instances holds the value of the instances edge.
 	Instances []*AlertInstance `json:"instances,omitempty"`
-	// Situations holds the value of the situations edge.
-	Situations []*Situation `json:"situations,omitempty"`
-	// SituationLinks holds the value of the situation_links edge.
-	SituationLinks []*AlertEpisodeSituation `json:"situation_links,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [6]bool
+	loadedTypes [4]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -106,24 +103,6 @@ func (e AlertEpisodeEdges) InstancesOrErr() ([]*AlertInstance, error) {
 	return nil, &NotLoadedError{edge: "instances"}
 }
 
-// SituationsOrErr returns the Situations value or an error if the edge
-// was not loaded in eager-loading.
-func (e AlertEpisodeEdges) SituationsOrErr() ([]*Situation, error) {
-	if e.loadedTypes[4] {
-		return e.Situations, nil
-	}
-	return nil, &NotLoadedError{edge: "situations"}
-}
-
-// SituationLinksOrErr returns the SituationLinks value or an error if the edge
-// was not loaded in eager-loading.
-func (e AlertEpisodeEdges) SituationLinksOrErr() ([]*AlertEpisodeSituation, error) {
-	if e.loadedTypes[5] {
-		return e.SituationLinks, nil
-	}
-	return nil, &NotLoadedError{edge: "situation_links"}
-}
-
 // scanValues returns the types for scanning values from sql.Rows.
 func (*AlertEpisode) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
@@ -139,6 +118,8 @@ func (*AlertEpisode) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullTime)
 		case alertepisode.FieldID, alertepisode.FieldAlertDefinitionID:
 			values[i] = new(uuid.UUID)
+		case alertepisode.ForeignKeys[0]: // situation_observation_group_alert_episodes
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -216,6 +197,13 @@ func (_m *AlertEpisode) assignValues(columns []string, values []any) error {
 				_m.ClosedAt = new(time.Time)
 				*_m.ClosedAt = value.Time
 			}
+		case alertepisode.ForeignKeys[0]:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field situation_observation_group_alert_episodes", values[i])
+			} else if value.Valid {
+				_m.situation_observation_group_alert_episodes = new(uuid.UUID)
+				*_m.situation_observation_group_alert_episodes = *value.S.(*uuid.UUID)
+			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
 		}
@@ -247,16 +235,6 @@ func (_m *AlertEpisode) QueryAlertDefinition() *AlertDefinitionQuery {
 // QueryInstances queries the "instances" edge of the AlertEpisode entity.
 func (_m *AlertEpisode) QueryInstances() *AlertInstanceQuery {
 	return NewAlertEpisodeClient(_m.config).QueryInstances(_m)
-}
-
-// QuerySituations queries the "situations" edge of the AlertEpisode entity.
-func (_m *AlertEpisode) QuerySituations() *SituationQuery {
-	return NewAlertEpisodeClient(_m.config).QuerySituations(_m)
-}
-
-// QuerySituationLinks queries the "situation_links" edge of the AlertEpisode entity.
-func (_m *AlertEpisode) QuerySituationLinks() *AlertEpisodeSituationQuery {
-	return NewAlertEpisodeClient(_m.config).QuerySituationLinks(_m)
 }
 
 // Update returns a builder for updating this AlertEpisode.

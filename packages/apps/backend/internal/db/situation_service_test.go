@@ -383,20 +383,3 @@ func (s *SituationServiceSuite) TestSituationHazardAssessmentRevisionsAndAssesso
 	})
 	s.ErrorIs(twoAssessorsErr, rez.ErrInvalidInput)
 }
-
-func (s *SituationServiceSuite) TestGetSituationLoadsSignalDefinition() {
-	ctx := s.SeedTenantContext()
-	tdb := s.CreateTestDatabase()
-	h := s.newHarness(tdb)
-	sit := s.createSituation(ctx, h, "Signal detail")
-	episode := s.createEpisode(ctx, tdb.Client(ctx))
-	createLink := tdb.Client(ctx).AlertEpisodeSituation.Create().
-		SetAlertEpisodeID(episode.ID).
-		SetSituationID(sit.ID)
-	createLink.SaveX(ctx)
-	loaded, err := h.situations.GetSituation(ctx, sit.ID)
-	s.Require().NoError(err)
-	s.Require().Len(loaded.Edges.AlertEpisodes, 1)
-	s.Require().NotNil(loaded.Edges.AlertEpisodes[0].Edges.AlertDefinition)
-	s.Equal("Checkout alert", loaded.Edges.AlertEpisodes[0].Edges.AlertDefinition.Title)
-}

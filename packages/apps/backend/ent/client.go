@@ -23,7 +23,6 @@ import (
 	"github.com/rezible/rezible/ent/agentturn"
 	"github.com/rezible/rezible/ent/alertdefinition"
 	"github.com/rezible/rezible/ent/alertepisode"
-	"github.com/rezible/rezible/ent/alertepisodesituation"
 	"github.com/rezible/rezible/ent/alertfeedback"
 	"github.com/rezible/rezible/ent/alertinstance"
 	"github.com/rezible/rezible/ent/discussioncomment"
@@ -116,8 +115,6 @@ type Client struct {
 	AlertDefinition *AlertDefinitionClient
 	// AlertEpisode is the client for interacting with the AlertEpisode builders.
 	AlertEpisode *AlertEpisodeClient
-	// AlertEpisodeSituation is the client for interacting with the AlertEpisodeSituation builders.
-	AlertEpisodeSituation *AlertEpisodeSituationClient
 	// AlertFeedback is the client for interacting with the AlertFeedback builders.
 	AlertFeedback *AlertFeedbackClient
 	// AlertInstance is the client for interacting with the AlertInstance builders.
@@ -276,7 +273,6 @@ func (c *Client) init() {
 	c.AgentTurn = NewAgentTurnClient(c.config)
 	c.AlertDefinition = NewAlertDefinitionClient(c.config)
 	c.AlertEpisode = NewAlertEpisodeClient(c.config)
-	c.AlertEpisodeSituation = NewAlertEpisodeSituationClient(c.config)
 	c.AlertFeedback = NewAlertFeedbackClient(c.config)
 	c.AlertInstance = NewAlertInstanceClient(c.config)
 	c.AlertMetrics = NewAlertMetricsClient(c.config)
@@ -449,7 +445,6 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		AgentTurn:                       NewAgentTurnClient(cfg),
 		AlertDefinition:                 NewAlertDefinitionClient(cfg),
 		AlertEpisode:                    NewAlertEpisodeClient(cfg),
-		AlertEpisodeSituation:           NewAlertEpisodeSituationClient(cfg),
 		AlertFeedback:                   NewAlertFeedbackClient(cfg),
 		AlertInstance:                   NewAlertInstanceClient(cfg),
 		AlertMetrics:                    NewAlertMetricsClient(cfg),
@@ -546,7 +541,6 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		AgentTurn:                       NewAgentTurnClient(cfg),
 		AlertDefinition:                 NewAlertDefinitionClient(cfg),
 		AlertEpisode:                    NewAlertEpisodeClient(cfg),
-		AlertEpisodeSituation:           NewAlertEpisodeSituationClient(cfg),
 		AlertFeedback:                   NewAlertFeedbackClient(cfg),
 		AlertInstance:                   NewAlertInstanceClient(cfg),
 		AlertMetrics:                    NewAlertMetricsClient(cfg),
@@ -647,9 +641,9 @@ func (c *Client) Close() error {
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
 		c.AgentArtifact, c.AgentMessage, c.AgentSession, c.AgentSessionBinding,
-		c.AgentTurn, c.AlertDefinition, c.AlertEpisode, c.AlertEpisodeSituation,
-		c.AlertFeedback, c.AlertInstance, c.DiscussionComment, c.DiscussionThread,
-		c.Document, c.DocumentAccess, c.EventAnnotation, c.Incident, c.IncidentDebrief,
+		c.AgentTurn, c.AlertDefinition, c.AlertEpisode, c.AlertFeedback,
+		c.AlertInstance, c.DiscussionComment, c.DiscussionThread, c.Document,
+		c.DocumentAccess, c.EventAnnotation, c.Incident, c.IncidentDebrief,
 		c.IncidentDebriefMessage, c.IncidentDebriefQuestion,
 		c.IncidentDebriefSuggestion, c.IncidentField, c.IncidentFieldOption,
 		c.IncidentImpact, c.IncidentLink, c.IncidentMilestone, c.IncidentRole,
@@ -679,15 +673,15 @@ func (c *Client) Use(hooks ...Hook) {
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
 		c.AgentArtifact, c.AgentMessage, c.AgentSession, c.AgentSessionBinding,
-		c.AgentTurn, c.AlertDefinition, c.AlertEpisode, c.AlertEpisodeSituation,
-		c.AlertFeedback, c.AlertInstance, c.AlertMetrics, c.DiscussionComment,
-		c.DiscussionThread, c.Document, c.DocumentAccess, c.EventAnnotation,
-		c.Incident, c.IncidentDebrief, c.IncidentDebriefMessage,
-		c.IncidentDebriefQuestion, c.IncidentDebriefSuggestion, c.IncidentField,
-		c.IncidentFieldOption, c.IncidentImpact, c.IncidentLink, c.IncidentMilestone,
-		c.IncidentRole, c.IncidentRoleAssignment, c.IncidentSeverity, c.IncidentTag,
-		c.IncidentType, c.Integration, c.IntegrationEventSyncCursor,
-		c.IntegrationEventSyncRun, c.IntegrationUserInstallState, c.KnowledgeEntity,
+		c.AgentTurn, c.AlertDefinition, c.AlertEpisode, c.AlertFeedback,
+		c.AlertInstance, c.AlertMetrics, c.DiscussionComment, c.DiscussionThread,
+		c.Document, c.DocumentAccess, c.EventAnnotation, c.Incident, c.IncidentDebrief,
+		c.IncidentDebriefMessage, c.IncidentDebriefQuestion,
+		c.IncidentDebriefSuggestion, c.IncidentField, c.IncidentFieldOption,
+		c.IncidentImpact, c.IncidentLink, c.IncidentMilestone, c.IncidentRole,
+		c.IncidentRoleAssignment, c.IncidentSeverity, c.IncidentTag, c.IncidentType,
+		c.Integration, c.IntegrationEventSyncCursor, c.IntegrationEventSyncRun,
+		c.IntegrationUserInstallState, c.KnowledgeEntity,
 		c.KnowledgeEntityLinkingAttribute, c.KnowledgeEvidence,
 		c.KnowledgeRelationship, c.KnowledgeSubjectAlias, c.MeetingSchedule,
 		c.MeetingSession, c.NormalizedEvent, c.NormalizedEventProjection,
@@ -723,8 +717,6 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.AlertDefinition.mutate(ctx, m)
 	case *AlertEpisodeMutation:
 		return c.AlertEpisode.mutate(ctx, m)
-	case *AlertEpisodeSituationMutation:
-		return c.AlertEpisodeSituation.mutate(ctx, m)
 	case *AlertFeedbackMutation:
 		return c.AlertFeedback.mutate(ctx, m)
 	case *AlertInstanceMutation:
@@ -2331,44 +2323,6 @@ func (c *AlertEpisodeClient) QueryInstances(_m *AlertEpisode) *AlertInstanceQuer
 	return query
 }
 
-// QuerySituations queries the situations edge of a AlertEpisode.
-func (c *AlertEpisodeClient) QuerySituations(_m *AlertEpisode) *SituationQuery {
-	query := (&SituationClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(alertepisode.Table, alertepisode.FieldID, id),
-			sqlgraph.To(situation.Table, situation.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, alertepisode.SituationsTable, alertepisode.SituationsPrimaryKey...),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.Situation
-		step.Edge.Schema = schemaConfig.AlertEpisodeSituation
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QuerySituationLinks queries the situation_links edge of a AlertEpisode.
-func (c *AlertEpisodeClient) QuerySituationLinks(_m *AlertEpisode) *AlertEpisodeSituationQuery {
-	query := (&AlertEpisodeSituationClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(alertepisode.Table, alertepisode.FieldID, id),
-			sqlgraph.To(alertepisodesituation.Table, alertepisodesituation.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, alertepisode.SituationLinksTable, alertepisode.SituationLinksColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.AlertEpisodeSituation
-		step.Edge.Schema = schemaConfig.AlertEpisodeSituation
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // Hooks returns the client hooks.
 func (c *AlertEpisodeClient) Hooks() []Hook {
 	hooks := c.hooks.AlertEpisode
@@ -2392,197 +2346,6 @@ func (c *AlertEpisodeClient) mutate(ctx context.Context, m *AlertEpisodeMutation
 		return (&AlertEpisodeDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown AlertEpisode mutation op: %q", m.Op())
-	}
-}
-
-// AlertEpisodeSituationClient is a client for the AlertEpisodeSituation schema.
-type AlertEpisodeSituationClient struct {
-	config
-}
-
-// NewAlertEpisodeSituationClient returns a client for the AlertEpisodeSituation from the given config.
-func NewAlertEpisodeSituationClient(c config) *AlertEpisodeSituationClient {
-	return &AlertEpisodeSituationClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `alertepisodesituation.Hooks(f(g(h())))`.
-func (c *AlertEpisodeSituationClient) Use(hooks ...Hook) {
-	c.hooks.AlertEpisodeSituation = append(c.hooks.AlertEpisodeSituation, hooks...)
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `alertepisodesituation.Intercept(f(g(h())))`.
-func (c *AlertEpisodeSituationClient) Intercept(interceptors ...Interceptor) {
-	c.inters.AlertEpisodeSituation = append(c.inters.AlertEpisodeSituation, interceptors...)
-}
-
-// Create returns a builder for creating a AlertEpisodeSituation entity.
-func (c *AlertEpisodeSituationClient) Create() *AlertEpisodeSituationCreate {
-	mutation := newAlertEpisodeSituationMutation(c.config, OpCreate)
-	return &AlertEpisodeSituationCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of AlertEpisodeSituation entities.
-func (c *AlertEpisodeSituationClient) CreateBulk(builders ...*AlertEpisodeSituationCreate) *AlertEpisodeSituationCreateBulk {
-	return &AlertEpisodeSituationCreateBulk{config: c.config, builders: builders}
-}
-
-// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
-// a builder and applies setFunc on it.
-func (c *AlertEpisodeSituationClient) MapCreateBulk(slice any, setFunc func(*AlertEpisodeSituationCreate, int)) *AlertEpisodeSituationCreateBulk {
-	rv := reflect.ValueOf(slice)
-	if rv.Kind() != reflect.Slice {
-		return &AlertEpisodeSituationCreateBulk{err: fmt.Errorf("calling to AlertEpisodeSituationClient.MapCreateBulk with wrong type %T, need slice", slice)}
-	}
-	builders := make([]*AlertEpisodeSituationCreate, rv.Len())
-	for i := 0; i < rv.Len(); i++ {
-		builders[i] = c.Create()
-		setFunc(builders[i], i)
-	}
-	return &AlertEpisodeSituationCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for AlertEpisodeSituation.
-func (c *AlertEpisodeSituationClient) Update() *AlertEpisodeSituationUpdate {
-	mutation := newAlertEpisodeSituationMutation(c.config, OpUpdate)
-	return &AlertEpisodeSituationUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *AlertEpisodeSituationClient) UpdateOne(_m *AlertEpisodeSituation) *AlertEpisodeSituationUpdateOne {
-	mutation := newAlertEpisodeSituationMutation(c.config, OpUpdateOne, withAlertEpisodeSituation(_m))
-	return &AlertEpisodeSituationUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *AlertEpisodeSituationClient) UpdateOneID(id uuid.UUID) *AlertEpisodeSituationUpdateOne {
-	mutation := newAlertEpisodeSituationMutation(c.config, OpUpdateOne, withAlertEpisodeSituationID(id))
-	return &AlertEpisodeSituationUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for AlertEpisodeSituation.
-func (c *AlertEpisodeSituationClient) Delete() *AlertEpisodeSituationDelete {
-	mutation := newAlertEpisodeSituationMutation(c.config, OpDelete)
-	return &AlertEpisodeSituationDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *AlertEpisodeSituationClient) DeleteOne(_m *AlertEpisodeSituation) *AlertEpisodeSituationDeleteOne {
-	return c.DeleteOneID(_m.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *AlertEpisodeSituationClient) DeleteOneID(id uuid.UUID) *AlertEpisodeSituationDeleteOne {
-	builder := c.Delete().Where(alertepisodesituation.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &AlertEpisodeSituationDeleteOne{builder}
-}
-
-// Query returns a query builder for AlertEpisodeSituation.
-func (c *AlertEpisodeSituationClient) Query() *AlertEpisodeSituationQuery {
-	return &AlertEpisodeSituationQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypeAlertEpisodeSituation},
-		inters: c.Interceptors(),
-	}
-}
-
-// Get returns a AlertEpisodeSituation entity by its id.
-func (c *AlertEpisodeSituationClient) Get(ctx context.Context, id uuid.UUID) (*AlertEpisodeSituation, error) {
-	return c.Query().Where(alertepisodesituation.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *AlertEpisodeSituationClient) GetX(ctx context.Context, id uuid.UUID) *AlertEpisodeSituation {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryTenant queries the tenant edge of a AlertEpisodeSituation.
-func (c *AlertEpisodeSituationClient) QueryTenant(_m *AlertEpisodeSituation) *TenantQuery {
-	query := (&TenantClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(alertepisodesituation.Table, alertepisodesituation.FieldID, id),
-			sqlgraph.To(tenant.Table, tenant.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, alertepisodesituation.TenantTable, alertepisodesituation.TenantColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.Tenant
-		step.Edge.Schema = schemaConfig.AlertEpisodeSituation
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryAlertEpisode queries the alert_episode edge of a AlertEpisodeSituation.
-func (c *AlertEpisodeSituationClient) QueryAlertEpisode(_m *AlertEpisodeSituation) *AlertEpisodeQuery {
-	query := (&AlertEpisodeClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(alertepisodesituation.Table, alertepisodesituation.FieldID, id),
-			sqlgraph.To(alertepisode.Table, alertepisode.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, alertepisodesituation.AlertEpisodeTable, alertepisodesituation.AlertEpisodeColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.AlertEpisode
-		step.Edge.Schema = schemaConfig.AlertEpisodeSituation
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QuerySituation queries the situation edge of a AlertEpisodeSituation.
-func (c *AlertEpisodeSituationClient) QuerySituation(_m *AlertEpisodeSituation) *SituationQuery {
-	query := (&SituationClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(alertepisodesituation.Table, alertepisodesituation.FieldID, id),
-			sqlgraph.To(situation.Table, situation.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, alertepisodesituation.SituationTable, alertepisodesituation.SituationColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.Situation
-		step.Edge.Schema = schemaConfig.AlertEpisodeSituation
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *AlertEpisodeSituationClient) Hooks() []Hook {
-	hooks := c.hooks.AlertEpisodeSituation
-	return append(hooks[:len(hooks):len(hooks)], alertepisodesituation.Hooks[:]...)
-}
-
-// Interceptors returns the client interceptors.
-func (c *AlertEpisodeSituationClient) Interceptors() []Interceptor {
-	return c.inters.AlertEpisodeSituation
-}
-
-func (c *AlertEpisodeSituationClient) mutate(ctx context.Context, m *AlertEpisodeSituationMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&AlertEpisodeSituationCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&AlertEpisodeSituationUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&AlertEpisodeSituationUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&AlertEpisodeSituationDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("ent: unknown AlertEpisodeSituation mutation op: %q", m.Op())
 	}
 }
 
@@ -13043,25 +12806,6 @@ func (c *SituationClient) QueryInvestigations(_m *Situation) *SituationInvestiga
 	return query
 }
 
-// QueryAlertEpisodes queries the alert_episodes edge of a Situation.
-func (c *SituationClient) QueryAlertEpisodes(_m *Situation) *AlertEpisodeQuery {
-	query := (&AlertEpisodeClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(situation.Table, situation.FieldID, id),
-			sqlgraph.To(alertepisode.Table, alertepisode.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, situation.AlertEpisodesTable, situation.AlertEpisodesPrimaryKey...),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.AlertEpisode
-		step.Edge.Schema = schemaConfig.AlertEpisodeSituation
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // QueryHazardAssessments queries the hazard_assessments edge of a Situation.
 func (c *SituationClient) QueryHazardAssessments(_m *Situation) *SituationHazardAssessmentQuery {
 	query := (&SituationHazardAssessmentClient{config: c.config}).Query()
@@ -13113,25 +12857,6 @@ func (c *SituationClient) QueryIncidents(_m *Situation) *IncidentQuery {
 		schemaConfig := _m.schemaConfig
 		step.To.Schema = schemaConfig.Incident
 		step.Edge.Schema = schemaConfig.IncidentSituations
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryAlertEpisodeLinks queries the alert_episode_links edge of a Situation.
-func (c *SituationClient) QueryAlertEpisodeLinks(_m *Situation) *AlertEpisodeSituationQuery {
-	query := (&AlertEpisodeSituationClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(situation.Table, situation.FieldID, id),
-			sqlgraph.To(alertepisodesituation.Table, alertepisodesituation.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, situation.AlertEpisodeLinksTable, situation.AlertEpisodeLinksColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.AlertEpisodeSituation
-		step.Edge.Schema = schemaConfig.AlertEpisodeSituation
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
 	}
@@ -13781,6 +13506,25 @@ func (c *SituationObservationGroupClient) QueryEvents(_m *SituationObservationGr
 		schemaConfig := _m.schemaConfig
 		step.To.Schema = schemaConfig.NormalizedEvent
 		step.Edge.Schema = schemaConfig.SituationObservationGroupEvents
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryAlertEpisodes queries the alert_episodes edge of a SituationObservationGroup.
+func (c *SituationObservationGroupClient) QueryAlertEpisodes(_m *SituationObservationGroup) *AlertEpisodeQuery {
+	query := (&AlertEpisodeClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(situationobservationgroup.Table, situationobservationgroup.FieldID, id),
+			sqlgraph.To(alertepisode.Table, alertepisode.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, situationobservationgroup.AlertEpisodesTable, situationobservationgroup.AlertEpisodesColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.AlertEpisode
+		step.Edge.Schema = schemaConfig.AlertEpisode
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
 	}
@@ -17310,13 +17054,13 @@ func (c *VideoConferenceClient) mutate(ctx context.Context, m *VideoConferenceMu
 type (
 	hooks struct {
 		AgentArtifact, AgentMessage, AgentSession, AgentSessionBinding, AgentTurn,
-		AlertDefinition, AlertEpisode, AlertEpisodeSituation, AlertFeedback,
-		AlertInstance, DiscussionComment, DiscussionThread, Document, DocumentAccess,
-		EventAnnotation, Incident, IncidentDebrief, IncidentDebriefMessage,
-		IncidentDebriefQuestion, IncidentDebriefSuggestion, IncidentField,
-		IncidentFieldOption, IncidentImpact, IncidentLink, IncidentMilestone,
-		IncidentRole, IncidentRoleAssignment, IncidentSeverity, IncidentTag,
-		IncidentType, Integration, IntegrationEventSyncCursor, IntegrationEventSyncRun,
+		AlertDefinition, AlertEpisode, AlertFeedback, AlertInstance, DiscussionComment,
+		DiscussionThread, Document, DocumentAccess, EventAnnotation, Incident,
+		IncidentDebrief, IncidentDebriefMessage, IncidentDebriefQuestion,
+		IncidentDebriefSuggestion, IncidentField, IncidentFieldOption, IncidentImpact,
+		IncidentLink, IncidentMilestone, IncidentRole, IncidentRoleAssignment,
+		IncidentSeverity, IncidentTag, IncidentType, Integration,
+		IntegrationEventSyncCursor, IntegrationEventSyncRun,
 		IntegrationUserInstallState, KnowledgeEntity, KnowledgeEntityLinkingAttribute,
 		KnowledgeEvidence, KnowledgeRelationship, KnowledgeSubjectAlias,
 		MeetingSchedule, MeetingSession, NormalizedEvent, NormalizedEventProjection,
@@ -17332,26 +17076,25 @@ type (
 	}
 	inters struct {
 		AgentArtifact, AgentMessage, AgentSession, AgentSessionBinding, AgentTurn,
-		AlertDefinition, AlertEpisode, AlertEpisodeSituation, AlertFeedback,
-		AlertInstance, AlertMetrics, DiscussionComment, DiscussionThread, Document,
-		DocumentAccess, EventAnnotation, Incident, IncidentDebrief,
-		IncidentDebriefMessage, IncidentDebriefQuestion, IncidentDebriefSuggestion,
-		IncidentField, IncidentFieldOption, IncidentImpact, IncidentLink,
-		IncidentMilestone, IncidentRole, IncidentRoleAssignment, IncidentSeverity,
-		IncidentTag, IncidentType, Integration, IntegrationEventSyncCursor,
-		IntegrationEventSyncRun, IntegrationUserInstallState, KnowledgeEntity,
-		KnowledgeEntityLinkingAttribute, KnowledgeEvidence, KnowledgeRelationship,
-		KnowledgeSubjectAlias, MeetingSchedule, MeetingSession, NormalizedEvent,
-		NormalizedEventProjection, NormalizedEventProjectionEntity,
-		OncallHandoverTemplate, OncallRoster, OncallRosterMetrics, OncallSchedule,
-		OncallScheduleParticipant, OncallShift, OncallShiftHandover,
-		OncallShiftMetrics, Organization, OrganizationPreferences, OrganizationRole,
-		Playbook, Retrospective, Review, Situation, SituationHazardAssessment,
-		SituationInvestigation, SituationObservationGroup, SystemAnalysis,
-		SystemAnalysisEntity, SystemAnalysisEntry, SystemAnalysisEntrySubject,
-		SystemAnalysisRelationship, SystemHazard, SystemHazardRiskAssessment, Task,
-		Team, TeamMembership, Tenant, Ticket, User, UserAuthSession,
-		VideoConference []ent.Interceptor
+		AlertDefinition, AlertEpisode, AlertFeedback, AlertInstance, AlertMetrics,
+		DiscussionComment, DiscussionThread, Document, DocumentAccess, EventAnnotation,
+		Incident, IncidentDebrief, IncidentDebriefMessage, IncidentDebriefQuestion,
+		IncidentDebriefSuggestion, IncidentField, IncidentFieldOption, IncidentImpact,
+		IncidentLink, IncidentMilestone, IncidentRole, IncidentRoleAssignment,
+		IncidentSeverity, IncidentTag, IncidentType, Integration,
+		IntegrationEventSyncCursor, IntegrationEventSyncRun,
+		IntegrationUserInstallState, KnowledgeEntity, KnowledgeEntityLinkingAttribute,
+		KnowledgeEvidence, KnowledgeRelationship, KnowledgeSubjectAlias,
+		MeetingSchedule, MeetingSession, NormalizedEvent, NormalizedEventProjection,
+		NormalizedEventProjectionEntity, OncallHandoverTemplate, OncallRoster,
+		OncallRosterMetrics, OncallSchedule, OncallScheduleParticipant, OncallShift,
+		OncallShiftHandover, OncallShiftMetrics, Organization, OrganizationPreferences,
+		OrganizationRole, Playbook, Retrospective, Review, Situation,
+		SituationHazardAssessment, SituationInvestigation, SituationObservationGroup,
+		SystemAnalysis, SystemAnalysisEntity, SystemAnalysisEntry,
+		SystemAnalysisEntrySubject, SystemAnalysisRelationship, SystemHazard,
+		SystemHazardRiskAssessment, Task, Team, TeamMembership, Tenant, Ticket, User,
+		UserAuthSession, VideoConference []ent.Interceptor
 	}
 )
 
@@ -17365,7 +17108,6 @@ var (
 		AgentTurn:                             tableSchemas[0],
 		AlertDefinition:                       tableSchemas[0],
 		AlertEpisode:                          tableSchemas[0],
-		AlertEpisodeSituation:                 tableSchemas[0],
 		AlertFeedback:                         tableSchemas[0],
 		AlertInstance:                         tableSchemas[0],
 		AlertMetrics:                          tableSchemas[0],
