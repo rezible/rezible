@@ -200,9 +200,8 @@ func (s *AlertService) notifyEpisodeLinkedSituations(ctx context.Context, epId u
 	if querySitLinksErr != nil {
 		return fmt.Errorf("query episode situation links: %w", querySitLinksErr)
 	}
-	sitEvParams := rez.SituationEvidenceItemParams{AlertEpisodeID: &epId}
 	for _, link := range sitLinks {
-		if evErr := s.situations.NotifySituationEvidenceItemUpdated(ctx, link.Edges.Situation.ID, sitEvParams); evErr != nil {
+		if evErr := s.situations.NotifySituationObservationGroupUpdated(ctx, link.Edges.Situation.ID); evErr != nil {
 			return fmt.Errorf("notify: %w", evErr)
 		}
 	}
@@ -239,9 +238,10 @@ func (s *AlertService) createAlertEpisode(ctx context.Context, params createAler
 		createSitParams := rez.CreateSituationParams{
 			Title:    params.AlertDef.Title,
 			OpenedAt: params.OccurredAt,
-			EvidenceItems: []rez.SituationEvidenceItemParams{
-				{AlertEpisodeID: &episodeId},
-			},
+			ObservationGroups: []rez.SituationObservationGroupParams{{
+				Title:           params.AlertDef.Title,
+				AlertEpisodeIDs: []uuid.UUID{episodeId},
+			}},
 		}
 		_, situationErr := s.situations.CreateSituation(ctx, createSitParams)
 		if situationErr != nil {

@@ -155,20 +155,17 @@ func (s *IncidentService) Set(ctx context.Context, id uuid.UUID, setFn func(*ent
 	return s.Get(ctx, incident.ID(incidentId))
 }
 
-func (s *IncidentService) updateIncidentMutationSituation(ctx context.Context, id uuid.UUID, mut *ent.IncidentMutation) error {
-	itemParams := rez.SituationEvidenceItemParams{
-		IncidentID: &id,
-	}
+func (s *IncidentService) updateIncidentMutationSituation(ctx context.Context, incId uuid.UUID, mut *ent.IncidentMutation) error {
 	if addedSituationIds := mut.SituationsIDs(); len(addedSituationIds) > 0 {
 		for _, sitId := range addedSituationIds {
-			if situationErr := s.situations.AddSituationEvidenceItem(ctx, sitId, itemParams); situationErr != nil {
+			if situationErr := s.situations.AddIncidentToSituation(ctx, sitId, incId); situationErr != nil {
 				return fmt.Errorf("add incident situation link: %w", situationErr)
 			}
 		}
 	}
 	if removedSituationIds := mut.RemovedSituationsIDs(); len(removedSituationIds) > 0 {
 		for _, sitId := range removedSituationIds {
-			if situationErr := s.situations.RemoveSituationEvidenceItem(ctx, sitId, itemParams); situationErr != nil {
+			if situationErr := s.situations.RemoveIncidentFromSituation(ctx, sitId, incId); situationErr != nil {
 				return fmt.Errorf("remove incident situation link: %w", situationErr)
 			}
 		}

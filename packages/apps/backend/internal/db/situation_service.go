@@ -3,7 +3,6 @@ package db
 import (
 	"context"
 	"fmt"
-	"log/slog"
 	"strings"
 	"time"
 
@@ -113,18 +112,27 @@ func (s *SituationService) CreateSituation(ctx context.Context, params rez.Creat
 		if summary := strings.TrimSpace(params.Summary); summary != "" {
 			createSituation.SetSummary(summary)
 		}
+		if len(params.IncidentIDs) > 0 {
+			createSituation.AddIncidentIDs(params.IncidentIDs...)
+		}
 		created, saveErr := createSituation.Save(ctx)
 		if saveErr != nil {
 			return fmt.Errorf("create situation: %w", saveErr)
 		}
 
-		for _, item := range params.EvidenceItems {
-			if item.AlertEpisodeID == nil && item.IncidentID == nil {
-				return fmt.Errorf("invalid evidence item")
+		for _, groupParams := range params.ObservationGroups {
+			groupTitle := strings.TrimSpace(groupParams.Title)
+			if groupTitle == "" {
+				return fmt.Errorf("observation group title is required")
 			}
-			evRelEnt := s.makeSituationEvidenceRelationshipEntity(item)
-			if relErr := s.ingestKnowledgeRelationship(ctx, created.ID, *evRelEnt); relErr != nil {
-				return fmt.Errorf("ingest knowledge relationship: %w", relErr)
+			createGroup := tx.SituationObservationGroup.Create().SetSituationID(created.ID).
+				SetTitle(groupTitle).AddEventIDs(groupParams.NormalizedEventIDs...).
+				AddAlertEpisodeIDs(groupParams.AlertEpisodeIDs...)
+			if groupParams.Body != nil {
+				createGroup.SetBody(*groupParams.Body)
+			}
+			if _, groupErr := createGroup.Save(ctx); groupErr != nil {
+				return fmt.Errorf("create observation group: %w", groupErr)
 			}
 		}
 
@@ -185,164 +193,33 @@ func (s *SituationService) CloseSituation(ctx context.Context, params rez.CloseS
 	})
 }
 
-func (s *SituationService) AddSituationEvidenceItem(ctx context.Context, id uuid.UUID, params rez.SituationEvidenceItemParams) error {
-	return s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
-		if lockErr := s.db.AcquireTxLocks(ctx, situationLockNamespace, id.String()); lockErr != nil {
-			return fmt.Errorf("lock situation: %w", lockErr)
-		}
-
-		sit, situationErr := tx.Situation.Get(ctx, id)
-		if situationErr != nil {
-			return fmt.Errorf("get situation: %w", situationErr)
-		}
-
-		relEnt := s.makeSituationEvidenceRelationshipEntity(params)
-		if relEnt == nil {
-			return fmt.Errorf("invalid evidence item")
-		}
-		if knrErr := s.ingestKnowledgeRelationship(ctx, sit.ID, *relEnt); knrErr != nil {
-			return fmt.Errorf("ingest situation evidence item knowledge relationship: %w", knrErr)
-		}
-
-		if sit.Status == situation.StatusOpen {
-			if evidenceErr := s.NotifySituationEvidenceItemUpdated(ctx, id, params); evidenceErr != nil {
-				return fmt.Errorf("situation evidence: %w", evidenceErr)
-			}
-		} else {
-			//return fmt.Errorf("%w: evidence links may target only an open situation", rez.ErrConflict)
-		}
-
-		return nil
-	})
-}
-
-func (s *SituationService) NotifySituationEvidenceItemUpdated(ctx context.Context, id uuid.UUID, params rez.SituationEvidenceItemParams) error {
-	return s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
-		if situationLockErr := s.db.AcquireTxLocks(ctx, situationLockNamespace, id.String()); situationLockErr != nil {
-			return fmt.Errorf("get situation lock: %w", situationLockErr)
-		}
-
-		evEnt := s.makeSituationEvidenceRelationshipEntity(params)
-		if evEnt == nil {
-			return fmt.Errorf("invalid evidence item")
-		}
-
-		updateRevision := tx.Situation.UpdateOneID(id).
-			AddEvidenceRevision(1)
-		if updateRevisionErr := updateRevision.Exec(ctx); updateRevisionErr != nil {
-			return fmt.Errorf("update evidence revision: %w", updateRevisionErr)
-		}
-
-		queryInvestigations := tx.SituationInvestigation.Query().
-			Where(si.SituationID(id))
-		invIds, queryInvestigationsErr := queryInvestigations.IDs(ctx)
-		if queryInvestigationsErr != nil {
-			return fmt.Errorf("query investigations: %w", queryInvestigationsErr)
-		}
-
-		if reqReconcileErr := s.requestReconcileInvestigations(ctx, invIds...); reqReconcileErr != nil {
-			return fmt.Errorf("request reconcile investigations: %w", reqReconcileErr)
-		}
-
-		return nil
-	})
-}
-
-func (s *SituationService) NotifySituationEvidenceItemStabilized(ctx context.Context, id uuid.UUID, params rez.SituationEvidenceItemParams) error {
-	return s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
-		if lockErr := s.db.AcquireTxLocks(ctx, situationLockNamespace, id.String()); lockErr != nil {
-			return fmt.Errorf("get situation lock: %w", lockErr)
-		}
-
-		sit, situationErr := tx.Situation.Get(ctx, id)
-		if situationErr != nil {
-			return fmt.Errorf("get situation: %w", situationErr)
-		}
-		if sit.Status != situation.StatusOpen {
-			return nil
-		}
-
-		var allItemsClosed bool
-		lastItemClosedAt := time.Now().UTC()
-		if params.AlertEpisodeID != nil {
-			ep, epErr := tx.AlertEpisode.Get(ctx, *params.AlertEpisodeID)
-			if epErr != nil {
-				return fmt.Errorf("situation alert episode: %w", epErr)
-			}
-			if ep.Status == ale.StatusClosed && ep.ClosedAt != nil {
-				lastItemClosedAt = *ep.ClosedAt
-			}
-		}
-
-		// TODO: check all linked evidence items
-
-		if allItemsClosed {
-			update := tx.Situation.UpdateOneID(id).
-				SetStatus(situation.StatusClosed).
-				SetCloseReason(situation.CloseReasonStabilized).
-				SetClosedAt(lastItemClosedAt)
-			if updateErr := update.Exec(ctx); updateErr != nil {
-				return fmt.Errorf("update situation: %w", updateErr)
-			}
-		}
-		return nil
-	})
-}
-
-func (s *SituationService) RemoveSituationEvidenceItem(ctx context.Context, id uuid.UUID, params rez.SituationEvidenceItemParams) error {
-	return s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
-		if lockErr := s.db.AcquireTxLocks(ctx, situationLockNamespace, id.String()); lockErr != nil {
-			return fmt.Errorf("lock situation: %w", lockErr)
-		}
-
-		sit, situationErr := tx.Situation.Get(ctx, id)
-		if situationErr != nil {
-			return fmt.Errorf("get situation: %w", situationErr)
-		}
-
-		relRef := s.makeSituationEvidenceRelationshipEntity(params)
-		if relRef == nil {
-			return fmt.Errorf("invalid evidence item")
-		}
-		slog.Debug("todo: remove evidence item relationship", "ref", relRef)
-
-		if sit.Status == situation.StatusOpen {
-			if evidenceErr := s.NotifySituationEvidenceItemStabilized(ctx, id, params); evidenceErr != nil {
-				return fmt.Errorf("situation evidence: %w", evidenceErr)
-			}
-		} else {
-			//return fmt.Errorf("%w: evidence links may target only an open situation", rez.ErrConflict)
-		}
-
-		return nil
-	})
-}
-
-func (s *SituationService) makeSituationEvidenceRelationshipEntity(params rez.SituationEvidenceItemParams) *situationKnowledgeRelationshipEntity {
-	if params.AlertEpisodeID != nil {
-		return &situationKnowledgeRelationshipEntity{
-			id:       *params.AlertEpisodeID,
-			category: kne.CategoryEvent,
-			kind:     "alert_episode",
-			pred:     knr.PredicateIndicates,
-		}
-	} else if params.IncidentID != nil {
-		return &situationKnowledgeRelationshipEntity{
-			id:       *params.IncidentID,
-			category: kne.CategoryEvent,
-			kind:     "incident",
-			pred:     knr.PredicateRespondsTo,
-		}
-	}
-	return nil
-}
-
 type situationKnowledgeRelationshipEntity struct {
 	id       uuid.UUID
 	category kne.Category
 	kind     string
 	pred     knr.Predicate
 	isTarget bool
+}
+
+func (s *SituationService) NotifySituationObservationGroupUpdated(ctx context.Context, id uuid.UUID) error {
+	return s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+		if lockErr := s.db.AcquireTxLocks(ctx, situationLockNamespace, id.String()); lockErr != nil {
+			return fmt.Errorf("lock situation: %w", lockErr)
+		}
+		updateRevision := tx.Situation.UpdateOneID(id).AddEvidenceRevision(1)
+		if updateErr := updateRevision.Exec(ctx); updateErr != nil {
+			return fmt.Errorf("update observation revision: %w", updateErr)
+		}
+		investigationQuery := tx.SituationInvestigation.Query().Where(si.SituationID(id))
+		investigationIDs, queryErr := investigationQuery.IDs(ctx)
+		if queryErr != nil {
+			return fmt.Errorf("query investigations: %w", queryErr)
+		}
+		if reconcileErr := s.requestReconcileInvestigations(ctx, investigationIDs...); reconcileErr != nil {
+			return fmt.Errorf("request reconcile investigations: %w", reconcileErr)
+		}
+		return nil
+	})
 }
 
 func (s *SituationService) ingestKnowledgeRelationship(ctx context.Context, sitId uuid.UUID, p situationKnowledgeRelationshipEntity) error {
@@ -374,7 +251,31 @@ func (s *SituationService) ingestKnowledgeRelationship(ctx context.Context, sitI
 	subjRef := rez.KnowledgeSubjectRef{Relationship: relationshipRef}
 
 	if _, relErr := s.knowledge.ResolveInternalSubject(ctx, subjRef); relErr != nil {
-		return fmt.Errorf("ingest situation evidence item: %w", relErr)
+		return fmt.Errorf("ingest situation knowledge relationship: %w", relErr)
+	}
+	return nil
+}
+
+func (s *SituationService) AddIncidentToSituation(ctx context.Context, situationID, incidentID uuid.UUID) error {
+	if situationID == uuid.Nil || incidentID == uuid.Nil {
+		return fmt.Errorf("%w: situation and incident ids are required", rez.ErrInvalidInput)
+	}
+
+	addIncident := s.db.Client(ctx).Situation.UpdateOneID(situationID).AddIncidentIDs(incidentID)
+	if updateErr := addIncident.Exec(ctx); updateErr != nil {
+		return fmt.Errorf("add incident to situation: %w", updateErr)
+	}
+	return nil
+}
+
+func (s *SituationService) RemoveIncidentFromSituation(ctx context.Context, situationID, incidentID uuid.UUID) error {
+	if situationID == uuid.Nil || incidentID == uuid.Nil {
+		return fmt.Errorf("%w: situation and incident ids are required", rez.ErrInvalidInput)
+	}
+
+	removeIncident := s.db.Client(ctx).Situation.UpdateOneID(situationID).RemoveIncidentIDs(incidentID)
+	if updateErr := removeIncident.Exec(ctx); updateErr != nil {
+		return fmt.Errorf("remove incident from situation: %w", updateErr)
 	}
 	return nil
 }

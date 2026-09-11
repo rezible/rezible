@@ -743,15 +743,18 @@ type (
 	}
 
 	CreateSituationParams struct {
-		Title         string
-		Summary       string
-		OpenedAt      time.Time
-		EvidenceItems []SituationEvidenceItemParams
+		Title             string
+		Summary           string
+		OpenedAt          time.Time
+		IncidentIDs       []uuid.UUID
+		ObservationGroups []SituationObservationGroupParams
 	}
 
-	SituationEvidenceItemParams struct {
-		AlertEpisodeID *uuid.UUID
-		IncidentID     *uuid.UUID
+	SituationObservationGroupParams struct {
+		Title              string
+		Body               *string
+		NormalizedEventIDs []uuid.UUID
+		AlertEpisodeIDs    []uuid.UUID
 	}
 
 	CreateSituationInvestigationParams struct {
@@ -798,9 +801,10 @@ type (
 		GetSituation(context.Context, uuid.UUID) (*ent.Situation, error)
 		CloseSituation(context.Context, CloseSituationParams) (*ent.Situation, error)
 
-		AddSituationEvidenceItem(context.Context, uuid.UUID, SituationEvidenceItemParams) error
-		NotifySituationEvidenceItemUpdated(context.Context, uuid.UUID, SituationEvidenceItemParams) error
-		RemoveSituationEvidenceItem(context.Context, uuid.UUID, SituationEvidenceItemParams) error
+		AddIncidentToSituation(context.Context, uuid.UUID, uuid.UUID) error
+		RemoveIncidentFromSituation(context.Context, uuid.UUID, uuid.UUID) error
+
+		NotifySituationObservationGroupUpdated(context.Context, uuid.UUID) error
 
 		CreateSituationInvestigation(context.Context, CreateSituationInvestigationParams) (*ent.SituationInvestigation, error)
 		GetInvestigationForSituation(context.Context, uuid.UUID) (*ent.SituationInvestigation, error)

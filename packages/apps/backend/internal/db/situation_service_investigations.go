@@ -20,6 +20,7 @@ import (
 	"github.com/rezible/rezible/ent/situation"
 	sha "github.com/rezible/rezible/ent/situationhazardassessment"
 	siti "github.com/rezible/rezible/ent/situationinvestigation"
+	sog "github.com/rezible/rezible/ent/situationobservationgroup"
 	rezai "github.com/rezible/rezible/pkg/ai"
 	"github.com/rezible/rezible/pkg/jobs"
 	"github.com/riverqueue/river"
@@ -424,8 +425,9 @@ func (w *ReconcileSituationInvestigationWorker) Work(ctx context.Context, job *j
 }
 
 func (w *ReconcileSituationInvestigationWorker) makeTurnInput(ctx context.Context, sit *ent.Situation) (*rez.AiAgentTurnInput, error) {
-	episodesQuery := w.db.Client(ctx).AlertEpisode.Query().
-		Where(ale.HasSituationsWith(situation.ID(sit.ID))).
+	episodesQuery := w.db.Client(ctx).SituationObservationGroup.Query().
+		Where(sog.SituationID(sit.ID)).
+		QueryAlertEpisodes().
 		WithAlertDefinition().
 		WithInstances(func(q *ent.AlertInstanceQuery) {
 			q.WithEvent()
