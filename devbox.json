@@ -3,11 +3,11 @@
   "packages": {
     "bun":                         "latest",
     "just":                        "latest",
-    "process-compose":             "1.120.0",
     "github:peterldowns/localias": "",
     "dotenvx":                     "latest",
     "wget":                        "latest",
-    "go":                          "1.27"
+    "go":                          "latest",
+    "process-compose":             "latest"
   },
   "env_from": ".env",
   "env": {

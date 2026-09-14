@@ -105,41 +105,41 @@
       "last_modified": "2025-07-29T20:15:41Z",
       "resolved": "github:peterldowns/localias/30eb016326558f6d14b87fe465ad8b363982c9be?lastModified=1753820141"
     },
-    "go@1.27": {
-      "last_modified": "2026-08-14T06:48:10Z",
-      "resolved": "github:NixOS/nixpkgs/f2b17eb1b90f6a359082035b4538d4c63017aec3#go_1_27",
+    "go@latest": {
+      "last_modified": "2026-08-27T07:16:00Z",
+      "resolved": "github:NixOS/nixpkgs/c27cdad491a991b11ed731760aa2ef8db0cb0410#go_1_27",
       "source": "devbox-search",
-      "version": "1.27rc3",
+      "version": "1.27.0",
       "systems": {
         "aarch64-darwin": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/80vk2mcdx8p127r99c11qwkx6g6159bl-go-1.27rc3",
+              "path": "/nix/store/lz3qw52rpazqga73xgsqlj4qz1lgs4hg-go-1.27.0",
               "default": true
             }
           ],
-          "store_path": "/nix/store/80vk2mcdx8p127r99c11qwkx6g6159bl-go-1.27rc3"
+          "store_path": "/nix/store/lz3qw52rpazqga73xgsqlj4qz1lgs4hg-go-1.27.0"
         },
         "aarch64-linux": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/bqwp6fhbnkxggxn41pnhzbbf6lajzbzp-go-1.27rc3",
+              "path": "/nix/store/zqjvg5805xkf6zsd8nrdvgbv58yw2phr-go-1.27.0",
               "default": true
             }
           ],
-          "store_path": "/nix/store/bqwp6fhbnkxggxn41pnhzbbf6lajzbzp-go-1.27rc3"
+          "store_path": "/nix/store/zqjvg5805xkf6zsd8nrdvgbv58yw2phr-go-1.27.0"
         },
         "x86_64-linux": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/1176al34sx5csv3grv6nghmyzjs52y0z-go-1.27rc3",
+              "path": "/nix/store/fibbp1k5gcpaxcin4dzk70yd056rfjhg-go-1.27.0",
               "default": true
             }
           ],
-          "store_path": "/nix/store/1176al34sx5csv3grv6nghmyzjs52y0z-go-1.27rc3"
+          "store_path": "/nix/store/fibbp1k5gcpaxcin4dzk70yd056rfjhg-go-1.27.0"
         }
       }
     },
@@ -227,7 +227,7 @@
         }
       }
     },
-    "process-compose@1.120.0": {
+    "process-compose@latest": {
       "last_modified": "2026-08-27T07:16:00Z",
       "resolved": "github:NixOS/nixpkgs/c27cdad491a991b11ed731760aa2ef8db0cb0410#process-compose",
       "source": "devbox-search",
