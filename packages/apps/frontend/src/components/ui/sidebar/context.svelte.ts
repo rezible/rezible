@@ -30,6 +30,12 @@ class SidebarState {
 		this.#isMobile = new IsMobile();
 	}
 
+	// Convenience getter for checking if the sidebar is mobile
+	// without this, we would need to use `sidebar.isMobile.current` everywhere
+	get isMobile() {
+		return this.#isMobile.current;
+	}
+
 	railOpen = $state(false);
 	openMobile = $state(false);
 
@@ -42,17 +48,12 @@ class SidebarState {
 	}
 
 	get effectiveOpen() {
+		if (this.isMobile) return this.openMobile;
 		return this.railActive ? this.railOpen : this.open;
 	}
 
 	get state() {
 		return this.effectiveOpen ? "expanded" : "collapsed";
-	}
-
-	// Convenience getter for checking if the sidebar is mobile
-	// without this, we would need to use `sidebar.isMobile.current` everywhere
-	get isMobile() {
-		return this.#isMobile.current;
 	}
 
 	// Event handler to apply to the `<svelte:window>`
@@ -68,7 +69,7 @@ class SidebarState {
 	};
 
 	toggle = () => {
-		if (this.#isMobile.current) return (this.openMobile = !this.openMobile);
+		if (this.isMobile) return (this.openMobile = !this.openMobile);
 		if (this.railActive) return (this.railOpen = !this.railOpen);
 		return this.setOpen(!this.open);
 	};

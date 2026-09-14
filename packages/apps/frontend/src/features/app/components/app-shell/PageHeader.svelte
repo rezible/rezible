@@ -34,7 +34,7 @@
 {#if descriptor}
 	<div class="flex min-w-0 flex-1 items-center justify-between gap-4">
 		<div class="flex min-w-0 items-center gap-2">
-			<Sidebar.Trigger class={shell.viewRail ? undefined : "md:hidden"} />
+			<Sidebar.Trigger class={shell.featureRail ? undefined : "md:hidden"} />
 			<Breadcrumb.Root>
 				<Breadcrumb.List>
 					{#each descriptor.parents ?? [] as parent (parent.path)}

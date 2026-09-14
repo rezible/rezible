@@ -13,7 +13,7 @@
 
 <script lang="ts" generics="Route extends RouteId">
 	import { page } from "$app/state";
-	import { registerViewRail } from "$lib/app-shell.svelte";
+	import { useAppShell } from "$lib/app-shell.svelte";
 	import type { ResolvedPathname } from "$app/types";
 	import type { Snippet } from "svelte";
 
@@ -25,7 +25,7 @@
 	};
 	const { route, entries, label, featureLinks }: Props = $props();
 
-	registerViewRail();
+	useAppShell().registerFeatureRail();
 
 	const resolveEntryRoute = resolve as unknown as (
 		route: Route,
@@ -72,6 +72,7 @@
 			</div>
 		{/if}
 	</aside>
+	
 	<section class="flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto p-4">
 		{#if ActiveComponent}
 			<ActiveComponent />

@@ -17,17 +17,6 @@
 </script>
 
 <section class="flex flex-col gap-6">
-	<header class="max-w-[75ch]">
-		<p class="text-[11px] font-semibold uppercase tracking-[0.04em] text-muted-foreground">
-			Authoritative implementation specimen
-		</p>
-		<h1 class="mt-2 text-[28px] font-semibold leading-9">Calm operational clarity</h1>
-		<p class="mt-2 text-[15px] leading-6 text-muted-foreground">
-			The same tokens and local primitives used by the application, with illustrative fixture content
-			only.
-		</p>
-	</header>
-
 	<Card.Root>
 		<Card.Header>
 			<Card.Title>Colour and surfaces</Card.Title>

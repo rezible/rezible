@@ -42,8 +42,10 @@ export type PageDescriptor<C extends AnyComponent = Component> = {
 
 export class AppShellController {
 	childSidebar = $state.raw<AppSidebarModel>();
-	viewRail = $state(false);
-	private viewRailOwner?: object;
+	
+	featureRail = $state(false);
+	private featureRailOwner?: object;
+
 	pageDescriptor = $state.raw<PageDescriptor<AnyComponent>>();
 	private pageDescriptorOwner?: object;
 
@@ -74,14 +76,14 @@ export class AppShellController {
 		this.childSidebar = undefined;
 	}
 
-	registerViewRail() {
+	registerFeatureRail() {
 		const owner = {};
-		this.viewRailOwner = owner;
-		this.viewRail = true;
+		this.featureRailOwner = owner;
+		this.featureRail = true;
 		onDestroy(() => {
-			if (this.viewRailOwner === owner) {
-				this.viewRail = false;
-				this.viewRailOwner = undefined;
+			if (this.featureRailOwner === owner) {
+				this.featureRail = false;
+				this.featureRailOwner = undefined;
 			}
 		});
 	}
@@ -93,8 +95,4 @@ export const useAppShell = () => ctx.get();
 
 export const registerPageDescriptor = <C extends AnyComponent>(getDescriptor: Getter<PageDescriptor<C>>) => {
 	useAppShell().registerPageDescriptor(getDescriptor);
-};
-
-export const registerViewRail = () => {
-	useAppShell().registerViewRail();
 };

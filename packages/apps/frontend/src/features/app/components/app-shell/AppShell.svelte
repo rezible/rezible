@@ -24,22 +24,21 @@
 <ModeWatcher />
 
 {#if sess.ready}
-	<Sidebar.Provider viewRail={shell.viewRail}>
+	<Sidebar.Provider viewRail={shell.featureRail}>
 		{#if sess.isSetup}
 			<AppSidebar variant="sidebar" />
 		{/if}
 		<main class="flex h-dvh min-h-0 min-w-0 flex-1 flex-col overflow-hidden antialiased">
 			{#if sess.isSetup}
-				<div class="bg-card flex h-14 w-full items-center justify-between border-b px-6">
+				<div class="bg-card flex h-14 w-full items-center justify-between border-b px-4">
 					<PageHeader />
 				</div>
 			{/if}
 
 			<div
 				id="scroll-body"
-				class:overflow-hidden={shell.viewRail}
-				class:overflow-y-auto={!shell.viewRail}
-				class:p-6={!shell.viewRail}
+				class:overflow-hidden={shell.featureRail}
+				class:overflow-y-auto={!shell.featureRail}
 				class="flex min-h-0 flex-1"
 			>
 				{@render children()}

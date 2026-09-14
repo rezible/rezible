@@ -24,4 +24,4 @@
 		{ label: "Content", component: ContentSection, params: { section: "content" } },
 		{ label: "Overlays", component: OverlaysSection, params: { section: "overlays" } },
 	]}
-></FeatureNavigationRail>
+/>
