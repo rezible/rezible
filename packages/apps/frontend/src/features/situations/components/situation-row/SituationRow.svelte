@@ -13,7 +13,7 @@
 </script>
 
 <a
-	href={resolve("/situations/[id]", { id: situation.id })}
+	href={resolve("/situations/[id]/[[view=situationView]]", { id: situation.id })}
 	class="block min-w-0 space-y-1 border-b border-border px-3 py-3 last:border-b-0 hover:bg-muted/50 focus-visible:outline-primary"
 >
 	<div class="flex flex-wrap items-center gap-2">

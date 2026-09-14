@@ -1,5 +1,5 @@
 <script lang="ts">
-	import * as Button from "$components/ui/button";
+	import { Button } from "$components/ui/button";
 	import * as Command from "$components/ui/command";
 	import * as Popover from "$components/ui/popover";
 	import RiSearchLine from "remixicon-svelte/icons/search-line";
@@ -11,13 +11,13 @@
 <Popover.Root bind:open={view.searchOpen}>
 	<Popover.Trigger>
 		{#snippet child({ props })}
-			<Button.Root {...props} variant="outline" class="bg-background w-72 justify-start">
-				<RiSearchLine />
+			<Button {...props} variant="outline" class="w-52 max-w-full justify-start">
+				<RiSearchLine data-icon="inline-start" />
 				<span class="text-muted-foreground">Find an entity…</span>
-			</Button.Root>
+			</Button>
 		{/snippet}
 	</Popover.Trigger>
-	<Popover.Content align="start" class="w-96 p-0">
+	<Popover.Content align="start" class="w-96 max-w-[calc(100vw-2rem)] p-0">
 		<Command.Root shouldFilter={false}>
 			<Command.Input bind:value={view.search} placeholder="Search names, kinds, or aliases…" />
 			<Command.List class="max-h-80">
@@ -25,6 +25,13 @@
 					<Command.Empty>Enter at least two characters.</Command.Empty>
 				{:else if view.searching}
 					<Command.Loading>Searching…</Command.Loading>
+				{:else if view.searchError}
+					<div role="alert" class="flex flex-col gap-2 p-3">
+						<p class="text-sm text-destructive">
+							{view.searchError.detail || view.searchError.title}
+						</p>
+						<Button variant="outline" size="sm" onclick={view.retrySearch}>Retry search</Button>
+					</div>
 				{:else if view.searchResults.length === 0}
 					<Command.Empty>No entities found.</Command.Empty>
 				{:else}

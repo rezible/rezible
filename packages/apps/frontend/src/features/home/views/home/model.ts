@@ -1,4 +1,5 @@
 import type { ActivityRecord, InboxItem } from "$lib/api";
+import { investigationHref } from "$features/situations/lib/routes";
 
 export const inboxActions = {
 	question: "Answer",
@@ -13,9 +14,7 @@ export function activityHref(item: ActivityRecord) {
 		case "incident-update":
 			return attrs.incidentId ? `/incidents/${attrs.incidentId}#update-${attrs.recordId}` : undefined;
 		case "situation-investigation":
-			return attrs.situationId
-				? `/situations/${attrs.situationId}#investigation-${attrs.recordId}`
-				: undefined;
+			return attrs.situationId ? investigationHref(attrs.situationId, attrs.recordId) : undefined;
 		case "inbox-item":
 			return "/";
 	}

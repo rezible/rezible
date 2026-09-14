@@ -1,10 +1,9 @@
 <script lang="ts">
 	import { resolve } from "$app/paths";
 	import { Badge } from "$components/ui/badge";
-	import * as Button from "$components/ui/button";
-	import * as Card from "$components/ui/card";
+	import { Button } from "$components/ui/button";
+	import * as Sheet from "$components/ui/sheet";
 	import { Separator } from "$components/ui/separator";
-	import RiCloseLine from "remixicon-svelte/icons/close-line";
 	import RiCrosshair2Line from "remixicon-svelte/icons/crosshair-2-line";
 	import RiExpandDiagonalLine from "remixicon-svelte/icons/expand-diagonal-line";
 	import RiHistoryLine from "remixicon-svelte/icons/history-line";
@@ -57,13 +56,13 @@
 	});
 </script>
 
-{#if inspected}
-	<Card.Root class="absolute top-3 right-3 z-20 w-96 max-w-[calc(100%-1.5rem)] shadow-lg">
-		<Card.Header class="gap-2">
+<Sheet.Root open={!!inspected} onOpenChange={(open) => !open && view.clearSelection()}>
+	<Sheet.Content class="overflow-y-auto sm:max-w-md" onCloseAutoFocus={view.restoreInspectionFocus}>
+		<Sheet.Header class="gap-2">
 			<div class="flex items-start justify-between gap-3">
 				<div class="min-w-0">
-					<Card.Title class="truncate text-base capitalize">{title}</Card.Title>
-					<Card.Description class="flex items-center gap-2">
+					<Sheet.Title>{title}</Sheet.Title>
+					<Sheet.Description class="flex items-center gap-2">
 						<span>{classification?.replaceAll("_", " ")}</span>
 						{#if freshness}
 							<span class="text-muted-foreground flex items-center gap-1 text-xs">
@@ -71,27 +70,23 @@
 								updated {freshness}
 							</span>
 						{/if}
-					</Card.Description>
+					</Sheet.Description>
 				</div>
-				<Button.Root
-					variant="ghost"
-					size="icon-sm"
-					aria-label="Close details"
-					onclick={() => view.clearSelection()}
-				>
-					<RiCloseLine />
-				</Button.Root>
 			</div>
-		</Card.Header>
-		<Card.Content class="max-h-[60vh] space-y-4 overflow-y-auto">
+		</Sheet.Header>
+		<div class="flex flex-col gap-4 px-4 pb-4">
+			<dl class="flex flex-col gap-1 text-xs">
+				<dt class="text-muted-foreground">Identity</dt>
+				<dd class="font-mono wrap-anywhere">{entity?.id ?? relationship?.id}</dd>
+			</dl>
 			{#if state?.description}
 				<p class="text-muted-foreground text-sm">{state.description}</p>
 			{/if}
 
 			{#if entity && view.relationshipSummary.length > 0}
-				<div class="space-y-2">
+				<div class="flex flex-col gap-2">
 					<div class="text-muted-foreground text-xs font-medium uppercase">Relationships</div>
-					<ul class="space-y-1 text-sm">
+					<ul class="flex flex-col gap-1 text-sm">
 						{#each view.relationshipSummary as [predicate, rels] (predicate)}
 							<li class="flex items-center justify-between gap-2">
 								<span class="capitalize">{predicate.replaceAll("_", " ")}</span>
@@ -103,9 +98,9 @@
 			{/if}
 
 			{#if relationship}
-				<div class="space-y-2">
+				<div class="flex flex-col gap-2">
 					<div class="text-muted-foreground text-xs font-medium uppercase">Between</div>
-					<ul class="space-y-1 text-sm">
+					<ul class="flex flex-col gap-1 text-sm">
 						{#each relationshipTargets as target (target.role)}
 							<li class="flex items-center justify-between gap-2">
 								<span class="text-muted-foreground capitalize">{target.role}</span>
@@ -116,20 +111,22 @@
 				</div>
 			{/if}
 
-			{#if state && Object.keys(state).length}
-				<div class="space-y-2">
+			{#if Object.keys(state?.properties ?? {}).length}
+				<div class="flex flex-col gap-2">
 					<div class="text-muted-foreground text-xs font-medium uppercase">Properties</div>
-					<dl class="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm">
-						{#each Object.entries(state.properties ?? {}) as [key, value] (key)}
+					<dl class="grid min-w-0 grid-cols-[minmax(0,1fr)_minmax(0,2fr)] gap-x-3 gap-y-1 text-sm">
+						{#each Object.entries(state?.properties ?? {}) as [key, value] (key)}
 							<dt class="text-muted-foreground">{key.replaceAll("_", " ")}</dt>
-							<dd class="truncate text-right">{String(value)}</dd>
+							<dd class="whitespace-pre-wrap wrap-anywhere">
+								{typeof value === "object" ? JSON.stringify(value, null, 2) : String(value)}
+							</dd>
 						{/each}
 					</dl>
 				</div>
 			{/if}
 
 			{#if attributes?.aliases?.length}
-				<div class="space-y-2">
+				<div class="flex flex-col gap-2">
 					<div class="text-muted-foreground text-xs font-medium uppercase">
 						Source identities ({attributes.aliases.length})
 					</div>
@@ -146,31 +143,31 @@
 				</div>
 			{/if}
 
-			{#if state && Object.keys(state).length === 0 && !state.description}
+			{#if !state?.description && !Object.keys(state?.properties ?? {}).length}
 				<Separator />
 				<p class="text-muted-foreground text-xs">
 					No observed state is recorded for this subject yet. Missing detail here is not evidence
 					that nothing is wrong.
 				</p>
 			{/if}
-		</Card.Content>
-		<Card.Footer class="flex-wrap gap-2">
+		</div>
+		<Sheet.Footer class="flex-wrap gap-2">
 			{#if situationHref}
-				<Button.Root variant="outline" size="sm" href={situationHref}>
-					<RiFileTextLine />
+				<Button variant="outline" size="sm" href={situationHref}>
+					<RiFileTextLine data-icon="inline-start" />
 					Open in Situations
-				</Button.Root>
+				</Button>
 			{/if}
 			{#if entity}
-				<Button.Root variant="outline" onclick={() => view.expand(entity)}>
-					<RiExpandDiagonalLine />
+				<Button variant="outline" onclick={() => view.expand(entity)}>
+					<RiExpandDiagonalLine data-icon="inline-start" />
 					Expand
-				</Button.Root>
-				<Button.Root variant="outline" onclick={() => view.recenter()}>
-					<RiCrosshair2Line />
+				</Button>
+				<Button variant="outline" onclick={() => view.recenter()}>
+					<RiCrosshair2Line data-icon="inline-start" />
 					Recenter
-				</Button.Root>
+				</Button>
 			{/if}
-		</Card.Footer>
-	</Card.Root>
-{/if}
+		</Sheet.Footer>
+	</Sheet.Content>
+</Sheet.Root>

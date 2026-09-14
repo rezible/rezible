@@ -52,7 +52,7 @@
 			</Breadcrumb.Root>
 		</div>
 		{#if pageActions}
-			<div class="flex shrink-0 items-center">
+			<div class="flex min-w-0 max-w-[65%] items-center">
 				<pageActions.component {...pageActions.props} />
 			</div>
 		{/if}

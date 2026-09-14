@@ -57,7 +57,7 @@
 							<td class="w-full">
 								<a
 									class="font-medium hover:underline focus-visible:outline-ring"
-									href={resolve("/situations/[id]", { id: item.id })}
+									href={resolve("/situations/[id]/[[view=situationView]]", { id: item.id })}
 								>
 									{attrs.title}
 								</a>
@@ -67,9 +67,10 @@
 								<Badge variant="secondary" class="text-muted-foreground">TODO</Badge>
 							</td>
 							<td class="text-xs text-muted-foreground">
-								<span class="whitespace-nowrap"
-								>
-									{attrs.signalCount} contributing {attrs.signalCount === 1 ? "signal" : "signals"}
+								<span class="whitespace-nowrap">
+									{attrs.signalCount} contributing {attrs.signalCount === 1
+										? "signal"
+										: "signals"}
 								</span>
 							</td>
 							<td>
@@ -86,7 +87,7 @@
 						<div class="flex items-start justify-between gap-3">
 							<a
 								class="min-w-0 break-words text-sm font-medium hover:underline focus-visible:outline-ring"
-								href={resolve("/situations/[id]", { id: item.id })}
+								href={resolve("/situations/[id]/[[view=situationView]]", { id: item.id })}
 							>
 								{attrs.title}
 							</a>
@@ -95,9 +96,10 @@
 						<p class="mt-1 line-clamp-2 text-sm text-muted-foreground">{attrs.summary}</p>
 						<div class="mt-3 flex items-center gap-3">
 							<Badge variant="secondary" class="text-muted-foreground">TODO</Badge>
-							<span class="text-xs text-muted-foreground"
-							>
-								{attrs.signalCount} contributing {attrs.signalCount === 1 ? "signal" : "signals"}
+							<span class="text-xs text-muted-foreground">
+								{attrs.signalCount} contributing {attrs.signalCount === 1
+									? "signal"
+									: "signals"}
 							</span>
 						</div>
 					</li>
