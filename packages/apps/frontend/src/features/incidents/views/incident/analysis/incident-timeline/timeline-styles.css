@@ -1,20 +1,20 @@
 /* the root timeline container element */
 .vis-timeline {
-	background-color: oklch(var(--color-surface-200) / var(--tw-bg-opacity, 1));
+	background-color: var(--background);
 	border: none;
 }
 
 /* horizontal timeline line (item dots connect to this) */
 .vis-panel.vis-center {
-	border-color: oklch(var(--color-surface-content) / 0.25);
+	border-color: color-mix(in srgb, var(--foreground) 25%, transparent);
 }
 
 /* vertical grid lines */
 .vis-time-axis .vis-grid.vis-minor {
-	border-color: oklch(var(--color-surface-content) / 0.25);
+	border-color: color-mix(in srgb, var(--foreground) 25%, transparent);
 }
 .vis-time-axis .vis-grid.vis-major {
-	border-color: oklch(var(--color-surface-content) / 0.75);
+	border-color: color-mix(in srgb, var(--foreground) 75%, transparent);
 }
 
 /* item dot connecting to horizontal timeline line */
@@ -25,17 +25,17 @@
 
 /* timeline item */
 .vis-item {
-	background-color: oklch(var(--color-neutral) / var(--tw-bg-opacity, 1));
-	color: oklch(var(--color-neutral-content) / var(--tw-bg-opacity, 1));
-	border-color: oklch(var(--color-accent) / var(--tw-bg-opacity, 1));
+	background-color: var(--status-neutral);
+	color: var(--status-neutral-foreground);
+	border-color: var(--border);
 	/* @apply bg-neutral text-neutral-content border-accent; */
 }
 
 /* selected timeline item */
 .vis-item.vis-selected {
-	background-color: oklch(var(--color-accent) / var(--tw-bg-opacity, 1));
-	color: oklch(var(--color-accent-content) / var(--tw-bg-opacity, 1));
-	border-color: oklch(var(--color-accent) / var(--tw-bg-opacity, 1));
+	background-color: var(--selection);
+	color: var(--selection-foreground);
+	border-color: var(--brand);
 	/* @apply bg-accent text-accent-content border-accent; */
 }
 
@@ -52,7 +52,7 @@
 
 /* current time vertical line */
 .vis-current-time {
-	background-color: oklch(var(--color-secondary) / var(--tw-bg-opacity, 1));
+	background-color: var(--secondary);
 }
 
 .vis-foreground .vis-group {

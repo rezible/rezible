@@ -39,7 +39,7 @@
 		class="flex shrink-0 flex-wrap items-center justify-between gap-2 pt-2 text-sm text-muted-foreground"
 	>
 		<div class="flex items-center gap-2">
-			<span>{rangeStart}–{rangeEnd} of {total}</span>
+			<span class="tabular-nums">{rangeStart}–{rangeEnd} of {total}</span>
 			{#if fetching}
 				<span class="animate-pulse" aria-live="polite">Updating…</span>
 			{/if}
@@ -54,7 +54,9 @@
 					onValueChange={onPageSizeSelected}
 					disabled={fetching}
 				>
-					<Select.Trigger size="sm" aria-label="Rows per page">{pageSize}</Select.Trigger>
+					<Select.Trigger size="sm" aria-label="Rows per page">
+						<span class="tabular-nums">{pageSize}</span>
+					</Select.Trigger>
 					<Select.Content>
 						{#each pageSizeOptions as opt (opt)}
 							<Select.Item value={opt.toString()} label={opt.toString()}>

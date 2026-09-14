@@ -2,17 +2,16 @@
 	import { tv, type VariantProps } from "tailwind-variants";
 
 	export const sidebarMenuButtonVariants = tv({
-		base: "ring-sidebar-ring hover:bg-sidebar-accent hover:text-sidebar-accent-foreground active:bg-sidebar-accent active:text-sidebar-accent-foreground data-active:bg-sidebar-selection data-active:text-sidebar-selection-foreground data-active:border-l-2 data-active:border-sidebar-primary data-open:hover:bg-sidebar-accent data-open:hover:text-sidebar-accent-foreground data-active:hover:bg-sidebar-selection data-active:hover:text-sidebar-selection-foreground gap-2 rounded-none border-l-2 border-transparent p-2 text-left text-base group-has-data-[sidebar=menu-action]/menu-item:pr-10 group-data-[collapsible=icon]:size-10! group-data-[collapsible=icon]:p-2! focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-offset-2 focus-visible:outline-sidebar-ring data-active:font-medium peer/menu-button group/menu-button flex w-full items-center overflow-hidden disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 [&_svg]:size-6 [&_svg]:shrink-0 [&>span:last-child]:truncate",
+		base: "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground active:bg-sidebar-accent data-active:bg-sidebar-selection data-active:text-sidebar-selection-foreground data-open:hover:bg-sidebar-accent data-open:hover:text-sidebar-accent-foreground data-active:hover:bg-sidebar-selection data-active:hover:text-sidebar-selection-foreground gap-2 rounded-md border border-transparent p-2 text-left text-sm group-has-data-[sidebar=menu-action]/menu-item:pr-10 group-data-[collapsible=icon]:size-10! group-data-[collapsible=icon]:p-2! focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-offset-2 focus-visible:outline-sidebar-ring data-active:font-medium peer/menu-button group/menu-button flex w-full items-center overflow-hidden disabled:pointer-events-none disabled:bg-sidebar-accent disabled:text-foreground-disabled aria-disabled:pointer-events-none aria-disabled:text-foreground-disabled [&_svg]:size-5 [&_svg]:shrink-0 [&>span:last-child]:truncate",
 		variants: {
 			variant: {
 				default: "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-				outline:
-					"bg-background hover:bg-sidebar-accent hover:text-sidebar-accent-foreground shadow-[0_0_0_1px_hsl(var(--sidebar-border))] hover:shadow-[0_0_0_1px_hsl(var(--sidebar-accent))]",
+				outline: "border-sidebar-border hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
 			},
 			size: {
-				default: "h-10 text-base",
-				sm: "h-7 text-base",
-				lg: "h-12 text-base group-data-[collapsible=icon]:p-0!",
+				default: "h-10 text-sm",
+				sm: "h-8 text-sm",
+				lg: "h-10 text-sm group-data-[collapsible=icon]:p-1!",
 			},
 		},
 		defaultVariants: {

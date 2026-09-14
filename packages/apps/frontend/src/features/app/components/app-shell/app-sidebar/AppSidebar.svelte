@@ -27,8 +27,8 @@
 				{#if controller.isDefault}
 					<Sidebar.MenuButton size="lg">
 						{#snippet child({ props })}
-							<a {...props} href="/" class="text-2xl text-base flex items-center gap-2">
-								<img src="/images/logo.svg" alt="logo" class={cn("fill-neutral size-10")} />
+							<a {...props} href="/" class="flex items-center gap-2 text-2xl text-base">
+								<img src="/images/logo.svg" alt="Rezible" class={cn("size-8")} />
 								<span
 									data-open={controller.isOpen ? true : undefined}
 									class="hidden data-open:inline"

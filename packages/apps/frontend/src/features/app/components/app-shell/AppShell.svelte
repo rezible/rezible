@@ -28,9 +28,9 @@
 		{#if sess.isSetup}
 			<AppSidebar variant="sidebar" />
 		{/if}
-		<main class="antialiased flex flex-col flex-1 min-w-0 min-h-0 h-dvh overflow-hidden">
+		<main class="flex h-dvh min-h-0 min-w-0 flex-1 flex-col overflow-hidden antialiased">
 			{#if sess.isSetup}
-				<div class="bg-card flex w-full justify-between items-center h-14 border-b px-3">
+				<div class="bg-card flex h-14 w-full items-center justify-between border-b px-6">
 					<PageHeader />
 				</div>
 			{/if}
@@ -39,8 +39,8 @@
 				id="scroll-body"
 				class:overflow-hidden={shell.viewRail}
 				class:overflow-y-auto={!shell.viewRail}
-				class:p-3={!shell.viewRail}
-				class="flex-1 flex min-h-0"
+				class:p-6={!shell.viewRail}
+				class="flex min-h-0 flex-1"
 			>
 				{@render children()}
 			</div>

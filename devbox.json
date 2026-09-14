@@ -11,6 +11,7 @@
   },
   "env_from": ".env",
   "env": {
+    "JUST_TEMPDIR":                        "/tmp",
     "DEV_DOMAIN":                          "dev.rezible.com",
     "APP_PORT":                            "7000",
     "APP_DOMAIN":                          "app.dev.rezible.com",

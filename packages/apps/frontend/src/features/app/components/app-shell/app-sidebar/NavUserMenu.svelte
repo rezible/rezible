@@ -73,10 +73,7 @@
 						class="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
 						{...props}
 					>
-						<Avatar.Root
-							class="size-5 [&>svg]:size-5 data-[state=open]:bg-white"
-							loadingStatus="loaded"
-						>
+						<Avatar.Root class="size-5 [&>svg]:size-5 data-[state=open]:bg-card" loadingStatus="loaded">
 							<UserAvatar kind="user" id={auth.user?.id || ""} size={24} />
 						</Avatar.Root>
 						<span class="truncate font-medium">{user?.attributes.name}</span>

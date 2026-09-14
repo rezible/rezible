@@ -19,7 +19,7 @@
 
 <div
 	class={cn(
-		"cn-native-select-wrapper group/native-select relative w-fit has-[select:disabled]:opacity-50",
+		"cn-native-select-wrapper group/native-select relative w-fit",
 		className
 	)}
 	data-slot="native-select-wrapper"
@@ -30,7 +30,7 @@
 		bind:this={ref}
 		data-slot="native-select"
 		data-size={size}
-		class="border-input placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 dark:hover:bg-input/50 focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:aria-invalid:border-destructive/50 h-8 w-full min-w-0 appearance-none rounded-none border bg-transparent py-1 pr-8 pl-2.5 text-sm transition-colors select-none focus-visible:ring-1 aria-invalid:ring-1 data-[size=sm]:h-7 data-[size=sm]:rounded-none data-[size=sm]:py-0.5 outline-none disabled:pointer-events-none disabled:cursor-not-allowed"
+		class="border-input placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground focus-visible:border-ring focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:aria-invalid:border-destructive/50 h-9 w-full min-w-0 appearance-none rounded-md border bg-card py-1 pr-8 pl-2.5 text-sm transition-colors select-none aria-invalid:ring-1 data-[size=sm]:h-8 data-[size=sm]:rounded-md data-[size=sm]:py-0.5 outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-muted disabled:text-foreground-disabled"
 		{...restProps}
 	>
 		{@render children?.()}
