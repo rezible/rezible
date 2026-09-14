@@ -96,7 +96,7 @@
 					<li
 						class={[
 							"px-4 py-3",
-							index === 0 && incidentPriorityClasses[incidentSeverityVariant(attrs.severity)],
+							incidentPriorityClasses[incidentSeverityVariant(attrs.severity)],
 						]}
 					>
 						<div class="flex items-start justify-between gap-3">

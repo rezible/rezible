@@ -3,7 +3,8 @@
 	import { registerPageDescriptor } from "$lib/app-shell.svelte";
 	import { initIncidentViewController } from "./controller.svelte";
 
-	import ViewRail from "$components/layout/view-rail/ViewRail.svelte";
+	import FeatureNavigationRail from "$components/layout/feature-navigation-rail/FeatureNavigationRail.svelte";
+	
 	import IncidentPageActions from "./PageActions.svelte";
 	import IncidentSidebar from "./sidebar/IncidentSidebar.svelte";
 	import IncidentOverview from "./overview/IncidentOverview.svelte";
@@ -24,9 +25,9 @@
 	}));
 </script>
 
-<ViewRail
+<FeatureNavigationRail
 	route="/incidents/[slug]/[[view=incidentView]]"
-	label="Incident views"
+	label="Incident"
 	entries={[
 		{ label: "Overview", component: IncidentOverview, params: { slug } },
 		{ label: "Analysis", component: IncidentAnalysis, params: { slug, view: "analysis" } },

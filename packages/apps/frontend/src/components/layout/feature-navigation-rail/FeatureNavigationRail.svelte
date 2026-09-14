@@ -3,7 +3,7 @@
 	import type { RouteId } from "$app/types";
 	import type { Component } from "svelte";
 
-	export type ViewRailEntry<Route extends RouteId> = {
+	export type FeatureNavRailEntry<Route extends RouteId> = {
 		label: string;
 		params: Parameters<typeof resolve<Route>>[1];
 		component: Component;
@@ -19,20 +19,17 @@
 
 	type Props = {
 		route: Route;
-		entries: ViewRailEntry<Route>[];
+		entries: FeatureNavRailEntry<Route>[];
 		label: string;
-		snippet?: Snippet;
+		featureLinks?: Snippet;
 	};
-	const { route, entries, label, snippet }: Props = $props();
+	const { route, entries, label, featureLinks }: Props = $props();
 
 	registerViewRail();
 
-	const resolvePath = resolve as unknown as (
-		route: Route,
-		params: ViewRailEntry<Route>["params"]
-	) => ResolvedPathname;
+	const resolveEntryRoute = resolve as unknown as (route: Route, params: FeatureNavRailEntry<Route>["params"]) => ResolvedPathname;
 
-	const paths = $derived(entries.map((entry) => resolvePath(route, entry.params)));
+	const paths = $derived(entries.map((entry) => resolveEntryRoute(route, entry.params)));
 	const activeIndex = $derived.by(() => {
 		if (page.route.id !== route) return undefined;
 		return paths.findIndex((path) => page.url.pathname === path);
@@ -49,7 +46,7 @@
 		<nav class="flex shrink-0 flex-col gap-1 p-2" aria-label={label}>
 			{#each entries as entry, index (entry.label)}
 				<a
-					href={resolvePath(route, entry.params)}
+					href={resolveEntryRoute(route, entry.params)}
 					aria-current={index === activeIndex ? "page" : undefined}
 					data-active={index === activeIndex ? "true" : undefined}
 					class="flex min-w-0 items-center gap-2 rounded px-3 py-2 text-muted-foreground outline-none hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring data-[active=true]:bg-muted data-[active=true]:text-foreground"
@@ -61,9 +58,10 @@
 				</a>
 			{/each}
 		</nav>
-		{#if snippet}
+
+		{#if featureLinks}
 			<div class="min-h-0 flex-1 overflow-y-auto border-t border-border p-3">
-				{@render snippet()}
+				{@render featureLinks()}
 			</div>
 		{/if}
 	</aside>

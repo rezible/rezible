@@ -9,7 +9,9 @@ import {
 	type AppSidebarModel,
 } from "$lib/app-shell.svelte";
 
-import RiRadarLine from "remixicon-svelte/icons/radar-line";
+import RiDashboardLine from "remixicon-svelte/icons/dashboard-horizontal-line";
+import RiFireLine from "remixicon-svelte/icons/fire-line";
+import RiArticleLine from "remixicon-svelte/icons/article-line";
 import RiPulseLine from "remixicon-svelte/icons/pulse-line";
 import RiConnectorLine from "remixicon-svelte/icons/connector-line";
 
@@ -60,9 +62,9 @@ const defaultSidebarModel: AppSidebarModel = {
 		{
 			// label: "General",
 			items: [
-				{ label: "Home", href: "/", icon: RiRadarLine },
-				{ label: "Incidents", href: "/incidents", icon: RiPulseLine },
-				{ label: "Situations", href: "/situations", icon: RiRadarLine },
+				{ label: "Home", href: "/", icon: RiDashboardLine },
+				{ label: "Incidents", href: "/incidents", icon: RiFireLine },
+				{ label: "Situations", href: "/situations", icon: RiArticleLine },
 				{ label: "Signals", href: "/signals", icon: RiPulseLine },
 				{ label: "System Map", href: "/map", icon: RiConnectorLine },
 			],
