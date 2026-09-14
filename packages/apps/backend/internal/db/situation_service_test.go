@@ -139,7 +139,7 @@ func (s *SituationServiceSuite) TestListSituationsFiltersByStatusAndSearch() {
 	s.Require().NoError(closeErr)
 
 	openList, openListErr := h.situations.ListSituations(ctx, rez.ListSituationsParams{
-		Status: situation.StatusOpen,
+		Active: new(true),
 	})
 	s.Require().NoError(openListErr)
 	openIds := make([]uuid.UUID, len(openList.Data))
@@ -149,7 +149,7 @@ func (s *SituationServiceSuite) TestListSituationsFiltersByStatusAndSearch() {
 	s.ElementsMatch([]uuid.UUID{openSituation.ID}, openIds)
 
 	closedList, closedListErr := h.situations.ListSituations(ctx, rez.ListSituationsParams{
-		Status: situation.StatusClosed,
+		Active: new(false),
 	})
 	s.Require().NoError(closedListErr)
 	s.Len(closedList.Data, 1)
@@ -163,6 +163,28 @@ func (s *SituationServiceSuite) TestListSituationsFiltersByStatusAndSearch() {
 	s.Equal(openSituation.ID, searchList.Data[0].ID)
 }
 
+func (s *SituationServiceSuite) TestListSituationsActiveIncludesInvestigatingAndExcludesClosed() {
+	ctx := s.SeedTenantContext()
+	tdb := s.CreateTestDatabase()
+	h := s.newHarness(tdb)
+
+	observed := s.createSituation(ctx, h, "Observed")
+	investigating := s.createSituation(ctx, h, "Investigating")
+	closed := s.createSituation(ctx, h, "Closed")
+
+	_, closeErr := h.situations.CloseSituation(ctx, rez.CloseSituationParams{
+		SituationID: closed.ID,
+		Reason:      situation.CloseReasonStabilized,
+	})
+	s.Require().NoError(closeErr)
+
+	result, listErr := h.situations.ListSituations(ctx, rez.ListSituationsParams{
+		Active: new(true),
+	})
+	s.Require().NoError(listErr)
+	s.ElementsMatch([]uuid.UUID{observed.ID, investigating.ID}, []uuid.UUID{result.Data[0].ID, result.Data[1].ID})
+}
+
 func (s *SituationServiceSuite) TestSituationCloseIsIdempotentAndNeverReopens() {
 	ctx := s.SeedTenantContext()
 	tdb := s.CreateTestDatabase()
@@ -174,7 +196,6 @@ func (s *SituationServiceSuite) TestSituationCloseIsIdempotentAndNeverReopens() 
 		Reason:      situation.CloseReasonStabilized,
 	})
 	s.Require().NoError(closeErr)
-	s.Equal(situation.StatusClosed, closed.Status)
 	s.NotNil(closed.ClosedAt)
 	s.Equal(situation.CloseReasonStabilized, *closed.CloseReason)
 

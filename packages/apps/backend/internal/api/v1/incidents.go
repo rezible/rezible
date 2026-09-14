@@ -2,7 +2,6 @@ package apiv1
 
 import (
 	"context"
-	"time"
 
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
@@ -145,58 +144,13 @@ func (*incidentsHandler) UnlinkIncidentSituation(ctx context.Context, _ *oapi.Un
 	return nil, oapi.Error(ctx, "incident situation links are not implemented", rez.ErrNotImplemented)
 }
 
-func (h *incidentsHandler) ListIncidentUpdates(ctx context.Context, request *oapi.ListIncidentUpdatesRequest) (*oapi.ListIncidentUpdatesResponse, error) {
-	if _, getErr := h.incidents.Get(ctx, incident.ID(request.Id)); getErr != nil {
+func (h *incidentsHandler) ListIncidentUpdates(ctx context.Context, req *oapi.ListIncidentUpdatesRequest) (*oapi.ListIncidentUpdatesResponse, error) {
+	if _, getErr := h.incidents.Get(ctx, incident.ID(req.Id)); getErr != nil {
 		return nil, oapi.Error(ctx, "get incident for updates", getErr)
 	}
-	updates := []oapi.IncidentUpdate{
-		{
-			Id: uuid.MustParse("b1000000-0000-4000-8000-000000000001"),
-			Attributes: oapi.IncidentUpdateAttributes{
-				IncidentId: request.Id,
-				AuthorId:   nil,
-				CreatedAt:  time.Date(2026, 9, 11, 8, 0, 0, 0, time.UTC),
-				Body:       "Checkout latency remains elevated; mitigation is in progress.",
-			},
-		},
-		{
-			Id: uuid.MustParse("b1000000-0000-4000-8000-000000000002"),
-			Attributes: oapi.IncidentUpdateAttributes{
-				IncidentId: request.Id,
-				AuthorId:   nil,
-				CreatedAt:  time.Date(2026, 9, 11, 8, 15, 0, 0, time.UTC),
-				Body:       "Connection pool limits were increased and error rates are falling.",
-			},
-		},
-		{
-			Id: uuid.MustParse("b1000000-0000-4000-8000-000000000003"),
-			Attributes: oapi.IncidentUpdateAttributes{
-				IncidentId: request.Id,
-				AuthorId:   nil,
-				CreatedAt:  time.Date(2026, 9, 11, 8, 30, 0, 0, time.UTC),
-				Body:       "The team is monitoring recovery before closing the incident.",
-			},
-		},
-	}
-	page := request.Page
-	pageSize := request.PageSize
-	if page < 1 {
-		page = 1
-	}
-	if pageSize < 1 {
-		pageSize = 25
-	}
-	start := (page - 1) * pageSize
-	end := start + pageSize
-	if start > len(updates) {
-		start = len(updates)
-	}
-	if end > len(updates) {
-		end = len(updates)
-	}
 	resp := &oapi.ListIncidentUpdatesResponse{}
-	resp.Body.Data = updates[start:end]
-	resp.Body.Pagination = oapi.Pagination{Page: page, PageSize: pageSize, Total: len(updates)}
+	resp.Body.Data = make([]oapi.IncidentUpdate, 0)
+	resp.Body.Pagination = oapi.Pagination{Page: 1, PageSize: req.PageSize, Total: 0}
 	return resp, nil
 }
 

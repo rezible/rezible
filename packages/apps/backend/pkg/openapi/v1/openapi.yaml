@@ -31,8 +31,13 @@ components:
           type: string
         scope:
           type: string
+        situationId:
+          type: string
+        title:
+          type: string
       required:
         - occurredAt
+        - title
         - explanation
         - recordKind
         - recordId
@@ -3116,6 +3121,9 @@ components:
             - task
             - maintenance
           type: string
+        occurredAt:
+          format: date-time
+          type: string
         proposedChange:
           type: string
         reason:
@@ -3129,6 +3137,7 @@ components:
             - dismissed
           type: string
         targetId:
+          description: Canonical target ID; absent for maintenance until a canonical resource exists.
           type: string
         targetKind:
           enum:
@@ -3139,13 +3148,16 @@ components:
           type: string
         teamId:
           type: string
+        title:
+          type: string
       required:
         - kind
+        - title
         - reason
         - targetKind
-        - targetId
         - state
         - context
+        - occurredAt
       type: object
     Incident:
       additionalProperties: false
@@ -3223,12 +3235,16 @@ components:
           type: string
         type:
           $ref: "#/components/schemas/IncidentType"
+        updatedAt:
+          format: date-time
+          type: string
       required:
         - title
         - summary
         - slug
         - currentStatus
         - openedAt
+        - updatedAt
         - closedAt
         - severity
         - type
@@ -5594,10 +5610,6 @@ components:
     SituationAttributes:
       additionalProperties: false
       properties:
-        alertEpisodes:
-          items:
-            $ref: "#/components/schemas/AlertEpisode"
-          type: array
         closeReason:
           enum:
             - stabilized
@@ -5619,10 +5631,6 @@ components:
           items:
             type: string
           type: array
-        observationEvents:
-          items:
-            $ref: "#/components/schemas/Event"
-          type: array
         observationGroups:
           items:
             $ref: "#/components/schemas/SituationObservationGroup"
@@ -5630,11 +5638,9 @@ components:
         openedAt:
           format: date-time
           type: string
-        status:
-          enum:
-            - open
-            - closed
-          type: string
+        signalCount:
+          format: int64
+          type: integer
         summary:
           type: string
         title:
@@ -5645,14 +5651,12 @@ components:
       required:
         - title
         - summary
-        - status
+        - signalCount
         - evidenceRevision
         - knowledgeEntityId
-        - alertEpisodes
         - linkedIncidentIds
         - investigations
         - observationGroups
-        - observationEvents
         - openedAt
         - updatedAt
       type: object
@@ -5780,6 +5784,10 @@ components:
     SituationObservationGroupAttributes:
       additionalProperties: false
       properties:
+        alertEpisodes:
+          items:
+            $ref: "#/components/schemas/AlertEpisode"
+          type: array
         body:
           type: string
         events:
@@ -5794,6 +5802,7 @@ components:
         - situationId
         - title
         - events
+        - alertEpisodes
       type: object
     StartIntegrationOAuthFlowResponseBody:
       additionalProperties: false
@@ -16468,7 +16477,8 @@ paths:
           name: status
           schema:
             enum:
-              - open
+              - active
+              - investigating
               - closed
             type: string
         - explode: false

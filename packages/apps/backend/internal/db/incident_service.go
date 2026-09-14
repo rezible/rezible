@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	"github.com/gosimple/slug"
 	rez "github.com/rezible/rezible"
@@ -16,6 +17,7 @@ import (
 	im "github.com/rezible/rezible/ent/incidentmilestone"
 	imodel "github.com/rezible/rezible/ent/incidentmilestone"
 	ira "github.com/rezible/rezible/ent/incidentroleassignment"
+	"github.com/rezible/rezible/ent/incidentseverity"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/retrospective"
 )
@@ -66,7 +68,6 @@ func (s *IncidentService) incidentQuery(ctx context.Context, pred predicate.Inci
 
 func (s *IncidentService) ListIncidents(ctx context.Context, params rez.ListIncidentsParams) (*ent.ListResult[ent.Incident], error) {
 	query := s.db.Client(ctx).Incident.Query()
-	query.Order(incident.ByOpenedAt(params.GetOrder()), incident.ByID(params.GetOrder()))
 	if search := strings.TrimSpace(params.Search); search != "" {
 		query.Where(incident.Or(incident.TitleContainsFold(search), incident.SummaryContainsFold(search), incident.SlugContainsFold(search)))
 	}
@@ -90,6 +91,12 @@ func (s *IncidentService) ListIncidents(ctx context.Context, params rez.ListInci
 		})
 	}
 	s.allQueryEdges(query)
+
+	query.Order(
+		incident.BySeverityField(incidentseverity.FieldRank, sql.OrderAsc()),
+		incident.ByUpdatedAt(sql.OrderDesc()),
+		incident.ByID(sql.OrderAsc()),
+	)
 
 	return ent.DoListQuery[ent.Incident, *ent.IncidentQuery](ctx, query, params.ListParams)
 }

@@ -2554,7 +2554,6 @@ var (
 		{Name: "title", Type: field.TypeString},
 		{Name: "evidence_revision", Type: field.TypeInt, Default: 1},
 		{Name: "summary", Type: field.TypeString, Nullable: true, Size: 2147483647},
-		{Name: "status", Type: field.TypeEnum, Enums: []string{"open", "closed"}, Default: "open"},
 		{Name: "opened_at", Type: field.TypeTime},
 		{Name: "closed_at", Type: field.TypeTime, Nullable: true},
 		{Name: "close_reason", Type: field.TypeEnum, Nullable: true, Enums: []string{"stabilized", "dismissed"}},
@@ -2569,13 +2568,13 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "situations_tenants_tenant",
-				Columns:    []*schema.Column{SituationsColumns[10]},
+				Columns:    []*schema.Column{SituationsColumns[9]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "situations_knowledge_entities_knowledge_entity",
-				Columns:    []*schema.Column{SituationsColumns[11]},
+				Columns:    []*schema.Column{SituationsColumns[10]},
 				RefColumns: []*schema.Column{KnowledgeEntitiesColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -2584,17 +2583,17 @@ var (
 			{
 				Name:    "situation_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{SituationsColumns[10]},
+				Columns: []*schema.Column{SituationsColumns[9]},
 			},
 			{
 				Name:    "situation_tenant_id_knowledge_entity_id",
 				Unique:  true,
-				Columns: []*schema.Column{SituationsColumns[10], SituationsColumns[11]},
+				Columns: []*schema.Column{SituationsColumns[9], SituationsColumns[10]},
 			},
 			{
-				Name:    "situation_tenant_id_status_opened_at",
+				Name:    "situation_tenant_id_opened_at",
 				Unique:  false,
-				Columns: []*schema.Column{SituationsColumns[10], SituationsColumns[6], SituationsColumns[7]},
+				Columns: []*schema.Column{SituationsColumns[9], SituationsColumns[6]},
 			},
 		},
 	}
@@ -4224,11 +4223,6 @@ func init() {
 	}
 	SituationsTable.ForeignKeys[0].RefTable = TenantsTable
 	SituationsTable.ForeignKeys[1].RefTable = KnowledgeEntitiesTable
-	SituationsTable.Annotation = &entsql.Annotation{}
-	SituationsTable.Annotation.Checks = map[string]string{
-		"situation_closed_state_consistent": "(status = 'closed' AND closed_at IS NOT NULL AND close_reason IS NOT NULL) OR status <> 'closed'",
-		"situation_open_state_consistent":   "(status = 'open' AND closed_at IS NULL AND close_reason IS NULL) OR status <> 'open'",
-	}
 	SituationHazardAssessmentsTable.ForeignKeys[0].RefTable = SituationsTable
 	SituationHazardAssessmentsTable.ForeignKeys[1].RefTable = TenantsTable
 	SituationHazardAssessmentsTable.ForeignKeys[2].RefTable = UsersTable

@@ -104,20 +104,6 @@ func (_c *SituationCreate) SetNillableSummary(v *string) *SituationCreate {
 	return _c
 }
 
-// SetStatus sets the "status" field.
-func (_c *SituationCreate) SetStatus(v situation.Status) *SituationCreate {
-	_c.mutation.SetStatus(v)
-	return _c
-}
-
-// SetNillableStatus sets the "status" field if the given value is not nil.
-func (_c *SituationCreate) SetNillableStatus(v *situation.Status) *SituationCreate {
-	if v != nil {
-		_c.SetStatus(*v)
-	}
-	return _c
-}
-
 // SetOpenedAt sets the "opened_at" field.
 func (_c *SituationCreate) SetOpenedAt(v time.Time) *SituationCreate {
 	_c.mutation.SetOpenedAt(v)
@@ -291,10 +277,6 @@ func (_c *SituationCreate) defaults() error {
 		v := situation.DefaultEvidenceRevision
 		_c.mutation.SetEvidenceRevision(v)
 	}
-	if _, ok := _c.mutation.Status(); !ok {
-		v := situation.DefaultStatus
-		_c.mutation.SetStatus(v)
-	}
 	if _, ok := _c.mutation.ID(); !ok {
 		if situation.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized situation.DefaultID (forgotten import ent/runtime?)")
@@ -333,14 +315,6 @@ func (_c *SituationCreate) check() error {
 	if v, ok := _c.mutation.EvidenceRevision(); ok {
 		if err := situation.EvidenceRevisionValidator(v); err != nil {
 			return &ValidationError{Name: "evidence_revision", err: fmt.Errorf(`ent: validator failed for field "Situation.evidence_revision": %w`, err)}
-		}
-	}
-	if _, ok := _c.mutation.Status(); !ok {
-		return &ValidationError{Name: "status", err: errors.New(`ent: missing required field "Situation.status"`)}
-	}
-	if v, ok := _c.mutation.Status(); ok {
-		if err := situation.StatusValidator(v); err != nil {
-			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "Situation.status": %w`, err)}
 		}
 	}
 	if _, ok := _c.mutation.OpenedAt(); !ok {
@@ -413,10 +387,6 @@ func (_c *SituationCreate) createSpec() (*Situation, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.Summary(); ok {
 		_spec.SetField(situation.FieldSummary, field.TypeString, value)
 		_node.Summary = value
-	}
-	if value, ok := _c.mutation.Status(); ok {
-		_spec.SetField(situation.FieldStatus, field.TypeEnum, value)
-		_node.Status = value
 	}
 	if value, ok := _c.mutation.OpenedAt(); ok {
 		_spec.SetField(situation.FieldOpenedAt, field.TypeTime, value)
@@ -658,18 +628,6 @@ func (u *SituationUpsert) ClearSummary() *SituationUpsert {
 	return u
 }
 
-// SetStatus sets the "status" field.
-func (u *SituationUpsert) SetStatus(v situation.Status) *SituationUpsert {
-	u.Set(situation.FieldStatus, v)
-	return u
-}
-
-// UpdateStatus sets the "status" field to the value that was provided on create.
-func (u *SituationUpsert) UpdateStatus() *SituationUpsert {
-	u.SetExcluded(situation.FieldStatus)
-	return u
-}
-
 // SetOpenedAt sets the "opened_at" field.
 func (u *SituationUpsert) SetOpenedAt(v time.Time) *SituationUpsert {
 	u.Set(situation.FieldOpenedAt, v)
@@ -853,20 +811,6 @@ func (u *SituationUpsertOne) UpdateSummary() *SituationUpsertOne {
 func (u *SituationUpsertOne) ClearSummary() *SituationUpsertOne {
 	return u.Update(func(s *SituationUpsert) {
 		s.ClearSummary()
-	})
-}
-
-// SetStatus sets the "status" field.
-func (u *SituationUpsertOne) SetStatus(v situation.Status) *SituationUpsertOne {
-	return u.Update(func(s *SituationUpsert) {
-		s.SetStatus(v)
-	})
-}
-
-// UpdateStatus sets the "status" field to the value that was provided on create.
-func (u *SituationUpsertOne) UpdateStatus() *SituationUpsertOne {
-	return u.Update(func(s *SituationUpsert) {
-		s.UpdateStatus()
 	})
 }
 
@@ -1228,20 +1172,6 @@ func (u *SituationUpsertBulk) UpdateSummary() *SituationUpsertBulk {
 func (u *SituationUpsertBulk) ClearSummary() *SituationUpsertBulk {
 	return u.Update(func(s *SituationUpsert) {
 		s.ClearSummary()
-	})
-}
-
-// SetStatus sets the "status" field.
-func (u *SituationUpsertBulk) SetStatus(v situation.Status) *SituationUpsertBulk {
-	return u.Update(func(s *SituationUpsert) {
-		s.SetStatus(v)
-	})
-}
-
-// UpdateStatus sets the "status" field to the value that was provided on create.
-func (u *SituationUpsertBulk) UpdateStatus() *SituationUpsertBulk {
-	return u.Update(func(s *SituationUpsert) {
-		s.UpdateStatus()
 	})
 }
 

@@ -68,7 +68,7 @@ func NewHandler(
 		incidentMilestonesHandler: newIncidentMilestonesHandler(db),
 		tasksHandler:              newTasksHandler(db),
 		incidentsHandler:          newIncidentsHandler(incidents),
-		activityHandler:           &activityHandler{},
+		activityHandler:           newActivityHandler(),
 		integrationsHandler:       newIntegrationsHandler(integrations),
 		meetingsHandler:           newMeetingsHandler(),
 		eventsHandler:             newEventsHandler(events),

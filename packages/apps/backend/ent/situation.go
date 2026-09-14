@@ -34,8 +34,6 @@ type Situation struct {
 	EvidenceRevision int `json:"evidence_revision,omitempty"`
 	// Summary holds the value of the "summary" field.
 	Summary string `json:"summary,omitempty"`
-	// Status holds the value of the "status" field.
-	Status situation.Status `json:"status,omitempty"`
 	// OpenedAt holds the value of the "opened_at" field.
 	OpenedAt time.Time `json:"opened_at,omitempty"`
 	// ClosedAt holds the value of the "closed_at" field.
@@ -132,7 +130,7 @@ func (*Situation) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case situation.FieldTenantID, situation.FieldEvidenceRevision:
 			values[i] = new(sql.NullInt64)
-		case situation.FieldTitle, situation.FieldSummary, situation.FieldStatus, situation.FieldCloseReason:
+		case situation.FieldTitle, situation.FieldSummary, situation.FieldCloseReason:
 			values[i] = new(sql.NullString)
 		case situation.FieldCreatedAt, situation.FieldUpdatedAt, situation.FieldOpenedAt, situation.FieldClosedAt:
 			values[i] = new(sql.NullTime)
@@ -200,12 +198,6 @@ func (_m *Situation) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field summary", values[i])
 			} else if value.Valid {
 				_m.Summary = value.String
-			}
-		case situation.FieldStatus:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field status", values[i])
-			} else if value.Valid {
-				_m.Status = situation.Status(value.String)
 			}
 		case situation.FieldOpenedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -313,9 +305,6 @@ func (_m *Situation) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("summary=")
 	builder.WriteString(_m.Summary)
-	builder.WriteString(", ")
-	builder.WriteString("status=")
-	builder.WriteString(fmt.Sprintf("%v", _m.Status))
 	builder.WriteString(", ")
 	builder.WriteString("opened_at=")
 	builder.WriteString(_m.OpenedAt.Format(time.ANSIC))

@@ -73,8 +73,7 @@ func (a *InvestigationAgent) updateInitialTurnMessage(ctx context.Context, input
 
 	return fmt.Sprintf(`Title: %s
 Summary: %s
-Status: %s
-Opened at: %s`, sit.Title, sit.Summary, sit.Status, sit.OpenedAt.Format("2006-01-02T15:04:05Z07:00")), nil
+Opened at: %s`, sit.Title, sit.Summary, sit.OpenedAt.Format("2006-01-02T15:04:05Z07:00")), nil
 }
 
 func (a *InvestigationAgent) getCustomState(context.Context, *ent.AgentSession) (*rezai.InvestigationAgentState, error) {

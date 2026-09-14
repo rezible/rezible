@@ -8,6 +8,7 @@
 	import PaginatedQueryListBox from "$components/layout/paginated-query-listbox/PaginatedQueryListBox.svelte";
 
 	const controller = initSituationsListController();
+
 	registerPageDescriptor(() => ({ title: "Situations" }));
 </script>
 

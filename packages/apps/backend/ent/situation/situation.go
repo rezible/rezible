@@ -31,8 +31,6 @@ const (
 	FieldEvidenceRevision = "evidence_revision"
 	// FieldSummary holds the string denoting the summary field in the database.
 	FieldSummary = "summary"
-	// FieldStatus holds the string denoting the status field in the database.
-	FieldStatus = "status"
 	// FieldOpenedAt holds the string denoting the opened_at field in the database.
 	FieldOpenedAt = "opened_at"
 	// FieldClosedAt holds the string denoting the closed_at field in the database.
@@ -105,7 +103,6 @@ var Columns = []string{
 	FieldTitle,
 	FieldEvidenceRevision,
 	FieldSummary,
-	FieldStatus,
 	FieldOpenedAt,
 	FieldClosedAt,
 	FieldCloseReason,
@@ -150,32 +147,6 @@ var (
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
-
-// Status defines the type for the "status" enum field.
-type Status string
-
-// StatusOpen is the default value of the Status enum.
-const DefaultStatus = StatusOpen
-
-// Status values.
-const (
-	StatusOpen   Status = "open"
-	StatusClosed Status = "closed"
-)
-
-func (s Status) String() string {
-	return string(s)
-}
-
-// StatusValidator is a validator for the "status" field enum values. It is called by the builders before save.
-func StatusValidator(s Status) error {
-	switch s {
-	case StatusOpen, StatusClosed:
-		return nil
-	default:
-		return fmt.Errorf("situation: invalid enum value for status field: %q", s)
-	}
-}
 
 // CloseReason defines the type for the "close_reason" enum field.
 type CloseReason string
@@ -241,11 +212,6 @@ func ByEvidenceRevision(opts ...sql.OrderTermOption) OrderOption {
 // BySummary orders the results by the summary field.
 func BySummary(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldSummary, opts...).ToFunc()
-}
-
-// ByStatus orders the results by the status field.
-func ByStatus(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldStatus, opts...).ToFunc()
 }
 
 // ByOpenedAt orders the results by the opened_at field.

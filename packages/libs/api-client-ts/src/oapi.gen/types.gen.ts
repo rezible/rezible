@@ -16,6 +16,8 @@ export type ActivityRecordAttributes = {
     recordId: string;
     recordKind: 'incident-update' | 'situation-investigation' | 'inbox-item';
     scope: string;
+    situationId?: string;
+    title: string;
 };
 
 export type AddIncidentDebriefUserMessageAttributes = {
@@ -1493,13 +1495,18 @@ export type InboxItemAttributes = {
     dueAt?: string;
     incidentId?: string;
     kind: 'question' | 'annotation' | 'task' | 'maintenance';
+    occurredAt: string;
     proposedChange?: string;
     reason: string;
     recipientId?: string;
     state: 'open' | 'completed' | 'dismissed';
-    targetId: string;
+    /**
+     * Canonical target ID; absent for maintenance until a canonical resource exists.
+     */
+    targetId?: string;
     targetKind: 'discussion-thread' | 'normalized-event' | 'task' | 'maintenance-request';
     teamId?: string;
+    title: string;
 };
 
 export type Incident = {
@@ -1528,6 +1535,7 @@ export type IncidentAttributes = {
     ticket?: ExternalTicket;
     title: string;
     type: IncidentType;
+    updatedAt: string;
 };
 
 export type IncidentChatChannel = {
@@ -2524,17 +2532,15 @@ export type Situation = {
 };
 
 export type SituationAttributes = {
-    alertEpisodes: Array<AlertEpisode>;
     closeReason?: 'stabilized' | 'dismissed';
     closedAt?: string;
     evidenceRevision: number;
     investigations: Array<SituationInvestigation>;
     knowledgeEntityId: string;
     linkedIncidentIds: Array<string>;
-    observationEvents: Array<Event>;
     observationGroups: Array<SituationObservationGroup>;
     openedAt: string;
-    status: 'open' | 'closed';
+    signalCount: number;
     summary: string;
     title: string;
     updatedAt: string;
@@ -2587,6 +2593,7 @@ export type SituationObservationGroup = {
 };
 
 export type SituationObservationGroupAttributes = {
+    alertEpisodes: Array<AlertEpisode>;
     body?: string;
     events: Array<Event>;
     situationId: string;
@@ -10465,7 +10472,7 @@ export type ListSituationsData = {
         page?: number;
         pageSize?: number;
         search?: string;
-        status?: 'open' | 'closed';
+        status?: 'active' | 'investigating' | 'closed';
         openedAfter?: string;
     };
     url: '/situations';

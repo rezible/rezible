@@ -110,20 +110,6 @@ func (_u *SituationUpdate) ClearSummary() *SituationUpdate {
 	return _u
 }
 
-// SetStatus sets the "status" field.
-func (_u *SituationUpdate) SetStatus(v situation.Status) *SituationUpdate {
-	_u.mutation.SetStatus(v)
-	return _u
-}
-
-// SetNillableStatus sets the "status" field if the given value is not nil.
-func (_u *SituationUpdate) SetNillableStatus(v *situation.Status) *SituationUpdate {
-	if v != nil {
-		_u.SetStatus(*v)
-	}
-	return _u
-}
-
 // SetOpenedAt sets the "opened_at" field.
 func (_u *SituationUpdate) SetOpenedAt(v time.Time) *SituationUpdate {
 	_u.mutation.SetOpenedAt(v)
@@ -381,11 +367,6 @@ func (_u *SituationUpdate) check() error {
 			return &ValidationError{Name: "evidence_revision", err: fmt.Errorf(`ent: validator failed for field "Situation.evidence_revision": %w`, err)}
 		}
 	}
-	if v, ok := _u.mutation.Status(); ok {
-		if err := situation.StatusValidator(v); err != nil {
-			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "Situation.status": %w`, err)}
-		}
-	}
 	if v, ok := _u.mutation.CloseReason(); ok {
 		if err := situation.CloseReasonValidator(v); err != nil {
 			return &ValidationError{Name: "close_reason", err: fmt.Errorf(`ent: validator failed for field "Situation.close_reason": %w`, err)}
@@ -438,9 +419,6 @@ func (_u *SituationUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if _u.mutation.SummaryCleared() {
 		_spec.ClearField(situation.FieldSummary, field.TypeString)
-	}
-	if value, ok := _u.mutation.Status(); ok {
-		_spec.SetField(situation.FieldStatus, field.TypeEnum, value)
 	}
 	if value, ok := _u.mutation.OpenedAt(); ok {
 		_spec.SetField(situation.FieldOpenedAt, field.TypeTime, value)
@@ -748,20 +726,6 @@ func (_u *SituationUpdateOne) ClearSummary() *SituationUpdateOne {
 	return _u
 }
 
-// SetStatus sets the "status" field.
-func (_u *SituationUpdateOne) SetStatus(v situation.Status) *SituationUpdateOne {
-	_u.mutation.SetStatus(v)
-	return _u
-}
-
-// SetNillableStatus sets the "status" field if the given value is not nil.
-func (_u *SituationUpdateOne) SetNillableStatus(v *situation.Status) *SituationUpdateOne {
-	if v != nil {
-		_u.SetStatus(*v)
-	}
-	return _u
-}
-
 // SetOpenedAt sets the "opened_at" field.
 func (_u *SituationUpdateOne) SetOpenedAt(v time.Time) *SituationUpdateOne {
 	_u.mutation.SetOpenedAt(v)
@@ -1032,11 +996,6 @@ func (_u *SituationUpdateOne) check() error {
 			return &ValidationError{Name: "evidence_revision", err: fmt.Errorf(`ent: validator failed for field "Situation.evidence_revision": %w`, err)}
 		}
 	}
-	if v, ok := _u.mutation.Status(); ok {
-		if err := situation.StatusValidator(v); err != nil {
-			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "Situation.status": %w`, err)}
-		}
-	}
 	if v, ok := _u.mutation.CloseReason(); ok {
 		if err := situation.CloseReasonValidator(v); err != nil {
 			return &ValidationError{Name: "close_reason", err: fmt.Errorf(`ent: validator failed for field "Situation.close_reason": %w`, err)}
@@ -1106,9 +1065,6 @@ func (_u *SituationUpdateOne) sqlSave(ctx context.Context) (_node *Situation, er
 	}
 	if _u.mutation.SummaryCleared() {
 		_spec.ClearField(situation.FieldSummary, field.TypeString)
-	}
-	if value, ok := _u.mutation.Status(); ok {
-		_spec.SetField(situation.FieldStatus, field.TypeEnum, value)
 	}
 	if value, ok := _u.mutation.OpenedAt(); ok {
 		_spec.SetField(situation.FieldOpenedAt, field.TypeTime, value)

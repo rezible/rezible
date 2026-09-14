@@ -2,13 +2,14 @@ import { z } from "zod";
 
 export const situationStatusOptions = [
 	{ value: "any", label: "Any" },
-	{ value: "open", label: "Open" },
+	{ value: "active", label: "Active" },
+	{ value: "investigating", label: "Investigating" },
 	{ value: "closed", label: "Closed" },
 ] as const;
 
 export const situationFilterSchema = z.object({
 	search: z.string().default("").catch(""),
-	status: z.enum(["any", "open", "closed"]).default("any").catch("any"),
+	status: z.enum(["any", "active", "investigating", "closed"]).default("any").catch("any"),
 });
 
 export type SituationFilters = z.infer<typeof situationFilterSchema>;

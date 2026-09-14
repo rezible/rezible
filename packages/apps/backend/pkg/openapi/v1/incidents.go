@@ -51,6 +51,7 @@ type (
 		Slug                   string                   `json:"slug"`
 		CurrentStatus          string                   `json:"currentStatus" enum:"started,mitigated,resolved"`
 		OpenedAt               time.Time                `json:"openedAt"`
+		UpdatedAt              time.Time                `json:"updatedAt"`
 		ClosedAt               time.Time                `json:"closedAt"`
 		RetrospectiveId        *uuid.UUID               `json:"retrospectiveId,omitempty"`
 		Severity               IncidentSeverity         `json:"severity"`
@@ -119,6 +120,7 @@ func IncidentFromEnt(inc *ent.Incident) Incident {
 		Title:              inc.Title,
 		Summary:            inc.Summary,
 		OpenedAt:           inc.OpenedAt,
+		UpdatedAt:          inc.UpdatedAt,
 		Tags:               make([]IncidentTag, 0),
 		FieldSelections:    make([]IncidentFieldSelection, 0),
 		LinkedIncidents:    make([]IncidentLink, 0),

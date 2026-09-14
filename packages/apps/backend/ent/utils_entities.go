@@ -79,3 +79,11 @@ func (r *KnowledgeRelationship) LatestEvidence() *KnowledgeEvidence {
 func (am *AgentMessage) MakeGenkitMessage() *ai.Message {
 	return ai.NewMessage(ai.Role(am.Role), am.Metadata, am.Content...)
 }
+
+func (sogs SituationObservationGroups) SignalCount() int {
+	count := 0
+	for _, group := range sogs {
+		count += len(group.Edges.Events) + len(group.Edges.AlertEpisodes)
+	}
+	return count
+}

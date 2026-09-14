@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { resolve } from "$app/paths";
 	import type { Situation } from "$lib/api";
-	import { Badge } from "$components/ui/badge";
+	import SituationStatus from "$features/situations/components/situation-status/SituationStatus.svelte";
 
 	type Props = {
 		situation: Situation;
@@ -18,16 +18,14 @@
 >
 	<div class="flex flex-wrap items-center gap-2">
 		<span class="min-w-0 break-words text-sm font-medium">{attrs.title}</span>
-		<Badge variant="outline" class="capitalize">{attrs.status}</Badge>
+		<SituationStatus attributes={attrs} />
 	</div>
 	{#if attrs.summary}
 		<p class="line-clamp-2 text-sm text-muted-foreground">{attrs.summary}</p>
 	{/if}
 	<div class="flex flex-wrap justify-between gap-x-3 text-xs text-muted-foreground">
 		<span>
-			{attrs.alertEpisodes.length} contributing {attrs.alertEpisodes.length === 1
-				? "signal"
-				: "signals"}
+			{attrs.signalCount} contributing {attrs.signalCount === 1 ? "signal" : "signals"}
 		</span>
 		<time datetime={attrs.openedAt}>Opened {new Date(attrs.openedAt).toLocaleString()}</time>
 	</div>

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { resolve } from "$app/paths";
 	import { Badge } from "$components/ui/badge";
+	import SituationStatus from "$features/situations/components/situation-status/SituationStatus.svelte";
 	import { Button } from "$components/ui/button";
 	import LoadingQueryWrapper from "$components/layout/loading-query-wrapper/LoadingQueryWrapper.svelte";
 	import type { SituationInvestigationReport } from "$lib/api";
@@ -15,14 +16,16 @@
 
 	const controller = initSituationController(() => id);
 	const attrs = $derived(controller.situation?.attributes);
+
 	const reportSections = (report: SituationInvestigationReport) => [
 		{ title: "Recommended actions", items: report.recommendedActions },
 		{ title: "Suggested checks", items: report.suggestedChecks },
 		{ title: "Limitations", items: report.limitations },
 	];
+
 	registerPageDescriptor(() => ({
 		title: attrs?.title ?? "Situation",
-		breadcrumbs: [{ title: "Situations", path: resolve("/situations") }],
+		parents: [{ label: "Situations", path: resolve("/situations") }],
 	}));
 </script>
 
@@ -36,7 +39,7 @@
 			<div class="min-w-0 space-y-2">
 				<h1 class="break-words text-xl font-semibold">{attrs.title}</h1>
 				<div class="flex flex-wrap items-center gap-2">
-					<Badge variant="outline" class="capitalize">{attrs.status}</Badge>
+					<SituationStatus attributes={attrs} />
 					{#if attrs.closeReason}
 						<span class="text-sm capitalize text-muted-foreground">{attrs.closeReason}</span>
 					{/if}
@@ -72,34 +75,29 @@
 		<section class="rounded-lg border border-border bg-card" aria-labelledby="signals-title">
 			<h2 id="signals-title" class="p-4 font-semibold">
 				Contributing signals
-				<span class="font-normal text-muted-foreground">{attrs.alertEpisodes.length}</span>
+				<span class="font-normal text-muted-foreground">{attrs.signalCount}</span>
 			</h2>
-			{#each attrs.alertEpisodes as episode (episode.id)}
-				{@const epAttrs = episode.attributes}
-				{@const alertDef = epAttrs.definition}
+			{#each attrs.observationGroups as group (group.id)}
 				<div class="space-y-2 border-t border-border p-4 text-sm">
-					<div class="flex flex-wrap items-center gap-2">
-						{#if alertDef}
-							<a
-								class="font-medium text-primary hover:underline"
-								href={resolve("/signals/[id]/[[view=signalView]]", { id: alertDef.id })}
-							>
-								{alertDef.attributes.title || "Signal"}
-							</a>
-						{:else}
-							<span class="break-all font-medium">Signal episode {episode.id}</span>
-						{/if}
-						<Badge variant="outline" class="capitalize">{epAttrs.status}</Badge>
-					</div>
-					<div class="flex flex-wrap gap-x-6 gap-y-1 text-xs text-muted-foreground">
-						<span>Started {new Date(epAttrs.startedAt).toLocaleString()}</span>
-						<span>
-							Last observed {new Date(epAttrs.lastObservedAt).toLocaleString()}
-						</span>
-						{#if epAttrs.closedAt}
-							<span>Closed {new Date(epAttrs.closedAt).toLocaleString()}</span>
-						{/if}
-					</div>
+					<h3 class="font-medium">{group.attributes.title}</h3>
+					{#each group.attributes.events as event (event.id)}
+						<a class="block text-primary hover:underline" href={`/events/${event.id}`}
+							>{event.attributes.kind}</a
+						>
+					{/each}
+					{#each group.attributes.alertEpisodes as episode (episode.id)}
+						<div class="flex items-center gap-2">
+							{#if episode.attributes.definition}
+								<a
+									class="text-primary hover:underline"
+									href={resolve("/signals/[id]/[[view=signalView]]", {
+										id: episode.attributes.definition.id,
+									})}>{episode.attributes.definition.attributes.title}</a
+								>
+							{/if}
+							<Badge variant="outline">{episode.attributes.status}</Badge>
+						</div>
+					{/each}
 				</div>
 			{:else}
 				<p class="px-4 pb-4 text-sm text-muted-foreground">No contributing signals recorded.</p>
@@ -115,7 +113,10 @@
 			{#each attrs.investigations as investigation (investigation.id)}
 				{@const investigationAttrs = investigation.attributes}
 				{@const report = investigationAttrs.report}
-				<article class="space-y-4 border-t border-border p-4">
+				<article
+					id={`investigation-${investigation.id}`}
+					class="space-y-4 border-t border-border p-4"
+				>
 					<div class="flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
 						<span>Current evidence revision: {attrs.evidenceRevision}</span>
 						<span>Report covers revision: {investigationAttrs.completedRevision}</span>

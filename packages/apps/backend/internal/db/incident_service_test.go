@@ -142,6 +142,10 @@ func (s *IncidentServiceSuite) TestListIncidentsUsesFilteredTotalsAndStablePages
 		s.Require().NoError(updateErr)
 		incidents[i] = updated
 	}
+	highest := client.IncidentSeverity.Create().SetName("SEV-0").SetRank(0).SaveX(ctx)
+	lower := client.IncidentSeverity.Create().SetName("SEV-2").SetRank(2).SaveX(ctx)
+	incidents[0] = client.Incident.UpdateOneID(incidents[0].ID).SetSeverityID(highest.ID).SetUpdatedAt(openedAt.Add(2 * time.Hour)).SaveX(ctx)
+	incidents[1] = client.Incident.UpdateOneID(incidents[1].ID).SetSeverityID(lower.ID).SetUpdatedAt(openedAt.Add(3 * time.Hour)).SaveX(ctx)
 	s.createBasicIncident(ctx, client, svc, "Unrelated incident")
 
 	params := rez.ListIncidentsParams{Search: "matching", PageSize: 1}
@@ -151,6 +155,7 @@ func (s *IncidentServiceSuite) TestListIncidentsUsesFilteredTotalsAndStablePages
 	s.Equal(1, firstPage.Page)
 	s.Equal(1, firstPage.PageSize)
 	s.Require().Len(firstPage.Data, 1)
+	s.Equal(incidents[0].ID, firstPage.Data[0].ID)
 
 	params.Page = 2
 	secondPage, secondErr := svc.ListIncidents(ctx, params)
@@ -164,6 +169,28 @@ func (s *IncidentServiceSuite) TestListIncidentsUsesFilteredTotalsAndStablePages
 	})
 	s.Require().NoError(repeatedErr)
 	s.Equal(firstPage.Data[0].ID, repeatedFirstPage.Data[0].ID)
+
+	// Within the same severity, latest update wins before the page is sliced.
+	updateSecond := client.Incident.UpdateOneID(incidents[1].ID).
+		SetSeverityID(highest.ID).
+		SetUpdatedAt(openedAt.Add(3 * time.Hour))
+	s.Require().NoError(updateSecond.Exec(ctx))
+	latest, latestErr := svc.ListIncidents(ctx, rez.ListIncidentsParams{Search: "matching", PageSize: 1})
+	s.Require().NoError(latestErr)
+	s.Require().Len(latest.Data, 1)
+	s.Equal(incidents[1].ID, latest.Data[0].ID)
+
+	updateFirst := client.Incident.UpdateOneID(incidents[0].ID).
+		SetUpdatedAt(openedAt.Add(3 * time.Hour))
+	s.Require().NoError(updateFirst.Exec(ctx))
+	tied, tiedErr := svc.ListIncidents(ctx, rez.ListIncidentsParams{Search: "matching", PageSize: 1})
+	s.Require().NoError(tiedErr)
+	s.Require().Len(tied.Data, 1)
+	expected := incidents[0].ID
+	if incidents[1].ID.String() < expected.String() {
+		expected = incidents[1].ID
+	}
+	s.Equal(expected, tied.Data[0].ID)
 
 }
 

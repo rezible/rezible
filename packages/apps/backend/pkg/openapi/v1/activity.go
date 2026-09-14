@@ -25,11 +25,13 @@ type (
 
 	ActivityRecordAttributes struct {
 		OccurredAt  time.Time  `json:"occurredAt"`
+		Title       string     `json:"title"`
 		Explanation string     `json:"explanation"`
 		RecordKind  string     `json:"recordKind" enum:"incident-update,situation-investigation,inbox-item"`
 		RecordId    uuid.UUID  `json:"recordId"`
 		Scope       string     `json:"scope"`
 		IncidentId  *uuid.UUID `json:"incidentId,omitempty"`
+		SituationId *uuid.UUID `json:"situationId,omitempty"`
 	}
 )
 

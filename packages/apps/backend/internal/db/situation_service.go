@@ -49,20 +49,28 @@ func (s *SituationService) ListSituations(ctx context.Context, params rez.ListSi
 	query := s.db.Client(ctx).Situation.Query().
 		WithKnowledgeEntity().
 		WithInvestigations(func(q *ent.SituationInvestigationQuery) {
-			q.WithAgentSession()
+
 		}).
 		WithObservationGroups(func(q *ent.SituationObservationGroupQuery) {
-			q.WithEvents()
-			q.WithAlertEpisodes()
 			q.Order(sog.ByID())
 		}).
-		WithIncidents().
 		Order(situation.ByOpenedAt(params.GetOrder()), situation.ByID(params.GetOrder()))
 	if search := strings.TrimSpace(params.Search); search != "" {
 		query = query.Where(situation.TitleContainsFold(search))
 	}
-	if params.Status != "" {
-		query = query.Where(situation.StatusEQ(params.Status))
+	if params.HasInvestigations != nil {
+		pred := situation.HasInvestigations()
+		if !*params.HasInvestigations {
+			pred = situation.Not(pred)
+		}
+		query = query.Where(pred)
+	}
+	if params.Active != nil {
+		if *params.Active {
+			query = query.Where(situation.ClosedAtIsNil())
+		} else {
+			query = query.Where(situation.ClosedAtNotNil())
+		}
 	}
 	if params.OpenedAfter != nil {
 		query = query.Where(situation.OpenedAtGTE(*params.OpenedAfter))
@@ -107,7 +115,6 @@ func (s *SituationService) CreateSituation(ctx context.Context, params rez.Creat
 			SetID(situationId).
 			SetKnowledgeEntityID(knEntId).
 			SetTitle(title).
-			SetStatus(situation.StatusOpen).
 			SetOpenedAt(openedAt)
 		if summary := strings.TrimSpace(params.Summary); summary != "" {
 			createSituation.SetSummary(summary)
@@ -172,7 +179,7 @@ func (s *SituationService) CloseSituation(ctx context.Context, params rez.CloseS
 		if queryErr != nil {
 			return fmt.Errorf("get situation: %w", queryErr)
 		}
-		if current.Status == situation.StatusClosed {
+		if current.ClosedAt != nil {
 			if current.CloseReason != nil && *current.CloseReason == params.Reason {
 				closed = current.Unwrap()
 				return nil
@@ -181,7 +188,6 @@ func (s *SituationService) CloseSituation(ctx context.Context, params rez.CloseS
 		}
 
 		update := tx.Situation.UpdateOneID(params.SituationID).
-			SetStatus(situation.StatusClosed).
 			SetCloseReason(params.Reason).
 			SetClosedAt(time.Now().UTC())
 		updated, updateErr := update.Save(ctx)

@@ -3,10 +3,8 @@ package apiv1
 import (
 	"context"
 	"maps"
-	"sort"
 	"strings"
 
-	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/organization"
@@ -19,6 +17,8 @@ import (
 type userSessionsHandler struct {
 	orgs  rez.OrganizationService
 	users rez.UserService
+
+	inboxExamples []oapi.InboxItem
 }
 
 func newUserSessionsHandler(orgs rez.OrganizationService, users rez.UserService) *userSessionsHandler {
@@ -150,115 +150,13 @@ func (h *userSessionsHandler) DeleteNotification(ctx context.Context, req *oapi.
 	return &resp, nil
 }
 
-var inboxItemExamples = []oapi.InboxItem{
-	{
-		Id: uuid.MustParse("77000000-0000-4000-8000-000000000001"),
-		Attributes: oapi.InboxItemAttributes{
-			Kind:        "question",
-			Reason:      "Confirm deploy correlation.",
-			RecipientId: new(uuid.MustParse("55555555-5555-4555-8555-555555555555")),
-			TargetKind:  "discussion-thread",
-			TargetId:    uuid.MustParse("88000000-0000-4000-8000-000000000001"),
-			State:       "open",
-			Context:     "Checkout investigation",
-			AnalysisId:  new(uuid.MustParse("22000000-0000-4000-8000-000000000001")),
-			TeamId:      new(uuid.MustParse("33333333-3333-4333-8333-333333333333")),
-		},
-	},
-	{
-		Id: uuid.MustParse("77000000-0000-4000-8000-000000000002"),
-		Attributes: oapi.InboxItemAttributes{
-			Kind:        "annotation",
-			Reason:      "Annotate rollback evidence.",
-			RecipientId: new(uuid.MustParse("55555555-5555-4555-8555-555555555555")),
-			TargetKind:  "normalized-event",
-			TargetId:    uuid.MustParse("30000000-0000-4000-8000-000000000004"),
-			State:       "open",
-			Context:     "Checkout analysis",
-			AnalysisId:  new(uuid.MustParse("22000000-0000-4000-8000-000000000001")),
-			TeamId:      new(uuid.MustParse("33333333-3333-4333-8333-333333333333")),
-		},
-	},
-	{
-		Id: uuid.MustParse("77000000-0000-4000-8000-000000000003"),
-		Attributes: oapi.InboxItemAttributes{
-			Kind:        "task",
-			Reason:      "Validate pool limit.",
-			RecipientId: new(uuid.MustParse("55555555-5555-4555-8555-555555555555")),
-			TargetKind:  "task",
-			TargetId:    uuid.MustParse("99000000-0000-4000-8000-000000000001"),
-			State:       "completed",
-			Context:     "Checkout incident",
-			IncidentId:  new(uuid.MustParse("44000000-0000-4000-8000-000000000001")),
-			TeamId:      new(uuid.MustParse("33333333-3333-4333-8333-333333333333")),
-		},
-	},
-	{
-		Id: uuid.MustParse("77000000-0000-4000-8000-000000000004"),
-		Attributes: oapi.InboxItemAttributes{
-			Kind:           "maintenance",
-			Reason:         "Review runbook update.",
-			RecipientId:    new(uuid.MustParse("55555555-5555-4555-8555-555555555555")),
-			TargetKind:     "maintenance-request",
-			TargetId:       uuid.MustParse("aa000000-0000-4000-8000-000000000001"),
-			State:          "open",
-			Context:        "Reliability maintenance",
-			ProposedChange: "Add rollback verification and pool saturation checks to the checkout runbook.",
-			TeamId:         new(uuid.MustParse("33333333-3333-4333-8333-333333333333")),
-		},
-	},
-}
-
 func (h *userSessionsHandler) ListInboxItems(ctx context.Context, request *oapi.ListInboxItemsRequest) (*oapi.ListInboxItemsResponse, error) {
-	viewer, ok := execution.GetContext(ctx).UserID()
-	if request.Scope == "mine" && !ok {
-		return nil, oapi.Error(ctx, "authenticated viewer is required for Mine", rez.ErrAuthSessionMissing)
-	}
-	if request.Scope == "team" && request.TeamId == uuid.Nil {
-		return nil, oapi.Error(ctx, "teamId is required for Team", rez.ErrInvalidInput)
-	}
-	items := make([]oapi.InboxItem, 0)
-	for _, inboxItem := range inboxItemExamples {
-		if request.RecipientId != uuid.Nil && (inboxItem.Attributes.RecipientId == nil || *inboxItem.Attributes.RecipientId != request.RecipientId) {
-			continue
-		}
-		if request.Kind != "" && request.Kind != inboxItem.Attributes.Kind {
-			continue
-		}
-		if request.State != "" && request.State != inboxItem.Attributes.State {
-			continue
-		}
-		if request.Scope == "mine" && (inboxItem.Attributes.RecipientId == nil || *inboxItem.Attributes.RecipientId != viewer) {
-			continue
-		}
-		if request.TeamId != uuid.Nil && (inboxItem.Attributes.TeamId == nil || *inboxItem.Attributes.TeamId != request.TeamId) {
-			continue
-		}
-		items = append(items, inboxItem)
-	}
-	sort.Slice(items, func(i, j int) bool { return items[i].Id.String() < items[j].Id.String() })
-	page, pageSize := request.Page, request.PageSize
-	if page < 1 {
-		page = 1
-	}
-	if pageSize < 1 {
-		pageSize = 25
-	}
-	start := min((page-1)*pageSize, len(items))
-	end := min(start+pageSize, len(items))
 	var response oapi.ListInboxItemsResponse
-	response.Body.Data = items[start:end]
-	response.Body.Pagination = oapi.Pagination{Page: page, PageSize: pageSize, Total: len(items)}
+	response.Body.Data = make([]oapi.InboxItem, 0)
+	response.Body.Pagination = oapi.Pagination{Page: 1, PageSize: 25, Total: 0}
 	return &response, nil
 }
 
-func (*userSessionsHandler) GetInboxItem(ctx context.Context, request *oapi.GetInboxItemRequest) (*oapi.GetInboxItemResponse, error) {
-	for _, item := range inboxItemExamples {
-		if item.Id == request.Id {
-			response := &oapi.GetInboxItemResponse{}
-			response.Body.Data = item
-			return response, nil
-		}
-	}
+func (h *userSessionsHandler) GetInboxItem(ctx context.Context, request *oapi.GetInboxItemRequest) (*oapi.GetInboxItemResponse, error) {
 	return nil, oapi.Error(ctx, "inbox item not found", rez.ErrNotFound)
 }

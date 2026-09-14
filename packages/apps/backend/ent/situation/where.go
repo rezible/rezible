@@ -402,26 +402,6 @@ func SummaryContainsFold(v string) predicate.Situation {
 	return predicate.Situation(sql.FieldContainsFold(FieldSummary, v))
 }
 
-// StatusEQ applies the EQ predicate on the "status" field.
-func StatusEQ(v Status) predicate.Situation {
-	return predicate.Situation(sql.FieldEQ(FieldStatus, v))
-}
-
-// StatusNEQ applies the NEQ predicate on the "status" field.
-func StatusNEQ(v Status) predicate.Situation {
-	return predicate.Situation(sql.FieldNEQ(FieldStatus, v))
-}
-
-// StatusIn applies the In predicate on the "status" field.
-func StatusIn(vs ...Status) predicate.Situation {
-	return predicate.Situation(sql.FieldIn(FieldStatus, vs...))
-}
-
-// StatusNotIn applies the NotIn predicate on the "status" field.
-func StatusNotIn(vs ...Status) predicate.Situation {
-	return predicate.Situation(sql.FieldNotIn(FieldStatus, vs...))
-}
-
 // OpenedAtEQ applies the EQ predicate on the "opened_at" field.
 func OpenedAtEQ(v time.Time) predicate.Situation {
 	return predicate.Situation(sql.FieldEQ(FieldOpenedAt, v))

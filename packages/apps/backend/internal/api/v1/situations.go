@@ -24,7 +24,15 @@ func (h *situationsHandler) ListSituations(ctx context.Context, request *oapi.Li
 	var response oapi.ListSituationsResponse
 	params := rez.ListSituationsParams{
 		ListParams: request.ListParams(),
-		Status:     request.Status,
+	}
+	if request.Status != "" {
+		if request.Status == "active" {
+			params.Active = new(true)
+		} else if request.Status == "investigating" {
+			params.HasInvestigations = new(true)
+		} else if request.Status == "closed" {
+			params.Active = new(false)
+		}
 	}
 	if !request.OpenedAfter.IsZero() {
 		params.OpenedAfter = &request.OpenedAfter

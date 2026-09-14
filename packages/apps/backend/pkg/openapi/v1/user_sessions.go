@@ -76,12 +76,14 @@ type (
 
 	InboxItemAttributes struct {
 		Kind           string     `json:"kind" enum:"question,annotation,task,maintenance"`
+		Title          string     `json:"title"`
 		Reason         string     `json:"reason"`
 		RecipientId    *uuid.UUID `json:"recipientId,omitempty"`
 		TargetKind     string     `json:"targetKind" enum:"discussion-thread,normalized-event,task,maintenance-request"`
-		TargetId       uuid.UUID  `json:"targetId"`
+		TargetId       *uuid.UUID `json:"targetId,omitempty" doc:"Canonical target ID; absent for maintenance until a canonical resource exists."`
 		State          string     `json:"state" enum:"open,completed,dismissed"`
 		Context        string     `json:"context"`
+		OccurredAt     time.Time  `json:"occurredAt"`
 		TeamId         *uuid.UUID `json:"teamId,omitempty"`
 		DueAt          *time.Time `json:"dueAt,omitempty"`
 		AnalysisId     *uuid.UUID `json:"analysisId,omitempty"`

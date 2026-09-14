@@ -23,15 +23,6 @@ func (Situation) Mixin() []ent.Mixin {
 	}
 }
 
-func (Situation) Annotations() []entschema.Annotation {
-	return []entschema.Annotation{
-		entsql.Annotation{Checks: map[string]string{
-			"situation_open_state_consistent":   "(status = 'open' AND closed_at IS NULL AND close_reason IS NULL) OR status <> 'open'",
-			"situation_closed_state_consistent": "(status = 'closed' AND closed_at IS NOT NULL AND close_reason IS NOT NULL) OR status <> 'closed'",
-		}},
-	}
-}
-
 func (Situation) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
@@ -39,7 +30,6 @@ func (Situation) Fields() []ent.Field {
 		field.String("title").NotEmpty(),
 		field.Int("evidence_revision").Positive().Default(1),
 		field.Text("summary").Optional(),
-		field.Enum("status").Values("open", "closed").Default("open"),
 		field.Time("opened_at"),
 		field.Time("closed_at").Optional().Nillable(),
 		field.Enum("close_reason").Values("stabilized", "dismissed").Optional().Nillable(),
@@ -65,7 +55,7 @@ func (Situation) Edges() []ent.Edge {
 func (Situation) Indexes() []ent.Index {
 	return []ent.Index{
 		index.Fields("tenant_id", "knowledge_entity_id").Unique(),
-		index.Fields("tenant_id", "status", "opened_at"),
+		index.Fields("tenant_id", "opened_at"),
 	}
 }
 

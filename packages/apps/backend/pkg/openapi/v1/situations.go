@@ -11,7 +11,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/schema/schematypes"
-	"github.com/rezible/rezible/ent/situation"
 	"github.com/rezible/rezible/ent/situationhazardassessment"
 	rezai "github.com/rezible/rezible/pkg/ai"
 	"github.com/rezible/rezible/pkg/openapi"
@@ -50,7 +49,7 @@ type (
 	SituationAttributes struct {
 		Title             string                      `json:"title"`
 		Summary           string                      `json:"summary"`
-		Status            string                      `json:"status" enum:"open,closed"`
+		SignalCount       int                         `json:"signalCount"`
 		CloseReason       *string                     `json:"closeReason,omitempty" enum:"stabilized,dismissed"`
 		EvidenceRevision  int                         `json:"evidenceRevision"`
 		KnowledgeEntityId uuid.UUID                   `json:"knowledgeEntityId"`
@@ -183,7 +182,7 @@ func SituationFromEnt(s *ent.Situation) (Situation, error) {
 	attrs := SituationAttributes{
 		Title:             s.Title,
 		Summary:           s.Summary,
-		Status:            string(s.Status),
+		SignalCount:       ent.SituationObservationGroups(s.Edges.ObservationGroups).SignalCount(),
 		EvidenceRevision:  s.EvidenceRevision,
 		KnowledgeEntityId: s.KnowledgeEntityID,
 		ObservationGroups: ConvertSlice(s.Edges.ObservationGroups, SituationObservationGroupFromEnt),
@@ -222,9 +221,9 @@ var ListSituations = openapi.Operation{
 
 type ListSituationsRequest struct {
 	PaginationRequest
-	Search      string           `query:"search" required:"false" nullable:"false"`
-	Status      situation.Status `query:"status" required:"false" enum:"open,closed"`
-	OpenedAfter time.Time        `query:"openedAfter" required:"false" format:"date-time"`
+	Search      string    `query:"search" required:"false" nullable:"false"`
+	Status      string    `query:"status" required:"false" enum:"active,investigating,closed"`
+	OpenedAfter time.Time `query:"openedAfter" required:"false" format:"date-time"`
 }
 
 type ListSituationsResponse PaginatedResponse[Situation]

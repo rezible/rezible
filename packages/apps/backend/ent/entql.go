@@ -1239,7 +1239,6 @@ var schemaGraph = func() *sqlgraph.Schema {
 			situation.FieldTitle:             {Type: field.TypeString, Column: situation.FieldTitle},
 			situation.FieldEvidenceRevision:  {Type: field.TypeInt, Column: situation.FieldEvidenceRevision},
 			situation.FieldSummary:           {Type: field.TypeString, Column: situation.FieldSummary},
-			situation.FieldStatus:            {Type: field.TypeEnum, Column: situation.FieldStatus},
 			situation.FieldOpenedAt:          {Type: field.TypeTime, Column: situation.FieldOpenedAt},
 			situation.FieldClosedAt:          {Type: field.TypeTime, Column: situation.FieldClosedAt},
 			situation.FieldCloseReason:       {Type: field.TypeEnum, Column: situation.FieldCloseReason},
@@ -12703,11 +12702,6 @@ func (f *SituationFilter) WhereEvidenceRevision(p entql.IntP) {
 // WhereSummary applies the entql string predicate on the summary field.
 func (f *SituationFilter) WhereSummary(p entql.StringP) {
 	f.Where(p.Field(situation.FieldSummary))
-}
-
-// WhereStatus applies the entql string predicate on the status field.
-func (f *SituationFilter) WhereStatus(p entql.StringP) {
-	f.Where(p.Field(situation.FieldStatus))
 }
 
 // WhereOpenedAt applies the entql time.Time predicate on the opened_at field.

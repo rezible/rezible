@@ -12,7 +12,6 @@ import (
 	"github.com/rezible/rezible/ent/agentturn"
 	kne "github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/schema/schematypes"
-	"github.com/rezible/rezible/ent/situation"
 	"github.com/rezible/rezible/ent/situationinvestigation"
 	sae "github.com/rezible/rezible/ent/systemanalysisentity"
 	saentry "github.com/rezible/rezible/ent/systemanalysisentry"
@@ -57,7 +56,6 @@ func seedBaseInvestigation(ctx context.Context, client *ent.Client, referenceTim
 		SetKnowledgeEntityID(situationEntity.ID).
 		SetTitle("Checkout API degradation").
 		SetSummary(description).
-		SetStatus(situation.StatusOpen).
 		SetOpenedAt(referenceTime)
 	createdSituation, situationErr := createSituation.Save(ctx)
 	if situationErr != nil {
