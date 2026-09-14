@@ -19,18 +19,19 @@ const (
 	knowledgeAssertionIncidentObserved = "incident_observed"
 )
 
-func (s *ProjectionService) handleIncidentEvent(ctx context.Context, event *projections.IncidentEvent) ([]rez.ProjectedEntityRef, error) {
-	attributes := event.Attributes
+func (s *ProjectionService) handleIncidentEvent(ctx context.Context, e *projections.IncidentEvent) ([]rez.ProjectedEntityRef, error) {
+	event := e.Event
+	attrs := e.Attributes
 
-	openedAt := attributes.OpenedAt
+	openedAt := attrs.OpenedAt
 	if openedAt.IsZero() {
-		openedAt = event.Event.OccurredAt
+		openedAt = event.OccurredAt
 	}
 
 	incidentResourceRef := rez.ProviderResourceRef{
-		Provider:          event.Event.Provider,
-		ProviderNamespace: event.Event.ProviderNamespace,
-		ResourceRef:       event.Event.ProviderResourceRef,
+		Provider:          event.Provider,
+		ProviderNamespace: event.ProviderNamespace,
+		ResourceRef:       event.ProviderResourceRef,
 	}
 	incidentEntityRef := rez.KnowledgeEntityRef{
 		Category:            kne.CategoryEvent,
@@ -38,25 +39,22 @@ func (s *ProjectionService) handleIncidentEvent(ctx context.Context, event *proj
 		ProviderResourceRef: incidentResourceRef,
 	}
 	incidentObservedEvidence := rez.KnowledgeEvidenceRef{
-		Kind:        projectionEvidenceKind(event.Event),
+		Kind:        projectionEvidenceKind(event),
 		Assertion:   knowledgeAssertionIncidentObserved,
 		EffectiveAt: openedAt,
 		SubjectState: schematypes.KnowledgeGraphSubjectState{
-			DisplayName: attributes.Title,
-			Description: attributes.Summary,
+			DisplayName: attrs.Title,
+			Description: attrs.Summary,
 		},
 		Subject: rez.KnowledgeSubjectRef{Entity: &incidentEntityRef},
 	}
 
 	var projected []rez.ProjectedEntityRef
 	return projected, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
-		subj, ingestErr := s.ingestSubjectEvidence(ctx, event.Event, incidentObservedEvidence)
+		knowledgeEntityId, ingestErr := s.ingestEntityEvidence(ctx, event, incidentObservedEvidence)
 		if ingestErr != nil {
 			return fmt.Errorf("incident knowledge evidence: %w", ingestErr)
-		} else if subj.EntityID == nil {
-			return fmt.Errorf("nil subject entity")
 		}
-		knowledgeEntityId := *subj.EntityID
 
 		queryExisting := tx.Incident.Query().
 			Where(incident.KnowledgeEntityID(knowledgeEntityId))
@@ -65,20 +63,20 @@ func (s *ProjectionService) handleIncidentEvent(ctx context.Context, event *proj
 			return fmt.Errorf("query existing incident: %w", existingErr)
 		}
 
-		severityID, severityErr := s.saveProjectedIncidentSeverity(ctx, attributes)
+		severityID, severityErr := s.saveProjectedIncidentSeverity(ctx, attrs)
 		if severityErr != nil {
 			return fmt.Errorf("upsert incident severity: %w", severityErr)
 		}
 
-		typeID, typeErr := s.saveProjectedIncidentType(ctx, attributes)
+		typeID, typeErr := s.saveProjectedIncidentType(ctx, attrs)
 		if typeErr != nil {
 			return fmt.Errorf("upsert incident type: %w", typeErr)
 		}
 
 		id := uuid.Nil
 		if existing != nil {
-			if existing.Title == attributes.Title &&
-				existing.Summary == attributes.Summary &&
+			if existing.Title == attrs.Title &&
+				existing.Summary == attrs.Summary &&
 				existing.SeverityID == severityID &&
 				existing.TypeID == typeID {
 				return nil
@@ -88,8 +86,8 @@ func (s *ProjectionService) handleIncidentEvent(ctx context.Context, event *proj
 
 		setFn := func(m *ent.IncidentMutation) {
 			m.SetKnowledgeEntityID(knowledgeEntityId)
-			m.SetTitle(attributes.Title)
-			m.SetSummary(attributes.Summary)
+			m.SetTitle(attrs.Title)
+			m.SetSummary(attrs.Summary)
 			m.SetSeverityID(severityID)
 			m.SetTypeID(typeID)
 			if !openedAt.IsZero() {

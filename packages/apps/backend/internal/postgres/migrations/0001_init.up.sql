@@ -345,13 +345,13 @@ CREATE TABLE "reviews" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "
 -- create index "review_tenant_id" to table: "reviews"
 CREATE INDEX "review_tenant_id" ON "reviews" ("tenant_id");
 -- create "situations" table
-CREATE TABLE "situations" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "title" character varying NOT NULL, "evidence_revision" bigint NOT NULL DEFAULT 1, "summary" text NULL, "status" character varying NOT NULL DEFAULT 'observed', "opened_at" timestamptz NOT NULL, "closed_at" timestamptz NULL, "close_reason" character varying NULL, "tenant_id" bigint NOT NULL, "knowledge_entity_id" uuid NOT NULL, PRIMARY KEY ("id"), CONSTRAINT "situation_active_state_consistent" CHECK ((status IN ('observed', 'investigating') AND closed_at IS NULL AND close_reason IS NULL) OR status = 'closed'), CONSTRAINT "situation_closed_state_consistent" CHECK ((status = 'closed' AND closed_at IS NOT NULL AND close_reason IS NOT NULL) OR status <> 'closed'));
+CREATE TABLE "situations" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "title" character varying NOT NULL, "evidence_revision" bigint NOT NULL DEFAULT 1, "summary" text NULL, "opened_at" timestamptz NOT NULL, "closed_at" timestamptz NULL, "close_reason" character varying NULL, "tenant_id" bigint NOT NULL, "knowledge_entity_id" uuid NOT NULL, PRIMARY KEY ("id"));
 -- create index "situation_tenant_id" to table: "situations"
 CREATE INDEX "situation_tenant_id" ON "situations" ("tenant_id");
 -- create index "situation_tenant_id_knowledge_entity_id" to table: "situations"
 CREATE UNIQUE INDEX "situation_tenant_id_knowledge_entity_id" ON "situations" ("tenant_id", "knowledge_entity_id");
--- create index "situation_tenant_id_status_opened_at" to table: "situations"
-CREATE INDEX "situation_tenant_id_status_opened_at" ON "situations" ("tenant_id", "status", "opened_at");
+-- create index "situation_tenant_id_opened_at" to table: "situations"
+CREATE INDEX "situation_tenant_id_opened_at" ON "situations" ("tenant_id", "opened_at");
 -- create "situation_hazard_assessments" table
 CREATE TABLE "situation_hazard_assessments" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "revision" bigint NOT NULL, "status" character varying NOT NULL, "summary" text NOT NULL, "assessed_at" timestamptz NOT NULL, "situation_id" uuid NOT NULL, "tenant_id" bigint NOT NULL, "user_id" uuid NULL, "agent_turn_id" uuid NULL, "system_hazard_id" uuid NOT NULL, PRIMARY KEY ("id"), CONSTRAINT "situation_hazard_assessment_exactly_one_assessor" CHECK (num_nonnulls(user_id, agent_turn_id) = 1));
 -- create index "situationhazardassessment_tenant_id" to table: "situation_hazard_assessments"

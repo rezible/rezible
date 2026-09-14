@@ -58,7 +58,7 @@ const filterGroups = (groups: AppSidebarGroup[] | undefined, query?: string) => 
 const defaultSidebarModel: AppSidebarModel = {
 	groups: [
 		{
-			label: "General",
+			// label: "General",
 			items: [
 				{ label: "Home", href: "/", icon: RiRadarLine },
 				{ label: "Incidents", href: "/incidents", icon: RiPulseLine },

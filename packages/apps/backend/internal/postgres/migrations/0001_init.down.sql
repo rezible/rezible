@@ -360,8 +360,8 @@ DROP INDEX "situationhazardassessment_tena_cb32fa264c6edabff58104f36323e533";
 DROP INDEX "situationhazardassessment_tenant_id";
 -- reverse: create "situation_hazard_assessments" table
 DROP TABLE "situation_hazard_assessments";
--- reverse: create index "situation_tenant_id_status_opened_at" to table: "situations"
-DROP INDEX "situation_tenant_id_status_opened_at";
+-- reverse: create index "situation_tenant_id_opened_at" to table: "situations"
+DROP INDEX "situation_tenant_id_opened_at";
 -- reverse: create index "situation_tenant_id_knowledge_entity_id" to table: "situations"
 DROP INDEX "situation_tenant_id_knowledge_entity_id";
 -- reverse: create index "situation_tenant_id" to table: "situations"

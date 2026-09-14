@@ -110,37 +110,27 @@ func (s *IncidentService) Get(ctx context.Context, p predicate.Incident) (*ent.I
 }
 
 func (s *IncidentService) Set(ctx context.Context, id uuid.UUID, setFn func(*ent.IncidentMutation)) (*ent.Incident, error) {
-	var curr *ent.Incident
-	client := s.db.Client(ctx)
-	if id != uuid.Nil {
-		inc, getErr := client.Incident.Get(ctx, id)
-		if getErr != nil {
-			return nil, fmt.Errorf("fetch existing incident: %w", getErr)
-		}
-		curr = inc
-	}
-	isCreate := id == uuid.Nil && curr == nil
+	isCreate := id == uuid.Nil
 
 	var mutator ent.EntityMutator[*ent.Incident, *ent.IncidentMutation]
 	if isCreate {
-		mutator = client.Incident.Create().SetID(uuid.New())
+		mutator = s.db.Client(ctx).Incident.Create().SetID(uuid.New())
 	} else {
-		mutator = client.Incident.UpdateOne(curr)
+		mutator = s.db.Client(ctx).Incident.UpdateOneID(id)
 	}
 	mut := mutator.Mutation()
 	setFn(mut)
 
 	if isCreate {
-		m := client.Incident.Create().Mutation()
-		setFn(m)
 		openedAt := time.Now()
-		if at, exists := m.OpenedAt(); exists {
+		if at, exists := mut.OpenedAt(); exists {
 			openedAt = at
 		}
 		incSlug, slugErr := s.generateIncidentSlug(ctx, openedAt)
 		if slugErr != nil {
 			return nil, fmt.Errorf("generate unique slug: %w", slugErr)
 		}
+		slog.Debug("generated slug", "slug", incSlug)
 		mut.SetSlug(incSlug)
 	}
 
@@ -250,26 +240,27 @@ var (
 )
 
 func (s *IncidentService) generateIncidentSlug(ctx context.Context, openedAt time.Time) (string, error) {
-	randgen := rand.New(rand.NewSource(openedAt.UnixNano()))
 	datePrefix := openedAt.Format("060102")
-	const maxRetries = 5
-	for attempt := 0; attempt < maxRetries; attempt++ {
-		adj := slugAdjectives[randgen.Intn(len(slugAdjectives))]
-		noun := slugNouns[randgen.Intn(len(slugNouns))]
+	const maxRetries = 3
+	for range maxRetries {
+		adj := slugAdjectives[rand.Intn(len(slugAdjectives))]
+		noun := slugNouns[rand.Intn(len(slugNouns))]
 		candidate := slug.Make(fmt.Sprintf("%s-%s-%s", datePrefix, adj, noun))
 
-		exists, queryErr := s.db.Client(ctx).Incident.Query().Where(incident.Slug(candidate)).Exist(ctx)
-		if queryErr != nil {
-			return "", fmt.Errorf("failed to check slug uniqueness: %w", queryErr)
-		}
+		querySlug := s.db.Client(ctx).Incident.Query().
+			Where(incident.Slug(candidate))
+		exists, queryErr := querySlug.Exist(ctx)
 		if !exists {
+			if queryErr != nil {
+				return "", fmt.Errorf("failed to check slug uniqueness: %w", queryErr)
+			}
 			return candidate, nil
 		}
 	}
 
 	// fallback - use uuid as suffix
-	adj := slugAdjectives[randgen.Intn(len(slugAdjectives))]
-	noun := slugNouns[randgen.Intn(len(slugNouns))]
+	adj := slugAdjectives[rand.Intn(len(slugAdjectives))]
+	noun := slugNouns[rand.Intn(len(slugNouns))]
 	shortUUID := uuid.New().String()[:8]
 	uuidSlug := slug.Make(fmt.Sprintf("%s-%s-%s-%s", datePrefix, adj, noun, shortUUID))
 	slog.Warn("falling back to uuid incident slug", "slug", uuidSlug)

@@ -47,12 +47,12 @@ export class AppShellController {
 	pageDescriptor = $state.raw<PageDescriptor<AnyComponent>>();
 	private pageDescriptorOwner?: object;
 
-	registerPageDescriptor<C extends AnyComponent>(getDescriptor: Getter<PageDescriptor<C>>) {
+	registerPageDescriptor<C extends AnyComponent>(fn: Getter<PageDescriptor<C>>) {
 		const owner = {};
 		this.pageDescriptorOwner = owner;
-		this.pageDescriptor = getDescriptor();
+		this.pageDescriptor = fn();
 
-		watch(getDescriptor, (descriptor) => {
+		watch(fn, (descriptor) => {
 			if (this.pageDescriptorOwner === owner) {
 				this.pageDescriptor = descriptor;
 			}

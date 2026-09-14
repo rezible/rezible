@@ -11,7 +11,7 @@ export const incidentStatusOptions = [
 
 export const incidentFilterSchema = z.object({
 	search: z.string().default("").catch(""),
-	status: z.enum(["active", "any", "started", "mitigated", "resolved"]).default("active").catch("active"),
+	status: z.enum(["active", "any", "started", "mitigated", "resolved"]).default("any").catch("any"),
 	severityId: z
 		.union([z.uuid(), z.literal("")])
 		.default("")
