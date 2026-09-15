@@ -132,6 +132,9 @@ func (s *JobService) extractContextPgxTx(ctx context.Context) (bool, pgx.Tx, err
 }
 
 func (s *JobService) Insert(ctx context.Context, args river.JobArgs, opts *river.InsertOpts) (*rivertype.JobInsertResult, error) {
+	if prepareErr := jobs.SetContextualArgs(ctx, args); prepareErr != nil {
+		return nil, fmt.Errorf("prepare job %q: %w", args.Kind(), prepareErr)
+	}
 	client, clientErr := s.getClient()
 	if clientErr != nil {
 		return nil, clientErr
@@ -146,6 +149,11 @@ func (s *JobService) Insert(ctx context.Context, args river.JobArgs, opts *river
 }
 
 func (s *JobService) InsertMany(ctx context.Context, params []river.InsertManyParams) ([]*rivertype.JobInsertResult, error) {
+	for i, param := range params {
+		if prepareErr := jobs.SetContextualArgs(ctx, param.Args); prepareErr != nil {
+			return nil, fmt.Errorf("prepare job %q at batch index %d: %w", param.Args.Kind(), i, prepareErr)
+		}
+	}
 	client, clientErr := s.getClient()
 	if clientErr != nil {
 		return nil, clientErr

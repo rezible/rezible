@@ -1,11 +1,54 @@
 package jobs
 
 import (
+	"context"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/pkg/execution"
+
 	"github.com/riverqueue/river"
+
+	rez "github.com/rezible/rezible"
 )
+
+// SetContextualArgs populates context-derived fields before River encodes arguments and calculates uniqueness. Ordinary arguments are unchanged.
+func SetContextualArgs(ctx context.Context, args JobArgs) error {
+	if setter, hasTenantID := args.(tenantIDSetter); hasTenantID {
+		tenantID, tenantOK := execution.GetContext(ctx).TenantID()
+		if !tenantOK {
+			return rez.ErrTenantContextMissing
+		}
+		setter.setTenantID(tenantID)
+	}
+	return nil
+}
+
+type tenantIDSetter interface{ setTenantID(int) }
+
+// TenantArgs scopes job identity to the enqueueing tenant. Embed it by value
+// and define Kind on a pointer receiver so context fields can be populated.
+// Other unique fields must also carry river:"unique" tags.
+type TenantArgs struct {
+	TenantID int `json:"tenant_id" river:"unique"`
+}
+
+func (a *TenantArgs) setTenantID(tenantID int) {
+	a.TenantID = tenantID
+}
+
+type ProcessProviderEventArgs struct {
+	TenantArgs
+	Event rez.ProviderEvent `json:"event" river:"unique"`
+}
+
+func (*ProcessProviderEventArgs) Kind() string {
+	return "process-provider-event"
+}
+
+func (*ProcessProviderEventArgs) InsertOpts() river.InsertOpts {
+	return river.InsertOpts{UniqueOpts: river.UniqueOpts{ByArgs: true}}
+}
 
 type ProjectNormalizedEvent struct {
 	EventId uuid.UUID

@@ -51,11 +51,10 @@ func (s *ProviderEventPipelineService) Ingest(ctx context.Context, ev rez.Provid
 }
 
 func (s *ProviderEventPipelineService) queueIngest(ctx context.Context, ev rez.ProviderEvent) (bool, error) {
-	if err := s.validateProviderEvent(ev); err != nil {
-		return false, err
+	if validateErr := s.validateProviderEvent(ev); validateErr != nil {
+		return false, validateErr
 	}
-
-	args := ProcessProviderEventArgs{Event: ev}
+	args := &jobs.ProcessProviderEventArgs{Event: ev}
 	insertOpts := args.InsertOpts()
 	jobRes, insertErr := s.jobs.Insert(ctx, args, &insertOpts)
 	if insertErr != nil {
@@ -82,7 +81,7 @@ func (s *ProviderEventPipelineService) SyncEvents(ctx context.Context, querier r
 		params := make([]river.InsertManyParams, len(batch))
 		for i, item := range batch {
 			params[i] = river.InsertManyParams{
-				Args:       ProcessProviderEventArgs{Event: item.Event},
+				Args:       &jobs.ProcessProviderEventArgs{Event: item.Event},
 				InsertOpts: &river.InsertOpts{UniqueOpts: river.UniqueOpts{ByArgs: true}},
 			}
 		}

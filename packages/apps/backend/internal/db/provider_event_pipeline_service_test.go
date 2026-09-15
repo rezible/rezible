@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"iter"
 	"log/slog"
 	"sync/atomic"
 	"testing"
@@ -97,7 +98,7 @@ func (s *ProviderEventPipelineServiceSuite) TestIngestProcessAndProjectEndToEnd(
 
 	ev := s.makeTestEvent()
 
-	var capturedProcessArgs ProcessProviderEventArgs
+	var capturedProcessArgs *jobs.ProcessProviderEventArgs
 	jobSvc.EXPECT().
 		Insert(mock.Anything, mock.Anything, mock.Anything).
 		Run(func(_ context.Context, args river.JobArgs, opts *river.InsertOpts) {
@@ -105,7 +106,7 @@ func (s *ProviderEventPipelineServiceSuite) TestIngestProcessAndProjectEndToEnd(
 			s.True(opts.UniqueOpts.ByArgs)
 
 			var ok bool
-			capturedProcessArgs, ok = args.(ProcessProviderEventArgs)
+			capturedProcessArgs, ok = args.(*jobs.ProcessProviderEventArgs)
 			s.Require().True(ok)
 		}).
 		Return(&rivertype.JobInsertResult{}, nil).
@@ -154,6 +155,48 @@ func (s *ProviderEventPipelineServiceSuite) TestIngestProcessAndProjectEndToEnd(
 	s.False(proj.CompletedAt.IsZero())
 }
 
+func (s *ProviderEventPipelineServiceSuite) TestSyncEventsEnqueuesEventPointers() {
+	event := s.makeTestEvent()
+
+	secondEvent := event
+	secondEvent.ProviderEventRef = "second-event"
+
+	jq := mocks.NewMockJobService(s.T())
+	jq.EXPECT().
+		InsertMany(mock.Anything, mock.Anything).
+		Run(func(_ context.Context, params []river.InsertManyParams) {
+			s.Require().Len(params, 2)
+			for i, param := range params {
+				args, argsOK := param.Args.(*jobs.ProcessProviderEventArgs)
+				s.Require().True(argsOK)
+				s.Equal([]rez.ProviderEvent{event, secondEvent}[i], args.Event)
+				s.True(param.InsertOpts.UniqueOpts.ByArgs)
+			}
+		}).
+		Return([]*rivertype.JobInsertResult{{}, {}}, nil).
+		Once()
+
+	querierFn := func(yield func(*rez.ProviderEventQueryResult, error) bool) {
+		if yield(&rez.ProviderEventQueryResult{Event: event, ProviderEventSourceCursorAfter: new("next")}, nil) {
+			yield(&rez.ProviderEventQueryResult{Event: secondEvent}, nil)
+		}
+	}
+
+	ctx := s.SeedTenantContext()
+	svc := s.newPipelineService(nil, jq, nil)
+	result := svc.SyncEvents(ctx, providerEventQuerierFunc(querierFn), make(rez.ProviderEventSourceCursors))
+	s.Require().Empty(result.SyncErrors)
+	s.Equal(2, result.EventsIngested)
+}
+
+type providerEventQuerierFunc func(func(*rez.ProviderEventQueryResult, error) bool)
+
+func (f providerEventQuerierFunc) QueryProviderEvents(context.Context, rez.ProviderEventSourceCursors) iter.Seq2[*rez.ProviderEventQueryResult, error] {
+	return func(yield func(*rez.ProviderEventQueryResult, error) bool) {
+		f(yield)
+	}
+}
+
 func (s *ProviderEventPipelineServiceSuite) TestProcessProviderEventDoesNotReinsertOrReprojectDuplicate() {
 	ctx := s.SeedTenantContext()
 	tdb := s.CreateTestDatabase()
@@ -166,7 +209,7 @@ func (s *ProviderEventPipelineServiceSuite) TestProcessProviderEventDoesNotReins
 
 	svc := s.newPipelineService(tdb, jobSvc, nil)
 
-	args := ProcessProviderEventArgs{Event: s.makeTestEvent()}
+	args := &jobs.ProcessProviderEventArgs{Event: s.makeTestEvent()}
 
 	s.Require().NoError(svc.HandleProcessEventJob(ctx, args))
 	s.Require().NoError(svc.HandleProcessEventJob(ctx, args))
@@ -198,12 +241,12 @@ func (s *ProviderEventPipelineServiceSuite) TestNormalizedEventIdentityIncludesN
 	event := s.makeTestEvent()
 	event.ProviderEventRef = "same-delivery"
 
-	processArgs := ProcessProviderEventArgs{Event: event}
+	processArgs := &jobs.ProcessProviderEventArgs{Event: event}
 	s.Require().NoError(svc.HandleProcessEventJob(ctx, processArgs))
 
 	otherNamespaceEvent := event
 	otherNamespaceEvent.ProviderNamespace = "another-pipeline-account"
-	otherProcessArgs := ProcessProviderEventArgs{Event: otherNamespaceEvent}
+	otherProcessArgs := &jobs.ProcessProviderEventArgs{Event: otherNamespaceEvent}
 	s.Require().NoError(svc.HandleProcessEventJob(ctx, otherProcessArgs))
 
 	countQuery := tdb.Client(ctx).NormalizedEvent.Query()
