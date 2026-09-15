@@ -1,9 +1,3 @@
-# Local development
-
-Run commands from the repository root. Enter `devbox shell` first, or prefix
-commands with `devbox run -q --`. Docker and a configured Localias HTTPS proxy
-must be available. Supply local secrets in the gitignored root `.env` file.
-
 ## Setup and teardown
 
 ```sh
