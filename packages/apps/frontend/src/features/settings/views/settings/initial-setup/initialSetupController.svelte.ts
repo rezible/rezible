@@ -34,6 +34,7 @@ export class InitialSetupController {
 			path: { id: this.orgId },
 			body: { attributes: { name: this.name.trim(), timezone: this.timezone.trim() } },
 		});
+		this.session.refetch();
 	};
 }
 

@@ -1,34 +1,24 @@
 <script lang="ts">
-	import { Combobox } from "bits-ui";
+	import { Button } from "$src/components/ui/button";
+	import * as Command from "$src/components/ui/command";
+	import * as Popover from "$src/components/ui/popover";
 	import RiCheckLine from "remixicon-svelte/icons/check-line";
 	import RiCloseLine from "remixicon-svelte/icons/close-line";
+	import { tick } from "svelte";
 
 	type Props = {
 		value?: string;
 		id?: string;
 		disabled?: boolean;
 	};
-
 	let { value = $bindable(""), id, disabled = false }: Props = $props();
 
 	const CLEAR_TIMEZONE_VALUE = "__clear__";
 	const localZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-	const browserZones =
-		typeof Intl.supportedValuesOf === "function" ? Intl.supportedValuesOf("timeZone") : [];
+	const browserZones = Intl.supportedValuesOf("timeZone");
 
-	let open = $state(false);
 	let search = $state("");
-	let highlightedZone = $state(value || localZone);
-
-	const zones = $derived.by(() => {
-		// Include saved and local zones even if the browser does not list them.
-		const availableZones = ["UTC", localZone, value, ...browserZones].filter(Boolean);
-		return [...new Set(availableZones)].sort();
-	});
 	const searchQuery = $derived(search.toLowerCase());
-	const visibleZones = $derived(zones.filter(matchesSearch));
-	const showClear = $derived(Boolean(value) && "clear timezone".includes(searchQuery));
-	const triggerLabel = $derived(value ? formatTimezone(value) : "Select timezone");
 
 	function formatTimezone(zone: string) {
 		return zone.replaceAll("_", " ");
@@ -39,61 +29,83 @@
 		return searchableText.includes(searchQuery);
 	}
 
+	let open = $state(false);
 	const handleValueChange = (nextValue: string) => {
-		value = nextValue === CLEAR_TIMEZONE_VALUE ? "" : nextValue;
-		open = false;
+		// value = nextValue === CLEAR_TIMEZONE_VALUE ? "" : nextValue;
+		// open = false;
 	};
 
+	let highlightedZone = $state(value || localZone);
 	const handleOpenChange = (nextOpen: boolean) => {
-		open = nextOpen;
-		if (nextOpen) {
-			search = "";
-			highlightedZone = value || localZone;
-		}
+		// open = nextOpen;
+		// if (nextOpen) {
+		// 	search = "";
+		// 	highlightedZone = value || localZone;
+		// }
 	};
+
+
+	let triggerRef = $state<HTMLButtonElement>(null!);
+	function closeAndFocusTrigger() {
+		open = false;
+		tick().then(() => {
+			triggerRef.focus();
+		});
+	}
+
+	const zones = $derived.by(() => {
+		// Include saved and local zones even if the browser does not list them.
+		const availableZones = ["UTC", localZone, value, ...browserZones].filter(Boolean);
+		return [...new Set(availableZones)].sort();
+	});
+	const visibleZones = $derived(zones.filter(matchesSearch));
+	const showClear = $derived(Boolean(value) && "clear timezone".includes(searchQuery));
+	const triggerLabel = $derived(value ? formatTimezone(value) : "Select timezone");
 </script>
 
-<Combobox.Root
-	bind:open
-	bind:value={highlightedZone}
-	onValueChange={handleValueChange}
-	onOpenChange={handleOpenChange}
-	inputValue={search}
-	type="single"
->
-	<Combobox.Trigger
-		{id}
-		class="border-input bg-card text-foreground hover:bg-accent flex h-9 w-full items-center justify-between rounded-md border px-3 text-sm font-normal"
-		{disabled}
-		aria-label="Timezone"
-	>
+<Popover.Root bind:open>
+  <Popover.Trigger bind:ref={triggerRef}>
+    {#snippet child({ props })}
+      <Button
+        variant="outline"
+        class="w-[200px] justify-between"
+        {...props}
+        role="combobox"
+        aria-expanded={open}
+      >
 		{triggerLabel}
-	</Combobox.Trigger>
-	<Combobox.Content class="w-[var(--bits-combobox-trigger-width)] p-0">
-		<Combobox.Input
+        <!-- <ChevronsUpDownIcon class="ms-2 size-4 shrink-0 opacity-50" /> -->
+      </Button>
+    {/snippet}
+  </Popover.Trigger>
+
+  <Popover.Content class="w-[200px] p-0">
+    <Command.Root>
+      <Command.Input 
 			oninput={(event) => (search = event.currentTarget.value)}
 			placeholder="Search timezones…"
 		/>
-		<Combobox.Viewport class="max-h-80 overflow-y-auto p-1">
-			{#if !showClear && visibleZones.length === 0}
-				<div class="text-muted-foreground py-6 text-center text-sm">No timezone found.</div>
-			{:else}
-				<Combobox.Group>
-					{#if showClear}
-						<Combobox.Item value={CLEAR_TIMEZONE_VALUE}>
-							<RiCloseLine /> Clear timezone
-						</Combobox.Item>
-					{/if}
-					{#each visibleZones as zone (zone)}
-						<Combobox.Item value={zone}>
-							{formatTimezone(zone)}
-							{#if value === zone}
-								<RiCheckLine class="ml-auto" />
-							{/if}
-						</Combobox.Item>
-					{/each}
-				</Combobox.Group>
-			{/if}
-		</Combobox.Viewport>
-	</Combobox.Content>
-</Combobox.Root>
+      <Command.List>
+		{#if !showClear && visibleZones.length === 0}
+			<div class="text-muted-foreground py-6 text-center text-sm">No timezone found.</div>
+		{:else}
+			<Command.Group>
+				{#if showClear}
+					<Command.Item value={CLEAR_TIMEZONE_VALUE} onSelect={() => {value = ""}}>
+						<RiCloseLine /> Clear timezone
+					</Command.Item>
+				{/if}
+				{#each visibleZones as zone (zone)}
+					<Command.Item value={zone} onSelect={() => {value = zone}}>
+						{formatTimezone(zone)}
+						{#if value === zone}
+							<RiCheckLine class="ml-auto" />
+						{/if}
+					</Command.Item>
+				{/each}
+			</Command.Group>
+		{/if}
+      </Command.List>
+    </Command.Root>
+  </Popover.Content>
+</Popover.Root>

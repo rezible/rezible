@@ -53,6 +53,8 @@
 				<Button type="submit" disabled={!ctrl.canSubmit}>
 					{#if ctrl.saving}
 						<Spinner data-icon="inline-start" />
+                    {:else}
+                        Save
 					{/if}
 				</Button>
 			</form>
