@@ -15,6 +15,10 @@
       "type": "service",
       "command": "./devenv/scripts/paseo-run backend::dev"
     },
+    "backend-tests": {
+      "type": "script",
+      "command": "devbox run -q -- just test backend"
+    },
     "documents": {
       "type": "service",
       "command": "./devenv/scripts/paseo-run documents-server::dev"
