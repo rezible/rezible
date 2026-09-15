@@ -1,166 +1,70 @@
-set shell := ["bash", "-uc"]
+set shell := ["bash", "-euc"]
 
-export dbPort := env("POSTGRES_PORT")
-export dbAdminUser := env("POSTGRES_ADMIN_USER")
-export dbAppUser := env("POSTGRES_APP_USER")
+workspace_env_file := source_dir() / ".workspace-env.sh"
 
-workspace_env_file := join(parent_directory(source_directory()), ".env.workspace")
-process_compose_file := source_dir() / "process-compose.yaml"
-process_compose_dev_file := source_dir() / "process-compose.dev.yaml"
-process_compose_test_file := source_dir() / "process-compose.test.yaml"
-infra_lock_file := "/tmp/rezible-infra.lock"
-
-[doc("Install dependencies & start services")]
-[working-directory("..")]
-@setup:
-    just backend::install
-    bun install
-    just dev::setup-workspace
-
+[doc("Run application services using Process Compose")]
 [default]
-[doc("Run all services & dependencies using process-compose")]
 [working-directory("..")]
-start target="all":
-    #!/usr/bin/env bash
-    set -euo pipefail
-    pc=(process-compose --no-server -f "{{ process_compose_file }}" -f "{{ process_compose_dev_file }}" up)
-    case "{{ target }}" in
-      all)       "${pc[@]}" frontend documents-server ;;
-      backend)   "${pc[@]}" backend ;;
-      frontend)  "${pc[@]}" frontend ;;
-      documents) "${pc[@]}" documents-server ;;
-      telemetry) "${pc[@]}" frontend documents-server telemetry ;;
-      *) echo "unknown development target: {{ target }}" >&2; exit 2 ;;
-    esac
+@start *SERVICES="backend frontend documents": verify-workspace
+    process-compose --no-server -f {{ quote(source_dir() / "process-compose.apps.yaml") }} up --disable-dotenv {{ SERVICES }}
 
-workspace_already_setup := path_exists(workspace_env_file)
-error_workspace_already_setup := "workspace already set up - run with --force to override"
+backend: (start "backend")
+frontend: (start "frontend")
+documents: (start "documents")
+
+[doc("Provision this workspace and apply migrations")]
+@setup-workspace:
+    bun --no-env-file scripts/workspace-env.ts
+    source "{{ workspace_env_file }}" && just _provision
+
+@_provision: && verify-workspace
+    just ensure-localias
+    just infra-up postgres dex
+    just setup-database
+    just _dex-client wait
+    localias set "${AUTH_URL#https://}" "$DEX_PORT"
+    just _dex-client ensure
 
 [arg("force", long="force", value="true")]
-[arg("no-migrate", long="no-migrate", value="false")]
-[doc("Setup development environment")]
-@setup-workspace force="false" no-migrate="false":
-    if [[ "{{ workspace_already_setup }}" == "true" ]]; then \
-      if [[ "{{ force }}" == "false" ]]; then \
-        echo "{{ error_workspace_already_setup }}"; \
-        exit 1; \
-      fi; \
-    fi
-    just _write-workspace-env
-    just ensure-infra postgres
-    if [[ "{{ force }}" == "true" ]]; then just drop-workspace-db; fi
-    just setup-workspace-db
-    if [[ "{{ no-migrate }}" == "false" ]]; then \
-      just migrate-workspace-db; \
-    fi
-    just set-domains
-    just ensure-localias
+[arg("no_migrate", long="no-migrate", value="true")]
+@setup-database force="false" no_migrate="false":
+    if {{ force }}; then bun --no-env-file scripts/database.ts drop; fi
+    bun --no-env-file scripts/database.ts ensure
+    if ! {{ no_migrate }}; then just --justfile ../Justfile backend::apply-migrations; fi
 
-[working-directory("..")]
-@migrate-workspace-db:
-    just backend::gen-schema
-    just backend::create-initial-migration
-    just backend::apply-migrations
+[doc("Verify workspace setup")]
+@verify-workspace:
+    bun --no-env-file scripts/database.ts verify
+    just _dex-client wait
 
-_write-workspace-env:
-    #!/usr/bin/env bun
-    const run = (args: string[]) => {
-      const result = Bun.spawnSync(args);
-      if (result.exitCode !== 0) throw new Error(result.stderr.toString());
-      return result.stdout.toString().trim();
-    };
-    const branch = run(["git", "branch", "--show-current"]);
-    const identity = branch || run(["git", "rev-parse", "HEAD"]);
-    const slug = identity.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 36) || "detached";
-    const hash = new Bun.CryptoHasher("sha256").update(identity).digest("hex").slice(0, 8);
-    const workspaceId = `${slug}-${hash}`;
-    await Bun.write("{{ workspace_env_file }}", [
-      `WORKSPACE_ID=${workspaceId}`,
-      `POSTGRES_APP_DB=rezible-${workspaceId}`,
-    ].join("\n"))
+[doc("Remove this workspace's resources; leave shared infrastructure running")]
+@teardown-workspace:
+    just _dex-client delete
+    bun --no-env-file scripts/database.ts drop
+    just unset-domains
+    rm -f "{{ workspace_env_file }}"
 
-drop-workspace-db:
-    #!/usr/bin/env bun
-    import { SQL } from "bun";
-    const database = process.env.POSTGRES_APP_DB!;
-    const adminUser = process.env.POSTGRES_ADMIN_USER!;
-    const port = process.env.POSTGRES_PORT!;
-    const pg = new SQL(`postgres://${adminUser}:${adminUser}@localhost:${port}/postgres`);
-    await pg.unsafe(`DROP DATABASE IF EXISTS "${database}" WITH (FORCE)`);
-    await pg.close();
+source_checkout := parent_directory(`git rev-parse --path-format=absolute --git-common-dir`)
+compose := 'docker compose --project-directory ' + quote(source_checkout) + ' -f ' + quote(source_checkout / 'docker-compose.yaml')
+@_docker-compose *ARGS:
+    docker compose --project-directory {{ quote(source_checkout) }} -f {{ quote(source_checkout / "docker-compose.yaml") }} {{ ARGS }}
 
-test-db:
-    #!/usr/bin/env bun
-    import { SQL } from "bun";
-    const adminConn = `postgres://{{ dbAdminUser }}:{{ dbAdminUser }}@localhost:{{ dbPort }}`;
-    const adminPg = new SQL(adminConn);
-    console.log(`query: (${adminConn})`, await adminPg.unsafe(`SELECT 1`));
+[doc("Start shared infrastructure services and wait until healthy")]
+@infra-up +SERVICES:
+    just _docker-compose up -d --wait {{ SERVICES }}
 
-setup-workspace-db:
-    #!/usr/bin/env bun
-    import { SQL } from "bun";
-    const adminConn = `postgres://{{ dbAdminUser }}:{{ dbAdminUser }}@localhost:{{ dbPort }}`;
-    const adminPg = new SQL(adminConn);
-    try {
-        await adminPg.unsafe(`CREATE USER {{ dbAppUser }} WITH PASSWORD '{{ dbAppUser }}';`);
-    } catch (e) {}
-    try {
-        await adminPg.unsafe(`CREATE DATABASE "${process.env.POSTGRES_APP_DB}"`);
-        console.log(`created database ${process.env.POSTGRES_APP_DB}`);
-    } catch (e) {}
-    const statements = [
-        `GRANT CONNECT ON DATABASE "${process.env.POSTGRES_APP_DB}" TO {{ dbAppUser }}`,
-        `CREATE SCHEMA IF NOT EXISTS river`,
-        `CREATE SCHEMA IF NOT EXISTS rezible`,
-        `GRANT USAGE ON SCHEMA rezible TO {{ dbAppUser }}`,
-        `GRANT USAGE ON SCHEMA river TO {{ dbAppUser }}`,
-        `ALTER DEFAULT PRIVILEGES IN SCHEMA rezible GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO {{ dbAppUser }}`,
-        `ALTER DEFAULT PRIVILEGES IN SCHEMA rezible GRANT USAGE, SELECT ON SEQUENCES TO {{ dbAppUser }}`,
-        `ALTER DEFAULT PRIVILEGES IN SCHEMA river GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO {{ dbAppUser }}`,
-        `ALTER DEFAULT PRIVILEGES IN SCHEMA river GRANT USAGE, SELECT ON SEQUENCES TO {{ dbAppUser }}`,
-        `ALTER ROLE {{ dbAppUser }} SET search_path TO rezible, river`,
-    ];
-    const userPg = new SQL(`${adminConn}/${process.env.POSTGRES_APP_DB}`);
-    for (const s of statements) {
-        try {
-            await userPg.unsafe(`${s};`);
-        } catch (e) {
-            console.error(`setting up user/db:\n "${s}"\n\t`, e.message);
-        }
-    }
-    await userPg.close();
-    await adminPg.close();
+[doc("Stop named shared infrastructure services; affects all worktrees")]
+@infra-stop +SERVICES:
+    just _docker-compose stop {{ SERVICES }}
 
-[doc("Ensure a shared infrastructure service is running and healthy")]
-[working-directory("..")]
-@ensure-infra SERVICE:
-    flock "{{ infra_lock_file }}" docker compose up -d --wait {{ SERVICE }}
-
-[doc("Stop shared infrastructure; may disrupt other worktrees")]
-[working-directory("..")]
-@infra-stop *SERVICES:
-    if [[ "{{ SERVICES }}" == "" ]]; then echo "name the shared services to stop" >&2; exit 2; fi
-    flock "{{ infra_lock_file }}" docker compose stop {{ SERVICES }}
-
-[doc("Run the repository test suite or one test target")]
-[working-directory("..")]
-test target="all" *ARGS:
-    #!/usr/bin/env bash
-    set -euo pipefail
-    pc=(process-compose --no-server -f "{{ process_compose_file }}" -f "{{ process_compose_test_file }}")
-    case "{{ target }}" in
-      all)       "${pc[@]}" up tests-complete -t=false ;;
-      backend)   "${pc[@]}" run backend-tests -- {{ ARGS }} ;;
-      frontend)  "${pc[@]}" run frontend-check ;;
-      documents) "${pc[@]}" run documents-tests ;;
-      *) echo "unknown test target: {{ target }}" >&2; exit 2 ;;
-    esac
-
-@set-domains:
-    localias set {{ trim_start_match(env("APP_URL"), "https://") }} ${APP_PORT}
-    localias set {{ trim_start_match(env("API_URL"), "https://") }} ${BACKEND_PORT}
-    localias set {{ trim_start_match(env("AUTH_URL"), "https://") }} ${AUTH_PORT}
+[arg("OPERATION", pattern="wait|ensure|delete")]
+[working-directory("scripts/dex-client")]
+@_dex-client OPERATION:
+    go run . {{ OPERATION }}
 
 @ensure-localias:
     cp "$(localias debug cert)" ./localias-ca.crt
     if ! localias status | grep -q 'daemon running'; then localias start; fi
+
+@unset-domains:
+    localias rm "${APP_URL#https://}" "${API_URL#https://}" "${DOCUMENTS_URL#https://}"

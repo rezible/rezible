@@ -1,23 +1,36 @@
 import { sveltekit } from "@sveltejs/kit/vite";
 import tailwindcss from "@tailwindcss/vite";
-import { defineConfig, loadEnv } from "vite";
+import { defineConfig, type PluginOption } from "vite";
 
-const envPrefix = "";
+export default defineConfig(({ command }) => {
+	const plugins: PluginOption[] = [tailwindcss(), sveltekit()];
+	if (command === "build") return { plugins };
 
-export default defineConfig(({ mode }) => {
-	const env = loadEnv(mode, process.cwd(), envPrefix);
-	const host = "0.0.0.0";
-	const port = Number(env.PORT ?? env.APP_PORT ?? "7000");
+	plugins.push({
+		name: "validate-environment",
+		configureServer() {
+			if (!process.env.APP_URL) throw new Error("APP_URL is required");
+
+			for (const name of ["APP_PORT", "BACKEND_PORT"]) {
+				const port = Number(process.env[name]);
+				if (!Number.isInteger(port) || port < 1 || port > 65535) {
+					throw new Error(`${name} must be a valid TCP port`);
+				}
+			}
+		},
+	});
+
+	const appHostname = process.env.APP_URL ? new URL(process.env.APP_URL).hostname : undefined;
 	return {
-		plugins: [tailwindcss(), sveltekit()],
+		plugins,
 		server: {
-			host,
-			port,
+			host: "localhost",
+			port: Number(process.env.APP_PORT),
 			strictPort: true,
-			allowedHosts: ["app.dev.rezible.com"],
+			allowedHosts: appHostname ? [appHostname] : [],
 			proxy: {
 				"/api": {
-					target: `http://localhost:${env.BACKEND_PORT}`,
+					target: `http://localhost:${process.env.BACKEND_PORT}`,
 					rewrite: (path) => path.replace(/^\/api/, ""),
 				},
 			},

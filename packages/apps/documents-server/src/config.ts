@@ -41,8 +41,10 @@ export const loadConfig = (): Config => {
 	const name = process.env.NAME ?? "documents-server";
 
 	const host = process.env.HOST ?? "0.0.0.0";
-	let port = Number.parseInt(process.env.PORT ?? "7002", 10);
-	if (port < 1024) port = 7003;
+	const port = Number(process.env.PORT);
+	if (!Number.isInteger(port) || port < 1 || port > 65535) {
+		throw new Error("PORT must be an integer between 1 and 65535");
+	}
 
 	const dbUrl = loadDbUrl();
 

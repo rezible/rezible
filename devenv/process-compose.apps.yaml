@@ -1,0 +1,51 @@
+version: "0.5"
+is_strict: true
+ordered_shutdown: true
+
+env_cmds:
+  BACKEND_PORT: bun --no-env-file --install=fallback devenv/scripts/get-port.ts backend
+  APP_PORT: bun --no-env-file --install=fallback devenv/scripts/get-port.ts frontend
+  DOCUMENTS_PORT: bun --no-env-file --install=fallback devenv/scripts/get-port.ts documents
+
+processes:
+  backend:
+    availability:
+      restart: on_failure
+      max_restarts: 2
+    description: Run the backend development server
+    command: just backend::dev
+    readiness_probe:
+      exec:
+        command: wget -q -O /dev/null "http://localhost:$${BACKEND_PORT}/ready"
+      period_seconds: 1
+      timeout_seconds: 2
+      failure_threshold: 30
+
+  frontend:
+    availability:
+      restart: on_failure
+      max_restarts: 2
+    description: Run the frontend development server
+    command: just frontend::dev
+    depends_on:
+      backend:
+        condition: process_healthy
+    readiness_probe:
+      exec:
+        command: wget -q -O /dev/null "http://localhost:$${APP_PORT}/"
+      period_seconds: 1
+      timeout_seconds: 2
+      failure_threshold: 30
+
+  documents:
+    availability:
+      restart: on_failure
+      max_restarts: 2
+    description: Run the collaborative documents development server
+    command: just documents-server::dev
+    readiness_probe:
+      exec:
+        command: wget -q -O /dev/null "http://localhost:$${DOCUMENTS_PORT}/health"
+      period_seconds: 1
+      timeout_seconds: 2
+      failure_threshold: 30

@@ -1,23 +1,24 @@
 issuer: "{{ .Env.ISSUER }}"
+
 web:
   http: "0.0.0.0:7011"
-  allowedOrigins: ["{{ .Env.APP_URL }}", "{{ .Env.API_URL }}"]
+
+grpc:
+  addr: "0.0.0.0:5557"
+
 storage:
   type: sqlite3
   config:
     file: /var/dex/dex.db
+
 oauth2:
   responseTypes: ["code"]
   skipApprovalScreen: true
   alwaysShowLoginScreen: false
-staticClients:
-  - id: test-client
-    secret: superdupersecret
-    name: "Web App"
-    redirectURIs: ["{{ .Env.APP_URL }}/api/auth/callback"]
+
 enablePasswordDB: true
+
 staticPasswords:
-  # password: $()
   - email: "admin@dev.rezible.com"
     username: "admin"
     userID: "cd8cc83f-de81-4f05-a64d-5e4105a35142"

@@ -1,9 +1,7 @@
 set shell := ["bash", "-uc"]
 
-set dotenv-filename := ".env.workspace"
-set dotenv-load
-
 mod dev 'devenv'
+mod test 'devenv/tests.Justfile'
 mod backend 'packages/apps/backend'
 mod frontend 'packages/apps/frontend'
 mod documents-server 'packages/apps/documents-server'
@@ -16,14 +14,20 @@ mod packages 'packages'
     just --list documents-server --unsorted --list-heading $'Documents Server\n'
     just --list packages --unsorted --list-heading $'Packages\n'
 
+[doc("Install dependencies and provision the workspace")]
+@setup:
+    just backend::install
+    bun install --frozen-lockfile
+    just dev::setup-workspace
+
+[doc("Generate all code")]
 @codegen:
     just backend::codegen
     just packages::generate-api-client
 
-[doc("Run all tests, or a backend/frontend/documents test target")]
-@test target="all" *ARGS:
-    just dev::test {{ target }} {{ ARGS }}
-
+[doc("Regenerate Ent and the initial migration, then recreate this workspace's database")]
 @regenerate-and-apply-db-schema:
     just backend::gen-schema
-    just dev::setup-workspace --force
+    just dev::setup-database --force --no-migrate
+    just backend::create-initial-migration
+    just backend::apply-migrations

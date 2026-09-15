@@ -1,9 +1,11 @@
 version: "0.5"
+is_strict: true
+ordered_shutdown: true
 
 processes:
   postgres-test-ready:
     description: Ensure the shared tmpfs PostgreSQL test server is healthy
-    command: just dev::ensure-infra postgres-test
+    command: just dev::infra-up postgres-test
 
   backend-tests:
     description: Run backend tests

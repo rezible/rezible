@@ -1,13 +1,29 @@
 {
   "worktree": {
-    "setup":    [
+    "setup": [
       "cp \"$PASEO_SOURCE_CHECKOUT_PATH/.env\" .env",
-      "just dev setup"
+      "devbox run -q -- just setup"
+    ],
+    "teardown": [
+      "devbox run -q -- just dev teardown-workspace"
     ]
   },
   "scripts": {
-    "test-backend": { "command": "just test backend" },
-    "dev": { "command": "HTTP__AUTH__ENABLE_DEV_SKIP_MODE=true just dev" },
-    "codegen": { "command": "just codegen" }
+    "frontend": {
+      "type": "service",
+      "command": "devbox run -q -- env APP_PORT=$PASEO_PORT BACKEND_PORT=$PASEO_SERVICE_BACKEND_PORT just frontend::dev"
+    },
+    "backend": {
+      "type": "service",
+      "command": "devbox run -q -- env BACKEND_PORT=$PASEO_PORT just backend::dev"
+    },
+    "documents": {
+      "type": "service",
+      "command": "devbox run -q -- env DOCUMENTS_PORT=$PASEO_PORT just documents-server::dev"
+    },
+    "test": { "command": "devbox run -q -- just test" },
+    "test-backend": { "command": "devbox run -q -- just test backend" },
+    "test-frontend": { "command": "devbox run -q -- just test frontend" },
+    "codegen": { "command": "devbox run -q -- just codegen" }
   }
 }

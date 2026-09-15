@@ -53,9 +53,9 @@ func (s *Suite) loadConfig() rez.Config {
 	pgAdminUser := getEnvOr("POSTGRES_ADMIN_USER", "postgres")
 	pgAppUser := getEnvOr("POSTGRES_APP_USER", "rez_app")
 	overrides := map[string]any{
-		"postgres.host":                getEnvOr("POSTGRES_HOST", "localhost"),
-		"postgres.port":                getEnvOr("POSTGRES_PORT", "7010"),
-		"postgres.database":            getEnvOr("POSTGRES_APP_DB", "rezible-main"),
+		//"postgres.host":                getEnvOr("POSTGRES_HOST", "localhost"),
+		//"postgres.port":                getEnvOr("POSTGRES_PORT", "7010"),
+		//"postgres.database":            getEnvOr("POSTGRES_APP_DB", "rezible-main"),
 		"postgres.role_admin.name":     pgAdminUser,
 		"postgres.role_admin.password": pgAdminUser,
 		"postgres.role_app.name":       pgAppUser,

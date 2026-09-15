@@ -1,61 +1,27 @@
 set shell := ["bash", "-uc"]
 
-export APP__DEBUG_MODE := "true"
-export APP__FRONTEND_DOMAIN := env("APP_DOMAIN")
-export APP__API_DOMAIN := env("API_DOMAIN")
-export APP__SINGLETENANT__ENABLED := "true"
-
-export DOCUMENTS__PROXY__ENABLED := "false"
-
-export HTTP__PORT := env("BACKEND_PORT")
-export HTTP__BASE_PATH := ""
-export HTTP__AUTH__SESSION_SECRET := "superduuuuuuuuuuuuuuuuupersecret"
-export HTTP__AUTH__OIDC__ISSUER := env("AUTH_URL")
-export HTTP__AUTH__OIDC__CLIENT_ID := "test-client"
-export HTTP__AUTH__OIDC__CLIENT_SECRET := "superdupersecret"
-
-export POSTGRES__HOST := "localhost"
-export POSTGRES__PORT := env("POSTGRES_PORT")
-export POSTGRES__DATABASE := env("POSTGRES_APP_DB")
-export POSTGRES__SSLMODE := "disable"
-export POSTGRES__ROLE_ADMIN__NAME := env("POSTGRES_ADMIN_USER", "postgres")
-export POSTGRES__ROLE_ADMIN__PASSWORD := POSTGRES__ROLE_ADMIN__NAME
-export POSTGRES__ROLE_APP__NAME := env("POSTGRES_APP_USER")
-export POSTGRES__ROLE_APP__PASSWORD := POSTGRES__ROLE_APP__NAME
-
-testPostgresHost := env("POSTGRES_TEST_HOST", "localhost")
-testPostgresPort := env("POSTGRES_TEST_PORT", "7014")
-testPostgresDatabase := env("POSTGRES_TEST_DB", "postgres")
-
-export OTEL_SERVICE_NAME := "rezible-backend"
-export OTEL_TRACES_EXPORTER := "otlp"
-export OTEL_METRICS_EXPORTER := "otlp"
-export OTEL_LOGS_EXPORTER := "none"
-export OTEL_EXPORTER_OTLP_ENDPOINT := "http://localhost:" + env("OTEL_GRPC_PORT", "4317")
-export OTEL_EXPORTER_OTLP_PROTOCOL := "grpc"
-
 _default:
     @just --list
 
 install:
-    go mod tidy
+    go mod download
 
 format:
     go fmt ./...
 
+export HTTP__PORT := env("BACKEND_PORT", "")
+
 @dev *ARGS:
-    go tool reflex --decoration=none -r '\.go' -s -- sh -c 'go run ./cmd/rezible serve {{ ARGS }}'
+    localias set "${API_URL#https://}" "${BACKEND_PORT}"
+    go tool reflex --decoration=none -r '\.go' -s -- sh -c 'just run serve {{ ARGS }}'
 
 @run *ARGS:
     go run ./cmd/rezible {{ ARGS }}
 
 @test *ARGS:
-    POSTGRES_HOST='{{ testPostgresHost }}' \
-      POSTGRES_PORT='{{ testPostgresPort }}' \
-      POSTGRES_APP_DB='{{ testPostgresDatabase }}' \
-      POSTGRES__HOST='{{ testPostgresHost }}' \
-      POSTGRES__PORT='{{ testPostgresPort }}' \
-      POSTGRES__DATABASE='{{ testPostgresDatabase }}' \
+    POSTGRES__HOST="${POSTGRES_TEST_HOST}" \
+      POSTGRES__PORT="${POSTGRES_TEST_PORT}" \
+      POSTGRES__DATABASE="${POSTGRES_TEST_DB}" \
       go test {{ ARGS }}
 
 exclude_test_packages_pattern := "/ent/"
@@ -72,16 +38,17 @@ exclude_test_packages_pattern := "/ent/"
 @test-pattern PATTERN:
     just test $(go list ./... | grep -v '{{ exclude_test_packages_pattern }}') -run {{ PATTERN }}
 
-@genkit *ARGS:
+@_genkit *ARGS:
     bunx genkit-cli@1.42.0 --no-update-notification {{ ARGS }}
 
 [env("GENKIT_ENV", "dev")]
 [env("GENKIT_REFLECTION_V2_SERVER", "true")]
-@run-genkit-dev:
-    just genkit start --experimental-reflection-v2 -- go run ./cmd/rezible serve
+[env("BACKEND_PORT", "7020")]
+@run-genkit:
+    just _genkit start --experimental-reflection-v2 -- just dev
 
 @send-demo-webhook KIND="alert":
-    curl -i -X POST "http://localhost:{{ HTTP__PORT }}{{ HTTP__BASE_PATH }}/webhooks/demo" \
+    curl -i -X POST "${API_URL:?Run just dev setup}/webhooks/demo" \
       -H "Content-Type: application/json" \
       -d '{"kind": "{{ KIND }}", "foo":"bar"}'
 

@@ -4,36 +4,18 @@
     "bun":                         "latest",
     "just":                        "latest",
     "github:peterldowns/localias": "",
-    "dotenvx":                     "latest",
     "wget":                        "latest",
     "go":                          "latest",
     "process-compose":             "latest"
   },
   "env_from": ".env",
   "env": {
-    "JUST_TEMPDIR":                        "/tmp",
-    "DEV_DOMAIN":                          "dev.rezible.com",
-    "APP_PORT":                            "7000",
-    "APP_DOMAIN":                          "app.dev.rezible.com",
-    "APP_URL":                             "https://app.dev.rezible.com",
-    "AUTH_PORT":                           "7011",
-    "AUTH_DOMAIN":                         "auth.dev.rezible.com",
-    "AUTH_URL":                            "https://auth.dev.rezible.com",
-    "BACKEND_PORT":                        "7001",
-    "API_DOMAIN":                          "api.dev.rezible.com",
-    "API_URL":                             "https://api.dev.rezible.com",
-    "POSTGRES_PORT":                       "7010",
-    "POSTGRES_TEST_PORT":                  "7014",
-    "POSTGRES_TEST_DB":                    "postgres",
-    "POSTGRES_ADMIN_USER":                 "postgres",
-    "POSTGRES_APP_USER":                   "rez_app",
-    "GRAFANA_PORT":                        "7012",
-    "ALERTMANAGER_PORT":                   "7013",
-    "DOCUMENTS__SESSION_TOKEN_SECRET_HEX": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f"
+    "JUST_TEMPDIR": "/tmp"
   },
   "shell": {
     "init_hook": [
-      "unset DEVELOPER_DIR"
+      "unset DEVELOPER_DIR",
+      "[[ ! -f \"$DEVBOX_PROJECT_ROOT/devenv/.workspace-env.sh\" ]] || . \"$DEVBOX_PROJECT_ROOT/devenv/.workspace-env.sh\""
     ]
   }
 }

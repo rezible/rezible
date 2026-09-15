@@ -1,12 +1,13 @@
 set shell := ["bash", "-uc"]
 
-_default:
-    @just --list
+@_default:
+    just --list
 
-build:
+@build:
     bun run build
 
-dev:
+@dev:
+    localias set "${APP_URL#https://}" "${APP_PORT}"
     bun run dev
 
 @run *ARGS:

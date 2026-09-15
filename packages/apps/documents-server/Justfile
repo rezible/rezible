@@ -1,7 +1,5 @@
 set shell := ["bash", "-uc"]
 
-export DB_URL := "postgresql://" + env("POSTGRES_APP_USER") + ":" + env("POSTGRES_APP_USER") + "@localhost:" + env("POSTGRES_PORT") + "/" + env("POSTGRES_APP_DB", "rezible-main") + "?sslmode=disable"
-
 _default:
     @just --list
 
@@ -12,7 +10,15 @@ test:
     bun run test
 
 dev:
-    bun run dev
+    #!/usr/bin/env bash
+    set -euo pipefail
+    : "${POSTGRES_APP_DB:?Run just dev setup, then reopen devbox shell}"
+    : "${POSTGRES_APP_USER:?Enter devbox shell}"
+    : "${POSTGRES_PORT:?Enter devbox shell}"
+    export DB_URL="postgresql://$POSTGRES_APP_USER:$POSTGRES_APP_USER@localhost:$POSTGRES_PORT/$POSTGRES_APP_DB?sslmode=disable"
+    export PORT="${DOCUMENTS_PORT:?Start through just dev or Paseo}"
+    localias set "${DOCUMENTS_URL#https://}" "${DOCUMENTS_PORT:?DOCUMENTS_PORT must be supplied by the service launcher}"
+    exec bun --no-env-file run dev
 
 @run *ARGS:
     bun run {{ ARGS }}
