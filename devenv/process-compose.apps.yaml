@@ -8,6 +8,16 @@ env_cmds:
   DOCUMENTS_PORT: bun --no-env-file --install=fallback devenv/scripts/get-port.ts documents
 
 processes:
+  localias-setup:
+    description: Register workspace service aliases
+    command: |
+      set -eu
+      localias set "$${API_URL#https://}" "$${BACKEND_PORT}"
+      localias set "$${APP_URL#https://}" "$${APP_PORT}"
+      localias set "$${DOCUMENTS_URL#https://}" "$${DOCUMENTS_PORT}"
+    availability:
+      restart: "no"
+
   backend:
     availability:
       restart: on_failure
@@ -20,6 +30,9 @@ processes:
       period_seconds: 1
       timeout_seconds: 2
       failure_threshold: 30
+    depends_on:
+      localias-setup:
+        condition: process_completed_successfully
 
   frontend:
     availability:
@@ -30,6 +43,8 @@ processes:
     depends_on:
       backend:
         condition: process_healthy
+      localias-setup:
+        condition: process_completed_successfully
     readiness_probe:
       exec:
         command: wget -q -O /dev/null "http://localhost:$${APP_PORT}/"
@@ -49,3 +64,6 @@ processes:
       period_seconds: 1
       timeout_seconds: 2
       failure_threshold: 30
+    depends_on:
+      localias-setup:
+        condition: process_completed_successfully

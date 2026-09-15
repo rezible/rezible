@@ -24,7 +24,7 @@ export default defineConfig(({ command }) => {
 	return {
 		plugins,
 		server: {
-			host: "localhost",
+			host: "127.0.0.1",
 			port: Number(process.env.APP_PORT),
 			strictPort: true,
 			allowedHosts: appHostname ? [appHostname] : [],

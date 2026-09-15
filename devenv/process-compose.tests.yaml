@@ -1,5 +1,6 @@
 version: "0.5"
 is_strict: true
+is_tui_disabled: true
 ordered_shutdown: true
 
 processes:
@@ -7,18 +8,18 @@ processes:
     description: Ensure the shared tmpfs PostgreSQL test server is healthy
     command: just dev::infra-up postgres-test
 
-  backend-tests:
+  backend:
     description: Run backend tests
     command: just backend::test-selection
     depends_on:
       postgres-test-ready:
         condition: process_completed_successfully
 
-  frontend-check:
+  frontend:
     description: Type-check the frontend
-    command: just frontend::run check
+    command: just frontend::run test
 
-  documents-tests:
+  documents:
     description: Run documents server tests
     command: just documents-server::test
 
@@ -29,9 +30,9 @@ processes:
       exit_on_end: true
       exit_on_skipped: true
     depends_on:
-      backend-tests:
+      backend:
         condition: process_completed_successfully
-      frontend-check:
+      frontend:
         condition: process_completed_successfully
-      documents-tests:
+      documents:
         condition: process_completed_successfully

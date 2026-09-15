@@ -6,5 +6,9 @@
     ],
     "teardown": "devbox run -q teardown"
   },
-  "scripts": {}
+  "scripts": {
+    "dev": {
+      "command": "PC_DISABLE_TUI=1 just dev"
+    }
+  }
 }

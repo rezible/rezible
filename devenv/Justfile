@@ -6,7 +6,9 @@ workspace_env_file := source_dir() / ".workspace-env.sh"
 [default]
 [working-directory("..")]
 @start *SERVICES="backend frontend documents": verify-workspace
-    process-compose --no-server -f {{ quote(source_dir() / "process-compose.apps.yaml") }} up --disable-dotenv {{ SERVICES }}
+    process-compose --no-server --disable-dotenv \
+      -f {{ quote(source_dir() / "process-compose.apps.yaml") }} \
+      up {{ SERVICES }}
 
 backend: (start "backend")
 frontend: (start "frontend")

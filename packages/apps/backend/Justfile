@@ -11,9 +11,10 @@ format:
 
 export HTTP__PORT := env("BACKEND_PORT", "")
 
-@dev *ARGS:
-    localias set "${API_URL#https://}" "${BACKEND_PORT}"
-    go tool reflex --decoration=none -r '\.go' -s -- sh -c 'just run serve {{ ARGS }}'
+[env("HTTP__AUTH__ENABLE_DEV_SKIP_AUTH", "false")]
+@dev:
+    go tool reflex --decoration=none -r '\.go' -s -- sh -c 'go run ./cmd/rezible serve'
+
 
 @run *ARGS:
     go run ./cmd/rezible {{ ARGS }}

@@ -7,7 +7,6 @@ set shell := ["bash", "-uc"]
     bun run build
 
 @dev:
-    localias set "${APP_URL#https://}" "${APP_PORT}"
     bun run dev
 
 @run *ARGS:

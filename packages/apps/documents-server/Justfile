@@ -9,16 +9,10 @@ build:
 test:
     bun run test
 
-dev:
-    #!/usr/bin/env bash
-    set -euo pipefail
-    : "${POSTGRES_APP_DB:?Run just dev setup, then reopen devbox shell}"
-    : "${POSTGRES_APP_USER:?Enter devbox shell}"
-    : "${POSTGRES_PORT:?Enter devbox shell}"
-    export DB_URL="postgresql://$POSTGRES_APP_USER:$POSTGRES_APP_USER@localhost:$POSTGRES_PORT/$POSTGRES_APP_DB?sslmode=disable"
-    export PORT="${DOCUMENTS_PORT:?Start through just dev or Paseo}"
-    localias set "${DOCUMENTS_URL#https://}" "${DOCUMENTS_PORT:?DOCUMENTS_PORT must be supplied by the service launcher}"
-    exec bun --no-env-file run dev
+@dev:
+    DB_URL="postgresql://${POSTGRES_APP_USER}:${POSTGRES_APP_USER}@localhost:${POSTGRES_PORT}/${POSTGRES_APP_DB}?sslmode=disable" \
+    PORT="${DOCUMENTS_PORT}" \
+      bun --no-env-file run dev
 
 @run *ARGS:
     bun run {{ ARGS }}
