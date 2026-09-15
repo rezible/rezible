@@ -6,18 +6,5 @@
     ],
     "teardown": "devbox run -q teardown"
   },
-  "scripts": {
-    "frontend": {
-      "type": "service",
-      "command": "./devenv/scripts/paseo-run frontend::dev"
-    },
-    "backend": {
-      "type": "service",
-      "command": "./devenv/scripts/paseo-run backend::dev"
-    },
-    "documents": {
-      "type": "service",
-      "command": "./devenv/scripts/paseo-run documents-server::dev"
-    }
-  }
+  "scripts": {}
 }

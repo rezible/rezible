@@ -92,11 +92,10 @@ Service configuration files live in `configs/`.
 | Generated workspace script | Backend mappings derived from workspace and shared values |
 | Application recipes | Listener port and test-specific overrides |
 
-Devbox loads `.env`, then sources the generated workspace
-configuration. Just and Process Compose inherit that environment. Setup sources
-the generated file explicitly so provisioning works on its first run.
-Workspace configuration contains no application ports. Paseo maps its port
-variables in `paseo.json`; common commands have no Paseo-specific behavior.
+Devbox loads `.env`, then sources the generated workspace configuration. 
+Just and Process Compose inherit that environment. 
+Setup sources the generated file explicitly so provisioning works on its first run.
+Workspace configuration contains no application ports. 
 Build and code-generation commands do not require a provisioned workspace.
 
 Process Compose allocates backend ports from 20000–20999, frontend ports from
