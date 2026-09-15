@@ -2,28 +2,22 @@
   "worktree": {
     "setup": [
       "cp \"$PASEO_SOURCE_CHECKOUT_PATH/.env\" .env",
-      "devbox run -q -- just setup"
+      "devbox run -q setup"
     ],
-    "teardown": [
-      "devbox run -q -- just dev teardown-workspace"
-    ]
+    "teardown": "devbox run -q teardown"
   },
   "scripts": {
     "frontend": {
       "type": "service",
-      "command": "devbox run -q -- env APP_PORT=$PASEO_PORT BACKEND_PORT=$PASEO_SERVICE_BACKEND_PORT just frontend::dev"
+      "command": "./devenv/scripts/paseo-run frontend::dev"
     },
     "backend": {
       "type": "service",
-      "command": "devbox run -q -- env BACKEND_PORT=$PASEO_PORT just backend::dev"
+      "command": "./devenv/scripts/paseo-run backend::dev"
     },
     "documents": {
       "type": "service",
-      "command": "devbox run -q -- env DOCUMENTS_PORT=$PASEO_PORT just documents-server::dev"
-    },
-    "test": { "command": "devbox run -q -- just test" },
-    "test-backend": { "command": "devbox run -q -- just test backend" },
-    "test-frontend": { "command": "devbox run -q -- just test frontend" },
-    "codegen": { "command": "devbox run -q -- just codegen" }
+      "command": "./devenv/scripts/paseo-run documents-server::dev"
+    }
   }
 }

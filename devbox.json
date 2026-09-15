@@ -16,6 +16,10 @@
     "init_hook": [
       "unset DEVELOPER_DIR",
       "[[ ! -f \"$DEVBOX_PROJECT_ROOT/devenv/.workspace-env.sh\" ]] || . \"$DEVBOX_PROJECT_ROOT/devenv/.workspace-env.sh\""
-    ]
+    ],
+    "scripts": {
+      "setup": "just setup",
+      "teardown": "just dev::cleanup-workspace"
+    }
   }
 }

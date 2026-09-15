@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+exec devbox run -q -- env \
+  APP_PORT="${PASEO_SERVICE_FRONTEND_PORT:?}" \
+  BACKEND_PORT="${PASEO_SERVICE_BACKEND_PORT:?}" \
+  DOCUMENTS_PORT="${PASEO_SERVICE_DOCUMENTS_PORT:?}" \
+  just "$@"

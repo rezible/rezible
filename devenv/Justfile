@@ -38,7 +38,7 @@ documents: (start "documents")
     just _dex-client wait
 
 [doc("Remove this workspace's resources; leave shared infrastructure running")]
-@teardown-workspace:
+@cleanup-workspace:
     just _dex-client delete
     bun --no-env-file scripts/database.ts drop
     just unset-domains
