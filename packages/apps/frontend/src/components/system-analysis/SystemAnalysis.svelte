@@ -1,46 +1,43 @@
 <script lang="ts">
-	import SystemDiagramWrapper from "./diagram/SystemDiagramWrapper.svelte";
+	import type { Snippet } from "svelte";
+	import { Button } from "$components/ui/button";
+	import ErrorAlert from "$components/layout/error-alert/ErrorAlert.svelte";
+	import SystemDiagram from "./diagram/SystemDiagram.svelte";
+	import type { GraphInteraction } from "./diagram/diagramController.svelte";
 	import { useSystemAnalysisController } from "./controller.svelte";
-	import type { SystemAnalysisEntry } from "@rezible/api-client-ts";
+
+	type Props = { 
+		interaction?: GraphInteraction;
+		inspector?: Snippet,
+	};
+	let { interaction, inspector }: Props = $props();
 
 	const controller = useSystemAnalysisController();
+
+	const graphError = $derived(controller.graphError ?? controller.entriesQuery.error);
+	const graphErrorText = $derived(controller.hasGraph
+		? "Refresh failed. Showing available analysis."
+		: "Could not load analysis.");
 </script>
 
-{#snippet unattachedEntries(entries: SystemAnalysisEntry[])}
-	{#if entries.length}
-		<section class="max-h-36 overflow-auto border-t border-border bg-card p-3">
-			<h3 class="text-sm font-semibold">Unattached analysis entries</h3>
-			{#each entries as entry (entry.id)}
-				{@const { kind, title } = entry.attributes}
-				<div class="mt-1 text-xs">
-					<span class="text-muted-foreground">{kind}</span> · {title}
-				</div>
-			{/each}
-		</section>
+<div class="flex h-full min-h-0 flex-col gap-2">
+	{#if !controller.analysisId}
+		<p class="p-6 text-sm text-muted-foreground">No analysis is associated with this incident.</p>
+	{:else}
+		{#if graphError}
+			<div role="alert" class="flex shrink-0 flex-wrap items-center gap-2 p-2">
+				<span class="text-sm">{graphErrorText}</span>
+				<ErrorAlert error={graphError} />
+				<Button variant="outline" size="sm" onclick={controller.refreshAll}>Retry analysis</Button>
+			</div>
+		{/if}
+		
+		{#if controller.hasGraph}
+			<div class="min-h-0 flex-1">
+				<SystemDiagram {interaction} {inspector} />
+			</div>
+		{:else if !graphError}
+			<p role="status" class="p-6 text-sm text-muted-foreground">Loading analysis…</p>
+		{/if}
 	{/if}
-{/snippet}
-
-{#if controller.graphError}
-	<div class="flex h-full items-center justify-center p-6 text-destructive">
-		<div>
-			<p>Could not load this analysis graph.</p>
-			<button
-				class="mt-2 underline"
-				onclick={() => {
-					controller.refreshAll();
-				}}>Retry</button
-			>
-		</div>
-	</div>
-{:else if controller.graphLoading}
-	<div class="flex h-full items-center justify-center text-sm text-muted-foreground">
-		Loading complete graph…
-	</div>
-{:else}
-	<div class="flex h-full min-h-0 flex-col">
-		<div class="min-h-0 grow">
-			<SystemDiagramWrapper />
-		</div>
-		{@render unattachedEntries(controller.attachments.unattached)}
-	</div>
-{/if}
+</div>

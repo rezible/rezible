@@ -2,7 +2,7 @@
 	import { useSvelteFlow, ViewportPortal } from "@xyflow/svelte";
 	import { Button } from "$components/ui/button";
 	import {
-		useSystemDiagram,
+		useDiagramController,
 		type SystemTopologyNodeData,
 		type SystemRelationshipEdgeData,
 	} from "../diagramController.svelte";
@@ -10,11 +10,12 @@
 	import { useSystemAnalysisController } from "../../controller.svelte";
 
 	const analysis = useSystemAnalysisController();
-	const diagram = useSystemDiagram();
+	const diagram = useDiagramController();
 
 	const { getNodesBounds } = useSvelteFlow();
 
-	const { node, edge } = $derived(diagram.selected);
+	const node = $derived(diagram.selectedNode);
+	const edge = $derived(diagram.selectedEdge);
 
 	const nodeData = $derived(node?.data as SystemTopologyNodeData | undefined);
 	const analysisNode = $derived(nodeData?.analysisNode);

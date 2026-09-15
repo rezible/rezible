@@ -9,8 +9,12 @@
 	import PageActions from "./PageActions.svelte";
 
 	const controller = initIncidentsListViewController();
-	registerPageDescriptor(() => ({ title: "Incidents", actions: { component: PageActions } }));
+	registerPageDescriptor(() => ({ title: "Incidents", pageActions: actions }));
 </script>
+
+{#snippet actions()}
+	<PageActions />
+{/snippet}
 
 <div class="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto p-4">
 	<div class="flex flex-wrap items-end justify-between gap-2">

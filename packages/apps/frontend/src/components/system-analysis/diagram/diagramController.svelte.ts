@@ -1,4 +1,5 @@
-import { Context, watch } from "runed";
+import { Context, watch, type Getter } from "runed";
+import { tick } from "svelte";
 import { SvelteMap } from "svelte/reactivity";
 
 import {
@@ -22,6 +23,24 @@ export type SystemTopologyNodeData = {
 export type SystemRelationshipEdgeData = {
 	edge: SystemAnalysisEdge;
 	attachmentCount: number;
+};
+
+export type DiagramContextMenuState = {
+	nodeId?: string;
+	edgeId?: string;
+	containerRect: DOMRect;
+	clickPos: XYPosition;
+};
+
+type DiagramSelection = { node?: Node; edge?: Edge };
+export type GraphSelection = { nodeId?: string; edgeId?: string };
+export type GraphHighlights = { nodeIds: string[]; edgeIds: string[] };
+
+export type GraphInteraction = {
+	selection?: GraphSelection;
+	highlights?: GraphHighlights;
+	onReady?: (focus: (subjects: GraphHighlights) => Promise<void>) => void;
+	select: (selection: GraphSelection, trigger?: HTMLElement) => void;
 };
 
 const translateSystemAnalysis = (
@@ -65,30 +84,42 @@ const translateSystemAnalysis = (
 	return { nodes, edges };
 };
 
-export type DiagramContextMenuState = {
-	nodeId?: string;
-	edgeId?: string;
-	containerRect: DOMRect;
-	clickPos: XYPosition;
-};
+const getSelected = <T extends {id: string}>(items: T[], selectedId: string | undefined) => {
+	if (!selectedId) return;
+	return items.find(item => (item.id === selectedId));
+}
 
-type DiagramSelectionState = { node?: Node; edge?: Edge };
-
-export class SystemDiagramState {
+export class DiagramController {
 	analysis = useSystemAnalysisController();
+
+	private localSelection = $state<GraphSelection>({});
+	private externalInteraction = $state.raw<GraphInteraction>();
+	interaction = $derived(this.externalInteraction ?? {
+		selection: this.localSelection,
+		select: (s) => {this.localSelection = s},
+	});
+	selection = $derived(this.interaction.selection);
 
 	contextMenu = $state.raw<DiagramContextMenuState>();
 
-	selected = $state<DiagramSelectionState>({});
+	nodes = $state.raw<Node[]>([]);
+	edges = $state.raw<Edge[]>([]);
+
+	selectedNode = $derived(getSelected(this.nodes, this.selection?.nodeId));
+	selectedEdge = $derived(getSelected(this.edges, this.selection?.edgeId));
+	private selected = $derived<DiagramSelection>({ node: this.selectedNode, edge: this.selectedEdge });
+
+	highlights = $derived(this.interaction.highlights);
 	selectedLivePosition = $state<XYPosition>();
 
 	containerEl = $state.raw<HTMLElement>(null!);
 	addingEntityGhost = $state.raw<KnowledgeGraphEntity>();
 
-	constructor(containerElFn: () => HTMLElement) {
-		watch(containerElFn, (ref) => {
-			this.containerEl = ref;
+	constructor(interactionFn: Getter<GraphInteraction | undefined>) {
+		watch(interactionFn, interaction => {
+			this.externalInteraction = interaction;
 		});
+
 		watch(
 			() =>
 				[
@@ -100,10 +131,10 @@ export class SystemDiagramState {
 				this.onAnalysisGraphUpdate(nodes, edges);
 			}
 		);
-	}
 
-	nodes = $state.raw<Node[]>([]);
-	edges = $state.raw<Edge[]>([]);
+		watch(() => this.highlights, () => this.updateHighlights());
+		watch(() => this.selected, (sel) => {this.updateSelectedPosition(sel)});
+	}
 
 	onAnalysisGraphUpdate(nodes: SystemAnalysisNode[], edges: SystemAnalysisEdge[]) {
 		const translated = translateSystemAnalysis(
@@ -114,22 +145,52 @@ export class SystemDiagramState {
 		);
 		this.nodes = translated.nodes;
 		this.edges = translated.edges;
+		this.updateHighlights();
 	}
+
+	private updateHighlights() {
+		if (!this.highlights) return;
+		const nodeIds = new Set(this.highlights.nodeIds);
+		const edgeIds = new Set(this.highlights.edgeIds);
+		this.nodes = this.nodes.map((node) =>
+			!!node.selected === nodeIds.has(node.id) ? node : { ...node, selected: nodeIds.has(node.id) }
+		);
+		this.edges = this.edges.map((edge) =>
+			!!edge.selected === edgeIds.has(edge.id) ? edge : { ...edge, selected: edgeIds.has(edge.id) }
+		);
+	}
+
+	private flow?: ReturnType<typeof useSvelteFlow>;
+
+	focusSubjects = async (subjects: GraphHighlights) => {
+		await tick();
+		const ids = new Set(subjects.nodeIds);
+		for (const edge of this.edges) {
+			if (!subjects.edgeIds.includes(edge.id)) continue;
+			ids.add(edge.source);
+			ids.add(edge.target);
+		}
+		const nodes = this.nodes.filter((node) => ids.has(node.id));
+		if (nodes.length) {
+			await this.flow?.fitView({ nodes, padding: 0.3, maxZoom: 1.25, duration: 200 });
+		}
+	};
 
 	getNodesBounds = $state.raw<ReturnType<typeof useSvelteFlow>["getNodesBounds"]>();
 	flowStore = $state.raw<ReturnType<typeof useSvelteFlowStore>>();
 
-	onFlowInit() {
-		const flow = useSvelteFlow();
+	onFlowInit(flow: ReturnType<typeof useSvelteFlow>, store: ReturnType<typeof useSvelteFlowStore>) {
+		this.flow = flow;
 		this.getNodesBounds = flow.getNodesBounds;
-		this.flowStore = useSvelteFlowStore();
+		this.flowStore = store;
+		this.interaction.onReady?.(this.focusSubjects);
 	}
 
 	interactionLocked() {
 		return this.flowStore && !this.flowStore.elementsSelectable;
 	}
 
-	updateSelectedPosition({ node, edge }: { node?: Node; edge?: Edge }) {
+	updateSelectedPosition({ node, edge }: DiagramSelection) {
 		if (edge) {
 			this.selectedLivePosition = this.getNodesBounds?.([edge.source, edge.target]);
 		} else if (node) {
@@ -139,36 +200,32 @@ export class SystemDiagramState {
 		}
 	}
 
-	setSelected(state: DiagramSelectionState) {
+	setSelected({ node, edge }: DiagramSelection, event?: MouseEvent | TouchEvent) {
 		this.closeContextMenu();
-		this.selected = state;
-		this.updateSelectedPosition(state);
+		const trigger =
+			event?.target instanceof Element
+				? (event.target.closest<HTMLElement>(".svelte-flow__node, .svelte-flow__edge") ?? undefined)
+				: undefined;
+		this.interaction.select({nodeId: node?.id,edgeId: edge?.id}, trigger);
 	}
 
-	handleNodeClicked(e: { node: Node; event: MouseEvent | TouchEvent }) {
-		if (this.interactionLocked()) return;
-		this.setSelected({ node: e.node });
+	handleNodeDragStart({targetNode}: { targetNode?: Node | null }) {
+		this.setSelected({ node: !!targetNode ? targetNode: undefined });
 	}
 
-	handleNodeDragStart(e: { targetNode?: Node | null }) {
-		const node = !!e.targetNode ? e.targetNode : undefined;
-		this.setSelected({ node });
-	}
-
-	handleNodeDrag(e: { targetNode?: Node | null }) {
-		if (this.selected.node?.id === e.targetNode?.id && e.targetNode) {
-			this.updateSelectedPosition({ node: e.targetNode });
+	handleNodeDrag({targetNode: node}: { targetNode?: Node | null }) {
+		if (!this.selection?.nodeId || !node) return;
+		if (this.selection.nodeId === node.id) {
+			this.updateSelectedPosition({ node });
 		}
 	}
 
-	handleNodeDragStop(e: { targetNode?: Node | null }) {
-		if (!e.targetNode) return;
-		const { analysisNode } = e.targetNode.data as SystemTopologyNodeData;
+	handleNodeDragStop({targetNode: node}: { targetNode?: Node | null }) {
+		if (!node) return;
+		const { analysisNode } = node.data as SystemTopologyNodeData;
 		if (!analysisNode) return;
 
-		this.analysis.updateNode(analysisNode.id, {
-			position: e.targetNode.position,
-		});
+		this.analysis.updateNode(analysisNode.id, {position: node.position});
 	}
 
 	setAddingEntityGhost(e?: KnowledgeGraphEntity) {
@@ -193,26 +250,29 @@ export class SystemDiagramState {
 		}
 	}
 
-	handleEdgeClicked({ edge }: { edge: Edge }) {
+	handleNodeClicked({ node, event }: { node: Node; event: MouseEvent | TouchEvent }) {
 		if (this.interactionLocked()) return;
-		this.setSelected({ edge });
+		this.setSelected({ node }, event);
 	}
 
-	handleContextMenuEvent(e: { event: MouseEvent; node?: Node; edge?: Edge; nodes?: Node[] }) {
+	handleEdgeClicked({ edge, event }: { edge: Edge; event: MouseEvent | TouchEvent }) {
+		if (this.interactionLocked()) return;
+		this.setSelected({ edge }, event);
+	}
+
+	handleContextMenuEvent({event, node, edge, nodes}: { event: MouseEvent; node?: Node; edge?: Edge; nodes?: Node[] }) {
 		if (this.interactionLocked()) return;
 		if (!this.containerEl) return;
 
-		e.event.preventDefault();
+		event.preventDefault();
 
-		if (!("pageX" in e.event)) return;
-
-		const containerRect = this.containerEl.getBoundingClientRect();
+		if (!("pageX" in event && "pageY" in event)) return;
 
 		this.contextMenu = {
-			nodeId: e.node?.id,
-			edgeId: e.edge?.id,
-			clickPos: { x: e.event.pageX, y: e.event.pageY },
-			containerRect,
+			nodeId: node?.id,
+			edgeId: edge?.id,
+			clickPos: { x: event.pageX, y: event.pageY },
+			containerRect: this.containerEl.getBoundingClientRect(),
 		};
 	}
 
@@ -226,6 +286,6 @@ export class SystemDiagramState {
 	}
 }
 
-const diagramCtx = new Context<SystemDiagramState>("systemDiagramState");
-export const setSystemDiagram = (s: SystemDiagramState) => diagramCtx.set(s);
-export const useSystemDiagram = () => diagramCtx.get();
+const ctx = new Context<DiagramController>("SystemDiagramController");
+export const initDiagramController = (interactionFn: Getter<GraphInteraction | undefined>) => ctx.set(new DiagramController(interactionFn));
+export const useDiagramController = () => ctx.get();

@@ -9,12 +9,13 @@
 		SIDEBAR_WIDTH_ICON,
 	} from "./constants.js";
 	import { setSidebar } from "./context.svelte.js";
+	import { watch } from "runed";
 
 	let {
 		ref = $bindable(null),
 		open = $bindable(true),
 		onOpenChange = () => {},
-		viewRail = false,
+		featureRailActive = false,
 		class: className,
 		style,
 		children,
@@ -22,7 +23,7 @@
 	}: WithElementRef<HTMLAttributes<HTMLDivElement>> & {
 		open?: boolean;
 		onOpenChange?: (open: boolean) => void;
-		viewRail?: boolean;
+		featureRailActive?: boolean;
 	} = $props();
 
 	const sidebar = setSidebar({
@@ -34,11 +35,11 @@
 			// This sets the cookie to keep the sidebar state.
 			document.cookie = `${SIDEBAR_COOKIE_NAME}=${open}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`;
 		},
-		railActive: () => viewRail ?? false,
+		railActive: () => featureRailActive ?? false,
 	});
 
-	$effect(() => {
-		if (!viewRail) sidebar.railOpen = false;
+	watch(() => featureRailActive, isOpen => {
+		if (!isOpen) sidebar.featureRailOpen = false;
 	});
 </script>
 

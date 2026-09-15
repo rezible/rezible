@@ -8,14 +8,16 @@
 	import HomeViewPageActions from "./HomeViewPageActions.svelte";
 
 	initHomeController();
-	registerPageDescriptor(() => ({ 
+	registerPageDescriptor(() => ({
 		title: "Overview",
 		parents: [{ label: "Home", path: "/" }],
-		actions: {
-			component: HomeViewPageActions,
-		}
+		pageActions: actions,
 	}));
 </script>
+
+{#snippet actions()}
+	<HomeViewPageActions />
+{/snippet}
 
 <div class="@container/dashboard min-h-0 flex-1 overflow-y-auto font-sans">
 	<div

@@ -6,14 +6,19 @@ import { Context, watch, type Getter } from "runed";
 import { onMount } from "svelte";
 
 export class IncidentCollaborationController {
-	provider = $state<HocuspocusProvider>();
-	awareness = $state<StatesArray>([]);
-	status = $state<WebSocketStatus>(WebSocketStatus.Disconnected);
-	error = $state<Error>();
+	private documentId = $state.raw<string>();
 
-	constructor(docIdFn: Getter<string | undefined>) {
-		watch(docIdFn, (documentId) => {
-			this.connect(documentId);
+	provider = $state.raw<HocuspocusProvider>();
+	awareness = $state.raw<StatesArray>([]);
+	status = $state.raw<WebSocketStatus>(WebSocketStatus.Disconnected);
+	error = $state.raw<Error>();
+
+	initialSynced = $state(false);
+	unsyncedChanges = $state(0);
+
+	constructor(idFn: Getter<string | undefined>) {
+		watch(idFn, (id) => {
+			this.connect(id);
 		});
 		onMount(() => {
 			return () => {
@@ -22,7 +27,15 @@ export class IncidentCollaborationController {
 		});
 	}
 
-	private createProvider({ serverUrl, token, name }: DocumentSessionAuth) {
+	private createProvider({ serverUrl, token, name }: DocumentSessionAuth, documentId: string) {
+		if (this.provider && this.documentId === documentId) {
+			this.provider.configuration.token = token;
+			this.provider.configuration.name = name;
+			this.provider.disconnect();
+			this.provider.connect();
+			return;
+		}
+		this.documentId = documentId;
 		this.provider = new HocuspocusProvider({
 			url: serverUrl,
 			token: token,
@@ -41,22 +54,45 @@ export class IncidentCollaborationController {
 				console.log("auth failed", reason);
 				this.error = new Error(reason);
 			},
+			onSynced: () => {
+				this.initialSynced = true;
+			},
+			onUnsyncedChanges: ({ number }) => {
+				this.unsyncedChanges = number;
+			},
 		});
 	}
 
 	private requestSessionAuthMut = createMutation(() => ({
 		...requestDocumentSessionAuthMutation(),
-		onSuccess: ({ data: auth }) => {
-			this.createProvider(auth);
+		onSuccess: ({ data: auth }, variables) => {
+			if (variables.path.id === this.documentId) this.createProvider(auth, variables.path.id);
+		},
+		onError: (error, variables) => {
+			if (variables.path.id === this.documentId)
+				this.error =
+					error instanceof Error ? error : new Error("Unable to authorize report connection");
 		},
 	}));
 
 	async connect(id?: string) {
-		this.cleanup();
-		if (!!id && id !== this.requestSessionAuthMut.variables?.path.id) {
-			this.requestSessionAuthMut.mutate({ path: { id } });
+		if (!id) {
+			this.cleanup();
+			return;
 		}
+		if (
+			id === this.documentId &&
+			this.provider &&
+			!this.error &&
+			this.status !== WebSocketStatus.Disconnected
+		)
+			return;
+		if (id !== this.documentId) this.cleanup();
+		this.documentId = id;
+		this.requestSessionAuthMut.mutate({ path: { id } });
 	}
+
+	retry = () => this.connect(this.documentId);
 
 	cleanup() {
 		// https://github.com/ueberdosis/hocuspocus/issues/845
@@ -70,6 +106,9 @@ export class IncidentCollaborationController {
 		this.awareness = [];
 		this.status = WebSocketStatus.Disconnected;
 		this.error = undefined;
+		this.initialSynced = false;
+		this.unsyncedChanges = 0;
+		this.documentId = "";
 	}
 }
 

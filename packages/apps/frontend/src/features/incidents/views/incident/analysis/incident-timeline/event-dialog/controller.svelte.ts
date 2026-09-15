@@ -1,192 +1,105 @@
 import {
-	addSystemAnalysisEntrySubjectMutation,
 	createSystemAnalysisEntryMutation,
-	deleteSystemAnalysisEntrySubjectMutation,
 	updateSystemAnalysisEntryMutation,
-	updateSystemAnalysisEntrySubjectMutation,
+	type ErrorModel,
+	type SystemAnalysisEntry,
 } from "$lib/api";
 import { createMutation } from "@tanstack/svelte-query";
 import { Context } from "runed";
-
+import {
+	fromDate,
+	getLocalTimeZone,
+	now,
+	parseAbsoluteToLocal,
+	type ZonedDateTime,
+} from "@internationalized/date";
+import { useSystemAnalysisController } from "$components/system-analysis";
 import { useIncidentView } from "$features/incidents/views/incident";
-import { useSystemAnalysisController } from "$src/components/system-analysis";
-import {
-	initEventDialogAttributes,
-	type TimelineEventDialogAttributes,
-} from "./attribute-panels/attributes.svelte";
-import {
-	timelineEntryProperties,
-	type TimelineAnalysisEntry,
-	type TimelineAnalysisEntryAttributes,
-	type TimelineEntrySystemContext,
-} from "../entry-model";
-
-type EditorDialogView = "closed" | "create" | "edit";
-export type OnEventChangedCallbackFn = () => void;
 
 export class IncidentEventDialogController {
-	incidentViewController = useIncidentView();
-	analysisController = useSystemAnalysisController();
-	incident = $derived(this.incidentViewController.incident);
-	analysisId = $derived(this.analysisController.analysisId);
-
-	editingEntry = $state<TimelineAnalysisEntry>();
-	onEventChangedCallback: OnEventChangedCallbackFn;
-
-	view = $state<EditorDialogView>("closed");
-	previousView = $state<EditorDialogView>("closed");
-
-	open = $derived(this.view !== "closed");
-
-	attributes: TimelineEventDialogAttributes;
-
-	constructor(onEventChanged: OnEventChangedCallbackFn) {
-		this.onEventChangedCallback = onEventChanged;
-		this.attributes = initEventDialogAttributes();
-	}
-
-	setView(v: EditorDialogView) {
-		this.previousView = $state.snapshot(this.view);
-		this.view = v;
-	}
-
-	clear() {
-		this.setView("closed");
-		this.editingEntry = undefined;
-	}
-
-	onSuccess() {
-		this.onEventChangedCallback();
-		this.clear();
-	}
-
+	analysis = useSystemAnalysisController();
+	incident = useIncidentView();
+	open = $state(false);
+	editingEntry = $state.raw<SystemAnalysisEntry>();
+	title = $state("");
+	kind = $state<SystemAnalysisEntry["attributes"]["kind"]>("observation");
+	body = $state("");
+	timestamp = $state<ZonedDateTime>(now(getLocalTimeZone()));
+	hasTimestamp = $state(true);
+	error = $state<ErrorModel>();
+	private onChanged: () => unknown;
+	private returnFocus?: HTMLElement;
 	createEntryMut = createMutation(() => createSystemAnalysisEntryMutation());
 	updateEntryMut = createMutation(() => updateSystemAnalysisEntryMutation());
-	addSubjectMut = createMutation(() => addSystemAnalysisEntrySubjectMutation());
-	updateSubjectMut = createMutation(() => updateSystemAnalysisEntrySubjectMutation());
-	deleteSubjectMut = createMutation(() => deleteSystemAnalysisEntrySubjectMutation());
+	loading = $derived(this.createEntryMut.isPending || this.updateEntryMut.isPending);
 
-	loading = $derived(
-		this.createEntryMut.isPending ||
-			this.updateEntryMut.isPending ||
-			this.addSubjectMut.isPending ||
-			this.updateSubjectMut.isPending ||
-			this.deleteSubjectMut.isPending
-	);
+	constructor(onChanged: () => unknown) {
+		this.onChanged = onChanged;
+	}
 
-	private makeCreateAttributes(attrs: TimelineAnalysisEntryAttributes) {
-		return {
-			kind: attrs.kind,
-			occurredAt: attrs.timestamp,
-			title: attrs.title,
-			body: attrs.description,
-			properties: timelineEntryProperties(attrs),
+	setCreating = (attributes?: { timestamp?: string }) => {
+		this.editingEntry = undefined;
+		this.title = "";
+		this.kind = "observation";
+		this.body = "";
+		const time = attributes?.timestamp ?? this.incident.incident?.attributes.openedAt;
+		this.timestamp = time ? parseAbsoluteToLocal(time) : now(getLocalTimeZone());
+		this.hasTimestamp = true;
+		this.show();
+	};
+	setEditing = (entry: SystemAnalysisEntry) => {
+		this.editingEntry = entry;
+		this.title = entry.attributes.title;
+		this.kind = entry.attributes.kind;
+		this.body = entry.attributes.body ?? "";
+		this.hasTimestamp = !!entry.attributes.occurredAt;
+		this.timestamp = entry.attributes.occurredAt
+			? parseAbsoluteToLocal(entry.attributes.occurredAt)
+			: fromDate(new Date(), getLocalTimeZone());
+		this.show();
+	};
+	private show() {
+		this.error = undefined;
+		this.returnFocus = document.activeElement instanceof HTMLElement ? document.activeElement : undefined;
+		this.open = true;
+	}
+	clear = () => {
+		if (!this.loading) this.open = false;
+	};
+	restoreFocus = () => {
+		this.returnFocus?.focus({ preventScroll: true });
+	};
+
+	confirm = async () => {
+		if (this.loading || !this.title.trim() || !this.analysis.analysisId) return;
+		this.error = undefined;
+		const attributes = {
+			title: this.title.trim(),
+			kind: this.kind,
+			body: this.body,
+			...(this.hasTimestamp ? { occurredAt: this.timestamp.toAbsoluteString() } : {}),
 		};
-	}
-
-	private makeUpdateAttributes(attrs: TimelineAnalysisEntryAttributes) {
-		return {
-			kind: attrs.kind,
-			occurredAt: attrs.timestamp,
-			title: attrs.title,
-			body: attrs.description,
-			properties: timelineEntryProperties(attrs),
-		};
-	}
-
-	private async addSubject(entryId: string, context: TimelineEntrySystemContext) {
-		await this.addSubjectMut.mutateAsync({
-			path: { id: entryId },
-			body: {
-				attributes: {
-					role: context.attributes.relationship || "related",
-					knowledgeEntityId: context.attributes.knowledgeEntityId,
-				},
-			},
-		});
-	}
-
-	private async syncSubjects(
-		entryId: string,
-		previous: TimelineEntrySystemContext[],
-		next: TimelineEntrySystemContext[]
-	) {
-		const retainedSubjectIds = new Set<string>();
-		const previousById = new Map(
-			previous.filter((context) => !!context.id).map((context) => [context.id!, context])
-		);
-
-		for (const context of next) {
-			const previousContext = context.id ? previousById.get(context.id) : undefined;
-			if (
-				!previousContext ||
-				previousContext.attributes.knowledgeEntityId !== context.attributes.knowledgeEntityId
-			) {
-				await this.addSubject(entryId, context);
-				continue;
-			}
-
-			retainedSubjectIds.add(previousContext.id!);
-			if (previousContext.attributes.relationship !== context.attributes.relationship) {
-				await this.updateSubjectMut.mutateAsync({
-					path: { id: previousContext.id! },
-					body: { attributes: { role: context.attributes.relationship || "related" } },
+		try {
+			if (this.editingEntry) {
+				await this.updateEntryMut.mutateAsync({
+					path: { id: this.editingEntry.id },
+					body: { attributes },
+				});
+			} else {
+				await this.createEntryMut.mutateAsync({
+					path: { id: this.analysis.analysisId },
+					body: { attributes },
 				});
 			}
+			void this.onChanged();
+			this.open = false;
+		} catch (error) {
+			this.error = error as ErrorModel;
 		}
-
-		for (const previousContext of previous) {
-			if (!previousContext.id || retainedSubjectIds.has(previousContext.id)) continue;
-			await this.deleteSubjectMut.mutateAsync({ path: { id: previousContext.id } });
-		}
-	}
-
-	async doCreate() {
-		if (!this.incident || !this.analysisId) return;
-		const attrs = this.attributes.snapshot();
-		const created = await this.createEntryMut.mutateAsync({
-			path: { id: this.analysisId },
-			body: { attributes: this.makeCreateAttributes(attrs) },
-		});
-		await this.syncSubjects(created.data.id, [], attrs.systemContext);
-		this.onSuccess();
-	}
-
-	async doEdit() {
-		if (!this.editingEntry) return;
-		const attrs = this.attributes.snapshot();
-		const entryId = $state.snapshot(this.editingEntry.id);
-		await this.updateEntryMut.mutateAsync({
-			path: { id: entryId },
-			body: { attributes: this.makeUpdateAttributes(attrs) },
-		});
-		await this.syncSubjects(entryId, this.editingEntry.attributes.systemContext, attrs.systemContext);
-		this.onSuccess();
-	}
-
-	setCreating(attrs?: Partial<TimelineAnalysisEntryAttributes>) {
-		this.setView("create");
-		this.attributes.init(this.incident, attrs);
-	}
-
-	setEditing(ev: TimelineAnalysisEntry) {
-		this.setView("edit");
-		this.editingEntry = $state.snapshot(ev);
-		this.attributes.init(this.incident, ev.attributes);
-	}
-
-	confirm() {
-		if (this.view === "create") {
-			this.doCreate();
-		} else if (this.view === "edit") {
-			this.doEdit();
-		} else {
-			console.error("something went wrong", $state.snapshot(this.view));
-		}
-	}
+	};
 }
 
 const ctx = new Context<IncidentEventDialogController>("IncidentEventDialogController");
-export const initEventDialog = (onEventChanged: OnEventChangedCallbackFn) =>
-	ctx.set(new IncidentEventDialogController(onEventChanged));
+export const initEventDialog = (onChanged: () => unknown) =>
+	ctx.set(new IncidentEventDialogController(onChanged));
 export const useEventDialog = () => ctx.get();

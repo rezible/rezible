@@ -17,19 +17,22 @@
 	registerPageDescriptor(() => ({
 		title: view.shiftTitle || "Shift",
 		parents: [{ label: "Oncall Shifts", path: resolve("/oncall/shifts") }],
-		actions: { component: PageActions },
+		pageActions: actions,
 	}));
 </script>
 
-{#snippet infoBar()}
-	<ShiftDetailsBar {view} />
+{#snippet actions()}
+	<PageActions />
 {/snippet}
 
 <TabbedViewContainer
 	route="/oncall/shifts/[id]/[[view=oncallShiftView]]"
-	{infoBar}
 	tabs={[
 		{ label: "Overview", component: ShiftOverview, params: { id } },
 		{ label: "Handover", component: ShiftHandover, params: { id, view: "handover" } },
 	]}
-/>
+>
+	{#snippet infoBar()}
+		<ShiftDetailsBar {view} />
+	{/snippet}
+</TabbedViewContainer>

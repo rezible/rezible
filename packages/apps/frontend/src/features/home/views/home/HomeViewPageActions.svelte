@@ -2,7 +2,6 @@
 	import { Label } from "$components/ui/label";
 	import { Input } from "$components/ui/input";
     import RiSearch2Line from "remixicon-svelte/icons/search-2-line";
-	import Badge from "$src/components/ui/badge/badge.svelte";
 </script>
 
 <div class="flex items-center relative">

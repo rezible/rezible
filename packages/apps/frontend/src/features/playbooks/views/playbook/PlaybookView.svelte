@@ -12,9 +12,13 @@
 	registerPageDescriptor(() => ({
 		title: view.playbookTitle || "Playbook",
 		parents: [{ label: "Playbooks", path: resolve("/playbooks") }],
-		actions: { component: PlaybookPageActions, props: { view } },
+		pageActions: actions,
 	}));
 </script>
+
+{#snippet actions()}
+	<PlaybookPageActions {view} />
+{/snippet}
 
 <div class="flex gap-4 h-full w-full justify-between">
 	<div class="flex flex-col w-3/5 max-w-4xl items-center">

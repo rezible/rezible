@@ -1,33 +1,49 @@
-import { page } from "$app/state";
-import { tick } from "svelte";
-import { Context, watch } from "runed";
-import { listIncidentUpdatesOptions } from "$lib/api";
-import { createPaginatedQuery } from "$lib/api/queryPaginator.svelte";
+import { Context } from "runed";
+import { getIncidentOptions, listIncidentsQueryKey, updateIncidentMutation } from "$lib/api";
+import { createMutation, useQueryClient } from "@tanstack/svelte-query";
 import { useIncidentView } from "../controller.svelte";
 
 class IncidentOverviewController {
-	incident = useIncidentView();
+	viewController = useIncidentView();
+	incident = $derived(this.viewController.incident);
+	retrospective = $derived(this.viewController.retrospective);
 
-	paginatedUpdatesQuery = createPaginatedQuery({
-		source: "url",
-		queryOptions: (pagination) => ({
-			...listIncidentUpdatesOptions({ path: { id: this.incident.incidentId }, query: pagination }),
-			enabled: !!this.incident.incidentId,
-		}),
-	});
-	updatesQuery = $derived(this.paginatedUpdatesQuery.query);
-	updates = $derived(this.updatesQuery.data?.data);
+	editing = $state(false);
+	title = $state("");
+	summary = $state("");
+	error = $state("");
+	saving = $state(false);
 
-	constructor() {
-		watch(
-			() => [page.url.hash, this.updatesQuery.data],
-			() => {
-				if (!page.url.hash.startsWith("#update-") || !this.updatesQuery.data) return;
-				const id = page.url.hash.slice(1);
-				void tick().then(() => document.getElementById(id)?.scrollIntoView({ block: "start" }));
-			}
-		);
+	queryClient = useQueryClient();
+	updateMutation = createMutation(() => ({ ...updateIncidentMutation() }));
+	async updateSummary(title: string, summary: string) {
+		await this.updateMutation.mutateAsync({
+			path: { id: this.viewController.incidentId },
+			body: { attributes: { title, summary } },
+		});
+		await this.queryClient.invalidateQueries({
+			queryKey: getIncidentOptions({ path: { id: this.viewController.slug } }).queryKey,
+		});
+		await this.queryClient.invalidateQueries({ queryKey: listIncidentsQueryKey() });
 	}
+	beginEdit = () => {
+		this.title = this.incident?.attributes.title ?? "";
+		this.summary = this.incident?.attributes.summary ?? "";
+		this.error = "";
+		this.editing = true;
+	};
+	save = async () => {
+		if (this.saving) return;
+		this.saving = true;
+		try {
+			await this.updateSummary(this.title, this.summary);
+			this.editing = false;
+		} catch (error) {
+			this.error = error instanceof Error ? error.message : "Unable to save changes";
+		} finally {
+			this.saving = false;
+		}
+	};
 }
 
 const context = new Context<IncidentOverviewController>("IncidentOverviewController");

@@ -11,8 +11,10 @@ import (
 	"time"
 
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/organization"
 	"github.com/rezible/rezible/ent/organizationrole"
+	"github.com/rezible/rezible/ent/user"
 	"github.com/rezible/rezible/internal/db"
 	"github.com/rezible/rezible/internal/http"
 	"github.com/rezible/rezible/internal/postgres/river"
@@ -344,23 +346,28 @@ func (a *Application) registerMessageHandlers() error {
 	return r.AddHandlers(handlers...)
 }
 
+func (a *Application) makeDevelopmentAuthSession(ctx context.Context) (*ent.UserAuthSession, error) {
+	sessions := a.mustInvoke[rez.AuthSessionService]()
+	sess, sessionErr := sessions.CreateFromUserAuthResponse(ctx, http.NewDevelopmentSessionIdentity())
+	if sessionErr != nil {
+		return nil, fmt.Errorf("http development session: %w", sessionErr)
+	}
+	return sess, nil
+}
+
 func (a *Application) seedDevelopmentIdentity(ctx context.Context) error {
 	cfg := a.mustInvoke[rez.Config]()
 	if !cfg.HttpServer.Auth.EnableDevSkipMode {
 		return nil
 	}
 
-	sessions := a.mustInvoke[rez.AuthSessionService]()
-	orgs := a.mustInvoke[rez.OrganizationService]()
-
-	devIdentity := http.NewDevelopmentSessionIdentity()
-
-	sess, sessionErr := sessions.CreateFromUserAuthResponse(ctx, devIdentity)
-	if sessionErr != nil {
-		return fmt.Errorf("seed development identity: %w", sessionErr)
+	sess, sessErr := a.makeDevelopmentAuthSession(ctx)
+	if sessErr != nil {
+		return fmt.Errorf("seed development identity: %w", sessErr)
 	}
 	ctx = execution.NewTenantContext(ctx, sess.TenantID)
 
+	orgs := a.mustInvoke[rez.OrganizationService]()
 	org, orgErr := orgs.Get(ctx, organization.ID(sess.OrganizationID))
 	if orgErr != nil {
 		return fmt.Errorf("load development organization: %w", orgErr)
@@ -407,4 +414,142 @@ func (a *Application) seedDevelopmentIdentity(ctx context.Context) error {
 	}
 
 	return nil
+}
+
+func (a *Application) setupDemo(ctx context.Context) error {
+	dbc := a.mustInvoke[rez.Database]()
+
+	sess, sessErr := a.makeDevelopmentAuthSession(execution.NewSystemContext(ctx))
+	if sessErr != nil {
+		return fmt.Errorf("seed development identity: %w", sessErr)
+	}
+
+	return dbc.WithTx(execution.NewTenantContext(ctx, sess.TenantID), func(ctx context.Context, tx *ent.Client) error {
+		queryIncident := tx.Incident.Query().
+			Where(incident.Slug("demo-incident-workspace"))
+		if queryIncident.ExistX(ctx) {
+			fmt.Println("/incidents/demo-incident-workspace")
+			return nil
+		}
+		queryUser := tx.User.Query().
+			Where(user.AuthProviderID("dev-user"))
+		devUser := queryUser.OnlyX(ctx)
+
+		createSeverity := tx.IncidentSeverity.Create().
+			SetName("Demo SEV-2").
+			SetRank(2)
+		severity := createSeverity.SaveX(ctx)
+
+		createType := tx.IncidentType.Create().
+			SetName("Demo outage")
+		incidentType := createType.SaveX(ctx)
+
+		opened := time.Now().UTC().Add(-time.Hour)
+		createIncident := tx.Incident.Create().
+			SetSlug("demo-incident-workspace").
+			SetTitle("[DEMO] Checkout requests timing out").
+			SetSummary("Checkout requests timed out while the database connection pool was exhausted. Increasing the pool limit restored service.").
+			SetSeverityID(severity.ID).
+			SetTypeID(incidentType.ID).
+			SetOpenedAt(opened)
+		inc := createIncident.SaveX(ctx)
+
+		createOpened := tx.IncidentMilestone.Create().
+			SetIncidentID(inc.ID).
+			SetUserID(devUser.ID).
+			SetKind("opened").
+			SetTimestamp(opened)
+		createOpened.SaveX(ctx)
+
+		createResolved := tx.IncidentMilestone.Create().
+			SetIncidentID(inc.ID).
+			SetUserID(devUser.ID).
+			SetKind("resolution").
+			SetTimestamp(opened.Add(30 * time.Minute))
+		createResolved.SaveX(ctx)
+
+		createDocument := tx.Document.Create().
+			SetContent([]byte{})
+		document := createDocument.SaveX(ctx)
+
+		analysis := tx.SystemAnalysis.Create().
+			SaveX(ctx)
+
+		createRetrospective := tx.Retrospective.Create().
+			SetIncidentID(inc.ID).
+			SetDocumentID(document.ID).
+			SetSystemAnalysisID(analysis.ID).
+			SetKind("simple").
+			SetState("draft")
+		createRetrospective.SaveX(ctx)
+
+		createAPI := tx.KnowledgeEntity.Create().
+			SetCategory("container").
+			SetKind("service")
+		api := createAPI.SaveX(ctx)
+
+		createDatabase := tx.KnowledgeEntity.Create().
+			SetCategory("container").
+			SetKind("database")
+		store := createDatabase.SaveX(ctx)
+
+		createAPINode := tx.SystemAnalysisEntity.Create().
+			SetAnalysisID(analysis.ID).
+			SetKnowledgeEntityID(api.ID).
+			SetLabelOverride("Checkout API").
+			SetPosX(0).
+			SetPosY(0)
+		createAPINode.SaveX(ctx)
+
+		createDatabaseNode := tx.SystemAnalysisEntity.Create().
+			SetAnalysisID(analysis.ID).
+			SetKnowledgeEntityID(store.ID).
+			SetLabelOverride("Checkout database").
+			SetPosX(350).
+			SetPosY(0)
+		createDatabaseNode.SaveX(ctx)
+
+		createRelationship := tx.KnowledgeRelationship.Create().
+			SetPredicate("reads_from").
+			SetSourceEntityID(api.ID).
+			SetTargetEntityID(store.ID)
+		relationship := createRelationship.SaveX(ctx)
+
+		createEdge := tx.SystemAnalysisRelationship.Create().
+			SetAnalysisID(analysis.ID).
+			SetKnowledgeRelationshipID(relationship.ID)
+		createEdge.SaveX(ctx)
+
+		createObservation := tx.SystemAnalysisEntry.Create().
+			SetAnalysisID(analysis.ID).
+			SetKind("observation").
+			SetTitle("Database connection pool exhausted").
+			SetBody("Checkout requests are waiting for available database connections.").
+			SetOccurredAt(opened.Add(5 * time.Minute))
+		observation := createObservation.SaveX(ctx)
+
+		createSubject := tx.SystemAnalysisEntrySubject.Create().
+			SetEntryID(observation.ID).
+			SetKnowledgeRelationshipID(relationship.ID).
+			SetRole("subject")
+		createSubject.SaveX(ctx)
+
+		createAction := tx.SystemAnalysisEntry.Create().
+			SetAnalysisID(analysis.ID).
+			SetKind("action").
+			SetTitle("Increased connection pool limit").
+			SetSequence(1).
+			SetBody("Requests recovered after increasing the pool limit.").
+			SetOccurredAt(opened.Add(25 * time.Minute))
+
+		action := createAction.SaveX(ctx)
+		createActionSubject := tx.SystemAnalysisEntrySubject.Create().
+			SetEntryID(action.ID).
+			SetKnowledgeEntityID(api.ID).
+			SetRole("subject")
+		createActionSubject.SaveX(ctx)
+
+		fmt.Println("/incidents/" + inc.Slug)
+		return nil
+	})
 }

@@ -2,9 +2,9 @@
 	import { useEdges, useNodes } from "@xyflow/svelte";
 	import { Button } from "$components/ui/button";
 	import ContextMenu from "$components/common/context-menu/ContextMenu.svelte";
-	import { useSystemDiagram } from "../diagramController.svelte";
+	import { useDiagramController } from "../diagramController.svelte";
 
-	const diagram = useSystemDiagram();
+	const diagram = useDiagramController();
 
 	const props = $derived(diagram.contextMenu);
 

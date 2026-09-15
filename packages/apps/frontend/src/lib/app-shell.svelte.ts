@@ -1,8 +1,6 @@
 import { Context, watch, type Getter } from "runed";
-import { onDestroy, type Component, type ComponentProps } from "svelte";
+import { onDestroy, type Component, type Snippet } from "svelte";
 import type { ResolvedPathname } from "$app/types";
-
-type AnyComponent = Component<any>;
 
 export type AppSidebarItem = {
 	label: string;
@@ -31,25 +29,23 @@ export type PageBreadcrumb = {
 	path: ResolvedPathname;
 };
 
-export type PageDescriptor<C extends AnyComponent = Component> = {
+export type PageDescriptor = {
 	title: string;
+	status?: string;
 	parents?: readonly PageBreadcrumb[];
-	actions?: {
-		component: C;
-		props?: ComponentProps<C>;
-	};
+	pageActions?: Snippet;
 };
 
 export class AppShellController {
 	childSidebar = $state.raw<AppSidebarModel>();
-	
+
 	featureRail = $state(false);
 	private featureRailOwner?: object;
 
-	pageDescriptor = $state.raw<PageDescriptor<AnyComponent>>();
+	pageDescriptor = $state.raw<PageDescriptor>();
 	private pageDescriptorOwner?: object;
 
-	registerPageDescriptor<C extends AnyComponent>(fn: Getter<PageDescriptor<C>>) {
+	registerPageDescriptor(fn: Getter<PageDescriptor>) {
 		const owner = {};
 		this.pageDescriptorOwner = owner;
 		this.pageDescriptor = fn();
@@ -93,6 +89,6 @@ const ctx = new Context<AppShellController>("AppShellController");
 export const initAppShell = () => ctx.set(new AppShellController());
 export const useAppShell = () => ctx.get();
 
-export const registerPageDescriptor = <C extends AnyComponent>(getDescriptor: Getter<PageDescriptor<C>>) => {
+export const registerPageDescriptor = (getDescriptor: Getter<PageDescriptor>) => {
 	useAppShell().registerPageDescriptor(getDescriptor);
 };

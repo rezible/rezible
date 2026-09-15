@@ -7,7 +7,7 @@
 	import RiFileTextLine from "remixicon-svelte/icons/file-text-line";
 	import RiFocus3Line from "remixicon-svelte/icons/focus-3-line";
 	import RiSearchLine from "remixicon-svelte/icons/search-line";
-	
+
 	import { initSituationController } from "./controller.svelte";
 
 	import SituationPageActions from "./SituationPageActions.svelte";
@@ -19,19 +19,23 @@
 	let { id }: Props = $props();
 
 	const controller = initSituationController(() => id);
-	
+
 	registerPageDescriptor(() => ({
 		title: controller.situation?.attributes.title || "Situation",
 		parents: [{ label: "Situations", path: resolve("/situations") }],
-		actions: { component: SituationPageActions, props: { controller } },
+		pageActions: actions,
 	}));
 </script>
 
+{#snippet actions()}
+	<SituationPageActions {controller} />
+{/snippet}
+
 <LoadingQueryWrapper query={controller.query} feedbackOnly />
 
-<FeatureNavigationRail 
+<FeatureNavigationRail
 	label="Situation views"
-	route="/situations/[id]/[[view=situationView]]" 
+	route="/situations/[id]/[[view=situationView]]"
 	entries={[
 		{ label: "Brief", params: { id }, icon: RiFileTextLine, component: SituationBrief },
 		{

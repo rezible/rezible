@@ -9,9 +9,13 @@
 
 	registerPageDescriptor(() => ({
 		title: "Design system",
-		actions: { component: DesignSystemActions },
+		pageActions: actions,
 	}));
 </script>
+
+{#snippet actions()}
+	<DesignSystemActions />
+{/snippet}
 
 <svelte:head><title>Atlas design system · Rezible</title></svelte:head>
 

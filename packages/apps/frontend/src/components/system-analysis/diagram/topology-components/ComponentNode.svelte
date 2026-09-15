@@ -5,11 +5,12 @@
 
 	const { selected, data: arbitraryData }: NodeProps = $props();
 
+	const { nodesConnectable } = useStore();
+
 	const data = $derived(arbitraryData as SystemTopologyNodeData);
 	const entity = $derived(data.analysisNode.attributes.knowledgeEntity);
 	const entityState = $derived(entity?.attributes.latestState);
-
-	const { nodesConnectable } = useStore();
+	$inspect(entity.attributes)
 </script>
 
 <div
@@ -17,10 +18,11 @@
 	class="node border bg-card data-[is-selected=true]:bg-muted rounded-lg p-3 group"
 >
 	<span>{entityState?.displayName ?? "Unknown entity"}</span>
+
 	{#if data.attachmentCount}
-		<span class="ml-2 rounded-full bg-primary px-1.5 py-0.5 text-xs text-primary-foreground"
-			>{data.attachmentCount}</span
-		>
+		<span class="ml-2 rounded-full bg-primary px-1.5 py-0.5 text-xs text-primary-foreground">
+			{data.attachmentCount}
+		</span>
 	{/if}
 	{#if nodesConnectable}
 		<Handle

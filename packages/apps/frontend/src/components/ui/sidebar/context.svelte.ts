@@ -36,7 +36,7 @@ class SidebarState {
 		return this.#isMobile.current;
 	}
 
-	railOpen = $state(false);
+	featureRailOpen = $state(false);
 	openMobile = $state(false);
 
 	get open() {
@@ -49,7 +49,7 @@ class SidebarState {
 
 	get effectiveOpen() {
 		if (this.isMobile) return this.openMobile;
-		return this.railActive ? this.railOpen : this.open;
+		return this.railActive ? this.featureRailOpen : this.open;
 	}
 
 	get state() {
@@ -70,7 +70,7 @@ class SidebarState {
 
 	toggle = () => {
 		if (this.isMobile) return (this.openMobile = !this.openMobile);
-		if (this.railActive) return (this.railOpen = !this.railOpen);
+		if (this.railActive) return (this.featureRailOpen = !this.featureRailOpen);
 		return this.setOpen(!this.open);
 	};
 }

@@ -12,18 +12,22 @@
 
 	registerPageDescriptor(() => ({
 		title: "Meetings",
-		actions: { component: MeetingsPageActions },
+		pageActions: actions,
 	}));
 </script>
 
-{#snippet filters()}
-	<div class="pb-2 border">
-		<span>month</span>
-		<!-- <Month bind:startOfMonth={viewState.monthStart} showOutsideDays /> -->
-	</div>
+{#snippet actions()}
+	<MeetingsPageActions />
 {/snippet}
 
-<FilterPage {filters}>
+<FilterPage>
+	{#snippet filters()}
+		<div class="pb-2 border">
+			<span>month</span>
+			<!-- <Month bind:startOfMonth={viewState.monthStart} showOutsideDays /> -->
+		</div>
+	{/snippet}
+
 	<div class="flex min-h-0 flex-col gap-1 overflow-auto">
 		<LoadingQueryWrapper {query}>
 			{#snippet view(sessions: MeetingSession[])}

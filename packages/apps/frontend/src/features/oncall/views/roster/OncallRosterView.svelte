@@ -19,9 +19,13 @@
 	registerPageDescriptor(() => ({
 		title: view.rosterName || "Roster",
 		parents: [{ label: "Oncall Rosters", path: resolve("/oncall/rosters") }],
-		actions: { component: PageActions },
+		pageActions: actions,
 	}));
 </script>
+
+{#snippet actions()}
+	<PageActions />
+{/snippet}
 
 {#snippet infoBar()}
 	<RosterDetailsBar {view} />

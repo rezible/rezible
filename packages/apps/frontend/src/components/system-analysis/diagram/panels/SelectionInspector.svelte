@@ -1,38 +1,37 @@
 <script lang="ts">
-	import type { Edge, Node } from "@xyflow/svelte";
+	import { useDiagramController } from "../diagramController.svelte";
 	import { useSystemAnalysisController } from "../../controller.svelte";
 
-	type Props = { selected: { node?: Node; edge?: Edge } };
-	let { selected }: Props = $props();
+	const diagram = useDiagramController();
+	const node = $derived(diagram.selectedNode);
+	const edge = $derived(diagram.selectedEdge);
 
 	const analysis = useSystemAnalysisController();
-	const entries = $derived(
-		selected.node
-			? (analysis.attachments.byNodeId.get(selected.node.id) ?? [])
-			: selected.edge
-				? (analysis.attachments.byEdgeId.get(selected.edge.id) ?? [])
-				: []
-	);
+	const nodeEntries = $derived(!!node ? (analysis.attachments.byNodeId.get(node.id) ?? []) : []);
+	const edgeEntries = $derived(!!edge ? (analysis.attachments.byEdgeId.get(edge.id) ?? []) : []);
+	const entries = $derived(nodeEntries || edgeEntries || []);
 </script>
 
-{#if selected.node || selected.edge}
+{#if node || edge}
 	<aside class="w-72 max-h-80 overflow-auto border border-border bg-card p-3 text-card-foreground shadow">
-		<h3 class="mb-2 text-sm font-semibold">{selected.node ? "Node entries" : "Relationship entries"}</h3>
+		<h3 class="mb-2 text-sm font-semibold">{node ? "Node entries" : "Relationship entries"}</h3>
 		{#if entries.length === 0}
 			<p class="text-xs text-muted-foreground">No entries attached.</p>
 		{:else}
 			<div class="space-y-2">
 				{#each entries as entry (entry.id)}
+					{@const attrs = entry.attributes}
 					<article class="border-l-2 border-primary pl-2 text-xs">
 						<div class="text-muted-foreground">
-							{entry.attributes.kind}{entry.attributes.occurredAt
-								? ` · ${new Date(entry.attributes.occurredAt).toLocaleString()}`
-								: ""}
+							{attrs.kind}
+							{attrs.occurredAt ? ` · ${new Date(attrs.occurredAt).toLocaleString()}` : ""}
 						</div>
-						<div class="font-medium">{entry.attributes.title}</div>
-						{#if entry.attributes.body}<p class="mt-1 whitespace-pre-wrap">
-								{entry.attributes.body}
-							</p>{/if}
+						<div class="font-medium">{attrs.title}</div>
+						{#if attrs.body}
+							<p class="mt-1 whitespace-pre-wrap">
+								{attrs.body}
+							</p>
+						{/if}
 					</article>
 				{/each}
 			</div>

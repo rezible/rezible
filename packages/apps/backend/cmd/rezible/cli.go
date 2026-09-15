@@ -56,6 +56,13 @@ func makeCliCommands(app *Application) []*cli.Command {
 			},
 		},
 		{
+			Name:  "setup-demo",
+			Usage: "Create a local incident workspace for the development user",
+			Action: func(ctx context.Context, cmd *cli.Command) error {
+				return app.setupDemo(ctx)
+			},
+		},
+		{
 			Name:  "print-config",
 			Usage: "print loaded configuration",
 			Action: func(ctx context.Context, cmd *cli.Command) error {

@@ -14,6 +14,7 @@ import { Context, watch } from "runed";
 
 import { listIncidentMilestonesOptions, type Incident, type IncidentMilestone } from "$lib/api";
 import { useIncidentView } from "$features/incidents/views/incident";
+import { useIncidentAnalysis } from "../controller.svelte";
 
 import IncidentTimelineEventItemContent, {
 	type Props as TimelineEventComponentProps,
@@ -22,7 +23,6 @@ import IncidentTimelineMilestoneItemContent, {
 	type Props as TimelineMilestoneComponentProps,
 } from "./IncidentTimelineMilestoneItemContent.svelte";
 import { SvelteSet } from "svelte/reactivity";
-import { initEventDialog } from "./event-dialog/controller.svelte";
 import { initMilestonesDialog } from "./milestones-dialog/controller.svelte";
 import { systemAnalysisEntryToTimelineEntry, type TimelineAnalysisEntry } from "./entry-model";
 import { useSystemAnalysisController } from "$src/components/system-analysis";
@@ -55,12 +55,14 @@ const flushItemsAndRedrawTimeline = (i: DataSet<TimelineItem>, tl?: Timeline) =>
 };
 
 class TimelineEventElement {
-	props = $state<TimelineEventComponentProps>({ selected: false });
+	props: TimelineEventComponentProps;
 	ref = document.createElement("div");
 	component: ReturnType<typeof mount> | undefined;
 
-	constructor(event: TimelineAnalysisEntry) {
+	constructor(event: TimelineAnalysisEntry, onSelect: TimelineEventComponentProps["onSelect"]) {
+		this.props = $state({ event, selected: false, onSelect });
 		this.ref.setAttribute("event-id", $state.snapshot(event.id));
+		this.ref.tabIndex = -1;
 		this.props.event = event;
 		tick().then(() => {
 			this.component = mount(IncidentTimelineEventItemContent, { target: this.ref, props: this.props });
@@ -135,7 +137,7 @@ const createMilestoneTimelineItems = (el: TimelineMilestoneElement, ms: Incident
 	return [bgItem, boxItem];
 };
 
-const createIncidentWindowTimelineItems = (r: TimelineRange) => {
+const createIncidentWindowTimelineItems = (r: TimelineRange, closed: boolean) => {
 	const windowKey = "incident-window";
 	const windowBg: TimelineItem = {
 		id: `${windowKey}-bg`,
@@ -165,7 +167,7 @@ const createIncidentWindowTimelineItems = (r: TimelineRange) => {
 		selectable: false,
 		start: r.end,
 	};
-	return [windowBg, windowStartPoint, windowEndPoint];
+	return closed ? [windowBg, windowStartPoint, windowEndPoint] : [windowStartPoint];
 };
 
 export const isMilestoneItem = (item: TimelineItem) => {
@@ -175,6 +177,7 @@ export const isMilestoneItem = (item: TimelineItem) => {
 class TimelineEventsState {
 	items: DataSet<TimelineItem>;
 	analysis = useSystemAnalysisController();
+	incidentAnalysis = useIncidentAnalysis();
 	timeline = $state.raw<Timeline>();
 	timelineElements = new Map<string, TimelineEventElement>();
 
@@ -226,8 +229,10 @@ class TimelineEventsState {
 	updateEvent(event: TimelineAnalysisEntry) {
 		let el = this.timelineElements.get(event.id);
 		if (!el) {
-			el = new TimelineEventElement(event);
+			el = new TimelineEventElement(event, this.incidentAnalysis.selectEntry);
 			this.timelineElements.set(event.id, el);
+		} else {
+			el.props.event = event;
 		}
 		const item = createTimelineEventItem(event, el.ref);
 		this.items.update(item);
@@ -364,6 +369,7 @@ class TimelineMilestonesState {
 
 export class IncidentTimelineController {
 	view = useIncidentView();
+	analysis = useIncidentAnalysis();
 	incident = $derived(this.view.incident);
 
 	items = new DataSet<TimelineItem>([]);
@@ -379,10 +385,14 @@ export class IncidentTimelineController {
 	selectedItems = new SvelteSet<string>();
 
 	constructor() {
-		initEventDialog(this.onEventChanged);
 		initMilestonesDialog();
 
 		this.items.clear();
+
+		watch(
+			() => this.analysis.selectedEntryId,
+			() => this.applyEntrySelection()
+		);
 
 		this.items.on("*", () => {
 			this.onItemsUpdate();
@@ -406,6 +416,7 @@ export class IncidentTimelineController {
 			this.timeline.destroy();
 		}
 
+		if (this.incident) this.setIncidentWindow(this.incident);
 		this.timeline = this.createTimeline(ref, this.items as DataItemCollectionType);
 
 		this.timeline.on("select", (e) => {
@@ -419,14 +430,24 @@ export class IncidentTimelineController {
 		this.milestones.setTimeline(this.timeline);
 
 		if (this.incident) {
-			this.setIncidentWindow(this.incident);
 			this.updateTimelineViewBounds(this.timeline);
+			this.applyEntrySelection();
 		}
 	}
 
 	createTimeline(ref: HTMLElement, items: DataItemCollectionType) {
 		const timelineOpts: TimelineOptions = {
 			height: "100%",
+			onInitialDrawComplete: () => {
+				const selectedTime = this.analysis.selectedEntry?.attributes.occurredAt;
+				const selected = selectedTime ? new Date(selectedTime).valueOf() : undefined;
+				this.timeline?.setWindow(
+					(selected ?? this.incidentWindow.start) - OneHour,
+					(selected ?? this.incidentWindow.end) + OneHour,
+					{ animation: false }
+				);
+				this.applyEntrySelection();
+			},
 			zoomMin: 1000 * 60,
 			zoomMax: 1000 * 60 * 60 * 24 * 7,
 			showCurrentTime: false,
@@ -444,6 +465,7 @@ export class IncidentTimelineController {
 	onItemsUpdate() {
 		if (!this.timeline) return;
 		this.updateTimelineViewBounds(this.timeline);
+		this.applyEntrySelection();
 	}
 
 	onIncidentUpdate(inc?: Incident) {
@@ -453,14 +475,14 @@ export class IncidentTimelineController {
 	}
 
 	setIncidentWindow(inc: Incident) {
-		if (!this.timeline) return;
-
 		const start = new Date(inc.attributes.openedAt).valueOf();
-		const end = Math.max(new Date(inc.attributes.closedAt).valueOf(), start + 1);
+		const closedAt = new Date(inc.attributes.closedAt).valueOf();
+		const closed = Number.isFinite(closedAt) && closedAt >= start;
+		const end = closed ? closedAt : start;
 
 		this.incidentWindow = { start, end };
-		this.items.update(createIncidentWindowTimelineItems(this.incidentWindow));
-		this.timeline.setWindow(start - OneHour, end + OneHour, { animation: false });
+		if (!closed) this.items.remove(["incident-window-bg", "incident-window-end"]);
+		this.items.update(createIncidentWindowTimelineItems(this.incidentWindow, closed));
 	}
 
 	updateTimelineViewBounds(tl: Timeline) {
@@ -489,20 +511,29 @@ export class IncidentTimelineController {
 		this.timeline?.destroy();
 	}
 
-	onTimelineSelect(e: TimelineSelectEvent) {
-		const newSelected = new Set(e.items);
-		const deselectedItems = this.selectedItems.difference(newSelected);
-
-		deselectedItems.forEach((id) => {
-			this.events.setSelected(id, false);
-			this.milestones.setSelected(id, false);
-			this.selectedItems.delete(id);
-		});
-		newSelected.forEach((id) => {
+	private focusedEntryId?: string;
+	applyEntrySelection() {
+		const id = this.analysis.selectedEntryId;
+		for (const selected of this.selectedItems) this.events.setSelected(selected, false);
+		this.selectedItems.clear();
+		if (id && this.events.timelineElements.has(id)) {
 			this.events.setSelected(id, true);
-			this.milestones.setSelected(id, true);
 			this.selectedItems.add(id);
-		});
+			this.timeline?.setSelection([id]);
+			if (this.timeline && this.focusedEntryId !== id) {
+				const item = this.items.get(id);
+				if (item) this.timeline.moveTo(item.start, { animation: false });
+				this.focusedEntryId = id;
+			}
+		} else {
+			this.timeline?.setSelection([]);
+			this.focusedEntryId = undefined;
+		}
+	}
+
+	onTimelineSelect(e: TimelineSelectEvent) {
+		const id = e.items.map(String).find((id) => this.events.timelineElements.has(id));
+		if (id) this.analysis.selectEntry(id, this.events.timelineElements.get(id)?.ref);
 	}
 
 	onTimelineRangeChanged(e: TimelineRangeChangeEvent) {

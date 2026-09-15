@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { useSvelteFlow, ViewportPortal, type XYPosition } from "@xyflow/svelte";
-	import { useSystemDiagram } from "../diagramController.svelte";
+	import { useDiagramController } from "../diagramController.svelte";
 
-	const diagram = useSystemDiagram();
+	const diagram = useDiagramController();
 
 	const { screenToFlowPosition } = useSvelteFlow();
 

@@ -1,10 +1,6 @@
 <script lang="ts">
 	import { onMount } from "svelte";
-	import { type RetrospectiveReportSection } from "$lib/api";
-	import { useUserSessionState } from "$src/lib/user-session.svelte";
-	import TiptapEditor, { Editor as SvelteEditor } from "$src/components/tiptap-editor/TiptapEditor.svelte";
-	import { RezUserSuggestion } from "$src/components/tiptap-editor/user-suggestions/user-suggestion.svelte";
-	import type { Editor, Extensions } from "@tiptap/core";
+	import type { Editor } from "@tiptap/core";
 	import type { HocuspocusProvider } from "@hocuspocus/provider";
 	import {
 		configureBaseExtensions,
@@ -15,20 +11,25 @@
 	import Collaboration from "@tiptap/extension-collaboration";
 	import CollaborationCaret from "@tiptap/extension-collaboration-caret";
 
+	import type { RetrospectiveReportSection } from "$lib/api";
+	import { useUserSessionState } from "$lib/user-session.svelte";
+	import TiptapEditor, { Editor as SvelteEditor } from "$components/tiptap-editor/TiptapEditor.svelte";
+	import { RezUserSuggestion } from "$components/tiptap-editor/user-suggestions/user-suggestion.svelte";
 	import { activeAnnotation, activeEditor } from "../activeEditor.svelte";
-	import BubbleMenu, { type AnnotationType } from "./BubbleMenu.svelte";
+	import { useIncidentCollaboration } from "../../collaboration.svelte";
 	import MenuBar from "./MenuBar.svelte";
+	import { watch } from "runed";
 
 	type Props = {
 		section: RetrospectiveReportSection;
-		provider: HocuspocusProvider;
-		setIsActive: (e: Editor, field: string) => void;
-		onCreateAnnotation: (e: Editor, t: AnnotationType) => void;
 		focusEditor: () => void;
 	};
-	let { section, provider, setIsActive, onCreateAnnotation, focusEditor = $bindable() }: Props = $props();
+	let {section, focusEditor = $bindable()}: Props = $props();
 
 	const session = useUserSessionState();
+	const collab = useIncidentCollaboration();
+
+	const isEditable = $derived(true);
 
 	// TODO: load this
 	const userAccentColor = "#a33333";
@@ -46,7 +47,8 @@
 	};
 
 	let editor = $state<SvelteEditor>();
-	const mountEditor = () => {
+	const createEditor = (provider?: HocuspocusProvider) => {
+		if (!provider) return;
 		editor = new SvelteEditor({
 			extensions: configureEditorExtensions(section.field, provider),
 			editable: true,
@@ -57,17 +59,24 @@
 				},
 			},
 			onFocus({ editor }) {
-				setIsActive(editor, section.field);
+				activeEditor.set(editor, section.field);
 			},
 			onBlur() {
 				// setIsActive(undefined)
 			},
 		});
-		return () => {
-			if (!editor?.isDestroyed) editor?.destroy();
-		};
 	};
-	onMount(mountEditor);
+	watch(() => collab.provider, createEditor);
+	watch(() => isEditable, (editable) => {
+		editor?.setEditable(editable);
+	});
+	onMount(() => {
+		return () => {
+			if (!editor) return;
+			if (activeEditor.editor === editor) activeEditor.clear();
+			if (!editor.isDestroyed) editor.destroy();
+		};
+	});
 
 	const onEditorContainerFocused = () => {
 		if (!editor || editor.isFocused) return;
@@ -81,24 +90,19 @@
 		<span class="text-lg text-foreground/80">{section.title}</span>
 	</div>
 	<div class="">
-		{#if activeEditor.field === section.field}
+		{#if isEditable && activeEditor.field === section.field}
 			<MenuBar />
 		{/if}
 	</div>
 </div>
 
 <div
-	class="border border-foreground/15 bg-foreground/5 p-2 px-3 mt-1"
+	class="border-t border-border py-4 first:border-t-0"
 	tabindex="-1"
 	spellcheck="false"
 	onfocus={onEditorContainerFocused}
 >
 	{#if editor}
-		<!--BubbleMenu
-			{editor}
-			field={section.field}
-			onCreate={(t) => onCreateAnnotation(editor as Editor, t)}
-		/-->
 		<TiptapEditor bind:editor />
 	{/if}
 </div>
