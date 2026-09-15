@@ -29,7 +29,7 @@
 
 	const itemId = $derived(item?.id.toString());
 	const event = $derived(
-		itemId && timelineController.analysis.analysis.entries.find((entry) => entry.id === itemId)
+		itemId && timelineController.entries.find((entry) => entry.id === itemId)
 	);
 
 	const onEditEventClick = () => {

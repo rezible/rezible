@@ -26,23 +26,35 @@
 				"Unknown subject"
 			);
 		}
-		if (relationship) return relationship.attributes.predicate.replaceAll("_", " ");
+		if (relationship) {
+			return relationship.attributes.predicate.replaceAll("_", " ");
+		}
 		return "Knowledge detail";
 	});
 
 	const updatedAt = $derived(attributes?.updatedAt);
 	const freshness = $derived.by(() => {
-		if (!updatedAt) return undefined;
+		if (!updatedAt) {
+			return undefined;
+		}
 		const minutes = Math.round((Date.now() - new Date(updatedAt).getTime()) / 60_000);
-		if (minutes < 1) return "just now";
-		if (minutes < 60) return `${minutes}m ago`;
+		if (minutes < 1) {
+			return "just now";
+		}
+		if (minutes < 60) {
+			return `${minutes}m ago`;
+		}
 		const hours = Math.round(minutes / 60);
-		if (hours < 24) return `${hours}h ago`;
+		if (hours < 24) {
+			return `${hours}h ago`;
+		}
 		return `${Math.round(hours / 24)}d ago`;
 	});
 
 	const relationshipTargets = $derived.by(() => {
-		if (!relationship) return [];
+		if (!relationship) {
+			return [];
+		}
 		return [
 			{ role: "source", id: relationship.attributes.sourceEntityId },
 			{ role: "target", id: relationship.attributes.targetEntityId },
@@ -50,7 +62,9 @@
 	});
 
 	const situationHref = $derived.by(() => {
-		if (entity?.attributes.kind !== "situation") return undefined;
+		if (entity?.attributes.kind !== "situation") {
+			return undefined;
+		}
 		const name = entity.attributes.latestState?.displayName;
 		return resolve("/situations") + (name ? `?search=${encodeURIComponent(name)}` : "");
 	});

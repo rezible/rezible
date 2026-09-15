@@ -4,7 +4,15 @@
  */
 module.exports = {
 	plugins: ["prettier-plugin-svelte"],
-	overrides: [{ files: "*.svelte", options: { parser: "svelte" } }],
+	overrides: [
+		{
+			files: "*.svelte",
+			options: {
+				parser: "svelte",
+				htmlWhitespaceSensitivity: "ignore",
+			},
+		},
+	],
 	trailingComma: "es5",
 	tabWidth: 4,
 	semi: true,

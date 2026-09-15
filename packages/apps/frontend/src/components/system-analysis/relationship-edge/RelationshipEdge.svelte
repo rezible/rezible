@@ -1,7 +1,9 @@
 <script lang="ts">
 	import { type EdgeProps, getSmoothStepPath } from "@xyflow/svelte";
+	import type { SystemDiagramEdge } from "$components/system-diagram";
 
-	const props: EdgeProps = $props();
+	type Props = EdgeProps<SystemDiagramEdge>;
+	let props: Props = $props();
 
 	const offset = 5;
 	const sourceX = $derived(props.sourceX - offset);
@@ -33,10 +35,8 @@
 		})
 	);
 
-	const animated = $derived(props.selected);
-	const hasAttachments = $derived(
-		Number((props.data as { attachmentCount?: number } | undefined)?.attachmentCount) > 0
-	);
+	const animated = $derived(props.selected || props.data?.highlighted);
+	const hasAttachments = $derived(Number(props.data?.attachmentCount) > 0);
 	const animatedPathProps = {
 		"stroke-width": "5",
 		"stroke-dasharray": "10",
@@ -50,7 +50,7 @@
 
 {#snippet edgePath(d: string, dir: "out" | "in")}
 	<path
-		id={props.id}
+		id={`${props.id}-${dir}`}
 		{d}
 		fill="none"
 		style=""

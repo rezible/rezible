@@ -11,9 +11,9 @@
 	import { initSituationController } from "./controller.svelte";
 
 	import SituationPageActions from "./SituationPageActions.svelte";
-	import SituationBrief from "./brief";
-	import SituationImpact from "./impact";
-	import SituationInvestigations from "./investigations";
+	import SituationBrief from "./brief/SituationBrief.svelte";
+	import SituationImpact from "./impact/SituationImpact.svelte";
+	import SituationInvestigations from "./investigations/SituationInvestigations.svelte";
 
 	type Props = { id: string };
 	let { id }: Props = $props();
@@ -31,7 +31,7 @@
 	<SituationPageActions {controller} />
 {/snippet}
 
-<LoadingQueryWrapper query={controller.query} feedbackOnly />
+<LoadingQueryWrapper query={controller.situationQuery} feedbackOnly />
 
 <FeatureNavigationRail
 	label="Situation views"

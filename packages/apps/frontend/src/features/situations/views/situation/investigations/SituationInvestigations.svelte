@@ -6,14 +6,14 @@
 	import * as Alert from "$components/ui/alert";
 	import * as Empty from "$components/ui/empty";
 	import LoadingQueryWrapper from "$components/layout/loading-query-wrapper/LoadingQueryWrapper.svelte";
-	import PaginatedQueryListBox from "$components/layout/paginated-query-listbox/PaginatedQueryListBox.svelte";
-	import { cn } from "$lib/utils";
+	import SituationInvestigationList from "../SituationInvestigationList.svelte";
 	import RiInformationLine from "remixicon-svelte/icons/information-line";
 	import { initSituationInvestigationsController } from "./controller.svelte";
 	import { timestamp } from "../model";
 
 	const controller = initSituationInvestigationsController();
 	const attrs = $derived(controller.attrs);
+	const situation = controller.situationController;
 </script>
 
 {#if attrs}
@@ -52,21 +52,26 @@
 			{#if controller.startMutation.error}
 				<Alert.Root variant="destructive">
 					<Alert.Title>Could not request investigation</Alert.Title>
-					<Alert.Description>{controller.startMutation.error.detail || controller.startMutation.error.title}</Alert.Description>
+					<Alert.Description
+						>{controller.startMutation.error.detail ||
+							controller.startMutation.error.title}</Alert.Description
+					>
 				</Alert.Root>
 			{/if}
 
 			<div class="grid min-w-0 items-start gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
 				<article class="flex min-w-0 flex-col gap-5 rounded-lg border bg-card p-4 md:p-6">
-					{#if controller.selectedId}
-						<LoadingQueryWrapper query={controller.selectedQuery} feedbackOnly />
-						{#if controller.selected && !controller.selectedBelongs}
+					{#if situation.selectedInvestigationId}
+						<LoadingQueryWrapper query={situation.selectedInvestigationQuery} feedbackOnly />
+						{#if situation.selectedInvestigation && !situation.selectedInvestigationBelongs}
 							<Alert.Root>
 								<Alert.Title>Investigation unavailable for this Situation</Alert.Title>
-								<Alert.Description>Select an investigation from this Situation's list.</Alert.Description>
+								<Alert.Description
+									>Select an investigation from this Situation's list.</Alert.Description
+								>
 							</Alert.Root>
-						{:else if controller.selected}
-							{@const selAttrs = controller.selected.attributes}
+						{:else if situation.selectedInvestigation}
+							{@const selAttrs = situation.selectedInvestigation.attributes}
 							<header class="flex flex-col gap-2">
 								<h2 class="text-lg font-semibold wrap-anywhere">
 									{selAttrs.query || "Investigation"}
@@ -74,7 +79,8 @@
 								<time
 									class="text-xs text-muted-foreground tabular-nums"
 									datetime={timestamp(selAttrs.updatedAt).iso}
-								>Updated {timestamp(selAttrs.updatedAt).label}</time>
+									>Updated {timestamp(selAttrs.updatedAt).label}</time
+								>
 							</header>
 							{#if controller.selectedChanged}
 								<Alert.Root role="note"
@@ -125,48 +131,15 @@
 						<Empty.Root>
 							<Empty.Header>
 								<Empty.Title>No investigation yet</Empty.Title>
-								<Empty.Description>Run an investigation using the form above.</Empty.Description>
+								<Empty.Description
+									>Run an investigation using the form above.</Empty.Description
+								>
 							</Empty.Header>
 						</Empty.Root>
 					{/if}
 				</article>
-				
-				<aside class="flex min-w-0 flex-col gap-3" aria-label="Existing investigations">
-					<h2 class="text-lg font-semibold">Existing investigations</h2>
-					<LoadingQueryWrapper query={controller.investigationsQuery.query} feedbackOnly />
-					{#if controller.investigationsQuery.query.data}
-							{#each controller.investigations as investigation (investigation.id)}
-								<a
-									href={controller.investigationHref(investigation.id)}
-									data-sveltekit-noscroll
-									aria-current={controller.selectedId === investigation.id
-										? "true"
-										: undefined}
-									class={cn(
-										"flex min-w-0 flex-col gap-2 rounded-md border p-3 text-sm hover:bg-accent focus-visible:outline-2 focus-visible:outline-ring",
-										controller.selectedId === investigation.id
-											? "border-l-2 border-l-brand bg-selection text-selection-foreground"
-											: "bg-card"
-									)}
-								>
-									<span class="font-medium wrap-anywhere"
-										>{investigation.attributes.query || "Investigation"}</span
-									>
-									<time
-										class="text-xs text-muted-foreground tabular-nums"
-										datetime={timestamp(investigation.attributes.updatedAt).iso}
-										>Updated {timestamp(investigation.attributes.updatedAt).label}</time
-									>
-								</a>
-							{:else}
-								<Empty.Root>
-									<Empty.Header>
-										<Empty.Title>No investigations</Empty.Title>
-									</Empty.Header>
-								</Empty.Root>
-							{/each}
-					{/if}
-				</aside>
+
+				<SituationInvestigationList />
 			</div>
 		</div>
 	</div>

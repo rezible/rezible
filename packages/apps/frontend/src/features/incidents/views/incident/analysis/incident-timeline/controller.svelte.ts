@@ -369,8 +369,10 @@ class TimelineMilestonesState {
 
 export class IncidentTimelineController {
 	view = useIncidentView();
-	analysis = useIncidentAnalysis();
 	incident = $derived(this.view.incident);
+
+	incidentAnalysis = useIncidentAnalysis();
+	entries = $derived(this.incidentAnalysis.systemAnalysis.entries);
 
 	items = new DataSet<TimelineItem>([]);
 	events = new TimelineEventsState(this.items);
@@ -390,7 +392,7 @@ export class IncidentTimelineController {
 		this.items.clear();
 
 		watch(
-			() => this.analysis.selectedEntryId,
+			() => this.incidentAnalysis.selectedEntryId,
 			() => this.applyEntrySelection()
 		);
 
@@ -439,7 +441,7 @@ export class IncidentTimelineController {
 		const timelineOpts: TimelineOptions = {
 			height: "100%",
 			onInitialDrawComplete: () => {
-				const selectedTime = this.analysis.selectedEntry?.attributes.occurredAt;
+				const selectedTime = this.incidentAnalysis.selectedEntry?.attributes.occurredAt;
 				const selected = selectedTime ? new Date(selectedTime).valueOf() : undefined;
 				this.timeline?.setWindow(
 					(selected ?? this.incidentWindow.start) - OneHour,
@@ -513,7 +515,7 @@ export class IncidentTimelineController {
 
 	private focusedEntryId?: string;
 	applyEntrySelection() {
-		const id = this.analysis.selectedEntryId;
+		const id = this.incidentAnalysis.selectedEntryId;
 		for (const selected of this.selectedItems) this.events.setSelected(selected, false);
 		this.selectedItems.clear();
 		if (id && this.events.timelineElements.has(id)) {
@@ -533,7 +535,7 @@ export class IncidentTimelineController {
 
 	onTimelineSelect(e: TimelineSelectEvent) {
 		const id = e.items.map(String).find((id) => this.events.timelineElements.has(id));
-		if (id) this.analysis.selectEntry(id, this.events.timelineElements.get(id)?.ref);
+		if (id) this.incidentAnalysis.selectEntry(id, this.events.timelineElements.get(id)?.ref);
 	}
 
 	onTimelineRangeChanged(e: TimelineRangeChangeEvent) {
