@@ -40,27 +40,29 @@ type ParsedAuthSessionQueryResult = {
 	error?: ApiAuthErrorCategory;
 };
 const parseAuthSessionQueryResponse = ({
-	data: body,
+	data,
 	error,
 }: AuthSessionQueryResult): ParsedAuthSessionQueryResult => {
-	let res: ParsedAuthSessionQueryResult = {};
-	if (!!error) {
-		res.error = parseAuthSessionResponseError(error);
-	} else if (!!body) {
-		res.session = {
-			user: body.data.user,
-			organization: body.data.organization,
-			organizationRole: body.data.organizationRole,
-			expiresAt: parseAbsoluteToLocal(body.data.expiresAt),
+	if (!!error && error.status === 401) {
+		return { error: parseAuthSessionResponseError(error) };
+	}
+	if (!!data) {
+		const res = data.data;
+		return {
+			session: {
+				user: res.user,
+				organization: res.organization,
+				organizationRole: res.organizationRole,
+				expiresAt: parseAbsoluteToLocal(res.expiresAt),
+			},
 		};
 	}
-	return res;
+	return error ? { error: parseAuthSessionResponseError(error) } : {};
 };
 
 const DefaultRoute = resolve("/");
 const LoginRoute = resolve("/login");
 const InitialSetupRoute = resolve("/settings/initial-setup");
-const ConnectIntegrationRoutePrefix = resolve("/(integrations)/connect");
 const getAuthRedirect = (routeId: RouteId | null, isAuthenticated: boolean, isSetup: boolean) => {
 	if (!routeId) return null;
 
@@ -70,12 +72,11 @@ const getAuthRedirect = (routeId: RouteId | null, isAuthenticated: boolean, isSe
 	}
 
 	const isInitialSetupRoute = routeId.startsWith(InitialSetupRoute);
-	const isConnectIntegrationRoute = routeId.startsWith(ConnectIntegrationRoutePrefix);
 	if (!isSetup) {
-		return isInitialSetupRoute || isConnectIntegrationRoute ? null : InitialSetupRoute;
+		return isInitialSetupRoute ? null : InitialSetupRoute;
 	}
 	if (isSetup && isInitialSetupRoute) {
-		return resolve("/settings");
+		return resolve("/settings/integrations");
 	}
 
 	return isLoginRoute ? consumeReturnLocation() : null;
@@ -167,8 +168,8 @@ export class UserSessionState {
 		});
 	}
 
-	refetch() {
-		this.query.refetch();
+	async refetch() {
+		await this.query.refetch();
 	}
 
 	signingOut = $state(false);

@@ -315,7 +315,7 @@ CREATE INDEX "organization_tenant_id" ON "organizations" ("tenant_id");
 -- create index "organization_tenant_id_auth_provider_id" to table: "organizations"
 CREATE UNIQUE INDEX "organization_tenant_id_auth_provider_id" ON "organizations" ("tenant_id", "auth_provider_id");
 -- create "organization_preferences" table
-CREATE TABLE "organization_preferences" ("id" uuid NOT NULL, "initial_setup_at" timestamptz NULL, "enable_incident_management" boolean NOT NULL DEFAULT false, "organization_id" uuid NOT NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
+CREATE TABLE "organization_preferences" ("id" uuid NOT NULL, "initial_setup_at" timestamptz NULL, "enable_incident_management" boolean NOT NULL DEFAULT false, "timezone" character varying NULL, "organization_id" uuid NOT NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
 -- create index "organization_preferences_organization_id_key" to table: "organization_preferences"
 CREATE UNIQUE INDEX "organization_preferences_organization_id_key" ON "organization_preferences" ("organization_id");
 -- create index "organizationpreferences_tenant_id" to table: "organization_preferences"

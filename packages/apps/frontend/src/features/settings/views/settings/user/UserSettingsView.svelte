@@ -4,6 +4,7 @@
 	import { Button } from "$components/ui/button";
 	import * as Card from "$components/ui/card";
 	import { Input } from "$components/ui/input";
+	import TimezoneSelectField from "$components/forms/timezone-select-field/TimezoneSelectField.svelte";
 	import { Label } from "$components/ui/label";
 	import * as NativeSelect from "$components/ui/native-select";
 	import { Switch } from "$components/ui/switch";
@@ -55,7 +56,7 @@
 				</div>
 				<div class="grid gap-1.5">
 					<Label for="user-timezone">Timezone</Label>
-					<Input id="user-timezone" bind:value={view.timezone} placeholder="Australia/Sydney" />
+					<TimezoneSelectField id="user-timezone" bind:value={view.timezone} />
 				</div>
 			</Card.Content>
 			<Card.Footer>
@@ -104,9 +105,9 @@
 				{/each}
 			</Card.Content>
 			<Card.Footer>
-				<Button onclick={() => view.saveNotifications()} disabled={view.saving}
-					>Save notifications</Button
-				>
+				<Button onclick={() => view.saveNotifications()} disabled={view.saving}>
+					Save notifications
+				</Button>
 			</Card.Footer>
 		</Card.Root>
 	{/if}

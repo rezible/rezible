@@ -80,6 +80,26 @@ func (_u *OrganizationPreferencesUpdate) SetNillableEnableIncidentManagement(v *
 	return _u
 }
 
+// SetTimezone sets the "timezone" field.
+func (_u *OrganizationPreferencesUpdate) SetTimezone(v string) *OrganizationPreferencesUpdate {
+	_u.mutation.SetTimezone(v)
+	return _u
+}
+
+// SetNillableTimezone sets the "timezone" field if the given value is not nil.
+func (_u *OrganizationPreferencesUpdate) SetNillableTimezone(v *string) *OrganizationPreferencesUpdate {
+	if v != nil {
+		_u.SetTimezone(*v)
+	}
+	return _u
+}
+
+// ClearTimezone clears the value of the "timezone" field.
+func (_u *OrganizationPreferencesUpdate) ClearTimezone() *OrganizationPreferencesUpdate {
+	_u.mutation.ClearTimezone()
+	return _u
+}
+
 // SetOrganization sets the "organization" edge to the Organization entity.
 func (_u *OrganizationPreferencesUpdate) SetOrganization(v *Organization) *OrganizationPreferencesUpdate {
 	return _u.SetOrganizationID(v.ID)
@@ -160,6 +180,12 @@ func (_u *OrganizationPreferencesUpdate) sqlSave(ctx context.Context) (_node int
 	}
 	if value, ok := _u.mutation.EnableIncidentManagement(); ok {
 		_spec.SetField(organizationpreferences.FieldEnableIncidentManagement, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.Timezone(); ok {
+		_spec.SetField(organizationpreferences.FieldTimezone, field.TypeString, value)
+	}
+	if _u.mutation.TimezoneCleared() {
+		_spec.ClearField(organizationpreferences.FieldTimezone, field.TypeString)
 	}
 	if _u.mutation.OrganizationCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -261,6 +287,26 @@ func (_u *OrganizationPreferencesUpdateOne) SetNillableEnableIncidentManagement(
 	if v != nil {
 		_u.SetEnableIncidentManagement(*v)
 	}
+	return _u
+}
+
+// SetTimezone sets the "timezone" field.
+func (_u *OrganizationPreferencesUpdateOne) SetTimezone(v string) *OrganizationPreferencesUpdateOne {
+	_u.mutation.SetTimezone(v)
+	return _u
+}
+
+// SetNillableTimezone sets the "timezone" field if the given value is not nil.
+func (_u *OrganizationPreferencesUpdateOne) SetNillableTimezone(v *string) *OrganizationPreferencesUpdateOne {
+	if v != nil {
+		_u.SetTimezone(*v)
+	}
+	return _u
+}
+
+// ClearTimezone clears the value of the "timezone" field.
+func (_u *OrganizationPreferencesUpdateOne) ClearTimezone() *OrganizationPreferencesUpdateOne {
+	_u.mutation.ClearTimezone()
 	return _u
 }
 
@@ -374,6 +420,12 @@ func (_u *OrganizationPreferencesUpdateOne) sqlSave(ctx context.Context) (_node 
 	}
 	if value, ok := _u.mutation.EnableIncidentManagement(); ok {
 		_spec.SetField(organizationpreferences.FieldEnableIncidentManagement, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.Timezone(); ok {
+		_spec.SetField(organizationpreferences.FieldTimezone, field.TypeString, value)
+	}
+	if _u.mutation.TimezoneCleared() {
+		_spec.ClearField(organizationpreferences.FieldTimezone, field.TypeString)
 	}
 	if _u.mutation.OrganizationCleared() {
 		edge := &sqlgraph.EdgeSpec{

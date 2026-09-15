@@ -11,11 +11,13 @@ import (
 
 type OrganizationsHandler interface {
 	GetOrganization(context.Context, *GetOrganizationRequest) (*GetOrganizationResponse, error)
+	CompleteOrgSetup(context.Context, *CompleteOrgSetupRequest) (*CompleteOrgSetupResponse, error)
 	UpdateOrganizationPreferences(context.Context, *UpdateOrganizationPreferencesRequest) (*UpdateOrganizationPreferencesResponse, error)
 }
 
 func (o operations) RegisterOrganizations(api huma.API) {
 	huma.Register(api, GetOrganization, o.GetOrganization)
+	huma.Register(api, CompleteOrgSetup, o.CompleteOrgSetup)
 	huma.Register(api, UpdateOrganizationPreferences, o.UpdateOrganizationPreferences)
 }
 
@@ -32,7 +34,8 @@ type (
 	}
 
 	OrganizationPreferences struct {
-		EnableIncidentManagement bool `json:"enableIncidentManagement"`
+		EnableIncidentManagement bool   `json:"enableIncidentManagement"`
+		Timezone                 string `json:"timezone,omitempty"`
 	}
 )
 
@@ -54,6 +57,7 @@ func OrganizationPreferencesFromEnt(prefs *ent.OrganizationPreferences) Organiza
 	}
 	return OrganizationPreferences{
 		EnableIncidentManagement: prefs.EnableIncidentManagement,
+		Timezone:                 prefs.Timezone,
 	}
 }
 
@@ -71,6 +75,23 @@ var GetOrganization = huma.Operation{
 type GetOrganizationRequest IdRequest
 type GetOrganizationResponse ItemResponse[Organization]
 
+// TODO: require organization admin authorization.
+var CompleteOrgSetup = huma.Operation{
+	OperationID: "complete-org-setup",
+	Method:      http.MethodPost,
+	Path:        "/organizations/{id}/setup",
+	Summary:     "Complete Organization Setup",
+	Tags:        organizationsTags,
+	Errors:      ErrorCodes(http.StatusConflict),
+}
+
+type CompleteOrgSetupRequestAttributes struct {
+	Name     string `json:"name"`
+	Timezone string `json:"timezone,omitempty"`
+}
+type CompleteOrgSetupRequest IdRequestWithBody[CompleteOrgSetupRequestAttributes]
+type CompleteOrgSetupResponse ItemResponse[Organization]
+
 var UpdateOrganizationPreferences = huma.Operation{
 	OperationID: "update-organization-preferences",
 	Method:      http.MethodPatch,
@@ -81,8 +102,8 @@ var UpdateOrganizationPreferences = huma.Operation{
 }
 
 type UpdateOrganizationPreferencesRequestAttributes struct {
-	InitialSetupComplete     *bool `json:"initialSetupComplete,omitempty"`
-	EnableIncidentManagement *bool `json:"enableIncidentManagement,omitempty"`
+	EnableIncidentManagement *bool   `json:"enableIncidentManagement,omitempty"`
+	Timezone                 *string `json:"timezone,omitempty"`
 }
 type UpdateOrganizationPreferencesRequest IdRequestWithBody[UpdateOrganizationPreferencesRequestAttributes]
 type UpdateOrganizationPreferencesResponse ItemResponse[OrganizationPreferences]

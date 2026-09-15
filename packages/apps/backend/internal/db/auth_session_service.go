@@ -70,29 +70,27 @@ func (s *AuthSessionService) syncAuthProviderOrg(ctx context.Context, c *ent.Cli
 		return nil, false, fmt.Errorf("lookup organization: %w", lookupErr)
 	}
 
-	var orgId uuid.UUID
+	isCreate := existing == nil
+
 	if existing != nil {
-		ctx = execution.NewTenantContext(ctx, existing.TenantID)
-		orgId = existing.ID
-
-		isEqual := po.Name == existing.Name
-		if isEqual {
-			return existing, false, nil
-		}
-	} else {
-		// TODO: new tenant for each org?
-		tnt, saveTntErr := c.Tenant.Create().Save(ctx)
-		if saveTntErr != nil {
-			return nil, false, fmt.Errorf("create tenant: %w", saveTntErr)
-		}
-		ctx = execution.NewTenantContext(ctx, tnt.ID)
+		return existing, isCreate, nil
 	}
+	// TODO: new tenant for each org?
+	tnt, saveTntErr := c.Tenant.Create().Save(ctx)
+	if saveTntErr != nil {
+		return nil, false, fmt.Errorf("create tenant: %w", saveTntErr)
+	}
+	ctx = execution.NewTenantContext(ctx, tnt.ID)
 
-	org, setErr := s.orgs.Set(ctx, orgId, func(m *ent.OrganizationMutation) {
+	setFn := func(m *ent.OrganizationMutation) {
 		m.SetAuthProviderID(po.AuthProviderID)
 		m.SetName(po.Name)
-	})
-	return org, existing == nil, setErr
+	}
+	org, setErr := s.orgs.Set(ctx, uuid.Nil, setFn)
+	if setErr != nil {
+		return nil, false, fmt.Errorf("set org: %w", setErr)
+	}
+	return org, isCreate, nil
 }
 
 func (s *AuthSessionService) syncAuthProviderUser(ctx context.Context, pu *ent.User) (*ent.User, error) {

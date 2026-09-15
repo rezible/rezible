@@ -1,24 +1,18 @@
 <script lang="ts">
-	import Header from "$components/layout/header/Header.svelte";
 	import Spinner from "$components/ui/spinner/spinner.svelte";
-	import Stepper from "$components/layout/stepper/Stepper.svelte";
-
+	import { registerPageDescriptor } from "$lib/app-shell.svelte";
 	import { initInitialSetupController } from "./initialSetupController.svelte";
-	import ConfigureIntegrationDialog from "./steps/suggested-integrations/ConfigureIntegrationDialog.svelte";
+	import InitialSetupFormCard from "./InitialSetupFormCard.svelte";
 
 	const ctrl = initInitialSetupController();
+
+	registerPageDescriptor(() => ({ title: "Initial setup" }));
 </script>
 
-<ConfigureIntegrationDialog />
-
-<div class="grid h-full w-full place-items-center">
-	<div class="flex w-full max-w-4xl flex-col gap-4 border border-border bg-background p-4">
-		<Header title="Initial Setup" classes={{ root: "gap-2", title: "text-2xl" }} />
-
-		{#if ctrl.loading}
-			<Spinner />
-		{:else}
-			<Stepper controller={ctrl.stepper} />
-		{/if}
-	</div>
+<div class="grid min-h-full w-full place-items-center p-4">
+	{#if ctrl.loading}
+		<Spinner aria-label="Loading setup" />
+	{:else}
+		<InitialSetupFormCard />
+	{/if}
 </div>

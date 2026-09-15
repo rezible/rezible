@@ -22,6 +22,8 @@ const (
 	FieldInitialSetupAt = "initial_setup_at"
 	// FieldEnableIncidentManagement holds the string denoting the enable_incident_management field in the database.
 	FieldEnableIncidentManagement = "enable_incident_management"
+	// FieldTimezone holds the string denoting the timezone field in the database.
+	FieldTimezone = "timezone"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
 	// EdgeOrganization holds the string denoting the organization edge name in mutations.
@@ -51,6 +53,7 @@ var Columns = []string{
 	FieldOrganizationID,
 	FieldInitialSetupAt,
 	FieldEnableIncidentManagement,
+	FieldTimezone,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -103,6 +106,11 @@ func ByInitialSetupAt(opts ...sql.OrderTermOption) OrderOption {
 // ByEnableIncidentManagement orders the results by the enable_incident_management field.
 func ByEnableIncidentManagement(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldEnableIncidentManagement, opts...).ToFunc()
+}
+
+// ByTimezone orders the results by the timezone field.
+func ByTimezone(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTimezone, opts...).ToFunc()
 }
 
 // ByTenantField orders the results by tenant field.

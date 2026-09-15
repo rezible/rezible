@@ -58,6 +58,7 @@ func (OrganizationPreferences) Fields() []ent.Field {
 		field.UUID("organization_id", uuid.UUID{}),
 		field.Time("initial_setup_at").Optional(),
 		field.Bool("enable_incident_management").Default(false),
+		field.String("timezone").Optional(),
 	}
 }
 

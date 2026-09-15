@@ -454,6 +454,27 @@ export type CompleteIntegrationOAuthFlowResponseBody = {
     data: IntegrationOAuthInstallResult;
 };
 
+export type CompleteOrgSetupRequestAttributes = {
+    name: string;
+    timezone?: string;
+};
+
+export type CompleteOrgSetupRequestBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    attributes: CompleteOrgSetupRequestAttributes;
+};
+
+export type CompleteOrgSetupResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Organization;
+};
+
 export type CreateAgentSessionAttributes = {
     agentName: string;
     input: string;
@@ -2070,6 +2091,7 @@ export type OrganizationAttributes = {
 
 export type OrganizationPreferences = {
     enableIncidentManagement: boolean;
+    timezone?: string;
 };
 
 export type PaginatedResponseBodyActivityRecord = {
@@ -3149,7 +3171,7 @@ export type UpdateOncallShiftHandoverTemplateResponseBody = {
 
 export type UpdateOrganizationPreferencesRequestAttributes = {
     enableIncidentManagement?: boolean;
-    initialSetupComplete?: boolean;
+    timezone?: string;
 };
 
 export type UpdateOrganizationPreferencesRequestBody = {
@@ -9787,6 +9809,57 @@ export type UpdateOrganizationPreferencesResponses = {
 };
 
 export type UpdateOrganizationPreferencesResponse = UpdateOrganizationPreferencesResponses[keyof UpdateOrganizationPreferencesResponses];
+
+export type CompleteOrgSetupData = {
+    body: CompleteOrgSetupRequestBody;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/organizations/{id}/setup';
+};
+
+export type CompleteOrgSetupErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Conflict
+     */
+    409: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type CompleteOrgSetupError = CompleteOrgSetupErrors[keyof CompleteOrgSetupErrors];
+
+export type CompleteOrgSetupResponses = {
+    /**
+     * OK
+     */
+    200: CompleteOrgSetupResponseBody;
+};
+
+export type CompleteOrgSetupResponse = CompleteOrgSetupResponses[keyof CompleteOrgSetupResponses];
 
 export type ListPlaybooksData = {
     body?: never;

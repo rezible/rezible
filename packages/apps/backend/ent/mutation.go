@@ -48048,6 +48048,7 @@ type OrganizationPreferencesMutation struct {
 	id                         *uuid.UUID
 	initial_setup_at           *time.Time
 	enable_incident_management *bool
+	timezone                   *string
 	clearedFields              map[string]struct{}
 	tenant                     *int
 	clearedtenant              bool
@@ -48319,6 +48320,55 @@ func (m *OrganizationPreferencesMutation) ResetEnableIncidentManagement() {
 	m.enable_incident_management = nil
 }
 
+// SetTimezone sets the "timezone" field.
+func (m *OrganizationPreferencesMutation) SetTimezone(s string) {
+	m.timezone = &s
+}
+
+// Timezone returns the value of the "timezone" field in the mutation.
+func (m *OrganizationPreferencesMutation) Timezone() (r string, exists bool) {
+	v := m.timezone
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTimezone returns the old "timezone" field's value of the OrganizationPreferences entity.
+// If the OrganizationPreferences object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OrganizationPreferencesMutation) OldTimezone(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTimezone is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTimezone requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTimezone: %w", err)
+	}
+	return oldValue.Timezone, nil
+}
+
+// ClearTimezone clears the value of the "timezone" field.
+func (m *OrganizationPreferencesMutation) ClearTimezone() {
+	m.timezone = nil
+	m.clearedFields[organizationpreferences.FieldTimezone] = struct{}{}
+}
+
+// TimezoneCleared returns if the "timezone" field was cleared in this mutation.
+func (m *OrganizationPreferencesMutation) TimezoneCleared() bool {
+	_, ok := m.clearedFields[organizationpreferences.FieldTimezone]
+	return ok
+}
+
+// ResetTimezone resets all changes to the "timezone" field.
+func (m *OrganizationPreferencesMutation) ResetTimezone() {
+	m.timezone = nil
+	delete(m.clearedFields, organizationpreferences.FieldTimezone)
+}
+
 // ClearTenant clears the "tenant" edge to the Tenant entity.
 func (m *OrganizationPreferencesMutation) ClearTenant() {
 	m.clearedtenant = true
@@ -48407,7 +48457,7 @@ func (m *OrganizationPreferencesMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *OrganizationPreferencesMutation) Fields() []string {
-	fields := make([]string, 0, 4)
+	fields := make([]string, 0, 5)
 	if m.tenant != nil {
 		fields = append(fields, organizationpreferences.FieldTenantID)
 	}
@@ -48419,6 +48469,9 @@ func (m *OrganizationPreferencesMutation) Fields() []string {
 	}
 	if m.enable_incident_management != nil {
 		fields = append(fields, organizationpreferences.FieldEnableIncidentManagement)
+	}
+	if m.timezone != nil {
+		fields = append(fields, organizationpreferences.FieldTimezone)
 	}
 	return fields
 }
@@ -48436,6 +48489,8 @@ func (m *OrganizationPreferencesMutation) Field(name string) (ent.Value, bool) {
 		return m.InitialSetupAt()
 	case organizationpreferences.FieldEnableIncidentManagement:
 		return m.EnableIncidentManagement()
+	case organizationpreferences.FieldTimezone:
+		return m.Timezone()
 	}
 	return nil, false
 }
@@ -48453,6 +48508,8 @@ func (m *OrganizationPreferencesMutation) OldField(ctx context.Context, name str
 		return m.OldInitialSetupAt(ctx)
 	case organizationpreferences.FieldEnableIncidentManagement:
 		return m.OldEnableIncidentManagement(ctx)
+	case organizationpreferences.FieldTimezone:
+		return m.OldTimezone(ctx)
 	}
 	return nil, fmt.Errorf("unknown OrganizationPreferences field %s", name)
 }
@@ -48490,6 +48547,13 @@ func (m *OrganizationPreferencesMutation) SetField(name string, value ent.Value)
 		}
 		m.SetEnableIncidentManagement(v)
 		return nil
+	case organizationpreferences.FieldTimezone:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTimezone(v)
+		return nil
 	}
 	return fmt.Errorf("unknown OrganizationPreferences field %s", name)
 }
@@ -48526,6 +48590,9 @@ func (m *OrganizationPreferencesMutation) ClearedFields() []string {
 	if m.FieldCleared(organizationpreferences.FieldInitialSetupAt) {
 		fields = append(fields, organizationpreferences.FieldInitialSetupAt)
 	}
+	if m.FieldCleared(organizationpreferences.FieldTimezone) {
+		fields = append(fields, organizationpreferences.FieldTimezone)
+	}
 	return fields
 }
 
@@ -48542,6 +48609,9 @@ func (m *OrganizationPreferencesMutation) ClearField(name string) error {
 	switch name {
 	case organizationpreferences.FieldInitialSetupAt:
 		m.ClearInitialSetupAt()
+		return nil
+	case organizationpreferences.FieldTimezone:
+		m.ClearTimezone()
 		return nil
 	}
 	return fmt.Errorf("unknown OrganizationPreferences nullable field %s", name)
@@ -48562,6 +48632,9 @@ func (m *OrganizationPreferencesMutation) ResetField(name string) error {
 		return nil
 	case organizationpreferences.FieldEnableIncidentManagement:
 		m.ResetEnableIncidentManagement()
+		return nil
+	case organizationpreferences.FieldTimezone:
+		m.ResetTimezone()
 		return nil
 	}
 	return fmt.Errorf("unknown OrganizationPreferences field %s", name)

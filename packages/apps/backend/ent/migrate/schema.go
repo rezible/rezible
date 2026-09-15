@@ -2329,6 +2329,7 @@ var (
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "initial_setup_at", Type: field.TypeTime, Nullable: true},
 		{Name: "enable_incident_management", Type: field.TypeBool, Default: false},
+		{Name: "timezone", Type: field.TypeString, Nullable: true},
 		{Name: "organization_id", Type: field.TypeUUID, Unique: true},
 		{Name: "tenant_id", Type: field.TypeInt},
 	}
@@ -2340,13 +2341,13 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "organization_preferences_organizations_preferences",
-				Columns:    []*schema.Column{OrganizationPreferencesColumns[3]},
+				Columns:    []*schema.Column{OrganizationPreferencesColumns[4]},
 				RefColumns: []*schema.Column{OrganizationsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "organization_preferences_tenants_tenant",
-				Columns:    []*schema.Column{OrganizationPreferencesColumns[4]},
+				Columns:    []*schema.Column{OrganizationPreferencesColumns[5]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -2355,7 +2356,7 @@ var (
 			{
 				Name:    "organizationpreferences_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{OrganizationPreferencesColumns[4]},
+				Columns: []*schema.Column{OrganizationPreferencesColumns[5]},
 			},
 		},
 	}

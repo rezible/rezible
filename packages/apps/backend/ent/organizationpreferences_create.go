@@ -66,6 +66,20 @@ func (_c *OrganizationPreferencesCreate) SetNillableEnableIncidentManagement(v *
 	return _c
 }
 
+// SetTimezone sets the "timezone" field.
+func (_c *OrganizationPreferencesCreate) SetTimezone(v string) *OrganizationPreferencesCreate {
+	_c.mutation.SetTimezone(v)
+	return _c
+}
+
+// SetNillableTimezone sets the "timezone" field if the given value is not nil.
+func (_c *OrganizationPreferencesCreate) SetNillableTimezone(v *string) *OrganizationPreferencesCreate {
+	if v != nil {
+		_c.SetTimezone(*v)
+	}
+	return _c
+}
+
 // SetID sets the "id" field.
 func (_c *OrganizationPreferencesCreate) SetID(v uuid.UUID) *OrganizationPreferencesCreate {
 	_c.mutation.SetID(v)
@@ -203,6 +217,10 @@ func (_c *OrganizationPreferencesCreate) createSpec() (*OrganizationPreferences,
 		_spec.SetField(organizationpreferences.FieldEnableIncidentManagement, field.TypeBool, value)
 		_node.EnableIncidentManagement = value
 	}
+	if value, ok := _c.mutation.Timezone(); ok {
+		_spec.SetField(organizationpreferences.FieldTimezone, field.TypeString, value)
+		_node.Timezone = value
+	}
 	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -333,6 +351,24 @@ func (u *OrganizationPreferencesUpsert) UpdateEnableIncidentManagement() *Organi
 	return u
 }
 
+// SetTimezone sets the "timezone" field.
+func (u *OrganizationPreferencesUpsert) SetTimezone(v string) *OrganizationPreferencesUpsert {
+	u.Set(organizationpreferences.FieldTimezone, v)
+	return u
+}
+
+// UpdateTimezone sets the "timezone" field to the value that was provided on create.
+func (u *OrganizationPreferencesUpsert) UpdateTimezone() *OrganizationPreferencesUpsert {
+	u.SetExcluded(organizationpreferences.FieldTimezone)
+	return u
+}
+
+// ClearTimezone clears the value of the "timezone" field.
+func (u *OrganizationPreferencesUpsert) ClearTimezone() *OrganizationPreferencesUpsert {
+	u.SetNull(organizationpreferences.FieldTimezone)
+	return u
+}
+
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
@@ -430,6 +466,27 @@ func (u *OrganizationPreferencesUpsertOne) SetEnableIncidentManagement(v bool) *
 func (u *OrganizationPreferencesUpsertOne) UpdateEnableIncidentManagement() *OrganizationPreferencesUpsertOne {
 	return u.Update(func(s *OrganizationPreferencesUpsert) {
 		s.UpdateEnableIncidentManagement()
+	})
+}
+
+// SetTimezone sets the "timezone" field.
+func (u *OrganizationPreferencesUpsertOne) SetTimezone(v string) *OrganizationPreferencesUpsertOne {
+	return u.Update(func(s *OrganizationPreferencesUpsert) {
+		s.SetTimezone(v)
+	})
+}
+
+// UpdateTimezone sets the "timezone" field to the value that was provided on create.
+func (u *OrganizationPreferencesUpsertOne) UpdateTimezone() *OrganizationPreferencesUpsertOne {
+	return u.Update(func(s *OrganizationPreferencesUpsert) {
+		s.UpdateTimezone()
+	})
+}
+
+// ClearTimezone clears the value of the "timezone" field.
+func (u *OrganizationPreferencesUpsertOne) ClearTimezone() *OrganizationPreferencesUpsertOne {
+	return u.Update(func(s *OrganizationPreferencesUpsert) {
+		s.ClearTimezone()
 	})
 }
 
@@ -697,6 +754,27 @@ func (u *OrganizationPreferencesUpsertBulk) SetEnableIncidentManagement(v bool) 
 func (u *OrganizationPreferencesUpsertBulk) UpdateEnableIncidentManagement() *OrganizationPreferencesUpsertBulk {
 	return u.Update(func(s *OrganizationPreferencesUpsert) {
 		s.UpdateEnableIncidentManagement()
+	})
+}
+
+// SetTimezone sets the "timezone" field.
+func (u *OrganizationPreferencesUpsertBulk) SetTimezone(v string) *OrganizationPreferencesUpsertBulk {
+	return u.Update(func(s *OrganizationPreferencesUpsert) {
+		s.SetTimezone(v)
+	})
+}
+
+// UpdateTimezone sets the "timezone" field to the value that was provided on create.
+func (u *OrganizationPreferencesUpsertBulk) UpdateTimezone() *OrganizationPreferencesUpsertBulk {
+	return u.Update(func(s *OrganizationPreferencesUpsert) {
+		s.UpdateTimezone()
+	})
+}
+
+// ClearTimezone clears the value of the "timezone" field.
+func (u *OrganizationPreferencesUpsertBulk) ClearTimezone() *OrganizationPreferencesUpsertBulk {
+	return u.Update(func(s *OrganizationPreferencesUpsert) {
+		s.ClearTimezone()
 	})
 }
 

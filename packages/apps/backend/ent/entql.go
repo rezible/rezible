@@ -1145,6 +1145,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			organizationpreferences.FieldOrganizationID:           {Type: field.TypeUUID, Column: organizationpreferences.FieldOrganizationID},
 			organizationpreferences.FieldInitialSetupAt:           {Type: field.TypeTime, Column: organizationpreferences.FieldInitialSetupAt},
 			organizationpreferences.FieldEnableIncidentManagement: {Type: field.TypeBool, Column: organizationpreferences.FieldEnableIncidentManagement},
+			organizationpreferences.FieldTimezone:                 {Type: field.TypeString, Column: organizationpreferences.FieldTimezone},
 		},
 	}
 	graph.Nodes[54] = &sqlgraph.Node{
@@ -12091,6 +12092,11 @@ func (f *OrganizationPreferencesFilter) WhereInitialSetupAt(p entql.TimeP) {
 // WhereEnableIncidentManagement applies the entql bool predicate on the enable_incident_management field.
 func (f *OrganizationPreferencesFilter) WhereEnableIncidentManagement(p entql.BoolP) {
 	f.Where(p.Field(organizationpreferences.FieldEnableIncidentManagement))
+}
+
+// WhereTimezone applies the entql string predicate on the timezone field.
+func (f *OrganizationPreferencesFilter) WhereTimezone(p entql.StringP) {
+	f.Where(p.Field(organizationpreferences.FieldTimezone))
 }
 
 // WhereHasTenant applies a predicate to check if query has an edge tenant.

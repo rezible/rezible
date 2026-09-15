@@ -512,10 +512,16 @@ type (
 )
 
 type (
+	CompleteOrgSetupParams struct {
+		Name     string
+		Timezone string
+	}
+
 	OrganizationService interface {
 		Get(context.Context, predicate.Organization) (*ent.Organization, error)
 		Set(context.Context, uuid.UUID, func(*ent.OrganizationMutation)) (*ent.Organization, error)
 		SetPreferences(context.Context, uuid.UUID, func(*ent.OrganizationPreferencesMutation)) (*ent.OrganizationPreferences, error)
+		CompleteOrgSetup(context.Context, uuid.UUID, CompleteOrgSetupParams) (*ent.Organization, error)
 	}
 )
 

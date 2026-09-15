@@ -77,6 +77,11 @@ func EnableIncidentManagement(v bool) predicate.OrganizationPreferences {
 	return predicate.OrganizationPreferences(sql.FieldEQ(FieldEnableIncidentManagement, v))
 }
 
+// Timezone applies equality check predicate on the "timezone" field. It's identical to TimezoneEQ.
+func Timezone(v string) predicate.OrganizationPreferences {
+	return predicate.OrganizationPreferences(sql.FieldEQ(FieldTimezone, v))
+}
+
 // TenantIDEQ applies the EQ predicate on the "tenant_id" field.
 func TenantIDEQ(v int) predicate.OrganizationPreferences {
 	return predicate.OrganizationPreferences(sql.FieldEQ(FieldTenantID, v))
@@ -175,6 +180,81 @@ func EnableIncidentManagementEQ(v bool) predicate.OrganizationPreferences {
 // EnableIncidentManagementNEQ applies the NEQ predicate on the "enable_incident_management" field.
 func EnableIncidentManagementNEQ(v bool) predicate.OrganizationPreferences {
 	return predicate.OrganizationPreferences(sql.FieldNEQ(FieldEnableIncidentManagement, v))
+}
+
+// TimezoneEQ applies the EQ predicate on the "timezone" field.
+func TimezoneEQ(v string) predicate.OrganizationPreferences {
+	return predicate.OrganizationPreferences(sql.FieldEQ(FieldTimezone, v))
+}
+
+// TimezoneNEQ applies the NEQ predicate on the "timezone" field.
+func TimezoneNEQ(v string) predicate.OrganizationPreferences {
+	return predicate.OrganizationPreferences(sql.FieldNEQ(FieldTimezone, v))
+}
+
+// TimezoneIn applies the In predicate on the "timezone" field.
+func TimezoneIn(vs ...string) predicate.OrganizationPreferences {
+	return predicate.OrganizationPreferences(sql.FieldIn(FieldTimezone, vs...))
+}
+
+// TimezoneNotIn applies the NotIn predicate on the "timezone" field.
+func TimezoneNotIn(vs ...string) predicate.OrganizationPreferences {
+	return predicate.OrganizationPreferences(sql.FieldNotIn(FieldTimezone, vs...))
+}
+
+// TimezoneGT applies the GT predicate on the "timezone" field.
+func TimezoneGT(v string) predicate.OrganizationPreferences {
+	return predicate.OrganizationPreferences(sql.FieldGT(FieldTimezone, v))
+}
+
+// TimezoneGTE applies the GTE predicate on the "timezone" field.
+func TimezoneGTE(v string) predicate.OrganizationPreferences {
+	return predicate.OrganizationPreferences(sql.FieldGTE(FieldTimezone, v))
+}
+
+// TimezoneLT applies the LT predicate on the "timezone" field.
+func TimezoneLT(v string) predicate.OrganizationPreferences {
+	return predicate.OrganizationPreferences(sql.FieldLT(FieldTimezone, v))
+}
+
+// TimezoneLTE applies the LTE predicate on the "timezone" field.
+func TimezoneLTE(v string) predicate.OrganizationPreferences {
+	return predicate.OrganizationPreferences(sql.FieldLTE(FieldTimezone, v))
+}
+
+// TimezoneContains applies the Contains predicate on the "timezone" field.
+func TimezoneContains(v string) predicate.OrganizationPreferences {
+	return predicate.OrganizationPreferences(sql.FieldContains(FieldTimezone, v))
+}
+
+// TimezoneHasPrefix applies the HasPrefix predicate on the "timezone" field.
+func TimezoneHasPrefix(v string) predicate.OrganizationPreferences {
+	return predicate.OrganizationPreferences(sql.FieldHasPrefix(FieldTimezone, v))
+}
+
+// TimezoneHasSuffix applies the HasSuffix predicate on the "timezone" field.
+func TimezoneHasSuffix(v string) predicate.OrganizationPreferences {
+	return predicate.OrganizationPreferences(sql.FieldHasSuffix(FieldTimezone, v))
+}
+
+// TimezoneIsNil applies the IsNil predicate on the "timezone" field.
+func TimezoneIsNil() predicate.OrganizationPreferences {
+	return predicate.OrganizationPreferences(sql.FieldIsNull(FieldTimezone))
+}
+
+// TimezoneNotNil applies the NotNil predicate on the "timezone" field.
+func TimezoneNotNil() predicate.OrganizationPreferences {
+	return predicate.OrganizationPreferences(sql.FieldNotNull(FieldTimezone))
+}
+
+// TimezoneEqualFold applies the EqualFold predicate on the "timezone" field.
+func TimezoneEqualFold(v string) predicate.OrganizationPreferences {
+	return predicate.OrganizationPreferences(sql.FieldEqualFold(FieldTimezone, v))
+}
+
+// TimezoneContainsFold applies the ContainsFold predicate on the "timezone" field.
+func TimezoneContainsFold(v string) predicate.OrganizationPreferences {
+	return predicate.OrganizationPreferences(sql.FieldContainsFold(FieldTimezone, v))
 }
 
 // HasTenant applies the HasEdge predicate on the "tenant" edge.

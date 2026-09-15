@@ -28,6 +28,8 @@ type OrganizationPreferences struct {
 	InitialSetupAt time.Time `json:"initial_setup_at,omitempty"`
 	// EnableIncidentManagement holds the value of the "enable_incident_management" field.
 	EnableIncidentManagement bool `json:"enable_incident_management,omitempty"`
+	// Timezone holds the value of the "timezone" field.
+	Timezone string `json:"timezone,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the OrganizationPreferencesQuery when eager-loading is set.
 	Edges        OrganizationPreferencesEdges `json:"edges"`
@@ -76,6 +78,8 @@ func (*OrganizationPreferences) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullBool)
 		case organizationpreferences.FieldTenantID:
 			values[i] = new(sql.NullInt64)
+		case organizationpreferences.FieldTimezone:
+			values[i] = new(sql.NullString)
 		case organizationpreferences.FieldInitialSetupAt:
 			values[i] = new(sql.NullTime)
 		case organizationpreferences.FieldID, organizationpreferences.FieldOrganizationID:
@@ -124,6 +128,12 @@ func (_m *OrganizationPreferences) assignValues(columns []string, values []any) 
 				return fmt.Errorf("unexpected type %T for field enable_incident_management", values[i])
 			} else if value.Valid {
 				_m.EnableIncidentManagement = value.Bool
+			}
+		case organizationpreferences.FieldTimezone:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field timezone", values[i])
+			} else if value.Valid {
+				_m.Timezone = value.String
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -182,6 +192,9 @@ func (_m *OrganizationPreferences) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("enable_incident_management=")
 	builder.WriteString(fmt.Sprintf("%v", _m.EnableIncidentManagement))
+	builder.WriteString(", ")
+	builder.WriteString("timezone=")
+	builder.WriteString(_m.Timezone)
 	builder.WriteByte(')')
 	return builder.String()
 }

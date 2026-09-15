@@ -1004,6 +1004,46 @@ components:
       required:
         - data
       type: object
+    CompleteOrgSetupRequestAttributes:
+      additionalProperties: false
+      properties:
+        name:
+          type: string
+        timezone:
+          type: string
+      required:
+        - name
+      type: object
+    CompleteOrgSetupRequestBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/CompleteOrgSetupRequestBody.json
+          format: uri
+          readOnly: true
+          type: string
+        attributes:
+          $ref: "#/components/schemas/CompleteOrgSetupRequestAttributes"
+      required:
+        - attributes
+      type: object
+    CompleteOrgSetupResponseBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/CompleteOrgSetupResponseBody.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          $ref: "#/components/schemas/Organization"
+      required:
+        - data
+      type: object
     CreateAgentSessionAttributes:
       additionalProperties: false
       properties:
@@ -4594,6 +4634,8 @@ components:
       properties:
         enableIncidentManagement:
           type: boolean
+        timezone:
+          type: string
       required:
         - enableIncidentManagement
       type: object
@@ -6909,8 +6951,8 @@ components:
       properties:
         enableIncidentManagement:
           type: boolean
-        initialSetupComplete:
-          type: boolean
+        timezone:
+          type: string
       type: object
     UpdateOrganizationPreferencesRequestBody:
       additionalProperties: false
@@ -15591,6 +15633,73 @@ paths:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
       summary: Update Organization Preferences
+      tags:
+        - Organizations
+  /organizations/{id}/setup:
+    post:
+      operationId: complete-org-setup
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CompleteOrgSetupRequestBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CompleteOrgSetupResponseBody"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Conflict
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: Complete Organization Setup
       tags:
         - Organizations
   /playbooks:

@@ -81,6 +81,7 @@ func WithRollbackHook(h RollbackHook) TxOption {
 
 type EntityMutator[T any, M ent.Mutation] interface {
 	Save(context.Context) (T, error)
+	Exec(context.Context) error
 	Mutation() M
 }
 
