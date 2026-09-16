@@ -66,7 +66,7 @@ func NewJobService(cfg rez.Config, pool *pgxpool.Pool, tel rez.TelemetryService)
 	return s, nil
 }
 
-func (s *JobService) RegisterWorkers(def jobs.Definition) error {
+func (s *JobService) Register(def jobs.Definition) error {
 	if s.client != nil {
 		return fmt.Errorf("job service is already initialized")
 	}

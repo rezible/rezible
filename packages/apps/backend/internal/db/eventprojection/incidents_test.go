@@ -19,7 +19,7 @@ import (
 )
 
 func (s *ProjectionServiceSuite) incidentService(tdb rez.Database, events *[]rez.EventOnIncidentUpdated) rez.IncidentService {
-	messageService := mocks.NewMockMessageService(s.T())
+	messageService := mocks.NewMockMessageQueue(s.T())
 	messageService.EXPECT().
 		Publish(mock.Anything, mock.Anything).
 		Run(func(_ context.Context, event any) {

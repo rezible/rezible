@@ -62,7 +62,7 @@ func (s *JobServiceSuite) SetupTest() {
 		jobs.DefineWorkerFunc(func(context.Context, *tenantJobArgs) error { return nil }),
 		jobs.DefineWorkerFunc(func(context.Context, jobs.ScanOncallShifts) error { return nil }),
 	}}
-	s.Require().NoError(service.RegisterWorkers(definition))
+	s.Require().NoError(service.Register(definition))
 	s.service = service
 }
 

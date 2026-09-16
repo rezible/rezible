@@ -41,7 +41,7 @@ type agentSessionTestHarness struct {
 	tdb        rez.Database
 	jobs       *mocks.MockJobService
 	ai         *mocks.MockAiService
-	msgs       *mocks.MockMessageService
+	msgs       *mocks.MockMessageQueue
 	service    *AgentSessionService
 	sessWorker *StartAgentSessionWorker
 	turnWorker *InvokeAgentTurnWorker
@@ -51,7 +51,7 @@ func (s *AgentSessionServiceSuite) newAgentSessionTestHarness() *agentSessionTes
 	tdb := s.CreateTestDatabase()
 	jobService := mocks.NewMockJobService(s.T())
 	aiService := mocks.NewMockAiService(s.T())
-	messageService := mocks.NewMockMessageService(s.T())
+	messageService := mocks.NewMockMessageQueue(s.T())
 	messageService.EXPECT().
 		Publish(mock.Anything, mock.IsType(rezai.AgentTurnUpdated{})).Return(nil).Maybe()
 	logger := slog.New(slog.NewTextHandler(io.Discard, nil))

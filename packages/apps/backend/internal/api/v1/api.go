@@ -39,7 +39,7 @@ func NewHandler(
 	db rez.Database,
 	ai rez.AiService,
 	agents rez.AgentSessionService,
-	messages rez.MessageService,
+	messages rez.MessageQueue,
 	alerts rez.AlertService,
 	orgs rez.OrganizationService,
 	users rez.UserService,

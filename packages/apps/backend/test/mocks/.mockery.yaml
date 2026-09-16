@@ -9,7 +9,7 @@ packages:
       dir: .
       pkgname: mocks
     interfaces:
-      MessageService: {}
+      MessageQueue: {}
       JobService: {}
       ProviderEventPipelineService: {}
       OrganizationService: {}

@@ -17,6 +17,13 @@ import (
 	"github.com/slack-go/slack"
 )
 
+func (a *App) JobWorkers() []jobs.WorkerDefinition {
+	return []jobs.WorkerDefinition{
+		jobs.DefineWorkerFunc(a.handleSendMessageJob),
+		jobs.DefineWorkerFunc(a.handleBoundAgentThreadMessagedJob),
+	}
+}
+
 type SendMessageJobArgs struct {
 	IntegrationID uuid.UUID `json:"integration_id" river:"unique"`
 	Message       string    `json:"message" river:"unique"`
@@ -55,14 +62,6 @@ func (HandleBoundAgentThreadMessagedArgs) InsertOpts() river.InsertOpts {
 			ByState: jobs.UniqueStateNonCompleted,
 		},
 	}
-}
-
-func NewSendMessageWorker(app *App) jobs.WorkerDefinition {
-	return jobs.DefineWorkerFunc(app.handleSendMessageJob)
-}
-
-func NewHandleBoundAgentThreadMessagedWorker(app *App) jobs.WorkerDefinition {
-	return jobs.DefineWorkerFunc(app.handleBoundAgentThreadMessagedJob)
 }
 
 func (a *App) handleSendMessageJob(ctx context.Context, args SendMessageJobArgs) error {

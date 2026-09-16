@@ -44,8 +44,8 @@ func (i *Integration) LifecycleService() rez.LifecycleService {
 	return nil
 }
 
-func (i *Integration) GetMessageHandlers() []rez.MessageEventHandler {
-	return i.appSvc.GetMessageHandlers()
+func (i *Integration) MessageHandlers() []rez.MessageEventHandler {
+	return i.appSvc.MakeMessageHandlers()
 }
 
 func (i *Integration) Capabilities() []string {

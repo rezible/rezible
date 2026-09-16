@@ -73,29 +73,20 @@ func (m *MigrationService) UpdateChecksum() error {
 	return nil
 }
 
-func (m *MigrationService) CreateSchemaMigration(ctx context.Context, name string) error {
-	dir, dirErr := m.getGolangMigrateDir()
-	if dirErr != nil {
-		return fmt.Errorf("get golang migrate dir: %w", dirErr)
+func (m *MigrationService) CreateSchemaMigration(ctx context.Context, name string, infraTables ...*schema.Table) error {
+	opts, optsErr := m.makeMigrationOpts(name)
+	if optsErr != nil {
+		return fmt.Errorf("making options: %w", optsErr)
 	}
-	formatter, fmtErr := m.makeFormatter(name)
-	if fmtErr != nil {
-		return fmt.Errorf("creating formatter: %w", fmtErr)
-	}
-	opts := []schema.MigrateOption{
-		schema.WithDir(dir),
-		schema.WithDialect(dialect.Postgres),
-		schema.WithDiffOptions(),
-		schema.WithMigrationMode(schema.ModeInspect),
-		schema.WithFormatter(formatter),
-	}
+	tables := append(schemamigrate.Tables, infraTables...)
+
 	return m.withDbFromPool(func(db *sql.DB) error {
 		driver := entsql.OpenDB(dialect.Postgres, db)
 		mig, mErr := schema.NewMigrate(driver, opts...)
 		if mErr != nil {
 			return fmt.Errorf("creating migrate: %w", mErr)
 		}
-		if diffErr := mig.NamedDiff(ctx, name, schemamigrate.Tables...); diffErr != nil {
+		if diffErr := mig.NamedDiff(ctx, name, tables...); diffErr != nil {
 			return fmt.Errorf("diff: %w", diffErr)
 		}
 		return nil
@@ -116,6 +107,7 @@ func (m *MigrationService) Run(ctx context.Context, direction rez.MigrationDirec
 		return fmt.Errorf("schema migration: %w", schemaErr)
 	}
 
+	// TODO: pass tables to CreateSchemaMigration using river.GetSchema() instead
 	slog.Info("Running river migrations " + string(direction))
 	riverErr := river.RunMigration(ctx, m.pool.Pool, direction)
 	if riverErr != nil {
@@ -213,6 +205,28 @@ func (m *MigrationService) GetCurrentStatus(ctx context.Context) (*rez.Migration
 	}
 
 	return &status, nil
+}
+
+func (m *MigrationService) makeMigrationOpts(name string) ([]schema.MigrateOption, error) {
+	opts := []schema.MigrateOption{
+		schema.WithDialect(dialect.Postgres),
+		schema.WithMigrationMode(schema.ModeInspect),
+		schema.WithDiffOptions(),
+	}
+
+	dir, dirErr := m.getGolangMigrateDir()
+	if dirErr != nil {
+		return nil, fmt.Errorf("get golang migrate dir: %w", dirErr)
+	}
+	opts = append(opts, schema.WithDir(dir))
+
+	formatter, fmtErr := m.makeFormatter(name)
+	if fmtErr != nil {
+		return nil, fmt.Errorf("creating formatter: %w", fmtErr)
+	}
+	opts = append(opts, schema.WithFormatter(formatter))
+
+	return opts, nil
 }
 
 func (m *MigrationService) makeFormatter(name string) (migrate.Formatter, error) {

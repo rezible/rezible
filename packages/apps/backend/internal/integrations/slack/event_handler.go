@@ -17,20 +17,20 @@ import (
 type appEventHandler struct {
 	integrationName string
 
-	eventPipeline                          rez.ProviderEventPipelineService
-	providerEventPipelinePublishEventTypes mapset.Set[slackevents.EventsAPIType]
+	pipeline          rez.ProviderEventPipelineService
+	publishEventTypes mapset.Set[slackevents.EventsAPIType]
 
-	messages          rez.MessageService
+	mq                rez.MessageQueue
 	respondEventTypes mapset.Set[slackevents.EventsAPIType]
 }
 
-func makeAppEventHandler(app App, msgs rez.MessageService, eventPipeline rez.ProviderEventPipelineService) *appEventHandler {
+func makeAppEventHandler(app App, mq rez.MessageQueue, pipeline rez.ProviderEventPipelineService) *appEventHandler {
 	return &appEventHandler{
-		integrationName:                        app.IntegrationName(),
-		eventPipeline:                          eventPipeline,
-		providerEventPipelinePublishEventTypes: mapset.NewSet(app.PublishProviderEventPipelineEventTypes()...),
-		messages:                               msgs,
-		respondEventTypes:                      mapset.NewSet(app.RespondEventTypes()...),
+		integrationName:   app.IntegrationName(),
+		mq:                mq,
+		pipeline:          pipeline,
+		publishEventTypes: mapset.NewSet(app.PublishEventTypes()...),
+		respondEventTypes: mapset.NewSet(app.RespondEventTypes()...),
 	}
 }
 
@@ -39,8 +39,10 @@ type slashCommandEvent struct {
 	Command         slack.SlashCommand
 }
 
+func (slashCommandEvent) MessageName() string { return "slack.slash-command-received.v1" }
+
 func (h *appEventHandler) OnSlashCommand(ctx context.Context, sc slack.SlashCommand) error {
-	return h.messages.Publish(ctx, &slashCommandEvent{
+	return h.mq.Publish(ctx, &slashCommandEvent{
 		IntegrationName: h.integrationName,
 		Command:         sc,
 	})
@@ -51,8 +53,10 @@ type interactionCallbackEvent struct {
 	Data            []byte
 }
 
+func (interactionCallbackEvent) MessageName() string { return "slack.interaction-received.v1" }
+
 func (h *appEventHandler) OnInteractionCallback(ctx context.Context, data []byte) error {
-	return h.messages.Publish(ctx, &interactionCallbackEvent{
+	return h.mq.Publish(ctx, &interactionCallbackEvent{
 		IntegrationName: h.integrationName,
 		Data:            data,
 	})
@@ -62,6 +66,8 @@ type handleEventsApiCallbackEvent struct {
 	IntegrationName string
 	Data            []byte
 }
+
+func (handleEventsApiCallbackEvent) MessageName() string { return "slack.events-api-received.v1" }
 
 func (h *appEventHandler) OnEventsApiCallback(ctx context.Context, ev *slackevents.EventsAPICallbackEvent, data []byte) error {
 	if ev.InnerEvent == nil {
@@ -78,11 +84,11 @@ func (h *appEventHandler) OnEventsApiCallback(ctx context.Context, ev *slackeven
 			IntegrationName: h.integrationName,
 			Data:            data,
 		}
-		if publishErr := h.messages.Publish(ctx, cbEv); publishErr != nil {
+		if publishErr := h.mq.Publish(ctx, cbEv); publishErr != nil {
 			return fmt.Errorf("publish callback event: %w", publishErr)
 		}
 	}
-	if h.providerEventPipelinePublishEventTypes.Contains(innerType) {
+	if h.publishEventTypes.Contains(innerType) {
 		namespace := ev.TeamID
 		if namespace == "" {
 			namespace = ev.EnterpriseID
@@ -95,7 +101,7 @@ func (h *appEventHandler) OnEventsApiCallback(ctx context.Context, ev *slackeven
 			Attributes:          data,
 			ReceivedAt:          time.Now().UTC(),
 		}
-		if ingestErr := h.eventPipeline.Ingest(ctx, pe); ingestErr != nil {
+		if ingestErr := h.pipeline.Ingest(ctx, pe); ingestErr != nil {
 			return fmt.Errorf("ingest event: %w", ingestErr)
 		}
 	}

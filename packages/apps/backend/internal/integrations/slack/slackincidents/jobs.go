@@ -45,12 +45,11 @@ func (sendMilestoneMessageJobArgs) InsertOpts() river.InsertOpts {
 	}
 }
 
-func NewCreateIncidentChannelWorker(app *App) jobs.WorkerDefinition {
-	return jobs.DefineWorkerFunc(app.handleCreateIncidentChannelJob)
-}
-
-func NewSendIncidentMilestoneMessageWorker(app *App) jobs.WorkerDefinition {
-	return jobs.DefineWorkerFunc(app.handleSendIncidentMilestoneMessageJob)
+func (a *App) JobWorkers() []jobs.WorkerDefinition {
+	return []jobs.WorkerDefinition{
+		jobs.DefineWorkerFunc(a.handleCreateIncidentChannelJob),
+		jobs.DefineWorkerFunc(a.handleSendIncidentMilestoneMessageJob),
+	}
 }
 
 func (a *App) handleCreateIncidentChannelJob(ctx context.Context, args createIncidentChannelJobArgs) error {

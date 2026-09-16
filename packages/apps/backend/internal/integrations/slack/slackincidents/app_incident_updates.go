@@ -24,7 +24,7 @@ type incidentUpdateProcessor struct {
 
 	db        rez.Database
 	incidents rez.IncidentService
-	messages  rez.MessageService
+	mq        rez.MessageQueue
 	jobs      rez.JobService
 
 	inc         *ent.Incident
@@ -38,21 +38,22 @@ func (a *App) newUpdateProcessor(ctx context.Context, client *slackintegration.C
 	if incErr != nil {
 		return nil, fmt.Errorf("get incident: %w", incErr)
 	}
+
 	incUrl, incUrlErr := a.cfg.App.GetFrontendUrl("incidents", inc.Slug)
 	if incUrlErr != nil {
 		return nil, fmt.Errorf("incident url: %w", incUrlErr)
 	}
-	prefs := defaultIncidentPreferences
+
 	return &incidentUpdateProcessor{
 		inc:         inc,
 		logger:      slog.Default().With("service", "slack.incident_updates"),
 		incidentUrl: incUrl,
 		db:          a.db,
 		incidents:   a.incidents,
-		messages:    a.messages,
+		mq:          a.mq,
 		jobs:        a.jobs,
 		client:      client,
-		prefs:       prefs,
+		prefs:       defaultIncidentPreferences,
 	}, nil
 }
 

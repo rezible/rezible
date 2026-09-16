@@ -29,10 +29,10 @@ type AgentSessionService struct {
 	logger *slog.Logger
 	db     rez.Database
 	jobs   rez.JobService
-	msgs   rez.MessageService
+	msgs   rez.MessageQueue
 }
 
-func NewAgentSessionService(tel rez.TelemetryService, db rez.Database, jobSvc rez.JobService, msgs rez.MessageService) (*AgentSessionService, error) {
+func NewAgentSessionService(tel rez.TelemetryService, db rez.Database, jobSvc rez.JobService, msgs rez.MessageQueue) (*AgentSessionService, error) {
 	s := &AgentSessionService{
 		logger: tel.NewLogger(rez.NewLoggerOptions{Name: "agent_session_service"}),
 		db:     db,
@@ -406,8 +406,8 @@ func (s *AgentSessionService) GetLastSuccessfulAgentTurn(ctx context.Context, se
 	return turn, nil
 }
 
-func (s *AgentSessionService) lookupAgentTurnSessionAndAcquireLock(ctx context.Context, turnID uuid.UUID) (*ent.AgentSession, error) {
-	querySession := s.db.Client(ctx).AgentSession.Query().
+func (s *AgentSessionService) lookupAgentTurnSessionAndAcquireLock(ctx context.Context, tx *ent.Client, turnID uuid.UUID) (*ent.AgentSession, error) {
+	querySession := tx.AgentSession.Query().
 		Where(as.HasTurnsWith(at.ID(turnID)))
 	sess, sessErr := querySession.Only(ctx)
 	if sessErr != nil {
@@ -422,11 +422,11 @@ func (s *AgentSessionService) lookupAgentTurnSessionAndAcquireLock(ctx context.C
 func (s *AgentSessionService) AbortAgentTurn(ctx context.Context, turnID uuid.UUID) (*ent.AgentTurn, error) {
 	var result *ent.AgentTurn
 	return result, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
-		_, sessErr := s.lookupAgentTurnSessionAndAcquireLock(ctx, turnID)
+		_, sessErr := s.lookupAgentTurnSessionAndAcquireLock(ctx, tx, turnID)
 		if sessErr != nil {
 			return fmt.Errorf("agent session: %w", sessErr)
 		}
-		turn, turnErr := s.GetAgentTurn(ctx, turnID)
+		turn, turnErr := tx.AgentTurn.Get(ctx, turnID)
 		if turnErr != nil {
 			return turnErr
 		}
@@ -454,10 +454,7 @@ func (s *AgentSessionService) AbortAgentTurn(ctx context.Context, turnID uuid.UU
 		}
 		result = savedTurn.Unwrap()
 		if eventErr := s.publishTurnUpdated(ctx, result); eventErr != nil {
-			s.logger.WarnContext(ctx, "failed to publish agent turn update",
-				"error", eventErr,
-				"sessionId", turn.AgentSessionID,
-				"turnId", turn.ID)
+			return fmt.Errorf("publish aborted turn update: %w", eventErr)
 		}
 		return nil
 	})
@@ -466,12 +463,12 @@ func (s *AgentSessionService) AbortAgentTurn(ctx context.Context, turnID uuid.UU
 func (s *AgentSessionService) RetryAgentTurn(ctx context.Context, turnID uuid.UUID) (*ent.AgentTurn, error) {
 	var result *ent.AgentTurn
 	return result, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
-		sess, sessErr := s.lookupAgentTurnSessionAndAcquireLock(ctx, turnID)
+		sess, sessErr := s.lookupAgentTurnSessionAndAcquireLock(ctx, tx, turnID)
 		if sessErr != nil {
 			return fmt.Errorf("agent session: %w", sessErr)
 		}
 
-		turn, turnErr := s.GetAgentTurn(ctx, turnID)
+		turn, turnErr := tx.AgentTurn.Get(ctx, turnID)
 		if turnErr != nil {
 			return turnErr
 		}
@@ -506,10 +503,7 @@ func (s *AgentSessionService) RetryAgentTurn(ctx context.Context, turnID uuid.UU
 		result = savedTurn.Unwrap()
 
 		if eventErr := s.publishTurnUpdated(ctx, result); eventErr != nil {
-			s.logger.WarnContext(ctx, "failed to publish agent turn update",
-				"error", eventErr,
-				"sessionId", turn.AgentSessionID,
-				"turnId", turn.ID)
+			return fmt.Errorf("publish retried turn update: %w", eventErr)
 		}
 		return nil
 	})

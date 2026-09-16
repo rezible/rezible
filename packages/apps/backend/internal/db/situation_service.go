@@ -39,7 +39,7 @@ func NewSituationService(db rez.Database, jobs rez.JobService, agents rez.AgentS
 	return s, nil
 }
 
-func (s *SituationService) GetMessageHandlers() []rez.MessageEventHandler {
+func (s *SituationService) MessageHandlers() []rez.MessageEventHandler {
 	return []rez.MessageEventHandler{
 		messages.NewEventHandler("db.SituationService.onAgentTurnUpdated", s.onAgentTurnUpdated),
 	}

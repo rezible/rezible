@@ -20,7 +20,7 @@ type IntegrationEventsSyncWorker struct {
 	river.WorkerDefaults[jobs.SyncIntegrationSourceEvents]
 
 	db       rez.Database
-	msgs     rez.MessageService
+	msgs     rez.MessageQueue
 	intgs    rez.IntegrationService
 	registry rez.IntegrationRegistry
 	pipeline rez.ProviderEventPipelineService
@@ -29,7 +29,7 @@ type IntegrationEventsSyncWorker struct {
 	timeout time.Duration
 }
 
-func NewIntegrationEventsSyncWorker(cfg rez.Config, tel rez.TelemetryService, db rez.Database, msgs rez.MessageService, intgs rez.IntegrationService, reg rez.IntegrationRegistry, pipeline rez.ProviderEventPipelineService) (*IntegrationEventsSyncWorker, error) {
+func NewIntegrationEventsSyncWorker(cfg rez.Config, tel rez.TelemetryService, db rez.Database, msgs rez.MessageQueue, intgs rez.IntegrationService, reg rez.IntegrationRegistry, pipeline rez.ProviderEventPipelineService) (*IntegrationEventsSyncWorker, error) {
 	w := &IntegrationEventsSyncWorker{
 		db:       db,
 		msgs:     msgs,

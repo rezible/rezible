@@ -15,12 +15,14 @@ type eventHandler struct {
 	incidents    rez.IncidentService
 }
 
-func (i *Integration) GetMessageHandlers() []rez.MessageEventHandler {
+func (i *Integration) MessageHandlers() []rez.MessageEventHandler {
 	mh := &eventHandler{
 		integrations: i.integrations,
 		incidents:    i.incidents,
 	}
-	return []rez.MessageEventHandler{messages.NewEventHandler("Google.OnIncidentUpdate", mh.onIncidentUpdate)}
+	return []rez.MessageEventHandler{
+		messages.NewEventHandler("Google.OnIncidentUpdate", mh.onIncidentUpdate),
+	}
 }
 
 func (h *eventHandler) withInstallation(ctx context.Context, fn func(*InstalledIntegration) error) error {

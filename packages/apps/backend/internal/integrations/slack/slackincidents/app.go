@@ -17,16 +17,16 @@ import (
 type App struct {
 	cfg       rez.Config
 	db        rez.Database
-	messages  rez.MessageService
+	mq        rez.MessageQueue
 	jobs      rez.JobService
 	incidents rez.IncidentService
 }
 
-func MakeApp(cfg rez.Config, db rez.Database, msgs rez.MessageService, js rez.JobService, incidents rez.IncidentService) *App {
+func MakeApp(cfg rez.Config, db rez.Database, mq rez.MessageQueue, js rez.JobService, incidents rez.IncidentService) *App {
 	return &App{
 		cfg:       cfg,
 		db:        db,
-		messages:  msgs,
+		mq:        mq,
 		jobs:      js,
 		incidents: incidents,
 	}
@@ -40,7 +40,7 @@ func (a *App) MakeIntegration(deps *slackintegration.AppServiceDependencies) (*I
 	return MakeIntegration(svc), nil
 }
 
-func (a *App) GetMessageHandlers() []rez.MessageEventHandler {
+func (a *App) MakeMessageHandlers() []rez.MessageEventHandler {
 	return []rez.MessageEventHandler{
 		messages.NewEventHandler("slack.incidents.updated", a.onIncidentUpdated),
 		messages.NewEventHandler("slack.incidents.milestone_updated", a.onIncidentMilestoneUpdated),
@@ -87,7 +87,7 @@ func (a *App) OAuthScopes() []string {
 	}
 }
 
-func (a *App) PublishProviderEventPipelineEventTypes() []slackevents.EventsAPIType {
+func (a *App) PublishEventTypes() []slackevents.EventsAPIType {
 	return []slackevents.EventsAPIType{}
 }
 

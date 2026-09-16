@@ -89,14 +89,14 @@ type InvokeAgentTurnWorker struct {
 	river.WorkerDefaults[jobs.InvokeAgentTurn]
 
 	db      rez.Database
-	msgs    rez.MessageService
+	msgs    rez.MessageQueue
 	ai      rez.AiService
 	aiSess  rez.AgentSessionService
 	logger  *slog.Logger
 	timeout time.Duration
 }
 
-func NewInvokeAgentTurnWorker(cfg rez.AiConfig, tel rez.TelemetryService, db rez.Database, msgs rez.MessageService, aiSvc rez.AiService, aiSess rez.AgentSessionService) (*InvokeAgentTurnWorker, error) {
+func NewInvokeAgentTurnWorker(cfg rez.AiConfig, tel rez.TelemetryService, db rez.Database, msgs rez.MessageQueue, aiSvc rez.AiService, aiSess rez.AgentSessionService) (*InvokeAgentTurnWorker, error) {
 	w := &InvokeAgentTurnWorker{
 		db:      db,
 		msgs:    msgs,
@@ -113,8 +113,6 @@ func (w *InvokeAgentTurnWorker) Timeout(*river.Job[jobs.InvokeAgentTurn]) time.D
 }
 
 func (w *InvokeAgentTurnWorker) Work(ctx context.Context, job *river.Job[jobs.InvokeAgentTurn]) error {
-	logger := w.logger.With("sessionId", job.Args.AgentSessionID, "turnId", job.Args.AgentTurnID)
-
 	claim, claimErr := w.claimAgentTurn(ctx, job)
 	if claimErr != nil {
 		if ent.IsNotFound(claimErr) {
@@ -136,30 +134,17 @@ func (w *InvokeAgentTurnWorker) Work(ctx context.Context, job *river.Job[jobs.In
 	}
 
 	result, invokeErr := w.invokeTurn(ctx, *claim)
-	if resultErr := w.saveInvocationResult(ctx, job, claim, result, invokeErr); resultErr != nil {
-		return fmt.Errorf("save result: %w", resultErr)
-	}
-	if invokeErr == nil {
-		if result != nil {
-			invokeErr = result.Error
-		} else {
-			invokeErr = fmt.Errorf("agent returned no result")
-		}
+	if saveResultErr := w.saveInvocationResult(ctx, job, claim, result, invokeErr); saveResultErr != nil {
+		return fmt.Errorf("save result: %w", saveResultErr)
 	}
 	if invokeErr != nil {
-		return invokeErr
+		return fmt.Errorf("invoke: %w", invokeErr)
 	}
-	if result != nil {
-		turnFinishedEvent := rezai.EventOnAgentTurnFinished{
-			AgentSessionId:       claim.session.ID,
-			AgentSessionMetadata: claim.session.Metadata,
-			AgentTurnId:          claim.turn.ID,
-			FinishReason:         result.FinishReason,
-			Response:             result.Response,
-		}
-		if eventErr := w.msgs.Publish(ctx, &turnFinishedEvent); eventErr != nil {
-			logger.Warn("failed to publish event", "error", eventErr)
-		}
+	if result == nil {
+		return fmt.Errorf("agent returned no result")
+	}
+	if result.Error != nil {
+		return fmt.Errorf("result: %w", result.Error)
 	}
 	return nil
 }
@@ -190,21 +175,25 @@ var errAgentTurnAlreadyRunning = fmt.Errorf("agent turn already running")
 
 func (w *InvokeAgentTurnWorker) claimAgentTurn(ctx context.Context, job *river.Job[jobs.InvokeAgentTurn]) (*agentTurnClaim, error) {
 	var claim *agentTurnClaim
-	txErr := w.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+	return claim, w.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
 		if lockErr := acquireAgentSessionTurnLock(ctx, w.db, job.Args.AgentSessionID); lockErr != nil {
 			return fmt.Errorf("acquire agent session lock: %w", lockErr)
 		}
+
 		sess, sessErr := tx.AgentSession.Get(ctx, job.Args.AgentSessionID)
 		if sessErr != nil {
 			return fmt.Errorf("lookup agent session: %w", sessErr)
 		}
 
-		turn, turnErr := sess.QueryTurns().Where(at.ID(job.Args.AgentTurnID)).Only(ctx)
+		turn, turnErr := tx.AgentTurn.Get(ctx, job.Args.AgentTurnID)
 		if turnErr != nil {
 			if ent.IsNotFound(turnErr) {
 				return river.JobCancel(fmt.Errorf("agent turn no longer exists"))
 			}
 			return fmt.Errorf("reload agent turn: %w", turnErr)
+		}
+		if turn.AgentSessionID != sess.ID {
+			return river.JobCancel(fmt.Errorf("turn does not belong to session"))
 		}
 
 		if turn.RiverJobID != job.ID {
@@ -306,31 +295,28 @@ func (w *InvokeAgentTurnWorker) claimAgentTurn(ctx context.Context, job *river.J
 			input = &rez.AiAgentTurnInput{Resume: turn.InputToolResume}
 		}
 
-		var inputErr error
-		claim.input, inputErr = normalizeAgentTurnInput(input)
+		normInput, inputErr := normalizeAgentTurnInput(input)
 		if inputErr != nil {
 			return fmt.Errorf("invalid agent turn input: %w", inputErr)
+		}
+		claim.input = normInput
+
+		if publishErr := w.publishTurnUpdated(ctx, startedTurn); publishErr != nil {
+			return fmt.Errorf("publish claimed agent turn update: %w", publishErr)
 		}
 
 		return nil
 	})
-	if txErr != nil || claim == nil {
-		return claim, txErr
-	}
-	w.publishTurnUpdated(ctx, claim.turn)
-	return claim, nil
 }
 
-func (w *InvokeAgentTurnWorker) publishTurnUpdated(ctx context.Context, turn *ent.AgentTurn) {
+func (w *InvokeAgentTurnWorker) publishTurnUpdated(ctx context.Context, turn *ent.AgentTurn) error {
 	event := rezai.AgentTurnUpdated{
 		AgentSessionId: turn.AgentSessionID,
 		AgentTurnId:    turn.ID,
 		Status:         turn.Status,
 		FinishReason:   turn.FinishReason,
 	}
-	if publishErr := w.msgs.Publish(ctx, event); publishErr != nil {
-		w.logger.WarnContext(ctx, "failed to publish agent turn update", "error", publishErr, "sessionId", turn.AgentSessionID, "turnId", turn.ID)
-	}
+	return w.msgs.Publish(ctx, event)
 }
 
 func (w *InvokeAgentTurnWorker) invokeTurn(ctx context.Context, claim agentTurnClaim) (*rez.AiAgentInvocationResult, error) {
@@ -345,7 +331,7 @@ func (w *InvokeAgentTurnWorker) invokeTurn(ctx context.Context, claim agentTurnC
 				AgentTurnId:    claim.turn.ID,
 				Chunk:          chunk,
 			}
-			if msgErr := w.msgs.Publish(ctx, chunkEvent); msgErr != nil {
+			if msgErr := w.msgs.PublishLive(ctx, chunkEvent); msgErr != nil {
 				w.logger.WarnContext(ctx, "failed to publish agent turn chunk", "error", msgErr)
 			}
 		},
@@ -359,8 +345,7 @@ func (w *InvokeAgentTurnWorker) saveInvocationResult(ctx context.Context, job *r
 	}
 	defer cleanupCancel()
 
-	var updatedTurn *ent.AgentTurn
-	txErr := w.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+	return w.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
 		if lockErr := acquireAgentSessionTurnLock(ctx, w.db, job.Args.AgentSessionID); lockErr != nil {
 			return fmt.Errorf("acquire agent session lock: %w", lockErr)
 		}
@@ -415,13 +400,17 @@ func (w *InvokeAgentTurnWorker) saveInvocationResult(ctx context.Context, job *r
 			u.SetFinishReason(string(result.FinishReason))
 			u.ClearError()
 		}
-		var updateErr error
-		updatedTurn, updateErr = u.Save(ctx)
+
+		updated, updateErr := u.Save(ctx)
 		if updateErr != nil {
 			return fmt.Errorf("save agent turn result: %w", updateErr)
 		}
 
-		if result == nil || updatedTurn.Status != at.StatusCompleted {
+		if publishErr := w.publishTurnUpdated(ctx, updated); publishErr != nil {
+			return fmt.Errorf("publish agent turn update: %w", publishErr)
+		}
+
+		if result == nil || updated.Status != at.StatusCompleted {
 			return nil
 		}
 
@@ -479,13 +468,19 @@ func (w *InvokeAgentTurnWorker) saveInvocationResult(ctx context.Context, job *r
 			}
 		}
 
+		if updated.Status == at.StatusCompleted {
+			ev := &rezai.EventOnAgentTurnFinished{
+				AgentSessionId:       updated.AgentSessionID,
+				AgentSessionMetadata: claim.session.Metadata,
+				AgentTurnId:          updated.ID,
+				FinishReason:         result.FinishReason,
+				Response:             result.Response,
+			}
+			if publishErr := w.msgs.Publish(ctx, ev); publishErr != nil {
+				return fmt.Errorf("publish agent turn finished event: %w", publishErr)
+			}
+		}
+
 		return nil
 	})
-	if txErr != nil {
-		return txErr
-	}
-	if updatedTurn != nil {
-		w.publishTurnUpdated(ctx, updatedTurn)
-	}
-	return nil
 }

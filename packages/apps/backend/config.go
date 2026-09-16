@@ -46,6 +46,8 @@ func DefaultConfig() Config {
 			Database: "rezible",
 			SSLMode:  "require",
 		},
+		MessageQueue: MessageQueueConfig{},
+		Redis:        RedisConfig{Address: "localhost:6379"},
 		Telemetry: TelemetryConfig{
 			ServiceName: cmp.Or(os.Getenv("OTEL_SERVICE_NAME"), "rezible"),
 			Logging: LoggingConfig{
@@ -73,12 +75,16 @@ type Config struct {
 	HttpServer   HttpServerConfig   `cfg:"http"`
 	Documents    DocumentsConfig    `cfg:"documents"`
 	Integrations IntegrationsConfig `cfg:"integrations"`
+	MessageQueue MessageQueueConfig `cfg:"messagequeue"`
 	Postgres     PostgresConfig     `cfg:"postgres"`
+	Redis        RedisConfig        `cfg:"redis"`
 	Telemetry    TelemetryConfig    `cfg:"telemetry"`
 }
 
 func (cfg Config) Format() string {
-	return fmt.Sprintf("%+v", cfg)
+	redacted := cfg
+	// TODO: redact values based on struct tag?
+	return fmt.Sprintf("%+v", redacted)
 }
 
 type (
@@ -192,6 +198,12 @@ type (
 )
 
 type (
+	MessageQueueConfig struct {
+		Namespace string `cfg:"namespace"`
+	}
+)
+
+type (
 	PostgresConfig struct {
 		Host         string             `cfg:"host"`
 		Port         uint16             `cfg:"port"`
@@ -204,6 +216,17 @@ type (
 	PostgresRoleConfig struct {
 		Name     string `cfg:"name"`
 		Password string `cfg:"password"`
+	}
+)
+
+type (
+	RedisConfig struct {
+		Enabled  bool   `cfg:"enabled"`
+		Address  string `cfg:"address"`
+		Username string `cfg:"username"`
+		Password string `cfg:"password"`
+		Database int    `cfg:"database"`
+		TLS      bool   `cfg:"tls"`
 	}
 )
 

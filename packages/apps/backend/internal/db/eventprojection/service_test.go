@@ -33,7 +33,7 @@ func TestProjectionServiceSuite(t *testing.T) {
 func (s *ProjectionServiceSuite) projectionService(tdb rez.Database) *ProjectionService {
 	users, _ := db.NewUserService(tdb, mocks.NewMockOrganizationService(s.T()))
 
-	messageService := mocks.NewMockMessageService(s.T())
+	messageService := mocks.NewMockMessageQueue(s.T())
 
 	incidents, _ := db.NewIncidentService(tdb, messageService, nil)
 

@@ -15,13 +15,13 @@ import (
 	"github.com/rezible/rezible/ent/organization"
 	"github.com/rezible/rezible/ent/organizationrole"
 	"github.com/rezible/rezible/ent/user"
-	"github.com/rezible/rezible/internal/db"
 	"github.com/rezible/rezible/internal/http"
 	"github.com/rezible/rezible/internal/postgres/river"
 	"github.com/rezible/rezible/internal/watermill"
 	rezai "github.com/rezible/rezible/pkg/ai"
 	"github.com/rezible/rezible/pkg/execution"
 	"github.com/rezible/rezible/pkg/jobs"
+	"github.com/rezible/rezible/pkg/messages"
 	"github.com/samber/do/v2"
 
 	rez "github.com/rezible/rezible"
@@ -125,10 +125,10 @@ func (a *Application) Shutdown(ctx context.Context) error {
 
 func (a *Application) invokeLifecycleServices(runSvcs ...rez.LifecycleService) []rez.LifecycleService {
 	svcs := []rez.LifecycleService{
+		a.mustInvoke[*watermill.MessageQueue](),
 		a.mustInvoke[*river.JobService](),
-		a.mustInvoke[*watermill.MessageService](),
 	}
-	for _, intg := range a.getAvailableIntegrationsWith[rez.LifecycleServiceProvider]() {
+	for _, intg := range getAvailableIntegrationsWith[rez.LifecycleServiceProvider](a.i) {
 		if ls := intg.LifecycleService(); ls != nil {
 			svcs = append(svcs, ls)
 		}
@@ -281,17 +281,6 @@ func (a *Application) setup(ctx context.Context) error {
 	return nil
 }
 
-func (a *Application) getAvailableIntegrationsWith[T any]() []T {
-	ir := a.mustInvoke[rez.IntegrationRegistry]()
-	var pt []T
-	for _, intg := range ir.GetAvailable() {
-		if ls, hasLifecycle := intg.(T); hasLifecycle {
-			pt = append(pt, ls)
-		}
-	}
-	return pt
-}
-
 func (a *Application) registerIntegrations() error {
 	intgReg := a.mustInvoke[rez.IntegrationRegistry]()
 	eventProcessors := a.mustInvoke[rez.ProviderEventProcessorRegistry]()
@@ -311,39 +300,23 @@ func (a *Application) registerIntegrations() error {
 }
 
 func (a *Application) registerJobWorkers() error {
-	workerProviders := makeDefaultJobWorkerProviders()
-	workerDefs := make([]jobs.WorkerDefinition, len(workerProviders))
-	for idx, provider := range workerProviders {
-		def, provideErr := provider(a.i)
-		if provideErr != nil {
-			return fmt.Errorf("provide job worker: %w", provideErr)
-		}
-		workerDefs[idx] = def
+	def, defErr := do.InvokeNamed[jobs.Definition](a.i, "jobs-default")
+	if defErr != nil {
+		return fmt.Errorf("get jobs definition: %w", defErr)
 	}
-
-	periodicJobs := []*jobs.PeriodicJob{
-		jobs.CloseInactiveAlertEpisodesPeriodicJob,
-	}
-
-	r := a.mustInvoke[JobsRegistrar]()
-	return r.RegisterWorkers(jobs.Definition{
-		Workers:      workerDefs,
-		PeriodicJobs: periodicJobs,
+	return a.With(func(r jobs.Registrar) error {
+		return r.Register(def)
 	})
 }
 
 func (a *Application) registerMessageHandlers() error {
-	handlers := a.mustInvoke[*db.SituationService]().GetMessageHandlers()
-
-	type ProvidesMessageHandlers interface {
-		GetMessageHandlers() []rez.MessageEventHandler
+	def, defErr := do.InvokeNamed[messages.Definition](a.i, "messages-default")
+	if defErr != nil {
+		return fmt.Errorf("get messages definition: %w", defErr)
 	}
-	for _, mhIntg := range a.getAvailableIntegrationsWith[ProvidesMessageHandlers]() {
-		handlers = append(handlers, mhIntg.GetMessageHandlers()...)
-	}
-
-	r := a.mustInvoke[MessageHandlerRegistrar]()
-	return r.AddHandlers(handlers...)
+	return a.With(func(r messages.Registrar) error {
+		return r.Register(def)
+	})
 }
 
 func (a *Application) makeDevelopmentAuthSession(ctx context.Context) (*ent.UserAuthSession, error) {

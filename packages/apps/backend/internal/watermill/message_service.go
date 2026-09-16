@@ -8,87 +8,120 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ThreeDotsLabs/watermill"
-	"github.com/ThreeDotsLabs/watermill/components/cqrs"
-	"github.com/ThreeDotsLabs/watermill/message"
 	"github.com/ThreeDotsLabs/watermill/message/router/middleware"
-	mapset "github.com/deckarep/golang-set/v2"
 	wotelfloss "github.com/dentech-floss/watermill-opentelemetry-go-extra/pkg/opentelemetry"
 	"github.com/google/uuid"
 	wotel "github.com/voi-oss/watermill-opentelemetry/pkg/opentelemetry"
 	"golang.org/x/sync/errgroup"
 
+	"github.com/ThreeDotsLabs/watermill"
+	"github.com/ThreeDotsLabs/watermill/components/cqrs"
+	//"github.com/ThreeDotsLabs/watermill/components/forwarder"
+	"github.com/ThreeDotsLabs/watermill/message"
+
 	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/pkg/execution"
+	"github.com/rezible/rezible/pkg/messages"
 )
 
-type MessageService struct {
-	telemetry rez.TelemetryService
-	logger    watermill.LoggerAdapter
+type MessageQueue struct {
+	cfg    rez.MessageQueueConfig
+	logger watermill.LoggerAdapter
 
-	transport  Transport
-	publisher  message.Publisher
-	router     *message.Router
-	marshaller cqrs.CommandEventMarshaler
+	transport messages.Transport
+	router    *message.Router
 
-	eventBus  *cqrs.EventBus
-	eventProc *cqrs.EventProcessor
+	bus       *cqrs.EventBus
+	liveBus   *cqrs.EventBus
+	processor *cqrs.EventProcessor
 }
 
-func NewMessageService(ts rez.TelemetryService, transport Transport) (*MessageService, error) {
-	ms := MessageService{
-		telemetry: ts,
+func NewMessageQueue(cfg rez.MessageQueueConfig, ts rez.TelemetryService, transport messages.Transport) (*MessageQueue, error) {
+	logger := ts.NewLogger(rez.NewLoggerOptions{
+		Name:  "watermill",
+		Level: slog.LevelWarn,
+	})
+	ms := &MessageQueue{
+		cfg:       cfg,
 		transport: transport,
-		logger: watermill.NewSlogLogger(ts.NewLogger(rez.NewLoggerOptions{
-			Name:  "watermill",
-			Level: slog.LevelWarn,
-		})),
-		marshaller: cqrs.JSONMarshaler{GenerateName: cqrs.FullyQualifiedStructName},
-	}
-	if ms.transport == nil {
-		ms.transport = newGoChannelTransport(ms.logger)
+		logger:    watermill.NewSlogLogger(logger),
 	}
 
-	pub, pubErr := ms.addPublisherDecorations(ms.transport.Publisher())
-	if pubErr != nil {
-		return nil, fmt.Errorf("decorate publisher: %w", pubErr)
+	rcfg := message.RouterConfig{
+		CloseTimeout: time.Second * 5,
 	}
-	ms.publisher = pub
-
-	router, routerErr := message.NewRouter(message.RouterConfig{CloseTimeout: time.Second * 5}, ms.logger)
+	router, routerErr := message.NewRouter(rcfg, ms.logger)
 	if routerErr != nil {
-		return nil, fmt.Errorf("failed initializing message router: %w", routerErr)
+		return nil, fmt.Errorf("create router: %w", routerErr)
 	}
-	ms.router = router
-
-	poison, poisonErr := ms.makePoisonQueue()
-	if poisonErr != nil {
-		return nil, fmt.Errorf("failed to setup poison queue: %w", poisonErr)
-	}
-
-	retry := middleware.Retry{
-		MaxRetries:      1,
-		InitialInterval: time.Second,
-		Logger:          ms.logger,
-	}
-
-	ms.router.AddMiddleware(
-		middleware.NewThrottle(10, time.Second).Middleware,
+	router.AddMiddleware(
+		ms.makeRetryMiddleware(),
+		ms.makeThrottleMiddleware(),
+		ms.attemptTimeout,
 		ms.restoreMessageAccessScope,
 		wotelfloss.ExtractRemoteParentSpanContext(),
 		wotel.Trace(),
-		poison,               // send caught errors to a dedicated queue
-		retry.Middleware,     // catch errors & retry up to 1 time, then bubble up
-		middleware.Recoverer, // catch panics and return as error
+		middleware.Recoverer,
 	)
+	ms.router = router
 
-	if eventsErr := ms.setupEventProcessor(); eventsErr != nil {
-		return nil, fmt.Errorf("event processor: %w", eventsErr)
+	proc, procErr := ms.makeEventProcessor()
+	if procErr != nil {
+		return nil, fmt.Errorf("event processor: %w", procErr)
 	}
+	ms.processor = proc
 
-	return &ms, nil
+	pubWrapper := newPublisherWrapper(ts)
+
+	//pubCfg := forwarder.PublisherConfig{
+	//	ForwarderTopic: "message_outbox",
+	//}
+	//forwardedPublisher := forwarder.NewPublisher(deps.OutboxPublisher, pubCfg)
+
+	pub, pubErr := pubWrapper.wrap(transport.Publisher())
+	if pubErr != nil {
+		return nil, fmt.Errorf("decorate publisher: %w", pubErr)
+	}
+	bus, busErr := ms.makeEventBus(pub)
+	if busErr != nil {
+		return nil, fmt.Errorf("event bus: %w", busErr)
+	}
+	ms.bus = bus
+
+	//livePub, livePubErr := ms.wrapPublisher(basePublisher)
+	//if livePubErr != nil {
+	//	return nil, fmt.Errorf("decorate live publisher: %w", livePubErr)
+	//}
+	//liveBus, liveBusErr := ms.makeEventBus(livePub)
+	//if liveBusErr != nil {
+	//	return nil, fmt.Errorf("live event bus: %w", liveBusErr)
+	//}
+	ms.liveBus = bus
+
+	//fwdConfig := forwarder.Config{
+	//	ForwarderTopic:      "message_outbox",
+	//	AckWhenCannotUnwrap: false,
+	//}
+	//fwd, fwdErr := forwarder.NewForwarder(deps.OutboxSubscriber, deps.Transport.Publisher(), ms.logger, fwdConfig)
+	//if fwdErr != nil {
+	//	return nil, fmt.Errorf("message outbox forwarder: %w", fwdErr)
+	//}
+	//ms.forwarder = fwd
+
+	return ms, nil
 }
 
-func (ms *MessageService) Run(ctx context.Context, ready chan<- struct{}) error {
+func (ms *MessageQueue) Register(def messages.Definition) error {
+	for _, handler := range def.Handlers {
+		if _, addErr := ms.processor.AddHandler(handler); addErr != nil {
+			return fmt.Errorf("add message handler: %w", addErr)
+		}
+	}
+	return nil
+}
+
+func (ms *MessageQueue) Run(ctx context.Context, ready chan<- struct{}) (runErr error) {
 	runCtx, cancel := context.WithCancel(ctx)
 	defer cancel()
 	go func() {
@@ -104,122 +137,74 @@ func (ms *MessageService) Run(ctx context.Context, ready chan<- struct{}) error 
 	return nil
 }
 
-func (ms *MessageService) Shutdown(context.Context) error {
+func (ms *MessageQueue) Shutdown(ctx context.Context) error {
 	return errors.Join(ms.router.Close(), ms.transport.Close())
 }
 
-func (ms *MessageService) eventTopic(eventName string) string {
-	return "events." + eventName
+func (ms *MessageQueue) eventTopic(eventName string) string {
+	return ms.cfg.Namespace + ":events:" + eventName
 }
 
-const msgMetadataScopesKey = "scopes"
-
-func (ms *MessageService) setupEventProcessor() error {
-	eventBusCfg := cqrs.EventBusConfig{
-		GeneratePublishTopic: func(params cqrs.GenerateEventPublishTopicParams) (string, error) {
-			return ms.eventTopic(params.EventName), nil
-		},
-		OnPublish: func(params cqrs.OnEventSendParams) error {
-			if ev, hasScopes := params.Event.(rez.MessageEventWithScopes); hasScopes {
-				params.Message.Metadata.Set(msgMetadataScopesKey, strings.Join(ev.MessageScopes(), ","))
-			}
-			return nil
-		},
-		Marshaler: ms.marshaller,
-		Logger:    ms.logger,
-	}
-	eventBus, eventBusErr := cqrs.NewEventBusWithConfig(ms.publisher, eventBusCfg)
-	if eventBusErr != nil {
-		return fmt.Errorf("failed creating event bus: %w", eventBusErr)
-	}
-	ms.eventBus = eventBus
-
-	eventProcCfg := cqrs.EventProcessorConfig{
-		SubscriberConstructor: func(params cqrs.EventProcessorSubscriberConstructorParams) (message.Subscriber, error) {
-			return ms.transport.Subscriber(params.HandlerName)
-		},
-		GenerateSubscribeTopic: func(params cqrs.EventProcessorGenerateSubscribeTopicParams) (string, error) {
-			return ms.eventTopic(params.EventName), nil
-		},
-		Marshaler: ms.marshaller,
-		Logger:    ms.logger,
-	}
-	eventProc, eventProcErr := cqrs.NewEventProcessorWithConfig(ms.router, eventProcCfg)
-	if eventProcErr != nil {
-		return fmt.Errorf("failed creating event processor: %w", eventProcErr)
-	}
-	ms.eventProc = eventProc
-
+func (ms *MessageQueue) verifyQueueReadyState() error {
+	// TODO: check message queue state
+	// rez.ErrMessageQueueNotRunning
 	return nil
 }
 
-func (ms *MessageService) AddHandlers(handlers ...rez.MessageEventHandler) error {
-	names := mapset.NewSetFromMapKeys(ms.router.Handlers())
-	for _, handler := range handlers {
-		if handler == nil {
-			return errors.New("cannot add nil message handler")
-		}
-		handlerName := handler.HandlerName()
-		if handlerName == "" {
-			return errors.New("cannot add message handler with empty name")
-		}
-		if !names.Add(handlerName) {
-			return fmt.Errorf("message handler %q is duplicated", handlerName)
-		}
-		if _, hErr := ms.eventProc.AddHandler(handler); hErr != nil {
-			return fmt.Errorf("failed adding handler: %w", hErr)
-		}
-	}
-	return nil
+func (ms *MessageQueue) Publish(ctx context.Context, ev any) error {
+	return ms.publish(ctx, ms.bus, ev)
 }
 
-func (ms *MessageService) Publish(ctx context.Context, ev any) error {
-	return ms.eventBus.Publish(ctx, ev)
+func (ms *MessageQueue) PublishLive(ctx context.Context, ev any) error {
+	if entTx := ent.TxFromContext(ctx); entTx != nil {
+		return fmt.Errorf("cannot use PublishLive inside a transaction")
+	}
+	return ms.publish(ctx, ms.liveBus, ev)
 }
 
-func (ms *MessageService) matchesScopes(msg *message.Message, scopes []string) bool {
-	if len(scopes) == 0 {
-		return true
+func (ms *MessageQueue) publish(ctx context.Context, bus *cqrs.EventBus, ev any) error {
+	if !execution.ContextExists(ctx) {
+		return fmt.Errorf("publish: execution context required")
 	}
-
-	if msgScopes := msg.Metadata.Get(msgMetadataScopesKey); msgScopes != "" {
-		for _, want := range scopes {
-			for scope := range strings.SplitSeq(msgScopes, ",") {
-				if scope == want {
-					return true
-				}
-			}
-		}
+	if _, encodeErr := execution.GetContext(ctx).Encode(); encodeErr != nil {
+		return fmt.Errorf("encode execution context: %w", encodeErr)
 	}
-
-	return false
+	if stateErr := ms.verifyQueueReadyState(); stateErr != nil {
+		return fmt.Errorf("queue state: %w", stateErr)
+	}
+	return bus.Publish(ctx, ev)
 }
 
-func (ms *MessageService) Subscribe(ctx context.Context, opts *rez.MessageEventSubscriptionOpts, handlers ...rez.MessageEventHandler) error {
+func (ms *MessageQueue) Subscribe(ctx context.Context, opts *rez.MessageEventSubscriptionOpts, handlers ...rez.MessageEventHandler) error {
 	if len(handlers) == 0 {
 		return fmt.Errorf("subscribe: at least one event handler is required")
 	}
 
-	var scopes []string
+	adhocSub, ok := ms.transport.(messages.TransportWithAdhocSubscriber)
+	if !ok {
+		return fmt.Errorf("transport: adhoc subscribe not supported")
+	}
+
+	var scopes rez.MessageEventScopes
 	if opts != nil {
 		scopes = opts.Scopes
 	}
 
-	group, subscriptionCtx := errgroup.WithContext(ctx)
+	group, subCtx := errgroup.WithContext(ctx)
 	for _, handler := range handlers {
 		group.Go(func() error {
-			return ms.subscribe(subscriptionCtx, handler, scopes)
+			return ms.subscribe(subCtx, adhocSub, handler, scopes)
 		})
 	}
 	return group.Wait()
 }
 
-func (ms *MessageService) subscribe(ctx context.Context, handler rez.MessageEventHandler, scopes []string) error {
-	eventName := ms.marshaller.Name(handler.NewEvent())
+func (ms *MessageQueue) subscribe(ctx context.Context, t messages.TransportWithAdhocSubscriber, handler rez.MessageEventHandler, scopes rez.MessageEventScopes) error {
+	eventName := eventMarshaller.Name(handler.NewEvent())
 	topic := ms.eventTopic(eventName)
 
 	subscriberName := handler.HandlerName() + "-" + uuid.NewString()
-	sub, subErr := ms.transport.AdhocSubscriber(subscriberName)
+	sub, subErr := t.AdhocSubscriber(subscriberName)
 	if subErr != nil {
 		return fmt.Errorf("subscriber %q: %w", subscriberName, subErr)
 	}
@@ -244,7 +229,7 @@ func (ms *MessageService) subscribe(ctx context.Context, handler rez.MessageEven
 		}()
 
 		event := handler.NewEvent()
-		if jsonErr := ms.marshaller.Unmarshal(msg, event); jsonErr != nil {
+		if jsonErr := eventMarshaller.Unmarshal(msg, event); jsonErr != nil {
 			return fmt.Errorf("unmarshal %s: %w", eventName, jsonErr)
 		}
 
@@ -252,7 +237,11 @@ func (ms *MessageService) subscribe(ctx context.Context, handler rez.MessageEven
 			return fmt.Errorf("message context: %w", ctxErr)
 		}
 
-		if !ms.matchesScopes(msg, scopes) {
+		if !ms.verifyMessageTenantId(ctx, msg) {
+			return nil
+		}
+
+		if !ms.verifyMessageMatchesAnyScopes(msg, scopes) {
 			return nil
 		}
 
@@ -287,4 +276,37 @@ func (ms *MessageService) subscribe(ctx context.Context, handler rez.MessageEven
 			}
 		}
 	}
+}
+
+const msgMetadataScopesKey = "scopes"
+
+func (ms *MessageQueue) setMessageEventScopesMetadata(ev any, msg *message.Message) {
+	if scopedEvent, hasScopes := ev.(messages.EventWithScopes); hasScopes {
+		msg.Metadata.Set(msgMetadataScopesKey, strings.Join(scopedEvent.MessageScopes(), ","))
+	}
+}
+
+func (ms *MessageQueue) verifyMessageMatchesAnyScopes(msg *message.Message, scopes rez.MessageEventScopes) bool {
+	if len(scopes) == 0 {
+		return true
+	}
+	if msgScopes := msg.Metadata.Get(msgMetadataScopesKey); msgScopes != "" {
+		for _, want := range scopes {
+			for scope := range strings.SplitSeq(msgScopes, ",") {
+				if scope == want {
+					return true
+				}
+			}
+		}
+	}
+	return false
+}
+
+func (ms *MessageQueue) verifyMessageTenantId(ctx context.Context, msg *message.Message) bool {
+	subscriberTenantID, subscriberHasTenant := execution.GetContext(ctx).TenantID()
+	producerTenantID, producerHasTenant := execution.GetContext(msg.Context()).TenantID()
+	if !subscriberHasTenant || !producerHasTenant {
+		return false
+	}
+	return subscriberTenantID == producerTenantID
 }

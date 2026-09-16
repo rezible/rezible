@@ -10,12 +10,27 @@ import (
 	"github.com/rezible/rezible/ent/agentturn"
 )
 
+func makeMessageEventScopes(sessId, turnId uuid.UUID) rez.MessageEventScopes {
+	return rez.MessageEventScopes{
+		"agent_session:" + sessId.String(),
+		"agent_turn:" + turnId.String(),
+	}
+}
+
 type EventOnAgentTurnFinished struct {
 	AgentSessionId       uuid.UUID
 	AgentSessionMetadata map[string]any
 	AgentTurnId          uuid.UUID
 	FinishReason         aix.AgentFinishReason
 	Response             *ai.Message
+}
+
+func (EventOnAgentTurnFinished) MessageName() string {
+	return "agent.turn-finished.v1"
+}
+
+func (e EventOnAgentTurnFinished) MessageScopes() rez.MessageEventScopes {
+	return makeMessageEventScopes(e.AgentSessionId, e.AgentTurnId)
 }
 
 type AgentTurnUpdated struct {
@@ -25,12 +40,12 @@ type AgentTurnUpdated struct {
 	FinishReason   string
 }
 
-func (e AgentTurnUpdated) MessageScopes() []string {
-	return []string{"agent_session:" + e.AgentSessionId.String(), "agent_turn:" + e.AgentTurnId.String()}
+func (AgentTurnUpdated) MessageName() string {
+	return "agent.turn-updated.v1"
 }
 
-func (e EventOnAgentTurnFinished) MessageScopes() []string {
-	return []string{"agent_session:" + e.AgentSessionId.String(), "agent_turn:" + e.AgentTurnId.String()}
+func (e AgentTurnUpdated) MessageScopes() rez.MessageEventScopes {
+	return makeMessageEventScopes(e.AgentSessionId, e.AgentTurnId)
 }
 
 type EventOnAgentTurnChunk struct {
@@ -39,6 +54,10 @@ type EventOnAgentTurnChunk struct {
 	Chunk          rez.AiAgentTurnChunk
 }
 
-func (e EventOnAgentTurnChunk) MessageScopes() []string {
-	return []string{"agent_session:" + e.AgentSessionId.String(), "agent_turn:" + e.AgentTurnId.String()}
+func (EventOnAgentTurnChunk) MessageName() string {
+	return "agent.turn-chunk.v1"
+}
+
+func (e EventOnAgentTurnChunk) MessageScopes() rez.MessageEventScopes {
+	return makeMessageEventScopes(e.AgentSessionId, e.AgentTurnId)
 }

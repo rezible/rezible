@@ -21,6 +21,14 @@ type (
 		Workers      []WorkerDefinition
 		PeriodicJobs []*PeriodicJob
 	}
+
+	Registrar interface {
+		Register(Definition) error
+	}
+
+	WorkerProvider interface {
+		JobWorkers() []WorkerDefinition
+	}
 )
 
 var (

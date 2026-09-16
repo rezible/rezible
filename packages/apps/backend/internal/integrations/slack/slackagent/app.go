@@ -55,7 +55,7 @@ func (a *App) MakeIntegration(deps *slackintegration.AppServiceDependencies) (*I
 	return MakeIntegration(svc), nil
 }
 
-func (a *App) GetMessageHandlers() []rez.MessageEventHandler {
+func (a *App) MakeMessageHandlers() []rez.MessageEventHandler {
 	return []rez.MessageEventHandler{
 		messages.NewEventHandler("slackagent.OnAiAgentTurnFinished", a.onAiAgentTurnFinished),
 	}
@@ -69,7 +69,7 @@ func (a *App) Config() rez.IntegrationsConfigSlackApp {
 	return a.cfg.Integrations.Slack.Agent
 }
 
-func (a *App) PublishProviderEventPipelineEventTypes() []slackevents.EventsAPIType {
+func (a *App) PublishEventTypes() []slackevents.EventsAPIType {
 	return []slackevents.EventsAPIType{}
 }
 

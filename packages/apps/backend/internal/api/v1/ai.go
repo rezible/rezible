@@ -24,10 +24,10 @@ import (
 type aiHandler struct {
 	ai     rez.AiService
 	agents rez.AgentSessionService
-	msgs   rez.MessageService
+	msgs   rez.MessageQueue
 }
 
-func newAiHandler(ai rez.AiService, agents rez.AgentSessionService, msgs rez.MessageService) *aiHandler {
+func newAiHandler(ai rez.AiService, agents rez.AgentSessionService, msgs rez.MessageQueue) *aiHandler {
 	return &aiHandler{
 		ai:     ai,
 		agents: agents,
@@ -196,6 +196,11 @@ func (h *aiHandler) RetryAgentTurn(ctx context.Context, req *oapi.AgentTurnActio
 }
 
 func (h *aiHandler) StreamAgentSessionEvents(ctx context.Context, req *oapi.StreamAgentSessionEventsRequest, send sse.Sender) {
+	if _, getErr := h.agents.GetAgentSession(ctx, req.Id); getErr != nil {
+		slog.WarnContext(ctx, "agent session SSE authorization failed", "error", getErr, "sessionId", req.Id)
+		return
+	}
+
 	// The sender can end the whole stream when the client connection stops accepting writes.
 	streamCtx, cancelStreamContext := context.WithCancel(ctx)
 	defer cancelStreamContext()
@@ -230,7 +235,7 @@ func (h *aiHandler) StreamAgentSessionEvents(ctx context.Context, req *oapi.Stre
 	})
 
 	subscribeOpts := &rez.MessageEventSubscriptionOpts{
-		Scopes: []string{"agent_session:" + req.Id.String()},
+		Scopes: rez.MessageEventScopes{"agent_session:" + req.Id.String()},
 	}
 	g.Go(func() error {
 		return h.msgs.Subscribe(subscriberCtx, subscribeOpts, eventHandlers...)

@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"entgo.io/ent/dialect/sql/schema"
 	"github.com/firebase/genkit/go/ai"
 	aix "github.com/firebase/genkit/go/ai/exp"
 	"github.com/google/uuid"
@@ -32,17 +33,21 @@ import (
 )
 
 var (
-	ErrTenantContextMissing = fmt.Errorf("tenant access context not set")
-	ErrInvalidUser          = fmt.Errorf("user does not exist")
-	ErrDomainNotAllowed     = fmt.Errorf("domain not allowed")
-	ErrInvalidTenant        = fmt.Errorf("tenant does not exist")
-	ErrAuthSessionMissing   = fmt.Errorf("no auth session")
-	ErrAuthSessionExpired   = fmt.Errorf("auth session expired")
-	ErrAuthSessionInvalid   = fmt.Errorf("auth session invalid")
-	ErrConflict             = fmt.Errorf("conflict")
-	ErrInvalidInput         = fmt.Errorf("invalid input")
-	ErrNotFound             = fmt.Errorf("not found")
-	ErrNotImplemented       = fmt.Errorf("not implemented")
+	ErrTenantContextMissing       = fmt.Errorf("tenant access context not set")
+	ErrInvalidUser                = fmt.Errorf("user does not exist")
+	ErrDomainNotAllowed           = fmt.Errorf("domain not allowed")
+	ErrInvalidTenant              = fmt.Errorf("tenant does not exist")
+	ErrAuthSessionMissing         = fmt.Errorf("no auth session")
+	ErrAuthSessionExpired         = fmt.Errorf("auth session expired")
+	ErrAuthSessionInvalid         = fmt.Errorf("auth session invalid")
+	ErrConflict                   = fmt.Errorf("conflict")
+	ErrInvalidInput               = fmt.Errorf("invalid input")
+	ErrNotFound                   = fmt.Errorf("not found")
+	ErrNotImplemented             = fmt.Errorf("not implemented")
+	ErrMessageQueueNotInitialized = fmt.Errorf("message queue not initialized")
+	ErrMessageQueueNotRunning     = fmt.Errorf("message queue not running")
+	ErrMessageQueueClosed         = fmt.Errorf("message queue closed")
+	ErrLivePublishInTransaction   = fmt.Errorf("live message publish cannot run in a transaction")
 )
 
 type (
@@ -71,7 +76,7 @@ type (
 
 	MigrationService interface {
 		GetCurrentStatus(context.Context) (*MigrationStatus, error)
-		CreateSchemaMigration(ctx context.Context, name string) error
+		CreateSchemaMigration(ctx context.Context, name string, infraTables ...*schema.Table) error
 		Run(context.Context, MigrationDirection) error
 		UpdateChecksum() error
 	}
@@ -107,22 +112,25 @@ type (
 )
 
 type (
+	MessageEvent interface {
+		MessageName() string
+	}
+
 	MessageEventHandler interface {
 		HandlerName() string
 		NewEvent() any
 		Handle(context.Context, any) error
 	}
 
-	MessageEventWithScopes interface {
-		MessageScopes() []string
-	}
+	MessageEventScopes []string
 
 	MessageEventSubscriptionOpts struct {
-		Scopes []string
+		Scopes MessageEventScopes
 	}
 
-	MessageService interface {
+	MessageQueue interface {
 		Publish(context.Context, any) error
+		PublishLive(context.Context, any) error
 		Subscribe(context.Context, *MessageEventSubscriptionOpts, ...MessageEventHandler) error
 	}
 )
@@ -921,6 +929,9 @@ type (
 		IncidentId uuid.UUID
 	}
 )
+
+func (EventOnIncidentUpdated) MessageName() string          { return "incident.updated.v1" }
+func (EventOnIncidentMilestoneUpdated) MessageName() string { return "incident.milestone-updated.v1" }
 
 type (
 	DebriefService interface {
