@@ -94,9 +94,9 @@
 						here. Search for a subject to focus the map on it.
 					</Alert.Description>
 					<Alert.Action>
-						<Button variant="outline" size="sm" href="/settings/integrations"
-							>Review integrations</Button
-						>
+						<Button variant="outline" size="sm" href="/settings/integrations">
+							Review integrations
+						</Button>
 					</Alert.Action>
 				</Alert.Root>
 			</div>

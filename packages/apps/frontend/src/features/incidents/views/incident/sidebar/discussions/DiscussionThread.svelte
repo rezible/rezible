@@ -36,9 +36,9 @@
 >
 	<div class="flex flex-col">
 		<span class="font-medium">{discussion.attributes.userId}</span>
-		<span class="text-sm text-muted-foreground"
-			>{new Date(discussion.attributes.createdAt).toLocaleString()}</span
-		>
+		<span class="text-sm text-muted-foreground">
+			{new Date(discussion.attributes.createdAt).toLocaleString()}
+		</span>
 	</div>
 
 	{#if commentsController.query.isPending}

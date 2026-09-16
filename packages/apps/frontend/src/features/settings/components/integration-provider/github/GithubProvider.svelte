@@ -53,19 +53,19 @@
 			<Card.Header>
 				<Card.Title>{details?.org ?? installation.attributes.displayName}</Card.Title>
 				<Card.Action>
-					<Badge variant="outline"
-						>Installation {details?.installationId ??
-							installation.attributes.providerInstallationRef}</Badge
-					>
+					<Badge variant="outline">
+						Installation {details?.installationId ??
+							installation.attributes.providerInstallationRef}
+					</Badge>
 				</Card.Action>
 			</Card.Header>
 			<Card.Footer class="gap-2">
 				{#if installation.attributes.capabilities.includes("event_sync")}
 					<Button variant="outline" onclick={() => sync.openFor(installation)}>Sync</Button>
 				{/if}
-				<Button variant="destructive" onclick={() => ctrl.disconnect(installation.id)}
-					>Disconnect</Button
-				>
+				<Button variant="destructive" onclick={() => ctrl.disconnect(installation.id)}>
+					Disconnect
+				</Button>
 			</Card.Footer>
 		</Card.Root>
 	{/each}

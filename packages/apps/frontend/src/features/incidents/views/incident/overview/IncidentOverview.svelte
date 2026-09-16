@@ -47,17 +47,18 @@
 							variant="outline"
 							disabled={overview.saving}
 							onclick={() => (overview.editing = false)}
-						>Cancel</Button>
-						<Button 
-							disabled={overview.saving} 
-							onclick={overview.save}
-						>{overview.saving ? "Saving…" : "Save"}</Button>
+						>
+							Cancel
+						</Button>
+						<Button disabled={overview.saving} onclick={overview.save}>
+							{overview.saving ? "Saving…" : "Save"}
+						</Button>
 					</div>
 				{:else}
 					<Button variant="ghost" onclick={overview.beginEdit}>Edit</Button>
 				{/if}
 			</div>
-			
+
 			{#if overview.error}
 				<p class="mb-4 text-sm text-destructive" role="alert">{overview.error}</p>
 			{/if}

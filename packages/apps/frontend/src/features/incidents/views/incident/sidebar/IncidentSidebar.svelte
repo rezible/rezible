@@ -20,8 +20,9 @@
 		{/snippet}
 		{#snippet subheading()}
 			{#if controller.connectionError}
-				<span class="text-destructive/70">Connection Error: {controller.connectionError.message}</span
-				>
+				<span class="text-destructive/70">
+					Connection Error: {controller.connectionError.message}
+				</span>
 			{/if}
 		{/snippet}
 	</Header>

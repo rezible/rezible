@@ -18,10 +18,7 @@
 </script>
 
 <div
-	class={cn(
-		"cn-native-select-wrapper group/native-select relative w-fit",
-		className
-	)}
+	class={cn("cn-native-select-wrapper group/native-select relative w-fit", className)}
 	data-slot="native-select-wrapper"
 	data-size={size}
 >

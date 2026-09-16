@@ -30,9 +30,9 @@
 				{#if installation.attributes.capabilities.includes("event_sync")}
 					<Button variant="outline" onclick={() => sync.openFor(installation)}>Sync</Button>
 				{/if}
-				<Button variant="destructive" onclick={() => ctrl.disconnect(installation.id)}
-					>Disconnect</Button
-				>
+				<Button variant="destructive" onclick={() => ctrl.disconnect(installation.id)}>
+					Disconnect
+				</Button>
 			</div>
 		{:else}
 			<Button onclick={enable} variant="default" class="w-fit">Install</Button>

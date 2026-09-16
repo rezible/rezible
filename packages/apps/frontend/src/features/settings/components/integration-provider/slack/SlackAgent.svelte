@@ -34,9 +34,9 @@
 				{#if attrs.capabilities.includes("event_sync")}
 					<Button variant="outline" onclick={() => sync.openFor(installation)}>Sync</Button>
 				{/if}
-				<Button variant="destructive" onclick={() => ctrl.disconnect(installation.id)}
-					>Disconnect</Button
-				>
+				<Button variant="destructive" onclick={() => ctrl.disconnect(installation.id)}>
+					Disconnect
+				</Button>
 			</div>
 		</div>
 	</Card.Content>

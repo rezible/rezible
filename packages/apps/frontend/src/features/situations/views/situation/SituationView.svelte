@@ -37,10 +37,10 @@
 	label="Situation views"
 	route="/situations/[id]/[[view=situationView]]"
 	entries={[
-		{ 
-			label: "Brief", 
-			params: { id }, 
-			icon: RiFileTextLine, 
+		{
+			label: "Brief",
+			params: { id },
+			icon: RiFileTextLine,
 			component: SituationBriefView,
 		},
 		{

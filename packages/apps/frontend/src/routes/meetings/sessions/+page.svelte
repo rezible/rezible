@@ -8,4 +8,4 @@
 	}));
 </script>
 
-<span> meeting sessions </span>
+<span>meeting sessions</span>

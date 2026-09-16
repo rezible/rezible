@@ -5,7 +5,7 @@
 
 	type Props = NodeProps<SystemDiagramNode>;
 	let { data, selected }: Props = $props();
-	
+
 	const entity = $derived(data.entity);
 	const attrs = $derived(entity.attributes);
 	const state = $derived(attrs.latestState);
@@ -29,7 +29,7 @@
 			</Badge>
 		{/if}
 	</div>
-	
+
 	<span class="truncate text-sm font-medium">
 		{label}
 	</span>

@@ -127,7 +127,7 @@ export class SystemDiagramController {
 	};
 
 	fit = () => this.requestFraming();
-	
+
 	focus = (subjects: GraphHighlights) => this.requestFraming(subjects);
 
 	private requestFraming(subjects?: GraphHighlights) {

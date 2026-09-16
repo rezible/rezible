@@ -76,15 +76,19 @@
 				<Button
 					size="sm"
 					disabled={!isActive}
-					onclick={runEditorCmd((c) => alert("TODO: migrate this"))}>bold</Button
+					onclick={runEditorCmd((c) => alert("TODO: migrate this"))}
 				>
+					bold
+				</Button>
 				<!-- variant={isActive && section.activeStatus?.get("bold") ? "fill" : "fill-light"} -->
 
 				<Button
 					size="sm"
 					disabled={!isActive}
-					onclick={runEditorCmd((c) => alert("TODO: migrate this"))}>bold</Button
+					onclick={runEditorCmd((c) => alert("TODO: migrate this"))}
 				>
+					bold
+				</Button>
 				<!-- variant={isActive && section.activeStatus?.get("bulletList") ? "fill" : "fill-light"} -->
 			</div>
 

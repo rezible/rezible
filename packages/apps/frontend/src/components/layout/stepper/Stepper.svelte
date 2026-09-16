@@ -46,9 +46,9 @@
 								{step.label}
 							</span>
 							{#if step.description}
-								<span class="block text-sm leading-snug text-muted-foreground"
-									>{step.description}</span
-								>
+								<span class="block text-sm leading-snug text-muted-foreground">
+									{step.description}
+								</span>
 							{/if}
 						</span>
 					</button>
@@ -74,8 +74,10 @@
 				onclick={() => {
 					controller.back();
 				}}
-				disabled={!controller.canGoBack}>Back</Button
+				disabled={!controller.canGoBack}
 			>
+				Back
+			</Button>
 			<Button
 				onclick={() => {
 					controller.next();

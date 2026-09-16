@@ -10,7 +10,7 @@ export class IncidentReportController {
 	documentAccess = $derived(this.viewController.documentAccess);
 	canView = $derived(this.documentAccess?.canView ?? false);
 	canEdit = $derived(this.documentAccess?.canEdit ?? false);
-	
+
 	editMode = $state(false);
 	toggleEdit = () => {
 		if (this.canEdit) this.editMode = !this.editMode;

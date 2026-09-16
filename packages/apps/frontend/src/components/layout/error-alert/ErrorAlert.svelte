@@ -30,8 +30,10 @@
 					variant="ghost"
 					onclick={() => {
 						error = undefined;
-					}}><RiCloseLine /></Button
+					}}
 				>
+					<RiCloseLine />
+				</Button>
 			</Alert.Action>
 		{/if}
 	</Alert.Root>

@@ -65,8 +65,7 @@
 							<p class="mt-1 text-sm text-muted-foreground">{item.attributes.reason}</p>
 						</div>
 						<div class="ml-auto flex items-center gap-3 self-center">
-							<Button variant="outline" size="sm" class="min-w-24" href={"/"}
-							>
+							<Button variant="outline" size="sm" class="min-w-24" href={"/"}>
 								{inboxActions[item.attributes.kind]}
 							</Button>
 							<DisplayTime value={item.attributes.occurredAt} />

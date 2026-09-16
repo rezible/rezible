@@ -32,7 +32,10 @@
 			</p>
 			<ul class="list-disc pl-4">
 				{#each view.mockBackedFields as field}
-					<li><span class="font-medium">{field.label}:</span> {field.reason}</li>
+					<li>
+						<span class="font-medium">{field.label}:</span>
+						{field.reason}
+					</li>
 				{/each}
 			</ul>
 		</Alert.Description>
@@ -83,8 +86,9 @@
 								</Select.Trigger>
 								<Select.Content>
 									{#each view.timezoneOptions as timezone}
-										<Select.Item value={timezone} label={timezone}>{timezone}</Select.Item
-										>
+										<Select.Item value={timezone} label={timezone}>
+											{timezone}
+										</Select.Item>
 									{/each}
 								</Select.Content>
 							</Select.Root>
@@ -131,9 +135,9 @@
 								<Card.Description>{view.scheduleCountLabel}</Card.Description>
 							</div>
 							<div class="flex gap-2">
-								<Button variant="outline" onclick={() => view.addSchedule()}
-									>Add Schedule</Button
-								>
+								<Button variant="outline" onclick={() => view.addSchedule()}>
+									Add Schedule
+								</Button>
 								<Button
 									variant="destructive"
 									disabled={view.draft.schedules.length <= 1}
@@ -157,9 +161,9 @@
 									onclick={() => view.selectSchedule(schedule.key)}
 								>
 									<span class="font-medium">{schedule.name || "Untitled Schedule"}</span>
-									<span class="text-foreground/70"
-										>{schedule.timezone || "No timezone"}</span
-									>
+									<span class="text-foreground/70">
+										{schedule.timezone || "No timezone"}
+									</span>
 									<span class="text-foreground/60">
 										{schedule.participants.length} participant{schedule.participants
 											.length === 1
@@ -199,9 +203,9 @@
 											</Select.Trigger>
 											<Select.Content>
 												{#each view.timezoneOptions as timezone}
-													<Select.Item value={timezone} label={timezone}
-														>{timezone}</Select.Item
-													>
+													<Select.Item value={timezone} label={timezone}>
+														{timezone}
+													</Select.Item>
 												{/each}
 											</Select.Content>
 										</Select.Root>
@@ -394,9 +398,9 @@
 				<Card.Root>
 					<Card.Header>
 						<Card.Title>OncallSchedule Schema Preview</Card.Title>
-						<Card.Description
-							>Draft schedules mapped to backend schedule and participant fields.</Card.Description
-						>
+						<Card.Description>
+							Draft schedules mapped to backend schedule and participant fields.
+						</Card.Description>
 					</Card.Header>
 					<Card.Content>
 						<pre class="bg-muted overflow-x-auto p-3 text-[11px] leading-5">{JSON.stringify(

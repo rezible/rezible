@@ -38,10 +38,10 @@
 	route="/incidents/[slug]/[[view=incidentView]]"
 	label="Incident"
 	entries={[
-		{ 
-			label: "Overview", 
-			icon: RiDashboardLine, 
-			component: IncidentOverview, 
+		{
+			label: "Overview",
+			icon: RiDashboardLine,
+			component: IncidentOverview,
 			params: { slug },
 		},
 		{

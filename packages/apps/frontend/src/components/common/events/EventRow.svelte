@@ -50,11 +50,11 @@
 		<div class="flex gap-1 items-center">
 			<span class="text-xs uppercase font-normal text-foreground/50">{attrs.kind}</span>
 		</div>
-		<a href="/events/{event.id}" class="anchor link w-full truncate text-left align-baseline"
-			>{attrs.resourceRef.provider}
+		<a href="/events/{event.id}" class="anchor link w-full truncate text-left align-baseline">
+			{attrs.resourceRef.provider}
 			{attrs.resourceRef.providerNamespace}
-			{attrs.resourceRef.resourceRef}</a
-		>
+			{attrs.resourceRef.resourceRef}
+		</a>
 	</div>
 
 	<div class="flex w-full h-full items-center justify-end gap-2">

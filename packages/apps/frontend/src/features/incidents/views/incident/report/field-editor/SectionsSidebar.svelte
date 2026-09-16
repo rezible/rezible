@@ -95,9 +95,9 @@
 							class="relative flex flex-col-reverse pl-0"
 							class:text-primary-content={i === -1}
 						>
-							<button class="text-left" onclick={() => onSectionClicked(section.field)}
-								>{section.title}</button
-							>
+							<button class="text-left" onclick={() => onSectionClicked(section.field)}>
+								{section.title}
+							</button>
 						</div>
 					</div>
 				</div>

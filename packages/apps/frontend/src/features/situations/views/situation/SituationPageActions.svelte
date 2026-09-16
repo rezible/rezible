@@ -57,26 +57,24 @@
 					</span>
 				{/snippet}
 				{#snippet error()}
-					<Button 
-						variant="ghost" size="sm" 
-						onclick={() => query?.refetch()}
-					>Incident unavailable - Retry</Button>
+					<Button variant="ghost" size="sm" onclick={() => query?.refetch()}>
+						Incident unavailable - Retry
+					</Button>
 				{/snippet}
 			</LoadingQueryWrapper>
 		{:else}
 			<Popover.Root>
 				<Popover.Trigger>
 					{#snippet child({ props })}
-						<Button {...props} 
-							variant="outline" 
-							size="sm"
-						>{controller.incidentIds.length} linked incidents</Button>
+						<Button {...props} variant="outline" size="sm">
+							{controller.incidentIds.length} linked incidents
+						</Button>
 					{/snippet}
 				</Popover.Trigger>
 				<Popover.Content align="end" class="flex w-80 max-w-[calc(100vw-2rem)] flex-col gap-3">
 					<h2 class="font-semibold">Linked incidents</h2>
 					{#each controller.incidentIds as id, index (id)}
-						{@const query=controller.incidentsQuery[index]}
+						{@const query = controller.incidentsQuery[index]}
 						<LoadingQueryWrapper {query} view={incidentLink}>
 							{#snippet loading()}
 								<span role="status" class="flex items-center gap-2 text-xs">
@@ -84,10 +82,9 @@
 								</span>
 							{/snippet}
 							{#snippet error()}
-								<Button 
-									variant="ghost" size="sm" 
-									onclick={() => query?.refetch()}
-								>Incident unavailable - Retry</Button>
+								<Button variant="ghost" size="sm" onclick={() => query?.refetch()}>
+									Incident unavailable - Retry
+								</Button>
 							{/snippet}
 						</LoadingQueryWrapper>
 					{/each}

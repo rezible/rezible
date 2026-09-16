@@ -39,8 +39,8 @@
 							<dt class="text-xs text-muted-foreground">Source incident</dt>
 							<dd>
 								<a class="text-primary underline" href={incidentHref}>
-									{incident.attributes.title}</a
-								>
+									{incident.attributes.title}
+								</a>
 							</dd>
 						</div>
 					{/if}
@@ -59,9 +59,9 @@
 						<dt class="text-xs text-muted-foreground">Due date</dt>
 						<dd>
 							{#if task.attributes.dueAt}
-								<time datetime={task.attributes.dueAt}
-									>{new Date(task.attributes.dueAt).toLocaleString()}</time
-								>
+								<time datetime={task.attributes.dueAt}>
+									{new Date(task.attributes.dueAt).toLocaleString()}
+								</time>
 							{:else}
 								No due date
 							{/if}
@@ -98,17 +98,18 @@
 						value={controller.draftState}
 						onValueChange={(value) => controller.setState(value as Task["attributes"]["state"])}
 						disabled={controller.update.isPending}
-						><Select.Trigger id="task-status" class="w-full capitalize"
-							>{controller.draftState}</Select.Trigger
-						><Select.Content>
+					>
+						<Select.Trigger id="task-status" class="w-full capitalize">
+							{controller.draftState}
+						</Select.Trigger><Select.Content>
 							{#each states as state (state)}
 								<Select.Item value={state} class="capitalize">{state}</Select.Item>
 							{/each}
-						</Select.Content></Select.Root
-					>
-					<Button type="submit" disabled={controller.update.isPending}
-						>{controller.update.isPending ? "Saving…" : "Save status"}</Button
-					>
+						</Select.Content>
+					</Select.Root>
+					<Button type="submit" disabled={controller.update.isPending}>
+						{controller.update.isPending ? "Saving…" : "Save status"}
+					</Button>
 
 					{#if controller.update.error}
 						<div role="alert">

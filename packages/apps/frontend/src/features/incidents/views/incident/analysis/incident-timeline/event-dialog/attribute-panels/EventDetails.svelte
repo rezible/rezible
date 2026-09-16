@@ -5,7 +5,7 @@
 	import * as Select from "$components/ui/select";
 	import { getLocalTimeZone, parseDateTime, toCalendarDateTime, toZoned } from "@internationalized/date";
 	import { useEventDialog } from "../controller.svelte";
-	
+
 	const editor = useEventDialog();
 	const eventKinds = ["observation", "action", "decision", "context", "finding", "recommendation"] as const;
 </script>
@@ -19,11 +19,11 @@
 		<Field.Label for="analysis-entry-kind">Kind</Field.Label>
 		<Select.Root type="single" bind:value={editor.kind} disabled={editor.loading}>
 			<Select.Trigger id="analysis-entry-kind">{editor.kind}</Select.Trigger>
-			<Select.Content
-				><Select.Group>
+			<Select.Content>
+				<Select.Group>
 					{#each eventKinds as kind (kind)}<Select.Item value={kind}>{kind}</Select.Item>{/each}
-				</Select.Group></Select.Content
-			>
+				</Select.Group>
+			</Select.Content>
 		</Select.Root>
 	</Field.Field>
 	{#if editor.hasTimestamp}

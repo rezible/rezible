@@ -43,12 +43,12 @@
 				<div class="flex flex-wrap items-center gap-4">
 					<label class="flex items-center gap-2"><Checkbox bind:checked />Checkbox</label>
 					<RadioGroup.Root value="evidence" class="flex gap-3">
-						<label class="flex items-center gap-2"
-							><RadioGroup.Item value="evidence" />Evidence</label
-						>
-						<label class="flex items-center gap-2"
-							><RadioGroup.Item value="timeline" />Timeline</label
-						>
+						<label class="flex items-center gap-2">
+							<RadioGroup.Item value="evidence" />Evidence
+						</label>
+						<label class="flex items-center gap-2">
+							<RadioGroup.Item value="timeline" />Timeline
+						</label>
 					</RadioGroup.Root>
 					<label class="flex items-center gap-2"><Switch bind:checked={switched} />Switch</label>
 					<Toggle pressed>Toggle</Toggle>

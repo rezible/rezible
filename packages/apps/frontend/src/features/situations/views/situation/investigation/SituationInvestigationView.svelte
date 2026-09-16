@@ -35,9 +35,7 @@
 					<Empty.Root>
 						<Empty.Header>
 							<Empty.Title>No investigation yet</Empty.Title>
-							<Empty.Description>
-								Run an investigation using the form above.
-							</Empty.Description>
+							<Empty.Description>Run an investigation using the form above.</Empty.Description>
 						</Empty.Header>
 					</Empty.Root>
 				{/if}

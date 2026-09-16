@@ -46,11 +46,15 @@ export class IncidentAnalysisController {
 	contextMenu = $state.raw<ContextMenuProps>({});
 
 	selectedNodeId = $derived(page.url.searchParams.get("node"));
-	selectedNode = $derived(this.systemAnalysis.analysisNodes.find((node) => node.id === this.selectedNodeId));
+	selectedNode = $derived(
+		this.systemAnalysis.analysisNodes.find((node) => node.id === this.selectedNodeId)
+	);
 
 	selectedEdgeId = $derived(page.url.searchParams.get("edge"));
-	selectedEdge = $derived(this.systemAnalysis.analysisEdges.find((edge) => edge.id === this.selectedEdgeId));
-	
+	selectedEdge = $derived(
+		this.systemAnalysis.analysisEdges.find((edge) => edge.id === this.selectedEdgeId)
+	);
+
 	selectedEntryId = $derived(page.url.searchParams.get("entry"));
 	selectedEntry = $derived(this.systemAnalysis.entries.find((entry) => entry.id === this.selectedEntryId));
 
@@ -167,7 +171,9 @@ export class IncidentAnalysisController {
 		return undefined;
 	});
 
-	selectedRecordLoading = $derived(this.systemAnalysis.entriesQuery.isPending || this.systemAnalysis.graphLoading);
+	selectedRecordLoading = $derived(
+		this.systemAnalysis.entriesQuery.isPending || this.systemAnalysis.graphLoading
+	);
 
 	selectionKey = $derived([this.selectedEntryId, this.selectedNodeId, this.selectedEdgeId].join(":"));
 	hasSelection = $derived(!!(this.selectedEntryId || this.selectedNodeId || this.selectedEdgeId));

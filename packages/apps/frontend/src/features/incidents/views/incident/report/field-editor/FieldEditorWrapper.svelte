@@ -24,7 +24,7 @@
 		section: RetrospectiveReportSection;
 		focusEditor: () => void;
 	};
-	let {section, focusEditor = $bindable()}: Props = $props();
+	let { section, focusEditor = $bindable() }: Props = $props();
 
 	const session = useUserSessionState();
 	const collab = useIncidentCollaboration();
@@ -67,9 +67,12 @@
 		});
 	};
 	watch(() => collab.provider, createEditor);
-	watch(() => isEditable, (editable) => {
-		editor?.setEditable(editable);
-	});
+	watch(
+		() => isEditable,
+		(editable) => {
+			editor?.setEditable(editable);
+		}
+	);
 	onMount(() => {
 		return () => {
 			if (!editor) return;

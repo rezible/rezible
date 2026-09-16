@@ -16,21 +16,16 @@ export class SituationBriefController {
 	observations = $derived(observationGroups(this.attrs?.observationGroups ?? []));
 	private inspectedKey = $state<string>();
 	inspectedRecord = $derived(
-		this.observations
-			.flatMap((group) => group.records)
-			.find((record) => record.key === this.inspectedKey)
+		this.observations.flatMap((group) => group.records).find((record) => record.key === this.inspectedKey)
 	);
 	inspectedGroup = $state("");
 	sourceSheetOpen = $state(false);
 
 	preview = $derived(this.situationController.investigation);
-	evidenceChanged = $derived(evidenceChanged(
-		this.attrs?.evidenceRevision ?? 0,
-		this.attrs?.investigation?.completedRevision
-	));
-	previewChanged = $derived(
-		!!this.situationController.investigationReport && this.evidenceChanged
+	evidenceChanged = $derived(
+		evidenceChanged(this.attrs?.evidenceRevision ?? 0, this.attrs?.investigation?.completedRevision)
 	);
+	previewChanged = $derived(!!this.situationController.investigationReport && this.evidenceChanged);
 
 	previewHref = $derived(investigationHref(this.situationId, page.url.search));
 

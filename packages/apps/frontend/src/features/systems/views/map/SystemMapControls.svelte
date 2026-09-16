@@ -36,9 +36,9 @@
 								<p class="text-sm text-destructive">
 									{view.searchError.detail || view.searchError.title}
 								</p>
-								<Button variant="outline" size="sm" onclick={view.retrySearch}
-									>Retry search</Button
-								>
+								<Button variant="outline" size="sm" onclick={view.retrySearch}>
+									Retry search
+								</Button>
 							</div>
 						{:else if view.searchResults.length === 0}
 							<Command.Empty>No entities found.</Command.Empty>

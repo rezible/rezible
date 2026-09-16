@@ -17,7 +17,7 @@ const isInvestigationPending = (situation?: Situation) => {
 	const invAttrs = sitInv.investigation.attributes;
 	const reportMissing = !!attrs?.investigation && !invAttrs?.report;
 	return reportMissing;
-}
+};
 
 export class SituationController {
 	situationId = $state<string>();
@@ -32,7 +32,7 @@ export class SituationController {
 		...getSituationOptions({ path: idPath(this.situationId) }),
 		enabled: !!this.situationId,
 		refetchInterval(q) {
-			return (isInvestigationPending(q.state.data?.data)) ? 2000 : false
+			return isInvestigationPending(q.state.data?.data) ? 2000 : false;
 		},
 	}));
 

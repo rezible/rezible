@@ -134,8 +134,10 @@
 						<Button
 							variant="outline"
 							onclick={() => view.updateType(type)}
-							disabled={!view.canEdit || view.saving}>Save</Button
+							disabled={!view.canEdit || view.saving}
 						>
+							Save
+						</Button>
 					</div>
 				{/each}
 			</Card.Content>
@@ -170,8 +172,10 @@
 						<Button
 							variant="outline"
 							onclick={() => view.updateRole(role)}
-							disabled={!view.canEdit || view.saving}>Save</Button
+							disabled={!view.canEdit || view.saving}
 						>
+							Save
+						</Button>
 					</div>
 				{/each}
 			</Card.Content>
@@ -196,8 +200,10 @@
 						<Button
 							variant="outline"
 							onclick={() => view.updateTag(tag)}
-							disabled={!view.canEdit || view.saving}>Save</Button
+							disabled={!view.canEdit || view.saving}
 						>
+							Save
+						</Button>
 					</div>
 				{/each}
 			</Card.Content>

@@ -29,9 +29,9 @@
 		<Popover.Root>
 			<Popover.Trigger>
 				{#snippet child({ props })}
-					<Button {...props} variant="outline" size="sm" class="shrink-0"
-						>{situations.length} situations</Button
-					>
+					<Button {...props} variant="outline" size="sm" class="shrink-0">
+						{situations.length} situations
+					</Button>
 				{/snippet}
 			</Popover.Trigger>
 			<Popover.Content align="end" class="flex max-w-[calc(100vw-2rem)] flex-col gap-2">
@@ -39,8 +39,9 @@
 					<a
 						class="flex items-center justify-between gap-3 rounded-md px-2 py-1 text-sm hover:bg-muted"
 						href={resolve("/situations/[id]/[[view=situationView]]", { id: situation.id })}
-						>{situation.attributes.title}<RiExternalLinkLine aria-hidden="true" /></a
 					>
+						{situation.attributes.title}<RiExternalLinkLine aria-hidden="true" />
+					</a>
 				{/each}
 			</Popover.Content>
 		</Popover.Root>

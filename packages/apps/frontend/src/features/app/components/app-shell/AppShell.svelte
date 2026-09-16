@@ -43,7 +43,10 @@
 				</div>
 			{/if}
 
-			<div id="scroll-body" class={cn("flex min-h-0 flex-1", featureRailActive ? "overflow-hidden" : "overflow-y-auto")}>
+			<div
+				id="scroll-body"
+				class={cn("flex min-h-0 flex-1", featureRailActive ? "overflow-hidden" : "overflow-y-auto")}
+			>
 				{@render children()}
 			</div>
 		</main>

@@ -34,7 +34,9 @@
 
 {#snippet defaultInspector()}
 	{#if !!controller.selectionInspector}
-		<aside class="w-72 max-h-80 overflow-auto border border-border bg-card p-3 text-card-foreground shadow">
+		<aside
+			class="w-72 max-h-80 overflow-auto border border-border bg-card p-3 text-card-foreground shadow"
+		>
 			<h3 class="mb-2 text-sm font-semibold">{controller.selectionInspector.title}</h3>
 			{#if controller.selectionInspector.entries.length === 0}
 				<p class="text-xs text-muted-foreground">No entries attached.</p>
@@ -102,7 +104,8 @@
 										variant="ghost"
 										disabled={controller.deleting}
 										onclick={() =>
-											controller.ctxMenu && controller.remove(controller.ctxMenu.selection)}
+											controller.ctxMenu &&
+											controller.remove(controller.ctxMenu.selection)}
 									>
 										{controller.ctxMenu.selection.nodeId
 											? "Remove node"
@@ -113,7 +116,7 @@
 						{/if}
 					</SystemDiagram>
 				</div>
-				
+
 				{@render selectionInspector()}
 			</div>
 		{:else if !graphError}

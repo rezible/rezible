@@ -16,22 +16,28 @@
 			onclick={() => {
 				view.cancelEditing();
 			}}
-			{disabled}>Cancel</Button
+			{disabled}
 		>
+			Cancel
+		</Button>
 		<Button
 			onclick={() => {
 				view.saveEdit();
 			}}
 			{disabled}
-			color="primary">Save</Button
+			color="primary"
 		>
+			Save
+		</Button>
 	{:else}
 		<Button
 			onclick={() => {
 				view.editing = true;
 			}}
 			{disabled}
-			color="primary">Edit</Button
+			color="primary"
 		>
+			Edit
+		</Button>
 	{/if}
 </div>

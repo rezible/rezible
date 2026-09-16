@@ -24,10 +24,7 @@
 >
 	<header class="mb-6 flex items-center justify-between gap-3">
 		<h2 id="home-activity" class="text-2xl font-semibold tracking-tight">Recent activity</h2>
-		<a 
-			class="shrink-0 text-sm text-primary hover:underline focus-visible:outline-ring" 
-			href={"/"}
-		>
+		<a class="shrink-0 text-sm text-primary hover:underline focus-visible:outline-ring" href={"/"}>
 			View all
 		</a>
 	</header>
@@ -63,9 +60,7 @@
 								<span
 									class="mt-1.5 size-2 rounded-full bg-muted-foreground opacity-45"
 									aria-hidden="true"
-								>
-									
-								</span>
+								></span>
 								<Icon class="size-5 shrink-0" aria-hidden="true" />
 								<div class="relative min-w-0 wrap-anywhere @min-[440px]/activity:pr-22">
 									<a

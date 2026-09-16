@@ -95,9 +95,9 @@
 	{#snippet topologyNodeSelector()}
 		{#each analysisNodes as node (node.id)}
 			{@const attr = node.attributes.knowledgeEntity.attributes}
-			<button type="button" class="text-left" onclick={() => (selectedNode = node)}
-				>{attr.latestState?.displayName ?? "Unknown entity"}</button
-			>
+			<button type="button" class="text-left" onclick={() => (selectedNode = node)}>
+				{attr.latestState?.displayName ?? "Unknown entity"}
+			</button>
 		{/each}
 
 		{#if analysisNodes.length === 0 && analysis.nodesQuery.isFetched}

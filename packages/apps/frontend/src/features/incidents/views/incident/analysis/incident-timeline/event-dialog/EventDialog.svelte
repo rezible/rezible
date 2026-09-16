@@ -43,16 +43,12 @@
 				</div>
 			{/if}
 			<Dialog.Footer>
-				<Button
-					type="button"
-					variant="outline"
-					disabled={editor.loading}
-					onclick={editor.clear}
-				>Cancel</Button>
-				<Button 
-					type="submit" 
-					disabled={!editor.title.trim() || editor.loading}
-				>{editor.loading ? "Saving…" : "Save entry"}</Button>
+				<Button type="button" variant="outline" disabled={editor.loading} onclick={editor.clear}>
+					Cancel
+				</Button>
+				<Button type="submit" disabled={!editor.title.trim() || editor.loading}>
+					{editor.loading ? "Saving…" : "Save entry"}
+				</Button>
 			</Dialog.Footer>
 		</form>
 	</Dialog.Content>

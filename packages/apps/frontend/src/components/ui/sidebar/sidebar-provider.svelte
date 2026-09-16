@@ -38,9 +38,12 @@
 		railActive: () => featureRailActive ?? false,
 	});
 
-	watch(() => featureRailActive, isOpen => {
-		if (!isOpen) sidebar.featureRailOpen = false;
-	});
+	watch(
+		() => featureRailActive,
+		(isOpen) => {
+			if (!isOpen) sidebar.featureRailOpen = false;
+		}
+	);
 </script>
 
 <svelte:window onkeydown={sidebar.handleShortcutKeydown} />

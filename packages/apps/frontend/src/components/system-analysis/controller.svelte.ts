@@ -55,7 +55,7 @@ export class SystemAnalysisController {
 		},
 	});
 
-	constructor(idFn: Getter<string | undefined>,optionsFn: Getter<SystemAnalysisOptions> = () => ({})) {
+	constructor(idFn: Getter<string | undefined>, optionsFn: Getter<SystemAnalysisOptions> = () => ({})) {
 		watch(idFn, (id) => {
 			this.analysisId = id;
 			this.localSelection = {};
@@ -81,7 +81,7 @@ export class SystemAnalysisController {
 
 		for (const query of [this.nodesQuery, this.edgesQuery, this.entriesQuery]) {
 			watch(
-				() => (query.hasNextPage && !query.isFetching && !query.isError),
+				() => query.hasNextPage && !query.isFetching && !query.isError,
 				(hasMore) => {
 					if (hasMore) query.fetchNextPage();
 				}
@@ -91,7 +91,14 @@ export class SystemAnalysisController {
 
 	private watchForRefresh() {
 		watch(
-			() => [this.analysisId,this.analysisNodes,this.analysisEdges,this.attachments,this.readOnly] as const,
+			() =>
+				[
+					this.analysisId,
+					this.analysisNodes,
+					this.analysisEdges,
+					this.attachments,
+					this.readOnly,
+				] as const,
 			() => {
 				if (this.readOnly) {
 					this.ctxMenu = undefined;
@@ -141,7 +148,7 @@ export class SystemAnalysisController {
 
 	refreshAll = () =>
 		Promise.all([this.nodesQuery.refetch(), this.edgesQuery.refetch(), this.entriesQuery.refetch()]);
-	
+
 	attachments = $derived(mapEntryAttachments(this.analysisNodes, this.analysisEdges, this.entries));
 
 	graphLoading = $derived(
@@ -289,6 +296,8 @@ export class SystemAnalysisController {
 }
 
 const ctx = new Context<SystemAnalysisController>("SystemAnalysisController");
-export const initSystemAnalysisController = (idFn: Getter<string | undefined>, optionsFn?: Getter<SystemAnalysisOptions>) => 
-	ctx.set(new SystemAnalysisController(idFn, optionsFn));
+export const initSystemAnalysisController = (
+	idFn: Getter<string | undefined>,
+	optionsFn?: Getter<SystemAnalysisOptions>
+) => ctx.set(new SystemAnalysisController(idFn, optionsFn));
 export const useSystemAnalysisController = () => ctx.get();

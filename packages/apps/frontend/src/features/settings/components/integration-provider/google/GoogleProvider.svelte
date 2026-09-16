@@ -86,9 +86,9 @@
 					<Alert.Description>{installation.attributes.displayName}</Alert.Description>
 				</Alert.Root>
 				<div>
-					<Button variant="destructive" onclick={() => ctrl.disconnect(installation.id)}
-						>Disconnect</Button
-					>
+					<Button variant="destructive" onclick={() => ctrl.disconnect(installation.id)}>
+						Disconnect
+					</Button>
 				</div>
 			{:else}
 				<div class="space-y-2">

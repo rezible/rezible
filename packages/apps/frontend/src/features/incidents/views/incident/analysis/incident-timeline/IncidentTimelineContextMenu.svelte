@@ -28,9 +28,7 @@
 	};
 
 	const itemId = $derived(item?.id.toString());
-	const event = $derived(
-		itemId && timelineController.entries.find((entry) => entry.id === itemId)
-	);
+	const event = $derived(itemId && timelineController.entries.find((entry) => entry.id === itemId));
 
 	const onEditEventClick = () => {
 		if (!event) return;

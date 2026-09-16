@@ -36,7 +36,7 @@ export class IncidentViewController {
 	retrospectiveQuery = createQuery(() => ({
 		...getRetrospectiveOptions({ path: { id: this.incidentRetrospectiveId } }),
 		enabled: !!this.incidentRetrospectiveId,
-	}));;
+	}));
 	retrospective = $derived(this.retrospectiveQuery.data?.data);
 	retrospectiveId = $derived(this.retrospective?.id);
 
@@ -48,10 +48,11 @@ export class IncidentViewController {
 	retrospectiveDocument = $derived(this.retrospectiveDocumentSessionQuery.data?.data);
 
 	documentAccess = $derived(this.retrospectiveDocument?.access);
-	
+
 	systemAnalysisId = $derived(this.retrospective?.attributes.systemAnalysisId);
 }
 
 const ctx = new Context<IncidentViewController>("IncidentViewController");
-export const initIncidentViewController = (slugFn: Getter<string>) => ctx.set(new IncidentViewController(slugFn));
+export const initIncidentViewController = (slugFn: Getter<string>) =>
+	ctx.set(new IncidentViewController(slugFn));
 export const useIncidentView = () => ctx.get();

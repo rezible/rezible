@@ -2,15 +2,15 @@
 	import { BaseEdge, getBezierPath, type EdgeProps } from "@xyflow/svelte";
 	import { cn } from "$lib/utils";
 	import type { SystemDiagramEdge } from "../types";
-	
+
 	type Props = EdgeProps<SystemDiagramEdge>;
 	let props: Props = $props();
-	
+
 	const path = $derived(getBezierPath(props));
 	const data = $derived(props.data);
 
 	const relationship = $derived(data?.relationship);
-	const attrs = $derived(relationship?.attributes)
+	const attrs = $derived(relationship?.attributes);
 	const label = $derived(attrs?.latestState?.displayName || attrs?.predicate.replaceAll("_", " "));
 </script>
 
@@ -29,4 +29,6 @@
 	dominant-baseline="central"
 	stroke-width="4"
 	class="fill-foreground stroke-background text-xs [paint-order:stroke]"
->{label}</text>
+>
+	{label}
+</text>

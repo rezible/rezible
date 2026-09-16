@@ -21,15 +21,17 @@
 		<Card.Content class="flex flex-wrap items-center gap-2">
 			<Tooltip.Root>
 				<Tooltip.Trigger>
-					{#snippet child({ props })}<Button variant="outline" {...props}>Hover tooltip</Button
-						>{/snippet}
+					{#snippet child({ props })}<Button variant="outline" {...props}>
+							Hover tooltip
+						</Button>{/snippet}
 				</Tooltip.Trigger>
 				<Tooltip.Content>Keyboard-accessible context.</Tooltip.Content>
 			</Tooltip.Root>
 			<DropdownMenu.Root>
 				<DropdownMenu.Trigger>
-					{#snippet child({ props })}<Button variant="outline" {...props}>Open menu</Button
-						>{/snippet}
+					{#snippet child({ props })}<Button variant="outline" {...props}>
+							Open menu
+						</Button>{/snippet}
 				</DropdownMenu.Trigger>
 				<DropdownMenu.Content>
 					<DropdownMenu.Group>
@@ -41,8 +43,9 @@
 			</DropdownMenu.Root>
 			<Popover.Root>
 				<Popover.Trigger>
-					{#snippet child({ props })}<Button variant="outline" {...props}>Open popover</Button
-						>{/snippet}
+					{#snippet child({ props })}<Button variant="outline" {...props}>
+							Open popover
+						</Button>{/snippet}
 				</Popover.Trigger>
 				<Popover.Content>
 					<Popover.Header>
@@ -61,9 +64,9 @@
 		<Dialog.Content>
 			<Dialog.Header>
 				<Dialog.Title>Review evidence</Dialog.Title>
-				<Dialog.Description
-					>A restrained overlay with preserved focus and dismissal behavior.</Dialog.Description
-				>
+				<Dialog.Description>
+					A restrained overlay with preserved focus and dismissal behavior.
+				</Dialog.Description>
 			</Dialog.Header>
 			<div class="flex items-center gap-2 text-sm text-muted-foreground">
 				<RiAlertLine class="size-4 shrink-0" aria-hidden="true" />

@@ -37,9 +37,9 @@
 				/>
 				<span class="flex flex-col">
 					<span class="font-medium">{option.displayName}</span>
-					<span class="text-muted-foreground"
-						>{option.resourceRef.providerNamespace} · {option.resourceRef.resourceRef}</span
-					>
+					<span class="text-muted-foreground">
+						{option.resourceRef.providerNamespace} · {option.resourceRef.resourceRef}
+					</span>
 				</span>
 			</label>
 		{/each}

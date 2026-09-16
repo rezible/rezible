@@ -54,7 +54,7 @@
 						}}
 						class="cursor-pointer w-full"
 					>
-						<span class="flex items-center gap-2"> Continue </span>
+						<span class="flex items-center gap-2">Continue</span>
 					</Button>
 				{/if}
 			</Card.Content>

@@ -48,9 +48,9 @@
 					<Alert.Title>Installed</Alert.Title>
 					<Alert.Description>{incidentsInstall.attributes.displayName}</Alert.Description>
 				</Alert.Root>
-				<Button variant="destructive" onclick={() => ctrl.disconnect(incidentsInstall.id)}
-					>Disconnect</Button
-				>
+				<Button variant="destructive" onclick={() => ctrl.disconnect(incidentsInstall.id)}>
+					Disconnect
+				</Button>
 			</div>
 			<div class="grid gap-3 md:grid-cols-2">
 				<div class="grid gap-1.5">

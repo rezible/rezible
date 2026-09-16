@@ -24,11 +24,7 @@
 		role="alert"
 	>
 		<span>{message}</span>
-		<Button
-			variant="outline"
-			size="sm"
-			onclick={retryFn}
-		>Retry</Button>
+		<Button variant="outline" size="sm" onclick={retryFn}>Retry</Button>
 	</div>
 {/snippet}
 
@@ -57,7 +53,9 @@
 						<div class="min-w-0 rounded-lg border border-border bg-card p-6">
 							<div class="w-full overflow-y-auto flex flex-col gap-4">
 								{#if !incident.retrospective}
-									<p class="rounded-md border border-border p-6 text-sm text-muted-foreground">
+									<p
+										class="rounded-md border border-border p-6 text-sm text-muted-foreground"
+									>
 										No report is associated with this incident.
 									</p>
 								{:else if !!collab.provider}
@@ -91,7 +89,7 @@
 								{/if}
 							</div>
 						</div>
-						
+
 						<aside class="rounded-lg border border-border bg-card p-5">
 							<h2 class="font-semibold">Review</h2>
 							<p class="mt-3 text-sm text-muted-foreground">
@@ -100,7 +98,10 @@
 							<h2 class="mt-6 font-semibold">In this report</h2>
 							<nav class="mt-4 flex flex-col gap-3">
 								{#each report.sections as section (section.field)}
-									<a href={`#${section.field}`} class="text-sm text-muted-foreground hover:text-foreground">
+									<a
+										href={`#${section.field}`}
+										class="text-sm text-muted-foreground hover:text-foreground"
+									>
 										{section.title}
 									</a>
 								{/each}

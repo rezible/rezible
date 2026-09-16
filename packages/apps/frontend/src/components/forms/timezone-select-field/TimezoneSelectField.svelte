@@ -44,7 +44,6 @@
 		// }
 	};
 
-
 	let triggerRef = $state<HTMLButtonElement>(null!);
 	function closeAndFocusTrigger() {
 		open = false;
@@ -64,48 +63,58 @@
 </script>
 
 <Popover.Root bind:open>
-  <Popover.Trigger bind:ref={triggerRef}>
-    {#snippet child({ props })}
-      <Button
-        variant="outline"
-        class="w-[200px] justify-between"
-        {...props}
-        role="combobox"
-        aria-expanded={open}
-      >
-		{triggerLabel}
-        <!-- <ChevronsUpDownIcon class="ms-2 size-4 shrink-0 opacity-50" /> -->
-      </Button>
-    {/snippet}
-  </Popover.Trigger>
+	<Popover.Trigger bind:ref={triggerRef}>
+		{#snippet child({ props })}
+			<Button
+				variant="outline"
+				class="w-[200px] justify-between"
+				{...props}
+				role="combobox"
+				aria-expanded={open}
+			>
+				{triggerLabel}
+				<!-- <ChevronsUpDownIcon class="ms-2 size-4 shrink-0 opacity-50" /> -->
+			</Button>
+		{/snippet}
+	</Popover.Trigger>
 
-  <Popover.Content class="w-[200px] p-0">
-    <Command.Root>
-      <Command.Input 
-			oninput={(event) => (search = event.currentTarget.value)}
-			placeholder="Search timezones…"
-		/>
-      <Command.List>
-		{#if !showClear && visibleZones.length === 0}
-			<div class="text-muted-foreground py-6 text-center text-sm">No timezone found.</div>
-		{:else}
-			<Command.Group>
-				{#if showClear}
-					<Command.Item value={CLEAR_TIMEZONE_VALUE} onSelect={() => {value = ""}}>
-						<RiCloseLine /> Clear timezone
-					</Command.Item>
-				{/if}
-				{#each visibleZones as zone (zone)}
-					<Command.Item value={zone} onSelect={() => {value = zone}}>
-						{formatTimezone(zone)}
-						{#if value === zone}
-							<RiCheckLine class="ml-auto" />
+	<Popover.Content class="w-[200px] p-0">
+		<Command.Root>
+			<Command.Input
+				oninput={(event) => (search = event.currentTarget.value)}
+				placeholder="Search timezones…"
+			/>
+			<Command.List>
+				{#if !showClear && visibleZones.length === 0}
+					<div class="text-muted-foreground py-6 text-center text-sm">No timezone found.</div>
+				{:else}
+					<Command.Group>
+						{#if showClear}
+							<Command.Item
+								value={CLEAR_TIMEZONE_VALUE}
+								onSelect={() => {
+									value = "";
+								}}
+							>
+								<RiCloseLine /> Clear timezone
+							</Command.Item>
 						{/if}
-					</Command.Item>
-				{/each}
-			</Command.Group>
-		{/if}
-      </Command.List>
-    </Command.Root>
-  </Popover.Content>
+						{#each visibleZones as zone (zone)}
+							<Command.Item
+								value={zone}
+								onSelect={() => {
+									value = zone;
+								}}
+							>
+								{formatTimezone(zone)}
+								{#if value === zone}
+									<RiCheckLine class="ml-auto" />
+								{/if}
+							</Command.Item>
+						{/each}
+					</Command.Group>
+				{/if}
+			</Command.List>
+		</Command.Root>
+	</Popover.Content>
 </Popover.Root>
