@@ -58,7 +58,7 @@ func (SystemAnalysis) Edges() []ent.Edge {
 
 		edge.From("discussion_threads", DiscussionThread.Type).Ref("analysis"),
 
-		edge.To("situation_investigation", SituationInvestigation.Type).Unique(),
+		edge.To("investigation", Investigation.Type).Unique(),
 	}
 }
 

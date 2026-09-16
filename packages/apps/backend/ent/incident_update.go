@@ -291,6 +291,21 @@ func (_u *IncidentUpdate) AddLinkedIncidents(v ...*Incident) *IncidentUpdate {
 	return _u.AddLinkedIncidentIDs(ids...)
 }
 
+// AddSituationIDs adds the "situations" edge to the Situation entity by IDs.
+func (_u *IncidentUpdate) AddSituationIDs(ids ...uuid.UUID) *IncidentUpdate {
+	_u.mutation.AddSituationIDs(ids...)
+	return _u
+}
+
+// AddSituations adds the "situations" edges to the Situation entity.
+func (_u *IncidentUpdate) AddSituations(v ...*Situation) *IncidentUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddSituationIDs(ids...)
+}
+
 // AddFieldSelectionIDs adds the "field_selections" edge to the IncidentFieldOption entity by IDs.
 func (_u *IncidentUpdate) AddFieldSelectionIDs(ids ...uuid.UUID) *IncidentUpdate {
 	_u.mutation.AddFieldSelectionIDs(ids...)
@@ -334,21 +349,6 @@ func (_u *IncidentUpdate) AddTagAssignments(v ...*IncidentTag) *IncidentUpdate {
 		ids[i] = v[i].ID
 	}
 	return _u.AddTagAssignmentIDs(ids...)
-}
-
-// AddSituationIDs adds the "situations" edge to the Situation entity by IDs.
-func (_u *IncidentUpdate) AddSituationIDs(ids ...uuid.UUID) *IncidentUpdate {
-	_u.mutation.AddSituationIDs(ids...)
-	return _u
-}
-
-// AddSituations adds the "situations" edges to the Situation entity.
-func (_u *IncidentUpdate) AddSituations(v ...*Situation) *IncidentUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddSituationIDs(ids...)
 }
 
 // AddImpactIDs adds the "impacts" edge to the IncidentImpact entity by IDs.
@@ -554,6 +554,27 @@ func (_u *IncidentUpdate) RemoveLinkedIncidents(v ...*Incident) *IncidentUpdate 
 	return _u.RemoveLinkedIncidentIDs(ids...)
 }
 
+// ClearSituations clears all "situations" edges to the Situation entity.
+func (_u *IncidentUpdate) ClearSituations() *IncidentUpdate {
+	_u.mutation.ClearSituations()
+	return _u
+}
+
+// RemoveSituationIDs removes the "situations" edge to Situation entities by IDs.
+func (_u *IncidentUpdate) RemoveSituationIDs(ids ...uuid.UUID) *IncidentUpdate {
+	_u.mutation.RemoveSituationIDs(ids...)
+	return _u
+}
+
+// RemoveSituations removes "situations" edges to Situation entities.
+func (_u *IncidentUpdate) RemoveSituations(v ...*Situation) *IncidentUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveSituationIDs(ids...)
+}
+
 // ClearFieldSelections clears all "field_selections" edges to the IncidentFieldOption entity.
 func (_u *IncidentUpdate) ClearFieldSelections() *IncidentUpdate {
 	_u.mutation.ClearFieldSelections()
@@ -615,27 +636,6 @@ func (_u *IncidentUpdate) RemoveTagAssignments(v ...*IncidentTag) *IncidentUpdat
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveTagAssignmentIDs(ids...)
-}
-
-// ClearSituations clears all "situations" edges to the Situation entity.
-func (_u *IncidentUpdate) ClearSituations() *IncidentUpdate {
-	_u.mutation.ClearSituations()
-	return _u
-}
-
-// RemoveSituationIDs removes the "situations" edge to Situation entities by IDs.
-func (_u *IncidentUpdate) RemoveSituationIDs(ids ...uuid.UUID) *IncidentUpdate {
-	_u.mutation.RemoveSituationIDs(ids...)
-	return _u
-}
-
-// RemoveSituations removes "situations" edges to Situation entities.
-func (_u *IncidentUpdate) RemoveSituations(v ...*Situation) *IncidentUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveSituationIDs(ids...)
 }
 
 // ClearImpacts clears all "impacts" edges to the IncidentImpact entity.
@@ -1202,6 +1202,54 @@ func (_u *IncidentUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.SituationsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   incident.SituationsTable,
+			Columns: incident.SituationsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(situation.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.IncidentSituations
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedSituationsIDs(); len(nodes) > 0 && !_u.mutation.SituationsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   incident.SituationsTable,
+			Columns: incident.SituationsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(situation.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.IncidentSituations
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.SituationsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   incident.SituationsTable,
+			Columns: incident.SituationsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(situation.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.IncidentSituations
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _u.mutation.FieldSelectionsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
@@ -1341,54 +1389,6 @@ func (_u *IncidentUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			},
 		}
 		edge.Schema = _u.schemaConfig.IncidentTagAssignments
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.SituationsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   incident.SituationsTable,
-			Columns: incident.SituationsPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(situation.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.IncidentSituations
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedSituationsIDs(); len(nodes) > 0 && !_u.mutation.SituationsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   incident.SituationsTable,
-			Columns: incident.SituationsPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(situation.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.IncidentSituations
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.SituationsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   incident.SituationsTable,
-			Columns: incident.SituationsPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(situation.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.IncidentSituations
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -1950,6 +1950,21 @@ func (_u *IncidentUpdateOne) AddLinkedIncidents(v ...*Incident) *IncidentUpdateO
 	return _u.AddLinkedIncidentIDs(ids...)
 }
 
+// AddSituationIDs adds the "situations" edge to the Situation entity by IDs.
+func (_u *IncidentUpdateOne) AddSituationIDs(ids ...uuid.UUID) *IncidentUpdateOne {
+	_u.mutation.AddSituationIDs(ids...)
+	return _u
+}
+
+// AddSituations adds the "situations" edges to the Situation entity.
+func (_u *IncidentUpdateOne) AddSituations(v ...*Situation) *IncidentUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddSituationIDs(ids...)
+}
+
 // AddFieldSelectionIDs adds the "field_selections" edge to the IncidentFieldOption entity by IDs.
 func (_u *IncidentUpdateOne) AddFieldSelectionIDs(ids ...uuid.UUID) *IncidentUpdateOne {
 	_u.mutation.AddFieldSelectionIDs(ids...)
@@ -1993,21 +2008,6 @@ func (_u *IncidentUpdateOne) AddTagAssignments(v ...*IncidentTag) *IncidentUpdat
 		ids[i] = v[i].ID
 	}
 	return _u.AddTagAssignmentIDs(ids...)
-}
-
-// AddSituationIDs adds the "situations" edge to the Situation entity by IDs.
-func (_u *IncidentUpdateOne) AddSituationIDs(ids ...uuid.UUID) *IncidentUpdateOne {
-	_u.mutation.AddSituationIDs(ids...)
-	return _u
-}
-
-// AddSituations adds the "situations" edges to the Situation entity.
-func (_u *IncidentUpdateOne) AddSituations(v ...*Situation) *IncidentUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddSituationIDs(ids...)
 }
 
 // AddImpactIDs adds the "impacts" edge to the IncidentImpact entity by IDs.
@@ -2213,6 +2213,27 @@ func (_u *IncidentUpdateOne) RemoveLinkedIncidents(v ...*Incident) *IncidentUpda
 	return _u.RemoveLinkedIncidentIDs(ids...)
 }
 
+// ClearSituations clears all "situations" edges to the Situation entity.
+func (_u *IncidentUpdateOne) ClearSituations() *IncidentUpdateOne {
+	_u.mutation.ClearSituations()
+	return _u
+}
+
+// RemoveSituationIDs removes the "situations" edge to Situation entities by IDs.
+func (_u *IncidentUpdateOne) RemoveSituationIDs(ids ...uuid.UUID) *IncidentUpdateOne {
+	_u.mutation.RemoveSituationIDs(ids...)
+	return _u
+}
+
+// RemoveSituations removes "situations" edges to Situation entities.
+func (_u *IncidentUpdateOne) RemoveSituations(v ...*Situation) *IncidentUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveSituationIDs(ids...)
+}
+
 // ClearFieldSelections clears all "field_selections" edges to the IncidentFieldOption entity.
 func (_u *IncidentUpdateOne) ClearFieldSelections() *IncidentUpdateOne {
 	_u.mutation.ClearFieldSelections()
@@ -2274,27 +2295,6 @@ func (_u *IncidentUpdateOne) RemoveTagAssignments(v ...*IncidentTag) *IncidentUp
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveTagAssignmentIDs(ids...)
-}
-
-// ClearSituations clears all "situations" edges to the Situation entity.
-func (_u *IncidentUpdateOne) ClearSituations() *IncidentUpdateOne {
-	_u.mutation.ClearSituations()
-	return _u
-}
-
-// RemoveSituationIDs removes the "situations" edge to Situation entities by IDs.
-func (_u *IncidentUpdateOne) RemoveSituationIDs(ids ...uuid.UUID) *IncidentUpdateOne {
-	_u.mutation.RemoveSituationIDs(ids...)
-	return _u
-}
-
-// RemoveSituations removes "situations" edges to Situation entities.
-func (_u *IncidentUpdateOne) RemoveSituations(v ...*Situation) *IncidentUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveSituationIDs(ids...)
 }
 
 // ClearImpacts clears all "impacts" edges to the IncidentImpact entity.
@@ -2891,6 +2891,54 @@ func (_u *IncidentUpdateOne) sqlSave(ctx context.Context) (_node *Incident, err 
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.SituationsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   incident.SituationsTable,
+			Columns: incident.SituationsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(situation.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.IncidentSituations
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedSituationsIDs(); len(nodes) > 0 && !_u.mutation.SituationsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   incident.SituationsTable,
+			Columns: incident.SituationsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(situation.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.IncidentSituations
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.SituationsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   incident.SituationsTable,
+			Columns: incident.SituationsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(situation.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.IncidentSituations
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _u.mutation.FieldSelectionsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
@@ -3030,54 +3078,6 @@ func (_u *IncidentUpdateOne) sqlSave(ctx context.Context) (_node *Incident, err 
 			},
 		}
 		edge.Schema = _u.schemaConfig.IncidentTagAssignments
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.SituationsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   incident.SituationsTable,
-			Columns: incident.SituationsPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(situation.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.IncidentSituations
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedSituationsIDs(); len(nodes) > 0 && !_u.mutation.SituationsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   incident.SituationsTable,
-			Columns: incident.SituationsPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(situation.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.IncidentSituations
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.SituationsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   incident.SituationsTable,
-			Columns: incident.SituationsPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(situation.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.IncidentSituations
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

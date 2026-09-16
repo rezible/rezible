@@ -41,7 +41,7 @@ func (AgentSession) Edges() []ent.Edge {
 		edge.To("messages", AgentMessage.Type),
 		edge.To("artifacts", AgentArtifact.Type),
 		edge.To("bindings", AgentSessionBinding.Type),
-		edge.To("situation_investigation", SituationInvestigation.Type).Unique(),
+		edge.To("investigation", Investigation.Type).Unique(),
 	}
 }
 
@@ -128,7 +128,8 @@ func (AgentTurn) Fields() []ent.Field {
 		field.UUID("input_message_id", uuid.UUID{}).
 			Optional().
 			Nillable(),
-		field.Enum("status").Values("queued", "running", "completed", "failed", "aborted"),
+		field.Enum("status").
+			Values("queued", "running", "completed", "failed", "aborted"),
 		field.Time("started_at").Optional().Nillable(),
 		field.Time("finished_at").Optional().Nillable(),
 		field.String("finish_reason").Default(""),
@@ -151,7 +152,6 @@ func (AgentTurn) Edges() []ent.Edge {
 
 		edge.To("messages", AgentMessage.Type),
 		edge.To("artifacts", AgentArtifact.Type),
-		edge.From("situation_hazard_assessments", SituationHazardAssessment.Type).Ref("agent_turn"),
 	}
 }
 

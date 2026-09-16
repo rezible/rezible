@@ -580,12 +580,12 @@ func HasKnowledgeEntityWith(preds ...predicate.KnowledgeEntity) predicate.Situat
 	})
 }
 
-// HasInvestigations applies the HasEdge predicate on the "investigations" edge.
-func HasInvestigations() predicate.Situation {
+// HasInvestigation applies the HasEdge predicate on the "investigation" edge.
+func HasInvestigation() predicate.Situation {
 	return predicate.Situation(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, InvestigationsTable, InvestigationsColumn),
+			sqlgraph.Edge(sqlgraph.O2O, false, InvestigationTable, InvestigationColumn),
 		)
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.SituationInvestigation
@@ -594,10 +594,10 @@ func HasInvestigations() predicate.Situation {
 	})
 }
 
-// HasInvestigationsWith applies the HasEdge predicate on the "investigations" edge with a given conditions (other predicates).
-func HasInvestigationsWith(preds ...predicate.SituationInvestigation) predicate.Situation {
+// HasInvestigationWith applies the HasEdge predicate on the "investigation" edge with a given conditions (other predicates).
+func HasInvestigationWith(preds ...predicate.SituationInvestigation) predicate.Situation {
 	return predicate.Situation(func(s *sql.Selector) {
-		step := newInvestigationsStep()
+		step := newInvestigationStep()
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.SituationInvestigation
 		step.Edge.Schema = schemaConfig.SituationInvestigation
@@ -614,7 +614,7 @@ func HasHazardAssessments() predicate.Situation {
 	return predicate.Situation(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, HazardAssessmentsTable, HazardAssessmentsColumn),
+			sqlgraph.Edge(sqlgraph.O2M, true, HazardAssessmentsTable, HazardAssessmentsColumn),
 		)
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.SituationHazardAssessment

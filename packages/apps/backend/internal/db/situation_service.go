@@ -9,7 +9,6 @@ import (
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	ale "github.com/rezible/rezible/ent/alertepisode"
 	kne "github.com/rezible/rezible/ent/knowledgeentity"
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/situation"
@@ -27,14 +26,14 @@ const (
 )
 
 type SituationService struct {
-	db        rez.Database
-	jobs      rez.JobService
-	agents    rez.AgentSessionService
-	knowledge rez.KnowledgeGraphService
+	db             rez.Database
+	jobs           rez.JobService
+	knowledge      rez.KnowledgeGraphService
+	investigations rez.InvestigationService
 }
 
-func NewSituationService(db rez.Database, jobs rez.JobService, agents rez.AgentSessionService, knowledge rez.KnowledgeGraphService) (*SituationService, error) {
-	s := &SituationService{db: db, agents: agents, jobs: jobs, knowledge: knowledge}
+func NewSituationService(db rez.Database, jobs rez.JobService, knowledge rez.KnowledgeGraphService, investigations rez.InvestigationService) (*SituationService, error) {
+	s := &SituationService{db: db, jobs: jobs, knowledge: knowledge, investigations: investigations}
 
 	return s, nil
 }
@@ -48,9 +47,7 @@ func (s *SituationService) MessageHandlers() []rez.MessageEventHandler {
 func (s *SituationService) ListSituations(ctx context.Context, params rez.ListSituationsParams) (*ent.ListResult[ent.Situation], error) {
 	query := s.db.Client(ctx).Situation.Query().
 		WithKnowledgeEntity().
-		WithInvestigations(func(q *ent.SituationInvestigationQuery) {
-
-		}).
+		WithInvestigation().
 		WithObservationGroups(func(q *ent.SituationObservationGroupQuery) {
 			q.Order(sog.ByID())
 		}).
@@ -58,9 +55,9 @@ func (s *SituationService) ListSituations(ctx context.Context, params rez.ListSi
 	if search := strings.TrimSpace(params.Search); search != "" {
 		query = query.Where(situation.TitleContainsFold(search))
 	}
-	if params.HasInvestigations != nil {
-		pred := situation.HasInvestigations()
-		if !*params.HasInvestigations {
+	if params.HasInvestigation != nil {
+		pred := situation.HasInvestigation()
+		if !*params.HasInvestigation {
 			pred = situation.Not(pred)
 		}
 		query = query.Where(pred)
@@ -82,12 +79,8 @@ func (s *SituationService) GetSituation(ctx context.Context, id uuid.UUID) (*ent
 	return s.db.Client(ctx).Situation.Query().
 		Where(situation.ID(id)).
 		WithKnowledgeEntity().
-		WithInvestigations(func(q *ent.SituationInvestigationQuery) { q.WithAgentSession() }).
-		WithObservationGroups(func(q *ent.SituationObservationGroupQuery) {
-			q.WithEvents().WithAlertEpisodes(func(eq *ent.AlertEpisodeQuery) {
-				eq.WithAlertDefinition().Order(ale.ByStartedAt(), ale.ByID())
-			}).Order(sog.ByID())
-		}).
+		WithInvestigation().
+		WithObservationGroups().
 		WithIncidents().
 		Only(ctx)
 }
@@ -132,14 +125,15 @@ func (s *SituationService) CreateSituation(ctx context.Context, params rez.Creat
 			if groupTitle == "" {
 				return fmt.Errorf("observation group title is required")
 			}
-			createGroup := tx.SituationObservationGroup.Create().SetSituationID(created.ID).
-				SetTitle(groupTitle).AddEventIDs(groupParams.NormalizedEventIDs...).
-				AddAlertEpisodeIDs(groupParams.AlertEpisodeIDs...)
-			if groupParams.Body != nil {
-				createGroup.SetBody(*groupParams.Body)
-			}
-			if _, groupErr := createGroup.Save(ctx); groupErr != nil {
-				return fmt.Errorf("create observation group: %w", groupErr)
+
+			createGroup := tx.SituationObservationGroup.Create().
+				SetSituationID(created.ID).
+				SetTitle(groupTitle).
+				AddEventIDs(groupParams.NormalizedEventIDs...).
+				AddAlertEpisodeIDs(groupParams.AlertEpisodeIDs...).
+				SetNillableBody(groupParams.Body)
+			if saveGroupErr := createGroup.Exec(ctx); saveGroupErr != nil {
+				return fmt.Errorf("create observation group: %w", saveGroupErr)
 			}
 		}
 
@@ -161,40 +155,37 @@ func (s *SituationService) resolveSituationKnowledgeEntityId(ctx context.Context
 	return *alias.EntityID, nil
 }
 
-func (s *SituationService) CloseSituation(ctx context.Context, params rez.CloseSituationParams) (*ent.Situation, error) {
-	if params.SituationID == uuid.Nil {
-		return nil, fmt.Errorf("%w: situation id is required", rez.ErrInvalidInput)
+func (s *SituationService) CloseSituation(ctx context.Context, id uuid.UUID, reason situation.CloseReason) error {
+	if id == uuid.Nil {
+		return fmt.Errorf("%w: situation id is required", rez.ErrInvalidInput)
 	}
-	if !(params.Reason == situation.CloseReasonStabilized || params.Reason == situation.CloseReasonDismissed) {
-		return nil, fmt.Errorf("%w: invalid situation close reason", rez.ErrInvalidInput)
+	if !(reason == situation.CloseReasonStabilized || reason == situation.CloseReasonDismissed) {
+		return fmt.Errorf("%w: invalid situation close reason", rez.ErrInvalidInput)
 	}
 
-	var closed *ent.Situation
-	return closed, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
-		if lockErr := s.db.AcquireTxLocks(ctx, situationLockNamespace, params.SituationID.String()); lockErr != nil {
+	return s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+		if lockErr := s.db.AcquireTxLocks(ctx, situationLockNamespace, id.String()); lockErr != nil {
 			return fmt.Errorf("lock situation: %w", lockErr)
 		}
 
-		current, queryErr := tx.Situation.Get(ctx, params.SituationID)
+		current, queryErr := tx.Situation.Get(ctx, id)
 		if queryErr != nil {
 			return fmt.Errorf("get situation: %w", queryErr)
 		}
 		if current.ClosedAt != nil {
-			if current.CloseReason != nil && *current.CloseReason == params.Reason {
-				closed = current.Unwrap()
+			if current.CloseReason != nil && *current.CloseReason == reason {
 				return nil
 			}
 			return fmt.Errorf("%w: situation is already closed with another reason", rez.ErrConflict)
 		}
 
-		update := tx.Situation.UpdateOneID(params.SituationID).
-			SetCloseReason(params.Reason).
+		update := current.Update().
+			SetCloseReason(reason).
 			SetClosedAt(time.Now().UTC())
-		updated, updateErr := update.Save(ctx)
-		if updateErr != nil {
+		if updateErr := update.Exec(ctx); updateErr != nil {
 			return fmt.Errorf("close situation: %w", updateErr)
 		}
-		closed = updated.Unwrap()
+
 		return nil
 	})
 }
@@ -221,8 +212,10 @@ func (s *SituationService) NotifySituationObservationGroupUpdated(ctx context.Co
 		if queryErr != nil {
 			return fmt.Errorf("query investigations: %w", queryErr)
 		}
-		if reconcileErr := s.requestReconcileInvestigations(ctx, investigationIDs...); reconcileErr != nil {
-			return fmt.Errorf("request reconcile investigations: %w", reconcileErr)
+		for _, investigationID := range investigationIDs {
+			if reconcileErr := s.requestBumpSituationInvestigation(ctx, investigationID); reconcileErr != nil {
+				return fmt.Errorf("request reconcile investigation: %w", reconcileErr)
+			}
 		}
 		return nil
 	})

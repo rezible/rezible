@@ -48,6 +48,10 @@ import (
 	"github.com/rezible/rezible/ent/integrationeventsynccursor"
 	"github.com/rezible/rezible/ent/integrationeventsyncrun"
 	"github.com/rezible/rezible/ent/integrationuserinstallstate"
+	"github.com/rezible/rezible/ent/investigation"
+	"github.com/rezible/rezible/ent/investigationfinding"
+	"github.com/rezible/rezible/ent/investigationhypothesis"
+	"github.com/rezible/rezible/ent/investigationreport"
 	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/knowledgeentitylinkingattribute"
 	"github.com/rezible/rezible/ent/knowledgeevidence"
@@ -137,6 +141,10 @@ const (
 	TypeIntegrationEventSyncCursor      = "IntegrationEventSyncCursor"
 	TypeIntegrationEventSyncRun         = "IntegrationEventSyncRun"
 	TypeIntegrationUserInstallState     = "IntegrationUserInstallState"
+	TypeInvestigation                   = "Investigation"
+	TypeInvestigationFinding            = "InvestigationFinding"
+	TypeInvestigationHypothesis         = "InvestigationHypothesis"
+	TypeInvestigationReport             = "InvestigationReport"
 	TypeKnowledgeEntity                 = "KnowledgeEntity"
 	TypeKnowledgeEntityLinkingAttribute = "KnowledgeEntityLinkingAttribute"
 	TypeKnowledgeEvidence               = "KnowledgeEvidence"
@@ -2111,36 +2119,36 @@ func (m *AgentMessageMutation) ResetEdge(name string) error {
 // AgentSessionMutation represents an operation that mutates the AgentSession nodes in the graph.
 type AgentSessionMutation struct {
 	config
-	op                             Op
-	typ                            string
-	id                             *uuid.UUID
-	created_at                     *time.Time
-	updated_at                     *time.Time
-	agent_name                     *string
-	scopes                         *[]string
-	appendscopes                   []string
-	input                          *[]byte
-	metadata                       *map[string]interface{}
-	clearedFields                  map[string]struct{}
-	tenant                         *int
-	clearedtenant                  bool
-	turns                          map[uuid.UUID]struct{}
-	removedturns                   map[uuid.UUID]struct{}
-	clearedturns                   bool
-	messages                       map[uuid.UUID]struct{}
-	removedmessages                map[uuid.UUID]struct{}
-	clearedmessages                bool
-	artifacts                      map[uuid.UUID]struct{}
-	removedartifacts               map[uuid.UUID]struct{}
-	clearedartifacts               bool
-	bindings                       map[uuid.UUID]struct{}
-	removedbindings                map[uuid.UUID]struct{}
-	clearedbindings                bool
-	situation_investigation        *uuid.UUID
-	clearedsituation_investigation bool
-	done                           bool
-	oldValue                       func(context.Context) (*AgentSession, error)
-	predicates                     []predicate.AgentSession
+	op                   Op
+	typ                  string
+	id                   *uuid.UUID
+	created_at           *time.Time
+	updated_at           *time.Time
+	agent_name           *string
+	scopes               *[]string
+	appendscopes         []string
+	input                *[]byte
+	metadata             *map[string]interface{}
+	clearedFields        map[string]struct{}
+	tenant               *int
+	clearedtenant        bool
+	turns                map[uuid.UUID]struct{}
+	removedturns         map[uuid.UUID]struct{}
+	clearedturns         bool
+	messages             map[uuid.UUID]struct{}
+	removedmessages      map[uuid.UUID]struct{}
+	clearedmessages      bool
+	artifacts            map[uuid.UUID]struct{}
+	removedartifacts     map[uuid.UUID]struct{}
+	clearedartifacts     bool
+	bindings             map[uuid.UUID]struct{}
+	removedbindings      map[uuid.UUID]struct{}
+	clearedbindings      bool
+	investigation        *uuid.UUID
+	clearedinvestigation bool
+	done                 bool
+	oldValue             func(context.Context) (*AgentSession, error)
+	predicates           []predicate.AgentSession
 }
 
 var _ ent.Mutation = (*AgentSessionMutation)(nil)
@@ -2770,43 +2778,43 @@ func (m *AgentSessionMutation) ResetBindings() {
 	m.removedbindings = nil
 }
 
-// SetSituationInvestigationID sets the "situation_investigation" edge to the SituationInvestigation entity by id.
-func (m *AgentSessionMutation) SetSituationInvestigationID(id uuid.UUID) {
-	m.situation_investigation = &id
+// SetInvestigationID sets the "investigation" edge to the Investigation entity by id.
+func (m *AgentSessionMutation) SetInvestigationID(id uuid.UUID) {
+	m.investigation = &id
 }
 
-// ClearSituationInvestigation clears the "situation_investigation" edge to the SituationInvestigation entity.
-func (m *AgentSessionMutation) ClearSituationInvestigation() {
-	m.clearedsituation_investigation = true
+// ClearInvestigation clears the "investigation" edge to the Investigation entity.
+func (m *AgentSessionMutation) ClearInvestigation() {
+	m.clearedinvestigation = true
 }
 
-// SituationInvestigationCleared reports if the "situation_investigation" edge to the SituationInvestigation entity was cleared.
-func (m *AgentSessionMutation) SituationInvestigationCleared() bool {
-	return m.clearedsituation_investigation
+// InvestigationCleared reports if the "investigation" edge to the Investigation entity was cleared.
+func (m *AgentSessionMutation) InvestigationCleared() bool {
+	return m.clearedinvestigation
 }
 
-// SituationInvestigationID returns the "situation_investigation" edge ID in the mutation.
-func (m *AgentSessionMutation) SituationInvestigationID() (id uuid.UUID, exists bool) {
-	if m.situation_investigation != nil {
-		return *m.situation_investigation, true
+// InvestigationID returns the "investigation" edge ID in the mutation.
+func (m *AgentSessionMutation) InvestigationID() (id uuid.UUID, exists bool) {
+	if m.investigation != nil {
+		return *m.investigation, true
 	}
 	return
 }
 
-// SituationInvestigationIDs returns the "situation_investigation" edge IDs in the mutation.
+// InvestigationIDs returns the "investigation" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// SituationInvestigationID instead. It exists only for internal usage by the builders.
-func (m *AgentSessionMutation) SituationInvestigationIDs() (ids []uuid.UUID) {
-	if id := m.situation_investigation; id != nil {
+// InvestigationID instead. It exists only for internal usage by the builders.
+func (m *AgentSessionMutation) InvestigationIDs() (ids []uuid.UUID) {
+	if id := m.investigation; id != nil {
 		ids = append(ids, *id)
 	}
 	return
 }
 
-// ResetSituationInvestigation resets all changes to the "situation_investigation" edge.
-func (m *AgentSessionMutation) ResetSituationInvestigation() {
-	m.situation_investigation = nil
-	m.clearedsituation_investigation = false
+// ResetInvestigation resets all changes to the "investigation" edge.
+func (m *AgentSessionMutation) ResetInvestigation() {
+	m.investigation = nil
+	m.clearedinvestigation = false
 }
 
 // Where appends a list predicates to the AgentSessionMutation builder.
@@ -3072,8 +3080,8 @@ func (m *AgentSessionMutation) AddedEdges() []string {
 	if m.bindings != nil {
 		edges = append(edges, agentsession.EdgeBindings)
 	}
-	if m.situation_investigation != nil {
-		edges = append(edges, agentsession.EdgeSituationInvestigation)
+	if m.investigation != nil {
+		edges = append(edges, agentsession.EdgeInvestigation)
 	}
 	return edges
 }
@@ -3110,8 +3118,8 @@ func (m *AgentSessionMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case agentsession.EdgeSituationInvestigation:
-		if id := m.situation_investigation; id != nil {
+	case agentsession.EdgeInvestigation:
+		if id := m.investigation; id != nil {
 			return []ent.Value{*id}
 		}
 	}
@@ -3186,8 +3194,8 @@ func (m *AgentSessionMutation) ClearedEdges() []string {
 	if m.clearedbindings {
 		edges = append(edges, agentsession.EdgeBindings)
 	}
-	if m.clearedsituation_investigation {
-		edges = append(edges, agentsession.EdgeSituationInvestigation)
+	if m.clearedinvestigation {
+		edges = append(edges, agentsession.EdgeInvestigation)
 	}
 	return edges
 }
@@ -3206,8 +3214,8 @@ func (m *AgentSessionMutation) EdgeCleared(name string) bool {
 		return m.clearedartifacts
 	case agentsession.EdgeBindings:
 		return m.clearedbindings
-	case agentsession.EdgeSituationInvestigation:
-		return m.clearedsituation_investigation
+	case agentsession.EdgeInvestigation:
+		return m.clearedinvestigation
 	}
 	return false
 }
@@ -3219,8 +3227,8 @@ func (m *AgentSessionMutation) ClearEdge(name string) error {
 	case agentsession.EdgeTenant:
 		m.ClearTenant()
 		return nil
-	case agentsession.EdgeSituationInvestigation:
-		m.ClearSituationInvestigation()
+	case agentsession.EdgeInvestigation:
+		m.ClearInvestigation()
 		return nil
 	}
 	return fmt.Errorf("unknown AgentSession unique edge %s", name)
@@ -3245,8 +3253,8 @@ func (m *AgentSessionMutation) ResetEdge(name string) error {
 	case agentsession.EdgeBindings:
 		m.ResetBindings()
 		return nil
-	case agentsession.EdgeSituationInvestigation:
-		m.ResetSituationInvestigation()
+	case agentsession.EdgeInvestigation:
+		m.ResetInvestigation()
 		return nil
 	}
 	return fmt.Errorf("unknown AgentSession edge %s", name)
@@ -4282,40 +4290,37 @@ func (m *AgentSessionBindingMutation) ResetEdge(name string) error {
 // AgentTurnMutation represents an operation that mutates the AgentTurn nodes in the graph.
 type AgentTurnMutation struct {
 	config
-	op                                  Op
-	typ                                 string
-	id                                  *uuid.UUID
-	created_at                          *time.Time
-	updated_at                          *time.Time
-	sequence                            *int
-	addsequence                         *int
-	river_job_id                        *int64
-	addriver_job_id                     *int64
-	input_tool_resume                   **exp.ToolResume
-	status                              *agentturn.Status
-	started_at                          *time.Time
-	finished_at                         *time.Time
-	finish_reason                       *string
-	error                               *string
-	clearedFields                       map[string]struct{}
-	tenant                              *int
-	clearedtenant                       bool
-	agent_session                       *uuid.UUID
-	clearedagent_session                bool
-	input_message                       *uuid.UUID
-	clearedinput_message                bool
-	messages                            map[uuid.UUID]struct{}
-	removedmessages                     map[uuid.UUID]struct{}
-	clearedmessages                     bool
-	artifacts                           map[uuid.UUID]struct{}
-	removedartifacts                    map[uuid.UUID]struct{}
-	clearedartifacts                    bool
-	situation_hazard_assessments        map[uuid.UUID]struct{}
-	removedsituation_hazard_assessments map[uuid.UUID]struct{}
-	clearedsituation_hazard_assessments bool
-	done                                bool
-	oldValue                            func(context.Context) (*AgentTurn, error)
-	predicates                          []predicate.AgentTurn
+	op                   Op
+	typ                  string
+	id                   *uuid.UUID
+	created_at           *time.Time
+	updated_at           *time.Time
+	sequence             *int
+	addsequence          *int
+	river_job_id         *int64
+	addriver_job_id      *int64
+	input_tool_resume    **exp.ToolResume
+	status               *agentturn.Status
+	started_at           *time.Time
+	finished_at          *time.Time
+	finish_reason        *string
+	error                *string
+	clearedFields        map[string]struct{}
+	tenant               *int
+	clearedtenant        bool
+	agent_session        *uuid.UUID
+	clearedagent_session bool
+	input_message        *uuid.UUID
+	clearedinput_message bool
+	messages             map[uuid.UUID]struct{}
+	removedmessages      map[uuid.UUID]struct{}
+	clearedmessages      bool
+	artifacts            map[uuid.UUID]struct{}
+	removedartifacts     map[uuid.UUID]struct{}
+	clearedartifacts     bool
+	done                 bool
+	oldValue             func(context.Context) (*AgentTurn, error)
+	predicates           []predicate.AgentTurn
 }
 
 var _ ent.Mutation = (*AgentTurnMutation)(nil)
@@ -5184,60 +5189,6 @@ func (m *AgentTurnMutation) ResetArtifacts() {
 	m.removedartifacts = nil
 }
 
-// AddSituationHazardAssessmentIDs adds the "situation_hazard_assessments" edge to the SituationHazardAssessment entity by ids.
-func (m *AgentTurnMutation) AddSituationHazardAssessmentIDs(ids ...uuid.UUID) {
-	if m.situation_hazard_assessments == nil {
-		m.situation_hazard_assessments = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.situation_hazard_assessments[ids[i]] = struct{}{}
-	}
-}
-
-// ClearSituationHazardAssessments clears the "situation_hazard_assessments" edge to the SituationHazardAssessment entity.
-func (m *AgentTurnMutation) ClearSituationHazardAssessments() {
-	m.clearedsituation_hazard_assessments = true
-}
-
-// SituationHazardAssessmentsCleared reports if the "situation_hazard_assessments" edge to the SituationHazardAssessment entity was cleared.
-func (m *AgentTurnMutation) SituationHazardAssessmentsCleared() bool {
-	return m.clearedsituation_hazard_assessments
-}
-
-// RemoveSituationHazardAssessmentIDs removes the "situation_hazard_assessments" edge to the SituationHazardAssessment entity by IDs.
-func (m *AgentTurnMutation) RemoveSituationHazardAssessmentIDs(ids ...uuid.UUID) {
-	if m.removedsituation_hazard_assessments == nil {
-		m.removedsituation_hazard_assessments = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.situation_hazard_assessments, ids[i])
-		m.removedsituation_hazard_assessments[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedSituationHazardAssessments returns the removed IDs of the "situation_hazard_assessments" edge to the SituationHazardAssessment entity.
-func (m *AgentTurnMutation) RemovedSituationHazardAssessmentsIDs() (ids []uuid.UUID) {
-	for id := range m.removedsituation_hazard_assessments {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// SituationHazardAssessmentsIDs returns the "situation_hazard_assessments" edge IDs in the mutation.
-func (m *AgentTurnMutation) SituationHazardAssessmentsIDs() (ids []uuid.UUID) {
-	for id := range m.situation_hazard_assessments {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetSituationHazardAssessments resets all changes to the "situation_hazard_assessments" edge.
-func (m *AgentTurnMutation) ResetSituationHazardAssessments() {
-	m.situation_hazard_assessments = nil
-	m.clearedsituation_hazard_assessments = false
-	m.removedsituation_hazard_assessments = nil
-}
-
 // Where appends a list predicates to the AgentTurnMutation builder.
 func (m *AgentTurnMutation) Where(ps ...predicate.AgentTurn) {
 	m.predicates = append(m.predicates, ps...)
@@ -5635,7 +5586,7 @@ func (m *AgentTurnMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *AgentTurnMutation) AddedEdges() []string {
-	edges := make([]string, 0, 6)
+	edges := make([]string, 0, 5)
 	if m.tenant != nil {
 		edges = append(edges, agentturn.EdgeTenant)
 	}
@@ -5650,9 +5601,6 @@ func (m *AgentTurnMutation) AddedEdges() []string {
 	}
 	if m.artifacts != nil {
 		edges = append(edges, agentturn.EdgeArtifacts)
-	}
-	if m.situation_hazard_assessments != nil {
-		edges = append(edges, agentturn.EdgeSituationHazardAssessments)
 	}
 	return edges
 }
@@ -5685,27 +5633,18 @@ func (m *AgentTurnMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case agentturn.EdgeSituationHazardAssessments:
-		ids := make([]ent.Value, 0, len(m.situation_hazard_assessments))
-		for id := range m.situation_hazard_assessments {
-			ids = append(ids, id)
-		}
-		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *AgentTurnMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 6)
+	edges := make([]string, 0, 5)
 	if m.removedmessages != nil {
 		edges = append(edges, agentturn.EdgeMessages)
 	}
 	if m.removedartifacts != nil {
 		edges = append(edges, agentturn.EdgeArtifacts)
-	}
-	if m.removedsituation_hazard_assessments != nil {
-		edges = append(edges, agentturn.EdgeSituationHazardAssessments)
 	}
 	return edges
 }
@@ -5726,19 +5665,13 @@ func (m *AgentTurnMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case agentturn.EdgeSituationHazardAssessments:
-		ids := make([]ent.Value, 0, len(m.removedsituation_hazard_assessments))
-		for id := range m.removedsituation_hazard_assessments {
-			ids = append(ids, id)
-		}
-		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *AgentTurnMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 6)
+	edges := make([]string, 0, 5)
 	if m.clearedtenant {
 		edges = append(edges, agentturn.EdgeTenant)
 	}
@@ -5753,9 +5686,6 @@ func (m *AgentTurnMutation) ClearedEdges() []string {
 	}
 	if m.clearedartifacts {
 		edges = append(edges, agentturn.EdgeArtifacts)
-	}
-	if m.clearedsituation_hazard_assessments {
-		edges = append(edges, agentturn.EdgeSituationHazardAssessments)
 	}
 	return edges
 }
@@ -5774,8 +5704,6 @@ func (m *AgentTurnMutation) EdgeCleared(name string) bool {
 		return m.clearedmessages
 	case agentturn.EdgeArtifacts:
 		return m.clearedartifacts
-	case agentturn.EdgeSituationHazardAssessments:
-		return m.clearedsituation_hazard_assessments
 	}
 	return false
 }
@@ -5815,9 +5743,6 @@ func (m *AgentTurnMutation) ResetEdge(name string) error {
 		return nil
 	case agentturn.EdgeArtifacts:
 		m.ResetArtifacts()
-		return nil
-	case agentturn.EdgeSituationHazardAssessments:
-		m.ResetSituationHazardAssessments()
 		return nil
 	}
 	return fmt.Errorf("unknown AgentTurn edge %s", name)
@@ -14218,6 +14143,9 @@ type IncidentMutation struct {
 	linked_incidents         map[uuid.UUID]struct{}
 	removedlinked_incidents  map[uuid.UUID]struct{}
 	clearedlinked_incidents  bool
+	situations               map[uuid.UUID]struct{}
+	removedsituations        map[uuid.UUID]struct{}
+	clearedsituations        bool
 	field_selections         map[uuid.UUID]struct{}
 	removedfield_selections  map[uuid.UUID]struct{}
 	clearedfield_selections  bool
@@ -14227,9 +14155,6 @@ type IncidentMutation struct {
 	tag_assignments          map[uuid.UUID]struct{}
 	removedtag_assignments   map[uuid.UUID]struct{}
 	clearedtag_assignments   bool
-	situations               map[uuid.UUID]struct{}
-	removedsituations        map[uuid.UUID]struct{}
-	clearedsituations        bool
 	impacts                  map[uuid.UUID]struct{}
 	removedimpacts           map[uuid.UUID]struct{}
 	clearedimpacts           bool
@@ -15155,6 +15080,60 @@ func (m *IncidentMutation) ResetLinkedIncidents() {
 	m.removedlinked_incidents = nil
 }
 
+// AddSituationIDs adds the "situations" edge to the Situation entity by ids.
+func (m *IncidentMutation) AddSituationIDs(ids ...uuid.UUID) {
+	if m.situations == nil {
+		m.situations = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.situations[ids[i]] = struct{}{}
+	}
+}
+
+// ClearSituations clears the "situations" edge to the Situation entity.
+func (m *IncidentMutation) ClearSituations() {
+	m.clearedsituations = true
+}
+
+// SituationsCleared reports if the "situations" edge to the Situation entity was cleared.
+func (m *IncidentMutation) SituationsCleared() bool {
+	return m.clearedsituations
+}
+
+// RemoveSituationIDs removes the "situations" edge to the Situation entity by IDs.
+func (m *IncidentMutation) RemoveSituationIDs(ids ...uuid.UUID) {
+	if m.removedsituations == nil {
+		m.removedsituations = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.situations, ids[i])
+		m.removedsituations[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedSituations returns the removed IDs of the "situations" edge to the Situation entity.
+func (m *IncidentMutation) RemovedSituationsIDs() (ids []uuid.UUID) {
+	for id := range m.removedsituations {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// SituationsIDs returns the "situations" edge IDs in the mutation.
+func (m *IncidentMutation) SituationsIDs() (ids []uuid.UUID) {
+	for id := range m.situations {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetSituations resets all changes to the "situations" edge.
+func (m *IncidentMutation) ResetSituations() {
+	m.situations = nil
+	m.clearedsituations = false
+	m.removedsituations = nil
+}
+
 // AddFieldSelectionIDs adds the "field_selections" edge to the IncidentFieldOption entity by ids.
 func (m *IncidentMutation) AddFieldSelectionIDs(ids ...uuid.UUID) {
 	if m.field_selections == nil {
@@ -15315,60 +15294,6 @@ func (m *IncidentMutation) ResetTagAssignments() {
 	m.tag_assignments = nil
 	m.clearedtag_assignments = false
 	m.removedtag_assignments = nil
-}
-
-// AddSituationIDs adds the "situations" edge to the Situation entity by ids.
-func (m *IncidentMutation) AddSituationIDs(ids ...uuid.UUID) {
-	if m.situations == nil {
-		m.situations = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.situations[ids[i]] = struct{}{}
-	}
-}
-
-// ClearSituations clears the "situations" edge to the Situation entity.
-func (m *IncidentMutation) ClearSituations() {
-	m.clearedsituations = true
-}
-
-// SituationsCleared reports if the "situations" edge to the Situation entity was cleared.
-func (m *IncidentMutation) SituationsCleared() bool {
-	return m.clearedsituations
-}
-
-// RemoveSituationIDs removes the "situations" edge to the Situation entity by IDs.
-func (m *IncidentMutation) RemoveSituationIDs(ids ...uuid.UUID) {
-	if m.removedsituations == nil {
-		m.removedsituations = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.situations, ids[i])
-		m.removedsituations[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedSituations returns the removed IDs of the "situations" edge to the Situation entity.
-func (m *IncidentMutation) RemovedSituationsIDs() (ids []uuid.UUID) {
-	for id := range m.removedsituations {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// SituationsIDs returns the "situations" edge IDs in the mutation.
-func (m *IncidentMutation) SituationsIDs() (ids []uuid.UUID) {
-	for id := range m.situations {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetSituations resets all changes to the "situations" edge.
-func (m *IncidentMutation) ResetSituations() {
-	m.situations = nil
-	m.clearedsituations = false
-	m.removedsituations = nil
 }
 
 // AddImpactIDs adds the "impacts" edge to the IncidentImpact entity by ids.
@@ -16050,6 +15975,9 @@ func (m *IncidentMutation) AddedEdges() []string {
 	if m.linked_incidents != nil {
 		edges = append(edges, incident.EdgeLinkedIncidents)
 	}
+	if m.situations != nil {
+		edges = append(edges, incident.EdgeSituations)
+	}
 	if m.field_selections != nil {
 		edges = append(edges, incident.EdgeFieldSelections)
 	}
@@ -16058,9 +15986,6 @@ func (m *IncidentMutation) AddedEdges() []string {
 	}
 	if m.tag_assignments != nil {
 		edges = append(edges, incident.EdgeTagAssignments)
-	}
-	if m.situations != nil {
-		edges = append(edges, incident.EdgeSituations)
 	}
 	if m.impacts != nil {
 		edges = append(edges, incident.EdgeImpacts)
@@ -16131,6 +16056,12 @@ func (m *IncidentMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case incident.EdgeSituations:
+		ids := make([]ent.Value, 0, len(m.situations))
+		for id := range m.situations {
+			ids = append(ids, id)
+		}
+		return ids
 	case incident.EdgeFieldSelections:
 		ids := make([]ent.Value, 0, len(m.field_selections))
 		for id := range m.field_selections {
@@ -16146,12 +16077,6 @@ func (m *IncidentMutation) AddedIDs(name string) []ent.Value {
 	case incident.EdgeTagAssignments:
 		ids := make([]ent.Value, 0, len(m.tag_assignments))
 		for id := range m.tag_assignments {
-			ids = append(ids, id)
-		}
-		return ids
-	case incident.EdgeSituations:
-		ids := make([]ent.Value, 0, len(m.situations))
-		for id := range m.situations {
 			ids = append(ids, id)
 		}
 		return ids
@@ -16210,6 +16135,9 @@ func (m *IncidentMutation) RemovedEdges() []string {
 	if m.removedlinked_incidents != nil {
 		edges = append(edges, incident.EdgeLinkedIncidents)
 	}
+	if m.removedsituations != nil {
+		edges = append(edges, incident.EdgeSituations)
+	}
 	if m.removedfield_selections != nil {
 		edges = append(edges, incident.EdgeFieldSelections)
 	}
@@ -16218,9 +16146,6 @@ func (m *IncidentMutation) RemovedEdges() []string {
 	}
 	if m.removedtag_assignments != nil {
 		edges = append(edges, incident.EdgeTagAssignments)
-	}
-	if m.removedsituations != nil {
-		edges = append(edges, incident.EdgeSituations)
 	}
 	if m.removedimpacts != nil {
 		edges = append(edges, incident.EdgeImpacts)
@@ -16271,6 +16196,12 @@ func (m *IncidentMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case incident.EdgeSituations:
+		ids := make([]ent.Value, 0, len(m.removedsituations))
+		for id := range m.removedsituations {
+			ids = append(ids, id)
+		}
+		return ids
 	case incident.EdgeFieldSelections:
 		ids := make([]ent.Value, 0, len(m.removedfield_selections))
 		for id := range m.removedfield_selections {
@@ -16286,12 +16217,6 @@ func (m *IncidentMutation) RemovedIDs(name string) []ent.Value {
 	case incident.EdgeTagAssignments:
 		ids := make([]ent.Value, 0, len(m.removedtag_assignments))
 		for id := range m.removedtag_assignments {
-			ids = append(ids, id)
-		}
-		return ids
-	case incident.EdgeSituations:
-		ids := make([]ent.Value, 0, len(m.removedsituations))
-		for id := range m.removedsituations {
 			ids = append(ids, id)
 		}
 		return ids
@@ -16365,6 +16290,9 @@ func (m *IncidentMutation) ClearedEdges() []string {
 	if m.clearedlinked_incidents {
 		edges = append(edges, incident.EdgeLinkedIncidents)
 	}
+	if m.clearedsituations {
+		edges = append(edges, incident.EdgeSituations)
+	}
 	if m.clearedfield_selections {
 		edges = append(edges, incident.EdgeFieldSelections)
 	}
@@ -16373,9 +16301,6 @@ func (m *IncidentMutation) ClearedEdges() []string {
 	}
 	if m.clearedtag_assignments {
 		edges = append(edges, incident.EdgeTagAssignments)
-	}
-	if m.clearedsituations {
-		edges = append(edges, incident.EdgeSituations)
 	}
 	if m.clearedimpacts {
 		edges = append(edges, incident.EdgeImpacts)
@@ -16420,14 +16345,14 @@ func (m *IncidentMutation) EdgeCleared(name string) bool {
 		return m.clearedrole_assignments
 	case incident.EdgeLinkedIncidents:
 		return m.clearedlinked_incidents
+	case incident.EdgeSituations:
+		return m.clearedsituations
 	case incident.EdgeFieldSelections:
 		return m.clearedfield_selections
 	case incident.EdgeTasks:
 		return m.clearedtasks
 	case incident.EdgeTagAssignments:
 		return m.clearedtag_assignments
-	case incident.EdgeSituations:
-		return m.clearedsituations
 	case incident.EdgeImpacts:
 		return m.clearedimpacts
 	case incident.EdgeDebriefs:
@@ -16498,6 +16423,9 @@ func (m *IncidentMutation) ResetEdge(name string) error {
 	case incident.EdgeLinkedIncidents:
 		m.ResetLinkedIncidents()
 		return nil
+	case incident.EdgeSituations:
+		m.ResetSituations()
+		return nil
 	case incident.EdgeFieldSelections:
 		m.ResetFieldSelections()
 		return nil
@@ -16506,9 +16434,6 @@ func (m *IncidentMutation) ResetEdge(name string) error {
 		return nil
 	case incident.EdgeTagAssignments:
 		m.ResetTagAssignments()
-		return nil
-	case incident.EdgeSituations:
-		m.ResetSituations()
 		return nil
 	case incident.EdgeImpacts:
 		m.ResetImpacts()
@@ -30920,6 +30845,3729 @@ func (m *IntegrationUserInstallStateMutation) ResetEdge(name string) error {
 		return nil
 	}
 	return fmt.Errorf("unknown IntegrationUserInstallState edge %s", name)
+}
+
+// InvestigationMutation represents an operation that mutates the Investigation nodes in the graph.
+type InvestigationMutation struct {
+	config
+	op                     Op
+	typ                    string
+	id                     *uuid.UUID
+	created_at             *time.Time
+	updated_at             *time.Time
+	clearedFields          map[string]struct{}
+	tenant                 *int
+	clearedtenant          bool
+	system_analysis        *uuid.UUID
+	clearedsystem_analysis bool
+	agent_session          *uuid.UUID
+	clearedagent_session   bool
+	situations             map[uuid.UUID]struct{}
+	removedsituations      map[uuid.UUID]struct{}
+	clearedsituations      bool
+	hypotheses             map[uuid.UUID]struct{}
+	removedhypotheses      map[uuid.UUID]struct{}
+	clearedhypotheses      bool
+	findings               map[uuid.UUID]struct{}
+	removedfindings        map[uuid.UUID]struct{}
+	clearedfindings        bool
+	report                 *uuid.UUID
+	clearedreport          bool
+	done                   bool
+	oldValue               func(context.Context) (*Investigation, error)
+	predicates             []predicate.Investigation
+}
+
+var _ ent.Mutation = (*InvestigationMutation)(nil)
+
+// investigationOption allows management of the mutation configuration using functional options.
+type investigationOption func(*InvestigationMutation)
+
+// newInvestigationMutation creates new mutation for the Investigation entity.
+func newInvestigationMutation(c config, op Op, opts ...investigationOption) *InvestigationMutation {
+	m := &InvestigationMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeInvestigation,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withInvestigationID sets the ID field of the mutation.
+func withInvestigationID(id uuid.UUID) investigationOption {
+	return func(m *InvestigationMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *Investigation
+		)
+		m.oldValue = func(ctx context.Context) (*Investigation, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().Investigation.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withInvestigation sets the old Investigation of the mutation.
+func withInvestigation(node *Investigation) investigationOption {
+	return func(m *InvestigationMutation) {
+		m.oldValue = func(context.Context) (*Investigation, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m InvestigationMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m InvestigationMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of Investigation entities.
+func (m *InvestigationMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *InvestigationMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *InvestigationMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uuid.UUID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().Investigation.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (m *InvestigationMutation) SetTenantID(i int) {
+	m.tenant = &i
+}
+
+// TenantID returns the value of the "tenant_id" field in the mutation.
+func (m *InvestigationMutation) TenantID() (r int, exists bool) {
+	v := m.tenant
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTenantID returns the old "tenant_id" field's value of the Investigation entity.
+// If the Investigation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InvestigationMutation) OldTenantID(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTenantID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTenantID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTenantID: %w", err)
+	}
+	return oldValue.TenantID, nil
+}
+
+// ResetTenantID resets all changes to the "tenant_id" field.
+func (m *InvestigationMutation) ResetTenantID() {
+	m.tenant = nil
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *InvestigationMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *InvestigationMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the Investigation entity.
+// If the Investigation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InvestigationMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *InvestigationMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *InvestigationMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *InvestigationMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the Investigation entity.
+// If the Investigation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InvestigationMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *InvestigationMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// SetSystemAnalysisID sets the "system_analysis_id" field.
+func (m *InvestigationMutation) SetSystemAnalysisID(u uuid.UUID) {
+	m.system_analysis = &u
+}
+
+// SystemAnalysisID returns the value of the "system_analysis_id" field in the mutation.
+func (m *InvestigationMutation) SystemAnalysisID() (r uuid.UUID, exists bool) {
+	v := m.system_analysis
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSystemAnalysisID returns the old "system_analysis_id" field's value of the Investigation entity.
+// If the Investigation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InvestigationMutation) OldSystemAnalysisID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSystemAnalysisID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSystemAnalysisID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSystemAnalysisID: %w", err)
+	}
+	return oldValue.SystemAnalysisID, nil
+}
+
+// ResetSystemAnalysisID resets all changes to the "system_analysis_id" field.
+func (m *InvestigationMutation) ResetSystemAnalysisID() {
+	m.system_analysis = nil
+}
+
+// SetAgentSessionID sets the "agent_session_id" field.
+func (m *InvestigationMutation) SetAgentSessionID(u uuid.UUID) {
+	m.agent_session = &u
+}
+
+// AgentSessionID returns the value of the "agent_session_id" field in the mutation.
+func (m *InvestigationMutation) AgentSessionID() (r uuid.UUID, exists bool) {
+	v := m.agent_session
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAgentSessionID returns the old "agent_session_id" field's value of the Investigation entity.
+// If the Investigation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InvestigationMutation) OldAgentSessionID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAgentSessionID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAgentSessionID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAgentSessionID: %w", err)
+	}
+	return oldValue.AgentSessionID, nil
+}
+
+// ResetAgentSessionID resets all changes to the "agent_session_id" field.
+func (m *InvestigationMutation) ResetAgentSessionID() {
+	m.agent_session = nil
+}
+
+// ClearTenant clears the "tenant" edge to the Tenant entity.
+func (m *InvestigationMutation) ClearTenant() {
+	m.clearedtenant = true
+	m.clearedFields[investigation.FieldTenantID] = struct{}{}
+}
+
+// TenantCleared reports if the "tenant" edge to the Tenant entity was cleared.
+func (m *InvestigationMutation) TenantCleared() bool {
+	return m.clearedtenant
+}
+
+// TenantIDs returns the "tenant" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// TenantID instead. It exists only for internal usage by the builders.
+func (m *InvestigationMutation) TenantIDs() (ids []int) {
+	if id := m.tenant; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetTenant resets all changes to the "tenant" edge.
+func (m *InvestigationMutation) ResetTenant() {
+	m.tenant = nil
+	m.clearedtenant = false
+}
+
+// ClearSystemAnalysis clears the "system_analysis" edge to the SystemAnalysis entity.
+func (m *InvestigationMutation) ClearSystemAnalysis() {
+	m.clearedsystem_analysis = true
+	m.clearedFields[investigation.FieldSystemAnalysisID] = struct{}{}
+}
+
+// SystemAnalysisCleared reports if the "system_analysis" edge to the SystemAnalysis entity was cleared.
+func (m *InvestigationMutation) SystemAnalysisCleared() bool {
+	return m.clearedsystem_analysis
+}
+
+// SystemAnalysisIDs returns the "system_analysis" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// SystemAnalysisID instead. It exists only for internal usage by the builders.
+func (m *InvestigationMutation) SystemAnalysisIDs() (ids []uuid.UUID) {
+	if id := m.system_analysis; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetSystemAnalysis resets all changes to the "system_analysis" edge.
+func (m *InvestigationMutation) ResetSystemAnalysis() {
+	m.system_analysis = nil
+	m.clearedsystem_analysis = false
+}
+
+// ClearAgentSession clears the "agent_session" edge to the AgentSession entity.
+func (m *InvestigationMutation) ClearAgentSession() {
+	m.clearedagent_session = true
+	m.clearedFields[investigation.FieldAgentSessionID] = struct{}{}
+}
+
+// AgentSessionCleared reports if the "agent_session" edge to the AgentSession entity was cleared.
+func (m *InvestigationMutation) AgentSessionCleared() bool {
+	return m.clearedagent_session
+}
+
+// AgentSessionIDs returns the "agent_session" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// AgentSessionID instead. It exists only for internal usage by the builders.
+func (m *InvestigationMutation) AgentSessionIDs() (ids []uuid.UUID) {
+	if id := m.agent_session; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetAgentSession resets all changes to the "agent_session" edge.
+func (m *InvestigationMutation) ResetAgentSession() {
+	m.agent_session = nil
+	m.clearedagent_session = false
+}
+
+// AddSituationIDs adds the "situations" edge to the SituationInvestigation entity by ids.
+func (m *InvestigationMutation) AddSituationIDs(ids ...uuid.UUID) {
+	if m.situations == nil {
+		m.situations = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.situations[ids[i]] = struct{}{}
+	}
+}
+
+// ClearSituations clears the "situations" edge to the SituationInvestigation entity.
+func (m *InvestigationMutation) ClearSituations() {
+	m.clearedsituations = true
+}
+
+// SituationsCleared reports if the "situations" edge to the SituationInvestigation entity was cleared.
+func (m *InvestigationMutation) SituationsCleared() bool {
+	return m.clearedsituations
+}
+
+// RemoveSituationIDs removes the "situations" edge to the SituationInvestigation entity by IDs.
+func (m *InvestigationMutation) RemoveSituationIDs(ids ...uuid.UUID) {
+	if m.removedsituations == nil {
+		m.removedsituations = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.situations, ids[i])
+		m.removedsituations[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedSituations returns the removed IDs of the "situations" edge to the SituationInvestigation entity.
+func (m *InvestigationMutation) RemovedSituationsIDs() (ids []uuid.UUID) {
+	for id := range m.removedsituations {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// SituationsIDs returns the "situations" edge IDs in the mutation.
+func (m *InvestigationMutation) SituationsIDs() (ids []uuid.UUID) {
+	for id := range m.situations {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetSituations resets all changes to the "situations" edge.
+func (m *InvestigationMutation) ResetSituations() {
+	m.situations = nil
+	m.clearedsituations = false
+	m.removedsituations = nil
+}
+
+// AddHypothesisIDs adds the "hypotheses" edge to the InvestigationHypothesis entity by ids.
+func (m *InvestigationMutation) AddHypothesisIDs(ids ...uuid.UUID) {
+	if m.hypotheses == nil {
+		m.hypotheses = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.hypotheses[ids[i]] = struct{}{}
+	}
+}
+
+// ClearHypotheses clears the "hypotheses" edge to the InvestigationHypothesis entity.
+func (m *InvestigationMutation) ClearHypotheses() {
+	m.clearedhypotheses = true
+}
+
+// HypothesesCleared reports if the "hypotheses" edge to the InvestigationHypothesis entity was cleared.
+func (m *InvestigationMutation) HypothesesCleared() bool {
+	return m.clearedhypotheses
+}
+
+// RemoveHypothesisIDs removes the "hypotheses" edge to the InvestigationHypothesis entity by IDs.
+func (m *InvestigationMutation) RemoveHypothesisIDs(ids ...uuid.UUID) {
+	if m.removedhypotheses == nil {
+		m.removedhypotheses = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.hypotheses, ids[i])
+		m.removedhypotheses[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedHypotheses returns the removed IDs of the "hypotheses" edge to the InvestigationHypothesis entity.
+func (m *InvestigationMutation) RemovedHypothesesIDs() (ids []uuid.UUID) {
+	for id := range m.removedhypotheses {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// HypothesesIDs returns the "hypotheses" edge IDs in the mutation.
+func (m *InvestigationMutation) HypothesesIDs() (ids []uuid.UUID) {
+	for id := range m.hypotheses {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetHypotheses resets all changes to the "hypotheses" edge.
+func (m *InvestigationMutation) ResetHypotheses() {
+	m.hypotheses = nil
+	m.clearedhypotheses = false
+	m.removedhypotheses = nil
+}
+
+// AddFindingIDs adds the "findings" edge to the InvestigationFinding entity by ids.
+func (m *InvestigationMutation) AddFindingIDs(ids ...uuid.UUID) {
+	if m.findings == nil {
+		m.findings = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.findings[ids[i]] = struct{}{}
+	}
+}
+
+// ClearFindings clears the "findings" edge to the InvestigationFinding entity.
+func (m *InvestigationMutation) ClearFindings() {
+	m.clearedfindings = true
+}
+
+// FindingsCleared reports if the "findings" edge to the InvestigationFinding entity was cleared.
+func (m *InvestigationMutation) FindingsCleared() bool {
+	return m.clearedfindings
+}
+
+// RemoveFindingIDs removes the "findings" edge to the InvestigationFinding entity by IDs.
+func (m *InvestigationMutation) RemoveFindingIDs(ids ...uuid.UUID) {
+	if m.removedfindings == nil {
+		m.removedfindings = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.findings, ids[i])
+		m.removedfindings[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedFindings returns the removed IDs of the "findings" edge to the InvestigationFinding entity.
+func (m *InvestigationMutation) RemovedFindingsIDs() (ids []uuid.UUID) {
+	for id := range m.removedfindings {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// FindingsIDs returns the "findings" edge IDs in the mutation.
+func (m *InvestigationMutation) FindingsIDs() (ids []uuid.UUID) {
+	for id := range m.findings {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetFindings resets all changes to the "findings" edge.
+func (m *InvestigationMutation) ResetFindings() {
+	m.findings = nil
+	m.clearedfindings = false
+	m.removedfindings = nil
+}
+
+// SetReportID sets the "report" edge to the InvestigationReport entity by id.
+func (m *InvestigationMutation) SetReportID(id uuid.UUID) {
+	m.report = &id
+}
+
+// ClearReport clears the "report" edge to the InvestigationReport entity.
+func (m *InvestigationMutation) ClearReport() {
+	m.clearedreport = true
+}
+
+// ReportCleared reports if the "report" edge to the InvestigationReport entity was cleared.
+func (m *InvestigationMutation) ReportCleared() bool {
+	return m.clearedreport
+}
+
+// ReportID returns the "report" edge ID in the mutation.
+func (m *InvestigationMutation) ReportID() (id uuid.UUID, exists bool) {
+	if m.report != nil {
+		return *m.report, true
+	}
+	return
+}
+
+// ReportIDs returns the "report" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ReportID instead. It exists only for internal usage by the builders.
+func (m *InvestigationMutation) ReportIDs() (ids []uuid.UUID) {
+	if id := m.report; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetReport resets all changes to the "report" edge.
+func (m *InvestigationMutation) ResetReport() {
+	m.report = nil
+	m.clearedreport = false
+}
+
+// Where appends a list predicates to the InvestigationMutation builder.
+func (m *InvestigationMutation) Where(ps ...predicate.Investigation) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the InvestigationMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *InvestigationMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.Investigation, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *InvestigationMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *InvestigationMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (Investigation).
+func (m *InvestigationMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *InvestigationMutation) Fields() []string {
+	fields := make([]string, 0, 5)
+	if m.tenant != nil {
+		fields = append(fields, investigation.FieldTenantID)
+	}
+	if m.created_at != nil {
+		fields = append(fields, investigation.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, investigation.FieldUpdatedAt)
+	}
+	if m.system_analysis != nil {
+		fields = append(fields, investigation.FieldSystemAnalysisID)
+	}
+	if m.agent_session != nil {
+		fields = append(fields, investigation.FieldAgentSessionID)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *InvestigationMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case investigation.FieldTenantID:
+		return m.TenantID()
+	case investigation.FieldCreatedAt:
+		return m.CreatedAt()
+	case investigation.FieldUpdatedAt:
+		return m.UpdatedAt()
+	case investigation.FieldSystemAnalysisID:
+		return m.SystemAnalysisID()
+	case investigation.FieldAgentSessionID:
+		return m.AgentSessionID()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *InvestigationMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case investigation.FieldTenantID:
+		return m.OldTenantID(ctx)
+	case investigation.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case investigation.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	case investigation.FieldSystemAnalysisID:
+		return m.OldSystemAnalysisID(ctx)
+	case investigation.FieldAgentSessionID:
+		return m.OldAgentSessionID(ctx)
+	}
+	return nil, fmt.Errorf("unknown Investigation field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *InvestigationMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case investigation.FieldTenantID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTenantID(v)
+		return nil
+	case investigation.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case investigation.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	case investigation.FieldSystemAnalysisID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSystemAnalysisID(v)
+		return nil
+	case investigation.FieldAgentSessionID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAgentSessionID(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Investigation field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *InvestigationMutation) AddedFields() []string {
+	var fields []string
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *InvestigationMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *InvestigationMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown Investigation numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *InvestigationMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *InvestigationMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *InvestigationMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown Investigation nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *InvestigationMutation) ResetField(name string) error {
+	switch name {
+	case investigation.FieldTenantID:
+		m.ResetTenantID()
+		return nil
+	case investigation.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case investigation.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	case investigation.FieldSystemAnalysisID:
+		m.ResetSystemAnalysisID()
+		return nil
+	case investigation.FieldAgentSessionID:
+		m.ResetAgentSessionID()
+		return nil
+	}
+	return fmt.Errorf("unknown Investigation field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *InvestigationMutation) AddedEdges() []string {
+	edges := make([]string, 0, 7)
+	if m.tenant != nil {
+		edges = append(edges, investigation.EdgeTenant)
+	}
+	if m.system_analysis != nil {
+		edges = append(edges, investigation.EdgeSystemAnalysis)
+	}
+	if m.agent_session != nil {
+		edges = append(edges, investigation.EdgeAgentSession)
+	}
+	if m.situations != nil {
+		edges = append(edges, investigation.EdgeSituations)
+	}
+	if m.hypotheses != nil {
+		edges = append(edges, investigation.EdgeHypotheses)
+	}
+	if m.findings != nil {
+		edges = append(edges, investigation.EdgeFindings)
+	}
+	if m.report != nil {
+		edges = append(edges, investigation.EdgeReport)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *InvestigationMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case investigation.EdgeTenant:
+		if id := m.tenant; id != nil {
+			return []ent.Value{*id}
+		}
+	case investigation.EdgeSystemAnalysis:
+		if id := m.system_analysis; id != nil {
+			return []ent.Value{*id}
+		}
+	case investigation.EdgeAgentSession:
+		if id := m.agent_session; id != nil {
+			return []ent.Value{*id}
+		}
+	case investigation.EdgeSituations:
+		ids := make([]ent.Value, 0, len(m.situations))
+		for id := range m.situations {
+			ids = append(ids, id)
+		}
+		return ids
+	case investigation.EdgeHypotheses:
+		ids := make([]ent.Value, 0, len(m.hypotheses))
+		for id := range m.hypotheses {
+			ids = append(ids, id)
+		}
+		return ids
+	case investigation.EdgeFindings:
+		ids := make([]ent.Value, 0, len(m.findings))
+		for id := range m.findings {
+			ids = append(ids, id)
+		}
+		return ids
+	case investigation.EdgeReport:
+		if id := m.report; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *InvestigationMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 7)
+	if m.removedsituations != nil {
+		edges = append(edges, investigation.EdgeSituations)
+	}
+	if m.removedhypotheses != nil {
+		edges = append(edges, investigation.EdgeHypotheses)
+	}
+	if m.removedfindings != nil {
+		edges = append(edges, investigation.EdgeFindings)
+	}
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *InvestigationMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case investigation.EdgeSituations:
+		ids := make([]ent.Value, 0, len(m.removedsituations))
+		for id := range m.removedsituations {
+			ids = append(ids, id)
+		}
+		return ids
+	case investigation.EdgeHypotheses:
+		ids := make([]ent.Value, 0, len(m.removedhypotheses))
+		for id := range m.removedhypotheses {
+			ids = append(ids, id)
+		}
+		return ids
+	case investigation.EdgeFindings:
+		ids := make([]ent.Value, 0, len(m.removedfindings))
+		for id := range m.removedfindings {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *InvestigationMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 7)
+	if m.clearedtenant {
+		edges = append(edges, investigation.EdgeTenant)
+	}
+	if m.clearedsystem_analysis {
+		edges = append(edges, investigation.EdgeSystemAnalysis)
+	}
+	if m.clearedagent_session {
+		edges = append(edges, investigation.EdgeAgentSession)
+	}
+	if m.clearedsituations {
+		edges = append(edges, investigation.EdgeSituations)
+	}
+	if m.clearedhypotheses {
+		edges = append(edges, investigation.EdgeHypotheses)
+	}
+	if m.clearedfindings {
+		edges = append(edges, investigation.EdgeFindings)
+	}
+	if m.clearedreport {
+		edges = append(edges, investigation.EdgeReport)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *InvestigationMutation) EdgeCleared(name string) bool {
+	switch name {
+	case investigation.EdgeTenant:
+		return m.clearedtenant
+	case investigation.EdgeSystemAnalysis:
+		return m.clearedsystem_analysis
+	case investigation.EdgeAgentSession:
+		return m.clearedagent_session
+	case investigation.EdgeSituations:
+		return m.clearedsituations
+	case investigation.EdgeHypotheses:
+		return m.clearedhypotheses
+	case investigation.EdgeFindings:
+		return m.clearedfindings
+	case investigation.EdgeReport:
+		return m.clearedreport
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *InvestigationMutation) ClearEdge(name string) error {
+	switch name {
+	case investigation.EdgeTenant:
+		m.ClearTenant()
+		return nil
+	case investigation.EdgeSystemAnalysis:
+		m.ClearSystemAnalysis()
+		return nil
+	case investigation.EdgeAgentSession:
+		m.ClearAgentSession()
+		return nil
+	case investigation.EdgeReport:
+		m.ClearReport()
+		return nil
+	}
+	return fmt.Errorf("unknown Investigation unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *InvestigationMutation) ResetEdge(name string) error {
+	switch name {
+	case investigation.EdgeTenant:
+		m.ResetTenant()
+		return nil
+	case investigation.EdgeSystemAnalysis:
+		m.ResetSystemAnalysis()
+		return nil
+	case investigation.EdgeAgentSession:
+		m.ResetAgentSession()
+		return nil
+	case investigation.EdgeSituations:
+		m.ResetSituations()
+		return nil
+	case investigation.EdgeHypotheses:
+		m.ResetHypotheses()
+		return nil
+	case investigation.EdgeFindings:
+		m.ResetFindings()
+		return nil
+	case investigation.EdgeReport:
+		m.ResetReport()
+		return nil
+	}
+	return fmt.Errorf("unknown Investigation edge %s", name)
+}
+
+// InvestigationFindingMutation represents an operation that mutates the InvestigationFinding nodes in the graph.
+type InvestigationFindingMutation struct {
+	config
+	op                   Op
+	typ                  string
+	id                   *uuid.UUID
+	created_at           *time.Time
+	updated_at           *time.Time
+	title                *string
+	body                 *string
+	clearedFields        map[string]struct{}
+	tenant               *int
+	clearedtenant        bool
+	investigation        *uuid.UUID
+	clearedinvestigation bool
+	done                 bool
+	oldValue             func(context.Context) (*InvestigationFinding, error)
+	predicates           []predicate.InvestigationFinding
+}
+
+var _ ent.Mutation = (*InvestigationFindingMutation)(nil)
+
+// investigationfindingOption allows management of the mutation configuration using functional options.
+type investigationfindingOption func(*InvestigationFindingMutation)
+
+// newInvestigationFindingMutation creates new mutation for the InvestigationFinding entity.
+func newInvestigationFindingMutation(c config, op Op, opts ...investigationfindingOption) *InvestigationFindingMutation {
+	m := &InvestigationFindingMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeInvestigationFinding,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withInvestigationFindingID sets the ID field of the mutation.
+func withInvestigationFindingID(id uuid.UUID) investigationfindingOption {
+	return func(m *InvestigationFindingMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *InvestigationFinding
+		)
+		m.oldValue = func(ctx context.Context) (*InvestigationFinding, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().InvestigationFinding.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withInvestigationFinding sets the old InvestigationFinding of the mutation.
+func withInvestigationFinding(node *InvestigationFinding) investigationfindingOption {
+	return func(m *InvestigationFindingMutation) {
+		m.oldValue = func(context.Context) (*InvestigationFinding, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m InvestigationFindingMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m InvestigationFindingMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of InvestigationFinding entities.
+func (m *InvestigationFindingMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *InvestigationFindingMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *InvestigationFindingMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uuid.UUID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().InvestigationFinding.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (m *InvestigationFindingMutation) SetTenantID(i int) {
+	m.tenant = &i
+}
+
+// TenantID returns the value of the "tenant_id" field in the mutation.
+func (m *InvestigationFindingMutation) TenantID() (r int, exists bool) {
+	v := m.tenant
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTenantID returns the old "tenant_id" field's value of the InvestigationFinding entity.
+// If the InvestigationFinding object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InvestigationFindingMutation) OldTenantID(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTenantID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTenantID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTenantID: %w", err)
+	}
+	return oldValue.TenantID, nil
+}
+
+// ResetTenantID resets all changes to the "tenant_id" field.
+func (m *InvestigationFindingMutation) ResetTenantID() {
+	m.tenant = nil
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *InvestigationFindingMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *InvestigationFindingMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the InvestigationFinding entity.
+// If the InvestigationFinding object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InvestigationFindingMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *InvestigationFindingMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *InvestigationFindingMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *InvestigationFindingMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the InvestigationFinding entity.
+// If the InvestigationFinding object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InvestigationFindingMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *InvestigationFindingMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// SetInvestigationID sets the "investigation_id" field.
+func (m *InvestigationFindingMutation) SetInvestigationID(u uuid.UUID) {
+	m.investigation = &u
+}
+
+// InvestigationID returns the value of the "investigation_id" field in the mutation.
+func (m *InvestigationFindingMutation) InvestigationID() (r uuid.UUID, exists bool) {
+	v := m.investigation
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldInvestigationID returns the old "investigation_id" field's value of the InvestigationFinding entity.
+// If the InvestigationFinding object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InvestigationFindingMutation) OldInvestigationID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldInvestigationID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldInvestigationID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldInvestigationID: %w", err)
+	}
+	return oldValue.InvestigationID, nil
+}
+
+// ResetInvestigationID resets all changes to the "investigation_id" field.
+func (m *InvestigationFindingMutation) ResetInvestigationID() {
+	m.investigation = nil
+}
+
+// SetTitle sets the "title" field.
+func (m *InvestigationFindingMutation) SetTitle(s string) {
+	m.title = &s
+}
+
+// Title returns the value of the "title" field in the mutation.
+func (m *InvestigationFindingMutation) Title() (r string, exists bool) {
+	v := m.title
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTitle returns the old "title" field's value of the InvestigationFinding entity.
+// If the InvestigationFinding object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InvestigationFindingMutation) OldTitle(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTitle is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTitle requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTitle: %w", err)
+	}
+	return oldValue.Title, nil
+}
+
+// ResetTitle resets all changes to the "title" field.
+func (m *InvestigationFindingMutation) ResetTitle() {
+	m.title = nil
+}
+
+// SetBody sets the "body" field.
+func (m *InvestigationFindingMutation) SetBody(s string) {
+	m.body = &s
+}
+
+// Body returns the value of the "body" field in the mutation.
+func (m *InvestigationFindingMutation) Body() (r string, exists bool) {
+	v := m.body
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldBody returns the old "body" field's value of the InvestigationFinding entity.
+// If the InvestigationFinding object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InvestigationFindingMutation) OldBody(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldBody is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldBody requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldBody: %w", err)
+	}
+	return oldValue.Body, nil
+}
+
+// ClearBody clears the value of the "body" field.
+func (m *InvestigationFindingMutation) ClearBody() {
+	m.body = nil
+	m.clearedFields[investigationfinding.FieldBody] = struct{}{}
+}
+
+// BodyCleared returns if the "body" field was cleared in this mutation.
+func (m *InvestigationFindingMutation) BodyCleared() bool {
+	_, ok := m.clearedFields[investigationfinding.FieldBody]
+	return ok
+}
+
+// ResetBody resets all changes to the "body" field.
+func (m *InvestigationFindingMutation) ResetBody() {
+	m.body = nil
+	delete(m.clearedFields, investigationfinding.FieldBody)
+}
+
+// ClearTenant clears the "tenant" edge to the Tenant entity.
+func (m *InvestigationFindingMutation) ClearTenant() {
+	m.clearedtenant = true
+	m.clearedFields[investigationfinding.FieldTenantID] = struct{}{}
+}
+
+// TenantCleared reports if the "tenant" edge to the Tenant entity was cleared.
+func (m *InvestigationFindingMutation) TenantCleared() bool {
+	return m.clearedtenant
+}
+
+// TenantIDs returns the "tenant" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// TenantID instead. It exists only for internal usage by the builders.
+func (m *InvestigationFindingMutation) TenantIDs() (ids []int) {
+	if id := m.tenant; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetTenant resets all changes to the "tenant" edge.
+func (m *InvestigationFindingMutation) ResetTenant() {
+	m.tenant = nil
+	m.clearedtenant = false
+}
+
+// ClearInvestigation clears the "investigation" edge to the Investigation entity.
+func (m *InvestigationFindingMutation) ClearInvestigation() {
+	m.clearedinvestigation = true
+	m.clearedFields[investigationfinding.FieldInvestigationID] = struct{}{}
+}
+
+// InvestigationCleared reports if the "investigation" edge to the Investigation entity was cleared.
+func (m *InvestigationFindingMutation) InvestigationCleared() bool {
+	return m.clearedinvestigation
+}
+
+// InvestigationIDs returns the "investigation" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// InvestigationID instead. It exists only for internal usage by the builders.
+func (m *InvestigationFindingMutation) InvestigationIDs() (ids []uuid.UUID) {
+	if id := m.investigation; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetInvestigation resets all changes to the "investigation" edge.
+func (m *InvestigationFindingMutation) ResetInvestigation() {
+	m.investigation = nil
+	m.clearedinvestigation = false
+}
+
+// Where appends a list predicates to the InvestigationFindingMutation builder.
+func (m *InvestigationFindingMutation) Where(ps ...predicate.InvestigationFinding) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the InvestigationFindingMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *InvestigationFindingMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.InvestigationFinding, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *InvestigationFindingMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *InvestigationFindingMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (InvestigationFinding).
+func (m *InvestigationFindingMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *InvestigationFindingMutation) Fields() []string {
+	fields := make([]string, 0, 6)
+	if m.tenant != nil {
+		fields = append(fields, investigationfinding.FieldTenantID)
+	}
+	if m.created_at != nil {
+		fields = append(fields, investigationfinding.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, investigationfinding.FieldUpdatedAt)
+	}
+	if m.investigation != nil {
+		fields = append(fields, investigationfinding.FieldInvestigationID)
+	}
+	if m.title != nil {
+		fields = append(fields, investigationfinding.FieldTitle)
+	}
+	if m.body != nil {
+		fields = append(fields, investigationfinding.FieldBody)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *InvestigationFindingMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case investigationfinding.FieldTenantID:
+		return m.TenantID()
+	case investigationfinding.FieldCreatedAt:
+		return m.CreatedAt()
+	case investigationfinding.FieldUpdatedAt:
+		return m.UpdatedAt()
+	case investigationfinding.FieldInvestigationID:
+		return m.InvestigationID()
+	case investigationfinding.FieldTitle:
+		return m.Title()
+	case investigationfinding.FieldBody:
+		return m.Body()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *InvestigationFindingMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case investigationfinding.FieldTenantID:
+		return m.OldTenantID(ctx)
+	case investigationfinding.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case investigationfinding.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	case investigationfinding.FieldInvestigationID:
+		return m.OldInvestigationID(ctx)
+	case investigationfinding.FieldTitle:
+		return m.OldTitle(ctx)
+	case investigationfinding.FieldBody:
+		return m.OldBody(ctx)
+	}
+	return nil, fmt.Errorf("unknown InvestigationFinding field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *InvestigationFindingMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case investigationfinding.FieldTenantID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTenantID(v)
+		return nil
+	case investigationfinding.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case investigationfinding.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	case investigationfinding.FieldInvestigationID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetInvestigationID(v)
+		return nil
+	case investigationfinding.FieldTitle:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTitle(v)
+		return nil
+	case investigationfinding.FieldBody:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetBody(v)
+		return nil
+	}
+	return fmt.Errorf("unknown InvestigationFinding field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *InvestigationFindingMutation) AddedFields() []string {
+	var fields []string
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *InvestigationFindingMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *InvestigationFindingMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown InvestigationFinding numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *InvestigationFindingMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(investigationfinding.FieldBody) {
+		fields = append(fields, investigationfinding.FieldBody)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *InvestigationFindingMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *InvestigationFindingMutation) ClearField(name string) error {
+	switch name {
+	case investigationfinding.FieldBody:
+		m.ClearBody()
+		return nil
+	}
+	return fmt.Errorf("unknown InvestigationFinding nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *InvestigationFindingMutation) ResetField(name string) error {
+	switch name {
+	case investigationfinding.FieldTenantID:
+		m.ResetTenantID()
+		return nil
+	case investigationfinding.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case investigationfinding.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	case investigationfinding.FieldInvestigationID:
+		m.ResetInvestigationID()
+		return nil
+	case investigationfinding.FieldTitle:
+		m.ResetTitle()
+		return nil
+	case investigationfinding.FieldBody:
+		m.ResetBody()
+		return nil
+	}
+	return fmt.Errorf("unknown InvestigationFinding field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *InvestigationFindingMutation) AddedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.tenant != nil {
+		edges = append(edges, investigationfinding.EdgeTenant)
+	}
+	if m.investigation != nil {
+		edges = append(edges, investigationfinding.EdgeInvestigation)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *InvestigationFindingMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case investigationfinding.EdgeTenant:
+		if id := m.tenant; id != nil {
+			return []ent.Value{*id}
+		}
+	case investigationfinding.EdgeInvestigation:
+		if id := m.investigation; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *InvestigationFindingMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 2)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *InvestigationFindingMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *InvestigationFindingMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.clearedtenant {
+		edges = append(edges, investigationfinding.EdgeTenant)
+	}
+	if m.clearedinvestigation {
+		edges = append(edges, investigationfinding.EdgeInvestigation)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *InvestigationFindingMutation) EdgeCleared(name string) bool {
+	switch name {
+	case investigationfinding.EdgeTenant:
+		return m.clearedtenant
+	case investigationfinding.EdgeInvestigation:
+		return m.clearedinvestigation
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *InvestigationFindingMutation) ClearEdge(name string) error {
+	switch name {
+	case investigationfinding.EdgeTenant:
+		m.ClearTenant()
+		return nil
+	case investigationfinding.EdgeInvestigation:
+		m.ClearInvestigation()
+		return nil
+	}
+	return fmt.Errorf("unknown InvestigationFinding unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *InvestigationFindingMutation) ResetEdge(name string) error {
+	switch name {
+	case investigationfinding.EdgeTenant:
+		m.ResetTenant()
+		return nil
+	case investigationfinding.EdgeInvestigation:
+		m.ResetInvestigation()
+		return nil
+	}
+	return fmt.Errorf("unknown InvestigationFinding edge %s", name)
+}
+
+// InvestigationHypothesisMutation represents an operation that mutates the InvestigationHypothesis nodes in the graph.
+type InvestigationHypothesisMutation struct {
+	config
+	op                   Op
+	typ                  string
+	id                   *uuid.UUID
+	created_at           *time.Time
+	updated_at           *time.Time
+	title                *string
+	body                 *string
+	verdict              *string
+	clearedFields        map[string]struct{}
+	tenant               *int
+	clearedtenant        bool
+	investigation        *uuid.UUID
+	clearedinvestigation bool
+	done                 bool
+	oldValue             func(context.Context) (*InvestigationHypothesis, error)
+	predicates           []predicate.InvestigationHypothesis
+}
+
+var _ ent.Mutation = (*InvestigationHypothesisMutation)(nil)
+
+// investigationhypothesisOption allows management of the mutation configuration using functional options.
+type investigationhypothesisOption func(*InvestigationHypothesisMutation)
+
+// newInvestigationHypothesisMutation creates new mutation for the InvestigationHypothesis entity.
+func newInvestigationHypothesisMutation(c config, op Op, opts ...investigationhypothesisOption) *InvestigationHypothesisMutation {
+	m := &InvestigationHypothesisMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeInvestigationHypothesis,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withInvestigationHypothesisID sets the ID field of the mutation.
+func withInvestigationHypothesisID(id uuid.UUID) investigationhypothesisOption {
+	return func(m *InvestigationHypothesisMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *InvestigationHypothesis
+		)
+		m.oldValue = func(ctx context.Context) (*InvestigationHypothesis, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().InvestigationHypothesis.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withInvestigationHypothesis sets the old InvestigationHypothesis of the mutation.
+func withInvestigationHypothesis(node *InvestigationHypothesis) investigationhypothesisOption {
+	return func(m *InvestigationHypothesisMutation) {
+		m.oldValue = func(context.Context) (*InvestigationHypothesis, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m InvestigationHypothesisMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m InvestigationHypothesisMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of InvestigationHypothesis entities.
+func (m *InvestigationHypothesisMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *InvestigationHypothesisMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *InvestigationHypothesisMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uuid.UUID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().InvestigationHypothesis.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (m *InvestigationHypothesisMutation) SetTenantID(i int) {
+	m.tenant = &i
+}
+
+// TenantID returns the value of the "tenant_id" field in the mutation.
+func (m *InvestigationHypothesisMutation) TenantID() (r int, exists bool) {
+	v := m.tenant
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTenantID returns the old "tenant_id" field's value of the InvestigationHypothesis entity.
+// If the InvestigationHypothesis object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InvestigationHypothesisMutation) OldTenantID(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTenantID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTenantID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTenantID: %w", err)
+	}
+	return oldValue.TenantID, nil
+}
+
+// ResetTenantID resets all changes to the "tenant_id" field.
+func (m *InvestigationHypothesisMutation) ResetTenantID() {
+	m.tenant = nil
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *InvestigationHypothesisMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *InvestigationHypothesisMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the InvestigationHypothesis entity.
+// If the InvestigationHypothesis object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InvestigationHypothesisMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *InvestigationHypothesisMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *InvestigationHypothesisMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *InvestigationHypothesisMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the InvestigationHypothesis entity.
+// If the InvestigationHypothesis object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InvestigationHypothesisMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *InvestigationHypothesisMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// SetInvestigationID sets the "investigation_id" field.
+func (m *InvestigationHypothesisMutation) SetInvestigationID(u uuid.UUID) {
+	m.investigation = &u
+}
+
+// InvestigationID returns the value of the "investigation_id" field in the mutation.
+func (m *InvestigationHypothesisMutation) InvestigationID() (r uuid.UUID, exists bool) {
+	v := m.investigation
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldInvestigationID returns the old "investigation_id" field's value of the InvestigationHypothesis entity.
+// If the InvestigationHypothesis object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InvestigationHypothesisMutation) OldInvestigationID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldInvestigationID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldInvestigationID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldInvestigationID: %w", err)
+	}
+	return oldValue.InvestigationID, nil
+}
+
+// ResetInvestigationID resets all changes to the "investigation_id" field.
+func (m *InvestigationHypothesisMutation) ResetInvestigationID() {
+	m.investigation = nil
+}
+
+// SetTitle sets the "title" field.
+func (m *InvestigationHypothesisMutation) SetTitle(s string) {
+	m.title = &s
+}
+
+// Title returns the value of the "title" field in the mutation.
+func (m *InvestigationHypothesisMutation) Title() (r string, exists bool) {
+	v := m.title
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTitle returns the old "title" field's value of the InvestigationHypothesis entity.
+// If the InvestigationHypothesis object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InvestigationHypothesisMutation) OldTitle(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTitle is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTitle requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTitle: %w", err)
+	}
+	return oldValue.Title, nil
+}
+
+// ResetTitle resets all changes to the "title" field.
+func (m *InvestigationHypothesisMutation) ResetTitle() {
+	m.title = nil
+}
+
+// SetBody sets the "body" field.
+func (m *InvestigationHypothesisMutation) SetBody(s string) {
+	m.body = &s
+}
+
+// Body returns the value of the "body" field in the mutation.
+func (m *InvestigationHypothesisMutation) Body() (r string, exists bool) {
+	v := m.body
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldBody returns the old "body" field's value of the InvestigationHypothesis entity.
+// If the InvestigationHypothesis object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InvestigationHypothesisMutation) OldBody(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldBody is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldBody requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldBody: %w", err)
+	}
+	return oldValue.Body, nil
+}
+
+// ClearBody clears the value of the "body" field.
+func (m *InvestigationHypothesisMutation) ClearBody() {
+	m.body = nil
+	m.clearedFields[investigationhypothesis.FieldBody] = struct{}{}
+}
+
+// BodyCleared returns if the "body" field was cleared in this mutation.
+func (m *InvestigationHypothesisMutation) BodyCleared() bool {
+	_, ok := m.clearedFields[investigationhypothesis.FieldBody]
+	return ok
+}
+
+// ResetBody resets all changes to the "body" field.
+func (m *InvestigationHypothesisMutation) ResetBody() {
+	m.body = nil
+	delete(m.clearedFields, investigationhypothesis.FieldBody)
+}
+
+// SetVerdict sets the "verdict" field.
+func (m *InvestigationHypothesisMutation) SetVerdict(s string) {
+	m.verdict = &s
+}
+
+// Verdict returns the value of the "verdict" field in the mutation.
+func (m *InvestigationHypothesisMutation) Verdict() (r string, exists bool) {
+	v := m.verdict
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldVerdict returns the old "verdict" field's value of the InvestigationHypothesis entity.
+// If the InvestigationHypothesis object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InvestigationHypothesisMutation) OldVerdict(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldVerdict is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldVerdict requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldVerdict: %w", err)
+	}
+	return oldValue.Verdict, nil
+}
+
+// ClearVerdict clears the value of the "verdict" field.
+func (m *InvestigationHypothesisMutation) ClearVerdict() {
+	m.verdict = nil
+	m.clearedFields[investigationhypothesis.FieldVerdict] = struct{}{}
+}
+
+// VerdictCleared returns if the "verdict" field was cleared in this mutation.
+func (m *InvestigationHypothesisMutation) VerdictCleared() bool {
+	_, ok := m.clearedFields[investigationhypothesis.FieldVerdict]
+	return ok
+}
+
+// ResetVerdict resets all changes to the "verdict" field.
+func (m *InvestigationHypothesisMutation) ResetVerdict() {
+	m.verdict = nil
+	delete(m.clearedFields, investigationhypothesis.FieldVerdict)
+}
+
+// ClearTenant clears the "tenant" edge to the Tenant entity.
+func (m *InvestigationHypothesisMutation) ClearTenant() {
+	m.clearedtenant = true
+	m.clearedFields[investigationhypothesis.FieldTenantID] = struct{}{}
+}
+
+// TenantCleared reports if the "tenant" edge to the Tenant entity was cleared.
+func (m *InvestigationHypothesisMutation) TenantCleared() bool {
+	return m.clearedtenant
+}
+
+// TenantIDs returns the "tenant" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// TenantID instead. It exists only for internal usage by the builders.
+func (m *InvestigationHypothesisMutation) TenantIDs() (ids []int) {
+	if id := m.tenant; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetTenant resets all changes to the "tenant" edge.
+func (m *InvestigationHypothesisMutation) ResetTenant() {
+	m.tenant = nil
+	m.clearedtenant = false
+}
+
+// ClearInvestigation clears the "investigation" edge to the Investigation entity.
+func (m *InvestigationHypothesisMutation) ClearInvestigation() {
+	m.clearedinvestigation = true
+	m.clearedFields[investigationhypothesis.FieldInvestigationID] = struct{}{}
+}
+
+// InvestigationCleared reports if the "investigation" edge to the Investigation entity was cleared.
+func (m *InvestigationHypothesisMutation) InvestigationCleared() bool {
+	return m.clearedinvestigation
+}
+
+// InvestigationIDs returns the "investigation" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// InvestigationID instead. It exists only for internal usage by the builders.
+func (m *InvestigationHypothesisMutation) InvestigationIDs() (ids []uuid.UUID) {
+	if id := m.investigation; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetInvestigation resets all changes to the "investigation" edge.
+func (m *InvestigationHypothesisMutation) ResetInvestigation() {
+	m.investigation = nil
+	m.clearedinvestigation = false
+}
+
+// Where appends a list predicates to the InvestigationHypothesisMutation builder.
+func (m *InvestigationHypothesisMutation) Where(ps ...predicate.InvestigationHypothesis) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the InvestigationHypothesisMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *InvestigationHypothesisMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.InvestigationHypothesis, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *InvestigationHypothesisMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *InvestigationHypothesisMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (InvestigationHypothesis).
+func (m *InvestigationHypothesisMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *InvestigationHypothesisMutation) Fields() []string {
+	fields := make([]string, 0, 7)
+	if m.tenant != nil {
+		fields = append(fields, investigationhypothesis.FieldTenantID)
+	}
+	if m.created_at != nil {
+		fields = append(fields, investigationhypothesis.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, investigationhypothesis.FieldUpdatedAt)
+	}
+	if m.investigation != nil {
+		fields = append(fields, investigationhypothesis.FieldInvestigationID)
+	}
+	if m.title != nil {
+		fields = append(fields, investigationhypothesis.FieldTitle)
+	}
+	if m.body != nil {
+		fields = append(fields, investigationhypothesis.FieldBody)
+	}
+	if m.verdict != nil {
+		fields = append(fields, investigationhypothesis.FieldVerdict)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *InvestigationHypothesisMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case investigationhypothesis.FieldTenantID:
+		return m.TenantID()
+	case investigationhypothesis.FieldCreatedAt:
+		return m.CreatedAt()
+	case investigationhypothesis.FieldUpdatedAt:
+		return m.UpdatedAt()
+	case investigationhypothesis.FieldInvestigationID:
+		return m.InvestigationID()
+	case investigationhypothesis.FieldTitle:
+		return m.Title()
+	case investigationhypothesis.FieldBody:
+		return m.Body()
+	case investigationhypothesis.FieldVerdict:
+		return m.Verdict()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *InvestigationHypothesisMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case investigationhypothesis.FieldTenantID:
+		return m.OldTenantID(ctx)
+	case investigationhypothesis.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case investigationhypothesis.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	case investigationhypothesis.FieldInvestigationID:
+		return m.OldInvestigationID(ctx)
+	case investigationhypothesis.FieldTitle:
+		return m.OldTitle(ctx)
+	case investigationhypothesis.FieldBody:
+		return m.OldBody(ctx)
+	case investigationhypothesis.FieldVerdict:
+		return m.OldVerdict(ctx)
+	}
+	return nil, fmt.Errorf("unknown InvestigationHypothesis field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *InvestigationHypothesisMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case investigationhypothesis.FieldTenantID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTenantID(v)
+		return nil
+	case investigationhypothesis.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case investigationhypothesis.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	case investigationhypothesis.FieldInvestigationID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetInvestigationID(v)
+		return nil
+	case investigationhypothesis.FieldTitle:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTitle(v)
+		return nil
+	case investigationhypothesis.FieldBody:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetBody(v)
+		return nil
+	case investigationhypothesis.FieldVerdict:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetVerdict(v)
+		return nil
+	}
+	return fmt.Errorf("unknown InvestigationHypothesis field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *InvestigationHypothesisMutation) AddedFields() []string {
+	var fields []string
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *InvestigationHypothesisMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *InvestigationHypothesisMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown InvestigationHypothesis numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *InvestigationHypothesisMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(investigationhypothesis.FieldBody) {
+		fields = append(fields, investigationhypothesis.FieldBody)
+	}
+	if m.FieldCleared(investigationhypothesis.FieldVerdict) {
+		fields = append(fields, investigationhypothesis.FieldVerdict)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *InvestigationHypothesisMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *InvestigationHypothesisMutation) ClearField(name string) error {
+	switch name {
+	case investigationhypothesis.FieldBody:
+		m.ClearBody()
+		return nil
+	case investigationhypothesis.FieldVerdict:
+		m.ClearVerdict()
+		return nil
+	}
+	return fmt.Errorf("unknown InvestigationHypothesis nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *InvestigationHypothesisMutation) ResetField(name string) error {
+	switch name {
+	case investigationhypothesis.FieldTenantID:
+		m.ResetTenantID()
+		return nil
+	case investigationhypothesis.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case investigationhypothesis.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	case investigationhypothesis.FieldInvestigationID:
+		m.ResetInvestigationID()
+		return nil
+	case investigationhypothesis.FieldTitle:
+		m.ResetTitle()
+		return nil
+	case investigationhypothesis.FieldBody:
+		m.ResetBody()
+		return nil
+	case investigationhypothesis.FieldVerdict:
+		m.ResetVerdict()
+		return nil
+	}
+	return fmt.Errorf("unknown InvestigationHypothesis field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *InvestigationHypothesisMutation) AddedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.tenant != nil {
+		edges = append(edges, investigationhypothesis.EdgeTenant)
+	}
+	if m.investigation != nil {
+		edges = append(edges, investigationhypothesis.EdgeInvestigation)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *InvestigationHypothesisMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case investigationhypothesis.EdgeTenant:
+		if id := m.tenant; id != nil {
+			return []ent.Value{*id}
+		}
+	case investigationhypothesis.EdgeInvestigation:
+		if id := m.investigation; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *InvestigationHypothesisMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 2)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *InvestigationHypothesisMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *InvestigationHypothesisMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.clearedtenant {
+		edges = append(edges, investigationhypothesis.EdgeTenant)
+	}
+	if m.clearedinvestigation {
+		edges = append(edges, investigationhypothesis.EdgeInvestigation)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *InvestigationHypothesisMutation) EdgeCleared(name string) bool {
+	switch name {
+	case investigationhypothesis.EdgeTenant:
+		return m.clearedtenant
+	case investigationhypothesis.EdgeInvestigation:
+		return m.clearedinvestigation
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *InvestigationHypothesisMutation) ClearEdge(name string) error {
+	switch name {
+	case investigationhypothesis.EdgeTenant:
+		m.ClearTenant()
+		return nil
+	case investigationhypothesis.EdgeInvestigation:
+		m.ClearInvestigation()
+		return nil
+	}
+	return fmt.Errorf("unknown InvestigationHypothesis unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *InvestigationHypothesisMutation) ResetEdge(name string) error {
+	switch name {
+	case investigationhypothesis.EdgeTenant:
+		m.ResetTenant()
+		return nil
+	case investigationhypothesis.EdgeInvestigation:
+		m.ResetInvestigation()
+		return nil
+	}
+	return fmt.Errorf("unknown InvestigationHypothesis edge %s", name)
+}
+
+// InvestigationReportMutation represents an operation that mutates the InvestigationReport nodes in the graph.
+type InvestigationReportMutation struct {
+	config
+	op                        Op
+	typ                       string
+	id                        *uuid.UUID
+	created_at                *time.Time
+	updated_at                *time.Time
+	text                      *string
+	likely_cause              *string
+	best_next_step            *string
+	limitations               *[]string
+	appendlimitations         []string
+	recommended_actions       *[]string
+	appendrecommended_actions []string
+	suggested_checks          *[]string
+	appendsuggested_checks    []string
+	clearedFields             map[string]struct{}
+	tenant                    *int
+	clearedtenant             bool
+	investigation             *uuid.UUID
+	clearedinvestigation      bool
+	agent_turn                *uuid.UUID
+	clearedagent_turn         bool
+	done                      bool
+	oldValue                  func(context.Context) (*InvestigationReport, error)
+	predicates                []predicate.InvestigationReport
+}
+
+var _ ent.Mutation = (*InvestigationReportMutation)(nil)
+
+// investigationreportOption allows management of the mutation configuration using functional options.
+type investigationreportOption func(*InvestigationReportMutation)
+
+// newInvestigationReportMutation creates new mutation for the InvestigationReport entity.
+func newInvestigationReportMutation(c config, op Op, opts ...investigationreportOption) *InvestigationReportMutation {
+	m := &InvestigationReportMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeInvestigationReport,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withInvestigationReportID sets the ID field of the mutation.
+func withInvestigationReportID(id uuid.UUID) investigationreportOption {
+	return func(m *InvestigationReportMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *InvestigationReport
+		)
+		m.oldValue = func(ctx context.Context) (*InvestigationReport, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().InvestigationReport.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withInvestigationReport sets the old InvestigationReport of the mutation.
+func withInvestigationReport(node *InvestigationReport) investigationreportOption {
+	return func(m *InvestigationReportMutation) {
+		m.oldValue = func(context.Context) (*InvestigationReport, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m InvestigationReportMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m InvestigationReportMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of InvestigationReport entities.
+func (m *InvestigationReportMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *InvestigationReportMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *InvestigationReportMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uuid.UUID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().InvestigationReport.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (m *InvestigationReportMutation) SetTenantID(i int) {
+	m.tenant = &i
+}
+
+// TenantID returns the value of the "tenant_id" field in the mutation.
+func (m *InvestigationReportMutation) TenantID() (r int, exists bool) {
+	v := m.tenant
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTenantID returns the old "tenant_id" field's value of the InvestigationReport entity.
+// If the InvestigationReport object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InvestigationReportMutation) OldTenantID(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTenantID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTenantID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTenantID: %w", err)
+	}
+	return oldValue.TenantID, nil
+}
+
+// ResetTenantID resets all changes to the "tenant_id" field.
+func (m *InvestigationReportMutation) ResetTenantID() {
+	m.tenant = nil
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *InvestigationReportMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *InvestigationReportMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the InvestigationReport entity.
+// If the InvestigationReport object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InvestigationReportMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *InvestigationReportMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *InvestigationReportMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *InvestigationReportMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the InvestigationReport entity.
+// If the InvestigationReport object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InvestigationReportMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *InvestigationReportMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// SetInvestigationID sets the "investigation_id" field.
+func (m *InvestigationReportMutation) SetInvestigationID(u uuid.UUID) {
+	m.investigation = &u
+}
+
+// InvestigationID returns the value of the "investigation_id" field in the mutation.
+func (m *InvestigationReportMutation) InvestigationID() (r uuid.UUID, exists bool) {
+	v := m.investigation
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldInvestigationID returns the old "investigation_id" field's value of the InvestigationReport entity.
+// If the InvestigationReport object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InvestigationReportMutation) OldInvestigationID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldInvestigationID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldInvestigationID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldInvestigationID: %w", err)
+	}
+	return oldValue.InvestigationID, nil
+}
+
+// ResetInvestigationID resets all changes to the "investigation_id" field.
+func (m *InvestigationReportMutation) ResetInvestigationID() {
+	m.investigation = nil
+}
+
+// SetAgentTurnID sets the "agent_turn_id" field.
+func (m *InvestigationReportMutation) SetAgentTurnID(u uuid.UUID) {
+	m.agent_turn = &u
+}
+
+// AgentTurnID returns the value of the "agent_turn_id" field in the mutation.
+func (m *InvestigationReportMutation) AgentTurnID() (r uuid.UUID, exists bool) {
+	v := m.agent_turn
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAgentTurnID returns the old "agent_turn_id" field's value of the InvestigationReport entity.
+// If the InvestigationReport object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InvestigationReportMutation) OldAgentTurnID(ctx context.Context) (v *uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAgentTurnID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAgentTurnID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAgentTurnID: %w", err)
+	}
+	return oldValue.AgentTurnID, nil
+}
+
+// ClearAgentTurnID clears the value of the "agent_turn_id" field.
+func (m *InvestigationReportMutation) ClearAgentTurnID() {
+	m.agent_turn = nil
+	m.clearedFields[investigationreport.FieldAgentTurnID] = struct{}{}
+}
+
+// AgentTurnIDCleared returns if the "agent_turn_id" field was cleared in this mutation.
+func (m *InvestigationReportMutation) AgentTurnIDCleared() bool {
+	_, ok := m.clearedFields[investigationreport.FieldAgentTurnID]
+	return ok
+}
+
+// ResetAgentTurnID resets all changes to the "agent_turn_id" field.
+func (m *InvestigationReportMutation) ResetAgentTurnID() {
+	m.agent_turn = nil
+	delete(m.clearedFields, investigationreport.FieldAgentTurnID)
+}
+
+// SetText sets the "text" field.
+func (m *InvestigationReportMutation) SetText(s string) {
+	m.text = &s
+}
+
+// Text returns the value of the "text" field in the mutation.
+func (m *InvestigationReportMutation) Text() (r string, exists bool) {
+	v := m.text
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldText returns the old "text" field's value of the InvestigationReport entity.
+// If the InvestigationReport object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InvestigationReportMutation) OldText(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldText is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldText requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldText: %w", err)
+	}
+	return oldValue.Text, nil
+}
+
+// ResetText resets all changes to the "text" field.
+func (m *InvestigationReportMutation) ResetText() {
+	m.text = nil
+}
+
+// SetLikelyCause sets the "likely_cause" field.
+func (m *InvestigationReportMutation) SetLikelyCause(s string) {
+	m.likely_cause = &s
+}
+
+// LikelyCause returns the value of the "likely_cause" field in the mutation.
+func (m *InvestigationReportMutation) LikelyCause() (r string, exists bool) {
+	v := m.likely_cause
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLikelyCause returns the old "likely_cause" field's value of the InvestigationReport entity.
+// If the InvestigationReport object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InvestigationReportMutation) OldLikelyCause(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLikelyCause is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLikelyCause requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLikelyCause: %w", err)
+	}
+	return oldValue.LikelyCause, nil
+}
+
+// ClearLikelyCause clears the value of the "likely_cause" field.
+func (m *InvestigationReportMutation) ClearLikelyCause() {
+	m.likely_cause = nil
+	m.clearedFields[investigationreport.FieldLikelyCause] = struct{}{}
+}
+
+// LikelyCauseCleared returns if the "likely_cause" field was cleared in this mutation.
+func (m *InvestigationReportMutation) LikelyCauseCleared() bool {
+	_, ok := m.clearedFields[investigationreport.FieldLikelyCause]
+	return ok
+}
+
+// ResetLikelyCause resets all changes to the "likely_cause" field.
+func (m *InvestigationReportMutation) ResetLikelyCause() {
+	m.likely_cause = nil
+	delete(m.clearedFields, investigationreport.FieldLikelyCause)
+}
+
+// SetBestNextStep sets the "best_next_step" field.
+func (m *InvestigationReportMutation) SetBestNextStep(s string) {
+	m.best_next_step = &s
+}
+
+// BestNextStep returns the value of the "best_next_step" field in the mutation.
+func (m *InvestigationReportMutation) BestNextStep() (r string, exists bool) {
+	v := m.best_next_step
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldBestNextStep returns the old "best_next_step" field's value of the InvestigationReport entity.
+// If the InvestigationReport object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InvestigationReportMutation) OldBestNextStep(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldBestNextStep is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldBestNextStep requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldBestNextStep: %w", err)
+	}
+	return oldValue.BestNextStep, nil
+}
+
+// ClearBestNextStep clears the value of the "best_next_step" field.
+func (m *InvestigationReportMutation) ClearBestNextStep() {
+	m.best_next_step = nil
+	m.clearedFields[investigationreport.FieldBestNextStep] = struct{}{}
+}
+
+// BestNextStepCleared returns if the "best_next_step" field was cleared in this mutation.
+func (m *InvestigationReportMutation) BestNextStepCleared() bool {
+	_, ok := m.clearedFields[investigationreport.FieldBestNextStep]
+	return ok
+}
+
+// ResetBestNextStep resets all changes to the "best_next_step" field.
+func (m *InvestigationReportMutation) ResetBestNextStep() {
+	m.best_next_step = nil
+	delete(m.clearedFields, investigationreport.FieldBestNextStep)
+}
+
+// SetLimitations sets the "limitations" field.
+func (m *InvestigationReportMutation) SetLimitations(s []string) {
+	m.limitations = &s
+	m.appendlimitations = nil
+}
+
+// Limitations returns the value of the "limitations" field in the mutation.
+func (m *InvestigationReportMutation) Limitations() (r []string, exists bool) {
+	v := m.limitations
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLimitations returns the old "limitations" field's value of the InvestigationReport entity.
+// If the InvestigationReport object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InvestigationReportMutation) OldLimitations(ctx context.Context) (v []string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLimitations is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLimitations requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLimitations: %w", err)
+	}
+	return oldValue.Limitations, nil
+}
+
+// AppendLimitations adds s to the "limitations" field.
+func (m *InvestigationReportMutation) AppendLimitations(s []string) {
+	m.appendlimitations = append(m.appendlimitations, s...)
+}
+
+// AppendedLimitations returns the list of values that were appended to the "limitations" field in this mutation.
+func (m *InvestigationReportMutation) AppendedLimitations() ([]string, bool) {
+	if len(m.appendlimitations) == 0 {
+		return nil, false
+	}
+	return m.appendlimitations, true
+}
+
+// ClearLimitations clears the value of the "limitations" field.
+func (m *InvestigationReportMutation) ClearLimitations() {
+	m.limitations = nil
+	m.appendlimitations = nil
+	m.clearedFields[investigationreport.FieldLimitations] = struct{}{}
+}
+
+// LimitationsCleared returns if the "limitations" field was cleared in this mutation.
+func (m *InvestigationReportMutation) LimitationsCleared() bool {
+	_, ok := m.clearedFields[investigationreport.FieldLimitations]
+	return ok
+}
+
+// ResetLimitations resets all changes to the "limitations" field.
+func (m *InvestigationReportMutation) ResetLimitations() {
+	m.limitations = nil
+	m.appendlimitations = nil
+	delete(m.clearedFields, investigationreport.FieldLimitations)
+}
+
+// SetRecommendedActions sets the "recommended_actions" field.
+func (m *InvestigationReportMutation) SetRecommendedActions(s []string) {
+	m.recommended_actions = &s
+	m.appendrecommended_actions = nil
+}
+
+// RecommendedActions returns the value of the "recommended_actions" field in the mutation.
+func (m *InvestigationReportMutation) RecommendedActions() (r []string, exists bool) {
+	v := m.recommended_actions
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRecommendedActions returns the old "recommended_actions" field's value of the InvestigationReport entity.
+// If the InvestigationReport object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InvestigationReportMutation) OldRecommendedActions(ctx context.Context) (v []string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRecommendedActions is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRecommendedActions requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRecommendedActions: %w", err)
+	}
+	return oldValue.RecommendedActions, nil
+}
+
+// AppendRecommendedActions adds s to the "recommended_actions" field.
+func (m *InvestigationReportMutation) AppendRecommendedActions(s []string) {
+	m.appendrecommended_actions = append(m.appendrecommended_actions, s...)
+}
+
+// AppendedRecommendedActions returns the list of values that were appended to the "recommended_actions" field in this mutation.
+func (m *InvestigationReportMutation) AppendedRecommendedActions() ([]string, bool) {
+	if len(m.appendrecommended_actions) == 0 {
+		return nil, false
+	}
+	return m.appendrecommended_actions, true
+}
+
+// ClearRecommendedActions clears the value of the "recommended_actions" field.
+func (m *InvestigationReportMutation) ClearRecommendedActions() {
+	m.recommended_actions = nil
+	m.appendrecommended_actions = nil
+	m.clearedFields[investigationreport.FieldRecommendedActions] = struct{}{}
+}
+
+// RecommendedActionsCleared returns if the "recommended_actions" field was cleared in this mutation.
+func (m *InvestigationReportMutation) RecommendedActionsCleared() bool {
+	_, ok := m.clearedFields[investigationreport.FieldRecommendedActions]
+	return ok
+}
+
+// ResetRecommendedActions resets all changes to the "recommended_actions" field.
+func (m *InvestigationReportMutation) ResetRecommendedActions() {
+	m.recommended_actions = nil
+	m.appendrecommended_actions = nil
+	delete(m.clearedFields, investigationreport.FieldRecommendedActions)
+}
+
+// SetSuggestedChecks sets the "suggested_checks" field.
+func (m *InvestigationReportMutation) SetSuggestedChecks(s []string) {
+	m.suggested_checks = &s
+	m.appendsuggested_checks = nil
+}
+
+// SuggestedChecks returns the value of the "suggested_checks" field in the mutation.
+func (m *InvestigationReportMutation) SuggestedChecks() (r []string, exists bool) {
+	v := m.suggested_checks
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSuggestedChecks returns the old "suggested_checks" field's value of the InvestigationReport entity.
+// If the InvestigationReport object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InvestigationReportMutation) OldSuggestedChecks(ctx context.Context) (v []string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSuggestedChecks is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSuggestedChecks requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSuggestedChecks: %w", err)
+	}
+	return oldValue.SuggestedChecks, nil
+}
+
+// AppendSuggestedChecks adds s to the "suggested_checks" field.
+func (m *InvestigationReportMutation) AppendSuggestedChecks(s []string) {
+	m.appendsuggested_checks = append(m.appendsuggested_checks, s...)
+}
+
+// AppendedSuggestedChecks returns the list of values that were appended to the "suggested_checks" field in this mutation.
+func (m *InvestigationReportMutation) AppendedSuggestedChecks() ([]string, bool) {
+	if len(m.appendsuggested_checks) == 0 {
+		return nil, false
+	}
+	return m.appendsuggested_checks, true
+}
+
+// ClearSuggestedChecks clears the value of the "suggested_checks" field.
+func (m *InvestigationReportMutation) ClearSuggestedChecks() {
+	m.suggested_checks = nil
+	m.appendsuggested_checks = nil
+	m.clearedFields[investigationreport.FieldSuggestedChecks] = struct{}{}
+}
+
+// SuggestedChecksCleared returns if the "suggested_checks" field was cleared in this mutation.
+func (m *InvestigationReportMutation) SuggestedChecksCleared() bool {
+	_, ok := m.clearedFields[investigationreport.FieldSuggestedChecks]
+	return ok
+}
+
+// ResetSuggestedChecks resets all changes to the "suggested_checks" field.
+func (m *InvestigationReportMutation) ResetSuggestedChecks() {
+	m.suggested_checks = nil
+	m.appendsuggested_checks = nil
+	delete(m.clearedFields, investigationreport.FieldSuggestedChecks)
+}
+
+// ClearTenant clears the "tenant" edge to the Tenant entity.
+func (m *InvestigationReportMutation) ClearTenant() {
+	m.clearedtenant = true
+	m.clearedFields[investigationreport.FieldTenantID] = struct{}{}
+}
+
+// TenantCleared reports if the "tenant" edge to the Tenant entity was cleared.
+func (m *InvestigationReportMutation) TenantCleared() bool {
+	return m.clearedtenant
+}
+
+// TenantIDs returns the "tenant" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// TenantID instead. It exists only for internal usage by the builders.
+func (m *InvestigationReportMutation) TenantIDs() (ids []int) {
+	if id := m.tenant; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetTenant resets all changes to the "tenant" edge.
+func (m *InvestigationReportMutation) ResetTenant() {
+	m.tenant = nil
+	m.clearedtenant = false
+}
+
+// ClearInvestigation clears the "investigation" edge to the Investigation entity.
+func (m *InvestigationReportMutation) ClearInvestigation() {
+	m.clearedinvestigation = true
+	m.clearedFields[investigationreport.FieldInvestigationID] = struct{}{}
+}
+
+// InvestigationCleared reports if the "investigation" edge to the Investigation entity was cleared.
+func (m *InvestigationReportMutation) InvestigationCleared() bool {
+	return m.clearedinvestigation
+}
+
+// InvestigationIDs returns the "investigation" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// InvestigationID instead. It exists only for internal usage by the builders.
+func (m *InvestigationReportMutation) InvestigationIDs() (ids []uuid.UUID) {
+	if id := m.investigation; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetInvestigation resets all changes to the "investigation" edge.
+func (m *InvestigationReportMutation) ResetInvestigation() {
+	m.investigation = nil
+	m.clearedinvestigation = false
+}
+
+// ClearAgentTurn clears the "agent_turn" edge to the AgentTurn entity.
+func (m *InvestigationReportMutation) ClearAgentTurn() {
+	m.clearedagent_turn = true
+	m.clearedFields[investigationreport.FieldAgentTurnID] = struct{}{}
+}
+
+// AgentTurnCleared reports if the "agent_turn" edge to the AgentTurn entity was cleared.
+func (m *InvestigationReportMutation) AgentTurnCleared() bool {
+	return m.AgentTurnIDCleared() || m.clearedagent_turn
+}
+
+// AgentTurnIDs returns the "agent_turn" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// AgentTurnID instead. It exists only for internal usage by the builders.
+func (m *InvestigationReportMutation) AgentTurnIDs() (ids []uuid.UUID) {
+	if id := m.agent_turn; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetAgentTurn resets all changes to the "agent_turn" edge.
+func (m *InvestigationReportMutation) ResetAgentTurn() {
+	m.agent_turn = nil
+	m.clearedagent_turn = false
+}
+
+// Where appends a list predicates to the InvestigationReportMutation builder.
+func (m *InvestigationReportMutation) Where(ps ...predicate.InvestigationReport) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the InvestigationReportMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *InvestigationReportMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.InvestigationReport, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *InvestigationReportMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *InvestigationReportMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (InvestigationReport).
+func (m *InvestigationReportMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *InvestigationReportMutation) Fields() []string {
+	fields := make([]string, 0, 11)
+	if m.tenant != nil {
+		fields = append(fields, investigationreport.FieldTenantID)
+	}
+	if m.created_at != nil {
+		fields = append(fields, investigationreport.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, investigationreport.FieldUpdatedAt)
+	}
+	if m.investigation != nil {
+		fields = append(fields, investigationreport.FieldInvestigationID)
+	}
+	if m.agent_turn != nil {
+		fields = append(fields, investigationreport.FieldAgentTurnID)
+	}
+	if m.text != nil {
+		fields = append(fields, investigationreport.FieldText)
+	}
+	if m.likely_cause != nil {
+		fields = append(fields, investigationreport.FieldLikelyCause)
+	}
+	if m.best_next_step != nil {
+		fields = append(fields, investigationreport.FieldBestNextStep)
+	}
+	if m.limitations != nil {
+		fields = append(fields, investigationreport.FieldLimitations)
+	}
+	if m.recommended_actions != nil {
+		fields = append(fields, investigationreport.FieldRecommendedActions)
+	}
+	if m.suggested_checks != nil {
+		fields = append(fields, investigationreport.FieldSuggestedChecks)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *InvestigationReportMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case investigationreport.FieldTenantID:
+		return m.TenantID()
+	case investigationreport.FieldCreatedAt:
+		return m.CreatedAt()
+	case investigationreport.FieldUpdatedAt:
+		return m.UpdatedAt()
+	case investigationreport.FieldInvestigationID:
+		return m.InvestigationID()
+	case investigationreport.FieldAgentTurnID:
+		return m.AgentTurnID()
+	case investigationreport.FieldText:
+		return m.Text()
+	case investigationreport.FieldLikelyCause:
+		return m.LikelyCause()
+	case investigationreport.FieldBestNextStep:
+		return m.BestNextStep()
+	case investigationreport.FieldLimitations:
+		return m.Limitations()
+	case investigationreport.FieldRecommendedActions:
+		return m.RecommendedActions()
+	case investigationreport.FieldSuggestedChecks:
+		return m.SuggestedChecks()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *InvestigationReportMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case investigationreport.FieldTenantID:
+		return m.OldTenantID(ctx)
+	case investigationreport.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case investigationreport.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	case investigationreport.FieldInvestigationID:
+		return m.OldInvestigationID(ctx)
+	case investigationreport.FieldAgentTurnID:
+		return m.OldAgentTurnID(ctx)
+	case investigationreport.FieldText:
+		return m.OldText(ctx)
+	case investigationreport.FieldLikelyCause:
+		return m.OldLikelyCause(ctx)
+	case investigationreport.FieldBestNextStep:
+		return m.OldBestNextStep(ctx)
+	case investigationreport.FieldLimitations:
+		return m.OldLimitations(ctx)
+	case investigationreport.FieldRecommendedActions:
+		return m.OldRecommendedActions(ctx)
+	case investigationreport.FieldSuggestedChecks:
+		return m.OldSuggestedChecks(ctx)
+	}
+	return nil, fmt.Errorf("unknown InvestigationReport field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *InvestigationReportMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case investigationreport.FieldTenantID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTenantID(v)
+		return nil
+	case investigationreport.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case investigationreport.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	case investigationreport.FieldInvestigationID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetInvestigationID(v)
+		return nil
+	case investigationreport.FieldAgentTurnID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAgentTurnID(v)
+		return nil
+	case investigationreport.FieldText:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetText(v)
+		return nil
+	case investigationreport.FieldLikelyCause:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLikelyCause(v)
+		return nil
+	case investigationreport.FieldBestNextStep:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetBestNextStep(v)
+		return nil
+	case investigationreport.FieldLimitations:
+		v, ok := value.([]string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLimitations(v)
+		return nil
+	case investigationreport.FieldRecommendedActions:
+		v, ok := value.([]string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRecommendedActions(v)
+		return nil
+	case investigationreport.FieldSuggestedChecks:
+		v, ok := value.([]string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSuggestedChecks(v)
+		return nil
+	}
+	return fmt.Errorf("unknown InvestigationReport field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *InvestigationReportMutation) AddedFields() []string {
+	var fields []string
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *InvestigationReportMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *InvestigationReportMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown InvestigationReport numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *InvestigationReportMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(investigationreport.FieldAgentTurnID) {
+		fields = append(fields, investigationreport.FieldAgentTurnID)
+	}
+	if m.FieldCleared(investigationreport.FieldLikelyCause) {
+		fields = append(fields, investigationreport.FieldLikelyCause)
+	}
+	if m.FieldCleared(investigationreport.FieldBestNextStep) {
+		fields = append(fields, investigationreport.FieldBestNextStep)
+	}
+	if m.FieldCleared(investigationreport.FieldLimitations) {
+		fields = append(fields, investigationreport.FieldLimitations)
+	}
+	if m.FieldCleared(investigationreport.FieldRecommendedActions) {
+		fields = append(fields, investigationreport.FieldRecommendedActions)
+	}
+	if m.FieldCleared(investigationreport.FieldSuggestedChecks) {
+		fields = append(fields, investigationreport.FieldSuggestedChecks)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *InvestigationReportMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *InvestigationReportMutation) ClearField(name string) error {
+	switch name {
+	case investigationreport.FieldAgentTurnID:
+		m.ClearAgentTurnID()
+		return nil
+	case investigationreport.FieldLikelyCause:
+		m.ClearLikelyCause()
+		return nil
+	case investigationreport.FieldBestNextStep:
+		m.ClearBestNextStep()
+		return nil
+	case investigationreport.FieldLimitations:
+		m.ClearLimitations()
+		return nil
+	case investigationreport.FieldRecommendedActions:
+		m.ClearRecommendedActions()
+		return nil
+	case investigationreport.FieldSuggestedChecks:
+		m.ClearSuggestedChecks()
+		return nil
+	}
+	return fmt.Errorf("unknown InvestigationReport nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *InvestigationReportMutation) ResetField(name string) error {
+	switch name {
+	case investigationreport.FieldTenantID:
+		m.ResetTenantID()
+		return nil
+	case investigationreport.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case investigationreport.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	case investigationreport.FieldInvestigationID:
+		m.ResetInvestigationID()
+		return nil
+	case investigationreport.FieldAgentTurnID:
+		m.ResetAgentTurnID()
+		return nil
+	case investigationreport.FieldText:
+		m.ResetText()
+		return nil
+	case investigationreport.FieldLikelyCause:
+		m.ResetLikelyCause()
+		return nil
+	case investigationreport.FieldBestNextStep:
+		m.ResetBestNextStep()
+		return nil
+	case investigationreport.FieldLimitations:
+		m.ResetLimitations()
+		return nil
+	case investigationreport.FieldRecommendedActions:
+		m.ResetRecommendedActions()
+		return nil
+	case investigationreport.FieldSuggestedChecks:
+		m.ResetSuggestedChecks()
+		return nil
+	}
+	return fmt.Errorf("unknown InvestigationReport field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *InvestigationReportMutation) AddedEdges() []string {
+	edges := make([]string, 0, 3)
+	if m.tenant != nil {
+		edges = append(edges, investigationreport.EdgeTenant)
+	}
+	if m.investigation != nil {
+		edges = append(edges, investigationreport.EdgeInvestigation)
+	}
+	if m.agent_turn != nil {
+		edges = append(edges, investigationreport.EdgeAgentTurn)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *InvestigationReportMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case investigationreport.EdgeTenant:
+		if id := m.tenant; id != nil {
+			return []ent.Value{*id}
+		}
+	case investigationreport.EdgeInvestigation:
+		if id := m.investigation; id != nil {
+			return []ent.Value{*id}
+		}
+	case investigationreport.EdgeAgentTurn:
+		if id := m.agent_turn; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *InvestigationReportMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 3)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *InvestigationReportMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *InvestigationReportMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 3)
+	if m.clearedtenant {
+		edges = append(edges, investigationreport.EdgeTenant)
+	}
+	if m.clearedinvestigation {
+		edges = append(edges, investigationreport.EdgeInvestigation)
+	}
+	if m.clearedagent_turn {
+		edges = append(edges, investigationreport.EdgeAgentTurn)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *InvestigationReportMutation) EdgeCleared(name string) bool {
+	switch name {
+	case investigationreport.EdgeTenant:
+		return m.clearedtenant
+	case investigationreport.EdgeInvestigation:
+		return m.clearedinvestigation
+	case investigationreport.EdgeAgentTurn:
+		return m.clearedagent_turn
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *InvestigationReportMutation) ClearEdge(name string) error {
+	switch name {
+	case investigationreport.EdgeTenant:
+		m.ClearTenant()
+		return nil
+	case investigationreport.EdgeInvestigation:
+		m.ClearInvestigation()
+		return nil
+	case investigationreport.EdgeAgentTurn:
+		m.ClearAgentTurn()
+		return nil
+	}
+	return fmt.Errorf("unknown InvestigationReport unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *InvestigationReportMutation) ResetEdge(name string) error {
+	switch name {
+	case investigationreport.EdgeTenant:
+		m.ResetTenant()
+		return nil
+	case investigationreport.EdgeInvestigation:
+		m.ResetInvestigation()
+		return nil
+	case investigationreport.EdgeAgentTurn:
+		m.ResetAgentTurn()
+		return nil
+	}
+	return fmt.Errorf("unknown InvestigationReport edge %s", name)
 }
 
 // KnowledgeEntityMutation represents an operation that mutates the KnowledgeEntity nodes in the graph.
@@ -52053,9 +55701,8 @@ type SituationMutation struct {
 	clearedtenant             bool
 	knowledge_entity          *uuid.UUID
 	clearedknowledge_entity   bool
-	investigations            map[uuid.UUID]struct{}
-	removedinvestigations     map[uuid.UUID]struct{}
-	clearedinvestigations     bool
+	investigation             *uuid.UUID
+	clearedinvestigation      bool
 	hazard_assessments        map[uuid.UUID]struct{}
 	removedhazard_assessments map[uuid.UUID]struct{}
 	clearedhazard_assessments bool
@@ -52647,58 +56294,43 @@ func (m *SituationMutation) ResetKnowledgeEntity() {
 	m.clearedknowledge_entity = false
 }
 
-// AddInvestigationIDs adds the "investigations" edge to the SituationInvestigation entity by ids.
-func (m *SituationMutation) AddInvestigationIDs(ids ...uuid.UUID) {
-	if m.investigations == nil {
-		m.investigations = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.investigations[ids[i]] = struct{}{}
-	}
+// SetInvestigationID sets the "investigation" edge to the SituationInvestigation entity by id.
+func (m *SituationMutation) SetInvestigationID(id uuid.UUID) {
+	m.investigation = &id
 }
 
-// ClearInvestigations clears the "investigations" edge to the SituationInvestigation entity.
-func (m *SituationMutation) ClearInvestigations() {
-	m.clearedinvestigations = true
+// ClearInvestigation clears the "investigation" edge to the SituationInvestigation entity.
+func (m *SituationMutation) ClearInvestigation() {
+	m.clearedinvestigation = true
 }
 
-// InvestigationsCleared reports if the "investigations" edge to the SituationInvestigation entity was cleared.
-func (m *SituationMutation) InvestigationsCleared() bool {
-	return m.clearedinvestigations
+// InvestigationCleared reports if the "investigation" edge to the SituationInvestigation entity was cleared.
+func (m *SituationMutation) InvestigationCleared() bool {
+	return m.clearedinvestigation
 }
 
-// RemoveInvestigationIDs removes the "investigations" edge to the SituationInvestigation entity by IDs.
-func (m *SituationMutation) RemoveInvestigationIDs(ids ...uuid.UUID) {
-	if m.removedinvestigations == nil {
-		m.removedinvestigations = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.investigations, ids[i])
-		m.removedinvestigations[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedInvestigations returns the removed IDs of the "investigations" edge to the SituationInvestigation entity.
-func (m *SituationMutation) RemovedInvestigationsIDs() (ids []uuid.UUID) {
-	for id := range m.removedinvestigations {
-		ids = append(ids, id)
+// InvestigationID returns the "investigation" edge ID in the mutation.
+func (m *SituationMutation) InvestigationID() (id uuid.UUID, exists bool) {
+	if m.investigation != nil {
+		return *m.investigation, true
 	}
 	return
 }
 
-// InvestigationsIDs returns the "investigations" edge IDs in the mutation.
-func (m *SituationMutation) InvestigationsIDs() (ids []uuid.UUID) {
-	for id := range m.investigations {
-		ids = append(ids, id)
+// InvestigationIDs returns the "investigation" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// InvestigationID instead. It exists only for internal usage by the builders.
+func (m *SituationMutation) InvestigationIDs() (ids []uuid.UUID) {
+	if id := m.investigation; id != nil {
+		ids = append(ids, *id)
 	}
 	return
 }
 
-// ResetInvestigations resets all changes to the "investigations" edge.
-func (m *SituationMutation) ResetInvestigations() {
-	m.investigations = nil
-	m.clearedinvestigations = false
-	m.removedinvestigations = nil
+// ResetInvestigation resets all changes to the "investigation" edge.
+func (m *SituationMutation) ResetInvestigation() {
+	m.investigation = nil
+	m.clearedinvestigation = false
 }
 
 // AddHazardAssessmentIDs adds the "hazard_assessments" edge to the SituationHazardAssessment entity by ids.
@@ -53192,8 +56824,8 @@ func (m *SituationMutation) AddedEdges() []string {
 	if m.knowledge_entity != nil {
 		edges = append(edges, situation.EdgeKnowledgeEntity)
 	}
-	if m.investigations != nil {
-		edges = append(edges, situation.EdgeInvestigations)
+	if m.investigation != nil {
+		edges = append(edges, situation.EdgeInvestigation)
 	}
 	if m.hazard_assessments != nil {
 		edges = append(edges, situation.EdgeHazardAssessments)
@@ -53219,12 +56851,10 @@ func (m *SituationMutation) AddedIDs(name string) []ent.Value {
 		if id := m.knowledge_entity; id != nil {
 			return []ent.Value{*id}
 		}
-	case situation.EdgeInvestigations:
-		ids := make([]ent.Value, 0, len(m.investigations))
-		for id := range m.investigations {
-			ids = append(ids, id)
+	case situation.EdgeInvestigation:
+		if id := m.investigation; id != nil {
+			return []ent.Value{*id}
 		}
-		return ids
 	case situation.EdgeHazardAssessments:
 		ids := make([]ent.Value, 0, len(m.hazard_assessments))
 		for id := range m.hazard_assessments {
@@ -53250,9 +56880,6 @@ func (m *SituationMutation) AddedIDs(name string) []ent.Value {
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *SituationMutation) RemovedEdges() []string {
 	edges := make([]string, 0, 6)
-	if m.removedinvestigations != nil {
-		edges = append(edges, situation.EdgeInvestigations)
-	}
 	if m.removedhazard_assessments != nil {
 		edges = append(edges, situation.EdgeHazardAssessments)
 	}
@@ -53269,12 +56896,6 @@ func (m *SituationMutation) RemovedEdges() []string {
 // the given name in this mutation.
 func (m *SituationMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case situation.EdgeInvestigations:
-		ids := make([]ent.Value, 0, len(m.removedinvestigations))
-		for id := range m.removedinvestigations {
-			ids = append(ids, id)
-		}
-		return ids
 	case situation.EdgeHazardAssessments:
 		ids := make([]ent.Value, 0, len(m.removedhazard_assessments))
 		for id := range m.removedhazard_assessments {
@@ -53306,8 +56927,8 @@ func (m *SituationMutation) ClearedEdges() []string {
 	if m.clearedknowledge_entity {
 		edges = append(edges, situation.EdgeKnowledgeEntity)
 	}
-	if m.clearedinvestigations {
-		edges = append(edges, situation.EdgeInvestigations)
+	if m.clearedinvestigation {
+		edges = append(edges, situation.EdgeInvestigation)
 	}
 	if m.clearedhazard_assessments {
 		edges = append(edges, situation.EdgeHazardAssessments)
@@ -53329,8 +56950,8 @@ func (m *SituationMutation) EdgeCleared(name string) bool {
 		return m.clearedtenant
 	case situation.EdgeKnowledgeEntity:
 		return m.clearedknowledge_entity
-	case situation.EdgeInvestigations:
-		return m.clearedinvestigations
+	case situation.EdgeInvestigation:
+		return m.clearedinvestigation
 	case situation.EdgeHazardAssessments:
 		return m.clearedhazard_assessments
 	case situation.EdgeObservationGroups:
@@ -53351,6 +56972,9 @@ func (m *SituationMutation) ClearEdge(name string) error {
 	case situation.EdgeKnowledgeEntity:
 		m.ClearKnowledgeEntity()
 		return nil
+	case situation.EdgeInvestigation:
+		m.ClearInvestigation()
+		return nil
 	}
 	return fmt.Errorf("unknown Situation unique edge %s", name)
 }
@@ -53365,8 +56989,8 @@ func (m *SituationMutation) ResetEdge(name string) error {
 	case situation.EdgeKnowledgeEntity:
 		m.ResetKnowledgeEntity()
 		return nil
-	case situation.EdgeInvestigations:
-		m.ResetInvestigations()
+	case situation.EdgeInvestigation:
+		m.ResetInvestigation()
 		return nil
 	case situation.EdgeHazardAssessments:
 		m.ResetHazardAssessments()
@@ -54571,30 +58195,27 @@ func (m *SituationHazardAssessmentMutation) ResetEdge(name string) error {
 // SituationInvestigationMutation represents an operation that mutates the SituationInvestigation nodes in the graph.
 type SituationInvestigationMutation struct {
 	config
-	op                     Op
-	typ                    string
-	id                     *uuid.UUID
-	created_at             *time.Time
-	updated_at             *time.Time
-	completed_revision     *int
-	addcompleted_revision  *int
-	requested_revision     *int
-	addrequested_revision  *int
-	report                 **schematypes.SituationInvestigationReport
-	clearedFields          map[string]struct{}
-	tenant                 *int
-	clearedtenant          bool
-	requested_turn         *uuid.UUID
-	clearedrequested_turn  bool
-	situation              *uuid.UUID
-	clearedsituation       bool
-	system_analysis        *uuid.UUID
-	clearedsystem_analysis bool
-	agent_session          *uuid.UUID
-	clearedagent_session   bool
-	done                   bool
-	oldValue               func(context.Context) (*SituationInvestigation, error)
-	predicates             []predicate.SituationInvestigation
+	op                    Op
+	typ                   string
+	id                    *uuid.UUID
+	created_at            *time.Time
+	updated_at            *time.Time
+	completed_revision    *int
+	addcompleted_revision *int
+	requested_revision    *int
+	addrequested_revision *int
+	clearedFields         map[string]struct{}
+	tenant                *int
+	clearedtenant         bool
+	requested_turn        *uuid.UUID
+	clearedrequested_turn bool
+	situation             *uuid.UUID
+	clearedsituation      bool
+	investigation         *uuid.UUID
+	clearedinvestigation  bool
+	done                  bool
+	oldValue              func(context.Context) (*SituationInvestigation, error)
+	predicates            []predicate.SituationInvestigation
 }
 
 var _ ent.Mutation = (*SituationInvestigationMutation)(nil)
@@ -54845,76 +58466,89 @@ func (m *SituationInvestigationMutation) ResetSituationID() {
 	m.situation = nil
 }
 
-// SetSystemAnalysisID sets the "system_analysis_id" field.
-func (m *SituationInvestigationMutation) SetSystemAnalysisID(u uuid.UUID) {
-	m.system_analysis = &u
+// SetInvestigationID sets the "investigation_id" field.
+func (m *SituationInvestigationMutation) SetInvestigationID(u uuid.UUID) {
+	m.investigation = &u
 }
 
-// SystemAnalysisID returns the value of the "system_analysis_id" field in the mutation.
-func (m *SituationInvestigationMutation) SystemAnalysisID() (r uuid.UUID, exists bool) {
-	v := m.system_analysis
+// InvestigationID returns the value of the "investigation_id" field in the mutation.
+func (m *SituationInvestigationMutation) InvestigationID() (r uuid.UUID, exists bool) {
+	v := m.investigation
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldSystemAnalysisID returns the old "system_analysis_id" field's value of the SituationInvestigation entity.
+// OldInvestigationID returns the old "investigation_id" field's value of the SituationInvestigation entity.
 // If the SituationInvestigation object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *SituationInvestigationMutation) OldSystemAnalysisID(ctx context.Context) (v uuid.UUID, err error) {
+func (m *SituationInvestigationMutation) OldInvestigationID(ctx context.Context) (v uuid.UUID, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldSystemAnalysisID is only allowed on UpdateOne operations")
+		return v, errors.New("OldInvestigationID is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldSystemAnalysisID requires an ID field in the mutation")
+		return v, errors.New("OldInvestigationID requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldSystemAnalysisID: %w", err)
+		return v, fmt.Errorf("querying old value for OldInvestigationID: %w", err)
 	}
-	return oldValue.SystemAnalysisID, nil
+	return oldValue.InvestigationID, nil
 }
 
-// ResetSystemAnalysisID resets all changes to the "system_analysis_id" field.
-func (m *SituationInvestigationMutation) ResetSystemAnalysisID() {
-	m.system_analysis = nil
+// ResetInvestigationID resets all changes to the "investigation_id" field.
+func (m *SituationInvestigationMutation) ResetInvestigationID() {
+	m.investigation = nil
 }
 
-// SetAgentSessionID sets the "agent_session_id" field.
-func (m *SituationInvestigationMutation) SetAgentSessionID(u uuid.UUID) {
-	m.agent_session = &u
+// SetRequestedTurnID sets the "requested_turn_id" field.
+func (m *SituationInvestigationMutation) SetRequestedTurnID(u uuid.UUID) {
+	m.requested_turn = &u
 }
 
-// AgentSessionID returns the value of the "agent_session_id" field in the mutation.
-func (m *SituationInvestigationMutation) AgentSessionID() (r uuid.UUID, exists bool) {
-	v := m.agent_session
+// RequestedTurnID returns the value of the "requested_turn_id" field in the mutation.
+func (m *SituationInvestigationMutation) RequestedTurnID() (r uuid.UUID, exists bool) {
+	v := m.requested_turn
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldAgentSessionID returns the old "agent_session_id" field's value of the SituationInvestigation entity.
+// OldRequestedTurnID returns the old "requested_turn_id" field's value of the SituationInvestigation entity.
 // If the SituationInvestigation object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *SituationInvestigationMutation) OldAgentSessionID(ctx context.Context) (v uuid.UUID, err error) {
+func (m *SituationInvestigationMutation) OldRequestedTurnID(ctx context.Context) (v *uuid.UUID, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldAgentSessionID is only allowed on UpdateOne operations")
+		return v, errors.New("OldRequestedTurnID is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldAgentSessionID requires an ID field in the mutation")
+		return v, errors.New("OldRequestedTurnID requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldAgentSessionID: %w", err)
+		return v, fmt.Errorf("querying old value for OldRequestedTurnID: %w", err)
 	}
-	return oldValue.AgentSessionID, nil
+	return oldValue.RequestedTurnID, nil
 }
 
-// ResetAgentSessionID resets all changes to the "agent_session_id" field.
-func (m *SituationInvestigationMutation) ResetAgentSessionID() {
-	m.agent_session = nil
+// ClearRequestedTurnID clears the value of the "requested_turn_id" field.
+func (m *SituationInvestigationMutation) ClearRequestedTurnID() {
+	m.requested_turn = nil
+	m.clearedFields[situationinvestigation.FieldRequestedTurnID] = struct{}{}
+}
+
+// RequestedTurnIDCleared returns if the "requested_turn_id" field was cleared in this mutation.
+func (m *SituationInvestigationMutation) RequestedTurnIDCleared() bool {
+	_, ok := m.clearedFields[situationinvestigation.FieldRequestedTurnID]
+	return ok
+}
+
+// ResetRequestedTurnID resets all changes to the "requested_turn_id" field.
+func (m *SituationInvestigationMutation) ResetRequestedTurnID() {
+	m.requested_turn = nil
+	delete(m.clearedFields, situationinvestigation.FieldRequestedTurnID)
 }
 
 // SetCompletedRevision sets the "completed_revision" field.
@@ -55029,104 +58663,6 @@ func (m *SituationInvestigationMutation) ResetRequestedRevision() {
 	m.addrequested_revision = nil
 }
 
-// SetRequestedTurnID sets the "requested_turn_id" field.
-func (m *SituationInvestigationMutation) SetRequestedTurnID(u uuid.UUID) {
-	m.requested_turn = &u
-}
-
-// RequestedTurnID returns the value of the "requested_turn_id" field in the mutation.
-func (m *SituationInvestigationMutation) RequestedTurnID() (r uuid.UUID, exists bool) {
-	v := m.requested_turn
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldRequestedTurnID returns the old "requested_turn_id" field's value of the SituationInvestigation entity.
-// If the SituationInvestigation object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *SituationInvestigationMutation) OldRequestedTurnID(ctx context.Context) (v *uuid.UUID, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldRequestedTurnID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldRequestedTurnID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldRequestedTurnID: %w", err)
-	}
-	return oldValue.RequestedTurnID, nil
-}
-
-// ClearRequestedTurnID clears the value of the "requested_turn_id" field.
-func (m *SituationInvestigationMutation) ClearRequestedTurnID() {
-	m.requested_turn = nil
-	m.clearedFields[situationinvestigation.FieldRequestedTurnID] = struct{}{}
-}
-
-// RequestedTurnIDCleared returns if the "requested_turn_id" field was cleared in this mutation.
-func (m *SituationInvestigationMutation) RequestedTurnIDCleared() bool {
-	_, ok := m.clearedFields[situationinvestigation.FieldRequestedTurnID]
-	return ok
-}
-
-// ResetRequestedTurnID resets all changes to the "requested_turn_id" field.
-func (m *SituationInvestigationMutation) ResetRequestedTurnID() {
-	m.requested_turn = nil
-	delete(m.clearedFields, situationinvestigation.FieldRequestedTurnID)
-}
-
-// SetReport sets the "report" field.
-func (m *SituationInvestigationMutation) SetReport(sir *schematypes.SituationInvestigationReport) {
-	m.report = &sir
-}
-
-// Report returns the value of the "report" field in the mutation.
-func (m *SituationInvestigationMutation) Report() (r *schematypes.SituationInvestigationReport, exists bool) {
-	v := m.report
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldReport returns the old "report" field's value of the SituationInvestigation entity.
-// If the SituationInvestigation object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *SituationInvestigationMutation) OldReport(ctx context.Context) (v *schematypes.SituationInvestigationReport, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldReport is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldReport requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldReport: %w", err)
-	}
-	return oldValue.Report, nil
-}
-
-// ClearReport clears the value of the "report" field.
-func (m *SituationInvestigationMutation) ClearReport() {
-	m.report = nil
-	m.clearedFields[situationinvestigation.FieldReport] = struct{}{}
-}
-
-// ReportCleared returns if the "report" field was cleared in this mutation.
-func (m *SituationInvestigationMutation) ReportCleared() bool {
-	_, ok := m.clearedFields[situationinvestigation.FieldReport]
-	return ok
-}
-
-// ResetReport resets all changes to the "report" field.
-func (m *SituationInvestigationMutation) ResetReport() {
-	m.report = nil
-	delete(m.clearedFields, situationinvestigation.FieldReport)
-}
-
 // ClearTenant clears the "tenant" edge to the Tenant entity.
 func (m *SituationInvestigationMutation) ClearTenant() {
 	m.clearedtenant = true
@@ -55208,58 +58744,31 @@ func (m *SituationInvestigationMutation) ResetSituation() {
 	m.clearedsituation = false
 }
 
-// ClearSystemAnalysis clears the "system_analysis" edge to the SystemAnalysis entity.
-func (m *SituationInvestigationMutation) ClearSystemAnalysis() {
-	m.clearedsystem_analysis = true
-	m.clearedFields[situationinvestigation.FieldSystemAnalysisID] = struct{}{}
+// ClearInvestigation clears the "investigation" edge to the Investigation entity.
+func (m *SituationInvestigationMutation) ClearInvestigation() {
+	m.clearedinvestigation = true
+	m.clearedFields[situationinvestigation.FieldInvestigationID] = struct{}{}
 }
 
-// SystemAnalysisCleared reports if the "system_analysis" edge to the SystemAnalysis entity was cleared.
-func (m *SituationInvestigationMutation) SystemAnalysisCleared() bool {
-	return m.clearedsystem_analysis
+// InvestigationCleared reports if the "investigation" edge to the Investigation entity was cleared.
+func (m *SituationInvestigationMutation) InvestigationCleared() bool {
+	return m.clearedinvestigation
 }
 
-// SystemAnalysisIDs returns the "system_analysis" edge IDs in the mutation.
+// InvestigationIDs returns the "investigation" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// SystemAnalysisID instead. It exists only for internal usage by the builders.
-func (m *SituationInvestigationMutation) SystemAnalysisIDs() (ids []uuid.UUID) {
-	if id := m.system_analysis; id != nil {
+// InvestigationID instead. It exists only for internal usage by the builders.
+func (m *SituationInvestigationMutation) InvestigationIDs() (ids []uuid.UUID) {
+	if id := m.investigation; id != nil {
 		ids = append(ids, *id)
 	}
 	return
 }
 
-// ResetSystemAnalysis resets all changes to the "system_analysis" edge.
-func (m *SituationInvestigationMutation) ResetSystemAnalysis() {
-	m.system_analysis = nil
-	m.clearedsystem_analysis = false
-}
-
-// ClearAgentSession clears the "agent_session" edge to the AgentSession entity.
-func (m *SituationInvestigationMutation) ClearAgentSession() {
-	m.clearedagent_session = true
-	m.clearedFields[situationinvestigation.FieldAgentSessionID] = struct{}{}
-}
-
-// AgentSessionCleared reports if the "agent_session" edge to the AgentSession entity was cleared.
-func (m *SituationInvestigationMutation) AgentSessionCleared() bool {
-	return m.clearedagent_session
-}
-
-// AgentSessionIDs returns the "agent_session" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// AgentSessionID instead. It exists only for internal usage by the builders.
-func (m *SituationInvestigationMutation) AgentSessionIDs() (ids []uuid.UUID) {
-	if id := m.agent_session; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetAgentSession resets all changes to the "agent_session" edge.
-func (m *SituationInvestigationMutation) ResetAgentSession() {
-	m.agent_session = nil
-	m.clearedagent_session = false
+// ResetInvestigation resets all changes to the "investigation" edge.
+func (m *SituationInvestigationMutation) ResetInvestigation() {
+	m.investigation = nil
+	m.clearedinvestigation = false
 }
 
 // Where appends a list predicates to the SituationInvestigationMutation builder.
@@ -55296,7 +58805,7 @@ func (m *SituationInvestigationMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *SituationInvestigationMutation) Fields() []string {
-	fields := make([]string, 0, 10)
+	fields := make([]string, 0, 8)
 	if m.tenant != nil {
 		fields = append(fields, situationinvestigation.FieldTenantID)
 	}
@@ -55309,23 +58818,17 @@ func (m *SituationInvestigationMutation) Fields() []string {
 	if m.situation != nil {
 		fields = append(fields, situationinvestigation.FieldSituationID)
 	}
-	if m.system_analysis != nil {
-		fields = append(fields, situationinvestigation.FieldSystemAnalysisID)
+	if m.investigation != nil {
+		fields = append(fields, situationinvestigation.FieldInvestigationID)
 	}
-	if m.agent_session != nil {
-		fields = append(fields, situationinvestigation.FieldAgentSessionID)
+	if m.requested_turn != nil {
+		fields = append(fields, situationinvestigation.FieldRequestedTurnID)
 	}
 	if m.completed_revision != nil {
 		fields = append(fields, situationinvestigation.FieldCompletedRevision)
 	}
 	if m.requested_revision != nil {
 		fields = append(fields, situationinvestigation.FieldRequestedRevision)
-	}
-	if m.requested_turn != nil {
-		fields = append(fields, situationinvestigation.FieldRequestedTurnID)
-	}
-	if m.report != nil {
-		fields = append(fields, situationinvestigation.FieldReport)
 	}
 	return fields
 }
@@ -55343,18 +58846,14 @@ func (m *SituationInvestigationMutation) Field(name string) (ent.Value, bool) {
 		return m.UpdatedAt()
 	case situationinvestigation.FieldSituationID:
 		return m.SituationID()
-	case situationinvestigation.FieldSystemAnalysisID:
-		return m.SystemAnalysisID()
-	case situationinvestigation.FieldAgentSessionID:
-		return m.AgentSessionID()
+	case situationinvestigation.FieldInvestigationID:
+		return m.InvestigationID()
+	case situationinvestigation.FieldRequestedTurnID:
+		return m.RequestedTurnID()
 	case situationinvestigation.FieldCompletedRevision:
 		return m.CompletedRevision()
 	case situationinvestigation.FieldRequestedRevision:
 		return m.RequestedRevision()
-	case situationinvestigation.FieldRequestedTurnID:
-		return m.RequestedTurnID()
-	case situationinvestigation.FieldReport:
-		return m.Report()
 	}
 	return nil, false
 }
@@ -55372,18 +58871,14 @@ func (m *SituationInvestigationMutation) OldField(ctx context.Context, name stri
 		return m.OldUpdatedAt(ctx)
 	case situationinvestigation.FieldSituationID:
 		return m.OldSituationID(ctx)
-	case situationinvestigation.FieldSystemAnalysisID:
-		return m.OldSystemAnalysisID(ctx)
-	case situationinvestigation.FieldAgentSessionID:
-		return m.OldAgentSessionID(ctx)
+	case situationinvestigation.FieldInvestigationID:
+		return m.OldInvestigationID(ctx)
+	case situationinvestigation.FieldRequestedTurnID:
+		return m.OldRequestedTurnID(ctx)
 	case situationinvestigation.FieldCompletedRevision:
 		return m.OldCompletedRevision(ctx)
 	case situationinvestigation.FieldRequestedRevision:
 		return m.OldRequestedRevision(ctx)
-	case situationinvestigation.FieldRequestedTurnID:
-		return m.OldRequestedTurnID(ctx)
-	case situationinvestigation.FieldReport:
-		return m.OldReport(ctx)
 	}
 	return nil, fmt.Errorf("unknown SituationInvestigation field %s", name)
 }
@@ -55421,19 +58916,19 @@ func (m *SituationInvestigationMutation) SetField(name string, value ent.Value) 
 		}
 		m.SetSituationID(v)
 		return nil
-	case situationinvestigation.FieldSystemAnalysisID:
+	case situationinvestigation.FieldInvestigationID:
 		v, ok := value.(uuid.UUID)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetSystemAnalysisID(v)
+		m.SetInvestigationID(v)
 		return nil
-	case situationinvestigation.FieldAgentSessionID:
+	case situationinvestigation.FieldRequestedTurnID:
 		v, ok := value.(uuid.UUID)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetAgentSessionID(v)
+		m.SetRequestedTurnID(v)
 		return nil
 	case situationinvestigation.FieldCompletedRevision:
 		v, ok := value.(int)
@@ -55448,20 +58943,6 @@ func (m *SituationInvestigationMutation) SetField(name string, value ent.Value) 
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetRequestedRevision(v)
-		return nil
-	case situationinvestigation.FieldRequestedTurnID:
-		v, ok := value.(uuid.UUID)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetRequestedTurnID(v)
-		return nil
-	case situationinvestigation.FieldReport:
-		v, ok := value.(*schematypes.SituationInvestigationReport)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetReport(v)
 		return nil
 	}
 	return fmt.Errorf("unknown SituationInvestigation field %s", name)
@@ -55523,9 +59004,6 @@ func (m *SituationInvestigationMutation) ClearedFields() []string {
 	if m.FieldCleared(situationinvestigation.FieldRequestedTurnID) {
 		fields = append(fields, situationinvestigation.FieldRequestedTurnID)
 	}
-	if m.FieldCleared(situationinvestigation.FieldReport) {
-		fields = append(fields, situationinvestigation.FieldReport)
-	}
 	return fields
 }
 
@@ -55542,9 +59020,6 @@ func (m *SituationInvestigationMutation) ClearField(name string) error {
 	switch name {
 	case situationinvestigation.FieldRequestedTurnID:
 		m.ClearRequestedTurnID()
-		return nil
-	case situationinvestigation.FieldReport:
-		m.ClearReport()
 		return nil
 	}
 	return fmt.Errorf("unknown SituationInvestigation nullable field %s", name)
@@ -55566,11 +59041,11 @@ func (m *SituationInvestigationMutation) ResetField(name string) error {
 	case situationinvestigation.FieldSituationID:
 		m.ResetSituationID()
 		return nil
-	case situationinvestigation.FieldSystemAnalysisID:
-		m.ResetSystemAnalysisID()
+	case situationinvestigation.FieldInvestigationID:
+		m.ResetInvestigationID()
 		return nil
-	case situationinvestigation.FieldAgentSessionID:
-		m.ResetAgentSessionID()
+	case situationinvestigation.FieldRequestedTurnID:
+		m.ResetRequestedTurnID()
 		return nil
 	case situationinvestigation.FieldCompletedRevision:
 		m.ResetCompletedRevision()
@@ -55578,19 +59053,13 @@ func (m *SituationInvestigationMutation) ResetField(name string) error {
 	case situationinvestigation.FieldRequestedRevision:
 		m.ResetRequestedRevision()
 		return nil
-	case situationinvestigation.FieldRequestedTurnID:
-		m.ResetRequestedTurnID()
-		return nil
-	case situationinvestigation.FieldReport:
-		m.ResetReport()
-		return nil
 	}
 	return fmt.Errorf("unknown SituationInvestigation field %s", name)
 }
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *SituationInvestigationMutation) AddedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 4)
 	if m.tenant != nil {
 		edges = append(edges, situationinvestigation.EdgeTenant)
 	}
@@ -55600,11 +59069,8 @@ func (m *SituationInvestigationMutation) AddedEdges() []string {
 	if m.situation != nil {
 		edges = append(edges, situationinvestigation.EdgeSituation)
 	}
-	if m.system_analysis != nil {
-		edges = append(edges, situationinvestigation.EdgeSystemAnalysis)
-	}
-	if m.agent_session != nil {
-		edges = append(edges, situationinvestigation.EdgeAgentSession)
+	if m.investigation != nil {
+		edges = append(edges, situationinvestigation.EdgeInvestigation)
 	}
 	return edges
 }
@@ -55625,12 +59091,8 @@ func (m *SituationInvestigationMutation) AddedIDs(name string) []ent.Value {
 		if id := m.situation; id != nil {
 			return []ent.Value{*id}
 		}
-	case situationinvestigation.EdgeSystemAnalysis:
-		if id := m.system_analysis; id != nil {
-			return []ent.Value{*id}
-		}
-	case situationinvestigation.EdgeAgentSession:
-		if id := m.agent_session; id != nil {
+	case situationinvestigation.EdgeInvestigation:
+		if id := m.investigation; id != nil {
 			return []ent.Value{*id}
 		}
 	}
@@ -55639,7 +59101,7 @@ func (m *SituationInvestigationMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *SituationInvestigationMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 4)
 	return edges
 }
 
@@ -55651,7 +59113,7 @@ func (m *SituationInvestigationMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *SituationInvestigationMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 4)
 	if m.clearedtenant {
 		edges = append(edges, situationinvestigation.EdgeTenant)
 	}
@@ -55661,11 +59123,8 @@ func (m *SituationInvestigationMutation) ClearedEdges() []string {
 	if m.clearedsituation {
 		edges = append(edges, situationinvestigation.EdgeSituation)
 	}
-	if m.clearedsystem_analysis {
-		edges = append(edges, situationinvestigation.EdgeSystemAnalysis)
-	}
-	if m.clearedagent_session {
-		edges = append(edges, situationinvestigation.EdgeAgentSession)
+	if m.clearedinvestigation {
+		edges = append(edges, situationinvestigation.EdgeInvestigation)
 	}
 	return edges
 }
@@ -55680,10 +59139,8 @@ func (m *SituationInvestigationMutation) EdgeCleared(name string) bool {
 		return m.clearedrequested_turn
 	case situationinvestigation.EdgeSituation:
 		return m.clearedsituation
-	case situationinvestigation.EdgeSystemAnalysis:
-		return m.clearedsystem_analysis
-	case situationinvestigation.EdgeAgentSession:
-		return m.clearedagent_session
+	case situationinvestigation.EdgeInvestigation:
+		return m.clearedinvestigation
 	}
 	return false
 }
@@ -55701,11 +59158,8 @@ func (m *SituationInvestigationMutation) ClearEdge(name string) error {
 	case situationinvestigation.EdgeSituation:
 		m.ClearSituation()
 		return nil
-	case situationinvestigation.EdgeSystemAnalysis:
-		m.ClearSystemAnalysis()
-		return nil
-	case situationinvestigation.EdgeAgentSession:
-		m.ClearAgentSession()
+	case situationinvestigation.EdgeInvestigation:
+		m.ClearInvestigation()
 		return nil
 	}
 	return fmt.Errorf("unknown SituationInvestigation unique edge %s", name)
@@ -55724,11 +59178,8 @@ func (m *SituationInvestigationMutation) ResetEdge(name string) error {
 	case situationinvestigation.EdgeSituation:
 		m.ResetSituation()
 		return nil
-	case situationinvestigation.EdgeSystemAnalysis:
-		m.ResetSystemAnalysis()
-		return nil
-	case situationinvestigation.EdgeAgentSession:
-		m.ResetAgentSession()
+	case situationinvestigation.EdgeInvestigation:
+		m.ResetInvestigation()
 		return nil
 	}
 	return fmt.Errorf("unknown SituationInvestigation edge %s", name)
@@ -56632,36 +60083,36 @@ func (m *SituationObservationGroupMutation) ResetEdge(name string) error {
 // SystemAnalysisMutation represents an operation that mutates the SystemAnalysis nodes in the graph.
 type SystemAnalysisMutation struct {
 	config
-	op                             Op
-	typ                            string
-	id                             *uuid.UUID
-	created_at                     *time.Time
-	updated_at                     *time.Time
-	reference_time                 *time.Time
-	clearedFields                  map[string]struct{}
-	tenant                         *int
-	clearedtenant                  bool
-	scope_entity                   *uuid.UUID
-	clearedscope_entity            bool
-	subject_entity                 *uuid.UUID
-	clearedsubject_entity          bool
-	analysis_entities              map[uuid.UUID]struct{}
-	removedanalysis_entities       map[uuid.UUID]struct{}
-	clearedanalysis_entities       bool
-	analysis_relationships         map[uuid.UUID]struct{}
-	removedanalysis_relationships  map[uuid.UUID]struct{}
-	clearedanalysis_relationships  bool
-	entries                        map[uuid.UUID]struct{}
-	removedentries                 map[uuid.UUID]struct{}
-	clearedentries                 bool
-	discussion_threads             map[uuid.UUID]struct{}
-	removeddiscussion_threads      map[uuid.UUID]struct{}
-	cleareddiscussion_threads      bool
-	situation_investigation        *uuid.UUID
-	clearedsituation_investigation bool
-	done                           bool
-	oldValue                       func(context.Context) (*SystemAnalysis, error)
-	predicates                     []predicate.SystemAnalysis
+	op                            Op
+	typ                           string
+	id                            *uuid.UUID
+	created_at                    *time.Time
+	updated_at                    *time.Time
+	reference_time                *time.Time
+	clearedFields                 map[string]struct{}
+	tenant                        *int
+	clearedtenant                 bool
+	scope_entity                  *uuid.UUID
+	clearedscope_entity           bool
+	subject_entity                *uuid.UUID
+	clearedsubject_entity         bool
+	analysis_entities             map[uuid.UUID]struct{}
+	removedanalysis_entities      map[uuid.UUID]struct{}
+	clearedanalysis_entities      bool
+	analysis_relationships        map[uuid.UUID]struct{}
+	removedanalysis_relationships map[uuid.UUID]struct{}
+	clearedanalysis_relationships bool
+	entries                       map[uuid.UUID]struct{}
+	removedentries                map[uuid.UUID]struct{}
+	clearedentries                bool
+	discussion_threads            map[uuid.UUID]struct{}
+	removeddiscussion_threads     map[uuid.UUID]struct{}
+	cleareddiscussion_threads     bool
+	investigation                 *uuid.UUID
+	clearedinvestigation          bool
+	done                          bool
+	oldValue                      func(context.Context) (*SystemAnalysis, error)
+	predicates                    []predicate.SystemAnalysis
 }
 
 var _ ent.Mutation = (*SystemAnalysisMutation)(nil)
@@ -57320,43 +60771,43 @@ func (m *SystemAnalysisMutation) ResetDiscussionThreads() {
 	m.removeddiscussion_threads = nil
 }
 
-// SetSituationInvestigationID sets the "situation_investigation" edge to the SituationInvestigation entity by id.
-func (m *SystemAnalysisMutation) SetSituationInvestigationID(id uuid.UUID) {
-	m.situation_investigation = &id
+// SetInvestigationID sets the "investigation" edge to the Investigation entity by id.
+func (m *SystemAnalysisMutation) SetInvestigationID(id uuid.UUID) {
+	m.investigation = &id
 }
 
-// ClearSituationInvestigation clears the "situation_investigation" edge to the SituationInvestigation entity.
-func (m *SystemAnalysisMutation) ClearSituationInvestigation() {
-	m.clearedsituation_investigation = true
+// ClearInvestigation clears the "investigation" edge to the Investigation entity.
+func (m *SystemAnalysisMutation) ClearInvestigation() {
+	m.clearedinvestigation = true
 }
 
-// SituationInvestigationCleared reports if the "situation_investigation" edge to the SituationInvestigation entity was cleared.
-func (m *SystemAnalysisMutation) SituationInvestigationCleared() bool {
-	return m.clearedsituation_investigation
+// InvestigationCleared reports if the "investigation" edge to the Investigation entity was cleared.
+func (m *SystemAnalysisMutation) InvestigationCleared() bool {
+	return m.clearedinvestigation
 }
 
-// SituationInvestigationID returns the "situation_investigation" edge ID in the mutation.
-func (m *SystemAnalysisMutation) SituationInvestigationID() (id uuid.UUID, exists bool) {
-	if m.situation_investigation != nil {
-		return *m.situation_investigation, true
+// InvestigationID returns the "investigation" edge ID in the mutation.
+func (m *SystemAnalysisMutation) InvestigationID() (id uuid.UUID, exists bool) {
+	if m.investigation != nil {
+		return *m.investigation, true
 	}
 	return
 }
 
-// SituationInvestigationIDs returns the "situation_investigation" edge IDs in the mutation.
+// InvestigationIDs returns the "investigation" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// SituationInvestigationID instead. It exists only for internal usage by the builders.
-func (m *SystemAnalysisMutation) SituationInvestigationIDs() (ids []uuid.UUID) {
-	if id := m.situation_investigation; id != nil {
+// InvestigationID instead. It exists only for internal usage by the builders.
+func (m *SystemAnalysisMutation) InvestigationIDs() (ids []uuid.UUID) {
+	if id := m.investigation; id != nil {
 		ids = append(ids, *id)
 	}
 	return
 }
 
-// ResetSituationInvestigation resets all changes to the "situation_investigation" edge.
-func (m *SystemAnalysisMutation) ResetSituationInvestigation() {
-	m.situation_investigation = nil
-	m.clearedsituation_investigation = false
+// ResetInvestigation resets all changes to the "investigation" edge.
+func (m *SystemAnalysisMutation) ResetInvestigation() {
+	m.investigation = nil
+	m.clearedinvestigation = false
 }
 
 // Where appends a list predicates to the SystemAnalysisMutation builder.
@@ -57623,8 +61074,8 @@ func (m *SystemAnalysisMutation) AddedEdges() []string {
 	if m.discussion_threads != nil {
 		edges = append(edges, systemanalysis.EdgeDiscussionThreads)
 	}
-	if m.situation_investigation != nil {
-		edges = append(edges, systemanalysis.EdgeSituationInvestigation)
+	if m.investigation != nil {
+		edges = append(edges, systemanalysis.EdgeInvestigation)
 	}
 	return edges
 }
@@ -57669,8 +61120,8 @@ func (m *SystemAnalysisMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case systemanalysis.EdgeSituationInvestigation:
-		if id := m.situation_investigation; id != nil {
+	case systemanalysis.EdgeInvestigation:
+		if id := m.investigation; id != nil {
 			return []ent.Value{*id}
 		}
 	}
@@ -57751,8 +61202,8 @@ func (m *SystemAnalysisMutation) ClearedEdges() []string {
 	if m.cleareddiscussion_threads {
 		edges = append(edges, systemanalysis.EdgeDiscussionThreads)
 	}
-	if m.clearedsituation_investigation {
-		edges = append(edges, systemanalysis.EdgeSituationInvestigation)
+	if m.clearedinvestigation {
+		edges = append(edges, systemanalysis.EdgeInvestigation)
 	}
 	return edges
 }
@@ -57775,8 +61226,8 @@ func (m *SystemAnalysisMutation) EdgeCleared(name string) bool {
 		return m.clearedentries
 	case systemanalysis.EdgeDiscussionThreads:
 		return m.cleareddiscussion_threads
-	case systemanalysis.EdgeSituationInvestigation:
-		return m.clearedsituation_investigation
+	case systemanalysis.EdgeInvestigation:
+		return m.clearedinvestigation
 	}
 	return false
 }
@@ -57794,8 +61245,8 @@ func (m *SystemAnalysisMutation) ClearEdge(name string) error {
 	case systemanalysis.EdgeSubjectEntity:
 		m.ClearSubjectEntity()
 		return nil
-	case systemanalysis.EdgeSituationInvestigation:
-		m.ClearSituationInvestigation()
+	case systemanalysis.EdgeInvestigation:
+		m.ClearInvestigation()
 		return nil
 	}
 	return fmt.Errorf("unknown SystemAnalysis unique edge %s", name)
@@ -57826,8 +61277,8 @@ func (m *SystemAnalysisMutation) ResetEdge(name string) error {
 	case systemanalysis.EdgeDiscussionThreads:
 		m.ResetDiscussionThreads()
 		return nil
-	case systemanalysis.EdgeSituationInvestigation:
-		m.ResetSituationInvestigation()
+	case systemanalysis.EdgeInvestigation:
+		m.ResetInvestigation()
 		return nil
 	}
 	return fmt.Errorf("unknown SystemAnalysis edge %s", name)

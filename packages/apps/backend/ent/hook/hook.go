@@ -405,6 +405,54 @@ func (f IntegrationUserInstallStateFunc) Mutate(ctx context.Context, m ent.Mutat
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.IntegrationUserInstallStateMutation", m)
 }
 
+// The InvestigationFunc type is an adapter to allow the use of ordinary
+// function as Investigation mutator.
+type InvestigationFunc func(context.Context, *ent.InvestigationMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f InvestigationFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.InvestigationMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.InvestigationMutation", m)
+}
+
+// The InvestigationFindingFunc type is an adapter to allow the use of ordinary
+// function as InvestigationFinding mutator.
+type InvestigationFindingFunc func(context.Context, *ent.InvestigationFindingMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f InvestigationFindingFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.InvestigationFindingMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.InvestigationFindingMutation", m)
+}
+
+// The InvestigationHypothesisFunc type is an adapter to allow the use of ordinary
+// function as InvestigationHypothesis mutator.
+type InvestigationHypothesisFunc func(context.Context, *ent.InvestigationHypothesisMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f InvestigationHypothesisFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.InvestigationHypothesisMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.InvestigationHypothesisMutation", m)
+}
+
+// The InvestigationReportFunc type is an adapter to allow the use of ordinary
+// function as InvestigationReport mutator.
+type InvestigationReportFunc func(context.Context, *ent.InvestigationReportMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f InvestigationReportFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.InvestigationReportMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.InvestigationReportMutation", m)
+}
+
 // The KnowledgeEntityFunc type is an adapter to allow the use of ordinary
 // function as KnowledgeEntity mutator.
 type KnowledgeEntityFunc func(context.Context, *ent.KnowledgeEntityMutation) (ent.Value, error)

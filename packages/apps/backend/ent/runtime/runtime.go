@@ -41,6 +41,10 @@ import (
 	"github.com/rezible/rezible/ent/integrationeventsynccursor"
 	"github.com/rezible/rezible/ent/integrationeventsyncrun"
 	"github.com/rezible/rezible/ent/integrationuserinstallstate"
+	"github.com/rezible/rezible/ent/investigation"
+	"github.com/rezible/rezible/ent/investigationfinding"
+	"github.com/rezible/rezible/ent/investigationhypothesis"
+	"github.com/rezible/rezible/ent/investigationreport"
 	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/knowledgeentitylinkingattribute"
 	"github.com/rezible/rezible/ent/knowledgeevidence"
@@ -934,6 +938,130 @@ func init() {
 	integrationuserinstallstateDescID := integrationuserinstallstateFields[0].Descriptor()
 	// integrationuserinstallstate.DefaultID holds the default value on creation for the id field.
 	integrationuserinstallstate.DefaultID = integrationuserinstallstateDescID.Default.(func() uuid.UUID)
+	investigationMixin := schema.Investigation{}.Mixin()
+	investigation.Policy = privacy.NewPolicies(investigationMixin[0], investigationMixin[1], schema.Investigation{})
+	investigation.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := investigation.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	investigationMixinFields2 := investigationMixin[2].Fields()
+	_ = investigationMixinFields2
+	investigationFields := schema.Investigation{}.Fields()
+	_ = investigationFields
+	// investigationDescCreatedAt is the schema descriptor for created_at field.
+	investigationDescCreatedAt := investigationMixinFields2[0].Descriptor()
+	// investigation.DefaultCreatedAt holds the default value on creation for the created_at field.
+	investigation.DefaultCreatedAt = investigationDescCreatedAt.Default.(func() time.Time)
+	// investigationDescUpdatedAt is the schema descriptor for updated_at field.
+	investigationDescUpdatedAt := investigationMixinFields2[1].Descriptor()
+	// investigation.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	investigation.DefaultUpdatedAt = investigationDescUpdatedAt.Default.(func() time.Time)
+	// investigation.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	investigation.UpdateDefaultUpdatedAt = investigationDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// investigationDescID is the schema descriptor for id field.
+	investigationDescID := investigationFields[0].Descriptor()
+	// investigation.DefaultID holds the default value on creation for the id field.
+	investigation.DefaultID = investigationDescID.Default.(func() uuid.UUID)
+	investigationfindingMixin := schema.InvestigationFinding{}.Mixin()
+	investigationfinding.Policy = privacy.NewPolicies(investigationfindingMixin[0], investigationfindingMixin[1], schema.InvestigationFinding{})
+	investigationfinding.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := investigationfinding.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	investigationfindingMixinFields2 := investigationfindingMixin[2].Fields()
+	_ = investigationfindingMixinFields2
+	investigationfindingFields := schema.InvestigationFinding{}.Fields()
+	_ = investigationfindingFields
+	// investigationfindingDescCreatedAt is the schema descriptor for created_at field.
+	investigationfindingDescCreatedAt := investigationfindingMixinFields2[0].Descriptor()
+	// investigationfinding.DefaultCreatedAt holds the default value on creation for the created_at field.
+	investigationfinding.DefaultCreatedAt = investigationfindingDescCreatedAt.Default.(func() time.Time)
+	// investigationfindingDescUpdatedAt is the schema descriptor for updated_at field.
+	investigationfindingDescUpdatedAt := investigationfindingMixinFields2[1].Descriptor()
+	// investigationfinding.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	investigationfinding.DefaultUpdatedAt = investigationfindingDescUpdatedAt.Default.(func() time.Time)
+	// investigationfinding.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	investigationfinding.UpdateDefaultUpdatedAt = investigationfindingDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// investigationfindingDescTitle is the schema descriptor for title field.
+	investigationfindingDescTitle := investigationfindingFields[2].Descriptor()
+	// investigationfinding.TitleValidator is a validator for the "title" field. It is called by the builders before save.
+	investigationfinding.TitleValidator = investigationfindingDescTitle.Validators[0].(func(string) error)
+	// investigationfindingDescID is the schema descriptor for id field.
+	investigationfindingDescID := investigationfindingFields[0].Descriptor()
+	// investigationfinding.DefaultID holds the default value on creation for the id field.
+	investigationfinding.DefaultID = investigationfindingDescID.Default.(func() uuid.UUID)
+	investigationhypothesisMixin := schema.InvestigationHypothesis{}.Mixin()
+	investigationhypothesis.Policy = privacy.NewPolicies(investigationhypothesisMixin[0], investigationhypothesisMixin[1], schema.InvestigationHypothesis{})
+	investigationhypothesis.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := investigationhypothesis.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	investigationhypothesisMixinFields2 := investigationhypothesisMixin[2].Fields()
+	_ = investigationhypothesisMixinFields2
+	investigationhypothesisFields := schema.InvestigationHypothesis{}.Fields()
+	_ = investigationhypothesisFields
+	// investigationhypothesisDescCreatedAt is the schema descriptor for created_at field.
+	investigationhypothesisDescCreatedAt := investigationhypothesisMixinFields2[0].Descriptor()
+	// investigationhypothesis.DefaultCreatedAt holds the default value on creation for the created_at field.
+	investigationhypothesis.DefaultCreatedAt = investigationhypothesisDescCreatedAt.Default.(func() time.Time)
+	// investigationhypothesisDescUpdatedAt is the schema descriptor for updated_at field.
+	investigationhypothesisDescUpdatedAt := investigationhypothesisMixinFields2[1].Descriptor()
+	// investigationhypothesis.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	investigationhypothesis.DefaultUpdatedAt = investigationhypothesisDescUpdatedAt.Default.(func() time.Time)
+	// investigationhypothesis.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	investigationhypothesis.UpdateDefaultUpdatedAt = investigationhypothesisDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// investigationhypothesisDescTitle is the schema descriptor for title field.
+	investigationhypothesisDescTitle := investigationhypothesisFields[2].Descriptor()
+	// investigationhypothesis.TitleValidator is a validator for the "title" field. It is called by the builders before save.
+	investigationhypothesis.TitleValidator = investigationhypothesisDescTitle.Validators[0].(func(string) error)
+	// investigationhypothesisDescID is the schema descriptor for id field.
+	investigationhypothesisDescID := investigationhypothesisFields[0].Descriptor()
+	// investigationhypothesis.DefaultID holds the default value on creation for the id field.
+	investigationhypothesis.DefaultID = investigationhypothesisDescID.Default.(func() uuid.UUID)
+	investigationreportMixin := schema.InvestigationReport{}.Mixin()
+	investigationreport.Policy = privacy.NewPolicies(investigationreportMixin[0], investigationreportMixin[1], schema.InvestigationReport{})
+	investigationreport.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := investigationreport.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	investigationreportMixinFields2 := investigationreportMixin[2].Fields()
+	_ = investigationreportMixinFields2
+	investigationreportFields := schema.InvestigationReport{}.Fields()
+	_ = investigationreportFields
+	// investigationreportDescCreatedAt is the schema descriptor for created_at field.
+	investigationreportDescCreatedAt := investigationreportMixinFields2[0].Descriptor()
+	// investigationreport.DefaultCreatedAt holds the default value on creation for the created_at field.
+	investigationreport.DefaultCreatedAt = investigationreportDescCreatedAt.Default.(func() time.Time)
+	// investigationreportDescUpdatedAt is the schema descriptor for updated_at field.
+	investigationreportDescUpdatedAt := investigationreportMixinFields2[1].Descriptor()
+	// investigationreport.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	investigationreport.DefaultUpdatedAt = investigationreportDescUpdatedAt.Default.(func() time.Time)
+	// investigationreport.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	investigationreport.UpdateDefaultUpdatedAt = investigationreportDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// investigationreportDescText is the schema descriptor for text field.
+	investigationreportDescText := investigationreportFields[3].Descriptor()
+	// investigationreport.TextValidator is a validator for the "text" field. It is called by the builders before save.
+	investigationreport.TextValidator = investigationreportDescText.Validators[0].(func(string) error)
+	// investigationreportDescID is the schema descriptor for id field.
+	investigationreportDescID := investigationreportFields[0].Descriptor()
+	// investigationreport.DefaultID holds the default value on creation for the id field.
+	investigationreport.DefaultID = investigationreportDescID.Default.(func() uuid.UUID)
 	knowledgeentityMixin := schema.KnowledgeEntity{}.Mixin()
 	knowledgeentity.Policy = privacy.NewPolicies(knowledgeentityMixin[0], knowledgeentityMixin[1], schema.KnowledgeEntity{})
 	knowledgeentity.Hooks[0] = func(next ent.Mutator) ent.Mutator {

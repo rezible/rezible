@@ -19,8 +19,8 @@ import (
 	"github.com/rezible/rezible/ent/agentsessionbinding"
 	"github.com/rezible/rezible/ent/agentturn"
 	"github.com/rezible/rezible/ent/internal"
+	"github.com/rezible/rezible/ent/investigation"
 	"github.com/rezible/rezible/ent/predicate"
-	"github.com/rezible/rezible/ent/situationinvestigation"
 )
 
 // AgentSessionUpdate is the builder for updating AgentSession entities.
@@ -161,23 +161,23 @@ func (_u *AgentSessionUpdate) AddBindings(v ...*AgentSessionBinding) *AgentSessi
 	return _u.AddBindingIDs(ids...)
 }
 
-// SetSituationInvestigationID sets the "situation_investigation" edge to the SituationInvestigation entity by ID.
-func (_u *AgentSessionUpdate) SetSituationInvestigationID(id uuid.UUID) *AgentSessionUpdate {
-	_u.mutation.SetSituationInvestigationID(id)
+// SetInvestigationID sets the "investigation" edge to the Investigation entity by ID.
+func (_u *AgentSessionUpdate) SetInvestigationID(id uuid.UUID) *AgentSessionUpdate {
+	_u.mutation.SetInvestigationID(id)
 	return _u
 }
 
-// SetNillableSituationInvestigationID sets the "situation_investigation" edge to the SituationInvestigation entity by ID if the given value is not nil.
-func (_u *AgentSessionUpdate) SetNillableSituationInvestigationID(id *uuid.UUID) *AgentSessionUpdate {
+// SetNillableInvestigationID sets the "investigation" edge to the Investigation entity by ID if the given value is not nil.
+func (_u *AgentSessionUpdate) SetNillableInvestigationID(id *uuid.UUID) *AgentSessionUpdate {
 	if id != nil {
-		_u = _u.SetSituationInvestigationID(*id)
+		_u = _u.SetInvestigationID(*id)
 	}
 	return _u
 }
 
-// SetSituationInvestigation sets the "situation_investigation" edge to the SituationInvestigation entity.
-func (_u *AgentSessionUpdate) SetSituationInvestigation(v *SituationInvestigation) *AgentSessionUpdate {
-	return _u.SetSituationInvestigationID(v.ID)
+// SetInvestigation sets the "investigation" edge to the Investigation entity.
+func (_u *AgentSessionUpdate) SetInvestigation(v *Investigation) *AgentSessionUpdate {
+	return _u.SetInvestigationID(v.ID)
 }
 
 // Mutation returns the AgentSessionMutation object of the builder.
@@ -269,9 +269,9 @@ func (_u *AgentSessionUpdate) RemoveBindings(v ...*AgentSessionBinding) *AgentSe
 	return _u.RemoveBindingIDs(ids...)
 }
 
-// ClearSituationInvestigation clears the "situation_investigation" edge to the SituationInvestigation entity.
-func (_u *AgentSessionUpdate) ClearSituationInvestigation() *AgentSessionUpdate {
-	_u.mutation.ClearSituationInvestigation()
+// ClearInvestigation clears the "investigation" edge to the Investigation entity.
+func (_u *AgentSessionUpdate) ClearInvestigation() *AgentSessionUpdate {
+	_u.mutation.ClearInvestigation()
 	return _u
 }
 
@@ -566,32 +566,32 @@ func (_u *AgentSessionUpdate) sqlSave(ctx context.Context) (_node int, err error
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if _u.mutation.SituationInvestigationCleared() {
+	if _u.mutation.InvestigationCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
 			Inverse: false,
-			Table:   agentsession.SituationInvestigationTable,
-			Columns: []string{agentsession.SituationInvestigationColumn},
+			Table:   agentsession.InvestigationTable,
+			Columns: []string{agentsession.InvestigationColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(situationinvestigation.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(investigation.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.SituationInvestigation
+		edge.Schema = _u.schemaConfig.Investigation
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.SituationInvestigationIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.InvestigationIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
 			Inverse: false,
-			Table:   agentsession.SituationInvestigationTable,
-			Columns: []string{agentsession.SituationInvestigationColumn},
+			Table:   agentsession.InvestigationTable,
+			Columns: []string{agentsession.InvestigationColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(situationinvestigation.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(investigation.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.SituationInvestigation
+		edge.Schema = _u.schemaConfig.Investigation
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -745,23 +745,23 @@ func (_u *AgentSessionUpdateOne) AddBindings(v ...*AgentSessionBinding) *AgentSe
 	return _u.AddBindingIDs(ids...)
 }
 
-// SetSituationInvestigationID sets the "situation_investigation" edge to the SituationInvestigation entity by ID.
-func (_u *AgentSessionUpdateOne) SetSituationInvestigationID(id uuid.UUID) *AgentSessionUpdateOne {
-	_u.mutation.SetSituationInvestigationID(id)
+// SetInvestigationID sets the "investigation" edge to the Investigation entity by ID.
+func (_u *AgentSessionUpdateOne) SetInvestigationID(id uuid.UUID) *AgentSessionUpdateOne {
+	_u.mutation.SetInvestigationID(id)
 	return _u
 }
 
-// SetNillableSituationInvestigationID sets the "situation_investigation" edge to the SituationInvestigation entity by ID if the given value is not nil.
-func (_u *AgentSessionUpdateOne) SetNillableSituationInvestigationID(id *uuid.UUID) *AgentSessionUpdateOne {
+// SetNillableInvestigationID sets the "investigation" edge to the Investigation entity by ID if the given value is not nil.
+func (_u *AgentSessionUpdateOne) SetNillableInvestigationID(id *uuid.UUID) *AgentSessionUpdateOne {
 	if id != nil {
-		_u = _u.SetSituationInvestigationID(*id)
+		_u = _u.SetInvestigationID(*id)
 	}
 	return _u
 }
 
-// SetSituationInvestigation sets the "situation_investigation" edge to the SituationInvestigation entity.
-func (_u *AgentSessionUpdateOne) SetSituationInvestigation(v *SituationInvestigation) *AgentSessionUpdateOne {
-	return _u.SetSituationInvestigationID(v.ID)
+// SetInvestigation sets the "investigation" edge to the Investigation entity.
+func (_u *AgentSessionUpdateOne) SetInvestigation(v *Investigation) *AgentSessionUpdateOne {
+	return _u.SetInvestigationID(v.ID)
 }
 
 // Mutation returns the AgentSessionMutation object of the builder.
@@ -853,9 +853,9 @@ func (_u *AgentSessionUpdateOne) RemoveBindings(v ...*AgentSessionBinding) *Agen
 	return _u.RemoveBindingIDs(ids...)
 }
 
-// ClearSituationInvestigation clears the "situation_investigation" edge to the SituationInvestigation entity.
-func (_u *AgentSessionUpdateOne) ClearSituationInvestigation() *AgentSessionUpdateOne {
-	_u.mutation.ClearSituationInvestigation()
+// ClearInvestigation clears the "investigation" edge to the Investigation entity.
+func (_u *AgentSessionUpdateOne) ClearInvestigation() *AgentSessionUpdateOne {
+	_u.mutation.ClearInvestigation()
 	return _u
 }
 
@@ -1180,32 +1180,32 @@ func (_u *AgentSessionUpdateOne) sqlSave(ctx context.Context) (_node *AgentSessi
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if _u.mutation.SituationInvestigationCleared() {
+	if _u.mutation.InvestigationCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
 			Inverse: false,
-			Table:   agentsession.SituationInvestigationTable,
-			Columns: []string{agentsession.SituationInvestigationColumn},
+			Table:   agentsession.InvestigationTable,
+			Columns: []string{agentsession.InvestigationColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(situationinvestigation.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(investigation.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.SituationInvestigation
+		edge.Schema = _u.schemaConfig.Investigation
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.SituationInvestigationIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.InvestigationIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
 			Inverse: false,
-			Table:   agentsession.SituationInvestigationTable,
-			Columns: []string{agentsession.SituationInvestigationColumn},
+			Table:   agentsession.InvestigationTable,
+			Columns: []string{agentsession.InvestigationColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(situationinvestigation.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(investigation.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.SituationInvestigation
+		edge.Schema = _u.schemaConfig.Investigation
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

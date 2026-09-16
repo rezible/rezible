@@ -442,27 +442,27 @@ func HasBindingsWith(preds ...predicate.AgentSessionBinding) predicate.AgentSess
 	})
 }
 
-// HasSituationInvestigation applies the HasEdge predicate on the "situation_investigation" edge.
-func HasSituationInvestigation() predicate.AgentSession {
+// HasInvestigation applies the HasEdge predicate on the "investigation" edge.
+func HasInvestigation() predicate.AgentSession {
 	return predicate.AgentSession(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, false, SituationInvestigationTable, SituationInvestigationColumn),
+			sqlgraph.Edge(sqlgraph.O2O, false, InvestigationTable, InvestigationColumn),
 		)
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.SituationInvestigation
-		step.Edge.Schema = schemaConfig.SituationInvestigation
+		step.To.Schema = schemaConfig.Investigation
+		step.Edge.Schema = schemaConfig.Investigation
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasSituationInvestigationWith applies the HasEdge predicate on the "situation_investigation" edge with a given conditions (other predicates).
-func HasSituationInvestigationWith(preds ...predicate.SituationInvestigation) predicate.AgentSession {
+// HasInvestigationWith applies the HasEdge predicate on the "investigation" edge with a given conditions (other predicates).
+func HasInvestigationWith(preds ...predicate.Investigation) predicate.AgentSession {
 	return predicate.AgentSession(func(s *sql.Selector) {
-		step := newSituationInvestigationStep()
+		step := newInvestigationStep()
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.SituationInvestigation
-		step.Edge.Schema = schemaConfig.SituationInvestigation
+		step.To.Schema = schemaConfig.Investigation
+		step.Edge.Schema = schemaConfig.Investigation
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

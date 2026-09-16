@@ -27,6 +27,7 @@ type Handler interface {
 	KnowledgeGraphHandler
 	SystemAnalysisHandler
 	SituationsHandler
+	InvestigationsHandler
 
 	IncidentsHandler
 	ReviewsHandler

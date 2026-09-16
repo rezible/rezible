@@ -56,14 +56,14 @@ const (
 	EdgeRoleAssignments = "role_assignments"
 	// EdgeLinkedIncidents holds the string denoting the linked_incidents edge name in mutations.
 	EdgeLinkedIncidents = "linked_incidents"
+	// EdgeSituations holds the string denoting the situations edge name in mutations.
+	EdgeSituations = "situations"
 	// EdgeFieldSelections holds the string denoting the field_selections edge name in mutations.
 	EdgeFieldSelections = "field_selections"
 	// EdgeTasks holds the string denoting the tasks edge name in mutations.
 	EdgeTasks = "tasks"
 	// EdgeTagAssignments holds the string denoting the tag_assignments edge name in mutations.
 	EdgeTagAssignments = "tag_assignments"
-	// EdgeSituations holds the string denoting the situations edge name in mutations.
-	EdgeSituations = "situations"
 	// EdgeImpacts holds the string denoting the impacts edge name in mutations.
 	EdgeImpacts = "impacts"
 	// EdgeDebriefs holds the string denoting the debriefs edge name in mutations.
@@ -134,6 +134,11 @@ const (
 	RoleAssignmentsColumn = "incident_id"
 	// LinkedIncidentsTable is the table that holds the linked_incidents relation/edge. The primary key declared below.
 	LinkedIncidentsTable = "incident_links"
+	// SituationsTable is the table that holds the situations relation/edge. The primary key declared below.
+	SituationsTable = "incident_situations"
+	// SituationsInverseTable is the table name for the Situation entity.
+	// It exists in this package in order to avoid circular dependency with the "situation" package.
+	SituationsInverseTable = "situations"
 	// FieldSelectionsTable is the table that holds the field_selections relation/edge. The primary key declared below.
 	FieldSelectionsTable = "incident_field_selections"
 	// FieldSelectionsInverseTable is the table name for the IncidentFieldOption entity.
@@ -151,11 +156,6 @@ const (
 	// TagAssignmentsInverseTable is the table name for the IncidentTag entity.
 	// It exists in this package in order to avoid circular dependency with the "incidenttag" package.
 	TagAssignmentsInverseTable = "incident_tags"
-	// SituationsTable is the table that holds the situations relation/edge. The primary key declared below.
-	SituationsTable = "incident_situations"
-	// SituationsInverseTable is the table name for the Situation entity.
-	// It exists in this package in order to avoid circular dependency with the "situation" package.
-	SituationsInverseTable = "situations"
 	// ImpactsTable is the table that holds the impacts relation/edge.
 	ImpactsTable = "incident_impacts"
 	// ImpactsInverseTable is the table name for the IncidentImpact entity.
@@ -221,15 +221,15 @@ var (
 	// LinkedIncidentsPrimaryKey and LinkedIncidentsColumn2 are the table columns denoting the
 	// primary key for the linked_incidents relation (M2M).
 	LinkedIncidentsPrimaryKey = []string{"incident_id", "linked_incident_id"}
+	// SituationsPrimaryKey and SituationsColumn2 are the table columns denoting the
+	// primary key for the situations relation (M2M).
+	SituationsPrimaryKey = []string{"incident_id", "situation_id"}
 	// FieldSelectionsPrimaryKey and FieldSelectionsColumn2 are the table columns denoting the
 	// primary key for the field_selections relation (M2M).
 	FieldSelectionsPrimaryKey = []string{"incident_id", "incident_field_option_id"}
 	// TagAssignmentsPrimaryKey and TagAssignmentsColumn2 are the table columns denoting the
 	// primary key for the tag_assignments relation (M2M).
 	TagAssignmentsPrimaryKey = []string{"incident_id", "incident_tag_id"}
-	// SituationsPrimaryKey and SituationsColumn2 are the table columns denoting the
-	// primary key for the situations relation (M2M).
-	SituationsPrimaryKey = []string{"incident_id", "situation_id"}
 	// ReviewSessionsPrimaryKey and ReviewSessionsColumn2 are the table columns denoting the
 	// primary key for the review_sessions relation (M2M).
 	ReviewSessionsPrimaryKey = []string{"incident_id", "meeting_session_id"}
@@ -419,6 +419,20 @@ func ByLinkedIncidents(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
+// BySituationsCount orders the results by situations count.
+func BySituationsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newSituationsStep(), opts...)
+	}
+}
+
+// BySituations orders the results by situations terms.
+func BySituations(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newSituationsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
 // ByFieldSelectionsCount orders the results by field_selections count.
 func ByFieldSelectionsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -458,20 +472,6 @@ func ByTagAssignmentsCount(opts ...sql.OrderTermOption) OrderOption {
 func ByTagAssignments(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newTagAssignmentsStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
-
-// BySituationsCount orders the results by situations count.
-func BySituationsCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newSituationsStep(), opts...)
-	}
-}
-
-// BySituations orders the results by situations terms.
-func BySituations(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newSituationsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
 
@@ -621,6 +621,13 @@ func newLinkedIncidentsStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.M2M, false, LinkedIncidentsTable, LinkedIncidentsPrimaryKey...),
 	)
 }
+func newSituationsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(SituationsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, false, SituationsTable, SituationsPrimaryKey...),
+	)
+}
 func newFieldSelectionsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -640,13 +647,6 @@ func newTagAssignmentsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(TagAssignmentsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2M, false, TagAssignmentsTable, TagAssignmentsPrimaryKey...),
-	)
-}
-func newSituationsStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(SituationsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2M, false, SituationsTable, SituationsPrimaryKey...),
 	)
 }
 func newImpactsStep() *sqlgraph.Step {

@@ -116,6 +116,7 @@ var pkgGenkit = do.Package(
 	do.Lazy(func(i do.Injector) ([]genkit.AiServiceOption, error) {
 		chatAgent := genkit.NewChatAgent()
 		investigationAgent := genkit.NewInvestigationAgent(
+			do.MustInvoke[rez.InvestigationService](i),
 			do.MustInvoke[rez.SituationService](i),
 			do.MustInvoke[rez.SystemAnalysisService](i),
 			do.MustInvoke[rez.KnowledgeGraphService](i),
@@ -467,13 +468,20 @@ var pkgDatabase = do.Package(
 		return db.NewSituationService(
 			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.JobService](i),
-			do.MustInvoke[rez.AgentSessionService](i),
 			do.MustInvoke[rez.KnowledgeGraphService](i),
+			do.MustInvoke[rez.InvestigationService](i),
 		)
 	}),
 	do.Bind[*db.SituationService, rez.SituationService](),
+	do.Lazy(func(i do.Injector) (*db.InvestigationService, error) {
+		return db.NewInvestigationService(
+			do.MustInvoke[rez.Database](i),
+			do.MustInvoke[rez.AgentSessionService](i),
+		), nil
+	}),
+	do.Bind[*db.InvestigationService, rez.InvestigationService](),
 
-	do.Lazy(func(i do.Injector) (jobs.Worker[jobs.ReconcileSituationInvestigation], error) {
+	do.Lazy(func(i do.Injector) (jobs.Worker[jobs.BumpSituationInvestigation], error) {
 		return db.NewReconcileSituationInvestigationWorker(
 			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.SituationService](i),
@@ -500,6 +508,7 @@ var pkgOpenApi = do.Package(
 			do.MustInvoke[rez.DebriefService](i),
 			do.MustInvoke[rez.IncidentService](i),
 			do.MustInvoke[rez.IntegrationService](i),
+			do.MustInvoke[rez.InvestigationService](i),
 			do.MustInvoke[rez.EventsService](i),
 			do.MustInvoke[rez.OncallRostersService](i),
 			do.MustInvoke[rez.OncallShiftsService](i),
@@ -576,7 +585,7 @@ var pkgJobs = do.Package(
 	do.LazyNamed("jobs-default", func(i do.Injector) (jobs.Definition, error) {
 		p := newJobDefinitionProvider(i)
 
-		p.addProvidedArgs[jobs.ReconcileSituationInvestigation]()
+		p.addProvidedArgs[jobs.BumpSituationInvestigation]()
 		p.addProvidedArgs[jobs.CloseInactiveAlertEpisodes]()
 		p.addProvidedArgs[jobs.StartAgentSession]()
 		p.addProvidedArgs[jobs.InvokeAgentTurn]()

@@ -24,28 +24,22 @@ const (
 	FieldUpdatedAt = "updated_at"
 	// FieldSituationID holds the string denoting the situation_id field in the database.
 	FieldSituationID = "situation_id"
-	// FieldSystemAnalysisID holds the string denoting the system_analysis_id field in the database.
-	FieldSystemAnalysisID = "system_analysis_id"
-	// FieldAgentSessionID holds the string denoting the agent_session_id field in the database.
-	FieldAgentSessionID = "agent_session_id"
+	// FieldInvestigationID holds the string denoting the investigation_id field in the database.
+	FieldInvestigationID = "investigation_id"
+	// FieldRequestedTurnID holds the string denoting the requested_turn_id field in the database.
+	FieldRequestedTurnID = "requested_turn_id"
 	// FieldCompletedRevision holds the string denoting the completed_revision field in the database.
 	FieldCompletedRevision = "completed_revision"
 	// FieldRequestedRevision holds the string denoting the requested_revision field in the database.
 	FieldRequestedRevision = "requested_revision"
-	// FieldRequestedTurnID holds the string denoting the requested_turn_id field in the database.
-	FieldRequestedTurnID = "requested_turn_id"
-	// FieldReport holds the string denoting the report field in the database.
-	FieldReport = "report"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
 	// EdgeRequestedTurn holds the string denoting the requested_turn edge name in mutations.
 	EdgeRequestedTurn = "requested_turn"
 	// EdgeSituation holds the string denoting the situation edge name in mutations.
 	EdgeSituation = "situation"
-	// EdgeSystemAnalysis holds the string denoting the system_analysis edge name in mutations.
-	EdgeSystemAnalysis = "system_analysis"
-	// EdgeAgentSession holds the string denoting the agent_session edge name in mutations.
-	EdgeAgentSession = "agent_session"
+	// EdgeInvestigation holds the string denoting the investigation edge name in mutations.
+	EdgeInvestigation = "investigation"
 	// Table holds the table name of the situationinvestigation in the database.
 	Table = "situation_investigations"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -69,20 +63,13 @@ const (
 	SituationInverseTable = "situations"
 	// SituationColumn is the table column denoting the situation relation/edge.
 	SituationColumn = "situation_id"
-	// SystemAnalysisTable is the table that holds the system_analysis relation/edge.
-	SystemAnalysisTable = "situation_investigations"
-	// SystemAnalysisInverseTable is the table name for the SystemAnalysis entity.
-	// It exists in this package in order to avoid circular dependency with the "systemanalysis" package.
-	SystemAnalysisInverseTable = "system_analyses"
-	// SystemAnalysisColumn is the table column denoting the system_analysis relation/edge.
-	SystemAnalysisColumn = "system_analysis_id"
-	// AgentSessionTable is the table that holds the agent_session relation/edge.
-	AgentSessionTable = "situation_investigations"
-	// AgentSessionInverseTable is the table name for the AgentSession entity.
-	// It exists in this package in order to avoid circular dependency with the "agentsession" package.
-	AgentSessionInverseTable = "agent_sessions"
-	// AgentSessionColumn is the table column denoting the agent_session relation/edge.
-	AgentSessionColumn = "agent_session_id"
+	// InvestigationTable is the table that holds the investigation relation/edge.
+	InvestigationTable = "situation_investigations"
+	// InvestigationInverseTable is the table name for the Investigation entity.
+	// It exists in this package in order to avoid circular dependency with the "investigation" package.
+	InvestigationInverseTable = "investigations"
+	// InvestigationColumn is the table column denoting the investigation relation/edge.
+	InvestigationColumn = "investigation_id"
 )
 
 // Columns holds all SQL columns for situationinvestigation fields.
@@ -92,12 +79,10 @@ var Columns = []string{
 	FieldCreatedAt,
 	FieldUpdatedAt,
 	FieldSituationID,
-	FieldSystemAnalysisID,
-	FieldAgentSessionID,
+	FieldInvestigationID,
+	FieldRequestedTurnID,
 	FieldCompletedRevision,
 	FieldRequestedRevision,
-	FieldRequestedTurnID,
-	FieldReport,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -164,14 +149,14 @@ func BySituationID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldSituationID, opts...).ToFunc()
 }
 
-// BySystemAnalysisID orders the results by the system_analysis_id field.
-func BySystemAnalysisID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldSystemAnalysisID, opts...).ToFunc()
+// ByInvestigationID orders the results by the investigation_id field.
+func ByInvestigationID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldInvestigationID, opts...).ToFunc()
 }
 
-// ByAgentSessionID orders the results by the agent_session_id field.
-func ByAgentSessionID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldAgentSessionID, opts...).ToFunc()
+// ByRequestedTurnID orders the results by the requested_turn_id field.
+func ByRequestedTurnID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldRequestedTurnID, opts...).ToFunc()
 }
 
 // ByCompletedRevision orders the results by the completed_revision field.
@@ -182,11 +167,6 @@ func ByCompletedRevision(opts ...sql.OrderTermOption) OrderOption {
 // ByRequestedRevision orders the results by the requested_revision field.
 func ByRequestedRevision(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldRequestedRevision, opts...).ToFunc()
-}
-
-// ByRequestedTurnID orders the results by the requested_turn_id field.
-func ByRequestedTurnID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldRequestedTurnID, opts...).ToFunc()
 }
 
 // ByTenantField orders the results by tenant field.
@@ -210,17 +190,10 @@ func BySituationField(field string, opts ...sql.OrderTermOption) OrderOption {
 	}
 }
 
-// BySystemAnalysisField orders the results by system_analysis field.
-func BySystemAnalysisField(field string, opts ...sql.OrderTermOption) OrderOption {
+// ByInvestigationField orders the results by investigation field.
+func ByInvestigationField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newSystemAnalysisStep(), sql.OrderByField(field, opts...))
-	}
-}
-
-// ByAgentSessionField orders the results by agent_session field.
-func ByAgentSessionField(field string, opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newAgentSessionStep(), sql.OrderByField(field, opts...))
+		sqlgraph.OrderByNeighborTerms(s, newInvestigationStep(), sql.OrderByField(field, opts...))
 	}
 }
 func newTenantStep() *sqlgraph.Step {
@@ -241,20 +214,13 @@ func newSituationStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(SituationInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, true, SituationTable, SituationColumn),
+		sqlgraph.Edge(sqlgraph.O2O, true, SituationTable, SituationColumn),
 	)
 }
-func newSystemAnalysisStep() *sqlgraph.Step {
+func newInvestigationStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(SystemAnalysisInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2O, true, SystemAnalysisTable, SystemAnalysisColumn),
-	)
-}
-func newAgentSessionStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(AgentSessionInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2O, true, AgentSessionTable, AgentSessionColumn),
+		sqlgraph.To(InvestigationInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, InvestigationTable, InvestigationColumn),
 	)
 }

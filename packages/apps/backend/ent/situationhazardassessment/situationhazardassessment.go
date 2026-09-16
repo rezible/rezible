@@ -104,10 +104,21 @@ var Columns = []string{
 	FieldAgentTurnID,
 }
 
+// ForeignKeys holds the SQL foreign-keys that are owned by the "situation_hazard_assessments"
+// table and are not defined as standalone fields in the schema.
+var ForeignKeys = []string{
+	"system_hazard_situation_assessments",
+}
+
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
+			return true
+		}
+	}
+	for i := range ForeignKeys {
+		if column == ForeignKeys[i] {
 			return true
 		}
 	}
@@ -268,14 +279,14 @@ func newSituationStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(SituationInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, true, SituationTable, SituationColumn),
+		sqlgraph.Edge(sqlgraph.M2O, false, SituationTable, SituationColumn),
 	)
 }
 func newSystemHazardStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(SystemHazardInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, true, SystemHazardTable, SystemHazardColumn),
+		sqlgraph.Edge(sqlgraph.M2O, false, SystemHazardTable, SystemHazardColumn),
 	)
 }
 func newUserStep() *sqlgraph.Step {

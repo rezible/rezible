@@ -27,7 +27,9 @@ func (SystemHazard) Fields() []ent.Field {
 		field.String("title").NotEmpty(),
 		field.Text("description").Optional(),
 		field.Text("potential_consequences").Optional(),
-		field.Enum("status").Values("active", "retired").Default("active"),
+		field.Enum("status").
+			Values("active", "retired").
+			Default("active"),
 	}
 }
 

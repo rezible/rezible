@@ -13,12 +13,10 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/agentsession"
 	"github.com/rezible/rezible/ent/agentturn"
-	"github.com/rezible/rezible/ent/schema/schematypes"
+	"github.com/rezible/rezible/ent/investigation"
 	"github.com/rezible/rezible/ent/situation"
 	"github.com/rezible/rezible/ent/situationinvestigation"
-	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
@@ -70,15 +68,23 @@ func (_c *SituationInvestigationCreate) SetSituationID(v uuid.UUID) *SituationIn
 	return _c
 }
 
-// SetSystemAnalysisID sets the "system_analysis_id" field.
-func (_c *SituationInvestigationCreate) SetSystemAnalysisID(v uuid.UUID) *SituationInvestigationCreate {
-	_c.mutation.SetSystemAnalysisID(v)
+// SetInvestigationID sets the "investigation_id" field.
+func (_c *SituationInvestigationCreate) SetInvestigationID(v uuid.UUID) *SituationInvestigationCreate {
+	_c.mutation.SetInvestigationID(v)
 	return _c
 }
 
-// SetAgentSessionID sets the "agent_session_id" field.
-func (_c *SituationInvestigationCreate) SetAgentSessionID(v uuid.UUID) *SituationInvestigationCreate {
-	_c.mutation.SetAgentSessionID(v)
+// SetRequestedTurnID sets the "requested_turn_id" field.
+func (_c *SituationInvestigationCreate) SetRequestedTurnID(v uuid.UUID) *SituationInvestigationCreate {
+	_c.mutation.SetRequestedTurnID(v)
+	return _c
+}
+
+// SetNillableRequestedTurnID sets the "requested_turn_id" field if the given value is not nil.
+func (_c *SituationInvestigationCreate) SetNillableRequestedTurnID(v *uuid.UUID) *SituationInvestigationCreate {
+	if v != nil {
+		_c.SetRequestedTurnID(*v)
+	}
 	return _c
 }
 
@@ -107,26 +113,6 @@ func (_c *SituationInvestigationCreate) SetNillableRequestedRevision(v *int) *Si
 	if v != nil {
 		_c.SetRequestedRevision(*v)
 	}
-	return _c
-}
-
-// SetRequestedTurnID sets the "requested_turn_id" field.
-func (_c *SituationInvestigationCreate) SetRequestedTurnID(v uuid.UUID) *SituationInvestigationCreate {
-	_c.mutation.SetRequestedTurnID(v)
-	return _c
-}
-
-// SetNillableRequestedTurnID sets the "requested_turn_id" field if the given value is not nil.
-func (_c *SituationInvestigationCreate) SetNillableRequestedTurnID(v *uuid.UUID) *SituationInvestigationCreate {
-	if v != nil {
-		_c.SetRequestedTurnID(*v)
-	}
-	return _c
-}
-
-// SetReport sets the "report" field.
-func (_c *SituationInvestigationCreate) SetReport(v *schematypes.SituationInvestigationReport) *SituationInvestigationCreate {
-	_c.mutation.SetReport(v)
 	return _c
 }
 
@@ -159,14 +145,9 @@ func (_c *SituationInvestigationCreate) SetSituation(v *Situation) *SituationInv
 	return _c.SetSituationID(v.ID)
 }
 
-// SetSystemAnalysis sets the "system_analysis" edge to the SystemAnalysis entity.
-func (_c *SituationInvestigationCreate) SetSystemAnalysis(v *SystemAnalysis) *SituationInvestigationCreate {
-	return _c.SetSystemAnalysisID(v.ID)
-}
-
-// SetAgentSession sets the "agent_session" edge to the AgentSession entity.
-func (_c *SituationInvestigationCreate) SetAgentSession(v *AgentSession) *SituationInvestigationCreate {
-	return _c.SetAgentSessionID(v.ID)
+// SetInvestigation sets the "investigation" edge to the Investigation entity.
+func (_c *SituationInvestigationCreate) SetInvestigation(v *Investigation) *SituationInvestigationCreate {
+	return _c.SetInvestigationID(v.ID)
 }
 
 // Mutation returns the SituationInvestigationMutation object of the builder.
@@ -252,11 +233,8 @@ func (_c *SituationInvestigationCreate) check() error {
 	if _, ok := _c.mutation.SituationID(); !ok {
 		return &ValidationError{Name: "situation_id", err: errors.New(`ent: missing required field "SituationInvestigation.situation_id"`)}
 	}
-	if _, ok := _c.mutation.SystemAnalysisID(); !ok {
-		return &ValidationError{Name: "system_analysis_id", err: errors.New(`ent: missing required field "SituationInvestigation.system_analysis_id"`)}
-	}
-	if _, ok := _c.mutation.AgentSessionID(); !ok {
-		return &ValidationError{Name: "agent_session_id", err: errors.New(`ent: missing required field "SituationInvestigation.agent_session_id"`)}
+	if _, ok := _c.mutation.InvestigationID(); !ok {
+		return &ValidationError{Name: "investigation_id", err: errors.New(`ent: missing required field "SituationInvestigation.investigation_id"`)}
 	}
 	if _, ok := _c.mutation.CompletedRevision(); !ok {
 		return &ValidationError{Name: "completed_revision", err: errors.New(`ent: missing required field "SituationInvestigation.completed_revision"`)}
@@ -280,11 +258,8 @@ func (_c *SituationInvestigationCreate) check() error {
 	if len(_c.mutation.SituationIDs()) == 0 {
 		return &ValidationError{Name: "situation", err: errors.New(`ent: missing required edge "SituationInvestigation.situation"`)}
 	}
-	if len(_c.mutation.SystemAnalysisIDs()) == 0 {
-		return &ValidationError{Name: "system_analysis", err: errors.New(`ent: missing required edge "SituationInvestigation.system_analysis"`)}
-	}
-	if len(_c.mutation.AgentSessionIDs()) == 0 {
-		return &ValidationError{Name: "agent_session", err: errors.New(`ent: missing required edge "SituationInvestigation.agent_session"`)}
+	if len(_c.mutation.InvestigationIDs()) == 0 {
+		return &ValidationError{Name: "investigation", err: errors.New(`ent: missing required edge "SituationInvestigation.investigation"`)}
 	}
 	return nil
 }
@@ -339,10 +314,6 @@ func (_c *SituationInvestigationCreate) createSpec() (*SituationInvestigation, *
 		_spec.SetField(situationinvestigation.FieldRequestedRevision, field.TypeInt, value)
 		_node.RequestedRevision = value
 	}
-	if value, ok := _c.mutation.Report(); ok {
-		_spec.SetField(situationinvestigation.FieldReport, field.TypeJSON, value)
-		_node.Report = value
-	}
 	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -381,7 +352,7 @@ func (_c *SituationInvestigationCreate) createSpec() (*SituationInvestigation, *
 	}
 	if nodes := _c.mutation.SituationIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
+			Rel:     sqlgraph.O2O,
 			Inverse: true,
 			Table:   situationinvestigation.SituationTable,
 			Columns: []string{situationinvestigation.SituationColumn},
@@ -397,40 +368,22 @@ func (_c *SituationInvestigationCreate) createSpec() (*SituationInvestigation, *
 		_node.SituationID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := _c.mutation.SystemAnalysisIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.InvestigationIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
+			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   situationinvestigation.SystemAnalysisTable,
-			Columns: []string{situationinvestigation.SystemAnalysisColumn},
+			Table:   situationinvestigation.InvestigationTable,
+			Columns: []string{situationinvestigation.InvestigationColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysis.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(investigation.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _c.schemaConfig.SituationInvestigation
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.SystemAnalysisID = nodes[0]
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := _c.mutation.AgentSessionIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
-			Inverse: true,
-			Table:   situationinvestigation.AgentSessionTable,
-			Columns: []string{situationinvestigation.AgentSessionColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agentsession.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _c.schemaConfig.SituationInvestigation
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_node.AgentSessionID = nodes[0]
+		_node.InvestigationID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
@@ -509,6 +462,24 @@ func (u *SituationInvestigationUpsert) UpdateUpdatedAt() *SituationInvestigation
 	return u
 }
 
+// SetRequestedTurnID sets the "requested_turn_id" field.
+func (u *SituationInvestigationUpsert) SetRequestedTurnID(v uuid.UUID) *SituationInvestigationUpsert {
+	u.Set(situationinvestigation.FieldRequestedTurnID, v)
+	return u
+}
+
+// UpdateRequestedTurnID sets the "requested_turn_id" field to the value that was provided on create.
+func (u *SituationInvestigationUpsert) UpdateRequestedTurnID() *SituationInvestigationUpsert {
+	u.SetExcluded(situationinvestigation.FieldRequestedTurnID)
+	return u
+}
+
+// ClearRequestedTurnID clears the value of the "requested_turn_id" field.
+func (u *SituationInvestigationUpsert) ClearRequestedTurnID() *SituationInvestigationUpsert {
+	u.SetNull(situationinvestigation.FieldRequestedTurnID)
+	return u
+}
+
 // SetCompletedRevision sets the "completed_revision" field.
 func (u *SituationInvestigationUpsert) SetCompletedRevision(v int) *SituationInvestigationUpsert {
 	u.Set(situationinvestigation.FieldCompletedRevision, v)
@@ -545,42 +516,6 @@ func (u *SituationInvestigationUpsert) AddRequestedRevision(v int) *SituationInv
 	return u
 }
 
-// SetRequestedTurnID sets the "requested_turn_id" field.
-func (u *SituationInvestigationUpsert) SetRequestedTurnID(v uuid.UUID) *SituationInvestigationUpsert {
-	u.Set(situationinvestigation.FieldRequestedTurnID, v)
-	return u
-}
-
-// UpdateRequestedTurnID sets the "requested_turn_id" field to the value that was provided on create.
-func (u *SituationInvestigationUpsert) UpdateRequestedTurnID() *SituationInvestigationUpsert {
-	u.SetExcluded(situationinvestigation.FieldRequestedTurnID)
-	return u
-}
-
-// ClearRequestedTurnID clears the value of the "requested_turn_id" field.
-func (u *SituationInvestigationUpsert) ClearRequestedTurnID() *SituationInvestigationUpsert {
-	u.SetNull(situationinvestigation.FieldRequestedTurnID)
-	return u
-}
-
-// SetReport sets the "report" field.
-func (u *SituationInvestigationUpsert) SetReport(v *schematypes.SituationInvestigationReport) *SituationInvestigationUpsert {
-	u.Set(situationinvestigation.FieldReport, v)
-	return u
-}
-
-// UpdateReport sets the "report" field to the value that was provided on create.
-func (u *SituationInvestigationUpsert) UpdateReport() *SituationInvestigationUpsert {
-	u.SetExcluded(situationinvestigation.FieldReport)
-	return u
-}
-
-// ClearReport clears the value of the "report" field.
-func (u *SituationInvestigationUpsert) ClearReport() *SituationInvestigationUpsert {
-	u.SetNull(situationinvestigation.FieldReport)
-	return u
-}
-
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
@@ -604,11 +539,8 @@ func (u *SituationInvestigationUpsertOne) UpdateNewValues() *SituationInvestigat
 		if _, exists := u.create.mutation.SituationID(); exists {
 			s.SetIgnore(situationinvestigation.FieldSituationID)
 		}
-		if _, exists := u.create.mutation.SystemAnalysisID(); exists {
-			s.SetIgnore(situationinvestigation.FieldSystemAnalysisID)
-		}
-		if _, exists := u.create.mutation.AgentSessionID(); exists {
-			s.SetIgnore(situationinvestigation.FieldAgentSessionID)
+		if _, exists := u.create.mutation.InvestigationID(); exists {
+			s.SetIgnore(situationinvestigation.FieldInvestigationID)
 		}
 	}))
 	return u
@@ -669,6 +601,27 @@ func (u *SituationInvestigationUpsertOne) UpdateUpdatedAt() *SituationInvestigat
 	})
 }
 
+// SetRequestedTurnID sets the "requested_turn_id" field.
+func (u *SituationInvestigationUpsertOne) SetRequestedTurnID(v uuid.UUID) *SituationInvestigationUpsertOne {
+	return u.Update(func(s *SituationInvestigationUpsert) {
+		s.SetRequestedTurnID(v)
+	})
+}
+
+// UpdateRequestedTurnID sets the "requested_turn_id" field to the value that was provided on create.
+func (u *SituationInvestigationUpsertOne) UpdateRequestedTurnID() *SituationInvestigationUpsertOne {
+	return u.Update(func(s *SituationInvestigationUpsert) {
+		s.UpdateRequestedTurnID()
+	})
+}
+
+// ClearRequestedTurnID clears the value of the "requested_turn_id" field.
+func (u *SituationInvestigationUpsertOne) ClearRequestedTurnID() *SituationInvestigationUpsertOne {
+	return u.Update(func(s *SituationInvestigationUpsert) {
+		s.ClearRequestedTurnID()
+	})
+}
+
 // SetCompletedRevision sets the "completed_revision" field.
 func (u *SituationInvestigationUpsertOne) SetCompletedRevision(v int) *SituationInvestigationUpsertOne {
 	return u.Update(func(s *SituationInvestigationUpsert) {
@@ -708,48 +661,6 @@ func (u *SituationInvestigationUpsertOne) AddRequestedRevision(v int) *Situation
 func (u *SituationInvestigationUpsertOne) UpdateRequestedRevision() *SituationInvestigationUpsertOne {
 	return u.Update(func(s *SituationInvestigationUpsert) {
 		s.UpdateRequestedRevision()
-	})
-}
-
-// SetRequestedTurnID sets the "requested_turn_id" field.
-func (u *SituationInvestigationUpsertOne) SetRequestedTurnID(v uuid.UUID) *SituationInvestigationUpsertOne {
-	return u.Update(func(s *SituationInvestigationUpsert) {
-		s.SetRequestedTurnID(v)
-	})
-}
-
-// UpdateRequestedTurnID sets the "requested_turn_id" field to the value that was provided on create.
-func (u *SituationInvestigationUpsertOne) UpdateRequestedTurnID() *SituationInvestigationUpsertOne {
-	return u.Update(func(s *SituationInvestigationUpsert) {
-		s.UpdateRequestedTurnID()
-	})
-}
-
-// ClearRequestedTurnID clears the value of the "requested_turn_id" field.
-func (u *SituationInvestigationUpsertOne) ClearRequestedTurnID() *SituationInvestigationUpsertOne {
-	return u.Update(func(s *SituationInvestigationUpsert) {
-		s.ClearRequestedTurnID()
-	})
-}
-
-// SetReport sets the "report" field.
-func (u *SituationInvestigationUpsertOne) SetReport(v *schematypes.SituationInvestigationReport) *SituationInvestigationUpsertOne {
-	return u.Update(func(s *SituationInvestigationUpsert) {
-		s.SetReport(v)
-	})
-}
-
-// UpdateReport sets the "report" field to the value that was provided on create.
-func (u *SituationInvestigationUpsertOne) UpdateReport() *SituationInvestigationUpsertOne {
-	return u.Update(func(s *SituationInvestigationUpsert) {
-		s.UpdateReport()
-	})
-}
-
-// ClearReport clears the value of the "report" field.
-func (u *SituationInvestigationUpsertOne) ClearReport() *SituationInvestigationUpsertOne {
-	return u.Update(func(s *SituationInvestigationUpsert) {
-		s.ClearReport()
 	})
 }
 
@@ -942,11 +853,8 @@ func (u *SituationInvestigationUpsertBulk) UpdateNewValues() *SituationInvestiga
 			if _, exists := b.mutation.SituationID(); exists {
 				s.SetIgnore(situationinvestigation.FieldSituationID)
 			}
-			if _, exists := b.mutation.SystemAnalysisID(); exists {
-				s.SetIgnore(situationinvestigation.FieldSystemAnalysisID)
-			}
-			if _, exists := b.mutation.AgentSessionID(); exists {
-				s.SetIgnore(situationinvestigation.FieldAgentSessionID)
+			if _, exists := b.mutation.InvestigationID(); exists {
+				s.SetIgnore(situationinvestigation.FieldInvestigationID)
 			}
 		}
 	}))
@@ -1008,6 +916,27 @@ func (u *SituationInvestigationUpsertBulk) UpdateUpdatedAt() *SituationInvestiga
 	})
 }
 
+// SetRequestedTurnID sets the "requested_turn_id" field.
+func (u *SituationInvestigationUpsertBulk) SetRequestedTurnID(v uuid.UUID) *SituationInvestigationUpsertBulk {
+	return u.Update(func(s *SituationInvestigationUpsert) {
+		s.SetRequestedTurnID(v)
+	})
+}
+
+// UpdateRequestedTurnID sets the "requested_turn_id" field to the value that was provided on create.
+func (u *SituationInvestigationUpsertBulk) UpdateRequestedTurnID() *SituationInvestigationUpsertBulk {
+	return u.Update(func(s *SituationInvestigationUpsert) {
+		s.UpdateRequestedTurnID()
+	})
+}
+
+// ClearRequestedTurnID clears the value of the "requested_turn_id" field.
+func (u *SituationInvestigationUpsertBulk) ClearRequestedTurnID() *SituationInvestigationUpsertBulk {
+	return u.Update(func(s *SituationInvestigationUpsert) {
+		s.ClearRequestedTurnID()
+	})
+}
+
 // SetCompletedRevision sets the "completed_revision" field.
 func (u *SituationInvestigationUpsertBulk) SetCompletedRevision(v int) *SituationInvestigationUpsertBulk {
 	return u.Update(func(s *SituationInvestigationUpsert) {
@@ -1047,48 +976,6 @@ func (u *SituationInvestigationUpsertBulk) AddRequestedRevision(v int) *Situatio
 func (u *SituationInvestigationUpsertBulk) UpdateRequestedRevision() *SituationInvestigationUpsertBulk {
 	return u.Update(func(s *SituationInvestigationUpsert) {
 		s.UpdateRequestedRevision()
-	})
-}
-
-// SetRequestedTurnID sets the "requested_turn_id" field.
-func (u *SituationInvestigationUpsertBulk) SetRequestedTurnID(v uuid.UUID) *SituationInvestigationUpsertBulk {
-	return u.Update(func(s *SituationInvestigationUpsert) {
-		s.SetRequestedTurnID(v)
-	})
-}
-
-// UpdateRequestedTurnID sets the "requested_turn_id" field to the value that was provided on create.
-func (u *SituationInvestigationUpsertBulk) UpdateRequestedTurnID() *SituationInvestigationUpsertBulk {
-	return u.Update(func(s *SituationInvestigationUpsert) {
-		s.UpdateRequestedTurnID()
-	})
-}
-
-// ClearRequestedTurnID clears the value of the "requested_turn_id" field.
-func (u *SituationInvestigationUpsertBulk) ClearRequestedTurnID() *SituationInvestigationUpsertBulk {
-	return u.Update(func(s *SituationInvestigationUpsert) {
-		s.ClearRequestedTurnID()
-	})
-}
-
-// SetReport sets the "report" field.
-func (u *SituationInvestigationUpsertBulk) SetReport(v *schematypes.SituationInvestigationReport) *SituationInvestigationUpsertBulk {
-	return u.Update(func(s *SituationInvestigationUpsert) {
-		s.SetReport(v)
-	})
-}
-
-// UpdateReport sets the "report" field to the value that was provided on create.
-func (u *SituationInvestigationUpsertBulk) UpdateReport() *SituationInvestigationUpsertBulk {
-	return u.Update(func(s *SituationInvestigationUpsert) {
-		s.UpdateReport()
-	})
-}
-
-// ClearReport clears the value of the "report" field.
-func (u *SituationInvestigationUpsertBulk) ClearReport() *SituationInvestigationUpsertBulk {
-	return u.Update(func(s *SituationInvestigationUpsert) {
-		s.ClearReport()
 	})
 }
 

@@ -1,10 +1,4 @@
-import type { AlertEpisode, Event, SituationInvestigation, SituationObservationGroup } from "$lib/api";
-
-export function investigationSearch(search: string, investigationId: string) {
-	const params = new URLSearchParams(search);
-	params.set("investigation", investigationId);
-	return `?${params}`;
-}
+import type { AlertEpisode, Event, SituationObservationGroup } from "$lib/api";
 
 export function timestamp(value?: string) {
 	const date = value ? new Date(value) : undefined;
@@ -16,26 +10,8 @@ export function timestamp(value?: string) {
 	};
 }
 
-export function latestInvestigation(items: SituationInvestigation[], reportOnly = false) {
-	return items
-		.filter((item) => !reportOnly || item.attributes.report)
-		.sort((a, b) => {
-			const aTime = timestamp(a.attributes.updatedAt).value ?? -Infinity;
-			const bTime = timestamp(b.attributes.updatedAt).value ?? -Infinity;
-			return (aTime === bTime ? 0 : aTime > bTime ? -1 : 1) || a.id.localeCompare(b.id);
-		})[0];
-}
-
-export function selectInvestigation(
-	explicitId: string | null,
-	retainedId: string | undefined,
-	items: SituationInvestigation[]
-) {
-	return explicitId || retainedId || latestInvestigation(items, true)?.id || latestInvestigation(items)?.id;
-}
-
-export function evidenceChanged(revision: number, investigation?: SituationInvestigation) {
-	return !!investigation?.attributes.report && revision > investigation.attributes.completedRevision;
+export function evidenceChanged(evidenceRevision: number, completedRevision?: number) {
+	return completedRevision !== undefined && evidenceRevision > completedRevision;
 }
 
 export type SourceRecord = {
@@ -129,13 +105,11 @@ export function sourceRecord(record: Event | AlertEpisode): SourceRecord {
 }
 
 export function observationGroups(groups: SituationObservationGroup[]) {
-	const keys = new Set<string>();
-	const items = groups.map((group) => {
+	return groups.map((group) => {
 		const records = new Map<string, SourceRecord>();
 		for (const record of [...group.attributes.events, ...group.attributes.alertEpisodes]) {
 			const source = sourceRecord(record);
 			records.set(source.key, source);
-			keys.add(source.key);
 		}
 		return {
 			id: group.id,
@@ -148,5 +122,4 @@ export function observationGroups(groups: SituationObservationGroup[]) {
 			}),
 		};
 	});
-	return { items, sourceCount: keys.size };
 }

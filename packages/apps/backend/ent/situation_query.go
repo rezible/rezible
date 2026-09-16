@@ -34,7 +34,7 @@ type SituationQuery struct {
 	predicates            []predicate.Situation
 	withTenant            *TenantQuery
 	withKnowledgeEntity   *KnowledgeEntityQuery
-	withInvestigations    *SituationInvestigationQuery
+	withInvestigation     *SituationInvestigationQuery
 	withHazardAssessments *SituationHazardAssessmentQuery
 	withObservationGroups *SituationObservationGroupQuery
 	withIncidents         *IncidentQuery
@@ -125,8 +125,8 @@ func (_q *SituationQuery) QueryKnowledgeEntity() *KnowledgeEntityQuery {
 	return query
 }
 
-// QueryInvestigations chains the current query on the "investigations" edge.
-func (_q *SituationQuery) QueryInvestigations() *SituationInvestigationQuery {
+// QueryInvestigation chains the current query on the "investigation" edge.
+func (_q *SituationQuery) QueryInvestigation() *SituationInvestigationQuery {
 	query := (&SituationInvestigationClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
@@ -139,7 +139,7 @@ func (_q *SituationQuery) QueryInvestigations() *SituationInvestigationQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(situation.Table, situation.FieldID, selector),
 			sqlgraph.To(situationinvestigation.Table, situationinvestigation.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, situation.InvestigationsTable, situation.InvestigationsColumn),
+			sqlgraph.Edge(sqlgraph.O2O, false, situation.InvestigationTable, situation.InvestigationColumn),
 		)
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.SituationInvestigation
@@ -164,7 +164,7 @@ func (_q *SituationQuery) QueryHazardAssessments() *SituationHazardAssessmentQue
 		step := sqlgraph.NewStep(
 			sqlgraph.From(situation.Table, situation.FieldID, selector),
 			sqlgraph.To(situationhazardassessment.Table, situationhazardassessment.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, situation.HazardAssessmentsTable, situation.HazardAssessmentsColumn),
+			sqlgraph.Edge(sqlgraph.O2M, true, situation.HazardAssessmentsTable, situation.HazardAssessmentsColumn),
 		)
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.SituationHazardAssessment
@@ -419,7 +419,7 @@ func (_q *SituationQuery) Clone() *SituationQuery {
 		predicates:            append([]predicate.Situation{}, _q.predicates...),
 		withTenant:            _q.withTenant.Clone(),
 		withKnowledgeEntity:   _q.withKnowledgeEntity.Clone(),
-		withInvestigations:    _q.withInvestigations.Clone(),
+		withInvestigation:     _q.withInvestigation.Clone(),
 		withHazardAssessments: _q.withHazardAssessments.Clone(),
 		withObservationGroups: _q.withObservationGroups.Clone(),
 		withIncidents:         _q.withIncidents.Clone(),
@@ -452,14 +452,14 @@ func (_q *SituationQuery) WithKnowledgeEntity(opts ...func(*KnowledgeEntityQuery
 	return _q
 }
 
-// WithInvestigations tells the query-builder to eager-load the nodes that are connected to
-// the "investigations" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *SituationQuery) WithInvestigations(opts ...func(*SituationInvestigationQuery)) *SituationQuery {
+// WithInvestigation tells the query-builder to eager-load the nodes that are connected to
+// the "investigation" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *SituationQuery) WithInvestigation(opts ...func(*SituationInvestigationQuery)) *SituationQuery {
 	query := (&SituationInvestigationClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	_q.withInvestigations = query
+	_q.withInvestigation = query
 	return _q
 }
 
@@ -583,7 +583,7 @@ func (_q *SituationQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Si
 		loadedTypes = [6]bool{
 			_q.withTenant != nil,
 			_q.withKnowledgeEntity != nil,
-			_q.withInvestigations != nil,
+			_q.withInvestigation != nil,
 			_q.withHazardAssessments != nil,
 			_q.withObservationGroups != nil,
 			_q.withIncidents != nil,
@@ -624,12 +624,9 @@ func (_q *SituationQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Si
 			return nil, err
 		}
 	}
-	if query := _q.withInvestigations; query != nil {
-		if err := _q.loadInvestigations(ctx, query, nodes,
-			func(n *Situation) { n.Edges.Investigations = []*SituationInvestigation{} },
-			func(n *Situation, e *SituationInvestigation) {
-				n.Edges.Investigations = append(n.Edges.Investigations, e)
-			}); err != nil {
+	if query := _q.withInvestigation; query != nil {
+		if err := _q.loadInvestigation(ctx, query, nodes, nil,
+			func(n *Situation, e *SituationInvestigation) { n.Edges.Investigation = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -719,21 +716,18 @@ func (_q *SituationQuery) loadKnowledgeEntity(ctx context.Context, query *Knowle
 	}
 	return nil
 }
-func (_q *SituationQuery) loadInvestigations(ctx context.Context, query *SituationInvestigationQuery, nodes []*Situation, init func(*Situation), assign func(*Situation, *SituationInvestigation)) error {
+func (_q *SituationQuery) loadInvestigation(ctx context.Context, query *SituationInvestigationQuery, nodes []*Situation, init func(*Situation), assign func(*Situation, *SituationInvestigation)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*Situation)
 	for i := range nodes {
 		fks = append(fks, nodes[i].ID)
 		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
 	}
 	if len(query.ctx.Fields) > 0 {
 		query.ctx.AppendFieldOnce(situationinvestigation.FieldSituationID)
 	}
 	query.Where(predicate.SituationInvestigation(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(situation.InvestigationsColumn), fks...))
+		s.Where(sql.InValues(s.C(situation.InvestigationColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {
@@ -759,6 +753,7 @@ func (_q *SituationQuery) loadHazardAssessments(ctx context.Context, query *Situ
 			init(nodes[i])
 		}
 	}
+	query.withFKs = true
 	if len(query.ctx.Fields) > 0 {
 		query.ctx.AppendFieldOnce(situationhazardassessment.FieldSituationID)
 	}

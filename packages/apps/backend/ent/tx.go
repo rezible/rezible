@@ -80,6 +80,14 @@ type Tx struct {
 	IntegrationEventSyncRun *IntegrationEventSyncRunClient
 	// IntegrationUserInstallState is the client for interacting with the IntegrationUserInstallState builders.
 	IntegrationUserInstallState *IntegrationUserInstallStateClient
+	// Investigation is the client for interacting with the Investigation builders.
+	Investigation *InvestigationClient
+	// InvestigationFinding is the client for interacting with the InvestigationFinding builders.
+	InvestigationFinding *InvestigationFindingClient
+	// InvestigationHypothesis is the client for interacting with the InvestigationHypothesis builders.
+	InvestigationHypothesis *InvestigationHypothesisClient
+	// InvestigationReport is the client for interacting with the InvestigationReport builders.
+	InvestigationReport *InvestigationReportClient
 	// KnowledgeEntity is the client for interacting with the KnowledgeEntity builders.
 	KnowledgeEntity *KnowledgeEntityClient
 	// KnowledgeEntityLinkingAttribute is the client for interacting with the KnowledgeEntityLinkingAttribute builders.
@@ -331,6 +339,10 @@ func (tx *Tx) init() {
 	tx.IntegrationEventSyncCursor = NewIntegrationEventSyncCursorClient(tx.config)
 	tx.IntegrationEventSyncRun = NewIntegrationEventSyncRunClient(tx.config)
 	tx.IntegrationUserInstallState = NewIntegrationUserInstallStateClient(tx.config)
+	tx.Investigation = NewInvestigationClient(tx.config)
+	tx.InvestigationFinding = NewInvestigationFindingClient(tx.config)
+	tx.InvestigationHypothesis = NewInvestigationHypothesisClient(tx.config)
+	tx.InvestigationReport = NewInvestigationReportClient(tx.config)
 	tx.KnowledgeEntity = NewKnowledgeEntityClient(tx.config)
 	tx.KnowledgeEntityLinkingAttribute = NewKnowledgeEntityLinkingAttributeClient(tx.config)
 	tx.KnowledgeEvidence = NewKnowledgeEvidenceClient(tx.config)

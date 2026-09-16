@@ -16,6 +16,7 @@
 </script>
 
 {#snippet incidentLink(incident: Incident)}
+	{@const attrs = incident.attributes}
 	<Tooltip.Root>
 		<Tooltip.Trigger>
 			{#snippet child({ props })}
@@ -25,17 +26,17 @@
 					size="sm"
 					class="min-w-0 max-w-full shrink"
 					href={resolve("/incidents/[slug]/[[view=incidentView]]", {
-						slug: incident.attributes.slug,
+						slug: attrs.slug,
 					})}
 				>
-					<span class="min-w-0 truncate">{incident.attributes.title}</span>
-					<span class="shrink-0 text-status-warning-foreground"
-						>{incident.attributes.currentStatus}</span
-					>
+					<span class="min-w-0 truncate">{attrs.title}</span>
+					<span class="shrink-0 text-status-warning-foreground">
+						{attrs.currentStatus}
+					</span>
 				</Button>
 			{/snippet}
 		</Tooltip.Trigger>
-		<Tooltip.Content>{incident.attributes.title} · {incident.attributes.slug}</Tooltip.Content>
+		<Tooltip.Content>{attrs.title} - {attrs.slug}</Tooltip.Content>
 	</Tooltip.Root>
 {/snippet}
 

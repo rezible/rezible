@@ -1,19 +1,23 @@
 import { SvelteSet } from "svelte/reactivity";
 import { createQueries, createQuery } from "@tanstack/svelte-query";
 import { page } from "$app/state";
-import { replaceState } from "$app/navigation";
-import {
-	getIncidentOptions,
-	getSituationOptions,
-	getSituationInvestigationOptions,
-	listSituationInvestigationsOptions,
-} from "$lib/api";
-import { createPaginatedQuery } from "$lib/api/queryPaginator.svelte";
+import { getIncidentOptions, getSituationOptions, type Situation } from "$lib/api";
 import { Context, watch, type Getter } from "runed";
-import { investigationSearch, selectInvestigation } from "./model";
-import { situationHref, investigationHref } from "../../lib/routes";
+import { situationHref } from "../../lib/routes";
 
 const idPath = (id?: string) => ({ id: id ?? "" });
+
+const isInvestigationPending = (situation?: Situation) => {
+	if (!situation) return false;
+	const attrs = situation.attributes;
+	const sitInv = attrs?.investigation;
+	if (!sitInv) return true;
+	if (sitInv.requestedRevision > sitInv.completedRevision) return true;
+	if (attrs.evidenceRevision > sitInv.completedRevision) return true;
+	const invAttrs = sitInv.investigation.attributes;
+	const reportMissing = !!attrs?.investigation && !invAttrs?.report;
+	return reportMissing;
+}
 
 export class SituationController {
 	situationId = $state<string>();
@@ -22,21 +26,14 @@ export class SituationController {
 		watch(idFn, (id) => {
 			this.situationId = id;
 		});
-		watch(
-			() => [this.investigationViewActive, this.selectedInvestigationId, page.url.search] as const,
-			([active, selectedId]) => {
-				if (!active || !selectedId || page.url.searchParams.get("investigation")) {
-					return;
-				}
-				const search = investigationSearch(page.url.search, selectedId);
-				replaceState(`${page.url.pathname}${search}${page.url.hash}`, page.state);
-			}
-		);
 	}
 
 	situationQuery = createQuery(() => ({
 		...getSituationOptions({ path: idPath(this.situationId) }),
 		enabled: !!this.situationId,
+		refetchInterval(q) {
+			return (isInvestigationPending(q.state.data?.data)) ? 2000 : false
+		},
 	}));
 
 	situation = $derived(this.situationQuery.data?.data);
@@ -45,48 +42,14 @@ export class SituationController {
 		queries: this.incidentIds.map((id) => getIncidentOptions({ path: { id } })),
 	}));
 
-	private investigationViewActive = $derived(
-		page.params.view === "analysis" || page.params.view === "investigations"
-	);
-
-	selectedInvestigationId = $derived(
-		selectInvestigation(
-			page.url.searchParams.get("investigation"),
-			undefined,
-			this.situation?.attributes.investigations ?? []
-		)
-	);
-
-	investigationsQuery = createPaginatedQuery({
-		resetWhen: () => this.situationId,
-		keepPreviousQueryData: false,
-		queryOptions: (pagination) => ({
-			...listSituationInvestigationsOptions({ path: idPath(this.situationId), query: pagination }),
-			enabled: !!this.situation && this.investigationViewActive,
-		}),
-	});
-	investigations = $derived(this.investigationsQuery.query.data?.data ?? []);
-
-	selectedInvestigationQuery = createQuery(() => ({
-		...getSituationInvestigationOptions({ path: idPath(this.selectedInvestigationId) }),
-		enabled: !!this.selectedInvestigationId && this.investigationViewActive,
-	}));
-	selectedInvestigation = $derived(this.selectedInvestigationQuery.data?.data);
-	selectedInvestigationBelongs = $derived(
-		!!this.selectedInvestigation && this.selectedInvestigation.attributes.situationId === this.situationId
-	);
-
-	investigationAnalysisId = $derived(
-		this.selectedInvestigationBelongs ? this.selectedInvestigation?.attributes.analysisId : undefined
-	);
+	investigationPending = $derived(isInvestigationPending(this.situation));
+	situationInvestigation = $derived(this.situation?.attributes.investigation);
+	investigation = $derived(this.situationInvestigation?.investigation);
+	investigationReport = $derived(this.investigation?.attributes?.report);
+	investigationAnalysisId = $derived(this.investigation?.attributes?.analysisId);
 
 	private id = $derived(this.situationId ?? "");
-	investigationsHref = $derived(situationHref(this.id, "investigations", page.url.search));
-
-	investigationSelectionHref(id: string) {
-		const param = page.params.view === "impact" ? "impact" : "investigations";
-		return situationHref(this.id, param, investigationSearch(page.url.search, id));
-	}
+	investigationHref = $derived(situationHref(this.id, "investigation", page.url.search));
 }
 
 const ctx = new Context<SituationController>("SituationController");

@@ -10,8 +10,8 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/investigation"
 	"github.com/rezible/rezible/ent/knowledgeentity"
-	"github.com/rezible/rezible/ent/situationinvestigation"
 	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/tenant"
 )
@@ -55,8 +55,8 @@ type SystemAnalysisEdges struct {
 	Entries []*SystemAnalysisEntry `json:"entries,omitempty"`
 	// DiscussionThreads holds the value of the discussion_threads edge.
 	DiscussionThreads []*DiscussionThread `json:"discussion_threads,omitempty"`
-	// SituationInvestigation holds the value of the situation_investigation edge.
-	SituationInvestigation *SituationInvestigation `json:"situation_investigation,omitempty"`
+	// Investigation holds the value of the investigation edge.
+	Investigation *Investigation `json:"investigation,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [8]bool
@@ -131,15 +131,15 @@ func (e SystemAnalysisEdges) DiscussionThreadsOrErr() ([]*DiscussionThread, erro
 	return nil, &NotLoadedError{edge: "discussion_threads"}
 }
 
-// SituationInvestigationOrErr returns the SituationInvestigation value or an error if the edge
+// InvestigationOrErr returns the Investigation value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e SystemAnalysisEdges) SituationInvestigationOrErr() (*SituationInvestigation, error) {
-	if e.SituationInvestigation != nil {
-		return e.SituationInvestigation, nil
+func (e SystemAnalysisEdges) InvestigationOrErr() (*Investigation, error) {
+	if e.Investigation != nil {
+		return e.Investigation, nil
 	} else if e.loadedTypes[7] {
-		return nil, &NotFoundError{label: situationinvestigation.Label}
+		return nil, &NotFoundError{label: investigation.Label}
 	}
-	return nil, &NotLoadedError{edge: "situation_investigation"}
+	return nil, &NotLoadedError{edge: "investigation"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -263,9 +263,9 @@ func (_m *SystemAnalysis) QueryDiscussionThreads() *DiscussionThreadQuery {
 	return NewSystemAnalysisClient(_m.config).QueryDiscussionThreads(_m)
 }
 
-// QuerySituationInvestigation queries the "situation_investigation" edge of the SystemAnalysis entity.
-func (_m *SystemAnalysis) QuerySituationInvestigation() *SituationInvestigationQuery {
-	return NewSystemAnalysisClient(_m.config).QuerySituationInvestigation(_m)
+// QueryInvestigation queries the "investigation" edge of the SystemAnalysis entity.
+func (_m *SystemAnalysis) QueryInvestigation() *InvestigationQuery {
+	return NewSystemAnalysisClient(_m.config).QueryInvestigation(_m)
 }
 
 // Update returns a builder for updating this SystemAnalysis.

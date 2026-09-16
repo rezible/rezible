@@ -362,7 +362,7 @@ func (_c *SituationHazardAssessmentCreate) createSpec() (*SituationHazardAssessm
 	if nodes := _c.mutation.SituationIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
-			Inverse: true,
+			Inverse: false,
 			Table:   situationhazardassessment.SituationTable,
 			Columns: []string{situationhazardassessment.SituationColumn},
 			Bidi:    false,
@@ -380,7 +380,7 @@ func (_c *SituationHazardAssessmentCreate) createSpec() (*SituationHazardAssessm
 	if nodes := _c.mutation.SystemHazardIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
-			Inverse: true,
+			Inverse: false,
 			Table:   situationhazardassessment.SystemHazardTable,
 			Columns: []string{situationhazardassessment.SystemHazardColumn},
 			Bidi:    false,

@@ -8,21 +8,23 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	rez "github.com/rezible/rezible"
-	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/ent/agentturn"
-	kne "github.com/rezible/rezible/ent/knowledgeentity"
-	"github.com/rezible/rezible/ent/schema/schematypes"
-	"github.com/rezible/rezible/ent/situation"
-	"github.com/rezible/rezible/ent/situationhazardassessment"
-	"github.com/rezible/rezible/pkg/jobs"
-	"github.com/rezible/rezible/test"
-	"github.com/rezible/rezible/test/mocks"
 	"github.com/riverqueue/river"
 	"github.com/riverqueue/river/rivertype"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 	"golang.org/x/sync/errgroup"
+
+	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/ent"
+	agt "github.com/rezible/rezible/ent/agentturn"
+	invr "github.com/rezible/rezible/ent/investigationreport"
+	kne "github.com/rezible/rezible/ent/knowledgeentity"
+	"github.com/rezible/rezible/ent/situation"
+	sitha "github.com/rezible/rezible/ent/situationhazardassessment"
+	siti "github.com/rezible/rezible/ent/situationinvestigation"
+	"github.com/rezible/rezible/pkg/jobs"
+	"github.com/rezible/rezible/test"
+	"github.com/rezible/rezible/test/mocks"
 )
 
 type SituationServiceSuite struct {
@@ -50,7 +52,8 @@ func (s *SituationServiceSuite) newHarness(tdb rez.Database) *situationServiceHa
 		jobs:   jobSvc,
 	}
 	kg, _ := NewKnowledgeGraphService(tdb)
-	sits, _ := NewSituationService(tdb, jobSvc, agentsSvc, kg)
+	investigations := NewInvestigationService(tdb, agentsSvc)
+	sits, _ := NewSituationService(tdb, jobSvc, kg, investigations)
 	haz, _ := NewSystemHazardService(tdb, kg)
 	return &situationServiceHarness{
 		tdb:        tdb,
@@ -71,7 +74,7 @@ func (h *situationServiceHarness) expectStartAgentSessionJobInserted(times int) 
 
 func (h *situationServiceHarness) expectReconciliationJobInserted(times int) {
 	h.jobs.EXPECT().
-		Insert(mock.Anything, mock.IsType(jobs.ReconcileSituationInvestigation{}), (*river.InsertOpts)(nil)).
+		Insert(mock.Anything, mock.IsType(jobs.BumpSituationInvestigation{}), (*river.InsertOpts)(nil)).
 		Return(&rivertype.JobInsertResult{Job: &rivertype.JobRow{ID: 1001}}, nil).
 		Times(times)
 }
@@ -132,7 +135,7 @@ func (s *SituationServiceSuite) TestListSituationsFiltersByStatusAndSearch() {
 
 	openSituation := s.createSituation(ctx, h, "Checkout degradation")
 	closedSituation := s.createSituation(ctx, h, "Payment provider outage")
-	_, closeErr := h.situations.CloseSituation(ctx, rez.CloseSituationParams{
+	closeErr := h.situations.CloseSituation(ctx, rez.CloseSituationParams{
 		SituationID: closedSituation.ID,
 		Reason:      situation.CloseReasonStabilized,
 	})
@@ -172,7 +175,7 @@ func (s *SituationServiceSuite) TestListSituationsActiveIncludesInvestigatingAnd
 	investigating := s.createSituation(ctx, h, "Investigating")
 	closed := s.createSituation(ctx, h, "Closed")
 
-	_, closeErr := h.situations.CloseSituation(ctx, rez.CloseSituationParams{
+	closeErr := h.situations.CloseSituation(ctx, rez.CloseSituationParams{
 		SituationID: closed.ID,
 		Reason:      situation.CloseReasonStabilized,
 	})
@@ -191,22 +194,19 @@ func (s *SituationServiceSuite) TestSituationCloseIsIdempotentAndNeverReopens() 
 	h := s.newHarness(tdb)
 
 	sit := s.createSituation(ctx, h, "Checkout degradation")
-	closed, closeErr := h.situations.CloseSituation(ctx, rez.CloseSituationParams{
+	closeErr := h.situations.CloseSituation(ctx, rez.CloseSituationParams{
 		SituationID: sit.ID,
 		Reason:      situation.CloseReasonStabilized,
 	})
 	s.Require().NoError(closeErr)
-	s.NotNil(closed.ClosedAt)
-	s.Equal(situation.CloseReasonStabilized, *closed.CloseReason)
 
-	repeated, repeatErr := h.situations.CloseSituation(ctx, rez.CloseSituationParams{
+	repeatErr := h.situations.CloseSituation(ctx, rez.CloseSituationParams{
 		SituationID: sit.ID,
 		Reason:      situation.CloseReasonStabilized,
 	})
 	s.Require().NoError(repeatErr)
-	s.Equal(closed.ID, repeated.ID)
 
-	_, conflictErr := h.situations.CloseSituation(ctx, rez.CloseSituationParams{
+	conflictErr := h.situations.CloseSituation(ctx, rez.CloseSituationParams{
 		SituationID: sit.ID,
 		Reason:      situation.CloseReasonDismissed,
 	})
@@ -219,9 +219,9 @@ func (s *SituationServiceSuite) TestSituationMayExistWithoutInvestigationAndInve
 
 	h := s.newHarness(tdb)
 
-	h.expectSessionCreationJobsInserted(2)
+	h.expectSessionCreationJobsInserted(1)
 
-	_, missingErr := h.situations.GetInvestigationForSituation(ctx, uuid.New())
+	_, missingErr := h.situations.LookupSituationInvestigation(ctx, siti.ID(uuid.New()))
 	s.True(ent.IsNotFound(missingErr))
 
 	sit := s.createSituation(ctx, h, "Checkout degradation")
@@ -229,14 +229,17 @@ func (s *SituationServiceSuite) TestSituationMayExistWithoutInvestigationAndInve
 		SituationID: sit.ID,
 		Query:       new("Assess operational impact."),
 	}
-	impactInv, impactInvErr := h.situations.CreateSituationInvestigation(ctx, impactParams)
+	impactSitInv, impactInvErr := h.situations.CreateSituationInvestigation(ctx, impactParams)
 	s.Require().NoError(impactInvErr)
 
 	s.Equal(1, tdb.Client(ctx).SituationInvestigation.Query().CountX(ctx))
+	s.Equal(1, tdb.Client(ctx).Investigation.Query().CountX(ctx))
 	s.Equal(1, tdb.Client(ctx).SystemAnalysis.Query().CountX(ctx))
 	s.Equal(1, tdb.Client(ctx).AgentSession.Query().CountX(ctx))
 
-	analysis := tdb.Client(ctx).SystemAnalysis.GetX(ctx, impactInv.SystemAnalysisID)
+	s.Require().NotNil(impactSitInv.Edges.Investigation)
+
+	analysis := tdb.Client(ctx).SystemAnalysis.GetX(ctx, impactSitInv.Edges.Investigation.SystemAnalysisID)
 	s.Equal(sit.KnowledgeEntityID, *analysis.SubjectEntityID)
 
 	factorsParams := rez.CreateSituationInvestigationParams{
@@ -245,9 +248,9 @@ func (s *SituationServiceSuite) TestSituationMayExistWithoutInvestigationAndInve
 	}
 	factorsInv, factorsInvErr := h.situations.CreateSituationInvestigation(ctx, factorsParams)
 	s.Require().NoError(factorsInvErr)
-	s.NotEqual(impactInv.ID, factorsInv.ID)
+	s.Equal(impactSitInv.ID, factorsInv.ID)
 
-	s.Equal(2, tdb.Client(ctx).SituationInvestigation.Query().CountX(ctx))
+	s.Equal(1, tdb.Client(ctx).SituationInvestigation.Query().CountX(ctx))
 }
 
 func (s *SituationServiceSuite) TestConcurrentSituationInvestigationCreation() {
@@ -260,12 +263,12 @@ func (s *SituationServiceSuite) TestConcurrentSituationInvestigationCreation() {
 	sit := s.createSituation(ctx, h, "Checkout degradation")
 	params := rez.CreateSituationInvestigationParams{SituationID: sit.ID, Query: new("Assess operational impact.")}
 
-	results := make(chan *ent.SituationInvestigation, 2)
+	results := make(chan *ent.Investigation, 2)
 	var g errgroup.Group
 	for range 2 {
 		g.Go(func() error {
 			investigation, createErr := h.situations.CreateSituationInvestigation(ctx, params)
-			results <- investigation
+			results <- investigation.Edges.Investigation
 			return createErr
 		})
 	}
@@ -287,26 +290,65 @@ func (s *SituationServiceSuite) TestSituationInvestigationReportPersistenceWhile
 
 	sit := s.createSituation(ctx, h, "Checkout degradation")
 
-	params := rez.CreateSituationInvestigationParams{SituationID: sit.ID, Query: new("Assess operational impact.")}
-	inv, err := h.situations.CreateSituationInvestigation(ctx, params)
-	s.Require().NoError(err)
+	params := rez.CreateSituationInvestigationParams{
+		SituationID: sit.ID,
+		Query:       new("Assess operational impact."),
+	}
+	sitInv, createErr := h.situations.CreateSituationInvestigation(ctx, params)
+	s.Require().NoError(createErr)
+
+	queryReport := tdb.Client(ctx).InvestigationReport.Query().Where(invr.InvestigationID(sitInv.ID))
+
+	inv := sitInv.Edges.Investigation
+	s.Require().NotNil(inv)
 
 	createTurn := tdb.Client(ctx).AgentTurn.Create().
 		SetID(uuid.New()).
 		SetAgentSessionID(inv.AgentSessionID).
 		SetSequence(1).
 		SetRiverJobID(1002).
-		SetStatus(agentturn.StatusRunning)
+		SetStatus(agt.StatusRunning)
 	turn := createTurn.SaveX(ctx)
-	tdb.Client(ctx).SituationInvestigation.UpdateOneID(inv.ID).
+
+	sitInv.Update().
 		SetRequestedTurnID(turn.ID).
 		SetRequestedRevision(1).
 		SaveX(ctx)
-	report := schematypes.SituationInvestigationReport{Text: "The database is saturated."}
-	updated, reportErr := h.situations.SetSituationInvestigationReport(ctx, rez.SetSituationInvestigationReportParams{AgentTurnID: turn.ID, Report: report})
+
+	reportInput := rez.InvestigationReportInput{
+		Text:               "The database is saturated.",
+		Limitations:        []string{"Only the primary database was checked."},
+		RecommendedActions: []string{"Scale the database pool."},
+		SuggestedChecks:    []string{"Inspect connection wait time."},
+	}
+	setReportParams := rez.SetSituationInvestigationReportParams{
+		AgentTurnID: turn.ID,
+		Report:      reportInput,
+	}
+	updated, reportErr := h.situations.SetSituationInvestigationReport(ctx, setReportParams)
 	s.Require().NoError(reportErr)
-	s.Equal(report.Text, updated.Report.Text)
+
+	report := queryReport.OnlyX(ctx)
+
+	firstCreatedAt := time.Date(2026, time.January, 1, 0, 0, 0, 0, time.UTC)
+	report.Update().SetCreatedAt(firstCreatedAt).SaveX(ctx)
+
+	s.Equal(reportInput.Text, report.Text)
+	s.Equal(reportInput.Limitations, report.Limitations)
+	s.Equal(reportInput.RecommendedActions, report.RecommendedActions)
+	s.Equal(reportInput.SuggestedChecks, report.SuggestedChecks)
 	s.Equal(1, updated.CompletedRevision)
+
+	repeatedSetReportParams := rez.SetSituationInvestigationReportParams{
+		AgentTurnID: turn.ID,
+		Report: rez.InvestigationReportInput{
+			Text: "This repeated report must not be inserted.",
+		},
+	}
+	repeated, repeatErr := h.situations.SetSituationInvestigationReport(ctx, repeatedSetReportParams)
+	s.Require().NoError(repeatErr)
+	s.Equal(updated.ID, repeated.ID)
+	s.Equal(1, queryReport.CountX(ctx))
 }
 
 func (s *SituationServiceSuite) TestSystemHazardRetirementAndRiskAssessmentRevisions() {
@@ -367,7 +409,7 @@ func (s *SituationServiceSuite) TestSituationHazardAssessmentRevisionsAndAssesso
 	first, firstErr := h.situations.AddSituationHazardAssessment(ctx, rez.AddSituationHazardAssessmentParams{
 		SituationID:    sit.ID,
 		SystemHazardID: hazard.ID,
-		Status:         situationhazardassessment.StatusSuspected,
+		Status:         sitha.StatusSuspected,
 		Summary:        "The observed symptoms may represent this hazard.",
 		UserID:         &userId,
 		AssessedAt:     time.Now().UTC(),
@@ -377,7 +419,7 @@ func (s *SituationServiceSuite) TestSituationHazardAssessmentRevisionsAndAssesso
 	second, secondErr := h.situations.AddSituationHazardAssessment(ctx, rez.AddSituationHazardAssessmentParams{
 		SituationID:    sit.ID,
 		SystemHazardID: hazard.ID,
-		Status:         situationhazardassessment.StatusDisproven,
+		Status:         sitha.StatusDisproven,
 		Summary:        "The symptoms do not match the hazard after review.",
 		UserID:         &userId,
 		AssessedAt:     time.Now().UTC().Add(time.Minute),
@@ -389,7 +431,7 @@ func (s *SituationServiceSuite) TestSituationHazardAssessmentRevisionsAndAssesso
 	_, noAssessorErr := h.situations.AddSituationHazardAssessment(ctx, rez.AddSituationHazardAssessmentParams{
 		SituationID:    sit.ID,
 		SystemHazardID: hazard.ID,
-		Status:         situationhazardassessment.StatusConfirmed,
+		Status:         sitha.StatusConfirmed,
 		Summary:        "Missing provenance.",
 	})
 	s.ErrorIs(noAssessorErr, rez.ErrInvalidInput)
@@ -397,7 +439,7 @@ func (s *SituationServiceSuite) TestSituationHazardAssessmentRevisionsAndAssesso
 	_, twoAssessorsErr := h.situations.AddSituationHazardAssessment(ctx, rez.AddSituationHazardAssessmentParams{
 		SituationID:    sit.ID,
 		SystemHazardID: hazard.ID,
-		Status:         situationhazardassessment.StatusConfirmed,
+		Status:         sitha.StatusConfirmed,
 		Summary:        "Two provenance sources are not supported.",
 		UserID:         &userId,
 		AgentTurnID:    new(uuid.New()),

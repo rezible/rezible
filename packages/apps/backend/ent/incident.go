@@ -71,14 +71,14 @@ type IncidentEdges struct {
 	RoleAssignments []*IncidentRoleAssignment `json:"role_assignments,omitempty"`
 	// LinkedIncidents holds the value of the linked_incidents edge.
 	LinkedIncidents []*Incident `json:"linked_incidents,omitempty"`
+	// Situations holds the value of the situations edge.
+	Situations []*Situation `json:"situations,omitempty"`
 	// FieldSelections holds the value of the field_selections edge.
 	FieldSelections []*IncidentFieldOption `json:"field_selections,omitempty"`
 	// Tasks holds the value of the tasks edge.
 	Tasks []*Task `json:"tasks,omitempty"`
 	// TagAssignments holds the value of the tag_assignments edge.
 	TagAssignments []*IncidentTag `json:"tag_assignments,omitempty"`
-	// Situations holds the value of the situations edge.
-	Situations []*Situation `json:"situations,omitempty"`
 	// Impacts holds the value of the impacts edge.
 	Impacts []*IncidentImpact `json:"impacts,omitempty"`
 	// Debriefs holds the value of the debriefs edge.
@@ -187,10 +187,19 @@ func (e IncidentEdges) LinkedIncidentsOrErr() ([]*Incident, error) {
 	return nil, &NotLoadedError{edge: "linked_incidents"}
 }
 
+// SituationsOrErr returns the Situations value or an error if the edge
+// was not loaded in eager-loading.
+func (e IncidentEdges) SituationsOrErr() ([]*Situation, error) {
+	if e.loadedTypes[9] {
+		return e.Situations, nil
+	}
+	return nil, &NotLoadedError{edge: "situations"}
+}
+
 // FieldSelectionsOrErr returns the FieldSelections value or an error if the edge
 // was not loaded in eager-loading.
 func (e IncidentEdges) FieldSelectionsOrErr() ([]*IncidentFieldOption, error) {
-	if e.loadedTypes[9] {
+	if e.loadedTypes[10] {
 		return e.FieldSelections, nil
 	}
 	return nil, &NotLoadedError{edge: "field_selections"}
@@ -199,7 +208,7 @@ func (e IncidentEdges) FieldSelectionsOrErr() ([]*IncidentFieldOption, error) {
 // TasksOrErr returns the Tasks value or an error if the edge
 // was not loaded in eager-loading.
 func (e IncidentEdges) TasksOrErr() ([]*Task, error) {
-	if e.loadedTypes[10] {
+	if e.loadedTypes[11] {
 		return e.Tasks, nil
 	}
 	return nil, &NotLoadedError{edge: "tasks"}
@@ -208,19 +217,10 @@ func (e IncidentEdges) TasksOrErr() ([]*Task, error) {
 // TagAssignmentsOrErr returns the TagAssignments value or an error if the edge
 // was not loaded in eager-loading.
 func (e IncidentEdges) TagAssignmentsOrErr() ([]*IncidentTag, error) {
-	if e.loadedTypes[11] {
+	if e.loadedTypes[12] {
 		return e.TagAssignments, nil
 	}
 	return nil, &NotLoadedError{edge: "tag_assignments"}
-}
-
-// SituationsOrErr returns the Situations value or an error if the edge
-// was not loaded in eager-loading.
-func (e IncidentEdges) SituationsOrErr() ([]*Situation, error) {
-	if e.loadedTypes[12] {
-		return e.Situations, nil
-	}
-	return nil, &NotLoadedError{edge: "situations"}
 }
 
 // ImpactsOrErr returns the Impacts value or an error if the edge
@@ -438,6 +438,11 @@ func (_m *Incident) QueryLinkedIncidents() *IncidentQuery {
 	return NewIncidentClient(_m.config).QueryLinkedIncidents(_m)
 }
 
+// QuerySituations queries the "situations" edge of the Incident entity.
+func (_m *Incident) QuerySituations() *SituationQuery {
+	return NewIncidentClient(_m.config).QuerySituations(_m)
+}
+
 // QueryFieldSelections queries the "field_selections" edge of the Incident entity.
 func (_m *Incident) QueryFieldSelections() *IncidentFieldOptionQuery {
 	return NewIncidentClient(_m.config).QueryFieldSelections(_m)
@@ -451,11 +456,6 @@ func (_m *Incident) QueryTasks() *TaskQuery {
 // QueryTagAssignments queries the "tag_assignments" edge of the Incident entity.
 func (_m *Incident) QueryTagAssignments() *IncidentTagQuery {
 	return NewIncidentClient(_m.config).QueryTagAssignments(_m)
-}
-
-// QuerySituations queries the "situations" edge of the Incident entity.
-func (_m *Incident) QuerySituations() *SituationQuery {
-	return NewIncidentClient(_m.config).QuerySituations(_m)
 }
 
 // QueryImpacts queries the "impacts" edge of the Incident entity.

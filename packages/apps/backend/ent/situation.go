@@ -12,6 +12,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/situation"
+	"github.com/rezible/rezible/ent/situationinvestigation"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
@@ -52,8 +53,8 @@ type SituationEdges struct {
 	Tenant *Tenant `json:"tenant,omitempty"`
 	// KnowledgeEntity holds the value of the knowledge_entity edge.
 	KnowledgeEntity *KnowledgeEntity `json:"knowledge_entity,omitempty"`
-	// Investigations holds the value of the investigations edge.
-	Investigations []*SituationInvestigation `json:"investigations,omitempty"`
+	// Investigation holds the value of the investigation edge.
+	Investigation *SituationInvestigation `json:"investigation,omitempty"`
 	// HazardAssessments holds the value of the hazard_assessments edge.
 	HazardAssessments []*SituationHazardAssessment `json:"hazard_assessments,omitempty"`
 	// ObservationGroups holds the value of the observation_groups edge.
@@ -87,13 +88,15 @@ func (e SituationEdges) KnowledgeEntityOrErr() (*KnowledgeEntity, error) {
 	return nil, &NotLoadedError{edge: "knowledge_entity"}
 }
 
-// InvestigationsOrErr returns the Investigations value or an error if the edge
-// was not loaded in eager-loading.
-func (e SituationEdges) InvestigationsOrErr() ([]*SituationInvestigation, error) {
-	if e.loadedTypes[2] {
-		return e.Investigations, nil
+// InvestigationOrErr returns the Investigation value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e SituationEdges) InvestigationOrErr() (*SituationInvestigation, error) {
+	if e.Investigation != nil {
+		return e.Investigation, nil
+	} else if e.loadedTypes[2] {
+		return nil, &NotFoundError{label: situationinvestigation.Label}
 	}
-	return nil, &NotLoadedError{edge: "investigations"}
+	return nil, &NotLoadedError{edge: "investigation"}
 }
 
 // HazardAssessmentsOrErr returns the HazardAssessments value or an error if the edge
@@ -242,9 +245,9 @@ func (_m *Situation) QueryKnowledgeEntity() *KnowledgeEntityQuery {
 	return NewSituationClient(_m.config).QueryKnowledgeEntity(_m)
 }
 
-// QueryInvestigations queries the "investigations" edge of the Situation entity.
-func (_m *Situation) QueryInvestigations() *SituationInvestigationQuery {
-	return NewSituationClient(_m.config).QueryInvestigations(_m)
+// QueryInvestigation queries the "investigation" edge of the Situation entity.
+func (_m *Situation) QueryInvestigation() *SituationInvestigationQuery {
+	return NewSituationClient(_m.config).QueryInvestigation(_m)
 }
 
 // QueryHazardAssessments queries the "hazard_assessments" edge of the Situation entity.

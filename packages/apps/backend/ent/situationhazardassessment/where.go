@@ -506,7 +506,7 @@ func HasSituation() predicate.SituationHazardAssessment {
 	return predicate.SituationHazardAssessment(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, SituationTable, SituationColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, SituationTable, SituationColumn),
 		)
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.Situation
@@ -535,7 +535,7 @@ func HasSystemHazard() predicate.SituationHazardAssessment {
 	return predicate.SituationHazardAssessment(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, SystemHazardTable, SystemHazardColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, SystemHazardTable, SystemHazardColumn),
 		)
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.SystemHazard

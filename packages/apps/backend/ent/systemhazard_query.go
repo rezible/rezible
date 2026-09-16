@@ -666,9 +666,7 @@ func (_q *SystemHazardQuery) loadSituationAssessments(ctx context.Context, query
 			init(nodes[i])
 		}
 	}
-	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(situationhazardassessment.FieldSystemHazardID)
-	}
+	query.withFKs = true
 	query.Where(predicate.SituationHazardAssessment(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(systemhazard.SituationAssessmentsColumn), fks...))
 	}))
@@ -677,10 +675,13 @@ func (_q *SystemHazardQuery) loadSituationAssessments(ctx context.Context, query
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.SystemHazardID
-		node, ok := nodeids[fk]
+		fk := n.system_hazard_situation_assessments
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "system_hazard_situation_assessments" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "system_hazard_id" returned %v for node %v`, fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "system_hazard_situation_assessments" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}

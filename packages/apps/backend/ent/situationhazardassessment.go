@@ -47,8 +47,9 @@ type SituationHazardAssessment struct {
 	AgentTurnID *uuid.UUID `json:"agent_turn_id,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the SituationHazardAssessmentQuery when eager-loading is set.
-	Edges        SituationHazardAssessmentEdges `json:"edges"`
-	selectValues sql.SelectValues
+	Edges                               SituationHazardAssessmentEdges `json:"edges"`
+	system_hazard_situation_assessments *uuid.UUID
+	selectValues                        sql.SelectValues
 }
 
 // SituationHazardAssessmentEdges holds the relations/edges for other nodes in the graph.
@@ -138,6 +139,8 @@ func (*SituationHazardAssessment) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullTime)
 		case situationhazardassessment.FieldID, situationhazardassessment.FieldSituationID, situationhazardassessment.FieldSystemHazardID:
 			values[i] = new(uuid.UUID)
+		case situationhazardassessment.ForeignKeys[0]: // system_hazard_situation_assessments
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -226,6 +229,13 @@ func (_m *SituationHazardAssessment) assignValues(columns []string, values []any
 			} else if value.Valid {
 				_m.AgentTurnID = new(uuid.UUID)
 				*_m.AgentTurnID = *value.S.(*uuid.UUID)
+			}
+		case situationhazardassessment.ForeignKeys[0]:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field system_hazard_situation_assessments", values[i])
+			} else if value.Valid {
+				_m.system_hazard_situation_assessments = new(uuid.UUID)
+				*_m.system_hazard_situation_assessments = *value.S.(*uuid.UUID)
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])

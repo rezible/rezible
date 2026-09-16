@@ -15,7 +15,6 @@ import (
 	"github.com/rezible/rezible/ent/agentturn"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
-	"github.com/rezible/rezible/ent/schema/schematypes"
 	"github.com/rezible/rezible/ent/situationinvestigation"
 )
 
@@ -50,6 +49,26 @@ func (_u *SituationInvestigationUpdate) SetNillableCreatedAt(v *time.Time) *Situ
 // SetUpdatedAt sets the "updated_at" field.
 func (_u *SituationInvestigationUpdate) SetUpdatedAt(v time.Time) *SituationInvestigationUpdate {
 	_u.mutation.SetUpdatedAt(v)
+	return _u
+}
+
+// SetRequestedTurnID sets the "requested_turn_id" field.
+func (_u *SituationInvestigationUpdate) SetRequestedTurnID(v uuid.UUID) *SituationInvestigationUpdate {
+	_u.mutation.SetRequestedTurnID(v)
+	return _u
+}
+
+// SetNillableRequestedTurnID sets the "requested_turn_id" field if the given value is not nil.
+func (_u *SituationInvestigationUpdate) SetNillableRequestedTurnID(v *uuid.UUID) *SituationInvestigationUpdate {
+	if v != nil {
+		_u.SetRequestedTurnID(*v)
+	}
+	return _u
+}
+
+// ClearRequestedTurnID clears the value of the "requested_turn_id" field.
+func (_u *SituationInvestigationUpdate) ClearRequestedTurnID() *SituationInvestigationUpdate {
+	_u.mutation.ClearRequestedTurnID()
 	return _u
 }
 
@@ -92,38 +111,6 @@ func (_u *SituationInvestigationUpdate) SetNillableRequestedRevision(v *int) *Si
 // AddRequestedRevision adds value to the "requested_revision" field.
 func (_u *SituationInvestigationUpdate) AddRequestedRevision(v int) *SituationInvestigationUpdate {
 	_u.mutation.AddRequestedRevision(v)
-	return _u
-}
-
-// SetRequestedTurnID sets the "requested_turn_id" field.
-func (_u *SituationInvestigationUpdate) SetRequestedTurnID(v uuid.UUID) *SituationInvestigationUpdate {
-	_u.mutation.SetRequestedTurnID(v)
-	return _u
-}
-
-// SetNillableRequestedTurnID sets the "requested_turn_id" field if the given value is not nil.
-func (_u *SituationInvestigationUpdate) SetNillableRequestedTurnID(v *uuid.UUID) *SituationInvestigationUpdate {
-	if v != nil {
-		_u.SetRequestedTurnID(*v)
-	}
-	return _u
-}
-
-// ClearRequestedTurnID clears the value of the "requested_turn_id" field.
-func (_u *SituationInvestigationUpdate) ClearRequestedTurnID() *SituationInvestigationUpdate {
-	_u.mutation.ClearRequestedTurnID()
-	return _u
-}
-
-// SetReport sets the "report" field.
-func (_u *SituationInvestigationUpdate) SetReport(v *schematypes.SituationInvestigationReport) *SituationInvestigationUpdate {
-	_u.mutation.SetReport(v)
-	return _u
-}
-
-// ClearReport clears the value of the "report" field.
-func (_u *SituationInvestigationUpdate) ClearReport() *SituationInvestigationUpdate {
-	_u.mutation.ClearReport()
 	return _u
 }
 
@@ -203,11 +190,8 @@ func (_u *SituationInvestigationUpdate) check() error {
 	if _u.mutation.SituationCleared() && len(_u.mutation.SituationIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "SituationInvestigation.situation"`)
 	}
-	if _u.mutation.SystemAnalysisCleared() && len(_u.mutation.SystemAnalysisIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "SituationInvestigation.system_analysis"`)
-	}
-	if _u.mutation.AgentSessionCleared() && len(_u.mutation.AgentSessionIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "SituationInvestigation.agent_session"`)
+	if _u.mutation.InvestigationCleared() && len(_u.mutation.InvestigationIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "SituationInvestigation.investigation"`)
 	}
 	return nil
 }
@@ -247,12 +231,6 @@ func (_u *SituationInvestigationUpdate) sqlSave(ctx context.Context) (_node int,
 	}
 	if value, ok := _u.mutation.AddedRequestedRevision(); ok {
 		_spec.AddField(situationinvestigation.FieldRequestedRevision, field.TypeInt, value)
-	}
-	if value, ok := _u.mutation.Report(); ok {
-		_spec.SetField(situationinvestigation.FieldReport, field.TypeJSON, value)
-	}
-	if _u.mutation.ReportCleared() {
-		_spec.ClearField(situationinvestigation.FieldReport, field.TypeJSON)
 	}
 	if _u.mutation.RequestedTurnCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -329,6 +307,26 @@ func (_u *SituationInvestigationUpdateOne) SetUpdatedAt(v time.Time) *SituationI
 	return _u
 }
 
+// SetRequestedTurnID sets the "requested_turn_id" field.
+func (_u *SituationInvestigationUpdateOne) SetRequestedTurnID(v uuid.UUID) *SituationInvestigationUpdateOne {
+	_u.mutation.SetRequestedTurnID(v)
+	return _u
+}
+
+// SetNillableRequestedTurnID sets the "requested_turn_id" field if the given value is not nil.
+func (_u *SituationInvestigationUpdateOne) SetNillableRequestedTurnID(v *uuid.UUID) *SituationInvestigationUpdateOne {
+	if v != nil {
+		_u.SetRequestedTurnID(*v)
+	}
+	return _u
+}
+
+// ClearRequestedTurnID clears the value of the "requested_turn_id" field.
+func (_u *SituationInvestigationUpdateOne) ClearRequestedTurnID() *SituationInvestigationUpdateOne {
+	_u.mutation.ClearRequestedTurnID()
+	return _u
+}
+
 // SetCompletedRevision sets the "completed_revision" field.
 func (_u *SituationInvestigationUpdateOne) SetCompletedRevision(v int) *SituationInvestigationUpdateOne {
 	_u.mutation.ResetCompletedRevision()
@@ -368,38 +366,6 @@ func (_u *SituationInvestigationUpdateOne) SetNillableRequestedRevision(v *int) 
 // AddRequestedRevision adds value to the "requested_revision" field.
 func (_u *SituationInvestigationUpdateOne) AddRequestedRevision(v int) *SituationInvestigationUpdateOne {
 	_u.mutation.AddRequestedRevision(v)
-	return _u
-}
-
-// SetRequestedTurnID sets the "requested_turn_id" field.
-func (_u *SituationInvestigationUpdateOne) SetRequestedTurnID(v uuid.UUID) *SituationInvestigationUpdateOne {
-	_u.mutation.SetRequestedTurnID(v)
-	return _u
-}
-
-// SetNillableRequestedTurnID sets the "requested_turn_id" field if the given value is not nil.
-func (_u *SituationInvestigationUpdateOne) SetNillableRequestedTurnID(v *uuid.UUID) *SituationInvestigationUpdateOne {
-	if v != nil {
-		_u.SetRequestedTurnID(*v)
-	}
-	return _u
-}
-
-// ClearRequestedTurnID clears the value of the "requested_turn_id" field.
-func (_u *SituationInvestigationUpdateOne) ClearRequestedTurnID() *SituationInvestigationUpdateOne {
-	_u.mutation.ClearRequestedTurnID()
-	return _u
-}
-
-// SetReport sets the "report" field.
-func (_u *SituationInvestigationUpdateOne) SetReport(v *schematypes.SituationInvestigationReport) *SituationInvestigationUpdateOne {
-	_u.mutation.SetReport(v)
-	return _u
-}
-
-// ClearReport clears the value of the "report" field.
-func (_u *SituationInvestigationUpdateOne) ClearReport() *SituationInvestigationUpdateOne {
-	_u.mutation.ClearReport()
 	return _u
 }
 
@@ -492,11 +458,8 @@ func (_u *SituationInvestigationUpdateOne) check() error {
 	if _u.mutation.SituationCleared() && len(_u.mutation.SituationIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "SituationInvestigation.situation"`)
 	}
-	if _u.mutation.SystemAnalysisCleared() && len(_u.mutation.SystemAnalysisIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "SituationInvestigation.system_analysis"`)
-	}
-	if _u.mutation.AgentSessionCleared() && len(_u.mutation.AgentSessionIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "SituationInvestigation.agent_session"`)
+	if _u.mutation.InvestigationCleared() && len(_u.mutation.InvestigationIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "SituationInvestigation.investigation"`)
 	}
 	return nil
 }
@@ -553,12 +516,6 @@ func (_u *SituationInvestigationUpdateOne) sqlSave(ctx context.Context) (_node *
 	}
 	if value, ok := _u.mutation.AddedRequestedRevision(); ok {
 		_spec.AddField(situationinvestigation.FieldRequestedRevision, field.TypeInt, value)
-	}
-	if value, ok := _u.mutation.Report(); ok {
-		_spec.SetField(situationinvestigation.FieldReport, field.TypeJSON, value)
-	}
-	if _u.mutation.ReportCleared() {
-		_spec.ClearField(situationinvestigation.FieldReport, field.TypeJSON)
 	}
 	if _u.mutation.RequestedTurnCleared() {
 		edge := &sqlgraph.EdgeSpec{

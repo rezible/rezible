@@ -24,9 +24,9 @@ type SchemaConfig struct {
 	EventAnnotation                           string // EventAnnotation table.
 	Incident                                  string // Incident table.
 	IncidentLinkedIncidents                   string // Incident-linked_incidents->Incident table.
+	IncidentSituations                        string // Incident-situations->Situation table.
 	IncidentFieldSelections                   string // Incident-field_selections->IncidentFieldOption table.
 	IncidentTagAssignments                    string // Incident-tag_assignments->IncidentTag table.
-	IncidentSituations                        string // Incident-situations->Situation table.
 	IncidentReviewSessions                    string // Incident-review_sessions->MeetingSession table.
 	IncidentDebrief                           string // IncidentDebrief table.
 	IncidentDebriefMessage                    string // IncidentDebriefMessage table.
@@ -51,6 +51,10 @@ type SchemaConfig struct {
 	IntegrationEventSyncCursor                string // IntegrationEventSyncCursor table.
 	IntegrationEventSyncRun                   string // IntegrationEventSyncRun table.
 	IntegrationUserInstallState               string // IntegrationUserInstallState table.
+	Investigation                             string // Investigation table.
+	InvestigationFinding                      string // InvestigationFinding table.
+	InvestigationHypothesis                   string // InvestigationHypothesis table.
+	InvestigationReport                       string // InvestigationReport table.
 	KnowledgeEntity                           string // KnowledgeEntity table.
 	KnowledgeEntityLinkingAttribute           string // KnowledgeEntityLinkingAttribute table.
 	KnowledgeEvidence                         string // KnowledgeEvidence table.

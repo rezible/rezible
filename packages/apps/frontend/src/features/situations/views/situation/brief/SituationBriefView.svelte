@@ -16,12 +16,11 @@
 
 	const brief = initSituationBriefController();
 	const previewAttrs = $derived(brief.preview?.attributes);
-	let fallbackTarget = $state<HTMLElement>();
-	$effect(() => brief.setFallbackTarget(fallbackTarget));
+	const reportAttrs = $derived(controller.investigationReport?.attributes);
 </script>
 
 {#if attrs}
-	<div class="min-h-0 min-w-0 flex-1 overflow-y-auto p-4" bind:this={fallbackTarget} tabindex="-1">
+	<div class="min-h-0 min-w-0 flex-1 overflow-y-auto p-4" tabindex="-1">
 		<div class="mx-auto flex max-w-6xl flex-col gap-6">
 			<section class="flex max-w-[75ch] flex-col gap-3">
 				<h1 class="text-[28px] leading-9 font-semibold wrap-anywhere">{attrs?.title}</h1>
@@ -35,19 +34,20 @@
 			>
 				<div class="flex flex-wrap items-center justify-between gap-2">
 					<h2 id="report-preview-title" class="text-lg font-semibold">Latest available report</h2>
-					{#if previewAttrs}
+					{#if !!reportAttrs}
 						<time
 							class="text-xs text-muted-foreground tabular-nums"
-							datetime={timestamp(previewAttrs.updatedAt).iso}
-							>Updated {timestamp(previewAttrs.updatedAt).label}</time
+							datetime={timestamp(reportAttrs.createdAt).iso}
 						>
+							Updated {timestamp(reportAttrs.createdAt).label}
+						</time>
 					{/if}
 				</div>
-				{#if previewAttrs}
+				{#if !!reportAttrs}
 					<p
 						class="max-w-[75ch] line-clamp-4 whitespace-pre-wrap text-[15px] leading-6 wrap-anywhere"
 					>
-						{previewAttrs.report?.text || "Report text unavailable."}
+						{reportAttrs.text || "Report text unavailable."}
 					</p>
 					{#if brief.previewChanged}
 						<Alert.Root role="note">
@@ -60,26 +60,23 @@
 						</Alert.Root>
 					{/if}
 					<Button variant="link" href={brief.previewHref} class="self-start">Read report</Button>
-				{:else if attrs?.investigations.length}
-					<p class="text-sm text-muted-foreground">No report available yet.</p>
-					<Button variant="outline" href={brief.previewHref} class="self-start">
-						Open Investigations
-					</Button>
 				{:else}
-					<p class="text-sm text-muted-foreground">No investigation yet.</p>
-					<Button href={brief.previewHref} class="self-start">Run investigation</Button>
+					<p class="text-sm text-muted-foreground">
+						{brief.preview ? "Investigation in progress." : "No investigation yet."}
+					</p>
+					<Button href={brief.previewHref} class="self-start">Start investigation</Button>
 				{/if}
 			</section>
-			
+
 			<section aria-labelledby="observations-title" class="flex flex-col gap-3">
 				<div class="flex flex-wrap items-center justify-between gap-2">
 					<div class="flex flex-wrap items-baseline gap-3">
 						<h2 id="observations-title" class="text-lg font-semibold">Observations</h2>
 						<p class="text-xs text-muted-foreground tabular-nums">
-							{brief.observations.items.length} groups · {brief.observations.sourceCount} sources
+							{brief.observations.length} groups
 						</p>
 					</div>
-					{#if brief.observations.items.length}
+					{#if brief.observations.length}
 						<div class="flex gap-1">
 							<Button variant="ghost" size="sm" onclick={() => brief.setAllGroups(true)}>
 								Expand all
@@ -90,7 +87,8 @@
 						</div>
 					{/if}
 				</div>
-				{#each brief.observations.items as group (group.id)}
+
+				{#each brief.observations as group (group.id)}
 					<Collapsible.Root
 						open={brief.groupOpen(group.id)}
 						onOpenChange={(open) => brief.setGroupOpen(group.id, open)}
@@ -103,8 +101,13 @@
 								<div {...props}>
 									<RiFileListLine class="size-6" aria-hidden="true" />
 									<span class="min-w-0 flex-1 wrap-anywhere">{group.title}</span>
-									<span class="shrink-0 text-xs text-muted-foreground tabular-nums">{group.records.length} sources</span>
-									<RiArrowDownSLine class="size-6 group-data-[state=open]:rotate-180" aria-hidden="true" />
+									<span class="shrink-0 text-xs text-muted-foreground tabular-nums">
+										{group.records.length} sources
+									</span>
+									<RiArrowDownSLine
+										class="size-6 group-data-[state=open]:rotate-180"
+										aria-hidden="true"
+									/>
 								</div>
 							{/snippet}
 						</Collapsible.Trigger>
@@ -126,14 +129,19 @@
 											<p class="text-[15px] font-medium wrap-anywhere">
 												{record.title}
 											</p>
-											<p class="line-clamp-2 whitespace-pre-wrap text-sm text-muted-foreground wrap-anywhere">
+											<p
+												class="line-clamp-2 whitespace-pre-wrap text-sm text-muted-foreground wrap-anywhere"
+											>
 												{record.content || "Source content unavailable."}
 											</p>
 										</div>
-										<div class="flex min-w-0 flex-col gap-1 text-xs text-muted-foreground sm:w-52">
+										<div
+											class="flex min-w-0 flex-col gap-1 text-xs text-muted-foreground sm:w-52"
+										>
 											<p class="wrap-anywhere">{record.type} · {record.source}</p>
 											<time datetime={record.time.iso} class="tabular-nums">
-												{record.timeLabel} {record.time.label}
+												{record.timeLabel}
+												{record.time.label}
 											</time>
 										</div>
 										<Button
@@ -141,9 +149,10 @@
 											size="sm"
 											class="self-start sm:self-center"
 											aria-label={`Inspect ${record.title}`}
-											onclick={(event) =>
-												brief.inspectSource(record, group.title, event.currentTarget)}
-										>Inspect</Button>
+											onclick={(event) => brief.inspectSource(record, group.title)}
+										>
+											Inspect
+										</Button>
 									</li>
 								{:else}
 									<li>

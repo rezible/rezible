@@ -61,6 +61,7 @@ type (
 	}
 
 	InvestigationAgentTurnInput struct {
+		Query         string
 		Situation     *ent.Situation
 		AlertEpisodes ent.AlertEpisodes
 	}
@@ -88,8 +89,8 @@ func (i InvestigationAgentTurnInput) MakeTurnInput() (*rez.AiAgentTurnInput, err
 	if jsonErr != nil {
 		return nil, fmt.Errorf("marshal episodes: %w", jsonErr)
 	}
-	msgText := fmt.Sprintf("Investigate this situation and save its report with save_situation_investigation_report.\nTitle: %s\nSummary: %s\nEvidence revision: %d\nAlert evidence: %s",
-		sit.Title, sit.Summary, sit.EvidenceRevision, evJson)
+	msgText := fmt.Sprintf("Investigate this situation and save its report with save_situation_investigation_report.\nQuestion: %s\nTitle: %s\nSummary: %s\nEvidence revision: %d\nAlert evidence: %s",
+		i.Query, sit.Title, sit.Summary, sit.EvidenceRevision, evJson)
 	return &rez.AiAgentTurnInput{Message: ai.NewUserTextMessage(msgText)}, nil
 }
 

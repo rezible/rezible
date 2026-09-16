@@ -12,7 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/agentsession"
-	"github.com/rezible/rezible/ent/situationinvestigation"
+	"github.com/rezible/rezible/ent/investigation"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
@@ -53,8 +53,8 @@ type AgentSessionEdges struct {
 	Artifacts []*AgentArtifact `json:"artifacts,omitempty"`
 	// Bindings holds the value of the bindings edge.
 	Bindings []*AgentSessionBinding `json:"bindings,omitempty"`
-	// SituationInvestigation holds the value of the situation_investigation edge.
-	SituationInvestigation *SituationInvestigation `json:"situation_investigation,omitempty"`
+	// Investigation holds the value of the investigation edge.
+	Investigation *Investigation `json:"investigation,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [6]bool
@@ -107,15 +107,15 @@ func (e AgentSessionEdges) BindingsOrErr() ([]*AgentSessionBinding, error) {
 	return nil, &NotLoadedError{edge: "bindings"}
 }
 
-// SituationInvestigationOrErr returns the SituationInvestigation value or an error if the edge
+// InvestigationOrErr returns the Investigation value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e AgentSessionEdges) SituationInvestigationOrErr() (*SituationInvestigation, error) {
-	if e.SituationInvestigation != nil {
-		return e.SituationInvestigation, nil
+func (e AgentSessionEdges) InvestigationOrErr() (*Investigation, error) {
+	if e.Investigation != nil {
+		return e.Investigation, nil
 	} else if e.loadedTypes[5] {
-		return nil, &NotFoundError{label: situationinvestigation.Label}
+		return nil, &NotFoundError{label: investigation.Label}
 	}
-	return nil, &NotLoadedError{edge: "situation_investigation"}
+	return nil, &NotLoadedError{edge: "investigation"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -238,9 +238,9 @@ func (_m *AgentSession) QueryBindings() *AgentSessionBindingQuery {
 	return NewAgentSessionClient(_m.config).QueryBindings(_m)
 }
 
-// QuerySituationInvestigation queries the "situation_investigation" edge of the AgentSession entity.
-func (_m *AgentSession) QuerySituationInvestigation() *SituationInvestigationQuery {
-	return NewAgentSessionClient(_m.config).QuerySituationInvestigation(_m)
+// QueryInvestigation queries the "investigation" edge of the AgentSession entity.
+func (_m *AgentSession) QueryInvestigation() *InvestigationQuery {
+	return NewAgentSessionClient(_m.config).QueryInvestigation(_m)
 }
 
 // Update returns a builder for updating this AgentSession.

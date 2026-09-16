@@ -35,6 +35,7 @@ type SituationHazardAssessmentQuery struct {
 	withSystemHazard *SystemHazardQuery
 	withUser         *UserQuery
 	withAgentTurn    *AgentTurnQuery
+	withFKs          bool
 	modifiers        []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -111,7 +112,7 @@ func (_q *SituationHazardAssessmentQuery) QuerySituation() *SituationQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(situationhazardassessment.Table, situationhazardassessment.FieldID, selector),
 			sqlgraph.To(situation.Table, situation.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, situationhazardassessment.SituationTable, situationhazardassessment.SituationColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, situationhazardassessment.SituationTable, situationhazardassessment.SituationColumn),
 		)
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.Situation
@@ -136,7 +137,7 @@ func (_q *SituationHazardAssessmentQuery) QuerySystemHazard() *SystemHazardQuery
 		step := sqlgraph.NewStep(
 			sqlgraph.From(situationhazardassessment.Table, situationhazardassessment.FieldID, selector),
 			sqlgraph.To(systemhazard.Table, systemhazard.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, situationhazardassessment.SystemHazardTable, situationhazardassessment.SystemHazardColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, situationhazardassessment.SystemHazardTable, situationhazardassessment.SystemHazardColumn),
 		)
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.SystemHazard
@@ -539,6 +540,7 @@ func (_q *SituationHazardAssessmentQuery) prepareQuery(ctx context.Context) erro
 func (_q *SituationHazardAssessmentQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*SituationHazardAssessment, error) {
 	var (
 		nodes       = []*SituationHazardAssessment{}
+		withFKs     = _q.withFKs
 		_spec       = _q.querySpec()
 		loadedTypes = [5]bool{
 			_q.withTenant != nil,
@@ -548,6 +550,9 @@ func (_q *SituationHazardAssessmentQuery) sqlAll(ctx context.Context, hooks ...q
 			_q.withAgentTurn != nil,
 		}
 	)
+	if withFKs {
+		_spec.Node.Columns = append(_spec.Node.Columns, situationhazardassessment.ForeignKeys...)
+	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*SituationHazardAssessment).scanValues(nil, columns)
 	}

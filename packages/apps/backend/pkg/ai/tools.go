@@ -1,11 +1,10 @@
 package ai
 
 import (
-	rez "github.com/rezible/rezible"
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/schema/schematypes"
+	rez "github.com/rezible/rezible"
 )
 
 type ToolDefinition[I any, O any] struct {
@@ -187,7 +186,7 @@ var RecordAnalysisFindingTool = defineTool[ToolDefinition[RecordAnalysisFindingT
 type (
 	SaveSituationInvestigationReportToolInput struct {
 		Assessments []rez.SituationInvestigationHazardAssessment `json:"assessments,omitempty"`
-		Report      schematypes.SituationInvestigationReport     `json:"report" jsonschema:"description=Completed situation investigation report"`
+		Report      rez.InvestigationReportInput                 `json:"report" jsonschema:"description=Completed situation investigation report"`
 	}
 
 	SaveSituationInvestigationReportToolOutput struct {

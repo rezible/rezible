@@ -1,13 +1,12 @@
 <script lang="ts">
 	import { Button } from "$components/ui/button";
-	import * as Alert from "$components/ui/alert";
 	import * as Empty from "$components/ui/empty";
-	import LoadingQueryWrapper from "$components/layout/loading-query-wrapper/LoadingQueryWrapper.svelte";
-	import SituationInvestigationList from "../SituationInvestigationList.svelte";
 	import { useSituationController } from "../controller.svelte";
 	import SituationImpactAnalysis from "./SituationImpactAnalysis.svelte";
 
 	const controller = useSituationController();
+	const situationId = $derived(controller.situationId);
+	const investigationAttributes = $derived(controller.investigation?.attributes);
 </script>
 
 <section class="flex min-h-0 min-w-0 flex-1 flex-col gap-4 p-4">
@@ -17,13 +16,10 @@
 			Systems and recorded entries from the selected investigation.
 		</p>
 	</header>
-	<div class="grid min-h-0 min-w-0 flex-1 gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
+	<div class="min-h-0 min-w-0 flex-1">
 		<div class="flex min-h-[28rem] min-w-0 flex-col gap-3">
-			{#if controller.selectedInvestigationId}
-				<LoadingQueryWrapper query={controller.selectedInvestigationQuery} feedbackOnly />
-				{#if controller.selectedInvestigation}
-					<SituationImpactAnalysis investigation={controller.selectedInvestigation} />
-				{/if}
+			{#if situationId && investigationAttributes}
+				<SituationImpactAnalysis {situationId} {investigationAttributes} />
 			{:else}
 				<Empty.Root>
 					<Empty.Header>
@@ -33,14 +29,12 @@
 						</Empty.Description>
 					</Empty.Header>
 					<Empty.Content>
-						<Button variant="outline" href={controller.investigationsHref}>
-							Go to investigations
+						<Button variant="outline" href={controller.investigationHref}>
+							Go to investigation
 						</Button>
 					</Empty.Content>
 				</Empty.Root>
 			{/if}
 		</div>
-
-		<SituationInvestigationList />
 	</div>
 </section>

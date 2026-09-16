@@ -15,6 +15,7 @@ import (
 	"github.com/firebase/genkit/go/ai"
 	aix "github.com/firebase/genkit/go/ai/exp"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/situation"
 	"github.com/riverqueue/river"
 	"github.com/riverqueue/river/rivertype"
 	"github.com/texm/prosemirror-go"
@@ -23,31 +24,27 @@ import (
 	"golang.org/x/oauth2"
 
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/predicate"
+
 	kne "github.com/rezible/rezible/ent/knowledgeentity"
 	ke "github.com/rezible/rezible/ent/knowledgeevidence"
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
-	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/schema/schematypes"
-	"github.com/rezible/rezible/ent/situation"
-	"github.com/rezible/rezible/ent/situationhazardassessment"
+	sha "github.com/rezible/rezible/ent/situationhazardassessment"
 )
 
 var (
-	ErrTenantContextMissing       = fmt.Errorf("tenant access context not set")
-	ErrInvalidUser                = fmt.Errorf("user does not exist")
-	ErrDomainNotAllowed           = fmt.Errorf("domain not allowed")
-	ErrInvalidTenant              = fmt.Errorf("tenant does not exist")
-	ErrAuthSessionMissing         = fmt.Errorf("no auth session")
-	ErrAuthSessionExpired         = fmt.Errorf("auth session expired")
-	ErrAuthSessionInvalid         = fmt.Errorf("auth session invalid")
-	ErrConflict                   = fmt.Errorf("conflict")
-	ErrInvalidInput               = fmt.Errorf("invalid input")
-	ErrNotFound                   = fmt.Errorf("not found")
-	ErrNotImplemented             = fmt.Errorf("not implemented")
-	ErrMessageQueueNotInitialized = fmt.Errorf("message queue not initialized")
-	ErrMessageQueueNotRunning     = fmt.Errorf("message queue not running")
-	ErrMessageQueueClosed         = fmt.Errorf("message queue closed")
-	ErrLivePublishInTransaction   = fmt.Errorf("live message publish cannot run in a transaction")
+	ErrTenantContextMissing = fmt.Errorf("tenant access context not set")
+	ErrInvalidUser          = fmt.Errorf("user does not exist")
+	ErrDomainNotAllowed     = fmt.Errorf("domain not allowed")
+	ErrInvalidTenant        = fmt.Errorf("tenant does not exist")
+	ErrAuthSessionMissing   = fmt.Errorf("no auth session")
+	ErrAuthSessionExpired   = fmt.Errorf("auth session expired")
+	ErrAuthSessionInvalid   = fmt.Errorf("auth session invalid")
+	ErrConflict             = fmt.Errorf("conflict")
+	ErrInvalidInput         = fmt.Errorf("invalid input")
+	ErrNotFound             = fmt.Errorf("not found")
+	ErrNotImplemented       = fmt.Errorf("not implemented")
 )
 
 type (
@@ -188,11 +185,13 @@ type (
 		Relationship *KnowledgeRelationshipRef
 	}
 
+	KnowledgeSubjectState = schematypes.KnowledgeGraphSubjectState
+
 	KnowledgeEvidenceRef struct {
 		Kind         ke.Kind
 		Assertion    string
 		EffectiveAt  time.Time
-		SubjectState schematypes.KnowledgeGraphSubjectState
+		SubjectState KnowledgeSubjectState
 		Subject      KnowledgeSubjectRef
 	}
 
@@ -750,11 +749,33 @@ type (
 )
 
 type (
+	CreateInvestigationParams struct {
+		Query           *string
+		SubjectEntityID *uuid.UUID
+	}
+
+	InvestigationReportInput struct {
+		Text               string   `json:"text"`
+		LikelyCause        string   `json:"likely_cause,omitempty"`
+		BestNextStep       string   `json:"best_next_step,omitempty"`
+		Limitations        []string `json:"limitations,omitempty"`
+		RecommendedActions []string `json:"recommended_actions,omitempty"`
+		SuggestedChecks    []string `json:"suggested_checks,omitempty"`
+	}
+
+	InvestigationService interface {
+		CreateInvestigation(context.Context, CreateInvestigationParams) (*ent.Investigation, error)
+		GetInvestigation(context.Context, uuid.UUID) (*ent.Investigation, error)
+		LookupInvestigation(context.Context, ...predicate.Investigation) (*ent.Investigation, error)
+	}
+)
+
+type (
 	ListSituationsParams struct {
 		ent.ListParams
-		Active            *bool
-		HasInvestigations *bool
-		OpenedAfter       *time.Time
+		Active           *bool
+		HasInvestigation *bool
+		OpenedAfter      *time.Time
 	}
 
 	CreateSituationParams struct {
@@ -777,21 +798,16 @@ type (
 		Query       *string
 	}
 
-	CloseSituationParams struct {
-		SituationID uuid.UUID
-		Reason      situation.CloseReason
-	}
-
 	SetSituationInvestigationReportParams struct {
 		AgentTurnID uuid.UUID
-		Report      schematypes.SituationInvestigationReport
+		Report      InvestigationReportInput
 		Assessments []SituationInvestigationHazardAssessment
 	}
 
 	SituationInvestigationHazardAssessment struct {
-		SystemHazardID uuid.UUID                        `json:"systemHazardId"`
-		Status         situationhazardassessment.Status `json:"status"`
-		Summary        string                           `json:"summary"`
+		SystemHazardID uuid.UUID  `json:"systemHazardId"`
+		Status         sha.Status `json:"status"`
+		Summary        string     `json:"summary"`
 	}
 
 	ListSituationHazardAssessmentsParams struct {
@@ -803,7 +819,7 @@ type (
 	AddSituationHazardAssessmentParams struct {
 		SituationID    uuid.UUID
 		SystemHazardID uuid.UUID
-		Status         situationhazardassessment.Status
+		Status         sha.Status
 		Summary        string
 		AssessedAt     time.Time
 		UserID         *uuid.UUID
@@ -814,7 +830,7 @@ type (
 		ListSituations(context.Context, ListSituationsParams) (*ent.ListResult[ent.Situation], error)
 		CreateSituation(context.Context, CreateSituationParams) (*ent.Situation, error)
 		GetSituation(context.Context, uuid.UUID) (*ent.Situation, error)
-		CloseSituation(context.Context, CloseSituationParams) (*ent.Situation, error)
+		CloseSituation(context.Context, uuid.UUID, situation.CloseReason) error
 
 		AddIncidentToSituation(context.Context, uuid.UUID, uuid.UUID) error
 		RemoveIncidentFromSituation(context.Context, uuid.UUID, uuid.UUID) error
@@ -822,8 +838,7 @@ type (
 		NotifySituationObservationGroupUpdated(context.Context, uuid.UUID) error
 
 		CreateSituationInvestigation(context.Context, CreateSituationInvestigationParams) (*ent.SituationInvestigation, error)
-		GetInvestigationForSituation(context.Context, uuid.UUID) (*ent.SituationInvestigation, error)
-		LookupSituationInvestigation(context.Context, ...predicate.SituationInvestigation) (*ent.SituationInvestigation, error)
+		LookupSituationInvestigation(context.Context, predicate.SituationInvestigation) (*ent.SituationInvestigation, error)
 		SetSituationInvestigationReport(context.Context, SetSituationInvestigationReportParams) (*ent.SituationInvestigation, error)
 
 		ListSituationHazardAssessments(context.Context, ListSituationHazardAssessmentsParams) (*ent.ListResult[ent.SituationHazardAssessment], error)

@@ -2413,6 +2413,16 @@ components:
       required:
         - id
       type: object
+    ExpandableInvestigationAttributes:
+      additionalProperties: false
+      properties:
+        attributes:
+          $ref: "#/components/schemas/InvestigationAttributes"
+        id:
+          type: string
+      required:
+        - id
+      type: object
     ExpandableOncallRosterAttributes:
       additionalProperties: false
       properties:
@@ -2741,6 +2751,21 @@ components:
       required:
         - data
       type: object
+    GetInvestigationResponseBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/GetInvestigationResponseBody.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          $ref: "#/components/schemas/Investigation"
+      required:
+        - data
+      type: object
     GetKnowledgeGraphEntityResponseBody:
       additionalProperties: false
       properties:
@@ -2978,21 +3003,6 @@ components:
           type: string
         data:
           $ref: "#/components/schemas/Review"
-      required:
-        - data
-      type: object
-    GetSituationInvestigationResponseBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/GetSituationInvestigationResponseBody.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          $ref: "#/components/schemas/SituationInvestigation"
       required:
         - data
       type: object
@@ -3987,6 +3997,79 @@ components:
           type: boolean
       required:
         - targetSelectionRequired
+      type: object
+    Investigation:
+      additionalProperties: false
+      properties:
+        attributes:
+          $ref: "#/components/schemas/InvestigationAttributes"
+        id:
+          type: string
+      required:
+        - id
+        - attributes
+      type: object
+    InvestigationAttributes:
+      additionalProperties: false
+      properties:
+        analysisId:
+          type: string
+        createdAt:
+          format: date-time
+          type: string
+        query:
+          type: string
+        report:
+          $ref: "#/components/schemas/InvestigationReport"
+        sessionId:
+          type: string
+        updatedAt:
+          format: date-time
+          type: string
+      required:
+        - analysisId
+        - sessionId
+        - createdAt
+        - updatedAt
+      type: object
+    InvestigationReport:
+      additionalProperties: false
+      properties:
+        attributes:
+          $ref: "#/components/schemas/InvestigationReportAttributes"
+        id:
+          type: string
+      required:
+        - id
+        - attributes
+      type: object
+    InvestigationReportAttributes:
+      additionalProperties: false
+      properties:
+        bestNextStep:
+          type: string
+        createdAt:
+          format: date-time
+          type: string
+        likelyCause:
+          type: string
+        limitations:
+          items:
+            type: string
+          type: array
+        recommendedActions:
+          items:
+            type: string
+          type: array
+        suggestedChecks:
+          items:
+            type: string
+          type: array
+        text:
+          type: string
+      required:
+        - text
+        - createdAt
       type: object
     KnowledgeGraphEntity:
       additionalProperties: false
@@ -5159,26 +5242,6 @@ components:
         - data
         - pagination
       type: object
-    PaginatedResponseBodySituationInvestigation:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/PaginatedResponseBodySituationInvestigation.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          items:
-            $ref: "#/components/schemas/SituationInvestigation"
-          type: array
-        pagination:
-          $ref: "#/components/schemas/Pagination"
-      required:
-        - data
-        - pagination
-      type: object
     PaginatedResponseBodySystemAnalysisEdge:
       additionalProperties: false
       properties:
@@ -5663,10 +5726,8 @@ components:
         evidenceRevision:
           format: int64
           type: integer
-        investigations:
-          items:
-            $ref: "#/components/schemas/SituationInvestigation"
-          type: array
+        investigation:
+          $ref: "#/components/schemas/SituationInvestigation"
         knowledgeEntityId:
           type: string
         linkedIncidentIds:
@@ -5697,7 +5758,6 @@ components:
         - evidenceRevision
         - knowledgeEntityId
         - linkedIncidentIds
-        - investigations
         - observationGroups
         - openedAt
         - updatedAt
@@ -5746,71 +5806,20 @@ components:
     SituationInvestigation:
       additionalProperties: false
       properties:
-        attributes:
-          $ref: "#/components/schemas/SituationInvestigationAttrs"
-        id:
-          type: string
-      required:
-        - id
-        - attributes
-      type: object
-    SituationInvestigationAttrs:
-      additionalProperties: false
-      properties:
-        analysisId:
-          type: string
         completedRevision:
           format: int64
           type: integer
-        evidenceRevision:
-          format: int64
-          type: integer
-        query:
-          type: string
-        report:
-          $ref: "#/components/schemas/SituationInvestigationReport"
+        investigation:
+          $ref: "#/components/schemas/ExpandableInvestigationAttributes"
         requestedRevision:
           format: int64
           type: integer
-        sessionId:
-          type: string
-        situationId:
-          type: string
-        updatedAt:
-          format: date-time
+        requestedTurnId:
           type: string
       required:
-        - situationId
-        - analysisId
-        - sessionId
+        - investigation
         - requestedRevision
         - completedRevision
-        - evidenceRevision
-        - updatedAt
-      type: object
-    SituationInvestigationReport:
-      additionalProperties: false
-      properties:
-        bestNextStep:
-          type: string
-        likelyCause:
-          type: string
-        limitations:
-          items:
-            type: string
-          type: array
-        recommendedActions:
-          items:
-            type: string
-          type: array
-        suggestedChecks:
-          items:
-            type: string
-          type: array
-        text:
-          type: string
-      required:
-        - text
       type: object
     SituationObservationGroup:
       additionalProperties: false
@@ -13503,6 +13512,61 @@ paths:
       summary: Request a manual event sync for an integration
       tags:
         - Integrations
+  /investigations/{id}:
+    get:
+      operationId: get-investigation
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetInvestigationResponseBody"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: Get Investigation
+      tags:
+        - Investigations
   /knowledge_graph/entities:
     get:
       operationId: list-knowledge-graph-entities
@@ -16500,61 +16564,6 @@ paths:
       summary: Update Review
       tags:
         - Reviews
-  /situation-investigations/{id}:
-    get:
-      operationId: get-situation-investigation
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/GetSituationInvestigationResponseBody"
-          description: OK
-        "400":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Bad Request
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unauthorized
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Forbidden
-        "404":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Not Found
-        "422":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unprocessable Entity
-        "500":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Internal Server Error
-      summary: Get Situation Investigation
-      tags:
-        - Situations
   /situations:
     get:
       operationId: list-situations
@@ -16829,78 +16838,7 @@ paths:
       summary: Add Situation Hazard Assessment
       tags:
         - Situations
-  /situations/{id}/investigations:
-    get:
-      operationId: list-situation-investigations
-      parameters:
-        - explode: false
-          in: query
-          name: page
-          schema:
-            default: 1
-            format: int64
-            minimum: 1
-            type: integer
-        - explode: false
-          in: query
-          name: pageSize
-          schema:
-            default: 25
-            format: int64
-            maximum: 50
-            minimum: 1
-            type: integer
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/PaginatedResponseBodySituationInvestigation"
-          description: OK
-        "400":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Bad Request
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unauthorized
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Forbidden
-        "404":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Not Found
-        "422":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unprocessable Entity
-        "500":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Internal Server Error
-      summary: List Situation Investigations
-      tags:
-        - Situations
+  /situations/{id}/investigation:
     post:
       operationId: start-situation-investigation
       parameters:

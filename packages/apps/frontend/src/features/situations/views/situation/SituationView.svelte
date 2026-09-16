@@ -11,9 +11,9 @@
 	import { initSituationController } from "./controller.svelte";
 
 	import SituationPageActions from "./SituationPageActions.svelte";
-	import SituationBrief from "./brief/SituationBrief.svelte";
-	import SituationImpact from "./impact/SituationImpact.svelte";
-	import SituationInvestigations from "./investigations/SituationInvestigations.svelte";
+	import SituationBriefView from "./brief/SituationBriefView.svelte";
+	import SituationImpactView from "./impact/SituationImpactView.svelte";
+	import SituationInvestigationView from "./investigation/SituationInvestigationView.svelte";
 
 	type Props = { id: string };
 	let { id }: Props = $props();
@@ -37,18 +37,23 @@
 	label="Situation views"
 	route="/situations/[id]/[[view=situationView]]"
 	entries={[
-		{ label: "Brief", params: { id }, icon: RiFileTextLine, component: SituationBrief },
+		{ 
+			label: "Brief", 
+			params: { id }, 
+			icon: RiFileTextLine, 
+			component: SituationBriefView,
+		},
 		{
 			label: "Impact Scope",
 			params: { id, view: "impact" },
 			icon: RiFocus3Line,
-			component: SituationImpact,
+			component: SituationImpactView,
 		},
 		{
-			label: "Investigations",
-			params: { id, view: "investigations" },
+			label: "Investigation",
+			params: { id, view: "investigation" },
 			icon: RiSearchLine,
-			component: SituationInvestigations,
+			component: SituationInvestigationView,
 		},
 	]}
 />

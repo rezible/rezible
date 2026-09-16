@@ -16,9 +16,9 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/discussionthread"
 	"github.com/rezible/rezible/ent/internal"
+	"github.com/rezible/rezible/ent/investigation"
 	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/predicate"
-	"github.com/rezible/rezible/ent/situationinvestigation"
 	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/systemanalysisentity"
 	"github.com/rezible/rezible/ent/systemanalysisentry"
@@ -29,19 +29,19 @@ import (
 // SystemAnalysisQuery is the builder for querying SystemAnalysis entities.
 type SystemAnalysisQuery struct {
 	config
-	ctx                        *QueryContext
-	order                      []systemanalysis.OrderOption
-	inters                     []Interceptor
-	predicates                 []predicate.SystemAnalysis
-	withTenant                 *TenantQuery
-	withScopeEntity            *KnowledgeEntityQuery
-	withSubjectEntity          *KnowledgeEntityQuery
-	withAnalysisEntities       *SystemAnalysisEntityQuery
-	withAnalysisRelationships  *SystemAnalysisRelationshipQuery
-	withEntries                *SystemAnalysisEntryQuery
-	withDiscussionThreads      *DiscussionThreadQuery
-	withSituationInvestigation *SituationInvestigationQuery
-	modifiers                  []func(*sql.Selector)
+	ctx                       *QueryContext
+	order                     []systemanalysis.OrderOption
+	inters                    []Interceptor
+	predicates                []predicate.SystemAnalysis
+	withTenant                *TenantQuery
+	withScopeEntity           *KnowledgeEntityQuery
+	withSubjectEntity         *KnowledgeEntityQuery
+	withAnalysisEntities      *SystemAnalysisEntityQuery
+	withAnalysisRelationships *SystemAnalysisRelationshipQuery
+	withEntries               *SystemAnalysisEntryQuery
+	withDiscussionThreads     *DiscussionThreadQuery
+	withInvestigation         *InvestigationQuery
+	modifiers                 []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -253,9 +253,9 @@ func (_q *SystemAnalysisQuery) QueryDiscussionThreads() *DiscussionThreadQuery {
 	return query
 }
 
-// QuerySituationInvestigation chains the current query on the "situation_investigation" edge.
-func (_q *SystemAnalysisQuery) QuerySituationInvestigation() *SituationInvestigationQuery {
-	query := (&SituationInvestigationClient{config: _q.config}).Query()
+// QueryInvestigation chains the current query on the "investigation" edge.
+func (_q *SystemAnalysisQuery) QueryInvestigation() *InvestigationQuery {
+	query := (&InvestigationClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -266,12 +266,12 @@ func (_q *SystemAnalysisQuery) QuerySituationInvestigation() *SituationInvestiga
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(systemanalysis.Table, systemanalysis.FieldID, selector),
-			sqlgraph.To(situationinvestigation.Table, situationinvestigation.FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, false, systemanalysis.SituationInvestigationTable, systemanalysis.SituationInvestigationColumn),
+			sqlgraph.To(investigation.Table, investigation.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, systemanalysis.InvestigationTable, systemanalysis.InvestigationColumn),
 		)
 		schemaConfig := _q.schemaConfig
-		step.To.Schema = schemaConfig.SituationInvestigation
-		step.Edge.Schema = schemaConfig.SituationInvestigation
+		step.To.Schema = schemaConfig.Investigation
+		step.Edge.Schema = schemaConfig.Investigation
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -465,19 +465,19 @@ func (_q *SystemAnalysisQuery) Clone() *SystemAnalysisQuery {
 		return nil
 	}
 	return &SystemAnalysisQuery{
-		config:                     _q.config,
-		ctx:                        _q.ctx.Clone(),
-		order:                      append([]systemanalysis.OrderOption{}, _q.order...),
-		inters:                     append([]Interceptor{}, _q.inters...),
-		predicates:                 append([]predicate.SystemAnalysis{}, _q.predicates...),
-		withTenant:                 _q.withTenant.Clone(),
-		withScopeEntity:            _q.withScopeEntity.Clone(),
-		withSubjectEntity:          _q.withSubjectEntity.Clone(),
-		withAnalysisEntities:       _q.withAnalysisEntities.Clone(),
-		withAnalysisRelationships:  _q.withAnalysisRelationships.Clone(),
-		withEntries:                _q.withEntries.Clone(),
-		withDiscussionThreads:      _q.withDiscussionThreads.Clone(),
-		withSituationInvestigation: _q.withSituationInvestigation.Clone(),
+		config:                    _q.config,
+		ctx:                       _q.ctx.Clone(),
+		order:                     append([]systemanalysis.OrderOption{}, _q.order...),
+		inters:                    append([]Interceptor{}, _q.inters...),
+		predicates:                append([]predicate.SystemAnalysis{}, _q.predicates...),
+		withTenant:                _q.withTenant.Clone(),
+		withScopeEntity:           _q.withScopeEntity.Clone(),
+		withSubjectEntity:         _q.withSubjectEntity.Clone(),
+		withAnalysisEntities:      _q.withAnalysisEntities.Clone(),
+		withAnalysisRelationships: _q.withAnalysisRelationships.Clone(),
+		withEntries:               _q.withEntries.Clone(),
+		withDiscussionThreads:     _q.withDiscussionThreads.Clone(),
+		withInvestigation:         _q.withInvestigation.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
 		path:      _q.path,
@@ -562,14 +562,14 @@ func (_q *SystemAnalysisQuery) WithDiscussionThreads(opts ...func(*DiscussionThr
 	return _q
 }
 
-// WithSituationInvestigation tells the query-builder to eager-load the nodes that are connected to
-// the "situation_investigation" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *SystemAnalysisQuery) WithSituationInvestigation(opts ...func(*SituationInvestigationQuery)) *SystemAnalysisQuery {
-	query := (&SituationInvestigationClient{config: _q.config}).Query()
+// WithInvestigation tells the query-builder to eager-load the nodes that are connected to
+// the "investigation" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *SystemAnalysisQuery) WithInvestigation(opts ...func(*InvestigationQuery)) *SystemAnalysisQuery {
+	query := (&InvestigationClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	_q.withSituationInvestigation = query
+	_q.withInvestigation = query
 	return _q
 }
 
@@ -665,7 +665,7 @@ func (_q *SystemAnalysisQuery) sqlAll(ctx context.Context, hooks ...queryHook) (
 			_q.withAnalysisRelationships != nil,
 			_q.withEntries != nil,
 			_q.withDiscussionThreads != nil,
-			_q.withSituationInvestigation != nil,
+			_q.withInvestigation != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -743,9 +743,9 @@ func (_q *SystemAnalysisQuery) sqlAll(ctx context.Context, hooks ...queryHook) (
 			return nil, err
 		}
 	}
-	if query := _q.withSituationInvestigation; query != nil {
-		if err := _q.loadSituationInvestigation(ctx, query, nodes, nil,
-			func(n *SystemAnalysis, e *SituationInvestigation) { n.Edges.SituationInvestigation = e }); err != nil {
+	if query := _q.withInvestigation; query != nil {
+		if err := _q.loadInvestigation(ctx, query, nodes, nil,
+			func(n *SystemAnalysis, e *Investigation) { n.Edges.Investigation = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -968,7 +968,7 @@ func (_q *SystemAnalysisQuery) loadDiscussionThreads(ctx context.Context, query 
 	}
 	return nil
 }
-func (_q *SystemAnalysisQuery) loadSituationInvestigation(ctx context.Context, query *SituationInvestigationQuery, nodes []*SystemAnalysis, init func(*SystemAnalysis), assign func(*SystemAnalysis, *SituationInvestigation)) error {
+func (_q *SystemAnalysisQuery) loadInvestigation(ctx context.Context, query *InvestigationQuery, nodes []*SystemAnalysis, init func(*SystemAnalysis), assign func(*SystemAnalysis, *Investigation)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*SystemAnalysis)
 	for i := range nodes {
@@ -976,10 +976,10 @@ func (_q *SystemAnalysisQuery) loadSituationInvestigation(ctx context.Context, q
 		nodeids[nodes[i].ID] = nodes[i]
 	}
 	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(situationinvestigation.FieldSystemAnalysisID)
+		query.ctx.AppendFieldOnce(investigation.FieldSystemAnalysisID)
 	}
-	query.Where(predicate.SituationInvestigation(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(systemanalysis.SituationInvestigationColumn), fks...))
+	query.Where(predicate.Investigation(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(systemanalysis.InvestigationColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {

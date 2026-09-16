@@ -70,7 +70,7 @@ const (
 	// It exists in this package in order to avoid circular dependency with the "situationhazardassessment" package.
 	SituationAssessmentsInverseTable = "situation_hazard_assessments"
 	// SituationAssessmentsColumn is the table column denoting the situation_assessments relation/edge.
-	SituationAssessmentsColumn = "system_hazard_id"
+	SituationAssessmentsColumn = "system_hazard_situation_assessments"
 )
 
 // Columns holds all SQL columns for systemhazard fields.

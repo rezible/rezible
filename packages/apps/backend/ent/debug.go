@@ -276,6 +276,38 @@ func (c *IntegrationUserInstallStateClient) Debug() *IntegrationUserInstallState
 	return &IntegrationUserInstallStateClient{config: cfg}
 }
 
+func (c *InvestigationClient) Debug() *InvestigationClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &InvestigationClient{config: cfg}
+}
+
+func (c *InvestigationFindingClient) Debug() *InvestigationFindingClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &InvestigationFindingClient{config: cfg}
+}
+
+func (c *InvestigationHypothesisClient) Debug() *InvestigationHypothesisClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &InvestigationHypothesisClient{config: cfg}
+}
+
+func (c *InvestigationReportClient) Debug() *InvestigationReportClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &InvestigationReportClient{config: cfg}
+}
+
 func (c *KnowledgeEntityClient) Debug() *KnowledgeEntityClient {
 	if c.debug {
 		return c

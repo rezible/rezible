@@ -108,6 +108,18 @@ type IntegrationEventSyncRun func(*sql.Selector)
 // IntegrationUserInstallState is the predicate function for integrationuserinstallstate builders.
 type IntegrationUserInstallState func(*sql.Selector)
 
+// Investigation is the predicate function for investigation builders.
+type Investigation func(*sql.Selector)
+
+// InvestigationFinding is the predicate function for investigationfinding builders.
+type InvestigationFinding func(*sql.Selector)
+
+// InvestigationHypothesis is the predicate function for investigationhypothesis builders.
+type InvestigationHypothesis func(*sql.Selector)
+
+// InvestigationReport is the predicate function for investigationreport builders.
+type InvestigationReport func(*sql.Selector)
+
 // KnowledgeEntity is the predicate function for knowledgeentity builders.
 type KnowledgeEntity func(*sql.Selector)
 

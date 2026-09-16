@@ -7,11 +7,12 @@ import (
 	"strings"
 	"time"
 
+	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/agentturn"
+	"github.com/rezible/rezible/ent/investigationreport"
 	kne "github.com/rezible/rezible/ent/knowledgeentity"
-	"github.com/rezible/rezible/ent/schema/schematypes"
 	"github.com/rezible/rezible/ent/situationinvestigation"
 	sae "github.com/rezible/rezible/ent/systemanalysisentity"
 	saentry "github.com/rezible/rezible/ent/systemanalysisentry"
@@ -97,32 +98,40 @@ func seedBaseInvestigation(ctx context.Context, client *ent.Client, referenceTim
 	if err != nil {
 		return fixture, rezai.EvalScenarioSeed{}, err
 	}
-	createInvestigation := client.SituationInvestigation.Create().SetID(investigationID).SetSituationID(fixture.situationID).
-		SetSystemAnalysisID(analysis.ID).SetAgentSessionID(session.ID).SetRequestedRevision(1).SetRequestedTurnID(turn.ID)
-	if err := createInvestigation.Exec(ctx); err != nil {
-		return fixture, rezai.EvalScenarioSeed{}, err
+	createInvestigation := client.Investigation.Create().SetID(investigationID).SetSystemAnalysisID(analysis.ID).SetAgentSessionID(session.ID)
+	createdInvestigation, investigationErr := createInvestigation.Save(ctx)
+	if investigationErr != nil {
+		return fixture, rezai.EvalScenarioSeed{}, investigationErr
+	}
+	createSituationInvestigation := client.SituationInvestigation.Create().SetSituationID(fixture.situationID).SetInvestigationID(createdInvestigation.ID).SetRequestedRevision(1).SetRequestedTurnID(turn.ID)
+	if joinErr := createSituationInvestigation.Exec(ctx); joinErr != nil {
+		return fixture, rezai.EvalScenarioSeed{}, joinErr
 	}
 	return fixture, rezai.EvalScenarioSeed{Session: session, Turn: turn}, nil
 }
 
-func loadSituationInvestigationReport(ctx context.Context, client *ent.Client, situationID uuid.UUID) (*schematypes.SituationInvestigationReport, rezai.EvalCheck, error) {
+func loadSituationInvestigationReport(ctx context.Context, client *ent.Client, situationID uuid.UUID) (*ent.InvestigationReport, rezai.EvalCheck, error) {
 	check := rezai.EvalCheck{ID: "accepted_report", Expected: "a persisted investigation report"}
 	query := client.SituationInvestigation.Query().Where(situationinvestigation.SituationID(situationID))
-	inv, err := query.Only(ctx)
-	if err != nil {
-		return nil, check, err
+	inv, queryErr := query.WithInvestigation().Only(ctx)
+	if queryErr != nil {
+		return nil, check, queryErr
 	}
 	if inv.CompletedRevision == 0 {
 		check.Summary = "No investigation report was accepted."
 		return nil, check, nil
 	}
-	normalizeReport(inv.Report)
+	reportQuery := client.InvestigationReport.Query().Where(investigationreport.InvestigationID(inv.Edges.Investigation.ID)).Order(investigationreport.ByCreatedAt(sql.OrderDesc()), investigationreport.ByID(sql.OrderDesc()))
+	report, reportErr := reportQuery.First(ctx)
+	if reportErr != nil {
+		return nil, check, reportErr
+	}
 	check.Passed = true
 	check.Summary = "The investigation report was accepted."
-	return inv.Report, check, nil
+	return report, check, nil
 }
 
-func normalizeReport(report *schematypes.SituationInvestigationReport) {
+func normalizeReport(report *ent.InvestigationReport) {
 	report.Text = strings.TrimSpace(report.Text)
 	report.LikelyCause = strings.TrimSpace(report.LikelyCause)
 	report.BestNextStep = strings.TrimSpace(report.BestNextStep)
@@ -141,7 +150,7 @@ func nonblankStrings(values []string) []string {
 	return trimmed
 }
 
-func reportTextCheck(report *schematypes.SituationInvestigationReport) rezai.EvalCheck {
+func reportTextCheck(report *ent.InvestigationReport) rezai.EvalCheck {
 	passed := report.Text != ""
 	summary := "The investigation report contains user-facing text."
 	if !passed {
@@ -150,7 +159,7 @@ func reportTextCheck(report *schematypes.SituationInvestigationReport) rezai.Eva
 	return rezai.EvalCheck{ID: "report_text", Passed: passed, Summary: summary, Expected: "nonblank text", Observed: report.Text}
 }
 
-func nextActionCheck(report *schematypes.SituationInvestigationReport) rezai.EvalCheck {
+func nextActionCheck(report *ent.InvestigationReport) rezai.EvalCheck {
 	observed := map[string]any{
 		"suggestedChecks":    report.SuggestedChecks,
 		"recommendedActions": report.RecommendedActions,

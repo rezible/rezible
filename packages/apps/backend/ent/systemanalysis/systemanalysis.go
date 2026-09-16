@@ -42,8 +42,8 @@ const (
 	EdgeEntries = "entries"
 	// EdgeDiscussionThreads holds the string denoting the discussion_threads edge name in mutations.
 	EdgeDiscussionThreads = "discussion_threads"
-	// EdgeSituationInvestigation holds the string denoting the situation_investigation edge name in mutations.
-	EdgeSituationInvestigation = "situation_investigation"
+	// EdgeInvestigation holds the string denoting the investigation edge name in mutations.
+	EdgeInvestigation = "investigation"
 	// Table holds the table name of the systemanalysis in the database.
 	Table = "system_analyses"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -95,13 +95,13 @@ const (
 	DiscussionThreadsInverseTable = "discussion_threads"
 	// DiscussionThreadsColumn is the table column denoting the discussion_threads relation/edge.
 	DiscussionThreadsColumn = "analysis_id"
-	// SituationInvestigationTable is the table that holds the situation_investigation relation/edge.
-	SituationInvestigationTable = "situation_investigations"
-	// SituationInvestigationInverseTable is the table name for the SituationInvestigation entity.
-	// It exists in this package in order to avoid circular dependency with the "situationinvestigation" package.
-	SituationInvestigationInverseTable = "situation_investigations"
-	// SituationInvestigationColumn is the table column denoting the situation_investigation relation/edge.
-	SituationInvestigationColumn = "system_analysis_id"
+	// InvestigationTable is the table that holds the investigation relation/edge.
+	InvestigationTable = "investigations"
+	// InvestigationInverseTable is the table name for the Investigation entity.
+	// It exists in this package in order to avoid circular dependency with the "investigation" package.
+	InvestigationInverseTable = "investigations"
+	// InvestigationColumn is the table column denoting the investigation relation/edge.
+	InvestigationColumn = "system_analysis_id"
 )
 
 // Columns holds all SQL columns for systemanalysis fields.
@@ -258,10 +258,10 @@ func ByDiscussionThreads(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption
 	}
 }
 
-// BySituationInvestigationField orders the results by situation_investigation field.
-func BySituationInvestigationField(field string, opts ...sql.OrderTermOption) OrderOption {
+// ByInvestigationField orders the results by investigation field.
+func ByInvestigationField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newSituationInvestigationStep(), sql.OrderByField(field, opts...))
+		sqlgraph.OrderByNeighborTerms(s, newInvestigationStep(), sql.OrderByField(field, opts...))
 	}
 }
 func newTenantStep() *sqlgraph.Step {
@@ -313,10 +313,10 @@ func newDiscussionThreadsStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.O2M, true, DiscussionThreadsTable, DiscussionThreadsColumn),
 	)
 }
-func newSituationInvestigationStep() *sqlgraph.Step {
+func newInvestigationStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(SituationInvestigationInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2O, false, SituationInvestigationTable, SituationInvestigationColumn),
+		sqlgraph.To(InvestigationInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2O, false, InvestigationTable, InvestigationColumn),
 	)
 }

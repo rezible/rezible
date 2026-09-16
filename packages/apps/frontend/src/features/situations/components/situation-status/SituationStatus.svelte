@@ -18,7 +18,7 @@
 	};
 	const status = $derived.by(() => {
 		if (!!attributes.closedAt) return "closed";
-		if (attributes.investigations.length > 0) return "investigating";
+		if (attributes.investigation) return "investigating";
 		return "observed";
 	});
 	const presentation = $derived(statuses[status]);

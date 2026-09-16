@@ -268,6 +268,21 @@ func (_c *IncidentCreate) AddLinkedIncidents(v ...*Incident) *IncidentCreate {
 	return _c.AddLinkedIncidentIDs(ids...)
 }
 
+// AddSituationIDs adds the "situations" edge to the Situation entity by IDs.
+func (_c *IncidentCreate) AddSituationIDs(ids ...uuid.UUID) *IncidentCreate {
+	_c.mutation.AddSituationIDs(ids...)
+	return _c
+}
+
+// AddSituations adds the "situations" edges to the Situation entity.
+func (_c *IncidentCreate) AddSituations(v ...*Situation) *IncidentCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddSituationIDs(ids...)
+}
+
 // AddFieldSelectionIDs adds the "field_selections" edge to the IncidentFieldOption entity by IDs.
 func (_c *IncidentCreate) AddFieldSelectionIDs(ids ...uuid.UUID) *IncidentCreate {
 	_c.mutation.AddFieldSelectionIDs(ids...)
@@ -311,21 +326,6 @@ func (_c *IncidentCreate) AddTagAssignments(v ...*IncidentTag) *IncidentCreate {
 		ids[i] = v[i].ID
 	}
 	return _c.AddTagAssignmentIDs(ids...)
-}
-
-// AddSituationIDs adds the "situations" edge to the Situation entity by IDs.
-func (_c *IncidentCreate) AddSituationIDs(ids ...uuid.UUID) *IncidentCreate {
-	_c.mutation.AddSituationIDs(ids...)
-	return _c
-}
-
-// AddSituations adds the "situations" edges to the Situation entity.
-func (_c *IncidentCreate) AddSituations(v ...*Situation) *IncidentCreate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _c.AddSituationIDs(ids...)
 }
 
 // AddImpactIDs adds the "impacts" edge to the IncidentImpact entity by IDs.
@@ -750,6 +750,23 @@ func (_c *IncidentCreate) createSpec() (*Incident, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
+	if nodes := _c.mutation.SituationsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   incident.SituationsTable,
+			Columns: incident.SituationsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(situation.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.IncidentSituations
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	if nodes := _c.mutation.FieldSelectionsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
@@ -796,23 +813,6 @@ func (_c *IncidentCreate) createSpec() (*Incident, *sqlgraph.CreateSpec) {
 			},
 		}
 		edge.Schema = _c.schemaConfig.IncidentTagAssignments
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := _c.mutation.SituationsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   incident.SituationsTable,
-			Columns: incident.SituationsPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(situation.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _c.schemaConfig.IncidentSituations
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

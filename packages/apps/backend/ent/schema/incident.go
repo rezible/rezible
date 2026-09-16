@@ -64,10 +64,11 @@ func (Incident) Edges() []ent.Edge {
 		edge.To("linked_incidents", Incident.Type).
 			Through("incident_links", IncidentLink.Type),
 
+		edge.To("situations", Situation.Type),
+
 		edge.To("field_selections", IncidentFieldOption.Type),
 		edge.To("tasks", Task.Type),
 		edge.To("tag_assignments", IncidentTag.Type),
-		edge.To("situations", Situation.Type),
 		edge.From("impacts", IncidentImpact.Type).
 			Ref("incident"),
 		edge.To("debriefs", IncidentDebrief.Type),

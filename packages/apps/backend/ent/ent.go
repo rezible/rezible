@@ -46,6 +46,10 @@ import (
 	"github.com/rezible/rezible/ent/integrationeventsynccursor"
 	"github.com/rezible/rezible/ent/integrationeventsyncrun"
 	"github.com/rezible/rezible/ent/integrationuserinstallstate"
+	"github.com/rezible/rezible/ent/investigation"
+	"github.com/rezible/rezible/ent/investigationfinding"
+	"github.com/rezible/rezible/ent/investigationhypothesis"
+	"github.com/rezible/rezible/ent/investigationreport"
 	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/knowledgeentitylinkingattribute"
 	"github.com/rezible/rezible/ent/knowledgeevidence"
@@ -183,6 +187,10 @@ func checkColumn(t, c string) error {
 			integrationeventsynccursor.Table:      integrationeventsynccursor.ValidColumn,
 			integrationeventsyncrun.Table:         integrationeventsyncrun.ValidColumn,
 			integrationuserinstallstate.Table:     integrationuserinstallstate.ValidColumn,
+			investigation.Table:                   investigation.ValidColumn,
+			investigationfinding.Table:            investigationfinding.ValidColumn,
+			investigationhypothesis.Table:         investigationhypothesis.ValidColumn,
+			investigationreport.Table:             investigationreport.ValidColumn,
 			knowledgeentity.Table:                 knowledgeentity.ValidColumn,
 			knowledgeentitylinkingattribute.Table: knowledgeentitylinkingattribute.ValidColumn,
 			knowledgeevidence.Table:               knowledgeevidence.ValidColumn,

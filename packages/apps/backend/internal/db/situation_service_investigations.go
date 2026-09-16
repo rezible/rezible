@@ -10,10 +10,12 @@ import (
 	"entgo.io/ent/dialect/sql"
 	mapset "github.com/deckarep/golang-set/v2"
 	"github.com/google/uuid"
+
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	agt "github.com/rezible/rezible/ent/agentturn"
 	ale "github.com/rezible/rezible/ent/alertepisode"
+	"github.com/rezible/rezible/ent/investigation"
 	kne "github.com/rezible/rezible/ent/knowledgeentity"
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/predicate"
@@ -23,7 +25,6 @@ import (
 	sog "github.com/rezible/rezible/ent/situationobservationgroup"
 	rezai "github.com/rezible/rezible/pkg/ai"
 	"github.com/rezible/rezible/pkg/jobs"
-	"github.com/riverqueue/river"
 )
 
 func (s *SituationService) CreateSituationInvestigation(ctx context.Context, params rez.CreateSituationInvestigationParams) (*ent.SituationInvestigation, error) {
@@ -39,118 +40,69 @@ func (s *SituationService) CreateSituationInvestigation(ctx context.Context, par
 		}
 	}
 
-	var investigation *ent.SituationInvestigation
-	return investigation, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+	var result *ent.SituationInvestigation
+	return result, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
 		if lockErr := s.db.AcquireTxLocks(ctx, situationLockNamespace, situationId.String()); lockErr != nil {
 			return fmt.Errorf("lock situation: %w", lockErr)
 		}
 
-		querySituation := tx.Situation.Query().
-			Where(situation.IDEQ(situationId)).
-			WithInvestigations(func(q *ent.SituationInvestigationQuery) {
-				q.WithAgentSession()
-			})
-		current, queryErr := querySituation.Only(ctx)
-		if queryErr != nil {
-			return fmt.Errorf("get situation: %w", queryErr)
+		existingSitInv, queryExistingSitInvErr := s.LookupSituationInvestigation(ctx, siti.SituationID(situationId))
+		if queryExistingSitInvErr != nil && !ent.IsNotFound(queryExistingSitInvErr) {
+			return fmt.Errorf("lookup existing situation investigation: %w", queryExistingSitInvErr)
+		} else if existingSitInv != nil {
+			result = existingSitInv.Unwrap()
+			return nil
 		}
 
-		currentInvs, currentInvsErr := current.Edges.InvestigationsOrErr()
-		if currentInvsErr != nil {
-			return fmt.Errorf("existing investigations: %w", currentInvsErr)
-		}
-		for _, currInv := range currentInvs {
-			invSess, invSessErr := currInv.Edges.AgentSessionOrErr()
-			if invSessErr != nil {
-				return fmt.Errorf("existing investigation agent session: %w", invSessErr)
-			}
-			// check if a session with this query has been started already
-			var sessInput rezai.InvestigationAgentSessionInput
-			if jsonErr := json.Unmarshal(invSess.Input, &sessInput); jsonErr == nil {
-				if s.agentSessionInputsEqual(agentInput, sessInput) {
-					investigation = currInv.Unwrap()
-					return nil
-				}
-			}
+		sit, querySituationErr := tx.Situation.Get(ctx, situationId)
+		if querySituationErr != nil {
+			return fmt.Errorf("get situation: %w", querySituationErr)
 		}
 
-		createAnalysis := tx.SystemAnalysis.Create().
-			SetSubjectEntityID(current.KnowledgeEntityID)
-		analysis, analysisErr := createAnalysis.Save(ctx)
-		if analysisErr != nil {
-			return fmt.Errorf("create system analysis: %w", analysisErr)
+		investigationParams := rez.CreateInvestigationParams{
+			Query:           agentInput.Query,
+			SubjectEntityID: &sit.KnowledgeEntityID,
 		}
-		createAnalysisEntity := tx.SystemAnalysisEntity.Create().
-			SetAnalysisID(analysis.ID).
-			SetKnowledgeEntityID(current.KnowledgeEntityID)
-		if entityErr := createAnalysisEntity.Exec(ctx); entityErr != nil {
-			return fmt.Errorf("seed system analysis entity: %w", entityErr)
+		inv, createInvErr := s.investigations.CreateInvestigation(ctx, investigationParams)
+		if createInvErr != nil {
+			return fmt.Errorf("create investigation: %w", createInvErr)
 		}
 
-		sessionParams := rez.CreateAgentSessionParams{
-			AgentName: rezai.InvestigationAgent.Name,
-			Input:     agentInput,
-		}
-		session, sessionErr := s.agents.CreateAgentSession(ctx, sessionParams)
-		if sessionErr != nil {
-			return fmt.Errorf("create situation investigation agent session: %w", sessionErr)
+		createLink := tx.SituationInvestigation.Create().
+			SetSituation(sit).
+			SetInvestigation(inv)
+		if createLinkErr := createLink.Exec(ctx); createLinkErr != nil {
+			return fmt.Errorf("link situation investigation: %w", createLinkErr)
 		}
 
-		createInvestigation := tx.SituationInvestigation.Create().
-			SetSituationID(situationId).
-			SetSystemAnalysisID(analysis.ID).
-			SetAgentSessionID(session.ID)
-		created, investigationErr := createInvestigation.Save(ctx)
-		if investigationErr != nil {
-			return fmt.Errorf("create situation investigation: %w", investigationErr)
+		sitInv, lookupSitInvErr := s.LookupSituationInvestigation(ctx, siti.SituationID(situationId))
+		if lookupSitInvErr != nil {
+			return fmt.Errorf("lookup situation investigation: %w", lookupSitInvErr)
 		}
 
-		if queueJobErr := s.requestReconcileInvestigations(ctx, created.ID); queueJobErr != nil {
+		if queueJobErr := s.requestBumpSituationInvestigation(ctx, sitInv.ID); queueJobErr != nil {
 			return fmt.Errorf("queue investigation job: %w", queueJobErr)
 		}
 
-		investigation = created.Unwrap()
+		result = sitInv.Unwrap()
 		return nil
 	})
 }
 
-func (s *SituationService) agentSessionInputsEqual(inp1, inp2 rezai.InvestigationAgentSessionInput) bool {
-	if inp1.Query == nil || inp2.Query == nil {
-		return (inp1.Query == nil) != (inp2.Query == nil)
-	}
-	return *inp1.Query == *inp2.Query
-}
-
-func (s *SituationService) requestReconcileInvestigations(ctx context.Context, ids ...uuid.UUID) error {
-	if len(ids) == 1 {
-		args := jobs.ReconcileSituationInvestigation{InvestigationID: ids[0]}
-		if _, insertErr := s.jobs.Insert(ctx, args, nil); insertErr != nil {
-			return fmt.Errorf("insert job: %w", insertErr)
-		}
-	} else if len(ids) > 1 {
-		params := make([]river.InsertManyParams, len(ids))
-		for i, id := range ids {
-			params[i] = river.InsertManyParams{
-				Args: jobs.ReconcileSituationInvestigation{InvestigationID: id},
-			}
-		}
-		if _, insertErr := s.jobs.InsertMany(ctx, params); insertErr != nil {
-			return fmt.Errorf("insert jobs: %w", insertErr)
-		}
+func (s *SituationService) requestBumpSituationInvestigation(ctx context.Context, id uuid.UUID) error {
+	args := jobs.BumpSituationInvestigation{SituationInvestigationID: id}
+	if _, insertErr := s.jobs.Insert(ctx, args, nil); insertErr != nil {
+		return fmt.Errorf("insert investigation reconciliation job: %w", insertErr)
 	}
 	return nil
 }
 
-func (s *SituationService) GetInvestigationForSituation(ctx context.Context, situationID uuid.UUID) (*ent.SituationInvestigation, error) {
-	return s.LookupSituationInvestigation(ctx, siti.SituationID(situationID))
-}
-
-func (s *SituationService) LookupSituationInvestigation(ctx context.Context, preds ...predicate.SituationInvestigation) (*ent.SituationInvestigation, error) {
+func (s *SituationService) LookupSituationInvestigation(ctx context.Context, pred predicate.SituationInvestigation) (*ent.SituationInvestigation, error) {
 	return s.db.Client(ctx).SituationInvestigation.Query().
-		Where(preds...).
+		Where(pred).
 		WithSituation().
-		WithSystemAnalysis().
-		WithAgentSession().
+		WithRequestedTurn().
+		WithInvestigation().
 		Only(ctx)
 }
 
@@ -246,9 +198,7 @@ func (s *SituationService) AddSituationHazardAssessment(ctx context.Context, par
 func (s *SituationService) SetSituationInvestigationReport(ctx context.Context, params rez.SetSituationInvestigationReportParams) (*ent.SituationInvestigation, error) {
 	var result *ent.SituationInvestigation
 	return result, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
-		lookupByTurn := tx.SituationInvestigation.Query().
-			Where(siti.RequestedTurnID(params.AgentTurnID))
-		turnInv, lookupByTurnErr := lookupByTurn.Only(ctx)
+		sitInv, lookupByTurnErr := s.LookupSituationInvestigation(ctx, siti.RequestedTurnID(params.AgentTurnID))
 		if lookupByTurnErr != nil {
 			if ent.IsNotFound(lookupByTurnErr) {
 				return fmt.Errorf("%w: stale investigation turn", rez.ErrConflict)
@@ -256,33 +206,37 @@ func (s *SituationService) SetSituationInvestigationReport(ctx context.Context, 
 			return fmt.Errorf("lookup investigation for turn: %w", lookupByTurnErr)
 		}
 
-		if situLockErr := s.db.AcquireTxLocks(ctx, situationLockNamespace, turnInv.SituationID.String()); situLockErr != nil {
+		if situLockErr := s.db.AcquireTxLocks(ctx, situationLockNamespace, sitInv.SituationID.String()); situLockErr != nil {
 			return situLockErr
 		}
 
-		if agentTurnLockErr := acquireAgentSessionTurnLock(ctx, s.db, turnInv.AgentSessionID); agentTurnLockErr != nil {
+		sessId := sitInv.Edges.Investigation.AgentSessionID
+		if agentTurnLockErr := acquireAgentSessionTurnLock(ctx, s.db, sessId); agentTurnLockErr != nil {
 			return agentTurnLockErr
 		}
 
-		lookupInv := tx.SituationInvestigation.Query().
-			Where(siti.ID(turnInv.ID)).
-			WithRequestedTurn()
-		inv, lookupInvestigationErr := lookupInv.Only(ctx)
-		if lookupInvestigationErr != nil {
-			return fmt.Errorf("lookup investigation: %w", lookupInvestigationErr)
+		var sitInvErr error
+		sitInv, sitInvErr = s.LookupSituationInvestigation(ctx, siti.ID(sitInv.ID))
+		if sitInvErr != nil {
+			return fmt.Errorf("lookup investigation: %w", sitInvErr)
 		}
-		if inv.RequestedTurnID == nil || *inv.RequestedTurnID != params.AgentTurnID {
+		if sitInv.RequestedTurnID == nil || *sitInv.RequestedTurnID != params.AgentTurnID {
 			return fmt.Errorf("%w: stale investigation turn", rez.ErrConflict)
 		}
 
-		if inv.CompletedRevision == inv.RequestedRevision {
-			result = inv.Unwrap()
+		if sitInv.CompletedRevision == sitInv.RequestedRevision {
+			result = sitInv.Unwrap()
 			return nil
 		}
 
-		turn, turnErr := inv.Edges.RequestedTurnOrErr()
+		inv, invErr := sitInv.Edges.InvestigationOrErr()
+		if invErr != nil {
+			return fmt.Errorf("investigation: %w", invErr)
+		}
+
+		turn, turnErr := sitInv.Edges.RequestedTurnOrErr()
 		if turnErr != nil {
-			return fmt.Errorf("get requested turn: %w", turnErr)
+			return fmt.Errorf("requested turn: %w", turnErr)
 		}
 
 		if turn.AgentSessionID != inv.AgentSessionID || turn.Status != agt.StatusRunning {
@@ -293,17 +247,35 @@ func (s *SituationService) SetSituationInvestigationReport(ctx context.Context, 
 			return fmt.Errorf("%w: report text is required", rez.ErrInvalidInput)
 		}
 
-		updateInv := inv.Update().
-			SetReport(new(params.Report)).
-			SetCompletedRevision(inv.RequestedRevision)
-		updatedInv, updateInvErr := updateInv.Save(ctx)
-		if updateInvErr != nil {
-			return updateInvErr
+		createReport := tx.InvestigationReport.Create().
+			SetInvestigationID(inv.ID).
+			SetAgentTurnID(turn.ID).
+			SetText(params.Report.Text).
+			SetLikelyCause(params.Report.LikelyCause).
+			SetBestNextStep(params.Report.BestNextStep)
+		if params.Report.Limitations != nil {
+			createReport.SetLimitations(params.Report.Limitations)
+		}
+		if params.Report.RecommendedActions != nil {
+			createReport.SetRecommendedActions(params.Report.RecommendedActions)
+		}
+		if params.Report.SuggestedChecks != nil {
+			createReport.SetSuggestedChecks(params.Report.SuggestedChecks)
+		}
+		upsert := createReport.OnConflict().UpdateNewValues()
+		if saveReportErr := upsert.Exec(ctx); saveReportErr != nil {
+			return fmt.Errorf("save investigation report: %w", saveReportErr)
+		}
+
+		updateInvRevision := sitInv.Update().
+			SetCompletedRevision(sitInv.RequestedRevision)
+		if updateInvRevisionErr := updateInvRevision.Exec(ctx); updateInvRevisionErr != nil {
+			return fmt.Errorf("update investigation revision: %w", updateInvRevisionErr)
 		}
 
 		for _, a := range params.Assessments {
 			addAssessmentParams := rez.AddSituationHazardAssessmentParams{
-				SituationID:    inv.SituationID,
+				SituationID:    sitInv.SituationID,
 				SystemHazardID: a.SystemHazardID,
 				Status:         a.Status,
 				Summary:        a.Summary,
@@ -314,7 +286,13 @@ func (s *SituationService) SetSituationInvestigationReport(ctx context.Context, 
 			}
 		}
 
-		result = updatedInv.Unwrap()
+		sitInv, sitInvErr = s.LookupSituationInvestigation(ctx, siti.ID(sitInv.ID))
+		if sitInvErr != nil || sitInv == nil {
+			return fmt.Errorf("lookup investigation: %w", sitInvErr)
+		}
+
+		result = sitInv.Unwrap()
+
 		return nil
 	})
 }
@@ -324,19 +302,22 @@ func (s *SituationService) onAgentTurnUpdated(ctx context.Context, event *rezai.
 		return nil
 	}
 	return s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
-		query := tx.SituationInvestigation.Query().
-			Where(siti.AgentSessionID(event.AgentSessionId)).
-			WithSituation()
-		inv, lookupInvestigationErr := query.Only(ctx)
-		if lookupInvestigationErr != nil {
-			if ent.IsNotFound(lookupInvestigationErr) {
+		querySessionInvestigation := tx.Investigation.Query().
+			Where(investigation.AgentSessionID(event.AgentSessionId)).
+			WithSituations(func(lq *ent.SituationInvestigationQuery) {
+				lq.WithSituation()
+			})
+		inv, queryInvErr := querySessionInvestigation.Only(ctx)
+		if queryInvErr != nil {
+			if ent.IsNotFound(queryInvErr) {
 				return nil
 			}
-			return fmt.Errorf("lookup investigation: %w", lookupInvestigationErr)
+			return fmt.Errorf("lookup investigation: %w", queryInvErr)
 		}
-		// TODO: query with this predicate
-		if inv.Edges.Situation.EvidenceRevision > inv.RequestedRevision {
-			return s.requestReconcileInvestigations(ctx, inv.ID)
+		for _, sitInv := range inv.Edges.Situations {
+			if sitInv.Edges.Situation != nil && sitInv.Edges.Situation.EvidenceRevision > sitInv.RequestedRevision {
+				return s.requestBumpSituationInvestigation(ctx, sitInv.ID)
+			}
 		}
 		return nil
 	})
@@ -347,16 +328,16 @@ func NewReconcileSituationInvestigationWorker(db rez.Database, s rez.SituationSe
 }
 
 type ReconcileSituationInvestigationWorker struct {
-	jobs.WorkerDefaults[jobs.ReconcileSituationInvestigation]
+	jobs.WorkerDefaults[jobs.BumpSituationInvestigation]
 	db         rez.Database
 	situations rez.SituationService
 	agents     rez.AgentSessionService
 }
 
-func (w *ReconcileSituationInvestigationWorker) Work(ctx context.Context, job *jobs.Job[jobs.ReconcileSituationInvestigation]) error {
-	investigationID := job.Args.InvestigationID
+func (w *ReconcileSituationInvestigationWorker) Work(ctx context.Context, job *jobs.Job[jobs.BumpSituationInvestigation]) error {
+	investigationID := job.Args.SituationInvestigationID
 	return w.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
-		inv, queryInvestigationErr := tx.SituationInvestigation.Get(ctx, investigationID)
+		link, queryInvestigationErr := tx.SituationInvestigation.Get(ctx, investigationID)
 		if queryInvestigationErr != nil {
 			if ent.IsNotFound(queryInvestigationErr) {
 				return nil
@@ -364,13 +345,20 @@ func (w *ReconcileSituationInvestigationWorker) Work(ctx context.Context, job *j
 			return fmt.Errorf("lookup investigation: %w", queryInvestigationErr)
 		}
 
-		// Situation precedes session everywhere that scheduling and submission meet.
-		//if situationLockErr := w.db.AcquireTxLocks(ctx, situationLockNamespace, inv.SituationID.String()); situationLockErr != nil {
-		//	return situationLockErr
-		//}
+		if situationLockErr := w.db.AcquireTxLocks(ctx, situationLockNamespace, link.SituationID.String()); situationLockErr != nil {
+			return fmt.Errorf("lock situation before reconciliation: %w", situationLockErr)
+		}
+		link, rereadErr := tx.SituationInvestigation.Get(ctx, link.ID)
+		if rereadErr != nil {
+			return fmt.Errorf("reread situation investigation: %w", rereadErr)
+		}
 
-		querySituation := inv.QuerySituation().
-			Where(situation.EvidenceRevisionLT(inv.CompletedRevision))
+		inv, investigationErr := link.QueryInvestigation().WithAgentSession().Only(ctx)
+		if investigationErr != nil {
+			return fmt.Errorf("lookup linked investigation: %w", investigationErr)
+		}
+		querySituation := link.QuerySituation().
+			Where(situation.EvidenceRevisionGT(link.CompletedRevision))
 		sit, querySituationErr := querySituation.Only(ctx)
 		if querySituationErr != nil {
 			if ent.IsNotFound(querySituationErr) {
@@ -379,9 +367,9 @@ func (w *ReconcileSituationInvestigationWorker) Work(ctx context.Context, job *j
 			return fmt.Errorf("get requested situation: %w", querySituationErr)
 		}
 
-		//if sessionLockErr := acquireAgentSessionTurnLock(ctx, w.db, inv.AgentSessionID); sessionLockErr != nil {
-		//	return sessionLockErr
-		//}
+		if sessionLockErr := acquireAgentSessionTurnLock(ctx, w.db, inv.AgentSessionID); sessionLockErr != nil {
+			return fmt.Errorf("lock investigation session after situation: %w", sessionLockErr)
+		}
 
 		// TODO: AgentSessionService.GetSessionActiveTurn
 		activeTurnQuery := tx.AgentTurn.Query().
@@ -393,8 +381,8 @@ func (w *ReconcileSituationInvestigationWorker) Work(ctx context.Context, job *j
 			return nil
 		}
 
-		if inv.RequestedTurnID != nil && inv.RequestedRevision == sit.EvidenceRevision {
-			reqTurn, lookupRequestedTurnErr := tx.AgentTurn.Get(ctx, *inv.RequestedTurnID)
+		if link.RequestedTurnID != nil && link.RequestedRevision == sit.EvidenceRevision {
+			reqTurn, lookupRequestedTurnErr := tx.AgentTurn.Get(ctx, *link.RequestedTurnID)
 			if lookupRequestedTurnErr != nil {
 				return fmt.Errorf("lookup requested turn: %w", lookupRequestedTurnErr)
 			}
@@ -403,7 +391,15 @@ func (w *ReconcileSituationInvestigationWorker) Work(ctx context.Context, job *j
 			}
 		}
 
-		turnInput, inputErr := w.makeTurnInput(ctx, sit)
+		var sessionInput rezai.InvestigationAgentSessionInput
+		if unmarshalErr := json.Unmarshal(inv.Edges.AgentSession.Input, &sessionInput); unmarshalErr != nil {
+			return fmt.Errorf("decode investigation session input: %w", unmarshalErr)
+		}
+		query := ""
+		if sessionInput.Query != nil {
+			query = *sessionInput.Query
+		}
+		turnInput, inputErr := w.makeTurnInput(ctx, sit, query)
 		if inputErr != nil {
 			return fmt.Errorf("make turn input: %w", inputErr)
 		}
@@ -413,7 +409,7 @@ func (w *ReconcileSituationInvestigationWorker) Work(ctx context.Context, job *j
 		if requestTurnErr != nil {
 			return fmt.Errorf("request investigation agent turn: %w", requestTurnErr)
 		}
-		update := inv.Update().
+		update := link.Update().
 			SetRequestedTurnID(turn.ID).
 			SetRequestedRevision(sit.EvidenceRevision)
 		if updateErr := update.Exec(ctx); updateErr != nil {
@@ -424,7 +420,7 @@ func (w *ReconcileSituationInvestigationWorker) Work(ctx context.Context, job *j
 	})
 }
 
-func (w *ReconcileSituationInvestigationWorker) makeTurnInput(ctx context.Context, sit *ent.Situation) (*rez.AiAgentTurnInput, error) {
+func (w *ReconcileSituationInvestigationWorker) makeTurnInput(ctx context.Context, sit *ent.Situation, query string) (*rez.AiAgentTurnInput, error) {
 	episodesQuery := w.db.Client(ctx).SituationObservationGroup.Query().
 		Where(sog.SituationID(sit.ID)).
 		QueryAlertEpisodes().
@@ -441,6 +437,7 @@ func (w *ReconcileSituationInvestigationWorker) makeTurnInput(ctx context.Contex
 	input := rezai.InvestigationAgentTurnInput{
 		Situation:     sit,
 		AlertEpisodes: episodes,
+		Query:         query,
 	}
 
 	return input.MakeTurnInput()

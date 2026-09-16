@@ -34,6 +34,10 @@ type Expandable[Attrs any] struct {
 	Attributes *Attrs    `json:"attributes,omitempty"`
 }
 
+func AsExpandable[Attrs any](id uuid.UUID, attrs *Attrs) Expandable[Attrs] {
+	return Expandable[Attrs]{Id: id, Attributes: attrs}
+}
+
 // Requests
 type (
 	EmptyRequest      struct{}

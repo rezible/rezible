@@ -8,7 +8,6 @@ import (
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/schema/schematypes"
 )
 
 type Situation struct {
@@ -43,8 +42,10 @@ func (Situation) Edges() []ent.Edge {
 			Required().
 			Immutable().
 			Field("knowledge_entity_id"),
-		edge.To("investigations", SituationInvestigation.Type),
-		edge.To("hazard_assessments", SituationHazardAssessment.Type),
+		edge.To("investigation", SituationInvestigation.Type).
+			Unique(),
+		edge.From("hazard_assessments", SituationHazardAssessment.Type).
+			Ref("situation"),
 		edge.From("observation_groups", SituationObservationGroup.Type).
 			Ref("situation"),
 		edge.From("incidents", Incident.Type).
@@ -107,14 +108,16 @@ func (SituationInvestigation) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("situation_id", uuid.UUID{}).Immutable(),
-		field.UUID("system_analysis_id", uuid.UUID{}).Immutable(),
-		field.UUID("agent_session_id", uuid.UUID{}).Immutable(),
-		field.Int("completed_revision").NonNegative().Default(0),
-		field.Int("requested_revision").NonNegative().Default(0),
-		field.UUID("requested_turn_id", uuid.UUID{}).Optional().Nillable(),
-		field.JSON("report", &schematypes.SituationInvestigationReport{}).
-			SchemaType(schemaTypeJsonB).
-			Optional(),
+		field.UUID("investigation_id", uuid.UUID{}).Immutable(),
+		field.UUID("requested_turn_id", uuid.UUID{}).
+			Optional().
+			Nillable(),
+		field.Int("completed_revision").
+			NonNegative().
+			Default(0),
+		field.Int("requested_revision").
+			NonNegative().
+			Default(0),
 	}
 }
 
@@ -124,31 +127,24 @@ func (SituationInvestigation) Edges() []ent.Edge {
 			Unique().
 			Field("requested_turn_id"),
 		edge.From("situation", Situation.Type).
-			Ref("investigations").
+			Ref("investigation").
 			Unique().
 			Required().
 			Immutable().
 			Field("situation_id"),
-		edge.From("system_analysis", SystemAnalysis.Type).
-			Ref("situation_investigation").
+		edge.From("investigation", Investigation.Type).
+			Ref("situations").
 			Unique().
 			Required().
 			Immutable().
-			Field("system_analysis_id"),
-		edge.From("agent_session", AgentSession.Type).
-			Ref("situation_investigation").
-			Unique().
-			Required().
-			Immutable().
-			Field("agent_session_id"),
+			Field("investigation_id"),
 	}
 }
 
 func (SituationInvestigation) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Fields("tenant_id", "situation_id"),
-		index.Fields("tenant_id", "system_analysis_id").Unique(),
-		index.Fields("tenant_id", "agent_session_id").Unique(),
+		index.Fields("tenant_id", "situation_id").Unique(),
+		index.Fields("tenant_id", "investigation_id").Unique(),
 	}
 }
 
@@ -188,14 +184,12 @@ func (SituationHazardAssessment) Fields() []ent.Field {
 
 func (SituationHazardAssessment) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.From("situation", Situation.Type).
-			Ref("hazard_assessments").
+		edge.To("situation", Situation.Type).
 			Unique().
 			Required().
 			Immutable().
 			Field("situation_id"),
-		edge.From("system_hazard", SystemHazard.Type).
-			Ref("situation_assessments").
+		edge.To("system_hazard", SystemHazard.Type).
 			Unique().
 			Required().
 			Immutable().

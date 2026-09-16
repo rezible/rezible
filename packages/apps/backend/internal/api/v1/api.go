@@ -7,6 +7,7 @@ import (
 
 type Handler struct {
 	*activityHandler
+	*aiHandler
 	*alertsHandler
 	*discussionHandler
 	*documentsHandler
@@ -15,7 +16,7 @@ type Handler struct {
 	*incidentMetadataHandler
 	*incidentDebriefsHandler
 	*incidentMilestonesHandler
-	*aiHandler
+	*investigationsHandler
 	*integrationsHandler
 	*meetingsHandler
 	*eventsHandler
@@ -47,6 +48,7 @@ func NewHandler(
 	debriefs rez.DebriefService,
 	incidents rez.IncidentService,
 	integrations rez.IntegrationService,
+	investigations rez.InvestigationService,
 	events rez.EventsService,
 	rosters rez.OncallRostersService,
 	shifts rez.OncallShiftsService,
@@ -70,6 +72,7 @@ func NewHandler(
 		incidentsHandler:          newIncidentsHandler(incidents),
 		activityHandler:           newActivityHandler(),
 		integrationsHandler:       newIntegrationsHandler(integrations),
+		investigationsHandler:     newInvestigationsHandler(investigations),
 		meetingsHandler:           newMeetingsHandler(),
 		eventsHandler:             newEventsHandler(events),
 		oncallRostersHandler:      newOncallRostersHandler(users, incidents, rosters, shifts),
