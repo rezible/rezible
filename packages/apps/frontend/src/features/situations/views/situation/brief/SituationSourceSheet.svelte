@@ -9,7 +9,7 @@
 </script>
 
 <Sheet.Root bind:open={controller.sourceSheetOpen}>
-	<Sheet.Content class="overflow-y-auto sm:max-w-lg" onCloseAutoFocus={controller.restoreSourceFocus}>
+	<Sheet.Content class="overflow-y-auto sm:max-w-lg">
 		<Sheet.Header>
 			<Sheet.Title>{record?.title || "Source record"}</Sheet.Title>
 			<Sheet.Description>Source in observation group: {controller.inspectedGroup}</Sheet.Description>
@@ -43,23 +43,24 @@
 			</dl>
 			<Sheet.Footer>
 				{#each record.links as link (link.label)}
-					<Button variant="outline" href={link.href} target="_blank" rel="noopener noreferrer"
-						>{link.label}</Button
-					>
+					<Button variant="outline" href={link.href} target="_blank" rel="noopener noreferrer">
+						{link.label}
+					</Button>
 				{:else}
 					<p class="text-xs text-muted-foreground">Original-source URL unavailable.</p>
 				{/each}
 				{#if record.eventId}
-					<Button variant="outline" href={resolve("/events/[id]", { id: record.eventId })}
-						>Open event</Button
-					>
+					<Button variant="outline" href={resolve("/events/[id]", { id: record.eventId })}>
+						Open event
+					</Button>
 				{/if}
 				{#if record.definitionId}
 					<Button
 						variant="outline"
 						href={resolve("/signals/[id]/[[view=signalView]]", { id: record.definitionId })}
-						>Open signal</Button
 					>
+						Open signal
+					</Button>
 				{/if}
 			</Sheet.Footer>
 		{/if}
