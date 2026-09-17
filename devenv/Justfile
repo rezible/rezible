@@ -1,12 +1,14 @@
 set shell := ["bash", "-euc"]
 
 workspace_env_file := source_dir() / ".workspace-env.sh"
+term_interactive := if env("TERM", "dumb") != "dumb" { "1" } else { "0" }
 
 [doc("Run application services using Process Compose")]
 [default]
 [working-directory("..")]
 @start *SERVICES="backend frontend documents": verify-workspace
     process-compose --no-server --disable-dotenv \
+      -t={{term_interactive}} \
       -f {{ quote(source_dir() / "process-compose.apps.yaml") }} \
       up {{ SERVICES }}
 

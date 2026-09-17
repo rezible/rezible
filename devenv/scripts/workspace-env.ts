@@ -18,7 +18,8 @@ const getWorkspaceId = (branch: string) => {
 };
 
 const getDocumentSessionKeys = () => {
-  const keysOutput = run(["bun", "run", "--silent", "--cwd=packages/apps/documents-server", "generate-session-keys"]);
+  const pwd = run(["pwd"]);
+  const keysOutput = run(["bun", "run", "--silent", "--cwd=../packages/apps/documents-server", "generate-session-keys"]);
   const { seedHex, publicKeyHex } = JSON.parse(keysOutput);
   return {
     "DOCUMENTS__SESSION_SIGNING_SEED_HEX": seedHex as string,
