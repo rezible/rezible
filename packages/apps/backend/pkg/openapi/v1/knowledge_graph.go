@@ -7,10 +7,11 @@ import (
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/schema/schematypes"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/knowledgeentity"
+	"github.com/rezible/rezible/ent/schema/schematypes"
 )
 
 type KnowledgeGraphHandler interface {
@@ -31,6 +32,10 @@ func (o operations) RegisterKnowledgeGraph(api huma.API) {
 	huma.Register(api, GetKnowledgeGraphRelationship, o.GetKnowledgeGraphRelationship)
 
 	huma.Register(api, GetKnowledgeGraphView, o.GetKnowledgeGraphView)
+}
+
+func (o operations) RegisterKnowledgeGraphEnums(api huma.API) {
+	registerEnumAlias[knowledgeentity.Category, knowledgeEntityCategorySchema](api)
 }
 
 type (
@@ -56,7 +61,7 @@ type (
 		Attributes KnowledgeGraphEntityAttributes `json:"attributes"`
 	}
 	KnowledgeGraphEntityAttributes struct {
-		Category    string                       `json:"category" enum:"system_function,actor,system,container,component,infrastructure,code,process,concern,decision,event,signal"`
+		Category    knowledgeentity.Category     `json:"category"`
 		Kind        string                       `json:"kind"`
 		Aliases     []KnowledgeGraphSubjectAlias `json:"aliases"`
 		LatestState *KnowledgeGraphSubjectState  `json:"latestState,omitempty"`
@@ -95,9 +100,15 @@ type (
 	}
 )
 
+type knowledgeEntityCategorySchema knowledgeentity.Category
+
+func (knowledgeEntityCategorySchema) Schema(huma.Registry) *huma.Schema {
+	return makeEnumStringSchema(knowledgeentity.CategoryValues)
+}
+
 func KnowledgeGraphEntityFromEnt(e *ent.KnowledgeEntity) KnowledgeGraphEntity {
 	attr := KnowledgeGraphEntityAttributes{
-		Category:  e.Category.String(),
+		Category:  e.Category,
 		Kind:      e.Kind,
 		Aliases:   make([]KnowledgeGraphSubjectAlias, len(e.Edges.Aliases)),
 		CreatedAt: e.CreatedAt,

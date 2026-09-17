@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"reflect"
+	"strings"
 	"time"
 
 	"github.com/danielgtaylor/huma/v2"
@@ -262,8 +263,29 @@ func (o OmittableNullable[T]) UnmarshalJSON(b []byte) error {
 
 func (o OmittableNullable[T]) Schema(r huma.Registry) *huma.Schema {
 	s := r.Schema(reflect.TypeOf(o.Value), true, "")
-	s.Extensions = map[string]interface{}{
+	s.Extensions = map[string]any{
 		"nullable": true,
 	}
 	return s
+}
+
+func autoRegisterEnumAliases(api huma.API, server any) {
+	args := []reflect.Value{reflect.ValueOf(server), reflect.ValueOf(api)}
+	for m := range reflect.TypeOf(server).Methods() {
+		if strings.HasPrefix(m.Name, "Register") && strings.HasSuffix(m.Name, "Enums") {
+			m.Func.Call(args)
+		}
+	}
+}
+
+func registerEnumAlias[A any, B any](api huma.API) {
+	api.OpenAPI().Components.Schemas.RegisterTypeAlias(reflect.TypeFor[A](), reflect.TypeFor[B]())
+}
+
+func makeEnumStringSchema(vals []string) *huma.Schema {
+	values := make([]any, len(vals))
+	for i, value := range vals {
+		values[i] = value
+	}
+	return &huma.Schema{Type: huma.TypeString, Enum: values}
 }

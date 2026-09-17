@@ -72,7 +72,9 @@ func makeConfig() openapi.Config {
 func MakeApi(h Handler, middlewares ...openapi.Middleware) openapi.API {
 	api := humago.NewWithPrefix(http.NewServeMux(), VersionPrefix, makeConfig())
 	api.UseMiddleware(middlewares...)
-	huma.AutoRegister(api, operations{Handler: h})
+	s := operations{Handler: h}
+	autoRegisterEnumAliases(api, s)
+	huma.AutoRegister(api, s)
 	return api
 }
 
