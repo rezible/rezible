@@ -1,15 +1,7 @@
-import { replaceState } from "$app/navigation";
-import { page } from "$app/state";
 import { clsx, type ClassValue } from "clsx";
-import { tick } from "svelte";
 import { twMerge } from "tailwind-merge";
 
-export const clearQueryParams = async () => {
-	const empty = new URL(page.url);
-	empty.search = "";
-	replaceState(empty, page.state);
-	await tick();
-};
+export const normalized = (value: string): string => value.trim().toLowerCase();
 
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));

@@ -53,26 +53,26 @@ export type MapCategoryDisplay = {
 	// How entities in this category appear on the map.
 	mode: DisplayMode;
 	// Human-readable category name, distinct from an entity's name or detail-level title.
-	categoryName: string;
+	categoryLabel: string;
 	// Usual reveal level for architecture; omitted for actors and other context.
 	level?: NodeDetailLevel;
 };
 
 const defineCategoryDisplay = (
 	mode: DisplayMode,
-	categoryName: string,
+	categoryLabel: string,
 	level?: NodeDetailLevel
-): MapCategoryDisplay => ({ mode, categoryName, level });
+): MapCategoryDisplay => ({ mode, categoryLabel, level });
 const node = (name: string, level?: NodeDetailLevel) => defineCategoryDisplay(DisplayMode.Node, name, level);
 const annotation = (name: string) => defineCategoryDisplay(DisplayMode.Annotation, name);
 const detailsOnly = (name: string) => defineCategoryDisplay(DisplayMode.DetailsOnly, name);
 
 export const categoryDisplay: Readonly<Record<MapCategory, MapCategoryDisplay>> = {
-	[MapCategory.Function]: node("Functionality", NodeDetailLevel.Landscape),
+	[MapCategory.Function]: node("Function", NodeDetailLevel.Landscape),
 	[MapCategory.System]: node("System", NodeDetailLevel.Systems),
-	[MapCategory.Container]: node("Runtime", NodeDetailLevel.Runtime),
-	[MapCategory.Infrastructure]: node("Runtime", NodeDetailLevel.Runtime),
-	[MapCategory.Component]: node("Implementation", NodeDetailLevel.Implementation),
+	[MapCategory.Container]: node("Container", NodeDetailLevel.Runtime),
+	[MapCategory.Infrastructure]: node("Infrastructure", NodeDetailLevel.Runtime),
+	[MapCategory.Component]: node("Component", NodeDetailLevel.Implementation),
 	[MapCategory.Code]: node("Source Artifact", NodeDetailLevel.Implementation),
 	[MapCategory.Actor]: node("Actor"),
 	[MapCategory.Concern]: annotation("Concern"),
@@ -88,3 +88,13 @@ export const parseMapCategory = (value: string) =>
 
 export const getMapCategoryDisplay = (category: string): MapCategoryDisplay =>
 	categoryDisplay[parseMapCategory(category)];
+
+export const isArchitectureCategory = (category: string): boolean => {
+	const display = getMapCategoryDisplay(category);
+	return display.mode === DisplayMode.Node && display.level !== undefined;
+};
+
+export const isActorCategory = (category: string): boolean => {
+	const display = getMapCategoryDisplay(category);
+	return display.mode === DisplayMode.Node && display.level === undefined;
+};
