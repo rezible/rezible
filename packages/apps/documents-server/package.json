@@ -5,12 +5,11 @@
   "description": "",
   "source": "src/index.ts",
   "main": "build/main.js",
-  "scripts": {
-    "build": "bun build --target bun ./src/index.ts --outdir ./dist",
-    "build:compile": "bun build --compile --target=bun-linux-x64 ./src/index.ts --outfile documents-server",
-    "dev": "bun --watch run ./src/index.ts",
-    "test": "bun test",
-    "generate-session-keys": "bun run ./scripts/generate-session-keys.ts"
+	"scripts": {
+		"build": "bun build --target bun ./src/index.ts --outdir ./dist",
+		"build:compile": "bun build --compile --target=bun-linux-x64 ./src/index.ts --outfile documents-server",
+		"dev": "bun --watch run ./src/index.ts",
+		"test": "bun test"
   },
   "devDependencies": {
     "@types/bun": "catalog:tooling",

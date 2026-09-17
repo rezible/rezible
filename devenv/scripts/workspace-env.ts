@@ -1,4 +1,4 @@
-import { randomUUID } from "node:crypto";
+import { randomBytes, randomUUID } from "node:crypto";
 
 const run = (args: string[]) => {
   const result = Bun.spawnSync(args);
@@ -15,16 +15,6 @@ const getWorkspaceId = (branch: string) => {
         .slice(0, 28);
     const hash = new Bun.CryptoHasher("sha256").update(root).digest("hex").slice(0, 8);
     return `${slug}-${hash}`;
-};
-
-const getDocumentSessionKeys = () => {
-  const pwd = run(["pwd"]);
-  const keysOutput = run(["bun", "run", "--silent", "--cwd=../packages/apps/documents-server", "generate-session-keys"]);
-  const { seedHex, publicKeyHex } = JSON.parse(keysOutput);
-  return {
-    "DOCUMENTS__SESSION_SIGNING_SEED_HEX": seedHex as string,
-    "DOCUMENTS__SESSION_PUBLIC_KEY_HEX": publicKeyHex as string,
-  };
 };
 
 const generateWorkspaceEnv = async () => {
@@ -101,7 +91,7 @@ const generateWorkspaceEnv = async () => {
     POSTGRES__ROLE_ADMIN__PASSWORD: postgresAdminUser,
     POSTGRES__ROLE_APP__NAME: postgresAppUser,
     POSTGRES__ROLE_APP__PASSWORD: postgresAppUser,
-    ...getDocumentSessionKeys(),
+    DOCUMENTS__SESSION_KEY_HEX: randomBytes(32).toString("hex"),
   };
 
   const fileContents = Object.entries(values)

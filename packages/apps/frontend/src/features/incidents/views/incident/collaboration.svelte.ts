@@ -5,8 +5,13 @@ import { createMutation } from "@tanstack/svelte-query";
 import { Context, watch, type Getter } from "runed";
 import { onMount } from "svelte";
 
+const shouldRetryStatus = (status?: number) => {
+	return !(status === undefined || status === 408 || status === 429 || (status >= 500 && status < 600))
+}
+
 export class IncidentCollaborationController {
 	private documentId = $state.raw<string>();
+	private token = $state.raw<string>();
 
 	provider = $state.raw<HocuspocusProvider>();
 	awareness = $state.raw<StatesArray>([]);
@@ -27,20 +32,25 @@ export class IncidentCollaborationController {
 		});
 	}
 
-	// TODO: Refresh document-session credentials before expiry and on reconnect.
-	private createProvider({ serverUrl, token, name }: DocumentSessionAuth, documentId: string) {
-		if (this.provider && this.documentId === documentId) {
-			this.provider.configuration.token = token;
-			this.provider.configuration.name = name;
-			this.provider.disconnect();
-			this.provider.connect();
-			return;
-		}
-		this.documentId = documentId;
+	private getToken = async () => {
+		
+	}
+
+	private createProvider({serverUrl: url, name, token}: DocumentSessionAuth) {
 		this.provider = new HocuspocusProvider({
-			url: serverUrl,
-			token: token,
-			name: name,
+			url,
+			name,
+			token: async () => {
+				let t = token;
+				if (!!this.token) {
+					const { data } = await this.requestSessionAuthMut.mutateAsync({
+						path: {id: name}
+					});
+					t = data.token;
+				}
+				this.token = t;
+				return t;
+			},
 			onAwarenessChange: ({ states }) => {
 				console.log("awareness", states);
 				this.awareness = states;
@@ -53,7 +63,9 @@ export class IncidentCollaborationController {
 			},
 			onAuthenticationFailed: ({ reason }) => {
 				console.log("auth failed", reason);
-				this.error = new Error(reason);
+				if (this.documentId !== name) return;
+				if (!this.error) this.error = new Error(reason);
+				this.provider?.disconnect();
 			},
 			onSynced: () => {
 				this.initialSynced = true;
@@ -66,13 +78,14 @@ export class IncidentCollaborationController {
 
 	private requestSessionAuthMut = createMutation(() => ({
 		...requestDocumentSessionAuthMutation(),
-		onSuccess: ({ data: auth }, variables) => {
-			if (variables.path.id === this.documentId) this.createProvider(auth, variables.path.id);
+		retryDelay: 250,
+		retry: (failureCount, error) => {
+			return failureCount < 2 && shouldRetryStatus(error.status);
 		},
 		onError: (error, variables) => {
-			if (variables.path.id === this.documentId)
-				this.error =
-					error instanceof Error ? error : new Error("Unable to authorize report connection");
+			if (variables.path.id !== this.documentId) return;
+			const prefix = error.status ? `(HTTP ${error.status}) ` : "";
+			this.error = new Error(prefix + (error.detail ?? "Error"));
 		},
 	}));
 
@@ -81,19 +94,26 @@ export class IncidentCollaborationController {
 			this.cleanup();
 			return;
 		}
-		if (
-			id === this.documentId &&
-			this.provider &&
-			!this.error &&
-			this.status !== WebSocketStatus.Disconnected
-		)
-			return;
+		if (id === this.documentId && this.provider) return;
 		if (id !== this.documentId) this.cleanup();
 		this.documentId = id;
-		this.requestSessionAuthMut.mutate({ path: { id } });
+		this.error = undefined;
+		try {
+			const { data: auth } = await this.requestSessionAuthMut.mutateAsync({ path: { id } });
+			if (this.documentId === id && !this.provider) this.createProvider(auth);
+		} catch {
+			// The mutation error handler exposes the failure to the report.
+		}
 	}
 
-	retry = () => this.connect(this.documentId);
+	retry = () => {
+		this.error = undefined;
+		if (this.provider) {
+			void this.provider.connect();
+			return;
+		}
+		void this.connect(this.documentId);
+	};
 
 	cleanup() {
 		// https://github.com/ueberdosis/hocuspocus/issues/845

@@ -48,17 +48,22 @@ const runServer = async () => {
       },
     },
   });
-
+  
+  const allowedOrigins = new Set(cfg.allowedOrigins);
   Bun.serve({
     hostname: cfg.host,
     port: cfg.port,
     websocket: ws.websocket,
     fetch(request, server) {
-      if (request.headers.get("upgrade") === "websocket") {
-        return ws.handleUpgrade(request, server);
-      }
       if (new URL(request.url).pathname === "/health") {
         return new Response(null, { status: 204 });
+      }
+      if (request.headers.get("upgrade") === "websocket") {
+        const origin = request.headers.get("origin");
+        if (!origin || !allowedOrigins.has(origin)) {
+          return new Response("Forbidden", { status: 403 });
+        }
+        return ws.handleUpgrade(request, server);
       }
       return new Response("Not Found", { status: 404 });
     },

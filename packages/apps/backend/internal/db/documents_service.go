@@ -22,7 +22,7 @@ type DocumentsService struct {
 	teams rez.TeamService
 
 	documentsServerUrl *url.URL
-	sessionSigningKey  paseto.V4AsymmetricSecretKey
+	sessionKey         paseto.V4SymmetricKey
 }
 
 func NewDocumentsService(cfg rez.Config, db rez.Database, teams rez.TeamService) (*DocumentsService, error) {
@@ -30,15 +30,15 @@ func NewDocumentsService(cfg rez.Config, db rez.Database, teams rez.TeamService)
 	if urlErr != nil {
 		return nil, fmt.Errorf("server url: %w", urlErr)
 	}
-	sessionKey, keyErr := paseto.NewV4AsymmetricSecretKeyFromSeed(cfg.Documents.SessionSigningSeedHex)
+	sessionKey, keyErr := paseto.V4SymmetricKeyFromHex(cfg.Documents.SessionKeyHex)
 	if keyErr != nil {
-		return nil, fmt.Errorf("document session signing seed: %w", keyErr)
+		return nil, fmt.Errorf("document session key: %w", keyErr)
 	}
 	svc := &DocumentsService{
 		db:                 db,
 		teams:              teams,
 		documentsServerUrl: srvUrl,
-		sessionSigningKey:  sessionKey,
+		sessionKey:         sessionKey,
 	}
 
 	return svc, nil
@@ -69,7 +69,7 @@ func (s *DocumentsService) CreateDocumentEditorSessionAuth(ctx context.Context, 
 		return nil, fmt.Errorf("set document session permission: %w", setErr)
 	}
 
-	tokenStr := token.V4Sign(s.sessionSigningKey, nil)
+	tokenStr := token.V4Encrypt(s.sessionKey, nil)
 
 	sess := &rez.DocumentSessionAuth{
 		DocumentName: docId.String(),

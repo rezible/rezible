@@ -3,7 +3,8 @@ export type Config = {
 	host: string;
 	port: number;
 	dbUrl: string;
-	sessionPublicKey: string;
+	sessionKey: string;
+	allowedOrigins: string[];
 }
 
 const loadDbUrl = () => {
@@ -22,15 +23,15 @@ const loadDbUrl = () => {
 	return `postgresql://${pgRole}:${pgPassword}@${pgHost}:${pgPort}/${pgDatabase}?sslmode=${pgSslMode}`
 }
 
-export const pasetoPublicKeyFromHex = (hex: string): string => {
+export const pasetoLocalKeyFromHex = (hex: string): string => {
 	if (!/^[0-9a-fA-F]{64}$/.test(hex)) {
-		throw new Error("DOCUMENTS__SESSION_PUBLIC_KEY_HEX must be 64 hex characters");
+		throw new Error("DOCUMENTS__SESSION_KEY_HEX must be 64 hex characters");
 	}
 	const bytes = new Uint8Array(hex.length / 2);
 	for (let i = 0; i < bytes.length; i += 1) {
 		bytes[i] = Number.parseInt(hex.slice(i * 2, i * 2 + 2), 16);
 	}
-	return `k4.public.${Buffer.from(bytes).toString("base64url")}`;
+	return `k4.local.${Buffer.from(bytes).toString("base64url")}`;
 };
 
 export const loadConfig = (): Config => {
@@ -42,8 +43,11 @@ export const loadConfig = (): Config => {
 		throw new Error("PORT must be an integer between 1 and 65535");
 	}
 
-	const sessionPublicKey = pasetoPublicKeyFromHex(process.env.DOCUMENTS__SESSION_PUBLIC_KEY_HEX ?? "");
+	const allowedOrigins = (process.env.DOCUMENTS__ALLOWED_ORIGINS ?? "")
+		.split(",").map(o => o.trim()).filter(Boolean);
+
+	const sessionKey = pasetoLocalKeyFromHex(process.env.DOCUMENTS__SESSION_KEY_HEX ?? "");
 	const dbUrl = loadDbUrl();
 
-	return { name, host, port, dbUrl, sessionPublicKey };
+	return { name, host, port, dbUrl, sessionKey, allowedOrigins };
 }
