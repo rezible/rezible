@@ -4,20 +4,20 @@ import {
 	type onLoadDocumentPayload,
 	type onDestroyPayload,
 	type onStoreDocumentPayload,
-	Server,
 	type storePayload,
 	type fetchPayload
 } from "@hocuspocus/server";
 import { Database } from "@hocuspocus/extension-database";
 
 import { SQL } from "bun";
-import { decrypt } from "paseto-ts/v4";
+import { validate as isUuid } from "uuid";
+import { verify } from "paseto-ts/v4";
 
 import { emptyDocument } from "./transformer";
 import type { Config } from "./config.ts";
 
 type SessionTokenClaims = {
-	user_id: string;
+	sub: string;
 	tenant_id: string;
 	document_id: string;
 	can_edit: boolean;
@@ -56,10 +56,10 @@ export class DocumentsServerExtension implements Extension<SessionContext> {
 	extensionName = "Rezible Documents Server";
 	db: SQL;
 	database: Database;
-	sessionTokenKey: Uint8Array;
+	sessionPublicKey: string;
 
-	constructor({ dbUrl, sessionTokenSecretKey }: Config) {
-		this.sessionTokenKey = sessionTokenSecretKey;
+	constructor({ dbUrl, sessionPublicKey }: Config) {
+		this.sessionPublicKey = sessionPublicKey;
 		this.db = new SQL({
 			url: dbUrl,
 		});
@@ -70,23 +70,33 @@ export class DocumentsServerExtension implements Extension<SessionContext> {
 		await this.db?.close();
 	}
 
-	decryptSessionToken(token: string, documentName: string): SessionContext {
+	verifySessionToken(token: string, documentName: string): SessionContext {
 		if (!token) throw new Error("missing document session token");
 
-		const { payload } = decrypt<SessionTokenClaims>(this.sessionTokenKey, token);
+		const { payload } = verify<SessionTokenClaims>(this.sessionPublicKey, token);
 
-		if (payload.document_id !== documentName) throw new Error("invalid document");
+		if (payload.iss !== "rezible-backend" || payload.aud !== "rezible-documents-server") {
+			throw new Error("invalid document session issuer or audience");
+		}
+		if (typeof payload.sub !== "string" || !isUuid(payload.sub)) throw new Error("invalid user");
+		if (typeof payload.tenant_id !== "string" || !/^[1-9][0-9]*$/.test(payload.tenant_id)) {
+			throw new Error("invalid tenant");
+		}
+		if (!isUuid(documentName) || payload.document_id !== documentName) throw new Error("invalid document");
+		if (typeof payload.can_edit !== "boolean") throw new Error("invalid document permission");
+		if (!payload.iat || !payload.nbf || !payload.exp) throw new Error("missing document session timestamps");
 
 		return {
 			tenantId: payload.tenant_id,
-			userId: payload.sub || payload.user_id,
+			userId: payload.sub,
 			documentId: payload.document_id,
 			canEdit: payload.can_edit,
 		};
 	};
 
+	// TODO: Enforce token expiry for established document connections.
 	async onAuthenticate(data: onAuthenticatePayload<SessionContext>): Promise<SessionContext> {
-		const session = this.decryptSessionToken(data.token, data.documentName);
+		const session = this.verifySessionToken(data.token, data.documentName);
 
 		data.connectionConfig = {
 			isAuthenticated: true,

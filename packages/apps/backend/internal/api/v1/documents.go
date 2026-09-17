@@ -51,7 +51,7 @@ func (h *documentsHandler) GetDocumentSession(ctx context.Context, request *oapi
 		return nil, oapi.Error(ctx, "get access", docErr)
 	}
 	if docAccess == nil {
-		return nil, oapi.ErrForbidden
+		return nil, oapi.Error(ctx, "get access", rez.ErrForbidden)
 	}
 	resp.Body.Data = oapi.DocumentSession{
 		User:   oapi.UserFromEnt(usr),

@@ -27,6 +27,7 @@ export class IncidentCollaborationController {
 		});
 	}
 
+	// TODO: Refresh document-session credentials before expiry and on reconnect.
 	private createProvider({ serverUrl, token, name }: DocumentSessionAuth, documentId: string) {
 		if (this.provider && this.documentId === documentId) {
 			this.provider.configuration.token = token;

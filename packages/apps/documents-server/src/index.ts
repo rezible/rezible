@@ -67,12 +67,10 @@ const runServer = async () => {
   console.log(`running server on ${cfg.host}:${cfg.port}`);
 };
 
-try {
-  runServer();
-} catch (e: unknown) {
+runServer().catch((e: unknown) => {
   if (e instanceof Error) {
     console.error("Failed to create server: %s", e.message);
   } else {
     console.error("Failed to create server: %s", e);
   }
-}
+});

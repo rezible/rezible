@@ -1,3 +1,5 @@
+import { randomUUID } from "node:crypto";
+
 const run = (args: string[]) => {
   const result = Bun.spawnSync(args);
   if (result.exitCode !== 0) throw new Error(result.stderr.toString());
@@ -13,7 +15,16 @@ const getWorkspaceId = (branch: string) => {
         .slice(0, 28);
     const hash = new Bun.CryptoHasher("sha256").update(root).digest("hex").slice(0, 8);
     return `${slug}-${hash}`;
-}
+};
+
+const getDocumentSessionKeys = () => {
+  const keysOutput = run(["bun", "run", "--silent", "--cwd=packages/apps/documents-server", "generate-session-keys"]);
+  const { seedHex, publicKeyHex } = JSON.parse(keysOutput);
+  return {
+    "DOCUMENTS__SESSION_SIGNING_SEED_HEX": seedHex as string,
+    "DOCUMENTS__SESSION_PUBLIC_KEY_HEX": publicKeyHex as string,
+  };
+};
 
 const generateWorkspaceEnv = async () => {
   const workspaceFile = Bun.file(new URL("../.workspace-env.sh", import.meta.url));
@@ -42,7 +53,7 @@ const generateWorkspaceEnv = async () => {
 
   const database = previous.POSTGRES_APP_DB ?? `rezible-${workspaceId}`;
   const clientId = previous.OIDC_CLIENT_ID ?? `rezible-${workspaceId}`;
-  const clientSecret = previous.OIDC_CLIENT_SECRET ?? crypto.randomUUID().replaceAll("-", "");
+  const clientSecret = previous.OIDC_CLIENT_SECRET ?? randomUUID().replaceAll("-", "");
 
   const values = {
     DEV_DOMAIN: devDomain,
@@ -61,11 +72,10 @@ const generateWorkspaceEnv = async () => {
     OTEL_LOGS_EXPORTER: "none",
     OTEL_EXPORTER_OTLP_ENDPOINT: "http://localhost:4317",
     OTEL_EXPORTER_OTLP_PROTOCOL: "grpc",
-    DOCUMENTS__SESSION_TOKEN_SECRET_HEX: "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
     OTEL_SERVICE_NAME: "rezible-backend",
     APP__DEBUG_MODE: "true",
     APP__SINGLETENANT__ENABLED: "true",
-    DOCUMENTS__PROXY__ENABLED: "false",
+    DOCUMENTS__ALLOWED_ORIGINS: `https://${appDomain}`,
     HTTP__BASE_PATH: "",
     HTTP__AUTH__SESSION_SECRET: "superduuuuuuuuuuuuuuuuupersecret",
     POSTGRES__HOST: "localhost",
@@ -90,6 +100,7 @@ const generateWorkspaceEnv = async () => {
     POSTGRES__ROLE_ADMIN__PASSWORD: postgresAdminUser,
     POSTGRES__ROLE_APP__NAME: postgresAppUser,
     POSTGRES__ROLE_APP__PASSWORD: postgresAppUser,
+    ...getDocumentSessionKeys(),
   };
 
   const fileContents = Object.entries(values)

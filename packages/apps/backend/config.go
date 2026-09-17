@@ -33,12 +33,7 @@ func DefaultConfig() Config {
 			Auth:     HttpAuthConfig{},
 		},
 		Documents: DocumentsConfig{
-			ServerUrl:             "http://localhost:7002",
-			SessionTokenSecretHex: "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
-			Proxy: DocumentsConfigServerProxy{
-				Enabled: false,
-				Host:    "localhost:7002",
-			},
+			ServerUrl: "http://localhost:7002",
 		},
 		Postgres: PostgresConfig{
 			Host:     "postgres",
@@ -149,14 +144,8 @@ type (
 
 type (
 	DocumentsConfig struct {
-		ServerUrl             string                     `cfg:"server_url" validate:"required"`
-		SessionTokenSecretHex string                     `cfg:"session_token_secret_hex" validate:"len=64"`
-		Proxy                 DocumentsConfigServerProxy `cfg:"proxy"`
-	}
-
-	DocumentsConfigServerProxy struct {
-		Enabled bool   `cfg:"enabled"`
-		Host    string `cfg:"host"`
+		ServerUrl             string `cfg:"server_url" validate:"required"`
+		SessionSigningSeedHex string `cfg:"session_signing_seed_hex" validate:"required,len=64"`
 	}
 )
 

@@ -7,7 +7,6 @@ import (
 	"log/slog"
 	"net"
 	"net/http"
-	"net/url"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -15,8 +14,6 @@ import (
 	mapset "github.com/deckarep/golang-set/v2"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/httplog/v3"
-
-	"github.com/koding/websocketproxy"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/internal/http/oidc"
@@ -59,15 +56,6 @@ func NewServer(
 		logger: slog.Default().WithGroup("http"),
 	}
 
-	var documentsProxyUrl *url.URL
-	if cfg.Documents.Proxy.Enabled {
-		proxyUrl, parseErr := url.Parse("ws://" + cfg.Documents.Proxy.Host)
-		if parseErr != nil {
-			return nil, fmt.Errorf("failed to parse documents_proxy.proxy_host: %w", parseErr)
-		}
-		documentsProxyUrl = proxyUrl
-	}
-
 	router := chi.NewMux()
 
 	router.Get(healthCheckPath, s.makeHealthCheckHandler(healthFn))
@@ -98,10 +86,6 @@ func NewServer(
 		ar.Use(rv.AuthSessionMiddleware)
 
 		ar.Mount(oapiv1.VersionPrefix, s.makeOpenApiHandler(ts, oapiV1Handler))
-
-		if documentsProxyUrl != nil {
-			ar.Handle("/documents", s.makeDocumentsProxyHandler(documentsProxyUrl))
-		}
 	})
 
 	s.server = s.makeServer(cfg, router)
@@ -239,28 +223,6 @@ func (s *Server) makeRequestLoggerMiddleware(concise bool) func(http.Handler) ht
 		LogRequestBody:  isDebugHeaderSet,
 		LogResponseBody: isDebugHeaderSet,
 	})
-}
-
-func (s *Server) makeDocumentsProxyHandler(serverUrl *url.URL) http.Handler {
-	headerKey := "X-Rez-Tenant-ID"
-	setAuthHeaders := func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			exec := execution.GetContext(r.Context())
-			tenantId, tenantOk := exec.TenantID()
-			if exec.IsAnonymous() || !tenantOk {
-				http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
-				return
-			}
-			r.Header.Set(headerKey, fmt.Sprintf("%d", tenantId))
-			next.ServeHTTP(w, r)
-		})
-	}
-
-	proxy := websocketproxy.NewProxy(serverUrl)
-	proxy.Director = func(r *http.Request, h http.Header) {
-		h.Set(headerKey, r.Header.Get(headerKey))
-	}
-	return chi.Chain(setAuthHeaders).Handler(proxy)
 }
 
 func (s *Server) Run(ctx context.Context, ready chan<- struct{}) error {

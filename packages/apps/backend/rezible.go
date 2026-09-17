@@ -38,6 +38,7 @@ var (
 	ErrInvalidUser          = fmt.Errorf("user does not exist")
 	ErrDomainNotAllowed     = fmt.Errorf("domain not allowed")
 	ErrInvalidTenant        = fmt.Errorf("tenant does not exist")
+	ErrForbidden            = fmt.Errorf("forbidden")
 	ErrAuthSessionMissing   = fmt.Errorf("no auth session")
 	ErrAuthSessionExpired   = fmt.Errorf("auth session expired")
 	ErrAuthSessionInvalid   = fmt.Errorf("auth session invalid")

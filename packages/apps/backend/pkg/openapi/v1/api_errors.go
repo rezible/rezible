@@ -65,6 +65,9 @@ func asStatusError(msg string, err error) huma.StatusError {
 		errors.Is(err, rez.ErrAuthSessionInvalid) {
 		return huma.Error401Unauthorized("unauthorized", err)
 	}
+	if errors.Is(err, rez.ErrForbidden) {
+		return huma.Error403Forbidden("forbidden", err)
+	}
 	if errors.Is(err, rez.ErrNotImplemented) {
 		return huma.Error501NotImplemented("not implemented", err)
 	}

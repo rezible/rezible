@@ -9,7 +9,8 @@
     "build": "bun build --target bun ./src/index.ts --outdir ./dist",
     "build:compile": "bun build --compile --target=bun-linux-x64 ./src/index.ts --outfile documents-server",
     "dev": "bun --watch run ./src/index.ts",
-    "test": "bun test"
+    "test": "bun test",
+    "generate-session-keys": "bun run ./scripts/generate-session-keys.ts"
   },
   "devDependencies": {
     "@types/bun": "catalog:tooling",
