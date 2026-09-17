@@ -14,10 +14,10 @@ import (
 
 type InvestigationService struct {
 	db     rez.Database
-	agents rez.AgentSessionService
+	agents rez.AiAgentSessionService
 }
 
-func NewInvestigationService(database rez.Database, agents rez.AgentSessionService) *InvestigationService {
+func NewInvestigationService(database rez.Database, agents rez.AiAgentSessionService) *InvestigationService {
 	return &InvestigationService{db: database, agents: agents}
 }
 
@@ -42,7 +42,7 @@ func (s *InvestigationService) CreateInvestigation(ctx context.Context, params r
 				return fmt.Errorf("seed system analysis entity: %w", entityErr)
 			}
 		}
-		session, sessionErr := s.agents.CreateAgentSession(ctx, rez.CreateAgentSessionParams{AgentName: rezai.InvestigationAgent.Name, Input: input})
+		session, sessionErr := s.agents.CreateAgentSession(ctx, rez.CreateAiAgentSessionParams{AgentName: rezai.InvestigationAgent.Name, Input: input})
 		if sessionErr != nil {
 			return fmt.Errorf("create investigation agent session: %w", sessionErr)
 		}

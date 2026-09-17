@@ -40,7 +40,7 @@ func (s *ProjectionServiceSuite) projectionService(tdb rez.Database) *Projection
 	knowledge, _ := db.NewKnowledgeGraphService(tdb)
 
 	jobService := mocks.NewMockJobService(s.T())
-	agentService := mocks.NewMockAgentSessionService(s.T())
+	agentService := mocks.NewMockAiAgentSessionService(s.T())
 	investigationService := db.NewInvestigationService(tdb, agentService)
 	situations, err := db.NewSituationService(tdb, jobService, knowledge, investigationService)
 	s.Require().NoError(err)

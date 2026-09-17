@@ -38,7 +38,7 @@ func TestSituationServiceSuite(t *testing.T) {
 type situationServiceHarness struct {
 	tdb        rez.Database
 	jobs       *mocks.MockJobService
-	agents     *AgentSessionService
+	agents     *AiAgentSessionService
 	situations *SituationService
 	hazards    *SystemHazardService
 	knowledge  *KnowledgeGraphService
@@ -46,7 +46,7 @@ type situationServiceHarness struct {
 
 func (s *SituationServiceSuite) newHarness(tdb rez.Database) *situationServiceHarness {
 	jobSvc := mocks.NewMockJobService(s.T())
-	agentsSvc := &AgentSessionService{
+	agentsSvc := &AiAgentSessionService{
 		logger: slog.New(slog.NewTextHandler(io.Discard, nil)),
 		db:     tdb,
 		jobs:   jobSvc,

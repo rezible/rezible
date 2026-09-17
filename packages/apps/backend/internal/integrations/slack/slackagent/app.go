@@ -24,17 +24,17 @@ type App struct {
 	jobs   rez.JobService
 	intgs  rez.IntegrationService
 	users  rez.UserService
-	agents rez.AgentSessionService
+	agents rez.AiAgentSessionService
 	events rez.EventsService
 
-	responseClassifier rezai.ClassifyAgentThreadResponseWorkflowRunner
+	responseClassifier rezai.AiClassifyAgentThreadResponseWorkflow
 }
 
 type AppSuite struct {
 	test.Suite
 }
 
-func MakeApp(cfg rez.Config, db rez.Database, jobSvc rez.JobService, intgs rez.IntegrationService, users rez.UserService, agents rez.AgentSessionService, events rez.EventsService, responseClassifier rezai.ClassifyAgentThreadResponseWorkflowRunner) *App {
+func MakeApp(cfg rez.Config, db rez.Database, jobSvc rez.JobService, intgs rez.IntegrationService, users rez.UserService, agents rez.AiAgentSessionService, events rez.EventsService, responseClassifier rezai.AiClassifyAgentThreadResponseWorkflow) *App {
 	return &App{
 		db:                 db,
 		cfg:                cfg,

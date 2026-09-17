@@ -31,7 +31,7 @@ func makeServerCli(app *Application) *cli.Command {
 		withEnvironmentConfig,
 		withOpenTelemetry,
 		withPostgresDatabase,
-		withGenkitAiService,
+		withGenkitAiRuntime,
 	}
 	return &cli.Command{
 		Name:  "rezible",
@@ -151,8 +151,9 @@ func makeCliCommands(app *Application) []*cli.Command {
 							Name:  "list",
 							Usage: "List available evaluation scenarios",
 							Action: func(ctx context.Context, cmd *cli.Command) error {
-								for _, definition := range evals.List() {
-									fmt.Printf("%s\t%s\t%s\n", definition.Name, definition.AgentName, definition.Description)
+								for _, scenario := range evals.List() {
+									def := scenario.Definition()
+									fmt.Printf("%s\t%s\t%s\n", def.Name, def.AgentName, def.Description)
 								}
 								return nil
 							},

@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	gkai "github.com/firebase/genkit/go/ai"
+	rez "github.com/rezible/rezible"
 	rezai "github.com/rezible/rezible/pkg/ai"
 )
 
@@ -18,6 +19,10 @@ type (
 	testWorkflowOutput struct {
 		OK bool `json:"ok"`
 	}
+
+	testWorkflowRunner struct {
+		calls int
+	}
 )
 
 func (i testWorkflowInput) Validate() error {
@@ -27,7 +32,12 @@ func (i testWorkflowInput) Validate() error {
 	return nil
 }
 
-func (s *AiServiceSuite) newTestOutputModel(output *testWorkflowOutput) ModelDefinition[any] {
+func (r *testWorkflowRunner) ExecuteWorkflow(ctx context.Context, name string, run func(context.Context) error) error {
+	r.calls++
+	return run(ctx)
+}
+
+func (s *AiRuntimeSuite) newTestOutputModel(output *testWorkflowOutput) ModelDefinition[any] {
 	out, jsonErr := json.Marshal(output)
 	s.Require().NoError(jsonErr)
 	response := &gkai.ModelResponse{
@@ -48,11 +58,14 @@ func (s *AiServiceSuite) newTestOutputModel(output *testWorkflowOutput) ModelDef
 	}
 }
 
-func (s *AiServiceSuite) TestDefineWorkflowValidatesInput() {
+func (s *AiRuntimeSuite) TestDefinePromptWorkflowValidatesInput() {
 	ctx := s.SeedTenantContext()
 
 	model := s.newTestOutputModel(&testWorkflowOutput{OK: true})
-	workflow := rezai.WorkflowDefinition[testWorkflowInput, testWorkflowOutput]{
+	svc := s.makeService(ctx, WithDefinedModel(model))
+	runner := &testWorkflowRunner{}
+	builder := NewWorkflowBuilder(svc, runner)
+	definition := rezai.AiPromptWorkflowDefinition[testWorkflowInput, testWorkflowOutput]{
 		Name:  "test_workflow_validation",
 		Model: model.Name,
 		Prompt: func(input testWorkflowInput) string {
@@ -60,20 +73,22 @@ func (s *AiServiceSuite) TestDefineWorkflowValidatesInput() {
 		},
 	}
 
-	svc := s.makeService(ctx, WithDefinedModel(model), WithWorkflow(workflow))
+	workflow, workflowErr := builder.DefinePromptWorkflow(definition)
+	s.Require().NoError(workflowErr)
 
-	runner, runnerErr := rezai.GetWorkflowRunner(svc, workflow)
-	s.Require().NoError(runnerErr)
-
-	_, runErr := runner.Run(ctx, testWorkflowInput{})
+	_, runErr := workflow.Run(ctx, testWorkflowInput{})
 	s.Require().ErrorContains(runErr, "message is required")
+	s.Equal(1, runner.calls)
 }
 
-func (s *AiServiceSuite) TestDefineWorkflowRunsTypedOutput() {
+func (s *AiRuntimeSuite) TestDefinePromptWorkflowRunsTypedOutput() {
 	ctx := s.SeedTenantContext()
 
 	model := s.newTestOutputModel(&testWorkflowOutput{OK: true})
-	workflow := rezai.WorkflowDefinition[testWorkflowInput, testWorkflowOutput]{
+	svc := s.makeService(ctx, WithDefinedModel(model))
+	runner := &testWorkflowRunner{}
+	builder := NewWorkflowBuilder(svc, runner)
+	definition := rezai.AiPromptWorkflowDefinition[testWorkflowInput, testWorkflowOutput]{
 		Name:         "test_workflow",
 		Model:        model.Name,
 		SystemPrompt: "Return JSON.",
@@ -82,12 +97,28 @@ func (s *AiServiceSuite) TestDefineWorkflowRunsTypedOutput() {
 		},
 	}
 
-	svc := s.makeService(ctx, WithDefinedModel(model), WithWorkflow(workflow))
+	workflow, workflowErr := builder.DefinePromptWorkflow(definition)
+	s.Require().NoError(workflowErr)
 
-	runner, runnerErr := rezai.GetWorkflowRunner(svc, workflow)
-	s.Require().NoError(runnerErr)
-
-	output, runErr := runner.Run(ctx, testWorkflowInput{Message: "hello"})
+	output, runErr := workflow.Run(ctx, testWorkflowInput{Message: "hello"})
 	s.Require().NoError(runErr)
-	s.Require().True(output.OK, "expected output to be ok")
+	s.True(output.OK, "expected output to be ok")
+	s.Equal(1, runner.calls)
 }
+
+func (s *AiRuntimeSuite) TestDefineWorkflowRejectsDuplicateNames() {
+	ctx := s.SeedTenantContext()
+	model := s.newTestOutputModel(&testWorkflowOutput{OK: true})
+	svc := s.makeService(ctx, WithDefinedModel(model))
+	builder := NewWorkflowBuilder(svc, &testWorkflowRunner{})
+	run := func(context.Context, testWorkflowInput) (testWorkflowOutput, error) {
+		return testWorkflowOutput{}, nil
+	}
+
+	_, firstErr := builder.DefineWorkflow("duplicate_workflow", run)
+	_, secondErr := builder.DefineWorkflow("duplicate_workflow", run)
+	s.Require().NoError(firstErr)
+	s.Require().ErrorContains(secondErr, "already defined")
+}
+
+var _ rez.AiWorkflow[testWorkflowInput, testWorkflowOutput] = (*typedWorkflow[testWorkflowInput, testWorkflowOutput])(nil)

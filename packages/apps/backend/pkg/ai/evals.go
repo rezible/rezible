@@ -15,8 +15,7 @@ type (
 	}
 
 	EvalScenarioRunner interface {
-		RunScenario(context.Context, EvalScenario) EvalScenarioRunResult
-		RunNamedScenario(context.Context, string) (*EvalScenarioRunResult, error)
+		RunScenario(ctx context.Context, name string) (EvalScenarioRunResult, error)
 	}
 )
 

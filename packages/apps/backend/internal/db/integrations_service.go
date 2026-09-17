@@ -74,7 +74,7 @@ func (s *IntegrationsService) ListAllInstalled(ctx context.Context, predicates .
 	return cfgIs, nil
 }
 
-func (s *IntegrationsService) GetAvailableAgentTools(ctx context.Context, params rez.GetAvailableAgentToolsParams) ([]ai.Tool, error) {
+func (s *IntegrationsService) GetAvailableAgentTools(ctx context.Context, params rez.GetAvailableAiAgentToolsParams) ([]ai.Tool, error) {
 	installed, listErr := s.ListAllInstalled(ctx)
 	if listErr != nil {
 		return nil, fmt.Errorf("list installed: %w", listErr)

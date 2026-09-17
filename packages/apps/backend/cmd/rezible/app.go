@@ -93,9 +93,9 @@ func (a *Application) RunLifecycle[S rez.LifecycleService](ctx context.Context) 
 
 func (a *Application) RunAiEvalScenario(ctx context.Context, evalName string, writer io.Writer) error {
 	return a.With(func(svc rezai.EvalScenarioRunner) error {
-		result, runErr := svc.RunNamedScenario(ctx, evalName)
-		if runErr != nil || result == nil {
-			return fmt.Errorf("failed to run scenario: %w", runErr)
+		result, runErr := svc.RunScenario(ctx, evalName)
+		if runErr != nil {
+			return fmt.Errorf("failed to run evaluation %q: %w", evalName, runErr)
 		}
 		encoder := json.NewEncoder(writer)
 		encoder.SetIndent("", "  ")
@@ -262,6 +262,10 @@ func (a *Application) shutdownServices(ctx context.Context) error {
 }
 
 func (a *Application) setup(ctx context.Context) error {
+	if _, workflowErr := do.Invoke[rezai.EvalScenarioRunner](a.i); workflowErr != nil {
+		return fmt.Errorf("initialize AI workflows: %w", workflowErr)
+	}
+
 	if intgsErr := a.registerIntegrations(); intgsErr != nil {
 		return fmt.Errorf("register integrations: %w", intgsErr)
 	}

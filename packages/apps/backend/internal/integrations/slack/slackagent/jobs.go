@@ -139,7 +139,7 @@ func (a *App) handleBoundAgentThreadMessagedJob(ctx context.Context, args Handle
 	if !output.ShouldReply {
 		return nil
 	}
-	params := &rez.RequestAgentTurnParams{
+	params := &rez.RequestAiAgentTurnParams{
 		Input: &rez.AiAgentTurnInput{Message: ai.NewUserTextMessage(usrMsg.Text)},
 	}
 	if _, requestErr := a.agents.RequestAgentTurn(ctx, binding.AgentSessionID, params); requestErr != nil {

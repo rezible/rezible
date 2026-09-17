@@ -22,22 +22,22 @@ import (
 )
 
 type aiHandler struct {
-	ai     rez.AiService
-	agents rez.AgentSessionService
-	msgs   rez.MessageQueue
+	agents   rez.AiAgentCatalogue
+	sessions rez.AiAgentSessionService
+	msgs     rez.MessageQueue
 }
 
-func newAiHandler(ai rez.AiService, agents rez.AgentSessionService, msgs rez.MessageQueue) *aiHandler {
+func newAiHandler(agents rez.AiAgentCatalogue, sessions rez.AiAgentSessionService, msgs rez.MessageQueue) *aiHandler {
 	return &aiHandler{
-		ai:     ai,
-		agents: agents,
-		msgs:   msgs,
+		agents:   agents,
+		sessions: sessions,
+		msgs:     msgs,
 	}
 }
 
 func (h *aiHandler) ListAiAgents(ctx context.Context, req *oapi.ListAiAgentsRequest) (*oapi.ListAiAgentsResponse, error) {
 	var resp oapi.ListAiAgentsResponse
-	resp.Body.Data = oapi.ConvertSlice(h.ai.GetAgents(), oapi.AiAgentConfigFromRez)
+	resp.Body.Data = oapi.ConvertSlice(h.agents.GetAgents(), oapi.AiAgentConfigFromRez)
 	return &resp, nil
 }
 
@@ -45,16 +45,16 @@ func (h *aiHandler) CreateAgentSession(ctx context.Context, req *oapi.CreateAgen
 	var resp oapi.CreateAgentSessionResponse
 	attrs := req.Body.Attributes
 
-	input, inputErr := h.ai.ValidateAgentSessionInput(attrs.AgentName, attrs.Input)
+	input, inputErr := h.agents.ValidateAgentSessionInput(attrs.AgentName, attrs.Input)
 	if inputErr != nil {
 		return nil, oapi.Error(ctx, "invalid input", inputErr)
 	}
 
-	params := rez.CreateAgentSessionParams{
+	params := rez.CreateAiAgentSessionParams{
 		AgentName: attrs.AgentName,
 		Input:     input,
 	}
-	session, createErr := h.agents.CreateAgentSession(ctx, params)
+	session, createErr := h.sessions.CreateAgentSession(ctx, params)
 	if createErr != nil {
 		return nil, oapi.Error(ctx, "create agent session", createErr)
 	}
@@ -67,10 +67,10 @@ func (h *aiHandler) ListAgentSessions(ctx context.Context, req *oapi.ListAgentSe
 		return nil, oapi.ErrAuthSessionMissing
 	}
 
-	params := rez.ListAgentSessionsParams{
+	params := rez.ListAiAgentSessionsParams{
 		ListParams: req.ListParams(),
 	}
-	sessions, listErr := h.agents.ListAgentSessions(ctx, params)
+	sessions, listErr := h.sessions.ListAgentSessions(ctx, params)
 	if listErr != nil {
 		return nil, oapi.Error(ctx, "list agent sessions", listErr)
 	}
@@ -82,7 +82,7 @@ func (h *aiHandler) ListAgentSessions(ctx context.Context, req *oapi.ListAgentSe
 
 func (h *aiHandler) GetAgentSession(ctx context.Context, req *oapi.GetAgentSessionRequest) (*oapi.GetAgentSessionResponse, error) {
 	var resp oapi.GetAgentSessionResponse
-	session, getErr := h.agents.GetAgentSession(ctx, req.Id)
+	session, getErr := h.sessions.GetAgentSession(ctx, req.Id)
 	if getErr != nil {
 		return nil, oapi.Error(ctx, "get agent session", getErr)
 	}
@@ -91,11 +91,11 @@ func (h *aiHandler) GetAgentSession(ctx context.Context, req *oapi.GetAgentSessi
 }
 
 func (h *aiHandler) ListAgentMessages(ctx context.Context, req *oapi.ListAgentMessagesRequest) (*oapi.ListAgentMessagesResponse, error) {
-	params := rez.ListAgentMessagesParams{
+	params := rez.ListAiAgentMessagesParams{
 		ListParams: req.ListParams(),
 		Predicates: []predicate.AgentMessage{agentmessage.AgentSessionID(req.Id)},
 	}
-	msgs, listErr := h.agents.ListAgentMessages(ctx, params)
+	msgs, listErr := h.sessions.ListAgentMessages(ctx, params)
 	if listErr != nil {
 		return nil, oapi.Error(ctx, "list agent session messages", listErr)
 	}
@@ -107,11 +107,11 @@ func (h *aiHandler) ListAgentMessages(ctx context.Context, req *oapi.ListAgentMe
 }
 
 func (h *aiHandler) ListAgentArtifacts(ctx context.Context, req *oapi.ListAgentArtifactsRequest) (*oapi.ListAgentArtifactsResponse, error) {
-	params := rez.ListAgentArtifactsParams{
+	params := rez.ListAiAgentArtifactsParams{
 		ListParams: req.ListParams(),
 		Predicates: []predicate.AgentArtifact{agentartifact.AgentSessionID(req.Id)},
 	}
-	artifacts, listErr := h.agents.ListAgentArtifacts(ctx, params)
+	artifacts, listErr := h.sessions.ListAgentArtifacts(ctx, params)
 	if listErr != nil {
 		return nil, oapi.Error(ctx, "list agent session artifacts", listErr)
 	}
@@ -123,11 +123,11 @@ func (h *aiHandler) ListAgentArtifacts(ctx context.Context, req *oapi.ListAgentA
 }
 
 func (h *aiHandler) ListAgentTurns(ctx context.Context, req *oapi.ListAgentTurnsRequest) (*oapi.ListAgentTurnsResponse, error) {
-	params := rez.ListAgentTurnsParams{
+	params := rez.ListAiAgentTurnsParams{
 		ListParams: req.ListParams(),
 		Predicates: []predicate.AgentTurn{agentturn.AgentSessionID(req.Id)},
 	}
-	turns, listErr := h.agents.ListAgentTurns(ctx, params)
+	turns, listErr := h.sessions.ListAgentTurns(ctx, params)
 	if listErr != nil {
 		return nil, oapi.Error(ctx, "list agent turns", listErr)
 	}
@@ -164,10 +164,10 @@ func (h *aiHandler) RequestAgentTurn(ctx context.Context, req *oapi.RequestAgent
 	if inputErr != nil {
 		return nil, oapi.Error(ctx, "invalid agent turn input", fmt.Errorf("%w: %w", rez.ErrInvalidInput, inputErr))
 	}
-	params := &rez.RequestAgentTurnParams{
+	params := &rez.RequestAiAgentTurnParams{
 		Input: input,
 	}
-	turn, requestErr := h.agents.RequestAgentTurn(ctx, req.Id, params)
+	turn, requestErr := h.sessions.RequestAgentTurn(ctx, req.Id, params)
 	if requestErr != nil {
 		return nil, oapi.Error(ctx, "request agent turn", requestErr)
 	}
@@ -177,7 +177,7 @@ func (h *aiHandler) RequestAgentTurn(ctx context.Context, req *oapi.RequestAgent
 
 func (h *aiHandler) AbortAgentTurn(ctx context.Context, req *oapi.AgentTurnActionRequest) (*oapi.AgentTurnActionResponse, error) {
 	var resp oapi.AgentTurnActionResponse
-	turn, abortErr := h.agents.AbortAgentTurn(ctx, req.Id)
+	turn, abortErr := h.sessions.AbortAgentTurn(ctx, req.Id)
 	if abortErr != nil {
 		return nil, oapi.Error(ctx, "abort agent turn", abortErr)
 	}
@@ -187,7 +187,7 @@ func (h *aiHandler) AbortAgentTurn(ctx context.Context, req *oapi.AgentTurnActio
 
 func (h *aiHandler) RetryAgentTurn(ctx context.Context, req *oapi.AgentTurnActionRequest) (*oapi.AgentTurnActionResponse, error) {
 	var resp oapi.AgentTurnActionResponse
-	turn, retryErr := h.agents.RetryAgentTurn(ctx, req.Id)
+	turn, retryErr := h.sessions.RetryAgentTurn(ctx, req.Id)
 	if retryErr != nil {
 		return nil, oapi.Error(ctx, "retry agent turn", retryErr)
 	}
@@ -196,7 +196,7 @@ func (h *aiHandler) RetryAgentTurn(ctx context.Context, req *oapi.AgentTurnActio
 }
 
 func (h *aiHandler) StreamAgentSessionEvents(ctx context.Context, req *oapi.StreamAgentSessionEventsRequest, send sse.Sender) {
-	if _, getErr := h.agents.GetAgentSession(ctx, req.Id); getErr != nil {
+	if _, getErr := h.sessions.GetAgentSession(ctx, req.Id); getErr != nil {
 		slog.WarnContext(ctx, "agent session SSE authorization failed", "error", getErr, "sessionId", req.Id)
 		return
 	}

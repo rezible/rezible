@@ -13,30 +13,26 @@ import (
 	"github.com/firebase/genkit/go/plugins/googlegenai"
 
 	rez "github.com/rezible/rezible"
-	"github.com/rezible/rezible/ent"
-	rezai "github.com/rezible/rezible/pkg/ai"
 )
 
-type AiService struct {
+type AiRuntime struct {
 	cfg rez.AiConfig
 
 	toolRefs []ai.ToolRef
 	gk       *genkit.Genkit
 
-	agentWrappers    map[string]rezai.AgentWrapper
-	workflowWrappers map[string]rezai.WorkflowWrapper
+	catalogue *agentCatalogue
 }
 
-func NewAiService(cfg rez.Config) *AiService {
-	return &AiService{
-		cfg:              cfg.AI,
-		toolRefs:         make([]ai.ToolRef, 0),
-		agentWrappers:    make(map[string]rezai.AgentWrapper),
-		workflowWrappers: make(map[string]rezai.WorkflowWrapper),
+func NewAiRuntime(cfg rez.Config) *AiRuntime {
+	return &AiRuntime{
+		cfg:       cfg.AI,
+		toolRefs:  make([]ai.ToolRef, 0),
+		catalogue: newAgentCatalogue(),
 	}
 }
 
-func (s *AiService) Init(ctx context.Context, opts ...AiServiceOption) error {
+func (s *AiRuntime) Init(ctx context.Context, opts ...AiRuntimeOption) error {
 	plugins, pluginsErr := s.makePlugins()
 	if pluginsErr != nil {
 		return fmt.Errorf("plugins: %w", pluginsErr)
@@ -60,7 +56,7 @@ func (s *AiService) Init(ctx context.Context, opts ...AiServiceOption) error {
 	return nil
 }
 
-func (s *AiService) makePlugins() ([]gkapi.Plugin, error) {
+func (s *AiRuntime) makePlugins() ([]gkapi.Plugin, error) {
 	var plugins []gkapi.Plugin
 	if geminiCfg := s.cfg.Gemini; geminiCfg.Enabled {
 		plugins = append(plugins, &googlegenai.GoogleAI{APIKey: geminiCfg.APIKey})
@@ -79,8 +75,8 @@ func IsDevMode() bool {
 	return gkapi.CurrentEnvironment() == gkapi.EnvironmentDev
 }
 
-func (s *AiService) applyOptions(opts []AiServiceOption) error {
-	slices.SortFunc(opts, func(a, b AiServiceOption) int {
+func (s *AiRuntime) applyOptions(opts []AiRuntimeOption) error {
+	slices.SortFunc(opts, func(a, b AiRuntimeOption) int {
 		return cmp.Compare(a.kind, b.kind)
 	})
 	for _, opt := range opts {
@@ -91,66 +87,30 @@ func (s *AiService) applyOptions(opts []AiServiceOption) error {
 	return nil
 }
 
-type AiServiceOptionKind int
+type AiRuntimeOptionKind int
 
 const (
-	AiServiceOptionKindModel    AiServiceOptionKind = iota
-	AiServiceOptionKindTool     AiServiceOptionKind = iota
-	AiServiceOptionKindWorkflow AiServiceOptionKind = iota
-	AiServiceOptionKindAgent    AiServiceOptionKind = iota
+	AiRuntimeOptionKindModel AiRuntimeOptionKind = iota
+	AiRuntimeOptionKindTool
+	AiRuntimeOptionKindAgent
 )
 
-type AiServiceOption struct {
-	kind  AiServiceOptionKind
-	optFn func(*AiService) error
+type AiRuntimeOption struct {
+	kind  AiRuntimeOptionKind
+	optFn func(*AiRuntime) error
 }
 
-func (s *AiService) GetAgents() []rez.AiAgentConfig {
-	var agents []rez.AiAgentConfig
-	for _, wrapper := range s.agentWrappers {
-		agents = append(agents, wrapper.Config())
-	}
-	return agents
+func (s *AiRuntime) AgentCatalogue() rez.AiAgentCatalogue {
+	return s.catalogue
 }
 
-func (s *AiService) getAgentWrapper(name string) (rezai.AgentWrapper, error) {
-	if wrapper, ok := s.agentWrappers[name]; ok {
-		return wrapper, nil
-	}
-	return nil, fmt.Errorf("agent %q not found", name)
-}
-
-func (s *AiService) ValidateAgentSessionInput(name string, input []byte) (rez.ValidatingInput, error) {
-	wrapper, wrapperErr := s.getAgentWrapper(name)
-	if wrapperErr != nil {
-		return nil, wrapperErr
-	}
-	return wrapper.ValidateInput(input)
-}
-
-func (s *AiService) MakeInitialAgentTurnInput(ctx context.Context, sess *ent.AgentSession) (*rez.AiAgentTurnInput, error) {
-	wrapper, wrapperErr := s.getAgentWrapper(sess.AgentName)
-	if wrapperErr != nil {
-		return nil, wrapperErr
-	}
-	return wrapper.MakeInitialTurnInput(ctx, sess)
-}
-
-func (s *AiService) InvokeAgentTurn(ctx context.Context, params rez.InvokeAgentTurnParams) (*rez.AiAgentInvocationResult, error) {
+func (s *AiRuntime) InvokeAgentTurn(ctx context.Context, params rez.InvokeAiAgentTurnParams) (*rez.AiAgentInvocationResult, error) {
 	if params.Session == nil {
 		return nil, fmt.Errorf("agent session is required")
 	}
-	wrapper, wrapperErr := s.getAgentWrapper(params.Session.AgentName)
-	if wrapperErr != nil {
-		return nil, wrapperErr
+	agent, agentErr := s.catalogue.getAgent(params.Session.AgentName)
+	if agentErr != nil {
+		return nil, agentErr
 	}
-	return wrapper.Invoke(ctx, params)
-}
-
-func (s *AiService) GetWorkflowRunner(name string) (rez.AiWorkflowRunner, error) {
-	wr, ok := s.workflowWrappers[name]
-	if !ok {
-		return nil, fmt.Errorf("workflow not found: %s", name)
-	}
-	return wr, nil
+	return agent.Invoke(ctx, params)
 }

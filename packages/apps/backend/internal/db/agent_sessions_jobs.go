@@ -23,20 +23,20 @@ import (
 type StartAgentSessionWorker struct {
 	river.WorkerDefaults[jobs.StartAgentSession]
 
-	db      rez.Database
-	ai      rez.AiService
-	aiSess  rez.AgentSessionService
-	logger  *slog.Logger
-	timeout time.Duration
+	db       rez.Database
+	agents   rez.AiAgentCatalogue
+	sessions rez.AiAgentSessionService
+	logger   *slog.Logger
+	timeout  time.Duration
 }
 
-func NewStartAgentSessionWorker(cfg rez.AiConfig, tel rez.TelemetryService, db rez.Database, aiSvc rez.AiService, aiSess rez.AgentSessionService) (*StartAgentSessionWorker, error) {
+func NewStartAgentSessionWorker(cfg rez.AiConfig, tel rez.TelemetryService, db rez.Database, agents rez.AiAgentCatalogue, sessions rez.AiAgentSessionService) (*StartAgentSessionWorker, error) {
 	w := &StartAgentSessionWorker{
-		db:      db,
-		ai:      aiSvc,
-		aiSess:  aiSess,
-		logger:  tel.NewLogger(rez.NewLoggerOptions{Name: "start_agent_session_worker"}),
-		timeout: cfg.Agents.WorkerTimeout,
+		db:       db,
+		agents:   agents,
+		sessions: sessions,
+		logger:   tel.NewLogger(rez.NewLoggerOptions{Name: "start_agent_session_worker"}),
+		timeout:  cfg.Agents.WorkerTimeout,
 	}
 	return w, nil
 }
@@ -68,7 +68,7 @@ func (w *StartAgentSessionWorker) Work(ctx context.Context, job *river.Job[jobs.
 		}
 		logger.Info("making initial agent turn input")
 
-		initialInput, initErr := w.ai.MakeInitialAgentTurnInput(ctx, sess)
+		initialInput, initErr := w.agents.MakeInitialAgentTurnInput(ctx, sess)
 		if initErr != nil {
 			return fmt.Errorf("make initial agent turn input: %w", initErr)
 		} else if initialInput == nil {
@@ -76,7 +76,7 @@ func (w *StartAgentSessionWorker) Work(ctx context.Context, job *river.Job[jobs.
 		}
 		logger.Info("requesting initial agent turn")
 
-		turn, turnErr := w.aiSess.RequestAgentTurn(ctx, sess.ID, &rez.RequestAgentTurnParams{Input: initialInput})
+		turn, turnErr := w.sessions.RequestAgentTurn(ctx, sess.ID, &rez.RequestAiAgentTurnParams{Input: initialInput})
 		if turnErr != nil {
 			return fmt.Errorf("request agent turn: %w", turnErr)
 		}
@@ -88,22 +88,22 @@ func (w *StartAgentSessionWorker) Work(ctx context.Context, job *river.Job[jobs.
 type InvokeAgentTurnWorker struct {
 	river.WorkerDefaults[jobs.InvokeAgentTurn]
 
-	db      rez.Database
-	msgs    rez.MessageQueue
-	ai      rez.AiService
-	aiSess  rez.AgentSessionService
-	logger  *slog.Logger
-	timeout time.Duration
+	db       rez.Database
+	msgs     rez.MessageQueue
+	agents   rez.AiAgentRuntime
+	sessions rez.AiAgentSessionService
+	logger   *slog.Logger
+	timeout  time.Duration
 }
 
-func NewInvokeAgentTurnWorker(cfg rez.AiConfig, tel rez.TelemetryService, db rez.Database, msgs rez.MessageQueue, aiSvc rez.AiService, aiSess rez.AgentSessionService) (*InvokeAgentTurnWorker, error) {
+func NewInvokeAgentTurnWorker(cfg rez.AiConfig, tel rez.TelemetryService, db rez.Database, msgs rez.MessageQueue, aiSvc rez.AiAgentRuntime, aiSess rez.AiAgentSessionService) (*InvokeAgentTurnWorker, error) {
 	w := &InvokeAgentTurnWorker{
-		db:      db,
-		msgs:    msgs,
-		ai:      aiSvc,
-		aiSess:  aiSess,
-		logger:  tel.NewLogger(rez.NewLoggerOptions{Name: "invoke_agent_turn_worker"}),
-		timeout: cfg.Agents.WorkerTimeout,
+		db:       db,
+		msgs:     msgs,
+		agents:   aiSvc,
+		sessions: aiSess,
+		logger:   tel.NewLogger(rez.NewLoggerOptions{Name: "invoke_agent_turn_worker"}),
+		timeout:  cfg.Agents.WorkerTimeout,
 	}
 	return w, nil
 }
@@ -320,7 +320,7 @@ func (w *InvokeAgentTurnWorker) publishTurnUpdated(ctx context.Context, turn *en
 }
 
 func (w *InvokeAgentTurnWorker) invokeTurn(ctx context.Context, claim agentTurnClaim) (*rez.AiAgentInvocationResult, error) {
-	return w.ai.InvokeAgentTurn(ctx, rez.InvokeAgentTurnParams{
+	return w.agents.InvokeAgentTurn(ctx, rez.InvokeAiAgentTurnParams{
 		Session: claim.session,
 		Turn:    claim.turn,
 		State:   claim.state,

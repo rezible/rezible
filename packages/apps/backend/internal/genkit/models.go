@@ -13,10 +13,10 @@ type ModelDefinition[Config any] struct {
 	fn   ai.ModelActionFunc[Config]
 }
 
-func WithDefinedModel[Config any](def ModelDefinition[Config]) AiServiceOption {
-	return AiServiceOption{
-		kind: AiServiceOptionKindModel,
-		optFn: func(s *AiService) error {
+func WithDefinedModel[Config any](def ModelDefinition[Config]) AiRuntimeOption {
+	return AiRuntimeOption{
+		kind: AiRuntimeOptionKindModel,
+		optFn: func(s *AiRuntime) error {
 			gk.DefineModelAction(s.gk, def.Name, def.opts, def.fn)
 			return nil
 		},
@@ -27,7 +27,7 @@ var flashModel = googlegenai.ModelRef("googleai/gemini-flash-latest", &genai.Gen
 	ThinkingConfig: &genai.ThinkingConfig{ThinkingLevel: genai.ThinkingLevelMinimal},
 })
 
-func (s *AiService) getDefaultModel() *ai.ModelRef {
+func (s *AiRuntime) getDefaultModel() *ai.ModelRef {
 	if s.cfg.Gemini.Enabled {
 		return &flashModel
 	}

@@ -66,7 +66,7 @@ func (a *App) onAgentMentionedByUser(ctx context.Context, usr *ent.User, intg *e
 	}
 
 	slog.Debug("continuing existing agent session in thread")
-	params := &rez.RequestAgentTurnParams{
+	params := &rez.RequestAiAgentTurnParams{
 		Input: &rez.AiAgentTurnInput{Message: ai.NewUserTextMessage(cleanedText)},
 	}
 	_, requestErr := a.agents.RequestAgentTurn(ctx, binding.AgentSessionID, params)
@@ -94,14 +94,14 @@ func (a *App) startBoundAgentThread(ctx context.Context, intg *ent.Integration, 
 		ProviderNamespace: providerNamespace,
 		ResourceRef:       res.makeRef(),
 	}
-	bindingParams := rez.AgentSessionBindingParams{
+	bindingParams := rez.AiAgentSessionBindingParams{
 		ProviderResourceRef: bindingRef,
 		IntegrationID:       new(intg.ID),
 	}
-	createSessionParams := rez.CreateAgentSessionParams{
+	createSessionParams := rez.CreateAiAgentSessionParams{
 		AgentName: rezai.ChatAgent.Name,
 		Input:     rezai.ChatAgentInput{UserId: userId, Message: msg},
-		Bindings:  []rez.AgentSessionBindingParams{bindingParams},
+		Bindings:  []rez.AiAgentSessionBindingParams{bindingParams},
 		Metadata: map[string]any{
 			agentSessionMetadataIntegrationKey: integrationName,
 		},

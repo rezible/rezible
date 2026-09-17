@@ -102,10 +102,10 @@ func (r *Registry) GetOAuth2FlowIntegration(name string) (rez.OAuth2FlowIntegrat
 }
 
 type IntegrationWithAgentToolProvider interface {
-	GetAvailableAgentTools(context.Context, []rez.InstalledIntegration, rez.GetAvailableAgentToolsParams) ([]ai.Tool, error)
+	GetAvailableAgentTools(context.Context, []rez.InstalledIntegration, rez.GetAvailableAiAgentToolsParams) ([]ai.Tool, error)
 }
 
-func (r *Registry) GetAvailableAgentTools(ctx context.Context, intgs []rez.InstalledIntegration, params rez.GetAvailableAgentToolsParams) (map[rez.IntegrationDefinition][]ai.Tool, error) {
+func (r *Registry) GetAvailableAgentTools(ctx context.Context, intgs []rez.InstalledIntegration, params rez.GetAvailableAiAgentToolsParams) (map[rez.IntegrationDefinition][]ai.Tool, error) {
 	packageMap := make(map[string][]rez.InstalledIntegration)
 	for _, ii := range intgs {
 		pkgName := ii.Integration().Name

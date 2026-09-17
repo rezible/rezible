@@ -2770,8 +2770,8 @@ func (_c *MockIntegrationService_GetAvailable_Call) RunAndReturn(run func() []re
 }
 
 // GetAvailableAgentTools provides a mock function for the type MockIntegrationService
-func (_mock *MockIntegrationService) GetAvailableAgentTools(context1 context.Context, getAvailableAgentToolsParams rez.GetAvailableAgentToolsParams) ([]ai.Tool, error) {
-	ret := _mock.Called(context1, getAvailableAgentToolsParams)
+func (_mock *MockIntegrationService) GetAvailableAgentTools(context1 context.Context, getAvailableAiAgentToolsParams rez.GetAvailableAiAgentToolsParams) ([]ai.Tool, error) {
+	ret := _mock.Called(context1, getAvailableAiAgentToolsParams)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetAvailableAgentTools")
@@ -2779,18 +2779,18 @@ func (_mock *MockIntegrationService) GetAvailableAgentTools(context1 context.Con
 
 	var r0 []ai.Tool
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.GetAvailableAgentToolsParams) ([]ai.Tool, error)); ok {
-		return returnFunc(context1, getAvailableAgentToolsParams)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.GetAvailableAiAgentToolsParams) ([]ai.Tool, error)); ok {
+		return returnFunc(context1, getAvailableAiAgentToolsParams)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.GetAvailableAgentToolsParams) []ai.Tool); ok {
-		r0 = returnFunc(context1, getAvailableAgentToolsParams)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.GetAvailableAiAgentToolsParams) []ai.Tool); ok {
+		r0 = returnFunc(context1, getAvailableAiAgentToolsParams)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]ai.Tool)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, rez.GetAvailableAgentToolsParams) error); ok {
-		r1 = returnFunc(context1, getAvailableAgentToolsParams)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, rez.GetAvailableAiAgentToolsParams) error); ok {
+		r1 = returnFunc(context1, getAvailableAiAgentToolsParams)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -2804,20 +2804,20 @@ type MockIntegrationService_GetAvailableAgentTools_Call struct {
 
 // GetAvailableAgentTools is a helper method to define mock.On call
 //   - context1 context.Context
-//   - getAvailableAgentToolsParams rez.GetAvailableAgentToolsParams
-func (_e *MockIntegrationService_Expecter) GetAvailableAgentTools(context1 interface{}, getAvailableAgentToolsParams interface{}) *MockIntegrationService_GetAvailableAgentTools_Call {
-	return &MockIntegrationService_GetAvailableAgentTools_Call{Call: _e.mock.On("GetAvailableAgentTools", context1, getAvailableAgentToolsParams)}
+//   - getAvailableAiAgentToolsParams rez.GetAvailableAiAgentToolsParams
+func (_e *MockIntegrationService_Expecter) GetAvailableAgentTools(context1 interface{}, getAvailableAiAgentToolsParams interface{}) *MockIntegrationService_GetAvailableAgentTools_Call {
+	return &MockIntegrationService_GetAvailableAgentTools_Call{Call: _e.mock.On("GetAvailableAgentTools", context1, getAvailableAiAgentToolsParams)}
 }
 
-func (_c *MockIntegrationService_GetAvailableAgentTools_Call) Run(run func(context1 context.Context, getAvailableAgentToolsParams rez.GetAvailableAgentToolsParams)) *MockIntegrationService_GetAvailableAgentTools_Call {
+func (_c *MockIntegrationService_GetAvailableAgentTools_Call) Run(run func(context1 context.Context, getAvailableAiAgentToolsParams rez.GetAvailableAiAgentToolsParams)) *MockIntegrationService_GetAvailableAgentTools_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 rez.GetAvailableAgentToolsParams
+		var arg1 rez.GetAvailableAiAgentToolsParams
 		if args[1] != nil {
-			arg1 = args[1].(rez.GetAvailableAgentToolsParams)
+			arg1 = args[1].(rez.GetAvailableAiAgentToolsParams)
 		}
 		run(
 			arg0,
@@ -2832,7 +2832,7 @@ func (_c *MockIntegrationService_GetAvailableAgentTools_Call) Return(tools []ai.
 	return _c
 }
 
-func (_c *MockIntegrationService_GetAvailableAgentTools_Call) RunAndReturn(run func(context1 context.Context, getAvailableAgentToolsParams rez.GetAvailableAgentToolsParams) ([]ai.Tool, error)) *MockIntegrationService_GetAvailableAgentTools_Call {
+func (_c *MockIntegrationService_GetAvailableAgentTools_Call) RunAndReturn(run func(context1 context.Context, getAvailableAiAgentToolsParams rez.GetAvailableAiAgentToolsParams) ([]ai.Tool, error)) *MockIntegrationService_GetAvailableAgentTools_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -4015,13 +4015,13 @@ func (_c *MockUserService_Set_Call) RunAndReturn(run func(context1 context.Conte
 	return _c
 }
 
-// NewMockAiService creates a new instance of MockAiService. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
+// NewMockAiAgentCatalogue creates a new instance of MockAiAgentCatalogue. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
 // The first argument is typically a *testing.T value.
-func NewMockAiService(t interface {
+func NewMockAiAgentCatalogue(t interface {
 	mock.TestingT
 	Cleanup(func())
-}) *MockAiService {
-	mock := &MockAiService{}
+}) *MockAiAgentCatalogue {
+	mock := &MockAiAgentCatalogue{}
 	mock.Mock.Test(t)
 
 	t.Cleanup(func() { mock.AssertExpectations(t) })
@@ -4029,21 +4029,21 @@ func NewMockAiService(t interface {
 	return mock
 }
 
-// MockAiService is an autogenerated mock type for the AiService type
-type MockAiService struct {
+// MockAiAgentCatalogue is an autogenerated mock type for the AiAgentCatalogue type
+type MockAiAgentCatalogue struct {
 	mock.Mock
 }
 
-type MockAiService_Expecter struct {
+type MockAiAgentCatalogue_Expecter struct {
 	mock *mock.Mock
 }
 
-func (_m *MockAiService) EXPECT() *MockAiService_Expecter {
-	return &MockAiService_Expecter{mock: &_m.Mock}
+func (_m *MockAiAgentCatalogue) EXPECT() *MockAiAgentCatalogue_Expecter {
+	return &MockAiAgentCatalogue_Expecter{mock: &_m.Mock}
 }
 
-// GetAgents provides a mock function for the type MockAiService
-func (_mock *MockAiService) GetAgents() []rez.AiAgentConfig {
+// GetAgents provides a mock function for the type MockAiAgentCatalogue
+func (_mock *MockAiAgentCatalogue) GetAgents() []rez.AiAgentConfig {
 	ret := _mock.Called()
 
 	if len(ret) == 0 {
@@ -4061,165 +4061,35 @@ func (_mock *MockAiService) GetAgents() []rez.AiAgentConfig {
 	return r0
 }
 
-// MockAiService_GetAgents_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetAgents'
-type MockAiService_GetAgents_Call struct {
+// MockAiAgentCatalogue_GetAgents_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetAgents'
+type MockAiAgentCatalogue_GetAgents_Call struct {
 	*mock.Call
 }
 
 // GetAgents is a helper method to define mock.On call
-func (_e *MockAiService_Expecter) GetAgents() *MockAiService_GetAgents_Call {
-	return &MockAiService_GetAgents_Call{Call: _e.mock.On("GetAgents")}
+func (_e *MockAiAgentCatalogue_Expecter) GetAgents() *MockAiAgentCatalogue_GetAgents_Call {
+	return &MockAiAgentCatalogue_GetAgents_Call{Call: _e.mock.On("GetAgents")}
 }
 
-func (_c *MockAiService_GetAgents_Call) Run(run func()) *MockAiService_GetAgents_Call {
+func (_c *MockAiAgentCatalogue_GetAgents_Call) Run(run func()) *MockAiAgentCatalogue_GetAgents_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		run()
 	})
 	return _c
 }
 
-func (_c *MockAiService_GetAgents_Call) Return(aiAgentConfigs []rez.AiAgentConfig) *MockAiService_GetAgents_Call {
+func (_c *MockAiAgentCatalogue_GetAgents_Call) Return(aiAgentConfigs []rez.AiAgentConfig) *MockAiAgentCatalogue_GetAgents_Call {
 	_c.Call.Return(aiAgentConfigs)
 	return _c
 }
 
-func (_c *MockAiService_GetAgents_Call) RunAndReturn(run func() []rez.AiAgentConfig) *MockAiService_GetAgents_Call {
+func (_c *MockAiAgentCatalogue_GetAgents_Call) RunAndReturn(run func() []rez.AiAgentConfig) *MockAiAgentCatalogue_GetAgents_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
-// GetWorkflowRunner provides a mock function for the type MockAiService
-func (_mock *MockAiService) GetWorkflowRunner(s string) (rez.AiWorkflowRunner, error) {
-	ret := _mock.Called(s)
-
-	if len(ret) == 0 {
-		panic("no return value specified for GetWorkflowRunner")
-	}
-
-	var r0 rez.AiWorkflowRunner
-	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(string) (rez.AiWorkflowRunner, error)); ok {
-		return returnFunc(s)
-	}
-	if returnFunc, ok := ret.Get(0).(func(string) rez.AiWorkflowRunner); ok {
-		r0 = returnFunc(s)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(rez.AiWorkflowRunner)
-		}
-	}
-	if returnFunc, ok := ret.Get(1).(func(string) error); ok {
-		r1 = returnFunc(s)
-	} else {
-		r1 = ret.Error(1)
-	}
-	return r0, r1
-}
-
-// MockAiService_GetWorkflowRunner_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetWorkflowRunner'
-type MockAiService_GetWorkflowRunner_Call struct {
-	*mock.Call
-}
-
-// GetWorkflowRunner is a helper method to define mock.On call
-//   - s string
-func (_e *MockAiService_Expecter) GetWorkflowRunner(s interface{}) *MockAiService_GetWorkflowRunner_Call {
-	return &MockAiService_GetWorkflowRunner_Call{Call: _e.mock.On("GetWorkflowRunner", s)}
-}
-
-func (_c *MockAiService_GetWorkflowRunner_Call) Run(run func(s string)) *MockAiService_GetWorkflowRunner_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 string
-		if args[0] != nil {
-			arg0 = args[0].(string)
-		}
-		run(
-			arg0,
-		)
-	})
-	return _c
-}
-
-func (_c *MockAiService_GetWorkflowRunner_Call) Return(v rez.AiWorkflowRunner, err error) *MockAiService_GetWorkflowRunner_Call {
-	_c.Call.Return(v, err)
-	return _c
-}
-
-func (_c *MockAiService_GetWorkflowRunner_Call) RunAndReturn(run func(s string) (rez.AiWorkflowRunner, error)) *MockAiService_GetWorkflowRunner_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
-// InvokeAgentTurn provides a mock function for the type MockAiService
-func (_mock *MockAiService) InvokeAgentTurn(context1 context.Context, invokeAgentTurnParams rez.InvokeAgentTurnParams) (*rez.AiAgentInvocationResult, error) {
-	ret := _mock.Called(context1, invokeAgentTurnParams)
-
-	if len(ret) == 0 {
-		panic("no return value specified for InvokeAgentTurn")
-	}
-
-	var r0 *rez.AiAgentInvocationResult
-	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.InvokeAgentTurnParams) (*rez.AiAgentInvocationResult, error)); ok {
-		return returnFunc(context1, invokeAgentTurnParams)
-	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.InvokeAgentTurnParams) *rez.AiAgentInvocationResult); ok {
-		r0 = returnFunc(context1, invokeAgentTurnParams)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*rez.AiAgentInvocationResult)
-		}
-	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, rez.InvokeAgentTurnParams) error); ok {
-		r1 = returnFunc(context1, invokeAgentTurnParams)
-	} else {
-		r1 = ret.Error(1)
-	}
-	return r0, r1
-}
-
-// MockAiService_InvokeAgentTurn_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'InvokeAgentTurn'
-type MockAiService_InvokeAgentTurn_Call struct {
-	*mock.Call
-}
-
-// InvokeAgentTurn is a helper method to define mock.On call
-//   - context1 context.Context
-//   - invokeAgentTurnParams rez.InvokeAgentTurnParams
-func (_e *MockAiService_Expecter) InvokeAgentTurn(context1 interface{}, invokeAgentTurnParams interface{}) *MockAiService_InvokeAgentTurn_Call {
-	return &MockAiService_InvokeAgentTurn_Call{Call: _e.mock.On("InvokeAgentTurn", context1, invokeAgentTurnParams)}
-}
-
-func (_c *MockAiService_InvokeAgentTurn_Call) Run(run func(context1 context.Context, invokeAgentTurnParams rez.InvokeAgentTurnParams)) *MockAiService_InvokeAgentTurn_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 context.Context
-		if args[0] != nil {
-			arg0 = args[0].(context.Context)
-		}
-		var arg1 rez.InvokeAgentTurnParams
-		if args[1] != nil {
-			arg1 = args[1].(rez.InvokeAgentTurnParams)
-		}
-		run(
-			arg0,
-			arg1,
-		)
-	})
-	return _c
-}
-
-func (_c *MockAiService_InvokeAgentTurn_Call) Return(aiAgentInvocationResult *rez.AiAgentInvocationResult, err error) *MockAiService_InvokeAgentTurn_Call {
-	_c.Call.Return(aiAgentInvocationResult, err)
-	return _c
-}
-
-func (_c *MockAiService_InvokeAgentTurn_Call) RunAndReturn(run func(context1 context.Context, invokeAgentTurnParams rez.InvokeAgentTurnParams) (*rez.AiAgentInvocationResult, error)) *MockAiService_InvokeAgentTurn_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
-// MakeInitialAgentTurnInput provides a mock function for the type MockAiService
-func (_mock *MockAiService) MakeInitialAgentTurnInput(context1 context.Context, agentSession *ent.AgentSession) (*rez.AiAgentTurnInput, error) {
+// MakeInitialAgentTurnInput provides a mock function for the type MockAiAgentCatalogue
+func (_mock *MockAiAgentCatalogue) MakeInitialAgentTurnInput(context1 context.Context, agentSession *ent.AgentSession) (*rez.AiAgentTurnInput, error) {
 	ret := _mock.Called(context1, agentSession)
 
 	if len(ret) == 0 {
@@ -4246,19 +4116,19 @@ func (_mock *MockAiService) MakeInitialAgentTurnInput(context1 context.Context, 
 	return r0, r1
 }
 
-// MockAiService_MakeInitialAgentTurnInput_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'MakeInitialAgentTurnInput'
-type MockAiService_MakeInitialAgentTurnInput_Call struct {
+// MockAiAgentCatalogue_MakeInitialAgentTurnInput_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'MakeInitialAgentTurnInput'
+type MockAiAgentCatalogue_MakeInitialAgentTurnInput_Call struct {
 	*mock.Call
 }
 
 // MakeInitialAgentTurnInput is a helper method to define mock.On call
 //   - context1 context.Context
 //   - agentSession *ent.AgentSession
-func (_e *MockAiService_Expecter) MakeInitialAgentTurnInput(context1 interface{}, agentSession interface{}) *MockAiService_MakeInitialAgentTurnInput_Call {
-	return &MockAiService_MakeInitialAgentTurnInput_Call{Call: _e.mock.On("MakeInitialAgentTurnInput", context1, agentSession)}
+func (_e *MockAiAgentCatalogue_Expecter) MakeInitialAgentTurnInput(context1 interface{}, agentSession interface{}) *MockAiAgentCatalogue_MakeInitialAgentTurnInput_Call {
+	return &MockAiAgentCatalogue_MakeInitialAgentTurnInput_Call{Call: _e.mock.On("MakeInitialAgentTurnInput", context1, agentSession)}
 }
 
-func (_c *MockAiService_MakeInitialAgentTurnInput_Call) Run(run func(context1 context.Context, agentSession *ent.AgentSession)) *MockAiService_MakeInitialAgentTurnInput_Call {
+func (_c *MockAiAgentCatalogue_MakeInitialAgentTurnInput_Call) Run(run func(context1 context.Context, agentSession *ent.AgentSession)) *MockAiAgentCatalogue_MakeInitialAgentTurnInput_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -4276,18 +4146,18 @@ func (_c *MockAiService_MakeInitialAgentTurnInput_Call) Run(run func(context1 co
 	return _c
 }
 
-func (_c *MockAiService_MakeInitialAgentTurnInput_Call) Return(aiAgentTurnInput *rez.AiAgentTurnInput, err error) *MockAiService_MakeInitialAgentTurnInput_Call {
+func (_c *MockAiAgentCatalogue_MakeInitialAgentTurnInput_Call) Return(aiAgentTurnInput *rez.AiAgentTurnInput, err error) *MockAiAgentCatalogue_MakeInitialAgentTurnInput_Call {
 	_c.Call.Return(aiAgentTurnInput, err)
 	return _c
 }
 
-func (_c *MockAiService_MakeInitialAgentTurnInput_Call) RunAndReturn(run func(context1 context.Context, agentSession *ent.AgentSession) (*rez.AiAgentTurnInput, error)) *MockAiService_MakeInitialAgentTurnInput_Call {
+func (_c *MockAiAgentCatalogue_MakeInitialAgentTurnInput_Call) RunAndReturn(run func(context1 context.Context, agentSession *ent.AgentSession) (*rez.AiAgentTurnInput, error)) *MockAiAgentCatalogue_MakeInitialAgentTurnInput_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
-// ValidateAgentSessionInput provides a mock function for the type MockAiService
-func (_mock *MockAiService) ValidateAgentSessionInput(s string, bytes []byte) (rez.ValidatingInput, error) {
+// ValidateAgentSessionInput provides a mock function for the type MockAiAgentCatalogue
+func (_mock *MockAiAgentCatalogue) ValidateAgentSessionInput(s string, bytes []byte) (rez.ValidatingInput, error) {
 	ret := _mock.Called(s, bytes)
 
 	if len(ret) == 0 {
@@ -4314,19 +4184,19 @@ func (_mock *MockAiService) ValidateAgentSessionInput(s string, bytes []byte) (r
 	return r0, r1
 }
 
-// MockAiService_ValidateAgentSessionInput_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ValidateAgentSessionInput'
-type MockAiService_ValidateAgentSessionInput_Call struct {
+// MockAiAgentCatalogue_ValidateAgentSessionInput_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ValidateAgentSessionInput'
+type MockAiAgentCatalogue_ValidateAgentSessionInput_Call struct {
 	*mock.Call
 }
 
 // ValidateAgentSessionInput is a helper method to define mock.On call
 //   - s string
 //   - bytes []byte
-func (_e *MockAiService_Expecter) ValidateAgentSessionInput(s interface{}, bytes interface{}) *MockAiService_ValidateAgentSessionInput_Call {
-	return &MockAiService_ValidateAgentSessionInput_Call{Call: _e.mock.On("ValidateAgentSessionInput", s, bytes)}
+func (_e *MockAiAgentCatalogue_Expecter) ValidateAgentSessionInput(s interface{}, bytes interface{}) *MockAiAgentCatalogue_ValidateAgentSessionInput_Call {
+	return &MockAiAgentCatalogue_ValidateAgentSessionInput_Call{Call: _e.mock.On("ValidateAgentSessionInput", s, bytes)}
 }
 
-func (_c *MockAiService_ValidateAgentSessionInput_Call) Run(run func(s string, bytes []byte)) *MockAiService_ValidateAgentSessionInput_Call {
+func (_c *MockAiAgentCatalogue_ValidateAgentSessionInput_Call) Run(run func(s string, bytes []byte)) *MockAiAgentCatalogue_ValidateAgentSessionInput_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 string
 		if args[0] != nil {
@@ -4344,23 +4214,23 @@ func (_c *MockAiService_ValidateAgentSessionInput_Call) Run(run func(s string, b
 	return _c
 }
 
-func (_c *MockAiService_ValidateAgentSessionInput_Call) Return(validatingInput rez.ValidatingInput, err error) *MockAiService_ValidateAgentSessionInput_Call {
+func (_c *MockAiAgentCatalogue_ValidateAgentSessionInput_Call) Return(validatingInput rez.ValidatingInput, err error) *MockAiAgentCatalogue_ValidateAgentSessionInput_Call {
 	_c.Call.Return(validatingInput, err)
 	return _c
 }
 
-func (_c *MockAiService_ValidateAgentSessionInput_Call) RunAndReturn(run func(s string, bytes []byte) (rez.ValidatingInput, error)) *MockAiService_ValidateAgentSessionInput_Call {
+func (_c *MockAiAgentCatalogue_ValidateAgentSessionInput_Call) RunAndReturn(run func(s string, bytes []byte) (rez.ValidatingInput, error)) *MockAiAgentCatalogue_ValidateAgentSessionInput_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
-// NewMockAgentSessionService creates a new instance of MockAgentSessionService. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
+// NewMockAiAgentRuntime creates a new instance of MockAiAgentRuntime. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
 // The first argument is typically a *testing.T value.
-func NewMockAgentSessionService(t interface {
+func NewMockAiAgentRuntime(t interface {
 	mock.TestingT
 	Cleanup(func())
-}) *MockAgentSessionService {
-	mock := &MockAgentSessionService{}
+}) *MockAiAgentRuntime {
+	mock := &MockAiAgentRuntime{}
 	mock.Mock.Test(t)
 
 	t.Cleanup(func() { mock.AssertExpectations(t) })
@@ -4368,21 +4238,162 @@ func NewMockAgentSessionService(t interface {
 	return mock
 }
 
-// MockAgentSessionService is an autogenerated mock type for the AgentSessionService type
-type MockAgentSessionService struct {
+// MockAiAgentRuntime is an autogenerated mock type for the AiAgentRuntime type
+type MockAiAgentRuntime struct {
 	mock.Mock
 }
 
-type MockAgentSessionService_Expecter struct {
+type MockAiAgentRuntime_Expecter struct {
 	mock *mock.Mock
 }
 
-func (_m *MockAgentSessionService) EXPECT() *MockAgentSessionService_Expecter {
-	return &MockAgentSessionService_Expecter{mock: &_m.Mock}
+func (_m *MockAiAgentRuntime) EXPECT() *MockAiAgentRuntime_Expecter {
+	return &MockAiAgentRuntime_Expecter{mock: &_m.Mock}
 }
 
-// AbortAgentTurn provides a mock function for the type MockAgentSessionService
-func (_mock *MockAgentSessionService) AbortAgentTurn(context1 context.Context, uUID uuid.UUID) (*ent.AgentTurn, error) {
+// AgentCatalogue provides a mock function for the type MockAiAgentRuntime
+func (_mock *MockAiAgentRuntime) AgentCatalogue() rez.AiAgentCatalogue {
+	ret := _mock.Called()
+
+	if len(ret) == 0 {
+		panic("no return value specified for AgentCatalogue")
+	}
+
+	var r0 rez.AiAgentCatalogue
+	if returnFunc, ok := ret.Get(0).(func() rez.AiAgentCatalogue); ok {
+		r0 = returnFunc()
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(rez.AiAgentCatalogue)
+		}
+	}
+	return r0
+}
+
+// MockAiAgentRuntime_AgentCatalogue_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'AgentCatalogue'
+type MockAiAgentRuntime_AgentCatalogue_Call struct {
+	*mock.Call
+}
+
+// AgentCatalogue is a helper method to define mock.On call
+func (_e *MockAiAgentRuntime_Expecter) AgentCatalogue() *MockAiAgentRuntime_AgentCatalogue_Call {
+	return &MockAiAgentRuntime_AgentCatalogue_Call{Call: _e.mock.On("AgentCatalogue")}
+}
+
+func (_c *MockAiAgentRuntime_AgentCatalogue_Call) Run(run func()) *MockAiAgentRuntime_AgentCatalogue_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run()
+	})
+	return _c
+}
+
+func (_c *MockAiAgentRuntime_AgentCatalogue_Call) Return(aiAgentCatalogue rez.AiAgentCatalogue) *MockAiAgentRuntime_AgentCatalogue_Call {
+	_c.Call.Return(aiAgentCatalogue)
+	return _c
+}
+
+func (_c *MockAiAgentRuntime_AgentCatalogue_Call) RunAndReturn(run func() rez.AiAgentCatalogue) *MockAiAgentRuntime_AgentCatalogue_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// InvokeAgentTurn provides a mock function for the type MockAiAgentRuntime
+func (_mock *MockAiAgentRuntime) InvokeAgentTurn(context1 context.Context, invokeAiAgentTurnParams rez.InvokeAiAgentTurnParams) (*rez.AiAgentInvocationResult, error) {
+	ret := _mock.Called(context1, invokeAiAgentTurnParams)
+
+	if len(ret) == 0 {
+		panic("no return value specified for InvokeAgentTurn")
+	}
+
+	var r0 *rez.AiAgentInvocationResult
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.InvokeAiAgentTurnParams) (*rez.AiAgentInvocationResult, error)); ok {
+		return returnFunc(context1, invokeAiAgentTurnParams)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.InvokeAiAgentTurnParams) *rez.AiAgentInvocationResult); ok {
+		r0 = returnFunc(context1, invokeAiAgentTurnParams)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*rez.AiAgentInvocationResult)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, rez.InvokeAiAgentTurnParams) error); ok {
+		r1 = returnFunc(context1, invokeAiAgentTurnParams)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockAiAgentRuntime_InvokeAgentTurn_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'InvokeAgentTurn'
+type MockAiAgentRuntime_InvokeAgentTurn_Call struct {
+	*mock.Call
+}
+
+// InvokeAgentTurn is a helper method to define mock.On call
+//   - context1 context.Context
+//   - invokeAiAgentTurnParams rez.InvokeAiAgentTurnParams
+func (_e *MockAiAgentRuntime_Expecter) InvokeAgentTurn(context1 interface{}, invokeAiAgentTurnParams interface{}) *MockAiAgentRuntime_InvokeAgentTurn_Call {
+	return &MockAiAgentRuntime_InvokeAgentTurn_Call{Call: _e.mock.On("InvokeAgentTurn", context1, invokeAiAgentTurnParams)}
+}
+
+func (_c *MockAiAgentRuntime_InvokeAgentTurn_Call) Run(run func(context1 context.Context, invokeAiAgentTurnParams rez.InvokeAiAgentTurnParams)) *MockAiAgentRuntime_InvokeAgentTurn_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 rez.InvokeAiAgentTurnParams
+		if args[1] != nil {
+			arg1 = args[1].(rez.InvokeAiAgentTurnParams)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockAiAgentRuntime_InvokeAgentTurn_Call) Return(aiAgentInvocationResult *rez.AiAgentInvocationResult, err error) *MockAiAgentRuntime_InvokeAgentTurn_Call {
+	_c.Call.Return(aiAgentInvocationResult, err)
+	return _c
+}
+
+func (_c *MockAiAgentRuntime_InvokeAgentTurn_Call) RunAndReturn(run func(context1 context.Context, invokeAiAgentTurnParams rez.InvokeAiAgentTurnParams) (*rez.AiAgentInvocationResult, error)) *MockAiAgentRuntime_InvokeAgentTurn_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// NewMockAiAgentSessionService creates a new instance of MockAiAgentSessionService. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
+// The first argument is typically a *testing.T value.
+func NewMockAiAgentSessionService(t interface {
+	mock.TestingT
+	Cleanup(func())
+}) *MockAiAgentSessionService {
+	mock := &MockAiAgentSessionService{}
+	mock.Mock.Test(t)
+
+	t.Cleanup(func() { mock.AssertExpectations(t) })
+
+	return mock
+}
+
+// MockAiAgentSessionService is an autogenerated mock type for the AiAgentSessionService type
+type MockAiAgentSessionService struct {
+	mock.Mock
+}
+
+type MockAiAgentSessionService_Expecter struct {
+	mock *mock.Mock
+}
+
+func (_m *MockAiAgentSessionService) EXPECT() *MockAiAgentSessionService_Expecter {
+	return &MockAiAgentSessionService_Expecter{mock: &_m.Mock}
+}
+
+// AbortAgentTurn provides a mock function for the type MockAiAgentSessionService
+func (_mock *MockAiAgentSessionService) AbortAgentTurn(context1 context.Context, uUID uuid.UUID) (*ent.AgentTurn, error) {
 	ret := _mock.Called(context1, uUID)
 
 	if len(ret) == 0 {
@@ -4409,19 +4420,19 @@ func (_mock *MockAgentSessionService) AbortAgentTurn(context1 context.Context, u
 	return r0, r1
 }
 
-// MockAgentSessionService_AbortAgentTurn_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'AbortAgentTurn'
-type MockAgentSessionService_AbortAgentTurn_Call struct {
+// MockAiAgentSessionService_AbortAgentTurn_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'AbortAgentTurn'
+type MockAiAgentSessionService_AbortAgentTurn_Call struct {
 	*mock.Call
 }
 
 // AbortAgentTurn is a helper method to define mock.On call
 //   - context1 context.Context
 //   - uUID uuid.UUID
-func (_e *MockAgentSessionService_Expecter) AbortAgentTurn(context1 interface{}, uUID interface{}) *MockAgentSessionService_AbortAgentTurn_Call {
-	return &MockAgentSessionService_AbortAgentTurn_Call{Call: _e.mock.On("AbortAgentTurn", context1, uUID)}
+func (_e *MockAiAgentSessionService_Expecter) AbortAgentTurn(context1 interface{}, uUID interface{}) *MockAiAgentSessionService_AbortAgentTurn_Call {
+	return &MockAiAgentSessionService_AbortAgentTurn_Call{Call: _e.mock.On("AbortAgentTurn", context1, uUID)}
 }
 
-func (_c *MockAgentSessionService_AbortAgentTurn_Call) Run(run func(context1 context.Context, uUID uuid.UUID)) *MockAgentSessionService_AbortAgentTurn_Call {
+func (_c *MockAiAgentSessionService_AbortAgentTurn_Call) Run(run func(context1 context.Context, uUID uuid.UUID)) *MockAiAgentSessionService_AbortAgentTurn_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -4439,19 +4450,19 @@ func (_c *MockAgentSessionService_AbortAgentTurn_Call) Run(run func(context1 con
 	return _c
 }
 
-func (_c *MockAgentSessionService_AbortAgentTurn_Call) Return(agentTurn *ent.AgentTurn, err error) *MockAgentSessionService_AbortAgentTurn_Call {
+func (_c *MockAiAgentSessionService_AbortAgentTurn_Call) Return(agentTurn *ent.AgentTurn, err error) *MockAiAgentSessionService_AbortAgentTurn_Call {
 	_c.Call.Return(agentTurn, err)
 	return _c
 }
 
-func (_c *MockAgentSessionService_AbortAgentTurn_Call) RunAndReturn(run func(context1 context.Context, uUID uuid.UUID) (*ent.AgentTurn, error)) *MockAgentSessionService_AbortAgentTurn_Call {
+func (_c *MockAiAgentSessionService_AbortAgentTurn_Call) RunAndReturn(run func(context1 context.Context, uUID uuid.UUID) (*ent.AgentTurn, error)) *MockAiAgentSessionService_AbortAgentTurn_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
-// CreateAgentSession provides a mock function for the type MockAgentSessionService
-func (_mock *MockAgentSessionService) CreateAgentSession(context1 context.Context, createAgentSessionParams rez.CreateAgentSessionParams) (*ent.AgentSession, error) {
-	ret := _mock.Called(context1, createAgentSessionParams)
+// CreateAgentSession provides a mock function for the type MockAiAgentSessionService
+func (_mock *MockAiAgentSessionService) CreateAgentSession(context1 context.Context, createAiAgentSessionParams rez.CreateAiAgentSessionParams) (*ent.AgentSession, error) {
+	ret := _mock.Called(context1, createAiAgentSessionParams)
 
 	if len(ret) == 0 {
 		panic("no return value specified for CreateAgentSession")
@@ -4459,45 +4470,45 @@ func (_mock *MockAgentSessionService) CreateAgentSession(context1 context.Contex
 
 	var r0 *ent.AgentSession
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.CreateAgentSessionParams) (*ent.AgentSession, error)); ok {
-		return returnFunc(context1, createAgentSessionParams)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.CreateAiAgentSessionParams) (*ent.AgentSession, error)); ok {
+		return returnFunc(context1, createAiAgentSessionParams)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.CreateAgentSessionParams) *ent.AgentSession); ok {
-		r0 = returnFunc(context1, createAgentSessionParams)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.CreateAiAgentSessionParams) *ent.AgentSession); ok {
+		r0 = returnFunc(context1, createAiAgentSessionParams)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*ent.AgentSession)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, rez.CreateAgentSessionParams) error); ok {
-		r1 = returnFunc(context1, createAgentSessionParams)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, rez.CreateAiAgentSessionParams) error); ok {
+		r1 = returnFunc(context1, createAiAgentSessionParams)
 	} else {
 		r1 = ret.Error(1)
 	}
 	return r0, r1
 }
 
-// MockAgentSessionService_CreateAgentSession_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CreateAgentSession'
-type MockAgentSessionService_CreateAgentSession_Call struct {
+// MockAiAgentSessionService_CreateAgentSession_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CreateAgentSession'
+type MockAiAgentSessionService_CreateAgentSession_Call struct {
 	*mock.Call
 }
 
 // CreateAgentSession is a helper method to define mock.On call
 //   - context1 context.Context
-//   - createAgentSessionParams rez.CreateAgentSessionParams
-func (_e *MockAgentSessionService_Expecter) CreateAgentSession(context1 interface{}, createAgentSessionParams interface{}) *MockAgentSessionService_CreateAgentSession_Call {
-	return &MockAgentSessionService_CreateAgentSession_Call{Call: _e.mock.On("CreateAgentSession", context1, createAgentSessionParams)}
+//   - createAiAgentSessionParams rez.CreateAiAgentSessionParams
+func (_e *MockAiAgentSessionService_Expecter) CreateAgentSession(context1 interface{}, createAiAgentSessionParams interface{}) *MockAiAgentSessionService_CreateAgentSession_Call {
+	return &MockAiAgentSessionService_CreateAgentSession_Call{Call: _e.mock.On("CreateAgentSession", context1, createAiAgentSessionParams)}
 }
 
-func (_c *MockAgentSessionService_CreateAgentSession_Call) Run(run func(context1 context.Context, createAgentSessionParams rez.CreateAgentSessionParams)) *MockAgentSessionService_CreateAgentSession_Call {
+func (_c *MockAiAgentSessionService_CreateAgentSession_Call) Run(run func(context1 context.Context, createAiAgentSessionParams rez.CreateAiAgentSessionParams)) *MockAiAgentSessionService_CreateAgentSession_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 rez.CreateAgentSessionParams
+		var arg1 rez.CreateAiAgentSessionParams
 		if args[1] != nil {
-			arg1 = args[1].(rez.CreateAgentSessionParams)
+			arg1 = args[1].(rez.CreateAiAgentSessionParams)
 		}
 		run(
 			arg0,
@@ -4507,18 +4518,18 @@ func (_c *MockAgentSessionService_CreateAgentSession_Call) Run(run func(context1
 	return _c
 }
 
-func (_c *MockAgentSessionService_CreateAgentSession_Call) Return(agentSession *ent.AgentSession, err error) *MockAgentSessionService_CreateAgentSession_Call {
+func (_c *MockAiAgentSessionService_CreateAgentSession_Call) Return(agentSession *ent.AgentSession, err error) *MockAiAgentSessionService_CreateAgentSession_Call {
 	_c.Call.Return(agentSession, err)
 	return _c
 }
 
-func (_c *MockAgentSessionService_CreateAgentSession_Call) RunAndReturn(run func(context1 context.Context, createAgentSessionParams rez.CreateAgentSessionParams) (*ent.AgentSession, error)) *MockAgentSessionService_CreateAgentSession_Call {
+func (_c *MockAiAgentSessionService_CreateAgentSession_Call) RunAndReturn(run func(context1 context.Context, createAiAgentSessionParams rez.CreateAiAgentSessionParams) (*ent.AgentSession, error)) *MockAiAgentSessionService_CreateAgentSession_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
-// GetAgentSession provides a mock function for the type MockAgentSessionService
-func (_mock *MockAgentSessionService) GetAgentSession(context1 context.Context, uUID uuid.UUID) (*ent.AgentSession, error) {
+// GetAgentSession provides a mock function for the type MockAiAgentSessionService
+func (_mock *MockAiAgentSessionService) GetAgentSession(context1 context.Context, uUID uuid.UUID) (*ent.AgentSession, error) {
 	ret := _mock.Called(context1, uUID)
 
 	if len(ret) == 0 {
@@ -4545,19 +4556,19 @@ func (_mock *MockAgentSessionService) GetAgentSession(context1 context.Context, 
 	return r0, r1
 }
 
-// MockAgentSessionService_GetAgentSession_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetAgentSession'
-type MockAgentSessionService_GetAgentSession_Call struct {
+// MockAiAgentSessionService_GetAgentSession_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetAgentSession'
+type MockAiAgentSessionService_GetAgentSession_Call struct {
 	*mock.Call
 }
 
 // GetAgentSession is a helper method to define mock.On call
 //   - context1 context.Context
 //   - uUID uuid.UUID
-func (_e *MockAgentSessionService_Expecter) GetAgentSession(context1 interface{}, uUID interface{}) *MockAgentSessionService_GetAgentSession_Call {
-	return &MockAgentSessionService_GetAgentSession_Call{Call: _e.mock.On("GetAgentSession", context1, uUID)}
+func (_e *MockAiAgentSessionService_Expecter) GetAgentSession(context1 interface{}, uUID interface{}) *MockAiAgentSessionService_GetAgentSession_Call {
+	return &MockAiAgentSessionService_GetAgentSession_Call{Call: _e.mock.On("GetAgentSession", context1, uUID)}
 }
 
-func (_c *MockAgentSessionService_GetAgentSession_Call) Run(run func(context1 context.Context, uUID uuid.UUID)) *MockAgentSessionService_GetAgentSession_Call {
+func (_c *MockAiAgentSessionService_GetAgentSession_Call) Run(run func(context1 context.Context, uUID uuid.UUID)) *MockAiAgentSessionService_GetAgentSession_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -4575,18 +4586,18 @@ func (_c *MockAgentSessionService_GetAgentSession_Call) Run(run func(context1 co
 	return _c
 }
 
-func (_c *MockAgentSessionService_GetAgentSession_Call) Return(agentSession *ent.AgentSession, err error) *MockAgentSessionService_GetAgentSession_Call {
+func (_c *MockAiAgentSessionService_GetAgentSession_Call) Return(agentSession *ent.AgentSession, err error) *MockAiAgentSessionService_GetAgentSession_Call {
 	_c.Call.Return(agentSession, err)
 	return _c
 }
 
-func (_c *MockAgentSessionService_GetAgentSession_Call) RunAndReturn(run func(context1 context.Context, uUID uuid.UUID) (*ent.AgentSession, error)) *MockAgentSessionService_GetAgentSession_Call {
+func (_c *MockAiAgentSessionService_GetAgentSession_Call) RunAndReturn(run func(context1 context.Context, uUID uuid.UUID) (*ent.AgentSession, error)) *MockAiAgentSessionService_GetAgentSession_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
-// GetAgentTurn provides a mock function for the type MockAgentSessionService
-func (_mock *MockAgentSessionService) GetAgentTurn(context1 context.Context, uUID uuid.UUID) (*ent.AgentTurn, error) {
+// GetAgentTurn provides a mock function for the type MockAiAgentSessionService
+func (_mock *MockAiAgentSessionService) GetAgentTurn(context1 context.Context, uUID uuid.UUID) (*ent.AgentTurn, error) {
 	ret := _mock.Called(context1, uUID)
 
 	if len(ret) == 0 {
@@ -4613,19 +4624,19 @@ func (_mock *MockAgentSessionService) GetAgentTurn(context1 context.Context, uUI
 	return r0, r1
 }
 
-// MockAgentSessionService_GetAgentTurn_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetAgentTurn'
-type MockAgentSessionService_GetAgentTurn_Call struct {
+// MockAiAgentSessionService_GetAgentTurn_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetAgentTurn'
+type MockAiAgentSessionService_GetAgentTurn_Call struct {
 	*mock.Call
 }
 
 // GetAgentTurn is a helper method to define mock.On call
 //   - context1 context.Context
 //   - uUID uuid.UUID
-func (_e *MockAgentSessionService_Expecter) GetAgentTurn(context1 interface{}, uUID interface{}) *MockAgentSessionService_GetAgentTurn_Call {
-	return &MockAgentSessionService_GetAgentTurn_Call{Call: _e.mock.On("GetAgentTurn", context1, uUID)}
+func (_e *MockAiAgentSessionService_Expecter) GetAgentTurn(context1 interface{}, uUID interface{}) *MockAiAgentSessionService_GetAgentTurn_Call {
+	return &MockAiAgentSessionService_GetAgentTurn_Call{Call: _e.mock.On("GetAgentTurn", context1, uUID)}
 }
 
-func (_c *MockAgentSessionService_GetAgentTurn_Call) Run(run func(context1 context.Context, uUID uuid.UUID)) *MockAgentSessionService_GetAgentTurn_Call {
+func (_c *MockAiAgentSessionService_GetAgentTurn_Call) Run(run func(context1 context.Context, uUID uuid.UUID)) *MockAiAgentSessionService_GetAgentTurn_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -4643,19 +4654,19 @@ func (_c *MockAgentSessionService_GetAgentTurn_Call) Run(run func(context1 conte
 	return _c
 }
 
-func (_c *MockAgentSessionService_GetAgentTurn_Call) Return(agentTurn *ent.AgentTurn, err error) *MockAgentSessionService_GetAgentTurn_Call {
+func (_c *MockAiAgentSessionService_GetAgentTurn_Call) Return(agentTurn *ent.AgentTurn, err error) *MockAiAgentSessionService_GetAgentTurn_Call {
 	_c.Call.Return(agentTurn, err)
 	return _c
 }
 
-func (_c *MockAgentSessionService_GetAgentTurn_Call) RunAndReturn(run func(context1 context.Context, uUID uuid.UUID) (*ent.AgentTurn, error)) *MockAgentSessionService_GetAgentTurn_Call {
+func (_c *MockAiAgentSessionService_GetAgentTurn_Call) RunAndReturn(run func(context1 context.Context, uUID uuid.UUID) (*ent.AgentTurn, error)) *MockAiAgentSessionService_GetAgentTurn_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
-// ListAgentArtifacts provides a mock function for the type MockAgentSessionService
-func (_mock *MockAgentSessionService) ListAgentArtifacts(context1 context.Context, listAgentArtifactsParams rez.ListAgentArtifactsParams) (*ent.ListResult[ent.AgentArtifact], error) {
-	ret := _mock.Called(context1, listAgentArtifactsParams)
+// ListAgentArtifacts provides a mock function for the type MockAiAgentSessionService
+func (_mock *MockAiAgentSessionService) ListAgentArtifacts(context1 context.Context, listAiAgentArtifactsParams rez.ListAiAgentArtifactsParams) (*ent.ListResult[ent.AgentArtifact], error) {
+	ret := _mock.Called(context1, listAiAgentArtifactsParams)
 
 	if len(ret) == 0 {
 		panic("no return value specified for ListAgentArtifacts")
@@ -4663,45 +4674,45 @@ func (_mock *MockAgentSessionService) ListAgentArtifacts(context1 context.Contex
 
 	var r0 *ent.ListResult[ent.AgentArtifact]
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.ListAgentArtifactsParams) (*ent.ListResult[ent.AgentArtifact], error)); ok {
-		return returnFunc(context1, listAgentArtifactsParams)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.ListAiAgentArtifactsParams) (*ent.ListResult[ent.AgentArtifact], error)); ok {
+		return returnFunc(context1, listAiAgentArtifactsParams)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.ListAgentArtifactsParams) *ent.ListResult[ent.AgentArtifact]); ok {
-		r0 = returnFunc(context1, listAgentArtifactsParams)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.ListAiAgentArtifactsParams) *ent.ListResult[ent.AgentArtifact]); ok {
+		r0 = returnFunc(context1, listAiAgentArtifactsParams)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*ent.ListResult[ent.AgentArtifact])
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, rez.ListAgentArtifactsParams) error); ok {
-		r1 = returnFunc(context1, listAgentArtifactsParams)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, rez.ListAiAgentArtifactsParams) error); ok {
+		r1 = returnFunc(context1, listAiAgentArtifactsParams)
 	} else {
 		r1 = ret.Error(1)
 	}
 	return r0, r1
 }
 
-// MockAgentSessionService_ListAgentArtifacts_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ListAgentArtifacts'
-type MockAgentSessionService_ListAgentArtifacts_Call struct {
+// MockAiAgentSessionService_ListAgentArtifacts_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ListAgentArtifacts'
+type MockAiAgentSessionService_ListAgentArtifacts_Call struct {
 	*mock.Call
 }
 
 // ListAgentArtifacts is a helper method to define mock.On call
 //   - context1 context.Context
-//   - listAgentArtifactsParams rez.ListAgentArtifactsParams
-func (_e *MockAgentSessionService_Expecter) ListAgentArtifacts(context1 interface{}, listAgentArtifactsParams interface{}) *MockAgentSessionService_ListAgentArtifacts_Call {
-	return &MockAgentSessionService_ListAgentArtifacts_Call{Call: _e.mock.On("ListAgentArtifacts", context1, listAgentArtifactsParams)}
+//   - listAiAgentArtifactsParams rez.ListAiAgentArtifactsParams
+func (_e *MockAiAgentSessionService_Expecter) ListAgentArtifacts(context1 interface{}, listAiAgentArtifactsParams interface{}) *MockAiAgentSessionService_ListAgentArtifacts_Call {
+	return &MockAiAgentSessionService_ListAgentArtifacts_Call{Call: _e.mock.On("ListAgentArtifacts", context1, listAiAgentArtifactsParams)}
 }
 
-func (_c *MockAgentSessionService_ListAgentArtifacts_Call) Run(run func(context1 context.Context, listAgentArtifactsParams rez.ListAgentArtifactsParams)) *MockAgentSessionService_ListAgentArtifacts_Call {
+func (_c *MockAiAgentSessionService_ListAgentArtifacts_Call) Run(run func(context1 context.Context, listAiAgentArtifactsParams rez.ListAiAgentArtifactsParams)) *MockAiAgentSessionService_ListAgentArtifacts_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 rez.ListAgentArtifactsParams
+		var arg1 rez.ListAiAgentArtifactsParams
 		if args[1] != nil {
-			arg1 = args[1].(rez.ListAgentArtifactsParams)
+			arg1 = args[1].(rez.ListAiAgentArtifactsParams)
 		}
 		run(
 			arg0,
@@ -4711,19 +4722,19 @@ func (_c *MockAgentSessionService_ListAgentArtifacts_Call) Run(run func(context1
 	return _c
 }
 
-func (_c *MockAgentSessionService_ListAgentArtifacts_Call) Return(listResult *ent.ListResult[ent.AgentArtifact], err error) *MockAgentSessionService_ListAgentArtifacts_Call {
+func (_c *MockAiAgentSessionService_ListAgentArtifacts_Call) Return(listResult *ent.ListResult[ent.AgentArtifact], err error) *MockAiAgentSessionService_ListAgentArtifacts_Call {
 	_c.Call.Return(listResult, err)
 	return _c
 }
 
-func (_c *MockAgentSessionService_ListAgentArtifacts_Call) RunAndReturn(run func(context1 context.Context, listAgentArtifactsParams rez.ListAgentArtifactsParams) (*ent.ListResult[ent.AgentArtifact], error)) *MockAgentSessionService_ListAgentArtifacts_Call {
+func (_c *MockAiAgentSessionService_ListAgentArtifacts_Call) RunAndReturn(run func(context1 context.Context, listAiAgentArtifactsParams rez.ListAiAgentArtifactsParams) (*ent.ListResult[ent.AgentArtifact], error)) *MockAiAgentSessionService_ListAgentArtifacts_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
-// ListAgentMessages provides a mock function for the type MockAgentSessionService
-func (_mock *MockAgentSessionService) ListAgentMessages(context1 context.Context, listAgentMessagesParams rez.ListAgentMessagesParams) (*ent.ListResult[ent.AgentMessage], error) {
-	ret := _mock.Called(context1, listAgentMessagesParams)
+// ListAgentMessages provides a mock function for the type MockAiAgentSessionService
+func (_mock *MockAiAgentSessionService) ListAgentMessages(context1 context.Context, listAiAgentMessagesParams rez.ListAiAgentMessagesParams) (*ent.ListResult[ent.AgentMessage], error) {
+	ret := _mock.Called(context1, listAiAgentMessagesParams)
 
 	if len(ret) == 0 {
 		panic("no return value specified for ListAgentMessages")
@@ -4731,45 +4742,45 @@ func (_mock *MockAgentSessionService) ListAgentMessages(context1 context.Context
 
 	var r0 *ent.ListResult[ent.AgentMessage]
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.ListAgentMessagesParams) (*ent.ListResult[ent.AgentMessage], error)); ok {
-		return returnFunc(context1, listAgentMessagesParams)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.ListAiAgentMessagesParams) (*ent.ListResult[ent.AgentMessage], error)); ok {
+		return returnFunc(context1, listAiAgentMessagesParams)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.ListAgentMessagesParams) *ent.ListResult[ent.AgentMessage]); ok {
-		r0 = returnFunc(context1, listAgentMessagesParams)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.ListAiAgentMessagesParams) *ent.ListResult[ent.AgentMessage]); ok {
+		r0 = returnFunc(context1, listAiAgentMessagesParams)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*ent.ListResult[ent.AgentMessage])
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, rez.ListAgentMessagesParams) error); ok {
-		r1 = returnFunc(context1, listAgentMessagesParams)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, rez.ListAiAgentMessagesParams) error); ok {
+		r1 = returnFunc(context1, listAiAgentMessagesParams)
 	} else {
 		r1 = ret.Error(1)
 	}
 	return r0, r1
 }
 
-// MockAgentSessionService_ListAgentMessages_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ListAgentMessages'
-type MockAgentSessionService_ListAgentMessages_Call struct {
+// MockAiAgentSessionService_ListAgentMessages_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ListAgentMessages'
+type MockAiAgentSessionService_ListAgentMessages_Call struct {
 	*mock.Call
 }
 
 // ListAgentMessages is a helper method to define mock.On call
 //   - context1 context.Context
-//   - listAgentMessagesParams rez.ListAgentMessagesParams
-func (_e *MockAgentSessionService_Expecter) ListAgentMessages(context1 interface{}, listAgentMessagesParams interface{}) *MockAgentSessionService_ListAgentMessages_Call {
-	return &MockAgentSessionService_ListAgentMessages_Call{Call: _e.mock.On("ListAgentMessages", context1, listAgentMessagesParams)}
+//   - listAiAgentMessagesParams rez.ListAiAgentMessagesParams
+func (_e *MockAiAgentSessionService_Expecter) ListAgentMessages(context1 interface{}, listAiAgentMessagesParams interface{}) *MockAiAgentSessionService_ListAgentMessages_Call {
+	return &MockAiAgentSessionService_ListAgentMessages_Call{Call: _e.mock.On("ListAgentMessages", context1, listAiAgentMessagesParams)}
 }
 
-func (_c *MockAgentSessionService_ListAgentMessages_Call) Run(run func(context1 context.Context, listAgentMessagesParams rez.ListAgentMessagesParams)) *MockAgentSessionService_ListAgentMessages_Call {
+func (_c *MockAiAgentSessionService_ListAgentMessages_Call) Run(run func(context1 context.Context, listAiAgentMessagesParams rez.ListAiAgentMessagesParams)) *MockAiAgentSessionService_ListAgentMessages_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 rez.ListAgentMessagesParams
+		var arg1 rez.ListAiAgentMessagesParams
 		if args[1] != nil {
-			arg1 = args[1].(rez.ListAgentMessagesParams)
+			arg1 = args[1].(rez.ListAiAgentMessagesParams)
 		}
 		run(
 			arg0,
@@ -4779,19 +4790,19 @@ func (_c *MockAgentSessionService_ListAgentMessages_Call) Run(run func(context1 
 	return _c
 }
 
-func (_c *MockAgentSessionService_ListAgentMessages_Call) Return(listResult *ent.ListResult[ent.AgentMessage], err error) *MockAgentSessionService_ListAgentMessages_Call {
+func (_c *MockAiAgentSessionService_ListAgentMessages_Call) Return(listResult *ent.ListResult[ent.AgentMessage], err error) *MockAiAgentSessionService_ListAgentMessages_Call {
 	_c.Call.Return(listResult, err)
 	return _c
 }
 
-func (_c *MockAgentSessionService_ListAgentMessages_Call) RunAndReturn(run func(context1 context.Context, listAgentMessagesParams rez.ListAgentMessagesParams) (*ent.ListResult[ent.AgentMessage], error)) *MockAgentSessionService_ListAgentMessages_Call {
+func (_c *MockAiAgentSessionService_ListAgentMessages_Call) RunAndReturn(run func(context1 context.Context, listAiAgentMessagesParams rez.ListAiAgentMessagesParams) (*ent.ListResult[ent.AgentMessage], error)) *MockAiAgentSessionService_ListAgentMessages_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
-// ListAgentSessionBindings provides a mock function for the type MockAgentSessionService
-func (_mock *MockAgentSessionService) ListAgentSessionBindings(context1 context.Context, listAgentSessionBindingsParams rez.ListAgentSessionBindingsParams) (ent.AgentSessionBindings, error) {
-	ret := _mock.Called(context1, listAgentSessionBindingsParams)
+// ListAgentSessionBindings provides a mock function for the type MockAiAgentSessionService
+func (_mock *MockAiAgentSessionService) ListAgentSessionBindings(context1 context.Context, listAiAgentSessionBindingsParams rez.ListAiAgentSessionBindingsParams) (ent.AgentSessionBindings, error) {
+	ret := _mock.Called(context1, listAiAgentSessionBindingsParams)
 
 	if len(ret) == 0 {
 		panic("no return value specified for ListAgentSessionBindings")
@@ -4799,45 +4810,45 @@ func (_mock *MockAgentSessionService) ListAgentSessionBindings(context1 context.
 
 	var r0 ent.AgentSessionBindings
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.ListAgentSessionBindingsParams) (ent.AgentSessionBindings, error)); ok {
-		return returnFunc(context1, listAgentSessionBindingsParams)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.ListAiAgentSessionBindingsParams) (ent.AgentSessionBindings, error)); ok {
+		return returnFunc(context1, listAiAgentSessionBindingsParams)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.ListAgentSessionBindingsParams) ent.AgentSessionBindings); ok {
-		r0 = returnFunc(context1, listAgentSessionBindingsParams)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.ListAiAgentSessionBindingsParams) ent.AgentSessionBindings); ok {
+		r0 = returnFunc(context1, listAiAgentSessionBindingsParams)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(ent.AgentSessionBindings)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, rez.ListAgentSessionBindingsParams) error); ok {
-		r1 = returnFunc(context1, listAgentSessionBindingsParams)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, rez.ListAiAgentSessionBindingsParams) error); ok {
+		r1 = returnFunc(context1, listAiAgentSessionBindingsParams)
 	} else {
 		r1 = ret.Error(1)
 	}
 	return r0, r1
 }
 
-// MockAgentSessionService_ListAgentSessionBindings_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ListAgentSessionBindings'
-type MockAgentSessionService_ListAgentSessionBindings_Call struct {
+// MockAiAgentSessionService_ListAgentSessionBindings_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ListAgentSessionBindings'
+type MockAiAgentSessionService_ListAgentSessionBindings_Call struct {
 	*mock.Call
 }
 
 // ListAgentSessionBindings is a helper method to define mock.On call
 //   - context1 context.Context
-//   - listAgentSessionBindingsParams rez.ListAgentSessionBindingsParams
-func (_e *MockAgentSessionService_Expecter) ListAgentSessionBindings(context1 interface{}, listAgentSessionBindingsParams interface{}) *MockAgentSessionService_ListAgentSessionBindings_Call {
-	return &MockAgentSessionService_ListAgentSessionBindings_Call{Call: _e.mock.On("ListAgentSessionBindings", context1, listAgentSessionBindingsParams)}
+//   - listAiAgentSessionBindingsParams rez.ListAiAgentSessionBindingsParams
+func (_e *MockAiAgentSessionService_Expecter) ListAgentSessionBindings(context1 interface{}, listAiAgentSessionBindingsParams interface{}) *MockAiAgentSessionService_ListAgentSessionBindings_Call {
+	return &MockAiAgentSessionService_ListAgentSessionBindings_Call{Call: _e.mock.On("ListAgentSessionBindings", context1, listAiAgentSessionBindingsParams)}
 }
 
-func (_c *MockAgentSessionService_ListAgentSessionBindings_Call) Run(run func(context1 context.Context, listAgentSessionBindingsParams rez.ListAgentSessionBindingsParams)) *MockAgentSessionService_ListAgentSessionBindings_Call {
+func (_c *MockAiAgentSessionService_ListAgentSessionBindings_Call) Run(run func(context1 context.Context, listAiAgentSessionBindingsParams rez.ListAiAgentSessionBindingsParams)) *MockAiAgentSessionService_ListAgentSessionBindings_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 rez.ListAgentSessionBindingsParams
+		var arg1 rez.ListAiAgentSessionBindingsParams
 		if args[1] != nil {
-			arg1 = args[1].(rez.ListAgentSessionBindingsParams)
+			arg1 = args[1].(rez.ListAiAgentSessionBindingsParams)
 		}
 		run(
 			arg0,
@@ -4847,19 +4858,19 @@ func (_c *MockAgentSessionService_ListAgentSessionBindings_Call) Run(run func(co
 	return _c
 }
 
-func (_c *MockAgentSessionService_ListAgentSessionBindings_Call) Return(agentSessionBindings ent.AgentSessionBindings, err error) *MockAgentSessionService_ListAgentSessionBindings_Call {
+func (_c *MockAiAgentSessionService_ListAgentSessionBindings_Call) Return(agentSessionBindings ent.AgentSessionBindings, err error) *MockAiAgentSessionService_ListAgentSessionBindings_Call {
 	_c.Call.Return(agentSessionBindings, err)
 	return _c
 }
 
-func (_c *MockAgentSessionService_ListAgentSessionBindings_Call) RunAndReturn(run func(context1 context.Context, listAgentSessionBindingsParams rez.ListAgentSessionBindingsParams) (ent.AgentSessionBindings, error)) *MockAgentSessionService_ListAgentSessionBindings_Call {
+func (_c *MockAiAgentSessionService_ListAgentSessionBindings_Call) RunAndReturn(run func(context1 context.Context, listAiAgentSessionBindingsParams rez.ListAiAgentSessionBindingsParams) (ent.AgentSessionBindings, error)) *MockAiAgentSessionService_ListAgentSessionBindings_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
-// ListAgentSessions provides a mock function for the type MockAgentSessionService
-func (_mock *MockAgentSessionService) ListAgentSessions(context1 context.Context, listAgentSessionsParams rez.ListAgentSessionsParams) (*ent.ListResult[ent.AgentSession], error) {
-	ret := _mock.Called(context1, listAgentSessionsParams)
+// ListAgentSessions provides a mock function for the type MockAiAgentSessionService
+func (_mock *MockAiAgentSessionService) ListAgentSessions(context1 context.Context, listAiAgentSessionsParams rez.ListAiAgentSessionsParams) (*ent.ListResult[ent.AgentSession], error) {
+	ret := _mock.Called(context1, listAiAgentSessionsParams)
 
 	if len(ret) == 0 {
 		panic("no return value specified for ListAgentSessions")
@@ -4867,45 +4878,45 @@ func (_mock *MockAgentSessionService) ListAgentSessions(context1 context.Context
 
 	var r0 *ent.ListResult[ent.AgentSession]
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.ListAgentSessionsParams) (*ent.ListResult[ent.AgentSession], error)); ok {
-		return returnFunc(context1, listAgentSessionsParams)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.ListAiAgentSessionsParams) (*ent.ListResult[ent.AgentSession], error)); ok {
+		return returnFunc(context1, listAiAgentSessionsParams)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.ListAgentSessionsParams) *ent.ListResult[ent.AgentSession]); ok {
-		r0 = returnFunc(context1, listAgentSessionsParams)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.ListAiAgentSessionsParams) *ent.ListResult[ent.AgentSession]); ok {
+		r0 = returnFunc(context1, listAiAgentSessionsParams)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*ent.ListResult[ent.AgentSession])
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, rez.ListAgentSessionsParams) error); ok {
-		r1 = returnFunc(context1, listAgentSessionsParams)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, rez.ListAiAgentSessionsParams) error); ok {
+		r1 = returnFunc(context1, listAiAgentSessionsParams)
 	} else {
 		r1 = ret.Error(1)
 	}
 	return r0, r1
 }
 
-// MockAgentSessionService_ListAgentSessions_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ListAgentSessions'
-type MockAgentSessionService_ListAgentSessions_Call struct {
+// MockAiAgentSessionService_ListAgentSessions_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ListAgentSessions'
+type MockAiAgentSessionService_ListAgentSessions_Call struct {
 	*mock.Call
 }
 
 // ListAgentSessions is a helper method to define mock.On call
 //   - context1 context.Context
-//   - listAgentSessionsParams rez.ListAgentSessionsParams
-func (_e *MockAgentSessionService_Expecter) ListAgentSessions(context1 interface{}, listAgentSessionsParams interface{}) *MockAgentSessionService_ListAgentSessions_Call {
-	return &MockAgentSessionService_ListAgentSessions_Call{Call: _e.mock.On("ListAgentSessions", context1, listAgentSessionsParams)}
+//   - listAiAgentSessionsParams rez.ListAiAgentSessionsParams
+func (_e *MockAiAgentSessionService_Expecter) ListAgentSessions(context1 interface{}, listAiAgentSessionsParams interface{}) *MockAiAgentSessionService_ListAgentSessions_Call {
+	return &MockAiAgentSessionService_ListAgentSessions_Call{Call: _e.mock.On("ListAgentSessions", context1, listAiAgentSessionsParams)}
 }
 
-func (_c *MockAgentSessionService_ListAgentSessions_Call) Run(run func(context1 context.Context, listAgentSessionsParams rez.ListAgentSessionsParams)) *MockAgentSessionService_ListAgentSessions_Call {
+func (_c *MockAiAgentSessionService_ListAgentSessions_Call) Run(run func(context1 context.Context, listAiAgentSessionsParams rez.ListAiAgentSessionsParams)) *MockAiAgentSessionService_ListAgentSessions_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 rez.ListAgentSessionsParams
+		var arg1 rez.ListAiAgentSessionsParams
 		if args[1] != nil {
-			arg1 = args[1].(rez.ListAgentSessionsParams)
+			arg1 = args[1].(rez.ListAiAgentSessionsParams)
 		}
 		run(
 			arg0,
@@ -4915,19 +4926,19 @@ func (_c *MockAgentSessionService_ListAgentSessions_Call) Run(run func(context1 
 	return _c
 }
 
-func (_c *MockAgentSessionService_ListAgentSessions_Call) Return(listResult *ent.ListResult[ent.AgentSession], err error) *MockAgentSessionService_ListAgentSessions_Call {
+func (_c *MockAiAgentSessionService_ListAgentSessions_Call) Return(listResult *ent.ListResult[ent.AgentSession], err error) *MockAiAgentSessionService_ListAgentSessions_Call {
 	_c.Call.Return(listResult, err)
 	return _c
 }
 
-func (_c *MockAgentSessionService_ListAgentSessions_Call) RunAndReturn(run func(context1 context.Context, listAgentSessionsParams rez.ListAgentSessionsParams) (*ent.ListResult[ent.AgentSession], error)) *MockAgentSessionService_ListAgentSessions_Call {
+func (_c *MockAiAgentSessionService_ListAgentSessions_Call) RunAndReturn(run func(context1 context.Context, listAiAgentSessionsParams rez.ListAiAgentSessionsParams) (*ent.ListResult[ent.AgentSession], error)) *MockAiAgentSessionService_ListAgentSessions_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
-// ListAgentTurns provides a mock function for the type MockAgentSessionService
-func (_mock *MockAgentSessionService) ListAgentTurns(context1 context.Context, listAgentTurnsParams rez.ListAgentTurnsParams) (*ent.ListResult[ent.AgentTurn], error) {
-	ret := _mock.Called(context1, listAgentTurnsParams)
+// ListAgentTurns provides a mock function for the type MockAiAgentSessionService
+func (_mock *MockAiAgentSessionService) ListAgentTurns(context1 context.Context, listAiAgentTurnsParams rez.ListAiAgentTurnsParams) (*ent.ListResult[ent.AgentTurn], error) {
+	ret := _mock.Called(context1, listAiAgentTurnsParams)
 
 	if len(ret) == 0 {
 		panic("no return value specified for ListAgentTurns")
@@ -4935,45 +4946,45 @@ func (_mock *MockAgentSessionService) ListAgentTurns(context1 context.Context, l
 
 	var r0 *ent.ListResult[ent.AgentTurn]
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.ListAgentTurnsParams) (*ent.ListResult[ent.AgentTurn], error)); ok {
-		return returnFunc(context1, listAgentTurnsParams)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.ListAiAgentTurnsParams) (*ent.ListResult[ent.AgentTurn], error)); ok {
+		return returnFunc(context1, listAiAgentTurnsParams)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.ListAgentTurnsParams) *ent.ListResult[ent.AgentTurn]); ok {
-		r0 = returnFunc(context1, listAgentTurnsParams)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.ListAiAgentTurnsParams) *ent.ListResult[ent.AgentTurn]); ok {
+		r0 = returnFunc(context1, listAiAgentTurnsParams)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*ent.ListResult[ent.AgentTurn])
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, rez.ListAgentTurnsParams) error); ok {
-		r1 = returnFunc(context1, listAgentTurnsParams)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, rez.ListAiAgentTurnsParams) error); ok {
+		r1 = returnFunc(context1, listAiAgentTurnsParams)
 	} else {
 		r1 = ret.Error(1)
 	}
 	return r0, r1
 }
 
-// MockAgentSessionService_ListAgentTurns_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ListAgentTurns'
-type MockAgentSessionService_ListAgentTurns_Call struct {
+// MockAiAgentSessionService_ListAgentTurns_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ListAgentTurns'
+type MockAiAgentSessionService_ListAgentTurns_Call struct {
 	*mock.Call
 }
 
 // ListAgentTurns is a helper method to define mock.On call
 //   - context1 context.Context
-//   - listAgentTurnsParams rez.ListAgentTurnsParams
-func (_e *MockAgentSessionService_Expecter) ListAgentTurns(context1 interface{}, listAgentTurnsParams interface{}) *MockAgentSessionService_ListAgentTurns_Call {
-	return &MockAgentSessionService_ListAgentTurns_Call{Call: _e.mock.On("ListAgentTurns", context1, listAgentTurnsParams)}
+//   - listAiAgentTurnsParams rez.ListAiAgentTurnsParams
+func (_e *MockAiAgentSessionService_Expecter) ListAgentTurns(context1 interface{}, listAiAgentTurnsParams interface{}) *MockAiAgentSessionService_ListAgentTurns_Call {
+	return &MockAiAgentSessionService_ListAgentTurns_Call{Call: _e.mock.On("ListAgentTurns", context1, listAiAgentTurnsParams)}
 }
 
-func (_c *MockAgentSessionService_ListAgentTurns_Call) Run(run func(context1 context.Context, listAgentTurnsParams rez.ListAgentTurnsParams)) *MockAgentSessionService_ListAgentTurns_Call {
+func (_c *MockAiAgentSessionService_ListAgentTurns_Call) Run(run func(context1 context.Context, listAiAgentTurnsParams rez.ListAiAgentTurnsParams)) *MockAiAgentSessionService_ListAgentTurns_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 rez.ListAgentTurnsParams
+		var arg1 rez.ListAiAgentTurnsParams
 		if args[1] != nil {
-			arg1 = args[1].(rez.ListAgentTurnsParams)
+			arg1 = args[1].(rez.ListAiAgentTurnsParams)
 		}
 		run(
 			arg0,
@@ -4983,18 +4994,18 @@ func (_c *MockAgentSessionService_ListAgentTurns_Call) Run(run func(context1 con
 	return _c
 }
 
-func (_c *MockAgentSessionService_ListAgentTurns_Call) Return(listResult *ent.ListResult[ent.AgentTurn], err error) *MockAgentSessionService_ListAgentTurns_Call {
+func (_c *MockAiAgentSessionService_ListAgentTurns_Call) Return(listResult *ent.ListResult[ent.AgentTurn], err error) *MockAiAgentSessionService_ListAgentTurns_Call {
 	_c.Call.Return(listResult, err)
 	return _c
 }
 
-func (_c *MockAgentSessionService_ListAgentTurns_Call) RunAndReturn(run func(context1 context.Context, listAgentTurnsParams rez.ListAgentTurnsParams) (*ent.ListResult[ent.AgentTurn], error)) *MockAgentSessionService_ListAgentTurns_Call {
+func (_c *MockAiAgentSessionService_ListAgentTurns_Call) RunAndReturn(run func(context1 context.Context, listAiAgentTurnsParams rez.ListAiAgentTurnsParams) (*ent.ListResult[ent.AgentTurn], error)) *MockAiAgentSessionService_ListAgentTurns_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
-// LookupAgentSessionBinding provides a mock function for the type MockAgentSessionService
-func (_mock *MockAgentSessionService) LookupAgentSessionBinding(context1 context.Context, agentSessionBindings ...predicate.AgentSessionBinding) (*ent.AgentSessionBinding, error) {
+// LookupAgentSessionBinding provides a mock function for the type MockAiAgentSessionService
+func (_mock *MockAiAgentSessionService) LookupAgentSessionBinding(context1 context.Context, agentSessionBindings ...predicate.AgentSessionBinding) (*ent.AgentSessionBinding, error) {
 	// predicate.AgentSessionBinding
 	_va := make([]interface{}, len(agentSessionBindings))
 	for _i := range agentSessionBindings {
@@ -5029,20 +5040,20 @@ func (_mock *MockAgentSessionService) LookupAgentSessionBinding(context1 context
 	return r0, r1
 }
 
-// MockAgentSessionService_LookupAgentSessionBinding_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'LookupAgentSessionBinding'
-type MockAgentSessionService_LookupAgentSessionBinding_Call struct {
+// MockAiAgentSessionService_LookupAgentSessionBinding_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'LookupAgentSessionBinding'
+type MockAiAgentSessionService_LookupAgentSessionBinding_Call struct {
 	*mock.Call
 }
 
 // LookupAgentSessionBinding is a helper method to define mock.On call
 //   - context1 context.Context
 //   - agentSessionBindings ...predicate.AgentSessionBinding
-func (_e *MockAgentSessionService_Expecter) LookupAgentSessionBinding(context1 interface{}, agentSessionBindings ...interface{}) *MockAgentSessionService_LookupAgentSessionBinding_Call {
-	return &MockAgentSessionService_LookupAgentSessionBinding_Call{Call: _e.mock.On("LookupAgentSessionBinding",
+func (_e *MockAiAgentSessionService_Expecter) LookupAgentSessionBinding(context1 interface{}, agentSessionBindings ...interface{}) *MockAiAgentSessionService_LookupAgentSessionBinding_Call {
+	return &MockAiAgentSessionService_LookupAgentSessionBinding_Call{Call: _e.mock.On("LookupAgentSessionBinding",
 		append([]interface{}{context1}, agentSessionBindings...)...)}
 }
 
-func (_c *MockAgentSessionService_LookupAgentSessionBinding_Call) Run(run func(context1 context.Context, agentSessionBindings ...predicate.AgentSessionBinding)) *MockAgentSessionService_LookupAgentSessionBinding_Call {
+func (_c *MockAiAgentSessionService_LookupAgentSessionBinding_Call) Run(run func(context1 context.Context, agentSessionBindings ...predicate.AgentSessionBinding)) *MockAiAgentSessionService_LookupAgentSessionBinding_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -5064,19 +5075,19 @@ func (_c *MockAgentSessionService_LookupAgentSessionBinding_Call) Run(run func(c
 	return _c
 }
 
-func (_c *MockAgentSessionService_LookupAgentSessionBinding_Call) Return(agentSessionBinding *ent.AgentSessionBinding, err error) *MockAgentSessionService_LookupAgentSessionBinding_Call {
+func (_c *MockAiAgentSessionService_LookupAgentSessionBinding_Call) Return(agentSessionBinding *ent.AgentSessionBinding, err error) *MockAiAgentSessionService_LookupAgentSessionBinding_Call {
 	_c.Call.Return(agentSessionBinding, err)
 	return _c
 }
 
-func (_c *MockAgentSessionService_LookupAgentSessionBinding_Call) RunAndReturn(run func(context1 context.Context, agentSessionBindings ...predicate.AgentSessionBinding) (*ent.AgentSessionBinding, error)) *MockAgentSessionService_LookupAgentSessionBinding_Call {
+func (_c *MockAiAgentSessionService_LookupAgentSessionBinding_Call) RunAndReturn(run func(context1 context.Context, agentSessionBindings ...predicate.AgentSessionBinding) (*ent.AgentSessionBinding, error)) *MockAiAgentSessionService_LookupAgentSessionBinding_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
-// RequestAgentTurn provides a mock function for the type MockAgentSessionService
-func (_mock *MockAgentSessionService) RequestAgentTurn(context1 context.Context, uUID uuid.UUID, requestAgentTurnParams *rez.RequestAgentTurnParams) (*ent.AgentTurn, error) {
-	ret := _mock.Called(context1, uUID, requestAgentTurnParams)
+// RequestAgentTurn provides a mock function for the type MockAiAgentSessionService
+func (_mock *MockAiAgentSessionService) RequestAgentTurn(context1 context.Context, uUID uuid.UUID, requestAiAgentTurnParams *rez.RequestAiAgentTurnParams) (*ent.AgentTurn, error) {
+	ret := _mock.Called(context1, uUID, requestAiAgentTurnParams)
 
 	if len(ret) == 0 {
 		panic("no return value specified for RequestAgentTurn")
@@ -5084,38 +5095,38 @@ func (_mock *MockAgentSessionService) RequestAgentTurn(context1 context.Context,
 
 	var r0 *ent.AgentTurn
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, *rez.RequestAgentTurnParams) (*ent.AgentTurn, error)); ok {
-		return returnFunc(context1, uUID, requestAgentTurnParams)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, *rez.RequestAiAgentTurnParams) (*ent.AgentTurn, error)); ok {
+		return returnFunc(context1, uUID, requestAiAgentTurnParams)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, *rez.RequestAgentTurnParams) *ent.AgentTurn); ok {
-		r0 = returnFunc(context1, uUID, requestAgentTurnParams)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, *rez.RequestAiAgentTurnParams) *ent.AgentTurn); ok {
+		r0 = returnFunc(context1, uUID, requestAiAgentTurnParams)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*ent.AgentTurn)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, *rez.RequestAgentTurnParams) error); ok {
-		r1 = returnFunc(context1, uUID, requestAgentTurnParams)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, *rez.RequestAiAgentTurnParams) error); ok {
+		r1 = returnFunc(context1, uUID, requestAiAgentTurnParams)
 	} else {
 		r1 = ret.Error(1)
 	}
 	return r0, r1
 }
 
-// MockAgentSessionService_RequestAgentTurn_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'RequestAgentTurn'
-type MockAgentSessionService_RequestAgentTurn_Call struct {
+// MockAiAgentSessionService_RequestAgentTurn_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'RequestAgentTurn'
+type MockAiAgentSessionService_RequestAgentTurn_Call struct {
 	*mock.Call
 }
 
 // RequestAgentTurn is a helper method to define mock.On call
 //   - context1 context.Context
 //   - uUID uuid.UUID
-//   - requestAgentTurnParams *rez.RequestAgentTurnParams
-func (_e *MockAgentSessionService_Expecter) RequestAgentTurn(context1 interface{}, uUID interface{}, requestAgentTurnParams interface{}) *MockAgentSessionService_RequestAgentTurn_Call {
-	return &MockAgentSessionService_RequestAgentTurn_Call{Call: _e.mock.On("RequestAgentTurn", context1, uUID, requestAgentTurnParams)}
+//   - requestAiAgentTurnParams *rez.RequestAiAgentTurnParams
+func (_e *MockAiAgentSessionService_Expecter) RequestAgentTurn(context1 interface{}, uUID interface{}, requestAiAgentTurnParams interface{}) *MockAiAgentSessionService_RequestAgentTurn_Call {
+	return &MockAiAgentSessionService_RequestAgentTurn_Call{Call: _e.mock.On("RequestAgentTurn", context1, uUID, requestAiAgentTurnParams)}
 }
 
-func (_c *MockAgentSessionService_RequestAgentTurn_Call) Run(run func(context1 context.Context, uUID uuid.UUID, requestAgentTurnParams *rez.RequestAgentTurnParams)) *MockAgentSessionService_RequestAgentTurn_Call {
+func (_c *MockAiAgentSessionService_RequestAgentTurn_Call) Run(run func(context1 context.Context, uUID uuid.UUID, requestAiAgentTurnParams *rez.RequestAiAgentTurnParams)) *MockAiAgentSessionService_RequestAgentTurn_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -5125,9 +5136,9 @@ func (_c *MockAgentSessionService_RequestAgentTurn_Call) Run(run func(context1 c
 		if args[1] != nil {
 			arg1 = args[1].(uuid.UUID)
 		}
-		var arg2 *rez.RequestAgentTurnParams
+		var arg2 *rez.RequestAiAgentTurnParams
 		if args[2] != nil {
-			arg2 = args[2].(*rez.RequestAgentTurnParams)
+			arg2 = args[2].(*rez.RequestAiAgentTurnParams)
 		}
 		run(
 			arg0,
@@ -5138,18 +5149,18 @@ func (_c *MockAgentSessionService_RequestAgentTurn_Call) Run(run func(context1 c
 	return _c
 }
 
-func (_c *MockAgentSessionService_RequestAgentTurn_Call) Return(agentTurn *ent.AgentTurn, err error) *MockAgentSessionService_RequestAgentTurn_Call {
+func (_c *MockAiAgentSessionService_RequestAgentTurn_Call) Return(agentTurn *ent.AgentTurn, err error) *MockAiAgentSessionService_RequestAgentTurn_Call {
 	_c.Call.Return(agentTurn, err)
 	return _c
 }
 
-func (_c *MockAgentSessionService_RequestAgentTurn_Call) RunAndReturn(run func(context1 context.Context, uUID uuid.UUID, requestAgentTurnParams *rez.RequestAgentTurnParams) (*ent.AgentTurn, error)) *MockAgentSessionService_RequestAgentTurn_Call {
+func (_c *MockAiAgentSessionService_RequestAgentTurn_Call) RunAndReturn(run func(context1 context.Context, uUID uuid.UUID, requestAiAgentTurnParams *rez.RequestAiAgentTurnParams) (*ent.AgentTurn, error)) *MockAiAgentSessionService_RequestAgentTurn_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
-// RetryAgentTurn provides a mock function for the type MockAgentSessionService
-func (_mock *MockAgentSessionService) RetryAgentTurn(context1 context.Context, uUID uuid.UUID) (*ent.AgentTurn, error) {
+// RetryAgentTurn provides a mock function for the type MockAiAgentSessionService
+func (_mock *MockAiAgentSessionService) RetryAgentTurn(context1 context.Context, uUID uuid.UUID) (*ent.AgentTurn, error) {
 	ret := _mock.Called(context1, uUID)
 
 	if len(ret) == 0 {
@@ -5176,19 +5187,19 @@ func (_mock *MockAgentSessionService) RetryAgentTurn(context1 context.Context, u
 	return r0, r1
 }
 
-// MockAgentSessionService_RetryAgentTurn_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'RetryAgentTurn'
-type MockAgentSessionService_RetryAgentTurn_Call struct {
+// MockAiAgentSessionService_RetryAgentTurn_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'RetryAgentTurn'
+type MockAiAgentSessionService_RetryAgentTurn_Call struct {
 	*mock.Call
 }
 
 // RetryAgentTurn is a helper method to define mock.On call
 //   - context1 context.Context
 //   - uUID uuid.UUID
-func (_e *MockAgentSessionService_Expecter) RetryAgentTurn(context1 interface{}, uUID interface{}) *MockAgentSessionService_RetryAgentTurn_Call {
-	return &MockAgentSessionService_RetryAgentTurn_Call{Call: _e.mock.On("RetryAgentTurn", context1, uUID)}
+func (_e *MockAiAgentSessionService_Expecter) RetryAgentTurn(context1 interface{}, uUID interface{}) *MockAiAgentSessionService_RetryAgentTurn_Call {
+	return &MockAiAgentSessionService_RetryAgentTurn_Call{Call: _e.mock.On("RetryAgentTurn", context1, uUID)}
 }
 
-func (_c *MockAgentSessionService_RetryAgentTurn_Call) Run(run func(context1 context.Context, uUID uuid.UUID)) *MockAgentSessionService_RetryAgentTurn_Call {
+func (_c *MockAiAgentSessionService_RetryAgentTurn_Call) Run(run func(context1 context.Context, uUID uuid.UUID)) *MockAiAgentSessionService_RetryAgentTurn_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -5206,18 +5217,18 @@ func (_c *MockAgentSessionService_RetryAgentTurn_Call) Run(run func(context1 con
 	return _c
 }
 
-func (_c *MockAgentSessionService_RetryAgentTurn_Call) Return(agentTurn *ent.AgentTurn, err error) *MockAgentSessionService_RetryAgentTurn_Call {
+func (_c *MockAiAgentSessionService_RetryAgentTurn_Call) Return(agentTurn *ent.AgentTurn, err error) *MockAiAgentSessionService_RetryAgentTurn_Call {
 	_c.Call.Return(agentTurn, err)
 	return _c
 }
 
-func (_c *MockAgentSessionService_RetryAgentTurn_Call) RunAndReturn(run func(context1 context.Context, uUID uuid.UUID) (*ent.AgentTurn, error)) *MockAgentSessionService_RetryAgentTurn_Call {
+func (_c *MockAiAgentSessionService_RetryAgentTurn_Call) RunAndReturn(run func(context1 context.Context, uUID uuid.UUID) (*ent.AgentTurn, error)) *MockAiAgentSessionService_RetryAgentTurn_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
-// SetAgentSessionBinding provides a mock function for the type MockAgentSessionService
-func (_mock *MockAgentSessionService) SetAgentSessionBinding(context1 context.Context, uUID uuid.UUID, fn func(*ent.AgentSessionBindingMutation)) (*ent.AgentSessionBinding, error) {
+// SetAgentSessionBinding provides a mock function for the type MockAiAgentSessionService
+func (_mock *MockAiAgentSessionService) SetAgentSessionBinding(context1 context.Context, uUID uuid.UUID, fn func(*ent.AgentSessionBindingMutation)) (*ent.AgentSessionBinding, error) {
 	ret := _mock.Called(context1, uUID, fn)
 
 	if len(ret) == 0 {
@@ -5244,8 +5255,8 @@ func (_mock *MockAgentSessionService) SetAgentSessionBinding(context1 context.Co
 	return r0, r1
 }
 
-// MockAgentSessionService_SetAgentSessionBinding_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'SetAgentSessionBinding'
-type MockAgentSessionService_SetAgentSessionBinding_Call struct {
+// MockAiAgentSessionService_SetAgentSessionBinding_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'SetAgentSessionBinding'
+type MockAiAgentSessionService_SetAgentSessionBinding_Call struct {
 	*mock.Call
 }
 
@@ -5253,11 +5264,11 @@ type MockAgentSessionService_SetAgentSessionBinding_Call struct {
 //   - context1 context.Context
 //   - uUID uuid.UUID
 //   - fn func(*ent.AgentSessionBindingMutation)
-func (_e *MockAgentSessionService_Expecter) SetAgentSessionBinding(context1 interface{}, uUID interface{}, fn interface{}) *MockAgentSessionService_SetAgentSessionBinding_Call {
-	return &MockAgentSessionService_SetAgentSessionBinding_Call{Call: _e.mock.On("SetAgentSessionBinding", context1, uUID, fn)}
+func (_e *MockAiAgentSessionService_Expecter) SetAgentSessionBinding(context1 interface{}, uUID interface{}, fn interface{}) *MockAiAgentSessionService_SetAgentSessionBinding_Call {
+	return &MockAiAgentSessionService_SetAgentSessionBinding_Call{Call: _e.mock.On("SetAgentSessionBinding", context1, uUID, fn)}
 }
 
-func (_c *MockAgentSessionService_SetAgentSessionBinding_Call) Run(run func(context1 context.Context, uUID uuid.UUID, fn func(*ent.AgentSessionBindingMutation))) *MockAgentSessionService_SetAgentSessionBinding_Call {
+func (_c *MockAiAgentSessionService_SetAgentSessionBinding_Call) Run(run func(context1 context.Context, uUID uuid.UUID, fn func(*ent.AgentSessionBindingMutation))) *MockAiAgentSessionService_SetAgentSessionBinding_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -5280,12 +5291,12 @@ func (_c *MockAgentSessionService_SetAgentSessionBinding_Call) Run(run func(cont
 	return _c
 }
 
-func (_c *MockAgentSessionService_SetAgentSessionBinding_Call) Return(agentSessionBinding *ent.AgentSessionBinding, err error) *MockAgentSessionService_SetAgentSessionBinding_Call {
+func (_c *MockAiAgentSessionService_SetAgentSessionBinding_Call) Return(agentSessionBinding *ent.AgentSessionBinding, err error) *MockAiAgentSessionService_SetAgentSessionBinding_Call {
 	_c.Call.Return(agentSessionBinding, err)
 	return _c
 }
 
-func (_c *MockAgentSessionService_SetAgentSessionBinding_Call) RunAndReturn(run func(context1 context.Context, uUID uuid.UUID, fn func(*ent.AgentSessionBindingMutation)) (*ent.AgentSessionBinding, error)) *MockAgentSessionService_SetAgentSessionBinding_Call {
+func (_c *MockAiAgentSessionService_SetAgentSessionBinding_Call) RunAndReturn(run func(context1 context.Context, uUID uuid.UUID, fn func(*ent.AgentSessionBindingMutation)) (*ent.AgentSessionBinding, error)) *MockAiAgentSessionService_SetAgentSessionBinding_Call {
 	_c.Call.Return(run)
 	return _c
 }

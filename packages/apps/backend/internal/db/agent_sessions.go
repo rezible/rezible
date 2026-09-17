@@ -25,15 +25,15 @@ import (
 	"github.com/rezible/rezible/pkg/jobs"
 )
 
-type AgentSessionService struct {
+type AiAgentSessionService struct {
 	logger *slog.Logger
 	db     rez.Database
 	jobs   rez.JobService
 	msgs   rez.MessageQueue
 }
 
-func NewAgentSessionService(tel rez.TelemetryService, db rez.Database, jobSvc rez.JobService, msgs rez.MessageQueue) (*AgentSessionService, error) {
-	s := &AgentSessionService{
+func NewAiAgentSessionService(tel rez.TelemetryService, db rez.Database, jobSvc rez.JobService, msgs rez.MessageQueue) (*AiAgentSessionService, error) {
+	s := &AiAgentSessionService{
 		logger: tel.NewLogger(rez.NewLoggerOptions{Name: "agent_session_service"}),
 		db:     db,
 		jobs:   jobSvc,
@@ -42,13 +42,13 @@ func NewAgentSessionService(tel rez.TelemetryService, db rez.Database, jobSvc re
 	return s, nil
 }
 
-func (s *AgentSessionService) GetAgentSession(ctx context.Context, id uuid.UUID) (*ent.AgentSession, error) {
+func (s *AiAgentSessionService) GetAgentSession(ctx context.Context, id uuid.UUID) (*ent.AgentSession, error) {
 	query := s.db.Client(ctx).AgentSession.Query().
 		Where(as.ID(id))
 	return query.Only(ctx)
 }
 
-func (s *AgentSessionService) ListAgentSessions(ctx context.Context, params rez.ListAgentSessionsParams) (*ent.ListResult[ent.AgentSession], error) {
+func (s *AiAgentSessionService) ListAgentSessions(ctx context.Context, params rez.ListAiAgentSessionsParams) (*ent.ListResult[ent.AgentSession], error) {
 	query := s.db.Client(ctx).AgentSession.Query().
 		Order(as.ByCreatedAt(sql.OrderDesc()), as.ByID(sql.OrderDesc())).
 		Where(params.Predicates...)
@@ -62,21 +62,21 @@ func (s *AgentSessionService) ListAgentSessions(ctx context.Context, params rez.
 	return ent.DoListQuery[ent.AgentSession, *ent.AgentSessionQuery](ctx, query, params.ListParams)
 }
 
-func (s *AgentSessionService) ListAgentMessages(ctx context.Context, params rez.ListAgentMessagesParams) (*ent.ListResult[ent.AgentMessage], error) {
+func (s *AiAgentSessionService) ListAgentMessages(ctx context.Context, params rez.ListAiAgentMessagesParams) (*ent.ListResult[ent.AgentMessage], error) {
 	query := s.db.Client(ctx).AgentMessage.Query().
 		Where(params.Predicates...).
 		Order(agentmessage.BySequence(sql.OrderAsc()), agentmessage.ByID(sql.OrderAsc()))
 	return ent.DoListQuery[ent.AgentMessage, *ent.AgentMessageQuery](ctx, query, params.ListParams)
 }
 
-func (s *AgentSessionService) ListAgentArtifacts(ctx context.Context, params rez.ListAgentArtifactsParams) (*ent.ListResult[ent.AgentArtifact], error) {
+func (s *AiAgentSessionService) ListAgentArtifacts(ctx context.Context, params rez.ListAiAgentArtifactsParams) (*ent.ListResult[ent.AgentArtifact], error) {
 	query := s.db.Client(ctx).AgentArtifact.Query().
 		Where(params.Predicates...).
 		Order(agentartifact.ByName(sql.OrderAsc()), agentartifact.ByID(sql.OrderAsc()))
 	return ent.DoListQuery[ent.AgentArtifact, *ent.AgentArtifactQuery](ctx, query, params.ListParams)
 }
 
-func (s *AgentSessionService) CreateAgentSession(ctx context.Context, params rez.CreateAgentSessionParams) (*ent.AgentSession, error) {
+func (s *AiAgentSessionService) CreateAgentSession(ctx context.Context, params rez.CreateAiAgentSessionParams) (*ent.AgentSession, error) {
 	name := strings.TrimSpace(params.AgentName)
 	if name == "" {
 		return nil, fmt.Errorf("%w: agent name is required", rez.ErrInvalidInput)
@@ -135,7 +135,7 @@ func (s *AgentSessionService) CreateAgentSession(ctx context.Context, params rez
 	})
 }
 
-func (s *AgentSessionService) setSessionBindingParams(m *ent.AgentSessionBindingMutation, params rez.AgentSessionBindingParams) {
+func (s *AiAgentSessionService) setSessionBindingParams(m *ent.AgentSessionBindingMutation, params rez.AiAgentSessionBindingParams) {
 	if params.IntegrationID == nil {
 		m.ClearIntegrationID()
 	} else {
@@ -150,7 +150,7 @@ func (s *AgentSessionService) setSessionBindingParams(m *ent.AgentSessionBinding
 	m.SetMetadata(metadata)
 }
 
-func (s *AgentSessionService) validateSessionBindingIntegration(ctx context.Context, ref rez.ProviderResourceRef, integrationID *uuid.UUID) error {
+func (s *AiAgentSessionService) validateSessionBindingIntegration(ctx context.Context, ref rez.ProviderResourceRef, integrationID *uuid.UUID) error {
 	if integrationID == nil {
 		return nil
 	}
@@ -164,13 +164,13 @@ func (s *AgentSessionService) validateSessionBindingIntegration(ctx context.Cont
 	return nil
 }
 
-func (s *AgentSessionService) ListAgentSessionBindings(ctx context.Context, params rez.ListAgentSessionBindingsParams) (ent.AgentSessionBindings, error) {
+func (s *AiAgentSessionService) ListAgentSessionBindings(ctx context.Context, params rez.ListAiAgentSessionBindingsParams) (ent.AgentSessionBindings, error) {
 	query := s.db.Client(ctx).AgentSessionBinding.Query().
 		Where(params.Predicates...)
 	return query.All(ctx)
 }
 
-func (s *AgentSessionService) LookupAgentSessionBinding(ctx context.Context, preds ...predicate.AgentSessionBinding) (*ent.AgentSessionBinding, error) {
+func (s *AiAgentSessionService) LookupAgentSessionBinding(ctx context.Context, preds ...predicate.AgentSessionBinding) (*ent.AgentSessionBinding, error) {
 	query := s.db.Client(ctx).AgentSessionBinding.Query().
 		Where(preds...).
 		WithAgentSession().
@@ -178,7 +178,7 @@ func (s *AgentSessionService) LookupAgentSessionBinding(ctx context.Context, pre
 	return query.Only(ctx)
 }
 
-func (s *AgentSessionService) SetAgentSessionBinding(ctx context.Context, bindingId uuid.UUID, setFn func(*ent.AgentSessionBindingMutation)) (*ent.AgentSessionBinding, error) {
+func (s *AiAgentSessionService) SetAgentSessionBinding(ctx context.Context, bindingId uuid.UUID, setFn func(*ent.AgentSessionBindingMutation)) (*ent.AgentSessionBinding, error) {
 	var binding *ent.AgentSessionBinding
 	return binding, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
 		var mutator ent.EntityMutator[*ent.AgentSessionBinding, *ent.AgentSessionBindingMutation]
@@ -256,7 +256,7 @@ func acquireAgentSessionTurnLock(ctx context.Context, db rez.Database, sessionId
 	return db.AcquireTxLocks(ctx, "agent_session", sessionId.String())
 }
 
-func (s *AgentSessionService) RequestAgentTurn(ctx context.Context, sessionID uuid.UUID, params *rez.RequestAgentTurnParams) (*ent.AgentTurn, error) {
+func (s *AiAgentSessionService) RequestAgentTurn(ctx context.Context, sessionID uuid.UUID, params *rez.RequestAiAgentTurnParams) (*ent.AgentTurn, error) {
 	if params == nil {
 		return nil, fmt.Errorf("%w: turn input nil", rez.ErrInvalidInput)
 	}
@@ -353,7 +353,7 @@ func (s *AgentSessionService) RequestAgentTurn(ctx context.Context, sessionID uu
 	})
 }
 
-func (s *AgentSessionService) insertInvokeAgentTurnJob(ctx context.Context, sessId uuid.UUID, turnId uuid.UUID) (int64, error) {
+func (s *AiAgentSessionService) insertInvokeAgentTurnJob(ctx context.Context, sessId uuid.UUID, turnId uuid.UUID) (int64, error) {
 	jobArgs := jobs.InvokeAgentTurn{
 		AgentSessionID: sessId,
 		AgentTurnID:    turnId,
@@ -371,31 +371,31 @@ func (s *AgentSessionService) insertInvokeAgentTurnJob(ctx context.Context, sess
 	return result.Job.ID, nil
 }
 
-func (s *AgentSessionService) queryAgentTurns(ctx context.Context) *ent.AgentTurnQuery {
+func (s *AiAgentSessionService) queryAgentTurns(ctx context.Context) *ent.AgentTurnQuery {
 	return s.db.Client(ctx).AgentTurn.Query()
 }
 
-func (s *AgentSessionService) GetAgentTurn(ctx context.Context, id uuid.UUID) (*ent.AgentTurn, error) {
+func (s *AiAgentSessionService) GetAgentTurn(ctx context.Context, id uuid.UUID) (*ent.AgentTurn, error) {
 	return s.queryAgentTurns(ctx).
 		Where(at.ID(id)).
 		Only(ctx)
 }
 
-func (s *AgentSessionService) ListAgentTurns(ctx context.Context, params rez.ListAgentTurnsParams) (*ent.ListResult[ent.AgentTurn], error) {
+func (s *AiAgentSessionService) ListAgentTurns(ctx context.Context, params rez.ListAiAgentTurnsParams) (*ent.ListResult[ent.AgentTurn], error) {
 	query := s.queryAgentTurns(ctx).
 		Where(params.Predicates...).
 		Order(at.BySequence(sql.OrderDesc()), at.ByID(sql.OrderDesc()))
 	return ent.DoListQuery[ent.AgentTurn, *ent.AgentTurnQuery](ctx, query, params.ListParams)
 }
 
-func (s *AgentSessionService) GetLatestTurnForSession(ctx context.Context, sessionId uuid.UUID) (*ent.AgentTurn, error) {
+func (s *AiAgentSessionService) GetLatestTurnForSession(ctx context.Context, sessionId uuid.UUID) (*ent.AgentTurn, error) {
 	query := s.queryAgentTurns(ctx).
 		Where(at.AgentSessionID(sessionId)).
 		Order(at.BySequence(sql.OrderDesc()))
 	return query.First(ctx)
 }
 
-func (s *AgentSessionService) GetLastSuccessfulAgentTurn(ctx context.Context, sessionID uuid.UUID) (*ent.AgentTurn, error) {
+func (s *AiAgentSessionService) GetLastSuccessfulAgentTurn(ctx context.Context, sessionID uuid.UUID) (*ent.AgentTurn, error) {
 	queryTurn := s.queryAgentTurns(ctx).
 		Where(at.AgentSessionID(sessionID), at.StatusEQ(at.StatusCompleted)).
 		Order(at.BySequence(sql.OrderDesc()))
@@ -406,7 +406,7 @@ func (s *AgentSessionService) GetLastSuccessfulAgentTurn(ctx context.Context, se
 	return turn, nil
 }
 
-func (s *AgentSessionService) lookupAgentTurnSessionAndAcquireLock(ctx context.Context, tx *ent.Client, turnID uuid.UUID) (*ent.AgentSession, error) {
+func (s *AiAgentSessionService) lookupAgentTurnSessionAndAcquireLock(ctx context.Context, tx *ent.Client, turnID uuid.UUID) (*ent.AgentSession, error) {
 	querySession := tx.AgentSession.Query().
 		Where(as.HasTurnsWith(at.ID(turnID)))
 	sess, sessErr := querySession.Only(ctx)
@@ -419,7 +419,7 @@ func (s *AgentSessionService) lookupAgentTurnSessionAndAcquireLock(ctx context.C
 	return sess, nil
 }
 
-func (s *AgentSessionService) AbortAgentTurn(ctx context.Context, turnID uuid.UUID) (*ent.AgentTurn, error) {
+func (s *AiAgentSessionService) AbortAgentTurn(ctx context.Context, turnID uuid.UUID) (*ent.AgentTurn, error) {
 	var result *ent.AgentTurn
 	return result, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
 		_, sessErr := s.lookupAgentTurnSessionAndAcquireLock(ctx, tx, turnID)
@@ -460,7 +460,7 @@ func (s *AgentSessionService) AbortAgentTurn(ctx context.Context, turnID uuid.UU
 	})
 }
 
-func (s *AgentSessionService) RetryAgentTurn(ctx context.Context, turnID uuid.UUID) (*ent.AgentTurn, error) {
+func (s *AiAgentSessionService) RetryAgentTurn(ctx context.Context, turnID uuid.UUID) (*ent.AgentTurn, error) {
 	var result *ent.AgentTurn
 	return result, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
 		sess, sessErr := s.lookupAgentTurnSessionAndAcquireLock(ctx, tx, turnID)
@@ -509,7 +509,7 @@ func (s *AgentSessionService) RetryAgentTurn(ctx context.Context, turnID uuid.UU
 	})
 }
 
-func (s *AgentSessionService) publishTurnUpdated(ctx context.Context, turn *ent.AgentTurn) error {
+func (s *AiAgentSessionService) publishTurnUpdated(ctx context.Context, turn *ent.AgentTurn) error {
 	event := rezai.AgentTurnUpdated{
 		AgentSessionId: turn.AgentSessionID,
 		AgentTurnId:    turn.ID,

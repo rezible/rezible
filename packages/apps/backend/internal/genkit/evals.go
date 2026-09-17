@@ -10,7 +10,6 @@ import (
 	"github.com/google/uuid"
 
 	mapset "github.com/deckarep/golang-set/v2"
-	"github.com/firebase/genkit/go/core"
 	"github.com/firebase/genkit/go/core/api"
 	"github.com/firebase/genkit/go/genkit"
 
@@ -20,41 +19,46 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	rezai "github.com/rezible/rezible/pkg/ai"
-	"github.com/rezible/rezible/pkg/ai/evals"
 	"github.com/rezible/rezible/pkg/execution"
 )
 
-type EvaluationService struct {
-	db rez.Database
-	ai *AiService
-
-	evaluateScenarioFlow *core.Flow[EvaluationFlowInput, rezai.EvalScenarioRunResult, struct{}]
-	evaluatorAction      *ai.EvaluatorAction
-}
+type (
+	EvaluateScenarioFlow = rez.AiWorkflow[EvaluationFlowInput, rezai.EvalScenarioRunResult]
+	EvaluationService    struct {
+		scenarioEvalFlow EvaluateScenarioFlow
+		evaluatorAction  *ai.EvaluatorAction
+	}
+)
 
 var scenarioChecksActionName = api.NewName("rezible", "scenario_checks")
 
-func NewEvaluationService(db rez.Database, aiSvc *AiService) *EvaluationService {
-	s := &EvaluationService{db: db, ai: aiSvc}
-
-	s.evaluateScenarioFlow = genkit.DefineFlow(aiSvc.gk, "evaluate_agent_scenario", s.runEvalScenarioFlow)
+func (s *AiRuntime) MakeEvaluationService(evalFlow EvaluateScenarioFlow) (*EvaluationService, error) {
 	options := &ai.EvaluatorOptions{
 		DisplayName: "Scenario Check",
 		Definition:  "Presents scenario grading checks as Genkit metrics.",
 		IsBilled:    false,
 	}
-	s.evaluatorAction = genkit.DefineEvaluatorAction(aiSvc.gk, scenarioChecksActionName, options, evaluateScenarioChecks)
 
-	return s
+	return &EvaluationService{
+		scenarioEvalFlow: evalFlow,
+		evaluatorAction:  genkit.DefineEvaluatorAction(s.gk, scenarioChecksActionName, options, evaluateScenarioChecks),
+	}, nil
 }
 
-func (s *EvaluationService) RunScenarioEvalFlow(ctx context.Context, name string) (*rezai.EvalScenarioRunResult, error) {
+func (s *EvaluationService) RunScenario(ctx context.Context, name string) (rezai.EvalScenarioRunResult, error) {
 	input := EvaluationFlowInput{ScenarioName: name}
 	fmt.Printf("running scenario eval %s\n", name)
-	output, flowErr := s.evaluateScenarioFlow.Run(ctx, input)
+	output, flowErr := s.scenarioEvalFlow.Run(ctx, input)
 	if flowErr != nil {
-		return nil, fmt.Errorf("run flow: %w", flowErr)
+		return output, fmt.Errorf("run flow: %w", flowErr)
 	}
+	if resultErr := s.outputEvaluationResult(ctx, input, output); resultErr != nil {
+		return output, fmt.Errorf("evaluation result: %w", resultErr)
+	}
+	return output, nil
+}
+
+func (s *EvaluationService) outputEvaluationResult(ctx context.Context, input EvaluationFlowInput, output rezai.EvalScenarioRunResult) error {
 	fmt.Printf("output %+v\n", output)
 	scenarioExample := &ai.Example{
 		TestCaseId: uuid.NewString(),
@@ -68,35 +72,29 @@ func (s *EvaluationService) RunScenarioEvalFlow(ctx context.Context, name string
 	}
 	evalResp, evalErr := s.evaluatorAction.Evaluate(ctx, evalReq)
 	if evalErr != nil {
-		return nil, fmt.Errorf("evaluator action: %w", evalErr)
+		return fmt.Errorf("evaluator action: %w", evalErr)
 	}
 	fmt.Printf("evaluator resp: %+v\n", evalResp)
-	return &output, nil
-}
-
-func (s *EvaluationService) RunNamedScenario(ctx context.Context, name string) (*rezai.EvalScenarioRunResult, error) {
-	scenario, lookupErr := evals.Lookup(strings.TrimSpace(name))
-	if lookupErr != nil {
-		return nil, lookupErr
-	}
-	result := s.RunScenario(ctx, scenario)
-	return &result, nil
-}
-
-func (s *EvaluationService) RunScenario(ctx context.Context, scenario rezai.EvalScenario) rezai.EvalScenarioRunResult {
-	return s.executeEvaluationRun(ctx, &evaluationRun{service: s, scenario: scenario})
+	return nil
 }
 
 type EvaluationFlowInput struct {
 	ScenarioName string `json:"scenario_name" jsonschema:"description=Registered evaluation scenario name,minLength=1"`
 }
 
-func (s *EvaluationService) runEvalScenarioFlow(ctx context.Context, input EvaluationFlowInput) (rezai.EvalScenarioRunResult, error) {
-	res, resErr := s.RunNamedScenario(ctx, input.ScenarioName)
-	if resErr != nil {
-		return rezai.EvalScenarioRunResult{}, resErr
+func NewEvaluateScenarioFlow(db rez.Database, runtime *AiRuntime, builder *WorkflowBuilder, scenarios ...rezai.EvalScenario) (EvaluateScenarioFlow, error) {
+	scenarioMap := make(map[string]rezai.EvalScenario)
+	for _, scenario := range scenarios {
+		scenarioMap[scenario.Definition().Name] = scenario
 	}
-	return *res, nil
+	return builder.DefineWorkflow("evaluate_agent_scenario", func(ctx context.Context, input EvaluationFlowInput) (rezai.EvalScenarioRunResult, error) {
+		scenario, ok := scenarioMap[input.ScenarioName]
+		if !ok {
+			return rezai.EvalScenarioRunResult{}, fmt.Errorf("scenario %q not found", input.ScenarioName)
+		}
+		eval := &evaluationRun{scenario: scenario}
+		return eval.run(ctx, db, runtime), nil
+	})
 }
 
 func evaluateScenarioChecks(ctx context.Context, req *ai.EvaluatorCallbackRequest, cfg struct{}) (*ai.EvaluatorCallbackResponse, error) {
@@ -108,7 +106,6 @@ func evaluateScenarioChecks(ctx context.Context, req *ai.EvaluatorCallbackReques
 }
 
 type evaluationRun struct {
-	service    *EvaluationService
 	scenario   rezai.EvalScenario
 	result     rezai.EvalScenarioRunResult
 	session    *ent.AgentSession
@@ -116,7 +113,7 @@ type evaluationRun struct {
 	invocation *rez.AiAgentInvocationResult
 }
 
-func (s *EvaluationService) executeEvaluationRun(ctx context.Context, r *evaluationRun) rezai.EvalScenarioRunResult {
+func (r *evaluationRun) run(ctx context.Context, db rez.Database, runtime *AiRuntime) rezai.EvalScenarioRunResult {
 	r.result = rezai.EvalScenarioRunResult{
 		Status: rezai.EvalRunStatusError,
 	}
@@ -129,7 +126,7 @@ func (s *EvaluationService) executeEvaluationRun(ctx context.Context, r *evaluat
 		return r.fail(rezai.EvalRunStageSetup, "scenario definition requires name, description, and agent name")
 	}
 	found := false
-	for _, agent := range s.ai.GetAgents() {
+	for _, agent := range runtime.catalogue.GetAgents() {
 		if agent.Name == d.AgentName {
 			r.result.Agent = agent
 			found = true
@@ -141,7 +138,7 @@ func (s *EvaluationService) executeEvaluationRun(ctx context.Context, r *evaluat
 	}
 
 	seedCtx, seedErr := traceStep(ctx, "seed", func(ctx context.Context) (context.Context, error) {
-		return r.seed(ctx)
+		return r.seed(ctx, db.Client(ctx), runtime.catalogue)
 	})
 	if seedErr != nil {
 		return r.fail(rezai.EvalRunStageSeed, seedErr.Error())
@@ -149,7 +146,7 @@ func (s *EvaluationService) executeEvaluationRun(ctx context.Context, r *evaluat
 	ctx = seedCtx
 
 	input, prepareErr := traceStep(ctx, "prepare", func(ctx context.Context) (*rez.AiAgentTurnInput, error) {
-		return s.ai.MakeInitialAgentTurnInput(ctx, r.session)
+		return runtime.catalogue.MakeInitialAgentTurnInput(ctx, r.session)
 	})
 	if prepareErr != nil || input == nil {
 		if prepareErr == nil {
@@ -160,7 +157,11 @@ func (s *EvaluationService) executeEvaluationRun(ctx context.Context, r *evaluat
 
 	started := time.Now()
 	invocation, invokeErr := traceStep(ctx, "invoke", func(ctx context.Context) (*rez.AiAgentInvocationResult, error) {
-		return s.ai.InvokeAgentTurn(ctx, rez.InvokeAgentTurnParams{Session: r.session, Turn: r.turn, Input: input})
+		return runtime.InvokeAgentTurn(ctx, rez.InvokeAiAgentTurnParams{
+			Session: r.session,
+			Turn:    r.turn,
+			Input:   input,
+		})
 	})
 	r.invocation = invocation
 	r.result.Execution = r.summarizeExecution(invocation, invokeErr, time.Since(started).Milliseconds())
@@ -176,7 +177,7 @@ func (s *EvaluationService) executeEvaluationRun(ctx context.Context, r *evaluat
 	}
 
 	grade, gradeErr := traceStep(ctx, "grade", func(ctx context.Context) (rezai.EvalScenarioGrade, error) {
-		return r.scenario.Grade(ctx, s.db.Client(ctx), invocation)
+		return r.scenario.Grade(ctx, db.Client(ctx), invocation)
 	})
 	if gradeErr != nil {
 		return r.fail(rezai.EvalRunStageGrade, gradeErr.Error())
@@ -195,8 +196,7 @@ func (s *EvaluationService) executeEvaluationRun(ctx context.Context, r *evaluat
 	return r.result
 }
 
-func (r *evaluationRun) seed(ctx context.Context) (context.Context, error) {
-	client := r.service.db.Client(ctx)
+func (r *evaluationRun) seed(ctx context.Context, client *ent.Client, agents *agentCatalogue) (context.Context, error) {
 	tenant, tenantErr := client.Tenant.Create().Save(execution.NewSystemContext(ctx))
 	if tenantErr != nil {
 		return nil, fmt.Errorf("create evaluation tenant: %w", tenantErr)
@@ -211,7 +211,7 @@ func (r *evaluationRun) seed(ctx context.Context) (context.Context, error) {
 		return nil, fmt.Errorf("scenario must seed a session and turn")
 	}
 
-	if _, inputErr := r.service.ai.ValidateAgentSessionInput(r.result.Agent.Name, seed.Session.Input); inputErr != nil {
+	if _, inputErr := agents.ValidateAgentSessionInput(r.result.Agent.Name, seed.Session.Input); inputErr != nil {
 		return nil, fmt.Errorf("validate seed input: %w", inputErr)
 	}
 	r.session = seed.Session

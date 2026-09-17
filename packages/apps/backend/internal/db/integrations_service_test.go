@@ -117,7 +117,7 @@ func (s *IntegrationsServiceSuite) TestGetAvailableAgentToolsSkipsIntegrationsWi
 	svc := s.newService(tdb, s.newRegistry(i))
 	s.installTestIntegration(ctx, svc, i, "target-a")
 
-	tools, toolsErr := svc.GetAvailableAgentTools(ctx, rez.GetAvailableAgentToolsParams{})
+	tools, toolsErr := svc.GetAvailableAgentTools(ctx, rez.GetAvailableAiAgentToolsParams{})
 	s.Require().NoError(toolsErr)
 	s.Empty(tools)
 }
@@ -134,7 +134,7 @@ func (s *IntegrationsServiceSuite) TestGetAvailableAgentToolsRejectsDuplicateToo
 	s.installTestIntegration(ctx, svc, i1, "target-a")
 	s.installTestIntegration(ctx, svc, i2, "target-b")
 
-	_, toolsErr := svc.GetAvailableAgentTools(ctx, rez.GetAvailableAgentToolsParams{})
+	_, toolsErr := svc.GetAvailableAgentTools(ctx, rez.GetAvailableAiAgentToolsParams{})
 	s.Require().Error(toolsErr)
 	s.ErrorContains(toolsErr, "duplicate agent tool")
 }
@@ -202,7 +202,7 @@ func (p *testIntegration) GetInstalledIntegration(intg *ent.Integration) (rez.In
 	return ii, nil
 }
 
-func (p *testIntegration) GetAvailableAgentTools(ctx context.Context, installations []rez.InstalledIntegration, params rez.GetAvailableAgentToolsParams) ([]ai.Tool, error) {
+func (p *testIntegration) GetAvailableAgentTools(ctx context.Context, installations []rez.InstalledIntegration, params rez.GetAvailableAiAgentToolsParams) ([]ai.Tool, error) {
 	return p.tools, nil
 }
 

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/rezible/rezible/pkg/ai/evals"
 	"github.com/samber/do/v2"
 
 	rez "github.com/rezible/rezible"
@@ -98,22 +99,35 @@ func providePostgresTestDatabaseConfig(i do.Injector) (rez.PostgresConfig, error
 	return do.MustInvoke[*pgtestdb.Database](i).Config(), nil
 }
 
-func withGenkitAiService(ctx context.Context) func(do.Injector) {
+func withGenkitAiRuntime(ctx context.Context) func(do.Injector) {
 	return do.Package(
-		do.Lazy(func(i do.Injector) (rez.AiService, error) {
-			svc := genkit.NewAiService(do.MustInvoke[rez.Config](i))
-			opts := do.MustInvoke[[]genkit.AiServiceOption](i)
+		do.Lazy(func(i do.Injector) (*genkit.AiRuntime, error) {
+			svc := genkit.NewAiRuntime(do.MustInvoke[rez.Config](i))
+			opts := do.MustInvoke[[]genkit.AiRuntimeOption](i)
 			return svc, svc.Init(ctx, opts...)
+		}),
+		do.Bind[*genkit.AiRuntime, rez.AiAgentRuntime](),
+
+		do.Lazy(func(i do.Injector) (rez.AiAgentCatalogue, error) {
+			return do.MustInvoke[*genkit.AiRuntime](i).AgentCatalogue(), nil
 		}),
 	)
 }
 
 var pkgGenkit = do.Package(
-	do.Lazy(func(i do.Injector) (rezai.ClassifyAgentThreadResponseWorkflowRunner, error) {
-		return rezai.GetWorkflowRunner(do.MustInvoke[rez.AiService](i), rezai.ClassifyAgentThreadResponseWorkflow)
+	do.Lazy(func(i do.Injector) (rezai.AiClassifyAgentThreadResponseWorkflow, error) {
+		builder := do.MustInvoke[*genkit.WorkflowBuilder](i)
+		return builder.DefinePromptWorkflow(rezai.ClassifyAgentThreadResponseDefinition)
 	}),
 
-	do.Lazy(func(i do.Injector) ([]genkit.AiServiceOption, error) {
+	do.Lazy(func(i do.Injector) (*genkit.WorkflowBuilder, error) {
+		return genkit.NewWorkflowBuilder(
+			do.MustInvoke[*genkit.AiRuntime](i),
+			do.MustInvoke[rez.AiWorkflowRunner](i),
+		), nil
+	}),
+
+	do.Lazy(func(i do.Injector) ([]genkit.AiRuntimeOption, error) {
 		chatAgent := genkit.NewChatAgent()
 		investigationAgent := genkit.NewInvestigationAgent(
 			do.MustInvoke[rez.InvestigationService](i),
@@ -121,16 +135,25 @@ var pkgGenkit = do.Package(
 			do.MustInvoke[rez.SystemAnalysisService](i),
 			do.MustInvoke[rez.KnowledgeGraphService](i),
 		)
-		opts := []genkit.AiServiceOption{
+		opts := []genkit.AiRuntimeOption{
 			genkit.WithAgent(chatAgent),
 			genkit.WithAgent(investigationAgent),
-			genkit.WithWorkflow(rezai.ClassifyAgentThreadResponseWorkflow),
 		}
 		return opts, nil
 	}),
 
+	do.Lazy(func(i do.Injector) (genkit.EvaluateScenarioFlow, error) {
+		return genkit.NewEvaluateScenarioFlow(
+			do.MustInvoke[rez.Database](i),
+			do.MustInvoke[*genkit.AiRuntime](i),
+			do.MustInvoke[*genkit.WorkflowBuilder](i),
+			evals.List()...,
+		)
+	}),
+
 	do.Lazy(func(i do.Injector) (*genkit.EvaluationService, error) {
-		return genkit.NewEvaluationService(do.MustInvoke[rez.Database](i), do.MustInvoke[*genkit.AiService](i)), nil
+		runtime := do.MustInvoke[*genkit.AiRuntime](i)
+		return runtime.MakeEvaluationService(do.MustInvoke[genkit.EvaluateScenarioFlow](i))
 	}),
 	do.Bind[*genkit.EvaluationService, rezai.EvalScenarioRunner](),
 )
@@ -232,9 +255,9 @@ var pkgIntegrations = do.Package(
 			do.MustInvoke[rez.JobService](i),
 			do.MustInvoke[rez.IntegrationService](i),
 			do.MustInvoke[rez.UserService](i),
-			do.MustInvoke[rez.AgentSessionService](i),
+			do.MustInvoke[rez.AiAgentSessionService](i),
 			do.MustInvoke[rez.EventsService](i),
-			do.MustInvoke[rezai.ClassifyAgentThreadResponseWorkflowRunner](i),
+			do.MustInvoke[rezai.AiClassifyAgentThreadResponseWorkflow](i),
 		), nil
 	}),
 
@@ -283,6 +306,11 @@ func getAvailableIntegrationsWith[T any](i do.Injector) []T {
 }
 
 var pkgDatabase = do.Package(
+	do.Lazy(func(i do.Injector) (*db.AiWorkflowRunner, error) {
+		return db.NewAiWorkflowRunner(do.MustInvoke[rez.TelemetryService](i)), nil
+	}),
+	do.Bind[*db.AiWorkflowRunner, rez.AiWorkflowRunner](),
+
 	do.Lazy(func(i do.Injector) (*db.ProviderEventPipelineService, error) {
 		return db.NewProviderEventPipelineService(
 			do.MustInvoke[rez.TelemetryService](i),
@@ -434,8 +462,8 @@ var pkgDatabase = do.Package(
 		)
 	}),
 
-	do.Lazy(func(i do.Injector) (rez.AgentSessionService, error) {
-		return db.NewAgentSessionService(
+	do.Lazy(func(i do.Injector) (rez.AiAgentSessionService, error) {
+		return db.NewAiAgentSessionService(
 			do.MustInvoke[rez.TelemetryService](i),
 			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.JobService](i),
@@ -448,8 +476,8 @@ var pkgDatabase = do.Package(
 			do.MustInvoke[rez.Config](i).AI,
 			do.MustInvoke[rez.TelemetryService](i),
 			do.MustInvoke[rez.Database](i),
-			do.MustInvoke[rez.AiService](i),
-			do.MustInvoke[rez.AgentSessionService](i),
+			do.MustInvoke[rez.AiAgentCatalogue](i),
+			do.MustInvoke[rez.AiAgentSessionService](i),
 		)
 	}),
 
@@ -459,8 +487,8 @@ var pkgDatabase = do.Package(
 			do.MustInvoke[rez.TelemetryService](i),
 			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.MessageQueue](i),
-			do.MustInvoke[rez.AiService](i),
-			do.MustInvoke[rez.AgentSessionService](i),
+			do.MustInvoke[rez.AiAgentRuntime](i),
+			do.MustInvoke[rez.AiAgentSessionService](i),
 		)
 	}),
 
@@ -476,7 +504,7 @@ var pkgDatabase = do.Package(
 	do.Lazy(func(i do.Injector) (*db.InvestigationService, error) {
 		return db.NewInvestigationService(
 			do.MustInvoke[rez.Database](i),
-			do.MustInvoke[rez.AgentSessionService](i),
+			do.MustInvoke[rez.AiAgentSessionService](i),
 		), nil
 	}),
 	do.Bind[*db.InvestigationService, rez.InvestigationService](),
@@ -485,7 +513,7 @@ var pkgDatabase = do.Package(
 		return db.NewReconcileSituationInvestigationWorker(
 			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.SituationService](i),
-			do.MustInvoke[rez.AgentSessionService](i),
+			do.MustInvoke[rez.AiAgentSessionService](i),
 		), nil
 	}),
 
@@ -498,8 +526,8 @@ var pkgOpenApi = do.Package(
 	do.Lazy(func(i do.Injector) (oapiv1.Handler, error) {
 		return apiv1.NewHandler(
 			do.MustInvoke[rez.Database](i),
-			do.MustInvoke[rez.AiService](i),
-			do.MustInvoke[rez.AgentSessionService](i),
+			do.MustInvoke[rez.AiAgentCatalogue](i),
+			do.MustInvoke[rez.AiAgentSessionService](i),
 			do.MustInvoke[rez.MessageQueue](i),
 			do.MustInvoke[rez.AlertService](i),
 			do.MustInvoke[rez.OrganizationService](i),

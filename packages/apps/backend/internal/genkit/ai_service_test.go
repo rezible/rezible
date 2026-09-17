@@ -15,24 +15,24 @@ import (
 	"github.com/rezible/rezible/test"
 )
 
-type AiServiceSuite struct {
+type AiRuntimeSuite struct {
 	test.Suite
 }
 
-func TestAiServiceSuite(t *testing.T) {
-	suite.Run(t, &AiServiceSuite{Suite: test.NewSuite()})
+func TestAiRuntimeSuite(t *testing.T) {
+	suite.Run(t, &AiRuntimeSuite{Suite: test.NewSuite()})
 }
 
-func (s *AiServiceSuite) checkSkip(name string) {
+func (s *AiRuntimeSuite) checkSkip(name string) {
 	if os.Getenv("AI_TESTS_ALL") != "true" && os.Getenv("AI_TESTS_"+name) != "true" {
 		s.T().Skipf("Skipping live AI test '%s'", name)
 	}
 }
 
-func withTestModel(response *ai.ModelResponse) AiServiceOption {
-	return AiServiceOption{
-		kind: AiServiceOptionKindModel,
-		optFn: func(s *AiService) error {
+func withTestModel(response *ai.ModelResponse) AiRuntimeOption {
+	return AiRuntimeOption{
+		kind: AiRuntimeOptionKindModel,
+		optFn: func(s *AiRuntime) error {
 			gk.DefineModel(s.gk, "test/model", &ai.ModelOptions{
 				Supports: &ai.ModelSupports{
 					Constrained: ai.ConstrainedSupportAll,
@@ -47,13 +47,13 @@ func withTestModel(response *ai.ModelResponse) AiServiceOption {
 	}
 }
 
-func (s *AiServiceSuite) makeService(ctx context.Context, opts ...AiServiceOption) *AiService {
-	svc := NewAiService(s.Config())
+func (s *AiRuntimeSuite) makeService(ctx context.Context, opts ...AiRuntimeOption) *AiRuntime {
+	svc := NewAiRuntime(s.Config())
 	s.Require().NoError(svc.Init(ctx, opts...))
 	return svc
 }
 
-func (s *AiServiceSuite) TestIntegrationToolsMiddlewareLoadsToolsPerTurn() {
+func (s *AiRuntimeSuite) TestIntegrationToolsMiddlewareLoadsToolsPerTurn() {
 	agentName := "test-agent"
 
 	tool := ai.NewTool[any, map[string]any](
@@ -66,7 +66,7 @@ func (s *AiServiceSuite) TestIntegrationToolsMiddlewareLoadsToolsPerTurn() {
 
 	intgs := mocks.NewMockIntegrationService(s.T())
 	intgs.EXPECT().
-		GetAvailableAgentTools(mock.Anything, rez.GetAvailableAgentToolsParams{AgentName: agentName}).
+		GetAvailableAgentTools(mock.Anything, rez.GetAvailableAiAgentToolsParams{AgentName: agentName}).
 		Return([]ai.Tool{tool}, nil).
 		Twice()
 

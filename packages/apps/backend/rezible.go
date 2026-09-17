@@ -419,7 +419,7 @@ type (
 		GetAvailableWebhookHandlers() map[string]http.Handler
 		GetOAuth2FlowIntegration(string) (OAuth2FlowIntegration, error)
 		GetProviderEventQuerier(InstalledIntegration) (ProviderEventQuerier, error)
-		GetAvailableAgentTools(context.Context, []InstalledIntegration, GetAvailableAgentToolsParams) (map[IntegrationDefinition][]ai.Tool, error)
+		GetAvailableAgentTools(context.Context, []InstalledIntegration, GetAvailableAiAgentToolsParams) (map[IntegrationDefinition][]ai.Tool, error)
 	}
 
 	ListIntegrationsParams struct {
@@ -444,7 +444,7 @@ type (
 		Config      IntegrationInstallationConfig
 	}
 
-	GetAvailableAgentToolsParams struct {
+	GetAvailableAiAgentToolsParams struct {
 		AgentName string
 	}
 
@@ -461,7 +461,7 @@ type (
 		DeleteInstalled(ctx context.Context, id uuid.UUID) error
 
 		AsInstalledIntegration(i *ent.Integration) (InstalledIntegration, error)
-		GetAvailableAgentTools(context.Context, GetAvailableAgentToolsParams) ([]ai.Tool, error)
+		GetAvailableAgentTools(context.Context, GetAvailableAiAgentToolsParams) ([]ai.Tool, error)
 
 		StartOAuth2Flow(ctx context.Context, integrationName string) (string, error)
 		CompleteOAuth2Flow(ctx context.Context, integrationName string, params CompleteIntegrationOAuth2FlowParams) (*CompleteIntegrationOAuth2FlowResult, error)
@@ -608,13 +608,15 @@ type (
 	ValidatingInput interface {
 		Validate() error
 	}
+)
 
-	AiWorkflowInput = ValidatingInput
+type (
+	AiWorkflow[I, O any] interface {
+		Run(context.Context, I) (O, error)
+	}
 
-	AiWorkflowOutput interface{}
-
-	AiWorkflowRunner = interface {
-		Run(context.Context, AiWorkflowInput) (AiWorkflowOutput, error)
+	AiWorkflowRunner interface {
+		ExecuteWorkflow(context.Context, string, func(context.Context) error) error
 	}
 
 	AiAgentTurnInput struct {
@@ -633,7 +635,7 @@ type (
 		Artifacts []*aix.Artifact
 	}
 
-	InvokeAgentTurnParams struct {
+	InvokeAiAgentTurnParams struct {
 		Session *ent.AgentSession
 		Turn    *ent.AgentTurn
 		State   AiAgentTurnState
@@ -654,74 +656,77 @@ type (
 		Model       string `json:"model"`
 	}
 
-	AiService interface {
-		GetWorkflowRunner(string) (AiWorkflowRunner, error)
+	AiAgentCatalogue interface {
 		GetAgents() []AiAgentConfig
 		ValidateAgentSessionInput(string, []byte) (ValidatingInput, error)
 		MakeInitialAgentTurnInput(context.Context, *ent.AgentSession) (*AiAgentTurnInput, error)
-		InvokeAgentTurn(context.Context, InvokeAgentTurnParams) (*AiAgentInvocationResult, error)
 	}
 
-	ListAgentSessionsParams struct {
+	AiAgentRuntime interface {
+		AgentCatalogue() AiAgentCatalogue
+		InvokeAgentTurn(context.Context, InvokeAiAgentTurnParams) (*AiAgentInvocationResult, error)
+	}
+
+	ListAiAgentSessionsParams struct {
 		ent.ListParams
 		Predicates []predicate.AgentSession
 		Metadata   map[string]any
 	}
 
-	CreateAgentSessionParams struct {
+	CreateAiAgentSessionParams struct {
 		AgentName        string
 		PermissionScopes []string
 		Input            ValidatingInput
 		Metadata         map[string]any
-		Bindings         []AgentSessionBindingParams
+		Bindings         []AiAgentSessionBindingParams
 	}
 
-	AgentSessionBindingParams struct {
+	AiAgentSessionBindingParams struct {
 		ProviderResourceRef
 		IntegrationID *uuid.UUID
 		Metadata      map[string]any
 	}
 
-	ListAgentSessionBindingsParams struct {
+	ListAiAgentSessionBindingsParams struct {
 		ent.ListParams
 		Predicates []predicate.AgentSessionBinding
 	}
 
-	RequestAgentTurnParams struct {
-		Input *AiAgentTurnInput
-	}
-
-	ListAgentTurnsParams struct {
+	ListAiAgentTurnsParams struct {
 		ent.ListParams
 		Predicates []predicate.AgentTurn
 	}
 
-	ListAgentMessagesParams struct {
+	ListAiAgentMessagesParams struct {
 		ent.ListParams
 		Predicates []predicate.AgentMessage
 	}
 
-	ListAgentArtifactsParams struct {
+	ListAiAgentArtifactsParams struct {
 		ent.ListParams
 		Predicates []predicate.AgentArtifact
 	}
 
-	AgentSessionService interface {
-		ListAgentSessions(context.Context, ListAgentSessionsParams) (*ent.ListResult[ent.AgentSession], error)
-		CreateAgentSession(context.Context, CreateAgentSessionParams) (*ent.AgentSession, error)
+	RequestAiAgentTurnParams struct {
+		Input *AiAgentTurnInput
+	}
+
+	AiAgentSessionService interface {
+		ListAgentSessions(context.Context, ListAiAgentSessionsParams) (*ent.ListResult[ent.AgentSession], error)
+		CreateAgentSession(context.Context, CreateAiAgentSessionParams) (*ent.AgentSession, error)
 		GetAgentSession(context.Context, uuid.UUID) (*ent.AgentSession, error)
 
-		RequestAgentTurn(context.Context, uuid.UUID, *RequestAgentTurnParams) (*ent.AgentTurn, error)
+		RequestAgentTurn(context.Context, uuid.UUID, *RequestAiAgentTurnParams) (*ent.AgentTurn, error)
 
-		ListAgentTurns(context.Context, ListAgentTurnsParams) (*ent.ListResult[ent.AgentTurn], error)
+		ListAgentTurns(context.Context, ListAiAgentTurnsParams) (*ent.ListResult[ent.AgentTurn], error)
 		GetAgentTurn(context.Context, uuid.UUID) (*ent.AgentTurn, error)
 		RetryAgentTurn(context.Context, uuid.UUID) (*ent.AgentTurn, error)
 		AbortAgentTurn(context.Context, uuid.UUID) (*ent.AgentTurn, error)
 
-		ListAgentMessages(context.Context, ListAgentMessagesParams) (*ent.ListResult[ent.AgentMessage], error)
-		ListAgentArtifacts(context.Context, ListAgentArtifactsParams) (*ent.ListResult[ent.AgentArtifact], error)
+		ListAgentMessages(context.Context, ListAiAgentMessagesParams) (*ent.ListResult[ent.AgentMessage], error)
+		ListAgentArtifacts(context.Context, ListAiAgentArtifactsParams) (*ent.ListResult[ent.AgentArtifact], error)
 
-		ListAgentSessionBindings(context.Context, ListAgentSessionBindingsParams) (ent.AgentSessionBindings, error)
+		ListAgentSessionBindings(context.Context, ListAiAgentSessionBindingsParams) (ent.AgentSessionBindings, error)
 		LookupAgentSessionBinding(context.Context, ...predicate.AgentSessionBinding) (*ent.AgentSessionBinding, error)
 		SetAgentSessionBinding(context.Context, uuid.UUID, func(*ent.AgentSessionBindingMutation)) (*ent.AgentSessionBinding, error)
 	}

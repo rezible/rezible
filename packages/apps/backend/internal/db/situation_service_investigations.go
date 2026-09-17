@@ -325,7 +325,7 @@ func (s *SituationService) onAgentTurnUpdated(ctx context.Context, event *rezai.
 	})
 }
 
-func NewReconcileSituationInvestigationWorker(db rez.Database, s rez.SituationService, agents rez.AgentSessionService) *ReconcileSituationInvestigationWorker {
+func NewReconcileSituationInvestigationWorker(db rez.Database, s rez.SituationService, agents rez.AiAgentSessionService) *ReconcileSituationInvestigationWorker {
 	return &ReconcileSituationInvestigationWorker{db: db, situations: s, agents: agents}
 }
 
@@ -333,7 +333,7 @@ type ReconcileSituationInvestigationWorker struct {
 	jobs.WorkerDefaults[jobs.BumpSituationInvestigation]
 	db         rez.Database
 	situations rez.SituationService
-	agents     rez.AgentSessionService
+	agents     rez.AiAgentSessionService
 }
 
 func (w *ReconcileSituationInvestigationWorker) Work(ctx context.Context, job *jobs.Job[jobs.BumpSituationInvestigation]) error {
@@ -373,7 +373,7 @@ func (w *ReconcileSituationInvestigationWorker) Work(ctx context.Context, job *j
 			return fmt.Errorf("lock investigation session after situation: %w", sessionLockErr)
 		}
 
-		// TODO: AgentSessionService.GetSessionActiveTurn
+		// TODO: AiAgentSessionService.GetSessionActiveTurn
 		activeTurnQuery := tx.AgentTurn.Query().
 			Where(agt.AgentSessionID(inv.AgentSessionID), agt.StatusIn(agt.StatusQueued, agt.StatusRunning))
 		active, queryActiveTurnErr := activeTurnQuery.Exist(ctx)
@@ -406,7 +406,7 @@ func (w *ReconcileSituationInvestigationWorker) Work(ctx context.Context, job *j
 			return fmt.Errorf("make turn input: %w", inputErr)
 		}
 
-		reqTurnParams := &rez.RequestAgentTurnParams{Input: turnInput}
+		reqTurnParams := &rez.RequestAiAgentTurnParams{Input: turnInput}
 		turn, requestTurnErr := w.agents.RequestAgentTurn(ctx, inv.AgentSessionID, reqTurnParams)
 		if requestTurnErr != nil {
 			return fmt.Errorf("request investigation agent turn: %w", requestTurnErr)

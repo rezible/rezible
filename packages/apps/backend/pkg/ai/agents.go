@@ -1,13 +1,11 @@
 package ai
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"strings"
 
 	"github.com/firebase/genkit/go/ai"
-	aix "github.com/firebase/genkit/go/ai/exp"
 	"github.com/google/uuid"
 
 	rez "github.com/rezible/rezible"
@@ -15,44 +13,23 @@ import (
 )
 
 type (
-	AgentInput = rez.ValidatingInput
-
-	SessionState interface {
-	}
-
-	AgentState[S SessionState] aix.SessionState[S]
-
-	AgentDefinition[I AgentInput, S SessionState] struct {
-		Name           string
-		Description    string
-		Model          string
-		SystemPrompt   string
-		inputValidator func(I) error
-	}
-
-	AgentWrapper interface {
-		Config() rez.AiAgentConfig
-		ValidateInput([]byte) (rez.ValidatingInput, error)
-		MakeInitialTurnInput(context.Context, *ent.AgentSession) (*rez.AiAgentTurnInput, error)
-		Invoke(context.Context, rez.InvokeAgentTurnParams) (*rez.AiAgentInvocationResult, error)
+	AiAgentDefinition[SessionInput rez.ValidatingInput] struct {
+		Name         string
+		Description  string
+		Model        string
+		SystemPrompt string
 	}
 )
 
-func (d AgentDefinition[I, S]) ValidateInput(raw []byte) (*I, error) {
-	var input I
+func (d AiAgentDefinition[SessionInput]) DecodeSessionInput(raw []byte) (*SessionInput, error) {
+	var input SessionInput
 	if jsonErr := json.Unmarshal(raw, &input); jsonErr != nil {
 		return nil, fmt.Errorf("unmarshal: %w", jsonErr)
 	}
-	var validationErr error
 	if validErr := input.Validate(); validErr != nil {
-		validationErr = fmt.Errorf("validate: %w", validErr)
+		return nil, fmt.Errorf("validate: %w", validErr)
 	}
-	if d.inputValidator != nil {
-		if validErr := d.inputValidator(input); validErr != nil {
-			validationErr = fmt.Errorf("validate: %w", validErr)
-		}
-	}
-	return &input, validationErr
+	return &input, nil
 }
 
 type (
@@ -70,7 +47,7 @@ type (
 		ReportReady bool `json:"report_ready"`
 	}
 
-	InvestigationAgentDefinition = AgentDefinition[InvestigationAgentSessionInput, InvestigationAgentState]
+	InvestigationAgentDefinition = AiAgentDefinition[InvestigationAgentSessionInput]
 )
 
 func (i InvestigationAgentSessionInput) Validate() error {
@@ -140,7 +117,7 @@ type (
 	ChatAgentState struct {
 	}
 
-	ChatAgentDefinition = AgentDefinition[ChatAgentInput, ChatAgentState]
+	ChatAgentDefinition = AiAgentDefinition[ChatAgentInput]
 )
 
 func (i ChatAgentInput) Validate() error {

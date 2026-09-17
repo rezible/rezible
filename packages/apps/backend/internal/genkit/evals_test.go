@@ -70,23 +70,41 @@ func TestEvaluationServiceSuite(t *testing.T) {
 	suite.Run(t, &EvaluationServiceSuite{Suite: test.NewSuite()})
 }
 
+func (s *EvaluationServiceSuite) makeEvalService(tdb rez.Database, runtime *AiRuntime, scenarios ...rezai.EvalScenario) *EvaluationService {
+	workflowBuilder := NewWorkflowBuilder(runtime, &testWorkflowRunner{})
+	flow, flowErr := NewEvaluateScenarioFlow(tdb, runtime, workflowBuilder, scenarios...)
+	s.Require().NoError(flowErr)
+	service, serviceErr := runtime.MakeEvaluationService(flow)
+	s.Require().NoError(serviceErr)
+	return service
+}
+
+func (s *EvaluationServiceSuite) runEval(ctx context.Context, tdb rez.Database, runtime *AiRuntime, scenario testEvalScenario) rezai.EvalScenarioRunResult {
+	service := s.makeEvalService(tdb, runtime, scenario)
+
+	result, runErr := service.RunScenario(ctx, scenario.Definition().Name)
+	s.Require().NoError(runErr)
+	return result
+}
+
 func (s *EvaluationServiceSuite) TestRunsAgentAndProducesPassingReport() {
 	ctx := s.SeedTenantContext()
-	database := s.CreateTestDatabase()
 	response := &ai.ModelResponse{
 		Message:      ai.NewModelTextMessage("hello"),
 		FinishReason: ai.FinishReasonStop,
 	}
 	agent := makeTestAgent[testAgentState](ai.NewUserTextMessage("say hello"))
 	agent.def.Model = "test/model"
-	aiService := NewAiService(s.Config())
-	s.Require().NoError(aiService.Init(ctx, withTestModel(response), WithAgent(agent)))
+	runtime := NewAiRuntime(s.Config())
+	s.Require().NoError(runtime.Init(ctx, withTestModel(response), WithAgent(agent)))
 
-	service := NewEvaluationService(database, aiService)
-	result := service.RunScenario(ctx, testEvalScenario{
+	tdb := s.CreateTestDatabase()
+	scenario := testEvalScenario{
 		agentName: agent.def.Name,
 		passed:    true,
-	})
+	}
+	result := s.runEval(ctx, tdb, runtime, scenario)
+
 	s.Equal(rezai.EvalRunStatusPassed, result.Status)
 	s.Require().NotNil(result.Execution)
 	s.True(result.Execution.Succeeded)
@@ -96,22 +114,22 @@ func (s *EvaluationServiceSuite) TestRunsAgentAndProducesPassingReport() {
 
 func (s *EvaluationServiceSuite) TestReportsGradeErrorsAtGradeStage() {
 	ctx := s.SeedTenantContext()
-	database := s.CreateTestDatabase()
 	response := &ai.ModelResponse{
 		Message:      ai.NewModelTextMessage("hello"),
 		FinishReason: ai.FinishReasonStop,
 	}
 	agent := makeTestAgent[testAgentState](ai.NewUserTextMessage("say hello"))
 	agent.def.Model = "test/model"
-	aiService := NewAiService(s.Config())
-	s.Require().NoError(aiService.Init(ctx, withTestModel(response), WithAgent(agent)))
+	runtime := NewAiRuntime(s.Config())
+	s.Require().NoError(runtime.Init(ctx, withTestModel(response), WithAgent(agent)))
 	expectedErr := errors.New("grading unavailable")
 
-	service := NewEvaluationService(database, aiService)
-	result := service.RunScenario(ctx, testEvalScenario{
+	tdb := s.CreateTestDatabase()
+	scenario := testEvalScenario{
 		agentName: agent.def.Name,
 		gradeErr:  expectedErr,
-	})
+	}
+	result := s.runEval(ctx, tdb, runtime, scenario)
 	s.Equal(rezai.EvalRunStatusError, result.Status)
 	s.Require().NotNil(result.Error)
 	s.Equal(rezai.EvalRunStageGrade, result.Error.Stage)

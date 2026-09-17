@@ -1,54 +1,18 @@
 package ai
 
 import (
-	"context"
 	"fmt"
 	"strings"
 
 	rez "github.com/rezible/rezible"
 )
 
-type (
-	WorkflowWrapper interface {
-		Config() rez.AiAgentConfig
-		Run(context.Context, rez.AiWorkflowInput) (rez.AiWorkflowOutput, error)
-	}
-
-	WorkflowRunner[I rez.AiWorkflowInput, O rez.AiWorkflowOutput] interface {
-		Run(context.Context, I) (*O, error)
-	}
-
-	WorkflowDefinition[I rez.AiWorkflowInput, O rez.AiWorkflowOutput] struct {
-		Name         string
-		Description  string
-		Model        string
-		SystemPrompt string
-		Prompt       func(I) string
-	}
-
-	workflowDefinitionRunner[I rez.AiWorkflowInput, O rez.AiWorkflowOutput] struct {
-		runner rez.AiWorkflowRunner
-	}
-)
-
-func (r *workflowDefinitionRunner[I, O]) Run(ctx context.Context, input I) (*O, error) {
-	runOutput, runErr := r.runner.Run(ctx, input)
-	if runErr != nil {
-		return nil, fmt.Errorf("run: %w", runErr)
-	}
-	output, ok := runOutput.(O)
-	if !ok {
-		return nil, fmt.Errorf("invalid output type %T", output)
-	}
-	return &output, nil
-}
-
-func GetWorkflowRunner[I rez.AiWorkflowInput, O rez.AiWorkflowOutput](s rez.AiService, d WorkflowDefinition[I, O]) (WorkflowRunner[I, O], error) {
-	runner, runnerErr := s.GetWorkflowRunner(d.Name)
-	if runnerErr != nil {
-		return nil, runnerErr
-	}
-	return &workflowDefinitionRunner[I, O]{runner: runner}, nil
+type AiPromptWorkflowDefinition[I rez.ValidatingInput, O any] struct {
+	Name         string
+	Description  string
+	Model        string
+	SystemPrompt string
+	Prompt       func(I) string
 }
 
 type (
@@ -61,7 +25,7 @@ type (
 		ShouldReply bool `json:"should_reply"`
 	}
 
-	ClassifyAgentThreadResponseWorkflowRunner = WorkflowRunner[ClassifyAgentThreadResponseInput, ClassifyAgentThreadResponseOutput]
+	AiClassifyAgentThreadResponseWorkflow = rez.AiWorkflow[ClassifyAgentThreadResponseInput, ClassifyAgentThreadResponseOutput]
 )
 
 func (i ClassifyAgentThreadResponseInput) Validate() error {
@@ -71,7 +35,7 @@ func (i ClassifyAgentThreadResponseInput) Validate() error {
 	return nil
 }
 
-var ClassifyAgentThreadResponseWorkflow = WorkflowDefinition[ClassifyAgentThreadResponseInput, ClassifyAgentThreadResponseOutput]{
+var ClassifyAgentThreadResponseDefinition = AiPromptWorkflowDefinition[ClassifyAgentThreadResponseInput, ClassifyAgentThreadResponseOutput]{
 	Name:        "classify_agent_thread_response",
 	Description: "Classify whether a chat thread message needs a reply from the agent.",
 	SystemPrompt: `You are a simple classifier to determine whether an incoming message in a slack thread is directed at the rezible agent, and requires a reply.

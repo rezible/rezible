@@ -15,7 +15,7 @@ import (
 	rezai "github.com/rezible/rezible/pkg/ai"
 )
 
-func (s *AiServiceSuite) makeAgentSession(svc *AiService, tdb rez.Database, name string, sessInput rezai.AgentInput) *ent.AgentSession {
+func (s *AiRuntimeSuite) makeAgentSession(svc *AiRuntime, tdb rez.Database, name string, sessInput rez.ValidatingInput) *ent.AgentSession {
 	sessInputJson, sessInputJsonErr := json.Marshal(sessInput)
 	s.Require().NoError(sessInputJsonErr)
 
@@ -30,7 +30,7 @@ func (s *AiServiceSuite) makeAgentSession(svc *AiService, tdb rez.Database, name
 		}
 		session = createdSession.Unwrap()
 
-		turnInput, inputErr := svc.MakeInitialAgentTurnInput(ctx, createdSession)
+		turnInput, inputErr := svc.catalogue.MakeInitialAgentTurnInput(ctx, createdSession)
 		if inputErr != nil {
 			return fmt.Errorf("initial agent turn input: %w", inputErr)
 		}
@@ -73,15 +73,15 @@ func (s *AiServiceSuite) makeAgentSession(svc *AiService, tdb rez.Database, name
 	return session
 }
 
-func (s *AiServiceSuite) makeInvokeAgentSessionParams(sess *ent.AgentSession) rez.InvokeAgentTurnParams {
+func (s *AiRuntimeSuite) makeInvokeAgentSessionParams(sess *ent.AgentSession) rez.InvokeAiAgentTurnParams {
 	s.Require().Greater(len(sess.Edges.Turns), 0)
-	return rez.InvokeAgentTurnParams{
+	return rez.InvokeAiAgentTurnParams{
 		Session: sess,
 		Turn:    sess.Edges.Turns[0],
 	}
 }
 
-func (s *AiServiceSuite) TestClientManagedTurnStateAndResumeRoundTrip() {
+func (s *AiRuntimeSuite) TestClientManagedTurnStateAndResumeRoundTrip() {
 	ctx := s.SeedTenantContext()
 	tdb := s.CreateTestDatabase()
 	msg := ai.NewUserTextMessage("hello world")
@@ -113,7 +113,7 @@ func (s *AiServiceSuite) TestClientManagedTurnStateAndResumeRoundTrip() {
 	s.Require().GreaterOrEqual(len(nextRes.State.Messages), len(initialRes.State.Messages))
 }
 
-func (s *AiServiceSuite) TestSimpleGreetingAgent() {
+func (s *AiRuntimeSuite) TestSimpleGreetingAgent() {
 	s.checkSkip("simple_greeting")
 
 	ctx := s.SeedTenantContext()
@@ -135,8 +135,8 @@ func (s *AiServiceSuite) TestSimpleGreetingAgent() {
 	s.NotEmpty(result.State.Messages)
 }
 
-func makeTestAgent[S rezai.SessionState](msg *ai.Message) *testAgent[S] {
-	taDef := testAgentDef[S]{
+func makeTestAgent[S any](msg *ai.Message) *testAgent[S] {
+	taDef := testAgentDef{
 		Name:         "test_agent",
 		Description:  "A simple agent",
 		SystemPrompt: "You are an ai agent that follow user instructions exactly. Keep output concise",
@@ -150,10 +150,10 @@ type (
 		Foo string `json:"foo"`
 	}
 
-	testAgentDef[S rezai.SessionState] = rezai.AgentDefinition[testAgentInput, S]
+	testAgentDef = rezai.AiAgentDefinition[testAgentInput]
 
-	testAgent[S rezai.SessionState] struct {
-		def         testAgentDef[S]
+	testAgent[S any] struct {
+		def         testAgentDef
 		customFn    func(S) S
 		userMessage *ai.Message
 	}
@@ -165,7 +165,7 @@ func (i testAgentInput) Validate() error {
 	return nil
 }
 
-func (t *testAgent[S]) agentDefinition() testAgentDef[S] {
+func (t *testAgent[S]) agentDefinition() testAgentDef {
 	return t.def
 }
 

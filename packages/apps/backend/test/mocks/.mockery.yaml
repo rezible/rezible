@@ -15,8 +15,9 @@ packages:
       OrganizationService: {}
       UserService: {}
       AlertService: {}
-      AgentSessionService: {}
-      AiService: {}
+      AiAgentSessionService: {}
+      AiAgentRuntime: {}
+      AiAgentCatalogue: {}
       IntegrationService: {}
       IncidentService: {}
       KnowledgeGraphService: {}

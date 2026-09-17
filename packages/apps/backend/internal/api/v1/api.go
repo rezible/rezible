@@ -38,8 +38,8 @@ var _ oapi.Handler = (*Handler)(nil)
 
 func NewHandler(
 	db rez.Database,
-	ai rez.AiService,
-	agents rez.AgentSessionService,
+	agents rez.AiAgentCatalogue,
+	agentSessions rez.AiAgentSessionService,
 	messages rez.MessageQueue,
 	alerts rez.AlertService,
 	orgs rez.OrganizationService,
@@ -62,7 +62,7 @@ func NewHandler(
 ) (*Handler, error) {
 	h := &Handler{
 		alertsHandler:             newAlertsHandler(alerts),
-		aiHandler:                 newAiHandler(ai, agents, messages),
+		aiHandler:                 newAiHandler(agents, agentSessions, messages),
 		userSessionsHandler:       newUserSessionsHandler(orgs, users),
 		documentsHandler:          newDocumentsHandler(documents, users),
 		incidentDebriefsHandler:   newIncidentDebriefsHandler(db, users, debriefs),

@@ -116,7 +116,7 @@ func (m *integrationToolsMiddleware) Name() string {
 }
 
 func (m *integrationToolsMiddleware) New(ctx context.Context) (*ai.Hooks, error) {
-	params := rez.GetAvailableAgentToolsParams{AgentName: m.agentName}
+	params := rez.GetAvailableAiAgentToolsParams{AgentName: m.agentName}
 	tools, toolsErr := m.integrations.GetAvailableAgentTools(ctx, params)
 	if toolsErr != nil {
 		return nil, fmt.Errorf("get available integration agent tools: %w", toolsErr)

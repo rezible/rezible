@@ -26,13 +26,13 @@ var scenarioFuncs = []scenarioFn{
 	defineScenario[InvestigationInsufficientContext](),
 }
 
-func List() []rezai.EvalScenarioDefinition {
-	definitions := make([]rezai.EvalScenarioDefinition, 0, len(scenarioFuncs))
+func List() []rezai.EvalScenario {
+	definitions := make([]rezai.EvalScenario, 0, len(scenarioFuncs))
 	for _, fn := range scenarioFuncs {
-		definitions = append(definitions, fn().Definition())
+		definitions = append(definitions, fn())
 	}
-	slices.SortFunc(definitions, func(a, b rezai.EvalScenarioDefinition) int {
-		return cmp.Compare(a.Name, b.Name)
+	slices.SortFunc(definitions, func(a, b rezai.EvalScenario) int {
+		return cmp.Compare(a.Definition().Name, b.Definition().Name)
 	})
 	return definitions
 }
