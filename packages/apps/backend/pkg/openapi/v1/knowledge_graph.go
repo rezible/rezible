@@ -56,7 +56,7 @@ type (
 		Attributes KnowledgeGraphEntityAttributes `json:"attributes"`
 	}
 	KnowledgeGraphEntityAttributes struct {
-		Category    string                       `json:"category"`
+		Category    string                       `json:"category" enum:"system_function,actor,system,container,component,infrastructure,code,process,concern,decision,event,signal"`
 		Kind        string                       `json:"kind"`
 		Aliases     []KnowledgeGraphSubjectAlias `json:"aliases"`
 		LatestState *KnowledgeGraphSubjectState  `json:"latestState,omitempty"`
@@ -184,7 +184,7 @@ var ListKnowledgeGraphEntities = huma.Operation{
 type ListKnowledgeGraphEntitiesRequest struct {
 	PaginationRequest
 	Search            string   `query:"search" required:"false" nullable:"false"`
-	Category          []string `query:"category" required:"false"`
+	Category          []string `query:"category" required:"false" enum:"system_function,actor,system,container,component,infrastructure,code,process,concern,decision,event,signal"`
 	Kind              []string `query:"kind" required:"false"`
 	Provider          string   `query:"provider" required:"false"`
 	ProviderNamespace string   `query:"providerNamespace" required:"false"`

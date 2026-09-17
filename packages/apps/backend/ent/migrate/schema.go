@@ -1701,7 +1701,7 @@ var (
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "category", Type: field.TypeEnum, Enums: []string{"actor", "system", "container", "component", "infrastructure", "code", "process", "domain_object", "concern", "decision", "event", "signal"}},
+		{Name: "category", Type: field.TypeEnum, Enums: []string{"system_function", "actor", "system", "container", "component", "infrastructure", "code", "process", "concern", "decision", "event", "signal"}},
 		{Name: "kind", Type: field.TypeString},
 		{Name: "tenant_id", Type: field.TypeInt},
 	}

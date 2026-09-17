@@ -4090,6 +4090,19 @@ components:
             $ref: "#/components/schemas/KnowledgeGraphSubjectAlias"
           type: array
         category:
+          enum:
+            - system_function
+            - actor
+            - system
+            - container
+            - component
+            - infrastructure
+            - code
+            - process
+            - concern
+            - decision
+            - event
+            - signal
           type: string
         createdAt:
           format: date-time
@@ -13598,6 +13611,19 @@ paths:
           name: category
           schema:
             items:
+              enum:
+                - system_function
+                - actor
+                - system
+                - container
+                - component
+                - infrastructure
+                - code
+                - process
+                - concern
+                - decision
+                - event
+                - signal
               type: string
             type: array
         - explode: false

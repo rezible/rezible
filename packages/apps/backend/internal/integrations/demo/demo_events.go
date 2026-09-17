@@ -88,7 +88,7 @@ func relatedComponent(id string, category kne.Category, kind string, displayName
 var demoCodeChangeEvents = []codeChangeObservedPayload{
 	{
 		ExternalID:    "pr-1842",
-		RepositoryRef: "rezible-commerce/search-api",
+		RepositoryRef: "demo:code_repositories:search-api",
 		Title:         "PR #1842 Tune search enrichment retry policy",
 		MergedAt:      time.Date(2026, 5, 12, 8, 42, 0, 0, time.UTC),
 		ImpactedEntities: []projections.EntityObservation{

@@ -1,3 +1,4 @@
+import type { KnowledgeGraphEntityAttributes } from "@rezible/api-client-ts";
 import { createSystemMapLayoutEngine, type LayoutResult } from "$src/features/systems/components/system-map";
 import { NodeDetailLevel, MapCategory } from "../category";
 import { Coverage, type GraphEntity, type GraphRelationship, type GraphSubset } from "../graph";
@@ -32,7 +33,16 @@ export type GraphExample = {
 	};
 };
 
-const entity = (id: string, category: MapCategory, label = id, kind = "subject"): GraphEntity => ({
+type GeneratedSourceCategory = KnowledgeGraphEntityAttributes["category"];
+
+const entity = (id: string, category: GeneratedSourceCategory, label = id, kind = "subject"): GraphEntity => ({
+	id,
+	category,
+	label,
+	kind,
+});
+
+const rawEntity = (id: string, category: string, label = id, kind = "subject"): GraphEntity => ({
 	id,
 	category,
 	label,
@@ -163,7 +173,7 @@ export const edgeCasesExample: GraphExample = {
 			entity("parent", MapCategory.System),
 			entity("child", MapCategory.Container),
 			entity("nested", MapCategory.System),
-			entity("isolated", MapCategory.Unknown),
+			rawEntity("isolated", "future_category"),
 			entity("actor", MapCategory.Actor),
 			entity("event", MapCategory.Event),
 			entity("code", MapCategory.Code),

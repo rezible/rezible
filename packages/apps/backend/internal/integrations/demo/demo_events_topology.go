@@ -37,13 +37,13 @@ func componentRef(id string) string {
 }
 
 func makeDemoTopologyComponents() []topologyComponentObservedPayload {
-	component := func(id string, category kne.Category, kind string, displayName string, description string, properties map[string]any) topologyComponentObservedPayload {
+	componentAtRef := func(resourceRef string, category kne.Category, kind string, displayName string, description string, properties map[string]any) topologyComponentObservedPayload {
 		props := map[string]any{}
 		for k, v := range properties {
 			props[k] = v
 		}
 		return topologyComponentObservedPayload{
-			ResourceRef: componentRef(id),
+			ResourceRef: resourceRef,
 			Category:    category,
 			Kind:        kind,
 			DisplayName: displayName,
@@ -51,8 +51,16 @@ func makeDemoTopologyComponents() []topologyComponentObservedPayload {
 			Properties:  props,
 		}
 	}
+	component := func(id string, category kne.Category, kind string, displayName string, description string, properties map[string]any) topologyComponentObservedPayload {
+		return componentAtRef(componentRef(id), category, kind, displayName, description, properties)
+	}
 
 	return []topologyComponentObservedPayload{
+		component("commerce_function", kne.CategorySystemFunction, "capability", "Online Commerce", "Customer-facing commerce capabilities from discovery through payment.", map[string]any{"business_domain": "commerce", "tags": []string{"landscape", "customer-facing"}}),
+		component("platform_function", kne.CategorySystemFunction, "capability", "Platform Operations", "Shared platform capabilities that keep commerce systems running.", map[string]any{"business_domain": "platform", "tags": []string{"landscape", "shared"}}),
+		component("customer_experience_system", kne.CategorySystem, "subsystem", "Customer Experience", "Web and API entry points for customer and operator journeys.", map[string]any{"tier": "edge", "business_domain": "commerce", "owner_team": "platform_team"}),
+		component("commerce_core_system", kne.CategorySystem, "subsystem", "Commerce Core", "Core identity, catalogue, checkout, order, payment, and inventory services.", map[string]any{"tier": "core", "business_domain": "commerce", "owner_team": "commerce_team"}),
+		component("platform_services_system", kne.CategorySystem, "subsystem", "Platform Services", "Shared asynchronous, messaging, and operational platform services.", map[string]any{"tier": "supporting", "business_domain": "platform", "owner_team": "platform_team"}),
 		component("web_app", kne.CategoryContainer, "user_surface", "Customer Web App", "Primary customer-facing storefront and account experience.", map[string]any{"tier": "edge", "criticality": "high", "lifecycle": "production", "runtime": "sveltekit", "region": "global", "owner_team": "commerce_team", "repository_ref": "rezible-commerce/web-app", "tags": []string{"customer-facing", "frontend"}, "business_domain": "commerce"}),
 		component("admin_console", kne.CategoryContainer, "user_surface", "Admin Console", "Internal operations interface for catalog, search, and order support.", map[string]any{"tier": "internal", "criticality": "medium", "lifecycle": "production", "runtime": "sveltekit", "region": "global", "owner_team": "platform_team", "repository_ref": "rezible-commerce/admin-console", "tags": []string{"internal", "operations"}, "business_domain": "operations"}),
 		component("public_api_gateway", kne.CategoryContainer, "gateway", "Public API Gateway", "Ingress gateway for public REST and partner API traffic.", map[string]any{"tier": "edge", "criticality": "high", "lifecycle": "production", "runtime": "envoy", "region": "us-east-1", "owner_team": "platform_team", "tags": []string{"api", "ingress"}, "business_domain": "platform"}),
@@ -78,13 +86,18 @@ func makeDemoTopologyComponents() []topologyComponentObservedPayload {
 		component("order_events_queue", kne.CategoryContainer, "message_queue", "Order Events Queue", "Durable stream for order lifecycle events.", map[string]any{"tier": "async", "criticality": "high", "engine": "sqs", "region": "us-east-1", "owner_team": "platform_team", "tags": []string{"events", "orders"}}),
 		component("stripe", kne.CategorySystem, "external_system", "Stripe", "External payment processor.", map[string]any{"tier": "external", "criticality": "critical", "owner_team": "commerce_team", "tags": []string{"payments", "third-party"}}),
 		component("sendgrid", kne.CategorySystem, "external_system", "SendGrid", "External email delivery provider.", map[string]any{"tier": "external", "criticality": "medium", "owner_team": "platform_team", "tags": []string{"email", "third-party"}}),
-		component("customer", kne.CategoryDomainObject, "business_entity", "Customer", "A person or organization buying from the storefront.", map[string]any{"business_domain": "identity", "owner_team": "identity_team", "tags": []string{"model"}}),
-		component("product", kne.CategoryDomainObject, "business_entity", "Product", "A sellable catalog item.", map[string]any{"business_domain": "catalog", "owner_team": "commerce_team", "tags": []string{"model"}}),
-		component("cart", kne.CategoryDomainObject, "business_entity", "Cart", "A customer's active purchase intent.", map[string]any{"business_domain": "checkout", "owner_team": "commerce_team", "tags": []string{"model"}}),
-		component("order", kne.CategoryDomainObject, "business_entity", "Order", "A committed customer purchase.", map[string]any{"business_domain": "orders", "owner_team": "commerce_team", "tags": []string{"model"}}),
-		component("payment", kne.CategoryDomainObject, "business_entity", "Payment", "Payment authorization and capture record.", map[string]any{"business_domain": "payments", "owner_team": "commerce_team", "tags": []string{"model"}}),
-		component("invoice", kne.CategoryDomainObject, "business_entity", "Invoice", "Customer invoice document.", map[string]any{"business_domain": "orders", "owner_team": "commerce_team", "tags": []string{"model"}}),
-		component("search_index", kne.CategoryDomainObject, "business_entity", "Search Index", "Materialized product search index.", map[string]any{"business_domain": "catalog", "owner_team": "commerce_team", "tags": []string{"model", "derived"}}),
+		component("production_cluster", kne.CategoryInfrastructure, "kubernetes_cluster", "Production Kubernetes", "Shared production cluster hosting the commerce runtime.", map[string]any{"tier": "platform", "criticality": "critical", "provider": "kubernetes", "region": "us-east-1", "owner_team": "platform_team", "tags": []string{"runtime", "shared"}}),
+		component("edge_network", kne.CategoryInfrastructure, "load_balancer", "Edge Network", "Shared ingress and load-balancing layer for public and operator traffic.", map[string]any{"tier": "edge", "criticality": "high", "provider": "cloud", "region": "global", "owner_team": "platform_team", "tags": []string{"network", "shared"}}),
+		component("shared_observability", kne.CategoryInfrastructure, "telemetry_platform", "Observability Platform", "Shared telemetry and alerting platform for runtime services.", map[string]any{"tier": "platform", "criticality": "high", "provider": "cloud", "region": "global", "owner_team": "platform_team", "tags": []string{"telemetry", "shared"}}),
+		component("auth_session_manager", kne.CategoryComponent, "module", "Auth Session Manager", "Internal component that manages sessions and identity state.", map[string]any{"container_ref": "auth_service", "repository_ref": "rezible-commerce/auth-service"}),
+		component("search_query_handler", kne.CategoryComponent, "module", "Search Query Handler", "Internal component that serves product and catalogue queries.", map[string]any{"container_ref": "search_api", "repository_ref": "rezible-commerce/search-api"}),
+		component("checkout_orchestrator", kne.CategoryComponent, "module", "Checkout Orchestrator", "Internal component coordinating checkout, inventory, payment, and order calls.", map[string]any{"container_ref": "checkout_service", "repository_ref": "rezible-commerce/checkout-service"}),
+		component("payment_adapter", kne.CategoryComponent, "module", "Payment Adapter", "Internal component translating checkout requests to the payment provider.", map[string]any{"container_ref": "checkout_service", "repository_ref": "rezible-commerce/checkout-service"}),
+		component("catalog_index_job", kne.CategoryComponent, "module", "Catalog Index Job", "Internal component that turns catalogue updates into search index writes.", map[string]any{"container_ref": "search_indexer", "repository_ref": "rezible-commerce/search-indexer"}),
+		componentAtRef("demo:code_repositories:search-api", kne.CategoryCode, "repository", "Search API Repository", "Source repository for the search API runtime and query handler.", map[string]any{"repository_ref": "rezible-commerce/search-api", "url": "https://github.example/rezible-commerce/search-api"}),
+		componentAtRef("demo:code_repositories:checkout-service", kne.CategoryCode, "repository", "Checkout Service Repository", "Source repository for checkout orchestration and payment integration.", map[string]any{"repository_ref": "rezible-commerce/checkout-service", "url": "https://github.example/rezible-commerce/checkout-service"}),
+		componentAtRef("demo:code:checkout-orchestrator", kne.CategoryCode, "source_file", "Checkout Orchestrator Source", "Representative source artifact for checkout orchestration.", map[string]any{"repository_ref": "rezible-commerce/checkout-service", "path": "internal/checkout/orchestrator.go"}),
+		componentAtRef("demo:code:search-query-handler", kne.CategoryCode, "source_file", "Search Query Handler Source", "Representative source artifact for search query handling.", map[string]any{"repository_ref": "rezible-commerce/search-api", "path": "internal/search/query_handler.go"}),
 		component("identity_team", kne.CategoryActor, "team", "Identity Team", "Owns authentication and customer identity.", map[string]any{"slack_channel": "#team-identity", "oncall_roster": "identity-primary"}),
 		component("commerce_team", kne.CategoryActor, "team", "Commerce Team", "Owns catalog, checkout, orders, and payments.", map[string]any{"slack_channel": "#team-commerce", "oncall_roster": "commerce-primary"}),
 		component("platform_team", kne.CategoryActor, "team", "Platform Team", "Owns shared platform, messaging, and communications infrastructure.", map[string]any{"slack_channel": "#team-platform", "oncall_roster": "platform-primary"}),
@@ -144,8 +157,17 @@ func (p topologyRelationshipObservedPayload) getAttributes(namespace string) pro
 }
 
 func makeDemoTopologyRelationships(cmps []topologyComponentObservedPayload) []topologyRelationshipObservedPayload {
+	resourceRefForID := map[string]string{
+		"search_repository":         "demo:code_repositories:search-api",
+		"checkout_repository":       "demo:code_repositories:checkout-service",
+		"checkout_orchestrator_source": "demo:code:checkout-orchestrator",
+		"search_query_source":           "demo:code:search-query-handler",
+	}
 	mustTopologyComponent := func(id string) topologyRelationshipObservedPayloadComponent {
 		ref := componentRef(id)
+		if customRef, ok := resourceRefForID[id]; ok {
+			ref = customRef
+		}
 		for _, c := range cmps {
 			if c.ResourceRef == ref {
 				return topologyRelationshipObservedPayloadComponent{
@@ -178,6 +200,52 @@ func makeDemoTopologyRelationships(cmps []topologyComponentObservedPayload) []to
 	}
 
 	return []topologyRelationshipObservedPayload{
+		rel("commerce_function", knr.PredicateContains, "customer_experience_system", "Online Commerce contains Customer Experience"),
+		rel("commerce_function", knr.PredicateContains, "commerce_core_system", "Online Commerce contains Commerce Core"),
+		rel("platform_function", knr.PredicateContains, "platform_services_system", "Platform Operations contains Platform Services"),
+		rel("customer_experience_system", knr.PredicateContains, "web_app", "Customer Experience contains Customer Web App"),
+		rel("customer_experience_system", knr.PredicateContains, "admin_console", "Customer Experience contains Admin Console"),
+		rel("customer_experience_system", knr.PredicateContains, "public_api_gateway", "Customer Experience contains Public API Gateway"),
+		rel("customer_experience_system", knr.PredicateContains, "search_api", "Customer Experience contains Search API"),
+		rel("customer_experience_system", knr.PredicateContains, "edge_network", "Customer Experience contains Edge Network"),
+		rel("commerce_core_system", knr.PredicateContains, "auth_service", "Commerce Core contains Auth Listener"),
+		rel("commerce_core_system", knr.PredicateContains, "catalog_service", "Commerce Core contains Catalog Listener"),
+		rel("commerce_core_system", knr.PredicateContains, "search_api", "Commerce Core contains Search API"),
+		rel("commerce_core_system", knr.PredicateContains, "checkout_service", "Commerce Core contains Checkout Listener"),
+		rel("commerce_core_system", knr.PredicateContains, "orders_service", "Commerce Core contains Orders Listener"),
+		rel("commerce_core_system", knr.PredicateContains, "payments_service", "Commerce Core contains Payments Listener"),
+		rel("commerce_core_system", knr.PredicateContains, "inventory_service", "Commerce Core contains Inventory Listener"),
+		rel("commerce_core_system", knr.PredicateContains, "users_postgres", "Commerce Core contains Users Postgres"),
+		rel("commerce_core_system", knr.PredicateContains, "catalog_postgres", "Commerce Core contains Catalog Postgres"),
+		rel("commerce_core_system", knr.PredicateContains, "orders_postgres", "Commerce Core contains Orders Postgres"),
+		rel("commerce_core_system", knr.PredicateContains, "payments_postgres", "Commerce Core contains Payments Postgres"),
+		rel("commerce_core_system", knr.PredicateContains, "redis_sessions", "Commerce Core contains Redis Sessions"),
+		rel("commerce_core_system", knr.PredicateContains, "redis_search_cache", "Commerce Core contains Redis Search Cache"),
+		rel("commerce_core_system", knr.PredicateContains, "elasticsearch_catalog", "Commerce Core contains Elasticsearch Catalog"),
+		rel("commerce_core_system", knr.PredicateContains, "s3_invoice_bucket", "Commerce Core contains Invoice S3 Bucket"),
+		rel("commerce_core_system", knr.PredicateContains, "order_events_queue", "Commerce Core contains Order Events Queue"),
+		rel("commerce_core_system", knr.PredicateContains, "production_cluster", "Commerce Core contains Production Kubernetes"),
+		rel("platform_services_system", knr.PredicateContains, "notifications_service", "Platform Services contains Notifications Listener"),
+		rel("platform_services_system", knr.PredicateContains, "search_indexer", "Platform Services contains Search Indexer"),
+		rel("platform_services_system", knr.PredicateContains, "order_fulfillment_worker", "Platform Services contains Order Fulfillment Worker"),
+		rel("platform_services_system", knr.PredicateContains, "email_dispatch_worker", "Platform Services contains Email Dispatch Worker"),
+		rel("platform_services_system", knr.PredicateContains, "order_events_queue", "Platform Services contains Order Events Queue"),
+		rel("platform_services_system", knr.PredicateContains, "production_cluster", "Platform Services contains Production Kubernetes"),
+		rel("platform_services_system", knr.PredicateContains, "shared_observability", "Platform Services contains Observability Platform"),
+		rel("auth_service", knr.PredicateContains, "auth_session_manager", "Auth Listener contains Auth Session Manager"),
+		rel("search_api", knr.PredicateContains, "search_query_handler", "Search API contains Search Query Handler"),
+		rel("search_api", knr.PredicateContains, "search_repository", "Search API contains Search API Repository"),
+		rel("checkout_service", knr.PredicateContains, "checkout_orchestrator", "Checkout Listener contains Checkout Orchestrator"),
+		rel("checkout_service", knr.PredicateContains, "payment_adapter", "Checkout Listener contains Payment Adapter"),
+		rel("checkout_service", knr.PredicateContains, "checkout_repository", "Checkout Listener contains Checkout Service Repository"),
+		rel("checkout_orchestrator", knr.PredicateContains, "checkout_orchestrator_source", "Checkout Orchestrator contains source"),
+		rel("search_query_handler", knr.PredicateContains, "search_query_source", "Search Query Handler contains source"),
+		rel("search_indexer", knr.PredicateContains, "catalog_index_job", "Search Indexer contains Catalog Index Job"),
+		rel("search_api", knr.PredicateRunsOn, "production_cluster", "Search API runs on Production Kubernetes"),
+		rel("checkout_service", knr.PredicateRunsOn, "production_cluster", "Checkout Listener runs on Production Kubernetes"),
+		rel("search_indexer", knr.PredicateRunsOn, "production_cluster", "Search Indexer runs on Production Kubernetes"),
+		rel("notifications_service", knr.PredicateRunsOn, "production_cluster", "Notifications Listener runs on Production Kubernetes"),
+		rel("shared_observability", knr.PredicateObserves, "search_api", "Observability Platform observes Search API"),
 		rel("web_app", knr.PredicateCalls, "public_api_gateway", "Customer Web App calls Public API Gateway"),
 		rel("admin_console", knr.PredicateCalls, "public_api_gateway", "Admin Console calls Public API Gateway"),
 		rel("public_api_gateway", knr.PredicateCalls, "auth_service", "Public API Gateway calls Auth Listener"),
@@ -218,13 +286,5 @@ func makeDemoTopologyRelationships(cmps []topologyComponentObservedPayload) []to
 		rel("commerce_team", knr.PredicateOwns, "payments_service", "Commerce Team owns Payments Listener"),
 		rel("platform_team", knr.PredicateOwns, "public_api_gateway", "Platform Team owns Public API Gateway"),
 		rel("platform_team", knr.PredicateOwns, "notifications_service", "Platform Team owns Notifications Listener"),
-		rel("auth_service", knr.PredicateProcesses, "customer", "Auth Listener processes Customer"),
-		rel("catalog_service", knr.PredicateProcesses, "product", "Catalog Listener processes Product"),
-		rel("checkout_service", knr.PredicateProcesses, "cart", "Checkout Listener processes Cart"),
-		rel("orders_service", knr.PredicateProcesses, "order", "Orders Listener processes Order"),
-		rel("payments_service", knr.PredicateProcesses, "payment", "Payments Listener processes Payment"),
-		rel("orders_service", knr.PredicateProcesses, "invoice", "Orders Listener processes Invoice"),
-		rel("search_indexer", knr.PredicateIndexes, "product", "Search Indexer indexes Product"),
-		rel("elasticsearch_catalog", knr.PredicateStores, "search_index", "Elasticsearch Catalog stores Search Index"),
 	}
 }

@@ -15,18 +15,18 @@ import (
 
 var (
 	knowledgeEntityCategories = []string{
-		"actor",          // Human or organizational participant; e.g. customer, on-call team.
-		"system",         // Top-level software or business system; e.g. ecommerce platform, billing system.
-		"container",      // Independently deployable or runnable unit; e.g. service, database.
-		"component",      // Internal part of a container/system; e.g. module, background worker.
-		"infrastructure", // Runtime or platform resource; e.g. Kubernetes cluster, namespace.
-		"code",           // Source-code artifact; e.g. repository, package.
-		"process",        // Business or operational workflow; e.g. checkout flow, deploy process.
-		"domain_object",  // Business/domain object; e.g. customer, order.
-		"concern",        // External force, risk, or requirement; e.g. compliance rule, latency target.
-		"decision",       // Chosen design or operating tradeoff; e.g. ADR, mitigation choice.
-		"event",          // Time-bound occurrence; e.g. incident, deploy.
-		"signal",         // Observable telemetry or notification; e.g. alert, metric.
+		"system_function", // What a system does independently of its implementation; e.g. online commerce.
+		"actor",           // Human or organizational participant; e.g. customer, on-call team.
+		"system",          // Top-level software or business system; e.g. ecommerce platform, billing system.
+		"container",       // Independently deployable or runnable unit; e.g. service, database.
+		"component",       // Internal module or in-process job within a container/system.
+		"infrastructure",  // Runtime or platform resource; e.g. Kubernetes cluster, namespace.
+		"code",            // Source-code artifact; e.g. repository, package.
+		"process",         // Business or operational workflow; e.g. checkout flow, deploy process.
+		"concern",         // External force, risk, or requirement; e.g. compliance rule, latency target.
+		"decision",        // Chosen design or operating tradeoff; e.g. ADR, mitigation choice.
+		"event",           // Time-bound occurrence; e.g. incident, deploy.
+		"signal",          // Observable telemetry or notification; e.g. alert, metric.
 	}
 
 	knowledgeRelationshipPredicates = []string{

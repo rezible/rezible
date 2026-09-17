@@ -1881,7 +1881,7 @@ export type KnowledgeGraphEntity = {
 
 export type KnowledgeGraphEntityAttributes = {
     aliases: Array<KnowledgeGraphSubjectAlias>;
-    category: string;
+    category: 'system_function' | 'actor' | 'system' | 'container' | 'component' | 'infrastructure' | 'code' | 'process' | 'concern' | 'decision' | 'event' | 'signal';
     createdAt: string;
     kind: string;
     latestState?: KnowledgeGraphSubjectState;
@@ -8169,7 +8169,7 @@ export type ListKnowledgeGraphEntitiesData = {
         page?: number;
         pageSize?: number;
         search?: string;
-        category?: Array<string>;
+        category?: Array<'system_function' | 'actor' | 'system' | 'container' | 'component' | 'infrastructure' | 'code' | 'process' | 'concern' | 'decision' | 'event' | 'signal'>;
         kind?: Array<string>;
         provider?: string;
         providerNamespace?: string;

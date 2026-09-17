@@ -121,6 +121,7 @@ type Category string
 
 // Category values.
 const (
+	CategorySystemFunction Category = "system_function"
 	CategoryActor          Category = "actor"
 	CategorySystem         Category = "system"
 	CategoryContainer      Category = "container"
@@ -128,7 +129,6 @@ const (
 	CategoryInfrastructure Category = "infrastructure"
 	CategoryCode           Category = "code"
 	CategoryProcess        Category = "process"
-	CategoryDomainObject   Category = "domain_object"
 	CategoryConcern        Category = "concern"
 	CategoryDecision       Category = "decision"
 	CategoryEvent          Category = "event"
@@ -142,7 +142,7 @@ func (c Category) String() string {
 // CategoryValidator is a validator for the "category" field enum values. It is called by the builders before save.
 func CategoryValidator(c Category) error {
 	switch c {
-	case CategoryActor, CategorySystem, CategoryContainer, CategoryComponent, CategoryInfrastructure, CategoryCode, CategoryProcess, CategoryDomainObject, CategoryConcern, CategoryDecision, CategoryEvent, CategorySignal:
+	case CategorySystemFunction, CategoryActor, CategorySystem, CategoryContainer, CategoryComponent, CategoryInfrastructure, CategoryCode, CategoryProcess, CategoryConcern, CategoryDecision, CategoryEvent, CategorySignal:
 		return nil
 	default:
 		return fmt.Errorf("knowledgeentity: invalid enum value for category field: %q", c)
