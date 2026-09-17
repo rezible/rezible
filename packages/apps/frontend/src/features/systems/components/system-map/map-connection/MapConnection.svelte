@@ -2,7 +2,7 @@
 	import { BaseEdge, type EdgeProps } from "@xyflow/svelte";
 
 	import { cn } from "$lib/utils";
-	import { getSystemMapConnectionPath } from "./geometry";
+	import { connectionRouteToSvgPath } from "./geometry";
 	import { connectionLabel } from "./presentation";
 	import type { FlowEdge } from "../flow-model";
 
@@ -11,16 +11,8 @@
 
 	const data = $derived(props.data);
 	const connection = $derived(data?.connection);
-	const laneOffset = $derived(data?.laneOffset ?? 0);
-	const path = $derived(getSystemMapConnectionPath({
-		sourceX: props.sourceX,
-		sourceY: props.sourceY,
-		sourcePosition: props.sourcePosition,
-		targetX: props.targetX,
-		targetY: props.targetY,
-		targetPosition: props.targetPosition,
-		laneOffset,
-	}));
+	const route = $derived(data!.route);
+	const path = $derived(connectionRouteToSvgPath(route));
 	const count = $derived(connection?.sourceRelationshipIds.length ?? 1);
 	const isMembership = $derived(connection?.predicate === "contains");
 	const isSummary = $derived(connection?.classification === "summary");
@@ -65,19 +57,23 @@
 <title>{props.ariaLabel}</title>
 
 <BaseEdge
-	id={props.id}
-	path={path[0]}
-	markerEnd={props.markerEnd}
-	interactionWidth={props.interactionWidth ?? 24}
-	style={edgeStyle}
-	{label}
-	labelX={path[1]}
-	labelY={path[2]}
-	labelStyle={labelStyle}
-	aria-label={props.ariaLabel}
-	data-connection-id={props.id}
-	class={cn(
-		isHighlighted ? "stroke-primary" : isSummary || isMembership ? "stroke-muted-foreground" : "stroke-foreground",
-		isDimmed && "opacity-25"
-	)}
+		id={props.id}
+		path={path}
+		markerEnd={props.markerEnd}
+		interactionWidth={props.interactionWidth ?? 24}
+		style={edgeStyle}
+		{label}
+		labelX={route.labelPosition.x}
+		labelY={route.labelPosition.y}
+		labelStyle={labelStyle}
+		aria-label={props.ariaLabel}
+		data-connection-id={props.id}
+		class={cn(
+			isHighlighted
+				? "stroke-primary"
+				: isSummary || isMembership
+					? "stroke-muted-foreground"
+					: "stroke-foreground",
+			isDimmed && "opacity-25"
+		)}
 />

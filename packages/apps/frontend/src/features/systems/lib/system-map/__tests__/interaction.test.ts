@@ -23,11 +23,11 @@ import {
 import { projectMap } from "../projection";
 import { nodePresentationForEntity } from "$features/systems/components/system-map/map-node/presentation";
 import { alignLayoutToPrevious } from "$features/systems/components/system-map/layout";
-import type { LayoutResult } from "$features/systems/components/system-map/flow-model";
+import type { ConnectionRoute, LayoutResult } from "$features/systems/components/system-map/flow-model";
 import { MapViewportState } from "$features/systems/components/system-map/viewport-state";
 import { relationshipExample, sharedGroupsExample, layoutProjection } from "./test-fixtures";
 
-const displayOptions = { showActors: false, showAnnotations: false };
+const displayOptions = { showAnnotations: false };
 
 describe("system map reveal interaction", () => {
 	test("maps zoom continuously while structural thresholds remain discrete", () => {
@@ -171,7 +171,7 @@ describe("system map reveal interaction", () => {
 			],
 		};
 		const reveal = { detail: NodeDetailLevel.Runtime, nearbyEntityIds: ["group", "child"] };
-		const displayOptions = { showActors: false, showAnnotations: false };
+		const displayOptions = { showAnnotations: false };
 		const projection = projectMap(graph, reveal, displayOptions);
 		const nodes = [
 			{ id: "root", position: { x: 0, y: 0 }, width: 1000, height: 500 },
@@ -206,7 +206,7 @@ describe("system map reveal interaction", () => {
 			relationships: [{ id: "m-root-group", source: "root", target: "group", predicate: "contains" }],
 		};
 		const reveal = { detail: NodeDetailLevel.Systems, nearbyEntityIds: ["group"] };
-		const displayOptions = { showActors: false, showAnnotations: false };
+		const displayOptions = { showAnnotations: false };
 		const projection = projectMap(graph, reveal, displayOptions);
 		const nodes = [
 			{ id: "root", position: { x: 0, y: 0 }, width: 1000, height: 500 },
@@ -249,7 +249,7 @@ describe("system map reveal interaction", () => {
 				{ id: "m-group-child", source: "group", target: "child", predicate: "contains" },
 			],
 		};
-		const displayOptions = { showActors: false, showAnnotations: false };
+		const displayOptions = { showAnnotations: false };
 		let nearbyEntityIds = ["group", "child"];
 		let projection = projectMap(
 			graph,
@@ -315,11 +315,16 @@ describe("system map reveal interaction", () => {
 			},
 			type: "system-map-node" as const,
 		});
+		const route: ConnectionRoute = {
+			sections: [{ start: { x: 120, y: 130 }, bends: [{ x: 220, y: 130 }], end: { x: 320, y: 190 } }],
+			labelPosition: { x: 220, y: 130 },
+			targetSectionIndex: 0,
+		};
 		const edge = {
 			id: "edge",
 			source: "anchor",
 			target: "other",
-			data: { connection: {} as never },
+			data: { connection: {} as never, route },
 			type: "system-map-connection" as const,
 		};
 		const previous: LayoutResult = {

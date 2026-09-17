@@ -1,5 +1,4 @@
-import { MapCategory } from "$features/systems/lib/system-map/category";
-import type { GraphRelationship, GraphSubset } from "$features/systems/lib/system-map/graph";
+import type { GraphSubset } from "$features/systems/lib/system-map/graph";
 import {
 	edgeCasesExample,
 	relationshipExample,
@@ -12,25 +11,7 @@ export type FixtureScenario = {
 	source: GraphSubset;
 };
 
-
-const withActor = (source: GraphSubset): GraphSubset => ({
-	...source,
-	entities: [
-		...source.entities,
-		{
-			id: "team",
-			category: MapCategory.Actor,
-			label: "Incident Response Team",
-			kind: "team",
-		},
-	],
-	relationships: [
-		...source.relationships,
-		{ id: "r-team", source: "team", target: "group-a", predicate: "owns" },
-	],
-});
-
-const denseRelationships: readonly GraphRelationship[] = [
+const denseRelationships: GraphSubset["relationships"] = [
 	{ id: "r-dense-calls-1", source: "member-a", target: "member-b", predicate: "calls" },
 	{ id: "r-dense-calls-2", source: "member-a2", target: "member-b", predicate: "calls" },
 	{ id: "r-dense-calls-3", source: "member-b", target: "member-a", predicate: "calls" },
@@ -63,7 +44,7 @@ const longAndDense = (source: GraphSubset): GraphSubset => ({
 	relationships: [...source.relationships, ...denseRelationships],
 });
 
-const connectionsSource = withActor(relationshipExample.source);
+const connectionsSource = relationshipExample.source;
 const stressSource = longAndDense(relationshipExample.source);
 
 export const systemMapFixtureScenarios: Readonly<Record<FixtureScenarioId, FixtureScenario>> = {

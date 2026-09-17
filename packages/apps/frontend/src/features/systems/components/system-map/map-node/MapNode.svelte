@@ -20,10 +20,8 @@
 	);
 </script>
 
-<Handle id="target-left" type="target" position={Position.Left} class="pointer-events-none opacity-0" />
-<Handle id="target-right" type="target" position={Position.Right} class="pointer-events-none opacity-0" />
-<Handle id="target-top" type="target" position={Position.Top} class="pointer-events-none opacity-0" />
-<Handle id="target-bottom" type="target" position={Position.Bottom} class="pointer-events-none opacity-0" />
+<!-- Svelte Flow needs one handle of each type to mount custom edges. ELK owns the rendered route. -->
+<Handle type="target" position={Position.Left} class="pointer-events-none opacity-0" />
 
 {#if isGroup}
 	<div
@@ -69,7 +67,7 @@
 			{nodePresentation.label}
 		</span>
 		<div class="flex min-w-0 items-center gap-2">
-			<Badge variant={nodePresentation.isActor ? "secondary" : "outline"}>
+			<Badge variant="outline">
 				{nodePresentation.categoryLabel}
 			</Badge>
 			{#if nodePresentation.kindLabel}
@@ -90,7 +88,4 @@
 	</div>
 {/if}
 
-<Handle id="source-left" type="source" position={Position.Left} class="pointer-events-none opacity-0" />
-<Handle id="source-right" type="source" position={Position.Right} class="pointer-events-none opacity-0" />
-<Handle id="source-top" type="source" position={Position.Top} class="pointer-events-none opacity-0" />
-<Handle id="source-bottom" type="source" position={Position.Bottom} class="pointer-events-none opacity-0" />
+<Handle type="source" position={Position.Right} class="pointer-events-none opacity-0" />

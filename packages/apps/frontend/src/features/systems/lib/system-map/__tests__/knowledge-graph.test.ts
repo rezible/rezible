@@ -8,6 +8,7 @@ import {
 	parseMapCategory,
 } from "../category";
 import { Coverage } from "../graph";
+import { buildInspectionItems } from "../inspection";
 import { projectMap } from "../projection";
 import {
 	edgeCasesExample,
@@ -115,7 +116,6 @@ describe("test-only graph examples", () => {
 				expect(entities.has(id)).toBe(true);
 				const category = entities.get(id)?.category ?? MapCategory.Unknown;
 				expect(getMapCategoryDisplay(category).mode).toBe(DisplayMode.Node);
-				if (category === MapCategory.Actor) expect(example.displayOptions.showActors).toBe(true);
 			}
 			for (const id of example.expected.enclosureMembershipIds ?? []) {
 				const membership = factsById.get(id);
@@ -374,27 +374,30 @@ describe("system map projection boundaries", () => {
 		expect(expandedSummary?.sourceRelationshipIds).toEqual(["r-one", "r-two", "r-three"]);
 	});
 
-	test("shows an enabled actor once and keeps an annotation on its original hidden target", () => {
+	test("keeps actors inspectable without projecting them or their relationships", () => {
 		const example = graphExamples.find(
 			(candidate) => candidate.name === "partial graph with cyclic membership and annotation context"
 		)!;
 		const projection = projectMap(
 			example.source,
 			{ detail: example.detail, nearbyEntityIds: example.source.entities.map((entity) => entity.id) },
-			{ showActors: true, showAnnotations: true }
+			{ showAnnotations: true }
 		);
 
-		expect(projection.nodes.filter((node) => node.id === "actor")).toHaveLength(1);
-		const actorConnection = projection.connections.find(
-			(connection) => connection.sourceRelationshipIds[0] === "r-actor"
+		expect(example.source.entities.find((entity) => entity.id === "actor")?.category).toBe(
+			MapCategory.Actor
 		);
-		expect(actorConnection).toEqual({
-			id: 'summary:["summary","actor","parent","owns"]',
-			endpoints: ["actor", "parent"],
-			predicate: "owns",
-			classification: "summary",
-			sourceRelationshipIds: ["r-actor"],
-		});
+		expect(projection.nodes.some((node) => node.id === "actor")).toBe(false);
+		expect(projection.connections.flatMap((connection) => connection.sourceRelationshipIds)).not.toContain(
+			"r-actor"
+		);
+		const inspectionItems = buildInspectionItems(example.source, projection);
+		expect(inspectionItems).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({ id: "entity:actor" }),
+				expect.objectContaining({ id: "relationship:r-actor" }),
+		])
+		);
 		expect(projection.annotations).toContainEqual({
 			entityId: "event",
 			relationshipId: "r-event",
@@ -403,7 +406,7 @@ describe("system map projection boundaries", () => {
 		});
 	});
 
-	test("does not give unsupported entities or disabled actors architectural representatives", () => {
+	test("does not give unsupported entities or actors architectural representatives", () => {
 		const source = {
 			...edgeCasesExample.source,
 			relationships: [

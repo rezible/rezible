@@ -56,7 +56,7 @@ const fact = (
 export const sharedGroupsExample: GraphExample = {
 	name: "two groups share one member",
 	detail: NodeDetailLevel.Systems,
-	displayOptions: { showActors: false, showAnnotations: false },
+	displayOptions: { showAnnotations: false },
 	source: {
 		coverage: { parentMembership: Coverage.Complete, relationships: Coverage.Complete },
 		entities: [
@@ -93,7 +93,7 @@ export const sharedGroupsExample: GraphExample = {
 export const relationshipExample: GraphExample = {
 	name: "direct and summary connection counts",
 	detail: NodeDetailLevel.Systems,
-	displayOptions: { showActors: false, showAnnotations: false },
+	displayOptions: { showAnnotations: false },
 	source: {
 		coverage: { parentMembership: Coverage.Complete, relationships: Coverage.Complete },
 		entities: [
@@ -155,7 +155,7 @@ export const relationshipExample: GraphExample = {
 export const edgeCasesExample: GraphExample = {
 	name: "partial graph with cyclic membership and annotation context",
 	detail: NodeDetailLevel.Systems,
-	displayOptions: { showActors: false, showAnnotations: true },
+	displayOptions: { showAnnotations: true },
 	source: {
 		// Parent membership coverage is incomplete for every entity in this example.
 		coverage: { parentMembership: Coverage.Partial, relationships: Coverage.Complete },

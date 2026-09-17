@@ -1,10 +1,7 @@
-import type { ELK as ElkInstance, ElkNode } from "elkjs/lib/elk-api.js";
+import type { ELK as ElkInstance, ElkEdgeSection, ElkExtendedEdge, ElkNode } from "elkjs/lib/elk-api.js";
 import { MarkerType } from "@xyflow/svelte";
 
-import {
-	isActorCategory,
-	isArchitectureCategory,
-} from "$features/systems/lib/system-map/category";
+import { isArchitectureCategory } from "$features/systems/lib/system-map/category";
 import type { GraphEntity, GraphSubset } from "$features/systems/lib/system-map/graph";
 import {
 	worldBoundsByNodeId,
@@ -15,13 +12,15 @@ import {
 	type Size,
 	type Viewport,
 } from "$features/systems/lib/system-map/geometry";
-import {
-	type MapConnection,
-	type MapNode,
-	type MapProjection,
-} from "$features/systems/lib/system-map/presentation";
-import { buildConnectionLanes, connectionHandleAssignment } from "./map-connection/geometry";
-import type { FlowEdge, FlowNode, FlowNodeData, LayoutResult } from "./flow-model";
+import type { MapNode, MapProjection } from "$features/systems/lib/system-map/presentation";
+import type {
+	ConnectionRoute,
+	ConnectionRouteSection,
+	FlowEdge,
+	FlowNode,
+	FlowNodeData,
+	LayoutResult,
+} from "./flow-model";
 
 export const COMPACT_NODE_SIZE = { width: 240, height: 96 } as const satisfies Readonly<Size>;
 export const GROUP_NODE_MIN_SIZE = { width: 280, height: 168 } as const satisfies Readonly<Size>;
@@ -30,7 +29,6 @@ const GROUP_PADDING = "[top=48,left=28,bottom=28,right=28]";
 const ROOT_PADDING = "[top=32,left=32,bottom=32,right=32]";
 const NODE_SPACING = "28";
 const LAYER_SPACING = "72";
-const ACTOR_GAP = 96;
 
 type LayoutModelNode = {
 	mapNode: MapNode;
@@ -75,12 +73,7 @@ const createModel = (graph: GraphSubset, projection: MapProjection) => {
 		.filter((modelNode) => isArchitectureCategory(modelNode.entity.category))
 		.sort((left, right) => left.entity.id.localeCompare(right.entity.id));
 
-	const actors = projection.nodes
-		.map(toModelNode)
-		.filter((modelNode) => isActorCategory(modelNode.entity.category))
-		.sort((left, right) => left.entity.id.localeCompare(right.entity.id));
-
-	return { rootNodes, actors };
+	return { rootNodes };
 };
 
 const createElkNode = (modelNode: LayoutModelNode): ElkNode => {
@@ -188,92 +181,216 @@ const flowNodesFromLayout = (
 	return { nodes, architecturePositions: positioned };
 };
 
-const actorNodes = (
-	actors: readonly LayoutModelNode[],
-	positions: readonly PositionedNode[],
-	annotationCounts: ReadonlyMap<string, number>
-): FlowNode[] => {
-	// Actors are positioned downstream of architecture so toggling context cannot repack it.
-	const maxX = positions.reduce((curr, {x, width}) => Math.max(curr, x + width), 0);
-	const minY = positions.reduce((curr, {y}) => Math.min(curr, y), 0);
+const pointIsFinite = (point: Point | undefined): point is Point =>
+	point !== undefined && Number.isFinite(point.x) && Number.isFinite(point.y);
 
-	return actors.map((actor, index) => {
-		const { width, height } = COMPACT_NODE_SIZE;
-		const position = {
-			x: maxX + ACTOR_GAP,
-			y: minY + index * (height + 24),
-		};
-		return {
-			id: actor.entity.id,
-			data: nodeData(actor, annotationCounts.get(actor.entity.id) ?? 0),
-			type: "system-map-node",
-			position,
-			width,
-			height,
-			zIndex: 3,
-			ariaLabel: actor.entity.label,
-		};
-	});
+const pointOnBoundsBoundary = (point: Point, bounds: Bounds): boolean => {
+	const epsilon = 0.001;
+	const onHorizontalBoundary =
+		(Math.abs(point.y - bounds.y) <= epsilon || Math.abs(point.y - (bounds.y + bounds.height)) <= epsilon) &&
+		point.x >= bounds.x - epsilon &&
+		point.x <= bounds.x + bounds.width + epsilon;
+	const onVerticalBoundary =
+		(Math.abs(point.x - bounds.x) <= epsilon || Math.abs(point.x - (bounds.x + bounds.width)) <= epsilon) &&
+		point.y >= bounds.y - epsilon &&
+		point.y <= bounds.y + bounds.height + epsilon;
+	return onHorizontalBoundary || onVerticalBoundary;
 };
 
-const flowEdges = (connections: readonly MapConnection[], nodes: readonly FlowNode[]): FlowEdge[] => {
-	const lanes = buildConnectionLanes(connections);
-	const boundsByNodeId = worldBoundsByNodeId(nodes);
+const routeSectionPoints = (section: ConnectionRouteSection): Point[] => [
+	section.start,
+	...section.bends,
+	section.end,
+];
 
-	return connections.map((connection) => {
-		const lane = lanes.get(connection.id)!;
-		const sourceBounds = boundsByNodeId.get(connection.endpoints[0]);
-		const targetBounds = boundsByNodeId.get(connection.endpoints[1]);
-		const handles = sourceBounds && targetBounds
-			? connectionHandleAssignment(sourceBounds, targetBounds)
-			: undefined;
+const labelPositionForSections = (sections: readonly ConnectionRouteSection[]): Point => {
+	type Segment = { start: Point; end: Point; length: number; horizontal: boolean };
+
+	const segments: Segment[] = [];
+	for (const section of sections) {
+		const points = routeSectionPoints(section);
+		for (let index = 1; index < points.length; index += 1) {
+			const start = points[index - 1];
+			const end = points[index];
+			const length = Math.hypot(end.x - start.x, end.y - start.y);
+			if (length === 0) continue;
+			segments.push({
+				start,
+				end,
+				length,
+				horizontal: start.y === end.y,
+			});
+		}
+	}
+
+	const horizontalSegments = segments.filter((segment) => segment.horizontal);
+	const candidates = horizontalSegments.length ? horizontalSegments : segments;
+	if (!candidates.length) throw new Error("ELK returned a route without a usable segment");
+	const segment = candidates.reduce((longest, candidate) =>
+		candidate.length > longest.length ? candidate : longest
+	);
+	return {
+		x: (segment.start.x + segment.end.x) / 2,
+		y: (segment.start.y + segment.end.y) / 2,
+	};
+};
+
+const collectElkEdges = (node: ElkNode): ElkExtendedEdge[] => [
+	...(node.edges ?? []),
+	...(node.children ?? []).flatMap(collectElkEdges),
+];
+
+const routeFromElkEdge = (
+	edge: ElkExtendedEdge,
+	connection: MapProjection["connections"][number],
+	worldOriginByNodeId: ReadonlyMap<string, Point>,
+	boundsByNodeId: ReadonlyMap<string, Bounds>
+): ConnectionRoute => {
+	const elkSections = edge.sections ?? [];
+	if (!elkSections.length) {
+		throw new Error(`ELK returned no route sections for connection ${connection.id}`);
+	}
+
+	const containerOrigin = edge.container
+		? worldOriginByNodeId.get(edge.container)
+		: worldOriginByNodeId.get("system-map") ?? { x: 0, y: 0 };
+	if (!containerOrigin) {
+		throw new Error(`ELK returned an unknown edge container for connection ${connection.id}`);
+	}
+
+	const toWorldPoint = (point: { x: number; y: number }): Point => ({
+		x: point.x + containerOrigin.x,
+		y: point.y + containerOrigin.y,
+	});
+
+	const sections = elkSections.map((section: ElkEdgeSection): ConnectionRouteSection => {
+		const start = toWorldPoint(section.startPoint);
+		const bends = (section.bendPoints ?? []).map(toWorldPoint);
+		const end = toWorldPoint(section.endPoint);
+		const points = [start, ...bends, end];
+		if (!points.every(pointIsFinite)) {
+			throw new Error(`ELK returned a malformed route for connection ${connection.id}`);
+		}
+		for (let index = 1; index < points.length; index += 1) {
+			const previous = points[index - 1];
+			const current = points[index];
+			if (previous.x !== current.x && previous.y !== current.y) {
+				throw new Error(`ELK returned a non-orthogonal route for connection ${connection.id}`);
+			}
+		}
+		return { start, bends, end };
+	});
+
+	const sourceSectionIndexes = elkSections
+		.map((section, index) => (section.incomingShape === connection.endpoints[0] ? index : -1))
+		.filter((index) => index >= 0);
+	const targetSectionIndexes = elkSections
+		.map((section, index) => (section.outgoingShape === connection.endpoints[1] ? index : -1))
+		.filter((index) => index >= 0);
+	if (sourceSectionIndexes.length !== 1 || targetSectionIndexes.length !== 1) {
+		throw new Error(`ELK returned an ambiguous terminal route for connection ${connection.id}`);
+	}
+
+	const sourceBounds = boundsByNodeId.get(connection.endpoints[0]);
+	const targetBounds = boundsByNodeId.get(connection.endpoints[1]);
+	if (!sourceBounds || !targetBounds) {
+		throw new Error(`ELK route endpoints are not displayed for connection ${connection.id}`);
+	}
+	if (
+		!pointOnBoundsBoundary(sections[sourceSectionIndexes[0]].start, sourceBounds) ||
+		!pointOnBoundsBoundary(sections[targetSectionIndexes[0]].end, targetBounds)
+	) {
+		throw new Error(`ELK route does not terminate at connection ${connection.id}'s node boundaries`);
+	}
+
+	return {
+		sections,
+		labelPosition: labelPositionForSections(sections),
+		targetSectionIndex: targetSectionIndexes[0],
+	};
+};
+
+const routesFromElk = (
+	result: ElkNode,
+	connections: readonly MapProjection["connections"][number][],
+	architecturePositions: readonly PositionedNode[]
+): ReadonlyMap<string, ConnectionRoute> => {
+	const edgesById = new Map(collectElkEdges(result).map((edge) => [edge.id, edge]));
+	const worldOriginByNodeId = new Map<string, Point>([["system-map", { x: 0, y: 0 }]]);
+	const boundsByNodeId = new Map<string, Bounds>();
+	for (const positioned of architecturePositions) {
+		worldOriginByNodeId.set(positioned.node.id, { x: positioned.x, y: positioned.y });
+		boundsByNodeId.set(positioned.node.id, positioned);
+	}
+
+	const routes = new Map<string, ConnectionRoute>();
+	for (const connection of connections) {
+		const edge = edgesById.get(connection.id);
+		if (!edge) throw new Error(`ELK returned no edge for connection ${connection.id}`);
+		routes.set(
+			connection.id,
+			routeFromElkEdge(edge, connection, worldOriginByNodeId, boundsByNodeId)
+		);
+	}
+	return routes;
+};
+
+const flowEdges = (
+	connections: readonly MapProjection["connections"][number][],
+	routes: ReadonlyMap<string, ConnectionRoute>
+): FlowEdge[] =>
+	connections.map((connection) => {
+		const route = routes.get(connection.id);
+		if (!route) throw new Error(`Missing ELK route for connection ${connection.id}`);
+
 		return {
 			id: connection.id,
 			source: connection.endpoints[0],
 			target: connection.endpoints[1],
-			...(handles
-				? { sourceHandle: handles.sourceHandle, targetHandle: handles.targetHandle }
-				: {}),
 			type: "system-map-connection",
 			markerEnd: { type: MarkerType.ArrowClosed },
 			interactionWidth: 24,
 			ariaLabel: `${connection.classification} ${connection.predicate.replaceAll("_", " ")}, ${connection.sourceRelationshipIds.length} relationship${connection.sourceRelationshipIds.length === 1 ? "" : "s"}`,
-			data: {
-				connection,
-				laneOffset: lane.offset,
-			},
+			data: { connection, route },
 		};
 	});
-};
 
-/** Converts the projection to ELK input and its result to renderer-owned Flow geometry. */
+/** Converts the projection to an ELK graph and preserves ELK's node/route output for Flow. */
 export const layoutWithElk = async (
 	elk: ElkInstance,
 	graph: GraphSubset,
 	projection: MapProjection
 ): Promise<LayoutResult> => {
-	const { rootNodes, actors } = createModel(graph, projection);
-	
+	const { rootNodes } = createModel(graph, projection);
+
 	const annoCounts = new Map<string, number>();
-	projection.annotations.forEach(({representativeId: repId}) => {
+	projection.annotations.forEach(({ representativeId: repId }) => {
 		annoCounts.set(repId, (annoCounts.get(repId) ?? 0) + 1);
 	});
 
 	const entityIds = new Set<string>();
-	const registerArchitecture = ({entity, children}: LayoutModelNode) => {
+	const registerArchitecture = ({ entity, children }: LayoutModelNode) => {
 		entityIds.add(entity.id);
-		children.forEach(registerArchitecture)
+		children.forEach(registerArchitecture);
 	};
 	rootNodes.forEach(registerArchitecture);
 
-	const entityConnections = projection.connections.filter(
-		({endpoints}) => entityIds.has(endpoints[0]) && entityIds.has(endpoints[1]));
+	const entityConnections = projection.connections;
+	for (const connection of entityConnections) {
+		if (!entityIds.has(connection.endpoints[0]) || !entityIds.has(connection.endpoints[1])) {
+			throw new Error(`Connection ${connection.id} has a non-layout endpoint`);
+		}
+	}
 
 	const layoutOptions = {
 		"elk.algorithm": "layered",
 		"elk.direction": "RIGHT",
 		"elk.hierarchyHandling": "INCLUDE_CHILDREN",
 		"elk.edgeRouting": "ORTHOGONAL",
+		"org.eclipse.elk.layered.mergeEdges": "false",
+		"org.eclipse.elk.layered.mergeHierarchyEdges": "false",
+		// Keep edge route points in the root coordinate system. Node coordinates remain parent-relative.
+		"org.eclipse.elk.json.edgeCoords": "ROOT",
 		"elk.padding": ROOT_PADDING,
 		"elk.spacing.nodeNode": NODE_SPACING,
 		"elk.layered.spacing.nodeNodeBetweenLayers": LAYER_SPACING,
@@ -284,18 +401,21 @@ export const layoutWithElk = async (
 	const elkGraph: ElkNode = {
 		id: "system-map",
 		children: rootNodes.map(createElkNode),
-		// ELK positions nodes; the renderer computes its own connection paths from this geometry.
-		edges: entityConnections.map(({id, endpoints}) => ({id, sources: [endpoints[0]], targets: [endpoints[1]]})),
+		edges: entityConnections.map(({ id, endpoints }) => ({
+			id,
+			sources: [endpoints[0]],
+			targets: [endpoints[1]],
+		})),
 		layoutOptions,
 	};
 
 	const result = await elk.layout(elkGraph);
 	const { nodes, architecturePositions } = flowNodesFromLayout(result, rootNodes, annoCounts);
-	const allNodes = [...nodes, ...actorNodes(actors, architecturePositions, annoCounts)];
+	const routes = routesFromElk(result, entityConnections, architecturePositions);
 
 	return {
-		nodes: allNodes,
-		edges: flowEdges(projection.connections, allNodes),
+		nodes,
+		edges: flowEdges(entityConnections, routes),
 	};
 };
 
@@ -337,7 +457,34 @@ export const alignLayoutToPrevious = (
 		const position = { x: node.position.x + delta.x, y: node.position.y + delta.y };
 		return { ...node, position };
 	});
-	return { ...next, nodes };
+	const edges = next.edges.map((edge) => {
+		const data = edge.data;
+		const route = data?.route;
+		if (!data || !route) throw new Error(`Cannot align connection ${edge.id} without an ELK route`);
+
+		return {
+			...edge,
+			data: {
+				...data,
+				route: {
+					...route,
+					sections: route.sections.map((section) => ({
+						start: { x: section.start.x + delta.x, y: section.start.y + delta.y },
+						bends: section.bends.map((point) => ({
+							x: point.x + delta.x,
+							y: point.y + delta.y,
+						})),
+						end: { x: section.end.x + delta.x, y: section.end.y + delta.y },
+					})),
+					labelPosition: {
+						x: route.labelPosition.x + delta.x,
+						y: route.labelPosition.y + delta.y,
+					},
+				},
+			},
+		};
+	});
+	return { ...next, nodes, edges };
 };
 
 /** Finds an architectural anchor shared by both layouts near the supplied screen point. */

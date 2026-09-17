@@ -1,6 +1,5 @@
 /** Optional context to display without changing the supplied architecture. */
 export type MapDisplayOptions = {
-	showActors: boolean;
 	showAnnotations: boolean;
 };
 
@@ -20,7 +19,7 @@ type MapNodeDisplayEnclosure = {
 	membershipId: string;
 };
 
-/** One displayed architectural or actor entity; layout assigns its coordinates afterward. */
+/** One displayed architectural entity; actor records remain source-inspectable and are not projected. */
 export type MapNode = {
 	/** The canonical entity ID, unchanged when the entity becomes a group boundary. */
 	id: string;

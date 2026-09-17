@@ -143,7 +143,7 @@ describe("system map viewport state", () => {
 		expect(focusedScreenPoint.y - keyboardViewport.y).toBeCloseTo(before.y * keyboardViewport.zoom);
 	});
 
-	test("falls back to the nearest surviving architectural anchor when an actor disappears", () => {
+	test("falls back to the nearest surviving architectural anchor when context disappears", () => {
 		const architectureNode = (id: string, x: number, y: number): FlowNode => ({
 			id,
 			position: { x, y },
@@ -156,16 +156,16 @@ describe("system map viewport state", () => {
 			},
 			type: "system-map-node",
 		});
-		const actor = (x: number): FlowNode => ({
+		const contextNode = (x: number): FlowNode => ({
 			...architectureNode("team", x, 100),
 			data: {
 				...architectureNode("team", x, 100).data,
-				entity: { id: "team", category: MapCategory.Actor, label: "team", kind: "actor" },
+				entity: { id: "team", category: MapCategory.Event, label: "team", kind: "context" },
 				appearance: "compact",
 			},
 		});
 		const previous: LayoutResult = {
-			nodes: [architectureNode("group-a", 100, 100), architectureNode("group-b", 400, 100), actor(800)],
+			nodes: [architectureNode("group-a", 100, 100), architectureNode("group-b", 400, 100), contextNode(800)],
 			edges: [],
 		};
 		const next: LayoutResult = {

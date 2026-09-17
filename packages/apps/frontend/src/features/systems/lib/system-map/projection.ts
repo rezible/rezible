@@ -1,4 +1,4 @@
-import { DisplayMode, getMapCategoryDisplay, isActorCategory, isArchitectureCategory } from "./category";
+import { DisplayMode, getMapCategoryDisplay, isArchitectureCategory } from "./category";
 import type { GraphEntity, GraphRelationship, GraphSubset } from "./graph";
 import type {
 	MapAnnotation,
@@ -267,9 +267,7 @@ const buildRepresentatives = (visibleIds: ReadonlySet<string>, index: GraphIndex
 	const representatives = new Map<string, string>();
 
 	for (const entity of index.entitiesById.values()) {
-		const canBeRepresentative =
-			isArchitectureCategory(entity.category) ||
-			(isActorCategory(entity.category) && visibleIds.has(entity.id));
+		const canBeRepresentative = isArchitectureCategory(entity.category);
 		if (!canBeRepresentative) continue;
 
 		if (visibleIds.has(entity.id)) {
@@ -283,35 +281,6 @@ const buildRepresentatives = (visibleIds: ReadonlySet<string>, index: GraphIndex
 	}
 
 	return representatives;
-};
-
-const addVisibleActors = (
-	visibleIds: Set<string>,
-	index: GraphIndex,
-	relationships: readonly GraphRelationship[],
-	representatives: ReadonlyMap<string, string>
-): void => {
-	for (const relationship of relationships) {
-		if (relationship.predicate === "contains") continue;
-
-		const source = index.entitiesById.get(relationship.source);
-		const target = index.entitiesById.get(relationship.target);
-		if (!source || !target) continue;
-		if (
-			isActorCategory(source.category) &&
-			isArchitectureCategory(target.category) &&
-			representatives.has(target.id)
-		) {
-			visibleIds.add(source.id);
-		}
-		if (
-			isActorCategory(target.category) &&
-			isArchitectureCategory(source.category) &&
-			representatives.has(source.id)
-		) {
-			visibleIds.add(target.id);
-		}
-	}
 };
 
 const connectionIdentity = (
@@ -430,12 +399,7 @@ export const projectMap = (
 	const index = indexGraph(graph);
 	const relationships = uniqueRelationships(graph.relationships);
 	const visibleIds = selectArchitectureNodes(graph, index, reveal);
-
-	let representatives = buildRepresentatives(visibleIds, index);
-	if (displayOptions.showActors) {
-		addVisibleActors(visibleIds, index, relationships, representatives);
-		representatives = buildRepresentatives(visibleIds, index);
-	}
+	const representatives = buildRepresentatives(visibleIds, index);
 
 	const cyclicIds = cyclicMembershipIds(index);
 	const enclosureByChild = findEnclosures(visibleIds, index, cyclicIds, graph.coverage.parentMembership);

@@ -8,12 +8,10 @@ const coverageLabel = (coverage: GraphSubset["coverage"]["parentMembership"]): s
 
 export class SystemMapFixtureController {
 	scenario = $state<FixtureScenarioId>("hierarchy");
-	showActors = $state(false);
 	showAnnotations = $state(false);
 
 	graph = $derived<GraphSubset>(systemMapFixtureScenarios[this.scenario].source);
 	displayOptions = $derived<MapDisplayOptions>({
-		showActors: this.showActors,
 		showAnnotations: this.showAnnotations,
 	});
 
@@ -29,14 +27,9 @@ export class SystemMapFixtureController {
 		this.scenario = value as FixtureScenarioId;
 	};
 
-	setShowActors = (showActors: boolean) => {
-		this.showActors = showActors;
-	};
-
 	setShowAnnotations = (showAnnotations: boolean) => {
 		this.showAnnotations = showAnnotations;
 	};
-
 }
 
 const ctx = new Context<SystemMapFixtureController>("SystemMapFixtureController");

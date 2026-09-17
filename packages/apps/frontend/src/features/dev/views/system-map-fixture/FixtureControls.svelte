@@ -22,19 +22,12 @@
 		>
 			<ToggleGroup.Item value="hierarchy">Nested + shared</ToggleGroup.Item>
 			<ToggleGroup.Item value="connections">Direct + summary</ToggleGroup.Item>
-			<ToggleGroup.Item value="context">Actors + annotations</ToggleGroup.Item>
+			<ToggleGroup.Item value="context">Context + annotations</ToggleGroup.Item>
 			<ToggleGroup.Item value="stress">Long + dense</ToggleGroup.Item>
 		</ToggleGroup.Root>
 
 		<Field.FieldSet class="flex-row items-center gap-3 text-sm">
 			<Field.FieldLegend class="sr-only">Map context</Field.FieldLegend>
-			<label class="flex items-center gap-2">
-				<Checkbox
-					checked={controller.showActors}
-					onCheckedChange={(checked) => controller.setShowActors(!!checked)}
-				/>
-				Actors
-			</label>
 			<label class="flex items-center gap-2">
 				<Checkbox
 					checked={controller.showAnnotations}
