@@ -262,7 +262,9 @@ func (s *SituationService) SetSituationInvestigationReport(ctx context.Context, 
 		if params.Report.SuggestedChecks != nil {
 			createReport.SetSuggestedChecks(params.Report.SuggestedChecks)
 		}
-		upsert := createReport.OnConflict().UpdateNewValues()
+		// TODO: only allow 1 report?
+		//upsert := createReport.OnConflict().UpdateNewValues()
+		upsert := createReport
 		if saveReportErr := upsert.Exec(ctx); saveReportErr != nil {
 			return fmt.Errorf("save investigation report: %w", saveReportErr)
 		}

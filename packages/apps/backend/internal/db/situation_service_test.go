@@ -135,10 +135,7 @@ func (s *SituationServiceSuite) TestListSituationsFiltersByStatusAndSearch() {
 
 	openSituation := s.createSituation(ctx, h, "Checkout degradation")
 	closedSituation := s.createSituation(ctx, h, "Payment provider outage")
-	closeErr := h.situations.CloseSituation(ctx, rez.CloseSituationParams{
-		SituationID: closedSituation.ID,
-		Reason:      situation.CloseReasonStabilized,
-	})
+	closeErr := h.situations.CloseSituation(ctx, closedSituation.ID, situation.CloseReasonStabilized)
 	s.Require().NoError(closeErr)
 
 	openList, openListErr := h.situations.ListSituations(ctx, rez.ListSituationsParams{
@@ -175,10 +172,7 @@ func (s *SituationServiceSuite) TestListSituationsActiveIncludesInvestigatingAnd
 	investigating := s.createSituation(ctx, h, "Investigating")
 	closed := s.createSituation(ctx, h, "Closed")
 
-	closeErr := h.situations.CloseSituation(ctx, rez.CloseSituationParams{
-		SituationID: closed.ID,
-		Reason:      situation.CloseReasonStabilized,
-	})
+	closeErr := h.situations.CloseSituation(ctx, closed.ID, situation.CloseReasonStabilized)
 	s.Require().NoError(closeErr)
 
 	result, listErr := h.situations.ListSituations(ctx, rez.ListSituationsParams{
@@ -194,22 +188,13 @@ func (s *SituationServiceSuite) TestSituationCloseIsIdempotentAndNeverReopens() 
 	h := s.newHarness(tdb)
 
 	sit := s.createSituation(ctx, h, "Checkout degradation")
-	closeErr := h.situations.CloseSituation(ctx, rez.CloseSituationParams{
-		SituationID: sit.ID,
-		Reason:      situation.CloseReasonStabilized,
-	})
+	closeErr := h.situations.CloseSituation(ctx, sit.ID, situation.CloseReasonStabilized)
 	s.Require().NoError(closeErr)
 
-	repeatErr := h.situations.CloseSituation(ctx, rez.CloseSituationParams{
-		SituationID: sit.ID,
-		Reason:      situation.CloseReasonStabilized,
-	})
+	repeatErr := h.situations.CloseSituation(ctx, sit.ID, situation.CloseReasonStabilized)
 	s.Require().NoError(repeatErr)
 
-	conflictErr := h.situations.CloseSituation(ctx, rez.CloseSituationParams{
-		SituationID: sit.ID,
-		Reason:      situation.CloseReasonDismissed,
-	})
+	conflictErr := h.situations.CloseSituation(ctx, sit.ID, situation.CloseReasonDismissed)
 	s.ErrorIs(conflictErr, rez.ErrConflict)
 }
 
@@ -297,7 +282,8 @@ func (s *SituationServiceSuite) TestSituationInvestigationReportPersistenceWhile
 	sitInv, createErr := h.situations.CreateSituationInvestigation(ctx, params)
 	s.Require().NoError(createErr)
 
-	queryReport := tdb.Client(ctx).InvestigationReport.Query().Where(invr.InvestigationID(sitInv.ID))
+	queryReport := tdb.Client(ctx).InvestigationReport.Query().
+		Where(invr.InvestigationID(sitInv.InvestigationID))
 
 	inv := sitInv.Edges.Investigation
 	s.Require().NotNil(inv)
@@ -325,8 +311,8 @@ func (s *SituationServiceSuite) TestSituationInvestigationReportPersistenceWhile
 		AgentTurnID: turn.ID,
 		Report:      reportInput,
 	}
-	updated, reportErr := h.situations.SetSituationInvestigationReport(ctx, setReportParams)
-	s.Require().NoError(reportErr)
+	updatedInv, setReportErr := h.situations.SetSituationInvestigationReport(ctx, setReportParams)
+	s.Require().NoError(setReportErr)
 
 	report := queryReport.OnlyX(ctx)
 
@@ -337,7 +323,7 @@ func (s *SituationServiceSuite) TestSituationInvestigationReportPersistenceWhile
 	s.Equal(reportInput.Limitations, report.Limitations)
 	s.Equal(reportInput.RecommendedActions, report.RecommendedActions)
 	s.Equal(reportInput.SuggestedChecks, report.SuggestedChecks)
-	s.Equal(1, updated.CompletedRevision)
+	s.Equal(1, updatedInv.CompletedRevision)
 
 	repeatedSetReportParams := rez.SetSituationInvestigationReportParams{
 		AgentTurnID: turn.ID,
@@ -347,7 +333,7 @@ func (s *SituationServiceSuite) TestSituationInvestigationReportPersistenceWhile
 	}
 	repeated, repeatErr := h.situations.SetSituationInvestigationReport(ctx, repeatedSetReportParams)
 	s.Require().NoError(repeatErr)
-	s.Equal(updated.ID, repeated.ID)
+	s.Equal(updatedInv.ID, repeated.ID)
 	s.Equal(1, queryReport.CountX(ctx))
 }
 
