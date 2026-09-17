@@ -14,7 +14,11 @@ import {
 	connectionHandleAssignment,
 	getSystemMapConnectionPath,
 } from "$features/systems/components/system-map/map-connection/geometry";
-import { connectionPresentationState } from "$features/systems/components/system-map/map-connection/presentation";
+import {
+	connectionEndpointIds,
+	connectionLabel,
+	connectionPresentationState,
+} from "$features/systems/components/system-map/map-connection/presentation";
 
 import { edgeCasesExample, layoutProjection, relationshipExample, sharedGroupsExample } from "./test-fixtures";
 
@@ -269,36 +273,158 @@ describe("system map ELK layout", () => {
 		}
 	});
 
-	test("dims unrelated connections while preserving selected-edge and endpoint emphasis", async () => {
+	test("derives connection labels and applies hover/selection presentation precedence", async () => {
 		const projection = projectMap(
 			relationshipExample.source,
 			implementationReveal(relationshipExample.source),
 			relationshipExample.displayOptions
 		);
 		const layout = await layoutProjection(relationshipExample.source, projection);
+		const directEdge = layout.edges.find((edge) =>
+			edge.data?.connection.sourceRelationshipIds.includes("r-direct")
+		);
 		const selectedEdge = layout.edges.find((edge) =>
 			edge.data?.connection.sourceRelationshipIds.includes("r-one")
 		);
 		const unrelatedEdge = layout.edges.find((edge) =>
 			edge.data?.connection.sourceRelationshipIds.includes("r-reverse")
 		);
-		if (!selectedEdge || !unrelatedEdge) throw new Error("Missing selection fixture edges");
+		const hoveredEdge = layout.edges.find((edge) =>
+			edge.data?.connection.sourceRelationshipIds.includes("r-other")
+		);
+		if (!directEdge || !selectedEdge || !unrelatedEdge || !hoveredEdge) {
+			throw new Error("Missing presentation fixture edges");
+		}
+		const summaryProjection = projectMap(
+			relationshipExample.source,
+			{
+				detail: relationshipExample.detail,
+				nearbyEntityIds: relationshipExample.source.entities.map((entity) => entity.id),
+			},
+			relationshipExample.displayOptions
+		);
+		const summaryCall = summaryProjection.connections.find((connection) =>
+			connection.sourceRelationshipIds.includes("r-reverse")
+		);
+		const summaryDependency = summaryProjection.connections.find((connection) =>
+			connection.sourceRelationshipIds.includes("r-other")
+		);
+		if (!summaryCall || !summaryDependency) throw new Error("Missing summary fixture connections");
+
+		expect(connectionLabel(directEdge.data!.connection)).toBe("calls");
+		expect(connectionLabel(summaryCall)).toBe("calls · 1");
+		expect(connectionLabel(summaryDependency)).toBe("depends on · 1");
+
+		expect(connectionPresentationState(directEdge, {})).toEqual({
+			selected: false,
+			hovered: false,
+			highlighted: false,
+			dimmed: false,
+			endpointEmphasized: false,
+			labelVisible: false,
+		});
+		expect(
+			connectionPresentationState(directEdge, { showAllConnectionLabels: true })
+		).toMatchObject({
+			highlighted: false,
+			dimmed: false,
+			labelVisible: true,
+		});
 
 		const edgeSelection = connectionPresentationState(selectedEdge, {
-			edgeId: selectedEdge.id,
-			endpointIds: new Set([selectedEdge.source, selectedEdge.target]),
+			selection: {
+				edgeId: selectedEdge.id,
+				endpointIds: new Set([selectedEdge.source, selectedEdge.target]),
+			},
 		});
 		const unrelatedPresentation = connectionPresentationState(unrelatedEdge, {
-			edgeId: selectedEdge.id,
-			endpointIds: new Set([selectedEdge.source, selectedEdge.target]),
+			selection: {
+				edgeId: selectedEdge.id,
+				endpointIds: new Set([selectedEdge.source, selectedEdge.target]),
+			},
 		});
-		const nodeSelection = connectionPresentationState(unrelatedEdge, {
-			endpointIds: new Set([unrelatedEdge.source]),
+		const nodeSelection = connectionPresentationState(selectedEdge, {
+			selection: { endpointIds: new Set([selectedEdge.source]) },
+		});
+		const hoveredWithNodeSelection = connectionPresentationState(selectedEdge, {
+			selection: { endpointIds: new Set([selectedEdge.source]) },
+			hoveredConnectionId: hoveredEdge.id,
+		});
+		const hoveredWithEdgeSelection = connectionPresentationState(hoveredEdge, {
+			selection: {
+				edgeId: selectedEdge.id,
+				endpointIds: new Set([selectedEdge.source, selectedEdge.target]),
+			},
+			hoveredConnectionId: hoveredEdge.id,
+		});
+		const selectedAndHovered = connectionPresentationState(selectedEdge, {
+			selection: {
+				edgeId: selectedEdge.id,
+				endpointIds: new Set([selectedEdge.source, selectedEdge.target]),
+			},
+			hoveredConnectionId: hoveredEdge.id,
 		});
 
-		expect(edgeSelection).toEqual({ selected: true, highlighted: true, dimmed: false });
-		expect(unrelatedPresentation).toEqual({ selected: false, highlighted: false, dimmed: true });
-		expect(nodeSelection).toEqual({ selected: false, highlighted: true, dimmed: false });
+		expect(edgeSelection).toMatchObject({
+			selected: true,
+			hovered: false,
+			highlighted: true,
+			dimmed: false,
+			endpointEmphasized: true,
+			labelVisible: true,
+		});
+		expect(unrelatedPresentation).toMatchObject({
+			selected: false,
+			hovered: false,
+			highlighted: false,
+			dimmed: true,
+			endpointEmphasized: false,
+			labelVisible: false,
+		});
+		expect(nodeSelection).toMatchObject({
+			selected: false,
+			hovered: false,
+			highlighted: true,
+			dimmed: false,
+			endpointEmphasized: false,
+			labelVisible: false,
+		});
+		expect(hoveredWithNodeSelection).toMatchObject({
+			highlighted: false,
+			dimmed: true,
+			labelVisible: false,
+		});
+		expect(hoveredWithEdgeSelection).toMatchObject({
+			selected: false,
+			hovered: true,
+			highlighted: true,
+			dimmed: false,
+			endpointEmphasized: true,
+			labelVisible: true,
+		});
+		expect(selectedAndHovered).toMatchObject({
+			selected: true,
+			hovered: false,
+			highlighted: true,
+			dimmed: false,
+			endpointEmphasized: true,
+			labelVisible: true,
+		});
+
+		expect(
+			connectionEndpointIds([selectedEdge, unrelatedEdge], {
+				selection: {
+					edgeId: selectedEdge.id,
+					endpointIds: new Set([selectedEdge.source, selectedEdge.target]),
+				},
+				hoveredConnectionId: unrelatedEdge.id,
+			})
+		).toEqual(new Set([
+			selectedEdge.source,
+			selectedEdge.target,
+			unrelatedEdge.source,
+			unrelatedEdge.target,
+		]));
 	});
 
 	test("assigns stable lanes to direct, summary, predicate, and reverse connections", () => {

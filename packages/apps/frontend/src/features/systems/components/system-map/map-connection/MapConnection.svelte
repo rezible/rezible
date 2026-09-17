@@ -3,6 +3,7 @@
 
 	import { cn } from "$lib/utils";
 	import { getSystemMapConnectionPath } from "./geometry";
+	import { connectionLabel } from "./presentation";
 	import type { FlowEdge } from "../flow-model";
 
 	type Props = EdgeProps<FlowEdge>;
@@ -57,7 +58,7 @@
 		].join(";")
 	);
 	const label = $derived(
-		connection ? `${connection.predicate.replaceAll("_", " ")} · ${count}` : undefined
+		connection && (props.selected || data?.isLabelVisible) ? connectionLabel(connection) : undefined
 	);
 </script>
 

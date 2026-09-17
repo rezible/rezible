@@ -1,4 +1,4 @@
-import { getViewportForBounds, type OnMove } from "@xyflow/svelte";
+import { getViewportForBounds, type EdgeEvents, type OnMove } from "@xyflow/svelte";
 import { Context, watch } from "runed";
 
 import {
@@ -45,6 +45,7 @@ import type {
 import { preferredLayoutAnchorId, settleLayoutChain, MapViewportState } from "./viewport-state";
 import { alignLayoutToPrevious, nearestSurvivingArchitectureAnchor } from "./layout";
 import {
+	connectionEndpointIds,
 	connectionPresentationState,
 	type ConnectionSelection,
 } from "./map-connection/presentation";
@@ -119,6 +120,7 @@ const nodeDataForEntity = (node: FlowNode, entity: GraphEntity): FlowNodeData =>
 });
 
 type MoveEvent = Parameters<OnMove>[0];
+type EdgePointerEvent = Parameters<NonNullable<EdgeEvents<FlowEdge>["onedgepointerenter"]>>[0];
 
 type RebuildInputs = {
 	graph: GraphSubset;
@@ -162,6 +164,8 @@ export class SystemMapController {
 	selectedItemId = $derived(inspectionItemId(this.selectedTarget));
 	selectedEntityIds = $derived(entityIdsForTarget(this.selectedTarget, this.suppliedGraph));
 	private selectedEdgeId = $state<string>();
+	showAllConnectionLabels = $state(false);
+	hoveredConnectionId = $state<string>();
 
 	inspection = $state.raw<SystemMapInspection>();
 	inspectionItems = $state.raw<SystemMapInspectionItem[]>([]);
@@ -249,6 +253,7 @@ export class SystemMapController {
 	private detach = () => {
 		this.attached = false;
 		this.disposed = true;
+		this.hoveredConnectionId = undefined;
 		this.requestId += 1;
 		this.layoutEngine?.dispose();
 		this.layoutEngine = undefined;
@@ -256,6 +261,42 @@ export class SystemMapController {
 
 	retry = () => {
 		this.scheduleRebuild();
+	};
+
+	toggleConnectionLabels = () => {
+		this.showAllConnectionLabels = !this.showAllConnectionLabels;
+		this.updateConnectionPresentation();
+	};
+
+	setHoveredConnection = (connectionId: string) => {
+		if (
+			!this.displayedProjection.connections.some((connection) => connection.id === connectionId)
+		)
+			return;
+		if (this.hoveredConnectionId === connectionId) return;
+
+		this.hoveredConnectionId = connectionId;
+		this.updateSelectionPresentation();
+	};
+
+	clearHoveredConnection = (connectionId?: string) => {
+		if (connectionId !== undefined && this.hoveredConnectionId !== connectionId) return;
+		if (this.hoveredConnectionId === undefined) return;
+
+		this.hoveredConnectionId = undefined;
+		this.updateSelectionPresentation();
+	};
+
+	onEdgePointerEnter: NonNullable<EdgeEvents<FlowEdge>["onedgepointerenter"]> = ({
+		edge,
+	}: EdgePointerEvent) => {
+		this.setHoveredConnection(edge.id);
+	};
+
+	onEdgePointerLeave: NonNullable<EdgeEvents<FlowEdge>["onedgepointerleave"]> = ({
+		edge,
+	}: EdgePointerEvent) => {
+		this.clearHoveredConnection(edge.id);
 	};
 
 	/** Synchronizes the reactive controller mirrors at the viewport-state boundary. */
@@ -457,7 +498,13 @@ export class SystemMapController {
 		this.displayedGraph = graph;
 		this.displayedLayout = stableLayout;
 		this.displayedProjection = projection;
-		this.nodes = this.decorateNodes(stableLayout.nodes, graph);
+		if (
+			this.hoveredConnectionId &&
+			!projection.connections.some((connection) => connection.id === this.hoveredConnectionId)
+		) {
+			this.hoveredConnectionId = undefined;
+		}
+		this.nodes = this.decorateNodes(stableLayout.nodes, graph, stableLayout.edges);
 		this.edges = this.decorateEdges(stableLayout.edges);
 		this.refreshInspection();
 		return stableLayout;
@@ -497,10 +544,12 @@ export class SystemMapController {
 	// Displayed diagram presentation: decorate the last successful layout with current selection.
 	private decorateNodes(
 		layoutNodes: readonly FlowNode[],
-		graph: GraphSubset
+		graph: GraphSubset,
+		layoutEdges: readonly FlowEdge[]
 	): FlowNode[] {
 		const entitiesById = new Map(graph.entities.map((entity) => [entity.id, entity]));
 		const selectedEntityIds = this.selectedEntityRepresentatives();
+		const endpointIds = connectionEndpointIds(layoutEdges, this.connectionPresentationOptions());
 
 		return layoutNodes.map((node) => {
 			const entity = entitiesById.get(node.id);
@@ -508,33 +557,58 @@ export class SystemMapController {
 			return {
 				...node,
 				selected: selectedEntityIds.has(node.id),
-				data: nodeDataForEntity(node, entity),
+				data: {
+					...nodeDataForEntity(node, entity),
+					isConnectionEndpoint: endpointIds.has(node.id),
+				},
 			};
 		});
 	}
 
-	private decorateEdges(layoutEdges: readonly FlowEdge[]): FlowEdge[] {
-		const selection: ConnectionSelection | undefined = this.selectedTarget
+	private connectionSelection(): ConnectionSelection | undefined {
+		return this.selectedTarget
 			? { edgeId: this.selectedEdgeId, endpointIds: this.selectedEntityRepresentatives() }
 			: undefined;
+	}
+
+	private connectionPresentationOptions() {
+		return {
+			selection: this.connectionSelection(),
+			hoveredConnectionId: this.hoveredConnectionId,
+			showAllConnectionLabels: this.showAllConnectionLabels,
+		};
+	}
+
+	private decorateEdges(layoutEdges: readonly FlowEdge[]): FlowEdge[] {
+		const presentationOptions = this.connectionPresentationOptions();
 
 		return layoutEdges.map((edge) => {
 			const { 
 				selected, 
 				highlighted: isHighlighted, 
 				dimmed: isDimmed,
-			} = connectionPresentationState(edge, selection);
+				labelVisible: isLabelVisible,
+			} = connectionPresentationState(edge, presentationOptions);
 			
 			let data: FlowEdge["data"];
-			if (edge.data) data = { ...edge.data, isHighlighted, isDimmed };
+			if (edge.data) data = { ...edge.data, isHighlighted, isDimmed, isLabelVisible };
 
-			return { ...edge, selected, data };
+			return { ...edge, selected, zIndex: isHighlighted ? 1 : 0, data };
 		});
+	}
+
+	private updateConnectionPresentation() {
+		if (!this.displayedLayout) return;
+		this.edges = this.decorateEdges(this.displayedLayout.edges);
 	}
 
 	private updateSelectionPresentation() {
 		if (!this.displayedGraph || !this.displayedLayout) return;
-		this.nodes = this.decorateNodes(this.displayedLayout.nodes, this.displayedGraph);
+		this.nodes = this.decorateNodes(
+			this.displayedLayout.nodes,
+			this.displayedGraph,
+			this.displayedLayout.edges
+		);
 		this.edges = this.decorateEdges(this.displayedLayout.edges);
 	}
 
@@ -602,7 +676,11 @@ export class SystemMapController {
 		this.syncDetailState();
 
 		if (this.displayedGraph && this.displayedLayout && !structuralChanged) {
-			this.nodes = this.decorateNodes(this.displayedLayout.nodes, this.displayedGraph);
+			this.nodes = this.decorateNodes(
+				this.displayedLayout.nodes,
+				this.displayedGraph,
+				this.displayedLayout.edges
+			);
 		}
 		this.options.onViewportChange?.(this.viewport);
 		this.refreshNearby();

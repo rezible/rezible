@@ -29,9 +29,10 @@
 	<div
 		data-appearance="group"
 		data-selected={selected}
+		data-connection-endpoint={data.isConnectionEndpoint ?? false}
 		data-category={category}
 		style={nodeStyle}
-		class="map-node-shell border-border bg-card/70 text-card-foreground flex h-full w-full flex-col gap-2 rounded-lg border p-3 shadow-sm data-[selected=true]:border-primary"
+		class="map-node-shell border-border bg-card/70 text-card-foreground flex h-full w-full flex-col gap-2 rounded-lg border p-3 shadow-sm data-[selected=true]:border-primary data-[connection-endpoint=true]:ring-1 data-[connection-endpoint=true]:ring-primary/60 data-[connection-endpoint=true]:ring-offset-1"
 		role="button"
 		tabindex="0"
 		aria-label={`${nodePresentation.label}, group boundary`}
@@ -53,9 +54,10 @@
 	<div
 		data-appearance="compact"
 		data-selected={selected}
+		data-connection-endpoint={data.isConnectionEndpoint ?? false}
 		data-category={category}
 		style={nodeStyle}
-		class="map-node-shell border-border bg-card text-card-foreground flex h-full w-full flex-col justify-center gap-1 rounded-md border px-3 py-2 shadow-sm data-[selected=true]:border-primary data-[selected=true]:bg-muted"
+		class="map-node-shell border-border bg-card text-card-foreground flex h-full w-full flex-col justify-center gap-1 rounded-md border px-3 py-2 shadow-sm data-[selected=true]:border-primary data-[selected=true]:bg-muted data-[connection-endpoint=true]:ring-1 data-[connection-endpoint=true]:ring-primary/60 data-[connection-endpoint=true]:ring-offset-1"
 		role="button"
 		tabindex="0"
 		aria-label={nodePresentation.label}

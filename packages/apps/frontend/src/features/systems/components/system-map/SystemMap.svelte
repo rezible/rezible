@@ -86,6 +86,8 @@
 				elementsSelectable={false}
 				onnodeclick={({ node, event }) => controller.selectNode(node.id, event)}
 				onedgeclick={({ edge, event }) => controller.selectEdge(edge.id, event)}
+				onedgepointerenter={controller.onEdgePointerEnter}
+				onedgepointerleave={controller.onEdgePointerLeave}
 				onpaneclick={() => controller.clearSelection()}
 				onmove={controller.onMove}
 			>
@@ -105,6 +107,15 @@
 							onclick={controller.revealSelected}
 						>
 							Reveal
+						</Button>
+						<Button
+							variant={controller.showAllConnectionLabels ? "secondary" : "outline"}
+							size="sm"
+							aria-pressed={controller.showAllConnectionLabels}
+							aria-label="Show all connection labels"
+							onclick={controller.toggleConnectionLabels}
+						>
+							Labels
 						</Button>
 						<Badge
 							variant="secondary"

@@ -7,6 +7,7 @@ export type FlowNodeData = {
 	entity: GraphEntity;
 	appearance: MapNodeAppearance;
 	annotationCount: number;
+	isConnectionEndpoint?: boolean;
 };
 
 export type FlowNode = Node<FlowNodeData, "system-map-node">;
@@ -16,6 +17,7 @@ export type FlowEdgeData = {
 	laneOffset?: number;
 	isDimmed?: boolean;
 	isHighlighted?: boolean;
+	isLabelVisible?: boolean;
 };
 
 export type FlowEdge = Edge<FlowEdgeData, "system-map-connection">;
