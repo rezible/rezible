@@ -5,7 +5,7 @@
 	let FixtureView = $state<Component>();
 
 	if (dev) {
-		void import("$features/systems/views/system-map-fixture").then(({ default: component }) => {
+		void import("$features/dev/views/system-map-fixture").then(({ default: component }) => {
 			FixtureView = component;
 		});
 	}

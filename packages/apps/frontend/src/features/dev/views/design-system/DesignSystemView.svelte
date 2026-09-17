@@ -20,7 +20,7 @@
 <svelte:head><title>Atlas design system · Rezible</title></svelte:head>
 
 <FeatureNavigationRail
-	route="/design-system/[[section=designSystemSection]]"
+	route="/dev/design-system/[[section=designSystemSection]]"
 	label="Design system"
 	entries={[
 		{ label: "Foundations", component: FoundationsSection, params: { section: undefined } },
