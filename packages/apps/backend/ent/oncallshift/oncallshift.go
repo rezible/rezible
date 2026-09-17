@@ -273,3 +273,11 @@ func newMetricsStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.O2O, false, MetricsTable, MetricsColumn),
 	)
 }
+
+// RoleValues contains all permitted values. Treat this slice as read-only.
+var RoleValues = []string{
+	"primary",
+	"secondary",
+	"shadow",
+	"covering",
+}

@@ -358,3 +358,23 @@ func newCommentsStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.O2M, true, CommentsTable, CommentsColumn),
 	)
 }
+
+// KindValues contains all permitted values. Treat this slice as read-only.
+var KindValues = []string{
+	"comment",
+	"question",
+}
+
+// TargetKindValues contains all permitted values. Treat this slice as read-only.
+var TargetKindValues = []string{
+	"finding",
+	"knowledge_entity",
+	"knowledge_relationship",
+	"normalized_event",
+}
+
+// ResolutionStateValues contains all permitted values. Treat this slice as read-only.
+var ResolutionStateValues = []string{
+	"open",
+	"resolved",
+}

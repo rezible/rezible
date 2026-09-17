@@ -311,3 +311,13 @@ func newReviewsStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.O2M, true, ReviewsTable, ReviewsColumn),
 	)
 }
+
+// KindValues contains all permitted values. Treat this slice as read-only.
+var KindValues = []string{
+	"observation",
+	"context",
+	"decision",
+	"action",
+	"finding",
+	"recommendation",
+}

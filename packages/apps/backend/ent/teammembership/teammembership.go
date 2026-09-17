@@ -212,3 +212,9 @@ func newUserStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.M2O, false, UserTable, UserColumn),
 	)
 }
+
+// RoleValues contains all permitted values. Treat this slice as read-only.
+var RoleValues = []string{
+	"admin",
+	"member",
+}

@@ -228,3 +228,15 @@ func newFromQuestionStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.M2O, false, FromQuestionTable, FromQuestionColumn),
 	)
 }
+
+// TypeValues contains all permitted values. Treat this slice as read-only.
+var TypeValues = []string{
+	"user",
+	"assistant",
+	"question",
+}
+
+// RequestedToolValues contains all permitted values. Treat this slice as read-only.
+var RequestedToolValues = []string{
+	"rating",
+}

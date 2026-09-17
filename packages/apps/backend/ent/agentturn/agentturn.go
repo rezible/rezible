@@ -316,3 +316,12 @@ func newArtifactsStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.O2M, false, ArtifactsTable, ArtifactsColumn),
 	)
 }
+
+// StatusValues contains all permitted values. Treat this slice as read-only.
+var StatusValues = []string{
+	"queued",
+	"running",
+	"completed",
+	"failed",
+	"aborted",
+}

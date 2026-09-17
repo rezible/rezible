@@ -208,3 +208,12 @@ func newUserStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.M2O, true, UserTable, UserColumn),
 	)
 }
+
+// KindValues contains all permitted values. Treat this slice as read-only.
+var KindValues = []string{
+	"impact",
+	"detected",
+	"opened",
+	"mitigation",
+	"resolution",
+}

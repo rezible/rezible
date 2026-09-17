@@ -302,3 +302,17 @@ func newSystemAnalysisStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.M2O, false, SystemAnalysisTable, SystemAnalysisColumn),
 	)
 }
+
+// KindValues contains all permitted values. Treat this slice as read-only.
+var KindValues = []string{
+	"simple",
+	"full",
+}
+
+// StateValues contains all permitted values. Treat this slice as read-only.
+var StateValues = []string{
+	"draft",
+	"in_review",
+	"meeting",
+	"closed",
+}

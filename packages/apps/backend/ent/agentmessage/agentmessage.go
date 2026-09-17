@@ -231,3 +231,11 @@ func newAgentTurnStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.M2O, true, AgentTurnTable, AgentTurnColumn),
 	)
 }
+
+// RoleValues contains all permitted values. Treat this slice as read-only.
+var RoleValues = []string{
+	"user",
+	"model",
+	"tool",
+	"system",
+}

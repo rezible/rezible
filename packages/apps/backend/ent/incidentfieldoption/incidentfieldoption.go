@@ -198,3 +198,9 @@ func newIncidentsStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.M2M, true, IncidentsTable, IncidentsPrimaryKey...),
 	)
 }
+
+// TypeValues contains all permitted values. Treat this slice as read-only.
+var TypeValues = []string{
+	"custom",
+	"derived",
+}

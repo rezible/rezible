@@ -333,3 +333,9 @@ func newIncidentsStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.M2M, true, IncidentsTable, IncidentsPrimaryKey...),
 	)
 }
+
+// CloseReasonValues contains all permitted values. Treat this slice as read-only.
+var CloseReasonValues = []string{
+	"stabilized",
+	"dismissed",
+}

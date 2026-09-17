@@ -218,3 +218,10 @@ func newIntegrationStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.M2O, false, IntegrationTable, IntegrationColumn),
 	)
 }
+
+// StatusValues contains all permitted values. Treat this slice as read-only.
+var StatusValues = []string{
+	"success",
+	"failed",
+	"skipped",
+}

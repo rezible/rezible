@@ -172,3 +172,10 @@ func newAlertInstanceStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.M2O, false, AlertInstanceTable, AlertInstanceColumn),
 	)
 }
+
+// AccurateValues contains all permitted values. Treat this slice as read-only.
+var AccurateValues = []string{
+	"yes",
+	"no",
+	"unknown",
+}

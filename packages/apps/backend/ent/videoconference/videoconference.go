@@ -265,3 +265,11 @@ func newMeetingSessionStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.O2O, true, MeetingSessionTable, MeetingSessionColumn),
 	)
 }
+
+// StatusValues contains all permitted values. Treat this slice as read-only.
+var StatusValues = []string{
+	"creating",
+	"active",
+	"ended",
+	"failed",
+}

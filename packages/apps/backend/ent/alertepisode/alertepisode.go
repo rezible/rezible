@@ -269,3 +269,9 @@ func newInstancesStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.O2M, false, InstancesTable, InstancesColumn),
 	)
 }
+
+// StatusValues contains all permitted values. Treat this slice as read-only.
+var StatusValues = []string{
+	"open",
+	"closed",
+}

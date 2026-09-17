@@ -236,3 +236,9 @@ func newEvidenceStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.O2M, true, EvidenceTable, EvidenceColumn),
 	)
 }
+
+// SubjectKindValues contains all permitted values. Treat this slice as read-only.
+var SubjectKindValues = []string{
+	"entity",
+	"relationship",
+}

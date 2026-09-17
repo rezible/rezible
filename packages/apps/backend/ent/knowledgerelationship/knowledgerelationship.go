@@ -257,3 +257,35 @@ func newAliasesStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.O2M, true, AliasesTable, AliasesColumn),
 	)
 }
+
+// PredicateValues contains all permitted values. Treat this slice as read-only.
+var PredicateValues = []string{
+	"contains",
+	"interacts_with",
+	"calls",
+	"reads_from",
+	"writes_to",
+	"publishes_to",
+	"consumes_from",
+	"depends_on",
+	"runs_on",
+	"owns",
+	"supports",
+	"participates_in",
+	"member_of",
+	"controls",
+	"observes",
+	"influences",
+	"constrains",
+	"addresses",
+	"impacts",
+	"touches",
+	"uses",
+	"processes",
+	"indexes",
+	"stores",
+	"indicates",
+	"classified_as",
+	"responds_to",
+	"mitigates",
+}

@@ -210,3 +210,9 @@ func newSubjectAliasStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.M2O, false, SubjectAliasTable, SubjectAliasColumn),
 	)
 }
+
+// KindValues contains all permitted values. Treat this slice as read-only.
+var KindValues = []string{
+	"observed",
+	"deleted",
+}

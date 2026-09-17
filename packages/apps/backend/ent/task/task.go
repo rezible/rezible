@@ -350,3 +350,18 @@ func newCreatorStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.M2O, true, CreatorTable, CreatorColumn),
 	)
 }
+
+// TypeValues contains all permitted values. Treat this slice as read-only.
+var TypeValues = []string{
+	"cleanup",
+	"detect",
+	"mitigate",
+	"prevent",
+}
+
+// StateValues contains all permitted values. Treat this slice as read-only.
+var StateValues = []string{
+	"open",
+	"completed",
+	"cancelled",
+}

@@ -292,3 +292,16 @@ func newSessionsStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.O2M, true, SessionsTable, SessionsColumn),
 	)
 }
+
+// RepeatsValues contains all permitted values. Treat this slice as read-only.
+var RepeatsValues = []string{
+	"daily",
+	"weekly",
+	"monthly",
+}
+
+// MonthlyOnValues contains all permitted values. Treat this slice as read-only.
+var MonthlyOnValues = []string{
+	"same_day",
+	"same_weekday",
+}

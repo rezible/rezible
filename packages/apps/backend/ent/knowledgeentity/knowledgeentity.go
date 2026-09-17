@@ -279,3 +279,19 @@ func newTargetRelationshipsStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.O2M, true, TargetRelationshipsTable, TargetRelationshipsColumn),
 	)
 }
+
+// CategoryValues contains all permitted values. Treat this slice as read-only.
+var CategoryValues = []string{
+	"system_function",
+	"actor",
+	"system",
+	"container",
+	"component",
+	"infrastructure",
+	"code",
+	"process",
+	"concern",
+	"decision",
+	"event",
+	"signal",
+}

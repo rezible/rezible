@@ -295,3 +295,10 @@ func newCommentStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.M2O, false, CommentTable, CommentColumn),
 	)
 }
+
+// StateValues contains all permitted values. Treat this slice as read-only.
+var StateValues = []string{
+	"waiting",
+	"request_changes",
+	"approved",
+}

@@ -184,3 +184,10 @@ func newLinkedIncidentStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.M2O, false, LinkedIncidentTable, LinkedIncidentColumn),
 	)
 }
+
+// LinkTypeValues contains all permitted values. Treat this slice as read-only.
+var LinkTypeValues = []string{
+	"parent",
+	"child",
+	"similar",
+}

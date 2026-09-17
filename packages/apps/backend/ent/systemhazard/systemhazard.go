@@ -259,3 +259,9 @@ func newSituationAssessmentsStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.O2M, false, SituationAssessmentsTable, SituationAssessmentsColumn),
 	)
 }
+
+// StatusValues contains all permitted values. Treat this slice as read-only.
+var StatusValues = []string{
+	"active",
+	"retired",
+}

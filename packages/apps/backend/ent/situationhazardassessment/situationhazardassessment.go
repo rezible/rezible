@@ -303,3 +303,10 @@ func newAgentTurnStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.M2O, false, AgentTurnTable, AgentTurnColumn),
 	)
 }
+
+// StatusValues contains all permitted values. Treat this slice as read-only.
+var StatusValues = []string{
+	"suspected",
+	"confirmed",
+	"disproven",
+}
