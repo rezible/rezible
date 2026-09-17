@@ -161,7 +161,7 @@ describe("system map reveal interaction", () => {
 		const graph = {
 			coverage: { parentMembership: Coverage.Complete, relationships: Coverage.Complete },
 			entities: [
-				{ id: "root", category: MapCategory.Function, label: "root", kind: "function" },
+				{ id: "root", category: MapCategory.SystemFunction, label: "root", kind: "function" },
 				{ id: "group", category: MapCategory.System, label: "group", kind: "system" },
 				{ id: "child", category: MapCategory.Container, label: "child", kind: "service" },
 			],
@@ -200,7 +200,7 @@ describe("system map reveal interaction", () => {
 		const graph = {
 			coverage: { parentMembership: Coverage.Complete, relationships: Coverage.Complete },
 			entities: [
-				{ id: "root", category: MapCategory.Function, label: "root", kind: "function" },
+				{ id: "root", category: MapCategory.SystemFunction, label: "root", kind: "function" },
 				{ id: "group", category: MapCategory.System, label: "group", kind: "system" },
 			],
 			relationships: [{ id: "m-root-group", source: "root", target: "group", predicate: "contains" }],
@@ -240,7 +240,7 @@ describe("system map reveal interaction", () => {
 		const graph = {
 			coverage: { parentMembership: Coverage.Complete, relationships: Coverage.Complete },
 			entities: [
-				{ id: "root", category: MapCategory.Function, label: "root", kind: "function" },
+				{ id: "root", category: MapCategory.SystemFunction, label: "root", kind: "function" },
 				{ id: "group", category: MapCategory.System, label: "group", kind: "system" },
 				{ id: "child", category: MapCategory.Container, label: "child", kind: "service" },
 			],
@@ -364,7 +364,7 @@ describe("system map reveal interaction", () => {
 describe("system map minimum detail", () => {
 	test("automatically shows the shallowest architecture and retains it when zoomed out", () => {
 		for (const [category, level] of [
-			[MapCategory.Function, NodeDetailLevel.Landscape],
+			[MapCategory.SystemFunction, NodeDetailLevel.Landscape],
 			[MapCategory.System, NodeDetailLevel.Systems],
 			[MapCategory.Container, NodeDetailLevel.Runtime],
 			[MapCategory.Infrastructure, NodeDetailLevel.Runtime],

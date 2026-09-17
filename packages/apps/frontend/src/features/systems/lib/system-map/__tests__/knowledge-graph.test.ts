@@ -22,7 +22,7 @@ import {
 describe("system map category policy", () => {
 	test("assigns architectural nodes to the intended detail levels", () => {
 		const levels = {
-			[MapCategory.Function]: NodeDetailLevel.Landscape,
+			[MapCategory.SystemFunction]: NodeDetailLevel.Landscape,
 			[MapCategory.System]: NodeDetailLevel.Systems,
 			[MapCategory.Container]: NodeDetailLevel.Runtime,
 			[MapCategory.Infrastructure]: NodeDetailLevel.Runtime,

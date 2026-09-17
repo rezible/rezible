@@ -1,6 +1,6 @@
 export enum MapCategory {
 	/** A business/organisational ability */
-	Function = "function",
+	SystemFunction = "system_function",
 	/** A system or subsystem grouping units that provide a function */
 	System = "system",
 	/** An independently runnable unit within a system */
@@ -68,7 +68,7 @@ const annotation = (name: string) => defineCategoryDisplay(DisplayMode.Annotatio
 const detailsOnly = (name: string) => defineCategoryDisplay(DisplayMode.DetailsOnly, name);
 
 export const categoryDisplay: Readonly<Record<MapCategory, MapCategoryDisplay>> = {
-	[MapCategory.Function]: node("Function", NodeDetailLevel.Landscape),
+	[MapCategory.SystemFunction]: node("Function", NodeDetailLevel.Landscape),
 	[MapCategory.System]: node("System", NodeDetailLevel.Systems),
 	[MapCategory.Container]: node("Container", NodeDetailLevel.Runtime),
 	[MapCategory.Infrastructure]: node("Infrastructure", NodeDetailLevel.Runtime),

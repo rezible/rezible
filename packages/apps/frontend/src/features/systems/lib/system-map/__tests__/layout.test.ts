@@ -145,7 +145,7 @@ describe("system map ELK layout", () => {
 		const overviewRoot = nodeById(overviewLayout.nodes, "root");
 
 		expect(overviewProjection.nodes.map((node) => node.id)).toEqual(["root"]);
-		expect(overviewRoot.data.entity.category).toBe(MapCategory.Function);
+		expect(overviewRoot.data.entity.category).toBe(MapCategory.SystemFunction);
 		expect(nodePresentationForEntity(overviewRoot.data.entity)).toMatchObject({
 		label: "root",
 		categoryLabel: "Function",

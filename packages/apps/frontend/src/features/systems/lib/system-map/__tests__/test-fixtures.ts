@@ -60,7 +60,7 @@ export const sharedGroupsExample: GraphExample = {
 	source: {
 		coverage: { parentMembership: Coverage.Complete, relationships: Coverage.Complete },
 		entities: [
-			entity("root", MapCategory.Function),
+			entity("root", MapCategory.SystemFunction),
 			entity("group-a", MapCategory.System),
 			entity("group-b", MapCategory.System),
 			entity("member-a", MapCategory.Container),
