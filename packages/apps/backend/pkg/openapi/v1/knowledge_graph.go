@@ -21,6 +21,12 @@ type KnowledgeGraphHandler interface {
 	ListKnowledgeGraphRelationships(context.Context, *ListKnowledgeGraphRelationshipsRequest) (*ListKnowledgeGraphRelationshipsResponse, error)
 	GetKnowledgeGraphRelationship(context.Context, *GetKnowledgeGraphRelationshipRequest) (*GetKnowledgeGraphRelationshipResponse, error)
 
+	ListKnowledgeGraphSubjectAliases(context.Context, *ListKnowledgeGraphSubjectAliasesRequest) (*ListKnowledgeGraphSubjectAliasesResponse, error)
+	GetKnowledgeGraphSubjectAliases(context.Context, *GetKnowledgeGraphSubjectAliasRequest) (*GetKnowledgeGraphSubjectAliasResponse, error)
+
+	ListKnowledgeGraphEvidence(context.Context, *ListKnowledgeGraphEvidenceRequest) (*ListKnowledgeGraphEvidenceResponse, error)
+	GetKnowledgeGraphEvidence(context.Context, *GetKnowledgeGraphEvidenceRequest) (*GetKnowledgeGraphEvidenceResponse, error)
+
 	GetKnowledgeGraphView(context.Context, *GetKnowledgeGraphViewRequest) (*GetKnowledgeGraphViewResponse, error)
 }
 
@@ -31,6 +37,13 @@ func (o operations) RegisterKnowledgeGraph(api huma.API) {
 	huma.Register(api, ListKnowledgeGraphRelationships, o.ListKnowledgeGraphRelationships)
 	huma.Register(api, GetKnowledgeGraphRelationship, o.GetKnowledgeGraphRelationship)
 
+	huma.Register(api, ListKnowledgeGraphSubjectAliases, o.ListKnowledgeGraphSubjectAliases)
+	huma.Register(api, GetKnowledgeGraphSubjectAlias, o.GetKnowledgeGraphSubjectAliases)
+
+	huma.Register(api, ListKnowledgeGraphEvidence, o.ListKnowledgeGraphEvidence)
+	huma.Register(api, GetKnowledgeGraphEvidence, o.GetKnowledgeGraphEvidence)
+
+	// TODO: remove once new querying is done
 	huma.Register(api, GetKnowledgeGraphView, o.GetKnowledgeGraphView)
 }
 
@@ -39,23 +52,6 @@ func (o operations) RegisterKnowledgeGraphEnums(api huma.API) {
 }
 
 type (
-	KnowledgeGraphEvidence struct {
-		Id         uuid.UUID                        `json:"id"`
-		Attributes KnowledgeGraphEvidenceAttributes `json:"attributes"`
-	}
-
-	KnowledgeGraphEvidenceAttributes struct {
-		Kind         string                     `json:"kind" enum:"observed,deleted"`
-		EffectiveAt  time.Time                  `json:"effectiveAt"`
-		SubjectState KnowledgeGraphSubjectState `json:"subjectState"`
-	}
-
-	KnowledgeGraphSubjectState struct {
-		DisplayName string         `json:"displayName"`
-		Description string         `json:"description"`
-		Properties  map[string]any `json:"properties"`
-	}
-
 	KnowledgeGraphEntity struct {
 		Id         uuid.UUID                      `json:"id"`
 		Attributes KnowledgeGraphEntityAttributes `json:"attributes"`
@@ -92,6 +88,27 @@ type (
 		ResourceRef ProviderResourceRef `json:"resourceRef"`
 	}
 
+	KnowledgeGraphEvidence struct {
+		Id         uuid.UUID                        `json:"id"`
+		Attributes KnowledgeGraphEvidenceAttributes `json:"attributes"`
+	}
+
+	KnowledgeGraphEvidenceAttributes struct {
+		Kind           string                     `json:"kind" enum:"observed,deleted"`
+		EffectiveAt    time.Time                  `json:"effectiveAt"`
+		CreatedAt      time.Time                  `json:"createdAt"`
+		EventId        uuid.UUID                  `json:"eventId"`
+		SubjectAliasId uuid.UUID                  `json:"subjectAliasId"`
+		SubjectState   KnowledgeGraphSubjectState `json:"subjectState"`
+	}
+
+	KnowledgeGraphSubjectState struct {
+		DisplayName string         `json:"displayName"`
+		Description string         `json:"description"`
+		Properties  map[string]any `json:"properties"`
+	}
+
+	// TODO: remove once new querying is done
 	KnowledgeGraphView struct {
 		RootId        uuid.UUID                    `json:"rootId"`
 		Entities      []KnowledgeGraphEntity       `json:"entities"`
@@ -157,9 +174,12 @@ func KnowledgeGraphSubjectAliasFromEnt(alias *ent.KnowledgeSubjectAlias) Knowled
 
 func KnowledgeGraphEvidenceFromEnt(ev *ent.KnowledgeEvidence) *KnowledgeGraphEvidence {
 	attrs := KnowledgeGraphEvidenceAttributes{
-		Kind:         ev.Kind.String(),
-		EffectiveAt:  ev.EffectiveAt,
-		SubjectState: KnowledgeGraphSubjectStateFromEnt(ev.SubjectState),
+		Kind:           ev.Kind.String(),
+		EffectiveAt:    ev.EffectiveAt,
+		CreatedAt:      ev.CreatedAt,
+		EventId:        ev.EventID,
+		SubjectAliasId: ev.SubjectAliasID,
+		SubjectState:   KnowledgeGraphSubjectStateFromEnt(ev.SubjectState),
 	}
 	return &KnowledgeGraphEvidence{Id: ev.ID, Attributes: attrs}
 }
@@ -172,23 +192,14 @@ func KnowledgeGraphSubjectStateFromEnt(s schematypes.KnowledgeGraphSubjectState)
 	}
 }
 
-func KnowledgeGraphViewFromRez(view *rez.KnowledgeGraphView) KnowledgeGraphView {
-	return KnowledgeGraphView{
-		RootId:        view.RootID,
-		Truncated:     view.Truncated,
-		Entities:      ConvertSlice(view.Entities, KnowledgeGraphEntityFromEnt),
-		Relationships: ConvertSlice(view.Relationships, KnowledgeGraphRelationshipFromEnt),
-	}
-}
-
-var knowledgeGraphTags = []string{"Knowledge Graph"}
+var knowledgeTags = []string{"Knowledge Graph"}
 
 var ListKnowledgeGraphEntities = huma.Operation{
 	OperationID: "list-knowledge-graph-entities",
 	Method:      http.MethodGet,
-	Path:        "/knowledge_graph/entities",
+	Path:        "/knowledge/entities",
 	Summary:     "List Knowledge Graph Entities",
-	Tags:        knowledgeGraphTags,
+	Tags:        knowledgeTags,
 	Errors:      ErrorCodes(),
 }
 
@@ -205,9 +216,9 @@ type ListKnowledgeGraphEntitiesResponse PaginatedResponse[KnowledgeGraphEntity]
 var GetKnowledgeGraphEntity = huma.Operation{
 	OperationID: "get-knowledge-graph-entity",
 	Method:      http.MethodGet,
-	Path:        "/knowledge_graph/entities/{id}",
+	Path:        "/knowledge/entities/{id}",
 	Summary:     "Get Knowledge Graph Entity",
-	Tags:        knowledgeGraphTags,
+	Tags:        knowledgeTags,
 	Errors:      ErrorCodes(),
 }
 
@@ -217,9 +228,9 @@ type GetKnowledgeGraphEntityResponse ItemResponse[KnowledgeGraphEntity]
 var ListKnowledgeGraphRelationships = huma.Operation{
 	OperationID: "list-knowledge-graph-relationships",
 	Method:      http.MethodGet,
-	Path:        "/knowledge_graph/relationships",
+	Path:        "/knowledge/relationships",
 	Summary:     "List Knowledge Graph Relationships",
-	Tags:        knowledgeGraphTags,
+	Tags:        knowledgeTags,
 	Errors:      ErrorCodes(),
 }
 
@@ -235,21 +246,77 @@ type ListKnowledgeGraphRelationshipsResponse PaginatedResponse[KnowledgeGraphRel
 var GetKnowledgeGraphRelationship = huma.Operation{
 	OperationID: "get-knowledge-graph-relationship",
 	Method:      http.MethodGet,
-	Path:        "/knowledge_graph/relationships/{id}",
+	Path:        "/knowledge/relationships/{id}",
 	Summary:     "Get Knowledge Graph Relationship",
-	Tags:        knowledgeGraphTags,
+	Tags:        knowledgeTags,
 	Errors:      ErrorCodes(),
 }
 
 type GetKnowledgeGraphRelationshipRequest IdRequest
 type GetKnowledgeGraphRelationshipResponse ItemResponse[KnowledgeGraphRelationship]
 
+var ListKnowledgeGraphSubjectAliases = huma.Operation{
+	OperationID: "list-knowledge-graph-aliases",
+	Method:      http.MethodGet,
+	Path:        "/knowledge/aliases",
+	Summary:     "List Knowledge Graph Subject Aliases",
+	Tags:        knowledgeTags,
+	Errors:      ErrorCodes(),
+}
+
+type ListKnowledgeGraphSubjectAliasesRequest struct {
+	PaginationRequest
+}
+type ListKnowledgeGraphSubjectAliasesResponse PaginatedResponse[KnowledgeGraphSubjectAlias]
+
+var GetKnowledgeGraphSubjectAlias = huma.Operation{
+	OperationID: "get-knowledge-graph-alias",
+	Method:      http.MethodGet,
+	Path:        "/knowledge/aliases/{id}",
+	Summary:     "Get Knowledge Graph Subject Alias",
+	Tags:        knowledgeTags,
+	Errors:      ErrorCodes(),
+}
+
+type GetKnowledgeGraphSubjectAliasRequest IdRequest
+type GetKnowledgeGraphSubjectAliasResponse ItemResponse[KnowledgeGraphSubjectAlias]
+
+var ListKnowledgeGraphEvidence = huma.Operation{
+	OperationID: "list-knowledge-graph-evidence",
+	Method:      http.MethodGet,
+	Path:        "/knowledge/evidence",
+	Summary:     "List Knowledge Graph Evidence",
+	Tags:        knowledgeTags,
+	Errors:      ErrorCodes(),
+}
+
+type ListKnowledgeGraphEvidenceRequest struct {
+	PaginationRequest
+	SubjectAliasId uuid.UUID `query:"subjectAliasId" required:"false"`
+	EntityId       uuid.UUID `query:"entityId" required:"false"`
+	RelationshipId uuid.UUID `query:"relationshipId" required:"false"`
+}
+type ListKnowledgeGraphEvidenceResponse PaginatedResponse[KnowledgeGraphEvidence]
+
+var GetKnowledgeGraphEvidence = huma.Operation{
+	OperationID: "get-knowledge-graph-evidence",
+	Method:      http.MethodGet,
+	Path:        "/knowledge/evidence/{id}",
+	Summary:     "Get Knowledge Graph Evidence",
+	Tags:        knowledgeTags,
+	Errors:      ErrorCodes(),
+}
+
+type GetKnowledgeGraphEvidenceRequest IdRequest
+type GetKnowledgeGraphEvidenceResponse ItemResponse[KnowledgeGraphEvidence]
+
+// TODO: remove once new querying is done
 var GetKnowledgeGraphView = huma.Operation{
 	OperationID: "get-knowledge-graph-view",
 	Method:      http.MethodGet,
-	Path:        "/knowledge_graph/view",
+	Path:        "/knowledge/graph/view",
 	Summary:     "Get Knowledge Graph View",
-	Tags:        knowledgeGraphTags,
+	Tags:        knowledgeTags,
 	Errors:      ErrorCodes(),
 }
 

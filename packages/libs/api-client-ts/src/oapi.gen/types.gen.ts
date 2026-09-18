@@ -1318,12 +1318,28 @@ export type GetKnowledgeGraphEntityResponseBody = {
     data: KnowledgeGraphEntity;
 };
 
+export type GetKnowledgeGraphEvidenceResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: KnowledgeGraphEvidence;
+};
+
 export type GetKnowledgeGraphRelationshipResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
     data: KnowledgeGraphRelationship;
+};
+
+export type GetKnowledgeGraphSubjectAliasResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: KnowledgeGraphSubjectAlias;
 };
 
 export type GetKnowledgeGraphViewResponseBody = {
@@ -1888,6 +1904,20 @@ export type KnowledgeGraphEntityAttributes = {
     updatedAt: string;
 };
 
+export type KnowledgeGraphEvidence = {
+    attributes: KnowledgeGraphEvidenceAttributes;
+    id: string;
+};
+
+export type KnowledgeGraphEvidenceAttributes = {
+    createdAt: string;
+    effectiveAt: string;
+    eventId: string;
+    kind: 'observed' | 'deleted';
+    subjectAliasId: string;
+    subjectState: KnowledgeGraphSubjectState;
+};
+
 export type KnowledgeGraphRelationship = {
     attributes: KnowledgeGraphRelationshipAttributes;
     id: string;
@@ -2290,12 +2320,30 @@ export type PaginatedResponseBodyKnowledgeGraphEntity = {
     pagination: Pagination;
 };
 
+export type PaginatedResponseBodyKnowledgeGraphEvidence = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<KnowledgeGraphEvidence>;
+    pagination: Pagination;
+};
+
 export type PaginatedResponseBodyKnowledgeGraphRelationship = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
     data: Array<KnowledgeGraphRelationship>;
+    pagination: Pagination;
+};
+
+export type PaginatedResponseBodyKnowledgeGraphSubjectAlias = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<KnowledgeGraphSubjectAlias>;
     pagination: Pagination;
 };
 
@@ -8162,6 +8210,101 @@ export type GetInvestigationResponses = {
 
 export type GetInvestigationResponse = GetInvestigationResponses[keyof GetInvestigationResponses];
 
+export type ListKnowledgeGraphAliasesData = {
+    body?: never;
+    path?: never;
+    query?: {
+        page?: number;
+        pageSize?: number;
+    };
+    url: '/knowledge/aliases';
+};
+
+export type ListKnowledgeGraphAliasesErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type ListKnowledgeGraphAliasesError = ListKnowledgeGraphAliasesErrors[keyof ListKnowledgeGraphAliasesErrors];
+
+export type ListKnowledgeGraphAliasesResponses = {
+    /**
+     * OK
+     */
+    200: PaginatedResponseBodyKnowledgeGraphSubjectAlias;
+};
+
+export type ListKnowledgeGraphAliasesResponse = ListKnowledgeGraphAliasesResponses[keyof ListKnowledgeGraphAliasesResponses];
+
+export type GetKnowledgeGraphAliasData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/knowledge/aliases/{id}';
+};
+
+export type GetKnowledgeGraphAliasErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type GetKnowledgeGraphAliasError = GetKnowledgeGraphAliasErrors[keyof GetKnowledgeGraphAliasErrors];
+
+export type GetKnowledgeGraphAliasResponses = {
+    /**
+     * OK
+     */
+    200: GetKnowledgeGraphSubjectAliasResponseBody;
+};
+
+export type GetKnowledgeGraphAliasResponse = GetKnowledgeGraphAliasResponses[keyof GetKnowledgeGraphAliasResponses];
+
 export type ListKnowledgeGraphEntitiesData = {
     body?: never;
     path?: never;
@@ -8174,7 +8317,7 @@ export type ListKnowledgeGraphEntitiesData = {
         provider?: string;
         providerNamespace?: string;
     };
-    url: '/knowledge_graph/entities';
+    url: '/knowledge/entities';
 };
 
 export type ListKnowledgeGraphEntitiesErrors = {
@@ -8221,7 +8364,7 @@ export type GetKnowledgeGraphEntityData = {
         id: string;
     };
     query?: never;
-    url: '/knowledge_graph/entities/{id}';
+    url: '/knowledge/entities/{id}';
 };
 
 export type GetKnowledgeGraphEntityErrors = {
@@ -8262,6 +8405,153 @@ export type GetKnowledgeGraphEntityResponses = {
 
 export type GetKnowledgeGraphEntityResponse = GetKnowledgeGraphEntityResponses[keyof GetKnowledgeGraphEntityResponses];
 
+export type ListKnowledgeGraphEvidenceData = {
+    body?: never;
+    path?: never;
+    query?: {
+        page?: number;
+        pageSize?: number;
+        subjectAliasId?: string;
+        entityId?: string;
+        relationshipId?: string;
+    };
+    url: '/knowledge/evidence';
+};
+
+export type ListKnowledgeGraphEvidenceErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type ListKnowledgeGraphEvidenceError = ListKnowledgeGraphEvidenceErrors[keyof ListKnowledgeGraphEvidenceErrors];
+
+export type ListKnowledgeGraphEvidenceResponses = {
+    /**
+     * OK
+     */
+    200: PaginatedResponseBodyKnowledgeGraphEvidence;
+};
+
+export type ListKnowledgeGraphEvidenceResponse = ListKnowledgeGraphEvidenceResponses[keyof ListKnowledgeGraphEvidenceResponses];
+
+export type GetKnowledgeGraphEvidenceData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/knowledge/evidence/{id}';
+};
+
+export type GetKnowledgeGraphEvidenceErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type GetKnowledgeGraphEvidenceError = GetKnowledgeGraphEvidenceErrors[keyof GetKnowledgeGraphEvidenceErrors];
+
+export type GetKnowledgeGraphEvidenceResponses = {
+    /**
+     * OK
+     */
+    200: GetKnowledgeGraphEvidenceResponseBody;
+};
+
+export type GetKnowledgeGraphEvidenceResponse = GetKnowledgeGraphEvidenceResponses[keyof GetKnowledgeGraphEvidenceResponses];
+
+export type GetKnowledgeGraphViewData = {
+    body?: never;
+    path?: never;
+    query?: {
+        entityId?: string;
+        depth?: number;
+        relationshipPredicate?: Array<string>;
+    };
+    url: '/knowledge/graph/view';
+};
+
+export type GetKnowledgeGraphViewErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type GetKnowledgeGraphViewError = GetKnowledgeGraphViewErrors[keyof GetKnowledgeGraphViewErrors];
+
+export type GetKnowledgeGraphViewResponses = {
+    /**
+     * OK
+     */
+    200: GetKnowledgeGraphViewResponseBody;
+};
+
+export type GetKnowledgeGraphViewResponse = GetKnowledgeGraphViewResponses[keyof GetKnowledgeGraphViewResponses];
+
 export type ListKnowledgeGraphRelationshipsData = {
     body?: never;
     path?: never;
@@ -8273,7 +8563,7 @@ export type ListKnowledgeGraphRelationshipsData = {
         sourceEntityId?: string;
         targetEntityId?: string;
     };
-    url: '/knowledge_graph/relationships';
+    url: '/knowledge/relationships';
 };
 
 export type ListKnowledgeGraphRelationshipsErrors = {
@@ -8320,7 +8610,7 @@ export type GetKnowledgeGraphRelationshipData = {
         id: string;
     };
     query?: never;
-    url: '/knowledge_graph/relationships/{id}';
+    url: '/knowledge/relationships/{id}';
 };
 
 export type GetKnowledgeGraphRelationshipErrors = {
@@ -8360,55 +8650,6 @@ export type GetKnowledgeGraphRelationshipResponses = {
 };
 
 export type GetKnowledgeGraphRelationshipResponse = GetKnowledgeGraphRelationshipResponses[keyof GetKnowledgeGraphRelationshipResponses];
-
-export type GetKnowledgeGraphViewData = {
-    body?: never;
-    path?: never;
-    query?: {
-        entityId?: string;
-        depth?: number;
-        relationshipPredicate?: Array<string>;
-    };
-    url: '/knowledge_graph/view';
-};
-
-export type GetKnowledgeGraphViewErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type GetKnowledgeGraphViewError = GetKnowledgeGraphViewErrors[keyof GetKnowledgeGraphViewErrors];
-
-export type GetKnowledgeGraphViewResponses = {
-    /**
-     * OK
-     */
-    200: GetKnowledgeGraphViewResponseBody;
-};
-
-export type GetKnowledgeGraphViewResponse = GetKnowledgeGraphViewResponses[keyof GetKnowledgeGraphViewResponses];
 
 export type ListMeetingSchedulesData = {
     body?: never;

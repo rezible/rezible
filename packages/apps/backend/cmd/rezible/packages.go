@@ -133,7 +133,7 @@ var pkgGenkit = do.Package(
 			do.MustInvoke[rez.InvestigationService](i),
 			do.MustInvoke[rez.SituationService](i),
 			do.MustInvoke[rez.SystemAnalysisService](i),
-			do.MustInvoke[rez.KnowledgeGraphService](i),
+			do.MustInvoke[rez.KnowledgeGraphQueryService](i),
 		)
 		opts := []genkit.AiRuntimeOption{
 			genkit.WithAgent(chatAgent),
@@ -210,7 +210,7 @@ var pkgIntegrations = do.Package(
 			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.UserService](i),
 			do.MustInvoke[rez.IncidentService](i),
-			do.MustInvoke[rez.KnowledgeGraphService](i),
+			do.MustInvoke[rez.KnowledgeGraphQueryService](i),
 			do.MustInvoke[rez.AlertService](i),
 		)
 	}),
@@ -405,14 +405,18 @@ var pkgDatabase = do.Package(
 	}),
 	do.Bind[*db.OncallMetricsService, rez.OncallMetricsService](),
 
-	do.Lazy(func(i do.Injector) (rez.KnowledgeGraphService, error) {
-		return db.NewKnowledgeGraphService(do.MustInvoke[rez.Database](i))
+	do.Lazy(func(i do.Injector) (rez.KnowledgeGraphQueryService, error) {
+		return db.NewKnowledgeGraphQueryService(do.MustInvoke[rez.Database](i))
+	}),
+
+	do.Lazy(func(i do.Injector) (rez.KnowledgeGraphIngestionService, error) {
+		return db.NewKnowledgeGraphIngestionService(do.MustInvoke[rez.Database](i))
 	}),
 
 	do.Lazy(func(i do.Injector) (rez.SystemAnalysisService, error) {
 		return db.NewSystemAnalysisService(
 			do.MustInvoke[rez.Database](i),
-			do.MustInvoke[rez.KnowledgeGraphService](i),
+			do.MustInvoke[rez.KnowledgeGraphQueryService](i),
 		)
 	}),
 
@@ -439,7 +443,7 @@ var pkgDatabase = do.Package(
 		return db.NewAlertService(
 			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.SituationService](i),
-			do.MustInvoke[rez.KnowledgeGraphService](i),
+			do.MustInvoke[rez.KnowledgeGraphIngestionService](i),
 		)
 	}),
 
@@ -496,7 +500,7 @@ var pkgDatabase = do.Package(
 		return db.NewSituationService(
 			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.JobService](i),
-			do.MustInvoke[rez.KnowledgeGraphService](i),
+			do.MustInvoke[rez.KnowledgeGraphIngestionService](i),
 			do.MustInvoke[rez.InvestigationService](i),
 		)
 	}),
@@ -518,7 +522,7 @@ var pkgDatabase = do.Package(
 	}),
 
 	do.Lazy(func(i do.Injector) (rez.SystemHazardService, error) {
-		return db.NewSystemHazardService(do.MustInvoke[rez.Database](i), do.MustInvoke[rez.KnowledgeGraphService](i))
+		return db.NewSystemHazardService(do.MustInvoke[rez.Database](i), do.MustInvoke[rez.KnowledgeGraphIngestionService](i))
 	}),
 )
 
@@ -545,7 +549,7 @@ var pkgOpenApi = do.Package(
 			do.MustInvoke[rez.RetrospectiveService](i),
 			do.MustInvoke[rez.DiscussionService](i),
 			do.MustInvoke[rez.SystemAnalysisService](i),
-			do.MustInvoke[rez.KnowledgeGraphService](i),
+			do.MustInvoke[rez.KnowledgeGraphQueryService](i),
 			do.MustInvoke[rez.SituationService](i),
 		)
 	}),

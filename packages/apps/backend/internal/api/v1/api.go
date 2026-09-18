@@ -57,7 +57,7 @@ func NewHandler(
 	retros rez.RetrospectiveService,
 	discussions rez.DiscussionService,
 	systemAnalysis rez.SystemAnalysisService,
-	knowledge rez.KnowledgeGraphService,
+	knowledge rez.KnowledgeGraphQueryService,
 	situations rez.SituationService,
 ) (*Handler, error) {
 	h := &Handler{

@@ -196,79 +196,128 @@ type (
 		Subject      KnowledgeSubjectRef
 	}
 
-	ListKnowledgeGraphEntitiesParams struct {
+	KnowledgeGraphIngestionService interface {
+		IngestEvidence(context.Context, *ent.NormalizedEvent, ...KnowledgeEvidenceRef) error
+		ResolveInternalSubject(context.Context, KnowledgeSubjectRef) (*ent.KnowledgeSubjectAlias, error)
+	}
+)
+
+type (
+	ListKnowledgeEntitiesParams struct {
 		ent.ListParams
 		Predicates []predicate.KnowledgeEntity
 	}
 
-	ListKnowledgeGraphRelationshipsParams struct {
+	ListKnowledgeRelationshipsParams struct {
 		ent.ListParams
 		Predicates []predicate.KnowledgeRelationship
 	}
 
-	ListKnowledgeGraphEvidenceParams struct {
+	ListKnowledgeSubjectAliasesParams struct {
+		ent.ListParams
+		Predicates []predicate.KnowledgeSubjectAlias
+	}
+
+	ListKnowledgeEvidenceParams struct {
 		ent.ListParams
 		Predicates []predicate.KnowledgeEvidence
 	}
 
-	QueryKnowledgeEntityNeighborhoodParams struct {
-		EntityID                 *uuid.UUID
-		SourceEntityID           *uuid.UUID
-		TargetEntityID           *uuid.UUID
-		NeighborEntityCategories []string
-		RelationshipPredicates   []string
-		Depth                    int
+	KnowledgeGraphQuery struct {
+		RootEntityIDs          []uuid.UUID
+		RootCategory           *kne.Category
+		Detail                 int
+		NeighborHops           int
+		NeighborPredicates     []knr.Predicate
+		RelationshipPredicates []knr.Predicate
 
+		RootPage         ent.ListParams
+		EntityPage       ent.ListParams
+		RelationshipPage ent.ListParams
+
+		Version string
+	}
+
+	KnowledgeGraphWindow struct {
 		Offset int
 		Limit  int
 	}
 
-	KnowledgeGraphNeighborhoodSlice struct {
-		RootEntityID  uuid.UUID
-		Entities      ent.KnowledgeEntities
-		Relationships ent.KnowledgeRelationships
+	KnowledgeGraphPage struct {
+		Offset     int
+		Limit      int
+		Total      int
+		NextOffset *int
+	}
 
+	KnowledgeGraphQueryResult struct {
+		RootEntityIDs []uuid.UUID
+
+		Entities                ent.KnowledgeEntities
+		Relationships           ent.KnowledgeRelationships
+		MembershipRelationships ent.KnowledgeRelationships
+		ConnectionAggregates    []KnowledgeGraphConnectionAggregate
+
+		Coverage KnowledgeGraphCoverageSet
+
+		RootsPage         KnowledgeGraphPage
+		EntitiesPage      KnowledgeGraphPage
+		RelationshipsPage KnowledgeGraphPage
+	}
+
+	KnowledgeGraphConnectionAggregateKey struct {
+		SourceRepresentativeID uuid.UUID
+		TargetRepresentativeID uuid.UUID
+		Predicate              knr.Predicate
+	}
+
+	KnowledgeGraphConnectionAggregate struct {
+		Key               KnowledgeGraphConnectionAggregateKey
 		RelationshipCount int
 	}
 
-	GetKnowledgeGraphViewParams struct {
-		EntityID               uuid.UUID
-		Depth                  int
-		RelationshipPredicates []string
+	KnowledgeGraphCoverage string
+
+	KnowledgeGraphCoverageSet struct {
+		Roots                KnowledgeGraphCoverage
+		Entities             KnowledgeGraphCoverage
+		Memberships          KnowledgeGraphCoverage
+		Relationships        KnowledgeGraphCoverage
+		ConnectionAggregates KnowledgeGraphCoverage
 	}
 
-	KnowledgeGraphView struct {
-		RootID        uuid.UUID
-		Entities      ent.KnowledgeEntities
+	ListKnowledgeGraphConnectionAggregateRelationshipsParams struct {
+		ent.ListParams
+		Query      KnowledgeGraphQuery
+		Connection KnowledgeGraphConnectionAggregateKey
+	}
+
+	KnowledgeGraphConnectionAggregateRelationshipsPage struct {
+		Connection KnowledgeGraphConnectionAggregate
+
 		Relationships ent.KnowledgeRelationships
-		Truncated     bool
+		Page          KnowledgeGraphPage
+		Coverage      KnowledgeGraphCoverage
 	}
 
-	KnowledgeGraphEntityNeighborhoodSummary struct {
-		OutgoingRelationships map[string]KnowledgeGraphNeighborhoodGroupSummary
-		IncomingRelationships map[string]KnowledgeGraphNeighborhoodGroupSummary
-	}
-	KnowledgeGraphNeighborhoodGroupSummary struct {
-		Count int
-	}
-
-	KnowledgeGraphService interface {
-		ListEntities(context.Context, ListKnowledgeGraphEntitiesParams) (*ent.ListResult[ent.KnowledgeEntity], error)
+	KnowledgeGraphQueryService interface {
+		ListEntities(context.Context, ListKnowledgeEntitiesParams) (*ent.ListResult[ent.KnowledgeEntity], error)
 		GetEntity(context.Context, uuid.UUID) (*ent.KnowledgeEntity, error)
 
-		ListRelationships(context.Context, ListKnowledgeGraphRelationshipsParams) (*ent.ListResult[ent.KnowledgeRelationship], error)
+		ListRelationships(context.Context, ListKnowledgeRelationshipsParams) (*ent.ListResult[ent.KnowledgeRelationship], error)
 		GetRelationship(context.Context, uuid.UUID) (*ent.KnowledgeRelationship, error)
 
-		ListEvidence(context.Context, ListKnowledgeGraphEvidenceParams) (*ent.ListResult[ent.KnowledgeEvidence], error)
+		ListSubjectAliases(context.Context, ListKnowledgeSubjectAliasesParams) (*ent.ListResult[ent.KnowledgeSubjectAlias], error)
+		GetSubjectAlias(context.Context, uuid.UUID) (*ent.KnowledgeSubjectAlias, error)
+
+		ListEvidence(context.Context, ListKnowledgeEvidenceParams) (*ent.ListResult[ent.KnowledgeEvidence], error)
 		GetEvidence(context.Context, uuid.UUID) (*ent.KnowledgeEvidence, error)
 
-		QueryEntityNeighborhood(context.Context, QueryKnowledgeEntityNeighborhoodParams) (*KnowledgeGraphNeighborhoodSlice, error)
-		SummarizeEntityNeighborhood(context.Context, uuid.UUID) (*KnowledgeGraphEntityNeighborhoodSummary, error)
-
-		GetView(context.Context, GetKnowledgeGraphViewParams) (*KnowledgeGraphView, error)
-
-		IngestEvidence(context.Context, *ent.NormalizedEvent, ...KnowledgeEvidenceRef) error
-		ResolveInternalSubject(context.Context, KnowledgeSubjectRef) (*ent.KnowledgeSubjectAlias, error)
+		Query(context.Context, KnowledgeGraphQuery) (*KnowledgeGraphQueryResult, error)
+		ListConnectionAggregateRelationships(
+			context.Context,
+			ListKnowledgeGraphConnectionAggregateRelationshipsParams,
+		) (*KnowledgeGraphConnectionAggregateRelationshipsPage, error)
 	}
 )
 

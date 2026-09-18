@@ -23,10 +23,10 @@ import (
 type AlertService struct {
 	db         rez.Database
 	situations rez.SituationService
-	knowledge  rez.KnowledgeGraphService
+	knowledge  rez.KnowledgeGraphIngestionService
 }
 
-func NewAlertService(db rez.Database, situations rez.SituationService, knowledge rez.KnowledgeGraphService) (*AlertService, error) {
+func NewAlertService(db rez.Database, situations rez.SituationService, knowledge rez.KnowledgeGraphIngestionService) (*AlertService, error) {
 	s := &AlertService{db: db, situations: situations, knowledge: knowledge}
 
 	return s, nil

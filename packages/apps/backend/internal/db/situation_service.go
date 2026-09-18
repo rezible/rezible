@@ -28,11 +28,11 @@ const (
 type SituationService struct {
 	db             rez.Database
 	jobs           rez.JobService
-	knowledge      rez.KnowledgeGraphService
+	knowledge      rez.KnowledgeGraphIngestionService
 	investigations rez.InvestigationService
 }
 
-func NewSituationService(db rez.Database, jobs rez.JobService, knowledge rez.KnowledgeGraphService, investigations rez.InvestigationService) (*SituationService, error) {
+func NewSituationService(db rez.Database, jobs rez.JobService, knowledge rez.KnowledgeGraphIngestionService, investigations rez.InvestigationService) (*SituationService, error) {
 	s := &SituationService{db: db, jobs: jobs, knowledge: knowledge, investigations: investigations}
 
 	return s, nil

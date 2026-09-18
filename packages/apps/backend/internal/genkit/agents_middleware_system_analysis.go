@@ -3,7 +3,6 @@ package genkit
 import (
 	"context"
 	"fmt"
-	"log/slog"
 	"slices"
 	"strings"
 
@@ -33,11 +32,11 @@ type systemAnalysisIdResolverFn = func(context.Context) (uuid.UUID, error)
 
 type systemAnalysisMiddleware struct {
 	analyses           rez.SystemAnalysisService
-	knowledge          rez.KnowledgeGraphService
+	knowledge          rez.KnowledgeGraphQueryService
 	analysisIdResolver systemAnalysisIdResolverFn
 }
 
-func newSystemAnalysisMiddleware(analyses rez.SystemAnalysisService, knowledge rez.KnowledgeGraphService, analysisIdResolver systemAnalysisIdResolverFn) *systemAnalysisMiddleware {
+func newSystemAnalysisMiddleware(analyses rez.SystemAnalysisService, knowledge rez.KnowledgeGraphQueryService, analysisIdResolver systemAnalysisIdResolverFn) *systemAnalysisMiddleware {
 	return &systemAnalysisMiddleware{analyses: analyses, knowledge: knowledge, analysisIdResolver: analysisIdResolver}
 }
 
@@ -52,10 +51,10 @@ func (m *systemAnalysisMiddleware) New(ctx context.Context) (*ai.Hooks, error) {
 	return &ai.Hooks{
 		WrapGenerate: makeSystemTextInjectorFn(systemAnalysisInstructionsMarker, systemAnalysisInstructions),
 		Tools: []ai.Tool{
-			makeDefinedTool(rezai.SummarizeSystemNeighborhoodTool, m.summarizeSystemNeighborhoodToolFunc),
-			makeDefinedTool(rezai.ExploreSystemNeighborhoodTool, m.exploreSystemEntityNeighborhoodToolFunc),
-			makeDefinedTool(rezai.InspectKnowledgeSubjectTool, m.inspectKnowledgeSubjectToolFunc),
-			makeDefinedTool(rezai.IncludeAnalysisSubjectsTool, m.includeAnalysisSubjectsToolFunc),
+			makeDefinedTool(rezai.SummarizeSystemNeighborhoodTool, m.summarizeNeighborhoodToolFunc),
+			makeDefinedTool(rezai.ExploreSystemNeighborhoodTool, m.exploreNeighborhoodToolFunc),
+			makeDefinedTool(rezai.InspectKnowledgeSubjectTool, m.inspectSubjectToolFunc),
+			makeDefinedTool(rezai.IncludeAnalysisSubjectsTool, m.includeSubjectsToolFunc),
 			makeDefinedTool(rezai.RecordAnalysisFindingTool, m.recordAnalysisFindingToolFunc),
 		},
 	}, nil
@@ -114,105 +113,35 @@ func (m *systemAnalysisMiddleware) resolveExplorationEntityId(ctx context.Contex
 	return rootID, nil
 }
 
-func (m *systemAnalysisMiddleware) summarizeSystemNeighborhoodToolFunc(ctx context.Context, input rezai.SummarizeSystemNeighborhoodToolInput) (*rezai.SummarizeSystemNeighborhoodToolOutput, error) {
+func (m *systemAnalysisMiddleware) summarizeNeighborhoodToolFunc(ctx context.Context, input rezai.SummarizeSystemNeighborhoodToolInput) (*rezai.SummarizeSystemNeighborhoodToolOutput, error) {
 	entityId, entityErr := m.resolveExplorationEntityId(ctx, input.EntityID)
 	if entityErr != nil {
 		return nil, entityErr
 	}
+	_ = entityId
 
-	summary, summaryErr := m.knowledge.SummarizeEntityNeighborhood(ctx, entityId)
-	if summaryErr != nil {
-		return nil, fmt.Errorf("summarize entity neighborhood: %w", summaryErr)
-	}
+	// TODO
 
-	output := rezai.SummarizeSystemNeighborhoodToolOutput{
-		IncomingRelationships: make(map[string]rezai.SystemNeighborhoodGroupSummary, len(summary.IncomingRelationships)),
-		OutgoingRelationships: make(map[string]rezai.SystemNeighborhoodGroupSummary, len(summary.OutgoingRelationships)),
-	}
-
-	for kind, group := range summary.IncomingRelationships {
-		output.IncomingRelationships[kind] = rezai.SystemNeighborhoodGroupSummary{
-			Count: group.Count,
-		}
-	}
-	for kind, group := range summary.OutgoingRelationships {
-		output.OutgoingRelationships[kind] = rezai.SystemNeighborhoodGroupSummary{
-			Count: group.Count,
-		}
-	}
+	output := rezai.SummarizeSystemNeighborhoodToolOutput{}
 
 	return &output, nil
 }
 
-func (m *systemAnalysisMiddleware) exploreSystemEntityNeighborhoodToolFunc(ctx context.Context, input rezai.ExploreSystemNeighborhoodToolInput) (*rezai.ExploreSystemNeighborhoodToolOutput, error) {
+func (m *systemAnalysisMiddleware) exploreNeighborhoodToolFunc(ctx context.Context, input rezai.ExploreSystemNeighborhoodToolInput) (*rezai.ExploreSystemNeighborhoodToolOutput, error) {
 	entityId, entityErr := m.resolveExplorationEntityId(ctx, input.EntityID)
 	if entityErr != nil {
 		return nil, entityErr
 	}
+	_ = entityId
 
-	var offset int
-	if input.Offset != nil {
-		offset = *input.Offset
-	}
+	// TODO
 
-	params := rez.QueryKnowledgeEntityNeighborhoodParams{
-		EntityID:                 &entityId,
-		SourceEntityID:           nil,
-		TargetEntityID:           nil,
-		NeighborEntityCategories: nil,
-		RelationshipPredicates:   nil,
-		Depth:                    1,
-		Offset:                   offset,
-	}
-	if input.NeighborCategory != nil {
-		params.NeighborEntityCategories = []string{*input.NeighborCategory}
-	}
-	if input.RelationshipPredicate != nil {
-		params.RelationshipPredicates = []string{*input.RelationshipPredicate}
-	}
+	output := &rezai.ExploreSystemNeighborhoodToolOutput{}
 
-	neighborhood, neighborhoodErr := m.knowledge.QueryEntityNeighborhood(ctx, params)
-	if neighborhoodErr != nil {
-		return nil, fmt.Errorf("query entity neighborhood: %w", neighborhoodErr)
-	}
-
-	entitySummaryMap := make(map[uuid.UUID]rezai.KnowledgeEntitySummary)
-	for _, e := range neighborhood.Entities {
-		if e.ID == entityId {
-			continue
-		}
-		if _, seen := entitySummaryMap[e.ID]; !seen {
-			entitySummaryMap[e.ID] = entitySummary(e)
-		}
-	}
-
-	matches := make([]rezai.SystemEntityNeighbor, 0, len(neighborhood.Relationships))
-	for _, rel := range neighborhood.Relationships {
-		neighborId := rel.SourceEntityID
-		if neighborId == entityId {
-			neighborId = rel.TargetEntityID
-		}
-		entSum, summaryOk := entitySummaryMap[neighborId]
-		if !summaryOk {
-			slog.Warn("missing entity result from neighborhood", "id", neighborId)
-			continue
-		}
-		matches = append(matches, rezai.SystemEntityNeighbor{
-			Entity:       entSum,
-			Relationship: relationshipSummary(rel),
-		})
-	}
-
-	output := &rezai.ExploreSystemNeighborhoodToolOutput{
-		Neighbours: matches,
-	}
-	if offset+len(matches) < neighborhood.RelationshipCount {
-		output.NextOffset = new(offset + len(matches))
-	}
 	return output, nil
 }
 
-func (m *systemAnalysisMiddleware) inspectKnowledgeSubjectToolFunc(ctx context.Context, input rezai.InspectKnowledgeSubjectToolInput) (*rezai.InspectKnowledgeSubjectToolOutput, error) {
+func (m *systemAnalysisMiddleware) inspectSubjectToolFunc(ctx context.Context, input rezai.InspectKnowledgeSubjectToolInput) (*rezai.InspectKnowledgeSubjectToolOutput, error) {
 	id, idErr := uuid.Parse(input.SubjectID)
 	if idErr != nil {
 		return nil, fmt.Errorf("%w: subject ID is required", rez.ErrInvalidInput)
@@ -235,23 +164,13 @@ func (m *systemAnalysisMiddleware) inspectKnowledgeSubjectToolFunc(ctx context.C
 			return nil, fmt.Errorf("get relationship detail: %w", detailErr)
 		}
 		output.Relationship = detail
-	case "evidence":
-		evidence, getErr := m.knowledge.GetEvidence(ctx, id)
-		if getErr != nil {
-			return nil, fmt.Errorf("get evidence: %w", getErr)
-		}
-		detail, conversionErr := evidenceDetail(evidence)
-		if conversionErr != nil {
-			return nil, conversionErr
-		}
-		output.Evidence = detail
 	default:
 		return nil, fmt.Errorf("%w: subject_kind must be entity, relationship, or evidence", rez.ErrInvalidInput)
 	}
 	return &output, nil
 }
 
-func (m *systemAnalysisMiddleware) includeAnalysisSubjectsToolFunc(ctx context.Context, input rezai.IncludeAnalysisSubjectsToolInput) (*rezai.IncludeAnalysisSubjectsToolOutput, error) {
+func (m *systemAnalysisMiddleware) includeSubjectsToolFunc(ctx context.Context, input rezai.IncludeAnalysisSubjectsToolInput) (*rezai.IncludeAnalysisSubjectsToolOutput, error) {
 	if len(input.Subjects) < 1 || len(input.Subjects) > systemAnalysisPageSize {
 		return nil, fmt.Errorf("%w: between 1 and %d subjects are required", rez.ErrInvalidInput, systemAnalysisPageSize)
 	}
@@ -359,40 +278,41 @@ func (m *systemAnalysisMiddleware) makeSubjectSetters(subjects []rezai.AnalysisF
 	}
 
 	setSubjects := make([]func(*ent.SystemAnalysisEntrySubjectMutation), len(subjects))
-	seen := mapset.NewSetWithSize[string](len(subjects))
+	//seen := mapset.NewSetWithSize[string](len(subjects))
 	hasEvidence := false
 	for i, s := range subjects {
-		kind, role := strings.TrimSpace(s.SubjectKind), strings.TrimSpace(s.Role)
-		id, idErr := uuid.Parse(s.SubjectID)
-		if idErr != nil || role == "" {
-			return nil, fmt.Errorf("%w: each finding subject requires a valid ID and non-empty role", rez.ErrInvalidInput)
-		}
-		if kind == "evidence" {
+		//kind, role := strings.TrimSpace(s.SubjectKind), strings.TrimSpace(s.Role)
+		//id, idErr := uuid.Parse(s.SubjectID)
+		//if idErr != nil || role == "" {
+		//	return nil, fmt.Errorf("%w: each finding subject requires a valid ID and non-empty role", rez.ErrInvalidInput)
+		//}
+		//if !seen.Add(kind + ":" + id.String() + ":" + role) {
+		//	return nil, fmt.Errorf("%w: duplicate finding %s subject %s:%s", rez.ErrInvalidInput, kind, id, role)
+		//}
+		if len(s.EvidenceIDs) > 0 {
 			hasEvidence = true
-		} else if kind != "entity" && kind != "relationship" {
-			return nil, fmt.Errorf("%w: subject_kind must be entity, relationship, or evidence", rez.ErrInvalidInput)
-		}
-
-		if !seen.Add(kind + ":" + id.String() + ":" + role) {
-			return nil, fmt.Errorf("%w: duplicate finding %s subject %s:%s", rez.ErrInvalidInput, kind, id, role)
 		}
 
 		setSubjects[i] = func(m *ent.SystemAnalysisEntrySubjectMutation) {
-			m.SetRole(role)
-			if kind == "entity" {
-				m.SetKnowledgeEntityID(id)
-			} else if kind == "relationship" {
-				m.SetKnowledgeRelationshipID(id)
-			} else if kind == "evidence" {
-				m.SetKnowledgeEvidenceID(id)
-			}
+			m.SetRole(s.Role)
+			//if kind == "entity" {
+			//	m.SetKnowledgeEntityID(id)
+			//} else if kind == "relationship" {
+			//	m.SetKnowledgeRelationshipID(id)
+			//} else if kind == "evidence" {
+			//	m.SetKnowledgeEvidenceID(id)
+			//}
 		}
 	}
+
 	if !hasEvidence {
 		return nil, fmt.Errorf("%w: finding must cite at least one evidence record", rez.ErrInvalidInput)
 	}
+
 	return setSubjects, nil
 }
+
+// TODO: delete/move all of these
 
 func subjectDisplayName(classification string, id uuid.UUID, evidence *ent.KnowledgeEvidence) string {
 	if evidence != nil && strings.TrimSpace(evidence.SubjectState.DisplayName) != "" {
@@ -409,6 +329,7 @@ func entitySummary(entity *ent.KnowledgeEntity) rezai.KnowledgeEntitySummary {
 		DisplayName: subjectDisplayName(fmt.Sprintf("%s:%s", entity.Category, entity.Kind), entity.ID, entity.LatestEvidence()),
 	}
 }
+
 func relationshipSummary(relationship *ent.KnowledgeRelationship) rezai.KnowledgeRelationshipSummary {
 	return rezai.KnowledgeRelationshipSummary{
 		ID:          relationship.ID,
@@ -416,14 +337,18 @@ func relationshipSummary(relationship *ent.KnowledgeRelationship) rezai.Knowledg
 		DisplayName: subjectDisplayName(relationship.Predicate.String(), relationship.ID, relationship.LatestEvidence()),
 	}
 }
+
 func subjectAliasSummary(alias *ent.KnowledgeSubjectAlias) rezai.KnowledgeSubjectAliasSummary {
 	return rezai.KnowledgeSubjectAliasSummary{
-		ID:                alias.ID,
-		Provider:          alias.Provider,
-		ProviderNamespace: alias.ProviderNamespace,
-		ResourceRef:       alias.ProviderResourceRef,
+		ID: alias.ID,
+		ResourceRef: rez.ProviderResourceRef{
+			Provider:          alias.Provider,
+			ProviderNamespace: alias.ProviderNamespace,
+			ResourceRef:       alias.ProviderResourceRef,
+		},
 	}
 }
+
 func evidenceSummary(evidence *ent.KnowledgeEvidence) rezai.KnowledgeEvidenceSummary {
 	return rezai.KnowledgeEvidenceSummary{
 		ID:          evidence.ID,
@@ -432,6 +357,32 @@ func evidenceSummary(evidence *ent.KnowledgeEvidence) rezai.KnowledgeEvidenceSum
 		EffectiveAt: evidence.EffectiveAt,
 		CreatedAt:   evidence.CreatedAt,
 	}
+}
+
+func entityDetail(entity *ent.KnowledgeEntity) *rezai.KnowledgeEntityDetail {
+	detail := &rezai.KnowledgeEntityDetail{
+		Summary: entitySummary(entity),
+		Aliases: aliasDetails(entity.Edges.Aliases),
+	}
+	return detail
+}
+
+func relationshipDetail(relationship *ent.KnowledgeRelationship) (*rezai.KnowledgeRelationshipDetail, error) {
+	srcEnt, srcErr := relationship.Edges.SourceEntityOrErr()
+	if srcErr != nil {
+		return nil, srcErr
+	}
+	tgtEnt, tgtErr := relationship.Edges.TargetEntityOrErr()
+	if tgtErr != nil {
+		return nil, tgtErr
+	}
+	detail := &rezai.KnowledgeRelationshipDetail{
+		Summary: relationshipSummary(relationship),
+		Aliases: aliasDetails(relationship.Edges.Aliases),
+		Source:  entitySummary(srcEnt),
+		Target:  entitySummary(tgtEnt),
+	}
+	return detail, nil
 }
 
 func aliasDetails(aliases ent.KnowledgeSubjectAliasSlice) []rezai.KnowledgeSubjectAliasDetail {
@@ -451,30 +402,7 @@ func aliasDetails(aliases ent.KnowledgeSubjectAliasSlice) []rezai.KnowledgeSubje
 	}
 	return result
 }
-func entityDetail(entity *ent.KnowledgeEntity) *rezai.KnowledgeEntityDetail {
-	detail := &rezai.KnowledgeEntityDetail{
-		Summary: entitySummary(entity),
-		Aliases: aliasDetails(entity.Edges.Aliases),
-	}
-	return detail
-}
-func relationshipDetail(relationship *ent.KnowledgeRelationship) (*rezai.KnowledgeRelationshipDetail, error) {
-	srcEnt, srcErr := relationship.Edges.SourceEntityOrErr()
-	if srcErr != nil {
-		return nil, srcErr
-	}
-	tgtEnt, tgtErr := relationship.Edges.TargetEntityOrErr()
-	if tgtErr != nil {
-		return nil, tgtErr
-	}
-	detail := &rezai.KnowledgeRelationshipDetail{
-		Summary: relationshipSummary(relationship),
-		Aliases: aliasDetails(relationship.Edges.Aliases),
-		Source:  entitySummary(srcEnt),
-		Target:  entitySummary(tgtEnt),
-	}
-	return detail, nil
-}
+
 func evidenceDetail(evidence *ent.KnowledgeEvidence) (*rezai.KnowledgeEvidenceDetail, error) {
 	alias, aliasErr := evidence.Edges.SubjectAliasOrErr()
 	if aliasErr != nil {

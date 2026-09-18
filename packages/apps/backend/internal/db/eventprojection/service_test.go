@@ -37,7 +37,7 @@ func (s *ProjectionServiceSuite) projectionService(tdb rez.Database) *Projection
 
 	incidents, _ := db.NewIncidentService(tdb, messageService, nil)
 
-	knowledge, _ := db.NewKnowledgeGraphService(tdb)
+	knowledge, _ := db.NewKnowledgeGraphQueryService(tdb)
 
 	jobService := mocks.NewMockJobService(s.T())
 	agentService := mocks.NewMockAiAgentSessionService(s.T())

@@ -19,10 +19,10 @@ type InvestigationAgent struct {
 	investigations rez.InvestigationService
 	situations     rez.SituationService
 	analyses       rez.SystemAnalysisService
-	knowledge      rez.KnowledgeGraphService
+	knowledge      rez.KnowledgeGraphQueryService
 }
 
-func NewInvestigationAgent(investigations rez.InvestigationService, situations rez.SituationService, analyses rez.SystemAnalysisService, knowledge rez.KnowledgeGraphService) *InvestigationAgent {
+func NewInvestigationAgent(investigations rez.InvestigationService, situations rez.SituationService, analyses rez.SystemAnalysisService, knowledge rez.KnowledgeGraphQueryService) *InvestigationAgent {
 	return &InvestigationAgent{investigations: investigations, situations: situations, analyses: analyses, knowledge: knowledge}
 }
 

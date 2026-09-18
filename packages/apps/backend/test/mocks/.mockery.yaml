@@ -20,5 +20,5 @@ packages:
       AiAgentCatalogue: {}
       IntegrationService: {}
       IncidentService: {}
-      KnowledgeGraphService: {}
+      KnowledgeGraphQueryService: {}
       SystemAnalysisService: {}

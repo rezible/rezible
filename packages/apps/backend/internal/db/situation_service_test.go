@@ -41,7 +41,7 @@ type situationServiceHarness struct {
 	agents     *AiAgentSessionService
 	situations *SituationService
 	hazards    *SystemHazardService
-	knowledge  *KnowledgeGraphService
+	knowledge  *KnowledgeGraphQueryService
 }
 
 func (s *SituationServiceSuite) newHarness(tdb rez.Database) *situationServiceHarness {
@@ -51,7 +51,7 @@ func (s *SituationServiceSuite) newHarness(tdb rez.Database) *situationServiceHa
 		db:     tdb,
 		jobs:   jobSvc,
 	}
-	kg, _ := NewKnowledgeGraphService(tdb)
+	kg, _ := NewKnowledgeGraphQueryService(tdb)
 	investigations := NewInvestigationService(tdb, agentsSvc)
 	sits, _ := NewSituationService(tdb, jobSvc, kg, investigations)
 	haz, _ := NewSystemHazardService(tdb, kg)

@@ -18,10 +18,10 @@ import (
 
 type SystemHazardService struct {
 	db        rez.Database
-	knowledge rez.KnowledgeGraphService
+	knowledge rez.KnowledgeGraphIngestionService
 }
 
-func NewSystemHazardService(db rez.Database, knowledge rez.KnowledgeGraphService) (*SystemHazardService, error) {
+func NewSystemHazardService(db rez.Database, knowledge rez.KnowledgeGraphIngestionService) (*SystemHazardService, error) {
 	return &SystemHazardService{db: db, knowledge: knowledge}, nil
 }
 

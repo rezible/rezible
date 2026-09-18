@@ -2781,6 +2781,21 @@ components:
       required:
         - data
       type: object
+    GetKnowledgeGraphEvidenceResponseBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/GetKnowledgeGraphEvidenceResponseBody.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          $ref: "#/components/schemas/KnowledgeGraphEvidence"
+      required:
+        - data
+      type: object
     GetKnowledgeGraphRelationshipResponseBody:
       additionalProperties: false
       properties:
@@ -2793,6 +2808,21 @@ components:
           type: string
         data:
           $ref: "#/components/schemas/KnowledgeGraphRelationship"
+      required:
+        - data
+      type: object
+    GetKnowledgeGraphSubjectAliasResponseBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/GetKnowledgeGraphSubjectAliasResponseBody.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          $ref: "#/components/schemas/KnowledgeGraphSubjectAlias"
       required:
         - data
       type: object
@@ -4121,6 +4151,45 @@ components:
         - createdAt
         - updatedAt
       type: object
+    KnowledgeGraphEvidence:
+      additionalProperties: false
+      properties:
+        attributes:
+          $ref: "#/components/schemas/KnowledgeGraphEvidenceAttributes"
+        id:
+          type: string
+      required:
+        - id
+        - attributes
+      type: object
+    KnowledgeGraphEvidenceAttributes:
+      additionalProperties: false
+      properties:
+        createdAt:
+          format: date-time
+          type: string
+        effectiveAt:
+          format: date-time
+          type: string
+        eventId:
+          type: string
+        kind:
+          enum:
+            - observed
+            - deleted
+          type: string
+        subjectAliasId:
+          type: string
+        subjectState:
+          $ref: "#/components/schemas/KnowledgeGraphSubjectState"
+      required:
+        - kind
+        - effectiveAt
+        - createdAt
+        - eventId
+        - subjectAliasId
+        - subjectState
+      type: object
     KnowledgeGraphRelationship:
       additionalProperties: false
       properties:
@@ -5095,6 +5164,26 @@ components:
         - data
         - pagination
       type: object
+    PaginatedResponseBodyKnowledgeGraphEvidence:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/PaginatedResponseBodyKnowledgeGraphEvidence.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          items:
+            $ref: "#/components/schemas/KnowledgeGraphEvidence"
+          type: array
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+      required:
+        - data
+        - pagination
+      type: object
     PaginatedResponseBodyKnowledgeGraphRelationship:
       additionalProperties: false
       properties:
@@ -5108,6 +5197,26 @@ components:
         data:
           items:
             $ref: "#/components/schemas/KnowledgeGraphRelationship"
+          type: array
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+      required:
+        - data
+        - pagination
+      type: object
+    PaginatedResponseBodyKnowledgeGraphSubjectAlias:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/PaginatedResponseBodyKnowledgeGraphSubjectAlias.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          items:
+            $ref: "#/components/schemas/KnowledgeGraphSubjectAlias"
           type: array
         pagination:
           $ref: "#/components/schemas/Pagination"
@@ -13580,7 +13689,129 @@ paths:
       summary: Get Investigation
       tags:
         - Investigations
-  /knowledge_graph/entities:
+  /knowledge/aliases:
+    get:
+      operationId: list-knowledge-graph-aliases
+      parameters:
+        - explode: false
+          in: query
+          name: page
+          schema:
+            default: 1
+            format: int64
+            minimum: 1
+            type: integer
+        - explode: false
+          in: query
+          name: pageSize
+          schema:
+            default: 25
+            format: int64
+            maximum: 50
+            minimum: 1
+            type: integer
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedResponseBodyKnowledgeGraphSubjectAlias"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: List Knowledge Graph Subject Aliases
+      tags:
+        - Knowledge Graph
+  /knowledge/aliases/{id}:
+    get:
+      operationId: get-knowledge-graph-alias
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetKnowledgeGraphSubjectAliasResponseBody"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: Get Knowledge Graph Subject Alias
+      tags:
+        - Knowledge Graph
+  /knowledge/entities:
     get:
       operationId: list-knowledge-graph-entities
       parameters:
@@ -13689,7 +13920,7 @@ paths:
       summary: List Knowledge Graph Entities
       tags:
         - Knowledge Graph
-  /knowledge_graph/entities/{id}:
+  /knowledge/entities/{id}:
     get:
       operationId: get-knowledge-graph-entity
       parameters:
@@ -13744,7 +13975,215 @@ paths:
       summary: Get Knowledge Graph Entity
       tags:
         - Knowledge Graph
-  /knowledge_graph/relationships:
+  /knowledge/evidence:
+    get:
+      operationId: list-knowledge-graph-evidence
+      parameters:
+        - explode: false
+          in: query
+          name: page
+          schema:
+            default: 1
+            format: int64
+            minimum: 1
+            type: integer
+        - explode: false
+          in: query
+          name: pageSize
+          schema:
+            default: 25
+            format: int64
+            maximum: 50
+            minimum: 1
+            type: integer
+        - explode: false
+          in: query
+          name: subjectAliasId
+          schema:
+            type: string
+        - explode: false
+          in: query
+          name: entityId
+          schema:
+            type: string
+        - explode: false
+          in: query
+          name: relationshipId
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedResponseBodyKnowledgeGraphEvidence"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: List Knowledge Graph Evidence
+      tags:
+        - Knowledge Graph
+  /knowledge/evidence/{id}:
+    get:
+      operationId: get-knowledge-graph-evidence
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetKnowledgeGraphEvidenceResponseBody"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: Get Knowledge Graph Evidence
+      tags:
+        - Knowledge Graph
+  /knowledge/graph/view:
+    get:
+      operationId: get-knowledge-graph-view
+      parameters:
+        - explode: false
+          in: query
+          name: entityId
+          schema:
+            type: string
+        - explode: false
+          in: query
+          name: depth
+          schema:
+            default: 1
+            format: int64
+            maximum: 4
+            minimum: 1
+            type: integer
+        - explode: false
+          in: query
+          name: relationshipPredicate
+          schema:
+            items:
+              type: string
+            type: array
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetKnowledgeGraphViewResponseBody"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: Get Knowledge Graph View
+      tags:
+        - Knowledge Graph
+  /knowledge/relationships:
     get:
       operationId: list-knowledge-graph-relationships
       parameters:
@@ -13833,7 +14272,7 @@ paths:
       summary: List Knowledge Graph Relationships
       tags:
         - Knowledge Graph
-  /knowledge_graph/relationships/{id}:
+  /knowledge/relationships/{id}:
     get:
       operationId: get-knowledge-graph-relationship
       parameters:
@@ -13886,77 +14325,6 @@ paths:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
       summary: Get Knowledge Graph Relationship
-      tags:
-        - Knowledge Graph
-  /knowledge_graph/view:
-    get:
-      operationId: get-knowledge-graph-view
-      parameters:
-        - explode: false
-          in: query
-          name: entityId
-          schema:
-            type: string
-        - explode: false
-          in: query
-          name: depth
-          schema:
-            default: 1
-            format: int64
-            maximum: 4
-            minimum: 1
-            type: integer
-        - explode: false
-          in: query
-          name: relationshipPredicate
-          schema:
-            items:
-              type: string
-            type: array
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/GetKnowledgeGraphViewResponseBody"
-          description: OK
-        "400":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Bad Request
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unauthorized
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Forbidden
-        "404":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Not Found
-        "422":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unprocessable Entity
-        "500":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Internal Server Error
-      summary: Get Knowledge Graph View
       tags:
         - Knowledge Graph
   /meeting_schedules:

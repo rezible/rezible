@@ -11,7 +11,6 @@ import (
 	"github.com/rezible/rezible/ent"
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/predicate"
-	sa "github.com/rezible/rezible/ent/systemanalysis"
 	saent "github.com/rezible/rezible/ent/systemanalysisentity"
 	sae "github.com/rezible/rezible/ent/systemanalysisentry"
 	saes "github.com/rezible/rezible/ent/systemanalysisentrysubject"
@@ -20,10 +19,10 @@ import (
 
 type SystemAnalysisService struct {
 	db        rez.Database
-	knowledge rez.KnowledgeGraphService
+	knowledge rez.KnowledgeGraphQueryService
 }
 
-func NewSystemAnalysisService(db rez.Database, knowledge rez.KnowledgeGraphService) (*SystemAnalysisService, error) {
+func NewSystemAnalysisService(db rez.Database, knowledge rez.KnowledgeGraphQueryService) (*SystemAnalysisService, error) {
 	return &SystemAnalysisService{db: db, knowledge: knowledge}, nil
 }
 
@@ -34,14 +33,14 @@ func (s *SystemAnalysisService) systemAnalysisEntrySubjectsQuery(q *ent.SystemAn
 func (s *SystemAnalysisService) systemAnalysisEntitiesQuery(q *ent.SystemAnalysisEntityQuery) {
 	q.Order(ent.Asc(saent.FieldCreatedAt), ent.Asc(saent.FieldID)).
 		WithKnowledgeEntity(func(eq *ent.KnowledgeEntityQuery) {
-			eq.WithAliases(knowledgeAliasWithEvidenceQuery())
+			eq.WithAliases(subjectAliasWithEvidence())
 		})
 }
 
 func (s *SystemAnalysisService) systemAnalysisRelationshipsQuery(q *ent.SystemAnalysisRelationshipQuery) {
 	q.Order(ent.Asc(sarel.FieldCreatedAt), ent.Asc(sarel.FieldID)).
 		WithKnowledgeRelationship(func(rq *ent.KnowledgeRelationshipQuery) {
-			rq.WithAliases(knowledgeAliasWithEvidenceQuery())
+			rq.WithAliases(subjectAliasWithEvidence())
 		})
 }
 
@@ -84,27 +83,6 @@ func (s *SystemAnalysisService) SetSystemAnalysis(ctx context.Context, id uuid.U
 		return nil, s.checkSaveErr(saveErr, "system analysis")
 	}
 	return saved, nil
-}
-
-func (s *SystemAnalysisService) GetSystemAnalysisGraph(ctx context.Context, id uuid.UUID, params rez.GetKnowledgeGraphViewParams) (*rez.KnowledgeGraphView, error) {
-	query := s.db.Client(ctx).SystemAnalysis.Query().
-		Where(sa.ID(id))
-	analysis, queryErr := query.Only(ctx)
-	if queryErr != nil {
-		return nil, fmt.Errorf("get system analysis: %w", queryErr)
-	}
-
-	rootID := uuid.Nil
-	if analysis.SubjectEntityID != nil {
-		rootID = *analysis.SubjectEntityID
-	}
-	params.EntityID = rootID
-
-	view, viewErr := s.knowledge.GetView(ctx, params)
-	if viewErr != nil {
-		return nil, fmt.Errorf("get system analysis graph: %w", viewErr)
-	}
-	return view, nil
 }
 
 func (s *SystemAnalysisService) IncludeSystemAnalysisSubjects(ctx context.Context, params rez.IncludeSystemAnalysisSubjectsParams) error {
@@ -392,21 +370,13 @@ func (s *SystemAnalysisService) SetSystemAnalysisEntry(
 			}
 		}
 
-		entry, queryErr := s.GetSystemAnalysisEntry(ctx, saved.ID)
+		entry, queryErr := s.LookupSystemAnalysisEntry(ctx, sae.ID(saved.ID))
 		if queryErr != nil {
 			return queryErr
 		}
 		result = entry.Unwrap()
 		return nil
 	})
-}
-
-func (s *SystemAnalysisService) GetSystemAnalysisEntry(ctx context.Context, id uuid.UUID) (*ent.SystemAnalysisEntry, error) {
-	return s.db.Client(ctx).SystemAnalysisEntry.Query().
-		Where(sae.ID(id)).
-		WithReviews().
-		WithSubjects().
-		Only(ctx)
 }
 
 func (s *SystemAnalysisService) LookupSystemAnalysisEntry(ctx context.Context, pred predicate.SystemAnalysisEntry) (*ent.SystemAnalysisEntry, error) {

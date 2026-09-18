@@ -39,10 +39,8 @@ type (
 	}
 
 	KnowledgeSubjectAliasSummary struct {
-		ID                uuid.UUID `json:"id"`
-		Provider          string    `json:"provider"`
-		ProviderNamespace string    `json:"provider_namespace"`
-		ResourceRef       string    `json:"resource_ref"`
+		ID          uuid.UUID               `json:"id"`
+		ResourceRef rez.ProviderResourceRef `json:"resource_ref"`
 	}
 
 	KnowledgeEvidenceSummary struct {
@@ -97,13 +95,12 @@ var ExploreSystemNeighborhoodTool = defineTool[ToolDefinition[ExploreSystemNeigh
 
 type (
 	InspectKnowledgeSubjectToolInput struct {
-		SubjectKind string `json:"subject_kind" jsonschema:"description=Kind of knowledge subject to inspect,enum=entity,enum=relationship,enum=evidence"`
+		SubjectKind string `json:"subject_kind" jsonschema:"description=Kind of knowledge subject to inspect,enum=entity,enum=relationship"`
 		SubjectID   string `json:"subject_id" jsonschema:"description=Knowledge subject id"`
 	}
 	InspectKnowledgeSubjectToolOutput struct {
 		Entity       *KnowledgeEntityDetail       `json:"entity,omitempty"`
 		Relationship *KnowledgeRelationshipDetail `json:"relationship,omitempty"`
-		Evidence     *KnowledgeEvidenceDetail     `json:"evidence,omitempty"`
 	}
 	KnowledgeEntityDetail struct {
 		Summary     KnowledgeEntitySummary        `json:"summary"`
@@ -165,9 +162,9 @@ type (
 		Subjects  []AnalysisFindingSubjectToolInputSubject `json:"subjects" jsonschema:"description=Knowledge subjects supporting the finding; at least one must be evidence,minItems=1,maxItems=20"`
 	}
 	AnalysisFindingSubjectToolInputSubject struct {
-		SubjectKind string `json:"subject_kind" jsonschema:"description=Kind of cited knowledge subject,enum=entity,enum=relationship,enum=evidence"`
-		SubjectID   string `json:"subject_id" jsonschema:"description=Knowledge subject id"`
-		Role        string `json:"role" jsonschema:"description=Concise role such as primary or affected or contributing or evidence_for,minLength=1"`
+		SubjectID   string   `json:"subject_id" jsonschema:"description=Knowledge subject id"`
+		Role        string   `json:"role" jsonschema:"description=Concise role such as primary or affected or contributing or evidence_for,minLength=1"`
+		EvidenceIDs []string `json:"evidence_ids" jsonschema:"description=Knowledge evidence ids`
 	}
 
 	RecordAnalysisFindingToolOutput struct {

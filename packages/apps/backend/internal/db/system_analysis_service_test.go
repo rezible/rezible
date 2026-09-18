@@ -6,7 +6,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/predicate"
-	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 
 	rez "github.com/rezible/rezible"
@@ -22,7 +21,6 @@ import (
 	sarel "github.com/rezible/rezible/ent/systemanalysisrelationship"
 	"github.com/rezible/rezible/pkg/projections"
 	"github.com/rezible/rezible/test"
-	"github.com/rezible/rezible/test/mocks"
 )
 
 type SystemAnalysisServiceSuite struct {
@@ -40,7 +38,7 @@ func TestSystemAnalysisServiceSuite(t *testing.T) {
 	suite.Run(t, &SystemAnalysisServiceSuite{Suite: test.NewSuite()})
 }
 
-func (s *SystemAnalysisServiceSuite) service(tdb rez.Database, knowledge rez.KnowledgeGraphService) *SystemAnalysisService {
+func (s *SystemAnalysisServiceSuite) service(tdb rez.Database, knowledge rez.KnowledgeGraphQueryService) *SystemAnalysisService {
 	svc, svcErr := NewSystemAnalysisService(tdb, knowledge)
 	s.Require().NoError(svcErr)
 	return svc
@@ -126,7 +124,7 @@ func (s *SystemAnalysisServiceSuite) TestAnalysisEntityMutationsAndDelete() {
 	ctx := s.SeedTenantContext()
 	tdb := s.CreateTestDatabase()
 	fixture := s.createGraphFixture(tdb)
-	svc := s.service(tdb, &KnowledgeGraphService{db: tdb})
+	svc := s.service(tdb, &KnowledgeGraphQueryService{db: tdb})
 	analysis := s.createAnalysis(tdb)
 
 	node, createErr := svc.SetSystemAnalysisEntity(ctx, uuid.Nil, func(m *ent.SystemAnalysisEntityMutation) {
@@ -176,7 +174,7 @@ func (s *SystemAnalysisServiceSuite) TestAnalysisRelationshipDerivesEndpointEnti
 	ctx := s.SeedTenantContext()
 	tdb := s.CreateTestDatabase()
 	fixture := s.createGraphFixture(tdb)
-	svc := s.service(tdb, &KnowledgeGraphService{db: tdb})
+	svc := s.service(tdb, &KnowledgeGraphQueryService{db: tdb})
 	analysis := s.createAnalysis(tdb)
 
 	relationship, createErr := svc.SetSystemAnalysisRelationship(ctx, uuid.Nil, func(m *ent.SystemAnalysisRelationshipMutation) {
@@ -232,7 +230,7 @@ func (s *SystemAnalysisServiceSuite) TestListEntriesOrdersAndLoadsSubjects() {
 	ctx := s.SeedTenantContext()
 	tdb := s.CreateTestDatabase()
 	fixture := s.createGraphFixture(tdb)
-	svc := s.service(tdb, &KnowledgeGraphService{db: tdb})
+	svc := s.service(tdb, &KnowledgeGraphQueryService{db: tdb})
 	analysis := s.createAnalysis(tdb)
 
 	entryOccAt := time.Now()
@@ -293,7 +291,7 @@ func (s *SystemAnalysisServiceSuite) TestEntryMutationsValidateUpdateAndDelete()
 	ctx := s.SeedTenantContext()
 	tdb := s.CreateTestDatabase()
 	fixture := s.createGraphFixture(tdb)
-	svc := s.service(tdb, &KnowledgeGraphService{db: tdb})
+	svc := s.service(tdb, &KnowledgeGraphQueryService{db: tdb})
 	analysis := s.createAnalysis(tdb)
 
 	_, invalidErr := svc.SetSystemAnalysisEntry(ctx, uuid.Nil, func(m *ent.SystemAnalysisEntryMutation) {
@@ -341,7 +339,7 @@ func (s *SystemAnalysisServiceSuite) TestEntrySubjectRequiresExactlyOneGraphRefe
 	ctx := s.SeedTenantContext()
 	tdb := s.CreateTestDatabase()
 	fixture := s.createGraphFixture(tdb)
-	svc := s.service(tdb, &KnowledgeGraphService{db: tdb})
+	svc := s.service(tdb, &KnowledgeGraphQueryService{db: tdb})
 	analysis := s.createAnalysis(tdb)
 
 	entry, createErr := svc.SetSystemAnalysisEntry(ctx, uuid.Nil, func(m *ent.SystemAnalysisEntryMutation) {
@@ -435,113 +433,13 @@ func (s *SystemAnalysisServiceSuite) TestEntrySubjectRequiresExactlyOneGraphRefe
 	s.Equal(0, subjectQuery.CountX(ctx))
 }
 
-func (s *SystemAnalysisServiceSuite) TestGetGraphUsesSubjectBeforeScope() {
-	ctx := s.SeedTenantContext()
-	tdb := s.CreateTestDatabase()
-	client := tdb.Client(ctx)
-	createScope := client.KnowledgeEntity.Create().
-		SetCategory(kne.CategorySystem).
-		SetKind("system")
-	scope, scopeErr := createScope.Save(ctx)
-	s.Require().NoError(scopeErr)
-	createSubject := client.KnowledgeEntity.Create().
-		SetCategory(kne.CategoryContainer).
-		SetKind("service")
-	subject, subjectErr := createSubject.Save(ctx)
-	s.Require().NoError(subjectErr)
-	createAnalysis := client.SystemAnalysis.Create().
-		SetScopeEntityID(scope.ID).
-		SetSubjectEntityID(subject.ID)
-	analysis, createErr := createAnalysis.Save(ctx)
-	s.Require().NoError(createErr)
-
-	knowledge := mocks.NewMockKnowledgeGraphService(s.T())
-	expectedParams := rez.GetKnowledgeGraphViewParams{
-		EntityID:               subject.ID,
-		Depth:                  2,
-		RelationshipPredicates: []string{"uses"},
-	}
-	knowledge.EXPECT().
-		GetView(mock.Anything, expectedParams).
-		Return(&rez.KnowledgeGraphView{RootID: subject.ID}, nil).
-		Once()
-	svc := s.service(tdb, knowledge)
-
-	view, viewErr := svc.GetSystemAnalysisGraph(ctx, analysis.ID, rez.GetKnowledgeGraphViewParams{
-		Depth:                  2,
-		RelationshipPredicates: []string{"uses"},
-	})
-	s.Require().NoError(viewErr)
-	s.Equal(subject.ID, view.RootID)
-}
-
-func (s *SystemAnalysisServiceSuite) TestGetGraphDoesNotUseScope() {
-	ctx := s.SeedTenantContext()
-	tdb := s.CreateTestDatabase()
-	client := tdb.Client(ctx)
-	createScope := client.KnowledgeEntity.Create().
-		SetCategory(kne.CategorySystem).
-		SetKind("system")
-	scope, scopeErr := createScope.Save(ctx)
-	s.Require().NoError(scopeErr)
-	createAnalysis := client.SystemAnalysis.Create().
-		SetScopeEntityID(scope.ID)
-	analysis, createErr := createAnalysis.Save(ctx)
-	s.Require().NoError(createErr)
-
-	knowledge := mocks.NewMockKnowledgeGraphService(s.T())
-	knowledge.EXPECT().
-		GetView(mock.Anything, rez.GetKnowledgeGraphViewParams{}).
-		Return(&rez.KnowledgeGraphView{}, nil).
-		Once()
-	svc := s.service(tdb, knowledge)
-
-	view, viewErr := svc.GetSystemAnalysisGraph(ctx, analysis.ID, rez.GetKnowledgeGraphViewParams{})
-	s.Require().NoError(viewErr)
-	s.Equal(uuid.Nil, view.RootID)
-}
-
-func (s *SystemAnalysisServiceSuite) TestGetGraphFallsBackToKnowledgeGraphDefault() {
-	ctx := s.SeedTenantContext()
-	tdb := s.CreateTestDatabase()
-	analysis := s.createAnalysis(tdb)
-
-	knowledge := mocks.NewMockKnowledgeGraphService(s.T())
-	knowledge.EXPECT().
-		GetView(mock.Anything, rez.GetKnowledgeGraphViewParams{}).
-		Return(&rez.KnowledgeGraphView{}, nil).
-		Once()
-	svc := s.service(tdb, knowledge)
-
-	_, viewErr := svc.GetSystemAnalysisGraph(ctx, analysis.ID, rez.GetKnowledgeGraphViewParams{})
-	s.Require().NoError(viewErr)
-}
-
-func (s *SystemAnalysisServiceSuite) TestHasSystemAnalysisEntity() {
-	ctx := s.SeedTenantContext()
-	tdb := s.CreateTestDatabase()
-	client := tdb.Client(ctx)
-	fixture := s.createGraphFixture(tdb)
-	analysis := client.SystemAnalysis.Create().SetSubjectEntityID(fixture.Source.ID).SaveX(ctx)
-	svc := s.service(tdb, &KnowledgeGraphService{db: tdb})
-
-	included, includedErr := svc.HasSystemAnalysisEntity(ctx, analysis.ID, fixture.Source.ID)
-	s.Require().NoError(includedErr)
-	s.False(included)
-
-	client.SystemAnalysisEntity.Create().SetAnalysisID(analysis.ID).SetKnowledgeEntityID(fixture.Source.ID).SaveX(ctx)
-	included, includedErr = svc.HasSystemAnalysisEntity(ctx, analysis.ID, fixture.Source.ID)
-	s.Require().NoError(includedErr)
-	s.True(included)
-}
-
 func (s *SystemAnalysisServiceSuite) TestIncludeSystemAnalysisSubjectsAddsRelationshipEndpoints() {
 	ctx := s.SeedTenantContext()
 	tdb := s.CreateTestDatabase()
 	client := tdb.Client(ctx)
 	fixture := s.createGraphFixture(tdb)
 	analysis := s.createAnalysis(tdb)
-	svc := s.service(tdb, &KnowledgeGraphService{db: tdb})
+	svc := s.service(tdb, &KnowledgeGraphQueryService{db: tdb})
 
 	includeParams := rez.IncludeSystemAnalysisSubjectsParams{
 		AnalysisId:      analysis.ID,
@@ -622,7 +520,7 @@ func (s *SystemAnalysisServiceSuite) TestSetSystemAnalysisEntryCreatesSubjectsAt
 	client := tdb.Client(ctx)
 	fixture := s.createGraphFixture(tdb)
 	analysis := s.createAnalysis(tdb)
-	svc := s.service(tdb, &KnowledgeGraphService{db: tdb})
+	svc := s.service(tdb, &KnowledgeGraphQueryService{db: tdb})
 	now := time.Now()
 	setEntry := func(m *ent.SystemAnalysisEntryMutation) {
 		m.SetAnalysisID(analysis.ID)
