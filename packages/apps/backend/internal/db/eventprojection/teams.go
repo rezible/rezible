@@ -183,7 +183,7 @@ func (s *ProjectionService) handleTeamMembershipEvent(ctx context.Context, e *pr
 }
 
 func (s *ProjectionService) setTeamMembershipFromProjection(ctx context.Context, relId uuid.UUID, attrs projections.TeamMembershipEventAttributes) (uuid.UUID, error) {
-	rel, relErr := s.knowledge.GetRelationship(ctx, relId)
+	rel, relErr := s.knowledgeQuery.GetRelationship(ctx, relId)
 	if relErr != nil {
 		return uuid.Nil, fmt.Errorf("get knowledge relationship: %w", relErr)
 	}

@@ -208,9 +208,10 @@ var pkgIntegrations = do.Package(
 	do.Lazy(func(i do.Injector) (rez.EventProjectionService, error) {
 		return eventprojection.NewProjectionService(
 			do.MustInvoke[rez.Database](i),
+			do.MustInvoke[rez.KnowledgeGraphIngestionService](i),
+			do.MustInvoke[rez.KnowledgeGraphQueryService](i),
 			do.MustInvoke[rez.UserService](i),
 			do.MustInvoke[rez.IncidentService](i),
-			do.MustInvoke[rez.KnowledgeGraphQueryService](i),
 			do.MustInvoke[rez.AlertService](i),
 		)
 	}),
