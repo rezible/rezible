@@ -223,81 +223,49 @@ type (
 		Predicates []predicate.KnowledgeEvidence
 	}
 
-	KnowledgeGraphQuery struct {
-		RootEntityIDs          []uuid.UUID
-		RootCategory           *kne.Category
-		Detail                 int
-		NeighborHops           int
-		NeighborPredicates     []knr.Predicate
-		RelationshipPredicates []knr.Predicate
+	KnowledgeGraphPageCursor string
 
-		RootPage         ent.ListParams
-		EntityPage       ent.ListParams
-		RelationshipPage ent.ListParams
-
-		Version string
-	}
-
-	KnowledgeGraphWindow struct {
-		Offset int
+	KnowledgeGraphPageParams struct {
+		Cursor KnowledgeGraphPageCursor
 		Limit  int
 	}
 
-	KnowledgeGraphPage struct {
-		Offset     int
-		Limit      int
-		Total      int
-		NextOffset *int
+	KnowledgeGraphQueryLens struct {
+		EntityIDs []uuid.UUID // eventually this lens should be parameters used to query for ids, instead of having them supplied
 	}
 
-	KnowledgeGraphQueryResult struct {
-		RootEntityIDs []uuid.UUID
-
-		Entities                ent.KnowledgeEntities
-		Relationships           ent.KnowledgeRelationships
-		MembershipRelationships ent.KnowledgeRelationships
-		ConnectionAggregates    []KnowledgeGraphConnectionAggregate
-
-		Coverage KnowledgeGraphCoverageSet
-
-		RootsPage         KnowledgeGraphPage
-		EntitiesPage      KnowledgeGraphPage
-		RelationshipsPage KnowledgeGraphPage
+	KnowledgeGraphQueryRoot struct {
+		Lens      KnowledgeGraphQueryLens
+		Timestamp time.Time
 	}
 
-	KnowledgeGraphConnectionAggregateKey struct {
+	KnowledgeGraphLevelQuery struct {
+		Root  KnowledgeGraphQueryRoot
+		Level KnowledgeGraphDetailLevel
+	}
+
+	KnowledgeGraphLevelQueryResult struct {
+		Entities    ent.KnowledgeEntities
+		Connections []KnowledgeGraphConnectionAggregate
+
+		NextCursor KnowledgeGraphPageCursor
+	}
+
+	KnowledgeGraphConnection struct {
 		SourceRepresentativeID uuid.UUID
 		TargetRepresentativeID uuid.UUID
 		Predicate              knr.Predicate
 	}
 
 	KnowledgeGraphConnectionAggregate struct {
-		Key               KnowledgeGraphConnectionAggregateKey
+		Key               KnowledgeGraphConnection
 		RelationshipCount int
-	}
-
-	KnowledgeGraphCoverage string
-
-	KnowledgeGraphCoverageSet struct {
-		Roots                KnowledgeGraphCoverage
-		Entities             KnowledgeGraphCoverage
-		Memberships          KnowledgeGraphCoverage
-		Relationships        KnowledgeGraphCoverage
-		ConnectionAggregates KnowledgeGraphCoverage
 	}
 
 	ListKnowledgeGraphConnectionAggregateRelationshipsParams struct {
 		ent.ListParams
-		Query      KnowledgeGraphQuery
-		Connection KnowledgeGraphConnectionAggregateKey
-	}
-
-	KnowledgeGraphConnectionAggregateRelationshipsPage struct {
-		Connection KnowledgeGraphConnectionAggregate
-
-		Relationships ent.KnowledgeRelationships
-		Page          KnowledgeGraphPage
-		Coverage      KnowledgeGraphCoverage
+		Query      KnowledgeGraphLevelQuery
+		Connection KnowledgeGraphConnection
 	}
 
 	KnowledgeGraphQueryService interface {
@@ -313,13 +281,36 @@ type (
 		ListEvidence(context.Context, ListKnowledgeEvidenceParams) (*ent.ListResult[ent.KnowledgeEvidence], error)
 		GetEvidence(context.Context, uuid.UUID) (*ent.KnowledgeEvidence, error)
 
-		Query(context.Context, KnowledgeGraphQuery) (*KnowledgeGraphQueryResult, error)
-		ListConnectionAggregateRelationships(
+		QueryGraphLevel(
+			context.Context,
+			KnowledgeGraphLevelQuery,
+			KnowledgeGraphPageParams,
+		) (KnowledgeGraphLevelQueryResult, error)
+
+		ListKnowledgeGraphConnectionAggregateRelationships(
 			context.Context,
 			ListKnowledgeGraphConnectionAggregateRelationshipsParams,
-		) (*KnowledgeGraphConnectionAggregateRelationshipsPage, error)
+		) (*ent.ListResult[ent.KnowledgeRelationship], error)
 	}
 )
+
+type KnowledgeGraphDetailLevel int
+
+const (
+	KnowledgeGraphDetailLevelLandscape      KnowledgeGraphDetailLevel = 0
+	KnowledgeGraphDetailLevelSystems        KnowledgeGraphDetailLevel = 1
+	KnowledgeGraphDetailLevelRuntime        KnowledgeGraphDetailLevel = 2
+	KnowledgeGraphDetailLevelImplementation KnowledgeGraphDetailLevel = 3
+)
+
+var KnowledgeGraphDetailLevels = map[kne.Category]KnowledgeGraphDetailLevel{
+	kne.CategorySystemFunction: KnowledgeGraphDetailLevelLandscape,
+	kne.CategorySystem:         KnowledgeGraphDetailLevelSystems,
+	kne.CategoryContainer:      KnowledgeGraphDetailLevelRuntime,
+	kne.CategoryInfrastructure: KnowledgeGraphDetailLevelRuntime,
+	kne.CategoryComponent:      KnowledgeGraphDetailLevelImplementation,
+	kne.CategoryCode:           KnowledgeGraphDetailLevelImplementation,
+}
 
 type (
 	ListSystemAnalysisEntitiesParams struct {

@@ -118,12 +118,17 @@ func (s *KnowledgeGraphQueryService) GetEvidence(ctx context.Context, id uuid.UU
 		Only(ctx)
 }
 
-func (s *KnowledgeGraphQueryService) Query(ctx context.Context, query rez.KnowledgeGraphQuery) (*rez.KnowledgeGraphQueryResult, error) {
-	//TODO implement me
+func (s *KnowledgeGraphQueryService) QueryGraphLevel(
+	context.Context,
+	rez.KnowledgeGraphLevelQuery,
+	rez.KnowledgeGraphPageParams,
+) (rez.KnowledgeGraphLevelQueryResult, error) {
 	panic("implement me")
 }
 
-func (s *KnowledgeGraphQueryService) ListConnectionAggregateRelationships(ctx context.Context, params rez.ListKnowledgeGraphConnectionAggregateRelationshipsParams) (*rez.KnowledgeGraphConnectionAggregateRelationshipsPage, error) {
-	//TODO implement me
+func (s *KnowledgeGraphQueryService) ListKnowledgeGraphConnectionAggregateRelationships(
+	context.Context,
+	rez.ListKnowledgeGraphConnectionAggregateRelationshipsParams,
+) (*ent.ListResult[ent.KnowledgeRelationship], error) {
 	panic("implement me")
 }

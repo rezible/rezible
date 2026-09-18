@@ -759,74 +759,6 @@ func (_c *MockKnowledgeGraphQueryService_GetSubjectAlias_Call) RunAndReturn(run 
 	return _c
 }
 
-// ListConnectionAggregateRelationships provides a mock function for the type MockKnowledgeGraphQueryService
-func (_mock *MockKnowledgeGraphQueryService) ListConnectionAggregateRelationships(context1 context.Context, listKnowledgeGraphConnectionAggregateRelationshipsParams rez.ListKnowledgeGraphConnectionAggregateRelationshipsParams) (*rez.KnowledgeGraphConnectionAggregateRelationshipsPage, error) {
-	ret := _mock.Called(context1, listKnowledgeGraphConnectionAggregateRelationshipsParams)
-
-	if len(ret) == 0 {
-		panic("no return value specified for ListConnectionAggregateRelationships")
-	}
-
-	var r0 *rez.KnowledgeGraphConnectionAggregateRelationshipsPage
-	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.ListKnowledgeGraphConnectionAggregateRelationshipsParams) (*rez.KnowledgeGraphConnectionAggregateRelationshipsPage, error)); ok {
-		return returnFunc(context1, listKnowledgeGraphConnectionAggregateRelationshipsParams)
-	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.ListKnowledgeGraphConnectionAggregateRelationshipsParams) *rez.KnowledgeGraphConnectionAggregateRelationshipsPage); ok {
-		r0 = returnFunc(context1, listKnowledgeGraphConnectionAggregateRelationshipsParams)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*rez.KnowledgeGraphConnectionAggregateRelationshipsPage)
-		}
-	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, rez.ListKnowledgeGraphConnectionAggregateRelationshipsParams) error); ok {
-		r1 = returnFunc(context1, listKnowledgeGraphConnectionAggregateRelationshipsParams)
-	} else {
-		r1 = ret.Error(1)
-	}
-	return r0, r1
-}
-
-// MockKnowledgeGraphQueryService_ListConnectionAggregateRelationships_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ListConnectionAggregateRelationships'
-type MockKnowledgeGraphQueryService_ListConnectionAggregateRelationships_Call struct {
-	*mock.Call
-}
-
-// ListConnectionAggregateRelationships is a helper method to define mock.On call
-//   - context1 context.Context
-//   - listKnowledgeGraphConnectionAggregateRelationshipsParams rez.ListKnowledgeGraphConnectionAggregateRelationshipsParams
-func (_e *MockKnowledgeGraphQueryService_Expecter) ListConnectionAggregateRelationships(context1 interface{}, listKnowledgeGraphConnectionAggregateRelationshipsParams interface{}) *MockKnowledgeGraphQueryService_ListConnectionAggregateRelationships_Call {
-	return &MockKnowledgeGraphQueryService_ListConnectionAggregateRelationships_Call{Call: _e.mock.On("ListConnectionAggregateRelationships", context1, listKnowledgeGraphConnectionAggregateRelationshipsParams)}
-}
-
-func (_c *MockKnowledgeGraphQueryService_ListConnectionAggregateRelationships_Call) Run(run func(context1 context.Context, listKnowledgeGraphConnectionAggregateRelationshipsParams rez.ListKnowledgeGraphConnectionAggregateRelationshipsParams)) *MockKnowledgeGraphQueryService_ListConnectionAggregateRelationships_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 context.Context
-		if args[0] != nil {
-			arg0 = args[0].(context.Context)
-		}
-		var arg1 rez.ListKnowledgeGraphConnectionAggregateRelationshipsParams
-		if args[1] != nil {
-			arg1 = args[1].(rez.ListKnowledgeGraphConnectionAggregateRelationshipsParams)
-		}
-		run(
-			arg0,
-			arg1,
-		)
-	})
-	return _c
-}
-
-func (_c *MockKnowledgeGraphQueryService_ListConnectionAggregateRelationships_Call) Return(knowledgeGraphConnectionAggregateRelationshipsPage *rez.KnowledgeGraphConnectionAggregateRelationshipsPage, err error) *MockKnowledgeGraphQueryService_ListConnectionAggregateRelationships_Call {
-	_c.Call.Return(knowledgeGraphConnectionAggregateRelationshipsPage, err)
-	return _c
-}
-
-func (_c *MockKnowledgeGraphQueryService_ListConnectionAggregateRelationships_Call) RunAndReturn(run func(context1 context.Context, listKnowledgeGraphConnectionAggregateRelationshipsParams rez.ListKnowledgeGraphConnectionAggregateRelationshipsParams) (*rez.KnowledgeGraphConnectionAggregateRelationshipsPage, error)) *MockKnowledgeGraphQueryService_ListConnectionAggregateRelationships_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
 // ListEntities provides a mock function for the type MockKnowledgeGraphQueryService
 func (_mock *MockKnowledgeGraphQueryService) ListEntities(context1 context.Context, listKnowledgeEntitiesParams rez.ListKnowledgeEntitiesParams) (*ent.ListResult[ent.KnowledgeEntity], error) {
 	ret := _mock.Called(context1, listKnowledgeEntitiesParams)
@@ -959,6 +891,74 @@ func (_c *MockKnowledgeGraphQueryService_ListEvidence_Call) Return(listResult *e
 }
 
 func (_c *MockKnowledgeGraphQueryService_ListEvidence_Call) RunAndReturn(run func(context1 context.Context, listKnowledgeEvidenceParams rez.ListKnowledgeEvidenceParams) (*ent.ListResult[ent.KnowledgeEvidence], error)) *MockKnowledgeGraphQueryService_ListEvidence_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// ListKnowledgeGraphConnectionAggregateRelationships provides a mock function for the type MockKnowledgeGraphQueryService
+func (_mock *MockKnowledgeGraphQueryService) ListKnowledgeGraphConnectionAggregateRelationships(context1 context.Context, listKnowledgeGraphConnectionAggregateRelationshipsParams rez.ListKnowledgeGraphConnectionAggregateRelationshipsParams) (*ent.ListResult[ent.KnowledgeRelationship], error) {
+	ret := _mock.Called(context1, listKnowledgeGraphConnectionAggregateRelationshipsParams)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ListKnowledgeGraphConnectionAggregateRelationships")
+	}
+
+	var r0 *ent.ListResult[ent.KnowledgeRelationship]
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.ListKnowledgeGraphConnectionAggregateRelationshipsParams) (*ent.ListResult[ent.KnowledgeRelationship], error)); ok {
+		return returnFunc(context1, listKnowledgeGraphConnectionAggregateRelationshipsParams)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.ListKnowledgeGraphConnectionAggregateRelationshipsParams) *ent.ListResult[ent.KnowledgeRelationship]); ok {
+		r0 = returnFunc(context1, listKnowledgeGraphConnectionAggregateRelationshipsParams)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*ent.ListResult[ent.KnowledgeRelationship])
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, rez.ListKnowledgeGraphConnectionAggregateRelationshipsParams) error); ok {
+		r1 = returnFunc(context1, listKnowledgeGraphConnectionAggregateRelationshipsParams)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockKnowledgeGraphQueryService_ListKnowledgeGraphConnectionAggregateRelationships_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ListKnowledgeGraphConnectionAggregateRelationships'
+type MockKnowledgeGraphQueryService_ListKnowledgeGraphConnectionAggregateRelationships_Call struct {
+	*mock.Call
+}
+
+// ListKnowledgeGraphConnectionAggregateRelationships is a helper method to define mock.On call
+//   - context1 context.Context
+//   - listKnowledgeGraphConnectionAggregateRelationshipsParams rez.ListKnowledgeGraphConnectionAggregateRelationshipsParams
+func (_e *MockKnowledgeGraphQueryService_Expecter) ListKnowledgeGraphConnectionAggregateRelationships(context1 interface{}, listKnowledgeGraphConnectionAggregateRelationshipsParams interface{}) *MockKnowledgeGraphQueryService_ListKnowledgeGraphConnectionAggregateRelationships_Call {
+	return &MockKnowledgeGraphQueryService_ListKnowledgeGraphConnectionAggregateRelationships_Call{Call: _e.mock.On("ListKnowledgeGraphConnectionAggregateRelationships", context1, listKnowledgeGraphConnectionAggregateRelationshipsParams)}
+}
+
+func (_c *MockKnowledgeGraphQueryService_ListKnowledgeGraphConnectionAggregateRelationships_Call) Run(run func(context1 context.Context, listKnowledgeGraphConnectionAggregateRelationshipsParams rez.ListKnowledgeGraphConnectionAggregateRelationshipsParams)) *MockKnowledgeGraphQueryService_ListKnowledgeGraphConnectionAggregateRelationships_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 rez.ListKnowledgeGraphConnectionAggregateRelationshipsParams
+		if args[1] != nil {
+			arg1 = args[1].(rez.ListKnowledgeGraphConnectionAggregateRelationshipsParams)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockKnowledgeGraphQueryService_ListKnowledgeGraphConnectionAggregateRelationships_Call) Return(listResult *ent.ListResult[ent.KnowledgeRelationship], err error) *MockKnowledgeGraphQueryService_ListKnowledgeGraphConnectionAggregateRelationships_Call {
+	_c.Call.Return(listResult, err)
+	return _c
+}
+
+func (_c *MockKnowledgeGraphQueryService_ListKnowledgeGraphConnectionAggregateRelationships_Call) RunAndReturn(run func(context1 context.Context, listKnowledgeGraphConnectionAggregateRelationshipsParams rez.ListKnowledgeGraphConnectionAggregateRelationshipsParams) (*ent.ListResult[ent.KnowledgeRelationship], error)) *MockKnowledgeGraphQueryService_ListKnowledgeGraphConnectionAggregateRelationships_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -1099,70 +1099,74 @@ func (_c *MockKnowledgeGraphQueryService_ListSubjectAliases_Call) RunAndReturn(r
 	return _c
 }
 
-// Query provides a mock function for the type MockKnowledgeGraphQueryService
-func (_mock *MockKnowledgeGraphQueryService) Query(context1 context.Context, knowledgeGraphQuery rez.KnowledgeGraphQuery) (*rez.KnowledgeGraphQueryResult, error) {
-	ret := _mock.Called(context1, knowledgeGraphQuery)
+// QueryGraphLevel provides a mock function for the type MockKnowledgeGraphQueryService
+func (_mock *MockKnowledgeGraphQueryService) QueryGraphLevel(context1 context.Context, knowledgeGraphLevelQuery rez.KnowledgeGraphLevelQuery, knowledgeGraphPageParams rez.KnowledgeGraphPageParams) (rez.KnowledgeGraphLevelQueryResult, error) {
+	ret := _mock.Called(context1, knowledgeGraphLevelQuery, knowledgeGraphPageParams)
 
 	if len(ret) == 0 {
-		panic("no return value specified for Query")
+		panic("no return value specified for QueryGraphLevel")
 	}
 
-	var r0 *rez.KnowledgeGraphQueryResult
+	var r0 rez.KnowledgeGraphLevelQueryResult
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.KnowledgeGraphQuery) (*rez.KnowledgeGraphQueryResult, error)); ok {
-		return returnFunc(context1, knowledgeGraphQuery)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.KnowledgeGraphLevelQuery, rez.KnowledgeGraphPageParams) (rez.KnowledgeGraphLevelQueryResult, error)); ok {
+		return returnFunc(context1, knowledgeGraphLevelQuery, knowledgeGraphPageParams)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.KnowledgeGraphQuery) *rez.KnowledgeGraphQueryResult); ok {
-		r0 = returnFunc(context1, knowledgeGraphQuery)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.KnowledgeGraphLevelQuery, rez.KnowledgeGraphPageParams) rez.KnowledgeGraphLevelQueryResult); ok {
+		r0 = returnFunc(context1, knowledgeGraphLevelQuery, knowledgeGraphPageParams)
 	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*rez.KnowledgeGraphQueryResult)
-		}
+		r0 = ret.Get(0).(rez.KnowledgeGraphLevelQueryResult)
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, rez.KnowledgeGraphQuery) error); ok {
-		r1 = returnFunc(context1, knowledgeGraphQuery)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, rez.KnowledgeGraphLevelQuery, rez.KnowledgeGraphPageParams) error); ok {
+		r1 = returnFunc(context1, knowledgeGraphLevelQuery, knowledgeGraphPageParams)
 	} else {
 		r1 = ret.Error(1)
 	}
 	return r0, r1
 }
 
-// MockKnowledgeGraphQueryService_Query_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Query'
-type MockKnowledgeGraphQueryService_Query_Call struct {
+// MockKnowledgeGraphQueryService_QueryGraphLevel_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'QueryGraphLevel'
+type MockKnowledgeGraphQueryService_QueryGraphLevel_Call struct {
 	*mock.Call
 }
 
-// Query is a helper method to define mock.On call
+// QueryGraphLevel is a helper method to define mock.On call
 //   - context1 context.Context
-//   - knowledgeGraphQuery rez.KnowledgeGraphQuery
-func (_e *MockKnowledgeGraphQueryService_Expecter) Query(context1 interface{}, knowledgeGraphQuery interface{}) *MockKnowledgeGraphQueryService_Query_Call {
-	return &MockKnowledgeGraphQueryService_Query_Call{Call: _e.mock.On("Query", context1, knowledgeGraphQuery)}
+//   - knowledgeGraphLevelQuery rez.KnowledgeGraphLevelQuery
+//   - knowledgeGraphPageParams rez.KnowledgeGraphPageParams
+func (_e *MockKnowledgeGraphQueryService_Expecter) QueryGraphLevel(context1 interface{}, knowledgeGraphLevelQuery interface{}, knowledgeGraphPageParams interface{}) *MockKnowledgeGraphQueryService_QueryGraphLevel_Call {
+	return &MockKnowledgeGraphQueryService_QueryGraphLevel_Call{Call: _e.mock.On("QueryGraphLevel", context1, knowledgeGraphLevelQuery, knowledgeGraphPageParams)}
 }
 
-func (_c *MockKnowledgeGraphQueryService_Query_Call) Run(run func(context1 context.Context, knowledgeGraphQuery rez.KnowledgeGraphQuery)) *MockKnowledgeGraphQueryService_Query_Call {
+func (_c *MockKnowledgeGraphQueryService_QueryGraphLevel_Call) Run(run func(context1 context.Context, knowledgeGraphLevelQuery rez.KnowledgeGraphLevelQuery, knowledgeGraphPageParams rez.KnowledgeGraphPageParams)) *MockKnowledgeGraphQueryService_QueryGraphLevel_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 rez.KnowledgeGraphQuery
+		var arg1 rez.KnowledgeGraphLevelQuery
 		if args[1] != nil {
-			arg1 = args[1].(rez.KnowledgeGraphQuery)
+			arg1 = args[1].(rez.KnowledgeGraphLevelQuery)
+		}
+		var arg2 rez.KnowledgeGraphPageParams
+		if args[2] != nil {
+			arg2 = args[2].(rez.KnowledgeGraphPageParams)
 		}
 		run(
 			arg0,
 			arg1,
+			arg2,
 		)
 	})
 	return _c
 }
 
-func (_c *MockKnowledgeGraphQueryService_Query_Call) Return(knowledgeGraphQueryResult *rez.KnowledgeGraphQueryResult, err error) *MockKnowledgeGraphQueryService_Query_Call {
-	_c.Call.Return(knowledgeGraphQueryResult, err)
+func (_c *MockKnowledgeGraphQueryService_QueryGraphLevel_Call) Return(knowledgeGraphLevelQueryResult rez.KnowledgeGraphLevelQueryResult, err error) *MockKnowledgeGraphQueryService_QueryGraphLevel_Call {
+	_c.Call.Return(knowledgeGraphLevelQueryResult, err)
 	return _c
 }
 
-func (_c *MockKnowledgeGraphQueryService_Query_Call) RunAndReturn(run func(context1 context.Context, knowledgeGraphQuery rez.KnowledgeGraphQuery) (*rez.KnowledgeGraphQueryResult, error)) *MockKnowledgeGraphQueryService_Query_Call {
+func (_c *MockKnowledgeGraphQueryService_QueryGraphLevel_Call) RunAndReturn(run func(context1 context.Context, knowledgeGraphLevelQuery rez.KnowledgeGraphLevelQuery, knowledgeGraphPageParams rez.KnowledgeGraphPageParams) (rez.KnowledgeGraphLevelQueryResult, error)) *MockKnowledgeGraphQueryService_QueryGraphLevel_Call {
 	_c.Call.Return(run)
 	return _c
 }

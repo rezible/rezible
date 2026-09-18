@@ -364,16 +364,13 @@ const projectConnections = (
 
 const projectAnnotations = (
 	relationships: readonly GraphRelationship[],
-	index: GraphIndex,
+	entitiesById: ReadonlyMap<string, GraphEntity>,
 	representatives: ReadonlyMap<string, string>,
-	showAnnotations: boolean
 ): MapAnnotation[] => {
-	if (!showAnnotations) return [];
-
 	const annotations: MapAnnotation[] = [];
 
 	for (const relationship of relationships) {
-		const entity = index.entitiesById.get(relationship.source);
+		const entity = entitiesById.get(relationship.source);
 		if (getMapCategoryDisplay(entity?.category ?? "").mode !== DisplayMode.Annotation) continue;
 
 		const representativeId = representatives.get(relationship.target);
@@ -399,41 +396,27 @@ export const projectMap = (
 	const index = indexGraph(graph);
 	const relationships = uniqueRelationships(graph.relationships);
 	const visibleIds = selectArchitectureNodes(graph, index, reveal);
-	const representatives = buildRepresentatives(visibleIds, index);
+	const representativeByEntityId = buildRepresentatives(visibleIds, index);
 
 	const cyclicIds = cyclicMembershipIds(index);
 	const enclosureByChild = findEnclosures(visibleIds, index, cyclicIds, graph.coverage.parentMembership);
 	const enclosedParentIds = new Set<string>();
 	for (const membership of enclosureByChild.values()) enclosedParentIds.add(membership.source);
 
-	const nodes: MapNode[] = [];
-	for (const entity of graph.entities) {
-		if (!visibleIds.has(entity.id)) continue;
+	const connections = projectConnections(relationships, index, representativeByEntityId, enclosureByChild, cyclicIds);
+	const annotations = (displayOptions.showAnnotations) ? 
+		projectAnnotations(relationships, index.entitiesById, representativeByEntityId)
+		: [];
 
-		const enclosure = enclosureByChild.get(entity.id);
-		nodes.push({
-			id: entity.id,
-			appearance: enclosedParentIds.has(entity.id) ? "group" : "compact",
-			...(enclosure
-				? {
-						enclosure: {
-							parentId: enclosure.source,
-							membershipId: enclosure.id,
-						},
-					}
-				: {}),
-		});
+	const nodes: MapNode[] = [];
+	for (const {id} of graph.entities) {
+		if (!visibleIds.has(id)) continue;
+		const appearance = enclosedParentIds.has(id) ? "group" : "compact";
+		let enclosure: MapNode["enclosure"];
+		const enclosureRel = enclosureByChild.get(id);
+		if (enclosureRel) enclosure = { parentId: enclosureRel.source, membershipId: enclosureRel.id };
+		nodes.push({ id, appearance, enclosure });
 	}
 
-	return {
-		nodes,
-		connections: projectConnections(relationships, index, representatives, enclosureByChild, cyclicIds),
-		annotations: projectAnnotations(
-			relationships,
-			index,
-			representatives,
-			displayOptions.showAnnotations
-		),
-		representativeByEntityId: representatives,
-	};
+	return { nodes, connections, annotations, representativeByEntityId };
 };
