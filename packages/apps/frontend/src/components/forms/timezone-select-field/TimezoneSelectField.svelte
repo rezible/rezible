@@ -10,8 +10,10 @@
 		value?: string;
 		id?: string;
 		disabled?: boolean;
+		"aria-invalid"?: boolean;
+		"aria-describedby"?: string;
 	};
-	let { value = $bindable(""), id, disabled = false }: Props = $props();
+	let { value = $bindable(""), id, disabled = false, ...aria }: Props = $props();
 
 	const CLEAR_TIMEZONE_VALUE = "__clear__";
 	const localZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -30,25 +32,12 @@
 	}
 
 	let open = $state(false);
-	const handleValueChange = (nextValue: string) => {
-		// value = nextValue === CLEAR_TIMEZONE_VALUE ? "" : nextValue;
-		// open = false;
-	};
-
-	let highlightedZone = $state(value || localZone);
-	const handleOpenChange = (nextOpen: boolean) => {
-		// open = nextOpen;
-		// if (nextOpen) {
-		// 	search = "";
-		// 	highlightedZone = value || localZone;
-		// }
-	};
 
 	let triggerRef = $state<HTMLButtonElement>(null!);
 	function closeAndFocusTrigger() {
 		open = false;
 		tick().then(() => {
-			triggerRef.focus();
+			triggerRef?.focus();
 		});
 	}
 
@@ -62,24 +51,29 @@
 	const triggerLabel = $derived(value ? formatTimezone(value) : "Select timezone");
 </script>
 
-<Popover.Root bind:open>
-	<Popover.Trigger bind:ref={triggerRef}>
+<Popover.Root
+	bind:open
+	onOpenChange={(nextOpen) => {
+		if (nextOpen) search = "";
+	}}
+>
+	<Popover.Trigger bind:ref={triggerRef} {id} {disabled}>
 		{#snippet child({ props })}
 			<Button
 				variant="outline"
-				class="w-[200px] justify-between"
+				class="w-full min-w-0 justify-between"
 				{...props}
+				{...aria}
 				role="combobox"
 				aria-expanded={open}
 			>
-				{triggerLabel}
-				<!-- <ChevronsUpDownIcon class="ms-2 size-4 shrink-0 opacity-50" /> -->
+				<span class="truncate">{triggerLabel}</span>
 			</Button>
 		{/snippet}
 	</Popover.Trigger>
 
-	<Popover.Content class="w-[200px] p-0">
-		<Command.Root>
+	<Popover.Content class="w-[var(--bits-popover-anchor-width)] p-0">
+		<Command.Root shouldFilter={false}>
 			<Command.Input
 				oninput={(event) => (search = event.currentTarget.value)}
 				placeholder="Search timezones…"
@@ -94,6 +88,7 @@
 								value={CLEAR_TIMEZONE_VALUE}
 								onSelect={() => {
 									value = "";
+									closeAndFocusTrigger();
 								}}
 							>
 								<RiCloseLine /> Clear timezone
@@ -104,6 +99,7 @@
 								value={zone}
 								onSelect={() => {
 									value = zone;
+									closeAndFocusTrigger();
 								}}
 							>
 								{formatTimezone(zone)}

@@ -4803,6 +4803,7 @@ components:
           type: string
       required:
         - enableIncidentManagement
+        - timezone
       type: object
     PaginatedResponseBodyActivityRecord:
       additionalProperties: false
@@ -7756,13 +7757,45 @@ components:
     UserSessionPreferences:
       additionalProperties: false
       properties:
+        defaultTeamId:
+          description: Current member team ID; null means no default team.
+          type:
+            - string
+            - "null"
         notifications:
           $ref: "#/components/schemas/UserSessionNotificationPreferences"
         profile:
           $ref: "#/components/schemas/UserSessionPreferencesProfile"
+        reducedMotion:
+          enum:
+            - system
+            - reduce
+            - full
+          type: string
+        theme:
+          enum:
+            - system
+            - light
+            - dark
+          type: string
+        timeFormat:
+          enum:
+            - 12h
+            - 24h
+          type: string
+        timezone:
+          description: IANA timezone; null follows the browser timezone.
+          type:
+            - string
+            - "null"
       required:
         - profile
         - notifications
+        - theme
+        - timezone
+        - timeFormat
+        - reducedMotion
+        - defaultTeamId
       type: object
     UserSessionPreferencesProfile:
       additionalProperties: false
@@ -7771,12 +7804,9 @@ components:
           type: string
         name:
           type: string
-        timezone:
-          type: string
       required:
         - name
         - email
-        - timezone
       type: object
     VideoConference:
       additionalProperties: false

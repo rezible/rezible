@@ -2155,7 +2155,7 @@ export type OrganizationAttributes = {
 
 export type OrganizationPreferences = {
     enableIncidentManagement: boolean;
-    timezone?: string;
+    timezone: string;
 };
 
 export type PaginatedResponseBodyActivityRecord = {
@@ -3553,14 +3553,24 @@ export type UserSessionNotificationPreferences = {
 };
 
 export type UserSessionPreferences = {
+    /**
+     * Current member team ID; null means no default team.
+     */
+    defaultTeamId: string | null;
     notifications: UserSessionNotificationPreferences;
     profile: UserSessionPreferencesProfile;
+    reducedMotion: 'system' | 'reduce' | 'full';
+    theme: 'system' | 'light' | 'dark';
+    timeFormat: '12h' | '24h';
+    /**
+     * IANA timezone; null follows the browser timezone.
+     */
+    timezone: string | null;
 };
 
 export type UserSessionPreferencesProfile = {
     email: string;
     name: string;
-    timezone: string;
 };
 
 export type VideoConference = {

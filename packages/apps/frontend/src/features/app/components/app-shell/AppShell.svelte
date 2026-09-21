@@ -35,11 +35,9 @@
 			<AppSidebar variant="sidebar" />
 		{/if}
 		<main class="flex h-dvh min-h-0 min-w-0 flex-1 flex-col overflow-hidden antialiased">
-			{#if sess.isSetup}
+			{#if sess.isSetup && !!pageDescriptor}
 				<div class="bg-card flex h-14 w-full items-center justify-between border-b px-4">
-					{#if pageDescriptor}
-						<PageHeader {pageDescriptor} {featureRailActive} />
-					{/if}
+					<PageHeader {pageDescriptor} {featureRailActive} />
 				</div>
 			{/if}
 

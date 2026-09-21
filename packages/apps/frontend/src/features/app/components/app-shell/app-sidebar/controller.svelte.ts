@@ -1,5 +1,6 @@
 import { Context } from "runed";
 import { page } from "$app/state";
+import { afterNavigate } from "$app/navigation";
 import { useSidebar } from "$components/ui/sidebar";
 import { useUserSessionState } from "$lib/user-session.svelte";
 import {
@@ -74,6 +75,12 @@ const defaultSidebarModel: AppSidebarModel = {
 
 class AppSidebarController {
 	private shell = useAppShell();
+
+	constructor() {
+		afterNavigate(() => {
+			this.sidebarState.setOpenMobile(false)
+		});
+	}
 
 	private session = useUserSessionState();
 	preloadHome = $derived<"tap" | "hover">(this.session.error ? "tap" : "hover");

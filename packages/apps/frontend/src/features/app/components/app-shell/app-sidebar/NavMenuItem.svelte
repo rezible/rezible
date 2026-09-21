@@ -21,7 +21,12 @@
 	<Sidebar.MenuItem>
 		<Sidebar.MenuButton {isActive} tooltipContent={item.label}>
 			{#snippet child({ props })}
-				<a href={resolve(item.href as any)} {...props} aria-label={item.label}>
+				<a
+					href={resolve(item.href as any)}
+					{...props}
+					aria-label={item.label}
+					aria-current={isActive ? "page" : undefined}
+				>
 					{#if !!item.icon && typeof item.icon === "function"}
 						<item.icon />
 					{/if}

@@ -14,7 +14,10 @@
 
 	registerPageDescriptor(() => ({
 		title: "Members",
-		parents: [{ label: "Settings", path: resolve("/settings") }],
+		parents: [
+			{ label: "Settings", path: resolve("/settings") },
+			{ label: "Organization", path: resolve("/settings/organization") },
+		],
 	}));
 </script>
 

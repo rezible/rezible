@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"cmp"
 	"context"
 	"net/http"
 
@@ -35,7 +36,7 @@ type (
 
 	OrganizationPreferences struct {
 		EnableIncidentManagement bool   `json:"enableIncidentManagement"`
-		Timezone                 string `json:"timezone,omitempty"`
+		Timezone                 string `json:"timezone"`
 	}
 )
 
@@ -57,7 +58,7 @@ func OrganizationPreferencesFromEnt(prefs *ent.OrganizationPreferences) Organiza
 	}
 	return OrganizationPreferences{
 		EnableIncidentManagement: prefs.EnableIncidentManagement,
-		Timezone:                 prefs.Timezone,
+		Timezone:                 cmp.Or(prefs.Timezone, "UTC"),
 	}
 }
 

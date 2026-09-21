@@ -2,6 +2,7 @@ package v1
 
 import (
 	"context"
+	"maps"
 	"net/http"
 	"time"
 
@@ -54,12 +55,16 @@ type (
 	UserSessionPreferences struct {
 		Profile       UserSessionPreferencesProfile      `json:"profile"`
 		Notifications UserSessionNotificationPreferences `json:"notifications"`
+		Theme         string                             `json:"theme" enum:"system,light,dark"`
+		Timezone      *string                            `json:"timezone" doc:"IANA timezone; null follows the browser timezone."`
+		TimeFormat    string                             `json:"timeFormat" enum:"12h,24h"`
+		ReducedMotion string                             `json:"reducedMotion" enum:"system,reduce,full"`
+		DefaultTeamId *uuid.UUID                         `json:"defaultTeamId" nullable:"true" doc:"Current member team ID; null means no default team."`
 	}
 
 	UserSessionPreferencesProfile struct {
-		Name     string `json:"name"`
-		Email    string `json:"email"`
-		Timezone string `json:"timezone"`
+		Name  string `json:"name"`
+		Email string `json:"email"`
 	}
 
 	UserSessionNotificationPreferences struct {
@@ -93,27 +98,31 @@ type (
 )
 
 func UserSessionPreferencesFromEnt(user *ent.User) UserSessionPreferences {
+	return UserSessionPreferences{
+		Profile: UserSessionPreferencesProfile{
+			Name:  user.Name,
+			Email: user.Email,
+		},
+		Notifications: UserSessionNotificationPreferencesFromEnt(user.NotificationPreferences),
+		Timezone:      &user.Timezone,
+	}
+}
+
+func UserSessionNotificationPreferencesFromEnt(userPrefs map[string]bool) UserSessionNotificationPreferences {
 	notifications := map[string]bool{
 		"incidentUpdates":         true,
 		"incidentRoleAssignments": true,
 		"agentRunResults":         true,
 		"integrationSyncFailures": true,
 	}
-	for key, value := range user.NotificationPreferences {
-		notifications[key] = value
+	if userPrefs != nil {
+		maps.Copy(userPrefs, notifications)
 	}
-	return UserSessionPreferences{
-		Profile: UserSessionPreferencesProfile{
-			Name:     user.Name,
-			Email:    user.Email,
-			Timezone: user.Timezone,
-		},
-		Notifications: UserSessionNotificationPreferences{
-			IncidentUpdates:         notifications["incidentUpdates"],
-			IncidentRoleAssignments: notifications["incidentRoleAssignments"],
-			AgentRunResults:         notifications["agentRunResults"],
-			IntegrationSyncFailures: notifications["integrationSyncFailures"],
-		},
+	return UserSessionNotificationPreferences{
+		IncidentUpdates:         notifications["incidentUpdates"],
+		IncidentRoleAssignments: notifications["incidentRoleAssignments"],
+		AgentRunResults:         notifications["agentRunResults"],
+		IntegrationSyncFailures: notifications["integrationSyncFailures"],
 	}
 }
 

@@ -38,6 +38,7 @@ documents: (start "documents")
 
 [doc("Verify workspace setup")]
 @verify-workspace:
+    just infra-up postgres dex
     bun --no-env-file scripts/database.ts verify
     just _dex-client wait
 

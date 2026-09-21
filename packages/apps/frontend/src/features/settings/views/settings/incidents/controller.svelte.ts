@@ -23,24 +23,24 @@ import {
 import { useUserSessionState } from "$lib/user-session.svelte";
 import { useIntegrationsController } from "$features/settings/lib/integrationsController.svelte";
 import { createMutation, createQuery, useQueryClient } from "@tanstack/svelte-query";
-import { Context } from "runed";
+import { Context, watch } from "runed";
+import { toast } from "svelte-sonner";
+import { SettingsDraft, SettingsDraftList } from "$features/settings/lib/settings-draft.svelte";
 import { SvelteMap } from "svelte/reactivity";
-
-type MetadataKind = "severities" | "types" | "roles" | "tags" | "fields";
 
 export class IncidentSettingsController {
 	session = useUserSessionState();
 	integrations = useIntegrationsController();
 	private queryClient = useQueryClient();
 
-	private metadataQuery = createQuery(() => getIncidentMetadataOptions({ query: { archived: true } }));
+	metadataQuery = createQuery(() => getIncidentMetadataOptions({ query: { archived: true } }));
 	private metadata = $derived(this.metadataQuery.data?.data);
 
-	severities = $derived(this.metadata?.severities ?? []);
-	types = $derived(this.metadata?.types ?? []);
-	roles = $derived(this.metadata?.roles ?? []);
-	tags = $derived(this.metadata?.tags ?? []);
-	fields = $derived(this.metadata?.fields ?? []);
+	severities = new SettingsDraftList<IncidentSeverity>();
+	types = new SettingsDraftList<IncidentType>();
+	roles = new SettingsDraftList<IncidentRole>();
+	tags = new SettingsDraftList<IncidentTag>();
+	fields = new SettingsDraftList<IncidentField>();
 
 	loading = $derived(this.metadataQuery.isPending);
 	error = $derived(this.metadataQuery.error as ErrorModel | null);
@@ -57,21 +57,55 @@ export class IncidentSettingsController {
 		Boolean(this.session.orgPreferences?.enableIncidentManagement) || this.incidentIntegrationInstalled
 	);
 
-	newSeverity = $state({ name: "", rank: 1, color: "#ef4444", description: "" });
-	newType = $state("");
-	newRole = $state({ name: "", required: false });
-	newTag = $state("");
-	newField = $state({ name: "", options: "" });
+	newSeverity = new SettingsDraft({ name: "", rank: 1, color: "#ef4444", description: "" });
+	newType = new SettingsDraft("");
+	newRole = new SettingsDraft({ name: "", required: false });
+	newTag = new SettingsDraft("");
+	newField = new SettingsDraft({ name: "", options: "" });
 	fieldOptionTextEdits = new SvelteMap<string, string>();
 
 	private async invalidateMetadata() {
 		await this.queryClient.invalidateQueries({ queryKey: getIncidentMetadataQueryKey() });
 	}
 
-	private mutationOptions() {
+	constructor() {
+		watch(
+			() => this.metadata,
+			(metadata) => {
+				if (!metadata) return;
+				this.severities.receive(metadata.severities);
+				this.types.receive(metadata.types);
+				this.roles.receive(metadata.roles);
+				this.tags.receive(metadata.tags);
+				this.fields.receive(metadata.fields);
+			}
+		);
+	}
+
+	dirty = $derived(
+		this.severities.dirty ||
+			this.types.dirty ||
+			this.roles.dirty ||
+			this.tags.dirty ||
+			this.fields.dirty ||
+			this.fieldOptionTextEdits.size > 0 ||
+			this.newSeverity.dirty ||
+			this.newType.dirty ||
+			this.newRole.dirty ||
+			this.newTag.dirty ||
+			this.newField.dirty
+	);
+
+	private mutationOptions<T extends { id: string }>(
+		forms: SettingsDraftList<T>,
+		onSaved?: (item: T) => void
+	) {
 		return {
-			onSuccess: async () => {
+			onSuccess: async ({ data }: { data: T }) => {
 				this.saveError = undefined;
+				forms.accept(data);
+				onSaved?.(data);
+				toast.success("Settings saved.");
 				await this.invalidateMetadata();
 			},
 			onError: (err: ErrorModel) => {
@@ -84,6 +118,7 @@ export class IncidentSettingsController {
 		...updateOrganizationPreferencesMutation(),
 		onSuccess: async () => {
 			this.saveError = undefined;
+			toast.success("Settings saved.");
 			await this.queryClient.invalidateQueries({ queryKey: getUserSessionOptions().queryKey });
 			this.session.refetch();
 		},
@@ -94,43 +129,60 @@ export class IncidentSettingsController {
 
 	private createSeverityMut = createMutation(() => ({
 		...createIncidentSeverityMutation(),
-		...this.mutationOptions(),
+		...this.mutationOptions(this.severities, () => {
+			this.newSeverity.accept({
+				name: "",
+				rank: this.newSeverity.value.rank + 1,
+				color: "#ef4444",
+				description: "",
+			});
+		}),
 	}));
 	private updateSeverityMut = createMutation(() => ({
 		...updateIncidentSeverityMutation(),
-		...this.mutationOptions(),
+		...this.mutationOptions(this.severities),
 	}));
 	private createTypeMut = createMutation(() => ({
 		...createIncidentTypeMutation(),
-		...this.mutationOptions(),
+		...this.mutationOptions(this.types, () => {
+			this.newType.accept("");
+		}),
 	}));
 	private updateTypeMut = createMutation(() => ({
 		...updateIncidentTypeMutation(),
-		...this.mutationOptions(),
+		...this.mutationOptions(this.types),
 	}));
 	private createRoleMut = createMutation(() => ({
 		...createIncidentRoleMutation(),
-		...this.mutationOptions(),
+		...this.mutationOptions(this.roles, () => {
+			this.newRole.accept({ name: "", required: false });
+		}),
 	}));
 	private updateRoleMut = createMutation(() => ({
 		...updateIncidentRoleMutation(),
-		...this.mutationOptions(),
+		...this.mutationOptions(this.roles),
 	}));
 	private createTagMut = createMutation(() => ({
 		...createIncidentTagMutation(),
-		...this.mutationOptions(),
+		...this.mutationOptions(this.tags, () => {
+			this.newTag.accept("");
+		}),
 	}));
 	private updateTagMut = createMutation(() => ({
 		...updateIncidentTagMutation(),
-		...this.mutationOptions(),
+		...this.mutationOptions(this.tags),
 	}));
 	private createFieldMut = createMutation(() => ({
 		...createIncidentFieldMutation(),
-		...this.mutationOptions(),
+		...this.mutationOptions(this.fields, () => {
+			this.newField.accept({ name: "", options: "" });
+		}),
 	}));
 	private updateFieldMut = createMutation(() => ({
 		...updateIncidentFieldMutation(),
-		...this.mutationOptions(),
+		...this.mutationOptions(this.fields, (item) => {
+			this.fieldOptionTextEdits.delete(item.id);
+		}),
 	}));
 
 	saving = $derived(
@@ -157,15 +209,14 @@ export class IncidentSettingsController {
 	}
 
 	createSeverity() {
-		if (!this.canEdit || !this.newSeverity.name.trim()) return;
+		if (this.saving || !this.canEdit || !this.newSeverity.value.name.trim()) return;
 		this.createSeverityMut.mutate({
-			body: { attributes: { ...this.newSeverity, name: this.newSeverity.name.trim() } },
+			body: { attributes: { ...this.newSeverity.value, name: this.newSeverity.value.name.trim() } },
 		});
-		this.newSeverity = { name: "", rank: this.newSeverity.rank + 1, color: "#ef4444", description: "" };
 	}
 
 	updateSeverity(item: IncidentSeverity) {
-		if (!this.canEdit) return;
+		if (this.saving || !this.canEdit) return;
 		this.updateSeverityMut.mutate({
 			path: { id: item.id },
 			body: { attributes: { ...item.attributes } },
@@ -173,13 +224,12 @@ export class IncidentSettingsController {
 	}
 
 	createType() {
-		if (!this.canEdit || !this.newType.trim()) return;
-		this.createTypeMut.mutate({ body: { attributes: { name: this.newType.trim() } } });
-		this.newType = "";
+		if (this.saving || !this.canEdit || !this.newType.value.trim()) return;
+		this.createTypeMut.mutate({ body: { attributes: { name: this.newType.value.trim() } } });
 	}
 
 	updateType(item: IncidentType) {
-		if (!this.canEdit) return;
+		if (this.saving || !this.canEdit) return;
 		this.updateTypeMut.mutate({
 			path: { id: item.id },
 			body: { attributes: { name: item.attributes.name, archived: item.attributes.archived } },
@@ -187,15 +237,16 @@ export class IncidentSettingsController {
 	}
 
 	createRole() {
-		if (!this.canEdit || !this.newRole.name.trim()) return;
+		if (this.saving || !this.canEdit || !this.newRole.value.name.trim()) return;
 		this.createRoleMut.mutate({
-			body: { attributes: { name: this.newRole.name.trim(), required: this.newRole.required } },
+			body: {
+				attributes: { name: this.newRole.value.name.trim(), required: this.newRole.value.required },
+			},
 		});
-		this.newRole = { name: "", required: false };
 	}
 
 	updateRole(item: IncidentRole) {
-		if (!this.canEdit) return;
+		if (this.saving || !this.canEdit) return;
 		this.updateRoleMut.mutate({
 			path: { id: item.id },
 			body: {
@@ -209,13 +260,12 @@ export class IncidentSettingsController {
 	}
 
 	createTag() {
-		if (!this.canEdit || !this.newTag.trim()) return;
-		this.createTagMut.mutate({ body: { attributes: { value: this.newTag.trim() } } });
-		this.newTag = "";
+		if (this.saving || !this.canEdit || !this.newTag.value.trim()) return;
+		this.createTagMut.mutate({ body: { attributes: { value: this.newTag.value.trim() } } });
 	}
 
 	updateTag(item: IncidentTag) {
-		if (!this.canEdit) return;
+		if (this.saving || !this.canEdit) return;
 		this.updateTagMut.mutate({
 			path: { id: item.id },
 			body: { attributes: { value: item.attributes.value, archived: item.attributes.archived } },
@@ -237,26 +287,35 @@ export class IncidentSettingsController {
 	}
 
 	setFieldOptionsText(id: string, value: string) {
-		this.fieldOptionTextEdits.set(id, value);
+		const savedText = this.fields
+			.get(id)
+			.value.attributes.options.map((option) => option.attributes.value)
+			.join(", ");
+		if (value === savedText) this.fieldOptionTextEdits.delete(id);
+		else this.fieldOptionTextEdits.set(id, value);
 	}
 
+	cancelField = (id: string) => {
+		this.fields.get(id).cancel();
+		this.fieldOptionTextEdits.delete(id);
+	};
+
 	createField() {
-		const options = this.fieldOptionsFromText(this.newField.options);
-		if (!this.canEdit || !this.newField.name.trim() || options.length === 0) return;
+		const options = this.fieldOptionsFromText(this.newField.value.options);
+		if (this.saving || !this.canEdit || !this.newField.value.name.trim() || options.length === 0) return;
 		this.createFieldMut.mutate({
 			body: {
 				attributes: {
-					name: this.newField.name.trim(),
+					name: this.newField.value.name.trim(),
 					required: false,
 					options: options.map((value) => ({ fieldOptionType: "custom", value })),
 				},
 			},
 		});
-		this.newField = { name: "", options: "" };
 	}
 
 	updateField(item: IncidentField, optionsText: string) {
-		if (!this.canEdit) return;
+		if (this.saving || !this.canEdit) return;
 		const optionValues = this.fieldOptionsFromText(optionsText);
 		this.updateFieldMut.mutate({
 			path: { id: item.id },

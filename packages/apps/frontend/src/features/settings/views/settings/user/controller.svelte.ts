@@ -56,7 +56,7 @@ export class UserSettingsController {
 				if (!preferences) return;
 				this.name = preferences.profile.name;
 				this.email = preferences.profile.email;
-				this.timezone = preferences.profile.timezone;
+				this.timezone = preferences.timezone || "UTC";
 				this.notifications = { ...defaultNotifications, ...preferences.notifications };
 			}
 		);

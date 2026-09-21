@@ -47,9 +47,11 @@
 		</Sidebar.Menu>
 
 		{#if controller.showSearch}
+			{@const placeholder = controller.model.search?.placeholder}
 			<Sidebar.Input
 				bind:value={controller.searchQuery}
-				placeholder={controller.model?.search?.placeholder}
+				{placeholder}
+				aria-label={placeholder}
 			/>
 		{/if}
 	</Sidebar.Header>

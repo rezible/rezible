@@ -95,6 +95,7 @@ export class IntegrationsController {
 		}
 		return grouped;
 	});
+	installedCapabilities = $derived(new Set(this.installed.flatMap(intg => intg.attributes.capabilities)));
 
 	refetchInstalled() {
 		this.listInstalledQuery.refetch();

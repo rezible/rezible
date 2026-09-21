@@ -19,13 +19,16 @@
 
 		{#if onDismiss}
 			<Alert.Action>
-				<Button size="icon-sm" variant="ghost" onclick={onDismiss}><RiCloseLine /></Button>
+				<Button size="icon-sm" variant="ghost" aria-label="Dismiss error" onclick={onDismiss}>
+					<RiCloseLine />
+				</Button>
 			</Alert.Action>
 		{/if}
 
 		{#if dismissable}
 			<Alert.Action>
 				<Button
+					aria-label="Dismiss error"
 					size="icon-sm"
 					variant="ghost"
 					onclick={() => {
