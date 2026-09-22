@@ -10,7 +10,8 @@ import (
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/ent/knowledgeentity"
+	kne "github.com/rezible/rezible/ent/knowledgeentity"
+	knr "github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/schema/schematypes"
 )
 
@@ -27,7 +28,7 @@ type KnowledgeGraphHandler interface {
 	ListKnowledgeGraphEvidence(context.Context, *ListKnowledgeGraphEvidenceRequest) (*ListKnowledgeGraphEvidenceResponse, error)
 	GetKnowledgeGraphEvidence(context.Context, *GetKnowledgeGraphEvidenceRequest) (*GetKnowledgeGraphEvidenceResponse, error)
 
-	GetKnowledgeGraphView(context.Context, *GetKnowledgeGraphViewRequest) (*GetKnowledgeGraphViewResponse, error)
+	GetKnowledgeGraphStructure(context.Context, *GetKnowledgeGraphStructureRequest) (*GetKnowledgeGraphStructureResponse, error)
 }
 
 func (o operations) RegisterKnowledgeGraph(api huma.API) {
@@ -43,12 +44,7 @@ func (o operations) RegisterKnowledgeGraph(api huma.API) {
 	huma.Register(api, ListKnowledgeGraphEvidence, o.ListKnowledgeGraphEvidence)
 	huma.Register(api, GetKnowledgeGraphEvidence, o.GetKnowledgeGraphEvidence)
 
-	// TODO: remove once new querying is done
-	huma.Register(api, GetKnowledgeGraphView, o.GetKnowledgeGraphView)
-}
-
-func (o operations) RegisterKnowledgeGraphEnums(api huma.API) {
-	registerEnumAlias[knowledgeentity.Category, knowledgeEntityCategorySchema](api)
+	huma.Register(api, GetKnowledgeGraphStructure, o.GetKnowledgeGraphStructure)
 }
 
 type (
@@ -57,7 +53,7 @@ type (
 		Attributes KnowledgeGraphEntityAttributes `json:"attributes"`
 	}
 	KnowledgeGraphEntityAttributes struct {
-		Category    knowledgeentity.Category     `json:"category"`
+		Category    kne.Category                 `json:"category"`
 		Kind        string                       `json:"kind"`
 		Aliases     []KnowledgeGraphSubjectAlias `json:"aliases"`
 		LatestState *KnowledgeGraphSubjectState  `json:"latestState,omitempty"`
@@ -108,19 +104,45 @@ type (
 		Properties  map[string]any `json:"properties"`
 	}
 
-	// TODO: remove once new querying is done
-	KnowledgeGraphView struct {
-		RootId        uuid.UUID                    `json:"rootId"`
-		Entities      []KnowledgeGraphEntity       `json:"entities"`
-		Relationships []KnowledgeGraphRelationship `json:"relationships"`
-		Truncated     bool                         `json:"truncated"`
+	KnowledgeGraphStructure struct {
+		Entities      []KnowledgeGraphStructureEntity       `json:"entities"`
+		Relationships []KnowledgeGraphStructureRelationship `json:"relationships"`
+	}
+
+	KnowledgeGraphStructureEntity struct {
+		ID       uuid.UUID    `json:"id"`
+		Category kne.Category `json:"category"`
+		Kind     string       `json:"kind"`
+	}
+
+	KnowledgeGraphStructureEntityContainment struct {
+		ParentID uuid.UUID `json:"parentId"`
+		ChildID  uuid.UUID `json:"childId"`
+	}
+
+	KnowledgeGraphStructureRelationship struct {
+		ID        uuid.UUID     `json:"id"`
+		SourceID  uuid.UUID     `json:"sourceId"`
+		TargetID  uuid.UUID     `json:"targetId"`
+		Predicate knr.Predicate `json:"predicate"`
 	}
 )
 
-type knowledgeEntityCategorySchema knowledgeentity.Category
+func (o operations) RegisterKnowledgeGraphEnums(api huma.API) {
+	registerEnumAlias[kne.Category, knowledgeEntityCategorySchema](api)
+	registerEnumAlias[knr.Predicate, knowledgeRelationshipPredicateSchema](api)
+}
+
+type knowledgeEntityCategorySchema kne.Category
 
 func (knowledgeEntityCategorySchema) Schema(huma.Registry) *huma.Schema {
-	return makeEnumStringSchema(knowledgeentity.CategoryValues)
+	return makeEnumStringSchema(kne.CategoryValues)
+}
+
+type knowledgeRelationshipPredicateSchema knr.Predicate
+
+func (knowledgeRelationshipPredicateSchema) Schema(huma.Registry) *huma.Schema {
+	return makeEnumStringSchema(knr.PredicateValues)
 }
 
 func KnowledgeGraphEntityFromEnt(e *ent.KnowledgeEntity) KnowledgeGraphEntity {
@@ -189,6 +211,32 @@ func KnowledgeGraphSubjectStateFromEnt(s schematypes.KnowledgeGraphSubjectState)
 		DisplayName: s.DisplayName,
 		Description: s.Description,
 		Properties:  s.Properties,
+	}
+}
+
+func KnowledgeGraphStructureFromRez(s *rez.KnowledgeGraphStructure) KnowledgeGraphStructure {
+	entities := make([]KnowledgeGraphStructureEntity, len(s.Entities))
+	for i, e := range s.Entities {
+		entities[i] = KnowledgeGraphStructureEntity{
+			ID:       e.ID,
+			Category: e.Category,
+			Kind:     e.Kind,
+		}
+	}
+
+	relationships := make([]KnowledgeGraphStructureRelationship, len(s.Relationships))
+	for i, r := range s.Relationships {
+		relationships[i] = KnowledgeGraphStructureRelationship{
+			ID:        r.ID,
+			SourceID:  r.SourceID,
+			TargetID:  r.TargetID,
+			Predicate: r.Predicate,
+		}
+	}
+
+	return KnowledgeGraphStructure{
+		Entities:      entities,
+		Relationships: relationships,
 	}
 }
 
@@ -310,19 +358,15 @@ var GetKnowledgeGraphEvidence = huma.Operation{
 type GetKnowledgeGraphEvidenceRequest IdRequest
 type GetKnowledgeGraphEvidenceResponse ItemResponse[KnowledgeGraphEvidence]
 
-// TODO: remove once new querying is done
-var GetKnowledgeGraphView = huma.Operation{
-	OperationID: "get-knowledge-graph-view",
+var GetKnowledgeGraphStructure = huma.Operation{
+	OperationID: "get-knowledge-graph-structure",
 	Method:      http.MethodGet,
-	Path:        "/knowledge/graph/view",
-	Summary:     "Get Knowledge Graph View",
+	Path:        "/knowledge/graph",
+	Summary:     "Get Knowledge Graph Structure",
 	Tags:        knowledgeTags,
 	Errors:      ErrorCodes(),
 }
 
-type GetKnowledgeGraphViewRequest struct {
-	EntityId              uuid.UUID `query:"entityId" required:"false"`
-	Depth                 int       `query:"depth" default:"1" minimum:"1" maximum:"4" required:"false"`
-	RelationshipPredicate []string  `query:"relationshipPredicate" required:"false"`
+type GetKnowledgeGraphStructureRequest struct {
 }
-type GetKnowledgeGraphViewResponse ItemResponse[KnowledgeGraphView]
+type GetKnowledgeGraphStructureResponse ItemResponse[KnowledgeGraphStructure]

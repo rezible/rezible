@@ -39,15 +39,15 @@
 				{#each view.displayEntities as entity (entity.id)}
 					<Table.Row class={cn(view.selectedId === entity.id && "bg-selection")}>
 						<Table.Cell>
-							<Button variant="link" onclick={() => view.selectEntity(entity)}>
-								{makeEntityLabel(entity)}
+							<Button variant="link" onclick={() => view.selectEntity(entity.id)}>
+								{entity.kind}
 							</Button>
 						</Table.Cell>
-						<Table.Cell>{entity.attributes.kind.replaceAll("_", " ")}</Table.Cell>
+						<Table.Cell>{entity.kind.replaceAll("_", " ")}</Table.Cell>
 						<Table.Cell>
 							{view.connectionCount(entity.id)}
 						</Table.Cell>
-						<Table.Cell>{formatUpdatedAt(entity.attributes.updatedAt)}</Table.Cell>
+						<Table.Cell></Table.Cell>
 					</Table.Row>
 				{/each}
 			</Table.Body>
@@ -67,22 +67,22 @@
 				</Table.Row>
 			</Table.Header>
 			<Table.Body>
-				{#each view.displayRelationships as relationship (relationship.id)}
+				{#each view.displayRelationships as rel (rel.id)}
 					<Table.Row
-						class={cn(view.inspectedRelationship?.id === relationship.id && "bg-selection")}
+						class={cn(view.inspectedRelationship?.id === rel.id && "bg-selection")}
 					>
 						<Table.Cell>
-							{view.entityLabel(relationship.attributes.sourceEntityId)}
+							{view.entityLabel(rel.sourceId)}
 						</Table.Cell>
 						<Table.Cell>
-							<Button variant="link" onclick={() => view.selectRelationship(relationship)}>
-								{relationship.attributes.predicate.replaceAll("_", " ")}
+							<Button variant="link" onclick={() => {}}>
+								{rel.predicate.replaceAll("_", " ")}
 							</Button>
 						</Table.Cell>
 						<Table.Cell>
-							{view.entityLabel(relationship.attributes.targetEntityId)}
+							{view.entityLabel(rel.targetId)}
 						</Table.Cell>
-						<Table.Cell>{formatUpdatedAt(relationship.attributes.updatedAt)}</Table.Cell>
+						<Table.Cell>{"todo"}</Table.Cell>
 					</Table.Row>
 				{/each}
 			</Table.Body>

@@ -123,14 +123,8 @@ type InvestigationReport func(*sql.Selector)
 // KnowledgeEntity is the predicate function for knowledgeentity builders.
 type KnowledgeEntity func(*sql.Selector)
 
-// KnowledgeEntityAncestry is the predicate function for knowledgeentityancestry builders.
-type KnowledgeEntityAncestry func(*sql.Selector)
-
 // KnowledgeEntityLinkingAttribute is the predicate function for knowledgeentitylinkingattribute builders.
 type KnowledgeEntityLinkingAttribute func(*sql.Selector)
-
-// KnowledgeEntityRepresentation is the predicate function for knowledgeentityrepresentation builders.
-type KnowledgeEntityRepresentation func(*sql.Selector)
 
 // KnowledgeEvidence is the predicate function for knowledgeevidence builders.
 type KnowledgeEvidence func(*sql.Selector)

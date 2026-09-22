@@ -1,9 +1,12 @@
 import {
-	getKnowledgeGraphViewOptions,
+	getKnowledgeGraphStructureOptions,
+	type KnowledgeGraphStructureEntity,
+	type KnowledgeGraphStructureRelationship,
 	getKnowledgeGraphEntityOptions,
 	listKnowledgeGraphEntitiesOptions,
 	type KnowledgeGraphEntity,
 	type KnowledgeGraphRelationship,
+	type KnowledgeGraphStructure,
 } from "$lib/api";
 import { createQuery } from "@tanstack/svelte-query";
 import { MarkerType, type XYPosition } from "@xyflow/svelte";
@@ -44,8 +47,8 @@ export function makeEntityLabel({ attributes }: KnowledgeGraphEntity) {
 }
 
 export class SystemMapViewController {
-	private entities = new SvelteMap<string, KnowledgeGraphEntity>();
-	private relationships = new SvelteMap<string, KnowledgeGraphRelationship>();
+	private entities = new SvelteMap<string, KnowledgeGraphStructureEntity>();
+	private relationships = new SvelteMap<string, KnowledgeGraphStructureRelationship>();
 	private positions = new SvelteMap<string, XYPosition>();
 
 	diagram: SystemDiagramController;
@@ -81,24 +84,19 @@ export class SystemMapViewController {
 	searching = $derived(this.searchQuery.query.isLoading || this.searchQuery.query.isFetching);
 	searchError = $derived(this.searchQuery.query.error);
 
-	private viewQuery = createQuery(() =>
-		getKnowledgeGraphViewOptions({
-			query: {
-				depth: this.params.depth,
-				entityId: this.focusId || undefined,
-			},
-		})
+	private structureQuery = createQuery(() =>
+		getKnowledgeGraphStructureOptions({})
 	);
-	loading = $derived(this.viewQuery.isLoading || this.viewQuery.isFetching);
-	error = $derived(this.viewQuery.error);
-	truncated = $derived(this.viewQuery.data?.data?.truncated ?? false);
+	loading = $derived(this.structureQuery.isLoading || this.structureQuery.isFetching);
+	error = $derived(this.structureQuery.error);
+	truncated = $derived(false);
 	hasGraph = $derived(this.entities.size > 0);
 
 	/** Entity kinds present in the loaded neighborhood, for the subject-type filter. */
 	availableKinds = $derived.by(() => {
 		const kinds = new SvelteSet<string>();
 		for (const entity of this.entities.values()) {
-			kinds.add(entity.attributes.kind);
+			kinds.add(entity.kind);
 		}
 		return [...kinds].sort();
 	});
@@ -106,8 +104,8 @@ export class SystemMapViewController {
 	/** Relationship predicates present in the loaded neighborhood, for the relationship filter. */
 	availablePredicates = $derived.by(() => {
 		const predicates = new SvelteSet<string>();
-		for (const relationship of this.relationships.values()) {
-			predicates.add(relationship.attributes.predicate);
+		for (const rel of this.relationships.values()) {
+			predicates.add(rel.predicate);
 		}
 		return [...predicates].sort();
 	});
@@ -117,7 +115,7 @@ export class SystemMapViewController {
 		if (this.kindFilter === "") {
 			return entities;
 		}
-		return entities.filter((entity) => entity.attributes.kind === this.kindFilter);
+		return entities.filter((entity) => entity.kind === this.kindFilter);
 	});
 
 	displayRelationships = $derived.by(() => {
@@ -126,11 +124,11 @@ export class SystemMapViewController {
 			const visible = new SvelteSet(this.displayEntities.map((entity) => entity.id));
 			relationships = relationships.filter(
 				(rel) =>
-					visible.has(rel.attributes.sourceEntityId) && visible.has(rel.attributes.targetEntityId)
+					visible.has(rel.sourceId) && visible.has(rel.targetId)
 			);
 		}
 		if (this.predicateFilter !== "") {
-			relationships = relationships.filter((rel) => rel.attributes.predicate === this.predicateFilter);
+			relationships = relationships.filter((rel) => rel.predicate === this.predicateFilter);
 		}
 		return relationships;
 	});
@@ -154,15 +152,14 @@ export class SystemMapViewController {
 		if (!this.selectedEntity || this.selectedEntity.kind !== "entity") {
 			return [];
 		}
-		const byPredicate = new SvelteMap<string, KnowledgeGraphRelationship[]>();
+		const byPredicate = new SvelteMap<string, KnowledgeGraphStructureRelationship[]>();
 		for (const rel of this.relationships.values()) {
-			const { sourceEntityId, targetEntityId, predicate } = rel.attributes;
-			if (sourceEntityId !== this.selectedEntity.entity.id && targetEntityId !== this.selectedEntity.entity.id) {
+			if (rel.sourceId !== this.selectedEntity.entity.id && rel.targetId !== this.selectedEntity.entity.id) {
 				continue;
 			}
-			const entries = byPredicate.get(predicate) ?? [];
+			const entries = byPredicate.get(rel.predicate) ?? [];
 			entries.push(rel);
-			byPredicate.set(predicate, entries);
+			byPredicate.set(rel.predicate, entries);
 		}
 		return [...byPredicate.entries()].sort(([a], [b]) => a.localeCompare(b));
 	});
@@ -207,9 +204,9 @@ export class SystemMapViewController {
 			}
 		);
 		watch(
-			() => [this.viewQuery.data?.data, this.viewQuery.dataUpdatedAt] as const,
-			([view]) => {
-				if (view) this.mergeView(view.entities, view.relationships);
+			() => [this.structureQuery.data?.data, this.structureQuery.dataUpdatedAt] as const,
+			([structure]) => {
+				if (structure) this.mergeView(structure);
 			}
 		);
 		watch(
@@ -246,43 +243,43 @@ export class SystemMapViewController {
 		this.params.predicate = "";
 	}
 
-	focus(entity: KnowledgeGraphEntity) {
-		this.entities.set(entity.id, entity);
-		this.params.update({ focus: entity.id, selected: entity.id });
+	focus(entityId: string) {
+		// this.entities.set(entity.id, entity);
+		// this.params.update({ focus: entity.id, selected: entity.id });
 		this.searchOpen = false;
 		this.search = "";
 	}
 
 	expand(entity: KnowledgeGraphEntity) {
-		this.focus(entity);
+		// this.focus(entity);
 	}
 
-	selectEntity(entity: KnowledgeGraphEntity) {
+	selectEntity(entityId: string) {
 		this.inspectionTrigger =
 			document.activeElement instanceof HTMLElement ? document.activeElement : undefined;
 		this.inspectedRelationship = undefined;
-		this.params.selected = entity.id;
-	}
-
-	private selectDiagram(selection: GraphSelection, trigger?: HTMLElement) {
-		if (selection.nodeId) {
-			const entity = this.entities.get(selection.nodeId);
-			if (entity) this.selectEntity(entity);
-		} else if (selection.edgeId) {
-			const relationship = this.relationships.get(selection.edgeId);
-			if (relationship) this.selectRelationship(relationship);
-		} else {
-			this.clearSelection();
-		}
-		if (trigger) {
-			this.inspectionTrigger = trigger;
-		}
+		this.params.selected = entityId;
 	}
 
 	selectRelationship(relationship: KnowledgeGraphRelationship) {
 		this.inspectionTrigger =
 			document.activeElement instanceof HTMLElement ? document.activeElement : undefined;
 		this.inspectedRelationship = relationship;
+	}
+
+	private selectDiagram(selection: GraphSelection, trigger?: HTMLElement) {
+		if (selection.nodeId) {
+			const entity = this.entities.get(selection.nodeId);
+			if (entity) this.selectEntity(entity.id);
+		} else if (selection.edgeId) {
+			const relationship = this.relationships.get(selection.edgeId);
+			// if (relationship) this.selectRelationship(relationship);
+		} else {
+			this.clearSelection();
+		}
+		if (trigger) {
+			this.inspectionTrigger = trigger;
+		}
 	}
 
 	clearSelection() {
@@ -316,14 +313,13 @@ export class SystemMapViewController {
 	}
 
 	entityLabel(id: string) {
-		const entity = this.entities.get(id);
-		return entity ? makeEntityLabel(entity) : "Unknown subject";
+		return this.entities.get(id)?.kind || "Unknown subject";
 	}
 
 	connectionCount(id: string) {
 		let count = 0;
 		for (const rel of this.relationships.values()) {
-			if (rel.attributes.sourceEntityId === id || rel.attributes.targetEntityId === id) {
+			if (rel.sourceId === id || rel.targetId === id) {
 				count++;
 			}
 		}
@@ -338,17 +334,17 @@ export class SystemMapViewController {
 		this.positions.clear();
 		this.framedFocus = undefined;
 		this.rebuildGraph();
-		void this.viewQuery.refetch();
+		void this.structureQuery.refetch();
 	}
 
-	retry = () => this.viewQuery.refetch();
+	retry = () => this.structureQuery.refetch();
 	retrySearch = () => this.searchQuery.query.refetch();
 
 	closeSearch() {
 		this.searchOpen = false;
 	}
 
-	private mergeView(entities: KnowledgeGraphEntity[], relationships: KnowledgeGraphRelationship[]) {
+	private mergeView({entities, relationships}: KnowledgeGraphStructure) {
 		for (const entity of entities) {
 			if (this.entities.size >= maxEntities && !this.entities.has(entity.id)) {
 				break;
@@ -359,8 +355,7 @@ export class SystemMapViewController {
 			if (this.relationships.size >= maxRelationships && !this.relationships.has(rel.id)) {
 				break;
 			}
-			const { sourceEntityId, targetEntityId } = rel.attributes;
-			if (this.entities.has(sourceEntityId) && this.entities.has(targetEntityId)) {
+			if (this.entities.has(rel.sourceId) && this.entities.has(rel.targetId)) {
 				this.relationships.set(rel.id, rel);
 			}
 		}
@@ -374,21 +369,20 @@ export class SystemMapViewController {
 		if (rootId && this.entities.has(rootId)) distances.set(rootId, 0);
 		for (let pass = 0; pass < 4; pass++) {
 			for (const rel of this.relationships.values()) {
-				const { sourceEntityId: source, targetEntityId: target } = rel.attributes;
-				const sourceDistance = distances.get(source);
-				const targetDistance = distances.get(target);
+				const sourceDistance = distances.get(rel.sourceId);
+				const targetDistance = distances.get(rel.targetId);
 				if (sourceDistance !== undefined && targetDistance === undefined) {
-					distances.set(target, sourceDistance + 1);
+					distances.set(rel.targetId, sourceDistance + 1);
 				}
 				if (targetDistance !== undefined && sourceDistance === undefined) {
-					distances.set(source, targetDistance + 1);
+					distances.set(rel.sourceId, targetDistance + 1);
 				}
 			}
 		}
 
 		// Preserve positions of already-placed entities so progressive loads
 		// never move the neighborhood the user is looking at.
-		const byLayer = new SvelteMap<number, KnowledgeGraphEntity[]>();
+		const byLayer = new SvelteMap<number, KnowledgeGraphStructureEntity[]>();
 		for (const entity of this.entities.values()) {
 			if (this.positions.has(entity.id)) {
 				continue;
@@ -400,7 +394,7 @@ export class SystemMapViewController {
 		}
 
 		for (const [layer, entities] of [...byLayer.entries()].sort(([a], [b]) => a - b)) {
-			entities.sort((a, b) => makeEntityLabel(a).localeCompare(makeEntityLabel(b)));
+			entities.sort((a, b) => a.kind.localeCompare(b.kind));
 			const height = (entities.length - 1) * 120;
 			entities.forEach((entity, index) => {
 				this.positions.set(entity.id, {
@@ -417,29 +411,28 @@ export class SystemMapViewController {
 			if (!position) {
 				continue;
 			}
-			nodes.push({
-				id: entity.id,
-				type: "entity",
-				position,
-				data: { entity },
-			});
+			// nodes.push({
+			// 	id: entity.id,
+			// 	type: "entity",
+			// 	position,
+			// 	data: { entity },
+			// });
 		}
 		const edges: SystemDiagramEdge[] = [];
-		for (const relationship of this.displayRelationships) {
-			const { id, attributes: attrs } = relationship;
-			if (!displayIds.has(attrs.sourceEntityId) || !displayIds.has(attrs.targetEntityId)) {
+		for (const rel of this.displayRelationships) {
+			if (!displayIds.has(rel.sourceId) || !displayIds.has(rel.targetId)) {
 				continue;
 			}
-			const label = attrs.latestState?.displayName || attrs.predicate.replaceAll("_", " ");
-			edges.push({
-				id,
-				type: "relationship",
-				source: attrs.sourceEntityId,
-				target: attrs.targetEntityId,
-				label,
-				data: { relationship },
-				markerEnd: MarkerType.ArrowClosed,
-			});
+			const label = rel.predicate.replaceAll("_", " ");
+			// edges.push({
+			// 	id: rel.id,
+			// 	type: "relationship",
+			// 	source: rel.sourceId,
+			// 	target: rel.targetId,
+			// 	label,
+			// 	data: { relationship: rel },
+			// 	markerEnd: MarkerType.ArrowClosed,
+			// });
 		}
 		this.diagram.setGraph(nodes, edges);
 	}

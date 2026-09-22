@@ -14,7 +14,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/knowledgeentity"
-	"github.com/rezible/rezible/ent/knowledgeentityancestry"
 	"github.com/rezible/rezible/ent/knowledgeentitylinkingattribute"
 	"github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/knowledgesubjectalias"
@@ -115,21 +114,6 @@ func (_u *KnowledgeEntityUpdate) AddTargetRelationships(v ...*KnowledgeRelations
 	return _u.AddTargetRelationshipIDs(ids...)
 }
 
-// AddAncestryLinkIDs adds the "ancestry_links" edge to the KnowledgeEntityAncestry entity by IDs.
-func (_u *KnowledgeEntityUpdate) AddAncestryLinkIDs(ids ...uuid.UUID) *KnowledgeEntityUpdate {
-	_u.mutation.AddAncestryLinkIDs(ids...)
-	return _u
-}
-
-// AddAncestryLinks adds the "ancestry_links" edges to the KnowledgeEntityAncestry entity.
-func (_u *KnowledgeEntityUpdate) AddAncestryLinks(v ...*KnowledgeEntityAncestry) *KnowledgeEntityUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddAncestryLinkIDs(ids...)
-}
-
 // Mutation returns the KnowledgeEntityMutation object of the builder.
 func (_u *KnowledgeEntityUpdate) Mutation() *KnowledgeEntityMutation {
 	return _u.mutation
@@ -217,27 +201,6 @@ func (_u *KnowledgeEntityUpdate) RemoveTargetRelationships(v ...*KnowledgeRelati
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveTargetRelationshipIDs(ids...)
-}
-
-// ClearAncestryLinks clears all "ancestry_links" edges to the KnowledgeEntityAncestry entity.
-func (_u *KnowledgeEntityUpdate) ClearAncestryLinks() *KnowledgeEntityUpdate {
-	_u.mutation.ClearAncestryLinks()
-	return _u
-}
-
-// RemoveAncestryLinkIDs removes the "ancestry_links" edge to KnowledgeEntityAncestry entities by IDs.
-func (_u *KnowledgeEntityUpdate) RemoveAncestryLinkIDs(ids ...uuid.UUID) *KnowledgeEntityUpdate {
-	_u.mutation.RemoveAncestryLinkIDs(ids...)
-	return _u
-}
-
-// RemoveAncestryLinks removes "ancestry_links" edges to KnowledgeEntityAncestry entities.
-func (_u *KnowledgeEntityUpdate) RemoveAncestryLinks(v ...*KnowledgeEntityAncestry) *KnowledgeEntityUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveAncestryLinkIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -506,54 +469,6 @@ func (_u *KnowledgeEntityUpdate) sqlSave(ctx context.Context) (_node int, err er
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if _u.mutation.AncestryLinksCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   knowledgeentity.AncestryLinksTable,
-			Columns: []string{knowledgeentity.AncestryLinksColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(knowledgeentityancestry.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.KnowledgeEntityAncestry
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedAncestryLinksIDs(); len(nodes) > 0 && !_u.mutation.AncestryLinksCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   knowledgeentity.AncestryLinksTable,
-			Columns: []string{knowledgeentity.AncestryLinksColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(knowledgeentityancestry.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.KnowledgeEntityAncestry
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.AncestryLinksIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   knowledgeentity.AncestryLinksTable,
-			Columns: []string{knowledgeentity.AncestryLinksColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(knowledgeentityancestry.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.KnowledgeEntityAncestry
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	_spec.Node.Schema = _u.schemaConfig.KnowledgeEntity
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
 	_spec.AddModifiers(_u.modifiers...)
@@ -658,21 +573,6 @@ func (_u *KnowledgeEntityUpdateOne) AddTargetRelationships(v ...*KnowledgeRelati
 	return _u.AddTargetRelationshipIDs(ids...)
 }
 
-// AddAncestryLinkIDs adds the "ancestry_links" edge to the KnowledgeEntityAncestry entity by IDs.
-func (_u *KnowledgeEntityUpdateOne) AddAncestryLinkIDs(ids ...uuid.UUID) *KnowledgeEntityUpdateOne {
-	_u.mutation.AddAncestryLinkIDs(ids...)
-	return _u
-}
-
-// AddAncestryLinks adds the "ancestry_links" edges to the KnowledgeEntityAncestry entity.
-func (_u *KnowledgeEntityUpdateOne) AddAncestryLinks(v ...*KnowledgeEntityAncestry) *KnowledgeEntityUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddAncestryLinkIDs(ids...)
-}
-
 // Mutation returns the KnowledgeEntityMutation object of the builder.
 func (_u *KnowledgeEntityUpdateOne) Mutation() *KnowledgeEntityMutation {
 	return _u.mutation
@@ -760,27 +660,6 @@ func (_u *KnowledgeEntityUpdateOne) RemoveTargetRelationships(v ...*KnowledgeRel
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveTargetRelationshipIDs(ids...)
-}
-
-// ClearAncestryLinks clears all "ancestry_links" edges to the KnowledgeEntityAncestry entity.
-func (_u *KnowledgeEntityUpdateOne) ClearAncestryLinks() *KnowledgeEntityUpdateOne {
-	_u.mutation.ClearAncestryLinks()
-	return _u
-}
-
-// RemoveAncestryLinkIDs removes the "ancestry_links" edge to KnowledgeEntityAncestry entities by IDs.
-func (_u *KnowledgeEntityUpdateOne) RemoveAncestryLinkIDs(ids ...uuid.UUID) *KnowledgeEntityUpdateOne {
-	_u.mutation.RemoveAncestryLinkIDs(ids...)
-	return _u
-}
-
-// RemoveAncestryLinks removes "ancestry_links" edges to KnowledgeEntityAncestry entities.
-func (_u *KnowledgeEntityUpdateOne) RemoveAncestryLinks(v ...*KnowledgeEntityAncestry) *KnowledgeEntityUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveAncestryLinkIDs(ids...)
 }
 
 // Where appends a list predicates to the KnowledgeEntityUpdate builder.
@@ -1074,54 +953,6 @@ func (_u *KnowledgeEntityUpdateOne) sqlSave(ctx context.Context) (_node *Knowled
 			},
 		}
 		edge.Schema = _u.schemaConfig.KnowledgeRelationship
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.AncestryLinksCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   knowledgeentity.AncestryLinksTable,
-			Columns: []string{knowledgeentity.AncestryLinksColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(knowledgeentityancestry.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.KnowledgeEntityAncestry
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedAncestryLinksIDs(); len(nodes) > 0 && !_u.mutation.AncestryLinksCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   knowledgeentity.AncestryLinksTable,
-			Columns: []string{knowledgeentity.AncestryLinksColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(knowledgeentityancestry.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.KnowledgeEntityAncestry
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.AncestryLinksIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   knowledgeentity.AncestryLinksTable,
-			Columns: []string{knowledgeentity.AncestryLinksColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(knowledgeentityancestry.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.KnowledgeEntityAncestry
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

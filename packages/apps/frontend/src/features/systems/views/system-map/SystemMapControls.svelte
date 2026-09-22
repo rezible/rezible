@@ -45,7 +45,7 @@
 						{:else}
 							<Command.Group heading="Knowledge entities">
 								{#each view.searchResults as entity (entity.id)}
-									<Command.Item value={entity.id} onclick={() => view.focus(entity)}>
+									<Command.Item value={entity.id} onclick={() => view.focus(entity.id)}>
 										<div class="min-w-0">
 											<div class="truncate text-sm font-medium">
 												{entity.attributes.latestState?.displayName ||

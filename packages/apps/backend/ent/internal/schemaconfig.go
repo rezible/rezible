@@ -56,9 +56,7 @@ type SchemaConfig struct {
 	InvestigationHypothesis                   string // InvestigationHypothesis table.
 	InvestigationReport                       string // InvestigationReport table.
 	KnowledgeEntity                           string // KnowledgeEntity table.
-	KnowledgeEntityAncestry                   string // KnowledgeEntityAncestry table.
 	KnowledgeEntityLinkingAttribute           string // KnowledgeEntityLinkingAttribute table.
-	KnowledgeEntityRepresentation             string // KnowledgeEntityRepresentation table.
 	KnowledgeEvidence                         string // KnowledgeEvidence table.
 	KnowledgeRelationship                     string // KnowledgeRelationship table.
 	KnowledgeSubjectAlias                     string // KnowledgeSubjectAlias table.

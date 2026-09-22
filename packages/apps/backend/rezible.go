@@ -236,75 +236,44 @@ type (
 		ListEvidence(context.Context, ListKnowledgeEvidenceParams) (*ent.ListResult[ent.KnowledgeEvidence], error)
 		GetEvidence(context.Context, uuid.UUID) (*ent.KnowledgeEvidence, error)
 
-		KnowledgeGraphSliceQueryService
+		GetGraphStructureSnapshot(context.Context) (*KnowledgeGraphStructure, error)
 	}
 
-	QueryKnowledgeGraphParams struct {
-		DetailLevel KnowledgeGraphDetailLevel
-		EntityIDs   []uuid.UUID
-
-		Cursor *string
-		Limit  int
+	KnowledgeGraphStructure struct {
+		Entities      []KnowledgeGraphStructureEntity
+		Relationships []KnowledgeGraphStructureRelationship
 	}
 
-	KnowledgeGraphEntitiesPage struct {
-		Entities  []KnowledgeGraphViewEntity
-		Ancestors []KnowledgeGraphViewEntity
-
-		TotalCount int
-		NextCursor *string
-	}
-
-	KnowledgeGraphViewEntity struct {
+	KnowledgeGraphStructureEntity struct {
 		ID       uuid.UUID
-		Name     string
 		Category kne.Category
-
-		ParentIDs []uuid.UUID
-
-		AncestorCount   int64
-		DescendantCount int64
+		Kind     string
 	}
 
-	KnowledgeGraphConnectionsPage struct {
-		Connections []KnowledgeGraphConnection
-
-		NextCursor *string
-	}
-
-	KnowledgeGraphConnection struct {
-		Key               KnowledgeGraphConnectionKey
-		RelationshipCount int
-	}
-
-	KnowledgeGraphConnectionKey struct {
-		SourceRepresentativeID uuid.UUID
-		TargetRepresentativeID uuid.UUID
-		Predicate              knr.Predicate
-	}
-
-	KnowledgeGraphSliceQueryService interface {
-		QueryEntities(context.Context, QueryKnowledgeGraphParams) (*KnowledgeGraphEntitiesPage, error)
-		QueryConnections(context.Context, QueryKnowledgeGraphParams) (*KnowledgeGraphConnectionsPage, error)
+	KnowledgeGraphStructureRelationship struct {
+		ID        uuid.UUID
+		SourceID  uuid.UUID
+		TargetID  uuid.UUID
+		Predicate knr.Predicate
 	}
 )
 
-type KnowledgeGraphDetailLevel int
+type KnowledgeGraphStructureLevel int
 
 const (
-	KnowledgeGraphDetailLevelLandscape      KnowledgeGraphDetailLevel = 0
-	KnowledgeGraphDetailLevelSystems        KnowledgeGraphDetailLevel = 1
-	KnowledgeGraphDetailLevelRuntime        KnowledgeGraphDetailLevel = 2
-	KnowledgeGraphDetailLevelImplementation KnowledgeGraphDetailLevel = 3
+	KnowledgeGraphStructureLevelLandscape      KnowledgeGraphStructureLevel = 0
+	KnowledgeGraphStructureLevelSystems        KnowledgeGraphStructureLevel = 1
+	KnowledgeGraphStructureLevelRuntime        KnowledgeGraphStructureLevel = 2
+	KnowledgeGraphStructureLevelImplementation KnowledgeGraphStructureLevel = 3
 )
 
-var KnowledgeGraphDetailLevels = map[kne.Category]KnowledgeGraphDetailLevel{
-	kne.CategorySystemFunction: KnowledgeGraphDetailLevelLandscape,
-	kne.CategorySystem:         KnowledgeGraphDetailLevelSystems,
-	kne.CategoryContainer:      KnowledgeGraphDetailLevelRuntime,
-	kne.CategoryInfrastructure: KnowledgeGraphDetailLevelRuntime,
-	kne.CategoryComponent:      KnowledgeGraphDetailLevelImplementation,
-	kne.CategoryCode:           KnowledgeGraphDetailLevelImplementation,
+var KnowledgeGraphCategoryStructureLevels = map[kne.Category]KnowledgeGraphStructureLevel{
+	kne.CategorySystemFunction: KnowledgeGraphStructureLevelLandscape,
+	kne.CategorySystem:         KnowledgeGraphStructureLevelSystems,
+	kne.CategoryContainer:      KnowledgeGraphStructureLevelRuntime,
+	kne.CategoryInfrastructure: KnowledgeGraphStructureLevelRuntime,
+	kne.CategoryComponent:      KnowledgeGraphStructureLevelImplementation,
+	kne.CategoryCode:           KnowledgeGraphStructureLevelImplementation,
 }
 
 type (

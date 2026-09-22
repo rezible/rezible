@@ -37,8 +37,6 @@ const (
 	EdgeSourceRelationships = "source_relationships"
 	// EdgeTargetRelationships holds the string denoting the target_relationships edge name in mutations.
 	EdgeTargetRelationships = "target_relationships"
-	// EdgeAncestryLinks holds the string denoting the ancestry_links edge name in mutations.
-	EdgeAncestryLinks = "ancestry_links"
 	// Table holds the table name of the knowledgeentity in the database.
 	Table = "knowledge_entities"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -76,13 +74,6 @@ const (
 	TargetRelationshipsInverseTable = "knowledge_relationships"
 	// TargetRelationshipsColumn is the table column denoting the target_relationships relation/edge.
 	TargetRelationshipsColumn = "target_entity_id"
-	// AncestryLinksTable is the table that holds the ancestry_links relation/edge.
-	AncestryLinksTable = "knowledge_entity_ancestries"
-	// AncestryLinksInverseTable is the table name for the KnowledgeEntityAncestry entity.
-	// It exists in this package in order to avoid circular dependency with the "knowledgeentityancestry" package.
-	AncestryLinksInverseTable = "knowledge_entity_ancestries"
-	// AncestryLinksColumn is the table column denoting the ancestry_links relation/edge.
-	AncestryLinksColumn = "descendant_id"
 )
 
 // Columns holds all SQL columns for knowledgeentity fields.
@@ -253,20 +244,6 @@ func ByTargetRelationships(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOpti
 		sqlgraph.OrderByNeighborTerms(s, newTargetRelationshipsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
-
-// ByAncestryLinksCount orders the results by ancestry_links count.
-func ByAncestryLinksCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newAncestryLinksStep(), opts...)
-	}
-}
-
-// ByAncestryLinks orders the results by ancestry_links terms.
-func ByAncestryLinks(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newAncestryLinksStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
 func newTenantStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -300,13 +277,6 @@ func newTargetRelationshipsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(TargetRelationshipsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, true, TargetRelationshipsTable, TargetRelationshipsColumn),
-	)
-}
-func newAncestryLinksStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(AncestryLinksInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, AncestryLinksTable, AncestryLinksColumn),
 	)
 }
 

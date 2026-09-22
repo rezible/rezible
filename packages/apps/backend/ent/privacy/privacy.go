@@ -1035,30 +1035,6 @@ func (f KnowledgeEntityMutationRuleFunc) EvalMutation(ctx context.Context, m ent
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.KnowledgeEntityMutation", m)
 }
 
-// The KnowledgeEntityAncestryQueryRuleFunc type is an adapter to allow the use of ordinary
-// functions as a query rule.
-type KnowledgeEntityAncestryQueryRuleFunc func(context.Context, *ent.KnowledgeEntityAncestryQuery) error
-
-// EvalQuery return f(ctx, q).
-func (f KnowledgeEntityAncestryQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.KnowledgeEntityAncestryQuery); ok {
-		return f(ctx, q)
-	}
-	return Denyf("ent/privacy: unexpected query type %T, expect *ent.KnowledgeEntityAncestryQuery", q)
-}
-
-// The KnowledgeEntityAncestryMutationRuleFunc type is an adapter to allow the use of ordinary
-// functions as a mutation rule.
-type KnowledgeEntityAncestryMutationRuleFunc func(context.Context, *ent.KnowledgeEntityAncestryMutation) error
-
-// EvalMutation calls f(ctx, m).
-func (f KnowledgeEntityAncestryMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
-	if m, ok := m.(*ent.KnowledgeEntityAncestryMutation); ok {
-		return f(ctx, m)
-	}
-	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.KnowledgeEntityAncestryMutation", m)
-}
-
 // The KnowledgeEntityLinkingAttributeQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
 type KnowledgeEntityLinkingAttributeQueryRuleFunc func(context.Context, *ent.KnowledgeEntityLinkingAttributeQuery) error
@@ -1081,30 +1057,6 @@ func (f KnowledgeEntityLinkingAttributeMutationRuleFunc) EvalMutation(ctx contex
 		return f(ctx, m)
 	}
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.KnowledgeEntityLinkingAttributeMutation", m)
-}
-
-// The KnowledgeEntityRepresentationQueryRuleFunc type is an adapter to allow the use of ordinary
-// functions as a query rule.
-type KnowledgeEntityRepresentationQueryRuleFunc func(context.Context, *ent.KnowledgeEntityRepresentationQuery) error
-
-// EvalQuery return f(ctx, q).
-func (f KnowledgeEntityRepresentationQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.KnowledgeEntityRepresentationQuery); ok {
-		return f(ctx, q)
-	}
-	return Denyf("ent/privacy: unexpected query type %T, expect *ent.KnowledgeEntityRepresentationQuery", q)
-}
-
-// The KnowledgeEntityRepresentationMutationRuleFunc type is an adapter to allow the use of ordinary
-// functions as a mutation rule.
-type KnowledgeEntityRepresentationMutationRuleFunc func(context.Context, *ent.KnowledgeEntityRepresentationMutation) error
-
-// EvalMutation calls f(ctx, m).
-func (f KnowledgeEntityRepresentationMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
-	if m, ok := m.(*ent.KnowledgeEntityRepresentationMutation); ok {
-		return f(ctx, m)
-	}
-	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.KnowledgeEntityRepresentationMutation", m)
 }
 
 // The KnowledgeEvidenceQueryRuleFunc type is an adapter to allow the use of ordinary
@@ -2204,11 +2156,7 @@ func queryFilter(q ent.Query) (Filter, error) {
 		return q.Filter(), nil
 	case *ent.KnowledgeEntityQuery:
 		return q.Filter(), nil
-	case *ent.KnowledgeEntityAncestryQuery:
-		return q.Filter(), nil
 	case *ent.KnowledgeEntityLinkingAttributeQuery:
-		return q.Filter(), nil
-	case *ent.KnowledgeEntityRepresentationQuery:
 		return q.Filter(), nil
 	case *ent.KnowledgeEvidenceQuery:
 		return q.Filter(), nil
@@ -2375,11 +2323,7 @@ func mutationFilter(m ent.Mutation) (Filter, error) {
 		return m.Filter(), nil
 	case *ent.KnowledgeEntityMutation:
 		return m.Filter(), nil
-	case *ent.KnowledgeEntityAncestryMutation:
-		return m.Filter(), nil
 	case *ent.KnowledgeEntityLinkingAttributeMutation:
-		return m.Filter(), nil
-	case *ent.KnowledgeEntityRepresentationMutation:
 		return m.Filter(), nil
 	case *ent.KnowledgeEvidenceMutation:
 		return m.Filter(), nil

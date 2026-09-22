@@ -2811,6 +2811,21 @@ components:
       required:
         - data
       type: object
+    GetKnowledgeGraphStructureResponseBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/GetKnowledgeGraphStructureResponseBody.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          $ref: "#/components/schemas/KnowledgeGraphStructure"
+      required:
+        - data
+      type: object
     GetKnowledgeGraphSubjectAliasResponseBody:
       additionalProperties: false
       properties:
@@ -2823,21 +2838,6 @@ components:
           type: string
         data:
           $ref: "#/components/schemas/KnowledgeGraphSubjectAlias"
-      required:
-        - data
-      type: object
-    GetKnowledgeGraphViewResponseBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/GetKnowledgeGraphViewResponseBody.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          $ref: "#/components/schemas/KnowledgeGraphView"
       required:
         - data
       type: object
@@ -4125,8 +4125,8 @@ components:
             - actor
             - system
             - container
-            - component
             - infrastructure
+            - component
             - code
             - process
             - concern
@@ -4230,6 +4230,94 @@ components:
         - createdAt
         - updatedAt
       type: object
+    KnowledgeGraphStructure:
+      additionalProperties: false
+      properties:
+        entities:
+          items:
+            $ref: "#/components/schemas/KnowledgeGraphStructureEntity"
+          type: array
+        relationships:
+          items:
+            $ref: "#/components/schemas/KnowledgeGraphStructureRelationship"
+          type: array
+      required:
+        - entities
+        - relationships
+      type: object
+    KnowledgeGraphStructureEntity:
+      additionalProperties: false
+      properties:
+        category:
+          enum:
+            - system_function
+            - actor
+            - system
+            - container
+            - infrastructure
+            - component
+            - code
+            - process
+            - concern
+            - decision
+            - event
+            - signal
+          type: string
+        id:
+          type: string
+        kind:
+          type: string
+      required:
+        - id
+        - category
+        - kind
+      type: object
+    KnowledgeGraphStructureRelationship:
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+        predicate:
+          enum:
+            - contains
+            - interacts_with
+            - calls
+            - reads_from
+            - writes_to
+            - publishes_to
+            - consumes_from
+            - depends_on
+            - runs_on
+            - owns
+            - supports
+            - participates_in
+            - member_of
+            - controls
+            - observes
+            - influences
+            - constrains
+            - addresses
+            - impacts
+            - touches
+            - uses
+            - processes
+            - indexes
+            - stores
+            - indicates
+            - classified_as
+            - responds_to
+            - mitigates
+          type: string
+        sourceId:
+          type: string
+        targetId:
+          type: string
+      required:
+        - id
+        - sourceId
+        - targetId
+        - predicate
+      type: object
     KnowledgeGraphSubjectAlias:
       additionalProperties: false
       properties:
@@ -4269,27 +4357,6 @@ components:
         - displayName
         - description
         - properties
-      type: object
-    KnowledgeGraphView:
-      additionalProperties: false
-      properties:
-        entities:
-          items:
-            $ref: "#/components/schemas/KnowledgeGraphEntity"
-          type: array
-        relationships:
-          items:
-            $ref: "#/components/schemas/KnowledgeGraphRelationship"
-          type: array
-        rootId:
-          type: string
-        truncated:
-          type: boolean
-      required:
-        - rootId
-        - entities
-        - relationships
-        - truncated
       type: object
     LinkIncidentSituationRequestBody:
       additionalProperties: false
@@ -14142,37 +14209,15 @@ paths:
       summary: Get Knowledge Graph Evidence
       tags:
         - Knowledge Graph
-  /knowledge/graph/view:
+  /knowledge/graph:
     get:
-      operationId: get-knowledge-graph-view
-      parameters:
-        - explode: false
-          in: query
-          name: entityId
-          schema:
-            type: string
-        - explode: false
-          in: query
-          name: depth
-          schema:
-            default: 1
-            format: int64
-            maximum: 4
-            minimum: 1
-            type: integer
-        - explode: false
-          in: query
-          name: relationshipPredicate
-          schema:
-            items:
-              type: string
-            type: array
+      operationId: get-knowledge-graph-structure
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/GetKnowledgeGraphViewResponseBody"
+                $ref: "#/components/schemas/GetKnowledgeGraphStructureResponseBody"
           description: OK
         "400":
           content:
@@ -14210,7 +14255,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
-      summary: Get Knowledge Graph View
+      summary: Get Knowledge Graph Structure
       tags:
         - Knowledge Graph
   /knowledge/relationships:

@@ -90,12 +90,8 @@ type Tx struct {
 	InvestigationReport *InvestigationReportClient
 	// KnowledgeEntity is the client for interacting with the KnowledgeEntity builders.
 	KnowledgeEntity *KnowledgeEntityClient
-	// KnowledgeEntityAncestry is the client for interacting with the KnowledgeEntityAncestry builders.
-	KnowledgeEntityAncestry *KnowledgeEntityAncestryClient
 	// KnowledgeEntityLinkingAttribute is the client for interacting with the KnowledgeEntityLinkingAttribute builders.
 	KnowledgeEntityLinkingAttribute *KnowledgeEntityLinkingAttributeClient
-	// KnowledgeEntityRepresentation is the client for interacting with the KnowledgeEntityRepresentation builders.
-	KnowledgeEntityRepresentation *KnowledgeEntityRepresentationClient
 	// KnowledgeEvidence is the client for interacting with the KnowledgeEvidence builders.
 	KnowledgeEvidence *KnowledgeEvidenceClient
 	// KnowledgeRelationship is the client for interacting with the KnowledgeRelationship builders.
@@ -348,9 +344,7 @@ func (tx *Tx) init() {
 	tx.InvestigationHypothesis = NewInvestigationHypothesisClient(tx.config)
 	tx.InvestigationReport = NewInvestigationReportClient(tx.config)
 	tx.KnowledgeEntity = NewKnowledgeEntityClient(tx.config)
-	tx.KnowledgeEntityAncestry = NewKnowledgeEntityAncestryClient(tx.config)
 	tx.KnowledgeEntityLinkingAttribute = NewKnowledgeEntityLinkingAttributeClient(tx.config)
-	tx.KnowledgeEntityRepresentation = NewKnowledgeEntityRepresentationClient(tx.config)
 	tx.KnowledgeEvidence = NewKnowledgeEvidenceClient(tx.config)
 	tx.KnowledgeRelationship = NewKnowledgeRelationshipClient(tx.config)
 	tx.KnowledgeSubjectAlias = NewKnowledgeSubjectAliasClient(tx.config)

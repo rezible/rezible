@@ -46,9 +46,7 @@ import (
 	"github.com/rezible/rezible/ent/investigationhypothesis"
 	"github.com/rezible/rezible/ent/investigationreport"
 	"github.com/rezible/rezible/ent/knowledgeentity"
-	"github.com/rezible/rezible/ent/knowledgeentityancestry"
 	"github.com/rezible/rezible/ent/knowledgeentitylinkingattribute"
-	"github.com/rezible/rezible/ent/knowledgeentityrepresentation"
 	"github.com/rezible/rezible/ent/knowledgeevidence"
 	"github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/knowledgesubjectalias"
@@ -1096,22 +1094,6 @@ func init() {
 	knowledgeentityDescID := knowledgeentityFields[0].Descriptor()
 	// knowledgeentity.DefaultID holds the default value on creation for the id field.
 	knowledgeentity.DefaultID = knowledgeentityDescID.Default.(func() uuid.UUID)
-	knowledgeentityancestryMixin := schema.KnowledgeEntityAncestry{}.Mixin()
-	knowledgeentityancestry.Policy = privacy.NewPolicies(knowledgeentityancestryMixin[0], knowledgeentityancestryMixin[1], schema.KnowledgeEntityAncestry{})
-	knowledgeentityancestry.Hooks[0] = func(next ent.Mutator) ent.Mutator {
-		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-			if err := knowledgeentityancestry.Policy.EvalMutation(ctx, m); err != nil {
-				return nil, err
-			}
-			return next.Mutate(ctx, m)
-		})
-	}
-	knowledgeentityancestryFields := schema.KnowledgeEntityAncestry{}.Fields()
-	_ = knowledgeentityancestryFields
-	// knowledgeentityancestryDescID is the schema descriptor for id field.
-	knowledgeentityancestryDescID := knowledgeentityancestryFields[0].Descriptor()
-	// knowledgeentityancestry.DefaultID holds the default value on creation for the id field.
-	knowledgeentityancestry.DefaultID = knowledgeentityancestryDescID.Default.(func() uuid.UUID)
 	knowledgeentitylinkingattributeMixin := schema.KnowledgeEntityLinkingAttribute{}.Mixin()
 	knowledgeentitylinkingattribute.Policy = privacy.NewPolicies(knowledgeentitylinkingattributeMixin[0], knowledgeentitylinkingattributeMixin[1], schema.KnowledgeEntityLinkingAttribute{})
 	knowledgeentitylinkingattribute.Hooks[0] = func(next ent.Mutator) ent.Mutator {
@@ -1136,36 +1118,6 @@ func init() {
 	knowledgeentitylinkingattributeDescID := knowledgeentitylinkingattributeFields[0].Descriptor()
 	// knowledgeentitylinkingattribute.DefaultID holds the default value on creation for the id field.
 	knowledgeentitylinkingattribute.DefaultID = knowledgeentitylinkingattributeDescID.Default.(func() uuid.UUID)
-	knowledgeentityrepresentationMixin := schema.KnowledgeEntityRepresentation{}.Mixin()
-	knowledgeentityrepresentation.Policy = privacy.NewPolicies(knowledgeentityrepresentationMixin[0], knowledgeentityrepresentationMixin[1], schema.KnowledgeEntityRepresentation{})
-	knowledgeentityrepresentation.Hooks[0] = func(next ent.Mutator) ent.Mutator {
-		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-			if err := knowledgeentityrepresentation.Policy.EvalMutation(ctx, m); err != nil {
-				return nil, err
-			}
-			return next.Mutate(ctx, m)
-		})
-	}
-	knowledgeentityrepresentationFields := schema.KnowledgeEntityRepresentation{}.Fields()
-	_ = knowledgeentityrepresentationFields
-	// knowledgeentityrepresentationDescDetailLevel is the schema descriptor for detail_level field.
-	knowledgeentityrepresentationDescDetailLevel := knowledgeentityrepresentationFields[1].Descriptor()
-	// knowledgeentityrepresentation.DetailLevelValidator is a validator for the "detail_level" field. It is called by the builders before save.
-	knowledgeentityrepresentation.DetailLevelValidator = func() func(int) error {
-		validators := knowledgeentityrepresentationDescDetailLevel.Validators
-		fns := [...]func(int) error{
-			validators[0].(func(int) error),
-			validators[1].(func(int) error),
-		}
-		return func(detail_level int) error {
-			for _, fn := range fns {
-				if err := fn(detail_level); err != nil {
-					return err
-				}
-			}
-			return nil
-		}
-	}()
 	knowledgeevidenceMixin := schema.KnowledgeEvidence{}.Mixin()
 	knowledgeevidence.Policy = privacy.NewPolicies(knowledgeevidenceMixin[0], knowledgeevidenceMixin[1], schema.KnowledgeEvidence{})
 	knowledgeevidence.Hooks[0] = func(next ent.Mutator) ent.Mutator {

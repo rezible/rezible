@@ -96,85 +96,12 @@ func (KnowledgeEntity) Edges() []ent.Edge {
 			Ref("source_entity"),
 		edge.From("target_relationships", KnowledgeRelationship.Type).
 			Ref("target_entity"),
-
-		edge.From("ancestry_links", KnowledgeEntityAncestry.Type).Ref("descendant"),
 	}
 }
 
 func (KnowledgeEntity) Indexes() []ent.Index {
 	return []ent.Index{
 		index.Fields("tenant_id", "category", "kind"),
-	}
-}
-
-type KnowledgeEntityAncestry struct {
-	ent.Schema
-}
-
-func (KnowledgeEntityAncestry) Mixin() []ent.Mixin {
-	return []ent.Mixin{
-		BaseMixin{},
-		TenantMixin{},
-	}
-}
-
-func (KnowledgeEntityAncestry) Fields() []ent.Field {
-	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).Default(uuid.New),
-		field.UUID("ancestor_id", uuid.UUID{}).Immutable(),
-		field.UUID("descendant_id", uuid.UUID{}).Immutable(),
-		field.Int("depth"),
-	}
-}
-
-func (KnowledgeEntityAncestry) Edges() []ent.Edge {
-	return []ent.Edge{
-		edge.To("ancestor", KnowledgeEntity.Type).
-			Unique().Required().Immutable().Field("ancestor_id"),
-		edge.To("descendant", KnowledgeEntity.Type).
-			Unique().Required().Immutable().Field("descendant_id"),
-	}
-}
-
-func (KnowledgeEntityAncestry) Indexes() []ent.Index {
-	return []ent.Index{
-		index.Fields("tenant_id", "ancestor_id", "descendant_id").Unique(),
-		index.Fields("tenant_id", "descendant_id", "ancestor_id"),
-	}
-}
-
-type KnowledgeEntityRepresentation struct {
-	ent.Schema
-}
-
-func (KnowledgeEntityRepresentation) Mixin() []ent.Mixin {
-	return []ent.Mixin{
-		BaseMixin{},
-		TenantMixin{},
-	}
-}
-
-func (KnowledgeEntityRepresentation) Fields() []ent.Field {
-	return []ent.Field{
-		field.UUID("entity_id", uuid.UUID{}).Immutable(),
-		field.Int("detail_level").Immutable().Min(0).Max(4),
-		field.UUID("representative_id", uuid.UUID{}).Immutable(),
-	}
-}
-
-func (KnowledgeEntityRepresentation) Edges() []ent.Edge {
-	return []ent.Edge{
-		edge.To("entity", KnowledgeEntity.Type).
-			Unique().Required().Immutable().Field("entity_id"),
-		edge.To("representative", KnowledgeEntity.Type).
-			Unique().Required().Immutable().Field("representative_id"),
-	}
-}
-
-func (KnowledgeEntityRepresentation) Indexes() []ent.Index {
-	return []ent.Index{
-		index.Fields("tenant_id", "entity_id", "detail_level").Unique(),
-		index.Fields("tenant_id", "detail_level", "representative_id"),
 	}
 }
 

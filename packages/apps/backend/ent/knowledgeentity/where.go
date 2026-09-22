@@ -407,35 +407,6 @@ func HasTargetRelationshipsWith(preds ...predicate.KnowledgeRelationship) predic
 	})
 }
 
-// HasAncestryLinks applies the HasEdge predicate on the "ancestry_links" edge.
-func HasAncestryLinks() predicate.KnowledgeEntity {
-	return predicate.KnowledgeEntity(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, AncestryLinksTable, AncestryLinksColumn),
-		)
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.KnowledgeEntityAncestry
-		step.Edge.Schema = schemaConfig.KnowledgeEntityAncestry
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasAncestryLinksWith applies the HasEdge predicate on the "ancestry_links" edge with a given conditions (other predicates).
-func HasAncestryLinksWith(preds ...predicate.KnowledgeEntityAncestry) predicate.KnowledgeEntity {
-	return predicate.KnowledgeEntity(func(s *sql.Selector) {
-		step := newAncestryLinksStep()
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.KnowledgeEntityAncestry
-		step.Edge.Schema = schemaConfig.KnowledgeEntityAncestry
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.KnowledgeEntity) predicate.KnowledgeEntity {
 	return predicate.KnowledgeEntity(sql.AndPredicates(predicates...))

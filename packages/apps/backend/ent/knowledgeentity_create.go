@@ -14,7 +14,6 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/knowledgeentity"
-	"github.com/rezible/rezible/ent/knowledgeentityancestry"
 	"github.com/rezible/rezible/ent/knowledgeentitylinkingattribute"
 	"github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/knowledgesubjectalias"
@@ -152,21 +151,6 @@ func (_c *KnowledgeEntityCreate) AddTargetRelationships(v ...*KnowledgeRelations
 		ids[i] = v[i].ID
 	}
 	return _c.AddTargetRelationshipIDs(ids...)
-}
-
-// AddAncestryLinkIDs adds the "ancestry_links" edge to the KnowledgeEntityAncestry entity by IDs.
-func (_c *KnowledgeEntityCreate) AddAncestryLinkIDs(ids ...uuid.UUID) *KnowledgeEntityCreate {
-	_c.mutation.AddAncestryLinkIDs(ids...)
-	return _c
-}
-
-// AddAncestryLinks adds the "ancestry_links" edges to the KnowledgeEntityAncestry entity.
-func (_c *KnowledgeEntityCreate) AddAncestryLinks(v ...*KnowledgeEntityAncestry) *KnowledgeEntityCreate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _c.AddAncestryLinkIDs(ids...)
 }
 
 // Mutation returns the KnowledgeEntityMutation object of the builder.
@@ -394,23 +378,6 @@ func (_c *KnowledgeEntityCreate) createSpec() (*KnowledgeEntity, *sqlgraph.Creat
 			},
 		}
 		edge.Schema = _c.schemaConfig.KnowledgeRelationship
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := _c.mutation.AncestryLinksIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   knowledgeentity.AncestryLinksTable,
-			Columns: []string{knowledgeentity.AncestryLinksColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(knowledgeentityancestry.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _c.schemaConfig.KnowledgeEntityAncestry
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
