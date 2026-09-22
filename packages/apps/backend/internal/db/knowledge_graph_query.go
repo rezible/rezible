@@ -1,13 +1,7 @@
 package db
 
 import (
-	"cmp"
 	"context"
-	"crypto/sha256"
-	"encoding/base64"
-	"encoding/json"
-	"fmt"
-	"slices"
 	"strings"
 
 	"github.com/google/uuid"
@@ -124,25 +118,24 @@ func (s *KnowledgeGraphQueryService) GetEvidence(ctx context.Context, id uuid.UU
 		Only(ctx)
 }
 
-func (s *KnowledgeGraphQueryService) Query(
-	ctx context.Context,
-	query rez.KnowledgeGraphQuery,
-	params rez.KnowledgeGraphPageParams,
-) (*rez.KnowledgeGraphQueryResult, error) {
-	if params.Limit < 0 {
-		return nil, fmt.Errorf("%w: page limit cannot be negative", rez.ErrInvalidInput)
-	}
-
-	return nil, nil
+func (s *KnowledgeGraphQueryService) QueryEntities(ctx context.Context, params rez.QueryKnowledgeGraphParams) (*rez.KnowledgeGraphEntitiesPage, error) {
+	//TODO implement me
+	panic("implement me")
 }
 
-type graphQueryHashInput struct {
-	TenantID int         `json:"tenant_id"`
-	RootIDs  []uuid.UUID `json:"root_ids"`
-	Level    int         `json:"level"`
+func (s *KnowledgeGraphQueryService) QueryConnections(ctx context.Context, params rez.QueryKnowledgeGraphParams) (*rez.KnowledgeGraphConnectionsPage, error) {
+	//TODO implement me
+	panic("implement me")
 }
 
-func (hi *graphQueryHashInput) makeHash() (string, error) {
+/*
+type graphQueryLevelHashInput struct {
+	TenantID int                           `json:"tenant_id"`
+	RootIDs  []uuid.UUID                   `json:"root_ids"`
+	Level    rez.KnowledgeGraphDetailLevel `json:"level"`
+}
+
+func (hi *graphQueryLevelHashInput) makeHash() (string, error) {
 	slices.SortFunc(hi.RootIDs, func(a, b uuid.UUID) int {
 		return cmp.Compare(a.String(), b.String())
 	})
@@ -186,3 +179,5 @@ func (s *KnowledgeGraphQueryService) ListConnectionRelationships(
 ) (*ent.ListResult[ent.KnowledgeRelationship], error) {
 	return nil, nil
 }
+
+*/

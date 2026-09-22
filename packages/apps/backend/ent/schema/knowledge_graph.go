@@ -19,8 +19,8 @@ var (
 		"actor",           // Human or organizational participant; e.g. customer, on-call team.
 		"system",          // Top-level software or business system; e.g. ecommerce platform, billing system.
 		"container",       // Independently deployable or runnable unit; e.g. service, database.
-		"component",       // Internal module or in-process job within a container/system.
 		"infrastructure",  // Runtime or platform resource; e.g. Kubernetes cluster, namespace.
+		"component",       // Internal module or in-process job within a container/system.
 		"code",            // Source-code artifact; e.g. repository, package.
 		"process",         // Business or operational workflow; e.g. checkout flow, deploy process.
 		"concern",         // External force, risk, or requirement; e.g. compliance rule, latency target.
@@ -102,6 +102,77 @@ func (KnowledgeEntity) Edges() []ent.Edge {
 func (KnowledgeEntity) Indexes() []ent.Index {
 	return []ent.Index{
 		index.Fields("tenant_id", "category", "kind"),
+	}
+}
+
+type KnowledgeEntityAncestry struct {
+	ent.Schema
+}
+
+func (KnowledgeEntityAncestry) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		BaseMixin{},
+		TenantMixin{},
+	}
+}
+
+func (KnowledgeEntityAncestry) Fields() []ent.Field {
+	return []ent.Field{
+		field.UUID("id", uuid.UUID{}).Default(uuid.New),
+		field.UUID("ancestor_id", uuid.UUID{}).Immutable(),
+		field.UUID("descendant_id", uuid.UUID{}).Immutable(),
+		field.Int("depth"),
+	}
+}
+
+func (KnowledgeEntityAncestry) Edges() []ent.Edge {
+	return []ent.Edge{
+		edge.To("ancestor", KnowledgeEntity.Type).
+			Unique().Required().Field("ancestor_id"),
+		edge.To("descendant", KnowledgeEntity.Type).
+			Unique().Required().Field("descendant_id"),
+	}
+}
+
+func (KnowledgeEntityAncestry) Indexes() []ent.Index {
+	return []ent.Index{
+		index.Fields("tenant_id", "ancestor_id", "descendant_id").Unique(),
+		index.Fields("tenant_id", "descendant_id", "ancestor_id"),
+	}
+}
+
+type KnowledgeEntityRepresentation struct {
+	ent.Schema
+}
+
+func (KnowledgeEntityRepresentation) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		BaseMixin{},
+		TenantMixin{},
+	}
+}
+
+func (KnowledgeEntityRepresentation) Fields() []ent.Field {
+	return []ent.Field{
+		field.UUID("entity_id", uuid.UUID{}).Immutable(),
+		field.Int("detail_level").Immutable().Min(0).Max(4),
+		field.UUID("representative_id", uuid.UUID{}).Immutable(),
+	}
+}
+
+func (KnowledgeEntityRepresentation) Edges() []ent.Edge {
+	return []ent.Edge{
+		edge.To("entity", KnowledgeEntity.Type).
+			Unique().Required().Field("entity_id"),
+		edge.To("representative", KnowledgeEntity.Type).
+			Unique().Required().Field("representative_id"),
+	}
+}
+
+func (KnowledgeEntityRepresentation) Indexes() []ent.Index {
+	return []ent.Index{
+		index.Fields("tenant_id", "entity_id", "detail_level").Unique(),
+		index.Fields("tenant_id", "detail_level", "representative_id"),
 	}
 }
 

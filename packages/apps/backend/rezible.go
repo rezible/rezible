@@ -223,47 +223,6 @@ type (
 		Predicates []predicate.KnowledgeEvidence
 	}
 
-	KnowledgeGraphQueryRoot struct {
-		EntityIDs []uuid.UUID // eventually this lens should be parameters used to query for ids, instead of having them supplied
-	}
-
-	KnowledgeGraphQuery struct {
-		Root      KnowledgeGraphQueryRoot
-		Level     KnowledgeGraphDetailLevel
-		Timestamp time.Time
-	}
-
-	KnowledgeGraphPageCursor string
-
-	KnowledgeGraphPageParams struct {
-		Cursor KnowledgeGraphPageCursor
-		Limit  int
-	}
-
-	KnowledgeGraphQueryResult struct {
-		Entities    ent.KnowledgeEntities
-		Connections []KnowledgeGraphConnection
-
-		NextCursor KnowledgeGraphPageCursor
-	}
-
-	KnowledgeGraphConnection struct {
-		Key               KnowledgeGraphConnectionKey
-		RelationshipCount int
-	}
-
-	KnowledgeGraphConnectionKey struct {
-		SourceRepresentativeID uuid.UUID
-		TargetRepresentativeID uuid.UUID
-		Predicate              knr.Predicate
-	}
-
-	ListKnowledgeGraphConnectionRelationshipsParams struct {
-		ent.ListParams
-		Query         KnowledgeGraphQuery
-		ConnectionKey KnowledgeGraphConnectionKey
-	}
-
 	KnowledgeGraphQueryService interface {
 		ListEntities(context.Context, ListKnowledgeEntitiesParams) (*ent.ListResult[ent.KnowledgeEntity], error)
 		GetEntity(context.Context, uuid.UUID) (*ent.KnowledgeEntity, error)
@@ -277,16 +236,56 @@ type (
 		ListEvidence(context.Context, ListKnowledgeEvidenceParams) (*ent.ListResult[ent.KnowledgeEvidence], error)
 		GetEvidence(context.Context, uuid.UUID) (*ent.KnowledgeEvidence, error)
 
-		Query(
-			context.Context,
-			KnowledgeGraphQuery,
-			KnowledgeGraphPageParams,
-		) (*KnowledgeGraphQueryResult, error)
+		KnowledgeGraphSliceQueryService
+	}
 
-		ListConnectionRelationships(
-			context.Context,
-			ListKnowledgeGraphConnectionRelationshipsParams,
-		) (*ent.ListResult[ent.KnowledgeRelationship], error)
+	QueryKnowledgeGraphParams struct {
+		DetailLevel KnowledgeGraphDetailLevel
+		EntityIDs   []uuid.UUID
+
+		Cursor *string
+		Limit  int
+	}
+
+	KnowledgeGraphEntitiesPage struct {
+		Entities  []KnowledgeGraphViewEntity
+		Ancestors []KnowledgeGraphViewEntity
+
+		TotalCount int
+		NextCursor *string
+	}
+
+	KnowledgeGraphViewEntity struct {
+		ID       uuid.UUID
+		Name     string
+		Category kne.Category
+
+		ParentIDs []uuid.UUID
+
+		AncestorCount   int64
+		DescendantCount int64
+	}
+
+	KnowledgeGraphConnectionsPage struct {
+		Connections []KnowledgeGraphConnection
+
+		NextCursor *string
+	}
+
+	KnowledgeGraphConnection struct {
+		Key               KnowledgeGraphConnectionKey
+		RelationshipCount int
+	}
+
+	KnowledgeGraphConnectionKey struct {
+		SourceRepresentativeID uuid.UUID
+		TargetRepresentativeID uuid.UUID
+		Predicate              knr.Predicate
+	}
+
+	KnowledgeGraphSliceQueryService interface {
+		QueryEntities(context.Context, QueryKnowledgeGraphParams) (*KnowledgeGraphEntitiesPage, error)
+		QueryConnections(context.Context, QueryKnowledgeGraphParams) (*KnowledgeGraphConnectionsPage, error)
 	}
 )
 
