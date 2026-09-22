@@ -54,7 +54,9 @@ import (
 	"github.com/rezible/rezible/ent/investigationhypothesis"
 	"github.com/rezible/rezible/ent/investigationreport"
 	"github.com/rezible/rezible/ent/knowledgeentity"
+	"github.com/rezible/rezible/ent/knowledgeentityancestry"
 	"github.com/rezible/rezible/ent/knowledgeentitylinkingattribute"
+	"github.com/rezible/rezible/ent/knowledgeentityrepresentation"
 	"github.com/rezible/rezible/ent/knowledgeevidence"
 	"github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/knowledgesubjectalias"
@@ -183,8 +185,12 @@ type Client struct {
 	InvestigationReport *InvestigationReportClient
 	// KnowledgeEntity is the client for interacting with the KnowledgeEntity builders.
 	KnowledgeEntity *KnowledgeEntityClient
+	// KnowledgeEntityAncestry is the client for interacting with the KnowledgeEntityAncestry builders.
+	KnowledgeEntityAncestry *KnowledgeEntityAncestryClient
 	// KnowledgeEntityLinkingAttribute is the client for interacting with the KnowledgeEntityLinkingAttribute builders.
 	KnowledgeEntityLinkingAttribute *KnowledgeEntityLinkingAttributeClient
+	// KnowledgeEntityRepresentation is the client for interacting with the KnowledgeEntityRepresentation builders.
+	KnowledgeEntityRepresentation *KnowledgeEntityRepresentationClient
 	// KnowledgeEvidence is the client for interacting with the KnowledgeEvidence builders.
 	KnowledgeEvidence *KnowledgeEvidenceClient
 	// KnowledgeRelationship is the client for interacting with the KnowledgeRelationship builders.
@@ -317,7 +323,9 @@ func (c *Client) init() {
 	c.InvestigationHypothesis = NewInvestigationHypothesisClient(c.config)
 	c.InvestigationReport = NewInvestigationReportClient(c.config)
 	c.KnowledgeEntity = NewKnowledgeEntityClient(c.config)
+	c.KnowledgeEntityAncestry = NewKnowledgeEntityAncestryClient(c.config)
 	c.KnowledgeEntityLinkingAttribute = NewKnowledgeEntityLinkingAttributeClient(c.config)
+	c.KnowledgeEntityRepresentation = NewKnowledgeEntityRepresentationClient(c.config)
 	c.KnowledgeEvidence = NewKnowledgeEvidenceClient(c.config)
 	c.KnowledgeRelationship = NewKnowledgeRelationshipClient(c.config)
 	c.KnowledgeSubjectAlias = NewKnowledgeSubjectAliasClient(c.config)
@@ -493,7 +501,9 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		InvestigationHypothesis:         NewInvestigationHypothesisClient(cfg),
 		InvestigationReport:             NewInvestigationReportClient(cfg),
 		KnowledgeEntity:                 NewKnowledgeEntityClient(cfg),
+		KnowledgeEntityAncestry:         NewKnowledgeEntityAncestryClient(cfg),
 		KnowledgeEntityLinkingAttribute: NewKnowledgeEntityLinkingAttributeClient(cfg),
+		KnowledgeEntityRepresentation:   NewKnowledgeEntityRepresentationClient(cfg),
 		KnowledgeEvidence:               NewKnowledgeEvidenceClient(cfg),
 		KnowledgeRelationship:           NewKnowledgeRelationshipClient(cfg),
 		KnowledgeSubjectAlias:           NewKnowledgeSubjectAliasClient(cfg),
@@ -593,7 +603,9 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		InvestigationHypothesis:         NewInvestigationHypothesisClient(cfg),
 		InvestigationReport:             NewInvestigationReportClient(cfg),
 		KnowledgeEntity:                 NewKnowledgeEntityClient(cfg),
+		KnowledgeEntityAncestry:         NewKnowledgeEntityAncestryClient(cfg),
 		KnowledgeEntityLinkingAttribute: NewKnowledgeEntityLinkingAttributeClient(cfg),
+		KnowledgeEntityRepresentation:   NewKnowledgeEntityRepresentationClient(cfg),
 		KnowledgeEvidence:               NewKnowledgeEvidenceClient(cfg),
 		KnowledgeRelationship:           NewKnowledgeRelationshipClient(cfg),
 		KnowledgeSubjectAlias:           NewKnowledgeSubjectAliasClient(cfg),
@@ -675,9 +687,10 @@ func (c *Client) Use(hooks ...Hook) {
 		c.Integration, c.IntegrationEventSyncCursor, c.IntegrationEventSyncRun,
 		c.IntegrationUserInstallState, c.Investigation, c.InvestigationFinding,
 		c.InvestigationHypothesis, c.InvestigationReport, c.KnowledgeEntity,
-		c.KnowledgeEntityLinkingAttribute, c.KnowledgeEvidence,
-		c.KnowledgeRelationship, c.KnowledgeSubjectAlias, c.MeetingSchedule,
-		c.MeetingSession, c.NormalizedEvent, c.NormalizedEventProjection,
+		c.KnowledgeEntityAncestry, c.KnowledgeEntityLinkingAttribute,
+		c.KnowledgeEntityRepresentation, c.KnowledgeEvidence, c.KnowledgeRelationship,
+		c.KnowledgeSubjectAlias, c.MeetingSchedule, c.MeetingSession,
+		c.NormalizedEvent, c.NormalizedEventProjection,
 		c.NormalizedEventProjectionEntity, c.OncallHandoverTemplate, c.OncallRoster,
 		c.OncallRosterMetrics, c.OncallSchedule, c.OncallScheduleParticipant,
 		c.OncallShift, c.OncallShiftHandover, c.OncallShiftMetrics, c.Organization,
@@ -708,9 +721,10 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 		c.Integration, c.IntegrationEventSyncCursor, c.IntegrationEventSyncRun,
 		c.IntegrationUserInstallState, c.Investigation, c.InvestigationFinding,
 		c.InvestigationHypothesis, c.InvestigationReport, c.KnowledgeEntity,
-		c.KnowledgeEntityLinkingAttribute, c.KnowledgeEvidence,
-		c.KnowledgeRelationship, c.KnowledgeSubjectAlias, c.MeetingSchedule,
-		c.MeetingSession, c.NormalizedEvent, c.NormalizedEventProjection,
+		c.KnowledgeEntityAncestry, c.KnowledgeEntityLinkingAttribute,
+		c.KnowledgeEntityRepresentation, c.KnowledgeEvidence, c.KnowledgeRelationship,
+		c.KnowledgeSubjectAlias, c.MeetingSchedule, c.MeetingSession,
+		c.NormalizedEvent, c.NormalizedEventProjection,
 		c.NormalizedEventProjectionEntity, c.OncallHandoverTemplate, c.OncallRoster,
 		c.OncallRosterMetrics, c.OncallSchedule, c.OncallScheduleParticipant,
 		c.OncallShift, c.OncallShiftHandover, c.OncallShiftMetrics, c.Organization,
@@ -805,8 +819,12 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.InvestigationReport.mutate(ctx, m)
 	case *KnowledgeEntityMutation:
 		return c.KnowledgeEntity.mutate(ctx, m)
+	case *KnowledgeEntityAncestryMutation:
+		return c.KnowledgeEntityAncestry.mutate(ctx, m)
 	case *KnowledgeEntityLinkingAttributeMutation:
 		return c.KnowledgeEntityLinkingAttribute.mutate(ctx, m)
+	case *KnowledgeEntityRepresentationMutation:
+		return c.KnowledgeEntityRepresentation.mutate(ctx, m)
 	case *KnowledgeEvidenceMutation:
 		return c.KnowledgeEvidence.mutate(ctx, m)
 	case *KnowledgeRelationshipMutation:
@@ -8853,6 +8871,197 @@ func (c *KnowledgeEntityClient) mutate(ctx context.Context, m *KnowledgeEntityMu
 	}
 }
 
+// KnowledgeEntityAncestryClient is a client for the KnowledgeEntityAncestry schema.
+type KnowledgeEntityAncestryClient struct {
+	config
+}
+
+// NewKnowledgeEntityAncestryClient returns a client for the KnowledgeEntityAncestry from the given config.
+func NewKnowledgeEntityAncestryClient(c config) *KnowledgeEntityAncestryClient {
+	return &KnowledgeEntityAncestryClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `knowledgeentityancestry.Hooks(f(g(h())))`.
+func (c *KnowledgeEntityAncestryClient) Use(hooks ...Hook) {
+	c.hooks.KnowledgeEntityAncestry = append(c.hooks.KnowledgeEntityAncestry, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `knowledgeentityancestry.Intercept(f(g(h())))`.
+func (c *KnowledgeEntityAncestryClient) Intercept(interceptors ...Interceptor) {
+	c.inters.KnowledgeEntityAncestry = append(c.inters.KnowledgeEntityAncestry, interceptors...)
+}
+
+// Create returns a builder for creating a KnowledgeEntityAncestry entity.
+func (c *KnowledgeEntityAncestryClient) Create() *KnowledgeEntityAncestryCreate {
+	mutation := newKnowledgeEntityAncestryMutation(c.config, OpCreate)
+	return &KnowledgeEntityAncestryCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of KnowledgeEntityAncestry entities.
+func (c *KnowledgeEntityAncestryClient) CreateBulk(builders ...*KnowledgeEntityAncestryCreate) *KnowledgeEntityAncestryCreateBulk {
+	return &KnowledgeEntityAncestryCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *KnowledgeEntityAncestryClient) MapCreateBulk(slice any, setFunc func(*KnowledgeEntityAncestryCreate, int)) *KnowledgeEntityAncestryCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &KnowledgeEntityAncestryCreateBulk{err: fmt.Errorf("calling to KnowledgeEntityAncestryClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*KnowledgeEntityAncestryCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &KnowledgeEntityAncestryCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for KnowledgeEntityAncestry.
+func (c *KnowledgeEntityAncestryClient) Update() *KnowledgeEntityAncestryUpdate {
+	mutation := newKnowledgeEntityAncestryMutation(c.config, OpUpdate)
+	return &KnowledgeEntityAncestryUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *KnowledgeEntityAncestryClient) UpdateOne(_m *KnowledgeEntityAncestry) *KnowledgeEntityAncestryUpdateOne {
+	mutation := newKnowledgeEntityAncestryMutation(c.config, OpUpdateOne, withKnowledgeEntityAncestry(_m))
+	return &KnowledgeEntityAncestryUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *KnowledgeEntityAncestryClient) UpdateOneID(id uuid.UUID) *KnowledgeEntityAncestryUpdateOne {
+	mutation := newKnowledgeEntityAncestryMutation(c.config, OpUpdateOne, withKnowledgeEntityAncestryID(id))
+	return &KnowledgeEntityAncestryUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for KnowledgeEntityAncestry.
+func (c *KnowledgeEntityAncestryClient) Delete() *KnowledgeEntityAncestryDelete {
+	mutation := newKnowledgeEntityAncestryMutation(c.config, OpDelete)
+	return &KnowledgeEntityAncestryDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *KnowledgeEntityAncestryClient) DeleteOne(_m *KnowledgeEntityAncestry) *KnowledgeEntityAncestryDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *KnowledgeEntityAncestryClient) DeleteOneID(id uuid.UUID) *KnowledgeEntityAncestryDeleteOne {
+	builder := c.Delete().Where(knowledgeentityancestry.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &KnowledgeEntityAncestryDeleteOne{builder}
+}
+
+// Query returns a query builder for KnowledgeEntityAncestry.
+func (c *KnowledgeEntityAncestryClient) Query() *KnowledgeEntityAncestryQuery {
+	return &KnowledgeEntityAncestryQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeKnowledgeEntityAncestry},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a KnowledgeEntityAncestry entity by its id.
+func (c *KnowledgeEntityAncestryClient) Get(ctx context.Context, id uuid.UUID) (*KnowledgeEntityAncestry, error) {
+	return c.Query().Where(knowledgeentityancestry.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *KnowledgeEntityAncestryClient) GetX(ctx context.Context, id uuid.UUID) *KnowledgeEntityAncestry {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryTenant queries the tenant edge of a KnowledgeEntityAncestry.
+func (c *KnowledgeEntityAncestryClient) QueryTenant(_m *KnowledgeEntityAncestry) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(knowledgeentityancestry.Table, knowledgeentityancestry.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, knowledgeentityancestry.TenantTable, knowledgeentityancestry.TenantColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.KnowledgeEntityAncestry
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryAncestor queries the ancestor edge of a KnowledgeEntityAncestry.
+func (c *KnowledgeEntityAncestryClient) QueryAncestor(_m *KnowledgeEntityAncestry) *KnowledgeEntityQuery {
+	query := (&KnowledgeEntityClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(knowledgeentityancestry.Table, knowledgeentityancestry.FieldID, id),
+			sqlgraph.To(knowledgeentity.Table, knowledgeentity.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, knowledgeentityancestry.AncestorTable, knowledgeentityancestry.AncestorColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.KnowledgeEntity
+		step.Edge.Schema = schemaConfig.KnowledgeEntityAncestry
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryDescendant queries the descendant edge of a KnowledgeEntityAncestry.
+func (c *KnowledgeEntityAncestryClient) QueryDescendant(_m *KnowledgeEntityAncestry) *KnowledgeEntityQuery {
+	query := (&KnowledgeEntityClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(knowledgeentityancestry.Table, knowledgeentityancestry.FieldID, id),
+			sqlgraph.To(knowledgeentity.Table, knowledgeentity.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, knowledgeentityancestry.DescendantTable, knowledgeentityancestry.DescendantColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.KnowledgeEntity
+		step.Edge.Schema = schemaConfig.KnowledgeEntityAncestry
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *KnowledgeEntityAncestryClient) Hooks() []Hook {
+	hooks := c.hooks.KnowledgeEntityAncestry
+	return append(hooks[:len(hooks):len(hooks)], knowledgeentityancestry.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *KnowledgeEntityAncestryClient) Interceptors() []Interceptor {
+	return c.inters.KnowledgeEntityAncestry
+}
+
+func (c *KnowledgeEntityAncestryClient) mutate(ctx context.Context, m *KnowledgeEntityAncestryMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&KnowledgeEntityAncestryCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&KnowledgeEntityAncestryUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&KnowledgeEntityAncestryUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&KnowledgeEntityAncestryDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown KnowledgeEntityAncestry mutation op: %q", m.Op())
+	}
+}
+
 // KnowledgeEntityLinkingAttributeClient is a client for the KnowledgeEntityLinkingAttribute schema.
 type KnowledgeEntityLinkingAttributeClient struct {
 	config
@@ -9022,6 +9231,197 @@ func (c *KnowledgeEntityLinkingAttributeClient) mutate(ctx context.Context, m *K
 		return (&KnowledgeEntityLinkingAttributeDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown KnowledgeEntityLinkingAttribute mutation op: %q", m.Op())
+	}
+}
+
+// KnowledgeEntityRepresentationClient is a client for the KnowledgeEntityRepresentation schema.
+type KnowledgeEntityRepresentationClient struct {
+	config
+}
+
+// NewKnowledgeEntityRepresentationClient returns a client for the KnowledgeEntityRepresentation from the given config.
+func NewKnowledgeEntityRepresentationClient(c config) *KnowledgeEntityRepresentationClient {
+	return &KnowledgeEntityRepresentationClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `knowledgeentityrepresentation.Hooks(f(g(h())))`.
+func (c *KnowledgeEntityRepresentationClient) Use(hooks ...Hook) {
+	c.hooks.KnowledgeEntityRepresentation = append(c.hooks.KnowledgeEntityRepresentation, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `knowledgeentityrepresentation.Intercept(f(g(h())))`.
+func (c *KnowledgeEntityRepresentationClient) Intercept(interceptors ...Interceptor) {
+	c.inters.KnowledgeEntityRepresentation = append(c.inters.KnowledgeEntityRepresentation, interceptors...)
+}
+
+// Create returns a builder for creating a KnowledgeEntityRepresentation entity.
+func (c *KnowledgeEntityRepresentationClient) Create() *KnowledgeEntityRepresentationCreate {
+	mutation := newKnowledgeEntityRepresentationMutation(c.config, OpCreate)
+	return &KnowledgeEntityRepresentationCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of KnowledgeEntityRepresentation entities.
+func (c *KnowledgeEntityRepresentationClient) CreateBulk(builders ...*KnowledgeEntityRepresentationCreate) *KnowledgeEntityRepresentationCreateBulk {
+	return &KnowledgeEntityRepresentationCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *KnowledgeEntityRepresentationClient) MapCreateBulk(slice any, setFunc func(*KnowledgeEntityRepresentationCreate, int)) *KnowledgeEntityRepresentationCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &KnowledgeEntityRepresentationCreateBulk{err: fmt.Errorf("calling to KnowledgeEntityRepresentationClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*KnowledgeEntityRepresentationCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &KnowledgeEntityRepresentationCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for KnowledgeEntityRepresentation.
+func (c *KnowledgeEntityRepresentationClient) Update() *KnowledgeEntityRepresentationUpdate {
+	mutation := newKnowledgeEntityRepresentationMutation(c.config, OpUpdate)
+	return &KnowledgeEntityRepresentationUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *KnowledgeEntityRepresentationClient) UpdateOne(_m *KnowledgeEntityRepresentation) *KnowledgeEntityRepresentationUpdateOne {
+	mutation := newKnowledgeEntityRepresentationMutation(c.config, OpUpdateOne, withKnowledgeEntityRepresentation(_m))
+	return &KnowledgeEntityRepresentationUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *KnowledgeEntityRepresentationClient) UpdateOneID(id int) *KnowledgeEntityRepresentationUpdateOne {
+	mutation := newKnowledgeEntityRepresentationMutation(c.config, OpUpdateOne, withKnowledgeEntityRepresentationID(id))
+	return &KnowledgeEntityRepresentationUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for KnowledgeEntityRepresentation.
+func (c *KnowledgeEntityRepresentationClient) Delete() *KnowledgeEntityRepresentationDelete {
+	mutation := newKnowledgeEntityRepresentationMutation(c.config, OpDelete)
+	return &KnowledgeEntityRepresentationDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *KnowledgeEntityRepresentationClient) DeleteOne(_m *KnowledgeEntityRepresentation) *KnowledgeEntityRepresentationDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *KnowledgeEntityRepresentationClient) DeleteOneID(id int) *KnowledgeEntityRepresentationDeleteOne {
+	builder := c.Delete().Where(knowledgeentityrepresentation.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &KnowledgeEntityRepresentationDeleteOne{builder}
+}
+
+// Query returns a query builder for KnowledgeEntityRepresentation.
+func (c *KnowledgeEntityRepresentationClient) Query() *KnowledgeEntityRepresentationQuery {
+	return &KnowledgeEntityRepresentationQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeKnowledgeEntityRepresentation},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a KnowledgeEntityRepresentation entity by its id.
+func (c *KnowledgeEntityRepresentationClient) Get(ctx context.Context, id int) (*KnowledgeEntityRepresentation, error) {
+	return c.Query().Where(knowledgeentityrepresentation.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *KnowledgeEntityRepresentationClient) GetX(ctx context.Context, id int) *KnowledgeEntityRepresentation {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryTenant queries the tenant edge of a KnowledgeEntityRepresentation.
+func (c *KnowledgeEntityRepresentationClient) QueryTenant(_m *KnowledgeEntityRepresentation) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(knowledgeentityrepresentation.Table, knowledgeentityrepresentation.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, knowledgeentityrepresentation.TenantTable, knowledgeentityrepresentation.TenantColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.KnowledgeEntityRepresentation
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryEntity queries the entity edge of a KnowledgeEntityRepresentation.
+func (c *KnowledgeEntityRepresentationClient) QueryEntity(_m *KnowledgeEntityRepresentation) *KnowledgeEntityQuery {
+	query := (&KnowledgeEntityClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(knowledgeentityrepresentation.Table, knowledgeentityrepresentation.FieldID, id),
+			sqlgraph.To(knowledgeentity.Table, knowledgeentity.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, knowledgeentityrepresentation.EntityTable, knowledgeentityrepresentation.EntityColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.KnowledgeEntity
+		step.Edge.Schema = schemaConfig.KnowledgeEntityRepresentation
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryRepresentative queries the representative edge of a KnowledgeEntityRepresentation.
+func (c *KnowledgeEntityRepresentationClient) QueryRepresentative(_m *KnowledgeEntityRepresentation) *KnowledgeEntityQuery {
+	query := (&KnowledgeEntityClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(knowledgeentityrepresentation.Table, knowledgeentityrepresentation.FieldID, id),
+			sqlgraph.To(knowledgeentity.Table, knowledgeentity.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, knowledgeentityrepresentation.RepresentativeTable, knowledgeentityrepresentation.RepresentativeColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.KnowledgeEntity
+		step.Edge.Schema = schemaConfig.KnowledgeEntityRepresentation
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *KnowledgeEntityRepresentationClient) Hooks() []Hook {
+	hooks := c.hooks.KnowledgeEntityRepresentation
+	return append(hooks[:len(hooks):len(hooks)], knowledgeentityrepresentation.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *KnowledgeEntityRepresentationClient) Interceptors() []Interceptor {
+	return c.inters.KnowledgeEntityRepresentation
+}
+
+func (c *KnowledgeEntityRepresentationClient) mutate(ctx context.Context, m *KnowledgeEntityRepresentationMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&KnowledgeEntityRepresentationCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&KnowledgeEntityRepresentationUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&KnowledgeEntityRepresentationUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&KnowledgeEntityRepresentationDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown KnowledgeEntityRepresentation mutation op: %q", m.Op())
 	}
 }
 
@@ -17861,7 +18261,8 @@ type (
 		IntegrationEventSyncCursor, IntegrationEventSyncRun,
 		IntegrationUserInstallState, Investigation, InvestigationFinding,
 		InvestigationHypothesis, InvestigationReport, KnowledgeEntity,
-		KnowledgeEntityLinkingAttribute, KnowledgeEvidence, KnowledgeRelationship,
+		KnowledgeEntityAncestry, KnowledgeEntityLinkingAttribute,
+		KnowledgeEntityRepresentation, KnowledgeEvidence, KnowledgeRelationship,
 		KnowledgeSubjectAlias, MeetingSchedule, MeetingSession, NormalizedEvent,
 		NormalizedEventProjection, NormalizedEventProjectionEntity,
 		OncallHandoverTemplate, OncallRoster, OncallRosterMetrics, OncallSchedule,
@@ -17885,7 +18286,8 @@ type (
 		IntegrationEventSyncCursor, IntegrationEventSyncRun,
 		IntegrationUserInstallState, Investigation, InvestigationFinding,
 		InvestigationHypothesis, InvestigationReport, KnowledgeEntity,
-		KnowledgeEntityLinkingAttribute, KnowledgeEvidence, KnowledgeRelationship,
+		KnowledgeEntityAncestry, KnowledgeEntityLinkingAttribute,
+		KnowledgeEntityRepresentation, KnowledgeEvidence, KnowledgeRelationship,
 		KnowledgeSubjectAlias, MeetingSchedule, MeetingSession, NormalizedEvent,
 		NormalizedEventProjection, NormalizedEventProjectionEntity,
 		OncallHandoverTemplate, OncallRoster, OncallRosterMetrics, OncallSchedule,
@@ -17951,7 +18353,9 @@ var (
 		InvestigationHypothesis:                   tableSchemas[0],
 		InvestigationReport:                       tableSchemas[0],
 		KnowledgeEntity:                           tableSchemas[0],
+		KnowledgeEntityAncestry:                   tableSchemas[0],
 		KnowledgeEntityLinkingAttribute:           tableSchemas[0],
+		KnowledgeEntityRepresentation:             tableSchemas[0],
 		KnowledgeEvidence:                         tableSchemas[0],
 		KnowledgeRelationship:                     tableSchemas[0],
 		KnowledgeSubjectAlias:                     tableSchemas[0],

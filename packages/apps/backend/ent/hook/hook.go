@@ -465,6 +465,18 @@ func (f KnowledgeEntityFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Va
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.KnowledgeEntityMutation", m)
 }
 
+// The KnowledgeEntityAncestryFunc type is an adapter to allow the use of ordinary
+// function as KnowledgeEntityAncestry mutator.
+type KnowledgeEntityAncestryFunc func(context.Context, *ent.KnowledgeEntityAncestryMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f KnowledgeEntityAncestryFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.KnowledgeEntityAncestryMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.KnowledgeEntityAncestryMutation", m)
+}
+
 // The KnowledgeEntityLinkingAttributeFunc type is an adapter to allow the use of ordinary
 // function as KnowledgeEntityLinkingAttribute mutator.
 type KnowledgeEntityLinkingAttributeFunc func(context.Context, *ent.KnowledgeEntityLinkingAttributeMutation) (ent.Value, error)
@@ -475,6 +487,18 @@ func (f KnowledgeEntityLinkingAttributeFunc) Mutate(ctx context.Context, m ent.M
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.KnowledgeEntityLinkingAttributeMutation", m)
+}
+
+// The KnowledgeEntityRepresentationFunc type is an adapter to allow the use of ordinary
+// function as KnowledgeEntityRepresentation mutator.
+type KnowledgeEntityRepresentationFunc func(context.Context, *ent.KnowledgeEntityRepresentationMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f KnowledgeEntityRepresentationFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.KnowledgeEntityRepresentationMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.KnowledgeEntityRepresentationMutation", m)
 }
 
 // The KnowledgeEvidenceFunc type is an adapter to allow the use of ordinary

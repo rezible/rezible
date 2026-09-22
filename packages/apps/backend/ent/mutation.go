@@ -53,7 +53,9 @@ import (
 	"github.com/rezible/rezible/ent/investigationhypothesis"
 	"github.com/rezible/rezible/ent/investigationreport"
 	"github.com/rezible/rezible/ent/knowledgeentity"
+	"github.com/rezible/rezible/ent/knowledgeentityancestry"
 	"github.com/rezible/rezible/ent/knowledgeentitylinkingattribute"
+	"github.com/rezible/rezible/ent/knowledgeentityrepresentation"
 	"github.com/rezible/rezible/ent/knowledgeevidence"
 	"github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/knowledgesubjectalias"
@@ -146,7 +148,9 @@ const (
 	TypeInvestigationHypothesis         = "InvestigationHypothesis"
 	TypeInvestigationReport             = "InvestigationReport"
 	TypeKnowledgeEntity                 = "KnowledgeEntity"
+	TypeKnowledgeEntityAncestry         = "KnowledgeEntityAncestry"
 	TypeKnowledgeEntityLinkingAttribute = "KnowledgeEntityLinkingAttribute"
+	TypeKnowledgeEntityRepresentation   = "KnowledgeEntityRepresentation"
 	TypeKnowledgeEvidence               = "KnowledgeEvidence"
 	TypeKnowledgeRelationship           = "KnowledgeRelationship"
 	TypeKnowledgeSubjectAlias           = "KnowledgeSubjectAlias"
@@ -35509,6 +35513,682 @@ func (m *KnowledgeEntityMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown KnowledgeEntity edge %s", name)
 }
 
+// KnowledgeEntityAncestryMutation represents an operation that mutates the KnowledgeEntityAncestry nodes in the graph.
+type KnowledgeEntityAncestryMutation struct {
+	config
+	op                Op
+	typ               string
+	id                *uuid.UUID
+	depth             *int
+	adddepth          *int
+	clearedFields     map[string]struct{}
+	tenant            *int
+	clearedtenant     bool
+	ancestor          *uuid.UUID
+	clearedancestor   bool
+	descendant        *uuid.UUID
+	cleareddescendant bool
+	done              bool
+	oldValue          func(context.Context) (*KnowledgeEntityAncestry, error)
+	predicates        []predicate.KnowledgeEntityAncestry
+}
+
+var _ ent.Mutation = (*KnowledgeEntityAncestryMutation)(nil)
+
+// knowledgeentityancestryOption allows management of the mutation configuration using functional options.
+type knowledgeentityancestryOption func(*KnowledgeEntityAncestryMutation)
+
+// newKnowledgeEntityAncestryMutation creates new mutation for the KnowledgeEntityAncestry entity.
+func newKnowledgeEntityAncestryMutation(c config, op Op, opts ...knowledgeentityancestryOption) *KnowledgeEntityAncestryMutation {
+	m := &KnowledgeEntityAncestryMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeKnowledgeEntityAncestry,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withKnowledgeEntityAncestryID sets the ID field of the mutation.
+func withKnowledgeEntityAncestryID(id uuid.UUID) knowledgeentityancestryOption {
+	return func(m *KnowledgeEntityAncestryMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *KnowledgeEntityAncestry
+		)
+		m.oldValue = func(ctx context.Context) (*KnowledgeEntityAncestry, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().KnowledgeEntityAncestry.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withKnowledgeEntityAncestry sets the old KnowledgeEntityAncestry of the mutation.
+func withKnowledgeEntityAncestry(node *KnowledgeEntityAncestry) knowledgeentityancestryOption {
+	return func(m *KnowledgeEntityAncestryMutation) {
+		m.oldValue = func(context.Context) (*KnowledgeEntityAncestry, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m KnowledgeEntityAncestryMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m KnowledgeEntityAncestryMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of KnowledgeEntityAncestry entities.
+func (m *KnowledgeEntityAncestryMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *KnowledgeEntityAncestryMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *KnowledgeEntityAncestryMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uuid.UUID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().KnowledgeEntityAncestry.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (m *KnowledgeEntityAncestryMutation) SetTenantID(i int) {
+	m.tenant = &i
+}
+
+// TenantID returns the value of the "tenant_id" field in the mutation.
+func (m *KnowledgeEntityAncestryMutation) TenantID() (r int, exists bool) {
+	v := m.tenant
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTenantID returns the old "tenant_id" field's value of the KnowledgeEntityAncestry entity.
+// If the KnowledgeEntityAncestry object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *KnowledgeEntityAncestryMutation) OldTenantID(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTenantID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTenantID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTenantID: %w", err)
+	}
+	return oldValue.TenantID, nil
+}
+
+// ResetTenantID resets all changes to the "tenant_id" field.
+func (m *KnowledgeEntityAncestryMutation) ResetTenantID() {
+	m.tenant = nil
+}
+
+// SetAncestorID sets the "ancestor_id" field.
+func (m *KnowledgeEntityAncestryMutation) SetAncestorID(u uuid.UUID) {
+	m.ancestor = &u
+}
+
+// AncestorID returns the value of the "ancestor_id" field in the mutation.
+func (m *KnowledgeEntityAncestryMutation) AncestorID() (r uuid.UUID, exists bool) {
+	v := m.ancestor
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAncestorID returns the old "ancestor_id" field's value of the KnowledgeEntityAncestry entity.
+// If the KnowledgeEntityAncestry object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *KnowledgeEntityAncestryMutation) OldAncestorID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAncestorID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAncestorID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAncestorID: %w", err)
+	}
+	return oldValue.AncestorID, nil
+}
+
+// ResetAncestorID resets all changes to the "ancestor_id" field.
+func (m *KnowledgeEntityAncestryMutation) ResetAncestorID() {
+	m.ancestor = nil
+}
+
+// SetDescendantID sets the "descendant_id" field.
+func (m *KnowledgeEntityAncestryMutation) SetDescendantID(u uuid.UUID) {
+	m.descendant = &u
+}
+
+// DescendantID returns the value of the "descendant_id" field in the mutation.
+func (m *KnowledgeEntityAncestryMutation) DescendantID() (r uuid.UUID, exists bool) {
+	v := m.descendant
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDescendantID returns the old "descendant_id" field's value of the KnowledgeEntityAncestry entity.
+// If the KnowledgeEntityAncestry object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *KnowledgeEntityAncestryMutation) OldDescendantID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDescendantID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDescendantID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDescendantID: %w", err)
+	}
+	return oldValue.DescendantID, nil
+}
+
+// ResetDescendantID resets all changes to the "descendant_id" field.
+func (m *KnowledgeEntityAncestryMutation) ResetDescendantID() {
+	m.descendant = nil
+}
+
+// SetDepth sets the "depth" field.
+func (m *KnowledgeEntityAncestryMutation) SetDepth(i int) {
+	m.depth = &i
+	m.adddepth = nil
+}
+
+// Depth returns the value of the "depth" field in the mutation.
+func (m *KnowledgeEntityAncestryMutation) Depth() (r int, exists bool) {
+	v := m.depth
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDepth returns the old "depth" field's value of the KnowledgeEntityAncestry entity.
+// If the KnowledgeEntityAncestry object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *KnowledgeEntityAncestryMutation) OldDepth(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDepth is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDepth requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDepth: %w", err)
+	}
+	return oldValue.Depth, nil
+}
+
+// AddDepth adds i to the "depth" field.
+func (m *KnowledgeEntityAncestryMutation) AddDepth(i int) {
+	if m.adddepth != nil {
+		*m.adddepth += i
+	} else {
+		m.adddepth = &i
+	}
+}
+
+// AddedDepth returns the value that was added to the "depth" field in this mutation.
+func (m *KnowledgeEntityAncestryMutation) AddedDepth() (r int, exists bool) {
+	v := m.adddepth
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetDepth resets all changes to the "depth" field.
+func (m *KnowledgeEntityAncestryMutation) ResetDepth() {
+	m.depth = nil
+	m.adddepth = nil
+}
+
+// ClearTenant clears the "tenant" edge to the Tenant entity.
+func (m *KnowledgeEntityAncestryMutation) ClearTenant() {
+	m.clearedtenant = true
+	m.clearedFields[knowledgeentityancestry.FieldTenantID] = struct{}{}
+}
+
+// TenantCleared reports if the "tenant" edge to the Tenant entity was cleared.
+func (m *KnowledgeEntityAncestryMutation) TenantCleared() bool {
+	return m.clearedtenant
+}
+
+// TenantIDs returns the "tenant" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// TenantID instead. It exists only for internal usage by the builders.
+func (m *KnowledgeEntityAncestryMutation) TenantIDs() (ids []int) {
+	if id := m.tenant; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetTenant resets all changes to the "tenant" edge.
+func (m *KnowledgeEntityAncestryMutation) ResetTenant() {
+	m.tenant = nil
+	m.clearedtenant = false
+}
+
+// ClearAncestor clears the "ancestor" edge to the KnowledgeEntity entity.
+func (m *KnowledgeEntityAncestryMutation) ClearAncestor() {
+	m.clearedancestor = true
+	m.clearedFields[knowledgeentityancestry.FieldAncestorID] = struct{}{}
+}
+
+// AncestorCleared reports if the "ancestor" edge to the KnowledgeEntity entity was cleared.
+func (m *KnowledgeEntityAncestryMutation) AncestorCleared() bool {
+	return m.clearedancestor
+}
+
+// AncestorIDs returns the "ancestor" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// AncestorID instead. It exists only for internal usage by the builders.
+func (m *KnowledgeEntityAncestryMutation) AncestorIDs() (ids []uuid.UUID) {
+	if id := m.ancestor; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetAncestor resets all changes to the "ancestor" edge.
+func (m *KnowledgeEntityAncestryMutation) ResetAncestor() {
+	m.ancestor = nil
+	m.clearedancestor = false
+}
+
+// ClearDescendant clears the "descendant" edge to the KnowledgeEntity entity.
+func (m *KnowledgeEntityAncestryMutation) ClearDescendant() {
+	m.cleareddescendant = true
+	m.clearedFields[knowledgeentityancestry.FieldDescendantID] = struct{}{}
+}
+
+// DescendantCleared reports if the "descendant" edge to the KnowledgeEntity entity was cleared.
+func (m *KnowledgeEntityAncestryMutation) DescendantCleared() bool {
+	return m.cleareddescendant
+}
+
+// DescendantIDs returns the "descendant" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// DescendantID instead. It exists only for internal usage by the builders.
+func (m *KnowledgeEntityAncestryMutation) DescendantIDs() (ids []uuid.UUID) {
+	if id := m.descendant; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetDescendant resets all changes to the "descendant" edge.
+func (m *KnowledgeEntityAncestryMutation) ResetDescendant() {
+	m.descendant = nil
+	m.cleareddescendant = false
+}
+
+// Where appends a list predicates to the KnowledgeEntityAncestryMutation builder.
+func (m *KnowledgeEntityAncestryMutation) Where(ps ...predicate.KnowledgeEntityAncestry) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the KnowledgeEntityAncestryMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *KnowledgeEntityAncestryMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.KnowledgeEntityAncestry, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *KnowledgeEntityAncestryMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *KnowledgeEntityAncestryMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (KnowledgeEntityAncestry).
+func (m *KnowledgeEntityAncestryMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *KnowledgeEntityAncestryMutation) Fields() []string {
+	fields := make([]string, 0, 4)
+	if m.tenant != nil {
+		fields = append(fields, knowledgeentityancestry.FieldTenantID)
+	}
+	if m.ancestor != nil {
+		fields = append(fields, knowledgeentityancestry.FieldAncestorID)
+	}
+	if m.descendant != nil {
+		fields = append(fields, knowledgeentityancestry.FieldDescendantID)
+	}
+	if m.depth != nil {
+		fields = append(fields, knowledgeentityancestry.FieldDepth)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *KnowledgeEntityAncestryMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case knowledgeentityancestry.FieldTenantID:
+		return m.TenantID()
+	case knowledgeentityancestry.FieldAncestorID:
+		return m.AncestorID()
+	case knowledgeentityancestry.FieldDescendantID:
+		return m.DescendantID()
+	case knowledgeentityancestry.FieldDepth:
+		return m.Depth()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *KnowledgeEntityAncestryMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case knowledgeentityancestry.FieldTenantID:
+		return m.OldTenantID(ctx)
+	case knowledgeentityancestry.FieldAncestorID:
+		return m.OldAncestorID(ctx)
+	case knowledgeentityancestry.FieldDescendantID:
+		return m.OldDescendantID(ctx)
+	case knowledgeentityancestry.FieldDepth:
+		return m.OldDepth(ctx)
+	}
+	return nil, fmt.Errorf("unknown KnowledgeEntityAncestry field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *KnowledgeEntityAncestryMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case knowledgeentityancestry.FieldTenantID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTenantID(v)
+		return nil
+	case knowledgeentityancestry.FieldAncestorID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAncestorID(v)
+		return nil
+	case knowledgeentityancestry.FieldDescendantID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDescendantID(v)
+		return nil
+	case knowledgeentityancestry.FieldDepth:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDepth(v)
+		return nil
+	}
+	return fmt.Errorf("unknown KnowledgeEntityAncestry field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *KnowledgeEntityAncestryMutation) AddedFields() []string {
+	var fields []string
+	if m.adddepth != nil {
+		fields = append(fields, knowledgeentityancestry.FieldDepth)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *KnowledgeEntityAncestryMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case knowledgeentityancestry.FieldDepth:
+		return m.AddedDepth()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *KnowledgeEntityAncestryMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case knowledgeentityancestry.FieldDepth:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddDepth(v)
+		return nil
+	}
+	return fmt.Errorf("unknown KnowledgeEntityAncestry numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *KnowledgeEntityAncestryMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *KnowledgeEntityAncestryMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *KnowledgeEntityAncestryMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown KnowledgeEntityAncestry nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *KnowledgeEntityAncestryMutation) ResetField(name string) error {
+	switch name {
+	case knowledgeentityancestry.FieldTenantID:
+		m.ResetTenantID()
+		return nil
+	case knowledgeentityancestry.FieldAncestorID:
+		m.ResetAncestorID()
+		return nil
+	case knowledgeentityancestry.FieldDescendantID:
+		m.ResetDescendantID()
+		return nil
+	case knowledgeentityancestry.FieldDepth:
+		m.ResetDepth()
+		return nil
+	}
+	return fmt.Errorf("unknown KnowledgeEntityAncestry field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *KnowledgeEntityAncestryMutation) AddedEdges() []string {
+	edges := make([]string, 0, 3)
+	if m.tenant != nil {
+		edges = append(edges, knowledgeentityancestry.EdgeTenant)
+	}
+	if m.ancestor != nil {
+		edges = append(edges, knowledgeentityancestry.EdgeAncestor)
+	}
+	if m.descendant != nil {
+		edges = append(edges, knowledgeentityancestry.EdgeDescendant)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *KnowledgeEntityAncestryMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case knowledgeentityancestry.EdgeTenant:
+		if id := m.tenant; id != nil {
+			return []ent.Value{*id}
+		}
+	case knowledgeentityancestry.EdgeAncestor:
+		if id := m.ancestor; id != nil {
+			return []ent.Value{*id}
+		}
+	case knowledgeentityancestry.EdgeDescendant:
+		if id := m.descendant; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *KnowledgeEntityAncestryMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 3)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *KnowledgeEntityAncestryMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *KnowledgeEntityAncestryMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 3)
+	if m.clearedtenant {
+		edges = append(edges, knowledgeentityancestry.EdgeTenant)
+	}
+	if m.clearedancestor {
+		edges = append(edges, knowledgeentityancestry.EdgeAncestor)
+	}
+	if m.cleareddescendant {
+		edges = append(edges, knowledgeentityancestry.EdgeDescendant)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *KnowledgeEntityAncestryMutation) EdgeCleared(name string) bool {
+	switch name {
+	case knowledgeentityancestry.EdgeTenant:
+		return m.clearedtenant
+	case knowledgeentityancestry.EdgeAncestor:
+		return m.clearedancestor
+	case knowledgeentityancestry.EdgeDescendant:
+		return m.cleareddescendant
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *KnowledgeEntityAncestryMutation) ClearEdge(name string) error {
+	switch name {
+	case knowledgeentityancestry.EdgeTenant:
+		m.ClearTenant()
+		return nil
+	case knowledgeentityancestry.EdgeAncestor:
+		m.ClearAncestor()
+		return nil
+	case knowledgeentityancestry.EdgeDescendant:
+		m.ClearDescendant()
+		return nil
+	}
+	return fmt.Errorf("unknown KnowledgeEntityAncestry unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *KnowledgeEntityAncestryMutation) ResetEdge(name string) error {
+	switch name {
+	case knowledgeentityancestry.EdgeTenant:
+		m.ResetTenant()
+		return nil
+	case knowledgeentityancestry.EdgeAncestor:
+		m.ResetAncestor()
+		return nil
+	case knowledgeentityancestry.EdgeDescendant:
+		m.ResetDescendant()
+		return nil
+	}
+	return fmt.Errorf("unknown KnowledgeEntityAncestry edge %s", name)
+}
+
 // KnowledgeEntityLinkingAttributeMutation represents an operation that mutates the KnowledgeEntityLinkingAttribute nodes in the graph.
 type KnowledgeEntityLinkingAttributeMutation struct {
 	config
@@ -36104,6 +36784,676 @@ func (m *KnowledgeEntityLinkingAttributeMutation) ResetEdge(name string) error {
 		return nil
 	}
 	return fmt.Errorf("unknown KnowledgeEntityLinkingAttribute edge %s", name)
+}
+
+// KnowledgeEntityRepresentationMutation represents an operation that mutates the KnowledgeEntityRepresentation nodes in the graph.
+type KnowledgeEntityRepresentationMutation struct {
+	config
+	op                    Op
+	typ                   string
+	id                    *int
+	detail_level          *int
+	adddetail_level       *int
+	clearedFields         map[string]struct{}
+	tenant                *int
+	clearedtenant         bool
+	entity                *uuid.UUID
+	clearedentity         bool
+	representative        *uuid.UUID
+	clearedrepresentative bool
+	done                  bool
+	oldValue              func(context.Context) (*KnowledgeEntityRepresentation, error)
+	predicates            []predicate.KnowledgeEntityRepresentation
+}
+
+var _ ent.Mutation = (*KnowledgeEntityRepresentationMutation)(nil)
+
+// knowledgeentityrepresentationOption allows management of the mutation configuration using functional options.
+type knowledgeentityrepresentationOption func(*KnowledgeEntityRepresentationMutation)
+
+// newKnowledgeEntityRepresentationMutation creates new mutation for the KnowledgeEntityRepresentation entity.
+func newKnowledgeEntityRepresentationMutation(c config, op Op, opts ...knowledgeentityrepresentationOption) *KnowledgeEntityRepresentationMutation {
+	m := &KnowledgeEntityRepresentationMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeKnowledgeEntityRepresentation,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withKnowledgeEntityRepresentationID sets the ID field of the mutation.
+func withKnowledgeEntityRepresentationID(id int) knowledgeentityrepresentationOption {
+	return func(m *KnowledgeEntityRepresentationMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *KnowledgeEntityRepresentation
+		)
+		m.oldValue = func(ctx context.Context) (*KnowledgeEntityRepresentation, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().KnowledgeEntityRepresentation.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withKnowledgeEntityRepresentation sets the old KnowledgeEntityRepresentation of the mutation.
+func withKnowledgeEntityRepresentation(node *KnowledgeEntityRepresentation) knowledgeentityrepresentationOption {
+	return func(m *KnowledgeEntityRepresentationMutation) {
+		m.oldValue = func(context.Context) (*KnowledgeEntityRepresentation, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m KnowledgeEntityRepresentationMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m KnowledgeEntityRepresentationMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *KnowledgeEntityRepresentationMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *KnowledgeEntityRepresentationMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().KnowledgeEntityRepresentation.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (m *KnowledgeEntityRepresentationMutation) SetTenantID(i int) {
+	m.tenant = &i
+}
+
+// TenantID returns the value of the "tenant_id" field in the mutation.
+func (m *KnowledgeEntityRepresentationMutation) TenantID() (r int, exists bool) {
+	v := m.tenant
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTenantID returns the old "tenant_id" field's value of the KnowledgeEntityRepresentation entity.
+// If the KnowledgeEntityRepresentation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *KnowledgeEntityRepresentationMutation) OldTenantID(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTenantID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTenantID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTenantID: %w", err)
+	}
+	return oldValue.TenantID, nil
+}
+
+// ResetTenantID resets all changes to the "tenant_id" field.
+func (m *KnowledgeEntityRepresentationMutation) ResetTenantID() {
+	m.tenant = nil
+}
+
+// SetEntityID sets the "entity_id" field.
+func (m *KnowledgeEntityRepresentationMutation) SetEntityID(u uuid.UUID) {
+	m.entity = &u
+}
+
+// EntityID returns the value of the "entity_id" field in the mutation.
+func (m *KnowledgeEntityRepresentationMutation) EntityID() (r uuid.UUID, exists bool) {
+	v := m.entity
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldEntityID returns the old "entity_id" field's value of the KnowledgeEntityRepresentation entity.
+// If the KnowledgeEntityRepresentation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *KnowledgeEntityRepresentationMutation) OldEntityID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldEntityID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldEntityID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldEntityID: %w", err)
+	}
+	return oldValue.EntityID, nil
+}
+
+// ResetEntityID resets all changes to the "entity_id" field.
+func (m *KnowledgeEntityRepresentationMutation) ResetEntityID() {
+	m.entity = nil
+}
+
+// SetDetailLevel sets the "detail_level" field.
+func (m *KnowledgeEntityRepresentationMutation) SetDetailLevel(i int) {
+	m.detail_level = &i
+	m.adddetail_level = nil
+}
+
+// DetailLevel returns the value of the "detail_level" field in the mutation.
+func (m *KnowledgeEntityRepresentationMutation) DetailLevel() (r int, exists bool) {
+	v := m.detail_level
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDetailLevel returns the old "detail_level" field's value of the KnowledgeEntityRepresentation entity.
+// If the KnowledgeEntityRepresentation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *KnowledgeEntityRepresentationMutation) OldDetailLevel(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDetailLevel is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDetailLevel requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDetailLevel: %w", err)
+	}
+	return oldValue.DetailLevel, nil
+}
+
+// AddDetailLevel adds i to the "detail_level" field.
+func (m *KnowledgeEntityRepresentationMutation) AddDetailLevel(i int) {
+	if m.adddetail_level != nil {
+		*m.adddetail_level += i
+	} else {
+		m.adddetail_level = &i
+	}
+}
+
+// AddedDetailLevel returns the value that was added to the "detail_level" field in this mutation.
+func (m *KnowledgeEntityRepresentationMutation) AddedDetailLevel() (r int, exists bool) {
+	v := m.adddetail_level
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetDetailLevel resets all changes to the "detail_level" field.
+func (m *KnowledgeEntityRepresentationMutation) ResetDetailLevel() {
+	m.detail_level = nil
+	m.adddetail_level = nil
+}
+
+// SetRepresentativeID sets the "representative_id" field.
+func (m *KnowledgeEntityRepresentationMutation) SetRepresentativeID(u uuid.UUID) {
+	m.representative = &u
+}
+
+// RepresentativeID returns the value of the "representative_id" field in the mutation.
+func (m *KnowledgeEntityRepresentationMutation) RepresentativeID() (r uuid.UUID, exists bool) {
+	v := m.representative
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRepresentativeID returns the old "representative_id" field's value of the KnowledgeEntityRepresentation entity.
+// If the KnowledgeEntityRepresentation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *KnowledgeEntityRepresentationMutation) OldRepresentativeID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRepresentativeID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRepresentativeID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRepresentativeID: %w", err)
+	}
+	return oldValue.RepresentativeID, nil
+}
+
+// ResetRepresentativeID resets all changes to the "representative_id" field.
+func (m *KnowledgeEntityRepresentationMutation) ResetRepresentativeID() {
+	m.representative = nil
+}
+
+// ClearTenant clears the "tenant" edge to the Tenant entity.
+func (m *KnowledgeEntityRepresentationMutation) ClearTenant() {
+	m.clearedtenant = true
+	m.clearedFields[knowledgeentityrepresentation.FieldTenantID] = struct{}{}
+}
+
+// TenantCleared reports if the "tenant" edge to the Tenant entity was cleared.
+func (m *KnowledgeEntityRepresentationMutation) TenantCleared() bool {
+	return m.clearedtenant
+}
+
+// TenantIDs returns the "tenant" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// TenantID instead. It exists only for internal usage by the builders.
+func (m *KnowledgeEntityRepresentationMutation) TenantIDs() (ids []int) {
+	if id := m.tenant; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetTenant resets all changes to the "tenant" edge.
+func (m *KnowledgeEntityRepresentationMutation) ResetTenant() {
+	m.tenant = nil
+	m.clearedtenant = false
+}
+
+// ClearEntity clears the "entity" edge to the KnowledgeEntity entity.
+func (m *KnowledgeEntityRepresentationMutation) ClearEntity() {
+	m.clearedentity = true
+	m.clearedFields[knowledgeentityrepresentation.FieldEntityID] = struct{}{}
+}
+
+// EntityCleared reports if the "entity" edge to the KnowledgeEntity entity was cleared.
+func (m *KnowledgeEntityRepresentationMutation) EntityCleared() bool {
+	return m.clearedentity
+}
+
+// EntityIDs returns the "entity" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// EntityID instead. It exists only for internal usage by the builders.
+func (m *KnowledgeEntityRepresentationMutation) EntityIDs() (ids []uuid.UUID) {
+	if id := m.entity; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetEntity resets all changes to the "entity" edge.
+func (m *KnowledgeEntityRepresentationMutation) ResetEntity() {
+	m.entity = nil
+	m.clearedentity = false
+}
+
+// ClearRepresentative clears the "representative" edge to the KnowledgeEntity entity.
+func (m *KnowledgeEntityRepresentationMutation) ClearRepresentative() {
+	m.clearedrepresentative = true
+	m.clearedFields[knowledgeentityrepresentation.FieldRepresentativeID] = struct{}{}
+}
+
+// RepresentativeCleared reports if the "representative" edge to the KnowledgeEntity entity was cleared.
+func (m *KnowledgeEntityRepresentationMutation) RepresentativeCleared() bool {
+	return m.clearedrepresentative
+}
+
+// RepresentativeIDs returns the "representative" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// RepresentativeID instead. It exists only for internal usage by the builders.
+func (m *KnowledgeEntityRepresentationMutation) RepresentativeIDs() (ids []uuid.UUID) {
+	if id := m.representative; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetRepresentative resets all changes to the "representative" edge.
+func (m *KnowledgeEntityRepresentationMutation) ResetRepresentative() {
+	m.representative = nil
+	m.clearedrepresentative = false
+}
+
+// Where appends a list predicates to the KnowledgeEntityRepresentationMutation builder.
+func (m *KnowledgeEntityRepresentationMutation) Where(ps ...predicate.KnowledgeEntityRepresentation) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the KnowledgeEntityRepresentationMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *KnowledgeEntityRepresentationMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.KnowledgeEntityRepresentation, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *KnowledgeEntityRepresentationMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *KnowledgeEntityRepresentationMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (KnowledgeEntityRepresentation).
+func (m *KnowledgeEntityRepresentationMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *KnowledgeEntityRepresentationMutation) Fields() []string {
+	fields := make([]string, 0, 4)
+	if m.tenant != nil {
+		fields = append(fields, knowledgeentityrepresentation.FieldTenantID)
+	}
+	if m.entity != nil {
+		fields = append(fields, knowledgeentityrepresentation.FieldEntityID)
+	}
+	if m.detail_level != nil {
+		fields = append(fields, knowledgeentityrepresentation.FieldDetailLevel)
+	}
+	if m.representative != nil {
+		fields = append(fields, knowledgeentityrepresentation.FieldRepresentativeID)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *KnowledgeEntityRepresentationMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case knowledgeentityrepresentation.FieldTenantID:
+		return m.TenantID()
+	case knowledgeentityrepresentation.FieldEntityID:
+		return m.EntityID()
+	case knowledgeentityrepresentation.FieldDetailLevel:
+		return m.DetailLevel()
+	case knowledgeentityrepresentation.FieldRepresentativeID:
+		return m.RepresentativeID()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *KnowledgeEntityRepresentationMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case knowledgeentityrepresentation.FieldTenantID:
+		return m.OldTenantID(ctx)
+	case knowledgeentityrepresentation.FieldEntityID:
+		return m.OldEntityID(ctx)
+	case knowledgeentityrepresentation.FieldDetailLevel:
+		return m.OldDetailLevel(ctx)
+	case knowledgeentityrepresentation.FieldRepresentativeID:
+		return m.OldRepresentativeID(ctx)
+	}
+	return nil, fmt.Errorf("unknown KnowledgeEntityRepresentation field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *KnowledgeEntityRepresentationMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case knowledgeentityrepresentation.FieldTenantID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTenantID(v)
+		return nil
+	case knowledgeentityrepresentation.FieldEntityID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetEntityID(v)
+		return nil
+	case knowledgeentityrepresentation.FieldDetailLevel:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDetailLevel(v)
+		return nil
+	case knowledgeentityrepresentation.FieldRepresentativeID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRepresentativeID(v)
+		return nil
+	}
+	return fmt.Errorf("unknown KnowledgeEntityRepresentation field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *KnowledgeEntityRepresentationMutation) AddedFields() []string {
+	var fields []string
+	if m.adddetail_level != nil {
+		fields = append(fields, knowledgeentityrepresentation.FieldDetailLevel)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *KnowledgeEntityRepresentationMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case knowledgeentityrepresentation.FieldDetailLevel:
+		return m.AddedDetailLevel()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *KnowledgeEntityRepresentationMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case knowledgeentityrepresentation.FieldDetailLevel:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddDetailLevel(v)
+		return nil
+	}
+	return fmt.Errorf("unknown KnowledgeEntityRepresentation numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *KnowledgeEntityRepresentationMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *KnowledgeEntityRepresentationMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *KnowledgeEntityRepresentationMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown KnowledgeEntityRepresentation nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *KnowledgeEntityRepresentationMutation) ResetField(name string) error {
+	switch name {
+	case knowledgeentityrepresentation.FieldTenantID:
+		m.ResetTenantID()
+		return nil
+	case knowledgeentityrepresentation.FieldEntityID:
+		m.ResetEntityID()
+		return nil
+	case knowledgeentityrepresentation.FieldDetailLevel:
+		m.ResetDetailLevel()
+		return nil
+	case knowledgeentityrepresentation.FieldRepresentativeID:
+		m.ResetRepresentativeID()
+		return nil
+	}
+	return fmt.Errorf("unknown KnowledgeEntityRepresentation field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *KnowledgeEntityRepresentationMutation) AddedEdges() []string {
+	edges := make([]string, 0, 3)
+	if m.tenant != nil {
+		edges = append(edges, knowledgeentityrepresentation.EdgeTenant)
+	}
+	if m.entity != nil {
+		edges = append(edges, knowledgeentityrepresentation.EdgeEntity)
+	}
+	if m.representative != nil {
+		edges = append(edges, knowledgeentityrepresentation.EdgeRepresentative)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *KnowledgeEntityRepresentationMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case knowledgeentityrepresentation.EdgeTenant:
+		if id := m.tenant; id != nil {
+			return []ent.Value{*id}
+		}
+	case knowledgeentityrepresentation.EdgeEntity:
+		if id := m.entity; id != nil {
+			return []ent.Value{*id}
+		}
+	case knowledgeentityrepresentation.EdgeRepresentative:
+		if id := m.representative; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *KnowledgeEntityRepresentationMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 3)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *KnowledgeEntityRepresentationMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *KnowledgeEntityRepresentationMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 3)
+	if m.clearedtenant {
+		edges = append(edges, knowledgeentityrepresentation.EdgeTenant)
+	}
+	if m.clearedentity {
+		edges = append(edges, knowledgeentityrepresentation.EdgeEntity)
+	}
+	if m.clearedrepresentative {
+		edges = append(edges, knowledgeentityrepresentation.EdgeRepresentative)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *KnowledgeEntityRepresentationMutation) EdgeCleared(name string) bool {
+	switch name {
+	case knowledgeentityrepresentation.EdgeTenant:
+		return m.clearedtenant
+	case knowledgeentityrepresentation.EdgeEntity:
+		return m.clearedentity
+	case knowledgeentityrepresentation.EdgeRepresentative:
+		return m.clearedrepresentative
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *KnowledgeEntityRepresentationMutation) ClearEdge(name string) error {
+	switch name {
+	case knowledgeentityrepresentation.EdgeTenant:
+		m.ClearTenant()
+		return nil
+	case knowledgeentityrepresentation.EdgeEntity:
+		m.ClearEntity()
+		return nil
+	case knowledgeentityrepresentation.EdgeRepresentative:
+		m.ClearRepresentative()
+		return nil
+	}
+	return fmt.Errorf("unknown KnowledgeEntityRepresentation unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *KnowledgeEntityRepresentationMutation) ResetEdge(name string) error {
+	switch name {
+	case knowledgeentityrepresentation.EdgeTenant:
+		m.ResetTenant()
+		return nil
+	case knowledgeentityrepresentation.EdgeEntity:
+		m.ResetEntity()
+		return nil
+	case knowledgeentityrepresentation.EdgeRepresentative:
+		m.ResetRepresentative()
+		return nil
+	}
+	return fmt.Errorf("unknown KnowledgeEntityRepresentation edge %s", name)
 }
 
 // KnowledgeEvidenceMutation represents an operation that mutates the KnowledgeEvidence nodes in the graph.

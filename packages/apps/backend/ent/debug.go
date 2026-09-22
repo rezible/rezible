@@ -316,12 +316,28 @@ func (c *KnowledgeEntityClient) Debug() *KnowledgeEntityClient {
 	return &KnowledgeEntityClient{config: cfg}
 }
 
+func (c *KnowledgeEntityAncestryClient) Debug() *KnowledgeEntityAncestryClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &KnowledgeEntityAncestryClient{config: cfg}
+}
+
 func (c *KnowledgeEntityLinkingAttributeClient) Debug() *KnowledgeEntityLinkingAttributeClient {
 	if c.debug {
 		return c
 	}
 	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
 	return &KnowledgeEntityLinkingAttributeClient{config: cfg}
+}
+
+func (c *KnowledgeEntityRepresentationClient) Debug() *KnowledgeEntityRepresentationClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &KnowledgeEntityRepresentationClient{config: cfg}
 }
 
 func (c *KnowledgeEvidenceClient) Debug() *KnowledgeEvidenceClient {

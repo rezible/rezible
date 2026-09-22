@@ -47,7 +47,9 @@ import (
 	"github.com/rezible/rezible/ent/investigationhypothesis"
 	"github.com/rezible/rezible/ent/investigationreport"
 	"github.com/rezible/rezible/ent/knowledgeentity"
+	"github.com/rezible/rezible/ent/knowledgeentityancestry"
 	"github.com/rezible/rezible/ent/knowledgeentitylinkingattribute"
+	"github.com/rezible/rezible/ent/knowledgeentityrepresentation"
 	"github.com/rezible/rezible/ent/knowledgeevidence"
 	"github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/knowledgesubjectalias"
@@ -1201,6 +1203,33 @@ func (f TraverseKnowledgeEntity) Traverse(ctx context.Context, q ent.Query) erro
 	return fmt.Errorf("unexpected query type %T. expect *ent.KnowledgeEntityQuery", q)
 }
 
+// The KnowledgeEntityAncestryFunc type is an adapter to allow the use of ordinary function as a Querier.
+type KnowledgeEntityAncestryFunc func(context.Context, *ent.KnowledgeEntityAncestryQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f KnowledgeEntityAncestryFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.KnowledgeEntityAncestryQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.KnowledgeEntityAncestryQuery", q)
+}
+
+// The TraverseKnowledgeEntityAncestry type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseKnowledgeEntityAncestry func(context.Context, *ent.KnowledgeEntityAncestryQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseKnowledgeEntityAncestry) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseKnowledgeEntityAncestry) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.KnowledgeEntityAncestryQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.KnowledgeEntityAncestryQuery", q)
+}
+
 // The KnowledgeEntityLinkingAttributeFunc type is an adapter to allow the use of ordinary function as a Querier.
 type KnowledgeEntityLinkingAttributeFunc func(context.Context, *ent.KnowledgeEntityLinkingAttributeQuery) (ent.Value, error)
 
@@ -1226,6 +1255,33 @@ func (f TraverseKnowledgeEntityLinkingAttribute) Traverse(ctx context.Context, q
 		return f(ctx, q)
 	}
 	return fmt.Errorf("unexpected query type %T. expect *ent.KnowledgeEntityLinkingAttributeQuery", q)
+}
+
+// The KnowledgeEntityRepresentationFunc type is an adapter to allow the use of ordinary function as a Querier.
+type KnowledgeEntityRepresentationFunc func(context.Context, *ent.KnowledgeEntityRepresentationQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f KnowledgeEntityRepresentationFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.KnowledgeEntityRepresentationQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.KnowledgeEntityRepresentationQuery", q)
+}
+
+// The TraverseKnowledgeEntityRepresentation type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseKnowledgeEntityRepresentation func(context.Context, *ent.KnowledgeEntityRepresentationQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseKnowledgeEntityRepresentation) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseKnowledgeEntityRepresentation) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.KnowledgeEntityRepresentationQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.KnowledgeEntityRepresentationQuery", q)
 }
 
 // The KnowledgeEvidenceFunc type is an adapter to allow the use of ordinary function as a Querier.
@@ -2416,8 +2472,12 @@ func NewQuery(q ent.Query) (Query, error) {
 		return &query[*ent.InvestigationReportQuery, predicate.InvestigationReport, investigationreport.OrderOption]{typ: ent.TypeInvestigationReport, tq: q}, nil
 	case *ent.KnowledgeEntityQuery:
 		return &query[*ent.KnowledgeEntityQuery, predicate.KnowledgeEntity, knowledgeentity.OrderOption]{typ: ent.TypeKnowledgeEntity, tq: q}, nil
+	case *ent.KnowledgeEntityAncestryQuery:
+		return &query[*ent.KnowledgeEntityAncestryQuery, predicate.KnowledgeEntityAncestry, knowledgeentityancestry.OrderOption]{typ: ent.TypeKnowledgeEntityAncestry, tq: q}, nil
 	case *ent.KnowledgeEntityLinkingAttributeQuery:
 		return &query[*ent.KnowledgeEntityLinkingAttributeQuery, predicate.KnowledgeEntityLinkingAttribute, knowledgeentitylinkingattribute.OrderOption]{typ: ent.TypeKnowledgeEntityLinkingAttribute, tq: q}, nil
+	case *ent.KnowledgeEntityRepresentationQuery:
+		return &query[*ent.KnowledgeEntityRepresentationQuery, predicate.KnowledgeEntityRepresentation, knowledgeentityrepresentation.OrderOption]{typ: ent.TypeKnowledgeEntityRepresentation, tq: q}, nil
 	case *ent.KnowledgeEvidenceQuery:
 		return &query[*ent.KnowledgeEvidenceQuery, predicate.KnowledgeEvidence, knowledgeevidence.OrderOption]{typ: ent.TypeKnowledgeEvidence, tq: q}, nil
 	case *ent.KnowledgeRelationshipQuery:

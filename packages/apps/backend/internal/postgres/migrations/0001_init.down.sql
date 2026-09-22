@@ -110,8 +110,12 @@ ALTER TABLE "knowledge_subject_alias" DROP CONSTRAINT "knowledge_subject_alias_k
 ALTER TABLE "knowledge_relationships" DROP CONSTRAINT "knowledge_relationships_knowledge_entities_target_entity", DROP CONSTRAINT "knowledge_relationships_knowledge_entities_source_entity", DROP CONSTRAINT "knowledge_relationships_tenants_tenant";
 -- reverse: modify "knowledge_evidences" table
 ALTER TABLE "knowledge_evidences" DROP CONSTRAINT "knowledge_evidences_knowledge_subject_alias_subject_alias", DROP CONSTRAINT "knowledge_evidences_normalized_events_event", DROP CONSTRAINT "knowledge_evidences_tenants_tenant";
+-- reverse: modify "knowledge_entity_representations" table
+ALTER TABLE "knowledge_entity_representations" DROP CONSTRAINT "knowledge_entity_representatio_d6047eaf3fc3089828b269825748c2ae", DROP CONSTRAINT "knowledge_entity_representations_knowledge_entities_entity", DROP CONSTRAINT "knowledge_entity_representations_tenants_tenant";
 -- reverse: modify "knowledge_entity_linking_attributes" table
 ALTER TABLE "knowledge_entity_linking_attributes" DROP CONSTRAINT "knowledge_entity_linking_attributes_knowledge_entities_entity", DROP CONSTRAINT "knowledge_entity_linking_attributes_tenants_tenant";
+-- reverse: modify "knowledge_entity_ancestries" table
+ALTER TABLE "knowledge_entity_ancestries" DROP CONSTRAINT "knowledge_entity_ancestries_knowledge_entities_descendant", DROP CONSTRAINT "knowledge_entity_ancestries_knowledge_entities_ancestor", DROP CONSTRAINT "knowledge_entity_ancestries_tenants_tenant";
 -- reverse: modify "knowledge_entities" table
 ALTER TABLE "knowledge_entities" DROP CONSTRAINT "knowledge_entities_tenants_tenant";
 -- reverse: modify "investigation_reports" table
@@ -508,6 +512,14 @@ DROP INDEX "knowledgeevidence_tenant_id_event_id_subject_alias_id";
 DROP INDEX "knowledgeevidence_tenant_id";
 -- reverse: create "knowledge_evidences" table
 DROP TABLE "knowledge_evidences";
+-- reverse: create index "knowledgeentityrepresentation__5ac9e1dddeec813678ccc1a6361ac903" to table: "knowledge_entity_representations"
+DROP INDEX "knowledgeentityrepresentation__5ac9e1dddeec813678ccc1a6361ac903";
+-- reverse: create index "knowledgeentityrepresentation_tenant_id_entity_id_detail_level" to table: "knowledge_entity_representations"
+DROP INDEX "knowledgeentityrepresentation_tenant_id_entity_id_detail_level";
+-- reverse: create index "knowledgeentityrepresentation_tenant_id" to table: "knowledge_entity_representations"
+DROP INDEX "knowledgeentityrepresentation_tenant_id";
+-- reverse: create "knowledge_entity_representations" table
+DROP TABLE "knowledge_entity_representations";
 -- reverse: create index "knowledgeentitylinkingattribute_tenant_id_entity_id" to table: "knowledge_entity_linking_attributes"
 DROP INDEX "knowledgeentitylinkingattribute_tenant_id_entity_id";
 -- reverse: create index "knowledgeentitylinkingattribute_tenant_id_attribute_value" to table: "knowledge_entity_linking_attributes"
@@ -516,6 +528,14 @@ DROP INDEX "knowledgeentitylinkingattribute_tenant_id_attribute_value";
 DROP INDEX "knowledgeentitylinkingattribute_tenant_id";
 -- reverse: create "knowledge_entity_linking_attributes" table
 DROP TABLE "knowledge_entity_linking_attributes";
+-- reverse: create index "knowledgeentityancestry_tenant_id_descendant_id_ancestor_id" to table: "knowledge_entity_ancestries"
+DROP INDEX "knowledgeentityancestry_tenant_id_descendant_id_ancestor_id";
+-- reverse: create index "knowledgeentityancestry_tenant_id_ancestor_id_descendant_id" to table: "knowledge_entity_ancestries"
+DROP INDEX "knowledgeentityancestry_tenant_id_ancestor_id_descendant_id";
+-- reverse: create index "knowledgeentityancestry_tenant_id" to table: "knowledge_entity_ancestries"
+DROP INDEX "knowledgeentityancestry_tenant_id";
+-- reverse: create "knowledge_entity_ancestries" table
+DROP TABLE "knowledge_entity_ancestries";
 -- reverse: create index "knowledgeentity_tenant_id_category_kind" to table: "knowledge_entities"
 DROP INDEX "knowledgeentity_tenant_id_category_kind";
 -- reverse: create index "knowledgeentity_tenant_id" to table: "knowledge_entities"

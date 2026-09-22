@@ -51,7 +51,9 @@ import (
 	"github.com/rezible/rezible/ent/investigationhypothesis"
 	"github.com/rezible/rezible/ent/investigationreport"
 	"github.com/rezible/rezible/ent/knowledgeentity"
+	"github.com/rezible/rezible/ent/knowledgeentityancestry"
 	"github.com/rezible/rezible/ent/knowledgeentitylinkingattribute"
+	"github.com/rezible/rezible/ent/knowledgeentityrepresentation"
 	"github.com/rezible/rezible/ent/knowledgeevidence"
 	"github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/knowledgesubjectalias"
@@ -192,7 +194,9 @@ func checkColumn(t, c string) error {
 			investigationhypothesis.Table:         investigationhypothesis.ValidColumn,
 			investigationreport.Table:             investigationreport.ValidColumn,
 			knowledgeentity.Table:                 knowledgeentity.ValidColumn,
+			knowledgeentityancestry.Table:         knowledgeentityancestry.ValidColumn,
 			knowledgeentitylinkingattribute.Table: knowledgeentitylinkingattribute.ValidColumn,
+			knowledgeentityrepresentation.Table:   knowledgeentityrepresentation.ValidColumn,
 			knowledgeevidence.Table:               knowledgeevidence.ValidColumn,
 			knowledgerelationship.Table:           knowledgerelationship.ValidColumn,
 			knowledgesubjectalias.Table:           knowledgesubjectalias.ValidColumn,

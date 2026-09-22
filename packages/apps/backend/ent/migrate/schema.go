@@ -1701,7 +1701,7 @@ var (
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "category", Type: field.TypeEnum, Enums: []string{"system_function", "actor", "system", "container", "component", "infrastructure", "code", "process", "concern", "decision", "event", "signal"}},
+		{Name: "category", Type: field.TypeEnum, Enums: []string{"system_function", "actor", "system", "container", "infrastructure", "component", "code", "process", "concern", "decision", "event", "signal"}},
 		{Name: "kind", Type: field.TypeString},
 		{Name: "tenant_id", Type: field.TypeInt},
 	}
@@ -1728,6 +1728,57 @@ var (
 				Name:    "knowledgeentity_tenant_id_category_kind",
 				Unique:  false,
 				Columns: []*schema.Column{KnowledgeEntitiesColumns[5], KnowledgeEntitiesColumns[3], KnowledgeEntitiesColumns[4]},
+			},
+		},
+	}
+	// KnowledgeEntityAncestriesColumns holds the columns for the "knowledge_entity_ancestries" table.
+	KnowledgeEntityAncestriesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "depth", Type: field.TypeInt},
+		{Name: "tenant_id", Type: field.TypeInt},
+		{Name: "ancestor_id", Type: field.TypeUUID},
+		{Name: "descendant_id", Type: field.TypeUUID},
+	}
+	// KnowledgeEntityAncestriesTable holds the schema information for the "knowledge_entity_ancestries" table.
+	KnowledgeEntityAncestriesTable = &schema.Table{
+		Name:       "knowledge_entity_ancestries",
+		Columns:    KnowledgeEntityAncestriesColumns,
+		PrimaryKey: []*schema.Column{KnowledgeEntityAncestriesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "knowledge_entity_ancestries_tenants_tenant",
+				Columns:    []*schema.Column{KnowledgeEntityAncestriesColumns[2]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "knowledge_entity_ancestries_knowledge_entities_ancestor",
+				Columns:    []*schema.Column{KnowledgeEntityAncestriesColumns[3]},
+				RefColumns: []*schema.Column{KnowledgeEntitiesColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "knowledge_entity_ancestries_knowledge_entities_descendant",
+				Columns:    []*schema.Column{KnowledgeEntityAncestriesColumns[4]},
+				RefColumns: []*schema.Column{KnowledgeEntitiesColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "knowledgeentityancestry_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{KnowledgeEntityAncestriesColumns[2]},
+			},
+			{
+				Name:    "knowledgeentityancestry_tenant_id_ancestor_id_descendant_id",
+				Unique:  true,
+				Columns: []*schema.Column{KnowledgeEntityAncestriesColumns[2], KnowledgeEntityAncestriesColumns[3], KnowledgeEntityAncestriesColumns[4]},
+			},
+			{
+				Name:    "knowledgeentityancestry_tenant_id_descendant_id_ancestor_id",
+				Unique:  false,
+				Columns: []*schema.Column{KnowledgeEntityAncestriesColumns[2], KnowledgeEntityAncestriesColumns[4], KnowledgeEntityAncestriesColumns[3]},
 			},
 		},
 	}
@@ -1773,6 +1824,57 @@ var (
 				Name:    "knowledgeentitylinkingattribute_tenant_id_entity_id",
 				Unique:  false,
 				Columns: []*schema.Column{KnowledgeEntityLinkingAttributesColumns[3], KnowledgeEntityLinkingAttributesColumns[4]},
+			},
+		},
+	}
+	// KnowledgeEntityRepresentationsColumns holds the columns for the "knowledge_entity_representations" table.
+	KnowledgeEntityRepresentationsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "detail_level", Type: field.TypeInt},
+		{Name: "tenant_id", Type: field.TypeInt},
+		{Name: "entity_id", Type: field.TypeUUID},
+		{Name: "representative_id", Type: field.TypeUUID},
+	}
+	// KnowledgeEntityRepresentationsTable holds the schema information for the "knowledge_entity_representations" table.
+	KnowledgeEntityRepresentationsTable = &schema.Table{
+		Name:       "knowledge_entity_representations",
+		Columns:    KnowledgeEntityRepresentationsColumns,
+		PrimaryKey: []*schema.Column{KnowledgeEntityRepresentationsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "knowledge_entity_representations_tenants_tenant",
+				Columns:    []*schema.Column{KnowledgeEntityRepresentationsColumns[2]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "knowledge_entity_representations_knowledge_entities_entity",
+				Columns:    []*schema.Column{KnowledgeEntityRepresentationsColumns[3]},
+				RefColumns: []*schema.Column{KnowledgeEntitiesColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "knowledge_entity_representations_knowledge_entities_representative",
+				Columns:    []*schema.Column{KnowledgeEntityRepresentationsColumns[4]},
+				RefColumns: []*schema.Column{KnowledgeEntitiesColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "knowledgeentityrepresentation_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{KnowledgeEntityRepresentationsColumns[2]},
+			},
+			{
+				Name:    "knowledgeentityrepresentation_tenant_id_entity_id_detail_level",
+				Unique:  true,
+				Columns: []*schema.Column{KnowledgeEntityRepresentationsColumns[2], KnowledgeEntityRepresentationsColumns[3], KnowledgeEntityRepresentationsColumns[1]},
+			},
+			{
+				Name:    "knowledgeentityrepresentation_tenant_id_detail_level_representative_id",
+				Unique:  false,
+				Columns: []*schema.Column{KnowledgeEntityRepresentationsColumns[2], KnowledgeEntityRepresentationsColumns[1], KnowledgeEntityRepresentationsColumns[4]},
 			},
 		},
 	}
@@ -4204,7 +4306,9 @@ var (
 		InvestigationHypothesesTable,
 		InvestigationReportsTable,
 		KnowledgeEntitiesTable,
+		KnowledgeEntityAncestriesTable,
 		KnowledgeEntityLinkingAttributesTable,
+		KnowledgeEntityRepresentationsTable,
 		KnowledgeEvidencesTable,
 		KnowledgeRelationshipsTable,
 		KnowledgeSubjectAliasTable,
@@ -4361,8 +4465,14 @@ func init() {
 	InvestigationReportsTable.ForeignKeys[1].RefTable = TenantsTable
 	InvestigationReportsTable.ForeignKeys[2].RefTable = AgentTurnsTable
 	KnowledgeEntitiesTable.ForeignKeys[0].RefTable = TenantsTable
+	KnowledgeEntityAncestriesTable.ForeignKeys[0].RefTable = TenantsTable
+	KnowledgeEntityAncestriesTable.ForeignKeys[1].RefTable = KnowledgeEntitiesTable
+	KnowledgeEntityAncestriesTable.ForeignKeys[2].RefTable = KnowledgeEntitiesTable
 	KnowledgeEntityLinkingAttributesTable.ForeignKeys[0].RefTable = TenantsTable
 	KnowledgeEntityLinkingAttributesTable.ForeignKeys[1].RefTable = KnowledgeEntitiesTable
+	KnowledgeEntityRepresentationsTable.ForeignKeys[0].RefTable = TenantsTable
+	KnowledgeEntityRepresentationsTable.ForeignKeys[1].RefTable = KnowledgeEntitiesTable
+	KnowledgeEntityRepresentationsTable.ForeignKeys[2].RefTable = KnowledgeEntitiesTable
 	KnowledgeEvidencesTable.ForeignKeys[0].RefTable = TenantsTable
 	KnowledgeEvidencesTable.ForeignKeys[1].RefTable = NormalizedEventsTable
 	KnowledgeEvidencesTable.ForeignKeys[2].RefTable = KnowledgeSubjectAliasTable

@@ -128,9 +128,9 @@ func (KnowledgeEntityAncestry) Fields() []ent.Field {
 func (KnowledgeEntityAncestry) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("ancestor", KnowledgeEntity.Type).
-			Unique().Required().Field("ancestor_id"),
+			Unique().Required().Immutable().Field("ancestor_id"),
 		edge.To("descendant", KnowledgeEntity.Type).
-			Unique().Required().Field("descendant_id"),
+			Unique().Required().Immutable().Field("descendant_id"),
 	}
 }
 
@@ -163,9 +163,9 @@ func (KnowledgeEntityRepresentation) Fields() []ent.Field {
 func (KnowledgeEntityRepresentation) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("entity", KnowledgeEntity.Type).
-			Unique().Required().Field("entity_id"),
+			Unique().Required().Immutable().Field("entity_id"),
 		edge.To("representative", KnowledgeEntity.Type).
-			Unique().Required().Field("representative_id"),
+			Unique().Required().Immutable().Field("representative_id"),
 	}
 }
 
