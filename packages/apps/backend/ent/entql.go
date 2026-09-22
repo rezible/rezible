@@ -3537,6 +3537,18 @@ var schemaGraph = func() *sqlgraph.Schema {
 		"KnowledgeRelationship",
 	)
 	graph.MustAddE(
+		"ancestry_links",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   knowledgeentity.AncestryLinksTable,
+			Columns: []string{knowledgeentity.AncestryLinksColumn},
+			Bidi:    false,
+		},
+		"KnowledgeEntity",
+		"KnowledgeEntityAncestry",
+	)
+	graph.MustAddE(
 		"tenant",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -10681,6 +10693,20 @@ func (f *KnowledgeEntityFilter) WhereHasTargetRelationships() {
 // WhereHasTargetRelationshipsWith applies a predicate to check if query has an edge target_relationships with a given conditions (other predicates).
 func (f *KnowledgeEntityFilter) WhereHasTargetRelationshipsWith(preds ...predicate.KnowledgeRelationship) {
 	f.Where(entql.HasEdgeWith("target_relationships", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasAncestryLinks applies a predicate to check if query has an edge ancestry_links.
+func (f *KnowledgeEntityFilter) WhereHasAncestryLinks() {
+	f.Where(entql.HasEdge("ancestry_links"))
+}
+
+// WhereHasAncestryLinksWith applies a predicate to check if query has an edge ancestry_links with a given conditions (other predicates).
+func (f *KnowledgeEntityFilter) WhereHasAncestryLinksWith(preds ...predicate.KnowledgeEntityAncestry) {
+	f.Where(entql.HasEdgeWith("ancestry_links", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}

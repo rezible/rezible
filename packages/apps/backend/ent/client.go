@@ -8845,6 +8845,25 @@ func (c *KnowledgeEntityClient) QueryTargetRelationships(_m *KnowledgeEntity) *K
 	return query
 }
 
+// QueryAncestryLinks queries the ancestry_links edge of a KnowledgeEntity.
+func (c *KnowledgeEntityClient) QueryAncestryLinks(_m *KnowledgeEntity) *KnowledgeEntityAncestryQuery {
+	query := (&KnowledgeEntityAncestryClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(knowledgeentity.Table, knowledgeentity.FieldID, id),
+			sqlgraph.To(knowledgeentityancestry.Table, knowledgeentityancestry.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, knowledgeentity.AncestryLinksTable, knowledgeentity.AncestryLinksColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.KnowledgeEntityAncestry
+		step.Edge.Schema = schemaConfig.KnowledgeEntityAncestry
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *KnowledgeEntityClient) Hooks() []Hook {
 	hooks := c.hooks.KnowledgeEntity

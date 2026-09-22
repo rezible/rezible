@@ -47,9 +47,11 @@ type KnowledgeEntityEdges struct {
 	SourceRelationships []*KnowledgeRelationship `json:"source_relationships,omitempty"`
 	// TargetRelationships holds the value of the target_relationships edge.
 	TargetRelationships []*KnowledgeRelationship `json:"target_relationships,omitempty"`
+	// AncestryLinks holds the value of the ancestry_links edge.
+	AncestryLinks []*KnowledgeEntityAncestry `json:"ancestry_links,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [5]bool
+	loadedTypes [6]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -97,6 +99,15 @@ func (e KnowledgeEntityEdges) TargetRelationshipsOrErr() ([]*KnowledgeRelationsh
 		return e.TargetRelationships, nil
 	}
 	return nil, &NotLoadedError{edge: "target_relationships"}
+}
+
+// AncestryLinksOrErr returns the AncestryLinks value or an error if the edge
+// was not loaded in eager-loading.
+func (e KnowledgeEntityEdges) AncestryLinksOrErr() ([]*KnowledgeEntityAncestry, error) {
+	if e.loadedTypes[5] {
+		return e.AncestryLinks, nil
+	}
+	return nil, &NotLoadedError{edge: "ancestry_links"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -199,6 +210,11 @@ func (_m *KnowledgeEntity) QuerySourceRelationships() *KnowledgeRelationshipQuer
 // QueryTargetRelationships queries the "target_relationships" edge of the KnowledgeEntity entity.
 func (_m *KnowledgeEntity) QueryTargetRelationships() *KnowledgeRelationshipQuery {
 	return NewKnowledgeEntityClient(_m.config).QueryTargetRelationships(_m)
+}
+
+// QueryAncestryLinks queries the "ancestry_links" edge of the KnowledgeEntity entity.
+func (_m *KnowledgeEntity) QueryAncestryLinks() *KnowledgeEntityAncestryQuery {
+	return NewKnowledgeEntityClient(_m.config).QueryAncestryLinks(_m)
 }
 
 // Update returns a builder for updating this KnowledgeEntity.

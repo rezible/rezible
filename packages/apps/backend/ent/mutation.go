@@ -34599,6 +34599,9 @@ type KnowledgeEntityMutation struct {
 	target_relationships        map[uuid.UUID]struct{}
 	removedtarget_relationships map[uuid.UUID]struct{}
 	clearedtarget_relationships bool
+	ancestry_links              map[uuid.UUID]struct{}
+	removedancestry_links       map[uuid.UUID]struct{}
+	clearedancestry_links       bool
 	done                        bool
 	oldValue                    func(context.Context) (*KnowledgeEntity, error)
 	predicates                  []predicate.KnowledgeEntity
@@ -35131,6 +35134,60 @@ func (m *KnowledgeEntityMutation) ResetTargetRelationships() {
 	m.removedtarget_relationships = nil
 }
 
+// AddAncestryLinkIDs adds the "ancestry_links" edge to the KnowledgeEntityAncestry entity by ids.
+func (m *KnowledgeEntityMutation) AddAncestryLinkIDs(ids ...uuid.UUID) {
+	if m.ancestry_links == nil {
+		m.ancestry_links = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.ancestry_links[ids[i]] = struct{}{}
+	}
+}
+
+// ClearAncestryLinks clears the "ancestry_links" edge to the KnowledgeEntityAncestry entity.
+func (m *KnowledgeEntityMutation) ClearAncestryLinks() {
+	m.clearedancestry_links = true
+}
+
+// AncestryLinksCleared reports if the "ancestry_links" edge to the KnowledgeEntityAncestry entity was cleared.
+func (m *KnowledgeEntityMutation) AncestryLinksCleared() bool {
+	return m.clearedancestry_links
+}
+
+// RemoveAncestryLinkIDs removes the "ancestry_links" edge to the KnowledgeEntityAncestry entity by IDs.
+func (m *KnowledgeEntityMutation) RemoveAncestryLinkIDs(ids ...uuid.UUID) {
+	if m.removedancestry_links == nil {
+		m.removedancestry_links = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.ancestry_links, ids[i])
+		m.removedancestry_links[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedAncestryLinks returns the removed IDs of the "ancestry_links" edge to the KnowledgeEntityAncestry entity.
+func (m *KnowledgeEntityMutation) RemovedAncestryLinksIDs() (ids []uuid.UUID) {
+	for id := range m.removedancestry_links {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// AncestryLinksIDs returns the "ancestry_links" edge IDs in the mutation.
+func (m *KnowledgeEntityMutation) AncestryLinksIDs() (ids []uuid.UUID) {
+	for id := range m.ancestry_links {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetAncestryLinks resets all changes to the "ancestry_links" edge.
+func (m *KnowledgeEntityMutation) ResetAncestryLinks() {
+	m.ancestry_links = nil
+	m.clearedancestry_links = false
+	m.removedancestry_links = nil
+}
+
 // Where appends a list predicates to the KnowledgeEntityMutation builder.
 func (m *KnowledgeEntityMutation) Where(ps ...predicate.KnowledgeEntity) {
 	m.predicates = append(m.predicates, ps...)
@@ -35335,7 +35392,7 @@ func (m *KnowledgeEntityMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *KnowledgeEntityMutation) AddedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 6)
 	if m.tenant != nil {
 		edges = append(edges, knowledgeentity.EdgeTenant)
 	}
@@ -35350,6 +35407,9 @@ func (m *KnowledgeEntityMutation) AddedEdges() []string {
 	}
 	if m.target_relationships != nil {
 		edges = append(edges, knowledgeentity.EdgeTargetRelationships)
+	}
+	if m.ancestry_links != nil {
+		edges = append(edges, knowledgeentity.EdgeAncestryLinks)
 	}
 	return edges
 }
@@ -35386,13 +35446,19 @@ func (m *KnowledgeEntityMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case knowledgeentity.EdgeAncestryLinks:
+		ids := make([]ent.Value, 0, len(m.ancestry_links))
+		for id := range m.ancestry_links {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *KnowledgeEntityMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 6)
 	if m.removedaliases != nil {
 		edges = append(edges, knowledgeentity.EdgeAliases)
 	}
@@ -35404,6 +35470,9 @@ func (m *KnowledgeEntityMutation) RemovedEdges() []string {
 	}
 	if m.removedtarget_relationships != nil {
 		edges = append(edges, knowledgeentity.EdgeTargetRelationships)
+	}
+	if m.removedancestry_links != nil {
+		edges = append(edges, knowledgeentity.EdgeAncestryLinks)
 	}
 	return edges
 }
@@ -35436,13 +35505,19 @@ func (m *KnowledgeEntityMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case knowledgeentity.EdgeAncestryLinks:
+		ids := make([]ent.Value, 0, len(m.removedancestry_links))
+		for id := range m.removedancestry_links {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *KnowledgeEntityMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 6)
 	if m.clearedtenant {
 		edges = append(edges, knowledgeentity.EdgeTenant)
 	}
@@ -35457,6 +35532,9 @@ func (m *KnowledgeEntityMutation) ClearedEdges() []string {
 	}
 	if m.clearedtarget_relationships {
 		edges = append(edges, knowledgeentity.EdgeTargetRelationships)
+	}
+	if m.clearedancestry_links {
+		edges = append(edges, knowledgeentity.EdgeAncestryLinks)
 	}
 	return edges
 }
@@ -35475,6 +35553,8 @@ func (m *KnowledgeEntityMutation) EdgeCleared(name string) bool {
 		return m.clearedsource_relationships
 	case knowledgeentity.EdgeTargetRelationships:
 		return m.clearedtarget_relationships
+	case knowledgeentity.EdgeAncestryLinks:
+		return m.clearedancestry_links
 	}
 	return false
 }
@@ -35508,6 +35588,9 @@ func (m *KnowledgeEntityMutation) ResetEdge(name string) error {
 		return nil
 	case knowledgeentity.EdgeTargetRelationships:
 		m.ResetTargetRelationships()
+		return nil
+	case knowledgeentity.EdgeAncestryLinks:
+		m.ResetAncestryLinks()
 		return nil
 	}
 	return fmt.Errorf("unknown KnowledgeEntity edge %s", name)

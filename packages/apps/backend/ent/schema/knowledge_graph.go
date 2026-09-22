@@ -96,6 +96,8 @@ func (KnowledgeEntity) Edges() []ent.Edge {
 			Ref("source_entity"),
 		edge.From("target_relationships", KnowledgeRelationship.Type).
 			Ref("target_entity"),
+
+		edge.From("ancestry_links", KnowledgeEntityAncestry.Type).Ref("descendant"),
 	}
 }
 

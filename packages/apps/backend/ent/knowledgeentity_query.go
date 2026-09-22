@@ -16,6 +16,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/knowledgeentity"
+	"github.com/rezible/rezible/ent/knowledgeentityancestry"
 	"github.com/rezible/rezible/ent/knowledgeentitylinkingattribute"
 	"github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/knowledgesubjectalias"
@@ -35,6 +36,7 @@ type KnowledgeEntityQuery struct {
 	withLinkingAttributes   *KnowledgeEntityLinkingAttributeQuery
 	withSourceRelationships *KnowledgeRelationshipQuery
 	withTargetRelationships *KnowledgeRelationshipQuery
+	withAncestryLinks       *KnowledgeEntityAncestryQuery
 	modifiers               []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -191,6 +193,31 @@ func (_q *KnowledgeEntityQuery) QueryTargetRelationships() *KnowledgeRelationshi
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.KnowledgeRelationship
 		step.Edge.Schema = schemaConfig.KnowledgeRelationship
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryAncestryLinks chains the current query on the "ancestry_links" edge.
+func (_q *KnowledgeEntityQuery) QueryAncestryLinks() *KnowledgeEntityAncestryQuery {
+	query := (&KnowledgeEntityAncestryClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(knowledgeentity.Table, knowledgeentity.FieldID, selector),
+			sqlgraph.To(knowledgeentityancestry.Table, knowledgeentityancestry.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, knowledgeentity.AncestryLinksTable, knowledgeentity.AncestryLinksColumn),
+		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.KnowledgeEntityAncestry
+		step.Edge.Schema = schemaConfig.KnowledgeEntityAncestry
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -394,6 +421,7 @@ func (_q *KnowledgeEntityQuery) Clone() *KnowledgeEntityQuery {
 		withLinkingAttributes:   _q.withLinkingAttributes.Clone(),
 		withSourceRelationships: _q.withSourceRelationships.Clone(),
 		withTargetRelationships: _q.withTargetRelationships.Clone(),
+		withAncestryLinks:       _q.withAncestryLinks.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
 		path:      _q.path,
@@ -453,6 +481,17 @@ func (_q *KnowledgeEntityQuery) WithTargetRelationships(opts ...func(*KnowledgeR
 		opt(query)
 	}
 	_q.withTargetRelationships = query
+	return _q
+}
+
+// WithAncestryLinks tells the query-builder to eager-load the nodes that are connected to
+// the "ancestry_links" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *KnowledgeEntityQuery) WithAncestryLinks(opts ...func(*KnowledgeEntityAncestryQuery)) *KnowledgeEntityQuery {
+	query := (&KnowledgeEntityAncestryClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withAncestryLinks = query
 	return _q
 }
 
@@ -540,12 +579,13 @@ func (_q *KnowledgeEntityQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 	var (
 		nodes       = []*KnowledgeEntity{}
 		_spec       = _q.querySpec()
-		loadedTypes = [5]bool{
+		loadedTypes = [6]bool{
 			_q.withTenant != nil,
 			_q.withAliases != nil,
 			_q.withLinkingAttributes != nil,
 			_q.withSourceRelationships != nil,
 			_q.withTargetRelationships != nil,
+			_q.withAncestryLinks != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -607,6 +647,15 @@ func (_q *KnowledgeEntityQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 			func(n *KnowledgeEntity) { n.Edges.TargetRelationships = []*KnowledgeRelationship{} },
 			func(n *KnowledgeEntity, e *KnowledgeRelationship) {
 				n.Edges.TargetRelationships = append(n.Edges.TargetRelationships, e)
+			}); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withAncestryLinks; query != nil {
+		if err := _q.loadAncestryLinks(ctx, query, nodes,
+			func(n *KnowledgeEntity) { n.Edges.AncestryLinks = []*KnowledgeEntityAncestry{} },
+			func(n *KnowledgeEntity, e *KnowledgeEntityAncestry) {
+				n.Edges.AncestryLinks = append(n.Edges.AncestryLinks, e)
 			}); err != nil {
 			return nil, err
 		}
@@ -761,6 +810,36 @@ func (_q *KnowledgeEntityQuery) loadTargetRelationships(ctx context.Context, que
 		node, ok := nodeids[fk]
 		if !ok {
 			return fmt.Errorf(`unexpected referenced foreign-key "target_entity_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *KnowledgeEntityQuery) loadAncestryLinks(ctx context.Context, query *KnowledgeEntityAncestryQuery, nodes []*KnowledgeEntity, init func(*KnowledgeEntity), assign func(*KnowledgeEntity, *KnowledgeEntityAncestry)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*KnowledgeEntity)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(knowledgeentityancestry.FieldDescendantID)
+	}
+	query.Where(predicate.KnowledgeEntityAncestry(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(knowledgeentity.AncestryLinksColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.DescendantID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "descendant_id" returned %v for node %v`, fk, n.ID)
 		}
 		assign(node, n)
 	}
