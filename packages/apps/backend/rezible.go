@@ -587,6 +587,12 @@ type (
 )
 
 type (
+	AppAuthSessionCookie interface {
+		Set(http.ResponseWriter, *ent.UserAuthSession)
+		Get(*http.Request) (uuid.UUID, error)
+		Clear(http.ResponseWriter)
+	}
+
 	UserAuthProviderSession struct {
 		User      ent.User
 		Org       ent.Organization

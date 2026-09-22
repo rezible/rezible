@@ -565,7 +565,7 @@ export const createDiscussionComment = <ThrowOnError extends boolean = false>(op
  */
 export const getDocumentSession = <ThrowOnError extends boolean = false>(options: Options<GetDocumentSessionData, ThrowOnError>): RequestResult<GetDocumentSessionResponses, GetDocumentSessionErrors, ThrowOnError> => (options.client ?? client).get<GetDocumentSessionResponses, GetDocumentSessionErrors, ThrowOnError>({
     security: [{
-            key: 'session-token',
+            key: 'scoped-session-token',
             scheme: 'bearer',
             type: 'http'
         }],

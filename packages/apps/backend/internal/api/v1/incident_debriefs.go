@@ -8,27 +8,23 @@ import (
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/incidentdebriefmessage"
 	"github.com/rezible/rezible/ent/schema"
-	"github.com/rezible/rezible/pkg/execution"
 	oapi "github.com/rezible/rezible/pkg/openapi/v1"
 )
 
 type incidentDebriefsHandler struct {
+	*baseHandler
 	db       rez.Database
-	users    rez.UserService
 	debriefs rez.DebriefService
 }
 
-func newIncidentDebriefsHandler(db rez.Database, users rez.UserService, debriefs rez.DebriefService) *incidentDebriefsHandler {
-	return &incidentDebriefsHandler{db: db, users: users, debriefs: debriefs}
+func newIncidentDebriefsHandler(bh *baseHandler, db rez.Database, debriefs rez.DebriefService) *incidentDebriefsHandler {
+	return &incidentDebriefsHandler{bh, db, debriefs}
 }
 
 func (h *incidentDebriefsHandler) GetIncidentUserDebrief(ctx context.Context, request *oapi.GetIncidentUserDebriefRequest) (*oapi.GetIncidentUserDebriefResponse, error) {
 	var resp oapi.GetIncidentUserDebriefResponse
 
-	userId, userOk := execution.GetContext(ctx).UserID()
-	if !userOk {
-		return nil, oapi.Error(ctx, "failed to get auth session", rez.ErrAuthSessionMissing)
-	}
+	userId := h.mustUserID(ctx)
 
 	debrief, debriefErr := h.debriefs.GetUserDebrief(ctx, request.Id, userId)
 	if debriefErr != nil {

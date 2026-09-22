@@ -2,109 +2,135 @@ package v1
 
 import (
 	"context"
-	"errors"
 	"log/slog"
+	"net/http"
+	"time"
 
 	"github.com/danielgtaylor/huma/v2"
+	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
-)
-
-var (
-	ErrAuthSessionMissing = huma.Error401Unauthorized("auth_session_missing")
-	ErrAuthSessionExpired = huma.Error401Unauthorized("auth_session_expired")
-	ErrAuthSessionInvalid = huma.Error401Unauthorized("auth_session_invalid")
-	ErrForbidden          = huma.Error403Forbidden("forbidden")
-	ErrDomainNotAllowed   = huma.Error403Forbidden("domain_not_allowed")
+	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/pkg/openapi"
 )
 
 type (
-	SecurityScheme        = huma.SecurityScheme
-	SecurityMethodOptions = []map[string][]string
+	SecurityScheme = huma.SecurityScheme
+
+	SecurityMethodKind           = string
+	SecurityMethodRequiredScopes = []string
+
+	OperationSecurityMethods = map[SecurityMethodKind]SecurityMethodRequiredScopes
+	OperationSecurityOptions = []OperationSecurityMethods
 )
 
 const (
-	SecurityMethodAppCookie          = "app-cookie"
-	SecurityMethodApiToken           = "api-token"
-	SecurityMethodScopedSessionToken = "session-token"
+	SecurityMethodAppCookie          SecurityMethodKind = "app-cookie"
+	SecurityMethodApiToken           SecurityMethodKind = "api-token"
+	SecurityMethodScopedSessionToken SecurityMethodKind = "scoped-session-token"
 
-	AppCookieName = "rez_auth_session"
+	AppAuthSessionCookieName = "rez_auth_session"
 )
 
-var (
-	DefaultSecurityMethods = SecurityMethodOptions{
-		{SecurityMethodAppCookie: {}},
-		{SecurityMethodApiToken: {}},
-	}
-)
+var DefaultOperationSecurityMethodOptions = OperationSecurityOptions{
+	{SecurityMethodAppCookie: {}},
+	{SecurityMethodApiToken: {}},
+}
 
 func MethodSecuritySchemes() map[string]*SecurityScheme {
-	appCookieSecurityScheme := &SecurityScheme{
-		Name: AppCookieName,
-		Type: "openIdConnect",
-		In:   "cookie",
-	}
-	apiTokenSecurityScheme := &SecurityScheme{
-		Type:         "http",
-		Scheme:       "bearer",
-		BearerFormat: "JWT",
-	}
-	sessionTokenSecurityScheme := &SecurityScheme{
-		Type:         "http",
-		Scheme:       "bearer",
-		BearerFormat: "paseto",
-	}
 	return map[string]*SecurityScheme{
-		SecurityMethodAppCookie:          appCookieSecurityScheme,
-		SecurityMethodApiToken:           apiTokenSecurityScheme,
-		SecurityMethodScopedSessionToken: sessionTokenSecurityScheme,
+		SecurityMethodAppCookie: {
+			Name: AppAuthSessionCookieName,
+			Type: "openIdConnect",
+			In:   "cookie",
+		},
+		SecurityMethodApiToken: {
+			Type:         "http",
+			Scheme:       "bearer",
+			BearerFormat: "JWT",
+		},
+		SecurityMethodScopedSessionToken: {
+			Type:         "http",
+			Scheme:       "bearer",
+			BearerFormat: "paseto",
+		},
 	}
 }
 
-type (
-	MethodSecurityCheckFn func(context.Context, SecurityMethodOptions) error
-)
+type authSessionCookie struct {
+	path string
+}
 
-func MakeRequestMethodSecurityMiddleware(checkFn MethodSecurityCheckFn) func(c huma.Context, next func(huma.Context)) {
-	api := makeUnhandledApi()
-	writeAuthError := func(c huma.Context, authErr error) {
-		statusErr := ConvertAuthStatusError(authErr)
+func NewAppAuthSessionCookie(path string) rez.AppAuthSessionCookie {
+	return &authSessionCookie{path: path}
+}
+
+func (c *authSessionCookie) Set(w http.ResponseWriter, sess *ent.UserAuthSession) {
+	c.set(w, sess.ID.String(), int(time.Until(sess.ExpiresAt).Seconds()))
+}
+
+func (c *authSessionCookie) Get(r *http.Request) (uuid.UUID, error) {
+	if cookie, cookieErr := r.Cookie(AppAuthSessionCookieName); cookieErr == nil {
+		return uuid.Parse(cookie.Value)
+	}
+	return uuid.Nil, nil
+}
+
+func (c *authSessionCookie) Clear(w http.ResponseWriter) {
+	c.set(w, "", -1)
+}
+
+func (c *authSessionCookie) set(w http.ResponseWriter, value string, maxAge int) {
+	http.SetCookie(w, &http.Cookie{
+		Name:     AppAuthSessionCookieName,
+		Path:     c.path,
+		Value:    value,
+		MaxAge:   maxAge,
+		HttpOnly: true,
+		Secure:   true,
+		SameSite: http.SameSiteLaxMode,
+	})
+}
+
+type SecurityProvider interface {
+	CreateRequestSecurityContext(http.ResponseWriter, *http.Request) (context.Context, error)
+	VerifyRequestSecurity(context.Context, OperationSecurityOptions) error
+}
+
+type contextUnwrapperFunc func(huma.Context) (*http.Request, http.ResponseWriter)
+
+func makeRequestMethodSecurityMiddleware(api openapi.API, p SecurityProvider, unwrapCtx contextUnwrapperFunc) openapi.Middleware {
+	defaultSecurityOpts := api.OpenAPI().Security
+	getOperationSecurityOptions := func(c huma.Context) OperationSecurityOptions {
+		if opts := c.Operation().Security; opts != nil {
+			return opts
+		}
+		return defaultSecurityOpts
+	}
+	writeSecurityError := func(c huma.Context, err error) {
+		statusErr := ConvertStatusError("verify request security", err)
 		if writeErr := huma.WriteErr(api, c, statusErr.GetStatus(), statusErr.Error()); writeErr != nil {
 			slog.Error("failed to write api error response", "error", writeErr)
 		}
 	}
 	return func(c huma.Context, next func(huma.Context)) {
-		opSecurity := c.Operation().Security
-
-		if opSecurity != nil && len(opSecurity) == 0 {
-			next(c)
+		r, w := unwrapCtx(c)
+		secCtx, sessErr := p.CreateRequestSecurityContext(w, r)
+		if sessErr != nil {
+			writeSecurityError(c, sessErr)
 			return
 		}
-		if opSecurity == nil {
-			opSecurity = DefaultSecurityMethods
+		c = huma.WithContext(c, secCtx)
+
+		secOpts := getOperationSecurityOptions(c)
+		if secOpts != nil && len(secOpts) == 0 {
+			slog.Debug("no security options for operation")
 		}
 
-		if checkErr := checkFn(c.Context(), opSecurity); checkErr != nil {
-			writeAuthError(c, checkErr)
-		} else {
-			next(c)
+		if secErr := p.VerifyRequestSecurity(c.Context(), secOpts); secErr != nil {
+			writeSecurityError(c, secErr)
+			return
 		}
-	}
-}
 
-func ConvertAuthStatusError(err error) huma.StatusError {
-	if errors.Is(err, rez.ErrAuthSessionMissing) {
-		return ErrAuthSessionMissing
-	} else if errors.Is(err, rez.ErrAuthSessionExpired) {
-		return ErrAuthSessionExpired
-	} else if errors.Is(err, rez.ErrAuthSessionInvalid) {
-		return ErrAuthSessionInvalid
-	} else if errors.Is(err, rez.ErrInvalidUser) {
-		return ErrAuthSessionInvalid
-	} else if errors.Is(err, rez.ErrInvalidTenant) {
-		return ErrAuthSessionInvalid
-	} else if errors.Is(err, rez.ErrDomainNotAllowed) {
-		return ErrDomainNotAllowed
+		next(c)
 	}
-	slog.Warn("unknown auth status error", "error", err)
-	return ErrAuthSessionInvalid
 }

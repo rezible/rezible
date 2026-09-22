@@ -14,23 +14,23 @@ import (
 	mapset "github.com/deckarep/golang-set/v2"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/httplog/v3"
-
 	rez "github.com/rezible/rezible"
-	"github.com/rezible/rezible/internal/http/oidc"
 	"github.com/rezible/rezible/pkg/execution"
-	"github.com/rezible/rezible/pkg/openapi"
 	oapiv1 "github.com/rezible/rezible/pkg/openapi/v1"
 )
 
 type (
 	Server struct {
-		cfg    rez.HttpServerConfig
 		logger *slog.Logger
 
 		server *http.Server
 
 		listenerMu    sync.Mutex
 		listenerReady atomic.Bool
+	}
+
+	UserAuthProvider interface {
+		MakeAuthHandler() http.Handler
 	}
 
 	WebhookHandlers map[string]http.Handler
@@ -45,14 +45,12 @@ const (
 
 func NewServer(
 	cfg rez.Config,
-	ts rez.TelemetryService,
-	sess rez.AuthSessionService,
-	oapiV1Handler oapiv1.Handler,
+	userAuth UserAuthProvider,
+	v1Api oapiv1.API,
 	webhooks WebhookHandlers,
 	healthFn HealthCheckFunc,
 ) (*Server, error) {
 	s := &Server{
-		cfg:    cfg.HttpServer,
 		logger: slog.Default().WithGroup("http"),
 	}
 
@@ -69,24 +67,9 @@ func NewServer(
 	}
 	router.Mount("/webhooks", webhooksHandler)
 
-	asc := newAppAuthSessionCookie(cfg.App.FrontendApiPath)
-	oidcAuthHandler, authErr := oidc.NewUserAuthHandler(cfg, sess, asc)
-	if authErr != nil {
-		return nil, fmt.Errorf("user auth: %w", authErr)
-	}
-	router.Mount("/auth", oidcAuthHandler)
+	router.Mount("/auth", userAuth.MakeAuthHandler())
 
-	rv := newRequestAuthValidator(sess, asc)
-	if cfg.HttpServer.Auth.EnableDevSkipMode {
-		slog.Warn("enabling development session auth override")
-		rv.devSessionOverride = true
-	}
-	// api routes with auth check
-	router.Group(func(ar chi.Router) {
-		ar.Use(rv.AuthSessionMiddleware)
-
-		ar.Mount(oapiv1.VersionPrefix, s.makeOpenApiHandler(ts, oapiV1Handler))
-	})
+	router.Mount(oapiv1.VersionPrefix, v1Api.Adapter())
 
 	s.server = s.makeServer(cfg, router)
 
@@ -97,9 +80,10 @@ func (s *Server) makeServer(cfg rez.Config, r *chi.Mux) *http.Server {
 	handler := chi.NewRouter()
 	handler.Use(s.makeSetRootExecutionContextMiddleware())
 	handler.Use(s.makeRequestLoggerMiddleware(cfg.App.DebugMode))
-	handler.Mount(ensureSlashPrefix(s.cfg.BasePath), http.StripPrefix(s.cfg.BasePath, r))
+	httpCfg := cfg.HttpServer
+	handler.Mount(ensureSlashPrefix(httpCfg.BasePath), http.StripPrefix(httpCfg.BasePath, r))
 	return &http.Server{
-		Addr:    net.JoinHostPort(s.cfg.Host, s.cfg.Port),
+		Addr:    net.JoinHostPort(httpCfg.Host, httpCfg.Port),
 		Handler: handler,
 	}
 }
@@ -109,62 +93,6 @@ func ensureSlashPrefix(s string) string {
 		return "/" + s
 	}
 	return s
-}
-
-func authScopesSatisfied(authScopes []string, secOpts oapiv1.SecurityMethodOptions) bool {
-	authParts := make(map[string][]string)
-	for _, scope := range authScopes {
-		parts := strings.Split(scope, ":")
-		if len(parts) == 2 || len(parts) == 3 {
-			authParts[parts[0]] = parts[1:]
-		} else {
-			slog.Warn("invalid auth scope", "scope", scope)
-		}
-	}
-	for _, opt := range secOpts {
-		for method, scopes := range opt {
-			slog.Debug("check api method scopes", "method", method, "scopes", scopes)
-			for _, scope := range scopes {
-				methodParts := strings.Split(scope, ":")
-				if len(methodParts) != 2 && len(methodParts) != 3 {
-					slog.Warn("invalid api security method scope",
-						"method", method, "scope", scope)
-					continue
-				}
-				subParts, ok := authParts[methodParts[0]]
-				if !ok {
-					continue
-				}
-				// TODO: check subParts
-				slog.Debug("check scope sub parts", "subParts", subParts)
-				return true
-			}
-		}
-	}
-	return false
-}
-
-func (s *Server) makeOpenApiHandler(ts rez.TelemetryService, v1h oapiv1.Handler) openapi.Adapter {
-	checkMethodOptionsFn := func(ctx context.Context, secOpts oapiv1.SecurityMethodOptions) error {
-		ec := execution.GetContext(ctx)
-
-		if ec.IsAnonymous() {
-			return rez.ErrAuthSessionMissing
-		}
-
-		if len(ec.Auth.Scopes) > 0 {
-			if !authScopesSatisfied(ec.Auth.Scopes, secOpts) {
-				return rez.ErrAuthSessionInvalid
-			}
-		}
-
-		return nil
-	}
-
-	api := oapiv1.MakeApi(v1h,
-		oapiv1.MakeRequestMethodSecurityMiddleware(checkMethodOptionsFn),
-		oapiv1.MakeAPITelemetryMiddleware(ts))
-	return api.Adapter()
 }
 
 func (s *Server) makeSetRootExecutionContextMiddleware() func(http.Handler) http.Handler {

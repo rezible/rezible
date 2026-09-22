@@ -7855,12 +7855,12 @@ components:
       in: cookie
       name: rez_auth_session
       type: openIdConnect
-    session-token:
+    scoped-session-token:
       bearerFormat: paseto
       scheme: bearer
       type: http
 info:
-  description: Rezible API Specification
+  description: Rezible API
   title: Rezible API
   version: 0.0.1
 openapi: 3.1.0
@@ -9867,7 +9867,7 @@ paths:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
       security:
-        - session-token:
+        - scoped-session-token:
             - documents:*
       summary: Get document session
       tags:

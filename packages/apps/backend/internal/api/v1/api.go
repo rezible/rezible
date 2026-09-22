@@ -1,11 +1,19 @@
 package apiv1
 
 import (
+	"context"
+
+	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/user"
+	"github.com/rezible/rezible/pkg/execution"
 	oapi "github.com/rezible/rezible/pkg/openapi/v1"
 )
 
 type Handler struct {
+	oapi.SecurityProvider
+
 	*activityHandler
 	*aiHandler
 	*alertsHandler
@@ -37,6 +45,7 @@ type Handler struct {
 var _ oapi.Handler = (*Handler)(nil)
 
 func NewHandler(
+	securityProvider oapi.SecurityProvider,
 	db rez.Database,
 	agents rez.AiAgentCatalogue,
 	agentSessions rez.AiAgentSessionService,
@@ -59,13 +68,17 @@ func NewHandler(
 	systemAnalysis rez.SystemAnalysisService,
 	knowledge rez.KnowledgeGraphQueryService,
 	situations rez.SituationService,
-) (*Handler, error) {
-	h := &Handler{
+) *Handler {
+	bh := &baseHandler{users: users}
+
+	return &Handler{
+		SecurityProvider: securityProvider,
+
 		alertsHandler:             newAlertsHandler(alerts),
 		aiHandler:                 newAiHandler(agents, agentSessions, messages),
-		userSessionsHandler:       newUserSessionsHandler(orgs, users),
-		documentsHandler:          newDocumentsHandler(documents, users),
-		incidentDebriefsHandler:   newIncidentDebriefsHandler(db, users, debriefs),
+		userSessionsHandler:       newUserSessionsHandler(bh, orgs),
+		documentsHandler:          newDocumentsHandler(bh, documents),
+		incidentDebriefsHandler:   newIncidentDebriefsHandler(bh, db, debriefs),
 		incidentMetadataHandler:   newIncidentMetadataHandler(db, incidents),
 		incidentMilestonesHandler: newIncidentMilestonesHandler(db),
 		tasksHandler:              newTasksHandler(db),
@@ -74,8 +87,8 @@ func NewHandler(
 		integrationsHandler:       newIntegrationsHandler(integrations),
 		investigationsHandler:     newInvestigationsHandler(investigations),
 		meetingsHandler:           newMeetingsHandler(),
-		eventsHandler:             newEventsHandler(events),
-		oncallRostersHandler:      newOncallRostersHandler(users, incidents, rosters, shifts),
+		eventsHandler:             newEventsHandler(bh, events),
+		oncallRostersHandler:      newOncallRostersHandler(bh, incidents, rosters, shifts),
 		oncallShiftsHandler:       newOncallShiftsHandler(users, incidents, shifts),
 		oncallMetricsHandler:      newOncallMetricsHandler(oncallMetrics),
 		organizationsHandler:      newOrganizationsHandler(orgs),
@@ -83,11 +96,43 @@ func NewHandler(
 		retrospectivesHandler:     newRetrospectivesHandler(users, incidents, retros, documents),
 		systemAnalysisHandler:     newSystemAnalysisHandler(systemAnalysis),
 		knowledgeGraphHandler:     newKnowledgeGraphHandler(knowledge),
-		situationsHandler:         newSituationsHandler(situations, users),
+		situationsHandler:         newSituationsHandler(bh, situations),
 		discussionHandler:         newDiscussionHandler(discussions),
 		teamsHandler:              newTeamsHandler(db),
 		usersHandler:              newUsersHandler(users),
 	}
+}
 
-	return h, nil
+type baseHandler struct {
+	users rez.UserService
+}
+
+// mustAuth reads the existing execution identity and panics when the
+// protected-handler identity invariant is broken. Only a user actor with a
+// present/nonzero user ID and a tenant ID satisfies the invariant; system or
+// agent execution is never treated as a logged-in user just because identity
+// fields exist.
+func (h *baseHandler) mustAuth(ctx context.Context) execution.Auth {
+	ec := execution.GetContext(ctx)
+	if !ec.IsUser() {
+		panic("protected handler requires an authenticated user execution context")
+	}
+	if ec.Auth.UserID == nil || *ec.Auth.UserID == uuid.Nil {
+		panic("protected handler requires a present authenticated user id")
+	}
+	if ec.Auth.TenantID == nil {
+		panic("protected handler requires a tenant id")
+	}
+	return ec.Auth
+}
+
+// mustUserID returns the authenticated user ID without a database call.
+func (h *baseHandler) mustUserID(ctx context.Context) uuid.UUID {
+	return *h.mustAuth(ctx).UserID
+}
+
+// currentUser loads the current user through the execution context's tenant.
+// Lookup failures are returned normally for callers to wrap.
+func (h *baseHandler) currentUser(ctx context.Context) (*ent.User, error) {
+	return h.users.Get(ctx, user.ID(h.mustUserID(ctx)))
 }

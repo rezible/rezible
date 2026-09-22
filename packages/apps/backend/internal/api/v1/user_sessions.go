@@ -4,37 +4,37 @@ import (
 	"context"
 	"maps"
 	"strings"
+	"time"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/organization"
 	"github.com/rezible/rezible/ent/organizationrole"
-	"github.com/rezible/rezible/ent/user"
-	"github.com/rezible/rezible/pkg/execution"
 	oapi "github.com/rezible/rezible/pkg/openapi/v1"
 )
 
 type userSessionsHandler struct {
-	orgs  rez.OrganizationService
-	users rez.UserService
+	*baseHandler
+	orgs rez.OrganizationService
 
 	inboxExamples []oapi.InboxItem
 }
 
-func newUserSessionsHandler(orgs rez.OrganizationService, users rez.UserService) *userSessionsHandler {
-	return &userSessionsHandler{orgs: orgs, users: users}
+func newUserSessionsHandler(bh *baseHandler, orgs rez.OrganizationService) *userSessionsHandler {
+	return &userSessionsHandler{baseHandler: bh, orgs: orgs}
 }
 
 func (h *userSessionsHandler) GetUserSession(ctx context.Context, req *oapi.GetUserSessionRequest) (*oapi.GetUserSessionResponse, error) {
 	var resp oapi.GetUserSessionResponse
 
-	exec := execution.GetContext(ctx)
-	userId, userOk := exec.UserID()
-	if !userOk {
-		return nil, oapi.Error(ctx, "get user session", rez.ErrAuthSessionMissing)
+	auth := h.mustAuth(ctx)
+
+	var expiresAt time.Time
+	if auth.ExpiresAt != nil {
+		expiresAt = *auth.ExpiresAt
 	}
 
-	u, userErr := h.users.Get(ctx, user.ID(userId))
+	u, userErr := h.currentUser(ctx)
 	if userErr != nil {
 		return nil, oapi.Error(ctx, "failed to get user", userErr)
 	}
@@ -44,45 +44,28 @@ func (h *userSessionsHandler) GetUserSession(ctx context.Context, req *oapi.GetU
 		return nil, oapi.Error(ctx, "failed to get organization", orgErr)
 	}
 
+	userOrgRole := organizationrole.RoleMember
+	orgRole, queryOrgRoleErr := u.QueryOrganizationRole().Only(ctx)
+	if queryOrgRoleErr != nil && !ent.IsNotFound(queryOrgRoleErr) {
+		return nil, oapi.Error(ctx, "failed to query user org role", queryOrgRoleErr)
+	} else if orgRole != nil {
+		userOrgRole = orgRole.Role
+	}
+
 	resp.Body.Data = oapi.UserSession{
-		User:         oapi.UserFromEnt(u),
-		Organization: oapi.OrganizationFromEnt(org),
-	}
-
-	if exec.Auth.ExpiresAt != nil {
-		resp.Body.Data.ExpiresAt = *exec.Auth.ExpiresAt
-	}
-
-	role, roleErr := u.QueryOrganizationRole().Only(ctx)
-	if roleErr != nil && !ent.IsNotFound(roleErr) {
-		return nil, oapi.Error(ctx, "failed to get organization role", roleErr)
-	}
-
-	resp.Body.Data.OrganizationRole = organizationrole.RoleMember.String()
-	if roleErr == nil && role.OrganizationID == org.ID && role.Role == organizationrole.RoleAdmin {
-		resp.Body.Data.OrganizationRole = organizationrole.RoleAdmin.String()
+		User:             oapi.UserFromEnt(u),
+		Organization:     oapi.OrganizationFromEnt(org),
+		OrganizationRole: userOrgRole,
+		ExpiresAt:        expiresAt,
 	}
 
 	return &resp, nil
 }
 
-func (h *userSessionsHandler) getCurrentUser(ctx context.Context) (*ent.User, error) {
-	exec := execution.GetContext(ctx)
-	userId, userOk := exec.UserID()
-	if !userOk {
-		return nil, oapi.Error(ctx, "get current user", rez.ErrAuthSessionMissing)
-	}
-	u, userErr := h.users.Get(ctx, user.ID(userId))
-	if userErr != nil {
-		return nil, oapi.Error(ctx, "failed to get user", userErr)
-	}
-	return u, nil
-}
-
 func (h *userSessionsHandler) GetUserSessionPreferences(ctx context.Context, req *oapi.GetUserSessionPreferencesRequest) (*oapi.GetUserSessionPreferencesResponse, error) {
 	var resp oapi.GetUserSessionPreferencesResponse
 
-	u, userErr := h.getCurrentUser(ctx)
+	u, userErr := h.currentUser(ctx)
 	if userErr != nil {
 		return nil, userErr
 	}
@@ -94,7 +77,7 @@ func (h *userSessionsHandler) GetUserSessionPreferences(ctx context.Context, req
 func (h *userSessionsHandler) UpdateUserSessionPreferences(ctx context.Context, req *oapi.UpdateUserSessionPreferencesRequest) (*oapi.UpdateUserSessionPreferencesResponse, error) {
 	var resp oapi.UpdateUserSessionPreferencesResponse
 
-	curr, currErr := h.getCurrentUser(ctx)
+	curr, currErr := h.currentUser(ctx)
 	if currErr != nil {
 		return nil, currErr
 	}

@@ -96,7 +96,7 @@ var GetDocumentSession = huma.Operation{
 	Summary:     "Get document session",
 	Tags:        documentsTags,
 	Errors:      ErrorCodes(),
-	Security: SecurityMethodOptions{
+	Security: OperationSecurityOptions{
 		{SecurityMethodScopedSessionToken: {"documents:*"}},
 	},
 }

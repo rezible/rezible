@@ -11,46 +11,51 @@ import (
 
 const VersionPrefix = "/v1"
 
-type Handler interface {
-	// GetMiddleware() []Middleware
+type (
+	Handler interface {
+		SecurityProvider
 
-	ActivityHandler
-	UserSessionsHandler
-	OrganizationsHandler
-	UsersHandler
-	TeamsHandler
-	IntegrationsHandler
-	AiHandler
+		ActivityHandler
+		UserSessionsHandler
+		OrganizationsHandler
+		UsersHandler
+		TeamsHandler
+		IntegrationsHandler
+		AiHandler
 
-	OncallMetricsHandler
+		OncallMetricsHandler
 
-	KnowledgeGraphHandler
-	SystemAnalysisHandler
-	SituationsHandler
-	InvestigationsHandler
+		KnowledgeGraphHandler
+		SystemAnalysisHandler
+		SituationsHandler
+		InvestigationsHandler
 
-	IncidentsHandler
-	ReviewsHandler
-	IncidentMetadataHandler
-	IncidentMilestonesHandler
-	IncidentDebriefsHandler
+		IncidentsHandler
+		ReviewsHandler
+		IncidentMetadataHandler
+		IncidentMilestonesHandler
+		IncidentDebriefsHandler
 
-	DocumentsHandler
-	RetrospectivesHandler
-	TasksHandler
-	PlaybooksHandler
-	MeetingsHandler
+		DocumentsHandler
+		RetrospectivesHandler
+		TasksHandler
+		PlaybooksHandler
+		MeetingsHandler
 
-	EventsHandler
-	EventAnnotationsHandler
+		EventsHandler
+		EventAnnotationsHandler
 
-	AlertsHandler
-	DiscussionHandler
+		AlertsHandler
+		DiscussionHandler
 
-	OncallRostersHandler
-	OncallShiftsHandler
-}
-type operations struct{ Handler }
+		OncallRostersHandler
+		OncallShiftsHandler
+	}
+
+	operations struct{ Handler }
+
+	API openapi.API
+)
 
 func makeConfig() openapi.Config {
 	cfg := huma.DefaultConfig("Rezible API", "0.0.1")
@@ -62,23 +67,27 @@ func makeConfig() openapi.Config {
 		//	Description: "Local Development",
 		//},
 	}
-	cfg.Info.Description = "Rezible API Specification"
-	cfg.Security = DefaultSecurityMethods
+	cfg.Info.Description = "Rezible API"
+	cfg.Security = DefaultOperationSecurityMethodOptions
 	cfg.Components.SecuritySchemes = MethodSecuritySchemes()
 
 	return cfg
 }
 
-func MakeApi(h Handler, middlewares ...openapi.Middleware) openapi.API {
+func MakeApi(h Handler, middlewares ...openapi.Middleware) API {
+	o := operations{Handler: h}
+
 	api := humago.NewWithPrefix(http.NewServeMux(), VersionPrefix, makeConfig())
+	api.UseMiddleware(makeRequestMethodSecurityMiddleware(api, o, humago.Unwrap))
 	api.UseMiddleware(middlewares...)
-	s := operations{Handler: h}
-	autoRegisterEnumAliases(api, s)
-	huma.AutoRegister(api, s)
+
+	autoRegisterEnumAliases(api, o)
+	huma.AutoRegister(api, o)
+
 	return api
 }
 
-func makeUnhandledApi() openapi.API {
+func makeUnhandledApi() API {
 	return MakeApi(operations{})
 }
 

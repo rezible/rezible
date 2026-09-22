@@ -4,7 +4,9 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/rezible/rezible/internal/http/oidc"
 	"github.com/rezible/rezible/pkg/ai/evals"
+	"github.com/rezible/rezible/pkg/openapi"
 	"github.com/samber/do/v2"
 
 	rez "github.com/rezible/rezible"
@@ -36,7 +38,6 @@ var basePackages = do.Package(
 	pkgRiver,
 	pkgWatermill,
 	pkgGenkit,
-	pkgOpenApi,
 	pkgHttp,
 	pkgIntegrations,
 	pkgDatabase,
@@ -523,13 +524,32 @@ var pkgDatabase = do.Package(
 	}),
 
 	do.Lazy(func(i do.Injector) (rez.SystemHazardService, error) {
-		return db.NewSystemHazardService(do.MustInvoke[rez.Database](i), do.MustInvoke[rez.KnowledgeGraphIngestionService](i))
+		return db.NewSystemHazardService(
+			do.MustInvoke[rez.Database](i),
+			do.MustInvoke[rez.KnowledgeGraphIngestionService](i),
+		)
 	}),
 )
 
-var pkgOpenApi = do.Package(
+var pkgOpenApiV1 = do.Package(
+	do.Lazy(func(i do.Injector) (rez.AppAuthSessionCookie, error) {
+		return oapiv1.NewAppAuthSessionCookie(do.MustInvoke[rez.Config](i).App.FrontendApiPath), nil
+	}),
+
+	do.Lazy(func(i do.Injector) (oapiv1.SecurityProvider, error) {
+		sp := apiv1.NewRequestSecurityProvider(
+			do.MustInvoke[rez.AuthSessionService](i),
+			do.MustInvoke[rez.AppAuthSessionCookie](i),
+		)
+		if do.MustInvoke[rez.Config](i).HttpServer.Auth.EnableDevSkipMode {
+			return apiv1.NewDevelopmentSecurityProvider(sp, makeDevelopmentAuthSession())
+		}
+		return sp, nil
+	}),
+
 	do.Lazy(func(i do.Injector) (oapiv1.Handler, error) {
 		return apiv1.NewHandler(
+			do.MustInvoke[oapiv1.SecurityProvider](i),
 			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.AiAgentCatalogue](i),
 			do.MustInvoke[rez.AiAgentSessionService](i),
@@ -552,18 +572,47 @@ var pkgOpenApi = do.Package(
 			do.MustInvoke[rez.SystemAnalysisService](i),
 			do.MustInvoke[rez.KnowledgeGraphQueryService](i),
 			do.MustInvoke[rez.SituationService](i),
-		)
+		), nil
+	}),
+
+	do.Lazy(func(i do.Injector) ([]openapi.Middleware, error) {
+		return []openapi.Middleware{
+			oapiv1.MakeAPITelemetryMiddleware(do.MustInvoke[rez.TelemetryService](i)),
+		}, nil
+	}),
+
+	do.Lazy(func(i do.Injector) (oapiv1.API, error) {
+		mw := do.MustInvoke[[]openapi.Middleware](i)
+		return oapiv1.MakeApi(do.MustInvoke[oapiv1.Handler](i), mw...), nil
+	}),
+
+	do.Lazy(func(i do.Injector) (openapi.Adapter, error) {
+		return do.MustInvoke[oapiv1.API](i).Adapter(), nil
 	}),
 )
 
 var pkgHttp = do.Package(
+	do.Lazy(func(i do.Injector) (*oidc.UserAuthProvider, error) {
+		return oidc.NewUserAuthProvider(
+			do.MustInvoke[rez.Config](i),
+			do.MustInvoke[rez.AuthSessionService](i),
+			do.MustInvoke[rez.AppAuthSessionCookie](i),
+		)
+	}),
+	do.Bind[*oidc.UserAuthProvider, http.UserAuthProvider](),
+
+	pkgOpenApiV1,
+
+	do.Lazy(func(i do.Injector) (http.WebhookHandlers, error) {
+		return do.MustInvoke[rez.IntegrationRegistry](i).GetAvailableWebhookHandlers(), nil
+	}),
+
 	do.Lazy(func(i do.Injector) (*http.Server, error) {
 		return http.NewServer(
 			do.MustInvoke[rez.Config](i),
-			do.MustInvoke[rez.TelemetryService](i),
-			do.MustInvoke[rez.AuthSessionService](i),
-			do.MustInvoke[oapiv1.Handler](i),
-			do.MustInvoke[rez.IntegrationRegistry](i).GetAvailableWebhookHandlers(),
+			do.MustInvoke[http.UserAuthProvider](i),
+			do.MustInvoke[oapiv1.API](i),
+			do.MustInvoke[http.WebhookHandlers](i),
 			i.HealthCheckWithContext,
 		)
 	}),

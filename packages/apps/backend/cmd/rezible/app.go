@@ -15,7 +15,6 @@ import (
 	"github.com/rezible/rezible/ent/organization"
 	"github.com/rezible/rezible/ent/organizationrole"
 	"github.com/rezible/rezible/ent/user"
-	"github.com/rezible/rezible/internal/http"
 	"github.com/rezible/rezible/internal/postgres/river"
 	"github.com/rezible/rezible/internal/watermill"
 	rezai "github.com/rezible/rezible/pkg/ai"
@@ -325,11 +324,26 @@ func (a *Application) registerMessageHandlers() error {
 
 func (a *Application) makeDevelopmentAuthSession(ctx context.Context) (*ent.UserAuthSession, error) {
 	sessions := a.mustInvoke[rez.AuthSessionService]()
-	sess, sessionErr := sessions.CreateFromUserAuthResponse(ctx, http.NewDevelopmentSessionIdentity())
+	sess, sessionErr := sessions.CreateFromUserAuthResponse(ctx, makeDevelopmentAuthSession())
 	if sessionErr != nil {
 		return nil, fmt.Errorf("http development session: %w", sessionErr)
 	}
 	return sess, nil
+}
+
+func makeDevelopmentAuthSession() *rez.UserAuthProviderSession {
+	return &rez.UserAuthProviderSession{
+		User: ent.User{
+			Email:          "test@dev.rezible.com",
+			Name:           "Dev User",
+			AuthProviderID: "dev-user",
+		},
+		Org: ent.Organization{
+			Name:           "Dev Org",
+			AuthProviderID: "dev-org",
+		},
+		ExpiresAt: time.Now().Add(time.Hour),
+	}
 }
 
 func (a *Application) seedDevelopmentIdentity(ctx context.Context) error {

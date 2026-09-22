@@ -8,7 +8,7 @@
   },
   "scripts": {
     "dev": {
-      "command": "PC_DISABLE_TUI=1 just dev"
+      "command": "SKIP_AUTH=true PC_DISABLE_TUI=1 just dev"
     }
   }
 }

@@ -15,7 +15,6 @@ import (
 	"github.com/rezible/rezible/ent/agentturn"
 	"github.com/rezible/rezible/ent/predicate"
 	rezai "github.com/rezible/rezible/pkg/ai"
-	"github.com/rezible/rezible/pkg/execution"
 	"github.com/rezible/rezible/pkg/messages"
 	oapi "github.com/rezible/rezible/pkg/openapi/v1"
 	"golang.org/x/sync/errgroup"
@@ -63,10 +62,6 @@ func (h *aiHandler) CreateAgentSession(ctx context.Context, req *oapi.CreateAgen
 }
 
 func (h *aiHandler) ListAgentSessions(ctx context.Context, req *oapi.ListAgentSessionsRequest) (*oapi.ListAgentSessionsResponse, error) {
-	if _, ownerIdOk := execution.GetContext(ctx).UserID(); !ownerIdOk {
-		return nil, oapi.ErrAuthSessionMissing
-	}
-
 	params := rez.ListAiAgentSessionsParams{
 		ListParams: req.ListParams(),
 	}

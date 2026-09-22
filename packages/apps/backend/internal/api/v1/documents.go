@@ -5,28 +5,22 @@ import (
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/ent/user"
-	"github.com/rezible/rezible/pkg/execution"
 	oapi "github.com/rezible/rezible/pkg/openapi/v1"
 )
 
 type documentsHandler struct {
+	*baseHandler
 	documents rez.DocumentsService
-	users     rez.UserService
 }
 
-func newDocumentsHandler(docs rez.DocumentsService, users rez.UserService) *documentsHandler {
-	return &documentsHandler{documents: docs, users: users}
+func newDocumentsHandler(bh *baseHandler, docs rez.DocumentsService) *documentsHandler {
+	return &documentsHandler{bh, docs}
 }
 
 func (h *documentsHandler) RequestDocumentSessionAuth(ctx context.Context, req *oapi.RequestDocumentSessionAuthRequest) (*oapi.RequestDocumentSessionAuthResponse, error) {
 	var resp oapi.RequestDocumentSessionAuthResponse
 
-	userId, userOK := execution.GetContext(ctx).UserID()
-	if !userOK {
-		return nil, oapi.Error(ctx, "no user", rez.ErrAuthSessionMissing)
-	}
-	ds, dsErr := h.documents.CreateDocumentEditorSessionAuth(ctx, req.Id, userId)
+	ds, dsErr := h.documents.CreateDocumentEditorSessionAuth(ctx, req.Id, h.mustUserID(ctx))
 	if dsErr != nil {
 		return nil, oapi.Error(ctx, "create session", dsErr)
 	}
@@ -38,15 +32,11 @@ func (h *documentsHandler) RequestDocumentSessionAuth(ctx context.Context, req *
 func (h *documentsHandler) GetDocumentSession(ctx context.Context, request *oapi.GetDocumentSessionRequest) (*oapi.GetDocumentSessionResponse, error) {
 	var resp oapi.GetDocumentSessionResponse
 
-	userId, userOK := execution.GetContext(ctx).UserID()
-	if !userOK {
-		return nil, oapi.Error(ctx, "no user", rez.ErrAuthSessionMissing)
-	}
-	usr, usrErr := h.users.Get(ctx, user.ID(userId))
+	usr, usrErr := h.currentUser(ctx)
 	if usrErr != nil {
 		return nil, oapi.Error(ctx, "get user", usrErr)
 	}
-	docAccess, docErr := h.documents.GetUserDocumentAccess(ctx, request.Id, userId)
+	docAccess, docErr := h.documents.GetUserDocumentAccess(ctx, request.Id, usr.ID)
 	if docErr != nil {
 		return nil, oapi.Error(ctx, "get access", docErr)
 	}

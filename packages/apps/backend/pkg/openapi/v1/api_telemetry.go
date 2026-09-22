@@ -6,18 +6,22 @@ import (
 	"time"
 
 	"github.com/danielgtaylor/huma/v2"
+	"github.com/rezible/rezible/pkg/openapi"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/metric"
 
 	rez "github.com/rezible/rezible"
 )
 
-func MakeAPITelemetryMiddleware(ts rez.TelemetryService) func(huma.Context, func(huma.Context)) {
+func MakeAPITelemetryMiddleware(ts rez.TelemetryService) openapi.Middleware {
 	m := ts.DefaultMeter()
-	requests, requestsErr := m.Int64Counter("rezible.backend.http.server.requests", metric.WithDescription("HTTP requests handled by the backend"))
-	requestSeconds, requestSecondsErr := m.Float64Histogram("rezible.backend.http.server.duration", metric.WithDescription("HTTP request duration"), metric.WithUnit("s"))
+	requests, requestsErr := m.Int64Counter("rezible.backend.http.server.requests",
+		metric.WithDescription("HTTP requests handled by the backend"))
+	requestSeconds, requestSecondsErr := m.Float64Histogram("rezible.backend.http.server.duration",
+		metric.WithDescription("HTTP request duration"),
+		metric.WithUnit("s"))
 	if telErr := errors.Join(requestsErr, requestSecondsErr); telErr != nil {
-		panic("telemetry error: " + telErr.Error())
+		panic("telemetry middleware: " + telErr.Error())
 	}
 
 	return func(ctx huma.Context, next func(huma.Context)) {

@@ -51,15 +51,16 @@ func (s *SituationServiceSuite) newHarness(tdb rez.Database) *situationServiceHa
 		db:     tdb,
 		jobs:   jobSvc,
 	}
-	kg, _ := NewKnowledgeGraphQueryService(tdb)
+	kgQuery, _ := NewKnowledgeGraphQueryService(tdb)
+	kgIngest, _ := NewKnowledgeGraphIngestionService(tdb)
 	investigations := NewInvestigationService(tdb, agentsSvc)
-	sits, _ := NewSituationService(tdb, jobSvc, kg, investigations)
-	haz, _ := NewSystemHazardService(tdb, kg)
+	sits, _ := NewSituationService(tdb, jobSvc, kgIngest, investigations)
+	haz, _ := NewSystemHazardService(tdb, kgIngest)
 	return &situationServiceHarness{
 		tdb:        tdb,
 		jobs:       jobSvc,
 		agents:     agentsSvc,
-		knowledge:  kg,
+		knowledge:  kgQuery,
 		situations: sits,
 		hazards:    haz,
 	}

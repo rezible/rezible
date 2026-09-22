@@ -6,7 +6,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/user"
-	"github.com/rezible/rezible/pkg/execution"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
@@ -14,14 +13,14 @@ import (
 )
 
 type oncallRostersHandler struct {
-	users     rez.UserService
+	*baseHandler
 	incidents rez.IncidentService
 	rosters   rez.OncallRostersService
 	shifts    rez.OncallShiftsService
 }
 
-func newOncallRostersHandler(users rez.UserService, inc rez.IncidentService, rosters rez.OncallRostersService, shifts rez.OncallShiftsService) *oncallRostersHandler {
-	return &oncallRostersHandler{users: users, incidents: inc, rosters: rosters, shifts: shifts}
+func newOncallRostersHandler(bh *baseHandler, inc rez.IncidentService, rosters rez.OncallRostersService, shifts rez.OncallShiftsService) *oncallRostersHandler {
+	return &oncallRostersHandler{bh, inc, rosters, shifts}
 }
 
 func (h *oncallRostersHandler) ListOncallRosters(ctx context.Context, request *oapi.ListOncallRostersRequest) (*oapi.ListOncallRostersResponse, error) {
@@ -83,12 +82,7 @@ func (h *oncallRostersHandler) getUserWatchedOncallRosters(ctx context.Context, 
 func (h *oncallRostersHandler) AddWatchedOncallRoster(ctx context.Context, request *oapi.AddWatchedOncallRosterRequest) (*oapi.AddWatchedOncallRosterResponse, error) {
 	var resp oapi.AddWatchedOncallRosterResponse
 
-	userId, userOk := execution.GetContext(ctx).UserID()
-	if !userOk {
-		return nil, oapi.Error(ctx, "failed to get auth session", rez.ErrAuthSessionMissing)
-	}
-
-	u, userErr := h.users.Get(ctx, user.ID(userId))
+	u, userErr := h.currentUser(ctx)
 	if userErr != nil {
 		return nil, oapi.Error(ctx, "failed to get user", userErr)
 	}
@@ -109,11 +103,7 @@ func (h *oncallRostersHandler) AddWatchedOncallRoster(ctx context.Context, reque
 func (h *oncallRostersHandler) ListWatchedOncallRosters(ctx context.Context, request *oapi.ListWatchedOncallRostersRequest) (*oapi.ListWatchedOncallRostersResponse, error) {
 	var resp oapi.ListWatchedOncallRostersResponse
 
-	userId, userOk := execution.GetContext(ctx).UserID()
-	if !userOk {
-		return nil, oapi.Error(ctx, "failed to get auth session", rez.ErrAuthSessionMissing)
-	}
-	u, userErr := h.users.Get(ctx, user.ID(userId))
+	u, userErr := h.currentUser(ctx)
 	if userErr != nil {
 		return nil, oapi.Error(ctx, "failed to get user", userErr)
 	}
@@ -129,11 +119,7 @@ func (h *oncallRostersHandler) ListWatchedOncallRosters(ctx context.Context, req
 func (h *oncallRostersHandler) RemoveWatchedOncallRoster(ctx context.Context, request *oapi.RemoveWatchedOncallRosterRequest) (*oapi.RemoveWatchedOncallRosterResponse, error) {
 	var resp oapi.RemoveWatchedOncallRosterResponse
 
-	userId, userOk := execution.GetContext(ctx).UserID()
-	if !userOk {
-		return nil, oapi.Error(ctx, "failed to get auth session", rez.ErrAuthSessionMissing)
-	}
-	u, userErr := h.users.Get(ctx, user.ID(userId))
+	u, userErr := h.currentUser(ctx)
 	if userErr != nil {
 		return nil, oapi.Error(ctx, "failed to get user", userErr)
 	}
@@ -153,10 +139,7 @@ func (h *oncallRostersHandler) RemoveWatchedOncallRoster(ctx context.Context, re
 func (h *oncallRostersHandler) GetUserOncallInformation(ctx context.Context, request *oapi.GetUserOncallInformationRequest) (*oapi.GetUserOncallInformationResponse, error) {
 	var resp oapi.GetUserOncallInformationResponse
 
-	userId, userOk := execution.GetContext(ctx).UserID()
-	if !userOk {
-		return nil, oapi.Error(ctx, "failed to get auth session", rez.ErrAuthSessionMissing)
-	}
+	userId := h.mustUserID(ctx)
 	if request.UserId != uuid.Nil {
 		userId = request.UserId
 	}

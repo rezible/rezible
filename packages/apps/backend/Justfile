@@ -10,8 +10,8 @@ format:
     go fmt ./...
 
 export HTTP__PORT := env("BACKEND_PORT", "")
+export HTTP__AUTH__ENABLE_DEV_SKIP_MODE := env("SKIP_AUTH", "")
 
-[env("HTTP__AUTH__ENABLE_DEV_SKIP_MODE", "true")]
 @dev:
     go tool reflex --decoration=none -r '\.go' -s -- sh -c 'go run ./cmd/rezible serve'
 

@@ -24,7 +24,8 @@ const (
 type oidcHandler struct {
 	oidcIssuer          string
 	authStateCookiePath string
-	codec               *cookieCodec
+
+	codec *cookieCodec
 
 	resourceOption oauth2.AuthCodeOption
 	provider       *oidc.Provider
@@ -174,9 +175,6 @@ func (h *oidcHandler) doCallbackExchange(w http.ResponseWriter, r *http.Request)
 	if exchangeErr != nil {
 		return nil, fmt.Errorf("token exchange failed: %w", exchangeErr)
 	}
-	if !token.Valid() {
-		return nil, fmt.Errorf("invalid token")
-	}
 
 	vc, vcErr := h.extractVerifiedClaims(ctx, token, as.Nonce)
 	if vcErr != nil {
@@ -232,6 +230,47 @@ func (h *oidcHandler) doLogout(ctx context.Context) error {
 	return nil
 }
 
+func (h *oidcHandler) extractVerifiedClaims(ctx context.Context, t *oauth2.Token, nonce string) (*VerifiedProviderAuthClaims, error) {
+	if !t.Valid() {
+		return nil, fmt.Errorf("invalid token")
+	}
+
+	at, atErr := h.accessTokenVerifier.Verify(ctx, t.AccessToken)
+	if atErr != nil {
+		return nil, fmt.Errorf("verify token: %w", atErr)
+	}
+
+	claims := VerifiedProviderAuthClaims{
+		ExpiresAt: at.Expiry,
+	}
+
+	if atClaimsErr := at.Claims(&claims.AccessClaims); atClaimsErr != nil {
+		return nil, fmt.Errorf("parse claims: %w", atClaimsErr)
+	}
+
+	idTokenStr, idOk := t.Extra("id_token").(string)
+	if !idOk {
+		return nil, fmt.Errorf("no id_token")
+	}
+
+	id, idTokenErr := h.idTokenVerifier.Verify(ctx, idTokenStr)
+	if idTokenErr != nil {
+		return nil, fmt.Errorf("verify id token: %w", idTokenErr)
+	}
+	if id.Nonce != nonce {
+		return nil, fmt.Errorf("invalid id token nonce")
+	}
+	if hashErr := id.VerifyAccessToken(t.AccessToken); hashErr != nil {
+		return nil, fmt.Errorf("verify access token: %w", hashErr)
+	}
+
+	if claimsErr := id.Claims(&claims.IdentityClaims); claimsErr != nil {
+		return nil, rez.ErrAuthSessionInvalid
+	}
+
+	return &claims, nil
+}
+
 type (
 	ProviderAccessTokenClaims struct {
 		Scopes           []string `json:"scopes"`
@@ -267,40 +306,4 @@ func (s *VerifiedProviderAuthClaims) makeSession() *rez.UserAuthProviderSession 
 		},
 		ExpiresAt: s.ExpiresAt,
 	}
-}
-
-func (h *oidcHandler) extractVerifiedClaims(ctx context.Context, t *oauth2.Token, nonce string) (*VerifiedProviderAuthClaims, error) {
-	var pas VerifiedProviderAuthClaims
-
-	at, atErr := h.accessTokenVerifier.Verify(ctx, t.AccessToken)
-	if atErr != nil {
-		return nil, fmt.Errorf("verify token: %w", atErr)
-	}
-	pas.ExpiresAt = at.Expiry
-
-	if atClaimsErr := at.Claims(&pas.AccessClaims); atClaimsErr != nil {
-		return nil, fmt.Errorf("parse claims: %w", atClaimsErr)
-	}
-
-	idTokenStr, idOk := t.Extra("id_token").(string)
-	if !idOk {
-		return nil, fmt.Errorf("no id_token")
-	}
-
-	id, idTokenErr := h.idTokenVerifier.Verify(ctx, idTokenStr)
-	if idTokenErr != nil {
-		return nil, fmt.Errorf("verify id token: %w", idTokenErr)
-	}
-	if id.Nonce != nonce {
-		return nil, fmt.Errorf("invalid id token nonce")
-	}
-	if hashErr := id.VerifyAccessToken(t.AccessToken); hashErr != nil {
-		return nil, fmt.Errorf("verify access token: %w", hashErr)
-	}
-
-	if claimsErr := id.Claims(&pas.IdentityClaims); claimsErr != nil {
-		return nil, rez.ErrAuthSessionInvalid
-	}
-
-	return &pas, nil
 }

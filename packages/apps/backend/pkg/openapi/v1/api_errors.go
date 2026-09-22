@@ -43,58 +43,50 @@ var (
 	}
 )
 
-func asStatusError(msg string, err error) huma.StatusError {
-	if statusError, ok := errors.AsType[huma.StatusError](err); ok {
-		return statusError
-	}
+type statusErrorFunc = func(...error) huma.StatusError
 
-	if ent.IsNotFound(err) {
-		return huma.Error404NotFound("not found", err)
+func statusErrorWithCode(code string, fn func(string, ...error) huma.StatusError) statusErrorFunc {
+	return func(errs ...error) huma.StatusError {
+		return fn(code, errs...)
 	}
-	if errors.Is(err, rez.ErrNotFound) {
-		return huma.Error404NotFound("not found", err)
-	}
-	if errors.Is(err, rez.ErrConflict) {
-		return huma.Error409Conflict("conflict", err)
-	}
-	if errors.Is(err, rez.ErrInvalidInput) {
-		return huma.Error400BadRequest("invalid input", err)
-	}
-	if errors.Is(err, rez.ErrAuthSessionMissing) ||
-		errors.Is(err, rez.ErrAuthSessionExpired) ||
-		errors.Is(err, rez.ErrAuthSessionInvalid) {
-		return huma.Error401Unauthorized("unauthorized", err)
-	}
-	if errors.Is(err, rez.ErrForbidden) {
-		return huma.Error403Forbidden("forbidden", err)
-	}
-	if errors.Is(err, rez.ErrNotImplemented) {
-		return huma.Error501NotImplemented("not implemented", err)
-	}
-
-	if enumValidationErrFieldRe.MatchString(err.Error()) {
-		return huma.Error400BadRequest("validation error", err)
-	}
-
-	if ent.IsConstraintError(err) {
-		match := uniqueErrFieldRe.FindStringSubmatch(err.Error())
-		if match == nil || len(match) < 2 {
-			return huma.Error400BadRequest("Constraint failed")
-		}
-
-		field := match[1]
-		cstrMsg, found := commonConstraints[field]
-		if found {
-			return huma.Error400BadRequest("Constraint Error", NewErrorDetail(cstrMsg, field, nil))
-		}
-		return huma.Error400BadRequest("Value is not unique")
-	}
-
-	return huma.Error500InternalServerError(msg, err)
 }
 
+var (
+	Err400InvalidInput = statusErrorWithCode("invalid_input", huma.Error400BadRequest)
+
+	Err401AuthSessionMissing = statusErrorWithCode("auth_session_missing", huma.Error401Unauthorized)
+	Err401AuthSessionExpired = statusErrorWithCode("auth_session_expired", huma.Error401Unauthorized)
+	Err401AuthSessionInvalid = statusErrorWithCode("auth_session_invalid", huma.Error401Unauthorized)
+
+	Err403DomainNotAllowed = statusErrorWithCode("domain_not_allowed", huma.Error403Forbidden)
+	Err403Forbidden        = statusErrorWithCode("forbidden", huma.Error403Forbidden)
+
+	Err404NotFound = statusErrorWithCode("not_found", huma.Error404NotFound)
+
+	Err409Conflict = statusErrorWithCode("conflict", huma.Error409Conflict)
+
+	Err500Internal = statusErrorWithCode("internal_server_error", huma.Error500InternalServerError)
+
+	Err501NotImplemented = statusErrorWithCode("not_implemented", huma.Error501NotImplemented)
+
+	// TODO: just have one map?
+
+	requestErrorMap = map[error]statusErrorFunc{
+		rez.ErrAuthSessionMissing: Err401AuthSessionMissing,
+		rez.ErrAuthSessionExpired: Err401AuthSessionExpired,
+		rez.ErrAuthSessionInvalid: Err401AuthSessionInvalid,
+		rez.ErrInvalidUser:        Err401AuthSessionInvalid,
+		rez.ErrInvalidTenant:      Err401AuthSessionInvalid,
+		rez.ErrDomainNotAllowed:   Err403DomainNotAllowed,
+		rez.ErrForbidden:          Err403Forbidden,
+		rez.ErrNotFound:           Err404NotFound,
+		rez.ErrConflict:           Err409Conflict,
+		rez.ErrNotImplemented:     Err501NotImplemented,
+	}
+)
+
 func Error(ctx context.Context, msg string, err error) error {
-	statusErr := asStatusError(msg, err)
+	statusErr := ConvertStatusError(msg, err)
 
 	logLevel := slog.LevelWarn
 	if statusErr.GetStatus() >= 500 {
@@ -107,4 +99,41 @@ func Error(ctx context.Context, msg string, err error) error {
 	)
 
 	return statusErr
+}
+
+func ConvertStatusError(msg string, err error) huma.StatusError {
+	if statusError, isStatusErr := errors.AsType[huma.StatusError](err); isStatusErr {
+		return statusError
+	}
+
+	if ent.IsNotFound(err) {
+		return Err404NotFound()
+	}
+
+	if enumValidationErrFieldRe.MatchString(err.Error()) {
+		return Err400InvalidInput()
+	}
+
+	if ent.IsConstraintError(err) {
+		match := uniqueErrFieldRe.FindStringSubmatch(err.Error())
+		if match != nil && len(match) > 2 {
+			field := match[1]
+			if constraintMsg, found := commonConstraints[field]; found {
+				return Err400InvalidInput(NewErrorDetail(constraintMsg, field, nil))
+			}
+			return Err409Conflict()
+		}
+		return Err400InvalidInput()
+	}
+
+	for domainErr, statusErrFn := range requestErrorMap {
+		if errors.Is(err, domainErr) {
+			return statusErrFn(err)
+		}
+	}
+
+	slog.Error("unexpected auth status error",
+		"msg", msg,
+		"error", err)
+	return Err500Internal(err)
 }

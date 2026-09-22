@@ -117,7 +117,7 @@ func (s *AuthSessionService) syncAuthProviderUser(ctx context.Context, pu *ent.U
 }
 
 func (s *AuthSessionService) CreateForToken(ctx context.Context, token string) (*ent.UserAuthSession, error) {
-	return nil, fmt.Errorf("not supported")
+	return nil, rez.ErrAuthSessionInvalid
 }
 
 func (s *AuthSessionService) LookupSession(ctx context.Context, id uuid.UUID) (*ent.UserAuthSession, error) {

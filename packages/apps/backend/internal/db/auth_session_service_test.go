@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/test"
@@ -40,4 +41,16 @@ func (s *AuthSessionServiceSuite) TestCreatingSessionPreservesExistingSessions()
 	loaded, lookupErr := sessions.LookupSession(s.T().Context(), first.ID)
 	s.Require().NoError(lookupErr)
 	s.Equal(first.ID, loaded.ID)
+}
+
+func (s *AuthSessionServiceSuite) TestLookupSessionMissingSessionIsNotFound() {
+	database := s.CreateTestDatabase()
+	jobs := mocks.NewMockJobService(s.T())
+	organizations, _ := NewOrganizationService(database, jobs)
+	users, _ := NewUserService(database, organizations)
+	sessions, _ := NewAuthSessionService(database, organizations, users)
+
+	_, lookupErr := sessions.LookupSession(s.T().Context(), uuid.New())
+	s.Require().Error(lookupErr)
+	s.True(ent.IsNotFound(lookupErr))
 }

@@ -4,17 +4,16 @@ import (
 	"context"
 
 	rez "github.com/rezible/rezible"
-	"github.com/rezible/rezible/pkg/execution"
 	oapi "github.com/rezible/rezible/pkg/openapi/v1"
 )
 
 type situationsHandler struct {
+	*baseHandler
 	situations rez.SituationService
-	users      rez.UserService
 }
 
-func newSituationsHandler(situations rez.SituationService, users rez.UserService) *situationsHandler {
-	return &situationsHandler{situations: situations, users: users}
+func newSituationsHandler(bh *baseHandler, situations rez.SituationService) *situationsHandler {
+	return &situationsHandler{bh, situations}
 }
 
 func (h *situationsHandler) ListSituations(ctx context.Context, request *oapi.ListSituationsRequest) (*oapi.ListSituationsResponse, error) {
@@ -78,10 +77,6 @@ func (h *situationsHandler) ListSituationHazardAssessments(ctx context.Context, 
 
 func (h *situationsHandler) AddSituationHazardAssessment(ctx context.Context, request *oapi.AddSituationHazardAssessmentRequest) (*oapi.AddSituationHazardAssessmentResponse, error) {
 	var response oapi.AddSituationHazardAssessmentResponse
-	userId, userOk := execution.GetContext(ctx).UserID()
-	if !userOk {
-		return nil, oapi.Error(ctx, "add situation hazard assessment", rez.ErrAuthSessionMissing)
-	}
 
 	attrs := request.Body.Attributes
 	assessment, addErr := h.situations.AddSituationHazardAssessment(ctx, rez.AddSituationHazardAssessmentParams{
@@ -89,7 +84,7 @@ func (h *situationsHandler) AddSituationHazardAssessment(ctx context.Context, re
 		SystemHazardID: attrs.SystemHazardId,
 		Status:         attrs.Status,
 		Summary:        attrs.Summary,
-		UserID:         &userId,
+		UserID:         new(h.mustUserID(ctx)),
 	})
 	if addErr != nil {
 		return nil, oapi.Error(ctx, "failed to add situation hazard assessment", addErr)

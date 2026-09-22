@@ -6,16 +6,16 @@ import (
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/pkg/execution"
 	oapi "github.com/rezible/rezible/pkg/openapi/v1"
 )
 
 type eventsHandler struct {
+	*baseHandler
 	events rez.EventsService
 }
 
-func newEventsHandler(events rez.EventsService) *eventsHandler {
-	return &eventsHandler{events: events}
+func newEventsHandler(bh *baseHandler, events rez.EventsService) *eventsHandler {
+	return &eventsHandler{bh, events}
 }
 
 func (h *eventsHandler) GetEvent(ctx context.Context, req *oapi.GetEventRequest) (*oapi.GetEventResponse, error) {
@@ -80,15 +80,10 @@ func (h *eventsHandler) ListEventAnnotations(ctx context.Context, req *oapi.List
 func (h *eventsHandler) CreateEventAnnotation(ctx context.Context, request *oapi.CreateEventAnnotationRequest) (*oapi.CreateEventAnnotationResponse, error) {
 	var resp oapi.CreateEventAnnotationResponse
 
-	userId, userOk := execution.GetContext(ctx).UserID()
-	if !userOk {
-		return nil, oapi.Error(ctx, "failed to get auth session", rez.ErrAuthSessionMissing)
-	}
-
 	attr := request.Body.Attributes
 
 	anno := &ent.EventAnnotation{
-		CreatorID:       userId,
+		CreatorID:       h.mustUserID(ctx),
 		EventID:         attr.EventId,
 		MinutesOccupied: attr.MinutesOccupied,
 		Notes:           attr.Notes,
