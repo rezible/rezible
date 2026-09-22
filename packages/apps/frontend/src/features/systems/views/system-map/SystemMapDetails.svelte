@@ -97,11 +97,11 @@
 				<p class="text-muted-foreground text-sm">{state.description}</p>
 			{/if}
 
-			{#if entity && view.relationshipSummary.length > 0}
+			{#if entity && view.selectedEntityRelationshipsSummary.length > 0}
 				<div class="flex flex-col gap-2">
 					<div class="text-muted-foreground text-xs font-medium uppercase">Relationships</div>
 					<ul class="flex flex-col gap-1 text-sm">
-						{#each view.relationshipSummary as [predicate, rels] (predicate)}
+						{#each view.selectedEntityRelationshipsSummary as [predicate, rels] (predicate)}
 							<li class="flex items-center justify-between gap-2">
 								<span class="capitalize">{predicate.replaceAll("_", " ")}</span>
 								<Badge variant="outline">{rels.length}</Badge>

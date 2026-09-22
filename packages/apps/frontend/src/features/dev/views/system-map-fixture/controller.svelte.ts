@@ -1,16 +1,13 @@
-import type { GraphSubset } from "$features/systems/lib/system-map/graph";
+import type { GraphSlice } from "$features/systems/lib/system-map/graph";
 import type { MapDisplayOptions } from "$features/systems/lib/system-map/presentation";
 import { Context } from "runed";
 import { systemMapFixtureScenarios, type FixtureScenarioId } from "./fixtures";
-
-const coverageLabel = (coverage: GraphSubset["coverage"]["parentMembership"]): string =>
-	coverage.charAt(0).toUpperCase() + coverage.slice(1);
 
 export class SystemMapFixtureController {
 	scenario = $state<FixtureScenarioId>("hierarchy");
 	showAnnotations = $state(false);
 
-	graph = $derived<GraphSubset>(systemMapFixtureScenarios[this.scenario].source);
+	graph = $derived<GraphSlice>(systemMapFixtureScenarios[this.scenario].source);
 	displayOptions = $derived<MapDisplayOptions>({
 		showAnnotations: this.showAnnotations,
 	});
@@ -18,8 +15,8 @@ export class SystemMapFixtureController {
 	sourceEntityCount = $derived(this.graph.entities.length);
 	sourceRelationshipCount = $derived(this.graph.relationships.length);
 
-	parentMembershipCoverage = $derived(coverageLabel(this.graph.coverage.parentMembership));
-	relationshipCoverage = $derived(coverageLabel(this.graph.coverage.relationships));
+	parentMembershipCoverage = $derived(this.graph.coverage.parentMembership);
+	relationshipCoverage = $derived(this.graph.coverage.relationships);
 
 	setScenario = (value?: string) => {
 		if (!value || !(value in systemMapFixtureScenarios) || value === this.scenario) return;

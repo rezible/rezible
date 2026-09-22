@@ -7,7 +7,6 @@ import {
 	MapCategory,
 	parseMapCategory,
 } from "../category";
-import { Coverage } from "../graph";
 import { buildInspectionItems } from "../inspection";
 import { projectMap } from "../projection";
 import {
@@ -253,7 +252,7 @@ describe("system map projection boundaries", () => {
 
 	test("considers visible ancestors at different path depths for a shared entity", () => {
 		const source = {
-			coverage: { parentMembership: Coverage.Complete, relationships: Coverage.Complete },
+			coverage: { parentMembership: true, relationships: true },
 			entities: [
 				{ id: "group-a", category: MapCategory.System, label: "group-a", kind: "subject" },
 				{ id: "group-b", category: MapCategory.System, label: "group-b", kind: "subject" },
@@ -446,7 +445,7 @@ describe("system map projection boundaries", () => {
 	test("rejects cyclic enclosure assignments even with complete membership coverage", () => {
 		const source = {
 			...edgeCasesExample.source,
-			coverage: { ...edgeCasesExample.source.coverage, parentMembership: Coverage.Complete },
+			coverage: { ...edgeCasesExample.source.coverage, parentMembership: true },
 		};
 		const sourceBeforeProjection = structuredClone(source);
 		const projection = projectMap(

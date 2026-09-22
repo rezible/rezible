@@ -100,9 +100,7 @@ export class SystemAnalysisController {
 					this.readOnly,
 				] as const,
 			() => {
-				if (this.readOnly) {
-					this.ctxMenu = undefined;
-				}
+				if (this.readOnly) this.ctxMenu = undefined;
 				this.refreshGraph();
 			}
 		);

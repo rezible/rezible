@@ -47,18 +47,6 @@
 		</Alert.Root>
 	{/if}
 
-	{#if view.focusMissing && view.hasGraph}
-		<Alert.Root>
-			<Alert.Title>Focused subject unavailable</Alert.Title>
-			<Alert.Description>
-				The requested subject was not returned. Previously loaded relationships remain available.
-			</Alert.Description>
-			<Alert.Action>
-				<Button variant="outline" size="sm" onclick={view.retry}>Retry</Button>
-			</Alert.Action>
-		</Alert.Root>
-	{/if}
-
 	<div class="bg-muted/20 relative min-h-64 flex-1">
 		{#if view.error && !view.hasGraph}
 			<div class="absolute inset-0 grid place-items-center">
@@ -67,21 +55,6 @@
 					<Alert.Description>{view.error.detail}</Alert.Description>
 					<Alert.Action>
 						<Button variant="outline" size="sm" onclick={view.retry}>Retry</Button>
-					</Alert.Action>
-				</Alert.Root>
-			</div>
-		{:else if view.focusMissing && !view.hasGraph}
-			<div class="absolute inset-0 grid place-items-center">
-				<Alert.Root class="w-fit max-w-md">
-					<Alert.Title>That subject is not on the map</Alert.Title>
-					<Alert.Description>
-						The linked subject could not be found or you are not authorized to see it. Search for
-						a subject to explore its neighborhood.
-					</Alert.Description>
-					<Alert.Action>
-						<Button variant="outline" size="sm" onclick={() => view.reset()}>
-							Start from the default view
-						</Button>
 					</Alert.Action>
 				</Alert.Root>
 			</div>

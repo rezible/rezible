@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { getViewportForBounds } from "@xyflow/svelte";
 
 import { getMapCategoryDisplay, MapCategory, NodeDetailLevel } from "../category";
-import { Coverage, type GraphSubset } from "../graph";
+import type { GraphSlice } from "../graph";
 import {
 	boundsForNodes,
 	nearestNodeIdAtScreenPoint,
@@ -159,7 +159,7 @@ describe("system map reveal interaction", () => {
 
 	test("retains a revealed child while its partially visible group remains eligible", () => {
 		const graph = {
-			coverage: { parentMembership: Coverage.Complete, relationships: Coverage.Complete },
+			coverage: { parentMembership: true, relationships: true },
 			entities: [
 				{ id: "root", category: MapCategory.SystemFunction, label: "root", kind: "function" },
 				{ id: "group", category: MapCategory.System, label: "group", kind: "system" },
@@ -198,7 +198,7 @@ describe("system map reveal interaction", () => {
 
 	test("retains a revealed system while its visible landscape parent remains eligible", () => {
 		const graph = {
-			coverage: { parentMembership: Coverage.Complete, relationships: Coverage.Complete },
+			coverage: { parentMembership: true, relationships: true },
 			entities: [
 				{ id: "root", category: MapCategory.SystemFunction, label: "root", kind: "function" },
 				{ id: "group", category: MapCategory.System, label: "group", kind: "system" },
@@ -238,7 +238,7 @@ describe("system map reveal interaction", () => {
 
 	test("converges nested projection and layout feedback before descendants are panned away", async () => {
 		const graph = {
-			coverage: { parentMembership: Coverage.Complete, relationships: Coverage.Complete },
+			coverage: { parentMembership: true, relationships: true },
 			entities: [
 				{ id: "root", category: MapCategory.SystemFunction, label: "root", kind: "function" },
 				{ id: "group", category: MapCategory.System, label: "group", kind: "system" },
@@ -371,13 +371,13 @@ describe("system map minimum detail", () => {
 			[MapCategory.Component, NodeDetailLevel.Implementation],
 			[MapCategory.Code, NodeDetailLevel.Implementation],
 		] as const) {
-			const graph: GraphSubset = {
+			const graph: GraphSlice = {
 				entities: [
 					{ id: "baseline", category, label: "Baseline", kind: "subject" },
 					{ id: "actor", category: MapCategory.Actor, label: "Actor", kind: "team" },
 				],
 				relationships: [],
-				coverage: { parentMembership: Coverage.Complete, relationships: Coverage.Complete },
+				coverage: { parentMembership: true, relationships: true },
 			};
 			expect(minimumDetailForGraph(graph)).toBe(level);
 			const state = new MapViewportState(minimumDetailForGraph(graph)!);
@@ -399,18 +399,5 @@ describe("system map minimum detail", () => {
 		}
 		expect(minimumDetailForGraph(relationshipExample.source)).toBe(NodeDetailLevel.Systems);
 		expect(minimumDetailForGraph(sharedGroupsExample.source)).toBe(NodeDetailLevel.Landscape);
-	});
-
-	test("retains empty states only for empty or nonarchitectural input", () => {
-		for (const category of [undefined, "future_category", MapCategory.Actor, MapCategory.Event]) {
-			const graph: GraphSubset = {
-				entities: category ? [{ id: "context", category, label: "Context", kind: "subject" }] : [],
-				relationships: [],
-				coverage: { parentMembership: Coverage.Unknown, relationships: Coverage.Unknown },
-			};
-			expect(minimumDetailForGraph(graph)).toBeUndefined();
-			const projection = projectMap(graph, { detail: 0, nearbyEntityIds: [] }, displayOptions);
-			expect(systemMapOverviewEmptyState(graph, projection)).toBe(category ? "no-architecture" : "truly-empty");
-		}
 	});
 });

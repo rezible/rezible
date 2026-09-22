@@ -19,7 +19,7 @@
 	import { Button } from "$components/ui/button";
 	import * as Empty from "$components/ui/empty";
 
-	import type { GraphSubset } from "$features/systems/lib/system-map/graph";
+	import type { GraphSlice } from "$features/systems/lib/system-map/graph";
 	import type { MapDisplayOptions } from "$features/systems/lib/system-map/presentation";
 	import type { Viewport } from "$features/systems/lib/system-map/geometry";
 	import { MAP_MAX_ZOOM, MAP_MIN_ZOOM } from "$features/systems/lib/system-map/interaction";
@@ -30,7 +30,7 @@
 	import { initSystemMapController, type SystemMapSelection } from "./controller.svelte";
 
 	type Props = {
-		graph: GraphSubset;
+		graph: GraphSlice;
 		displayOptions: MapDisplayOptions;
 		onSelect?: (selection: SystemMapSelection) => void;
 		onClearSelection?: () => void;

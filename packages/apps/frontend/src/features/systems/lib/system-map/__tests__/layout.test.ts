@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 
 import { MapCategory, NodeDetailLevel } from "../category";
-import type { GraphSubset } from "../graph";
+import type { GraphSlice } from "../graph";
 import { projectMap } from "../projection";
 import { nodePresentationForEntity } from "$features/systems/components/system-map/map-node/presentation";
 import { worldBoundsByNodeId, worldCenter, type Bounds, type Point } from "../geometry";
@@ -31,7 +31,7 @@ const nodeById = <T extends { id: string }>(items: readonly T[], id: string): T 
 	return item;
 };
 
-const implementationReveal = (source: GraphSubset) => ({
+const implementationReveal = (source: GraphSlice) => ({
 	detail: NodeDetailLevel.Implementation,
 	nearbyEntityIds: source.entities.map((entity) => entity.id),
 });

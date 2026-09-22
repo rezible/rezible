@@ -1,5 +1,5 @@
 import { DisplayMode, getMapCategoryDisplay, isArchitectureCategory } from "./category";
-import type { GraphEntity, GraphRelationship, GraphSubset } from "./graph";
+import type { GraphEntity, GraphRelationship, GraphSlice } from "./graph";
 import type {
 	MapAnnotation,
 	MapConnection,
@@ -39,7 +39,7 @@ const uniqueRelationships = (relationships: readonly GraphRelationship[]): Graph
 	return unique;
 };
 
-const indexGraph = (graph: GraphSubset): GraphIndex => {
+const indexGraph = (graph: GraphSlice): GraphIndex => {
 	const entitiesById = new Map<string, GraphEntity>();
 	for (const entity of graph.entities) {
 		entitiesById.set(entity.id, entity);
@@ -156,7 +156,7 @@ const addContextualAncestors = (visibleIds: Set<string>, index: GraphIndex, deta
 };
 
 const selectArchitectureNodes = (
-	graph: GraphSubset,
+	graph: GraphSlice,
 	index: GraphIndex,
 	reveal: MapRevealState
 ): Set<string> => {
@@ -205,12 +205,9 @@ const selectArchitectureNodes = (
 const cyclicMembershipIds = (index: GraphIndex): ReadonlySet<string> => {
 	const cyclicIds = new Set<string>();
 
-	for (const membership of index.memberships) {
-		if (
-			membership.source === membership.target ||
-			hasMembershipPath(membership.target, membership.source, index, membership.id)
-		) {
-			cyclicIds.add(membership.id);
+	for (const {id, source, target} of index.memberships) {
+		if (source === target || hasMembershipPath(target, source, index, id)) {
+			cyclicIds.add(id);
 		}
 	}
 
@@ -227,11 +224,8 @@ const findEnclosures = (
 	visibleIds: ReadonlySet<string>,
 	index: GraphIndex,
 	cyclicIds: ReadonlySet<string>,
-	parentMembershipCoverage: GraphSubset["coverage"]["parentMembership"]
 ): ReadonlyMap<string, GraphRelationship> => {
 	const enclosureByChild = new Map<string, GraphRelationship>();
-
-	if (parentMembershipCoverage !== "complete") return enclosureByChild;
 
 	for (const membership of index.memberships) {
 		if (cyclicIds.has(membership.id)) continue;
@@ -389,7 +383,7 @@ const projectAnnotations = (
 
 /** Projects supplied graph facts into source-backed map representations before layout. */
 export const projectMap = (
-	graph: GraphSubset,
+	graph: GraphSlice,
 	reveal: MapRevealState,
 	displayOptions: MapDisplayOptions
 ): MapProjection => {
@@ -399,7 +393,10 @@ export const projectMap = (
 	const representativeByEntityId = buildRepresentatives(visibleIds, index);
 
 	const cyclicIds = cyclicMembershipIds(index);
-	const enclosureByChild = findEnclosures(visibleIds, index, cyclicIds, graph.coverage.parentMembership);
+
+	const enclosureByChild = graph.coverage.parentMembership 
+		? findEnclosures(visibleIds, index, cyclicIds) 
+		: new Map();
 	const enclosedParentIds = new Set<string>();
 	for (const membership of enclosureByChild.values()) enclosedParentIds.add(membership.source);
 

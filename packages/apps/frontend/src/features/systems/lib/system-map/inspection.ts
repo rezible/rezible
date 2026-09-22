@@ -1,5 +1,5 @@
 import { DisplayMode, getMapCategoryDisplay } from "./category";
-import type { GraphEntity, GraphRelationship, GraphSubset } from "./graph";
+import type { GraphEntity, GraphRelationship, GraphSlice } from "./graph";
 import type { InspectionTarget, MapAnnotation, MapProjection } from "./presentation";
 
 export type InspectedRelationship = {
@@ -40,7 +40,7 @@ export type SystemMapInspectionItem = {
 };
 
 /** Checks that a selection still belongs to the currently supplied source snapshot. */
-export const inspectionTargetAvailable = (graph: GraphSubset, target: InspectionTarget): boolean => {
+export const inspectionTargetAvailable = (graph: GraphSlice, target: InspectionTarget): boolean => {
 	const entityIds = new Set(graph.entities.map((entity) => entity.id));
 	const relationshipsById = new Map(
 		graph.relationships.map((relationship) => [relationship.id, relationship])
@@ -84,7 +84,7 @@ const visibilityFor = (
 
 const entityInspection = (
 	target: Extract<InspectionTarget, { kind: "entity" }>,
-	graph: GraphSubset,
+	graph: GraphSlice,
 	projection: MapProjection,
 	entitiesById: ReadonlyMap<string, GraphEntity>,
 	visibleIds: ReadonlySet<string>
@@ -202,7 +202,7 @@ const annotationInspection = (
 
 /** Resolves source records at inspection time; it never captures projected records as identity. */
 export const resolveInspectionTarget = (
-	graph: GraphSubset,
+	graph: GraphSlice,
 	projection: MapProjection,
 	target: InspectionTarget
 ): SystemMapInspection => {
@@ -240,7 +240,7 @@ const mapGraphEntityToSystemMapInspectionItem = ({id, label, category, kind}: Gr
 const makeAnnotationId = (entityId: string, relationshipId: string) => `${entityId}:${relationshipId}`;
 
 /** Builds the keyboard list from the supplied subset, including non-rendered subjects and facts. */
-export const buildInspectionItems = (graph: GraphSubset, {annotations}: MapProjection): SystemMapInspectionItem[] => {
+export const buildInspectionItems = (graph: GraphSlice, {annotations}: MapProjection): SystemMapInspectionItem[] => {
 	const entitiesById = new Map(graph.entities.map((entity) => [entity.id, entity]));
 	const items = graph.entities.map(mapGraphEntityToSystemMapInspectionItem);
 	const projectedAnnotationIds = new Set(annotations.map(a => makeAnnotationId(a.entityId, a.relationshipId)));

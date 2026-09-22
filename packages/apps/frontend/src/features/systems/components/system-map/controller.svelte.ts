@@ -6,7 +6,7 @@ import {
 	NodeDetailLevel,
 	getMapCategoryDisplay,
 } from "$features/systems/lib/system-map/category";
-import type { GraphEntity, GraphSubset } from "$features/systems/lib/system-map/graph";
+import type { GraphEntity, GraphSlice } from "$features/systems/lib/system-map/graph";
 import {
 	boundsForNodes,
 	nearestNodeIdAtScreenPoint,
@@ -26,7 +26,6 @@ import {
 	initialFrameMaxZoom,
 	deriveNearbyEntityIds,
 	systemMapOverviewEmptyState,
-	type SystemMapOverviewEmptyState,
 } from "$features/systems/lib/system-map/interaction";
 import {
 	buildInspectionItems,
@@ -51,7 +50,6 @@ import {
 } from "./map-connection/presentation";
 import type { FlowEdge, FlowNode, FlowNodeData, LayoutResult } from "./flow-model";
 import { createSystemMapLayoutEngine, type SystemMapLayoutEngine } from "./layout-engine";
-import { onMount } from "svelte";
 
 export type SystemMapSelection = {
 	target: InspectionTarget;
@@ -59,7 +57,7 @@ export type SystemMapSelection = {
 };
 
 export type SystemMapControllerOptions = {
-	graph: () => GraphSubset;
+	graph: () => GraphSlice;
 	displayOptions: () => MapDisplayOptions;
 	onSelect?: (selection: SystemMapSelection) => void;
 	onClearSelection?: () => void;
@@ -83,7 +81,7 @@ const sameIds = (left: readonly string[], right: readonly string[]): boolean => 
 
 const entityIdsForTarget = (
 	target: InspectionTarget | undefined,
-	graph: GraphSubset | undefined
+	graph: GraphSlice | undefined
 ): string[] => {
 	if (!target) return [];
 
@@ -123,7 +121,7 @@ type MoveEvent = Parameters<OnMove>[0];
 type EdgePointerEvent = Parameters<NonNullable<EdgeEvents<FlowEdge>["onedgepointerenter"]>>[0];
 
 type RebuildInputs = {
-	graph: GraphSubset;
+	graph: GraphSlice;
 	displayOptions: MapDisplayOptions;
 	nearbyEntityIds: readonly string[];
 };
@@ -155,7 +153,7 @@ export class SystemMapController {
 	private interaction!: MapViewportState;
 
 	// Supplied source and inspection. Inspection follows these latest inputs, not the last canvas commit.
-	private suppliedGraph = $state.raw<GraphSubset>();
+	private suppliedGraph = $state.raw<GraphSlice>();
 	private suppliedProjection = $state.raw<MapProjection>(emptyProjection);
 
 	// Increments for every explicit selection, including reselecting the same target.
@@ -172,7 +170,7 @@ export class SystemMapController {
 
 	// Displayed diagram. These values change together only after a layout has succeeded; a failed
 	// replacement leaves this snapshot visible while the supplied source and inspection stay current.
-	private displayedGraph = $state.raw<GraphSubset>();
+	private displayedGraph = $state.raw<GraphSlice>();
 	displayedProjection = $state.raw<MapProjection>(emptyProjection);
 	private displayedLayout = $state.raw<LayoutResult>();
 
@@ -268,35 +266,30 @@ export class SystemMapController {
 		this.updateConnectionPresentation();
 	};
 
-	setHoveredConnection = (connectionId: string) => {
-		if (
-			!this.displayedProjection.connections.some((connection) => connection.id === connectionId)
-		)
+	setHoveredConnection = (connId: string) => {
+		if (!this.displayedProjection.connections.some(({id}) => id === connId)) {
 			return;
-		if (this.hoveredConnectionId === connectionId) return;
+		}
+		if (this.hoveredConnectionId === connId) return;
 
-		this.hoveredConnectionId = connectionId;
+		this.hoveredConnectionId = connId;
 		this.updateSelectionPresentation();
 	};
 
-	clearHoveredConnection = (connectionId?: string) => {
-		if (connectionId !== undefined && this.hoveredConnectionId !== connectionId) return;
+	clearHoveredConnection = (connId?: string) => {
+		if (connId !== undefined && this.hoveredConnectionId !== connId) return;
 		if (this.hoveredConnectionId === undefined) return;
 
 		this.hoveredConnectionId = undefined;
 		this.updateSelectionPresentation();
 	};
 
-	onEdgePointerEnter: NonNullable<EdgeEvents<FlowEdge>["onedgepointerenter"]> = ({
-		edge,
-	}: EdgePointerEvent) => {
-		this.setHoveredConnection(edge.id);
+	onEdgePointerEnter = (e: EdgePointerEvent) => {
+		this.setHoveredConnection(e.edge.id);
 	};
 
-	onEdgePointerLeave: NonNullable<EdgeEvents<FlowEdge>["onedgepointerleave"]> = ({
-		edge,
-	}: EdgePointerEvent) => {
-		this.clearHoveredConnection(edge.id);
+	onEdgePointerLeave = (e: EdgePointerEvent) => {
+		this.clearHoveredConnection(e.edge.id);
 	};
 
 	/** Synchronizes the reactive controller mirrors at the viewport-state boundary. */
@@ -311,7 +304,7 @@ export class SystemMapController {
 
 	// Supplied source inspection: publish source facts before layout, so inspection stays current
 	// even when the displayed diagram is still the last successful snapshot.
-	private publishInspection(graph: GraphSubset, projection: MapProjection) {
+	private publishInspection(graph: GraphSlice, projection: MapProjection) {
 		this.suppliedGraph = graph;
 		this.suppliedProjection = projection;
 		this.inspectionItems = buildInspectionItems(graph, projection);
@@ -393,7 +386,7 @@ export class SystemMapController {
 		this.requestLayout(inputs.graph, projection);
 	}
 
-	private requestLayout(graph: GraphSubset, projection: MapProjection) {
+	private requestLayout(graph: GraphSlice, projection: MapProjection) {
 		const requestId = ++this.requestId;
 
 		this.status = "loading";
@@ -413,7 +406,7 @@ export class SystemMapController {
 		return this.disposed || requestId !== this.requestId;
 	}
 
-	private async layoutAndCommit(requestId: number, graph: GraphSubset, projection: MapProjection) {
+	private async layoutAndCommit(requestId: number, graph: GraphSlice, projection: MapProjection) {
 		const layoutEngine = (this.layoutEngine ??= createSystemMapLayoutEngine());
 		const layout = await layoutEngine.layout(graph, projection);
 		if (this.isStaleLayoutRequest(requestId)) return;
@@ -484,7 +477,7 @@ export class SystemMapController {
 	}
 
 	private alignAndCommit(
-		graph: GraphSubset,
+		graph: GraphSlice,
 		projection: MapProjection,
 		layout: LayoutResult
 	): LayoutResult {
@@ -513,7 +506,7 @@ export class SystemMapController {
 	/** Completes a successful layout with the initial frame, pending recenter, and nearby feedback. */
 	private settleInitialFrameAndFollowup(
 		requestId: number,
-		graph: GraphSubset,
+		graph: GraphSlice,
 		projection: MapProjection,
 		stableLayout: LayoutResult
 	) {
@@ -544,7 +537,7 @@ export class SystemMapController {
 	// Displayed diagram presentation: decorate the last successful layout with current selection.
 	private decorateNodes(
 		layoutNodes: readonly FlowNode[],
-		graph: GraphSubset,
+		graph: GraphSlice,
 		layoutEdges: readonly FlowEdge[]
 	): FlowNode[] {
 		const entitiesById = new Map(graph.entities.map((entity) => [entity.id, entity]));
@@ -641,7 +634,7 @@ export class SystemMapController {
 
 	// Layout completion feedback keeps nearby detail convergent without changing the source snapshot.
 	private updateDerivedNearby(
-		graph: GraphSubset,
+		graph: GraphSlice,
 		projection: MapProjection,
 		nodes: readonly FlowNode[]
 	): boolean {
@@ -689,7 +682,6 @@ export class SystemMapController {
 		}
 	}
 
-	/** Svelte Flow callback; the public arrow field preserves the controller context. */
 	onMove: OnMove = (_event, viewport) => {
 		this.updateViewport(viewport, _event);
 	};

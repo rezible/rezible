@@ -2,7 +2,7 @@ import type { ELK as ElkInstance, ElkEdgeSection, ElkExtendedEdge, ElkNode } fro
 import { MarkerType } from "@xyflow/svelte";
 
 import { isArchitectureCategory } from "$features/systems/lib/system-map/category";
-import type { GraphEntity, GraphSubset } from "$features/systems/lib/system-map/graph";
+import type { GraphEntity, GraphSlice } from "$features/systems/lib/system-map/graph";
 import {
 	worldBoundsByNodeId,
 	worldCenter,
@@ -44,7 +44,7 @@ const nodeData = (modelNode: LayoutModelNode, annotationCount: number): FlowNode
 	annotationCount,
 });
 
-const createModel = (graph: GraphSubset, projection: MapProjection) => {
+const createModel = (graph: GraphSlice, projection: MapProjection) => {
 	const entitiesById = new Map(graph.entities.map((entity) => [entity.id, entity]));
 	const mapNodesById = new Map(projection.nodes.map((mapNode) => [mapNode.id, mapNode]));
 	const childrenByParent = new Map<string, MapNode[]>();
@@ -358,7 +358,7 @@ const flowEdges = (
 /** Converts the projection to an ELK graph and preserves ELK's node/route output for Flow. */
 export const layoutWithElk = async (
 	elk: ElkInstance,
-	graph: GraphSubset,
+	graph: GraphSlice,
 	projection: MapProjection
 ): Promise<LayoutResult> => {
 	const { rootNodes } = createModel(graph, projection);
@@ -448,40 +448,35 @@ export const alignLayoutToPrevious = (
 		x: previousAnchor.x - nextAnchor.x,
 		y: previousAnchor.y - nextAnchor.y,
 	};
-	if (delta.x === 0 && delta.y === 0) {
-		return next;
-	}
+	if (delta.x === 0 && delta.y === 0) return next;
 
-	const nodes = next.nodes.map((node) => {
-		if (node.parentId) return node;
-		const position = { x: node.position.x + delta.x, y: node.position.y + delta.y };
-		return { ...node, position };
-	});
+	const nodes = next.nodes.map((node) => !!node.parentId 
+		? node 
+		: { ...node, position: { x: node.position.x + delta.x, y: node.position.y + delta.y } });
+
 	const edges = next.edges.map((edge) => {
 		const data = edge.data;
 		const route = data?.route;
 		if (!data || !route) throw new Error(`Cannot align connection ${edge.id} without an ELK route`);
 
+		const newRoute = {
+			...route,
+			sections: route.sections.map((section) => ({
+				start: { x: section.start.x + delta.x, y: section.start.y + delta.y },
+				bends: section.bends.map((point) => ({
+					x: point.x + delta.x,
+					y: point.y + delta.y,
+				})),
+				end: { x: section.end.x + delta.x, y: section.end.y + delta.y },
+			})),
+			labelPosition: {
+				x: route.labelPosition.x + delta.x,
+				y: route.labelPosition.y + delta.y,
+			},
+		};
 		return {
 			...edge,
-			data: {
-				...data,
-				route: {
-					...route,
-					sections: route.sections.map((section) => ({
-						start: { x: section.start.x + delta.x, y: section.start.y + delta.y },
-						bends: section.bends.map((point) => ({
-							x: point.x + delta.x,
-							y: point.y + delta.y,
-						})),
-						end: { x: section.end.x + delta.x, y: section.end.y + delta.y },
-					})),
-					labelPosition: {
-						x: route.labelPosition.x + delta.x,
-						y: route.labelPosition.y + delta.y,
-					},
-				},
-			},
+			data: { ...data, route: newRoute },
 		};
 	});
 	return { ...next, nodes, edges };

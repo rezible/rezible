@@ -1,12 +1,12 @@
 import ELK, { type ELK as ElkInstance } from "elkjs/lib/elk-api.js";
 
-import type { GraphSubset } from "$features/systems/lib/system-map/graph";
+import type { GraphSlice } from "$features/systems/lib/system-map/graph";
 import type { MapProjection } from "$features/systems/lib/system-map/presentation";
 import { layoutWithElk } from "./layout";
 import type { LayoutResult } from "./flow-model";
 
 export type SystemMapLayoutEngine = {
-	layout: (graph: GraphSubset, projection: MapProjection) => Promise<LayoutResult>;
+	layout: (graph: GraphSlice, projection: MapProjection) => Promise<LayoutResult>;
 	dispose: () => void;
 };
 

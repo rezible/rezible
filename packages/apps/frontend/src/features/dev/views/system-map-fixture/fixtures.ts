@@ -1,4 +1,4 @@
-import type { GraphSubset } from "$features/systems/lib/system-map/graph";
+import type { GraphSlice } from "$features/systems/lib/system-map/graph";
 import {
 	edgeCasesExample,
 	relationshipExample,
@@ -8,10 +8,10 @@ import {
 export type FixtureScenarioId = "hierarchy" | "connections" | "context" | "stress";
 
 export type FixtureScenario = {
-	source: GraphSubset;
+	source: GraphSlice;
 };
 
-const denseRelationships: GraphSubset["relationships"] = [
+const denseRelationships: GraphSlice["relationships"] = [
 	{ id: "r-dense-calls-1", source: "member-a", target: "member-b", predicate: "calls" },
 	{ id: "r-dense-calls-2", source: "member-a2", target: "member-b", predicate: "calls" },
 	{ id: "r-dense-calls-3", source: "member-b", target: "member-a", predicate: "calls" },
@@ -24,22 +24,19 @@ const denseRelationships: GraphSubset["relationships"] = [
 	{ id: "r-dense-owns", source: "member-a2", target: "member-b", predicate: "owns" },
 ];
 
-const longAndDense = (source: GraphSubset): GraphSubset => ({
+const entityLabels = new Map<string, string>([
+	["group-a", "Order Fulfillment and Customer Notification — Regional Control Plane"],
+	["group-b", "Billing and Entitlements — Shared Platform Operations"],
+	["member-a", "Checkout request orchestration and idempotency worker"],
+	["member-a2", "Promotion eligibility and pricing rule evaluation service"],
+	["member-b", "Invoice generation, tax calculation, and ledger synchronization"],
+]);
+
+const longAndDense = (source: GraphSlice): GraphSlice => ({
 	...source,
 	entities: source.entities.map((entity) => ({
 		...entity,
-		label:
-			entity.id === "group-a"
-				? "Order Fulfillment and Customer Notification — Regional Control Plane"
-				: entity.id === "group-b"
-					? "Billing and Entitlements — Shared Platform Operations"
-					: entity.id === "member-a"
-						? "Checkout request orchestration and idempotency worker"
-						: entity.id === "member-a2"
-							? "Promotion eligibility and pricing rule evaluation service"
-							: entity.id === "member-b"
-								? "Invoice generation, tax calculation, and ledger synchronization"
-								: entity.label,
+		label: entityLabels.get(entity.id) ?? entity.label,
 	})),
 	relationships: [...source.relationships, ...denseRelationships],
 });

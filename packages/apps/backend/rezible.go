@@ -223,6 +223,16 @@ type (
 		Predicates []predicate.KnowledgeEvidence
 	}
 
+	KnowledgeGraphQueryRoot struct {
+		EntityIDs []uuid.UUID // eventually this lens should be parameters used to query for ids, instead of having them supplied
+	}
+
+	KnowledgeGraphQuery struct {
+		Root      KnowledgeGraphQueryRoot
+		Level     KnowledgeGraphDetailLevel
+		Timestamp time.Time
+	}
+
 	KnowledgeGraphPageCursor string
 
 	KnowledgeGraphPageParams struct {
@@ -230,42 +240,28 @@ type (
 		Limit  int
 	}
 
-	KnowledgeGraphQueryLens struct {
-		EntityIDs []uuid.UUID // eventually this lens should be parameters used to query for ids, instead of having them supplied
-	}
-
-	KnowledgeGraphQueryRoot struct {
-		Lens      KnowledgeGraphQueryLens
-		Timestamp time.Time
-	}
-
-	KnowledgeGraphLevelQuery struct {
-		Root  KnowledgeGraphQueryRoot
-		Level KnowledgeGraphDetailLevel
-	}
-
-	KnowledgeGraphLevelQueryResult struct {
+	KnowledgeGraphQueryResult struct {
 		Entities    ent.KnowledgeEntities
-		Connections []KnowledgeGraphConnectionAggregate
+		Connections []KnowledgeGraphConnection
 
 		NextCursor KnowledgeGraphPageCursor
 	}
 
 	KnowledgeGraphConnection struct {
+		Key               KnowledgeGraphConnectionKey
+		RelationshipCount int
+	}
+
+	KnowledgeGraphConnectionKey struct {
 		SourceRepresentativeID uuid.UUID
 		TargetRepresentativeID uuid.UUID
 		Predicate              knr.Predicate
 	}
 
-	KnowledgeGraphConnectionAggregate struct {
-		Key               KnowledgeGraphConnection
-		RelationshipCount int
-	}
-
-	ListKnowledgeGraphConnectionAggregateRelationshipsParams struct {
+	ListKnowledgeGraphConnectionRelationshipsParams struct {
 		ent.ListParams
-		Query      KnowledgeGraphLevelQuery
-		Connection KnowledgeGraphConnection
+		Query         KnowledgeGraphQuery
+		ConnectionKey KnowledgeGraphConnectionKey
 	}
 
 	KnowledgeGraphQueryService interface {
@@ -281,15 +277,15 @@ type (
 		ListEvidence(context.Context, ListKnowledgeEvidenceParams) (*ent.ListResult[ent.KnowledgeEvidence], error)
 		GetEvidence(context.Context, uuid.UUID) (*ent.KnowledgeEvidence, error)
 
-		QueryGraphLevel(
+		Query(
 			context.Context,
-			KnowledgeGraphLevelQuery,
+			KnowledgeGraphQuery,
 			KnowledgeGraphPageParams,
-		) (KnowledgeGraphLevelQueryResult, error)
+		) (*KnowledgeGraphQueryResult, error)
 
-		ListKnowledgeGraphConnectionAggregateRelationships(
+		ListConnectionRelationships(
 			context.Context,
-			ListKnowledgeGraphConnectionAggregateRelationshipsParams,
+			ListKnowledgeGraphConnectionRelationshipsParams,
 		) (*ent.ListResult[ent.KnowledgeRelationship], error)
 	}
 )
@@ -374,8 +370,6 @@ type (
 		ProviderEventSourceCursorAfter *string
 	}
 
-	ProviderEventSourceCursors map[string]string
-
 	ProviderEventQuerier interface {
 		QueryProviderEvents(context.Context, ProviderEventSourceCursors) iter.Seq2[*ProviderEventQueryResult, error]
 	}
@@ -415,6 +409,8 @@ type (
 		SyncEvents(context.Context, ProviderEventQuerier, ProviderEventSourceCursors) ProviderEventSyncResult
 	}
 )
+
+type ProviderEventSourceCursors map[string]string
 
 func (c ProviderEventSourceCursors) GetForSource(source string) (string, bool) {
 	sc, ok := c[source]

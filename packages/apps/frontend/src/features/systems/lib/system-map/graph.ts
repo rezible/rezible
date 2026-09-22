@@ -1,13 +1,3 @@
-/** Completeness reported by retrieval or fixture metadata; never inferred from graph shape. */
-export enum Coverage {
-	/** The requested enumeration finished without remaining pages, truncation, or unresolved limits. */
-	Complete = "complete",
-	/** More matching facts are known to exist than were supplied. */
-	Partial = "partial",
-	/** The producer cannot establish whether the requested enumeration is complete. */
-	Unknown = "unknown",
-}
-
 /** Canonical source entity supplied to the map, independent of API response wrappers. */
 export type GraphEntity = {
 	/** Opaque canonical identity; the map does not require UUID syntax. */
@@ -31,14 +21,14 @@ export type GraphRelationship = {
 };
 
 /** Supplied graph content, independent of viewport, display options, and inspection selection. */
-export type GraphSubset = {
+export type GraphSlice = {
 	entities: readonly GraphEntity[];
 	/** Includes membership; each relationship ID occurs once and both endpoints must be supplied. */
 	relationships: readonly GraphRelationship[];
 	coverage: {
 		/** All parents of supplied entities, including outside the chosen scope; not children of one parent. */
-		parentMembership: Coverage;
+		parentMembership: boolean;
 		/** Ordinary relationships within the requested scope, not completeness of knowledge about reality. */
-		relationships: Coverage;
+		relationships: boolean;
 	};
 };

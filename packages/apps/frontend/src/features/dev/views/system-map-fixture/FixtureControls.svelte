@@ -48,8 +48,8 @@
 			<div class="flex flex-wrap gap-2 pt-2">
 				<Badge variant="outline">{controller.sourceEntityCount} source entities</Badge>
 				<Badge variant="outline">{controller.sourceRelationshipCount} source relationships</Badge>
-				<Badge variant="outline">{controller.parentMembershipCoverage} membership coverage</Badge>
-				<Badge variant="outline">{controller.relationshipCoverage} relationship coverage</Badge>
+				<Badge variant="outline">memberships coverage: {controller.parentMembershipCoverage}</Badge>
+				<Badge variant="outline">relationships coverage: {controller.relationshipCoverage}</Badge>
 			</div>
 		</Collapsible.Content>
 	</Collapsible.Root>

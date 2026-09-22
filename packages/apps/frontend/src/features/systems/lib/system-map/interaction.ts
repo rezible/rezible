@@ -11,7 +11,7 @@ import {
 	getMapCategoryDisplay,
 	NodeDetailLevel,
 } from "./category";
-import type { GraphSubset } from "./graph";
+import type { GraphSlice } from "./graph";
 import type { MapProjection } from "./presentation";
 
 export const REVEAL_ZOOM_ANCHORS = [
@@ -98,7 +98,7 @@ export const initialFrameMaxZoom = (detail: number): number => {
  * checked through their source-to-representative mapping, so they do not need to be rendered first.
  */
 export const deriveNearbyEntityIds = (
-	graph: GraphSubset,
+	graph: GraphSlice,
 	projection: MapProjection,
 	nodes: readonly LayoutNodeLike[],
 	viewport: Viewport,
@@ -150,7 +150,7 @@ export const deriveNearbyEntityIds = (
 };
 
 /** Shallowest supplied architecture; context and unsupported categories have no level. */
-export const minimumDetailForGraph = (graph: GraphSubset): NodeDetailLevel | undefined => {
+export const minimumDetailForGraph = (graph: GraphSlice): NodeDetailLevel | undefined => {
 	let minimum: NodeDetailLevel | undefined;
 	for (const entity of graph.entities) {
 		if (!isArchitectureCategory(entity.category)) continue;
@@ -164,7 +164,7 @@ export const minimumDetailForGraph = (graph: GraphSubset): NodeDetailLevel | und
 export type SystemMapOverviewEmptyState = "truly-empty" | "no-architecture";
 
 export const systemMapOverviewEmptyState = (
-	graph: GraphSubset | undefined,
+	graph: GraphSlice | undefined,
 	projection: MapProjection | undefined
 ): SystemMapOverviewEmptyState | undefined => {
 	if (!graph || !projection || projection.nodes.length > 0) return undefined;

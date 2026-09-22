@@ -44,23 +44,42 @@ export function makeEntityLabel({ attributes }: KnowledgeGraphEntity) {
 }
 
 export class SystemMapViewController {
-	private params = useSearchParams(paramsSchema, { pushHistory: true });
-
 	private entities = new SvelteMap<string, KnowledgeGraphEntity>();
 	private relationships = new SvelteMap<string, KnowledgeGraphRelationship>();
 	private positions = new SvelteMap<string, XYPosition>();
 
-	search = $state("");
-	searchOpen = $state(false);
 	diagram: SystemDiagramController;
 	private framedFocus?: string;
 
+	private params = useSearchParams(paramsSchema, { pushHistory: true });
 	focusId = $derived(this.params.focus);
 	selectedId = $derived(this.params.selected);
 	depth = $derived(this.params.depth);
 	displayMode = $derived(this.params.view);
 	kindFilter = $derived(this.params.kind);
 	predicateFilter = $derived(this.params.predicate);
+
+	search = $state("");
+	searchOpen = $state(false);
+	private trimmedSearch = $derived(this.search.trim());
+
+	private searchQuery = createPaginatedQuery({
+		source: "local",
+		queryOptions: () => ({
+			...listKnowledgeGraphEntitiesOptions({
+				query: {
+					search: this.trimmedSearch,
+					page: 1,
+					pageSize: 20,
+				},
+			}),
+			enabled: this.trimmedSearch.length >= 2,
+		}),
+	});
+
+	searchResults = $derived(this.searchQuery.query.data?.data ?? []);
+	searching = $derived(this.searchQuery.query.isLoading || this.searchQuery.query.isFetching);
+	searchError = $derived(this.searchQuery.query.error);
 
 	private viewQuery = createQuery(() =>
 		getKnowledgeGraphViewOptions({
@@ -70,54 +89,10 @@ export class SystemMapViewController {
 			},
 		})
 	);
-
-	private searchQuery = createPaginatedQuery({
-		source: "local",
-		queryOptions: () => ({
-			...listKnowledgeGraphEntitiesOptions({
-				query: {
-					search: this.search.trim(),
-					page: 1,
-					pageSize: 20,
-				},
-			}),
-			enabled: this.search.trim().length >= 2,
-		}),
-	});
-	private selectionQuery = createQuery(() => ({
-		...getKnowledgeGraphEntityOptions({ path: { id: this.selectedId } }),
-		enabled: !!this.selectedId && !this.entities.has(this.selectedId),
-	}));
-
-	searchResults = $derived(this.searchQuery.query.data?.data ?? []);
-	searching = $derived(this.searchQuery.query.isLoading || this.searchQuery.query.isFetching);
 	loading = $derived(this.viewQuery.isLoading || this.viewQuery.isFetching);
 	error = $derived(this.viewQuery.error);
-	searchError = $derived(this.searchQuery.query.error);
 	truncated = $derived(this.viewQuery.data?.data?.truncated ?? false);
 	hasGraph = $derived(this.entities.size > 0);
-
-	/** The focused subject is missing from the loaded neighborhood (e.g. unknown or unauthorized id). */
-	focusMissing = $derived(
-		!!this.focusId &&
-			!this.loading &&
-			!this.viewQuery.data?.data.entities.some((entity) => entity.id === this.focusId) &&
-			!this.error
-	);
-
-	selected = $derived.by<SystemMapSelection | undefined>(() => {
-		if (this.selectedId === "") {
-			return undefined;
-		}
-		const entity = this.entities.get(this.selectedId) ?? this.selectionQuery.data?.data;
-		if (entity) {
-			return { kind: "entity", entity };
-		}
-		return undefined;
-	});
-	selectionLoading = $derived(!!this.selectedId && !this.selected && this.selectionQuery.isPending);
-	selectionError = $derived(this.selected ? undefined : this.selectionQuery.error);
-	retrySelection = () => this.selectionQuery.refetch();
 
 	/** Entity kinds present in the loaded neighborhood, for the subject-type filter. */
 	availableKinds = $derived.by(() => {
@@ -160,15 +135,29 @@ export class SystemMapViewController {
 		return relationships;
 	});
 
+	private selectionQuery = createQuery(() => ({
+		...getKnowledgeGraphEntityOptions({ path: { id: this.selectedId } }),
+		enabled: !!this.selectedId,
+	}));
+	selectedEntity = $derived.by(() => {
+		if (!this.selectedId) return;
+		const entity = this.entities.get(this.selectedId) ?? this.selectionQuery.data?.data;
+		return !!entity ? { kind: "entity", entity } as SystemMapSelection : undefined;
+	});
+	selectionLoading = $derived(!!this.selectedId && !this.selectedEntity && this.selectionQuery.isPending);
+	selectionError = $derived(this.selectedEntity ? undefined : this.selectionQuery.error);
+	
+	retrySelection = () => this.selectionQuery.refetch();
+
 	/** Summary of a selected entity's relationships grouped by predicate. */
-	relationshipSummary = $derived.by(() => {
-		if (!this.selected || this.selected.kind !== "entity") {
+	selectedEntityRelationshipsSummary = $derived.by(() => {
+		if (!this.selectedEntity || this.selectedEntity.kind !== "entity") {
 			return [];
 		}
 		const byPredicate = new SvelteMap<string, KnowledgeGraphRelationship[]>();
 		for (const rel of this.relationships.values()) {
 			const { sourceEntityId, targetEntityId, predicate } = rel.attributes;
-			if (sourceEntityId !== this.selected.entity.id && targetEntityId !== this.selected.entity.id) {
+			if (sourceEntityId !== this.selectedEntity.entity.id && targetEntityId !== this.selectedEntity.entity.id) {
 				continue;
 			}
 			const entries = byPredicate.get(predicate) ?? [];
@@ -187,17 +176,19 @@ export class SystemMapViewController {
 		if (this.inspectedRelationship) {
 			return { kind: "relationship", relationship: this.inspectedRelationship };
 		}
-		return this.selected;
+		return this.selectedEntity;
 	});
+
+	selection = $derived(this.inspectedRelationship
+					? { edgeId: this.inspectedRelationship.id }
+					: { nodeId: this.selectedId });
+
 
 	hasFilters = $derived(this.kindFilter !== "" || this.predicateFilter !== "");
 
 	constructor() {
 		this.diagram = new SystemDiagramController({
-			selection: () =>
-				this.inspectedRelationship
-					? { edgeId: this.inspectedRelationship.id }
-					: { nodeId: this.selectedId },
+			selection: () => this.selection,
 			select: (selection, trigger) => this.selectDiagram(selection, trigger),
 			onNodeMove: (id, position) => this.positions.set(id, position),
 		});
@@ -205,13 +196,8 @@ export class SystemMapViewController {
 			() => [this.diagram.nodes, this.focusId] as const,
 			([nodes, focus]) => {
 				const id = focus || "";
-				if (
-					this.framedFocus === id ||
-					!nodes.length ||
-					(id && !nodes.some((node) => node.id === id))
-				) {
-					return;
-				}
+				if (this.framedFocus === id || !nodes.length) return;
+				if (id && !nodes.some((node) => node.id === id)) return;
 				this.framedFocus = id;
 				if (id) {
 					void this.diagram.focus({ nodeIds: [id], edgeIds: [] });
@@ -223,9 +209,7 @@ export class SystemMapViewController {
 		watch(
 			() => [this.viewQuery.data?.data, this.viewQuery.dataUpdatedAt] as const,
 			([view]) => {
-				if (view) {
-					this.mergeView(view.entities, view.relationships);
-				}
+				if (view) this.mergeView(view.entities, view.relationships);
 			}
 		);
 		watch(
@@ -245,9 +229,9 @@ export class SystemMapViewController {
 	setKindFilter(kind: string) {
 		this.params.kind = kind;
 		if (
-			this.selected?.kind === "entity" &&
+			this.selectedEntity?.kind === "entity" &&
 			kind !== "" &&
-			this.selected.entity.attributes.kind !== kind
+			this.selectedEntity.entity.attributes.kind !== kind
 		) {
 			this.clearSelection();
 		}
@@ -283,14 +267,10 @@ export class SystemMapViewController {
 	private selectDiagram(selection: GraphSelection, trigger?: HTMLElement) {
 		if (selection.nodeId) {
 			const entity = this.entities.get(selection.nodeId);
-			if (entity) {
-				this.selectEntity(entity);
-			}
+			if (entity) this.selectEntity(entity);
 		} else if (selection.edgeId) {
 			const relationship = this.relationships.get(selection.edgeId);
-			if (relationship) {
-				this.selectRelationship(relationship);
-			}
+			if (relationship) this.selectRelationship(relationship);
 		} else {
 			this.clearSelection();
 		}
@@ -302,7 +282,6 @@ export class SystemMapViewController {
 	selectRelationship(relationship: KnowledgeGraphRelationship) {
 		this.inspectionTrigger =
 			document.activeElement instanceof HTMLElement ? document.activeElement : undefined;
-		// Relationship selection is transient inspection, not a durable subject.
 		this.inspectedRelationship = relationship;
 	}
 
@@ -314,10 +293,8 @@ export class SystemMapViewController {
 	restoreInspectionFocus = (event: Event) => {
 		let target = this.inspectionTrigger;
 		if (!target?.isConnected) {
+			if (!this.focusFallback?.isConnected) return;
 			target = this.focusFallback;
-		}
-		if (!target?.isConnected) {
-			return;
 		}
 		event.preventDefault();
 		target.focus({ preventScroll: true });
@@ -325,9 +302,7 @@ export class SystemMapViewController {
 
 	setFocusFallback = (target: HTMLElement) => {
 		this.focusFallback = target;
-		return () => {
-			this.focusFallback = undefined;
-		};
+		return () => { this.focusFallback = undefined };
 	};
 
 	recenter() {
@@ -393,14 +368,13 @@ export class SystemMapViewController {
 	}
 
 	private rebuildGraph() {
-		const distances = new SvelteMap<string, number>();
 		const rootId = this.focusId;
-		if (rootId && this.entities.has(rootId)) {
-			distances.set(rootId, 0);
-		}
+
+		const distances = new SvelteMap<string, number>();
+		if (rootId && this.entities.has(rootId)) distances.set(rootId, 0);
 		for (let pass = 0; pass < 4; pass++) {
-			for (const relationship of this.relationships.values()) {
-				const { sourceEntityId: source, targetEntityId: target } = relationship.attributes;
+			for (const rel of this.relationships.values()) {
+				const { sourceEntityId: source, targetEntityId: target } = rel.attributes;
 				const sourceDistance = distances.get(source);
 				const targetDistance = distances.get(target);
 				if (sourceDistance !== undefined && targetDistance === undefined) {
@@ -472,10 +446,5 @@ export class SystemMapViewController {
 }
 
 const ctx = new Context<SystemMapViewController>("SystemMapViewController");
-export function initSystemMapViewController() {
-	return ctx.set(new SystemMapViewController());
-}
-
-export function useSystemMapViewController() {
-	return ctx.get();
-}
+export const initSystemMapViewController = () => ctx.set(new SystemMapViewController());
+export const useSystemMapViewController = () => ctx.get();

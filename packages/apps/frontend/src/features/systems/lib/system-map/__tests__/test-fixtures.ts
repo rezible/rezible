@@ -1,11 +1,11 @@
 import type { KnowledgeGraphEntityAttributes } from "@rezible/api-client-ts";
 import { createSystemMapLayoutEngine, type LayoutResult } from "$src/features/systems/components/system-map";
 import { NodeDetailLevel, MapCategory } from "../category";
-import { Coverage, type GraphEntity, type GraphRelationship, type GraphSubset } from "../graph";
+import { type GraphEntity, type GraphRelationship, type GraphSlice } from "../graph";
 import type { MapConnection, MapDisplayOptions, MapProjection } from "../presentation";
 
 /** Convenience boundary for pure layout tests; production controllers retain one engine. */
-export const layoutProjection = async (graph: GraphSubset, projection: MapProjection): Promise<LayoutResult> => {
+export const layoutProjection = async (graph: GraphSlice, projection: MapProjection): Promise<LayoutResult> => {
 	const engine = createSystemMapLayoutEngine();
 	try {
 		return await engine.layout(graph, projection);
@@ -20,7 +20,7 @@ export type GraphExample = {
 	name: string;
 	detail: number;
 	displayOptions: MapDisplayOptions;
-	source: GraphSubset;
+	source: GraphSlice;
 	expected: {
 		visibleRepresentatives: readonly string[];
 		sharedMembership: readonly { parentId: string; sharedId: string; membershipId: string }[];
@@ -68,7 +68,7 @@ export const sharedGroupsExample: GraphExample = {
 	detail: NodeDetailLevel.Systems,
 	displayOptions: { showAnnotations: false },
 	source: {
-		coverage: { parentMembership: Coverage.Complete, relationships: Coverage.Complete },
+		coverage: { parentMembership: true, relationships: true },
 		entities: [
 			entity("root", MapCategory.SystemFunction),
 			entity("group-a", MapCategory.System),
@@ -105,7 +105,7 @@ export const relationshipExample: GraphExample = {
 	detail: NodeDetailLevel.Systems,
 	displayOptions: { showAnnotations: false },
 	source: {
-		coverage: { parentMembership: Coverage.Complete, relationships: Coverage.Complete },
+		coverage: { parentMembership: true, relationships: true },
 		entities: [
 			entity("group-a", MapCategory.System),
 			entity("group-b", MapCategory.System),
@@ -168,7 +168,7 @@ export const edgeCasesExample: GraphExample = {
 	displayOptions: { showAnnotations: true },
 	source: {
 		// Parent membership coverage is incomplete for every entity in this example.
-		coverage: { parentMembership: Coverage.Partial, relationships: Coverage.Complete },
+		coverage: { parentMembership: false, relationships: true },
 		entities: [
 			entity("parent", MapCategory.System),
 			entity("child", MapCategory.Container),
