@@ -68,7 +68,7 @@ func (w *StartAgentSessionWorker) Work(ctx context.Context, job *river.Job[jobs.
 		}
 		logger.Info("making initial agent turn input")
 
-		initialInput, initErr := w.agents.MakeInitialAgentTurnInput(ctx, sess)
+		initialInput, initErr := w.agents.MakeInitialTurnInput(ctx, sess)
 		if initErr != nil {
 			return fmt.Errorf("make initial agent turn input: %w", initErr)
 		} else if initialInput == nil {

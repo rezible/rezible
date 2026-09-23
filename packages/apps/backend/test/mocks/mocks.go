@@ -3967,7 +3967,7 @@ func (_m *MockAiAgentCatalogue) EXPECT() *MockAiAgentCatalogue_Expecter {
 }
 
 // GetAgents provides a mock function for the type MockAiAgentCatalogue
-func (_mock *MockAiAgentCatalogue) GetAgents() []rez.AiAgentConfig {
+func (_mock *MockAiAgentCatalogue) GetConfigs() []rez.AiAgentConfig {
 	ret := _mock.Called()
 
 	if len(ret) == 0 {
@@ -4013,7 +4013,7 @@ func (_c *MockAiAgentCatalogue_GetAgents_Call) RunAndReturn(run func() []rez.AiA
 }
 
 // MakeInitialAgentTurnInput provides a mock function for the type MockAiAgentCatalogue
-func (_mock *MockAiAgentCatalogue) MakeInitialAgentTurnInput(context1 context.Context, agentSession *ent.AgentSession) (*rez.AiAgentTurnInput, error) {
+func (_mock *MockAiAgentCatalogue) MakeInitialTurnInput(context1 context.Context, agentSession *ent.AgentSession) (*rez.AiAgentTurnInput, error) {
 	ret := _mock.Called(context1, agentSession)
 
 	if len(ret) == 0 {
@@ -4081,7 +4081,7 @@ func (_c *MockAiAgentCatalogue_MakeInitialAgentTurnInput_Call) RunAndReturn(run 
 }
 
 // ValidateAgentSessionInput provides a mock function for the type MockAiAgentCatalogue
-func (_mock *MockAiAgentCatalogue) ValidateAgentSessionInput(s string, bytes []byte) (rez.ValidatingInput, error) {
+func (_mock *MockAiAgentCatalogue) ValidateSessionInput(s string, bytes []byte) (rez.ValidatingInput, error) {
 	ret := _mock.Called(s, bytes)
 
 	if len(ret) == 0 {

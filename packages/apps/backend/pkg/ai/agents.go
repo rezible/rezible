@@ -12,16 +12,14 @@ import (
 	"github.com/rezible/rezible/ent"
 )
 
-type (
-	AiAgentDefinition[SessionInput rez.ValidatingInput] struct {
-		Name         string
-		Description  string
-		Model        string
-		SystemPrompt string
-	}
-)
+type AgentDefinition[SessionInput rez.ValidatingInput] struct {
+	Name         string
+	Description  string
+	Model        string
+	SystemPrompt string
+}
 
-func (d AiAgentDefinition[SessionInput]) DecodeSessionInput(raw []byte) (*SessionInput, error) {
+func (d AgentDefinition[SessionInput]) DecodeSessionInput(raw []byte) (*SessionInput, error) {
 	var input SessionInput
 	if jsonErr := json.Unmarshal(raw, &input); jsonErr != nil {
 		return nil, fmt.Errorf("unmarshal: %w", jsonErr)
@@ -44,10 +42,9 @@ type (
 	}
 
 	InvestigationAgentState struct {
-		ReportReady bool `json:"report_ready"`
 	}
 
-	InvestigationAgentDefinition = AiAgentDefinition[InvestigationAgentSessionInput]
+	InvestigationAgentDefinition = AgentDefinition[InvestigationAgentSessionInput]
 )
 
 func (i InvestigationAgentSessionInput) Validate() error {
@@ -117,7 +114,7 @@ type (
 	ChatAgentState struct {
 	}
 
-	ChatAgentDefinition = AiAgentDefinition[ChatAgentInput]
+	ChatAgentDefinition = AgentDefinition[ChatAgentInput]
 )
 
 func (i ChatAgentInput) Validate() error {

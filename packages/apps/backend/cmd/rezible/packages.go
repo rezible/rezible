@@ -129,6 +129,7 @@ var pkgGenkit = do.Package(
 	}),
 
 	do.Lazy(func(i do.Injector) ([]genkit.AiRuntimeOption, error) {
+		aiCfg := do.MustInvoke[rez.Config](i).AI
 		chatAgent := genkit.NewChatAgent()
 		investigationAgent := genkit.NewInvestigationAgent(
 			do.MustInvoke[rez.InvestigationService](i),
@@ -137,24 +138,31 @@ var pkgGenkit = do.Package(
 			do.MustInvoke[rez.KnowledgeGraphQueryService](i),
 		)
 		opts := []genkit.AiRuntimeOption{
+			genkit.WithDevEvals(),
+			genkit.WithGeminiPlugin(aiCfg.Gemini),
 			genkit.WithAgent(chatAgent),
 			genkit.WithAgent(investigationAgent),
 		}
 		return opts, nil
 	}),
 
-	do.Lazy(func(i do.Injector) (genkit.EvaluateScenarioFlow, error) {
-		return genkit.NewEvaluateScenarioFlow(
+	do.Lazy(func(i do.Injector) (*genkit.EvaluationService, error) {
+		svc, svcErr := genkit.MakeEvaluationService(
 			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[*genkit.AiRuntime](i),
 			do.MustInvoke[*genkit.WorkflowBuilder](i),
-			evals.List()...,
 		)
-	}),
+		if svcErr != nil {
+			return nil, svcErr
+		}
 
-	do.Lazy(func(i do.Injector) (*genkit.EvaluationService, error) {
-		runtime := do.MustInvoke[*genkit.AiRuntime](i)
-		return runtime.MakeEvaluationService(do.MustInvoke[genkit.EvaluateScenarioFlow](i))
+		for _, scenario := range evals.List() {
+			if regErr := svc.RegisterScenario(scenario); regErr != nil {
+				return nil, regErr
+			}
+		}
+
+		return svc, nil
 	}),
 	do.Bind[*genkit.EvaluationService, rezai.EvalScenarioRunner](),
 )

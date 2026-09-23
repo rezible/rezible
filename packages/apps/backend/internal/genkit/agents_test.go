@@ -30,7 +30,7 @@ func (s *AiRuntimeSuite) makeAgentSession(svc *AiRuntime, tdb rez.Database, name
 		}
 		session = createdSession.Unwrap()
 
-		turnInput, inputErr := svc.catalogue.MakeInitialAgentTurnInput(ctx, createdSession)
+		turnInput, inputErr := svc.catalogue.MakeInitialTurnInput(ctx, createdSession)
 		if inputErr != nil {
 			return fmt.Errorf("initial agent turn input: %w", inputErr)
 		}
@@ -73,22 +73,27 @@ func (s *AiRuntimeSuite) makeAgentSession(svc *AiRuntime, tdb rez.Database, name
 	return session
 }
 
+func withTestAgent[S any](agent *testAgent[S]) []AiRuntimeOption {
+	resp := &ai.ModelResponse{Message: ai.NewModelTextMessage("foo")}
+	model := makeTestOutputModel(resp)
+	agent.def.Model = model.Name
+	return []AiRuntimeOption{WithDefinedModel(model), WithAgent(agent)}
+}
+
 func (s *AiRuntimeSuite) makeInvokeAgentSessionParams(sess *ent.AgentSession) rez.InvokeAiAgentTurnParams {
 	s.Require().Greater(len(sess.Edges.Turns), 0)
-	return rez.InvokeAiAgentTurnParams{
-		Session: sess,
-		Turn:    sess.Edges.Turns[0],
-	}
+	return rez.InvokeAiAgentTurnParams{Session: sess, Turn: sess.Edges.Turns[0]}
 }
 
 func (s *AiRuntimeSuite) TestClientManagedTurnStateAndResumeRoundTrip() {
 	ctx := s.SeedTenantContext()
 	tdb := s.CreateTestDatabase()
+
 	msg := ai.NewUserTextMessage("hello world")
 	ta := makeTestAgent[testAgentState](msg)
-	svc := s.makeService(ctx, WithAgent(ta))
-	sess := s.makeAgentSession(svc, tdb, ta.def.Name, testAgentInput{})
+	svc := s.makeRuntime(ctx, withTestAgent(ta)...)
 
+	sess := s.makeAgentSession(svc, tdb, ta.def.Name, testAgentInput{})
 	initParams := s.makeInvokeAgentSessionParams(sess)
 	initParams.Input = &rez.AiAgentTurnInput{Message: msg}
 
@@ -121,7 +126,7 @@ func (s *AiRuntimeSuite) TestSimpleGreetingAgent() {
 
 	msg := ai.NewUserTextMessage("Reply with a one-word greeting.")
 	ta := makeTestAgent[testAgentState](msg)
-	svc := s.makeService(ctx, WithAgent(ta))
+	svc := s.makeRuntime(ctx, withTestAgent(ta)...)
 
 	sess := s.makeAgentSession(svc, tdb, ta.def.Name, testAgentInput{})
 	s.T().Logf("Starting test agent session (id %s)", sess.ID)
@@ -150,7 +155,7 @@ type (
 		Foo string `json:"foo"`
 	}
 
-	testAgentDef = rezai.AiAgentDefinition[testAgentInput]
+	testAgentDef = rezai.AgentDefinition[testAgentInput]
 
 	testAgent[S any] struct {
 		def         testAgentDef
@@ -159,7 +164,7 @@ type (
 	}
 )
 
-var _ agentRunner[testAgentInput, any] = &testAgent[any]{}
+var _ agentHarness[testAgentInput, any] = &testAgent[any]{}
 
 func (i testAgentInput) Validate() error {
 	return nil

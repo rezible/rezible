@@ -36,7 +36,7 @@ func newAiHandler(agents rez.AiAgentCatalogue, sessions rez.AiAgentSessionServic
 
 func (h *aiHandler) ListAiAgents(ctx context.Context, req *oapi.ListAiAgentsRequest) (*oapi.ListAiAgentsResponse, error) {
 	var resp oapi.ListAiAgentsResponse
-	resp.Body.Data = oapi.ConvertSlice(h.agents.GetAgents(), oapi.AiAgentConfigFromRez)
+	resp.Body.Data = oapi.ConvertSlice(h.agents.GetConfigs(), oapi.AiAgentConfigFromRez)
 	return &resp, nil
 }
 
@@ -44,7 +44,7 @@ func (h *aiHandler) CreateAgentSession(ctx context.Context, req *oapi.CreateAgen
 	var resp oapi.CreateAgentSessionResponse
 	attrs := req.Body.Attributes
 
-	input, inputErr := h.agents.ValidateAgentSessionInput(attrs.AgentName, attrs.Input)
+	input, inputErr := h.agents.ValidateSessionInput(attrs.AgentName, attrs.Input)
 	if inputErr != nil {
 		return nil, oapi.Error(ctx, "invalid input", inputErr)
 	}

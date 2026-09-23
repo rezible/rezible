@@ -10,9 +10,9 @@ import (
 	rezai "github.com/rezible/rezible/pkg/ai"
 )
 
-func (s *AiRuntime) getRegisteredTools(refs []ai.ToolRef) ([]ai.ToolRef, []ai.ToolRef) {
+func (r *AiRuntime) getRegisteredTools(refs []ai.ToolRef) ([]ai.ToolRef, []ai.ToolRef) {
 	toolMap := make(map[string]ai.ToolRef)
-	for _, ref := range genkit.ListTools(s.gk) {
+	for _, ref := range genkit.ListTools(r.gk) {
 		toolMap[ref.Name()] = ref
 	}
 	var registered []ai.ToolRef
@@ -46,7 +46,7 @@ func makeDefinedTool[I any, O any](def rezai.ToolDefinition[I, O], toolFn aix.To
 func WithDefinedTool[I any, O any](t ToolRunner[I, O]) AiRuntimeOption {
 	return AiRuntimeOption{
 		kind: AiRuntimeOptionKindTool,
-		optFn: func(s *AiRuntime) error {
+		runtimeFn: func(s *AiRuntime) error {
 			def := t.Definition()
 			genkitx.DefineTool(s.gk, def.Name(), def.Description(), t.ToolFunc)
 			return nil

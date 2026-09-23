@@ -15,6 +15,7 @@ type (
 	}
 
 	EvalScenarioRunner interface {
+		RegisterScenario(EvalScenario) error
 		RunScenario(ctx context.Context, name string) (EvalScenarioRunResult, error)
 	}
 )

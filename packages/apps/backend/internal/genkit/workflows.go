@@ -95,12 +95,10 @@ func (b *WorkflowBuilder) DefinePromptWorkflow[I rez.ValidatingInput, O any](def
 }
 
 func (b *WorkflowBuilder) buildPromptWorkflowOpts[I rez.ValidatingInput, O any](def rezai.AiPromptWorkflowDefinition[I, O], input I) []gkai.GenerateOption {
-	opts := make([]gkai.GenerateOption, 1, 4)
-	modelOpt := gkai.WithModel(b.runtime.getDefaultModel())
+	var opts []gkai.GenerateOption
 	if def.Model != "" {
-		modelOpt = gkai.WithModelName(def.Model)
+		opts = append(opts, gkai.WithModelName(def.Model))
 	}
-	opts[0] = modelOpt
 	if def.SystemPrompt != "" {
 		opts = append(opts, gkai.WithSystem(def.SystemPrompt))
 	}

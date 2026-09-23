@@ -37,32 +37,20 @@ func (r *testWorkflowRunner) ExecuteWorkflow(ctx context.Context, name string, r
 	return run(ctx)
 }
 
-func (s *AiRuntimeSuite) newTestOutputModel(output *testWorkflowOutput) ModelDefinition[any] {
+func (s *AiRuntimeSuite) makeWorkflowOutputModel(output *testWorkflowOutput) ModelDefinition[any] {
 	out, jsonErr := json.Marshal(output)
 	s.Require().NoError(jsonErr)
 	response := &gkai.ModelResponse{
 		Message: gkai.NewModelTextMessage(string(out)),
 	}
-	return ModelDefinition[any]{
-		Name: "test/output",
-		opts: &gkai.ModelOptions{
-			Supports: &gkai.ModelSupports{
-				Constrained: gkai.ConstrainedSupportAll,
-				Multiturn:   true,
-				SystemRole:  true,
-			},
-		},
-		fn: func(ctx context.Context, req *gkai.ModelRequest, cfg any, cb gkai.ModelStreamCallback) (*gkai.ModelResponse, error) {
-			return response, nil
-		},
-	}
+	return makeTestOutputModel(response)
 }
 
 func (s *AiRuntimeSuite) TestDefinePromptWorkflowValidatesInput() {
 	ctx := s.SeedTenantContext()
 
-	model := s.newTestOutputModel(&testWorkflowOutput{OK: true})
-	svc := s.makeService(ctx, WithDefinedModel(model))
+	model := s.makeWorkflowOutputModel(&testWorkflowOutput{OK: true})
+	svc := s.makeRuntime(ctx, WithDefinedModel(model))
 	runner := &testWorkflowRunner{}
 	builder := NewWorkflowBuilder(svc, runner)
 	definition := rezai.AiPromptWorkflowDefinition[testWorkflowInput, testWorkflowOutput]{
@@ -84,8 +72,8 @@ func (s *AiRuntimeSuite) TestDefinePromptWorkflowValidatesInput() {
 func (s *AiRuntimeSuite) TestDefinePromptWorkflowRunsTypedOutput() {
 	ctx := s.SeedTenantContext()
 
-	model := s.newTestOutputModel(&testWorkflowOutput{OK: true})
-	svc := s.makeService(ctx, WithDefinedModel(model))
+	model := s.makeWorkflowOutputModel(&testWorkflowOutput{OK: true})
+	svc := s.makeRuntime(ctx, WithDefinedModel(model))
 	runner := &testWorkflowRunner{}
 	builder := NewWorkflowBuilder(svc, runner)
 	definition := rezai.AiPromptWorkflowDefinition[testWorkflowInput, testWorkflowOutput]{
@@ -108,8 +96,9 @@ func (s *AiRuntimeSuite) TestDefinePromptWorkflowRunsTypedOutput() {
 
 func (s *AiRuntimeSuite) TestDefineWorkflowRejectsDuplicateNames() {
 	ctx := s.SeedTenantContext()
-	model := s.newTestOutputModel(&testWorkflowOutput{OK: true})
-	svc := s.makeService(ctx, WithDefinedModel(model))
+
+	model := s.makeWorkflowOutputModel(&testWorkflowOutput{OK: true})
+	svc := s.makeRuntime(ctx, WithDefinedModel(model))
 	builder := NewWorkflowBuilder(svc, &testWorkflowRunner{})
 	run := func(context.Context, testWorkflowInput) (testWorkflowOutput, error) {
 		return testWorkflowOutput{}, nil

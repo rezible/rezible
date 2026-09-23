@@ -11,6 +11,7 @@ format:
 
 export HTTP__PORT := env("BACKEND_PORT", "")
 export HTTP__AUTH__ENABLE_DEV_SKIP_MODE := env("SKIP_AUTH", "")
+#export GENKIT_ENV := env("GENKIT_ENV", "dev")
 
 @dev:
     go tool reflex --decoration=none -r '\.go' -s -- sh -c 'go run ./cmd/rezible serve'
@@ -46,7 +47,7 @@ exclude_test_packages_pattern := "/ent/"
 [env("GENKIT_REFLECTION_V2_SERVER", "true")]
 [env("BACKEND_PORT", "7020")]
 @run-genkit:
-    just _genkit start --experimental-reflection-v2 -- just dev
+    just _genkit start --experimental-reflection-v2 -- go run ./cmd/rezible serve
 
 @send-demo-webhook KIND="alert":
     curl -i -X POST "${API_URL:?Run just dev setup}/webhooks/demo" \

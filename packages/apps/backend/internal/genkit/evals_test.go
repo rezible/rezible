@@ -70,12 +70,21 @@ func TestEvaluationServiceSuite(t *testing.T) {
 	suite.Run(t, &EvaluationServiceSuite{Suite: test.NewSuite()})
 }
 
+func (s *EvaluationServiceSuite) makeRuntime(ctx context.Context, opts ...AiRuntimeOption) *AiRuntime {
+	cfg := s.Config()
+	runtime := NewAiRuntime(cfg)
+	baseOpts := []AiRuntimeOption{WithDevEvals()}
+	s.Require().NoError(runtime.Init(ctx, append(baseOpts, opts...)...))
+	return runtime
+}
+
 func (s *EvaluationServiceSuite) makeEvalService(tdb rez.Database, runtime *AiRuntime, scenarios ...rezai.EvalScenario) *EvaluationService {
 	workflowBuilder := NewWorkflowBuilder(runtime, &testWorkflowRunner{})
-	flow, flowErr := NewEvaluateScenarioFlow(tdb, runtime, workflowBuilder, scenarios...)
-	s.Require().NoError(flowErr)
-	service, serviceErr := runtime.MakeEvaluationService(flow)
+	service, serviceErr := MakeEvaluationService(tdb, runtime, workflowBuilder)
 	s.Require().NoError(serviceErr)
+	for _, sc := range scenarios {
+		s.Require().NoError(service.RegisterScenario(sc))
+	}
 	return service
 }
 
@@ -93,10 +102,10 @@ func (s *EvaluationServiceSuite) TestRunsAgentAndProducesPassingReport() {
 		Message:      ai.NewModelTextMessage("hello"),
 		FinishReason: ai.FinishReasonStop,
 	}
+	testModel := makeTestOutputModel(response)
 	agent := makeTestAgent[testAgentState](ai.NewUserTextMessage("say hello"))
-	agent.def.Model = "test/model"
-	runtime := NewAiRuntime(s.Config())
-	s.Require().NoError(runtime.Init(ctx, withTestModel(response), WithAgent(agent)))
+	agent.def.Model = testModel.Name
+	runtime := s.makeRuntime(ctx, WithDefinedModel(testModel), WithAgent(agent))
 
 	tdb := s.CreateTestDatabase()
 	scenario := testEvalScenario{
@@ -108,7 +117,7 @@ func (s *EvaluationServiceSuite) TestRunsAgentAndProducesPassingReport() {
 	s.Equal(rezai.EvalRunStatusPassed, result.Status)
 	s.Require().NotNil(result.Execution)
 	s.True(result.Execution.Succeeded)
-	s.Equal("test/model", result.Agent.Model)
+	s.Equal(testModel.Name, result.Agent.Model)
 	s.Len(result.Checks, 1)
 }
 
@@ -118,10 +127,10 @@ func (s *EvaluationServiceSuite) TestReportsGradeErrorsAtGradeStage() {
 		Message:      ai.NewModelTextMessage("hello"),
 		FinishReason: ai.FinishReasonStop,
 	}
+	testModel := makeTestOutputModel(response)
 	agent := makeTestAgent[testAgentState](ai.NewUserTextMessage("say hello"))
-	agent.def.Model = "test/model"
-	runtime := NewAiRuntime(s.Config())
-	s.Require().NoError(runtime.Init(ctx, withTestModel(response), WithAgent(agent)))
+	agent.def.Model = testModel.Name
+	runtime := s.makeRuntime(ctx, WithDefinedModel(testModel), WithAgent(agent))
 	expectedErr := errors.New("grading unavailable")
 
 	tdb := s.CreateTestDatabase()

@@ -661,10 +661,17 @@ type (
 		Model       string `json:"model"`
 	}
 
+	AiAgentInvoker interface {
+		Config() AiAgentConfig
+		DecodeSessionInput([]byte) (ValidatingInput, error)
+		MakeInitialTurnInput(context.Context, *ent.AgentSession) (*AiAgentTurnInput, error)
+		Invoke(context.Context, InvokeAiAgentTurnParams) (*AiAgentInvocationResult, error)
+	}
+
 	AiAgentCatalogue interface {
-		GetAgents() []AiAgentConfig
-		ValidateAgentSessionInput(string, []byte) (ValidatingInput, error)
-		MakeInitialAgentTurnInput(context.Context, *ent.AgentSession) (*AiAgentTurnInput, error)
+		GetConfigs() []AiAgentConfig
+		ValidateSessionInput(string, []byte) (ValidatingInput, error)
+		MakeInitialTurnInput(context.Context, *ent.AgentSession) (*AiAgentTurnInput, error)
 	}
 
 	AiAgentRuntime interface {

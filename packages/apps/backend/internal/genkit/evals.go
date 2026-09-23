@@ -4,16 +4,19 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"strings"
 	"time"
 
+	"github.com/firebase/genkit/go/plugins/evaluators"
 	"github.com/google/uuid"
 
 	mapset "github.com/deckarep/golang-set/v2"
-	"github.com/firebase/genkit/go/core/api"
-	"github.com/firebase/genkit/go/genkit"
 
 	"github.com/firebase/genkit/go/ai"
+	gkapi "github.com/firebase/genkit/go/core/api"
+	"github.com/firebase/genkit/go/genkit"
+
 	aix "github.com/firebase/genkit/go/ai/exp"
 	"github.com/firebase/genkit/go/core/tracing"
 	rez "github.com/rezible/rezible"
@@ -22,44 +25,64 @@ import (
 	"github.com/rezible/rezible/pkg/execution"
 )
 
-type (
-	EvaluateScenarioFlow = rez.AiWorkflow[EvaluationFlowInput, rezai.EvalScenarioRunResult]
-	EvaluationService    struct {
-		scenarioEvalFlow EvaluateScenarioFlow
-		evaluatorAction  *ai.EvaluatorAction
+func WithDevEvals() AiRuntimeOption {
+	opt := AiRuntimeOption{kind: AiRuntimeOptionKindPlugin}
+	if gkapi.CurrentEnvironment() == gkapi.EnvironmentDev {
+		opt.plugins = append(opt.plugins, &evaluators.GenkitEval{
+			Metrics: []evaluators.MetricConfig{{MetricType: evaluators.EvaluatorDeepEqual}},
+		})
+	} else {
+		slog.Debug("genkit skipping eval plugin")
 	}
-)
+	return opt
+}
 
-var scenarioChecksActionName = api.NewName("rezible", "scenario_checks")
+type EvaluationService struct {
+	flowRunner   *scenarioEvalFlowRunner
+	checksAction *ai.EvaluatorAction
+}
 
-func (s *AiRuntime) MakeEvaluationService(evalFlow EvaluateScenarioFlow) (*EvaluationService, error) {
-	options := &ai.EvaluatorOptions{
-		DisplayName: "Scenario Check",
-		Definition:  "Presents scenario grading checks as Genkit metrics.",
-		IsBilled:    false,
+var scenarioChecksActionName = gkapi.NewName("rezible", "scenario_checks")
+
+func MakeEvaluationService(db rez.Database, r *AiRuntime, builder *WorkflowBuilder) (*EvaluationService, error) {
+	flowRunner, flowRunnerErr := newScenarioEvalFlowRunner(db, r, builder)
+	if flowRunnerErr != nil {
+		return nil, fmt.Errorf("make scenario flow runner: %w", flowRunnerErr)
 	}
 
-	return &EvaluationService{
-		scenarioEvalFlow: evalFlow,
-		evaluatorAction:  genkit.DefineEvaluatorAction(s.gk, scenarioChecksActionName, options, evaluateScenarioChecks),
-	}, nil
+	svc := &EvaluationService{
+		flowRunner:   flowRunner,
+		checksAction: newScenarioChecksEvaluatorAction(r.gk),
+	}
+
+	return svc, nil
+}
+
+func (s *EvaluationService) RegisterScenario(scenario rezai.EvalScenario) error {
+	name := scenario.Definition().Name
+	s.flowRunner.scenarioMap[name] = scenario
+	return nil
 }
 
 func (s *EvaluationService) RunScenario(ctx context.Context, name string) (rezai.EvalScenarioRunResult, error) {
-	input := EvaluationFlowInput{ScenarioName: name}
-	fmt.Printf("running scenario eval %s\n", name)
-	output, flowErr := s.scenarioEvalFlow.Run(ctx, input)
+	input := EvaluateScenarioFlowInput{ScenarioName: name}
+	output, flowErr := s.flowRunner.flow.Run(ctx, input)
 	if flowErr != nil {
 		return output, fmt.Errorf("run flow: %w", flowErr)
 	}
+
 	if resultErr := s.outputEvaluationResult(ctx, input, output); resultErr != nil {
 		return output, fmt.Errorf("evaluation result: %w", resultErr)
 	}
+
 	return output, nil
 }
 
-func (s *EvaluationService) outputEvaluationResult(ctx context.Context, input EvaluationFlowInput, output rezai.EvalScenarioRunResult) error {
-	fmt.Printf("output %+v\n", output)
+type EvaluateScenarioFlowInput struct {
+	ScenarioName string `json:"scenario_name" jsonschema:"description=Registered evaluation scenario name,minLength=1"`
+}
+
+func (s *EvaluationService) outputEvaluationResult(ctx context.Context, input EvaluateScenarioFlowInput, output rezai.EvalScenarioRunResult) error {
 	scenarioExample := &ai.Example{
 		TestCaseId: uuid.NewString(),
 		Input:      input,
@@ -70,39 +93,46 @@ func (s *EvaluationService) outputEvaluationResult(ctx context.Context, input Ev
 		EvaluationId: uuid.New().String(),
 		Options:      struct{}{},
 	}
-	evalResp, evalErr := s.evaluatorAction.Evaluate(ctx, evalReq)
+	evalResp, evalErr := s.checksAction.Evaluate(ctx, evalReq)
 	if evalErr != nil {
 		return fmt.Errorf("evaluator action: %w", evalErr)
 	}
-	fmt.Printf("evaluator resp: %+v\n", evalResp)
+	slog.Debug("evaluator finished",
+		"output", output,
+		"evalResp", evalResp)
 	return nil
 }
 
-type EvaluationFlowInput struct {
-	ScenarioName string `json:"scenario_name" jsonschema:"description=Registered evaluation scenario name,minLength=1"`
+type scenarioEvalFlowRunner struct {
+	db          rez.Database
+	runtime     *AiRuntime
+	scenarioMap map[string]rezai.EvalScenario
+	flow        rez.AiWorkflow[EvaluateScenarioFlowInput, rezai.EvalScenarioRunResult]
 }
 
-func NewEvaluateScenarioFlow(db rez.Database, runtime *AiRuntime, builder *WorkflowBuilder, scenarios ...rezai.EvalScenario) (EvaluateScenarioFlow, error) {
-	scenarioMap := make(map[string]rezai.EvalScenario)
-	for _, scenario := range scenarios {
-		scenarioMap[scenario.Definition().Name] = scenario
+func newScenarioEvalFlowRunner(db rez.Database, runtime *AiRuntime, builder *WorkflowBuilder) (*scenarioEvalFlowRunner, error) {
+	r := &scenarioEvalFlowRunner{
+		db:          db,
+		runtime:     runtime,
+		scenarioMap: make(map[string]rezai.EvalScenario),
 	}
-	return builder.DefineWorkflow("evaluate_agent_scenario", func(ctx context.Context, input EvaluationFlowInput) (rezai.EvalScenarioRunResult, error) {
-		scenario, ok := scenarioMap[input.ScenarioName]
+
+	flowFunc := func(ctx context.Context, input EvaluateScenarioFlowInput) (rezai.EvalScenarioRunResult, error) {
+		scenario, ok := r.scenarioMap[input.ScenarioName]
 		if !ok {
 			return rezai.EvalScenarioRunResult{}, fmt.Errorf("scenario %q not found", input.ScenarioName)
 		}
 		eval := &evaluationRun{scenario: scenario}
-		return eval.run(ctx, db, runtime), nil
-	})
-}
-
-func evaluateScenarioChecks(ctx context.Context, req *ai.EvaluatorCallbackRequest, cfg struct{}) (*ai.EvaluatorCallbackResponse, error) {
-	if req == nil || req.Input.Output == nil {
-		return nil, fmt.Errorf("evaluation output is required")
+		return eval.run(ctx, r.db, r.runtime), nil
 	}
-	e := &scenarioChecksEvaluator{}
-	return e.evaluate(req.Input)
+
+	evalFlow, evalFlowErr := builder.DefineWorkflow("evaluate_agent_scenario", flowFunc)
+	if evalFlowErr != nil {
+		return nil, fmt.Errorf("define eval scenario workflow: %w", evalFlowErr)
+	}
+	r.flow = evalFlow
+
+	return r, nil
 }
 
 type evaluationRun struct {
@@ -126,7 +156,7 @@ func (r *evaluationRun) run(ctx context.Context, db rez.Database, runtime *AiRun
 		return r.fail(rezai.EvalRunStageSetup, "scenario definition requires name, description, and agent name")
 	}
 	found := false
-	for _, agent := range runtime.catalogue.GetAgents() {
+	for _, agent := range runtime.catalogue.GetConfigs() {
 		if agent.Name == d.AgentName {
 			r.result.Agent = agent
 			found = true
@@ -146,7 +176,7 @@ func (r *evaluationRun) run(ctx context.Context, db rez.Database, runtime *AiRun
 	ctx = seedCtx
 
 	input, prepareErr := traceStep(ctx, "prepare", func(ctx context.Context) (*rez.AiAgentTurnInput, error) {
-		return runtime.catalogue.MakeInitialAgentTurnInput(ctx, r.session)
+		return runtime.catalogue.MakeInitialTurnInput(ctx, r.session)
 	})
 	if prepareErr != nil || input == nil {
 		if prepareErr == nil {
@@ -211,7 +241,7 @@ func (r *evaluationRun) seed(ctx context.Context, client *ent.Client, agents *ag
 		return nil, fmt.Errorf("scenario must seed a session and turn")
 	}
 
-	if _, inputErr := agents.ValidateAgentSessionInput(r.result.Agent.Name, seed.Session.Input); inputErr != nil {
+	if _, inputErr := agents.ValidateSessionInput(r.result.Agent.Name, seed.Session.Input); inputErr != nil {
 		return nil, fmt.Errorf("validate seed input: %w", inputErr)
 	}
 	r.session = seed.Session
@@ -291,6 +321,25 @@ func traceStep[I any](ctx context.Context, name string, fn func(context.Context)
 }
 
 type scenarioChecksEvaluator struct{}
+
+func newScenarioChecksEvaluatorAction(gk *genkit.Genkit) *ai.EvaluatorAction {
+	options := &ai.EvaluatorOptions{
+		DisplayName: "Scenario Check",
+		Definition:  "Presents scenario grading checks as Genkit metrics.",
+		IsBilled:    false,
+	}
+
+	e := &scenarioChecksEvaluator{}
+
+	return genkit.DefineEvaluatorAction(gk, scenarioChecksActionName, options, e.run)
+}
+
+func (e *scenarioChecksEvaluator) run(ctx context.Context, req *ai.EvaluatorCallbackRequest, cfg struct{}) (*ai.EvaluatorCallbackResponse, error) {
+	if req == nil || req.Input.Output == nil {
+		return nil, fmt.Errorf("evaluation output is required")
+	}
+	return e.evaluate(req.Input)
+}
 
 func (e *scenarioChecksEvaluator) evaluate(example ai.Example) (*ai.EvaluatorCallbackResponse, error) {
 	raw, marshalErr := json.Marshal(example.Output)

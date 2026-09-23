@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
-	"strings"
 
 	"github.com/firebase/genkit/go/ai"
 	aix "github.com/firebase/genkit/go/ai/exp"
@@ -15,36 +14,28 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	rezai "github.com/rezible/rezible/pkg/ai"
-	"github.com/rezible/rezible/pkg/execution"
 )
 
-func WithAgent[I rez.ValidatingInput, S any](r agentRunner[I, S], mwFuncs ...AgentMiddlewareConstructorFn) AiRuntimeOption {
+func WithAgent[I rez.ValidatingInput, S any](h agentHarness[I, S], mw ...AgentMiddlewareConstructorFn) AiRuntimeOption {
 	return AiRuntimeOption{
 		kind: AiRuntimeOptionKindAgent,
-		optFn: func(s *AiRuntime) error {
-			return s.catalogue.addAgent(s.gk, r, mwFuncs...)
+		runtimeFn: func(s *AiRuntime) error {
+			return s.catalogue.register(s.gk, h, mw...)
 		},
 	}
 }
 
-type agentInvoker interface {
-	Config() rez.AiAgentConfig
-	DecodeSessionInput([]byte) (rez.ValidatingInput, error)
-	MakeInitialTurnInput(context.Context, *ent.AgentSession) (*rez.AiAgentTurnInput, error)
-	Invoke(context.Context, rez.InvokeAiAgentTurnParams) (*rez.AiAgentInvocationResult, error)
-}
-
 type agentCatalogue struct {
-	agents map[string]agentInvoker
+	agents map[string]rez.AiAgentInvoker
 }
 
 func newAgentCatalogue() *agentCatalogue {
 	return &agentCatalogue{
-		agents: make(map[string]agentInvoker),
+		agents: make(map[string]rez.AiAgentInvoker),
 	}
 }
 
-func (c *agentCatalogue) GetAgents() []rez.AiAgentConfig {
+func (c *agentCatalogue) GetConfigs() []rez.AiAgentConfig {
 	var agents []rez.AiAgentConfig
 	for _, agent := range c.agents {
 		agents = append(agents, agent.Config())
@@ -52,14 +43,14 @@ func (c *agentCatalogue) GetAgents() []rez.AiAgentConfig {
 	return agents
 }
 
-func (c *agentCatalogue) getAgent(name string) (agentInvoker, error) {
+func (c *agentCatalogue) getAgent(name string) (rez.AiAgentInvoker, error) {
 	if a, ok := c.agents[name]; ok {
 		return a, nil
 	}
 	return nil, fmt.Errorf("agent %q not found", name)
 }
 
-func (c *agentCatalogue) ValidateAgentSessionInput(name string, input []byte) (rez.ValidatingInput, error) {
+func (c *agentCatalogue) ValidateSessionInput(name string, input []byte) (rez.ValidatingInput, error) {
 	a, agentErr := c.getAgent(name)
 	if agentErr != nil {
 		return nil, agentErr
@@ -67,7 +58,7 @@ func (c *agentCatalogue) ValidateAgentSessionInput(name string, input []byte) (r
 	return a.DecodeSessionInput(input)
 }
 
-func (c *agentCatalogue) MakeInitialAgentTurnInput(ctx context.Context, sess *ent.AgentSession) (*rez.AiAgentTurnInput, error) {
+func (c *agentCatalogue) MakeInitialTurnInput(ctx context.Context, sess *ent.AgentSession) (*rez.AiAgentTurnInput, error) {
 	wrapper, wrapperErr := c.getAgent(sess.AgentName)
 	if wrapperErr != nil {
 		return nil, wrapperErr
@@ -76,37 +67,33 @@ func (c *agentCatalogue) MakeInitialAgentTurnInput(ctx context.Context, sess *en
 }
 
 type (
-	agentRunner[SessionInput rez.ValidatingInput, State any] interface {
-		agentDefinition() rezai.AiAgentDefinition[SessionInput]
+	agentHarness[SessionInput rez.ValidatingInput, State any] interface {
+		agentDefinition() rezai.AgentDefinition[SessionInput]
 		makeInitialTurnInput(context.Context, SessionInput) (*rez.AiAgentTurnInput, error)
 		getCustomState(context.Context, *ent.AgentSession) (*State, error)
 		transformState(context.Context, *aix.SessionState[State]) (*aix.SessionState[State], error)
 		transformStreamChunk(context.Context, *aix.AgentStreamChunk) (*aix.AgentStreamChunk, error)
 	}
 
-	customAgentRunner[SessionInput rez.ValidatingInput, State any] interface {
-		makeAgentFunc([]ai.Middleware) aix.AgentFunc[State]
+	agentHarnessWithCustomFunc[SessionInput rez.ValidatingInput, State any] interface {
+		runCustom(context.Context, aix.Responder, *aix.SessionRunner[State], *ai.Hooks) (*aix.AgentResult, error)
 	}
 
-	systemPromptFuncAgentRunner[SessionInput rez.ValidatingInput] interface {
+	agentHarnessWithSystemPrompt[SessionInput rez.ValidatingInput, State any] interface {
 		makeSystemPrompt(context.Context, SessionInput) (string, error)
 	}
 
-	runnerWithInitialTurnMessage[SessionInput rez.ValidatingInput] interface {
-		updateInitialTurnMessage(context.Context, SessionInput) (string, error)
-	}
-
-	runnerWithMiddleware interface {
+	agentHarnessWithMiddleware interface {
 		makeMiddleware() []ai.Middleware
 	}
 )
 
-func (c *agentCatalogue) addAgent[SessionInput rez.ValidatingInput, State any](gk *genkit.Genkit, runner agentRunner[SessionInput, State], mwFuncs ...AgentMiddlewareConstructorFn) error {
-	d := runner.agentDefinition()
+func (c *agentCatalogue) register[SessionInput rez.ValidatingInput, State any](gk *genkit.Genkit, harness agentHarness[SessionInput, State], mwFuncs ...AgentMiddlewareConstructorFn) error {
+	d := harness.agentDefinition()
 	opts := []aix.AgentOption[State]{
 		aix.WithDescription[State](d.Description),
-		aix.WithStateTransform[State](runner.transformState),
-		aix.WithStreamTransform[State](runner.transformStreamChunk),
+		aix.WithStateTransform[State](harness.transformState),
+		aix.WithStreamTransform[State](harness.transformStreamChunk),
 	}
 
 	var modelName string
@@ -125,12 +112,12 @@ func (c *agentCatalogue) addAgent[SessionInput rez.ValidatingInput, State any](g
 	for _, mwFn := range mwFuncs {
 		middleware = append(middleware, mwFn(d.Name))
 	}
-	if mwRunner, ok := runner.(runnerWithMiddleware); ok {
+	if mwRunner, ok := harness.(agentHarnessWithMiddleware); ok {
 		middleware = append(middleware, mwRunner.makeMiddleware()...)
 	}
 
 	withSystemPrompt := ai.WithSystem(d.SystemPrompt)
-	if spr, hasPromptFn := runner.(systemPromptFuncAgentRunner[SessionInput]); hasPromptFn {
+	if spr, hasPromptFn := harness.(agentHarnessWithSystemPrompt[SessionInput, State]); hasPromptFn {
 		withSystemPrompt = ai.WithSystemFn(func(ctx context.Context, i any) (string, error) {
 			input, inputOk := i.(SessionInput)
 			if !inputOk {
@@ -141,8 +128,21 @@ func (c *agentCatalogue) addAgent[SessionInput rez.ValidatingInput, State any](g
 	}
 
 	var agent *aix.Agent[State]
-	if cr, ok := runner.(customAgentRunner[SessionInput, State]); ok {
-		agent = genkitx.DefineCustomAgent(gk, d.Name, cr.makeAgentFunc(middleware), opts...)
+	if fh, hasFunc := harness.(agentHarnessWithCustomFunc[SessionInput, State]); hasFunc {
+		agentFunc := func(ctx context.Context, resp aix.Responder, sess *aix.SessionRunner[State]) (*aix.AgentResult, error) {
+			hooks := make([]*ai.Hooks, len(middleware))
+			for i, mw := range middleware {
+				mwHooks, mwErr := mw.New(ctx)
+				if mwErr != nil {
+					return nil, fmt.Errorf("middleware %s error: %w", mw.Name(), mwErr)
+				}
+				hooks[i] = mwHooks
+			}
+			// TODO: combine all hooks
+			combinedHooks := &ai.Hooks{}
+			return fh.runCustom(ctx, resp, sess, combinedHooks)
+		}
+		agent = genkitx.DefineCustomAgent(gk, d.Name, agentFunc, opts...)
 	} else {
 		prompt := aix.InlinePrompt{
 			ai.WithModelName(modelName),
@@ -152,21 +152,23 @@ func (c *agentCatalogue) addAgent[SessionInput rez.ValidatingInput, State any](g
 		agent = genkitx.DefineAgent(gk, d.Name, prompt, opts...)
 	}
 
-	cfg := rez.AiAgentConfig{
-		Name:        d.Name,
-		DisplayName: d.Name,
-		Model:       modelName,
+	c.agents[d.Name] = &wrappedAgent[SessionInput, State]{
+		agent:   agent,
+		harness: harness,
+		config: rez.AiAgentConfig{
+			Name:        d.Name,
+			DisplayName: d.Name,
+			Model:       modelName,
+		},
 	}
-
-	c.agents[d.Name] = &wrappedAgent[SessionInput, State]{agent: agent, runner: runner, config: cfg}
 
 	return nil
 }
 
 type wrappedAgent[SessionInput rez.ValidatingInput, State any] struct {
-	agent  *aix.Agent[State]
-	config rez.AiAgentConfig
-	runner agentRunner[SessionInput, State]
+	agent   *aix.Agent[State]
+	harness agentHarness[SessionInput, State]
+	config  rez.AiAgentConfig
 }
 
 func (w *wrappedAgent[SessionInput, State]) Config() rez.AiAgentConfig {
@@ -174,7 +176,7 @@ func (w *wrappedAgent[SessionInput, State]) Config() rez.AiAgentConfig {
 }
 
 func (w *wrappedAgent[SessionInput, State]) DecodeSessionInput(raw []byte) (rez.ValidatingInput, error) {
-	input, validationErr := w.runner.agentDefinition().DecodeSessionInput(raw)
+	input, validationErr := w.harness.agentDefinition().DecodeSessionInput(raw)
 	if validationErr != nil {
 		return nil, validationErr
 	} else if input == nil {
@@ -197,32 +199,17 @@ func (w *wrappedAgent[SessionInput, State]) normalizeTurnInput(input *rez.AiAgen
 }
 
 func (w *wrappedAgent[SessionInput, State]) MakeInitialTurnInput(ctx context.Context, sess *ent.AgentSession) (*rez.AiAgentTurnInput, error) {
-	validated, validateErr := w.runner.agentDefinition().DecodeSessionInput(sess.Input)
+	validated, validateErr := w.harness.agentDefinition().DecodeSessionInput(sess.Input)
 	if validateErr != nil || validated == nil {
 		return nil, fmt.Errorf("input: %w", validateErr)
 	}
 	input := *validated
 
-	turnInput, turnErr := w.runner.makeInitialTurnInput(ctx, input)
+	turnInput, turnErr := w.harness.makeInitialTurnInput(ctx, input)
 	if turnErr != nil {
 		return nil, fmt.Errorf("make turn: %w", turnErr)
 	} else if turnInput == nil {
 		return nil, rez.ErrInvalidInput
-	}
-
-	if msgSetter, setMsg := w.runner.(runnerWithInitialTurnMessage[SessionInput]); setMsg {
-		seed, msgErr := msgSetter.updateInitialTurnMessage(ctx, input)
-		if msgErr != nil {
-			return nil, fmt.Errorf("update message: %w", msgErr)
-		}
-
-		if strings.TrimSpace(seed) != "" {
-			task := ""
-			if turnInput.Message != nil {
-				task = strings.TrimSpace(turnInput.Message.Text())
-			}
-			turnInput.Message = ai.NewUserTextMessage(strings.TrimSpace("Context:\n" + seed + "\n\nTask:\n" + task))
-		}
 	}
 
 	normalized, normalizeErr := w.normalizeTurnInput(turnInput)
@@ -248,7 +235,7 @@ func (w *wrappedAgent[SessionInput, State]) getTurnState(ctx context.Context, pa
 		state.Artifacts[i] = &aix.Artifact{Name: a.Name, Metadata: a.Metadata, Parts: a.Parts}
 	}
 
-	custom, customErr := w.runner.getCustomState(ctx, params.Session)
+	custom, customErr := w.harness.getCustomState(ctx, params.Session)
 	if customErr != nil {
 		return nil, fmt.Errorf("custom state: %w", customErr)
 	} else if custom != nil {
@@ -274,8 +261,6 @@ func getAgentInvocationContext(ctx context.Context) *agentInvocationContext {
 }
 
 func (w *wrappedAgent[SessionInput, State]) Invoke(ctx context.Context, params rez.InvokeAiAgentTurnParams) (*rez.AiAgentInvocationResult, error) {
-	ctx = execution.NewAiAgentContext(ctx, params.Session, params.Turn)
-
 	invCtx := &agentInvocationContext{Session: params.Session, Turn: params.Turn}
 	ctx = context.WithValue(ctx, agentInvocationContextKey{}, invCtx)
 
@@ -314,6 +299,8 @@ func (w *wrappedAgent[SessionInput, State]) Invoke(ctx context.Context, params r
 	if out.SessionID != params.Session.ID.String() {
 		return nil, fmt.Errorf("output session ID %q does not match %q", out.SessionID, params.Session.ID)
 	}
+
+	fmt.Printf("invoke output: %+v\n", out)
 
 	return w.wrapInvocationOutput(out)
 }

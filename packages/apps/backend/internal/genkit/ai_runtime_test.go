@@ -5,8 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/firebase/genkit/go/ai"
-	gk "github.com/firebase/genkit/go/genkit"
+	gkai "github.com/firebase/genkit/go/ai"
 	"github.com/rezible/rezible/test/mocks"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
@@ -29,37 +28,48 @@ func (s *AiRuntimeSuite) checkSkip(name string) {
 	}
 }
 
-func withTestModel(response *ai.ModelResponse) AiRuntimeOption {
-	return AiRuntimeOption{
-		kind: AiRuntimeOptionKindModel,
-		optFn: func(s *AiRuntime) error {
-			gk.DefineModel(s.gk, "test/model", &ai.ModelOptions{
-				Supports: &ai.ModelSupports{
-					Constrained: ai.ConstrainedSupportAll,
-					Multiturn:   true,
-					SystemRole:  true,
-				},
-			}, func(ctx context.Context, req *ai.ModelRequest, cb ai.ModelStreamCallback) (*ai.ModelResponse, error) {
-				return response, nil
-			})
-			return nil
-		},
-	}
-}
-
-func (s *AiRuntimeSuite) makeService(ctx context.Context, opts ...AiRuntimeOption) *AiRuntime {
+func (s *AiRuntimeSuite) makeRuntime(ctx context.Context, opts ...AiRuntimeOption) *AiRuntime {
 	svc := NewAiRuntime(s.Config())
+	var anyModels bool
+	for _, opt := range opts {
+		if opt.kind == AiRuntimeOptionKindModel {
+			anyModels = true
+			break
+		}
+	}
+	if !anyModels {
+		s.T().Log("adding default test model to runtime init opts as none were defined")
+		response := &gkai.ModelResponse{Message: gkai.NewModelTextMessage("foo")}
+		opts = append(opts, WithDefinedModel(makeTestOutputModel(response)))
+	}
 	s.Require().NoError(svc.Init(ctx, opts...))
 	return svc
+}
+
+func makeTestOutputModel(response *gkai.ModelResponse) ModelDefinition[any] {
+	return ModelDefinition[any]{
+		Name:      "test/output",
+		IsDefault: true,
+		opts: &gkai.ModelOptions{
+			Supports: &gkai.ModelSupports{
+				Constrained: gkai.ConstrainedSupportAll,
+				Multiturn:   true,
+				SystemRole:  true,
+			},
+		},
+		fn: func(ctx context.Context, req *gkai.ModelRequest, cfg any, cb gkai.ModelStreamCallback) (*gkai.ModelResponse, error) {
+			return response, nil
+		},
+	}
 }
 
 func (s *AiRuntimeSuite) TestIntegrationToolsMiddlewareLoadsToolsPerTurn() {
 	agentName := "test-agent"
 
-	tool := ai.NewTool[any, map[string]any](
+	tool := gkai.NewTool[any, map[string]any](
 		"test_integration_lookup",
 		"test integration lookup",
-		func(ctx *ai.ToolContext, input any) (map[string]any, error) {
+		func(ctx *gkai.ToolContext, input any) (map[string]any, error) {
 			return map[string]any{"ok": true}, nil
 		},
 	)
@@ -67,7 +77,7 @@ func (s *AiRuntimeSuite) TestIntegrationToolsMiddlewareLoadsToolsPerTurn() {
 	intgs := mocks.NewMockIntegrationService(s.T())
 	intgs.EXPECT().
 		GetAvailableAgentTools(mock.Anything, rez.GetAvailableAiAgentToolsParams{AgentName: agentName}).
-		Return([]ai.Tool{tool}, nil).
+		Return([]gkai.Tool{tool}, nil).
 		Twice()
 
 	ctx := s.T().Context()
