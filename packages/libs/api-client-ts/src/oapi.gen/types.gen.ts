@@ -1118,6 +1118,14 @@ export type EventProjectionEntity = {
     entityKind: string;
 };
 
+export type ExpandKnowledgeGraphRelationshipsResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: KnowledgeGraphRelationshipsPage;
+};
+
 export type ExpandableEventAttributes = {
     attributes?: EventAttributes;
     id: string;
@@ -1332,14 +1340,6 @@ export type GetKnowledgeGraphRelationshipResponseBody = {
      */
     readonly $schema?: string;
     data: KnowledgeGraphRelationship;
-};
-
-export type GetKnowledgeGraphStructureResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: KnowledgeGraphStructure;
 };
 
 export type GetKnowledgeGraphSubjectAliasResponseBody = {
@@ -1890,6 +1890,10 @@ export type InvestigationReportAttributes = {
     text: string;
 };
 
+export type KnowledgeGraphEntitiesPage = {
+    entities: Array<KnowledgeGraphEntitySummary>;
+};
+
 export type KnowledgeGraphEntity = {
     attributes: KnowledgeGraphEntityAttributes;
     id: string;
@@ -1902,6 +1906,12 @@ export type KnowledgeGraphEntityAttributes = {
     kind: string;
     latestState?: KnowledgeGraphSubjectState;
     updatedAt: string;
+};
+
+export type KnowledgeGraphEntitySummary = {
+    category: 'system_function' | 'actor' | 'system' | 'container' | 'infrastructure' | 'component' | 'code' | 'process' | 'concern' | 'decision' | 'event' | 'signal';
+    id: string;
+    kind: string;
 };
 
 export type KnowledgeGraphEvidence = {
@@ -1933,22 +1943,15 @@ export type KnowledgeGraphRelationshipAttributes = {
     updatedAt: string;
 };
 
-export type KnowledgeGraphStructure = {
-    entities: Array<KnowledgeGraphStructureEntity>;
-    relationships: Array<KnowledgeGraphStructureRelationship>;
-};
-
-export type KnowledgeGraphStructureEntity = {
-    category: 'system_function' | 'actor' | 'system' | 'container' | 'infrastructure' | 'component' | 'code' | 'process' | 'concern' | 'decision' | 'event' | 'signal';
-    id: string;
-    kind: string;
-};
-
-export type KnowledgeGraphStructureRelationship = {
+export type KnowledgeGraphRelationshipSummary = {
     id: string;
     predicate: 'contains' | 'interacts_with' | 'calls' | 'reads_from' | 'writes_to' | 'publishes_to' | 'consumes_from' | 'depends_on' | 'runs_on' | 'owns' | 'supports' | 'participates_in' | 'member_of' | 'controls' | 'observes' | 'influences' | 'constrains' | 'addresses' | 'impacts' | 'touches' | 'uses' | 'processes' | 'indexes' | 'stores' | 'indicates' | 'classified_as' | 'responds_to' | 'mitigates';
     sourceId: string;
     targetId: string;
+};
+
+export type KnowledgeGraphRelationshipsPage = {
+    relationships: Array<KnowledgeGraphRelationshipSummary>;
 };
 
 export type KnowledgeGraphSubjectAlias = {
@@ -2610,6 +2613,14 @@ export type ReviewAttributes = {
     reviewerId: string;
     state: 'waiting' | 'request_changes' | 'approved';
     updatedAt: string;
+};
+
+export type SelectKnowledgeGraphEntitiesResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: KnowledgeGraphEntitiesPage;
 };
 
 export type SendOncallShiftHandoverAttributes = {
@@ -8333,7 +8344,7 @@ export type ListKnowledgeGraphEntitiesData = {
         page?: number;
         pageSize?: number;
         search?: string;
-        category?: Array<'system_function' | 'actor' | 'system' | 'container' | 'component' | 'infrastructure' | 'code' | 'process' | 'concern' | 'decision' | 'event' | 'signal'>;
+        category?: Array<'system_function' | 'actor' | 'system' | 'container' | 'infrastructure' | 'component' | 'code' | 'process' | 'concern' | 'decision' | 'event' | 'signal'>;
         kind?: Array<string>;
         provider?: string;
         providerNamespace?: string;
@@ -8524,14 +8535,14 @@ export type GetKnowledgeGraphEvidenceResponses = {
 
 export type GetKnowledgeGraphEvidenceResponse = GetKnowledgeGraphEvidenceResponses[keyof GetKnowledgeGraphEvidenceResponses];
 
-export type GetKnowledgeGraphStructureData = {
+export type SelectKnowledgeGraphEntitiesData = {
     body?: never;
     path?: never;
     query?: never;
-    url: '/knowledge/graph';
+    url: '/knowledge/graph/entities';
 };
 
-export type GetKnowledgeGraphStructureErrors = {
+export type SelectKnowledgeGraphEntitiesErrors = {
     /**
      * Bad Request
      */
@@ -8558,16 +8569,61 @@ export type GetKnowledgeGraphStructureErrors = {
     500: ErrorModel;
 };
 
-export type GetKnowledgeGraphStructureError = GetKnowledgeGraphStructureErrors[keyof GetKnowledgeGraphStructureErrors];
+export type SelectKnowledgeGraphEntitiesError = SelectKnowledgeGraphEntitiesErrors[keyof SelectKnowledgeGraphEntitiesErrors];
 
-export type GetKnowledgeGraphStructureResponses = {
+export type SelectKnowledgeGraphEntitiesResponses = {
     /**
      * OK
      */
-    200: GetKnowledgeGraphStructureResponseBody;
+    200: SelectKnowledgeGraphEntitiesResponseBody;
 };
 
-export type GetKnowledgeGraphStructureResponse = GetKnowledgeGraphStructureResponses[keyof GetKnowledgeGraphStructureResponses];
+export type SelectKnowledgeGraphEntitiesResponse = SelectKnowledgeGraphEntitiesResponses[keyof SelectKnowledgeGraphEntitiesResponses];
+
+export type ExpandKnowledgeGraphRelationshipsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/knowledge/graph/relationships';
+};
+
+export type ExpandKnowledgeGraphRelationshipsErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type ExpandKnowledgeGraphRelationshipsError = ExpandKnowledgeGraphRelationshipsErrors[keyof ExpandKnowledgeGraphRelationshipsErrors];
+
+export type ExpandKnowledgeGraphRelationshipsResponses = {
+    /**
+     * OK
+     */
+    200: ExpandKnowledgeGraphRelationshipsResponseBody;
+};
+
+export type ExpandKnowledgeGraphRelationshipsResponse = ExpandKnowledgeGraphRelationshipsResponses[keyof ExpandKnowledgeGraphRelationshipsResponses];
 
 export type ListKnowledgeGraphRelationshipsData = {
     body?: never;

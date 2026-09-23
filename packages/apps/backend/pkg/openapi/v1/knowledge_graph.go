@@ -28,7 +28,8 @@ type KnowledgeGraphHandler interface {
 	ListKnowledgeGraphEvidence(context.Context, *ListKnowledgeGraphEvidenceRequest) (*ListKnowledgeGraphEvidenceResponse, error)
 	GetKnowledgeGraphEvidence(context.Context, *GetKnowledgeGraphEvidenceRequest) (*GetKnowledgeGraphEvidenceResponse, error)
 
-	GetKnowledgeGraphStructure(context.Context, *GetKnowledgeGraphStructureRequest) (*GetKnowledgeGraphStructureResponse, error)
+	SelectKnowledgeGraphEntities(context.Context, *SelectKnowledgeGraphEntitiesRequest) (*SelectKnowledgeGraphEntitiesResponse, error)
+	ExpandKnowledgeGraphRelationships(context.Context, *ExpandKnowledgeGraphRelationshipsRequest) (*ExpandKnowledgeGraphRelationshipsResponse, error)
 }
 
 func (o operations) RegisterKnowledgeGraph(api huma.API) {
@@ -44,7 +45,8 @@ func (o operations) RegisterKnowledgeGraph(api huma.API) {
 	huma.Register(api, ListKnowledgeGraphEvidence, o.ListKnowledgeGraphEvidence)
 	huma.Register(api, GetKnowledgeGraphEvidence, o.GetKnowledgeGraphEvidence)
 
-	huma.Register(api, GetKnowledgeGraphStructure, o.GetKnowledgeGraphStructure)
+	huma.Register(api, SelectKnowledgeGraphEntities, o.SelectKnowledgeGraphEntities)
+	huma.Register(api, ExpandKnowledgeGraphRelationships, o.ExpandKnowledgeGraphRelationships)
 }
 
 type (
@@ -104,23 +106,21 @@ type (
 		Properties  map[string]any `json:"properties"`
 	}
 
-	KnowledgeGraphStructure struct {
-		Entities      []KnowledgeGraphStructureEntity       `json:"entities"`
-		Relationships []KnowledgeGraphStructureRelationship `json:"relationships"`
+	KnowledgeGraphEntitiesPage struct {
+		Entities []KnowledgeGraphEntitySummary `json:"entities"`
 	}
 
-	KnowledgeGraphStructureEntity struct {
+	KnowledgeGraphEntitySummary struct {
 		ID       uuid.UUID    `json:"id"`
 		Category kne.Category `json:"category"`
 		Kind     string       `json:"kind"`
 	}
 
-	KnowledgeGraphStructureEntityContainment struct {
-		ParentID uuid.UUID `json:"parentId"`
-		ChildID  uuid.UUID `json:"childId"`
+	KnowledgeGraphRelationshipsPage struct {
+		Relationships []KnowledgeGraphRelationshipSummary `json:"relationships"`
 	}
 
-	KnowledgeGraphStructureRelationship struct {
+	KnowledgeGraphRelationshipSummary struct {
 		ID        uuid.UUID     `json:"id"`
 		SourceID  uuid.UUID     `json:"sourceId"`
 		TargetID  uuid.UUID     `json:"targetId"`
@@ -214,32 +214,6 @@ func KnowledgeGraphSubjectStateFromEnt(s schematypes.KnowledgeGraphSubjectState)
 	}
 }
 
-func KnowledgeGraphStructureFromRez(s *rez.KnowledgeGraphStructure) KnowledgeGraphStructure {
-	entities := make([]KnowledgeGraphStructureEntity, len(s.Entities))
-	for i, e := range s.Entities {
-		entities[i] = KnowledgeGraphStructureEntity{
-			ID:       e.ID,
-			Category: e.Category,
-			Kind:     e.Kind,
-		}
-	}
-
-	relationships := make([]KnowledgeGraphStructureRelationship, len(s.Relationships))
-	for i, r := range s.Relationships {
-		relationships[i] = KnowledgeGraphStructureRelationship{
-			ID:        r.ID,
-			SourceID:  r.SourceID,
-			TargetID:  r.TargetID,
-			Predicate: r.Predicate,
-		}
-	}
-
-	return KnowledgeGraphStructure{
-		Entities:      entities,
-		Relationships: relationships,
-	}
-}
-
 var knowledgeTags = []string{"Knowledge Graph"}
 
 var ListKnowledgeGraphEntities = huma.Operation{
@@ -253,11 +227,11 @@ var ListKnowledgeGraphEntities = huma.Operation{
 
 type ListKnowledgeGraphEntitiesRequest struct {
 	PaginationRequest
-	Search            string   `query:"search" required:"false" nullable:"false"`
-	Category          []string `query:"category" required:"false" enum:"system_function,actor,system,container,component,infrastructure,code,process,concern,decision,event,signal"`
-	Kind              []string `query:"kind" required:"false"`
-	Provider          string   `query:"provider" required:"false"`
-	ProviderNamespace string   `query:"providerNamespace" required:"false"`
+	Search            string         `query:"search" required:"false" nullable:"false"`
+	Category          []kne.Category `query:"category" required:"false"`
+	Kind              []string       `query:"kind" required:"false"`
+	Provider          string         `query:"provider" required:"false"`
+	ProviderNamespace string         `query:"providerNamespace" required:"false"`
 }
 type ListKnowledgeGraphEntitiesResponse PaginatedResponse[KnowledgeGraphEntity]
 
@@ -358,15 +332,28 @@ var GetKnowledgeGraphEvidence = huma.Operation{
 type GetKnowledgeGraphEvidenceRequest IdRequest
 type GetKnowledgeGraphEvidenceResponse ItemResponse[KnowledgeGraphEvidence]
 
-var GetKnowledgeGraphStructure = huma.Operation{
-	OperationID: "get-knowledge-graph-structure",
+var SelectKnowledgeGraphEntities = huma.Operation{
+	OperationID: "select-knowledge-graph-entities",
 	Method:      http.MethodGet,
-	Path:        "/knowledge/graph",
-	Summary:     "Get Knowledge Graph Structure",
+	Path:        "/knowledge/graph/entities",
+	Summary:     "Select Knowledge Graph Entities",
 	Tags:        knowledgeTags,
 	Errors:      ErrorCodes(),
 }
 
-type GetKnowledgeGraphStructureRequest struct {
+type SelectKnowledgeGraphEntitiesRequest struct {
 }
-type GetKnowledgeGraphStructureResponse ItemResponse[KnowledgeGraphStructure]
+type SelectKnowledgeGraphEntitiesResponse ItemResponse[KnowledgeGraphEntitiesPage]
+
+var ExpandKnowledgeGraphRelationships = huma.Operation{
+	OperationID: "expand-knowledge-graph-relationships",
+	Method:      http.MethodGet,
+	Path:        "/knowledge/graph/relationships",
+	Summary:     "Expand Knowledge Graph Relationships",
+	Tags:        knowledgeTags,
+	Errors:      ErrorCodes(),
+}
+
+type ExpandKnowledgeGraphRelationshipsRequest struct {
+}
+type ExpandKnowledgeGraphRelationshipsResponse ItemResponse[KnowledgeGraphRelationshipsPage]

@@ -236,25 +236,20 @@ type (
 		ListEvidence(context.Context, ListKnowledgeEvidenceParams) (*ent.ListResult[ent.KnowledgeEvidence], error)
 		GetEvidence(context.Context, uuid.UUID) (*ent.KnowledgeEvidence, error)
 
-		GetGraphStructureSnapshot(context.Context) (*KnowledgeGraphStructure, error)
+		SelectGraphEntities(context.Context, SelectKnowledgeGraphEntitiesParams) (*KnowledgeGraphEntitiesPage, error)
+		ExpandGraphRelationships(context.Context, ExpandKnowledgeGraphRelationshipsParams) (*KnowledgeGraphRelationshipsPage, error)
 	}
 
-	KnowledgeGraphStructure struct {
-		Entities      []KnowledgeGraphStructureEntity
-		Relationships []KnowledgeGraphStructureRelationship
+	SelectKnowledgeGraphEntitiesParams struct {
 	}
 
-	KnowledgeGraphStructureEntity struct {
-		ID       uuid.UUID
-		Category kne.Category
-		Kind     string
+	KnowledgeGraphEntitiesPage struct {
 	}
 
-	KnowledgeGraphStructureRelationship struct {
-		ID        uuid.UUID
-		SourceID  uuid.UUID
-		TargetID  uuid.UUID
-		Predicate knr.Predicate
+	ExpandKnowledgeGraphRelationshipsParams struct {
+	}
+
+	KnowledgeGraphRelationshipsPage struct {
 	}
 )
 

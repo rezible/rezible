@@ -176,14 +176,14 @@ func (h *knowledgeGraphHandler) GetKnowledgeGraphEvidence(ctx context.Context, r
 	return &response, nil
 }
 
-func (h *knowledgeGraphHandler) GetKnowledgeGraphStructure(ctx context.Context, request *oapi.GetKnowledgeGraphStructureRequest) (*oapi.GetKnowledgeGraphStructureResponse, error) {
-	var response oapi.GetKnowledgeGraphStructureResponse
+func (h *knowledgeGraphHandler) SelectKnowledgeGraphEntities(ctx context.Context, request *oapi.SelectKnowledgeGraphEntitiesRequest) (*oapi.SelectKnowledgeGraphEntitiesResponse, error) {
+	var resp oapi.SelectKnowledgeGraphEntitiesResponse
+	// TODO
+	return &resp, nil
+}
 
-	structure, structureErr := h.knowledge.GetGraphStructureSnapshot(ctx)
-	if structureErr != nil {
-		return nil, oapi.Error(ctx, "failed to get knowledge graph structure", structureErr)
-	}
-	response.Body.Data = oapi.KnowledgeGraphStructureFromRez(structure)
-
-	return &response, nil
+func (h *knowledgeGraphHandler) ExpandKnowledgeGraphRelationships(ctx context.Context, request *oapi.ExpandKnowledgeGraphRelationshipsRequest) (*oapi.ExpandKnowledgeGraphRelationshipsResponse, error) {
+	var resp oapi.ExpandKnowledgeGraphRelationshipsResponse
+	// TODO
+	return &resp, nil
 }

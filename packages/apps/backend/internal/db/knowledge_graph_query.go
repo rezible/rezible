@@ -2,10 +2,8 @@ package db
 
 import (
 	"context"
-	"fmt"
 	"strings"
 
-	mapset "github.com/deckarep/golang-set/v2"
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
@@ -120,70 +118,12 @@ func (s *KnowledgeGraphQueryService) GetEvidence(ctx context.Context, id uuid.UU
 		Only(ctx)
 }
 
-const (
-	maxStructureEntities      = 10_000
-	maxStructureRelationships = 100_000
-)
+func (s *KnowledgeGraphQueryService) SelectGraphEntities(ctx context.Context, params rez.SelectKnowledgeGraphEntitiesParams) (*rez.KnowledgeGraphEntitiesPage, error) {
+	//TODO implement me
+	panic("implement me")
+}
 
-func (s *KnowledgeGraphQueryService) GetGraphStructureSnapshot(ctx context.Context) (*rez.KnowledgeGraphStructure, error) {
-	structureCats := mapset.NewSetFromMapKeys(rez.KnowledgeGraphCategoryStructureLevels).ToSlice()
-
-	queryStructureEnts := s.db.Client(ctx).KnowledgeEntity.Query().
-		Where(kne.CategoryIn(structureCats...)).
-		Limit(maxStructureEntities+1).
-		Select(
-			kne.FieldID,
-			kne.FieldCategory,
-			kne.FieldKind,
-		)
-	structureEnts, queryEntsErr := queryStructureEnts.All(ctx)
-	if queryEntsErr != nil {
-		return nil, fmt.Errorf("fetch structure entities: %w", queryEntsErr)
-	}
-	if len(structureEnts) > maxStructureEntities {
-		return nil, fmt.Errorf("graph exceeds %d structural entities", maxStructureEntities)
-	}
-
-	structure := &rez.KnowledgeGraphStructure{}
-
-	structure.Entities = make([]rez.KnowledgeGraphStructureEntity, len(structureEnts))
-	ids := make([]uuid.UUID, len(structureEnts))
-	for i, e := range structureEnts {
-		ids[i] = e.ID
-		structure.Entities[i] = rez.KnowledgeGraphStructureEntity{
-			ID:       e.ID,
-			Category: e.Category,
-			Kind:     e.Kind,
-		}
-	}
-
-	if len(ids) > 0 {
-		queryStructureRels := s.db.Client(ctx).KnowledgeRelationship.Query().
-			Where(knr.SourceEntityIDIn(ids...), knr.TargetEntityIDIn(ids...)).
-			Limit(maxStructureRelationships+1).
-			Select(
-				knr.FieldID,
-				knr.FieldSourceEntityID,
-				knr.FieldTargetEntityID,
-				knr.FieldPredicate,
-			)
-		structureRels, queryRelsErr := queryStructureRels.All(ctx)
-		if queryRelsErr != nil {
-			return nil, fmt.Errorf("query structure relationships: %w", queryRelsErr)
-		}
-		if len(structureRels) > maxStructureRelationships {
-			return nil, fmt.Errorf("graph exceeds %d relationships", maxStructureRelationships)
-		}
-		structure.Relationships = make([]rez.KnowledgeGraphStructureRelationship, len(structureRels))
-		for i, r := range structureRels {
-			structure.Relationships[i] = rez.KnowledgeGraphStructureRelationship{
-				ID:        r.ID,
-				SourceID:  r.SourceEntityID,
-				TargetID:  r.TargetEntityID,
-				Predicate: r.Predicate,
-			}
-		}
-	}
-
-	return structure, nil
+func (s *KnowledgeGraphQueryService) ExpandGraphRelationships(ctx context.Context, params rez.ExpandKnowledgeGraphRelationshipsParams) (*rez.KnowledgeGraphRelationshipsPage, error) {
+	//TODO implement me
+	panic("implement me")
 }

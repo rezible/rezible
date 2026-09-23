@@ -487,6 +487,74 @@ func (_m *MockKnowledgeGraphQueryService) EXPECT() *MockKnowledgeGraphQueryServi
 	return &MockKnowledgeGraphQueryService_Expecter{mock: &_m.Mock}
 }
 
+// ExpandGraphRelationships provides a mock function for the type MockKnowledgeGraphQueryService
+func (_mock *MockKnowledgeGraphQueryService) ExpandGraphRelationships(context1 context.Context, expandKnowledgeGraphRelationshipsParams rez.ExpandKnowledgeGraphRelationshipsParams) (*rez.KnowledgeGraphRelationshipsPage, error) {
+	ret := _mock.Called(context1, expandKnowledgeGraphRelationshipsParams)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ExpandGraphRelationships")
+	}
+
+	var r0 *rez.KnowledgeGraphRelationshipsPage
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.ExpandKnowledgeGraphRelationshipsParams) (*rez.KnowledgeGraphRelationshipsPage, error)); ok {
+		return returnFunc(context1, expandKnowledgeGraphRelationshipsParams)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.ExpandKnowledgeGraphRelationshipsParams) *rez.KnowledgeGraphRelationshipsPage); ok {
+		r0 = returnFunc(context1, expandKnowledgeGraphRelationshipsParams)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*rez.KnowledgeGraphRelationshipsPage)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, rez.ExpandKnowledgeGraphRelationshipsParams) error); ok {
+		r1 = returnFunc(context1, expandKnowledgeGraphRelationshipsParams)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockKnowledgeGraphQueryService_ExpandGraphRelationships_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ExpandGraphRelationships'
+type MockKnowledgeGraphQueryService_ExpandGraphRelationships_Call struct {
+	*mock.Call
+}
+
+// ExpandGraphRelationships is a helper method to define mock.On call
+//   - context1 context.Context
+//   - expandKnowledgeGraphRelationshipsParams rez.ExpandKnowledgeGraphRelationshipsParams
+func (_e *MockKnowledgeGraphQueryService_Expecter) ExpandGraphRelationships(context1 interface{}, expandKnowledgeGraphRelationshipsParams interface{}) *MockKnowledgeGraphQueryService_ExpandGraphRelationships_Call {
+	return &MockKnowledgeGraphQueryService_ExpandGraphRelationships_Call{Call: _e.mock.On("ExpandGraphRelationships", context1, expandKnowledgeGraphRelationshipsParams)}
+}
+
+func (_c *MockKnowledgeGraphQueryService_ExpandGraphRelationships_Call) Run(run func(context1 context.Context, expandKnowledgeGraphRelationshipsParams rez.ExpandKnowledgeGraphRelationshipsParams)) *MockKnowledgeGraphQueryService_ExpandGraphRelationships_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 rez.ExpandKnowledgeGraphRelationshipsParams
+		if args[1] != nil {
+			arg1 = args[1].(rez.ExpandKnowledgeGraphRelationshipsParams)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockKnowledgeGraphQueryService_ExpandGraphRelationships_Call) Return(knowledgeGraphRelationshipsPage *rez.KnowledgeGraphRelationshipsPage, err error) *MockKnowledgeGraphQueryService_ExpandGraphRelationships_Call {
+	_c.Call.Return(knowledgeGraphRelationshipsPage, err)
+	return _c
+}
+
+func (_c *MockKnowledgeGraphQueryService_ExpandGraphRelationships_Call) RunAndReturn(run func(context1 context.Context, expandKnowledgeGraphRelationshipsParams rez.ExpandKnowledgeGraphRelationshipsParams) (*rez.KnowledgeGraphRelationshipsPage, error)) *MockKnowledgeGraphQueryService_ExpandGraphRelationships_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetEntity provides a mock function for the type MockKnowledgeGraphQueryService
 func (_mock *MockKnowledgeGraphQueryService) GetEntity(context1 context.Context, uUID uuid.UUID) (*ent.KnowledgeEntity, error) {
 	ret := _mock.Called(context1, uUID)
@@ -619,68 +687,6 @@ func (_c *MockKnowledgeGraphQueryService_GetEvidence_Call) Return(knowledgeEvide
 }
 
 func (_c *MockKnowledgeGraphQueryService_GetEvidence_Call) RunAndReturn(run func(context1 context.Context, uUID uuid.UUID) (*ent.KnowledgeEvidence, error)) *MockKnowledgeGraphQueryService_GetEvidence_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
-// GetGraphStructureSnapshot provides a mock function for the type MockKnowledgeGraphQueryService
-func (_mock *MockKnowledgeGraphQueryService) GetGraphStructureSnapshot(context1 context.Context) (*rez.KnowledgeGraphStructure, error) {
-	ret := _mock.Called(context1)
-
-	if len(ret) == 0 {
-		panic("no return value specified for GetGraphStructureSnapshot")
-	}
-
-	var r0 *rez.KnowledgeGraphStructure
-	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context) (*rez.KnowledgeGraphStructure, error)); ok {
-		return returnFunc(context1)
-	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context) *rez.KnowledgeGraphStructure); ok {
-		r0 = returnFunc(context1)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*rez.KnowledgeGraphStructure)
-		}
-	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context) error); ok {
-		r1 = returnFunc(context1)
-	} else {
-		r1 = ret.Error(1)
-	}
-	return r0, r1
-}
-
-// MockKnowledgeGraphQueryService_GetGraphStructureSnapshot_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetGraphStructureSnapshot'
-type MockKnowledgeGraphQueryService_GetGraphStructureSnapshot_Call struct {
-	*mock.Call
-}
-
-// GetGraphStructureSnapshot is a helper method to define mock.On call
-//   - context1 context.Context
-func (_e *MockKnowledgeGraphQueryService_Expecter) GetGraphStructureSnapshot(context1 interface{}) *MockKnowledgeGraphQueryService_GetGraphStructureSnapshot_Call {
-	return &MockKnowledgeGraphQueryService_GetGraphStructureSnapshot_Call{Call: _e.mock.On("GetGraphStructureSnapshot", context1)}
-}
-
-func (_c *MockKnowledgeGraphQueryService_GetGraphStructureSnapshot_Call) Run(run func(context1 context.Context)) *MockKnowledgeGraphQueryService_GetGraphStructureSnapshot_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 context.Context
-		if args[0] != nil {
-			arg0 = args[0].(context.Context)
-		}
-		run(
-			arg0,
-		)
-	})
-	return _c
-}
-
-func (_c *MockKnowledgeGraphQueryService_GetGraphStructureSnapshot_Call) Return(knowledgeGraphStructure *rez.KnowledgeGraphStructure, err error) *MockKnowledgeGraphQueryService_GetGraphStructureSnapshot_Call {
-	_c.Call.Return(knowledgeGraphStructure, err)
-	return _c
-}
-
-func (_c *MockKnowledgeGraphQueryService_GetGraphStructureSnapshot_Call) RunAndReturn(run func(context1 context.Context) (*rez.KnowledgeGraphStructure, error)) *MockKnowledgeGraphQueryService_GetGraphStructureSnapshot_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -1089,6 +1095,74 @@ func (_c *MockKnowledgeGraphQueryService_ListSubjectAliases_Call) Return(listRes
 }
 
 func (_c *MockKnowledgeGraphQueryService_ListSubjectAliases_Call) RunAndReturn(run func(context1 context.Context, listKnowledgeSubjectAliasesParams rez.ListKnowledgeSubjectAliasesParams) (*ent.ListResult[ent.KnowledgeSubjectAlias], error)) *MockKnowledgeGraphQueryService_ListSubjectAliases_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// SelectGraphEntities provides a mock function for the type MockKnowledgeGraphQueryService
+func (_mock *MockKnowledgeGraphQueryService) SelectGraphEntities(context1 context.Context, selectKnowledgeGraphEntitiesParams rez.SelectKnowledgeGraphEntitiesParams) (*rez.KnowledgeGraphEntitiesPage, error) {
+	ret := _mock.Called(context1, selectKnowledgeGraphEntitiesParams)
+
+	if len(ret) == 0 {
+		panic("no return value specified for SelectGraphEntities")
+	}
+
+	var r0 *rez.KnowledgeGraphEntitiesPage
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.SelectKnowledgeGraphEntitiesParams) (*rez.KnowledgeGraphEntitiesPage, error)); ok {
+		return returnFunc(context1, selectKnowledgeGraphEntitiesParams)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.SelectKnowledgeGraphEntitiesParams) *rez.KnowledgeGraphEntitiesPage); ok {
+		r0 = returnFunc(context1, selectKnowledgeGraphEntitiesParams)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*rez.KnowledgeGraphEntitiesPage)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, rez.SelectKnowledgeGraphEntitiesParams) error); ok {
+		r1 = returnFunc(context1, selectKnowledgeGraphEntitiesParams)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockKnowledgeGraphQueryService_SelectGraphEntities_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'SelectGraphEntities'
+type MockKnowledgeGraphQueryService_SelectGraphEntities_Call struct {
+	*mock.Call
+}
+
+// SelectGraphEntities is a helper method to define mock.On call
+//   - context1 context.Context
+//   - selectKnowledgeGraphEntitiesParams rez.SelectKnowledgeGraphEntitiesParams
+func (_e *MockKnowledgeGraphQueryService_Expecter) SelectGraphEntities(context1 interface{}, selectKnowledgeGraphEntitiesParams interface{}) *MockKnowledgeGraphQueryService_SelectGraphEntities_Call {
+	return &MockKnowledgeGraphQueryService_SelectGraphEntities_Call{Call: _e.mock.On("SelectGraphEntities", context1, selectKnowledgeGraphEntitiesParams)}
+}
+
+func (_c *MockKnowledgeGraphQueryService_SelectGraphEntities_Call) Run(run func(context1 context.Context, selectKnowledgeGraphEntitiesParams rez.SelectKnowledgeGraphEntitiesParams)) *MockKnowledgeGraphQueryService_SelectGraphEntities_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 rez.SelectKnowledgeGraphEntitiesParams
+		if args[1] != nil {
+			arg1 = args[1].(rez.SelectKnowledgeGraphEntitiesParams)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockKnowledgeGraphQueryService_SelectGraphEntities_Call) Return(knowledgeGraphEntitiesPage *rez.KnowledgeGraphEntitiesPage, err error) *MockKnowledgeGraphQueryService_SelectGraphEntities_Call {
+	_c.Call.Return(knowledgeGraphEntitiesPage, err)
+	return _c
+}
+
+func (_c *MockKnowledgeGraphQueryService_SelectGraphEntities_Call) RunAndReturn(run func(context1 context.Context, selectKnowledgeGraphEntitiesParams rez.SelectKnowledgeGraphEntitiesParams) (*rez.KnowledgeGraphEntitiesPage, error)) *MockKnowledgeGraphQueryService_SelectGraphEntities_Call {
 	_c.Call.Return(run)
 	return _c
 }
