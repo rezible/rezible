@@ -3966,12 +3966,12 @@ func (_m *MockAiAgentCatalogue) EXPECT() *MockAiAgentCatalogue_Expecter {
 	return &MockAiAgentCatalogue_Expecter{mock: &_m.Mock}
 }
 
-// GetAgents provides a mock function for the type MockAiAgentCatalogue
+// GetConfigs provides a mock function for the type MockAiAgentCatalogue
 func (_mock *MockAiAgentCatalogue) GetConfigs() []rez.AiAgentConfig {
 	ret := _mock.Called()
 
 	if len(ret) == 0 {
-		panic("no return value specified for GetAgents")
+		panic("no return value specified for GetConfigs")
 	}
 
 	var r0 []rez.AiAgentConfig
@@ -3985,39 +3985,39 @@ func (_mock *MockAiAgentCatalogue) GetConfigs() []rez.AiAgentConfig {
 	return r0
 }
 
-// MockAiAgentCatalogue_GetAgents_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetAgents'
-type MockAiAgentCatalogue_GetAgents_Call struct {
+// MockAiAgentCatalogue_GetConfigs_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetConfigs'
+type MockAiAgentCatalogue_GetConfigs_Call struct {
 	*mock.Call
 }
 
-// GetAgents is a helper method to define mock.On call
-func (_e *MockAiAgentCatalogue_Expecter) GetAgents() *MockAiAgentCatalogue_GetAgents_Call {
-	return &MockAiAgentCatalogue_GetAgents_Call{Call: _e.mock.On("GetAgents")}
+// GetConfigs is a helper method to define mock.On call
+func (_e *MockAiAgentCatalogue_Expecter) GetConfigs() *MockAiAgentCatalogue_GetConfigs_Call {
+	return &MockAiAgentCatalogue_GetConfigs_Call{Call: _e.mock.On("GetConfigs")}
 }
 
-func (_c *MockAiAgentCatalogue_GetAgents_Call) Run(run func()) *MockAiAgentCatalogue_GetAgents_Call {
+func (_c *MockAiAgentCatalogue_GetConfigs_Call) Run(run func()) *MockAiAgentCatalogue_GetConfigs_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		run()
 	})
 	return _c
 }
 
-func (_c *MockAiAgentCatalogue_GetAgents_Call) Return(aiAgentConfigs []rez.AiAgentConfig) *MockAiAgentCatalogue_GetAgents_Call {
+func (_c *MockAiAgentCatalogue_GetConfigs_Call) Return(aiAgentConfigs []rez.AiAgentConfig) *MockAiAgentCatalogue_GetConfigs_Call {
 	_c.Call.Return(aiAgentConfigs)
 	return _c
 }
 
-func (_c *MockAiAgentCatalogue_GetAgents_Call) RunAndReturn(run func() []rez.AiAgentConfig) *MockAiAgentCatalogue_GetAgents_Call {
+func (_c *MockAiAgentCatalogue_GetConfigs_Call) RunAndReturn(run func() []rez.AiAgentConfig) *MockAiAgentCatalogue_GetConfigs_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
-// MakeInitialAgentTurnInput provides a mock function for the type MockAiAgentCatalogue
+// MakeInitialTurnInput provides a mock function for the type MockAiAgentCatalogue
 func (_mock *MockAiAgentCatalogue) MakeInitialTurnInput(context1 context.Context, agentSession *ent.AgentSession) (*rez.AiAgentTurnInput, error) {
 	ret := _mock.Called(context1, agentSession)
 
 	if len(ret) == 0 {
-		panic("no return value specified for MakeInitialAgentTurnInput")
+		panic("no return value specified for MakeInitialTurnInput")
 	}
 
 	var r0 *rez.AiAgentTurnInput
@@ -4040,19 +4040,19 @@ func (_mock *MockAiAgentCatalogue) MakeInitialTurnInput(context1 context.Context
 	return r0, r1
 }
 
-// MockAiAgentCatalogue_MakeInitialAgentTurnInput_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'MakeInitialAgentTurnInput'
-type MockAiAgentCatalogue_MakeInitialAgentTurnInput_Call struct {
+// MockAiAgentCatalogue_MakeInitialTurnInput_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'MakeInitialTurnInput'
+type MockAiAgentCatalogue_MakeInitialTurnInput_Call struct {
 	*mock.Call
 }
 
-// MakeInitialAgentTurnInput is a helper method to define mock.On call
+// MakeInitialTurnInput is a helper method to define mock.On call
 //   - context1 context.Context
 //   - agentSession *ent.AgentSession
-func (_e *MockAiAgentCatalogue_Expecter) MakeInitialAgentTurnInput(context1 interface{}, agentSession interface{}) *MockAiAgentCatalogue_MakeInitialAgentTurnInput_Call {
-	return &MockAiAgentCatalogue_MakeInitialAgentTurnInput_Call{Call: _e.mock.On("MakeInitialAgentTurnInput", context1, agentSession)}
+func (_e *MockAiAgentCatalogue_Expecter) MakeInitialTurnInput(context1 interface{}, agentSession interface{}) *MockAiAgentCatalogue_MakeInitialTurnInput_Call {
+	return &MockAiAgentCatalogue_MakeInitialTurnInput_Call{Call: _e.mock.On("MakeInitialTurnInput", context1, agentSession)}
 }
 
-func (_c *MockAiAgentCatalogue_MakeInitialAgentTurnInput_Call) Run(run func(context1 context.Context, agentSession *ent.AgentSession)) *MockAiAgentCatalogue_MakeInitialAgentTurnInput_Call {
+func (_c *MockAiAgentCatalogue_MakeInitialTurnInput_Call) Run(run func(context1 context.Context, agentSession *ent.AgentSession)) *MockAiAgentCatalogue_MakeInitialTurnInput_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -4070,22 +4070,22 @@ func (_c *MockAiAgentCatalogue_MakeInitialAgentTurnInput_Call) Run(run func(cont
 	return _c
 }
 
-func (_c *MockAiAgentCatalogue_MakeInitialAgentTurnInput_Call) Return(aiAgentTurnInput *rez.AiAgentTurnInput, err error) *MockAiAgentCatalogue_MakeInitialAgentTurnInput_Call {
+func (_c *MockAiAgentCatalogue_MakeInitialTurnInput_Call) Return(aiAgentTurnInput *rez.AiAgentTurnInput, err error) *MockAiAgentCatalogue_MakeInitialTurnInput_Call {
 	_c.Call.Return(aiAgentTurnInput, err)
 	return _c
 }
 
-func (_c *MockAiAgentCatalogue_MakeInitialAgentTurnInput_Call) RunAndReturn(run func(context1 context.Context, agentSession *ent.AgentSession) (*rez.AiAgentTurnInput, error)) *MockAiAgentCatalogue_MakeInitialAgentTurnInput_Call {
+func (_c *MockAiAgentCatalogue_MakeInitialTurnInput_Call) RunAndReturn(run func(context1 context.Context, agentSession *ent.AgentSession) (*rez.AiAgentTurnInput, error)) *MockAiAgentCatalogue_MakeInitialTurnInput_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
-// ValidateAgentSessionInput provides a mock function for the type MockAiAgentCatalogue
+// ValidateSessionInput provides a mock function for the type MockAiAgentCatalogue
 func (_mock *MockAiAgentCatalogue) ValidateSessionInput(s string, bytes []byte) (rez.ValidatingInput, error) {
 	ret := _mock.Called(s, bytes)
 
 	if len(ret) == 0 {
-		panic("no return value specified for ValidateAgentSessionInput")
+		panic("no return value specified for ValidateSessionInput")
 	}
 
 	var r0 rez.ValidatingInput
@@ -4108,19 +4108,19 @@ func (_mock *MockAiAgentCatalogue) ValidateSessionInput(s string, bytes []byte) 
 	return r0, r1
 }
 
-// MockAiAgentCatalogue_ValidateAgentSessionInput_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ValidateAgentSessionInput'
-type MockAiAgentCatalogue_ValidateAgentSessionInput_Call struct {
+// MockAiAgentCatalogue_ValidateSessionInput_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ValidateSessionInput'
+type MockAiAgentCatalogue_ValidateSessionInput_Call struct {
 	*mock.Call
 }
 
-// ValidateAgentSessionInput is a helper method to define mock.On call
+// ValidateSessionInput is a helper method to define mock.On call
 //   - s string
 //   - bytes []byte
-func (_e *MockAiAgentCatalogue_Expecter) ValidateAgentSessionInput(s interface{}, bytes interface{}) *MockAiAgentCatalogue_ValidateAgentSessionInput_Call {
-	return &MockAiAgentCatalogue_ValidateAgentSessionInput_Call{Call: _e.mock.On("ValidateAgentSessionInput", s, bytes)}
+func (_e *MockAiAgentCatalogue_Expecter) ValidateSessionInput(s interface{}, bytes interface{}) *MockAiAgentCatalogue_ValidateSessionInput_Call {
+	return &MockAiAgentCatalogue_ValidateSessionInput_Call{Call: _e.mock.On("ValidateSessionInput", s, bytes)}
 }
 
-func (_c *MockAiAgentCatalogue_ValidateAgentSessionInput_Call) Run(run func(s string, bytes []byte)) *MockAiAgentCatalogue_ValidateAgentSessionInput_Call {
+func (_c *MockAiAgentCatalogue_ValidateSessionInput_Call) Run(run func(s string, bytes []byte)) *MockAiAgentCatalogue_ValidateSessionInput_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 string
 		if args[0] != nil {
@@ -4138,12 +4138,12 @@ func (_c *MockAiAgentCatalogue_ValidateAgentSessionInput_Call) Run(run func(s st
 	return _c
 }
 
-func (_c *MockAiAgentCatalogue_ValidateAgentSessionInput_Call) Return(validatingInput rez.ValidatingInput, err error) *MockAiAgentCatalogue_ValidateAgentSessionInput_Call {
+func (_c *MockAiAgentCatalogue_ValidateSessionInput_Call) Return(validatingInput rez.ValidatingInput, err error) *MockAiAgentCatalogue_ValidateSessionInput_Call {
 	_c.Call.Return(validatingInput, err)
 	return _c
 }
 
-func (_c *MockAiAgentCatalogue_ValidateAgentSessionInput_Call) RunAndReturn(run func(s string, bytes []byte) (rez.ValidatingInput, error)) *MockAiAgentCatalogue_ValidateAgentSessionInput_Call {
+func (_c *MockAiAgentCatalogue_ValidateSessionInput_Call) RunAndReturn(run func(s string, bytes []byte) (rez.ValidatingInput, error)) *MockAiAgentCatalogue_ValidateSessionInput_Call {
 	_c.Call.Return(run)
 	return _c
 }

@@ -4108,8 +4108,13 @@ components:
           items:
             $ref: "#/components/schemas/KnowledgeGraphEntitySummary"
           type: array
+        entitySelectionRef:
+          type: string
+        nextCursor:
+          type: string
       required:
         - entities
+        - entitySelectionRef
       type: object
     KnowledgeGraphEntity:
       additionalProperties: false
@@ -4316,6 +4321,8 @@ components:
     KnowledgeGraphRelationshipsPage:
       additionalProperties: false
       properties:
+        nextCursor:
+          type: string
         relationships:
           items:
             $ref: "#/components/schemas/KnowledgeGraphRelationshipSummary"
@@ -14232,6 +14239,45 @@ paths:
   /knowledge/graph/entities:
     get:
       operationId: select-knowledge-graph-entities
+      parameters:
+        - explode: false
+          in: query
+          name: category
+          schema:
+            items:
+              enum:
+                - system_function
+                - actor
+                - system
+                - container
+                - infrastructure
+                - component
+                - code
+                - process
+                - concern
+                - decision
+                - event
+                - signal
+              type: string
+            type: array
+        - explode: false
+          in: query
+          name: kind
+          schema:
+            items:
+              type: string
+            type: array
+        - explode: false
+          in: query
+          name: cursor
+          schema:
+            type: string
+        - explode: false
+          in: query
+          name: limit
+          schema:
+            format: int64
+            type: integer
       responses:
         "200":
           content:
@@ -14281,6 +14327,60 @@ paths:
   /knowledge/graph/relationships:
     get:
       operationId: expand-knowledge-graph-relationships
+      parameters:
+        - explode: false
+          in: query
+          name: entitySelectionRef
+          required: true
+          schema:
+            type: string
+        - explode: false
+          in: query
+          name: predicate
+          schema:
+            items:
+              enum:
+                - contains
+                - interacts_with
+                - calls
+                - reads_from
+                - writes_to
+                - publishes_to
+                - consumes_from
+                - depends_on
+                - runs_on
+                - owns
+                - supports
+                - participates_in
+                - member_of
+                - controls
+                - observes
+                - influences
+                - constrains
+                - addresses
+                - impacts
+                - touches
+                - uses
+                - processes
+                - indexes
+                - stores
+                - indicates
+                - classified_as
+                - responds_to
+                - mitigates
+              type: string
+            type: array
+        - explode: false
+          in: query
+          name: cursor
+          schema:
+            type: string
+        - explode: false
+          in: query
+          name: limit
+          schema:
+            format: int64
+            type: integer
       responses:
         "200":
           content:

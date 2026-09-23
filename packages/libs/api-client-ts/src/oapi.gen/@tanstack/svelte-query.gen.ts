@@ -2456,12 +2456,12 @@ export const selectKnowledgeGraphEntitiesOptions = (options?: Options<SelectKnow
     queryKey: selectKnowledgeGraphEntitiesQueryKey(options)
 });
 
-export const expandKnowledgeGraphRelationshipsQueryKey = (options?: Options<ExpandKnowledgeGraphRelationshipsData>) => createQueryKey('expandKnowledgeGraphRelationships', options);
+export const expandKnowledgeGraphRelationshipsQueryKey = (options: Options<ExpandKnowledgeGraphRelationshipsData>) => createQueryKey('expandKnowledgeGraphRelationships', options);
 
 /**
  * Expand Knowledge Graph Relationships
  */
-export const expandKnowledgeGraphRelationshipsOptions = (options?: Options<ExpandKnowledgeGraphRelationshipsData>) => queryOptions<ExpandKnowledgeGraphRelationshipsResponse, ExpandKnowledgeGraphRelationshipsError, ExpandKnowledgeGraphRelationshipsResponse, ReturnType<typeof expandKnowledgeGraphRelationshipsQueryKey>>({
+export const expandKnowledgeGraphRelationshipsOptions = (options: Options<ExpandKnowledgeGraphRelationshipsData>) => queryOptions<ExpandKnowledgeGraphRelationshipsResponse, ExpandKnowledgeGraphRelationshipsError, ExpandKnowledgeGraphRelationshipsResponse, ReturnType<typeof expandKnowledgeGraphRelationshipsQueryKey>>({
     queryFn: async ({ queryKey, signal }) => {
         const { data } = await expandKnowledgeGraphRelationships({
             ...options,

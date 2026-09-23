@@ -1886,6 +1886,7 @@ export const getKnowledgeGraphEvidence = <ThrowOnError extends boolean = false>(
  * Select Knowledge Graph Entities
  */
 export const selectKnowledgeGraphEntities = <ThrowOnError extends boolean = false>(options?: Options<SelectKnowledgeGraphEntitiesData, ThrowOnError>): RequestResult<SelectKnowledgeGraphEntitiesResponses, SelectKnowledgeGraphEntitiesErrors, ThrowOnError> => (options?.client ?? client).get<SelectKnowledgeGraphEntitiesResponses, SelectKnowledgeGraphEntitiesErrors, ThrowOnError>({
+    querySerializer: { parameters: { category: { array: { explode: false } }, kind: { array: { explode: false } } } },
     security: [{
             key: 'app-cookie',
             scheme: 'bearer',
@@ -1902,7 +1903,8 @@ export const selectKnowledgeGraphEntities = <ThrowOnError extends boolean = fals
 /**
  * Expand Knowledge Graph Relationships
  */
-export const expandKnowledgeGraphRelationships = <ThrowOnError extends boolean = false>(options?: Options<ExpandKnowledgeGraphRelationshipsData, ThrowOnError>): RequestResult<ExpandKnowledgeGraphRelationshipsResponses, ExpandKnowledgeGraphRelationshipsErrors, ThrowOnError> => (options?.client ?? client).get<ExpandKnowledgeGraphRelationshipsResponses, ExpandKnowledgeGraphRelationshipsErrors, ThrowOnError>({
+export const expandKnowledgeGraphRelationships = <ThrowOnError extends boolean = false>(options: Options<ExpandKnowledgeGraphRelationshipsData, ThrowOnError>): RequestResult<ExpandKnowledgeGraphRelationshipsResponses, ExpandKnowledgeGraphRelationshipsErrors, ThrowOnError> => (options.client ?? client).get<ExpandKnowledgeGraphRelationshipsResponses, ExpandKnowledgeGraphRelationshipsErrors, ThrowOnError>({
+    querySerializer: { parameters: { predicate: { array: { explode: false } } } },
     security: [{
             key: 'app-cookie',
             scheme: 'bearer',

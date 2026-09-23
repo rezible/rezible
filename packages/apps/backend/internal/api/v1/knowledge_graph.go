@@ -177,13 +177,55 @@ func (h *knowledgeGraphHandler) GetKnowledgeGraphEvidence(ctx context.Context, r
 }
 
 func (h *knowledgeGraphHandler) SelectKnowledgeGraphEntities(ctx context.Context, request *oapi.SelectKnowledgeGraphEntitiesRequest) (*oapi.SelectKnowledgeGraphEntitiesResponse, error) {
+	var params rez.SelectKnowledgeGraphEntitiesParams
+	if request.Limit.IsSet {
+		params.Limit = new(request.Limit.Value)
+	}
+	if request.Cursor.IsSet {
+		params.Cursor = new(rez.EntitySelectionCursor(request.Cursor.Value))
+	}
+	params.Filter = rez.KnowledgeEntityFilter{Categories: request.Category, Kinds: request.Kind}
+
+	page, queryErr := h.knowledge.SelectGraphEntities(ctx, params)
+	if queryErr != nil {
+		return nil, oapi.Error(ctx, "failed to select knowledge graph entities", queryErr)
+	}
+
 	var resp oapi.SelectKnowledgeGraphEntitiesResponse
-	// TODO
+	data := oapi.KnowledgeGraphEntitiesPage{
+		Entities:           oapi.ConvertSlice(page.Entities, oapi.KnowledgeGraphEntitySummaryFromEnt),
+		EntitySelectionRef: string(page.EntitySelectionRef),
+	}
+	if page.NextCursor != nil {
+		data.NextCursor = new(string(*page.NextCursor))
+	}
+	resp.Body.Data = data
 	return &resp, nil
 }
 
 func (h *knowledgeGraphHandler) ExpandKnowledgeGraphRelationships(ctx context.Context, request *oapi.ExpandKnowledgeGraphRelationshipsRequest) (*oapi.ExpandKnowledgeGraphRelationshipsResponse, error) {
+	params := rez.ExpandKnowledgeGraphRelationshipsParams{
+		EntitySelectionRef: rez.EntitySelectionRef(request.EntitySelectionRef),
+		Predicates:         request.Predicate,
+	}
+	if request.Limit.IsSet {
+		params.Limit = new(request.Limit.Value)
+	}
+	if request.Cursor.IsSet {
+		params.Cursor = new(rez.RelationshipExpansionCursor(request.Cursor.Value))
+	}
+	page, expandErr := h.knowledge.ExpandGraphRelationships(ctx, params)
+	if expandErr != nil {
+		return nil, oapi.Error(ctx, "failed to expand knowledge graph relationships", expandErr)
+	}
+
 	var resp oapi.ExpandKnowledgeGraphRelationshipsResponse
-	// TODO
+	data := oapi.KnowledgeGraphRelationshipsPage{
+		Relationships: oapi.ConvertSlice(page.Relationships, oapi.KnowledgeGraphRelationshipSummaryFromEnt),
+	}
+	if page.NextCursor != nil {
+		data.NextCursor = new(string(*page.NextCursor))
+	}
+	resp.Body.Data = data
 	return &resp, nil
 }

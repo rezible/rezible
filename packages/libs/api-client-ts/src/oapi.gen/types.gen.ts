@@ -1892,6 +1892,8 @@ export type InvestigationReportAttributes = {
 
 export type KnowledgeGraphEntitiesPage = {
     entities: Array<KnowledgeGraphEntitySummary>;
+    entitySelectionRef: string;
+    nextCursor?: string;
 };
 
 export type KnowledgeGraphEntity = {
@@ -1951,6 +1953,7 @@ export type KnowledgeGraphRelationshipSummary = {
 };
 
 export type KnowledgeGraphRelationshipsPage = {
+    nextCursor?: string;
     relationships: Array<KnowledgeGraphRelationshipSummary>;
 };
 
@@ -8538,7 +8541,12 @@ export type GetKnowledgeGraphEvidenceResponse = GetKnowledgeGraphEvidenceRespons
 export type SelectKnowledgeGraphEntitiesData = {
     body?: never;
     path?: never;
-    query?: never;
+    query?: {
+        category?: Array<'system_function' | 'actor' | 'system' | 'container' | 'infrastructure' | 'component' | 'code' | 'process' | 'concern' | 'decision' | 'event' | 'signal'>;
+        kind?: Array<string>;
+        cursor?: string;
+        limit?: number;
+    };
     url: '/knowledge/graph/entities';
 };
 
@@ -8583,7 +8591,12 @@ export type SelectKnowledgeGraphEntitiesResponse = SelectKnowledgeGraphEntitiesR
 export type ExpandKnowledgeGraphRelationshipsData = {
     body?: never;
     path?: never;
-    query?: never;
+    query: {
+        entitySelectionRef: string;
+        predicate?: Array<'contains' | 'interacts_with' | 'calls' | 'reads_from' | 'writes_to' | 'publishes_to' | 'consumes_from' | 'depends_on' | 'runs_on' | 'owns' | 'supports' | 'participates_in' | 'member_of' | 'controls' | 'observes' | 'influences' | 'constrains' | 'addresses' | 'impacts' | 'touches' | 'uses' | 'processes' | 'indexes' | 'stores' | 'indicates' | 'classified_as' | 'responds_to' | 'mitigates'>;
+        cursor?: string;
+        limit?: number;
+    };
     url: '/knowledge/graph/relationships';
 };
 

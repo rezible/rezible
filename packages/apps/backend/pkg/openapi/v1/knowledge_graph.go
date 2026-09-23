@@ -107,7 +107,9 @@ type (
 	}
 
 	KnowledgeGraphEntitiesPage struct {
-		Entities []KnowledgeGraphEntitySummary `json:"entities"`
+		Entities           []KnowledgeGraphEntitySummary `json:"entities"`
+		EntitySelectionRef string                        `json:"entitySelectionRef"`
+		NextCursor         *string                       `json:"nextCursor,omitempty"`
 	}
 
 	KnowledgeGraphEntitySummary struct {
@@ -118,6 +120,7 @@ type (
 
 	KnowledgeGraphRelationshipsPage struct {
 		Relationships []KnowledgeGraphRelationshipSummary `json:"relationships"`
+		NextCursor    *string                             `json:"nextCursor,omitempty"`
 	}
 
 	KnowledgeGraphRelationshipSummary struct {
@@ -164,6 +167,14 @@ func KnowledgeGraphEntityFromEnt(e *ent.KnowledgeEntity) KnowledgeGraphEntity {
 	return KnowledgeGraphEntity{Id: e.ID, Attributes: attr}
 }
 
+func KnowledgeGraphEntitySummaryFromEnt(entity *ent.KnowledgeEntity) KnowledgeGraphEntitySummary {
+	return KnowledgeGraphEntitySummary{
+		ID:       entity.ID,
+		Category: entity.Category,
+		Kind:     entity.Kind,
+	}
+}
+
 func KnowledgeGraphRelationshipFromEnt(rel *ent.KnowledgeRelationship) KnowledgeGraphRelationship {
 	attr := KnowledgeGraphRelationshipAttributes{
 		Predicate:      rel.Predicate.String(),
@@ -180,6 +191,15 @@ func KnowledgeGraphRelationshipFromEnt(rel *ent.KnowledgeRelationship) Knowledge
 		attr.Aliases[i] = KnowledgeGraphSubjectAliasFromEnt(alias)
 	}
 	return KnowledgeGraphRelationship{Id: rel.ID, Attributes: attr}
+}
+
+func KnowledgeGraphRelationshipSummaryFromEnt(relationship *ent.KnowledgeRelationship) KnowledgeGraphRelationshipSummary {
+	return KnowledgeGraphRelationshipSummary{
+		ID:        relationship.ID,
+		SourceID:  relationship.SourceEntityID,
+		TargetID:  relationship.TargetEntityID,
+		Predicate: relationship.Predicate,
+	}
 }
 
 func KnowledgeGraphSubjectAliasFromEnt(alias *ent.KnowledgeSubjectAlias) KnowledgeGraphSubjectAlias {
@@ -342,7 +362,12 @@ var SelectKnowledgeGraphEntities = huma.Operation{
 }
 
 type SelectKnowledgeGraphEntitiesRequest struct {
+	Category []kne.Category        `query:"category" required:"false"`
+	Kind     []string              `query:"kind" required:"false"`
+	Cursor   OptionalParam[string] `query:"cursor" required:"false"`
+	Limit    OptionalParam[int]    `query:"limit" required:"false"`
 }
+
 type SelectKnowledgeGraphEntitiesResponse ItemResponse[KnowledgeGraphEntitiesPage]
 
 var ExpandKnowledgeGraphRelationships = huma.Operation{
@@ -355,5 +380,10 @@ var ExpandKnowledgeGraphRelationships = huma.Operation{
 }
 
 type ExpandKnowledgeGraphRelationshipsRequest struct {
+	EntitySelectionRef string                `query:"entitySelectionRef" required:"true"`
+	Predicate          []knr.Predicate       `query:"predicate" required:"false"`
+	Cursor             OptionalParam[string] `query:"cursor" required:"false"`
+	Limit              OptionalParam[int]    `query:"limit" required:"false"`
 }
+
 type ExpandKnowledgeGraphRelationshipsResponse ItemResponse[KnowledgeGraphRelationshipsPage]

@@ -240,16 +240,37 @@ type (
 		ExpandGraphRelationships(context.Context, ExpandKnowledgeGraphRelationshipsParams) (*KnowledgeGraphRelationshipsPage, error)
 	}
 
+	EntitySelectionRef          string
+	EntitySelectionCursor       string
+	RelationshipExpansionCursor string
+
+	KnowledgeEntityFilter struct {
+		Categories []kne.Category
+		Kinds      []string
+	}
+
 	SelectKnowledgeGraphEntitiesParams struct {
+		Filter KnowledgeEntityFilter
+		Cursor *EntitySelectionCursor
+		Limit  *int
 	}
 
 	KnowledgeGraphEntitiesPage struct {
+		Entities           []*ent.KnowledgeEntity
+		EntitySelectionRef EntitySelectionRef
+		NextCursor         *EntitySelectionCursor
 	}
 
 	ExpandKnowledgeGraphRelationshipsParams struct {
+		EntitySelectionRef EntitySelectionRef
+		Predicates         []knr.Predicate
+		Cursor             *RelationshipExpansionCursor
+		Limit              *int
 	}
 
 	KnowledgeGraphRelationshipsPage struct {
+		Relationships []*ent.KnowledgeRelationship
+		NextCursor    *RelationshipExpansionCursor
 	}
 )
 
