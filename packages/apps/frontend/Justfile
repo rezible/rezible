@@ -9,5 +9,9 @@ set shell := ["bash", "-uc"]
 @dev:
     bun run dev
 
+[positional-arguments]
+@format *ARGS=".":
+    bun run format "$@"
+
 @run *ARGS:
     bun run {{ ARGS }}
