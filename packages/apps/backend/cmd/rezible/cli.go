@@ -19,25 +19,19 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT)
 	defer stop()
 
-	serverCli := makeServerCli(NewApplication())
+	appCli := makeApplicationCli(NewApplication())
 
-	if runErr := serverCli.Run(ctx, os.Args); runErr != nil {
+	if runErr := appCli.Run(ctx, os.Args); runErr != nil {
 		log.Fatalf("run: %v", runErr)
 	}
 }
 
-func makeServerCli(app *Application) *cli.Command {
-	serverInitProviders := []InitProvider{
-		withEnvironmentConfig,
-		withOpenTelemetry,
-		withPostgresDatabase,
-		withGenkitAiRuntime,
-	}
+func makeApplicationCli(app *Application) *cli.Command {
 	return &cli.Command{
 		Name:  "rezible",
 		Usage: "backend server control",
 		Before: func(ctx context.Context, command *cli.Command) (context.Context, error) {
-			return app.Init(ctx, serverInitProviders...)
+			return app.Init(ctx)
 		},
 		Commands: makeCliCommands(app),
 		After: func(ctx context.Context, command *cli.Command) error {

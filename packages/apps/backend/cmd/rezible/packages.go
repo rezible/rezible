@@ -35,6 +35,15 @@ import (
 	oapiv1 "github.com/rezible/rezible/pkg/openapi/v1"
 )
 
+func applicationPackages(ctx context.Context) Package {
+	return do.Package(
+		withEnvironmentConfig(ctx),
+		withOpenTelemetry(ctx),
+		withPostgresDatabase(ctx),
+		withGenkitAiRuntime(ctx),
+	)
+}
+
 var basePackages = do.Package(
 	pkgRiver,
 	pkgWatermill,
@@ -97,6 +106,17 @@ func withPostgresDatabase(ctx context.Context) func(do.Injector) {
 	)
 }
 
+func invokedProviderFn[D any, R any](fn func(D) (R, error)) do.Provider[R] {
+	return func(i do.Injector) (R, error) {
+		d, dErr := do.Invoke[D](i)
+		if dErr != nil {
+			var r R
+			return r, fmt.Errorf("failed to invoke: %w", dErr)
+		}
+		return fn(d)
+	}
+}
+
 var pkgRiver = do.Package(
 	do.Lazy(func(i do.Injector) (*river.JobService, error) {
 		return river.NewJobService(
@@ -129,6 +149,9 @@ func withGenkitAiRuntime(ctx context.Context) func(do.Injector) {
 }
 
 var pkgGenkit = do.Package(
+	//do.Lazy(invokedProviderFn(func(b *genkit.WorkflowBuilder) (rezai.AiClassifyAgentThreadResponseWorkflow, error) {
+	//	return b.DefinePromptWorkflow(rezai.ClassifyAgentThreadResponseDefinition)
+	//})),
 	do.Lazy(func(i do.Injector) (rezai.AiClassifyAgentThreadResponseWorkflow, error) {
 		builder := do.MustInvoke[*genkit.WorkflowBuilder](i)
 		return builder.DefinePromptWorkflow(rezai.ClassifyAgentThreadResponseDefinition)
@@ -166,12 +189,12 @@ var pkgGenkit = do.Package(
 			do.MustInvoke[*genkit.WorkflowBuilder](i),
 		)
 		if svcErr != nil {
-			return nil, svcErr
+			return nil, fmt.Errorf("genkit.MakeEvaluationService: %w", svcErr)
 		}
 
 		for _, scenario := range evals.List() {
 			if regErr := svc.RegisterScenario(scenario); regErr != nil {
-				return nil, regErr
+				return nil, fmt.Errorf("register scenario %s: %w", scenario.Definition().Name, regErr)
 			}
 		}
 
@@ -180,15 +203,7 @@ var pkgGenkit = do.Package(
 	do.Bind[*genkit.EvaluationService, rezai.EvalScenarioRunner](),
 )
 
-var pkgRedis = do.Package(
-/*
-	do.Lazy(func(i do.Injector) (*redis.MessageTransport, error) {
-		cfg := do.MustInvoke[rez.Config](i)
-		namespace := cfg.MessageQueue.Namespace
-		return redis.NewMessageTransport(cfg.Redis, namespace, do.MustInvoke[rez.TelemetryService](i))
-	}),
-*/
-)
+var pkgRedis = do.Package( /* TODO */ )
 
 var pkgWatermill = do.Package(
 	do.Lazy(func(i do.Injector) (messages.Transport, error) {
@@ -626,17 +641,6 @@ var pkgHttp = do.Package(
 		)
 	}),
 )
-
-func invokedProviderFn[D any, R any](fn func(D) R) do.Provider[R] {
-	return func(i do.Injector) (R, error) {
-		d, dErr := do.Invoke[D](i)
-		if dErr != nil {
-			var r R
-			return r, fmt.Errorf("failed to invoke: %w", dErr)
-		}
-		return fn(d), nil
-	}
-}
 
 type jobDefinitionProvider struct {
 	i       do.Injector

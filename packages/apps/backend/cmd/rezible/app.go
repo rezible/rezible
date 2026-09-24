@@ -29,7 +29,6 @@ import (
 type (
 	Package         = func(do.Injector)
 	Provider[T any] = do.Provider[T]
-	InitProvider    = func(context.Context) Package
 
 	Application struct {
 		i            do.Injector
@@ -49,12 +48,10 @@ func NewApplication() *Application {
 	return &Application{i: i}
 }
 
-func (a *Application) Init(ctx context.Context, provs ...InitProvider) (context.Context, error) {
+func (a *Application) Init(ctx context.Context) (context.Context, error) {
 	ctx = execution.NewRootContext(ctx, execution.KindAnonymous, execution.SourceCLI)
 
-	for _, p := range provs {
-		p(ctx)(a.i)
-	}
+	applicationPackages(ctx)(a.i)
 
 	return ctx, nil
 }
@@ -78,7 +75,7 @@ func (a *Application) mustInvoke[T any]() T {
 func (a *Application) With[T any](fn func(T) error) error {
 	t, invErr := a.invoke[T]()
 	if invErr != nil {
-		return fmt.Errorf("failed to invoke %T: %w", t, invErr)
+		return invErr
 	}
 	return fn(t)
 }
@@ -87,7 +84,9 @@ func (a *Application) RunLifecycle[S rez.LifecycleService](ctx context.Context) 
 	if bootstrapErr := a.setup(ctx); bootstrapErr != nil {
 		return fmt.Errorf("bootstrap: %w", bootstrapErr)
 	}
-	return a.runLifecycleServices(ctx, a.invokeLifecycleServices(a.mustInvoke[S]()))
+	return a.With[S](func(s S) error {
+		return a.runLifecycleServices(ctx, a.invokeLifecycleServices(s))
+	})
 }
 
 func (a *Application) RunAiEvalScenario(ctx context.Context, evalName string, writer io.Writer) error {
@@ -132,8 +131,7 @@ func (a *Application) invokeLifecycleServices(runSvcs ...rez.LifecycleService) [
 			svcs = append(svcs, ls)
 		}
 	}
-	svcs = append(svcs, runSvcs...)
-	return svcs
+	return append(svcs, runSvcs...)
 }
 
 func (a *Application) getServiceName(s rez.LifecycleService) string {
@@ -261,10 +259,6 @@ func (a *Application) shutdownServices(ctx context.Context) error {
 }
 
 func (a *Application) setup(ctx context.Context) error {
-	if _, workflowErr := do.Invoke[rezai.EvalScenarioRunner](a.i); workflowErr != nil {
-		return fmt.Errorf("initialize AI workflows: %w", workflowErr)
-	}
-
 	if intgsErr := a.registerIntegrations(); intgsErr != nil {
 		return fmt.Errorf("register integrations: %w", intgsErr)
 	}
@@ -277,8 +271,8 @@ func (a *Application) setup(ctx context.Context) error {
 		return fmt.Errorf("register message handlers: %w", msgsErr)
 	}
 
-	if seedErr := a.seedDevelopmentIdentity(ctx); seedErr != nil {
-		return fmt.Errorf("seed dev identity: %w", seedErr)
+	if devErr := a.registerDevelopmentData(ctx); devErr != nil {
+		return fmt.Errorf("register dev: %w", devErr)
 	}
 
 	return nil
@@ -320,6 +314,19 @@ func (a *Application) registerMessageHandlers() error {
 	return a.With(func(r messages.Registrar) error {
 		return r.Register(def)
 	})
+}
+
+func (a *Application) registerDevelopmentData(ctx context.Context) error {
+	// TODO: check current environment == dev
+
+	// used to ensure evals are registered when running the `serve` command
+	if _, workflowErr := do.Invoke[rezai.EvalScenarioRunner](a.i); workflowErr != nil {
+		return fmt.Errorf("initialize ai eval workflows: %w", workflowErr)
+	}
+	if seedErr := a.seedDevelopmentIdentity(ctx); seedErr != nil {
+		return fmt.Errorf("seed dev identity: %w", seedErr)
+	}
+	return nil
 }
 
 func (a *Application) makeDevelopmentAuthSession(ctx context.Context) (*ent.UserAuthSession, error) {
