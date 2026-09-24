@@ -8,6 +8,7 @@ import (
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/retrospective"
 )
@@ -48,10 +49,20 @@ func (s *RetrospectiveService) Set(ctx context.Context, id uuid.UUID, setFn func
 	return updated, nil
 }
 
+func (s *RetrospectiveService) CreateForIncident(ctx context.Context, incidentID uuid.UUID) (*ent.Retrospective, error) {
+	inc, getErr := s.incidents.Get(ctx, incident.ID(incidentID))
+	if getErr != nil {
+		return nil, fmt.Errorf("get incident: %w", getErr)
+	}
+	return s.createForIncident(ctx, inc)
+}
+
 func (s *RetrospectiveService) createForIncident(ctx context.Context, inc *ent.Incident) (*ent.Retrospective, error) {
-	exists, queryErr := s.db.Client(ctx).Retrospective.Query().Where(retrospective.IncidentID(inc.ID)).Exist(ctx)
-	if exists || queryErr != nil {
-		return nil, queryErr
+	existing, getExistingErr := s.Get(ctx, retrospective.IncidentID(inc.ID))
+	if getExistingErr != nil && !ent.IsNotFound(getExistingErr) {
+		return nil, fmt.Errorf("lookup existing retrospective: %w", getExistingErr)
+	} else if existing != nil {
+		return existing, nil
 	}
 
 	// TODO: base on severity?
@@ -86,11 +97,4 @@ func (s *RetrospectiveService) createForIncident(ctx context.Context, inc *ent.I
 		return nil
 	}
 	return retro, s.db.WithTx(ctx, createTxFn)
-}
-
-func (s *RetrospectiveService) GetForIncident(ctx context.Context, inc *ent.Incident) (*ent.Retrospective, error) {
-	return s.db.Client(ctx).Retrospective.Query().
-		Where(retrospective.IncidentID(inc.ID)).
-		WithReviews().
-		Only(ctx)
 }

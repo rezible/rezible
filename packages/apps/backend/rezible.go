@@ -1036,6 +1036,7 @@ type (
 	RetrospectiveService interface {
 		Get(context.Context, predicate.Retrospective) (*ent.Retrospective, error)
 		Set(context.Context, uuid.UUID, func(*ent.RetrospectiveMutation)) (*ent.Retrospective, error)
+		CreateForIncident(context.Context, uuid.UUID) (*ent.Retrospective, error)
 	}
 )
 
