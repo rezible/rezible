@@ -4,9 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/rezible/rezible/internal/http/oidc"
-	"github.com/rezible/rezible/pkg/ai/evals"
-	"github.com/rezible/rezible/pkg/openapi"
 	"github.com/samber/do/v2"
 
 	rez "github.com/rezible/rezible"
@@ -15,6 +12,7 @@ import (
 	"github.com/rezible/rezible/internal/db/eventprojection"
 	"github.com/rezible/rezible/internal/genkit"
 	"github.com/rezible/rezible/internal/http"
+	"github.com/rezible/rezible/internal/http/oidc"
 	"github.com/rezible/rezible/internal/integrations/demo"
 	"github.com/rezible/rezible/internal/integrations/github"
 	"github.com/rezible/rezible/internal/integrations/google"
@@ -27,10 +25,13 @@ import (
 	"github.com/rezible/rezible/internal/postgres/pgtestdb"
 	"github.com/rezible/rezible/internal/postgres/river"
 	"github.com/rezible/rezible/internal/watermill"
+
 	rezai "github.com/rezible/rezible/pkg/ai"
+	"github.com/rezible/rezible/pkg/ai/evals"
 	"github.com/rezible/rezible/pkg/integrations"
 	"github.com/rezible/rezible/pkg/jobs"
 	"github.com/rezible/rezible/pkg/messages"
+	"github.com/rezible/rezible/pkg/openapi"
 	oapiv1 "github.com/rezible/rezible/pkg/openapi/v1"
 )
 
@@ -95,6 +96,18 @@ func withPostgresDatabase(ctx context.Context) func(do.Injector) {
 		}),
 	)
 }
+
+var pkgRiver = do.Package(
+	do.Lazy(func(i do.Injector) (*river.JobService, error) {
+		return river.NewJobService(
+			do.MustInvoke[rez.Config](i),
+			do.MustInvoke[*postgres.ConnectionPool](i).Pool,
+			do.MustInvoke[rez.TelemetryService](i),
+		)
+	}),
+	do.Bind[*river.JobService, rez.JobService](),
+	do.Bind[*river.JobService, jobs.Registrar](),
+)
 
 func providePostgresTestDatabaseConfig(i do.Injector) (rez.PostgresConfig, error) {
 	return do.MustInvoke[*pgtestdb.Database](i).Config(), nil
@@ -165,18 +178,6 @@ var pkgGenkit = do.Package(
 		return svc, nil
 	}),
 	do.Bind[*genkit.EvaluationService, rezai.EvalScenarioRunner](),
-)
-
-var pkgRiver = do.Package(
-	do.Lazy(func(i do.Injector) (*river.JobService, error) {
-		return river.NewJobService(
-			do.MustInvoke[rez.Config](i),
-			do.MustInvoke[*postgres.ConnectionPool](i).Pool,
-			do.MustInvoke[rez.TelemetryService](i),
-		)
-	}),
-	do.Bind[*river.JobService, rez.JobService](),
-	do.Bind[*river.JobService, jobs.Registrar](),
 )
 
 var pkgRedis = do.Package(
