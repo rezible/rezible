@@ -46,7 +46,9 @@ func makeCliCommands(app *Application) []*cli.Command {
 			Name:  "serve",
 			Usage: "Run rezible server",
 			Action: func(ctx context.Context, cmd *cli.Command) error {
-				return app.RunLifecycle[*http.Server](ctx)
+				return app.With(func(server *http.Server) error {
+					return app.RunLifecycle(ctx, server)
+				})
 			},
 		},
 		{

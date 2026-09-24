@@ -10,20 +10,19 @@ import (
 	"slices"
 	"time"
 
+	demoprovider "github.com/rezible/rezible/internal/integrations/demo"
+	"github.com/samber/do/v2"
+
+	"github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/organization"
 	"github.com/rezible/rezible/ent/organizationrole"
-	"github.com/rezible/rezible/ent/user"
 	"github.com/rezible/rezible/internal/postgres/river"
 	"github.com/rezible/rezible/internal/watermill"
 	rezai "github.com/rezible/rezible/pkg/ai"
 	"github.com/rezible/rezible/pkg/execution"
 	"github.com/rezible/rezible/pkg/jobs"
 	"github.com/rezible/rezible/pkg/messages"
-	"github.com/samber/do/v2"
-
-	rez "github.com/rezible/rezible"
 )
 
 type (
@@ -32,6 +31,7 @@ type (
 
 	Application struct {
 		i            do.Injector
+		ready        chan struct{}
 		cancelRunCtx context.CancelFunc
 		services     []appService
 	}
@@ -80,13 +80,11 @@ func (a *Application) With[T any](fn func(T) error) error {
 	return fn(t)
 }
 
-func (a *Application) RunLifecycle[S rez.LifecycleService](ctx context.Context) error {
+func (a *Application) RunLifecycle(ctx context.Context, svcs ...rez.LifecycleService) error {
 	if bootstrapErr := a.setup(ctx); bootstrapErr != nil {
 		return fmt.Errorf("bootstrap: %w", bootstrapErr)
 	}
-	return a.With[S](func(s S) error {
-		return a.runLifecycleServices(ctx, a.invokeLifecycleServices(s))
-	})
+	return a.runLifecycleServices(ctx, append(a.invokeBaseLifecycleServices(), svcs...))
 }
 
 func (a *Application) RunAiEvalScenario(ctx context.Context, evalName string, writer io.Writer) error {
@@ -121,7 +119,7 @@ func (a *Application) Shutdown(ctx context.Context) error {
 	return shutdownErr
 }
 
-func (a *Application) invokeLifecycleServices(runSvcs ...rez.LifecycleService) []rez.LifecycleService {
+func (a *Application) invokeBaseLifecycleServices() []rez.LifecycleService {
 	svcs := []rez.LifecycleService{
 		a.mustInvoke[*watermill.MessageQueue](),
 		a.mustInvoke[*river.JobService](),
@@ -131,7 +129,27 @@ func (a *Application) invokeLifecycleServices(runSvcs ...rez.LifecycleService) [
 			svcs = append(svcs, ls)
 		}
 	}
-	return append(svcs, runSvcs...)
+	return svcs
+}
+
+func (a *Application) runLifecycleFunc(ctx context.Context, fn func(context.Context) error) error {
+	runCtx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	a.ready = make(chan struct{})
+	lifecycleResult := make(chan error, 1)
+	go func() {
+		lifecycleResult <- a.RunLifecycle(runCtx)
+	}()
+	select {
+	case <-a.ready:
+	case lifecycleErr := <-lifecycleResult:
+		return lifecycleErr
+	}
+
+	fnErr := fn(runCtx)
+	cancel()
+	return errors.Join(fnErr, <-lifecycleResult)
 }
 
 func (a *Application) getServiceName(s rez.LifecycleService) string {
@@ -154,6 +172,9 @@ func (a *Application) runLifecycleServices(ctx context.Context, services []rez.L
 
 	if startErr := a.startServices(runCtx, services); startErr != nil {
 		return fmt.Errorf("start services: %w", startErr)
+	}
+	if a.ready != nil {
+		close(a.ready)
 	}
 
 	return a.waitForServices(ctx)
@@ -330,8 +351,8 @@ func (a *Application) registerDevelopmentData(ctx context.Context) error {
 }
 
 func (a *Application) makeDevelopmentAuthSession(ctx context.Context) (*ent.UserAuthSession, error) {
-	sessions := a.mustInvoke[rez.AuthSessionService]()
-	sess, sessionErr := sessions.CreateFromUserAuthResponse(ctx, makeDevelopmentAuthSession())
+	svc := a.mustInvoke[rez.AuthSessionService]()
+	sess, sessionErr := svc.CreateFromUserAuthResponse(execution.NewSystemContext(ctx), makeDevelopmentAuthSession())
 	if sessionErr != nil {
 		return nil, fmt.Errorf("http development session: %w", sessionErr)
 	}
@@ -415,139 +436,18 @@ func (a *Application) seedDevelopmentIdentity(ctx context.Context) error {
 }
 
 func (a *Application) setupDemo(ctx context.Context) error {
-	dbc := a.mustInvoke[rez.Database]()
-
-	sess, sessErr := a.makeDevelopmentAuthSession(execution.NewSystemContext(ctx))
-	if sessErr != nil {
-		return fmt.Errorf("seed development identity: %w", sessErr)
-	}
-
-	return dbc.WithTx(execution.NewTenantContext(ctx, sess.TenantID), func(ctx context.Context, tx *ent.Client) error {
-		queryIncident := tx.Incident.Query().
-			Where(incident.Slug("demo-incident-workspace"))
-		if queryIncident.ExistX(ctx) {
-			fmt.Println("/incidents/demo-incident-workspace")
-			return nil
+	return a.runLifecycleFunc(ctx, func(ctx context.Context) error {
+		sess, sessErr := a.makeDevelopmentAuthSession(ctx)
+		if sessErr != nil {
+			return fmt.Errorf("seed development identity: %w", sessErr)
 		}
-		queryUser := tx.User.Query().
-			Where(user.AuthProviderID("dev-user"))
-		devUser := queryUser.OnlyX(ctx)
-
-		createSeverity := tx.IncidentSeverity.Create().
-			SetName("Demo SEV-2").
-			SetRank(2)
-		severity := createSeverity.SaveX(ctx)
-
-		createType := tx.IncidentType.Create().
-			SetName("Demo outage")
-		incidentType := createType.SaveX(ctx)
-
-		opened := time.Now().UTC().Add(-time.Hour)
-		createIncident := tx.Incident.Create().
-			SetSlug("demo-incident-workspace").
-			SetTitle("[DEMO] Checkout requests timing out").
-			SetSummary("Checkout requests timed out while the database connection pool was exhausted. Increasing the pool limit restored service.").
-			SetSeverityID(severity.ID).
-			SetTypeID(incidentType.ID).
-			SetOpenedAt(opened)
-		inc := createIncident.SaveX(ctx)
-
-		createOpened := tx.IncidentMilestone.Create().
-			SetIncidentID(inc.ID).
-			SetUserID(devUser.ID).
-			SetKind("opened").
-			SetTimestamp(opened)
-		createOpened.SaveX(ctx)
-
-		createResolved := tx.IncidentMilestone.Create().
-			SetIncidentID(inc.ID).
-			SetUserID(devUser.ID).
-			SetKind("resolution").
-			SetTimestamp(opened.Add(30 * time.Minute))
-		createResolved.SaveX(ctx)
-
-		createDocument := tx.Document.Create().
-			SetContent([]byte{})
-		document := createDocument.SaveX(ctx)
-
-		analysis := tx.SystemAnalysis.Create().
-			SaveX(ctx)
-
-		createRetrospective := tx.Retrospective.Create().
-			SetIncidentID(inc.ID).
-			SetDocumentID(document.ID).
-			SetSystemAnalysisID(analysis.ID).
-			SetKind("simple").
-			SetState("draft")
-		createRetrospective.SaveX(ctx)
-
-		createAPI := tx.KnowledgeEntity.Create().
-			SetCategory("container").
-			SetKind("service")
-		api := createAPI.SaveX(ctx)
-
-		createDatabase := tx.KnowledgeEntity.Create().
-			SetCategory("container").
-			SetKind("database")
-		store := createDatabase.SaveX(ctx)
-
-		createAPINode := tx.SystemAnalysisEntity.Create().
-			SetAnalysisID(analysis.ID).
-			SetKnowledgeEntityID(api.ID).
-			SetLabelOverride("Checkout API").
-			SetPosX(0).
-			SetPosY(0)
-		createAPINode.SaveX(ctx)
-
-		createDatabaseNode := tx.SystemAnalysisEntity.Create().
-			SetAnalysisID(analysis.ID).
-			SetKnowledgeEntityID(store.ID).
-			SetLabelOverride("Checkout database").
-			SetPosX(350).
-			SetPosY(0)
-		createDatabaseNode.SaveX(ctx)
-
-		createRelationship := tx.KnowledgeRelationship.Create().
-			SetPredicate("reads_from").
-			SetSourceEntityID(api.ID).
-			SetTargetEntityID(store.ID)
-		relationship := createRelationship.SaveX(ctx)
-
-		createEdge := tx.SystemAnalysisRelationship.Create().
-			SetAnalysisID(analysis.ID).
-			SetKnowledgeRelationshipID(relationship.ID)
-		createEdge.SaveX(ctx)
-
-		createObservation := tx.SystemAnalysisEntry.Create().
-			SetAnalysisID(analysis.ID).
-			SetKind("observation").
-			SetTitle("Database connection pool exhausted").
-			SetBody("Checkout requests are waiting for available database connections.").
-			SetOccurredAt(opened.Add(5 * time.Minute))
-		observation := createObservation.SaveX(ctx)
-
-		createSubject := tx.SystemAnalysisEntrySubject.Create().
-			SetEntryID(observation.ID).
-			SetKnowledgeRelationshipID(relationship.ID).
-			SetRole("subject")
-		createSubject.SaveX(ctx)
-
-		createAction := tx.SystemAnalysisEntry.Create().
-			SetAnalysisID(analysis.ID).
-			SetKind("action").
-			SetTitle("Increased connection pool limit").
-			SetSequence(1).
-			SetBody("Requests recovered after increasing the pool limit.").
-			SetOccurredAt(opened.Add(25 * time.Minute))
-
-		action := createAction.SaveX(ctx)
-		createActionSubject := tx.SystemAnalysisEntrySubject.Create().
-			SetEntryID(action.ID).
-			SetKnowledgeEntityID(api.ID).
-			SetRole("subject")
-		createActionSubject.SaveX(ctx)
-
-		fmt.Println("/incidents/" + inc.Slug)
-		return nil
+		installer := demoprovider.NewDevModeDataInstaller(
+			a.mustInvoke[rez.KnowledgeGraphQueryService](),
+			a.mustInvoke[rez.IncidentService](),
+			a.mustInvoke[rez.RetrospectiveService](),
+			a.mustInvoke[rez.IntegrationService](),
+			a.mustInvoke[rez.SystemAnalysisService](),
+		)
+		return installer.InstallData(execution.NewUserContext(ctx, sess))
 	})
 }
