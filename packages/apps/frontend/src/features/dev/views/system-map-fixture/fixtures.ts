@@ -1,60 +1,84 @@
-import type { GraphSlice } from "$features/systems/lib/system-map/graph";
-import {
-	edgeCasesExample,
-	relationshipExample,
-	sharedGroupsExample,
-} from "$features/systems/lib/system-map/__tests__/test-fixtures";
+import type { GraphSubset } from "$features/system/lib/system-map/graph";
+import type { Point } from "$features/system/lib/system-map/geometry";
 
-export type FixtureScenarioId = "hierarchy" | "connections" | "context" | "stress";
+export type FixtureScenarioId = "shared" | "empty" | "sparse-positions";
 
 export type FixtureScenario = {
-	source: GraphSlice;
+	graph: GraphSubset;
+	positions?: Readonly<Partial<Record<string, Point>>>;
 };
 
-const denseRelationships: GraphSlice["relationships"] = [
-	{ id: "r-dense-calls-1", source: "member-a", target: "member-b", predicate: "calls" },
-	{ id: "r-dense-calls-2", source: "member-a2", target: "member-b", predicate: "calls" },
-	{ id: "r-dense-calls-3", source: "member-b", target: "member-a", predicate: "calls" },
-	{ id: "r-dense-depends-1", source: "member-a", target: "member-b", predicate: "depends_on" },
-	{ id: "r-dense-depends-2", source: "member-b", target: "member-a", predicate: "depends_on" },
-	{ id: "r-dense-emits-1", source: "member-a", target: "member-b", predicate: "emits" },
-	{ id: "r-dense-emits-2", source: "member-a2", target: "member-b", predicate: "emits" },
-	{ id: "r-dense-reads-1", source: "member-b", target: "member-a2", predicate: "reads" },
-	{ id: "r-dense-reads-2", source: "member-b", target: "member-a", predicate: "reads" },
-	{ id: "r-dense-owns", source: "member-a2", target: "member-b", predicate: "owns" },
-];
+const sharedGraph: GraphSubset = {
+	entities: [
+		{ id: "function-orders", category: "system_function", kind: "order processing" },
+		{ id: "system-checkout", category: "system", kind: "checkout" },
+		{ id: "system-billing", category: "system", kind: "billing" },
+		{ id: "service-checkout", category: "container", kind: "checkout service" },
+		{ id: "database-orders", category: "infrastructure", kind: "orders database" },
+	],
+	relationships: [
+		{
+			id: "contains-orders",
+			source: "function-orders",
+			target: "system-checkout",
+			predicate: "contains",
+		},
+		{
+			id: "contains-billing",
+			source: "function-orders",
+			target: "system-billing",
+			predicate: "contains",
+		},
+		{
+			id: "contains-checkout",
+			source: "system-checkout",
+			target: "service-checkout",
+			predicate: "contains",
+		},
+		{
+			id: "contains-orders-db",
+			source: "system-checkout",
+			target: "database-orders",
+			predicate: "contains",
+		},
+		{
+			id: "contains-billing-db",
+			source: "system-billing",
+			target: "database-orders",
+			predicate: "contains",
+		},
+		{ id: "reads-orders-db", source: "service-checkout", target: "database-orders", predicate: "reads" },
+	],
+	unresolvedRelationships: [
+		{
+			id: "contains-platform-checkout",
+			source: "system-platform",
+			target: "service-checkout",
+			predicate: "contains",
+		},
+	],
+	enumeration: { scope: "fixture", stopReason: "relationship-limit" },
+};
 
-const entityLabels = new Map<string, string>([
-	["group-a", "Order Fulfillment and Customer Notification — Regional Control Plane"],
-	["group-b", "Billing and Entitlements — Shared Platform Operations"],
-	["member-a", "Checkout request orchestration and idempotency worker"],
-	["member-a2", "Promotion eligibility and pricing rule evaluation service"],
-	["member-b", "Invoice generation, tax calculation, and ledger synchronization"],
-]);
-
-const longAndDense = (source: GraphSlice): GraphSlice => ({
-	...source,
-	entities: source.entities.map((entity) => ({
-		...entity,
-		label: entityLabels.get(entity.id) ?? entity.label,
-	})),
-	relationships: [...source.relationships, ...denseRelationships],
-});
-
-const connectionsSource = relationshipExample.source;
-const stressSource = longAndDense(relationshipExample.source);
+const emptyGraph: GraphSubset = {
+	entities: [],
+	relationships: [],
+	unresolvedRelationships: [],
+	enumeration: { scope: "fixture", stopReason: "exhausted" },
+};
 
 export const systemMapFixtureScenarios: Readonly<Record<FixtureScenarioId, FixtureScenario>> = {
-	hierarchy: {
-		source: sharedGroupsExample.source,
+	shared: {
+		graph: sharedGraph,
 	},
-	connections: {
-		source: connectionsSource,
+	empty: {
+		graph: emptyGraph,
 	},
-	context: {
-		source: edgeCasesExample.source,
-	},
-	stress: {
-		source: stressSource,
+	"sparse-positions": {
+		graph: sharedGraph,
+		positions: {
+			"function-orders": { x: 0, y: 0 },
+			"system-checkout": { x: -260, y: 150 },
+		},
 	},
 };

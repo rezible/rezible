@@ -67,7 +67,7 @@ const defaultSidebarModel: AppSidebarModel = {
 				{ label: "Incidents", href: "/incidents", icon: RiFireLine },
 				{ label: "Situations", href: "/situations", icon: RiArticleLine },
 				{ label: "Signals", href: "/signals", icon: RiPulseLine },
-				{ label: "System Map", href: "/map", icon: RiConnectorLine },
+				{ label: "System", href: "/system", icon: RiConnectorLine },
 			],
 		},
 	],
@@ -78,7 +78,7 @@ class AppSidebarController {
 
 	constructor() {
 		afterNavigate(() => {
-			this.sidebarState.setOpenMobile(false)
+			this.sidebarState.setOpenMobile(false);
 		});
 	}
 

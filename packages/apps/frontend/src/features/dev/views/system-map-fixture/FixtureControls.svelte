@@ -1,8 +1,7 @@
 <script lang="ts">
 	import { Badge } from "$components/ui/badge";
-	import { Checkbox } from "$components/ui/checkbox";
+	import { Button } from "$components/ui/button";
 	import * as Collapsible from "$components/ui/collapsible";
-	import * as Field from "$components/ui/field";
 	import * as ToggleGroup from "$components/ui/toggle-group";
 	import { useSystemMapFixtureController } from "./controller.svelte";
 
@@ -20,22 +19,24 @@
 			size="sm"
 			class="max-w-full flex-wrap"
 		>
-			<ToggleGroup.Item value="hierarchy">Nested + shared</ToggleGroup.Item>
-			<ToggleGroup.Item value="connections">Direct + summary</ToggleGroup.Item>
-			<ToggleGroup.Item value="context">Context + annotations</ToggleGroup.Item>
-			<ToggleGroup.Item value="stress">Long + dense</ToggleGroup.Item>
+			<ToggleGroup.Item value="shared">Shared membership</ToggleGroup.Item>
+			<ToggleGroup.Item value="empty">Empty graph</ToggleGroup.Item>
+			<ToggleGroup.Item value="sparse-positions">Sparse positions</ToggleGroup.Item>
 		</ToggleGroup.Root>
 
-		<Field.FieldSet class="flex-row items-center gap-3 text-sm">
-			<Field.FieldLegend class="sr-only">Map context</Field.FieldLegend>
-			<label class="flex items-center gap-2">
-				<Checkbox
-					checked={controller.showAnnotations}
-					onCheckedChange={(checked) => controller.setShowAnnotations(!!checked)}
-				/>
-				Annotations
-			</label>
-		</Field.FieldSet>
+		<div class="flex items-center gap-2">
+			<Button
+				variant={controller.dragEnabled ? "secondary" : "outline"}
+				size="sm"
+				aria-pressed={controller.dragEnabled}
+				onclick={() => controller.setDragEnabled(!controller.dragEnabled)}
+			>
+				Dragging {controller.dragEnabled ? "enabled" : "disabled"}
+			</Button>
+			{#if controller.partial}
+				<Badge variant="secondary">Partial supplied subset</Badge>
+			{/if}
+		</div>
 	</div>
 
 	<Collapsible.Root class="border-border border-t pt-2 text-xs">
@@ -48,8 +49,11 @@
 			<div class="flex flex-wrap gap-2 pt-2">
 				<Badge variant="outline">{controller.sourceEntityCount} source entities</Badge>
 				<Badge variant="outline">{controller.sourceRelationshipCount} source relationships</Badge>
-				<Badge variant="outline">memberships coverage: {controller.parentMembershipCoverage}</Badge>
-				<Badge variant="outline">relationships coverage: {controller.relationshipCoverage}</Badge>
+				<Badge variant="outline">
+					{controller.unresolvedRelationshipCount} unresolved relationships
+				</Badge>
+				<Badge variant="outline">{Object.keys(controller.positions).length} position hints</Badge>
+				<Badge variant="outline">enumeration: {controller.graph.enumeration.stopReason}</Badge>
 			</div>
 		</Collapsible.Content>
 	</Collapsible.Root>

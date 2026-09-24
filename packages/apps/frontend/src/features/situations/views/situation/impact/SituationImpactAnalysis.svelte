@@ -1,10 +1,13 @@
 <script lang="ts">
 	import type { InvestigationAttributes } from "$lib/api";
-	import { SystemAnalysis, initSystemAnalysisController } from "$components/system-analysis";
-	import { timestamp } from "../model";
-	import { Button } from "$components/ui/button";
-	import { investigationHref } from "$features/situations/lib/routes";
 	import { page } from "$app/state";
+
+	import { Button } from "$components/ui/button";
+	
+	import { SystemAnalysis, initSystemAnalysisController } from "$components/system-analysis";
+	import { investigationHref } from "$features/situations/lib/routes";
+
+	import { timestamp } from "../model";
 
 	type Props = {
 		situationId: string;
@@ -12,10 +15,7 @@
 	};
 	const { situationId, investigationAttributes }: Props = $props();
 
-	const analysis = initSystemAnalysisController(
-		() => investigationAttributes.analysisId,
-		() => ({ readOnly: true })
-	);
+	const analysis = initSystemAnalysisController(() => investigationAttributes.analysisId);
 
 	const updatedAt = $derived(timestamp(investigationAttributes.updatedAt));
 

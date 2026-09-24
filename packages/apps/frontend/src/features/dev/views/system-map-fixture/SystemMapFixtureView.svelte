@@ -1,12 +1,13 @@
 <script lang="ts">
 	import { registerPageDescriptor } from "$lib/app-shell.svelte";
-	import { SystemMap } from "$features/systems/components/system-map";
+	import { MapInspector } from "$features/system/components/map-inspector";
+	import { SystemMap } from "$features/system/components/system-map";
 	import { initSystemMapFixtureController } from "./controller.svelte";
 	import FixtureControls from "./FixtureControls.svelte";
 
 	const view = initSystemMapFixtureController();
 
-	registerPageDescriptor(() => ({title: "System Map"}));
+	registerPageDescriptor(() => ({ title: "System Map" }));
 </script>
 
 <svelte:head>
@@ -16,12 +17,17 @@
 <section class="flex min-h-0 min-w-0 flex-1 flex-col gap-3 overflow-hidden p-3">
 	<FixtureControls />
 
-	<div class="border-border min-h-0 min-w-0 flex-1 overflow-hidden rounded-md border">
-		{#key view.scenario}
-			<SystemMap 
-				graph={view.graph} 
-				displayOptions={view.displayOptions}
+	<div class="border-border flex min-h-0 min-w-0 flex-1 overflow-hidden rounded-md border">
+		<div class="min-h-0 min-w-0 flex-1">
+			<SystemMap
+				graph={view.graph}
+				positions={view.positions}
+				selection={view.selection}
+				highlights={view.highlights}
+				onSelectionChange={view.setSelection}
+				onNodeMove={view.dragEnabled ? view.moveNode : undefined}
 			/>
-		{/key}
+		</div>
+		<MapInspector graph={view.graph} selection={view.selection} onSelectionChange={view.setSelection} />
 	</div>
 </section>

@@ -1,112 +1,93 @@
-import { createInfiniteQuery, createMutation } from "@tanstack/svelte-query";
+import { createInfiniteQuery } from "@tanstack/svelte-query";
 import { Context, watch, type Getter } from "runed";
 import {
-	deleteSystemAnalysisEdgeMutation,
-	deleteSystemAnalysisNodeMutation,
 	listSystemAnalysisEdgesInfiniteOptions,
 	listSystemAnalysisEntriesInfiniteOptions,
 	listSystemAnalysisNodesInfiniteOptions,
-	updateSystemAnalysisNodeMutation,
-	type ErrorModel,
+	type SystemAnalysisEdge,
+	type SystemAnalysisNode,
 } from "$lib/api";
 import { getNextPageParam } from "$lib/api/utils";
-import { flattenPages, mapEntryAttachments, buildAnalysisGraph } from "./lib";
-import type { XYPosition } from "@xyflow/svelte";
-import { SystemDiagramController } from "$components/system-diagram/controller.svelte.ts";
-import type { DiagramContextMenu, GraphSelection, GraphHighlights } from "$components/system-diagram";
+import { reconcileSelection } from "$features/system/lib/system-map/selection";
+import type { MapHighlights, MapSelection } from "$features/system/lib/system-map/presentation";
+import { buildAnalysisGraph, flattenPages, mapEntryAttachments, type AnalysisGraph } from "./lib";
 
 export type GraphInteraction = {
-	selection?: GraphSelection;
-	highlights?: GraphHighlights;
-	select: (selection: GraphSelection, trigger?: HTMLElement) => void;
+	selection?: MapSelection;
+	highlights?: MapHighlights;
+	select: (selection: MapSelection | undefined, trigger?: HTMLElement) => void;
 };
 
 export type SystemAnalysisOptions = {
 	interaction?: GraphInteraction;
-	readOnly?: boolean;
+};
+
+export type PublishedSystemAnalysis = AnalysisGraph & {
+	analysisId: string;
 };
 
 const pageSize = 50;
+const emptyNodeMap = new Map<string, SystemAnalysisNode>();
+const emptyEdgeMap = new Map<string, SystemAnalysisEdge>();
 
 export class SystemAnalysisController {
 	analysisId = $state<string>();
 	options = $state.raw<SystemAnalysisOptions>();
-	readOnly = $derived(this.options?.readOnly ?? false);
 
 	private interaction = $derived(this.options?.interaction);
-	private localSelection = $state<GraphSelection>({});
-	selection = $derived(this.interaction?.selection ?? this.localSelection);
+	private localSelection = $state<MapSelection>();
+	selection = $derived(this.interaction ? this.interaction.selection : this.localSelection);
+	highlights = $derived(this.interaction?.highlights);
 
-	ctxMenu = $state<DiagramContextMenu>();
-
-	deleting = $state(false);
-
-	diagram = new SystemDiagramController({
-		selection: () => this.selection,
-		highlights: () => this.interaction?.highlights,
-		select: (selection, trigger) => {
-			this.onSelected(selection, trigger);
-		},
-		onNodeMove: (id, pos) => {
-			this.onMoveNode(id, pos);
-		},
-		onContextMenu: (menu) => {
-			if (!this.readOnly) this.ctxMenu = menu;
-		},
-	});
+	publishedAnalysis = $state.raw<PublishedSystemAnalysis>();
+	graph = $derived(this.publishedAnalysis?.graph);
+	positions = $derived(this.publishedAnalysis?.positions);
+	hasGraph = $derived(this.publishedAnalysis?.analysisId === this.analysisId && !!this.analysisId);
 
 	constructor(idFn: Getter<string | undefined>, optionsFn: Getter<SystemAnalysisOptions> = () => ({})) {
 		watch(idFn, (id) => {
 			this.analysisId = id;
-			this.localSelection = {};
-			this.ctxMenu = undefined;
-			this.mutationError = undefined;
-			this.deleting = false;
-			this.framedAnalysis = undefined;
-			this.diagram.setGraph([], []);
-			this.diagram.viewport = { x: 0, y: 0, zoom: 1 };
-			void this.diagram.fit();
+			this.localSelection = undefined;
+			this.publishedAnalysis = undefined;
 		});
 
-		watch(optionsFn, (opts) => {
-			this.options = opts;
+		watch(optionsFn, (options) => {
+			this.options = options;
 		});
-
-		this.watchForRefresh();
 
 		watch(
-			() => [this.analysisId, this.graphLoading, this.diagram.nodes.length] as const,
-			() => this.frameAnalysis()
+			() =>
+				[
+					this.analysisId,
+					this.nodesQuery.data?.pages,
+					this.nodesQuery.isSuccess,
+					this.nodesQuery.isFetching,
+					this.nodesQuery.hasNextPage,
+					this.edgesQuery.data?.pages,
+					this.edgesQuery.isSuccess,
+					this.edgesQuery.isFetching,
+					this.edgesQuery.hasNextPage,
+				] as const,
+			() => this.publishCompletedGraph()
+		);
+
+		watch(
+			() => [this.publishedAnalysis, this.selection] as const,
+			([published, selection]) => {
+				if (!published || !selection) return;
+				if (!reconcileSelection(published.graph, selection)) this.onSelected(undefined);
+			}
 		);
 
 		for (const query of [this.nodesQuery, this.edgesQuery, this.entriesQuery]) {
 			watch(
 				() => query.hasNextPage && !query.isFetching && !query.isError,
 				(hasMore) => {
-					if (hasMore) query.fetchNextPage();
+					if (hasMore) void query.fetchNextPage();
 				}
 			);
 		}
 	}
-
-	private watchForRefresh() {
-		watch(
-			() =>
-				[
-					this.analysisId,
-					this.analysisNodes,
-					this.analysisEdges,
-					this.attachments,
-					this.readOnly,
-				] as const,
-			() => {
-				if (this.readOnly) this.ctxMenu = undefined;
-				this.refreshGraph();
-			}
-		);
-	}
-
-	private framedAnalysis?: string;
 
 	private analysisPath = $derived({ id: this.analysisId ?? "" });
 
@@ -143,35 +124,54 @@ export class SystemAnalysisController {
 	}));
 	entries = $derived(flattenPages(this.entriesQuery.data?.pages));
 	refreshEntries = () => this.entriesQuery.refetch();
-
 	refreshAll = () =>
 		Promise.all([this.nodesQuery.refetch(), this.edgesQuery.refetch(), this.entriesQuery.refetch()]);
 
-	attachments = $derived(mapEntryAttachments(this.analysisNodes, this.analysisEdges, this.entries));
-
+	graphError = $derived(this.nodesQuery.error ?? this.edgesQuery.error);
 	graphLoading = $derived(
 		!!this.analysisId &&
+			!this.hasGraph &&
 			(this.nodesQuery.isPending ||
+				this.nodesQuery.isFetching ||
 				this.nodesQuery.hasNextPage ||
 				this.edgesQuery.isPending ||
+				this.edgesQuery.isFetching ||
 				this.edgesQuery.hasNextPage)
 	);
-	graphError = $derived(this.nodesQuery.error ?? this.edgesQuery.error);
-	hasGraph = $derived(!!this.nodesQuery.data && !!this.edgesQuery.data);
+
+	attachments = $derived(
+		mapEntryAttachments(
+			this.publishedAnalysis?.nodeByEntityId ?? emptyNodeMap,
+			this.publishedAnalysis?.edgeByRelationshipId ?? emptyEdgeMap,
+			this.entries
+		)
+	);
+
+	nodeByEntityId = $derived(this.publishedAnalysis?.nodeByEntityId ?? emptyNodeMap);
+	edgeByRelationshipId = $derived(this.publishedAnalysis?.edgeByRelationshipId ?? emptyEdgeMap);
 
 	selectionInspector = $derived.by(() => {
-		const node = this.diagram.selectedNode;
-		const edge = this.diagram.selectedEdge;
-		if (!node && !edge) {
-			return undefined;
+		const selection = this.selection;
+		if (!selection) return undefined;
+
+		const entriesById = new Map<string, (typeof this.entries)[number]>();
+		if (selection.kind === "entity") {
+			for (const entry of this.attachments.byEntityId.get(selection.entityId) ?? []) {
+				entriesById.set(entry.id, entry);
+			}
+		} else {
+			const relationshipIds =
+				selection.kind === "relationship" ? [selection.relationshipId] : selection.relationshipIds;
+			for (const relationshipId of relationshipIds) {
+				for (const entry of this.attachments.byRelationshipId.get(relationshipId) ?? []) {
+					entriesById.set(entry.id, entry);
+				}
+			}
 		}
-		const entries = node
-			? this.attachments.byNodeId.get(node.id)
-			: this.attachments.byEdgeId.get(edge!.id);
 
 		return {
-			title: node ? "Node entries" : "Relationship entries",
-			entries: (entries ?? []).map(({ id, attributes }) => ({
+			title: selection.kind === "entity" ? "Entity entries" : "Relationship entries",
+			entries: [...entriesById.values()].map(({ id, attributes }) => ({
 				id,
 				title: attributes.title,
 				body: attributes.body,
@@ -183,112 +183,32 @@ export class SystemAnalysisController {
 		};
 	});
 
-	mutationError = $state<ErrorModel>();
-
-	private updateNodeMutation = createMutation(() => ({
-		...updateSystemAnalysisNodeMutation(),
-		onSuccess: () => this.nodesQuery.refetch(),
-	}));
-
-	private removeNodeMutation = createMutation(() => ({
-		...deleteSystemAnalysisNodeMutation(),
-		onSuccess: this.refreshAll,
-	}));
-
-	private removeEdgeMutation = createMutation(() => ({
-		...deleteSystemAnalysisEdgeMutation(),
-		onSuccess: this.refreshAll,
-	}));
-
-	private frameAnalysis() {
-		const id = this.analysisId;
-		if (!id || this.graphLoading || !this.diagram.nodes.length || this.framedAnalysis === id) {
+	private publishCompletedGraph() {
+		const analysisId = this.analysisId;
+		if (
+			!analysisId ||
+			!this.nodesQuery.isSuccess ||
+			this.nodesQuery.isFetching ||
+			this.nodesQuery.hasNextPage ||
+			!this.edgesQuery.isSuccess ||
+			this.edgesQuery.isFetching ||
+			this.edgesQuery.hasNextPage
+		) {
 			return;
 		}
-		this.framedAnalysis = id;
-		void this.diagram.fit();
-	}
 
-	private refreshGraph() {
-		const graph = buildAnalysisGraph(this.analysisNodes, this.analysisEdges, this.attachments);
-		for (const node of graph.nodes) {
-			node.draggable = !this.readOnly;
+		const graph = buildAnalysisGraph(this.analysisNodes, this.analysisEdges);
+		if (this.analysisId === analysisId) {
+			this.publishedAnalysis = { analysisId, ...graph };
 		}
-		this.diagram.setGraph(graph.nodes, graph.edges);
 	}
 
-	container = $state<HTMLElement>();
-	setContainer = (element: HTMLElement) => {
-		this.container = element;
-		return () => {
-			this.container = undefined;
-		};
-	};
-
-	onSelected = (selection: GraphSelection, trigger?: HTMLElement) => {
-		this.ctxMenu = undefined;
+	onSelected = (selection: MapSelection | undefined, trigger?: HTMLElement) => {
 		const interaction = this.interaction;
 		if (interaction) {
 			interaction.select(selection, trigger);
 		} else {
 			this.localSelection = selection;
-		}
-	};
-
-	private onMoveNode = async (id: string, position: XYPosition) => {
-		if (this.readOnly) {
-			return;
-		}
-
-		const analysisId = this.analysisId;
-		this.mutationError = undefined;
-		try {
-			await this.updateNodeMutation.mutateAsync({
-				path: { id },
-				body: { attributes: { position } },
-			});
-		} catch (error) {
-			if (this.analysisId === analysisId) {
-				this.mutationError = error as ErrorModel;
-				this.refreshGraph();
-			}
-		}
-	};
-
-	remove = async (selection: GraphSelection) => {
-		if (this.readOnly || this.deleting || (!selection.nodeId && !selection.edgeId)) {
-			return;
-		}
-
-		const subject = selection.nodeId ? "node" : "relationship";
-		if (!confirm(`Remove this ${subject} from the analysis?`)) {
-			return;
-		}
-
-		const analysisId = this.analysisId;
-		this.mutationError = undefined;
-		this.deleting = true;
-		try {
-			if (selection.nodeId) {
-				await this.removeNodeMutation.mutateAsync({ path: { id: selection.nodeId } });
-			} else if (selection.edgeId) {
-				await this.removeEdgeMutation.mutateAsync({ path: { id: selection.edgeId } });
-			}
-			if (this.analysisId !== analysisId) {
-				return;
-			}
-			if (this.selection.nodeId === selection.nodeId && this.selection.edgeId === selection.edgeId) {
-				this.onSelected({});
-			}
-			this.ctxMenu = undefined;
-		} catch (error) {
-			if (this.analysisId === analysisId) {
-				this.mutationError = error as ErrorModel;
-			}
-		} finally {
-			if (this.analysisId === analysisId) {
-				this.deleting = false;
-			}
 		}
 	};
 }

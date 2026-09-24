@@ -27,8 +27,13 @@
 		{#each controller.relationships as relationship (relationship.id)}
 			<a
 				class="underline"
-				href={controller.selectionUrl({ edgeId: relationship.id })}
-				onclick={(event) => controller.selectInspectorLink(event, { edgeId: relationship.id })}
+				href={controller.selectionUrl({
+					mapSelection: { kind: "relationship", relationshipId: relationship.id },
+				})}
+				onclick={(event) =>
+					controller.selectInspectorLink(event, {
+						mapSelection: { kind: "relationship", relationshipId: relationship.id },
+					})}
 			>
 				{relationship.label}
 			</a>

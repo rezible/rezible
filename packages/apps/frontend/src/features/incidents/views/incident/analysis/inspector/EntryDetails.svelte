@@ -45,7 +45,7 @@
 	<section class="flex flex-col gap-3" aria-label="Subjects and evidence">
 		<h4 class="font-medium">Subjects and evidence</h4>
 		{#each controller.subjects as subject (subject.id)}
-			{@const selection = subject.selection}
+			{@const selection = subject.mapSelection ? { mapSelection: subject.mapSelection } : undefined}
 			<div class="flex flex-col gap-1">
 				<span class="text-xs text-muted-foreground">{subject.role}</span>
 				{#if selection}

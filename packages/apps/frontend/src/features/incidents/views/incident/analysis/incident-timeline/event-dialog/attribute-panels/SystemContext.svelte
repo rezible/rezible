@@ -13,7 +13,7 @@
 	const attributes = useEventDialogAttributes();
 
 	const analysis = useSystemAnalysisController();
-	const analysisNodes = $derived(analysis.analysisNodes);
+	const analysisNodes = $derived([...analysis.nodeByEntityId.values()]);
 	const analysisNodeMap = $derived(new SvelteMap(analysisNodes.map((node) => [node.id, node])));
 	const knowledgeEntityNodeMap = $derived(
 		new SvelteMap(analysisNodes.map((node) => [node.attributes.knowledgeEntity.id, node]))
@@ -100,7 +100,7 @@
 			</button>
 		{/each}
 
-		{#if analysisNodes.length === 0 && analysis.nodesQuery.isFetched}
+		{#if analysisNodes.length === 0 && analysis.hasGraph}
 			<span>No topology nodes linked to this analysis</span>
 		{/if}
 	{/snippet}

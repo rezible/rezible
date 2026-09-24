@@ -33,10 +33,9 @@
 				variant="outline"
 				size="sm"
 				bind:ref={controller.fallbackFocus}
-				disabled={!controller.hasSelection}
 				onclick={controller.openInspector}
 			>
-				Inspect selection
+				Inventory
 			</Button>
 		</div>
 
