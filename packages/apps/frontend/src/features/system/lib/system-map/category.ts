@@ -29,70 +29,42 @@ export enum MapCategory {
 
 const categories = new Set<string>(Object.values(MapCategory));
 
-export enum NodeDetailLevel {
-	// Broad business and organizational functions.
-	Landscape = 0,
-	// Systems grouping runtime units.
-	Systems = 1,
-	// Runtime units and supporting infrastructure.
-	Runtime = 2,
-	// Internal components and source artifacts.
-	Implementation = 3,
-}
-
-const layerLabels: Readonly<Record<NodeDetailLevel, string>> = {
-	[NodeDetailLevel.Landscape]: "Landscape · Function",
-	[NodeDetailLevel.Systems]: "System",
-	[NodeDetailLevel.Runtime]: "Runtime",
-	[NodeDetailLevel.Implementation]: "Implementation",
-};
-
-/** Human-readable architectural layer names, independent of containment depth. */
-export const getArchitectureLayerLabel = (level: NodeDetailLevel): string => layerLabels[level];
-
-/** Names the layer represented by a continuous detail value. */
-export const getDetailLayerLabel = (detail: number): string => {
-	const level = Math.max(
-		NodeDetailLevel.Landscape,
-		Math.min(NodeDetailLevel.Implementation, Math.floor(Number.isFinite(detail) ? detail : 0))
-	);
-	return layerLabels[level as NodeDetailLevel];
-};
-
 export type MapCategoryDisplay = {
 	// Human-readable category name, distinct from an entity's name or detail-level title.
 	categoryLabel: string;
-	// Architectural categories participate in map projection; all other categories remain source data.
-	level?: NodeDetailLevel;
 };
 
-const category = (categoryLabel: string, level?: NodeDetailLevel): MapCategoryDisplay => ({
-	categoryLabel,
-	level,
-});
+const architectureCategories = new Set<string>([
+	MapCategory.SystemFunction,
+	MapCategory.System,
+	MapCategory.Container,
+	MapCategory.Infrastructure,
+	MapCategory.Component,
+	MapCategory.Code,
+]);
 
-export const categoryDisplay: Readonly<Record<MapCategory, MapCategoryDisplay>> = {
-	[MapCategory.SystemFunction]: category("Function", NodeDetailLevel.Landscape),
-	[MapCategory.System]: category("System", NodeDetailLevel.Systems),
-	[MapCategory.Container]: category("Container", NodeDetailLevel.Runtime),
-	[MapCategory.Infrastructure]: category("Infrastructure", NodeDetailLevel.Runtime),
-	[MapCategory.Component]: category("Component", NodeDetailLevel.Implementation),
-	[MapCategory.Code]: category("Code", NodeDetailLevel.Implementation),
-	[MapCategory.Actor]: category("Actor"),
-	[MapCategory.Concern]: category("Concern"),
-	[MapCategory.Decision]: category("Decision"),
-	[MapCategory.Event]: category("Event"),
-	[MapCategory.Signal]: category("Signal"),
-	[MapCategory.Process]: category("Workflow"),
-	[MapCategory.Unknown]: category("Unsupported category"),
+const categoryLabels: Readonly<Record<MapCategory, string>> = {
+	[MapCategory.SystemFunction]: "Function",
+	[MapCategory.System]: "System",
+	[MapCategory.Container]: "Container",
+	[MapCategory.Infrastructure]: "Infrastructure",
+	[MapCategory.Component]: "Component",
+	[MapCategory.Code]: "Code",
+	[MapCategory.Actor]: "Actor",
+	[MapCategory.Concern]: "Concern",
+	[MapCategory.Decision]: "Decision",
+	[MapCategory.Event]: "Event",
+	[MapCategory.Signal]: "Signal",
+	[MapCategory.Process]: "Workflow",
+	[MapCategory.Unknown]: "Unsupported category",
 };
 
 export const parseMapCategory = (value: string) =>
 	categories.has(value) ? (value as MapCategory) : MapCategory.Unknown;
 
-export const getMapCategoryDisplay = (category: string): MapCategoryDisplay =>
-	categoryDisplay[parseMapCategory(category)];
+export function getMapCategoryDisplay(category: string): MapCategoryDisplay {
+	const parsed = parseMapCategory(category);
+	return { categoryLabel: categoryLabels[parsed] };
+}
 
-export const isArchitectureCategory = (category: string): boolean => {
-	return getMapCategoryDisplay(category).level !== undefined;
-};
+export const isArchitectureCategory = (category: string): boolean => architectureCategories.has(category);

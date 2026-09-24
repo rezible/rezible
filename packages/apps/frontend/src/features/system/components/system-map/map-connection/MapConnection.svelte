@@ -1,110 +1,94 @@
 <script lang="ts">
-	import { BaseEdge, type EdgeProps } from "@xyflow/svelte";
-
-	import { cn } from "$lib/utils";
-	import { connectionRouteToSvgPath } from "./geometry";
-	import { connectionLabel, connectionLabelOpacity, connectionRouteOpacities } from "./presentation";
-	import type { ConnectionRouteVariant, FlowEdge } from "../flow-model";
+	import { BaseEdge, EdgeLabel, getBezierPath, type EdgeProps } from "@xyflow/svelte";
+	import type { FlowEdge } from "../flow-graph-model";
+	import { connectionLabel } from "./presentation";
 
 	type Props = EdgeProps<FlowEdge>;
 	let props: Props = $props();
-
-	const data = $derived(props.data);
-	const connection = $derived(data?.connection);
-	const route = $derived(data!.route);
-	const routeLayers = $derived<readonly ConnectionRouteVariant[]>(
-		data?.routeVariants?.length ? data.routeVariants : [{ route, opacity: data?.opacity ?? 1 }]
-	);
-	const primaryRouteIndex = $derived(
-		routeLayers.reduce(
-			(bestIndex, candidate, index) =>
-				candidate.opacity > routeLayers[bestIndex].opacity ? index : bestIndex,
-			0
-		)
-	);
-	const primaryRoute = $derived(routeLayers[primaryRouteIndex] ?? { route, opacity: data?.opacity ?? 1 });
-	const count = $derived(connection?.sourceRelationshipIds.length ?? 1);
-	const isMembership = $derived(connection?.predicate === "contains");
-	const isSummary = $derived(connection?.classification === "summary");
-	const isHighlighted = $derived(Boolean(props.selected || data?.isHighlighted));
-	const isHovered = $derived(Boolean(data?.isHovered));
-	const isDimmed = $derived(Boolean(data?.isDimmed && !isHighlighted));
-	const isInteractive = $derived((props.interactionWidth ?? 24) > 0);
-	const routeOpacities = $derived(
-		connectionRouteOpacities(
-			routeLayers.map((layer) => layer.opacity),
-			isHovered,
-			isDimmed
-		)
-	);
-	const renderedRoutes = $derived(
-		routeLayers.map((layer, index) => ({
-			...layer,
-			opacity: routeOpacities[index] ?? layer.opacity,
-			path: connectionRouteToSvgPath(layer.route),
-			isPrimary: index === primaryRouteIndex,
-		}))
-	);
-	const lineWidth = $derived(
-		isMembership
-			? Math.min(2.4, 1 + Math.log2(count + 1) * 0.7)
-			: Math.min(5, 1.5 + Math.log2(count + 1) * 1.2) + (isHighlighted ? 0.6 : 0)
-	);
-	const edgeStyle = (routeOpacity: number, primary: boolean) =>
-		[
-			`stroke-width: ${lineWidth}px`,
-			"stroke-linecap: round",
-			"stroke-linejoin: round",
-			`opacity: ${routeOpacity}`,
-			!primary || !isInteractive ? "pointer-events: none" : "",
-			isSummary ? "stroke-dasharray: 7 4" : "",
-		]
-			.filter(Boolean)
-			.join(";");
-	const labelStyle = $derived(
-		[
-			"font-size: 11px",
-			"font-weight: 600",
-			`color: ${isHighlighted ? "var(--primary)" : isMembership ? "var(--muted-foreground)" : "var(--foreground)"}`,
-			"background: var(--background)",
-			"border: 1px solid var(--border)",
-			"border-radius: 4px",
-			"box-shadow: 0 1px 2px color-mix(in srgb, var(--foreground) 12%, transparent)",
-			"line-height: 1.1",
-			"max-width: 180px",
-			"overflow-wrap: anywhere",
-			"padding: 2px 5px",
-			"text-align: center",
-			"white-space: normal",
-			`opacity: ${connectionLabelOpacity(primaryRoute.opacity, isHovered, isDimmed)}`,
-		].join(";")
-	);
-	const label = $derived(
-		connection && (props.selected || data?.isLabelVisible) ? connectionLabel(connection) : undefined
+	const markerId = $props.id();
+	const connection = $derived(props.data!.connection);
+	const label = $derived(connectionLabel(connection));
+	const [path, labelX, labelY] = $derived(
+		getBezierPath({
+			sourceX: props.sourceX,
+			sourceY: props.sourceY,
+			targetX: props.targetX,
+			targetY: props.targetY,
+			sourcePosition: props.sourcePosition,
+			targetPosition: props.targetPosition,
+		})
 	);
 </script>
 
-<title>{props.ariaLabel}</title>
-
-{#each renderedRoutes as routeLayer, index (`${props.id}-${index}`)}
+<g
+	class="connection"
+	class:emphasized={props.selected || props.data?.emphasized}
+	class:dimmed={props.data?.dimmed}
+	class:membership={connection.predicate === "contains"}
+	class:aggregated={connection.relationshipIds.length > 1}
+>
+	<title>{label}</title>
+	<defs>
+		<marker
+			id={markerId}
+			viewBox="0 0 10 10"
+			refX="9"
+			refY="5"
+			markerWidth="6"
+			markerHeight="6"
+			orient="auto"
+		>
+			<path class="arrow" d="M 0 0 L 10 5 L 0 10 z" />
+		</marker>
+	</defs>
 	<BaseEdge
-		id={routeLayer.isPrimary ? props.id : `${props.id}--route-${index}`}
-		path={routeLayer.path}
-		markerEnd={props.markerEnd}
-		interactionWidth={routeLayer.isPrimary ? (props.interactionWidth ?? 24) : 0}
-		style={edgeStyle(routeLayer.opacity, routeLayer.isPrimary)}
-		label={routeLayer.isPrimary ? label : undefined}
-		labelX={primaryRoute.route.labelPosition.x}
-		labelY={primaryRoute.route.labelPosition.y}
-		{labelStyle}
-		aria-label={routeLayer.isPrimary ? props.ariaLabel : undefined}
-		data-connection-id={props.id}
-		class={cn(
-			isHighlighted
-				? "stroke-primary"
-				: isSummary || isMembership
-					? "stroke-muted-foreground"
-					: "stroke-foreground"
-		)}
+		id={props.id}
+		{path}
+		markerEnd={`url(#${markerId})`}
+		interactionWidth={20}
+		class="connection-path"
 	/>
-{/each}
+</g>
+
+{#if props.data?.showLabel}
+	<EdgeLabel x={labelX} y={labelY} class="connection-label" transparent>
+		<span class="bg-background text-foreground border-border rounded border px-1.5 py-0.5 text-[11px]">
+			{label}
+		</span>
+	</EdgeLabel>
+{/if}
+
+<style>
+	.connection {
+		--connection-color: var(--muted-foreground);
+		--connection-width: 1.5px;
+	}
+
+	.aggregated {
+		--connection-width: 2.5px;
+	}
+	.emphasized {
+		--connection-color: var(--primary);
+		--connection-width: 3px;
+	}
+	.dimmed {
+		opacity: 0.25;
+	}
+	.arrow {
+		fill: var(--connection-color);
+	}
+
+	.connection :global(.connection-path) {
+		stroke: var(--connection-color);
+		stroke-width: var(--connection-width);
+		stroke-linecap: round;
+	}
+
+	.membership :global(.connection-path) {
+		stroke-dasharray: 5 4;
+	}
+
+	:global(.connection-label) {
+		pointer-events: none !important;
+	}
+</style>

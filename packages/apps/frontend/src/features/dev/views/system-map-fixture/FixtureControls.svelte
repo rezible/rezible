@@ -52,7 +52,7 @@
 				<Badge variant="outline">
 					{controller.unresolvedRelationshipCount} unresolved relationships
 				</Badge>
-				<Badge variant="outline">{Object.keys(controller.positions).length} position hints</Badge>
+				<Badge variant="outline">{Object.keys(controller.positions).length} supplied positions</Badge>
 				<Badge variant="outline">enumeration: {controller.graph.enumeration.stopReason}</Badge>
 			</div>
 		</Collapsible.Content>

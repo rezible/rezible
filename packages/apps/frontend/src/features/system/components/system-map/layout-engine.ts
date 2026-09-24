@@ -1,78 +1,53 @@
-import ELK, { type ELK as ElkInstance } from "elkjs/lib/elk-api.js";
+import ELK, { type ELK as ElkInstance, type ElkNode, type ElkExtendedEdge, type ELKConstructorArguments } from "elkjs/lib/elk-api.js";
+import type { Point } from "$features/system/lib/system-map/geometry";
+import { NODE_WIDTH, NODE_HEIGHT, type FlowNode, type FlowEdge } from "./flow-graph-model";
 
-import type { GraphSubset } from "$features/system/lib/system-map/graph";
-import type { MapProjection } from "$features/system/lib/system-map/presentation";
-import { layoutWithElk, type LayoutPositionInputs } from "./layout";
-import type { LayoutResult } from "./flow-model";
+const elkArgs: ELKConstructorArguments = {
+	algorithms: ["layered"],
+	workerFactory: () => {
+		return new Worker(new URL("./elk.worker.ts", import.meta.url), { type: "module" });
+	},
+}
 
-export type SystemMapLayoutEngine = {
-	layout: (
-		graph: GraphSubset,
-		projection: MapProjection,
-		positionInputs?: LayoutPositionInputs
-	) => Promise<LayoutResult>;
-	dispose: () => void;
-};
+const convertFlowNode = (node: FlowNode): ElkNode => 
+	({ id: node.id, width: NODE_WIDTH, height: NODE_HEIGHT });
 
-/** Owns the single lazy ELK worker used by a controller and rejects work on disposal. */
-export const createSystemMapLayoutEngine = (): SystemMapLayoutEngine => {
-	let elk: ElkInstance | undefined;
-	let initializing: Promise<ElkInstance> | undefined;
-	let disposed = false;
-	const pendingLayouts = new Set<{ reject: (reason?: unknown) => void }>();
+const convertFlowEdge = ({id, source, target}: FlowEdge): ElkExtendedEdge => 
+	({ id, sources: [source], targets: [target] });
 
-	const getElk = (): Promise<ElkInstance> => {
-		if (disposed) return Promise.reject(new Error("System map layout engine has been disposed"));
-		if (elk) return Promise.resolve(elk);
-		if (initializing) return initializing;
-
-		initializing = Promise.resolve()
-			.then(() => {
-				if (disposed) throw new Error("System map layout engine has been disposed");
-
-				const instance = new ELK({
-					algorithms: ["layered"],
-					workerFactory: () =>
-						new Worker(new URL("./elk.worker.ts", import.meta.url), { type: "module" }),
-				});
-				elk = instance;
-				return instance;
-			})
-			.finally(() => {
-				initializing = undefined;
-			});
-
-		return initializing;
-	};
-
-	return {
-		layout: async (graph, projection, positionInputs) => {
-			const instance = await getElk();
-			if (disposed) throw new Error("System map layout engine has been disposed");
-
-			return new Promise<LayoutResult>((resolve, reject) => {
-				const pending = { reject };
-				pendingLayouts.add(pending);
-				void layoutWithElk(instance, graph, projection, positionInputs).then(
-					(result) => {
-						pendingLayouts.delete(pending);
-						resolve(result);
-					},
-					(error: unknown) => {
-						pendingLayouts.delete(pending);
-						reject(error);
-					}
-				);
-			});
+const doElkLayout = async (elk: ElkInstance, nodes: readonly FlowNode[], edges: readonly FlowEdge[]) => {
+	return elk.layout({
+		id: "system-map",
+		layoutOptions: {
+			"elk.algorithm": "layered",
+			"elk.direction": "RIGHT",
+			"elk.spacing.nodeNode": "32",
+			"elk.layered.spacing.nodeNodeBetweenLayers": "100",
 		},
-		dispose: () => {
-			if (disposed) return;
-			disposed = true;
-			const error = new Error("System map layout engine has been disposed");
-			for (const pending of pendingLayouts) pending.reject(error);
-			pendingLayouts.clear();
-			elk?.terminateWorker();
-			elk = undefined;
-		},
-	};
-};
+		children: nodes.map(convertFlowNode),
+		edges: edges.map(convertFlowEdge),
+	});
+}
+
+/** Owns automatic placement and its worker. Svelte Flow owns edge paths and live dragging. */
+export class SystemMapLayoutEngine {
+	private elk?: ElkInstance;
+
+	async layout(nodes: readonly FlowNode[], edges: readonly FlowEdge[]) {
+		if (!this.elk) this.elk = new ELK(elkArgs);
+
+		const result = await doElkLayout(this.elk, nodes, edges);
+		const positions = new Map<string, Point>();
+		for (const node of result.children ?? []) {
+			const position = { x: node.x ?? 0, y: node.y ?? 0 };
+			positions.set(node.id, position);
+		}
+
+		return positions;
+	}
+
+	dispose() {
+		this.elk?.terminateWorker();
+		this.elk = undefined;
+	}
+}

@@ -1,5 +1,5 @@
 export { default as SystemMap } from "./SystemMap.svelte";
-export type { SystemMapHandle, SystemMapProps } from "./types";
+export type { SystemMapHandle } from "./types";
 
 export type {
 	GraphEntity,
