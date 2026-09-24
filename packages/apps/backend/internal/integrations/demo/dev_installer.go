@@ -15,34 +15,33 @@ import (
 	"github.com/rezible/rezible/pkg/execution"
 )
 
-func NewDevModeDataInstaller(
+func SeedDemoData(
+	ctx context.Context,
 	knowledge rez.KnowledgeGraphQueryService,
 	incidents rez.IncidentService,
 	retrospectives rez.RetrospectiveService,
-	integrations rez.IntegrationService,
 	systemAnalysis rez.SystemAnalysisService,
-) *DevModeDataInstaller {
-	return &DevModeDataInstaller{
+) error {
+	s := &dataSeeder{
 		knowledge,
 		incidents,
 		retrospectives,
-		integrations,
 		systemAnalysis,
 	}
+	return s.seedData(ctx)
 }
 
-type DevModeDataInstaller struct {
+type dataSeeder struct {
 	knowledge      rez.KnowledgeGraphQueryService
 	incidents      rez.IncidentService
 	retrospectives rez.RetrospectiveService
-	integrations   rez.IntegrationService
 	systemAnalysis rez.SystemAnalysisService
 }
 
-func (d *DevModeDataInstaller) InstallData(ctx context.Context) error {
-	inc, pollIncErr := d.installIntegrationAndWaitForIncident(ctx)
-	if pollIncErr != nil {
-		return pollIncErr
+func (d *dataSeeder) seedData(ctx context.Context) error {
+	inc, lookupErr := d.lookupIncident(ctx)
+	if lookupErr != nil {
+		return lookupErr
 	}
 
 	if milestonesErr := d.createMilestones(ctx, inc); milestonesErr != nil {
@@ -56,37 +55,7 @@ func (d *DevModeDataInstaller) InstallData(ctx context.Context) error {
 	return nil
 }
 
-func (d *DevModeDataInstaller) installIntegrationAndWaitForIncident(ctx context.Context) (*ent.Incident, error) {
-	if _, installErr := d.integrations.InstallNew(ctx, providerName, []byte("{}")); installErr != nil {
-		return nil, fmt.Errorf("install demo integration: %w", installErr)
-	}
-
-	for range 6 {
-		timer := time.NewTimer(250 * time.Millisecond)
-
-		select {
-		case <-ctx.Done():
-			if !timer.Stop() {
-				select {
-				case <-timer.C:
-				default:
-				}
-			}
-			return nil, ctx.Err()
-		case <-timer.C:
-		}
-
-		inc, lookupErr := d.lookupIncident(ctx)
-		if lookupErr != nil {
-			return nil, lookupErr
-		} else if inc != nil {
-			return inc, nil
-		}
-	}
-	return nil, fmt.Errorf("demo incident was not available after waiting")
-}
-
-func (d *DevModeDataInstaller) lookupAlias(ctx context.Context, resourceRef string) (*ent.KnowledgeSubjectAlias, error) {
+func (d *dataSeeder) lookupAlias(ctx context.Context, resourceRef string) (*ent.KnowledgeSubjectAlias, error) {
 	params := rez.ListKnowledgeSubjectAliasesParams{
 		Predicates: []predicate.KnowledgeSubjectAlias{
 			ksa.Provider(providerName),
@@ -105,7 +74,7 @@ func (d *DevModeDataInstaller) lookupAlias(ctx context.Context, resourceRef stri
 	return aliases.Data[0], nil
 }
 
-func (d *DevModeDataInstaller) lookupIncident(ctx context.Context) (*ent.Incident, error) {
+func (d *dataSeeder) lookupIncident(ctx context.Context) (*ent.Incident, error) {
 	alias, aliasErr := d.lookupAlias(ctx, "demo:incident:checkout-search-timeouts")
 	if aliasErr != nil {
 		return nil, aliasErr
@@ -117,7 +86,7 @@ func (d *DevModeDataInstaller) lookupIncident(ctx context.Context) (*ent.Inciden
 	return d.incidents.Get(ctx, incident.KnowledgeEntityID(*alias.EntityID))
 }
 
-func (d *DevModeDataInstaller) createMilestones(ctx context.Context, inc *ent.Incident) error {
+func (d *dataSeeder) createMilestones(ctx context.Context, inc *ent.Incident) error {
 	userID, ok := execution.GetContext(ctx).UserID()
 	if !ok {
 		return fmt.Errorf("execution user ID not found in context")
@@ -145,7 +114,7 @@ func (d *DevModeDataInstaller) createMilestones(ctx context.Context, inc *ent.In
 	return nil
 }
 
-func (d *DevModeDataInstaller) createRetrospective(ctx context.Context, inc *ent.Incident) error {
+func (d *dataSeeder) createRetrospective(ctx context.Context, inc *ent.Incident) error {
 	checkoutAlias, checkoutAliasErr := d.lookupAlias(ctx, "demo:component:checkout_service")
 	if checkoutAliasErr != nil {
 		return checkoutAliasErr
@@ -231,7 +200,7 @@ func (d *DevModeDataInstaller) createRetrospective(ctx context.Context, inc *ent
 	return nil
 }
 
-func (d *DevModeDataInstaller) positionEntity(ctx context.Context, entities []*ent.SystemAnalysisEntity, entityID uuid.UUID, posX, posY float64) error {
+func (d *dataSeeder) positionEntity(ctx context.Context, entities []*ent.SystemAnalysisEntity, entityID uuid.UUID, posX, posY float64) error {
 	var analysisEntity *ent.SystemAnalysisEntity
 	for _, candidate := range entities {
 		if candidate.KnowledgeEntityID == entityID {

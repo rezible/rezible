@@ -375,8 +375,7 @@ func makeDevelopmentAuthSession() *rez.UserAuthProviderSession {
 }
 
 func (a *Application) seedDevelopmentIdentity(ctx context.Context) error {
-	cfg := a.mustInvoke[rez.Config]()
-	if !cfg.HttpServer.Auth.EnableDevSkipMode {
+	if !a.mustInvoke[rez.Config]().HttpServer.Auth.EnableDevSkipMode {
 		return nil
 	}
 
@@ -441,13 +440,25 @@ func (a *Application) setupDemo(ctx context.Context) error {
 		if sessErr != nil {
 			return fmt.Errorf("seed development identity: %w", sessErr)
 		}
-		installer := demoprovider.NewDevModeDataInstaller(
+		ctx = execution.NewUserContext(ctx, sess)
+
+		installErr := a.With(func(i rez.IntegrationService) error {
+			_, installErr := i.InstallNew(ctx, "demo", []byte("{}"))
+			return installErr
+		})
+		if installErr != nil {
+			return fmt.Errorf("install demo integration: %w", installErr)
+		}
+
+		fmt.Printf("wait for integration data ingestion...\n")
+		time.Sleep(time.Second)
+
+		return demoprovider.SeedDemoData(
+			ctx,
 			a.mustInvoke[rez.KnowledgeGraphQueryService](),
 			a.mustInvoke[rez.IncidentService](),
 			a.mustInvoke[rez.RetrospectiveService](),
-			a.mustInvoke[rez.IntegrationService](),
 			a.mustInvoke[rez.SystemAnalysisService](),
 		)
-		return installer.InstallData(execution.NewUserContext(ctx, sess))
 	})
 }
