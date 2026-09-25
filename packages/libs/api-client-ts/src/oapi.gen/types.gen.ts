@@ -83,7 +83,6 @@ export type AddSystemAnalysisEntrySubjectAttributes = {
     knowledgeEntityId?: string;
     knowledgeEvidenceId?: string;
     knowledgeRelationshipId?: string;
-    normalizedEventId?: string;
     role: string;
 };
 
@@ -1918,11 +1917,11 @@ export type InvestigationEvidenceRevisionAttributes = {
 };
 
 export type InvestigationFinding = {
-    attributes: InvestigationFindingAttrs;
+    attributes: InvestigationFindingAttributes;
     id: string;
 };
 
-export type InvestigationFindingAttrs = {
+export type InvestigationFindingAttributes = {
     agentTurnId: string;
     body: string;
     createdAt: string;
@@ -1938,11 +1937,11 @@ export type InvestigationFindingAttrs = {
 };
 
 export type InvestigationHypothesis = {
-    attributes: InvestigationHypothesisAttrs;
+    attributes: InvestigationHypothesisAttributes;
     id: string;
 };
 
-export type InvestigationHypothesisAttrs = {
+export type InvestigationHypothesisAttributes = {
     agentTurnId: string;
     createdAt: string;
     hypothesisId: string;
@@ -2907,7 +2906,6 @@ export type SystemAnalysisEntrySubjectAttributes = {
     knowledgeEntityId?: string;
     knowledgeEvidenceId?: string;
     knowledgeRelationshipId?: string;
-    normalizedEventId?: string;
     role: string;
 };
 

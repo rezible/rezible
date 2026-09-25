@@ -5320,6 +5320,57 @@ func (_m *MockAlertService) EXPECT() *MockAlertService_Expecter {
 	return &MockAlertService_Expecter{mock: &_m.Mock}
 }
 
+// CloseInactiveAlertEpisodes provides a mock function for the type MockAlertService
+func (_mock *MockAlertService) CloseInactiveAlertEpisodes(context1 context.Context) error {
+	ret := _mock.Called(context1)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CloseInactiveAlertEpisodes")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context) error); ok {
+		r0 = returnFunc(context1)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// MockAlertService_CloseInactiveAlertEpisodes_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CloseInactiveAlertEpisodes'
+type MockAlertService_CloseInactiveAlertEpisodes_Call struct {
+	*mock.Call
+}
+
+// CloseInactiveAlertEpisodes is a helper method to define mock.On call
+//   - context1 context.Context
+func (_e *MockAlertService_Expecter) CloseInactiveAlertEpisodes(context1 interface{}) *MockAlertService_CloseInactiveAlertEpisodes_Call {
+	return &MockAlertService_CloseInactiveAlertEpisodes_Call{Call: _e.mock.On("CloseInactiveAlertEpisodes", context1)}
+}
+
+func (_c *MockAlertService_CloseInactiveAlertEpisodes_Call) Run(run func(context1 context.Context)) *MockAlertService_CloseInactiveAlertEpisodes_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		run(
+			arg0,
+		)
+	})
+	return _c
+}
+
+func (_c *MockAlertService_CloseInactiveAlertEpisodes_Call) Return(err error) *MockAlertService_CloseInactiveAlertEpisodes_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockAlertService_CloseInactiveAlertEpisodes_Call) RunAndReturn(run func(context1 context.Context) error) *MockAlertService_CloseInactiveAlertEpisodes_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetAlert provides a mock function for the type MockAlertService
 func (_mock *MockAlertService) GetAlert(context1 context.Context, uUID uuid.UUID) (*ent.AlertDefinition, error) {
 	ret := _mock.Called(context1, uUID)

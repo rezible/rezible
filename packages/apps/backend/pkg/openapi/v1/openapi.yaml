@@ -164,8 +164,6 @@ components:
           type: string
         knowledgeRelationshipId:
           type: string
-        normalizedEventId:
-          type: string
         role:
           type: string
       required:
@@ -4162,14 +4160,14 @@ components:
       additionalProperties: false
       properties:
         attributes:
-          $ref: "#/components/schemas/InvestigationFindingAttrs"
+          $ref: "#/components/schemas/InvestigationFindingAttributes"
         id:
           type: string
       required:
         - id
         - attributes
       type: object
-    InvestigationFindingAttrs:
+    InvestigationFindingAttributes:
       additionalProperties: false
       properties:
         agentTurnId:
@@ -4223,14 +4221,14 @@ components:
       additionalProperties: false
       properties:
         attributes:
-          $ref: "#/components/schemas/InvestigationHypothesisAttrs"
+          $ref: "#/components/schemas/InvestigationHypothesisAttributes"
         id:
           type: string
       required:
         - id
         - attributes
       type: object
-    InvestigationHypothesisAttrs:
+    InvestigationHypothesisAttributes:
       additionalProperties: false
       properties:
         agentTurnId:
@@ -4278,8 +4276,8 @@ components:
             - knowledge_evidence
           type: string
       required:
-        - kind
         - id
+        - kind
       type: object
     InvestigationReport:
       additionalProperties: false
@@ -6563,8 +6561,6 @@ components:
         knowledgeEvidenceId:
           type: string
         knowledgeRelationshipId:
-          type: string
-        normalizedEventId:
           type: string
         role:
           type: string
