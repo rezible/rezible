@@ -249,12 +249,26 @@ func InvestigationEvidenceRevisionFromEnt(revision *ent.InvestigationEvidenceRev
 
 var investigationsTags = []string{"Investigations"}
 
-var GetInvestigation = openapi.Operation{OperationID: "get-investigation", Method: http.MethodGet, Path: "/investigations/{id}", Summary: "Get Investigation", Tags: investigationsTags, Errors: ErrorCodes()}
+var GetInvestigation = openapi.Operation{
+	OperationID: "get-investigation",
+	Method:      http.MethodGet,
+	Path:        "/investigations/{id}",
+	Summary:     "Get Investigation",
+	Tags:        investigationsTags,
+	Errors:      ErrorCodes(),
+}
 
 type GetInvestigationRequest IdRequest
 type GetInvestigationResponse ItemResponse[Investigation]
 
-var GetInvestigationReport = openapi.Operation{OperationID: "get-investigation-report", Method: http.MethodGet, Path: "/investigations/{id}/report", Summary: "Get Investigation Report", Tags: investigationsTags, Errors: ErrorCodes()}
+var GetInvestigationReport = openapi.Operation{
+	OperationID: "get-investigation-report",
+	Method:      http.MethodGet,
+	Path:        "/investigations/{id}/report",
+	Summary:     "Get Investigation Report",
+	Tags:        investigationsTags,
+	Errors:      ErrorCodes(),
+}
 
 type GetInvestigationReportRequest struct {
 	Id        uuid.UUID `path:"id"`
@@ -262,7 +276,14 @@ type GetInvestigationReportRequest struct {
 }
 type GetInvestigationReportResponse ItemResponse[InvestigationReport]
 
-var ListInvestigationFindings = openapi.Operation{OperationID: "list-investigation-findings", Method: http.MethodGet, Path: "/investigations/{id}/findings", Summary: "List Investigation Findings", Tags: investigationsTags, Errors: ErrorCodes()}
+var ListInvestigationFindings = openapi.Operation{
+	OperationID: "list-investigation-findings",
+	Method:      http.MethodGet,
+	Path:        "/investigations/{id}/findings",
+	Summary:     "List Investigation Findings",
+	Tags:        investigationsTags,
+	Errors:      ErrorCodes(),
+}
 
 type ListInvestigationFindingsRequest struct {
 	Id uuid.UUID `path:"id"`
@@ -270,7 +291,14 @@ type ListInvestigationFindingsRequest struct {
 }
 type ListInvestigationFindingsResponse PaginatedResponse[InvestigationFinding]
 
-var GetInvestigationFinding = openapi.Operation{OperationID: "get-investigation-finding", Method: http.MethodGet, Path: "/investigations/{id}/findings/{versionId}", Summary: "Get Investigation Finding", Tags: investigationsTags, Errors: ErrorCodes()}
+var GetInvestigationFinding = openapi.Operation{
+	OperationID: "get-investigation-finding",
+	Method:      http.MethodGet,
+	Path:        "/investigations/{id}/findings/{versionId}",
+	Summary:     "Get Investigation Finding",
+	Tags:        investigationsTags,
+	Errors:      ErrorCodes(),
+}
 
 type GetInvestigationFindingRequest struct {
 	Id        uuid.UUID `path:"id"`
@@ -278,7 +306,14 @@ type GetInvestigationFindingRequest struct {
 }
 type GetInvestigationFindingResponse ItemResponse[InvestigationFinding]
 
-var ListInvestigationHypotheses = openapi.Operation{OperationID: "list-investigation-hypotheses", Method: http.MethodGet, Path: "/investigations/{id}/hypotheses", Summary: "List Investigation Hypotheses", Tags: investigationsTags, Errors: ErrorCodes()}
+var ListInvestigationHypotheses = openapi.Operation{
+	OperationID: "list-investigation-hypotheses",
+	Method:      http.MethodGet,
+	Path:        "/investigations/{id}/hypotheses",
+	Summary:     "List Investigation Hypotheses",
+	Tags:        investigationsTags,
+	Errors:      ErrorCodes(),
+}
 
 type ListInvestigationHypothesesRequest struct {
 	Id uuid.UUID `path:"id"`
@@ -286,7 +321,14 @@ type ListInvestigationHypothesesRequest struct {
 }
 type ListInvestigationHypothesesResponse PaginatedResponse[InvestigationHypothesis]
 
-var GetInvestigationHypothesis = openapi.Operation{OperationID: "get-investigation-hypothesis", Method: http.MethodGet, Path: "/investigations/{id}/hypotheses/{versionId}", Summary: "Get Investigation Hypothesis", Tags: investigationsTags, Errors: ErrorCodes()}
+var GetInvestigationHypothesis = openapi.Operation{
+	OperationID: "get-investigation-hypothesis",
+	Method:      http.MethodGet,
+	Path:        "/investigations/{id}/hypotheses/{versionId}",
+	Summary:     "Get Investigation Hypothesis",
+	Tags:        investigationsTags,
+	Errors:      ErrorCodes(),
+}
 
 type GetInvestigationHypothesisRequest struct {
 	Id        uuid.UUID `path:"id"`
@@ -294,7 +336,14 @@ type GetInvestigationHypothesisRequest struct {
 }
 type GetInvestigationHypothesisResponse ItemResponse[InvestigationHypothesis]
 
-var SubmitInvestigationUserInput = openapi.Operation{OperationID: "submit-investigation-user-input", Method: http.MethodPost, Path: "/investigations/{id}/user-inputs", Summary: "Submit Investigation User Input", Tags: investigationsTags, Errors: ErrorCodes(http.StatusConflict)}
+var SubmitInvestigationUserInput = openapi.Operation{
+	OperationID: "submit-investigation-user-input",
+	Method:      http.MethodPost,
+	Path:        "/investigations/{id}/user-inputs",
+	Summary:     "Submit Investigation User Input",
+	Tags:        investigationsTags,
+	Errors:      ErrorCodes(http.StatusConflict),
+}
 
 type SubmitInvestigationUserInputRequest struct {
 	Id   uuid.UUID `path:"id"`
@@ -305,7 +354,14 @@ type SubmitInvestigationUserInputRequest struct {
 }
 type SubmitInvestigationUserInputResponse ItemResponse[InvestigationUserInput]
 
-var ListInvestigationUserInputs = openapi.Operation{OperationID: "list-investigation-user-inputs", Method: http.MethodGet, Path: "/investigations/{id}/user-inputs", Summary: "List Investigation User Inputs", Tags: investigationsTags, Errors: ErrorCodes()}
+var ListInvestigationUserInputs = openapi.Operation{
+	OperationID: "list-investigation-user-inputs",
+	Method:      http.MethodGet,
+	Path:        "/investigations/{id}/user-inputs",
+	Summary:     "List Investigation User Inputs",
+	Tags:        investigationsTags,
+	Errors:      ErrorCodes(),
+}
 
 type ListInvestigationUserInputsRequest struct {
 	Id uuid.UUID `path:"id"`
@@ -313,7 +369,14 @@ type ListInvestigationUserInputsRequest struct {
 }
 type ListInvestigationUserInputsResponse PaginatedResponse[InvestigationUserInput]
 
-var ListInvestigationEvidenceRevisions = openapi.Operation{OperationID: "list-investigation-evidence-revisions", Method: http.MethodGet, Path: "/investigations/{id}/evidence-revisions", Summary: "List Investigation Evidence Revisions", Tags: investigationsTags, Errors: ErrorCodes()}
+var ListInvestigationEvidenceRevisions = openapi.Operation{
+	OperationID: "list-investigation-evidence-revisions",
+	Method:      http.MethodGet,
+	Path:        "/investigations/{id}/evidence-revisions",
+	Summary:     "List Investigation Evidence Revisions",
+	Tags:        investigationsTags,
+	Errors:      ErrorCodes(),
+}
 
 type ListInvestigationEvidenceRevisionsRequest struct {
 	Id uuid.UUID `path:"id"`
