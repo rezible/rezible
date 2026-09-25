@@ -12,8 +12,6 @@ import (
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/situation"
 	sog "github.com/rezible/rezible/ent/situationobservationgroup"
-	sae "github.com/rezible/rezible/ent/systemanalysisentry"
-	saes "github.com/rezible/rezible/ent/systemanalysisentrysubject"
 )
 
 type EventsService struct {
@@ -59,9 +57,7 @@ func (s *EventsService) ListEvents(ctx context.Context, params rez.ListEventsPar
 		query.Where(ne.HasSituationObservationGroupsWith(sog.HasSituationWith(situation.ID(params.SituationID))))
 	}
 	if params.AnalysisID != uuid.Nil {
-		query.Where(ne.HasAnalysisEntrySubjectsWith(
-			saes.HasEntryWith(sae.AnalysisID(params.AnalysisID)),
-		))
+		// TODO
 	}
 	if params.WithAnnotations {
 		//query.WithAnnotations(func(q *ent.EventAnnotationQuery) {

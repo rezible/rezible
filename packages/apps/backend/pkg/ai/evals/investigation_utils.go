@@ -4,20 +4,16 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"sort"
 	"strings"
 	"time"
 
-	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/agentturn"
 	"github.com/rezible/rezible/ent/investigationreport"
-	kne "github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/situationinvestigation"
-	sae "github.com/rezible/rezible/ent/systemanalysisentity"
-	saentry "github.com/rezible/rezible/ent/systemanalysisentry"
-	saentries "github.com/rezible/rezible/ent/systemanalysisentrysubject"
-	sar "github.com/rezible/rezible/ent/systemanalysisrelationship"
+	"github.com/rezible/rezible/ent/systemanalysisentry"
 	rezai "github.com/rezible/rezible/pkg/ai"
 )
 
@@ -26,35 +22,34 @@ type investigationFixture struct {
 	situationID uuid.UUID
 }
 
-type analysisState struct {
-	includedEntityIDs       map[uuid.UUID]struct{}
-	includedRelationshipIDs map[uuid.UUID]struct{}
-	findingEntityIDs        map[uuid.UUID]struct{}
-	findingRelationshipIDs  map[uuid.UUID]struct{}
-	findingEvidenceIDs      map[uuid.UUID]struct{}
-	findings                []subjectObservation
-}
-
-type subjectObservation struct {
-	DisplayName string    `json:"displayName"`
-	ID          uuid.UUID `json:"id"`
-}
-
 func seedBaseInvestigation(ctx context.Context, client *ent.Client, referenceTime time.Time) (investigationFixture, rezai.EvalScenarioSeed, error) {
-	situationEntity, entityErr := client.KnowledgeEntity.Create().
-		SetCategory(kne.CategoryEvent).
-		SetKind("situation").
-		Save(ctx)
-	if entityErr != nil {
-		return investigationFixture{}, rezai.EvalScenarioSeed{}, fmt.Errorf("create situation knowledge entity: %w", entityErr)
-	}
-
 	description := fmt.Sprintf(
 		"The production Checkout API 5xx error rate exceeded its warning threshold at %s.",
 		referenceTime.Format(time.RFC3339),
 	)
+	createEvent := client.NormalizedEvent.Create().
+		SetProvider("evaluation").
+		SetProviderNamespace("investigation").
+		SetProviderResourceRef("insufficient-context-" + uuid.NewString()).
+		SetKind("alert").
+		SetProviderEventSource("evaluation").
+		SetProviderEventRef(uuid.NewString()).
+		SetAttributes([]byte(`{"message":"checkout errors increased"}`)).
+		SetOccurredAt(referenceTime).
+		SetReceivedAt(referenceTime)
+	event, eventErr := createEvent.Save(ctx)
+	if eventErr != nil {
+		return investigationFixture{}, rezai.EvalScenarioSeed{}, fmt.Errorf("create normalized event: %w", eventErr)
+	}
+
+	createEvidence := client.KnowledgeEvidence.Create().
+		SetEventID(event.ID)
+	evidence, evidenceErr := createEvidence.Save(ctx)
+	if evidenceErr != nil {
+		return investigationFixture{}, rezai.EvalScenarioSeed{}, fmt.Errorf("create evidence: %w", eventErr)
+	}
+
 	createSituation := client.Situation.Create().
-		SetKnowledgeEntityID(situationEntity.ID).
 		SetTitle("Checkout API degradation").
 		SetSummary(description).
 		SetOpenedAt(referenceTime)
@@ -64,25 +59,44 @@ func seedBaseInvestigation(ctx context.Context, client *ent.Client, referenceTim
 	}
 
 	createAnalysis := client.SystemAnalysis.Create().
-		SetSubjectEntityID(situationEntity.ID).
 		SetReferenceTime(referenceTime)
 	analysis, analysisErr := createAnalysis.Save(ctx)
 	if analysisErr != nil {
 		return investigationFixture{}, rezai.EvalScenarioSeed{}, fmt.Errorf("create system analysis: %w", analysisErr)
 	}
 
-	createAnalysisEntity := client.SystemAnalysisEntity.Create().
+	createGroup := client.SituationObservationGroup.Create().
+		SetSituationID(createdSituation.ID).
+		SetTitle("Initial normalized event").
+		AddEventIDs(event.ID)
+	if groupErr := createGroup.Exec(ctx); groupErr != nil {
+		return investigationFixture{}, rezai.EvalScenarioSeed{}, fmt.Errorf("create situation evidence group: %w", groupErr)
+	}
+	createAnalysisEntry := client.SystemAnalysisEntry.Create().
 		SetAnalysisID(analysis.ID).
-		SetKnowledgeEntityID(situationEntity.ID)
-	if analysisEntityErr := createAnalysisEntity.Exec(ctx); analysisEntityErr != nil {
-		return investigationFixture{}, rezai.EvalScenarioSeed{}, fmt.Errorf("include situation entity: %w", analysisEntityErr)
+		SetReference("normalized_event:" + event.ID.String()).
+		SetKind(systemanalysisentry.KindObservation).
+		SetOccurredAt(referenceTime).
+		SetSequence(1).
+		SetTitle("alert event").
+		SetBody("provider_event_source: evaluation\nprovider_event_ref: " + event.ProviderEventRef)
+	entry, entryErr := createAnalysisEntry.Save(ctx)
+	if entryErr != nil {
+		return investigationFixture{}, rezai.EvalScenarioSeed{}, fmt.Errorf("create system analysis observation: %w", entryErr)
+	}
+	createEntrySubject := client.SystemAnalysisEntrySubject.Create().
+		SetEntryID(entry.ID).
+		SetRole("evidence").
+		SetKnowledgeEvidence(evidence)
+	if subjectErr := createEntrySubject.Exec(ctx); subjectErr != nil {
+		return investigationFixture{}, rezai.EvalScenarioSeed{}, fmt.Errorf("attach source event to system analysis: %w", subjectErr)
 	}
 
 	fixture := investigationFixture{analysisID: analysis.ID, situationID: createdSituation.ID}
 	investigationID := uuid.New()
 
 	input := rezai.InvestigationAgentSessionInput{
-		Query: new("Assess the operational situation."),
+		Query: "Assess the operational situation.",
 	}
 	raw, err := json.Marshal(input)
 	if err != nil {
@@ -103,7 +117,7 @@ func seedBaseInvestigation(ctx context.Context, client *ent.Client, referenceTim
 	if investigationErr != nil {
 		return fixture, rezai.EvalScenarioSeed{}, investigationErr
 	}
-	createSituationInvestigation := client.SituationInvestigation.Create().SetSituationID(fixture.situationID).SetInvestigationID(createdInvestigation.ID).SetRequestedRevision(1).SetRequestedTurnID(turn.ID)
+	createSituationInvestigation := client.SituationInvestigation.Create().SetSituationID(fixture.situationID).SetInvestigationID(createdInvestigation.ID)
 	if joinErr := createSituationInvestigation.Exec(ctx); joinErr != nil {
 		return fixture, rezai.EvalScenarioSeed{}, joinErr
 	}
@@ -117,15 +131,31 @@ func loadSituationInvestigationReport(ctx context.Context, client *ent.Client, s
 	if queryErr != nil {
 		return nil, check, queryErr
 	}
-	if inv.CompletedRevision == 0 {
-		check.Summary = "No investigation report was accepted."
-		return nil, check, nil
-	}
-	reportQuery := client.InvestigationReport.Query().Where(investigationreport.InvestigationID(inv.Edges.Investigation.ID)).Order(investigationreport.ByCreatedAt(sql.OrderDesc()), investigationreport.ByID(sql.OrderDesc()))
-	report, reportErr := reportQuery.First(ctx)
+	reportQuery := client.InvestigationReport.Query().Where(investigationreport.InvestigationID(inv.Edges.Investigation.ID)).WithAgentTurn()
+	reports, reportErr := reportQuery.All(ctx)
 	if reportErr != nil {
 		return nil, check, reportErr
 	}
+	eligible := make([]*ent.InvestigationReport, 0, len(reports))
+	for _, report := range reports {
+		if report.Edges.AgentTurn != nil && (report.Edges.AgentTurn.Status == agentturn.StatusRunning || report.Edges.AgentTurn.Status == agentturn.StatusCompleted) {
+			eligible = append(eligible, report)
+		}
+	}
+	sort.Slice(eligible, func(i, j int) bool {
+		if eligible[i].Edges.AgentTurn.Sequence != eligible[j].Edges.AgentTurn.Sequence {
+			return eligible[i].Edges.AgentTurn.Sequence > eligible[j].Edges.AgentTurn.Sequence
+		}
+		if !eligible[i].CreatedAt.Equal(eligible[j].CreatedAt) {
+			return eligible[i].CreatedAt.After(eligible[j].CreatedAt)
+		}
+		return eligible[i].ID.String() > eligible[j].ID.String()
+	})
+	if len(eligible) == 0 {
+		check.Summary = "No eligible investigation report was published."
+		return nil, check, nil
+	}
+	report := eligible[0]
 	check.Passed = true
 	check.Summary = "The investigation report was accepted."
 	return report, check, nil
@@ -133,21 +163,6 @@ func loadSituationInvestigationReport(ctx context.Context, client *ent.Client, s
 
 func normalizeReport(report *ent.InvestigationReport) {
 	report.Text = strings.TrimSpace(report.Text)
-	report.LikelyCause = strings.TrimSpace(report.LikelyCause)
-	report.BestNextStep = strings.TrimSpace(report.BestNextStep)
-	report.Limitations = nonblankStrings(report.Limitations)
-	report.SuggestedChecks = nonblankStrings(report.SuggestedChecks)
-	report.RecommendedActions = nonblankStrings(report.RecommendedActions)
-}
-
-func nonblankStrings(values []string) []string {
-	trimmed := make([]string, 0, len(values))
-	for _, value := range values {
-		if value = strings.TrimSpace(value); value != "" {
-			trimmed = append(trimmed, value)
-		}
-	}
-	return trimmed
 }
 
 func reportTextCheck(report *ent.InvestigationReport) rezai.EvalCheck {
@@ -157,75 +172,4 @@ func reportTextCheck(report *ent.InvestigationReport) rezai.EvalCheck {
 		summary = "The investigation report text is blank."
 	}
 	return rezai.EvalCheck{ID: "report_text", Passed: passed, Summary: summary, Expected: "nonblank text", Observed: report.Text}
-}
-
-func nextActionCheck(report *ent.InvestigationReport) rezai.EvalCheck {
-	observed := map[string]any{
-		"suggestedChecks":    report.SuggestedChecks,
-		"recommendedActions": report.RecommendedActions,
-		"bestNextStep":       report.BestNextStep,
-	}
-	passed := len(report.SuggestedChecks)+len(report.RecommendedActions) > 0 || report.BestNextStep != ""
-	summary := "The investigation report proposes a next check or action."
-	if !passed {
-		summary = "The investigation report proposes no nonblank next check or action."
-	}
-	return rezai.EvalCheck{ID: "next_action", Passed: passed, Summary: summary, Expected: "at least one nonblank check or action", Observed: observed}
-}
-
-func queryAnalysisState(ctx context.Context, client *ent.Client, analysisID uuid.UUID) (analysisState, error) {
-	state := analysisState{
-		includedEntityIDs:       make(map[uuid.UUID]struct{}),
-		includedRelationshipIDs: make(map[uuid.UUID]struct{}),
-		findingEntityIDs:        make(map[uuid.UUID]struct{}),
-		findingRelationshipIDs:  make(map[uuid.UUID]struct{}),
-		findingEvidenceIDs:      make(map[uuid.UUID]struct{}),
-	}
-
-	entitiesQuery := client.SystemAnalysisEntity.Query().Where(sae.AnalysisID(analysisID))
-	includedEntities, entitiesErr := entitiesQuery.All(ctx)
-	if entitiesErr != nil {
-		return analysisState{}, fmt.Errorf("query included analysis entities: %w", entitiesErr)
-	}
-	for _, included := range includedEntities {
-		state.includedEntityIDs[included.KnowledgeEntityID] = struct{}{}
-	}
-
-	relationshipsQuery := client.SystemAnalysisRelationship.Query().Where(sar.AnalysisID(analysisID))
-	includedRelationships, relationshipsErr := relationshipsQuery.All(ctx)
-	if relationshipsErr != nil {
-		return analysisState{}, fmt.Errorf("query included analysis relationships: %w", relationshipsErr)
-	}
-	for _, included := range includedRelationships {
-		state.includedRelationshipIDs[included.KnowledgeRelationshipID] = struct{}{}
-	}
-
-	findingsQuery := client.SystemAnalysisEntry.Query().Where(
-		saentry.AnalysisID(analysisID),
-		saentry.KindEQ(saentry.KindFinding),
-	)
-	findings, findingsErr := findingsQuery.All(ctx)
-	if findingsErr != nil {
-		return analysisState{}, fmt.Errorf("query analysis findings: %w", findingsErr)
-	}
-	for _, finding := range findings {
-		state.findings = append(state.findings, subjectObservation{DisplayName: finding.Title, ID: finding.ID})
-		subjectsQuery := client.SystemAnalysisEntrySubject.Query().Where(saentries.EntryID(finding.ID))
-		subjects, subjectsErr := subjectsQuery.All(ctx)
-		if subjectsErr != nil {
-			return analysisState{}, fmt.Errorf("query subjects for finding %s: %w", finding.ID, subjectsErr)
-		}
-		for _, subject := range subjects {
-			if subject.KnowledgeEntityID != nil {
-				state.findingEntityIDs[*subject.KnowledgeEntityID] = struct{}{}
-			}
-			if subject.KnowledgeRelationshipID != nil {
-				state.findingRelationshipIDs[*subject.KnowledgeRelationshipID] = struct{}{}
-			}
-			if subject.KnowledgeEvidenceID != nil {
-				state.findingEvidenceIDs[*subject.KnowledgeEvidenceID] = struct{}{}
-			}
-		}
-	}
-	return state, nil
 }

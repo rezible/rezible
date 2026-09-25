@@ -17,9 +17,11 @@ import (
 	"github.com/rezible/rezible/ent/agentsession"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/investigation"
+	"github.com/rezible/rezible/ent/investigationevidencerevision"
 	"github.com/rezible/rezible/ent/investigationfinding"
 	"github.com/rezible/rezible/ent/investigationhypothesis"
 	"github.com/rezible/rezible/ent/investigationreport"
+	"github.com/rezible/rezible/ent/investigationuserinput"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/situationinvestigation"
 	"github.com/rezible/rezible/ent/systemanalysis"
@@ -29,18 +31,20 @@ import (
 // InvestigationQuery is the builder for querying Investigation entities.
 type InvestigationQuery struct {
 	config
-	ctx                *QueryContext
-	order              []investigation.OrderOption
-	inters             []Interceptor
-	predicates         []predicate.Investigation
-	withTenant         *TenantQuery
-	withSystemAnalysis *SystemAnalysisQuery
-	withAgentSession   *AgentSessionQuery
-	withSituations     *SituationInvestigationQuery
-	withHypotheses     *InvestigationHypothesisQuery
-	withFindings       *InvestigationFindingQuery
-	withReport         *InvestigationReportQuery
-	modifiers          []func(*sql.Selector)
+	ctx                   *QueryContext
+	order                 []investigation.OrderOption
+	inters                []Interceptor
+	predicates            []predicate.Investigation
+	withTenant            *TenantQuery
+	withAgentSession      *AgentSessionQuery
+	withSystemAnalysis    *SystemAnalysisQuery
+	withSituations        *SituationInvestigationQuery
+	withUserInputs        *InvestigationUserInputQuery
+	withEvidenceRevisions *InvestigationEvidenceRevisionQuery
+	withHypotheses        *InvestigationHypothesisQuery
+	withFindings          *InvestigationFindingQuery
+	withReports           *InvestigationReportQuery
+	modifiers             []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -102,31 +106,6 @@ func (_q *InvestigationQuery) QueryTenant() *TenantQuery {
 	return query
 }
 
-// QuerySystemAnalysis chains the current query on the "system_analysis" edge.
-func (_q *InvestigationQuery) QuerySystemAnalysis() *SystemAnalysisQuery {
-	query := (&SystemAnalysisClient{config: _q.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := _q.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := _q.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(investigation.Table, investigation.FieldID, selector),
-			sqlgraph.To(systemanalysis.Table, systemanalysis.FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, true, investigation.SystemAnalysisTable, investigation.SystemAnalysisColumn),
-		)
-		schemaConfig := _q.schemaConfig
-		step.To.Schema = schemaConfig.SystemAnalysis
-		step.Edge.Schema = schemaConfig.Investigation
-		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
 // QueryAgentSession chains the current query on the "agent_session" edge.
 func (_q *InvestigationQuery) QueryAgentSession() *AgentSessionQuery {
 	query := (&AgentSessionClient{config: _q.config}).Query()
@@ -145,6 +124,31 @@ func (_q *InvestigationQuery) QueryAgentSession() *AgentSessionQuery {
 		)
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.AgentSession
+		step.Edge.Schema = schemaConfig.Investigation
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QuerySystemAnalysis chains the current query on the "system_analysis" edge.
+func (_q *InvestigationQuery) QuerySystemAnalysis() *SystemAnalysisQuery {
+	query := (&SystemAnalysisClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(investigation.Table, investigation.FieldID, selector),
+			sqlgraph.To(systemanalysis.Table, systemanalysis.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, investigation.SystemAnalysisTable, investigation.SystemAnalysisColumn),
+		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.SystemAnalysis
 		step.Edge.Schema = schemaConfig.Investigation
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -171,6 +175,56 @@ func (_q *InvestigationQuery) QuerySituations() *SituationInvestigationQuery {
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.SituationInvestigation
 		step.Edge.Schema = schemaConfig.SituationInvestigation
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryUserInputs chains the current query on the "user_inputs" edge.
+func (_q *InvestigationQuery) QueryUserInputs() *InvestigationUserInputQuery {
+	query := (&InvestigationUserInputClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(investigation.Table, investigation.FieldID, selector),
+			sqlgraph.To(investigationuserinput.Table, investigationuserinput.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, investigation.UserInputsTable, investigation.UserInputsColumn),
+		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.InvestigationUserInput
+		step.Edge.Schema = schemaConfig.InvestigationUserInput
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryEvidenceRevisions chains the current query on the "evidence_revisions" edge.
+func (_q *InvestigationQuery) QueryEvidenceRevisions() *InvestigationEvidenceRevisionQuery {
+	query := (&InvestigationEvidenceRevisionClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(investigation.Table, investigation.FieldID, selector),
+			sqlgraph.To(investigationevidencerevision.Table, investigationevidencerevision.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, investigation.EvidenceRevisionsTable, investigation.EvidenceRevisionsColumn),
+		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.InvestigationEvidenceRevision
+		step.Edge.Schema = schemaConfig.InvestigationEvidenceRevision
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -227,8 +281,8 @@ func (_q *InvestigationQuery) QueryFindings() *InvestigationFindingQuery {
 	return query
 }
 
-// QueryReport chains the current query on the "report" edge.
-func (_q *InvestigationQuery) QueryReport() *InvestigationReportQuery {
+// QueryReports chains the current query on the "reports" edge.
+func (_q *InvestigationQuery) QueryReports() *InvestigationReportQuery {
 	query := (&InvestigationReportClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
@@ -241,7 +295,7 @@ func (_q *InvestigationQuery) QueryReport() *InvestigationReportQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(investigation.Table, investigation.FieldID, selector),
 			sqlgraph.To(investigationreport.Table, investigationreport.FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, false, investigation.ReportTable, investigation.ReportColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, investigation.ReportsTable, investigation.ReportsColumn),
 		)
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.InvestigationReport
@@ -439,18 +493,20 @@ func (_q *InvestigationQuery) Clone() *InvestigationQuery {
 		return nil
 	}
 	return &InvestigationQuery{
-		config:             _q.config,
-		ctx:                _q.ctx.Clone(),
-		order:              append([]investigation.OrderOption{}, _q.order...),
-		inters:             append([]Interceptor{}, _q.inters...),
-		predicates:         append([]predicate.Investigation{}, _q.predicates...),
-		withTenant:         _q.withTenant.Clone(),
-		withSystemAnalysis: _q.withSystemAnalysis.Clone(),
-		withAgentSession:   _q.withAgentSession.Clone(),
-		withSituations:     _q.withSituations.Clone(),
-		withHypotheses:     _q.withHypotheses.Clone(),
-		withFindings:       _q.withFindings.Clone(),
-		withReport:         _q.withReport.Clone(),
+		config:                _q.config,
+		ctx:                   _q.ctx.Clone(),
+		order:                 append([]investigation.OrderOption{}, _q.order...),
+		inters:                append([]Interceptor{}, _q.inters...),
+		predicates:            append([]predicate.Investigation{}, _q.predicates...),
+		withTenant:            _q.withTenant.Clone(),
+		withAgentSession:      _q.withAgentSession.Clone(),
+		withSystemAnalysis:    _q.withSystemAnalysis.Clone(),
+		withSituations:        _q.withSituations.Clone(),
+		withUserInputs:        _q.withUserInputs.Clone(),
+		withEvidenceRevisions: _q.withEvidenceRevisions.Clone(),
+		withHypotheses:        _q.withHypotheses.Clone(),
+		withFindings:          _q.withFindings.Clone(),
+		withReports:           _q.withReports.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
 		path:      _q.path,
@@ -469,17 +525,6 @@ func (_q *InvestigationQuery) WithTenant(opts ...func(*TenantQuery)) *Investigat
 	return _q
 }
 
-// WithSystemAnalysis tells the query-builder to eager-load the nodes that are connected to
-// the "system_analysis" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *InvestigationQuery) WithSystemAnalysis(opts ...func(*SystemAnalysisQuery)) *InvestigationQuery {
-	query := (&SystemAnalysisClient{config: _q.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	_q.withSystemAnalysis = query
-	return _q
-}
-
 // WithAgentSession tells the query-builder to eager-load the nodes that are connected to
 // the "agent_session" edge. The optional arguments are used to configure the query builder of the edge.
 func (_q *InvestigationQuery) WithAgentSession(opts ...func(*AgentSessionQuery)) *InvestigationQuery {
@@ -491,6 +536,17 @@ func (_q *InvestigationQuery) WithAgentSession(opts ...func(*AgentSessionQuery))
 	return _q
 }
 
+// WithSystemAnalysis tells the query-builder to eager-load the nodes that are connected to
+// the "system_analysis" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *InvestigationQuery) WithSystemAnalysis(opts ...func(*SystemAnalysisQuery)) *InvestigationQuery {
+	query := (&SystemAnalysisClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withSystemAnalysis = query
+	return _q
+}
+
 // WithSituations tells the query-builder to eager-load the nodes that are connected to
 // the "situations" edge. The optional arguments are used to configure the query builder of the edge.
 func (_q *InvestigationQuery) WithSituations(opts ...func(*SituationInvestigationQuery)) *InvestigationQuery {
@@ -499,6 +555,28 @@ func (_q *InvestigationQuery) WithSituations(opts ...func(*SituationInvestigatio
 		opt(query)
 	}
 	_q.withSituations = query
+	return _q
+}
+
+// WithUserInputs tells the query-builder to eager-load the nodes that are connected to
+// the "user_inputs" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *InvestigationQuery) WithUserInputs(opts ...func(*InvestigationUserInputQuery)) *InvestigationQuery {
+	query := (&InvestigationUserInputClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withUserInputs = query
+	return _q
+}
+
+// WithEvidenceRevisions tells the query-builder to eager-load the nodes that are connected to
+// the "evidence_revisions" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *InvestigationQuery) WithEvidenceRevisions(opts ...func(*InvestigationEvidenceRevisionQuery)) *InvestigationQuery {
+	query := (&InvestigationEvidenceRevisionClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withEvidenceRevisions = query
 	return _q
 }
 
@@ -524,14 +602,14 @@ func (_q *InvestigationQuery) WithFindings(opts ...func(*InvestigationFindingQue
 	return _q
 }
 
-// WithReport tells the query-builder to eager-load the nodes that are connected to
-// the "report" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *InvestigationQuery) WithReport(opts ...func(*InvestigationReportQuery)) *InvestigationQuery {
+// WithReports tells the query-builder to eager-load the nodes that are connected to
+// the "reports" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *InvestigationQuery) WithReports(opts ...func(*InvestigationReportQuery)) *InvestigationQuery {
 	query := (&InvestigationReportClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	_q.withReport = query
+	_q.withReports = query
 	return _q
 }
 
@@ -619,14 +697,16 @@ func (_q *InvestigationQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([
 	var (
 		nodes       = []*Investigation{}
 		_spec       = _q.querySpec()
-		loadedTypes = [7]bool{
+		loadedTypes = [9]bool{
 			_q.withTenant != nil,
-			_q.withSystemAnalysis != nil,
 			_q.withAgentSession != nil,
+			_q.withSystemAnalysis != nil,
 			_q.withSituations != nil,
+			_q.withUserInputs != nil,
+			_q.withEvidenceRevisions != nil,
 			_q.withHypotheses != nil,
 			_q.withFindings != nil,
-			_q.withReport != nil,
+			_q.withReports != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -658,15 +738,15 @@ func (_q *InvestigationQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([
 			return nil, err
 		}
 	}
-	if query := _q.withSystemAnalysis; query != nil {
-		if err := _q.loadSystemAnalysis(ctx, query, nodes, nil,
-			func(n *Investigation, e *SystemAnalysis) { n.Edges.SystemAnalysis = e }); err != nil {
-			return nil, err
-		}
-	}
 	if query := _q.withAgentSession; query != nil {
 		if err := _q.loadAgentSession(ctx, query, nodes, nil,
 			func(n *Investigation, e *AgentSession) { n.Edges.AgentSession = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withSystemAnalysis; query != nil {
+		if err := _q.loadSystemAnalysis(ctx, query, nodes, nil,
+			func(n *Investigation, e *SystemAnalysis) { n.Edges.SystemAnalysis = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -674,6 +754,22 @@ func (_q *InvestigationQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([
 		if err := _q.loadSituations(ctx, query, nodes,
 			func(n *Investigation) { n.Edges.Situations = []*SituationInvestigation{} },
 			func(n *Investigation, e *SituationInvestigation) { n.Edges.Situations = append(n.Edges.Situations, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withUserInputs; query != nil {
+		if err := _q.loadUserInputs(ctx, query, nodes,
+			func(n *Investigation) { n.Edges.UserInputs = []*InvestigationUserInput{} },
+			func(n *Investigation, e *InvestigationUserInput) { n.Edges.UserInputs = append(n.Edges.UserInputs, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withEvidenceRevisions; query != nil {
+		if err := _q.loadEvidenceRevisions(ctx, query, nodes,
+			func(n *Investigation) { n.Edges.EvidenceRevisions = []*InvestigationEvidenceRevision{} },
+			func(n *Investigation, e *InvestigationEvidenceRevision) {
+				n.Edges.EvidenceRevisions = append(n.Edges.EvidenceRevisions, e)
+			}); err != nil {
 			return nil, err
 		}
 	}
@@ -691,9 +787,10 @@ func (_q *InvestigationQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([
 			return nil, err
 		}
 	}
-	if query := _q.withReport; query != nil {
-		if err := _q.loadReport(ctx, query, nodes, nil,
-			func(n *Investigation, e *InvestigationReport) { n.Edges.Report = e }); err != nil {
+	if query := _q.withReports; query != nil {
+		if err := _q.loadReports(ctx, query, nodes,
+			func(n *Investigation) { n.Edges.Reports = []*InvestigationReport{} },
+			func(n *Investigation, e *InvestigationReport) { n.Edges.Reports = append(n.Edges.Reports, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -722,35 +819,6 @@ func (_q *InvestigationQuery) loadTenant(ctx context.Context, query *TenantQuery
 		nodes, ok := nodeids[n.ID]
 		if !ok {
 			return fmt.Errorf(`unexpected foreign-key "tenant_id" returned %v`, n.ID)
-		}
-		for i := range nodes {
-			assign(nodes[i], n)
-		}
-	}
-	return nil
-}
-func (_q *InvestigationQuery) loadSystemAnalysis(ctx context.Context, query *SystemAnalysisQuery, nodes []*Investigation, init func(*Investigation), assign func(*Investigation, *SystemAnalysis)) error {
-	ids := make([]uuid.UUID, 0, len(nodes))
-	nodeids := make(map[uuid.UUID][]*Investigation)
-	for i := range nodes {
-		fk := nodes[i].SystemAnalysisID
-		if _, ok := nodeids[fk]; !ok {
-			ids = append(ids, fk)
-		}
-		nodeids[fk] = append(nodeids[fk], nodes[i])
-	}
-	if len(ids) == 0 {
-		return nil
-	}
-	query.Where(systemanalysis.IDIn(ids...))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		nodes, ok := nodeids[n.ID]
-		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "system_analysis_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -787,6 +855,35 @@ func (_q *InvestigationQuery) loadAgentSession(ctx context.Context, query *Agent
 	}
 	return nil
 }
+func (_q *InvestigationQuery) loadSystemAnalysis(ctx context.Context, query *SystemAnalysisQuery, nodes []*Investigation, init func(*Investigation), assign func(*Investigation, *SystemAnalysis)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*Investigation)
+	for i := range nodes {
+		fk := nodes[i].SystemAnalysisID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(systemanalysis.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "system_analysis_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
 func (_q *InvestigationQuery) loadSituations(ctx context.Context, query *SituationInvestigationQuery, nodes []*Investigation, init func(*Investigation), assign func(*Investigation, *SituationInvestigation)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*Investigation)
@@ -802,6 +899,66 @@ func (_q *InvestigationQuery) loadSituations(ctx context.Context, query *Situati
 	}
 	query.Where(predicate.SituationInvestigation(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(investigation.SituationsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.InvestigationID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "investigation_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *InvestigationQuery) loadUserInputs(ctx context.Context, query *InvestigationUserInputQuery, nodes []*Investigation, init func(*Investigation), assign func(*Investigation, *InvestigationUserInput)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Investigation)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(investigationuserinput.FieldInvestigationID)
+	}
+	query.Where(predicate.InvestigationUserInput(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(investigation.UserInputsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.InvestigationID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "investigation_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *InvestigationQuery) loadEvidenceRevisions(ctx context.Context, query *InvestigationEvidenceRevisionQuery, nodes []*Investigation, init func(*Investigation), assign func(*Investigation, *InvestigationEvidenceRevision)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Investigation)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(investigationevidencerevision.FieldInvestigationID)
+	}
+	query.Where(predicate.InvestigationEvidenceRevision(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(investigation.EvidenceRevisionsColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {
@@ -877,18 +1034,21 @@ func (_q *InvestigationQuery) loadFindings(ctx context.Context, query *Investiga
 	}
 	return nil
 }
-func (_q *InvestigationQuery) loadReport(ctx context.Context, query *InvestigationReportQuery, nodes []*Investigation, init func(*Investigation), assign func(*Investigation, *InvestigationReport)) error {
+func (_q *InvestigationQuery) loadReports(ctx context.Context, query *InvestigationReportQuery, nodes []*Investigation, init func(*Investigation), assign func(*Investigation, *InvestigationReport)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*Investigation)
 	for i := range nodes {
 		fks = append(fks, nodes[i].ID)
 		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
 	}
 	if len(query.ctx.Fields) > 0 {
 		query.ctx.AppendFieldOnce(investigationreport.FieldInvestigationID)
 	}
 	query.Where(predicate.InvestigationReport(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(investigation.ReportColumn), fks...))
+		s.Where(sql.InValues(s.C(investigation.ReportsColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {
@@ -938,11 +1098,11 @@ func (_q *InvestigationQuery) querySpec() *sqlgraph.QuerySpec {
 		if _q.withTenant != nil {
 			_spec.Node.AddColumnOnce(investigation.FieldTenantID)
 		}
-		if _q.withSystemAnalysis != nil {
-			_spec.Node.AddColumnOnce(investigation.FieldSystemAnalysisID)
-		}
 		if _q.withAgentSession != nil {
 			_spec.Node.AddColumnOnce(investigation.FieldAgentSessionID)
+		}
+		if _q.withSystemAnalysis != nil {
+			_spec.Node.AddColumnOnce(investigation.FieldSystemAnalysisID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {

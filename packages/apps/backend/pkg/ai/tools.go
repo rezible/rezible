@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	rez "github.com/rezible/rezible"
+	"github.com/invopop/jsonschema"
 )
 
 type ToolDefinition[I any, O any] struct {
@@ -25,173 +25,248 @@ func defineTool[D ToolDefinition[I, O], I any, O any](name, description string) 
 }
 
 type (
-	KnowledgeEntitySummary struct {
-		ID          uuid.UUID `json:"id"`
-		Category    string    `json:"category"`
-		Kind        string    `json:"kind"`
-		DisplayName string    `json:"display_name"`
+	AnalysisPageArgs struct {
+		Page     int `json:"page" jsonschema:"description=One-based page number; zero uses the default,minimum=0"`
+		PageSize int `json:"page_size" jsonschema:"description=Page size from 1 to 50; zero uses the default,minimum=0,maximum=50"`
 	}
 
-	KnowledgeRelationshipSummary struct {
-		ID          uuid.UUID `json:"id"`
-		Predicate   string    `json:"predicate"`
-		DisplayName string    `json:"display_name"`
+	ListAnalysisSubjectsArgs struct {
+		Kind     string `json:"kind" jsonschema:"description=Membership collection to list,enum=entity,enum=relationship"`
+		Page     int    `json:"page" jsonschema:"description=One-based page number; zero uses the default,minimum=0"`
+		PageSize int    `json:"page_size" jsonschema:"description=Page size from 1 to 50; zero uses the default,minimum=0,maximum=50"`
 	}
 
-	KnowledgeSubjectAliasSummary struct {
-		ID          uuid.UUID               `json:"id"`
-		ResourceRef rez.ProviderResourceRef `json:"resource_ref"`
+	InspectAnalysisSubjectArgs struct {
+		Kind     string    `json:"kind" jsonschema:"description=Knowledge subject record type,enum=entity,enum=relationship"`
+		ID       uuid.UUID `json:"id" jsonschema:"description=Canonical knowledge entity or relationship ID,type=string,format=uuid"`
+		Page     int       `json:"page" jsonschema:"description=One-based linked-entry page number; zero uses the default,minimum=0"`
+		PageSize int       `json:"page_size" jsonschema:"description=Linked-entry page size from 1 to 50; zero uses the default,minimum=0,maximum=50"`
 	}
 
-	KnowledgeEvidenceSummary struct {
-		ID          uuid.UUID `json:"id"`
-		Kind        string    `json:"kind"`
-		Assertion   string    `json:"assertion"`
-		EffectiveAt time.Time `json:"effective_at"`
-		CreatedAt   time.Time `json:"created_at"`
+	ReadAnalysisEntryArgs struct {
+		EntryID  uuid.UUID `json:"entry_id" jsonschema:"description=Canonical analysis-entry ID returned by an analysis tool,type=string,format=uuid"`
+		Page     int       `json:"page" jsonschema:"description=One-based attachment page number; zero uses the default,minimum=0"`
+		PageSize int       `json:"page_size" jsonschema:"description=Attachment page size from 1 to 50; zero uses the default,minimum=0,maximum=50"`
 	}
+
+	ReadAnalysisEvidenceArgs struct {
+		EvidenceID uuid.UUID `json:"evidence_id" jsonschema:"description=Canonical knowledge-evidence ID attached to an analysis entry,type=string,format=uuid"`
+	}
+
+	AnalysisToolResult struct {
+		Text     string `json:"text"`
+		Page     int    `json:"page"`
+		PageSize int    `json:"page_size"`
+		Total    int    `json:"total"`
+		HasMore  bool   `json:"has_more"`
+	}
+)
+
+var ListAnalysisSubjectsTool = defineTool[ToolDefinition[ListAnalysisSubjectsArgs, *AnalysisToolResult]](
+	"list_analysis_subjects",
+	"List entities or relationships included in this investigation's supplied analysis. Results include canonical IDs and are paginated.",
+)
+
+var ListAnalysisEntriesTool = defineTool[ToolDefinition[AnalysisPageArgs, *AnalysisToolResult]](
+	"list_analysis_entries",
+	"List observation and context entries in the supplied analysis. Results include canonical entry IDs and titles, not full bodies.",
+)
+
+var InspectAnalysisSubjectTool = defineTool[ToolDefinition[InspectAnalysisSubjectArgs, *AnalysisToolResult]](
+	"inspect_analysis_subject",
+	"Inspect an included entity or relationship by its canonical ID and list linked observation and context entries. This does not search graph neighbors.",
+)
+
+var ReadAnalysisEntryTool = defineTool[ToolDefinition[ReadAnalysisEntryArgs, *AnalysisToolResult]](
+	"read_analysis_entry",
+	"Read an observation or context entry by its canonical ID and page through its attached evidence and subjects.",
+)
+
+var ReadAnalysisEvidenceTool = defineTool[ToolDefinition[ReadAnalysisEvidenceArgs, *AnalysisToolResult]](
+	"read_analysis_evidence",
+	"Read knowledge evidence attached to an observation or context entry in this analysis. Returns the evidence ID used for publication citations.",
 )
 
 type (
-	SummarizeSystemNeighborhoodToolInput struct {
-		EntityID *string `json:"entity_id,omitempty" jsonschema:"description=Knowledge entity to summarize. Omit to use the default analysis subject"`
+	InvestigationFindingReferenceInput struct {
+		VersionID uuid.UUID `json:"version_id" jsonschema:"description=Exact finding-version ID,type=string,format=uuid"`
+		Relation  string    `json:"relation" jsonschema:"description=How the finding version relates,enum=supports,enum=contradicts,enum=invalidates"`
 	}
-	SummarizeSystemNeighborhoodToolOutput struct {
-		IncomingRelationships map[string]SystemNeighborhoodGroupSummary `json:"incoming_relationships"`
-		OutgoingRelationships map[string]SystemNeighborhoodGroupSummary `json:"outgoing_relationships"`
+
+	InvestigationFindingReference struct {
+		VersionID uuid.UUID `json:"version_id" jsonschema:"type=string,format=uuid"`
+		Relation  string    `json:"relation"`
 	}
-	SystemNeighborhoodGroupSummary struct {
-		Count int `json:"count"`
+
+	PublishInvestigationReportToolInput struct {
+		Text        string      `json:"text"`
+		EvidenceIDs []uuid.UUID `json:"evidence_ids" jsonschema:"description=Knowledge-evidence IDs cited by this report; may be empty,format=uuid"`
+	}
+
+	PublishInvestigationFindingToolInput struct {
+		Key               string                               `json:"key"`
+		Title             string                               `json:"title"`
+		Body              string                               `json:"body"`
+		EvidenceIDs       []uuid.UUID                          `json:"evidence_ids" jsonschema:"description=Knowledge-evidence IDs cited by this finding; may be empty,format=uuid"`
+		FindingReferences []InvestigationFindingReferenceInput `json:"finding_references,omitempty"`
+	}
+
+	PublishInvestigationAnswerToolInput struct {
+		Title             string                               `json:"title"`
+		Body              string                               `json:"body"`
+		EvidenceIDs       []uuid.UUID                          `json:"evidence_ids" jsonschema:"description=Knowledge-evidence IDs cited by this answer; may be empty,format=uuid"`
+		FindingReferences []InvestigationFindingReferenceInput `json:"finding_references,omitempty"`
+	}
+
+	PublishInvestigationHypothesisToolInput struct {
+		Key           string      `json:"key"`
+		Title         string      `json:"title"`
+		Justification string      `json:"justification"`
+		Status        string      `json:"status" jsonschema:"enum=open,enum=supported,enum=disproven,enum=inconclusive"`
+		EvidenceIDs   []uuid.UUID `json:"evidence_ids" jsonschema:"description=Knowledge-evidence IDs cited by this hypothesis; may be empty,format=uuid"`
+	}
+
+	ReadInvestigationReportToolInput struct {
+		Selection string `json:"selection,omitempty" jsonschema:"description=Report to read; omitted means latest,enum=latest,enum=completed"`
+	}
+
+	ReadInvestigationFindingToolInput struct {
+		VersionID uuid.UUID `json:"version_id" jsonschema:"description=Exact finding-version ID,type=string,format=uuid"`
+	}
+
+	ReadInvestigationHypothesisToolInput struct {
+		VersionID uuid.UUID `json:"version_id" jsonschema:"description=Exact hypothesis-version ID,type=string,format=uuid"`
+	}
+
+	InvestigationReportToolResult struct {
+		Text        string      `json:"text"`
+		EvidenceIDs []uuid.UUID `json:"evidence_ids" jsonschema:"format=uuid"`
+		TurnStatus  string      `json:"turn_status"`
+		Provisional bool        `json:"provisional"`
+		CreatedAt   time.Time   `json:"created_at"`
+	}
+
+	InvestigationFindingVersionToolResult struct {
+		VersionID               uuid.UUID                       `json:"version_id" jsonschema:"type=string,format=uuid"`
+		Key                     string                          `json:"key,omitempty"`
+		IsAnswer                bool                            `json:"is_answer"`
+		Title                   string                          `json:"title"`
+		Body                    string                          `json:"body"`
+		EvidenceIDs             []uuid.UUID                     `json:"evidence_ids" jsonschema:"format=uuid"`
+		FindingReferences       []InvestigationFindingReference `json:"finding_references"`
+		InvalidatedByVersionIDs []uuid.UUID                     `json:"invalidated_by_version_ids" jsonschema:"format=uuid"`
+		TurnStatus              string                          `json:"turn_status"`
+		Provisional             bool                            `json:"provisional"`
+		CreatedAt               time.Time                       `json:"created_at"`
+	}
+
+	InvestigationHypothesisVersionToolResult struct {
+		VersionID     uuid.UUID   `json:"version_id" jsonschema:"type=string,format=uuid"`
+		Key           string      `json:"key"`
+		Title         string      `json:"title"`
+		Justification string      `json:"justification"`
+		Status        string      `json:"status"`
+		EvidenceIDs   []uuid.UUID `json:"evidence_ids" jsonschema:"format=uuid"`
+		TurnStatus    string      `json:"turn_status"`
+		Provisional   bool        `json:"provisional"`
+		CreatedAt     time.Time   `json:"created_at"`
+	}
+
+	InvestigationOutputPage[T any] struct {
+		Items    []T  `json:"items"`
+		Page     int  `json:"page"`
+		PageSize int  `json:"page_size"`
+		Total    int  `json:"total"`
+		HasMore  bool `json:"has_more"`
 	}
 )
 
-var SummarizeSystemNeighborhoodTool = defineTool[ToolDefinition[SummarizeSystemNeighborhoodToolInput, SummarizeSystemNeighborhoodToolOutput]](
-	"summarize_system_neighborhood",
-	"Summarize the one-hop knowledge graph neighborhood of the system analysis subject or an included entity, grouped by direction and relationship predicate.",
+var PublishInvestigationReportTool = defineTool[ToolDefinition[PublishInvestigationReportToolInput, *InvestigationReportToolResult]](
+	"publish_investigation_report",
+	"Publish an explicit plain-text investigation report with knowledge-evidence citations. Empty evidence_ids is valid.",
 )
 
-type (
-	ExploreSystemNeighborhoodToolInput struct {
-		EntityID              *string `json:"entity_id,omitempty" jsonschema:"description=Knowledge entity to explore. Omit to use the default analysis subject"`
-		RelationshipPredicate *string `json:"relationship_predicate,omitempty" jsonschema:"description=Optional exact relationship predicate,minLength=1"`
-		NeighborCategory      *string `json:"neighbor_category,omitempty" jsonschema:"description=Optional category of the entity at the opposite endpoint,minLength=1"`
-		Offset                *int    `json:"offset,omitempty" jsonschema:"description=Zero-based result offset,minimum=0"`
-	}
-
-	ExploreSystemNeighborhoodToolOutput struct {
-		Neighbours []SystemEntityNeighbor `json:"neighbours"`
-		NextOffset *int                   `json:"next_offset,omitempty"`
-	}
-	SystemEntityNeighbor struct {
-		Relationship KnowledgeRelationshipSummary `json:"relationship"`
-		Entity       KnowledgeEntitySummary       `json:"entity"`
-	}
+var PublishInvestigationFindingTool = defineTool[ToolDefinition[PublishInvestigationFindingToolInput, *InvestigationFindingVersionToolResult]](
+	"publish_investigation_finding",
+	"Publish or revise a finding. Cite knowledge-evidence IDs and link exact finding versions when needed.",
 )
 
-var ExploreSystemNeighborhoodTool = defineTool[ToolDefinition[ExploreSystemNeighborhoodToolInput, ExploreSystemNeighborhoodToolOutput]](
-	"explore_system_neighborhood",
-	"Query neighboring related entities. Exploration is read-only.",
+var PublishInvestigationAnswerTool = defineTool[ToolDefinition[PublishInvestigationAnswerToolInput, *InvestigationFindingVersionToolResult]](
+	"publish_investigation_answer",
+	"Publish an answer linked to the question assigned to this turn. Cite knowledge-evidence IDs and link exact finding versions when needed.",
 )
 
-type (
-	InspectKnowledgeSubjectToolInput struct {
-		SubjectKind string `json:"subject_kind" jsonschema:"description=Kind of knowledge subject to inspect,enum=entity,enum=relationship"`
-		SubjectID   string `json:"subject_id" jsonschema:"description=Knowledge subject id"`
-	}
-	InspectKnowledgeSubjectToolOutput struct {
-		Entity       *KnowledgeEntityDetail       `json:"entity,omitempty"`
-		Relationship *KnowledgeRelationshipDetail `json:"relationship,omitempty"`
-	}
-	KnowledgeEntityDetail struct {
-		Summary     KnowledgeEntitySummary        `json:"summary"`
-		Description string                        `json:"description,omitempty"`
-		Properties  map[string]any                `json:"properties"`
-		Aliases     []KnowledgeSubjectAliasDetail `json:"aliases"`
-	}
-	KnowledgeRelationshipDetail struct {
-		Summary     KnowledgeRelationshipSummary  `json:"summary"`
-		Description string                        `json:"description,omitempty"`
-		Properties  map[string]any                `json:"properties"`
-		Aliases     []KnowledgeSubjectAliasDetail `json:"aliases"`
-		Source      KnowledgeEntitySummary        `json:"source"`
-		Target      KnowledgeEntitySummary        `json:"target"`
-	}
-	KnowledgeSubjectAliasDetail struct {
-		Summary        KnowledgeSubjectAliasSummary `json:"summary"`
-		LatestEvidence *KnowledgeEvidenceSummary    `json:"latest_evidence,omitempty"`
-	}
-	KnowledgeEvidenceDetail struct {
-		Summary     KnowledgeEvidenceSummary     `json:"summary"`
-		Description string                       `json:"description,omitempty"`
-		Properties  map[string]any               `json:"properties"`
-		Alias       KnowledgeSubjectAliasSummary `json:"alias"`
-	}
+var PublishInvestigationHypothesisTool = defineTool[ToolDefinition[PublishInvestigationHypothesisToolInput, *InvestigationHypothesisVersionToolResult]](
+	"publish_investigation_hypothesis",
+	"Publish or revise a hypothesis with status open, supported, disproven, or inconclusive and optional knowledge-evidence citations.",
 )
 
-var InspectKnowledgeSubjectTool = defineTool[ToolDefinition[InspectKnowledgeSubjectToolInput, InspectKnowledgeSubjectToolOutput]](
-	"inspect_knowledge_subject",
-	`Get detailed current information and evidence for one knowledge entity, relationship, or evidence record.
-	Use IDs returned by neighborhood exploration or another trusted tool.`,
+var ReadInvestigationReportTool = defineTool[ToolDefinition[ReadInvestigationReportToolInput, *InvestigationReportToolResult]](
+	"read_investigation_report",
+	"Read the latest eligible report or latest completed report. Returns null when none is eligible.",
 )
 
-type (
-	IncludeAnalysisSubjectsToolInput struct {
-		Subjects []IncludeAnalysisSubjectToolInputSubject `json:"subjects" jsonschema:"description=Knowledge subjects to include,minItems=1,maxItems=20"`
-	}
-	IncludeAnalysisSubjectToolInputSubject struct {
-		SubjectKind string `json:"subject_kind" jsonschema:"description=Kind of knowledge subject to include,enum=entity,enum=relationship"`
-		SubjectID   string `json:"subject_id" jsonschema:"description=Knowledge subject id"`
-	}
-
-	IncludeAnalysisSubjectsToolOutput struct {
-		Included int `json:"included"`
-	}
+var ListInvestigationFindingsTool = defineTool[ToolDefinition[AnalysisPageArgs, *InvestigationOutputPage[InvestigationFindingVersionToolResult]]](
+	"list_investigation_findings",
+	"List the latest eligible finding and answer versions, ordered by producing turn.",
 )
 
-var IncludeAnalysisSubjectsTool = defineTool[ToolDefinition[IncludeAnalysisSubjectsToolInput, IncludeAnalysisSubjectsToolOutput]](
-	"include_analysis_subjects",
-	`Include chosen knowledge entities and relationships in the current system analysis subgraph.
-	Including a relationship also includes both related entities. This does not record a finding.`,
+var ListInvestigationHypothesesTool = defineTool[ToolDefinition[AnalysisPageArgs, *InvestigationOutputPage[InvestigationHypothesisVersionToolResult]]](
+	"list_investigation_hypotheses",
+	"List the latest eligible hypothesis versions, ordered by producing turn.",
 )
 
-type (
-	RecordAnalysisFindingToolInput struct {
-		Reference string                                   `json:"reference" jsonschema:"description=A unique finding reference to create or update,minLength=1"`
-		Title     string                                   `json:"title" jsonschema:"description=Concise finding title,minLength=1"`
-		Detail    string                                   `json:"body,omitempty" jsonschema:"description=Optional supporting detail for the finding"`
-		Subjects  []AnalysisFindingSubjectToolInputSubject `json:"subjects" jsonschema:"description=Knowledge subjects supporting the finding; at least one must be evidence,minItems=1,maxItems=20"`
-	}
-	AnalysisFindingSubjectToolInputSubject struct {
-		SubjectID   string   `json:"subject_id" jsonschema:"description=Knowledge subject id"`
-		Role        string   `json:"role" jsonschema:"description=Concise role such as primary or affected or contributing or evidence_for,minLength=1"`
-		EvidenceIDs []string `json:"evidence_ids" jsonschema:"description=Knowledge evidence ids`
-	}
-
-	RecordAnalysisFindingToolOutput struct {
-		Reference    string `json:"reference"`
-		Sequence     int    `json:"sequence"`
-		Title        string `json:"title"`
-		SubjectCount int    `json:"subject_count"`
-	}
+var ReadInvestigationFindingTool = defineTool[ToolDefinition[ReadInvestigationFindingToolInput, *InvestigationFindingVersionToolResult]](
+	"read_investigation_finding",
+	"Read an exact finding version, including historical or failed-turn output.",
 )
 
-var RecordAnalysisFindingTool = defineTool[ToolDefinition[RecordAnalysisFindingToolInput, RecordAnalysisFindingToolOutput]](
-	"record_analysis_finding",
-	"Record an evidence-backed finding in the current system analysis. Cite at least one inspected evidence record and any relevant knowledge entities or relationships as subjects. Use concise roles such as primary, affected, contributing, and evidence_for.",
+var ReadInvestigationHypothesisTool = defineTool[ToolDefinition[ReadInvestigationHypothesisToolInput, *InvestigationHypothesisVersionToolResult]](
+	"read_investigation_hypothesis",
+	"Read an exact hypothesis version, including historical or failed-turn output.",
 )
 
-type (
-	SaveSituationInvestigationReportToolInput struct {
-		Assessments []rez.SituationInvestigationHazardAssessment `json:"assessments,omitempty"`
-		Report      rez.InvestigationReportInput                 `json:"report" jsonschema:"description=Completed situation investigation report"`
+type uuidStringArray []string
+
+func (uuidStringArray) JSONSchemaExtend(schema *jsonschema.Schema) {
+	schema.Items.Format = "uuid"
+}
+
+// uuidStringArrayProperty keeps UUID slices typed as []uuid.UUID in Go while
+// describing their JSON representation as arrays of canonical UUID strings.
+func uuidStringArrayProperty(name string, fields ...string) any {
+	for _, field := range fields {
+		if name == field {
+			return uuidStringArray{}
+		}
 	}
+	return nil
+}
 
-	SaveSituationInvestigationReportToolOutput struct {
-		Saved bool `json:"saved"`
-	}
-)
+func (PublishInvestigationReportToolInput) JSONSchemaProperty(name string) any {
+	return uuidStringArrayProperty(name, "evidence_ids")
+}
 
-var SaveSituationInvestigationReportTool = defineTool[ToolDefinition[SaveSituationInvestigationReportToolInput, SaveSituationInvestigationReportToolOutput]](
-	"save_situation_investigation_report",
-	"Save the situation investigation report for this agent session.",
-)
+func (PublishInvestigationFindingToolInput) JSONSchemaProperty(name string) any {
+	return uuidStringArrayProperty(name, "evidence_ids")
+}
+
+func (PublishInvestigationAnswerToolInput) JSONSchemaProperty(name string) any {
+	return uuidStringArrayProperty(name, "evidence_ids")
+}
+
+func (PublishInvestigationHypothesisToolInput) JSONSchemaProperty(name string) any {
+	return uuidStringArrayProperty(name, "evidence_ids")
+}
+
+func (InvestigationReportToolResult) JSONSchemaProperty(name string) any {
+	return uuidStringArrayProperty(name, "evidence_ids")
+}
+
+func (InvestigationFindingVersionToolResult) JSONSchemaProperty(name string) any {
+	return uuidStringArrayProperty(name, "evidence_ids", "invalidated_by_version_ids")
+}
+
+func (InvestigationHypothesisVersionToolResult) JSONSchemaProperty(name string) any {
+	return uuidStringArrayProperty(name, "evidence_ids")
+}

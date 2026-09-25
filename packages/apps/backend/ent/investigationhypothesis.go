@@ -28,12 +28,8 @@ type InvestigationHypothesis struct {
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// InvestigationID holds the value of the "investigation_id" field.
 	InvestigationID uuid.UUID `json:"investigation_id,omitempty"`
-	// Title holds the value of the "title" field.
-	Title string `json:"title,omitempty"`
-	// Body holds the value of the "body" field.
-	Body string `json:"body,omitempty"`
-	// Verdict holds the value of the "verdict" field.
-	Verdict *string `json:"verdict,omitempty"`
+	// Key holds the value of the "key" field.
+	Key string `json:"key,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the InvestigationHypothesisQuery when eager-loading is set.
 	Edges        InvestigationHypothesisEdges `json:"edges"`
@@ -46,9 +42,11 @@ type InvestigationHypothesisEdges struct {
 	Tenant *Tenant `json:"tenant,omitempty"`
 	// Investigation holds the value of the investigation edge.
 	Investigation *Investigation `json:"investigation,omitempty"`
+	// Versions holds the value of the versions edge.
+	Versions []*InvestigationHypothesisVersion `json:"versions,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [3]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -73,6 +71,15 @@ func (e InvestigationHypothesisEdges) InvestigationOrErr() (*Investigation, erro
 	return nil, &NotLoadedError{edge: "investigation"}
 }
 
+// VersionsOrErr returns the Versions value or an error if the edge
+// was not loaded in eager-loading.
+func (e InvestigationHypothesisEdges) VersionsOrErr() ([]*InvestigationHypothesisVersion, error) {
+	if e.loadedTypes[2] {
+		return e.Versions, nil
+	}
+	return nil, &NotLoadedError{edge: "versions"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*InvestigationHypothesis) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
@@ -80,7 +87,7 @@ func (*InvestigationHypothesis) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case investigationhypothesis.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case investigationhypothesis.FieldTitle, investigationhypothesis.FieldBody, investigationhypothesis.FieldVerdict:
+		case investigationhypothesis.FieldKey:
 			values[i] = new(sql.NullString)
 		case investigationhypothesis.FieldCreatedAt, investigationhypothesis.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -131,24 +138,11 @@ func (_m *InvestigationHypothesis) assignValues(columns []string, values []any) 
 			} else if value != nil {
 				_m.InvestigationID = *value
 			}
-		case investigationhypothesis.FieldTitle:
+		case investigationhypothesis.FieldKey:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field title", values[i])
+				return fmt.Errorf("unexpected type %T for field key", values[i])
 			} else if value.Valid {
-				_m.Title = value.String
-			}
-		case investigationhypothesis.FieldBody:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field body", values[i])
-			} else if value.Valid {
-				_m.Body = value.String
-			}
-		case investigationhypothesis.FieldVerdict:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field verdict", values[i])
-			} else if value.Valid {
-				_m.Verdict = new(string)
-				*_m.Verdict = value.String
+				_m.Key = value.String
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -171,6 +165,11 @@ func (_m *InvestigationHypothesis) QueryTenant() *TenantQuery {
 // QueryInvestigation queries the "investigation" edge of the InvestigationHypothesis entity.
 func (_m *InvestigationHypothesis) QueryInvestigation() *InvestigationQuery {
 	return NewInvestigationHypothesisClient(_m.config).QueryInvestigation(_m)
+}
+
+// QueryVersions queries the "versions" edge of the InvestigationHypothesis entity.
+func (_m *InvestigationHypothesis) QueryVersions() *InvestigationHypothesisVersionQuery {
+	return NewInvestigationHypothesisClient(_m.config).QueryVersions(_m)
 }
 
 // Update returns a builder for updating this InvestigationHypothesis.
@@ -208,16 +207,8 @@ func (_m *InvestigationHypothesis) String() string {
 	builder.WriteString("investigation_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.InvestigationID))
 	builder.WriteString(", ")
-	builder.WriteString("title=")
-	builder.WriteString(_m.Title)
-	builder.WriteString(", ")
-	builder.WriteString("body=")
-	builder.WriteString(_m.Body)
-	builder.WriteString(", ")
-	if v := _m.Verdict; v != nil {
-		builder.WriteString("verdict=")
-		builder.WriteString(*v)
-	}
+	builder.WriteString("key=")
+	builder.WriteString(_m.Key)
 	builder.WriteByte(')')
 	return builder.String()
 }

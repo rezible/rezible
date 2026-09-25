@@ -48,8 +48,6 @@ const (
 	EdgeProjection = "projection"
 	// EdgeSituationObservationGroups holds the string denoting the situation_observation_groups edge name in mutations.
 	EdgeSituationObservationGroups = "situation_observation_groups"
-	// EdgeAnalysisEntrySubjects holds the string denoting the analysis_entry_subjects edge name in mutations.
-	EdgeAnalysisEntrySubjects = "analysis_entry_subjects"
 	// Table holds the table name of the normalizedevent in the database.
 	Table = "normalized_events"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -78,13 +76,6 @@ const (
 	// SituationObservationGroupsInverseTable is the table name for the SituationObservationGroup entity.
 	// It exists in this package in order to avoid circular dependency with the "situationobservationgroup" package.
 	SituationObservationGroupsInverseTable = "situation_observation_groups"
-	// AnalysisEntrySubjectsTable is the table that holds the analysis_entry_subjects relation/edge.
-	AnalysisEntrySubjectsTable = "system_analysis_entry_subjects"
-	// AnalysisEntrySubjectsInverseTable is the table name for the SystemAnalysisEntrySubject entity.
-	// It exists in this package in order to avoid circular dependency with the "systemanalysisentrysubject" package.
-	AnalysisEntrySubjectsInverseTable = "system_analysis_entry_subjects"
-	// AnalysisEntrySubjectsColumn is the table column denoting the analysis_entry_subjects relation/edge.
-	AnalysisEntrySubjectsColumn = "normalized_event_id"
 )
 
 // Columns holds all SQL columns for normalizedevent fields.
@@ -252,20 +243,6 @@ func BySituationObservationGroups(term sql.OrderTerm, terms ...sql.OrderTerm) Or
 		sqlgraph.OrderByNeighborTerms(s, newSituationObservationGroupsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
-
-// ByAnalysisEntrySubjectsCount orders the results by analysis_entry_subjects count.
-func ByAnalysisEntrySubjectsCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newAnalysisEntrySubjectsStep(), opts...)
-	}
-}
-
-// ByAnalysisEntrySubjects orders the results by analysis_entry_subjects terms.
-func ByAnalysisEntrySubjects(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newAnalysisEntrySubjectsStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
 func newTenantStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -292,12 +269,5 @@ func newSituationObservationGroupsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(SituationObservationGroupsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2M, true, SituationObservationGroupsTable, SituationObservationGroupsPrimaryKey...),
-	)
-}
-func newAnalysisEntrySubjectsStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(AnalysisEntrySubjectsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, AnalysisEntrySubjectsTable, AnalysisEntrySubjectsColumn),
 	)
 }

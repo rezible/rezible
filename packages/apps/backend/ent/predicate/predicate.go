@@ -111,14 +111,32 @@ type IntegrationUserInstallState func(*sql.Selector)
 // Investigation is the predicate function for investigation builders.
 type Investigation func(*sql.Selector)
 
+// InvestigationEvidenceRevision is the predicate function for investigationevidencerevision builders.
+type InvestigationEvidenceRevision func(*sql.Selector)
+
 // InvestigationFinding is the predicate function for investigationfinding builders.
 type InvestigationFinding func(*sql.Selector)
+
+// InvestigationFindingVersion is the predicate function for investigationfindingversion builders.
+type InvestigationFindingVersion func(*sql.Selector)
+
+// InvestigationFindingVersionLink is the predicate function for investigationfindingversionlink builders.
+type InvestigationFindingVersionLink func(*sql.Selector)
 
 // InvestigationHypothesis is the predicate function for investigationhypothesis builders.
 type InvestigationHypothesis func(*sql.Selector)
 
+// InvestigationHypothesisVersion is the predicate function for investigationhypothesisversion builders.
+type InvestigationHypothesisVersion func(*sql.Selector)
+
+// InvestigationOutputReference is the predicate function for investigationoutputreference builders.
+type InvestigationOutputReference func(*sql.Selector)
+
 // InvestigationReport is the predicate function for investigationreport builders.
 type InvestigationReport func(*sql.Selector)
+
+// InvestigationUserInput is the predicate function for investigationuserinput builders.
+type InvestigationUserInput func(*sql.Selector)
 
 // KnowledgeEntity is the predicate function for knowledgeentity builders.
 type KnowledgeEntity func(*sql.Selector)

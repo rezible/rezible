@@ -42,9 +42,15 @@ import (
 	"github.com/rezible/rezible/ent/integrationeventsyncrun"
 	"github.com/rezible/rezible/ent/integrationuserinstallstate"
 	"github.com/rezible/rezible/ent/investigation"
+	"github.com/rezible/rezible/ent/investigationevidencerevision"
 	"github.com/rezible/rezible/ent/investigationfinding"
+	"github.com/rezible/rezible/ent/investigationfindingversion"
+	"github.com/rezible/rezible/ent/investigationfindingversionlink"
 	"github.com/rezible/rezible/ent/investigationhypothesis"
+	"github.com/rezible/rezible/ent/investigationhypothesisversion"
+	"github.com/rezible/rezible/ent/investigationoutputreference"
 	"github.com/rezible/rezible/ent/investigationreport"
+	"github.com/rezible/rezible/ent/investigationuserinput"
 	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/knowledgeentitylinkingattribute"
 	"github.com/rezible/rezible/ent/knowledgeevidence"
@@ -966,6 +972,36 @@ func init() {
 	investigationDescID := investigationFields[0].Descriptor()
 	// investigation.DefaultID holds the default value on creation for the id field.
 	investigation.DefaultID = investigationDescID.Default.(func() uuid.UUID)
+	investigationevidencerevisionMixin := schema.InvestigationEvidenceRevision{}.Mixin()
+	investigationevidencerevision.Policy = privacy.NewPolicies(investigationevidencerevisionMixin[0], investigationevidencerevisionMixin[1], schema.InvestigationEvidenceRevision{})
+	investigationevidencerevision.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := investigationevidencerevision.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	investigationevidencerevisionMixinFields2 := investigationevidencerevisionMixin[2].Fields()
+	_ = investigationevidencerevisionMixinFields2
+	investigationevidencerevisionFields := schema.InvestigationEvidenceRevision{}.Fields()
+	_ = investigationevidencerevisionFields
+	// investigationevidencerevisionDescCreatedAt is the schema descriptor for created_at field.
+	investigationevidencerevisionDescCreatedAt := investigationevidencerevisionMixinFields2[0].Descriptor()
+	// investigationevidencerevision.DefaultCreatedAt holds the default value on creation for the created_at field.
+	investigationevidencerevision.DefaultCreatedAt = investigationevidencerevisionDescCreatedAt.Default.(func() time.Time)
+	// investigationevidencerevisionDescExplanation is the schema descriptor for explanation field.
+	investigationevidencerevisionDescExplanation := investigationevidencerevisionFields[2].Descriptor()
+	// investigationevidencerevision.ExplanationValidator is a validator for the "explanation" field. It is called by the builders before save.
+	investigationevidencerevision.ExplanationValidator = investigationevidencerevisionDescExplanation.Validators[0].(func(string) error)
+	// investigationevidencerevisionDescKey is the schema descriptor for key field.
+	investigationevidencerevisionDescKey := investigationevidencerevisionFields[3].Descriptor()
+	// investigationevidencerevision.KeyValidator is a validator for the "key" field. It is called by the builders before save.
+	investigationevidencerevision.KeyValidator = investigationevidencerevisionDescKey.Validators[0].(func(string) error)
+	// investigationevidencerevisionDescID is the schema descriptor for id field.
+	investigationevidencerevisionDescID := investigationevidencerevisionFields[0].Descriptor()
+	// investigationevidencerevision.DefaultID holds the default value on creation for the id field.
+	investigationevidencerevision.DefaultID = investigationevidencerevisionDescID.Default.(func() uuid.UUID)
 	investigationfindingMixin := schema.InvestigationFinding{}.Mixin()
 	investigationfinding.Policy = privacy.NewPolicies(investigationfindingMixin[0], investigationfindingMixin[1], schema.InvestigationFinding{})
 	investigationfinding.Hooks[0] = func(next ent.Mutator) ent.Mutator {
@@ -990,14 +1026,80 @@ func init() {
 	investigationfinding.DefaultUpdatedAt = investigationfindingDescUpdatedAt.Default.(func() time.Time)
 	// investigationfinding.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	investigationfinding.UpdateDefaultUpdatedAt = investigationfindingDescUpdatedAt.UpdateDefault.(func() time.Time)
-	// investigationfindingDescTitle is the schema descriptor for title field.
-	investigationfindingDescTitle := investigationfindingFields[2].Descriptor()
-	// investigationfinding.TitleValidator is a validator for the "title" field. It is called by the builders before save.
-	investigationfinding.TitleValidator = investigationfindingDescTitle.Validators[0].(func(string) error)
+	// investigationfindingDescKey is the schema descriptor for key field.
+	investigationfindingDescKey := investigationfindingFields[2].Descriptor()
+	// investigationfinding.KeyValidator is a validator for the "key" field. It is called by the builders before save.
+	investigationfinding.KeyValidator = investigationfindingDescKey.Validators[0].(func(string) error)
 	// investigationfindingDescID is the schema descriptor for id field.
 	investigationfindingDescID := investigationfindingFields[0].Descriptor()
 	// investigationfinding.DefaultID holds the default value on creation for the id field.
 	investigationfinding.DefaultID = investigationfindingDescID.Default.(func() uuid.UUID)
+	investigationfindingversionMixin := schema.InvestigationFindingVersion{}.Mixin()
+	investigationfindingversion.Policy = privacy.NewPolicies(investigationfindingversionMixin[0], investigationfindingversionMixin[1], schema.InvestigationFindingVersion{})
+	investigationfindingversion.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := investigationfindingversion.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	investigationfindingversionMixinFields2 := investigationfindingversionMixin[2].Fields()
+	_ = investigationfindingversionMixinFields2
+	investigationfindingversionMixinFields3 := investigationfindingversionMixin[3].Fields()
+	_ = investigationfindingversionMixinFields3
+	investigationfindingversionFields := schema.InvestigationFindingVersion{}.Fields()
+	_ = investigationfindingversionFields
+	// investigationfindingversionDescCreatedAt is the schema descriptor for created_at field.
+	investigationfindingversionDescCreatedAt := investigationfindingversionMixinFields2[0].Descriptor()
+	// investigationfindingversion.DefaultCreatedAt holds the default value on creation for the created_at field.
+	investigationfindingversion.DefaultCreatedAt = investigationfindingversionDescCreatedAt.Default.(func() time.Time)
+	// investigationfindingversionDescFingerprint is the schema descriptor for fingerprint field.
+	investigationfindingversionDescFingerprint := investigationfindingversionMixinFields3[0].Descriptor()
+	// investigationfindingversion.FingerprintValidator is a validator for the "fingerprint" field. It is called by the builders before save.
+	investigationfindingversion.FingerprintValidator = func() func(string) error {
+		validators := investigationfindingversionDescFingerprint.Validators
+		fns := [...]func(string) error{
+			validators[0].(func(string) error),
+			validators[1].(func(string) error),
+		}
+		return func(fingerprint string) error {
+			for _, fn := range fns {
+				if err := fn(fingerprint); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
+	// investigationfindingversionDescTitle is the schema descriptor for title field.
+	investigationfindingversionDescTitle := investigationfindingversionFields[3].Descriptor()
+	// investigationfindingversion.TitleValidator is a validator for the "title" field. It is called by the builders before save.
+	investigationfindingversion.TitleValidator = investigationfindingversionDescTitle.Validators[0].(func(string) error)
+	// investigationfindingversionDescBody is the schema descriptor for body field.
+	investigationfindingversionDescBody := investigationfindingversionFields[4].Descriptor()
+	// investigationfindingversion.BodyValidator is a validator for the "body" field. It is called by the builders before save.
+	investigationfindingversion.BodyValidator = investigationfindingversionDescBody.Validators[0].(func(string) error)
+	// investigationfindingversionDescID is the schema descriptor for id field.
+	investigationfindingversionDescID := investigationfindingversionFields[0].Descriptor()
+	// investigationfindingversion.DefaultID holds the default value on creation for the id field.
+	investigationfindingversion.DefaultID = investigationfindingversionDescID.Default.(func() uuid.UUID)
+	investigationfindingversionlinkMixin := schema.InvestigationFindingVersionLink{}.Mixin()
+	investigationfindingversionlink.Policy = privacy.NewPolicies(investigationfindingversionlinkMixin[0], investigationfindingversionlinkMixin[1], schema.InvestigationFindingVersionLink{})
+	investigationfindingversionlink.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := investigationfindingversionlink.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	investigationfindingversionlinkFields := schema.InvestigationFindingVersionLink{}.Fields()
+	_ = investigationfindingversionlinkFields
+	// investigationfindingversionlinkDescID is the schema descriptor for id field.
+	investigationfindingversionlinkDescID := investigationfindingversionlinkFields[0].Descriptor()
+	// investigationfindingversionlink.DefaultID holds the default value on creation for the id field.
+	investigationfindingversionlink.DefaultID = investigationfindingversionlinkDescID.Default.(func() uuid.UUID)
 	investigationhypothesisMixin := schema.InvestigationHypothesis{}.Mixin()
 	investigationhypothesis.Policy = privacy.NewPolicies(investigationhypothesisMixin[0], investigationhypothesisMixin[1], schema.InvestigationHypothesis{})
 	investigationhypothesis.Hooks[0] = func(next ent.Mutator) ent.Mutator {
@@ -1022,14 +1124,80 @@ func init() {
 	investigationhypothesis.DefaultUpdatedAt = investigationhypothesisDescUpdatedAt.Default.(func() time.Time)
 	// investigationhypothesis.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	investigationhypothesis.UpdateDefaultUpdatedAt = investigationhypothesisDescUpdatedAt.UpdateDefault.(func() time.Time)
-	// investigationhypothesisDescTitle is the schema descriptor for title field.
-	investigationhypothesisDescTitle := investigationhypothesisFields[2].Descriptor()
-	// investigationhypothesis.TitleValidator is a validator for the "title" field. It is called by the builders before save.
-	investigationhypothesis.TitleValidator = investigationhypothesisDescTitle.Validators[0].(func(string) error)
+	// investigationhypothesisDescKey is the schema descriptor for key field.
+	investigationhypothesisDescKey := investigationhypothesisFields[2].Descriptor()
+	// investigationhypothesis.KeyValidator is a validator for the "key" field. It is called by the builders before save.
+	investigationhypothesis.KeyValidator = investigationhypothesisDescKey.Validators[0].(func(string) error)
 	// investigationhypothesisDescID is the schema descriptor for id field.
 	investigationhypothesisDescID := investigationhypothesisFields[0].Descriptor()
 	// investigationhypothesis.DefaultID holds the default value on creation for the id field.
 	investigationhypothesis.DefaultID = investigationhypothesisDescID.Default.(func() uuid.UUID)
+	investigationhypothesisversionMixin := schema.InvestigationHypothesisVersion{}.Mixin()
+	investigationhypothesisversion.Policy = privacy.NewPolicies(investigationhypothesisversionMixin[0], investigationhypothesisversionMixin[1], schema.InvestigationHypothesisVersion{})
+	investigationhypothesisversion.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := investigationhypothesisversion.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	investigationhypothesisversionMixinFields2 := investigationhypothesisversionMixin[2].Fields()
+	_ = investigationhypothesisversionMixinFields2
+	investigationhypothesisversionMixinFields3 := investigationhypothesisversionMixin[3].Fields()
+	_ = investigationhypothesisversionMixinFields3
+	investigationhypothesisversionFields := schema.InvestigationHypothesisVersion{}.Fields()
+	_ = investigationhypothesisversionFields
+	// investigationhypothesisversionDescCreatedAt is the schema descriptor for created_at field.
+	investigationhypothesisversionDescCreatedAt := investigationhypothesisversionMixinFields2[0].Descriptor()
+	// investigationhypothesisversion.DefaultCreatedAt holds the default value on creation for the created_at field.
+	investigationhypothesisversion.DefaultCreatedAt = investigationhypothesisversionDescCreatedAt.Default.(func() time.Time)
+	// investigationhypothesisversionDescFingerprint is the schema descriptor for fingerprint field.
+	investigationhypothesisversionDescFingerprint := investigationhypothesisversionMixinFields3[0].Descriptor()
+	// investigationhypothesisversion.FingerprintValidator is a validator for the "fingerprint" field. It is called by the builders before save.
+	investigationhypothesisversion.FingerprintValidator = func() func(string) error {
+		validators := investigationhypothesisversionDescFingerprint.Validators
+		fns := [...]func(string) error{
+			validators[0].(func(string) error),
+			validators[1].(func(string) error),
+		}
+		return func(fingerprint string) error {
+			for _, fn := range fns {
+				if err := fn(fingerprint); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
+	// investigationhypothesisversionDescTitle is the schema descriptor for title field.
+	investigationhypothesisversionDescTitle := investigationhypothesisversionFields[3].Descriptor()
+	// investigationhypothesisversion.TitleValidator is a validator for the "title" field. It is called by the builders before save.
+	investigationhypothesisversion.TitleValidator = investigationhypothesisversionDescTitle.Validators[0].(func(string) error)
+	// investigationhypothesisversionDescJustification is the schema descriptor for justification field.
+	investigationhypothesisversionDescJustification := investigationhypothesisversionFields[5].Descriptor()
+	// investigationhypothesisversion.JustificationValidator is a validator for the "justification" field. It is called by the builders before save.
+	investigationhypothesisversion.JustificationValidator = investigationhypothesisversionDescJustification.Validators[0].(func(string) error)
+	// investigationhypothesisversionDescID is the schema descriptor for id field.
+	investigationhypothesisversionDescID := investigationhypothesisversionFields[0].Descriptor()
+	// investigationhypothesisversion.DefaultID holds the default value on creation for the id field.
+	investigationhypothesisversion.DefaultID = investigationhypothesisversionDescID.Default.(func() uuid.UUID)
+	investigationoutputreferenceMixin := schema.InvestigationOutputReference{}.Mixin()
+	investigationoutputreference.Policy = privacy.NewPolicies(investigationoutputreferenceMixin[0], investigationoutputreferenceMixin[1], schema.InvestigationOutputReference{})
+	investigationoutputreference.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := investigationoutputreference.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	investigationoutputreferenceFields := schema.InvestigationOutputReference{}.Fields()
+	_ = investigationoutputreferenceFields
+	// investigationoutputreferenceDescID is the schema descriptor for id field.
+	investigationoutputreferenceDescID := investigationoutputreferenceFields[0].Descriptor()
+	// investigationoutputreference.DefaultID holds the default value on creation for the id field.
+	investigationoutputreference.DefaultID = investigationoutputreferenceDescID.Default.(func() uuid.UUID)
 	investigationreportMixin := schema.InvestigationReport{}.Mixin()
 	investigationreport.Policy = privacy.NewPolicies(investigationreportMixin[0], investigationreportMixin[1], schema.InvestigationReport{})
 	investigationreport.Hooks[0] = func(next ent.Mutator) ent.Mutator {
@@ -1042,18 +1210,32 @@ func init() {
 	}
 	investigationreportMixinFields2 := investigationreportMixin[2].Fields()
 	_ = investigationreportMixinFields2
+	investigationreportMixinFields3 := investigationreportMixin[3].Fields()
+	_ = investigationreportMixinFields3
 	investigationreportFields := schema.InvestigationReport{}.Fields()
 	_ = investigationreportFields
 	// investigationreportDescCreatedAt is the schema descriptor for created_at field.
 	investigationreportDescCreatedAt := investigationreportMixinFields2[0].Descriptor()
 	// investigationreport.DefaultCreatedAt holds the default value on creation for the created_at field.
 	investigationreport.DefaultCreatedAt = investigationreportDescCreatedAt.Default.(func() time.Time)
-	// investigationreportDescUpdatedAt is the schema descriptor for updated_at field.
-	investigationreportDescUpdatedAt := investigationreportMixinFields2[1].Descriptor()
-	// investigationreport.DefaultUpdatedAt holds the default value on creation for the updated_at field.
-	investigationreport.DefaultUpdatedAt = investigationreportDescUpdatedAt.Default.(func() time.Time)
-	// investigationreport.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
-	investigationreport.UpdateDefaultUpdatedAt = investigationreportDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// investigationreportDescFingerprint is the schema descriptor for fingerprint field.
+	investigationreportDescFingerprint := investigationreportMixinFields3[0].Descriptor()
+	// investigationreport.FingerprintValidator is a validator for the "fingerprint" field. It is called by the builders before save.
+	investigationreport.FingerprintValidator = func() func(string) error {
+		validators := investigationreportDescFingerprint.Validators
+		fns := [...]func(string) error{
+			validators[0].(func(string) error),
+			validators[1].(func(string) error),
+		}
+		return func(fingerprint string) error {
+			for _, fn := range fns {
+				if err := fn(fingerprint); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
 	// investigationreportDescText is the schema descriptor for text field.
 	investigationreportDescText := investigationreportFields[3].Descriptor()
 	// investigationreport.TextValidator is a validator for the "text" field. It is called by the builders before save.
@@ -1062,6 +1244,36 @@ func init() {
 	investigationreportDescID := investigationreportFields[0].Descriptor()
 	// investigationreport.DefaultID holds the default value on creation for the id field.
 	investigationreport.DefaultID = investigationreportDescID.Default.(func() uuid.UUID)
+	investigationuserinputMixin := schema.InvestigationUserInput{}.Mixin()
+	investigationuserinput.Policy = privacy.NewPolicies(investigationuserinputMixin[0], investigationuserinputMixin[1], schema.InvestigationUserInput{})
+	investigationuserinput.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := investigationuserinput.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	investigationuserinputMixinFields2 := investigationuserinputMixin[2].Fields()
+	_ = investigationuserinputMixinFields2
+	investigationuserinputFields := schema.InvestigationUserInput{}.Fields()
+	_ = investigationuserinputFields
+	// investigationuserinputDescCreatedAt is the schema descriptor for created_at field.
+	investigationuserinputDescCreatedAt := investigationuserinputMixinFields2[0].Descriptor()
+	// investigationuserinput.DefaultCreatedAt holds the default value on creation for the created_at field.
+	investigationuserinput.DefaultCreatedAt = investigationuserinputDescCreatedAt.Default.(func() time.Time)
+	// investigationuserinputDescText is the schema descriptor for text field.
+	investigationuserinputDescText := investigationuserinputFields[3].Descriptor()
+	// investigationuserinput.TextValidator is a validator for the "text" field. It is called by the builders before save.
+	investigationuserinput.TextValidator = investigationuserinputDescText.Validators[0].(func(string) error)
+	// investigationuserinputDescKey is the schema descriptor for key field.
+	investigationuserinputDescKey := investigationuserinputFields[4].Descriptor()
+	// investigationuserinput.KeyValidator is a validator for the "key" field. It is called by the builders before save.
+	investigationuserinput.KeyValidator = investigationuserinputDescKey.Validators[0].(func(string) error)
+	// investigationuserinputDescID is the schema descriptor for id field.
+	investigationuserinputDescID := investigationuserinputFields[0].Descriptor()
+	// investigationuserinput.DefaultID holds the default value on creation for the id field.
+	investigationuserinput.DefaultID = investigationuserinputDescID.Default.(func() uuid.UUID)
 	knowledgeentityMixin := schema.KnowledgeEntity{}.Mixin()
 	knowledgeentity.Policy = privacy.NewPolicies(knowledgeentityMixin[0], knowledgeentityMixin[1], schema.KnowledgeEntity{})
 	knowledgeentity.Hooks[0] = func(next ent.Mutator) ent.Mutator {
@@ -1622,15 +1834,9 @@ func init() {
 	// situation.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	situation.UpdateDefaultUpdatedAt = situationDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// situationDescTitle is the schema descriptor for title field.
-	situationDescTitle := situationFields[2].Descriptor()
+	situationDescTitle := situationFields[1].Descriptor()
 	// situation.TitleValidator is a validator for the "title" field. It is called by the builders before save.
 	situation.TitleValidator = situationDescTitle.Validators[0].(func(string) error)
-	// situationDescEvidenceRevision is the schema descriptor for evidence_revision field.
-	situationDescEvidenceRevision := situationFields[3].Descriptor()
-	// situation.DefaultEvidenceRevision holds the default value on creation for the evidence_revision field.
-	situation.DefaultEvidenceRevision = situationDescEvidenceRevision.Default.(int)
-	// situation.EvidenceRevisionValidator is a validator for the "evidence_revision" field. It is called by the builders before save.
-	situation.EvidenceRevisionValidator = situationDescEvidenceRevision.Validators[0].(func(int) error)
 	// situationDescID is the schema descriptor for id field.
 	situationDescID := situationFields[0].Descriptor()
 	// situation.DefaultID holds the default value on creation for the id field.
@@ -1695,18 +1901,6 @@ func init() {
 	situationinvestigation.DefaultUpdatedAt = situationinvestigationDescUpdatedAt.Default.(func() time.Time)
 	// situationinvestigation.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	situationinvestigation.UpdateDefaultUpdatedAt = situationinvestigationDescUpdatedAt.UpdateDefault.(func() time.Time)
-	// situationinvestigationDescCompletedRevision is the schema descriptor for completed_revision field.
-	situationinvestigationDescCompletedRevision := situationinvestigationFields[4].Descriptor()
-	// situationinvestigation.DefaultCompletedRevision holds the default value on creation for the completed_revision field.
-	situationinvestigation.DefaultCompletedRevision = situationinvestigationDescCompletedRevision.Default.(int)
-	// situationinvestigation.CompletedRevisionValidator is a validator for the "completed_revision" field. It is called by the builders before save.
-	situationinvestigation.CompletedRevisionValidator = situationinvestigationDescCompletedRevision.Validators[0].(func(int) error)
-	// situationinvestigationDescRequestedRevision is the schema descriptor for requested_revision field.
-	situationinvestigationDescRequestedRevision := situationinvestigationFields[5].Descriptor()
-	// situationinvestigation.DefaultRequestedRevision holds the default value on creation for the requested_revision field.
-	situationinvestigation.DefaultRequestedRevision = situationinvestigationDescRequestedRevision.Default.(int)
-	// situationinvestigation.RequestedRevisionValidator is a validator for the "requested_revision" field. It is called by the builders before save.
-	situationinvestigation.RequestedRevisionValidator = situationinvestigationDescRequestedRevision.Validators[0].(func(int) error)
 	// situationinvestigationDescID is the schema descriptor for id field.
 	situationinvestigationDescID := situationinvestigationFields[0].Descriptor()
 	// situationinvestigation.DefaultID holds the default value on creation for the id field.
@@ -1864,7 +2058,7 @@ func init() {
 	// systemanalysisentrysubject.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	systemanalysisentrysubject.UpdateDefaultUpdatedAt = systemanalysisentrysubjectDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// systemanalysisentrysubjectDescRole is the schema descriptor for role field.
-	systemanalysisentrysubjectDescRole := systemanalysisentrysubjectFields[6].Descriptor()
+	systemanalysisentrysubjectDescRole := systemanalysisentrysubjectFields[5].Descriptor()
 	// systemanalysisentrysubject.RoleValidator is a validator for the "role" field. It is called by the builders before save.
 	systemanalysisentrysubject.RoleValidator = systemanalysisentrysubjectDescRole.Validators[0].(func(string) error)
 	// systemanalysisentrysubjectDescID is the schema descriptor for id field.

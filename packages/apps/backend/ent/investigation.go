@@ -12,7 +12,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/agentsession"
 	"github.com/rezible/rezible/ent/investigation"
-	"github.com/rezible/rezible/ent/investigationreport"
 	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/tenant"
 )
@@ -28,10 +27,10 @@ type Investigation struct {
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
-	// SystemAnalysisID holds the value of the "system_analysis_id" field.
-	SystemAnalysisID uuid.UUID `json:"system_analysis_id,omitempty"`
 	// AgentSessionID holds the value of the "agent_session_id" field.
 	AgentSessionID uuid.UUID `json:"agent_session_id,omitempty"`
+	// SystemAnalysisID holds the value of the "system_analysis_id" field.
+	SystemAnalysisID uuid.UUID `json:"system_analysis_id,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the InvestigationQuery when eager-loading is set.
 	Edges        InvestigationEdges `json:"edges"`
@@ -42,21 +41,25 @@ type Investigation struct {
 type InvestigationEdges struct {
 	// Tenant holds the value of the tenant edge.
 	Tenant *Tenant `json:"tenant,omitempty"`
-	// SystemAnalysis holds the value of the system_analysis edge.
-	SystemAnalysis *SystemAnalysis `json:"system_analysis,omitempty"`
 	// AgentSession holds the value of the agent_session edge.
 	AgentSession *AgentSession `json:"agent_session,omitempty"`
+	// SystemAnalysis holds the value of the system_analysis edge.
+	SystemAnalysis *SystemAnalysis `json:"system_analysis,omitempty"`
 	// Situations holds the value of the situations edge.
 	Situations []*SituationInvestigation `json:"situations,omitempty"`
+	// UserInputs holds the value of the user_inputs edge.
+	UserInputs []*InvestigationUserInput `json:"user_inputs,omitempty"`
+	// EvidenceRevisions holds the value of the evidence_revisions edge.
+	EvidenceRevisions []*InvestigationEvidenceRevision `json:"evidence_revisions,omitempty"`
 	// Hypotheses holds the value of the hypotheses edge.
 	Hypotheses []*InvestigationHypothesis `json:"hypotheses,omitempty"`
 	// Findings holds the value of the findings edge.
 	Findings []*InvestigationFinding `json:"findings,omitempty"`
-	// Report holds the value of the report edge.
-	Report *InvestigationReport `json:"report,omitempty"`
+	// Reports holds the value of the reports edge.
+	Reports []*InvestigationReport `json:"reports,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [7]bool
+	loadedTypes [9]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -70,26 +73,26 @@ func (e InvestigationEdges) TenantOrErr() (*Tenant, error) {
 	return nil, &NotLoadedError{edge: "tenant"}
 }
 
-// SystemAnalysisOrErr returns the SystemAnalysis value or an error if the edge
-// was not loaded in eager-loading, or loaded but was not found.
-func (e InvestigationEdges) SystemAnalysisOrErr() (*SystemAnalysis, error) {
-	if e.SystemAnalysis != nil {
-		return e.SystemAnalysis, nil
-	} else if e.loadedTypes[1] {
-		return nil, &NotFoundError{label: systemanalysis.Label}
-	}
-	return nil, &NotLoadedError{edge: "system_analysis"}
-}
-
 // AgentSessionOrErr returns the AgentSession value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
 func (e InvestigationEdges) AgentSessionOrErr() (*AgentSession, error) {
 	if e.AgentSession != nil {
 		return e.AgentSession, nil
-	} else if e.loadedTypes[2] {
+	} else if e.loadedTypes[1] {
 		return nil, &NotFoundError{label: agentsession.Label}
 	}
 	return nil, &NotLoadedError{edge: "agent_session"}
+}
+
+// SystemAnalysisOrErr returns the SystemAnalysis value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e InvestigationEdges) SystemAnalysisOrErr() (*SystemAnalysis, error) {
+	if e.SystemAnalysis != nil {
+		return e.SystemAnalysis, nil
+	} else if e.loadedTypes[2] {
+		return nil, &NotFoundError{label: systemanalysis.Label}
+	}
+	return nil, &NotLoadedError{edge: "system_analysis"}
 }
 
 // SituationsOrErr returns the Situations value or an error if the edge
@@ -101,10 +104,28 @@ func (e InvestigationEdges) SituationsOrErr() ([]*SituationInvestigation, error)
 	return nil, &NotLoadedError{edge: "situations"}
 }
 
+// UserInputsOrErr returns the UserInputs value or an error if the edge
+// was not loaded in eager-loading.
+func (e InvestigationEdges) UserInputsOrErr() ([]*InvestigationUserInput, error) {
+	if e.loadedTypes[4] {
+		return e.UserInputs, nil
+	}
+	return nil, &NotLoadedError{edge: "user_inputs"}
+}
+
+// EvidenceRevisionsOrErr returns the EvidenceRevisions value or an error if the edge
+// was not loaded in eager-loading.
+func (e InvestigationEdges) EvidenceRevisionsOrErr() ([]*InvestigationEvidenceRevision, error) {
+	if e.loadedTypes[5] {
+		return e.EvidenceRevisions, nil
+	}
+	return nil, &NotLoadedError{edge: "evidence_revisions"}
+}
+
 // HypothesesOrErr returns the Hypotheses value or an error if the edge
 // was not loaded in eager-loading.
 func (e InvestigationEdges) HypothesesOrErr() ([]*InvestigationHypothesis, error) {
-	if e.loadedTypes[4] {
+	if e.loadedTypes[6] {
 		return e.Hypotheses, nil
 	}
 	return nil, &NotLoadedError{edge: "hypotheses"}
@@ -113,21 +134,19 @@ func (e InvestigationEdges) HypothesesOrErr() ([]*InvestigationHypothesis, error
 // FindingsOrErr returns the Findings value or an error if the edge
 // was not loaded in eager-loading.
 func (e InvestigationEdges) FindingsOrErr() ([]*InvestigationFinding, error) {
-	if e.loadedTypes[5] {
+	if e.loadedTypes[7] {
 		return e.Findings, nil
 	}
 	return nil, &NotLoadedError{edge: "findings"}
 }
 
-// ReportOrErr returns the Report value or an error if the edge
-// was not loaded in eager-loading, or loaded but was not found.
-func (e InvestigationEdges) ReportOrErr() (*InvestigationReport, error) {
-	if e.Report != nil {
-		return e.Report, nil
-	} else if e.loadedTypes[6] {
-		return nil, &NotFoundError{label: investigationreport.Label}
+// ReportsOrErr returns the Reports value or an error if the edge
+// was not loaded in eager-loading.
+func (e InvestigationEdges) ReportsOrErr() ([]*InvestigationReport, error) {
+	if e.loadedTypes[8] {
+		return e.Reports, nil
 	}
-	return nil, &NotLoadedError{edge: "report"}
+	return nil, &NotLoadedError{edge: "reports"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -139,7 +158,7 @@ func (*Investigation) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullInt64)
 		case investigation.FieldCreatedAt, investigation.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
-		case investigation.FieldID, investigation.FieldSystemAnalysisID, investigation.FieldAgentSessionID:
+		case investigation.FieldID, investigation.FieldAgentSessionID, investigation.FieldSystemAnalysisID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -180,17 +199,17 @@ func (_m *Investigation) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.UpdatedAt = value.Time
 			}
-		case investigation.FieldSystemAnalysisID:
-			if value, ok := values[i].(*uuid.UUID); !ok {
-				return fmt.Errorf("unexpected type %T for field system_analysis_id", values[i])
-			} else if value != nil {
-				_m.SystemAnalysisID = *value
-			}
 		case investigation.FieldAgentSessionID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field agent_session_id", values[i])
 			} else if value != nil {
 				_m.AgentSessionID = *value
+			}
+		case investigation.FieldSystemAnalysisID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field system_analysis_id", values[i])
+			} else if value != nil {
+				_m.SystemAnalysisID = *value
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -210,19 +229,29 @@ func (_m *Investigation) QueryTenant() *TenantQuery {
 	return NewInvestigationClient(_m.config).QueryTenant(_m)
 }
 
-// QuerySystemAnalysis queries the "system_analysis" edge of the Investigation entity.
-func (_m *Investigation) QuerySystemAnalysis() *SystemAnalysisQuery {
-	return NewInvestigationClient(_m.config).QuerySystemAnalysis(_m)
-}
-
 // QueryAgentSession queries the "agent_session" edge of the Investigation entity.
 func (_m *Investigation) QueryAgentSession() *AgentSessionQuery {
 	return NewInvestigationClient(_m.config).QueryAgentSession(_m)
 }
 
+// QuerySystemAnalysis queries the "system_analysis" edge of the Investigation entity.
+func (_m *Investigation) QuerySystemAnalysis() *SystemAnalysisQuery {
+	return NewInvestigationClient(_m.config).QuerySystemAnalysis(_m)
+}
+
 // QuerySituations queries the "situations" edge of the Investigation entity.
 func (_m *Investigation) QuerySituations() *SituationInvestigationQuery {
 	return NewInvestigationClient(_m.config).QuerySituations(_m)
+}
+
+// QueryUserInputs queries the "user_inputs" edge of the Investigation entity.
+func (_m *Investigation) QueryUserInputs() *InvestigationUserInputQuery {
+	return NewInvestigationClient(_m.config).QueryUserInputs(_m)
+}
+
+// QueryEvidenceRevisions queries the "evidence_revisions" edge of the Investigation entity.
+func (_m *Investigation) QueryEvidenceRevisions() *InvestigationEvidenceRevisionQuery {
+	return NewInvestigationClient(_m.config).QueryEvidenceRevisions(_m)
 }
 
 // QueryHypotheses queries the "hypotheses" edge of the Investigation entity.
@@ -235,9 +264,9 @@ func (_m *Investigation) QueryFindings() *InvestigationFindingQuery {
 	return NewInvestigationClient(_m.config).QueryFindings(_m)
 }
 
-// QueryReport queries the "report" edge of the Investigation entity.
-func (_m *Investigation) QueryReport() *InvestigationReportQuery {
-	return NewInvestigationClient(_m.config).QueryReport(_m)
+// QueryReports queries the "reports" edge of the Investigation entity.
+func (_m *Investigation) QueryReports() *InvestigationReportQuery {
+	return NewInvestigationClient(_m.config).QueryReports(_m)
 }
 
 // Update returns a builder for updating this Investigation.
@@ -272,11 +301,11 @@ func (_m *Investigation) String() string {
 	builder.WriteString("updated_at=")
 	builder.WriteString(_m.UpdatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
-	builder.WriteString("system_analysis_id=")
-	builder.WriteString(fmt.Sprintf("%v", _m.SystemAnalysisID))
-	builder.WriteString(", ")
 	builder.WriteString("agent_session_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.AgentSessionID))
+	builder.WriteString(", ")
+	builder.WriteString("system_analysis_id=")
+	builder.WriteString(fmt.Sprintf("%v", _m.SystemAnalysisID))
 	builder.WriteByte(')')
 	return builder.String()
 }

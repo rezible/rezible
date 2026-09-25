@@ -1150,6 +1150,11 @@ export type ExternalTicket = {
     provider: string;
 };
 
+export type FindingVersionReference = {
+    relation: string;
+    versionId: string;
+};
+
 export type GetAdjacentOncallShiftsResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
@@ -1308,6 +1313,30 @@ export type GetIntegrationInstallationResponseBody = {
      */
     readonly $schema?: string;
     data: IntegrationInstallation;
+};
+
+export type GetInvestigationFindingResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: InvestigationFinding;
+};
+
+export type GetInvestigationHypothesisResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: InvestigationHypothesis;
+};
+
+export type GetInvestigationReportResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: InvestigationReport;
 };
 
 export type GetInvestigationResponseBody = {
@@ -1869,10 +1898,66 @@ export type Investigation = {
 export type InvestigationAttributes = {
     analysisId: string;
     createdAt: string;
-    query?: string;
-    report?: InvestigationReport;
+    latestTurnId: string | null;
+    latestTurnStatus: string | null;
+    query: string;
     sessionId: string;
     updatedAt: string;
+};
+
+export type InvestigationEvidenceRevision = {
+    attributes: InvestigationEvidenceRevisionAttributes;
+    id: string;
+};
+
+export type InvestigationEvidenceRevisionAttributes = {
+    agentTurnId: string | null;
+    callerKey: string;
+    createdAt: string;
+    explanation: string;
+};
+
+export type InvestigationFinding = {
+    attributes: InvestigationFindingAttrs;
+    id: string;
+};
+
+export type InvestigationFindingAttrs = {
+    agentTurnId: string;
+    body: string;
+    createdAt: string;
+    findingId: string;
+    findingReferences: Array<FindingVersionReference>;
+    invalidatedByVersionIds: Array<string>;
+    key: string;
+    provisional: boolean;
+    references: Array<InvestigationReference>;
+    title: string;
+    turnStatus: string;
+    userInputId: string | null;
+};
+
+export type InvestigationHypothesis = {
+    attributes: InvestigationHypothesisAttrs;
+    id: string;
+};
+
+export type InvestigationHypothesisAttrs = {
+    agentTurnId: string;
+    createdAt: string;
+    hypothesisId: string;
+    justification: string;
+    key: string;
+    provisional: boolean;
+    references: Array<InvestigationReference>;
+    status: string;
+    title: string;
+    turnStatus: string;
+};
+
+export type InvestigationReference = {
+    id: string;
+    kind: 'knowledge_evidence';
 };
 
 export type InvestigationReport = {
@@ -1881,13 +1966,26 @@ export type InvestigationReport = {
 };
 
 export type InvestigationReportAttributes = {
-    bestNextStep?: string;
+    agentTurnId: string;
     createdAt: string;
-    likelyCause?: string;
-    limitations?: Array<string>;
-    recommendedActions?: Array<string>;
-    suggestedChecks?: Array<string>;
+    provisional: boolean;
+    references: Array<InvestigationReference>;
     text: string;
+    turnStatus: string;
+};
+
+export type InvestigationUserInput = {
+    attributes: InvestigationUserInputAttributes;
+    id: string;
+};
+
+export type InvestigationUserInputAttributes = {
+    agentTurnId: string | null;
+    answerVersionId: string | null;
+    createdAt: string;
+    submissionKey: string;
+    text: string;
+    userId: string;
 };
 
 export type KnowledgeGraphEntitiesPage = {
@@ -2328,6 +2426,42 @@ export type PaginatedResponseBodyIncidentUpdate = {
     pagination: Pagination;
 };
 
+export type PaginatedResponseBodyInvestigationEvidenceRevision = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<InvestigationEvidenceRevision>;
+    pagination: Pagination;
+};
+
+export type PaginatedResponseBodyInvestigationFinding = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<InvestigationFinding>;
+    pagination: Pagination;
+};
+
+export type PaginatedResponseBodyInvestigationHypothesis = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<InvestigationHypothesis>;
+    pagination: Pagination;
+};
+
+export type PaginatedResponseBodyInvestigationUserInput = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<InvestigationUserInput>;
+    pagination: Pagination;
+};
+
 export type PaginatedResponseBodyKnowledgeGraphEntity = {
     /**
      * A URL to the JSON Schema for this object.
@@ -2654,9 +2788,7 @@ export type Situation = {
 export type SituationAttributes = {
     closeReason?: 'stabilized' | 'dismissed';
     closedAt?: string;
-    evidenceRevision: number;
     investigation?: SituationInvestigation;
-    knowledgeEntityId: string;
     linkedIncidentIds: Array<string>;
     observationGroups: Array<SituationObservationGroup>;
     openedAt: string;
@@ -2682,10 +2814,7 @@ export type SituationHazardAssessmentAttrs = {
 };
 
 export type SituationInvestigation = {
-    completedRevision: number;
     investigation: ExpandableInvestigationAttributes;
-    requestedRevision: number;
-    requestedTurnId?: string;
 };
 
 export type SituationObservationGroup = {
@@ -2709,24 +2838,21 @@ export type StartIntegrationOAuthFlowResponseBody = {
     data: IntegrationOAuthFlow;
 };
 
-export type StartSituationInvestigationAttributes = {
-    query?: string;
-};
-
-export type StartSituationInvestigationRequestBody = {
+export type SubmitInvestigationUserInputRequestBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    attributes: StartSituationInvestigationAttributes;
+    submissionKey: string;
+    text: string;
 };
 
-export type StartSituationInvestigationResponseBody = {
+export type SubmitInvestigationUserInputResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: SituationInvestigation;
+    data: InvestigationUserInput;
 };
 
 export type SystemAnalysis = {
@@ -8245,6 +8371,402 @@ export type GetInvestigationResponses = {
 
 export type GetInvestigationResponse = GetInvestigationResponses[keyof GetInvestigationResponses];
 
+export type ListInvestigationEvidenceRevisionsData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: {
+        page?: number;
+        pageSize?: number;
+    };
+    url: '/investigations/{id}/evidence-revisions';
+};
+
+export type ListInvestigationEvidenceRevisionsErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type ListInvestigationEvidenceRevisionsError = ListInvestigationEvidenceRevisionsErrors[keyof ListInvestigationEvidenceRevisionsErrors];
+
+export type ListInvestigationEvidenceRevisionsResponses = {
+    /**
+     * OK
+     */
+    200: PaginatedResponseBodyInvestigationEvidenceRevision;
+};
+
+export type ListInvestigationEvidenceRevisionsResponse = ListInvestigationEvidenceRevisionsResponses[keyof ListInvestigationEvidenceRevisionsResponses];
+
+export type ListInvestigationFindingsData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: {
+        page?: number;
+        pageSize?: number;
+    };
+    url: '/investigations/{id}/findings';
+};
+
+export type ListInvestigationFindingsErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type ListInvestigationFindingsError = ListInvestigationFindingsErrors[keyof ListInvestigationFindingsErrors];
+
+export type ListInvestigationFindingsResponses = {
+    /**
+     * OK
+     */
+    200: PaginatedResponseBodyInvestigationFinding;
+};
+
+export type ListInvestigationFindingsResponse = ListInvestigationFindingsResponses[keyof ListInvestigationFindingsResponses];
+
+export type GetInvestigationFindingData = {
+    body?: never;
+    path: {
+        id: string;
+        versionId: string;
+    };
+    query?: never;
+    url: '/investigations/{id}/findings/{versionId}';
+};
+
+export type GetInvestigationFindingErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type GetInvestigationFindingError = GetInvestigationFindingErrors[keyof GetInvestigationFindingErrors];
+
+export type GetInvestigationFindingResponses = {
+    /**
+     * OK
+     */
+    200: GetInvestigationFindingResponseBody;
+};
+
+export type GetInvestigationFindingResponse = GetInvestigationFindingResponses[keyof GetInvestigationFindingResponses];
+
+export type ListInvestigationHypothesesData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: {
+        page?: number;
+        pageSize?: number;
+    };
+    url: '/investigations/{id}/hypotheses';
+};
+
+export type ListInvestigationHypothesesErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type ListInvestigationHypothesesError = ListInvestigationHypothesesErrors[keyof ListInvestigationHypothesesErrors];
+
+export type ListInvestigationHypothesesResponses = {
+    /**
+     * OK
+     */
+    200: PaginatedResponseBodyInvestigationHypothesis;
+};
+
+export type ListInvestigationHypothesesResponse = ListInvestigationHypothesesResponses[keyof ListInvestigationHypothesesResponses];
+
+export type GetInvestigationHypothesisData = {
+    body?: never;
+    path: {
+        id: string;
+        versionId: string;
+    };
+    query?: never;
+    url: '/investigations/{id}/hypotheses/{versionId}';
+};
+
+export type GetInvestigationHypothesisErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type GetInvestigationHypothesisError = GetInvestigationHypothesisErrors[keyof GetInvestigationHypothesisErrors];
+
+export type GetInvestigationHypothesisResponses = {
+    /**
+     * OK
+     */
+    200: GetInvestigationHypothesisResponseBody;
+};
+
+export type GetInvestigationHypothesisResponse = GetInvestigationHypothesisResponses[keyof GetInvestigationHypothesisResponses];
+
+export type GetInvestigationReportData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: {
+        selection?: 'latest' | 'completed';
+    };
+    url: '/investigations/{id}/report';
+};
+
+export type GetInvestigationReportErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type GetInvestigationReportError = GetInvestigationReportErrors[keyof GetInvestigationReportErrors];
+
+export type GetInvestigationReportResponses = {
+    /**
+     * OK
+     */
+    200: GetInvestigationReportResponseBody;
+};
+
+export type GetInvestigationReportResponse = GetInvestigationReportResponses[keyof GetInvestigationReportResponses];
+
+export type ListInvestigationUserInputsData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: {
+        page?: number;
+        pageSize?: number;
+    };
+    url: '/investigations/{id}/user-inputs';
+};
+
+export type ListInvestigationUserInputsErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type ListInvestigationUserInputsError = ListInvestigationUserInputsErrors[keyof ListInvestigationUserInputsErrors];
+
+export type ListInvestigationUserInputsResponses = {
+    /**
+     * OK
+     */
+    200: PaginatedResponseBodyInvestigationUserInput;
+};
+
+export type ListInvestigationUserInputsResponse = ListInvestigationUserInputsResponses[keyof ListInvestigationUserInputsResponses];
+
+export type SubmitInvestigationUserInputData = {
+    body: SubmitInvestigationUserInputRequestBody;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/investigations/{id}/user-inputs';
+};
+
+export type SubmitInvestigationUserInputErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Conflict
+     */
+    409: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type SubmitInvestigationUserInputError = SubmitInvestigationUserInputErrors[keyof SubmitInvestigationUserInputErrors];
+
+export type SubmitInvestigationUserInputResponses = {
+    /**
+     * OK
+     */
+    200: SubmitInvestigationUserInputResponseBody;
+};
+
+export type SubmitInvestigationUserInputResponse = SubmitInvestigationUserInputResponses[keyof SubmitInvestigationUserInputResponses];
+
 export type ListKnowledgeGraphAliasesData = {
     body?: never;
     path?: never;
@@ -11065,53 +11587,6 @@ export type AddSituationHazardAssessmentResponses = {
 };
 
 export type AddSituationHazardAssessmentResponse = AddSituationHazardAssessmentResponses[keyof AddSituationHazardAssessmentResponses];
-
-export type StartSituationInvestigationData = {
-    body: StartSituationInvestigationRequestBody;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/situations/{id}/investigation';
-};
-
-export type StartSituationInvestigationErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type StartSituationInvestigationError = StartSituationInvestigationErrors[keyof StartSituationInvestigationErrors];
-
-export type StartSituationInvestigationResponses = {
-    /**
-     * OK
-     */
-    200: StartSituationInvestigationResponseBody;
-};
-
-export type StartSituationInvestigationResponse = StartSituationInvestigationResponses[keyof StartSituationInvestigationResponses];
 
 export type GetSystemAnalysisData = {
     body?: never;

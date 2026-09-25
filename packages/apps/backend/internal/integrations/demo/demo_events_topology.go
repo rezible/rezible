@@ -158,10 +158,10 @@ func (p topologyRelationshipObservedPayload) getAttributes(namespace string) pro
 
 func makeDemoTopologyRelationships(cmps []topologyComponentObservedPayload) []topologyRelationshipObservedPayload {
 	resourceRefForID := map[string]string{
-		"search_repository":         "demo:code_repositories:search-api",
-		"checkout_repository":       "demo:code_repositories:checkout-service",
+		"search_repository":            "demo:code_repositories:search-api",
+		"checkout_repository":          "demo:code_repositories:checkout-service",
 		"checkout_orchestrator_source": "demo:code:checkout-orchestrator",
-		"search_query_source":           "demo:code:search-query-handler",
+		"search_query_source":          "demo:code:search-query-handler",
 	}
 	mustTopologyComponent := func(id string) topologyRelationshipObservedPayloadComponent {
 		ref := componentRef(id)

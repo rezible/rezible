@@ -53,6 +53,7 @@ func statusErrorWithCode(code string, fn func(string, ...error) huma.StatusError
 
 var (
 	Err400InvalidInput = statusErrorWithCode("invalid_input", huma.Error400BadRequest)
+	Err422InvalidInput = statusErrorWithCode("invalid_input", huma.Error422UnprocessableEntity)
 
 	Err401AuthSessionMissing = statusErrorWithCode("auth_session_missing", huma.Error401Unauthorized)
 	Err401AuthSessionExpired = statusErrorWithCode("auth_session_expired", huma.Error401Unauthorized)

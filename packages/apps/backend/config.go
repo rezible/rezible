@@ -144,7 +144,7 @@ type (
 
 type (
 	DocumentsConfig struct {
-		ServerUrl      string `cfg:"server_url" validate:"required"`
+		ServerUrl     string `cfg:"server_url" validate:"required"`
 		SessionKeyHex string `cfg:"session_key_hex" validate:"required,len=64"`
 	}
 )

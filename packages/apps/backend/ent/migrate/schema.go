@@ -1542,14 +1542,72 @@ var (
 				Columns: []*schema.Column{InvestigationsColumns[4]},
 			},
 			{
+				Name:    "investigation_tenant_id_agent_session_id",
+				Unique:  true,
+				Columns: []*schema.Column{InvestigationsColumns[4], InvestigationsColumns[3]},
+			},
+			{
 				Name:    "investigation_tenant_id_system_analysis_id",
 				Unique:  true,
 				Columns: []*schema.Column{InvestigationsColumns[4], InvestigationsColumns[5]},
 			},
+		},
+	}
+	// InvestigationEvidenceRevisionsColumns holds the columns for the "investigation_evidence_revisions" table.
+	InvestigationEvidenceRevisionsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "explanation", Type: field.TypeString, Size: 2147483647},
+		{Name: "key", Type: field.TypeString},
+		{Name: "investigation_id", Type: field.TypeUUID},
+		{Name: "tenant_id", Type: field.TypeInt},
+		{Name: "agent_turn_id", Type: field.TypeUUID, Nullable: true},
+	}
+	// InvestigationEvidenceRevisionsTable holds the schema information for the "investigation_evidence_revisions" table.
+	InvestigationEvidenceRevisionsTable = &schema.Table{
+		Name:       "investigation_evidence_revisions",
+		Columns:    InvestigationEvidenceRevisionsColumns,
+		PrimaryKey: []*schema.Column{InvestigationEvidenceRevisionsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
 			{
-				Name:    "investigation_tenant_id_agent_session_id",
+				Symbol:     "investigation_evidence_revisions_investigations_evidence_revisions",
+				Columns:    []*schema.Column{InvestigationEvidenceRevisionsColumns[4]},
+				RefColumns: []*schema.Column{InvestigationsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "investigation_evidence_revisions_tenants_tenant",
+				Columns:    []*schema.Column{InvestigationEvidenceRevisionsColumns[5]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "investigation_evidence_revisions_agent_turns_agent_turn",
+				Columns:    []*schema.Column{InvestigationEvidenceRevisionsColumns[6]},
+				RefColumns: []*schema.Column{AgentTurnsColumns[0]},
+				OnDelete:   schema.Restrict,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "investigationevidencerevision_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{InvestigationEvidenceRevisionsColumns[5]},
+			},
+			{
+				Name:    "investigationevidencerevision_investigation_id_key",
 				Unique:  true,
-				Columns: []*schema.Column{InvestigationsColumns[4], InvestigationsColumns[3]},
+				Columns: []*schema.Column{InvestigationEvidenceRevisionsColumns[4], InvestigationEvidenceRevisionsColumns[3]},
+			},
+			{
+				Name:    "investigationevidencerevision_investigation_id_agent_turn_id",
+				Unique:  true,
+				Columns: []*schema.Column{InvestigationEvidenceRevisionsColumns[4], InvestigationEvidenceRevisionsColumns[6]},
+			},
+			{
+				Name:    "investigationevidencerevision_investigation_id_created_at_id",
+				Unique:  false,
+				Columns: []*schema.Column{InvestigationEvidenceRevisionsColumns[4], InvestigationEvidenceRevisionsColumns[1], InvestigationEvidenceRevisionsColumns[0]},
 			},
 		},
 	}
@@ -1558,10 +1616,10 @@ var (
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "title", Type: field.TypeString},
-		{Name: "body", Type: field.TypeString, Nullable: true, Size: 2147483647},
+		{Name: "key", Type: field.TypeString},
 		{Name: "investigation_id", Type: field.TypeUUID},
 		{Name: "tenant_id", Type: field.TypeInt},
+		{Name: "user_input_id", Type: field.TypeUUID, Nullable: true},
 	}
 	// InvestigationFindingsTable holds the schema information for the "investigation_findings" table.
 	InvestigationFindingsTable = &schema.Table{
@@ -1571,14 +1629,20 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "investigation_findings_investigations_findings",
-				Columns:    []*schema.Column{InvestigationFindingsColumns[5]},
+				Columns:    []*schema.Column{InvestigationFindingsColumns[4]},
 				RefColumns: []*schema.Column{InvestigationsColumns[0]},
-				OnDelete:   schema.NoAction,
+				OnDelete:   schema.Cascade,
 			},
 			{
 				Symbol:     "investigation_findings_tenants_tenant",
-				Columns:    []*schema.Column{InvestigationFindingsColumns[6]},
+				Columns:    []*schema.Column{InvestigationFindingsColumns[5]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "investigation_findings_investigation_user_inputs_user_input",
+				Columns:    []*schema.Column{InvestigationFindingsColumns[6]},
+				RefColumns: []*schema.Column{InvestigationUserInputsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 		},
@@ -1586,12 +1650,122 @@ var (
 			{
 				Name:    "investigationfinding_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{InvestigationFindingsColumns[6]},
+				Columns: []*schema.Column{InvestigationFindingsColumns[5]},
 			},
 			{
-				Name:    "investigationfinding_tenant_id_investigation_id",
+				Name:    "investigationfinding_tenant_id_investigation_id_key",
+				Unique:  true,
+				Columns: []*schema.Column{InvestigationFindingsColumns[5], InvestigationFindingsColumns[4], InvestigationFindingsColumns[3]},
+			},
+			{
+				Name:    "investigationfinding_tenant_id_user_input_id",
+				Unique:  true,
+				Columns: []*schema.Column{InvestigationFindingsColumns[5], InvestigationFindingsColumns[6]},
+			},
+		},
+	}
+	// InvestigationFindingVersionsColumns holds the columns for the "investigation_finding_versions" table.
+	InvestigationFindingVersionsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "fingerprint", Type: field.TypeString, Size: 64},
+		{Name: "title", Type: field.TypeString},
+		{Name: "body", Type: field.TypeString, Size: 2147483647},
+		{Name: "tenant_id", Type: field.TypeInt},
+		{Name: "finding_id", Type: field.TypeUUID},
+		{Name: "agent_turn_id", Type: field.TypeUUID},
+	}
+	// InvestigationFindingVersionsTable holds the schema information for the "investigation_finding_versions" table.
+	InvestigationFindingVersionsTable = &schema.Table{
+		Name:       "investigation_finding_versions",
+		Columns:    InvestigationFindingVersionsColumns,
+		PrimaryKey: []*schema.Column{InvestigationFindingVersionsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "investigation_finding_versions_tenants_tenant",
+				Columns:    []*schema.Column{InvestigationFindingVersionsColumns[5]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "investigation_finding_versions_investigation_findings_finding",
+				Columns:    []*schema.Column{InvestigationFindingVersionsColumns[6]},
+				RefColumns: []*schema.Column{InvestigationFindingsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "investigation_finding_versions_agent_turns_agent_turn",
+				Columns:    []*schema.Column{InvestigationFindingVersionsColumns[7]},
+				RefColumns: []*schema.Column{AgentTurnsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "investigationfindingversion_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{InvestigationFindingsColumns[6], InvestigationFindingsColumns[5]},
+				Columns: []*schema.Column{InvestigationFindingVersionsColumns[5]},
+			},
+			{
+				Name:    "investigationfindingversion_tenant_id_agent_turn_id_fingerprint",
+				Unique:  true,
+				Columns: []*schema.Column{InvestigationFindingVersionsColumns[5], InvestigationFindingVersionsColumns[7], InvestigationFindingVersionsColumns[2]},
+			},
+			{
+				Name:    "investigationfindingversion_tenant_id_finding_id_agent_turn_id_created_at_id",
+				Unique:  false,
+				Columns: []*schema.Column{InvestigationFindingVersionsColumns[5], InvestigationFindingVersionsColumns[6], InvestigationFindingVersionsColumns[7], InvestigationFindingVersionsColumns[1], InvestigationFindingVersionsColumns[0]},
+			},
+		},
+	}
+	// InvestigationFindingVersionLinksColumns holds the columns for the "investigation_finding_version_links" table.
+	InvestigationFindingVersionLinksColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "relation", Type: field.TypeEnum, Enums: []string{"supports", "contradicts", "invalidates"}},
+		{Name: "tenant_id", Type: field.TypeInt},
+		{Name: "source_version_id", Type: field.TypeUUID},
+		{Name: "target_version_id", Type: field.TypeUUID},
+	}
+	// InvestigationFindingVersionLinksTable holds the schema information for the "investigation_finding_version_links" table.
+	InvestigationFindingVersionLinksTable = &schema.Table{
+		Name:       "investigation_finding_version_links",
+		Columns:    InvestigationFindingVersionLinksColumns,
+		PrimaryKey: []*schema.Column{InvestigationFindingVersionLinksColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "investigation_finding_version_links_tenants_tenant",
+				Columns:    []*schema.Column{InvestigationFindingVersionLinksColumns[2]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "investigation_finding_version_links_investigation_finding_versions_source_version",
+				Columns:    []*schema.Column{InvestigationFindingVersionLinksColumns[3]},
+				RefColumns: []*schema.Column{InvestigationFindingVersionsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "investigation_finding_version_links_investigation_finding_versions_target_version",
+				Columns:    []*schema.Column{InvestigationFindingVersionLinksColumns[4]},
+				RefColumns: []*schema.Column{InvestigationFindingVersionsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "investigationfindingversionlink_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{InvestigationFindingVersionLinksColumns[2]},
+			},
+			{
+				Name:    "investigationfindingversionlink_tenant_id_source_version_id_target_version_id_relation",
+				Unique:  true,
+				Columns: []*schema.Column{InvestigationFindingVersionLinksColumns[2], InvestigationFindingVersionLinksColumns[3], InvestigationFindingVersionLinksColumns[4], InvestigationFindingVersionLinksColumns[1]},
+			},
+			{
+				Name:    "investigationfindingversionlink_tenant_id_target_version_id",
+				Unique:  false,
+				Columns: []*schema.Column{InvestigationFindingVersionLinksColumns[2], InvestigationFindingVersionLinksColumns[4]},
 			},
 		},
 	}
@@ -1600,9 +1774,7 @@ var (
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "title", Type: field.TypeString},
-		{Name: "body", Type: field.TypeString, Nullable: true, Size: 2147483647},
-		{Name: "verdict", Type: field.TypeString, Nullable: true, Size: 2147483647},
+		{Name: "key", Type: field.TypeString},
 		{Name: "investigation_id", Type: field.TypeUUID},
 		{Name: "tenant_id", Type: field.TypeInt},
 	}
@@ -1614,13 +1786,13 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "investigation_hypotheses_investigations_hypotheses",
-				Columns:    []*schema.Column{InvestigationHypothesesColumns[6]},
+				Columns:    []*schema.Column{InvestigationHypothesesColumns[4]},
 				RefColumns: []*schema.Column{InvestigationsColumns[0]},
-				OnDelete:   schema.NoAction,
+				OnDelete:   schema.Cascade,
 			},
 			{
 				Symbol:     "investigation_hypotheses_tenants_tenant",
-				Columns:    []*schema.Column{InvestigationHypothesesColumns[7]},
+				Columns:    []*schema.Column{InvestigationHypothesesColumns[5]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -1629,12 +1801,136 @@ var (
 			{
 				Name:    "investigationhypothesis_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{InvestigationHypothesesColumns[7]},
+				Columns: []*schema.Column{InvestigationHypothesesColumns[5]},
 			},
 			{
-				Name:    "investigationhypothesis_tenant_id_investigation_id",
+				Name:    "investigationhypothesis_tenant_id_investigation_id_key",
+				Unique:  true,
+				Columns: []*schema.Column{InvestigationHypothesesColumns[5], InvestigationHypothesesColumns[4], InvestigationHypothesesColumns[3]},
+			},
+		},
+	}
+	// InvestigationHypothesisVersionsColumns holds the columns for the "investigation_hypothesis_versions" table.
+	InvestigationHypothesisVersionsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "fingerprint", Type: field.TypeString, Size: 64},
+		{Name: "title", Type: field.TypeString},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"open", "supported", "disproven", "inconclusive"}},
+		{Name: "justification", Type: field.TypeString, Size: 2147483647},
+		{Name: "tenant_id", Type: field.TypeInt},
+		{Name: "hypothesis_id", Type: field.TypeUUID},
+		{Name: "agent_turn_id", Type: field.TypeUUID},
+	}
+	// InvestigationHypothesisVersionsTable holds the schema information for the "investigation_hypothesis_versions" table.
+	InvestigationHypothesisVersionsTable = &schema.Table{
+		Name:       "investigation_hypothesis_versions",
+		Columns:    InvestigationHypothesisVersionsColumns,
+		PrimaryKey: []*schema.Column{InvestigationHypothesisVersionsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "investigation_hypothesis_versions_tenants_tenant",
+				Columns:    []*schema.Column{InvestigationHypothesisVersionsColumns[6]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "investigation_hypothesis_versions_investigation_hypotheses_hypothesis",
+				Columns:    []*schema.Column{InvestigationHypothesisVersionsColumns[7]},
+				RefColumns: []*schema.Column{InvestigationHypothesesColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "investigation_hypothesis_versions_agent_turns_agent_turn",
+				Columns:    []*schema.Column{InvestigationHypothesisVersionsColumns[8]},
+				RefColumns: []*schema.Column{AgentTurnsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "investigationhypothesisversion_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{InvestigationHypothesesColumns[7], InvestigationHypothesesColumns[6]},
+				Columns: []*schema.Column{InvestigationHypothesisVersionsColumns[6]},
+			},
+			{
+				Name:    "investigationhypothesisversion_tenant_id_agent_turn_id_fingerprint",
+				Unique:  true,
+				Columns: []*schema.Column{InvestigationHypothesisVersionsColumns[6], InvestigationHypothesisVersionsColumns[8], InvestigationHypothesisVersionsColumns[2]},
+			},
+			{
+				Name:    "investigationhypothesisversion_tenant_id_hypothesis_id_agent_turn_id_created_at_id",
+				Unique:  false,
+				Columns: []*schema.Column{InvestigationHypothesisVersionsColumns[6], InvestigationHypothesisVersionsColumns[7], InvestigationHypothesisVersionsColumns[8], InvestigationHypothesisVersionsColumns[1], InvestigationHypothesisVersionsColumns[0]},
+			},
+		},
+	}
+	// InvestigationOutputReferencesColumns holds the columns for the "investigation_output_references" table.
+	InvestigationOutputReferencesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "tenant_id", Type: field.TypeInt},
+		{Name: "report_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "finding_version_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "hypothesis_version_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "knowledge_evidence_id", Type: field.TypeUUID},
+	}
+	// InvestigationOutputReferencesTable holds the schema information for the "investigation_output_references" table.
+	InvestigationOutputReferencesTable = &schema.Table{
+		Name:       "investigation_output_references",
+		Columns:    InvestigationOutputReferencesColumns,
+		PrimaryKey: []*schema.Column{InvestigationOutputReferencesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "investigation_output_references_tenants_tenant",
+				Columns:    []*schema.Column{InvestigationOutputReferencesColumns[1]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "investigation_output_references_investigation_reports_report",
+				Columns:    []*schema.Column{InvestigationOutputReferencesColumns[2]},
+				RefColumns: []*schema.Column{InvestigationReportsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "investigation_output_references_investigation_finding_versions_finding_version",
+				Columns:    []*schema.Column{InvestigationOutputReferencesColumns[3]},
+				RefColumns: []*schema.Column{InvestigationFindingVersionsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "investigation_output_references_investigation_hypothesis_versions_hypothesis_version",
+				Columns:    []*schema.Column{InvestigationOutputReferencesColumns[4]},
+				RefColumns: []*schema.Column{InvestigationHypothesisVersionsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "investigation_output_references_knowledge_evidences_knowledge_evidence",
+				Columns:    []*schema.Column{InvestigationOutputReferencesColumns[5]},
+				RefColumns: []*schema.Column{KnowledgeEvidencesColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "investigationoutputreference_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{InvestigationOutputReferencesColumns[1]},
+			},
+			{
+				Name:    "investigationoutputreference_tenant_id_report_id",
+				Unique:  false,
+				Columns: []*schema.Column{InvestigationOutputReferencesColumns[1], InvestigationOutputReferencesColumns[2]},
+			},
+			{
+				Name:    "investigationoutputreference_tenant_id_finding_version_id",
+				Unique:  false,
+				Columns: []*schema.Column{InvestigationOutputReferencesColumns[1], InvestigationOutputReferencesColumns[3]},
+			},
+			{
+				Name:    "investigationoutputreference_tenant_id_hypothesis_version_id",
+				Unique:  false,
+				Columns: []*schema.Column{InvestigationOutputReferencesColumns[1], InvestigationOutputReferencesColumns[4]},
 			},
 		},
 	}
@@ -1642,16 +1938,11 @@ var (
 	InvestigationReportsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "created_at", Type: field.TypeTime},
-		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "fingerprint", Type: field.TypeString, Size: 64},
 		{Name: "text", Type: field.TypeString, Size: 2147483647},
-		{Name: "likely_cause", Type: field.TypeString, Nullable: true, Size: 2147483647},
-		{Name: "best_next_step", Type: field.TypeString, Nullable: true, Size: 2147483647},
-		{Name: "limitations", Type: field.TypeJSON, Nullable: true},
-		{Name: "recommended_actions", Type: field.TypeJSON, Nullable: true},
-		{Name: "suggested_checks", Type: field.TypeJSON, Nullable: true},
-		{Name: "investigation_id", Type: field.TypeUUID, Unique: true},
+		{Name: "investigation_id", Type: field.TypeUUID},
 		{Name: "tenant_id", Type: field.TypeInt},
-		{Name: "agent_turn_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "agent_turn_id", Type: field.TypeUUID},
 	}
 	// InvestigationReportsTable holds the schema information for the "investigation_reports" table.
 	InvestigationReportsTable = &schema.Table{
@@ -1660,39 +1951,98 @@ var (
 		PrimaryKey: []*schema.Column{InvestigationReportsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "investigation_reports_investigations_report",
-				Columns:    []*schema.Column{InvestigationReportsColumns[9]},
+				Symbol:     "investigation_reports_investigations_reports",
+				Columns:    []*schema.Column{InvestigationReportsColumns[4]},
 				RefColumns: []*schema.Column{InvestigationsColumns[0]},
-				OnDelete:   schema.NoAction,
+				OnDelete:   schema.Cascade,
 			},
 			{
 				Symbol:     "investigation_reports_tenants_tenant",
-				Columns:    []*schema.Column{InvestigationReportsColumns[10]},
+				Columns:    []*schema.Column{InvestigationReportsColumns[5]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "investigation_reports_agent_turns_agent_turn",
-				Columns:    []*schema.Column{InvestigationReportsColumns[11]},
+				Columns:    []*schema.Column{InvestigationReportsColumns[6]},
 				RefColumns: []*schema.Column{AgentTurnsColumns[0]},
-				OnDelete:   schema.SetNull,
+				OnDelete:   schema.NoAction,
 			},
 		},
 		Indexes: []*schema.Index{
 			{
 				Name:    "investigationreport_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{InvestigationReportsColumns[10]},
+				Columns: []*schema.Column{InvestigationReportsColumns[5]},
 			},
 			{
-				Name:    "investigationreport_tenant_id_agent_turn_id",
-				Unique:  false,
-				Columns: []*schema.Column{InvestigationReportsColumns[10], InvestigationReportsColumns[11]},
+				Name:    "investigationreport_tenant_id_agent_turn_id_fingerprint",
+				Unique:  true,
+				Columns: []*schema.Column{InvestigationReportsColumns[5], InvestigationReportsColumns[6], InvestigationReportsColumns[2]},
 			},
 			{
-				Name:    "investigationreport_tenant_id_investigation_id_created_at",
+				Name:    "investigationreport_tenant_id_investigation_id_agent_turn_id_created_at_id",
 				Unique:  false,
-				Columns: []*schema.Column{InvestigationReportsColumns[10], InvestigationReportsColumns[9], InvestigationReportsColumns[1]},
+				Columns: []*schema.Column{InvestigationReportsColumns[5], InvestigationReportsColumns[4], InvestigationReportsColumns[6], InvestigationReportsColumns[1], InvestigationReportsColumns[0]},
+			},
+		},
+	}
+	// InvestigationUserInputsColumns holds the columns for the "investigation_user_inputs" table.
+	InvestigationUserInputsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "user_id", Type: field.TypeUUID},
+		{Name: "text", Type: field.TypeString, Size: 2147483647},
+		{Name: "key", Type: field.TypeString},
+		{Name: "investigation_id", Type: field.TypeUUID},
+		{Name: "tenant_id", Type: field.TypeInt},
+		{Name: "agent_turn_id", Type: field.TypeUUID, Nullable: true},
+	}
+	// InvestigationUserInputsTable holds the schema information for the "investigation_user_inputs" table.
+	InvestigationUserInputsTable = &schema.Table{
+		Name:       "investigation_user_inputs",
+		Columns:    InvestigationUserInputsColumns,
+		PrimaryKey: []*schema.Column{InvestigationUserInputsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "investigation_user_inputs_investigations_user_inputs",
+				Columns:    []*schema.Column{InvestigationUserInputsColumns[5]},
+				RefColumns: []*schema.Column{InvestigationsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "investigation_user_inputs_tenants_tenant",
+				Columns:    []*schema.Column{InvestigationUserInputsColumns[6]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "investigation_user_inputs_agent_turns_agent_turn",
+				Columns:    []*schema.Column{InvestigationUserInputsColumns[7]},
+				RefColumns: []*schema.Column{AgentTurnsColumns[0]},
+				OnDelete:   schema.Restrict,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "investigationuserinput_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{InvestigationUserInputsColumns[6]},
+			},
+			{
+				Name:    "investigationuserinput_investigation_id_key",
+				Unique:  true,
+				Columns: []*schema.Column{InvestigationUserInputsColumns[5], InvestigationUserInputsColumns[4]},
+			},
+			{
+				Name:    "investigationuserinput_investigation_id_agent_turn_id",
+				Unique:  true,
+				Columns: []*schema.Column{InvestigationUserInputsColumns[5], InvestigationUserInputsColumns[7]},
+			},
+			{
+				Name:    "investigationuserinput_investigation_id_created_at_id",
+				Unique:  false,
+				Columns: []*schema.Column{InvestigationUserInputsColumns[5], InvestigationUserInputsColumns[1], InvestigationUserInputsColumns[0]},
 			},
 		},
 	}
@@ -2748,13 +3098,11 @@ var (
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "title", Type: field.TypeString},
-		{Name: "evidence_revision", Type: field.TypeInt, Default: 1},
 		{Name: "summary", Type: field.TypeString, Nullable: true, Size: 2147483647},
 		{Name: "opened_at", Type: field.TypeTime},
 		{Name: "closed_at", Type: field.TypeTime, Nullable: true},
 		{Name: "close_reason", Type: field.TypeEnum, Nullable: true, Enums: []string{"stabilized", "dismissed"}},
 		{Name: "tenant_id", Type: field.TypeInt},
-		{Name: "knowledge_entity_id", Type: field.TypeUUID},
 	}
 	// SituationsTable holds the schema information for the "situations" table.
 	SituationsTable = &schema.Table{
@@ -2764,14 +3112,8 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "situations_tenants_tenant",
-				Columns:    []*schema.Column{SituationsColumns[9]},
+				Columns:    []*schema.Column{SituationsColumns[8]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-			{
-				Symbol:     "situations_knowledge_entities_knowledge_entity",
-				Columns:    []*schema.Column{SituationsColumns[10]},
-				RefColumns: []*schema.Column{KnowledgeEntitiesColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 		},
@@ -2779,17 +3121,12 @@ var (
 			{
 				Name:    "situation_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{SituationsColumns[9]},
-			},
-			{
-				Name:    "situation_tenant_id_knowledge_entity_id",
-				Unique:  true,
-				Columns: []*schema.Column{SituationsColumns[9], SituationsColumns[10]},
+				Columns: []*schema.Column{SituationsColumns[8]},
 			},
 			{
 				Name:    "situation_tenant_id_opened_at",
 				Unique:  false,
-				Columns: []*schema.Column{SituationsColumns[9], SituationsColumns[6]},
+				Columns: []*schema.Column{SituationsColumns[8], SituationsColumns[5]},
 			},
 		},
 	}
@@ -2880,12 +3217,9 @@ var (
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "completed_revision", Type: field.TypeInt, Default: 0},
-		{Name: "requested_revision", Type: field.TypeInt, Default: 0},
 		{Name: "investigation_id", Type: field.TypeUUID},
 		{Name: "situation_id", Type: field.TypeUUID, Unique: true},
 		{Name: "tenant_id", Type: field.TypeInt},
-		{Name: "requested_turn_id", Type: field.TypeUUID, Nullable: true},
 	}
 	// SituationInvestigationsTable holds the schema information for the "situation_investigations" table.
 	SituationInvestigationsTable = &schema.Table{
@@ -2895,44 +3229,38 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "situation_investigations_investigations_situations",
-				Columns:    []*schema.Column{SituationInvestigationsColumns[5]},
+				Columns:    []*schema.Column{SituationInvestigationsColumns[3]},
 				RefColumns: []*schema.Column{InvestigationsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "situation_investigations_situations_investigation",
-				Columns:    []*schema.Column{SituationInvestigationsColumns[6]},
+				Columns:    []*schema.Column{SituationInvestigationsColumns[4]},
 				RefColumns: []*schema.Column{SituationsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "situation_investigations_tenants_tenant",
-				Columns:    []*schema.Column{SituationInvestigationsColumns[7]},
+				Columns:    []*schema.Column{SituationInvestigationsColumns[5]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
-			},
-			{
-				Symbol:     "situation_investigations_agent_turns_requested_turn",
-				Columns:    []*schema.Column{SituationInvestigationsColumns[8]},
-				RefColumns: []*schema.Column{AgentTurnsColumns[0]},
-				OnDelete:   schema.SetNull,
 			},
 		},
 		Indexes: []*schema.Index{
 			{
 				Name:    "situationinvestigation_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{SituationInvestigationsColumns[7]},
+				Columns: []*schema.Column{SituationInvestigationsColumns[5]},
 			},
 			{
 				Name:    "situationinvestigation_tenant_id_situation_id",
 				Unique:  true,
-				Columns: []*schema.Column{SituationInvestigationsColumns[7], SituationInvestigationsColumns[6]},
+				Columns: []*schema.Column{SituationInvestigationsColumns[5], SituationInvestigationsColumns[4]},
 			},
 			{
 				Name:    "situationinvestigation_tenant_id_investigation_id",
 				Unique:  true,
-				Columns: []*schema.Column{SituationInvestigationsColumns[7], SituationInvestigationsColumns[5]},
+				Columns: []*schema.Column{SituationInvestigationsColumns[5], SituationInvestigationsColumns[3]},
 			},
 		},
 	}
@@ -3152,7 +3480,6 @@ var (
 		{Name: "knowledge_entity_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "knowledge_relationship_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "knowledge_evidence_id", Type: field.TypeUUID, Nullable: true},
-		{Name: "normalized_event_id", Type: field.TypeUUID, Nullable: true},
 	}
 	// SystemAnalysisEntrySubjectsTable holds the schema information for the "system_analysis_entry_subjects" table.
 	SystemAnalysisEntrySubjectsTable = &schema.Table{
@@ -3190,12 +3517,6 @@ var (
 				RefColumns: []*schema.Column{KnowledgeEvidencesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
-			{
-				Symbol:     "system_analysis_entry_subjects_normalized_events_normalized_event",
-				Columns:    []*schema.Column{SystemAnalysisEntrySubjectsColumns[9]},
-				RefColumns: []*schema.Column{NormalizedEventsColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
 		},
 		Indexes: []*schema.Index{
 			{
@@ -3219,11 +3540,6 @@ var (
 				Columns: []*schema.Column{SystemAnalysisEntrySubjectsColumns[4], SystemAnalysisEntrySubjectsColumns[5], SystemAnalysisEntrySubjectsColumns[8], SystemAnalysisEntrySubjectsColumns[3]},
 			},
 			{
-				Name:    "systemanalysisentrysubject_tenant_id_entry_id_normalized_event_id_role",
-				Unique:  true,
-				Columns: []*schema.Column{SystemAnalysisEntrySubjectsColumns[4], SystemAnalysisEntrySubjectsColumns[5], SystemAnalysisEntrySubjectsColumns[9], SystemAnalysisEntrySubjectsColumns[3]},
-			},
-			{
 				Name:    "systemanalysisentrysubject_tenant_id_knowledge_entity_id",
 				Unique:  false,
 				Columns: []*schema.Column{SystemAnalysisEntrySubjectsColumns[4], SystemAnalysisEntrySubjectsColumns[6]},
@@ -3237,11 +3553,6 @@ var (
 				Name:    "systemanalysisentrysubject_tenant_id_knowledge_evidence_id",
 				Unique:  false,
 				Columns: []*schema.Column{SystemAnalysisEntrySubjectsColumns[4], SystemAnalysisEntrySubjectsColumns[8]},
-			},
-			{
-				Name:    "systemanalysisentrysubject_tenant_id_normalized_event_id",
-				Unique:  false,
-				Columns: []*schema.Column{SystemAnalysisEntrySubjectsColumns[4], SystemAnalysisEntrySubjectsColumns[9]},
 			},
 		},
 	}
@@ -4200,9 +4511,15 @@ var (
 		IntegrationEventSyncRunsTable,
 		IntegrationUserInstallStatesTable,
 		InvestigationsTable,
+		InvestigationEvidenceRevisionsTable,
 		InvestigationFindingsTable,
+		InvestigationFindingVersionsTable,
+		InvestigationFindingVersionLinksTable,
 		InvestigationHypothesesTable,
+		InvestigationHypothesisVersionsTable,
+		InvestigationOutputReferencesTable,
 		InvestigationReportsTable,
+		InvestigationUserInputsTable,
 		KnowledgeEntitiesTable,
 		KnowledgeEntityLinkingAttributesTable,
 		KnowledgeEvidencesTable,
@@ -4353,13 +4670,42 @@ func init() {
 	InvestigationsTable.ForeignKeys[0].RefTable = AgentSessionsTable
 	InvestigationsTable.ForeignKeys[1].RefTable = TenantsTable
 	InvestigationsTable.ForeignKeys[2].RefTable = SystemAnalysesTable
+	InvestigationEvidenceRevisionsTable.ForeignKeys[0].RefTable = InvestigationsTable
+	InvestigationEvidenceRevisionsTable.ForeignKeys[1].RefTable = TenantsTable
+	InvestigationEvidenceRevisionsTable.ForeignKeys[2].RefTable = AgentTurnsTable
 	InvestigationFindingsTable.ForeignKeys[0].RefTable = InvestigationsTable
 	InvestigationFindingsTable.ForeignKeys[1].RefTable = TenantsTable
+	InvestigationFindingsTable.ForeignKeys[2].RefTable = InvestigationUserInputsTable
+	InvestigationFindingVersionsTable.ForeignKeys[0].RefTable = TenantsTable
+	InvestigationFindingVersionsTable.ForeignKeys[1].RefTable = InvestigationFindingsTable
+	InvestigationFindingVersionsTable.ForeignKeys[2].RefTable = AgentTurnsTable
+	InvestigationFindingVersionLinksTable.ForeignKeys[0].RefTable = TenantsTable
+	InvestigationFindingVersionLinksTable.ForeignKeys[1].RefTable = InvestigationFindingVersionsTable
+	InvestigationFindingVersionLinksTable.ForeignKeys[2].RefTable = InvestigationFindingVersionsTable
+	InvestigationFindingVersionLinksTable.Annotation = &entsql.Annotation{}
+	InvestigationFindingVersionLinksTable.Annotation.Checks = map[string]string{
+		"investigation_finding_version_link_distinct_versions": "source_version_id <> target_version_id",
+	}
 	InvestigationHypothesesTable.ForeignKeys[0].RefTable = InvestigationsTable
 	InvestigationHypothesesTable.ForeignKeys[1].RefTable = TenantsTable
+	InvestigationHypothesisVersionsTable.ForeignKeys[0].RefTable = TenantsTable
+	InvestigationHypothesisVersionsTable.ForeignKeys[1].RefTable = InvestigationHypothesesTable
+	InvestigationHypothesisVersionsTable.ForeignKeys[2].RefTable = AgentTurnsTable
+	InvestigationOutputReferencesTable.ForeignKeys[0].RefTable = TenantsTable
+	InvestigationOutputReferencesTable.ForeignKeys[1].RefTable = InvestigationReportsTable
+	InvestigationOutputReferencesTable.ForeignKeys[2].RefTable = InvestigationFindingVersionsTable
+	InvestigationOutputReferencesTable.ForeignKeys[3].RefTable = InvestigationHypothesisVersionsTable
+	InvestigationOutputReferencesTable.ForeignKeys[4].RefTable = KnowledgeEvidencesTable
+	InvestigationOutputReferencesTable.Annotation = &entsql.Annotation{}
+	InvestigationOutputReferencesTable.Annotation.Checks = map[string]string{
+		"investigation_output_reference_exactly_one_owner": "num_nonnulls(report_id, finding_version_id, hypothesis_version_id) = 1",
+	}
 	InvestigationReportsTable.ForeignKeys[0].RefTable = InvestigationsTable
 	InvestigationReportsTable.ForeignKeys[1].RefTable = TenantsTable
 	InvestigationReportsTable.ForeignKeys[2].RefTable = AgentTurnsTable
+	InvestigationUserInputsTable.ForeignKeys[0].RefTable = InvestigationsTable
+	InvestigationUserInputsTable.ForeignKeys[1].RefTable = TenantsTable
+	InvestigationUserInputsTable.ForeignKeys[2].RefTable = AgentTurnsTable
 	KnowledgeEntitiesTable.ForeignKeys[0].RefTable = TenantsTable
 	KnowledgeEntityLinkingAttributesTable.ForeignKeys[0].RefTable = TenantsTable
 	KnowledgeEntityLinkingAttributesTable.ForeignKeys[1].RefTable = KnowledgeEntitiesTable
@@ -4426,7 +4772,6 @@ func init() {
 		"review_exactly_one_subject": "num_nonnulls(retrospective_id, analysis_entry_id) = 1",
 	}
 	SituationsTable.ForeignKeys[0].RefTable = TenantsTable
-	SituationsTable.ForeignKeys[1].RefTable = KnowledgeEntitiesTable
 	SituationHazardAssessmentsTable.ForeignKeys[0].RefTable = TenantsTable
 	SituationHazardAssessmentsTable.ForeignKeys[1].RefTable = SituationsTable
 	SituationHazardAssessmentsTable.ForeignKeys[2].RefTable = SystemHazardsTable
@@ -4440,7 +4785,6 @@ func init() {
 	SituationInvestigationsTable.ForeignKeys[0].RefTable = InvestigationsTable
 	SituationInvestigationsTable.ForeignKeys[1].RefTable = SituationsTable
 	SituationInvestigationsTable.ForeignKeys[2].RefTable = TenantsTable
-	SituationInvestigationsTable.ForeignKeys[3].RefTable = AgentTurnsTable
 	SituationObservationGroupsTable.ForeignKeys[0].RefTable = TenantsTable
 	SituationObservationGroupsTable.ForeignKeys[1].RefTable = SituationsTable
 	SystemAnalysesTable.ForeignKeys[0].RefTable = TenantsTable
@@ -4456,10 +4800,9 @@ func init() {
 	SystemAnalysisEntrySubjectsTable.ForeignKeys[2].RefTable = KnowledgeEntitiesTable
 	SystemAnalysisEntrySubjectsTable.ForeignKeys[3].RefTable = KnowledgeRelationshipsTable
 	SystemAnalysisEntrySubjectsTable.ForeignKeys[4].RefTable = KnowledgeEvidencesTable
-	SystemAnalysisEntrySubjectsTable.ForeignKeys[5].RefTable = NormalizedEventsTable
 	SystemAnalysisEntrySubjectsTable.Annotation = &entsql.Annotation{}
 	SystemAnalysisEntrySubjectsTable.Annotation.Checks = map[string]string{
-		"system_analysis_entry_subject_exactly_one_reference": "num_nonnulls(knowledge_entity_id, knowledge_relationship_id, knowledge_evidence_id, normalized_event_id) = 1",
+		"system_analysis_entry_subject_exactly_one_reference": "num_nonnulls(knowledge_entity_id, knowledge_relationship_id, knowledge_evidence_id) = 1",
 	}
 	SystemAnalysisRelationshipsTable.ForeignKeys[0].RefTable = TenantsTable
 	SystemAnalysisRelationshipsTable.ForeignKeys[1].RefTable = SystemAnalysesTable

@@ -67,9 +67,9 @@ func CreatedAt(v time.Time) predicate.InvestigationReport {
 	return predicate.InvestigationReport(sql.FieldEQ(FieldCreatedAt, v))
 }
 
-// UpdatedAt applies equality check predicate on the "updated_at" field. It's identical to UpdatedAtEQ.
-func UpdatedAt(v time.Time) predicate.InvestigationReport {
-	return predicate.InvestigationReport(sql.FieldEQ(FieldUpdatedAt, v))
+// Fingerprint applies equality check predicate on the "fingerprint" field. It's identical to FingerprintEQ.
+func Fingerprint(v string) predicate.InvestigationReport {
+	return predicate.InvestigationReport(sql.FieldEQ(FieldFingerprint, v))
 }
 
 // InvestigationID applies equality check predicate on the "investigation_id" field. It's identical to InvestigationIDEQ.
@@ -85,16 +85,6 @@ func AgentTurnID(v uuid.UUID) predicate.InvestigationReport {
 // Text applies equality check predicate on the "text" field. It's identical to TextEQ.
 func Text(v string) predicate.InvestigationReport {
 	return predicate.InvestigationReport(sql.FieldEQ(FieldText, v))
-}
-
-// LikelyCause applies equality check predicate on the "likely_cause" field. It's identical to LikelyCauseEQ.
-func LikelyCause(v string) predicate.InvestigationReport {
-	return predicate.InvestigationReport(sql.FieldEQ(FieldLikelyCause, v))
-}
-
-// BestNextStep applies equality check predicate on the "best_next_step" field. It's identical to BestNextStepEQ.
-func BestNextStep(v string) predicate.InvestigationReport {
-	return predicate.InvestigationReport(sql.FieldEQ(FieldBestNextStep, v))
 }
 
 // TenantIDEQ applies the EQ predicate on the "tenant_id" field.
@@ -157,44 +147,69 @@ func CreatedAtLTE(v time.Time) predicate.InvestigationReport {
 	return predicate.InvestigationReport(sql.FieldLTE(FieldCreatedAt, v))
 }
 
-// UpdatedAtEQ applies the EQ predicate on the "updated_at" field.
-func UpdatedAtEQ(v time.Time) predicate.InvestigationReport {
-	return predicate.InvestigationReport(sql.FieldEQ(FieldUpdatedAt, v))
+// FingerprintEQ applies the EQ predicate on the "fingerprint" field.
+func FingerprintEQ(v string) predicate.InvestigationReport {
+	return predicate.InvestigationReport(sql.FieldEQ(FieldFingerprint, v))
 }
 
-// UpdatedAtNEQ applies the NEQ predicate on the "updated_at" field.
-func UpdatedAtNEQ(v time.Time) predicate.InvestigationReport {
-	return predicate.InvestigationReport(sql.FieldNEQ(FieldUpdatedAt, v))
+// FingerprintNEQ applies the NEQ predicate on the "fingerprint" field.
+func FingerprintNEQ(v string) predicate.InvestigationReport {
+	return predicate.InvestigationReport(sql.FieldNEQ(FieldFingerprint, v))
 }
 
-// UpdatedAtIn applies the In predicate on the "updated_at" field.
-func UpdatedAtIn(vs ...time.Time) predicate.InvestigationReport {
-	return predicate.InvestigationReport(sql.FieldIn(FieldUpdatedAt, vs...))
+// FingerprintIn applies the In predicate on the "fingerprint" field.
+func FingerprintIn(vs ...string) predicate.InvestigationReport {
+	return predicate.InvestigationReport(sql.FieldIn(FieldFingerprint, vs...))
 }
 
-// UpdatedAtNotIn applies the NotIn predicate on the "updated_at" field.
-func UpdatedAtNotIn(vs ...time.Time) predicate.InvestigationReport {
-	return predicate.InvestigationReport(sql.FieldNotIn(FieldUpdatedAt, vs...))
+// FingerprintNotIn applies the NotIn predicate on the "fingerprint" field.
+func FingerprintNotIn(vs ...string) predicate.InvestigationReport {
+	return predicate.InvestigationReport(sql.FieldNotIn(FieldFingerprint, vs...))
 }
 
-// UpdatedAtGT applies the GT predicate on the "updated_at" field.
-func UpdatedAtGT(v time.Time) predicate.InvestigationReport {
-	return predicate.InvestigationReport(sql.FieldGT(FieldUpdatedAt, v))
+// FingerprintGT applies the GT predicate on the "fingerprint" field.
+func FingerprintGT(v string) predicate.InvestigationReport {
+	return predicate.InvestigationReport(sql.FieldGT(FieldFingerprint, v))
 }
 
-// UpdatedAtGTE applies the GTE predicate on the "updated_at" field.
-func UpdatedAtGTE(v time.Time) predicate.InvestigationReport {
-	return predicate.InvestigationReport(sql.FieldGTE(FieldUpdatedAt, v))
+// FingerprintGTE applies the GTE predicate on the "fingerprint" field.
+func FingerprintGTE(v string) predicate.InvestigationReport {
+	return predicate.InvestigationReport(sql.FieldGTE(FieldFingerprint, v))
 }
 
-// UpdatedAtLT applies the LT predicate on the "updated_at" field.
-func UpdatedAtLT(v time.Time) predicate.InvestigationReport {
-	return predicate.InvestigationReport(sql.FieldLT(FieldUpdatedAt, v))
+// FingerprintLT applies the LT predicate on the "fingerprint" field.
+func FingerprintLT(v string) predicate.InvestigationReport {
+	return predicate.InvestigationReport(sql.FieldLT(FieldFingerprint, v))
 }
 
-// UpdatedAtLTE applies the LTE predicate on the "updated_at" field.
-func UpdatedAtLTE(v time.Time) predicate.InvestigationReport {
-	return predicate.InvestigationReport(sql.FieldLTE(FieldUpdatedAt, v))
+// FingerprintLTE applies the LTE predicate on the "fingerprint" field.
+func FingerprintLTE(v string) predicate.InvestigationReport {
+	return predicate.InvestigationReport(sql.FieldLTE(FieldFingerprint, v))
+}
+
+// FingerprintContains applies the Contains predicate on the "fingerprint" field.
+func FingerprintContains(v string) predicate.InvestigationReport {
+	return predicate.InvestigationReport(sql.FieldContains(FieldFingerprint, v))
+}
+
+// FingerprintHasPrefix applies the HasPrefix predicate on the "fingerprint" field.
+func FingerprintHasPrefix(v string) predicate.InvestigationReport {
+	return predicate.InvestigationReport(sql.FieldHasPrefix(FieldFingerprint, v))
+}
+
+// FingerprintHasSuffix applies the HasSuffix predicate on the "fingerprint" field.
+func FingerprintHasSuffix(v string) predicate.InvestigationReport {
+	return predicate.InvestigationReport(sql.FieldHasSuffix(FieldFingerprint, v))
+}
+
+// FingerprintEqualFold applies the EqualFold predicate on the "fingerprint" field.
+func FingerprintEqualFold(v string) predicate.InvestigationReport {
+	return predicate.InvestigationReport(sql.FieldEqualFold(FieldFingerprint, v))
+}
+
+// FingerprintContainsFold applies the ContainsFold predicate on the "fingerprint" field.
+func FingerprintContainsFold(v string) predicate.InvestigationReport {
+	return predicate.InvestigationReport(sql.FieldContainsFold(FieldFingerprint, v))
 }
 
 // InvestigationIDEQ applies the EQ predicate on the "investigation_id" field.
@@ -235,16 +250,6 @@ func AgentTurnIDIn(vs ...uuid.UUID) predicate.InvestigationReport {
 // AgentTurnIDNotIn applies the NotIn predicate on the "agent_turn_id" field.
 func AgentTurnIDNotIn(vs ...uuid.UUID) predicate.InvestigationReport {
 	return predicate.InvestigationReport(sql.FieldNotIn(FieldAgentTurnID, vs...))
-}
-
-// AgentTurnIDIsNil applies the IsNil predicate on the "agent_turn_id" field.
-func AgentTurnIDIsNil() predicate.InvestigationReport {
-	return predicate.InvestigationReport(sql.FieldIsNull(FieldAgentTurnID))
-}
-
-// AgentTurnIDNotNil applies the NotNil predicate on the "agent_turn_id" field.
-func AgentTurnIDNotNil() predicate.InvestigationReport {
-	return predicate.InvestigationReport(sql.FieldNotNull(FieldAgentTurnID))
 }
 
 // TextEQ applies the EQ predicate on the "text" field.
@@ -312,186 +317,6 @@ func TextContainsFold(v string) predicate.InvestigationReport {
 	return predicate.InvestigationReport(sql.FieldContainsFold(FieldText, v))
 }
 
-// LikelyCauseEQ applies the EQ predicate on the "likely_cause" field.
-func LikelyCauseEQ(v string) predicate.InvestigationReport {
-	return predicate.InvestigationReport(sql.FieldEQ(FieldLikelyCause, v))
-}
-
-// LikelyCauseNEQ applies the NEQ predicate on the "likely_cause" field.
-func LikelyCauseNEQ(v string) predicate.InvestigationReport {
-	return predicate.InvestigationReport(sql.FieldNEQ(FieldLikelyCause, v))
-}
-
-// LikelyCauseIn applies the In predicate on the "likely_cause" field.
-func LikelyCauseIn(vs ...string) predicate.InvestigationReport {
-	return predicate.InvestigationReport(sql.FieldIn(FieldLikelyCause, vs...))
-}
-
-// LikelyCauseNotIn applies the NotIn predicate on the "likely_cause" field.
-func LikelyCauseNotIn(vs ...string) predicate.InvestigationReport {
-	return predicate.InvestigationReport(sql.FieldNotIn(FieldLikelyCause, vs...))
-}
-
-// LikelyCauseGT applies the GT predicate on the "likely_cause" field.
-func LikelyCauseGT(v string) predicate.InvestigationReport {
-	return predicate.InvestigationReport(sql.FieldGT(FieldLikelyCause, v))
-}
-
-// LikelyCauseGTE applies the GTE predicate on the "likely_cause" field.
-func LikelyCauseGTE(v string) predicate.InvestigationReport {
-	return predicate.InvestigationReport(sql.FieldGTE(FieldLikelyCause, v))
-}
-
-// LikelyCauseLT applies the LT predicate on the "likely_cause" field.
-func LikelyCauseLT(v string) predicate.InvestigationReport {
-	return predicate.InvestigationReport(sql.FieldLT(FieldLikelyCause, v))
-}
-
-// LikelyCauseLTE applies the LTE predicate on the "likely_cause" field.
-func LikelyCauseLTE(v string) predicate.InvestigationReport {
-	return predicate.InvestigationReport(sql.FieldLTE(FieldLikelyCause, v))
-}
-
-// LikelyCauseContains applies the Contains predicate on the "likely_cause" field.
-func LikelyCauseContains(v string) predicate.InvestigationReport {
-	return predicate.InvestigationReport(sql.FieldContains(FieldLikelyCause, v))
-}
-
-// LikelyCauseHasPrefix applies the HasPrefix predicate on the "likely_cause" field.
-func LikelyCauseHasPrefix(v string) predicate.InvestigationReport {
-	return predicate.InvestigationReport(sql.FieldHasPrefix(FieldLikelyCause, v))
-}
-
-// LikelyCauseHasSuffix applies the HasSuffix predicate on the "likely_cause" field.
-func LikelyCauseHasSuffix(v string) predicate.InvestigationReport {
-	return predicate.InvestigationReport(sql.FieldHasSuffix(FieldLikelyCause, v))
-}
-
-// LikelyCauseIsNil applies the IsNil predicate on the "likely_cause" field.
-func LikelyCauseIsNil() predicate.InvestigationReport {
-	return predicate.InvestigationReport(sql.FieldIsNull(FieldLikelyCause))
-}
-
-// LikelyCauseNotNil applies the NotNil predicate on the "likely_cause" field.
-func LikelyCauseNotNil() predicate.InvestigationReport {
-	return predicate.InvestigationReport(sql.FieldNotNull(FieldLikelyCause))
-}
-
-// LikelyCauseEqualFold applies the EqualFold predicate on the "likely_cause" field.
-func LikelyCauseEqualFold(v string) predicate.InvestigationReport {
-	return predicate.InvestigationReport(sql.FieldEqualFold(FieldLikelyCause, v))
-}
-
-// LikelyCauseContainsFold applies the ContainsFold predicate on the "likely_cause" field.
-func LikelyCauseContainsFold(v string) predicate.InvestigationReport {
-	return predicate.InvestigationReport(sql.FieldContainsFold(FieldLikelyCause, v))
-}
-
-// BestNextStepEQ applies the EQ predicate on the "best_next_step" field.
-func BestNextStepEQ(v string) predicate.InvestigationReport {
-	return predicate.InvestigationReport(sql.FieldEQ(FieldBestNextStep, v))
-}
-
-// BestNextStepNEQ applies the NEQ predicate on the "best_next_step" field.
-func BestNextStepNEQ(v string) predicate.InvestigationReport {
-	return predicate.InvestigationReport(sql.FieldNEQ(FieldBestNextStep, v))
-}
-
-// BestNextStepIn applies the In predicate on the "best_next_step" field.
-func BestNextStepIn(vs ...string) predicate.InvestigationReport {
-	return predicate.InvestigationReport(sql.FieldIn(FieldBestNextStep, vs...))
-}
-
-// BestNextStepNotIn applies the NotIn predicate on the "best_next_step" field.
-func BestNextStepNotIn(vs ...string) predicate.InvestigationReport {
-	return predicate.InvestigationReport(sql.FieldNotIn(FieldBestNextStep, vs...))
-}
-
-// BestNextStepGT applies the GT predicate on the "best_next_step" field.
-func BestNextStepGT(v string) predicate.InvestigationReport {
-	return predicate.InvestigationReport(sql.FieldGT(FieldBestNextStep, v))
-}
-
-// BestNextStepGTE applies the GTE predicate on the "best_next_step" field.
-func BestNextStepGTE(v string) predicate.InvestigationReport {
-	return predicate.InvestigationReport(sql.FieldGTE(FieldBestNextStep, v))
-}
-
-// BestNextStepLT applies the LT predicate on the "best_next_step" field.
-func BestNextStepLT(v string) predicate.InvestigationReport {
-	return predicate.InvestigationReport(sql.FieldLT(FieldBestNextStep, v))
-}
-
-// BestNextStepLTE applies the LTE predicate on the "best_next_step" field.
-func BestNextStepLTE(v string) predicate.InvestigationReport {
-	return predicate.InvestigationReport(sql.FieldLTE(FieldBestNextStep, v))
-}
-
-// BestNextStepContains applies the Contains predicate on the "best_next_step" field.
-func BestNextStepContains(v string) predicate.InvestigationReport {
-	return predicate.InvestigationReport(sql.FieldContains(FieldBestNextStep, v))
-}
-
-// BestNextStepHasPrefix applies the HasPrefix predicate on the "best_next_step" field.
-func BestNextStepHasPrefix(v string) predicate.InvestigationReport {
-	return predicate.InvestigationReport(sql.FieldHasPrefix(FieldBestNextStep, v))
-}
-
-// BestNextStepHasSuffix applies the HasSuffix predicate on the "best_next_step" field.
-func BestNextStepHasSuffix(v string) predicate.InvestigationReport {
-	return predicate.InvestigationReport(sql.FieldHasSuffix(FieldBestNextStep, v))
-}
-
-// BestNextStepIsNil applies the IsNil predicate on the "best_next_step" field.
-func BestNextStepIsNil() predicate.InvestigationReport {
-	return predicate.InvestigationReport(sql.FieldIsNull(FieldBestNextStep))
-}
-
-// BestNextStepNotNil applies the NotNil predicate on the "best_next_step" field.
-func BestNextStepNotNil() predicate.InvestigationReport {
-	return predicate.InvestigationReport(sql.FieldNotNull(FieldBestNextStep))
-}
-
-// BestNextStepEqualFold applies the EqualFold predicate on the "best_next_step" field.
-func BestNextStepEqualFold(v string) predicate.InvestigationReport {
-	return predicate.InvestigationReport(sql.FieldEqualFold(FieldBestNextStep, v))
-}
-
-// BestNextStepContainsFold applies the ContainsFold predicate on the "best_next_step" field.
-func BestNextStepContainsFold(v string) predicate.InvestigationReport {
-	return predicate.InvestigationReport(sql.FieldContainsFold(FieldBestNextStep, v))
-}
-
-// LimitationsIsNil applies the IsNil predicate on the "limitations" field.
-func LimitationsIsNil() predicate.InvestigationReport {
-	return predicate.InvestigationReport(sql.FieldIsNull(FieldLimitations))
-}
-
-// LimitationsNotNil applies the NotNil predicate on the "limitations" field.
-func LimitationsNotNil() predicate.InvestigationReport {
-	return predicate.InvestigationReport(sql.FieldNotNull(FieldLimitations))
-}
-
-// RecommendedActionsIsNil applies the IsNil predicate on the "recommended_actions" field.
-func RecommendedActionsIsNil() predicate.InvestigationReport {
-	return predicate.InvestigationReport(sql.FieldIsNull(FieldRecommendedActions))
-}
-
-// RecommendedActionsNotNil applies the NotNil predicate on the "recommended_actions" field.
-func RecommendedActionsNotNil() predicate.InvestigationReport {
-	return predicate.InvestigationReport(sql.FieldNotNull(FieldRecommendedActions))
-}
-
-// SuggestedChecksIsNil applies the IsNil predicate on the "suggested_checks" field.
-func SuggestedChecksIsNil() predicate.InvestigationReport {
-	return predicate.InvestigationReport(sql.FieldIsNull(FieldSuggestedChecks))
-}
-
-// SuggestedChecksNotNil applies the NotNil predicate on the "suggested_checks" field.
-func SuggestedChecksNotNil() predicate.InvestigationReport {
-	return predicate.InvestigationReport(sql.FieldNotNull(FieldSuggestedChecks))
-}
-
 // HasTenant applies the HasEdge predicate on the "tenant" edge.
 func HasTenant() predicate.InvestigationReport {
 	return predicate.InvestigationReport(func(s *sql.Selector) {
@@ -526,7 +351,7 @@ func HasInvestigation() predicate.InvestigationReport {
 	return predicate.InvestigationReport(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, true, InvestigationTable, InvestigationColumn),
+			sqlgraph.Edge(sqlgraph.M2O, true, InvestigationTable, InvestigationColumn),
 		)
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.Investigation
@@ -571,6 +396,35 @@ func HasAgentTurnWith(preds ...predicate.AgentTurn) predicate.InvestigationRepor
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.AgentTurn
 		step.Edge.Schema = schemaConfig.InvestigationReport
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasOutputReferences applies the HasEdge predicate on the "output_references" edge.
+func HasOutputReferences() predicate.InvestigationReport {
+	return predicate.InvestigationReport(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, OutputReferencesTable, OutputReferencesColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.InvestigationOutputReference
+		step.Edge.Schema = schemaConfig.InvestigationOutputReference
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasOutputReferencesWith applies the HasEdge predicate on the "output_references" edge with a given conditions (other predicates).
+func HasOutputReferencesWith(preds ...predicate.InvestigationOutputReference) predicate.InvestigationReport {
+	return predicate.InvestigationReport(func(s *sql.Selector) {
+		step := newOutputReferencesStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.InvestigationOutputReference
+		step.Edge.Schema = schemaConfig.InvestigationOutputReference
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

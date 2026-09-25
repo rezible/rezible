@@ -127,7 +127,6 @@ type (
 		KnowledgeEntityID       *uuid.UUID `json:"knowledgeEntityId,omitempty"`
 		KnowledgeRelationshipID *uuid.UUID `json:"knowledgeRelationshipId,omitempty"`
 		KnowledgeEvidenceID     *uuid.UUID `json:"knowledgeEvidenceId,omitempty"`
-		NormalizedEventID       *uuid.UUID `json:"normalizedEventId,omitempty"`
 	}
 )
 
@@ -200,7 +199,6 @@ func SystemAnalysisEntrySubjectFromEnt(subject *ent.SystemAnalysisEntrySubject) 
 		KnowledgeEntityID:       subject.KnowledgeEntityID,
 		KnowledgeRelationshipID: subject.KnowledgeRelationshipID,
 		KnowledgeEvidenceID:     subject.KnowledgeEvidenceID,
-		NormalizedEventID:       subject.NormalizedEventID,
 	}
 	return SystemAnalysisEntrySubject{Id: subject.ID, Attributes: attrs}
 }
@@ -446,7 +444,6 @@ type AddSystemAnalysisEntrySubjectAttributes struct {
 	KnowledgeEntityId       *uuid.UUID `json:"knowledgeEntityId,omitempty"`
 	KnowledgeRelationshipId *uuid.UUID `json:"knowledgeRelationshipId,omitempty"`
 	KnowledgeEvidenceId     *uuid.UUID `json:"knowledgeEvidenceId,omitempty"`
-	NormalizedEventId       *uuid.UUID `json:"normalizedEventId,omitempty"`
 }
 type AddSystemAnalysisEntrySubjectRequest IdRequestWithBody[AddSystemAnalysisEntrySubjectAttributes]
 type AddSystemAnalysisEntrySubjectResponse ItemResponse[SystemAnalysisEntrySubject]

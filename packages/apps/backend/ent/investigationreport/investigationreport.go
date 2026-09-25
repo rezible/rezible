@@ -20,30 +20,22 @@ const (
 	FieldTenantID = "tenant_id"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
-	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
-	FieldUpdatedAt = "updated_at"
+	// FieldFingerprint holds the string denoting the fingerprint field in the database.
+	FieldFingerprint = "fingerprint"
 	// FieldInvestigationID holds the string denoting the investigation_id field in the database.
 	FieldInvestigationID = "investigation_id"
 	// FieldAgentTurnID holds the string denoting the agent_turn_id field in the database.
 	FieldAgentTurnID = "agent_turn_id"
 	// FieldText holds the string denoting the text field in the database.
 	FieldText = "text"
-	// FieldLikelyCause holds the string denoting the likely_cause field in the database.
-	FieldLikelyCause = "likely_cause"
-	// FieldBestNextStep holds the string denoting the best_next_step field in the database.
-	FieldBestNextStep = "best_next_step"
-	// FieldLimitations holds the string denoting the limitations field in the database.
-	FieldLimitations = "limitations"
-	// FieldRecommendedActions holds the string denoting the recommended_actions field in the database.
-	FieldRecommendedActions = "recommended_actions"
-	// FieldSuggestedChecks holds the string denoting the suggested_checks field in the database.
-	FieldSuggestedChecks = "suggested_checks"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
 	// EdgeInvestigation holds the string denoting the investigation edge name in mutations.
 	EdgeInvestigation = "investigation"
 	// EdgeAgentTurn holds the string denoting the agent_turn edge name in mutations.
 	EdgeAgentTurn = "agent_turn"
+	// EdgeOutputReferences holds the string denoting the output_references edge name in mutations.
+	EdgeOutputReferences = "output_references"
 	// Table holds the table name of the investigationreport in the database.
 	Table = "investigation_reports"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -67,6 +59,13 @@ const (
 	AgentTurnInverseTable = "agent_turns"
 	// AgentTurnColumn is the table column denoting the agent_turn relation/edge.
 	AgentTurnColumn = "agent_turn_id"
+	// OutputReferencesTable is the table that holds the output_references relation/edge.
+	OutputReferencesTable = "investigation_output_references"
+	// OutputReferencesInverseTable is the table name for the InvestigationOutputReference entity.
+	// It exists in this package in order to avoid circular dependency with the "investigationoutputreference" package.
+	OutputReferencesInverseTable = "investigation_output_references"
+	// OutputReferencesColumn is the table column denoting the output_references relation/edge.
+	OutputReferencesColumn = "report_id"
 )
 
 // Columns holds all SQL columns for investigationreport fields.
@@ -74,15 +73,10 @@ var Columns = []string{
 	FieldID,
 	FieldTenantID,
 	FieldCreatedAt,
-	FieldUpdatedAt,
+	FieldFingerprint,
 	FieldInvestigationID,
 	FieldAgentTurnID,
 	FieldText,
-	FieldLikelyCause,
-	FieldBestNextStep,
-	FieldLimitations,
-	FieldRecommendedActions,
-	FieldSuggestedChecks,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -105,10 +99,8 @@ var (
 	Policy ent.Policy
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() time.Time
-	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.
-	DefaultUpdatedAt func() time.Time
-	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
-	UpdateDefaultUpdatedAt func() time.Time
+	// FingerprintValidator is a validator for the "fingerprint" field. It is called by the builders before save.
+	FingerprintValidator func(string) error
 	// TextValidator is a validator for the "text" field. It is called by the builders before save.
 	TextValidator func(string) error
 	// DefaultID holds the default value on creation for the "id" field.
@@ -133,9 +125,9 @@ func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldCreatedAt, opts...).ToFunc()
 }
 
-// ByUpdatedAt orders the results by the updated_at field.
-func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
+// ByFingerprint orders the results by the fingerprint field.
+func ByFingerprint(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldFingerprint, opts...).ToFunc()
 }
 
 // ByInvestigationID orders the results by the investigation_id field.
@@ -151,16 +143,6 @@ func ByAgentTurnID(opts ...sql.OrderTermOption) OrderOption {
 // ByText orders the results by the text field.
 func ByText(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldText, opts...).ToFunc()
-}
-
-// ByLikelyCause orders the results by the likely_cause field.
-func ByLikelyCause(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldLikelyCause, opts...).ToFunc()
-}
-
-// ByBestNextStep orders the results by the best_next_step field.
-func ByBestNextStep(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldBestNextStep, opts...).ToFunc()
 }
 
 // ByTenantField orders the results by tenant field.
@@ -183,6 +165,20 @@ func ByAgentTurnField(field string, opts ...sql.OrderTermOption) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newAgentTurnStep(), sql.OrderByField(field, opts...))
 	}
 }
+
+// ByOutputReferencesCount orders the results by output_references count.
+func ByOutputReferencesCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newOutputReferencesStep(), opts...)
+	}
+}
+
+// ByOutputReferences orders the results by output_references terms.
+func ByOutputReferences(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newOutputReferencesStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newTenantStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -194,7 +190,7 @@ func newInvestigationStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(InvestigationInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2O, true, InvestigationTable, InvestigationColumn),
+		sqlgraph.Edge(sqlgraph.M2O, true, InvestigationTable, InvestigationColumn),
 	)
 }
 func newAgentTurnStep() *sqlgraph.Step {
@@ -202,5 +198,12 @@ func newAgentTurnStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(AgentTurnInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, false, AgentTurnTable, AgentTurnColumn),
+	)
+}
+func newOutputReferencesStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(OutputReferencesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, OutputReferencesTable, OutputReferencesColumn),
 	)
 }

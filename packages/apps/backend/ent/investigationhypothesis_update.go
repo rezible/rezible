@@ -11,8 +11,10 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/investigationhypothesis"
+	"github.com/rezible/rezible/ent/investigationhypothesisversion"
 	"github.com/rezible/rezible/ent/predicate"
 )
 
@@ -50,63 +52,45 @@ func (_u *InvestigationHypothesisUpdate) SetUpdatedAt(v time.Time) *Investigatio
 	return _u
 }
 
-// SetTitle sets the "title" field.
-func (_u *InvestigationHypothesisUpdate) SetTitle(v string) *InvestigationHypothesisUpdate {
-	_u.mutation.SetTitle(v)
+// AddVersionIDs adds the "versions" edge to the InvestigationHypothesisVersion entity by IDs.
+func (_u *InvestigationHypothesisUpdate) AddVersionIDs(ids ...uuid.UUID) *InvestigationHypothesisUpdate {
+	_u.mutation.AddVersionIDs(ids...)
 	return _u
 }
 
-// SetNillableTitle sets the "title" field if the given value is not nil.
-func (_u *InvestigationHypothesisUpdate) SetNillableTitle(v *string) *InvestigationHypothesisUpdate {
-	if v != nil {
-		_u.SetTitle(*v)
+// AddVersions adds the "versions" edges to the InvestigationHypothesisVersion entity.
+func (_u *InvestigationHypothesisUpdate) AddVersions(v ...*InvestigationHypothesisVersion) *InvestigationHypothesisUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return _u
-}
-
-// SetBody sets the "body" field.
-func (_u *InvestigationHypothesisUpdate) SetBody(v string) *InvestigationHypothesisUpdate {
-	_u.mutation.SetBody(v)
-	return _u
-}
-
-// SetNillableBody sets the "body" field if the given value is not nil.
-func (_u *InvestigationHypothesisUpdate) SetNillableBody(v *string) *InvestigationHypothesisUpdate {
-	if v != nil {
-		_u.SetBody(*v)
-	}
-	return _u
-}
-
-// ClearBody clears the value of the "body" field.
-func (_u *InvestigationHypothesisUpdate) ClearBody() *InvestigationHypothesisUpdate {
-	_u.mutation.ClearBody()
-	return _u
-}
-
-// SetVerdict sets the "verdict" field.
-func (_u *InvestigationHypothesisUpdate) SetVerdict(v string) *InvestigationHypothesisUpdate {
-	_u.mutation.SetVerdict(v)
-	return _u
-}
-
-// SetNillableVerdict sets the "verdict" field if the given value is not nil.
-func (_u *InvestigationHypothesisUpdate) SetNillableVerdict(v *string) *InvestigationHypothesisUpdate {
-	if v != nil {
-		_u.SetVerdict(*v)
-	}
-	return _u
-}
-
-// ClearVerdict clears the value of the "verdict" field.
-func (_u *InvestigationHypothesisUpdate) ClearVerdict() *InvestigationHypothesisUpdate {
-	_u.mutation.ClearVerdict()
-	return _u
+	return _u.AddVersionIDs(ids...)
 }
 
 // Mutation returns the InvestigationHypothesisMutation object of the builder.
 func (_u *InvestigationHypothesisUpdate) Mutation() *InvestigationHypothesisMutation {
 	return _u.mutation
+}
+
+// ClearVersions clears all "versions" edges to the InvestigationHypothesisVersion entity.
+func (_u *InvestigationHypothesisUpdate) ClearVersions() *InvestigationHypothesisUpdate {
+	_u.mutation.ClearVersions()
+	return _u
+}
+
+// RemoveVersionIDs removes the "versions" edge to InvestigationHypothesisVersion entities by IDs.
+func (_u *InvestigationHypothesisUpdate) RemoveVersionIDs(ids ...uuid.UUID) *InvestigationHypothesisUpdate {
+	_u.mutation.RemoveVersionIDs(ids...)
+	return _u
+}
+
+// RemoveVersions removes "versions" edges to InvestigationHypothesisVersion entities.
+func (_u *InvestigationHypothesisUpdate) RemoveVersions(v ...*InvestigationHypothesisVersion) *InvestigationHypothesisUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveVersionIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -153,11 +137,6 @@ func (_u *InvestigationHypothesisUpdate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *InvestigationHypothesisUpdate) check() error {
-	if v, ok := _u.mutation.Title(); ok {
-		if err := investigationhypothesis.TitleValidator(v); err != nil {
-			return &ValidationError{Name: "title", err: fmt.Errorf(`ent: validator failed for field "InvestigationHypothesis.title": %w`, err)}
-		}
-	}
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "InvestigationHypothesis.tenant"`)
 	}
@@ -191,20 +170,53 @@ func (_u *InvestigationHypothesisUpdate) sqlSave(ctx context.Context) (_node int
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(investigationhypothesis.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if value, ok := _u.mutation.Title(); ok {
-		_spec.SetField(investigationhypothesis.FieldTitle, field.TypeString, value)
+	if _u.mutation.VersionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   investigationhypothesis.VersionsTable,
+			Columns: []string{investigationhypothesis.VersionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(investigationhypothesisversion.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.InvestigationHypothesisVersion
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if value, ok := _u.mutation.Body(); ok {
-		_spec.SetField(investigationhypothesis.FieldBody, field.TypeString, value)
+	if nodes := _u.mutation.RemovedVersionsIDs(); len(nodes) > 0 && !_u.mutation.VersionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   investigationhypothesis.VersionsTable,
+			Columns: []string{investigationhypothesis.VersionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(investigationhypothesisversion.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.InvestigationHypothesisVersion
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if _u.mutation.BodyCleared() {
-		_spec.ClearField(investigationhypothesis.FieldBody, field.TypeString)
-	}
-	if value, ok := _u.mutation.Verdict(); ok {
-		_spec.SetField(investigationhypothesis.FieldVerdict, field.TypeString, value)
-	}
-	if _u.mutation.VerdictCleared() {
-		_spec.ClearField(investigationhypothesis.FieldVerdict, field.TypeString)
+	if nodes := _u.mutation.VersionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   investigationhypothesis.VersionsTable,
+			Columns: []string{investigationhypothesis.VersionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(investigationhypothesisversion.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.InvestigationHypothesisVersion
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_spec.Node.Schema = _u.schemaConfig.InvestigationHypothesis
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
@@ -250,63 +262,45 @@ func (_u *InvestigationHypothesisUpdateOne) SetUpdatedAt(v time.Time) *Investiga
 	return _u
 }
 
-// SetTitle sets the "title" field.
-func (_u *InvestigationHypothesisUpdateOne) SetTitle(v string) *InvestigationHypothesisUpdateOne {
-	_u.mutation.SetTitle(v)
+// AddVersionIDs adds the "versions" edge to the InvestigationHypothesisVersion entity by IDs.
+func (_u *InvestigationHypothesisUpdateOne) AddVersionIDs(ids ...uuid.UUID) *InvestigationHypothesisUpdateOne {
+	_u.mutation.AddVersionIDs(ids...)
 	return _u
 }
 
-// SetNillableTitle sets the "title" field if the given value is not nil.
-func (_u *InvestigationHypothesisUpdateOne) SetNillableTitle(v *string) *InvestigationHypothesisUpdateOne {
-	if v != nil {
-		_u.SetTitle(*v)
+// AddVersions adds the "versions" edges to the InvestigationHypothesisVersion entity.
+func (_u *InvestigationHypothesisUpdateOne) AddVersions(v ...*InvestigationHypothesisVersion) *InvestigationHypothesisUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return _u
-}
-
-// SetBody sets the "body" field.
-func (_u *InvestigationHypothesisUpdateOne) SetBody(v string) *InvestigationHypothesisUpdateOne {
-	_u.mutation.SetBody(v)
-	return _u
-}
-
-// SetNillableBody sets the "body" field if the given value is not nil.
-func (_u *InvestigationHypothesisUpdateOne) SetNillableBody(v *string) *InvestigationHypothesisUpdateOne {
-	if v != nil {
-		_u.SetBody(*v)
-	}
-	return _u
-}
-
-// ClearBody clears the value of the "body" field.
-func (_u *InvestigationHypothesisUpdateOne) ClearBody() *InvestigationHypothesisUpdateOne {
-	_u.mutation.ClearBody()
-	return _u
-}
-
-// SetVerdict sets the "verdict" field.
-func (_u *InvestigationHypothesisUpdateOne) SetVerdict(v string) *InvestigationHypothesisUpdateOne {
-	_u.mutation.SetVerdict(v)
-	return _u
-}
-
-// SetNillableVerdict sets the "verdict" field if the given value is not nil.
-func (_u *InvestigationHypothesisUpdateOne) SetNillableVerdict(v *string) *InvestigationHypothesisUpdateOne {
-	if v != nil {
-		_u.SetVerdict(*v)
-	}
-	return _u
-}
-
-// ClearVerdict clears the value of the "verdict" field.
-func (_u *InvestigationHypothesisUpdateOne) ClearVerdict() *InvestigationHypothesisUpdateOne {
-	_u.mutation.ClearVerdict()
-	return _u
+	return _u.AddVersionIDs(ids...)
 }
 
 // Mutation returns the InvestigationHypothesisMutation object of the builder.
 func (_u *InvestigationHypothesisUpdateOne) Mutation() *InvestigationHypothesisMutation {
 	return _u.mutation
+}
+
+// ClearVersions clears all "versions" edges to the InvestigationHypothesisVersion entity.
+func (_u *InvestigationHypothesisUpdateOne) ClearVersions() *InvestigationHypothesisUpdateOne {
+	_u.mutation.ClearVersions()
+	return _u
+}
+
+// RemoveVersionIDs removes the "versions" edge to InvestigationHypothesisVersion entities by IDs.
+func (_u *InvestigationHypothesisUpdateOne) RemoveVersionIDs(ids ...uuid.UUID) *InvestigationHypothesisUpdateOne {
+	_u.mutation.RemoveVersionIDs(ids...)
+	return _u
+}
+
+// RemoveVersions removes "versions" edges to InvestigationHypothesisVersion entities.
+func (_u *InvestigationHypothesisUpdateOne) RemoveVersions(v ...*InvestigationHypothesisVersion) *InvestigationHypothesisUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveVersionIDs(ids...)
 }
 
 // Where appends a list predicates to the InvestigationHypothesisUpdate builder.
@@ -366,11 +360,6 @@ func (_u *InvestigationHypothesisUpdateOne) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *InvestigationHypothesisUpdateOne) check() error {
-	if v, ok := _u.mutation.Title(); ok {
-		if err := investigationhypothesis.TitleValidator(v); err != nil {
-			return &ValidationError{Name: "title", err: fmt.Errorf(`ent: validator failed for field "InvestigationHypothesis.title": %w`, err)}
-		}
-	}
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "InvestigationHypothesis.tenant"`)
 	}
@@ -421,20 +410,53 @@ func (_u *InvestigationHypothesisUpdateOne) sqlSave(ctx context.Context) (_node 
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(investigationhypothesis.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if value, ok := _u.mutation.Title(); ok {
-		_spec.SetField(investigationhypothesis.FieldTitle, field.TypeString, value)
+	if _u.mutation.VersionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   investigationhypothesis.VersionsTable,
+			Columns: []string{investigationhypothesis.VersionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(investigationhypothesisversion.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.InvestigationHypothesisVersion
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if value, ok := _u.mutation.Body(); ok {
-		_spec.SetField(investigationhypothesis.FieldBody, field.TypeString, value)
+	if nodes := _u.mutation.RemovedVersionsIDs(); len(nodes) > 0 && !_u.mutation.VersionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   investigationhypothesis.VersionsTable,
+			Columns: []string{investigationhypothesis.VersionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(investigationhypothesisversion.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.InvestigationHypothesisVersion
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if _u.mutation.BodyCleared() {
-		_spec.ClearField(investigationhypothesis.FieldBody, field.TypeString)
-	}
-	if value, ok := _u.mutation.Verdict(); ok {
-		_spec.SetField(investigationhypothesis.FieldVerdict, field.TypeString, value)
-	}
-	if _u.mutation.VerdictCleared() {
-		_spec.ClearField(investigationhypothesis.FieldVerdict, field.TypeString)
+	if nodes := _u.mutation.VersionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   investigationhypothesis.VersionsTable,
+			Columns: []string{investigationhypothesis.VersionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(investigationhypothesisversion.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.InvestigationHypothesisVersion
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_spec.Node.Schema = _u.schemaConfig.InvestigationHypothesis
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)

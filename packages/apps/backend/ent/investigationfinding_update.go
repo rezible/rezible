@@ -11,8 +11,10 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/investigationfinding"
+	"github.com/rezible/rezible/ent/investigationfindingversion"
 	"github.com/rezible/rezible/ent/predicate"
 )
 
@@ -50,43 +52,45 @@ func (_u *InvestigationFindingUpdate) SetUpdatedAt(v time.Time) *InvestigationFi
 	return _u
 }
 
-// SetTitle sets the "title" field.
-func (_u *InvestigationFindingUpdate) SetTitle(v string) *InvestigationFindingUpdate {
-	_u.mutation.SetTitle(v)
+// AddVersionIDs adds the "versions" edge to the InvestigationFindingVersion entity by IDs.
+func (_u *InvestigationFindingUpdate) AddVersionIDs(ids ...uuid.UUID) *InvestigationFindingUpdate {
+	_u.mutation.AddVersionIDs(ids...)
 	return _u
 }
 
-// SetNillableTitle sets the "title" field if the given value is not nil.
-func (_u *InvestigationFindingUpdate) SetNillableTitle(v *string) *InvestigationFindingUpdate {
-	if v != nil {
-		_u.SetTitle(*v)
+// AddVersions adds the "versions" edges to the InvestigationFindingVersion entity.
+func (_u *InvestigationFindingUpdate) AddVersions(v ...*InvestigationFindingVersion) *InvestigationFindingUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return _u
-}
-
-// SetBody sets the "body" field.
-func (_u *InvestigationFindingUpdate) SetBody(v string) *InvestigationFindingUpdate {
-	_u.mutation.SetBody(v)
-	return _u
-}
-
-// SetNillableBody sets the "body" field if the given value is not nil.
-func (_u *InvestigationFindingUpdate) SetNillableBody(v *string) *InvestigationFindingUpdate {
-	if v != nil {
-		_u.SetBody(*v)
-	}
-	return _u
-}
-
-// ClearBody clears the value of the "body" field.
-func (_u *InvestigationFindingUpdate) ClearBody() *InvestigationFindingUpdate {
-	_u.mutation.ClearBody()
-	return _u
+	return _u.AddVersionIDs(ids...)
 }
 
 // Mutation returns the InvestigationFindingMutation object of the builder.
 func (_u *InvestigationFindingUpdate) Mutation() *InvestigationFindingMutation {
 	return _u.mutation
+}
+
+// ClearVersions clears all "versions" edges to the InvestigationFindingVersion entity.
+func (_u *InvestigationFindingUpdate) ClearVersions() *InvestigationFindingUpdate {
+	_u.mutation.ClearVersions()
+	return _u
+}
+
+// RemoveVersionIDs removes the "versions" edge to InvestigationFindingVersion entities by IDs.
+func (_u *InvestigationFindingUpdate) RemoveVersionIDs(ids ...uuid.UUID) *InvestigationFindingUpdate {
+	_u.mutation.RemoveVersionIDs(ids...)
+	return _u
+}
+
+// RemoveVersions removes "versions" edges to InvestigationFindingVersion entities.
+func (_u *InvestigationFindingUpdate) RemoveVersions(v ...*InvestigationFindingVersion) *InvestigationFindingUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveVersionIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -133,11 +137,6 @@ func (_u *InvestigationFindingUpdate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *InvestigationFindingUpdate) check() error {
-	if v, ok := _u.mutation.Title(); ok {
-		if err := investigationfinding.TitleValidator(v); err != nil {
-			return &ValidationError{Name: "title", err: fmt.Errorf(`ent: validator failed for field "InvestigationFinding.title": %w`, err)}
-		}
-	}
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "InvestigationFinding.tenant"`)
 	}
@@ -171,14 +170,53 @@ func (_u *InvestigationFindingUpdate) sqlSave(ctx context.Context) (_node int, e
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(investigationfinding.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if value, ok := _u.mutation.Title(); ok {
-		_spec.SetField(investigationfinding.FieldTitle, field.TypeString, value)
+	if _u.mutation.VersionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   investigationfinding.VersionsTable,
+			Columns: []string{investigationfinding.VersionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(investigationfindingversion.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.InvestigationFindingVersion
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if value, ok := _u.mutation.Body(); ok {
-		_spec.SetField(investigationfinding.FieldBody, field.TypeString, value)
+	if nodes := _u.mutation.RemovedVersionsIDs(); len(nodes) > 0 && !_u.mutation.VersionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   investigationfinding.VersionsTable,
+			Columns: []string{investigationfinding.VersionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(investigationfindingversion.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.InvestigationFindingVersion
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if _u.mutation.BodyCleared() {
-		_spec.ClearField(investigationfinding.FieldBody, field.TypeString)
+	if nodes := _u.mutation.VersionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   investigationfinding.VersionsTable,
+			Columns: []string{investigationfinding.VersionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(investigationfindingversion.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.InvestigationFindingVersion
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_spec.Node.Schema = _u.schemaConfig.InvestigationFinding
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
@@ -224,43 +262,45 @@ func (_u *InvestigationFindingUpdateOne) SetUpdatedAt(v time.Time) *Investigatio
 	return _u
 }
 
-// SetTitle sets the "title" field.
-func (_u *InvestigationFindingUpdateOne) SetTitle(v string) *InvestigationFindingUpdateOne {
-	_u.mutation.SetTitle(v)
+// AddVersionIDs adds the "versions" edge to the InvestigationFindingVersion entity by IDs.
+func (_u *InvestigationFindingUpdateOne) AddVersionIDs(ids ...uuid.UUID) *InvestigationFindingUpdateOne {
+	_u.mutation.AddVersionIDs(ids...)
 	return _u
 }
 
-// SetNillableTitle sets the "title" field if the given value is not nil.
-func (_u *InvestigationFindingUpdateOne) SetNillableTitle(v *string) *InvestigationFindingUpdateOne {
-	if v != nil {
-		_u.SetTitle(*v)
+// AddVersions adds the "versions" edges to the InvestigationFindingVersion entity.
+func (_u *InvestigationFindingUpdateOne) AddVersions(v ...*InvestigationFindingVersion) *InvestigationFindingUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return _u
-}
-
-// SetBody sets the "body" field.
-func (_u *InvestigationFindingUpdateOne) SetBody(v string) *InvestigationFindingUpdateOne {
-	_u.mutation.SetBody(v)
-	return _u
-}
-
-// SetNillableBody sets the "body" field if the given value is not nil.
-func (_u *InvestigationFindingUpdateOne) SetNillableBody(v *string) *InvestigationFindingUpdateOne {
-	if v != nil {
-		_u.SetBody(*v)
-	}
-	return _u
-}
-
-// ClearBody clears the value of the "body" field.
-func (_u *InvestigationFindingUpdateOne) ClearBody() *InvestigationFindingUpdateOne {
-	_u.mutation.ClearBody()
-	return _u
+	return _u.AddVersionIDs(ids...)
 }
 
 // Mutation returns the InvestigationFindingMutation object of the builder.
 func (_u *InvestigationFindingUpdateOne) Mutation() *InvestigationFindingMutation {
 	return _u.mutation
+}
+
+// ClearVersions clears all "versions" edges to the InvestigationFindingVersion entity.
+func (_u *InvestigationFindingUpdateOne) ClearVersions() *InvestigationFindingUpdateOne {
+	_u.mutation.ClearVersions()
+	return _u
+}
+
+// RemoveVersionIDs removes the "versions" edge to InvestigationFindingVersion entities by IDs.
+func (_u *InvestigationFindingUpdateOne) RemoveVersionIDs(ids ...uuid.UUID) *InvestigationFindingUpdateOne {
+	_u.mutation.RemoveVersionIDs(ids...)
+	return _u
+}
+
+// RemoveVersions removes "versions" edges to InvestigationFindingVersion entities.
+func (_u *InvestigationFindingUpdateOne) RemoveVersions(v ...*InvestigationFindingVersion) *InvestigationFindingUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveVersionIDs(ids...)
 }
 
 // Where appends a list predicates to the InvestigationFindingUpdate builder.
@@ -320,11 +360,6 @@ func (_u *InvestigationFindingUpdateOne) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *InvestigationFindingUpdateOne) check() error {
-	if v, ok := _u.mutation.Title(); ok {
-		if err := investigationfinding.TitleValidator(v); err != nil {
-			return &ValidationError{Name: "title", err: fmt.Errorf(`ent: validator failed for field "InvestigationFinding.title": %w`, err)}
-		}
-	}
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "InvestigationFinding.tenant"`)
 	}
@@ -375,14 +410,53 @@ func (_u *InvestigationFindingUpdateOne) sqlSave(ctx context.Context) (_node *In
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(investigationfinding.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if value, ok := _u.mutation.Title(); ok {
-		_spec.SetField(investigationfinding.FieldTitle, field.TypeString, value)
+	if _u.mutation.VersionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   investigationfinding.VersionsTable,
+			Columns: []string{investigationfinding.VersionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(investigationfindingversion.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.InvestigationFindingVersion
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if value, ok := _u.mutation.Body(); ok {
-		_spec.SetField(investigationfinding.FieldBody, field.TypeString, value)
+	if nodes := _u.mutation.RemovedVersionsIDs(); len(nodes) > 0 && !_u.mutation.VersionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   investigationfinding.VersionsTable,
+			Columns: []string{investigationfinding.VersionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(investigationfindingversion.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.InvestigationFindingVersion
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if _u.mutation.BodyCleared() {
-		_spec.ClearField(investigationfinding.FieldBody, field.TypeString)
+	if nodes := _u.mutation.VersionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   investigationfinding.VersionsTable,
+			Columns: []string{investigationfinding.VersionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(investigationfindingversion.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.InvestigationFindingVersion
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_spec.Node.Schema = _u.schemaConfig.InvestigationFinding
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)

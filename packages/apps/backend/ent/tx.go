@@ -82,12 +82,24 @@ type Tx struct {
 	IntegrationUserInstallState *IntegrationUserInstallStateClient
 	// Investigation is the client for interacting with the Investigation builders.
 	Investigation *InvestigationClient
+	// InvestigationEvidenceRevision is the client for interacting with the InvestigationEvidenceRevision builders.
+	InvestigationEvidenceRevision *InvestigationEvidenceRevisionClient
 	// InvestigationFinding is the client for interacting with the InvestigationFinding builders.
 	InvestigationFinding *InvestigationFindingClient
+	// InvestigationFindingVersion is the client for interacting with the InvestigationFindingVersion builders.
+	InvestigationFindingVersion *InvestigationFindingVersionClient
+	// InvestigationFindingVersionLink is the client for interacting with the InvestigationFindingVersionLink builders.
+	InvestigationFindingVersionLink *InvestigationFindingVersionLinkClient
 	// InvestigationHypothesis is the client for interacting with the InvestigationHypothesis builders.
 	InvestigationHypothesis *InvestigationHypothesisClient
+	// InvestigationHypothesisVersion is the client for interacting with the InvestigationHypothesisVersion builders.
+	InvestigationHypothesisVersion *InvestigationHypothesisVersionClient
+	// InvestigationOutputReference is the client for interacting with the InvestigationOutputReference builders.
+	InvestigationOutputReference *InvestigationOutputReferenceClient
 	// InvestigationReport is the client for interacting with the InvestigationReport builders.
 	InvestigationReport *InvestigationReportClient
+	// InvestigationUserInput is the client for interacting with the InvestigationUserInput builders.
+	InvestigationUserInput *InvestigationUserInputClient
 	// KnowledgeEntity is the client for interacting with the KnowledgeEntity builders.
 	KnowledgeEntity *KnowledgeEntityClient
 	// KnowledgeEntityLinkingAttribute is the client for interacting with the KnowledgeEntityLinkingAttribute builders.
@@ -340,9 +352,15 @@ func (tx *Tx) init() {
 	tx.IntegrationEventSyncRun = NewIntegrationEventSyncRunClient(tx.config)
 	tx.IntegrationUserInstallState = NewIntegrationUserInstallStateClient(tx.config)
 	tx.Investigation = NewInvestigationClient(tx.config)
+	tx.InvestigationEvidenceRevision = NewInvestigationEvidenceRevisionClient(tx.config)
 	tx.InvestigationFinding = NewInvestigationFindingClient(tx.config)
+	tx.InvestigationFindingVersion = NewInvestigationFindingVersionClient(tx.config)
+	tx.InvestigationFindingVersionLink = NewInvestigationFindingVersionLinkClient(tx.config)
 	tx.InvestigationHypothesis = NewInvestigationHypothesisClient(tx.config)
+	tx.InvestigationHypothesisVersion = NewInvestigationHypothesisVersionClient(tx.config)
+	tx.InvestigationOutputReference = NewInvestigationOutputReferenceClient(tx.config)
 	tx.InvestigationReport = NewInvestigationReportClient(tx.config)
+	tx.InvestigationUserInput = NewInvestigationUserInputClient(tx.config)
 	tx.KnowledgeEntity = NewKnowledgeEntityClient(tx.config)
 	tx.KnowledgeEntityLinkingAttribute = NewKnowledgeEntityLinkingAttributeClient(tx.config)
 	tx.KnowledgeEvidence = NewKnowledgeEvidenceClient(tx.config)

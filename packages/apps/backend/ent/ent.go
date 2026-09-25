@@ -47,9 +47,15 @@ import (
 	"github.com/rezible/rezible/ent/integrationeventsyncrun"
 	"github.com/rezible/rezible/ent/integrationuserinstallstate"
 	"github.com/rezible/rezible/ent/investigation"
+	"github.com/rezible/rezible/ent/investigationevidencerevision"
 	"github.com/rezible/rezible/ent/investigationfinding"
+	"github.com/rezible/rezible/ent/investigationfindingversion"
+	"github.com/rezible/rezible/ent/investigationfindingversionlink"
 	"github.com/rezible/rezible/ent/investigationhypothesis"
+	"github.com/rezible/rezible/ent/investigationhypothesisversion"
+	"github.com/rezible/rezible/ent/investigationoutputreference"
 	"github.com/rezible/rezible/ent/investigationreport"
+	"github.com/rezible/rezible/ent/investigationuserinput"
 	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/knowledgeentitylinkingattribute"
 	"github.com/rezible/rezible/ent/knowledgeevidence"
@@ -188,9 +194,15 @@ func checkColumn(t, c string) error {
 			integrationeventsyncrun.Table:         integrationeventsyncrun.ValidColumn,
 			integrationuserinstallstate.Table:     integrationuserinstallstate.ValidColumn,
 			investigation.Table:                   investigation.ValidColumn,
+			investigationevidencerevision.Table:   investigationevidencerevision.ValidColumn,
 			investigationfinding.Table:            investigationfinding.ValidColumn,
+			investigationfindingversion.Table:     investigationfindingversion.ValidColumn,
+			investigationfindingversionlink.Table: investigationfindingversionlink.ValidColumn,
 			investigationhypothesis.Table:         investigationhypothesis.ValidColumn,
+			investigationhypothesisversion.Table:  investigationhypothesisversion.ValidColumn,
+			investigationoutputreference.Table:    investigationoutputreference.ValidColumn,
 			investigationreport.Table:             investigationreport.ValidColumn,
+			investigationuserinput.Table:          investigationuserinput.ValidColumn,
 			knowledgeentity.Table:                 knowledgeentity.ValidColumn,
 			knowledgeentitylinkingattribute.Table: knowledgeentitylinkingattribute.ValidColumn,
 			knowledgeevidence.Table:               knowledgeevidence.ValidColumn,

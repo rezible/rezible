@@ -24,14 +24,18 @@ const (
 	FieldUpdatedAt = "updated_at"
 	// FieldInvestigationID holds the string denoting the investigation_id field in the database.
 	FieldInvestigationID = "investigation_id"
-	// FieldTitle holds the string denoting the title field in the database.
-	FieldTitle = "title"
-	// FieldBody holds the string denoting the body field in the database.
-	FieldBody = "body"
+	// FieldKey holds the string denoting the key field in the database.
+	FieldKey = "key"
+	// FieldUserInputID holds the string denoting the user_input_id field in the database.
+	FieldUserInputID = "user_input_id"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
 	// EdgeInvestigation holds the string denoting the investigation edge name in mutations.
 	EdgeInvestigation = "investigation"
+	// EdgeUserInput holds the string denoting the user_input edge name in mutations.
+	EdgeUserInput = "user_input"
+	// EdgeVersions holds the string denoting the versions edge name in mutations.
+	EdgeVersions = "versions"
 	// Table holds the table name of the investigationfinding in the database.
 	Table = "investigation_findings"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -48,6 +52,20 @@ const (
 	InvestigationInverseTable = "investigations"
 	// InvestigationColumn is the table column denoting the investigation relation/edge.
 	InvestigationColumn = "investigation_id"
+	// UserInputTable is the table that holds the user_input relation/edge.
+	UserInputTable = "investigation_findings"
+	// UserInputInverseTable is the table name for the InvestigationUserInput entity.
+	// It exists in this package in order to avoid circular dependency with the "investigationuserinput" package.
+	UserInputInverseTable = "investigation_user_inputs"
+	// UserInputColumn is the table column denoting the user_input relation/edge.
+	UserInputColumn = "user_input_id"
+	// VersionsTable is the table that holds the versions relation/edge.
+	VersionsTable = "investigation_finding_versions"
+	// VersionsInverseTable is the table name for the InvestigationFindingVersion entity.
+	// It exists in this package in order to avoid circular dependency with the "investigationfindingversion" package.
+	VersionsInverseTable = "investigation_finding_versions"
+	// VersionsColumn is the table column denoting the versions relation/edge.
+	VersionsColumn = "finding_id"
 )
 
 // Columns holds all SQL columns for investigationfinding fields.
@@ -57,8 +75,8 @@ var Columns = []string{
 	FieldCreatedAt,
 	FieldUpdatedAt,
 	FieldInvestigationID,
-	FieldTitle,
-	FieldBody,
+	FieldKey,
+	FieldUserInputID,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -85,8 +103,8 @@ var (
 	DefaultUpdatedAt func() time.Time
 	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
 	UpdateDefaultUpdatedAt func() time.Time
-	// TitleValidator is a validator for the "title" field. It is called by the builders before save.
-	TitleValidator func(string) error
+	// KeyValidator is a validator for the "key" field. It is called by the builders before save.
+	KeyValidator func(string) error
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
@@ -119,14 +137,14 @@ func ByInvestigationID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldInvestigationID, opts...).ToFunc()
 }
 
-// ByTitle orders the results by the title field.
-func ByTitle(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldTitle, opts...).ToFunc()
+// ByKey orders the results by the key field.
+func ByKey(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldKey, opts...).ToFunc()
 }
 
-// ByBody orders the results by the body field.
-func ByBody(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldBody, opts...).ToFunc()
+// ByUserInputID orders the results by the user_input_id field.
+func ByUserInputID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldUserInputID, opts...).ToFunc()
 }
 
 // ByTenantField orders the results by tenant field.
@@ -142,6 +160,27 @@ func ByInvestigationField(field string, opts ...sql.OrderTermOption) OrderOption
 		sqlgraph.OrderByNeighborTerms(s, newInvestigationStep(), sql.OrderByField(field, opts...))
 	}
 }
+
+// ByUserInputField orders the results by user_input field.
+func ByUserInputField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newUserInputStep(), sql.OrderByField(field, opts...))
+	}
+}
+
+// ByVersionsCount orders the results by versions count.
+func ByVersionsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newVersionsStep(), opts...)
+	}
+}
+
+// ByVersions orders the results by versions terms.
+func ByVersions(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newVersionsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newTenantStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -154,5 +193,19 @@ func newInvestigationStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(InvestigationInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, true, InvestigationTable, InvestigationColumn),
+	)
+}
+func newUserInputStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(UserInputInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, UserInputTable, UserInputColumn),
+	)
+}
+func newVersionsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(VersionsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, VersionsTable, VersionsColumn),
 	)
 }

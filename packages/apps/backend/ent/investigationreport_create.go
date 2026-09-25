@@ -15,6 +15,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/agentturn"
 	"github.com/rezible/rezible/ent/investigation"
+	"github.com/rezible/rezible/ent/investigationoutputreference"
 	"github.com/rezible/rezible/ent/investigationreport"
 	"github.com/rezible/rezible/ent/tenant"
 )
@@ -47,17 +48,9 @@ func (_c *InvestigationReportCreate) SetNillableCreatedAt(v *time.Time) *Investi
 	return _c
 }
 
-// SetUpdatedAt sets the "updated_at" field.
-func (_c *InvestigationReportCreate) SetUpdatedAt(v time.Time) *InvestigationReportCreate {
-	_c.mutation.SetUpdatedAt(v)
-	return _c
-}
-
-// SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
-func (_c *InvestigationReportCreate) SetNillableUpdatedAt(v *time.Time) *InvestigationReportCreate {
-	if v != nil {
-		_c.SetUpdatedAt(*v)
-	}
+// SetFingerprint sets the "fingerprint" field.
+func (_c *InvestigationReportCreate) SetFingerprint(v string) *InvestigationReportCreate {
+	_c.mutation.SetFingerprint(v)
 	return _c
 }
 
@@ -73,63 +66,9 @@ func (_c *InvestigationReportCreate) SetAgentTurnID(v uuid.UUID) *InvestigationR
 	return _c
 }
 
-// SetNillableAgentTurnID sets the "agent_turn_id" field if the given value is not nil.
-func (_c *InvestigationReportCreate) SetNillableAgentTurnID(v *uuid.UUID) *InvestigationReportCreate {
-	if v != nil {
-		_c.SetAgentTurnID(*v)
-	}
-	return _c
-}
-
 // SetText sets the "text" field.
 func (_c *InvestigationReportCreate) SetText(v string) *InvestigationReportCreate {
 	_c.mutation.SetText(v)
-	return _c
-}
-
-// SetLikelyCause sets the "likely_cause" field.
-func (_c *InvestigationReportCreate) SetLikelyCause(v string) *InvestigationReportCreate {
-	_c.mutation.SetLikelyCause(v)
-	return _c
-}
-
-// SetNillableLikelyCause sets the "likely_cause" field if the given value is not nil.
-func (_c *InvestigationReportCreate) SetNillableLikelyCause(v *string) *InvestigationReportCreate {
-	if v != nil {
-		_c.SetLikelyCause(*v)
-	}
-	return _c
-}
-
-// SetBestNextStep sets the "best_next_step" field.
-func (_c *InvestigationReportCreate) SetBestNextStep(v string) *InvestigationReportCreate {
-	_c.mutation.SetBestNextStep(v)
-	return _c
-}
-
-// SetNillableBestNextStep sets the "best_next_step" field if the given value is not nil.
-func (_c *InvestigationReportCreate) SetNillableBestNextStep(v *string) *InvestigationReportCreate {
-	if v != nil {
-		_c.SetBestNextStep(*v)
-	}
-	return _c
-}
-
-// SetLimitations sets the "limitations" field.
-func (_c *InvestigationReportCreate) SetLimitations(v []string) *InvestigationReportCreate {
-	_c.mutation.SetLimitations(v)
-	return _c
-}
-
-// SetRecommendedActions sets the "recommended_actions" field.
-func (_c *InvestigationReportCreate) SetRecommendedActions(v []string) *InvestigationReportCreate {
-	_c.mutation.SetRecommendedActions(v)
-	return _c
-}
-
-// SetSuggestedChecks sets the "suggested_checks" field.
-func (_c *InvestigationReportCreate) SetSuggestedChecks(v []string) *InvestigationReportCreate {
-	_c.mutation.SetSuggestedChecks(v)
 	return _c
 }
 
@@ -160,6 +99,21 @@ func (_c *InvestigationReportCreate) SetInvestigation(v *Investigation) *Investi
 // SetAgentTurn sets the "agent_turn" edge to the AgentTurn entity.
 func (_c *InvestigationReportCreate) SetAgentTurn(v *AgentTurn) *InvestigationReportCreate {
 	return _c.SetAgentTurnID(v.ID)
+}
+
+// AddOutputReferenceIDs adds the "output_references" edge to the InvestigationOutputReference entity by IDs.
+func (_c *InvestigationReportCreate) AddOutputReferenceIDs(ids ...uuid.UUID) *InvestigationReportCreate {
+	_c.mutation.AddOutputReferenceIDs(ids...)
+	return _c
+}
+
+// AddOutputReferences adds the "output_references" edges to the InvestigationOutputReference entity.
+func (_c *InvestigationReportCreate) AddOutputReferences(v ...*InvestigationOutputReference) *InvestigationReportCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddOutputReferenceIDs(ids...)
 }
 
 // Mutation returns the InvestigationReportMutation object of the builder.
@@ -206,13 +160,6 @@ func (_c *InvestigationReportCreate) defaults() error {
 		v := investigationreport.DefaultCreatedAt()
 		_c.mutation.SetCreatedAt(v)
 	}
-	if _, ok := _c.mutation.UpdatedAt(); !ok {
-		if investigationreport.DefaultUpdatedAt == nil {
-			return fmt.Errorf("ent: uninitialized investigationreport.DefaultUpdatedAt (forgotten import ent/runtime?)")
-		}
-		v := investigationreport.DefaultUpdatedAt()
-		_c.mutation.SetUpdatedAt(v)
-	}
 	if _, ok := _c.mutation.ID(); !ok {
 		if investigationreport.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized investigationreport.DefaultID (forgotten import ent/runtime?)")
@@ -231,11 +178,19 @@ func (_c *InvestigationReportCreate) check() error {
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "InvestigationReport.created_at"`)}
 	}
-	if _, ok := _c.mutation.UpdatedAt(); !ok {
-		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "InvestigationReport.updated_at"`)}
+	if _, ok := _c.mutation.Fingerprint(); !ok {
+		return &ValidationError{Name: "fingerprint", err: errors.New(`ent: missing required field "InvestigationReport.fingerprint"`)}
+	}
+	if v, ok := _c.mutation.Fingerprint(); ok {
+		if err := investigationreport.FingerprintValidator(v); err != nil {
+			return &ValidationError{Name: "fingerprint", err: fmt.Errorf(`ent: validator failed for field "InvestigationReport.fingerprint": %w`, err)}
+		}
 	}
 	if _, ok := _c.mutation.InvestigationID(); !ok {
 		return &ValidationError{Name: "investigation_id", err: errors.New(`ent: missing required field "InvestigationReport.investigation_id"`)}
+	}
+	if _, ok := _c.mutation.AgentTurnID(); !ok {
+		return &ValidationError{Name: "agent_turn_id", err: errors.New(`ent: missing required field "InvestigationReport.agent_turn_id"`)}
 	}
 	if _, ok := _c.mutation.Text(); !ok {
 		return &ValidationError{Name: "text", err: errors.New(`ent: missing required field "InvestigationReport.text"`)}
@@ -250,6 +205,9 @@ func (_c *InvestigationReportCreate) check() error {
 	}
 	if len(_c.mutation.InvestigationIDs()) == 0 {
 		return &ValidationError{Name: "investigation", err: errors.New(`ent: missing required edge "InvestigationReport.investigation"`)}
+	}
+	if len(_c.mutation.AgentTurnIDs()) == 0 {
+		return &ValidationError{Name: "agent_turn", err: errors.New(`ent: missing required edge "InvestigationReport.agent_turn"`)}
 	}
 	return nil
 }
@@ -292,33 +250,13 @@ func (_c *InvestigationReportCreate) createSpec() (*InvestigationReport, *sqlgra
 		_spec.SetField(investigationreport.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
 	}
-	if value, ok := _c.mutation.UpdatedAt(); ok {
-		_spec.SetField(investigationreport.FieldUpdatedAt, field.TypeTime, value)
-		_node.UpdatedAt = value
+	if value, ok := _c.mutation.Fingerprint(); ok {
+		_spec.SetField(investigationreport.FieldFingerprint, field.TypeString, value)
+		_node.Fingerprint = value
 	}
 	if value, ok := _c.mutation.Text(); ok {
 		_spec.SetField(investigationreport.FieldText, field.TypeString, value)
 		_node.Text = value
-	}
-	if value, ok := _c.mutation.LikelyCause(); ok {
-		_spec.SetField(investigationreport.FieldLikelyCause, field.TypeString, value)
-		_node.LikelyCause = value
-	}
-	if value, ok := _c.mutation.BestNextStep(); ok {
-		_spec.SetField(investigationreport.FieldBestNextStep, field.TypeString, value)
-		_node.BestNextStep = value
-	}
-	if value, ok := _c.mutation.Limitations(); ok {
-		_spec.SetField(investigationreport.FieldLimitations, field.TypeJSON, value)
-		_node.Limitations = value
-	}
-	if value, ok := _c.mutation.RecommendedActions(); ok {
-		_spec.SetField(investigationreport.FieldRecommendedActions, field.TypeJSON, value)
-		_node.RecommendedActions = value
-	}
-	if value, ok := _c.mutation.SuggestedChecks(); ok {
-		_spec.SetField(investigationreport.FieldSuggestedChecks, field.TypeJSON, value)
-		_node.SuggestedChecks = value
 	}
 	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -340,7 +278,7 @@ func (_c *InvestigationReportCreate) createSpec() (*InvestigationReport, *sqlgra
 	}
 	if nodes := _c.mutation.InvestigationIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
+			Rel:     sqlgraph.M2O,
 			Inverse: true,
 			Table:   investigationreport.InvestigationTable,
 			Columns: []string{investigationreport.InvestigationColumn},
@@ -371,7 +309,24 @@ func (_c *InvestigationReportCreate) createSpec() (*InvestigationReport, *sqlgra
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.AgentTurnID = &nodes[0]
+		_node.AgentTurnID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.OutputReferencesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   investigationreport.OutputReferencesTable,
+			Columns: []string{investigationreport.OutputReferencesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(investigationoutputreference.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.InvestigationOutputReference
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
@@ -426,132 +381,6 @@ type (
 	}
 )
 
-// SetCreatedAt sets the "created_at" field.
-func (u *InvestigationReportUpsert) SetCreatedAt(v time.Time) *InvestigationReportUpsert {
-	u.Set(investigationreport.FieldCreatedAt, v)
-	return u
-}
-
-// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
-func (u *InvestigationReportUpsert) UpdateCreatedAt() *InvestigationReportUpsert {
-	u.SetExcluded(investigationreport.FieldCreatedAt)
-	return u
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (u *InvestigationReportUpsert) SetUpdatedAt(v time.Time) *InvestigationReportUpsert {
-	u.Set(investigationreport.FieldUpdatedAt, v)
-	return u
-}
-
-// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
-func (u *InvestigationReportUpsert) UpdateUpdatedAt() *InvestigationReportUpsert {
-	u.SetExcluded(investigationreport.FieldUpdatedAt)
-	return u
-}
-
-// SetText sets the "text" field.
-func (u *InvestigationReportUpsert) SetText(v string) *InvestigationReportUpsert {
-	u.Set(investigationreport.FieldText, v)
-	return u
-}
-
-// UpdateText sets the "text" field to the value that was provided on create.
-func (u *InvestigationReportUpsert) UpdateText() *InvestigationReportUpsert {
-	u.SetExcluded(investigationreport.FieldText)
-	return u
-}
-
-// SetLikelyCause sets the "likely_cause" field.
-func (u *InvestigationReportUpsert) SetLikelyCause(v string) *InvestigationReportUpsert {
-	u.Set(investigationreport.FieldLikelyCause, v)
-	return u
-}
-
-// UpdateLikelyCause sets the "likely_cause" field to the value that was provided on create.
-func (u *InvestigationReportUpsert) UpdateLikelyCause() *InvestigationReportUpsert {
-	u.SetExcluded(investigationreport.FieldLikelyCause)
-	return u
-}
-
-// ClearLikelyCause clears the value of the "likely_cause" field.
-func (u *InvestigationReportUpsert) ClearLikelyCause() *InvestigationReportUpsert {
-	u.SetNull(investigationreport.FieldLikelyCause)
-	return u
-}
-
-// SetBestNextStep sets the "best_next_step" field.
-func (u *InvestigationReportUpsert) SetBestNextStep(v string) *InvestigationReportUpsert {
-	u.Set(investigationreport.FieldBestNextStep, v)
-	return u
-}
-
-// UpdateBestNextStep sets the "best_next_step" field to the value that was provided on create.
-func (u *InvestigationReportUpsert) UpdateBestNextStep() *InvestigationReportUpsert {
-	u.SetExcluded(investigationreport.FieldBestNextStep)
-	return u
-}
-
-// ClearBestNextStep clears the value of the "best_next_step" field.
-func (u *InvestigationReportUpsert) ClearBestNextStep() *InvestigationReportUpsert {
-	u.SetNull(investigationreport.FieldBestNextStep)
-	return u
-}
-
-// SetLimitations sets the "limitations" field.
-func (u *InvestigationReportUpsert) SetLimitations(v []string) *InvestigationReportUpsert {
-	u.Set(investigationreport.FieldLimitations, v)
-	return u
-}
-
-// UpdateLimitations sets the "limitations" field to the value that was provided on create.
-func (u *InvestigationReportUpsert) UpdateLimitations() *InvestigationReportUpsert {
-	u.SetExcluded(investigationreport.FieldLimitations)
-	return u
-}
-
-// ClearLimitations clears the value of the "limitations" field.
-func (u *InvestigationReportUpsert) ClearLimitations() *InvestigationReportUpsert {
-	u.SetNull(investigationreport.FieldLimitations)
-	return u
-}
-
-// SetRecommendedActions sets the "recommended_actions" field.
-func (u *InvestigationReportUpsert) SetRecommendedActions(v []string) *InvestigationReportUpsert {
-	u.Set(investigationreport.FieldRecommendedActions, v)
-	return u
-}
-
-// UpdateRecommendedActions sets the "recommended_actions" field to the value that was provided on create.
-func (u *InvestigationReportUpsert) UpdateRecommendedActions() *InvestigationReportUpsert {
-	u.SetExcluded(investigationreport.FieldRecommendedActions)
-	return u
-}
-
-// ClearRecommendedActions clears the value of the "recommended_actions" field.
-func (u *InvestigationReportUpsert) ClearRecommendedActions() *InvestigationReportUpsert {
-	u.SetNull(investigationreport.FieldRecommendedActions)
-	return u
-}
-
-// SetSuggestedChecks sets the "suggested_checks" field.
-func (u *InvestigationReportUpsert) SetSuggestedChecks(v []string) *InvestigationReportUpsert {
-	u.Set(investigationreport.FieldSuggestedChecks, v)
-	return u
-}
-
-// UpdateSuggestedChecks sets the "suggested_checks" field to the value that was provided on create.
-func (u *InvestigationReportUpsert) UpdateSuggestedChecks() *InvestigationReportUpsert {
-	u.SetExcluded(investigationreport.FieldSuggestedChecks)
-	return u
-}
-
-// ClearSuggestedChecks clears the value of the "suggested_checks" field.
-func (u *InvestigationReportUpsert) ClearSuggestedChecks() *InvestigationReportUpsert {
-	u.SetNull(investigationreport.FieldSuggestedChecks)
-	return u
-}
-
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
@@ -572,11 +401,20 @@ func (u *InvestigationReportUpsertOne) UpdateNewValues() *InvestigationReportUps
 		if _, exists := u.create.mutation.TenantID(); exists {
 			s.SetIgnore(investigationreport.FieldTenantID)
 		}
+		if _, exists := u.create.mutation.CreatedAt(); exists {
+			s.SetIgnore(investigationreport.FieldCreatedAt)
+		}
+		if _, exists := u.create.mutation.Fingerprint(); exists {
+			s.SetIgnore(investigationreport.FieldFingerprint)
+		}
 		if _, exists := u.create.mutation.InvestigationID(); exists {
 			s.SetIgnore(investigationreport.FieldInvestigationID)
 		}
 		if _, exists := u.create.mutation.AgentTurnID(); exists {
 			s.SetIgnore(investigationreport.FieldAgentTurnID)
+		}
+		if _, exists := u.create.mutation.Text(); exists {
+			s.SetIgnore(investigationreport.FieldText)
 		}
 	}))
 	return u
@@ -607,153 +445,6 @@ func (u *InvestigationReportUpsertOne) Update(set func(*InvestigationReportUpser
 		set(&InvestigationReportUpsert{UpdateSet: update})
 	}))
 	return u
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (u *InvestigationReportUpsertOne) SetCreatedAt(v time.Time) *InvestigationReportUpsertOne {
-	return u.Update(func(s *InvestigationReportUpsert) {
-		s.SetCreatedAt(v)
-	})
-}
-
-// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
-func (u *InvestigationReportUpsertOne) UpdateCreatedAt() *InvestigationReportUpsertOne {
-	return u.Update(func(s *InvestigationReportUpsert) {
-		s.UpdateCreatedAt()
-	})
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (u *InvestigationReportUpsertOne) SetUpdatedAt(v time.Time) *InvestigationReportUpsertOne {
-	return u.Update(func(s *InvestigationReportUpsert) {
-		s.SetUpdatedAt(v)
-	})
-}
-
-// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
-func (u *InvestigationReportUpsertOne) UpdateUpdatedAt() *InvestigationReportUpsertOne {
-	return u.Update(func(s *InvestigationReportUpsert) {
-		s.UpdateUpdatedAt()
-	})
-}
-
-// SetText sets the "text" field.
-func (u *InvestigationReportUpsertOne) SetText(v string) *InvestigationReportUpsertOne {
-	return u.Update(func(s *InvestigationReportUpsert) {
-		s.SetText(v)
-	})
-}
-
-// UpdateText sets the "text" field to the value that was provided on create.
-func (u *InvestigationReportUpsertOne) UpdateText() *InvestigationReportUpsertOne {
-	return u.Update(func(s *InvestigationReportUpsert) {
-		s.UpdateText()
-	})
-}
-
-// SetLikelyCause sets the "likely_cause" field.
-func (u *InvestigationReportUpsertOne) SetLikelyCause(v string) *InvestigationReportUpsertOne {
-	return u.Update(func(s *InvestigationReportUpsert) {
-		s.SetLikelyCause(v)
-	})
-}
-
-// UpdateLikelyCause sets the "likely_cause" field to the value that was provided on create.
-func (u *InvestigationReportUpsertOne) UpdateLikelyCause() *InvestigationReportUpsertOne {
-	return u.Update(func(s *InvestigationReportUpsert) {
-		s.UpdateLikelyCause()
-	})
-}
-
-// ClearLikelyCause clears the value of the "likely_cause" field.
-func (u *InvestigationReportUpsertOne) ClearLikelyCause() *InvestigationReportUpsertOne {
-	return u.Update(func(s *InvestigationReportUpsert) {
-		s.ClearLikelyCause()
-	})
-}
-
-// SetBestNextStep sets the "best_next_step" field.
-func (u *InvestigationReportUpsertOne) SetBestNextStep(v string) *InvestigationReportUpsertOne {
-	return u.Update(func(s *InvestigationReportUpsert) {
-		s.SetBestNextStep(v)
-	})
-}
-
-// UpdateBestNextStep sets the "best_next_step" field to the value that was provided on create.
-func (u *InvestigationReportUpsertOne) UpdateBestNextStep() *InvestigationReportUpsertOne {
-	return u.Update(func(s *InvestigationReportUpsert) {
-		s.UpdateBestNextStep()
-	})
-}
-
-// ClearBestNextStep clears the value of the "best_next_step" field.
-func (u *InvestigationReportUpsertOne) ClearBestNextStep() *InvestigationReportUpsertOne {
-	return u.Update(func(s *InvestigationReportUpsert) {
-		s.ClearBestNextStep()
-	})
-}
-
-// SetLimitations sets the "limitations" field.
-func (u *InvestigationReportUpsertOne) SetLimitations(v []string) *InvestigationReportUpsertOne {
-	return u.Update(func(s *InvestigationReportUpsert) {
-		s.SetLimitations(v)
-	})
-}
-
-// UpdateLimitations sets the "limitations" field to the value that was provided on create.
-func (u *InvestigationReportUpsertOne) UpdateLimitations() *InvestigationReportUpsertOne {
-	return u.Update(func(s *InvestigationReportUpsert) {
-		s.UpdateLimitations()
-	})
-}
-
-// ClearLimitations clears the value of the "limitations" field.
-func (u *InvestigationReportUpsertOne) ClearLimitations() *InvestigationReportUpsertOne {
-	return u.Update(func(s *InvestigationReportUpsert) {
-		s.ClearLimitations()
-	})
-}
-
-// SetRecommendedActions sets the "recommended_actions" field.
-func (u *InvestigationReportUpsertOne) SetRecommendedActions(v []string) *InvestigationReportUpsertOne {
-	return u.Update(func(s *InvestigationReportUpsert) {
-		s.SetRecommendedActions(v)
-	})
-}
-
-// UpdateRecommendedActions sets the "recommended_actions" field to the value that was provided on create.
-func (u *InvestigationReportUpsertOne) UpdateRecommendedActions() *InvestigationReportUpsertOne {
-	return u.Update(func(s *InvestigationReportUpsert) {
-		s.UpdateRecommendedActions()
-	})
-}
-
-// ClearRecommendedActions clears the value of the "recommended_actions" field.
-func (u *InvestigationReportUpsertOne) ClearRecommendedActions() *InvestigationReportUpsertOne {
-	return u.Update(func(s *InvestigationReportUpsert) {
-		s.ClearRecommendedActions()
-	})
-}
-
-// SetSuggestedChecks sets the "suggested_checks" field.
-func (u *InvestigationReportUpsertOne) SetSuggestedChecks(v []string) *InvestigationReportUpsertOne {
-	return u.Update(func(s *InvestigationReportUpsert) {
-		s.SetSuggestedChecks(v)
-	})
-}
-
-// UpdateSuggestedChecks sets the "suggested_checks" field to the value that was provided on create.
-func (u *InvestigationReportUpsertOne) UpdateSuggestedChecks() *InvestigationReportUpsertOne {
-	return u.Update(func(s *InvestigationReportUpsert) {
-		s.UpdateSuggestedChecks()
-	})
-}
-
-// ClearSuggestedChecks clears the value of the "suggested_checks" field.
-func (u *InvestigationReportUpsertOne) ClearSuggestedChecks() *InvestigationReportUpsertOne {
-	return u.Update(func(s *InvestigationReportUpsert) {
-		s.ClearSuggestedChecks()
-	})
 }
 
 // Exec executes the query.
@@ -942,11 +633,20 @@ func (u *InvestigationReportUpsertBulk) UpdateNewValues() *InvestigationReportUp
 			if _, exists := b.mutation.TenantID(); exists {
 				s.SetIgnore(investigationreport.FieldTenantID)
 			}
+			if _, exists := b.mutation.CreatedAt(); exists {
+				s.SetIgnore(investigationreport.FieldCreatedAt)
+			}
+			if _, exists := b.mutation.Fingerprint(); exists {
+				s.SetIgnore(investigationreport.FieldFingerprint)
+			}
 			if _, exists := b.mutation.InvestigationID(); exists {
 				s.SetIgnore(investigationreport.FieldInvestigationID)
 			}
 			if _, exists := b.mutation.AgentTurnID(); exists {
 				s.SetIgnore(investigationreport.FieldAgentTurnID)
+			}
+			if _, exists := b.mutation.Text(); exists {
+				s.SetIgnore(investigationreport.FieldText)
 			}
 		}
 	}))
@@ -978,153 +678,6 @@ func (u *InvestigationReportUpsertBulk) Update(set func(*InvestigationReportUpse
 		set(&InvestigationReportUpsert{UpdateSet: update})
 	}))
 	return u
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (u *InvestigationReportUpsertBulk) SetCreatedAt(v time.Time) *InvestigationReportUpsertBulk {
-	return u.Update(func(s *InvestigationReportUpsert) {
-		s.SetCreatedAt(v)
-	})
-}
-
-// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
-func (u *InvestigationReportUpsertBulk) UpdateCreatedAt() *InvestigationReportUpsertBulk {
-	return u.Update(func(s *InvestigationReportUpsert) {
-		s.UpdateCreatedAt()
-	})
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (u *InvestigationReportUpsertBulk) SetUpdatedAt(v time.Time) *InvestigationReportUpsertBulk {
-	return u.Update(func(s *InvestigationReportUpsert) {
-		s.SetUpdatedAt(v)
-	})
-}
-
-// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
-func (u *InvestigationReportUpsertBulk) UpdateUpdatedAt() *InvestigationReportUpsertBulk {
-	return u.Update(func(s *InvestigationReportUpsert) {
-		s.UpdateUpdatedAt()
-	})
-}
-
-// SetText sets the "text" field.
-func (u *InvestigationReportUpsertBulk) SetText(v string) *InvestigationReportUpsertBulk {
-	return u.Update(func(s *InvestigationReportUpsert) {
-		s.SetText(v)
-	})
-}
-
-// UpdateText sets the "text" field to the value that was provided on create.
-func (u *InvestigationReportUpsertBulk) UpdateText() *InvestigationReportUpsertBulk {
-	return u.Update(func(s *InvestigationReportUpsert) {
-		s.UpdateText()
-	})
-}
-
-// SetLikelyCause sets the "likely_cause" field.
-func (u *InvestigationReportUpsertBulk) SetLikelyCause(v string) *InvestigationReportUpsertBulk {
-	return u.Update(func(s *InvestigationReportUpsert) {
-		s.SetLikelyCause(v)
-	})
-}
-
-// UpdateLikelyCause sets the "likely_cause" field to the value that was provided on create.
-func (u *InvestigationReportUpsertBulk) UpdateLikelyCause() *InvestigationReportUpsertBulk {
-	return u.Update(func(s *InvestigationReportUpsert) {
-		s.UpdateLikelyCause()
-	})
-}
-
-// ClearLikelyCause clears the value of the "likely_cause" field.
-func (u *InvestigationReportUpsertBulk) ClearLikelyCause() *InvestigationReportUpsertBulk {
-	return u.Update(func(s *InvestigationReportUpsert) {
-		s.ClearLikelyCause()
-	})
-}
-
-// SetBestNextStep sets the "best_next_step" field.
-func (u *InvestigationReportUpsertBulk) SetBestNextStep(v string) *InvestigationReportUpsertBulk {
-	return u.Update(func(s *InvestigationReportUpsert) {
-		s.SetBestNextStep(v)
-	})
-}
-
-// UpdateBestNextStep sets the "best_next_step" field to the value that was provided on create.
-func (u *InvestigationReportUpsertBulk) UpdateBestNextStep() *InvestigationReportUpsertBulk {
-	return u.Update(func(s *InvestigationReportUpsert) {
-		s.UpdateBestNextStep()
-	})
-}
-
-// ClearBestNextStep clears the value of the "best_next_step" field.
-func (u *InvestigationReportUpsertBulk) ClearBestNextStep() *InvestigationReportUpsertBulk {
-	return u.Update(func(s *InvestigationReportUpsert) {
-		s.ClearBestNextStep()
-	})
-}
-
-// SetLimitations sets the "limitations" field.
-func (u *InvestigationReportUpsertBulk) SetLimitations(v []string) *InvestigationReportUpsertBulk {
-	return u.Update(func(s *InvestigationReportUpsert) {
-		s.SetLimitations(v)
-	})
-}
-
-// UpdateLimitations sets the "limitations" field to the value that was provided on create.
-func (u *InvestigationReportUpsertBulk) UpdateLimitations() *InvestigationReportUpsertBulk {
-	return u.Update(func(s *InvestigationReportUpsert) {
-		s.UpdateLimitations()
-	})
-}
-
-// ClearLimitations clears the value of the "limitations" field.
-func (u *InvestigationReportUpsertBulk) ClearLimitations() *InvestigationReportUpsertBulk {
-	return u.Update(func(s *InvestigationReportUpsert) {
-		s.ClearLimitations()
-	})
-}
-
-// SetRecommendedActions sets the "recommended_actions" field.
-func (u *InvestigationReportUpsertBulk) SetRecommendedActions(v []string) *InvestigationReportUpsertBulk {
-	return u.Update(func(s *InvestigationReportUpsert) {
-		s.SetRecommendedActions(v)
-	})
-}
-
-// UpdateRecommendedActions sets the "recommended_actions" field to the value that was provided on create.
-func (u *InvestigationReportUpsertBulk) UpdateRecommendedActions() *InvestigationReportUpsertBulk {
-	return u.Update(func(s *InvestigationReportUpsert) {
-		s.UpdateRecommendedActions()
-	})
-}
-
-// ClearRecommendedActions clears the value of the "recommended_actions" field.
-func (u *InvestigationReportUpsertBulk) ClearRecommendedActions() *InvestigationReportUpsertBulk {
-	return u.Update(func(s *InvestigationReportUpsert) {
-		s.ClearRecommendedActions()
-	})
-}
-
-// SetSuggestedChecks sets the "suggested_checks" field.
-func (u *InvestigationReportUpsertBulk) SetSuggestedChecks(v []string) *InvestigationReportUpsertBulk {
-	return u.Update(func(s *InvestigationReportUpsert) {
-		s.SetSuggestedChecks(v)
-	})
-}
-
-// UpdateSuggestedChecks sets the "suggested_checks" field to the value that was provided on create.
-func (u *InvestigationReportUpsertBulk) UpdateSuggestedChecks() *InvestigationReportUpsertBulk {
-	return u.Update(func(s *InvestigationReportUpsert) {
-		s.UpdateSuggestedChecks()
-	})
-}
-
-// ClearSuggestedChecks clears the value of the "suggested_checks" field.
-func (u *InvestigationReportUpsertBulk) ClearSuggestedChecks() *InvestigationReportUpsertBulk {
-	return u.Update(func(s *InvestigationReportUpsert) {
-		s.ClearSuggestedChecks()
-	})
 }
 
 // Exec executes the query.

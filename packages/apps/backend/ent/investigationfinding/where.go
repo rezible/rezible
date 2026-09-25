@@ -77,14 +77,14 @@ func InvestigationID(v uuid.UUID) predicate.InvestigationFinding {
 	return predicate.InvestigationFinding(sql.FieldEQ(FieldInvestigationID, v))
 }
 
-// Title applies equality check predicate on the "title" field. It's identical to TitleEQ.
-func Title(v string) predicate.InvestigationFinding {
-	return predicate.InvestigationFinding(sql.FieldEQ(FieldTitle, v))
+// Key applies equality check predicate on the "key" field. It's identical to KeyEQ.
+func Key(v string) predicate.InvestigationFinding {
+	return predicate.InvestigationFinding(sql.FieldEQ(FieldKey, v))
 }
 
-// Body applies equality check predicate on the "body" field. It's identical to BodyEQ.
-func Body(v string) predicate.InvestigationFinding {
-	return predicate.InvestigationFinding(sql.FieldEQ(FieldBody, v))
+// UserInputID applies equality check predicate on the "user_input_id" field. It's identical to UserInputIDEQ.
+func UserInputID(v uuid.UUID) predicate.InvestigationFinding {
+	return predicate.InvestigationFinding(sql.FieldEQ(FieldUserInputID, v))
 }
 
 // TenantIDEQ applies the EQ predicate on the "tenant_id" field.
@@ -207,144 +207,99 @@ func InvestigationIDNotIn(vs ...uuid.UUID) predicate.InvestigationFinding {
 	return predicate.InvestigationFinding(sql.FieldNotIn(FieldInvestigationID, vs...))
 }
 
-// TitleEQ applies the EQ predicate on the "title" field.
-func TitleEQ(v string) predicate.InvestigationFinding {
-	return predicate.InvestigationFinding(sql.FieldEQ(FieldTitle, v))
+// KeyEQ applies the EQ predicate on the "key" field.
+func KeyEQ(v string) predicate.InvestigationFinding {
+	return predicate.InvestigationFinding(sql.FieldEQ(FieldKey, v))
 }
 
-// TitleNEQ applies the NEQ predicate on the "title" field.
-func TitleNEQ(v string) predicate.InvestigationFinding {
-	return predicate.InvestigationFinding(sql.FieldNEQ(FieldTitle, v))
+// KeyNEQ applies the NEQ predicate on the "key" field.
+func KeyNEQ(v string) predicate.InvestigationFinding {
+	return predicate.InvestigationFinding(sql.FieldNEQ(FieldKey, v))
 }
 
-// TitleIn applies the In predicate on the "title" field.
-func TitleIn(vs ...string) predicate.InvestigationFinding {
-	return predicate.InvestigationFinding(sql.FieldIn(FieldTitle, vs...))
+// KeyIn applies the In predicate on the "key" field.
+func KeyIn(vs ...string) predicate.InvestigationFinding {
+	return predicate.InvestigationFinding(sql.FieldIn(FieldKey, vs...))
 }
 
-// TitleNotIn applies the NotIn predicate on the "title" field.
-func TitleNotIn(vs ...string) predicate.InvestigationFinding {
-	return predicate.InvestigationFinding(sql.FieldNotIn(FieldTitle, vs...))
+// KeyNotIn applies the NotIn predicate on the "key" field.
+func KeyNotIn(vs ...string) predicate.InvestigationFinding {
+	return predicate.InvestigationFinding(sql.FieldNotIn(FieldKey, vs...))
 }
 
-// TitleGT applies the GT predicate on the "title" field.
-func TitleGT(v string) predicate.InvestigationFinding {
-	return predicate.InvestigationFinding(sql.FieldGT(FieldTitle, v))
+// KeyGT applies the GT predicate on the "key" field.
+func KeyGT(v string) predicate.InvestigationFinding {
+	return predicate.InvestigationFinding(sql.FieldGT(FieldKey, v))
 }
 
-// TitleGTE applies the GTE predicate on the "title" field.
-func TitleGTE(v string) predicate.InvestigationFinding {
-	return predicate.InvestigationFinding(sql.FieldGTE(FieldTitle, v))
+// KeyGTE applies the GTE predicate on the "key" field.
+func KeyGTE(v string) predicate.InvestigationFinding {
+	return predicate.InvestigationFinding(sql.FieldGTE(FieldKey, v))
 }
 
-// TitleLT applies the LT predicate on the "title" field.
-func TitleLT(v string) predicate.InvestigationFinding {
-	return predicate.InvestigationFinding(sql.FieldLT(FieldTitle, v))
+// KeyLT applies the LT predicate on the "key" field.
+func KeyLT(v string) predicate.InvestigationFinding {
+	return predicate.InvestigationFinding(sql.FieldLT(FieldKey, v))
 }
 
-// TitleLTE applies the LTE predicate on the "title" field.
-func TitleLTE(v string) predicate.InvestigationFinding {
-	return predicate.InvestigationFinding(sql.FieldLTE(FieldTitle, v))
+// KeyLTE applies the LTE predicate on the "key" field.
+func KeyLTE(v string) predicate.InvestigationFinding {
+	return predicate.InvestigationFinding(sql.FieldLTE(FieldKey, v))
 }
 
-// TitleContains applies the Contains predicate on the "title" field.
-func TitleContains(v string) predicate.InvestigationFinding {
-	return predicate.InvestigationFinding(sql.FieldContains(FieldTitle, v))
+// KeyContains applies the Contains predicate on the "key" field.
+func KeyContains(v string) predicate.InvestigationFinding {
+	return predicate.InvestigationFinding(sql.FieldContains(FieldKey, v))
 }
 
-// TitleHasPrefix applies the HasPrefix predicate on the "title" field.
-func TitleHasPrefix(v string) predicate.InvestigationFinding {
-	return predicate.InvestigationFinding(sql.FieldHasPrefix(FieldTitle, v))
+// KeyHasPrefix applies the HasPrefix predicate on the "key" field.
+func KeyHasPrefix(v string) predicate.InvestigationFinding {
+	return predicate.InvestigationFinding(sql.FieldHasPrefix(FieldKey, v))
 }
 
-// TitleHasSuffix applies the HasSuffix predicate on the "title" field.
-func TitleHasSuffix(v string) predicate.InvestigationFinding {
-	return predicate.InvestigationFinding(sql.FieldHasSuffix(FieldTitle, v))
+// KeyHasSuffix applies the HasSuffix predicate on the "key" field.
+func KeyHasSuffix(v string) predicate.InvestigationFinding {
+	return predicate.InvestigationFinding(sql.FieldHasSuffix(FieldKey, v))
 }
 
-// TitleEqualFold applies the EqualFold predicate on the "title" field.
-func TitleEqualFold(v string) predicate.InvestigationFinding {
-	return predicate.InvestigationFinding(sql.FieldEqualFold(FieldTitle, v))
+// KeyEqualFold applies the EqualFold predicate on the "key" field.
+func KeyEqualFold(v string) predicate.InvestigationFinding {
+	return predicate.InvestigationFinding(sql.FieldEqualFold(FieldKey, v))
 }
 
-// TitleContainsFold applies the ContainsFold predicate on the "title" field.
-func TitleContainsFold(v string) predicate.InvestigationFinding {
-	return predicate.InvestigationFinding(sql.FieldContainsFold(FieldTitle, v))
+// KeyContainsFold applies the ContainsFold predicate on the "key" field.
+func KeyContainsFold(v string) predicate.InvestigationFinding {
+	return predicate.InvestigationFinding(sql.FieldContainsFold(FieldKey, v))
 }
 
-// BodyEQ applies the EQ predicate on the "body" field.
-func BodyEQ(v string) predicate.InvestigationFinding {
-	return predicate.InvestigationFinding(sql.FieldEQ(FieldBody, v))
+// UserInputIDEQ applies the EQ predicate on the "user_input_id" field.
+func UserInputIDEQ(v uuid.UUID) predicate.InvestigationFinding {
+	return predicate.InvestigationFinding(sql.FieldEQ(FieldUserInputID, v))
 }
 
-// BodyNEQ applies the NEQ predicate on the "body" field.
-func BodyNEQ(v string) predicate.InvestigationFinding {
-	return predicate.InvestigationFinding(sql.FieldNEQ(FieldBody, v))
+// UserInputIDNEQ applies the NEQ predicate on the "user_input_id" field.
+func UserInputIDNEQ(v uuid.UUID) predicate.InvestigationFinding {
+	return predicate.InvestigationFinding(sql.FieldNEQ(FieldUserInputID, v))
 }
 
-// BodyIn applies the In predicate on the "body" field.
-func BodyIn(vs ...string) predicate.InvestigationFinding {
-	return predicate.InvestigationFinding(sql.FieldIn(FieldBody, vs...))
+// UserInputIDIn applies the In predicate on the "user_input_id" field.
+func UserInputIDIn(vs ...uuid.UUID) predicate.InvestigationFinding {
+	return predicate.InvestigationFinding(sql.FieldIn(FieldUserInputID, vs...))
 }
 
-// BodyNotIn applies the NotIn predicate on the "body" field.
-func BodyNotIn(vs ...string) predicate.InvestigationFinding {
-	return predicate.InvestigationFinding(sql.FieldNotIn(FieldBody, vs...))
+// UserInputIDNotIn applies the NotIn predicate on the "user_input_id" field.
+func UserInputIDNotIn(vs ...uuid.UUID) predicate.InvestigationFinding {
+	return predicate.InvestigationFinding(sql.FieldNotIn(FieldUserInputID, vs...))
 }
 
-// BodyGT applies the GT predicate on the "body" field.
-func BodyGT(v string) predicate.InvestigationFinding {
-	return predicate.InvestigationFinding(sql.FieldGT(FieldBody, v))
+// UserInputIDIsNil applies the IsNil predicate on the "user_input_id" field.
+func UserInputIDIsNil() predicate.InvestigationFinding {
+	return predicate.InvestigationFinding(sql.FieldIsNull(FieldUserInputID))
 }
 
-// BodyGTE applies the GTE predicate on the "body" field.
-func BodyGTE(v string) predicate.InvestigationFinding {
-	return predicate.InvestigationFinding(sql.FieldGTE(FieldBody, v))
-}
-
-// BodyLT applies the LT predicate on the "body" field.
-func BodyLT(v string) predicate.InvestigationFinding {
-	return predicate.InvestigationFinding(sql.FieldLT(FieldBody, v))
-}
-
-// BodyLTE applies the LTE predicate on the "body" field.
-func BodyLTE(v string) predicate.InvestigationFinding {
-	return predicate.InvestigationFinding(sql.FieldLTE(FieldBody, v))
-}
-
-// BodyContains applies the Contains predicate on the "body" field.
-func BodyContains(v string) predicate.InvestigationFinding {
-	return predicate.InvestigationFinding(sql.FieldContains(FieldBody, v))
-}
-
-// BodyHasPrefix applies the HasPrefix predicate on the "body" field.
-func BodyHasPrefix(v string) predicate.InvestigationFinding {
-	return predicate.InvestigationFinding(sql.FieldHasPrefix(FieldBody, v))
-}
-
-// BodyHasSuffix applies the HasSuffix predicate on the "body" field.
-func BodyHasSuffix(v string) predicate.InvestigationFinding {
-	return predicate.InvestigationFinding(sql.FieldHasSuffix(FieldBody, v))
-}
-
-// BodyIsNil applies the IsNil predicate on the "body" field.
-func BodyIsNil() predicate.InvestigationFinding {
-	return predicate.InvestigationFinding(sql.FieldIsNull(FieldBody))
-}
-
-// BodyNotNil applies the NotNil predicate on the "body" field.
-func BodyNotNil() predicate.InvestigationFinding {
-	return predicate.InvestigationFinding(sql.FieldNotNull(FieldBody))
-}
-
-// BodyEqualFold applies the EqualFold predicate on the "body" field.
-func BodyEqualFold(v string) predicate.InvestigationFinding {
-	return predicate.InvestigationFinding(sql.FieldEqualFold(FieldBody, v))
-}
-
-// BodyContainsFold applies the ContainsFold predicate on the "body" field.
-func BodyContainsFold(v string) predicate.InvestigationFinding {
-	return predicate.InvestigationFinding(sql.FieldContainsFold(FieldBody, v))
+// UserInputIDNotNil applies the NotNil predicate on the "user_input_id" field.
+func UserInputIDNotNil() predicate.InvestigationFinding {
+	return predicate.InvestigationFinding(sql.FieldNotNull(FieldUserInputID))
 }
 
 // HasTenant applies the HasEdge predicate on the "tenant" edge.
@@ -397,6 +352,64 @@ func HasInvestigationWith(preds ...predicate.Investigation) predicate.Investigat
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.Investigation
 		step.Edge.Schema = schemaConfig.InvestigationFinding
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasUserInput applies the HasEdge predicate on the "user_input" edge.
+func HasUserInput() predicate.InvestigationFinding {
+	return predicate.InvestigationFinding(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, UserInputTable, UserInputColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.InvestigationUserInput
+		step.Edge.Schema = schemaConfig.InvestigationFinding
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasUserInputWith applies the HasEdge predicate on the "user_input" edge with a given conditions (other predicates).
+func HasUserInputWith(preds ...predicate.InvestigationUserInput) predicate.InvestigationFinding {
+	return predicate.InvestigationFinding(func(s *sql.Selector) {
+		step := newUserInputStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.InvestigationUserInput
+		step.Edge.Schema = schemaConfig.InvestigationFinding
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasVersions applies the HasEdge predicate on the "versions" edge.
+func HasVersions() predicate.InvestigationFinding {
+	return predicate.InvestigationFinding(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, VersionsTable, VersionsColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.InvestigationFindingVersion
+		step.Edge.Schema = schemaConfig.InvestigationFindingVersion
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasVersionsWith applies the HasEdge predicate on the "versions" edge with a given conditions (other predicates).
+func HasVersionsWith(preds ...predicate.InvestigationFindingVersion) predicate.InvestigationFinding {
+	return predicate.InvestigationFinding(func(s *sql.Selector) {
+		step := newVersionsStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.InvestigationFindingVersion
+		step.Edge.Schema = schemaConfig.InvestigationFindingVersion
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

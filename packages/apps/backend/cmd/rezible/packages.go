@@ -169,7 +169,6 @@ var pkgGenkit = do.Package(
 		chatAgent := genkit.NewChatAgent()
 		investigationAgent := genkit.NewInvestigationAgent(
 			do.MustInvoke[rez.InvestigationService](i),
-			do.MustInvoke[rez.SituationService](i),
 			do.MustInvoke[rez.SystemAnalysisService](i),
 			do.MustInvoke[rez.KnowledgeGraphQueryService](i),
 		)
@@ -474,10 +473,7 @@ var pkgDatabase = do.Package(
 	}),
 
 	do.Lazy(func(i do.Injector) (jobs.Worker[jobs.CloseInactiveAlertEpisodes], error) {
-		return db.NewCloseInactiveAlertEpisodesWorker(
-			do.MustInvoke[rez.Database](i),
-			do.MustInvoke[rez.SituationService](i),
-		)
+		return db.NewCloseInactiveAlertEpisodesWorker(do.MustInvoke[rez.AlertService](i))
 	}),
 
 	do.Lazy(func(i do.Injector) (rez.PlaybookService, error) {
@@ -525,9 +521,9 @@ var pkgDatabase = do.Package(
 	do.Lazy(func(i do.Injector) (*db.SituationService, error) {
 		return db.NewSituationService(
 			do.MustInvoke[rez.Database](i),
-			do.MustInvoke[rez.JobService](i),
-			do.MustInvoke[rez.KnowledgeGraphIngestionService](i),
 			do.MustInvoke[rez.InvestigationService](i),
+			do.MustInvoke[rez.SystemAnalysisService](i),
+			do.MustInvoke[rez.KnowledgeGraphQueryService](i),
 		)
 	}),
 	do.Bind[*db.SituationService, rez.SituationService](),
@@ -535,15 +531,13 @@ var pkgDatabase = do.Package(
 		return db.NewInvestigationService(
 			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.AiAgentSessionService](i),
+			do.MustInvoke[rez.JobService](i),
 		), nil
 	}),
 	do.Bind[*db.InvestigationService, rez.InvestigationService](),
-
-	do.Lazy(func(i do.Injector) (jobs.Worker[jobs.BumpSituationInvestigation], error) {
-		return db.NewReconcileSituationInvestigationWorker(
-			do.MustInvoke[rez.Database](i),
-			do.MustInvoke[rez.SituationService](i),
-			do.MustInvoke[rez.AiAgentSessionService](i),
+	do.Lazy(func(i do.Injector) (jobs.Worker[jobs.ReconcileInvestigation], error) {
+		return db.NewReconcileInvestigationWorker(
+			do.MustInvoke[*db.InvestigationService](i),
 		), nil
 	}),
 
@@ -680,7 +674,7 @@ var pkgJobs = do.Package(
 	do.LazyNamed("jobs-default", func(i do.Injector) (jobs.Definition, error) {
 		p := newJobDefinitionProvider(i)
 
-		p.addProvidedArgs[jobs.BumpSituationInvestigation]()
+		p.addProvidedArgs[jobs.ReconcileInvestigation]()
 		p.addProvidedArgs[jobs.CloseInactiveAlertEpisodes]()
 		p.addProvidedArgs[jobs.StartAgentSession]()
 		p.addProvidedArgs[jobs.InvokeAgentTurn]()
@@ -734,7 +728,7 @@ var pkgMessages = do.Package(
 	do.LazyNamed("messages-default", func(i do.Injector) (messages.Definition, error) {
 		p := newMessagesDefinitionProvider(i)
 
-		p.addInvokedProvider[*db.SituationService]()
+		p.addInvokedProvider[*db.InvestigationService]()
 
 		for _, intgProv := range getAvailableIntegrationsWith[messages.MessageHandlerProvider](i) {
 			p.add(intgProv.MessageHandlers()...)

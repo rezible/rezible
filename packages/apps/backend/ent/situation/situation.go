@@ -23,12 +23,8 @@ const (
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
-	// FieldKnowledgeEntityID holds the string denoting the knowledge_entity_id field in the database.
-	FieldKnowledgeEntityID = "knowledge_entity_id"
 	// FieldTitle holds the string denoting the title field in the database.
 	FieldTitle = "title"
-	// FieldEvidenceRevision holds the string denoting the evidence_revision field in the database.
-	FieldEvidenceRevision = "evidence_revision"
 	// FieldSummary holds the string denoting the summary field in the database.
 	FieldSummary = "summary"
 	// FieldOpenedAt holds the string denoting the opened_at field in the database.
@@ -39,8 +35,6 @@ const (
 	FieldCloseReason = "close_reason"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
-	// EdgeKnowledgeEntity holds the string denoting the knowledge_entity edge name in mutations.
-	EdgeKnowledgeEntity = "knowledge_entity"
 	// EdgeInvestigation holds the string denoting the investigation edge name in mutations.
 	EdgeInvestigation = "investigation"
 	// EdgeHazardAssessments holds the string denoting the hazard_assessments edge name in mutations.
@@ -58,13 +52,6 @@ const (
 	TenantInverseTable = "tenants"
 	// TenantColumn is the table column denoting the tenant relation/edge.
 	TenantColumn = "tenant_id"
-	// KnowledgeEntityTable is the table that holds the knowledge_entity relation/edge.
-	KnowledgeEntityTable = "situations"
-	// KnowledgeEntityInverseTable is the table name for the KnowledgeEntity entity.
-	// It exists in this package in order to avoid circular dependency with the "knowledgeentity" package.
-	KnowledgeEntityInverseTable = "knowledge_entities"
-	// KnowledgeEntityColumn is the table column denoting the knowledge_entity relation/edge.
-	KnowledgeEntityColumn = "knowledge_entity_id"
 	// InvestigationTable is the table that holds the investigation relation/edge.
 	InvestigationTable = "situation_investigations"
 	// InvestigationInverseTable is the table name for the SituationInvestigation entity.
@@ -99,9 +86,7 @@ var Columns = []string{
 	FieldTenantID,
 	FieldCreatedAt,
 	FieldUpdatedAt,
-	FieldKnowledgeEntityID,
 	FieldTitle,
-	FieldEvidenceRevision,
 	FieldSummary,
 	FieldOpenedAt,
 	FieldClosedAt,
@@ -140,10 +125,6 @@ var (
 	UpdateDefaultUpdatedAt func() time.Time
 	// TitleValidator is a validator for the "title" field. It is called by the builders before save.
 	TitleValidator func(string) error
-	// DefaultEvidenceRevision holds the default value on creation for the "evidence_revision" field.
-	DefaultEvidenceRevision int
-	// EvidenceRevisionValidator is a validator for the "evidence_revision" field. It is called by the builders before save.
-	EvidenceRevisionValidator func(int) error
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
@@ -194,19 +175,9 @@ func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
 }
 
-// ByKnowledgeEntityID orders the results by the knowledge_entity_id field.
-func ByKnowledgeEntityID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldKnowledgeEntityID, opts...).ToFunc()
-}
-
 // ByTitle orders the results by the title field.
 func ByTitle(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTitle, opts...).ToFunc()
-}
-
-// ByEvidenceRevision orders the results by the evidence_revision field.
-func ByEvidenceRevision(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldEvidenceRevision, opts...).ToFunc()
 }
 
 // BySummary orders the results by the summary field.
@@ -233,13 +204,6 @@ func ByCloseReason(opts ...sql.OrderTermOption) OrderOption {
 func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newTenantStep(), sql.OrderByField(field, opts...))
-	}
-}
-
-// ByKnowledgeEntityField orders the results by knowledge_entity field.
-func ByKnowledgeEntityField(field string, opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newKnowledgeEntityStep(), sql.OrderByField(field, opts...))
 	}
 }
 
@@ -296,13 +260,6 @@ func newTenantStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(TenantInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
-	)
-}
-func newKnowledgeEntityStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(KnowledgeEntityInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, false, KnowledgeEntityTable, KnowledgeEntityColumn),
 	)
 }
 func newInvestigationStep() *sqlgraph.Step {

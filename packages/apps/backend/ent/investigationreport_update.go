@@ -6,13 +6,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
-	"entgo.io/ent/dialect/sql/sqljson"
 	"entgo.io/ent/schema/field"
+	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/internal"
+	"github.com/rezible/rezible/ent/investigationoutputreference"
 	"github.com/rezible/rezible/ent/investigationreport"
 	"github.com/rezible/rezible/ent/predicate"
 )
@@ -31,132 +31,19 @@ func (_u *InvestigationReportUpdate) Where(ps ...predicate.InvestigationReport) 
 	return _u
 }
 
-// SetCreatedAt sets the "created_at" field.
-func (_u *InvestigationReportUpdate) SetCreatedAt(v time.Time) *InvestigationReportUpdate {
-	_u.mutation.SetCreatedAt(v)
+// AddOutputReferenceIDs adds the "output_references" edge to the InvestigationOutputReference entity by IDs.
+func (_u *InvestigationReportUpdate) AddOutputReferenceIDs(ids ...uuid.UUID) *InvestigationReportUpdate {
+	_u.mutation.AddOutputReferenceIDs(ids...)
 	return _u
 }
 
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (_u *InvestigationReportUpdate) SetNillableCreatedAt(v *time.Time) *InvestigationReportUpdate {
-	if v != nil {
-		_u.SetCreatedAt(*v)
+// AddOutputReferences adds the "output_references" edges to the InvestigationOutputReference entity.
+func (_u *InvestigationReportUpdate) AddOutputReferences(v ...*InvestigationOutputReference) *InvestigationReportUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return _u
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (_u *InvestigationReportUpdate) SetUpdatedAt(v time.Time) *InvestigationReportUpdate {
-	_u.mutation.SetUpdatedAt(v)
-	return _u
-}
-
-// SetText sets the "text" field.
-func (_u *InvestigationReportUpdate) SetText(v string) *InvestigationReportUpdate {
-	_u.mutation.SetText(v)
-	return _u
-}
-
-// SetNillableText sets the "text" field if the given value is not nil.
-func (_u *InvestigationReportUpdate) SetNillableText(v *string) *InvestigationReportUpdate {
-	if v != nil {
-		_u.SetText(*v)
-	}
-	return _u
-}
-
-// SetLikelyCause sets the "likely_cause" field.
-func (_u *InvestigationReportUpdate) SetLikelyCause(v string) *InvestigationReportUpdate {
-	_u.mutation.SetLikelyCause(v)
-	return _u
-}
-
-// SetNillableLikelyCause sets the "likely_cause" field if the given value is not nil.
-func (_u *InvestigationReportUpdate) SetNillableLikelyCause(v *string) *InvestigationReportUpdate {
-	if v != nil {
-		_u.SetLikelyCause(*v)
-	}
-	return _u
-}
-
-// ClearLikelyCause clears the value of the "likely_cause" field.
-func (_u *InvestigationReportUpdate) ClearLikelyCause() *InvestigationReportUpdate {
-	_u.mutation.ClearLikelyCause()
-	return _u
-}
-
-// SetBestNextStep sets the "best_next_step" field.
-func (_u *InvestigationReportUpdate) SetBestNextStep(v string) *InvestigationReportUpdate {
-	_u.mutation.SetBestNextStep(v)
-	return _u
-}
-
-// SetNillableBestNextStep sets the "best_next_step" field if the given value is not nil.
-func (_u *InvestigationReportUpdate) SetNillableBestNextStep(v *string) *InvestigationReportUpdate {
-	if v != nil {
-		_u.SetBestNextStep(*v)
-	}
-	return _u
-}
-
-// ClearBestNextStep clears the value of the "best_next_step" field.
-func (_u *InvestigationReportUpdate) ClearBestNextStep() *InvestigationReportUpdate {
-	_u.mutation.ClearBestNextStep()
-	return _u
-}
-
-// SetLimitations sets the "limitations" field.
-func (_u *InvestigationReportUpdate) SetLimitations(v []string) *InvestigationReportUpdate {
-	_u.mutation.SetLimitations(v)
-	return _u
-}
-
-// AppendLimitations appends value to the "limitations" field.
-func (_u *InvestigationReportUpdate) AppendLimitations(v []string) *InvestigationReportUpdate {
-	_u.mutation.AppendLimitations(v)
-	return _u
-}
-
-// ClearLimitations clears the value of the "limitations" field.
-func (_u *InvestigationReportUpdate) ClearLimitations() *InvestigationReportUpdate {
-	_u.mutation.ClearLimitations()
-	return _u
-}
-
-// SetRecommendedActions sets the "recommended_actions" field.
-func (_u *InvestigationReportUpdate) SetRecommendedActions(v []string) *InvestigationReportUpdate {
-	_u.mutation.SetRecommendedActions(v)
-	return _u
-}
-
-// AppendRecommendedActions appends value to the "recommended_actions" field.
-func (_u *InvestigationReportUpdate) AppendRecommendedActions(v []string) *InvestigationReportUpdate {
-	_u.mutation.AppendRecommendedActions(v)
-	return _u
-}
-
-// ClearRecommendedActions clears the value of the "recommended_actions" field.
-func (_u *InvestigationReportUpdate) ClearRecommendedActions() *InvestigationReportUpdate {
-	_u.mutation.ClearRecommendedActions()
-	return _u
-}
-
-// SetSuggestedChecks sets the "suggested_checks" field.
-func (_u *InvestigationReportUpdate) SetSuggestedChecks(v []string) *InvestigationReportUpdate {
-	_u.mutation.SetSuggestedChecks(v)
-	return _u
-}
-
-// AppendSuggestedChecks appends value to the "suggested_checks" field.
-func (_u *InvestigationReportUpdate) AppendSuggestedChecks(v []string) *InvestigationReportUpdate {
-	_u.mutation.AppendSuggestedChecks(v)
-	return _u
-}
-
-// ClearSuggestedChecks clears the value of the "suggested_checks" field.
-func (_u *InvestigationReportUpdate) ClearSuggestedChecks() *InvestigationReportUpdate {
-	_u.mutation.ClearSuggestedChecks()
-	return _u
+	return _u.AddOutputReferenceIDs(ids...)
 }
 
 // Mutation returns the InvestigationReportMutation object of the builder.
@@ -164,11 +51,29 @@ func (_u *InvestigationReportUpdate) Mutation() *InvestigationReportMutation {
 	return _u.mutation
 }
 
+// ClearOutputReferences clears all "output_references" edges to the InvestigationOutputReference entity.
+func (_u *InvestigationReportUpdate) ClearOutputReferences() *InvestigationReportUpdate {
+	_u.mutation.ClearOutputReferences()
+	return _u
+}
+
+// RemoveOutputReferenceIDs removes the "output_references" edge to InvestigationOutputReference entities by IDs.
+func (_u *InvestigationReportUpdate) RemoveOutputReferenceIDs(ids ...uuid.UUID) *InvestigationReportUpdate {
+	_u.mutation.RemoveOutputReferenceIDs(ids...)
+	return _u
+}
+
+// RemoveOutputReferences removes "output_references" edges to InvestigationOutputReference entities.
+func (_u *InvestigationReportUpdate) RemoveOutputReferences(v ...*InvestigationOutputReference) *InvestigationReportUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveOutputReferenceIDs(ids...)
+}
+
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (_u *InvestigationReportUpdate) Save(ctx context.Context) (int, error) {
-	if err := _u.defaults(); err != nil {
-		return 0, err
-	}
 	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
@@ -194,30 +99,16 @@ func (_u *InvestigationReportUpdate) ExecX(ctx context.Context) {
 	}
 }
 
-// defaults sets the default values of the builder before save.
-func (_u *InvestigationReportUpdate) defaults() error {
-	if _, ok := _u.mutation.UpdatedAt(); !ok {
-		if investigationreport.UpdateDefaultUpdatedAt == nil {
-			return fmt.Errorf("ent: uninitialized investigationreport.UpdateDefaultUpdatedAt (forgotten import ent/runtime?)")
-		}
-		v := investigationreport.UpdateDefaultUpdatedAt()
-		_u.mutation.SetUpdatedAt(v)
-	}
-	return nil
-}
-
 // check runs all checks and user-defined validators on the builder.
 func (_u *InvestigationReportUpdate) check() error {
-	if v, ok := _u.mutation.Text(); ok {
-		if err := investigationreport.TextValidator(v); err != nil {
-			return &ValidationError{Name: "text", err: fmt.Errorf(`ent: validator failed for field "InvestigationReport.text": %w`, err)}
-		}
-	}
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "InvestigationReport.tenant"`)
 	}
 	if _u.mutation.InvestigationCleared() && len(_u.mutation.InvestigationIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "InvestigationReport.investigation"`)
+	}
+	if _u.mutation.AgentTurnCleared() && len(_u.mutation.AgentTurnIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "InvestigationReport.agent_turn"`)
 	}
 	return nil
 }
@@ -240,59 +131,53 @@ func (_u *InvestigationReportUpdate) sqlSave(ctx context.Context) (_node int, er
 			}
 		}
 	}
-	if value, ok := _u.mutation.CreatedAt(); ok {
-		_spec.SetField(investigationreport.FieldCreatedAt, field.TypeTime, value)
+	if _u.mutation.OutputReferencesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   investigationreport.OutputReferencesTable,
+			Columns: []string{investigationreport.OutputReferencesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(investigationoutputreference.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.InvestigationOutputReference
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if value, ok := _u.mutation.UpdatedAt(); ok {
-		_spec.SetField(investigationreport.FieldUpdatedAt, field.TypeTime, value)
+	if nodes := _u.mutation.RemovedOutputReferencesIDs(); len(nodes) > 0 && !_u.mutation.OutputReferencesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   investigationreport.OutputReferencesTable,
+			Columns: []string{investigationreport.OutputReferencesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(investigationoutputreference.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.InvestigationOutputReference
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if value, ok := _u.mutation.Text(); ok {
-		_spec.SetField(investigationreport.FieldText, field.TypeString, value)
-	}
-	if value, ok := _u.mutation.LikelyCause(); ok {
-		_spec.SetField(investigationreport.FieldLikelyCause, field.TypeString, value)
-	}
-	if _u.mutation.LikelyCauseCleared() {
-		_spec.ClearField(investigationreport.FieldLikelyCause, field.TypeString)
-	}
-	if value, ok := _u.mutation.BestNextStep(); ok {
-		_spec.SetField(investigationreport.FieldBestNextStep, field.TypeString, value)
-	}
-	if _u.mutation.BestNextStepCleared() {
-		_spec.ClearField(investigationreport.FieldBestNextStep, field.TypeString)
-	}
-	if value, ok := _u.mutation.Limitations(); ok {
-		_spec.SetField(investigationreport.FieldLimitations, field.TypeJSON, value)
-	}
-	if value, ok := _u.mutation.AppendedLimitations(); ok {
-		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, investigationreport.FieldLimitations, value)
-		})
-	}
-	if _u.mutation.LimitationsCleared() {
-		_spec.ClearField(investigationreport.FieldLimitations, field.TypeJSON)
-	}
-	if value, ok := _u.mutation.RecommendedActions(); ok {
-		_spec.SetField(investigationreport.FieldRecommendedActions, field.TypeJSON, value)
-	}
-	if value, ok := _u.mutation.AppendedRecommendedActions(); ok {
-		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, investigationreport.FieldRecommendedActions, value)
-		})
-	}
-	if _u.mutation.RecommendedActionsCleared() {
-		_spec.ClearField(investigationreport.FieldRecommendedActions, field.TypeJSON)
-	}
-	if value, ok := _u.mutation.SuggestedChecks(); ok {
-		_spec.SetField(investigationreport.FieldSuggestedChecks, field.TypeJSON, value)
-	}
-	if value, ok := _u.mutation.AppendedSuggestedChecks(); ok {
-		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, investigationreport.FieldSuggestedChecks, value)
-		})
-	}
-	if _u.mutation.SuggestedChecksCleared() {
-		_spec.ClearField(investigationreport.FieldSuggestedChecks, field.TypeJSON)
+	if nodes := _u.mutation.OutputReferencesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   investigationreport.OutputReferencesTable,
+			Columns: []string{investigationreport.OutputReferencesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(investigationoutputreference.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.InvestigationOutputReference
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_spec.Node.Schema = _u.schemaConfig.InvestigationReport
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
@@ -318,137 +203,45 @@ type InvestigationReportUpdateOne struct {
 	modifiers []func(*sql.UpdateBuilder)
 }
 
-// SetCreatedAt sets the "created_at" field.
-func (_u *InvestigationReportUpdateOne) SetCreatedAt(v time.Time) *InvestigationReportUpdateOne {
-	_u.mutation.SetCreatedAt(v)
+// AddOutputReferenceIDs adds the "output_references" edge to the InvestigationOutputReference entity by IDs.
+func (_u *InvestigationReportUpdateOne) AddOutputReferenceIDs(ids ...uuid.UUID) *InvestigationReportUpdateOne {
+	_u.mutation.AddOutputReferenceIDs(ids...)
 	return _u
 }
 
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (_u *InvestigationReportUpdateOne) SetNillableCreatedAt(v *time.Time) *InvestigationReportUpdateOne {
-	if v != nil {
-		_u.SetCreatedAt(*v)
+// AddOutputReferences adds the "output_references" edges to the InvestigationOutputReference entity.
+func (_u *InvestigationReportUpdateOne) AddOutputReferences(v ...*InvestigationOutputReference) *InvestigationReportUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return _u
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (_u *InvestigationReportUpdateOne) SetUpdatedAt(v time.Time) *InvestigationReportUpdateOne {
-	_u.mutation.SetUpdatedAt(v)
-	return _u
-}
-
-// SetText sets the "text" field.
-func (_u *InvestigationReportUpdateOne) SetText(v string) *InvestigationReportUpdateOne {
-	_u.mutation.SetText(v)
-	return _u
-}
-
-// SetNillableText sets the "text" field if the given value is not nil.
-func (_u *InvestigationReportUpdateOne) SetNillableText(v *string) *InvestigationReportUpdateOne {
-	if v != nil {
-		_u.SetText(*v)
-	}
-	return _u
-}
-
-// SetLikelyCause sets the "likely_cause" field.
-func (_u *InvestigationReportUpdateOne) SetLikelyCause(v string) *InvestigationReportUpdateOne {
-	_u.mutation.SetLikelyCause(v)
-	return _u
-}
-
-// SetNillableLikelyCause sets the "likely_cause" field if the given value is not nil.
-func (_u *InvestigationReportUpdateOne) SetNillableLikelyCause(v *string) *InvestigationReportUpdateOne {
-	if v != nil {
-		_u.SetLikelyCause(*v)
-	}
-	return _u
-}
-
-// ClearLikelyCause clears the value of the "likely_cause" field.
-func (_u *InvestigationReportUpdateOne) ClearLikelyCause() *InvestigationReportUpdateOne {
-	_u.mutation.ClearLikelyCause()
-	return _u
-}
-
-// SetBestNextStep sets the "best_next_step" field.
-func (_u *InvestigationReportUpdateOne) SetBestNextStep(v string) *InvestigationReportUpdateOne {
-	_u.mutation.SetBestNextStep(v)
-	return _u
-}
-
-// SetNillableBestNextStep sets the "best_next_step" field if the given value is not nil.
-func (_u *InvestigationReportUpdateOne) SetNillableBestNextStep(v *string) *InvestigationReportUpdateOne {
-	if v != nil {
-		_u.SetBestNextStep(*v)
-	}
-	return _u
-}
-
-// ClearBestNextStep clears the value of the "best_next_step" field.
-func (_u *InvestigationReportUpdateOne) ClearBestNextStep() *InvestigationReportUpdateOne {
-	_u.mutation.ClearBestNextStep()
-	return _u
-}
-
-// SetLimitations sets the "limitations" field.
-func (_u *InvestigationReportUpdateOne) SetLimitations(v []string) *InvestigationReportUpdateOne {
-	_u.mutation.SetLimitations(v)
-	return _u
-}
-
-// AppendLimitations appends value to the "limitations" field.
-func (_u *InvestigationReportUpdateOne) AppendLimitations(v []string) *InvestigationReportUpdateOne {
-	_u.mutation.AppendLimitations(v)
-	return _u
-}
-
-// ClearLimitations clears the value of the "limitations" field.
-func (_u *InvestigationReportUpdateOne) ClearLimitations() *InvestigationReportUpdateOne {
-	_u.mutation.ClearLimitations()
-	return _u
-}
-
-// SetRecommendedActions sets the "recommended_actions" field.
-func (_u *InvestigationReportUpdateOne) SetRecommendedActions(v []string) *InvestigationReportUpdateOne {
-	_u.mutation.SetRecommendedActions(v)
-	return _u
-}
-
-// AppendRecommendedActions appends value to the "recommended_actions" field.
-func (_u *InvestigationReportUpdateOne) AppendRecommendedActions(v []string) *InvestigationReportUpdateOne {
-	_u.mutation.AppendRecommendedActions(v)
-	return _u
-}
-
-// ClearRecommendedActions clears the value of the "recommended_actions" field.
-func (_u *InvestigationReportUpdateOne) ClearRecommendedActions() *InvestigationReportUpdateOne {
-	_u.mutation.ClearRecommendedActions()
-	return _u
-}
-
-// SetSuggestedChecks sets the "suggested_checks" field.
-func (_u *InvestigationReportUpdateOne) SetSuggestedChecks(v []string) *InvestigationReportUpdateOne {
-	_u.mutation.SetSuggestedChecks(v)
-	return _u
-}
-
-// AppendSuggestedChecks appends value to the "suggested_checks" field.
-func (_u *InvestigationReportUpdateOne) AppendSuggestedChecks(v []string) *InvestigationReportUpdateOne {
-	_u.mutation.AppendSuggestedChecks(v)
-	return _u
-}
-
-// ClearSuggestedChecks clears the value of the "suggested_checks" field.
-func (_u *InvestigationReportUpdateOne) ClearSuggestedChecks() *InvestigationReportUpdateOne {
-	_u.mutation.ClearSuggestedChecks()
-	return _u
+	return _u.AddOutputReferenceIDs(ids...)
 }
 
 // Mutation returns the InvestigationReportMutation object of the builder.
 func (_u *InvestigationReportUpdateOne) Mutation() *InvestigationReportMutation {
 	return _u.mutation
+}
+
+// ClearOutputReferences clears all "output_references" edges to the InvestigationOutputReference entity.
+func (_u *InvestigationReportUpdateOne) ClearOutputReferences() *InvestigationReportUpdateOne {
+	_u.mutation.ClearOutputReferences()
+	return _u
+}
+
+// RemoveOutputReferenceIDs removes the "output_references" edge to InvestigationOutputReference entities by IDs.
+func (_u *InvestigationReportUpdateOne) RemoveOutputReferenceIDs(ids ...uuid.UUID) *InvestigationReportUpdateOne {
+	_u.mutation.RemoveOutputReferenceIDs(ids...)
+	return _u
+}
+
+// RemoveOutputReferences removes "output_references" edges to InvestigationOutputReference entities.
+func (_u *InvestigationReportUpdateOne) RemoveOutputReferences(v ...*InvestigationOutputReference) *InvestigationReportUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveOutputReferenceIDs(ids...)
 }
 
 // Where appends a list predicates to the InvestigationReportUpdate builder.
@@ -466,9 +259,6 @@ func (_u *InvestigationReportUpdateOne) Select(field string, fields ...string) *
 
 // Save executes the query and returns the updated InvestigationReport entity.
 func (_u *InvestigationReportUpdateOne) Save(ctx context.Context) (*InvestigationReport, error) {
-	if err := _u.defaults(); err != nil {
-		return nil, err
-	}
 	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
@@ -494,30 +284,16 @@ func (_u *InvestigationReportUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
-// defaults sets the default values of the builder before save.
-func (_u *InvestigationReportUpdateOne) defaults() error {
-	if _, ok := _u.mutation.UpdatedAt(); !ok {
-		if investigationreport.UpdateDefaultUpdatedAt == nil {
-			return fmt.Errorf("ent: uninitialized investigationreport.UpdateDefaultUpdatedAt (forgotten import ent/runtime?)")
-		}
-		v := investigationreport.UpdateDefaultUpdatedAt()
-		_u.mutation.SetUpdatedAt(v)
-	}
-	return nil
-}
-
 // check runs all checks and user-defined validators on the builder.
 func (_u *InvestigationReportUpdateOne) check() error {
-	if v, ok := _u.mutation.Text(); ok {
-		if err := investigationreport.TextValidator(v); err != nil {
-			return &ValidationError{Name: "text", err: fmt.Errorf(`ent: validator failed for field "InvestigationReport.text": %w`, err)}
-		}
-	}
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "InvestigationReport.tenant"`)
 	}
 	if _u.mutation.InvestigationCleared() && len(_u.mutation.InvestigationIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "InvestigationReport.investigation"`)
+	}
+	if _u.mutation.AgentTurnCleared() && len(_u.mutation.AgentTurnIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "InvestigationReport.agent_turn"`)
 	}
 	return nil
 }
@@ -557,59 +333,53 @@ func (_u *InvestigationReportUpdateOne) sqlSave(ctx context.Context) (_node *Inv
 			}
 		}
 	}
-	if value, ok := _u.mutation.CreatedAt(); ok {
-		_spec.SetField(investigationreport.FieldCreatedAt, field.TypeTime, value)
+	if _u.mutation.OutputReferencesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   investigationreport.OutputReferencesTable,
+			Columns: []string{investigationreport.OutputReferencesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(investigationoutputreference.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.InvestigationOutputReference
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if value, ok := _u.mutation.UpdatedAt(); ok {
-		_spec.SetField(investigationreport.FieldUpdatedAt, field.TypeTime, value)
+	if nodes := _u.mutation.RemovedOutputReferencesIDs(); len(nodes) > 0 && !_u.mutation.OutputReferencesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   investigationreport.OutputReferencesTable,
+			Columns: []string{investigationreport.OutputReferencesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(investigationoutputreference.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.InvestigationOutputReference
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if value, ok := _u.mutation.Text(); ok {
-		_spec.SetField(investigationreport.FieldText, field.TypeString, value)
-	}
-	if value, ok := _u.mutation.LikelyCause(); ok {
-		_spec.SetField(investigationreport.FieldLikelyCause, field.TypeString, value)
-	}
-	if _u.mutation.LikelyCauseCleared() {
-		_spec.ClearField(investigationreport.FieldLikelyCause, field.TypeString)
-	}
-	if value, ok := _u.mutation.BestNextStep(); ok {
-		_spec.SetField(investigationreport.FieldBestNextStep, field.TypeString, value)
-	}
-	if _u.mutation.BestNextStepCleared() {
-		_spec.ClearField(investigationreport.FieldBestNextStep, field.TypeString)
-	}
-	if value, ok := _u.mutation.Limitations(); ok {
-		_spec.SetField(investigationreport.FieldLimitations, field.TypeJSON, value)
-	}
-	if value, ok := _u.mutation.AppendedLimitations(); ok {
-		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, investigationreport.FieldLimitations, value)
-		})
-	}
-	if _u.mutation.LimitationsCleared() {
-		_spec.ClearField(investigationreport.FieldLimitations, field.TypeJSON)
-	}
-	if value, ok := _u.mutation.RecommendedActions(); ok {
-		_spec.SetField(investigationreport.FieldRecommendedActions, field.TypeJSON, value)
-	}
-	if value, ok := _u.mutation.AppendedRecommendedActions(); ok {
-		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, investigationreport.FieldRecommendedActions, value)
-		})
-	}
-	if _u.mutation.RecommendedActionsCleared() {
-		_spec.ClearField(investigationreport.FieldRecommendedActions, field.TypeJSON)
-	}
-	if value, ok := _u.mutation.SuggestedChecks(); ok {
-		_spec.SetField(investigationreport.FieldSuggestedChecks, field.TypeJSON, value)
-	}
-	if value, ok := _u.mutation.AppendedSuggestedChecks(); ok {
-		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, investigationreport.FieldSuggestedChecks, value)
-		})
-	}
-	if _u.mutation.SuggestedChecksCleared() {
-		_spec.ClearField(investigationreport.FieldSuggestedChecks, field.TypeJSON)
+	if nodes := _u.mutation.OutputReferencesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   investigationreport.OutputReferencesTable,
+			Columns: []string{investigationreport.OutputReferencesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(investigationoutputreference.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.InvestigationOutputReference
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_spec.Node.Schema = _u.schemaConfig.InvestigationReport
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)

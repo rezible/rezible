@@ -72,19 +72,9 @@ func UpdatedAt(v time.Time) predicate.Situation {
 	return predicate.Situation(sql.FieldEQ(FieldUpdatedAt, v))
 }
 
-// KnowledgeEntityID applies equality check predicate on the "knowledge_entity_id" field. It's identical to KnowledgeEntityIDEQ.
-func KnowledgeEntityID(v uuid.UUID) predicate.Situation {
-	return predicate.Situation(sql.FieldEQ(FieldKnowledgeEntityID, v))
-}
-
 // Title applies equality check predicate on the "title" field. It's identical to TitleEQ.
 func Title(v string) predicate.Situation {
 	return predicate.Situation(sql.FieldEQ(FieldTitle, v))
-}
-
-// EvidenceRevision applies equality check predicate on the "evidence_revision" field. It's identical to EvidenceRevisionEQ.
-func EvidenceRevision(v int) predicate.Situation {
-	return predicate.Situation(sql.FieldEQ(FieldEvidenceRevision, v))
 }
 
 // Summary applies equality check predicate on the "summary" field. It's identical to SummaryEQ.
@@ -202,26 +192,6 @@ func UpdatedAtLTE(v time.Time) predicate.Situation {
 	return predicate.Situation(sql.FieldLTE(FieldUpdatedAt, v))
 }
 
-// KnowledgeEntityIDEQ applies the EQ predicate on the "knowledge_entity_id" field.
-func KnowledgeEntityIDEQ(v uuid.UUID) predicate.Situation {
-	return predicate.Situation(sql.FieldEQ(FieldKnowledgeEntityID, v))
-}
-
-// KnowledgeEntityIDNEQ applies the NEQ predicate on the "knowledge_entity_id" field.
-func KnowledgeEntityIDNEQ(v uuid.UUID) predicate.Situation {
-	return predicate.Situation(sql.FieldNEQ(FieldKnowledgeEntityID, v))
-}
-
-// KnowledgeEntityIDIn applies the In predicate on the "knowledge_entity_id" field.
-func KnowledgeEntityIDIn(vs ...uuid.UUID) predicate.Situation {
-	return predicate.Situation(sql.FieldIn(FieldKnowledgeEntityID, vs...))
-}
-
-// KnowledgeEntityIDNotIn applies the NotIn predicate on the "knowledge_entity_id" field.
-func KnowledgeEntityIDNotIn(vs ...uuid.UUID) predicate.Situation {
-	return predicate.Situation(sql.FieldNotIn(FieldKnowledgeEntityID, vs...))
-}
-
 // TitleEQ applies the EQ predicate on the "title" field.
 func TitleEQ(v string) predicate.Situation {
 	return predicate.Situation(sql.FieldEQ(FieldTitle, v))
@@ -285,46 +255,6 @@ func TitleEqualFold(v string) predicate.Situation {
 // TitleContainsFold applies the ContainsFold predicate on the "title" field.
 func TitleContainsFold(v string) predicate.Situation {
 	return predicate.Situation(sql.FieldContainsFold(FieldTitle, v))
-}
-
-// EvidenceRevisionEQ applies the EQ predicate on the "evidence_revision" field.
-func EvidenceRevisionEQ(v int) predicate.Situation {
-	return predicate.Situation(sql.FieldEQ(FieldEvidenceRevision, v))
-}
-
-// EvidenceRevisionNEQ applies the NEQ predicate on the "evidence_revision" field.
-func EvidenceRevisionNEQ(v int) predicate.Situation {
-	return predicate.Situation(sql.FieldNEQ(FieldEvidenceRevision, v))
-}
-
-// EvidenceRevisionIn applies the In predicate on the "evidence_revision" field.
-func EvidenceRevisionIn(vs ...int) predicate.Situation {
-	return predicate.Situation(sql.FieldIn(FieldEvidenceRevision, vs...))
-}
-
-// EvidenceRevisionNotIn applies the NotIn predicate on the "evidence_revision" field.
-func EvidenceRevisionNotIn(vs ...int) predicate.Situation {
-	return predicate.Situation(sql.FieldNotIn(FieldEvidenceRevision, vs...))
-}
-
-// EvidenceRevisionGT applies the GT predicate on the "evidence_revision" field.
-func EvidenceRevisionGT(v int) predicate.Situation {
-	return predicate.Situation(sql.FieldGT(FieldEvidenceRevision, v))
-}
-
-// EvidenceRevisionGTE applies the GTE predicate on the "evidence_revision" field.
-func EvidenceRevisionGTE(v int) predicate.Situation {
-	return predicate.Situation(sql.FieldGTE(FieldEvidenceRevision, v))
-}
-
-// EvidenceRevisionLT applies the LT predicate on the "evidence_revision" field.
-func EvidenceRevisionLT(v int) predicate.Situation {
-	return predicate.Situation(sql.FieldLT(FieldEvidenceRevision, v))
-}
-
-// EvidenceRevisionLTE applies the LTE predicate on the "evidence_revision" field.
-func EvidenceRevisionLTE(v int) predicate.Situation {
-	return predicate.Situation(sql.FieldLTE(FieldEvidenceRevision, v))
 }
 
 // SummaryEQ applies the EQ predicate on the "summary" field.
@@ -542,35 +472,6 @@ func HasTenantWith(preds ...predicate.Tenant) predicate.Situation {
 		step := newTenantStep()
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.Tenant
-		step.Edge.Schema = schemaConfig.Situation
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasKnowledgeEntity applies the HasEdge predicate on the "knowledge_entity" edge.
-func HasKnowledgeEntity() predicate.Situation {
-	return predicate.Situation(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, KnowledgeEntityTable, KnowledgeEntityColumn),
-		)
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.KnowledgeEntity
-		step.Edge.Schema = schemaConfig.Situation
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasKnowledgeEntityWith applies the HasEdge predicate on the "knowledge_entity" edge with a given conditions (other predicates).
-func HasKnowledgeEntityWith(preds ...predicate.KnowledgeEntity) predicate.Situation {
-	return predicate.Situation(func(s *sql.Selector) {
-		step := newKnowledgeEntityStep()
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.KnowledgeEntity
 		step.Edge.Schema = schemaConfig.Situation
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

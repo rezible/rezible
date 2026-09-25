@@ -2,9 +2,8 @@ package db
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"strings"
+	"log/slog"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
@@ -13,434 +12,414 @@ import (
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	agt "github.com/rezible/rezible/ent/agentturn"
-	ale "github.com/rezible/rezible/ent/alertepisode"
-	"github.com/rezible/rezible/ent/investigation"
-	kne "github.com/rezible/rezible/ent/knowledgeentity"
-	knr "github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/predicate"
-	"github.com/rezible/rezible/ent/situation"
-	sha "github.com/rezible/rezible/ent/situationhazardassessment"
-	siti "github.com/rezible/rezible/ent/situationinvestigation"
-	sog "github.com/rezible/rezible/ent/situationobservationgroup"
-	rezai "github.com/rezible/rezible/pkg/ai"
-	"github.com/rezible/rezible/pkg/jobs"
+
+	ale "github.com/rezible/rezible/ent/alertepisode"
+	ali "github.com/rezible/rezible/ent/alertinstance"
+	kne "github.com/rezible/rezible/ent/knowledgeentity"
+	knev "github.com/rezible/rezible/ent/knowledgeevidence"
+	knr "github.com/rezible/rezible/ent/knowledgerelationship"
+	ksa "github.com/rezible/rezible/ent/knowledgesubjectalias"
+	ev "github.com/rezible/rezible/ent/normalizedevent"
+	sae "github.com/rezible/rezible/ent/systemanalysisentry"
+	saes "github.com/rezible/rezible/ent/systemanalysisentrysubject"
 )
 
-func (s *SituationService) CreateSituationInvestigation(ctx context.Context, params rez.CreateSituationInvestigationParams) (*ent.SituationInvestigation, error) {
-	situationId := params.SituationID
-	if situationId == uuid.Nil {
-		return nil, fmt.Errorf("%w: situation id is required", rez.ErrInvalidInput)
-	}
+const maxSituationEvidenceQueryPageSize = 100
 
-	agentInput := rezai.InvestigationAgentSessionInput{}
-	if params.Query != nil {
-		if cleaned := strings.TrimSpace(*params.Query); cleaned != "" {
-			agentInput.Query = new(cleaned)
-		}
-	}
-
-	var result *ent.SituationInvestigation
-	return result, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
-		if lockErr := s.db.AcquireTxLocks(ctx, situationLockNamespace, situationId.String()); lockErr != nil {
-			return fmt.Errorf("lock situation: %w", lockErr)
-		}
-
-		existingSitInv, queryExistingSitInvErr := s.LookupSituationInvestigation(ctx, siti.SituationID(situationId))
-		if queryExistingSitInvErr != nil && !ent.IsNotFound(queryExistingSitInvErr) {
-			return fmt.Errorf("lookup existing situation investigation: %w", queryExistingSitInvErr)
-		} else if existingSitInv != nil {
-			result = existingSitInv.Unwrap()
-			return nil
-		}
-
-		sit, querySituationErr := tx.Situation.Get(ctx, situationId)
-		if querySituationErr != nil {
-			return fmt.Errorf("get situation: %w", querySituationErr)
-		}
-
-		investigationParams := rez.CreateInvestigationParams{
-			Query:           agentInput.Query,
-			SubjectEntityID: &sit.KnowledgeEntityID,
-		}
-		inv, createInvErr := s.investigations.CreateInvestigation(ctx, investigationParams)
-		if createInvErr != nil {
-			return fmt.Errorf("create investigation: %w", createInvErr)
-		}
-
-		createLink := tx.SituationInvestigation.Create().
-			SetSituation(sit).
-			SetInvestigation(inv)
-		if createLinkErr := createLink.Exec(ctx); createLinkErr != nil {
-			return fmt.Errorf("link situation investigation: %w", createLinkErr)
-		}
-
-		sitInv, lookupSitInvErr := s.LookupSituationInvestigation(ctx, siti.SituationID(situationId))
-		if lookupSitInvErr != nil {
-			return fmt.Errorf("lookup situation investigation: %w", lookupSitInvErr)
-		}
-
-		if queueJobErr := s.requestBumpSituationInvestigation(ctx, sitInv.ID); queueJobErr != nil {
-			return fmt.Errorf("queue investigation job: %w", queueJobErr)
-		}
-
-		result = sitInv.Unwrap()
-		return nil
-	})
+type situationEvidenceEntry struct {
+	reference string
+	title     string
+	body      string
+	occurred  time.Time
+	eventIDs  []uuid.UUID
 }
 
-func (s *SituationService) requestBumpSituationInvestigation(ctx context.Context, id uuid.UUID) error {
-	args := jobs.BumpSituationInvestigation{SituationInvestigationID: id}
-	if _, insertErr := s.jobs.Insert(ctx, args, nil); insertErr != nil {
-		return fmt.Errorf("insert investigation reconciliation job: %w", insertErr)
+type situationEntrySubjectAttachment struct {
+	id    uuid.UUID
+	kind  string
+	role  string
+	setFn func(*ent.SystemAnalysisEntrySubjectMutation)
+}
+
+func (a situationEntrySubjectAttachment) key() string {
+	return a.kind + ":" + a.id.String() + ":" + a.role
+}
+
+func makeSituationEntrySubjectAttachment(id uuid.UUID, kind string, role string, setFn func(*ent.SystemAnalysisEntrySubjectMutation)) *situationEntrySubjectAttachment {
+	setFnWithRole := func(m *ent.SystemAnalysisEntrySubjectMutation) {
+		m.SetRole(role)
+		if setFn != nil {
+			setFn(m)
+		}
+	}
+	return &situationEntrySubjectAttachment{id, kind, role, setFnWithRole}
+}
+
+func (s *SituationService) prepareOrRefreshSituationAnalysis(ctx context.Context, analysisID uuid.UUID, directEventIDs, episodeIDs []uuid.UUID) error {
+	if analysisID == uuid.Nil {
+		return fmt.Errorf("%w: system analysis ID is required", rez.ErrInvalidInput)
+	}
+	directEventIDs = mapset.NewSet(directEventIDs...).ToSlice()
+	episodeIDs = mapset.NewSet(episodeIDs...).ToSlice()
+	if validateErr := s.validateSituationSources(ctx, directEventIDs, episodeIDs); validateErr != nil {
+		return validateErr
+	}
+
+	episodes := make(map[uuid.UUID]*ent.AlertEpisode, len(episodeIDs))
+	if len(episodeIDs) > 0 {
+		queryEpisodes := s.db.Client(ctx).AlertEpisode.Query().
+			Where(ale.IDIn(episodeIDs...)).
+			WithAlertDefinition()
+		loadedEpisodes, queryErr := queryEpisodes.All(ctx)
+		if queryErr != nil {
+			return fmt.Errorf("load alert episodes for analysis: %w", queryErr)
+		}
+		for _, episode := range loadedEpisodes {
+			episodes[episode.ID] = episode
+		}
+	}
+
+	eventsByID := make(map[uuid.UUID]*ent.NormalizedEvent)
+	for _, eventID := range directEventIDs {
+		eventsByID[eventID] = nil
+	}
+	episodeEvents := make(map[uuid.UUID][]uuid.UUID, len(episodeIDs))
+	if len(episodeIDs) > 0 {
+		queryInstances := s.db.Client(ctx).AlertInstance.Query().
+			Where(ali.AlertEpisodeIDIn(episodeIDs...)).
+			Order(ali.ByID(sql.OrderAsc()))
+		instances, queryErr := queryInstances.All(ctx)
+		if queryErr != nil {
+			return fmt.Errorf("load alert episode instances for analysis: %w", queryErr)
+		}
+		for _, instance := range instances {
+			episodeEvents[instance.AlertEpisodeID] = append(episodeEvents[instance.AlertEpisodeID], instance.NormalizedEventID)
+			eventsByID[instance.NormalizedEventID] = nil
+		}
+	}
+	allEventIDs := mapset.NewSetFromMapKeys(eventsByID)
+	if !allEventIDs.IsEmpty() {
+		queryEvents := s.db.Client(ctx).NormalizedEvent.Query().
+			Where(ev.IDIn(allEventIDs.ToSlice()...))
+		events, queryErr := queryEvents.All(ctx)
+		if queryErr != nil {
+			return fmt.Errorf("load normalized events for analysis: %w", queryErr)
+		}
+		for _, event := range events {
+			eventsByID[event.ID] = event
+		}
+		if len(events) != allEventIDs.Cardinality() {
+			return fmt.Errorf("%w: normalized event from situation evidence is unavailable", rez.ErrNotFound)
+		}
+	}
+
+	gctx, graphErr := s.loadSituationEventGraphContext(ctx, allEventIDs)
+	if graphErr != nil {
+		return graphErr
+	}
+
+	entityIDs := gctx.entityIDs.ToSlice()
+	relationshipIDs := gctx.relationshipIDs.ToSlice()
+	if len(entityIDs)+len(relationshipIDs) > 0 {
+		includeParams := rez.IncludeSystemAnalysisSubjectsParams{
+			AnalysisId:      analysisID,
+			EntityIds:       entityIDs,
+			RelationshipIds: relationshipIDs,
+		}
+		if includeErr := s.analyses.IncludeSystemAnalysisSubjects(ctx, includeParams); includeErr != nil {
+			return fmt.Errorf("include evidence-linked graph subjects in analysis: %w", includeErr)
+		}
+	}
+
+	entries := make([]situationEvidenceEntry, 0, len(directEventIDs)+len(episodeIDs))
+	for _, eventID := range directEventIDs {
+		event := eventsByID[eventID]
+		entries = append(entries, situationEvidenceEntry{
+			reference: "normalized_event:" + event.ID.String(),
+			title:     event.Kind + " event",
+			body:      fmt.Sprintf("provider_event_source: %s\nprovider_event_ref: %s", event.ProviderEventSource, event.ProviderEventRef),
+			occurred:  event.OccurredAt,
+			eventIDs:  []uuid.UUID{event.ID},
+		})
+	}
+	for _, episodeID := range episodeIDs {
+		episode := episodes[episodeID]
+		definition, definitionErr := episode.Edges.AlertDefinitionOrErr()
+		if definitionErr != nil {
+			return fmt.Errorf("load alert episode definition: %w", definitionErr)
+		}
+		entries = append(entries, situationEvidenceEntry{
+			reference: "alert_episode:" + episode.ID.String(),
+			title:     definition.Title,
+			body:      fmt.Sprintf("episode_id: %s\nstatus: %s", episode.ID, episode.Status),
+			occurred:  episode.StartedAt,
+			eventIDs:  mapset.NewSet(episodeEvents[episodeID]...).ToSlice(),
+		})
+	}
+
+	for _, entry := range entries {
+		attachments := make(map[string]situationEntrySubjectAttachment)
+		appendAttachment := func(id uuid.UUID, kind string, role string, setFn func(*ent.SystemAnalysisEntrySubjectMutation)) {
+			a := makeSituationEntrySubjectAttachment(id, kind, role, setFn)
+			if _, exists := attachments[a.key()]; !exists {
+				attachments[a.key()] = *a
+			}
+		}
+		for _, eventID := range entry.eventIDs {
+			for _, evidence := range gctx.evidenceByEvent[eventID] {
+				evidenceID := evidence.ID
+				appendAttachment(evidenceID, "evidence", "knowledge_evidence", func(m *ent.SystemAnalysisEntrySubjectMutation) {
+					m.SetKnowledgeEvidenceID(evidenceID)
+				})
+			}
+
+			if eventEntityIds := gctx.entitiesByEvent[eventID]; eventEntityIds != nil {
+				for _, entityID := range eventEntityIds.ToSlice() {
+					subjectID := entityID
+					appendAttachment(subjectID, "knowledge_entity", "subject", func(m *ent.SystemAnalysisEntrySubjectMutation) {
+						m.SetKnowledgeEntityID(subjectID)
+					})
+				}
+			}
+
+			if eventRelIds := gctx.relationshipsByEvent[eventID]; eventRelIds != nil {
+				for _, relationshipID := range eventRelIds.ToSlice() {
+					subjectID := relationshipID
+					appendAttachment(subjectID, "knowledge_relationship", "subject", func(m *ent.SystemAnalysisEntrySubjectMutation) {
+						m.SetKnowledgeRelationshipID(subjectID)
+					})
+				}
+			}
+		}
+
+		queryEntry := s.db.Client(ctx).SystemAnalysisEntry.Query().
+			Where(sae.AnalysisID(analysisID), sae.Reference(entry.reference))
+		existingEntry, lookupErr := queryEntry.Only(ctx)
+		if lookupErr != nil && !ent.IsNotFound(lookupErr) {
+			return fmt.Errorf("lookup existing situation analysis observation: %w", lookupErr)
+		}
+
+		entryID := uuid.Nil
+		existingAttachmentKeys := mapset.NewSet[string]()
+		if existingEntry != nil {
+			entryID = existingEntry.ID
+			queryExistingAttachments := s.db.Client(ctx).SystemAnalysisEntrySubject.Query().
+				Where(saes.EntryID(existingEntry.ID))
+			storedAttachments, attachmentsErr := queryExistingAttachments.All(ctx)
+			if attachmentsErr != nil {
+				return fmt.Errorf("load existing situation analysis attachments: %w", attachmentsErr)
+			}
+			for _, attch := range storedAttachments {
+				var subjAtt *situationEntrySubjectAttachment
+				if attch.KnowledgeEntityID != nil {
+					subjAtt = makeSituationEntrySubjectAttachment(*attch.KnowledgeEntityID, "knowledge_entity", attch.Role, nil)
+				}
+				if attch.KnowledgeRelationshipID != nil {
+					subjAtt = makeSituationEntrySubjectAttachment(*attch.KnowledgeRelationshipID, "knowledge_relationship", attch.Role, nil)
+				}
+				if attch.KnowledgeEvidenceID != nil {
+					subjAtt = makeSituationEntrySubjectAttachment(*attch.KnowledgeEvidenceID, "knowledge_evidence", attch.Role, nil)
+				}
+				if subjAtt != nil {
+					existingAttachmentKeys.Add(subjAtt.key())
+				}
+			}
+		}
+
+		newAttachments := make([]func(*ent.SystemAnalysisEntrySubjectMutation), 0, len(attachments))
+		for _, att := range attachments {
+			if !existingAttachmentKeys.Contains(att.key()) {
+				newAttachments = append(newAttachments, att.setFn)
+			}
+		}
+
+		occurredAt := entry.occurred
+		setEntryFn := func(m *ent.SystemAnalysisEntryMutation) {
+			if entryID == uuid.Nil {
+				m.SetAnalysisID(analysisID)
+				m.SetReference(entry.reference)
+				m.SetKind(sae.KindObservation)
+			}
+			m.SetTitle(entry.title)
+			m.SetBody(entry.body)
+			m.SetOccurredAt(occurredAt)
+		}
+		_, saveErr := s.analyses.SetSystemAnalysisEntry(ctx, entryID, setEntryFn, newAttachments...)
+		if saveErr != nil {
+			return fmt.Errorf("save situation analysis observation: %w", saveErr)
+		}
 	}
 	return nil
 }
 
-func (s *SituationService) LookupSituationInvestigation(ctx context.Context, pred predicate.SituationInvestigation) (*ent.SituationInvestigation, error) {
-	return s.db.Client(ctx).SituationInvestigation.Query().
-		Where(pred).
-		WithSituation().
-		WithRequestedTurn().
-		WithInvestigation().
-		Only(ctx)
+type situationEventGraphContext struct {
+	evidenceByEvent      map[uuid.UUID][]*ent.KnowledgeEvidence
+	entitiesByEvent      map[uuid.UUID]mapset.Set[uuid.UUID]
+	relationshipsByEvent map[uuid.UUID]mapset.Set[uuid.UUID]
+	entityIDs            mapset.Set[uuid.UUID]
+	relationshipIDs      mapset.Set[uuid.UUID]
 }
 
-func (s *SituationService) ListSituationHazardAssessments(ctx context.Context, params rez.ListSituationHazardAssessmentsParams) (*ent.ListResult[ent.SituationHazardAssessment], error) {
-	order := params.GetOrder()
-	query := s.db.Client(ctx).SituationHazardAssessment.Query().
-		Order(sha.ByAssessedAt(order), sha.ByRevision(order), sha.ByID(order))
-	if params.SituationID != uuid.Nil {
-		query.Where(sha.SituationID(params.SituationID))
+func (c *situationEventGraphContext) ensureAdd(sets map[uuid.UUID]mapset.Set[uuid.UUID], eventID uuid.UUID, ids ...uuid.UUID) int {
+	set, exists := sets[eventID]
+	if !exists {
+		set = mapset.NewSet[uuid.UUID]()
+		sets[eventID] = set
 	}
-	if params.SystemHazardID != uuid.Nil {
-		query.Where(sha.SystemHazardID(params.SystemHazardID))
-	}
-	return ent.DoListQuery[ent.SituationHazardAssessment, *ent.SituationHazardAssessmentQuery](ctx, query, params.ListParams)
+	return set.Append(ids...)
 }
 
-var validSituationHazardAssessmentStatus = mapset.NewSet(sha.StatusSuspected, sha.StatusConfirmed, sha.StatusDisproven)
-
-func (s *SituationService) AddSituationHazardAssessment(ctx context.Context, params rez.AddSituationHazardAssessmentParams) (*ent.SituationHazardAssessment, error) {
-	if params.SituationID == uuid.Nil || params.SystemHazardID == uuid.Nil {
-		return nil, fmt.Errorf("%w: situation and system hazard ids are required", rez.ErrInvalidInput)
+func (s *SituationService) loadSituationEventGraphContext(ctx context.Context, eventIDs mapset.Set[uuid.UUID]) (*situationEventGraphContext, error) {
+	result := &situationEventGraphContext{
+		evidenceByEvent:      make(map[uuid.UUID][]*ent.KnowledgeEvidence),
+		entitiesByEvent:      make(map[uuid.UUID]mapset.Set[uuid.UUID]),
+		relationshipsByEvent: make(map[uuid.UUID]mapset.Set[uuid.UUID]),
+		entityIDs:            mapset.NewSet[uuid.UUID](),
+		relationshipIDs:      mapset.NewSet[uuid.UUID](),
 	}
-	if (params.UserID == nil) == (params.AgentTurnID == nil) {
-		return nil, fmt.Errorf("%w: exactly one assessor is required", rez.ErrInvalidInput)
+	if eventIDs.IsEmpty() {
+		return result, nil
 	}
-	if !validSituationHazardAssessmentStatus.Contains(params.Status) {
-		return nil, fmt.Errorf("%w: invalid situation hazard assessment status", rez.ErrInvalidInput)
-	}
-
-	summary := strings.TrimSpace(params.Summary)
-	if summary == "" {
-		return nil, fmt.Errorf("%w: assessment summary is required", rez.ErrInvalidInput)
-	}
-
-	assessedAt := params.AssessedAt
-	if assessedAt.IsZero() {
-		assessedAt = time.Now().UTC()
-	}
-
-	situationId := params.SituationID
-
-	var assessment *ent.SituationHazardAssessment
-	return assessment, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
-		pairKey := situationId.String() + "\x1f" + params.SystemHazardID.String()
-		if lockErr := s.db.AcquireTxLocks(ctx, situationHazardAssessmentLockNamespace, pairKey); lockErr != nil {
-			return fmt.Errorf("lock situation hazard pair: %w", lockErr)
+	var evidence []*ent.KnowledgeEvidence
+	for page := 1; ; page++ {
+		listEvidenceParams := rez.ListKnowledgeEvidenceParams{
+			ListParams: ent.ListParams{
+				Page:     page,
+				PageSize: maxSituationEvidenceQueryPageSize,
+				OrderAsc: true,
+			},
+			Predicates: []predicate.KnowledgeEvidence{knev.EventIDIn(eventIDs.ToSlice()...)},
 		}
-
-		nextRevision := 1
-		latestQuery := tx.SituationHazardAssessment.Query().
-			Where(sha.SituationID(situationId), sha.SystemHazardID(params.SystemHazardID)).
-			Order(sha.ByRevision(sql.OrderDesc()))
-		latest, latestErr := latestQuery.First(ctx)
-		if latestErr == nil {
-			nextRevision = latest.Revision + 1
-		} else if !ent.IsNotFound(latestErr) {
-			return fmt.Errorf("get latest situation hazard assessment: %w", latestErr)
+		listed, listErr := s.graph.ListEvidence(ctx, listEvidenceParams)
+		if listErr != nil {
+			return nil, fmt.Errorf("list event knowledge evidence for situation analysis: %w", listErr)
 		}
-
-		createAssessment := tx.SituationHazardAssessment.Create().
-			SetSituationID(situationId).
-			SetSystemHazardID(params.SystemHazardID).
-			SetRevision(nextRevision).
-			SetStatus(params.Status).
-			SetSummary(summary).
-			SetAssessedAt(assessedAt).
-			SetNillableUserID(params.UserID).
-			SetNillableAgentTurnID(params.AgentTurnID)
-		created, saveErr := createAssessment.Save(ctx)
-		if saveErr != nil {
-			return fmt.Errorf("add situation hazard assessment: %w", saveErr)
+		evidence = append(evidence, listed.Data...)
+		if len(evidence) >= listed.Total || len(listed.Data) == 0 {
+			break
 		}
-		assessment = created.Unwrap()
-
-		hazardRelEnt := &situationKnowledgeRelationshipEntity{
-			id:       params.SystemHazardID,
-			category: kne.CategoryConcern,
-			kind:     "system_hazard",
-			pred:     knr.PredicateClassifiedAs,
-			isTarget: true,
-		}
-		if params.Status == sha.StatusConfirmed {
-			if relErr := s.ingestKnowledgeRelationship(ctx, situationId, *hazardRelEnt); relErr != nil {
-				return fmt.Errorf("ingest situation hazard assessment: %w", relErr)
-			}
-		} else {
-			// TODO: remove knowledge relationship ?
-		}
-		return nil
-	})
-}
-
-func (s *SituationService) SetSituationInvestigationReport(ctx context.Context, params rez.SetSituationInvestigationReportParams) (*ent.SituationInvestigation, error) {
-	var result *ent.SituationInvestigation
-	return result, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
-		sitInv, lookupByTurnErr := s.LookupSituationInvestigation(ctx, siti.RequestedTurnID(params.AgentTurnID))
-		if lookupByTurnErr != nil {
-			if ent.IsNotFound(lookupByTurnErr) {
-				return fmt.Errorf("%w: stale investigation turn", rez.ErrConflict)
-			}
-			return fmt.Errorf("lookup investigation for turn: %w", lookupByTurnErr)
-		}
-
-		if situLockErr := s.db.AcquireTxLocks(ctx, situationLockNamespace, sitInv.SituationID.String()); situLockErr != nil {
-			return situLockErr
-		}
-
-		sessId := sitInv.Edges.Investigation.AgentSessionID
-		if agentTurnLockErr := acquireAgentSessionTurnLock(ctx, s.db, sessId); agentTurnLockErr != nil {
-			return agentTurnLockErr
-		}
-
-		var sitInvErr error
-		sitInv, sitInvErr = s.LookupSituationInvestigation(ctx, siti.ID(sitInv.ID))
-		if sitInvErr != nil {
-			return fmt.Errorf("lookup investigation: %w", sitInvErr)
-		}
-		if sitInv.RequestedTurnID == nil || *sitInv.RequestedTurnID != params.AgentTurnID {
-			return fmt.Errorf("%w: stale investigation turn", rez.ErrConflict)
-		}
-
-		if sitInv.CompletedRevision == sitInv.RequestedRevision {
-			result = sitInv.Unwrap()
-			return nil
-		}
-
-		inv, invErr := sitInv.Edges.InvestigationOrErr()
-		if invErr != nil {
-			return fmt.Errorf("investigation: %w", invErr)
-		}
-
-		turn, turnErr := sitInv.Edges.RequestedTurnOrErr()
-		if turnErr != nil {
-			return fmt.Errorf("requested turn: %w", turnErr)
-		}
-
-		if turn.AgentSessionID != inv.AgentSessionID || turn.Status != agt.StatusRunning {
-			return fmt.Errorf("%w: report turn must be running", rez.ErrConflict)
-		}
-		params.Report.Text = strings.TrimSpace(params.Report.Text)
-		if params.Report.Text == "" {
-			return fmt.Errorf("%w: report text is required", rez.ErrInvalidInput)
-		}
-
-		createReport := tx.InvestigationReport.Create().
-			SetInvestigationID(inv.ID).
-			SetAgentTurnID(turn.ID).
-			SetText(params.Report.Text).
-			SetLikelyCause(params.Report.LikelyCause).
-			SetBestNextStep(params.Report.BestNextStep)
-		if params.Report.Limitations != nil {
-			createReport.SetLimitations(params.Report.Limitations)
-		}
-		if params.Report.RecommendedActions != nil {
-			createReport.SetRecommendedActions(params.Report.RecommendedActions)
-		}
-		if params.Report.SuggestedChecks != nil {
-			createReport.SetSuggestedChecks(params.Report.SuggestedChecks)
-		}
-		// TODO: only allow 1 report?
-		//upsert := createReport.OnConflict().UpdateNewValues()
-		upsert := createReport
-		if saveReportErr := upsert.Exec(ctx); saveReportErr != nil {
-			return fmt.Errorf("save investigation report: %w", saveReportErr)
-		}
-
-		updateInvRevision := sitInv.Update().
-			SetCompletedRevision(sitInv.RequestedRevision)
-		if updateInvRevisionErr := updateInvRevision.Exec(ctx); updateInvRevisionErr != nil {
-			return fmt.Errorf("update investigation revision: %w", updateInvRevisionErr)
-		}
-
-		for _, a := range params.Assessments {
-			addAssessmentParams := rez.AddSituationHazardAssessmentParams{
-				SituationID:    sitInv.SituationID,
-				SystemHazardID: a.SystemHazardID,
-				Status:         a.Status,
-				Summary:        a.Summary,
-				AgentTurnID:    &turn.ID,
-			}
-			if _, addAssmtErr := s.AddSituationHazardAssessment(ctx, addAssessmentParams); addAssmtErr != nil {
-				return fmt.Errorf("add situation hazard assessment: %w", addAssmtErr)
-			}
-		}
-
-		sitInv, sitInvErr = s.LookupSituationInvestigation(ctx, siti.ID(sitInv.ID))
-		if sitInvErr != nil || sitInv == nil {
-			return fmt.Errorf("lookup investigation: %w", sitInvErr)
-		}
-
-		result = sitInv.Unwrap()
-
-		return nil
-	})
-}
-
-func (s *SituationService) onAgentTurnUpdated(ctx context.Context, event *rezai.AgentTurnUpdated) error {
-	if event.Status != agt.StatusCompleted && event.Status != agt.StatusFailed && event.Status != agt.StatusAborted {
-		return nil
-	}
-	return s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
-		querySessionInvestigation := tx.Investigation.Query().
-			Where(investigation.AgentSessionID(event.AgentSessionId)).
-			WithSituations(func(lq *ent.SituationInvestigationQuery) {
-				lq.WithSituation()
-			})
-		inv, queryInvErr := querySessionInvestigation.Only(ctx)
-		if queryInvErr != nil {
-			if ent.IsNotFound(queryInvErr) {
-				return nil
-			}
-			return fmt.Errorf("lookup investigation: %w", queryInvErr)
-		}
-		for _, sitInv := range inv.Edges.Situations {
-			if sitInv.Edges.Situation != nil && sitInv.Edges.Situation.EvidenceRevision > sitInv.RequestedRevision {
-				return s.requestBumpSituationInvestigation(ctx, sitInv.ID)
-			}
-		}
-		return nil
-	})
-}
-
-func NewReconcileSituationInvestigationWorker(db rez.Database, s rez.SituationService, agents rez.AiAgentSessionService) *ReconcileSituationInvestigationWorker {
-	return &ReconcileSituationInvestigationWorker{db: db, situations: s, agents: agents}
-}
-
-type ReconcileSituationInvestigationWorker struct {
-	jobs.WorkerDefaults[jobs.BumpSituationInvestigation]
-	db         rez.Database
-	situations rez.SituationService
-	agents     rez.AiAgentSessionService
-}
-
-func (w *ReconcileSituationInvestigationWorker) Work(ctx context.Context, job *jobs.Job[jobs.BumpSituationInvestigation]) error {
-	investigationID := job.Args.SituationInvestigationID
-	return w.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
-		link, queryInvestigationErr := tx.SituationInvestigation.Get(ctx, investigationID)
-		if queryInvestigationErr != nil {
-			if ent.IsNotFound(queryInvestigationErr) {
-				return nil
-			}
-			return fmt.Errorf("lookup investigation: %w", queryInvestigationErr)
-		}
-
-		if situationLockErr := w.db.AcquireTxLocks(ctx, situationLockNamespace, link.SituationID.String()); situationLockErr != nil {
-			return fmt.Errorf("lock situation before reconciliation: %w", situationLockErr)
-		}
-		link, rereadErr := tx.SituationInvestigation.Get(ctx, link.ID)
-		if rereadErr != nil {
-			return fmt.Errorf("reread situation investigation: %w", rereadErr)
-		}
-
-		inv, investigationErr := link.QueryInvestigation().WithAgentSession().Only(ctx)
-		if investigationErr != nil {
-			return fmt.Errorf("lookup linked investigation: %w", investigationErr)
-		}
-		querySituation := link.QuerySituation().
-			Where(situation.EvidenceRevisionGT(link.CompletedRevision))
-		sit, querySituationErr := querySituation.Only(ctx)
-		if querySituationErr != nil {
-			if ent.IsNotFound(querySituationErr) {
-				return nil
-			}
-			return fmt.Errorf("get requested situation: %w", querySituationErr)
-		}
-
-		if sessionLockErr := acquireAgentSessionTurnLock(ctx, w.db, inv.AgentSessionID); sessionLockErr != nil {
-			return fmt.Errorf("lock investigation session after situation: %w", sessionLockErr)
-		}
-
-		// TODO: AiAgentSessionService.GetSessionActiveTurn
-		activeTurnQuery := tx.AgentTurn.Query().
-			Where(agt.AgentSessionID(inv.AgentSessionID), agt.StatusIn(agt.StatusQueued, agt.StatusRunning))
-		active, queryActiveTurnErr := activeTurnQuery.Exist(ctx)
-		if queryActiveTurnErr != nil {
-			return fmt.Errorf("lookup active agent turn: %w", queryActiveTurnErr)
-		} else if active {
-			return nil
-		}
-
-		if link.RequestedTurnID != nil && link.RequestedRevision == sit.EvidenceRevision {
-			reqTurn, lookupRequestedTurnErr := tx.AgentTurn.Get(ctx, *link.RequestedTurnID)
-			if lookupRequestedTurnErr != nil {
-				return fmt.Errorf("lookup requested turn: %w", lookupRequestedTurnErr)
-			}
-			if reqTurn.Status == agt.StatusFailed || reqTurn.Status == agt.StatusAborted {
-				return nil
-			}
-		}
-
-		var sessionInput rezai.InvestigationAgentSessionInput
-		if unmarshalErr := json.Unmarshal(inv.Edges.AgentSession.Input, &sessionInput); unmarshalErr != nil {
-			return fmt.Errorf("decode investigation session input: %w", unmarshalErr)
-		}
-		query := ""
-		if sessionInput.Query != nil {
-			query = *sessionInput.Query
-		}
-		turnInput, inputErr := w.makeTurnInput(ctx, sit, query)
-		if inputErr != nil {
-			return fmt.Errorf("make turn input: %w", inputErr)
-		}
-
-		reqTurnParams := &rez.RequestAiAgentTurnParams{Input: turnInput}
-		turn, requestTurnErr := w.agents.RequestAgentTurn(ctx, inv.AgentSessionID, reqTurnParams)
-		if requestTurnErr != nil {
-			return fmt.Errorf("request investigation agent turn: %w", requestTurnErr)
-		}
-		update := link.Update().
-			SetRequestedTurnID(turn.ID).
-			SetRequestedRevision(sit.EvidenceRevision)
-		if updateErr := update.Exec(ctx); updateErr != nil {
-			return fmt.Errorf("update investigation: %w", updateErr)
-		}
-
-		return nil
-	})
-}
-
-func (w *ReconcileSituationInvestigationWorker) makeTurnInput(ctx context.Context, sit *ent.Situation, query string) (*rez.AiAgentTurnInput, error) {
-	episodesQuery := w.db.Client(ctx).SituationObservationGroup.Query().
-		Where(sog.SituationID(sit.ID)).
-		QueryAlertEpisodes().
-		WithAlertDefinition().
-		WithInstances(func(q *ent.AlertInstanceQuery) {
-			q.WithEvent()
-		}).
-		Order(ale.ByStartedAt(), ale.ByID())
-	episodes, queryEpisodesErr := episodesQuery.All(ctx)
-	if queryEpisodesErr != nil {
-		return nil, fmt.Errorf("load investigation evidence: %w", queryEpisodesErr)
 	}
 
-	input := rezai.InvestigationAgentTurnInput{
-		Situation:     sit,
-		AlertEpisodes: episodes,
-		Query:         query,
+	aliasIDsSet := mapset.NewSet[uuid.UUID]()
+	for _, item := range evidence {
+		result.evidenceByEvent[item.EventID] = append(result.evidenceByEvent[item.EventID], item)
+		aliasIDsSet.Add(item.SubjectAliasID)
+	}
+	aliases := make(map[uuid.UUID]*ent.KnowledgeSubjectAlias, aliasIDsSet.Cardinality())
+	aliasIDs := aliasIDsSet.ToSlice()
+	for offset := 0; offset < len(aliasIDs); offset += maxSituationEvidenceQueryPageSize {
+		end := offset + maxSituationEvidenceQueryPageSize
+		if end > len(aliasIDs) {
+			end = len(aliasIDs)
+		}
+		batch := aliasIDs[offset:end]
+		listed, listErr := s.graph.ListSubjectAliases(ctx, rez.ListKnowledgeSubjectAliasesParams{
+			ListParams: ent.ListParams{Page: 1, PageSize: len(batch), OrderAsc: true},
+			Predicates: []predicate.KnowledgeSubjectAlias{
+				ksa.IDIn(batch...),
+			},
+		})
+		if listErr != nil {
+			return nil, fmt.Errorf("list subject aliases for situation evidence: %w", listErr)
+		}
+		for _, alias := range listed.Data {
+			aliases[alias.ID] = alias
+		}
 	}
 
-	return input.MakeTurnInput()
+	client := s.db.Client(ctx)
+
+	entityCache := make(map[uuid.UUID]bool)
+	relationshipCache := make(map[uuid.UUID]bool)
+	relationshipEndpoints := make(map[uuid.UUID][2]uuid.UUID)
+	for _, item := range evidence {
+		alias, exists := aliases[item.SubjectAliasID]
+		if !exists {
+			slog.WarnContext(ctx, "situation analysis skipped missing evidence alias",
+				"knowledgeEvidenceId", item.ID,
+				"subjectAliasId", item.SubjectAliasID)
+			continue
+		}
+		switch alias.SubjectKind {
+		case ksa.SubjectKindEntity:
+			if alias.EntityID == nil {
+				slog.WarnContext(ctx, "situation analysis skipped empty entity alias",
+					"knowledgeEvidenceId", item.ID,
+					"subjectAliasId", alias.ID)
+				continue
+			}
+			entityID := *alias.EntityID
+			if !entityCache[entityID] {
+				lookupEntity := client.KnowledgeEntity.Query().
+					Where(kne.ID(entityID))
+				if entityExists, lookupEntityErr := lookupEntity.Exist(ctx); lookupEntityErr != nil {
+					return nil, fmt.Errorf("load evidence-linked entity: %w", lookupEntityErr)
+				} else if !entityExists {
+					slog.WarnContext(ctx, "situation analysis skipped inaccessible evidence entity",
+						"knowledgeEvidenceId", item.ID,
+						"entityId", entityID)
+					entityCache[entityID] = false
+					continue
+				}
+				entityCache[entityID] = true
+			}
+			if !entityCache[entityID] {
+				continue
+			}
+			result.ensureAdd(result.entitiesByEvent, item.EventID, entityID)
+			result.entityIDs.Add(entityID)
+		case ksa.SubjectKindRelationship:
+			if alias.RelationshipID == nil {
+				slog.WarnContext(ctx, "situation analysis skipped empty relationship alias",
+					"knowledgeEvidenceId", item.ID,
+					"subjectAliasId", alias.ID)
+				continue
+			}
+			relationshipID := *alias.RelationshipID
+			if !relationshipCache[relationshipID] {
+				queryRelationship := client.KnowledgeRelationship.Query().
+					Where(knr.ID(relationshipID)).
+					WithSourceEntity().
+					WithTargetEntity()
+				relationship, queryErr := queryRelationship.Only(ctx)
+				if queryErr != nil {
+					if ent.IsNotFound(queryErr) {
+						slog.WarnContext(ctx, "situation analysis skipped inaccessible evidence relationship",
+							"knowledgeEvidenceId", item.ID,
+							"relationshipId", relationshipID)
+						relationshipCache[relationshipID] = false
+						continue
+					}
+					return nil, fmt.Errorf("load evidence-linked relationship: %w", queryErr)
+				}
+
+				source, sourceErr := relationship.Edges.SourceEntityOrErr()
+				target, targetErr := relationship.Edges.TargetEntityOrErr()
+				if sourceErr != nil || targetErr != nil {
+					slog.WarnContext(ctx, "situation analysis skipped relationship with unavailable endpoint",
+						"knowledgeEvidenceId", item.ID,
+						"relationshipId", relationshipID)
+					relationshipCache[relationshipID] = false
+					continue
+				}
+				result.entityIDs.Append(source.ID, target.ID)
+				relationshipEndpoints[relationshipID] = [2]uuid.UUID{source.ID, target.ID}
+				relationshipCache[relationshipID] = true
+			}
+			if !relationshipCache[relationshipID] {
+				continue
+			}
+			endpoints := relationshipEndpoints[relationshipID]
+			result.ensureAdd(result.relationshipsByEvent, item.EventID, relationshipID)
+			result.ensureAdd(result.entitiesByEvent, item.EventID, endpoints[0], endpoints[1])
+			result.relationshipIDs.Add(relationshipID)
+		default:
+			slog.WarnContext(ctx, "situation analysis skipped unknown evidence alias kind",
+				"knowledgeEvidenceId", item.ID,
+				"subjectAliasId", alias.ID,
+				"subjectKind", alias.SubjectKind)
+		}
+	}
+	return result, nil
 }

@@ -18,8 +18,6 @@ type SituationsHandler interface {
 
 	ListSituationHazardAssessments(context.Context, *ListSituationHazardAssessmentsRequest) (*ListSituationHazardAssessmentsResponse, error)
 	AddSituationHazardAssessment(context.Context, *AddSituationHazardAssessmentRequest) (*AddSituationHazardAssessmentResponse, error)
-
-	StartSituationInvestigation(context.Context, *StartSituationInvestigationRequest) (*StartSituationInvestigationResponse, error)
 }
 
 func (o operations) RegisterSituations(api huma.API) {
@@ -28,8 +26,6 @@ func (o operations) RegisterSituations(api huma.API) {
 
 	huma.Register(api, ListSituationHazardAssessments, o.ListSituationHazardAssessments)
 	huma.Register(api, AddSituationHazardAssessment, o.AddSituationHazardAssessment)
-
-	huma.Register(api, StartSituationInvestigation, o.StartSituationInvestigation)
 }
 
 type (
@@ -43,8 +39,6 @@ type (
 		Summary           string                      `json:"summary"`
 		SignalCount       int                         `json:"signalCount"`
 		CloseReason       *string                     `json:"closeReason,omitempty" enum:"stabilized,dismissed"`
-		EvidenceRevision  int                         `json:"evidenceRevision"`
-		KnowledgeEntityId uuid.UUID                   `json:"knowledgeEntityId"`
 		LinkedIncidentIds []uuid.UUID                 `json:"linkedIncidentIds"`
 		Investigation     *SituationInvestigation     `json:"investigation,omitempty"`
 		ObservationGroups []SituationObservationGroup `json:"observationGroups"`
@@ -54,10 +48,7 @@ type (
 	}
 
 	SituationInvestigation struct {
-		Investigation     Expandable[InvestigationAttributes] `json:"investigation"`
-		RequestedTurnId   *uuid.UUID                          `json:"requestedTurnId,omitempty"`
-		RequestedRevision int                                 `json:"requestedRevision"`
-		CompletedRevision int                                 `json:"completedRevision"`
+		Investigation Expandable[InvestigationAttributes] `json:"investigation"`
 	}
 
 	SituationHazardAssessment struct {
@@ -120,8 +111,6 @@ func SituationFromEnt(s *ent.Situation) Situation {
 		Title:             s.Title,
 		Summary:           s.Summary,
 		SignalCount:       ent.SituationObservationGroups(s.Edges.ObservationGroups).SignalCount(),
-		EvidenceRevision:  s.EvidenceRevision,
-		KnowledgeEntityId: s.KnowledgeEntityID,
 		ObservationGroups: ConvertSlice(s.Edges.ObservationGroups, SituationObservationGroupFromEnt),
 		OpenedAt:          s.OpenedAt,
 		ClosedAt:          s.ClosedAt,
@@ -141,15 +130,8 @@ func SituationFromEnt(s *ent.Situation) Situation {
 }
 
 func SituationInvestigationFromEnt(si *ent.SituationInvestigation) SituationInvestigation {
-	var investigationAttrs *InvestigationAttributes
-	if si.Edges.Investigation != nil {
-		investigationAttrs = new(InvestigationFromEnt(si.Edges.Investigation).Attributes)
-	}
 	return SituationInvestigation{
-		Investigation:     AsExpandable(si.InvestigationID, investigationAttrs),
-		RequestedTurnId:   si.RequestedTurnID,
-		RequestedRevision: si.RequestedRevision,
-		CompletedRevision: si.CompletedRevision,
+		Investigation: AsExpandable[InvestigationAttributes](si.InvestigationID, nil),
 	}
 }
 
@@ -184,24 +166,6 @@ var GetSituation = openapi.Operation{
 
 type GetSituationRequest IdRequest
 type GetSituationResponse ItemResponse[Situation]
-
-var StartSituationInvestigation = openapi.Operation{
-	OperationID: "start-situation-investigation",
-	Method:      http.MethodPost,
-	Path:        "/situations/{id}/investigation",
-	Summary:     "Start Situation Investigation",
-	Tags:        situationsTags,
-	Errors:      ErrorCodes(),
-}
-
-type StartSituationInvestigationAttributes struct {
-	Query *string `json:"query,omitempty"`
-}
-type StartSituationInvestigationRequest struct {
-	Id uuid.UUID `path:"id"`
-	RequestWithBodyAttributes[StartSituationInvestigationAttributes]
-}
-type StartSituationInvestigationResponse ItemResponse[SituationInvestigation]
 
 var ListSituationHazardAssessments = openapi.Operation{
 	OperationID: "list-situation-hazard-assessments",

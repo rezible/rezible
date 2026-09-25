@@ -40,6 +40,7 @@ const (
 	KindAnonymous ActorKind = "anonymous"
 	KindUser      ActorKind = "user"
 	KindAiAgent   ActorKind = "ai_agent"
+	KindTenant    ActorKind = "tenant"
 	KindSystem    ActorKind = "system"
 
 	SourceHTTP     SourceKind = "http"
@@ -155,7 +156,7 @@ func NewSystemContext(ctx context.Context) context.Context {
 
 func NewTenantContext(ctx context.Context, tenantID int) context.Context {
 	c := GetContext(ctx)
-	c.ActorKind = KindSystem
+	c.ActorKind = KindTenant
 	c.Auth = Auth{
 		TenantID: &tenantID,
 	}
@@ -190,6 +191,13 @@ func (c Context) validate() error {
 	case KindAnonymous:
 		if c.Auth.UserID != nil {
 			return fmt.Errorf("anonymous actor cannot carry user id")
+		}
+	case KindTenant:
+		if c.Auth.TenantID == nil {
+			return fmt.Errorf("tenant actor missing tenant id")
+		}
+		if c.Auth.UserID != nil || c.Auth.AgentSessionID != nil || c.Auth.AgentTurnID != nil || c.Auth.ImpersonatingUserID != nil || c.Auth.ExpiresAt != nil || len(c.Auth.Scopes) > 0 {
+			return fmt.Errorf("tenant actor cannot carry user or agent auth")
 		}
 	case KindUser:
 		if c.Auth.TenantID == nil {

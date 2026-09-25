@@ -202,32 +202,86 @@ CREATE UNIQUE INDEX "investigations_agent_session_id_key" ON "investigations" ("
 CREATE UNIQUE INDEX "investigations_system_analysis_id_key" ON "investigations" ("system_analysis_id");
 -- create index "investigation_tenant_id" to table: "investigations"
 CREATE INDEX "investigation_tenant_id" ON "investigations" ("tenant_id");
--- create index "investigation_tenant_id_system_analysis_id" to table: "investigations"
-CREATE UNIQUE INDEX "investigation_tenant_id_system_analysis_id" ON "investigations" ("tenant_id", "system_analysis_id");
 -- create index "investigation_tenant_id_agent_session_id" to table: "investigations"
 CREATE UNIQUE INDEX "investigation_tenant_id_agent_session_id" ON "investigations" ("tenant_id", "agent_session_id");
+-- create index "investigation_tenant_id_system_analysis_id" to table: "investigations"
+CREATE UNIQUE INDEX "investigation_tenant_id_system_analysis_id" ON "investigations" ("tenant_id", "system_analysis_id");
+-- create "investigation_evidence_revisions" table
+CREATE TABLE "investigation_evidence_revisions" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "explanation" text NOT NULL, "key" character varying NOT NULL, "investigation_id" uuid NOT NULL, "tenant_id" bigint NOT NULL, "agent_turn_id" uuid NULL, PRIMARY KEY ("id"));
+-- create index "investigationevidencerevision_tenant_id" to table: "investigation_evidence_revisions"
+CREATE INDEX "investigationevidencerevision_tenant_id" ON "investigation_evidence_revisions" ("tenant_id");
+-- create index "investigationevidencerevision_investigation_id_key" to table: "investigation_evidence_revisions"
+CREATE UNIQUE INDEX "investigationevidencerevision_investigation_id_key" ON "investigation_evidence_revisions" ("investigation_id", "key");
+-- create index "investigationevidencerevision_investigation_id_agent_turn_id" to table: "investigation_evidence_revisions"
+CREATE UNIQUE INDEX "investigationevidencerevision_investigation_id_agent_turn_id" ON "investigation_evidence_revisions" ("investigation_id", "agent_turn_id");
+-- create index "investigationevidencerevision_investigation_id_created_at_id" to table: "investigation_evidence_revisions"
+CREATE INDEX "investigationevidencerevision_investigation_id_created_at_id" ON "investigation_evidence_revisions" ("investigation_id", "created_at", "id");
 -- create "investigation_findings" table
-CREATE TABLE "investigation_findings" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "title" character varying NOT NULL, "body" text NULL, "investigation_id" uuid NOT NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
+CREATE TABLE "investigation_findings" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "key" character varying NOT NULL, "investigation_id" uuid NOT NULL, "tenant_id" bigint NOT NULL, "user_input_id" uuid NULL, PRIMARY KEY ("id"));
 -- create index "investigationfinding_tenant_id" to table: "investigation_findings"
 CREATE INDEX "investigationfinding_tenant_id" ON "investigation_findings" ("tenant_id");
--- create index "investigationfinding_tenant_id_investigation_id" to table: "investigation_findings"
-CREATE INDEX "investigationfinding_tenant_id_investigation_id" ON "investigation_findings" ("tenant_id", "investigation_id");
+-- create index "investigationfinding_tenant_id_investigation_id_key" to table: "investigation_findings"
+CREATE UNIQUE INDEX "investigationfinding_tenant_id_investigation_id_key" ON "investigation_findings" ("tenant_id", "investigation_id", "key");
+-- create index "investigationfinding_tenant_id_user_input_id" to table: "investigation_findings"
+CREATE UNIQUE INDEX "investigationfinding_tenant_id_user_input_id" ON "investigation_findings" ("tenant_id", "user_input_id");
+-- create "investigation_finding_versions" table
+CREATE TABLE "investigation_finding_versions" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "fingerprint" character varying NOT NULL, "title" character varying NOT NULL, "body" text NOT NULL, "tenant_id" bigint NOT NULL, "finding_id" uuid NOT NULL, "agent_turn_id" uuid NOT NULL, PRIMARY KEY ("id"));
+-- create index "investigationfindingversion_tenant_id" to table: "investigation_finding_versions"
+CREATE INDEX "investigationfindingversion_tenant_id" ON "investigation_finding_versions" ("tenant_id");
+-- create index "investigationfindingversion_tenant_id_agent_turn_id_fingerprint" to table: "investigation_finding_versions"
+CREATE UNIQUE INDEX "investigationfindingversion_tenant_id_agent_turn_id_fingerprint" ON "investigation_finding_versions" ("tenant_id", "agent_turn_id", "fingerprint");
+-- create index "investigationfindingversion_te_e72d38e02e22d53af5dd44d2db41a067" to table: "investigation_finding_versions"
+CREATE INDEX "investigationfindingversion_te_e72d38e02e22d53af5dd44d2db41a067" ON "investigation_finding_versions" ("tenant_id", "finding_id", "agent_turn_id", "created_at", "id");
+-- create "investigation_finding_version_links" table
+CREATE TABLE "investigation_finding_version_links" ("id" uuid NOT NULL, "relation" character varying NOT NULL, "tenant_id" bigint NOT NULL, "source_version_id" uuid NOT NULL, "target_version_id" uuid NOT NULL, PRIMARY KEY ("id"), CONSTRAINT "investigation_finding_version_link_distinct_versions" CHECK (source_version_id <> target_version_id));
+-- create index "investigationfindingversionlink_tenant_id" to table: "investigation_finding_version_links"
+CREATE INDEX "investigationfindingversionlink_tenant_id" ON "investigation_finding_version_links" ("tenant_id");
+-- create index "investigationfindingversionlin_0ad2a45c15386608fb61877da208fca8" to table: "investigation_finding_version_links"
+CREATE UNIQUE INDEX "investigationfindingversionlin_0ad2a45c15386608fb61877da208fca8" ON "investigation_finding_version_links" ("tenant_id", "source_version_id", "target_version_id", "relation");
+-- create index "investigationfindingversionlink_tenant_id_target_version_id" to table: "investigation_finding_version_links"
+CREATE INDEX "investigationfindingversionlink_tenant_id_target_version_id" ON "investigation_finding_version_links" ("tenant_id", "target_version_id");
 -- create "investigation_hypotheses" table
-CREATE TABLE "investigation_hypotheses" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "title" character varying NOT NULL, "body" text NULL, "verdict" text NULL, "investigation_id" uuid NOT NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
+CREATE TABLE "investigation_hypotheses" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "key" character varying NOT NULL, "investigation_id" uuid NOT NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
 -- create index "investigationhypothesis_tenant_id" to table: "investigation_hypotheses"
 CREATE INDEX "investigationhypothesis_tenant_id" ON "investigation_hypotheses" ("tenant_id");
--- create index "investigationhypothesis_tenant_id_investigation_id" to table: "investigation_hypotheses"
-CREATE INDEX "investigationhypothesis_tenant_id_investigation_id" ON "investigation_hypotheses" ("tenant_id", "investigation_id");
+-- create index "investigationhypothesis_tenant_id_investigation_id_key" to table: "investigation_hypotheses"
+CREATE UNIQUE INDEX "investigationhypothesis_tenant_id_investigation_id_key" ON "investigation_hypotheses" ("tenant_id", "investigation_id", "key");
+-- create "investigation_hypothesis_versions" table
+CREATE TABLE "investigation_hypothesis_versions" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "fingerprint" character varying NOT NULL, "title" character varying NOT NULL, "status" character varying NOT NULL, "justification" text NOT NULL, "tenant_id" bigint NOT NULL, "hypothesis_id" uuid NOT NULL, "agent_turn_id" uuid NOT NULL, PRIMARY KEY ("id"));
+-- create index "investigationhypothesisversion_tenant_id" to table: "investigation_hypothesis_versions"
+CREATE INDEX "investigationhypothesisversion_tenant_id" ON "investigation_hypothesis_versions" ("tenant_id");
+-- create index "investigationhypothesisversion_fdb80fec734158f65dde879bc383a999" to table: "investigation_hypothesis_versions"
+CREATE UNIQUE INDEX "investigationhypothesisversion_fdb80fec734158f65dde879bc383a999" ON "investigation_hypothesis_versions" ("tenant_id", "agent_turn_id", "fingerprint");
+-- create index "investigationhypothesisversion_db06a0a5c6994f554178dd8d38713f02" to table: "investigation_hypothesis_versions"
+CREATE INDEX "investigationhypothesisversion_db06a0a5c6994f554178dd8d38713f02" ON "investigation_hypothesis_versions" ("tenant_id", "hypothesis_id", "agent_turn_id", "created_at", "id");
+-- create "investigation_output_references" table
+CREATE TABLE "investigation_output_references" ("id" uuid NOT NULL, "tenant_id" bigint NOT NULL, "report_id" uuid NULL, "finding_version_id" uuid NULL, "hypothesis_version_id" uuid NULL, "knowledge_evidence_id" uuid NOT NULL, PRIMARY KEY ("id"), CONSTRAINT "investigation_output_reference_exactly_one_owner" CHECK (num_nonnulls(report_id, finding_version_id, hypothesis_version_id) = 1));
+-- create index "investigationoutputreference_tenant_id" to table: "investigation_output_references"
+CREATE INDEX "investigationoutputreference_tenant_id" ON "investigation_output_references" ("tenant_id");
+-- create index "investigationoutputreference_tenant_id_report_id" to table: "investigation_output_references"
+CREATE INDEX "investigationoutputreference_tenant_id_report_id" ON "investigation_output_references" ("tenant_id", "report_id");
+-- create index "investigationoutputreference_tenant_id_finding_version_id" to table: "investigation_output_references"
+CREATE INDEX "investigationoutputreference_tenant_id_finding_version_id" ON "investigation_output_references" ("tenant_id", "finding_version_id");
+-- create index "investigationoutputreference_tenant_id_hypothesis_version_id" to table: "investigation_output_references"
+CREATE INDEX "investigationoutputreference_tenant_id_hypothesis_version_id" ON "investigation_output_references" ("tenant_id", "hypothesis_version_id");
 -- create "investigation_reports" table
-CREATE TABLE "investigation_reports" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "text" text NOT NULL, "likely_cause" text NULL, "best_next_step" text NULL, "limitations" jsonb NULL, "recommended_actions" jsonb NULL, "suggested_checks" jsonb NULL, "investigation_id" uuid NOT NULL, "tenant_id" bigint NOT NULL, "agent_turn_id" uuid NULL, PRIMARY KEY ("id"));
--- create index "investigation_reports_investigation_id_key" to table: "investigation_reports"
-CREATE UNIQUE INDEX "investigation_reports_investigation_id_key" ON "investigation_reports" ("investigation_id");
+CREATE TABLE "investigation_reports" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "fingerprint" character varying NOT NULL, "text" text NOT NULL, "investigation_id" uuid NOT NULL, "tenant_id" bigint NOT NULL, "agent_turn_id" uuid NOT NULL, PRIMARY KEY ("id"));
 -- create index "investigationreport_tenant_id" to table: "investigation_reports"
 CREATE INDEX "investigationreport_tenant_id" ON "investigation_reports" ("tenant_id");
--- create index "investigationreport_tenant_id_agent_turn_id" to table: "investigation_reports"
-CREATE INDEX "investigationreport_tenant_id_agent_turn_id" ON "investigation_reports" ("tenant_id", "agent_turn_id");
--- create index "investigationreport_tenant_id_investigation_id_created_at" to table: "investigation_reports"
-CREATE INDEX "investigationreport_tenant_id_investigation_id_created_at" ON "investigation_reports" ("tenant_id", "investigation_id", "created_at");
+-- create index "investigationreport_tenant_id_agent_turn_id_fingerprint" to table: "investigation_reports"
+CREATE UNIQUE INDEX "investigationreport_tenant_id_agent_turn_id_fingerprint" ON "investigation_reports" ("tenant_id", "agent_turn_id", "fingerprint");
+-- create index "investigationreport_tenant_id__96fa32c834dcde34e610dab6be684a51" to table: "investigation_reports"
+CREATE INDEX "investigationreport_tenant_id__96fa32c834dcde34e610dab6be684a51" ON "investigation_reports" ("tenant_id", "investigation_id", "agent_turn_id", "created_at", "id");
+-- create "investigation_user_inputs" table
+CREATE TABLE "investigation_user_inputs" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "user_id" uuid NOT NULL, "text" text NOT NULL, "key" character varying NOT NULL, "investigation_id" uuid NOT NULL, "tenant_id" bigint NOT NULL, "agent_turn_id" uuid NULL, PRIMARY KEY ("id"));
+-- create index "investigationuserinput_tenant_id" to table: "investigation_user_inputs"
+CREATE INDEX "investigationuserinput_tenant_id" ON "investigation_user_inputs" ("tenant_id");
+-- create index "investigationuserinput_investigation_id_key" to table: "investigation_user_inputs"
+CREATE UNIQUE INDEX "investigationuserinput_investigation_id_key" ON "investigation_user_inputs" ("investigation_id", "key");
+-- create index "investigationuserinput_investigation_id_agent_turn_id" to table: "investigation_user_inputs"
+CREATE UNIQUE INDEX "investigationuserinput_investigation_id_agent_turn_id" ON "investigation_user_inputs" ("investigation_id", "agent_turn_id");
+-- create index "investigationuserinput_investigation_id_created_at_id" to table: "investigation_user_inputs"
+CREATE INDEX "investigationuserinput_investigation_id_created_at_id" ON "investigation_user_inputs" ("investigation_id", "created_at", "id");
 -- create "knowledge_entities" table
 CREATE TABLE "knowledge_entities" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "category" character varying NOT NULL, "kind" character varying NOT NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
 -- create index "knowledgeentity_tenant_id" to table: "knowledge_entities"
@@ -379,11 +433,9 @@ CREATE TABLE "reviews" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "
 -- create index "review_tenant_id" to table: "reviews"
 CREATE INDEX "review_tenant_id" ON "reviews" ("tenant_id");
 -- create "situations" table
-CREATE TABLE "situations" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "title" character varying NOT NULL, "evidence_revision" bigint NOT NULL DEFAULT 1, "summary" text NULL, "opened_at" timestamptz NOT NULL, "closed_at" timestamptz NULL, "close_reason" character varying NULL, "tenant_id" bigint NOT NULL, "knowledge_entity_id" uuid NOT NULL, PRIMARY KEY ("id"));
+CREATE TABLE "situations" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "title" character varying NOT NULL, "summary" text NULL, "opened_at" timestamptz NOT NULL, "closed_at" timestamptz NULL, "close_reason" character varying NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
 -- create index "situation_tenant_id" to table: "situations"
 CREATE INDEX "situation_tenant_id" ON "situations" ("tenant_id");
--- create index "situation_tenant_id_knowledge_entity_id" to table: "situations"
-CREATE UNIQUE INDEX "situation_tenant_id_knowledge_entity_id" ON "situations" ("tenant_id", "knowledge_entity_id");
 -- create index "situation_tenant_id_opened_at" to table: "situations"
 CREATE INDEX "situation_tenant_id_opened_at" ON "situations" ("tenant_id", "opened_at");
 -- create "situation_hazard_assessments" table
@@ -397,7 +449,7 @@ CREATE INDEX "situationhazardassessment_tenant_id_situation_id_assessed_at" ON "
 -- create index "situationhazardassessment_tena_a2189e8fe766c71d42d5c2b4956f991c" to table: "situation_hazard_assessments"
 CREATE INDEX "situationhazardassessment_tena_a2189e8fe766c71d42d5c2b4956f991c" ON "situation_hazard_assessments" ("tenant_id", "system_hazard_id", "assessed_at");
 -- create "situation_investigations" table
-CREATE TABLE "situation_investigations" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "completed_revision" bigint NOT NULL DEFAULT 0, "requested_revision" bigint NOT NULL DEFAULT 0, "investigation_id" uuid NOT NULL, "situation_id" uuid NOT NULL, "tenant_id" bigint NOT NULL, "requested_turn_id" uuid NULL, PRIMARY KEY ("id"));
+CREATE TABLE "situation_investigations" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "investigation_id" uuid NOT NULL, "situation_id" uuid NOT NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
 -- create index "situation_investigations_situation_id_key" to table: "situation_investigations"
 CREATE UNIQUE INDEX "situation_investigations_situation_id_key" ON "situation_investigations" ("situation_id");
 -- create index "situationinvestigation_tenant_id" to table: "situation_investigations"
@@ -437,7 +489,7 @@ CREATE INDEX "systemanalysisentry_tenant_id_analysis_id_kind" ON "system_analysi
 -- create index "systemanalysisentry_tenant_id_analysis_id_sequence" to table: "system_analysis_entries"
 CREATE INDEX "systemanalysisentry_tenant_id_analysis_id_sequence" ON "system_analysis_entries" ("tenant_id", "analysis_id", "sequence");
 -- create "system_analysis_entry_subjects" table
-CREATE TABLE "system_analysis_entry_subjects" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "role" character varying NOT NULL, "tenant_id" bigint NOT NULL, "entry_id" uuid NOT NULL, "knowledge_entity_id" uuid NULL, "knowledge_relationship_id" uuid NULL, "knowledge_evidence_id" uuid NULL, "normalized_event_id" uuid NULL, PRIMARY KEY ("id"), CONSTRAINT "system_analysis_entry_subject_exactly_one_reference" CHECK (num_nonnulls(knowledge_entity_id, knowledge_relationship_id, knowledge_evidence_id, normalized_event_id) = 1));
+CREATE TABLE "system_analysis_entry_subjects" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "role" character varying NOT NULL, "tenant_id" bigint NOT NULL, "entry_id" uuid NOT NULL, "knowledge_entity_id" uuid NULL, "knowledge_relationship_id" uuid NULL, "knowledge_evidence_id" uuid NULL, PRIMARY KEY ("id"), CONSTRAINT "system_analysis_entry_subject_exactly_one_reference" CHECK (num_nonnulls(knowledge_entity_id, knowledge_relationship_id, knowledge_evidence_id) = 1));
 -- create index "systemanalysisentrysubject_tenant_id" to table: "system_analysis_entry_subjects"
 CREATE INDEX "systemanalysisentrysubject_tenant_id" ON "system_analysis_entry_subjects" ("tenant_id");
 -- create index "systemanalysisentrysubject_ten_c4a21fbb3b9de2428569f66a19985134" to table: "system_analysis_entry_subjects"
@@ -446,16 +498,12 @@ CREATE UNIQUE INDEX "systemanalysisentrysubject_ten_c4a21fbb3b9de2428569f66a1998
 CREATE UNIQUE INDEX "systemanalysisentrysubject_ten_dc808ec92a5050740e97559ed0829fef" ON "system_analysis_entry_subjects" ("tenant_id", "entry_id", "knowledge_relationship_id", "role");
 -- create index "systemanalysisentrysubject_ten_dc57a3ba916d5e935c195e68bedc78ed" to table: "system_analysis_entry_subjects"
 CREATE UNIQUE INDEX "systemanalysisentrysubject_ten_dc57a3ba916d5e935c195e68bedc78ed" ON "system_analysis_entry_subjects" ("tenant_id", "entry_id", "knowledge_evidence_id", "role");
--- create index "systemanalysisentrysubject_ten_fd31024669a720c37628dad3f0e1e538" to table: "system_analysis_entry_subjects"
-CREATE UNIQUE INDEX "systemanalysisentrysubject_ten_fd31024669a720c37628dad3f0e1e538" ON "system_analysis_entry_subjects" ("tenant_id", "entry_id", "normalized_event_id", "role");
 -- create index "systemanalysisentrysubject_tenant_id_knowledge_entity_id" to table: "system_analysis_entry_subjects"
 CREATE INDEX "systemanalysisentrysubject_tenant_id_knowledge_entity_id" ON "system_analysis_entry_subjects" ("tenant_id", "knowledge_entity_id");
 -- create index "systemanalysisentrysubject_tenant_id_knowledge_relationship_id" to table: "system_analysis_entry_subjects"
 CREATE INDEX "systemanalysisentrysubject_tenant_id_knowledge_relationship_id" ON "system_analysis_entry_subjects" ("tenant_id", "knowledge_relationship_id");
 -- create index "systemanalysisentrysubject_tenant_id_knowledge_evidence_id" to table: "system_analysis_entry_subjects"
 CREATE INDEX "systemanalysisentrysubject_tenant_id_knowledge_evidence_id" ON "system_analysis_entry_subjects" ("tenant_id", "knowledge_evidence_id");
--- create index "systemanalysisentrysubject_tenant_id_normalized_event_id" to table: "system_analysis_entry_subjects"
-CREATE INDEX "systemanalysisentrysubject_tenant_id_normalized_event_id" ON "system_analysis_entry_subjects" ("tenant_id", "normalized_event_id");
 -- create "system_analysis_relationships" table
 CREATE TABLE "system_analysis_relationships" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "hidden" boolean NOT NULL DEFAULT false, "label_override" character varying NULL, "description_override" text NULL, "layout" jsonb NULL, "properties" jsonb NULL, "tenant_id" bigint NOT NULL, "analysis_id" uuid NOT NULL, "knowledge_relationship_id" uuid NOT NULL, PRIMARY KEY ("id"));
 -- create index "systemanalysisrelationship_tenant_id" to table: "system_analysis_relationships"
@@ -630,12 +678,24 @@ ALTER TABLE "integration_event_sync_runs" ADD CONSTRAINT "integration_event_sync
 ALTER TABLE "integration_user_install_states" ADD CONSTRAINT "integration_user_install_states_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "integration_user_install_states_users_user" FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE NO ACTION;
 -- modify "investigations" table
 ALTER TABLE "investigations" ADD CONSTRAINT "investigations_agent_sessions_investigation" FOREIGN KEY ("agent_session_id") REFERENCES "agent_sessions" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "investigations_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "investigations_system_analyses_investigation" FOREIGN KEY ("system_analysis_id") REFERENCES "system_analyses" ("id") ON DELETE NO ACTION;
+-- modify "investigation_evidence_revisions" table
+ALTER TABLE "investigation_evidence_revisions" ADD CONSTRAINT "investigation_evidence_revisio_80602e4f97e659a214870e7c49c36239" FOREIGN KEY ("investigation_id") REFERENCES "investigations" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "investigation_evidence_revisions_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "investigation_evidence_revisions_agent_turns_agent_turn" FOREIGN KEY ("agent_turn_id") REFERENCES "agent_turns" ("id") ON DELETE RESTRICT;
 -- modify "investigation_findings" table
-ALTER TABLE "investigation_findings" ADD CONSTRAINT "investigation_findings_investigations_findings" FOREIGN KEY ("investigation_id") REFERENCES "investigations" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "investigation_findings_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION;
+ALTER TABLE "investigation_findings" ADD CONSTRAINT "investigation_findings_investigations_findings" FOREIGN KEY ("investigation_id") REFERENCES "investigations" ("id") ON DELETE CASCADE, ADD CONSTRAINT "investigation_findings_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "investigation_findings_investigation_user_inputs_user_input" FOREIGN KEY ("user_input_id") REFERENCES "investigation_user_inputs" ("id") ON DELETE NO ACTION;
+-- modify "investigation_finding_versions" table
+ALTER TABLE "investigation_finding_versions" ADD CONSTRAINT "investigation_finding_versions_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "investigation_finding_versions_investigation_findings_finding" FOREIGN KEY ("finding_id") REFERENCES "investigation_findings" ("id") ON DELETE CASCADE, ADD CONSTRAINT "investigation_finding_versions_agent_turns_agent_turn" FOREIGN KEY ("agent_turn_id") REFERENCES "agent_turns" ("id") ON DELETE NO ACTION;
+-- modify "investigation_finding_version_links" table
+ALTER TABLE "investigation_finding_version_links" ADD CONSTRAINT "investigation_finding_version_links_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "investigation_finding_version__a858640a5bb4fc046ffa66f7471569d0" FOREIGN KEY ("source_version_id") REFERENCES "investigation_finding_versions" ("id") ON DELETE CASCADE, ADD CONSTRAINT "investigation_finding_version__c6b71b5605fe6436c7e142fff566eb32" FOREIGN KEY ("target_version_id") REFERENCES "investigation_finding_versions" ("id") ON DELETE NO ACTION;
 -- modify "investigation_hypotheses" table
-ALTER TABLE "investigation_hypotheses" ADD CONSTRAINT "investigation_hypotheses_investigations_hypotheses" FOREIGN KEY ("investigation_id") REFERENCES "investigations" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "investigation_hypotheses_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION;
+ALTER TABLE "investigation_hypotheses" ADD CONSTRAINT "investigation_hypotheses_investigations_hypotheses" FOREIGN KEY ("investigation_id") REFERENCES "investigations" ("id") ON DELETE CASCADE, ADD CONSTRAINT "investigation_hypotheses_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION;
+-- modify "investigation_hypothesis_versions" table
+ALTER TABLE "investigation_hypothesis_versions" ADD CONSTRAINT "investigation_hypothesis_versions_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "investigation_hypothesis_versi_8a313c9666ec14f3a56be08b9114c170" FOREIGN KEY ("hypothesis_id") REFERENCES "investigation_hypotheses" ("id") ON DELETE CASCADE, ADD CONSTRAINT "investigation_hypothesis_versions_agent_turns_agent_turn" FOREIGN KEY ("agent_turn_id") REFERENCES "agent_turns" ("id") ON DELETE NO ACTION;
+-- modify "investigation_output_references" table
+ALTER TABLE "investigation_output_references" ADD CONSTRAINT "investigation_output_references_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "investigation_output_references_investigation_reports_report" FOREIGN KEY ("report_id") REFERENCES "investigation_reports" ("id") ON DELETE CASCADE, ADD CONSTRAINT "investigation_output_reference_694e046dee9043d3d8ab666387b3b77b" FOREIGN KEY ("finding_version_id") REFERENCES "investigation_finding_versions" ("id") ON DELETE CASCADE, ADD CONSTRAINT "investigation_output_reference_301855c5320da85fac0a55377fdf5c0d" FOREIGN KEY ("hypothesis_version_id") REFERENCES "investigation_hypothesis_versions" ("id") ON DELETE CASCADE, ADD CONSTRAINT "investigation_output_reference_19d5676cbf4c7efbfe0274329fc6dce2" FOREIGN KEY ("knowledge_evidence_id") REFERENCES "knowledge_evidences" ("id") ON DELETE NO ACTION;
 -- modify "investigation_reports" table
-ALTER TABLE "investigation_reports" ADD CONSTRAINT "investigation_reports_investigations_report" FOREIGN KEY ("investigation_id") REFERENCES "investigations" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "investigation_reports_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "investigation_reports_agent_turns_agent_turn" FOREIGN KEY ("agent_turn_id") REFERENCES "agent_turns" ("id") ON DELETE SET NULL;
+ALTER TABLE "investigation_reports" ADD CONSTRAINT "investigation_reports_investigations_reports" FOREIGN KEY ("investigation_id") REFERENCES "investigations" ("id") ON DELETE CASCADE, ADD CONSTRAINT "investigation_reports_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "investigation_reports_agent_turns_agent_turn" FOREIGN KEY ("agent_turn_id") REFERENCES "agent_turns" ("id") ON DELETE NO ACTION;
+-- modify "investigation_user_inputs" table
+ALTER TABLE "investigation_user_inputs" ADD CONSTRAINT "investigation_user_inputs_investigations_user_inputs" FOREIGN KEY ("investigation_id") REFERENCES "investigations" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "investigation_user_inputs_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "investigation_user_inputs_agent_turns_agent_turn" FOREIGN KEY ("agent_turn_id") REFERENCES "agent_turns" ("id") ON DELETE RESTRICT;
 -- modify "knowledge_entities" table
 ALTER TABLE "knowledge_entities" ADD CONSTRAINT "knowledge_entities_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION;
 -- modify "knowledge_entity_linking_attributes" table
@@ -685,11 +745,11 @@ ALTER TABLE "retrospectives" ADD CONSTRAINT "retrospectives_documents_retrospect
 -- modify "reviews" table
 ALTER TABLE "reviews" ADD CONSTRAINT "reviews_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "reviews_retrospectives_retrospective" FOREIGN KEY ("retrospective_id") REFERENCES "retrospectives" ("id") ON DELETE SET NULL, ADD CONSTRAINT "reviews_system_analysis_entries_analysis_entry" FOREIGN KEY ("analysis_entry_id") REFERENCES "system_analysis_entries" ("id") ON DELETE SET NULL, ADD CONSTRAINT "reviews_users_requester" FOREIGN KEY ("requester_id") REFERENCES "users" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "reviews_users_reviewer" FOREIGN KEY ("reviewer_id") REFERENCES "users" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "reviews_discussion_comments_comment" FOREIGN KEY ("comment_id") REFERENCES "discussion_comments" ("id") ON DELETE SET NULL;
 -- modify "situations" table
-ALTER TABLE "situations" ADD CONSTRAINT "situations_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "situations_knowledge_entities_knowledge_entity" FOREIGN KEY ("knowledge_entity_id") REFERENCES "knowledge_entities" ("id") ON DELETE NO ACTION;
+ALTER TABLE "situations" ADD CONSTRAINT "situations_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION;
 -- modify "situation_hazard_assessments" table
 ALTER TABLE "situation_hazard_assessments" ADD CONSTRAINT "situation_hazard_assessments_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "situation_hazard_assessments_situations_situation" FOREIGN KEY ("situation_id") REFERENCES "situations" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "situation_hazard_assessments_system_hazards_system_hazard" FOREIGN KEY ("system_hazard_id") REFERENCES "system_hazards" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "situation_hazard_assessments_users_user" FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE SET NULL, ADD CONSTRAINT "situation_hazard_assessments_agent_turns_agent_turn" FOREIGN KEY ("agent_turn_id") REFERENCES "agent_turns" ("id") ON DELETE SET NULL, ADD CONSTRAINT "situation_hazard_assessments_s_4cfd09fc46fb5f66a4f31cc2a855fdad" FOREIGN KEY ("system_hazard_situation_assessments") REFERENCES "system_hazards" ("id") ON DELETE SET NULL;
 -- modify "situation_investigations" table
-ALTER TABLE "situation_investigations" ADD CONSTRAINT "situation_investigations_investigations_situations" FOREIGN KEY ("investigation_id") REFERENCES "investigations" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "situation_investigations_situations_investigation" FOREIGN KEY ("situation_id") REFERENCES "situations" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "situation_investigations_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "situation_investigations_agent_turns_requested_turn" FOREIGN KEY ("requested_turn_id") REFERENCES "agent_turns" ("id") ON DELETE SET NULL;
+ALTER TABLE "situation_investigations" ADD CONSTRAINT "situation_investigations_investigations_situations" FOREIGN KEY ("investigation_id") REFERENCES "investigations" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "situation_investigations_situations_investigation" FOREIGN KEY ("situation_id") REFERENCES "situations" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "situation_investigations_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION;
 -- modify "situation_observation_groups" table
 ALTER TABLE "situation_observation_groups" ADD CONSTRAINT "situation_observation_groups_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "situation_observation_groups_situations_situation" FOREIGN KEY ("situation_id") REFERENCES "situations" ("id") ON DELETE NO ACTION;
 -- modify "system_analyses" table
@@ -699,7 +759,7 @@ ALTER TABLE "system_analysis_entities" ADD CONSTRAINT "system_analysis_entities_
 -- modify "system_analysis_entries" table
 ALTER TABLE "system_analysis_entries" ADD CONSTRAINT "system_analysis_entries_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "system_analysis_entries_system_analyses_analysis" FOREIGN KEY ("analysis_id") REFERENCES "system_analyses" ("id") ON DELETE NO ACTION;
 -- modify "system_analysis_entry_subjects" table
-ALTER TABLE "system_analysis_entry_subjects" ADD CONSTRAINT "system_analysis_entry_subjects_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "system_analysis_entry_subjects_system_analysis_entries_entry" FOREIGN KEY ("entry_id") REFERENCES "system_analysis_entries" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "system_analysis_entry_subjects_49d5b666fad2cccccfff680228c04fc3" FOREIGN KEY ("knowledge_entity_id") REFERENCES "knowledge_entities" ("id") ON DELETE SET NULL, ADD CONSTRAINT "system_analysis_entry_subjects_900e59485c580b401fec755bd8cd2504" FOREIGN KEY ("knowledge_relationship_id") REFERENCES "knowledge_relationships" ("id") ON DELETE SET NULL, ADD CONSTRAINT "system_analysis_entry_subjects_1264d7dddb02bff88a4448e8cddecac8" FOREIGN KEY ("knowledge_evidence_id") REFERENCES "knowledge_evidences" ("id") ON DELETE SET NULL, ADD CONSTRAINT "system_analysis_entry_subjects_f5a3e3d454bdb8a01343f1c7b7a57859" FOREIGN KEY ("normalized_event_id") REFERENCES "normalized_events" ("id") ON DELETE SET NULL;
+ALTER TABLE "system_analysis_entry_subjects" ADD CONSTRAINT "system_analysis_entry_subjects_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "system_analysis_entry_subjects_system_analysis_entries_entry" FOREIGN KEY ("entry_id") REFERENCES "system_analysis_entries" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "system_analysis_entry_subjects_49d5b666fad2cccccfff680228c04fc3" FOREIGN KEY ("knowledge_entity_id") REFERENCES "knowledge_entities" ("id") ON DELETE SET NULL, ADD CONSTRAINT "system_analysis_entry_subjects_900e59485c580b401fec755bd8cd2504" FOREIGN KEY ("knowledge_relationship_id") REFERENCES "knowledge_relationships" ("id") ON DELETE SET NULL, ADD CONSTRAINT "system_analysis_entry_subjects_1264d7dddb02bff88a4448e8cddecac8" FOREIGN KEY ("knowledge_evidence_id") REFERENCES "knowledge_evidences" ("id") ON DELETE SET NULL;
 -- modify "system_analysis_relationships" table
 ALTER TABLE "system_analysis_relationships" ADD CONSTRAINT "system_analysis_relationships_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "system_analysis_relationships_system_analyses_analysis" FOREIGN KEY ("analysis_id") REFERENCES "system_analyses" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "system_analysis_relationships__b7ca708fb4a6c01cc857332c522e01e3" FOREIGN KEY ("knowledge_relationship_id") REFERENCES "knowledge_relationships" ("id") ON DELETE NO ACTION;
 -- modify "system_hazards" table

@@ -93,6 +93,17 @@ func (dbc *DatabaseClient) IsTransientError(err error) bool {
 	return false
 }
 
+func (dbc *DatabaseClient) IsConstraintError(err error) (string, bool) {
+	if err == nil {
+		return "", false
+	}
+	pgErr, ok := errors.AsType[*pgconn.PgError](err)
+	if !ok || pgErr.Code != "23505" {
+		return "", false
+	}
+	return pgErr.ConstraintName, true
+}
+
 func (dbc *DatabaseClient) WithTx(ctx context.Context, fn func(txCtx context.Context, tx *ent.Client) error, opts ...ent.TxOption) error {
 	if tx := ent.TxFromContext(ctx); tx != nil {
 		applyTxOptions(tx, opts...)

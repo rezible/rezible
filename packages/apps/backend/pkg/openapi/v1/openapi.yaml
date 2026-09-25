@@ -2466,6 +2466,17 @@ components:
       required:
         - provider
       type: object
+    FindingVersionReference:
+      additionalProperties: false
+      properties:
+        relation:
+          type: string
+        versionId:
+          type: string
+      required:
+        - versionId
+        - relation
+      type: object
     GetAdjacentOncallShiftsResponseBody:
       additionalProperties: false
       properties:
@@ -2763,6 +2774,51 @@ components:
           type: string
         data:
           $ref: "#/components/schemas/IntegrationInstallation"
+      required:
+        - data
+      type: object
+    GetInvestigationFindingResponseBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/GetInvestigationFindingResponseBody.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          $ref: "#/components/schemas/InvestigationFinding"
+      required:
+        - data
+      type: object
+    GetInvestigationHypothesisResponseBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/GetInvestigationHypothesisResponseBody.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          $ref: "#/components/schemas/InvestigationHypothesis"
+      required:
+        - data
+      type: object
+    GetInvestigationReportResponseBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/GetInvestigationReportResponseBody.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          $ref: "#/components/schemas/InvestigationReport"
       required:
         - data
       type: object
@@ -4047,20 +4103,183 @@ components:
         createdAt:
           format: date-time
           type: string
+        latestTurnId:
+          type:
+            - string
+            - "null"
+        latestTurnStatus:
+          type:
+            - string
+            - "null"
         query:
           type: string
-        report:
-          $ref: "#/components/schemas/InvestigationReport"
         sessionId:
           type: string
         updatedAt:
           format: date-time
           type: string
       required:
+        - query
         - analysisId
         - sessionId
+        - latestTurnId
+        - latestTurnStatus
         - createdAt
         - updatedAt
+      type: object
+    InvestigationEvidenceRevision:
+      additionalProperties: false
+      properties:
+        attributes:
+          $ref: "#/components/schemas/InvestigationEvidenceRevisionAttributes"
+        id:
+          type: string
+      required:
+        - id
+        - attributes
+      type: object
+    InvestigationEvidenceRevisionAttributes:
+      additionalProperties: false
+      properties:
+        agentTurnId:
+          type:
+            - string
+            - "null"
+        callerKey:
+          type: string
+        createdAt:
+          format: date-time
+          type: string
+        explanation:
+          type: string
+      required:
+        - explanation
+        - callerKey
+        - agentTurnId
+        - createdAt
+      type: object
+    InvestigationFinding:
+      additionalProperties: false
+      properties:
+        attributes:
+          $ref: "#/components/schemas/InvestigationFindingAttrs"
+        id:
+          type: string
+      required:
+        - id
+        - attributes
+      type: object
+    InvestigationFindingAttrs:
+      additionalProperties: false
+      properties:
+        agentTurnId:
+          type: string
+        body:
+          type: string
+        createdAt:
+          format: date-time
+          type: string
+        findingId:
+          type: string
+        findingReferences:
+          items:
+            $ref: "#/components/schemas/FindingVersionReference"
+          type: array
+        invalidatedByVersionIds:
+          items:
+            type: string
+          type: array
+        key:
+          type: string
+        provisional:
+          type: boolean
+        references:
+          items:
+            $ref: "#/components/schemas/InvestigationReference"
+          type: array
+        title:
+          type: string
+        turnStatus:
+          type: string
+        userInputId:
+          type:
+            - string
+            - "null"
+      required:
+        - findingId
+        - key
+        - userInputId
+        - title
+        - body
+        - references
+        - findingReferences
+        - invalidatedByVersionIds
+        - agentTurnId
+        - turnStatus
+        - provisional
+        - createdAt
+      type: object
+    InvestigationHypothesis:
+      additionalProperties: false
+      properties:
+        attributes:
+          $ref: "#/components/schemas/InvestigationHypothesisAttrs"
+        id:
+          type: string
+      required:
+        - id
+        - attributes
+      type: object
+    InvestigationHypothesisAttrs:
+      additionalProperties: false
+      properties:
+        agentTurnId:
+          type: string
+        createdAt:
+          format: date-time
+          type: string
+        hypothesisId:
+          type: string
+        justification:
+          type: string
+        key:
+          type: string
+        provisional:
+          type: boolean
+        references:
+          items:
+            $ref: "#/components/schemas/InvestigationReference"
+          type: array
+        status:
+          type: string
+        title:
+          type: string
+        turnStatus:
+          type: string
+      required:
+        - hypothesisId
+        - key
+        - title
+        - justification
+        - status
+        - references
+        - agentTurnId
+        - turnStatus
+        - provisional
+        - createdAt
+      type: object
+    InvestigationReference:
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+        kind:
+          enum:
+            - knowledge_evidence
+          type: string
+      required:
+        - kind
+        - id
       type: object
     InvestigationReport:
       additionalProperties: false
@@ -4076,30 +4295,67 @@ components:
     InvestigationReportAttributes:
       additionalProperties: false
       properties:
-        bestNextStep:
+        agentTurnId:
           type: string
         createdAt:
           format: date-time
           type: string
-        likelyCause:
-          type: string
-        limitations:
+        provisional:
+          type: boolean
+        references:
           items:
-            type: string
-          type: array
-        recommendedActions:
-          items:
-            type: string
-          type: array
-        suggestedChecks:
-          items:
-            type: string
+            $ref: "#/components/schemas/InvestigationReference"
           type: array
         text:
           type: string
+        turnStatus:
+          type: string
       required:
         - text
+        - references
+        - agentTurnId
+        - turnStatus
+        - provisional
         - createdAt
+      type: object
+    InvestigationUserInput:
+      additionalProperties: false
+      properties:
+        attributes:
+          $ref: "#/components/schemas/InvestigationUserInputAttributes"
+        id:
+          type: string
+      required:
+        - id
+        - attributes
+      type: object
+    InvestigationUserInputAttributes:
+      additionalProperties: false
+      properties:
+        agentTurnId:
+          type:
+            - string
+            - "null"
+        answerVersionId:
+          type:
+            - string
+            - "null"
+        createdAt:
+          format: date-time
+          type: string
+        submissionKey:
+          type: string
+        text:
+          type: string
+        userId:
+          type: string
+      required:
+        - text
+        - userId
+        - submissionKey
+        - createdAt
+        - agentTurnId
+        - answerVersionId
       type: object
     KnowledgeGraphEntitiesPage:
       additionalProperties: false
@@ -5224,6 +5480,86 @@ components:
         - data
         - pagination
       type: object
+    PaginatedResponseBodyInvestigationEvidenceRevision:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/PaginatedResponseBodyInvestigationEvidenceRevision.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          items:
+            $ref: "#/components/schemas/InvestigationEvidenceRevision"
+          type: array
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+      required:
+        - data
+        - pagination
+      type: object
+    PaginatedResponseBodyInvestigationFinding:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/PaginatedResponseBodyInvestigationFinding.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          items:
+            $ref: "#/components/schemas/InvestigationFinding"
+          type: array
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+      required:
+        - data
+        - pagination
+      type: object
+    PaginatedResponseBodyInvestigationHypothesis:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/PaginatedResponseBodyInvestigationHypothesis.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          items:
+            $ref: "#/components/schemas/InvestigationHypothesis"
+          type: array
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+      required:
+        - data
+        - pagination
+      type: object
+    PaginatedResponseBodyInvestigationUserInput:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/PaginatedResponseBodyInvestigationUserInput.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          items:
+            $ref: "#/components/schemas/InvestigationUserInput"
+          type: array
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+      required:
+        - data
+        - pagination
+      type: object
     PaginatedResponseBodyKnowledgeGraphEntity:
       additionalProperties: false
       properties:
@@ -5940,13 +6276,8 @@ components:
         closedAt:
           format: date-time
           type: string
-        evidenceRevision:
-          format: int64
-          type: integer
         investigation:
           $ref: "#/components/schemas/SituationInvestigation"
-        knowledgeEntityId:
-          type: string
         linkedIncidentIds:
           items:
             type: string
@@ -5972,8 +6303,6 @@ components:
         - title
         - summary
         - signalCount
-        - evidenceRevision
-        - knowledgeEntityId
         - linkedIncidentIds
         - observationGroups
         - openedAt
@@ -6023,20 +6352,10 @@ components:
     SituationInvestigation:
       additionalProperties: false
       properties:
-        completedRevision:
-          format: int64
-          type: integer
         investigation:
           $ref: "#/components/schemas/ExpandableInvestigationAttributes"
-        requestedRevision:
-          format: int64
-          type: integer
-        requestedTurnId:
-          type: string
       required:
         - investigation
-        - requestedRevision
-        - completedRevision
       type: object
     SituationObservationGroup:
       additionalProperties: false
@@ -6087,39 +6406,36 @@ components:
       required:
         - data
       type: object
-    StartSituationInvestigationAttributes:
-      additionalProperties: false
-      properties:
-        query:
-          type: string
-      type: object
-    StartSituationInvestigationRequestBody:
+    SubmitInvestigationUserInputRequestBody:
       additionalProperties: false
       properties:
         $schema:
           description: A URL to the JSON Schema for this object.
           examples:
-            - /v1/schemas/StartSituationInvestigationRequestBody.json
+            - /v1/schemas/SubmitInvestigationUserInputRequestBody.json
           format: uri
           readOnly: true
           type: string
-        attributes:
-          $ref: "#/components/schemas/StartSituationInvestigationAttributes"
+        submissionKey:
+          type: string
+        text:
+          type: string
       required:
-        - attributes
+        - text
+        - submissionKey
       type: object
-    StartSituationInvestigationResponseBody:
+    SubmitInvestigationUserInputResponseBody:
       additionalProperties: false
       properties:
         $schema:
           description: A URL to the JSON Schema for this object.
           examples:
-            - /v1/schemas/StartSituationInvestigationResponseBody.json
+            - /v1/schemas/SubmitInvestigationUserInputResponseBody.json
           format: uri
           readOnly: true
           type: string
         data:
-          $ref: "#/components/schemas/SituationInvestigation"
+          $ref: "#/components/schemas/InvestigationUserInput"
       required:
         - data
       type: object
@@ -13813,6 +14129,544 @@ paths:
       summary: Get Investigation
       tags:
         - Investigations
+  /investigations/{id}/evidence-revisions:
+    get:
+      operationId: list-investigation-evidence-revisions
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+        - explode: false
+          in: query
+          name: page
+          schema:
+            default: 1
+            format: int64
+            minimum: 1
+            type: integer
+        - explode: false
+          in: query
+          name: pageSize
+          schema:
+            default: 25
+            format: int64
+            maximum: 50
+            minimum: 1
+            type: integer
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedResponseBodyInvestigationEvidenceRevision"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: List Investigation Evidence Revisions
+      tags:
+        - Investigations
+  /investigations/{id}/findings:
+    get:
+      operationId: list-investigation-findings
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+        - explode: false
+          in: query
+          name: page
+          schema:
+            default: 1
+            format: int64
+            minimum: 1
+            type: integer
+        - explode: false
+          in: query
+          name: pageSize
+          schema:
+            default: 25
+            format: int64
+            maximum: 50
+            minimum: 1
+            type: integer
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedResponseBodyInvestigationFinding"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: List Investigation Findings
+      tags:
+        - Investigations
+  /investigations/{id}/findings/{versionId}:
+    get:
+      operationId: get-investigation-finding
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: versionId
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetInvestigationFindingResponseBody"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: Get Investigation Finding
+      tags:
+        - Investigations
+  /investigations/{id}/hypotheses:
+    get:
+      operationId: list-investigation-hypotheses
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+        - explode: false
+          in: query
+          name: page
+          schema:
+            default: 1
+            format: int64
+            minimum: 1
+            type: integer
+        - explode: false
+          in: query
+          name: pageSize
+          schema:
+            default: 25
+            format: int64
+            maximum: 50
+            minimum: 1
+            type: integer
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedResponseBodyInvestigationHypothesis"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: List Investigation Hypotheses
+      tags:
+        - Investigations
+  /investigations/{id}/hypotheses/{versionId}:
+    get:
+      operationId: get-investigation-hypothesis
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: versionId
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetInvestigationHypothesisResponseBody"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: Get Investigation Hypothesis
+      tags:
+        - Investigations
+  /investigations/{id}/report:
+    get:
+      operationId: get-investigation-report
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+        - explode: false
+          in: query
+          name: selection
+          schema:
+            default: latest
+            enum:
+              - latest
+              - completed
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetInvestigationReportResponseBody"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: Get Investigation Report
+      tags:
+        - Investigations
+  /investigations/{id}/user-inputs:
+    get:
+      operationId: list-investigation-user-inputs
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+        - explode: false
+          in: query
+          name: page
+          schema:
+            default: 1
+            format: int64
+            minimum: 1
+            type: integer
+        - explode: false
+          in: query
+          name: pageSize
+          schema:
+            default: 25
+            format: int64
+            maximum: 50
+            minimum: 1
+            type: integer
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedResponseBodyInvestigationUserInput"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: List Investigation User Inputs
+      tags:
+        - Investigations
+    post:
+      operationId: submit-investigation-user-input
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SubmitInvestigationUserInputRequestBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SubmitInvestigationUserInputResponseBody"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Conflict
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: Submit Investigation User Input
+      tags:
+        - Investigations
   /knowledge/aliases:
     get:
       operationId: list-knowledge-graph-aliases
@@ -17474,67 +18328,6 @@ paths:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
       summary: Add Situation Hazard Assessment
-      tags:
-        - Situations
-  /situations/{id}/investigation:
-    post:
-      operationId: start-situation-investigation
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/StartSituationInvestigationRequestBody"
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/StartSituationInvestigationResponseBody"
-          description: OK
-        "400":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Bad Request
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unauthorized
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Forbidden
-        "404":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Not Found
-        "422":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unprocessable Entity
-        "500":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Internal Server Error
-      summary: Start Situation Investigation
       tags:
         - Situations
   /system_analysis/{id}:

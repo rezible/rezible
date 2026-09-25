@@ -14,9 +14,11 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/investigation"
+	"github.com/rezible/rezible/ent/investigationevidencerevision"
 	"github.com/rezible/rezible/ent/investigationfinding"
 	"github.com/rezible/rezible/ent/investigationhypothesis"
 	"github.com/rezible/rezible/ent/investigationreport"
+	"github.com/rezible/rezible/ent/investigationuserinput"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/situationinvestigation"
 )
@@ -70,6 +72,36 @@ func (_u *InvestigationUpdate) AddSituations(v ...*SituationInvestigation) *Inve
 	return _u.AddSituationIDs(ids...)
 }
 
+// AddUserInputIDs adds the "user_inputs" edge to the InvestigationUserInput entity by IDs.
+func (_u *InvestigationUpdate) AddUserInputIDs(ids ...uuid.UUID) *InvestigationUpdate {
+	_u.mutation.AddUserInputIDs(ids...)
+	return _u
+}
+
+// AddUserInputs adds the "user_inputs" edges to the InvestigationUserInput entity.
+func (_u *InvestigationUpdate) AddUserInputs(v ...*InvestigationUserInput) *InvestigationUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddUserInputIDs(ids...)
+}
+
+// AddEvidenceRevisionIDs adds the "evidence_revisions" edge to the InvestigationEvidenceRevision entity by IDs.
+func (_u *InvestigationUpdate) AddEvidenceRevisionIDs(ids ...uuid.UUID) *InvestigationUpdate {
+	_u.mutation.AddEvidenceRevisionIDs(ids...)
+	return _u
+}
+
+// AddEvidenceRevisions adds the "evidence_revisions" edges to the InvestigationEvidenceRevision entity.
+func (_u *InvestigationUpdate) AddEvidenceRevisions(v ...*InvestigationEvidenceRevision) *InvestigationUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddEvidenceRevisionIDs(ids...)
+}
+
 // AddHypothesisIDs adds the "hypotheses" edge to the InvestigationHypothesis entity by IDs.
 func (_u *InvestigationUpdate) AddHypothesisIDs(ids ...uuid.UUID) *InvestigationUpdate {
 	_u.mutation.AddHypothesisIDs(ids...)
@@ -100,23 +132,19 @@ func (_u *InvestigationUpdate) AddFindings(v ...*InvestigationFinding) *Investig
 	return _u.AddFindingIDs(ids...)
 }
 
-// SetReportID sets the "report" edge to the InvestigationReport entity by ID.
-func (_u *InvestigationUpdate) SetReportID(id uuid.UUID) *InvestigationUpdate {
-	_u.mutation.SetReportID(id)
+// AddReportIDs adds the "reports" edge to the InvestigationReport entity by IDs.
+func (_u *InvestigationUpdate) AddReportIDs(ids ...uuid.UUID) *InvestigationUpdate {
+	_u.mutation.AddReportIDs(ids...)
 	return _u
 }
 
-// SetNillableReportID sets the "report" edge to the InvestigationReport entity by ID if the given value is not nil.
-func (_u *InvestigationUpdate) SetNillableReportID(id *uuid.UUID) *InvestigationUpdate {
-	if id != nil {
-		_u = _u.SetReportID(*id)
+// AddReports adds the "reports" edges to the InvestigationReport entity.
+func (_u *InvestigationUpdate) AddReports(v ...*InvestigationReport) *InvestigationUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return _u
-}
-
-// SetReport sets the "report" edge to the InvestigationReport entity.
-func (_u *InvestigationUpdate) SetReport(v *InvestigationReport) *InvestigationUpdate {
-	return _u.SetReportID(v.ID)
+	return _u.AddReportIDs(ids...)
 }
 
 // Mutation returns the InvestigationMutation object of the builder.
@@ -143,6 +171,48 @@ func (_u *InvestigationUpdate) RemoveSituations(v ...*SituationInvestigation) *I
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveSituationIDs(ids...)
+}
+
+// ClearUserInputs clears all "user_inputs" edges to the InvestigationUserInput entity.
+func (_u *InvestigationUpdate) ClearUserInputs() *InvestigationUpdate {
+	_u.mutation.ClearUserInputs()
+	return _u
+}
+
+// RemoveUserInputIDs removes the "user_inputs" edge to InvestigationUserInput entities by IDs.
+func (_u *InvestigationUpdate) RemoveUserInputIDs(ids ...uuid.UUID) *InvestigationUpdate {
+	_u.mutation.RemoveUserInputIDs(ids...)
+	return _u
+}
+
+// RemoveUserInputs removes "user_inputs" edges to InvestigationUserInput entities.
+func (_u *InvestigationUpdate) RemoveUserInputs(v ...*InvestigationUserInput) *InvestigationUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveUserInputIDs(ids...)
+}
+
+// ClearEvidenceRevisions clears all "evidence_revisions" edges to the InvestigationEvidenceRevision entity.
+func (_u *InvestigationUpdate) ClearEvidenceRevisions() *InvestigationUpdate {
+	_u.mutation.ClearEvidenceRevisions()
+	return _u
+}
+
+// RemoveEvidenceRevisionIDs removes the "evidence_revisions" edge to InvestigationEvidenceRevision entities by IDs.
+func (_u *InvestigationUpdate) RemoveEvidenceRevisionIDs(ids ...uuid.UUID) *InvestigationUpdate {
+	_u.mutation.RemoveEvidenceRevisionIDs(ids...)
+	return _u
+}
+
+// RemoveEvidenceRevisions removes "evidence_revisions" edges to InvestigationEvidenceRevision entities.
+func (_u *InvestigationUpdate) RemoveEvidenceRevisions(v ...*InvestigationEvidenceRevision) *InvestigationUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveEvidenceRevisionIDs(ids...)
 }
 
 // ClearHypotheses clears all "hypotheses" edges to the InvestigationHypothesis entity.
@@ -187,10 +257,25 @@ func (_u *InvestigationUpdate) RemoveFindings(v ...*InvestigationFinding) *Inves
 	return _u.RemoveFindingIDs(ids...)
 }
 
-// ClearReport clears the "report" edge to the InvestigationReport entity.
-func (_u *InvestigationUpdate) ClearReport() *InvestigationUpdate {
-	_u.mutation.ClearReport()
+// ClearReports clears all "reports" edges to the InvestigationReport entity.
+func (_u *InvestigationUpdate) ClearReports() *InvestigationUpdate {
+	_u.mutation.ClearReports()
 	return _u
+}
+
+// RemoveReportIDs removes the "reports" edge to InvestigationReport entities by IDs.
+func (_u *InvestigationUpdate) RemoveReportIDs(ids ...uuid.UUID) *InvestigationUpdate {
+	_u.mutation.RemoveReportIDs(ids...)
+	return _u
+}
+
+// RemoveReports removes "reports" edges to InvestigationReport entities.
+func (_u *InvestigationUpdate) RemoveReports(v ...*InvestigationReport) *InvestigationUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveReportIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -240,11 +325,11 @@ func (_u *InvestigationUpdate) check() error {
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "Investigation.tenant"`)
 	}
-	if _u.mutation.SystemAnalysisCleared() && len(_u.mutation.SystemAnalysisIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "Investigation.system_analysis"`)
-	}
 	if _u.mutation.AgentSessionCleared() && len(_u.mutation.AgentSessionIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "Investigation.agent_session"`)
+	}
+	if _u.mutation.SystemAnalysisCleared() && len(_u.mutation.SystemAnalysisIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "Investigation.system_analysis"`)
 	}
 	return nil
 }
@@ -316,6 +401,102 @@ func (_u *InvestigationUpdate) sqlSave(ctx context.Context) (_node int, err erro
 			},
 		}
 		edge.Schema = _u.schemaConfig.SituationInvestigation
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.UserInputsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   investigation.UserInputsTable,
+			Columns: []string{investigation.UserInputsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(investigationuserinput.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.InvestigationUserInput
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedUserInputsIDs(); len(nodes) > 0 && !_u.mutation.UserInputsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   investigation.UserInputsTable,
+			Columns: []string{investigation.UserInputsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(investigationuserinput.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.InvestigationUserInput
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.UserInputsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   investigation.UserInputsTable,
+			Columns: []string{investigation.UserInputsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(investigationuserinput.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.InvestigationUserInput
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.EvidenceRevisionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   investigation.EvidenceRevisionsTable,
+			Columns: []string{investigation.EvidenceRevisionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(investigationevidencerevision.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.InvestigationEvidenceRevision
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedEvidenceRevisionsIDs(); len(nodes) > 0 && !_u.mutation.EvidenceRevisionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   investigation.EvidenceRevisionsTable,
+			Columns: []string{investigation.EvidenceRevisionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(investigationevidencerevision.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.InvestigationEvidenceRevision
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.EvidenceRevisionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   investigation.EvidenceRevisionsTable,
+			Columns: []string{investigation.EvidenceRevisionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(investigationevidencerevision.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.InvestigationEvidenceRevision
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -417,12 +598,12 @@ func (_u *InvestigationUpdate) sqlSave(ctx context.Context) (_node int, err erro
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if _u.mutation.ReportCleared() {
+	if _u.mutation.ReportsCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   investigation.ReportTable,
-			Columns: []string{investigation.ReportColumn},
+			Table:   investigation.ReportsTable,
+			Columns: []string{investigation.ReportsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(investigationreport.FieldID, field.TypeUUID),
@@ -431,12 +612,29 @@ func (_u *InvestigationUpdate) sqlSave(ctx context.Context) (_node int, err erro
 		edge.Schema = _u.schemaConfig.InvestigationReport
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.ReportIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.RemovedReportsIDs(); len(nodes) > 0 && !_u.mutation.ReportsCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   investigation.ReportTable,
-			Columns: []string{investigation.ReportColumn},
+			Table:   investigation.ReportsTable,
+			Columns: []string{investigation.ReportsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(investigationreport.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.InvestigationReport
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ReportsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   investigation.ReportsTable,
+			Columns: []string{investigation.ReportsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(investigationreport.FieldID, field.TypeUUID),
@@ -507,6 +705,36 @@ func (_u *InvestigationUpdateOne) AddSituations(v ...*SituationInvestigation) *I
 	return _u.AddSituationIDs(ids...)
 }
 
+// AddUserInputIDs adds the "user_inputs" edge to the InvestigationUserInput entity by IDs.
+func (_u *InvestigationUpdateOne) AddUserInputIDs(ids ...uuid.UUID) *InvestigationUpdateOne {
+	_u.mutation.AddUserInputIDs(ids...)
+	return _u
+}
+
+// AddUserInputs adds the "user_inputs" edges to the InvestigationUserInput entity.
+func (_u *InvestigationUpdateOne) AddUserInputs(v ...*InvestigationUserInput) *InvestigationUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddUserInputIDs(ids...)
+}
+
+// AddEvidenceRevisionIDs adds the "evidence_revisions" edge to the InvestigationEvidenceRevision entity by IDs.
+func (_u *InvestigationUpdateOne) AddEvidenceRevisionIDs(ids ...uuid.UUID) *InvestigationUpdateOne {
+	_u.mutation.AddEvidenceRevisionIDs(ids...)
+	return _u
+}
+
+// AddEvidenceRevisions adds the "evidence_revisions" edges to the InvestigationEvidenceRevision entity.
+func (_u *InvestigationUpdateOne) AddEvidenceRevisions(v ...*InvestigationEvidenceRevision) *InvestigationUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddEvidenceRevisionIDs(ids...)
+}
+
 // AddHypothesisIDs adds the "hypotheses" edge to the InvestigationHypothesis entity by IDs.
 func (_u *InvestigationUpdateOne) AddHypothesisIDs(ids ...uuid.UUID) *InvestigationUpdateOne {
 	_u.mutation.AddHypothesisIDs(ids...)
@@ -537,23 +765,19 @@ func (_u *InvestigationUpdateOne) AddFindings(v ...*InvestigationFinding) *Inves
 	return _u.AddFindingIDs(ids...)
 }
 
-// SetReportID sets the "report" edge to the InvestigationReport entity by ID.
-func (_u *InvestigationUpdateOne) SetReportID(id uuid.UUID) *InvestigationUpdateOne {
-	_u.mutation.SetReportID(id)
+// AddReportIDs adds the "reports" edge to the InvestigationReport entity by IDs.
+func (_u *InvestigationUpdateOne) AddReportIDs(ids ...uuid.UUID) *InvestigationUpdateOne {
+	_u.mutation.AddReportIDs(ids...)
 	return _u
 }
 
-// SetNillableReportID sets the "report" edge to the InvestigationReport entity by ID if the given value is not nil.
-func (_u *InvestigationUpdateOne) SetNillableReportID(id *uuid.UUID) *InvestigationUpdateOne {
-	if id != nil {
-		_u = _u.SetReportID(*id)
+// AddReports adds the "reports" edges to the InvestigationReport entity.
+func (_u *InvestigationUpdateOne) AddReports(v ...*InvestigationReport) *InvestigationUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return _u
-}
-
-// SetReport sets the "report" edge to the InvestigationReport entity.
-func (_u *InvestigationUpdateOne) SetReport(v *InvestigationReport) *InvestigationUpdateOne {
-	return _u.SetReportID(v.ID)
+	return _u.AddReportIDs(ids...)
 }
 
 // Mutation returns the InvestigationMutation object of the builder.
@@ -580,6 +804,48 @@ func (_u *InvestigationUpdateOne) RemoveSituations(v ...*SituationInvestigation)
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveSituationIDs(ids...)
+}
+
+// ClearUserInputs clears all "user_inputs" edges to the InvestigationUserInput entity.
+func (_u *InvestigationUpdateOne) ClearUserInputs() *InvestigationUpdateOne {
+	_u.mutation.ClearUserInputs()
+	return _u
+}
+
+// RemoveUserInputIDs removes the "user_inputs" edge to InvestigationUserInput entities by IDs.
+func (_u *InvestigationUpdateOne) RemoveUserInputIDs(ids ...uuid.UUID) *InvestigationUpdateOne {
+	_u.mutation.RemoveUserInputIDs(ids...)
+	return _u
+}
+
+// RemoveUserInputs removes "user_inputs" edges to InvestigationUserInput entities.
+func (_u *InvestigationUpdateOne) RemoveUserInputs(v ...*InvestigationUserInput) *InvestigationUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveUserInputIDs(ids...)
+}
+
+// ClearEvidenceRevisions clears all "evidence_revisions" edges to the InvestigationEvidenceRevision entity.
+func (_u *InvestigationUpdateOne) ClearEvidenceRevisions() *InvestigationUpdateOne {
+	_u.mutation.ClearEvidenceRevisions()
+	return _u
+}
+
+// RemoveEvidenceRevisionIDs removes the "evidence_revisions" edge to InvestigationEvidenceRevision entities by IDs.
+func (_u *InvestigationUpdateOne) RemoveEvidenceRevisionIDs(ids ...uuid.UUID) *InvestigationUpdateOne {
+	_u.mutation.RemoveEvidenceRevisionIDs(ids...)
+	return _u
+}
+
+// RemoveEvidenceRevisions removes "evidence_revisions" edges to InvestigationEvidenceRevision entities.
+func (_u *InvestigationUpdateOne) RemoveEvidenceRevisions(v ...*InvestigationEvidenceRevision) *InvestigationUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveEvidenceRevisionIDs(ids...)
 }
 
 // ClearHypotheses clears all "hypotheses" edges to the InvestigationHypothesis entity.
@@ -624,10 +890,25 @@ func (_u *InvestigationUpdateOne) RemoveFindings(v ...*InvestigationFinding) *In
 	return _u.RemoveFindingIDs(ids...)
 }
 
-// ClearReport clears the "report" edge to the InvestigationReport entity.
-func (_u *InvestigationUpdateOne) ClearReport() *InvestigationUpdateOne {
-	_u.mutation.ClearReport()
+// ClearReports clears all "reports" edges to the InvestigationReport entity.
+func (_u *InvestigationUpdateOne) ClearReports() *InvestigationUpdateOne {
+	_u.mutation.ClearReports()
 	return _u
+}
+
+// RemoveReportIDs removes the "reports" edge to InvestigationReport entities by IDs.
+func (_u *InvestigationUpdateOne) RemoveReportIDs(ids ...uuid.UUID) *InvestigationUpdateOne {
+	_u.mutation.RemoveReportIDs(ids...)
+	return _u
+}
+
+// RemoveReports removes "reports" edges to InvestigationReport entities.
+func (_u *InvestigationUpdateOne) RemoveReports(v ...*InvestigationReport) *InvestigationUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveReportIDs(ids...)
 }
 
 // Where appends a list predicates to the InvestigationUpdate builder.
@@ -690,11 +971,11 @@ func (_u *InvestigationUpdateOne) check() error {
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "Investigation.tenant"`)
 	}
-	if _u.mutation.SystemAnalysisCleared() && len(_u.mutation.SystemAnalysisIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "Investigation.system_analysis"`)
-	}
 	if _u.mutation.AgentSessionCleared() && len(_u.mutation.AgentSessionIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "Investigation.agent_session"`)
+	}
+	if _u.mutation.SystemAnalysisCleared() && len(_u.mutation.SystemAnalysisIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "Investigation.system_analysis"`)
 	}
 	return nil
 }
@@ -788,6 +1069,102 @@ func (_u *InvestigationUpdateOne) sqlSave(ctx context.Context) (_node *Investiga
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.UserInputsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   investigation.UserInputsTable,
+			Columns: []string{investigation.UserInputsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(investigationuserinput.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.InvestigationUserInput
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedUserInputsIDs(); len(nodes) > 0 && !_u.mutation.UserInputsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   investigation.UserInputsTable,
+			Columns: []string{investigation.UserInputsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(investigationuserinput.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.InvestigationUserInput
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.UserInputsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   investigation.UserInputsTable,
+			Columns: []string{investigation.UserInputsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(investigationuserinput.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.InvestigationUserInput
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.EvidenceRevisionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   investigation.EvidenceRevisionsTable,
+			Columns: []string{investigation.EvidenceRevisionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(investigationevidencerevision.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.InvestigationEvidenceRevision
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedEvidenceRevisionsIDs(); len(nodes) > 0 && !_u.mutation.EvidenceRevisionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   investigation.EvidenceRevisionsTable,
+			Columns: []string{investigation.EvidenceRevisionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(investigationevidencerevision.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.InvestigationEvidenceRevision
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.EvidenceRevisionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   investigation.EvidenceRevisionsTable,
+			Columns: []string{investigation.EvidenceRevisionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(investigationevidencerevision.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.InvestigationEvidenceRevision
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _u.mutation.HypothesesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -884,12 +1261,12 @@ func (_u *InvestigationUpdateOne) sqlSave(ctx context.Context) (_node *Investiga
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if _u.mutation.ReportCleared() {
+	if _u.mutation.ReportsCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   investigation.ReportTable,
-			Columns: []string{investigation.ReportColumn},
+			Table:   investigation.ReportsTable,
+			Columns: []string{investigation.ReportsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(investigationreport.FieldID, field.TypeUUID),
@@ -898,12 +1275,29 @@ func (_u *InvestigationUpdateOne) sqlSave(ctx context.Context) (_node *Investiga
 		edge.Schema = _u.schemaConfig.InvestigationReport
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.ReportIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.RemovedReportsIDs(); len(nodes) > 0 && !_u.mutation.ReportsCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   investigation.ReportTable,
-			Columns: []string{investigation.ReportColumn},
+			Table:   investigation.ReportsTable,
+			Columns: []string{investigation.ReportsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(investigationreport.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.InvestigationReport
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ReportsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   investigation.ReportsTable,
+			Columns: []string{investigation.ReportsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(investigationreport.FieldID, field.TypeUUID),

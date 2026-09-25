@@ -2,12 +2,15 @@ package eventprojection
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"testing"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/internal/db"
+	"github.com/riverqueue/river/rivertype"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 
 	rez "github.com/rezible/rezible"
@@ -39,11 +42,32 @@ func (s *ProjectionServiceSuite) projectionService(tdb rez.Database) *Projection
 
 	knowledge, _ := db.NewKnowledgeGraphIngestionService(tdb)
 	knowledgeQuery, _ := db.NewKnowledgeGraphQueryService(tdb)
+	analysisService, _ := db.NewSystemAnalysisService(tdb, knowledgeQuery)
 
 	jobService := mocks.NewMockJobService(s.T())
 	agentService := mocks.NewMockAiAgentSessionService(s.T())
-	investigationService := db.NewInvestigationService(tdb, agentService)
-	situations, err := db.NewSituationService(tdb, jobService, knowledge, investigationService)
+	agentService.EXPECT().CreateAgentSession(mock.Anything, mock.Anything).
+		RunAndReturn(func(ctx context.Context, params rez.CreateAiAgentSessionParams) (*ent.AgentSession, error) {
+			input, marshalErr := json.Marshal(params.Input)
+			if marshalErr != nil {
+				return nil, marshalErr
+			}
+			metadata := params.Metadata
+			if metadata == nil {
+				metadata = map[string]any{}
+			}
+			return tdb.Client(ctx).AgentSession.Create().
+				SetAgentName(params.AgentName).
+				SetInput(input).
+				SetScopes(params.PermissionScopes).
+				SetMetadata(metadata).
+				Save(ctx)
+		}).Maybe()
+	jobService.EXPECT().Insert(mock.Anything, mock.Anything, mock.Anything).
+		Return(&rivertype.JobInsertResult{Job: &rivertype.JobRow{ID: 1}}, nil).
+		Maybe()
+	investigationService := db.NewInvestigationService(tdb, agentService, jobService)
+	situations, err := db.NewSituationService(tdb, investigationService, analysisService, knowledgeQuery)
 	s.Require().NoError(err)
 	alerts, err := db.NewAlertService(tdb, situations, knowledge)
 	s.Require().NoError(err)

@@ -50,7 +50,6 @@ func (NormalizedEvent) Edges() []ent.Edge {
 		edge.To("projection", NormalizedEventProjection.Type).Unique(),
 
 		edge.From("situation_observation_groups", SituationObservationGroup.Type).Ref("events"),
-		edge.From("analysis_entry_subjects", SystemAnalysisEntrySubject.Type).Ref("normalized_event"),
 	}
 }
 

@@ -15,6 +15,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/investigation"
 	"github.com/rezible/rezible/ent/investigationfinding"
+	"github.com/rezible/rezible/ent/investigationfindingversion"
+	"github.com/rezible/rezible/ent/investigationuserinput"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
@@ -66,22 +68,22 @@ func (_c *InvestigationFindingCreate) SetInvestigationID(v uuid.UUID) *Investiga
 	return _c
 }
 
-// SetTitle sets the "title" field.
-func (_c *InvestigationFindingCreate) SetTitle(v string) *InvestigationFindingCreate {
-	_c.mutation.SetTitle(v)
+// SetKey sets the "key" field.
+func (_c *InvestigationFindingCreate) SetKey(v string) *InvestigationFindingCreate {
+	_c.mutation.SetKey(v)
 	return _c
 }
 
-// SetBody sets the "body" field.
-func (_c *InvestigationFindingCreate) SetBody(v string) *InvestigationFindingCreate {
-	_c.mutation.SetBody(v)
+// SetUserInputID sets the "user_input_id" field.
+func (_c *InvestigationFindingCreate) SetUserInputID(v uuid.UUID) *InvestigationFindingCreate {
+	_c.mutation.SetUserInputID(v)
 	return _c
 }
 
-// SetNillableBody sets the "body" field if the given value is not nil.
-func (_c *InvestigationFindingCreate) SetNillableBody(v *string) *InvestigationFindingCreate {
+// SetNillableUserInputID sets the "user_input_id" field if the given value is not nil.
+func (_c *InvestigationFindingCreate) SetNillableUserInputID(v *uuid.UUID) *InvestigationFindingCreate {
 	if v != nil {
-		_c.SetBody(*v)
+		_c.SetUserInputID(*v)
 	}
 	return _c
 }
@@ -108,6 +110,26 @@ func (_c *InvestigationFindingCreate) SetTenant(v *Tenant) *InvestigationFinding
 // SetInvestigation sets the "investigation" edge to the Investigation entity.
 func (_c *InvestigationFindingCreate) SetInvestigation(v *Investigation) *InvestigationFindingCreate {
 	return _c.SetInvestigationID(v.ID)
+}
+
+// SetUserInput sets the "user_input" edge to the InvestigationUserInput entity.
+func (_c *InvestigationFindingCreate) SetUserInput(v *InvestigationUserInput) *InvestigationFindingCreate {
+	return _c.SetUserInputID(v.ID)
+}
+
+// AddVersionIDs adds the "versions" edge to the InvestigationFindingVersion entity by IDs.
+func (_c *InvestigationFindingCreate) AddVersionIDs(ids ...uuid.UUID) *InvestigationFindingCreate {
+	_c.mutation.AddVersionIDs(ids...)
+	return _c
+}
+
+// AddVersions adds the "versions" edges to the InvestigationFindingVersion entity.
+func (_c *InvestigationFindingCreate) AddVersions(v ...*InvestigationFindingVersion) *InvestigationFindingCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddVersionIDs(ids...)
 }
 
 // Mutation returns the InvestigationFindingMutation object of the builder.
@@ -185,12 +207,12 @@ func (_c *InvestigationFindingCreate) check() error {
 	if _, ok := _c.mutation.InvestigationID(); !ok {
 		return &ValidationError{Name: "investigation_id", err: errors.New(`ent: missing required field "InvestigationFinding.investigation_id"`)}
 	}
-	if _, ok := _c.mutation.Title(); !ok {
-		return &ValidationError{Name: "title", err: errors.New(`ent: missing required field "InvestigationFinding.title"`)}
+	if _, ok := _c.mutation.Key(); !ok {
+		return &ValidationError{Name: "key", err: errors.New(`ent: missing required field "InvestigationFinding.key"`)}
 	}
-	if v, ok := _c.mutation.Title(); ok {
-		if err := investigationfinding.TitleValidator(v); err != nil {
-			return &ValidationError{Name: "title", err: fmt.Errorf(`ent: validator failed for field "InvestigationFinding.title": %w`, err)}
+	if v, ok := _c.mutation.Key(); ok {
+		if err := investigationfinding.KeyValidator(v); err != nil {
+			return &ValidationError{Name: "key", err: fmt.Errorf(`ent: validator failed for field "InvestigationFinding.key": %w`, err)}
 		}
 	}
 	if len(_c.mutation.TenantIDs()) == 0 {
@@ -244,13 +266,9 @@ func (_c *InvestigationFindingCreate) createSpec() (*InvestigationFinding, *sqlg
 		_spec.SetField(investigationfinding.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
 	}
-	if value, ok := _c.mutation.Title(); ok {
-		_spec.SetField(investigationfinding.FieldTitle, field.TypeString, value)
-		_node.Title = value
-	}
-	if value, ok := _c.mutation.Body(); ok {
-		_spec.SetField(investigationfinding.FieldBody, field.TypeString, value)
-		_node.Body = value
+	if value, ok := _c.mutation.Key(); ok {
+		_spec.SetField(investigationfinding.FieldKey, field.TypeString, value)
+		_node.Key = value
 	}
 	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -286,6 +304,41 @@ func (_c *InvestigationFindingCreate) createSpec() (*InvestigationFinding, *sqlg
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.InvestigationID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.UserInputIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   investigationfinding.UserInputTable,
+			Columns: []string{investigationfinding.UserInputColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(investigationuserinput.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.InvestigationFinding
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.UserInputID = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.VersionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   investigationfinding.VersionsTable,
+			Columns: []string{investigationfinding.VersionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(investigationfindingversion.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.InvestigationFindingVersion
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
@@ -364,36 +417,6 @@ func (u *InvestigationFindingUpsert) UpdateUpdatedAt() *InvestigationFindingUpse
 	return u
 }
 
-// SetTitle sets the "title" field.
-func (u *InvestigationFindingUpsert) SetTitle(v string) *InvestigationFindingUpsert {
-	u.Set(investigationfinding.FieldTitle, v)
-	return u
-}
-
-// UpdateTitle sets the "title" field to the value that was provided on create.
-func (u *InvestigationFindingUpsert) UpdateTitle() *InvestigationFindingUpsert {
-	u.SetExcluded(investigationfinding.FieldTitle)
-	return u
-}
-
-// SetBody sets the "body" field.
-func (u *InvestigationFindingUpsert) SetBody(v string) *InvestigationFindingUpsert {
-	u.Set(investigationfinding.FieldBody, v)
-	return u
-}
-
-// UpdateBody sets the "body" field to the value that was provided on create.
-func (u *InvestigationFindingUpsert) UpdateBody() *InvestigationFindingUpsert {
-	u.SetExcluded(investigationfinding.FieldBody)
-	return u
-}
-
-// ClearBody clears the value of the "body" field.
-func (u *InvestigationFindingUpsert) ClearBody() *InvestigationFindingUpsert {
-	u.SetNull(investigationfinding.FieldBody)
-	return u
-}
-
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
@@ -416,6 +439,12 @@ func (u *InvestigationFindingUpsertOne) UpdateNewValues() *InvestigationFindingU
 		}
 		if _, exists := u.create.mutation.InvestigationID(); exists {
 			s.SetIgnore(investigationfinding.FieldInvestigationID)
+		}
+		if _, exists := u.create.mutation.Key(); exists {
+			s.SetIgnore(investigationfinding.FieldKey)
+		}
+		if _, exists := u.create.mutation.UserInputID(); exists {
+			s.SetIgnore(investigationfinding.FieldUserInputID)
 		}
 	}))
 	return u
@@ -473,41 +502,6 @@ func (u *InvestigationFindingUpsertOne) SetUpdatedAt(v time.Time) *Investigation
 func (u *InvestigationFindingUpsertOne) UpdateUpdatedAt() *InvestigationFindingUpsertOne {
 	return u.Update(func(s *InvestigationFindingUpsert) {
 		s.UpdateUpdatedAt()
-	})
-}
-
-// SetTitle sets the "title" field.
-func (u *InvestigationFindingUpsertOne) SetTitle(v string) *InvestigationFindingUpsertOne {
-	return u.Update(func(s *InvestigationFindingUpsert) {
-		s.SetTitle(v)
-	})
-}
-
-// UpdateTitle sets the "title" field to the value that was provided on create.
-func (u *InvestigationFindingUpsertOne) UpdateTitle() *InvestigationFindingUpsertOne {
-	return u.Update(func(s *InvestigationFindingUpsert) {
-		s.UpdateTitle()
-	})
-}
-
-// SetBody sets the "body" field.
-func (u *InvestigationFindingUpsertOne) SetBody(v string) *InvestigationFindingUpsertOne {
-	return u.Update(func(s *InvestigationFindingUpsert) {
-		s.SetBody(v)
-	})
-}
-
-// UpdateBody sets the "body" field to the value that was provided on create.
-func (u *InvestigationFindingUpsertOne) UpdateBody() *InvestigationFindingUpsertOne {
-	return u.Update(func(s *InvestigationFindingUpsert) {
-		s.UpdateBody()
-	})
-}
-
-// ClearBody clears the value of the "body" field.
-func (u *InvestigationFindingUpsertOne) ClearBody() *InvestigationFindingUpsertOne {
-	return u.Update(func(s *InvestigationFindingUpsert) {
-		s.ClearBody()
 	})
 }
 
@@ -700,6 +694,12 @@ func (u *InvestigationFindingUpsertBulk) UpdateNewValues() *InvestigationFinding
 			if _, exists := b.mutation.InvestigationID(); exists {
 				s.SetIgnore(investigationfinding.FieldInvestigationID)
 			}
+			if _, exists := b.mutation.Key(); exists {
+				s.SetIgnore(investigationfinding.FieldKey)
+			}
+			if _, exists := b.mutation.UserInputID(); exists {
+				s.SetIgnore(investigationfinding.FieldUserInputID)
+			}
 		}
 	}))
 	return u
@@ -757,41 +757,6 @@ func (u *InvestigationFindingUpsertBulk) SetUpdatedAt(v time.Time) *Investigatio
 func (u *InvestigationFindingUpsertBulk) UpdateUpdatedAt() *InvestigationFindingUpsertBulk {
 	return u.Update(func(s *InvestigationFindingUpsert) {
 		s.UpdateUpdatedAt()
-	})
-}
-
-// SetTitle sets the "title" field.
-func (u *InvestigationFindingUpsertBulk) SetTitle(v string) *InvestigationFindingUpsertBulk {
-	return u.Update(func(s *InvestigationFindingUpsert) {
-		s.SetTitle(v)
-	})
-}
-
-// UpdateTitle sets the "title" field to the value that was provided on create.
-func (u *InvestigationFindingUpsertBulk) UpdateTitle() *InvestigationFindingUpsertBulk {
-	return u.Update(func(s *InvestigationFindingUpsert) {
-		s.UpdateTitle()
-	})
-}
-
-// SetBody sets the "body" field.
-func (u *InvestigationFindingUpsertBulk) SetBody(v string) *InvestigationFindingUpsertBulk {
-	return u.Update(func(s *InvestigationFindingUpsert) {
-		s.SetBody(v)
-	})
-}
-
-// UpdateBody sets the "body" field to the value that was provided on create.
-func (u *InvestigationFindingUpsertBulk) UpdateBody() *InvestigationFindingUpsertBulk {
-	return u.Update(func(s *InvestigationFindingUpsert) {
-		s.UpdateBody()
-	})
-}
-
-// ClearBody clears the value of the "body" field.
-func (u *InvestigationFindingUpsertBulk) ClearBody() *InvestigationFindingUpsertBulk {
-	return u.Update(func(s *InvestigationFindingUpsert) {
-		s.ClearBody()
 	})
 }
 

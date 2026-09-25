@@ -48,20 +48,6 @@ func (h *situationsHandler) GetSituation(ctx context.Context, request *oapi.GetS
 	return &response, nil
 }
 
-func (h *situationsHandler) StartSituationInvestigation(ctx context.Context, request *oapi.StartSituationInvestigationRequest) (*oapi.StartSituationInvestigationResponse, error) {
-	var response oapi.StartSituationInvestigationResponse
-	params := rez.CreateSituationInvestigationParams{
-		SituationID: request.Id,
-		Query:       request.Body.Attributes.Query,
-	}
-	sitEnv, createErr := h.situations.CreateSituationInvestigation(ctx, params)
-	if createErr != nil {
-		return nil, oapi.Error(ctx, "start situation investigation", createErr)
-	}
-	response.Body.Data = oapi.SituationInvestigationFromEnt(sitEnv)
-	return &response, nil
-}
-
 func (h *situationsHandler) ListSituationHazardAssessments(ctx context.Context, request *oapi.ListSituationHazardAssessmentsRequest) (*oapi.ListSituationHazardAssessmentsResponse, error) {
 	var response oapi.ListSituationHazardAssessmentsResponse
 	result, listErr := h.situations.ListSituationHazardAssessments(ctx, rez.ListSituationHazardAssessmentsParams{

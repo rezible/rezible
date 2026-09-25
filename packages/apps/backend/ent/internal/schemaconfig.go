@@ -52,9 +52,15 @@ type SchemaConfig struct {
 	IntegrationEventSyncRun                   string // IntegrationEventSyncRun table.
 	IntegrationUserInstallState               string // IntegrationUserInstallState table.
 	Investigation                             string // Investigation table.
+	InvestigationEvidenceRevision             string // InvestigationEvidenceRevision table.
 	InvestigationFinding                      string // InvestigationFinding table.
+	InvestigationFindingVersion               string // InvestigationFindingVersion table.
+	InvestigationFindingVersionLink           string // InvestigationFindingVersionLink table.
 	InvestigationHypothesis                   string // InvestigationHypothesis table.
+	InvestigationHypothesisVersion            string // InvestigationHypothesisVersion table.
+	InvestigationOutputReference              string // InvestigationOutputReference table.
 	InvestigationReport                       string // InvestigationReport table.
+	InvestigationUserInput                    string // InvestigationUserInput table.
 	KnowledgeEntity                           string // KnowledgeEntity table.
 	KnowledgeEntityLinkingAttribute           string // KnowledgeEntityLinkingAttribute table.
 	KnowledgeEvidence                         string // KnowledgeEvidence table.

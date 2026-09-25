@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
+	mapset "github.com/deckarep/golang-set/v2"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/pkg/projections"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
@@ -18,6 +18,7 @@ import (
 	sog "github.com/rezible/rezible/ent/situationobservationgroup"
 	"github.com/rezible/rezible/pkg/execution"
 	"github.com/rezible/rezible/pkg/jobs"
+	"github.com/rezible/rezible/pkg/projections"
 )
 
 type AlertService struct {
@@ -62,8 +63,12 @@ func (s *AlertService) GetAlertMetrics(ctx context.Context, params rez.GetAlertM
 
 const alertEpisodeInactivity = 30 * time.Minute
 const alertDefinitionLockNamespace = "alert_definition"
+const alertEpisodeLockNamespace = "alert_episode"
 
 func (s *AlertService) RecordAlertDefinitionInstance(ctx context.Context, definitionID uuid.UUID, event *ent.NormalizedEvent) (*ent.AlertInstance, error) {
+	if definitionID == uuid.Nil || event == nil || event.ID == uuid.Nil {
+		return nil, fmt.Errorf("%w: alert definition and normalized event are required", rez.ErrInvalidInput)
+	}
 	var result *ent.AlertInstance
 	return result, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
 		if locksErr := s.db.AcquireTxLocks(ctx, alertDefinitionLockNamespace, definitionID.String()); locksErr != nil {
@@ -92,7 +97,9 @@ func (s *AlertService) RecordAlertDefinitionInstance(ctx context.Context, defini
 		if saveErr != nil {
 			return fmt.Errorf("save alert instance: %w", saveErr)
 		}
-
+		if refreshErr := s.refreshEpisodeLinkedSituations(ctx, episode.ID); refreshErr != nil {
+			return fmt.Errorf("refresh situation analysis after alert instance: %w", refreshErr)
+		}
 		result = instance.Unwrap()
 		return nil
 	})
@@ -123,10 +130,10 @@ func (s *AlertService) resolveAlertEpisode(ctx context.Context, definitionID uui
 		if episode != nil {
 			expiryTime := episode.LastObservedAt.Add(alertEpisodeInactivity)
 			if occurredAt.After(expiryTime) {
-				episode = nil
 				if closeErr := s.closeInactiveEpisode(ctx, episode.ID, expiryTime); closeErr != nil {
 					return fmt.Errorf("failed to close inactive episode: %w", closeErr)
 				}
+				episode = nil
 			}
 		}
 
@@ -148,10 +155,6 @@ func (s *AlertService) resolveAlertEpisode(ctx context.Context, definitionID uui
 			updated, updateEpisodeErr := update.Save(ctx)
 			if updateEpisodeErr != nil {
 				return fmt.Errorf("update episode: %w", updateEpisodeErr)
-			}
-
-			if sitsErr := s.notifyEpisodeLinkedSituations(ctx, episode.ID); sitsErr != nil {
-				return fmt.Errorf("notify existing episode linked situations: %w", sitsErr)
 			}
 
 			result = updated.Unwrap()
@@ -184,15 +187,34 @@ func (s *AlertService) closeInactiveEpisode(ctx context.Context, id uuid.UUID, i
 			return fmt.Errorf("update existing episode: %w", updateEpisodeErr)
 		}
 
-		if evidenceErr := s.notifyEpisodeLinkedSituations(ctx, id); evidenceErr != nil {
-			return fmt.Errorf("notify linked situations: %w", evidenceErr)
+		if refreshErr := s.refreshEpisodeLinkedSituations(ctx, id); refreshErr != nil {
+			return fmt.Errorf("refresh linked situation analysis: %w", refreshErr)
 		}
 
 		return nil
 	})
 }
 
-func (s *AlertService) notifyEpisodeLinkedSituations(ctx context.Context, epId uuid.UUID) error {
+func (s *AlertService) CloseInactiveAlertEpisodes(ctx context.Context) error {
+	now := time.Now().UTC()
+	query := s.db.Client(ctx).AlertEpisode.Query().
+		Where(ale.StatusEQ(ale.StatusOpen), ale.LastObservedAtLT(now.Add(-alertEpisodeInactivity)))
+	openEpisodes, queryOpenErr := query.All(ctx)
+	if queryOpenErr != nil {
+		return fmt.Errorf("querying open alert episodes: %w", queryOpenErr)
+	}
+
+	for _, candidate := range openEpisodes {
+		tenantCtx := execution.NewTenantContext(ctx, candidate.TenantID)
+		if closeErr := s.closeInactiveEpisode(tenantCtx, candidate.ID, now); closeErr != nil {
+			return fmt.Errorf("close inactive episode %s: %w", candidate.ID, closeErr)
+		}
+	}
+
+	return nil
+}
+
+func (s *AlertService) refreshEpisodeLinkedSituations(ctx context.Context, epId uuid.UUID) error {
 	queryEpSituationLinks := s.db.Client(ctx).SituationObservationGroup.Query().
 		Where(sog.HasAlertEpisodesWith(ale.ID(epId))).
 		WithSituation()
@@ -200,9 +222,14 @@ func (s *AlertService) notifyEpisodeLinkedSituations(ctx context.Context, epId u
 	if querySitLinksErr != nil {
 		return fmt.Errorf("query episode situation links: %w", querySitLinksErr)
 	}
+	seenSituations := mapset.NewSet[uuid.UUID]()
 	for _, link := range sitLinks {
-		if evErr := s.situations.NotifySituationObservationGroupUpdated(ctx, link.Edges.Situation.ID); evErr != nil {
-			return fmt.Errorf("notify: %w", evErr)
+		situationID := link.Edges.Situation.ID
+		if !seenSituations.Add(situationID) {
+			continue
+		}
+		if refreshErr := s.situations.RefreshSituationEpisodeAnalysis(ctx, situationID, epId); refreshErr != nil {
+			return fmt.Errorf("refresh episode analysis: %w", refreshErr)
 		}
 	}
 	return nil
@@ -267,59 +294,16 @@ func (s *AlertService) resolveAlertEpisodeKnowledgeEntityId(ctx context.Context,
 	return *alias.EntityID, nil
 }
 
-func NewCloseInactiveAlertEpisodesWorker(db rez.Database, situations rez.SituationService) (*CloseInactiveAlertEpisodesWorker, error) {
-	return &CloseInactiveAlertEpisodesWorker{db: db, situations: situations}, nil
+func NewCloseInactiveAlertEpisodesWorker(alerts rez.AlertService) (*CloseInactiveAlertEpisodesWorker, error) {
+	return &CloseInactiveAlertEpisodesWorker{alerts: alerts}, nil
 }
 
 type CloseInactiveAlertEpisodesWorker struct {
 	jobs.WorkerDefaults[jobs.CloseInactiveAlertEpisodes]
-	db         rez.Database
-	situations rez.SituationService
+	alerts rez.AlertService
 }
 
 func (w *CloseInactiveAlertEpisodesWorker) Work(ctx context.Context, job *jobs.Job[jobs.CloseInactiveAlertEpisodes]) error {
 	systemCtx := execution.NewSystemContext(ctx)
-	now := time.Now().UTC()
-	query := w.db.Client(systemCtx).AlertEpisode.Query().
-		Where(ale.StatusEQ(ale.StatusOpen), ale.LastObservedAtLT(now.Add(-alertEpisodeInactivity)))
-	openEpisodes, queryOpenErr := query.All(systemCtx)
-	if queryOpenErr != nil {
-		return fmt.Errorf("querying open alert episodes: %w", queryOpenErr)
-	}
-
-	for _, candidate := range openEpisodes {
-		tenantCtx := execution.NewTenantContext(ctx, candidate.TenantID)
-		if closeErr := w.maybeCloseOpenEpisode(tenantCtx, now, candidate.ID); closeErr != nil {
-			return fmt.Errorf("close inactive episode %s: %w", candidate.ID, closeErr)
-		}
-	}
-
-	return nil
-}
-
-func (w *CloseInactiveAlertEpisodesWorker) maybeCloseOpenEpisode(ctx context.Context, now time.Time, id uuid.UUID) error {
-	return w.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
-		if epLock := w.db.AcquireTxLocks(ctx, alertEpisodeLockNamespace, id.String()); epLock != nil {
-			return fmt.Errorf("alert episode lock: %w", epLock)
-		}
-		queryCandidate := tx.AlertEpisode.Query().
-			Where(ale.ID(id), ale.StatusEQ(ale.StatusOpen), ale.LastObservedAtGT(now.Add(-alertEpisodeInactivity)))
-		shouldClose, queryCandidateErr := queryCandidate.Exist(ctx)
-		if queryCandidateErr != nil {
-			return fmt.Errorf("lookup alert episode: %w", queryCandidateErr)
-		}
-		if !shouldClose {
-			return nil
-		}
-		update := tx.AlertEpisode.UpdateOneID(id).
-			SetStatus(ale.StatusClosed).
-			SetClosedAt(now)
-		if updateErr := update.Exec(ctx); updateErr != nil {
-			return fmt.Errorf("failed to update episode %s: %w", id, updateErr)
-		}
-
-		// TODO: notify situations service that observation group has changed
-
-		return nil
-	})
+	return w.alerts.CloseInactiveAlertEpisodes(systemCtx)
 }

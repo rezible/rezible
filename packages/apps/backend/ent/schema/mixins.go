@@ -93,6 +93,26 @@ func (TimestampsMixin) Fields() []ent.Field {
 	}
 }
 
+type CreatedAtMixin struct {
+	mixin.Schema
+}
+
+func (CreatedAtMixin) Fields() []ent.Field {
+	return []ent.Field{
+		field.Time("created_at").Default(time.Now).Immutable(),
+	}
+}
+
+type FingerprintMixin struct {
+	mixin.Schema
+}
+
+func (FingerprintMixin) Fields() []ent.Field {
+	return []ent.Field{
+		field.String("fingerprint").MinLen(64).MaxLen(64).Immutable(),
+	}
+}
+
 type ProviderResourceReferenceMixin struct {
 	mixin.Schema
 }

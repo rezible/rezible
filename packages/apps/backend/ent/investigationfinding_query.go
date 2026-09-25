@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"database/sql/driver"
 	"errors"
 	"fmt"
 	"math"
@@ -16,6 +17,8 @@ import (
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/investigation"
 	"github.com/rezible/rezible/ent/investigationfinding"
+	"github.com/rezible/rezible/ent/investigationfindingversion"
+	"github.com/rezible/rezible/ent/investigationuserinput"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/tenant"
 )
@@ -29,6 +32,8 @@ type InvestigationFindingQuery struct {
 	predicates        []predicate.InvestigationFinding
 	withTenant        *TenantQuery
 	withInvestigation *InvestigationQuery
+	withUserInput     *InvestigationUserInputQuery
+	withVersions      *InvestigationFindingVersionQuery
 	modifiers         []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -110,6 +115,56 @@ func (_q *InvestigationFindingQuery) QueryInvestigation() *InvestigationQuery {
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.Investigation
 		step.Edge.Schema = schemaConfig.InvestigationFinding
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryUserInput chains the current query on the "user_input" edge.
+func (_q *InvestigationFindingQuery) QueryUserInput() *InvestigationUserInputQuery {
+	query := (&InvestigationUserInputClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(investigationfinding.Table, investigationfinding.FieldID, selector),
+			sqlgraph.To(investigationuserinput.Table, investigationuserinput.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, investigationfinding.UserInputTable, investigationfinding.UserInputColumn),
+		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.InvestigationUserInput
+		step.Edge.Schema = schemaConfig.InvestigationFinding
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryVersions chains the current query on the "versions" edge.
+func (_q *InvestigationFindingQuery) QueryVersions() *InvestigationFindingVersionQuery {
+	query := (&InvestigationFindingVersionClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(investigationfinding.Table, investigationfinding.FieldID, selector),
+			sqlgraph.To(investigationfindingversion.Table, investigationfindingversion.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, investigationfinding.VersionsTable, investigationfinding.VersionsColumn),
+		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.InvestigationFindingVersion
+		step.Edge.Schema = schemaConfig.InvestigationFindingVersion
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -310,6 +365,8 @@ func (_q *InvestigationFindingQuery) Clone() *InvestigationFindingQuery {
 		predicates:        append([]predicate.InvestigationFinding{}, _q.predicates...),
 		withTenant:        _q.withTenant.Clone(),
 		withInvestigation: _q.withInvestigation.Clone(),
+		withUserInput:     _q.withUserInput.Clone(),
+		withVersions:      _q.withVersions.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
 		path:      _q.path,
@@ -336,6 +393,28 @@ func (_q *InvestigationFindingQuery) WithInvestigation(opts ...func(*Investigati
 		opt(query)
 	}
 	_q.withInvestigation = query
+	return _q
+}
+
+// WithUserInput tells the query-builder to eager-load the nodes that are connected to
+// the "user_input" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *InvestigationFindingQuery) WithUserInput(opts ...func(*InvestigationUserInputQuery)) *InvestigationFindingQuery {
+	query := (&InvestigationUserInputClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withUserInput = query
+	return _q
+}
+
+// WithVersions tells the query-builder to eager-load the nodes that are connected to
+// the "versions" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *InvestigationFindingQuery) WithVersions(opts ...func(*InvestigationFindingVersionQuery)) *InvestigationFindingQuery {
+	query := (&InvestigationFindingVersionClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withVersions = query
 	return _q
 }
 
@@ -423,9 +502,11 @@ func (_q *InvestigationFindingQuery) sqlAll(ctx context.Context, hooks ...queryH
 	var (
 		nodes       = []*InvestigationFinding{}
 		_spec       = _q.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [4]bool{
 			_q.withTenant != nil,
 			_q.withInvestigation != nil,
+			_q.withUserInput != nil,
+			_q.withVersions != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -460,6 +541,21 @@ func (_q *InvestigationFindingQuery) sqlAll(ctx context.Context, hooks ...queryH
 	if query := _q.withInvestigation; query != nil {
 		if err := _q.loadInvestigation(ctx, query, nodes, nil,
 			func(n *InvestigationFinding, e *Investigation) { n.Edges.Investigation = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withUserInput; query != nil {
+		if err := _q.loadUserInput(ctx, query, nodes, nil,
+			func(n *InvestigationFinding, e *InvestigationUserInput) { n.Edges.UserInput = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withVersions; query != nil {
+		if err := _q.loadVersions(ctx, query, nodes,
+			func(n *InvestigationFinding) { n.Edges.Versions = []*InvestigationFindingVersion{} },
+			func(n *InvestigationFinding, e *InvestigationFindingVersion) {
+				n.Edges.Versions = append(n.Edges.Versions, e)
+			}); err != nil {
 			return nil, err
 		}
 	}
@@ -524,6 +620,68 @@ func (_q *InvestigationFindingQuery) loadInvestigation(ctx context.Context, quer
 	}
 	return nil
 }
+func (_q *InvestigationFindingQuery) loadUserInput(ctx context.Context, query *InvestigationUserInputQuery, nodes []*InvestigationFinding, init func(*InvestigationFinding), assign func(*InvestigationFinding, *InvestigationUserInput)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*InvestigationFinding)
+	for i := range nodes {
+		if nodes[i].UserInputID == nil {
+			continue
+		}
+		fk := *nodes[i].UserInputID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(investigationuserinput.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "user_input_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (_q *InvestigationFindingQuery) loadVersions(ctx context.Context, query *InvestigationFindingVersionQuery, nodes []*InvestigationFinding, init func(*InvestigationFinding), assign func(*InvestigationFinding, *InvestigationFindingVersion)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*InvestigationFinding)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(investigationfindingversion.FieldFindingID)
+	}
+	query.Where(predicate.InvestigationFindingVersion(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(investigationfinding.VersionsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.FindingID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "finding_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
 
 func (_q *InvestigationFindingQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := _q.querySpec()
@@ -560,6 +718,9 @@ func (_q *InvestigationFindingQuery) querySpec() *sqlgraph.QuerySpec {
 		}
 		if _q.withInvestigation != nil {
 			_spec.Node.AddColumnOnce(investigationfinding.FieldInvestigationID)
+		}
+		if _q.withUserInput != nil {
+			_spec.Node.AddColumnOnce(investigationfinding.FieldUserInputID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {

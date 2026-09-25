@@ -168,12 +168,12 @@ func (InvokeAgentTurn) InsertOpts() river.InsertOpts {
 	}
 }
 
-type BumpSituationInvestigation struct {
-	SituationInvestigationID uuid.UUID `json:"situation_investigation_id"`
+type ReconcileInvestigation struct {
+	InvestigationID uuid.UUID `json:"investigation_id"`
 }
 
-func (BumpSituationInvestigation) Kind() string {
-	return "bump-situation-investigation"
+func (ReconcileInvestigation) Kind() string {
+	return "reconcile-investigation"
 }
 
 type CloseInactiveAlertEpisodes struct{}

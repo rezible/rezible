@@ -77,19 +77,9 @@ func InvestigationID(v uuid.UUID) predicate.InvestigationHypothesis {
 	return predicate.InvestigationHypothesis(sql.FieldEQ(FieldInvestigationID, v))
 }
 
-// Title applies equality check predicate on the "title" field. It's identical to TitleEQ.
-func Title(v string) predicate.InvestigationHypothesis {
-	return predicate.InvestigationHypothesis(sql.FieldEQ(FieldTitle, v))
-}
-
-// Body applies equality check predicate on the "body" field. It's identical to BodyEQ.
-func Body(v string) predicate.InvestigationHypothesis {
-	return predicate.InvestigationHypothesis(sql.FieldEQ(FieldBody, v))
-}
-
-// Verdict applies equality check predicate on the "verdict" field. It's identical to VerdictEQ.
-func Verdict(v string) predicate.InvestigationHypothesis {
-	return predicate.InvestigationHypothesis(sql.FieldEQ(FieldVerdict, v))
+// Key applies equality check predicate on the "key" field. It's identical to KeyEQ.
+func Key(v string) predicate.InvestigationHypothesis {
+	return predicate.InvestigationHypothesis(sql.FieldEQ(FieldKey, v))
 }
 
 // TenantIDEQ applies the EQ predicate on the "tenant_id" field.
@@ -212,219 +202,69 @@ func InvestigationIDNotIn(vs ...uuid.UUID) predicate.InvestigationHypothesis {
 	return predicate.InvestigationHypothesis(sql.FieldNotIn(FieldInvestigationID, vs...))
 }
 
-// TitleEQ applies the EQ predicate on the "title" field.
-func TitleEQ(v string) predicate.InvestigationHypothesis {
-	return predicate.InvestigationHypothesis(sql.FieldEQ(FieldTitle, v))
+// KeyEQ applies the EQ predicate on the "key" field.
+func KeyEQ(v string) predicate.InvestigationHypothesis {
+	return predicate.InvestigationHypothesis(sql.FieldEQ(FieldKey, v))
 }
 
-// TitleNEQ applies the NEQ predicate on the "title" field.
-func TitleNEQ(v string) predicate.InvestigationHypothesis {
-	return predicate.InvestigationHypothesis(sql.FieldNEQ(FieldTitle, v))
+// KeyNEQ applies the NEQ predicate on the "key" field.
+func KeyNEQ(v string) predicate.InvestigationHypothesis {
+	return predicate.InvestigationHypothesis(sql.FieldNEQ(FieldKey, v))
 }
 
-// TitleIn applies the In predicate on the "title" field.
-func TitleIn(vs ...string) predicate.InvestigationHypothesis {
-	return predicate.InvestigationHypothesis(sql.FieldIn(FieldTitle, vs...))
+// KeyIn applies the In predicate on the "key" field.
+func KeyIn(vs ...string) predicate.InvestigationHypothesis {
+	return predicate.InvestigationHypothesis(sql.FieldIn(FieldKey, vs...))
 }
 
-// TitleNotIn applies the NotIn predicate on the "title" field.
-func TitleNotIn(vs ...string) predicate.InvestigationHypothesis {
-	return predicate.InvestigationHypothesis(sql.FieldNotIn(FieldTitle, vs...))
+// KeyNotIn applies the NotIn predicate on the "key" field.
+func KeyNotIn(vs ...string) predicate.InvestigationHypothesis {
+	return predicate.InvestigationHypothesis(sql.FieldNotIn(FieldKey, vs...))
 }
 
-// TitleGT applies the GT predicate on the "title" field.
-func TitleGT(v string) predicate.InvestigationHypothesis {
-	return predicate.InvestigationHypothesis(sql.FieldGT(FieldTitle, v))
+// KeyGT applies the GT predicate on the "key" field.
+func KeyGT(v string) predicate.InvestigationHypothesis {
+	return predicate.InvestigationHypothesis(sql.FieldGT(FieldKey, v))
 }
 
-// TitleGTE applies the GTE predicate on the "title" field.
-func TitleGTE(v string) predicate.InvestigationHypothesis {
-	return predicate.InvestigationHypothesis(sql.FieldGTE(FieldTitle, v))
+// KeyGTE applies the GTE predicate on the "key" field.
+func KeyGTE(v string) predicate.InvestigationHypothesis {
+	return predicate.InvestigationHypothesis(sql.FieldGTE(FieldKey, v))
 }
 
-// TitleLT applies the LT predicate on the "title" field.
-func TitleLT(v string) predicate.InvestigationHypothesis {
-	return predicate.InvestigationHypothesis(sql.FieldLT(FieldTitle, v))
+// KeyLT applies the LT predicate on the "key" field.
+func KeyLT(v string) predicate.InvestigationHypothesis {
+	return predicate.InvestigationHypothesis(sql.FieldLT(FieldKey, v))
 }
 
-// TitleLTE applies the LTE predicate on the "title" field.
-func TitleLTE(v string) predicate.InvestigationHypothesis {
-	return predicate.InvestigationHypothesis(sql.FieldLTE(FieldTitle, v))
+// KeyLTE applies the LTE predicate on the "key" field.
+func KeyLTE(v string) predicate.InvestigationHypothesis {
+	return predicate.InvestigationHypothesis(sql.FieldLTE(FieldKey, v))
 }
 
-// TitleContains applies the Contains predicate on the "title" field.
-func TitleContains(v string) predicate.InvestigationHypothesis {
-	return predicate.InvestigationHypothesis(sql.FieldContains(FieldTitle, v))
+// KeyContains applies the Contains predicate on the "key" field.
+func KeyContains(v string) predicate.InvestigationHypothesis {
+	return predicate.InvestigationHypothesis(sql.FieldContains(FieldKey, v))
 }
 
-// TitleHasPrefix applies the HasPrefix predicate on the "title" field.
-func TitleHasPrefix(v string) predicate.InvestigationHypothesis {
-	return predicate.InvestigationHypothesis(sql.FieldHasPrefix(FieldTitle, v))
+// KeyHasPrefix applies the HasPrefix predicate on the "key" field.
+func KeyHasPrefix(v string) predicate.InvestigationHypothesis {
+	return predicate.InvestigationHypothesis(sql.FieldHasPrefix(FieldKey, v))
 }
 
-// TitleHasSuffix applies the HasSuffix predicate on the "title" field.
-func TitleHasSuffix(v string) predicate.InvestigationHypothesis {
-	return predicate.InvestigationHypothesis(sql.FieldHasSuffix(FieldTitle, v))
+// KeyHasSuffix applies the HasSuffix predicate on the "key" field.
+func KeyHasSuffix(v string) predicate.InvestigationHypothesis {
+	return predicate.InvestigationHypothesis(sql.FieldHasSuffix(FieldKey, v))
 }
 
-// TitleEqualFold applies the EqualFold predicate on the "title" field.
-func TitleEqualFold(v string) predicate.InvestigationHypothesis {
-	return predicate.InvestigationHypothesis(sql.FieldEqualFold(FieldTitle, v))
+// KeyEqualFold applies the EqualFold predicate on the "key" field.
+func KeyEqualFold(v string) predicate.InvestigationHypothesis {
+	return predicate.InvestigationHypothesis(sql.FieldEqualFold(FieldKey, v))
 }
 
-// TitleContainsFold applies the ContainsFold predicate on the "title" field.
-func TitleContainsFold(v string) predicate.InvestigationHypothesis {
-	return predicate.InvestigationHypothesis(sql.FieldContainsFold(FieldTitle, v))
-}
-
-// BodyEQ applies the EQ predicate on the "body" field.
-func BodyEQ(v string) predicate.InvestigationHypothesis {
-	return predicate.InvestigationHypothesis(sql.FieldEQ(FieldBody, v))
-}
-
-// BodyNEQ applies the NEQ predicate on the "body" field.
-func BodyNEQ(v string) predicate.InvestigationHypothesis {
-	return predicate.InvestigationHypothesis(sql.FieldNEQ(FieldBody, v))
-}
-
-// BodyIn applies the In predicate on the "body" field.
-func BodyIn(vs ...string) predicate.InvestigationHypothesis {
-	return predicate.InvestigationHypothesis(sql.FieldIn(FieldBody, vs...))
-}
-
-// BodyNotIn applies the NotIn predicate on the "body" field.
-func BodyNotIn(vs ...string) predicate.InvestigationHypothesis {
-	return predicate.InvestigationHypothesis(sql.FieldNotIn(FieldBody, vs...))
-}
-
-// BodyGT applies the GT predicate on the "body" field.
-func BodyGT(v string) predicate.InvestigationHypothesis {
-	return predicate.InvestigationHypothesis(sql.FieldGT(FieldBody, v))
-}
-
-// BodyGTE applies the GTE predicate on the "body" field.
-func BodyGTE(v string) predicate.InvestigationHypothesis {
-	return predicate.InvestigationHypothesis(sql.FieldGTE(FieldBody, v))
-}
-
-// BodyLT applies the LT predicate on the "body" field.
-func BodyLT(v string) predicate.InvestigationHypothesis {
-	return predicate.InvestigationHypothesis(sql.FieldLT(FieldBody, v))
-}
-
-// BodyLTE applies the LTE predicate on the "body" field.
-func BodyLTE(v string) predicate.InvestigationHypothesis {
-	return predicate.InvestigationHypothesis(sql.FieldLTE(FieldBody, v))
-}
-
-// BodyContains applies the Contains predicate on the "body" field.
-func BodyContains(v string) predicate.InvestigationHypothesis {
-	return predicate.InvestigationHypothesis(sql.FieldContains(FieldBody, v))
-}
-
-// BodyHasPrefix applies the HasPrefix predicate on the "body" field.
-func BodyHasPrefix(v string) predicate.InvestigationHypothesis {
-	return predicate.InvestigationHypothesis(sql.FieldHasPrefix(FieldBody, v))
-}
-
-// BodyHasSuffix applies the HasSuffix predicate on the "body" field.
-func BodyHasSuffix(v string) predicate.InvestigationHypothesis {
-	return predicate.InvestigationHypothesis(sql.FieldHasSuffix(FieldBody, v))
-}
-
-// BodyIsNil applies the IsNil predicate on the "body" field.
-func BodyIsNil() predicate.InvestigationHypothesis {
-	return predicate.InvestigationHypothesis(sql.FieldIsNull(FieldBody))
-}
-
-// BodyNotNil applies the NotNil predicate on the "body" field.
-func BodyNotNil() predicate.InvestigationHypothesis {
-	return predicate.InvestigationHypothesis(sql.FieldNotNull(FieldBody))
-}
-
-// BodyEqualFold applies the EqualFold predicate on the "body" field.
-func BodyEqualFold(v string) predicate.InvestigationHypothesis {
-	return predicate.InvestigationHypothesis(sql.FieldEqualFold(FieldBody, v))
-}
-
-// BodyContainsFold applies the ContainsFold predicate on the "body" field.
-func BodyContainsFold(v string) predicate.InvestigationHypothesis {
-	return predicate.InvestigationHypothesis(sql.FieldContainsFold(FieldBody, v))
-}
-
-// VerdictEQ applies the EQ predicate on the "verdict" field.
-func VerdictEQ(v string) predicate.InvestigationHypothesis {
-	return predicate.InvestigationHypothesis(sql.FieldEQ(FieldVerdict, v))
-}
-
-// VerdictNEQ applies the NEQ predicate on the "verdict" field.
-func VerdictNEQ(v string) predicate.InvestigationHypothesis {
-	return predicate.InvestigationHypothesis(sql.FieldNEQ(FieldVerdict, v))
-}
-
-// VerdictIn applies the In predicate on the "verdict" field.
-func VerdictIn(vs ...string) predicate.InvestigationHypothesis {
-	return predicate.InvestigationHypothesis(sql.FieldIn(FieldVerdict, vs...))
-}
-
-// VerdictNotIn applies the NotIn predicate on the "verdict" field.
-func VerdictNotIn(vs ...string) predicate.InvestigationHypothesis {
-	return predicate.InvestigationHypothesis(sql.FieldNotIn(FieldVerdict, vs...))
-}
-
-// VerdictGT applies the GT predicate on the "verdict" field.
-func VerdictGT(v string) predicate.InvestigationHypothesis {
-	return predicate.InvestigationHypothesis(sql.FieldGT(FieldVerdict, v))
-}
-
-// VerdictGTE applies the GTE predicate on the "verdict" field.
-func VerdictGTE(v string) predicate.InvestigationHypothesis {
-	return predicate.InvestigationHypothesis(sql.FieldGTE(FieldVerdict, v))
-}
-
-// VerdictLT applies the LT predicate on the "verdict" field.
-func VerdictLT(v string) predicate.InvestigationHypothesis {
-	return predicate.InvestigationHypothesis(sql.FieldLT(FieldVerdict, v))
-}
-
-// VerdictLTE applies the LTE predicate on the "verdict" field.
-func VerdictLTE(v string) predicate.InvestigationHypothesis {
-	return predicate.InvestigationHypothesis(sql.FieldLTE(FieldVerdict, v))
-}
-
-// VerdictContains applies the Contains predicate on the "verdict" field.
-func VerdictContains(v string) predicate.InvestigationHypothesis {
-	return predicate.InvestigationHypothesis(sql.FieldContains(FieldVerdict, v))
-}
-
-// VerdictHasPrefix applies the HasPrefix predicate on the "verdict" field.
-func VerdictHasPrefix(v string) predicate.InvestigationHypothesis {
-	return predicate.InvestigationHypothesis(sql.FieldHasPrefix(FieldVerdict, v))
-}
-
-// VerdictHasSuffix applies the HasSuffix predicate on the "verdict" field.
-func VerdictHasSuffix(v string) predicate.InvestigationHypothesis {
-	return predicate.InvestigationHypothesis(sql.FieldHasSuffix(FieldVerdict, v))
-}
-
-// VerdictIsNil applies the IsNil predicate on the "verdict" field.
-func VerdictIsNil() predicate.InvestigationHypothesis {
-	return predicate.InvestigationHypothesis(sql.FieldIsNull(FieldVerdict))
-}
-
-// VerdictNotNil applies the NotNil predicate on the "verdict" field.
-func VerdictNotNil() predicate.InvestigationHypothesis {
-	return predicate.InvestigationHypothesis(sql.FieldNotNull(FieldVerdict))
-}
-
-// VerdictEqualFold applies the EqualFold predicate on the "verdict" field.
-func VerdictEqualFold(v string) predicate.InvestigationHypothesis {
-	return predicate.InvestigationHypothesis(sql.FieldEqualFold(FieldVerdict, v))
-}
-
-// VerdictContainsFold applies the ContainsFold predicate on the "verdict" field.
-func VerdictContainsFold(v string) predicate.InvestigationHypothesis {
-	return predicate.InvestigationHypothesis(sql.FieldContainsFold(FieldVerdict, v))
+// KeyContainsFold applies the ContainsFold predicate on the "key" field.
+func KeyContainsFold(v string) predicate.InvestigationHypothesis {
+	return predicate.InvestigationHypothesis(sql.FieldContainsFold(FieldKey, v))
 }
 
 // HasTenant applies the HasEdge predicate on the "tenant" edge.
@@ -477,6 +317,35 @@ func HasInvestigationWith(preds ...predicate.Investigation) predicate.Investigat
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.Investigation
 		step.Edge.Schema = schemaConfig.InvestigationHypothesis
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasVersions applies the HasEdge predicate on the "versions" edge.
+func HasVersions() predicate.InvestigationHypothesis {
+	return predicate.InvestigationHypothesis(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, VersionsTable, VersionsColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.InvestigationHypothesisVersion
+		step.Edge.Schema = schemaConfig.InvestigationHypothesisVersion
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasVersionsWith applies the HasEdge predicate on the "versions" edge with a given conditions (other predicates).
+func HasVersionsWith(preds ...predicate.InvestigationHypothesisVersion) predicate.InvestigationHypothesis {
+	return predicate.InvestigationHypothesis(func(s *sql.Selector) {
+		step := newVersionsStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.InvestigationHypothesisVersion
+		step.Edge.Schema = schemaConfig.InvestigationHypothesisVersion
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

@@ -1755,6 +1755,74 @@ func (_c *MockSystemAnalysisService_ListSystemAnalysisEntries_Call) RunAndReturn
 	return _c
 }
 
+// ListSystemAnalysisEntrySubjects provides a mock function for the type MockSystemAnalysisService
+func (_mock *MockSystemAnalysisService) ListSystemAnalysisEntrySubjects(context1 context.Context, listSystemAnalysisEntrySubjectsParams rez.ListSystemAnalysisEntrySubjectsParams) (*ent.ListResult[ent.SystemAnalysisEntrySubject], error) {
+	ret := _mock.Called(context1, listSystemAnalysisEntrySubjectsParams)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ListSystemAnalysisEntrySubjects")
+	}
+
+	var r0 *ent.ListResult[ent.SystemAnalysisEntrySubject]
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.ListSystemAnalysisEntrySubjectsParams) (*ent.ListResult[ent.SystemAnalysisEntrySubject], error)); ok {
+		return returnFunc(context1, listSystemAnalysisEntrySubjectsParams)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.ListSystemAnalysisEntrySubjectsParams) *ent.ListResult[ent.SystemAnalysisEntrySubject]); ok {
+		r0 = returnFunc(context1, listSystemAnalysisEntrySubjectsParams)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*ent.ListResult[ent.SystemAnalysisEntrySubject])
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, rez.ListSystemAnalysisEntrySubjectsParams) error); ok {
+		r1 = returnFunc(context1, listSystemAnalysisEntrySubjectsParams)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockSystemAnalysisService_ListSystemAnalysisEntrySubjects_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ListSystemAnalysisEntrySubjects'
+type MockSystemAnalysisService_ListSystemAnalysisEntrySubjects_Call struct {
+	*mock.Call
+}
+
+// ListSystemAnalysisEntrySubjects is a helper method to define mock.On call
+//   - context1 context.Context
+//   - listSystemAnalysisEntrySubjectsParams rez.ListSystemAnalysisEntrySubjectsParams
+func (_e *MockSystemAnalysisService_Expecter) ListSystemAnalysisEntrySubjects(context1 interface{}, listSystemAnalysisEntrySubjectsParams interface{}) *MockSystemAnalysisService_ListSystemAnalysisEntrySubjects_Call {
+	return &MockSystemAnalysisService_ListSystemAnalysisEntrySubjects_Call{Call: _e.mock.On("ListSystemAnalysisEntrySubjects", context1, listSystemAnalysisEntrySubjectsParams)}
+}
+
+func (_c *MockSystemAnalysisService_ListSystemAnalysisEntrySubjects_Call) Run(run func(context1 context.Context, listSystemAnalysisEntrySubjectsParams rez.ListSystemAnalysisEntrySubjectsParams)) *MockSystemAnalysisService_ListSystemAnalysisEntrySubjects_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 rez.ListSystemAnalysisEntrySubjectsParams
+		if args[1] != nil {
+			arg1 = args[1].(rez.ListSystemAnalysisEntrySubjectsParams)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockSystemAnalysisService_ListSystemAnalysisEntrySubjects_Call) Return(listResult *ent.ListResult[ent.SystemAnalysisEntrySubject], err error) *MockSystemAnalysisService_ListSystemAnalysisEntrySubjects_Call {
+	_c.Call.Return(listResult, err)
+	return _c
+}
+
+func (_c *MockSystemAnalysisService_ListSystemAnalysisEntrySubjects_Call) RunAndReturn(run func(context1 context.Context, listSystemAnalysisEntrySubjectsParams rez.ListSystemAnalysisEntrySubjectsParams) (*ent.ListResult[ent.SystemAnalysisEntrySubject], error)) *MockSystemAnalysisService_ListSystemAnalysisEntrySubjects_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // ListSystemAnalysisRelationships provides a mock function for the type MockSystemAnalysisService
 func (_mock *MockSystemAnalysisService) ListSystemAnalysisRelationships(context1 context.Context, listSystemAnalysisRelationshipsParams rez.ListSystemAnalysisRelationshipsParams) (*ent.ListResult[ent.SystemAnalysisRelationship], error) {
 	ret := _mock.Called(context1, listSystemAnalysisRelationshipsParams)

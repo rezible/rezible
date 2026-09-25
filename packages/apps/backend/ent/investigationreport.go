@@ -3,7 +3,6 @@
 package ent
 
 import (
-	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -26,24 +25,14 @@ type InvestigationReport struct {
 	TenantID int `json:"tenant_id,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
-	// UpdatedAt holds the value of the "updated_at" field.
-	UpdatedAt time.Time `json:"updated_at,omitempty"`
+	// Fingerprint holds the value of the "fingerprint" field.
+	Fingerprint string `json:"fingerprint,omitempty"`
 	// InvestigationID holds the value of the "investigation_id" field.
 	InvestigationID uuid.UUID `json:"investigation_id,omitempty"`
 	// AgentTurnID holds the value of the "agent_turn_id" field.
-	AgentTurnID *uuid.UUID `json:"agent_turn_id,omitempty"`
+	AgentTurnID uuid.UUID `json:"agent_turn_id,omitempty"`
 	// Text holds the value of the "text" field.
 	Text string `json:"text,omitempty"`
-	// LikelyCause holds the value of the "likely_cause" field.
-	LikelyCause string `json:"likely_cause,omitempty"`
-	// BestNextStep holds the value of the "best_next_step" field.
-	BestNextStep string `json:"best_next_step,omitempty"`
-	// Limitations holds the value of the "limitations" field.
-	Limitations []string `json:"limitations,omitempty"`
-	// RecommendedActions holds the value of the "recommended_actions" field.
-	RecommendedActions []string `json:"recommended_actions,omitempty"`
-	// SuggestedChecks holds the value of the "suggested_checks" field.
-	SuggestedChecks []string `json:"suggested_checks,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the InvestigationReportQuery when eager-loading is set.
 	Edges        InvestigationReportEdges `json:"edges"`
@@ -58,9 +47,11 @@ type InvestigationReportEdges struct {
 	Investigation *Investigation `json:"investigation,omitempty"`
 	// AgentTurn holds the value of the agent_turn edge.
 	AgentTurn *AgentTurn `json:"agent_turn,omitempty"`
+	// OutputReferences holds the value of the output_references edge.
+	OutputReferences []*InvestigationOutputReference `json:"output_references,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes [4]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -96,22 +87,27 @@ func (e InvestigationReportEdges) AgentTurnOrErr() (*AgentTurn, error) {
 	return nil, &NotLoadedError{edge: "agent_turn"}
 }
 
+// OutputReferencesOrErr returns the OutputReferences value or an error if the edge
+// was not loaded in eager-loading.
+func (e InvestigationReportEdges) OutputReferencesOrErr() ([]*InvestigationOutputReference, error) {
+	if e.loadedTypes[3] {
+		return e.OutputReferences, nil
+	}
+	return nil, &NotLoadedError{edge: "output_references"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*InvestigationReport) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case investigationreport.FieldAgentTurnID:
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case investigationreport.FieldLimitations, investigationreport.FieldRecommendedActions, investigationreport.FieldSuggestedChecks:
-			values[i] = new([]byte)
 		case investigationreport.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case investigationreport.FieldText, investigationreport.FieldLikelyCause, investigationreport.FieldBestNextStep:
+		case investigationreport.FieldFingerprint, investigationreport.FieldText:
 			values[i] = new(sql.NullString)
-		case investigationreport.FieldCreatedAt, investigationreport.FieldUpdatedAt:
+		case investigationreport.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
-		case investigationreport.FieldID, investigationreport.FieldInvestigationID:
+		case investigationreport.FieldID, investigationreport.FieldInvestigationID, investigationreport.FieldAgentTurnID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -146,11 +142,11 @@ func (_m *InvestigationReport) assignValues(columns []string, values []any) erro
 			} else if value.Valid {
 				_m.CreatedAt = value.Time
 			}
-		case investigationreport.FieldUpdatedAt:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
+		case investigationreport.FieldFingerprint:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field fingerprint", values[i])
 			} else if value.Valid {
-				_m.UpdatedAt = value.Time
+				_m.Fingerprint = value.String
 			}
 		case investigationreport.FieldInvestigationID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
@@ -159,53 +155,16 @@ func (_m *InvestigationReport) assignValues(columns []string, values []any) erro
 				_m.InvestigationID = *value
 			}
 		case investigationreport.FieldAgentTurnID:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
+			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field agent_turn_id", values[i])
-			} else if value.Valid {
-				_m.AgentTurnID = new(uuid.UUID)
-				*_m.AgentTurnID = *value.S.(*uuid.UUID)
+			} else if value != nil {
+				_m.AgentTurnID = *value
 			}
 		case investigationreport.FieldText:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field text", values[i])
 			} else if value.Valid {
 				_m.Text = value.String
-			}
-		case investigationreport.FieldLikelyCause:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field likely_cause", values[i])
-			} else if value.Valid {
-				_m.LikelyCause = value.String
-			}
-		case investigationreport.FieldBestNextStep:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field best_next_step", values[i])
-			} else if value.Valid {
-				_m.BestNextStep = value.String
-			}
-		case investigationreport.FieldLimitations:
-			if value, ok := values[i].(*[]byte); !ok {
-				return fmt.Errorf("unexpected type %T for field limitations", values[i])
-			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &_m.Limitations); err != nil {
-					return fmt.Errorf("unmarshal field limitations: %w", err)
-				}
-			}
-		case investigationreport.FieldRecommendedActions:
-			if value, ok := values[i].(*[]byte); !ok {
-				return fmt.Errorf("unexpected type %T for field recommended_actions", values[i])
-			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &_m.RecommendedActions); err != nil {
-					return fmt.Errorf("unmarshal field recommended_actions: %w", err)
-				}
-			}
-		case investigationreport.FieldSuggestedChecks:
-			if value, ok := values[i].(*[]byte); !ok {
-				return fmt.Errorf("unexpected type %T for field suggested_checks", values[i])
-			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &_m.SuggestedChecks); err != nil {
-					return fmt.Errorf("unmarshal field suggested_checks: %w", err)
-				}
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -233,6 +192,11 @@ func (_m *InvestigationReport) QueryInvestigation() *InvestigationQuery {
 // QueryAgentTurn queries the "agent_turn" edge of the InvestigationReport entity.
 func (_m *InvestigationReport) QueryAgentTurn() *AgentTurnQuery {
 	return NewInvestigationReportClient(_m.config).QueryAgentTurn(_m)
+}
+
+// QueryOutputReferences queries the "output_references" edge of the InvestigationReport entity.
+func (_m *InvestigationReport) QueryOutputReferences() *InvestigationOutputReferenceQuery {
+	return NewInvestigationReportClient(_m.config).QueryOutputReferences(_m)
 }
 
 // Update returns a builder for updating this InvestigationReport.
@@ -264,34 +228,17 @@ func (_m *InvestigationReport) String() string {
 	builder.WriteString("created_at=")
 	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
-	builder.WriteString("updated_at=")
-	builder.WriteString(_m.UpdatedAt.Format(time.ANSIC))
+	builder.WriteString("fingerprint=")
+	builder.WriteString(_m.Fingerprint)
 	builder.WriteString(", ")
 	builder.WriteString("investigation_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.InvestigationID))
 	builder.WriteString(", ")
-	if v := _m.AgentTurnID; v != nil {
-		builder.WriteString("agent_turn_id=")
-		builder.WriteString(fmt.Sprintf("%v", *v))
-	}
+	builder.WriteString("agent_turn_id=")
+	builder.WriteString(fmt.Sprintf("%v", _m.AgentTurnID))
 	builder.WriteString(", ")
 	builder.WriteString("text=")
 	builder.WriteString(_m.Text)
-	builder.WriteString(", ")
-	builder.WriteString("likely_cause=")
-	builder.WriteString(_m.LikelyCause)
-	builder.WriteString(", ")
-	builder.WriteString("best_next_step=")
-	builder.WriteString(_m.BestNextStep)
-	builder.WriteString(", ")
-	builder.WriteString("limitations=")
-	builder.WriteString(fmt.Sprintf("%v", _m.Limitations))
-	builder.WriteString(", ")
-	builder.WriteString("recommended_actions=")
-	builder.WriteString(fmt.Sprintf("%v", _m.RecommendedActions))
-	builder.WriteString(", ")
-	builder.WriteString("suggested_checks=")
-	builder.WriteString(fmt.Sprintf("%v", _m.SuggestedChecks))
 	builder.WriteByte(')')
 	return builder.String()
 }

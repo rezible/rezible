@@ -43,9 +43,15 @@ import (
 	"github.com/rezible/rezible/ent/integrationeventsyncrun"
 	"github.com/rezible/rezible/ent/integrationuserinstallstate"
 	"github.com/rezible/rezible/ent/investigation"
+	"github.com/rezible/rezible/ent/investigationevidencerevision"
 	"github.com/rezible/rezible/ent/investigationfinding"
+	"github.com/rezible/rezible/ent/investigationfindingversion"
+	"github.com/rezible/rezible/ent/investigationfindingversionlink"
 	"github.com/rezible/rezible/ent/investigationhypothesis"
+	"github.com/rezible/rezible/ent/investigationhypothesisversion"
+	"github.com/rezible/rezible/ent/investigationoutputreference"
 	"github.com/rezible/rezible/ent/investigationreport"
+	"github.com/rezible/rezible/ent/investigationuserinput"
 	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/knowledgeentitylinkingattribute"
 	"github.com/rezible/rezible/ent/knowledgeevidence"
@@ -1093,6 +1099,33 @@ func (f TraverseInvestigation) Traverse(ctx context.Context, q ent.Query) error 
 	return fmt.Errorf("unexpected query type %T. expect *ent.InvestigationQuery", q)
 }
 
+// The InvestigationEvidenceRevisionFunc type is an adapter to allow the use of ordinary function as a Querier.
+type InvestigationEvidenceRevisionFunc func(context.Context, *ent.InvestigationEvidenceRevisionQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f InvestigationEvidenceRevisionFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.InvestigationEvidenceRevisionQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.InvestigationEvidenceRevisionQuery", q)
+}
+
+// The TraverseInvestigationEvidenceRevision type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseInvestigationEvidenceRevision func(context.Context, *ent.InvestigationEvidenceRevisionQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseInvestigationEvidenceRevision) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseInvestigationEvidenceRevision) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.InvestigationEvidenceRevisionQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.InvestigationEvidenceRevisionQuery", q)
+}
+
 // The InvestigationFindingFunc type is an adapter to allow the use of ordinary function as a Querier.
 type InvestigationFindingFunc func(context.Context, *ent.InvestigationFindingQuery) (ent.Value, error)
 
@@ -1118,6 +1151,60 @@ func (f TraverseInvestigationFinding) Traverse(ctx context.Context, q ent.Query)
 		return f(ctx, q)
 	}
 	return fmt.Errorf("unexpected query type %T. expect *ent.InvestigationFindingQuery", q)
+}
+
+// The InvestigationFindingVersionFunc type is an adapter to allow the use of ordinary function as a Querier.
+type InvestigationFindingVersionFunc func(context.Context, *ent.InvestigationFindingVersionQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f InvestigationFindingVersionFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.InvestigationFindingVersionQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.InvestigationFindingVersionQuery", q)
+}
+
+// The TraverseInvestigationFindingVersion type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseInvestigationFindingVersion func(context.Context, *ent.InvestigationFindingVersionQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseInvestigationFindingVersion) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseInvestigationFindingVersion) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.InvestigationFindingVersionQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.InvestigationFindingVersionQuery", q)
+}
+
+// The InvestigationFindingVersionLinkFunc type is an adapter to allow the use of ordinary function as a Querier.
+type InvestigationFindingVersionLinkFunc func(context.Context, *ent.InvestigationFindingVersionLinkQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f InvestigationFindingVersionLinkFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.InvestigationFindingVersionLinkQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.InvestigationFindingVersionLinkQuery", q)
+}
+
+// The TraverseInvestigationFindingVersionLink type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseInvestigationFindingVersionLink func(context.Context, *ent.InvestigationFindingVersionLinkQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseInvestigationFindingVersionLink) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseInvestigationFindingVersionLink) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.InvestigationFindingVersionLinkQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.InvestigationFindingVersionLinkQuery", q)
 }
 
 // The InvestigationHypothesisFunc type is an adapter to allow the use of ordinary function as a Querier.
@@ -1147,6 +1234,60 @@ func (f TraverseInvestigationHypothesis) Traverse(ctx context.Context, q ent.Que
 	return fmt.Errorf("unexpected query type %T. expect *ent.InvestigationHypothesisQuery", q)
 }
 
+// The InvestigationHypothesisVersionFunc type is an adapter to allow the use of ordinary function as a Querier.
+type InvestigationHypothesisVersionFunc func(context.Context, *ent.InvestigationHypothesisVersionQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f InvestigationHypothesisVersionFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.InvestigationHypothesisVersionQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.InvestigationHypothesisVersionQuery", q)
+}
+
+// The TraverseInvestigationHypothesisVersion type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseInvestigationHypothesisVersion func(context.Context, *ent.InvestigationHypothesisVersionQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseInvestigationHypothesisVersion) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseInvestigationHypothesisVersion) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.InvestigationHypothesisVersionQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.InvestigationHypothesisVersionQuery", q)
+}
+
+// The InvestigationOutputReferenceFunc type is an adapter to allow the use of ordinary function as a Querier.
+type InvestigationOutputReferenceFunc func(context.Context, *ent.InvestigationOutputReferenceQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f InvestigationOutputReferenceFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.InvestigationOutputReferenceQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.InvestigationOutputReferenceQuery", q)
+}
+
+// The TraverseInvestigationOutputReference type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseInvestigationOutputReference func(context.Context, *ent.InvestigationOutputReferenceQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseInvestigationOutputReference) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseInvestigationOutputReference) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.InvestigationOutputReferenceQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.InvestigationOutputReferenceQuery", q)
+}
+
 // The InvestigationReportFunc type is an adapter to allow the use of ordinary function as a Querier.
 type InvestigationReportFunc func(context.Context, *ent.InvestigationReportQuery) (ent.Value, error)
 
@@ -1172,6 +1313,33 @@ func (f TraverseInvestigationReport) Traverse(ctx context.Context, q ent.Query) 
 		return f(ctx, q)
 	}
 	return fmt.Errorf("unexpected query type %T. expect *ent.InvestigationReportQuery", q)
+}
+
+// The InvestigationUserInputFunc type is an adapter to allow the use of ordinary function as a Querier.
+type InvestigationUserInputFunc func(context.Context, *ent.InvestigationUserInputQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f InvestigationUserInputFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.InvestigationUserInputQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.InvestigationUserInputQuery", q)
+}
+
+// The TraverseInvestigationUserInput type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseInvestigationUserInput func(context.Context, *ent.InvestigationUserInputQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseInvestigationUserInput) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseInvestigationUserInput) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.InvestigationUserInputQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.InvestigationUserInputQuery", q)
 }
 
 // The KnowledgeEntityFunc type is an adapter to allow the use of ordinary function as a Querier.
@@ -2408,12 +2576,24 @@ func NewQuery(q ent.Query) (Query, error) {
 		return &query[*ent.IntegrationUserInstallStateQuery, predicate.IntegrationUserInstallState, integrationuserinstallstate.OrderOption]{typ: ent.TypeIntegrationUserInstallState, tq: q}, nil
 	case *ent.InvestigationQuery:
 		return &query[*ent.InvestigationQuery, predicate.Investigation, investigation.OrderOption]{typ: ent.TypeInvestigation, tq: q}, nil
+	case *ent.InvestigationEvidenceRevisionQuery:
+		return &query[*ent.InvestigationEvidenceRevisionQuery, predicate.InvestigationEvidenceRevision, investigationevidencerevision.OrderOption]{typ: ent.TypeInvestigationEvidenceRevision, tq: q}, nil
 	case *ent.InvestigationFindingQuery:
 		return &query[*ent.InvestigationFindingQuery, predicate.InvestigationFinding, investigationfinding.OrderOption]{typ: ent.TypeInvestigationFinding, tq: q}, nil
+	case *ent.InvestigationFindingVersionQuery:
+		return &query[*ent.InvestigationFindingVersionQuery, predicate.InvestigationFindingVersion, investigationfindingversion.OrderOption]{typ: ent.TypeInvestigationFindingVersion, tq: q}, nil
+	case *ent.InvestigationFindingVersionLinkQuery:
+		return &query[*ent.InvestigationFindingVersionLinkQuery, predicate.InvestigationFindingVersionLink, investigationfindingversionlink.OrderOption]{typ: ent.TypeInvestigationFindingVersionLink, tq: q}, nil
 	case *ent.InvestigationHypothesisQuery:
 		return &query[*ent.InvestigationHypothesisQuery, predicate.InvestigationHypothesis, investigationhypothesis.OrderOption]{typ: ent.TypeInvestigationHypothesis, tq: q}, nil
+	case *ent.InvestigationHypothesisVersionQuery:
+		return &query[*ent.InvestigationHypothesisVersionQuery, predicate.InvestigationHypothesisVersion, investigationhypothesisversion.OrderOption]{typ: ent.TypeInvestigationHypothesisVersion, tq: q}, nil
+	case *ent.InvestigationOutputReferenceQuery:
+		return &query[*ent.InvestigationOutputReferenceQuery, predicate.InvestigationOutputReference, investigationoutputreference.OrderOption]{typ: ent.TypeInvestigationOutputReference, tq: q}, nil
 	case *ent.InvestigationReportQuery:
 		return &query[*ent.InvestigationReportQuery, predicate.InvestigationReport, investigationreport.OrderOption]{typ: ent.TypeInvestigationReport, tq: q}, nil
+	case *ent.InvestigationUserInputQuery:
+		return &query[*ent.InvestigationUserInputQuery, predicate.InvestigationUserInput, investigationuserinput.OrderOption]{typ: ent.TypeInvestigationUserInput, tq: q}, nil
 	case *ent.KnowledgeEntityQuery:
 		return &query[*ent.KnowledgeEntityQuery, predicate.KnowledgeEntity, knowledgeentity.OrderOption]{typ: ent.TypeKnowledgeEntity, tq: q}, nil
 	case *ent.KnowledgeEntityLinkingAttributeQuery:

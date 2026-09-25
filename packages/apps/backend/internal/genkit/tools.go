@@ -32,15 +32,8 @@ type ToolRunner[Input any, Output any] interface {
 	ToolFunc(context.Context, Input) (Output, error)
 }
 
-func makeDefinedTool[I any, O any](def rezai.ToolDefinition[I, O], toolFn aix.ToolFunc[I, *O]) ai.Tool {
-	return aix.NewTool(def.Name(), def.Description(), func(ctx context.Context, i I) (O, error) {
-		toolOutput, toolErr := toolFn(ctx, i)
-		var o O
-		if toolOutput != nil {
-			o = *toolOutput
-		}
-		return o, toolErr
-	})
+func makeDefinedTool[I, O any](def rezai.ToolDefinition[I, O], toolFn aix.ToolFunc[I, O]) ai.Tool {
+	return aix.NewTool(def.Name(), def.Description(), toolFn)
 }
 
 func WithDefinedTool[I any, O any](t ToolRunner[I, O]) AiRuntimeOption {

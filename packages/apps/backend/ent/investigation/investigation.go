@@ -22,24 +22,28 @@ const (
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
-	// FieldSystemAnalysisID holds the string denoting the system_analysis_id field in the database.
-	FieldSystemAnalysisID = "system_analysis_id"
 	// FieldAgentSessionID holds the string denoting the agent_session_id field in the database.
 	FieldAgentSessionID = "agent_session_id"
+	// FieldSystemAnalysisID holds the string denoting the system_analysis_id field in the database.
+	FieldSystemAnalysisID = "system_analysis_id"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
-	// EdgeSystemAnalysis holds the string denoting the system_analysis edge name in mutations.
-	EdgeSystemAnalysis = "system_analysis"
 	// EdgeAgentSession holds the string denoting the agent_session edge name in mutations.
 	EdgeAgentSession = "agent_session"
+	// EdgeSystemAnalysis holds the string denoting the system_analysis edge name in mutations.
+	EdgeSystemAnalysis = "system_analysis"
 	// EdgeSituations holds the string denoting the situations edge name in mutations.
 	EdgeSituations = "situations"
+	// EdgeUserInputs holds the string denoting the user_inputs edge name in mutations.
+	EdgeUserInputs = "user_inputs"
+	// EdgeEvidenceRevisions holds the string denoting the evidence_revisions edge name in mutations.
+	EdgeEvidenceRevisions = "evidence_revisions"
 	// EdgeHypotheses holds the string denoting the hypotheses edge name in mutations.
 	EdgeHypotheses = "hypotheses"
 	// EdgeFindings holds the string denoting the findings edge name in mutations.
 	EdgeFindings = "findings"
-	// EdgeReport holds the string denoting the report edge name in mutations.
-	EdgeReport = "report"
+	// EdgeReports holds the string denoting the reports edge name in mutations.
+	EdgeReports = "reports"
 	// Table holds the table name of the investigation in the database.
 	Table = "investigations"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -49,13 +53,6 @@ const (
 	TenantInverseTable = "tenants"
 	// TenantColumn is the table column denoting the tenant relation/edge.
 	TenantColumn = "tenant_id"
-	// SystemAnalysisTable is the table that holds the system_analysis relation/edge.
-	SystemAnalysisTable = "investigations"
-	// SystemAnalysisInverseTable is the table name for the SystemAnalysis entity.
-	// It exists in this package in order to avoid circular dependency with the "systemanalysis" package.
-	SystemAnalysisInverseTable = "system_analyses"
-	// SystemAnalysisColumn is the table column denoting the system_analysis relation/edge.
-	SystemAnalysisColumn = "system_analysis_id"
 	// AgentSessionTable is the table that holds the agent_session relation/edge.
 	AgentSessionTable = "investigations"
 	// AgentSessionInverseTable is the table name for the AgentSession entity.
@@ -63,6 +60,13 @@ const (
 	AgentSessionInverseTable = "agent_sessions"
 	// AgentSessionColumn is the table column denoting the agent_session relation/edge.
 	AgentSessionColumn = "agent_session_id"
+	// SystemAnalysisTable is the table that holds the system_analysis relation/edge.
+	SystemAnalysisTable = "investigations"
+	// SystemAnalysisInverseTable is the table name for the SystemAnalysis entity.
+	// It exists in this package in order to avoid circular dependency with the "systemanalysis" package.
+	SystemAnalysisInverseTable = "system_analyses"
+	// SystemAnalysisColumn is the table column denoting the system_analysis relation/edge.
+	SystemAnalysisColumn = "system_analysis_id"
 	// SituationsTable is the table that holds the situations relation/edge.
 	SituationsTable = "situation_investigations"
 	// SituationsInverseTable is the table name for the SituationInvestigation entity.
@@ -70,6 +74,20 @@ const (
 	SituationsInverseTable = "situation_investigations"
 	// SituationsColumn is the table column denoting the situations relation/edge.
 	SituationsColumn = "investigation_id"
+	// UserInputsTable is the table that holds the user_inputs relation/edge.
+	UserInputsTable = "investigation_user_inputs"
+	// UserInputsInverseTable is the table name for the InvestigationUserInput entity.
+	// It exists in this package in order to avoid circular dependency with the "investigationuserinput" package.
+	UserInputsInverseTable = "investigation_user_inputs"
+	// UserInputsColumn is the table column denoting the user_inputs relation/edge.
+	UserInputsColumn = "investigation_id"
+	// EvidenceRevisionsTable is the table that holds the evidence_revisions relation/edge.
+	EvidenceRevisionsTable = "investigation_evidence_revisions"
+	// EvidenceRevisionsInverseTable is the table name for the InvestigationEvidenceRevision entity.
+	// It exists in this package in order to avoid circular dependency with the "investigationevidencerevision" package.
+	EvidenceRevisionsInverseTable = "investigation_evidence_revisions"
+	// EvidenceRevisionsColumn is the table column denoting the evidence_revisions relation/edge.
+	EvidenceRevisionsColumn = "investigation_id"
 	// HypothesesTable is the table that holds the hypotheses relation/edge.
 	HypothesesTable = "investigation_hypotheses"
 	// HypothesesInverseTable is the table name for the InvestigationHypothesis entity.
@@ -84,13 +102,13 @@ const (
 	FindingsInverseTable = "investigation_findings"
 	// FindingsColumn is the table column denoting the findings relation/edge.
 	FindingsColumn = "investigation_id"
-	// ReportTable is the table that holds the report relation/edge.
-	ReportTable = "investigation_reports"
-	// ReportInverseTable is the table name for the InvestigationReport entity.
+	// ReportsTable is the table that holds the reports relation/edge.
+	ReportsTable = "investigation_reports"
+	// ReportsInverseTable is the table name for the InvestigationReport entity.
 	// It exists in this package in order to avoid circular dependency with the "investigationreport" package.
-	ReportInverseTable = "investigation_reports"
-	// ReportColumn is the table column denoting the report relation/edge.
-	ReportColumn = "investigation_id"
+	ReportsInverseTable = "investigation_reports"
+	// ReportsColumn is the table column denoting the reports relation/edge.
+	ReportsColumn = "investigation_id"
 )
 
 // Columns holds all SQL columns for investigation fields.
@@ -99,8 +117,8 @@ var Columns = []string{
 	FieldTenantID,
 	FieldCreatedAt,
 	FieldUpdatedAt,
-	FieldSystemAnalysisID,
 	FieldAgentSessionID,
+	FieldSystemAnalysisID,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -154,14 +172,14 @@ func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
 }
 
-// BySystemAnalysisID orders the results by the system_analysis_id field.
-func BySystemAnalysisID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldSystemAnalysisID, opts...).ToFunc()
-}
-
 // ByAgentSessionID orders the results by the agent_session_id field.
 func ByAgentSessionID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldAgentSessionID, opts...).ToFunc()
+}
+
+// BySystemAnalysisID orders the results by the system_analysis_id field.
+func BySystemAnalysisID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldSystemAnalysisID, opts...).ToFunc()
 }
 
 // ByTenantField orders the results by tenant field.
@@ -171,17 +189,17 @@ func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
 	}
 }
 
-// BySystemAnalysisField orders the results by system_analysis field.
-func BySystemAnalysisField(field string, opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newSystemAnalysisStep(), sql.OrderByField(field, opts...))
-	}
-}
-
 // ByAgentSessionField orders the results by agent_session field.
 func ByAgentSessionField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newAgentSessionStep(), sql.OrderByField(field, opts...))
+	}
+}
+
+// BySystemAnalysisField orders the results by system_analysis field.
+func BySystemAnalysisField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newSystemAnalysisStep(), sql.OrderByField(field, opts...))
 	}
 }
 
@@ -196,6 +214,34 @@ func BySituationsCount(opts ...sql.OrderTermOption) OrderOption {
 func BySituations(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newSituationsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByUserInputsCount orders the results by user_inputs count.
+func ByUserInputsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newUserInputsStep(), opts...)
+	}
+}
+
+// ByUserInputs orders the results by user_inputs terms.
+func ByUserInputs(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newUserInputsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByEvidenceRevisionsCount orders the results by evidence_revisions count.
+func ByEvidenceRevisionsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newEvidenceRevisionsStep(), opts...)
+	}
+}
+
+// ByEvidenceRevisions orders the results by evidence_revisions terms.
+func ByEvidenceRevisions(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newEvidenceRevisionsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
 
@@ -227,10 +273,17 @@ func ByFindings(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
-// ByReportField orders the results by report field.
-func ByReportField(field string, opts ...sql.OrderTermOption) OrderOption {
+// ByReportsCount orders the results by reports count.
+func ByReportsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newReportStep(), sql.OrderByField(field, opts...))
+		sqlgraph.OrderByNeighborsCount(s, newReportsStep(), opts...)
+	}
+}
+
+// ByReports orders the results by reports terms.
+func ByReports(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newReportsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
 func newTenantStep() *sqlgraph.Step {
@@ -240,13 +293,6 @@ func newTenantStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
 	)
 }
-func newSystemAnalysisStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(SystemAnalysisInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2O, true, SystemAnalysisTable, SystemAnalysisColumn),
-	)
-}
 func newAgentSessionStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -254,11 +300,32 @@ func newAgentSessionStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.O2O, true, AgentSessionTable, AgentSessionColumn),
 	)
 }
+func newSystemAnalysisStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(SystemAnalysisInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2O, true, SystemAnalysisTable, SystemAnalysisColumn),
+	)
+}
 func newSituationsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(SituationsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, SituationsTable, SituationsColumn),
+	)
+}
+func newUserInputsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(UserInputsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, UserInputsTable, UserInputsColumn),
+	)
+}
+func newEvidenceRevisionsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(EvidenceRevisionsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, EvidenceRevisionsTable, EvidenceRevisionsColumn),
 	)
 }
 func newHypothesesStep() *sqlgraph.Step {
@@ -275,10 +342,10 @@ func newFindingsStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.O2M, false, FindingsTable, FindingsColumn),
 	)
 }
-func newReportStep() *sqlgraph.Step {
+func newReportsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(ReportInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2O, false, ReportTable, ReportColumn),
+		sqlgraph.To(ReportsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, ReportsTable, ReportsColumn),
 	)
 }

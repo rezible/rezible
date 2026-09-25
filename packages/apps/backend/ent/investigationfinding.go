@@ -12,6 +12,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/investigation"
 	"github.com/rezible/rezible/ent/investigationfinding"
+	"github.com/rezible/rezible/ent/investigationuserinput"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
@@ -28,10 +29,10 @@ type InvestigationFinding struct {
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// InvestigationID holds the value of the "investigation_id" field.
 	InvestigationID uuid.UUID `json:"investigation_id,omitempty"`
-	// Title holds the value of the "title" field.
-	Title string `json:"title,omitempty"`
-	// Body holds the value of the "body" field.
-	Body string `json:"body,omitempty"`
+	// Key holds the value of the "key" field.
+	Key string `json:"key,omitempty"`
+	// UserInputID holds the value of the "user_input_id" field.
+	UserInputID *uuid.UUID `json:"user_input_id,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the InvestigationFindingQuery when eager-loading is set.
 	Edges        InvestigationFindingEdges `json:"edges"`
@@ -44,9 +45,13 @@ type InvestigationFindingEdges struct {
 	Tenant *Tenant `json:"tenant,omitempty"`
 	// Investigation holds the value of the investigation edge.
 	Investigation *Investigation `json:"investigation,omitempty"`
+	// UserInput holds the value of the user_input edge.
+	UserInput *InvestigationUserInput `json:"user_input,omitempty"`
+	// Versions holds the value of the versions edge.
+	Versions []*InvestigationFindingVersion `json:"versions,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [4]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -71,14 +76,36 @@ func (e InvestigationFindingEdges) InvestigationOrErr() (*Investigation, error) 
 	return nil, &NotLoadedError{edge: "investigation"}
 }
 
+// UserInputOrErr returns the UserInput value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e InvestigationFindingEdges) UserInputOrErr() (*InvestigationUserInput, error) {
+	if e.UserInput != nil {
+		return e.UserInput, nil
+	} else if e.loadedTypes[2] {
+		return nil, &NotFoundError{label: investigationuserinput.Label}
+	}
+	return nil, &NotLoadedError{edge: "user_input"}
+}
+
+// VersionsOrErr returns the Versions value or an error if the edge
+// was not loaded in eager-loading.
+func (e InvestigationFindingEdges) VersionsOrErr() ([]*InvestigationFindingVersion, error) {
+	if e.loadedTypes[3] {
+		return e.Versions, nil
+	}
+	return nil, &NotLoadedError{edge: "versions"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*InvestigationFinding) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case investigationfinding.FieldUserInputID:
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case investigationfinding.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case investigationfinding.FieldTitle, investigationfinding.FieldBody:
+		case investigationfinding.FieldKey:
 			values[i] = new(sql.NullString)
 		case investigationfinding.FieldCreatedAt, investigationfinding.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -129,17 +156,18 @@ func (_m *InvestigationFinding) assignValues(columns []string, values []any) err
 			} else if value != nil {
 				_m.InvestigationID = *value
 			}
-		case investigationfinding.FieldTitle:
+		case investigationfinding.FieldKey:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field title", values[i])
+				return fmt.Errorf("unexpected type %T for field key", values[i])
 			} else if value.Valid {
-				_m.Title = value.String
+				_m.Key = value.String
 			}
-		case investigationfinding.FieldBody:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field body", values[i])
+		case investigationfinding.FieldUserInputID:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field user_input_id", values[i])
 			} else if value.Valid {
-				_m.Body = value.String
+				_m.UserInputID = new(uuid.UUID)
+				*_m.UserInputID = *value.S.(*uuid.UUID)
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -162,6 +190,16 @@ func (_m *InvestigationFinding) QueryTenant() *TenantQuery {
 // QueryInvestigation queries the "investigation" edge of the InvestigationFinding entity.
 func (_m *InvestigationFinding) QueryInvestigation() *InvestigationQuery {
 	return NewInvestigationFindingClient(_m.config).QueryInvestigation(_m)
+}
+
+// QueryUserInput queries the "user_input" edge of the InvestigationFinding entity.
+func (_m *InvestigationFinding) QueryUserInput() *InvestigationUserInputQuery {
+	return NewInvestigationFindingClient(_m.config).QueryUserInput(_m)
+}
+
+// QueryVersions queries the "versions" edge of the InvestigationFinding entity.
+func (_m *InvestigationFinding) QueryVersions() *InvestigationFindingVersionQuery {
+	return NewInvestigationFindingClient(_m.config).QueryVersions(_m)
 }
 
 // Update returns a builder for updating this InvestigationFinding.
@@ -199,11 +237,13 @@ func (_m *InvestigationFinding) String() string {
 	builder.WriteString("investigation_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.InvestigationID))
 	builder.WriteString(", ")
-	builder.WriteString("title=")
-	builder.WriteString(_m.Title)
+	builder.WriteString("key=")
+	builder.WriteString(_m.Key)
 	builder.WriteString(", ")
-	builder.WriteString("body=")
-	builder.WriteString(_m.Body)
+	if v := _m.UserInputID; v != nil {
+		builder.WriteString("user_input_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
 	builder.WriteByte(')')
 	return builder.String()
 }

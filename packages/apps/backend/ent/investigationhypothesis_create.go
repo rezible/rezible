@@ -15,6 +15,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/investigation"
 	"github.com/rezible/rezible/ent/investigationhypothesis"
+	"github.com/rezible/rezible/ent/investigationhypothesisversion"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
@@ -66,37 +67,9 @@ func (_c *InvestigationHypothesisCreate) SetInvestigationID(v uuid.UUID) *Invest
 	return _c
 }
 
-// SetTitle sets the "title" field.
-func (_c *InvestigationHypothesisCreate) SetTitle(v string) *InvestigationHypothesisCreate {
-	_c.mutation.SetTitle(v)
-	return _c
-}
-
-// SetBody sets the "body" field.
-func (_c *InvestigationHypothesisCreate) SetBody(v string) *InvestigationHypothesisCreate {
-	_c.mutation.SetBody(v)
-	return _c
-}
-
-// SetNillableBody sets the "body" field if the given value is not nil.
-func (_c *InvestigationHypothesisCreate) SetNillableBody(v *string) *InvestigationHypothesisCreate {
-	if v != nil {
-		_c.SetBody(*v)
-	}
-	return _c
-}
-
-// SetVerdict sets the "verdict" field.
-func (_c *InvestigationHypothesisCreate) SetVerdict(v string) *InvestigationHypothesisCreate {
-	_c.mutation.SetVerdict(v)
-	return _c
-}
-
-// SetNillableVerdict sets the "verdict" field if the given value is not nil.
-func (_c *InvestigationHypothesisCreate) SetNillableVerdict(v *string) *InvestigationHypothesisCreate {
-	if v != nil {
-		_c.SetVerdict(*v)
-	}
+// SetKey sets the "key" field.
+func (_c *InvestigationHypothesisCreate) SetKey(v string) *InvestigationHypothesisCreate {
+	_c.mutation.SetKey(v)
 	return _c
 }
 
@@ -122,6 +95,21 @@ func (_c *InvestigationHypothesisCreate) SetTenant(v *Tenant) *InvestigationHypo
 // SetInvestigation sets the "investigation" edge to the Investigation entity.
 func (_c *InvestigationHypothesisCreate) SetInvestigation(v *Investigation) *InvestigationHypothesisCreate {
 	return _c.SetInvestigationID(v.ID)
+}
+
+// AddVersionIDs adds the "versions" edge to the InvestigationHypothesisVersion entity by IDs.
+func (_c *InvestigationHypothesisCreate) AddVersionIDs(ids ...uuid.UUID) *InvestigationHypothesisCreate {
+	_c.mutation.AddVersionIDs(ids...)
+	return _c
+}
+
+// AddVersions adds the "versions" edges to the InvestigationHypothesisVersion entity.
+func (_c *InvestigationHypothesisCreate) AddVersions(v ...*InvestigationHypothesisVersion) *InvestigationHypothesisCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddVersionIDs(ids...)
 }
 
 // Mutation returns the InvestigationHypothesisMutation object of the builder.
@@ -199,12 +187,12 @@ func (_c *InvestigationHypothesisCreate) check() error {
 	if _, ok := _c.mutation.InvestigationID(); !ok {
 		return &ValidationError{Name: "investigation_id", err: errors.New(`ent: missing required field "InvestigationHypothesis.investigation_id"`)}
 	}
-	if _, ok := _c.mutation.Title(); !ok {
-		return &ValidationError{Name: "title", err: errors.New(`ent: missing required field "InvestigationHypothesis.title"`)}
+	if _, ok := _c.mutation.Key(); !ok {
+		return &ValidationError{Name: "key", err: errors.New(`ent: missing required field "InvestigationHypothesis.key"`)}
 	}
-	if v, ok := _c.mutation.Title(); ok {
-		if err := investigationhypothesis.TitleValidator(v); err != nil {
-			return &ValidationError{Name: "title", err: fmt.Errorf(`ent: validator failed for field "InvestigationHypothesis.title": %w`, err)}
+	if v, ok := _c.mutation.Key(); ok {
+		if err := investigationhypothesis.KeyValidator(v); err != nil {
+			return &ValidationError{Name: "key", err: fmt.Errorf(`ent: validator failed for field "InvestigationHypothesis.key": %w`, err)}
 		}
 	}
 	if len(_c.mutation.TenantIDs()) == 0 {
@@ -258,17 +246,9 @@ func (_c *InvestigationHypothesisCreate) createSpec() (*InvestigationHypothesis,
 		_spec.SetField(investigationhypothesis.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
 	}
-	if value, ok := _c.mutation.Title(); ok {
-		_spec.SetField(investigationhypothesis.FieldTitle, field.TypeString, value)
-		_node.Title = value
-	}
-	if value, ok := _c.mutation.Body(); ok {
-		_spec.SetField(investigationhypothesis.FieldBody, field.TypeString, value)
-		_node.Body = value
-	}
-	if value, ok := _c.mutation.Verdict(); ok {
-		_spec.SetField(investigationhypothesis.FieldVerdict, field.TypeString, value)
-		_node.Verdict = &value
+	if value, ok := _c.mutation.Key(); ok {
+		_spec.SetField(investigationhypothesis.FieldKey, field.TypeString, value)
+		_node.Key = value
 	}
 	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -304,6 +284,23 @@ func (_c *InvestigationHypothesisCreate) createSpec() (*InvestigationHypothesis,
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.InvestigationID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.VersionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   investigationhypothesis.VersionsTable,
+			Columns: []string{investigationhypothesis.VersionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(investigationhypothesisversion.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.InvestigationHypothesisVersion
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
@@ -382,54 +379,6 @@ func (u *InvestigationHypothesisUpsert) UpdateUpdatedAt() *InvestigationHypothes
 	return u
 }
 
-// SetTitle sets the "title" field.
-func (u *InvestigationHypothesisUpsert) SetTitle(v string) *InvestigationHypothesisUpsert {
-	u.Set(investigationhypothesis.FieldTitle, v)
-	return u
-}
-
-// UpdateTitle sets the "title" field to the value that was provided on create.
-func (u *InvestigationHypothesisUpsert) UpdateTitle() *InvestigationHypothesisUpsert {
-	u.SetExcluded(investigationhypothesis.FieldTitle)
-	return u
-}
-
-// SetBody sets the "body" field.
-func (u *InvestigationHypothesisUpsert) SetBody(v string) *InvestigationHypothesisUpsert {
-	u.Set(investigationhypothesis.FieldBody, v)
-	return u
-}
-
-// UpdateBody sets the "body" field to the value that was provided on create.
-func (u *InvestigationHypothesisUpsert) UpdateBody() *InvestigationHypothesisUpsert {
-	u.SetExcluded(investigationhypothesis.FieldBody)
-	return u
-}
-
-// ClearBody clears the value of the "body" field.
-func (u *InvestigationHypothesisUpsert) ClearBody() *InvestigationHypothesisUpsert {
-	u.SetNull(investigationhypothesis.FieldBody)
-	return u
-}
-
-// SetVerdict sets the "verdict" field.
-func (u *InvestigationHypothesisUpsert) SetVerdict(v string) *InvestigationHypothesisUpsert {
-	u.Set(investigationhypothesis.FieldVerdict, v)
-	return u
-}
-
-// UpdateVerdict sets the "verdict" field to the value that was provided on create.
-func (u *InvestigationHypothesisUpsert) UpdateVerdict() *InvestigationHypothesisUpsert {
-	u.SetExcluded(investigationhypothesis.FieldVerdict)
-	return u
-}
-
-// ClearVerdict clears the value of the "verdict" field.
-func (u *InvestigationHypothesisUpsert) ClearVerdict() *InvestigationHypothesisUpsert {
-	u.SetNull(investigationhypothesis.FieldVerdict)
-	return u
-}
-
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
@@ -452,6 +401,9 @@ func (u *InvestigationHypothesisUpsertOne) UpdateNewValues() *InvestigationHypot
 		}
 		if _, exists := u.create.mutation.InvestigationID(); exists {
 			s.SetIgnore(investigationhypothesis.FieldInvestigationID)
+		}
+		if _, exists := u.create.mutation.Key(); exists {
+			s.SetIgnore(investigationhypothesis.FieldKey)
 		}
 	}))
 	return u
@@ -509,62 +461,6 @@ func (u *InvestigationHypothesisUpsertOne) SetUpdatedAt(v time.Time) *Investigat
 func (u *InvestigationHypothesisUpsertOne) UpdateUpdatedAt() *InvestigationHypothesisUpsertOne {
 	return u.Update(func(s *InvestigationHypothesisUpsert) {
 		s.UpdateUpdatedAt()
-	})
-}
-
-// SetTitle sets the "title" field.
-func (u *InvestigationHypothesisUpsertOne) SetTitle(v string) *InvestigationHypothesisUpsertOne {
-	return u.Update(func(s *InvestigationHypothesisUpsert) {
-		s.SetTitle(v)
-	})
-}
-
-// UpdateTitle sets the "title" field to the value that was provided on create.
-func (u *InvestigationHypothesisUpsertOne) UpdateTitle() *InvestigationHypothesisUpsertOne {
-	return u.Update(func(s *InvestigationHypothesisUpsert) {
-		s.UpdateTitle()
-	})
-}
-
-// SetBody sets the "body" field.
-func (u *InvestigationHypothesisUpsertOne) SetBody(v string) *InvestigationHypothesisUpsertOne {
-	return u.Update(func(s *InvestigationHypothesisUpsert) {
-		s.SetBody(v)
-	})
-}
-
-// UpdateBody sets the "body" field to the value that was provided on create.
-func (u *InvestigationHypothesisUpsertOne) UpdateBody() *InvestigationHypothesisUpsertOne {
-	return u.Update(func(s *InvestigationHypothesisUpsert) {
-		s.UpdateBody()
-	})
-}
-
-// ClearBody clears the value of the "body" field.
-func (u *InvestigationHypothesisUpsertOne) ClearBody() *InvestigationHypothesisUpsertOne {
-	return u.Update(func(s *InvestigationHypothesisUpsert) {
-		s.ClearBody()
-	})
-}
-
-// SetVerdict sets the "verdict" field.
-func (u *InvestigationHypothesisUpsertOne) SetVerdict(v string) *InvestigationHypothesisUpsertOne {
-	return u.Update(func(s *InvestigationHypothesisUpsert) {
-		s.SetVerdict(v)
-	})
-}
-
-// UpdateVerdict sets the "verdict" field to the value that was provided on create.
-func (u *InvestigationHypothesisUpsertOne) UpdateVerdict() *InvestigationHypothesisUpsertOne {
-	return u.Update(func(s *InvestigationHypothesisUpsert) {
-		s.UpdateVerdict()
-	})
-}
-
-// ClearVerdict clears the value of the "verdict" field.
-func (u *InvestigationHypothesisUpsertOne) ClearVerdict() *InvestigationHypothesisUpsertOne {
-	return u.Update(func(s *InvestigationHypothesisUpsert) {
-		s.ClearVerdict()
 	})
 }
 
@@ -757,6 +653,9 @@ func (u *InvestigationHypothesisUpsertBulk) UpdateNewValues() *InvestigationHypo
 			if _, exists := b.mutation.InvestigationID(); exists {
 				s.SetIgnore(investigationhypothesis.FieldInvestigationID)
 			}
+			if _, exists := b.mutation.Key(); exists {
+				s.SetIgnore(investigationhypothesis.FieldKey)
+			}
 		}
 	}))
 	return u
@@ -814,62 +713,6 @@ func (u *InvestigationHypothesisUpsertBulk) SetUpdatedAt(v time.Time) *Investiga
 func (u *InvestigationHypothesisUpsertBulk) UpdateUpdatedAt() *InvestigationHypothesisUpsertBulk {
 	return u.Update(func(s *InvestigationHypothesisUpsert) {
 		s.UpdateUpdatedAt()
-	})
-}
-
-// SetTitle sets the "title" field.
-func (u *InvestigationHypothesisUpsertBulk) SetTitle(v string) *InvestigationHypothesisUpsertBulk {
-	return u.Update(func(s *InvestigationHypothesisUpsert) {
-		s.SetTitle(v)
-	})
-}
-
-// UpdateTitle sets the "title" field to the value that was provided on create.
-func (u *InvestigationHypothesisUpsertBulk) UpdateTitle() *InvestigationHypothesisUpsertBulk {
-	return u.Update(func(s *InvestigationHypothesisUpsert) {
-		s.UpdateTitle()
-	})
-}
-
-// SetBody sets the "body" field.
-func (u *InvestigationHypothesisUpsertBulk) SetBody(v string) *InvestigationHypothesisUpsertBulk {
-	return u.Update(func(s *InvestigationHypothesisUpsert) {
-		s.SetBody(v)
-	})
-}
-
-// UpdateBody sets the "body" field to the value that was provided on create.
-func (u *InvestigationHypothesisUpsertBulk) UpdateBody() *InvestigationHypothesisUpsertBulk {
-	return u.Update(func(s *InvestigationHypothesisUpsert) {
-		s.UpdateBody()
-	})
-}
-
-// ClearBody clears the value of the "body" field.
-func (u *InvestigationHypothesisUpsertBulk) ClearBody() *InvestigationHypothesisUpsertBulk {
-	return u.Update(func(s *InvestigationHypothesisUpsert) {
-		s.ClearBody()
-	})
-}
-
-// SetVerdict sets the "verdict" field.
-func (u *InvestigationHypothesisUpsertBulk) SetVerdict(v string) *InvestigationHypothesisUpsertBulk {
-	return u.Update(func(s *InvestigationHypothesisUpsert) {
-		s.SetVerdict(v)
-	})
-}
-
-// UpdateVerdict sets the "verdict" field to the value that was provided on create.
-func (u *InvestigationHypothesisUpsertBulk) UpdateVerdict() *InvestigationHypothesisUpsertBulk {
-	return u.Update(func(s *InvestigationHypothesisUpsert) {
-		s.UpdateVerdict()
-	})
-}
-
-// ClearVerdict clears the value of the "verdict" field.
-func (u *InvestigationHypothesisUpsertBulk) ClearVerdict() *InvestigationHypothesisUpsertBulk {
-	return u.Update(func(s *InvestigationHypothesisUpsert) {
-		s.ClearVerdict()
 	})
 }
 

@@ -51,7 +51,7 @@ ALTER TABLE "system_hazards" DROP CONSTRAINT "system_hazards_knowledge_entities_
 -- reverse: modify "system_analysis_relationships" table
 ALTER TABLE "system_analysis_relationships" DROP CONSTRAINT "system_analysis_relationships__b7ca708fb4a6c01cc857332c522e01e3", DROP CONSTRAINT "system_analysis_relationships_system_analyses_analysis", DROP CONSTRAINT "system_analysis_relationships_tenants_tenant";
 -- reverse: modify "system_analysis_entry_subjects" table
-ALTER TABLE "system_analysis_entry_subjects" DROP CONSTRAINT "system_analysis_entry_subjects_f5a3e3d454bdb8a01343f1c7b7a57859", DROP CONSTRAINT "system_analysis_entry_subjects_1264d7dddb02bff88a4448e8cddecac8", DROP CONSTRAINT "system_analysis_entry_subjects_900e59485c580b401fec755bd8cd2504", DROP CONSTRAINT "system_analysis_entry_subjects_49d5b666fad2cccccfff680228c04fc3", DROP CONSTRAINT "system_analysis_entry_subjects_system_analysis_entries_entry", DROP CONSTRAINT "system_analysis_entry_subjects_tenants_tenant";
+ALTER TABLE "system_analysis_entry_subjects" DROP CONSTRAINT "system_analysis_entry_subjects_1264d7dddb02bff88a4448e8cddecac8", DROP CONSTRAINT "system_analysis_entry_subjects_900e59485c580b401fec755bd8cd2504", DROP CONSTRAINT "system_analysis_entry_subjects_49d5b666fad2cccccfff680228c04fc3", DROP CONSTRAINT "system_analysis_entry_subjects_system_analysis_entries_entry", DROP CONSTRAINT "system_analysis_entry_subjects_tenants_tenant";
 -- reverse: modify "system_analysis_entries" table
 ALTER TABLE "system_analysis_entries" DROP CONSTRAINT "system_analysis_entries_system_analyses_analysis", DROP CONSTRAINT "system_analysis_entries_tenants_tenant";
 -- reverse: modify "system_analysis_entities" table
@@ -61,11 +61,11 @@ ALTER TABLE "system_analyses" DROP CONSTRAINT "system_analyses_knowledge_entitie
 -- reverse: modify "situation_observation_groups" table
 ALTER TABLE "situation_observation_groups" DROP CONSTRAINT "situation_observation_groups_situations_situation", DROP CONSTRAINT "situation_observation_groups_tenants_tenant";
 -- reverse: modify "situation_investigations" table
-ALTER TABLE "situation_investigations" DROP CONSTRAINT "situation_investigations_agent_turns_requested_turn", DROP CONSTRAINT "situation_investigations_tenants_tenant", DROP CONSTRAINT "situation_investigations_situations_investigation", DROP CONSTRAINT "situation_investigations_investigations_situations";
+ALTER TABLE "situation_investigations" DROP CONSTRAINT "situation_investigations_tenants_tenant", DROP CONSTRAINT "situation_investigations_situations_investigation", DROP CONSTRAINT "situation_investigations_investigations_situations";
 -- reverse: modify "situation_hazard_assessments" table
 ALTER TABLE "situation_hazard_assessments" DROP CONSTRAINT "situation_hazard_assessments_s_4cfd09fc46fb5f66a4f31cc2a855fdad", DROP CONSTRAINT "situation_hazard_assessments_agent_turns_agent_turn", DROP CONSTRAINT "situation_hazard_assessments_users_user", DROP CONSTRAINT "situation_hazard_assessments_system_hazards_system_hazard", DROP CONSTRAINT "situation_hazard_assessments_situations_situation", DROP CONSTRAINT "situation_hazard_assessments_tenants_tenant";
 -- reverse: modify "situations" table
-ALTER TABLE "situations" DROP CONSTRAINT "situations_knowledge_entities_knowledge_entity", DROP CONSTRAINT "situations_tenants_tenant";
+ALTER TABLE "situations" DROP CONSTRAINT "situations_tenants_tenant";
 -- reverse: modify "reviews" table
 ALTER TABLE "reviews" DROP CONSTRAINT "reviews_discussion_comments_comment", DROP CONSTRAINT "reviews_users_reviewer", DROP CONSTRAINT "reviews_users_requester", DROP CONSTRAINT "reviews_system_analysis_entries_analysis_entry", DROP CONSTRAINT "reviews_retrospectives_retrospective", DROP CONSTRAINT "reviews_tenants_tenant";
 -- reverse: modify "retrospectives" table
@@ -114,12 +114,24 @@ ALTER TABLE "knowledge_evidences" DROP CONSTRAINT "knowledge_evidences_knowledge
 ALTER TABLE "knowledge_entity_linking_attributes" DROP CONSTRAINT "knowledge_entity_linking_attributes_knowledge_entities_entity", DROP CONSTRAINT "knowledge_entity_linking_attributes_tenants_tenant";
 -- reverse: modify "knowledge_entities" table
 ALTER TABLE "knowledge_entities" DROP CONSTRAINT "knowledge_entities_tenants_tenant";
+-- reverse: modify "investigation_user_inputs" table
+ALTER TABLE "investigation_user_inputs" DROP CONSTRAINT "investigation_user_inputs_agent_turns_agent_turn", DROP CONSTRAINT "investigation_user_inputs_tenants_tenant", DROP CONSTRAINT "investigation_user_inputs_investigations_user_inputs";
 -- reverse: modify "investigation_reports" table
-ALTER TABLE "investigation_reports" DROP CONSTRAINT "investigation_reports_agent_turns_agent_turn", DROP CONSTRAINT "investigation_reports_tenants_tenant", DROP CONSTRAINT "investigation_reports_investigations_report";
+ALTER TABLE "investigation_reports" DROP CONSTRAINT "investigation_reports_agent_turns_agent_turn", DROP CONSTRAINT "investigation_reports_tenants_tenant", DROP CONSTRAINT "investigation_reports_investigations_reports";
+-- reverse: modify "investigation_output_references" table
+ALTER TABLE "investigation_output_references" DROP CONSTRAINT "investigation_output_reference_19d5676cbf4c7efbfe0274329fc6dce2", DROP CONSTRAINT "investigation_output_reference_301855c5320da85fac0a55377fdf5c0d", DROP CONSTRAINT "investigation_output_reference_694e046dee9043d3d8ab666387b3b77b", DROP CONSTRAINT "investigation_output_references_investigation_reports_report", DROP CONSTRAINT "investigation_output_references_tenants_tenant";
+-- reverse: modify "investigation_hypothesis_versions" table
+ALTER TABLE "investigation_hypothesis_versions" DROP CONSTRAINT "investigation_hypothesis_versions_agent_turns_agent_turn", DROP CONSTRAINT "investigation_hypothesis_versi_8a313c9666ec14f3a56be08b9114c170", DROP CONSTRAINT "investigation_hypothesis_versions_tenants_tenant";
 -- reverse: modify "investigation_hypotheses" table
 ALTER TABLE "investigation_hypotheses" DROP CONSTRAINT "investigation_hypotheses_tenants_tenant", DROP CONSTRAINT "investigation_hypotheses_investigations_hypotheses";
+-- reverse: modify "investigation_finding_version_links" table
+ALTER TABLE "investigation_finding_version_links" DROP CONSTRAINT "investigation_finding_version__c6b71b5605fe6436c7e142fff566eb32", DROP CONSTRAINT "investigation_finding_version__a858640a5bb4fc046ffa66f7471569d0", DROP CONSTRAINT "investigation_finding_version_links_tenants_tenant";
+-- reverse: modify "investigation_finding_versions" table
+ALTER TABLE "investigation_finding_versions" DROP CONSTRAINT "investigation_finding_versions_agent_turns_agent_turn", DROP CONSTRAINT "investigation_finding_versions_investigation_findings_finding", DROP CONSTRAINT "investigation_finding_versions_tenants_tenant";
 -- reverse: modify "investigation_findings" table
-ALTER TABLE "investigation_findings" DROP CONSTRAINT "investigation_findings_tenants_tenant", DROP CONSTRAINT "investigation_findings_investigations_findings";
+ALTER TABLE "investigation_findings" DROP CONSTRAINT "investigation_findings_investigation_user_inputs_user_input", DROP CONSTRAINT "investigation_findings_tenants_tenant", DROP CONSTRAINT "investigation_findings_investigations_findings";
+-- reverse: modify "investigation_evidence_revisions" table
+ALTER TABLE "investigation_evidence_revisions" DROP CONSTRAINT "investigation_evidence_revisions_agent_turns_agent_turn", DROP CONSTRAINT "investigation_evidence_revisions_tenants_tenant", DROP CONSTRAINT "investigation_evidence_revisio_80602e4f97e659a214870e7c49c36239";
 -- reverse: modify "investigations" table
 ALTER TABLE "investigations" DROP CONSTRAINT "investigations_system_analyses_investigation", DROP CONSTRAINT "investigations_tenants_tenant", DROP CONSTRAINT "investigations_agent_sessions_investigation";
 -- reverse: modify "integration_user_install_states" table
@@ -294,16 +306,12 @@ DROP INDEX "systemanalysisrelationship_ten_4ca9378453889ae93a25a749d875e2ed";
 DROP INDEX "systemanalysisrelationship_tenant_id";
 -- reverse: create "system_analysis_relationships" table
 DROP TABLE "system_analysis_relationships";
--- reverse: create index "systemanalysisentrysubject_tenant_id_normalized_event_id" to table: "system_analysis_entry_subjects"
-DROP INDEX "systemanalysisentrysubject_tenant_id_normalized_event_id";
 -- reverse: create index "systemanalysisentrysubject_tenant_id_knowledge_evidence_id" to table: "system_analysis_entry_subjects"
 DROP INDEX "systemanalysisentrysubject_tenant_id_knowledge_evidence_id";
 -- reverse: create index "systemanalysisentrysubject_tenant_id_knowledge_relationship_id" to table: "system_analysis_entry_subjects"
 DROP INDEX "systemanalysisentrysubject_tenant_id_knowledge_relationship_id";
 -- reverse: create index "systemanalysisentrysubject_tenant_id_knowledge_entity_id" to table: "system_analysis_entry_subjects"
 DROP INDEX "systemanalysisentrysubject_tenant_id_knowledge_entity_id";
--- reverse: create index "systemanalysisentrysubject_ten_fd31024669a720c37628dad3f0e1e538" to table: "system_analysis_entry_subjects"
-DROP INDEX "systemanalysisentrysubject_ten_fd31024669a720c37628dad3f0e1e538";
 -- reverse: create index "systemanalysisentrysubject_ten_dc57a3ba916d5e935c195e68bedc78ed" to table: "system_analysis_entry_subjects"
 DROP INDEX "systemanalysisentrysubject_ten_dc57a3ba916d5e935c195e68bedc78ed";
 -- reverse: create index "systemanalysisentrysubject_ten_dc808ec92a5050740e97559ed0829fef" to table: "system_analysis_entry_subjects"
@@ -366,8 +374,6 @@ DROP INDEX "situationhazardassessment_tenant_id";
 DROP TABLE "situation_hazard_assessments";
 -- reverse: create index "situation_tenant_id_opened_at" to table: "situations"
 DROP INDEX "situation_tenant_id_opened_at";
--- reverse: create index "situation_tenant_id_knowledge_entity_id" to table: "situations"
-DROP INDEX "situation_tenant_id_knowledge_entity_id";
 -- reverse: create index "situation_tenant_id" to table: "situations"
 DROP INDEX "situation_tenant_id";
 -- reverse: create "situations" table
@@ -522,32 +528,86 @@ DROP INDEX "knowledgeentity_tenant_id_category_kind";
 DROP INDEX "knowledgeentity_tenant_id";
 -- reverse: create "knowledge_entities" table
 DROP TABLE "knowledge_entities";
--- reverse: create index "investigationreport_tenant_id_investigation_id_created_at" to table: "investigation_reports"
-DROP INDEX "investigationreport_tenant_id_investigation_id_created_at";
--- reverse: create index "investigationreport_tenant_id_agent_turn_id" to table: "investigation_reports"
-DROP INDEX "investigationreport_tenant_id_agent_turn_id";
+-- reverse: create index "investigationuserinput_investigation_id_created_at_id" to table: "investigation_user_inputs"
+DROP INDEX "investigationuserinput_investigation_id_created_at_id";
+-- reverse: create index "investigationuserinput_investigation_id_agent_turn_id" to table: "investigation_user_inputs"
+DROP INDEX "investigationuserinput_investigation_id_agent_turn_id";
+-- reverse: create index "investigationuserinput_investigation_id_key" to table: "investigation_user_inputs"
+DROP INDEX "investigationuserinput_investigation_id_key";
+-- reverse: create index "investigationuserinput_tenant_id" to table: "investigation_user_inputs"
+DROP INDEX "investigationuserinput_tenant_id";
+-- reverse: create "investigation_user_inputs" table
+DROP TABLE "investigation_user_inputs";
+-- reverse: create index "investigationreport_tenant_id__96fa32c834dcde34e610dab6be684a51" to table: "investigation_reports"
+DROP INDEX "investigationreport_tenant_id__96fa32c834dcde34e610dab6be684a51";
+-- reverse: create index "investigationreport_tenant_id_agent_turn_id_fingerprint" to table: "investigation_reports"
+DROP INDEX "investigationreport_tenant_id_agent_turn_id_fingerprint";
 -- reverse: create index "investigationreport_tenant_id" to table: "investigation_reports"
 DROP INDEX "investigationreport_tenant_id";
--- reverse: create index "investigation_reports_investigation_id_key" to table: "investigation_reports"
-DROP INDEX "investigation_reports_investigation_id_key";
 -- reverse: create "investigation_reports" table
 DROP TABLE "investigation_reports";
--- reverse: create index "investigationhypothesis_tenant_id_investigation_id" to table: "investigation_hypotheses"
-DROP INDEX "investigationhypothesis_tenant_id_investigation_id";
+-- reverse: create index "investigationoutputreference_tenant_id_hypothesis_version_id" to table: "investigation_output_references"
+DROP INDEX "investigationoutputreference_tenant_id_hypothesis_version_id";
+-- reverse: create index "investigationoutputreference_tenant_id_finding_version_id" to table: "investigation_output_references"
+DROP INDEX "investigationoutputreference_tenant_id_finding_version_id";
+-- reverse: create index "investigationoutputreference_tenant_id_report_id" to table: "investigation_output_references"
+DROP INDEX "investigationoutputreference_tenant_id_report_id";
+-- reverse: create index "investigationoutputreference_tenant_id" to table: "investigation_output_references"
+DROP INDEX "investigationoutputreference_tenant_id";
+-- reverse: create "investigation_output_references" table
+DROP TABLE "investigation_output_references";
+-- reverse: create index "investigationhypothesisversion_db06a0a5c6994f554178dd8d38713f02" to table: "investigation_hypothesis_versions"
+DROP INDEX "investigationhypothesisversion_db06a0a5c6994f554178dd8d38713f02";
+-- reverse: create index "investigationhypothesisversion_fdb80fec734158f65dde879bc383a999" to table: "investigation_hypothesis_versions"
+DROP INDEX "investigationhypothesisversion_fdb80fec734158f65dde879bc383a999";
+-- reverse: create index "investigationhypothesisversion_tenant_id" to table: "investigation_hypothesis_versions"
+DROP INDEX "investigationhypothesisversion_tenant_id";
+-- reverse: create "investigation_hypothesis_versions" table
+DROP TABLE "investigation_hypothesis_versions";
+-- reverse: create index "investigationhypothesis_tenant_id_investigation_id_key" to table: "investigation_hypotheses"
+DROP INDEX "investigationhypothesis_tenant_id_investigation_id_key";
 -- reverse: create index "investigationhypothesis_tenant_id" to table: "investigation_hypotheses"
 DROP INDEX "investigationhypothesis_tenant_id";
 -- reverse: create "investigation_hypotheses" table
 DROP TABLE "investigation_hypotheses";
--- reverse: create index "investigationfinding_tenant_id_investigation_id" to table: "investigation_findings"
-DROP INDEX "investigationfinding_tenant_id_investigation_id";
+-- reverse: create index "investigationfindingversionlink_tenant_id_target_version_id" to table: "investigation_finding_version_links"
+DROP INDEX "investigationfindingversionlink_tenant_id_target_version_id";
+-- reverse: create index "investigationfindingversionlin_0ad2a45c15386608fb61877da208fca8" to table: "investigation_finding_version_links"
+DROP INDEX "investigationfindingversionlin_0ad2a45c15386608fb61877da208fca8";
+-- reverse: create index "investigationfindingversionlink_tenant_id" to table: "investigation_finding_version_links"
+DROP INDEX "investigationfindingversionlink_tenant_id";
+-- reverse: create "investigation_finding_version_links" table
+DROP TABLE "investigation_finding_version_links";
+-- reverse: create index "investigationfindingversion_te_e72d38e02e22d53af5dd44d2db41a067" to table: "investigation_finding_versions"
+DROP INDEX "investigationfindingversion_te_e72d38e02e22d53af5dd44d2db41a067";
+-- reverse: create index "investigationfindingversion_tenant_id_agent_turn_id_fingerprint" to table: "investigation_finding_versions"
+DROP INDEX "investigationfindingversion_tenant_id_agent_turn_id_fingerprint";
+-- reverse: create index "investigationfindingversion_tenant_id" to table: "investigation_finding_versions"
+DROP INDEX "investigationfindingversion_tenant_id";
+-- reverse: create "investigation_finding_versions" table
+DROP TABLE "investigation_finding_versions";
+-- reverse: create index "investigationfinding_tenant_id_user_input_id" to table: "investigation_findings"
+DROP INDEX "investigationfinding_tenant_id_user_input_id";
+-- reverse: create index "investigationfinding_tenant_id_investigation_id_key" to table: "investigation_findings"
+DROP INDEX "investigationfinding_tenant_id_investigation_id_key";
 -- reverse: create index "investigationfinding_tenant_id" to table: "investigation_findings"
 DROP INDEX "investigationfinding_tenant_id";
 -- reverse: create "investigation_findings" table
 DROP TABLE "investigation_findings";
--- reverse: create index "investigation_tenant_id_agent_session_id" to table: "investigations"
-DROP INDEX "investigation_tenant_id_agent_session_id";
+-- reverse: create index "investigationevidencerevision_investigation_id_created_at_id" to table: "investigation_evidence_revisions"
+DROP INDEX "investigationevidencerevision_investigation_id_created_at_id";
+-- reverse: create index "investigationevidencerevision_investigation_id_agent_turn_id" to table: "investigation_evidence_revisions"
+DROP INDEX "investigationevidencerevision_investigation_id_agent_turn_id";
+-- reverse: create index "investigationevidencerevision_investigation_id_key" to table: "investigation_evidence_revisions"
+DROP INDEX "investigationevidencerevision_investigation_id_key";
+-- reverse: create index "investigationevidencerevision_tenant_id" to table: "investigation_evidence_revisions"
+DROP INDEX "investigationevidencerevision_tenant_id";
+-- reverse: create "investigation_evidence_revisions" table
+DROP TABLE "investigation_evidence_revisions";
 -- reverse: create index "investigation_tenant_id_system_analysis_id" to table: "investigations"
 DROP INDEX "investigation_tenant_id_system_analysis_id";
+-- reverse: create index "investigation_tenant_id_agent_session_id" to table: "investigations"
+DROP INDEX "investigation_tenant_id_agent_session_id";
 -- reverse: create index "investigation_tenant_id" to table: "investigations"
 DROP INDEX "investigation_tenant_id";
 -- reverse: create index "investigations_system_analysis_id_key" to table: "investigations"

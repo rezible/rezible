@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"database/sql/driver"
 	"errors"
 	"fmt"
 	"math"
@@ -16,6 +17,7 @@ import (
 	"github.com/rezible/rezible/ent/agentturn"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/investigation"
+	"github.com/rezible/rezible/ent/investigationoutputreference"
 	"github.com/rezible/rezible/ent/investigationreport"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/tenant"
@@ -24,14 +26,15 @@ import (
 // InvestigationReportQuery is the builder for querying InvestigationReport entities.
 type InvestigationReportQuery struct {
 	config
-	ctx               *QueryContext
-	order             []investigationreport.OrderOption
-	inters            []Interceptor
-	predicates        []predicate.InvestigationReport
-	withTenant        *TenantQuery
-	withInvestigation *InvestigationQuery
-	withAgentTurn     *AgentTurnQuery
-	modifiers         []func(*sql.Selector)
+	ctx                  *QueryContext
+	order                []investigationreport.OrderOption
+	inters               []Interceptor
+	predicates           []predicate.InvestigationReport
+	withTenant           *TenantQuery
+	withInvestigation    *InvestigationQuery
+	withAgentTurn        *AgentTurnQuery
+	withOutputReferences *InvestigationOutputReferenceQuery
+	modifiers            []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -107,7 +110,7 @@ func (_q *InvestigationReportQuery) QueryInvestigation() *InvestigationQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(investigationreport.Table, investigationreport.FieldID, selector),
 			sqlgraph.To(investigation.Table, investigation.FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, true, investigationreport.InvestigationTable, investigationreport.InvestigationColumn),
+			sqlgraph.Edge(sqlgraph.M2O, true, investigationreport.InvestigationTable, investigationreport.InvestigationColumn),
 		)
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.Investigation
@@ -137,6 +140,31 @@ func (_q *InvestigationReportQuery) QueryAgentTurn() *AgentTurnQuery {
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.AgentTurn
 		step.Edge.Schema = schemaConfig.InvestigationReport
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryOutputReferences chains the current query on the "output_references" edge.
+func (_q *InvestigationReportQuery) QueryOutputReferences() *InvestigationOutputReferenceQuery {
+	query := (&InvestigationOutputReferenceClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(investigationreport.Table, investigationreport.FieldID, selector),
+			sqlgraph.To(investigationoutputreference.Table, investigationoutputreference.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, investigationreport.OutputReferencesTable, investigationreport.OutputReferencesColumn),
+		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.InvestigationOutputReference
+		step.Edge.Schema = schemaConfig.InvestigationOutputReference
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -330,14 +358,15 @@ func (_q *InvestigationReportQuery) Clone() *InvestigationReportQuery {
 		return nil
 	}
 	return &InvestigationReportQuery{
-		config:            _q.config,
-		ctx:               _q.ctx.Clone(),
-		order:             append([]investigationreport.OrderOption{}, _q.order...),
-		inters:            append([]Interceptor{}, _q.inters...),
-		predicates:        append([]predicate.InvestigationReport{}, _q.predicates...),
-		withTenant:        _q.withTenant.Clone(),
-		withInvestigation: _q.withInvestigation.Clone(),
-		withAgentTurn:     _q.withAgentTurn.Clone(),
+		config:               _q.config,
+		ctx:                  _q.ctx.Clone(),
+		order:                append([]investigationreport.OrderOption{}, _q.order...),
+		inters:               append([]Interceptor{}, _q.inters...),
+		predicates:           append([]predicate.InvestigationReport{}, _q.predicates...),
+		withTenant:           _q.withTenant.Clone(),
+		withInvestigation:    _q.withInvestigation.Clone(),
+		withAgentTurn:        _q.withAgentTurn.Clone(),
+		withOutputReferences: _q.withOutputReferences.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
 		path:      _q.path,
@@ -375,6 +404,17 @@ func (_q *InvestigationReportQuery) WithAgentTurn(opts ...func(*AgentTurnQuery))
 		opt(query)
 	}
 	_q.withAgentTurn = query
+	return _q
+}
+
+// WithOutputReferences tells the query-builder to eager-load the nodes that are connected to
+// the "output_references" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *InvestigationReportQuery) WithOutputReferences(opts ...func(*InvestigationOutputReferenceQuery)) *InvestigationReportQuery {
+	query := (&InvestigationOutputReferenceClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withOutputReferences = query
 	return _q
 }
 
@@ -462,10 +502,11 @@ func (_q *InvestigationReportQuery) sqlAll(ctx context.Context, hooks ...queryHo
 	var (
 		nodes       = []*InvestigationReport{}
 		_spec       = _q.querySpec()
-		loadedTypes = [3]bool{
+		loadedTypes = [4]bool{
 			_q.withTenant != nil,
 			_q.withInvestigation != nil,
 			_q.withAgentTurn != nil,
+			_q.withOutputReferences != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -506,6 +547,15 @@ func (_q *InvestigationReportQuery) sqlAll(ctx context.Context, hooks ...queryHo
 	if query := _q.withAgentTurn; query != nil {
 		if err := _q.loadAgentTurn(ctx, query, nodes, nil,
 			func(n *InvestigationReport, e *AgentTurn) { n.Edges.AgentTurn = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withOutputReferences; query != nil {
+		if err := _q.loadOutputReferences(ctx, query, nodes,
+			func(n *InvestigationReport) { n.Edges.OutputReferences = []*InvestigationOutputReference{} },
+			func(n *InvestigationReport, e *InvestigationOutputReference) {
+				n.Edges.OutputReferences = append(n.Edges.OutputReferences, e)
+			}); err != nil {
 			return nil, err
 		}
 	}
@@ -574,10 +624,7 @@ func (_q *InvestigationReportQuery) loadAgentTurn(ctx context.Context, query *Ag
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*InvestigationReport)
 	for i := range nodes {
-		if nodes[i].AgentTurnID == nil {
-			continue
-		}
-		fk := *nodes[i].AgentTurnID
+		fk := nodes[i].AgentTurnID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -599,6 +646,39 @@ func (_q *InvestigationReportQuery) loadAgentTurn(ctx context.Context, query *Ag
 		for i := range nodes {
 			assign(nodes[i], n)
 		}
+	}
+	return nil
+}
+func (_q *InvestigationReportQuery) loadOutputReferences(ctx context.Context, query *InvestigationOutputReferenceQuery, nodes []*InvestigationReport, init func(*InvestigationReport), assign func(*InvestigationReport, *InvestigationOutputReference)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*InvestigationReport)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(investigationoutputreference.FieldReportID)
+	}
+	query.Where(predicate.InvestigationOutputReference(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(investigationreport.OutputReferencesColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.ReportID
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "report_id" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "report_id" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
 	}
 	return nil
 }

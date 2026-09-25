@@ -62,11 +62,9 @@ type NormalizedEventEdges struct {
 	Projection *NormalizedEventProjection `json:"projection,omitempty"`
 	// SituationObservationGroups holds the value of the situation_observation_groups edge.
 	SituationObservationGroups []*SituationObservationGroup `json:"situation_observation_groups,omitempty"`
-	// AnalysisEntrySubjects holds the value of the analysis_entry_subjects edge.
-	AnalysisEntrySubjects []*SystemAnalysisEntrySubject `json:"analysis_entry_subjects,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [5]bool
+	loadedTypes [4]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -109,15 +107,6 @@ func (e NormalizedEventEdges) SituationObservationGroupsOrErr() ([]*SituationObs
 		return e.SituationObservationGroups, nil
 	}
 	return nil, &NotLoadedError{edge: "situation_observation_groups"}
-}
-
-// AnalysisEntrySubjectsOrErr returns the AnalysisEntrySubjects value or an error if the edge
-// was not loaded in eager-loading.
-func (e NormalizedEventEdges) AnalysisEntrySubjectsOrErr() ([]*SystemAnalysisEntrySubject, error) {
-	if e.loadedTypes[4] {
-		return e.AnalysisEntrySubjects, nil
-	}
-	return nil, &NotLoadedError{edge: "analysis_entry_subjects"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -271,11 +260,6 @@ func (_m *NormalizedEvent) QueryProjection() *NormalizedEventProjectionQuery {
 // QuerySituationObservationGroups queries the "situation_observation_groups" edge of the NormalizedEvent entity.
 func (_m *NormalizedEvent) QuerySituationObservationGroups() *SituationObservationGroupQuery {
 	return NewNormalizedEventClient(_m.config).QuerySituationObservationGroups(_m)
-}
-
-// QueryAnalysisEntrySubjects queries the "analysis_entry_subjects" edge of the NormalizedEvent entity.
-func (_m *NormalizedEvent) QueryAnalysisEntrySubjects() *SystemAnalysisEntrySubjectQuery {
-	return NewNormalizedEventClient(_m.config).QueryAnalysisEntrySubjects(_m)
 }
 
 // Update returns a builder for updating this NormalizedEvent.

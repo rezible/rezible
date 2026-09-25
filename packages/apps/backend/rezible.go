@@ -25,11 +25,14 @@ import (
 
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/schema/schematypes"
 
+	at "github.com/rezible/rezible/ent/agentturn"
+	ifvl "github.com/rezible/rezible/ent/investigationfindingversionlink"
+	ihv "github.com/rezible/rezible/ent/investigationhypothesisversion"
 	kne "github.com/rezible/rezible/ent/knowledgeentity"
 	ke "github.com/rezible/rezible/ent/knowledgeevidence"
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
-	"github.com/rezible/rezible/ent/schema/schematypes"
 	sha "github.com/rezible/rezible/ent/situationhazardassessment"
 )
 
@@ -67,6 +70,7 @@ type (
 		WithTx(context.Context, func(context.Context, *ent.Client) error, ...ent.TxOption) error
 		AcquireTxLocks(context.Context, string, ...string) error
 		IsTransientError(error) bool
+		IsConstraintError(error) (string, bool)
 		Shutdown() error
 	}
 
@@ -293,19 +297,52 @@ var KnowledgeGraphCategoryStructureLevels = map[kne.Category]KnowledgeGraphStruc
 }
 
 type (
+	// SystemAnalysisSubjectOrder selects the ordering used for analysis entity and relationship memberships.
+	SystemAnalysisSubjectOrder int
+
+	// SystemAnalysisEntryOrder selects the ordering used for analysis entries.
+	SystemAnalysisEntryOrder int
+)
+
+const (
+	// SystemAnalysisSubjectOrderCreatedAt orders by membership creation time, then membership ID ascending.
+	SystemAnalysisSubjectOrderCreatedAt SystemAnalysisSubjectOrder = iota
+	// SystemAnalysisSubjectOrderCanonicalID orders by canonical subject ID, then membership ID ascending.
+	SystemAnalysisSubjectOrderCanonicalID
+)
+
+const (
+	// SystemAnalysisEntryOrderOccurrence orders by occurrence time, sequence, then entry ID ascending.
+	SystemAnalysisEntryOrderOccurrence SystemAnalysisEntryOrder = iota
+	// SystemAnalysisEntryOrderSequence orders by sequence, then entry ID ascending.
+	SystemAnalysisEntryOrderSequence
+)
+
+type (
 	ListSystemAnalysisEntitiesParams struct {
 		ent.ListParams
 		Predicates []predicate.SystemAnalysisEntity
+		Order      SystemAnalysisSubjectOrder
 	}
 
 	ListSystemAnalysisRelationshipsParams struct {
 		ent.ListParams
-		Predicates []predicate.SystemAnalysisRelationship
+		Predicates    []predicate.SystemAnalysisRelationship
+		Order         SystemAnalysisSubjectOrder
+		WithEndpoints bool
 	}
 
 	ListSystemAnalysisEntriesParams struct {
 		ent.ListParams
-		Predicates []predicate.SystemAnalysisEntry
+		Predicates  []predicate.SystemAnalysisEntry
+		Order       SystemAnalysisEntryOrder
+		SummaryOnly bool
+	}
+
+	ListSystemAnalysisEntrySubjectsParams struct {
+		AnalysisID uuid.UUID
+		EntryID    uuid.UUID
+		ent.ListParams
 	}
 
 	IncludeSystemAnalysisSubjectsParams struct {
@@ -334,6 +371,7 @@ type (
 		SetSystemAnalysisEntry(context.Context, uuid.UUID, func(*ent.SystemAnalysisEntryMutation), ...func(*ent.SystemAnalysisEntrySubjectMutation)) (*ent.SystemAnalysisEntry, error)
 		DeleteSystemAnalysisEntry(context.Context, uuid.UUID) error
 
+		ListSystemAnalysisEntrySubjects(context.Context, ListSystemAnalysisEntrySubjectsParams) (*ent.ListResult[ent.SystemAnalysisEntrySubject], error)
 		SetSystemAnalysisEntrySubject(context.Context, uuid.UUID, func(*ent.SystemAnalysisEntrySubjectMutation)) (*ent.SystemAnalysisEntrySubject, error)
 		DeleteSystemAnalysisEntrySubject(context.Context, uuid.UUID) error
 	}
@@ -783,30 +821,147 @@ type (
 		GetAlertInstance(context.Context, uuid.UUID) (*ent.AlertInstance, error)
 		GetAlertMetrics(context.Context, GetAlertMetricsParams) (*ent.AlertMetrics, error)
 
+		CloseInactiveAlertEpisodes(context.Context) error
 		RecordAlertDefinitionInstance(context.Context, uuid.UUID, *ent.NormalizedEvent) (*ent.AlertInstance, error)
 	}
 )
 
 type (
 	CreateInvestigationParams struct {
-		Query           *string
-		SubjectEntityID *uuid.UUID
+		AnalysisID uuid.UUID
+		Query      string
 	}
 
-	InvestigationReportInput struct {
-		Text               string   `json:"text"`
-		LikelyCause        string   `json:"likely_cause,omitempty"`
-		BestNextStep       string   `json:"best_next_step,omitempty"`
-		Limitations        []string `json:"limitations,omitempty"`
-		RecommendedActions []string `json:"recommended_actions,omitempty"`
-		SuggestedChecks    []string `json:"suggested_checks,omitempty"`
+	SubmitInvestigationUserInputParams struct {
+		InvestigationID uuid.UUID
+		Text            string
+		SubmissionKey   string
+	}
+
+	RecordInvestigationEvidenceRevisionParams struct {
+		InvestigationID uuid.UUID
+		Explanation     string
+		CallerKey       string
+	}
+
+	InvestigationPublicationScope struct {
+		InvestigationID uuid.UUID
+		AgentTurnID     uuid.UUID
+	}
+
+	FindingVersionReference struct {
+		VersionID uuid.UUID
+		Relation  ifvl.Relation
+	}
+
+	PublishInvestigationReportParams struct {
+		Text        string
+		EvidenceIDs []uuid.UUID
+	}
+
+	PublishInvestigationFindingParams struct {
+		Key               string
+		Title             string
+		Body              string
+		EvidenceIDs       []uuid.UUID
+		FindingReferences []FindingVersionReference
+	}
+
+	PublishInvestigationAnswerParams struct {
+		Title             string
+		Body              string
+		EvidenceIDs       []uuid.UUID
+		FindingReferences []FindingVersionReference
+	}
+
+	PublishInvestigationHypothesisParams struct {
+		Key           string
+		Title         string
+		Justification string
+		Status        ihv.Status
+		EvidenceIDs   []uuid.UUID
+	}
+
+	InvestigationPublicationMeta struct {
+		ID          uuid.UUID
+		AgentTurnID uuid.UUID
+		TurnStatus  at.Status
+		CreatedAt   time.Time
+	}
+
+	InvestigationReportResult struct {
+		InvestigationPublicationMeta
+		Text        string
+		EvidenceIDs []uuid.UUID
+	}
+
+	InvestigationFindingVersion struct {
+		InvestigationPublicationMeta
+		FindingID               uuid.UUID
+		Key                     string
+		UserInputID             *uuid.UUID
+		Title                   string
+		Body                    string
+		EvidenceIDs             []uuid.UUID
+		FindingReferences       []FindingVersionReference
+		InvalidatedByVersionIDs []uuid.UUID
+	}
+
+	InvestigationHypothesisVersion struct {
+		InvestigationPublicationMeta
+		HypothesisID  uuid.UUID
+		Key           string
+		Title         string
+		Justification string
+		Status        ihv.Status
+		EvidenceIDs   []uuid.UUID
+	}
+
+	InvestigationDetail struct {
+		Investigation *ent.Investigation
+		Query         string
+		LatestTurn    *ent.AgentTurn
+	}
+
+	InvestigationUserInput struct {
+		ID              uuid.UUID
+		Text            string
+		UserID          uuid.UUID
+		SubmissionKey   string
+		CreatedAt       time.Time
+		AgentTurnID     *uuid.UUID
+		AnswerVersionID *uuid.UUID
+	}
+
+	ReadInvestigationReportParams struct {
+		Selection InvestigationReportSelection
 	}
 
 	InvestigationService interface {
 		CreateInvestigation(context.Context, CreateInvestigationParams) (*ent.Investigation, error)
-		GetInvestigation(context.Context, uuid.UUID) (*ent.Investigation, error)
 		LookupInvestigation(context.Context, ...predicate.Investigation) (*ent.Investigation, error)
+		ReadInvestigationDetail(context.Context, uuid.UUID) (*InvestigationDetail, error)
+		ListInvestigationUserInputs(context.Context, uuid.UUID, ent.ListParams) (*ent.ListResult[InvestigationUserInput], error)
+		ListInvestigationEvidenceRevisions(context.Context, uuid.UUID, ent.ListParams) (*ent.ListResult[ent.InvestigationEvidenceRevision], error)
+		SubmitInvestigationUserInput(context.Context, SubmitInvestigationUserInputParams) (*InvestigationUserInput, error)
+		RecordInvestigationEvidenceRevision(context.Context, RecordInvestigationEvidenceRevisionParams) (*ent.InvestigationEvidenceRevision, error)
+		PublishInvestigationReport(context.Context, InvestigationPublicationScope, PublishInvestigationReportParams) (*InvestigationReportResult, error)
+		PublishInvestigationFinding(context.Context, InvestigationPublicationScope, PublishInvestigationFindingParams) (*InvestigationFindingVersion, error)
+		PublishInvestigationAnswer(context.Context, InvestigationPublicationScope, PublishInvestigationAnswerParams) (*InvestigationFindingVersion, error)
+		PublishInvestigationHypothesis(context.Context, InvestigationPublicationScope, PublishInvestigationHypothesisParams) (*InvestigationHypothesisVersion, error)
+		ReadInvestigationReport(context.Context, uuid.UUID, ReadInvestigationReportParams) (*InvestigationReportResult, error)
+		GetInvestigationFindingVersion(context.Context, uuid.UUID, uuid.UUID) (*InvestigationFindingVersion, error)
+		GetInvestigationHypothesisVersion(context.Context, uuid.UUID, uuid.UUID) (*InvestigationHypothesisVersion, error)
+		ListInvestigationFindings(context.Context, uuid.UUID, ent.ListParams) (*ent.ListResult[InvestigationFindingVersion], error)
+		ListInvestigationHypotheses(context.Context, uuid.UUID, ent.ListParams) (*ent.ListResult[InvestigationHypothesisVersion], error)
 	}
+)
+
+type InvestigationReportSelection string
+
+const (
+	InvestigationReportSelectionLatest    InvestigationReportSelection = "latest"
+	InvestigationReportSelectionCompleted InvestigationReportSelection = "completed"
 )
 
 type (
@@ -832,23 +987,6 @@ type (
 		AlertEpisodeIDs    []uuid.UUID
 	}
 
-	CreateSituationInvestigationParams struct {
-		SituationID uuid.UUID
-		Query       *string
-	}
-
-	SetSituationInvestigationReportParams struct {
-		AgentTurnID uuid.UUID
-		Report      InvestigationReportInput
-		Assessments []SituationInvestigationHazardAssessment
-	}
-
-	SituationInvestigationHazardAssessment struct {
-		SystemHazardID uuid.UUID  `json:"systemHazardId"`
-		Status         sha.Status `json:"status"`
-		Summary        string     `json:"summary"`
-	}
-
 	ListSituationHazardAssessmentsParams struct {
 		ent.ListParams
 		SituationID    uuid.UUID
@@ -868,17 +1006,14 @@ type (
 	SituationService interface {
 		ListSituations(context.Context, ListSituationsParams) (*ent.ListResult[ent.Situation], error)
 		CreateSituation(context.Context, CreateSituationParams) (*ent.Situation, error)
+		AddSituationObservationGroup(context.Context, uuid.UUID, SituationObservationGroupParams) (*ent.SituationObservationGroup, error)
 		GetSituation(context.Context, uuid.UUID) (*ent.Situation, error)
 		CloseSituation(context.Context, uuid.UUID, situation.CloseReason) error
 
 		AddIncidentToSituation(context.Context, uuid.UUID, uuid.UUID) error
 		RemoveIncidentFromSituation(context.Context, uuid.UUID, uuid.UUID) error
 
-		NotifySituationObservationGroupUpdated(context.Context, uuid.UUID) error
-
-		CreateSituationInvestigation(context.Context, CreateSituationInvestigationParams) (*ent.SituationInvestigation, error)
-		LookupSituationInvestigation(context.Context, predicate.SituationInvestigation) (*ent.SituationInvestigation, error)
-		SetSituationInvestigationReport(context.Context, SetSituationInvestigationReportParams) (*ent.SituationInvestigation, error)
+		RefreshSituationEpisodeAnalysis(context.Context, uuid.UUID, uuid.UUID) error
 
 		ListSituationHazardAssessments(context.Context, ListSituationHazardAssessmentsParams) (*ent.ListResult[ent.SituationHazardAssessment], error)
 		AddSituationHazardAssessment(context.Context, AddSituationHazardAssessmentParams) (*ent.SituationHazardAssessment, error)

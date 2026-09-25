@@ -15,9 +15,11 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/agentsession"
 	"github.com/rezible/rezible/ent/investigation"
+	"github.com/rezible/rezible/ent/investigationevidencerevision"
 	"github.com/rezible/rezible/ent/investigationfinding"
 	"github.com/rezible/rezible/ent/investigationhypothesis"
 	"github.com/rezible/rezible/ent/investigationreport"
+	"github.com/rezible/rezible/ent/investigationuserinput"
 	"github.com/rezible/rezible/ent/situationinvestigation"
 	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/tenant"
@@ -65,15 +67,15 @@ func (_c *InvestigationCreate) SetNillableUpdatedAt(v *time.Time) *Investigation
 	return _c
 }
 
-// SetSystemAnalysisID sets the "system_analysis_id" field.
-func (_c *InvestigationCreate) SetSystemAnalysisID(v uuid.UUID) *InvestigationCreate {
-	_c.mutation.SetSystemAnalysisID(v)
-	return _c
-}
-
 // SetAgentSessionID sets the "agent_session_id" field.
 func (_c *InvestigationCreate) SetAgentSessionID(v uuid.UUID) *InvestigationCreate {
 	_c.mutation.SetAgentSessionID(v)
+	return _c
+}
+
+// SetSystemAnalysisID sets the "system_analysis_id" field.
+func (_c *InvestigationCreate) SetSystemAnalysisID(v uuid.UUID) *InvestigationCreate {
+	_c.mutation.SetSystemAnalysisID(v)
 	return _c
 }
 
@@ -96,14 +98,14 @@ func (_c *InvestigationCreate) SetTenant(v *Tenant) *InvestigationCreate {
 	return _c.SetTenantID(v.ID)
 }
 
-// SetSystemAnalysis sets the "system_analysis" edge to the SystemAnalysis entity.
-func (_c *InvestigationCreate) SetSystemAnalysis(v *SystemAnalysis) *InvestigationCreate {
-	return _c.SetSystemAnalysisID(v.ID)
-}
-
 // SetAgentSession sets the "agent_session" edge to the AgentSession entity.
 func (_c *InvestigationCreate) SetAgentSession(v *AgentSession) *InvestigationCreate {
 	return _c.SetAgentSessionID(v.ID)
+}
+
+// SetSystemAnalysis sets the "system_analysis" edge to the SystemAnalysis entity.
+func (_c *InvestigationCreate) SetSystemAnalysis(v *SystemAnalysis) *InvestigationCreate {
+	return _c.SetSystemAnalysisID(v.ID)
 }
 
 // AddSituationIDs adds the "situations" edge to the SituationInvestigation entity by IDs.
@@ -119,6 +121,36 @@ func (_c *InvestigationCreate) AddSituations(v ...*SituationInvestigation) *Inve
 		ids[i] = v[i].ID
 	}
 	return _c.AddSituationIDs(ids...)
+}
+
+// AddUserInputIDs adds the "user_inputs" edge to the InvestigationUserInput entity by IDs.
+func (_c *InvestigationCreate) AddUserInputIDs(ids ...uuid.UUID) *InvestigationCreate {
+	_c.mutation.AddUserInputIDs(ids...)
+	return _c
+}
+
+// AddUserInputs adds the "user_inputs" edges to the InvestigationUserInput entity.
+func (_c *InvestigationCreate) AddUserInputs(v ...*InvestigationUserInput) *InvestigationCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddUserInputIDs(ids...)
+}
+
+// AddEvidenceRevisionIDs adds the "evidence_revisions" edge to the InvestigationEvidenceRevision entity by IDs.
+func (_c *InvestigationCreate) AddEvidenceRevisionIDs(ids ...uuid.UUID) *InvestigationCreate {
+	_c.mutation.AddEvidenceRevisionIDs(ids...)
+	return _c
+}
+
+// AddEvidenceRevisions adds the "evidence_revisions" edges to the InvestigationEvidenceRevision entity.
+func (_c *InvestigationCreate) AddEvidenceRevisions(v ...*InvestigationEvidenceRevision) *InvestigationCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddEvidenceRevisionIDs(ids...)
 }
 
 // AddHypothesisIDs adds the "hypotheses" edge to the InvestigationHypothesis entity by IDs.
@@ -151,23 +183,19 @@ func (_c *InvestigationCreate) AddFindings(v ...*InvestigationFinding) *Investig
 	return _c.AddFindingIDs(ids...)
 }
 
-// SetReportID sets the "report" edge to the InvestigationReport entity by ID.
-func (_c *InvestigationCreate) SetReportID(id uuid.UUID) *InvestigationCreate {
-	_c.mutation.SetReportID(id)
+// AddReportIDs adds the "reports" edge to the InvestigationReport entity by IDs.
+func (_c *InvestigationCreate) AddReportIDs(ids ...uuid.UUID) *InvestigationCreate {
+	_c.mutation.AddReportIDs(ids...)
 	return _c
 }
 
-// SetNillableReportID sets the "report" edge to the InvestigationReport entity by ID if the given value is not nil.
-func (_c *InvestigationCreate) SetNillableReportID(id *uuid.UUID) *InvestigationCreate {
-	if id != nil {
-		_c = _c.SetReportID(*id)
+// AddReports adds the "reports" edges to the InvestigationReport entity.
+func (_c *InvestigationCreate) AddReports(v ...*InvestigationReport) *InvestigationCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return _c
-}
-
-// SetReport sets the "report" edge to the InvestigationReport entity.
-func (_c *InvestigationCreate) SetReport(v *InvestigationReport) *InvestigationCreate {
-	return _c.SetReportID(v.ID)
+	return _c.AddReportIDs(ids...)
 }
 
 // Mutation returns the InvestigationMutation object of the builder.
@@ -242,20 +270,20 @@ func (_c *InvestigationCreate) check() error {
 	if _, ok := _c.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "Investigation.updated_at"`)}
 	}
-	if _, ok := _c.mutation.SystemAnalysisID(); !ok {
-		return &ValidationError{Name: "system_analysis_id", err: errors.New(`ent: missing required field "Investigation.system_analysis_id"`)}
-	}
 	if _, ok := _c.mutation.AgentSessionID(); !ok {
 		return &ValidationError{Name: "agent_session_id", err: errors.New(`ent: missing required field "Investigation.agent_session_id"`)}
+	}
+	if _, ok := _c.mutation.SystemAnalysisID(); !ok {
+		return &ValidationError{Name: "system_analysis_id", err: errors.New(`ent: missing required field "Investigation.system_analysis_id"`)}
 	}
 	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "Investigation.tenant"`)}
 	}
-	if len(_c.mutation.SystemAnalysisIDs()) == 0 {
-		return &ValidationError{Name: "system_analysis", err: errors.New(`ent: missing required edge "Investigation.system_analysis"`)}
-	}
 	if len(_c.mutation.AgentSessionIDs()) == 0 {
 		return &ValidationError{Name: "agent_session", err: errors.New(`ent: missing required edge "Investigation.agent_session"`)}
+	}
+	if len(_c.mutation.SystemAnalysisIDs()) == 0 {
+		return &ValidationError{Name: "system_analysis", err: errors.New(`ent: missing required edge "Investigation.system_analysis"`)}
 	}
 	return nil
 }
@@ -320,24 +348,6 @@ func (_c *InvestigationCreate) createSpec() (*Investigation, *sqlgraph.CreateSpe
 		_node.TenantID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := _c.mutation.SystemAnalysisIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
-			Inverse: true,
-			Table:   investigation.SystemAnalysisTable,
-			Columns: []string{investigation.SystemAnalysisColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysis.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _c.schemaConfig.Investigation
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_node.SystemAnalysisID = nodes[0]
-		_spec.Edges = append(_spec.Edges, edge)
-	}
 	if nodes := _c.mutation.AgentSessionIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
@@ -356,6 +366,24 @@ func (_c *InvestigationCreate) createSpec() (*Investigation, *sqlgraph.CreateSpe
 		_node.AgentSessionID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
+	if nodes := _c.mutation.SystemAnalysisIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
+			Table:   investigation.SystemAnalysisTable,
+			Columns: []string{investigation.SystemAnalysisColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemanalysis.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.Investigation
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.SystemAnalysisID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	if nodes := _c.mutation.SituationsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -368,6 +396,40 @@ func (_c *InvestigationCreate) createSpec() (*Investigation, *sqlgraph.CreateSpe
 			},
 		}
 		edge.Schema = _c.schemaConfig.SituationInvestigation
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.UserInputsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   investigation.UserInputsTable,
+			Columns: []string{investigation.UserInputsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(investigationuserinput.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.InvestigationUserInput
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.EvidenceRevisionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   investigation.EvidenceRevisionsTable,
+			Columns: []string{investigation.EvidenceRevisionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(investigationevidencerevision.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.InvestigationEvidenceRevision
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -407,12 +469,12 @@ func (_c *InvestigationCreate) createSpec() (*Investigation, *sqlgraph.CreateSpe
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := _c.mutation.ReportIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.ReportsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   investigation.ReportTable,
-			Columns: []string{investigation.ReportColumn},
+			Table:   investigation.ReportsTable,
+			Columns: []string{investigation.ReportsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(investigationreport.FieldID, field.TypeUUID),
@@ -520,11 +582,11 @@ func (u *InvestigationUpsertOne) UpdateNewValues() *InvestigationUpsertOne {
 		if _, exists := u.create.mutation.TenantID(); exists {
 			s.SetIgnore(investigation.FieldTenantID)
 		}
-		if _, exists := u.create.mutation.SystemAnalysisID(); exists {
-			s.SetIgnore(investigation.FieldSystemAnalysisID)
-		}
 		if _, exists := u.create.mutation.AgentSessionID(); exists {
 			s.SetIgnore(investigation.FieldAgentSessionID)
+		}
+		if _, exists := u.create.mutation.SystemAnalysisID(); exists {
+			s.SetIgnore(investigation.FieldSystemAnalysisID)
 		}
 	}))
 	return u
@@ -771,11 +833,11 @@ func (u *InvestigationUpsertBulk) UpdateNewValues() *InvestigationUpsertBulk {
 			if _, exists := b.mutation.TenantID(); exists {
 				s.SetIgnore(investigation.FieldTenantID)
 			}
-			if _, exists := b.mutation.SystemAnalysisID(); exists {
-				s.SetIgnore(investigation.FieldSystemAnalysisID)
-			}
 			if _, exists := b.mutation.AgentSessionID(); exists {
 				s.SetIgnore(investigation.FieldAgentSessionID)
+			}
+			if _, exists := b.mutation.SystemAnalysisID(); exists {
+				s.SetIgnore(investigation.FieldSystemAnalysisID)
 			}
 		}
 	}))

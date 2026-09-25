@@ -50,9 +50,15 @@ import (
 	"github.com/rezible/rezible/ent/integrationeventsyncrun"
 	"github.com/rezible/rezible/ent/integrationuserinstallstate"
 	"github.com/rezible/rezible/ent/investigation"
+	"github.com/rezible/rezible/ent/investigationevidencerevision"
 	"github.com/rezible/rezible/ent/investigationfinding"
+	"github.com/rezible/rezible/ent/investigationfindingversion"
+	"github.com/rezible/rezible/ent/investigationfindingversionlink"
 	"github.com/rezible/rezible/ent/investigationhypothesis"
+	"github.com/rezible/rezible/ent/investigationhypothesisversion"
+	"github.com/rezible/rezible/ent/investigationoutputreference"
 	"github.com/rezible/rezible/ent/investigationreport"
+	"github.com/rezible/rezible/ent/investigationuserinput"
 	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/knowledgeentitylinkingattribute"
 	"github.com/rezible/rezible/ent/knowledgeevidence"
@@ -175,12 +181,24 @@ type Client struct {
 	IntegrationUserInstallState *IntegrationUserInstallStateClient
 	// Investigation is the client for interacting with the Investigation builders.
 	Investigation *InvestigationClient
+	// InvestigationEvidenceRevision is the client for interacting with the InvestigationEvidenceRevision builders.
+	InvestigationEvidenceRevision *InvestigationEvidenceRevisionClient
 	// InvestigationFinding is the client for interacting with the InvestigationFinding builders.
 	InvestigationFinding *InvestigationFindingClient
+	// InvestigationFindingVersion is the client for interacting with the InvestigationFindingVersion builders.
+	InvestigationFindingVersion *InvestigationFindingVersionClient
+	// InvestigationFindingVersionLink is the client for interacting with the InvestigationFindingVersionLink builders.
+	InvestigationFindingVersionLink *InvestigationFindingVersionLinkClient
 	// InvestigationHypothesis is the client for interacting with the InvestigationHypothesis builders.
 	InvestigationHypothesis *InvestigationHypothesisClient
+	// InvestigationHypothesisVersion is the client for interacting with the InvestigationHypothesisVersion builders.
+	InvestigationHypothesisVersion *InvestigationHypothesisVersionClient
+	// InvestigationOutputReference is the client for interacting with the InvestigationOutputReference builders.
+	InvestigationOutputReference *InvestigationOutputReferenceClient
 	// InvestigationReport is the client for interacting with the InvestigationReport builders.
 	InvestigationReport *InvestigationReportClient
+	// InvestigationUserInput is the client for interacting with the InvestigationUserInput builders.
+	InvestigationUserInput *InvestigationUserInputClient
 	// KnowledgeEntity is the client for interacting with the KnowledgeEntity builders.
 	KnowledgeEntity *KnowledgeEntityClient
 	// KnowledgeEntityLinkingAttribute is the client for interacting with the KnowledgeEntityLinkingAttribute builders.
@@ -313,9 +331,15 @@ func (c *Client) init() {
 	c.IntegrationEventSyncRun = NewIntegrationEventSyncRunClient(c.config)
 	c.IntegrationUserInstallState = NewIntegrationUserInstallStateClient(c.config)
 	c.Investigation = NewInvestigationClient(c.config)
+	c.InvestigationEvidenceRevision = NewInvestigationEvidenceRevisionClient(c.config)
 	c.InvestigationFinding = NewInvestigationFindingClient(c.config)
+	c.InvestigationFindingVersion = NewInvestigationFindingVersionClient(c.config)
+	c.InvestigationFindingVersionLink = NewInvestigationFindingVersionLinkClient(c.config)
 	c.InvestigationHypothesis = NewInvestigationHypothesisClient(c.config)
+	c.InvestigationHypothesisVersion = NewInvestigationHypothesisVersionClient(c.config)
+	c.InvestigationOutputReference = NewInvestigationOutputReferenceClient(c.config)
 	c.InvestigationReport = NewInvestigationReportClient(c.config)
+	c.InvestigationUserInput = NewInvestigationUserInputClient(c.config)
 	c.KnowledgeEntity = NewKnowledgeEntityClient(c.config)
 	c.KnowledgeEntityLinkingAttribute = NewKnowledgeEntityLinkingAttributeClient(c.config)
 	c.KnowledgeEvidence = NewKnowledgeEvidenceClient(c.config)
@@ -489,9 +513,15 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		IntegrationEventSyncRun:         NewIntegrationEventSyncRunClient(cfg),
 		IntegrationUserInstallState:     NewIntegrationUserInstallStateClient(cfg),
 		Investigation:                   NewInvestigationClient(cfg),
+		InvestigationEvidenceRevision:   NewInvestigationEvidenceRevisionClient(cfg),
 		InvestigationFinding:            NewInvestigationFindingClient(cfg),
+		InvestigationFindingVersion:     NewInvestigationFindingVersionClient(cfg),
+		InvestigationFindingVersionLink: NewInvestigationFindingVersionLinkClient(cfg),
 		InvestigationHypothesis:         NewInvestigationHypothesisClient(cfg),
+		InvestigationHypothesisVersion:  NewInvestigationHypothesisVersionClient(cfg),
+		InvestigationOutputReference:    NewInvestigationOutputReferenceClient(cfg),
 		InvestigationReport:             NewInvestigationReportClient(cfg),
+		InvestigationUserInput:          NewInvestigationUserInputClient(cfg),
 		KnowledgeEntity:                 NewKnowledgeEntityClient(cfg),
 		KnowledgeEntityLinkingAttribute: NewKnowledgeEntityLinkingAttributeClient(cfg),
 		KnowledgeEvidence:               NewKnowledgeEvidenceClient(cfg),
@@ -589,9 +619,15 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		IntegrationEventSyncRun:         NewIntegrationEventSyncRunClient(cfg),
 		IntegrationUserInstallState:     NewIntegrationUserInstallStateClient(cfg),
 		Investigation:                   NewInvestigationClient(cfg),
+		InvestigationEvidenceRevision:   NewInvestigationEvidenceRevisionClient(cfg),
 		InvestigationFinding:            NewInvestigationFindingClient(cfg),
+		InvestigationFindingVersion:     NewInvestigationFindingVersionClient(cfg),
+		InvestigationFindingVersionLink: NewInvestigationFindingVersionLinkClient(cfg),
 		InvestigationHypothesis:         NewInvestigationHypothesisClient(cfg),
+		InvestigationHypothesisVersion:  NewInvestigationHypothesisVersionClient(cfg),
+		InvestigationOutputReference:    NewInvestigationOutputReferenceClient(cfg),
 		InvestigationReport:             NewInvestigationReportClient(cfg),
+		InvestigationUserInput:          NewInvestigationUserInputClient(cfg),
 		KnowledgeEntity:                 NewKnowledgeEntityClient(cfg),
 		KnowledgeEntityLinkingAttribute: NewKnowledgeEntityLinkingAttributeClient(cfg),
 		KnowledgeEvidence:               NewKnowledgeEvidenceClient(cfg),
@@ -673,14 +709,18 @@ func (c *Client) Use(hooks ...Hook) {
 		c.IncidentImpact, c.IncidentLink, c.IncidentMilestone, c.IncidentRole,
 		c.IncidentRoleAssignment, c.IncidentSeverity, c.IncidentTag, c.IncidentType,
 		c.Integration, c.IntegrationEventSyncCursor, c.IntegrationEventSyncRun,
-		c.IntegrationUserInstallState, c.Investigation, c.InvestigationFinding,
-		c.InvestigationHypothesis, c.InvestigationReport, c.KnowledgeEntity,
-		c.KnowledgeEntityLinkingAttribute, c.KnowledgeEvidence,
-		c.KnowledgeRelationship, c.KnowledgeSubjectAlias, c.MeetingSchedule,
-		c.MeetingSession, c.NormalizedEvent, c.NormalizedEventProjection,
-		c.NormalizedEventProjectionEntity, c.OncallHandoverTemplate, c.OncallRoster,
-		c.OncallRosterMetrics, c.OncallSchedule, c.OncallScheduleParticipant,
-		c.OncallShift, c.OncallShiftHandover, c.OncallShiftMetrics, c.Organization,
+		c.IntegrationUserInstallState, c.Investigation,
+		c.InvestigationEvidenceRevision, c.InvestigationFinding,
+		c.InvestigationFindingVersion, c.InvestigationFindingVersionLink,
+		c.InvestigationHypothesis, c.InvestigationHypothesisVersion,
+		c.InvestigationOutputReference, c.InvestigationReport,
+		c.InvestigationUserInput, c.KnowledgeEntity, c.KnowledgeEntityLinkingAttribute,
+		c.KnowledgeEvidence, c.KnowledgeRelationship, c.KnowledgeSubjectAlias,
+		c.MeetingSchedule, c.MeetingSession, c.NormalizedEvent,
+		c.NormalizedEventProjection, c.NormalizedEventProjectionEntity,
+		c.OncallHandoverTemplate, c.OncallRoster, c.OncallRosterMetrics,
+		c.OncallSchedule, c.OncallScheduleParticipant, c.OncallShift,
+		c.OncallShiftHandover, c.OncallShiftMetrics, c.Organization,
 		c.OrganizationPreferences, c.OrganizationRole, c.Playbook, c.Retrospective,
 		c.Review, c.Situation, c.SituationHazardAssessment, c.SituationInvestigation,
 		c.SituationObservationGroup, c.SystemAnalysis, c.SystemAnalysisEntity,
@@ -706,14 +746,18 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 		c.IncidentImpact, c.IncidentLink, c.IncidentMilestone, c.IncidentRole,
 		c.IncidentRoleAssignment, c.IncidentSeverity, c.IncidentTag, c.IncidentType,
 		c.Integration, c.IntegrationEventSyncCursor, c.IntegrationEventSyncRun,
-		c.IntegrationUserInstallState, c.Investigation, c.InvestigationFinding,
-		c.InvestigationHypothesis, c.InvestigationReport, c.KnowledgeEntity,
-		c.KnowledgeEntityLinkingAttribute, c.KnowledgeEvidence,
-		c.KnowledgeRelationship, c.KnowledgeSubjectAlias, c.MeetingSchedule,
-		c.MeetingSession, c.NormalizedEvent, c.NormalizedEventProjection,
-		c.NormalizedEventProjectionEntity, c.OncallHandoverTemplate, c.OncallRoster,
-		c.OncallRosterMetrics, c.OncallSchedule, c.OncallScheduleParticipant,
-		c.OncallShift, c.OncallShiftHandover, c.OncallShiftMetrics, c.Organization,
+		c.IntegrationUserInstallState, c.Investigation,
+		c.InvestigationEvidenceRevision, c.InvestigationFinding,
+		c.InvestigationFindingVersion, c.InvestigationFindingVersionLink,
+		c.InvestigationHypothesis, c.InvestigationHypothesisVersion,
+		c.InvestigationOutputReference, c.InvestigationReport,
+		c.InvestigationUserInput, c.KnowledgeEntity, c.KnowledgeEntityLinkingAttribute,
+		c.KnowledgeEvidence, c.KnowledgeRelationship, c.KnowledgeSubjectAlias,
+		c.MeetingSchedule, c.MeetingSession, c.NormalizedEvent,
+		c.NormalizedEventProjection, c.NormalizedEventProjectionEntity,
+		c.OncallHandoverTemplate, c.OncallRoster, c.OncallRosterMetrics,
+		c.OncallSchedule, c.OncallScheduleParticipant, c.OncallShift,
+		c.OncallShiftHandover, c.OncallShiftMetrics, c.Organization,
 		c.OrganizationPreferences, c.OrganizationRole, c.Playbook, c.Retrospective,
 		c.Review, c.Situation, c.SituationHazardAssessment, c.SituationInvestigation,
 		c.SituationObservationGroup, c.SystemAnalysis, c.SystemAnalysisEntity,
@@ -797,12 +841,24 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.IntegrationUserInstallState.mutate(ctx, m)
 	case *InvestigationMutation:
 		return c.Investigation.mutate(ctx, m)
+	case *InvestigationEvidenceRevisionMutation:
+		return c.InvestigationEvidenceRevision.mutate(ctx, m)
 	case *InvestigationFindingMutation:
 		return c.InvestigationFinding.mutate(ctx, m)
+	case *InvestigationFindingVersionMutation:
+		return c.InvestigationFindingVersion.mutate(ctx, m)
+	case *InvestigationFindingVersionLinkMutation:
+		return c.InvestigationFindingVersionLink.mutate(ctx, m)
 	case *InvestigationHypothesisMutation:
 		return c.InvestigationHypothesis.mutate(ctx, m)
+	case *InvestigationHypothesisVersionMutation:
+		return c.InvestigationHypothesisVersion.mutate(ctx, m)
+	case *InvestigationOutputReferenceMutation:
+		return c.InvestigationOutputReference.mutate(ctx, m)
 	case *InvestigationReportMutation:
 		return c.InvestigationReport.mutate(ctx, m)
+	case *InvestigationUserInputMutation:
+		return c.InvestigationUserInput.mutate(ctx, m)
 	case *KnowledgeEntityMutation:
 		return c.KnowledgeEntity.mutate(ctx, m)
 	case *KnowledgeEntityLinkingAttributeMutation:
@@ -7949,25 +8005,6 @@ func (c *InvestigationClient) QueryTenant(_m *Investigation) *TenantQuery {
 	return query
 }
 
-// QuerySystemAnalysis queries the system_analysis edge of a Investigation.
-func (c *InvestigationClient) QuerySystemAnalysis(_m *Investigation) *SystemAnalysisQuery {
-	query := (&SystemAnalysisClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(investigation.Table, investigation.FieldID, id),
-			sqlgraph.To(systemanalysis.Table, systemanalysis.FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, true, investigation.SystemAnalysisTable, investigation.SystemAnalysisColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.SystemAnalysis
-		step.Edge.Schema = schemaConfig.Investigation
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // QueryAgentSession queries the agent_session edge of a Investigation.
 func (c *InvestigationClient) QueryAgentSession(_m *Investigation) *AgentSessionQuery {
 	query := (&AgentSessionClient{config: c.config}).Query()
@@ -7980,6 +8017,25 @@ func (c *InvestigationClient) QueryAgentSession(_m *Investigation) *AgentSession
 		)
 		schemaConfig := _m.schemaConfig
 		step.To.Schema = schemaConfig.AgentSession
+		step.Edge.Schema = schemaConfig.Investigation
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QuerySystemAnalysis queries the system_analysis edge of a Investigation.
+func (c *InvestigationClient) QuerySystemAnalysis(_m *Investigation) *SystemAnalysisQuery {
+	query := (&SystemAnalysisClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(investigation.Table, investigation.FieldID, id),
+			sqlgraph.To(systemanalysis.Table, systemanalysis.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, investigation.SystemAnalysisTable, investigation.SystemAnalysisColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.SystemAnalysis
 		step.Edge.Schema = schemaConfig.Investigation
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -8000,6 +8056,44 @@ func (c *InvestigationClient) QuerySituations(_m *Investigation) *SituationInves
 		schemaConfig := _m.schemaConfig
 		step.To.Schema = schemaConfig.SituationInvestigation
 		step.Edge.Schema = schemaConfig.SituationInvestigation
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryUserInputs queries the user_inputs edge of a Investigation.
+func (c *InvestigationClient) QueryUserInputs(_m *Investigation) *InvestigationUserInputQuery {
+	query := (&InvestigationUserInputClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(investigation.Table, investigation.FieldID, id),
+			sqlgraph.To(investigationuserinput.Table, investigationuserinput.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, investigation.UserInputsTable, investigation.UserInputsColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.InvestigationUserInput
+		step.Edge.Schema = schemaConfig.InvestigationUserInput
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryEvidenceRevisions queries the evidence_revisions edge of a Investigation.
+func (c *InvestigationClient) QueryEvidenceRevisions(_m *Investigation) *InvestigationEvidenceRevisionQuery {
+	query := (&InvestigationEvidenceRevisionClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(investigation.Table, investigation.FieldID, id),
+			sqlgraph.To(investigationevidencerevision.Table, investigationevidencerevision.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, investigation.EvidenceRevisionsTable, investigation.EvidenceRevisionsColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.InvestigationEvidenceRevision
+		step.Edge.Schema = schemaConfig.InvestigationEvidenceRevision
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
 	}
@@ -8044,15 +8138,15 @@ func (c *InvestigationClient) QueryFindings(_m *Investigation) *InvestigationFin
 	return query
 }
 
-// QueryReport queries the report edge of a Investigation.
-func (c *InvestigationClient) QueryReport(_m *Investigation) *InvestigationReportQuery {
+// QueryReports queries the reports edge of a Investigation.
+func (c *InvestigationClient) QueryReports(_m *Investigation) *InvestigationReportQuery {
 	query := (&InvestigationReportClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(investigation.Table, investigation.FieldID, id),
 			sqlgraph.To(investigationreport.Table, investigationreport.FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, false, investigation.ReportTable, investigation.ReportColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, investigation.ReportsTable, investigation.ReportsColumn),
 		)
 		schemaConfig := _m.schemaConfig
 		step.To.Schema = schemaConfig.InvestigationReport
@@ -8086,6 +8180,197 @@ func (c *InvestigationClient) mutate(ctx context.Context, m *InvestigationMutati
 		return (&InvestigationDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown Investigation mutation op: %q", m.Op())
+	}
+}
+
+// InvestigationEvidenceRevisionClient is a client for the InvestigationEvidenceRevision schema.
+type InvestigationEvidenceRevisionClient struct {
+	config
+}
+
+// NewInvestigationEvidenceRevisionClient returns a client for the InvestigationEvidenceRevision from the given config.
+func NewInvestigationEvidenceRevisionClient(c config) *InvestigationEvidenceRevisionClient {
+	return &InvestigationEvidenceRevisionClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `investigationevidencerevision.Hooks(f(g(h())))`.
+func (c *InvestigationEvidenceRevisionClient) Use(hooks ...Hook) {
+	c.hooks.InvestigationEvidenceRevision = append(c.hooks.InvestigationEvidenceRevision, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `investigationevidencerevision.Intercept(f(g(h())))`.
+func (c *InvestigationEvidenceRevisionClient) Intercept(interceptors ...Interceptor) {
+	c.inters.InvestigationEvidenceRevision = append(c.inters.InvestigationEvidenceRevision, interceptors...)
+}
+
+// Create returns a builder for creating a InvestigationEvidenceRevision entity.
+func (c *InvestigationEvidenceRevisionClient) Create() *InvestigationEvidenceRevisionCreate {
+	mutation := newInvestigationEvidenceRevisionMutation(c.config, OpCreate)
+	return &InvestigationEvidenceRevisionCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of InvestigationEvidenceRevision entities.
+func (c *InvestigationEvidenceRevisionClient) CreateBulk(builders ...*InvestigationEvidenceRevisionCreate) *InvestigationEvidenceRevisionCreateBulk {
+	return &InvestigationEvidenceRevisionCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *InvestigationEvidenceRevisionClient) MapCreateBulk(slice any, setFunc func(*InvestigationEvidenceRevisionCreate, int)) *InvestigationEvidenceRevisionCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &InvestigationEvidenceRevisionCreateBulk{err: fmt.Errorf("calling to InvestigationEvidenceRevisionClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*InvestigationEvidenceRevisionCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &InvestigationEvidenceRevisionCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for InvestigationEvidenceRevision.
+func (c *InvestigationEvidenceRevisionClient) Update() *InvestigationEvidenceRevisionUpdate {
+	mutation := newInvestigationEvidenceRevisionMutation(c.config, OpUpdate)
+	return &InvestigationEvidenceRevisionUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *InvestigationEvidenceRevisionClient) UpdateOne(_m *InvestigationEvidenceRevision) *InvestigationEvidenceRevisionUpdateOne {
+	mutation := newInvestigationEvidenceRevisionMutation(c.config, OpUpdateOne, withInvestigationEvidenceRevision(_m))
+	return &InvestigationEvidenceRevisionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *InvestigationEvidenceRevisionClient) UpdateOneID(id uuid.UUID) *InvestigationEvidenceRevisionUpdateOne {
+	mutation := newInvestigationEvidenceRevisionMutation(c.config, OpUpdateOne, withInvestigationEvidenceRevisionID(id))
+	return &InvestigationEvidenceRevisionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for InvestigationEvidenceRevision.
+func (c *InvestigationEvidenceRevisionClient) Delete() *InvestigationEvidenceRevisionDelete {
+	mutation := newInvestigationEvidenceRevisionMutation(c.config, OpDelete)
+	return &InvestigationEvidenceRevisionDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *InvestigationEvidenceRevisionClient) DeleteOne(_m *InvestigationEvidenceRevision) *InvestigationEvidenceRevisionDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *InvestigationEvidenceRevisionClient) DeleteOneID(id uuid.UUID) *InvestigationEvidenceRevisionDeleteOne {
+	builder := c.Delete().Where(investigationevidencerevision.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &InvestigationEvidenceRevisionDeleteOne{builder}
+}
+
+// Query returns a query builder for InvestigationEvidenceRevision.
+func (c *InvestigationEvidenceRevisionClient) Query() *InvestigationEvidenceRevisionQuery {
+	return &InvestigationEvidenceRevisionQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeInvestigationEvidenceRevision},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a InvestigationEvidenceRevision entity by its id.
+func (c *InvestigationEvidenceRevisionClient) Get(ctx context.Context, id uuid.UUID) (*InvestigationEvidenceRevision, error) {
+	return c.Query().Where(investigationevidencerevision.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *InvestigationEvidenceRevisionClient) GetX(ctx context.Context, id uuid.UUID) *InvestigationEvidenceRevision {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryTenant queries the tenant edge of a InvestigationEvidenceRevision.
+func (c *InvestigationEvidenceRevisionClient) QueryTenant(_m *InvestigationEvidenceRevision) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(investigationevidencerevision.Table, investigationevidencerevision.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, investigationevidencerevision.TenantTable, investigationevidencerevision.TenantColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.InvestigationEvidenceRevision
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryInvestigation queries the investigation edge of a InvestigationEvidenceRevision.
+func (c *InvestigationEvidenceRevisionClient) QueryInvestigation(_m *InvestigationEvidenceRevision) *InvestigationQuery {
+	query := (&InvestigationClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(investigationevidencerevision.Table, investigationevidencerevision.FieldID, id),
+			sqlgraph.To(investigation.Table, investigation.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, investigationevidencerevision.InvestigationTable, investigationevidencerevision.InvestigationColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.Investigation
+		step.Edge.Schema = schemaConfig.InvestigationEvidenceRevision
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryAgentTurn queries the agent_turn edge of a InvestigationEvidenceRevision.
+func (c *InvestigationEvidenceRevisionClient) QueryAgentTurn(_m *InvestigationEvidenceRevision) *AgentTurnQuery {
+	query := (&AgentTurnClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(investigationevidencerevision.Table, investigationevidencerevision.FieldID, id),
+			sqlgraph.To(agentturn.Table, agentturn.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, investigationevidencerevision.AgentTurnTable, investigationevidencerevision.AgentTurnColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.AgentTurn
+		step.Edge.Schema = schemaConfig.InvestigationEvidenceRevision
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *InvestigationEvidenceRevisionClient) Hooks() []Hook {
+	hooks := c.hooks.InvestigationEvidenceRevision
+	return append(hooks[:len(hooks):len(hooks)], investigationevidencerevision.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *InvestigationEvidenceRevisionClient) Interceptors() []Interceptor {
+	return c.inters.InvestigationEvidenceRevision
+}
+
+func (c *InvestigationEvidenceRevisionClient) mutate(ctx context.Context, m *InvestigationEvidenceRevisionMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&InvestigationEvidenceRevisionCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&InvestigationEvidenceRevisionUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&InvestigationEvidenceRevisionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&InvestigationEvidenceRevisionDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown InvestigationEvidenceRevision mutation op: %q", m.Op())
 	}
 }
 
@@ -8235,6 +8520,44 @@ func (c *InvestigationFindingClient) QueryInvestigation(_m *InvestigationFinding
 	return query
 }
 
+// QueryUserInput queries the user_input edge of a InvestigationFinding.
+func (c *InvestigationFindingClient) QueryUserInput(_m *InvestigationFinding) *InvestigationUserInputQuery {
+	query := (&InvestigationUserInputClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(investigationfinding.Table, investigationfinding.FieldID, id),
+			sqlgraph.To(investigationuserinput.Table, investigationuserinput.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, investigationfinding.UserInputTable, investigationfinding.UserInputColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.InvestigationUserInput
+		step.Edge.Schema = schemaConfig.InvestigationFinding
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryVersions queries the versions edge of a InvestigationFinding.
+func (c *InvestigationFindingClient) QueryVersions(_m *InvestigationFinding) *InvestigationFindingVersionQuery {
+	query := (&InvestigationFindingVersionClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(investigationfinding.Table, investigationfinding.FieldID, id),
+			sqlgraph.To(investigationfindingversion.Table, investigationfindingversion.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, investigationfinding.VersionsTable, investigationfinding.VersionsColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.InvestigationFindingVersion
+		step.Edge.Schema = schemaConfig.InvestigationFindingVersion
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *InvestigationFindingClient) Hooks() []Hook {
 	hooks := c.hooks.InvestigationFinding
@@ -8258,6 +8581,445 @@ func (c *InvestigationFindingClient) mutate(ctx context.Context, m *Investigatio
 		return (&InvestigationFindingDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown InvestigationFinding mutation op: %q", m.Op())
+	}
+}
+
+// InvestigationFindingVersionClient is a client for the InvestigationFindingVersion schema.
+type InvestigationFindingVersionClient struct {
+	config
+}
+
+// NewInvestigationFindingVersionClient returns a client for the InvestigationFindingVersion from the given config.
+func NewInvestigationFindingVersionClient(c config) *InvestigationFindingVersionClient {
+	return &InvestigationFindingVersionClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `investigationfindingversion.Hooks(f(g(h())))`.
+func (c *InvestigationFindingVersionClient) Use(hooks ...Hook) {
+	c.hooks.InvestigationFindingVersion = append(c.hooks.InvestigationFindingVersion, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `investigationfindingversion.Intercept(f(g(h())))`.
+func (c *InvestigationFindingVersionClient) Intercept(interceptors ...Interceptor) {
+	c.inters.InvestigationFindingVersion = append(c.inters.InvestigationFindingVersion, interceptors...)
+}
+
+// Create returns a builder for creating a InvestigationFindingVersion entity.
+func (c *InvestigationFindingVersionClient) Create() *InvestigationFindingVersionCreate {
+	mutation := newInvestigationFindingVersionMutation(c.config, OpCreate)
+	return &InvestigationFindingVersionCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of InvestigationFindingVersion entities.
+func (c *InvestigationFindingVersionClient) CreateBulk(builders ...*InvestigationFindingVersionCreate) *InvestigationFindingVersionCreateBulk {
+	return &InvestigationFindingVersionCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *InvestigationFindingVersionClient) MapCreateBulk(slice any, setFunc func(*InvestigationFindingVersionCreate, int)) *InvestigationFindingVersionCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &InvestigationFindingVersionCreateBulk{err: fmt.Errorf("calling to InvestigationFindingVersionClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*InvestigationFindingVersionCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &InvestigationFindingVersionCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for InvestigationFindingVersion.
+func (c *InvestigationFindingVersionClient) Update() *InvestigationFindingVersionUpdate {
+	mutation := newInvestigationFindingVersionMutation(c.config, OpUpdate)
+	return &InvestigationFindingVersionUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *InvestigationFindingVersionClient) UpdateOne(_m *InvestigationFindingVersion) *InvestigationFindingVersionUpdateOne {
+	mutation := newInvestigationFindingVersionMutation(c.config, OpUpdateOne, withInvestigationFindingVersion(_m))
+	return &InvestigationFindingVersionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *InvestigationFindingVersionClient) UpdateOneID(id uuid.UUID) *InvestigationFindingVersionUpdateOne {
+	mutation := newInvestigationFindingVersionMutation(c.config, OpUpdateOne, withInvestigationFindingVersionID(id))
+	return &InvestigationFindingVersionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for InvestigationFindingVersion.
+func (c *InvestigationFindingVersionClient) Delete() *InvestigationFindingVersionDelete {
+	mutation := newInvestigationFindingVersionMutation(c.config, OpDelete)
+	return &InvestigationFindingVersionDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *InvestigationFindingVersionClient) DeleteOne(_m *InvestigationFindingVersion) *InvestigationFindingVersionDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *InvestigationFindingVersionClient) DeleteOneID(id uuid.UUID) *InvestigationFindingVersionDeleteOne {
+	builder := c.Delete().Where(investigationfindingversion.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &InvestigationFindingVersionDeleteOne{builder}
+}
+
+// Query returns a query builder for InvestigationFindingVersion.
+func (c *InvestigationFindingVersionClient) Query() *InvestigationFindingVersionQuery {
+	return &InvestigationFindingVersionQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeInvestigationFindingVersion},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a InvestigationFindingVersion entity by its id.
+func (c *InvestigationFindingVersionClient) Get(ctx context.Context, id uuid.UUID) (*InvestigationFindingVersion, error) {
+	return c.Query().Where(investigationfindingversion.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *InvestigationFindingVersionClient) GetX(ctx context.Context, id uuid.UUID) *InvestigationFindingVersion {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryTenant queries the tenant edge of a InvestigationFindingVersion.
+func (c *InvestigationFindingVersionClient) QueryTenant(_m *InvestigationFindingVersion) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(investigationfindingversion.Table, investigationfindingversion.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, investigationfindingversion.TenantTable, investigationfindingversion.TenantColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.InvestigationFindingVersion
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryFinding queries the finding edge of a InvestigationFindingVersion.
+func (c *InvestigationFindingVersionClient) QueryFinding(_m *InvestigationFindingVersion) *InvestigationFindingQuery {
+	query := (&InvestigationFindingClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(investigationfindingversion.Table, investigationfindingversion.FieldID, id),
+			sqlgraph.To(investigationfinding.Table, investigationfinding.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, investigationfindingversion.FindingTable, investigationfindingversion.FindingColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.InvestigationFinding
+		step.Edge.Schema = schemaConfig.InvestigationFindingVersion
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryAgentTurn queries the agent_turn edge of a InvestigationFindingVersion.
+func (c *InvestigationFindingVersionClient) QueryAgentTurn(_m *InvestigationFindingVersion) *AgentTurnQuery {
+	query := (&AgentTurnClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(investigationfindingversion.Table, investigationfindingversion.FieldID, id),
+			sqlgraph.To(agentturn.Table, agentturn.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, investigationfindingversion.AgentTurnTable, investigationfindingversion.AgentTurnColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.AgentTurn
+		step.Edge.Schema = schemaConfig.InvestigationFindingVersion
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryOutputReferences queries the output_references edge of a InvestigationFindingVersion.
+func (c *InvestigationFindingVersionClient) QueryOutputReferences(_m *InvestigationFindingVersion) *InvestigationOutputReferenceQuery {
+	query := (&InvestigationOutputReferenceClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(investigationfindingversion.Table, investigationfindingversion.FieldID, id),
+			sqlgraph.To(investigationoutputreference.Table, investigationoutputreference.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, investigationfindingversion.OutputReferencesTable, investigationfindingversion.OutputReferencesColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.InvestigationOutputReference
+		step.Edge.Schema = schemaConfig.InvestigationOutputReference
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryOutgoingLinks queries the outgoing_links edge of a InvestigationFindingVersion.
+func (c *InvestigationFindingVersionClient) QueryOutgoingLinks(_m *InvestigationFindingVersion) *InvestigationFindingVersionLinkQuery {
+	query := (&InvestigationFindingVersionLinkClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(investigationfindingversion.Table, investigationfindingversion.FieldID, id),
+			sqlgraph.To(investigationfindingversionlink.Table, investigationfindingversionlink.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, investigationfindingversion.OutgoingLinksTable, investigationfindingversion.OutgoingLinksColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.InvestigationFindingVersionLink
+		step.Edge.Schema = schemaConfig.InvestigationFindingVersionLink
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryIncomingLinks queries the incoming_links edge of a InvestigationFindingVersion.
+func (c *InvestigationFindingVersionClient) QueryIncomingLinks(_m *InvestigationFindingVersion) *InvestigationFindingVersionLinkQuery {
+	query := (&InvestigationFindingVersionLinkClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(investigationfindingversion.Table, investigationfindingversion.FieldID, id),
+			sqlgraph.To(investigationfindingversionlink.Table, investigationfindingversionlink.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, investigationfindingversion.IncomingLinksTable, investigationfindingversion.IncomingLinksColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.InvestigationFindingVersionLink
+		step.Edge.Schema = schemaConfig.InvestigationFindingVersionLink
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *InvestigationFindingVersionClient) Hooks() []Hook {
+	hooks := c.hooks.InvestigationFindingVersion
+	return append(hooks[:len(hooks):len(hooks)], investigationfindingversion.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *InvestigationFindingVersionClient) Interceptors() []Interceptor {
+	return c.inters.InvestigationFindingVersion
+}
+
+func (c *InvestigationFindingVersionClient) mutate(ctx context.Context, m *InvestigationFindingVersionMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&InvestigationFindingVersionCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&InvestigationFindingVersionUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&InvestigationFindingVersionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&InvestigationFindingVersionDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown InvestigationFindingVersion mutation op: %q", m.Op())
+	}
+}
+
+// InvestigationFindingVersionLinkClient is a client for the InvestigationFindingVersionLink schema.
+type InvestigationFindingVersionLinkClient struct {
+	config
+}
+
+// NewInvestigationFindingVersionLinkClient returns a client for the InvestigationFindingVersionLink from the given config.
+func NewInvestigationFindingVersionLinkClient(c config) *InvestigationFindingVersionLinkClient {
+	return &InvestigationFindingVersionLinkClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `investigationfindingversionlink.Hooks(f(g(h())))`.
+func (c *InvestigationFindingVersionLinkClient) Use(hooks ...Hook) {
+	c.hooks.InvestigationFindingVersionLink = append(c.hooks.InvestigationFindingVersionLink, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `investigationfindingversionlink.Intercept(f(g(h())))`.
+func (c *InvestigationFindingVersionLinkClient) Intercept(interceptors ...Interceptor) {
+	c.inters.InvestigationFindingVersionLink = append(c.inters.InvestigationFindingVersionLink, interceptors...)
+}
+
+// Create returns a builder for creating a InvestigationFindingVersionLink entity.
+func (c *InvestigationFindingVersionLinkClient) Create() *InvestigationFindingVersionLinkCreate {
+	mutation := newInvestigationFindingVersionLinkMutation(c.config, OpCreate)
+	return &InvestigationFindingVersionLinkCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of InvestigationFindingVersionLink entities.
+func (c *InvestigationFindingVersionLinkClient) CreateBulk(builders ...*InvestigationFindingVersionLinkCreate) *InvestigationFindingVersionLinkCreateBulk {
+	return &InvestigationFindingVersionLinkCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *InvestigationFindingVersionLinkClient) MapCreateBulk(slice any, setFunc func(*InvestigationFindingVersionLinkCreate, int)) *InvestigationFindingVersionLinkCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &InvestigationFindingVersionLinkCreateBulk{err: fmt.Errorf("calling to InvestigationFindingVersionLinkClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*InvestigationFindingVersionLinkCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &InvestigationFindingVersionLinkCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for InvestigationFindingVersionLink.
+func (c *InvestigationFindingVersionLinkClient) Update() *InvestigationFindingVersionLinkUpdate {
+	mutation := newInvestigationFindingVersionLinkMutation(c.config, OpUpdate)
+	return &InvestigationFindingVersionLinkUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *InvestigationFindingVersionLinkClient) UpdateOne(_m *InvestigationFindingVersionLink) *InvestigationFindingVersionLinkUpdateOne {
+	mutation := newInvestigationFindingVersionLinkMutation(c.config, OpUpdateOne, withInvestigationFindingVersionLink(_m))
+	return &InvestigationFindingVersionLinkUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *InvestigationFindingVersionLinkClient) UpdateOneID(id uuid.UUID) *InvestigationFindingVersionLinkUpdateOne {
+	mutation := newInvestigationFindingVersionLinkMutation(c.config, OpUpdateOne, withInvestigationFindingVersionLinkID(id))
+	return &InvestigationFindingVersionLinkUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for InvestigationFindingVersionLink.
+func (c *InvestigationFindingVersionLinkClient) Delete() *InvestigationFindingVersionLinkDelete {
+	mutation := newInvestigationFindingVersionLinkMutation(c.config, OpDelete)
+	return &InvestigationFindingVersionLinkDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *InvestigationFindingVersionLinkClient) DeleteOne(_m *InvestigationFindingVersionLink) *InvestigationFindingVersionLinkDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *InvestigationFindingVersionLinkClient) DeleteOneID(id uuid.UUID) *InvestigationFindingVersionLinkDeleteOne {
+	builder := c.Delete().Where(investigationfindingversionlink.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &InvestigationFindingVersionLinkDeleteOne{builder}
+}
+
+// Query returns a query builder for InvestigationFindingVersionLink.
+func (c *InvestigationFindingVersionLinkClient) Query() *InvestigationFindingVersionLinkQuery {
+	return &InvestigationFindingVersionLinkQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeInvestigationFindingVersionLink},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a InvestigationFindingVersionLink entity by its id.
+func (c *InvestigationFindingVersionLinkClient) Get(ctx context.Context, id uuid.UUID) (*InvestigationFindingVersionLink, error) {
+	return c.Query().Where(investigationfindingversionlink.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *InvestigationFindingVersionLinkClient) GetX(ctx context.Context, id uuid.UUID) *InvestigationFindingVersionLink {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryTenant queries the tenant edge of a InvestigationFindingVersionLink.
+func (c *InvestigationFindingVersionLinkClient) QueryTenant(_m *InvestigationFindingVersionLink) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(investigationfindingversionlink.Table, investigationfindingversionlink.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, investigationfindingversionlink.TenantTable, investigationfindingversionlink.TenantColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.InvestigationFindingVersionLink
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QuerySourceVersion queries the source_version edge of a InvestigationFindingVersionLink.
+func (c *InvestigationFindingVersionLinkClient) QuerySourceVersion(_m *InvestigationFindingVersionLink) *InvestigationFindingVersionQuery {
+	query := (&InvestigationFindingVersionClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(investigationfindingversionlink.Table, investigationfindingversionlink.FieldID, id),
+			sqlgraph.To(investigationfindingversion.Table, investigationfindingversion.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, investigationfindingversionlink.SourceVersionTable, investigationfindingversionlink.SourceVersionColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.InvestigationFindingVersion
+		step.Edge.Schema = schemaConfig.InvestigationFindingVersionLink
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryTargetVersion queries the target_version edge of a InvestigationFindingVersionLink.
+func (c *InvestigationFindingVersionLinkClient) QueryTargetVersion(_m *InvestigationFindingVersionLink) *InvestigationFindingVersionQuery {
+	query := (&InvestigationFindingVersionClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(investigationfindingversionlink.Table, investigationfindingversionlink.FieldID, id),
+			sqlgraph.To(investigationfindingversion.Table, investigationfindingversion.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, investigationfindingversionlink.TargetVersionTable, investigationfindingversionlink.TargetVersionColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.InvestigationFindingVersion
+		step.Edge.Schema = schemaConfig.InvestigationFindingVersionLink
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *InvestigationFindingVersionLinkClient) Hooks() []Hook {
+	hooks := c.hooks.InvestigationFindingVersionLink
+	return append(hooks[:len(hooks):len(hooks)], investigationfindingversionlink.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *InvestigationFindingVersionLinkClient) Interceptors() []Interceptor {
+	return c.inters.InvestigationFindingVersionLink
+}
+
+func (c *InvestigationFindingVersionLinkClient) mutate(ctx context.Context, m *InvestigationFindingVersionLinkMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&InvestigationFindingVersionLinkCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&InvestigationFindingVersionLinkUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&InvestigationFindingVersionLinkUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&InvestigationFindingVersionLinkDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown InvestigationFindingVersionLink mutation op: %q", m.Op())
 	}
 }
 
@@ -8407,6 +9169,25 @@ func (c *InvestigationHypothesisClient) QueryInvestigation(_m *InvestigationHypo
 	return query
 }
 
+// QueryVersions queries the versions edge of a InvestigationHypothesis.
+func (c *InvestigationHypothesisClient) QueryVersions(_m *InvestigationHypothesis) *InvestigationHypothesisVersionQuery {
+	query := (&InvestigationHypothesisVersionClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(investigationhypothesis.Table, investigationhypothesis.FieldID, id),
+			sqlgraph.To(investigationhypothesisversion.Table, investigationhypothesisversion.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, investigationhypothesis.VersionsTable, investigationhypothesis.VersionsColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.InvestigationHypothesisVersion
+		step.Edge.Schema = schemaConfig.InvestigationHypothesisVersion
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *InvestigationHypothesisClient) Hooks() []Hook {
 	hooks := c.hooks.InvestigationHypothesis
@@ -8430,6 +9211,445 @@ func (c *InvestigationHypothesisClient) mutate(ctx context.Context, m *Investiga
 		return (&InvestigationHypothesisDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown InvestigationHypothesis mutation op: %q", m.Op())
+	}
+}
+
+// InvestigationHypothesisVersionClient is a client for the InvestigationHypothesisVersion schema.
+type InvestigationHypothesisVersionClient struct {
+	config
+}
+
+// NewInvestigationHypothesisVersionClient returns a client for the InvestigationHypothesisVersion from the given config.
+func NewInvestigationHypothesisVersionClient(c config) *InvestigationHypothesisVersionClient {
+	return &InvestigationHypothesisVersionClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `investigationhypothesisversion.Hooks(f(g(h())))`.
+func (c *InvestigationHypothesisVersionClient) Use(hooks ...Hook) {
+	c.hooks.InvestigationHypothesisVersion = append(c.hooks.InvestigationHypothesisVersion, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `investigationhypothesisversion.Intercept(f(g(h())))`.
+func (c *InvestigationHypothesisVersionClient) Intercept(interceptors ...Interceptor) {
+	c.inters.InvestigationHypothesisVersion = append(c.inters.InvestigationHypothesisVersion, interceptors...)
+}
+
+// Create returns a builder for creating a InvestigationHypothesisVersion entity.
+func (c *InvestigationHypothesisVersionClient) Create() *InvestigationHypothesisVersionCreate {
+	mutation := newInvestigationHypothesisVersionMutation(c.config, OpCreate)
+	return &InvestigationHypothesisVersionCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of InvestigationHypothesisVersion entities.
+func (c *InvestigationHypothesisVersionClient) CreateBulk(builders ...*InvestigationHypothesisVersionCreate) *InvestigationHypothesisVersionCreateBulk {
+	return &InvestigationHypothesisVersionCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *InvestigationHypothesisVersionClient) MapCreateBulk(slice any, setFunc func(*InvestigationHypothesisVersionCreate, int)) *InvestigationHypothesisVersionCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &InvestigationHypothesisVersionCreateBulk{err: fmt.Errorf("calling to InvestigationHypothesisVersionClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*InvestigationHypothesisVersionCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &InvestigationHypothesisVersionCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for InvestigationHypothesisVersion.
+func (c *InvestigationHypothesisVersionClient) Update() *InvestigationHypothesisVersionUpdate {
+	mutation := newInvestigationHypothesisVersionMutation(c.config, OpUpdate)
+	return &InvestigationHypothesisVersionUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *InvestigationHypothesisVersionClient) UpdateOne(_m *InvestigationHypothesisVersion) *InvestigationHypothesisVersionUpdateOne {
+	mutation := newInvestigationHypothesisVersionMutation(c.config, OpUpdateOne, withInvestigationHypothesisVersion(_m))
+	return &InvestigationHypothesisVersionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *InvestigationHypothesisVersionClient) UpdateOneID(id uuid.UUID) *InvestigationHypothesisVersionUpdateOne {
+	mutation := newInvestigationHypothesisVersionMutation(c.config, OpUpdateOne, withInvestigationHypothesisVersionID(id))
+	return &InvestigationHypothesisVersionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for InvestigationHypothesisVersion.
+func (c *InvestigationHypothesisVersionClient) Delete() *InvestigationHypothesisVersionDelete {
+	mutation := newInvestigationHypothesisVersionMutation(c.config, OpDelete)
+	return &InvestigationHypothesisVersionDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *InvestigationHypothesisVersionClient) DeleteOne(_m *InvestigationHypothesisVersion) *InvestigationHypothesisVersionDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *InvestigationHypothesisVersionClient) DeleteOneID(id uuid.UUID) *InvestigationHypothesisVersionDeleteOne {
+	builder := c.Delete().Where(investigationhypothesisversion.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &InvestigationHypothesisVersionDeleteOne{builder}
+}
+
+// Query returns a query builder for InvestigationHypothesisVersion.
+func (c *InvestigationHypothesisVersionClient) Query() *InvestigationHypothesisVersionQuery {
+	return &InvestigationHypothesisVersionQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeInvestigationHypothesisVersion},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a InvestigationHypothesisVersion entity by its id.
+func (c *InvestigationHypothesisVersionClient) Get(ctx context.Context, id uuid.UUID) (*InvestigationHypothesisVersion, error) {
+	return c.Query().Where(investigationhypothesisversion.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *InvestigationHypothesisVersionClient) GetX(ctx context.Context, id uuid.UUID) *InvestigationHypothesisVersion {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryTenant queries the tenant edge of a InvestigationHypothesisVersion.
+func (c *InvestigationHypothesisVersionClient) QueryTenant(_m *InvestigationHypothesisVersion) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(investigationhypothesisversion.Table, investigationhypothesisversion.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, investigationhypothesisversion.TenantTable, investigationhypothesisversion.TenantColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.InvestigationHypothesisVersion
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryHypothesis queries the hypothesis edge of a InvestigationHypothesisVersion.
+func (c *InvestigationHypothesisVersionClient) QueryHypothesis(_m *InvestigationHypothesisVersion) *InvestigationHypothesisQuery {
+	query := (&InvestigationHypothesisClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(investigationhypothesisversion.Table, investigationhypothesisversion.FieldID, id),
+			sqlgraph.To(investigationhypothesis.Table, investigationhypothesis.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, investigationhypothesisversion.HypothesisTable, investigationhypothesisversion.HypothesisColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.InvestigationHypothesis
+		step.Edge.Schema = schemaConfig.InvestigationHypothesisVersion
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryAgentTurn queries the agent_turn edge of a InvestigationHypothesisVersion.
+func (c *InvestigationHypothesisVersionClient) QueryAgentTurn(_m *InvestigationHypothesisVersion) *AgentTurnQuery {
+	query := (&AgentTurnClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(investigationhypothesisversion.Table, investigationhypothesisversion.FieldID, id),
+			sqlgraph.To(agentturn.Table, agentturn.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, investigationhypothesisversion.AgentTurnTable, investigationhypothesisversion.AgentTurnColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.AgentTurn
+		step.Edge.Schema = schemaConfig.InvestigationHypothesisVersion
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryOutputReferences queries the output_references edge of a InvestigationHypothesisVersion.
+func (c *InvestigationHypothesisVersionClient) QueryOutputReferences(_m *InvestigationHypothesisVersion) *InvestigationOutputReferenceQuery {
+	query := (&InvestigationOutputReferenceClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(investigationhypothesisversion.Table, investigationhypothesisversion.FieldID, id),
+			sqlgraph.To(investigationoutputreference.Table, investigationoutputreference.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, investigationhypothesisversion.OutputReferencesTable, investigationhypothesisversion.OutputReferencesColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.InvestigationOutputReference
+		step.Edge.Schema = schemaConfig.InvestigationOutputReference
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *InvestigationHypothesisVersionClient) Hooks() []Hook {
+	hooks := c.hooks.InvestigationHypothesisVersion
+	return append(hooks[:len(hooks):len(hooks)], investigationhypothesisversion.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *InvestigationHypothesisVersionClient) Interceptors() []Interceptor {
+	return c.inters.InvestigationHypothesisVersion
+}
+
+func (c *InvestigationHypothesisVersionClient) mutate(ctx context.Context, m *InvestigationHypothesisVersionMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&InvestigationHypothesisVersionCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&InvestigationHypothesisVersionUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&InvestigationHypothesisVersionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&InvestigationHypothesisVersionDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown InvestigationHypothesisVersion mutation op: %q", m.Op())
+	}
+}
+
+// InvestigationOutputReferenceClient is a client for the InvestigationOutputReference schema.
+type InvestigationOutputReferenceClient struct {
+	config
+}
+
+// NewInvestigationOutputReferenceClient returns a client for the InvestigationOutputReference from the given config.
+func NewInvestigationOutputReferenceClient(c config) *InvestigationOutputReferenceClient {
+	return &InvestigationOutputReferenceClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `investigationoutputreference.Hooks(f(g(h())))`.
+func (c *InvestigationOutputReferenceClient) Use(hooks ...Hook) {
+	c.hooks.InvestigationOutputReference = append(c.hooks.InvestigationOutputReference, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `investigationoutputreference.Intercept(f(g(h())))`.
+func (c *InvestigationOutputReferenceClient) Intercept(interceptors ...Interceptor) {
+	c.inters.InvestigationOutputReference = append(c.inters.InvestigationOutputReference, interceptors...)
+}
+
+// Create returns a builder for creating a InvestigationOutputReference entity.
+func (c *InvestigationOutputReferenceClient) Create() *InvestigationOutputReferenceCreate {
+	mutation := newInvestigationOutputReferenceMutation(c.config, OpCreate)
+	return &InvestigationOutputReferenceCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of InvestigationOutputReference entities.
+func (c *InvestigationOutputReferenceClient) CreateBulk(builders ...*InvestigationOutputReferenceCreate) *InvestigationOutputReferenceCreateBulk {
+	return &InvestigationOutputReferenceCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *InvestigationOutputReferenceClient) MapCreateBulk(slice any, setFunc func(*InvestigationOutputReferenceCreate, int)) *InvestigationOutputReferenceCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &InvestigationOutputReferenceCreateBulk{err: fmt.Errorf("calling to InvestigationOutputReferenceClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*InvestigationOutputReferenceCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &InvestigationOutputReferenceCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for InvestigationOutputReference.
+func (c *InvestigationOutputReferenceClient) Update() *InvestigationOutputReferenceUpdate {
+	mutation := newInvestigationOutputReferenceMutation(c.config, OpUpdate)
+	return &InvestigationOutputReferenceUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *InvestigationOutputReferenceClient) UpdateOne(_m *InvestigationOutputReference) *InvestigationOutputReferenceUpdateOne {
+	mutation := newInvestigationOutputReferenceMutation(c.config, OpUpdateOne, withInvestigationOutputReference(_m))
+	return &InvestigationOutputReferenceUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *InvestigationOutputReferenceClient) UpdateOneID(id uuid.UUID) *InvestigationOutputReferenceUpdateOne {
+	mutation := newInvestigationOutputReferenceMutation(c.config, OpUpdateOne, withInvestigationOutputReferenceID(id))
+	return &InvestigationOutputReferenceUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for InvestigationOutputReference.
+func (c *InvestigationOutputReferenceClient) Delete() *InvestigationOutputReferenceDelete {
+	mutation := newInvestigationOutputReferenceMutation(c.config, OpDelete)
+	return &InvestigationOutputReferenceDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *InvestigationOutputReferenceClient) DeleteOne(_m *InvestigationOutputReference) *InvestigationOutputReferenceDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *InvestigationOutputReferenceClient) DeleteOneID(id uuid.UUID) *InvestigationOutputReferenceDeleteOne {
+	builder := c.Delete().Where(investigationoutputreference.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &InvestigationOutputReferenceDeleteOne{builder}
+}
+
+// Query returns a query builder for InvestigationOutputReference.
+func (c *InvestigationOutputReferenceClient) Query() *InvestigationOutputReferenceQuery {
+	return &InvestigationOutputReferenceQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeInvestigationOutputReference},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a InvestigationOutputReference entity by its id.
+func (c *InvestigationOutputReferenceClient) Get(ctx context.Context, id uuid.UUID) (*InvestigationOutputReference, error) {
+	return c.Query().Where(investigationoutputreference.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *InvestigationOutputReferenceClient) GetX(ctx context.Context, id uuid.UUID) *InvestigationOutputReference {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryTenant queries the tenant edge of a InvestigationOutputReference.
+func (c *InvestigationOutputReferenceClient) QueryTenant(_m *InvestigationOutputReference) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(investigationoutputreference.Table, investigationoutputreference.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, investigationoutputreference.TenantTable, investigationoutputreference.TenantColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.InvestigationOutputReference
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryReport queries the report edge of a InvestigationOutputReference.
+func (c *InvestigationOutputReferenceClient) QueryReport(_m *InvestigationOutputReference) *InvestigationReportQuery {
+	query := (&InvestigationReportClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(investigationoutputreference.Table, investigationoutputreference.FieldID, id),
+			sqlgraph.To(investigationreport.Table, investigationreport.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, investigationoutputreference.ReportTable, investigationoutputreference.ReportColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.InvestigationReport
+		step.Edge.Schema = schemaConfig.InvestigationOutputReference
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryFindingVersion queries the finding_version edge of a InvestigationOutputReference.
+func (c *InvestigationOutputReferenceClient) QueryFindingVersion(_m *InvestigationOutputReference) *InvestigationFindingVersionQuery {
+	query := (&InvestigationFindingVersionClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(investigationoutputreference.Table, investigationoutputreference.FieldID, id),
+			sqlgraph.To(investigationfindingversion.Table, investigationfindingversion.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, investigationoutputreference.FindingVersionTable, investigationoutputreference.FindingVersionColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.InvestigationFindingVersion
+		step.Edge.Schema = schemaConfig.InvestigationOutputReference
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryHypothesisVersion queries the hypothesis_version edge of a InvestigationOutputReference.
+func (c *InvestigationOutputReferenceClient) QueryHypothesisVersion(_m *InvestigationOutputReference) *InvestigationHypothesisVersionQuery {
+	query := (&InvestigationHypothesisVersionClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(investigationoutputreference.Table, investigationoutputreference.FieldID, id),
+			sqlgraph.To(investigationhypothesisversion.Table, investigationhypothesisversion.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, investigationoutputreference.HypothesisVersionTable, investigationoutputreference.HypothesisVersionColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.InvestigationHypothesisVersion
+		step.Edge.Schema = schemaConfig.InvestigationOutputReference
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryKnowledgeEvidence queries the knowledge_evidence edge of a InvestigationOutputReference.
+func (c *InvestigationOutputReferenceClient) QueryKnowledgeEvidence(_m *InvestigationOutputReference) *KnowledgeEvidenceQuery {
+	query := (&KnowledgeEvidenceClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(investigationoutputreference.Table, investigationoutputreference.FieldID, id),
+			sqlgraph.To(knowledgeevidence.Table, knowledgeevidence.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, investigationoutputreference.KnowledgeEvidenceTable, investigationoutputreference.KnowledgeEvidenceColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.KnowledgeEvidence
+		step.Edge.Schema = schemaConfig.InvestigationOutputReference
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *InvestigationOutputReferenceClient) Hooks() []Hook {
+	hooks := c.hooks.InvestigationOutputReference
+	return append(hooks[:len(hooks):len(hooks)], investigationoutputreference.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *InvestigationOutputReferenceClient) Interceptors() []Interceptor {
+	return c.inters.InvestigationOutputReference
+}
+
+func (c *InvestigationOutputReferenceClient) mutate(ctx context.Context, m *InvestigationOutputReferenceMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&InvestigationOutputReferenceCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&InvestigationOutputReferenceUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&InvestigationOutputReferenceUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&InvestigationOutputReferenceDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown InvestigationOutputReference mutation op: %q", m.Op())
 	}
 }
 
@@ -8568,7 +9788,7 @@ func (c *InvestigationReportClient) QueryInvestigation(_m *InvestigationReport) 
 		step := sqlgraph.NewStep(
 			sqlgraph.From(investigationreport.Table, investigationreport.FieldID, id),
 			sqlgraph.To(investigation.Table, investigation.FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, true, investigationreport.InvestigationTable, investigationreport.InvestigationColumn),
+			sqlgraph.Edge(sqlgraph.M2O, true, investigationreport.InvestigationTable, investigationreport.InvestigationColumn),
 		)
 		schemaConfig := _m.schemaConfig
 		step.To.Schema = schemaConfig.Investigation
@@ -8598,6 +9818,25 @@ func (c *InvestigationReportClient) QueryAgentTurn(_m *InvestigationReport) *Age
 	return query
 }
 
+// QueryOutputReferences queries the output_references edge of a InvestigationReport.
+func (c *InvestigationReportClient) QueryOutputReferences(_m *InvestigationReport) *InvestigationOutputReferenceQuery {
+	query := (&InvestigationOutputReferenceClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(investigationreport.Table, investigationreport.FieldID, id),
+			sqlgraph.To(investigationoutputreference.Table, investigationoutputreference.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, investigationreport.OutputReferencesTable, investigationreport.OutputReferencesColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.InvestigationOutputReference
+		step.Edge.Schema = schemaConfig.InvestigationOutputReference
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *InvestigationReportClient) Hooks() []Hook {
 	hooks := c.hooks.InvestigationReport
@@ -8621,6 +9860,197 @@ func (c *InvestigationReportClient) mutate(ctx context.Context, m *Investigation
 		return (&InvestigationReportDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown InvestigationReport mutation op: %q", m.Op())
+	}
+}
+
+// InvestigationUserInputClient is a client for the InvestigationUserInput schema.
+type InvestigationUserInputClient struct {
+	config
+}
+
+// NewInvestigationUserInputClient returns a client for the InvestigationUserInput from the given config.
+func NewInvestigationUserInputClient(c config) *InvestigationUserInputClient {
+	return &InvestigationUserInputClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `investigationuserinput.Hooks(f(g(h())))`.
+func (c *InvestigationUserInputClient) Use(hooks ...Hook) {
+	c.hooks.InvestigationUserInput = append(c.hooks.InvestigationUserInput, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `investigationuserinput.Intercept(f(g(h())))`.
+func (c *InvestigationUserInputClient) Intercept(interceptors ...Interceptor) {
+	c.inters.InvestigationUserInput = append(c.inters.InvestigationUserInput, interceptors...)
+}
+
+// Create returns a builder for creating a InvestigationUserInput entity.
+func (c *InvestigationUserInputClient) Create() *InvestigationUserInputCreate {
+	mutation := newInvestigationUserInputMutation(c.config, OpCreate)
+	return &InvestigationUserInputCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of InvestigationUserInput entities.
+func (c *InvestigationUserInputClient) CreateBulk(builders ...*InvestigationUserInputCreate) *InvestigationUserInputCreateBulk {
+	return &InvestigationUserInputCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *InvestigationUserInputClient) MapCreateBulk(slice any, setFunc func(*InvestigationUserInputCreate, int)) *InvestigationUserInputCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &InvestigationUserInputCreateBulk{err: fmt.Errorf("calling to InvestigationUserInputClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*InvestigationUserInputCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &InvestigationUserInputCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for InvestigationUserInput.
+func (c *InvestigationUserInputClient) Update() *InvestigationUserInputUpdate {
+	mutation := newInvestigationUserInputMutation(c.config, OpUpdate)
+	return &InvestigationUserInputUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *InvestigationUserInputClient) UpdateOne(_m *InvestigationUserInput) *InvestigationUserInputUpdateOne {
+	mutation := newInvestigationUserInputMutation(c.config, OpUpdateOne, withInvestigationUserInput(_m))
+	return &InvestigationUserInputUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *InvestigationUserInputClient) UpdateOneID(id uuid.UUID) *InvestigationUserInputUpdateOne {
+	mutation := newInvestigationUserInputMutation(c.config, OpUpdateOne, withInvestigationUserInputID(id))
+	return &InvestigationUserInputUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for InvestigationUserInput.
+func (c *InvestigationUserInputClient) Delete() *InvestigationUserInputDelete {
+	mutation := newInvestigationUserInputMutation(c.config, OpDelete)
+	return &InvestigationUserInputDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *InvestigationUserInputClient) DeleteOne(_m *InvestigationUserInput) *InvestigationUserInputDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *InvestigationUserInputClient) DeleteOneID(id uuid.UUID) *InvestigationUserInputDeleteOne {
+	builder := c.Delete().Where(investigationuserinput.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &InvestigationUserInputDeleteOne{builder}
+}
+
+// Query returns a query builder for InvestigationUserInput.
+func (c *InvestigationUserInputClient) Query() *InvestigationUserInputQuery {
+	return &InvestigationUserInputQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeInvestigationUserInput},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a InvestigationUserInput entity by its id.
+func (c *InvestigationUserInputClient) Get(ctx context.Context, id uuid.UUID) (*InvestigationUserInput, error) {
+	return c.Query().Where(investigationuserinput.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *InvestigationUserInputClient) GetX(ctx context.Context, id uuid.UUID) *InvestigationUserInput {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryTenant queries the tenant edge of a InvestigationUserInput.
+func (c *InvestigationUserInputClient) QueryTenant(_m *InvestigationUserInput) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(investigationuserinput.Table, investigationuserinput.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, investigationuserinput.TenantTable, investigationuserinput.TenantColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.InvestigationUserInput
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryInvestigation queries the investigation edge of a InvestigationUserInput.
+func (c *InvestigationUserInputClient) QueryInvestigation(_m *InvestigationUserInput) *InvestigationQuery {
+	query := (&InvestigationClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(investigationuserinput.Table, investigationuserinput.FieldID, id),
+			sqlgraph.To(investigation.Table, investigation.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, investigationuserinput.InvestigationTable, investigationuserinput.InvestigationColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.Investigation
+		step.Edge.Schema = schemaConfig.InvestigationUserInput
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryAgentTurn queries the agent_turn edge of a InvestigationUserInput.
+func (c *InvestigationUserInputClient) QueryAgentTurn(_m *InvestigationUserInput) *AgentTurnQuery {
+	query := (&AgentTurnClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(investigationuserinput.Table, investigationuserinput.FieldID, id),
+			sqlgraph.To(agentturn.Table, agentturn.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, investigationuserinput.AgentTurnTable, investigationuserinput.AgentTurnColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.AgentTurn
+		step.Edge.Schema = schemaConfig.InvestigationUserInput
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *InvestigationUserInputClient) Hooks() []Hook {
+	hooks := c.hooks.InvestigationUserInput
+	return append(hooks[:len(hooks):len(hooks)], investigationuserinput.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *InvestigationUserInputClient) Interceptors() []Interceptor {
+	return c.inters.InvestigationUserInput
+}
+
+func (c *InvestigationUserInputClient) mutate(ctx context.Context, m *InvestigationUserInputMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&InvestigationUserInputCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&InvestigationUserInputUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&InvestigationUserInputUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&InvestigationUserInputDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown InvestigationUserInput mutation op: %q", m.Op())
 	}
 }
 
@@ -10216,25 +11646,6 @@ func (c *NormalizedEventClient) QuerySituationObservationGroups(_m *NormalizedEv
 		schemaConfig := _m.schemaConfig
 		step.To.Schema = schemaConfig.SituationObservationGroup
 		step.Edge.Schema = schemaConfig.SituationObservationGroupEvents
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryAnalysisEntrySubjects queries the analysis_entry_subjects edge of a NormalizedEvent.
-func (c *NormalizedEventClient) QueryAnalysisEntrySubjects(_m *NormalizedEvent) *SystemAnalysisEntrySubjectQuery {
-	query := (&SystemAnalysisEntrySubjectClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(normalizedevent.Table, normalizedevent.FieldID, id),
-			sqlgraph.To(systemanalysisentrysubject.Table, systemanalysisentrysubject.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, normalizedevent.AnalysisEntrySubjectsTable, normalizedevent.AnalysisEntrySubjectsColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.SystemAnalysisEntrySubject
-		step.Edge.Schema = schemaConfig.SystemAnalysisEntrySubject
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
 	}
@@ -13585,25 +14996,6 @@ func (c *SituationClient) QueryTenant(_m *Situation) *TenantQuery {
 	return query
 }
 
-// QueryKnowledgeEntity queries the knowledge_entity edge of a Situation.
-func (c *SituationClient) QueryKnowledgeEntity(_m *Situation) *KnowledgeEntityQuery {
-	query := (&KnowledgeEntityClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(situation.Table, situation.FieldID, id),
-			sqlgraph.To(knowledgeentity.Table, knowledgeentity.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, situation.KnowledgeEntityTable, situation.KnowledgeEntityColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.KnowledgeEntity
-		step.Edge.Schema = schemaConfig.Situation
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // QueryInvestigation queries the investigation edge of a Situation.
 func (c *SituationClient) QueryInvestigation(_m *Situation) *SituationInvestigationQuery {
 	query := (&SituationInvestigationClient{config: c.config}).Query()
@@ -14055,25 +15447,6 @@ func (c *SituationInvestigationClient) QueryTenant(_m *SituationInvestigation) *
 		)
 		schemaConfig := _m.schemaConfig
 		step.To.Schema = schemaConfig.Tenant
-		step.Edge.Schema = schemaConfig.SituationInvestigation
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryRequestedTurn queries the requested_turn edge of a SituationInvestigation.
-func (c *SituationInvestigationClient) QueryRequestedTurn(_m *SituationInvestigation) *AgentTurnQuery {
-	query := (&AgentTurnClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(situationinvestigation.Table, situationinvestigation.FieldID, id),
-			sqlgraph.To(agentturn.Table, agentturn.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, situationinvestigation.RequestedTurnTable, situationinvestigation.RequestedTurnColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.AgentTurn
 		step.Edge.Schema = schemaConfig.SituationInvestigation
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -15257,25 +16630,6 @@ func (c *SystemAnalysisEntrySubjectClient) QueryKnowledgeEvidence(_m *SystemAnal
 		)
 		schemaConfig := _m.schemaConfig
 		step.To.Schema = schemaConfig.KnowledgeEvidence
-		step.Edge.Schema = schemaConfig.SystemAnalysisEntrySubject
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryNormalizedEvent queries the normalized_event edge of a SystemAnalysisEntrySubject.
-func (c *SystemAnalysisEntrySubjectClient) QueryNormalizedEvent(_m *SystemAnalysisEntrySubject) *NormalizedEventQuery {
-	query := (&NormalizedEventClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(systemanalysisentrysubject.Table, systemanalysisentrysubject.FieldID, id),
-			sqlgraph.To(normalizedevent.Table, normalizedevent.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, systemanalysisentrysubject.NormalizedEventTable, systemanalysisentrysubject.NormalizedEventColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.NormalizedEvent
 		step.Edge.Schema = schemaConfig.SystemAnalysisEntrySubject
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -17859,8 +19213,11 @@ type (
 		IncidentLink, IncidentMilestone, IncidentRole, IncidentRoleAssignment,
 		IncidentSeverity, IncidentTag, IncidentType, Integration,
 		IntegrationEventSyncCursor, IntegrationEventSyncRun,
-		IntegrationUserInstallState, Investigation, InvestigationFinding,
-		InvestigationHypothesis, InvestigationReport, KnowledgeEntity,
+		IntegrationUserInstallState, Investigation, InvestigationEvidenceRevision,
+		InvestigationFinding, InvestigationFindingVersion,
+		InvestigationFindingVersionLink, InvestigationHypothesis,
+		InvestigationHypothesisVersion, InvestigationOutputReference,
+		InvestigationReport, InvestigationUserInput, KnowledgeEntity,
 		KnowledgeEntityLinkingAttribute, KnowledgeEvidence, KnowledgeRelationship,
 		KnowledgeSubjectAlias, MeetingSchedule, MeetingSession, NormalizedEvent,
 		NormalizedEventProjection, NormalizedEventProjectionEntity,
@@ -17883,8 +19240,11 @@ type (
 		IncidentLink, IncidentMilestone, IncidentRole, IncidentRoleAssignment,
 		IncidentSeverity, IncidentTag, IncidentType, Integration,
 		IntegrationEventSyncCursor, IntegrationEventSyncRun,
-		IntegrationUserInstallState, Investigation, InvestigationFinding,
-		InvestigationHypothesis, InvestigationReport, KnowledgeEntity,
+		IntegrationUserInstallState, Investigation, InvestigationEvidenceRevision,
+		InvestigationFinding, InvestigationFindingVersion,
+		InvestigationFindingVersionLink, InvestigationHypothesis,
+		InvestigationHypothesisVersion, InvestigationOutputReference,
+		InvestigationReport, InvestigationUserInput, KnowledgeEntity,
 		KnowledgeEntityLinkingAttribute, KnowledgeEvidence, KnowledgeRelationship,
 		KnowledgeSubjectAlias, MeetingSchedule, MeetingSession, NormalizedEvent,
 		NormalizedEventProjection, NormalizedEventProjectionEntity,
@@ -17947,9 +19307,15 @@ var (
 		IntegrationEventSyncRun:                   tableSchemas[0],
 		IntegrationUserInstallState:               tableSchemas[0],
 		Investigation:                             tableSchemas[0],
+		InvestigationEvidenceRevision:             tableSchemas[0],
 		InvestigationFinding:                      tableSchemas[0],
+		InvestigationFindingVersion:               tableSchemas[0],
+		InvestigationFindingVersionLink:           tableSchemas[0],
 		InvestigationHypothesis:                   tableSchemas[0],
+		InvestigationHypothesisVersion:            tableSchemas[0],
+		InvestigationOutputReference:              tableSchemas[0],
 		InvestigationReport:                       tableSchemas[0],
+		InvestigationUserInput:                    tableSchemas[0],
 		KnowledgeEntity:                           tableSchemas[0],
 		KnowledgeEntityLinkingAttribute:           tableSchemas[0],
 		KnowledgeEvidence:                         tableSchemas[0],

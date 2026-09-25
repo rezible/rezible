@@ -14,7 +14,6 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/incident"
-	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/situation"
 	"github.com/rezible/rezible/ent/situationhazardassessment"
 	"github.com/rezible/rezible/ent/situationinvestigation"
@@ -64,29 +63,9 @@ func (_c *SituationCreate) SetNillableUpdatedAt(v *time.Time) *SituationCreate {
 	return _c
 }
 
-// SetKnowledgeEntityID sets the "knowledge_entity_id" field.
-func (_c *SituationCreate) SetKnowledgeEntityID(v uuid.UUID) *SituationCreate {
-	_c.mutation.SetKnowledgeEntityID(v)
-	return _c
-}
-
 // SetTitle sets the "title" field.
 func (_c *SituationCreate) SetTitle(v string) *SituationCreate {
 	_c.mutation.SetTitle(v)
-	return _c
-}
-
-// SetEvidenceRevision sets the "evidence_revision" field.
-func (_c *SituationCreate) SetEvidenceRevision(v int) *SituationCreate {
-	_c.mutation.SetEvidenceRevision(v)
-	return _c
-}
-
-// SetNillableEvidenceRevision sets the "evidence_revision" field if the given value is not nil.
-func (_c *SituationCreate) SetNillableEvidenceRevision(v *int) *SituationCreate {
-	if v != nil {
-		_c.SetEvidenceRevision(*v)
-	}
 	return _c
 }
 
@@ -155,11 +134,6 @@ func (_c *SituationCreate) SetNillableID(v *uuid.UUID) *SituationCreate {
 // SetTenant sets the "tenant" edge to the Tenant entity.
 func (_c *SituationCreate) SetTenant(v *Tenant) *SituationCreate {
 	return _c.SetTenantID(v.ID)
-}
-
-// SetKnowledgeEntity sets the "knowledge_entity" edge to the KnowledgeEntity entity.
-func (_c *SituationCreate) SetKnowledgeEntity(v *KnowledgeEntity) *SituationCreate {
-	return _c.SetKnowledgeEntityID(v.ID)
 }
 
 // SetInvestigationID sets the "investigation" edge to the SituationInvestigation entity by ID.
@@ -277,10 +251,6 @@ func (_c *SituationCreate) defaults() error {
 		v := situation.DefaultUpdatedAt()
 		_c.mutation.SetUpdatedAt(v)
 	}
-	if _, ok := _c.mutation.EvidenceRevision(); !ok {
-		v := situation.DefaultEvidenceRevision
-		_c.mutation.SetEvidenceRevision(v)
-	}
 	if _, ok := _c.mutation.ID(); !ok {
 		if situation.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized situation.DefaultID (forgotten import ent/runtime?)")
@@ -302,23 +272,12 @@ func (_c *SituationCreate) check() error {
 	if _, ok := _c.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "Situation.updated_at"`)}
 	}
-	if _, ok := _c.mutation.KnowledgeEntityID(); !ok {
-		return &ValidationError{Name: "knowledge_entity_id", err: errors.New(`ent: missing required field "Situation.knowledge_entity_id"`)}
-	}
 	if _, ok := _c.mutation.Title(); !ok {
 		return &ValidationError{Name: "title", err: errors.New(`ent: missing required field "Situation.title"`)}
 	}
 	if v, ok := _c.mutation.Title(); ok {
 		if err := situation.TitleValidator(v); err != nil {
 			return &ValidationError{Name: "title", err: fmt.Errorf(`ent: validator failed for field "Situation.title": %w`, err)}
-		}
-	}
-	if _, ok := _c.mutation.EvidenceRevision(); !ok {
-		return &ValidationError{Name: "evidence_revision", err: errors.New(`ent: missing required field "Situation.evidence_revision"`)}
-	}
-	if v, ok := _c.mutation.EvidenceRevision(); ok {
-		if err := situation.EvidenceRevisionValidator(v); err != nil {
-			return &ValidationError{Name: "evidence_revision", err: fmt.Errorf(`ent: validator failed for field "Situation.evidence_revision": %w`, err)}
 		}
 	}
 	if _, ok := _c.mutation.OpenedAt(); !ok {
@@ -331,9 +290,6 @@ func (_c *SituationCreate) check() error {
 	}
 	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "Situation.tenant"`)}
-	}
-	if len(_c.mutation.KnowledgeEntityIDs()) == 0 {
-		return &ValidationError{Name: "knowledge_entity", err: errors.New(`ent: missing required edge "Situation.knowledge_entity"`)}
 	}
 	return nil
 }
@@ -384,10 +340,6 @@ func (_c *SituationCreate) createSpec() (*Situation, *sqlgraph.CreateSpec) {
 		_spec.SetField(situation.FieldTitle, field.TypeString, value)
 		_node.Title = value
 	}
-	if value, ok := _c.mutation.EvidenceRevision(); ok {
-		_spec.SetField(situation.FieldEvidenceRevision, field.TypeInt, value)
-		_node.EvidenceRevision = value
-	}
 	if value, ok := _c.mutation.Summary(); ok {
 		_spec.SetField(situation.FieldSummary, field.TypeString, value)
 		_node.Summary = value
@@ -420,24 +372,6 @@ func (_c *SituationCreate) createSpec() (*Situation, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.TenantID = nodes[0]
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := _c.mutation.KnowledgeEntityIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   situation.KnowledgeEntityTable,
-			Columns: []string{situation.KnowledgeEntityColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _c.schemaConfig.Situation
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_node.KnowledgeEntityID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := _c.mutation.InvestigationIDs(); len(nodes) > 0 {
@@ -596,24 +530,6 @@ func (u *SituationUpsert) UpdateTitle() *SituationUpsert {
 	return u
 }
 
-// SetEvidenceRevision sets the "evidence_revision" field.
-func (u *SituationUpsert) SetEvidenceRevision(v int) *SituationUpsert {
-	u.Set(situation.FieldEvidenceRevision, v)
-	return u
-}
-
-// UpdateEvidenceRevision sets the "evidence_revision" field to the value that was provided on create.
-func (u *SituationUpsert) UpdateEvidenceRevision() *SituationUpsert {
-	u.SetExcluded(situation.FieldEvidenceRevision)
-	return u
-}
-
-// AddEvidenceRevision adds v to the "evidence_revision" field.
-func (u *SituationUpsert) AddEvidenceRevision(v int) *SituationUpsert {
-	u.Add(situation.FieldEvidenceRevision, v)
-	return u
-}
-
 // SetSummary sets the "summary" field.
 func (u *SituationUpsert) SetSummary(v string) *SituationUpsert {
 	u.Set(situation.FieldSummary, v)
@@ -700,9 +616,6 @@ func (u *SituationUpsertOne) UpdateNewValues() *SituationUpsertOne {
 		if _, exists := u.create.mutation.TenantID(); exists {
 			s.SetIgnore(situation.FieldTenantID)
 		}
-		if _, exists := u.create.mutation.KnowledgeEntityID(); exists {
-			s.SetIgnore(situation.FieldKnowledgeEntityID)
-		}
 	}))
 	return u
 }
@@ -773,27 +686,6 @@ func (u *SituationUpsertOne) SetTitle(v string) *SituationUpsertOne {
 func (u *SituationUpsertOne) UpdateTitle() *SituationUpsertOne {
 	return u.Update(func(s *SituationUpsert) {
 		s.UpdateTitle()
-	})
-}
-
-// SetEvidenceRevision sets the "evidence_revision" field.
-func (u *SituationUpsertOne) SetEvidenceRevision(v int) *SituationUpsertOne {
-	return u.Update(func(s *SituationUpsert) {
-		s.SetEvidenceRevision(v)
-	})
-}
-
-// AddEvidenceRevision adds v to the "evidence_revision" field.
-func (u *SituationUpsertOne) AddEvidenceRevision(v int) *SituationUpsertOne {
-	return u.Update(func(s *SituationUpsert) {
-		s.AddEvidenceRevision(v)
-	})
-}
-
-// UpdateEvidenceRevision sets the "evidence_revision" field to the value that was provided on create.
-func (u *SituationUpsertOne) UpdateEvidenceRevision() *SituationUpsertOne {
-	return u.Update(func(s *SituationUpsert) {
-		s.UpdateEvidenceRevision()
 	})
 }
 
@@ -1060,9 +952,6 @@ func (u *SituationUpsertBulk) UpdateNewValues() *SituationUpsertBulk {
 			if _, exists := b.mutation.TenantID(); exists {
 				s.SetIgnore(situation.FieldTenantID)
 			}
-			if _, exists := b.mutation.KnowledgeEntityID(); exists {
-				s.SetIgnore(situation.FieldKnowledgeEntityID)
-			}
 		}
 	}))
 	return u
@@ -1134,27 +1023,6 @@ func (u *SituationUpsertBulk) SetTitle(v string) *SituationUpsertBulk {
 func (u *SituationUpsertBulk) UpdateTitle() *SituationUpsertBulk {
 	return u.Update(func(s *SituationUpsert) {
 		s.UpdateTitle()
-	})
-}
-
-// SetEvidenceRevision sets the "evidence_revision" field.
-func (u *SituationUpsertBulk) SetEvidenceRevision(v int) *SituationUpsertBulk {
-	return u.Update(func(s *SituationUpsert) {
-		s.SetEvidenceRevision(v)
-	})
-}
-
-// AddEvidenceRevision adds v to the "evidence_revision" field.
-func (u *SituationUpsertBulk) AddEvidenceRevision(v int) *SituationUpsertBulk {
-	return u.Update(func(s *SituationUpsert) {
-		s.AddEvidenceRevision(v)
-	})
-}
-
-// UpdateEvidenceRevision sets the "evidence_revision" field to the value that was provided on create.
-func (u *SituationUpsertBulk) UpdateEvidenceRevision() *SituationUpsertBulk {
-	return u.Update(func(s *SituationUpsert) {
-		s.UpdateEvidenceRevision()
 	})
 }
 

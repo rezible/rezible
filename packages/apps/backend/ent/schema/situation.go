@@ -25,9 +25,7 @@ func (Situation) Mixin() []ent.Mixin {
 func (Situation) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
-		field.UUID("knowledge_entity_id", uuid.UUID{}).Immutable(),
 		field.String("title").NotEmpty(),
-		field.Int("evidence_revision").Positive().Default(1),
 		field.Text("summary").Optional(),
 		field.Time("opened_at"),
 		field.Time("closed_at").Optional().Nillable(),
@@ -37,11 +35,6 @@ func (Situation) Fields() []ent.Field {
 
 func (Situation) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("knowledge_entity", KnowledgeEntity.Type).
-			Unique().
-			Required().
-			Immutable().
-			Field("knowledge_entity_id"),
 		edge.To("investigation", SituationInvestigation.Type).
 			Unique(),
 		edge.From("hazard_assessments", SituationHazardAssessment.Type).
@@ -55,7 +48,6 @@ func (Situation) Edges() []ent.Edge {
 
 func (Situation) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Fields("tenant_id", "knowledge_entity_id").Unique(),
 		index.Fields("tenant_id", "opened_at"),
 	}
 }
@@ -109,23 +101,11 @@ func (SituationInvestigation) Fields() []ent.Field {
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("situation_id", uuid.UUID{}).Immutable(),
 		field.UUID("investigation_id", uuid.UUID{}).Immutable(),
-		field.UUID("requested_turn_id", uuid.UUID{}).
-			Optional().
-			Nillable(),
-		field.Int("completed_revision").
-			NonNegative().
-			Default(0),
-		field.Int("requested_revision").
-			NonNegative().
-			Default(0),
 	}
 }
 
 func (SituationInvestigation) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("requested_turn", AgentTurn.Type).
-			Unique().
-			Field("requested_turn_id"),
 		edge.From("situation", Situation.Type).
 			Ref("investigation").
 			Unique().

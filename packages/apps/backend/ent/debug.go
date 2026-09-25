@@ -284,12 +284,36 @@ func (c *InvestigationClient) Debug() *InvestigationClient {
 	return &InvestigationClient{config: cfg}
 }
 
+func (c *InvestigationEvidenceRevisionClient) Debug() *InvestigationEvidenceRevisionClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &InvestigationEvidenceRevisionClient{config: cfg}
+}
+
 func (c *InvestigationFindingClient) Debug() *InvestigationFindingClient {
 	if c.debug {
 		return c
 	}
 	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
 	return &InvestigationFindingClient{config: cfg}
+}
+
+func (c *InvestigationFindingVersionClient) Debug() *InvestigationFindingVersionClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &InvestigationFindingVersionClient{config: cfg}
+}
+
+func (c *InvestigationFindingVersionLinkClient) Debug() *InvestigationFindingVersionLinkClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &InvestigationFindingVersionLinkClient{config: cfg}
 }
 
 func (c *InvestigationHypothesisClient) Debug() *InvestigationHypothesisClient {
@@ -300,12 +324,36 @@ func (c *InvestigationHypothesisClient) Debug() *InvestigationHypothesisClient {
 	return &InvestigationHypothesisClient{config: cfg}
 }
 
+func (c *InvestigationHypothesisVersionClient) Debug() *InvestigationHypothesisVersionClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &InvestigationHypothesisVersionClient{config: cfg}
+}
+
+func (c *InvestigationOutputReferenceClient) Debug() *InvestigationOutputReferenceClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &InvestigationOutputReferenceClient{config: cfg}
+}
+
 func (c *InvestigationReportClient) Debug() *InvestigationReportClient {
 	if c.debug {
 		return c
 	}
 	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
 	return &InvestigationReportClient{config: cfg}
+}
+
+func (c *InvestigationUserInputClient) Debug() *InvestigationUserInputClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &InvestigationUserInputClient{config: cfg}
 }
 
 func (c *KnowledgeEntityClient) Debug() *KnowledgeEntityClient {

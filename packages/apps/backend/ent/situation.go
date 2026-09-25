@@ -10,7 +10,6 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/situation"
 	"github.com/rezible/rezible/ent/situationinvestigation"
 	"github.com/rezible/rezible/ent/tenant"
@@ -27,12 +26,8 @@ type Situation struct {
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
-	// KnowledgeEntityID holds the value of the "knowledge_entity_id" field.
-	KnowledgeEntityID uuid.UUID `json:"knowledge_entity_id,omitempty"`
 	// Title holds the value of the "title" field.
 	Title string `json:"title,omitempty"`
-	// EvidenceRevision holds the value of the "evidence_revision" field.
-	EvidenceRevision int `json:"evidence_revision,omitempty"`
 	// Summary holds the value of the "summary" field.
 	Summary string `json:"summary,omitempty"`
 	// OpenedAt holds the value of the "opened_at" field.
@@ -51,8 +46,6 @@ type Situation struct {
 type SituationEdges struct {
 	// Tenant holds the value of the tenant edge.
 	Tenant *Tenant `json:"tenant,omitempty"`
-	// KnowledgeEntity holds the value of the knowledge_entity edge.
-	KnowledgeEntity *KnowledgeEntity `json:"knowledge_entity,omitempty"`
 	// Investigation holds the value of the investigation edge.
 	Investigation *SituationInvestigation `json:"investigation,omitempty"`
 	// HazardAssessments holds the value of the hazard_assessments edge.
@@ -63,7 +56,7 @@ type SituationEdges struct {
 	Incidents []*Incident `json:"incidents,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [6]bool
+	loadedTypes [5]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -77,23 +70,12 @@ func (e SituationEdges) TenantOrErr() (*Tenant, error) {
 	return nil, &NotLoadedError{edge: "tenant"}
 }
 
-// KnowledgeEntityOrErr returns the KnowledgeEntity value or an error if the edge
-// was not loaded in eager-loading, or loaded but was not found.
-func (e SituationEdges) KnowledgeEntityOrErr() (*KnowledgeEntity, error) {
-	if e.KnowledgeEntity != nil {
-		return e.KnowledgeEntity, nil
-	} else if e.loadedTypes[1] {
-		return nil, &NotFoundError{label: knowledgeentity.Label}
-	}
-	return nil, &NotLoadedError{edge: "knowledge_entity"}
-}
-
 // InvestigationOrErr returns the Investigation value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
 func (e SituationEdges) InvestigationOrErr() (*SituationInvestigation, error) {
 	if e.Investigation != nil {
 		return e.Investigation, nil
-	} else if e.loadedTypes[2] {
+	} else if e.loadedTypes[1] {
 		return nil, &NotFoundError{label: situationinvestigation.Label}
 	}
 	return nil, &NotLoadedError{edge: "investigation"}
@@ -102,7 +84,7 @@ func (e SituationEdges) InvestigationOrErr() (*SituationInvestigation, error) {
 // HazardAssessmentsOrErr returns the HazardAssessments value or an error if the edge
 // was not loaded in eager-loading.
 func (e SituationEdges) HazardAssessmentsOrErr() ([]*SituationHazardAssessment, error) {
-	if e.loadedTypes[3] {
+	if e.loadedTypes[2] {
 		return e.HazardAssessments, nil
 	}
 	return nil, &NotLoadedError{edge: "hazard_assessments"}
@@ -111,7 +93,7 @@ func (e SituationEdges) HazardAssessmentsOrErr() ([]*SituationHazardAssessment, 
 // ObservationGroupsOrErr returns the ObservationGroups value or an error if the edge
 // was not loaded in eager-loading.
 func (e SituationEdges) ObservationGroupsOrErr() ([]*SituationObservationGroup, error) {
-	if e.loadedTypes[4] {
+	if e.loadedTypes[3] {
 		return e.ObservationGroups, nil
 	}
 	return nil, &NotLoadedError{edge: "observation_groups"}
@@ -120,7 +102,7 @@ func (e SituationEdges) ObservationGroupsOrErr() ([]*SituationObservationGroup, 
 // IncidentsOrErr returns the Incidents value or an error if the edge
 // was not loaded in eager-loading.
 func (e SituationEdges) IncidentsOrErr() ([]*Incident, error) {
-	if e.loadedTypes[5] {
+	if e.loadedTypes[4] {
 		return e.Incidents, nil
 	}
 	return nil, &NotLoadedError{edge: "incidents"}
@@ -131,13 +113,13 @@ func (*Situation) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case situation.FieldTenantID, situation.FieldEvidenceRevision:
+		case situation.FieldTenantID:
 			values[i] = new(sql.NullInt64)
 		case situation.FieldTitle, situation.FieldSummary, situation.FieldCloseReason:
 			values[i] = new(sql.NullString)
 		case situation.FieldCreatedAt, situation.FieldUpdatedAt, situation.FieldOpenedAt, situation.FieldClosedAt:
 			values[i] = new(sql.NullTime)
-		case situation.FieldID, situation.FieldKnowledgeEntityID:
+		case situation.FieldID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -178,23 +160,11 @@ func (_m *Situation) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.UpdatedAt = value.Time
 			}
-		case situation.FieldKnowledgeEntityID:
-			if value, ok := values[i].(*uuid.UUID); !ok {
-				return fmt.Errorf("unexpected type %T for field knowledge_entity_id", values[i])
-			} else if value != nil {
-				_m.KnowledgeEntityID = *value
-			}
 		case situation.FieldTitle:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field title", values[i])
 			} else if value.Valid {
 				_m.Title = value.String
-			}
-		case situation.FieldEvidenceRevision:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for field evidence_revision", values[i])
-			} else if value.Valid {
-				_m.EvidenceRevision = int(value.Int64)
 			}
 		case situation.FieldSummary:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -238,11 +208,6 @@ func (_m *Situation) Value(name string) (ent.Value, error) {
 // QueryTenant queries the "tenant" edge of the Situation entity.
 func (_m *Situation) QueryTenant() *TenantQuery {
 	return NewSituationClient(_m.config).QueryTenant(_m)
-}
-
-// QueryKnowledgeEntity queries the "knowledge_entity" edge of the Situation entity.
-func (_m *Situation) QueryKnowledgeEntity() *KnowledgeEntityQuery {
-	return NewSituationClient(_m.config).QueryKnowledgeEntity(_m)
 }
 
 // QueryInvestigation queries the "investigation" edge of the Situation entity.
@@ -297,14 +262,8 @@ func (_m *Situation) String() string {
 	builder.WriteString("updated_at=")
 	builder.WriteString(_m.UpdatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
-	builder.WriteString("knowledge_entity_id=")
-	builder.WriteString(fmt.Sprintf("%v", _m.KnowledgeEntityID))
-	builder.WriteString(", ")
 	builder.WriteString("title=")
 	builder.WriteString(_m.Title)
-	builder.WriteString(", ")
-	builder.WriteString("evidence_revision=")
-	builder.WriteString(fmt.Sprintf("%v", _m.EvidenceRevision))
 	builder.WriteString(", ")
 	builder.WriteString("summary=")
 	builder.WriteString(_m.Summary)

@@ -72,14 +72,14 @@ func UpdatedAt(v time.Time) predicate.Investigation {
 	return predicate.Investigation(sql.FieldEQ(FieldUpdatedAt, v))
 }
 
-// SystemAnalysisID applies equality check predicate on the "system_analysis_id" field. It's identical to SystemAnalysisIDEQ.
-func SystemAnalysisID(v uuid.UUID) predicate.Investigation {
-	return predicate.Investigation(sql.FieldEQ(FieldSystemAnalysisID, v))
-}
-
 // AgentSessionID applies equality check predicate on the "agent_session_id" field. It's identical to AgentSessionIDEQ.
 func AgentSessionID(v uuid.UUID) predicate.Investigation {
 	return predicate.Investigation(sql.FieldEQ(FieldAgentSessionID, v))
+}
+
+// SystemAnalysisID applies equality check predicate on the "system_analysis_id" field. It's identical to SystemAnalysisIDEQ.
+func SystemAnalysisID(v uuid.UUID) predicate.Investigation {
+	return predicate.Investigation(sql.FieldEQ(FieldSystemAnalysisID, v))
 }
 
 // TenantIDEQ applies the EQ predicate on the "tenant_id" field.
@@ -182,26 +182,6 @@ func UpdatedAtLTE(v time.Time) predicate.Investigation {
 	return predicate.Investigation(sql.FieldLTE(FieldUpdatedAt, v))
 }
 
-// SystemAnalysisIDEQ applies the EQ predicate on the "system_analysis_id" field.
-func SystemAnalysisIDEQ(v uuid.UUID) predicate.Investigation {
-	return predicate.Investigation(sql.FieldEQ(FieldSystemAnalysisID, v))
-}
-
-// SystemAnalysisIDNEQ applies the NEQ predicate on the "system_analysis_id" field.
-func SystemAnalysisIDNEQ(v uuid.UUID) predicate.Investigation {
-	return predicate.Investigation(sql.FieldNEQ(FieldSystemAnalysisID, v))
-}
-
-// SystemAnalysisIDIn applies the In predicate on the "system_analysis_id" field.
-func SystemAnalysisIDIn(vs ...uuid.UUID) predicate.Investigation {
-	return predicate.Investigation(sql.FieldIn(FieldSystemAnalysisID, vs...))
-}
-
-// SystemAnalysisIDNotIn applies the NotIn predicate on the "system_analysis_id" field.
-func SystemAnalysisIDNotIn(vs ...uuid.UUID) predicate.Investigation {
-	return predicate.Investigation(sql.FieldNotIn(FieldSystemAnalysisID, vs...))
-}
-
 // AgentSessionIDEQ applies the EQ predicate on the "agent_session_id" field.
 func AgentSessionIDEQ(v uuid.UUID) predicate.Investigation {
 	return predicate.Investigation(sql.FieldEQ(FieldAgentSessionID, v))
@@ -220,6 +200,26 @@ func AgentSessionIDIn(vs ...uuid.UUID) predicate.Investigation {
 // AgentSessionIDNotIn applies the NotIn predicate on the "agent_session_id" field.
 func AgentSessionIDNotIn(vs ...uuid.UUID) predicate.Investigation {
 	return predicate.Investigation(sql.FieldNotIn(FieldAgentSessionID, vs...))
+}
+
+// SystemAnalysisIDEQ applies the EQ predicate on the "system_analysis_id" field.
+func SystemAnalysisIDEQ(v uuid.UUID) predicate.Investigation {
+	return predicate.Investigation(sql.FieldEQ(FieldSystemAnalysisID, v))
+}
+
+// SystemAnalysisIDNEQ applies the NEQ predicate on the "system_analysis_id" field.
+func SystemAnalysisIDNEQ(v uuid.UUID) predicate.Investigation {
+	return predicate.Investigation(sql.FieldNEQ(FieldSystemAnalysisID, v))
+}
+
+// SystemAnalysisIDIn applies the In predicate on the "system_analysis_id" field.
+func SystemAnalysisIDIn(vs ...uuid.UUID) predicate.Investigation {
+	return predicate.Investigation(sql.FieldIn(FieldSystemAnalysisID, vs...))
+}
+
+// SystemAnalysisIDNotIn applies the NotIn predicate on the "system_analysis_id" field.
+func SystemAnalysisIDNotIn(vs ...uuid.UUID) predicate.Investigation {
+	return predicate.Investigation(sql.FieldNotIn(FieldSystemAnalysisID, vs...))
 }
 
 // HasTenant applies the HasEdge predicate on the "tenant" edge.
@@ -242,35 +242,6 @@ func HasTenantWith(preds ...predicate.Tenant) predicate.Investigation {
 		step := newTenantStep()
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.Tenant
-		step.Edge.Schema = schemaConfig.Investigation
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasSystemAnalysis applies the HasEdge predicate on the "system_analysis" edge.
-func HasSystemAnalysis() predicate.Investigation {
-	return predicate.Investigation(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, true, SystemAnalysisTable, SystemAnalysisColumn),
-		)
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.SystemAnalysis
-		step.Edge.Schema = schemaConfig.Investigation
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasSystemAnalysisWith applies the HasEdge predicate on the "system_analysis" edge with a given conditions (other predicates).
-func HasSystemAnalysisWith(preds ...predicate.SystemAnalysis) predicate.Investigation {
-	return predicate.Investigation(func(s *sql.Selector) {
-		step := newSystemAnalysisStep()
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.SystemAnalysis
 		step.Edge.Schema = schemaConfig.Investigation
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
@@ -309,6 +280,35 @@ func HasAgentSessionWith(preds ...predicate.AgentSession) predicate.Investigatio
 	})
 }
 
+// HasSystemAnalysis applies the HasEdge predicate on the "system_analysis" edge.
+func HasSystemAnalysis() predicate.Investigation {
+	return predicate.Investigation(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, SystemAnalysisTable, SystemAnalysisColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SystemAnalysis
+		step.Edge.Schema = schemaConfig.Investigation
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasSystemAnalysisWith applies the HasEdge predicate on the "system_analysis" edge with a given conditions (other predicates).
+func HasSystemAnalysisWith(preds ...predicate.SystemAnalysis) predicate.Investigation {
+	return predicate.Investigation(func(s *sql.Selector) {
+		step := newSystemAnalysisStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SystemAnalysis
+		step.Edge.Schema = schemaConfig.Investigation
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // HasSituations applies the HasEdge predicate on the "situations" edge.
 func HasSituations() predicate.Investigation {
 	return predicate.Investigation(func(s *sql.Selector) {
@@ -330,6 +330,64 @@ func HasSituationsWith(preds ...predicate.SituationInvestigation) predicate.Inve
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.SituationInvestigation
 		step.Edge.Schema = schemaConfig.SituationInvestigation
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasUserInputs applies the HasEdge predicate on the "user_inputs" edge.
+func HasUserInputs() predicate.Investigation {
+	return predicate.Investigation(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, UserInputsTable, UserInputsColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.InvestigationUserInput
+		step.Edge.Schema = schemaConfig.InvestigationUserInput
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasUserInputsWith applies the HasEdge predicate on the "user_inputs" edge with a given conditions (other predicates).
+func HasUserInputsWith(preds ...predicate.InvestigationUserInput) predicate.Investigation {
+	return predicate.Investigation(func(s *sql.Selector) {
+		step := newUserInputsStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.InvestigationUserInput
+		step.Edge.Schema = schemaConfig.InvestigationUserInput
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasEvidenceRevisions applies the HasEdge predicate on the "evidence_revisions" edge.
+func HasEvidenceRevisions() predicate.Investigation {
+	return predicate.Investigation(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, EvidenceRevisionsTable, EvidenceRevisionsColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.InvestigationEvidenceRevision
+		step.Edge.Schema = schemaConfig.InvestigationEvidenceRevision
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasEvidenceRevisionsWith applies the HasEdge predicate on the "evidence_revisions" edge with a given conditions (other predicates).
+func HasEvidenceRevisionsWith(preds ...predicate.InvestigationEvidenceRevision) predicate.Investigation {
+	return predicate.Investigation(func(s *sql.Selector) {
+		step := newEvidenceRevisionsStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.InvestigationEvidenceRevision
+		step.Edge.Schema = schemaConfig.InvestigationEvidenceRevision
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -396,12 +454,12 @@ func HasFindingsWith(preds ...predicate.InvestigationFinding) predicate.Investig
 	})
 }
 
-// HasReport applies the HasEdge predicate on the "report" edge.
-func HasReport() predicate.Investigation {
+// HasReports applies the HasEdge predicate on the "reports" edge.
+func HasReports() predicate.Investigation {
 	return predicate.Investigation(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, false, ReportTable, ReportColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, ReportsTable, ReportsColumn),
 		)
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.InvestigationReport
@@ -410,10 +468,10 @@ func HasReport() predicate.Investigation {
 	})
 }
 
-// HasReportWith applies the HasEdge predicate on the "report" edge with a given conditions (other predicates).
-func HasReportWith(preds ...predicate.InvestigationReport) predicate.Investigation {
+// HasReportsWith applies the HasEdge predicate on the "reports" edge with a given conditions (other predicates).
+func HasReportsWith(preds ...predicate.InvestigationReport) predicate.Investigation {
 	return predicate.Investigation(func(s *sql.Selector) {
-		step := newReportStep()
+		step := newReportsStep()
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.InvestigationReport
 		step.Edge.Schema = schemaConfig.InvestigationReport

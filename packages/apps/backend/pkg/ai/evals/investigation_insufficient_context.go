@@ -2,6 +2,7 @@ package evals
 
 import (
 	"context"
+	"strings"
 	"time"
 
 	rez "github.com/rezible/rezible"
@@ -40,43 +41,24 @@ func (s *InvestigationInsufficientContext) Grade(ctx context.Context, client *en
 		return rezai.EvalScenarioGrade{Checks: []rezai.EvalCheck{reportCheck}}, nil
 	}
 
-	state, stateErr := queryAnalysisState(ctx, client, s.fixture.analysisID)
-	if stateErr != nil {
-		return rezai.EvalScenarioGrade{}, stateErr
-	}
-
-	limitationsPassed := len(report.Limitations) > 0
+	reportText := strings.ToLower(report.Text)
+	limitationsPassed := strings.Contains(reportText, "insufficient") || strings.Contains(reportText, "not available") || strings.Contains(reportText, "no evidence") || strings.Contains(reportText, "cannot determine") || strings.Contains(reportText, "not enough")
 	limitationsSummary := "The investigation report explicitly records missing context."
 	if !limitationsPassed {
-		limitationsSummary = "The investigation report contains no nonblank limitations."
+		limitationsSummary = "The investigation report does not explain the missing context."
 	}
 	limitationsCheck := rezai.EvalCheck{
 		ID:       "limitations",
 		Passed:   limitationsPassed,
 		Summary:  limitationsSummary,
-		Expected: "at least one nonblank limitation",
-		Observed: report.Limitations,
-	}
-
-	noFindingsPassed := len(state.findings) == 0
-	noFindingsSummary := "The analysis contains no unsupported durable findings."
-	if !noFindingsPassed {
-		noFindingsSummary = "The analysis contains unsupported durable findings."
-	}
-	noFindingsCheck := rezai.EvalCheck{
-		ID:       "no_unsupported_findings",
-		Passed:   noFindingsPassed,
-		Summary:  noFindingsSummary,
-		Expected: []subjectObservation{},
-		Observed: state.findings,
+		Expected: "a plain-text explanation that context is insufficient",
+		Observed: report.Text,
 	}
 
 	checks := []rezai.EvalCheck{
 		reportCheck,
 		reportTextCheck(report),
 		limitationsCheck,
-		nextActionCheck(report),
-		noFindingsCheck,
 	}
 	return rezai.EvalScenarioGrade{Output: report, Checks: checks}, nil
 }

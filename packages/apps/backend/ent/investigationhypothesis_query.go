@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"database/sql/driver"
 	"errors"
 	"fmt"
 	"math"
@@ -16,6 +17,7 @@ import (
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/investigation"
 	"github.com/rezible/rezible/ent/investigationhypothesis"
+	"github.com/rezible/rezible/ent/investigationhypothesisversion"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/tenant"
 )
@@ -29,6 +31,7 @@ type InvestigationHypothesisQuery struct {
 	predicates        []predicate.InvestigationHypothesis
 	withTenant        *TenantQuery
 	withInvestigation *InvestigationQuery
+	withVersions      *InvestigationHypothesisVersionQuery
 	modifiers         []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -110,6 +113,31 @@ func (_q *InvestigationHypothesisQuery) QueryInvestigation() *InvestigationQuery
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.Investigation
 		step.Edge.Schema = schemaConfig.InvestigationHypothesis
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryVersions chains the current query on the "versions" edge.
+func (_q *InvestigationHypothesisQuery) QueryVersions() *InvestigationHypothesisVersionQuery {
+	query := (&InvestigationHypothesisVersionClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(investigationhypothesis.Table, investigationhypothesis.FieldID, selector),
+			sqlgraph.To(investigationhypothesisversion.Table, investigationhypothesisversion.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, investigationhypothesis.VersionsTable, investigationhypothesis.VersionsColumn),
+		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.InvestigationHypothesisVersion
+		step.Edge.Schema = schemaConfig.InvestigationHypothesisVersion
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -310,6 +338,7 @@ func (_q *InvestigationHypothesisQuery) Clone() *InvestigationHypothesisQuery {
 		predicates:        append([]predicate.InvestigationHypothesis{}, _q.predicates...),
 		withTenant:        _q.withTenant.Clone(),
 		withInvestigation: _q.withInvestigation.Clone(),
+		withVersions:      _q.withVersions.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
 		path:      _q.path,
@@ -336,6 +365,17 @@ func (_q *InvestigationHypothesisQuery) WithInvestigation(opts ...func(*Investig
 		opt(query)
 	}
 	_q.withInvestigation = query
+	return _q
+}
+
+// WithVersions tells the query-builder to eager-load the nodes that are connected to
+// the "versions" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *InvestigationHypothesisQuery) WithVersions(opts ...func(*InvestigationHypothesisVersionQuery)) *InvestigationHypothesisQuery {
+	query := (&InvestigationHypothesisVersionClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withVersions = query
 	return _q
 }
 
@@ -423,9 +463,10 @@ func (_q *InvestigationHypothesisQuery) sqlAll(ctx context.Context, hooks ...que
 	var (
 		nodes       = []*InvestigationHypothesis{}
 		_spec       = _q.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [3]bool{
 			_q.withTenant != nil,
 			_q.withInvestigation != nil,
+			_q.withVersions != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -460,6 +501,15 @@ func (_q *InvestigationHypothesisQuery) sqlAll(ctx context.Context, hooks ...que
 	if query := _q.withInvestigation; query != nil {
 		if err := _q.loadInvestigation(ctx, query, nodes, nil,
 			func(n *InvestigationHypothesis, e *Investigation) { n.Edges.Investigation = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withVersions; query != nil {
+		if err := _q.loadVersions(ctx, query, nodes,
+			func(n *InvestigationHypothesis) { n.Edges.Versions = []*InvestigationHypothesisVersion{} },
+			func(n *InvestigationHypothesis, e *InvestigationHypothesisVersion) {
+				n.Edges.Versions = append(n.Edges.Versions, e)
+			}); err != nil {
 			return nil, err
 		}
 	}
@@ -521,6 +571,36 @@ func (_q *InvestigationHypothesisQuery) loadInvestigation(ctx context.Context, q
 		for i := range nodes {
 			assign(nodes[i], n)
 		}
+	}
+	return nil
+}
+func (_q *InvestigationHypothesisQuery) loadVersions(ctx context.Context, query *InvestigationHypothesisVersionQuery, nodes []*InvestigationHypothesis, init func(*InvestigationHypothesis), assign func(*InvestigationHypothesis, *InvestigationHypothesisVersion)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*InvestigationHypothesis)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(investigationhypothesisversion.FieldHypothesisID)
+	}
+	query.Where(predicate.InvestigationHypothesisVersion(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(investigationhypothesis.VersionsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.HypothesisID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "hypothesis_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
 	}
 	return nil
 }
