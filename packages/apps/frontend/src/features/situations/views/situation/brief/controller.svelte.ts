@@ -2,7 +2,7 @@ import { page } from "$app/state";
 import { investigationHref } from "$features/situations/lib/routes";
 import { Context } from "runed";
 import { useSituationController } from "../controller.svelte";
-import { evidenceChanged, observationGroups, type SourceRecord } from "../model";
+import { observationGroups, type SourceRecord } from "../model";
 
 export class SituationBriefController {
 	private situationController = useSituationController();
@@ -22,10 +22,6 @@ export class SituationBriefController {
 	sourceSheetOpen = $state(false);
 
 	preview = $derived(this.situationController.investigation);
-	evidenceChanged = $derived(
-		evidenceChanged(this.attrs?.evidenceRevision ?? 0, this.attrs?.investigation?.completedRevision)
-	);
-	previewChanged = $derived(!!this.situationController.investigationReport && this.evidenceChanged);
 
 	previewHref = $derived(investigationHref(this.situationId, page.url.search));
 

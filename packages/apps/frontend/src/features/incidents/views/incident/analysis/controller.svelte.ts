@@ -151,10 +151,7 @@ export class IncidentAnalysisController {
 					? "Evidence details unavailable"
 					: "Subject details unavailable",
 				reference:
-					attrs.knowledgeEvidenceId ??
-					attrs.normalizedEventId ??
-					attrs.knowledgeEntityId ??
-					attrs.knowledgeRelationshipId,
+					attrs.knowledgeEvidenceId ?? attrs.knowledgeEntityId ?? attrs.knowledgeRelationshipId,
 			};
 		})
 	);

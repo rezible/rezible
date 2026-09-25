@@ -1,11 +1,9 @@
 <script lang="ts">
 	import { Button } from "$components/ui/button";
-	import * as Alert from "$components/ui/alert";
 	import * as Empty from "$components/ui/empty";
 	import * as Collapsible from "$components/ui/collapsible";
 	import RiArrowDownSLine from "remixicon-svelte/icons/arrow-down-s-line";
 	import RiFileListLine from "remixicon-svelte/icons/file-list-line";
-	import RiInformationLine from "remixicon-svelte/icons/information-line";
 	import { useSituationController } from "../controller.svelte";
 	import { initSituationBriefController } from "./controller.svelte";
 	import SituationSourceSheet from "./SituationSourceSheet.svelte";
@@ -49,22 +47,12 @@
 					>
 						{reportAttrs.text || "Report text unavailable."}
 					</p>
-					{#if brief.previewChanged}
-						<Alert.Root role="note">
-							<RiInformationLine />
-							<Alert.Title>
-								<span class="text-status-warning-foreground">
-									Evidence has changed since this report.
-								</span>
-							</Alert.Title>
-						</Alert.Root>
-					{/if}
 					<Button variant="link" href={brief.previewHref} class="self-start">Read report</Button>
 				{:else}
 					<p class="text-sm text-muted-foreground">
-						{brief.preview ? "Investigation in progress." : "No investigation yet."}
+						{brief.preview ? "No report yet." : "No investigation yet."}
 					</p>
-					<Button href={brief.previewHref} class="self-start">Start investigation</Button>
+					<Button href={brief.previewHref} class="self-start">View investigation</Button>
 				{/if}
 			</section>
 

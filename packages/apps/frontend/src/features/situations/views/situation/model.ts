@@ -10,10 +10,6 @@ export function timestamp(value?: string) {
 	};
 }
 
-export function evidenceChanged(evidenceRevision: number, completedRevision?: number) {
-	return completedRevision !== undefined && evidenceRevision > completedRevision;
-}
-
 export type SourceRecord = {
 	key: string;
 	id: string;
