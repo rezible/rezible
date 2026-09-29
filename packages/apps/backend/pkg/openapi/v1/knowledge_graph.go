@@ -93,6 +93,7 @@ type (
 
 	KnowledgeGraphEvidenceAttributes struct {
 		Kind           string                     `json:"kind" enum:"observed,deleted"`
+		Assertion      string                     `json:"assertion"`
 		EffectiveAt    time.Time                  `json:"effectiveAt"`
 		CreatedAt      time.Time                  `json:"createdAt"`
 		EventId        uuid.UUID                  `json:"eventId"`
@@ -217,6 +218,7 @@ func KnowledgeGraphSubjectAliasFromEnt(alias *ent.KnowledgeSubjectAlias) Knowled
 func KnowledgeGraphEvidenceFromEnt(ev *ent.KnowledgeEvidence) *KnowledgeGraphEvidence {
 	attrs := KnowledgeGraphEvidenceAttributes{
 		Kind:           ev.Kind.String(),
+		Assertion:      ev.Assertion,
 		EffectiveAt:    ev.EffectiveAt,
 		CreatedAt:      ev.CreatedAt,
 		EventId:        ev.EventID,

@@ -918,9 +918,11 @@ type (
 	}
 
 	InvestigationDetail struct {
-		Investigation *ent.Investigation
-		Query         string
-		LatestTurn    *ent.AgentTurn
+		Investigation  *ent.Investigation
+		Query          string
+		HasPendingWork bool
+		LatestTurn     *ent.AgentTurn
+		ActiveTurn     *ent.AgentTurn
 	}
 
 	InvestigationUserInput struct {
@@ -930,6 +932,7 @@ type (
 		SubmissionKey   string
 		CreatedAt       time.Time
 		AgentTurnID     *uuid.UUID
+		TurnStatus      *at.Status
 		AnswerVersionID *uuid.UUID
 	}
 
@@ -973,11 +976,12 @@ type (
 	}
 
 	CreateSituationParams struct {
-		Title             string
-		Summary           string
-		OpenedAt          time.Time
-		IncidentIDs       []uuid.UUID
-		ObservationGroups []SituationObservationGroupParams
+		Title              string
+		Summary            string
+		OpenedAt           time.Time
+		IncidentIDs        []uuid.UUID
+		ObservationGroups  []SituationObservationGroupParams
+		StartInvestigation bool
 	}
 
 	SituationObservationGroupParams struct {

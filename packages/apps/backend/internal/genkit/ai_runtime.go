@@ -29,28 +29,20 @@ func NewAiRuntime(cfg rez.Config) *AiRuntime {
 }
 
 func (r *AiRuntime) Init(ctx context.Context, opts ...AiRuntimeOption) error {
+	gkOpts := []genkit.GenkitOption{
+		genkit.WithExperimental(),
+	}
+
 	var plugins []gkapi.Plugin
-	var defaultModelName string
 	for _, opt := range opts {
 		if len(opt.plugins) > 0 {
 			plugins = append(plugins, opt.plugins...)
 		}
-		if opt.defaultModelName != nil {
-			fmt.Printf("opt: %+v\n", opt)
-			if defaultModelName != "" {
-				return fmt.Errorf("multiple default models set")
-			}
-			defaultModelName = *opt.defaultModelName
+		for _, gkOpt := range opt.genkitOpts {
+			gkOpts = append(gkOpts, gkOpt)
 		}
 	}
-
-	gkOpts := []genkit.GenkitOption{
-		genkit.WithExperimental(),
-		genkit.WithPlugins(plugins...),
-	}
-	if defaultModelName != "" {
-		gkOpts = append(gkOpts, genkit.WithDefaultModel(defaultModelName))
-	}
+	gkOpts = append(gkOpts, genkit.WithPlugins(plugins...))
 
 	r.gk = genkit.Init(ctx, gkOpts...)
 
@@ -92,10 +84,10 @@ func (r *AiRuntime) InvokeAgentTurn(ctx context.Context, params rez.InvokeAiAgen
 }
 
 type AiRuntimeOption struct {
-	kind             AiRuntimeOptionKind
-	runtimeFn        func(*AiRuntime) error
-	defaultModelName *string
-	plugins          []gkapi.Plugin
+	kind       AiRuntimeOptionKind
+	runtimeFn  func(*AiRuntime) error
+	genkitOpts []genkit.GenkitOption
+	plugins    []gkapi.Plugin
 }
 
 // TODO: remove these, don't use option kinds (just different functions eg `opt.agentFn`)
@@ -124,7 +116,7 @@ func WithDefinedModel[Config any](def ModelDefinition[Config]) AiRuntimeOption {
 		},
 	}
 	if def.IsDefault {
-		opt.defaultModelName = &def.Name
+		opt.genkitOpts = append(opt.genkitOpts, genkit.WithDefaultModel(def.Name))
 	}
 	return opt
 }
@@ -137,6 +129,9 @@ func WithGeminiPlugin(cfg rez.AiProviderConfigGemini) AiRuntimeOption {
 	opt := AiRuntimeOption{kind: AiRuntimeOptionKindPlugin}
 	if cfg.Enabled {
 		opt.plugins = append(opt.plugins, &googlegenai.GoogleAI{APIKey: cfg.APIKey})
+
+		// TODO: don't hardcode
+		opt.genkitOpts = append(opt.genkitOpts, genkit.WithDefaultModel(geminiFlashModel.Name()))
 	}
 	return opt
 }

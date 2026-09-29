@@ -451,7 +451,7 @@ func (a *Application) setupDemo(ctx context.Context) error {
 		}
 
 		fmt.Printf("wait for integration data ingestion...\n")
-		time.Sleep(time.Second)
+		time.Sleep(time.Second * 5)
 
 		return demoprovider.SeedDemoData(
 			ctx,

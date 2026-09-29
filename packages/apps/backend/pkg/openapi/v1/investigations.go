@@ -52,13 +52,14 @@ type (
 	}
 
 	InvestigationAttributes struct {
-		Query            string     `json:"query"`
-		AnalysisId       uuid.UUID  `json:"analysisId"`
-		SessionId        uuid.UUID  `json:"sessionId"`
-		LatestTurnId     *uuid.UUID `json:"latestTurnId" nullable:"true"`
-		LatestTurnStatus *string    `json:"latestTurnStatus" nullable:"true"`
-		CreatedAt        time.Time  `json:"createdAt"`
-		UpdatedAt        time.Time  `json:"updatedAt"`
+		Query          string                   `json:"query"`
+		AnalysisId     uuid.UUID                `json:"analysisId"`
+		SessionId      uuid.UUID                `json:"sessionId"`
+		LatestTurn     *AgentTurnStatusOverview `json:"latestTurn"`
+		ActiveTurn     *AgentTurnStatusOverview `json:"activeTurn"`
+		HasPendingWork bool                     `json:"hasPendingWork"`
+		CreatedAt      time.Time                `json:"createdAt"`
+		UpdatedAt      time.Time                `json:"updatedAt"`
 	}
 
 	InvestigationReport struct {
@@ -129,12 +130,12 @@ type (
 	}
 
 	InvestigationUserInputAttributes struct {
-		Text            string     `json:"text"`
-		UserId          uuid.UUID  `json:"userId"`
-		SubmissionKey   string     `json:"submissionKey"`
-		CreatedAt       time.Time  `json:"createdAt"`
-		AgentTurnId     *uuid.UUID `json:"agentTurnId" nullable:"true"`
-		AnswerVersionId *uuid.UUID `json:"answerVersionId" nullable:"true"`
+		Text            string                   `json:"text"`
+		UserId          uuid.UUID                `json:"userId"`
+		SubmissionKey   string                   `json:"submissionKey"`
+		CreatedAt       time.Time                `json:"createdAt"`
+		AgentTurn       *AgentTurnStatusOverview `json:"agentTurn"`
+		AnswerVersionId *uuid.UUID               `json:"answerVersionId" nullable:"true"`
 	}
 
 	InvestigationEvidenceRevision struct {
@@ -152,25 +153,18 @@ type (
 
 func InvestigationFromDetail(detail *rez.InvestigationDetail) Investigation {
 	inv := detail.Investigation
-	var latestTurnID *uuid.UUID
-	var latestTurnStatus *string
-	if detail.LatestTurn != nil {
-		latestTurnID = new(detail.LatestTurn.ID)
-		latestTurnStatusValue := string(detail.LatestTurn.Status)
-		latestTurnStatus = &latestTurnStatusValue
-	}
 	attrs := InvestigationAttributes{
-		Query:            detail.Query,
-		AnalysisId:       inv.SystemAnalysisID,
-		SessionId:        inv.AgentSessionID,
-		LatestTurnId:     latestTurnID,
-		LatestTurnStatus: latestTurnStatus,
-		CreatedAt:        inv.CreatedAt,
-		UpdatedAt:        inv.UpdatedAt,
+		Query:          detail.Query,
+		AnalysisId:     inv.SystemAnalysisID,
+		SessionId:      inv.AgentSessionID,
+		LatestTurn:     AgentTurnStatusOverviewFromDetail(detail.LatestTurn),
+		ActiveTurn:     AgentTurnStatusOverviewFromDetail(detail.ActiveTurn),
+		HasPendingWork: detail.HasPendingWork,
+		CreatedAt:      inv.CreatedAt,
+		UpdatedAt:      inv.UpdatedAt,
 	}
 	return Investigation{Id: inv.ID, Attributes: attrs}
 }
-
 func InvestigationReportFromResult(report *rez.InvestigationReportResult) InvestigationReport {
 	attrs := InvestigationReportAttributes{
 		Text:        report.Text,
@@ -226,12 +220,16 @@ func FindingVersionReferenceFromRez(reference rez.FindingVersionReference) Findi
 }
 
 func InvestigationUserInputFromRez(input *rez.InvestigationUserInput) InvestigationUserInput {
+	var turnOverview *AgentTurnStatusOverview
+	if input.AgentTurnID != nil && input.TurnStatus != nil {
+		turnOverview = &AgentTurnStatusOverview{Id: *input.AgentTurnID, Status: *input.TurnStatus}
+	}
 	attrs := InvestigationUserInputAttributes{
 		Text:            input.Text,
 		UserId:          input.UserID,
 		SubmissionKey:   input.SubmissionKey,
 		CreatedAt:       input.CreatedAt,
-		AgentTurnId:     input.AgentTurnID,
+		AgentTurn:       turnOverview,
 		AnswerVersionId: input.AnswerVersionID,
 	}
 	return InvestigationUserInput{Id: input.ID, Attributes: attrs}

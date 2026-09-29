@@ -12,6 +12,8 @@ import (
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/agentturn"
+	kne "github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/pkg/openapi"
 )
 
@@ -126,6 +128,11 @@ type (
 		Code    string `json:"code"`
 	}
 
+	AgentTurnStatusOverview struct {
+		Id     uuid.UUID        `json:"id"`
+		Status agentturn.Status `json:"status"`
+	}
+
 	AgentTurnUpdatedEvent struct {
 		SessionId    uuid.UUID `json:"sessionId"`
 		TurnId       uuid.UUID `json:"turnId"`
@@ -160,6 +167,16 @@ type (
 		Model       string `json:"model"`
 	}
 )
+
+func (o operations) RegisterAiEnums(api huma.API) {
+	registerEnumAlias[kne.Category, agentTurnStatusSchema](api)
+}
+
+type agentTurnStatusSchema agentturn.Status
+
+func (agentTurnStatusSchema) Schema(huma.Registry) *huma.Schema {
+	return makeEnumStringSchema(agentturn.StatusValues)
+}
 
 func AgentTurnChunkEventFromRez(sessionId, turnId uuid.UUID, chunk rez.AiAgentTurnChunk) (*AgentTurnChunkEvent, error) {
 	event := &AgentTurnChunkEvent{
@@ -212,6 +229,13 @@ func AgentSessionFromEnt(session *ent.AgentSession) AgentSession {
 		UpdatedAt:        session.UpdatedAt,
 	}
 	return AgentSession{Id: session.ID, Attributes: attrs}
+}
+
+func AgentTurnStatusOverviewFromDetail(t *ent.AgentTurn) *AgentTurnStatusOverview {
+	if t == nil {
+		return nil
+	}
+	return &AgentTurnStatusOverview{Id: t.ID, Status: t.Status}
 }
 
 func AgentMessagePartFromGenkit(part *ai.Part) (*AgentMessagePart, error) {

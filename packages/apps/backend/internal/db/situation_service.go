@@ -9,6 +9,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	mapset "github.com/deckarep/golang-set/v2"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/investigation"
 	sha "github.com/rezible/rezible/ent/situationhazardassessment"
 
 	rez "github.com/rezible/rezible"
@@ -33,6 +34,11 @@ type SituationService struct {
 	investigations rez.InvestigationService
 	analyses       rez.SystemAnalysisService
 	graph          rez.KnowledgeGraphQueryService
+}
+
+type situationSourceKey struct {
+	kind string
+	id   uuid.UUID
 }
 
 func NewSituationService(db rez.Database, investigations rez.InvestigationService, analyses rez.SystemAnalysisService, graph rez.KnowledgeGraphQueryService) (*SituationService, error) {
@@ -76,7 +82,9 @@ func (s *SituationService) GetSituation(ctx context.Context, id uuid.UUID) (*ent
 			q.WithInvestigation()
 		}).
 		WithObservationGroups(func(q *ent.SituationObservationGroupQuery) {
+			q.Order(sitog.ByCreatedAt(sql.OrderAsc()), sitog.ByID(sql.OrderAsc()))
 			q.WithEvents()
+			q.WithAlertEpisodes()
 		}).
 		WithIncidents().
 		Only(ctx)
@@ -133,25 +141,10 @@ func (s *SituationService) CreateSituation(ctx context.Context, params rez.Creat
 			return fmt.Errorf("create situation observation groups: %w", groupsErr)
 		}
 
-		analysis, createAnalysisErr := s.analyses.SetSystemAnalysis(ctx, uuid.Nil, func(*ent.SystemAnalysisMutation) {})
-		if createAnalysisErr != nil {
-			return fmt.Errorf("create situation investigation analysis: %w", createAnalysisErr)
-		}
-		if prepareErr := s.prepareOrRefreshSituationAnalysis(ctx, analysis.ID, eventIDs, episodeIDs); prepareErr != nil {
-			return fmt.Errorf("prepare situation investigation analysis: %w", prepareErr)
-		}
-		investigation, createInvestigationErr := s.investigations.CreateInvestigation(ctx, rez.CreateInvestigationParams{
-			AnalysisID: analysis.ID,
-			Query:      defaultSituationInvestigationQuestion,
-		})
-		if createInvestigationErr != nil {
-			return fmt.Errorf("create situation investigation: %w", createInvestigationErr)
-		}
-		createLink := tx.SituationInvestigation.Create().
-			SetSituationID(created.ID).
-			SetInvestigationID(investigation.ID)
-		if linkErr := createLink.Exec(ctx); linkErr != nil {
-			return fmt.Errorf("link situation investigation: %w", linkErr)
+		if params.StartInvestigation {
+			if invErr := s.createInvestigation(ctx, created.ID, eventIDs, episodeIDs); invErr != nil {
+				return fmt.Errorf("create situation investigation: %w", invErr)
+			}
 		}
 
 		querySituation := tx.Situation.Query().
@@ -166,6 +159,32 @@ func (s *SituationService) CreateSituation(ctx context.Context, params rez.Creat
 			return fmt.Errorf("load created situation: %w", loadErr)
 		}
 		result = loaded.Unwrap()
+		return nil
+	})
+}
+
+func (s *SituationService) createInvestigation(ctx context.Context, situationID uuid.UUID, eventIDs []uuid.UUID, episodeIDs []uuid.UUID) error {
+	return s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+		analysis, createAnalysisErr := s.analyses.SetSystemAnalysis(ctx, uuid.Nil, func(*ent.SystemAnalysisMutation) {})
+		if createAnalysisErr != nil {
+			return fmt.Errorf("create situation investigation analysis: %w", createAnalysisErr)
+		}
+		if prepareErr := s.prepareOrRefreshSituationAnalysis(ctx, analysis.ID, eventIDs, episodeIDs); prepareErr != nil {
+			return fmt.Errorf("prepare situation investigation analysis: %w", prepareErr)
+		}
+		inv, createInvErr := s.investigations.CreateInvestigation(ctx, rez.CreateInvestigationParams{
+			AnalysisID: analysis.ID,
+			Query:      defaultSituationInvestigationQuestion,
+		})
+		if createInvErr != nil {
+			return fmt.Errorf("create situation investigation: %w", createInvErr)
+		}
+		createLink := tx.SituationInvestigation.Create().
+			SetSituationID(situationID).
+			SetInvestigationID(inv.ID)
+		if linkErr := createLink.Exec(ctx); linkErr != nil {
+			return fmt.Errorf("link situation investigation: %w", linkErr)
+		}
 		return nil
 	})
 }
@@ -361,15 +380,19 @@ func (s *SituationService) RefreshSituationEpisodeAnalysis(ctx context.Context, 
 			return nil
 		}
 
-		queryLink := tx.SituationInvestigation.Query().
+		queryInvAnalysis := tx.SituationInvestigation.Query().
 			Where(siti.SituationID(situationID)).
-			WithInvestigation()
-		link, queryLinkErr := queryLink.Only(ctx)
-		if queryLinkErr != nil {
-			return fmt.Errorf("load situation investigation: %w", queryLinkErr)
+			QueryInvestigation().
+			Select(investigation.FieldSystemAnalysisID)
+		analysisInv, queryInvAnalysisErr := queryInvAnalysis.Only(ctx)
+		if queryInvAnalysisErr != nil {
+			if ent.IsNotFound(queryInvAnalysisErr) {
+				return nil
+			}
+			return fmt.Errorf("load situation investigation: %w", queryInvAnalysisErr)
 		}
 
-		prepErr := s.prepareOrRefreshSituationAnalysis(ctx, link.Edges.Investigation.SystemAnalysisID, nil, []uuid.UUID{episodeID})
+		prepErr := s.prepareOrRefreshSituationAnalysis(ctx, analysisInv.SystemAnalysisID, nil, []uuid.UUID{episodeID})
 		if prepErr != nil {
 			return fmt.Errorf("prepare or refresh: %w", prepErr)
 		}

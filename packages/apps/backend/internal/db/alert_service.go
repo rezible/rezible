@@ -217,18 +217,14 @@ func (s *AlertService) CloseInactiveAlertEpisodes(ctx context.Context) error {
 func (s *AlertService) refreshEpisodeLinkedSituations(ctx context.Context, epId uuid.UUID) error {
 	queryEpSituationLinks := s.db.Client(ctx).SituationObservationGroup.Query().
 		Where(sog.HasAlertEpisodesWith(ale.ID(epId))).
-		WithSituation()
-	sitLinks, querySitLinksErr := queryEpSituationLinks.All(ctx)
-	if querySitLinksErr != nil {
-		return fmt.Errorf("query episode situation links: %w", querySitLinksErr)
+		WithSituation().
+		QuerySituation()
+	situationIds, querySituationIdsErr := queryEpSituationLinks.IDs(ctx)
+	if querySituationIdsErr != nil {
+		return fmt.Errorf("query episode situation links: %w", querySituationIdsErr)
 	}
-	seenSituations := mapset.NewSet[uuid.UUID]()
-	for _, link := range sitLinks {
-		situationID := link.Edges.Situation.ID
-		if !seenSituations.Add(situationID) {
-			continue
-		}
-		if refreshErr := s.situations.RefreshSituationEpisodeAnalysis(ctx, situationID, epId); refreshErr != nil {
+	for situationId := range mapset.NewSet(situationIds...).Iter() {
+		if refreshErr := s.situations.RefreshSituationEpisodeAnalysis(ctx, situationId, epId); refreshErr != nil {
 			return fmt.Errorf("refresh episode analysis: %w", refreshErr)
 		}
 	}
@@ -262,15 +258,16 @@ func (s *AlertService) createAlertEpisode(ctx context.Context, params createAler
 		}
 		created = createdEpisode
 
-		createSitParams := rez.CreateSituationParams{
+		sitParams := rez.CreateSituationParams{
 			Title:    params.AlertDef.Title,
 			OpenedAt: params.OccurredAt,
 			ObservationGroups: []rez.SituationObservationGroupParams{{
 				Title:           params.AlertDef.Title,
 				AlertEpisodeIDs: []uuid.UUID{episodeId},
 			}},
+			StartInvestigation: time.Since(params.OccurredAt) < time.Hour,
 		}
-		_, situationErr := s.situations.CreateSituation(ctx, createSitParams)
+		_, situationErr := s.situations.CreateSituation(ctx, sitParams)
 		if situationErr != nil {
 			return fmt.Errorf("create situation: %w", situationErr)
 		}

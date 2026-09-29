@@ -133,21 +133,6 @@ func providePostgresTestDatabaseConfig(i do.Injector) (rez.PostgresConfig, error
 	return do.MustInvoke[*pgtestdb.Database](i).Config(), nil
 }
 
-func withGenkitAiRuntime(ctx context.Context) func(do.Injector) {
-	return do.Package(
-		do.Lazy(func(i do.Injector) (*genkit.AiRuntime, error) {
-			svc := genkit.NewAiRuntime(do.MustInvoke[rez.Config](i))
-			opts := do.MustInvoke[[]genkit.AiRuntimeOption](i)
-			return svc, svc.Init(ctx, opts...)
-		}),
-		do.Bind[*genkit.AiRuntime, rez.AiAgentRuntime](),
-
-		do.Lazy(func(i do.Injector) (rez.AiAgentCatalogue, error) {
-			return do.MustInvoke[*genkit.AiRuntime](i).AgentCatalogue(), nil
-		}),
-	)
-}
-
 var pkgGenkit = do.Package(
 	//do.Lazy(invokedProviderFn(func(b *genkit.WorkflowBuilder) (rezai.AiClassifyAgentThreadResponseWorkflow, error) {
 	//	return b.DefinePromptWorkflow(rezai.ClassifyAgentThreadResponseDefinition)
@@ -201,6 +186,23 @@ var pkgGenkit = do.Package(
 	}),
 	do.Bind[*genkit.EvaluationService, rezai.EvalScenarioRunner](),
 )
+
+func withGenkitAiRuntime(ctx context.Context) func(do.Injector) {
+	return do.Package(
+		do.Lazy(func(i do.Injector) (*genkit.AiRuntime, error) {
+			svc := genkit.NewAiRuntime(do.MustInvoke[rez.Config](i))
+			if initErr := svc.Init(ctx, do.MustInvoke[[]genkit.AiRuntimeOption](i)...); initErr != nil {
+				return nil, fmt.Errorf("init genkit runtime: %w", initErr)
+			}
+			return svc, nil
+		}),
+		do.Bind[*genkit.AiRuntime, rez.AiAgentRuntime](),
+
+		do.Lazy(func(i do.Injector) (rez.AiAgentCatalogue, error) {
+			return do.MustInvoke[*genkit.AiRuntime](i).AgentCatalogue(), nil
+		}),
+	)
+}
 
 var pkgRedis = do.Package( /* TODO */ )
 

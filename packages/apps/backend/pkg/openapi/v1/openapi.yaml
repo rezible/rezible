@@ -526,6 +526,17 @@ components:
             $ref: "#/components/schemas/Part"
           type: array
       type: object
+    AgentTurnStatusOverview:
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+        status:
+          type: string
+      required:
+        - id
+        - status
+      type: object
     AgentTurnUpdatedEvent:
       additionalProperties: false
       properties:
@@ -4096,19 +4107,17 @@ components:
     InvestigationAttributes:
       additionalProperties: false
       properties:
+        activeTurn:
+          $ref: "#/components/schemas/AgentTurnStatusOverview"
         analysisId:
           type: string
         createdAt:
           format: date-time
           type: string
-        latestTurnId:
-          type:
-            - string
-            - "null"
-        latestTurnStatus:
-          type:
-            - string
-            - "null"
+        hasPendingWork:
+          type: boolean
+        latestTurn:
+          $ref: "#/components/schemas/AgentTurnStatusOverview"
         query:
           type: string
         sessionId:
@@ -4120,8 +4129,9 @@ components:
         - query
         - analysisId
         - sessionId
-        - latestTurnId
-        - latestTurnStatus
+        - latestTurn
+        - activeTurn
+        - hasPendingWork
         - createdAt
         - updatedAt
       type: object
@@ -4330,10 +4340,8 @@ components:
     InvestigationUserInputAttributes:
       additionalProperties: false
       properties:
-        agentTurnId:
-          type:
-            - string
-            - "null"
+        agentTurn:
+          $ref: "#/components/schemas/AgentTurnStatusOverview"
         answerVersionId:
           type:
             - string
@@ -4352,7 +4360,7 @@ components:
         - userId
         - submissionKey
         - createdAt
-        - agentTurnId
+        - agentTurn
         - answerVersionId
       type: object
     KnowledgeGraphEntitiesPage:
@@ -4390,18 +4398,11 @@ components:
           type: array
         category:
           enum:
-            - system_function
-            - actor
-            - system
-            - container
-            - infrastructure
-            - component
-            - code
-            - process
-            - concern
-            - decision
-            - event
-            - signal
+            - queued
+            - running
+            - completed
+            - failed
+            - aborted
           type: string
         createdAt:
           format: date-time
@@ -4425,18 +4426,11 @@ components:
       properties:
         category:
           enum:
-            - system_function
-            - actor
-            - system
-            - container
-            - infrastructure
-            - component
-            - code
-            - process
-            - concern
-            - decision
-            - event
-            - signal
+            - queued
+            - running
+            - completed
+            - failed
+            - aborted
           type: string
         id:
           type: string
@@ -4461,6 +4455,8 @@ components:
     KnowledgeGraphEvidenceAttributes:
       additionalProperties: false
       properties:
+        assertion:
+          type: string
         createdAt:
           format: date-time
           type: string
@@ -4480,6 +4476,7 @@ components:
           $ref: "#/components/schemas/KnowledgeGraphSubjectState"
       required:
         - kind
+        - assertion
         - effectiveAt
         - createdAt
         - eventId
@@ -14817,18 +14814,11 @@ paths:
           schema:
             items:
               enum:
-                - system_function
-                - actor
-                - system
-                - container
-                - infrastructure
-                - component
-                - code
-                - process
-                - concern
-                - decision
-                - event
-                - signal
+                - queued
+                - running
+                - completed
+                - failed
+                - aborted
               type: string
             type: array
         - explode: false
@@ -15096,18 +15086,11 @@ paths:
           schema:
             items:
               enum:
-                - system_function
-                - actor
-                - system
-                - container
-                - infrastructure
-                - component
-                - code
-                - process
-                - concern
-                - decision
-                - event
-                - signal
+                - queued
+                - running
+                - completed
+                - failed
+                - aborted
               type: string
             type: array
         - explode: false

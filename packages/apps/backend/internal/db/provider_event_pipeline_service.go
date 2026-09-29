@@ -245,7 +245,6 @@ func (s *ProviderEventPipelineService) saveNormalizedEvents(ctx context.Context,
 			if jobErr != nil {
 				return fmt.Errorf("inserting project events: %w", jobErr)
 			}
-			slog.Debug("inserted projection jobs", "new", len(ids))
 		}
 		return nil
 	})

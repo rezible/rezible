@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"entgo.io/ent/dialect/sql"
+	"github.com/deckarep/golang-set/v2"
 	"github.com/firebase/genkit/go/ai"
 	"github.com/google/uuid"
 
@@ -140,32 +141,63 @@ func (s *InvestigationService) LookupInvestigation(ctx context.Context, predicat
 		Only(ctx)
 }
 
-func (s *InvestigationService) ReadInvestigationDetail(ctx context.Context, investigationID uuid.UUID) (*rez.InvestigationDetail, error) {
-	current, getErr := s.GetInvestigation(ctx, investigationID)
-	if getErr != nil {
-		return nil, fmt.Errorf("get investigation detail: %w", getErr)
-	}
-	session, sessionErr := current.Edges.AgentSessionOrErr()
-	if sessionErr != nil {
-		return nil, fmt.Errorf("load investigation session: %w", sessionErr)
-	}
-	var input rezai.InvestigationAgentSessionInput
-	if decodeErr := json.Unmarshal(session.Input, &input); decodeErr != nil {
-		return nil, fmt.Errorf("decode investigation question: %w", decodeErr)
-	}
+func (s *InvestigationService) ReadInvestigationDetail(ctx context.Context, invId uuid.UUID) (*rez.InvestigationDetail, error) {
+	var detail *rez.InvestigationDetail
+	return detail, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+		queryInvestigation := tx.Investigation.Query().
+			Where(inv.ID(invId))
+		curr, getErr := queryInvestigation.Only(ctx)
+		if getErr != nil {
+			return fmt.Errorf("get investigation detail: %w", getErr)
+		}
 
-	queryTurns := s.db.Client(ctx).AgentTurn.Query().
-		Where(at.AgentSessionID(current.AgentSessionID)).
-		Order(at.BySequence(sql.OrderDesc()), at.ByID(sql.OrderDesc()))
-	latestTurn, latestErr := queryTurns.First(ctx)
-	if latestErr != nil && !ent.IsNotFound(latestErr) {
-		return nil, fmt.Errorf("load latest investigation turn: %w", latestErr)
-	}
-	return &rez.InvestigationDetail{
-		Investigation: current,
-		Query:         input.Query,
-		LatestTurn:    latestTurn,
-	}, nil
+		session, sessionErr := curr.QueryAgentSession().Only(ctx)
+		if sessionErr != nil {
+			return fmt.Errorf("load investigation session: %w", sessionErr)
+		}
+		var input rezai.InvestigationAgentSessionInput
+		if decodeErr := json.Unmarshal(session.Input, &input); decodeErr != nil {
+			return fmt.Errorf("decode investigation question: %w", decodeErr)
+		}
+
+		queryTurns := session.QueryTurns().
+			Order(at.BySequence(sql.OrderDesc()), at.ByID(sql.OrderDesc()))
+
+		latestTurn, latestErr := queryTurns.Clone().First(ctx)
+		if latestErr != nil && !ent.IsNotFound(latestErr) {
+			return fmt.Errorf("load latest investigation turn: %w", latestErr)
+		}
+
+		queryActiveTurn := queryTurns.Clone().
+			Where(at.StatusIn(at.StatusQueued, at.StatusRunning))
+		activeTurn, activeErr := queryActiveTurn.First(ctx)
+		if activeErr != nil && !ent.IsNotFound(activeErr) {
+			return fmt.Errorf("load active investigation turn: %w", activeErr)
+		}
+
+		queryPendingInputs := curr.QueryUserInputs().
+			Where(invui.AgentTurnIDIsNil())
+		hasPendingInputs, pendingInputsErr := queryPendingInputs.Exist(ctx)
+		if pendingInputsErr != nil {
+			return fmt.Errorf("check pending investigation inputs: %w", pendingInputsErr)
+		}
+
+		queryPendingRevisions := curr.QueryEvidenceRevisions().
+			Where(inver.AgentTurnIDIsNil())
+		hasPendingRevisions, pendingRevisionsErr := queryPendingRevisions.Exist(ctx)
+		if pendingRevisionsErr != nil {
+			return fmt.Errorf("check pending investigation evidence revisions: %w", pendingRevisionsErr)
+		}
+
+		detail = &rez.InvestigationDetail{
+			Investigation:  curr,
+			Query:          input.Query,
+			LatestTurn:     latestTurn,
+			ActiveTurn:     activeTurn,
+			HasPendingWork: hasPendingInputs || hasPendingRevisions,
+		}
+		return nil
+	})
 }
 
 func (s *InvestigationService) ListInvestigationUserInputs(ctx context.Context, investigationID uuid.UUID, params ent.ListParams) (*ent.ListResult[rez.InvestigationUserInput], error) {
@@ -176,6 +208,11 @@ func (s *InvestigationService) ListInvestigationUserInputs(ctx context.Context, 
 	listed, listErr := ent.DoListQuery[ent.InvestigationUserInput, *ent.InvestigationUserInputQuery](ctx, query, params)
 	if listErr != nil {
 		return nil, fmt.Errorf("list investigation user inputs: %w", listErr)
+	}
+
+	inputTurns, turnsErr := s.loadAssignedUserInputTurns(ctx, listed.Data)
+	if turnsErr != nil {
+		return nil, turnsErr
 	}
 
 	inputIDs := make([]uuid.UUID, 0, len(listed.Data))
@@ -219,12 +256,48 @@ func (s *InvestigationService) ListInvestigationUserInputs(ctx context.Context, 
 			CreatedAt:     input.CreatedAt,
 			AgentTurnID:   input.AgentTurnID,
 		}
+		if input.AgentTurnID != nil {
+			turnStatus := inputTurns[*input.AgentTurnID].Status
+			item.TurnStatus = &turnStatus
+		}
 		if answer := answerVersions[input.ID]; answer != nil {
 			item.AnswerVersionID = new(answer.ID)
 		}
 		result.Data = append(result.Data, item)
 	}
 	return result, nil
+}
+
+func (s *InvestigationService) loadAssignedUserInputTurns(ctx context.Context, inputs []*ent.InvestigationUserInput) (map[uuid.UUID]*ent.AgentTurn, error) {
+	turnIDs := mapset.NewSet[uuid.UUID]()
+	for _, input := range inputs {
+		if input.AgentTurnID != nil {
+			turnIDs.Add(*input.AgentTurnID)
+		}
+	}
+
+	turnsByID := make(map[uuid.UUID]*ent.AgentTurn, turnIDs.Cardinality())
+	if turnIDs.Cardinality() == 0 {
+		return turnsByID, nil
+	}
+	queryTurns := s.db.Client(ctx).AgentTurn.Query().
+		Where(at.IDIn(turnIDs.ToSlice()...))
+	turns, queryErr := queryTurns.All(ctx)
+	if queryErr != nil {
+		return nil, fmt.Errorf("load assigned investigation turns: %w", queryErr)
+	}
+	for _, turn := range turns {
+		turnsByID[turn.ID] = turn
+	}
+	for _, input := range inputs {
+		if input.AgentTurnID == nil {
+			continue
+		}
+		if _, exists := turnsByID[*input.AgentTurnID]; !exists {
+			return nil, fmt.Errorf("assigned turn %s for investigation user input %s is missing", *input.AgentTurnID, input.ID)
+		}
+	}
+	return turnsByID, nil
 }
 
 func (s *InvestigationService) ListInvestigationEvidenceRevisions(ctx context.Context, investigationID uuid.UUID, params ent.ListParams) (*ent.ListResult[ent.InvestigationEvidenceRevision], error) {
@@ -315,6 +388,13 @@ func (s *InvestigationService) readInvestigationUserInput(ctx context.Context, i
 	result := &rez.InvestigationUserInput{
 		ID: input.ID, Text: input.Text, UserID: input.UserID,
 		SubmissionKey: input.Key, CreatedAt: input.CreatedAt, AgentTurnID: input.AgentTurnID,
+	}
+	inputTurns, turnsErr := s.loadAssignedUserInputTurns(ctx, []*ent.InvestigationUserInput{input})
+	if turnsErr != nil {
+		return nil, turnsErr
+	}
+	if input.AgentTurnID != nil {
+		result.TurnStatus = new(inputTurns[*input.AgentTurnID].Status)
 	}
 	versions, versionsErr := s.latestInvestigationFindingVersions(ctx, investigationID)
 	if versionsErr != nil {
