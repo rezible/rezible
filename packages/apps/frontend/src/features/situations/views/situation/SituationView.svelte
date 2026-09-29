@@ -1,22 +1,20 @@
 <script lang="ts">
 	import { resolve } from "$app/paths";
-	import FeatureNavigationRail from "$components/layout/feature-navigation-rail/FeatureNavigationRail.svelte";
-	import { registerPageDescriptor } from "$lib/app-shell.svelte";
-	import LoadingQueryWrapper from "$components/layout/loading-query-wrapper/LoadingQueryWrapper.svelte";
-
 	import RiFileTextLine from "remixicon-svelte/icons/file-text-line";
-	import RiFocus3Line from "remixicon-svelte/icons/focus-3-line";
 	import RiSearchLine from "remixicon-svelte/icons/search-line";
+	import { registerPageDescriptor } from "$lib/app-shell.svelte"
 
+	import FeatureNavigationRail from "$components/layout/feature-navigation-rail/FeatureNavigationRail.svelte";
+	import LoadingQueryWrapper from "$components/layout/loading-query-wrapper/LoadingQueryWrapper.svelte";
+	import * as Empty from "$components/ui/empty";
+	;
 	import { initSituationController } from "./controller.svelte";
-
 	import SituationPageActions from "./SituationPageActions.svelte";
-	import SituationBriefView from "./brief/SituationBriefView.svelte";
-	import SituationImpactView from "./impact/SituationImpactView.svelte";
+	import SituationOverviewView from "./overview/SituationOverviewView.svelte";
 	import SituationInvestigationView from "./investigation/SituationInvestigationView.svelte";
 
 	type Props = { id: string };
-	let { id }: Props = $props();
+	const { id }: Props = $props();
 
 	const controller = initSituationController(() => id);
 
@@ -31,29 +29,33 @@
 	<SituationPageActions {controller} />
 {/snippet}
 
-<LoadingQueryWrapper query={controller.situationQuery} feedbackOnly />
-
-<FeatureNavigationRail
-	label="Situation views"
-	route="/situations/[id]/[[view=situationView]]"
-	entries={[
-		{
-			label: "Brief",
-			params: { id },
-			icon: RiFileTextLine,
-			component: SituationBriefView,
-		},
-		{
-			label: "Impact Scope",
-			params: { id, view: "impact" },
-			icon: RiFocus3Line,
-			component: SituationImpactView,
-		},
-		{
-			label: "Investigation",
-			params: { id, view: "investigation" },
-			icon: RiSearchLine,
-			component: SituationInvestigationView,
-		},
-	]}
-/>
+{#if controller.situationUnavailable}
+	<Empty.Root>
+		<Empty.Header>
+			<Empty.Title>Situation unavailable</Empty.Title>
+			<Empty.Description>
+				This situation could not be found or is no longer accessible.
+			</Empty.Description>
+		</Empty.Header>
+	</Empty.Root>
+{:else}
+	<LoadingQueryWrapper query={controller.situationQuery} feedbackOnly />
+	<FeatureNavigationRail
+		label="Situation views"
+		route="/situations/[id]/[[view=situationView]]"
+		entries={[
+			{
+				label: "Overview",
+				params: { id },
+				icon: RiFileTextLine,
+				component: SituationOverviewView,
+			},
+			{
+				label: "Investigation",
+				params: { id, view: "investigation" },
+				icon: RiSearchLine,
+				component: SituationInvestigationView,
+			},
+		]}
+	/>
+{/if}

@@ -243,6 +243,11 @@ export type AgentTurnResume = {
     restart?: Array<Part>;
 };
 
+export type AgentTurnStatusOverview = {
+    id: string;
+    status: 'queued' | 'running' | 'completed' | 'failed' | 'aborted';
+};
+
 export type AgentTurnUpdatedEvent = {
     finishReason?: string;
     sessionId: string;
@@ -1895,10 +1900,11 @@ export type Investigation = {
 };
 
 export type InvestigationAttributes = {
+    activeTurn: AgentTurnStatusOverview;
     analysisId: string;
     createdAt: string;
-    latestTurnId: string | null;
-    latestTurnStatus: string | null;
+    hasPendingWork: boolean;
+    latestTurn: AgentTurnStatusOverview;
     query: string;
     sessionId: string;
     updatedAt: string;
@@ -1979,7 +1985,7 @@ export type InvestigationUserInput = {
 };
 
 export type InvestigationUserInputAttributes = {
-    agentTurnId: string | null;
+    agentTurn: AgentTurnStatusOverview;
     answerVersionId: string | null;
     createdAt: string;
     submissionKey: string;
@@ -2019,6 +2025,7 @@ export type KnowledgeGraphEvidence = {
 };
 
 export type KnowledgeGraphEvidenceAttributes = {
+    assertion: string;
     createdAt: string;
     effectiveAt: string;
     eventId: string;

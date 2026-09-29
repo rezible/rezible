@@ -1,19 +1,16 @@
 import { SvelteSet } from "svelte/reactivity";
 import { createQueries, createQuery } from "@tanstack/svelte-query";
 import { page } from "$app/state";
-import {
-	getIncidentOptions,
-	getInvestigationOptions,
-	getInvestigationReportOptions,
-	getSituationOptions,
-} from "$lib/api";
+import { getIncidentOptions, getSituationOptions } from "$lib/api";
 import { Context, watch, type Getter } from "runed";
+import { isDefinitiveUnavailableError } from "./model";
 import { situationHref } from "../../lib/routes";
 
 const idPath = (id?: string) => ({ id: id ?? "" });
 
 export class SituationController {
 	situationId = $state<string>();
+	private overviewRefreshInterval: Getter<number> = () => 30000;
 
 	constructor(idFn: Getter<string>) {
 		watch(idFn, (id) => {
@@ -21,41 +18,30 @@ export class SituationController {
 		});
 	}
 
+	setOverviewRefreshInterval = (getInterval: Getter<number>) => {
+		this.overviewRefreshInterval = getInterval;
+	};
+
 	situationQuery = createQuery(() => ({
 		...getSituationOptions({ path: idPath(this.situationId) }),
 		enabled: !!this.situationId,
+		refetchInterval: () => (this.overviewRefreshInterval()),
+		refetchIntervalInBackground: false,
+		retry: (failureCount, error) => !isDefinitiveUnavailableError(error) && failureCount < 2,
 	}));
 
-	situation = $derived(this.situationQuery.data?.data);
-	incidentIds = $derived([...new SvelteSet(this.situation?.attributes?.linkedIncidentIds ?? [])]);
+	situation = $derived(
+		isDefinitiveUnavailableError(this.situationQuery.error) ? undefined : this.situationQuery.data?.data
+	);
+	situationUnavailable = $derived(isDefinitiveUnavailableError(this.situationQuery.error));
+	incidentIds = $derived([...new SvelteSet(this.situation?.attributes.linkedIncidentIds ?? [])]);
 	incidentsQuery = createQueries(() => ({
 		queries: this.incidentIds.map((id) => getIncidentOptions({ path: { id } })),
 	}));
 
 	situationInvestigation = $derived(this.situation?.attributes.investigation);
 	investigationId = $derived(this.situationInvestigation?.investigation.id);
-	investigationQuery = createQuery(() => ({
-		...getInvestigationOptions({ path: idPath(this.investigationId) }),
-		enabled: !!this.investigationId,
-		refetchInterval(query) {
-			return ["queued", "running"].includes(query.state.data?.data.attributes.latestTurnStatus ?? "")
-				? 2000
-				: 30000;
-		},
-	}));
-	investigation = $derived(this.investigationQuery.data?.data);
-	investigationReportQuery = createQuery(() => ({
-		...getInvestigationReportOptions({ path: idPath(this.investigationId) }),
-		enabled: !!this.investigationId,
-		refetchInterval: ["queued", "running"].includes(this.investigation?.attributes.latestTurnStatus ?? "")
-			? 2000
-			: 30000,
-		retry: (failureCount, error) => error.status !== 404 && failureCount < 3,
-	}));
-	investigationReport = $derived(this.investigationReportQuery.data?.data);
-
-	private id = $derived(this.situationId ?? "");
-	investigationHref = $derived(situationHref(this.id, "investigation", page.url.search));
+	investigationHref = $derived(situationHref(this.situationId ?? "", "investigation", page.url.search));
 }
 
 const ctx = new Context<SituationController>("SituationController");

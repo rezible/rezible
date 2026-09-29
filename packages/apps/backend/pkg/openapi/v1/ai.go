@@ -10,10 +10,10 @@ import (
 	"github.com/danielgtaylor/huma/v2/sse"
 	"github.com/firebase/genkit/go/ai"
 	"github.com/google/uuid"
+
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/agentturn"
-	kne "github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/pkg/openapi"
 )
 
@@ -169,7 +169,7 @@ type (
 )
 
 func (o operations) RegisterAiEnums(api huma.API) {
-	registerEnumAlias[kne.Category, agentTurnStatusSchema](api)
+	registerEnumAlias[agentturn.Status, agentTurnStatusSchema](api)
 }
 
 type agentTurnStatusSchema agentturn.Status

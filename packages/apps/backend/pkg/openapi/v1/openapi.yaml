@@ -532,6 +532,12 @@ components:
         id:
           type: string
         status:
+          enum:
+            - queued
+            - running
+            - completed
+            - failed
+            - aborted
           type: string
       required:
         - id
@@ -4398,11 +4404,18 @@ components:
           type: array
         category:
           enum:
-            - queued
-            - running
-            - completed
-            - failed
-            - aborted
+            - system_function
+            - actor
+            - system
+            - container
+            - infrastructure
+            - component
+            - code
+            - process
+            - concern
+            - decision
+            - event
+            - signal
           type: string
         createdAt:
           format: date-time
@@ -4426,11 +4439,18 @@ components:
       properties:
         category:
           enum:
-            - queued
-            - running
-            - completed
-            - failed
-            - aborted
+            - system_function
+            - actor
+            - system
+            - container
+            - infrastructure
+            - component
+            - code
+            - process
+            - concern
+            - decision
+            - event
+            - signal
           type: string
         id:
           type: string
@@ -14814,11 +14834,18 @@ paths:
           schema:
             items:
               enum:
-                - queued
-                - running
-                - completed
-                - failed
-                - aborted
+                - system_function
+                - actor
+                - system
+                - container
+                - infrastructure
+                - component
+                - code
+                - process
+                - concern
+                - decision
+                - event
+                - signal
               type: string
             type: array
         - explode: false
@@ -15086,11 +15113,18 @@ paths:
           schema:
             items:
               enum:
-                - queued
-                - running
-                - completed
-                - failed
-                - aborted
+                - system_function
+                - actor
+                - system
+                - container
+                - infrastructure
+                - component
+                - code
+                - process
+                - concern
+                - decision
+                - event
+                - signal
               type: string
             type: array
         - explode: false
