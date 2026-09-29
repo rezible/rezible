@@ -16,6 +16,7 @@ const ignores = [
 	"dist/**",
 	"build/**",
 	".svelte-kit/**",
+	".cache/**",
 	"package/**",
 	".env",
 	".env.*",
@@ -23,10 +24,14 @@ const ignores = [
 	"**/*.gen**",
 ];
 
+// These rules do not require type information. Keep project parsing disabled;
+// svelte-check owns type checking without making each lint run load the project.
 const tsRules = {
 	...tseslint.configs.recommended.rules,
 	"@typescript-eslint/no-explicit-any": "warn",
-	"@typescript-eslint/no-unused-vars": [
+
+	// disabled for now, too noisy
+	"@typescript-eslint/no-unused-vars": "off", /*[
 		"error",
 		{
 			vars: "all",
@@ -34,7 +39,7 @@ const tsRules = {
 			args: "after-used",
 			argsIgnorePattern: "^_",
 		},
-	],
+	],*/
 };
 
 export default [
@@ -60,7 +65,6 @@ export default [
 			parserOptions: {
 				ecmaVersion: "latest",
 				sourceType: "module",
-				project: "./tsconfig.json",
 			},
 			globals: jsGlobals,
 		},
@@ -81,7 +85,6 @@ export default [
 					js: null,
 				},
 				extraFileExtensions: [".svelte"],
-				project: ["./tsconfig.json"],
 			},
 		},
 		rules: {

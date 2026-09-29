@@ -4,7 +4,7 @@ import { Context, type Getter } from "runed";
 import { isDefinitiveUnavailableError, timestamp, type SourceTarget } from "$features/situations/lib/model";
 
 export class SituationSourceSheetController {
-	private getTarget: Getter<SourceTarget | undefined> = () => undefined;
+	private getTarget = $state<Getter<SourceTarget | undefined>>(() => undefined);
 	target = $derived(this.getTarget());
 	directRecord = $derived(this.target?.kind === "direct" ? this.target.record : undefined);
 	evidenceId = $derived(this.target?.kind === "knowledgeEvidence" ? this.target.id : undefined);

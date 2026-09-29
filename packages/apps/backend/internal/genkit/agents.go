@@ -149,6 +149,9 @@ func (c *agentCatalogue) register[SessionInput rez.ValidatingInput, State any](g
 			ai.WithUse(middleware...),
 			withSystemPrompt,
 		}
+		if d.MaxToolIterations != 0 {
+			prompt = append(prompt, ai.WithMaxTurns(d.MaxToolIterations))
+		}
 		agent = genkitx.DefineAgent(gk, d.Name, prompt, opts...)
 	}
 

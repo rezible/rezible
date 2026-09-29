@@ -15,6 +15,7 @@ import (
 type SituationsHandler interface {
 	ListSituations(context.Context, *ListSituationsRequest) (*ListSituationsResponse, error)
 	GetSituation(context.Context, *GetSituationRequest) (*GetSituationResponse, error)
+	RequestSituationInvestigation(context.Context, *RequestSituationInvestigationRequest) (*RequestSituationInvestigationResponse, error)
 
 	ListSituationHazardAssessments(context.Context, *ListSituationHazardAssessmentsRequest) (*ListSituationHazardAssessmentsResponse, error)
 	AddSituationHazardAssessment(context.Context, *AddSituationHazardAssessmentRequest) (*AddSituationHazardAssessmentResponse, error)
@@ -23,6 +24,7 @@ type SituationsHandler interface {
 func (o operations) RegisterSituations(api huma.API) {
 	huma.Register(api, ListSituations, o.ListSituations)
 	huma.Register(api, GetSituation, o.GetSituation)
+	huma.Register(api, RequestSituationInvestigation, o.RequestSituationInvestigation)
 
 	huma.Register(api, ListSituationHazardAssessments, o.ListSituationHazardAssessments)
 	huma.Register(api, AddSituationHazardAssessment, o.AddSituationHazardAssessment)
@@ -166,6 +168,18 @@ var GetSituation = openapi.Operation{
 
 type GetSituationRequest IdRequest
 type GetSituationResponse ItemResponse[Situation]
+
+var RequestSituationInvestigation = openapi.Operation{
+	OperationID: "request-situation-investigation",
+	Method:      http.MethodPost,
+	Path:        "/situations/{id}/investigation",
+	Summary:     "Request Situation Investigation",
+	Tags:        situationsTags,
+	Errors:      ErrorCodes(),
+}
+
+type RequestSituationInvestigationRequest IdRequest
+type RequestSituationInvestigationResponse ItemResponse[Situation]
 
 var ListSituationHazardAssessments = openapi.Operation{
 	OperationID: "list-situation-hazard-assessments",

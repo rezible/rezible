@@ -1012,6 +1012,7 @@ type (
 		CreateSituation(context.Context, CreateSituationParams) (*ent.Situation, error)
 		AddSituationObservationGroup(context.Context, uuid.UUID, SituationObservationGroupParams) (*ent.SituationObservationGroup, error)
 		GetSituation(context.Context, uuid.UUID) (*ent.Situation, error)
+		RequestSituationInvestigation(context.Context, uuid.UUID) (*ent.SituationInvestigation, error)
 		CloseSituation(context.Context, uuid.UUID, situation.CloseReason) error
 
 		AddIncidentToSituation(context.Context, uuid.UUID, uuid.UUID) error

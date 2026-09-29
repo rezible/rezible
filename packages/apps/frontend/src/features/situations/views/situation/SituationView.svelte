@@ -5,8 +5,6 @@
 	import { registerPageDescriptor } from "$lib/app-shell.svelte";
 
 	import FeatureNavigationRail from "$components/layout/feature-navigation-rail/FeatureNavigationRail.svelte";
-	import LoadingQueryWrapper from "$components/layout/loading-query-wrapper/LoadingQueryWrapper.svelte";
-	import * as Empty from "$components/ui/empty";
 	import { initSituationController } from "./controller.svelte";
 	import SituationPageActions from "./SituationPageActions.svelte";
 	import SituationOverviewView from "./overview/SituationOverviewView.svelte";
@@ -28,33 +26,21 @@
 	<SituationPageActions {controller} />
 {/snippet}
 
-{#if controller.situationUnavailable}
-	<Empty.Root>
-		<Empty.Header>
-			<Empty.Title>Situation unavailable</Empty.Title>
-			<Empty.Description>
-				This situation could not be found or is no longer accessible.
-			</Empty.Description>
-		</Empty.Header>
-	</Empty.Root>
-{:else}
-	<LoadingQueryWrapper query={controller.situationQuery} feedbackOnly />
-	<FeatureNavigationRail
-		label="Situation views"
-		route="/situations/[id]/[[view=situationView]]"
-		entries={[
-			{
-				label: "Overview",
-				params: { id },
-				icon: RiFileTextLine,
-				component: SituationOverviewView,
-			},
-			{
-				label: "Investigation",
-				params: { id, view: "investigation" },
-				icon: RiSearchLine,
-				component: SituationInvestigationView,
-			},
-		]}
-	/>
-{/if}
+<FeatureNavigationRail
+	label="Situation views"
+	route="/situations/[id]/[[view=situationView]]"
+	entries={[
+		{
+			label: "Overview",
+			params: { id },
+			icon: RiFileTextLine,
+			component: SituationOverviewView,
+		},
+		{
+			label: "Investigation",
+			params: { id, view: "investigation" },
+			icon: RiSearchLine,
+			component: SituationInvestigationView,
+		},
+	]}
+/>

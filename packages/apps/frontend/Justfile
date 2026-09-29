@@ -13,5 +13,14 @@ set shell := ["bash", "-uc"]
 @format *ARGS=".":
     bun run format "$@"
 
+[doc("Lint selected frontend-relative paths using the shared ESLint cache.")]
+[positional-arguments]
+@lint +PATHS:
+    bun run lint "$@"
+
+[doc("Lint the whole frontend for CI or lint configuration changes.")]
+@lint-all:
+    bun run lint .
+
 @run *ARGS:
     bun run {{ ARGS }}

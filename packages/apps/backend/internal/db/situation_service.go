@@ -142,7 +142,7 @@ func (s *SituationService) CreateSituation(ctx context.Context, params rez.Creat
 		}
 
 		if params.StartInvestigation {
-			if invErr := s.createInvestigation(ctx, created.ID, eventIDs, episodeIDs); invErr != nil {
+			if _, invErr := s.createInvestigation(ctx, created.ID, eventIDs, episodeIDs); invErr != nil {
 				return fmt.Errorf("create situation investigation: %w", invErr)
 			}
 		}
@@ -163,8 +163,43 @@ func (s *SituationService) CreateSituation(ctx context.Context, params rez.Creat
 	})
 }
 
-func (s *SituationService) createInvestigation(ctx context.Context, situationID uuid.UUID, eventIDs []uuid.UUID, episodeIDs []uuid.UUID) error {
-	return s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+func (s *SituationService) RequestSituationInvestigation(ctx context.Context, situationID uuid.UUID) (*ent.SituationInvestigation, error) {
+	var sitInv *ent.SituationInvestigation
+	return sitInv, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+		if lockErr := s.db.AcquireTxLocks(ctx, situationLockNamespace, situationID.String()); lockErr != nil {
+			return fmt.Errorf("lock situation: %w", lockErr)
+		}
+		current, getErr := s.GetSituation(ctx, situationID)
+		if getErr != nil {
+			return fmt.Errorf("load situation: %w", getErr)
+		}
+		if current.Edges.Investigation != nil {
+			return nil
+		}
+
+		eventIDs := mapset.NewSet[uuid.UUID]()
+		episodeIDs := mapset.NewSet[uuid.UUID]()
+		for _, group := range current.Edges.ObservationGroups {
+			for _, event := range group.Edges.Events {
+				eventIDs.Add(event.ID)
+			}
+			for _, episode := range group.Edges.AlertEpisodes {
+				episodeIDs.Add(episode.ID)
+			}
+		}
+
+		created, createInvErr := s.createInvestigation(ctx, situationID, eventIDs.ToSlice(), episodeIDs.ToSlice())
+		if createInvErr != nil {
+			return fmt.Errorf("create situation investigation: %w", createInvErr)
+		}
+		sitInv = created
+		return nil
+	})
+}
+
+func (s *SituationService) createInvestigation(ctx context.Context, situationID uuid.UUID, eventIDs []uuid.UUID, episodeIDs []uuid.UUID) (*ent.SituationInvestigation, error) {
+	var sitInv *ent.SituationInvestigation
+	return sitInv, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
 		analysis, createAnalysisErr := s.analyses.SetSystemAnalysis(ctx, uuid.Nil, func(*ent.SystemAnalysisMutation) {})
 		if createAnalysisErr != nil {
 			return fmt.Errorf("create situation investigation analysis: %w", createAnalysisErr)
@@ -182,9 +217,11 @@ func (s *SituationService) createInvestigation(ctx context.Context, situationID 
 		createLink := tx.SituationInvestigation.Create().
 			SetSituationID(situationID).
 			SetInvestigationID(inv.ID)
-		if linkErr := createLink.Exec(ctx); linkErr != nil {
-			return fmt.Errorf("link situation investigation: %w", linkErr)
+		createdLink, createLinkErr := createLink.Save(ctx)
+		if createLinkErr != nil {
+			return fmt.Errorf("link situation investigation: %w", createLinkErr)
 		}
+		sitInv = createdLink.Unwrap()
 		return nil
 	})
 }

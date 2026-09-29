@@ -48,6 +48,20 @@ func (h *situationsHandler) GetSituation(ctx context.Context, request *oapi.GetS
 	return &response, nil
 }
 
+func (h *situationsHandler) RequestSituationInvestigation(ctx context.Context, request *oapi.RequestSituationInvestigationRequest) (*oapi.RequestSituationInvestigationResponse, error) {
+	_, invErr := h.situations.RequestSituationInvestigation(ctx, request.Id)
+	if invErr != nil {
+		return nil, oapi.Error(ctx, "failed to request situation investigation", invErr)
+	}
+	situ, situErr := h.situations.GetSituation(ctx, request.Id)
+	if situErr != nil {
+		return nil, oapi.Error(ctx, "failed to get situation", situErr)
+	}
+	var response oapi.RequestSituationInvestigationResponse
+	response.Body.Data = oapi.SituationFromEnt(situ)
+	return &response, nil
+}
+
 func (h *situationsHandler) ListSituationHazardAssessments(ctx context.Context, request *oapi.ListSituationHazardAssessmentsRequest) (*oapi.ListSituationHazardAssessmentsResponse, error) {
 	var response oapi.ListSituationHazardAssessmentsResponse
 	result, listErr := h.situations.ListSituationHazardAssessments(ctx, rez.ListSituationHazardAssessmentsParams{

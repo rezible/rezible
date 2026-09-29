@@ -60,6 +60,21 @@
 	{#if situation}
 		<SituationStatus attributes={situation.attributes} />
 
+		{#if !controller.investigationId}
+			<Button
+				size="sm"
+				disabled={controller.requestInvestigationMutation.isPending}
+				onclick={controller.startInvestigation}
+			>
+				{#if controller.requestInvestigationMutation.isPending}
+					<Spinner data-icon="inline-start" />
+					Starting…
+				{:else}
+					Start investigation
+				{/if}
+			</Button>
+		{/if}
+
 		{#if controller.incidentIds.length === 0}
 			<span class="text-xs text-muted-foreground">No linked incident</span>
 		{:else if controller.incidentIds.length === 1}

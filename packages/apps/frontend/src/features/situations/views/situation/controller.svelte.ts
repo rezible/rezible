@@ -1,12 +1,16 @@
 import { SvelteSet } from "svelte/reactivity";
 import { Context, watch, type Getter } from "runed";
-import { createQueries, createQuery } from "@tanstack/svelte-query";
+import { createMutation, createQueries, createQuery, useQueryClient } from "@tanstack/svelte-query";
+import { goto } from "$app/navigation";
 import { page } from "$app/state";
+import { toast } from "svelte-sonner";
 import {
 	getIncidentOptions,
 	getSituationOptions,
 	getInvestigationOptions,
 	getInvestigationReportOptions,
+	listSituationsQueryKey,
+	requestSituationInvestigationMutation,
 } from "$lib/api";
 import {
 	isDefinitiveUnavailableError,
@@ -19,6 +23,7 @@ import { situationHref } from "$features/situations/lib/routes";
 const idPath = (id?: string) => ({ id: id ?? "" });
 
 export class SituationController {
+	private queryClient = useQueryClient();
 	situationId = $state<string>();
 
 	constructor(idFn: Getter<string>) {
@@ -26,6 +31,28 @@ export class SituationController {
 			this.situationId = id;
 		});
 	}
+
+	requestInvestigationMutation = createMutation(() => ({
+		...requestSituationInvestigationMutation(),
+		onSuccess: async (response, variables) => {
+			const id = variables.path.id;
+			this.queryClient.setQueryData(getSituationOptions({ path: { id } }).queryKey, response);
+			await this.queryClient.invalidateQueries({ queryKey: listSituationsQueryKey() });
+			if (this.situationId === id) {
+				await goto(this.investigationHref);
+			}
+		},
+		onError: (error) => {
+			toast.error("Could not start investigation", { description: error.detail });
+		},
+	}));
+
+	startInvestigation = () => {
+		if (!this.situationId || this.investigationId || this.requestInvestigationMutation.isPending) {
+			return;
+		}
+		this.requestInvestigationMutation.mutate({ path: { id: this.situationId } });
+	};
 
 	situationQuery = createQuery(() => ({
 		...getSituationOptions({ path: idPath(this.situationId) }),

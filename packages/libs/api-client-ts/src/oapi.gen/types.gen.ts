@@ -2717,6 +2717,14 @@ export type RequestIntegrationEventSyncRequestBody = {
     attributes: RequestIntegrationEventSyncRequestAttributes;
 };
 
+export type RequestSituationInvestigationResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Situation;
+};
+
 export type ResourcePart = {
     uri?: string;
 };
@@ -11592,6 +11600,53 @@ export type AddSituationHazardAssessmentResponses = {
 };
 
 export type AddSituationHazardAssessmentResponse = AddSituationHazardAssessmentResponses[keyof AddSituationHazardAssessmentResponses];
+
+export type RequestSituationInvestigationData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/situations/{id}/investigation';
+};
+
+export type RequestSituationInvestigationErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type RequestSituationInvestigationError = RequestSituationInvestigationErrors[keyof RequestSituationInvestigationErrors];
+
+export type RequestSituationInvestigationResponses = {
+    /**
+     * OK
+     */
+    200: RequestSituationInvestigationResponseBody;
+};
+
+export type RequestSituationInvestigationResponse = RequestSituationInvestigationResponses[keyof RequestSituationInvestigationResponses];
 
 export type GetSystemAnalysisData = {
     body?: never;

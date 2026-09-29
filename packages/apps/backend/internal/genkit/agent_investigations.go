@@ -10,7 +10,7 @@ import (
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/ent/investigation"
+	inv "github.com/rezible/rezible/ent/investigation"
 	rezai "github.com/rezible/rezible/pkg/ai"
 )
 
@@ -38,7 +38,11 @@ func (a *InvestigationAgent) agentDefinition() rezai.InvestigationAgentDefinitio
 
 func (a *InvestigationAgent) makeMiddleware() []ai.Middleware {
 	return []ai.Middleware{
-		newInvestigationCapabilitiesMiddleware(a.investigations, a.analyses, a.knowledge),
+		&investigationCapabilitiesMiddleware{
+			investigations: a.investigations,
+			analyses:       a.analyses,
+			knowledge:      a.knowledge,
+		},
 	}
 }
 
@@ -64,18 +68,6 @@ type investigationCapabilitiesMiddleware struct {
 	knowledge      rez.KnowledgeGraphQueryService
 }
 
-func newInvestigationCapabilitiesMiddleware(
-	investigations rez.InvestigationService,
-	analyses rez.SystemAnalysisService,
-	knowledge rez.KnowledgeGraphQueryService,
-) *investigationCapabilitiesMiddleware {
-	return &investigationCapabilitiesMiddleware{
-		investigations: investigations,
-		analyses:       analyses,
-		knowledge:      knowledge,
-	}
-}
-
 func (m *investigationCapabilitiesMiddleware) Name() string {
 	return "investigation_capabilities"
 }
@@ -92,7 +84,7 @@ func (m *investigationCapabilitiesMiddleware) New(ctx context.Context) (*ai.Hook
 		return nil, fmt.Errorf("agent turn does not belong to supplied session")
 	}
 
-	current, lookupErr := m.investigations.LookupInvestigation(ctx, investigation.AgentSessionID(invCtx.Session.ID))
+	current, lookupErr := m.investigations.LookupInvestigation(ctx, inv.AgentSessionID(invCtx.Session.ID))
 	if ent.IsNotFound(lookupErr) {
 		return nil, fmt.Errorf("investigation for agent session: %w", rez.ErrNotFound)
 	}
@@ -103,7 +95,7 @@ func (m *investigationCapabilitiesMiddleware) New(ctx context.Context) (*ai.Hook
 		return nil, fmt.Errorf("investigation is missing its session association or analysis ID")
 	}
 
-	inv := &investigationInvocation{
+	i := &investigationInvocation{
 		investigations:  m.investigations,
 		analyses:        m.analyses,
 		knowledge:       m.knowledge,
@@ -112,5 +104,5 @@ func (m *investigationCapabilitiesMiddleware) New(ctx context.Context) (*ai.Hook
 		turnID:          invCtx.Turn.ID,
 	}
 
-	return inv.makeHooks(ctx, invCtx)
+	return i.makeHooks(ctx, invCtx)
 }

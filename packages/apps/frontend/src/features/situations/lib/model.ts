@@ -251,7 +251,7 @@ export function investigationExecution(attributes?: InvestigationAttributes): In
 	}
 }
 
-export const SITUATION_POLL_INTERVAL_MS = 5000;
+export const SITUATION_POLL_INTERVAL_MS = 30_000;
 
 export function reportExcerpt(text: string, limit = 400) {
 	const characters = Array.from(text);

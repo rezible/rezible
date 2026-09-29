@@ -11,7 +11,7 @@
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"test": "bun test",
-		"lint": "eslint .",
+		"lint": "eslint --cache --cache-strategy content --cache-location .cache/eslint/",
 		"format": "prettier --list-different --write"
 	},
 	"devDependencies": {
