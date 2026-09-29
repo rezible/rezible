@@ -3,20 +3,20 @@
 	import { Button } from "$components/ui/button";
 	import { Spinner } from "$components/ui/spinner";
 	import SituationSourceSheet from "$features/situations/components/situation-source-sheet/SituationSourceSheet.svelte";
-	import { useSituationController } from "../controller.svelte";
-	import SituationInvestigationContent from "./SituationInvestigationContent.svelte";
 	import { initSituationInvestigationController } from "./controller.svelte";
+	import SituationInvestigationExecution from "./SituationInvestigationExecution.svelte";
+	import SituationInvestigationReport from "./SituationInvestigationReport.svelte";
+	import SituationInvestigationQuestions from "./SituationInvestigationQuestions.svelte";
 
-	const situationController = useSituationController();
-	const controller = initSituationInvestigationController(() => situationController.investigationId);
-	const investigationAttributes = $derived(controller.investigation?.attributes);
+	const controller = initSituationInvestigationController();
+	const investigationAttributes = $derived(controller.investigationAttributes);
 </script>
 
 <div class="min-h-0 min-w-0 flex-1 overflow-y-auto p-4">
 	<div class="mx-auto flex max-w-4xl flex-col gap-6">
 		<h1 class="text-[28px] leading-9 font-semibold">Investigation</h1>
 
-		{#if !situationController.investigationId}
+		{#if !controller.investigationId}
 			<Empty.Root>
 				<Empty.Header>
 					<Empty.Title>Investigation unavailable</Empty.Title>
@@ -60,10 +60,13 @@
 						</Button>
 					</div>
 				{/if}
-				<SituationInvestigationContent {investigationAttributes} />
+
+				<SituationInvestigationExecution />
+				<SituationInvestigationReport />
+				<SituationInvestigationQuestions />
 			</article>
 		{/if}
 	</div>
 </div>
 
-<SituationSourceSheet target={controller.sourceTarget} onClose={controller.closeSource} />
+<SituationSourceSheet target={controller.inspection.target} onClose={controller.inspection.close} />

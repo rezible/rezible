@@ -2,12 +2,11 @@
 	import { resolve } from "$app/paths";
 	import RiFileTextLine from "remixicon-svelte/icons/file-text-line";
 	import RiSearchLine from "remixicon-svelte/icons/search-line";
-	import { registerPageDescriptor } from "$lib/app-shell.svelte"
+	import { registerPageDescriptor } from "$lib/app-shell.svelte";
 
 	import FeatureNavigationRail from "$components/layout/feature-navigation-rail/FeatureNavigationRail.svelte";
 	import LoadingQueryWrapper from "$components/layout/loading-query-wrapper/LoadingQueryWrapper.svelte";
 	import * as Empty from "$components/ui/empty";
-	;
 	import { initSituationController } from "./controller.svelte";
 	import SituationPageActions from "./SituationPageActions.svelte";
 	import SituationOverviewView from "./overview/SituationOverviewView.svelte";

@@ -1,5 +1,4 @@
-import { createMutation, createQueries, createQuery, useQueryClient } from "@tanstack/svelte-query";
-import { tick } from "svelte";
+import { createMutation, createQueries, useQueryClient } from "@tanstack/svelte-query";
 import { SvelteSet } from "svelte/reactivity";
 import {
 	getInvestigationFindingOptions,
@@ -16,13 +15,22 @@ import {
 	type AgentTurnStatusOverview,
 } from "$lib/api";
 import { createPaginatedQuery } from "$lib/api/queryPaginator.svelte";
-import { Context, watch, type Getter } from "runed";
-import { investigationRefreshInterval, isDefinitiveUnavailableError, type SourceTarget } from "../model";
+import { Context, watch } from "runed";
+import {
+	SITUATION_POLL_INTERVAL_MS,
+	isDefinitiveUnavailableError,
+	timestamp,
+} from "$features/situations/lib/model";
+
+import { useSituationController } from "../controller.svelte";
+import { SourceInspection } from "$features/situations/lib/sourceInspection.svelte";
+
+export const QUESTION_PAGE_SIZE = 25;
 
 const idPath = (id?: string) => ({ id: id ?? "" });
 
-function userInputStatusLabel(ts: AgentTurnStatusOverview) {
-	switch (ts.status) {
+function userInputStatusLabel(turn: AgentTurnStatusOverview | null) {
+	switch (turn?.status) {
 		case "queued":
 			return "Queued";
 		case "running":
@@ -56,9 +64,10 @@ function errorMessage(error: unknown, fallback: string) {
 }
 
 export class SituationInvestigationController {
-	investigationId = $state<string>();
-	sourceTarget = $state<SourceTarget>();
-	private sourceTrigger = $state<HTMLElement>();
+	private pageController = useSituationController();
+	private queryClient = useQueryClient();
+
+	inspection = new SourceInspection();
 	questionDraft = $state("");
 	questionValidationError = $state(false);
 	questionError = $state("");
@@ -67,93 +76,13 @@ export class SituationInvestigationController {
 	private submissionAttempt = $state<{ text: string; key: string }>();
 	private answerSelectionRefreshes = new SvelteSet<string>();
 
-	constructor(idFn: Getter<string | undefined>) {
-		watch(idFn, (id) => {
-			if (this.investigationId !== id) {
-				this.sourceTarget = undefined;
-				this.sourceTrigger = undefined;
-				this.questionDraft = "";
-				this.questionValidationError = false;
-				this.questionError = "";
-				this.submissionAttempt = undefined;
-				this.submittedQuestion = undefined;
-				this.expandedQuestionIds.clear();
-				this.answerSelectionRefreshes.clear();
-				this.retryMessage = "";
-				this.retryError = "";
-				this.retryNeedsRefresh = false;
-			}
-			this.investigationId = id;
-		});
+	retryReconciling = $state(false);
+	retryNeedsRefresh = $state(false);
+	retryMessage = $state("");
+	retryError = $state("");
 
-		watch(
-			() =>
-				this.answerRows
-					.filter((row) => row.answerNeedsUpdate)
-					.map((row) => `${row.input.id}:${row.input.attributes.answerVersionId}`)
-					.sort()
-					.join("|"),
-			() => {
-				void this.refetchStaleAnswerSelection();
-			}
-		);
-	}
-
-	private id = $derived(this.investigationId ?? "");
-	private queryClient = useQueryClient();
-
-	investigationQuery = createQuery(() => ({
-		...getInvestigationOptions({ path: idPath(this.id) }),
-		enabled: !!this.investigationId,
-		refetchInterval: (query) => {
-			if (isDefinitiveUnavailableError(query.state.error)) {
-				return false;
-			}
-			if (query.state.error && !query.state.data) {
-				return 30000;
-			}
-			return investigationRefreshInterval(query.state.data?.data.attributes);
-		},
-		refetchIntervalInBackground: false,
-		retry: (failureCount, error) => !isDefinitiveUnavailableError(error) && failureCount < 2,
-	}));
-
-	investigation = $derived(
-		isDefinitiveUnavailableError(this.investigationQuery.error)
-			? undefined
-			: this.investigationQuery.data?.data
-	);
-	refreshInterval = $derived.by(() => {
-		if (!this.investigationId || this.investigationUnavailable) {
-			return 30000;
-		}
-		if (this.investigationQuery.isError && !this.investigation) {
-			return 30000;
-		}
-		return investigationRefreshInterval(this.investigation?.attributes);
-	});
-	investigationUnavailable = $derived(isDefinitiveUnavailableError(this.investigationQuery.error));
-	investigationAttributes = $derived(this.investigation?.attributes);
-
-	reportQuery = createQuery(() => ({
-		...getInvestigationReportOptions({ path: idPath(this.id) }),
-		enabled: !!this.investigationId,
-		refetchInterval: (query) => {
-			if ([401, 403].includes(query.state.error?.status ?? 0) || this.investigationUnavailable) {
-				return false;
-			}
-			return this.refreshInterval;
-		},
-		refetchIntervalInBackground: false,
-		retry: (failureCount, error) => !isDefinitiveUnavailableError(error) && failureCount < 2,
-	}));
-
-	report = $derived(
-		this.investigationUnavailable || isDefinitiveUnavailableError(this.reportQuery.error)
-			? undefined
-			: this.reportQuery.data?.data
-	);
-	reportAccessLost = $derived([401, 403].includes(this.reportQuery.error?.status ?? 0));
+	questionSubmitMutation = createMutation(() => submitInvestigationUserInputMutation());
+	retryMutation = createMutation(() => retryAgentTurnMutation());
 
 	questionPage = createPaginatedQuery<
 		ListInvestigationUserInputsResponse,
@@ -162,15 +91,15 @@ export class SituationInvestigationController {
 	>({
 		queryOptions: (pagination) => ({
 			...listInvestigationUserInputsOptions({
-				path: idPath(this.id),
-				query: { ...pagination, pageSize: 25 },
+				path: idPath(this.investigationId),
+				query: { ...pagination, pageSize: QUESTION_PAGE_SIZE },
 			}),
 			enabled: !!this.investigationId,
 			refetchInterval: (query) => {
 				if (isDefinitiveUnavailableError(query.state.error) || this.investigationUnavailable) {
 					return false;
 				}
-				return this.refreshInterval;
+				return SITUATION_POLL_INTERVAL_MS;
 			},
 			refetchIntervalInBackground: false,
 			retry: (failureCount, error) => !isDefinitiveUnavailableError(error) && failureCount < 2,
@@ -179,43 +108,28 @@ export class SituationInvestigationController {
 		keepPreviousQueryData: false,
 	});
 	questionQuery = $derived(this.questionPage.query);
+	questionTotal = $derived(this.questionQuery.data?.pagination.total ?? 0);
+	lastQuestionPage = $derived(Math.max(1, Math.ceil(this.questionTotal / QUESTION_PAGE_SIZE)));
+	questionFetching = $derived(this.questionQuery.isFetching);
 	questionInputsUnavailable = $derived(
 		isDefinitiveUnavailableError(this.questionQuery.error) || this.investigationUnavailable
 	);
 	questionInputs = $derived(this.questionInputsUnavailable ? [] : (this.questionQuery.data?.data ?? []));
-	questionSuccessMessage = $derived.by(() => {
-		const input = this.submittedQuestion;
-		if (!input) {
-			return "";
-		}
+	questionSuccessMessage = $derived(this.getQuestionSuccessMessage());
 
-		const ts = input.attributes.agentTurn;
-		const status = userInputStatusLabel(ts);
-		if (ts.status === "completed" && !input.attributes.answerVersionId) {
-			return `Question submitted. Status: ${status}. No answer was published.`;
-		}
-		if (input.attributes.answerVersionId) {
-			return `Question submitted. Status: ${status}. An answer is available.`;
-		}
-		return `Question submitted. Status: ${status}.`;
-	});
-	expandedAnswerInputs = $derived(
-		this.questionInputs.filter(
-			(input) => this.expandedQuestionIds.has(input.id) && !!input.attributes.answerVersionId
-		)
-	);
+	expandedAnswerInputs = $derived(this.getExpandedAnswerInputs());
 
 	expandedAnswerQueries = createQueries(() => ({
 		queries: this.expandedAnswerInputs.map((input) => {
 			const versionId = input.attributes.answerVersionId ?? "";
 			return {
-				...getInvestigationFindingOptions({ path: { id: this.id, versionId } }),
+				...getInvestigationFindingOptions({ path: { id: this.investigationId ?? "", versionId } }),
 				enabled: !!this.investigationId && !!versionId,
 				refetchInterval: (query: { state: { error: ErrorModel | null } }) => {
 					if (isDefinitiveUnavailableError(query.state.error) || this.investigationUnavailable) {
 						return false;
 					}
-					return this.refreshInterval;
+					return SITUATION_POLL_INTERVAL_MS;
 				},
 				refetchIntervalInBackground: false,
 				retry: (failureCount: number, error: ErrorModel) =>
@@ -224,53 +138,69 @@ export class SituationInvestigationController {
 		}),
 	}));
 
-	answerRows = $derived.by(() => {
-		let answerQueryIndex = 0;
+	answerRows = $derived(this.buildAnswerRows());
 
-		return this.questionInputs.map((input) => {
-			const expanded = this.expandedQuestionIds.has(input.id);
-			const versionId = input.attributes.answerVersionId;
-			const answerQuery =
-				expanded && versionId ? this.expandedAnswerQueries[answerQueryIndex++] : undefined;
-			const queriedAnswer = answerQuery?.data?.data;
-			const answerUnavailable = isDefinitiveUnavailableError(answerQuery?.error);
-			const answerNeedsUpdate =
-				!!queriedAnswer && !["running", "completed"].includes(queriedAnswer.attributes.turnStatus);
-			const answer: InvestigationFinding | undefined =
-				answerUnavailable || answerNeedsUpdate ? undefined : queriedAnswer;
-
-			const ts = input.attributes.agentTurn;
-			return {
-				input,
-				statusLabel: userInputStatusLabel(ts),
-				noAnswerPublished: ts.status === "completed" && !input.attributes.answerVersionId,
-				hasSelectedAnswer: !!versionId,
-				expanded,
-				answerQuery,
-				answer,
-				answerUnavailable,
-				answerNeedsUpdate,
-				answerStale: !!answer && !!answerQuery?.isError,
-				answerPending: !!answerQuery?.isPending && !answerQuery.data,
-				answerLoadFailed: !!answerQuery?.isError && !answerQuery.data && !answerUnavailable,
-			};
-		});
-	});
-
-	questionSubmitMutation = createMutation(() => submitInvestigationUserInputMutation());
 	questionSubmitting = $derived(this.questionSubmitMutation.isPending);
 
-	retryMutation = createMutation(() => retryAgentTurnMutation());
-	retryReconciling = $state(false);
-	retryNeedsRefresh = $state(false);
-	retryMessage = $state("");
-	retryError = $state("");
 	retryAvailable = $derived(
-		this.investigationAttributes?.latestTurn.status === "failed" &&
-			!this.investigationAttributes.activeTurn &&
-			!!this.investigationAttributes.latestTurn
+		this.investigationAttributes?.latestTurn?.status === "failed" &&
+			!this.investigationAttributes.activeTurn
 	);
 	retryDisabled = $derived(this.retryMutation.isPending || this.retryReconciling || this.retryNeedsRefresh);
+
+	get investigationId() {
+		return this.pageController.investigationId;
+	}
+
+	get investigationQuery() {
+		return this.pageController.investigationQuery;
+	}
+
+	get investigationAttributes() {
+		return this.pageController.investigationAttributes;
+	}
+
+	get investigationUnavailable() {
+		return this.pageController.investigationUnavailable;
+	}
+
+	get execution() {
+		return this.pageController.execution;
+	}
+
+	get reportQuery() {
+		return this.pageController.reportQuery;
+	}
+
+	get reportAttributes() {
+		return this.pageController.reportAttributes;
+	}
+
+	get reportPublishedAt() {
+		return this.pageController.reportPublishedAt;
+	}
+
+	get reportAccessLost() {
+		return this.pageController.reportAccessLost;
+	}
+
+	get reportReferences() {
+		return this.pageController.reportReferences;
+	}
+
+	constructor() {
+		watch(
+			() => this.investigationId,
+			() => this.resetInteractionState(),
+			{ lazy: true }
+		);
+		watch(
+			() => this.answerRows,
+			() => {
+				void this.refetchStaleAnswerSelection();
+			}
+		);
+	}
 
 	updateQuestionDraft = (text: string) => {
 		if (this.submissionAttempt && this.submissionAttempt.text !== text) {
@@ -324,7 +254,7 @@ export class SituationInvestigationController {
 		const refreshed = await this.refreshVisibleInvestigationData();
 		const pagination = refreshed.data?.pagination;
 		if (!refreshed.isError && pagination) {
-			const lastPage = Math.max(1, Math.ceil(pagination.total / 25));
+			const lastPage = Math.max(1, Math.ceil(pagination.total / QUESTION_PAGE_SIZE));
 			this.questionPage.paginator.setPage(lastPage);
 		}
 	};
@@ -335,6 +265,67 @@ export class SituationInvestigationController {
 			return;
 		}
 		this.expandedQuestionIds.add(inputId);
+	};
+
+	retryLatestFailedTurn = async () => {
+		const latestTurn = this.investigationAttributes?.latestTurn;
+		if (!this.retryAvailable || this.retryDisabled || !latestTurn) {
+			return;
+		}
+
+		this.retryMessage = "";
+		this.retryError = "";
+		let accepted = false;
+		let conflict = false;
+		try {
+			await this.retryMutation.mutateAsync({ path: { id: latestTurn.id } });
+			accepted = true;
+			this.retryMessage = "Retry requested for the same turn.";
+		} catch (error) {
+			conflict = errorStatus(error) === 409;
+			this.retryNeedsRefresh = true;
+			if (conflict) {
+				this.retryError =
+					"Execution changed while retrying. Current investigation state is being refreshed.";
+			} else {
+				const message = errorMessage(error, "The retry request could not be confirmed.");
+				this.retryError = `${message} Current state is being refreshed before another retry is offered.`;
+			}
+		}
+
+		const refreshed = await this.reconcileRetryStatus();
+		if (!refreshed) {
+			if (accepted) {
+				this.retryError =
+					"Retry was accepted, but the current state could not be confirmed. Refresh status to continue.";
+			} else {
+				this.retryError =
+					"Current investigation state could not be refreshed. Refresh status before retrying again.";
+			}
+			return;
+		}
+
+		if (accepted) {
+			this.retryError = "";
+		} else if (conflict) {
+			this.retryError =
+				"Execution changed while retrying. Current investigation state has been refreshed.";
+		} else {
+			this.retryError = "Retry response was uncertain. Current investigation state has been refreshed.";
+		}
+	};
+
+	refreshRetryStatus = async () => {
+		if (this.retryReconciling) {
+			return;
+		}
+
+		const refreshed = await this.reconcileRetryStatus();
+		if (refreshed) {
+			this.retryError = "";
+		} else {
+			this.retryError = "Investigation status could not be refreshed. Try again.";
+		}
 	};
 
 	private async refreshVisibleInvestigationData() {
@@ -374,10 +365,12 @@ export class SituationInvestigationController {
 	}
 
 	private async refetchStaleAnswerSelection() {
-		const staleRows = this.answerRows.filter((row) => row.answerNeedsUpdate);
 		let shouldRefetch = false;
 
-		for (const row of staleRows) {
+		for (const row of this.answerRows) {
+			if (!row.answerNeedsUpdate) {
+				continue;
+			}
 			const key = `${row.input.id}:${row.input.attributes.answerVersionId}`;
 			if (!this.answerSelectionRefreshes.has(key)) {
 				this.answerSelectionRefreshes.add(key);
@@ -390,105 +383,105 @@ export class SituationInvestigationController {
 		}
 	}
 
-	retryLatestFailedTurn = async () => {
-		const attributes = this.investigationAttributes;
-		if (!this.retryAvailable || this.retryDisabled || !attributes?.latestTurn) {
-			return;
+	private async reconcileRetryStatus() {
+		this.retryReconciling = true;
+		try {
+			await this.refreshVisibleInvestigationData();
+			this.retryNeedsRefresh = this.investigationQuery.isError;
+		} catch {
+			this.retryNeedsRefresh = true;
+		} finally {
+			this.retryReconciling = false;
 		}
+		return !this.retryNeedsRefresh;
+	}
 
+	private resetInteractionState() {
+		this.inspection.reset();
+		this.questionDraft = "";
+		this.questionValidationError = false;
+		this.questionError = "";
+		this.submissionAttempt = undefined;
+		this.submittedQuestion = undefined;
+		this.expandedQuestionIds.clear();
+		this.answerSelectionRefreshes.clear();
 		this.retryMessage = "";
 		this.retryError = "";
-		try {
-			await this.retryMutation.mutateAsync({ path: { id: attributes.latestTurn.id } });
-		} catch (error) {
-			const conflict = errorStatus(error) === 409;
-			this.retryNeedsRefresh = true;
-			this.retryReconciling = true;
-			this.retryError = conflict
-				? "Execution changed while retrying. Current investigation state is being refreshed."
-				: `${errorMessage(error, "The retry request could not be confirmed.")} Current state is being refreshed before another retry is offered.`;
-			try {
-				await this.refreshVisibleInvestigationData();
-				this.retryNeedsRefresh = this.investigationQuery.isError;
-				if (this.retryNeedsRefresh) {
-					this.retryError =
-						"Current investigation state could not be refreshed. Refresh status before retrying again.";
-				} else if (conflict) {
-					this.retryError =
-						"Execution changed while retrying. Current investigation state has been refreshed.";
-				} else {
-					this.retryError =
-						"Retry response was uncertain. Current investigation state has been refreshed.";
-				}
-			} catch {
-				this.retryNeedsRefresh = true;
-				this.retryError =
-					"Current investigation state could not be refreshed. Refresh status before retrying again.";
-			} finally {
-				this.retryReconciling = false;
+		this.retryNeedsRefresh = false;
+	}
+
+	private getQuestionSuccessMessage() {
+		const input = this.submittedQuestion;
+		if (!input) {
+			return "";
+		}
+
+		const turn = input.attributes.agentTurn;
+		const status = userInputStatusLabel(turn);
+		if (turn?.status === "completed" && !input.attributes.answerVersionId) {
+			return `Question submitted. Status: ${status}. No answer was published.`;
+		}
+		if (input.attributes.answerVersionId) {
+			return `Question submitted. Status: ${status}. An answer is available.`;
+		}
+		return `Question submitted. Status: ${status}.`;
+	}
+
+	private getExpandedAnswerInputs() {
+		const inputs: InvestigationUserInput[] = [];
+		for (const input of this.questionInputs) {
+			if (this.expandedQuestionIds.has(input.id) && input.attributes.answerVersionId) {
+				inputs.push(input);
 			}
-			return;
 		}
+		return inputs;
+	}
 
-		this.retryMessage = "Retry requested for the same turn.";
-		this.retryReconciling = true;
-		try {
-			await this.refreshVisibleInvestigationData();
-			this.retryNeedsRefresh = this.investigationQuery.isError;
-			if (this.retryNeedsRefresh) {
-				this.retryError =
-					"Retry was accepted, but the current state could not be confirmed. Refresh status to continue.";
+	private buildAnswerRows() {
+		const rows = [];
+		let answerQueryIndex = 0;
+
+		for (const input of this.questionInputs) {
+			const expanded = this.expandedQuestionIds.has(input.id);
+			const versionId = input.attributes.answerVersionId;
+			let answerQuery: (typeof this.expandedAnswerQueries)[number] | undefined;
+			if (expanded && versionId) {
+				answerQuery = this.expandedAnswerQueries[answerQueryIndex];
+				answerQueryIndex += 1;
 			}
-		} catch {
-			this.retryNeedsRefresh = true;
-			this.retryError =
-				"Retry was accepted, but the current state could not be confirmed. Refresh status to continue.";
-		} finally {
-			this.retryReconciling = false;
-		}
-	};
-
-	refreshRetryStatus = async () => {
-		if (this.retryReconciling) {
-			return;
-		}
-
-		this.retryReconciling = true;
-		try {
-			await this.refreshVisibleInvestigationData();
-			this.retryNeedsRefresh = this.investigationQuery.isError;
-			if (!this.retryNeedsRefresh) {
-				this.retryError = "";
+			const queriedAnswer = answerQuery?.data?.data;
+			const answerUnavailable = isDefinitiveUnavailableError(answerQuery?.error);
+			const answerNeedsUpdate =
+				!!queriedAnswer && !["running", "completed"].includes(queriedAnswer.attributes.turnStatus);
+			let answer: InvestigationFinding | undefined;
+			if (!answerUnavailable && !answerNeedsUpdate) {
+				answer = queriedAnswer;
 			}
-		} catch {
-			this.retryNeedsRefresh = true;
-			this.retryError = "Investigation status could not be refreshed. Try again.";
-		} finally {
-			this.retryReconciling = false;
+
+			const turn = input.attributes.agentTurn;
+			rows.push({
+				input,
+				submittedAt: timestamp(input.attributes.createdAt),
+				answerPublishedAt: timestamp(answer?.attributes.createdAt),
+				statusLabel: userInputStatusLabel(turn),
+				noAnswerPublished: turn?.status === "completed" && !input.attributes.answerVersionId,
+				hasSelectedAnswer: !!versionId,
+				expanded,
+				answerQuery,
+				answer,
+				answerUnavailable,
+				answerNeedsUpdate,
+				answerStale: !!answer && !!answerQuery?.isError,
+				answerPending: !!answerQuery?.isPending && !answerQuery.data,
+				answerLoadFailed: !!answerQuery?.isError && !answerQuery.data && !answerUnavailable,
+			});
 		}
-	};
-
-	openSource = (target: SourceTarget, trigger: HTMLElement) => {
-		this.sourceTarget = target;
-		this.sourceTrigger = trigger;
-	};
-
-	openEvidence = (id: string, trigger: HTMLElement) => {
-		this.openSource({ kind: "knowledgeEvidence", id }, trigger);
-	};
-
-	closeSource = async () => {
-		const trigger = this.sourceTrigger;
-		this.sourceTarget = undefined;
-		this.sourceTrigger = undefined;
-		await tick();
-		if (trigger?.isConnected) {
-			trigger.focus();
-		}
-	};
+		return rows;
+	}
 }
 
 const ctx = new Context<SituationInvestigationController>("SituationInvestigationController");
-export const initSituationInvestigationController = (idFn: Getter<string | undefined>) =>
-	ctx.set(new SituationInvestigationController(idFn));
+export const initSituationInvestigationController = () => ctx.set(new SituationInvestigationController());
 export const useSituationInvestigationController = () => ctx.get();
+
+export type InvestigationQuestionRow = SituationInvestigationController["answerRows"][number];

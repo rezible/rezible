@@ -6,7 +6,7 @@
 	import * as Popover from "$components/ui/popover";
 	import * as Tooltip from "$components/ui/tooltip";
 	import LoadingQueryWrapper from "$components/layout/loading-query-wrapper/LoadingQueryWrapper.svelte";
-	
+
 	import SituationStatus from "$features/situations/components/situation-status/SituationStatus.svelte";
 	import type { SituationController } from "./controller.svelte";
 
@@ -16,7 +16,7 @@
 	const situation = $derived(controller.situation);
 </script>
 
-{#snippet linkedIncidentQuery(query: (typeof controller["incidentsQuery"])[number])}
+{#snippet linkedIncidentQuery(query: (typeof controller)["incidentsQuery"][number])}
 	<LoadingQueryWrapper {query}>
 		{#snippet loading()}
 			<span role="status" class="flex items-center gap-2 text-xs">

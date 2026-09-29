@@ -4,8 +4,7 @@
 	import { Button } from "$components/ui/button";
 	import { Spinner } from "$components/ui/spinner";
 	import { initSituationSourceSheetController } from "./controller.svelte";
-	import type { SourceTarget } from "$features/situations/views/situation/model";
-	import { timestamp } from "$features/situations/views/situation/model";
+	import type { SourceTarget } from "$features/situations/lib/model";
 
 	type Props = {
 		target: SourceTarget | undefined;
@@ -13,21 +12,12 @@
 	};
 
 	let { target, onClose }: Props = $props();
+
 	const controller = initSituationSourceSheetController(() => target);
+	
 	const directRecord = $derived(controller.directRecord);
 	const evidence = $derived(controller.evidence);
-	const evidenceAttributes = $derived(evidence?.attributes);
-	const evidenceTime = $derived(timestamp(evidenceAttributes?.effectiveAt));
-	const title = $derived(
-		directRecord?.title ||
-			controller.evidence?.attributes.subjectState.displayName ||
-			(target?.kind === "knowledgeEvidence" ? "Knowledge evidence" : "Source record")
-	);
-	const description = $derived(
-		target?.kind === "direct"
-			? `Source in observation group: ${target.observationGroupTitle}`
-			: "Existing knowledge evidence record cited by the report."
-	);
+	const evidenceAttributes = $derived(controller.evidenceAttributes);
 
 	function closeWhenDismissed(open: boolean) {
 		if (!open && target) {
@@ -39,8 +29,8 @@
 <Sheet.Root open={target !== undefined} onOpenChange={closeWhenDismissed}>
 	<Sheet.Content class="overflow-y-auto sm:max-w-lg">
 		<Sheet.Header>
-			<Sheet.Title>{title}</Sheet.Title>
-			<Sheet.Description>{description}</Sheet.Description>
+			<Sheet.Title>{controller.title}</Sheet.Title>
+			<Sheet.Description>{controller.description}</Sheet.Description>
 		</Sheet.Header>
 
 		{#if directRecord}
@@ -131,11 +121,15 @@
 					</div>
 					<div>
 						<dt class="text-muted-foreground">Kind</dt>
-						<dd>{evidenceAttributes.kind === "observed" ? "Observed" : "Deleted"}</dd>
+						<dd>{controller.evidenceKindLabel}</dd>
 					</div>
 					<div>
 						<dt class="text-muted-foreground">Effective time</dt>
-						<dd><time datetime={evidenceTime.iso}>{evidenceTime.label}</time></dd>
+						<dd>
+							<time datetime={controller.evidenceTime.iso}>
+								{controller.evidenceTime.label}
+							</time>
+						</dd>
 					</div>
 					{#if evidenceAttributes.subjectState.displayName}
 						<div>

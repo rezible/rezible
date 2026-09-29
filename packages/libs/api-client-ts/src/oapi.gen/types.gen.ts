@@ -1900,11 +1900,11 @@ export type Investigation = {
 };
 
 export type InvestigationAttributes = {
-    activeTurn: AgentTurnStatusOverview;
+    activeTurn: AgentTurnStatusOverview | null;
     analysisId: string;
     createdAt: string;
     hasPendingWork: boolean;
-    latestTurn: AgentTurnStatusOverview;
+    latestTurn: AgentTurnStatusOverview | null;
     query: string;
     sessionId: string;
     updatedAt: string;
@@ -1985,7 +1985,7 @@ export type InvestigationUserInput = {
 };
 
 export type InvestigationUserInputAttributes = {
-    agentTurn: AgentTurnStatusOverview;
+    agentTurn: AgentTurnStatusOverview | null;
     answerVersionId: string | null;
     createdAt: string;
     submissionKey: string;

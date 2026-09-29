@@ -1,37 +1,71 @@
-import { Context } from "runed";
+import { Context, watch } from "runed";
 import { useSituationController } from "../controller.svelte";
-import { useSituationInvestigationController } from "../investigation/controller.svelte";
-import { observationGroups, type SourceTarget } from "../model";
+import {
+	observationGroups,
+	timestamp,
+	reportExcerpt,
+	type SourceRecord,
+} from "$features/situations/lib/model";
+import { SourceInspection } from "$features/situations/lib/sourceInspection.svelte";
 
 export class SituationOverviewController {
-	private situationController = useSituationController();
-	private investigationController = useSituationInvestigationController();
-
-	private situation = $derived(this.situationController.situation);
-	attrs = $derived(this.situation?.attributes);
-	observations = $derived(observationGroups(this.attrs?.observationGroups ?? []));
-	initialGroupId = $derived(this.attrs?.observationGroups[0]?.id);
-
+	private pageController = useSituationController();
+	inspection = new SourceInspection();
+	situationAttributes = $derived(this.pageController.situation?.attributes);
+	observations = $derived(observationGroups(this.situationAttributes?.observationGroups ?? []));
+	initialGroupId = $derived(this.situationAttributes?.observationGroups[0]?.id);
 	groupChoices = $state<Record<string, boolean>>({});
-
-	get investigationUnavailable() {
-		return this.investigationController.investigationUnavailable;
-	}
+	openedAt = $derived(timestamp(this.situationAttributes?.openedAt));
+	closedAt = $derived(timestamp(this.situationAttributes?.closedAt));
+	closeReason = $derived(this.getCloseReason());
+	excerpt = $derived(this.getReportExcerpt());
 
 	get investigationId() {
-		return this.situationController.investigationId;
+		return this.pageController.investigationId;
 	}
 
 	get investigationQuery() {
-		return this.investigationController.investigationQuery;
+		return this.pageController.investigationQuery;
+	}
+
+	get investigationAttributes() {
+		return this.pageController.investigationAttributes;
+	}
+
+	get investigationUnavailable() {
+		return this.pageController.investigationUnavailable;
+	}
+
+	get execution() {
+		return this.pageController.execution;
 	}
 
 	get reportQuery() {
-		return this.investigationController.reportQuery;
+		return this.pageController.reportQuery;
 	}
 
-	get sourceTarget() {
-		return this.investigationController.sourceTarget;
+	get reportAttributes() {
+		return this.pageController.reportAttributes;
+	}
+
+	get reportPublishedAt() {
+		return this.pageController.reportPublishedAt;
+	}
+
+	get reportAccessLost() {
+		return this.pageController.reportAccessLost;
+	}
+
+	get investigationHref() {
+		return this.pageController.investigationHref;
+	}
+
+	constructor() {
+		watch(
+			() => this.pageController.investigationId,
+			() => this.inspection.reset(),
+			{ lazy: true }
+		);
 	}
 
 	groupOpen(id: string) {
@@ -41,10 +75,27 @@ export class SituationOverviewController {
 	setGroupOpen = (id: string, open: boolean) => {
 		this.groupChoices[id] = open;
 	};
+	inspectSource = (record: SourceRecord, groupTitle: string, trigger: HTMLElement) => {
+		this.inspection.open({ kind: "direct", record, observationGroupTitle: groupTitle }, trigger);
+	};
 
-	openSource = (target: SourceTarget, trigger: HTMLElement) =>
-		this.investigationController.openSource(target, trigger);
-	closeSource = () => this.investigationController.closeSource();
+	private getCloseReason() {
+		switch (this.situationAttributes?.closeReason) {
+			case "stabilized":
+				return "Stabilized";
+			case "dismissed":
+				return "Dismissed";
+			default:
+				return undefined;
+		}
+	}
+
+	private getReportExcerpt() {
+		if (!this.reportAttributes) {
+			return undefined;
+		}
+		return reportExcerpt(this.reportAttributes.text);
+	}
 }
 
 const ctx = new Context<SituationOverviewController>("SituationOverviewController");

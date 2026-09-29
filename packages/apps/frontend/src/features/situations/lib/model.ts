@@ -1,12 +1,17 @@
 import type { AlertEpisode, Event, InvestigationAttributes, SituationObservationGroup } from "$lib/api";
 
 export function timestamp(value?: string) {
-	const date = value ? new Date(value) : undefined;
-	const usable = date && Number.isFinite(date.getTime()) && date.getUTCFullYear() > 1;
+	if (!value) {
+		return { value: undefined, iso: undefined, label: "Time unavailable" };
+	}
+	const date = new Date(value);
+	if (!Number.isFinite(date.getTime()) || date.getUTCFullYear() <= 1) {
+		return { value: undefined, iso: undefined, label: "Time unavailable" };
+	}
 	return {
-		value: usable ? date.getTime() : undefined,
-		iso: usable ? date.toISOString() : undefined,
-		label: usable ? date.toLocaleString(undefined, { timeZoneName: "short" }) : "Time unavailable",
+		value: date.getTime(),
+		iso: date.toISOString(),
+		label: date.toLocaleString(undefined, { timeZoneName: "short" }),
 	};
 }
 
@@ -80,20 +85,44 @@ function safeExternalUrl(value: string) {
 	return undefined;
 }
 
+function eventContent(payload: ReturnType<typeof readablePayload>) {
+	const message = readableField(payload?.fields, "message");
+	if (message) {
+		return message;
+	}
+	const description = readableField(payload?.fields, "description");
+	if (description) {
+		return description;
+	}
+	if (payload?.fields) {
+		return JSON.stringify(payload.fields, null, 2);
+	}
+	return payload?.decoded ?? "";
+}
+
+function eventTitle(fields: Record<string, unknown> | undefined, kind: string) {
+	const title = readableField(fields, "title");
+	if (title) {
+		return title;
+	}
+	const message = readableField(fields, "message");
+	if (message) {
+		return message;
+	}
+	return kind || "Event";
+}
+
 function eventSourceRecord(record: Event): SourceRecord {
-	const attrs = record.attributes;
-	const payload = readablePayload(attrs.attributes);
+	const attributes = record.attributes;
+	const payload = readablePayload(attributes.attributes);
 	const fields = payload?.fields;
-	const content =
-		readableField(fields, "message") ??
-		readableField(fields, "description") ??
-		(fields ? JSON.stringify(fields, null, 2) : payload?.decoded) ??
-		"";
+	const content = eventContent(payload);
+	const title = eventTitle(fields, attributes.kind);
 	const links: SourceRecord["links"] = [];
 	const references: [string, string][] = [
-		["Provider event reference", attrs.providerEventRef],
-		["Provider event source", attrs.providerEventSource],
-		["Resource reference", attrs.resourceRef.resourceRef],
+		["Provider event reference", attributes.providerEventRef],
+		["Provider event source", attributes.providerEventSource],
+		["Resource reference", attributes.resourceRef.resourceRef],
 	];
 
 	for (const [label, reference] of references) {
@@ -108,43 +137,46 @@ function eventSourceRecord(record: Event): SourceRecord {
 		id: record.id,
 		type: "Event",
 		eventId: record.id,
-		title: readableField(fields, "title") ?? readableField(fields, "message") ?? (attrs.kind || "Event"),
-		source: attrs.resourceRef.provider || attrs.providerEventSource || "Source unavailable",
-		time: timestamp(attrs.occurredAt),
+		title,
+		source: attributes.resourceRef.provider || attributes.providerEventSource || "Source unavailable",
+		time: timestamp(attributes.occurredAt),
 		timeLabel: "Occurred",
 		content,
 		fields: [
-			{ label: "Kind", value: attrs.kind },
-			{ label: "Provider", value: attrs.resourceRef.provider },
-			{ label: "Provider namespace", value: attrs.resourceRef.providerNamespace },
-			{ label: "Resource reference", value: attrs.resourceRef.resourceRef },
-			{ label: "Provider event source", value: attrs.providerEventSource },
-			{ label: "Provider event reference", value: attrs.providerEventRef },
-			{ label: "Integration ID", value: attrs.integrationId ?? "" },
-			{ label: "Received", value: timestamp(attrs.receivedAt).label },
+			{ label: "Kind", value: attributes.kind },
+			{ label: "Provider", value: attributes.resourceRef.provider },
+			{ label: "Provider namespace", value: attributes.resourceRef.providerNamespace },
+			{ label: "Resource reference", value: attributes.resourceRef.resourceRef },
+			{ label: "Provider event source", value: attributes.providerEventSource },
+			{ label: "Provider event reference", value: attributes.providerEventRef },
+			{ label: "Integration ID", value: attributes.integrationId ?? "" },
+			{ label: "Received", value: timestamp(attributes.receivedAt).label },
 		].filter((field) => field.value),
 		links,
 	};
 }
 
 function episodeSourceRecord(record: AlertEpisode): SourceRecord {
-	const attrs = record.attributes;
+	const attributes = record.attributes;
+	const fields = [
+		{ label: "Status", value: attributes.status },
+		{ label: "Last observed", value: timestamp(attributes.lastObservedAt).label },
+	];
+	if (attributes.closedAt) {
+		fields.push({ label: "Closed", value: timestamp(attributes.closedAt).label });
+	}
+	fields.push({ label: "Definition", value: attributes.definition?.attributes.definition ?? "" });
 	return {
 		key: `alert-episode:${record.id}`,
 		id: record.id,
 		type: "Alert episode",
-		title: attrs.definition?.attributes.title || "Alert episode",
+		title: attributes.definition?.attributes.title || "Alert episode",
 		source: "Alert episode",
-		time: timestamp(attrs.startedAt),
+		time: timestamp(attributes.startedAt),
 		timeLabel: "Started",
-		content: attrs.definition?.attributes.description || "",
-		definitionId: attrs.definition?.id,
-		fields: [
-			{ label: "Status", value: attrs.status },
-			{ label: "Last observed", value: timestamp(attrs.lastObservedAt).label },
-			...(attrs.closedAt ? [{ label: "Closed", value: timestamp(attrs.closedAt).label }] : []),
-			{ label: "Definition", value: attrs.definition?.attributes.definition ?? "" },
-		].filter((field) => field.value),
+		content: attributes.definition?.attributes.description || "",
+		definitionId: attributes.definition?.id,
+		fields: fields.filter((field) => field.value),
 		links: [],
 	};
 }
@@ -160,6 +192,18 @@ export function sourceRecord(record: Event | AlertEpisode): SourceRecord {
 	return episodeSourceRecord(record);
 }
 
+function compareSources(first: SourceRecord, second: SourceRecord) {
+	const firstTime = first.time.value ?? Infinity;
+	const secondTime = second.time.value ?? Infinity;
+	if (firstTime < secondTime) {
+		return -1;
+	}
+	if (firstTime > secondTime) {
+		return 1;
+	}
+	return first.key.localeCompare(second.key);
+}
+
 export function observationGroups(groups: SituationObservationGroup[]) {
 	return groups.map((group) => {
 		const records = new Map<string, SourceRecord>();
@@ -171,11 +215,7 @@ export function observationGroups(groups: SituationObservationGroup[]) {
 			id: group.id,
 			title: group.attributes.title,
 			body: group.attributes.body,
-			records: [...records.values()].sort((a, b) => {
-				const aTime = a.time.value ?? Infinity;
-				const bTime = b.time.value ?? Infinity;
-				return (aTime === bTime ? 0 : aTime < bTime ? -1 : 1) || a.key.localeCompare(b.key);
-			}),
+			records: [...records.values()].sort(compareSources),
 		};
 	});
 }
@@ -183,40 +223,35 @@ export function observationGroups(groups: SituationObservationGroup[]) {
 export type InvestigationExecution = {
 	label: string;
 	message?: string;
-	shouldPoll: boolean;
 };
 
 export function investigationExecution(attributes?: InvestigationAttributes): InvestigationExecution {
-	if (attributes?.activeTurn.status === "queued") {
-		return { label: "Queued", shouldPoll: true };
+	if (attributes?.activeTurn?.status === "queued") {
+		return { label: "Queued" };
 	}
-	if (attributes?.activeTurn.status === "running") {
-		return { label: "Running", shouldPoll: true };
+	if (attributes?.activeTurn?.status === "running") {
+		return { label: "Running" };
 	}
 
-	switch (attributes?.latestTurn.status) {
+	switch (attributes?.latestTurn?.status) {
 		case "completed":
-			return { label: "Completed", shouldPoll: !!attributes.hasPendingWork };
+			return { label: "Completed" };
 		case "failed":
 			return {
 				label: "Failed",
 				message: "The investigation turn could not finish.",
-				shouldPoll: !!attributes.hasPendingWork,
 			};
 		case "aborted":
 			return {
 				label: "Aborted",
 				message: "The investigation turn was stopped.",
-				shouldPoll: !!attributes.hasPendingWork,
 			};
 		default:
-			return { label: "Waiting to start", shouldPoll: true };
+			return { label: "Waiting to start" };
 	}
 }
 
-export function investigationRefreshInterval(attributes?: InvestigationAttributes) {
-	return investigationExecution(attributes).shouldPoll ? 2000 : 30000;
-}
+export const SITUATION_POLL_INTERVAL_MS = 5000;
 
 export function reportExcerpt(text: string, limit = 400) {
 	const characters = Array.from(text);

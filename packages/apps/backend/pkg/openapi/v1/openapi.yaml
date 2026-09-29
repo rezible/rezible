@@ -4114,7 +4114,9 @@ components:
       additionalProperties: false
       properties:
         activeTurn:
-          $ref: "#/components/schemas/AgentTurnStatusOverview"
+          anyOf:
+            - $ref: "#/components/schemas/AgentTurnStatusOverview"
+            - type: "null"
         analysisId:
           type: string
         createdAt:
@@ -4123,7 +4125,9 @@ components:
         hasPendingWork:
           type: boolean
         latestTurn:
-          $ref: "#/components/schemas/AgentTurnStatusOverview"
+          anyOf:
+            - $ref: "#/components/schemas/AgentTurnStatusOverview"
+            - type: "null"
         query:
           type: string
         sessionId:
@@ -4347,7 +4351,9 @@ components:
       additionalProperties: false
       properties:
         agentTurn:
-          $ref: "#/components/schemas/AgentTurnStatusOverview"
+          anyOf:
+            - $ref: "#/components/schemas/AgentTurnStatusOverview"
+            - type: "null"
         answerVersionId:
           type:
             - string

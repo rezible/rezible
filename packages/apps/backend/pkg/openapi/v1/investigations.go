@@ -381,3 +381,23 @@ type ListInvestigationEvidenceRevisionsRequest struct {
 	PaginationRequest
 }
 type ListInvestigationEvidenceRevisionsResponse PaginatedResponse[InvestigationEvidenceRevision]
+
+// Huma does not support nullable tags on referenced objects. Describe absent
+// turns explicitly while retaining the shared status overview schema.
+func (InvestigationAttributes) TransformSchema(_ huma.Registry, schema *huma.Schema) *huma.Schema {
+	for _, name := range []string{"activeTurn", "latestTurn"} {
+		schema.Properties[name] = &huma.Schema{AnyOf: []*huma.Schema{
+			schema.Properties[name],
+			{Type: "null"},
+		}}
+	}
+	return schema
+}
+
+func (InvestigationUserInputAttributes) TransformSchema(_ huma.Registry, schema *huma.Schema) *huma.Schema {
+	schema.Properties["agentTurn"] = &huma.Schema{AnyOf: []*huma.Schema{
+		schema.Properties["agentTurn"],
+		{Type: "null"},
+	}}
+	return schema
+}
