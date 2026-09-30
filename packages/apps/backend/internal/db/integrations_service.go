@@ -299,9 +299,9 @@ func (s *IntegrationsService) deleteUserInstallationState(ctx context.Context, u
 func (s *IntegrationsService) makeUserOAuthInstallationState(ctx context.Context, userId uuid.UUID, intgName string) (string, error) {
 	// TODO: replace this with something actually random
 	state := uuid.New().String()
-	createFreshStateFn := func(ctx context.Context, client *ent.Client) error {
+	createFreshStateFn := func(ctx context.Context, client *ent.Client) (string, error) {
 		if delErr := s.deleteUserInstallationState(ctx, userId, intgName); delErr != nil {
-			return fmt.Errorf("delete existing user install state: %w", delErr)
+			return "", fmt.Errorf("delete existing user install state: %w", delErr)
 		}
 
 		create := client.IntegrationUserInstallState.Create().
@@ -310,9 +310,12 @@ func (s *IntegrationsService) makeUserOAuthInstallationState(ctx context.Context
 			SetOauthState(state).
 			SetExpiresAt(time.Now().Add(time.Minute * 10))
 
-		return create.Exec(ctx)
+		if createErr := create.Exec(ctx); createErr != nil {
+			return "", createErr
+		}
+		return state, nil
 	}
-	return state, s.db.WithTx(ctx, createFreshStateFn)
+	return ent.WithTxReturning(ctx, s.db, createFreshStateFn)
 }
 
 func (s *IntegrationsService) updateUserInstallationStateWithOptions(ctx context.Context, id uuid.UUID, options []rez.IntegrationInstallationTarget) error {

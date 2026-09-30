@@ -24,16 +24,18 @@ import (
 )
 
 type IncidentService struct {
-	db         rez.Database
-	msgs       rez.MessageQueue
-	situations rez.SituationService
+	db             rez.Database
+	msgs           rez.MessageQueue
+	situations     rez.SituationService
+	retrospectives rez.RetrospectiveService
 }
 
-func NewIncidentService(db rez.Database, msgs rez.MessageQueue, situations rez.SituationService) (*IncidentService, error) {
+func NewIncidentService(db rez.Database, msgs rez.MessageQueue, situations rez.SituationService, retrospectives rez.RetrospectiveService) (*IncidentService, error) {
 	svc := &IncidentService{
-		db:         db,
-		msgs:       msgs,
-		situations: situations,
+		db:             db,
+		msgs:           msgs,
+		situations:     situations,
+		retrospectives: retrospectives,
 	}
 	return svc, nil
 }
@@ -115,8 +117,7 @@ func (s *IncidentService) Get(ctx context.Context, p predicate.Incident) (*ent.I
 
 func (s *IncidentService) Set(ctx context.Context, id uuid.UUID, setFn func(*ent.IncidentMutation)) (*ent.Incident, error) {
 	isCreate := id == uuid.Nil
-	var updated *ent.Incident
-	txErr := s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+	updatedID, txErr := ent.WithTxReturning(ctx, s.db, func(ctx context.Context, tx *ent.Client) (uuid.UUID, error) {
 		var mutator ent.EntityMutator[*ent.Incident, *ent.IncidentMutation]
 		if isCreate {
 			mutator = tx.Incident.Create().SetID(uuid.New())
@@ -132,27 +133,31 @@ func (s *IncidentService) Set(ctx context.Context, id uuid.UUID, setFn func(*ent
 			}
 			incSlug, slugErr := s.generateIncidentSlug(ctx, openedAt)
 			if slugErr != nil {
-				return fmt.Errorf("generate unique slug: %w", slugErr)
+				return uuid.Nil, fmt.Errorf("generate unique slug: %w", slugErr)
 			}
 			mut.SetSlug(incSlug)
 		}
-		var saveErr error
-		updated, saveErr = mutator.Save(ctx)
+		updated, saveErr := mutator.Save(ctx)
 		if saveErr != nil {
-			return fmt.Errorf("save incident: %w", saveErr)
+			return uuid.Nil, fmt.Errorf("save incident: %w", saveErr)
+		}
+		if updated.ResponseState == incident.ResponseStateResolved {
+			if _, createErr := s.retrospectives.CreateForIncident(ctx, updated.ID); createErr != nil {
+				return uuid.Nil, fmt.Errorf("create incident retrospective: %w", createErr)
+			}
 		}
 		if sitErr := s.updateIncidentMutationSituation(ctx, updated.ID, mut); sitErr != nil {
-			return fmt.Errorf("update incident situation: %w", sitErr)
+			return uuid.Nil, fmt.Errorf("update incident situation: %w", sitErr)
 		}
 		if publishErr := s.msgs.Publish(ctx, rez.EventOnIncidentUpdated{Created: isCreate, IncidentId: updated.ID}); publishErr != nil {
-			return fmt.Errorf("publish incident update: %w", publishErr)
+			return uuid.Nil, fmt.Errorf("publish incident update: %w", publishErr)
 		}
-		return nil
+		return updated.ID, nil
 	})
 	if txErr != nil {
 		return nil, txErr
 	}
-	return s.Get(ctx, incident.ID(updated.ID))
+	return s.Get(ctx, incident.ID(updatedID))
 }
 
 func (s *IncidentService) updateIncidentMutationSituation(ctx context.Context, incId uuid.UUID, mut *ent.IncidentMutation) error {
@@ -295,8 +300,7 @@ func (s *IncidentService) ListMilestonesForIncident(ctx context.Context, incId u
 }
 
 func (s *IncidentService) SetIncidentMilestone(ctx context.Context, id uuid.UUID, setFn func(*ent.IncidentMilestoneMutation)) (*ent.IncidentMilestone, error) {
-	var updated *ent.IncidentMilestone
-	return updated, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+	return ent.WithTxReturning(ctx, s.db, func(ctx context.Context, tx *ent.Client) (*ent.IncidentMilestone, error) {
 		var mutator ent.EntityMutator[*ent.IncidentMilestone, *ent.IncidentMilestoneMutation]
 		if id == uuid.Nil {
 			mutator = tx.IncidentMilestone.Create().SetID(uuid.New())
@@ -306,10 +310,9 @@ func (s *IncidentService) SetIncidentMilestone(ctx context.Context, id uuid.UUID
 		mut := mutator.Mutation()
 		setFn(mut)
 
-		var saveErr error
-		updated, saveErr = mutator.Save(ctx)
+		updated, saveErr := mutator.Save(ctx)
 		if saveErr != nil {
-			return fmt.Errorf("save incident milestone: %w", saveErr)
+			return nil, fmt.Errorf("save incident milestone: %w", saveErr)
 		}
 
 		updatedEvent := rez.EventOnIncidentMilestoneUpdated{
@@ -318,9 +321,9 @@ func (s *IncidentService) SetIncidentMilestone(ctx context.Context, id uuid.UUID
 			Created:     id == uuid.Nil,
 		}
 		if publishErr := s.msgs.Publish(ctx, updatedEvent); publishErr != nil {
-			return fmt.Errorf("publish incident milestone update: %w", publishErr)
+			return nil, fmt.Errorf("publish incident milestone update: %w", publishErr)
 		}
-		return nil
+		return updated, nil
 	})
 }
 

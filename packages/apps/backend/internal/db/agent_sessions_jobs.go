@@ -174,42 +174,41 @@ func (c *agentTurnClaim) newOutputMessagesFromState(stateMessages []*ai.Message)
 var errAgentTurnAlreadyRunning = fmt.Errorf("agent turn already running")
 
 func (w *InvokeAgentTurnWorker) claimAgentTurn(ctx context.Context, job *river.Job[jobs.InvokeAgentTurn]) (*agentTurnClaim, error) {
-	var claim *agentTurnClaim
-	return claim, w.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+	return ent.WithTxReturning(ctx, w.db, func(ctx context.Context, tx *ent.Client) (*agentTurnClaim, error) {
 		if lockErr := acquireAgentSessionTurnLock(ctx, w.db, job.Args.AgentSessionID); lockErr != nil {
-			return fmt.Errorf("acquire agent session lock: %w", lockErr)
+			return nil, fmt.Errorf("acquire agent session lock: %w", lockErr)
 		}
 
 		sess, sessErr := tx.AgentSession.Get(ctx, job.Args.AgentSessionID)
 		if sessErr != nil {
-			return fmt.Errorf("lookup agent session: %w", sessErr)
+			return nil, fmt.Errorf("lookup agent session: %w", sessErr)
 		}
 
 		turn, turnErr := tx.AgentTurn.Get(ctx, job.Args.AgentTurnID)
 		if turnErr != nil {
 			if ent.IsNotFound(turnErr) {
-				return river.JobCancel(fmt.Errorf("agent turn no longer exists"))
+				return nil, river.JobCancel(fmt.Errorf("agent turn no longer exists"))
 			}
-			return fmt.Errorf("reload agent turn: %w", turnErr)
+			return nil, fmt.Errorf("reload agent turn: %w", turnErr)
 		}
 		if turn.AgentSessionID != sess.ID {
-			return river.JobCancel(fmt.Errorf("turn does not belong to session"))
+			return nil, river.JobCancel(fmt.Errorf("turn does not belong to session"))
 		}
 
 		if turn.RiverJobID != job.ID {
-			return river.JobCancel(fmt.Errorf("stale agent turn job"))
+			return nil, river.JobCancel(fmt.Errorf("stale agent turn job"))
 		}
 
 		if turn.Status != at.StatusQueued {
 			switch turn.Status {
 			case at.StatusCompleted:
-				return nil
+				return nil, nil
 			case at.StatusFailed, at.StatusAborted:
-				return river.JobCancel(fmt.Errorf("agent turn is already %s", turn.Status))
+				return nil, river.JobCancel(fmt.Errorf("agent turn is already %s", turn.Status))
 			case at.StatusRunning:
-				return errAgentTurnAlreadyRunning
+				return nil, errAgentTurnAlreadyRunning
 			}
-			return fmt.Errorf("invalid agent turn status %q", turn.Status)
+			return nil, fmt.Errorf("invalid agent turn status %q", turn.Status)
 		}
 
 		// query for any other turns of the same session that are currently running or have been queued for longer
@@ -222,9 +221,9 @@ func (w *InvokeAgentTurnWorker) claimAgentTurn(ctx context.Context, job *river.J
 					at.And(at.StatusEQ(at.StatusQueued), at.SequenceLT(turn.Sequence))))
 		othersExist, queryOthersErr := queryOthers.Exist(ctx)
 		if queryOthersErr != nil {
-			return fmt.Errorf("query running agent turn: %w", queryOthersErr)
+			return nil, fmt.Errorf("query running agent turn: %w", queryOthersErr)
 		} else if othersExist {
-			return river.JobSnooze(time.Second * 5)
+			return nil, river.JobSnooze(time.Second * 5)
 		}
 
 		update := turn.Update().
@@ -235,7 +234,7 @@ func (w *InvokeAgentTurnWorker) claimAgentTurn(ctx context.Context, job *river.J
 			SetStartedAt(time.Now().UTC())
 		startedTurn, updateErr := update.Save(ctx)
 		if updateErr != nil {
-			return fmt.Errorf("claim agent turn: %w", updateErr)
+			return nil, fmt.Errorf("claim agent turn: %w", updateErr)
 		}
 
 		queryMessages := tx.AgentMessage.Query().
@@ -250,17 +249,17 @@ func (w *InvokeAgentTurnWorker) claimAgentTurn(ctx context.Context, job *river.J
 			Order(agentmessage.BySequence(sql.OrderAsc()))
 		msgs, msgsErr := queryMessages.All(ctx)
 		if msgsErr != nil {
-			return fmt.Errorf("query session messages: %w", msgsErr)
+			return nil, fmt.Errorf("query session messages: %w", msgsErr)
 		}
 
 		artifacts, artifactsErr := sess.QueryArtifacts().All(ctx)
 		if artifactsErr != nil {
-			return fmt.Errorf("query session artifacts: %w", artifactsErr)
+			return nil, fmt.Errorf("query session artifacts: %w", artifactsErr)
 		}
 
-		claim = &agentTurnClaim{
-			session: sess.Unwrap(),
-			turn:    startedTurn.Unwrap(),
+		claim := &agentTurnClaim{
+			session: sess,
+			turn:    startedTurn,
 			state: rez.AiAgentTurnState{
 				Messages:  make([]*ai.Message, len(msgs)),
 				Artifacts: make([]*aix.Artifact, len(artifacts)),
@@ -288,7 +287,7 @@ func (w *InvokeAgentTurnWorker) claimAgentTurn(ctx context.Context, job *river.J
 				)
 			inputMsg, inputMsgErr := queryInputMsg.Only(ctx)
 			if inputMsgErr != nil {
-				return fmt.Errorf("query input message: %w", inputMsgErr)
+				return nil, fmt.Errorf("query input message: %w", inputMsgErr)
 			}
 			input = &rez.AiAgentTurnInput{Message: inputMsg.MakeGenkitMessage()}
 		} else {
@@ -297,15 +296,15 @@ func (w *InvokeAgentTurnWorker) claimAgentTurn(ctx context.Context, job *river.J
 
 		normInput, inputErr := normalizeAgentTurnInput(input)
 		if inputErr != nil {
-			return fmt.Errorf("invalid agent turn input: %w", inputErr)
+			return nil, fmt.Errorf("invalid agent turn input: %w", inputErr)
 		}
 		claim.input = normInput
 
 		if publishErr := w.publishTurnUpdated(ctx, startedTurn); publishErr != nil {
-			return fmt.Errorf("publish claimed agent turn update: %w", publishErr)
+			return nil, fmt.Errorf("publish claimed agent turn update: %w", publishErr)
 		}
 
-		return nil
+		return claim, nil
 	})
 }
 

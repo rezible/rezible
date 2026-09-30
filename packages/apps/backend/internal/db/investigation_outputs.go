@@ -48,11 +48,10 @@ func (s *InvestigationService) PublishInvestigationReport(ctx context.Context, s
 		return nil, fmt.Errorf("fingerprint investigation report: %w", fingerprintErr)
 	}
 
-	var result *rez.InvestigationReportResult
-	return result, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+	return ent.WithTxReturning(ctx, s.db, func(ctx context.Context, tx *ent.Client) (*rez.InvestigationReportResult, error) {
 		current, turn, prepareErr := s.prepareInvestigationOutputWrite(ctx, invId, scope.AgentTurnID)
 		if prepareErr != nil {
-			return prepareErr
+			return nil, prepareErr
 		}
 
 		reportPreds := []predicate.InvestigationReport{
@@ -64,13 +63,11 @@ func (s *InvestigationService) PublishInvestigationReport(ctx context.Context, s
 			Where(reportPreds...).
 			WithAgentTurn()
 		existing, queryErr := queryReport.Only(ctx)
-		var resultErr error
 		if queryErr == nil {
-			result, resultErr = s.investigationReportResult(ctx, existing)
-			return resultErr
+			return s.investigationReportResult(ctx, existing)
 		}
 		if !ent.IsNotFound(queryErr) {
-			return fmt.Errorf("find repeated investigation report: %w", queryErr)
+			return nil, fmt.Errorf("find repeated investigation report: %w", queryErr)
 		}
 
 		createReport := tx.InvestigationReport.Create().
@@ -80,22 +77,21 @@ func (s *InvestigationService) PublishInvestigationReport(ctx context.Context, s
 			SetFingerprint(fingerprint)
 		created, saveErr := createReport.Save(ctx)
 		if saveErr != nil {
-			return fmt.Errorf("save investigation report publication: %w", saveErr)
+			return nil, fmt.Errorf("save investigation report publication: %w", saveErr)
 		}
 
 		owner := investigationReferenceOwner{reportID: &created.ID}
 		if referenceErr := s.saveInvestigationEvidenceIDs(ctx, owner, params.EvidenceIDs); referenceErr != nil {
-			return referenceErr
+			return nil, referenceErr
 		}
 		queryCreated := tx.InvestigationReport.Query().
 			Where(invr.ID(created.ID)).
 			WithAgentTurn()
 		loaded, loadErr := queryCreated.Only(ctx)
 		if loadErr != nil {
-			return fmt.Errorf("load saved investigation report: %w", loadErr)
+			return nil, fmt.Errorf("load saved investigation report: %w", loadErr)
 		}
-		result, resultErr = s.investigationReportResult(ctx, loaded)
-		return resultErr
+		return s.investigationReportResult(ctx, loaded)
 	})
 }
 
@@ -133,11 +129,10 @@ func (s *InvestigationService) PublishInvestigationFinding(ctx context.Context, 
 	if fingerprintErr != nil {
 		return nil, fmt.Errorf("fingerprint investigation finding: %w", fingerprintErr)
 	}
-	var result *rez.InvestigationFindingVersion
-	return result, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+	return ent.WithTxReturning(ctx, s.db, func(ctx context.Context, tx *ent.Client) (*rez.InvestigationFindingVersion, error) {
 		current, turn, prepareErr := s.prepareInvestigationOutputWrite(ctx, investigationID, turnID)
 		if prepareErr != nil {
-			return prepareErr
+			return nil, prepareErr
 		}
 
 		queryExisting := tx.InvestigationFindingVersion.Query().
@@ -146,15 +141,14 @@ func (s *InvestigationService) PublishInvestigationFinding(ctx context.Context, 
 			WithAgentTurn()
 		existing, queryErr := queryExisting.Only(ctx)
 		if queryErr == nil {
-			result, queryErr = s.investigationFindingResult(ctx, existing)
-			return queryErr
+			return s.investigationFindingResult(ctx, existing)
 		}
 		if !ent.IsNotFound(queryErr) {
-			return fmt.Errorf("find repeated investigation finding: %w", queryErr)
+			return nil, fmt.Errorf("find repeated investigation finding: %w", queryErr)
 		}
 		stable, stableErr := s.findOrCreateInvestigationFinding(ctx, current.ID, params.Key, nil)
 		if stableErr != nil {
-			return stableErr
+			return nil, stableErr
 		}
 
 		createVersion := tx.InvestigationFindingVersion.Create().
@@ -165,15 +159,15 @@ func (s *InvestigationService) PublishInvestigationFinding(ctx context.Context, 
 			SetFingerprint(fingerprint)
 		created, saveErr := createVersion.Save(ctx)
 		if saveErr != nil {
-			return fmt.Errorf("save investigation finding version: %w", saveErr)
+			return nil, fmt.Errorf("save investigation finding version: %w", saveErr)
 		}
 
 		refOwner := investigationReferenceOwner{findingVersionID: &created.ID}
 		if refErr := s.saveInvestigationEvidenceIDs(ctx, refOwner, params.EvidenceIDs); refErr != nil {
-			return refErr
+			return nil, refErr
 		}
 		if linkErr := s.saveFindingVersionReferences(ctx, created.ID, params.FindingReferences); linkErr != nil {
-			return linkErr
+			return nil, linkErr
 		}
 
 		queryVersion := tx.InvestigationFindingVersion.Query().
@@ -182,10 +176,9 @@ func (s *InvestigationService) PublishInvestigationFinding(ctx context.Context, 
 			WithAgentTurn()
 		loaded, loadErr := queryVersion.Only(ctx)
 		if loadErr != nil {
-			return fmt.Errorf("load saved investigation finding version: %w", loadErr)
+			return nil, fmt.Errorf("load saved investigation finding version: %w", loadErr)
 		}
-		result, loadErr = s.investigationFindingResult(ctx, loaded)
-		return loadErr
+		return s.investigationFindingResult(ctx, loaded)
 	})
 }
 
@@ -200,20 +193,19 @@ func (s *InvestigationService) PublishInvestigationAnswer(ctx context.Context, s
 	if investigationID == uuid.Nil || turnID == uuid.Nil || params.Title == "" || params.Body == "" {
 		return nil, fmt.Errorf("%w: investigation, turn, title and body are required", rez.ErrInvalidInput)
 	}
-	var result *rez.InvestigationFindingVersion
-	return result, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+	return ent.WithTxReturning(ctx, s.db, func(ctx context.Context, tx *ent.Client) (*rez.InvestigationFindingVersion, error) {
 		current, turn, prepareErr := s.prepareInvestigationOutputWrite(ctx, investigationID, turnID)
 		if prepareErr != nil {
-			return prepareErr
+			return nil, prepareErr
 		}
 		assignedQuery := tx.InvestigationUserInput.Query().
 			Where(invui.InvestigationID(current.ID), invui.AgentTurnID(turn.ID))
 		userInput, assignedErr := assignedQuery.Only(ctx)
 		if ent.IsNotFound(assignedErr) {
-			return fmt.Errorf("%w: this turn has no assigned user question", rez.ErrInvalidInput)
+			return nil, fmt.Errorf("%w: this turn has no assigned user question", rez.ErrInvalidInput)
 		}
 		if assignedErr != nil {
-			return fmt.Errorf("load assigned investigation question: %w", assignedErr)
+			return nil, fmt.Errorf("load assigned investigation question: %w", assignedErr)
 		}
 		key := investigationAnswerKeyPrefix + userInput.ID.String()
 		fingerprintPayload := investigationAnswerFingerprintPayload{
@@ -224,7 +216,7 @@ func (s *InvestigationService) PublishInvestigationAnswer(ctx context.Context, s
 		}
 		fingerprint, fingerprintErr := s.investigationOutputFingerprint("answer", userInput.ID.String(), fingerprintPayload)
 		if fingerprintErr != nil {
-			return fmt.Errorf("fingerprint investigation answer: %w", fingerprintErr)
+			return nil, fmt.Errorf("fingerprint investigation answer: %w", fingerprintErr)
 		}
 
 		findingPred := invf.And(
@@ -238,16 +230,15 @@ func (s *InvestigationService) PublishInvestigationAnswer(ctx context.Context, s
 			WithAgentTurn()
 		existing, queryErr := queryExisting.Only(ctx)
 		if queryErr == nil {
-			result, queryErr = s.investigationFindingResult(ctx, existing)
-			return queryErr
+			return s.investigationFindingResult(ctx, existing)
 		}
 		if !ent.IsNotFound(queryErr) {
-			return fmt.Errorf("find repeated investigation answer: %w", queryErr)
+			return nil, fmt.Errorf("find repeated investigation answer: %w", queryErr)
 		}
 		inputID := userInput.ID
 		stable, stableErr := s.findOrCreateInvestigationFinding(ctx, current.ID, key, &inputID)
 		if stableErr != nil {
-			return stableErr
+			return nil, stableErr
 		}
 
 		createVersion := tx.InvestigationFindingVersion.Create().
@@ -258,20 +249,23 @@ func (s *InvestigationService) PublishInvestigationAnswer(ctx context.Context, s
 			SetFingerprint(fingerprint)
 		created, saveErr := createVersion.Save(ctx)
 		if saveErr != nil {
-			return fmt.Errorf("save investigation answer version: %w", saveErr)
+			return nil, fmt.Errorf("save investigation answer version: %w", saveErr)
 		}
 		if referenceErr := s.saveInvestigationEvidenceIDs(ctx, investigationReferenceOwner{findingVersionID: &created.ID}, params.EvidenceIDs); referenceErr != nil {
-			return referenceErr
+			return nil, referenceErr
 		}
 		if linkErr := s.saveFindingVersionReferences(ctx, created.ID, params.FindingReferences); linkErr != nil {
-			return linkErr
+			return nil, linkErr
 		}
-		loaded, loadErr := tx.InvestigationFindingVersion.Query().Where(invfv.ID(created.ID)).WithFinding().WithAgentTurn().Only(ctx)
+		queryVersion := tx.InvestigationFindingVersion.Query().
+			Where(invfv.ID(created.ID)).
+			WithFinding().
+			WithAgentTurn()
+		loaded, loadErr := queryVersion.Only(ctx)
 		if loadErr != nil {
-			return fmt.Errorf("load saved investigation answer version: %w", loadErr)
+			return nil, fmt.Errorf("load saved investigation answer version: %w", loadErr)
 		}
-		result, loadErr = s.investigationFindingResult(ctx, loaded)
-		return loadErr
+		return s.investigationFindingResult(ctx, loaded)
 	})
 }
 
@@ -301,24 +295,22 @@ func (s *InvestigationService) PublishInvestigationHypothesis(ctx context.Contex
 	if fingerprintErr != nil {
 		return nil, fmt.Errorf("fingerprint investigation hypothesis: %w", fingerprintErr)
 	}
-	var result *rez.InvestigationHypothesisVersion
-	return result, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+	return ent.WithTxReturning(ctx, s.db, func(ctx context.Context, tx *ent.Client) (*rez.InvestigationHypothesisVersion, error) {
 		current, turn, prepareErr := s.prepareInvestigationOutputWrite(ctx, investigationID, turnID)
 		if prepareErr != nil {
-			return prepareErr
+			return nil, prepareErr
 		}
 
-		lookupResult := func(preds ...predicate.InvestigationHypothesisVersion) error {
+		lookupResult := func(preds ...predicate.InvestigationHypothesisVersion) (*rez.InvestigationHypothesisVersion, error) {
 			queryVersion := tx.InvestigationHypothesisVersion.Query().
 				Where(preds...).
 				WithHypothesis().
 				WithAgentTurn()
 			ver, queryErr := queryVersion.Only(ctx)
-			if queryErr == nil {
-				result, queryErr = s.investigationHypothesisResult(ctx, ver)
-				return queryErr
+			if queryErr != nil {
+				return nil, queryErr
 			}
-			return queryErr
+			return s.investigationHypothesisResult(ctx, ver)
 		}
 
 		versionPreds := []predicate.InvestigationHypothesisVersion{
@@ -330,14 +322,14 @@ func (s *InvestigationService) PublishInvestigationHypothesis(ctx context.Contex
 			),
 		}
 
-		existingResultErr := lookupResult(versionPreds...)
+		_, existingResultErr := lookupResult(versionPreds...)
 		if existingResultErr != nil && !ent.IsNotFound(existingResultErr) {
-			return fmt.Errorf("find repeated investigation hypothesis: %w", existingResultErr)
+			return nil, fmt.Errorf("find repeated investigation hypothesis: %w", existingResultErr)
 		}
 
 		stable, stableErr := s.findOrCreateInvestigationHypothesis(ctx, current.ID, params.Key)
 		if stableErr != nil {
-			return stableErr
+			return nil, stableErr
 		}
 
 		createVersion := tx.InvestigationHypothesisVersion.Create().
@@ -349,12 +341,12 @@ func (s *InvestigationService) PublishInvestigationHypothesis(ctx context.Contex
 			SetFingerprint(fingerprint)
 		created, saveErr := createVersion.Save(ctx)
 		if saveErr != nil {
-			return fmt.Errorf("save investigation hypothesis version: %w", saveErr)
+			return nil, fmt.Errorf("save investigation hypothesis version: %w", saveErr)
 		}
 
 		refOwner := investigationReferenceOwner{hypothesisVersionID: &created.ID}
 		if refErr := s.saveInvestigationEvidenceIDs(ctx, refOwner, params.EvidenceIDs); refErr != nil {
-			return refErr
+			return nil, refErr
 		}
 		return lookupResult(invhv.ID(created.ID))
 	})
@@ -527,24 +519,22 @@ func (s *InvestigationService) prepareInvestigationOutputWrite(ctx context.Conte
 }
 
 func (s *InvestigationService) findOrCreateInvestigationFinding(ctx context.Context, invId uuid.UUID, key string, inputID *uuid.UUID) (*ent.InvestigationFinding, error) {
-	var result *ent.InvestigationFinding
-	return result, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+	return ent.WithTxReturning(ctx, s.db, func(ctx context.Context, tx *ent.Client) (*ent.InvestigationFinding, error) {
 		lockKey := invId.String() + "\x1f" + key
 		if lockErr := s.db.AcquireTxLocks(ctx, "investigation_output_finding", lockKey); lockErr != nil {
-			return fmt.Errorf("lock investigation finding identity: %w", lockErr)
+			return nil, fmt.Errorf("lock investigation finding identity: %w", lockErr)
 		}
 
 		queryExisting := s.db.Client(ctx).InvestigationFinding.Query().
 			Where(invf.InvestigationID(invId), invf.Key(key))
 		existing, queryExistingErr := queryExisting.Only(ctx)
 		if queryExistingErr != nil && !ent.IsNotFound(queryExistingErr) {
-			return fmt.Errorf("load investigation finding identity: %w", queryExistingErr)
+			return nil, fmt.Errorf("load investigation finding identity: %w", queryExistingErr)
 		} else if existing != nil {
 			if inputID == nil && existing.UserInputID != nil || inputID != nil && (existing.UserInputID == nil || *existing.UserInputID != *inputID) {
-				return fmt.Errorf("%w: finding identity is already bound to another user input", rez.ErrConflict)
+				return nil, fmt.Errorf("%w: finding identity is already bound to another user input", rez.ErrConflict)
 			}
-			result = existing.Unwrap()
-			return nil
+			return existing, nil
 		}
 
 		createFinding := tx.InvestigationFinding.Create().
@@ -555,38 +545,34 @@ func (s *InvestigationService) findOrCreateInvestigationFinding(ctx context.Cont
 		}
 		created, saveErr := createFinding.Save(ctx)
 		if saveErr != nil {
-			return fmt.Errorf("create investigation finding identity: %w", saveErr)
+			return nil, fmt.Errorf("create investigation finding identity: %w", saveErr)
 		}
-		result = created.Unwrap()
-		return nil
+		return created, nil
 	})
 }
 
 func (s *InvestigationService) findOrCreateInvestigationHypothesis(ctx context.Context, invId uuid.UUID, key string) (*ent.InvestigationHypothesis, error) {
-	var result *ent.InvestigationHypothesis
-	return result, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+	return ent.WithTxReturning(ctx, s.db, func(ctx context.Context, tx *ent.Client) (*ent.InvestigationHypothesis, error) {
 		lockKey := invId.String() + "\x1f" + key
 		if lockErr := s.db.AcquireTxLocks(ctx, "investigation_output_hypothesis", lockKey); lockErr != nil {
-			return fmt.Errorf("lock investigation hypothesis identity: %w", lockErr)
+			return nil, fmt.Errorf("lock investigation hypothesis identity: %w", lockErr)
 		}
 		queryHypothesis := tx.InvestigationHypothesis.Query().
 			Where(invh.InvestigationID(invId), invh.Key(key))
 		existing, queryErr := queryHypothesis.Only(ctx)
 		if queryErr != nil && !ent.IsNotFound(queryErr) {
-			return fmt.Errorf("load investigation hypothesis identity: %w", queryErr)
+			return nil, fmt.Errorf("load investigation hypothesis identity: %w", queryErr)
 		} else if existing != nil {
-			result = existing.Unwrap()
-			return nil
+			return existing, nil
 		}
 		createHypothesis := tx.InvestigationHypothesis.Create().
 			SetInvestigationID(invId).
 			SetKey(key)
 		created, saveErr := createHypothesis.Save(ctx)
 		if saveErr != nil {
-			return fmt.Errorf("create investigation hypothesis identity: %w", saveErr)
+			return nil, fmt.Errorf("create investigation hypothesis identity: %w", saveErr)
 		}
-		result = created.Unwrap()
-		return nil
+		return created, nil
 	})
 }
 
@@ -726,7 +712,7 @@ func (s *InvestigationService) saveFindingVersionReferences(ctx context.Context,
 func (s *InvestigationService) investigationReportResult(ctx context.Context, report *ent.InvestigationReport) (*rez.InvestigationReportResult, error) {
 	turn := report.Edges.AgentTurn
 	if turn == nil {
-		loaded, loadErr := report.QueryAgentTurn().Only(ctx)
+		loaded, loadErr := s.db.Client(ctx).InvestigationReport.QueryAgentTurn(report).Only(ctx)
 		if loadErr != nil {
 			return nil, fmt.Errorf("load producing turn for report: %w", loadErr)
 		}
@@ -757,7 +743,7 @@ func (s *InvestigationService) investigationFindingResult(ctx context.Context, v
 func (s *InvestigationService) investigationFindingResultWithInvalidations(ctx context.Context, version *ent.InvestigationFindingVersion, invalidated map[uuid.UUID][]uuid.UUID) (*rez.InvestigationFindingVersion, error) {
 	finding := version.Edges.Finding
 	if finding == nil {
-		loaded, loadErr := version.QueryFinding().Only(ctx)
+		loaded, loadErr := s.db.Client(ctx).InvestigationFindingVersion.QueryFinding(version).Only(ctx)
 		if loadErr != nil {
 			return nil, fmt.Errorf("load stable finding identity: %w", loadErr)
 		}
@@ -765,7 +751,7 @@ func (s *InvestigationService) investigationFindingResultWithInvalidations(ctx c
 	}
 	turn := version.Edges.AgentTurn
 	if turn == nil {
-		loaded, loadErr := version.QueryAgentTurn().Only(ctx)
+		loaded, loadErr := s.db.Client(ctx).InvestigationFindingVersion.QueryAgentTurn(version).Only(ctx)
 		if loadErr != nil {
 			return nil, fmt.Errorf("load producing turn for finding: %w", loadErr)
 		}
@@ -795,7 +781,7 @@ func (s *InvestigationService) investigationFindingResultWithInvalidations(ctx c
 func (s *InvestigationService) investigationHypothesisResult(ctx context.Context, version *ent.InvestigationHypothesisVersion) (*rez.InvestigationHypothesisVersion, error) {
 	hypothesis := version.Edges.Hypothesis
 	if hypothesis == nil {
-		loaded, loadErr := version.QueryHypothesis().Only(ctx)
+		loaded, loadErr := s.db.Client(ctx).InvestigationHypothesisVersion.QueryHypothesis(version).Only(ctx)
 		if loadErr != nil {
 			return nil, fmt.Errorf("load stable hypothesis identity: %w", loadErr)
 		}
@@ -803,7 +789,7 @@ func (s *InvestigationService) investigationHypothesisResult(ctx context.Context
 	}
 	turn := version.Edges.AgentTurn
 	if turn == nil {
-		loaded, loadErr := version.QueryAgentTurn().Only(ctx)
+		loaded, loadErr := s.db.Client(ctx).InvestigationHypothesisVersion.QueryAgentTurn(version).Only(ctx)
 		if loadErr != nil {
 			return nil, fmt.Errorf("load producing turn for hypothesis: %w", loadErr)
 		}

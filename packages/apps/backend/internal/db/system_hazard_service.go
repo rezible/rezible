@@ -31,8 +31,7 @@ func (s *SystemHazardService) CreateSystemHazard(ctx context.Context, params rez
 		return nil, fmt.Errorf("%w: system hazard title is required", rez.ErrInvalidInput)
 	}
 
-	var created *ent.SystemHazard
-	return created, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+	return ent.WithTxReturning(ctx, s.db, func(ctx context.Context, tx *ent.Client) (*ent.SystemHazard, error) {
 		hazardId := uuid.New()
 		hazardEntityRef := &rez.KnowledgeEntityRef{
 			Category:            kne.CategoryConcern,
@@ -41,7 +40,7 @@ func (s *SystemHazardService) CreateSystemHazard(ctx context.Context, params rez
 		}
 		ka, kaErr := s.knowledge.ResolveInternalSubject(ctx, rez.KnowledgeSubjectRef{Entity: hazardEntityRef})
 		if kaErr != nil || ka.EntityID == nil {
-			return fmt.Errorf("create situation knowledge entity: %w", kaErr)
+			return nil, fmt.Errorf("create situation knowledge entity: %w", kaErr)
 		}
 
 		createHazard := tx.SystemHazard.Create().
@@ -57,10 +56,9 @@ func (s *SystemHazardService) CreateSystemHazard(ctx context.Context, params rez
 		}
 		createdHazard, saveErr := createHazard.Save(ctx)
 		if saveErr != nil {
-			return fmt.Errorf("create system hazard: %w", saveErr)
+			return nil, fmt.Errorf("create system hazard: %w", saveErr)
 		}
-		created = createdHazard.Unwrap()
-		return nil
+		return createdHazard, nil
 	})
 }
 
@@ -80,29 +78,26 @@ func (s *SystemHazardService) RetireSystemHazard(ctx context.Context, id uuid.UU
 		return nil, fmt.Errorf("%w: system hazard id is required", rez.ErrInvalidInput)
 	}
 
-	var retired *ent.SystemHazard
-	return retired, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+	return ent.WithTxReturning(ctx, s.db, func(ctx context.Context, tx *ent.Client) (*ent.SystemHazard, error) {
 		if lockErr := s.db.AcquireTxLocks(ctx, systemHazardLockNamespace, id.String()); lockErr != nil {
-			return fmt.Errorf("lock system hazard: %w", lockErr)
+			return nil, fmt.Errorf("lock system hazard: %w", lockErr)
 		}
 
 		current, queryErr := tx.SystemHazard.Get(ctx, id)
 		if queryErr != nil {
-			return fmt.Errorf("get system hazard: %w", queryErr)
+			return nil, fmt.Errorf("get system hazard: %w", queryErr)
 		}
 		if current.Status == sh.StatusRetired {
-			retired = current.Unwrap()
-			return nil
+			return current, nil
 		}
 		update := current.Update().
 			SetStatus(sh.StatusRetired)
 		updated, updateErr := update.Save(ctx)
 		if updateErr != nil {
-			return fmt.Errorf("retire system hazard: %w", updateErr)
+			return nil, fmt.Errorf("retire system hazard: %w", updateErr)
 		}
 
-		retired = updated.Unwrap()
-		return nil
+		return updated, nil
 	})
 }
 
@@ -121,13 +116,12 @@ func (s *SystemHazardService) AddSystemHazardRiskAssessment(ctx context.Context,
 		assessedAt = time.Now().UTC()
 	}
 
-	var assessment *ent.SystemHazardRiskAssessment
-	return assessment, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+	return ent.WithTxReturning(ctx, s.db, func(ctx context.Context, tx *ent.Client) (*ent.SystemHazardRiskAssessment, error) {
 		if lockErr := s.db.AcquireTxLocks(ctx, systemHazardLockNamespace, params.SystemHazardID.String()); lockErr != nil {
-			return fmt.Errorf("lock system hazard: %w", lockErr)
+			return nil, fmt.Errorf("lock system hazard: %w", lockErr)
 		}
 		if _, hazardErr := tx.SystemHazard.Get(ctx, params.SystemHazardID); hazardErr != nil {
-			return fmt.Errorf("get system hazard: %w", hazardErr)
+			return nil, fmt.Errorf("get system hazard: %w", hazardErr)
 		}
 
 		lookupByRevision := tx.SystemHazardRiskAssessment.Query().
@@ -138,7 +132,7 @@ func (s *SystemHazardService) AddSystemHazardRiskAssessment(ctx context.Context,
 		if latestErr == nil {
 			nextRevision = latest.Revision + 1
 		} else if !ent.IsNotFound(latestErr) {
-			return fmt.Errorf("get latest system hazard risk assessment: %w", latestErr)
+			return nil, fmt.Errorf("get latest system hazard risk assessment: %w", latestErr)
 		}
 
 		createAssessment := tx.SystemHazardRiskAssessment.Create().
@@ -153,10 +147,9 @@ func (s *SystemHazardService) AddSystemHazardRiskAssessment(ctx context.Context,
 		}
 		created, saveErr := createAssessment.Save(ctx)
 		if saveErr != nil {
-			return fmt.Errorf("add system hazard risk assessment: %w", saveErr)
+			return nil, fmt.Errorf("add system hazard risk assessment: %w", saveErr)
 		}
-		assessment = created.Unwrap()
-		return nil
+		return created, nil
 	})
 }
 

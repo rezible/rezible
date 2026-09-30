@@ -38,7 +38,8 @@ func (s *ProjectionServiceSuite) projectionService(tdb rez.Database) *Projection
 
 	messageService := mocks.NewMockMessageQueue(s.T())
 
-	incidents, _ := db.NewIncidentService(tdb, messageService, nil)
+	retrospectives, _ := db.NewRetrospectiveService(tdb)
+	incidents, _ := db.NewIncidentService(tdb, messageService, nil, retrospectives)
 
 	knowledge, _ := db.NewKnowledgeGraphIngestionService(tdb)
 	knowledgeQuery, _ := db.NewKnowledgeGraphQueryService(tdb)

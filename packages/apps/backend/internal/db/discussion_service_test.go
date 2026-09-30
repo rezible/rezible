@@ -8,6 +8,7 @@ import (
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/discussioncomment"
 	"github.com/rezible/rezible/ent/discussionthread"
+	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/test"
 	"github.com/stretchr/testify/suite"
@@ -22,7 +23,7 @@ func (s *DiscussionSuite) createIncident(client *ent.Client, ctx context.Context
 	s.Require().NoError(severityErr)
 	kind, kindErr := client.IncidentType.Create().SetName(uuid.NewString()).Save(ctx)
 	s.Require().NoError(kindErr)
-	incident, incidentErr := client.Incident.Create().SetSlug(uuid.NewString()).SetTitle("outage").SetSeverity(severity).SetType(kind).Save(ctx)
+	incident, incidentErr := client.Incident.Create().SetSlug(uuid.NewString()).SetTitle("outage").SetResponseState(incident.ResponseStateResolved).SetSeverity(severity).SetType(kind).Save(ctx)
 	s.Require().NoError(incidentErr)
 	return incident
 }
@@ -36,7 +37,7 @@ func (s *DiscussionSuite) TestThreadRequiresExactlyOneOwnerAndReverseEdges() {
 	analysis, analysisErr := client.SystemAnalysis.Create().Save(ctx)
 	s.Require().NoError(analysisErr)
 	incident := s.createIncident(client, ctx)
-	retro, retroErr := (&RetrospectiveService{db: db}).createForIncident(ctx, incident)
+	retro, retroErr := (&RetrospectiveService{db: db}).CreateForIncident(ctx, incident.ID)
 	s.Require().NoError(retroErr)
 
 	_, bothErr := client.DiscussionThread.Create().SetUser(user).SetAnalysis(analysis).SetRetrospective(retro).Save(ctx)

@@ -47,25 +47,25 @@ func (s *ProjectionService) handleTeamEvent(ctx context.Context, e *projections.
 		Subject: rez.KnowledgeSubjectRef{Entity: &teamEntityRef},
 	}
 
-	var projected []rez.ProjectedEntityRef
-	return projected, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+	return ent.WithTxReturning(ctx, s.db, func(ctx context.Context, tx *ent.Client) ([]rez.ProjectedEntityRef, error) {
+		var projected []rez.ProjectedEntityRef
 		subj, ingestErr := s.ingestSubjectEvidence(ctx, e.Event, evidence)
 		if ingestErr != nil {
-			return fmt.Errorf("ingest knowledge evidence: %w", ingestErr)
+			return nil, fmt.Errorf("ingest knowledge evidence: %w", ingestErr)
 		} else if subj.EntityID == nil {
-			return fmt.Errorf("nil subject entity")
+			return nil, fmt.Errorf("nil subject entity")
 		}
 
 		teamId, saveTeamErr := s.setTeamFromProjection(ctx, *subj.EntityID, attrs)
 		if saveTeamErr != nil {
-			return fmt.Errorf("create team from projection: %w", saveTeamErr)
+			return nil, fmt.Errorf("create team from projection: %w", saveTeamErr)
 		}
 
 		projected = append(projected, rez.ProjectedEntityRef{
 			Kind: knowledgeEntityKindTeam,
 			Id:   teamId,
 		})
-		return nil
+		return projected, nil
 	})
 }
 
@@ -160,25 +160,25 @@ func (s *ProjectionService) handleTeamMembershipEvent(ctx context.Context, e *pr
 		Subject: rez.KnowledgeSubjectRef{Relationship: &membershipRelationship},
 	}
 
-	var projected []rez.ProjectedEntityRef
-	return projected, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+	return ent.WithTxReturning(ctx, s.db, func(ctx context.Context, tx *ent.Client) ([]rez.ProjectedEntityRef, error) {
+		var projected []rez.ProjectedEntityRef
 		subj, ingestErr := s.ingestSubjectEvidence(ctx, event, membershipEvidenceRef, userEvidenceRef, teamEvidenceRef)
 		if ingestErr != nil {
-			return fmt.Errorf("ingest knowledge evidence: %w", ingestErr)
+			return nil, fmt.Errorf("ingest knowledge evidence: %w", ingestErr)
 		} else if subj.RelationshipID == nil {
-			return fmt.Errorf("nil subject relationship")
+			return nil, fmt.Errorf("nil subject relationship")
 		}
 
 		membershipId, membershipErr := s.setTeamMembershipFromProjection(ctx, *subj.RelationshipID, attrs)
 		if membershipErr != nil {
-			return fmt.Errorf("set membership: %w", membershipErr)
+			return nil, fmt.Errorf("set membership: %w", membershipErr)
 		}
 
 		projected = append(projected, rez.ProjectedEntityRef{
 			Kind: "team_membership",
 			Id:   membershipId,
 		})
-		return nil
+		return projected, nil
 	})
 }
 

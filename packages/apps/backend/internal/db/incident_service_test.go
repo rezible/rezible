@@ -31,7 +31,8 @@ func (s *IncidentServiceSuite) newService(tdb rez.Database) *IncidentService {
 	msgs := mocks.NewMockMessageQueue(s.T())
 	msgs.EXPECT().Publish(mock.Anything, mock.Anything).Return(nil).Maybe()
 
-	svc, err := NewIncidentService(tdb, msgs, nil)
+	retrospectives, _ := NewRetrospectiveService(tdb)
+	svc, err := NewIncidentService(tdb, msgs, nil, retrospectives)
 	s.Require().NoError(err)
 	return svc
 }
@@ -230,4 +231,38 @@ func (s *IncidentServiceSuite) TestDoListQueryUsesSameArchiveContextForTotalAndP
 	s.Require().NoError(archivedErr)
 	s.Equal(2, withArchived.Total)
 	s.Require().Len(withArchived.Data, 2)
+}
+
+func (s *IncidentServiceSuite) TestResolutionCreatesAndPreservesRetrospective() {
+	ctx := s.SeedTenantContext()
+	tdb := s.CreateTestDatabase()
+	svc := s.newService(tdb)
+	inc := s.createBasicIncident(ctx, tdb.Client(ctx), svc, "Response lifecycle")
+	s.Nil(inc.Edges.Retrospective)
+	resolved, resolveErr := svc.Set(ctx, inc.ID, func(m *ent.IncidentMutation) {
+		m.SetResponseState(incident.ResponseStateResolved)
+	})
+	s.Require().NoError(resolveErr)
+	s.Require().NotNil(resolved.Edges.Retrospective)
+	retrospectiveID := resolved.Edges.Retrospective.ID
+	for _, state := range []incident.ResponseState{incident.ResponseStateResolved, incident.ResponseStateStarted, incident.ResponseStateResolved} {
+		updated, updateErr := svc.Set(ctx, inc.ID, func(m *ent.IncidentMutation) { m.SetResponseState(state) })
+		s.Require().NoError(updateErr)
+		s.Require().NotNil(updated.Edges.Retrospective)
+		s.Equal(retrospectiveID, updated.Edges.Retrospective.ID)
+	}
+	s.Equal(1, tdb.Client(ctx).Retrospective.Query().CountX(ctx))
+}
+
+func (s *IncidentServiceSuite) TestCreateResolvedIncidentStartsRetrospective() {
+	ctx := s.SeedTenantContext()
+	tdb := s.CreateTestDatabase()
+	svc := s.newService(tdb)
+	inc, createErr := svc.Set(ctx, uuid.Nil, func(m *ent.IncidentMutation) {
+		m.SetTitle("Imported resolved incident")
+		m.SetResponseState(incident.ResponseStateResolved)
+	})
+	s.Require().NoError(createErr)
+	s.Require().NotNil(inc.Edges.Retrospective)
+	s.Nil(inc.ResolvedAt)
 }

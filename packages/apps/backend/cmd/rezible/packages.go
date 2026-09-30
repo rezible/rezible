@@ -405,6 +405,7 @@ var pkgDatabase = do.Package(
 			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.MessageQueue](i),
 			do.MustInvoke[rez.SituationService](i),
+			do.MustInvoke[rez.RetrospectiveService](i),
 		)
 	}),
 
@@ -458,7 +459,6 @@ var pkgDatabase = do.Package(
 	do.Lazy(func(i do.Injector) (rez.RetrospectiveService, error) {
 		return db.NewRetrospectiveService(
 			do.MustInvoke[rez.Database](i),
-			do.MustInvoke[rez.IncidentService](i),
 		)
 	}),
 

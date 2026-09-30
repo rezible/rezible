@@ -6,10 +6,15 @@ import (
 	"fmt"
 	"sync"
 	"testing"
+	"time"
+
+	"github.com/google/uuid"
 
 	"github.com/jackc/pgx/v5/pgconn"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/user"
+	dbservices "github.com/rezible/rezible/internal/db"
 	"github.com/rezible/rezible/internal/postgres"
 	"github.com/rezible/rezible/test"
 	"github.com/stretchr/testify/suite"
@@ -232,4 +237,73 @@ func (s *DatabaseClientSuite) TestIsTransientErrorClassifiesPostgresConcurrencyE
 	s.True(tdb.IsTransientError(fmt.Errorf("wrapped: %w", &pgconn.PgError{Code: "40001"})))
 	s.False(tdb.IsTransientError(&pgconn.PgError{Code: "23505"}))
 	s.False(tdb.IsTransientError(errors.New("plain error")))
+}
+
+func (s *DatabaseClientSuite) TestWithTxReturningNestedServiceRollback() {
+	tdb := s.CreateTestDatabase()
+	ctx := s.SeedTenantContext()
+	txCtx, cancelTx := context.WithTimeout(ctx, 10*time.Second)
+	defer cancelTx()
+
+	users, serviceErr := dbservices.NewUserService(tdb, nil)
+	s.Require().NoError(serviceErr)
+
+	expectedErr := errors.New("force outer transaction rollback")
+	var createdID uuid.UUID
+	rolledBack := false
+
+	result, txErr := ent.WithTxReturning(txCtx, tdb,
+		func(ctx context.Context, tx *ent.Client) (*ent.User, error) {
+			created, createErr := users.Set(ctx, uuid.Nil, func(m *ent.UserMutation) {
+				m.SetEmail("tx-helper-" + uuid.NewString() + "@example.com")
+				m.SetName("before nested update")
+			})
+			if createErr != nil {
+				return nil, fmt.Errorf("nested user creation: %w", createErr)
+			}
+			if created == nil {
+				return nil, errors.New("nested service returned no user")
+			}
+			createdID = created.ID
+
+			// Deliberately entity-bound: the enclosing transaction is active.
+			// This detects a service or helper unwrapping before outer commit.
+			updateUser := created.Update().SetName("after nested update")
+			if updateErr := updateUser.Exec(ctx); updateErr != nil {
+				return nil, fmt.Errorf("update nested result in outer transaction: %w", updateErr)
+			}
+
+			current, queryErr := tdb.Client(ctx).User.Get(ctx, created.ID)
+			if queryErr != nil {
+				return nil, fmt.Errorf("read nested result in outer transaction: %w", queryErr)
+			}
+			if current.Name != "after nested update" {
+				return nil, fmt.Errorf("nested update not visible: got name %q", current.Name)
+			}
+
+			// A non-nil callback result must be discarded when WithTx fails.
+			return current, expectedErr
+		},
+		ent.WithRollbackHook(func(next ent.Rollbacker) ent.Rollbacker {
+			return ent.RollbackFunc(func(ctx context.Context, tx *ent.Tx) error {
+				if rollbackErr := next.Rollback(ctx, tx); rollbackErr != nil {
+					return rollbackErr
+				}
+				rolledBack = true
+				return nil
+			})
+		}),
+	)
+	cancelTx()
+
+	s.Require().ErrorIs(txErr, expectedErr)
+	s.Nil(result)
+	s.True(rolledBack)
+	s.Require().NotEqual(uuid.Nil, createdID)
+
+	// Use the original nontransactional context to observe persisted state.
+	queryUser := tdb.Client(ctx).User.Query().Where(user.ID(createdID))
+	exists, queryErr := queryUser.Exist(ctx)
+	s.Require().NoError(queryErr)
+	s.False(exists, "nested writes must be rolled back with the outer transaction")
 }

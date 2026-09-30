@@ -49,27 +49,27 @@ func (s *ProjectionService) handleIncidentEvent(ctx context.Context, e *projecti
 		Subject: rez.KnowledgeSubjectRef{Entity: &incidentEntityRef},
 	}
 
-	var projected []rez.ProjectedEntityRef
-	return projected, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+	return ent.WithTxReturning(ctx, s.db, func(ctx context.Context, tx *ent.Client) ([]rez.ProjectedEntityRef, error) {
+		var projected []rez.ProjectedEntityRef
 		knowledgeEntityId, ingestErr := s.ingestEntityEvidence(ctx, event, incidentObservedEvidence)
 		if ingestErr != nil {
-			return fmt.Errorf("incident knowledge evidence: %w", ingestErr)
+			return nil, fmt.Errorf("incident knowledge evidence: %w", ingestErr)
 		}
 
 		queryExisting := tx.Incident.Query().Where(incident.KnowledgeEntityID(knowledgeEntityId))
 		existing, existingErr := queryExisting.Only(ctx)
 		if existingErr != nil && !ent.IsNotFound(existingErr) {
-			return fmt.Errorf("query existing incident: %w", existingErr)
+			return nil, fmt.Errorf("query existing incident: %w", existingErr)
 		}
 
 		severityID, severityErr := s.saveProjectedIncidentSeverity(ctx, attrs)
 		if severityErr != nil {
-			return fmt.Errorf("upsert incident severity: %w", severityErr)
+			return nil, fmt.Errorf("upsert incident severity: %w", severityErr)
 		}
 
 		typeID, typeErr := s.saveProjectedIncidentType(ctx, attrs)
 		if typeErr != nil {
-			return fmt.Errorf("upsert incident type: %w", typeErr)
+			return nil, fmt.Errorf("upsert incident type: %w", typeErr)
 		}
 
 		id := uuid.Nil
@@ -81,7 +81,7 @@ func (s *ProjectionService) handleIncidentEvent(ctx context.Context, e *projecti
 				existing.OpenedAt.Equal(openedAt) &&
 				(attrs.ResponseState == "" || existing.ResponseState == incident.ResponseState(attrs.ResponseState)) &&
 				(attrs.ResolvedAt == nil || (existing.ResolvedAt != nil && existing.ResolvedAt.Equal(*attrs.ResolvedAt))) {
-				return nil
+				return projected, nil
 			}
 			id = existing.ID
 		}
@@ -104,14 +104,14 @@ func (s *ProjectionService) handleIncidentEvent(ctx context.Context, e *projecti
 		}
 		inc, setErr := s.incidents.Set(ctx, id, setFn)
 		if setErr != nil {
-			return fmt.Errorf("set incident: %w", setErr)
+			return nil, fmt.Errorf("set incident: %w", setErr)
 		}
 		projected = append(projected, rez.ProjectedEntityRef{
 			Kind: knowledgeEntityKindIncident,
 			Id:   inc.ID,
 		})
 
-		return nil
+		return projected, nil
 	})
 }
 

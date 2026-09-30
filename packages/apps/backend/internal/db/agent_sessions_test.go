@@ -123,8 +123,7 @@ func (s *AiAgentSessionServiceSuite) createAgentTurn(ctx context.Context, tdb re
 	input, inputErr := normalizeAgentTurnInput(seed.input)
 	s.Require().NoError(inputErr)
 
-	var turn *ent.AgentTurn
-	txErr := tdb.WithTx(ctx, func(ctx context.Context, client *ent.Client) error {
+	turn, txErr := ent.WithTxReturning(ctx, tdb, func(ctx context.Context, client *ent.Client) (*ent.AgentTurn, error) {
 		sess := client.AgentSession.GetX(ctx, session.ID)
 
 		numTurns := sess.QueryTurns().CountX(ctx)
@@ -163,14 +162,13 @@ func (s *AiAgentSessionServiceSuite) createAgentTurn(ctx context.Context, tdb re
 				SetMetadata(inputMsg.Metadata)
 			createdMsg := createMsg.SaveX(ctx)
 
-			createdTurn = createdTurn.Update().SetInputMessageID(createdMsg.ID).SaveX(ctx)
+			updateCreatedTurn := createdTurn.Update().SetInputMessageID(createdMsg.ID)
+			createdTurn = updateCreatedTurn.SaveX(ctx)
 
-			createdTurn.Edges.Messages = append(createdTurn.Edges.Messages, createdMsg.Unwrap())
+			createdTurn.Edges.Messages = append(createdTurn.Edges.Messages, createdMsg)
 		}
 
-		turn = createdTurn.Unwrap()
-
-		return nil
+		return createdTurn, nil
 	})
 	s.Require().NoError(txErr)
 
@@ -178,7 +176,7 @@ func (s *AiAgentSessionServiceSuite) createAgentTurn(ctx context.Context, tdb re
 }
 
 func (s *AiAgentSessionServiceSuite) createAgentMessage(ctx context.Context, tdb rez.Database, session *ent.AgentSession, turn *ent.AgentTurn, msg *ai.Message) *ent.AgentMessage {
-	numMsgs, countErr := session.QueryMessages().Count(ctx)
+	numMsgs, countErr := tdb.Client(ctx).AgentSession.QueryMessages(session).Count(ctx)
 	s.Require().NoError(countErr)
 
 	createMsg := tdb.Client(ctx).AgentMessage.Create().
@@ -456,7 +454,7 @@ func (s *AiAgentSessionServiceSuite) TestRequestAgentTurnValidatesInputAndComple
 	s.Nil(turn)
 	s.ErrorIs(requestErr, rez.ErrConflict)
 
-	setInitialCompleted := initialTurn.Update().
+	setInitialCompleted := h.tdb.Client(ctx).AgentTurn.UpdateOneID(initialTurn.ID).
 		SetStatus(at.StatusCompleted).
 		SetFinishReason(string(aix.AgentFinishReasonStop)).
 		SetFinishedAt(time.Now().UTC())
@@ -487,7 +485,7 @@ func (s *AiAgentSessionServiceSuite) TestRequestAgentTurnValidatesInputAndComple
 	s.Equal(initialTurn.AgentSessionID, turn.AgentSessionID)
 	s.Require().NotNil(turn.InputMessageID)
 
-	inputMsg, inputMsgErr := turn.QueryInputMessage().Only(ctx)
+	inputMsg, inputMsgErr := h.tdb.Client(ctx).AgentTurn.QueryInputMessage(turn).Only(ctx)
 	s.Require().NoError(inputMsgErr)
 	s.Equal(agentmessage.RoleUser, inputMsg.Role)
 	s.Equal("follow up", inputMsg.MakeGenkitMessage().Text())
@@ -580,7 +578,8 @@ func (s *AiAgentSessionServiceSuite) TestWorkerPersistsSuccessfulResultAndPublis
 	s.Equal(string(aix.AgentFinishReasonStop), turn.FinishReason)
 	s.NotNil(turn.FinishedAt)
 
-	turnMsgs, queryMsgsErr := turn.QueryMessages().Order(agentmessage.BySequence()).All(ctx)
+	queryTurnMessages := h.tdb.Client(ctx).AgentTurn.QueryMessages(turn).Order(agentmessage.BySequence())
+	turnMsgs, queryMsgsErr := queryTurnMessages.All(ctx)
 	s.Require().NoError(queryMsgsErr)
 	s.Require().Len(turnMsgs, 2)
 	s.Equal("baz", turnMsgs[0].MakeGenkitMessage().Text())
@@ -588,7 +587,7 @@ func (s *AiAgentSessionServiceSuite) TestWorkerPersistsSuccessfulResultAndPublis
 	s.Equal(3, turnMsgs[0].Sequence)
 	s.Equal(4, turnMsgs[1].Sequence)
 
-	updatedArtifact, artifactErr := session.QueryArtifacts().Only(ctx)
+	updatedArtifact, artifactErr := h.tdb.Client(ctx).AgentSession.QueryArtifacts(session).Only(ctx)
 	s.Require().NoError(artifactErr)
 	s.Equal(followUp.ID, *updatedArtifact.LastAgentTurnID)
 	s.Equal("new", updatedArtifact.Metadata["version"])
@@ -725,7 +724,7 @@ func (s *AiAgentSessionServiceSuite) TestRetryAgentTurnRequeuesSameTurnAndClears
 		Return(makeJobInsertResult(803), nil).
 		Once()
 
-	msgsBefore, msgsBeforeErr := turn.QueryMessages().Count(ctx)
+	msgsBefore, msgsBeforeErr := h.tdb.Client(ctx).AgentTurn.QueryMessages(turn).Count(ctx)
 	s.Require().NoError(msgsBeforeErr)
 
 	retried, retryErr := h.service.RetryAgentTurn(ctx, turn.ID)
@@ -738,7 +737,7 @@ func (s *AiAgentSessionServiceSuite) TestRetryAgentTurnRequeuesSameTurnAndClears
 	s.Nil(retried.FinishedAt)
 	s.Empty(retried.FinishReason)
 
-	msgsAfter, msgsAfterErr := retried.QueryMessages().Count(ctx)
+	msgsAfter, msgsAfterErr := h.tdb.Client(ctx).AgentTurn.QueryMessages(retried).Count(ctx)
 	s.Require().NoError(msgsAfterErr)
 	s.Require().Equal(msgsBefore, msgsAfter)
 }

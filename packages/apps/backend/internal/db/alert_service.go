@@ -69,25 +69,23 @@ func (s *AlertService) RecordAlertDefinitionInstance(ctx context.Context, defini
 	if definitionID == uuid.Nil || event == nil || event.ID == uuid.Nil {
 		return nil, fmt.Errorf("%w: alert definition and normalized event are required", rez.ErrInvalidInput)
 	}
-	var result *ent.AlertInstance
-	return result, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+	return ent.WithTxReturning(ctx, s.db, func(ctx context.Context, tx *ent.Client) (*ent.AlertInstance, error) {
 		if locksErr := s.db.AcquireTxLocks(ctx, alertDefinitionLockNamespace, definitionID.String()); locksErr != nil {
-			return fmt.Errorf("get locks: %w", locksErr)
+			return nil, fmt.Errorf("get locks: %w", locksErr)
 		}
 		existingQuery := tx.AlertInstance.Query().
 			Where(ali.NormalizedEventID(event.ID))
 		existing, lookupExistingErr := existingQuery.Only(ctx)
 		if lookupExistingErr != nil && !ent.IsNotFound(lookupExistingErr) {
-			return fmt.Errorf("lookup existing definition: %w", lookupExistingErr)
+			return nil, fmt.Errorf("lookup existing definition: %w", lookupExistingErr)
 		}
 		if existing != nil && lookupExistingErr == nil {
-			result = existing.Unwrap()
-			return nil
+			return existing, nil
 		}
 
 		episode, episodeErr := s.resolveAlertEpisode(ctx, definitionID, event.OccurredAt)
 		if episodeErr != nil {
-			return fmt.Errorf("resolve alert episode: %w", episodeErr)
+			return nil, fmt.Errorf("resolve alert episode: %w", episodeErr)
 		}
 
 		createInstance := tx.AlertInstance.Create().
@@ -95,35 +93,33 @@ func (s *AlertService) RecordAlertDefinitionInstance(ctx context.Context, defini
 			SetNormalizedEventID(event.ID)
 		instance, saveErr := createInstance.Save(ctx)
 		if saveErr != nil {
-			return fmt.Errorf("save alert instance: %w", saveErr)
+			return nil, fmt.Errorf("save alert instance: %w", saveErr)
 		}
 		if refreshErr := s.refreshEpisodeLinkedSituations(ctx, episode.ID); refreshErr != nil {
-			return fmt.Errorf("refresh situation analysis after alert instance: %w", refreshErr)
+			return nil, fmt.Errorf("refresh situation analysis after alert instance: %w", refreshErr)
 		}
-		result = instance.Unwrap()
-		return nil
+		return instance, nil
 	})
 }
 
 func (s *AlertService) resolveAlertEpisode(ctx context.Context, definitionID uuid.UUID, occurredAt time.Time) (*ent.AlertEpisode, error) {
-	var result *ent.AlertEpisode
-	return result, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+	return ent.WithTxReturning(ctx, s.db, func(ctx context.Context, tx *ent.Client) (*ent.AlertEpisode, error) {
 		if locksErr := s.db.AcquireTxLocks(ctx, alertDefinitionLockNamespace, definitionID.String()); locksErr != nil {
-			return fmt.Errorf("get locks: %w", locksErr)
+			return nil, fmt.Errorf("get locks: %w", locksErr)
 		}
 
 		queryAlertDefinition := tx.AlertDefinition.Query().
 			Where(ald.ID(definitionID))
 		definition, queryDefinitionErr := queryAlertDefinition.Only(ctx)
 		if queryDefinitionErr != nil {
-			return fmt.Errorf("query alert definition: %w", queryDefinitionErr)
+			return nil, fmt.Errorf("query alert definition: %w", queryDefinitionErr)
 		}
 
 		queryOpenEpisodes := definition.QueryEpisodes().
 			Where(ale.StatusEQ(ale.StatusOpen))
 		openEpisode, queryOpenEpisodeErr := queryOpenEpisodes.Only(ctx)
 		if queryOpenEpisodeErr != nil && !ent.IsNotFound(queryOpenEpisodeErr) {
-			return fmt.Errorf("query open episode: %w", queryOpenEpisodeErr)
+			return nil, fmt.Errorf("query open episode: %w", queryOpenEpisodeErr)
 		}
 
 		episode := openEpisode
@@ -131,7 +127,7 @@ func (s *AlertService) resolveAlertEpisode(ctx context.Context, definitionID uui
 			expiryTime := episode.LastObservedAt.Add(alertEpisodeInactivity)
 			if occurredAt.After(expiryTime) {
 				if closeErr := s.closeInactiveEpisode(ctx, episode.ID, expiryTime); closeErr != nil {
-					return fmt.Errorf("failed to close inactive episode: %w", closeErr)
+					return nil, fmt.Errorf("failed to close inactive episode: %w", closeErr)
 				}
 				episode = nil
 			}
@@ -141,8 +137,7 @@ func (s *AlertService) resolveAlertEpisode(ctx context.Context, definitionID uui
 			isEarlierOccurrance := occurredAt.Before(episode.StartedAt)
 			isLaterOccurrance := occurredAt.After(episode.LastObservedAt)
 			if !(isEarlierOccurrance || isLaterOccurrance) {
-				result = episode.Unwrap()
-				return nil
+				return episode, nil
 			}
 
 			update := episode.Update()
@@ -154,11 +149,10 @@ func (s *AlertService) resolveAlertEpisode(ctx context.Context, definitionID uui
 			}
 			updated, updateEpisodeErr := update.Save(ctx)
 			if updateEpisodeErr != nil {
-				return fmt.Errorf("update episode: %w", updateEpisodeErr)
+				return nil, fmt.Errorf("update episode: %w", updateEpisodeErr)
 			}
 
-			result = updated.Unwrap()
-			return nil
+			return updated, nil
 		}
 
 		createEpParams := createAlertEpisodeParams{
@@ -167,10 +161,9 @@ func (s *AlertService) resolveAlertEpisode(ctx context.Context, definitionID uui
 		}
 		created, createErr := s.createAlertEpisode(ctx, createEpParams)
 		if createErr != nil {
-			return fmt.Errorf("create alert episode: %w", createErr)
+			return nil, fmt.Errorf("create alert episode: %w", createErr)
 		}
-		result = created.Unwrap()
-		return nil
+		return created, nil
 	})
 }
 
@@ -237,13 +230,12 @@ type createAlertEpisodeParams struct {
 }
 
 func (s *AlertService) createAlertEpisode(ctx context.Context, params createAlertEpisodeParams) (*ent.AlertEpisode, error) {
-	var created *ent.AlertEpisode
-	return created, s.db.WithTx(ctx, func(ctx context.Context, client *ent.Client) error {
+	return ent.WithTxReturning(ctx, s.db, func(ctx context.Context, client *ent.Client) (*ent.AlertEpisode, error) {
 		episodeId := uuid.New()
 
 		knowlEntId, knowlErr := s.resolveAlertEpisodeKnowledgeEntityId(ctx, episodeId)
 		if knowlErr != nil {
-			return fmt.Errorf("resolve alert episode knowledge entity id: %w", knowlErr)
+			return nil, fmt.Errorf("resolve alert episode knowledge entity id: %w", knowlErr)
 		}
 
 		create := client.AlertEpisode.Create().
@@ -254,9 +246,9 @@ func (s *AlertService) createAlertEpisode(ctx context.Context, params createAler
 			SetLastObservedAt(params.OccurredAt)
 		createdEpisode, createEpisodeErr := create.Save(ctx)
 		if createEpisodeErr != nil {
-			return fmt.Errorf("create episode: %w", createEpisodeErr)
+			return nil, fmt.Errorf("create episode: %w", createEpisodeErr)
 		}
-		created = createdEpisode
+		created := createdEpisode
 
 		sitParams := rez.CreateSituationParams{
 			Title:    params.AlertDef.Title,
@@ -269,10 +261,10 @@ func (s *AlertService) createAlertEpisode(ctx context.Context, params createAler
 		}
 		_, situationErr := s.situations.CreateSituation(ctx, sitParams)
 		if situationErr != nil {
-			return fmt.Errorf("create situation: %w", situationErr)
+			return nil, fmt.Errorf("create situation: %w", situationErr)
 		}
 
-		return nil
+		return created, nil
 	})
 }
 

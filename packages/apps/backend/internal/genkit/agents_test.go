@@ -19,20 +19,19 @@ func (s *AiRuntimeSuite) makeAgentSession(svc *AiRuntime, tdb rez.Database, name
 	sessInputJson, sessInputJsonErr := json.Marshal(sessInput)
 	s.Require().NoError(sessInputJsonErr)
 
-	var session *ent.AgentSession
-	txFn := func(ctx context.Context, tx *ent.Client) error {
+	txFn := func(ctx context.Context, tx *ent.Client) (*ent.AgentSession, error) {
 		createSess := tx.AgentSession.Create().
 			SetAgentName(name).
 			SetInput(sessInputJson)
 		createdSession, saveSessionErr := createSess.Save(ctx)
 		if saveSessionErr != nil {
-			return fmt.Errorf("create session: %w", saveSessionErr)
+			return nil, fmt.Errorf("create session: %w", saveSessionErr)
 		}
-		session = createdSession.Unwrap()
+		session := createdSession
 
 		turnInput, inputErr := svc.catalogue.MakeInitialTurnInput(ctx, createdSession)
 		if inputErr != nil {
-			return fmt.Errorf("initial agent turn input: %w", inputErr)
+			return nil, fmt.Errorf("initial agent turn input: %w", inputErr)
 		}
 
 		createTurn := tx.AgentTurn.Create().
@@ -44,7 +43,7 @@ func (s *AiRuntimeSuite) makeAgentSession(svc *AiRuntime, tdb rez.Database, name
 			SetInputToolResume(turnInput.Resume)
 		createdTurn, saveTurnErr := createTurn.Save(ctx)
 		if saveTurnErr != nil {
-			return fmt.Errorf("create turn: %w", saveTurnErr)
+			return nil, fmt.Errorf("create turn: %w", saveTurnErr)
 		}
 
 		if turnInput.Message != nil {
@@ -58,18 +57,20 @@ func (s *AiRuntimeSuite) makeAgentSession(svc *AiRuntime, tdb rez.Database, name
 				SetMetadata(turnInput.Message.Metadata)
 			createdMsg, saveMsgErr := createMsg.Save(ctx)
 			if saveMsgErr != nil {
-				return fmt.Errorf("create msg: %w", saveMsgErr)
+				return nil, fmt.Errorf("create msg: %w", saveMsgErr)
 			}
-			createdTurn = createdTurn.Update().SetInputMessageID(createdMsg.ID).SaveX(ctx)
+			updateCreatedTurn := createdTurn.Update().SetInputMessageID(createdMsg.ID)
+			createdTurn = updateCreatedTurn.SaveX(ctx)
 
-			session.Edges.Messages = append(session.Edges.Messages, createdMsg.Unwrap())
+			session.Edges.Messages = append(session.Edges.Messages, createdMsg)
 		}
 
-		session.Edges.Turns = append(session.Edges.Turns, createdTurn.Unwrap())
+		session.Edges.Turns = append(session.Edges.Turns, createdTurn)
 
-		return nil
+		return session, nil
 	}
-	s.Require().NoError(tdb.WithTx(s.SeedTenantContext(), txFn))
+	session, txErr := ent.WithTxReturning(s.SeedTenantContext(), tdb, txFn)
+	s.Require().NoError(txErr)
 	return session
 }
 

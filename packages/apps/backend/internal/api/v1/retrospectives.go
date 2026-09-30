@@ -64,3 +64,13 @@ func (h *retrospectivesHandler) GetRetrospectiveReportComposition(ctx context.Co
 func (h *retrospectivesHandler) SetRetrospectiveReportFindingSelection(ctx context.Context, input *oapi.SetRetrospectiveReportFindingSelectionRequest) (*oapi.SetRetrospectiveReportFindingSelectionResponse, error) {
 	return nil, oapi.Error(ctx, "not implemented", rez.ErrNotImplemented)
 }
+
+func (h *retrospectivesHandler) CreateIncidentRetrospective(ctx context.Context, request *oapi.CreateIncidentRetrospectiveRequest) (*oapi.CreateIncidentRetrospectiveResponse, error) {
+	retro, createErr := h.retros.CreateForIncident(ctx, request.Id)
+	if createErr != nil {
+		return nil, oapi.Error(ctx, "failed to start retrospective", createErr)
+	}
+	var response oapi.CreateIncidentRetrospectiveResponse
+	response.Body.Data = oapi.RetrospectiveFromEnt(retro)
+	return &response, nil
+}

@@ -131,7 +131,6 @@ func (s *EventsService) SetAnnotation(ctx context.Context, anno *ent.EventAnnota
 }
 
 func (s *EventsService) createAnnotation(ctx context.Context, anno *ent.EventAnnotation) (*ent.EventAnnotation, error) {
-	var created *ent.EventAnnotation
 	eventId := anno.EventID
 	if eventId == uuid.Nil && anno.Edges.Event != nil {
 		eventQuery := s.db.Client(ctx).NormalizedEvent.Query().
@@ -142,7 +141,7 @@ func (s *EventsService) createAnnotation(ctx context.Context, anno *ent.EventAnn
 		}
 		eventId = existingId
 	}
-	createFn := func(txCtx context.Context, tx *ent.Client) error {
+	createFn := func(txCtx context.Context, tx *ent.Client) (*ent.EventAnnotation, error) {
 		//if eventId == uuid.Nil {
 		//	e := anno.Edges.Event
 		//	if anno.Edges.Event == nil {
@@ -162,15 +161,15 @@ func (s *EventsService) createAnnotation(ctx context.Context, anno *ent.EventAnn
 		//	anno.EventID = createdEvent.ID
 		//}
 
-		createdAnno, annoErr := tx.EventAnnotation.Create().
+		createAnnotation := tx.EventAnnotation.Create().
 			SetEventID(anno.EventID).
 			SetCreatorID(anno.CreatorID).
 			SetMinutesOccupied(anno.MinutesOccupied).
 			SetNotes(anno.Notes).
-			SetTags(anno.Tags).
-			Save(txCtx)
+			SetTags(anno.Tags)
+		createdAnno, annoErr := createAnnotation.Save(txCtx)
 		if annoErr != nil {
-			return fmt.Errorf("create annotation: %w", annoErr)
+			return nil, fmt.Errorf("create annotation: %w", annoErr)
 		}
 
 		//if alertFb := anno.Edges.AlertFeedback; alertFb != nil {
@@ -185,10 +184,10 @@ func (s *EventsService) createAnnotation(ctx context.Context, anno *ent.EventAnn
 		//	}
 		//	createdAnno.Edges.AlertFeedback = createdFb
 		//}
-		created = createdAnno
-		return nil
+		return createdAnno, nil
 	}
-	if txErr := s.db.WithTx(ctx, createFn); txErr != nil {
+	created, txErr := ent.WithTxReturning(ctx, s.db, createFn)
+	if txErr != nil {
 		return nil, fmt.Errorf("creating annotation: %w", txErr)
 	}
 	return created, nil

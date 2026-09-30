@@ -25,19 +25,18 @@ func NewAuthSessionService(db rez.Database, orgs rez.OrganizationService, users 
 }
 
 func (s *AuthSessionService) CreateFromUserAuthResponse(ctx context.Context, ps *rez.UserAuthProviderSession) (*ent.UserAuthSession, error) {
-	var sess *ent.UserAuthSession
-	return sess, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+	return ent.WithTxReturning(ctx, s.db, func(ctx context.Context, tx *ent.Client) (*ent.UserAuthSession, error) {
 		ctx = execution.NewSystemContext(ctx)
 
 		org, isNewOrg, orgErr := s.syncAuthProviderOrg(ctx, tx, &ps.Org)
 		if orgErr != nil {
-			return fmt.Errorf("sync org: %w", orgErr)
+			return nil, fmt.Errorf("sync org: %w", orgErr)
 		}
 		ctx = execution.NewTenantContext(ctx, org.TenantID)
 
 		usr, userErr := s.syncAuthProviderUser(ctx, &ps.User)
 		if userErr != nil {
-			return fmt.Errorf("sync user: %w", userErr)
+			return nil, fmt.Errorf("sync user: %w", userErr)
 		}
 
 		if isNewOrg {
@@ -46,7 +45,7 @@ func (s *AuthSessionService) CreateFromUserAuthResponse(ctx context.Context, ps 
 				SetOrganizationID(org.ID).
 				SetRole(organizationrole.RoleAdmin)
 			if roleErr := createAdminRole.Exec(ctx); roleErr != nil {
-				return fmt.Errorf("create admin role: %w", roleErr)
+				return nil, fmt.Errorf("create admin role: %w", roleErr)
 			}
 		}
 
@@ -56,11 +55,9 @@ func (s *AuthSessionService) CreateFromUserAuthResponse(ctx context.Context, ps 
 			SetExpiresAt(time.Now().Add(time.Hour))
 		created, createErr := create.Save(ctx)
 		if createErr != nil {
-			return fmt.Errorf("create session: %w", createErr)
+			return nil, fmt.Errorf("create session: %w", createErr)
 		}
-		sess = created.Unwrap()
-
-		return nil
+		return created, nil
 	})
 }
 

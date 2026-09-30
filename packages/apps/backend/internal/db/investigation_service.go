@@ -88,15 +88,14 @@ func (s *InvestigationService) CreateInvestigation(ctx context.Context, params r
 	if params.AnalysisID == uuid.Nil || query == "" {
 		return nil, fmt.Errorf("%w: analysis ID and question are required", rez.ErrInvalidInput)
 	}
-	var result *ent.Investigation
-	return result, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+	return ent.WithTxReturning(ctx, s.db, func(ctx context.Context, tx *ent.Client) (*ent.Investigation, error) {
 		inUseQuery := tx.Investigation.Query().
 			Where(inv.SystemAnalysisID(params.AnalysisID))
 		inUse, inUseErr := inUseQuery.Exist(ctx)
 		if inUseErr != nil {
-			return fmt.Errorf("check system analysis ownership: %w", inUseErr)
+			return nil, fmt.Errorf("check system analysis ownership: %w", inUseErr)
 		} else if inUse {
-			return fmt.Errorf("%w: system analysis is already in use", rez.ErrConflict)
+			return nil, fmt.Errorf("%w: system analysis is already in use", rez.ErrConflict)
 		}
 
 		sessionParams := rez.CreateAiAgentSessionParams{
@@ -105,7 +104,7 @@ func (s *InvestigationService) CreateInvestigation(ctx context.Context, params r
 		}
 		session, sessionErr := s.agents.CreateAgentSession(ctx, sessionParams)
 		if sessionErr != nil {
-			return fmt.Errorf("create investigation agent session: %w", sessionErr)
+			return nil, fmt.Errorf("create investigation agent session: %w", sessionErr)
 		}
 
 		createInvestigation := tx.Investigation.Create().
@@ -114,17 +113,16 @@ func (s *InvestigationService) CreateInvestigation(ctx context.Context, params r
 		created, saveErr := createInvestigation.Save(ctx)
 		if saveErr != nil {
 			if _, isConstraint := s.db.IsConstraintError(saveErr); isConstraint {
-				return fmt.Errorf("%w: system analysis is already in use", rez.ErrConflict)
+				return nil, fmt.Errorf("%w: system analysis is already in use", rez.ErrConflict)
 			}
-			return fmt.Errorf("create investigation: %w", saveErr)
+			return nil, fmt.Errorf("create investigation: %w", saveErr)
 		}
 
 		loaded, lookupErr := s.LookupInvestigation(ctx, inv.ID(created.ID))
 		if lookupErr != nil {
-			return fmt.Errorf("load created investigation: %w", lookupErr)
+			return nil, fmt.Errorf("load created investigation: %w", lookupErr)
 		}
-		result = loaded.Unwrap()
-		return nil
+		return loaded, nil
 	})
 }
 
@@ -142,22 +140,21 @@ func (s *InvestigationService) LookupInvestigation(ctx context.Context, predicat
 }
 
 func (s *InvestigationService) ReadInvestigationDetail(ctx context.Context, invId uuid.UUID) (*rez.InvestigationDetail, error) {
-	var detail *rez.InvestigationDetail
-	return detail, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+	return ent.WithTxReturning(ctx, s.db, func(ctx context.Context, tx *ent.Client) (*rez.InvestigationDetail, error) {
 		queryInvestigation := tx.Investigation.Query().
 			Where(inv.ID(invId))
 		curr, getErr := queryInvestigation.Only(ctx)
 		if getErr != nil {
-			return fmt.Errorf("get investigation detail: %w", getErr)
+			return nil, fmt.Errorf("get investigation detail: %w", getErr)
 		}
 
 		session, sessionErr := curr.QueryAgentSession().Only(ctx)
 		if sessionErr != nil {
-			return fmt.Errorf("load investigation session: %w", sessionErr)
+			return nil, fmt.Errorf("load investigation session: %w", sessionErr)
 		}
 		var input rezai.InvestigationAgentSessionInput
 		if decodeErr := json.Unmarshal(session.Input, &input); decodeErr != nil {
-			return fmt.Errorf("decode investigation question: %w", decodeErr)
+			return nil, fmt.Errorf("decode investigation question: %w", decodeErr)
 		}
 
 		queryTurns := session.QueryTurns().
@@ -165,38 +162,38 @@ func (s *InvestigationService) ReadInvestigationDetail(ctx context.Context, invI
 
 		latestTurn, latestErr := queryTurns.Clone().First(ctx)
 		if latestErr != nil && !ent.IsNotFound(latestErr) {
-			return fmt.Errorf("load latest investigation turn: %w", latestErr)
+			return nil, fmt.Errorf("load latest investigation turn: %w", latestErr)
 		}
 
 		queryActiveTurn := queryTurns.Clone().
 			Where(at.StatusIn(at.StatusQueued, at.StatusRunning))
 		activeTurn, activeErr := queryActiveTurn.First(ctx)
 		if activeErr != nil && !ent.IsNotFound(activeErr) {
-			return fmt.Errorf("load active investigation turn: %w", activeErr)
+			return nil, fmt.Errorf("load active investigation turn: %w", activeErr)
 		}
 
 		queryPendingInputs := curr.QueryUserInputs().
 			Where(invui.AgentTurnIDIsNil())
 		hasPendingInputs, pendingInputsErr := queryPendingInputs.Exist(ctx)
 		if pendingInputsErr != nil {
-			return fmt.Errorf("check pending investigation inputs: %w", pendingInputsErr)
+			return nil, fmt.Errorf("check pending investigation inputs: %w", pendingInputsErr)
 		}
 
 		queryPendingRevisions := curr.QueryEvidenceRevisions().
 			Where(inver.AgentTurnIDIsNil())
 		hasPendingRevisions, pendingRevisionsErr := queryPendingRevisions.Exist(ctx)
 		if pendingRevisionsErr != nil {
-			return fmt.Errorf("check pending investigation evidence revisions: %w", pendingRevisionsErr)
+			return nil, fmt.Errorf("check pending investigation evidence revisions: %w", pendingRevisionsErr)
 		}
 
-		detail = &rez.InvestigationDetail{
+		detail := &rez.InvestigationDetail{
 			Investigation:  curr,
 			Query:          input.Query,
 			LatestTurn:     latestTurn,
 			ActiveTurn:     activeTurn,
 			HasPendingWork: hasPendingInputs || hasPendingRevisions,
 		}
-		return nil
+		return detail, nil
 	})
 }
 
@@ -329,14 +326,14 @@ func (s *InvestigationService) SubmitInvestigationUserInput(ctx context.Context,
 		return nil, fmt.Errorf("%w: authenticated user is required", rez.ErrInvalidInput)
 	}
 
-	var result *ent.InvestigationUserInput
-	if txErr := s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+	inputID, txErr := ent.WithTxReturning(ctx, s.db, func(ctx context.Context, tx *ent.Client) (uuid.UUID, error) {
+		var inputID uuid.UUID
 		if _, investigationErr := tx.Investigation.Get(ctx, params.InvestigationID); investigationErr != nil {
-			return fmt.Errorf("load investigation for user input: %w", investigationErr)
+			return uuid.Nil, fmt.Errorf("load investigation for user input: %w", investigationErr)
 		}
 		lockKey := params.InvestigationID.String() + ":" + submissionKey
 		if lockErr := s.db.AcquireTxLocks(ctx, "investigation_user_input_submission", lockKey); lockErr != nil {
-			return fmt.Errorf("lock investigation user input submission: %w", lockErr)
+			return uuid.Nil, fmt.Errorf("lock investigation user input submission: %w", lockErr)
 		}
 
 		existingQuery := tx.InvestigationUserInput.Query().Where(
@@ -346,11 +343,11 @@ func (s *InvestigationService) SubmitInvestigationUserInput(ctx context.Context,
 		existing, queryErr := existingQuery.Only(ctx)
 		if queryErr == nil {
 			if existing.Text != text || existing.UserID != userID {
-				return fmt.Errorf("%w: submission key was already used for different content", rez.ErrConflict)
+				return uuid.Nil, fmt.Errorf("%w: submission key was already used for different content", rez.ErrConflict)
 			}
-			result = existing
+			inputID = existing.ID
 		} else if !ent.IsNotFound(queryErr) {
-			return fmt.Errorf("lookup investigation user input submission: %w", queryErr)
+			return uuid.Nil, fmt.Errorf("lookup investigation user input submission: %w", queryErr)
 		} else {
 			createInput := tx.InvestigationUserInput.Create().
 				SetInvestigationID(params.InvestigationID).
@@ -359,19 +356,20 @@ func (s *InvestigationService) SubmitInvestigationUserInput(ctx context.Context,
 				SetKey(submissionKey)
 			created, saveErr := createInput.Save(ctx)
 			if saveErr != nil {
-				return fmt.Errorf("save investigation user input: %w", saveErr)
+				return uuid.Nil, fmt.Errorf("save investigation user input: %w", saveErr)
 			}
-			result = created.Unwrap()
+			inputID = created.ID
 		}
 
 		if requestErr := s.requestReconcile(ctx, params.InvestigationID); requestErr != nil {
-			return fmt.Errorf("schedule investigation reconciliation: %w", requestErr)
+			return uuid.Nil, fmt.Errorf("schedule investigation reconciliation: %w", requestErr)
 		}
-		return nil
-	}); txErr != nil {
+		return inputID, nil
+	})
+	if txErr != nil {
 		return nil, txErr
 	}
-	return s.readInvestigationUserInput(ctx, params.InvestigationID, result.ID)
+	return s.readInvestigationUserInput(ctx, params.InvestigationID, inputID)
 }
 
 func (s *InvestigationService) readInvestigationUserInput(ctx context.Context, investigationID, inputID uuid.UUID) (*rez.InvestigationUserInput, error) {
@@ -417,14 +415,13 @@ func (s *InvestigationService) RecordInvestigationEvidenceRevision(ctx context.C
 		return nil, fmt.Errorf("%w: investigation ID, explanation and caller key are required", rez.ErrInvalidInput)
 	}
 
-	var result *ent.InvestigationEvidenceRevision
-	return result, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+	return ent.WithTxReturning(ctx, s.db, func(ctx context.Context, tx *ent.Client) (*ent.InvestigationEvidenceRevision, error) {
 		if _, investigationErr := tx.Investigation.Get(ctx, params.InvestigationID); investigationErr != nil {
-			return fmt.Errorf("load investigation for evidence revision: %w", investigationErr)
+			return nil, fmt.Errorf("load investigation for evidence revision: %w", investigationErr)
 		}
 		lockKey := params.InvestigationID.String() + ":" + key
 		if lockErr := s.db.AcquireTxLocks(ctx, "investigation_evidence_follow_up_key", lockKey); lockErr != nil {
-			return fmt.Errorf("lock investigation evidence revision key: %w", lockErr)
+			return nil, fmt.Errorf("lock investigation evidence revision key: %w", lockErr)
 		}
 
 		existingQuery := tx.InvestigationEvidenceRevision.Query().Where(
@@ -434,12 +431,11 @@ func (s *InvestigationService) RecordInvestigationEvidenceRevision(ctx context.C
 		existing, queryErr := existingQuery.Only(ctx)
 		if queryErr == nil {
 			if existing.Explanation != explanation {
-				return fmt.Errorf("%w: evidence revision key was already used for a different explanation", rez.ErrConflict)
+				return nil, fmt.Errorf("%w: evidence revision key was already used for a different explanation", rez.ErrConflict)
 			}
-			result = existing
-			return nil
+			return existing, nil
 		} else if !ent.IsNotFound(queryErr) {
-			return fmt.Errorf("lookup investigation evidence revision: %w", queryErr)
+			return nil, fmt.Errorf("lookup investigation evidence revision: %w", queryErr)
 		}
 		createRevision := tx.InvestigationEvidenceRevision.Create().
 			SetInvestigationID(params.InvestigationID).
@@ -447,14 +443,14 @@ func (s *InvestigationService) RecordInvestigationEvidenceRevision(ctx context.C
 			SetKey(key)
 		created, saveErr := createRevision.Save(ctx)
 		if saveErr != nil {
-			return fmt.Errorf("save investigation evidence revision: %w", saveErr)
+			return nil, fmt.Errorf("save investigation evidence revision: %w", saveErr)
 		}
-		result = created.Unwrap()
+		result := created
 
 		if requestErr := s.requestReconcile(ctx, params.InvestigationID); requestErr != nil {
-			return fmt.Errorf("schedule investigation reconciliation: %w", requestErr)
+			return nil, fmt.Errorf("schedule investigation reconciliation: %w", requestErr)
 		}
-		return nil
+		return result, nil
 	})
 }
 

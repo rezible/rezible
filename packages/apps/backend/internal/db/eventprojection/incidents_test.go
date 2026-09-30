@@ -28,7 +28,8 @@ func (s *ProjectionServiceSuite) incidentService(tdb rez.Database, events *[]rez
 		}).
 		Return(nil).
 		Maybe()
-	service, err := db.NewIncidentService(tdb, messageService, nil)
+	retrospectives, _ := db.NewRetrospectiveService(tdb)
+	service, err := db.NewIncidentService(tdb, messageService, nil, retrospectives)
 	s.Require().NoError(err)
 	return service
 }

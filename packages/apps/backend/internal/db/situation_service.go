@@ -108,13 +108,12 @@ func (s *SituationService) CreateSituation(ctx context.Context, params rez.Creat
 	}
 	incidentIDs := mapset.NewSet(params.IncidentIDs...).ToSlice()
 
-	var result *ent.Situation
-	return result, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+	return ent.WithTxReturning(ctx, s.db, func(ctx context.Context, tx *ent.Client) (*ent.Situation, error) {
 		if validateErr := s.validateSituationSources(ctx, eventIDs, episodeIDs); validateErr != nil {
-			return validateErr
+			return nil, validateErr
 		}
 		if validateErr := s.validateSituationIncidents(ctx, incidentIDs); validateErr != nil {
-			return validateErr
+			return nil, validateErr
 		}
 
 		createSituation := tx.Situation.Create().
@@ -126,7 +125,7 @@ func (s *SituationService) CreateSituation(ctx context.Context, params rez.Creat
 		}
 		created, saveErr := createSituation.Save(ctx)
 		if saveErr != nil {
-			return fmt.Errorf("create situation: %w", saveErr)
+			return nil, fmt.Errorf("create situation: %w", saveErr)
 		}
 
 		createGroups := tx.SituationObservationGroup.MapCreateBulk(groups, func(c *ent.SituationObservationGroupCreate, i int) {
@@ -138,12 +137,12 @@ func (s *SituationService) CreateSituation(ctx context.Context, params rez.Creat
 			c.SetNillableBody(group.Body)
 		})
 		if groupsErr := createGroups.Exec(ctx); groupsErr != nil {
-			return fmt.Errorf("create situation observation groups: %w", groupsErr)
+			return nil, fmt.Errorf("create situation observation groups: %w", groupsErr)
 		}
 
 		if params.StartInvestigation {
 			if _, invErr := s.createInvestigation(ctx, created.ID, eventIDs, episodeIDs); invErr != nil {
-				return fmt.Errorf("create situation investigation: %w", invErr)
+				return nil, fmt.Errorf("create situation investigation: %w", invErr)
 			}
 		}
 
@@ -156,25 +155,23 @@ func (s *SituationService) CreateSituation(ctx context.Context, params rez.Creat
 			WithIncidents()
 		loaded, loadErr := querySituation.Only(ctx)
 		if loadErr != nil {
-			return fmt.Errorf("load created situation: %w", loadErr)
+			return nil, fmt.Errorf("load created situation: %w", loadErr)
 		}
-		result = loaded.Unwrap()
-		return nil
+		return loaded, nil
 	})
 }
 
 func (s *SituationService) RequestSituationInvestigation(ctx context.Context, situationID uuid.UUID) (*ent.SituationInvestigation, error) {
-	var sitInv *ent.SituationInvestigation
-	return sitInv, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+	return ent.WithTxReturning(ctx, s.db, func(ctx context.Context, tx *ent.Client) (*ent.SituationInvestigation, error) {
 		if lockErr := s.db.AcquireTxLocks(ctx, situationLockNamespace, situationID.String()); lockErr != nil {
-			return fmt.Errorf("lock situation: %w", lockErr)
+			return nil, fmt.Errorf("lock situation: %w", lockErr)
 		}
 		current, getErr := s.GetSituation(ctx, situationID)
 		if getErr != nil {
-			return fmt.Errorf("load situation: %w", getErr)
+			return nil, fmt.Errorf("load situation: %w", getErr)
 		}
 		if current.Edges.Investigation != nil {
-			return nil
+			return nil, nil
 		}
 
 		eventIDs := mapset.NewSet[uuid.UUID]()
@@ -190,39 +187,36 @@ func (s *SituationService) RequestSituationInvestigation(ctx context.Context, si
 
 		created, createInvErr := s.createInvestigation(ctx, situationID, eventIDs.ToSlice(), episodeIDs.ToSlice())
 		if createInvErr != nil {
-			return fmt.Errorf("create situation investigation: %w", createInvErr)
+			return nil, fmt.Errorf("create situation investigation: %w", createInvErr)
 		}
-		sitInv = created
-		return nil
+		return created, nil
 	})
 }
 
 func (s *SituationService) createInvestigation(ctx context.Context, situationID uuid.UUID, eventIDs []uuid.UUID, episodeIDs []uuid.UUID) (*ent.SituationInvestigation, error) {
-	var sitInv *ent.SituationInvestigation
-	return sitInv, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+	return ent.WithTxReturning(ctx, s.db, func(ctx context.Context, tx *ent.Client) (*ent.SituationInvestigation, error) {
 		analysis, createAnalysisErr := s.analyses.SetSystemAnalysis(ctx, uuid.Nil, func(*ent.SystemAnalysisMutation) {})
 		if createAnalysisErr != nil {
-			return fmt.Errorf("create situation investigation analysis: %w", createAnalysisErr)
+			return nil, fmt.Errorf("create situation investigation analysis: %w", createAnalysisErr)
 		}
 		if prepareErr := s.prepareOrRefreshSituationAnalysis(ctx, analysis.ID, eventIDs, episodeIDs); prepareErr != nil {
-			return fmt.Errorf("prepare situation investigation analysis: %w", prepareErr)
+			return nil, fmt.Errorf("prepare situation investigation analysis: %w", prepareErr)
 		}
 		inv, createInvErr := s.investigations.CreateInvestigation(ctx, rez.CreateInvestigationParams{
 			AnalysisID: analysis.ID,
 			Query:      defaultSituationInvestigationQuestion,
 		})
 		if createInvErr != nil {
-			return fmt.Errorf("create situation investigation: %w", createInvErr)
+			return nil, fmt.Errorf("create situation investigation: %w", createInvErr)
 		}
 		createLink := tx.SituationInvestigation.Create().
 			SetSituationID(situationID).
 			SetInvestigationID(inv.ID)
 		createdLink, createLinkErr := createLink.Save(ctx)
 		if createLinkErr != nil {
-			return fmt.Errorf("link situation investigation: %w", createLinkErr)
+			return nil, fmt.Errorf("link situation investigation: %w", createLinkErr)
 		}
-		sitInv = createdLink.Unwrap()
-		return nil
+		return createdLink, nil
 	})
 }
 
@@ -235,20 +229,19 @@ func (s *SituationService) AddSituationObservationGroup(ctx context.Context, sit
 		return nil, fmt.Errorf("%w: observation group requires at least one normalized event or alert episode", rez.ErrInvalidInput)
 	}
 
-	var result *ent.SituationObservationGroup
-	return result, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+	return ent.WithTxReturning(ctx, s.db, func(ctx context.Context, tx *ent.Client) (*ent.SituationObservationGroup, error) {
 		if lockErr := s.db.AcquireTxLocks(ctx, situationLockNamespace, situationID.String()); lockErr != nil {
-			return fmt.Errorf("lock situation: %w", lockErr)
+			return nil, fmt.Errorf("lock situation: %w", lockErr)
 		}
 		querySituation := tx.Situation.Query().Where(sit.ID(situationID))
 		if situationExists, queryErr := querySituation.Exist(ctx); queryErr != nil || !situationExists {
 			if ent.IsNotFound(queryErr) {
-				return fmt.Errorf("%w: situation not found", rez.ErrNotFound)
+				return nil, fmt.Errorf("%w: situation not found", rez.ErrNotFound)
 			}
-			return fmt.Errorf("get situation: %w", queryErr)
+			return nil, fmt.Errorf("get situation: %w", queryErr)
 		}
 		if validateErr := s.validateSituationSources(ctx, eventIDs, episodeIDs); validateErr != nil {
-			return validateErr
+			return nil, validateErr
 		}
 
 		groupsQuery := tx.SituationObservationGroup.Query().
@@ -257,7 +250,7 @@ func (s *SituationService) AddSituationObservationGroup(ctx context.Context, sit
 			WithAlertEpisodes()
 		existingGroups, queryGroupsErr := groupsQuery.All(ctx)
 		if queryGroupsErr != nil {
-			return fmt.Errorf("load existing situation evidence links: %w", queryGroupsErr)
+			return nil, fmt.Errorf("load existing situation evidence links: %w", queryGroupsErr)
 		}
 
 		linkedEvents := mapset.NewSet[uuid.UUID]()
@@ -287,7 +280,7 @@ func (s *SituationService) AddSituationObservationGroup(ctx context.Context, sit
 			}
 		}
 		if len(newEventIDs)+len(newEpisodeIDs) == 0 {
-			return nil
+			return nil, nil
 		}
 
 		group := groups[0]
@@ -299,20 +292,20 @@ func (s *SituationService) AddSituationObservationGroup(ctx context.Context, sit
 			SetNillableBody(group.Body)
 		created, saveErr := createGroup.Save(ctx)
 		if saveErr != nil {
-			return fmt.Errorf("create situation observation group: %w", saveErr)
+			return nil, fmt.Errorf("create situation observation group: %w", saveErr)
 		}
-		result = created.Unwrap()
+		result := created
 
 		queryInvLink := tx.SituationInvestigation.Query().
 			Where(siti.SituationID(situationID)).
 			WithInvestigation()
 		investigationLink, queryLinkErr := queryInvLink.Only(ctx)
 		if queryLinkErr != nil {
-			return fmt.Errorf("load situation investigation: %w", queryLinkErr)
+			return nil, fmt.Errorf("load situation investigation: %w", queryLinkErr)
 		}
 		analysisID := investigationLink.Edges.Investigation.SystemAnalysisID
 		if prepareErr := s.prepareOrRefreshSituationAnalysis(ctx, analysisID, newEventIDs, newEpisodeIDs); prepareErr != nil {
-			return fmt.Errorf("refresh situation investigation analysis: %w", prepareErr)
+			return nil, fmt.Errorf("refresh situation investigation analysis: %w", prepareErr)
 		}
 		for _, episodeID := range newEpisodeIDs {
 			revParams := rez.RecordInvestigationEvidenceRevisionParams{
@@ -321,10 +314,10 @@ func (s *SituationService) AddSituationObservationGroup(ctx context.Context, sit
 				Explanation:     "Alert episode " + episodeID.String() + " was added to this situation.",
 			}
 			if _, revisionErr := s.investigations.RecordInvestigationEvidenceRevision(ctx, revParams); revisionErr != nil {
-				return fmt.Errorf("record investigation evidence revision for alert episode: %w", revisionErr)
+				return nil, fmt.Errorf("record investigation evidence revision for alert episode: %w", revisionErr)
 			}
 		}
-		return nil
+		return result, nil
 	})
 }
 
@@ -526,11 +519,10 @@ func (s *SituationService) AddSituationHazardAssessment(ctx context.Context, par
 		assessedAt = time.Now().UTC()
 	}
 
-	var assessment *ent.SituationHazardAssessment
-	return assessment, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+	return ent.WithTxReturning(ctx, s.db, func(ctx context.Context, tx *ent.Client) (*ent.SituationHazardAssessment, error) {
 		pairKey := params.SituationID.String() + "\x1f" + params.SystemHazardID.String()
 		if lockErr := s.db.AcquireTxLocks(ctx, situationHazardAssessmentLockNamespace, pairKey); lockErr != nil {
-			return fmt.Errorf("lock situation hazard pair: %w", lockErr)
+			return nil, fmt.Errorf("lock situation hazard pair: %w", lockErr)
 		}
 		latestQuery := tx.SituationHazardAssessment.Query().
 			Where(sha.SituationID(params.SituationID), sha.SystemHazardID(params.SystemHazardID)).
@@ -540,7 +532,7 @@ func (s *SituationService) AddSituationHazardAssessment(ctx context.Context, par
 		if latestErr == nil {
 			nextRevision = latest.Revision + 1
 		} else if !ent.IsNotFound(latestErr) {
-			return fmt.Errorf("get latest situation hazard assessment: %w", latestErr)
+			return nil, fmt.Errorf("get latest situation hazard assessment: %w", latestErr)
 		}
 		createAssessment := tx.SituationHazardAssessment.Create().
 			SetSituationID(params.SituationID).
@@ -553,9 +545,8 @@ func (s *SituationService) AddSituationHazardAssessment(ctx context.Context, par
 			SetNillableAgentTurnID(params.AgentTurnID)
 		created, saveErr := createAssessment.Save(ctx)
 		if saveErr != nil {
-			return fmt.Errorf("add situation hazard assessment: %w", saveErr)
+			return nil, fmt.Errorf("add situation hazard assessment: %w", saveErr)
 		}
-		assessment = created
-		return nil
+		return created, nil
 	})
 }

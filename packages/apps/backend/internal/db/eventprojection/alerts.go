@@ -84,13 +84,13 @@ func (s *ProjectionService) handleAlertInstanceEvent(ctx context.Context, e *pro
 		supportingEvidence = append(supportingEvidence, entityEvidence, relationshipEvidence)
 	}
 
-	var projected []rez.ProjectedEntityRef
-	return projected, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+	return ent.WithTxReturning(ctx, s.db, func(ctx context.Context, tx *ent.Client) ([]rez.ProjectedEntityRef, error) {
+		var projected []rez.ProjectedEntityRef
 		subj, ingestErr := s.ingestSubjectEvidence(ctx, event, alertEntityEvidence, supportingEvidence...)
 		if ingestErr != nil {
-			return fmt.Errorf("alert knowledge evidence: %w", ingestErr)
+			return nil, fmt.Errorf("alert knowledge evidence: %w", ingestErr)
 		} else if subj.EntityID == nil {
-			return fmt.Errorf("nil subject entity")
+			return nil, fmt.Errorf("nil subject entity")
 		}
 
 		upsertDefinition := tx.AlertDefinition.Create().
@@ -102,11 +102,11 @@ func (s *ProjectionService) handleAlertInstanceEvent(ctx context.Context, e *pro
 			UpdateNewValues()
 		definitionId, alertErr := upsertDefinition.ID(ctx)
 		if alertErr != nil {
-			return fmt.Errorf("upsert alert: %w", alertErr)
+			return nil, fmt.Errorf("upsert alert: %w", alertErr)
 		}
 
 		if _, eventErr := s.alerts.RecordAlertDefinitionInstance(ctx, definitionId, event); eventErr != nil {
-			return fmt.Errorf("record alert definition instance: %w", eventErr)
+			return nil, fmt.Errorf("record alert definition instance: %w", eventErr)
 		}
 
 		projected = append(projected, rez.ProjectedEntityRef{
@@ -114,6 +114,6 @@ func (s *ProjectionService) handleAlertInstanceEvent(ctx context.Context, e *pro
 			Id:   definitionId,
 		})
 
-		return nil
+		return projected, nil
 	})
 }

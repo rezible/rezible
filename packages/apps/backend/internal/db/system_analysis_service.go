@@ -68,8 +68,7 @@ func (s *SystemAnalysisService) HasSystemAnalysisEntity(ctx context.Context, ana
 }
 
 func (s *SystemAnalysisService) SetSystemAnalysis(ctx context.Context, id uuid.UUID, setFn func(*ent.SystemAnalysisMutation)) (*ent.SystemAnalysis, error) {
-	var result *ent.SystemAnalysis
-	return result, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+	return ent.WithTxReturning(ctx, s.db, func(ctx context.Context, tx *ent.Client) (*ent.SystemAnalysis, error) {
 		var mutator ent.EntityMutator[*ent.SystemAnalysis, *ent.SystemAnalysisMutation]
 		if id == uuid.Nil {
 			mutator = tx.SystemAnalysis.Create()
@@ -87,15 +86,14 @@ func (s *SystemAnalysisService) SetSystemAnalysis(ctx context.Context, id uuid.U
 			entityIDs.Add(entityID)
 		}
 		if validateErr := s.validateKnowledgeEntityTargets(ctx, tx, entityIDs); validateErr != nil {
-			return validateErr
+			return nil, validateErr
 		}
 
 		saved, saveErr := mutator.Save(ctx)
 		if saveErr != nil {
-			return s.checkSaveErr(saveErr, "system analysis")
+			return nil, s.checkSaveErr(saveErr, "system analysis")
 		}
-		result = saved
-		return nil
+		return saved, nil
 	})
 }
 
@@ -240,8 +238,7 @@ func (s *SystemAnalysisService) ListSystemAnalysisEntities(ctx context.Context, 
 }
 
 func (s *SystemAnalysisService) SetSystemAnalysisEntity(ctx context.Context, id uuid.UUID, setFn func(*ent.SystemAnalysisEntityMutation)) (*ent.SystemAnalysisEntity, error) {
-	var result *ent.SystemAnalysisEntity
-	return result, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+	return ent.WithTxReturning(ctx, s.db, func(ctx context.Context, tx *ent.Client) (*ent.SystemAnalysisEntity, error) {
 		var mutator ent.EntityMutator[*ent.SystemAnalysisEntity, *ent.SystemAnalysisEntityMutation]
 		if id == uuid.Nil {
 			mutator = tx.SystemAnalysisEntity.Create()
@@ -253,25 +250,24 @@ func (s *SystemAnalysisService) SetSystemAnalysisEntity(ctx context.Context, id 
 		setFn(mut)
 
 		if mutErr := s.validateMutationFields(mut, saent.FieldAnalysisID, saent.FieldKnowledgeEntityID); mutErr != nil {
-			return mutErr
+			return nil, mutErr
 		}
 		if id == uuid.Nil {
 			analysisID, _ := mut.AnalysisID()
 			if validateErr := s.validateSystemAnalysisTarget(ctx, tx, analysisID); validateErr != nil {
-				return validateErr
+				return nil, validateErr
 			}
 			entityID, _ := mut.KnowledgeEntityID()
 			if validateErr := s.validateKnowledgeEntityTargets(ctx, tx, mapset.NewSet(entityID)); validateErr != nil {
-				return validateErr
+				return nil, validateErr
 			}
 		}
 
 		saved, saveErr := mutator.Save(ctx)
 		if saveErr != nil {
-			return s.checkSaveErr(saveErr, "entity")
+			return nil, s.checkSaveErr(saveErr, "entity")
 		}
-		result = saved
-		return nil
+		return saved, nil
 	})
 }
 
@@ -323,9 +319,8 @@ func (s *SystemAnalysisService) ListSystemAnalysisRelationships(ctx context.Cont
 }
 
 func (s *SystemAnalysisService) SetSystemAnalysisRelationship(ctx context.Context, id uuid.UUID, setFn func(*ent.SystemAnalysisRelationshipMutation)) (*ent.SystemAnalysisRelationship, error) {
-	var result *ent.SystemAnalysisRelationship
 	isCreate := id == uuid.Nil
-	return result, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+	return ent.WithTxReturning(ctx, s.db, func(ctx context.Context, tx *ent.Client) (*ent.SystemAnalysisRelationship, error) {
 		var mutator ent.EntityMutator[*ent.SystemAnalysisRelationship, *ent.SystemAnalysisRelationshipMutation]
 		if isCreate {
 			mutator = tx.SystemAnalysisRelationship.Create()
@@ -337,36 +332,35 @@ func (s *SystemAnalysisService) SetSystemAnalysisRelationship(ctx context.Contex
 		setFn(mut)
 
 		if mutErr := s.validateMutationFields(mut, sarel.FieldAnalysisID, sarel.FieldKnowledgeRelationshipID); mutErr != nil {
-			return mutErr
+			return nil, mutErr
 		}
 		var relationshipEntityIDs []uuid.UUID
 		if isCreate {
 			analysisID, _ := mut.AnalysisID()
 			if validateErr := s.validateSystemAnalysisTarget(ctx, tx, analysisID); validateErr != nil {
-				return validateErr
+				return nil, validateErr
 			}
 			relationshipID, _ := mut.KnowledgeRelationshipID()
 			var resolveErr error
 			relationshipEntityIDs, resolveErr = s.resolveRelationshipEntityIDs(ctx, tx, mapset.NewSet(relationshipID))
 			if resolveErr != nil {
-				return fmt.Errorf("resolve relationship entity IDs: %w", resolveErr)
+				return nil, fmt.Errorf("resolve relationship entity IDs: %w", resolveErr)
 			}
 		}
 
 		saved, saveErr := mutator.Save(ctx)
 		if saveErr != nil {
-			return s.checkSaveErr(saveErr, "relationship")
+			return nil, s.checkSaveErr(saveErr, "relationship")
 		}
 
 		if isCreate {
 			includeRelEntsErr := s.includeAnalysisEntities(ctx, tx, saved.AnalysisID, mapset.NewSet(relationshipEntityIDs...))
 			if includeRelEntsErr != nil {
-				return fmt.Errorf("include relationship entities: %w", includeRelEntsErr)
+				return nil, fmt.Errorf("include relationship entities: %w", includeRelEntsErr)
 			}
 		}
 
-		result = saved.Unwrap()
-		return nil
+		return saved, nil
 	})
 }
 
@@ -403,21 +397,20 @@ var (
 
 func (s *SystemAnalysisService) SetSystemAnalysisEntry(ctx context.Context, id uuid.UUID, params rez.SetSystemAnalysisEntryParams) (*ent.SystemAnalysisEntry, error) {
 	isCreate := id == uuid.Nil
-	var result *ent.SystemAnalysisEntry
-	return result, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+	return ent.WithTxReturning(ctx, s.db, func(ctx context.Context, tx *ent.Client) (*ent.SystemAnalysisEntry, error) {
 		var mutator ent.EntityMutator[*ent.SystemAnalysisEntry, *ent.SystemAnalysisEntryMutation]
 		if isCreate {
 			mutator = tx.SystemAnalysisEntry.Create()
 		} else {
 			current, queryErr := tx.SystemAnalysisEntry.Get(ctx, id)
 			if queryErr != nil {
-				return queryErr
+				return nil, queryErr
 			}
 			if params.AnalysisID != uuid.Nil && current.AnalysisID != params.AnalysisID {
-				return fmt.Errorf("%w: analysis_id cannot be changed", rez.ErrInvalidInput)
+				return nil, fmt.Errorf("%w: analysis_id cannot be changed", rez.ErrInvalidInput)
 			}
 			if params.Reference != nil && (current.Reference == nil || *current.Reference != *params.Reference) {
-				return fmt.Errorf("%w: reference cannot be changed", rez.ErrInvalidInput)
+				return nil, fmt.Errorf("%w: reference cannot be changed", rez.ErrInvalidInput)
 			}
 			mutator = tx.SystemAnalysisEntry.UpdateOneID(id)
 		}
@@ -437,7 +430,7 @@ func (s *SystemAnalysisService) SetSystemAnalysisEntry(ctx context.Context, id u
 		}
 
 		if mutErr := s.validateMutationFields(mut, sae.FieldAnalysisID); mutErr != nil {
-			return mutErr
+			return nil, mutErr
 		}
 
 		occurredAt, hasOccurredAt := mut.OccurredAt()
@@ -445,14 +438,14 @@ func (s *SystemAnalysisService) SetSystemAnalysisEntry(ctx context.Context, id u
 		if isCreate && hasOccurredAt {
 			analysisID, _ := mut.AnalysisID()
 			if lockErr := s.db.AcquireTxLocks(ctx, systemAnalysisWriteLock, analysisID.String()); lockErr != nil {
-				return fmt.Errorf("lock system analysis: %w", lockErr)
+				return nil, fmt.Errorf("lock system analysis: %w", lockErr)
 			}
 
 			querySameTime := tx.SystemAnalysisEntry.Query().
 				Where(sae.AnalysisID(analysisID), sae.OccurredAt(occurredAt))
 			count, countErr := querySameTime.Count(ctx)
 			if countErr != nil && !ent.IsNotFound(countErr) {
-				return fmt.Errorf("query same entry times: %w", countErr)
+				return nil, fmt.Errorf("query same entry times: %w", countErr)
 			}
 			sequence = count + 1
 		}
@@ -462,7 +455,7 @@ func (s *SystemAnalysisService) SetSystemAnalysisEntry(ctx context.Context, id u
 
 		saved, saveErr := mutator.Save(ctx)
 		if saveErr != nil {
-			return s.checkSaveErr(saveErr, "analysis entry")
+			return nil, s.checkSaveErr(saveErr, "analysis entry")
 		}
 
 		if len(params.SetSubjects) > 0 {
@@ -481,19 +474,18 @@ func (s *SystemAnalysisService) SetSystemAnalysisEntry(ctx context.Context, id u
 				OnConflict().
 				DoNothing()
 			if subjectMutErr != nil {
-				return subjectMutErr
+				return nil, subjectMutErr
 			}
 			if saveSubjectsErr := upsertSubjects.Exec(ctx); saveSubjectsErr != nil {
-				return s.checkSaveErr(saveSubjectsErr, "subjects")
+				return nil, s.checkSaveErr(saveSubjectsErr, "subjects")
 			}
 		}
 
 		entry, queryErr := s.LookupSystemAnalysisEntry(ctx, sae.ID(saved.ID))
 		if queryErr != nil {
-			return queryErr
+			return nil, queryErr
 		}
-		result = entry.Unwrap()
-		return nil
+		return entry, nil
 	})
 }
 
@@ -553,8 +545,7 @@ func (s *SystemAnalysisService) ListSystemAnalysisEntrySubjects(ctx context.Cont
 
 func (s *SystemAnalysisService) SetSystemAnalysisEntrySubject(ctx context.Context, id uuid.UUID, setFn func(*ent.SystemAnalysisEntrySubjectMutation)) (*ent.SystemAnalysisEntrySubject, error) {
 	isCreate := id == uuid.Nil
-	var result *ent.SystemAnalysisEntrySubject
-	return result, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+	return ent.WithTxReturning(ctx, s.db, func(ctx context.Context, tx *ent.Client) (*ent.SystemAnalysisEntrySubject, error) {
 		var mutator ent.EntityMutator[*ent.SystemAnalysisEntrySubject, *ent.SystemAnalysisEntrySubjectMutation]
 		if isCreate {
 			mutator = tx.SystemAnalysisEntrySubject.Create()
@@ -566,15 +557,14 @@ func (s *SystemAnalysisService) SetSystemAnalysisEntrySubject(ctx context.Contex
 		setFn(mut)
 
 		if validErr := s.validateEntrySubjectMutation(mut); validErr != nil {
-			return validErr
+			return nil, validErr
 		}
 
 		saved, saveErr := mutator.Save(ctx)
 		if saveErr != nil {
-			return s.checkSaveErr(saveErr, "entry subject")
+			return nil, s.checkSaveErr(saveErr, "entry subject")
 		}
-		result = saved.Unwrap()
-		return nil
+		return saved, nil
 	})
 }
 

@@ -81,23 +81,21 @@ func (s *KnowledgeGraphIngestionService) ResolveInternalSubject(ctx context.Cont
 		return nil, fmt.Errorf("invalid subject")
 	}
 
-	var alias *ent.KnowledgeSubjectAlias
-	return alias, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+	return ent.WithTxReturning(ctx, s.db, func(ctx context.Context, tx *ent.Client) (*ent.KnowledgeSubjectAlias, error) {
 		if lockErr := s.db.AcquireTxLocks(ctx, knowledgeEntityIdentityLockNamespace, ik.keys...); lockErr != nil {
-			return fmt.Errorf("lock knowledge entity identities: %w", lockErr)
+			return nil, fmt.Errorf("lock knowledge entity identities: %w", lockErr)
 		}
 
 		resolvedAlias, resolveErr := s.resolveSubjectAliasFromRef(ctx, ref, true)
 		if resolveErr != nil {
-			return fmt.Errorf("resolve alias: %w", resolveErr)
+			return nil, fmt.Errorf("resolve alias: %w", resolveErr)
 		}
 
 		subjAlias, aliasErr := tx.KnowledgeSubjectAlias.Get(ctx, resolvedAlias.aliasId)
 		if aliasErr != nil {
-			return fmt.Errorf("get knowledge subject alias: %w", aliasErr)
+			return nil, fmt.Errorf("get knowledge subject alias: %w", aliasErr)
 		}
-		alias = subjAlias.Unwrap()
-		return nil
+		return subjAlias, nil
 	})
 }
 

@@ -31,8 +31,7 @@ func (s *UserService) Get(ctx context.Context, p predicate.User) (*ent.User, err
 }
 
 func (s *UserService) Set(ctx context.Context, id uuid.UUID, setFn func(*ent.UserMutation)) (*ent.User, error) {
-	var res *ent.User
-	return res, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+	return ent.WithTxReturning(ctx, s.db, func(ctx context.Context, tx *ent.Client) (*ent.User, error) {
 		var mutator ent.EntityMutator[*ent.User, *ent.UserMutation]
 
 		if id == uuid.Nil {
@@ -45,10 +44,9 @@ func (s *UserService) Set(ctx context.Context, id uuid.UUID, setFn func(*ent.Use
 
 		saved, saveErr := mutator.Save(ctx)
 		if saveErr != nil {
-			return fmt.Errorf("save: %w", saveErr)
+			return nil, fmt.Errorf("save: %w", saveErr)
 		}
-		res = saved.Unwrap()
-		return nil
+		return saved, nil
 	})
 }
 

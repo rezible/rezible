@@ -44,18 +44,18 @@ func (s *ProjectionService) handleUserEvent(ctx context.Context, e *projections.
 		Subject: rez.KnowledgeSubjectRef{Entity: &userEntityRef},
 	}
 
-	var projected []rez.ProjectedEntityRef
-	return projected, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+	return ent.WithTxReturning(ctx, s.db, func(ctx context.Context, tx *ent.Client) ([]rez.ProjectedEntityRef, error) {
+		var projected []rez.ProjectedEntityRef
 		subj, ingestErr := s.ingestSubjectEvidence(ctx, event, userObservedEvidence)
 		if ingestErr != nil {
-			return fmt.Errorf("ingest knowledge evidence: %w", ingestErr)
+			return nil, fmt.Errorf("ingest knowledge evidence: %w", ingestErr)
 		} else if subj.EntityID == nil {
-			return fmt.Errorf("nil subject entity")
+			return nil, fmt.Errorf("nil subject entity")
 		}
 
 		userId, setUserErr := s.setUserFromProjection(ctx, *subj.EntityID, attributes)
 		if setUserErr != nil {
-			return fmt.Errorf("create user from projection: %w", setUserErr)
+			return nil, fmt.Errorf("create user from projection: %w", setUserErr)
 		}
 
 		projected = append(projected, rez.ProjectedEntityRef{
@@ -63,7 +63,7 @@ func (s *ProjectionService) handleUserEvent(ctx context.Context, e *projections.
 			Id:   userId,
 		})
 
-		return nil
+		return projected, nil
 	})
 }
 

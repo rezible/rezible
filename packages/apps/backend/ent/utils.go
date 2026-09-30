@@ -50,6 +50,33 @@ func (p ListParams) GetQueryContext(parent context.Context) context.Context {
 
 type TxOption func(*TxOptions)
 
+type transactionRunner interface {
+	WithTx(context.Context, func(context.Context, *Client) error, ...TxOption) error
+}
+
+// WithTxReturning runs fn using db.WithTx and returns its value only when
+// WithTx succeeds. On error it returns the zero value of T.
+// It preserves entity transaction bindings; it does not unwrap entities.
+// When joining an existing transaction, success does not commit that transaction.
+func WithTxReturning[T any](
+	ctx context.Context,
+	db transactionRunner,
+	fn func(context.Context, *Client) (T, error),
+	opts ...TxOption,
+) (T, error) {
+	var result T
+	txFn := func(txCtx context.Context, tx *Client) error {
+		var callbackErr error
+		result, callbackErr = fn(txCtx, tx)
+		return callbackErr
+	}
+	if txErr := db.WithTx(ctx, txFn, opts...); txErr != nil {
+		var zero T
+		return zero, txErr
+	}
+	return result, nil
+}
+
 type TxOptions struct {
 	OnCommit   []CommitHook
 	OnRollback []RollbackHook

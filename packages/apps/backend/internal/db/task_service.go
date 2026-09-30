@@ -50,8 +50,7 @@ func (s *TaskService) GetTask(ctx context.Context, id uuid.UUID) (*ent.Task, err
 }
 
 func (s *TaskService) SetTask(ctx context.Context, id uuid.UUID, params rez.SetTaskParams) (*ent.Task, error) {
-	var updated *ent.Task
-	return updated, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+	return ent.WithTxReturning(ctx, s.db, func(ctx context.Context, tx *ent.Client) (*ent.Task, error) {
 		var mut ent.EntityMutator[*ent.Task, *ent.TaskMutation]
 		if id == uuid.Nil {
 			mut = tx.Task.Create()
@@ -79,11 +78,9 @@ func (s *TaskService) SetTask(ctx context.Context, id uuid.UUID, params rez.SetT
 
 		saved, saveErr := mut.Save(ctx)
 		if saveErr != nil {
-			return fmt.Errorf("update task: %w", saveErr)
+			return nil, fmt.Errorf("update task: %w", saveErr)
 		}
-		updated = saved
-
-		return nil
+		return saved, nil
 	})
 }
 

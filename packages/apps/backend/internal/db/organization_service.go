@@ -31,8 +31,7 @@ func (s *OrganizationService) Get(ctx context.Context, p predicate.Organization)
 }
 
 func (s *OrganizationService) Set(ctx context.Context, id uuid.UUID, setFn func(*ent.OrganizationMutation)) (*ent.Organization, error) {
-	var res *ent.Organization
-	return res, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+	return ent.WithTxReturning(ctx, s.db, func(ctx context.Context, tx *ent.Client) (*ent.Organization, error) {
 		var mutator ent.EntityMutator[*ent.Organization, *ent.OrganizationMutation]
 		if id == uuid.Nil {
 			mutator = tx.Organization.Create()
@@ -44,10 +43,9 @@ func (s *OrganizationService) Set(ctx context.Context, id uuid.UUID, setFn func(
 
 		saved, saveErr := mutator.Save(ctx)
 		if saveErr != nil {
-			return fmt.Errorf("save: %w", saveErr)
+			return nil, fmt.Errorf("save: %w", saveErr)
 		}
-		res = saved.Unwrap()
-		return nil
+		return saved, nil
 	})
 }
 
@@ -67,21 +65,20 @@ func (s *OrganizationService) CompleteOrgSetup(ctx context.Context, orgId uuid.U
 		}
 	}
 
-	var org *ent.Organization
-	return org, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+	return ent.WithTxReturning(ctx, s.db, func(ctx context.Context, tx *ent.Client) (*ent.Organization, error) {
 		if lockErr := s.db.AcquireTxLocks(ctx, "organization_setup", orgId.String()); lockErr != nil {
-			return fmt.Errorf("lock organization setup: %w", lockErr)
+			return nil, fmt.Errorf("lock organization setup: %w", lockErr)
 		}
 
 		currOrg, queryOrgErr := s.Get(ctx, organization.ID(orgId))
 		if queryOrgErr != nil {
-			return fmt.Errorf("query org: %w", queryOrgErr)
+			return nil, fmt.Errorf("query org: %w", queryOrgErr)
 		}
 
 		var prefsMut ent.EntityMutator[*ent.OrganizationPreferences, *ent.OrganizationPreferencesMutation]
 		if currPrefs := currOrg.Edges.Preferences; currPrefs != nil {
 			if !currPrefs.InitialSetupAt.IsZero() {
-				return fmt.Errorf("%w: organization setup already completed", rez.ErrConflict)
+				return nil, fmt.Errorf("%w: organization setup already completed", rez.ErrConflict)
 			}
 
 			prefsMut = currPrefs.Update()
@@ -97,32 +94,30 @@ func (s *OrganizationService) CompleteOrgSetup(ctx context.Context, orgId uuid.U
 			pm.SetTimezone(timezone)
 		}
 		if savePrefsErr := prefsMut.Exec(ctx); savePrefsErr != nil {
-			return fmt.Errorf("update preferences: %w", savePrefsErr)
+			return nil, fmt.Errorf("update preferences: %w", savePrefsErr)
 		}
 
 		updateOrg := currOrg.Update().
 			SetName(name)
 		if updateOrgErr := updateOrg.Exec(ctx); updateOrgErr != nil {
-			return fmt.Errorf("update org: %w", updateOrgErr)
+			return nil, fmt.Errorf("update org: %w", updateOrgErr)
 		}
 
 		updatedOrg, queryUpdatedOrgErr := s.Get(ctx, organization.ID(orgId))
 		if queryUpdatedOrgErr != nil {
-			return fmt.Errorf("get org: %w", queryUpdatedOrgErr)
+			return nil, fmt.Errorf("get org: %w", queryUpdatedOrgErr)
 		}
-		org = updatedOrg.Unwrap()
-		return nil
+		return updatedOrg, nil
 	})
 }
 
 func (s *OrganizationService) SetPreferences(ctx context.Context, orgId uuid.UUID, setFn func(*ent.OrganizationPreferencesMutation)) (*ent.OrganizationPreferences, error) {
-	var prefs *ent.OrganizationPreferences
-	return prefs, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+	return ent.WithTxReturning(ctx, s.db, func(ctx context.Context, tx *ent.Client) (*ent.OrganizationPreferences, error) {
 		queryExisting := tx.OrganizationPreferences.Query().
 			Where(organizationpreferences.OrganizationID(orgId))
 		curr, queryErr := queryExisting.Only(ctx)
 		if queryErr != nil && !ent.IsNotFound(queryErr) {
-			return queryErr
+			return nil, queryErr
 		}
 
 		var mutator ent.EntityMutator[*ent.OrganizationPreferences, *ent.OrganizationPreferencesMutation]
@@ -135,16 +130,15 @@ func (s *OrganizationService) SetPreferences(ctx context.Context, orgId uuid.UUI
 		m := mutator.Mutation()
 		setFn(m)
 		if requiredReviewerCount, changed := m.RequiredReviewerCount(); changed && requiredReviewerCount < 0 {
-			return fmt.Errorf("%w: required reviewer count cannot be negative", rez.ErrInvalidInput)
+			return nil, fmt.Errorf("%w: required reviewer count cannot be negative", rez.ErrInvalidInput)
 		}
 
 		updated, saveErr := mutator.Save(ctx)
 		if saveErr != nil {
-			return fmt.Errorf("save: %w", saveErr)
+			return nil, fmt.Errorf("save: %w", saveErr)
 		}
 
-		prefs = updated
-		return nil
+		return updated, nil
 	})
 }
 

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 
+	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 
 	rez "github.com/rezible/rezible"
@@ -15,19 +16,11 @@ import (
 )
 
 type RetrospectiveService struct {
-	db        rez.Database
-	incidents rez.IncidentService
+	db rez.Database
 }
 
-func NewRetrospectiveService(
-	db rez.Database,
-	incidents rez.IncidentService,
-) (*RetrospectiveService, error) {
-	svc := &RetrospectiveService{
-		db:        db,
-		incidents: incidents,
-	}
-	return svc, nil
+func NewRetrospectiveService(db rez.Database) (*RetrospectiveService, error) {
+	return &RetrospectiveService{db: db}, nil
 }
 
 func (s *RetrospectiveService) Get(ctx context.Context, p predicate.Retrospective) (*ent.Retrospective, error) {
@@ -38,28 +31,27 @@ func (s *RetrospectiveService) Get(ctx context.Context, p predicate.Retrospectiv
 }
 
 func (s *RetrospectiveService) Set(ctx context.Context, id uuid.UUID, setFn func(*ent.RetrospectiveMutation)) (*ent.Retrospective, error) {
-	var updated *ent.Retrospective
-	return updated, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+	return ent.WithTxReturning(ctx, s.db, func(ctx context.Context, tx *ent.Client) (*ent.Retrospective, error) {
 		if lockErr := s.db.AcquireTxLocks(ctx, "retrospective_state", id.String()); lockErr != nil {
-			return fmt.Errorf("lock retrospective lifecycle state: %w", lockErr)
+			return nil, fmt.Errorf("lock retrospective lifecycle state: %w", lockErr)
 		}
 		current, queryErr := tx.Retrospective.Get(ctx, id)
 		if queryErr != nil {
-			return queryErr
+			return nil, queryErr
 		}
 		update := tx.Retrospective.UpdateOneID(id)
 		setFn(update.Mutation())
 		updatedValue, updateErr := update.Save(ctx)
 		if updateErr != nil {
-			return updateErr
+			return nil, updateErr
 		}
-		updated = updatedValue
+		updated := updatedValue
 		if current.State == retrospective.StateInReview && updated.State == retrospective.StateClosed {
 			if compErr := s.onRetrospectiveCompleted(ctx, updated); compErr != nil {
-				return fmt.Errorf("on completed: %w", compErr)
+				return nil, fmt.Errorf("on completed: %w", compErr)
 			}
 		}
-		return nil
+		return updated, nil
 	})
 }
 
@@ -75,27 +67,37 @@ func (s *RetrospectiveService) onRetrospectiveCompleted(ctx context.Context, ret
 }
 
 func (s *RetrospectiveService) CreateForIncident(ctx context.Context, incidentID uuid.UUID) (*ent.Retrospective, error) {
-	inc, getErr := s.incidents.Get(ctx, incident.ID(incidentID))
-	if getErr != nil {
-		return nil, fmt.Errorf("get incident: %w", getErr)
-	}
-	return s.createForIncident(ctx, inc)
-}
+	return ent.WithTxReturning(ctx, s.db, func(txCtx context.Context, tx *ent.Client) (*ent.Retrospective, error) {
+		// Coordinate automatic and manual creation, including concurrent status changes.
+		queryIncident := tx.Incident.Query().Where(incident.ID(incidentID)).
+			Modify(func(selector *sql.Selector) { selector.ForUpdate() })
+		inc, incidentErr := queryIncident.Only(txCtx)
+		if incidentErr != nil {
+			return nil, fmt.Errorf("get incident: %w", incidentErr)
+		}
+		queryExisting := tx.Retrospective.Query().Where(retrospective.IncidentID(incidentID))
+		existing, queryErr := queryExisting.Only(txCtx)
+		if queryErr == nil {
+			return existing, nil
+		}
+		if !ent.IsNotFound(queryErr) {
+			return nil, fmt.Errorf("get incident retrospective: %w", queryErr)
+		}
+		if inc.ResponseState != incident.ResponseStateResolved {
+			return nil, fmt.Errorf("%w: incident must be resolved before starting a retrospective", rez.ErrConflict)
+		}
 
-func (s *RetrospectiveService) createForIncident(ctx context.Context, inc *ent.Incident) (*ent.Retrospective, error) {
-	var retro *ent.Retrospective
-	return retro, s.db.WithTx(ctx, func(txCtx context.Context, tx *ent.Client) error {
 		createDoc := tx.Document.Create().
 			SetContent([]byte("")).
 			SetAccessRestricted(false)
 		createdDoc, createDocErr := createDoc.Save(txCtx)
 		if createDocErr != nil {
-			return fmt.Errorf("create doc: %w", createDocErr)
+			return nil, fmt.Errorf("create doc: %w", createDocErr)
 		}
 
 		analysis, createAnalysisErr := tx.SystemAnalysis.Create().Save(txCtx)
 		if createAnalysisErr != nil {
-			return fmt.Errorf("create system analysis: %w", createAnalysisErr)
+			return nil, fmt.Errorf("create system analysis: %w", createAnalysisErr)
 		}
 
 		createRetro := tx.Retrospective.Create().
@@ -105,10 +107,9 @@ func (s *RetrospectiveService) createForIncident(ctx context.Context, inc *ent.I
 			SetSystemAnalysisID(analysis.ID)
 		created, createRetroErr := createRetro.Save(txCtx)
 		if createRetroErr != nil {
-			return fmt.Errorf("create retrospective: %w", createRetroErr)
+			return nil, fmt.Errorf("create retrospective: %w", createRetroErr)
 		}
-		retro = created.Unwrap()
-		return nil
+		return created, nil
 	})
 }
 
