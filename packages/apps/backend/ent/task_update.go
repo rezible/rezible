@@ -55,17 +55,44 @@ func (_u *TaskUpdate) SetUpdatedAt(v time.Time) *TaskUpdate {
 	return _u
 }
 
-// SetType sets the "type" field.
-func (_u *TaskUpdate) SetType(v task.Type) *TaskUpdate {
-	_u.mutation.SetType(v)
+// SetArchiveTime sets the "archive_time" field.
+func (_u *TaskUpdate) SetArchiveTime(v time.Time) *TaskUpdate {
+	_u.mutation.SetArchiveTime(v)
 	return _u
 }
 
-// SetNillableType sets the "type" field if the given value is not nil.
-func (_u *TaskUpdate) SetNillableType(v *task.Type) *TaskUpdate {
+// SetNillableArchiveTime sets the "archive_time" field if the given value is not nil.
+func (_u *TaskUpdate) SetNillableArchiveTime(v *time.Time) *TaskUpdate {
 	if v != nil {
-		_u.SetType(*v)
+		_u.SetArchiveTime(*v)
 	}
+	return _u
+}
+
+// ClearArchiveTime clears the value of the "archive_time" field.
+func (_u *TaskUpdate) ClearArchiveTime() *TaskUpdate {
+	_u.mutation.ClearArchiveTime()
+	return _u
+}
+
+// SetVersion sets the "version" field.
+func (_u *TaskUpdate) SetVersion(v int) *TaskUpdate {
+	_u.mutation.ResetVersion()
+	_u.mutation.SetVersion(v)
+	return _u
+}
+
+// SetNillableVersion sets the "version" field if the given value is not nil.
+func (_u *TaskUpdate) SetNillableVersion(v *int) *TaskUpdate {
+	if v != nil {
+		_u.SetVersion(*v)
+	}
+	return _u
+}
+
+// AddVersion adds value to the "version" field.
+func (_u *TaskUpdate) AddVersion(v int) *TaskUpdate {
+	_u.mutation.AddVersion(v)
 	return _u
 }
 
@@ -79,6 +106,34 @@ func (_u *TaskUpdate) SetTitle(v string) *TaskUpdate {
 func (_u *TaskUpdate) SetNillableTitle(v *string) *TaskUpdate {
 	if v != nil {
 		_u.SetTitle(*v)
+	}
+	return _u
+}
+
+// SetDescription sets the "description" field.
+func (_u *TaskUpdate) SetDescription(v string) *TaskUpdate {
+	_u.mutation.SetDescription(v)
+	return _u
+}
+
+// SetNillableDescription sets the "description" field if the given value is not nil.
+func (_u *TaskUpdate) SetNillableDescription(v *string) *TaskUpdate {
+	if v != nil {
+		_u.SetDescription(*v)
+	}
+	return _u
+}
+
+// SetKind sets the "kind" field.
+func (_u *TaskUpdate) SetKind(v task.Kind) *TaskUpdate {
+	_u.mutation.SetKind(v)
+	return _u
+}
+
+// SetNillableKind sets the "kind" field if the given value is not nil.
+func (_u *TaskUpdate) SetNillableKind(v *task.Kind) *TaskUpdate {
+	if v != nil {
+		_u.SetKind(*v)
 	}
 	return _u
 }
@@ -212,14 +267,14 @@ func (_u *TaskUpdate) AddTickets(v ...*Ticket) *TaskUpdate {
 	return _u.AddTicketIDs(ids...)
 }
 
-// SetIncident sets the "incident" edge to the Incident entity.
-func (_u *TaskUpdate) SetIncident(v *Incident) *TaskUpdate {
-	return _u.SetIncidentID(v.ID)
-}
-
 // SetOriginEntry sets the "origin_entry" edge to the SystemAnalysisEntry entity.
 func (_u *TaskUpdate) SetOriginEntry(v *SystemAnalysisEntry) *TaskUpdate {
 	return _u.SetOriginEntryID(v.ID)
+}
+
+// SetIncident sets the "incident" edge to the Incident entity.
+func (_u *TaskUpdate) SetIncident(v *Incident) *TaskUpdate {
+	return _u.SetIncidentID(v.ID)
 }
 
 // SetAssignee sets the "assignee" edge to the User entity.
@@ -258,15 +313,15 @@ func (_u *TaskUpdate) RemoveTickets(v ...*Ticket) *TaskUpdate {
 	return _u.RemoveTicketIDs(ids...)
 }
 
-// ClearIncident clears the "incident" edge to the Incident entity.
-func (_u *TaskUpdate) ClearIncident() *TaskUpdate {
-	_u.mutation.ClearIncident()
-	return _u
-}
-
 // ClearOriginEntry clears the "origin_entry" edge to the SystemAnalysisEntry entity.
 func (_u *TaskUpdate) ClearOriginEntry() *TaskUpdate {
 	_u.mutation.ClearOriginEntry()
+	return _u
+}
+
+// ClearIncident clears the "incident" edge to the Incident entity.
+func (_u *TaskUpdate) ClearIncident() *TaskUpdate {
+	_u.mutation.ClearIncident()
 	return _u
 }
 
@@ -326,9 +381,9 @@ func (_u *TaskUpdate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *TaskUpdate) check() error {
-	if v, ok := _u.mutation.GetType(); ok {
-		if err := task.TypeValidator(v); err != nil {
-			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "Task.type": %w`, err)}
+	if v, ok := _u.mutation.Kind(); ok {
+		if err := task.KindValidator(v); err != nil {
+			return &ValidationError{Name: "kind", err: fmt.Errorf(`ent: validator failed for field "Task.kind": %w`, err)}
 		}
 	}
 	if v, ok := _u.mutation.State(); ok {
@@ -366,11 +421,26 @@ func (_u *TaskUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(task.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if value, ok := _u.mutation.GetType(); ok {
-		_spec.SetField(task.FieldType, field.TypeEnum, value)
+	if value, ok := _u.mutation.ArchiveTime(); ok {
+		_spec.SetField(task.FieldArchiveTime, field.TypeTime, value)
+	}
+	if _u.mutation.ArchiveTimeCleared() {
+		_spec.ClearField(task.FieldArchiveTime, field.TypeTime)
+	}
+	if value, ok := _u.mutation.Version(); ok {
+		_spec.SetField(task.FieldVersion, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedVersion(); ok {
+		_spec.AddField(task.FieldVersion, field.TypeInt, value)
 	}
 	if value, ok := _u.mutation.Title(); ok {
 		_spec.SetField(task.FieldTitle, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.Description(); ok {
+		_spec.SetField(task.FieldDescription, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.Kind(); ok {
+		_spec.SetField(task.FieldKind, field.TypeEnum, value)
 	}
 	if value, ok := _u.mutation.State(); ok {
 		_spec.SetField(task.FieldState, field.TypeEnum, value)
@@ -429,37 +499,6 @@ func (_u *TaskUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if _u.mutation.IncidentCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   task.IncidentTable,
-			Columns: []string{task.IncidentColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.Task
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.IncidentIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   task.IncidentTable,
-			Columns: []string{task.IncidentColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.Task
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	if _u.mutation.OriginEntryCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -491,10 +530,41 @@ func (_u *TaskUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.IncidentCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   task.IncidentTable,
+			Columns: []string{task.IncidentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.Task
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.IncidentIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   task.IncidentTable,
+			Columns: []string{task.IncidentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.Task
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _u.mutation.AssigneeCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
-			Inverse: true,
+			Inverse: false,
 			Table:   task.AssigneeTable,
 			Columns: []string{task.AssigneeColumn},
 			Bidi:    false,
@@ -508,7 +578,7 @@ func (_u *TaskUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if nodes := _u.mutation.AssigneeIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
-			Inverse: true,
+			Inverse: false,
 			Table:   task.AssigneeTable,
 			Columns: []string{task.AssigneeColumn},
 			Bidi:    false,
@@ -525,7 +595,7 @@ func (_u *TaskUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if _u.mutation.CreatorCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
-			Inverse: true,
+			Inverse: false,
 			Table:   task.CreatorTable,
 			Columns: []string{task.CreatorColumn},
 			Bidi:    false,
@@ -539,7 +609,7 @@ func (_u *TaskUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if nodes := _u.mutation.CreatorIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
-			Inverse: true,
+			Inverse: false,
 			Table:   task.CreatorTable,
 			Columns: []string{task.CreatorColumn},
 			Bidi:    false,
@@ -597,17 +667,44 @@ func (_u *TaskUpdateOne) SetUpdatedAt(v time.Time) *TaskUpdateOne {
 	return _u
 }
 
-// SetType sets the "type" field.
-func (_u *TaskUpdateOne) SetType(v task.Type) *TaskUpdateOne {
-	_u.mutation.SetType(v)
+// SetArchiveTime sets the "archive_time" field.
+func (_u *TaskUpdateOne) SetArchiveTime(v time.Time) *TaskUpdateOne {
+	_u.mutation.SetArchiveTime(v)
 	return _u
 }
 
-// SetNillableType sets the "type" field if the given value is not nil.
-func (_u *TaskUpdateOne) SetNillableType(v *task.Type) *TaskUpdateOne {
+// SetNillableArchiveTime sets the "archive_time" field if the given value is not nil.
+func (_u *TaskUpdateOne) SetNillableArchiveTime(v *time.Time) *TaskUpdateOne {
 	if v != nil {
-		_u.SetType(*v)
+		_u.SetArchiveTime(*v)
 	}
+	return _u
+}
+
+// ClearArchiveTime clears the value of the "archive_time" field.
+func (_u *TaskUpdateOne) ClearArchiveTime() *TaskUpdateOne {
+	_u.mutation.ClearArchiveTime()
+	return _u
+}
+
+// SetVersion sets the "version" field.
+func (_u *TaskUpdateOne) SetVersion(v int) *TaskUpdateOne {
+	_u.mutation.ResetVersion()
+	_u.mutation.SetVersion(v)
+	return _u
+}
+
+// SetNillableVersion sets the "version" field if the given value is not nil.
+func (_u *TaskUpdateOne) SetNillableVersion(v *int) *TaskUpdateOne {
+	if v != nil {
+		_u.SetVersion(*v)
+	}
+	return _u
+}
+
+// AddVersion adds value to the "version" field.
+func (_u *TaskUpdateOne) AddVersion(v int) *TaskUpdateOne {
+	_u.mutation.AddVersion(v)
 	return _u
 }
 
@@ -621,6 +718,34 @@ func (_u *TaskUpdateOne) SetTitle(v string) *TaskUpdateOne {
 func (_u *TaskUpdateOne) SetNillableTitle(v *string) *TaskUpdateOne {
 	if v != nil {
 		_u.SetTitle(*v)
+	}
+	return _u
+}
+
+// SetDescription sets the "description" field.
+func (_u *TaskUpdateOne) SetDescription(v string) *TaskUpdateOne {
+	_u.mutation.SetDescription(v)
+	return _u
+}
+
+// SetNillableDescription sets the "description" field if the given value is not nil.
+func (_u *TaskUpdateOne) SetNillableDescription(v *string) *TaskUpdateOne {
+	if v != nil {
+		_u.SetDescription(*v)
+	}
+	return _u
+}
+
+// SetKind sets the "kind" field.
+func (_u *TaskUpdateOne) SetKind(v task.Kind) *TaskUpdateOne {
+	_u.mutation.SetKind(v)
+	return _u
+}
+
+// SetNillableKind sets the "kind" field if the given value is not nil.
+func (_u *TaskUpdateOne) SetNillableKind(v *task.Kind) *TaskUpdateOne {
+	if v != nil {
+		_u.SetKind(*v)
 	}
 	return _u
 }
@@ -754,14 +879,14 @@ func (_u *TaskUpdateOne) AddTickets(v ...*Ticket) *TaskUpdateOne {
 	return _u.AddTicketIDs(ids...)
 }
 
-// SetIncident sets the "incident" edge to the Incident entity.
-func (_u *TaskUpdateOne) SetIncident(v *Incident) *TaskUpdateOne {
-	return _u.SetIncidentID(v.ID)
-}
-
 // SetOriginEntry sets the "origin_entry" edge to the SystemAnalysisEntry entity.
 func (_u *TaskUpdateOne) SetOriginEntry(v *SystemAnalysisEntry) *TaskUpdateOne {
 	return _u.SetOriginEntryID(v.ID)
+}
+
+// SetIncident sets the "incident" edge to the Incident entity.
+func (_u *TaskUpdateOne) SetIncident(v *Incident) *TaskUpdateOne {
+	return _u.SetIncidentID(v.ID)
 }
 
 // SetAssignee sets the "assignee" edge to the User entity.
@@ -800,15 +925,15 @@ func (_u *TaskUpdateOne) RemoveTickets(v ...*Ticket) *TaskUpdateOne {
 	return _u.RemoveTicketIDs(ids...)
 }
 
-// ClearIncident clears the "incident" edge to the Incident entity.
-func (_u *TaskUpdateOne) ClearIncident() *TaskUpdateOne {
-	_u.mutation.ClearIncident()
-	return _u
-}
-
 // ClearOriginEntry clears the "origin_entry" edge to the SystemAnalysisEntry entity.
 func (_u *TaskUpdateOne) ClearOriginEntry() *TaskUpdateOne {
 	_u.mutation.ClearOriginEntry()
+	return _u
+}
+
+// ClearIncident clears the "incident" edge to the Incident entity.
+func (_u *TaskUpdateOne) ClearIncident() *TaskUpdateOne {
+	_u.mutation.ClearIncident()
 	return _u
 }
 
@@ -881,9 +1006,9 @@ func (_u *TaskUpdateOne) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *TaskUpdateOne) check() error {
-	if v, ok := _u.mutation.GetType(); ok {
-		if err := task.TypeValidator(v); err != nil {
-			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "Task.type": %w`, err)}
+	if v, ok := _u.mutation.Kind(); ok {
+		if err := task.KindValidator(v); err != nil {
+			return &ValidationError{Name: "kind", err: fmt.Errorf(`ent: validator failed for field "Task.kind": %w`, err)}
 		}
 	}
 	if v, ok := _u.mutation.State(); ok {
@@ -938,11 +1063,26 @@ func (_u *TaskUpdateOne) sqlSave(ctx context.Context) (_node *Task, err error) {
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(task.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if value, ok := _u.mutation.GetType(); ok {
-		_spec.SetField(task.FieldType, field.TypeEnum, value)
+	if value, ok := _u.mutation.ArchiveTime(); ok {
+		_spec.SetField(task.FieldArchiveTime, field.TypeTime, value)
+	}
+	if _u.mutation.ArchiveTimeCleared() {
+		_spec.ClearField(task.FieldArchiveTime, field.TypeTime)
+	}
+	if value, ok := _u.mutation.Version(); ok {
+		_spec.SetField(task.FieldVersion, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedVersion(); ok {
+		_spec.AddField(task.FieldVersion, field.TypeInt, value)
 	}
 	if value, ok := _u.mutation.Title(); ok {
 		_spec.SetField(task.FieldTitle, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.Description(); ok {
+		_spec.SetField(task.FieldDescription, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.Kind(); ok {
+		_spec.SetField(task.FieldKind, field.TypeEnum, value)
 	}
 	if value, ok := _u.mutation.State(); ok {
 		_spec.SetField(task.FieldState, field.TypeEnum, value)
@@ -1001,37 +1141,6 @@ func (_u *TaskUpdateOne) sqlSave(ctx context.Context) (_node *Task, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if _u.mutation.IncidentCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   task.IncidentTable,
-			Columns: []string{task.IncidentColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.Task
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.IncidentIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   task.IncidentTable,
-			Columns: []string{task.IncidentColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.Task
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	if _u.mutation.OriginEntryCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -1063,10 +1172,41 @@ func (_u *TaskUpdateOne) sqlSave(ctx context.Context) (_node *Task, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.IncidentCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   task.IncidentTable,
+			Columns: []string{task.IncidentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.Task
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.IncidentIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   task.IncidentTable,
+			Columns: []string{task.IncidentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.Task
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _u.mutation.AssigneeCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
-			Inverse: true,
+			Inverse: false,
 			Table:   task.AssigneeTable,
 			Columns: []string{task.AssigneeColumn},
 			Bidi:    false,
@@ -1080,7 +1220,7 @@ func (_u *TaskUpdateOne) sqlSave(ctx context.Context) (_node *Task, err error) {
 	if nodes := _u.mutation.AssigneeIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
-			Inverse: true,
+			Inverse: false,
 			Table:   task.AssigneeTable,
 			Columns: []string{task.AssigneeColumn},
 			Bidi:    false,
@@ -1097,7 +1237,7 @@ func (_u *TaskUpdateOne) sqlSave(ctx context.Context) (_node *Task, err error) {
 	if _u.mutation.CreatorCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
-			Inverse: true,
+			Inverse: false,
 			Table:   task.CreatorTable,
 			Columns: []string{task.CreatorColumn},
 			Bidi:    false,
@@ -1111,7 +1251,7 @@ func (_u *TaskUpdateOne) sqlSave(ctx context.Context) (_node *Task, err error) {
 	if nodes := _u.mutation.CreatorIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
-			Inverse: true,
+			Inverse: false,
 			Table:   task.CreatorTable,
 			Columns: []string{task.CreatorColumn},
 			Bidi:    false,

@@ -205,6 +205,10 @@ func (SystemAnalysisEntry) Fields() []ent.Field {
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("analysis_id", uuid.UUID{}).
 			Immutable(),
+		field.UUID("author_id", uuid.UUID{}).
+			Optional().
+			Immutable().
+			Nillable(),
 		field.String("reference").
 			Optional().
 			Nillable().
@@ -218,6 +222,7 @@ func (SystemAnalysisEntry) Fields() []ent.Field {
 		field.Int("sequence").Default(0),
 		field.String("title").NotEmpty(),
 		field.Text("body").Optional(),
+		field.Int("version").Default(1),
 		field.JSON("properties", map[string]any{}).
 			Optional().
 			SchemaType(schemaTypeJsonB).
@@ -232,6 +237,10 @@ func (SystemAnalysisEntry) Edges() []ent.Edge {
 			Unique().
 			Immutable().
 			Field("analysis_id"),
+		edge.To("author", User.Type).
+			Unique().
+			Immutable().
+			Field("author_id"),
 		edge.From("subjects", SystemAnalysisEntrySubject.Type).
 			Ref("entry"),
 		edge.From("origin_tasks", Task.Type).
@@ -296,7 +305,8 @@ func (SystemAnalysisEntrySubject) Edges() []ent.Edge {
 			Required().
 			Unique().
 			Immutable().
-			Field("entry_id"),
+			Field("entry_id").
+			Annotations(entsql.OnDelete(entsql.Cascade)),
 		edge.To("knowledge_entity", KnowledgeEntity.Type).
 			Unique().
 			Immutable().

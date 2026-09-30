@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"fmt"
+	"log/slog"
 
 	"github.com/google/uuid"
 
@@ -37,16 +38,40 @@ func (s *RetrospectiveService) Get(ctx context.Context, p predicate.Retrospectiv
 }
 
 func (s *RetrospectiveService) Set(ctx context.Context, id uuid.UUID, setFn func(*ent.RetrospectiveMutation)) (*ent.Retrospective, error) {
-	update := s.db.Client(ctx).Retrospective.UpdateOneID(id)
+	var updated *ent.Retrospective
+	return updated, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+		if lockErr := s.db.AcquireTxLocks(ctx, "retrospective_state", id.String()); lockErr != nil {
+			return fmt.Errorf("lock retrospective lifecycle state: %w", lockErr)
+		}
+		current, queryErr := tx.Retrospective.Get(ctx, id)
+		if queryErr != nil {
+			return queryErr
+		}
+		update := tx.Retrospective.UpdateOneID(id)
+		setFn(update.Mutation())
+		updatedValue, updateErr := update.Save(ctx)
+		if updateErr != nil {
+			return updateErr
+		}
+		updated = updatedValue
+		if current.State == retrospective.StateInReview && updated.State == retrospective.StateClosed {
+			if compErr := s.onRetrospectiveCompleted(ctx, updated); compErr != nil {
+				return fmt.Errorf("on completed: %w", compErr)
+			}
+		}
+		return nil
+	})
+}
 
-	setFn(update.Mutation())
-
-	updated, updateErr := update.Save(ctx)
-	if updateErr != nil {
-		return nil, updateErr
-	}
-
-	return updated, nil
+func (s *RetrospectiveService) onRetrospectiveCompleted(ctx context.Context, retro *ent.Retrospective) error {
+	slog.InfoContext(ctx, "retrospective.completed",
+		slog.String("id", retro.ID.String()),
+		slog.String("incidentId", retro.IncidentID.String()),
+		slog.String("fromState", retrospective.StateInReview.String()),
+		slog.String("toState", retrospective.StateClosed.String()),
+	)
+	// TODO: invoke future retrospective completion processing here.
+	return nil
 }
 
 func (s *RetrospectiveService) CreateForIncident(ctx context.Context, incidentID uuid.UUID) (*ent.Retrospective, error) {
@@ -58,43 +83,39 @@ func (s *RetrospectiveService) CreateForIncident(ctx context.Context, incidentID
 }
 
 func (s *RetrospectiveService) createForIncident(ctx context.Context, inc *ent.Incident) (*ent.Retrospective, error) {
-	existing, getExistingErr := s.Get(ctx, retrospective.IncidentID(inc.ID))
-	if getExistingErr != nil && !ent.IsNotFound(getExistingErr) {
-		return nil, fmt.Errorf("lookup existing retrospective: %w", getExistingErr)
-	} else if existing != nil {
-		return existing, nil
-	}
-
-	// TODO: base on severity?
-	kind := retrospective.KindFull
-
 	var retro *ent.Retrospective
-	createTxFn := func(txCtx context.Context, tx *ent.Client) error {
-		createdDoc, createDocErr := tx.Document.Create().
+	return retro, s.db.WithTx(ctx, func(txCtx context.Context, tx *ent.Client) error {
+		createDoc := tx.Document.Create().
 			SetContent([]byte("")).
-			SetAccessRestricted(false).
-			Save(txCtx)
+			SetAccessRestricted(false)
+		createdDoc, createDocErr := createDoc.Save(txCtx)
 		if createDocErr != nil {
 			return fmt.Errorf("create doc: %w", createDocErr)
 		}
 
-		createRetro := tx.Retrospective.Create().
-			SetIncident(inc).
-			SetDocument(createdDoc).
-			SetKind(kind).
-			SetState(retrospective.StateDraft)
 		analysis, createAnalysisErr := tx.SystemAnalysis.Create().Save(txCtx)
 		if createAnalysisErr != nil {
 			return fmt.Errorf("create system analysis: %w", createAnalysisErr)
 		}
-		createRetro.SetSystemAnalysis(analysis)
 
+		createRetro := tx.Retrospective.Create().
+			SetIncidentID(inc.ID).
+			SetDocument(createdDoc).
+			SetState(retrospective.StateDraft).
+			SetSystemAnalysisID(analysis.ID)
 		created, createRetroErr := createRetro.Save(txCtx)
 		if createRetroErr != nil {
 			return fmt.Errorf("create retrospective: %w", createRetroErr)
 		}
 		retro = created.Unwrap()
 		return nil
-	}
-	return retro, s.db.WithTx(ctx, createTxFn)
+	})
+}
+
+func (s *RetrospectiveService) GetReportComposition(ctx context.Context, id uuid.UUID) (*rez.RetrospectiveReportComposition, error) {
+	return &rez.RetrospectiveReportComposition{}, nil
+}
+
+func (s *RetrospectiveService) SetReport(ctx context.Context, id uuid.UUID, params rez.SetRetrospectiveReportParams) (*rez.RetrospectiveReport, error) {
+	return &rez.RetrospectiveReport{}, nil
 }

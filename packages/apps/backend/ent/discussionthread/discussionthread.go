@@ -29,8 +29,6 @@ const (
 	FieldRetrospectiveID = "retrospective_id"
 	// FieldUserID holds the string denoting the user_id field in the database.
 	FieldUserID = "user_id"
-	// FieldKind holds the string denoting the kind field in the database.
-	FieldKind = "kind"
 	// FieldTargetKind holds the string denoting the target_kind field in the database.
 	FieldTargetKind = "target_kind"
 	// FieldTargetID holds the string denoting the target_id field in the database.
@@ -101,7 +99,6 @@ var Columns = []string{
 	FieldAnalysisID,
 	FieldRetrospectiveID,
 	FieldUserID,
-	FieldKind,
 	FieldTargetKind,
 	FieldTargetID,
 	FieldResolutionState,
@@ -138,35 +135,13 @@ var (
 	DefaultID func() uuid.UUID
 )
 
-// Kind defines the type for the "kind" enum field.
-type Kind string
-
-// Kind values.
-const (
-	KindComment  Kind = "comment"
-	KindQuestion Kind = "question"
-)
-
-func (k Kind) String() string {
-	return string(k)
-}
-
-// KindValidator is a validator for the "kind" field enum values. It is called by the builders before save.
-func KindValidator(k Kind) error {
-	switch k {
-	case KindComment, KindQuestion:
-		return nil
-	default:
-		return fmt.Errorf("discussionthread: invalid enum value for kind field: %q", k)
-	}
-}
-
 // TargetKind defines the type for the "target_kind" enum field.
 type TargetKind string
 
 // TargetKind values.
 const (
 	TargetKindFinding               TargetKind = "finding"
+	TargetKindEntry                 TargetKind = "entry"
 	TargetKindKnowledgeEntity       TargetKind = "knowledge_entity"
 	TargetKindKnowledgeRelationship TargetKind = "knowledge_relationship"
 	TargetKindNormalizedEvent       TargetKind = "normalized_event"
@@ -179,7 +154,7 @@ func (tk TargetKind) String() string {
 // TargetKindValidator is a validator for the "target_kind" field enum values. It is called by the builders before save.
 func TargetKindValidator(tk TargetKind) error {
 	switch tk {
-	case TargetKindFinding, TargetKindKnowledgeEntity, TargetKindKnowledgeRelationship, TargetKindNormalizedEvent:
+	case TargetKindFinding, TargetKindEntry, TargetKindKnowledgeEntity, TargetKindKnowledgeRelationship, TargetKindNormalizedEvent:
 		return nil
 	default:
 		return fmt.Errorf("discussionthread: invalid enum value for target_kind field: %q", tk)
@@ -245,11 +220,6 @@ func ByRetrospectiveID(opts ...sql.OrderTermOption) OrderOption {
 // ByUserID orders the results by the user_id field.
 func ByUserID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUserID, opts...).ToFunc()
-}
-
-// ByKind orders the results by the kind field.
-func ByKind(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldKind, opts...).ToFunc()
 }
 
 // ByTargetKind orders the results by the target_kind field.
@@ -359,15 +329,10 @@ func newCommentsStep() *sqlgraph.Step {
 	)
 }
 
-// KindValues contains all permitted values. Treat this slice as read-only.
-var KindValues = []string{
-	"comment",
-	"question",
-}
-
 // TargetKindValues contains all permitted values. Treat this slice as read-only.
 var TargetKindValues = []string{
 	"finding",
+	"entry",
 	"knowledge_entity",
 	"knowledge_relationship",
 	"normalized_event",

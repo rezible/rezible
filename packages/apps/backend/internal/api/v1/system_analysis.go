@@ -224,9 +224,19 @@ func (h *systemAnalysisHandler) DeleteSystemAnalysisEdge(ctx context.Context, re
 }
 
 func (h *systemAnalysisHandler) ListSystemAnalysisEntries(ctx context.Context, request *oapi.ListSystemAnalysisEntriesRequest) (*oapi.ListSystemAnalysisEntriesResponse, error) {
+	listParams := request.ListParams()
+	if len(request.SelectedEntryIDs) > 0 {
+		listParams.Page = 1
+		listParams.PageSize = len(request.SelectedEntryIDs)
+	}
+	preds := []predicate.SystemAnalysisEntry{sae.AnalysisID(request.Id)}
+	if len(request.SelectedEntryIDs) > 0 {
+		// TODO
+	}
 	params := rez.ListSystemAnalysisEntriesParams{
-		ListParams: request.ListParams(),
-		Predicates: []predicate.SystemAnalysisEntry{sae.AnalysisID(request.Id)},
+		ListParams: listParams,
+		Predicates: preds,
+		Kinds:      request.Kind,
 	}
 	entries, listErr := h.analysis.ListSystemAnalysisEntries(ctx, params)
 	if listErr != nil {
@@ -249,24 +259,14 @@ func (h *systemAnalysisHandler) GetSystemAnalysisEntry(ctx context.Context, requ
 
 func (h *systemAnalysisHandler) CreateSystemAnalysisEntry(ctx context.Context, request *oapi.CreateSystemAnalysisEntryRequest) (*oapi.CreateSystemAnalysisEntryResponse, error) {
 	attrs := request.Body.Attributes
-	setFn := func(m *ent.SystemAnalysisEntryMutation) {
-		m.SetAnalysisID(request.Id)
-		if attrs.Reference != nil {
-			m.SetReference(*attrs.Reference)
-		}
-		m.SetKind(sae.Kind(attrs.Kind))
-		if attrs.OccurredAt != nil {
-			m.SetOccurredAt(*attrs.OccurredAt)
-		}
-		m.SetTitle(attrs.Title)
-		if attrs.Body != nil {
-			m.SetBody(*attrs.Body)
-		}
-		if attrs.Properties != nil {
-			m.SetProperties(attrs.Properties)
-		}
-	}
-	entry, createErr := h.analysis.SetSystemAnalysisEntry(ctx, uuid.Nil, setFn)
+	entry, createErr := h.analysis.SetSystemAnalysisEntry(ctx, uuid.Nil, rez.SetSystemAnalysisEntryParams{
+		AnalysisID:  request.Id,
+		Kind:        attrs.Kind,
+		Title:       attrs.Title,
+		Body:        attrs.Body,
+		OccurredAt:  attrs.OccurredAt,
+		SetSubjects: h.systemAnalysisEntrySubjectInputs(attrs.Subjects),
+	})
 	if createErr != nil {
 		return nil, oapi.Error(ctx, "create system analysis entry", createErr)
 	}
@@ -276,34 +276,33 @@ func (h *systemAnalysisHandler) CreateSystemAnalysisEntry(ctx context.Context, r
 	return &resp, nil
 }
 
-func (h *systemAnalysisHandler) UpdateSystemAnalysisEntry(ctx context.Context, request *oapi.UpdateSystemAnalysisEntryRequest) (*oapi.UpdateSystemAnalysisEntryResponse, error) {
-	var resp oapi.UpdateSystemAnalysisEntryResponse
-	attrs := request.Body.Attributes
-	setFn := func(m *ent.SystemAnalysisEntryMutation) {
-		if attrs.Kind != nil {
-			m.SetKind(sae.Kind(*attrs.Kind))
-		}
-		if attrs.OccurredAt != nil {
-			m.SetOccurredAt(*attrs.OccurredAt)
-		}
-		if attrs.Title != nil {
-			m.SetTitle(*attrs.Title)
-		}
-		if attrs.Body != nil {
-			m.SetBody(*attrs.Body)
-		}
-		if attrs.Sequence != nil {
-			m.SetSequence(*attrs.Sequence)
-		}
-		if attrs.Properties != nil {
-			m.SetProperties(attrs.Properties)
-		}
+func (h *systemAnalysisHandler) systemAnalysisEntrySubjectInputs(subjects []oapi.SystemAnalysisEntrySubjectInput) []rez.SetSystemAnalysisEntrySubjectParams {
+	inputs := make([]rez.SetSystemAnalysisEntrySubjectParams, 0, len(subjects))
+	for _, subject := range subjects {
+		inputs = append(inputs, rez.SetSystemAnalysisEntrySubjectParams{
+			Role:                    subject.Role,
+			KnowledgeEntityID:       subject.KnowledgeEntityID,
+			KnowledgeRelationshipID: subject.KnowledgeRelationshipID,
+			KnowledgeEvidenceID:     subject.KnowledgeEvidenceID,
+		})
 	}
-	entry, updateErr := h.analysis.SetSystemAnalysisEntry(ctx, request.Id, setFn)
+	return inputs
+}
+
+func (h *systemAnalysisHandler) UpdateSystemAnalysisEntry(ctx context.Context, request *oapi.UpdateSystemAnalysisEntryRequest) (*oapi.UpdateSystemAnalysisEntryResponse, error) {
+	attrs := request.Body.Attributes
+	params := rez.SetSystemAnalysisEntryParams{
+		Kind:        attrs.Kind,
+		Title:       attrs.Title,
+		Body:        attrs.Body,
+		OccurredAt:  attrs.OccurredAt,
+		SetSubjects: h.systemAnalysisEntrySubjectInputs(attrs.Subjects),
+	}
+	entry, updateErr := h.analysis.SetSystemAnalysisEntry(ctx, request.Id, params)
 	if updateErr != nil {
 		return nil, oapi.Error(ctx, "update system analysis entry", updateErr)
 	}
-
+	var resp oapi.UpdateSystemAnalysisEntryResponse
 	resp.Body.Data = oapi.SystemAnalysisEntryFromEnt(entry)
 	return &resp, nil
 }
@@ -315,7 +314,7 @@ func (h *systemAnalysisHandler) DeleteSystemAnalysisEntry(ctx context.Context, r
 	return &oapi.DeleteSystemAnalysisEntryResponse{}, nil
 }
 
-func (h *systemAnalysisHandler) AddSystemAnalysisEntrySubject(ctx context.Context, request *oapi.AddSystemAnalysisEntrySubjectRequest) (*oapi.AddSystemAnalysisEntrySubjectResponse, error) {
+func (h *systemAnalysisHandler) CreateSystemAnalysisEntrySubject(ctx context.Context, request *oapi.CreateSystemAnalysisEntrySubjectRequest) (*oapi.CreateSystemAnalysisEntrySubjectResponse, error) {
 	attrs := request.Body.Attributes
 	setFn := func(m *ent.SystemAnalysisEntrySubjectMutation) {
 		m.SetEntryID(request.Id)
@@ -334,8 +333,7 @@ func (h *systemAnalysisHandler) AddSystemAnalysisEntrySubject(ctx context.Contex
 	if createErr != nil {
 		return nil, oapi.Error(ctx, "add system analysis entry subject", createErr)
 	}
-
-	var resp oapi.AddSystemAnalysisEntrySubjectResponse
+	var resp oapi.CreateSystemAnalysisEntrySubjectResponse
 	resp.Body.Data = oapi.SystemAnalysisEntrySubjectFromEnt(subject)
 	return &resp, nil
 }

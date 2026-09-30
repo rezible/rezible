@@ -3,6 +3,7 @@ package v1
 import (
 	"context"
 	"net/http"
+	"time"
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
@@ -172,6 +173,10 @@ func IncidentMetadataFromRez(md *rez.IncidentMetadata) IncidentMetadata {
 	}
 }
 
+func isArchived(archiveTime *time.Time) bool {
+	return archiveTime != nil && !archiveTime.IsZero()
+}
+
 func IncidentSeverityFromEnt(sev *ent.IncidentSeverity) IncidentSeverity {
 	return IncidentSeverity{
 		Id: sev.ID,
@@ -180,7 +185,7 @@ func IncidentSeverityFromEnt(sev *ent.IncidentSeverity) IncidentSeverity {
 			Rank:        sev.Rank,
 			Color:       sev.Color,
 			Description: sev.Description,
-			Archived:    !sev.ArchiveTime.IsZero(),
+			Archived:    isArchived(sev.ArchiveTime),
 		},
 	}
 }
@@ -190,7 +195,7 @@ func IncidentTypeFromEnt(t *ent.IncidentType) IncidentType {
 		Id: t.ID,
 		Attributes: IncidentTypeAttributes{
 			Name:     t.Name,
-			Archived: !t.ArchiveTime.IsZero(),
+			Archived: isArchived(t.ArchiveTime),
 		},
 	}
 }
@@ -200,7 +205,7 @@ func IncidentRoleFromEnt(role *ent.IncidentRole) IncidentRole {
 		Id: role.ID,
 		Attributes: IncidentRoleAttributes{
 			Name:        role.Name,
-			Archived:    !role.ArchiveTime.IsZero(),
+			Archived:    isArchived(role.ArchiveTime),
 			Required:    role.Required,
 			Description: "",
 		},
@@ -213,7 +218,7 @@ func IncidentTagFromEnt(tag *ent.IncidentTag) IncidentTag {
 		Attributes: IncidentTagAttributes{
 			Key:      tag.Key,
 			Value:    tag.Value,
-			Archived: !tag.ArchiveTime.IsZero(),
+			Archived: isArchived(tag.ArchiveTime),
 		},
 	}
 }
@@ -227,7 +232,7 @@ func IncidentFieldFromEnt(field *ent.IncidentField) IncidentField {
 		Id: field.ID,
 		Attributes: IncidentFieldAttributes{
 			Name:         field.Name,
-			Archived:     !field.ArchiveTime.IsZero(),
+			Archived:     isArchived(field.ArchiveTime),
 			Description:  "",
 			Required:     false,
 			IncidentType: nil,
@@ -243,7 +248,7 @@ func IncidentFieldOptionFromEnt(opt *ent.IncidentFieldOption) IncidentFieldOptio
 		Attributes: IncidentFieldOptionAttributes{
 			Value:           opt.Value,
 			FieldOptionType: opt.Type.String(),
-			Archived:        !opt.ArchiveTime.IsZero(),
+			Archived:        isArchived(opt.ArchiveTime),
 		},
 	}
 }

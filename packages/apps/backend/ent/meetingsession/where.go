@@ -351,35 +351,6 @@ func HasTenantWith(preds ...predicate.Tenant) predicate.MeetingSession {
 	})
 }
 
-// HasIncidents applies the HasEdge predicate on the "incidents" edge.
-func HasIncidents() predicate.MeetingSession {
-	return predicate.MeetingSession(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, IncidentsTable, IncidentsPrimaryKey...),
-		)
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.Incident
-		step.Edge.Schema = schemaConfig.IncidentReviewSessions
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasIncidentsWith applies the HasEdge predicate on the "incidents" edge with a given conditions (other predicates).
-func HasIncidentsWith(preds ...predicate.Incident) predicate.MeetingSession {
-	return predicate.MeetingSession(func(s *sql.Selector) {
-		step := newIncidentsStep()
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.Incident
-		step.Edge.Schema = schemaConfig.IncidentReviewSessions
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
 // HasVideoConference applies the HasEdge predicate on the "video_conference" edge.
 func HasVideoConference() predicate.MeetingSession {
 	return predicate.MeetingSession(func(s *sql.Selector) {

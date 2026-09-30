@@ -157,6 +157,26 @@ func (_u *ReviewUpdate) SetNillableState(v *review.State) *ReviewUpdate {
 	return _u
 }
 
+// SetFeedback sets the "feedback" field.
+func (_u *ReviewUpdate) SetFeedback(v string) *ReviewUpdate {
+	_u.mutation.SetFeedback(v)
+	return _u
+}
+
+// SetNillableFeedback sets the "feedback" field if the given value is not nil.
+func (_u *ReviewUpdate) SetNillableFeedback(v *string) *ReviewUpdate {
+	if v != nil {
+		_u.SetFeedback(*v)
+	}
+	return _u
+}
+
+// ClearFeedback clears the value of the "feedback" field.
+func (_u *ReviewUpdate) ClearFeedback() *ReviewUpdate {
+	_u.mutation.ClearFeedback()
+	return _u
+}
+
 // SetRetrospective sets the "retrospective" edge to the Retrospective entity.
 func (_u *ReviewUpdate) SetRetrospective(v *Retrospective) *ReviewUpdate {
 	return _u.SetRetrospectiveID(v.ID)
@@ -167,6 +187,11 @@ func (_u *ReviewUpdate) SetAnalysisEntry(v *SystemAnalysisEntry) *ReviewUpdate {
 	return _u.SetAnalysisEntryID(v.ID)
 }
 
+// SetComment sets the "comment" edge to the DiscussionComment entity.
+func (_u *ReviewUpdate) SetComment(v *DiscussionComment) *ReviewUpdate {
+	return _u.SetCommentID(v.ID)
+}
+
 // SetRequester sets the "requester" edge to the User entity.
 func (_u *ReviewUpdate) SetRequester(v *User) *ReviewUpdate {
 	return _u.SetRequesterID(v.ID)
@@ -175,11 +200,6 @@ func (_u *ReviewUpdate) SetRequester(v *User) *ReviewUpdate {
 // SetReviewer sets the "reviewer" edge to the User entity.
 func (_u *ReviewUpdate) SetReviewer(v *User) *ReviewUpdate {
 	return _u.SetReviewerID(v.ID)
-}
-
-// SetComment sets the "comment" edge to the DiscussionComment entity.
-func (_u *ReviewUpdate) SetComment(v *DiscussionComment) *ReviewUpdate {
-	return _u.SetCommentID(v.ID)
 }
 
 // Mutation returns the ReviewMutation object of the builder.
@@ -199,6 +219,12 @@ func (_u *ReviewUpdate) ClearAnalysisEntry() *ReviewUpdate {
 	return _u
 }
 
+// ClearComment clears the "comment" edge to the DiscussionComment entity.
+func (_u *ReviewUpdate) ClearComment() *ReviewUpdate {
+	_u.mutation.ClearComment()
+	return _u
+}
+
 // ClearRequester clears the "requester" edge to the User entity.
 func (_u *ReviewUpdate) ClearRequester() *ReviewUpdate {
 	_u.mutation.ClearRequester()
@@ -208,12 +234,6 @@ func (_u *ReviewUpdate) ClearRequester() *ReviewUpdate {
 // ClearReviewer clears the "reviewer" edge to the User entity.
 func (_u *ReviewUpdate) ClearReviewer() *ReviewUpdate {
 	_u.mutation.ClearReviewer()
-	return _u
-}
-
-// ClearComment clears the "comment" edge to the DiscussionComment entity.
-func (_u *ReviewUpdate) ClearComment() *ReviewUpdate {
-	_u.mutation.ClearComment()
 	return _u
 }
 
@@ -305,6 +325,12 @@ func (_u *ReviewUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if value, ok := _u.mutation.State(); ok {
 		_spec.SetField(review.FieldState, field.TypeEnum, value)
 	}
+	if value, ok := _u.mutation.Feedback(); ok {
+		_spec.SetField(review.FieldFeedback, field.TypeString, value)
+	}
+	if _u.mutation.FeedbackCleared() {
+		_spec.ClearField(review.FieldFeedback, field.TypeString)
+	}
 	if _u.mutation.RetrospectiveCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -367,6 +393,37 @@ func (_u *ReviewUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.CommentCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   review.CommentTable,
+			Columns: []string{review.CommentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(discussioncomment.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.Review
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.CommentIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   review.CommentTable,
+			Columns: []string{review.CommentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(discussioncomment.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.Review
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _u.mutation.RequesterCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -421,37 +478,6 @@ func (_u *ReviewUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.Review
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.CommentCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   review.CommentTable,
-			Columns: []string{review.CommentColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(discussioncomment.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.Review
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.CommentIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   review.CommentTable,
-			Columns: []string{review.CommentColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(discussioncomment.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _u.schemaConfig.Review
@@ -606,6 +632,26 @@ func (_u *ReviewUpdateOne) SetNillableState(v *review.State) *ReviewUpdateOne {
 	return _u
 }
 
+// SetFeedback sets the "feedback" field.
+func (_u *ReviewUpdateOne) SetFeedback(v string) *ReviewUpdateOne {
+	_u.mutation.SetFeedback(v)
+	return _u
+}
+
+// SetNillableFeedback sets the "feedback" field if the given value is not nil.
+func (_u *ReviewUpdateOne) SetNillableFeedback(v *string) *ReviewUpdateOne {
+	if v != nil {
+		_u.SetFeedback(*v)
+	}
+	return _u
+}
+
+// ClearFeedback clears the value of the "feedback" field.
+func (_u *ReviewUpdateOne) ClearFeedback() *ReviewUpdateOne {
+	_u.mutation.ClearFeedback()
+	return _u
+}
+
 // SetRetrospective sets the "retrospective" edge to the Retrospective entity.
 func (_u *ReviewUpdateOne) SetRetrospective(v *Retrospective) *ReviewUpdateOne {
 	return _u.SetRetrospectiveID(v.ID)
@@ -616,6 +662,11 @@ func (_u *ReviewUpdateOne) SetAnalysisEntry(v *SystemAnalysisEntry) *ReviewUpdat
 	return _u.SetAnalysisEntryID(v.ID)
 }
 
+// SetComment sets the "comment" edge to the DiscussionComment entity.
+func (_u *ReviewUpdateOne) SetComment(v *DiscussionComment) *ReviewUpdateOne {
+	return _u.SetCommentID(v.ID)
+}
+
 // SetRequester sets the "requester" edge to the User entity.
 func (_u *ReviewUpdateOne) SetRequester(v *User) *ReviewUpdateOne {
 	return _u.SetRequesterID(v.ID)
@@ -624,11 +675,6 @@ func (_u *ReviewUpdateOne) SetRequester(v *User) *ReviewUpdateOne {
 // SetReviewer sets the "reviewer" edge to the User entity.
 func (_u *ReviewUpdateOne) SetReviewer(v *User) *ReviewUpdateOne {
 	return _u.SetReviewerID(v.ID)
-}
-
-// SetComment sets the "comment" edge to the DiscussionComment entity.
-func (_u *ReviewUpdateOne) SetComment(v *DiscussionComment) *ReviewUpdateOne {
-	return _u.SetCommentID(v.ID)
 }
 
 // Mutation returns the ReviewMutation object of the builder.
@@ -648,6 +694,12 @@ func (_u *ReviewUpdateOne) ClearAnalysisEntry() *ReviewUpdateOne {
 	return _u
 }
 
+// ClearComment clears the "comment" edge to the DiscussionComment entity.
+func (_u *ReviewUpdateOne) ClearComment() *ReviewUpdateOne {
+	_u.mutation.ClearComment()
+	return _u
+}
+
 // ClearRequester clears the "requester" edge to the User entity.
 func (_u *ReviewUpdateOne) ClearRequester() *ReviewUpdateOne {
 	_u.mutation.ClearRequester()
@@ -657,12 +709,6 @@ func (_u *ReviewUpdateOne) ClearRequester() *ReviewUpdateOne {
 // ClearReviewer clears the "reviewer" edge to the User entity.
 func (_u *ReviewUpdateOne) ClearReviewer() *ReviewUpdateOne {
 	_u.mutation.ClearReviewer()
-	return _u
-}
-
-// ClearComment clears the "comment" edge to the DiscussionComment entity.
-func (_u *ReviewUpdateOne) ClearComment() *ReviewUpdateOne {
-	_u.mutation.ClearComment()
 	return _u
 }
 
@@ -784,6 +830,12 @@ func (_u *ReviewUpdateOne) sqlSave(ctx context.Context) (_node *Review, err erro
 	if value, ok := _u.mutation.State(); ok {
 		_spec.SetField(review.FieldState, field.TypeEnum, value)
 	}
+	if value, ok := _u.mutation.Feedback(); ok {
+		_spec.SetField(review.FieldFeedback, field.TypeString, value)
+	}
+	if _u.mutation.FeedbackCleared() {
+		_spec.ClearField(review.FieldFeedback, field.TypeString)
+	}
 	if _u.mutation.RetrospectiveCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -846,6 +898,37 @@ func (_u *ReviewUpdateOne) sqlSave(ctx context.Context) (_node *Review, err erro
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.CommentCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   review.CommentTable,
+			Columns: []string{review.CommentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(discussioncomment.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.Review
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.CommentIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   review.CommentTable,
+			Columns: []string{review.CommentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(discussioncomment.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.Review
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _u.mutation.RequesterCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -900,37 +983,6 @@ func (_u *ReviewUpdateOne) sqlSave(ctx context.Context) (_node *Review, err erro
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.Review
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.CommentCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   review.CommentTable,
-			Columns: []string{review.CommentColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(discussioncomment.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.Review
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.CommentIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   review.CommentTable,
-			Columns: []string{review.CommentColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(discussioncomment.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _u.schemaConfig.Review

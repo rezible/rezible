@@ -65,16 +65,10 @@ type UserEdges struct {
 	SituationHazardAssessments []*SituationHazardAssessment `json:"situation_hazard_assessments,omitempty"`
 	// IntegrationOauthStates holds the value of the integration_oauth_states edge.
 	IntegrationOauthStates []*IntegrationUserInstallState `json:"integration_oauth_states,omitempty"`
-	// Incidents holds the value of the incidents edge.
-	Incidents []*Incident `json:"incidents,omitempty"`
 	// IncidentMilestones holds the value of the incident_milestones edge.
 	IncidentMilestones []*IncidentMilestone `json:"incident_milestones,omitempty"`
 	// IncidentDebriefs holds the value of the incident_debriefs edge.
 	IncidentDebriefs []*IncidentDebrief `json:"incident_debriefs,omitempty"`
-	// AssignedTasks holds the value of the assigned_tasks edge.
-	AssignedTasks []*Task `json:"assigned_tasks,omitempty"`
-	// CreatedTasks holds the value of the created_tasks edge.
-	CreatedTasks []*Task `json:"created_tasks,omitempty"`
 	// ReviewRequests holds the value of the review_requests edge.
 	ReviewRequests []*Review `json:"review_requests,omitempty"`
 	// ReviewResponses holds the value of the review_responses edge.
@@ -87,11 +81,9 @@ type UserEdges struct {
 	DocumentAccesses []*DocumentAccess `json:"document_accesses,omitempty"`
 	// TeamMemberships holds the value of the team_memberships edge.
 	TeamMemberships []*TeamMembership `json:"team_memberships,omitempty"`
-	// RoleAssignments holds the value of the role_assignments edge.
-	RoleAssignments []*IncidentRoleAssignment `json:"role_assignments,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [22]bool
+	loadedTypes [18]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -190,19 +182,10 @@ func (e UserEdges) IntegrationOauthStatesOrErr() ([]*IntegrationUserInstallState
 	return nil, &NotLoadedError{edge: "integration_oauth_states"}
 }
 
-// IncidentsOrErr returns the Incidents value or an error if the edge
-// was not loaded in eager-loading.
-func (e UserEdges) IncidentsOrErr() ([]*Incident, error) {
-	if e.loadedTypes[10] {
-		return e.Incidents, nil
-	}
-	return nil, &NotLoadedError{edge: "incidents"}
-}
-
 // IncidentMilestonesOrErr returns the IncidentMilestones value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) IncidentMilestonesOrErr() ([]*IncidentMilestone, error) {
-	if e.loadedTypes[11] {
+	if e.loadedTypes[10] {
 		return e.IncidentMilestones, nil
 	}
 	return nil, &NotLoadedError{edge: "incident_milestones"}
@@ -211,34 +194,16 @@ func (e UserEdges) IncidentMilestonesOrErr() ([]*IncidentMilestone, error) {
 // IncidentDebriefsOrErr returns the IncidentDebriefs value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) IncidentDebriefsOrErr() ([]*IncidentDebrief, error) {
-	if e.loadedTypes[12] {
+	if e.loadedTypes[11] {
 		return e.IncidentDebriefs, nil
 	}
 	return nil, &NotLoadedError{edge: "incident_debriefs"}
 }
 
-// AssignedTasksOrErr returns the AssignedTasks value or an error if the edge
-// was not loaded in eager-loading.
-func (e UserEdges) AssignedTasksOrErr() ([]*Task, error) {
-	if e.loadedTypes[13] {
-		return e.AssignedTasks, nil
-	}
-	return nil, &NotLoadedError{edge: "assigned_tasks"}
-}
-
-// CreatedTasksOrErr returns the CreatedTasks value or an error if the edge
-// was not loaded in eager-loading.
-func (e UserEdges) CreatedTasksOrErr() ([]*Task, error) {
-	if e.loadedTypes[14] {
-		return e.CreatedTasks, nil
-	}
-	return nil, &NotLoadedError{edge: "created_tasks"}
-}
-
 // ReviewRequestsOrErr returns the ReviewRequests value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) ReviewRequestsOrErr() ([]*Review, error) {
-	if e.loadedTypes[15] {
+	if e.loadedTypes[12] {
 		return e.ReviewRequests, nil
 	}
 	return nil, &NotLoadedError{edge: "review_requests"}
@@ -247,7 +212,7 @@ func (e UserEdges) ReviewRequestsOrErr() ([]*Review, error) {
 // ReviewResponsesOrErr returns the ReviewResponses value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) ReviewResponsesOrErr() ([]*Review, error) {
-	if e.loadedTypes[16] {
+	if e.loadedTypes[13] {
 		return e.ReviewResponses, nil
 	}
 	return nil, &NotLoadedError{edge: "review_responses"}
@@ -256,7 +221,7 @@ func (e UserEdges) ReviewResponsesOrErr() ([]*Review, error) {
 // DiscussionThreadsOrErr returns the DiscussionThreads value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) DiscussionThreadsOrErr() ([]*DiscussionThread, error) {
-	if e.loadedTypes[17] {
+	if e.loadedTypes[14] {
 		return e.DiscussionThreads, nil
 	}
 	return nil, &NotLoadedError{edge: "discussion_threads"}
@@ -265,7 +230,7 @@ func (e UserEdges) DiscussionThreadsOrErr() ([]*DiscussionThread, error) {
 // DiscussionCommentsOrErr returns the DiscussionComments value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) DiscussionCommentsOrErr() ([]*DiscussionComment, error) {
-	if e.loadedTypes[18] {
+	if e.loadedTypes[15] {
 		return e.DiscussionComments, nil
 	}
 	return nil, &NotLoadedError{edge: "discussion_comments"}
@@ -274,7 +239,7 @@ func (e UserEdges) DiscussionCommentsOrErr() ([]*DiscussionComment, error) {
 // DocumentAccessesOrErr returns the DocumentAccesses value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) DocumentAccessesOrErr() ([]*DocumentAccess, error) {
-	if e.loadedTypes[19] {
+	if e.loadedTypes[16] {
 		return e.DocumentAccesses, nil
 	}
 	return nil, &NotLoadedError{edge: "document_accesses"}
@@ -283,19 +248,10 @@ func (e UserEdges) DocumentAccessesOrErr() ([]*DocumentAccess, error) {
 // TeamMembershipsOrErr returns the TeamMemberships value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) TeamMembershipsOrErr() ([]*TeamMembership, error) {
-	if e.loadedTypes[20] {
+	if e.loadedTypes[17] {
 		return e.TeamMemberships, nil
 	}
 	return nil, &NotLoadedError{edge: "team_memberships"}
-}
-
-// RoleAssignmentsOrErr returns the RoleAssignments value or an error if the edge
-// was not loaded in eager-loading.
-func (e UserEdges) RoleAssignmentsOrErr() ([]*IncidentRoleAssignment, error) {
-	if e.loadedTypes[21] {
-		return e.RoleAssignments, nil
-	}
-	return nil, &NotLoadedError{edge: "role_assignments"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -448,11 +404,6 @@ func (_m *User) QueryIntegrationOauthStates() *IntegrationUserInstallStateQuery 
 	return NewUserClient(_m.config).QueryIntegrationOauthStates(_m)
 }
 
-// QueryIncidents queries the "incidents" edge of the User entity.
-func (_m *User) QueryIncidents() *IncidentQuery {
-	return NewUserClient(_m.config).QueryIncidents(_m)
-}
-
 // QueryIncidentMilestones queries the "incident_milestones" edge of the User entity.
 func (_m *User) QueryIncidentMilestones() *IncidentMilestoneQuery {
 	return NewUserClient(_m.config).QueryIncidentMilestones(_m)
@@ -461,16 +412,6 @@ func (_m *User) QueryIncidentMilestones() *IncidentMilestoneQuery {
 // QueryIncidentDebriefs queries the "incident_debriefs" edge of the User entity.
 func (_m *User) QueryIncidentDebriefs() *IncidentDebriefQuery {
 	return NewUserClient(_m.config).QueryIncidentDebriefs(_m)
-}
-
-// QueryAssignedTasks queries the "assigned_tasks" edge of the User entity.
-func (_m *User) QueryAssignedTasks() *TaskQuery {
-	return NewUserClient(_m.config).QueryAssignedTasks(_m)
-}
-
-// QueryCreatedTasks queries the "created_tasks" edge of the User entity.
-func (_m *User) QueryCreatedTasks() *TaskQuery {
-	return NewUserClient(_m.config).QueryCreatedTasks(_m)
 }
 
 // QueryReviewRequests queries the "review_requests" edge of the User entity.
@@ -501,11 +442,6 @@ func (_m *User) QueryDocumentAccesses() *DocumentAccessQuery {
 // QueryTeamMemberships queries the "team_memberships" edge of the User entity.
 func (_m *User) QueryTeamMemberships() *TeamMembershipQuery {
 	return NewUserClient(_m.config).QueryTeamMemberships(_m)
-}
-
-// QueryRoleAssignments queries the "role_assignments" edge of the User entity.
-func (_m *User) QueryRoleAssignments() *IncidentRoleAssignmentQuery {
-	return NewUserClient(_m.config).QueryRoleAssignments(_m)
 }
 
 // Update returns a builder for updating this User.

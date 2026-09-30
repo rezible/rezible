@@ -237,7 +237,7 @@ func (p *incidentUpdateProcessor) createIncidentChannel(ctx context.Context) err
 }
 
 func (p *incidentUpdateProcessor) getSlackIncidentCreateMilestone(ctx context.Context) (*ent.IncidentMilestone, error) {
-	msQuery := p.inc.QueryMilestones().Where(im.KindEQ(im.KindOpened))
+	msQuery := p.inc.QueryMilestones().Where(im.KindEQ(im.KindDetection))
 	ms, msErr := msQuery.First(ctx)
 	if msErr != nil && !ent.IsNotFound(msErr) {
 		return nil, fmt.Errorf("query milestones: %w", msErr)

@@ -23,7 +23,7 @@ mod packages 'packages'
 [doc("Generate all code")]
 @codegen:
     just backend::codegen
-    just packages::generate-api-client
+    bun run --filter=@rezible/api-client-ts build
 
 [doc("Regenerate Ent and the initial migration, then recreate this workspace's database")]
 @regenerate-and-apply-db-schema:

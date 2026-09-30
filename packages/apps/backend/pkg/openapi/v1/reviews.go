@@ -8,6 +8,7 @@ import (
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/review"
 )
 
 type ReviewsHandler interface {
@@ -26,6 +27,16 @@ func (o operations) RegisterReviews(api huma.API) {
 	huma.Register(api, ArchiveReview, o.ArchiveReview)
 }
 
+func (o operations) RegisterReviewEnums(api huma.API) {
+	registerEnumAlias[review.State, reviewStateSchema](api)
+}
+
+type reviewStateSchema review.State
+
+func (reviewStateSchema) Schema(huma.Registry) *huma.Schema {
+	return makeEnumStringSchema(review.StateValues)
+}
+
 type (
 	Review struct {
 		Id         uuid.UUID        `json:"id"`
@@ -33,14 +44,14 @@ type (
 	}
 
 	ReviewAttributes struct {
-		CreatedAt       time.Time  `json:"createdAt"`
-		UpdatedAt       time.Time  `json:"updatedAt"`
-		RequesterId     uuid.UUID  `json:"requesterId"`
-		ReviewerId      uuid.UUID  `json:"reviewerId"`
-		CommentId       *uuid.UUID `json:"commentId,omitempty"`
-		State           string     `json:"state" enum:"waiting,request_changes,approved"`
-		RetrospectiveId *uuid.UUID `json:"retrospectiveId,omitempty"`
-		AnalysisEntryId *uuid.UUID `json:"analysisEntryId,omitempty"`
+		CreatedAt       time.Time    `json:"createdAt"`
+		UpdatedAt       time.Time    `json:"updatedAt"`
+		RequesterId     uuid.UUID    `json:"requesterId"`
+		ReviewerId      uuid.UUID    `json:"reviewerId"`
+		CommentId       *uuid.UUID   `json:"commentId,omitempty"`
+		State           review.State `json:"state"`
+		RetrospectiveId *uuid.UUID   `json:"retrospectiveId,omitempty"`
+		AnalysisEntryId *uuid.UUID   `json:"analysisEntryId,omitempty"`
 	}
 )
 
@@ -50,7 +61,7 @@ func ReviewFromEnt(v *ent.Review) Review {
 		UpdatedAt:   v.UpdatedAt,
 		RequesterId: v.RequesterID,
 		ReviewerId:  v.ReviewerID,
-		State:       v.State.String(),
+		State:       v.State,
 	}
 	if v.RetrospectiveID != nil {
 		attr.RetrospectiveId = v.RetrospectiveID

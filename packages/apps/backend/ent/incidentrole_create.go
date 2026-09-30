@@ -220,7 +220,7 @@ func (_c *IncidentRoleCreate) createSpec() (*IncidentRole, *sqlgraph.CreateSpec)
 	}
 	if value, ok := _c.mutation.ArchiveTime(); ok {
 		_spec.SetField(incidentrole.FieldArchiveTime, field.TypeTime, value)
-		_node.ArchiveTime = value
+		_node.ArchiveTime = &value
 	}
 	if value, ok := _c.mutation.Name(); ok {
 		_spec.SetField(incidentrole.FieldName, field.TypeString, value)

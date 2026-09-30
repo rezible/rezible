@@ -318,7 +318,7 @@ func (_c *OncallRosterCreate) createSpec() (*OncallRoster, *sqlgraph.CreateSpec)
 	}
 	if value, ok := _c.mutation.ArchiveTime(); ok {
 		_spec.SetField(oncallroster.FieldArchiveTime, field.TypeTime, value)
-		_node.ArchiveTime = value
+		_node.ArchiveTime = &value
 	}
 	if value, ok := _c.mutation.Name(); ok {
 		_spec.SetField(oncallroster.FieldName, field.TypeString, value)

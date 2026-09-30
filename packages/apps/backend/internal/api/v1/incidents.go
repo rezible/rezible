@@ -5,18 +5,19 @@ import (
 
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
-	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/predicate"
 	oapi "github.com/rezible/rezible/pkg/openapi/v1"
 )
 
 type incidentsHandler struct {
+	*baseHandler
+	db        rez.Database
 	incidents rez.IncidentService
 }
 
-func newIncidentsHandler(incidents rez.IncidentService) *incidentsHandler {
-	return &incidentsHandler{incidents: incidents}
+func newIncidentsHandler(base *baseHandler, db rez.Database, incidents rez.IncidentService) *incidentsHandler {
+	return &incidentsHandler{baseHandler: base, db: db, incidents: incidents}
 }
 
 func incidentIdPredicate(id oapi.FlexibleId) predicate.Incident {
@@ -30,9 +31,9 @@ func (h *incidentsHandler) ListIncidents(ctx context.Context, req *oapi.ListInci
 	var resp oapi.ListIncidentsResponse
 
 	params := rez.ListIncidentsParams{
-		ListParams: req.ListParams(),
-		Statuses:   req.Statuses,
-		SeverityId: req.SeverityId,
+		ListParams:     req.ListParams(),
+		ResponseStates: req.ResponseStates,
+		SeverityId:     req.SeverityId,
 	}
 	params.Search = req.Search
 	incs, listErr := h.incidents.ListIncidents(ctx, params)
@@ -57,73 +58,11 @@ func (h *incidentsHandler) GetIncident(ctx context.Context, input *oapi.GetIncid
 }
 
 func (h *incidentsHandler) CreateIncident(ctx context.Context, input *oapi.CreateIncidentRequest) (*oapi.CreateIncidentResponse, error) {
-	/*
-		attr := input.Body.Attributes
-		setFn := func(m *ent.IncidentMutation) []ent.Mutation {
-			m.SetTitle(attr.Title)
-			m.SetSeverityID(attr.SeverityId)
-			m.SetTypeID(attr.TypeId)
-			if attr.Summary != nil {
-				m.SetSummary(*attr.Summary)
-			}
-			if len(attr.TagIds) > 0 {
-				m.AddTagAssignmentIDs(attr.TagIds...)
-			}
-			if len(attr.FieldSelectionIds) > 0 {
-				m.AddFieldSelectionIDs(attr.FieldSelectionIds...)
-			}
-
-			incidentId, exists := m.ID()
-			if !exists {
-				return nil
-			}
-
-			createMilestone := m.Client().IncidentMilestone.Create().
-				SetKind(im.KindOpened).
-				SetDescription("Incident created via API").
-				SetTimestamp(time.Now()).
-				SetSource("api").
-				SetIncidentID(incidentId)
-
-			return []ent.Mutation{createMilestone.Mutation()}
-		}
-
-		created, createErr := h.incidents.Set(ctx, setFn)
-		if createErr != nil {
-			return nil, oapi.Error(ctx, "create incident", createErr)
-		}
-		resp.Body.Data = oapi.IncidentFromEnt(created)
-	*/
-
 	return nil, oapi.Error(ctx, "create incident is not implemented", rez.ErrNotImplemented)
 }
 
 func (h *incidentsHandler) UpdateIncident(ctx context.Context, request *oapi.UpdateIncidentRequest) (*oapi.UpdateIncidentResponse, error) {
-	var resp oapi.UpdateIncidentResponse
-
-	attr := request.Body.Attributes
-	setFn := func(m *ent.IncidentMutation) {
-		if attr.Title != nil {
-			m.SetTitle(*attr.Title)
-		}
-		if attr.Summary != nil {
-			m.SetSummary(*attr.Summary)
-		}
-		if attr.SeverityId != uuid.Nil {
-			m.SetSeverityID(attr.SeverityId)
-		}
-		if attr.TypeId != uuid.Nil {
-			m.SetTypeID(attr.TypeId)
-		}
-	}
-
-	updated, updateErr := h.incidents.Set(ctx, request.Id, setFn)
-	if updateErr != nil {
-		return nil, oapi.Error(ctx, "update incident", updateErr)
-	}
-	resp.Body.Data = oapi.IncidentFromEnt(updated)
-
-	return &resp, nil
+	return nil, oapi.Error(ctx, "incident is read-only", rez.ErrNotImplemented)
 }
 
 func (h *incidentsHandler) ArchiveIncident(ctx context.Context, input *oapi.ArchiveIncidentRequest) (*oapi.ArchiveIncidentResponse, error) {
@@ -134,6 +73,39 @@ func (h *incidentsHandler) ArchiveIncident(ctx context.Context, input *oapi.Arch
 	}
 
 	return &resp, nil
+}
+
+func (h *incidentsHandler) ListIncidentMilestones(ctx context.Context, request *oapi.ListIncidentMilestonesRequest) (*oapi.ListIncidentMilestonesResponse, error) {
+	milestones, milestonesErr := h.incidents.ListMilestonesForIncident(ctx, request.Id)
+	if milestonesErr != nil {
+		return nil, oapi.Error(ctx, "failed to query incident events", milestonesErr)
+	}
+	var resp oapi.ListIncidentMilestonesResponse
+	resp.Body.Data = oapi.ConvertSlice(milestones, oapi.IncidentMilestoneFromEnt)
+	return &resp, nil
+}
+
+func (h *incidentsHandler) CreateIncidentRoleAssignment(ctx context.Context, request *oapi.CreateIncidentRoleAssignmentRequest) (*oapi.CreateIncidentRoleAssignmentResponse, error) {
+	attr := request.Body.Attributes
+	params := rez.SetIncidentRoleAssignmentParams{
+		IncidentID: request.Id,
+		RoleID:     attr.RoleId,
+		UserID:     attr.UserId,
+	}
+	assignment, saveErr := h.incidents.SetIncidentRoleAssignment(ctx, uuid.Nil, params)
+	if saveErr != nil {
+		return nil, oapi.Error(ctx, "assign incident role", saveErr)
+	}
+	var resp oapi.CreateIncidentRoleAssignmentResponse
+	resp.Body.Data = oapi.IncidentUserRoleAssignmentFromEnt(assignment)
+	return &resp, nil
+}
+
+func (h *incidentsHandler) DeleteIncidentRoleAssignment(ctx context.Context, request *oapi.DeleteIncidentRoleAssignmentRequest) (*oapi.DeleteIncidentRoleAssignmentResponse, error) {
+	if deleteErr := h.incidents.DeleteIncidentRoleAssignment(ctx, request.Id); deleteErr != nil {
+		return nil, oapi.Error(ctx, "delete incident role assignment", deleteErr)
+	}
+	return &oapi.DeleteIncidentRoleAssignmentResponse{}, nil
 }
 
 func (*incidentsHandler) LinkIncidentSituation(ctx context.Context, _ *oapi.LinkIncidentSituationRequest) (*oapi.LinkIncidentSituationResponse, error) {

@@ -32,8 +32,8 @@ type DiscussionCommentQuery struct {
 	predicates  []predicate.DiscussionComment
 	withTenant  *TenantQuery
 	withThread  *DiscussionThreadQuery
-	withUser    *UserQuery
 	withParent  *DiscussionCommentQuery
+	withUser    *UserQuery
 	withReplies *DiscussionCommentQuery
 	withReviews *ReviewQuery
 	modifiers   []func(*sql.Selector)
@@ -123,31 +123,6 @@ func (_q *DiscussionCommentQuery) QueryThread() *DiscussionThreadQuery {
 	return query
 }
 
-// QueryUser chains the current query on the "user" edge.
-func (_q *DiscussionCommentQuery) QueryUser() *UserQuery {
-	query := (&UserClient{config: _q.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := _q.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := _q.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(discussioncomment.Table, discussioncomment.FieldID, selector),
-			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, discussioncomment.UserTable, discussioncomment.UserColumn),
-		)
-		schemaConfig := _q.schemaConfig
-		step.To.Schema = schemaConfig.User
-		step.Edge.Schema = schemaConfig.DiscussionComment
-		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
 // QueryParent chains the current query on the "parent" edge.
 func (_q *DiscussionCommentQuery) QueryParent() *DiscussionCommentQuery {
 	query := (&DiscussionCommentClient{config: _q.config}).Query()
@@ -166,6 +141,31 @@ func (_q *DiscussionCommentQuery) QueryParent() *DiscussionCommentQuery {
 		)
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.DiscussionComment
+		step.Edge.Schema = schemaConfig.DiscussionComment
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryUser chains the current query on the "user" edge.
+func (_q *DiscussionCommentQuery) QueryUser() *UserQuery {
+	query := (&UserClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(discussioncomment.Table, discussioncomment.FieldID, selector),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, discussioncomment.UserTable, discussioncomment.UserColumn),
+		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.User
 		step.Edge.Schema = schemaConfig.DiscussionComment
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -417,8 +417,8 @@ func (_q *DiscussionCommentQuery) Clone() *DiscussionCommentQuery {
 		predicates:  append([]predicate.DiscussionComment{}, _q.predicates...),
 		withTenant:  _q.withTenant.Clone(),
 		withThread:  _q.withThread.Clone(),
-		withUser:    _q.withUser.Clone(),
 		withParent:  _q.withParent.Clone(),
+		withUser:    _q.withUser.Clone(),
 		withReplies: _q.withReplies.Clone(),
 		withReviews: _q.withReviews.Clone(),
 		// clone intermediate query.
@@ -450,17 +450,6 @@ func (_q *DiscussionCommentQuery) WithThread(opts ...func(*DiscussionThreadQuery
 	return _q
 }
 
-// WithUser tells the query-builder to eager-load the nodes that are connected to
-// the "user" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *DiscussionCommentQuery) WithUser(opts ...func(*UserQuery)) *DiscussionCommentQuery {
-	query := (&UserClient{config: _q.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	_q.withUser = query
-	return _q
-}
-
 // WithParent tells the query-builder to eager-load the nodes that are connected to
 // the "parent" edge. The optional arguments are used to configure the query builder of the edge.
 func (_q *DiscussionCommentQuery) WithParent(opts ...func(*DiscussionCommentQuery)) *DiscussionCommentQuery {
@@ -469,6 +458,17 @@ func (_q *DiscussionCommentQuery) WithParent(opts ...func(*DiscussionCommentQuer
 		opt(query)
 	}
 	_q.withParent = query
+	return _q
+}
+
+// WithUser tells the query-builder to eager-load the nodes that are connected to
+// the "user" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *DiscussionCommentQuery) WithUser(opts ...func(*UserQuery)) *DiscussionCommentQuery {
+	query := (&UserClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withUser = query
 	return _q
 }
 
@@ -581,8 +581,8 @@ func (_q *DiscussionCommentQuery) sqlAll(ctx context.Context, hooks ...queryHook
 		loadedTypes = [6]bool{
 			_q.withTenant != nil,
 			_q.withThread != nil,
-			_q.withUser != nil,
 			_q.withParent != nil,
+			_q.withUser != nil,
 			_q.withReplies != nil,
 			_q.withReviews != nil,
 		}
@@ -622,15 +622,15 @@ func (_q *DiscussionCommentQuery) sqlAll(ctx context.Context, hooks ...queryHook
 			return nil, err
 		}
 	}
-	if query := _q.withUser; query != nil {
-		if err := _q.loadUser(ctx, query, nodes, nil,
-			func(n *DiscussionComment, e *User) { n.Edges.User = e }); err != nil {
-			return nil, err
-		}
-	}
 	if query := _q.withParent; query != nil {
 		if err := _q.loadParent(ctx, query, nodes, nil,
 			func(n *DiscussionComment, e *DiscussionComment) { n.Edges.Parent = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withUser; query != nil {
+		if err := _q.loadUser(ctx, query, nodes, nil,
+			func(n *DiscussionComment, e *User) { n.Edges.User = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -709,35 +709,6 @@ func (_q *DiscussionCommentQuery) loadThread(ctx context.Context, query *Discuss
 	}
 	return nil
 }
-func (_q *DiscussionCommentQuery) loadUser(ctx context.Context, query *UserQuery, nodes []*DiscussionComment, init func(*DiscussionComment), assign func(*DiscussionComment, *User)) error {
-	ids := make([]uuid.UUID, 0, len(nodes))
-	nodeids := make(map[uuid.UUID][]*DiscussionComment)
-	for i := range nodes {
-		fk := nodes[i].UserID
-		if _, ok := nodeids[fk]; !ok {
-			ids = append(ids, fk)
-		}
-		nodeids[fk] = append(nodeids[fk], nodes[i])
-	}
-	if len(ids) == 0 {
-		return nil
-	}
-	query.Where(user.IDIn(ids...))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		nodes, ok := nodeids[n.ID]
-		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "user_id" returned %v`, n.ID)
-		}
-		for i := range nodes {
-			assign(nodes[i], n)
-		}
-	}
-	return nil
-}
 func (_q *DiscussionCommentQuery) loadParent(ctx context.Context, query *DiscussionCommentQuery, nodes []*DiscussionComment, init func(*DiscussionComment), assign func(*DiscussionComment, *DiscussionComment)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*DiscussionComment)
@@ -763,6 +734,35 @@ func (_q *DiscussionCommentQuery) loadParent(ctx context.Context, query *Discuss
 		nodes, ok := nodeids[n.ID]
 		if !ok {
 			return fmt.Errorf(`unexpected foreign-key "parent_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (_q *DiscussionCommentQuery) loadUser(ctx context.Context, query *UserQuery, nodes []*DiscussionComment, init func(*DiscussionComment), assign func(*DiscussionComment, *User)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*DiscussionComment)
+	for i := range nodes {
+		fk := nodes[i].UserID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(user.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "user_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -873,11 +873,11 @@ func (_q *DiscussionCommentQuery) querySpec() *sqlgraph.QuerySpec {
 		if _q.withThread != nil {
 			_spec.Node.AddColumnOnce(discussioncomment.FieldThreadID)
 		}
-		if _q.withUser != nil {
-			_spec.Node.AddColumnOnce(discussioncomment.FieldUserID)
-		}
 		if _q.withParent != nil {
 			_spec.Node.AddColumnOnce(discussioncomment.FieldParentID)
+		}
+		if _q.withUser != nil {
+			_spec.Node.AddColumnOnce(discussioncomment.FieldUserID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {

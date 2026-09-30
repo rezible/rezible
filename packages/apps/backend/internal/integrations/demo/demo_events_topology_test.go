@@ -1,10 +1,14 @@
 package demoprovider
 
 import (
+	"encoding/json"
 	"testing"
+	"time"
 
+	rez "github.com/rezible/rezible"
 	kne "github.com/rezible/rezible/ent/knowledgeentity"
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
+	"github.com/rezible/rezible/pkg/projections"
 )
 
 func TestDemoTopologyCoversMapLevelsAndPreservesReferences(t *testing.T) {
@@ -77,5 +81,51 @@ func TestDemoTopologyCoversMapLevelsAndPreservesReferences(t *testing.T) {
 		if containsMemberships[componentRef(id)] < 2 {
 			t.Errorf("demo shared member %q has fewer than two explicit contains memberships", id)
 		}
+	}
+}
+
+func TestIncidentProcessorLeavesUnknownOptionalDatesNull(t *testing.T) {
+	receivedAt := time.Date(2026, 6, 1, 11, 0, 0, 0, time.UTC)
+	openedAt := time.Date(2026, 6, 1, 10, 0, 0, 0, time.UTC)
+	payload, marshalErr := json.Marshal(incidentObservedPayload{
+		ResourceID:    "unknown-dates",
+		Title:         "Unknown incident dates",
+		SeverityRef:   "SEV-3",
+		TypeRef:       "Internal Tooling",
+		ResponseState: "resolved",
+		OccurredAt:    openedAt,
+	})
+	if marshalErr != nil {
+		t.Fatalf("marshal demo incident: %v", marshalErr)
+	}
+
+	providerEvent := rez.ProviderEvent{
+		ProviderNamespace:   integrationName,
+		ProviderEventSource: sourceIncidents,
+		ReceivedAt:          receivedAt,
+		Attributes:          payload,
+	}
+	events, processErr := (&eventProcessor{event: &providerEvent}).processIncident()
+	if processErr != nil {
+		t.Fatalf("process demo incident: %v", processErr)
+	}
+	if len(events) != 1 {
+		t.Fatalf("processed %d normalized events, want 1", len(events))
+	}
+	decoded, decodeErr := projections.DecodeIncidentEvent(events[0])
+	if decodeErr != nil {
+		t.Fatalf("decode projected incident: %v", decodeErr)
+	}
+	if decoded.Attributes.ResolvedAt != nil {
+		t.Fatalf("resolved_at = %v, want null", decoded.Attributes.ResolvedAt)
+	}
+	if decoded.Attributes.SourceUpdatedAt != nil {
+		t.Fatalf("source_updated_at = %v, want null", decoded.Attributes.SourceUpdatedAt)
+	}
+	if !decoded.Attributes.OpenedAt.Equal(openedAt) {
+		t.Fatalf("opened_at = %s, want source time %s", decoded.Attributes.OpenedAt, openedAt)
+	}
+	if !events[0].ReceivedAt.Equal(receivedAt) {
+		t.Fatalf("received_at = %s, want receipt time %s", events[0].ReceivedAt, receivedAt)
 	}
 }

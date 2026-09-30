@@ -324,9 +324,9 @@ var schemaGraph = func() *sqlgraph.Schema {
 			discussioncomment.FieldCreatedAt: {Type: field.TypeTime, Column: discussioncomment.FieldCreatedAt},
 			discussioncomment.FieldUpdatedAt: {Type: field.TypeTime, Column: discussioncomment.FieldUpdatedAt},
 			discussioncomment.FieldThreadID:  {Type: field.TypeUUID, Column: discussioncomment.FieldThreadID},
+			discussioncomment.FieldParentID:  {Type: field.TypeUUID, Column: discussioncomment.FieldParentID},
 			discussioncomment.FieldUserID:    {Type: field.TypeUUID, Column: discussioncomment.FieldUserID},
 			discussioncomment.FieldContent:   {Type: field.TypeString, Column: discussioncomment.FieldContent},
-			discussioncomment.FieldParentID:  {Type: field.TypeUUID, Column: discussioncomment.FieldParentID},
 		},
 	}
 	graph.Nodes[11] = &sqlgraph.Node{
@@ -346,7 +346,6 @@ var schemaGraph = func() *sqlgraph.Schema {
 			discussionthread.FieldAnalysisID:      {Type: field.TypeUUID, Column: discussionthread.FieldAnalysisID},
 			discussionthread.FieldRetrospectiveID: {Type: field.TypeUUID, Column: discussionthread.FieldRetrospectiveID},
 			discussionthread.FieldUserID:          {Type: field.TypeUUID, Column: discussionthread.FieldUserID},
-			discussionthread.FieldKind:            {Type: field.TypeEnum, Column: discussionthread.FieldKind},
 			discussionthread.FieldTargetKind:      {Type: field.TypeEnum, Column: discussionthread.FieldTargetKind},
 			discussionthread.FieldTargetID:        {Type: field.TypeUUID, Column: discussionthread.FieldTargetID},
 			discussionthread.FieldResolutionState: {Type: field.TypeEnum, Column: discussionthread.FieldResolutionState},
@@ -434,7 +433,9 @@ var schemaGraph = func() *sqlgraph.Schema {
 			incident.FieldTypeID:            {Type: field.TypeUUID, Column: incident.FieldTypeID},
 			incident.FieldSummary:           {Type: field.TypeString, Column: incident.FieldSummary},
 			incident.FieldChatChannelID:     {Type: field.TypeString, Column: incident.FieldChatChannelID},
+			incident.FieldResponseState:     {Type: field.TypeEnum, Column: incident.FieldResponseState},
 			incident.FieldOpenedAt:          {Type: field.TypeTime, Column: incident.FieldOpenedAt},
+			incident.FieldResolvedAt:        {Type: field.TypeTime, Column: incident.FieldResolvedAt},
 		},
 	}
 	graph.Nodes[16] = &sqlgraph.Node{
@@ -1344,6 +1345,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			organizationpreferences.FieldOrganizationID:           {Type: field.TypeUUID, Column: organizationpreferences.FieldOrganizationID},
 			organizationpreferences.FieldInitialSetupAt:           {Type: field.TypeTime, Column: organizationpreferences.FieldInitialSetupAt},
 			organizationpreferences.FieldEnableIncidentManagement: {Type: field.TypeBool, Column: organizationpreferences.FieldEnableIncidentManagement},
+			organizationpreferences.FieldRequiredReviewerCount:    {Type: field.TypeInt, Column: organizationpreferences.FieldRequiredReviewerCount},
 			organizationpreferences.FieldTimezone:                 {Type: field.TypeString, Column: organizationpreferences.FieldTimezone},
 		},
 	}
@@ -1395,7 +1397,6 @@ var schemaGraph = func() *sqlgraph.Schema {
 			retrospective.FieldIncidentID:       {Type: field.TypeUUID, Column: retrospective.FieldIncidentID},
 			retrospective.FieldDocumentID:       {Type: field.TypeUUID, Column: retrospective.FieldDocumentID},
 			retrospective.FieldSystemAnalysisID: {Type: field.TypeUUID, Column: retrospective.FieldSystemAnalysisID},
-			retrospective.FieldKind:             {Type: field.TypeEnum, Column: retrospective.FieldKind},
 			retrospective.FieldState:            {Type: field.TypeEnum, Column: retrospective.FieldState},
 		},
 	}
@@ -1419,6 +1420,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			review.FieldRequesterID:     {Type: field.TypeUUID, Column: review.FieldRequesterID},
 			review.FieldReviewerID:      {Type: field.TypeUUID, Column: review.FieldReviewerID},
 			review.FieldState:           {Type: field.TypeEnum, Column: review.FieldState},
+			review.FieldFeedback:        {Type: field.TypeString, Column: review.FieldFeedback},
 		},
 	}
 	graph.Nodes[68] = &sqlgraph.Node{
@@ -1561,12 +1563,14 @@ var schemaGraph = func() *sqlgraph.Schema {
 			systemanalysisentry.FieldCreatedAt:  {Type: field.TypeTime, Column: systemanalysisentry.FieldCreatedAt},
 			systemanalysisentry.FieldUpdatedAt:  {Type: field.TypeTime, Column: systemanalysisentry.FieldUpdatedAt},
 			systemanalysisentry.FieldAnalysisID: {Type: field.TypeUUID, Column: systemanalysisentry.FieldAnalysisID},
+			systemanalysisentry.FieldAuthorID:   {Type: field.TypeUUID, Column: systemanalysisentry.FieldAuthorID},
 			systemanalysisentry.FieldReference:  {Type: field.TypeString, Column: systemanalysisentry.FieldReference},
 			systemanalysisentry.FieldKind:       {Type: field.TypeEnum, Column: systemanalysisentry.FieldKind},
 			systemanalysisentry.FieldOccurredAt: {Type: field.TypeTime, Column: systemanalysisentry.FieldOccurredAt},
 			systemanalysisentry.FieldSequence:   {Type: field.TypeInt, Column: systemanalysisentry.FieldSequence},
 			systemanalysisentry.FieldTitle:      {Type: field.TypeString, Column: systemanalysisentry.FieldTitle},
 			systemanalysisentry.FieldBody:       {Type: field.TypeString, Column: systemanalysisentry.FieldBody},
+			systemanalysisentry.FieldVersion:    {Type: field.TypeInt, Column: systemanalysisentry.FieldVersion},
 			systemanalysisentry.FieldProperties: {Type: field.TypeJSON, Column: systemanalysisentry.FieldProperties},
 		},
 	}
@@ -1672,8 +1676,11 @@ var schemaGraph = func() *sqlgraph.Schema {
 			task.FieldTenantID:      {Type: field.TypeInt, Column: task.FieldTenantID},
 			task.FieldCreatedAt:     {Type: field.TypeTime, Column: task.FieldCreatedAt},
 			task.FieldUpdatedAt:     {Type: field.TypeTime, Column: task.FieldUpdatedAt},
-			task.FieldType:          {Type: field.TypeEnum, Column: task.FieldType},
+			task.FieldArchiveTime:   {Type: field.TypeTime, Column: task.FieldArchiveTime},
+			task.FieldVersion:       {Type: field.TypeInt, Column: task.FieldVersion},
 			task.FieldTitle:         {Type: field.TypeString, Column: task.FieldTitle},
+			task.FieldDescription:   {Type: field.TypeString, Column: task.FieldDescription},
+			task.FieldKind:          {Type: field.TypeEnum, Column: task.FieldKind},
 			task.FieldState:         {Type: field.TypeEnum, Column: task.FieldState},
 			task.FieldDueAt:         {Type: field.TypeTime, Column: task.FieldDueAt},
 			task.FieldIncidentID:    {Type: field.TypeUUID, Column: task.FieldIncidentID},
@@ -2253,18 +2260,6 @@ var schemaGraph = func() *sqlgraph.Schema {
 		"DiscussionThread",
 	)
 	graph.MustAddE(
-		"user",
-		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   discussioncomment.UserTable,
-			Columns: []string{discussioncomment.UserColumn},
-			Bidi:    false,
-		},
-		"DiscussionComment",
-		"User",
-	)
-	graph.MustAddE(
 		"parent",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -2275,6 +2270,18 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		"DiscussionComment",
 		"DiscussionComment",
+	)
+	graph.MustAddE(
+		"user",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   discussioncomment.UserTable,
+			Columns: []string{discussioncomment.UserColumn},
+			Bidi:    false,
+		},
+		"DiscussionComment",
+		"User",
 	)
 	graph.MustAddE(
 		"replies",
@@ -2565,18 +2572,6 @@ var schemaGraph = func() *sqlgraph.Schema {
 		"Retrospective",
 	)
 	graph.MustAddE(
-		"users",
-		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   incident.UsersTable,
-			Columns: incident.UsersPrimaryKey,
-			Bidi:    false,
-		},
-		"Incident",
-		"User",
-	)
-	graph.MustAddE(
 		"role_assignments",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -2625,18 +2620,6 @@ var schemaGraph = func() *sqlgraph.Schema {
 		"IncidentFieldOption",
 	)
 	graph.MustAddE(
-		"tasks",
-		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   incident.TasksTable,
-			Columns: []string{incident.TasksColumn},
-			Bidi:    false,
-		},
-		"Incident",
-		"Task",
-	)
-	graph.MustAddE(
 		"tag_assignments",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
@@ -2673,40 +2656,16 @@ var schemaGraph = func() *sqlgraph.Schema {
 		"IncidentDebrief",
 	)
 	graph.MustAddE(
-		"review_sessions",
-		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   incident.ReviewSessionsTable,
-			Columns: incident.ReviewSessionsPrimaryKey,
-			Bidi:    false,
-		},
-		"Incident",
-		"MeetingSession",
-	)
-	graph.MustAddE(
 		"video_conferences",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
-			Inverse: false,
+			Inverse: true,
 			Table:   incident.VideoConferencesTable,
 			Columns: []string{incident.VideoConferencesColumn},
 			Bidi:    false,
 		},
 		"Incident",
 		"VideoConference",
-	)
-	graph.MustAddE(
-		"user_roles",
-		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   incident.UserRolesTable,
-			Columns: []string{incident.UserRolesColumn},
-			Bidi:    false,
-		},
-		"Incident",
-		"IncidentRoleAssignment",
 	)
 	graph.MustAddE(
 		"incident_links",
@@ -4173,18 +4132,6 @@ var schemaGraph = func() *sqlgraph.Schema {
 		"Tenant",
 	)
 	graph.MustAddE(
-		"incidents",
-		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   meetingsession.IncidentsTable,
-			Columns: meetingsession.IncidentsPrimaryKey,
-			Bidi:    false,
-		},
-		"MeetingSession",
-		"Incident",
-	)
-	graph.MustAddE(
 		"video_conference",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
@@ -4881,6 +4828,18 @@ var schemaGraph = func() *sqlgraph.Schema {
 		"SystemAnalysisEntry",
 	)
 	graph.MustAddE(
+		"comment",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   review.CommentTable,
+			Columns: []string{review.CommentColumn},
+			Bidi:    false,
+		},
+		"Review",
+		"DiscussionComment",
+	)
+	graph.MustAddE(
 		"requester",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -4903,18 +4862,6 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		"Review",
 		"User",
-	)
-	graph.MustAddE(
-		"comment",
-		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   review.CommentTable,
-			Columns: []string{review.CommentColumn},
-			Bidi:    false,
-		},
-		"Review",
-		"DiscussionComment",
 	)
 	graph.MustAddE(
 		"tenant",
@@ -5277,6 +5224,18 @@ var schemaGraph = func() *sqlgraph.Schema {
 		"SystemAnalysis",
 	)
 	graph.MustAddE(
+		"author",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   systemanalysisentry.AuthorTable,
+			Columns: []string{systemanalysisentry.AuthorColumn},
+			Bidi:    false,
+		},
+		"SystemAnalysisEntry",
+		"User",
+	)
+	graph.MustAddE(
 		"subjects",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -5505,18 +5464,6 @@ var schemaGraph = func() *sqlgraph.Schema {
 		"Ticket",
 	)
 	graph.MustAddE(
-		"incident",
-		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   task.IncidentTable,
-			Columns: []string{task.IncidentColumn},
-			Bidi:    false,
-		},
-		"Task",
-		"Incident",
-	)
-	graph.MustAddE(
 		"origin_entry",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -5529,10 +5476,22 @@ var schemaGraph = func() *sqlgraph.Schema {
 		"SystemAnalysisEntry",
 	)
 	graph.MustAddE(
+		"incident",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   task.IncidentTable,
+			Columns: []string{task.IncidentColumn},
+			Bidi:    false,
+		},
+		"Task",
+		"Incident",
+	)
+	graph.MustAddE(
 		"assignee",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
-			Inverse: true,
+			Inverse: false,
 			Table:   task.AssigneeTable,
 			Columns: []string{task.AssigneeColumn},
 			Bidi:    false,
@@ -5544,7 +5503,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 		"creator",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
-			Inverse: true,
+			Inverse: false,
 			Table:   task.CreatorTable,
 			Columns: []string{task.CreatorColumn},
 			Bidi:    false,
@@ -5829,18 +5788,6 @@ var schemaGraph = func() *sqlgraph.Schema {
 		"IntegrationUserInstallState",
 	)
 	graph.MustAddE(
-		"incidents",
-		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   user.IncidentsTable,
-			Columns: user.IncidentsPrimaryKey,
-			Bidi:    false,
-		},
-		"User",
-		"Incident",
-	)
-	graph.MustAddE(
 		"incident_milestones",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -5863,30 +5810,6 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		"User",
 		"IncidentDebrief",
-	)
-	graph.MustAddE(
-		"assigned_tasks",
-		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   user.AssignedTasksTable,
-			Columns: []string{user.AssignedTasksColumn},
-			Bidi:    false,
-		},
-		"User",
-		"Task",
-	)
-	graph.MustAddE(
-		"created_tasks",
-		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   user.CreatedTasksTable,
-			Columns: []string{user.CreatedTasksColumn},
-			Bidi:    false,
-		},
-		"User",
-		"Task",
 	)
 	graph.MustAddE(
 		"review_requests",
@@ -5961,18 +5884,6 @@ var schemaGraph = func() *sqlgraph.Schema {
 		"TeamMembership",
 	)
 	graph.MustAddE(
-		"role_assignments",
-		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   user.RoleAssignmentsTable,
-			Columns: []string{user.RoleAssignmentsColumn},
-			Bidi:    false,
-		},
-		"User",
-		"IncidentRoleAssignment",
-	)
-	graph.MustAddE(
 		"tenant",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -6024,7 +5935,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 		"incident",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
-			Inverse: true,
+			Inverse: false,
 			Table:   videoconference.IncidentTable,
 			Columns: []string{videoconference.IncidentColumn},
 			Bidi:    false,
@@ -7379,6 +7290,11 @@ func (f *DiscussionCommentFilter) WhereThreadID(p entql.ValueP) {
 	f.Where(p.Field(discussioncomment.FieldThreadID))
 }
 
+// WhereParentID applies the entql [16]byte predicate on the parent_id field.
+func (f *DiscussionCommentFilter) WhereParentID(p entql.ValueP) {
+	f.Where(p.Field(discussioncomment.FieldParentID))
+}
+
 // WhereUserID applies the entql [16]byte predicate on the user_id field.
 func (f *DiscussionCommentFilter) WhereUserID(p entql.ValueP) {
 	f.Where(p.Field(discussioncomment.FieldUserID))
@@ -7387,11 +7303,6 @@ func (f *DiscussionCommentFilter) WhereUserID(p entql.ValueP) {
 // WhereContent applies the entql string predicate on the content field.
 func (f *DiscussionCommentFilter) WhereContent(p entql.StringP) {
 	f.Where(p.Field(discussioncomment.FieldContent))
-}
-
-// WhereParentID applies the entql [16]byte predicate on the parent_id field.
-func (f *DiscussionCommentFilter) WhereParentID(p entql.ValueP) {
-	f.Where(p.Field(discussioncomment.FieldParentID))
 }
 
 // WhereHasTenant applies a predicate to check if query has an edge tenant.
@@ -7422,20 +7333,6 @@ func (f *DiscussionCommentFilter) WhereHasThreadWith(preds ...predicate.Discussi
 	})))
 }
 
-// WhereHasUser applies a predicate to check if query has an edge user.
-func (f *DiscussionCommentFilter) WhereHasUser() {
-	f.Where(entql.HasEdge("user"))
-}
-
-// WhereHasUserWith applies a predicate to check if query has an edge user with a given conditions (other predicates).
-func (f *DiscussionCommentFilter) WhereHasUserWith(preds ...predicate.User) {
-	f.Where(entql.HasEdgeWith("user", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
-}
-
 // WhereHasParent applies a predicate to check if query has an edge parent.
 func (f *DiscussionCommentFilter) WhereHasParent() {
 	f.Where(entql.HasEdge("parent"))
@@ -7444,6 +7341,20 @@ func (f *DiscussionCommentFilter) WhereHasParent() {
 // WhereHasParentWith applies a predicate to check if query has an edge parent with a given conditions (other predicates).
 func (f *DiscussionCommentFilter) WhereHasParentWith(preds ...predicate.DiscussionComment) {
 	f.Where(entql.HasEdgeWith("parent", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasUser applies a predicate to check if query has an edge user.
+func (f *DiscussionCommentFilter) WhereHasUser() {
+	f.Where(entql.HasEdge("user"))
+}
+
+// WhereHasUserWith applies a predicate to check if query has an edge user with a given conditions (other predicates).
+func (f *DiscussionCommentFilter) WhereHasUserWith(preds ...predicate.User) {
+	f.Where(entql.HasEdgeWith("user", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}
@@ -7546,11 +7457,6 @@ func (f *DiscussionThreadFilter) WhereRetrospectiveID(p entql.ValueP) {
 // WhereUserID applies the entql [16]byte predicate on the user_id field.
 func (f *DiscussionThreadFilter) WhereUserID(p entql.ValueP) {
 	f.Where(p.Field(discussionthread.FieldUserID))
-}
-
-// WhereKind applies the entql string predicate on the kind field.
-func (f *DiscussionThreadFilter) WhereKind(p entql.StringP) {
-	f.Where(p.Field(discussionthread.FieldKind))
 }
 
 // WhereTargetKind applies the entql string predicate on the target_kind field.
@@ -8112,9 +8018,19 @@ func (f *IncidentFilter) WhereChatChannelID(p entql.StringP) {
 	f.Where(p.Field(incident.FieldChatChannelID))
 }
 
+// WhereResponseState applies the entql string predicate on the response_state field.
+func (f *IncidentFilter) WhereResponseState(p entql.StringP) {
+	f.Where(p.Field(incident.FieldResponseState))
+}
+
 // WhereOpenedAt applies the entql time.Time predicate on the opened_at field.
 func (f *IncidentFilter) WhereOpenedAt(p entql.TimeP) {
 	f.Where(p.Field(incident.FieldOpenedAt))
+}
+
+// WhereResolvedAt applies the entql time.Time predicate on the resolved_at field.
+func (f *IncidentFilter) WhereResolvedAt(p entql.TimeP) {
+	f.Where(p.Field(incident.FieldResolvedAt))
 }
 
 // WhereHasTenant applies a predicate to check if query has an edge tenant.
@@ -8201,20 +8117,6 @@ func (f *IncidentFilter) WhereHasRetrospectiveWith(preds ...predicate.Retrospect
 	})))
 }
 
-// WhereHasUsers applies a predicate to check if query has an edge users.
-func (f *IncidentFilter) WhereHasUsers() {
-	f.Where(entql.HasEdge("users"))
-}
-
-// WhereHasUsersWith applies a predicate to check if query has an edge users with a given conditions (other predicates).
-func (f *IncidentFilter) WhereHasUsersWith(preds ...predicate.User) {
-	f.Where(entql.HasEdgeWith("users", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
-}
-
 // WhereHasRoleAssignments applies a predicate to check if query has an edge role_assignments.
 func (f *IncidentFilter) WhereHasRoleAssignments() {
 	f.Where(entql.HasEdge("role_assignments"))
@@ -8271,20 +8173,6 @@ func (f *IncidentFilter) WhereHasFieldSelectionsWith(preds ...predicate.Incident
 	})))
 }
 
-// WhereHasTasks applies a predicate to check if query has an edge tasks.
-func (f *IncidentFilter) WhereHasTasks() {
-	f.Where(entql.HasEdge("tasks"))
-}
-
-// WhereHasTasksWith applies a predicate to check if query has an edge tasks with a given conditions (other predicates).
-func (f *IncidentFilter) WhereHasTasksWith(preds ...predicate.Task) {
-	f.Where(entql.HasEdgeWith("tasks", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
-}
-
 // WhereHasTagAssignments applies a predicate to check if query has an edge tag_assignments.
 func (f *IncidentFilter) WhereHasTagAssignments() {
 	f.Where(entql.HasEdge("tag_assignments"))
@@ -8327,20 +8215,6 @@ func (f *IncidentFilter) WhereHasDebriefsWith(preds ...predicate.IncidentDebrief
 	})))
 }
 
-// WhereHasReviewSessions applies a predicate to check if query has an edge review_sessions.
-func (f *IncidentFilter) WhereHasReviewSessions() {
-	f.Where(entql.HasEdge("review_sessions"))
-}
-
-// WhereHasReviewSessionsWith applies a predicate to check if query has an edge review_sessions with a given conditions (other predicates).
-func (f *IncidentFilter) WhereHasReviewSessionsWith(preds ...predicate.MeetingSession) {
-	f.Where(entql.HasEdgeWith("review_sessions", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
-}
-
 // WhereHasVideoConferences applies a predicate to check if query has an edge video_conferences.
 func (f *IncidentFilter) WhereHasVideoConferences() {
 	f.Where(entql.HasEdge("video_conferences"))
@@ -8349,20 +8223,6 @@ func (f *IncidentFilter) WhereHasVideoConferences() {
 // WhereHasVideoConferencesWith applies a predicate to check if query has an edge video_conferences with a given conditions (other predicates).
 func (f *IncidentFilter) WhereHasVideoConferencesWith(preds ...predicate.VideoConference) {
 	f.Where(entql.HasEdgeWith("video_conferences", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
-}
-
-// WhereHasUserRoles applies a predicate to check if query has an edge user_roles.
-func (f *IncidentFilter) WhereHasUserRoles() {
-	f.Where(entql.HasEdge("user_roles"))
-}
-
-// WhereHasUserRolesWith applies a predicate to check if query has an edge user_roles with a given conditions (other predicates).
-func (f *IncidentFilter) WhereHasUserRolesWith(preds ...predicate.IncidentRoleAssignment) {
-	f.Where(entql.HasEdgeWith("user_roles", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}
@@ -12502,20 +12362,6 @@ func (f *MeetingSessionFilter) WhereHasTenantWith(preds ...predicate.Tenant) {
 	})))
 }
 
-// WhereHasIncidents applies a predicate to check if query has an edge incidents.
-func (f *MeetingSessionFilter) WhereHasIncidents() {
-	f.Where(entql.HasEdge("incidents"))
-}
-
-// WhereHasIncidentsWith applies a predicate to check if query has an edge incidents with a given conditions (other predicates).
-func (f *MeetingSessionFilter) WhereHasIncidentsWith(preds ...predicate.Incident) {
-	f.Where(entql.HasEdgeWith("incidents", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
-}
-
 // WhereHasVideoConference applies a predicate to check if query has an edge video_conference.
 func (f *MeetingSessionFilter) WhereHasVideoConference() {
 	f.Where(entql.HasEdge("video_conference"))
@@ -14024,6 +13870,11 @@ func (f *OrganizationPreferencesFilter) WhereEnableIncidentManagement(p entql.Bo
 	f.Where(p.Field(organizationpreferences.FieldEnableIncidentManagement))
 }
 
+// WhereRequiredReviewerCount applies the entql int predicate on the required_reviewer_count field.
+func (f *OrganizationPreferencesFilter) WhereRequiredReviewerCount(p entql.IntP) {
+	f.Where(p.Field(organizationpreferences.FieldRequiredReviewerCount))
+}
+
 // WhereTimezone applies the entql string predicate on the timezone field.
 func (f *OrganizationPreferencesFilter) WhereTimezone(p entql.StringP) {
 	f.Where(p.Field(organizationpreferences.FieldTimezone))
@@ -14302,11 +14153,6 @@ func (f *RetrospectiveFilter) WhereSystemAnalysisID(p entql.ValueP) {
 	f.Where(p.Field(retrospective.FieldSystemAnalysisID))
 }
 
-// WhereKind applies the entql string predicate on the kind field.
-func (f *RetrospectiveFilter) WhereKind(p entql.StringP) {
-	f.Where(p.Field(retrospective.FieldKind))
-}
-
 // WhereState applies the entql string predicate on the state field.
 func (f *RetrospectiveFilter) WhereState(p entql.StringP) {
 	f.Where(p.Field(retrospective.FieldState))
@@ -14481,6 +14327,11 @@ func (f *ReviewFilter) WhereState(p entql.StringP) {
 	f.Where(p.Field(review.FieldState))
 }
 
+// WhereFeedback applies the entql string predicate on the feedback field.
+func (f *ReviewFilter) WhereFeedback(p entql.StringP) {
+	f.Where(p.Field(review.FieldFeedback))
+}
+
 // WhereHasTenant applies a predicate to check if query has an edge tenant.
 func (f *ReviewFilter) WhereHasTenant() {
 	f.Where(entql.HasEdge("tenant"))
@@ -14523,6 +14374,20 @@ func (f *ReviewFilter) WhereHasAnalysisEntryWith(preds ...predicate.SystemAnalys
 	})))
 }
 
+// WhereHasComment applies a predicate to check if query has an edge comment.
+func (f *ReviewFilter) WhereHasComment() {
+	f.Where(entql.HasEdge("comment"))
+}
+
+// WhereHasCommentWith applies a predicate to check if query has an edge comment with a given conditions (other predicates).
+func (f *ReviewFilter) WhereHasCommentWith(preds ...predicate.DiscussionComment) {
+	f.Where(entql.HasEdgeWith("comment", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
 // WhereHasRequester applies a predicate to check if query has an edge requester.
 func (f *ReviewFilter) WhereHasRequester() {
 	f.Where(entql.HasEdge("requester"))
@@ -14545,20 +14410,6 @@ func (f *ReviewFilter) WhereHasReviewer() {
 // WhereHasReviewerWith applies a predicate to check if query has an edge reviewer with a given conditions (other predicates).
 func (f *ReviewFilter) WhereHasReviewerWith(preds ...predicate.User) {
 	f.Where(entql.HasEdgeWith("reviewer", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
-}
-
-// WhereHasComment applies a predicate to check if query has an edge comment.
-func (f *ReviewFilter) WhereHasComment() {
-	f.Where(entql.HasEdge("comment"))
-}
-
-// WhereHasCommentWith applies a predicate to check if query has an edge comment with a given conditions (other predicates).
-func (f *ReviewFilter) WhereHasCommentWith(preds ...predicate.DiscussionComment) {
-	f.Where(entql.HasEdgeWith("comment", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}
@@ -15492,6 +15343,11 @@ func (f *SystemAnalysisEntryFilter) WhereAnalysisID(p entql.ValueP) {
 	f.Where(p.Field(systemanalysisentry.FieldAnalysisID))
 }
 
+// WhereAuthorID applies the entql [16]byte predicate on the author_id field.
+func (f *SystemAnalysisEntryFilter) WhereAuthorID(p entql.ValueP) {
+	f.Where(p.Field(systemanalysisentry.FieldAuthorID))
+}
+
 // WhereReference applies the entql string predicate on the reference field.
 func (f *SystemAnalysisEntryFilter) WhereReference(p entql.StringP) {
 	f.Where(p.Field(systemanalysisentry.FieldReference))
@@ -15522,6 +15378,11 @@ func (f *SystemAnalysisEntryFilter) WhereBody(p entql.StringP) {
 	f.Where(p.Field(systemanalysisentry.FieldBody))
 }
 
+// WhereVersion applies the entql int predicate on the version field.
+func (f *SystemAnalysisEntryFilter) WhereVersion(p entql.IntP) {
+	f.Where(p.Field(systemanalysisentry.FieldVersion))
+}
+
 // WhereProperties applies the entql json.RawMessage predicate on the properties field.
 func (f *SystemAnalysisEntryFilter) WhereProperties(p entql.BytesP) {
 	f.Where(p.Field(systemanalysisentry.FieldProperties))
@@ -15549,6 +15410,20 @@ func (f *SystemAnalysisEntryFilter) WhereHasAnalysis() {
 // WhereHasAnalysisWith applies a predicate to check if query has an edge analysis with a given conditions (other predicates).
 func (f *SystemAnalysisEntryFilter) WhereHasAnalysisWith(preds ...predicate.SystemAnalysis) {
 	f.Where(entql.HasEdgeWith("analysis", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasAuthor applies a predicate to check if query has an edge author.
+func (f *SystemAnalysisEntryFilter) WhereHasAuthor() {
+	f.Where(entql.HasEdge("author"))
+}
+
+// WhereHasAuthorWith applies a predicate to check if query has an edge author with a given conditions (other predicates).
+func (f *SystemAnalysisEntryFilter) WhereHasAuthorWith(preds ...predicate.User) {
+	f.Where(entql.HasEdgeWith("author", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}
@@ -16188,14 +16063,29 @@ func (f *TaskFilter) WhereUpdatedAt(p entql.TimeP) {
 	f.Where(p.Field(task.FieldUpdatedAt))
 }
 
-// WhereType applies the entql string predicate on the type field.
-func (f *TaskFilter) WhereType(p entql.StringP) {
-	f.Where(p.Field(task.FieldType))
+// WhereArchiveTime applies the entql time.Time predicate on the archive_time field.
+func (f *TaskFilter) WhereArchiveTime(p entql.TimeP) {
+	f.Where(p.Field(task.FieldArchiveTime))
+}
+
+// WhereVersion applies the entql int predicate on the version field.
+func (f *TaskFilter) WhereVersion(p entql.IntP) {
+	f.Where(p.Field(task.FieldVersion))
 }
 
 // WhereTitle applies the entql string predicate on the title field.
 func (f *TaskFilter) WhereTitle(p entql.StringP) {
 	f.Where(p.Field(task.FieldTitle))
+}
+
+// WhereDescription applies the entql string predicate on the description field.
+func (f *TaskFilter) WhereDescription(p entql.StringP) {
+	f.Where(p.Field(task.FieldDescription))
+}
+
+// WhereKind applies the entql string predicate on the kind field.
+func (f *TaskFilter) WhereKind(p entql.StringP) {
+	f.Where(p.Field(task.FieldKind))
 }
 
 // WhereState applies the entql string predicate on the state field.
@@ -16256,20 +16146,6 @@ func (f *TaskFilter) WhereHasTicketsWith(preds ...predicate.Ticket) {
 	})))
 }
 
-// WhereHasIncident applies a predicate to check if query has an edge incident.
-func (f *TaskFilter) WhereHasIncident() {
-	f.Where(entql.HasEdge("incident"))
-}
-
-// WhereHasIncidentWith applies a predicate to check if query has an edge incident with a given conditions (other predicates).
-func (f *TaskFilter) WhereHasIncidentWith(preds ...predicate.Incident) {
-	f.Where(entql.HasEdgeWith("incident", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
-}
-
 // WhereHasOriginEntry applies a predicate to check if query has an edge origin_entry.
 func (f *TaskFilter) WhereHasOriginEntry() {
 	f.Where(entql.HasEdge("origin_entry"))
@@ -16278,6 +16154,20 @@ func (f *TaskFilter) WhereHasOriginEntry() {
 // WhereHasOriginEntryWith applies a predicate to check if query has an edge origin_entry with a given conditions (other predicates).
 func (f *TaskFilter) WhereHasOriginEntryWith(preds ...predicate.SystemAnalysisEntry) {
 	f.Where(entql.HasEdgeWith("origin_entry", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasIncident applies a predicate to check if query has an edge incident.
+func (f *TaskFilter) WhereHasIncident() {
+	f.Where(entql.HasEdge("incident"))
+}
+
+// WhereHasIncidentWith applies a predicate to check if query has an edge incident with a given conditions (other predicates).
+func (f *TaskFilter) WhereHasIncidentWith(preds ...predicate.Incident) {
+	f.Where(entql.HasEdgeWith("incident", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}
@@ -16979,20 +16869,6 @@ func (f *UserFilter) WhereHasIntegrationOauthStatesWith(preds ...predicate.Integ
 	})))
 }
 
-// WhereHasIncidents applies a predicate to check if query has an edge incidents.
-func (f *UserFilter) WhereHasIncidents() {
-	f.Where(entql.HasEdge("incidents"))
-}
-
-// WhereHasIncidentsWith applies a predicate to check if query has an edge incidents with a given conditions (other predicates).
-func (f *UserFilter) WhereHasIncidentsWith(preds ...predicate.Incident) {
-	f.Where(entql.HasEdgeWith("incidents", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
-}
-
 // WhereHasIncidentMilestones applies a predicate to check if query has an edge incident_milestones.
 func (f *UserFilter) WhereHasIncidentMilestones() {
 	f.Where(entql.HasEdge("incident_milestones"))
@@ -17015,34 +16891,6 @@ func (f *UserFilter) WhereHasIncidentDebriefs() {
 // WhereHasIncidentDebriefsWith applies a predicate to check if query has an edge incident_debriefs with a given conditions (other predicates).
 func (f *UserFilter) WhereHasIncidentDebriefsWith(preds ...predicate.IncidentDebrief) {
 	f.Where(entql.HasEdgeWith("incident_debriefs", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
-}
-
-// WhereHasAssignedTasks applies a predicate to check if query has an edge assigned_tasks.
-func (f *UserFilter) WhereHasAssignedTasks() {
-	f.Where(entql.HasEdge("assigned_tasks"))
-}
-
-// WhereHasAssignedTasksWith applies a predicate to check if query has an edge assigned_tasks with a given conditions (other predicates).
-func (f *UserFilter) WhereHasAssignedTasksWith(preds ...predicate.Task) {
-	f.Where(entql.HasEdgeWith("assigned_tasks", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
-}
-
-// WhereHasCreatedTasks applies a predicate to check if query has an edge created_tasks.
-func (f *UserFilter) WhereHasCreatedTasks() {
-	f.Where(entql.HasEdge("created_tasks"))
-}
-
-// WhereHasCreatedTasksWith applies a predicate to check if query has an edge created_tasks with a given conditions (other predicates).
-func (f *UserFilter) WhereHasCreatedTasksWith(preds ...predicate.Task) {
-	f.Where(entql.HasEdgeWith("created_tasks", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}
@@ -17127,20 +16975,6 @@ func (f *UserFilter) WhereHasTeamMemberships() {
 // WhereHasTeamMembershipsWith applies a predicate to check if query has an edge team_memberships with a given conditions (other predicates).
 func (f *UserFilter) WhereHasTeamMembershipsWith(preds ...predicate.TeamMembership) {
 	f.Where(entql.HasEdgeWith("team_memberships", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
-}
-
-// WhereHasRoleAssignments applies a predicate to check if query has an edge role_assignments.
-func (f *UserFilter) WhereHasRoleAssignments() {
-	f.Where(entql.HasEdge("role_assignments"))
-}
-
-// WhereHasRoleAssignmentsWith applies a predicate to check if query has an edge role_assignments with a given conditions (other predicates).
-func (f *UserFilter) WhereHasRoleAssignmentsWith(preds ...predicate.IncidentRoleAssignment) {
-	f.Where(entql.HasEdgeWith("role_assignments", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}

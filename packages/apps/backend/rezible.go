@@ -15,7 +15,7 @@ import (
 	"github.com/firebase/genkit/go/ai"
 	aix "github.com/firebase/genkit/go/ai/exp"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/situation"
+	"github.com/rezible/rezible/ent/task"
 	"github.com/riverqueue/river"
 	"github.com/riverqueue/river/rivertype"
 	"github.com/texm/prosemirror-go"
@@ -28,12 +28,16 @@ import (
 	"github.com/rezible/rezible/ent/schema/schematypes"
 
 	at "github.com/rezible/rezible/ent/agentturn"
+	dt "github.com/rezible/rezible/ent/discussionthread"
+	"github.com/rezible/rezible/ent/incident"
 	ifvl "github.com/rezible/rezible/ent/investigationfindingversionlink"
 	ihv "github.com/rezible/rezible/ent/investigationhypothesisversion"
 	kne "github.com/rezible/rezible/ent/knowledgeentity"
 	ke "github.com/rezible/rezible/ent/knowledgeevidence"
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
+	"github.com/rezible/rezible/ent/situation"
 	sha "github.com/rezible/rezible/ent/situationhazardassessment"
+	sae "github.com/rezible/rezible/ent/systemanalysisentry"
 )
 
 var (
@@ -47,9 +51,41 @@ var (
 	ErrAuthSessionInvalid   = fmt.Errorf("auth session invalid")
 	ErrConflict             = fmt.Errorf("conflict")
 	ErrInvalidInput         = fmt.Errorf("invalid input")
+	ErrUnprocessableInput   = fmt.Errorf("unprocessable input")
 	ErrNotFound             = fmt.Errorf("not found")
 	ErrNotImplemented       = fmt.Errorf("not implemented")
 )
+
+type SystemAnalysisEntryConflictError struct {
+	Current *ent.SystemAnalysisEntry
+}
+
+func (e *SystemAnalysisEntryConflictError) Error() string {
+	return "system analysis entry version conflict"
+}
+func (e *SystemAnalysisEntryConflictError) Unwrap() error { return ErrConflict }
+
+type DiscussionCommentConflictError struct {
+	Current *ent.DiscussionComment
+}
+
+func (e *DiscussionCommentConflictError) Error() string { return "discussion comment version conflict" }
+func (e *DiscussionCommentConflictError) Unwrap() error { return ErrConflict }
+
+type ReportSelectionConflictError struct {
+	SelectedEntryIDs []uuid.UUID
+	Version          int
+}
+
+func (e *ReportSelectionConflictError) Error() string { return "report selection version conflict" }
+func (e *ReportSelectionConflictError) Unwrap() error { return ErrConflict }
+
+type TaskConflictError struct {
+	Current *ent.Task
+}
+
+func (e *TaskConflictError) Error() string { return "task version conflict" }
+func (e *TaskConflictError) Unwrap() error { return ErrConflict }
 
 type (
 	// LifecycleService runs until it is shut down or fails. Run closes ready
@@ -337,6 +373,24 @@ type (
 		Predicates  []predicate.SystemAnalysisEntry
 		Order       SystemAnalysisEntryOrder
 		SummaryOnly bool
+		Kinds       []sae.Kind
+	}
+
+	SetSystemAnalysisEntryParams struct {
+		AnalysisID  uuid.UUID
+		Reference   *string
+		Kind        sae.Kind
+		Title       string
+		Body        string
+		OccurredAt  *time.Time
+		SetSubjects []SetSystemAnalysisEntrySubjectParams
+	}
+
+	SetSystemAnalysisEntrySubjectParams struct {
+		Role                    string
+		KnowledgeEntityID       *uuid.UUID
+		KnowledgeRelationshipID *uuid.UUID
+		KnowledgeEvidenceID     *uuid.UUID
 	}
 
 	ListSystemAnalysisEntrySubjectsParams struct {
@@ -368,7 +422,7 @@ type (
 
 		ListSystemAnalysisEntries(context.Context, ListSystemAnalysisEntriesParams) (*ent.ListResult[ent.SystemAnalysisEntry], error)
 		LookupSystemAnalysisEntry(context.Context, predicate.SystemAnalysisEntry) (*ent.SystemAnalysisEntry, error)
-		SetSystemAnalysisEntry(context.Context, uuid.UUID, func(*ent.SystemAnalysisEntryMutation), ...func(*ent.SystemAnalysisEntrySubjectMutation)) (*ent.SystemAnalysisEntry, error)
+		SetSystemAnalysisEntry(context.Context, uuid.UUID, SetSystemAnalysisEntryParams) (*ent.SystemAnalysisEntry, error)
 		DeleteSystemAnalysisEntry(context.Context, uuid.UUID) error
 
 		ListSystemAnalysisEntrySubjects(context.Context, ListSystemAnalysisEntrySubjectsParams) (*ent.ListResult[ent.SystemAnalysisEntrySubject], error)
@@ -1079,13 +1133,19 @@ type (
 		Tags       ent.IncidentTags
 	}
 
+	SetIncidentRoleAssignmentParams struct {
+		IncidentID uuid.UUID
+		RoleID     uuid.UUID
+		UserID     uuid.UUID
+	}
+
 	ListIncidentsParams struct {
 		ent.ListParams
-		Statuses     []string
-		SeverityId   uuid.UUID
-		UserId       uuid.UUID
-		OpenedAfter  time.Time
-		OpenedBefore time.Time
+		ResponseStates []incident.ResponseState
+		SeverityId     uuid.UUID
+		UserId         uuid.UUID
+		OpenedAfter    time.Time
+		OpenedBefore   time.Time
 	}
 
 	IncidentService interface {
@@ -1095,17 +1155,21 @@ type (
 		Set(context.Context, uuid.UUID, func(*ent.IncidentMutation)) (*ent.Incident, error)
 		Archive(context.Context, uuid.UUID) error
 
+		ListMilestonesForIncident(context.Context, uuid.UUID) (ent.IncidentMilestones, error)
 		GetIncidentMilestone(context.Context, uuid.UUID) (*ent.IncidentMilestone, error)
 		SetIncidentMilestone(context.Context, uuid.UUID, func(*ent.IncidentMilestoneMutation)) (*ent.IncidentMilestone, error)
 
 		GetIncidentMetadata(context.Context) (*IncidentMetadata, error)
-
-		ListIncidentRoles(context.Context) ([]*ent.IncidentRole, error)
-		ListIncidentSeverities(context.Context) ([]*ent.IncidentSeverity, error)
-		ListIncidentTypes(context.Context) ([]*ent.IncidentType, error)
-		ListIncidentTags(context.Context) ([]*ent.IncidentTag, error)
+		ListIncidentTypes(context.Context) (ent.IncidentTypes, error)
+		ListIncidentTags(context.Context) (ent.IncidentTags, error)
+		ListIncidentSeverities(context.Context) (ent.IncidentSeverities, error)
+		ListIncidentRoles(context.Context) (ent.IncidentRoles, error)
 
 		GetIncidentSeverity(context.Context, uuid.UUID) (*ent.IncidentSeverity, error)
+
+		SetIncidentRoleAssignment(context.Context, uuid.UUID, SetIncidentRoleAssignmentParams) (*ent.IncidentRoleAssignment, error)
+		GetIncidentRoleAssignment(context.Context, uuid.UUID) (*ent.IncidentRoleAssignment, error)
+		DeleteIncidentRoleAssignment(context.Context, uuid.UUID) error
 	}
 
 	EventOnIncidentUpdated struct {
@@ -1140,20 +1204,13 @@ type (
 )
 
 type (
-	ListReviewsParams struct {
-		ent.ListParams
-		RetrospectiveID uuid.UUID
-		AnalysisEntryID uuid.UUID
-	}
-
 	ListDiscussionThreadsParams struct {
 		ent.ListParams
 		AnalysisID      uuid.UUID
 		RetrospectiveID uuid.UUID
-		Kind            string
-		TargetKind      string
+		TargetKind      dt.TargetKind
 		TargetID        uuid.UUID
-		ResolutionState string
+		Resolved        *bool
 	}
 
 	ListDiscussionCommentsParams struct {
@@ -1162,21 +1219,104 @@ type (
 		ParentID uuid.UUID
 	}
 
+	CreateDiscussionThreadParams struct {
+		AnalysisID      *uuid.UUID
+		RetrospectiveID *uuid.UUID
+		TargetKind      *dt.TargetKind
+		TargetID        *uuid.UUID
+		InitialMessage  string
+	}
+
+	CreateDiscussionCommentParams struct {
+		ThreadID uuid.UUID
+		Content  string
+	}
+
+	UpdateDiscussionCommentParams struct {
+		Content string
+	}
+
 	DiscussionService interface {
 		ListThreads(context.Context, ListDiscussionThreadsParams) (*ent.ListResult[ent.DiscussionThread], error)
 		GetThread(context.Context, uuid.UUID) (*ent.DiscussionThread, error)
+		CreateThread(context.Context, CreateDiscussionThreadParams) (*ent.DiscussionThread, error)
 
 		ListComments(context.Context, ListDiscussionCommentsParams) (*ent.ListResult[ent.DiscussionComment], error)
 		GetComment(context.Context, uuid.UUID) (*ent.DiscussionComment, error)
+		CreateComment(context.Context, CreateDiscussionCommentParams) (*ent.DiscussionComment, error)
+		UpdateComment(context.Context, uuid.UUID, UpdateDiscussionCommentParams) (*ent.DiscussionComment, error)
 
+		ReviewService
+	}
+)
+
+type (
+	ListReviewsParams struct {
+		ent.ListParams
+		RetrospectiveID uuid.UUID
+		AnalysisEntryID uuid.UUID
+	}
+
+	CreateReviewRequestParams struct {
+		ReviewerID uuid.UUID
+		Message    *string
+	}
+
+	ReviewService interface {
 		ListReviews(context.Context, ListReviewsParams) (*ent.ListResult[ent.Review], error)
 		GetReview(context.Context, uuid.UUID) (*ent.Review, error)
+		CreateReviewRequest(context.Context, CreateReviewRequestParams) (*ent.Review, error)
+	}
+)
+
+type (
+	RetrospectiveReportComposition struct {
+		SelectedFindingEntries ent.SystemAnalysisEntries
+		Tasks                  ent.Tasks
+	}
+
+	RetrospectiveReport struct {
+		SelectedFindings []uuid.UUID
+	}
+
+	SetRetrospectiveReportParams struct {
+		SelectedFindingEntryIDs []uuid.UUID
 	}
 
 	RetrospectiveService interface {
 		Get(context.Context, predicate.Retrospective) (*ent.Retrospective, error)
 		Set(context.Context, uuid.UUID, func(*ent.RetrospectiveMutation)) (*ent.Retrospective, error)
 		CreateForIncident(context.Context, uuid.UUID) (*ent.Retrospective, error)
+
+		GetReportComposition(context.Context, uuid.UUID) (*RetrospectiveReportComposition, error)
+		SetReport(context.Context, uuid.UUID, SetRetrospectiveReportParams) (*RetrospectiveReport, error)
+	}
+)
+
+type (
+	ListTasksParams struct {
+		ent.ListParams
+		IncidentID    uuid.UUID
+		OwnerID       uuid.UUID
+		SourceEntryID uuid.UUID
+		State         task.State
+	}
+
+	SetTaskParams struct {
+		Title         *string
+		Description   *string
+		IncidentID    *uuid.UUID
+		OwnerID       *uuid.UUID
+		DueAt         *time.Time
+		SourceEntryID *uuid.UUID
+		TicketIDs     []uuid.UUID
+	}
+
+	TaskService interface {
+		ListTasks(context.Context, ListTasksParams) (*ent.ListResult[ent.Task], error)
+		GetTask(context.Context, uuid.UUID) (*ent.Task, error)
+		SetTask(context.Context, uuid.UUID, SetTaskParams) (*ent.Task, error)
+		ArchiveTask(context.Context, uuid.UUID) error
 	}
 )
 

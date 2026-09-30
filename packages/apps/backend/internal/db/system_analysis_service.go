@@ -30,7 +30,10 @@ func NewSystemAnalysisService(db rez.Database, knowledge rez.KnowledgeGraphQuery
 }
 
 func (s *SystemAnalysisService) systemAnalysisEntrySubjectsQuery(q *ent.SystemAnalysisEntrySubjectQuery) {
-	q.Order(ent.Asc(saes.FieldCreatedAt), ent.Asc(saes.FieldID))
+	q.Order(ent.Asc(saes.FieldCreatedAt), ent.Asc(saes.FieldID)).
+		WithKnowledgeEntity().
+		WithKnowledgeRelationship().
+		WithKnowledgeEvidence()
 }
 
 func (s *SystemAnalysisService) systemAnalysisEntitiesQuery(q *ent.SystemAnalysisEntityQuery) {
@@ -368,11 +371,7 @@ func (s *SystemAnalysisService) SetSystemAnalysisRelationship(ctx context.Contex
 }
 
 func (s *SystemAnalysisService) DeleteSystemAnalysisRelationship(ctx context.Context, id uuid.UUID) error {
-	deleteRelationship := s.db.Client(ctx).SystemAnalysisRelationship.DeleteOneID(id)
-	if deleteErr := deleteRelationship.Exec(ctx); deleteErr != nil {
-		return fmt.Errorf("delete system analysis relationship: %w", deleteErr)
-	}
-	return nil
+	return s.db.Client(ctx).SystemAnalysisRelationship.DeleteOneID(id).Exec(ctx)
 }
 
 func (s *SystemAnalysisService) ListSystemAnalysisEntries(ctx context.Context, params rez.ListSystemAnalysisEntriesParams) (*ent.ListResult[ent.SystemAnalysisEntry], error) {
@@ -392,27 +391,6 @@ func (s *SystemAnalysisService) ListSystemAnalysisEntries(ctx context.Context, p
 	return ent.DoListQuery[ent.SystemAnalysisEntry, *ent.SystemAnalysisEntryQuery](ctx, query, params.ListParams)
 }
 
-func (s *SystemAnalysisService) ListSystemAnalysisEntrySubjects(ctx context.Context, params rez.ListSystemAnalysisEntrySubjectsParams) (*ent.ListResult[ent.SystemAnalysisEntrySubject], error) {
-	if params.AnalysisID == uuid.Nil || params.EntryID == uuid.Nil {
-		return nil, fmt.Errorf("%w: analysis and entry IDs are required", rez.ErrInvalidInput)
-	}
-
-	entryExists, queryEntryErr := s.db.Client(ctx).SystemAnalysisEntry.Query().
-		Where(sae.ID(params.EntryID), sae.AnalysisID(params.AnalysisID)).
-		Exist(ctx)
-	if queryEntryErr != nil {
-		return nil, fmt.Errorf("check analysis entry access: %w", queryEntryErr)
-	}
-	if !entryExists {
-		return nil, rez.ErrNotFound
-	}
-
-	query := s.db.Client(ctx).SystemAnalysisEntrySubject.Query().
-		Where(saes.EntryID(params.EntryID)).
-		Order(saes.ByID(sql.OrderAsc()))
-	return ent.DoListQuery[ent.SystemAnalysisEntrySubject, *ent.SystemAnalysisEntrySubjectQuery](ctx, query, params.ListParams)
-}
-
 const systemAnalysisWriteLock = "system_analysis_write"
 
 var (
@@ -423,12 +401,7 @@ var (
 	}
 )
 
-func (s *SystemAnalysisService) SetSystemAnalysisEntry(
-	ctx context.Context,
-	id uuid.UUID,
-	setEntry func(*ent.SystemAnalysisEntryMutation),
-	setSubjects ...func(*ent.SystemAnalysisEntrySubjectMutation),
-) (*ent.SystemAnalysisEntry, error) {
+func (s *SystemAnalysisService) SetSystemAnalysisEntry(ctx context.Context, id uuid.UUID, params rez.SetSystemAnalysisEntryParams) (*ent.SystemAnalysisEntry, error) {
 	isCreate := id == uuid.Nil
 	var result *ent.SystemAnalysisEntry
 	return result, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
@@ -436,11 +409,32 @@ func (s *SystemAnalysisService) SetSystemAnalysisEntry(
 		if isCreate {
 			mutator = tx.SystemAnalysisEntry.Create()
 		} else {
+			current, queryErr := tx.SystemAnalysisEntry.Get(ctx, id)
+			if queryErr != nil {
+				return queryErr
+			}
+			if params.AnalysisID != uuid.Nil && current.AnalysisID != params.AnalysisID {
+				return fmt.Errorf("%w: analysis_id cannot be changed", rez.ErrInvalidInput)
+			}
+			if params.Reference != nil && (current.Reference == nil || *current.Reference != *params.Reference) {
+				return fmt.Errorf("%w: reference cannot be changed", rez.ErrInvalidInput)
+			}
 			mutator = tx.SystemAnalysisEntry.UpdateOneID(id)
 		}
 
 		mut := mutator.Mutation()
-		setEntry(mut)
+		if isCreate {
+			mut.SetAnalysisID(params.AnalysisID)
+			if params.Reference != nil {
+				mut.SetReference(*params.Reference)
+			}
+		}
+		mut.SetKind(params.Kind)
+		mut.SetTitle(params.Title)
+		mut.SetBody(params.Body)
+		if params.OccurredAt != nil {
+			mut.SetOccurredAt(*params.OccurredAt)
+		}
 
 		if mutErr := s.validateMutationFields(mut, sae.FieldAnalysisID); mutErr != nil {
 			return mutErr
@@ -471,18 +465,24 @@ func (s *SystemAnalysisService) SetSystemAnalysisEntry(
 			return s.checkSaveErr(saveErr, "analysis entry")
 		}
 
-		if len(setSubjects) > 0 {
+		if len(params.SetSubjects) > 0 {
+			setSubjects := make([]func(*ent.SystemAnalysisEntrySubjectMutation) error, len(params.SetSubjects))
+			for i, ss := range params.SetSubjects {
+				setSubjects[i] = func(m *ent.SystemAnalysisEntrySubjectMutation) error {
+					return s.mutateEntrySubjectWithParams(m, ss)
+				}
+			}
 			var subjectMutErr error
 			upsertSubjects := tx.SystemAnalysisEntrySubject.
 				MapCreateBulk(setSubjects, func(c *ent.SystemAnalysisEntrySubjectCreate, i int) {
 					c.SetEntryID(saved.ID)
-					cm := c.Mutation()
-					setSubjects[i](cm)
-					subjectMutErr = errors.Join(subjectMutErr,
-						s.validateMutationFields(cm, systemAnalysisEntrySubjectImmutableFields...))
+					subjectMutErr = errors.Join(subjectMutErr, setSubjects[i](c.Mutation()))
 				}).
 				OnConflict().
 				DoNothing()
+			if subjectMutErr != nil {
+				return subjectMutErr
+			}
 			if saveSubjectsErr := upsertSubjects.Exec(ctx); saveSubjectsErr != nil {
 				return s.checkSaveErr(saveSubjectsErr, "subjects")
 			}
@@ -521,19 +521,34 @@ func (s *SystemAnalysisService) LookupSystemAnalysisEntry(ctx context.Context, p
 	return s.db.Client(ctx).SystemAnalysisEntry.Query().
 		Where(pred).
 		WithReviews().
-		WithSubjects().
+		WithSubjects(s.systemAnalysisEntrySubjectsQuery).
 		Only(ctx)
 }
 
 func (s *SystemAnalysisService) DeleteSystemAnalysisEntry(ctx context.Context, id uuid.UUID) error {
-	return s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
-		deleteSubjects := tx.SystemAnalysisEntrySubject.Delete().
-			Where(saes.EntryID(id))
-		if _, subjectsErr := deleteSubjects.Exec(ctx); subjectsErr != nil {
-			return subjectsErr
-		}
-		return tx.SystemAnalysisEntry.DeleteOneID(id).Exec(ctx)
-	})
+	// cascade delete
+	return s.db.Client(ctx).SystemAnalysisEntry.DeleteOneID(id).Exec(ctx)
+}
+
+func (s *SystemAnalysisService) ListSystemAnalysisEntrySubjects(ctx context.Context, params rez.ListSystemAnalysisEntrySubjectsParams) (*ent.ListResult[ent.SystemAnalysisEntrySubject], error) {
+	if params.AnalysisID == uuid.Nil || params.EntryID == uuid.Nil {
+		return nil, fmt.Errorf("%w: analysis and entry IDs are required", rez.ErrInvalidInput)
+	}
+
+	entryExists, queryEntryErr := s.db.Client(ctx).SystemAnalysisEntry.Query().
+		Where(sae.ID(params.EntryID), sae.AnalysisID(params.AnalysisID)).
+		Exist(ctx)
+	if queryEntryErr != nil {
+		return nil, fmt.Errorf("check analysis entry access: %w", queryEntryErr)
+	}
+	if !entryExists {
+		return nil, rez.ErrNotFound
+	}
+
+	query := s.db.Client(ctx).SystemAnalysisEntrySubject.Query().
+		Where(saes.EntryID(params.EntryID)).
+		Order(saes.ByID(sql.OrderAsc()))
+	return ent.DoListQuery[ent.SystemAnalysisEntrySubject, *ent.SystemAnalysisEntrySubjectQuery](ctx, query, params.ListParams)
 }
 
 func (s *SystemAnalysisService) SetSystemAnalysisEntrySubject(ctx context.Context, id uuid.UUID, setFn func(*ent.SystemAnalysisEntrySubjectMutation)) (*ent.SystemAnalysisEntrySubject, error) {
@@ -550,13 +565,8 @@ func (s *SystemAnalysisService) SetSystemAnalysisEntrySubject(ctx context.Contex
 		mut := mutator.Mutation()
 		setFn(mut)
 
-		mutFields := []string{saes.FieldEntryID}
-		if !isCreate {
-			mutFields = append(mutFields, systemAnalysisEntrySubjectImmutableFields...)
-		} else {
-		}
-		if mutErr := s.validateMutationFields(mut, mutFields...); mutErr != nil {
-			return mutErr
+		if validErr := s.validateEntrySubjectMutation(mut); validErr != nil {
+			return validErr
 		}
 
 		saved, saveErr := mutator.Save(ctx)
@@ -568,10 +578,43 @@ func (s *SystemAnalysisService) SetSystemAnalysisEntrySubject(ctx context.Contex
 	})
 }
 
-func (s *SystemAnalysisService) DeleteSystemAnalysisEntrySubject(ctx context.Context, id uuid.UUID) error {
-	deleteSubject := s.db.Client(ctx).SystemAnalysisEntrySubject.DeleteOneID(id)
-	if deleteErr := deleteSubject.Exec(ctx); deleteErr != nil {
-		return fmt.Errorf("delete entry subject: %w", deleteErr)
+func (s *SystemAnalysisService) validateEntrySubjectMutation(m *ent.SystemAnalysisEntrySubjectMutation) error {
+	if entryErr := s.validateMutationFields(m, saes.FieldEntryID); entryErr != nil {
+		return entryErr
+	}
+	if m.Op() != ent.OpCreate {
+		return s.validateMutationFields(m, systemAnalysisEntrySubjectImmutableFields...)
+	}
+	count := 0
+	for _, name := range systemAnalysisEntrySubjectImmutableFields {
+		if value, isSet := m.Field(name); isSet {
+			id, validUUID := value.(uuid.UUID)
+			if !validUUID || id == uuid.Nil {
+				return fmt.Errorf("%w: %s is invalid uuid", rez.ErrInvalidInput, name)
+			}
+			count++
+		}
+	}
+	if count != 1 {
+		return fmt.Errorf("%w: exactly one graph reference is required", rez.ErrUnprocessableInput)
 	}
 	return nil
+}
+
+func (s *SystemAnalysisService) mutateEntrySubjectWithParams(m *ent.SystemAnalysisEntrySubjectMutation, p rez.SetSystemAnalysisEntrySubjectParams) error {
+	m.SetRole(p.Role)
+	if p.KnowledgeRelationshipID != nil {
+		m.SetKnowledgeRelationshipID(*p.KnowledgeRelationshipID)
+	}
+	if p.KnowledgeEntityID != nil {
+		m.SetKnowledgeEntityID(*p.KnowledgeEntityID)
+	}
+	if p.KnowledgeEvidenceID != nil {
+		m.SetKnowledgeEvidenceID(*p.KnowledgeEvidenceID)
+	}
+	return s.validateEntrySubjectMutation(m)
+}
+
+func (s *SystemAnalysisService) DeleteSystemAnalysisEntrySubject(ctx context.Context, id uuid.UUID) error {
+	return s.db.Client(ctx).SystemAnalysisEntrySubject.DeleteOneID(id).Exec(ctx)
 }

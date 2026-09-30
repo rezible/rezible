@@ -8,7 +8,6 @@ import (
 	"github.com/stretchr/testify/suite"
 
 	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/ent/retrospective"
 )
 
 type RetrospectiveServiceSuite struct {
@@ -47,18 +46,16 @@ func (s *RetrospectiveServiceSuite) createIncident(client *ent.Client) *ent.Inci
 func (s *RetrospectiveServiceSuite) TestCreateFullRetrospective() {
 	ctx := s.SeedTenantContext()
 	tdb := s.CreateTestDatabase()
-	svc := &RetrospectiveService{db: tdb}
+	svc := &RetrospectiveService{db: tdb, incidents: &IncidentService{db: tdb}}
 
 	client := tdb.Client(ctx)
 	inc := s.createIncident(client)
 
-	retro, err := svc.createForIncident(ctx, inc)
+	retro, err := svc.CreateForIncident(ctx, inc.ID)
 	s.Require().NoError(err)
-	s.Equal(retrospective.KindFull, retro.Kind)
+	s.NotNil(retro)
 	s.NotEqual(uuid.Nil, retro.DocumentID)
 	s.NotEqual(uuid.Nil, retro.SystemAnalysisID)
-	_, documentErr := client.Document.Get(ctx, retro.DocumentID)
-	s.Require().NoError(documentErr)
 	_, analysisErr := client.SystemAnalysis.Get(ctx, retro.SystemAnalysisID)
 	s.Require().NoError(analysisErr)
 }

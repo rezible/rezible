@@ -3,6 +3,7 @@
 package incident
 
 import (
+	"fmt"
 	"time"
 
 	"entgo.io/ent"
@@ -36,8 +37,12 @@ const (
 	FieldSummary = "summary"
 	// FieldChatChannelID holds the string denoting the chat_channel_id field in the database.
 	FieldChatChannelID = "chat_channel_id"
+	// FieldResponseState holds the string denoting the response_state field in the database.
+	FieldResponseState = "response_state"
 	// FieldOpenedAt holds the string denoting the opened_at field in the database.
 	FieldOpenedAt = "opened_at"
+	// FieldResolvedAt holds the string denoting the resolved_at field in the database.
+	FieldResolvedAt = "resolved_at"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
 	// EdgeKnowledgeEntity holds the string denoting the knowledge_entity edge name in mutations.
@@ -50,8 +55,6 @@ const (
 	EdgeMilestones = "milestones"
 	// EdgeRetrospective holds the string denoting the retrospective edge name in mutations.
 	EdgeRetrospective = "retrospective"
-	// EdgeUsers holds the string denoting the users edge name in mutations.
-	EdgeUsers = "users"
 	// EdgeRoleAssignments holds the string denoting the role_assignments edge name in mutations.
 	EdgeRoleAssignments = "role_assignments"
 	// EdgeLinkedIncidents holds the string denoting the linked_incidents edge name in mutations.
@@ -60,20 +63,14 @@ const (
 	EdgeSituations = "situations"
 	// EdgeFieldSelections holds the string denoting the field_selections edge name in mutations.
 	EdgeFieldSelections = "field_selections"
-	// EdgeTasks holds the string denoting the tasks edge name in mutations.
-	EdgeTasks = "tasks"
 	// EdgeTagAssignments holds the string denoting the tag_assignments edge name in mutations.
 	EdgeTagAssignments = "tag_assignments"
 	// EdgeImpacts holds the string denoting the impacts edge name in mutations.
 	EdgeImpacts = "impacts"
 	// EdgeDebriefs holds the string denoting the debriefs edge name in mutations.
 	EdgeDebriefs = "debriefs"
-	// EdgeReviewSessions holds the string denoting the review_sessions edge name in mutations.
-	EdgeReviewSessions = "review_sessions"
 	// EdgeVideoConferences holds the string denoting the video_conferences edge name in mutations.
 	EdgeVideoConferences = "video_conferences"
-	// EdgeUserRoles holds the string denoting the user_roles edge name in mutations.
-	EdgeUserRoles = "user_roles"
 	// EdgeIncidentLinks holds the string denoting the incident_links edge name in mutations.
 	EdgeIncidentLinks = "incident_links"
 	// Table holds the table name of the incident in the database.
@@ -120,11 +117,6 @@ const (
 	RetrospectiveInverseTable = "retrospectives"
 	// RetrospectiveColumn is the table column denoting the retrospective relation/edge.
 	RetrospectiveColumn = "incident_id"
-	// UsersTable is the table that holds the users relation/edge. The primary key declared below.
-	UsersTable = "incident_role_assignments"
-	// UsersInverseTable is the table name for the User entity.
-	// It exists in this package in order to avoid circular dependency with the "user" package.
-	UsersInverseTable = "users"
 	// RoleAssignmentsTable is the table that holds the role_assignments relation/edge.
 	RoleAssignmentsTable = "incident_role_assignments"
 	// RoleAssignmentsInverseTable is the table name for the IncidentRoleAssignment entity.
@@ -144,13 +136,6 @@ const (
 	// FieldSelectionsInverseTable is the table name for the IncidentFieldOption entity.
 	// It exists in this package in order to avoid circular dependency with the "incidentfieldoption" package.
 	FieldSelectionsInverseTable = "incident_field_options"
-	// TasksTable is the table that holds the tasks relation/edge.
-	TasksTable = "tasks"
-	// TasksInverseTable is the table name for the Task entity.
-	// It exists in this package in order to avoid circular dependency with the "task" package.
-	TasksInverseTable = "tasks"
-	// TasksColumn is the table column denoting the tasks relation/edge.
-	TasksColumn = "incident_id"
 	// TagAssignmentsTable is the table that holds the tag_assignments relation/edge. The primary key declared below.
 	TagAssignmentsTable = "incident_tag_assignments"
 	// TagAssignmentsInverseTable is the table name for the IncidentTag entity.
@@ -170,11 +155,6 @@ const (
 	DebriefsInverseTable = "incident_debriefs"
 	// DebriefsColumn is the table column denoting the debriefs relation/edge.
 	DebriefsColumn = "incident_id"
-	// ReviewSessionsTable is the table that holds the review_sessions relation/edge. The primary key declared below.
-	ReviewSessionsTable = "incident_review_sessions"
-	// ReviewSessionsInverseTable is the table name for the MeetingSession entity.
-	// It exists in this package in order to avoid circular dependency with the "meetingsession" package.
-	ReviewSessionsInverseTable = "meeting_sessions"
 	// VideoConferencesTable is the table that holds the video_conferences relation/edge.
 	VideoConferencesTable = "video_conferences"
 	// VideoConferencesInverseTable is the table name for the VideoConference entity.
@@ -182,13 +162,6 @@ const (
 	VideoConferencesInverseTable = "video_conferences"
 	// VideoConferencesColumn is the table column denoting the video_conferences relation/edge.
 	VideoConferencesColumn = "incident_id"
-	// UserRolesTable is the table that holds the user_roles relation/edge.
-	UserRolesTable = "incident_role_assignments"
-	// UserRolesInverseTable is the table name for the IncidentRoleAssignment entity.
-	// It exists in this package in order to avoid circular dependency with the "incidentroleassignment" package.
-	UserRolesInverseTable = "incident_role_assignments"
-	// UserRolesColumn is the table column denoting the user_roles relation/edge.
-	UserRolesColumn = "incident_id"
 	// IncidentLinksTable is the table that holds the incident_links relation/edge.
 	IncidentLinksTable = "incident_links"
 	// IncidentLinksInverseTable is the table name for the IncidentLink entity.
@@ -211,13 +184,12 @@ var Columns = []string{
 	FieldTypeID,
 	FieldSummary,
 	FieldChatChannelID,
+	FieldResponseState,
 	FieldOpenedAt,
+	FieldResolvedAt,
 }
 
 var (
-	// UsersPrimaryKey and UsersColumn2 are the table columns denoting the
-	// primary key for the users relation (M2M).
-	UsersPrimaryKey = []string{"user_id", "incident_id"}
 	// LinkedIncidentsPrimaryKey and LinkedIncidentsColumn2 are the table columns denoting the
 	// primary key for the linked_incidents relation (M2M).
 	LinkedIncidentsPrimaryKey = []string{"incident_id", "linked_incident_id"}
@@ -230,9 +202,6 @@ var (
 	// TagAssignmentsPrimaryKey and TagAssignmentsColumn2 are the table columns denoting the
 	// primary key for the tag_assignments relation (M2M).
 	TagAssignmentsPrimaryKey = []string{"incident_id", "incident_tag_id"}
-	// ReviewSessionsPrimaryKey and ReviewSessionsColumn2 are the table columns denoting the
-	// primary key for the review_sessions relation (M2M).
-	ReviewSessionsPrimaryKey = []string{"incident_id", "meeting_session_id"}
 )
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -264,6 +233,34 @@ var (
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
+
+// ResponseState defines the type for the "response_state" enum field.
+type ResponseState string
+
+// ResponseStateUnknown is the default value of the ResponseState enum.
+const DefaultResponseState = ResponseStateUnknown
+
+// ResponseState values.
+const (
+	ResponseStateUnknown   ResponseState = "unknown"
+	ResponseStateStarted   ResponseState = "started"
+	ResponseStateMitigated ResponseState = "mitigated"
+	ResponseStateResolved  ResponseState = "resolved"
+)
+
+func (rs ResponseState) String() string {
+	return string(rs)
+}
+
+// ResponseStateValidator is a validator for the "response_state" field enum values. It is called by the builders before save.
+func ResponseStateValidator(rs ResponseState) error {
+	switch rs {
+	case ResponseStateUnknown, ResponseStateStarted, ResponseStateMitigated, ResponseStateResolved:
+		return nil
+	default:
+		return fmt.Errorf("incident: invalid enum value for response_state field: %q", rs)
+	}
+}
 
 // OrderOption defines the ordering options for the Incident queries.
 type OrderOption func(*sql.Selector)
@@ -323,9 +320,19 @@ func ByChatChannelID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldChatChannelID, opts...).ToFunc()
 }
 
+// ByResponseState orders the results by the response_state field.
+func ByResponseState(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldResponseState, opts...).ToFunc()
+}
+
 // ByOpenedAt orders the results by the opened_at field.
 func ByOpenedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldOpenedAt, opts...).ToFunc()
+}
+
+// ByResolvedAt orders the results by the resolved_at field.
+func ByResolvedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldResolvedAt, opts...).ToFunc()
 }
 
 // ByTenantField orders the results by tenant field.
@@ -374,20 +381,6 @@ func ByMilestones(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 func ByRetrospectiveField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newRetrospectiveStep(), sql.OrderByField(field, opts...))
-	}
-}
-
-// ByUsersCount orders the results by users count.
-func ByUsersCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newUsersStep(), opts...)
-	}
-}
-
-// ByUsers orders the results by users terms.
-func ByUsers(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newUsersStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
 
@@ -447,20 +440,6 @@ func ByFieldSelections(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
-// ByTasksCount orders the results by tasks count.
-func ByTasksCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newTasksStep(), opts...)
-	}
-}
-
-// ByTasks orders the results by tasks terms.
-func ByTasks(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newTasksStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
-
 // ByTagAssignmentsCount orders the results by tag_assignments count.
 func ByTagAssignmentsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -503,20 +482,6 @@ func ByDebriefs(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
-// ByReviewSessionsCount orders the results by review_sessions count.
-func ByReviewSessionsCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newReviewSessionsStep(), opts...)
-	}
-}
-
-// ByReviewSessions orders the results by review_sessions terms.
-func ByReviewSessions(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newReviewSessionsStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
-
 // ByVideoConferencesCount orders the results by video_conferences count.
 func ByVideoConferencesCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -528,20 +493,6 @@ func ByVideoConferencesCount(opts ...sql.OrderTermOption) OrderOption {
 func ByVideoConferences(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newVideoConferencesStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
-
-// ByUserRolesCount orders the results by user_roles count.
-func ByUserRolesCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newUserRolesStep(), opts...)
-	}
-}
-
-// ByUserRoles orders the results by user_roles terms.
-func ByUserRoles(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newUserRolesStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
 
@@ -600,13 +551,6 @@ func newRetrospectiveStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.O2O, false, RetrospectiveTable, RetrospectiveColumn),
 	)
 }
-func newUsersStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(UsersInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2M, true, UsersTable, UsersPrimaryKey...),
-	)
-}
 func newRoleAssignmentsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -635,13 +579,6 @@ func newFieldSelectionsStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.M2M, false, FieldSelectionsTable, FieldSelectionsPrimaryKey...),
 	)
 }
-func newTasksStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(TasksInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, TasksTable, TasksColumn),
-	)
-}
 func newTagAssignmentsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -663,25 +600,11 @@ func newDebriefsStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.O2M, false, DebriefsTable, DebriefsColumn),
 	)
 }
-func newReviewSessionsStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(ReviewSessionsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2M, false, ReviewSessionsTable, ReviewSessionsPrimaryKey...),
-	)
-}
 func newVideoConferencesStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(VideoConferencesInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, VideoConferencesTable, VideoConferencesColumn),
-	)
-}
-func newUserRolesStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(UserRolesInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, UserRolesTable, UserRolesColumn),
+		sqlgraph.Edge(sqlgraph.O2M, true, VideoConferencesTable, VideoConferencesColumn),
 	)
 }
 func newIncidentLinksStep() *sqlgraph.Step {
@@ -690,4 +613,12 @@ func newIncidentLinksStep() *sqlgraph.Step {
 		sqlgraph.To(IncidentLinksInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, true, IncidentLinksTable, IncidentLinksColumn),
 	)
+}
+
+// ResponseStateValues contains all permitted values. Treat this slice as read-only.
+var ResponseStateValues = []string{
+	"unknown",
+	"started",
+	"mitigated",
+	"resolved",
 }

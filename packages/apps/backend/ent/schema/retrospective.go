@@ -6,6 +6,7 @@ import (
 	entschema "entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
+	"entgo.io/ent/schema/index"
 	"github.com/google/uuid"
 )
 
@@ -21,6 +22,8 @@ func (Retrospective) Mixin() []ent.Mixin {
 	}
 }
 
+var retrospectiveStates = []string{"draft", "in_review", "meeting", "closed"}
+
 // Fields of the Retrospective.
 func (Retrospective) Fields() []ent.Field {
 	return []ent.Field{
@@ -28,8 +31,7 @@ func (Retrospective) Fields() []ent.Field {
 		field.UUID("incident_id", uuid.UUID{}),
 		field.UUID("document_id", uuid.UUID{}),
 		field.UUID("system_analysis_id", uuid.UUID{}),
-		field.Enum("kind").Values("simple", "full"),
-		field.Enum("state").Values("draft", "in_review", "meeting", "closed"),
+		field.Enum("state").Values(retrospectiveStates...),
 	}
 }
 
@@ -48,7 +50,8 @@ func (Retrospective) Edges() []ent.Edge {
 			Required(),
 		edge.From("discussion_threads", DiscussionThread.Type).
 			Ref("retrospective"),
-		edge.From("reviews", Review.Type).Ref("retrospective"),
+		edge.From("reviews", Review.Type).
+			Ref("retrospective"),
 		edge.To("system_analysis", SystemAnalysis.Type).
 			Field("system_analysis_id").
 			Unique().
@@ -68,15 +71,18 @@ func (DiscussionThread) Mixin() []ent.Mixin {
 	}
 }
 
+var discussionThreadTargetKind = []string{"finding", "entry", "knowledge_entity", "knowledge_relationship", "normalized_event"}
+
 func (DiscussionThread) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.New()).Default(uuid.New),
 		field.UUID("analysis_id", uuid.UUID{}).Optional().Nillable(),
 		field.UUID("retrospective_id", uuid.UUID{}).Optional().Nillable(),
 		field.UUID("user_id", uuid.UUID{}),
-		field.Enum("kind").Values("comment", "question"),
-		field.Enum("target_kind").Values("finding", "knowledge_entity", "knowledge_relationship", "normalized_event").Optional().Nillable(),
+
+		field.Enum("target_kind").Values(discussionThreadTargetKind...).Optional().Nillable(),
 		field.UUID("target_id", uuid.UUID{}).Optional().Nillable(),
+
 		field.Enum("resolution_state").Values("open", "resolved").Optional().Nillable(),
 		field.UUID("resolved_by_id", uuid.UUID{}).Optional().Nillable(),
 		field.Time("resolved_at").Optional().Nillable(),
@@ -122,17 +128,25 @@ func (DiscussionComment) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.New()).Default(uuid.New),
 		field.UUID("thread_id", uuid.UUID{}),
+		field.UUID("parent_id", uuid.UUID{}).Optional().Nillable(),
 		field.UUID("user_id", uuid.UUID{}),
 		field.Text("content"),
-		field.UUID("parent_id", uuid.UUID{}).Optional().Nillable(),
 	}
 }
 
 func (DiscussionComment) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("thread", DiscussionThread.Type).Field("thread_id").Required().Unique(),
-		edge.To("user", User.Type).Field("user_id").Required().Unique(),
-		edge.To("parent", DiscussionComment.Type).Field("parent_id").Unique(),
+		edge.To("thread", DiscussionThread.Type).
+			Required().
+			Unique().
+			Field("thread_id"),
+		edge.To("parent", DiscussionComment.Type).
+			Unique().
+			Field("parent_id"),
+		edge.To("user", User.Type).
+			Required().
+			Unique().
+			Field("user_id"),
 		edge.From("replies", DiscussionComment.Type).Ref("parent"),
 		edge.From("reviews", Review.Type).Ref("comment"),
 	}
@@ -170,6 +184,13 @@ func (Review) Fields() []ent.Field {
 		field.UUID("requester_id", uuid.UUID{}),
 		field.UUID("reviewer_id", uuid.UUID{}),
 		field.Enum("state").Values("waiting", "request_changes", "approved"),
+		field.Text("feedback").Optional().Nillable(),
+	}
+}
+
+func (Review) Indexes() []ent.Index {
+	return []ent.Index{
+		index.Fields("tenant_id", "retrospective_id", "reviewer_id").Unique(),
 	}
 }
 
@@ -181,6 +202,9 @@ func (Review) Edges() []ent.Edge {
 		edge.To("analysis_entry", SystemAnalysisEntry.Type).
 			Field("analysis_entry_id").
 			Unique(),
+		edge.To("comment", DiscussionComment.Type).
+			Field("comment_id").
+			Unique(),
 		edge.To("requester", User.Type).
 			Field("requester_id").
 			Required().
@@ -188,9 +212,6 @@ func (Review) Edges() []ent.Edge {
 		edge.To("reviewer", User.Type).
 			Field("reviewer_id").
 			Required().
-			Unique(),
-		edge.To("comment", DiscussionComment.Type).
-			Field("comment_id").
 			Unique(),
 	}
 }

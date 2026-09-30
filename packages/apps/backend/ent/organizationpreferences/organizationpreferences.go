@@ -22,6 +22,8 @@ const (
 	FieldInitialSetupAt = "initial_setup_at"
 	// FieldEnableIncidentManagement holds the string denoting the enable_incident_management field in the database.
 	FieldEnableIncidentManagement = "enable_incident_management"
+	// FieldRequiredReviewerCount holds the string denoting the required_reviewer_count field in the database.
+	FieldRequiredReviewerCount = "required_reviewer_count"
 	// FieldTimezone holds the string denoting the timezone field in the database.
 	FieldTimezone = "timezone"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
@@ -53,6 +55,7 @@ var Columns = []string{
 	FieldOrganizationID,
 	FieldInitialSetupAt,
 	FieldEnableIncidentManagement,
+	FieldRequiredReviewerCount,
 	FieldTimezone,
 }
 
@@ -76,6 +79,10 @@ var (
 	Policy ent.Policy
 	// DefaultEnableIncidentManagement holds the default value on creation for the "enable_incident_management" field.
 	DefaultEnableIncidentManagement bool
+	// DefaultRequiredReviewerCount holds the default value on creation for the "required_reviewer_count" field.
+	DefaultRequiredReviewerCount int
+	// RequiredReviewerCountValidator is a validator for the "required_reviewer_count" field. It is called by the builders before save.
+	RequiredReviewerCountValidator func(int) error
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
@@ -106,6 +113,11 @@ func ByInitialSetupAt(opts ...sql.OrderTermOption) OrderOption {
 // ByEnableIncidentManagement orders the results by the enable_incident_management field.
 func ByEnableIncidentManagement(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldEnableIncidentManagement, opts...).ToFunc()
+}
+
+// ByRequiredReviewerCount orders the results by the required_reviewer_count field.
+func ByRequiredReviewerCount(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldRequiredReviewerCount, opts...).ToFunc()
 }
 
 // ByTimezone orders the results by the timezone field.

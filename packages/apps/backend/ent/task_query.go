@@ -33,8 +33,8 @@ type TaskQuery struct {
 	predicates      []predicate.Task
 	withTenant      *TenantQuery
 	withTickets     *TicketQuery
-	withIncident    *IncidentQuery
 	withOriginEntry *SystemAnalysisEntryQuery
+	withIncident    *IncidentQuery
 	withAssignee    *UserQuery
 	withCreator     *UserQuery
 	modifiers       []func(*sql.Selector)
@@ -124,31 +124,6 @@ func (_q *TaskQuery) QueryTickets() *TicketQuery {
 	return query
 }
 
-// QueryIncident chains the current query on the "incident" edge.
-func (_q *TaskQuery) QueryIncident() *IncidentQuery {
-	query := (&IncidentClient{config: _q.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := _q.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := _q.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(task.Table, task.FieldID, selector),
-			sqlgraph.To(incident.Table, incident.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, task.IncidentTable, task.IncidentColumn),
-		)
-		schemaConfig := _q.schemaConfig
-		step.To.Schema = schemaConfig.Incident
-		step.Edge.Schema = schemaConfig.Task
-		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
 // QueryOriginEntry chains the current query on the "origin_entry" edge.
 func (_q *TaskQuery) QueryOriginEntry() *SystemAnalysisEntryQuery {
 	query := (&SystemAnalysisEntryClient{config: _q.config}).Query()
@@ -174,6 +149,31 @@ func (_q *TaskQuery) QueryOriginEntry() *SystemAnalysisEntryQuery {
 	return query
 }
 
+// QueryIncident chains the current query on the "incident" edge.
+func (_q *TaskQuery) QueryIncident() *IncidentQuery {
+	query := (&IncidentClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(task.Table, task.FieldID, selector),
+			sqlgraph.To(incident.Table, incident.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, task.IncidentTable, task.IncidentColumn),
+		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.Incident
+		step.Edge.Schema = schemaConfig.Task
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
 // QueryAssignee chains the current query on the "assignee" edge.
 func (_q *TaskQuery) QueryAssignee() *UserQuery {
 	query := (&UserClient{config: _q.config}).Query()
@@ -188,7 +188,7 @@ func (_q *TaskQuery) QueryAssignee() *UserQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(task.Table, task.FieldID, selector),
 			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, task.AssigneeTable, task.AssigneeColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, task.AssigneeTable, task.AssigneeColumn),
 		)
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.User
@@ -213,7 +213,7 @@ func (_q *TaskQuery) QueryCreator() *UserQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(task.Table, task.FieldID, selector),
 			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, task.CreatorTable, task.CreatorColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, task.CreatorTable, task.CreatorColumn),
 		)
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.User
@@ -418,8 +418,8 @@ func (_q *TaskQuery) Clone() *TaskQuery {
 		predicates:      append([]predicate.Task{}, _q.predicates...),
 		withTenant:      _q.withTenant.Clone(),
 		withTickets:     _q.withTickets.Clone(),
-		withIncident:    _q.withIncident.Clone(),
 		withOriginEntry: _q.withOriginEntry.Clone(),
+		withIncident:    _q.withIncident.Clone(),
 		withAssignee:    _q.withAssignee.Clone(),
 		withCreator:     _q.withCreator.Clone(),
 		// clone intermediate query.
@@ -451,17 +451,6 @@ func (_q *TaskQuery) WithTickets(opts ...func(*TicketQuery)) *TaskQuery {
 	return _q
 }
 
-// WithIncident tells the query-builder to eager-load the nodes that are connected to
-// the "incident" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *TaskQuery) WithIncident(opts ...func(*IncidentQuery)) *TaskQuery {
-	query := (&IncidentClient{config: _q.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	_q.withIncident = query
-	return _q
-}
-
 // WithOriginEntry tells the query-builder to eager-load the nodes that are connected to
 // the "origin_entry" edge. The optional arguments are used to configure the query builder of the edge.
 func (_q *TaskQuery) WithOriginEntry(opts ...func(*SystemAnalysisEntryQuery)) *TaskQuery {
@@ -470,6 +459,17 @@ func (_q *TaskQuery) WithOriginEntry(opts ...func(*SystemAnalysisEntryQuery)) *T
 		opt(query)
 	}
 	_q.withOriginEntry = query
+	return _q
+}
+
+// WithIncident tells the query-builder to eager-load the nodes that are connected to
+// the "incident" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *TaskQuery) WithIncident(opts ...func(*IncidentQuery)) *TaskQuery {
+	query := (&IncidentClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withIncident = query
 	return _q
 }
 
@@ -582,8 +582,8 @@ func (_q *TaskQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Task, e
 		loadedTypes = [6]bool{
 			_q.withTenant != nil,
 			_q.withTickets != nil,
-			_q.withIncident != nil,
 			_q.withOriginEntry != nil,
+			_q.withIncident != nil,
 			_q.withAssignee != nil,
 			_q.withCreator != nil,
 		}
@@ -624,15 +624,15 @@ func (_q *TaskQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Task, e
 			return nil, err
 		}
 	}
-	if query := _q.withIncident; query != nil {
-		if err := _q.loadIncident(ctx, query, nodes, nil,
-			func(n *Task, e *Incident) { n.Edges.Incident = e }); err != nil {
-			return nil, err
-		}
-	}
 	if query := _q.withOriginEntry; query != nil {
 		if err := _q.loadOriginEntry(ctx, query, nodes, nil,
 			func(n *Task, e *SystemAnalysisEntry) { n.Edges.OriginEntry = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withIncident; query != nil {
+		if err := _q.loadIncident(ctx, query, nodes, nil,
+			func(n *Task, e *Incident) { n.Edges.Incident = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -742,35 +742,6 @@ func (_q *TaskQuery) loadTickets(ctx context.Context, query *TicketQuery, nodes 
 	}
 	return nil
 }
-func (_q *TaskQuery) loadIncident(ctx context.Context, query *IncidentQuery, nodes []*Task, init func(*Task), assign func(*Task, *Incident)) error {
-	ids := make([]uuid.UUID, 0, len(nodes))
-	nodeids := make(map[uuid.UUID][]*Task)
-	for i := range nodes {
-		fk := nodes[i].IncidentID
-		if _, ok := nodeids[fk]; !ok {
-			ids = append(ids, fk)
-		}
-		nodeids[fk] = append(nodeids[fk], nodes[i])
-	}
-	if len(ids) == 0 {
-		return nil
-	}
-	query.Where(incident.IDIn(ids...))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		nodes, ok := nodeids[n.ID]
-		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "incident_id" returned %v`, n.ID)
-		}
-		for i := range nodes {
-			assign(nodes[i], n)
-		}
-	}
-	return nil
-}
 func (_q *TaskQuery) loadOriginEntry(ctx context.Context, query *SystemAnalysisEntryQuery, nodes []*Task, init func(*Task), assign func(*Task, *SystemAnalysisEntry)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*Task)
@@ -803,11 +774,46 @@ func (_q *TaskQuery) loadOriginEntry(ctx context.Context, query *SystemAnalysisE
 	}
 	return nil
 }
+func (_q *TaskQuery) loadIncident(ctx context.Context, query *IncidentQuery, nodes []*Task, init func(*Task), assign func(*Task, *Incident)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*Task)
+	for i := range nodes {
+		if nodes[i].IncidentID == nil {
+			continue
+		}
+		fk := *nodes[i].IncidentID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(incident.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "incident_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
 func (_q *TaskQuery) loadAssignee(ctx context.Context, query *UserQuery, nodes []*Task, init func(*Task), assign func(*Task, *User)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*Task)
 	for i := range nodes {
-		fk := nodes[i].AssigneeID
+		if nodes[i].AssigneeID == nil {
+			continue
+		}
+		fk := *nodes[i].AssigneeID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -836,7 +842,10 @@ func (_q *TaskQuery) loadCreator(ctx context.Context, query *UserQuery, nodes []
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*Task)
 	for i := range nodes {
-		fk := nodes[i].CreatorID
+		if nodes[i].CreatorID == nil {
+			continue
+		}
+		fk := *nodes[i].CreatorID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -895,11 +904,11 @@ func (_q *TaskQuery) querySpec() *sqlgraph.QuerySpec {
 		if _q.withTenant != nil {
 			_spec.Node.AddColumnOnce(task.FieldTenantID)
 		}
-		if _q.withIncident != nil {
-			_spec.Node.AddColumnOnce(task.FieldIncidentID)
-		}
 		if _q.withOriginEntry != nil {
 			_spec.Node.AddColumnOnce(task.FieldOriginEntryID)
+		}
+		if _q.withIncident != nil {
+			_spec.Node.AddColumnOnce(task.FieldIncidentID)
 		}
 		if _q.withAssignee != nil {
 			_spec.Node.AddColumnOnce(task.FieldAssigneeID)

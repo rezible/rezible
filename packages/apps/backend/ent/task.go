@@ -28,22 +28,28 @@ type Task struct {
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
-	// Type holds the value of the "type" field.
-	Type task.Type `json:"type,omitempty"`
+	// ArchiveTime holds the value of the "archive_time" field.
+	ArchiveTime *time.Time `json:"archive_time,omitempty"`
+	// Version holds the value of the "version" field.
+	Version int `json:"version,omitempty"`
 	// Title holds the value of the "title" field.
 	Title string `json:"title,omitempty"`
+	// Description holds the value of the "description" field.
+	Description string `json:"description,omitempty"`
+	// Kind holds the value of the "kind" field.
+	Kind task.Kind `json:"kind,omitempty"`
 	// State holds the value of the "state" field.
 	State task.State `json:"state,omitempty"`
 	// DueAt holds the value of the "due_at" field.
 	DueAt *time.Time `json:"due_at,omitempty"`
 	// IncidentID holds the value of the "incident_id" field.
-	IncidentID uuid.UUID `json:"incident_id,omitempty"`
+	IncidentID *uuid.UUID `json:"incident_id,omitempty"`
 	// OriginEntryID holds the value of the "origin_entry_id" field.
 	OriginEntryID *uuid.UUID `json:"origin_entry_id,omitempty"`
 	// AssigneeID holds the value of the "assignee_id" field.
-	AssigneeID uuid.UUID `json:"assignee_id,omitempty"`
+	AssigneeID *uuid.UUID `json:"assignee_id,omitempty"`
 	// CreatorID holds the value of the "creator_id" field.
-	CreatorID uuid.UUID `json:"creator_id,omitempty"`
+	CreatorID *uuid.UUID `json:"creator_id,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the TaskQuery when eager-loading is set.
 	Edges        TaskEdges `json:"edges"`
@@ -56,10 +62,10 @@ type TaskEdges struct {
 	Tenant *Tenant `json:"tenant,omitempty"`
 	// Tickets holds the value of the tickets edge.
 	Tickets []*Ticket `json:"tickets,omitempty"`
-	// Incident holds the value of the incident edge.
-	Incident *Incident `json:"incident,omitempty"`
 	// OriginEntry holds the value of the origin_entry edge.
 	OriginEntry *SystemAnalysisEntry `json:"origin_entry,omitempty"`
+	// Incident holds the value of the incident edge.
+	Incident *Incident `json:"incident,omitempty"`
 	// Assignee holds the value of the assignee edge.
 	Assignee *User `json:"assignee,omitempty"`
 	// Creator holds the value of the creator edge.
@@ -89,26 +95,26 @@ func (e TaskEdges) TicketsOrErr() ([]*Ticket, error) {
 	return nil, &NotLoadedError{edge: "tickets"}
 }
 
-// IncidentOrErr returns the Incident value or an error if the edge
-// was not loaded in eager-loading, or loaded but was not found.
-func (e TaskEdges) IncidentOrErr() (*Incident, error) {
-	if e.Incident != nil {
-		return e.Incident, nil
-	} else if e.loadedTypes[2] {
-		return nil, &NotFoundError{label: incident.Label}
-	}
-	return nil, &NotLoadedError{edge: "incident"}
-}
-
 // OriginEntryOrErr returns the OriginEntry value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
 func (e TaskEdges) OriginEntryOrErr() (*SystemAnalysisEntry, error) {
 	if e.OriginEntry != nil {
 		return e.OriginEntry, nil
-	} else if e.loadedTypes[3] {
+	} else if e.loadedTypes[2] {
 		return nil, &NotFoundError{label: systemanalysisentry.Label}
 	}
 	return nil, &NotLoadedError{edge: "origin_entry"}
+}
+
+// IncidentOrErr returns the Incident value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e TaskEdges) IncidentOrErr() (*Incident, error) {
+	if e.Incident != nil {
+		return e.Incident, nil
+	} else if e.loadedTypes[3] {
+		return nil, &NotFoundError{label: incident.Label}
+	}
+	return nil, &NotLoadedError{edge: "incident"}
 }
 
 // AssigneeOrErr returns the Assignee value or an error if the edge
@@ -138,15 +144,15 @@ func (*Task) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case task.FieldOriginEntryID:
+		case task.FieldIncidentID, task.FieldOriginEntryID, task.FieldAssigneeID, task.FieldCreatorID:
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case task.FieldTenantID:
+		case task.FieldTenantID, task.FieldVersion:
 			values[i] = new(sql.NullInt64)
-		case task.FieldType, task.FieldTitle, task.FieldState:
+		case task.FieldTitle, task.FieldDescription, task.FieldKind, task.FieldState:
 			values[i] = new(sql.NullString)
-		case task.FieldCreatedAt, task.FieldUpdatedAt, task.FieldDueAt:
+		case task.FieldCreatedAt, task.FieldUpdatedAt, task.FieldArchiveTime, task.FieldDueAt:
 			values[i] = new(sql.NullTime)
-		case task.FieldID, task.FieldIncidentID, task.FieldAssigneeID, task.FieldCreatorID:
+		case task.FieldID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -187,17 +193,36 @@ func (_m *Task) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.UpdatedAt = value.Time
 			}
-		case task.FieldType:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field type", values[i])
+		case task.FieldArchiveTime:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field archive_time", values[i])
 			} else if value.Valid {
-				_m.Type = task.Type(value.String)
+				_m.ArchiveTime = new(time.Time)
+				*_m.ArchiveTime = value.Time
+			}
+		case task.FieldVersion:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field version", values[i])
+			} else if value.Valid {
+				_m.Version = int(value.Int64)
 			}
 		case task.FieldTitle:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field title", values[i])
 			} else if value.Valid {
 				_m.Title = value.String
+			}
+		case task.FieldDescription:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field description", values[i])
+			} else if value.Valid {
+				_m.Description = value.String
+			}
+		case task.FieldKind:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field kind", values[i])
+			} else if value.Valid {
+				_m.Kind = task.Kind(value.String)
 			}
 		case task.FieldState:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -213,10 +238,11 @@ func (_m *Task) assignValues(columns []string, values []any) error {
 				*_m.DueAt = value.Time
 			}
 		case task.FieldIncidentID:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field incident_id", values[i])
-			} else if value != nil {
-				_m.IncidentID = *value
+			} else if value.Valid {
+				_m.IncidentID = new(uuid.UUID)
+				*_m.IncidentID = *value.S.(*uuid.UUID)
 			}
 		case task.FieldOriginEntryID:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
@@ -226,16 +252,18 @@ func (_m *Task) assignValues(columns []string, values []any) error {
 				*_m.OriginEntryID = *value.S.(*uuid.UUID)
 			}
 		case task.FieldAssigneeID:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field assignee_id", values[i])
-			} else if value != nil {
-				_m.AssigneeID = *value
+			} else if value.Valid {
+				_m.AssigneeID = new(uuid.UUID)
+				*_m.AssigneeID = *value.S.(*uuid.UUID)
 			}
 		case task.FieldCreatorID:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field creator_id", values[i])
-			} else if value != nil {
-				_m.CreatorID = *value
+			} else if value.Valid {
+				_m.CreatorID = new(uuid.UUID)
+				*_m.CreatorID = *value.S.(*uuid.UUID)
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -260,14 +288,14 @@ func (_m *Task) QueryTickets() *TicketQuery {
 	return NewTaskClient(_m.config).QueryTickets(_m)
 }
 
-// QueryIncident queries the "incident" edge of the Task entity.
-func (_m *Task) QueryIncident() *IncidentQuery {
-	return NewTaskClient(_m.config).QueryIncident(_m)
-}
-
 // QueryOriginEntry queries the "origin_entry" edge of the Task entity.
 func (_m *Task) QueryOriginEntry() *SystemAnalysisEntryQuery {
 	return NewTaskClient(_m.config).QueryOriginEntry(_m)
+}
+
+// QueryIncident queries the "incident" edge of the Task entity.
+func (_m *Task) QueryIncident() *IncidentQuery {
+	return NewTaskClient(_m.config).QueryIncident(_m)
 }
 
 // QueryAssignee queries the "assignee" edge of the Task entity.
@@ -312,11 +340,22 @@ func (_m *Task) String() string {
 	builder.WriteString("updated_at=")
 	builder.WriteString(_m.UpdatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
-	builder.WriteString("type=")
-	builder.WriteString(fmt.Sprintf("%v", _m.Type))
+	if v := _m.ArchiveTime; v != nil {
+		builder.WriteString("archive_time=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
+	builder.WriteString(", ")
+	builder.WriteString("version=")
+	builder.WriteString(fmt.Sprintf("%v", _m.Version))
 	builder.WriteString(", ")
 	builder.WriteString("title=")
 	builder.WriteString(_m.Title)
+	builder.WriteString(", ")
+	builder.WriteString("description=")
+	builder.WriteString(_m.Description)
+	builder.WriteString(", ")
+	builder.WriteString("kind=")
+	builder.WriteString(fmt.Sprintf("%v", _m.Kind))
 	builder.WriteString(", ")
 	builder.WriteString("state=")
 	builder.WriteString(fmt.Sprintf("%v", _m.State))
@@ -326,19 +365,25 @@ func (_m *Task) String() string {
 		builder.WriteString(v.Format(time.ANSIC))
 	}
 	builder.WriteString(", ")
-	builder.WriteString("incident_id=")
-	builder.WriteString(fmt.Sprintf("%v", _m.IncidentID))
+	if v := _m.IncidentID; v != nil {
+		builder.WriteString("incident_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
 	builder.WriteString(", ")
 	if v := _m.OriginEntryID; v != nil {
 		builder.WriteString("origin_entry_id=")
 		builder.WriteString(fmt.Sprintf("%v", *v))
 	}
 	builder.WriteString(", ")
-	builder.WriteString("assignee_id=")
-	builder.WriteString(fmt.Sprintf("%v", _m.AssigneeID))
+	if v := _m.AssigneeID; v != nil {
+		builder.WriteString("assignee_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
 	builder.WriteString(", ")
-	builder.WriteString("creator_id=")
-	builder.WriteString(fmt.Sprintf("%v", _m.CreatorID))
+	if v := _m.CreatorID; v != nil {
+		builder.WriteString("creator_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
 	builder.WriteByte(')')
 	return builder.String()
 }

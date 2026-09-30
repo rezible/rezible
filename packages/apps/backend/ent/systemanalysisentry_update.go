@@ -143,6 +143,27 @@ func (_u *SystemAnalysisEntryUpdate) ClearBody() *SystemAnalysisEntryUpdate {
 	return _u
 }
 
+// SetVersion sets the "version" field.
+func (_u *SystemAnalysisEntryUpdate) SetVersion(v int) *SystemAnalysisEntryUpdate {
+	_u.mutation.ResetVersion()
+	_u.mutation.SetVersion(v)
+	return _u
+}
+
+// SetNillableVersion sets the "version" field if the given value is not nil.
+func (_u *SystemAnalysisEntryUpdate) SetNillableVersion(v *int) *SystemAnalysisEntryUpdate {
+	if v != nil {
+		_u.SetVersion(*v)
+	}
+	return _u
+}
+
+// AddVersion adds value to the "version" field.
+func (_u *SystemAnalysisEntryUpdate) AddVersion(v int) *SystemAnalysisEntryUpdate {
+	_u.mutation.AddVersion(v)
+	return _u
+}
+
 // SetProperties sets the "properties" field.
 func (_u *SystemAnalysisEntryUpdate) SetProperties(v map[string]interface{}) *SystemAnalysisEntryUpdate {
 	_u.mutation.SetProperties(v)
@@ -381,6 +402,12 @@ func (_u *SystemAnalysisEntryUpdate) sqlSave(ctx context.Context) (_node int, er
 	}
 	if _u.mutation.BodyCleared() {
 		_spec.ClearField(systemanalysisentry.FieldBody, field.TypeString)
+	}
+	if value, ok := _u.mutation.Version(); ok {
+		_spec.SetField(systemanalysisentry.FieldVersion, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedVersion(); ok {
+		_spec.AddField(systemanalysisentry.FieldVersion, field.TypeInt, value)
 	}
 	if value, ok := _u.mutation.Properties(); ok {
 		_spec.SetField(systemanalysisentry.FieldProperties, field.TypeJSON, value)
@@ -665,6 +692,27 @@ func (_u *SystemAnalysisEntryUpdateOne) ClearBody() *SystemAnalysisEntryUpdateOn
 	return _u
 }
 
+// SetVersion sets the "version" field.
+func (_u *SystemAnalysisEntryUpdateOne) SetVersion(v int) *SystemAnalysisEntryUpdateOne {
+	_u.mutation.ResetVersion()
+	_u.mutation.SetVersion(v)
+	return _u
+}
+
+// SetNillableVersion sets the "version" field if the given value is not nil.
+func (_u *SystemAnalysisEntryUpdateOne) SetNillableVersion(v *int) *SystemAnalysisEntryUpdateOne {
+	if v != nil {
+		_u.SetVersion(*v)
+	}
+	return _u
+}
+
+// AddVersion adds value to the "version" field.
+func (_u *SystemAnalysisEntryUpdateOne) AddVersion(v int) *SystemAnalysisEntryUpdateOne {
+	_u.mutation.AddVersion(v)
+	return _u
+}
+
 // SetProperties sets the "properties" field.
 func (_u *SystemAnalysisEntryUpdateOne) SetProperties(v map[string]interface{}) *SystemAnalysisEntryUpdateOne {
 	_u.mutation.SetProperties(v)
@@ -933,6 +981,12 @@ func (_u *SystemAnalysisEntryUpdateOne) sqlSave(ctx context.Context) (_node *Sys
 	}
 	if _u.mutation.BodyCleared() {
 		_spec.ClearField(systemanalysisentry.FieldBody, field.TypeString)
+	}
+	if value, ok := _u.mutation.Version(); ok {
+		_spec.SetField(systemanalysisentry.FieldVersion, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedVersion(); ok {
+		_spec.AddField(systemanalysisentry.FieldVersion, field.TypeInt, value)
 	}
 	if value, ok := _u.mutation.Properties(); ok {
 		_spec.SetField(systemanalysisentry.FieldProperties, field.TypeJSON, value)

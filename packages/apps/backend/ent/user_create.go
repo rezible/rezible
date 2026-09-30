@@ -16,10 +16,8 @@ import (
 	"github.com/rezible/rezible/ent/discussionthread"
 	"github.com/rezible/rezible/ent/documentaccess"
 	"github.com/rezible/rezible/ent/eventannotation"
-	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/incidentdebrief"
 	"github.com/rezible/rezible/ent/incidentmilestone"
-	"github.com/rezible/rezible/ent/incidentroleassignment"
 	"github.com/rezible/rezible/ent/integrationuserinstallstate"
 	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/oncallroster"
@@ -28,7 +26,6 @@ import (
 	"github.com/rezible/rezible/ent/organizationrole"
 	"github.com/rezible/rezible/ent/review"
 	"github.com/rezible/rezible/ent/situationhazardassessment"
-	"github.com/rezible/rezible/ent/task"
 	"github.com/rezible/rezible/ent/team"
 	"github.com/rezible/rezible/ent/teammembership"
 	"github.com/rezible/rezible/ent/tenant"
@@ -279,21 +276,6 @@ func (_c *UserCreate) AddIntegrationOauthStates(v ...*IntegrationUserInstallStat
 	return _c.AddIntegrationOauthStateIDs(ids...)
 }
 
-// AddIncidentIDs adds the "incidents" edge to the Incident entity by IDs.
-func (_c *UserCreate) AddIncidentIDs(ids ...uuid.UUID) *UserCreate {
-	_c.mutation.AddIncidentIDs(ids...)
-	return _c
-}
-
-// AddIncidents adds the "incidents" edges to the Incident entity.
-func (_c *UserCreate) AddIncidents(v ...*Incident) *UserCreate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _c.AddIncidentIDs(ids...)
-}
-
 // AddIncidentMilestoneIDs adds the "incident_milestones" edge to the IncidentMilestone entity by IDs.
 func (_c *UserCreate) AddIncidentMilestoneIDs(ids ...uuid.UUID) *UserCreate {
 	_c.mutation.AddIncidentMilestoneIDs(ids...)
@@ -322,36 +304,6 @@ func (_c *UserCreate) AddIncidentDebriefs(v ...*IncidentDebrief) *UserCreate {
 		ids[i] = v[i].ID
 	}
 	return _c.AddIncidentDebriefIDs(ids...)
-}
-
-// AddAssignedTaskIDs adds the "assigned_tasks" edge to the Task entity by IDs.
-func (_c *UserCreate) AddAssignedTaskIDs(ids ...uuid.UUID) *UserCreate {
-	_c.mutation.AddAssignedTaskIDs(ids...)
-	return _c
-}
-
-// AddAssignedTasks adds the "assigned_tasks" edges to the Task entity.
-func (_c *UserCreate) AddAssignedTasks(v ...*Task) *UserCreate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _c.AddAssignedTaskIDs(ids...)
-}
-
-// AddCreatedTaskIDs adds the "created_tasks" edge to the Task entity by IDs.
-func (_c *UserCreate) AddCreatedTaskIDs(ids ...uuid.UUID) *UserCreate {
-	_c.mutation.AddCreatedTaskIDs(ids...)
-	return _c
-}
-
-// AddCreatedTasks adds the "created_tasks" edges to the Task entity.
-func (_c *UserCreate) AddCreatedTasks(v ...*Task) *UserCreate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _c.AddCreatedTaskIDs(ids...)
 }
 
 // AddReviewRequestIDs adds the "review_requests" edge to the Review entity by IDs.
@@ -442,21 +394,6 @@ func (_c *UserCreate) AddTeamMemberships(v ...*TeamMembership) *UserCreate {
 		ids[i] = v[i].ID
 	}
 	return _c.AddTeamMembershipIDs(ids...)
-}
-
-// AddRoleAssignmentIDs adds the "role_assignments" edge to the IncidentRoleAssignment entity by IDs.
-func (_c *UserCreate) AddRoleAssignmentIDs(ids ...uuid.UUID) *UserCreate {
-	_c.mutation.AddRoleAssignmentIDs(ids...)
-	return _c
-}
-
-// AddRoleAssignments adds the "role_assignments" edges to the IncidentRoleAssignment entity.
-func (_c *UserCreate) AddRoleAssignments(v ...*IncidentRoleAssignment) *UserCreate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _c.AddRoleAssignmentIDs(ids...)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -764,30 +701,6 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := _c.mutation.IncidentsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   user.IncidentsTable,
-			Columns: user.IncidentsPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _c.schemaConfig.IncidentRoleAssignment
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		createE := &IncidentRoleAssignmentCreate{config: _c.config, mutation: newIncidentRoleAssignmentMutation(_c.config, OpCreate)}
-		_ = createE.defaults()
-		_, specE := createE.createSpec()
-		edge.Target.Fields = specE.Fields
-		if specE.ID.Value != nil {
-			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
 	if nodes := _c.mutation.IncidentMilestonesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -817,40 +730,6 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			},
 		}
 		edge.Schema = _c.schemaConfig.IncidentDebrief
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := _c.mutation.AssignedTasksIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   user.AssignedTasksTable,
-			Columns: []string{user.AssignedTasksColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _c.schemaConfig.Task
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := _c.mutation.CreatedTasksIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   user.CreatedTasksTable,
-			Columns: []string{user.CreatedTasksColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _c.schemaConfig.Task
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -953,23 +832,6 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			},
 		}
 		edge.Schema = _c.schemaConfig.TeamMembership
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := _c.mutation.RoleAssignmentsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   user.RoleAssignmentsTable,
-			Columns: []string{user.RoleAssignmentsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incidentroleassignment.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _c.schemaConfig.IncidentRoleAssignment
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

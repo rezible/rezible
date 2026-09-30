@@ -8,12 +8,10 @@ import (
 	"entgo.io/ent/schema/field"
 )
 
-var taskTypes = []string{
-	"cleanup",
-	"detect",
-	"mitigate",
-	"prevent",
-}
+var (
+	taskKinds  = []string{"cleanup", "detect", "mitigate", "prevent"}
+	taskStates = []string{"open", "completed", "cancelled"}
+)
 
 // Task holds the schema definition for the Task entity.
 type Task struct {
@@ -25,6 +23,7 @@ func (Task) Mixin() []ent.Mixin {
 		BaseMixin{},
 		TenantMixin{},
 		TimestampsMixin{},
+		ArchiveMixin{},
 	}
 }
 
@@ -32,14 +31,16 @@ func (Task) Mixin() []ent.Mixin {
 func (Task) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.New()).Default(uuid.New),
-		field.Enum("type").Values(taskTypes...),
+		field.Int("version").Default(1),
 		field.String("title"),
-		field.Enum("state").Values("open", "completed", "cancelled").Default("open"),
+		field.Text("description").Default(""),
+		field.Enum("kind").Values(taskKinds...),
+		field.Enum("state").Values(taskStates...).Default("open"),
 		field.Time("due_at").Optional().Nillable(),
-		field.UUID("incident_id", uuid.UUID{}).Optional(),
+		field.UUID("incident_id", uuid.UUID{}).Optional().Nillable(),
 		field.UUID("origin_entry_id", uuid.UUID{}).Optional().Nillable(),
-		field.UUID("assignee_id", uuid.UUID{}).Optional(),
-		field.UUID("creator_id", uuid.UUID{}).Optional(),
+		field.UUID("assignee_id", uuid.UUID{}).Optional().Nillable(),
+		field.UUID("creator_id", uuid.UUID{}).Optional().Nillable(),
 	}
 }
 
@@ -47,15 +48,20 @@ func (Task) Fields() []ent.Field {
 func (Task) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("tickets", Ticket.Type),
-
-		edge.From("incident", Incident.Type).
-			Ref("tasks").Unique().Field("incident_id"),
 		edge.To("origin_entry", SystemAnalysisEntry.Type).
-			Unique().Field("origin_entry_id"),
-		edge.From("assignee", User.Type).
-			Ref("assigned_tasks").Unique().Field("assignee_id"),
-		edge.From("creator", User.Type).
-			Ref("created_tasks").Unique().Field("creator_id"),
+			Unique().
+			Field("origin_entry_id"),
+
+		edge.To("incident", Incident.Type).
+			Unique().
+			Field("incident_id"),
+
+		edge.To("assignee", User.Type).
+			Unique().
+			Field("assignee_id"),
+		edge.To("creator", User.Type).
+			Unique().
+			Field("creator_id"),
 	}
 }
 
@@ -69,6 +75,7 @@ func (Ticket) Mixin() []ent.Mixin {
 		BaseMixin{},
 		TenantMixin{},
 		TimestampsMixin{},
+		//ProviderResourceReferenceMixin{},
 	}
 }
 

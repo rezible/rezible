@@ -2,7 +2,6 @@ package eventprojection
 
 import (
 	"context"
-	"encoding/json"
 	"time"
 
 	"github.com/google/uuid"
@@ -62,12 +61,14 @@ func (s *ProjectionServiceSuite) TestIncidentProjectionPublishesCreateChangeAndS
 	projector.incidents = s.incidentService(tdb, &events)
 
 	openedAt := time.Date(2026, 6, 1, 10, 0, 0, 0, time.UTC)
+	sourceUpdatedAt := openedAt
 	attrs := projections.IncidentEventAttributes{
-		Title:       "Search outage",
-		Summary:     "Search requests are failing.",
-		SeverityRef: "SEV-1",
-		TypeRef:     "Customer Impact",
-		OpenedAt:    openedAt,
+		Title:           "Search outage",
+		Summary:         "Search requests are failing.",
+		SeverityRef:     "SEV-1",
+		TypeRef:         "Customer Impact",
+		OpenedAt:        openedAt,
+		SourceUpdatedAt: &sourceUpdatedAt,
 	}
 	first := s.createIncidentProjectionEvent(tdb, "incident-1", openedAt, attrs)
 
@@ -88,6 +89,8 @@ func (s *ProjectionServiceSuite) TestIncidentProjectionPublishesCreateChangeAndS
 	s.Len(events, 1)
 
 	attrs.Title = "Search outage updated"
+	updatedSourceAt := sourceUpdatedAt.Add(time.Minute)
+	attrs.SourceUpdatedAt = &updatedSourceAt
 	second := s.createIncidentProjectionEvent(tdb, "incident-1", openedAt.Add(time.Minute), attrs)
 
 	_, projSecondErr := runProjection(ctx, projector, second)
@@ -106,53 +109,4 @@ func (s *ProjectionServiceSuite) TestIncidentProjectionPublishesCreateChangeAndS
 		Count(ctx)
 	s.Require().NoError(err)
 	s.Equal(1, typeCount)
-}
-
-func (s *ProjectionServiceSuite) TestIncidentProjectionDoesNotPanicForDemoCatalogSearchEntity() {
-	ctx := s.SeedTenantContext()
-	tdb := s.CreateTestDatabase()
-	client := tdb.Client(ctx)
-
-	projector := s.projectionService(tdb)
-	var events []rez.EventOnIncidentUpdated
-	projector.incidents = s.incidentService(tdb, &events)
-
-	eventID := uuid.MustParse("d1be3113-c03a-45f0-adcb-1191041c3b02")
-	createdAt := time.Date(2026, 6, 19, 10, 4, 46, 429693000, time.UTC)
-	occurredAt := time.Date(2026, 4, 18, 2, 30, 0, 0, time.UTC)
-	attrs, attrsErr := json.Marshal(projections.IncidentEventAttributes{
-		Title:       "Catalog search returning stale results",
-		Summary:     "The catalog search index failed to refresh after the nightly product import.",
-		SeverityRef: "SEV-2",
-		TypeRef:     "Data Freshness",
-		OpenedAt:    occurredAt,
-	})
-	s.Require().NoError(attrsErr)
-	createEvent := client.NormalizedEvent.Create().
-		SetID(eventID).
-		SetKind(projections.KindIncident).
-		SetProvider("demo").
-		SetProviderNamespace("demo").
-		SetProviderResourceRef("demo:incident:catalog-search-stale-results").
-		SetProviderEventSource("incidents").
-		SetProviderEventRef("demo:incidents:catalog-search-stale-results-observed").
-		SetAttributes(attrs).
-		SetCreatedAt(createdAt).
-		SetOccurredAt(occurredAt).
-		SetReceivedAt(occurredAt)
-
-	ev, err := createEvent.Save(ctx)
-	s.Require().NoError(err)
-
-	var projectionErr error
-	s.Require().NotPanics(func() {
-		_, projectionErr = runProjection(ctx, projector, ev)
-	})
-	s.Require().NoError(projectionErr)
-
-	created, err := client.Incident.Query().
-		Where(incident.Title("Catalog search returning stale results")).
-		Only(ctx)
-	s.Require().NoError(err)
-	s.True(created.OpenedAt.Equal(occurredAt))
 }

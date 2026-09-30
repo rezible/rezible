@@ -9097,10 +9097,10 @@ type DiscussionCommentMutation struct {
 	clearedtenant  bool
 	thread         *uuid.UUID
 	clearedthread  bool
-	user           *uuid.UUID
-	cleareduser    bool
 	parent         *uuid.UUID
 	clearedparent  bool
+	user           *uuid.UUID
+	cleareduser    bool
 	replies        map[uuid.UUID]struct{}
 	removedreplies map[uuid.UUID]struct{}
 	clearedreplies bool
@@ -9360,6 +9360,55 @@ func (m *DiscussionCommentMutation) ResetThreadID() {
 	m.thread = nil
 }
 
+// SetParentID sets the "parent_id" field.
+func (m *DiscussionCommentMutation) SetParentID(u uuid.UUID) {
+	m.parent = &u
+}
+
+// ParentID returns the value of the "parent_id" field in the mutation.
+func (m *DiscussionCommentMutation) ParentID() (r uuid.UUID, exists bool) {
+	v := m.parent
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldParentID returns the old "parent_id" field's value of the DiscussionComment entity.
+// If the DiscussionComment object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DiscussionCommentMutation) OldParentID(ctx context.Context) (v *uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldParentID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldParentID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldParentID: %w", err)
+	}
+	return oldValue.ParentID, nil
+}
+
+// ClearParentID clears the value of the "parent_id" field.
+func (m *DiscussionCommentMutation) ClearParentID() {
+	m.parent = nil
+	m.clearedFields[discussioncomment.FieldParentID] = struct{}{}
+}
+
+// ParentIDCleared returns if the "parent_id" field was cleared in this mutation.
+func (m *DiscussionCommentMutation) ParentIDCleared() bool {
+	_, ok := m.clearedFields[discussioncomment.FieldParentID]
+	return ok
+}
+
+// ResetParentID resets all changes to the "parent_id" field.
+func (m *DiscussionCommentMutation) ResetParentID() {
+	m.parent = nil
+	delete(m.clearedFields, discussioncomment.FieldParentID)
+}
+
 // SetUserID sets the "user_id" field.
 func (m *DiscussionCommentMutation) SetUserID(u uuid.UUID) {
 	m.user = &u
@@ -9432,55 +9481,6 @@ func (m *DiscussionCommentMutation) ResetContent() {
 	m.content = nil
 }
 
-// SetParentID sets the "parent_id" field.
-func (m *DiscussionCommentMutation) SetParentID(u uuid.UUID) {
-	m.parent = &u
-}
-
-// ParentID returns the value of the "parent_id" field in the mutation.
-func (m *DiscussionCommentMutation) ParentID() (r uuid.UUID, exists bool) {
-	v := m.parent
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldParentID returns the old "parent_id" field's value of the DiscussionComment entity.
-// If the DiscussionComment object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *DiscussionCommentMutation) OldParentID(ctx context.Context) (v *uuid.UUID, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldParentID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldParentID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldParentID: %w", err)
-	}
-	return oldValue.ParentID, nil
-}
-
-// ClearParentID clears the value of the "parent_id" field.
-func (m *DiscussionCommentMutation) ClearParentID() {
-	m.parent = nil
-	m.clearedFields[discussioncomment.FieldParentID] = struct{}{}
-}
-
-// ParentIDCleared returns if the "parent_id" field was cleared in this mutation.
-func (m *DiscussionCommentMutation) ParentIDCleared() bool {
-	_, ok := m.clearedFields[discussioncomment.FieldParentID]
-	return ok
-}
-
-// ResetParentID resets all changes to the "parent_id" field.
-func (m *DiscussionCommentMutation) ResetParentID() {
-	m.parent = nil
-	delete(m.clearedFields, discussioncomment.FieldParentID)
-}
-
 // ClearTenant clears the "tenant" edge to the Tenant entity.
 func (m *DiscussionCommentMutation) ClearTenant() {
 	m.clearedtenant = true
@@ -9535,33 +9535,6 @@ func (m *DiscussionCommentMutation) ResetThread() {
 	m.clearedthread = false
 }
 
-// ClearUser clears the "user" edge to the User entity.
-func (m *DiscussionCommentMutation) ClearUser() {
-	m.cleareduser = true
-	m.clearedFields[discussioncomment.FieldUserID] = struct{}{}
-}
-
-// UserCleared reports if the "user" edge to the User entity was cleared.
-func (m *DiscussionCommentMutation) UserCleared() bool {
-	return m.cleareduser
-}
-
-// UserIDs returns the "user" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// UserID instead. It exists only for internal usage by the builders.
-func (m *DiscussionCommentMutation) UserIDs() (ids []uuid.UUID) {
-	if id := m.user; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetUser resets all changes to the "user" edge.
-func (m *DiscussionCommentMutation) ResetUser() {
-	m.user = nil
-	m.cleareduser = false
-}
-
 // ClearParent clears the "parent" edge to the DiscussionComment entity.
 func (m *DiscussionCommentMutation) ClearParent() {
 	m.clearedparent = true
@@ -9587,6 +9560,33 @@ func (m *DiscussionCommentMutation) ParentIDs() (ids []uuid.UUID) {
 func (m *DiscussionCommentMutation) ResetParent() {
 	m.parent = nil
 	m.clearedparent = false
+}
+
+// ClearUser clears the "user" edge to the User entity.
+func (m *DiscussionCommentMutation) ClearUser() {
+	m.cleareduser = true
+	m.clearedFields[discussioncomment.FieldUserID] = struct{}{}
+}
+
+// UserCleared reports if the "user" edge to the User entity was cleared.
+func (m *DiscussionCommentMutation) UserCleared() bool {
+	return m.cleareduser
+}
+
+// UserIDs returns the "user" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// UserID instead. It exists only for internal usage by the builders.
+func (m *DiscussionCommentMutation) UserIDs() (ids []uuid.UUID) {
+	if id := m.user; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetUser resets all changes to the "user" edge.
+func (m *DiscussionCommentMutation) ResetUser() {
+	m.user = nil
+	m.cleareduser = false
 }
 
 // AddReplyIDs adds the "replies" edge to the DiscussionComment entity by ids.
@@ -9744,14 +9744,14 @@ func (m *DiscussionCommentMutation) Fields() []string {
 	if m.thread != nil {
 		fields = append(fields, discussioncomment.FieldThreadID)
 	}
+	if m.parent != nil {
+		fields = append(fields, discussioncomment.FieldParentID)
+	}
 	if m.user != nil {
 		fields = append(fields, discussioncomment.FieldUserID)
 	}
 	if m.content != nil {
 		fields = append(fields, discussioncomment.FieldContent)
-	}
-	if m.parent != nil {
-		fields = append(fields, discussioncomment.FieldParentID)
 	}
 	return fields
 }
@@ -9769,12 +9769,12 @@ func (m *DiscussionCommentMutation) Field(name string) (ent.Value, bool) {
 		return m.UpdatedAt()
 	case discussioncomment.FieldThreadID:
 		return m.ThreadID()
+	case discussioncomment.FieldParentID:
+		return m.ParentID()
 	case discussioncomment.FieldUserID:
 		return m.UserID()
 	case discussioncomment.FieldContent:
 		return m.Content()
-	case discussioncomment.FieldParentID:
-		return m.ParentID()
 	}
 	return nil, false
 }
@@ -9792,12 +9792,12 @@ func (m *DiscussionCommentMutation) OldField(ctx context.Context, name string) (
 		return m.OldUpdatedAt(ctx)
 	case discussioncomment.FieldThreadID:
 		return m.OldThreadID(ctx)
+	case discussioncomment.FieldParentID:
+		return m.OldParentID(ctx)
 	case discussioncomment.FieldUserID:
 		return m.OldUserID(ctx)
 	case discussioncomment.FieldContent:
 		return m.OldContent(ctx)
-	case discussioncomment.FieldParentID:
-		return m.OldParentID(ctx)
 	}
 	return nil, fmt.Errorf("unknown DiscussionComment field %s", name)
 }
@@ -9835,6 +9835,13 @@ func (m *DiscussionCommentMutation) SetField(name string, value ent.Value) error
 		}
 		m.SetThreadID(v)
 		return nil
+	case discussioncomment.FieldParentID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetParentID(v)
+		return nil
 	case discussioncomment.FieldUserID:
 		v, ok := value.(uuid.UUID)
 		if !ok {
@@ -9848,13 +9855,6 @@ func (m *DiscussionCommentMutation) SetField(name string, value ent.Value) error
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetContent(v)
-		return nil
-	case discussioncomment.FieldParentID:
-		v, ok := value.(uuid.UUID)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetParentID(v)
 		return nil
 	}
 	return fmt.Errorf("unknown DiscussionComment field %s", name)
@@ -9929,14 +9929,14 @@ func (m *DiscussionCommentMutation) ResetField(name string) error {
 	case discussioncomment.FieldThreadID:
 		m.ResetThreadID()
 		return nil
+	case discussioncomment.FieldParentID:
+		m.ResetParentID()
+		return nil
 	case discussioncomment.FieldUserID:
 		m.ResetUserID()
 		return nil
 	case discussioncomment.FieldContent:
 		m.ResetContent()
-		return nil
-	case discussioncomment.FieldParentID:
-		m.ResetParentID()
 		return nil
 	}
 	return fmt.Errorf("unknown DiscussionComment field %s", name)
@@ -9951,11 +9951,11 @@ func (m *DiscussionCommentMutation) AddedEdges() []string {
 	if m.thread != nil {
 		edges = append(edges, discussioncomment.EdgeThread)
 	}
-	if m.user != nil {
-		edges = append(edges, discussioncomment.EdgeUser)
-	}
 	if m.parent != nil {
 		edges = append(edges, discussioncomment.EdgeParent)
+	}
+	if m.user != nil {
+		edges = append(edges, discussioncomment.EdgeUser)
 	}
 	if m.replies != nil {
 		edges = append(edges, discussioncomment.EdgeReplies)
@@ -9978,12 +9978,12 @@ func (m *DiscussionCommentMutation) AddedIDs(name string) []ent.Value {
 		if id := m.thread; id != nil {
 			return []ent.Value{*id}
 		}
-	case discussioncomment.EdgeUser:
-		if id := m.user; id != nil {
-			return []ent.Value{*id}
-		}
 	case discussioncomment.EdgeParent:
 		if id := m.parent; id != nil {
+			return []ent.Value{*id}
+		}
+	case discussioncomment.EdgeUser:
+		if id := m.user; id != nil {
 			return []ent.Value{*id}
 		}
 	case discussioncomment.EdgeReplies:
@@ -10043,11 +10043,11 @@ func (m *DiscussionCommentMutation) ClearedEdges() []string {
 	if m.clearedthread {
 		edges = append(edges, discussioncomment.EdgeThread)
 	}
-	if m.cleareduser {
-		edges = append(edges, discussioncomment.EdgeUser)
-	}
 	if m.clearedparent {
 		edges = append(edges, discussioncomment.EdgeParent)
+	}
+	if m.cleareduser {
+		edges = append(edges, discussioncomment.EdgeUser)
 	}
 	if m.clearedreplies {
 		edges = append(edges, discussioncomment.EdgeReplies)
@@ -10066,10 +10066,10 @@ func (m *DiscussionCommentMutation) EdgeCleared(name string) bool {
 		return m.clearedtenant
 	case discussioncomment.EdgeThread:
 		return m.clearedthread
-	case discussioncomment.EdgeUser:
-		return m.cleareduser
 	case discussioncomment.EdgeParent:
 		return m.clearedparent
+	case discussioncomment.EdgeUser:
+		return m.cleareduser
 	case discussioncomment.EdgeReplies:
 		return m.clearedreplies
 	case discussioncomment.EdgeReviews:
@@ -10088,11 +10088,11 @@ func (m *DiscussionCommentMutation) ClearEdge(name string) error {
 	case discussioncomment.EdgeThread:
 		m.ClearThread()
 		return nil
-	case discussioncomment.EdgeUser:
-		m.ClearUser()
-		return nil
 	case discussioncomment.EdgeParent:
 		m.ClearParent()
+		return nil
+	case discussioncomment.EdgeUser:
+		m.ClearUser()
 		return nil
 	}
 	return fmt.Errorf("unknown DiscussionComment unique edge %s", name)
@@ -10108,11 +10108,11 @@ func (m *DiscussionCommentMutation) ResetEdge(name string) error {
 	case discussioncomment.EdgeThread:
 		m.ResetThread()
 		return nil
-	case discussioncomment.EdgeUser:
-		m.ResetUser()
-		return nil
 	case discussioncomment.EdgeParent:
 		m.ResetParent()
+		return nil
+	case discussioncomment.EdgeUser:
+		m.ResetUser()
 		return nil
 	case discussioncomment.EdgeReplies:
 		m.ResetReplies()
@@ -10132,7 +10132,6 @@ type DiscussionThreadMutation struct {
 	id                   *uuid.UUID
 	created_at           *time.Time
 	updated_at           *time.Time
-	kind                 *discussionthread.Kind
 	target_kind          *discussionthread.TargetKind
 	target_id            *uuid.UUID
 	resolution_state     *discussionthread.ResolutionState
@@ -10500,42 +10499,6 @@ func (m *DiscussionThreadMutation) OldUserID(ctx context.Context) (v uuid.UUID, 
 // ResetUserID resets all changes to the "user_id" field.
 func (m *DiscussionThreadMutation) ResetUserID() {
 	m.user = nil
-}
-
-// SetKind sets the "kind" field.
-func (m *DiscussionThreadMutation) SetKind(d discussionthread.Kind) {
-	m.kind = &d
-}
-
-// Kind returns the value of the "kind" field in the mutation.
-func (m *DiscussionThreadMutation) Kind() (r discussionthread.Kind, exists bool) {
-	v := m.kind
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldKind returns the old "kind" field's value of the DiscussionThread entity.
-// If the DiscussionThread object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *DiscussionThreadMutation) OldKind(ctx context.Context) (v discussionthread.Kind, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldKind is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldKind requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldKind: %w", err)
-	}
-	return oldValue.Kind, nil
-}
-
-// ResetKind resets all changes to the "kind" field.
-func (m *DiscussionThreadMutation) ResetKind() {
-	m.kind = nil
 }
 
 // SetTargetKind sets the "target_kind" field.
@@ -11028,7 +10991,7 @@ func (m *DiscussionThreadMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *DiscussionThreadMutation) Fields() []string {
-	fields := make([]string, 0, 13)
+	fields := make([]string, 0, 12)
 	if m.tenant != nil {
 		fields = append(fields, discussionthread.FieldTenantID)
 	}
@@ -11046,9 +11009,6 @@ func (m *DiscussionThreadMutation) Fields() []string {
 	}
 	if m.user != nil {
 		fields = append(fields, discussionthread.FieldUserID)
-	}
-	if m.kind != nil {
-		fields = append(fields, discussionthread.FieldKind)
 	}
 	if m.target_kind != nil {
 		fields = append(fields, discussionthread.FieldTargetKind)
@@ -11088,8 +11048,6 @@ func (m *DiscussionThreadMutation) Field(name string) (ent.Value, bool) {
 		return m.RetrospectiveID()
 	case discussionthread.FieldUserID:
 		return m.UserID()
-	case discussionthread.FieldKind:
-		return m.Kind()
 	case discussionthread.FieldTargetKind:
 		return m.TargetKind()
 	case discussionthread.FieldTargetID:
@@ -11123,8 +11081,6 @@ func (m *DiscussionThreadMutation) OldField(ctx context.Context, name string) (e
 		return m.OldRetrospectiveID(ctx)
 	case discussionthread.FieldUserID:
 		return m.OldUserID(ctx)
-	case discussionthread.FieldKind:
-		return m.OldKind(ctx)
 	case discussionthread.FieldTargetKind:
 		return m.OldTargetKind(ctx)
 	case discussionthread.FieldTargetID:
@@ -11187,13 +11143,6 @@ func (m *DiscussionThreadMutation) SetField(name string, value ent.Value) error 
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetUserID(v)
-		return nil
-	case discussionthread.FieldKind:
-		v, ok := value.(discussionthread.Kind)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetKind(v)
 		return nil
 	case discussionthread.FieldTargetKind:
 		v, ok := value.(discussionthread.TargetKind)
@@ -11357,9 +11306,6 @@ func (m *DiscussionThreadMutation) ResetField(name string) error {
 		return nil
 	case discussionthread.FieldUserID:
 		m.ResetUserID()
-		return nil
-	case discussionthread.FieldKind:
-		m.ResetKind()
 		return nil
 	case discussionthread.FieldTargetKind:
 		m.ResetTargetKind()
@@ -14131,7 +14077,9 @@ type IncidentMutation struct {
 	title                    *string
 	summary                  *string
 	chat_channel_id          *string
+	response_state           *incident.ResponseState
 	opened_at                *time.Time
+	resolved_at              *time.Time
 	clearedFields            map[string]struct{}
 	tenant                   *int
 	clearedtenant            bool
@@ -14146,9 +14094,6 @@ type IncidentMutation struct {
 	clearedmilestones        bool
 	retrospective            *uuid.UUID
 	clearedretrospective     bool
-	users                    map[uuid.UUID]struct{}
-	removedusers             map[uuid.UUID]struct{}
-	clearedusers             bool
 	role_assignments         map[uuid.UUID]struct{}
 	removedrole_assignments  map[uuid.UUID]struct{}
 	clearedrole_assignments  bool
@@ -14161,9 +14106,6 @@ type IncidentMutation struct {
 	field_selections         map[uuid.UUID]struct{}
 	removedfield_selections  map[uuid.UUID]struct{}
 	clearedfield_selections  bool
-	tasks                    map[uuid.UUID]struct{}
-	removedtasks             map[uuid.UUID]struct{}
-	clearedtasks             bool
 	tag_assignments          map[uuid.UUID]struct{}
 	removedtag_assignments   map[uuid.UUID]struct{}
 	clearedtag_assignments   bool
@@ -14173,15 +14115,9 @@ type IncidentMutation struct {
 	debriefs                 map[uuid.UUID]struct{}
 	removeddebriefs          map[uuid.UUID]struct{}
 	cleareddebriefs          bool
-	review_sessions          map[uuid.UUID]struct{}
-	removedreview_sessions   map[uuid.UUID]struct{}
-	clearedreview_sessions   bool
 	video_conferences        map[uuid.UUID]struct{}
 	removedvideo_conferences map[uuid.UUID]struct{}
 	clearedvideo_conferences bool
-	user_roles               map[uuid.UUID]struct{}
-	removeduser_roles        map[uuid.UUID]struct{}
-	cleareduser_roles        bool
 	incident_links           map[int]struct{}
 	removedincident_links    map[int]struct{}
 	clearedincident_links    bool
@@ -14540,7 +14476,7 @@ func (m *IncidentMutation) SeverityID() (r uuid.UUID, exists bool) {
 // OldSeverityID returns the old "severity_id" field's value of the Incident entity.
 // If the Incident object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *IncidentMutation) OldSeverityID(ctx context.Context) (v uuid.UUID, err error) {
+func (m *IncidentMutation) OldSeverityID(ctx context.Context) (v *uuid.UUID, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldSeverityID is only allowed on UpdateOne operations")
 	}
@@ -14554,9 +14490,22 @@ func (m *IncidentMutation) OldSeverityID(ctx context.Context) (v uuid.UUID, err 
 	return oldValue.SeverityID, nil
 }
 
+// ClearSeverityID clears the value of the "severity_id" field.
+func (m *IncidentMutation) ClearSeverityID() {
+	m.severity = nil
+	m.clearedFields[incident.FieldSeverityID] = struct{}{}
+}
+
+// SeverityIDCleared returns if the "severity_id" field was cleared in this mutation.
+func (m *IncidentMutation) SeverityIDCleared() bool {
+	_, ok := m.clearedFields[incident.FieldSeverityID]
+	return ok
+}
+
 // ResetSeverityID resets all changes to the "severity_id" field.
 func (m *IncidentMutation) ResetSeverityID() {
 	m.severity = nil
+	delete(m.clearedFields, incident.FieldSeverityID)
 }
 
 // SetTypeID sets the "type_id" field.
@@ -14576,7 +14525,7 @@ func (m *IncidentMutation) TypeID() (r uuid.UUID, exists bool) {
 // OldTypeID returns the old "type_id" field's value of the Incident entity.
 // If the Incident object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *IncidentMutation) OldTypeID(ctx context.Context) (v uuid.UUID, err error) {
+func (m *IncidentMutation) OldTypeID(ctx context.Context) (v *uuid.UUID, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldTypeID is only allowed on UpdateOne operations")
 	}
@@ -14590,9 +14539,22 @@ func (m *IncidentMutation) OldTypeID(ctx context.Context) (v uuid.UUID, err erro
 	return oldValue.TypeID, nil
 }
 
+// ClearTypeID clears the value of the "type_id" field.
+func (m *IncidentMutation) ClearTypeID() {
+	m._type = nil
+	m.clearedFields[incident.FieldTypeID] = struct{}{}
+}
+
+// TypeIDCleared returns if the "type_id" field was cleared in this mutation.
+func (m *IncidentMutation) TypeIDCleared() bool {
+	_, ok := m.clearedFields[incident.FieldTypeID]
+	return ok
+}
+
 // ResetTypeID resets all changes to the "type_id" field.
 func (m *IncidentMutation) ResetTypeID() {
 	m._type = nil
+	delete(m.clearedFields, incident.FieldTypeID)
 }
 
 // SetSummary sets the "summary" field.
@@ -14693,6 +14655,42 @@ func (m *IncidentMutation) ResetChatChannelID() {
 	delete(m.clearedFields, incident.FieldChatChannelID)
 }
 
+// SetResponseState sets the "response_state" field.
+func (m *IncidentMutation) SetResponseState(is incident.ResponseState) {
+	m.response_state = &is
+}
+
+// ResponseState returns the value of the "response_state" field in the mutation.
+func (m *IncidentMutation) ResponseState() (r incident.ResponseState, exists bool) {
+	v := m.response_state
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldResponseState returns the old "response_state" field's value of the Incident entity.
+// If the Incident object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *IncidentMutation) OldResponseState(ctx context.Context) (v incident.ResponseState, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldResponseState is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldResponseState requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldResponseState: %w", err)
+	}
+	return oldValue.ResponseState, nil
+}
+
+// ResetResponseState resets all changes to the "response_state" field.
+func (m *IncidentMutation) ResetResponseState() {
+	m.response_state = nil
+}
+
 // SetOpenedAt sets the "opened_at" field.
 func (m *IncidentMutation) SetOpenedAt(t time.Time) {
 	m.opened_at = &t
@@ -14727,6 +14725,55 @@ func (m *IncidentMutation) OldOpenedAt(ctx context.Context) (v time.Time, err er
 // ResetOpenedAt resets all changes to the "opened_at" field.
 func (m *IncidentMutation) ResetOpenedAt() {
 	m.opened_at = nil
+}
+
+// SetResolvedAt sets the "resolved_at" field.
+func (m *IncidentMutation) SetResolvedAt(t time.Time) {
+	m.resolved_at = &t
+}
+
+// ResolvedAt returns the value of the "resolved_at" field in the mutation.
+func (m *IncidentMutation) ResolvedAt() (r time.Time, exists bool) {
+	v := m.resolved_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldResolvedAt returns the old "resolved_at" field's value of the Incident entity.
+// If the Incident object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *IncidentMutation) OldResolvedAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldResolvedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldResolvedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldResolvedAt: %w", err)
+	}
+	return oldValue.ResolvedAt, nil
+}
+
+// ClearResolvedAt clears the value of the "resolved_at" field.
+func (m *IncidentMutation) ClearResolvedAt() {
+	m.resolved_at = nil
+	m.clearedFields[incident.FieldResolvedAt] = struct{}{}
+}
+
+// ResolvedAtCleared returns if the "resolved_at" field was cleared in this mutation.
+func (m *IncidentMutation) ResolvedAtCleared() bool {
+	_, ok := m.clearedFields[incident.FieldResolvedAt]
+	return ok
+}
+
+// ResetResolvedAt resets all changes to the "resolved_at" field.
+func (m *IncidentMutation) ResetResolvedAt() {
+	m.resolved_at = nil
+	delete(m.clearedFields, incident.FieldResolvedAt)
 }
 
 // ClearTenant clears the "tenant" edge to the Tenant entity.
@@ -14791,7 +14838,7 @@ func (m *IncidentMutation) ClearSeverity() {
 
 // SeverityCleared reports if the "severity" edge to the IncidentSeverity entity was cleared.
 func (m *IncidentMutation) SeverityCleared() bool {
-	return m.clearedseverity
+	return m.SeverityIDCleared() || m.clearedseverity
 }
 
 // SeverityIDs returns the "severity" edge IDs in the mutation.
@@ -14818,7 +14865,7 @@ func (m *IncidentMutation) ClearType() {
 
 // TypeCleared reports if the "type" edge to the IncidentType entity was cleared.
 func (m *IncidentMutation) TypeCleared() bool {
-	return m.cleared_type
+	return m.TypeIDCleared() || m.cleared_type
 }
 
 // TypeIDs returns the "type" edge IDs in the mutation.
@@ -14928,60 +14975,6 @@ func (m *IncidentMutation) RetrospectiveIDs() (ids []uuid.UUID) {
 func (m *IncidentMutation) ResetRetrospective() {
 	m.retrospective = nil
 	m.clearedretrospective = false
-}
-
-// AddUserIDs adds the "users" edge to the User entity by ids.
-func (m *IncidentMutation) AddUserIDs(ids ...uuid.UUID) {
-	if m.users == nil {
-		m.users = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.users[ids[i]] = struct{}{}
-	}
-}
-
-// ClearUsers clears the "users" edge to the User entity.
-func (m *IncidentMutation) ClearUsers() {
-	m.clearedusers = true
-}
-
-// UsersCleared reports if the "users" edge to the User entity was cleared.
-func (m *IncidentMutation) UsersCleared() bool {
-	return m.clearedusers
-}
-
-// RemoveUserIDs removes the "users" edge to the User entity by IDs.
-func (m *IncidentMutation) RemoveUserIDs(ids ...uuid.UUID) {
-	if m.removedusers == nil {
-		m.removedusers = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.users, ids[i])
-		m.removedusers[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedUsers returns the removed IDs of the "users" edge to the User entity.
-func (m *IncidentMutation) RemovedUsersIDs() (ids []uuid.UUID) {
-	for id := range m.removedusers {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// UsersIDs returns the "users" edge IDs in the mutation.
-func (m *IncidentMutation) UsersIDs() (ids []uuid.UUID) {
-	for id := range m.users {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetUsers resets all changes to the "users" edge.
-func (m *IncidentMutation) ResetUsers() {
-	m.users = nil
-	m.clearedusers = false
-	m.removedusers = nil
 }
 
 // AddRoleAssignmentIDs adds the "role_assignments" edge to the IncidentRoleAssignment entity by ids.
@@ -15200,60 +15193,6 @@ func (m *IncidentMutation) ResetFieldSelections() {
 	m.removedfield_selections = nil
 }
 
-// AddTaskIDs adds the "tasks" edge to the Task entity by ids.
-func (m *IncidentMutation) AddTaskIDs(ids ...uuid.UUID) {
-	if m.tasks == nil {
-		m.tasks = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.tasks[ids[i]] = struct{}{}
-	}
-}
-
-// ClearTasks clears the "tasks" edge to the Task entity.
-func (m *IncidentMutation) ClearTasks() {
-	m.clearedtasks = true
-}
-
-// TasksCleared reports if the "tasks" edge to the Task entity was cleared.
-func (m *IncidentMutation) TasksCleared() bool {
-	return m.clearedtasks
-}
-
-// RemoveTaskIDs removes the "tasks" edge to the Task entity by IDs.
-func (m *IncidentMutation) RemoveTaskIDs(ids ...uuid.UUID) {
-	if m.removedtasks == nil {
-		m.removedtasks = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.tasks, ids[i])
-		m.removedtasks[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedTasks returns the removed IDs of the "tasks" edge to the Task entity.
-func (m *IncidentMutation) RemovedTasksIDs() (ids []uuid.UUID) {
-	for id := range m.removedtasks {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// TasksIDs returns the "tasks" edge IDs in the mutation.
-func (m *IncidentMutation) TasksIDs() (ids []uuid.UUID) {
-	for id := range m.tasks {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetTasks resets all changes to the "tasks" edge.
-func (m *IncidentMutation) ResetTasks() {
-	m.tasks = nil
-	m.clearedtasks = false
-	m.removedtasks = nil
-}
-
 // AddTagAssignmentIDs adds the "tag_assignments" edge to the IncidentTag entity by ids.
 func (m *IncidentMutation) AddTagAssignmentIDs(ids ...uuid.UUID) {
 	if m.tag_assignments == nil {
@@ -15416,60 +15355,6 @@ func (m *IncidentMutation) ResetDebriefs() {
 	m.removeddebriefs = nil
 }
 
-// AddReviewSessionIDs adds the "review_sessions" edge to the MeetingSession entity by ids.
-func (m *IncidentMutation) AddReviewSessionIDs(ids ...uuid.UUID) {
-	if m.review_sessions == nil {
-		m.review_sessions = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.review_sessions[ids[i]] = struct{}{}
-	}
-}
-
-// ClearReviewSessions clears the "review_sessions" edge to the MeetingSession entity.
-func (m *IncidentMutation) ClearReviewSessions() {
-	m.clearedreview_sessions = true
-}
-
-// ReviewSessionsCleared reports if the "review_sessions" edge to the MeetingSession entity was cleared.
-func (m *IncidentMutation) ReviewSessionsCleared() bool {
-	return m.clearedreview_sessions
-}
-
-// RemoveReviewSessionIDs removes the "review_sessions" edge to the MeetingSession entity by IDs.
-func (m *IncidentMutation) RemoveReviewSessionIDs(ids ...uuid.UUID) {
-	if m.removedreview_sessions == nil {
-		m.removedreview_sessions = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.review_sessions, ids[i])
-		m.removedreview_sessions[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedReviewSessions returns the removed IDs of the "review_sessions" edge to the MeetingSession entity.
-func (m *IncidentMutation) RemovedReviewSessionsIDs() (ids []uuid.UUID) {
-	for id := range m.removedreview_sessions {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ReviewSessionsIDs returns the "review_sessions" edge IDs in the mutation.
-func (m *IncidentMutation) ReviewSessionsIDs() (ids []uuid.UUID) {
-	for id := range m.review_sessions {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetReviewSessions resets all changes to the "review_sessions" edge.
-func (m *IncidentMutation) ResetReviewSessions() {
-	m.review_sessions = nil
-	m.clearedreview_sessions = false
-	m.removedreview_sessions = nil
-}
-
 // AddVideoConferenceIDs adds the "video_conferences" edge to the VideoConference entity by ids.
 func (m *IncidentMutation) AddVideoConferenceIDs(ids ...uuid.UUID) {
 	if m.video_conferences == nil {
@@ -15522,60 +15407,6 @@ func (m *IncidentMutation) ResetVideoConferences() {
 	m.video_conferences = nil
 	m.clearedvideo_conferences = false
 	m.removedvideo_conferences = nil
-}
-
-// AddUserRoleIDs adds the "user_roles" edge to the IncidentRoleAssignment entity by ids.
-func (m *IncidentMutation) AddUserRoleIDs(ids ...uuid.UUID) {
-	if m.user_roles == nil {
-		m.user_roles = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.user_roles[ids[i]] = struct{}{}
-	}
-}
-
-// ClearUserRoles clears the "user_roles" edge to the IncidentRoleAssignment entity.
-func (m *IncidentMutation) ClearUserRoles() {
-	m.cleareduser_roles = true
-}
-
-// UserRolesCleared reports if the "user_roles" edge to the IncidentRoleAssignment entity was cleared.
-func (m *IncidentMutation) UserRolesCleared() bool {
-	return m.cleareduser_roles
-}
-
-// RemoveUserRoleIDs removes the "user_roles" edge to the IncidentRoleAssignment entity by IDs.
-func (m *IncidentMutation) RemoveUserRoleIDs(ids ...uuid.UUID) {
-	if m.removeduser_roles == nil {
-		m.removeduser_roles = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.user_roles, ids[i])
-		m.removeduser_roles[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedUserRoles returns the removed IDs of the "user_roles" edge to the IncidentRoleAssignment entity.
-func (m *IncidentMutation) RemovedUserRolesIDs() (ids []uuid.UUID) {
-	for id := range m.removeduser_roles {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// UserRolesIDs returns the "user_roles" edge IDs in the mutation.
-func (m *IncidentMutation) UserRolesIDs() (ids []uuid.UUID) {
-	for id := range m.user_roles {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetUserRoles resets all changes to the "user_roles" edge.
-func (m *IncidentMutation) ResetUserRoles() {
-	m.user_roles = nil
-	m.cleareduser_roles = false
-	m.removeduser_roles = nil
 }
 
 // AddIncidentLinkIDs adds the "incident_links" edge to the IncidentLink entity by ids.
@@ -15666,7 +15497,7 @@ func (m *IncidentMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *IncidentMutation) Fields() []string {
-	fields := make([]string, 0, 11)
+	fields := make([]string, 0, 13)
 	if m.tenant != nil {
 		fields = append(fields, incident.FieldTenantID)
 	}
@@ -15697,8 +15528,14 @@ func (m *IncidentMutation) Fields() []string {
 	if m.chat_channel_id != nil {
 		fields = append(fields, incident.FieldChatChannelID)
 	}
+	if m.response_state != nil {
+		fields = append(fields, incident.FieldResponseState)
+	}
 	if m.opened_at != nil {
 		fields = append(fields, incident.FieldOpenedAt)
+	}
+	if m.resolved_at != nil {
+		fields = append(fields, incident.FieldResolvedAt)
 	}
 	return fields
 }
@@ -15728,8 +15565,12 @@ func (m *IncidentMutation) Field(name string) (ent.Value, bool) {
 		return m.Summary()
 	case incident.FieldChatChannelID:
 		return m.ChatChannelID()
+	case incident.FieldResponseState:
+		return m.ResponseState()
 	case incident.FieldOpenedAt:
 		return m.OpenedAt()
+	case incident.FieldResolvedAt:
+		return m.ResolvedAt()
 	}
 	return nil, false
 }
@@ -15759,8 +15600,12 @@ func (m *IncidentMutation) OldField(ctx context.Context, name string) (ent.Value
 		return m.OldSummary(ctx)
 	case incident.FieldChatChannelID:
 		return m.OldChatChannelID(ctx)
+	case incident.FieldResponseState:
+		return m.OldResponseState(ctx)
 	case incident.FieldOpenedAt:
 		return m.OldOpenedAt(ctx)
+	case incident.FieldResolvedAt:
+		return m.OldResolvedAt(ctx)
 	}
 	return nil, fmt.Errorf("unknown Incident field %s", name)
 }
@@ -15840,12 +15685,26 @@ func (m *IncidentMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetChatChannelID(v)
 		return nil
+	case incident.FieldResponseState:
+		v, ok := value.(incident.ResponseState)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetResponseState(v)
+		return nil
 	case incident.FieldOpenedAt:
 		v, ok := value.(time.Time)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetOpenedAt(v)
+		return nil
+	case incident.FieldResolvedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetResolvedAt(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Incident field %s", name)
@@ -15883,11 +15742,20 @@ func (m *IncidentMutation) ClearedFields() []string {
 	if m.FieldCleared(incident.FieldKnowledgeEntityID) {
 		fields = append(fields, incident.FieldKnowledgeEntityID)
 	}
+	if m.FieldCleared(incident.FieldSeverityID) {
+		fields = append(fields, incident.FieldSeverityID)
+	}
+	if m.FieldCleared(incident.FieldTypeID) {
+		fields = append(fields, incident.FieldTypeID)
+	}
 	if m.FieldCleared(incident.FieldSummary) {
 		fields = append(fields, incident.FieldSummary)
 	}
 	if m.FieldCleared(incident.FieldChatChannelID) {
 		fields = append(fields, incident.FieldChatChannelID)
+	}
+	if m.FieldCleared(incident.FieldResolvedAt) {
+		fields = append(fields, incident.FieldResolvedAt)
 	}
 	return fields
 }
@@ -15906,11 +15774,20 @@ func (m *IncidentMutation) ClearField(name string) error {
 	case incident.FieldKnowledgeEntityID:
 		m.ClearKnowledgeEntityID()
 		return nil
+	case incident.FieldSeverityID:
+		m.ClearSeverityID()
+		return nil
+	case incident.FieldTypeID:
+		m.ClearTypeID()
+		return nil
 	case incident.FieldSummary:
 		m.ClearSummary()
 		return nil
 	case incident.FieldChatChannelID:
 		m.ClearChatChannelID()
+		return nil
+	case incident.FieldResolvedAt:
+		m.ClearResolvedAt()
 		return nil
 	}
 	return fmt.Errorf("unknown Incident nullable field %s", name)
@@ -15950,8 +15827,14 @@ func (m *IncidentMutation) ResetField(name string) error {
 	case incident.FieldChatChannelID:
 		m.ResetChatChannelID()
 		return nil
+	case incident.FieldResponseState:
+		m.ResetResponseState()
+		return nil
 	case incident.FieldOpenedAt:
 		m.ResetOpenedAt()
+		return nil
+	case incident.FieldResolvedAt:
+		m.ResetResolvedAt()
 		return nil
 	}
 	return fmt.Errorf("unknown Incident field %s", name)
@@ -15959,7 +15842,7 @@ func (m *IncidentMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *IncidentMutation) AddedEdges() []string {
-	edges := make([]string, 0, 19)
+	edges := make([]string, 0, 15)
 	if m.tenant != nil {
 		edges = append(edges, incident.EdgeTenant)
 	}
@@ -15978,9 +15861,6 @@ func (m *IncidentMutation) AddedEdges() []string {
 	if m.retrospective != nil {
 		edges = append(edges, incident.EdgeRetrospective)
 	}
-	if m.users != nil {
-		edges = append(edges, incident.EdgeUsers)
-	}
 	if m.role_assignments != nil {
 		edges = append(edges, incident.EdgeRoleAssignments)
 	}
@@ -15993,9 +15873,6 @@ func (m *IncidentMutation) AddedEdges() []string {
 	if m.field_selections != nil {
 		edges = append(edges, incident.EdgeFieldSelections)
 	}
-	if m.tasks != nil {
-		edges = append(edges, incident.EdgeTasks)
-	}
 	if m.tag_assignments != nil {
 		edges = append(edges, incident.EdgeTagAssignments)
 	}
@@ -16005,14 +15882,8 @@ func (m *IncidentMutation) AddedEdges() []string {
 	if m.debriefs != nil {
 		edges = append(edges, incident.EdgeDebriefs)
 	}
-	if m.review_sessions != nil {
-		edges = append(edges, incident.EdgeReviewSessions)
-	}
 	if m.video_conferences != nil {
 		edges = append(edges, incident.EdgeVideoConferences)
-	}
-	if m.user_roles != nil {
-		edges = append(edges, incident.EdgeUserRoles)
 	}
 	if m.incident_links != nil {
 		edges = append(edges, incident.EdgeIncidentLinks)
@@ -16050,12 +15921,6 @@ func (m *IncidentMutation) AddedIDs(name string) []ent.Value {
 		if id := m.retrospective; id != nil {
 			return []ent.Value{*id}
 		}
-	case incident.EdgeUsers:
-		ids := make([]ent.Value, 0, len(m.users))
-		for id := range m.users {
-			ids = append(ids, id)
-		}
-		return ids
 	case incident.EdgeRoleAssignments:
 		ids := make([]ent.Value, 0, len(m.role_assignments))
 		for id := range m.role_assignments {
@@ -16080,12 +15945,6 @@ func (m *IncidentMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case incident.EdgeTasks:
-		ids := make([]ent.Value, 0, len(m.tasks))
-		for id := range m.tasks {
-			ids = append(ids, id)
-		}
-		return ids
 	case incident.EdgeTagAssignments:
 		ids := make([]ent.Value, 0, len(m.tag_assignments))
 		for id := range m.tag_assignments {
@@ -16104,21 +15963,9 @@ func (m *IncidentMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case incident.EdgeReviewSessions:
-		ids := make([]ent.Value, 0, len(m.review_sessions))
-		for id := range m.review_sessions {
-			ids = append(ids, id)
-		}
-		return ids
 	case incident.EdgeVideoConferences:
 		ids := make([]ent.Value, 0, len(m.video_conferences))
 		for id := range m.video_conferences {
-			ids = append(ids, id)
-		}
-		return ids
-	case incident.EdgeUserRoles:
-		ids := make([]ent.Value, 0, len(m.user_roles))
-		for id := range m.user_roles {
 			ids = append(ids, id)
 		}
 		return ids
@@ -16134,12 +15981,9 @@ func (m *IncidentMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *IncidentMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 19)
+	edges := make([]string, 0, 15)
 	if m.removedmilestones != nil {
 		edges = append(edges, incident.EdgeMilestones)
-	}
-	if m.removedusers != nil {
-		edges = append(edges, incident.EdgeUsers)
 	}
 	if m.removedrole_assignments != nil {
 		edges = append(edges, incident.EdgeRoleAssignments)
@@ -16153,9 +15997,6 @@ func (m *IncidentMutation) RemovedEdges() []string {
 	if m.removedfield_selections != nil {
 		edges = append(edges, incident.EdgeFieldSelections)
 	}
-	if m.removedtasks != nil {
-		edges = append(edges, incident.EdgeTasks)
-	}
 	if m.removedtag_assignments != nil {
 		edges = append(edges, incident.EdgeTagAssignments)
 	}
@@ -16165,14 +16006,8 @@ func (m *IncidentMutation) RemovedEdges() []string {
 	if m.removeddebriefs != nil {
 		edges = append(edges, incident.EdgeDebriefs)
 	}
-	if m.removedreview_sessions != nil {
-		edges = append(edges, incident.EdgeReviewSessions)
-	}
 	if m.removedvideo_conferences != nil {
 		edges = append(edges, incident.EdgeVideoConferences)
-	}
-	if m.removeduser_roles != nil {
-		edges = append(edges, incident.EdgeUserRoles)
 	}
 	if m.removedincident_links != nil {
 		edges = append(edges, incident.EdgeIncidentLinks)
@@ -16187,12 +16022,6 @@ func (m *IncidentMutation) RemovedIDs(name string) []ent.Value {
 	case incident.EdgeMilestones:
 		ids := make([]ent.Value, 0, len(m.removedmilestones))
 		for id := range m.removedmilestones {
-			ids = append(ids, id)
-		}
-		return ids
-	case incident.EdgeUsers:
-		ids := make([]ent.Value, 0, len(m.removedusers))
-		for id := range m.removedusers {
 			ids = append(ids, id)
 		}
 		return ids
@@ -16220,12 +16049,6 @@ func (m *IncidentMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case incident.EdgeTasks:
-		ids := make([]ent.Value, 0, len(m.removedtasks))
-		for id := range m.removedtasks {
-			ids = append(ids, id)
-		}
-		return ids
 	case incident.EdgeTagAssignments:
 		ids := make([]ent.Value, 0, len(m.removedtag_assignments))
 		for id := range m.removedtag_assignments {
@@ -16244,21 +16067,9 @@ func (m *IncidentMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case incident.EdgeReviewSessions:
-		ids := make([]ent.Value, 0, len(m.removedreview_sessions))
-		for id := range m.removedreview_sessions {
-			ids = append(ids, id)
-		}
-		return ids
 	case incident.EdgeVideoConferences:
 		ids := make([]ent.Value, 0, len(m.removedvideo_conferences))
 		for id := range m.removedvideo_conferences {
-			ids = append(ids, id)
-		}
-		return ids
-	case incident.EdgeUserRoles:
-		ids := make([]ent.Value, 0, len(m.removeduser_roles))
-		for id := range m.removeduser_roles {
 			ids = append(ids, id)
 		}
 		return ids
@@ -16274,7 +16085,7 @@ func (m *IncidentMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *IncidentMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 19)
+	edges := make([]string, 0, 15)
 	if m.clearedtenant {
 		edges = append(edges, incident.EdgeTenant)
 	}
@@ -16293,9 +16104,6 @@ func (m *IncidentMutation) ClearedEdges() []string {
 	if m.clearedretrospective {
 		edges = append(edges, incident.EdgeRetrospective)
 	}
-	if m.clearedusers {
-		edges = append(edges, incident.EdgeUsers)
-	}
 	if m.clearedrole_assignments {
 		edges = append(edges, incident.EdgeRoleAssignments)
 	}
@@ -16308,9 +16116,6 @@ func (m *IncidentMutation) ClearedEdges() []string {
 	if m.clearedfield_selections {
 		edges = append(edges, incident.EdgeFieldSelections)
 	}
-	if m.clearedtasks {
-		edges = append(edges, incident.EdgeTasks)
-	}
 	if m.clearedtag_assignments {
 		edges = append(edges, incident.EdgeTagAssignments)
 	}
@@ -16320,14 +16125,8 @@ func (m *IncidentMutation) ClearedEdges() []string {
 	if m.cleareddebriefs {
 		edges = append(edges, incident.EdgeDebriefs)
 	}
-	if m.clearedreview_sessions {
-		edges = append(edges, incident.EdgeReviewSessions)
-	}
 	if m.clearedvideo_conferences {
 		edges = append(edges, incident.EdgeVideoConferences)
-	}
-	if m.cleareduser_roles {
-		edges = append(edges, incident.EdgeUserRoles)
 	}
 	if m.clearedincident_links {
 		edges = append(edges, incident.EdgeIncidentLinks)
@@ -16351,8 +16150,6 @@ func (m *IncidentMutation) EdgeCleared(name string) bool {
 		return m.clearedmilestones
 	case incident.EdgeRetrospective:
 		return m.clearedretrospective
-	case incident.EdgeUsers:
-		return m.clearedusers
 	case incident.EdgeRoleAssignments:
 		return m.clearedrole_assignments
 	case incident.EdgeLinkedIncidents:
@@ -16361,20 +16158,14 @@ func (m *IncidentMutation) EdgeCleared(name string) bool {
 		return m.clearedsituations
 	case incident.EdgeFieldSelections:
 		return m.clearedfield_selections
-	case incident.EdgeTasks:
-		return m.clearedtasks
 	case incident.EdgeTagAssignments:
 		return m.clearedtag_assignments
 	case incident.EdgeImpacts:
 		return m.clearedimpacts
 	case incident.EdgeDebriefs:
 		return m.cleareddebriefs
-	case incident.EdgeReviewSessions:
-		return m.clearedreview_sessions
 	case incident.EdgeVideoConferences:
 		return m.clearedvideo_conferences
-	case incident.EdgeUserRoles:
-		return m.cleareduser_roles
 	case incident.EdgeIncidentLinks:
 		return m.clearedincident_links
 	}
@@ -16426,9 +16217,6 @@ func (m *IncidentMutation) ResetEdge(name string) error {
 	case incident.EdgeRetrospective:
 		m.ResetRetrospective()
 		return nil
-	case incident.EdgeUsers:
-		m.ResetUsers()
-		return nil
 	case incident.EdgeRoleAssignments:
 		m.ResetRoleAssignments()
 		return nil
@@ -16441,9 +16229,6 @@ func (m *IncidentMutation) ResetEdge(name string) error {
 	case incident.EdgeFieldSelections:
 		m.ResetFieldSelections()
 		return nil
-	case incident.EdgeTasks:
-		m.ResetTasks()
-		return nil
 	case incident.EdgeTagAssignments:
 		m.ResetTagAssignments()
 		return nil
@@ -16453,14 +16238,8 @@ func (m *IncidentMutation) ResetEdge(name string) error {
 	case incident.EdgeDebriefs:
 		m.ResetDebriefs()
 		return nil
-	case incident.EdgeReviewSessions:
-		m.ResetReviewSessions()
-		return nil
 	case incident.EdgeVideoConferences:
 		m.ResetVideoConferences()
-		return nil
-	case incident.EdgeUserRoles:
-		m.ResetUserRoles()
 		return nil
 	case incident.EdgeIncidentLinks:
 		m.ResetIncidentLinks()
@@ -19817,7 +19596,7 @@ func (m *IncidentFieldMutation) ArchiveTime() (r time.Time, exists bool) {
 // OldArchiveTime returns the old "archive_time" field's value of the IncidentField entity.
 // If the IncidentField object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *IncidentFieldMutation) OldArchiveTime(ctx context.Context) (v time.Time, err error) {
+func (m *IncidentFieldMutation) OldArchiveTime(ctx context.Context) (v *time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldArchiveTime is only allowed on UpdateOne operations")
 	}
@@ -20504,7 +20283,7 @@ func (m *IncidentFieldOptionMutation) ArchiveTime() (r time.Time, exists bool) {
 // OldArchiveTime returns the old "archive_time" field's value of the IncidentFieldOption entity.
 // If the IncidentFieldOption object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *IncidentFieldOptionMutation) OldArchiveTime(ctx context.Context) (v time.Time, err error) {
+func (m *IncidentFieldOptionMutation) OldArchiveTime(ctx context.Context) (v *time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldArchiveTime is only allowed on UpdateOne operations")
 	}
@@ -22858,7 +22637,7 @@ func (m *IncidentMilestoneMutation) UserID() (r uuid.UUID, exists bool) {
 // OldUserID returns the old "user_id" field's value of the IncidentMilestone entity.
 // If the IncidentMilestone object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *IncidentMilestoneMutation) OldUserID(ctx context.Context) (v uuid.UUID, err error) {
+func (m *IncidentMilestoneMutation) OldUserID(ctx context.Context) (v *uuid.UUID, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldUserID is only allowed on UpdateOne operations")
 	}
@@ -22872,9 +22651,22 @@ func (m *IncidentMilestoneMutation) OldUserID(ctx context.Context) (v uuid.UUID,
 	return oldValue.UserID, nil
 }
 
+// ClearUserID clears the value of the "user_id" field.
+func (m *IncidentMilestoneMutation) ClearUserID() {
+	m.user = nil
+	m.clearedFields[incidentmilestone.FieldUserID] = struct{}{}
+}
+
+// UserIDCleared returns if the "user_id" field was cleared in this mutation.
+func (m *IncidentMilestoneMutation) UserIDCleared() bool {
+	_, ok := m.clearedFields[incidentmilestone.FieldUserID]
+	return ok
+}
+
 // ResetUserID resets all changes to the "user_id" field.
 func (m *IncidentMilestoneMutation) ResetUserID() {
 	m.user = nil
+	delete(m.clearedFields, incidentmilestone.FieldUserID)
 }
 
 // SetKind sets the "kind" field.
@@ -23158,7 +22950,7 @@ func (m *IncidentMilestoneMutation) ClearUser() {
 
 // UserCleared reports if the "user" edge to the User entity was cleared.
 func (m *IncidentMilestoneMutation) UserCleared() bool {
-	return m.cleareduser
+	return m.UserIDCleared() || m.cleareduser
 }
 
 // UserIDs returns the "user" edge IDs in the mutation.
@@ -23383,6 +23175,9 @@ func (m *IncidentMilestoneMutation) AddField(name string, value ent.Value) error
 // mutation.
 func (m *IncidentMilestoneMutation) ClearedFields() []string {
 	var fields []string
+	if m.FieldCleared(incidentmilestone.FieldUserID) {
+		fields = append(fields, incidentmilestone.FieldUserID)
+	}
 	if m.FieldCleared(incidentmilestone.FieldDescription) {
 		fields = append(fields, incidentmilestone.FieldDescription)
 	}
@@ -23406,6 +23201,9 @@ func (m *IncidentMilestoneMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *IncidentMilestoneMutation) ClearField(name string) error {
 	switch name {
+	case incidentmilestone.FieldUserID:
+		m.ClearUserID()
+		return nil
 	case incidentmilestone.FieldDescription:
 		m.ClearDescription()
 		return nil
@@ -23741,7 +23539,7 @@ func (m *IncidentRoleMutation) ArchiveTime() (r time.Time, exists bool) {
 // OldArchiveTime returns the old "archive_time" field's value of the IncidentRole entity.
 // If the IncidentRole object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *IncidentRoleMutation) OldArchiveTime(ctx context.Context) (v time.Time, err error) {
+func (m *IncidentRoleMutation) OldArchiveTime(ctx context.Context) (v *time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldArchiveTime is only allowed on UpdateOne operations")
 	}
@@ -25174,7 +24972,7 @@ func (m *IncidentSeverityMutation) ArchiveTime() (r time.Time, exists bool) {
 // OldArchiveTime returns the old "archive_time" field's value of the IncidentSeverity entity.
 // If the IncidentSeverity object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *IncidentSeverityMutation) OldArchiveTime(ctx context.Context) (v time.Time, err error) {
+func (m *IncidentSeverityMutation) OldArchiveTime(ctx context.Context) (v *time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldArchiveTime is only allowed on UpdateOne operations")
 	}
@@ -26091,7 +25889,7 @@ func (m *IncidentTagMutation) ArchiveTime() (r time.Time, exists bool) {
 // OldArchiveTime returns the old "archive_time" field's value of the IncidentTag entity.
 // If the IncidentTag object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *IncidentTagMutation) OldArchiveTime(ctx context.Context) (v time.Time, err error) {
+func (m *IncidentTagMutation) OldArchiveTime(ctx context.Context) (v *time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldArchiveTime is only allowed on UpdateOne operations")
 	}
@@ -26831,7 +26629,7 @@ func (m *IncidentTypeMutation) ArchiveTime() (r time.Time, exists bool) {
 // OldArchiveTime returns the old "archive_time" field's value of the IncidentType entity.
 // If the IncidentType object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *IncidentTypeMutation) OldArchiveTime(ctx context.Context) (v time.Time, err error) {
+func (m *IncidentTypeMutation) OldArchiveTime(ctx context.Context) (v *time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldArchiveTime is only allowed on UpdateOne operations")
 	}
@@ -43934,7 +43732,7 @@ func (m *MeetingScheduleMutation) ArchiveTime() (r time.Time, exists bool) {
 // OldArchiveTime returns the old "archive_time" field's value of the MeetingSchedule entity.
 // If the MeetingSchedule object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *MeetingScheduleMutation) OldArchiveTime(ctx context.Context) (v time.Time, err error) {
+func (m *MeetingScheduleMutation) OldArchiveTime(ctx context.Context) (v *time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldArchiveTime is only allowed on UpdateOne operations")
 	}
@@ -45225,9 +45023,6 @@ type MeetingSessionMutation struct {
 	clearedFields           map[string]struct{}
 	tenant                  *int
 	clearedtenant           bool
-	incidents               map[uuid.UUID]struct{}
-	removedincidents        map[uuid.UUID]struct{}
-	clearedincidents        bool
 	video_conference        *uuid.UUID
 	clearedvideo_conference bool
 	schedule                *uuid.UUID
@@ -45561,60 +45356,6 @@ func (m *MeetingSessionMutation) ResetTenant() {
 	m.clearedtenant = false
 }
 
-// AddIncidentIDs adds the "incidents" edge to the Incident entity by ids.
-func (m *MeetingSessionMutation) AddIncidentIDs(ids ...uuid.UUID) {
-	if m.incidents == nil {
-		m.incidents = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.incidents[ids[i]] = struct{}{}
-	}
-}
-
-// ClearIncidents clears the "incidents" edge to the Incident entity.
-func (m *MeetingSessionMutation) ClearIncidents() {
-	m.clearedincidents = true
-}
-
-// IncidentsCleared reports if the "incidents" edge to the Incident entity was cleared.
-func (m *MeetingSessionMutation) IncidentsCleared() bool {
-	return m.clearedincidents
-}
-
-// RemoveIncidentIDs removes the "incidents" edge to the Incident entity by IDs.
-func (m *MeetingSessionMutation) RemoveIncidentIDs(ids ...uuid.UUID) {
-	if m.removedincidents == nil {
-		m.removedincidents = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.incidents, ids[i])
-		m.removedincidents[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedIncidents returns the removed IDs of the "incidents" edge to the Incident entity.
-func (m *MeetingSessionMutation) RemovedIncidentsIDs() (ids []uuid.UUID) {
-	for id := range m.removedincidents {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// IncidentsIDs returns the "incidents" edge IDs in the mutation.
-func (m *MeetingSessionMutation) IncidentsIDs() (ids []uuid.UUID) {
-	for id := range m.incidents {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetIncidents resets all changes to the "incidents" edge.
-func (m *MeetingSessionMutation) ResetIncidents() {
-	m.incidents = nil
-	m.clearedincidents = false
-	m.removedincidents = nil
-}
-
 // SetVideoConferenceID sets the "video_conference" edge to the VideoConference entity by id.
 func (m *MeetingSessionMutation) SetVideoConferenceID(id uuid.UUID) {
 	m.video_conference = &id
@@ -45906,12 +45647,9 @@ func (m *MeetingSessionMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *MeetingSessionMutation) AddedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 3)
 	if m.tenant != nil {
 		edges = append(edges, meetingsession.EdgeTenant)
-	}
-	if m.incidents != nil {
-		edges = append(edges, meetingsession.EdgeIncidents)
 	}
 	if m.video_conference != nil {
 		edges = append(edges, meetingsession.EdgeVideoConference)
@@ -45930,12 +45668,6 @@ func (m *MeetingSessionMutation) AddedIDs(name string) []ent.Value {
 		if id := m.tenant; id != nil {
 			return []ent.Value{*id}
 		}
-	case meetingsession.EdgeIncidents:
-		ids := make([]ent.Value, 0, len(m.incidents))
-		for id := range m.incidents {
-			ids = append(ids, id)
-		}
-		return ids
 	case meetingsession.EdgeVideoConference:
 		if id := m.video_conference; id != nil {
 			return []ent.Value{*id}
@@ -45950,35 +45682,21 @@ func (m *MeetingSessionMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *MeetingSessionMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 4)
-	if m.removedincidents != nil {
-		edges = append(edges, meetingsession.EdgeIncidents)
-	}
+	edges := make([]string, 0, 3)
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *MeetingSessionMutation) RemovedIDs(name string) []ent.Value {
-	switch name {
-	case meetingsession.EdgeIncidents:
-		ids := make([]ent.Value, 0, len(m.removedincidents))
-		for id := range m.removedincidents {
-			ids = append(ids, id)
-		}
-		return ids
-	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *MeetingSessionMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 3)
 	if m.clearedtenant {
 		edges = append(edges, meetingsession.EdgeTenant)
-	}
-	if m.clearedincidents {
-		edges = append(edges, meetingsession.EdgeIncidents)
 	}
 	if m.clearedvideo_conference {
 		edges = append(edges, meetingsession.EdgeVideoConference)
@@ -45995,8 +45713,6 @@ func (m *MeetingSessionMutation) EdgeCleared(name string) bool {
 	switch name {
 	case meetingsession.EdgeTenant:
 		return m.clearedtenant
-	case meetingsession.EdgeIncidents:
-		return m.clearedincidents
 	case meetingsession.EdgeVideoConference:
 		return m.clearedvideo_conference
 	case meetingsession.EdgeSchedule:
@@ -46028,9 +45744,6 @@ func (m *MeetingSessionMutation) ResetEdge(name string) error {
 	switch name {
 	case meetingsession.EdgeTenant:
 		m.ResetTenant()
-		return nil
-	case meetingsession.EdgeIncidents:
-		m.ResetIncidents()
 		return nil
 	case meetingsession.EdgeVideoConference:
 		m.ResetVideoConference()
@@ -49346,7 +49059,7 @@ func (m *OncallRosterMutation) ArchiveTime() (r time.Time, exists bool) {
 // OldArchiveTime returns the old "archive_time" field's value of the OncallRoster entity.
 // If the OncallRoster object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *OncallRosterMutation) OldArchiveTime(ctx context.Context) (v time.Time, err error) {
+func (m *OncallRosterMutation) OldArchiveTime(ctx context.Context) (v *time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldArchiveTime is only allowed on UpdateOne operations")
 	}
@@ -51148,7 +50861,7 @@ func (m *OncallScheduleMutation) ArchiveTime() (r time.Time, exists bool) {
 // OldArchiveTime returns the old "archive_time" field's value of the OncallSchedule entity.
 // If the OncallSchedule object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *OncallScheduleMutation) OldArchiveTime(ctx context.Context) (v time.Time, err error) {
+func (m *OncallScheduleMutation) OldArchiveTime(ctx context.Context) (v *time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldArchiveTime is only allowed on UpdateOne operations")
 	}
@@ -56621,6 +56334,8 @@ type OrganizationPreferencesMutation struct {
 	id                         *uuid.UUID
 	initial_setup_at           *time.Time
 	enable_incident_management *bool
+	required_reviewer_count    *int
+	addrequired_reviewer_count *int
 	timezone                   *string
 	clearedFields              map[string]struct{}
 	tenant                     *int
@@ -56893,6 +56608,62 @@ func (m *OrganizationPreferencesMutation) ResetEnableIncidentManagement() {
 	m.enable_incident_management = nil
 }
 
+// SetRequiredReviewerCount sets the "required_reviewer_count" field.
+func (m *OrganizationPreferencesMutation) SetRequiredReviewerCount(i int) {
+	m.required_reviewer_count = &i
+	m.addrequired_reviewer_count = nil
+}
+
+// RequiredReviewerCount returns the value of the "required_reviewer_count" field in the mutation.
+func (m *OrganizationPreferencesMutation) RequiredReviewerCount() (r int, exists bool) {
+	v := m.required_reviewer_count
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRequiredReviewerCount returns the old "required_reviewer_count" field's value of the OrganizationPreferences entity.
+// If the OrganizationPreferences object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OrganizationPreferencesMutation) OldRequiredReviewerCount(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRequiredReviewerCount is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRequiredReviewerCount requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRequiredReviewerCount: %w", err)
+	}
+	return oldValue.RequiredReviewerCount, nil
+}
+
+// AddRequiredReviewerCount adds i to the "required_reviewer_count" field.
+func (m *OrganizationPreferencesMutation) AddRequiredReviewerCount(i int) {
+	if m.addrequired_reviewer_count != nil {
+		*m.addrequired_reviewer_count += i
+	} else {
+		m.addrequired_reviewer_count = &i
+	}
+}
+
+// AddedRequiredReviewerCount returns the value that was added to the "required_reviewer_count" field in this mutation.
+func (m *OrganizationPreferencesMutation) AddedRequiredReviewerCount() (r int, exists bool) {
+	v := m.addrequired_reviewer_count
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetRequiredReviewerCount resets all changes to the "required_reviewer_count" field.
+func (m *OrganizationPreferencesMutation) ResetRequiredReviewerCount() {
+	m.required_reviewer_count = nil
+	m.addrequired_reviewer_count = nil
+}
+
 // SetTimezone sets the "timezone" field.
 func (m *OrganizationPreferencesMutation) SetTimezone(s string) {
 	m.timezone = &s
@@ -57030,7 +56801,7 @@ func (m *OrganizationPreferencesMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *OrganizationPreferencesMutation) Fields() []string {
-	fields := make([]string, 0, 5)
+	fields := make([]string, 0, 6)
 	if m.tenant != nil {
 		fields = append(fields, organizationpreferences.FieldTenantID)
 	}
@@ -57042,6 +56813,9 @@ func (m *OrganizationPreferencesMutation) Fields() []string {
 	}
 	if m.enable_incident_management != nil {
 		fields = append(fields, organizationpreferences.FieldEnableIncidentManagement)
+	}
+	if m.required_reviewer_count != nil {
+		fields = append(fields, organizationpreferences.FieldRequiredReviewerCount)
 	}
 	if m.timezone != nil {
 		fields = append(fields, organizationpreferences.FieldTimezone)
@@ -57062,6 +56836,8 @@ func (m *OrganizationPreferencesMutation) Field(name string) (ent.Value, bool) {
 		return m.InitialSetupAt()
 	case organizationpreferences.FieldEnableIncidentManagement:
 		return m.EnableIncidentManagement()
+	case organizationpreferences.FieldRequiredReviewerCount:
+		return m.RequiredReviewerCount()
 	case organizationpreferences.FieldTimezone:
 		return m.Timezone()
 	}
@@ -57081,6 +56857,8 @@ func (m *OrganizationPreferencesMutation) OldField(ctx context.Context, name str
 		return m.OldInitialSetupAt(ctx)
 	case organizationpreferences.FieldEnableIncidentManagement:
 		return m.OldEnableIncidentManagement(ctx)
+	case organizationpreferences.FieldRequiredReviewerCount:
+		return m.OldRequiredReviewerCount(ctx)
 	case organizationpreferences.FieldTimezone:
 		return m.OldTimezone(ctx)
 	}
@@ -57120,6 +56898,13 @@ func (m *OrganizationPreferencesMutation) SetField(name string, value ent.Value)
 		}
 		m.SetEnableIncidentManagement(v)
 		return nil
+	case organizationpreferences.FieldRequiredReviewerCount:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRequiredReviewerCount(v)
+		return nil
 	case organizationpreferences.FieldTimezone:
 		v, ok := value.(string)
 		if !ok {
@@ -57135,6 +56920,9 @@ func (m *OrganizationPreferencesMutation) SetField(name string, value ent.Value)
 // this mutation.
 func (m *OrganizationPreferencesMutation) AddedFields() []string {
 	var fields []string
+	if m.addrequired_reviewer_count != nil {
+		fields = append(fields, organizationpreferences.FieldRequiredReviewerCount)
+	}
 	return fields
 }
 
@@ -57143,6 +56931,8 @@ func (m *OrganizationPreferencesMutation) AddedFields() []string {
 // was not set, or was not defined in the schema.
 func (m *OrganizationPreferencesMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
+	case organizationpreferences.FieldRequiredReviewerCount:
+		return m.AddedRequiredReviewerCount()
 	}
 	return nil, false
 }
@@ -57152,6 +56942,13 @@ func (m *OrganizationPreferencesMutation) AddedField(name string) (ent.Value, bo
 // type.
 func (m *OrganizationPreferencesMutation) AddField(name string, value ent.Value) error {
 	switch name {
+	case organizationpreferences.FieldRequiredReviewerCount:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddRequiredReviewerCount(v)
+		return nil
 	}
 	return fmt.Errorf("unknown OrganizationPreferences numeric field %s", name)
 }
@@ -57205,6 +57002,9 @@ func (m *OrganizationPreferencesMutation) ResetField(name string) error {
 		return nil
 	case organizationpreferences.FieldEnableIncidentManagement:
 		m.ResetEnableIncidentManagement()
+		return nil
+	case organizationpreferences.FieldRequiredReviewerCount:
+		m.ResetRequiredReviewerCount()
 		return nil
 	case organizationpreferences.FieldTimezone:
 		m.ResetTimezone()
@@ -58536,7 +58336,6 @@ type RetrospectiveMutation struct {
 	op                        Op
 	typ                       string
 	id                        *uuid.UUID
-	kind                      *retrospective.Kind
 	state                     *retrospective.State
 	clearedFields             map[string]struct{}
 	tenant                    *int
@@ -58804,42 +58603,6 @@ func (m *RetrospectiveMutation) OldSystemAnalysisID(ctx context.Context) (v uuid
 // ResetSystemAnalysisID resets all changes to the "system_analysis_id" field.
 func (m *RetrospectiveMutation) ResetSystemAnalysisID() {
 	m.system_analysis = nil
-}
-
-// SetKind sets the "kind" field.
-func (m *RetrospectiveMutation) SetKind(r retrospective.Kind) {
-	m.kind = &r
-}
-
-// Kind returns the value of the "kind" field in the mutation.
-func (m *RetrospectiveMutation) Kind() (r retrospective.Kind, exists bool) {
-	v := m.kind
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldKind returns the old "kind" field's value of the Retrospective entity.
-// If the Retrospective object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *RetrospectiveMutation) OldKind(ctx context.Context) (v retrospective.Kind, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldKind is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldKind requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldKind: %w", err)
-	}
-	return oldValue.Kind, nil
-}
-
-// ResetKind resets all changes to the "kind" field.
-func (m *RetrospectiveMutation) ResetKind() {
-	m.kind = nil
 }
 
 // SetState sets the "state" field.
@@ -59128,7 +58891,7 @@ func (m *RetrospectiveMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *RetrospectiveMutation) Fields() []string {
-	fields := make([]string, 0, 6)
+	fields := make([]string, 0, 5)
 	if m.tenant != nil {
 		fields = append(fields, retrospective.FieldTenantID)
 	}
@@ -59140,9 +58903,6 @@ func (m *RetrospectiveMutation) Fields() []string {
 	}
 	if m.system_analysis != nil {
 		fields = append(fields, retrospective.FieldSystemAnalysisID)
-	}
-	if m.kind != nil {
-		fields = append(fields, retrospective.FieldKind)
 	}
 	if m.state != nil {
 		fields = append(fields, retrospective.FieldState)
@@ -59163,8 +58923,6 @@ func (m *RetrospectiveMutation) Field(name string) (ent.Value, bool) {
 		return m.DocumentID()
 	case retrospective.FieldSystemAnalysisID:
 		return m.SystemAnalysisID()
-	case retrospective.FieldKind:
-		return m.Kind()
 	case retrospective.FieldState:
 		return m.State()
 	}
@@ -59184,8 +58942,6 @@ func (m *RetrospectiveMutation) OldField(ctx context.Context, name string) (ent.
 		return m.OldDocumentID(ctx)
 	case retrospective.FieldSystemAnalysisID:
 		return m.OldSystemAnalysisID(ctx)
-	case retrospective.FieldKind:
-		return m.OldKind(ctx)
 	case retrospective.FieldState:
 		return m.OldState(ctx)
 	}
@@ -59224,13 +58980,6 @@ func (m *RetrospectiveMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetSystemAnalysisID(v)
-		return nil
-	case retrospective.FieldKind:
-		v, ok := value.(retrospective.Kind)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetKind(v)
 		return nil
 	case retrospective.FieldState:
 		v, ok := value.(retrospective.State)
@@ -59302,9 +59051,6 @@ func (m *RetrospectiveMutation) ResetField(name string) error {
 		return nil
 	case retrospective.FieldSystemAnalysisID:
 		m.ResetSystemAnalysisID()
-		return nil
-	case retrospective.FieldKind:
-		m.ResetKind()
 		return nil
 	case retrospective.FieldState:
 		m.ResetState()
@@ -59504,6 +59250,7 @@ type ReviewMutation struct {
 	created_at            *time.Time
 	updated_at            *time.Time
 	state                 *review.State
+	feedback              *string
 	clearedFields         map[string]struct{}
 	tenant                *int
 	clearedtenant         bool
@@ -59511,12 +59258,12 @@ type ReviewMutation struct {
 	clearedretrospective  bool
 	analysis_entry        *uuid.UUID
 	clearedanalysis_entry bool
+	comment               *uuid.UUID
+	clearedcomment        bool
 	requester             *uuid.UUID
 	clearedrequester      bool
 	reviewer              *uuid.UUID
 	clearedreviewer       bool
-	comment               *uuid.UUID
-	clearedcomment        bool
 	done                  bool
 	oldValue              func(context.Context) (*Review, error)
 	predicates            []predicate.Review
@@ -59989,6 +59736,55 @@ func (m *ReviewMutation) ResetState() {
 	m.state = nil
 }
 
+// SetFeedback sets the "feedback" field.
+func (m *ReviewMutation) SetFeedback(s string) {
+	m.feedback = &s
+}
+
+// Feedback returns the value of the "feedback" field in the mutation.
+func (m *ReviewMutation) Feedback() (r string, exists bool) {
+	v := m.feedback
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldFeedback returns the old "feedback" field's value of the Review entity.
+// If the Review object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ReviewMutation) OldFeedback(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldFeedback is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldFeedback requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldFeedback: %w", err)
+	}
+	return oldValue.Feedback, nil
+}
+
+// ClearFeedback clears the value of the "feedback" field.
+func (m *ReviewMutation) ClearFeedback() {
+	m.feedback = nil
+	m.clearedFields[review.FieldFeedback] = struct{}{}
+}
+
+// FeedbackCleared returns if the "feedback" field was cleared in this mutation.
+func (m *ReviewMutation) FeedbackCleared() bool {
+	_, ok := m.clearedFields[review.FieldFeedback]
+	return ok
+}
+
+// ResetFeedback resets all changes to the "feedback" field.
+func (m *ReviewMutation) ResetFeedback() {
+	m.feedback = nil
+	delete(m.clearedFields, review.FieldFeedback)
+}
+
 // ClearTenant clears the "tenant" edge to the Tenant entity.
 func (m *ReviewMutation) ClearTenant() {
 	m.clearedtenant = true
@@ -60070,6 +59866,33 @@ func (m *ReviewMutation) ResetAnalysisEntry() {
 	m.clearedanalysis_entry = false
 }
 
+// ClearComment clears the "comment" edge to the DiscussionComment entity.
+func (m *ReviewMutation) ClearComment() {
+	m.clearedcomment = true
+	m.clearedFields[review.FieldCommentID] = struct{}{}
+}
+
+// CommentCleared reports if the "comment" edge to the DiscussionComment entity was cleared.
+func (m *ReviewMutation) CommentCleared() bool {
+	return m.CommentIDCleared() || m.clearedcomment
+}
+
+// CommentIDs returns the "comment" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// CommentID instead. It exists only for internal usage by the builders.
+func (m *ReviewMutation) CommentIDs() (ids []uuid.UUID) {
+	if id := m.comment; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetComment resets all changes to the "comment" edge.
+func (m *ReviewMutation) ResetComment() {
+	m.comment = nil
+	m.clearedcomment = false
+}
+
 // ClearRequester clears the "requester" edge to the User entity.
 func (m *ReviewMutation) ClearRequester() {
 	m.clearedrequester = true
@@ -60124,33 +59947,6 @@ func (m *ReviewMutation) ResetReviewer() {
 	m.clearedreviewer = false
 }
 
-// ClearComment clears the "comment" edge to the DiscussionComment entity.
-func (m *ReviewMutation) ClearComment() {
-	m.clearedcomment = true
-	m.clearedFields[review.FieldCommentID] = struct{}{}
-}
-
-// CommentCleared reports if the "comment" edge to the DiscussionComment entity was cleared.
-func (m *ReviewMutation) CommentCleared() bool {
-	return m.CommentIDCleared() || m.clearedcomment
-}
-
-// CommentIDs returns the "comment" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// CommentID instead. It exists only for internal usage by the builders.
-func (m *ReviewMutation) CommentIDs() (ids []uuid.UUID) {
-	if id := m.comment; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetComment resets all changes to the "comment" edge.
-func (m *ReviewMutation) ResetComment() {
-	m.comment = nil
-	m.clearedcomment = false
-}
-
 // Where appends a list predicates to the ReviewMutation builder.
 func (m *ReviewMutation) Where(ps ...predicate.Review) {
 	m.predicates = append(m.predicates, ps...)
@@ -60185,7 +59981,7 @@ func (m *ReviewMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ReviewMutation) Fields() []string {
-	fields := make([]string, 0, 9)
+	fields := make([]string, 0, 10)
 	if m.tenant != nil {
 		fields = append(fields, review.FieldTenantID)
 	}
@@ -60213,6 +60009,9 @@ func (m *ReviewMutation) Fields() []string {
 	if m.state != nil {
 		fields = append(fields, review.FieldState)
 	}
+	if m.feedback != nil {
+		fields = append(fields, review.FieldFeedback)
+	}
 	return fields
 }
 
@@ -60239,6 +60038,8 @@ func (m *ReviewMutation) Field(name string) (ent.Value, bool) {
 		return m.ReviewerID()
 	case review.FieldState:
 		return m.State()
+	case review.FieldFeedback:
+		return m.Feedback()
 	}
 	return nil, false
 }
@@ -60266,6 +60067,8 @@ func (m *ReviewMutation) OldField(ctx context.Context, name string) (ent.Value, 
 		return m.OldReviewerID(ctx)
 	case review.FieldState:
 		return m.OldState(ctx)
+	case review.FieldFeedback:
+		return m.OldFeedback(ctx)
 	}
 	return nil, fmt.Errorf("unknown Review field %s", name)
 }
@@ -60338,6 +60141,13 @@ func (m *ReviewMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetState(v)
 		return nil
+	case review.FieldFeedback:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetFeedback(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Review field %s", name)
 }
@@ -60380,6 +60190,9 @@ func (m *ReviewMutation) ClearedFields() []string {
 	if m.FieldCleared(review.FieldCommentID) {
 		fields = append(fields, review.FieldCommentID)
 	}
+	if m.FieldCleared(review.FieldFeedback) {
+		fields = append(fields, review.FieldFeedback)
+	}
 	return fields
 }
 
@@ -60402,6 +60215,9 @@ func (m *ReviewMutation) ClearField(name string) error {
 		return nil
 	case review.FieldCommentID:
 		m.ClearCommentID()
+		return nil
+	case review.FieldFeedback:
+		m.ClearFeedback()
 		return nil
 	}
 	return fmt.Errorf("unknown Review nullable field %s", name)
@@ -60438,6 +60254,9 @@ func (m *ReviewMutation) ResetField(name string) error {
 	case review.FieldState:
 		m.ResetState()
 		return nil
+	case review.FieldFeedback:
+		m.ResetFeedback()
+		return nil
 	}
 	return fmt.Errorf("unknown Review field %s", name)
 }
@@ -60454,14 +60273,14 @@ func (m *ReviewMutation) AddedEdges() []string {
 	if m.analysis_entry != nil {
 		edges = append(edges, review.EdgeAnalysisEntry)
 	}
+	if m.comment != nil {
+		edges = append(edges, review.EdgeComment)
+	}
 	if m.requester != nil {
 		edges = append(edges, review.EdgeRequester)
 	}
 	if m.reviewer != nil {
 		edges = append(edges, review.EdgeReviewer)
-	}
-	if m.comment != nil {
-		edges = append(edges, review.EdgeComment)
 	}
 	return edges
 }
@@ -60482,16 +60301,16 @@ func (m *ReviewMutation) AddedIDs(name string) []ent.Value {
 		if id := m.analysis_entry; id != nil {
 			return []ent.Value{*id}
 		}
+	case review.EdgeComment:
+		if id := m.comment; id != nil {
+			return []ent.Value{*id}
+		}
 	case review.EdgeRequester:
 		if id := m.requester; id != nil {
 			return []ent.Value{*id}
 		}
 	case review.EdgeReviewer:
 		if id := m.reviewer; id != nil {
-			return []ent.Value{*id}
-		}
-	case review.EdgeComment:
-		if id := m.comment; id != nil {
 			return []ent.Value{*id}
 		}
 	}
@@ -60522,14 +60341,14 @@ func (m *ReviewMutation) ClearedEdges() []string {
 	if m.clearedanalysis_entry {
 		edges = append(edges, review.EdgeAnalysisEntry)
 	}
+	if m.clearedcomment {
+		edges = append(edges, review.EdgeComment)
+	}
 	if m.clearedrequester {
 		edges = append(edges, review.EdgeRequester)
 	}
 	if m.clearedreviewer {
 		edges = append(edges, review.EdgeReviewer)
-	}
-	if m.clearedcomment {
-		edges = append(edges, review.EdgeComment)
 	}
 	return edges
 }
@@ -60544,12 +60363,12 @@ func (m *ReviewMutation) EdgeCleared(name string) bool {
 		return m.clearedretrospective
 	case review.EdgeAnalysisEntry:
 		return m.clearedanalysis_entry
+	case review.EdgeComment:
+		return m.clearedcomment
 	case review.EdgeRequester:
 		return m.clearedrequester
 	case review.EdgeReviewer:
 		return m.clearedreviewer
-	case review.EdgeComment:
-		return m.clearedcomment
 	}
 	return false
 }
@@ -60567,14 +60386,14 @@ func (m *ReviewMutation) ClearEdge(name string) error {
 	case review.EdgeAnalysisEntry:
 		m.ClearAnalysisEntry()
 		return nil
+	case review.EdgeComment:
+		m.ClearComment()
+		return nil
 	case review.EdgeRequester:
 		m.ClearRequester()
 		return nil
 	case review.EdgeReviewer:
 		m.ClearReviewer()
-		return nil
-	case review.EdgeComment:
-		m.ClearComment()
 		return nil
 	}
 	return fmt.Errorf("unknown Review unique edge %s", name)
@@ -60593,14 +60412,14 @@ func (m *ReviewMutation) ResetEdge(name string) error {
 	case review.EdgeAnalysisEntry:
 		m.ResetAnalysisEntry()
 		return nil
+	case review.EdgeComment:
+		m.ResetComment()
+		return nil
 	case review.EdgeRequester:
 		m.ResetRequester()
 		return nil
 	case review.EdgeReviewer:
 		m.ResetReviewer()
-		return nil
-	case review.EdgeComment:
-		m.ResetComment()
 		return nil
 	}
 	return fmt.Errorf("unknown Review edge %s", name)
@@ -66928,12 +66747,16 @@ type SystemAnalysisEntryMutation struct {
 	addsequence         *int
 	title               *string
 	body                *string
+	version             *int
+	addversion          *int
 	properties          *map[string]interface{}
 	clearedFields       map[string]struct{}
 	tenant              *int
 	clearedtenant       bool
 	analysis            *uuid.UUID
 	clearedanalysis     bool
+	author              *uuid.UUID
+	clearedauthor       bool
 	subjects            map[uuid.UUID]struct{}
 	removedsubjects     map[uuid.UUID]struct{}
 	clearedsubjects     bool
@@ -67194,6 +67017,55 @@ func (m *SystemAnalysisEntryMutation) OldAnalysisID(ctx context.Context) (v uuid
 // ResetAnalysisID resets all changes to the "analysis_id" field.
 func (m *SystemAnalysisEntryMutation) ResetAnalysisID() {
 	m.analysis = nil
+}
+
+// SetAuthorID sets the "author_id" field.
+func (m *SystemAnalysisEntryMutation) SetAuthorID(u uuid.UUID) {
+	m.author = &u
+}
+
+// AuthorID returns the value of the "author_id" field in the mutation.
+func (m *SystemAnalysisEntryMutation) AuthorID() (r uuid.UUID, exists bool) {
+	v := m.author
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAuthorID returns the old "author_id" field's value of the SystemAnalysisEntry entity.
+// If the SystemAnalysisEntry object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SystemAnalysisEntryMutation) OldAuthorID(ctx context.Context) (v *uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAuthorID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAuthorID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAuthorID: %w", err)
+	}
+	return oldValue.AuthorID, nil
+}
+
+// ClearAuthorID clears the value of the "author_id" field.
+func (m *SystemAnalysisEntryMutation) ClearAuthorID() {
+	m.author = nil
+	m.clearedFields[systemanalysisentry.FieldAuthorID] = struct{}{}
+}
+
+// AuthorIDCleared returns if the "author_id" field was cleared in this mutation.
+func (m *SystemAnalysisEntryMutation) AuthorIDCleared() bool {
+	_, ok := m.clearedFields[systemanalysisentry.FieldAuthorID]
+	return ok
+}
+
+// ResetAuthorID resets all changes to the "author_id" field.
+func (m *SystemAnalysisEntryMutation) ResetAuthorID() {
+	m.author = nil
+	delete(m.clearedFields, systemanalysisentry.FieldAuthorID)
 }
 
 // SetReference sets the "reference" field.
@@ -67471,6 +67343,62 @@ func (m *SystemAnalysisEntryMutation) ResetBody() {
 	delete(m.clearedFields, systemanalysisentry.FieldBody)
 }
 
+// SetVersion sets the "version" field.
+func (m *SystemAnalysisEntryMutation) SetVersion(i int) {
+	m.version = &i
+	m.addversion = nil
+}
+
+// Version returns the value of the "version" field in the mutation.
+func (m *SystemAnalysisEntryMutation) Version() (r int, exists bool) {
+	v := m.version
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldVersion returns the old "version" field's value of the SystemAnalysisEntry entity.
+// If the SystemAnalysisEntry object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SystemAnalysisEntryMutation) OldVersion(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldVersion is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldVersion requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldVersion: %w", err)
+	}
+	return oldValue.Version, nil
+}
+
+// AddVersion adds i to the "version" field.
+func (m *SystemAnalysisEntryMutation) AddVersion(i int) {
+	if m.addversion != nil {
+		*m.addversion += i
+	} else {
+		m.addversion = &i
+	}
+}
+
+// AddedVersion returns the value that was added to the "version" field in this mutation.
+func (m *SystemAnalysisEntryMutation) AddedVersion() (r int, exists bool) {
+	v := m.addversion
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetVersion resets all changes to the "version" field.
+func (m *SystemAnalysisEntryMutation) ResetVersion() {
+	m.version = nil
+	m.addversion = nil
+}
+
 // SetProperties sets the "properties" field.
 func (m *SystemAnalysisEntryMutation) SetProperties(value map[string]interface{}) {
 	m.properties = &value
@@ -67572,6 +67500,33 @@ func (m *SystemAnalysisEntryMutation) AnalysisIDs() (ids []uuid.UUID) {
 func (m *SystemAnalysisEntryMutation) ResetAnalysis() {
 	m.analysis = nil
 	m.clearedanalysis = false
+}
+
+// ClearAuthor clears the "author" edge to the User entity.
+func (m *SystemAnalysisEntryMutation) ClearAuthor() {
+	m.clearedauthor = true
+	m.clearedFields[systemanalysisentry.FieldAuthorID] = struct{}{}
+}
+
+// AuthorCleared reports if the "author" edge to the User entity was cleared.
+func (m *SystemAnalysisEntryMutation) AuthorCleared() bool {
+	return m.AuthorIDCleared() || m.clearedauthor
+}
+
+// AuthorIDs returns the "author" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// AuthorID instead. It exists only for internal usage by the builders.
+func (m *SystemAnalysisEntryMutation) AuthorIDs() (ids []uuid.UUID) {
+	if id := m.author; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetAuthor resets all changes to the "author" edge.
+func (m *SystemAnalysisEntryMutation) ResetAuthor() {
+	m.author = nil
+	m.clearedauthor = false
 }
 
 // AddSubjectIDs adds the "subjects" edge to the SystemAnalysisEntrySubject entity by ids.
@@ -67770,7 +67725,7 @@ func (m *SystemAnalysisEntryMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *SystemAnalysisEntryMutation) Fields() []string {
-	fields := make([]string, 0, 11)
+	fields := make([]string, 0, 13)
 	if m.tenant != nil {
 		fields = append(fields, systemanalysisentry.FieldTenantID)
 	}
@@ -67782,6 +67737,9 @@ func (m *SystemAnalysisEntryMutation) Fields() []string {
 	}
 	if m.analysis != nil {
 		fields = append(fields, systemanalysisentry.FieldAnalysisID)
+	}
+	if m.author != nil {
+		fields = append(fields, systemanalysisentry.FieldAuthorID)
 	}
 	if m.reference != nil {
 		fields = append(fields, systemanalysisentry.FieldReference)
@@ -67800,6 +67758,9 @@ func (m *SystemAnalysisEntryMutation) Fields() []string {
 	}
 	if m.body != nil {
 		fields = append(fields, systemanalysisentry.FieldBody)
+	}
+	if m.version != nil {
+		fields = append(fields, systemanalysisentry.FieldVersion)
 	}
 	if m.properties != nil {
 		fields = append(fields, systemanalysisentry.FieldProperties)
@@ -67820,6 +67781,8 @@ func (m *SystemAnalysisEntryMutation) Field(name string) (ent.Value, bool) {
 		return m.UpdatedAt()
 	case systemanalysisentry.FieldAnalysisID:
 		return m.AnalysisID()
+	case systemanalysisentry.FieldAuthorID:
+		return m.AuthorID()
 	case systemanalysisentry.FieldReference:
 		return m.Reference()
 	case systemanalysisentry.FieldKind:
@@ -67832,6 +67795,8 @@ func (m *SystemAnalysisEntryMutation) Field(name string) (ent.Value, bool) {
 		return m.Title()
 	case systemanalysisentry.FieldBody:
 		return m.Body()
+	case systemanalysisentry.FieldVersion:
+		return m.Version()
 	case systemanalysisentry.FieldProperties:
 		return m.Properties()
 	}
@@ -67851,6 +67816,8 @@ func (m *SystemAnalysisEntryMutation) OldField(ctx context.Context, name string)
 		return m.OldUpdatedAt(ctx)
 	case systemanalysisentry.FieldAnalysisID:
 		return m.OldAnalysisID(ctx)
+	case systemanalysisentry.FieldAuthorID:
+		return m.OldAuthorID(ctx)
 	case systemanalysisentry.FieldReference:
 		return m.OldReference(ctx)
 	case systemanalysisentry.FieldKind:
@@ -67863,6 +67830,8 @@ func (m *SystemAnalysisEntryMutation) OldField(ctx context.Context, name string)
 		return m.OldTitle(ctx)
 	case systemanalysisentry.FieldBody:
 		return m.OldBody(ctx)
+	case systemanalysisentry.FieldVersion:
+		return m.OldVersion(ctx)
 	case systemanalysisentry.FieldProperties:
 		return m.OldProperties(ctx)
 	}
@@ -67901,6 +67870,13 @@ func (m *SystemAnalysisEntryMutation) SetField(name string, value ent.Value) err
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetAnalysisID(v)
+		return nil
+	case systemanalysisentry.FieldAuthorID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAuthorID(v)
 		return nil
 	case systemanalysisentry.FieldReference:
 		v, ok := value.(string)
@@ -67944,6 +67920,13 @@ func (m *SystemAnalysisEntryMutation) SetField(name string, value ent.Value) err
 		}
 		m.SetBody(v)
 		return nil
+	case systemanalysisentry.FieldVersion:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetVersion(v)
+		return nil
 	case systemanalysisentry.FieldProperties:
 		v, ok := value.(map[string]interface{})
 		if !ok {
@@ -67962,6 +67945,9 @@ func (m *SystemAnalysisEntryMutation) AddedFields() []string {
 	if m.addsequence != nil {
 		fields = append(fields, systemanalysisentry.FieldSequence)
 	}
+	if m.addversion != nil {
+		fields = append(fields, systemanalysisentry.FieldVersion)
+	}
 	return fields
 }
 
@@ -67972,6 +67958,8 @@ func (m *SystemAnalysisEntryMutation) AddedField(name string) (ent.Value, bool) 
 	switch name {
 	case systemanalysisentry.FieldSequence:
 		return m.AddedSequence()
+	case systemanalysisentry.FieldVersion:
+		return m.AddedVersion()
 	}
 	return nil, false
 }
@@ -67988,6 +67976,13 @@ func (m *SystemAnalysisEntryMutation) AddField(name string, value ent.Value) err
 		}
 		m.AddSequence(v)
 		return nil
+	case systemanalysisentry.FieldVersion:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddVersion(v)
+		return nil
 	}
 	return fmt.Errorf("unknown SystemAnalysisEntry numeric field %s", name)
 }
@@ -67996,6 +67991,9 @@ func (m *SystemAnalysisEntryMutation) AddField(name string, value ent.Value) err
 // mutation.
 func (m *SystemAnalysisEntryMutation) ClearedFields() []string {
 	var fields []string
+	if m.FieldCleared(systemanalysisentry.FieldAuthorID) {
+		fields = append(fields, systemanalysisentry.FieldAuthorID)
+	}
 	if m.FieldCleared(systemanalysisentry.FieldReference) {
 		fields = append(fields, systemanalysisentry.FieldReference)
 	}
@@ -68022,6 +68020,9 @@ func (m *SystemAnalysisEntryMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *SystemAnalysisEntryMutation) ClearField(name string) error {
 	switch name {
+	case systemanalysisentry.FieldAuthorID:
+		m.ClearAuthorID()
+		return nil
 	case systemanalysisentry.FieldReference:
 		m.ClearReference()
 		return nil
@@ -68054,6 +68055,9 @@ func (m *SystemAnalysisEntryMutation) ResetField(name string) error {
 	case systemanalysisentry.FieldAnalysisID:
 		m.ResetAnalysisID()
 		return nil
+	case systemanalysisentry.FieldAuthorID:
+		m.ResetAuthorID()
+		return nil
 	case systemanalysisentry.FieldReference:
 		m.ResetReference()
 		return nil
@@ -68072,6 +68076,9 @@ func (m *SystemAnalysisEntryMutation) ResetField(name string) error {
 	case systemanalysisentry.FieldBody:
 		m.ResetBody()
 		return nil
+	case systemanalysisentry.FieldVersion:
+		m.ResetVersion()
+		return nil
 	case systemanalysisentry.FieldProperties:
 		m.ResetProperties()
 		return nil
@@ -68081,12 +68088,15 @@ func (m *SystemAnalysisEntryMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *SystemAnalysisEntryMutation) AddedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 6)
 	if m.tenant != nil {
 		edges = append(edges, systemanalysisentry.EdgeTenant)
 	}
 	if m.analysis != nil {
 		edges = append(edges, systemanalysisentry.EdgeAnalysis)
+	}
+	if m.author != nil {
+		edges = append(edges, systemanalysisentry.EdgeAuthor)
 	}
 	if m.subjects != nil {
 		edges = append(edges, systemanalysisentry.EdgeSubjects)
@@ -68110,6 +68120,10 @@ func (m *SystemAnalysisEntryMutation) AddedIDs(name string) []ent.Value {
 		}
 	case systemanalysisentry.EdgeAnalysis:
 		if id := m.analysis; id != nil {
+			return []ent.Value{*id}
+		}
+	case systemanalysisentry.EdgeAuthor:
+		if id := m.author; id != nil {
 			return []ent.Value{*id}
 		}
 	case systemanalysisentry.EdgeSubjects:
@@ -68136,7 +68150,7 @@ func (m *SystemAnalysisEntryMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *SystemAnalysisEntryMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 6)
 	if m.removedsubjects != nil {
 		edges = append(edges, systemanalysisentry.EdgeSubjects)
 	}
@@ -68177,12 +68191,15 @@ func (m *SystemAnalysisEntryMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *SystemAnalysisEntryMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 6)
 	if m.clearedtenant {
 		edges = append(edges, systemanalysisentry.EdgeTenant)
 	}
 	if m.clearedanalysis {
 		edges = append(edges, systemanalysisentry.EdgeAnalysis)
+	}
+	if m.clearedauthor {
+		edges = append(edges, systemanalysisentry.EdgeAuthor)
 	}
 	if m.clearedsubjects {
 		edges = append(edges, systemanalysisentry.EdgeSubjects)
@@ -68204,6 +68221,8 @@ func (m *SystemAnalysisEntryMutation) EdgeCleared(name string) bool {
 		return m.clearedtenant
 	case systemanalysisentry.EdgeAnalysis:
 		return m.clearedanalysis
+	case systemanalysisentry.EdgeAuthor:
+		return m.clearedauthor
 	case systemanalysisentry.EdgeSubjects:
 		return m.clearedsubjects
 	case systemanalysisentry.EdgeOriginTasks:
@@ -68224,6 +68243,9 @@ func (m *SystemAnalysisEntryMutation) ClearEdge(name string) error {
 	case systemanalysisentry.EdgeAnalysis:
 		m.ClearAnalysis()
 		return nil
+	case systemanalysisentry.EdgeAuthor:
+		m.ClearAuthor()
+		return nil
 	}
 	return fmt.Errorf("unknown SystemAnalysisEntry unique edge %s", name)
 }
@@ -68237,6 +68259,9 @@ func (m *SystemAnalysisEntryMutation) ResetEdge(name string) error {
 		return nil
 	case systemanalysisentry.EdgeAnalysis:
 		m.ResetAnalysis()
+		return nil
+	case systemanalysisentry.EdgeAuthor:
+		m.ResetAuthor()
 		return nil
 	case systemanalysisentry.EdgeSubjects:
 		m.ResetSubjects()
@@ -72333,8 +72358,12 @@ type TaskMutation struct {
 	id                  *uuid.UUID
 	created_at          *time.Time
 	updated_at          *time.Time
-	_type               *task.Type
+	archive_time        *time.Time
+	version             *int
+	addversion          *int
 	title               *string
+	description         *string
+	kind                *task.Kind
 	state               *task.State
 	due_at              *time.Time
 	clearedFields       map[string]struct{}
@@ -72343,10 +72372,10 @@ type TaskMutation struct {
 	tickets             map[uuid.UUID]struct{}
 	removedtickets      map[uuid.UUID]struct{}
 	clearedtickets      bool
-	incident            *uuid.UUID
-	clearedincident     bool
 	origin_entry        *uuid.UUID
 	clearedorigin_entry bool
+	incident            *uuid.UUID
+	clearedincident     bool
 	assignee            *uuid.UUID
 	clearedassignee     bool
 	creator             *uuid.UUID
@@ -72568,40 +72597,109 @@ func (m *TaskMutation) ResetUpdatedAt() {
 	m.updated_at = nil
 }
 
-// SetType sets the "type" field.
-func (m *TaskMutation) SetType(t task.Type) {
-	m._type = &t
+// SetArchiveTime sets the "archive_time" field.
+func (m *TaskMutation) SetArchiveTime(t time.Time) {
+	m.archive_time = &t
 }
 
-// GetType returns the value of the "type" field in the mutation.
-func (m *TaskMutation) GetType() (r task.Type, exists bool) {
-	v := m._type
+// ArchiveTime returns the value of the "archive_time" field in the mutation.
+func (m *TaskMutation) ArchiveTime() (r time.Time, exists bool) {
+	v := m.archive_time
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldType returns the old "type" field's value of the Task entity.
+// OldArchiveTime returns the old "archive_time" field's value of the Task entity.
 // If the Task object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TaskMutation) OldType(ctx context.Context) (v task.Type, err error) {
+func (m *TaskMutation) OldArchiveTime(ctx context.Context) (v *time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldType is only allowed on UpdateOne operations")
+		return v, errors.New("OldArchiveTime is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldType requires an ID field in the mutation")
+		return v, errors.New("OldArchiveTime requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldType: %w", err)
+		return v, fmt.Errorf("querying old value for OldArchiveTime: %w", err)
 	}
-	return oldValue.Type, nil
+	return oldValue.ArchiveTime, nil
 }
 
-// ResetType resets all changes to the "type" field.
-func (m *TaskMutation) ResetType() {
-	m._type = nil
+// ClearArchiveTime clears the value of the "archive_time" field.
+func (m *TaskMutation) ClearArchiveTime() {
+	m.archive_time = nil
+	m.clearedFields[task.FieldArchiveTime] = struct{}{}
+}
+
+// ArchiveTimeCleared returns if the "archive_time" field was cleared in this mutation.
+func (m *TaskMutation) ArchiveTimeCleared() bool {
+	_, ok := m.clearedFields[task.FieldArchiveTime]
+	return ok
+}
+
+// ResetArchiveTime resets all changes to the "archive_time" field.
+func (m *TaskMutation) ResetArchiveTime() {
+	m.archive_time = nil
+	delete(m.clearedFields, task.FieldArchiveTime)
+}
+
+// SetVersion sets the "version" field.
+func (m *TaskMutation) SetVersion(i int) {
+	m.version = &i
+	m.addversion = nil
+}
+
+// Version returns the value of the "version" field in the mutation.
+func (m *TaskMutation) Version() (r int, exists bool) {
+	v := m.version
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldVersion returns the old "version" field's value of the Task entity.
+// If the Task object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TaskMutation) OldVersion(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldVersion is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldVersion requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldVersion: %w", err)
+	}
+	return oldValue.Version, nil
+}
+
+// AddVersion adds i to the "version" field.
+func (m *TaskMutation) AddVersion(i int) {
+	if m.addversion != nil {
+		*m.addversion += i
+	} else {
+		m.addversion = &i
+	}
+}
+
+// AddedVersion returns the value that was added to the "version" field in this mutation.
+func (m *TaskMutation) AddedVersion() (r int, exists bool) {
+	v := m.addversion
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetVersion resets all changes to the "version" field.
+func (m *TaskMutation) ResetVersion() {
+	m.version = nil
+	m.addversion = nil
 }
 
 // SetTitle sets the "title" field.
@@ -72638,6 +72736,78 @@ func (m *TaskMutation) OldTitle(ctx context.Context) (v string, err error) {
 // ResetTitle resets all changes to the "title" field.
 func (m *TaskMutation) ResetTitle() {
 	m.title = nil
+}
+
+// SetDescription sets the "description" field.
+func (m *TaskMutation) SetDescription(s string) {
+	m.description = &s
+}
+
+// Description returns the value of the "description" field in the mutation.
+func (m *TaskMutation) Description() (r string, exists bool) {
+	v := m.description
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDescription returns the old "description" field's value of the Task entity.
+// If the Task object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TaskMutation) OldDescription(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDescription is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDescription requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDescription: %w", err)
+	}
+	return oldValue.Description, nil
+}
+
+// ResetDescription resets all changes to the "description" field.
+func (m *TaskMutation) ResetDescription() {
+	m.description = nil
+}
+
+// SetKind sets the "kind" field.
+func (m *TaskMutation) SetKind(t task.Kind) {
+	m.kind = &t
+}
+
+// Kind returns the value of the "kind" field in the mutation.
+func (m *TaskMutation) Kind() (r task.Kind, exists bool) {
+	v := m.kind
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldKind returns the old "kind" field's value of the Task entity.
+// If the Task object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TaskMutation) OldKind(ctx context.Context) (v task.Kind, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldKind is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldKind requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldKind: %w", err)
+	}
+	return oldValue.Kind, nil
+}
+
+// ResetKind resets all changes to the "kind" field.
+func (m *TaskMutation) ResetKind() {
+	m.kind = nil
 }
 
 // SetState sets the "state" field.
@@ -72742,7 +72912,7 @@ func (m *TaskMutation) IncidentID() (r uuid.UUID, exists bool) {
 // OldIncidentID returns the old "incident_id" field's value of the Task entity.
 // If the Task object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TaskMutation) OldIncidentID(ctx context.Context) (v uuid.UUID, err error) {
+func (m *TaskMutation) OldIncidentID(ctx context.Context) (v *uuid.UUID, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldIncidentID is only allowed on UpdateOne operations")
 	}
@@ -72840,7 +73010,7 @@ func (m *TaskMutation) AssigneeID() (r uuid.UUID, exists bool) {
 // OldAssigneeID returns the old "assignee_id" field's value of the Task entity.
 // If the Task object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TaskMutation) OldAssigneeID(ctx context.Context) (v uuid.UUID, err error) {
+func (m *TaskMutation) OldAssigneeID(ctx context.Context) (v *uuid.UUID, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldAssigneeID is only allowed on UpdateOne operations")
 	}
@@ -72889,7 +73059,7 @@ func (m *TaskMutation) CreatorID() (r uuid.UUID, exists bool) {
 // OldCreatorID returns the old "creator_id" field's value of the Task entity.
 // If the Task object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TaskMutation) OldCreatorID(ctx context.Context) (v uuid.UUID, err error) {
+func (m *TaskMutation) OldCreatorID(ctx context.Context) (v *uuid.UUID, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldCreatorID is only allowed on UpdateOne operations")
 	}
@@ -73002,33 +73172,6 @@ func (m *TaskMutation) ResetTickets() {
 	m.removedtickets = nil
 }
 
-// ClearIncident clears the "incident" edge to the Incident entity.
-func (m *TaskMutation) ClearIncident() {
-	m.clearedincident = true
-	m.clearedFields[task.FieldIncidentID] = struct{}{}
-}
-
-// IncidentCleared reports if the "incident" edge to the Incident entity was cleared.
-func (m *TaskMutation) IncidentCleared() bool {
-	return m.IncidentIDCleared() || m.clearedincident
-}
-
-// IncidentIDs returns the "incident" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// IncidentID instead. It exists only for internal usage by the builders.
-func (m *TaskMutation) IncidentIDs() (ids []uuid.UUID) {
-	if id := m.incident; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetIncident resets all changes to the "incident" edge.
-func (m *TaskMutation) ResetIncident() {
-	m.incident = nil
-	m.clearedincident = false
-}
-
 // ClearOriginEntry clears the "origin_entry" edge to the SystemAnalysisEntry entity.
 func (m *TaskMutation) ClearOriginEntry() {
 	m.clearedorigin_entry = true
@@ -73054,6 +73197,33 @@ func (m *TaskMutation) OriginEntryIDs() (ids []uuid.UUID) {
 func (m *TaskMutation) ResetOriginEntry() {
 	m.origin_entry = nil
 	m.clearedorigin_entry = false
+}
+
+// ClearIncident clears the "incident" edge to the Incident entity.
+func (m *TaskMutation) ClearIncident() {
+	m.clearedincident = true
+	m.clearedFields[task.FieldIncidentID] = struct{}{}
+}
+
+// IncidentCleared reports if the "incident" edge to the Incident entity was cleared.
+func (m *TaskMutation) IncidentCleared() bool {
+	return m.IncidentIDCleared() || m.clearedincident
+}
+
+// IncidentIDs returns the "incident" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// IncidentID instead. It exists only for internal usage by the builders.
+func (m *TaskMutation) IncidentIDs() (ids []uuid.UUID) {
+	if id := m.incident; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetIncident resets all changes to the "incident" edge.
+func (m *TaskMutation) ResetIncident() {
+	m.incident = nil
+	m.clearedincident = false
 }
 
 // ClearAssignee clears the "assignee" edge to the User entity.
@@ -73144,7 +73314,7 @@ func (m *TaskMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *TaskMutation) Fields() []string {
-	fields := make([]string, 0, 11)
+	fields := make([]string, 0, 14)
 	if m.tenant != nil {
 		fields = append(fields, task.FieldTenantID)
 	}
@@ -73154,11 +73324,20 @@ func (m *TaskMutation) Fields() []string {
 	if m.updated_at != nil {
 		fields = append(fields, task.FieldUpdatedAt)
 	}
-	if m._type != nil {
-		fields = append(fields, task.FieldType)
+	if m.archive_time != nil {
+		fields = append(fields, task.FieldArchiveTime)
+	}
+	if m.version != nil {
+		fields = append(fields, task.FieldVersion)
 	}
 	if m.title != nil {
 		fields = append(fields, task.FieldTitle)
+	}
+	if m.description != nil {
+		fields = append(fields, task.FieldDescription)
+	}
+	if m.kind != nil {
+		fields = append(fields, task.FieldKind)
 	}
 	if m.state != nil {
 		fields = append(fields, task.FieldState)
@@ -73192,10 +73371,16 @@ func (m *TaskMutation) Field(name string) (ent.Value, bool) {
 		return m.CreatedAt()
 	case task.FieldUpdatedAt:
 		return m.UpdatedAt()
-	case task.FieldType:
-		return m.GetType()
+	case task.FieldArchiveTime:
+		return m.ArchiveTime()
+	case task.FieldVersion:
+		return m.Version()
 	case task.FieldTitle:
 		return m.Title()
+	case task.FieldDescription:
+		return m.Description()
+	case task.FieldKind:
+		return m.Kind()
 	case task.FieldState:
 		return m.State()
 	case task.FieldDueAt:
@@ -73223,10 +73408,16 @@ func (m *TaskMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldCreatedAt(ctx)
 	case task.FieldUpdatedAt:
 		return m.OldUpdatedAt(ctx)
-	case task.FieldType:
-		return m.OldType(ctx)
+	case task.FieldArchiveTime:
+		return m.OldArchiveTime(ctx)
+	case task.FieldVersion:
+		return m.OldVersion(ctx)
 	case task.FieldTitle:
 		return m.OldTitle(ctx)
+	case task.FieldDescription:
+		return m.OldDescription(ctx)
+	case task.FieldKind:
+		return m.OldKind(ctx)
 	case task.FieldState:
 		return m.OldState(ctx)
 	case task.FieldDueAt:
@@ -73269,12 +73460,19 @@ func (m *TaskMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetUpdatedAt(v)
 		return nil
-	case task.FieldType:
-		v, ok := value.(task.Type)
+	case task.FieldArchiveTime:
+		v, ok := value.(time.Time)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetType(v)
+		m.SetArchiveTime(v)
+		return nil
+	case task.FieldVersion:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetVersion(v)
 		return nil
 	case task.FieldTitle:
 		v, ok := value.(string)
@@ -73282,6 +73480,20 @@ func (m *TaskMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetTitle(v)
+		return nil
+	case task.FieldDescription:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDescription(v)
+		return nil
+	case task.FieldKind:
+		v, ok := value.(task.Kind)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetKind(v)
 		return nil
 	case task.FieldState:
 		v, ok := value.(task.State)
@@ -73333,6 +73545,9 @@ func (m *TaskMutation) SetField(name string, value ent.Value) error {
 // this mutation.
 func (m *TaskMutation) AddedFields() []string {
 	var fields []string
+	if m.addversion != nil {
+		fields = append(fields, task.FieldVersion)
+	}
 	return fields
 }
 
@@ -73341,6 +73556,8 @@ func (m *TaskMutation) AddedFields() []string {
 // was not set, or was not defined in the schema.
 func (m *TaskMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
+	case task.FieldVersion:
+		return m.AddedVersion()
 	}
 	return nil, false
 }
@@ -73350,6 +73567,13 @@ func (m *TaskMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *TaskMutation) AddField(name string, value ent.Value) error {
 	switch name {
+	case task.FieldVersion:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddVersion(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Task numeric field %s", name)
 }
@@ -73358,6 +73582,9 @@ func (m *TaskMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *TaskMutation) ClearedFields() []string {
 	var fields []string
+	if m.FieldCleared(task.FieldArchiveTime) {
+		fields = append(fields, task.FieldArchiveTime)
+	}
 	if m.FieldCleared(task.FieldDueAt) {
 		fields = append(fields, task.FieldDueAt)
 	}
@@ -73387,6 +73614,9 @@ func (m *TaskMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *TaskMutation) ClearField(name string) error {
 	switch name {
+	case task.FieldArchiveTime:
+		m.ClearArchiveTime()
+		return nil
 	case task.FieldDueAt:
 		m.ClearDueAt()
 		return nil
@@ -73419,11 +73649,20 @@ func (m *TaskMutation) ResetField(name string) error {
 	case task.FieldUpdatedAt:
 		m.ResetUpdatedAt()
 		return nil
-	case task.FieldType:
-		m.ResetType()
+	case task.FieldArchiveTime:
+		m.ResetArchiveTime()
+		return nil
+	case task.FieldVersion:
+		m.ResetVersion()
 		return nil
 	case task.FieldTitle:
 		m.ResetTitle()
+		return nil
+	case task.FieldDescription:
+		m.ResetDescription()
+		return nil
+	case task.FieldKind:
+		m.ResetKind()
 		return nil
 	case task.FieldState:
 		m.ResetState()
@@ -73456,11 +73695,11 @@ func (m *TaskMutation) AddedEdges() []string {
 	if m.tickets != nil {
 		edges = append(edges, task.EdgeTickets)
 	}
-	if m.incident != nil {
-		edges = append(edges, task.EdgeIncident)
-	}
 	if m.origin_entry != nil {
 		edges = append(edges, task.EdgeOriginEntry)
+	}
+	if m.incident != nil {
+		edges = append(edges, task.EdgeIncident)
 	}
 	if m.assignee != nil {
 		edges = append(edges, task.EdgeAssignee)
@@ -73485,12 +73724,12 @@ func (m *TaskMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case task.EdgeIncident:
-		if id := m.incident; id != nil {
-			return []ent.Value{*id}
-		}
 	case task.EdgeOriginEntry:
 		if id := m.origin_entry; id != nil {
+			return []ent.Value{*id}
+		}
+	case task.EdgeIncident:
+		if id := m.incident; id != nil {
 			return []ent.Value{*id}
 		}
 	case task.EdgeAssignee:
@@ -73537,11 +73776,11 @@ func (m *TaskMutation) ClearedEdges() []string {
 	if m.clearedtickets {
 		edges = append(edges, task.EdgeTickets)
 	}
-	if m.clearedincident {
-		edges = append(edges, task.EdgeIncident)
-	}
 	if m.clearedorigin_entry {
 		edges = append(edges, task.EdgeOriginEntry)
+	}
+	if m.clearedincident {
+		edges = append(edges, task.EdgeIncident)
 	}
 	if m.clearedassignee {
 		edges = append(edges, task.EdgeAssignee)
@@ -73560,10 +73799,10 @@ func (m *TaskMutation) EdgeCleared(name string) bool {
 		return m.clearedtenant
 	case task.EdgeTickets:
 		return m.clearedtickets
-	case task.EdgeIncident:
-		return m.clearedincident
 	case task.EdgeOriginEntry:
 		return m.clearedorigin_entry
+	case task.EdgeIncident:
+		return m.clearedincident
 	case task.EdgeAssignee:
 		return m.clearedassignee
 	case task.EdgeCreator:
@@ -73579,11 +73818,11 @@ func (m *TaskMutation) ClearEdge(name string) error {
 	case task.EdgeTenant:
 		m.ClearTenant()
 		return nil
-	case task.EdgeIncident:
-		m.ClearIncident()
-		return nil
 	case task.EdgeOriginEntry:
 		m.ClearOriginEntry()
+		return nil
+	case task.EdgeIncident:
+		m.ClearIncident()
 		return nil
 	case task.EdgeAssignee:
 		m.ClearAssignee()
@@ -73605,11 +73844,11 @@ func (m *TaskMutation) ResetEdge(name string) error {
 	case task.EdgeTickets:
 		m.ResetTickets()
 		return nil
-	case task.EdgeIncident:
-		m.ResetIncident()
-		return nil
 	case task.EdgeOriginEntry:
 		m.ResetOriginEntry()
+		return nil
+	case task.EdgeIncident:
+		m.ResetIncident()
 		return nil
 	case task.EdgeAssignee:
 		m.ResetAssignee()
@@ -73814,7 +74053,7 @@ func (m *TeamMutation) ArchiveTime() (r time.Time, exists bool) {
 // OldArchiveTime returns the old "archive_time" field's value of the Team entity.
 // If the Team object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TeamMutation) OldArchiveTime(ctx context.Context) (v time.Time, err error) {
+func (m *TeamMutation) OldArchiveTime(ctx context.Context) (v *time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldArchiveTime is only allowed on UpdateOne operations")
 	}
@@ -76949,21 +77188,12 @@ type UserMutation struct {
 	integration_oauth_states            map[uuid.UUID]struct{}
 	removedintegration_oauth_states     map[uuid.UUID]struct{}
 	clearedintegration_oauth_states     bool
-	incidents                           map[uuid.UUID]struct{}
-	removedincidents                    map[uuid.UUID]struct{}
-	clearedincidents                    bool
 	incident_milestones                 map[uuid.UUID]struct{}
 	removedincident_milestones          map[uuid.UUID]struct{}
 	clearedincident_milestones          bool
 	incident_debriefs                   map[uuid.UUID]struct{}
 	removedincident_debriefs            map[uuid.UUID]struct{}
 	clearedincident_debriefs            bool
-	assigned_tasks                      map[uuid.UUID]struct{}
-	removedassigned_tasks               map[uuid.UUID]struct{}
-	clearedassigned_tasks               bool
-	created_tasks                       map[uuid.UUID]struct{}
-	removedcreated_tasks                map[uuid.UUID]struct{}
-	clearedcreated_tasks                bool
 	review_requests                     map[uuid.UUID]struct{}
 	removedreview_requests              map[uuid.UUID]struct{}
 	clearedreview_requests              bool
@@ -76982,9 +77212,6 @@ type UserMutation struct {
 	team_memberships                    map[uuid.UUID]struct{}
 	removedteam_memberships             map[uuid.UUID]struct{}
 	clearedteam_memberships             bool
-	role_assignments                    map[uuid.UUID]struct{}
-	removedrole_assignments             map[uuid.UUID]struct{}
-	clearedrole_assignments             bool
 	done                                bool
 	oldValue                            func(context.Context) (*User, error)
 	predicates                          []predicate.User
@@ -77918,60 +78145,6 @@ func (m *UserMutation) ResetIntegrationOauthStates() {
 	m.removedintegration_oauth_states = nil
 }
 
-// AddIncidentIDs adds the "incidents" edge to the Incident entity by ids.
-func (m *UserMutation) AddIncidentIDs(ids ...uuid.UUID) {
-	if m.incidents == nil {
-		m.incidents = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.incidents[ids[i]] = struct{}{}
-	}
-}
-
-// ClearIncidents clears the "incidents" edge to the Incident entity.
-func (m *UserMutation) ClearIncidents() {
-	m.clearedincidents = true
-}
-
-// IncidentsCleared reports if the "incidents" edge to the Incident entity was cleared.
-func (m *UserMutation) IncidentsCleared() bool {
-	return m.clearedincidents
-}
-
-// RemoveIncidentIDs removes the "incidents" edge to the Incident entity by IDs.
-func (m *UserMutation) RemoveIncidentIDs(ids ...uuid.UUID) {
-	if m.removedincidents == nil {
-		m.removedincidents = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.incidents, ids[i])
-		m.removedincidents[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedIncidents returns the removed IDs of the "incidents" edge to the Incident entity.
-func (m *UserMutation) RemovedIncidentsIDs() (ids []uuid.UUID) {
-	for id := range m.removedincidents {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// IncidentsIDs returns the "incidents" edge IDs in the mutation.
-func (m *UserMutation) IncidentsIDs() (ids []uuid.UUID) {
-	for id := range m.incidents {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetIncidents resets all changes to the "incidents" edge.
-func (m *UserMutation) ResetIncidents() {
-	m.incidents = nil
-	m.clearedincidents = false
-	m.removedincidents = nil
-}
-
 // AddIncidentMilestoneIDs adds the "incident_milestones" edge to the IncidentMilestone entity by ids.
 func (m *UserMutation) AddIncidentMilestoneIDs(ids ...uuid.UUID) {
 	if m.incident_milestones == nil {
@@ -78078,114 +78251,6 @@ func (m *UserMutation) ResetIncidentDebriefs() {
 	m.incident_debriefs = nil
 	m.clearedincident_debriefs = false
 	m.removedincident_debriefs = nil
-}
-
-// AddAssignedTaskIDs adds the "assigned_tasks" edge to the Task entity by ids.
-func (m *UserMutation) AddAssignedTaskIDs(ids ...uuid.UUID) {
-	if m.assigned_tasks == nil {
-		m.assigned_tasks = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.assigned_tasks[ids[i]] = struct{}{}
-	}
-}
-
-// ClearAssignedTasks clears the "assigned_tasks" edge to the Task entity.
-func (m *UserMutation) ClearAssignedTasks() {
-	m.clearedassigned_tasks = true
-}
-
-// AssignedTasksCleared reports if the "assigned_tasks" edge to the Task entity was cleared.
-func (m *UserMutation) AssignedTasksCleared() bool {
-	return m.clearedassigned_tasks
-}
-
-// RemoveAssignedTaskIDs removes the "assigned_tasks" edge to the Task entity by IDs.
-func (m *UserMutation) RemoveAssignedTaskIDs(ids ...uuid.UUID) {
-	if m.removedassigned_tasks == nil {
-		m.removedassigned_tasks = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.assigned_tasks, ids[i])
-		m.removedassigned_tasks[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedAssignedTasks returns the removed IDs of the "assigned_tasks" edge to the Task entity.
-func (m *UserMutation) RemovedAssignedTasksIDs() (ids []uuid.UUID) {
-	for id := range m.removedassigned_tasks {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// AssignedTasksIDs returns the "assigned_tasks" edge IDs in the mutation.
-func (m *UserMutation) AssignedTasksIDs() (ids []uuid.UUID) {
-	for id := range m.assigned_tasks {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetAssignedTasks resets all changes to the "assigned_tasks" edge.
-func (m *UserMutation) ResetAssignedTasks() {
-	m.assigned_tasks = nil
-	m.clearedassigned_tasks = false
-	m.removedassigned_tasks = nil
-}
-
-// AddCreatedTaskIDs adds the "created_tasks" edge to the Task entity by ids.
-func (m *UserMutation) AddCreatedTaskIDs(ids ...uuid.UUID) {
-	if m.created_tasks == nil {
-		m.created_tasks = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.created_tasks[ids[i]] = struct{}{}
-	}
-}
-
-// ClearCreatedTasks clears the "created_tasks" edge to the Task entity.
-func (m *UserMutation) ClearCreatedTasks() {
-	m.clearedcreated_tasks = true
-}
-
-// CreatedTasksCleared reports if the "created_tasks" edge to the Task entity was cleared.
-func (m *UserMutation) CreatedTasksCleared() bool {
-	return m.clearedcreated_tasks
-}
-
-// RemoveCreatedTaskIDs removes the "created_tasks" edge to the Task entity by IDs.
-func (m *UserMutation) RemoveCreatedTaskIDs(ids ...uuid.UUID) {
-	if m.removedcreated_tasks == nil {
-		m.removedcreated_tasks = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.created_tasks, ids[i])
-		m.removedcreated_tasks[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedCreatedTasks returns the removed IDs of the "created_tasks" edge to the Task entity.
-func (m *UserMutation) RemovedCreatedTasksIDs() (ids []uuid.UUID) {
-	for id := range m.removedcreated_tasks {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// CreatedTasksIDs returns the "created_tasks" edge IDs in the mutation.
-func (m *UserMutation) CreatedTasksIDs() (ids []uuid.UUID) {
-	for id := range m.created_tasks {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetCreatedTasks resets all changes to the "created_tasks" edge.
-func (m *UserMutation) ResetCreatedTasks() {
-	m.created_tasks = nil
-	m.clearedcreated_tasks = false
-	m.removedcreated_tasks = nil
 }
 
 // AddReviewRequestIDs adds the "review_requests" edge to the Review entity by ids.
@@ -78512,60 +78577,6 @@ func (m *UserMutation) ResetTeamMemberships() {
 	m.removedteam_memberships = nil
 }
 
-// AddRoleAssignmentIDs adds the "role_assignments" edge to the IncidentRoleAssignment entity by ids.
-func (m *UserMutation) AddRoleAssignmentIDs(ids ...uuid.UUID) {
-	if m.role_assignments == nil {
-		m.role_assignments = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.role_assignments[ids[i]] = struct{}{}
-	}
-}
-
-// ClearRoleAssignments clears the "role_assignments" edge to the IncidentRoleAssignment entity.
-func (m *UserMutation) ClearRoleAssignments() {
-	m.clearedrole_assignments = true
-}
-
-// RoleAssignmentsCleared reports if the "role_assignments" edge to the IncidentRoleAssignment entity was cleared.
-func (m *UserMutation) RoleAssignmentsCleared() bool {
-	return m.clearedrole_assignments
-}
-
-// RemoveRoleAssignmentIDs removes the "role_assignments" edge to the IncidentRoleAssignment entity by IDs.
-func (m *UserMutation) RemoveRoleAssignmentIDs(ids ...uuid.UUID) {
-	if m.removedrole_assignments == nil {
-		m.removedrole_assignments = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.role_assignments, ids[i])
-		m.removedrole_assignments[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedRoleAssignments returns the removed IDs of the "role_assignments" edge to the IncidentRoleAssignment entity.
-func (m *UserMutation) RemovedRoleAssignmentsIDs() (ids []uuid.UUID) {
-	for id := range m.removedrole_assignments {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// RoleAssignmentsIDs returns the "role_assignments" edge IDs in the mutation.
-func (m *UserMutation) RoleAssignmentsIDs() (ids []uuid.UUID) {
-	for id := range m.role_assignments {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetRoleAssignments resets all changes to the "role_assignments" edge.
-func (m *UserMutation) ResetRoleAssignments() {
-	m.role_assignments = nil
-	m.clearedrole_assignments = false
-	m.removedrole_assignments = nil
-}
-
 // Where appends a list predicates to the UserMutation builder.
 func (m *UserMutation) Where(ps ...predicate.User) {
 	m.predicates = append(m.predicates, ps...)
@@ -78854,7 +78865,7 @@ func (m *UserMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *UserMutation) AddedEdges() []string {
-	edges := make([]string, 0, 22)
+	edges := make([]string, 0, 18)
 	if m.tenant != nil {
 		edges = append(edges, user.EdgeTenant)
 	}
@@ -78885,20 +78896,11 @@ func (m *UserMutation) AddedEdges() []string {
 	if m.integration_oauth_states != nil {
 		edges = append(edges, user.EdgeIntegrationOauthStates)
 	}
-	if m.incidents != nil {
-		edges = append(edges, user.EdgeIncidents)
-	}
 	if m.incident_milestones != nil {
 		edges = append(edges, user.EdgeIncidentMilestones)
 	}
 	if m.incident_debriefs != nil {
 		edges = append(edges, user.EdgeIncidentDebriefs)
-	}
-	if m.assigned_tasks != nil {
-		edges = append(edges, user.EdgeAssignedTasks)
-	}
-	if m.created_tasks != nil {
-		edges = append(edges, user.EdgeCreatedTasks)
 	}
 	if m.review_requests != nil {
 		edges = append(edges, user.EdgeReviewRequests)
@@ -78917,9 +78919,6 @@ func (m *UserMutation) AddedEdges() []string {
 	}
 	if m.team_memberships != nil {
 		edges = append(edges, user.EdgeTeamMemberships)
-	}
-	if m.role_assignments != nil {
-		edges = append(edges, user.EdgeRoleAssignments)
 	}
 	return edges
 }
@@ -78982,12 +78981,6 @@ func (m *UserMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case user.EdgeIncidents:
-		ids := make([]ent.Value, 0, len(m.incidents))
-		for id := range m.incidents {
-			ids = append(ids, id)
-		}
-		return ids
 	case user.EdgeIncidentMilestones:
 		ids := make([]ent.Value, 0, len(m.incident_milestones))
 		for id := range m.incident_milestones {
@@ -78997,18 +78990,6 @@ func (m *UserMutation) AddedIDs(name string) []ent.Value {
 	case user.EdgeIncidentDebriefs:
 		ids := make([]ent.Value, 0, len(m.incident_debriefs))
 		for id := range m.incident_debriefs {
-			ids = append(ids, id)
-		}
-		return ids
-	case user.EdgeAssignedTasks:
-		ids := make([]ent.Value, 0, len(m.assigned_tasks))
-		for id := range m.assigned_tasks {
-			ids = append(ids, id)
-		}
-		return ids
-	case user.EdgeCreatedTasks:
-		ids := make([]ent.Value, 0, len(m.created_tasks))
-		for id := range m.created_tasks {
 			ids = append(ids, id)
 		}
 		return ids
@@ -79048,19 +79029,13 @@ func (m *UserMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case user.EdgeRoleAssignments:
-		ids := make([]ent.Value, 0, len(m.role_assignments))
-		for id := range m.role_assignments {
-			ids = append(ids, id)
-		}
-		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *UserMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 22)
+	edges := make([]string, 0, 18)
 	if m.removedteams != nil {
 		edges = append(edges, user.EdgeTeams)
 	}
@@ -79082,20 +79057,11 @@ func (m *UserMutation) RemovedEdges() []string {
 	if m.removedintegration_oauth_states != nil {
 		edges = append(edges, user.EdgeIntegrationOauthStates)
 	}
-	if m.removedincidents != nil {
-		edges = append(edges, user.EdgeIncidents)
-	}
 	if m.removedincident_milestones != nil {
 		edges = append(edges, user.EdgeIncidentMilestones)
 	}
 	if m.removedincident_debriefs != nil {
 		edges = append(edges, user.EdgeIncidentDebriefs)
-	}
-	if m.removedassigned_tasks != nil {
-		edges = append(edges, user.EdgeAssignedTasks)
-	}
-	if m.removedcreated_tasks != nil {
-		edges = append(edges, user.EdgeCreatedTasks)
 	}
 	if m.removedreview_requests != nil {
 		edges = append(edges, user.EdgeReviewRequests)
@@ -79114,9 +79080,6 @@ func (m *UserMutation) RemovedEdges() []string {
 	}
 	if m.removedteam_memberships != nil {
 		edges = append(edges, user.EdgeTeamMemberships)
-	}
-	if m.removedrole_assignments != nil {
-		edges = append(edges, user.EdgeRoleAssignments)
 	}
 	return edges
 }
@@ -79167,12 +79130,6 @@ func (m *UserMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case user.EdgeIncidents:
-		ids := make([]ent.Value, 0, len(m.removedincidents))
-		for id := range m.removedincidents {
-			ids = append(ids, id)
-		}
-		return ids
 	case user.EdgeIncidentMilestones:
 		ids := make([]ent.Value, 0, len(m.removedincident_milestones))
 		for id := range m.removedincident_milestones {
@@ -79182,18 +79139,6 @@ func (m *UserMutation) RemovedIDs(name string) []ent.Value {
 	case user.EdgeIncidentDebriefs:
 		ids := make([]ent.Value, 0, len(m.removedincident_debriefs))
 		for id := range m.removedincident_debriefs {
-			ids = append(ids, id)
-		}
-		return ids
-	case user.EdgeAssignedTasks:
-		ids := make([]ent.Value, 0, len(m.removedassigned_tasks))
-		for id := range m.removedassigned_tasks {
-			ids = append(ids, id)
-		}
-		return ids
-	case user.EdgeCreatedTasks:
-		ids := make([]ent.Value, 0, len(m.removedcreated_tasks))
-		for id := range m.removedcreated_tasks {
 			ids = append(ids, id)
 		}
 		return ids
@@ -79233,19 +79178,13 @@ func (m *UserMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case user.EdgeRoleAssignments:
-		ids := make([]ent.Value, 0, len(m.removedrole_assignments))
-		for id := range m.removedrole_assignments {
-			ids = append(ids, id)
-		}
-		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *UserMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 22)
+	edges := make([]string, 0, 18)
 	if m.clearedtenant {
 		edges = append(edges, user.EdgeTenant)
 	}
@@ -79276,20 +79215,11 @@ func (m *UserMutation) ClearedEdges() []string {
 	if m.clearedintegration_oauth_states {
 		edges = append(edges, user.EdgeIntegrationOauthStates)
 	}
-	if m.clearedincidents {
-		edges = append(edges, user.EdgeIncidents)
-	}
 	if m.clearedincident_milestones {
 		edges = append(edges, user.EdgeIncidentMilestones)
 	}
 	if m.clearedincident_debriefs {
 		edges = append(edges, user.EdgeIncidentDebriefs)
-	}
-	if m.clearedassigned_tasks {
-		edges = append(edges, user.EdgeAssignedTasks)
-	}
-	if m.clearedcreated_tasks {
-		edges = append(edges, user.EdgeCreatedTasks)
 	}
 	if m.clearedreview_requests {
 		edges = append(edges, user.EdgeReviewRequests)
@@ -79308,9 +79238,6 @@ func (m *UserMutation) ClearedEdges() []string {
 	}
 	if m.clearedteam_memberships {
 		edges = append(edges, user.EdgeTeamMemberships)
-	}
-	if m.clearedrole_assignments {
-		edges = append(edges, user.EdgeRoleAssignments)
 	}
 	return edges
 }
@@ -79339,16 +79266,10 @@ func (m *UserMutation) EdgeCleared(name string) bool {
 		return m.clearedsituation_hazard_assessments
 	case user.EdgeIntegrationOauthStates:
 		return m.clearedintegration_oauth_states
-	case user.EdgeIncidents:
-		return m.clearedincidents
 	case user.EdgeIncidentMilestones:
 		return m.clearedincident_milestones
 	case user.EdgeIncidentDebriefs:
 		return m.clearedincident_debriefs
-	case user.EdgeAssignedTasks:
-		return m.clearedassigned_tasks
-	case user.EdgeCreatedTasks:
-		return m.clearedcreated_tasks
 	case user.EdgeReviewRequests:
 		return m.clearedreview_requests
 	case user.EdgeReviewResponses:
@@ -79361,8 +79282,6 @@ func (m *UserMutation) EdgeCleared(name string) bool {
 		return m.cleareddocument_accesses
 	case user.EdgeTeamMemberships:
 		return m.clearedteam_memberships
-	case user.EdgeRoleAssignments:
-		return m.clearedrole_assignments
 	}
 	return false
 }
@@ -79418,20 +79337,11 @@ func (m *UserMutation) ResetEdge(name string) error {
 	case user.EdgeIntegrationOauthStates:
 		m.ResetIntegrationOauthStates()
 		return nil
-	case user.EdgeIncidents:
-		m.ResetIncidents()
-		return nil
 	case user.EdgeIncidentMilestones:
 		m.ResetIncidentMilestones()
 		return nil
 	case user.EdgeIncidentDebriefs:
 		m.ResetIncidentDebriefs()
-		return nil
-	case user.EdgeAssignedTasks:
-		m.ResetAssignedTasks()
-		return nil
-	case user.EdgeCreatedTasks:
-		m.ResetCreatedTasks()
 		return nil
 	case user.EdgeReviewRequests:
 		m.ResetReviewRequests()
@@ -79450,9 +79360,6 @@ func (m *UserMutation) ResetEdge(name string) error {
 		return nil
 	case user.EdgeTeamMemberships:
 		m.ResetTeamMemberships()
-		return nil
-	case user.EdgeRoleAssignments:
-		m.ResetRoleAssignments()
 		return nil
 	}
 	return fmt.Errorf("unknown User edge %s", name)

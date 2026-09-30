@@ -333,7 +333,7 @@ func (_c *MeetingScheduleCreate) createSpec() (*MeetingSchedule, *sqlgraph.Creat
 	}
 	if value, ok := _c.mutation.ArchiveTime(); ok {
 		_spec.SetField(meetingschedule.FieldArchiveTime, field.TypeTime, value)
-		_node.ArchiveTime = value
+		_node.ArchiveTime = &value
 	}
 	if value, ok := _c.mutation.Name(); ok {
 		_spec.SetField(meetingschedule.FieldName, field.TypeString, value)

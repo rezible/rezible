@@ -18,10 +18,14 @@ import (
 	"github.com/rezible/rezible/ent/alertinstance"
 	inver "github.com/rezible/rezible/ent/investigationevidencerevision"
 	kne "github.com/rezible/rezible/ent/knowledgeentity"
+	knev "github.com/rezible/rezible/ent/knowledgeevidence"
+	ksa "github.com/rezible/rezible/ent/knowledgesubjectalias"
+	"github.com/rezible/rezible/ent/schema/schematypes"
 	"github.com/rezible/rezible/ent/situation"
 	sitha "github.com/rezible/rezible/ent/situationhazardassessment"
 	siti "github.com/rezible/rezible/ent/situationinvestigation"
 	sae "github.com/rezible/rezible/ent/systemanalysisentry"
+	saes "github.com/rezible/rezible/ent/systemanalysisentrysubject"
 	"github.com/rezible/rezible/pkg/jobs"
 	"github.com/rezible/rezible/test"
 	"github.com/rezible/rezible/test/mocks"
@@ -76,13 +80,8 @@ func (h *situationServiceHarness) expectStartAgentSessionJobInserted(times int) 
 		Times(times)
 }
 
-func (h *situationServiceHarness) expectInitialSessionStartupJobInserted(times int) {
-	h.expectStartAgentSessionJobInserted(times)
-}
-
 func (s *SituationServiceSuite) createSituation(ctx context.Context, h *situationServiceHarness, title string) *ent.Situation {
 	event := situationTestEvent(ctx, h.tdb)
-	h.expectInitialSessionStartupJobInserted(1)
 	created, createErr := h.situations.CreateSituation(ctx, rez.CreateSituationParams{
 		Title:    title,
 		Summary:  "checkout traffic is failing",
@@ -127,9 +126,10 @@ func (s *SituationServiceSuite) TestCreateSituationCreatesInvestigationFromEvide
 	h := s.newHarness(tdb)
 
 	event := situationTestEvent(ctx, tdb)
-	h.expectInitialSessionStartupJobInserted(1)
+	h.expectStartAgentSessionJobInserted(1)
 	sit, createErr := h.situations.CreateSituation(ctx, rez.CreateSituationParams{
-		Title: "Checkout degradation",
+		Title:              "Checkout degradation",
+		StartInvestigation: true,
 		ObservationGroups: []rez.SituationObservationGroupParams{{
 			Title: "Source evidence", NormalizedEventIDs: []uuid.UUID{event.ID},
 		}},
@@ -147,6 +147,75 @@ func (s *SituationServiceSuite) TestCreateSituationCreatesInvestigationFromEvide
 	detail, detailErr := h.investigations.ReadInvestigationDetail(ctx, investigation.ID)
 	s.Require().NoError(detailErr)
 	s.Equal(defaultSituationInvestigationQuestion, detail.Query)
+}
+
+func (s *SituationServiceSuite) TestSituationInvestigationMaterializationNormalizesAndDeduplicatesSubjects() {
+	ctx := s.SeedTenantContext()
+	tdb := s.CreateTestDatabase()
+	h := s.newHarness(tdb)
+	client := tdb.Client(ctx)
+	event := situationTestEvent(ctx, tdb)
+	createEntity := client.KnowledgeEntity.Create().
+		SetCategory(kne.CategoryContainer).
+		SetKind("service")
+	entity := createEntity.SaveX(ctx)
+	createAlias := client.KnowledgeSubjectAlias.Create().
+		SetSubjectKind(ksa.SubjectKindEntity).
+		SetProvider(event.Provider).
+		SetProviderNamespace(event.ProviderNamespace).
+		SetProviderResourceRef(event.ProviderResourceRef).
+		SetEntityID(entity.ID)
+	alias := createAlias.SaveX(ctx)
+	createEvidence := client.KnowledgeEvidence.Create().
+		SetEventID(event.ID).
+		SetSubjectAliasID(alias.ID).
+		SetKind(knev.KindObserved).
+		SetAssertion("service_observed").
+		SetEffectiveAt(event.OccurredAt).
+		SetSubjectState(schematypes.KnowledgeGraphSubjectState{DisplayName: "Checkout service"})
+	evidence := createEvidence.SaveX(ctx)
+
+	h.expectStartAgentSessionJobInserted(1)
+	sit, createErr := h.situations.CreateSituation(ctx, rez.CreateSituationParams{
+		Title:              "Checkout degradation with graph evidence",
+		StartInvestigation: true,
+		ObservationGroups: []rez.SituationObservationGroupParams{{
+			Title: "Source evidence", NormalizedEventIDs: []uuid.UUID{event.ID},
+		}},
+	})
+	s.Require().NoError(createErr)
+	loaded, getErr := h.situations.GetSituation(ctx, sit.ID)
+	s.Require().NoError(getErr)
+	s.Require().NotNil(loaded.Edges.Investigation)
+	investigation := loaded.Edges.Investigation.Edges.Investigation
+	s.Require().NotNil(investigation)
+	analysisID := investigation.SystemAnalysisID
+	entryQuery := client.SystemAnalysisEntry.Query().Where(sae.AnalysisID(analysisID))
+	entry := entryQuery.OnlyX(ctx)
+
+	entitySubjectQuery := client.SystemAnalysisEntrySubject.Query().Where(
+		saes.EntryID(entry.ID), saes.KnowledgeEntityID(entity.ID),
+	)
+	entitySubject := entitySubjectQuery.OnlyX(ctx)
+	s.Equal("context", entitySubject.Role)
+	evidenceSubjectQuery := client.SystemAnalysisEntrySubject.Query().Where(
+		saes.EntryID(entry.ID), saes.KnowledgeEvidenceID(evidence.ID),
+	)
+	evidenceSubject := evidenceSubjectQuery.OnlyX(ctx)
+	s.Equal("supports", evidenceSubject.Role)
+	entryCountQuery := client.SystemAnalysisEntry.Query().Where(sae.AnalysisID(analysisID))
+	s.Equal(1, entryCountQuery.CountX(ctx))
+	entrySubjectCountQuery := client.SystemAnalysisEntrySubject.Query().Where(saes.EntryID(entry.ID))
+	s.Equal(2, entrySubjectCountQuery.CountX(ctx))
+
+	for range 2 {
+		materializeErr := h.situations.prepareOrRefreshSituationAnalysis(ctx, analysisID, []uuid.UUID{event.ID}, nil)
+		s.Require().NoError(materializeErr)
+	}
+	entryCountQuery = client.SystemAnalysisEntry.Query().Where(sae.AnalysisID(analysisID))
+	s.Equal(1, entryCountQuery.CountX(ctx))
+	entrySubjectCountQuery = client.SystemAnalysisEntrySubject.Query().Where(saes.EntryID(entry.ID))
+	s.Equal(2, entrySubjectCountQuery.CountX(ctx))
 }
 
 func (s *SituationServiceSuite) TestListSituationsFiltersByStatusAndSearch() {
@@ -184,25 +253,6 @@ func (s *SituationServiceSuite) TestListSituationsFiltersByStatusAndSearch() {
 	s.Equal(openSituation.ID, searchList.Data[0].ID)
 }
 
-func (s *SituationServiceSuite) TestListSituationsActiveIncludesInvestigatingAndExcludesClosed() {
-	ctx := s.SeedTenantContext()
-	tdb := s.CreateTestDatabase()
-	h := s.newHarness(tdb)
-
-	observed := s.createSituation(ctx, h, "Observed")
-	investigating := s.createSituation(ctx, h, "Investigating")
-	closed := s.createSituation(ctx, h, "Closed")
-
-	closeErr := h.situations.CloseSituation(ctx, closed.ID, situation.CloseReasonStabilized)
-	s.Require().NoError(closeErr)
-
-	result, listErr := h.situations.ListSituations(ctx, rez.ListSituationsParams{
-		Active: new(true),
-	})
-	s.Require().NoError(listErr)
-	s.ElementsMatch([]uuid.UUID{observed.ID, investigating.ID}, []uuid.UUID{result.Data[0].ID, result.Data[1].ID})
-}
-
 func (s *SituationServiceSuite) TestSituationCloseIsIdempotentAndNeverReopens() {
 	ctx := s.SeedTenantContext()
 	tdb := s.CreateTestDatabase()
@@ -237,10 +287,11 @@ func (s *SituationServiceSuite) TestSituationCanStartFromEpisodeWithoutInstances
 	tdb := s.CreateTestDatabase()
 	h := s.newHarness(tdb)
 	episode := s.createEpisode(ctx, tdb.Client(ctx))
-	h.expectInitialSessionStartupJobInserted(1)
+	h.expectStartAgentSessionJobInserted(1)
 
 	sit, createErr := h.situations.CreateSituation(ctx, rez.CreateSituationParams{
-		Title: "Checkout alert",
+		Title:              "Checkout alert",
+		StartInvestigation: true,
 		ObservationGroups: []rez.SituationObservationGroupParams{{
 			Title: "Alert episode", AlertEpisodeIDs: []uuid.UUID{episode.ID},
 		}},

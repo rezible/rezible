@@ -33,9 +33,9 @@ type ReviewQuery struct {
 	withTenant        *TenantQuery
 	withRetrospective *RetrospectiveQuery
 	withAnalysisEntry *SystemAnalysisEntryQuery
+	withComment       *DiscussionCommentQuery
 	withRequester     *UserQuery
 	withReviewer      *UserQuery
-	withComment       *DiscussionCommentQuery
 	modifiers         []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -148,6 +148,31 @@ func (_q *ReviewQuery) QueryAnalysisEntry() *SystemAnalysisEntryQuery {
 	return query
 }
 
+// QueryComment chains the current query on the "comment" edge.
+func (_q *ReviewQuery) QueryComment() *DiscussionCommentQuery {
+	query := (&DiscussionCommentClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(review.Table, review.FieldID, selector),
+			sqlgraph.To(discussioncomment.Table, discussioncomment.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, review.CommentTable, review.CommentColumn),
+		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.DiscussionComment
+		step.Edge.Schema = schemaConfig.Review
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
 // QueryRequester chains the current query on the "requester" edge.
 func (_q *ReviewQuery) QueryRequester() *UserQuery {
 	query := (&UserClient{config: _q.config}).Query()
@@ -191,31 +216,6 @@ func (_q *ReviewQuery) QueryReviewer() *UserQuery {
 		)
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.User
-		step.Edge.Schema = schemaConfig.Review
-		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryComment chains the current query on the "comment" edge.
-func (_q *ReviewQuery) QueryComment() *DiscussionCommentQuery {
-	query := (&DiscussionCommentClient{config: _q.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := _q.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := _q.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(review.Table, review.FieldID, selector),
-			sqlgraph.To(discussioncomment.Table, discussioncomment.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, review.CommentTable, review.CommentColumn),
-		)
-		schemaConfig := _q.schemaConfig
-		step.To.Schema = schemaConfig.DiscussionComment
 		step.Edge.Schema = schemaConfig.Review
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -418,9 +418,9 @@ func (_q *ReviewQuery) Clone() *ReviewQuery {
 		withTenant:        _q.withTenant.Clone(),
 		withRetrospective: _q.withRetrospective.Clone(),
 		withAnalysisEntry: _q.withAnalysisEntry.Clone(),
+		withComment:       _q.withComment.Clone(),
 		withRequester:     _q.withRequester.Clone(),
 		withReviewer:      _q.withReviewer.Clone(),
-		withComment:       _q.withComment.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
 		path:      _q.path,
@@ -461,6 +461,17 @@ func (_q *ReviewQuery) WithAnalysisEntry(opts ...func(*SystemAnalysisEntryQuery)
 	return _q
 }
 
+// WithComment tells the query-builder to eager-load the nodes that are connected to
+// the "comment" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *ReviewQuery) WithComment(opts ...func(*DiscussionCommentQuery)) *ReviewQuery {
+	query := (&DiscussionCommentClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withComment = query
+	return _q
+}
+
 // WithRequester tells the query-builder to eager-load the nodes that are connected to
 // the "requester" edge. The optional arguments are used to configure the query builder of the edge.
 func (_q *ReviewQuery) WithRequester(opts ...func(*UserQuery)) *ReviewQuery {
@@ -480,17 +491,6 @@ func (_q *ReviewQuery) WithReviewer(opts ...func(*UserQuery)) *ReviewQuery {
 		opt(query)
 	}
 	_q.withReviewer = query
-	return _q
-}
-
-// WithComment tells the query-builder to eager-load the nodes that are connected to
-// the "comment" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *ReviewQuery) WithComment(opts ...func(*DiscussionCommentQuery)) *ReviewQuery {
-	query := (&DiscussionCommentClient{config: _q.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	_q.withComment = query
 	return _q
 }
 
@@ -582,9 +582,9 @@ func (_q *ReviewQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Revie
 			_q.withTenant != nil,
 			_q.withRetrospective != nil,
 			_q.withAnalysisEntry != nil,
+			_q.withComment != nil,
 			_q.withRequester != nil,
 			_q.withReviewer != nil,
-			_q.withComment != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -628,6 +628,12 @@ func (_q *ReviewQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Revie
 			return nil, err
 		}
 	}
+	if query := _q.withComment; query != nil {
+		if err := _q.loadComment(ctx, query, nodes, nil,
+			func(n *Review, e *DiscussionComment) { n.Edges.Comment = e }); err != nil {
+			return nil, err
+		}
+	}
 	if query := _q.withRequester; query != nil {
 		if err := _q.loadRequester(ctx, query, nodes, nil,
 			func(n *Review, e *User) { n.Edges.Requester = e }); err != nil {
@@ -637,12 +643,6 @@ func (_q *ReviewQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Revie
 	if query := _q.withReviewer; query != nil {
 		if err := _q.loadReviewer(ctx, query, nodes, nil,
 			func(n *Review, e *User) { n.Edges.Reviewer = e }); err != nil {
-			return nil, err
-		}
-	}
-	if query := _q.withComment; query != nil {
-		if err := _q.loadComment(ctx, query, nodes, nil,
-			func(n *Review, e *DiscussionComment) { n.Edges.Comment = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -742,6 +742,38 @@ func (_q *ReviewQuery) loadAnalysisEntry(ctx context.Context, query *SystemAnaly
 	}
 	return nil
 }
+func (_q *ReviewQuery) loadComment(ctx context.Context, query *DiscussionCommentQuery, nodes []*Review, init func(*Review), assign func(*Review, *DiscussionComment)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*Review)
+	for i := range nodes {
+		if nodes[i].CommentID == nil {
+			continue
+		}
+		fk := *nodes[i].CommentID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(discussioncomment.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "comment_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
 func (_q *ReviewQuery) loadRequester(ctx context.Context, query *UserQuery, nodes []*Review, init func(*Review), assign func(*Review, *User)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*Review)
@@ -800,38 +832,6 @@ func (_q *ReviewQuery) loadReviewer(ctx context.Context, query *UserQuery, nodes
 	}
 	return nil
 }
-func (_q *ReviewQuery) loadComment(ctx context.Context, query *DiscussionCommentQuery, nodes []*Review, init func(*Review), assign func(*Review, *DiscussionComment)) error {
-	ids := make([]uuid.UUID, 0, len(nodes))
-	nodeids := make(map[uuid.UUID][]*Review)
-	for i := range nodes {
-		if nodes[i].CommentID == nil {
-			continue
-		}
-		fk := *nodes[i].CommentID
-		if _, ok := nodeids[fk]; !ok {
-			ids = append(ids, fk)
-		}
-		nodeids[fk] = append(nodeids[fk], nodes[i])
-	}
-	if len(ids) == 0 {
-		return nil
-	}
-	query.Where(discussioncomment.IDIn(ids...))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		nodes, ok := nodeids[n.ID]
-		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "comment_id" returned %v`, n.ID)
-		}
-		for i := range nodes {
-			assign(nodes[i], n)
-		}
-	}
-	return nil
-}
 
 func (_q *ReviewQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := _q.querySpec()
@@ -872,14 +872,14 @@ func (_q *ReviewQuery) querySpec() *sqlgraph.QuerySpec {
 		if _q.withAnalysisEntry != nil {
 			_spec.Node.AddColumnOnce(review.FieldAnalysisEntryID)
 		}
+		if _q.withComment != nil {
+			_spec.Node.AddColumnOnce(review.FieldCommentID)
+		}
 		if _q.withRequester != nil {
 			_spec.Node.AddColumnOnce(review.FieldRequesterID)
 		}
 		if _q.withReviewer != nil {
 			_spec.Node.AddColumnOnce(review.FieldReviewerID)
-		}
-		if _q.withComment != nil {
-			_spec.Node.AddColumnOnce(review.FieldCommentID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {

@@ -287,26 +287,6 @@ func UserIDNotIn(vs ...uuid.UUID) predicate.DiscussionThread {
 	return predicate.DiscussionThread(sql.FieldNotIn(FieldUserID, vs...))
 }
 
-// KindEQ applies the EQ predicate on the "kind" field.
-func KindEQ(v Kind) predicate.DiscussionThread {
-	return predicate.DiscussionThread(sql.FieldEQ(FieldKind, v))
-}
-
-// KindNEQ applies the NEQ predicate on the "kind" field.
-func KindNEQ(v Kind) predicate.DiscussionThread {
-	return predicate.DiscussionThread(sql.FieldNEQ(FieldKind, v))
-}
-
-// KindIn applies the In predicate on the "kind" field.
-func KindIn(vs ...Kind) predicate.DiscussionThread {
-	return predicate.DiscussionThread(sql.FieldIn(FieldKind, vs...))
-}
-
-// KindNotIn applies the NotIn predicate on the "kind" field.
-func KindNotIn(vs ...Kind) predicate.DiscussionThread {
-	return predicate.DiscussionThread(sql.FieldNotIn(FieldKind, vs...))
-}
-
 // TargetKindEQ applies the EQ predicate on the "target_kind" field.
 func TargetKindEQ(v TargetKind) predicate.DiscussionThread {
 	return predicate.DiscussionThread(sql.FieldEQ(FieldTargetKind, v))

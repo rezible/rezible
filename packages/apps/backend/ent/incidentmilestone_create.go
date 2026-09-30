@@ -45,6 +45,14 @@ func (_c *IncidentMilestoneCreate) SetUserID(v uuid.UUID) *IncidentMilestoneCrea
 	return _c
 }
 
+// SetNillableUserID sets the "user_id" field if the given value is not nil.
+func (_c *IncidentMilestoneCreate) SetNillableUserID(v *uuid.UUID) *IncidentMilestoneCreate {
+	if v != nil {
+		_c.SetUserID(*v)
+	}
+	return _c
+}
+
 // SetKind sets the "kind" field.
 func (_c *IncidentMilestoneCreate) SetKind(v incidentmilestone.Kind) *IncidentMilestoneCreate {
 	_c.mutation.SetKind(v)
@@ -175,9 +183,6 @@ func (_c *IncidentMilestoneCreate) check() error {
 	if _, ok := _c.mutation.IncidentID(); !ok {
 		return &ValidationError{Name: "incident_id", err: errors.New(`ent: missing required field "IncidentMilestone.incident_id"`)}
 	}
-	if _, ok := _c.mutation.UserID(); !ok {
-		return &ValidationError{Name: "user_id", err: errors.New(`ent: missing required field "IncidentMilestone.user_id"`)}
-	}
 	if _, ok := _c.mutation.Kind(); !ok {
 		return &ValidationError{Name: "kind", err: errors.New(`ent: missing required field "IncidentMilestone.kind"`)}
 	}
@@ -194,9 +199,6 @@ func (_c *IncidentMilestoneCreate) check() error {
 	}
 	if len(_c.mutation.IncidentIDs()) == 0 {
 		return &ValidationError{Name: "incident", err: errors.New(`ent: missing required edge "IncidentMilestone.incident"`)}
-	}
-	if len(_c.mutation.UserIDs()) == 0 {
-		return &ValidationError{Name: "user", err: errors.New(`ent: missing required edge "IncidentMilestone.user"`)}
 	}
 	return nil
 }
@@ -306,7 +308,7 @@ func (_c *IncidentMilestoneCreate) createSpec() (*IncidentMilestone, *sqlgraph.C
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.UserID = nodes[0]
+		_node.UserID = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
@@ -382,6 +384,12 @@ func (u *IncidentMilestoneUpsert) SetUserID(v uuid.UUID) *IncidentMilestoneUpser
 // UpdateUserID sets the "user_id" field to the value that was provided on create.
 func (u *IncidentMilestoneUpsert) UpdateUserID() *IncidentMilestoneUpsert {
 	u.SetExcluded(incidentmilestone.FieldUserID)
+	return u
+}
+
+// ClearUserID clears the value of the "user_id" field.
+func (u *IncidentMilestoneUpsert) ClearUserID() *IncidentMilestoneUpsert {
+	u.SetNull(incidentmilestone.FieldUserID)
 	return u
 }
 
@@ -539,6 +547,13 @@ func (u *IncidentMilestoneUpsertOne) SetUserID(v uuid.UUID) *IncidentMilestoneUp
 func (u *IncidentMilestoneUpsertOne) UpdateUserID() *IncidentMilestoneUpsertOne {
 	return u.Update(func(s *IncidentMilestoneUpsert) {
 		s.UpdateUserID()
+	})
+}
+
+// ClearUserID clears the value of the "user_id" field.
+func (u *IncidentMilestoneUpsertOne) ClearUserID() *IncidentMilestoneUpsertOne {
+	return u.Update(func(s *IncidentMilestoneUpsert) {
+		s.ClearUserID()
 	})
 }
 
@@ -876,6 +891,13 @@ func (u *IncidentMilestoneUpsertBulk) SetUserID(v uuid.UUID) *IncidentMilestoneU
 func (u *IncidentMilestoneUpsertBulk) UpdateUserID() *IncidentMilestoneUpsertBulk {
 	return u.Update(func(s *IncidentMilestoneUpsert) {
 		s.UpdateUserID()
+	})
+}
+
+// ClearUserID clears the value of the "user_id" field.
+func (u *IncidentMilestoneUpsertBulk) ClearUserID() *IncidentMilestoneUpsertBulk {
+	return u.Update(func(s *IncidentMilestoneUpsert) {
+		s.ClearUserID()
 	})
 }
 

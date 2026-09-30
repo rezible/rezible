@@ -50,16 +50,10 @@ const (
 	EdgeSituationHazardAssessments = "situation_hazard_assessments"
 	// EdgeIntegrationOauthStates holds the string denoting the integration_oauth_states edge name in mutations.
 	EdgeIntegrationOauthStates = "integration_oauth_states"
-	// EdgeIncidents holds the string denoting the incidents edge name in mutations.
-	EdgeIncidents = "incidents"
 	// EdgeIncidentMilestones holds the string denoting the incident_milestones edge name in mutations.
 	EdgeIncidentMilestones = "incident_milestones"
 	// EdgeIncidentDebriefs holds the string denoting the incident_debriefs edge name in mutations.
 	EdgeIncidentDebriefs = "incident_debriefs"
-	// EdgeAssignedTasks holds the string denoting the assigned_tasks edge name in mutations.
-	EdgeAssignedTasks = "assigned_tasks"
-	// EdgeCreatedTasks holds the string denoting the created_tasks edge name in mutations.
-	EdgeCreatedTasks = "created_tasks"
 	// EdgeReviewRequests holds the string denoting the review_requests edge name in mutations.
 	EdgeReviewRequests = "review_requests"
 	// EdgeReviewResponses holds the string denoting the review_responses edge name in mutations.
@@ -72,8 +66,6 @@ const (
 	EdgeDocumentAccesses = "document_accesses"
 	// EdgeTeamMemberships holds the string denoting the team_memberships edge name in mutations.
 	EdgeTeamMemberships = "team_memberships"
-	// EdgeRoleAssignments holds the string denoting the role_assignments edge name in mutations.
-	EdgeRoleAssignments = "role_assignments"
 	// Table holds the table name of the user in the database.
 	Table = "users"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -142,11 +134,6 @@ const (
 	IntegrationOauthStatesInverseTable = "integration_user_install_states"
 	// IntegrationOauthStatesColumn is the table column denoting the integration_oauth_states relation/edge.
 	IntegrationOauthStatesColumn = "user_id"
-	// IncidentsTable is the table that holds the incidents relation/edge. The primary key declared below.
-	IncidentsTable = "incident_role_assignments"
-	// IncidentsInverseTable is the table name for the Incident entity.
-	// It exists in this package in order to avoid circular dependency with the "incident" package.
-	IncidentsInverseTable = "incidents"
 	// IncidentMilestonesTable is the table that holds the incident_milestones relation/edge.
 	IncidentMilestonesTable = "incident_milestones"
 	// IncidentMilestonesInverseTable is the table name for the IncidentMilestone entity.
@@ -161,20 +148,6 @@ const (
 	IncidentDebriefsInverseTable = "incident_debriefs"
 	// IncidentDebriefsColumn is the table column denoting the incident_debriefs relation/edge.
 	IncidentDebriefsColumn = "user_id"
-	// AssignedTasksTable is the table that holds the assigned_tasks relation/edge.
-	AssignedTasksTable = "tasks"
-	// AssignedTasksInverseTable is the table name for the Task entity.
-	// It exists in this package in order to avoid circular dependency with the "task" package.
-	AssignedTasksInverseTable = "tasks"
-	// AssignedTasksColumn is the table column denoting the assigned_tasks relation/edge.
-	AssignedTasksColumn = "assignee_id"
-	// CreatedTasksTable is the table that holds the created_tasks relation/edge.
-	CreatedTasksTable = "tasks"
-	// CreatedTasksInverseTable is the table name for the Task entity.
-	// It exists in this package in order to avoid circular dependency with the "task" package.
-	CreatedTasksInverseTable = "tasks"
-	// CreatedTasksColumn is the table column denoting the created_tasks relation/edge.
-	CreatedTasksColumn = "creator_id"
 	// ReviewRequestsTable is the table that holds the review_requests relation/edge.
 	ReviewRequestsTable = "reviews"
 	// ReviewRequestsInverseTable is the table name for the Review entity.
@@ -217,13 +190,6 @@ const (
 	TeamMembershipsInverseTable = "team_memberships"
 	// TeamMembershipsColumn is the table column denoting the team_memberships relation/edge.
 	TeamMembershipsColumn = "user_id"
-	// RoleAssignmentsTable is the table that holds the role_assignments relation/edge.
-	RoleAssignmentsTable = "incident_role_assignments"
-	// RoleAssignmentsInverseTable is the table name for the IncidentRoleAssignment entity.
-	// It exists in this package in order to avoid circular dependency with the "incidentroleassignment" package.
-	RoleAssignmentsInverseTable = "incident_role_assignments"
-	// RoleAssignmentsColumn is the table column denoting the role_assignments relation/edge.
-	RoleAssignmentsColumn = "user_id"
 )
 
 // Columns holds all SQL columns for user fields.
@@ -246,9 +212,6 @@ var (
 	// WatchedOncallRostersPrimaryKey and WatchedOncallRostersColumn2 are the table columns denoting the
 	// primary key for the watched_oncall_rosters relation (M2M).
 	WatchedOncallRostersPrimaryKey = []string{"user_id", "oncall_roster_id"}
-	// IncidentsPrimaryKey and IncidentsColumn2 are the table columns denoting the
-	// primary key for the incidents relation (M2M).
-	IncidentsPrimaryKey = []string{"user_id", "incident_id"}
 )
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -437,20 +400,6 @@ func ByIntegrationOauthStates(term sql.OrderTerm, terms ...sql.OrderTerm) OrderO
 	}
 }
 
-// ByIncidentsCount orders the results by incidents count.
-func ByIncidentsCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newIncidentsStep(), opts...)
-	}
-}
-
-// ByIncidents orders the results by incidents terms.
-func ByIncidents(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newIncidentsStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
-
 // ByIncidentMilestonesCount orders the results by incident_milestones count.
 func ByIncidentMilestonesCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -476,34 +425,6 @@ func ByIncidentDebriefsCount(opts ...sql.OrderTermOption) OrderOption {
 func ByIncidentDebriefs(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newIncidentDebriefsStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
-
-// ByAssignedTasksCount orders the results by assigned_tasks count.
-func ByAssignedTasksCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newAssignedTasksStep(), opts...)
-	}
-}
-
-// ByAssignedTasks orders the results by assigned_tasks terms.
-func ByAssignedTasks(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newAssignedTasksStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
-
-// ByCreatedTasksCount orders the results by created_tasks count.
-func ByCreatedTasksCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newCreatedTasksStep(), opts...)
-	}
-}
-
-// ByCreatedTasks orders the results by created_tasks terms.
-func ByCreatedTasks(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newCreatedTasksStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
 
@@ -590,20 +511,6 @@ func ByTeamMemberships(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newTeamMembershipsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
-
-// ByRoleAssignmentsCount orders the results by role_assignments count.
-func ByRoleAssignmentsCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newRoleAssignmentsStep(), opts...)
-	}
-}
-
-// ByRoleAssignments orders the results by role_assignments terms.
-func ByRoleAssignments(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newRoleAssignmentsStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
 func newTenantStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -674,13 +581,6 @@ func newIntegrationOauthStatesStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.O2M, true, IntegrationOauthStatesTable, IntegrationOauthStatesColumn),
 	)
 }
-func newIncidentsStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(IncidentsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2M, false, IncidentsTable, IncidentsPrimaryKey...),
-	)
-}
 func newIncidentMilestonesStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -693,20 +593,6 @@ func newIncidentDebriefsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(IncidentDebriefsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, IncidentDebriefsTable, IncidentDebriefsColumn),
-	)
-}
-func newAssignedTasksStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(AssignedTasksInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, AssignedTasksTable, AssignedTasksColumn),
-	)
-}
-func newCreatedTasksStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(CreatedTasksInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, CreatedTasksTable, CreatedTasksColumn),
 	)
 }
 func newReviewRequestsStep() *sqlgraph.Step {
@@ -749,12 +635,5 @@ func newTeamMembershipsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(TeamMembershipsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, true, TeamMembershipsTable, TeamMembershipsColumn),
-	)
-}
-func newRoleAssignmentsStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(RoleAssignmentsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, RoleAssignmentsTable, RoleAssignmentsColumn),
 	)
 }

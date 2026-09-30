@@ -66,6 +66,20 @@ func (_c *OrganizationPreferencesCreate) SetNillableEnableIncidentManagement(v *
 	return _c
 }
 
+// SetRequiredReviewerCount sets the "required_reviewer_count" field.
+func (_c *OrganizationPreferencesCreate) SetRequiredReviewerCount(v int) *OrganizationPreferencesCreate {
+	_c.mutation.SetRequiredReviewerCount(v)
+	return _c
+}
+
+// SetNillableRequiredReviewerCount sets the "required_reviewer_count" field if the given value is not nil.
+func (_c *OrganizationPreferencesCreate) SetNillableRequiredReviewerCount(v *int) *OrganizationPreferencesCreate {
+	if v != nil {
+		_c.SetRequiredReviewerCount(*v)
+	}
+	return _c
+}
+
 // SetTimezone sets the "timezone" field.
 func (_c *OrganizationPreferencesCreate) SetTimezone(v string) *OrganizationPreferencesCreate {
 	_c.mutation.SetTimezone(v)
@@ -145,6 +159,10 @@ func (_c *OrganizationPreferencesCreate) defaults() error {
 		v := organizationpreferences.DefaultEnableIncidentManagement
 		_c.mutation.SetEnableIncidentManagement(v)
 	}
+	if _, ok := _c.mutation.RequiredReviewerCount(); !ok {
+		v := organizationpreferences.DefaultRequiredReviewerCount
+		_c.mutation.SetRequiredReviewerCount(v)
+	}
 	if _, ok := _c.mutation.ID(); !ok {
 		if organizationpreferences.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized organizationpreferences.DefaultID (forgotten import ent/runtime?)")
@@ -165,6 +183,14 @@ func (_c *OrganizationPreferencesCreate) check() error {
 	}
 	if _, ok := _c.mutation.EnableIncidentManagement(); !ok {
 		return &ValidationError{Name: "enable_incident_management", err: errors.New(`ent: missing required field "OrganizationPreferences.enable_incident_management"`)}
+	}
+	if _, ok := _c.mutation.RequiredReviewerCount(); !ok {
+		return &ValidationError{Name: "required_reviewer_count", err: errors.New(`ent: missing required field "OrganizationPreferences.required_reviewer_count"`)}
+	}
+	if v, ok := _c.mutation.RequiredReviewerCount(); ok {
+		if err := organizationpreferences.RequiredReviewerCountValidator(v); err != nil {
+			return &ValidationError{Name: "required_reviewer_count", err: fmt.Errorf(`ent: validator failed for field "OrganizationPreferences.required_reviewer_count": %w`, err)}
+		}
 	}
 	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "OrganizationPreferences.tenant"`)}
@@ -216,6 +242,10 @@ func (_c *OrganizationPreferencesCreate) createSpec() (*OrganizationPreferences,
 	if value, ok := _c.mutation.EnableIncidentManagement(); ok {
 		_spec.SetField(organizationpreferences.FieldEnableIncidentManagement, field.TypeBool, value)
 		_node.EnableIncidentManagement = value
+	}
+	if value, ok := _c.mutation.RequiredReviewerCount(); ok {
+		_spec.SetField(organizationpreferences.FieldRequiredReviewerCount, field.TypeInt, value)
+		_node.RequiredReviewerCount = value
 	}
 	if value, ok := _c.mutation.Timezone(); ok {
 		_spec.SetField(organizationpreferences.FieldTimezone, field.TypeString, value)
@@ -351,6 +381,24 @@ func (u *OrganizationPreferencesUpsert) UpdateEnableIncidentManagement() *Organi
 	return u
 }
 
+// SetRequiredReviewerCount sets the "required_reviewer_count" field.
+func (u *OrganizationPreferencesUpsert) SetRequiredReviewerCount(v int) *OrganizationPreferencesUpsert {
+	u.Set(organizationpreferences.FieldRequiredReviewerCount, v)
+	return u
+}
+
+// UpdateRequiredReviewerCount sets the "required_reviewer_count" field to the value that was provided on create.
+func (u *OrganizationPreferencesUpsert) UpdateRequiredReviewerCount() *OrganizationPreferencesUpsert {
+	u.SetExcluded(organizationpreferences.FieldRequiredReviewerCount)
+	return u
+}
+
+// AddRequiredReviewerCount adds v to the "required_reviewer_count" field.
+func (u *OrganizationPreferencesUpsert) AddRequiredReviewerCount(v int) *OrganizationPreferencesUpsert {
+	u.Add(organizationpreferences.FieldRequiredReviewerCount, v)
+	return u
+}
+
 // SetTimezone sets the "timezone" field.
 func (u *OrganizationPreferencesUpsert) SetTimezone(v string) *OrganizationPreferencesUpsert {
 	u.Set(organizationpreferences.FieldTimezone, v)
@@ -466,6 +514,27 @@ func (u *OrganizationPreferencesUpsertOne) SetEnableIncidentManagement(v bool) *
 func (u *OrganizationPreferencesUpsertOne) UpdateEnableIncidentManagement() *OrganizationPreferencesUpsertOne {
 	return u.Update(func(s *OrganizationPreferencesUpsert) {
 		s.UpdateEnableIncidentManagement()
+	})
+}
+
+// SetRequiredReviewerCount sets the "required_reviewer_count" field.
+func (u *OrganizationPreferencesUpsertOne) SetRequiredReviewerCount(v int) *OrganizationPreferencesUpsertOne {
+	return u.Update(func(s *OrganizationPreferencesUpsert) {
+		s.SetRequiredReviewerCount(v)
+	})
+}
+
+// AddRequiredReviewerCount adds v to the "required_reviewer_count" field.
+func (u *OrganizationPreferencesUpsertOne) AddRequiredReviewerCount(v int) *OrganizationPreferencesUpsertOne {
+	return u.Update(func(s *OrganizationPreferencesUpsert) {
+		s.AddRequiredReviewerCount(v)
+	})
+}
+
+// UpdateRequiredReviewerCount sets the "required_reviewer_count" field to the value that was provided on create.
+func (u *OrganizationPreferencesUpsertOne) UpdateRequiredReviewerCount() *OrganizationPreferencesUpsertOne {
+	return u.Update(func(s *OrganizationPreferencesUpsert) {
+		s.UpdateRequiredReviewerCount()
 	})
 }
 
@@ -754,6 +823,27 @@ func (u *OrganizationPreferencesUpsertBulk) SetEnableIncidentManagement(v bool) 
 func (u *OrganizationPreferencesUpsertBulk) UpdateEnableIncidentManagement() *OrganizationPreferencesUpsertBulk {
 	return u.Update(func(s *OrganizationPreferencesUpsert) {
 		s.UpdateEnableIncidentManagement()
+	})
+}
+
+// SetRequiredReviewerCount sets the "required_reviewer_count" field.
+func (u *OrganizationPreferencesUpsertBulk) SetRequiredReviewerCount(v int) *OrganizationPreferencesUpsertBulk {
+	return u.Update(func(s *OrganizationPreferencesUpsert) {
+		s.SetRequiredReviewerCount(v)
+	})
+}
+
+// AddRequiredReviewerCount adds v to the "required_reviewer_count" field.
+func (u *OrganizationPreferencesUpsertBulk) AddRequiredReviewerCount(v int) *OrganizationPreferencesUpsertBulk {
+	return u.Update(func(s *OrganizationPreferencesUpsert) {
+		s.AddRequiredReviewerCount(v)
+	})
+}
+
+// UpdateRequiredReviewerCount sets the "required_reviewer_count" field to the value that was provided on create.
+func (u *OrganizationPreferencesUpsertBulk) UpdateRequiredReviewerCount() *OrganizationPreferencesUpsertBulk {
+	return u.Update(func(s *OrganizationPreferencesUpsert) {
+		s.UpdateRequiredReviewerCount()
 	})
 }
 

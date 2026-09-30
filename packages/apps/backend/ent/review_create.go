@@ -123,6 +123,20 @@ func (_c *ReviewCreate) SetState(v review.State) *ReviewCreate {
 	return _c
 }
 
+// SetFeedback sets the "feedback" field.
+func (_c *ReviewCreate) SetFeedback(v string) *ReviewCreate {
+	_c.mutation.SetFeedback(v)
+	return _c
+}
+
+// SetNillableFeedback sets the "feedback" field if the given value is not nil.
+func (_c *ReviewCreate) SetNillableFeedback(v *string) *ReviewCreate {
+	if v != nil {
+		_c.SetFeedback(*v)
+	}
+	return _c
+}
+
 // SetID sets the "id" field.
 func (_c *ReviewCreate) SetID(v uuid.UUID) *ReviewCreate {
 	_c.mutation.SetID(v)
@@ -152,6 +166,11 @@ func (_c *ReviewCreate) SetAnalysisEntry(v *SystemAnalysisEntry) *ReviewCreate {
 	return _c.SetAnalysisEntryID(v.ID)
 }
 
+// SetComment sets the "comment" edge to the DiscussionComment entity.
+func (_c *ReviewCreate) SetComment(v *DiscussionComment) *ReviewCreate {
+	return _c.SetCommentID(v.ID)
+}
+
 // SetRequester sets the "requester" edge to the User entity.
 func (_c *ReviewCreate) SetRequester(v *User) *ReviewCreate {
 	return _c.SetRequesterID(v.ID)
@@ -160,11 +179,6 @@ func (_c *ReviewCreate) SetRequester(v *User) *ReviewCreate {
 // SetReviewer sets the "reviewer" edge to the User entity.
 func (_c *ReviewCreate) SetReviewer(v *User) *ReviewCreate {
 	return _c.SetReviewerID(v.ID)
-}
-
-// SetComment sets the "comment" edge to the DiscussionComment entity.
-func (_c *ReviewCreate) SetComment(v *DiscussionComment) *ReviewCreate {
-	return _c.SetCommentID(v.ID)
 }
 
 // Mutation returns the ReviewMutation object of the builder.
@@ -311,6 +325,10 @@ func (_c *ReviewCreate) createSpec() (*Review, *sqlgraph.CreateSpec) {
 		_spec.SetField(review.FieldState, field.TypeEnum, value)
 		_node.State = value
 	}
+	if value, ok := _c.mutation.Feedback(); ok {
+		_spec.SetField(review.FieldFeedback, field.TypeString, value)
+		_node.Feedback = &value
+	}
 	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -365,6 +383,24 @@ func (_c *ReviewCreate) createSpec() (*Review, *sqlgraph.CreateSpec) {
 		_node.AnalysisEntryID = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
+	if nodes := _c.mutation.CommentIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   review.CommentTable,
+			Columns: []string{review.CommentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(discussioncomment.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.Review
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.CommentID = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	if nodes := _c.mutation.RequesterIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -399,24 +435,6 @@ func (_c *ReviewCreate) createSpec() (*Review, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.ReviewerID = nodes[0]
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := _c.mutation.CommentIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   review.CommentTable,
-			Columns: []string{review.CommentColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(discussioncomment.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _c.schemaConfig.Review
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_node.CommentID = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
@@ -582,6 +600,24 @@ func (u *ReviewUpsert) SetState(v review.State) *ReviewUpsert {
 // UpdateState sets the "state" field to the value that was provided on create.
 func (u *ReviewUpsert) UpdateState() *ReviewUpsert {
 	u.SetExcluded(review.FieldState)
+	return u
+}
+
+// SetFeedback sets the "feedback" field.
+func (u *ReviewUpsert) SetFeedback(v string) *ReviewUpsert {
+	u.Set(review.FieldFeedback, v)
+	return u
+}
+
+// UpdateFeedback sets the "feedback" field to the value that was provided on create.
+func (u *ReviewUpsert) UpdateFeedback() *ReviewUpsert {
+	u.SetExcluded(review.FieldFeedback)
+	return u
+}
+
+// ClearFeedback clears the value of the "feedback" field.
+func (u *ReviewUpsert) ClearFeedback() *ReviewUpsert {
+	u.SetNull(review.FieldFeedback)
 	return u
 }
 
@@ -766,6 +802,27 @@ func (u *ReviewUpsertOne) SetState(v review.State) *ReviewUpsertOne {
 func (u *ReviewUpsertOne) UpdateState() *ReviewUpsertOne {
 	return u.Update(func(s *ReviewUpsert) {
 		s.UpdateState()
+	})
+}
+
+// SetFeedback sets the "feedback" field.
+func (u *ReviewUpsertOne) SetFeedback(v string) *ReviewUpsertOne {
+	return u.Update(func(s *ReviewUpsert) {
+		s.SetFeedback(v)
+	})
+}
+
+// UpdateFeedback sets the "feedback" field to the value that was provided on create.
+func (u *ReviewUpsertOne) UpdateFeedback() *ReviewUpsertOne {
+	return u.Update(func(s *ReviewUpsert) {
+		s.UpdateFeedback()
+	})
+}
+
+// ClearFeedback clears the value of the "feedback" field.
+func (u *ReviewUpsertOne) ClearFeedback() *ReviewUpsertOne {
+	return u.Update(func(s *ReviewUpsert) {
+		s.ClearFeedback()
 	})
 }
 
@@ -1117,6 +1174,27 @@ func (u *ReviewUpsertBulk) SetState(v review.State) *ReviewUpsertBulk {
 func (u *ReviewUpsertBulk) UpdateState() *ReviewUpsertBulk {
 	return u.Update(func(s *ReviewUpsert) {
 		s.UpdateState()
+	})
+}
+
+// SetFeedback sets the "feedback" field.
+func (u *ReviewUpsertBulk) SetFeedback(v string) *ReviewUpsertBulk {
+	return u.Update(func(s *ReviewUpsert) {
+		s.SetFeedback(v)
+	})
+}
+
+// UpdateFeedback sets the "feedback" field to the value that was provided on create.
+func (u *ReviewUpsertBulk) UpdateFeedback() *ReviewUpsertBulk {
+	return u.Update(func(s *ReviewUpsert) {
+		s.UpdateFeedback()
+	})
+}
+
+// ClearFeedback clears the value of the "feedback" field.
+func (u *ReviewUpsertBulk) ClearFeedback() *ReviewUpsertBulk {
+	return u.Update(func(s *ReviewUpsert) {
+		s.ClearFeedback()
 	})
 }
 

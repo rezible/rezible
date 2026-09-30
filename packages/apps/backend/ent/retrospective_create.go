@@ -53,12 +53,6 @@ func (_c *RetrospectiveCreate) SetSystemAnalysisID(v uuid.UUID) *RetrospectiveCr
 	return _c
 }
 
-// SetKind sets the "kind" field.
-func (_c *RetrospectiveCreate) SetKind(v retrospective.Kind) *RetrospectiveCreate {
-	_c.mutation.SetKind(v)
-	return _c
-}
-
 // SetState sets the "state" field.
 func (_c *RetrospectiveCreate) SetState(v retrospective.State) *RetrospectiveCreate {
 	_c.mutation.SetState(v)
@@ -190,14 +184,6 @@ func (_c *RetrospectiveCreate) check() error {
 	if _, ok := _c.mutation.SystemAnalysisID(); !ok {
 		return &ValidationError{Name: "system_analysis_id", err: errors.New(`ent: missing required field "Retrospective.system_analysis_id"`)}
 	}
-	if _, ok := _c.mutation.Kind(); !ok {
-		return &ValidationError{Name: "kind", err: errors.New(`ent: missing required field "Retrospective.kind"`)}
-	}
-	if v, ok := _c.mutation.Kind(); ok {
-		if err := retrospective.KindValidator(v); err != nil {
-			return &ValidationError{Name: "kind", err: fmt.Errorf(`ent: validator failed for field "Retrospective.kind": %w`, err)}
-		}
-	}
 	if _, ok := _c.mutation.State(); !ok {
 		return &ValidationError{Name: "state", err: errors.New(`ent: missing required field "Retrospective.state"`)}
 	}
@@ -254,10 +240,6 @@ func (_c *RetrospectiveCreate) createSpec() (*Retrospective, *sqlgraph.CreateSpe
 	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
-	}
-	if value, ok := _c.mutation.Kind(); ok {
-		_spec.SetField(retrospective.FieldKind, field.TypeEnum, value)
-		_node.Kind = value
 	}
 	if value, ok := _c.mutation.State(); ok {
 		_spec.SetField(retrospective.FieldState, field.TypeEnum, value)
@@ -457,18 +439,6 @@ func (u *RetrospectiveUpsert) UpdateSystemAnalysisID() *RetrospectiveUpsert {
 	return u
 }
 
-// SetKind sets the "kind" field.
-func (u *RetrospectiveUpsert) SetKind(v retrospective.Kind) *RetrospectiveUpsert {
-	u.Set(retrospective.FieldKind, v)
-	return u
-}
-
-// UpdateKind sets the "kind" field to the value that was provided on create.
-func (u *RetrospectiveUpsert) UpdateKind() *RetrospectiveUpsert {
-	u.SetExcluded(retrospective.FieldKind)
-	return u
-}
-
 // SetState sets the "state" field.
 func (u *RetrospectiveUpsert) SetState(v retrospective.State) *RetrospectiveUpsert {
 	u.Set(retrospective.FieldState, v)
@@ -571,20 +541,6 @@ func (u *RetrospectiveUpsertOne) SetSystemAnalysisID(v uuid.UUID) *Retrospective
 func (u *RetrospectiveUpsertOne) UpdateSystemAnalysisID() *RetrospectiveUpsertOne {
 	return u.Update(func(s *RetrospectiveUpsert) {
 		s.UpdateSystemAnalysisID()
-	})
-}
-
-// SetKind sets the "kind" field.
-func (u *RetrospectiveUpsertOne) SetKind(v retrospective.Kind) *RetrospectiveUpsertOne {
-	return u.Update(func(s *RetrospectiveUpsert) {
-		s.SetKind(v)
-	})
-}
-
-// UpdateKind sets the "kind" field to the value that was provided on create.
-func (u *RetrospectiveUpsertOne) UpdateKind() *RetrospectiveUpsertOne {
-	return u.Update(func(s *RetrospectiveUpsert) {
-		s.UpdateKind()
 	})
 }
 
@@ -859,20 +815,6 @@ func (u *RetrospectiveUpsertBulk) SetSystemAnalysisID(v uuid.UUID) *Retrospectiv
 func (u *RetrospectiveUpsertBulk) UpdateSystemAnalysisID() *RetrospectiveUpsertBulk {
 	return u.Update(func(s *RetrospectiveUpsert) {
 		s.UpdateSystemAnalysisID()
-	})
-}
-
-// SetKind sets the "kind" field.
-func (u *RetrospectiveUpsertBulk) SetKind(v retrospective.Kind) *RetrospectiveUpsertBulk {
-	return u.Update(func(s *RetrospectiveUpsert) {
-		s.SetKind(v)
-	})
-}
-
-// UpdateKind sets the "kind" field to the value that was provided on create.
-func (u *RetrospectiveUpsertBulk) UpdateKind() *RetrospectiveUpsertBulk {
-	return u.Update(func(s *RetrospectiveUpsert) {
-		s.UpdateKind()
 	})
 }
 

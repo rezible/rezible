@@ -25,6 +25,8 @@ const (
 	FieldUpdatedAt = "updated_at"
 	// FieldAnalysisID holds the string denoting the analysis_id field in the database.
 	FieldAnalysisID = "analysis_id"
+	// FieldAuthorID holds the string denoting the author_id field in the database.
+	FieldAuthorID = "author_id"
 	// FieldReference holds the string denoting the reference field in the database.
 	FieldReference = "reference"
 	// FieldKind holds the string denoting the kind field in the database.
@@ -37,12 +39,16 @@ const (
 	FieldTitle = "title"
 	// FieldBody holds the string denoting the body field in the database.
 	FieldBody = "body"
+	// FieldVersion holds the string denoting the version field in the database.
+	FieldVersion = "version"
 	// FieldProperties holds the string denoting the properties field in the database.
 	FieldProperties = "properties"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
 	// EdgeAnalysis holds the string denoting the analysis edge name in mutations.
 	EdgeAnalysis = "analysis"
+	// EdgeAuthor holds the string denoting the author edge name in mutations.
+	EdgeAuthor = "author"
 	// EdgeSubjects holds the string denoting the subjects edge name in mutations.
 	EdgeSubjects = "subjects"
 	// EdgeOriginTasks holds the string denoting the origin_tasks edge name in mutations.
@@ -65,6 +71,13 @@ const (
 	AnalysisInverseTable = "system_analyses"
 	// AnalysisColumn is the table column denoting the analysis relation/edge.
 	AnalysisColumn = "analysis_id"
+	// AuthorTable is the table that holds the author relation/edge.
+	AuthorTable = "system_analysis_entries"
+	// AuthorInverseTable is the table name for the User entity.
+	// It exists in this package in order to avoid circular dependency with the "user" package.
+	AuthorInverseTable = "users"
+	// AuthorColumn is the table column denoting the author relation/edge.
+	AuthorColumn = "author_id"
 	// SubjectsTable is the table that holds the subjects relation/edge.
 	SubjectsTable = "system_analysis_entry_subjects"
 	// SubjectsInverseTable is the table name for the SystemAnalysisEntrySubject entity.
@@ -95,12 +108,14 @@ var Columns = []string{
 	FieldCreatedAt,
 	FieldUpdatedAt,
 	FieldAnalysisID,
+	FieldAuthorID,
 	FieldReference,
 	FieldKind,
 	FieldOccurredAt,
 	FieldSequence,
 	FieldTitle,
 	FieldBody,
+	FieldVersion,
 	FieldProperties,
 }
 
@@ -132,6 +147,8 @@ var (
 	DefaultSequence int
 	// TitleValidator is a validator for the "title" field. It is called by the builders before save.
 	TitleValidator func(string) error
+	// DefaultVersion holds the default value on creation for the "version" field.
+	DefaultVersion int
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
@@ -191,6 +208,11 @@ func ByAnalysisID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldAnalysisID, opts...).ToFunc()
 }
 
+// ByAuthorID orders the results by the author_id field.
+func ByAuthorID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldAuthorID, opts...).ToFunc()
+}
+
 // ByReference orders the results by the reference field.
 func ByReference(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldReference, opts...).ToFunc()
@@ -221,6 +243,11 @@ func ByBody(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldBody, opts...).ToFunc()
 }
 
+// ByVersion orders the results by the version field.
+func ByVersion(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldVersion, opts...).ToFunc()
+}
+
 // ByTenantField orders the results by tenant field.
 func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -232,6 +259,13 @@ func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
 func ByAnalysisField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newAnalysisStep(), sql.OrderByField(field, opts...))
+	}
+}
+
+// ByAuthorField orders the results by author field.
+func ByAuthorField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newAuthorStep(), sql.OrderByField(field, opts...))
 	}
 }
 
@@ -288,6 +322,13 @@ func newAnalysisStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(AnalysisInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, false, AnalysisTable, AnalysisColumn),
+	)
+}
+func newAuthorStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(AuthorInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, AuthorTable, AuthorColumn),
 	)
 }
 func newSubjectsStep() *sqlgraph.Step {

@@ -115,25 +115,18 @@ func (s *InvestigationServiceSuite) TestCreateInvestigationUsesPreparedAnalysisA
 		AnalysisId:      analysis.ID,
 		RelationshipIds: []uuid.UUID{relationship.ID},
 	}))
-	entry, entryErr := analysisService.SetSystemAnalysisEntry(ctx, uuid.Nil, func(m *ent.SystemAnalysisEntryMutation) {
-		m.SetAnalysisID(analysis.ID)
-		m.SetKind("observation")
-		m.SetTitle("Payment error rate increased")
-		m.SetBody("A deployment preceded the increase.")
-	},
-		func(m *ent.SystemAnalysisEntrySubjectMutation) {
-			m.SetRole("primary")
-			m.SetKnowledgeEntityID(source.ID)
+	entryParams := rez.SetSystemAnalysisEntryParams{
+		AnalysisID: analysis.ID,
+		Kind:       "observation",
+		Title:      "Payment error rate increased",
+		Body:       "A deployment preceded the increase.",
+		SetSubjects: []rez.SetSystemAnalysisEntrySubjectParams{
+			{Role: "primary", KnowledgeEntityID: &source.ID},
+			{Role: "affected", KnowledgeRelationshipID: &relationship.ID},
+			{Role: "evidence_for", KnowledgeEvidenceID: &evidence.ID},
 		},
-		func(m *ent.SystemAnalysisEntrySubjectMutation) {
-			m.SetRole("affected")
-			m.SetKnowledgeRelationshipID(relationship.ID)
-		},
-		func(m *ent.SystemAnalysisEntrySubjectMutation) {
-			m.SetRole("evidence_for")
-			m.SetKnowledgeEvidenceID(evidence.ID)
-		},
-	)
+	}
+	entry, entryErr := analysisService.SetSystemAnalysisEntry(ctx, uuid.Nil, entryParams)
 	s.Require().NoError(entryErr)
 
 	jobService := mocks.NewMockJobService(s.T())

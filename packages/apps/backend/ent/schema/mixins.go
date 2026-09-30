@@ -133,7 +133,7 @@ type ArchiveMixin struct {
 func (ArchiveMixin) Fields() []ent.Field {
 	return []ent.Field{
 		field.Time("archive_time").
-			Optional(),
+			Optional().Nillable(),
 	}
 }
 

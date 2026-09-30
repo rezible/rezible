@@ -63,15 +63,57 @@ func (_c *TaskCreate) SetNillableUpdatedAt(v *time.Time) *TaskCreate {
 	return _c
 }
 
-// SetType sets the "type" field.
-func (_c *TaskCreate) SetType(v task.Type) *TaskCreate {
-	_c.mutation.SetType(v)
+// SetArchiveTime sets the "archive_time" field.
+func (_c *TaskCreate) SetArchiveTime(v time.Time) *TaskCreate {
+	_c.mutation.SetArchiveTime(v)
+	return _c
+}
+
+// SetNillableArchiveTime sets the "archive_time" field if the given value is not nil.
+func (_c *TaskCreate) SetNillableArchiveTime(v *time.Time) *TaskCreate {
+	if v != nil {
+		_c.SetArchiveTime(*v)
+	}
+	return _c
+}
+
+// SetVersion sets the "version" field.
+func (_c *TaskCreate) SetVersion(v int) *TaskCreate {
+	_c.mutation.SetVersion(v)
+	return _c
+}
+
+// SetNillableVersion sets the "version" field if the given value is not nil.
+func (_c *TaskCreate) SetNillableVersion(v *int) *TaskCreate {
+	if v != nil {
+		_c.SetVersion(*v)
+	}
 	return _c
 }
 
 // SetTitle sets the "title" field.
 func (_c *TaskCreate) SetTitle(v string) *TaskCreate {
 	_c.mutation.SetTitle(v)
+	return _c
+}
+
+// SetDescription sets the "description" field.
+func (_c *TaskCreate) SetDescription(v string) *TaskCreate {
+	_c.mutation.SetDescription(v)
+	return _c
+}
+
+// SetNillableDescription sets the "description" field if the given value is not nil.
+func (_c *TaskCreate) SetNillableDescription(v *string) *TaskCreate {
+	if v != nil {
+		_c.SetDescription(*v)
+	}
+	return _c
+}
+
+// SetKind sets the "kind" field.
+func (_c *TaskCreate) SetKind(v task.Kind) *TaskCreate {
+	_c.mutation.SetKind(v)
 	return _c
 }
 
@@ -193,14 +235,14 @@ func (_c *TaskCreate) AddTickets(v ...*Ticket) *TaskCreate {
 	return _c.AddTicketIDs(ids...)
 }
 
-// SetIncident sets the "incident" edge to the Incident entity.
-func (_c *TaskCreate) SetIncident(v *Incident) *TaskCreate {
-	return _c.SetIncidentID(v.ID)
-}
-
 // SetOriginEntry sets the "origin_entry" edge to the SystemAnalysisEntry entity.
 func (_c *TaskCreate) SetOriginEntry(v *SystemAnalysisEntry) *TaskCreate {
 	return _c.SetOriginEntryID(v.ID)
+}
+
+// SetIncident sets the "incident" edge to the Incident entity.
+func (_c *TaskCreate) SetIncident(v *Incident) *TaskCreate {
+	return _c.SetIncidentID(v.ID)
 }
 
 // SetAssignee sets the "assignee" edge to the User entity.
@@ -264,6 +306,14 @@ func (_c *TaskCreate) defaults() error {
 		v := task.DefaultUpdatedAt()
 		_c.mutation.SetUpdatedAt(v)
 	}
+	if _, ok := _c.mutation.Version(); !ok {
+		v := task.DefaultVersion
+		_c.mutation.SetVersion(v)
+	}
+	if _, ok := _c.mutation.Description(); !ok {
+		v := task.DefaultDescription
+		_c.mutation.SetDescription(v)
+	}
 	if _, ok := _c.mutation.State(); !ok {
 		v := task.DefaultState
 		_c.mutation.SetState(v)
@@ -289,16 +339,22 @@ func (_c *TaskCreate) check() error {
 	if _, ok := _c.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "Task.updated_at"`)}
 	}
-	if _, ok := _c.mutation.GetType(); !ok {
-		return &ValidationError{Name: "type", err: errors.New(`ent: missing required field "Task.type"`)}
-	}
-	if v, ok := _c.mutation.GetType(); ok {
-		if err := task.TypeValidator(v); err != nil {
-			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "Task.type": %w`, err)}
-		}
+	if _, ok := _c.mutation.Version(); !ok {
+		return &ValidationError{Name: "version", err: errors.New(`ent: missing required field "Task.version"`)}
 	}
 	if _, ok := _c.mutation.Title(); !ok {
 		return &ValidationError{Name: "title", err: errors.New(`ent: missing required field "Task.title"`)}
+	}
+	if _, ok := _c.mutation.Description(); !ok {
+		return &ValidationError{Name: "description", err: errors.New(`ent: missing required field "Task.description"`)}
+	}
+	if _, ok := _c.mutation.Kind(); !ok {
+		return &ValidationError{Name: "kind", err: errors.New(`ent: missing required field "Task.kind"`)}
+	}
+	if v, ok := _c.mutation.Kind(); ok {
+		if err := task.KindValidator(v); err != nil {
+			return &ValidationError{Name: "kind", err: fmt.Errorf(`ent: validator failed for field "Task.kind": %w`, err)}
+		}
 	}
 	if _, ok := _c.mutation.State(); !ok {
 		return &ValidationError{Name: "state", err: errors.New(`ent: missing required field "Task.state"`)}
@@ -356,13 +412,25 @@ func (_c *TaskCreate) createSpec() (*Task, *sqlgraph.CreateSpec) {
 		_spec.SetField(task.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
 	}
-	if value, ok := _c.mutation.GetType(); ok {
-		_spec.SetField(task.FieldType, field.TypeEnum, value)
-		_node.Type = value
+	if value, ok := _c.mutation.ArchiveTime(); ok {
+		_spec.SetField(task.FieldArchiveTime, field.TypeTime, value)
+		_node.ArchiveTime = &value
+	}
+	if value, ok := _c.mutation.Version(); ok {
+		_spec.SetField(task.FieldVersion, field.TypeInt, value)
+		_node.Version = value
 	}
 	if value, ok := _c.mutation.Title(); ok {
 		_spec.SetField(task.FieldTitle, field.TypeString, value)
 		_node.Title = value
+	}
+	if value, ok := _c.mutation.Description(); ok {
+		_spec.SetField(task.FieldDescription, field.TypeString, value)
+		_node.Description = value
+	}
+	if value, ok := _c.mutation.Kind(); ok {
+		_spec.SetField(task.FieldKind, field.TypeEnum, value)
+		_node.Kind = value
 	}
 	if value, ok := _c.mutation.State(); ok {
 		_spec.SetField(task.FieldState, field.TypeEnum, value)
@@ -407,24 +475,6 @@ func (_c *TaskCreate) createSpec() (*Task, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := _c.mutation.IncidentIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   task.IncidentTable,
-			Columns: []string{task.IncidentColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _c.schemaConfig.Task
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_node.IncidentID = nodes[0]
-		_spec.Edges = append(_spec.Edges, edge)
-	}
 	if nodes := _c.mutation.OriginEntryIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -443,10 +493,28 @@ func (_c *TaskCreate) createSpec() (*Task, *sqlgraph.CreateSpec) {
 		_node.OriginEntryID = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
+	if nodes := _c.mutation.IncidentIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   task.IncidentTable,
+			Columns: []string{task.IncidentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.Task
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.IncidentID = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	if nodes := _c.mutation.AssigneeIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
-			Inverse: true,
+			Inverse: false,
 			Table:   task.AssigneeTable,
 			Columns: []string{task.AssigneeColumn},
 			Bidi:    false,
@@ -458,13 +526,13 @@ func (_c *TaskCreate) createSpec() (*Task, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.AssigneeID = nodes[0]
+		_node.AssigneeID = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := _c.mutation.CreatorIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
-			Inverse: true,
+			Inverse: false,
 			Table:   task.CreatorTable,
 			Columns: []string{task.CreatorColumn},
 			Bidi:    false,
@@ -476,7 +544,7 @@ func (_c *TaskCreate) createSpec() (*Task, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.CreatorID = nodes[0]
+		_node.CreatorID = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
@@ -555,15 +623,39 @@ func (u *TaskUpsert) UpdateUpdatedAt() *TaskUpsert {
 	return u
 }
 
-// SetType sets the "type" field.
-func (u *TaskUpsert) SetType(v task.Type) *TaskUpsert {
-	u.Set(task.FieldType, v)
+// SetArchiveTime sets the "archive_time" field.
+func (u *TaskUpsert) SetArchiveTime(v time.Time) *TaskUpsert {
+	u.Set(task.FieldArchiveTime, v)
 	return u
 }
 
-// UpdateType sets the "type" field to the value that was provided on create.
-func (u *TaskUpsert) UpdateType() *TaskUpsert {
-	u.SetExcluded(task.FieldType)
+// UpdateArchiveTime sets the "archive_time" field to the value that was provided on create.
+func (u *TaskUpsert) UpdateArchiveTime() *TaskUpsert {
+	u.SetExcluded(task.FieldArchiveTime)
+	return u
+}
+
+// ClearArchiveTime clears the value of the "archive_time" field.
+func (u *TaskUpsert) ClearArchiveTime() *TaskUpsert {
+	u.SetNull(task.FieldArchiveTime)
+	return u
+}
+
+// SetVersion sets the "version" field.
+func (u *TaskUpsert) SetVersion(v int) *TaskUpsert {
+	u.Set(task.FieldVersion, v)
+	return u
+}
+
+// UpdateVersion sets the "version" field to the value that was provided on create.
+func (u *TaskUpsert) UpdateVersion() *TaskUpsert {
+	u.SetExcluded(task.FieldVersion)
+	return u
+}
+
+// AddVersion adds v to the "version" field.
+func (u *TaskUpsert) AddVersion(v int) *TaskUpsert {
+	u.Add(task.FieldVersion, v)
 	return u
 }
 
@@ -576,6 +668,30 @@ func (u *TaskUpsert) SetTitle(v string) *TaskUpsert {
 // UpdateTitle sets the "title" field to the value that was provided on create.
 func (u *TaskUpsert) UpdateTitle() *TaskUpsert {
 	u.SetExcluded(task.FieldTitle)
+	return u
+}
+
+// SetDescription sets the "description" field.
+func (u *TaskUpsert) SetDescription(v string) *TaskUpsert {
+	u.Set(task.FieldDescription, v)
+	return u
+}
+
+// UpdateDescription sets the "description" field to the value that was provided on create.
+func (u *TaskUpsert) UpdateDescription() *TaskUpsert {
+	u.SetExcluded(task.FieldDescription)
+	return u
+}
+
+// SetKind sets the "kind" field.
+func (u *TaskUpsert) SetKind(v task.Kind) *TaskUpsert {
+	u.Set(task.FieldKind, v)
+	return u
+}
+
+// UpdateKind sets the "kind" field to the value that was provided on create.
+func (u *TaskUpsert) UpdateKind() *TaskUpsert {
+	u.SetExcluded(task.FieldKind)
 	return u
 }
 
@@ -760,17 +876,45 @@ func (u *TaskUpsertOne) UpdateUpdatedAt() *TaskUpsertOne {
 	})
 }
 
-// SetType sets the "type" field.
-func (u *TaskUpsertOne) SetType(v task.Type) *TaskUpsertOne {
+// SetArchiveTime sets the "archive_time" field.
+func (u *TaskUpsertOne) SetArchiveTime(v time.Time) *TaskUpsertOne {
 	return u.Update(func(s *TaskUpsert) {
-		s.SetType(v)
+		s.SetArchiveTime(v)
 	})
 }
 
-// UpdateType sets the "type" field to the value that was provided on create.
-func (u *TaskUpsertOne) UpdateType() *TaskUpsertOne {
+// UpdateArchiveTime sets the "archive_time" field to the value that was provided on create.
+func (u *TaskUpsertOne) UpdateArchiveTime() *TaskUpsertOne {
 	return u.Update(func(s *TaskUpsert) {
-		s.UpdateType()
+		s.UpdateArchiveTime()
+	})
+}
+
+// ClearArchiveTime clears the value of the "archive_time" field.
+func (u *TaskUpsertOne) ClearArchiveTime() *TaskUpsertOne {
+	return u.Update(func(s *TaskUpsert) {
+		s.ClearArchiveTime()
+	})
+}
+
+// SetVersion sets the "version" field.
+func (u *TaskUpsertOne) SetVersion(v int) *TaskUpsertOne {
+	return u.Update(func(s *TaskUpsert) {
+		s.SetVersion(v)
+	})
+}
+
+// AddVersion adds v to the "version" field.
+func (u *TaskUpsertOne) AddVersion(v int) *TaskUpsertOne {
+	return u.Update(func(s *TaskUpsert) {
+		s.AddVersion(v)
+	})
+}
+
+// UpdateVersion sets the "version" field to the value that was provided on create.
+func (u *TaskUpsertOne) UpdateVersion() *TaskUpsertOne {
+	return u.Update(func(s *TaskUpsert) {
+		s.UpdateVersion()
 	})
 }
 
@@ -785,6 +929,34 @@ func (u *TaskUpsertOne) SetTitle(v string) *TaskUpsertOne {
 func (u *TaskUpsertOne) UpdateTitle() *TaskUpsertOne {
 	return u.Update(func(s *TaskUpsert) {
 		s.UpdateTitle()
+	})
+}
+
+// SetDescription sets the "description" field.
+func (u *TaskUpsertOne) SetDescription(v string) *TaskUpsertOne {
+	return u.Update(func(s *TaskUpsert) {
+		s.SetDescription(v)
+	})
+}
+
+// UpdateDescription sets the "description" field to the value that was provided on create.
+func (u *TaskUpsertOne) UpdateDescription() *TaskUpsertOne {
+	return u.Update(func(s *TaskUpsert) {
+		s.UpdateDescription()
+	})
+}
+
+// SetKind sets the "kind" field.
+func (u *TaskUpsertOne) SetKind(v task.Kind) *TaskUpsertOne {
+	return u.Update(func(s *TaskUpsert) {
+		s.SetKind(v)
+	})
+}
+
+// UpdateKind sets the "kind" field to the value that was provided on create.
+func (u *TaskUpsertOne) UpdateKind() *TaskUpsertOne {
+	return u.Update(func(s *TaskUpsert) {
+		s.UpdateKind()
 	})
 }
 
@@ -1153,17 +1325,45 @@ func (u *TaskUpsertBulk) UpdateUpdatedAt() *TaskUpsertBulk {
 	})
 }
 
-// SetType sets the "type" field.
-func (u *TaskUpsertBulk) SetType(v task.Type) *TaskUpsertBulk {
+// SetArchiveTime sets the "archive_time" field.
+func (u *TaskUpsertBulk) SetArchiveTime(v time.Time) *TaskUpsertBulk {
 	return u.Update(func(s *TaskUpsert) {
-		s.SetType(v)
+		s.SetArchiveTime(v)
 	})
 }
 
-// UpdateType sets the "type" field to the value that was provided on create.
-func (u *TaskUpsertBulk) UpdateType() *TaskUpsertBulk {
+// UpdateArchiveTime sets the "archive_time" field to the value that was provided on create.
+func (u *TaskUpsertBulk) UpdateArchiveTime() *TaskUpsertBulk {
 	return u.Update(func(s *TaskUpsert) {
-		s.UpdateType()
+		s.UpdateArchiveTime()
+	})
+}
+
+// ClearArchiveTime clears the value of the "archive_time" field.
+func (u *TaskUpsertBulk) ClearArchiveTime() *TaskUpsertBulk {
+	return u.Update(func(s *TaskUpsert) {
+		s.ClearArchiveTime()
+	})
+}
+
+// SetVersion sets the "version" field.
+func (u *TaskUpsertBulk) SetVersion(v int) *TaskUpsertBulk {
+	return u.Update(func(s *TaskUpsert) {
+		s.SetVersion(v)
+	})
+}
+
+// AddVersion adds v to the "version" field.
+func (u *TaskUpsertBulk) AddVersion(v int) *TaskUpsertBulk {
+	return u.Update(func(s *TaskUpsert) {
+		s.AddVersion(v)
+	})
+}
+
+// UpdateVersion sets the "version" field to the value that was provided on create.
+func (u *TaskUpsertBulk) UpdateVersion() *TaskUpsertBulk {
+	return u.Update(func(s *TaskUpsert) {
+		s.UpdateVersion()
 	})
 }
 
@@ -1178,6 +1378,34 @@ func (u *TaskUpsertBulk) SetTitle(v string) *TaskUpsertBulk {
 func (u *TaskUpsertBulk) UpdateTitle() *TaskUpsertBulk {
 	return u.Update(func(s *TaskUpsert) {
 		s.UpdateTitle()
+	})
+}
+
+// SetDescription sets the "description" field.
+func (u *TaskUpsertBulk) SetDescription(v string) *TaskUpsertBulk {
+	return u.Update(func(s *TaskUpsert) {
+		s.SetDescription(v)
+	})
+}
+
+// UpdateDescription sets the "description" field to the value that was provided on create.
+func (u *TaskUpsertBulk) UpdateDescription() *TaskUpsertBulk {
+	return u.Update(func(s *TaskUpsert) {
+		s.UpdateDescription()
+	})
+}
+
+// SetKind sets the "kind" field.
+func (u *TaskUpsertBulk) SetKind(v task.Kind) *TaskUpsertBulk {
+	return u.Update(func(s *TaskUpsert) {
+		s.SetKind(v)
+	})
+}
+
+// UpdateKind sets the "kind" field to the value that was provided on create.
+func (u *TaskUpsertBulk) UpdateKind() *TaskUpsertBulk {
+	return u.Update(func(s *TaskUpsert) {
+		s.UpdateKind()
 	})
 }
 

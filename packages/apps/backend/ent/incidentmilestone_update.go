@@ -61,6 +61,12 @@ func (_u *IncidentMilestoneUpdate) SetNillableUserID(v *uuid.UUID) *IncidentMile
 	return _u
 }
 
+// ClearUserID clears the value of the "user_id" field.
+func (_u *IncidentMilestoneUpdate) ClearUserID() *IncidentMilestoneUpdate {
+	_u.mutation.ClearUserID()
+	return _u
+}
+
 // SetKind sets the "kind" field.
 func (_u *IncidentMilestoneUpdate) SetKind(v incidentmilestone.Kind) *IncidentMilestoneUpdate {
 	_u.mutation.SetKind(v)
@@ -207,9 +213,6 @@ func (_u *IncidentMilestoneUpdate) check() error {
 	}
 	if _u.mutation.IncidentCleared() && len(_u.mutation.IncidentIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentMilestone.incident"`)
-	}
-	if _u.mutation.UserCleared() && len(_u.mutation.UserIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "IncidentMilestone.user"`)
 	}
 	return nil
 }
@@ -367,6 +370,12 @@ func (_u *IncidentMilestoneUpdateOne) SetNillableUserID(v *uuid.UUID) *IncidentM
 	if v != nil {
 		_u.SetUserID(*v)
 	}
+	return _u
+}
+
+// ClearUserID clears the value of the "user_id" field.
+func (_u *IncidentMilestoneUpdateOne) ClearUserID() *IncidentMilestoneUpdateOne {
+	_u.mutation.ClearUserID()
 	return _u
 }
 
@@ -529,9 +538,6 @@ func (_u *IncidentMilestoneUpdateOne) check() error {
 	}
 	if _u.mutation.IncidentCleared() && len(_u.mutation.IncidentIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentMilestone.incident"`)
-	}
-	if _u.mutation.UserCleared() && len(_u.mutation.UserIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "IncidentMilestone.user"`)
 	}
 	return nil
 }

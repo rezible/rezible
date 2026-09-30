@@ -31,16 +31,18 @@ type (
 		InvestigationsHandler
 
 		IncidentsHandler
-		ReviewsHandler
 		IncidentMetadataHandler
-		IncidentMilestonesHandler
 		IncidentDebriefsHandler
 
 		DocumentsHandler
 		RetrospectivesHandler
+
 		TasksHandler
+
 		PlaybooksHandler
 		MeetingsHandler
+
+		ReviewsHandler
 
 		EventsHandler
 		EventAnnotationsHandler

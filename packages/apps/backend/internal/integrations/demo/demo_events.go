@@ -1,6 +1,7 @@
 package demoprovider
 
 import (
+	"fmt"
 	"time"
 
 	rez "github.com/rezible/rezible"
@@ -36,6 +37,46 @@ var demoUserEvents = []userObservedPayload{
 		ChatID:     "UAVA123",
 		Timezone:   "Australia/Sydney",
 		UpdatedAt:  demoObservedAt,
+	},
+}
+
+type teamObservedPayload struct {
+	ResourceID    string    `json:"resource_id"`
+	Name          string    `json:"name"`
+	Slug          string    `json:"slug"`
+	ChatChannelID string    `json:"chat_channel_id"`
+	UpdatedAt     time.Time `json:"updated_at"`
+}
+
+func (p teamObservedPayload) resourceRef() string {
+	return "demo:team:" + p.ResourceID
+}
+
+var demoTeamEvents = []teamObservedPayload{
+	{
+		ResourceID:    "search-platform",
+		Name:          "Search Platform",
+		Slug:          "search-platform",
+		ChatChannelID: "CSEARCH123",
+		UpdatedAt:     demoObservedAt,
+	},
+}
+
+type teamMembershipObservedPayload struct {
+	TeamResourceID string `json:"team_resource_id"`
+	UserExternalID string `json:"user_external_id"`
+	Role           string `json:"role"`
+}
+
+func (p teamMembershipObservedPayload) resourceRef() string {
+	return "demo:team-membership:" + p.TeamResourceID + ":" + p.UserExternalID
+}
+
+var demoTeamMembershipEvents = []teamMembershipObservedPayload{
+	{
+		TeamResourceID: "search-platform",
+		UserExternalID: "ava-patel",
+		Role:           "member",
 	},
 }
 
@@ -99,47 +140,110 @@ var demoCodeChangeEvents = []codeChangeObservedPayload{
 }
 
 type incidentObservedPayload struct {
-	ResourceID    string    `json:"resource_id"`
-	Title         string    `json:"title"`
-	Summary       string    `json:"summary,omitempty"`
-	SeverityRef   string    `json:"severity_ref"`
-	TypeRef       string    `json:"type_ref"`
-	OccurredAt    time.Time `json:"occurred_at"`
-	ObservationID string    `json:"observation_id"`
+	ResourceID      string     `json:"resource_id"`
+	Title           string     `json:"title"`
+	Summary         string     `json:"summary,omitempty"`
+	SeverityRef     string     `json:"severity_ref"`
+	TypeRef         string     `json:"type_ref"`
+	ResponseState   string     `json:"response_state"`
+	ResolvedAt      *time.Time `json:"resolved_at,omitempty"`
+	SourceUpdatedAt time.Time  `json:"source_updated_at"`
+	SourceURL       string     `json:"source_url"`
+	OccurredAt      time.Time  `json:"occurred_at"`
+	ObservationID   string     `json:"observation_id"`
 }
 
 func (p incidentObservedPayload) resourceRef() string {
 	return "demo:incident:" + p.ResourceID
 }
 
+func (p incidentObservedPayload) eventRef() string {
+	return "demo:incidents:" + p.ObservationID
+}
+
+func (p incidentObservedPayload) cursorAfter() string {
+	return fmt.Sprintf("z:%s\x1f%s\x1f%s", p.SourceUpdatedAt.UTC().Format(time.RFC3339Nano), p.resourceRef(), p.ObservationID)
+}
+
 var demoIncidentEvents = []incidentObservedPayload{
 	{
-		ResourceID:    "checkout-search-timeouts",
-		Title:         "Checkout search lookups timing out",
-		Summary:       "Checkout requests that need product search enrichment are timing out for a subset of customers.",
-		SeverityRef:   "SEV-1",
-		TypeRef:       "Customer Impact",
-		OccurredAt:    time.Date(2026, 5, 12, 9, 35, 0, 0, time.UTC),
-		ObservationID: "checkout-search-timeouts-observed",
+		ResourceID:      "catalog-search-stale-results",
+		Title:           "Catalog search returning stale results",
+		Summary:         "The catalog search index failed to refresh after the nightly product import.",
+		SeverityRef:     "SEV-2",
+		TypeRef:         "Data Freshness",
+		ResponseState:   "started",
+		SourceUpdatedAt: time.Date(2026, 4, 18, 2, 30, 0, 0, time.UTC),
+		SourceURL:       "https://status.demo.example/incidents/catalog-search-stale-results",
+		OccurredAt:      time.Date(2026, 4, 18, 2, 30, 0, 0, time.UTC),
+		ObservationID:   "catalog-search-stale-results-started",
 	},
 	{
-		ResourceID:    "catalog-search-stale-results",
-		Title:         "Catalog search returning stale results",
-		Summary:       "The catalog search index failed to refresh after the nightly product import.",
-		SeverityRef:   "SEV-2",
-		TypeRef:       "Data Freshness",
-		OccurredAt:    time.Date(2026, 4, 18, 2, 30, 0, 0, time.UTC),
-		ObservationID: "catalog-search-stale-results-observed",
+		ResourceID:      "catalog-search-stale-results",
+		Title:           "Catalog search returning stale results",
+		Summary:         "The catalog search index failed to refresh after the nightly product import.",
+		SeverityRef:     "SEV-2",
+		TypeRef:         "Data Freshness",
+		ResponseState:   "resolved",
+		SourceUpdatedAt: time.Date(2026, 4, 18, 3, 5, 0, 0, time.UTC),
+		SourceURL:       "https://status.demo.example/incidents/catalog-search-stale-results",
+		OccurredAt:      time.Date(2026, 4, 18, 2, 30, 0, 0, time.UTC),
+		ObservationID:   "catalog-search-stale-results-resolved-time-unknown",
 	},
 	{
-		ResourceID:    "search-admin-dashboard-degraded",
-		Title:         "Search admin dashboard degraded",
-		Summary:       "Internal teams are seeing slow loads and intermittent errors in search administration views.",
-		SeverityRef:   "SEV-3",
-		TypeRef:       "Internal Tooling",
-		OccurredAt:    time.Date(2026, 5, 14, 5, 0, 0, 0, time.UTC),
-		ObservationID: "search-admin-dashboard-degraded-observed",
+		ResourceID:      "checkout-search-timeouts",
+		Title:           "Checkout search lookups timing out",
+		Summary:         "Checkout requests that need product search enrichment are timing out for a subset of customers.",
+		SeverityRef:     "SEV-1",
+		TypeRef:         "Customer Impact",
+		ResponseState:   "started",
+		SourceUpdatedAt: time.Date(2026, 5, 12, 9, 35, 0, 0, time.UTC),
+		SourceURL:       "https://status.demo.example/incidents/checkout-search-timeouts",
+		OccurredAt:      time.Date(2026, 5, 12, 9, 35, 0, 0, time.UTC),
+		ObservationID:   "checkout-search-timeouts-started",
 	},
+	{
+		ResourceID:      "checkout-search-timeouts",
+		Title:           "Checkout search lookups timing out",
+		Summary:         "Checkout requests that need product search enrichment are timing out for a subset of customers.",
+		SeverityRef:     "SEV-1",
+		TypeRef:         "Customer Impact",
+		ResponseState:   "resolved",
+		ResolvedAt:      demoTime(time.Date(2026, 5, 12, 10, 5, 0, 0, time.UTC)),
+		SourceUpdatedAt: time.Date(2026, 5, 12, 10, 5, 0, 0, time.UTC),
+		SourceURL:       "https://status.demo.example/incidents/checkout-search-timeouts",
+		OccurredAt:      time.Date(2026, 5, 12, 9, 35, 0, 0, time.UTC),
+		ObservationID:   "checkout-search-timeouts-resolved",
+	},
+	{
+		ResourceID:      "checkout-search-timeouts",
+		Title:           "Checkout search lookups timing out",
+		Summary:         "Checkout requests that need product search enrichment are timing out for a subset of customers.",
+		SeverityRef:     "SEV-1",
+		TypeRef:         "Customer Impact",
+		ResponseState:   "resolved",
+		ResolvedAt:      demoTime(time.Date(2026, 5, 12, 10, 5, 0, 0, time.UTC)),
+		SourceUpdatedAt: time.Date(2026, 5, 12, 10, 5, 0, 0, time.UTC),
+		SourceURL:       "https://status.demo.example/incidents/checkout-search-timeouts",
+		OccurredAt:      time.Date(2026, 5, 12, 9, 35, 0, 0, time.UTC),
+		ObservationID:   "checkout-search-timeouts-resolved-repeat",
+	},
+	{
+		ResourceID:      "search-admin-dashboard-degraded",
+		Title:           "Search admin dashboard degraded",
+		Summary:         "Internal teams are seeing slow loads and intermittent errors in search administration views.",
+		SeverityRef:     "SEV-3",
+		TypeRef:         "Internal Tooling",
+		ResponseState:   "resolved",
+		SourceUpdatedAt: time.Date(2026, 5, 14, 5, 0, 0, 0, time.UTC),
+		SourceURL:       "https://status.demo.example/incidents/search-admin-dashboard-degraded",
+		OccurredAt:      time.Date(2026, 5, 14, 5, 0, 0, 0, time.UTC),
+		ObservationID:   "search-admin-dashboard-resolved-first-observation",
+	},
+}
+
+func demoTime(value time.Time) *time.Time {
+	return &value
 }
 
 type alertObservedPayload struct {

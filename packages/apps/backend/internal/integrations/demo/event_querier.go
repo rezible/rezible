@@ -28,6 +28,8 @@ func (q *eventQuerier) QueryProviderEvents(ctx context.Context, cursors rez.Prov
 	return func(yield func(*rez.ProviderEventQueryResult, error) bool) {
 		pullFuncs := []func() bool{
 			makeEventPuller(cursors, yield, sourceUsers, demoUserEvents),
+			makeEventPuller(cursors, yield, sourceTeams, demoTeamEvents),
+			makeEventPuller(cursors, yield, sourceTeamMembers, demoTeamMembershipEvents),
 			makeEventPuller(cursors, yield, sourceCodeRepos, demoCodeRepositoryEvents),
 			makeEventPuller(cursors, yield, sourceCodeChanges, demoCodeChangeEvents),
 			makeEventPuller(cursors, yield, sourceAlerts, demoAlertEvents),
@@ -60,6 +62,14 @@ func pullPayloadEvents[P demoEventPayload](source string, items []P, cursor stri
 	return func(yield func(*rez.ProviderEventQueryResult, error) bool) {
 		for _, p := range items {
 			cursorAfter := p.resourceRef()
+			providerEventRef := p.resourceRef()
+			if incidentEvent, ok := any(p).(interface {
+				eventRef() string
+				cursorAfter() string
+			}); ok {
+				providerEventRef = incidentEvent.eventRef()
+				cursorAfter = incidentEvent.cursorAfter()
+			}
 			if cursor != "" && cursorAfter <= cursor {
 				continue
 			}
@@ -72,7 +82,7 @@ func pullPayloadEvents[P demoEventPayload](source string, items []P, cursor stri
 				Provider:            providerName,
 				ProviderNamespace:   integrationName,
 				ProviderEventSource: source,
-				ProviderEventRef:    p.resourceRef(),
+				ProviderEventRef:    providerEventRef,
 				ReceivedAt:          demoObservedAt,
 				Attributes:          enc,
 			}

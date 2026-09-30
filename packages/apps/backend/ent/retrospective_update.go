@@ -77,20 +77,6 @@ func (_u *RetrospectiveUpdate) SetNillableSystemAnalysisID(v *uuid.UUID) *Retros
 	return _u
 }
 
-// SetKind sets the "kind" field.
-func (_u *RetrospectiveUpdate) SetKind(v retrospective.Kind) *RetrospectiveUpdate {
-	_u.mutation.SetKind(v)
-	return _u
-}
-
-// SetNillableKind sets the "kind" field if the given value is not nil.
-func (_u *RetrospectiveUpdate) SetNillableKind(v *retrospective.Kind) *RetrospectiveUpdate {
-	if v != nil {
-		_u.SetKind(*v)
-	}
-	return _u
-}
-
 // SetState sets the "state" field.
 func (_u *RetrospectiveUpdate) SetState(v retrospective.State) *RetrospectiveUpdate {
 	_u.mutation.SetState(v)
@@ -244,11 +230,6 @@ func (_u *RetrospectiveUpdate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *RetrospectiveUpdate) check() error {
-	if v, ok := _u.mutation.Kind(); ok {
-		if err := retrospective.KindValidator(v); err != nil {
-			return &ValidationError{Name: "kind", err: fmt.Errorf(`ent: validator failed for field "Retrospective.kind": %w`, err)}
-		}
-	}
 	if v, ok := _u.mutation.State(); ok {
 		if err := retrospective.StateValidator(v); err != nil {
 			return &ValidationError{Name: "state", err: fmt.Errorf(`ent: validator failed for field "Retrospective.state": %w`, err)}
@@ -286,9 +267,6 @@ func (_u *RetrospectiveUpdate) sqlSave(ctx context.Context) (_node int, err erro
 				ps[i](selector)
 			}
 		}
-	}
-	if value, ok := _u.mutation.Kind(); ok {
-		_spec.SetField(retrospective.FieldKind, field.TypeEnum, value)
 	}
 	if value, ok := _u.mutation.State(); ok {
 		_spec.SetField(retrospective.FieldState, field.TypeEnum, value)
@@ -548,20 +526,6 @@ func (_u *RetrospectiveUpdateOne) SetNillableSystemAnalysisID(v *uuid.UUID) *Ret
 	return _u
 }
 
-// SetKind sets the "kind" field.
-func (_u *RetrospectiveUpdateOne) SetKind(v retrospective.Kind) *RetrospectiveUpdateOne {
-	_u.mutation.SetKind(v)
-	return _u
-}
-
-// SetNillableKind sets the "kind" field if the given value is not nil.
-func (_u *RetrospectiveUpdateOne) SetNillableKind(v *retrospective.Kind) *RetrospectiveUpdateOne {
-	if v != nil {
-		_u.SetKind(*v)
-	}
-	return _u
-}
-
 // SetState sets the "state" field.
 func (_u *RetrospectiveUpdateOne) SetState(v retrospective.State) *RetrospectiveUpdateOne {
 	_u.mutation.SetState(v)
@@ -728,11 +692,6 @@ func (_u *RetrospectiveUpdateOne) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *RetrospectiveUpdateOne) check() error {
-	if v, ok := _u.mutation.Kind(); ok {
-		if err := retrospective.KindValidator(v); err != nil {
-			return &ValidationError{Name: "kind", err: fmt.Errorf(`ent: validator failed for field "Retrospective.kind": %w`, err)}
-		}
-	}
 	if v, ok := _u.mutation.State(); ok {
 		if err := retrospective.StateValidator(v); err != nil {
 			return &ValidationError{Name: "state", err: fmt.Errorf(`ent: validator failed for field "Retrospective.state": %w`, err)}
@@ -787,9 +746,6 @@ func (_u *RetrospectiveUpdateOne) sqlSave(ctx context.Context) (_node *Retrospec
 				ps[i](selector)
 			}
 		}
-	}
-	if value, ok := _u.mutation.Kind(); ok {
-		_spec.SetField(retrospective.FieldKind, field.TypeEnum, value)
 	}
 	if value, ok := _u.mutation.State(); ok {
 		_spec.SetField(retrospective.FieldState, field.TypeEnum, value)

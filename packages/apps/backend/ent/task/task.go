@@ -23,10 +23,16 @@ const (
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
-	// FieldType holds the string denoting the type field in the database.
-	FieldType = "type"
+	// FieldArchiveTime holds the string denoting the archive_time field in the database.
+	FieldArchiveTime = "archive_time"
+	// FieldVersion holds the string denoting the version field in the database.
+	FieldVersion = "version"
 	// FieldTitle holds the string denoting the title field in the database.
 	FieldTitle = "title"
+	// FieldDescription holds the string denoting the description field in the database.
+	FieldDescription = "description"
+	// FieldKind holds the string denoting the kind field in the database.
+	FieldKind = "kind"
 	// FieldState holds the string denoting the state field in the database.
 	FieldState = "state"
 	// FieldDueAt holds the string denoting the due_at field in the database.
@@ -43,10 +49,10 @@ const (
 	EdgeTenant = "tenant"
 	// EdgeTickets holds the string denoting the tickets edge name in mutations.
 	EdgeTickets = "tickets"
-	// EdgeIncident holds the string denoting the incident edge name in mutations.
-	EdgeIncident = "incident"
 	// EdgeOriginEntry holds the string denoting the origin_entry edge name in mutations.
 	EdgeOriginEntry = "origin_entry"
+	// EdgeIncident holds the string denoting the incident edge name in mutations.
+	EdgeIncident = "incident"
 	// EdgeAssignee holds the string denoting the assignee edge name in mutations.
 	EdgeAssignee = "assignee"
 	// EdgeCreator holds the string denoting the creator edge name in mutations.
@@ -65,13 +71,6 @@ const (
 	// TicketsInverseTable is the table name for the Ticket entity.
 	// It exists in this package in order to avoid circular dependency with the "ticket" package.
 	TicketsInverseTable = "tickets"
-	// IncidentTable is the table that holds the incident relation/edge.
-	IncidentTable = "tasks"
-	// IncidentInverseTable is the table name for the Incident entity.
-	// It exists in this package in order to avoid circular dependency with the "incident" package.
-	IncidentInverseTable = "incidents"
-	// IncidentColumn is the table column denoting the incident relation/edge.
-	IncidentColumn = "incident_id"
 	// OriginEntryTable is the table that holds the origin_entry relation/edge.
 	OriginEntryTable = "tasks"
 	// OriginEntryInverseTable is the table name for the SystemAnalysisEntry entity.
@@ -79,6 +78,13 @@ const (
 	OriginEntryInverseTable = "system_analysis_entries"
 	// OriginEntryColumn is the table column denoting the origin_entry relation/edge.
 	OriginEntryColumn = "origin_entry_id"
+	// IncidentTable is the table that holds the incident relation/edge.
+	IncidentTable = "tasks"
+	// IncidentInverseTable is the table name for the Incident entity.
+	// It exists in this package in order to avoid circular dependency with the "incident" package.
+	IncidentInverseTable = "incidents"
+	// IncidentColumn is the table column denoting the incident relation/edge.
+	IncidentColumn = "incident_id"
 	// AssigneeTable is the table that holds the assignee relation/edge.
 	AssigneeTable = "tasks"
 	// AssigneeInverseTable is the table name for the User entity.
@@ -101,8 +107,11 @@ var Columns = []string{
 	FieldTenantID,
 	FieldCreatedAt,
 	FieldUpdatedAt,
-	FieldType,
+	FieldArchiveTime,
+	FieldVersion,
 	FieldTitle,
+	FieldDescription,
+	FieldKind,
 	FieldState,
 	FieldDueAt,
 	FieldIncidentID,
@@ -133,40 +142,45 @@ func ValidColumn(column string) bool {
 //
 //	import _ "github.com/rezible/rezible/ent/runtime"
 var (
-	Hooks  [1]ent.Hook
-	Policy ent.Policy
+	Hooks        [2]ent.Hook
+	Interceptors [1]ent.Interceptor
+	Policy       ent.Policy
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() time.Time
 	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.
 	DefaultUpdatedAt func() time.Time
 	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
 	UpdateDefaultUpdatedAt func() time.Time
+	// DefaultVersion holds the default value on creation for the "version" field.
+	DefaultVersion int
+	// DefaultDescription holds the default value on creation for the "description" field.
+	DefaultDescription string
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
 
-// Type defines the type for the "type" enum field.
-type Type string
+// Kind defines the type for the "kind" enum field.
+type Kind string
 
-// Type values.
+// Kind values.
 const (
-	TypeCleanup  Type = "cleanup"
-	TypeDetect   Type = "detect"
-	TypeMitigate Type = "mitigate"
-	TypePrevent  Type = "prevent"
+	KindCleanup  Kind = "cleanup"
+	KindDetect   Kind = "detect"
+	KindMitigate Kind = "mitigate"
+	KindPrevent  Kind = "prevent"
 )
 
-func (_type Type) String() string {
-	return string(_type)
+func (k Kind) String() string {
+	return string(k)
 }
 
-// TypeValidator is a validator for the "type" field enum values. It is called by the builders before save.
-func TypeValidator(_type Type) error {
-	switch _type {
-	case TypeCleanup, TypeDetect, TypeMitigate, TypePrevent:
+// KindValidator is a validator for the "kind" field enum values. It is called by the builders before save.
+func KindValidator(k Kind) error {
+	switch k {
+	case KindCleanup, KindDetect, KindMitigate, KindPrevent:
 		return nil
 	default:
-		return fmt.Errorf("task: invalid enum value for type field: %q", _type)
+		return fmt.Errorf("task: invalid enum value for kind field: %q", k)
 	}
 }
 
@@ -220,14 +234,29 @@ func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
 }
 
-// ByType orders the results by the type field.
-func ByType(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldType, opts...).ToFunc()
+// ByArchiveTime orders the results by the archive_time field.
+func ByArchiveTime(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldArchiveTime, opts...).ToFunc()
+}
+
+// ByVersion orders the results by the version field.
+func ByVersion(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldVersion, opts...).ToFunc()
 }
 
 // ByTitle orders the results by the title field.
 func ByTitle(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTitle, opts...).ToFunc()
+}
+
+// ByDescription orders the results by the description field.
+func ByDescription(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldDescription, opts...).ToFunc()
+}
+
+// ByKind orders the results by the kind field.
+func ByKind(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldKind, opts...).ToFunc()
 }
 
 // ByState orders the results by the state field.
@@ -281,17 +310,17 @@ func ByTickets(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
-// ByIncidentField orders the results by incident field.
-func ByIncidentField(field string, opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newIncidentStep(), sql.OrderByField(field, opts...))
-	}
-}
-
 // ByOriginEntryField orders the results by origin_entry field.
 func ByOriginEntryField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newOriginEntryStep(), sql.OrderByField(field, opts...))
+	}
+}
+
+// ByIncidentField orders the results by incident field.
+func ByIncidentField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newIncidentStep(), sql.OrderByField(field, opts...))
 	}
 }
 
@@ -322,13 +351,6 @@ func newTicketsStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.M2M, false, TicketsTable, TicketsPrimaryKey...),
 	)
 }
-func newIncidentStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(IncidentInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, true, IncidentTable, IncidentColumn),
-	)
-}
 func newOriginEntryStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -336,23 +358,30 @@ func newOriginEntryStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.M2O, false, OriginEntryTable, OriginEntryColumn),
 	)
 }
+func newIncidentStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(IncidentInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, IncidentTable, IncidentColumn),
+	)
+}
 func newAssigneeStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(AssigneeInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, true, AssigneeTable, AssigneeColumn),
+		sqlgraph.Edge(sqlgraph.M2O, false, AssigneeTable, AssigneeColumn),
 	)
 }
 func newCreatorStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(CreatorInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, true, CreatorTable, CreatorColumn),
+		sqlgraph.Edge(sqlgraph.M2O, false, CreatorTable, CreatorColumn),
 	)
 }
 
-// TypeValues contains all permitted values. Treat this slice as read-only.
-var TypeValues = []string{
+// KindValues contains all permitted values. Treat this slice as read-only.
+var KindValues = []string{
 	"cleanup",
 	"detect",
 	"mitigate",

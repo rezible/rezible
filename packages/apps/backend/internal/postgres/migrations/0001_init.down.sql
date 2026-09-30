@@ -22,8 +22,6 @@ ALTER TABLE "incident_debrief_question_incident_severities" DROP CONSTRAINT "inc
 ALTER TABLE "incident_debrief_question_incident_roles" DROP CONSTRAINT "incident_debrief_question_incident_roles_incident_role_id", DROP CONSTRAINT "incident_debrief_question_inci_88623030b1280506f5687158ce17d47b";
 -- reverse: modify "incident_debrief_question_incident_fields" table
 ALTER TABLE "incident_debrief_question_incident_fields" DROP CONSTRAINT "incident_debrief_question_incident_fields_incident_field_id", DROP CONSTRAINT "incident_debrief_question_inci_44abe8f51887ab1da22a39603e050506";
--- reverse: modify "incident_review_sessions" table
-ALTER TABLE "incident_review_sessions" DROP CONSTRAINT "incident_review_sessions_meeting_session_id", DROP CONSTRAINT "incident_review_sessions_incident_id";
 -- reverse: modify "incident_tag_assignments" table
 ALTER TABLE "incident_tag_assignments" DROP CONSTRAINT "incident_tag_assignments_incident_tag_id", DROP CONSTRAINT "incident_tag_assignments_incident_id";
 -- reverse: modify "incident_field_selections" table
@@ -31,7 +29,7 @@ ALTER TABLE "incident_field_selections" DROP CONSTRAINT "incident_field_selectio
 -- reverse: modify "incident_situations" table
 ALTER TABLE "incident_situations" DROP CONSTRAINT "incident_situations_situation_id", DROP CONSTRAINT "incident_situations_incident_id";
 -- reverse: modify "video_conferences" table
-ALTER TABLE "video_conferences" DROP CONSTRAINT "video_conferences_tenants_tenant", DROP CONSTRAINT "video_conferences_meeting_sessions_video_conference", DROP CONSTRAINT "video_conferences_incidents_video_conferences";
+ALTER TABLE "video_conferences" DROP CONSTRAINT "video_conferences_incidents_incident", DROP CONSTRAINT "video_conferences_tenants_tenant", DROP CONSTRAINT "video_conferences_meeting_sessions_video_conference";
 -- reverse: modify "user_auth_sessions" table
 ALTER TABLE "user_auth_sessions" DROP CONSTRAINT "user_auth_sessions_organizations_organization", DROP CONSTRAINT "user_auth_sessions_users_user", DROP CONSTRAINT "user_auth_sessions_tenants_tenant";
 -- reverse: modify "users" table
@@ -43,7 +41,7 @@ ALTER TABLE "team_memberships" DROP CONSTRAINT "team_memberships_users_user", DR
 -- reverse: modify "teams" table
 ALTER TABLE "teams" DROP CONSTRAINT "teams_knowledge_entities_knowledge_entity", DROP CONSTRAINT "teams_tenants_tenant";
 -- reverse: modify "tasks" table
-ALTER TABLE "tasks" DROP CONSTRAINT "tasks_users_created_tasks", DROP CONSTRAINT "tasks_users_assigned_tasks", DROP CONSTRAINT "tasks_system_analysis_entries_origin_entry", DROP CONSTRAINT "tasks_tenants_tenant", DROP CONSTRAINT "tasks_incidents_tasks";
+ALTER TABLE "tasks" DROP CONSTRAINT "tasks_users_creator", DROP CONSTRAINT "tasks_users_assignee", DROP CONSTRAINT "tasks_incidents_incident", DROP CONSTRAINT "tasks_system_analysis_entries_origin_entry", DROP CONSTRAINT "tasks_tenants_tenant";
 -- reverse: modify "system_hazard_risk_assessments" table
 ALTER TABLE "system_hazard_risk_assessments" DROP CONSTRAINT "system_hazard_risk_assessments_tenants_tenant", DROP CONSTRAINT "system_hazard_risk_assessments_system_hazards_risk_assessments";
 -- reverse: modify "system_hazards" table
@@ -53,7 +51,7 @@ ALTER TABLE "system_analysis_relationships" DROP CONSTRAINT "system_analysis_rel
 -- reverse: modify "system_analysis_entry_subjects" table
 ALTER TABLE "system_analysis_entry_subjects" DROP CONSTRAINT "system_analysis_entry_subjects_1264d7dddb02bff88a4448e8cddecac8", DROP CONSTRAINT "system_analysis_entry_subjects_900e59485c580b401fec755bd8cd2504", DROP CONSTRAINT "system_analysis_entry_subjects_49d5b666fad2cccccfff680228c04fc3", DROP CONSTRAINT "system_analysis_entry_subjects_system_analysis_entries_entry", DROP CONSTRAINT "system_analysis_entry_subjects_tenants_tenant";
 -- reverse: modify "system_analysis_entries" table
-ALTER TABLE "system_analysis_entries" DROP CONSTRAINT "system_analysis_entries_system_analyses_analysis", DROP CONSTRAINT "system_analysis_entries_tenants_tenant";
+ALTER TABLE "system_analysis_entries" DROP CONSTRAINT "system_analysis_entries_users_author", DROP CONSTRAINT "system_analysis_entries_system_analyses_analysis", DROP CONSTRAINT "system_analysis_entries_tenants_tenant";
 -- reverse: modify "system_analysis_entities" table
 ALTER TABLE "system_analysis_entities" DROP CONSTRAINT "system_analysis_entities_knowledge_entities_knowledge_entity", DROP CONSTRAINT "system_analysis_entities_system_analyses_analysis", DROP CONSTRAINT "system_analysis_entities_tenants_tenant";
 -- reverse: modify "system_analyses" table
@@ -67,7 +65,7 @@ ALTER TABLE "situation_hazard_assessments" DROP CONSTRAINT "situation_hazard_ass
 -- reverse: modify "situations" table
 ALTER TABLE "situations" DROP CONSTRAINT "situations_tenants_tenant";
 -- reverse: modify "reviews" table
-ALTER TABLE "reviews" DROP CONSTRAINT "reviews_discussion_comments_comment", DROP CONSTRAINT "reviews_users_reviewer", DROP CONSTRAINT "reviews_users_requester", DROP CONSTRAINT "reviews_system_analysis_entries_analysis_entry", DROP CONSTRAINT "reviews_retrospectives_retrospective", DROP CONSTRAINT "reviews_tenants_tenant";
+ALTER TABLE "reviews" DROP CONSTRAINT "reviews_users_reviewer", DROP CONSTRAINT "reviews_users_requester", DROP CONSTRAINT "reviews_discussion_comments_comment", DROP CONSTRAINT "reviews_system_analysis_entries_analysis_entry", DROP CONSTRAINT "reviews_retrospectives_retrospective", DROP CONSTRAINT "reviews_tenants_tenant";
 -- reverse: modify "retrospectives" table
 ALTER TABLE "retrospectives" DROP CONSTRAINT "retrospectives_system_analyses_system_analysis", DROP CONSTRAINT "retrospectives_tenants_tenant", DROP CONSTRAINT "retrospectives_incidents_retrospective", DROP CONSTRAINT "retrospectives_documents_retrospective";
 -- reverse: modify "playbooks" table
@@ -224,8 +222,6 @@ DROP TABLE "incident_debrief_question_incident_severities";
 DROP TABLE "incident_debrief_question_incident_roles";
 -- reverse: create "incident_debrief_question_incident_fields" table
 DROP TABLE "incident_debrief_question_incident_fields";
--- reverse: create "incident_review_sessions" table
-DROP TABLE "incident_review_sessions";
 -- reverse: create "incident_tag_assignments" table
 DROP TABLE "incident_tag_assignments";
 -- reverse: create "incident_field_selections" table
@@ -378,6 +374,8 @@ DROP INDEX "situation_tenant_id_opened_at";
 DROP INDEX "situation_tenant_id";
 -- reverse: create "situations" table
 DROP TABLE "situations";
+-- reverse: create index "review_tenant_id_retrospective_id_reviewer_id" to table: "reviews"
+DROP INDEX "review_tenant_id_retrospective_id_reviewer_id";
 -- reverse: create index "review_tenant_id" to table: "reviews"
 DROP INDEX "review_tenant_id";
 -- reverse: create "reviews" table
@@ -660,8 +658,8 @@ DROP INDEX "incidentseverity_tenant_id_name";
 DROP INDEX "incidentseverity_tenant_id";
 -- reverse: create "incident_severities" table
 DROP TABLE "incident_severities";
--- reverse: create index "incidentroleassignment_user_id_incident_id" to table: "incident_role_assignments"
-DROP INDEX "incidentroleassignment_user_id_incident_id";
+-- reverse: create index "incidentroleassignment_tenant_id_incident_id_user_id" to table: "incident_role_assignments"
+DROP INDEX "incidentroleassignment_tenant_id_incident_id_user_id";
 -- reverse: create index "incidentroleassignment_tenant_id" to table: "incident_role_assignments"
 DROP INDEX "incidentroleassignment_tenant_id";
 -- reverse: create "incident_role_assignments" table

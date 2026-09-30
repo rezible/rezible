@@ -22,6 +22,7 @@ import (
 	"github.com/rezible/rezible/ent/systemanalysisentrysubject"
 	"github.com/rezible/rezible/ent/task"
 	"github.com/rezible/rezible/ent/tenant"
+	"github.com/rezible/rezible/ent/user"
 )
 
 // SystemAnalysisEntryQuery is the builder for querying SystemAnalysisEntry entities.
@@ -33,6 +34,7 @@ type SystemAnalysisEntryQuery struct {
 	predicates      []predicate.SystemAnalysisEntry
 	withTenant      *TenantQuery
 	withAnalysis    *SystemAnalysisQuery
+	withAuthor      *UserQuery
 	withSubjects    *SystemAnalysisEntrySubjectQuery
 	withOriginTasks *TaskQuery
 	withReviews     *ReviewQuery
@@ -116,6 +118,31 @@ func (_q *SystemAnalysisEntryQuery) QueryAnalysis() *SystemAnalysisQuery {
 		)
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.SystemAnalysis
+		step.Edge.Schema = schemaConfig.SystemAnalysisEntry
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryAuthor chains the current query on the "author" edge.
+func (_q *SystemAnalysisEntryQuery) QueryAuthor() *UserQuery {
+	query := (&UserClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(systemanalysisentry.Table, systemanalysisentry.FieldID, selector),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, systemanalysisentry.AuthorTable, systemanalysisentry.AuthorColumn),
+		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.User
 		step.Edge.Schema = schemaConfig.SystemAnalysisEntry
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -392,6 +419,7 @@ func (_q *SystemAnalysisEntryQuery) Clone() *SystemAnalysisEntryQuery {
 		predicates:      append([]predicate.SystemAnalysisEntry{}, _q.predicates...),
 		withTenant:      _q.withTenant.Clone(),
 		withAnalysis:    _q.withAnalysis.Clone(),
+		withAuthor:      _q.withAuthor.Clone(),
 		withSubjects:    _q.withSubjects.Clone(),
 		withOriginTasks: _q.withOriginTasks.Clone(),
 		withReviews:     _q.withReviews.Clone(),
@@ -421,6 +449,17 @@ func (_q *SystemAnalysisEntryQuery) WithAnalysis(opts ...func(*SystemAnalysisQue
 		opt(query)
 	}
 	_q.withAnalysis = query
+	return _q
+}
+
+// WithAuthor tells the query-builder to eager-load the nodes that are connected to
+// the "author" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *SystemAnalysisEntryQuery) WithAuthor(opts ...func(*UserQuery)) *SystemAnalysisEntryQuery {
+	query := (&UserClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withAuthor = query
 	return _q
 }
 
@@ -541,9 +580,10 @@ func (_q *SystemAnalysisEntryQuery) sqlAll(ctx context.Context, hooks ...queryHo
 	var (
 		nodes       = []*SystemAnalysisEntry{}
 		_spec       = _q.querySpec()
-		loadedTypes = [5]bool{
+		loadedTypes = [6]bool{
 			_q.withTenant != nil,
 			_q.withAnalysis != nil,
+			_q.withAuthor != nil,
 			_q.withSubjects != nil,
 			_q.withOriginTasks != nil,
 			_q.withReviews != nil,
@@ -581,6 +621,12 @@ func (_q *SystemAnalysisEntryQuery) sqlAll(ctx context.Context, hooks ...queryHo
 	if query := _q.withAnalysis; query != nil {
 		if err := _q.loadAnalysis(ctx, query, nodes, nil,
 			func(n *SystemAnalysisEntry, e *SystemAnalysis) { n.Edges.Analysis = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withAuthor; query != nil {
+		if err := _q.loadAuthor(ctx, query, nodes, nil,
+			func(n *SystemAnalysisEntry, e *User) { n.Edges.Author = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -661,6 +707,38 @@ func (_q *SystemAnalysisEntryQuery) loadAnalysis(ctx context.Context, query *Sys
 		nodes, ok := nodeids[n.ID]
 		if !ok {
 			return fmt.Errorf(`unexpected foreign-key "analysis_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (_q *SystemAnalysisEntryQuery) loadAuthor(ctx context.Context, query *UserQuery, nodes []*SystemAnalysisEntry, init func(*SystemAnalysisEntry), assign func(*SystemAnalysisEntry, *User)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*SystemAnalysisEntry)
+	for i := range nodes {
+		if nodes[i].AuthorID == nil {
+			continue
+		}
+		fk := *nodes[i].AuthorID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(user.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "author_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -800,6 +878,9 @@ func (_q *SystemAnalysisEntryQuery) querySpec() *sqlgraph.QuerySpec {
 		}
 		if _q.withAnalysis != nil {
 			_spec.Node.AddColumnOnce(systemanalysisentry.FieldAnalysisID)
+		}
+		if _q.withAuthor != nil {
+			_spec.Node.AddColumnOnce(systemanalysisentry.FieldAuthorID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {

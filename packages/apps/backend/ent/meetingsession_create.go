@@ -13,7 +13,6 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/meetingschedule"
 	"github.com/rezible/rezible/ent/meetingsession"
 	"github.com/rezible/rezible/ent/tenant"
@@ -91,21 +90,6 @@ func (_c *MeetingSessionCreate) SetNillableID(v *uuid.UUID) *MeetingSessionCreat
 // SetTenant sets the "tenant" edge to the Tenant entity.
 func (_c *MeetingSessionCreate) SetTenant(v *Tenant) *MeetingSessionCreate {
 	return _c.SetTenantID(v.ID)
-}
-
-// AddIncidentIDs adds the "incidents" edge to the Incident entity by IDs.
-func (_c *MeetingSessionCreate) AddIncidentIDs(ids ...uuid.UUID) *MeetingSessionCreate {
-	_c.mutation.AddIncidentIDs(ids...)
-	return _c
-}
-
-// AddIncidents adds the "incidents" edges to the Incident entity.
-func (_c *MeetingSessionCreate) AddIncidents(v ...*Incident) *MeetingSessionCreate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _c.AddIncidentIDs(ids...)
 }
 
 // SetVideoConferenceID sets the "video_conference" edge to the VideoConference entity by ID.
@@ -286,23 +270,6 @@ func (_c *MeetingSessionCreate) createSpec() (*MeetingSession, *sqlgraph.CreateS
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.TenantID = nodes[0]
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := _c.mutation.IncidentsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   meetingsession.IncidentsTable,
-			Columns: meetingsession.IncidentsPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _c.schemaConfig.IncidentReviewSessions
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := _c.mutation.VideoConferenceIDs(); len(nodes) > 0 {

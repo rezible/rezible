@@ -414,7 +414,7 @@ func (_u *VideoConferenceUpdate) sqlSave(ctx context.Context) (_node int, err er
 	if _u.mutation.IncidentCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
-			Inverse: true,
+			Inverse: false,
 			Table:   videoconference.IncidentTable,
 			Columns: []string{videoconference.IncidentColumn},
 			Bidi:    false,
@@ -428,7 +428,7 @@ func (_u *VideoConferenceUpdate) sqlSave(ctx context.Context) (_node int, err er
 	if nodes := _u.mutation.IncidentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
-			Inverse: true,
+			Inverse: false,
 			Table:   videoconference.IncidentTable,
 			Columns: []string{videoconference.IncidentColumn},
 			Bidi:    false,
@@ -906,7 +906,7 @@ func (_u *VideoConferenceUpdateOne) sqlSave(ctx context.Context) (_node *VideoCo
 	if _u.mutation.IncidentCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
-			Inverse: true,
+			Inverse: false,
 			Table:   videoconference.IncidentTable,
 			Columns: []string{videoconference.IncidentColumn},
 			Bidi:    false,
@@ -920,7 +920,7 @@ func (_u *VideoConferenceUpdateOne) sqlSave(ctx context.Context) (_node *VideoCo
 	if nodes := _u.mutation.IncidentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
-			Inverse: true,
+			Inverse: false,
 			Table:   videoconference.IncidentTable,
 			Columns: []string{videoconference.IncidentColumn},
 			Bidi:    false,

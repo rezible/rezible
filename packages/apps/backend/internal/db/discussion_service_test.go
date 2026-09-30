@@ -39,12 +39,12 @@ func (s *DiscussionSuite) TestThreadRequiresExactlyOneOwnerAndReverseEdges() {
 	retro, retroErr := (&RetrospectiveService{db: db}).createForIncident(ctx, incident)
 	s.Require().NoError(retroErr)
 
-	_, bothErr := client.DiscussionThread.Create().SetUser(user).SetAnalysis(analysis).SetRetrospective(retro).SetKind(discussionthread.KindComment).Save(ctx)
+	_, bothErr := client.DiscussionThread.Create().SetUser(user).SetAnalysis(analysis).SetRetrospective(retro).Save(ctx)
 	s.Error(bothErr)
-	_, neitherErr := client.DiscussionThread.Create().SetUser(user).SetKind(discussionthread.KindComment).Save(ctx)
+	_, neitherErr := client.DiscussionThread.Create().SetUser(user).Save(ctx)
 	s.Error(neitherErr)
 
-	thread, createErr := client.DiscussionThread.Create().SetUser(user).SetAnalysis(analysis).SetKind(discussionthread.KindComment).Save(ctx)
+	thread, createErr := client.DiscussionThread.Create().SetUser(user).SetAnalysis(analysis).Save(ctx)
 	s.Require().NoError(createErr)
 	fetchedAnalysis, fetchErr := client.SystemAnalysis.Query().Where(systemanalysis.ID(analysis.ID)).WithDiscussionThreads().Only(ctx)
 	s.Require().NoError(fetchErr)
@@ -62,7 +62,7 @@ func (s *DiscussionSuite) TestCommentListIsThreadScopedAndPaginated() {
 	s.Require().NoError(userErr)
 	analysis, analysisErr := client.SystemAnalysis.Create().Save(ctx)
 	s.Require().NoError(analysisErr)
-	thread, createErr := client.DiscussionThread.Create().SetUser(user).SetAnalysis(analysis).SetKind(discussionthread.KindComment).Save(ctx)
+	thread, createErr := client.DiscussionThread.Create().SetUser(user).SetAnalysis(analysis).Save(ctx)
 	s.Require().NoError(createErr)
 	for range 3 {
 		_, commentErr := client.DiscussionComment.Create().SetThread(thread).SetUser(user).SetContent(uuid.NewString()).Save(ctx)

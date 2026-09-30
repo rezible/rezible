@@ -4,78 +4,83 @@ import (
 	"context"
 
 	"github.com/google/uuid"
-
 	rez "github.com/rezible/rezible"
-	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/ent/task"
 	oapi "github.com/rezible/rezible/pkg/openapi/v1"
 )
 
 type tasksHandler struct {
-	db rez.Database
+	*baseHandler
+	tasks rez.TaskService
 }
 
-func newTasksHandler(db rez.Database) *tasksHandler {
-	return &tasksHandler{db: db}
+func newTasksHandler(bh *baseHandler, tasks rez.TaskService) *tasksHandler {
+	return &tasksHandler{bh, tasks}
 }
 
 func (h *tasksHandler) ListTasks(ctx context.Context, request *oapi.ListTasksRequest) (*oapi.ListTasksResponse, error) {
-	var resp oapi.ListTasksResponse
-
-	query := h.db.Client(ctx).Task.Query()
-	if request.IncidentId != uuid.Nil {
-		query = query.Where(task.IncidentID(request.IncidentId))
+	params := rez.ListTasksParams{
+		ListParams:    request.ListParams(),
+		IncidentID:    request.IncidentId,
+		OwnerID:       request.OwnerId,
+		SourceEntryID: request.OriginEntryId,
+		State:         request.State,
 	}
-	if request.OwnerId != uuid.Nil {
-		query = query.Where(task.AssigneeID(request.OwnerId))
-	}
-	if request.OriginEntryId != uuid.Nil {
-		query = query.Where(task.OriginEntryID(request.OriginEntryId))
-	}
-	if request.State != "" {
-		query = query.Where(task.StateEQ(task.State(request.State)))
-	}
-	query = query.WithTickets().Order(task.ByID())
-	params := request.ListParams()
 	params.IncludeArchived = request.IncludeArchived
-	tasks, queryErr := ent.DoListQuery[ent.Task, *ent.TaskQuery](ctx, query, params)
+	tasks, queryErr := h.tasks.ListTasks(ctx, params)
 	if queryErr != nil {
 		return nil, oapi.Error(ctx, "failed to fetch tasks", queryErr)
 	}
-
+	var resp oapi.ListTasksResponse
 	resp.Body = oapi.ConvertPaginatedResultBody(tasks, oapi.TaskFromEnt)
-
 	return &resp, nil
 }
 
 func (h *tasksHandler) CreateTask(ctx context.Context, request *oapi.CreateTaskRequest) (*oapi.CreateTaskResponse, error) {
-	return nil, oapi.Error(ctx, "create task is not implemented", rez.ErrNotImplemented)
+	attrs := request.Body.Attributes
+	params := rez.SetTaskParams{
+		Title:         &attrs.Title,
+		Description:   &attrs.Description,
+		IncidentID:    attrs.IncidentId,
+		DueAt:         attrs.DueAt,
+		SourceEntryID: attrs.OriginEntryId,
+	}
+	created, createErr := h.tasks.SetTask(ctx, uuid.Nil, params)
+	if createErr != nil {
+		return nil, oapi.Error(ctx, "create task", createErr)
+	}
+	var resp oapi.CreateTaskResponse
+	resp.Body.Data = oapi.TaskFromEnt(created)
+	return &resp, nil
 }
 
 func (h *tasksHandler) GetTask(ctx context.Context, request *oapi.GetTaskRequest) (*oapi.GetTaskResponse, error) {
-	var resp oapi.GetTaskResponse
-
-	taskQuery := h.db.Client(ctx).Task.Query().Where(task.ID(request.Id)).WithTickets()
-	t, queryErr := taskQuery.Only(ctx)
+	taskRecord, queryErr := h.tasks.GetTask(ctx, request.Id)
 	if queryErr != nil {
 		return nil, oapi.Error(ctx, "failed to fetch task", queryErr)
 	}
-	resp.Body.Data = oapi.TaskFromEnt(t)
-
+	var resp oapi.GetTaskResponse
+	resp.Body.Data = oapi.TaskFromEnt(taskRecord)
 	return &resp, nil
 }
 
 func (h *tasksHandler) UpdateTask(ctx context.Context, request *oapi.UpdateTaskRequest) (*oapi.UpdateTaskResponse, error) {
-	return nil, oapi.Error(ctx, "update task is not implemented", rez.ErrNotImplemented)
+	attrs := request.Body.Attributes
+	params := rez.SetTaskParams{
+		Title:       attrs.Title.NillableValue(),
+		Description: attrs.Description.NillableValue(),
+	}
+	updated, updateErr := h.tasks.SetTask(ctx, request.Id, params)
+	if updateErr != nil {
+		return nil, oapi.Error(ctx, "update task", updateErr)
+	}
+	var resp oapi.UpdateTaskResponse
+	resp.Body.Data = oapi.TaskFromEnt(updated)
+	return &resp, nil
 }
 
 func (h *tasksHandler) ArchiveTask(ctx context.Context, request *oapi.ArchiveTaskRequest) (*oapi.ArchiveTaskResponse, error) {
-	var resp oapi.ArchiveTaskResponse
-
-	archiveErr := h.db.Client(ctx).Task.DeleteOneID(request.Id).Exec(ctx)
-	if archiveErr != nil {
-		return nil, oapi.Error(ctx, "failed to archive task", archiveErr)
+	if archiveErr := h.tasks.ArchiveTask(ctx, request.Id); archiveErr != nil {
+		return nil, oapi.Error(ctx, "archive task", archiveErr)
 	}
-
-	return &resp, nil
+	return &oapi.ArchiveTaskResponse{}, nil
 }

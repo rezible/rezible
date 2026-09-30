@@ -795,35 +795,6 @@ func HasIntegrationOauthStatesWith(preds ...predicate.IntegrationUserInstallStat
 	})
 }
 
-// HasIncidents applies the HasEdge predicate on the "incidents" edge.
-func HasIncidents() predicate.User {
-	return predicate.User(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, IncidentsTable, IncidentsPrimaryKey...),
-		)
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.Incident
-		step.Edge.Schema = schemaConfig.IncidentRoleAssignment
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasIncidentsWith applies the HasEdge predicate on the "incidents" edge with a given conditions (other predicates).
-func HasIncidentsWith(preds ...predicate.Incident) predicate.User {
-	return predicate.User(func(s *sql.Selector) {
-		step := newIncidentsStep()
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.Incident
-		step.Edge.Schema = schemaConfig.IncidentRoleAssignment
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
 // HasIncidentMilestones applies the HasEdge predicate on the "incident_milestones" edge.
 func HasIncidentMilestones() predicate.User {
 	return predicate.User(func(s *sql.Selector) {
@@ -874,64 +845,6 @@ func HasIncidentDebriefsWith(preds ...predicate.IncidentDebrief) predicate.User 
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.IncidentDebrief
 		step.Edge.Schema = schemaConfig.IncidentDebrief
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasAssignedTasks applies the HasEdge predicate on the "assigned_tasks" edge.
-func HasAssignedTasks() predicate.User {
-	return predicate.User(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, AssignedTasksTable, AssignedTasksColumn),
-		)
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.Task
-		step.Edge.Schema = schemaConfig.Task
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasAssignedTasksWith applies the HasEdge predicate on the "assigned_tasks" edge with a given conditions (other predicates).
-func HasAssignedTasksWith(preds ...predicate.Task) predicate.User {
-	return predicate.User(func(s *sql.Selector) {
-		step := newAssignedTasksStep()
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.Task
-		step.Edge.Schema = schemaConfig.Task
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasCreatedTasks applies the HasEdge predicate on the "created_tasks" edge.
-func HasCreatedTasks() predicate.User {
-	return predicate.User(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, CreatedTasksTable, CreatedTasksColumn),
-		)
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.Task
-		step.Edge.Schema = schemaConfig.Task
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasCreatedTasksWith applies the HasEdge predicate on the "created_tasks" edge with a given conditions (other predicates).
-func HasCreatedTasksWith(preds ...predicate.Task) predicate.User {
-	return predicate.User(func(s *sql.Selector) {
-		step := newCreatedTasksStep()
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.Task
-		step.Edge.Schema = schemaConfig.Task
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -1106,35 +1019,6 @@ func HasTeamMembershipsWith(preds ...predicate.TeamMembership) predicate.User {
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.TeamMembership
 		step.Edge.Schema = schemaConfig.TeamMembership
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasRoleAssignments applies the HasEdge predicate on the "role_assignments" edge.
-func HasRoleAssignments() predicate.User {
-	return predicate.User(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, RoleAssignmentsTable, RoleAssignmentsColumn),
-		)
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.IncidentRoleAssignment
-		step.Edge.Schema = schemaConfig.IncidentRoleAssignment
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasRoleAssignmentsWith applies the HasEdge predicate on the "role_assignments" edge with a given conditions (other predicates).
-func HasRoleAssignmentsWith(preds ...predicate.IncidentRoleAssignment) predicate.User {
-	return predicate.User(func(s *sql.Selector) {
-		step := newRoleAssignmentsStep()
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.IncidentRoleAssignment
-		step.Edge.Schema = schemaConfig.IncidentRoleAssignment
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

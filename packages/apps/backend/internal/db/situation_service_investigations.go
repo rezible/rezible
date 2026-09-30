@@ -35,25 +35,16 @@ type situationEvidenceEntry struct {
 	eventIDs  []uuid.UUID
 }
 
-type situationEntrySubjectAttachment struct {
-	id    uuid.UUID
-	kind  string
-	role  string
-	setFn func(*ent.SystemAnalysisEntrySubjectMutation)
-}
-
-func (a situationEntrySubjectAttachment) key() string {
-	return a.kind + ":" + a.id.String() + ":" + a.role
-}
-
-func makeSituationEntrySubjectAttachment(id uuid.UUID, kind string, role string, setFn func(*ent.SystemAnalysisEntrySubjectMutation)) *situationEntrySubjectAttachment {
-	setFnWithRole := func(m *ent.SystemAnalysisEntrySubjectMutation) {
-		m.SetRole(role)
-		if setFn != nil {
-			setFn(m)
-		}
+func makeSetSituationEntrySubject(id uuid.UUID, kind string, role string) (string, rez.SetSystemAnalysisEntrySubjectParams) {
+	params := rez.SetSystemAnalysisEntrySubjectParams{Role: role}
+	if kind == "entity" {
+		params.KnowledgeEntityID = &id
+	} else if kind == "relationship" {
+		params.KnowledgeRelationshipID = &id
+	} else if kind == "evidence" {
+		params.KnowledgeEvidenceID = &id
 	}
-	return &situationEntrySubjectAttachment{id, kind, role, setFnWithRole}
+	return kind + ":" + id.String() + ":" + role, params
 }
 
 func (s *SituationService) prepareOrRefreshSituationAnalysis(ctx context.Context, analysisID uuid.UUID, directEventIDs, episodeIDs []uuid.UUID) error {
@@ -159,36 +150,24 @@ func (s *SituationService) prepareOrRefreshSituationAnalysis(ctx context.Context
 	}
 
 	for _, entry := range entries {
-		attachments := make(map[string]situationEntrySubjectAttachment)
-		appendAttachment := func(id uuid.UUID, kind string, role string, setFn func(*ent.SystemAnalysisEntrySubjectMutation)) {
-			a := makeSituationEntrySubjectAttachment(id, kind, role, setFn)
-			if _, exists := attachments[a.key()]; !exists {
-				attachments[a.key()] = *a
-			}
-		}
+		attachments := make(map[string]rez.SetSystemAnalysisEntrySubjectParams)
 		for _, eventID := range entry.eventIDs {
 			for _, evidence := range gctx.evidenceByEvent[eventID] {
-				evidenceID := evidence.ID
-				appendAttachment(evidenceID, "evidence", "knowledge_evidence", func(m *ent.SystemAnalysisEntrySubjectMutation) {
-					m.SetKnowledgeEvidenceID(evidenceID)
-				})
+				key, sp := makeSetSituationEntrySubject(evidence.ID, "evidence", "supports")
+				attachments[key] = sp
 			}
 
 			if eventEntityIds := gctx.entitiesByEvent[eventID]; eventEntityIds != nil {
 				for _, entityID := range eventEntityIds.ToSlice() {
-					subjectID := entityID
-					appendAttachment(subjectID, "knowledge_entity", "subject", func(m *ent.SystemAnalysisEntrySubjectMutation) {
-						m.SetKnowledgeEntityID(subjectID)
-					})
+					key, sp := makeSetSituationEntrySubject(entityID, "entity", "context")
+					attachments[key] = sp
 				}
 			}
 
 			if eventRelIds := gctx.relationshipsByEvent[eventID]; eventRelIds != nil {
 				for _, relationshipID := range eventRelIds.ToSlice() {
-					subjectID := relationshipID
-					appendAttachment(subjectID, "knowledge_relationship", "subject", func(m *ent.SystemAnalysisEntrySubjectMutation) {
-						m.SetKnowledgeRelationshipID(subjectID)
-					})
+					key, sp := makeSetSituationEntrySubject(relationshipID, "relationship", "context")
+					attachments[key] = sp
 				}
 			}
 		}
@@ -211,41 +190,39 @@ func (s *SituationService) prepareOrRefreshSituationAnalysis(ctx context.Context
 				return fmt.Errorf("load existing situation analysis attachments: %w", attachmentsErr)
 			}
 			for _, attch := range storedAttachments {
-				var subjAtt *situationEntrySubjectAttachment
+				var subjKey string
 				if attch.KnowledgeEntityID != nil {
-					subjAtt = makeSituationEntrySubjectAttachment(*attch.KnowledgeEntityID, "knowledge_entity", attch.Role, nil)
+					subjKey, _ = makeSetSituationEntrySubject(*attch.KnowledgeEntityID, "entity", attch.Role)
 				}
 				if attch.KnowledgeRelationshipID != nil {
-					subjAtt = makeSituationEntrySubjectAttachment(*attch.KnowledgeRelationshipID, "knowledge_relationship", attch.Role, nil)
+					subjKey, _ = makeSetSituationEntrySubject(*attch.KnowledgeRelationshipID, "relationship", attch.Role)
 				}
 				if attch.KnowledgeEvidenceID != nil {
-					subjAtt = makeSituationEntrySubjectAttachment(*attch.KnowledgeEvidenceID, "knowledge_evidence", attch.Role, nil)
+					subjKey, _ = makeSetSituationEntrySubject(*attch.KnowledgeEvidenceID, "evidence", attch.Role)
 				}
-				if subjAtt != nil {
-					existingAttachmentKeys.Add(subjAtt.key())
+				if subjKey != "" {
+					existingAttachmentKeys.Add(subjKey)
 				}
 			}
 		}
 
-		newAttachments := make([]func(*ent.SystemAnalysisEntrySubjectMutation), 0, len(attachments))
-		for _, att := range attachments {
-			if !existingAttachmentKeys.Contains(att.key()) {
-				newAttachments = append(newAttachments, att.setFn)
+		setSubjects := make([]rez.SetSystemAnalysisEntrySubjectParams, 0, len(attachments))
+		for key, sp := range attachments {
+			if !existingAttachmentKeys.Contains(key) {
+				setSubjects = append(setSubjects, sp)
 			}
 		}
 
-		occurredAt := entry.occurred
-		setEntryFn := func(m *ent.SystemAnalysisEntryMutation) {
-			if entryID == uuid.Nil {
-				m.SetAnalysisID(analysisID)
-				m.SetReference(entry.reference)
-				m.SetKind(sae.KindObservation)
-			}
-			m.SetTitle(entry.title)
-			m.SetBody(entry.body)
-			m.SetOccurredAt(occurredAt)
+		setEntryParams := rez.SetSystemAnalysisEntryParams{
+			AnalysisID:  analysisID,
+			Reference:   &entry.reference,
+			Kind:        sae.KindObservation,
+			Title:       entry.title,
+			Body:        entry.body,
+			OccurredAt:  &entry.occurred,
+			SetSubjects: setSubjects,
 		}
-		_, saveErr := s.analyses.SetSystemAnalysisEntry(ctx, entryID, setEntryFn, newAttachments...)
+		_, saveErr := s.analyses.SetSystemAnalysisEntry(ctx, entryID, setEntryParams)
 		if saveErr != nil {
 			return fmt.Errorf("save situation analysis observation: %w", saveErr)
 		}

@@ -27,7 +27,7 @@ type IncidentMilestone struct {
 	// IncidentID holds the value of the "incident_id" field.
 	IncidentID uuid.UUID `json:"incident_id,omitempty"`
 	// UserID holds the value of the "user_id" field.
-	UserID uuid.UUID `json:"user_id,omitempty"`
+	UserID *uuid.UUID `json:"user_id,omitempty"`
 	// Kind holds the value of the "kind" field.
 	Kind incidentmilestone.Kind `json:"kind,omitempty"`
 	// Timestamp holds the value of the "timestamp" field.
@@ -95,6 +95,8 @@ func (*IncidentMilestone) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case incidentmilestone.FieldUserID:
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case incidentmilestone.FieldMetadata:
 			values[i] = new([]byte)
 		case incidentmilestone.FieldTenantID:
@@ -103,7 +105,7 @@ func (*IncidentMilestone) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullString)
 		case incidentmilestone.FieldTimestamp:
 			values[i] = new(sql.NullTime)
-		case incidentmilestone.FieldID, incidentmilestone.FieldIncidentID, incidentmilestone.FieldUserID:
+		case incidentmilestone.FieldID, incidentmilestone.FieldIncidentID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -139,10 +141,11 @@ func (_m *IncidentMilestone) assignValues(columns []string, values []any) error 
 				_m.IncidentID = *value
 			}
 		case incidentmilestone.FieldUserID:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field user_id", values[i])
-			} else if value != nil {
-				_m.UserID = *value
+			} else if value.Valid {
+				_m.UserID = new(uuid.UUID)
+				*_m.UserID = *value.S.(*uuid.UUID)
 			}
 		case incidentmilestone.FieldKind:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -233,8 +236,10 @@ func (_m *IncidentMilestone) String() string {
 	builder.WriteString("incident_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.IncidentID))
 	builder.WriteString(", ")
-	builder.WriteString("user_id=")
-	builder.WriteString(fmt.Sprintf("%v", _m.UserID))
+	if v := _m.UserID; v != nil {
+		builder.WriteString("user_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
 	builder.WriteString(", ")
 	builder.WriteString("kind=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Kind))

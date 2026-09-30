@@ -97,6 +97,11 @@ func ReviewerID(v uuid.UUID) predicate.Review {
 	return predicate.Review(sql.FieldEQ(FieldReviewerID, v))
 }
 
+// Feedback applies equality check predicate on the "feedback" field. It's identical to FeedbackEQ.
+func Feedback(v string) predicate.Review {
+	return predicate.Review(sql.FieldEQ(FieldFeedback, v))
+}
+
 // TenantIDEQ applies the EQ predicate on the "tenant_id" field.
 func TenantIDEQ(v int) predicate.Review {
 	return predicate.Review(sql.FieldEQ(FieldTenantID, v))
@@ -347,6 +352,81 @@ func StateNotIn(vs ...State) predicate.Review {
 	return predicate.Review(sql.FieldNotIn(FieldState, vs...))
 }
 
+// FeedbackEQ applies the EQ predicate on the "feedback" field.
+func FeedbackEQ(v string) predicate.Review {
+	return predicate.Review(sql.FieldEQ(FieldFeedback, v))
+}
+
+// FeedbackNEQ applies the NEQ predicate on the "feedback" field.
+func FeedbackNEQ(v string) predicate.Review {
+	return predicate.Review(sql.FieldNEQ(FieldFeedback, v))
+}
+
+// FeedbackIn applies the In predicate on the "feedback" field.
+func FeedbackIn(vs ...string) predicate.Review {
+	return predicate.Review(sql.FieldIn(FieldFeedback, vs...))
+}
+
+// FeedbackNotIn applies the NotIn predicate on the "feedback" field.
+func FeedbackNotIn(vs ...string) predicate.Review {
+	return predicate.Review(sql.FieldNotIn(FieldFeedback, vs...))
+}
+
+// FeedbackGT applies the GT predicate on the "feedback" field.
+func FeedbackGT(v string) predicate.Review {
+	return predicate.Review(sql.FieldGT(FieldFeedback, v))
+}
+
+// FeedbackGTE applies the GTE predicate on the "feedback" field.
+func FeedbackGTE(v string) predicate.Review {
+	return predicate.Review(sql.FieldGTE(FieldFeedback, v))
+}
+
+// FeedbackLT applies the LT predicate on the "feedback" field.
+func FeedbackLT(v string) predicate.Review {
+	return predicate.Review(sql.FieldLT(FieldFeedback, v))
+}
+
+// FeedbackLTE applies the LTE predicate on the "feedback" field.
+func FeedbackLTE(v string) predicate.Review {
+	return predicate.Review(sql.FieldLTE(FieldFeedback, v))
+}
+
+// FeedbackContains applies the Contains predicate on the "feedback" field.
+func FeedbackContains(v string) predicate.Review {
+	return predicate.Review(sql.FieldContains(FieldFeedback, v))
+}
+
+// FeedbackHasPrefix applies the HasPrefix predicate on the "feedback" field.
+func FeedbackHasPrefix(v string) predicate.Review {
+	return predicate.Review(sql.FieldHasPrefix(FieldFeedback, v))
+}
+
+// FeedbackHasSuffix applies the HasSuffix predicate on the "feedback" field.
+func FeedbackHasSuffix(v string) predicate.Review {
+	return predicate.Review(sql.FieldHasSuffix(FieldFeedback, v))
+}
+
+// FeedbackIsNil applies the IsNil predicate on the "feedback" field.
+func FeedbackIsNil() predicate.Review {
+	return predicate.Review(sql.FieldIsNull(FieldFeedback))
+}
+
+// FeedbackNotNil applies the NotNil predicate on the "feedback" field.
+func FeedbackNotNil() predicate.Review {
+	return predicate.Review(sql.FieldNotNull(FieldFeedback))
+}
+
+// FeedbackEqualFold applies the EqualFold predicate on the "feedback" field.
+func FeedbackEqualFold(v string) predicate.Review {
+	return predicate.Review(sql.FieldEqualFold(FieldFeedback, v))
+}
+
+// FeedbackContainsFold applies the ContainsFold predicate on the "feedback" field.
+func FeedbackContainsFold(v string) predicate.Review {
+	return predicate.Review(sql.FieldContainsFold(FieldFeedback, v))
+}
+
 // HasTenant applies the HasEdge predicate on the "tenant" edge.
 func HasTenant() predicate.Review {
 	return predicate.Review(func(s *sql.Selector) {
@@ -434,6 +514,35 @@ func HasAnalysisEntryWith(preds ...predicate.SystemAnalysisEntry) predicate.Revi
 	})
 }
 
+// HasComment applies the HasEdge predicate on the "comment" edge.
+func HasComment() predicate.Review {
+	return predicate.Review(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, CommentTable, CommentColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.DiscussionComment
+		step.Edge.Schema = schemaConfig.Review
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasCommentWith applies the HasEdge predicate on the "comment" edge with a given conditions (other predicates).
+func HasCommentWith(preds ...predicate.DiscussionComment) predicate.Review {
+	return predicate.Review(func(s *sql.Selector) {
+		step := newCommentStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.DiscussionComment
+		step.Edge.Schema = schemaConfig.Review
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // HasRequester applies the HasEdge predicate on the "requester" edge.
 func HasRequester() predicate.Review {
 	return predicate.Review(func(s *sql.Selector) {
@@ -483,35 +592,6 @@ func HasReviewerWith(preds ...predicate.User) predicate.Review {
 		step := newReviewerStep()
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.User
-		step.Edge.Schema = schemaConfig.Review
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasComment applies the HasEdge predicate on the "comment" edge.
-func HasComment() predicate.Review {
-	return predicate.Review(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, CommentTable, CommentColumn),
-		)
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.DiscussionComment
-		step.Edge.Schema = schemaConfig.Review
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasCommentWith applies the HasEdge predicate on the "comment" edge with a given conditions (other predicates).
-func HasCommentWith(preds ...predicate.DiscussionComment) predicate.Review {
-	return predicate.Review(func(s *sql.Selector) {
-		step := newCommentStep()
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.DiscussionComment
 		step.Edge.Schema = schemaConfig.Review
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

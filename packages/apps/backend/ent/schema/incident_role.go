@@ -4,6 +4,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
+	"entgo.io/ent/schema/index"
 	"github.com/google/uuid"
 )
 
@@ -37,6 +38,7 @@ func (IncidentRole) Edges() []ent.Edge {
 	}
 }
 
+// TODO: this should be IncidentUserRoleAssignment
 type IncidentRoleAssignment struct {
 	ent.Schema
 }
@@ -54,6 +56,12 @@ func (IncidentRoleAssignment) Fields() []ent.Field {
 		field.UUID("incident_id", uuid.UUID{}),
 		field.UUID("user_id", uuid.UUID{}),
 		field.UUID("role_id", uuid.UUID{}),
+	}
+}
+
+func (IncidentRoleAssignment) Indexes() []ent.Index {
+	return []ent.Index{
+		index.Fields("tenant_id", "incident_id", "user_id").Unique(),
 	}
 }
 

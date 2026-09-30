@@ -304,7 +304,7 @@ func (_c *TeamCreate) createSpec() (*Team, *sqlgraph.CreateSpec) {
 	}
 	if value, ok := _c.mutation.ArchiveTime(); ok {
 		_spec.SetField(team.FieldArchiveTime, field.TypeTime, value)
-		_node.ArchiveTime = value
+		_node.ArchiveTime = &value
 	}
 	if value, ok := _c.mutation.Slug(); ok {
 		_spec.SetField(team.FieldSlug, field.TypeString, value)

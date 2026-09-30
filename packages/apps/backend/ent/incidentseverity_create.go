@@ -236,7 +236,7 @@ func (_c *IncidentSeverityCreate) createSpec() (*IncidentSeverity, *sqlgraph.Cre
 	}
 	if value, ok := _c.mutation.ArchiveTime(); ok {
 		_spec.SetField(incidentseverity.FieldArchiveTime, field.TypeTime, value)
-		_node.ArchiveTime = value
+		_node.ArchiveTime = &value
 	}
 	if value, ok := _c.mutation.Name(); ok {
 		_spec.SetField(incidentseverity.FieldName, field.TypeString, value)

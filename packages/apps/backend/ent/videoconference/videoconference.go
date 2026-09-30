@@ -255,7 +255,7 @@ func newIncidentStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(IncidentInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, true, IncidentTable, IncidentColumn),
+		sqlgraph.Edge(sqlgraph.M2O, false, IncidentTable, IncidentColumn),
 	)
 }
 func newMeetingSessionStep() *sqlgraph.Step {

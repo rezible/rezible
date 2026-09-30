@@ -12,7 +12,6 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/meetingschedule"
 	"github.com/rezible/rezible/ent/meetingsession"
@@ -96,21 +95,6 @@ func (_u *MeetingSessionUpdate) SetNillableDocumentName(v *string) *MeetingSessi
 	return _u
 }
 
-// AddIncidentIDs adds the "incidents" edge to the Incident entity by IDs.
-func (_u *MeetingSessionUpdate) AddIncidentIDs(ids ...uuid.UUID) *MeetingSessionUpdate {
-	_u.mutation.AddIncidentIDs(ids...)
-	return _u
-}
-
-// AddIncidents adds the "incidents" edges to the Incident entity.
-func (_u *MeetingSessionUpdate) AddIncidents(v ...*Incident) *MeetingSessionUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddIncidentIDs(ids...)
-}
-
 // SetVideoConferenceID sets the "video_conference" edge to the VideoConference entity by ID.
 func (_u *MeetingSessionUpdate) SetVideoConferenceID(id uuid.UUID) *MeetingSessionUpdate {
 	_u.mutation.SetVideoConferenceID(id)
@@ -152,27 +136,6 @@ func (_u *MeetingSessionUpdate) SetSchedule(v *MeetingSchedule) *MeetingSessionU
 // Mutation returns the MeetingSessionMutation object of the builder.
 func (_u *MeetingSessionUpdate) Mutation() *MeetingSessionMutation {
 	return _u.mutation
-}
-
-// ClearIncidents clears all "incidents" edges to the Incident entity.
-func (_u *MeetingSessionUpdate) ClearIncidents() *MeetingSessionUpdate {
-	_u.mutation.ClearIncidents()
-	return _u
-}
-
-// RemoveIncidentIDs removes the "incidents" edge to Incident entities by IDs.
-func (_u *MeetingSessionUpdate) RemoveIncidentIDs(ids ...uuid.UUID) *MeetingSessionUpdate {
-	_u.mutation.RemoveIncidentIDs(ids...)
-	return _u
-}
-
-// RemoveIncidents removes "incidents" edges to Incident entities.
-func (_u *MeetingSessionUpdate) RemoveIncidents(v ...*Incident) *MeetingSessionUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveIncidentIDs(ids...)
 }
 
 // ClearVideoConference clears the "video_conference" edge to the VideoConference entity.
@@ -254,54 +217,6 @@ func (_u *MeetingSessionUpdate) sqlSave(ctx context.Context) (_node int, err err
 	}
 	if value, ok := _u.mutation.DocumentName(); ok {
 		_spec.SetField(meetingsession.FieldDocumentName, field.TypeString, value)
-	}
-	if _u.mutation.IncidentsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   meetingsession.IncidentsTable,
-			Columns: meetingsession.IncidentsPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.IncidentReviewSessions
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedIncidentsIDs(); len(nodes) > 0 && !_u.mutation.IncidentsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   meetingsession.IncidentsTable,
-			Columns: meetingsession.IncidentsPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.IncidentReviewSessions
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.IncidentsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   meetingsession.IncidentsTable,
-			Columns: meetingsession.IncidentsPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.IncidentReviewSessions
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if _u.mutation.VideoConferenceCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -451,21 +366,6 @@ func (_u *MeetingSessionUpdateOne) SetNillableDocumentName(v *string) *MeetingSe
 	return _u
 }
 
-// AddIncidentIDs adds the "incidents" edge to the Incident entity by IDs.
-func (_u *MeetingSessionUpdateOne) AddIncidentIDs(ids ...uuid.UUID) *MeetingSessionUpdateOne {
-	_u.mutation.AddIncidentIDs(ids...)
-	return _u
-}
-
-// AddIncidents adds the "incidents" edges to the Incident entity.
-func (_u *MeetingSessionUpdateOne) AddIncidents(v ...*Incident) *MeetingSessionUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddIncidentIDs(ids...)
-}
-
 // SetVideoConferenceID sets the "video_conference" edge to the VideoConference entity by ID.
 func (_u *MeetingSessionUpdateOne) SetVideoConferenceID(id uuid.UUID) *MeetingSessionUpdateOne {
 	_u.mutation.SetVideoConferenceID(id)
@@ -507,27 +407,6 @@ func (_u *MeetingSessionUpdateOne) SetSchedule(v *MeetingSchedule) *MeetingSessi
 // Mutation returns the MeetingSessionMutation object of the builder.
 func (_u *MeetingSessionUpdateOne) Mutation() *MeetingSessionMutation {
 	return _u.mutation
-}
-
-// ClearIncidents clears all "incidents" edges to the Incident entity.
-func (_u *MeetingSessionUpdateOne) ClearIncidents() *MeetingSessionUpdateOne {
-	_u.mutation.ClearIncidents()
-	return _u
-}
-
-// RemoveIncidentIDs removes the "incidents" edge to Incident entities by IDs.
-func (_u *MeetingSessionUpdateOne) RemoveIncidentIDs(ids ...uuid.UUID) *MeetingSessionUpdateOne {
-	_u.mutation.RemoveIncidentIDs(ids...)
-	return _u
-}
-
-// RemoveIncidents removes "incidents" edges to Incident entities.
-func (_u *MeetingSessionUpdateOne) RemoveIncidents(v ...*Incident) *MeetingSessionUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveIncidentIDs(ids...)
 }
 
 // ClearVideoConference clears the "video_conference" edge to the VideoConference entity.
@@ -639,54 +518,6 @@ func (_u *MeetingSessionUpdateOne) sqlSave(ctx context.Context) (_node *MeetingS
 	}
 	if value, ok := _u.mutation.DocumentName(); ok {
 		_spec.SetField(meetingsession.FieldDocumentName, field.TypeString, value)
-	}
-	if _u.mutation.IncidentsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   meetingsession.IncidentsTable,
-			Columns: meetingsession.IncidentsPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.IncidentReviewSessions
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedIncidentsIDs(); len(nodes) > 0 && !_u.mutation.IncidentsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   meetingsession.IncidentsTable,
-			Columns: meetingsession.IncidentsPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.IncidentReviewSessions
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.IncidentsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   meetingsession.IncidentsTable,
-			Columns: meetingsession.IncidentsPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.IncidentReviewSessions
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if _u.mutation.VideoConferenceCleared() {
 		edge := &sqlgraph.EdgeSpec{

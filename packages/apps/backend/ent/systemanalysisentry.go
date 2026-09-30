@@ -14,6 +14,7 @@ import (
 	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/systemanalysisentry"
 	"github.com/rezible/rezible/ent/tenant"
+	"github.com/rezible/rezible/ent/user"
 )
 
 // SystemAnalysisEntry is the model entity for the SystemAnalysisEntry schema.
@@ -29,6 +30,8 @@ type SystemAnalysisEntry struct {
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// AnalysisID holds the value of the "analysis_id" field.
 	AnalysisID uuid.UUID `json:"analysis_id,omitempty"`
+	// AuthorID holds the value of the "author_id" field.
+	AuthorID *uuid.UUID `json:"author_id,omitempty"`
 	// Reference holds the value of the "reference" field.
 	Reference *string `json:"reference,omitempty"`
 	// Kind holds the value of the "kind" field.
@@ -41,6 +44,8 @@ type SystemAnalysisEntry struct {
 	Title string `json:"title,omitempty"`
 	// Body holds the value of the "body" field.
 	Body string `json:"body,omitempty"`
+	// Version holds the value of the "version" field.
+	Version int `json:"version,omitempty"`
 	// Structured workflow-specific details that should not become core graph schema.
 	Properties map[string]interface{} `json:"properties,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -55,6 +60,8 @@ type SystemAnalysisEntryEdges struct {
 	Tenant *Tenant `json:"tenant,omitempty"`
 	// Analysis holds the value of the analysis edge.
 	Analysis *SystemAnalysis `json:"analysis,omitempty"`
+	// Author holds the value of the author edge.
+	Author *User `json:"author,omitempty"`
 	// Subjects holds the value of the subjects edge.
 	Subjects []*SystemAnalysisEntrySubject `json:"subjects,omitempty"`
 	// OriginTasks holds the value of the origin_tasks edge.
@@ -63,7 +70,7 @@ type SystemAnalysisEntryEdges struct {
 	Reviews []*Review `json:"reviews,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [5]bool
+	loadedTypes [6]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -88,10 +95,21 @@ func (e SystemAnalysisEntryEdges) AnalysisOrErr() (*SystemAnalysis, error) {
 	return nil, &NotLoadedError{edge: "analysis"}
 }
 
+// AuthorOrErr returns the Author value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e SystemAnalysisEntryEdges) AuthorOrErr() (*User, error) {
+	if e.Author != nil {
+		return e.Author, nil
+	} else if e.loadedTypes[2] {
+		return nil, &NotFoundError{label: user.Label}
+	}
+	return nil, &NotLoadedError{edge: "author"}
+}
+
 // SubjectsOrErr returns the Subjects value or an error if the edge
 // was not loaded in eager-loading.
 func (e SystemAnalysisEntryEdges) SubjectsOrErr() ([]*SystemAnalysisEntrySubject, error) {
-	if e.loadedTypes[2] {
+	if e.loadedTypes[3] {
 		return e.Subjects, nil
 	}
 	return nil, &NotLoadedError{edge: "subjects"}
@@ -100,7 +118,7 @@ func (e SystemAnalysisEntryEdges) SubjectsOrErr() ([]*SystemAnalysisEntrySubject
 // OriginTasksOrErr returns the OriginTasks value or an error if the edge
 // was not loaded in eager-loading.
 func (e SystemAnalysisEntryEdges) OriginTasksOrErr() ([]*Task, error) {
-	if e.loadedTypes[3] {
+	if e.loadedTypes[4] {
 		return e.OriginTasks, nil
 	}
 	return nil, &NotLoadedError{edge: "origin_tasks"}
@@ -109,7 +127,7 @@ func (e SystemAnalysisEntryEdges) OriginTasksOrErr() ([]*Task, error) {
 // ReviewsOrErr returns the Reviews value or an error if the edge
 // was not loaded in eager-loading.
 func (e SystemAnalysisEntryEdges) ReviewsOrErr() ([]*Review, error) {
-	if e.loadedTypes[4] {
+	if e.loadedTypes[5] {
 		return e.Reviews, nil
 	}
 	return nil, &NotLoadedError{edge: "reviews"}
@@ -120,9 +138,11 @@ func (*SystemAnalysisEntry) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case systemanalysisentry.FieldAuthorID:
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case systemanalysisentry.FieldProperties:
 			values[i] = new([]byte)
-		case systemanalysisentry.FieldTenantID, systemanalysisentry.FieldSequence:
+		case systemanalysisentry.FieldTenantID, systemanalysisentry.FieldSequence, systemanalysisentry.FieldVersion:
 			values[i] = new(sql.NullInt64)
 		case systemanalysisentry.FieldReference, systemanalysisentry.FieldKind, systemanalysisentry.FieldTitle, systemanalysisentry.FieldBody:
 			values[i] = new(sql.NullString)
@@ -175,6 +195,13 @@ func (_m *SystemAnalysisEntry) assignValues(columns []string, values []any) erro
 			} else if value != nil {
 				_m.AnalysisID = *value
 			}
+		case systemanalysisentry.FieldAuthorID:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field author_id", values[i])
+			} else if value.Valid {
+				_m.AuthorID = new(uuid.UUID)
+				*_m.AuthorID = *value.S.(*uuid.UUID)
+			}
 		case systemanalysisentry.FieldReference:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field reference", values[i])
@@ -213,6 +240,12 @@ func (_m *SystemAnalysisEntry) assignValues(columns []string, values []any) erro
 			} else if value.Valid {
 				_m.Body = value.String
 			}
+		case systemanalysisentry.FieldVersion:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field version", values[i])
+			} else if value.Valid {
+				_m.Version = int(value.Int64)
+			}
 		case systemanalysisentry.FieldProperties:
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field properties", values[i])
@@ -242,6 +275,11 @@ func (_m *SystemAnalysisEntry) QueryTenant() *TenantQuery {
 // QueryAnalysis queries the "analysis" edge of the SystemAnalysisEntry entity.
 func (_m *SystemAnalysisEntry) QueryAnalysis() *SystemAnalysisQuery {
 	return NewSystemAnalysisEntryClient(_m.config).QueryAnalysis(_m)
+}
+
+// QueryAuthor queries the "author" edge of the SystemAnalysisEntry entity.
+func (_m *SystemAnalysisEntry) QueryAuthor() *UserQuery {
+	return NewSystemAnalysisEntryClient(_m.config).QueryAuthor(_m)
 }
 
 // QuerySubjects queries the "subjects" edge of the SystemAnalysisEntry entity.
@@ -294,6 +332,11 @@ func (_m *SystemAnalysisEntry) String() string {
 	builder.WriteString("analysis_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.AnalysisID))
 	builder.WriteString(", ")
+	if v := _m.AuthorID; v != nil {
+		builder.WriteString("author_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
 	if v := _m.Reference; v != nil {
 		builder.WriteString("reference=")
 		builder.WriteString(*v)
@@ -315,6 +358,9 @@ func (_m *SystemAnalysisEntry) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("body=")
 	builder.WriteString(_m.Body)
+	builder.WriteString(", ")
+	builder.WriteString("version=")
+	builder.WriteString(fmt.Sprintf("%v", _m.Version))
 	builder.WriteString(", ")
 	builder.WriteString("properties=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Properties))

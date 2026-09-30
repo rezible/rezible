@@ -77,6 +77,11 @@ func EnableIncidentManagement(v bool) predicate.OrganizationPreferences {
 	return predicate.OrganizationPreferences(sql.FieldEQ(FieldEnableIncidentManagement, v))
 }
 
+// RequiredReviewerCount applies equality check predicate on the "required_reviewer_count" field. It's identical to RequiredReviewerCountEQ.
+func RequiredReviewerCount(v int) predicate.OrganizationPreferences {
+	return predicate.OrganizationPreferences(sql.FieldEQ(FieldRequiredReviewerCount, v))
+}
+
 // Timezone applies equality check predicate on the "timezone" field. It's identical to TimezoneEQ.
 func Timezone(v string) predicate.OrganizationPreferences {
 	return predicate.OrganizationPreferences(sql.FieldEQ(FieldTimezone, v))
@@ -180,6 +185,46 @@ func EnableIncidentManagementEQ(v bool) predicate.OrganizationPreferences {
 // EnableIncidentManagementNEQ applies the NEQ predicate on the "enable_incident_management" field.
 func EnableIncidentManagementNEQ(v bool) predicate.OrganizationPreferences {
 	return predicate.OrganizationPreferences(sql.FieldNEQ(FieldEnableIncidentManagement, v))
+}
+
+// RequiredReviewerCountEQ applies the EQ predicate on the "required_reviewer_count" field.
+func RequiredReviewerCountEQ(v int) predicate.OrganizationPreferences {
+	return predicate.OrganizationPreferences(sql.FieldEQ(FieldRequiredReviewerCount, v))
+}
+
+// RequiredReviewerCountNEQ applies the NEQ predicate on the "required_reviewer_count" field.
+func RequiredReviewerCountNEQ(v int) predicate.OrganizationPreferences {
+	return predicate.OrganizationPreferences(sql.FieldNEQ(FieldRequiredReviewerCount, v))
+}
+
+// RequiredReviewerCountIn applies the In predicate on the "required_reviewer_count" field.
+func RequiredReviewerCountIn(vs ...int) predicate.OrganizationPreferences {
+	return predicate.OrganizationPreferences(sql.FieldIn(FieldRequiredReviewerCount, vs...))
+}
+
+// RequiredReviewerCountNotIn applies the NotIn predicate on the "required_reviewer_count" field.
+func RequiredReviewerCountNotIn(vs ...int) predicate.OrganizationPreferences {
+	return predicate.OrganizationPreferences(sql.FieldNotIn(FieldRequiredReviewerCount, vs...))
+}
+
+// RequiredReviewerCountGT applies the GT predicate on the "required_reviewer_count" field.
+func RequiredReviewerCountGT(v int) predicate.OrganizationPreferences {
+	return predicate.OrganizationPreferences(sql.FieldGT(FieldRequiredReviewerCount, v))
+}
+
+// RequiredReviewerCountGTE applies the GTE predicate on the "required_reviewer_count" field.
+func RequiredReviewerCountGTE(v int) predicate.OrganizationPreferences {
+	return predicate.OrganizationPreferences(sql.FieldGTE(FieldRequiredReviewerCount, v))
+}
+
+// RequiredReviewerCountLT applies the LT predicate on the "required_reviewer_count" field.
+func RequiredReviewerCountLT(v int) predicate.OrganizationPreferences {
+	return predicate.OrganizationPreferences(sql.FieldLT(FieldRequiredReviewerCount, v))
+}
+
+// RequiredReviewerCountLTE applies the LTE predicate on the "required_reviewer_count" field.
+func RequiredReviewerCountLTE(v int) predicate.OrganizationPreferences {
+	return predicate.OrganizationPreferences(sql.FieldLTE(FieldRequiredReviewerCount, v))
 }
 
 // TimezoneEQ applies the EQ predicate on the "timezone" field.

@@ -97,12 +97,6 @@ func (_c *DiscussionThreadCreate) SetUserID(v uuid.UUID) *DiscussionThreadCreate
 	return _c
 }
 
-// SetKind sets the "kind" field.
-func (_c *DiscussionThreadCreate) SetKind(v discussionthread.Kind) *DiscussionThreadCreate {
-	_c.mutation.SetKind(v)
-	return _c
-}
-
 // SetTargetKind sets the "target_kind" field.
 func (_c *DiscussionThreadCreate) SetTargetKind(v discussionthread.TargetKind) *DiscussionThreadCreate {
 	_c.mutation.SetTargetKind(v)
@@ -311,14 +305,6 @@ func (_c *DiscussionThreadCreate) check() error {
 	if _, ok := _c.mutation.UserID(); !ok {
 		return &ValidationError{Name: "user_id", err: errors.New(`ent: missing required field "DiscussionThread.user_id"`)}
 	}
-	if _, ok := _c.mutation.Kind(); !ok {
-		return &ValidationError{Name: "kind", err: errors.New(`ent: missing required field "DiscussionThread.kind"`)}
-	}
-	if v, ok := _c.mutation.Kind(); ok {
-		if err := discussionthread.KindValidator(v); err != nil {
-			return &ValidationError{Name: "kind", err: fmt.Errorf(`ent: validator failed for field "DiscussionThread.kind": %w`, err)}
-		}
-	}
 	if v, ok := _c.mutation.TargetKind(); ok {
 		if err := discussionthread.TargetKindValidator(v); err != nil {
 			return &ValidationError{Name: "target_kind", err: fmt.Errorf(`ent: validator failed for field "DiscussionThread.target_kind": %w`, err)}
@@ -379,10 +365,6 @@ func (_c *DiscussionThreadCreate) createSpec() (*DiscussionThread, *sqlgraph.Cre
 	if value, ok := _c.mutation.UpdatedAt(); ok {
 		_spec.SetField(discussionthread.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
-	}
-	if value, ok := _c.mutation.Kind(); ok {
-		_spec.SetField(discussionthread.FieldKind, field.TypeEnum, value)
-		_node.Kind = value
 	}
 	if value, ok := _c.mutation.TargetKind(); ok {
 		_spec.SetField(discussionthread.FieldTargetKind, field.TypeEnum, value)
@@ -618,18 +600,6 @@ func (u *DiscussionThreadUpsert) SetUserID(v uuid.UUID) *DiscussionThreadUpsert 
 // UpdateUserID sets the "user_id" field to the value that was provided on create.
 func (u *DiscussionThreadUpsert) UpdateUserID() *DiscussionThreadUpsert {
 	u.SetExcluded(discussionthread.FieldUserID)
-	return u
-}
-
-// SetKind sets the "kind" field.
-func (u *DiscussionThreadUpsert) SetKind(v discussionthread.Kind) *DiscussionThreadUpsert {
-	u.Set(discussionthread.FieldKind, v)
-	return u
-}
-
-// UpdateKind sets the "kind" field to the value that was provided on create.
-func (u *DiscussionThreadUpsert) UpdateKind() *DiscussionThreadUpsert {
-	u.SetExcluded(discussionthread.FieldKind)
 	return u
 }
 
@@ -873,20 +843,6 @@ func (u *DiscussionThreadUpsertOne) SetUserID(v uuid.UUID) *DiscussionThreadUpse
 func (u *DiscussionThreadUpsertOne) UpdateUserID() *DiscussionThreadUpsertOne {
 	return u.Update(func(s *DiscussionThreadUpsert) {
 		s.UpdateUserID()
-	})
-}
-
-// SetKind sets the "kind" field.
-func (u *DiscussionThreadUpsertOne) SetKind(v discussionthread.Kind) *DiscussionThreadUpsertOne {
-	return u.Update(func(s *DiscussionThreadUpsert) {
-		s.SetKind(v)
-	})
-}
-
-// UpdateKind sets the "kind" field to the value that was provided on create.
-func (u *DiscussionThreadUpsertOne) UpdateKind() *DiscussionThreadUpsertOne {
-	return u.Update(func(s *DiscussionThreadUpsert) {
-		s.UpdateKind()
 	})
 }
 
@@ -1315,20 +1271,6 @@ func (u *DiscussionThreadUpsertBulk) SetUserID(v uuid.UUID) *DiscussionThreadUps
 func (u *DiscussionThreadUpsertBulk) UpdateUserID() *DiscussionThreadUpsertBulk {
 	return u.Update(func(s *DiscussionThreadUpsert) {
 		s.UpdateUserID()
-	})
-}
-
-// SetKind sets the "kind" field.
-func (u *DiscussionThreadUpsertBulk) SetKind(v discussionthread.Kind) *DiscussionThreadUpsertBulk {
-	return u.Update(func(s *DiscussionThreadUpsert) {
-		s.SetKind(v)
-	})
-}
-
-// UpdateKind sets the "kind" field to the value that was provided on create.
-func (u *DiscussionThreadUpsertBulk) UpdateKind() *DiscussionThreadUpsertBulk {
-	return u.Update(func(s *DiscussionThreadUpsert) {
-		s.UpdateKind()
 	})
 }
 

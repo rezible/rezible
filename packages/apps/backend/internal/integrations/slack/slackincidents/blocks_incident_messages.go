@@ -54,7 +54,7 @@ func (b *incidentDetailsMessageBuilder) currentStatus() string {
 			return "MITIGATED"
 		case im.KindImpact:
 			return "IMPACT"
-		case im.KindOpened:
+		case im.KindDetection:
 			return "OPEN"
 		}
 	}
@@ -84,7 +84,7 @@ func (b *incidentDetailsMessageBuilder) roleSummary() string {
 
 func (b *incidentDetailsMessageBuilder) latestUpdateSummary() string {
 	for _, milestone := range b.incident.Edges.Milestones {
-		if milestone.Kind == im.KindOpened {
+		if milestone.Kind == im.KindDetection {
 			continue
 		}
 		summary := strings.ToUpper(milestone.Kind.String())

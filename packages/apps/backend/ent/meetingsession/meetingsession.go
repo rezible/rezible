@@ -28,8 +28,6 @@ const (
 	FieldDocumentName = "document_name"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
-	// EdgeIncidents holds the string denoting the incidents edge name in mutations.
-	EdgeIncidents = "incidents"
 	// EdgeVideoConference holds the string denoting the video_conference edge name in mutations.
 	EdgeVideoConference = "video_conference"
 	// EdgeSchedule holds the string denoting the schedule edge name in mutations.
@@ -43,11 +41,6 @@ const (
 	TenantInverseTable = "tenants"
 	// TenantColumn is the table column denoting the tenant relation/edge.
 	TenantColumn = "tenant_id"
-	// IncidentsTable is the table that holds the incidents relation/edge. The primary key declared below.
-	IncidentsTable = "incident_review_sessions"
-	// IncidentsInverseTable is the table name for the Incident entity.
-	// It exists in this package in order to avoid circular dependency with the "incident" package.
-	IncidentsInverseTable = "incidents"
 	// VideoConferenceTable is the table that holds the video_conference relation/edge.
 	VideoConferenceTable = "video_conferences"
 	// VideoConferenceInverseTable is the table name for the VideoConference entity.
@@ -79,12 +72,6 @@ var Columns = []string{
 var ForeignKeys = []string{
 	"meeting_session_schedule",
 }
-
-var (
-	// IncidentsPrimaryKey and IncidentsColumn2 are the table columns denoting the
-	// primary key for the incidents relation (M2M).
-	IncidentsPrimaryKey = []string{"incident_id", "meeting_session_id"}
-)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
@@ -155,20 +142,6 @@ func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
 	}
 }
 
-// ByIncidentsCount orders the results by incidents count.
-func ByIncidentsCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newIncidentsStep(), opts...)
-	}
-}
-
-// ByIncidents orders the results by incidents terms.
-func ByIncidents(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newIncidentsStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
-
 // ByVideoConferenceField orders the results by video_conference field.
 func ByVideoConferenceField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -187,13 +160,6 @@ func newTenantStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(TenantInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
-	)
-}
-func newIncidentsStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(IncidentsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2M, true, IncidentsTable, IncidentsPrimaryKey...),
 	)
 }
 func newVideoConferenceStep() *sqlgraph.Step {

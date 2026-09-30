@@ -14,7 +14,6 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/meetingschedule"
 	"github.com/rezible/rezible/ent/meetingsession"
@@ -31,7 +30,6 @@ type MeetingSessionQuery struct {
 	inters              []Interceptor
 	predicates          []predicate.MeetingSession
 	withTenant          *TenantQuery
-	withIncidents       *IncidentQuery
 	withVideoConference *VideoConferenceQuery
 	withSchedule        *MeetingScheduleQuery
 	withFKs             bool
@@ -91,31 +89,6 @@ func (_q *MeetingSessionQuery) QueryTenant() *TenantQuery {
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.Tenant
 		step.Edge.Schema = schemaConfig.MeetingSession
-		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryIncidents chains the current query on the "incidents" edge.
-func (_q *MeetingSessionQuery) QueryIncidents() *IncidentQuery {
-	query := (&IncidentClient{config: _q.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := _q.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := _q.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(meetingsession.Table, meetingsession.FieldID, selector),
-			sqlgraph.To(incident.Table, incident.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, meetingsession.IncidentsTable, meetingsession.IncidentsPrimaryKey...),
-		)
-		schemaConfig := _q.schemaConfig
-		step.To.Schema = schemaConfig.Incident
-		step.Edge.Schema = schemaConfig.IncidentReviewSessions
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -365,7 +338,6 @@ func (_q *MeetingSessionQuery) Clone() *MeetingSessionQuery {
 		inters:              append([]Interceptor{}, _q.inters...),
 		predicates:          append([]predicate.MeetingSession{}, _q.predicates...),
 		withTenant:          _q.withTenant.Clone(),
-		withIncidents:       _q.withIncidents.Clone(),
 		withVideoConference: _q.withVideoConference.Clone(),
 		withSchedule:        _q.withSchedule.Clone(),
 		// clone intermediate query.
@@ -383,17 +355,6 @@ func (_q *MeetingSessionQuery) WithTenant(opts ...func(*TenantQuery)) *MeetingSe
 		opt(query)
 	}
 	_q.withTenant = query
-	return _q
-}
-
-// WithIncidents tells the query-builder to eager-load the nodes that are connected to
-// the "incidents" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *MeetingSessionQuery) WithIncidents(opts ...func(*IncidentQuery)) *MeetingSessionQuery {
-	query := (&IncidentClient{config: _q.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	_q.withIncidents = query
 	return _q
 }
 
@@ -504,9 +465,8 @@ func (_q *MeetingSessionQuery) sqlAll(ctx context.Context, hooks ...queryHook) (
 		nodes       = []*MeetingSession{}
 		withFKs     = _q.withFKs
 		_spec       = _q.querySpec()
-		loadedTypes = [4]bool{
+		loadedTypes = [3]bool{
 			_q.withTenant != nil,
-			_q.withIncidents != nil,
 			_q.withVideoConference != nil,
 			_q.withSchedule != nil,
 		}
@@ -543,13 +503,6 @@ func (_q *MeetingSessionQuery) sqlAll(ctx context.Context, hooks ...queryHook) (
 	if query := _q.withTenant; query != nil {
 		if err := _q.loadTenant(ctx, query, nodes, nil,
 			func(n *MeetingSession, e *Tenant) { n.Edges.Tenant = e }); err != nil {
-			return nil, err
-		}
-	}
-	if query := _q.withIncidents; query != nil {
-		if err := _q.loadIncidents(ctx, query, nodes,
-			func(n *MeetingSession) { n.Edges.Incidents = []*Incident{} },
-			func(n *MeetingSession, e *Incident) { n.Edges.Incidents = append(n.Edges.Incidents, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -593,68 +546,6 @@ func (_q *MeetingSessionQuery) loadTenant(ctx context.Context, query *TenantQuer
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
-		}
-	}
-	return nil
-}
-func (_q *MeetingSessionQuery) loadIncidents(ctx context.Context, query *IncidentQuery, nodes []*MeetingSession, init func(*MeetingSession), assign func(*MeetingSession, *Incident)) error {
-	edgeIDs := make([]driver.Value, len(nodes))
-	byID := make(map[uuid.UUID]*MeetingSession)
-	nids := make(map[uuid.UUID]map[*MeetingSession]struct{})
-	for i, node := range nodes {
-		edgeIDs[i] = node.ID
-		byID[node.ID] = node
-		if init != nil {
-			init(node)
-		}
-	}
-	query.Where(func(s *sql.Selector) {
-		joinT := sql.Table(meetingsession.IncidentsTable)
-		joinT.Schema(_q.schemaConfig.IncidentReviewSessions)
-		s.Join(joinT).On(s.C(incident.FieldID), joinT.C(meetingsession.IncidentsPrimaryKey[0]))
-		s.Where(sql.InValues(joinT.C(meetingsession.IncidentsPrimaryKey[1]), edgeIDs...))
-		columns := s.SelectedColumns()
-		s.Select(joinT.C(meetingsession.IncidentsPrimaryKey[1]))
-		s.AppendSelect(columns...)
-		s.SetDistinct(false)
-	})
-	if err := query.prepareQuery(ctx); err != nil {
-		return err
-	}
-	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
-		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
-			assign := spec.Assign
-			values := spec.ScanValues
-			spec.ScanValues = func(columns []string) ([]any, error) {
-				values, err := values(columns[1:])
-				if err != nil {
-					return nil, err
-				}
-				return append([]any{new(uuid.UUID)}, values...), nil
-			}
-			spec.Assign = func(columns []string, values []any) error {
-				outValue := *values[0].(*uuid.UUID)
-				inValue := *values[1].(*uuid.UUID)
-				if nids[inValue] == nil {
-					nids[inValue] = map[*MeetingSession]struct{}{byID[outValue]: {}}
-					return assign(columns[1:], values[1:])
-				}
-				nids[inValue][byID[outValue]] = struct{}{}
-				return nil
-			}
-		})
-	})
-	neighbors, err := withInterceptors[[]*Incident](ctx, query, qr, query.inters)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		nodes, ok := nids[n.ID]
-		if !ok {
-			return fmt.Errorf(`unexpected "incidents" node returned %v`, n.ID)
-		}
-		for kn := range nodes {
-			assign(kn, n)
 		}
 	}
 	return nil

@@ -19,6 +19,7 @@ import (
 	"github.com/rezible/rezible/ent/systemanalysisentrysubject"
 	"github.com/rezible/rezible/ent/task"
 	"github.com/rezible/rezible/ent/tenant"
+	"github.com/rezible/rezible/ent/user"
 )
 
 // SystemAnalysisEntryCreate is the builder for creating a SystemAnalysisEntry entity.
@@ -66,6 +67,20 @@ func (_c *SystemAnalysisEntryCreate) SetNillableUpdatedAt(v *time.Time) *SystemA
 // SetAnalysisID sets the "analysis_id" field.
 func (_c *SystemAnalysisEntryCreate) SetAnalysisID(v uuid.UUID) *SystemAnalysisEntryCreate {
 	_c.mutation.SetAnalysisID(v)
+	return _c
+}
+
+// SetAuthorID sets the "author_id" field.
+func (_c *SystemAnalysisEntryCreate) SetAuthorID(v uuid.UUID) *SystemAnalysisEntryCreate {
+	_c.mutation.SetAuthorID(v)
+	return _c
+}
+
+// SetNillableAuthorID sets the "author_id" field if the given value is not nil.
+func (_c *SystemAnalysisEntryCreate) SetNillableAuthorID(v *uuid.UUID) *SystemAnalysisEntryCreate {
+	if v != nil {
+		_c.SetAuthorID(*v)
+	}
 	return _c
 }
 
@@ -137,6 +152,20 @@ func (_c *SystemAnalysisEntryCreate) SetNillableBody(v *string) *SystemAnalysisE
 	return _c
 }
 
+// SetVersion sets the "version" field.
+func (_c *SystemAnalysisEntryCreate) SetVersion(v int) *SystemAnalysisEntryCreate {
+	_c.mutation.SetVersion(v)
+	return _c
+}
+
+// SetNillableVersion sets the "version" field if the given value is not nil.
+func (_c *SystemAnalysisEntryCreate) SetNillableVersion(v *int) *SystemAnalysisEntryCreate {
+	if v != nil {
+		_c.SetVersion(*v)
+	}
+	return _c
+}
+
 // SetProperties sets the "properties" field.
 func (_c *SystemAnalysisEntryCreate) SetProperties(v map[string]interface{}) *SystemAnalysisEntryCreate {
 	_c.mutation.SetProperties(v)
@@ -165,6 +194,11 @@ func (_c *SystemAnalysisEntryCreate) SetTenant(v *Tenant) *SystemAnalysisEntryCr
 // SetAnalysis sets the "analysis" edge to the SystemAnalysis entity.
 func (_c *SystemAnalysisEntryCreate) SetAnalysis(v *SystemAnalysis) *SystemAnalysisEntryCreate {
 	return _c.SetAnalysisID(v.ID)
+}
+
+// SetAuthor sets the "author" edge to the User entity.
+func (_c *SystemAnalysisEntryCreate) SetAuthor(v *User) *SystemAnalysisEntryCreate {
+	return _c.SetAuthorID(v.ID)
 }
 
 // AddSubjectIDs adds the "subjects" edge to the SystemAnalysisEntrySubject entity by IDs.
@@ -267,6 +301,10 @@ func (_c *SystemAnalysisEntryCreate) defaults() error {
 		v := systemanalysisentry.DefaultSequence
 		_c.mutation.SetSequence(v)
 	}
+	if _, ok := _c.mutation.Version(); !ok {
+		v := systemanalysisentry.DefaultVersion
+		_c.mutation.SetVersion(v)
+	}
 	if _, ok := _c.mutation.ID(); !ok {
 		if systemanalysisentry.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized systemanalysisentry.DefaultID (forgotten import ent/runtime?)")
@@ -309,6 +347,9 @@ func (_c *SystemAnalysisEntryCreate) check() error {
 		if err := systemanalysisentry.TitleValidator(v); err != nil {
 			return &ValidationError{Name: "title", err: fmt.Errorf(`ent: validator failed for field "SystemAnalysisEntry.title": %w`, err)}
 		}
+	}
+	if _, ok := _c.mutation.Version(); !ok {
+		return &ValidationError{Name: "version", err: errors.New(`ent: missing required field "SystemAnalysisEntry.version"`)}
 	}
 	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "SystemAnalysisEntry.tenant"`)}
@@ -385,6 +426,10 @@ func (_c *SystemAnalysisEntryCreate) createSpec() (*SystemAnalysisEntry, *sqlgra
 		_spec.SetField(systemanalysisentry.FieldBody, field.TypeString, value)
 		_node.Body = value
 	}
+	if value, ok := _c.mutation.Version(); ok {
+		_spec.SetField(systemanalysisentry.FieldVersion, field.TypeInt, value)
+		_node.Version = value
+	}
 	if value, ok := _c.mutation.Properties(); ok {
 		_spec.SetField(systemanalysisentry.FieldProperties, field.TypeJSON, value)
 		_node.Properties = value
@@ -423,6 +468,24 @@ func (_c *SystemAnalysisEntryCreate) createSpec() (*SystemAnalysisEntry, *sqlgra
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.AnalysisID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.AuthorIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   systemanalysisentry.AuthorTable,
+			Columns: []string{systemanalysisentry.AuthorColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.SystemAnalysisEntry
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.AuthorID = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := _c.mutation.SubjectsIDs(); len(nodes) > 0 {
@@ -630,6 +693,24 @@ func (u *SystemAnalysisEntryUpsert) ClearBody() *SystemAnalysisEntryUpsert {
 	return u
 }
 
+// SetVersion sets the "version" field.
+func (u *SystemAnalysisEntryUpsert) SetVersion(v int) *SystemAnalysisEntryUpsert {
+	u.Set(systemanalysisentry.FieldVersion, v)
+	return u
+}
+
+// UpdateVersion sets the "version" field to the value that was provided on create.
+func (u *SystemAnalysisEntryUpsert) UpdateVersion() *SystemAnalysisEntryUpsert {
+	u.SetExcluded(systemanalysisentry.FieldVersion)
+	return u
+}
+
+// AddVersion adds v to the "version" field.
+func (u *SystemAnalysisEntryUpsert) AddVersion(v int) *SystemAnalysisEntryUpsert {
+	u.Add(systemanalysisentry.FieldVersion, v)
+	return u
+}
+
 // SetProperties sets the "properties" field.
 func (u *SystemAnalysisEntryUpsert) SetProperties(v map[string]interface{}) *SystemAnalysisEntryUpsert {
 	u.Set(systemanalysisentry.FieldProperties, v)
@@ -670,6 +751,9 @@ func (u *SystemAnalysisEntryUpsertOne) UpdateNewValues() *SystemAnalysisEntryUps
 		}
 		if _, exists := u.create.mutation.AnalysisID(); exists {
 			s.SetIgnore(systemanalysisentry.FieldAnalysisID)
+		}
+		if _, exists := u.create.mutation.AuthorID(); exists {
+			s.SetIgnore(systemanalysisentry.FieldAuthorID)
 		}
 		if _, exists := u.create.mutation.Reference(); exists {
 			s.SetIgnore(systemanalysisentry.FieldReference)
@@ -821,6 +905,27 @@ func (u *SystemAnalysisEntryUpsertOne) UpdateBody() *SystemAnalysisEntryUpsertOn
 func (u *SystemAnalysisEntryUpsertOne) ClearBody() *SystemAnalysisEntryUpsertOne {
 	return u.Update(func(s *SystemAnalysisEntryUpsert) {
 		s.ClearBody()
+	})
+}
+
+// SetVersion sets the "version" field.
+func (u *SystemAnalysisEntryUpsertOne) SetVersion(v int) *SystemAnalysisEntryUpsertOne {
+	return u.Update(func(s *SystemAnalysisEntryUpsert) {
+		s.SetVersion(v)
+	})
+}
+
+// AddVersion adds v to the "version" field.
+func (u *SystemAnalysisEntryUpsertOne) AddVersion(v int) *SystemAnalysisEntryUpsertOne {
+	return u.Update(func(s *SystemAnalysisEntryUpsert) {
+		s.AddVersion(v)
+	})
+}
+
+// UpdateVersion sets the "version" field to the value that was provided on create.
+func (u *SystemAnalysisEntryUpsertOne) UpdateVersion() *SystemAnalysisEntryUpsertOne {
+	return u.Update(func(s *SystemAnalysisEntryUpsert) {
+		s.UpdateVersion()
 	})
 }
 
@@ -1034,6 +1139,9 @@ func (u *SystemAnalysisEntryUpsertBulk) UpdateNewValues() *SystemAnalysisEntryUp
 			if _, exists := b.mutation.AnalysisID(); exists {
 				s.SetIgnore(systemanalysisentry.FieldAnalysisID)
 			}
+			if _, exists := b.mutation.AuthorID(); exists {
+				s.SetIgnore(systemanalysisentry.FieldAuthorID)
+			}
 			if _, exists := b.mutation.Reference(); exists {
 				s.SetIgnore(systemanalysisentry.FieldReference)
 			}
@@ -1185,6 +1293,27 @@ func (u *SystemAnalysisEntryUpsertBulk) UpdateBody() *SystemAnalysisEntryUpsertB
 func (u *SystemAnalysisEntryUpsertBulk) ClearBody() *SystemAnalysisEntryUpsertBulk {
 	return u.Update(func(s *SystemAnalysisEntryUpsert) {
 		s.ClearBody()
+	})
+}
+
+// SetVersion sets the "version" field.
+func (u *SystemAnalysisEntryUpsertBulk) SetVersion(v int) *SystemAnalysisEntryUpsertBulk {
+	return u.Update(func(s *SystemAnalysisEntryUpsert) {
+		s.SetVersion(v)
+	})
+}
+
+// AddVersion adds v to the "version" field.
+func (u *SystemAnalysisEntryUpsertBulk) AddVersion(v int) *SystemAnalysisEntryUpsertBulk {
+	return u.Update(func(s *SystemAnalysisEntryUpsert) {
+		s.AddVersion(v)
+	})
+}
+
+// UpdateVersion sets the "version" field to the value that was provided on create.
+func (u *SystemAnalysisEntryUpsertBulk) UpdateVersion() *SystemAnalysisEntryUpsertBulk {
+	return u.Update(func(s *SystemAnalysisEntryUpsert) {
+		s.UpdateVersion()
 	})
 }
 

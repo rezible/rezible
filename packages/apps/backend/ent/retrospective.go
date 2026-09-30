@@ -29,8 +29,6 @@ type Retrospective struct {
 	DocumentID uuid.UUID `json:"document_id,omitempty"`
 	// SystemAnalysisID holds the value of the "system_analysis_id" field.
 	SystemAnalysisID uuid.UUID `json:"system_analysis_id,omitempty"`
-	// Kind holds the value of the "kind" field.
-	Kind retrospective.Kind `json:"kind,omitempty"`
 	// State holds the value of the "state" field.
 	State retrospective.State `json:"state,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -127,7 +125,7 @@ func (*Retrospective) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case retrospective.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case retrospective.FieldKind, retrospective.FieldState:
+		case retrospective.FieldState:
 			values[i] = new(sql.NullString)
 		case retrospective.FieldID, retrospective.FieldIncidentID, retrospective.FieldDocumentID, retrospective.FieldSystemAnalysisID:
 			values[i] = new(uuid.UUID)
@@ -175,12 +173,6 @@ func (_m *Retrospective) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field system_analysis_id", values[i])
 			} else if value != nil {
 				_m.SystemAnalysisID = *value
-			}
-		case retrospective.FieldKind:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field kind", values[i])
-			} else if value.Valid {
-				_m.Kind = retrospective.Kind(value.String)
 			}
 		case retrospective.FieldState:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -265,9 +257,6 @@ func (_m *Retrospective) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("system_analysis_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.SystemAnalysisID))
-	builder.WriteString(", ")
-	builder.WriteString("kind=")
-	builder.WriteString(fmt.Sprintf("%v", _m.Kind))
 	builder.WriteString(", ")
 	builder.WriteString("state=")
 	builder.WriteString(fmt.Sprintf("%v", _m.State))

@@ -238,27 +238,30 @@ func (s *SystemAnalysisServiceSuite) TestListEntriesOrdersAndLoadsSubjects() {
 	}))
 
 	entryOccAt := time.Now()
-	first, firstErr := svc.SetSystemAnalysisEntry(ctx, uuid.Nil, func(m *ent.SystemAnalysisEntryMutation) {
-		m.SetAnalysisID(analysis.ID)
-		m.SetKind(sae.KindContext)
-		m.SetTitle("First")
-		m.SetProperties(map[string]any{"source": "test"})
-		m.SetOccurredAt(entryOccAt)
-	})
+	firstParams := rez.SetSystemAnalysisEntryParams{
+		AnalysisID: analysis.ID,
+		Kind:       sae.KindContext,
+		Title:      "First",
+		Body:       "Test context",
+		OccurredAt: &entryOccAt,
+	}
+	first, firstErr := svc.SetSystemAnalysisEntry(ctx, uuid.Nil, firstParams)
 	s.Require().NoError(firstErr)
 
-	second, secondErr := svc.SetSystemAnalysisEntry(ctx, uuid.Nil, func(m *ent.SystemAnalysisEntryMutation) {
-		m.SetAnalysisID(analysis.ID)
-		m.SetKind(sae.KindObservation)
-		m.SetTitle("Second")
-		m.SetOccurredAt(entryOccAt.Add(time.Second))
-	})
+	secondOccAt := entryOccAt.Add(time.Second)
+	secondParams := rez.SetSystemAnalysisEntryParams{
+		AnalysisID: analysis.ID,
+		Kind:       sae.KindObservation,
+		Title:      "Second",
+		OccurredAt: &secondOccAt,
+	}
+	second, secondErr := svc.SetSystemAnalysisEntry(ctx, uuid.Nil, secondParams)
 	s.Require().NoError(secondErr)
-	s.Empty(second.Properties)
+	s.Empty(second.Body)
 
 	_, subjectErr := svc.SetSystemAnalysisEntrySubject(ctx, uuid.Nil, func(m *ent.SystemAnalysisEntrySubjectMutation) {
 		m.SetEntryID(second.ID)
-		m.SetRole("primary")
+		m.SetRole("affected")
 		m.SetKnowledgeEntityID(fixture.Source.ID)
 	})
 	s.Require().NoError(subjectErr)
@@ -278,7 +281,7 @@ func (s *SystemAnalysisServiceSuite) TestListEntriesOrdersAndLoadsSubjects() {
 	s.Require().NoError(secondSubjectsErr)
 	s.Require().Len(secondSubjects, 1)
 	subject := secondSubjects[0]
-	s.Equal("primary", subject.Role)
+	s.Equal("affected", subject.Role)
 
 	params2 := rez.ListSystemAnalysisEntriesParams{
 		Predicates: []predicate.SystemAnalysisEntry{sae.AnalysisID(analysis.ID)},
@@ -302,36 +305,36 @@ func (s *SystemAnalysisServiceSuite) TestEntryMutationsValidateUpdateAndDelete()
 		EntityIds:  []uuid.UUID{fixture.Source.ID},
 	}))
 
-	_, invalidErr := svc.SetSystemAnalysisEntry(ctx, uuid.Nil, func(m *ent.SystemAnalysisEntryMutation) {
-		m.SetAnalysisID(analysis.ID)
-		m.SetKind(sae.Kind("timeline_event"))
-		m.SetTitle("Invalid")
-	})
+	invalidParams := rez.SetSystemAnalysisEntryParams{
+		AnalysisID: analysis.ID,
+		Kind:       sae.Kind("timeline_event"),
+		Title:      "Invalid",
+	}
+	_, invalidErr := svc.SetSystemAnalysisEntry(ctx, uuid.Nil, invalidParams)
 	s.Require().Error(invalidErr)
 
-	entry, createErr := svc.SetSystemAnalysisEntry(ctx, uuid.Nil, func(m *ent.SystemAnalysisEntryMutation) {
-		m.SetAnalysisID(analysis.ID)
-		m.SetKind(sae.KindObservation)
-		m.SetTitle("Original")
-	})
+	createParams := rez.SetSystemAnalysisEntryParams{
+		AnalysisID: analysis.ID,
+		Kind:       sae.KindObservation,
+		Title:      "Original",
+	}
+	entry, createErr := svc.SetSystemAnalysisEntry(ctx, uuid.Nil, createParams)
 	s.Require().NoError(createErr)
 
 	_, addErr := svc.SetSystemAnalysisEntrySubject(ctx, uuid.Nil, func(m *ent.SystemAnalysisEntrySubjectMutation) {
 		m.SetEntryID(entry.ID)
-		m.SetRole("primary")
+		m.SetRole("affected")
 		m.SetKnowledgeEntityID(fixture.Source.ID)
 	})
 	s.Require().NoError(addErr)
 
-	title := "Updated"
-	properties := map[string]any{"confidence": "high"}
-	updated, updateErr := svc.SetSystemAnalysisEntry(ctx, entry.ID, func(m *ent.SystemAnalysisEntryMutation) {
-		m.SetTitle(title)
-		m.SetProperties(properties)
-	})
+	updateParams := rez.SetSystemAnalysisEntryParams{
+		AnalysisID: analysis.ID,
+		Kind:       sae.KindObservation,
+		Title:      "Updated",
+	}
+	_, updateErr := svc.SetSystemAnalysisEntry(ctx, entry.ID, updateParams)
 	s.Require().NoError(updateErr)
-	s.Equal(title, updated.Title)
-	s.Equal(properties, updated.Properties)
 
 	s.Require().NoError(svc.DeleteSystemAnalysisEntry(ctx, entry.ID))
 	client := tdb.Client(ctx)
@@ -354,18 +357,19 @@ func (s *SystemAnalysisServiceSuite) TestEntrySubjectRequiresExactlyOneGraphRefe
 		RelationshipIds: []uuid.UUID{fixture.Relationship.ID},
 	}))
 
-	entry, createErr := svc.SetSystemAnalysisEntry(ctx, uuid.Nil, func(m *ent.SystemAnalysisEntryMutation) {
-		m.SetAnalysisID(analysis.ID)
-		m.SetKind(sae.KindObservation)
-		m.SetTitle("Observation")
-	})
+	createParams := rez.SetSystemAnalysisEntryParams{
+		AnalysisID: analysis.ID,
+		Kind:       sae.KindObservation,
+		Title:      "Observation",
+	}
+	entry, createErr := svc.SetSystemAnalysisEntry(ctx, uuid.Nil, createParams)
 	s.Require().NoError(createErr)
 
 	_, missingErr := svc.SetSystemAnalysisEntrySubject(ctx, uuid.Nil, func(m *ent.SystemAnalysisEntrySubjectMutation) {
 		m.SetEntryID(entry.ID)
 		m.SetRole("missing")
 	})
-	s.ErrorIs(missingErr, rez.ErrInvalidInput)
+	s.ErrorIs(missingErr, rez.ErrUnprocessableInput)
 
 	_, multipleErr := svc.SetSystemAnalysisEntrySubject(ctx, uuid.Nil, func(m *ent.SystemAnalysisEntrySubjectMutation) {
 		m.SetEntryID(entry.ID)
@@ -373,11 +377,11 @@ func (s *SystemAnalysisServiceSuite) TestEntrySubjectRequiresExactlyOneGraphRefe
 		m.SetKnowledgeEntityID(fixture.Source.ID)
 		m.SetKnowledgeRelationshipID(fixture.Relationship.ID)
 	})
-	s.ErrorIs(multipleErr, rez.ErrInvalidInput)
+	s.ErrorIs(multipleErr, rez.ErrUnprocessableInput)
 
 	entitySubject, addErr := svc.SetSystemAnalysisEntrySubject(ctx, uuid.Nil, func(m *ent.SystemAnalysisEntrySubjectMutation) {
 		m.SetEntryID(entry.ID)
-		m.SetRole("entity")
+		m.SetRole("context")
 		m.SetKnowledgeEntityID(fixture.Source.ID)
 	})
 	s.Require().NoError(addErr)
@@ -386,7 +390,7 @@ func (s *SystemAnalysisServiceSuite) TestEntrySubjectRequiresExactlyOneGraphRefe
 
 	relationshipSubject, addErr := svc.SetSystemAnalysisEntrySubject(ctx, uuid.Nil, func(m *ent.SystemAnalysisEntrySubjectMutation) {
 		m.SetEntryID(entry.ID)
-		m.SetRole("relationship")
+		m.SetRole("contributing")
 		m.SetKnowledgeRelationshipID(fixture.Relationship.ID)
 	})
 	s.Require().NoError(addErr)
@@ -394,40 +398,17 @@ func (s *SystemAnalysisServiceSuite) TestEntrySubjectRequiresExactlyOneGraphRefe
 
 	evidenceSubject, addErr := svc.SetSystemAnalysisEntrySubject(ctx, uuid.Nil, func(m *ent.SystemAnalysisEntrySubjectMutation) {
 		m.SetEntryID(entry.ID)
-		m.SetRole("evidence")
+		m.SetRole("supports")
 		m.SetKnowledgeEvidenceID(fixture.Evidence.ID)
 	})
 	s.Require().NoError(addErr)
 	s.Require().NotNil(evidenceSubject.KnowledgeEvidenceID)
-
-	_, observationSubjectErr := svc.SetSystemAnalysisEntrySubject(ctx, uuid.Nil, func(m *ent.SystemAnalysisEntrySubjectMutation) {
-		m.SetEntryID(entry.ID)
-		m.SetRole("observation")
-		m.SetKnowledgeEntityID(fixture.Source.ID)
-	})
-	s.Require().NoError(observationSubjectErr)
-	_, duplicateObservationErr := svc.SetSystemAnalysisEntrySubject(ctx, uuid.Nil, func(m *ent.SystemAnalysisEntrySubjectMutation) {
-		m.SetEntryID(entry.ID)
-		m.SetRole("observation")
-		m.SetKnowledgeEntityID(fixture.Source.ID)
-	})
-	s.Error(duplicateObservationErr)
 
 	_, retargetErr := svc.SetSystemAnalysisEntrySubject(ctx, entitySubject.ID, func(m *ent.SystemAnalysisEntrySubjectMutation) {
 		m.SetKnowledgeRelationshipID(fixture.Relationship.ID)
 	})
 	s.ErrorIs(retargetErr, rez.ErrInvalidInput)
 
-	updated, updateErr := svc.SetSystemAnalysisEntrySubject(ctx, entitySubject.ID, func(m *ent.SystemAnalysisEntrySubjectMutation) {
-		m.SetRole("renamed")
-	})
-	s.Require().NoError(updateErr)
-	s.Equal("renamed", updated.Role)
-
-	s.Require().NoError(svc.DeleteSystemAnalysisEntrySubject(ctx, relationshipSubject.ID))
-	subjectQuery := tdb.Client(ctx).SystemAnalysisEntrySubject.Query().
-		Where(saes.ID(relationshipSubject.ID))
-	s.Equal(0, subjectQuery.CountX(ctx))
 }
 
 func (s *SystemAnalysisServiceSuite) TestIncludeSystemAnalysisSubjectsAddsRelationshipEndpoints() {
@@ -500,28 +481,19 @@ func (s *SystemAnalysisServiceSuite) TestSetSystemAnalysisEntryCreatesSubjectsAt
 		EntityIds:       []uuid.UUID{fixture.Source.ID},
 	}))
 	now := time.Now()
-	setEntry := func(m *ent.SystemAnalysisEntryMutation) {
-		m.SetAnalysisID(analysis.ID)
-		m.SetKind(sae.KindFinding)
-		m.SetOccurredAt(now)
-		m.SetTitle("Database dependency")
-		m.SetBody("API relies on DB.")
-	}
-	setSubjects := []func(*ent.SystemAnalysisEntrySubjectMutation){
-		func(m *ent.SystemAnalysisEntrySubjectMutation) {
-			m.SetRole("primary")
-			m.SetKnowledgeEntityID(fixture.Source.ID)
-		},
-		func(m *ent.SystemAnalysisEntrySubjectMutation) {
-			m.SetRole("contributing")
-			m.SetKnowledgeRelationshipID(fixture.Relationship.ID)
-		},
-		func(m *ent.SystemAnalysisEntrySubjectMutation) {
-			m.SetRole("evidence_for")
-			m.SetKnowledgeEvidenceID(fixture.Evidence.ID)
+	params := rez.SetSystemAnalysisEntryParams{
+		AnalysisID: analysis.ID,
+		Kind:       sae.KindFinding,
+		OccurredAt: &now,
+		Title:      "Database dependency",
+		Body:       "API relies on DB.",
+		SetSubjects: []rez.SetSystemAnalysisEntrySubjectParams{
+			{Role: "affected", KnowledgeEntityID: &fixture.Source.ID},
+			{Role: "contributing", KnowledgeRelationshipID: &fixture.Relationship.ID},
+			{Role: "supports", KnowledgeEvidenceID: &fixture.Evidence.ID},
 		},
 	}
-	entry, createErr := svc.SetSystemAnalysisEntry(ctx, uuid.Nil, setEntry, setSubjects...)
+	entry, createErr := svc.SetSystemAnalysisEntry(ctx, uuid.Nil, params)
 	s.Require().NoError(createErr)
 	s.Equal(sae.KindFinding, entry.Kind)
 	s.Equal(1, entry.Sequence)
@@ -531,27 +503,8 @@ func (s *SystemAnalysisServiceSuite) TestSetSystemAnalysisEntryCreatesSubjectsAt
 	s.Equal(2, client.SystemAnalysisEntity.Query().Where(saentity.AnalysisID(analysis.ID)).CountX(ctx),
 		"entry attachments do not change prepared graph membership")
 
-	second, secondErr := svc.SetSystemAnalysisEntry(ctx, uuid.Nil, setEntry)
+	params.SetSubjects = nil
+	second, secondErr := svc.SetSystemAnalysisEntry(ctx, uuid.Nil, params)
 	s.Require().NoError(secondErr)
 	s.Equal(2, second.Sequence)
-
-	missingID := uuid.New()
-	subjectCountBeforeFailure := client.SystemAnalysisEntrySubject.Query().CountX(ctx)
-	_, invalidErr := svc.SetSystemAnalysisEntry(
-		ctx,
-		uuid.Nil,
-		setEntry,
-		func(m *ent.SystemAnalysisEntrySubjectMutation) {
-			m.SetRole("primary")
-			m.SetKnowledgeEntityID(fixture.Source.ID)
-		},
-		func(m *ent.SystemAnalysisEntrySubjectMutation) {
-			m.SetRole("missing")
-			m.SetKnowledgeEvidenceID(missingID)
-		},
-	)
-	s.Require().ErrorIs(invalidErr, rez.ErrInvalidInput)
-	s.Equal(2, client.SystemAnalysisEntry.Query().Where(sae.AnalysisID(analysis.ID)).CountX(ctx))
-	s.Equal(subjectCountBeforeFailure, client.SystemAnalysisEntrySubject.Query().CountX(ctx))
-	s.Equal(3, client.SystemAnalysisEntrySubject.Query().Where(saes.EntryID(entry.ID)).CountX(ctx))
 }

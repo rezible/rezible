@@ -24,8 +24,6 @@ const (
 	FieldDocumentID = "document_id"
 	// FieldSystemAnalysisID holds the string denoting the system_analysis_id field in the database.
 	FieldSystemAnalysisID = "system_analysis_id"
-	// FieldKind holds the string denoting the kind field in the database.
-	FieldKind = "kind"
 	// FieldState holds the string denoting the state field in the database.
 	FieldState = "state"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
@@ -93,7 +91,6 @@ var Columns = []string{
 	FieldIncidentID,
 	FieldDocumentID,
 	FieldSystemAnalysisID,
-	FieldKind,
 	FieldState,
 }
 
@@ -118,29 +115,6 @@ var (
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
-
-// Kind defines the type for the "kind" enum field.
-type Kind string
-
-// Kind values.
-const (
-	KindSimple Kind = "simple"
-	KindFull   Kind = "full"
-)
-
-func (k Kind) String() string {
-	return string(k)
-}
-
-// KindValidator is a validator for the "kind" field enum values. It is called by the builders before save.
-func KindValidator(k Kind) error {
-	switch k {
-	case KindSimple, KindFull:
-		return nil
-	default:
-		return fmt.Errorf("retrospective: invalid enum value for kind field: %q", k)
-	}
-}
 
 // State defines the type for the "state" enum field.
 type State string
@@ -193,11 +167,6 @@ func ByDocumentID(opts ...sql.OrderTermOption) OrderOption {
 // BySystemAnalysisID orders the results by the system_analysis_id field.
 func BySystemAnalysisID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldSystemAnalysisID, opts...).ToFunc()
-}
-
-// ByKind orders the results by the kind field.
-func ByKind(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldKind, opts...).ToFunc()
 }
 
 // ByState orders the results by the state field.
@@ -301,12 +270,6 @@ func newSystemAnalysisStep() *sqlgraph.Step {
 		sqlgraph.To(SystemAnalysisInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, false, SystemAnalysisTable, SystemAnalysisColumn),
 	)
-}
-
-// KindValues contains all permitted values. Treat this slice as read-only.
-var KindValues = []string{
-	"simple",
-	"full",
 }
 
 // StateValues contains all permitted values. Treat this slice as read-only.

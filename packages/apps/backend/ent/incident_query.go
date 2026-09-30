@@ -26,13 +26,10 @@ import (
 	"github.com/rezible/rezible/ent/incidenttype"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/knowledgeentity"
-	"github.com/rezible/rezible/ent/meetingsession"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/ent/situation"
-	"github.com/rezible/rezible/ent/task"
 	"github.com/rezible/rezible/ent/tenant"
-	"github.com/rezible/rezible/ent/user"
 	"github.com/rezible/rezible/ent/videoconference"
 )
 
@@ -49,18 +46,14 @@ type IncidentQuery struct {
 	withType             *IncidentTypeQuery
 	withMilestones       *IncidentMilestoneQuery
 	withRetrospective    *RetrospectiveQuery
-	withUsers            *UserQuery
 	withRoleAssignments  *IncidentRoleAssignmentQuery
 	withLinkedIncidents  *IncidentQuery
 	withSituations       *SituationQuery
 	withFieldSelections  *IncidentFieldOptionQuery
-	withTasks            *TaskQuery
 	withTagAssignments   *IncidentTagQuery
 	withImpacts          *IncidentImpactQuery
 	withDebriefs         *IncidentDebriefQuery
-	withReviewSessions   *MeetingSessionQuery
 	withVideoConferences *VideoConferenceQuery
-	withUserRoles        *IncidentRoleAssignmentQuery
 	withIncidentLinks    *IncidentLinkQuery
 	modifiers            []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
@@ -249,31 +242,6 @@ func (_q *IncidentQuery) QueryRetrospective() *RetrospectiveQuery {
 	return query
 }
 
-// QueryUsers chains the current query on the "users" edge.
-func (_q *IncidentQuery) QueryUsers() *UserQuery {
-	query := (&UserClient{config: _q.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := _q.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := _q.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(incident.Table, incident.FieldID, selector),
-			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, incident.UsersTable, incident.UsersPrimaryKey...),
-		)
-		schemaConfig := _q.schemaConfig
-		step.To.Schema = schemaConfig.User
-		step.Edge.Schema = schemaConfig.IncidentRoleAssignment
-		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
 // QueryRoleAssignments chains the current query on the "role_assignments" edge.
 func (_q *IncidentQuery) QueryRoleAssignments() *IncidentRoleAssignmentQuery {
 	query := (&IncidentRoleAssignmentClient{config: _q.config}).Query()
@@ -374,31 +342,6 @@ func (_q *IncidentQuery) QueryFieldSelections() *IncidentFieldOptionQuery {
 	return query
 }
 
-// QueryTasks chains the current query on the "tasks" edge.
-func (_q *IncidentQuery) QueryTasks() *TaskQuery {
-	query := (&TaskClient{config: _q.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := _q.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := _q.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(incident.Table, incident.FieldID, selector),
-			sqlgraph.To(task.Table, task.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, incident.TasksTable, incident.TasksColumn),
-		)
-		schemaConfig := _q.schemaConfig
-		step.To.Schema = schemaConfig.Task
-		step.Edge.Schema = schemaConfig.Task
-		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
 // QueryTagAssignments chains the current query on the "tag_assignments" edge.
 func (_q *IncidentQuery) QueryTagAssignments() *IncidentTagQuery {
 	query := (&IncidentTagClient{config: _q.config}).Query()
@@ -474,31 +417,6 @@ func (_q *IncidentQuery) QueryDebriefs() *IncidentDebriefQuery {
 	return query
 }
 
-// QueryReviewSessions chains the current query on the "review_sessions" edge.
-func (_q *IncidentQuery) QueryReviewSessions() *MeetingSessionQuery {
-	query := (&MeetingSessionClient{config: _q.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := _q.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := _q.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(incident.Table, incident.FieldID, selector),
-			sqlgraph.To(meetingsession.Table, meetingsession.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, incident.ReviewSessionsTable, incident.ReviewSessionsPrimaryKey...),
-		)
-		schemaConfig := _q.schemaConfig
-		step.To.Schema = schemaConfig.MeetingSession
-		step.Edge.Schema = schemaConfig.IncidentReviewSessions
-		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
 // QueryVideoConferences chains the current query on the "video_conferences" edge.
 func (_q *IncidentQuery) QueryVideoConferences() *VideoConferenceQuery {
 	query := (&VideoConferenceClient{config: _q.config}).Query()
@@ -513,36 +431,11 @@ func (_q *IncidentQuery) QueryVideoConferences() *VideoConferenceQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(incident.Table, incident.FieldID, selector),
 			sqlgraph.To(videoconference.Table, videoconference.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, incident.VideoConferencesTable, incident.VideoConferencesColumn),
+			sqlgraph.Edge(sqlgraph.O2M, true, incident.VideoConferencesTable, incident.VideoConferencesColumn),
 		)
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.VideoConference
 		step.Edge.Schema = schemaConfig.VideoConference
-		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryUserRoles chains the current query on the "user_roles" edge.
-func (_q *IncidentQuery) QueryUserRoles() *IncidentRoleAssignmentQuery {
-	query := (&IncidentRoleAssignmentClient{config: _q.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := _q.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := _q.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(incident.Table, incident.FieldID, selector),
-			sqlgraph.To(incidentroleassignment.Table, incidentroleassignment.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, incident.UserRolesTable, incident.UserRolesColumn),
-		)
-		schemaConfig := _q.schemaConfig
-		step.To.Schema = schemaConfig.IncidentRoleAssignment
-		step.Edge.Schema = schemaConfig.IncidentRoleAssignment
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -772,18 +665,14 @@ func (_q *IncidentQuery) Clone() *IncidentQuery {
 		withType:             _q.withType.Clone(),
 		withMilestones:       _q.withMilestones.Clone(),
 		withRetrospective:    _q.withRetrospective.Clone(),
-		withUsers:            _q.withUsers.Clone(),
 		withRoleAssignments:  _q.withRoleAssignments.Clone(),
 		withLinkedIncidents:  _q.withLinkedIncidents.Clone(),
 		withSituations:       _q.withSituations.Clone(),
 		withFieldSelections:  _q.withFieldSelections.Clone(),
-		withTasks:            _q.withTasks.Clone(),
 		withTagAssignments:   _q.withTagAssignments.Clone(),
 		withImpacts:          _q.withImpacts.Clone(),
 		withDebriefs:         _q.withDebriefs.Clone(),
-		withReviewSessions:   _q.withReviewSessions.Clone(),
 		withVideoConferences: _q.withVideoConferences.Clone(),
-		withUserRoles:        _q.withUserRoles.Clone(),
 		withIncidentLinks:    _q.withIncidentLinks.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
@@ -858,17 +747,6 @@ func (_q *IncidentQuery) WithRetrospective(opts ...func(*RetrospectiveQuery)) *I
 	return _q
 }
 
-// WithUsers tells the query-builder to eager-load the nodes that are connected to
-// the "users" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *IncidentQuery) WithUsers(opts ...func(*UserQuery)) *IncidentQuery {
-	query := (&UserClient{config: _q.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	_q.withUsers = query
-	return _q
-}
-
 // WithRoleAssignments tells the query-builder to eager-load the nodes that are connected to
 // the "role_assignments" edge. The optional arguments are used to configure the query builder of the edge.
 func (_q *IncidentQuery) WithRoleAssignments(opts ...func(*IncidentRoleAssignmentQuery)) *IncidentQuery {
@@ -913,17 +791,6 @@ func (_q *IncidentQuery) WithFieldSelections(opts ...func(*IncidentFieldOptionQu
 	return _q
 }
 
-// WithTasks tells the query-builder to eager-load the nodes that are connected to
-// the "tasks" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *IncidentQuery) WithTasks(opts ...func(*TaskQuery)) *IncidentQuery {
-	query := (&TaskClient{config: _q.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	_q.withTasks = query
-	return _q
-}
-
 // WithTagAssignments tells the query-builder to eager-load the nodes that are connected to
 // the "tag_assignments" edge. The optional arguments are used to configure the query builder of the edge.
 func (_q *IncidentQuery) WithTagAssignments(opts ...func(*IncidentTagQuery)) *IncidentQuery {
@@ -957,17 +824,6 @@ func (_q *IncidentQuery) WithDebriefs(opts ...func(*IncidentDebriefQuery)) *Inci
 	return _q
 }
 
-// WithReviewSessions tells the query-builder to eager-load the nodes that are connected to
-// the "review_sessions" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *IncidentQuery) WithReviewSessions(opts ...func(*MeetingSessionQuery)) *IncidentQuery {
-	query := (&MeetingSessionClient{config: _q.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	_q.withReviewSessions = query
-	return _q
-}
-
 // WithVideoConferences tells the query-builder to eager-load the nodes that are connected to
 // the "video_conferences" edge. The optional arguments are used to configure the query builder of the edge.
 func (_q *IncidentQuery) WithVideoConferences(opts ...func(*VideoConferenceQuery)) *IncidentQuery {
@@ -976,17 +832,6 @@ func (_q *IncidentQuery) WithVideoConferences(opts ...func(*VideoConferenceQuery
 		opt(query)
 	}
 	_q.withVideoConferences = query
-	return _q
-}
-
-// WithUserRoles tells the query-builder to eager-load the nodes that are connected to
-// the "user_roles" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *IncidentQuery) WithUserRoles(opts ...func(*IncidentRoleAssignmentQuery)) *IncidentQuery {
-	query := (&IncidentRoleAssignmentClient{config: _q.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	_q.withUserRoles = query
 	return _q
 }
 
@@ -1085,25 +930,21 @@ func (_q *IncidentQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Inc
 	var (
 		nodes       = []*Incident{}
 		_spec       = _q.querySpec()
-		loadedTypes = [19]bool{
+		loadedTypes = [15]bool{
 			_q.withTenant != nil,
 			_q.withKnowledgeEntity != nil,
 			_q.withSeverity != nil,
 			_q.withType != nil,
 			_q.withMilestones != nil,
 			_q.withRetrospective != nil,
-			_q.withUsers != nil,
 			_q.withRoleAssignments != nil,
 			_q.withLinkedIncidents != nil,
 			_q.withSituations != nil,
 			_q.withFieldSelections != nil,
-			_q.withTasks != nil,
 			_q.withTagAssignments != nil,
 			_q.withImpacts != nil,
 			_q.withDebriefs != nil,
-			_q.withReviewSessions != nil,
 			_q.withVideoConferences != nil,
-			_q.withUserRoles != nil,
 			_q.withIncidentLinks != nil,
 		}
 	)
@@ -1167,13 +1008,6 @@ func (_q *IncidentQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Inc
 			return nil, err
 		}
 	}
-	if query := _q.withUsers; query != nil {
-		if err := _q.loadUsers(ctx, query, nodes,
-			func(n *Incident) { n.Edges.Users = []*User{} },
-			func(n *Incident, e *User) { n.Edges.Users = append(n.Edges.Users, e) }); err != nil {
-			return nil, err
-		}
-	}
 	if query := _q.withRoleAssignments; query != nil {
 		if err := _q.loadRoleAssignments(ctx, query, nodes,
 			func(n *Incident) { n.Edges.RoleAssignments = []*IncidentRoleAssignment{} },
@@ -1206,13 +1040,6 @@ func (_q *IncidentQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Inc
 			return nil, err
 		}
 	}
-	if query := _q.withTasks; query != nil {
-		if err := _q.loadTasks(ctx, query, nodes,
-			func(n *Incident) { n.Edges.Tasks = []*Task{} },
-			func(n *Incident, e *Task) { n.Edges.Tasks = append(n.Edges.Tasks, e) }); err != nil {
-			return nil, err
-		}
-	}
 	if query := _q.withTagAssignments; query != nil {
 		if err := _q.loadTagAssignments(ctx, query, nodes,
 			func(n *Incident) { n.Edges.TagAssignments = []*IncidentTag{} },
@@ -1234,24 +1061,10 @@ func (_q *IncidentQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Inc
 			return nil, err
 		}
 	}
-	if query := _q.withReviewSessions; query != nil {
-		if err := _q.loadReviewSessions(ctx, query, nodes,
-			func(n *Incident) { n.Edges.ReviewSessions = []*MeetingSession{} },
-			func(n *Incident, e *MeetingSession) { n.Edges.ReviewSessions = append(n.Edges.ReviewSessions, e) }); err != nil {
-			return nil, err
-		}
-	}
 	if query := _q.withVideoConferences; query != nil {
 		if err := _q.loadVideoConferences(ctx, query, nodes,
 			func(n *Incident) { n.Edges.VideoConferences = []*VideoConference{} },
 			func(n *Incident, e *VideoConference) { n.Edges.VideoConferences = append(n.Edges.VideoConferences, e) }); err != nil {
-			return nil, err
-		}
-	}
-	if query := _q.withUserRoles; query != nil {
-		if err := _q.loadUserRoles(ctx, query, nodes,
-			func(n *Incident) { n.Edges.UserRoles = []*IncidentRoleAssignment{} },
-			func(n *Incident, e *IncidentRoleAssignment) { n.Edges.UserRoles = append(n.Edges.UserRoles, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -1330,7 +1143,10 @@ func (_q *IncidentQuery) loadSeverity(ctx context.Context, query *IncidentSeveri
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*Incident)
 	for i := range nodes {
-		fk := nodes[i].SeverityID
+		if nodes[i].SeverityID == nil {
+			continue
+		}
+		fk := *nodes[i].SeverityID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -1359,7 +1175,10 @@ func (_q *IncidentQuery) loadType(ctx context.Context, query *IncidentTypeQuery,
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*Incident)
 	for i := range nodes {
-		fk := nodes[i].TypeID
+		if nodes[i].TypeID == nil {
+			continue
+		}
+		fk := *nodes[i].TypeID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -1438,68 +1257,6 @@ func (_q *IncidentQuery) loadRetrospective(ctx context.Context, query *Retrospec
 			return fmt.Errorf(`unexpected referenced foreign-key "incident_id" returned %v for node %v`, fk, n.ID)
 		}
 		assign(node, n)
-	}
-	return nil
-}
-func (_q *IncidentQuery) loadUsers(ctx context.Context, query *UserQuery, nodes []*Incident, init func(*Incident), assign func(*Incident, *User)) error {
-	edgeIDs := make([]driver.Value, len(nodes))
-	byID := make(map[uuid.UUID]*Incident)
-	nids := make(map[uuid.UUID]map[*Incident]struct{})
-	for i, node := range nodes {
-		edgeIDs[i] = node.ID
-		byID[node.ID] = node
-		if init != nil {
-			init(node)
-		}
-	}
-	query.Where(func(s *sql.Selector) {
-		joinT := sql.Table(incident.UsersTable)
-		joinT.Schema(_q.schemaConfig.IncidentRoleAssignment)
-		s.Join(joinT).On(s.C(user.FieldID), joinT.C(incident.UsersPrimaryKey[0]))
-		s.Where(sql.InValues(joinT.C(incident.UsersPrimaryKey[1]), edgeIDs...))
-		columns := s.SelectedColumns()
-		s.Select(joinT.C(incident.UsersPrimaryKey[1]))
-		s.AppendSelect(columns...)
-		s.SetDistinct(false)
-	})
-	if err := query.prepareQuery(ctx); err != nil {
-		return err
-	}
-	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
-		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
-			assign := spec.Assign
-			values := spec.ScanValues
-			spec.ScanValues = func(columns []string) ([]any, error) {
-				values, err := values(columns[1:])
-				if err != nil {
-					return nil, err
-				}
-				return append([]any{new(uuid.UUID)}, values...), nil
-			}
-			spec.Assign = func(columns []string, values []any) error {
-				outValue := *values[0].(*uuid.UUID)
-				inValue := *values[1].(*uuid.UUID)
-				if nids[inValue] == nil {
-					nids[inValue] = map[*Incident]struct{}{byID[outValue]: {}}
-					return assign(columns[1:], values[1:])
-				}
-				nids[inValue][byID[outValue]] = struct{}{}
-				return nil
-			}
-		})
-	})
-	neighbors, err := withInterceptors[[]*User](ctx, query, qr, query.inters)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		nodes, ok := nids[n.ID]
-		if !ok {
-			return fmt.Errorf(`unexpected "users" node returned %v`, n.ID)
-		}
-		for kn := range nodes {
-			assign(kn, n)
-		}
 	}
 	return nil
 }
@@ -1719,36 +1476,6 @@ func (_q *IncidentQuery) loadFieldSelections(ctx context.Context, query *Inciden
 	}
 	return nil
 }
-func (_q *IncidentQuery) loadTasks(ctx context.Context, query *TaskQuery, nodes []*Incident, init func(*Incident), assign func(*Incident, *Task)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*Incident)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
-	}
-	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(task.FieldIncidentID)
-	}
-	query.Where(predicate.Task(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(incident.TasksColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		fk := n.IncidentID
-		node, ok := nodeids[fk]
-		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "incident_id" returned %v for node %v`, fk, n.ID)
-		}
-		assign(node, n)
-	}
-	return nil
-}
 func (_q *IncidentQuery) loadTagAssignments(ctx context.Context, query *IncidentTagQuery, nodes []*Incident, init func(*Incident), assign func(*Incident, *IncidentTag)) error {
 	edgeIDs := make([]driver.Value, len(nodes))
 	byID := make(map[uuid.UUID]*Incident)
@@ -1871,68 +1598,6 @@ func (_q *IncidentQuery) loadDebriefs(ctx context.Context, query *IncidentDebrie
 	}
 	return nil
 }
-func (_q *IncidentQuery) loadReviewSessions(ctx context.Context, query *MeetingSessionQuery, nodes []*Incident, init func(*Incident), assign func(*Incident, *MeetingSession)) error {
-	edgeIDs := make([]driver.Value, len(nodes))
-	byID := make(map[uuid.UUID]*Incident)
-	nids := make(map[uuid.UUID]map[*Incident]struct{})
-	for i, node := range nodes {
-		edgeIDs[i] = node.ID
-		byID[node.ID] = node
-		if init != nil {
-			init(node)
-		}
-	}
-	query.Where(func(s *sql.Selector) {
-		joinT := sql.Table(incident.ReviewSessionsTable)
-		joinT.Schema(_q.schemaConfig.IncidentReviewSessions)
-		s.Join(joinT).On(s.C(meetingsession.FieldID), joinT.C(incident.ReviewSessionsPrimaryKey[1]))
-		s.Where(sql.InValues(joinT.C(incident.ReviewSessionsPrimaryKey[0]), edgeIDs...))
-		columns := s.SelectedColumns()
-		s.Select(joinT.C(incident.ReviewSessionsPrimaryKey[0]))
-		s.AppendSelect(columns...)
-		s.SetDistinct(false)
-	})
-	if err := query.prepareQuery(ctx); err != nil {
-		return err
-	}
-	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
-		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
-			assign := spec.Assign
-			values := spec.ScanValues
-			spec.ScanValues = func(columns []string) ([]any, error) {
-				values, err := values(columns[1:])
-				if err != nil {
-					return nil, err
-				}
-				return append([]any{new(uuid.UUID)}, values...), nil
-			}
-			spec.Assign = func(columns []string, values []any) error {
-				outValue := *values[0].(*uuid.UUID)
-				inValue := *values[1].(*uuid.UUID)
-				if nids[inValue] == nil {
-					nids[inValue] = map[*Incident]struct{}{byID[outValue]: {}}
-					return assign(columns[1:], values[1:])
-				}
-				nids[inValue][byID[outValue]] = struct{}{}
-				return nil
-			}
-		})
-	})
-	neighbors, err := withInterceptors[[]*MeetingSession](ctx, query, qr, query.inters)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		nodes, ok := nids[n.ID]
-		if !ok {
-			return fmt.Errorf(`unexpected "review_sessions" node returned %v`, n.ID)
-		}
-		for kn := range nodes {
-			assign(kn, n)
-		}
-	}
-	return nil
-}
 func (_q *IncidentQuery) loadVideoConferences(ctx context.Context, query *VideoConferenceQuery, nodes []*Incident, init func(*Incident), assign func(*Incident, *VideoConference)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*Incident)
@@ -1961,36 +1626,6 @@ func (_q *IncidentQuery) loadVideoConferences(ctx context.Context, query *VideoC
 		node, ok := nodeids[*fk]
 		if !ok {
 			return fmt.Errorf(`unexpected referenced foreign-key "incident_id" returned %v for node %v`, *fk, n.ID)
-		}
-		assign(node, n)
-	}
-	return nil
-}
-func (_q *IncidentQuery) loadUserRoles(ctx context.Context, query *IncidentRoleAssignmentQuery, nodes []*Incident, init func(*Incident), assign func(*Incident, *IncidentRoleAssignment)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*Incident)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
-	}
-	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(incidentroleassignment.FieldIncidentID)
-	}
-	query.Where(predicate.IncidentRoleAssignment(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(incident.UserRolesColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		fk := n.IncidentID
-		node, ok := nodeids[fk]
-		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "incident_id" returned %v for node %v`, fk, n.ID)
 		}
 		assign(node, n)
 	}

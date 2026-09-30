@@ -56,8 +56,7 @@ func (s *ProjectionService) handleIncidentEvent(ctx context.Context, e *projecti
 			return fmt.Errorf("incident knowledge evidence: %w", ingestErr)
 		}
 
-		queryExisting := tx.Incident.Query().
-			Where(incident.KnowledgeEntityID(knowledgeEntityId))
+		queryExisting := tx.Incident.Query().Where(incident.KnowledgeEntityID(knowledgeEntityId))
 		existing, existingErr := queryExisting.Only(ctx)
 		if existingErr != nil && !ent.IsNotFound(existingErr) {
 			return fmt.Errorf("query existing incident: %w", existingErr)
@@ -77,8 +76,11 @@ func (s *ProjectionService) handleIncidentEvent(ctx context.Context, e *projecti
 		if existing != nil {
 			if existing.Title == attrs.Title &&
 				existing.Summary == attrs.Summary &&
-				existing.SeverityID == severityID &&
-				existing.TypeID == typeID {
+				existing.SeverityID != nil && *existing.SeverityID == severityID &&
+				existing.TypeID != nil && *existing.TypeID == typeID &&
+				existing.OpenedAt.Equal(openedAt) &&
+				(attrs.ResponseState == "" || existing.ResponseState == incident.ResponseState(attrs.ResponseState)) &&
+				(attrs.ResolvedAt == nil || (existing.ResolvedAt != nil && existing.ResolvedAt.Equal(*attrs.ResolvedAt))) {
 				return nil
 			}
 			id = existing.ID
@@ -90,6 +92,12 @@ func (s *ProjectionService) handleIncidentEvent(ctx context.Context, e *projecti
 			m.SetSummary(attrs.Summary)
 			m.SetSeverityID(severityID)
 			m.SetTypeID(typeID)
+			if attrs.ResponseState != "" {
+				m.SetResponseState(incident.ResponseState(attrs.ResponseState))
+			}
+			if attrs.ResolvedAt != nil {
+				m.SetResolvedAt(*attrs.ResolvedAt)
+			}
 			if !openedAt.IsZero() {
 				m.SetOpenedAt(openedAt)
 			}

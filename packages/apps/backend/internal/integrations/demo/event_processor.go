@@ -16,6 +16,8 @@ const (
 	sourceAlerts      = "alerts"
 	sourceIncidents   = "incidents"
 	sourceUsers       = "users"
+	sourceTeams       = "teams"
+	sourceTeamMembers = "team_memberships"
 	sourceCodeRepos   = "code_repositories"
 	sourceCodeChanges = "code_changes"
 	sourceTopology    = "system_topology"
@@ -37,6 +39,10 @@ func (p *eventProcessor) process() (ent.NormalizedEvents, error) {
 		return p.processIncident()
 	case sourceUsers:
 		return p.processUser()
+	case sourceTeams:
+		return p.processTeam()
+	case sourceTeamMembers:
+		return p.processTeamMembership()
 	case sourceCodeRepos:
 		return p.processCodeRepository()
 	case sourceCodeChanges:
@@ -46,6 +52,84 @@ func (p *eventProcessor) process() (ent.NormalizedEvents, error) {
 	default:
 		return nil, fmt.Errorf("unknown provider event source: %s", p.event.ProviderEventSource)
 	}
+}
+
+func (p *eventProcessor) processTeam() (ent.NormalizedEvents, error) {
+	var payload teamObservedPayload
+	if unmarshalErr := json.Unmarshal(p.event.Attributes, &payload); unmarshalErr != nil {
+		return nil, fmt.Errorf("unmarshal team observed payload: %w", unmarshalErr)
+	}
+	occurredAt := payload.UpdatedAt
+	if occurredAt.IsZero() {
+		occurredAt = p.event.ReceivedAt
+	}
+	if occurredAt.IsZero() {
+		occurredAt = time.Now().UTC()
+	}
+	attrs := projections.TeamEventAttributes{
+		Name:          payload.Name,
+		Slug:          payload.Slug,
+		ChatChannelId: payload.ChatChannelID,
+	}
+	encodedAttrs, encodeErr := projections.EncodeAttributes(attrs)
+	if encodeErr != nil {
+		return nil, fmt.Errorf("encode team observed attributes: %w", encodeErr)
+	}
+	result := &ent.NormalizedEvent{
+		Provider:            providerName,
+		ProviderNamespace:   p.event.ProviderNamespace,
+		ProviderResourceRef: payload.resourceRef(),
+		ProviderEventSource: p.event.ProviderEventSource,
+		ProviderEventRef:    p.event.ProviderEventRef,
+		Kind:                projections.KindTeam,
+		OccurredAt:          occurredAt,
+		ReceivedAt:          p.event.ReceivedAt,
+		Attributes:          encodedAttrs,
+	}
+	return ent.NormalizedEvents{result}, nil
+}
+
+func (p *eventProcessor) processTeamMembership() (ent.NormalizedEvents, error) {
+	var payload teamMembershipObservedPayload
+	if unmarshalErr := json.Unmarshal(p.event.Attributes, &payload); unmarshalErr != nil {
+		return nil, fmt.Errorf("unmarshal team membership observed payload: %w", unmarshalErr)
+	}
+	attrs := projections.TeamMembershipEventAttributes{
+		Team: projections.TeamMembershipTeamAttributes{
+			ProviderResourceRef: rez.ProviderResourceRef{Provider: providerName, ProviderNamespace: integrationName, ResourceRef: "demo:team:" + payload.TeamResourceID},
+			Name:                "Search Platform",
+			Slug:                "search-platform",
+			ChatChannelId:       "CSEARCH123",
+		},
+		User: projections.TeamMembershipUserAttributes{
+			ProviderResourceRef: rez.ProviderResourceRef{Provider: providerName, ProviderNamespace: integrationName, ResourceRef: "demo:user:" + payload.UserExternalID},
+			Name:                "Ava Patel",
+			Email:               "ava.patel@rezible.example",
+			ChatId:              "UAVA123",
+			Timezone:            "Australia/Sydney",
+		},
+		Role: payload.Role,
+	}
+	encodedAttrs, encodeErr := projections.EncodeAttributes(attrs)
+	if encodeErr != nil {
+		return nil, fmt.Errorf("encode team membership observed attributes: %w", encodeErr)
+	}
+	occurredAt := p.event.ReceivedAt
+	if occurredAt.IsZero() {
+		occurredAt = time.Now().UTC()
+	}
+	result := &ent.NormalizedEvent{
+		Provider:            providerName,
+		ProviderNamespace:   p.event.ProviderNamespace,
+		ProviderResourceRef: payload.resourceRef(),
+		ProviderEventSource: p.event.ProviderEventSource,
+		ProviderEventRef:    p.event.ProviderEventRef,
+		Kind:                projections.KindTeamMembership,
+		OccurredAt:          occurredAt,
+		ReceivedAt:          p.event.ReceivedAt,
+		Attributes:          encodedAttrs,
+	}
+	return ent.NormalizedEvents{result}, nil
 }
 
 func (p *eventProcessor) processAlert() (ent.NormalizedEvents, error) {
@@ -205,8 +289,8 @@ func (p *eventProcessor) processCodeChange() (ent.NormalizedEvents, error) {
 
 func (p *eventProcessor) processIncident() (ent.NormalizedEvents, error) {
 	var payload incidentObservedPayload
-	if err := json.Unmarshal(p.event.Attributes, &payload); err != nil {
-		return nil, fmt.Errorf("unmarshal incident observed payload: %w", err)
+	if unmarshalErr := json.Unmarshal(p.event.Attributes, &payload); unmarshalErr != nil {
+		return nil, fmt.Errorf("unmarshal incident observed payload: %w", unmarshalErr)
 	}
 	occurredAt := payload.OccurredAt
 	if occurredAt.IsZero() {
@@ -215,12 +299,24 @@ func (p *eventProcessor) processIncident() (ent.NormalizedEvents, error) {
 	if occurredAt.IsZero() {
 		occurredAt = time.Now().UTC()
 	}
+	var sourceUpdatedAt *time.Time
+	if !payload.SourceUpdatedAt.IsZero() {
+		sourceUpdatedAt = &payload.SourceUpdatedAt
+	}
+	var sourceURL *string
+	if payload.SourceURL != "" {
+		sourceURL = &payload.SourceURL
+	}
 	attrs := projections.IncidentEventAttributes{
-		Title:       payload.Title,
-		Summary:     payload.Summary,
-		SeverityRef: payload.SeverityRef,
-		TypeRef:     payload.TypeRef,
-		OpenedAt:    occurredAt,
+		Title:           payload.Title,
+		Summary:         payload.Summary,
+		SeverityRef:     payload.SeverityRef,
+		TypeRef:         payload.TypeRef,
+		OpenedAt:        occurredAt,
+		ResponseState:   payload.ResponseState,
+		ResolvedAt:      payload.ResolvedAt,
+		SourceUpdatedAt: sourceUpdatedAt,
+		SourceURL:       sourceURL,
 	}
 	encodedAttrs, encodeErr := projections.EncodeAttributes(attrs)
 	if encodeErr != nil {

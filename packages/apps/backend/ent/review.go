@@ -41,6 +41,8 @@ type Review struct {
 	ReviewerID uuid.UUID `json:"reviewer_id,omitempty"`
 	// State holds the value of the "state" field.
 	State review.State `json:"state,omitempty"`
+	// Feedback holds the value of the "feedback" field.
+	Feedback *string `json:"feedback,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ReviewQuery when eager-loading is set.
 	Edges        ReviewEdges `json:"edges"`
@@ -55,12 +57,12 @@ type ReviewEdges struct {
 	Retrospective *Retrospective `json:"retrospective,omitempty"`
 	// AnalysisEntry holds the value of the analysis_entry edge.
 	AnalysisEntry *SystemAnalysisEntry `json:"analysis_entry,omitempty"`
+	// Comment holds the value of the comment edge.
+	Comment *DiscussionComment `json:"comment,omitempty"`
 	// Requester holds the value of the requester edge.
 	Requester *User `json:"requester,omitempty"`
 	// Reviewer holds the value of the reviewer edge.
 	Reviewer *User `json:"reviewer,omitempty"`
-	// Comment holds the value of the comment edge.
-	Comment *DiscussionComment `json:"comment,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [6]bool
@@ -99,12 +101,23 @@ func (e ReviewEdges) AnalysisEntryOrErr() (*SystemAnalysisEntry, error) {
 	return nil, &NotLoadedError{edge: "analysis_entry"}
 }
 
+// CommentOrErr returns the Comment value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e ReviewEdges) CommentOrErr() (*DiscussionComment, error) {
+	if e.Comment != nil {
+		return e.Comment, nil
+	} else if e.loadedTypes[3] {
+		return nil, &NotFoundError{label: discussioncomment.Label}
+	}
+	return nil, &NotLoadedError{edge: "comment"}
+}
+
 // RequesterOrErr returns the Requester value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
 func (e ReviewEdges) RequesterOrErr() (*User, error) {
 	if e.Requester != nil {
 		return e.Requester, nil
-	} else if e.loadedTypes[3] {
+	} else if e.loadedTypes[4] {
 		return nil, &NotFoundError{label: user.Label}
 	}
 	return nil, &NotLoadedError{edge: "requester"}
@@ -115,21 +128,10 @@ func (e ReviewEdges) RequesterOrErr() (*User, error) {
 func (e ReviewEdges) ReviewerOrErr() (*User, error) {
 	if e.Reviewer != nil {
 		return e.Reviewer, nil
-	} else if e.loadedTypes[4] {
+	} else if e.loadedTypes[5] {
 		return nil, &NotFoundError{label: user.Label}
 	}
 	return nil, &NotLoadedError{edge: "reviewer"}
-}
-
-// CommentOrErr returns the Comment value or an error if the edge
-// was not loaded in eager-loading, or loaded but was not found.
-func (e ReviewEdges) CommentOrErr() (*DiscussionComment, error) {
-	if e.Comment != nil {
-		return e.Comment, nil
-	} else if e.loadedTypes[5] {
-		return nil, &NotFoundError{label: discussioncomment.Label}
-	}
-	return nil, &NotLoadedError{edge: "comment"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -141,7 +143,7 @@ func (*Review) scanValues(columns []string) ([]any, error) {
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case review.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case review.FieldState:
+		case review.FieldState, review.FieldFeedback:
 			values[i] = new(sql.NullString)
 		case review.FieldCreatedAt, review.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -225,6 +227,13 @@ func (_m *Review) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.State = review.State(value.String)
 			}
+		case review.FieldFeedback:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field feedback", values[i])
+			} else if value.Valid {
+				_m.Feedback = new(string)
+				*_m.Feedback = value.String
+			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
 		}
@@ -253,6 +262,11 @@ func (_m *Review) QueryAnalysisEntry() *SystemAnalysisEntryQuery {
 	return NewReviewClient(_m.config).QueryAnalysisEntry(_m)
 }
 
+// QueryComment queries the "comment" edge of the Review entity.
+func (_m *Review) QueryComment() *DiscussionCommentQuery {
+	return NewReviewClient(_m.config).QueryComment(_m)
+}
+
 // QueryRequester queries the "requester" edge of the Review entity.
 func (_m *Review) QueryRequester() *UserQuery {
 	return NewReviewClient(_m.config).QueryRequester(_m)
@@ -261,11 +275,6 @@ func (_m *Review) QueryRequester() *UserQuery {
 // QueryReviewer queries the "reviewer" edge of the Review entity.
 func (_m *Review) QueryReviewer() *UserQuery {
 	return NewReviewClient(_m.config).QueryReviewer(_m)
-}
-
-// QueryComment queries the "comment" edge of the Review entity.
-func (_m *Review) QueryComment() *DiscussionCommentQuery {
-	return NewReviewClient(_m.config).QueryComment(_m)
 }
 
 // Update returns a builder for updating this Review.
@@ -323,6 +332,11 @@ func (_m *Review) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("state=")
 	builder.WriteString(fmt.Sprintf("%v", _m.State))
+	builder.WriteString(", ")
+	if v := _m.Feedback; v != nil {
+		builder.WriteString("feedback=")
+		builder.WriteString(*v)
+	}
 	builder.WriteByte(')')
 	return builder.String()
 }

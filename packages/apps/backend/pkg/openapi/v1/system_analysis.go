@@ -8,6 +8,7 @@ import (
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent"
+	sae "github.com/rezible/rezible/ent/systemanalysisentry"
 )
 
 type SystemAnalysisHandler interface {
@@ -30,7 +31,7 @@ type SystemAnalysisHandler interface {
 	UpdateSystemAnalysisEntry(context.Context, *UpdateSystemAnalysisEntryRequest) (*UpdateSystemAnalysisEntryResponse, error)
 	DeleteSystemAnalysisEntry(context.Context, *DeleteSystemAnalysisEntryRequest) (*DeleteSystemAnalysisEntryResponse, error)
 
-	AddSystemAnalysisEntrySubject(context.Context, *AddSystemAnalysisEntrySubjectRequest) (*AddSystemAnalysisEntrySubjectResponse, error)
+	CreateSystemAnalysisEntrySubject(context.Context, *CreateSystemAnalysisEntrySubjectRequest) (*CreateSystemAnalysisEntrySubjectResponse, error)
 	UpdateSystemAnalysisEntrySubject(context.Context, *UpdateSystemAnalysisEntrySubjectRequest) (*UpdateSystemAnalysisEntrySubjectResponse, error)
 	DeleteSystemAnalysisEntrySubject(context.Context, *DeleteSystemAnalysisEntrySubjectRequest) (*DeleteSystemAnalysisEntrySubjectResponse, error)
 }
@@ -55,9 +56,19 @@ func (o operations) RegisterSystemAnalysis(api huma.API) {
 	huma.Register(api, UpdateSystemAnalysisEntry, o.UpdateSystemAnalysisEntry)
 	huma.Register(api, DeleteSystemAnalysisEntry, o.DeleteSystemAnalysisEntry)
 
-	huma.Register(api, AddSystemAnalysisEntrySubject, o.AddSystemAnalysisEntrySubject)
+	huma.Register(api, CreateSystemAnalysisEntrySubject, o.CreateSystemAnalysisEntrySubject)
 	huma.Register(api, UpdateSystemAnalysisEntrySubject, o.UpdateSystemAnalysisEntrySubject)
 	huma.Register(api, DeleteSystemAnalysisEntrySubject, o.DeleteSystemAnalysisEntrySubject)
+}
+
+func (o operations) RegisterSystemAnalysisEnums(api huma.API) {
+	registerEnumAlias[sae.Kind, systemAnalysisEntityKindSchema](api)
+}
+
+type systemAnalysisEntityKindSchema sae.Kind
+
+func (systemAnalysisEntityKindSchema) Schema(huma.Registry) *huma.Schema {
+	return makeEnumStringSchema(sae.KindValues)
 }
 
 type (
@@ -71,9 +82,7 @@ type (
 		SubjectEntityId *uuid.UUID `json:"subjectEntityId,omitempty"`
 		ReferenceTime   *time.Time `json:"referenceTime,omitempty"`
 	}
-)
 
-type (
 	SystemAnalysisNode struct {
 		Id         uuid.UUID                    `json:"id"`
 		Attributes SystemAnalysisNodeAttributes `json:"attributes"`
@@ -108,14 +117,17 @@ type (
 	SystemAnalysisEntryAttributes struct {
 		AnalysisId uuid.UUID                    `json:"analysisId"`
 		Reference  *string                      `json:"reference,omitempty"`
-		Kind       string                       `json:"kind" enum:"observation,context,decision,action,finding,recommendation"`
+		Kind       sae.Kind                     `json:"kind"`
 		OccurredAt *time.Time                   `json:"occurredAt,omitempty"`
 		Sequence   int                          `json:"sequence"`
 		Title      string                       `json:"title"`
 		Body       string                       `json:"body,omitempty"`
 		Properties map[string]any               `json:"properties"`
 		Subjects   []SystemAnalysisEntrySubject `json:"subjects"`
-		Reviews    []Review                     `json:"reviews"`
+		Author     *Expandable[UserAttributes]  `json:"author,omitempty"`
+		CreatedAt  time.Time                    `json:"createdAt"`
+		UpdatedAt  time.Time                    `json:"updatedAt"`
+		Version    int                          `json:"version"`
 	}
 
 	SystemAnalysisEntrySubject struct {
@@ -123,6 +135,20 @@ type (
 		Attributes SystemAnalysisEntrySubjectAttributes `json:"attributes"`
 	}
 	SystemAnalysisEntrySubjectAttributes struct {
+		Role                    string                             `json:"role"`
+		KnowledgeEntityID       *uuid.UUID                         `json:"knowledgeEntityId,omitempty"`
+		KnowledgeRelationshipID *uuid.UUID                         `json:"knowledgeRelationshipId,omitempty"`
+		KnowledgeEvidenceID     *uuid.UUID                         `json:"knowledgeEvidenceId,omitempty"`
+		Available               bool                               `json:"available"`
+		Preview                 *SystemAnalysisEntrySubjectPreview `json:"preview,omitempty"`
+	}
+	SystemAnalysisEntrySubjectPreview struct {
+		Kind       string     `json:"kind"`
+		Label      string     `json:"label"`
+		OccurredAt *time.Time `json:"occurredAt,omitempty"`
+	}
+
+	SystemAnalysisEntrySubjectInput struct {
 		Role                    string     `json:"role"`
 		KnowledgeEntityID       *uuid.UUID `json:"knowledgeEntityId,omitempty"`
 		KnowledgeRelationshipID *uuid.UUID `json:"knowledgeRelationshipId,omitempty"`
@@ -180,25 +206,54 @@ func SystemAnalysisEntryFromEnt(entry *ent.SystemAnalysisEntry) SystemAnalysisEn
 	}
 	attrs := SystemAnalysisEntryAttributes{
 		AnalysisId: entry.AnalysisID,
-		Reviews:    ConvertSlice(entry.Edges.Reviews, ReviewFromEnt),
 		Reference:  entry.Reference,
-		Kind:       entry.Kind.String(),
+		Kind:       entry.Kind,
 		OccurredAt: entry.OccurredAt,
 		Sequence:   entry.Sequence,
 		Title:      entry.Title,
 		Body:       entry.Body,
 		Properties: properties,
 		Subjects:   ConvertSlice(entry.Edges.Subjects, SystemAnalysisEntrySubjectFromEnt),
+		CreatedAt:  entry.CreatedAt,
+		UpdatedAt:  entry.UpdatedAt,
+		Version:    entry.Version,
+	}
+
+	if entry.AuthorID != nil {
+		attrs.Author = &Expandable[UserAttributes]{Id: *entry.AuthorID}
+		if author := entry.Edges.Author; author != nil {
+			attrs.Author.Attributes = new(UserFromEnt(entry.Edges.Author).Attributes)
+		}
 	}
 	return SystemAnalysisEntry{Id: entry.ID, Attributes: attrs}
 }
 
 func SystemAnalysisEntrySubjectFromEnt(subject *ent.SystemAnalysisEntrySubject) SystemAnalysisEntrySubject {
+	var preview *SystemAnalysisEntrySubjectPreview
+	switch {
+	case subject.KnowledgeEntityID != nil && subject.Edges.KnowledgeEntity != nil:
+		preview = &SystemAnalysisEntrySubjectPreview{
+			Kind:  "entity",
+			Label: subject.Edges.KnowledgeEntity.Category.String() + " " + subject.Edges.KnowledgeEntity.Kind,
+		}
+	case subject.KnowledgeRelationshipID != nil && subject.Edges.KnowledgeRelationship != nil:
+		preview = &SystemAnalysisEntrySubjectPreview{
+			Kind:  "relationship",
+			Label: subject.Edges.KnowledgeRelationship.Predicate.String(),
+		}
+	case subject.KnowledgeEvidenceID != nil && subject.Edges.KnowledgeEvidence != nil:
+		preview = &SystemAnalysisEntrySubjectPreview{
+			Kind:  "evidence",
+			Label: subject.Edges.KnowledgeEvidence.Assertion,
+		}
+	}
 	attrs := SystemAnalysisEntrySubjectAttributes{
 		Role:                    subject.Role,
 		KnowledgeEntityID:       subject.KnowledgeEntityID,
 		KnowledgeRelationshipID: subject.KnowledgeRelationshipID,
 		KnowledgeEvidenceID:     subject.KnowledgeEvidenceID,
+		Available:               preview != nil,
+		Preview:                 preview,
 	}
 	return SystemAnalysisEntrySubject{Id: subject.ID, Attributes: attrs}
 }
@@ -363,7 +418,12 @@ var ListSystemAnalysisEntries = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type ListSystemAnalysisEntriesRequest PaginatedIdRequest
+type ListSystemAnalysisEntriesRequest struct {
+	PaginationRequest
+	IdRequest
+	Kind             []sae.Kind  `query:"kind,omitempty"`
+	SelectedEntryIDs []uuid.UUID `query:"selectedEntryIds,omitempty"`
+}
 type ListSystemAnalysisEntriesResponse PaginatedResponse[SystemAnalysisEntry]
 
 var GetSystemAnalysisEntry = huma.Operation{
@@ -388,12 +448,11 @@ var CreateSystemAnalysisEntry = huma.Operation{
 }
 
 type CreateSystemAnalysisEntryAttributes struct {
-	Reference  *string        `json:"reference,omitempty" minLength:"1"`
-	Kind       string         `json:"kind" enum:"observation,context,decision,action,finding,recommendation"`
-	OccurredAt *time.Time     `json:"occurredAt,omitempty"`
-	Title      string         `json:"title"`
-	Body       *string        `json:"body,omitempty"`
-	Properties map[string]any `json:"properties,omitempty"`
+	Kind       sae.Kind                          `json:"kind"`
+	OccurredAt *time.Time                        `json:"occurredAt" nullable:"true"`
+	Title      string                            `json:"title"`
+	Body       string                            `json:"body"`
+	Subjects   []SystemAnalysisEntrySubjectInput `json:"subjects"`
 }
 type CreateSystemAnalysisEntryRequest IdRequestWithBody[CreateSystemAnalysisEntryAttributes]
 type CreateSystemAnalysisEntryResponse ItemResponse[SystemAnalysisEntry]
@@ -404,16 +463,15 @@ var UpdateSystemAnalysisEntry = huma.Operation{
 	Path:        "/system_analysis_entries/{id}",
 	Summary:     "Update System Analysis Entry",
 	Tags:        systemAnalysisTags,
-	Errors:      ErrorCodes(),
+	Errors:      ErrorCodes(http.StatusConflict),
 }
 
 type UpdateSystemAnalysisEntryAttributes struct {
-	Kind       *string        `json:"kind,omitempty" enum:"observation,context,decision,action,finding,recommendation"`
-	OccurredAt *time.Time     `json:"occurredAt,omitempty"`
-	Sequence   *int           `json:"sequence,omitempty"`
-	Title      *string        `json:"title,omitempty"`
-	Body       *string        `json:"body,omitempty"`
-	Properties map[string]any `json:"properties,omitempty"`
+	Kind       sae.Kind                          `json:"kind"`
+	OccurredAt *time.Time                        `json:"occurredAt" nullable:"true"`
+	Title      string                            `json:"title"`
+	Body       string                            `json:"body"`
+	Subjects   []SystemAnalysisEntrySubjectInput `json:"subjects"`
 }
 type UpdateSystemAnalysisEntryRequest IdRequestWithBody[UpdateSystemAnalysisEntryAttributes]
 type UpdateSystemAnalysisEntryResponse ItemResponse[SystemAnalysisEntry]
@@ -424,13 +482,14 @@ var DeleteSystemAnalysisEntry = huma.Operation{
 	Path:        "/system_analysis_entries/{id}",
 	Summary:     "Delete System Analysis Entry",
 	Tags:        systemAnalysisTags,
-	Errors:      ErrorCodes(),
+	Errors:      ErrorCodes(http.StatusConflict),
 }
 
-type DeleteSystemAnalysisEntryRequest IdRequest
+type DeleteSystemAnalysisEntryAttributes IdRequest
+type DeleteSystemAnalysisEntryRequest IdRequestWithBody[DeleteSystemAnalysisEntryAttributes]
 type DeleteSystemAnalysisEntryResponse EmptyResponse
 
-var AddSystemAnalysisEntrySubject = huma.Operation{
+var CreateSystemAnalysisEntrySubject = huma.Operation{
 	OperationID: "add-system-analysis-entry-subject",
 	Method:      http.MethodPost,
 	Path:        "/system_analysis_entries/{id}/subjects",
@@ -439,14 +498,14 @@ var AddSystemAnalysisEntrySubject = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type AddSystemAnalysisEntrySubjectAttributes struct {
+type CreateSystemAnalysisEntrySubjectAttributes struct {
 	Role                    string     `json:"role"`
 	KnowledgeEntityId       *uuid.UUID `json:"knowledgeEntityId,omitempty"`
 	KnowledgeRelationshipId *uuid.UUID `json:"knowledgeRelationshipId,omitempty"`
 	KnowledgeEvidenceId     *uuid.UUID `json:"knowledgeEvidenceId,omitempty"`
 }
-type AddSystemAnalysisEntrySubjectRequest IdRequestWithBody[AddSystemAnalysisEntrySubjectAttributes]
-type AddSystemAnalysisEntrySubjectResponse ItemResponse[SystemAnalysisEntrySubject]
+type CreateSystemAnalysisEntrySubjectRequest IdRequestWithBody[CreateSystemAnalysisEntrySubjectAttributes]
+type CreateSystemAnalysisEntrySubjectResponse ItemResponse[SystemAnalysisEntrySubject]
 
 var UpdateSystemAnalysisEntrySubject = huma.Operation{
 	OperationID: "update-system-analysis-entry-subject",
@@ -454,7 +513,7 @@ var UpdateSystemAnalysisEntrySubject = huma.Operation{
 	Path:        "/system_analysis_entry_subjects/{id}",
 	Summary:     "Update System Analysis Entry Subject",
 	Tags:        systemAnalysisTags,
-	Errors:      ErrorCodes(),
+	Errors:      ErrorCodes(http.StatusConflict),
 }
 
 type UpdateSystemAnalysisEntrySubjectAttributes struct {

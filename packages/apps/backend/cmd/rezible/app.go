@@ -455,10 +455,13 @@ func (a *Application) setupDemo(ctx context.Context) error {
 
 		return demoprovider.SeedDemoData(
 			ctx,
+			a.mustInvoke[rez.Database](),
 			a.mustInvoke[rez.KnowledgeGraphQueryService](),
 			a.mustInvoke[rez.IncidentService](),
 			a.mustInvoke[rez.RetrospectiveService](),
 			a.mustInvoke[rez.SystemAnalysisService](),
+			a.mustInvoke[rez.EventsService](),
+			a.mustInvoke[rez.SituationService](),
 		)
 	})
 }

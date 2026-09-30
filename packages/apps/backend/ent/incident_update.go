@@ -24,12 +24,9 @@ import (
 	"github.com/rezible/rezible/ent/incidenttype"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/knowledgeentity"
-	"github.com/rezible/rezible/ent/meetingsession"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/ent/situation"
-	"github.com/rezible/rezible/ent/task"
-	"github.com/rezible/rezible/ent/user"
 	"github.com/rezible/rezible/ent/videoconference"
 )
 
@@ -129,6 +126,12 @@ func (_u *IncidentUpdate) SetNillableSeverityID(v *uuid.UUID) *IncidentUpdate {
 	return _u
 }
 
+// ClearSeverityID clears the value of the "severity_id" field.
+func (_u *IncidentUpdate) ClearSeverityID() *IncidentUpdate {
+	_u.mutation.ClearSeverityID()
+	return _u
+}
+
 // SetTypeID sets the "type_id" field.
 func (_u *IncidentUpdate) SetTypeID(v uuid.UUID) *IncidentUpdate {
 	_u.mutation.SetTypeID(v)
@@ -140,6 +143,12 @@ func (_u *IncidentUpdate) SetNillableTypeID(v *uuid.UUID) *IncidentUpdate {
 	if v != nil {
 		_u.SetTypeID(*v)
 	}
+	return _u
+}
+
+// ClearTypeID clears the value of the "type_id" field.
+func (_u *IncidentUpdate) ClearTypeID() *IncidentUpdate {
+	_u.mutation.ClearTypeID()
 	return _u
 }
 
@@ -183,6 +192,20 @@ func (_u *IncidentUpdate) ClearChatChannelID() *IncidentUpdate {
 	return _u
 }
 
+// SetResponseState sets the "response_state" field.
+func (_u *IncidentUpdate) SetResponseState(v incident.ResponseState) *IncidentUpdate {
+	_u.mutation.SetResponseState(v)
+	return _u
+}
+
+// SetNillableResponseState sets the "response_state" field if the given value is not nil.
+func (_u *IncidentUpdate) SetNillableResponseState(v *incident.ResponseState) *IncidentUpdate {
+	if v != nil {
+		_u.SetResponseState(*v)
+	}
+	return _u
+}
+
 // SetOpenedAt sets the "opened_at" field.
 func (_u *IncidentUpdate) SetOpenedAt(v time.Time) *IncidentUpdate {
 	_u.mutation.SetOpenedAt(v)
@@ -194,6 +217,26 @@ func (_u *IncidentUpdate) SetNillableOpenedAt(v *time.Time) *IncidentUpdate {
 	if v != nil {
 		_u.SetOpenedAt(*v)
 	}
+	return _u
+}
+
+// SetResolvedAt sets the "resolved_at" field.
+func (_u *IncidentUpdate) SetResolvedAt(v time.Time) *IncidentUpdate {
+	_u.mutation.SetResolvedAt(v)
+	return _u
+}
+
+// SetNillableResolvedAt sets the "resolved_at" field if the given value is not nil.
+func (_u *IncidentUpdate) SetNillableResolvedAt(v *time.Time) *IncidentUpdate {
+	if v != nil {
+		_u.SetResolvedAt(*v)
+	}
+	return _u
+}
+
+// ClearResolvedAt clears the value of the "resolved_at" field.
+func (_u *IncidentUpdate) ClearResolvedAt() *IncidentUpdate {
+	_u.mutation.ClearResolvedAt()
 	return _u
 }
 
@@ -244,21 +287,6 @@ func (_u *IncidentUpdate) SetNillableRetrospectiveID(id *uuid.UUID) *IncidentUpd
 // SetRetrospective sets the "retrospective" edge to the Retrospective entity.
 func (_u *IncidentUpdate) SetRetrospective(v *Retrospective) *IncidentUpdate {
 	return _u.SetRetrospectiveID(v.ID)
-}
-
-// AddUserIDs adds the "users" edge to the User entity by IDs.
-func (_u *IncidentUpdate) AddUserIDs(ids ...uuid.UUID) *IncidentUpdate {
-	_u.mutation.AddUserIDs(ids...)
-	return _u
-}
-
-// AddUsers adds the "users" edges to the User entity.
-func (_u *IncidentUpdate) AddUsers(v ...*User) *IncidentUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddUserIDs(ids...)
 }
 
 // AddRoleAssignmentIDs adds the "role_assignments" edge to the IncidentRoleAssignment entity by IDs.
@@ -321,21 +349,6 @@ func (_u *IncidentUpdate) AddFieldSelections(v ...*IncidentFieldOption) *Inciden
 	return _u.AddFieldSelectionIDs(ids...)
 }
 
-// AddTaskIDs adds the "tasks" edge to the Task entity by IDs.
-func (_u *IncidentUpdate) AddTaskIDs(ids ...uuid.UUID) *IncidentUpdate {
-	_u.mutation.AddTaskIDs(ids...)
-	return _u
-}
-
-// AddTasks adds the "tasks" edges to the Task entity.
-func (_u *IncidentUpdate) AddTasks(v ...*Task) *IncidentUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddTaskIDs(ids...)
-}
-
 // AddTagAssignmentIDs adds the "tag_assignments" edge to the IncidentTag entity by IDs.
 func (_u *IncidentUpdate) AddTagAssignmentIDs(ids ...uuid.UUID) *IncidentUpdate {
 	_u.mutation.AddTagAssignmentIDs(ids...)
@@ -381,21 +394,6 @@ func (_u *IncidentUpdate) AddDebriefs(v ...*IncidentDebrief) *IncidentUpdate {
 	return _u.AddDebriefIDs(ids...)
 }
 
-// AddReviewSessionIDs adds the "review_sessions" edge to the MeetingSession entity by IDs.
-func (_u *IncidentUpdate) AddReviewSessionIDs(ids ...uuid.UUID) *IncidentUpdate {
-	_u.mutation.AddReviewSessionIDs(ids...)
-	return _u
-}
-
-// AddReviewSessions adds the "review_sessions" edges to the MeetingSession entity.
-func (_u *IncidentUpdate) AddReviewSessions(v ...*MeetingSession) *IncidentUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddReviewSessionIDs(ids...)
-}
-
 // AddVideoConferenceIDs adds the "video_conferences" edge to the VideoConference entity by IDs.
 func (_u *IncidentUpdate) AddVideoConferenceIDs(ids ...uuid.UUID) *IncidentUpdate {
 	_u.mutation.AddVideoConferenceIDs(ids...)
@@ -409,21 +407,6 @@ func (_u *IncidentUpdate) AddVideoConferences(v ...*VideoConference) *IncidentUp
 		ids[i] = v[i].ID
 	}
 	return _u.AddVideoConferenceIDs(ids...)
-}
-
-// AddUserRoleIDs adds the "user_roles" edge to the IncidentRoleAssignment entity by IDs.
-func (_u *IncidentUpdate) AddUserRoleIDs(ids ...uuid.UUID) *IncidentUpdate {
-	_u.mutation.AddUserRoleIDs(ids...)
-	return _u
-}
-
-// AddUserRoles adds the "user_roles" edges to the IncidentRoleAssignment entity.
-func (_u *IncidentUpdate) AddUserRoles(v ...*IncidentRoleAssignment) *IncidentUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddUserRoleIDs(ids...)
 }
 
 // AddIncidentLinkIDs adds the "incident_links" edge to the IncidentLink entity by IDs.
@@ -489,27 +472,6 @@ func (_u *IncidentUpdate) RemoveMilestones(v ...*IncidentMilestone) *IncidentUpd
 func (_u *IncidentUpdate) ClearRetrospective() *IncidentUpdate {
 	_u.mutation.ClearRetrospective()
 	return _u
-}
-
-// ClearUsers clears all "users" edges to the User entity.
-func (_u *IncidentUpdate) ClearUsers() *IncidentUpdate {
-	_u.mutation.ClearUsers()
-	return _u
-}
-
-// RemoveUserIDs removes the "users" edge to User entities by IDs.
-func (_u *IncidentUpdate) RemoveUserIDs(ids ...uuid.UUID) *IncidentUpdate {
-	_u.mutation.RemoveUserIDs(ids...)
-	return _u
-}
-
-// RemoveUsers removes "users" edges to User entities.
-func (_u *IncidentUpdate) RemoveUsers(v ...*User) *IncidentUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveUserIDs(ids...)
 }
 
 // ClearRoleAssignments clears all "role_assignments" edges to the IncidentRoleAssignment entity.
@@ -596,27 +558,6 @@ func (_u *IncidentUpdate) RemoveFieldSelections(v ...*IncidentFieldOption) *Inci
 	return _u.RemoveFieldSelectionIDs(ids...)
 }
 
-// ClearTasks clears all "tasks" edges to the Task entity.
-func (_u *IncidentUpdate) ClearTasks() *IncidentUpdate {
-	_u.mutation.ClearTasks()
-	return _u
-}
-
-// RemoveTaskIDs removes the "tasks" edge to Task entities by IDs.
-func (_u *IncidentUpdate) RemoveTaskIDs(ids ...uuid.UUID) *IncidentUpdate {
-	_u.mutation.RemoveTaskIDs(ids...)
-	return _u
-}
-
-// RemoveTasks removes "tasks" edges to Task entities.
-func (_u *IncidentUpdate) RemoveTasks(v ...*Task) *IncidentUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveTaskIDs(ids...)
-}
-
 // ClearTagAssignments clears all "tag_assignments" edges to the IncidentTag entity.
 func (_u *IncidentUpdate) ClearTagAssignments() *IncidentUpdate {
 	_u.mutation.ClearTagAssignments()
@@ -680,27 +621,6 @@ func (_u *IncidentUpdate) RemoveDebriefs(v ...*IncidentDebrief) *IncidentUpdate 
 	return _u.RemoveDebriefIDs(ids...)
 }
 
-// ClearReviewSessions clears all "review_sessions" edges to the MeetingSession entity.
-func (_u *IncidentUpdate) ClearReviewSessions() *IncidentUpdate {
-	_u.mutation.ClearReviewSessions()
-	return _u
-}
-
-// RemoveReviewSessionIDs removes the "review_sessions" edge to MeetingSession entities by IDs.
-func (_u *IncidentUpdate) RemoveReviewSessionIDs(ids ...uuid.UUID) *IncidentUpdate {
-	_u.mutation.RemoveReviewSessionIDs(ids...)
-	return _u
-}
-
-// RemoveReviewSessions removes "review_sessions" edges to MeetingSession entities.
-func (_u *IncidentUpdate) RemoveReviewSessions(v ...*MeetingSession) *IncidentUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveReviewSessionIDs(ids...)
-}
-
 // ClearVideoConferences clears all "video_conferences" edges to the VideoConference entity.
 func (_u *IncidentUpdate) ClearVideoConferences() *IncidentUpdate {
 	_u.mutation.ClearVideoConferences()
@@ -720,27 +640,6 @@ func (_u *IncidentUpdate) RemoveVideoConferences(v ...*VideoConference) *Inciden
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveVideoConferenceIDs(ids...)
-}
-
-// ClearUserRoles clears all "user_roles" edges to the IncidentRoleAssignment entity.
-func (_u *IncidentUpdate) ClearUserRoles() *IncidentUpdate {
-	_u.mutation.ClearUserRoles()
-	return _u
-}
-
-// RemoveUserRoleIDs removes the "user_roles" edge to IncidentRoleAssignment entities by IDs.
-func (_u *IncidentUpdate) RemoveUserRoleIDs(ids ...uuid.UUID) *IncidentUpdate {
-	_u.mutation.RemoveUserRoleIDs(ids...)
-	return _u
-}
-
-// RemoveUserRoles removes "user_roles" edges to IncidentRoleAssignment entities.
-func (_u *IncidentUpdate) RemoveUserRoles(v ...*IncidentRoleAssignment) *IncidentUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveUserRoleIDs(ids...)
 }
 
 // ClearIncidentLinks clears all "incident_links" edges to the IncidentLink entity.
@@ -808,14 +707,13 @@ func (_u *IncidentUpdate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *IncidentUpdate) check() error {
+	if v, ok := _u.mutation.ResponseState(); ok {
+		if err := incident.ResponseStateValidator(v); err != nil {
+			return &ValidationError{Name: "response_state", err: fmt.Errorf(`ent: validator failed for field "Incident.response_state": %w`, err)}
+		}
+	}
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "Incident.tenant"`)
-	}
-	if _u.mutation.SeverityCleared() && len(_u.mutation.SeverityIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "Incident.severity"`)
-	}
-	if _u.mutation.TypeCleared() && len(_u.mutation.TypeIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "Incident.type"`)
 	}
 	return nil
 }
@@ -862,8 +760,17 @@ func (_u *IncidentUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if _u.mutation.ChatChannelIDCleared() {
 		_spec.ClearField(incident.FieldChatChannelID, field.TypeString)
 	}
+	if value, ok := _u.mutation.ResponseState(); ok {
+		_spec.SetField(incident.FieldResponseState, field.TypeEnum, value)
+	}
 	if value, ok := _u.mutation.OpenedAt(); ok {
 		_spec.SetField(incident.FieldOpenedAt, field.TypeTime, value)
+	}
+	if value, ok := _u.mutation.ResolvedAt(); ok {
+		_spec.SetField(incident.FieldResolvedAt, field.TypeTime, value)
+	}
+	if _u.mutation.ResolvedAtCleared() {
+		_spec.ClearField(incident.FieldResolvedAt, field.TypeTime)
 	}
 	if _u.mutation.KnowledgeEntityCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -1034,75 +941,6 @@ func (_u *IncidentUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		edge.Schema = _u.schemaConfig.Retrospective
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.UsersCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   incident.UsersTable,
-			Columns: incident.UsersPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.IncidentRoleAssignment
-		createE := &IncidentRoleAssignmentCreate{config: _u.config, mutation: newIncidentRoleAssignmentMutation(_u.config, OpCreate)}
-		_ = createE.defaults()
-		_, specE := createE.createSpec()
-		edge.Target.Fields = specE.Fields
-		if specE.ID.Value != nil {
-			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedUsersIDs(); len(nodes) > 0 && !_u.mutation.UsersCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   incident.UsersTable,
-			Columns: incident.UsersPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.IncidentRoleAssignment
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		createE := &IncidentRoleAssignmentCreate{config: _u.config, mutation: newIncidentRoleAssignmentMutation(_u.config, OpCreate)}
-		_ = createE.defaults()
-		_, specE := createE.createSpec()
-		edge.Target.Fields = specE.Fields
-		if specE.ID.Value != nil {
-			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.UsersIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   incident.UsersTable,
-			Columns: incident.UsersPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.IncidentRoleAssignment
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		createE := &IncidentRoleAssignmentCreate{config: _u.config, mutation: newIncidentRoleAssignmentMutation(_u.config, OpCreate)}
-		_ = createE.defaults()
-		_, specE := createE.createSpec()
-		edge.Target.Fields = specE.Fields
-		if specE.ID.Value != nil {
-			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
@@ -1298,54 +1136,6 @@ func (_u *IncidentUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if _u.mutation.TasksCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   incident.TasksTable,
-			Columns: []string{incident.TasksColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.Task
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedTasksIDs(); len(nodes) > 0 && !_u.mutation.TasksCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   incident.TasksTable,
-			Columns: []string{incident.TasksColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.Task
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.TasksIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   incident.TasksTable,
-			Columns: []string{incident.TasksColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.Task
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	if _u.mutation.TagAssignmentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
@@ -1490,58 +1280,10 @@ func (_u *IncidentUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if _u.mutation.ReviewSessionsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   incident.ReviewSessionsTable,
-			Columns: incident.ReviewSessionsPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(meetingsession.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.IncidentReviewSessions
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedReviewSessionsIDs(); len(nodes) > 0 && !_u.mutation.ReviewSessionsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   incident.ReviewSessionsTable,
-			Columns: incident.ReviewSessionsPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(meetingsession.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.IncidentReviewSessions
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.ReviewSessionsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   incident.ReviewSessionsTable,
-			Columns: incident.ReviewSessionsPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(meetingsession.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.IncidentReviewSessions
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	if _u.mutation.VideoConferencesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
-			Inverse: false,
+			Inverse: true,
 			Table:   incident.VideoConferencesTable,
 			Columns: []string{incident.VideoConferencesColumn},
 			Bidi:    false,
@@ -1555,7 +1297,7 @@ func (_u *IncidentUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if nodes := _u.mutation.RemovedVideoConferencesIDs(); len(nodes) > 0 && !_u.mutation.VideoConferencesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
-			Inverse: false,
+			Inverse: true,
 			Table:   incident.VideoConferencesTable,
 			Columns: []string{incident.VideoConferencesColumn},
 			Bidi:    false,
@@ -1572,7 +1314,7 @@ func (_u *IncidentUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if nodes := _u.mutation.VideoConferencesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
-			Inverse: false,
+			Inverse: true,
 			Table:   incident.VideoConferencesTable,
 			Columns: []string{incident.VideoConferencesColumn},
 			Bidi:    false,
@@ -1581,54 +1323,6 @@ func (_u *IncidentUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			},
 		}
 		edge.Schema = _u.schemaConfig.VideoConference
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.UserRolesCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   incident.UserRolesTable,
-			Columns: []string{incident.UserRolesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incidentroleassignment.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.IncidentRoleAssignment
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedUserRolesIDs(); len(nodes) > 0 && !_u.mutation.UserRolesCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   incident.UserRolesTable,
-			Columns: []string{incident.UserRolesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incidentroleassignment.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.IncidentRoleAssignment
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.UserRolesIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   incident.UserRolesTable,
-			Columns: []string{incident.UserRolesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incidentroleassignment.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.IncidentRoleAssignment
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -1788,6 +1482,12 @@ func (_u *IncidentUpdateOne) SetNillableSeverityID(v *uuid.UUID) *IncidentUpdate
 	return _u
 }
 
+// ClearSeverityID clears the value of the "severity_id" field.
+func (_u *IncidentUpdateOne) ClearSeverityID() *IncidentUpdateOne {
+	_u.mutation.ClearSeverityID()
+	return _u
+}
+
 // SetTypeID sets the "type_id" field.
 func (_u *IncidentUpdateOne) SetTypeID(v uuid.UUID) *IncidentUpdateOne {
 	_u.mutation.SetTypeID(v)
@@ -1799,6 +1499,12 @@ func (_u *IncidentUpdateOne) SetNillableTypeID(v *uuid.UUID) *IncidentUpdateOne 
 	if v != nil {
 		_u.SetTypeID(*v)
 	}
+	return _u
+}
+
+// ClearTypeID clears the value of the "type_id" field.
+func (_u *IncidentUpdateOne) ClearTypeID() *IncidentUpdateOne {
+	_u.mutation.ClearTypeID()
 	return _u
 }
 
@@ -1842,6 +1548,20 @@ func (_u *IncidentUpdateOne) ClearChatChannelID() *IncidentUpdateOne {
 	return _u
 }
 
+// SetResponseState sets the "response_state" field.
+func (_u *IncidentUpdateOne) SetResponseState(v incident.ResponseState) *IncidentUpdateOne {
+	_u.mutation.SetResponseState(v)
+	return _u
+}
+
+// SetNillableResponseState sets the "response_state" field if the given value is not nil.
+func (_u *IncidentUpdateOne) SetNillableResponseState(v *incident.ResponseState) *IncidentUpdateOne {
+	if v != nil {
+		_u.SetResponseState(*v)
+	}
+	return _u
+}
+
 // SetOpenedAt sets the "opened_at" field.
 func (_u *IncidentUpdateOne) SetOpenedAt(v time.Time) *IncidentUpdateOne {
 	_u.mutation.SetOpenedAt(v)
@@ -1853,6 +1573,26 @@ func (_u *IncidentUpdateOne) SetNillableOpenedAt(v *time.Time) *IncidentUpdateOn
 	if v != nil {
 		_u.SetOpenedAt(*v)
 	}
+	return _u
+}
+
+// SetResolvedAt sets the "resolved_at" field.
+func (_u *IncidentUpdateOne) SetResolvedAt(v time.Time) *IncidentUpdateOne {
+	_u.mutation.SetResolvedAt(v)
+	return _u
+}
+
+// SetNillableResolvedAt sets the "resolved_at" field if the given value is not nil.
+func (_u *IncidentUpdateOne) SetNillableResolvedAt(v *time.Time) *IncidentUpdateOne {
+	if v != nil {
+		_u.SetResolvedAt(*v)
+	}
+	return _u
+}
+
+// ClearResolvedAt clears the value of the "resolved_at" field.
+func (_u *IncidentUpdateOne) ClearResolvedAt() *IncidentUpdateOne {
+	_u.mutation.ClearResolvedAt()
 	return _u
 }
 
@@ -1903,21 +1643,6 @@ func (_u *IncidentUpdateOne) SetNillableRetrospectiveID(id *uuid.UUID) *Incident
 // SetRetrospective sets the "retrospective" edge to the Retrospective entity.
 func (_u *IncidentUpdateOne) SetRetrospective(v *Retrospective) *IncidentUpdateOne {
 	return _u.SetRetrospectiveID(v.ID)
-}
-
-// AddUserIDs adds the "users" edge to the User entity by IDs.
-func (_u *IncidentUpdateOne) AddUserIDs(ids ...uuid.UUID) *IncidentUpdateOne {
-	_u.mutation.AddUserIDs(ids...)
-	return _u
-}
-
-// AddUsers adds the "users" edges to the User entity.
-func (_u *IncidentUpdateOne) AddUsers(v ...*User) *IncidentUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddUserIDs(ids...)
 }
 
 // AddRoleAssignmentIDs adds the "role_assignments" edge to the IncidentRoleAssignment entity by IDs.
@@ -1980,21 +1705,6 @@ func (_u *IncidentUpdateOne) AddFieldSelections(v ...*IncidentFieldOption) *Inci
 	return _u.AddFieldSelectionIDs(ids...)
 }
 
-// AddTaskIDs adds the "tasks" edge to the Task entity by IDs.
-func (_u *IncidentUpdateOne) AddTaskIDs(ids ...uuid.UUID) *IncidentUpdateOne {
-	_u.mutation.AddTaskIDs(ids...)
-	return _u
-}
-
-// AddTasks adds the "tasks" edges to the Task entity.
-func (_u *IncidentUpdateOne) AddTasks(v ...*Task) *IncidentUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddTaskIDs(ids...)
-}
-
 // AddTagAssignmentIDs adds the "tag_assignments" edge to the IncidentTag entity by IDs.
 func (_u *IncidentUpdateOne) AddTagAssignmentIDs(ids ...uuid.UUID) *IncidentUpdateOne {
 	_u.mutation.AddTagAssignmentIDs(ids...)
@@ -2040,21 +1750,6 @@ func (_u *IncidentUpdateOne) AddDebriefs(v ...*IncidentDebrief) *IncidentUpdateO
 	return _u.AddDebriefIDs(ids...)
 }
 
-// AddReviewSessionIDs adds the "review_sessions" edge to the MeetingSession entity by IDs.
-func (_u *IncidentUpdateOne) AddReviewSessionIDs(ids ...uuid.UUID) *IncidentUpdateOne {
-	_u.mutation.AddReviewSessionIDs(ids...)
-	return _u
-}
-
-// AddReviewSessions adds the "review_sessions" edges to the MeetingSession entity.
-func (_u *IncidentUpdateOne) AddReviewSessions(v ...*MeetingSession) *IncidentUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddReviewSessionIDs(ids...)
-}
-
 // AddVideoConferenceIDs adds the "video_conferences" edge to the VideoConference entity by IDs.
 func (_u *IncidentUpdateOne) AddVideoConferenceIDs(ids ...uuid.UUID) *IncidentUpdateOne {
 	_u.mutation.AddVideoConferenceIDs(ids...)
@@ -2068,21 +1763,6 @@ func (_u *IncidentUpdateOne) AddVideoConferences(v ...*VideoConference) *Inciden
 		ids[i] = v[i].ID
 	}
 	return _u.AddVideoConferenceIDs(ids...)
-}
-
-// AddUserRoleIDs adds the "user_roles" edge to the IncidentRoleAssignment entity by IDs.
-func (_u *IncidentUpdateOne) AddUserRoleIDs(ids ...uuid.UUID) *IncidentUpdateOne {
-	_u.mutation.AddUserRoleIDs(ids...)
-	return _u
-}
-
-// AddUserRoles adds the "user_roles" edges to the IncidentRoleAssignment entity.
-func (_u *IncidentUpdateOne) AddUserRoles(v ...*IncidentRoleAssignment) *IncidentUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddUserRoleIDs(ids...)
 }
 
 // AddIncidentLinkIDs adds the "incident_links" edge to the IncidentLink entity by IDs.
@@ -2148,27 +1828,6 @@ func (_u *IncidentUpdateOne) RemoveMilestones(v ...*IncidentMilestone) *Incident
 func (_u *IncidentUpdateOne) ClearRetrospective() *IncidentUpdateOne {
 	_u.mutation.ClearRetrospective()
 	return _u
-}
-
-// ClearUsers clears all "users" edges to the User entity.
-func (_u *IncidentUpdateOne) ClearUsers() *IncidentUpdateOne {
-	_u.mutation.ClearUsers()
-	return _u
-}
-
-// RemoveUserIDs removes the "users" edge to User entities by IDs.
-func (_u *IncidentUpdateOne) RemoveUserIDs(ids ...uuid.UUID) *IncidentUpdateOne {
-	_u.mutation.RemoveUserIDs(ids...)
-	return _u
-}
-
-// RemoveUsers removes "users" edges to User entities.
-func (_u *IncidentUpdateOne) RemoveUsers(v ...*User) *IncidentUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveUserIDs(ids...)
 }
 
 // ClearRoleAssignments clears all "role_assignments" edges to the IncidentRoleAssignment entity.
@@ -2255,27 +1914,6 @@ func (_u *IncidentUpdateOne) RemoveFieldSelections(v ...*IncidentFieldOption) *I
 	return _u.RemoveFieldSelectionIDs(ids...)
 }
 
-// ClearTasks clears all "tasks" edges to the Task entity.
-func (_u *IncidentUpdateOne) ClearTasks() *IncidentUpdateOne {
-	_u.mutation.ClearTasks()
-	return _u
-}
-
-// RemoveTaskIDs removes the "tasks" edge to Task entities by IDs.
-func (_u *IncidentUpdateOne) RemoveTaskIDs(ids ...uuid.UUID) *IncidentUpdateOne {
-	_u.mutation.RemoveTaskIDs(ids...)
-	return _u
-}
-
-// RemoveTasks removes "tasks" edges to Task entities.
-func (_u *IncidentUpdateOne) RemoveTasks(v ...*Task) *IncidentUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveTaskIDs(ids...)
-}
-
 // ClearTagAssignments clears all "tag_assignments" edges to the IncidentTag entity.
 func (_u *IncidentUpdateOne) ClearTagAssignments() *IncidentUpdateOne {
 	_u.mutation.ClearTagAssignments()
@@ -2339,27 +1977,6 @@ func (_u *IncidentUpdateOne) RemoveDebriefs(v ...*IncidentDebrief) *IncidentUpda
 	return _u.RemoveDebriefIDs(ids...)
 }
 
-// ClearReviewSessions clears all "review_sessions" edges to the MeetingSession entity.
-func (_u *IncidentUpdateOne) ClearReviewSessions() *IncidentUpdateOne {
-	_u.mutation.ClearReviewSessions()
-	return _u
-}
-
-// RemoveReviewSessionIDs removes the "review_sessions" edge to MeetingSession entities by IDs.
-func (_u *IncidentUpdateOne) RemoveReviewSessionIDs(ids ...uuid.UUID) *IncidentUpdateOne {
-	_u.mutation.RemoveReviewSessionIDs(ids...)
-	return _u
-}
-
-// RemoveReviewSessions removes "review_sessions" edges to MeetingSession entities.
-func (_u *IncidentUpdateOne) RemoveReviewSessions(v ...*MeetingSession) *IncidentUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveReviewSessionIDs(ids...)
-}
-
 // ClearVideoConferences clears all "video_conferences" edges to the VideoConference entity.
 func (_u *IncidentUpdateOne) ClearVideoConferences() *IncidentUpdateOne {
 	_u.mutation.ClearVideoConferences()
@@ -2379,27 +1996,6 @@ func (_u *IncidentUpdateOne) RemoveVideoConferences(v ...*VideoConference) *Inci
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveVideoConferenceIDs(ids...)
-}
-
-// ClearUserRoles clears all "user_roles" edges to the IncidentRoleAssignment entity.
-func (_u *IncidentUpdateOne) ClearUserRoles() *IncidentUpdateOne {
-	_u.mutation.ClearUserRoles()
-	return _u
-}
-
-// RemoveUserRoleIDs removes the "user_roles" edge to IncidentRoleAssignment entities by IDs.
-func (_u *IncidentUpdateOne) RemoveUserRoleIDs(ids ...uuid.UUID) *IncidentUpdateOne {
-	_u.mutation.RemoveUserRoleIDs(ids...)
-	return _u
-}
-
-// RemoveUserRoles removes "user_roles" edges to IncidentRoleAssignment entities.
-func (_u *IncidentUpdateOne) RemoveUserRoles(v ...*IncidentRoleAssignment) *IncidentUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveUserRoleIDs(ids...)
 }
 
 // ClearIncidentLinks clears all "incident_links" edges to the IncidentLink entity.
@@ -2480,14 +2076,13 @@ func (_u *IncidentUpdateOne) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *IncidentUpdateOne) check() error {
+	if v, ok := _u.mutation.ResponseState(); ok {
+		if err := incident.ResponseStateValidator(v); err != nil {
+			return &ValidationError{Name: "response_state", err: fmt.Errorf(`ent: validator failed for field "Incident.response_state": %w`, err)}
+		}
+	}
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "Incident.tenant"`)
-	}
-	if _u.mutation.SeverityCleared() && len(_u.mutation.SeverityIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "Incident.severity"`)
-	}
-	if _u.mutation.TypeCleared() && len(_u.mutation.TypeIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "Incident.type"`)
 	}
 	return nil
 }
@@ -2551,8 +2146,17 @@ func (_u *IncidentUpdateOne) sqlSave(ctx context.Context) (_node *Incident, err 
 	if _u.mutation.ChatChannelIDCleared() {
 		_spec.ClearField(incident.FieldChatChannelID, field.TypeString)
 	}
+	if value, ok := _u.mutation.ResponseState(); ok {
+		_spec.SetField(incident.FieldResponseState, field.TypeEnum, value)
+	}
 	if value, ok := _u.mutation.OpenedAt(); ok {
 		_spec.SetField(incident.FieldOpenedAt, field.TypeTime, value)
+	}
+	if value, ok := _u.mutation.ResolvedAt(); ok {
+		_spec.SetField(incident.FieldResolvedAt, field.TypeTime, value)
+	}
+	if _u.mutation.ResolvedAtCleared() {
+		_spec.ClearField(incident.FieldResolvedAt, field.TypeTime)
 	}
 	if _u.mutation.KnowledgeEntityCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -2723,75 +2327,6 @@ func (_u *IncidentUpdateOne) sqlSave(ctx context.Context) (_node *Incident, err 
 		edge.Schema = _u.schemaConfig.Retrospective
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.UsersCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   incident.UsersTable,
-			Columns: incident.UsersPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.IncidentRoleAssignment
-		createE := &IncidentRoleAssignmentCreate{config: _u.config, mutation: newIncidentRoleAssignmentMutation(_u.config, OpCreate)}
-		_ = createE.defaults()
-		_, specE := createE.createSpec()
-		edge.Target.Fields = specE.Fields
-		if specE.ID.Value != nil {
-			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedUsersIDs(); len(nodes) > 0 && !_u.mutation.UsersCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   incident.UsersTable,
-			Columns: incident.UsersPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.IncidentRoleAssignment
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		createE := &IncidentRoleAssignmentCreate{config: _u.config, mutation: newIncidentRoleAssignmentMutation(_u.config, OpCreate)}
-		_ = createE.defaults()
-		_, specE := createE.createSpec()
-		edge.Target.Fields = specE.Fields
-		if specE.ID.Value != nil {
-			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.UsersIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   incident.UsersTable,
-			Columns: incident.UsersPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.IncidentRoleAssignment
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		createE := &IncidentRoleAssignmentCreate{config: _u.config, mutation: newIncidentRoleAssignmentMutation(_u.config, OpCreate)}
-		_ = createE.defaults()
-		_, specE := createE.createSpec()
-		edge.Target.Fields = specE.Fields
-		if specE.ID.Value != nil {
-			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
@@ -2987,54 +2522,6 @@ func (_u *IncidentUpdateOne) sqlSave(ctx context.Context) (_node *Incident, err 
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if _u.mutation.TasksCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   incident.TasksTable,
-			Columns: []string{incident.TasksColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.Task
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedTasksIDs(); len(nodes) > 0 && !_u.mutation.TasksCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   incident.TasksTable,
-			Columns: []string{incident.TasksColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.Task
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.TasksIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   incident.TasksTable,
-			Columns: []string{incident.TasksColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.Task
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	if _u.mutation.TagAssignmentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
@@ -3179,58 +2666,10 @@ func (_u *IncidentUpdateOne) sqlSave(ctx context.Context) (_node *Incident, err 
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if _u.mutation.ReviewSessionsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   incident.ReviewSessionsTable,
-			Columns: incident.ReviewSessionsPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(meetingsession.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.IncidentReviewSessions
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedReviewSessionsIDs(); len(nodes) > 0 && !_u.mutation.ReviewSessionsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   incident.ReviewSessionsTable,
-			Columns: incident.ReviewSessionsPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(meetingsession.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.IncidentReviewSessions
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.ReviewSessionsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   incident.ReviewSessionsTable,
-			Columns: incident.ReviewSessionsPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(meetingsession.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.IncidentReviewSessions
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	if _u.mutation.VideoConferencesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
-			Inverse: false,
+			Inverse: true,
 			Table:   incident.VideoConferencesTable,
 			Columns: []string{incident.VideoConferencesColumn},
 			Bidi:    false,
@@ -3244,7 +2683,7 @@ func (_u *IncidentUpdateOne) sqlSave(ctx context.Context) (_node *Incident, err 
 	if nodes := _u.mutation.RemovedVideoConferencesIDs(); len(nodes) > 0 && !_u.mutation.VideoConferencesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
-			Inverse: false,
+			Inverse: true,
 			Table:   incident.VideoConferencesTable,
 			Columns: []string{incident.VideoConferencesColumn},
 			Bidi:    false,
@@ -3261,7 +2700,7 @@ func (_u *IncidentUpdateOne) sqlSave(ctx context.Context) (_node *Incident, err 
 	if nodes := _u.mutation.VideoConferencesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
-			Inverse: false,
+			Inverse: true,
 			Table:   incident.VideoConferencesTable,
 			Columns: []string{incident.VideoConferencesColumn},
 			Bidi:    false,
@@ -3270,54 +2709,6 @@ func (_u *IncidentUpdateOne) sqlSave(ctx context.Context) (_node *Incident, err 
 			},
 		}
 		edge.Schema = _u.schemaConfig.VideoConference
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.UserRolesCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   incident.UserRolesTable,
-			Columns: []string{incident.UserRolesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incidentroleassignment.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.IncidentRoleAssignment
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedUserRolesIDs(); len(nodes) > 0 && !_u.mutation.UserRolesCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   incident.UserRolesTable,
-			Columns: []string{incident.UserRolesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incidentroleassignment.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.IncidentRoleAssignment
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.UserRolesIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   incident.UserRolesTable,
-			Columns: []string{incident.UserRolesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incidentroleassignment.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.IncidentRoleAssignment
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

@@ -27,7 +27,6 @@ type SchemaConfig struct {
 	IncidentSituations                        string // Incident-situations->Situation table.
 	IncidentFieldSelections                   string // Incident-field_selections->IncidentFieldOption table.
 	IncidentTagAssignments                    string // Incident-tag_assignments->IncidentTag table.
-	IncidentReviewSessions                    string // Incident-review_sessions->MeetingSession table.
 	IncidentDebrief                           string // IncidentDebrief table.
 	IncidentDebriefMessage                    string // IncidentDebriefMessage table.
 	IncidentDebriefQuestion                   string // IncidentDebriefQuestion table.
@@ -110,7 +109,6 @@ type SchemaConfig struct {
 	User                                      string // User table.
 	UserTeams                                 string // User-teams->Team table.
 	UserWatchedOncallRosters                  string // User-watched_oncall_rosters->OncallRoster table.
-	UserIncidents                             string // User-incidents->Incident table.
 	UserAuthSession                           string // UserAuthSession table.
 	VideoConference                           string // VideoConference table.
 }

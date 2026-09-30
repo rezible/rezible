@@ -846,7 +846,7 @@ func HasIncident() predicate.VideoConference {
 	return predicate.VideoConference(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, IncidentTable, IncidentColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, IncidentTable, IncidentColumn),
 		)
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.Incident

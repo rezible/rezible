@@ -77,6 +77,11 @@ func AnalysisID(v uuid.UUID) predicate.SystemAnalysisEntry {
 	return predicate.SystemAnalysisEntry(sql.FieldEQ(FieldAnalysisID, v))
 }
 
+// AuthorID applies equality check predicate on the "author_id" field. It's identical to AuthorIDEQ.
+func AuthorID(v uuid.UUID) predicate.SystemAnalysisEntry {
+	return predicate.SystemAnalysisEntry(sql.FieldEQ(FieldAuthorID, v))
+}
+
 // Reference applies equality check predicate on the "reference" field. It's identical to ReferenceEQ.
 func Reference(v string) predicate.SystemAnalysisEntry {
 	return predicate.SystemAnalysisEntry(sql.FieldEQ(FieldReference, v))
@@ -100,6 +105,11 @@ func Title(v string) predicate.SystemAnalysisEntry {
 // Body applies equality check predicate on the "body" field. It's identical to BodyEQ.
 func Body(v string) predicate.SystemAnalysisEntry {
 	return predicate.SystemAnalysisEntry(sql.FieldEQ(FieldBody, v))
+}
+
+// Version applies equality check predicate on the "version" field. It's identical to VersionEQ.
+func Version(v int) predicate.SystemAnalysisEntry {
+	return predicate.SystemAnalysisEntry(sql.FieldEQ(FieldVersion, v))
 }
 
 // TenantIDEQ applies the EQ predicate on the "tenant_id" field.
@@ -220,6 +230,36 @@ func AnalysisIDIn(vs ...uuid.UUID) predicate.SystemAnalysisEntry {
 // AnalysisIDNotIn applies the NotIn predicate on the "analysis_id" field.
 func AnalysisIDNotIn(vs ...uuid.UUID) predicate.SystemAnalysisEntry {
 	return predicate.SystemAnalysisEntry(sql.FieldNotIn(FieldAnalysisID, vs...))
+}
+
+// AuthorIDEQ applies the EQ predicate on the "author_id" field.
+func AuthorIDEQ(v uuid.UUID) predicate.SystemAnalysisEntry {
+	return predicate.SystemAnalysisEntry(sql.FieldEQ(FieldAuthorID, v))
+}
+
+// AuthorIDNEQ applies the NEQ predicate on the "author_id" field.
+func AuthorIDNEQ(v uuid.UUID) predicate.SystemAnalysisEntry {
+	return predicate.SystemAnalysisEntry(sql.FieldNEQ(FieldAuthorID, v))
+}
+
+// AuthorIDIn applies the In predicate on the "author_id" field.
+func AuthorIDIn(vs ...uuid.UUID) predicate.SystemAnalysisEntry {
+	return predicate.SystemAnalysisEntry(sql.FieldIn(FieldAuthorID, vs...))
+}
+
+// AuthorIDNotIn applies the NotIn predicate on the "author_id" field.
+func AuthorIDNotIn(vs ...uuid.UUID) predicate.SystemAnalysisEntry {
+	return predicate.SystemAnalysisEntry(sql.FieldNotIn(FieldAuthorID, vs...))
+}
+
+// AuthorIDIsNil applies the IsNil predicate on the "author_id" field.
+func AuthorIDIsNil() predicate.SystemAnalysisEntry {
+	return predicate.SystemAnalysisEntry(sql.FieldIsNull(FieldAuthorID))
+}
+
+// AuthorIDNotNil applies the NotNil predicate on the "author_id" field.
+func AuthorIDNotNil() predicate.SystemAnalysisEntry {
+	return predicate.SystemAnalysisEntry(sql.FieldNotNull(FieldAuthorID))
 }
 
 // ReferenceEQ applies the EQ predicate on the "reference" field.
@@ -547,6 +587,46 @@ func BodyContainsFold(v string) predicate.SystemAnalysisEntry {
 	return predicate.SystemAnalysisEntry(sql.FieldContainsFold(FieldBody, v))
 }
 
+// VersionEQ applies the EQ predicate on the "version" field.
+func VersionEQ(v int) predicate.SystemAnalysisEntry {
+	return predicate.SystemAnalysisEntry(sql.FieldEQ(FieldVersion, v))
+}
+
+// VersionNEQ applies the NEQ predicate on the "version" field.
+func VersionNEQ(v int) predicate.SystemAnalysisEntry {
+	return predicate.SystemAnalysisEntry(sql.FieldNEQ(FieldVersion, v))
+}
+
+// VersionIn applies the In predicate on the "version" field.
+func VersionIn(vs ...int) predicate.SystemAnalysisEntry {
+	return predicate.SystemAnalysisEntry(sql.FieldIn(FieldVersion, vs...))
+}
+
+// VersionNotIn applies the NotIn predicate on the "version" field.
+func VersionNotIn(vs ...int) predicate.SystemAnalysisEntry {
+	return predicate.SystemAnalysisEntry(sql.FieldNotIn(FieldVersion, vs...))
+}
+
+// VersionGT applies the GT predicate on the "version" field.
+func VersionGT(v int) predicate.SystemAnalysisEntry {
+	return predicate.SystemAnalysisEntry(sql.FieldGT(FieldVersion, v))
+}
+
+// VersionGTE applies the GTE predicate on the "version" field.
+func VersionGTE(v int) predicate.SystemAnalysisEntry {
+	return predicate.SystemAnalysisEntry(sql.FieldGTE(FieldVersion, v))
+}
+
+// VersionLT applies the LT predicate on the "version" field.
+func VersionLT(v int) predicate.SystemAnalysisEntry {
+	return predicate.SystemAnalysisEntry(sql.FieldLT(FieldVersion, v))
+}
+
+// VersionLTE applies the LTE predicate on the "version" field.
+func VersionLTE(v int) predicate.SystemAnalysisEntry {
+	return predicate.SystemAnalysisEntry(sql.FieldLTE(FieldVersion, v))
+}
+
 // PropertiesIsNil applies the IsNil predicate on the "properties" field.
 func PropertiesIsNil() predicate.SystemAnalysisEntry {
 	return predicate.SystemAnalysisEntry(sql.FieldIsNull(FieldProperties))
@@ -606,6 +686,35 @@ func HasAnalysisWith(preds ...predicate.SystemAnalysis) predicate.SystemAnalysis
 		step := newAnalysisStep()
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.SystemAnalysis
+		step.Edge.Schema = schemaConfig.SystemAnalysisEntry
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasAuthor applies the HasEdge predicate on the "author" edge.
+func HasAuthor() predicate.SystemAnalysisEntry {
+	return predicate.SystemAnalysisEntry(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, AuthorTable, AuthorColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.User
+		step.Edge.Schema = schemaConfig.SystemAnalysisEntry
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasAuthorWith applies the HasEdge predicate on the "author" edge with a given conditions (other predicates).
+func HasAuthorWith(preds ...predicate.User) predicate.SystemAnalysisEntry {
+	return predicate.SystemAnalysisEntry(func(s *sql.Selector) {
+		step := newAuthorStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.User
 		step.Edge.Schema = schemaConfig.SystemAnalysisEntry
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

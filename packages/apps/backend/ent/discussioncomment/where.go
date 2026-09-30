@@ -77,6 +77,11 @@ func ThreadID(v uuid.UUID) predicate.DiscussionComment {
 	return predicate.DiscussionComment(sql.FieldEQ(FieldThreadID, v))
 }
 
+// ParentID applies equality check predicate on the "parent_id" field. It's identical to ParentIDEQ.
+func ParentID(v uuid.UUID) predicate.DiscussionComment {
+	return predicate.DiscussionComment(sql.FieldEQ(FieldParentID, v))
+}
+
 // UserID applies equality check predicate on the "user_id" field. It's identical to UserIDEQ.
 func UserID(v uuid.UUID) predicate.DiscussionComment {
 	return predicate.DiscussionComment(sql.FieldEQ(FieldUserID, v))
@@ -85,11 +90,6 @@ func UserID(v uuid.UUID) predicate.DiscussionComment {
 // Content applies equality check predicate on the "content" field. It's identical to ContentEQ.
 func Content(v string) predicate.DiscussionComment {
 	return predicate.DiscussionComment(sql.FieldEQ(FieldContent, v))
-}
-
-// ParentID applies equality check predicate on the "parent_id" field. It's identical to ParentIDEQ.
-func ParentID(v uuid.UUID) predicate.DiscussionComment {
-	return predicate.DiscussionComment(sql.FieldEQ(FieldParentID, v))
 }
 
 // TenantIDEQ applies the EQ predicate on the "tenant_id" field.
@@ -212,6 +212,36 @@ func ThreadIDNotIn(vs ...uuid.UUID) predicate.DiscussionComment {
 	return predicate.DiscussionComment(sql.FieldNotIn(FieldThreadID, vs...))
 }
 
+// ParentIDEQ applies the EQ predicate on the "parent_id" field.
+func ParentIDEQ(v uuid.UUID) predicate.DiscussionComment {
+	return predicate.DiscussionComment(sql.FieldEQ(FieldParentID, v))
+}
+
+// ParentIDNEQ applies the NEQ predicate on the "parent_id" field.
+func ParentIDNEQ(v uuid.UUID) predicate.DiscussionComment {
+	return predicate.DiscussionComment(sql.FieldNEQ(FieldParentID, v))
+}
+
+// ParentIDIn applies the In predicate on the "parent_id" field.
+func ParentIDIn(vs ...uuid.UUID) predicate.DiscussionComment {
+	return predicate.DiscussionComment(sql.FieldIn(FieldParentID, vs...))
+}
+
+// ParentIDNotIn applies the NotIn predicate on the "parent_id" field.
+func ParentIDNotIn(vs ...uuid.UUID) predicate.DiscussionComment {
+	return predicate.DiscussionComment(sql.FieldNotIn(FieldParentID, vs...))
+}
+
+// ParentIDIsNil applies the IsNil predicate on the "parent_id" field.
+func ParentIDIsNil() predicate.DiscussionComment {
+	return predicate.DiscussionComment(sql.FieldIsNull(FieldParentID))
+}
+
+// ParentIDNotNil applies the NotNil predicate on the "parent_id" field.
+func ParentIDNotNil() predicate.DiscussionComment {
+	return predicate.DiscussionComment(sql.FieldNotNull(FieldParentID))
+}
+
 // UserIDEQ applies the EQ predicate on the "user_id" field.
 func UserIDEQ(v uuid.UUID) predicate.DiscussionComment {
 	return predicate.DiscussionComment(sql.FieldEQ(FieldUserID, v))
@@ -297,36 +327,6 @@ func ContentContainsFold(v string) predicate.DiscussionComment {
 	return predicate.DiscussionComment(sql.FieldContainsFold(FieldContent, v))
 }
 
-// ParentIDEQ applies the EQ predicate on the "parent_id" field.
-func ParentIDEQ(v uuid.UUID) predicate.DiscussionComment {
-	return predicate.DiscussionComment(sql.FieldEQ(FieldParentID, v))
-}
-
-// ParentIDNEQ applies the NEQ predicate on the "parent_id" field.
-func ParentIDNEQ(v uuid.UUID) predicate.DiscussionComment {
-	return predicate.DiscussionComment(sql.FieldNEQ(FieldParentID, v))
-}
-
-// ParentIDIn applies the In predicate on the "parent_id" field.
-func ParentIDIn(vs ...uuid.UUID) predicate.DiscussionComment {
-	return predicate.DiscussionComment(sql.FieldIn(FieldParentID, vs...))
-}
-
-// ParentIDNotIn applies the NotIn predicate on the "parent_id" field.
-func ParentIDNotIn(vs ...uuid.UUID) predicate.DiscussionComment {
-	return predicate.DiscussionComment(sql.FieldNotIn(FieldParentID, vs...))
-}
-
-// ParentIDIsNil applies the IsNil predicate on the "parent_id" field.
-func ParentIDIsNil() predicate.DiscussionComment {
-	return predicate.DiscussionComment(sql.FieldIsNull(FieldParentID))
-}
-
-// ParentIDNotNil applies the NotNil predicate on the "parent_id" field.
-func ParentIDNotNil() predicate.DiscussionComment {
-	return predicate.DiscussionComment(sql.FieldNotNull(FieldParentID))
-}
-
 // HasTenant applies the HasEdge predicate on the "tenant" edge.
 func HasTenant() predicate.DiscussionComment {
 	return predicate.DiscussionComment(func(s *sql.Selector) {
@@ -385,35 +385,6 @@ func HasThreadWith(preds ...predicate.DiscussionThread) predicate.DiscussionComm
 	})
 }
 
-// HasUser applies the HasEdge predicate on the "user" edge.
-func HasUser() predicate.DiscussionComment {
-	return predicate.DiscussionComment(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, UserTable, UserColumn),
-		)
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.User
-		step.Edge.Schema = schemaConfig.DiscussionComment
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasUserWith applies the HasEdge predicate on the "user" edge with a given conditions (other predicates).
-func HasUserWith(preds ...predicate.User) predicate.DiscussionComment {
-	return predicate.DiscussionComment(func(s *sql.Selector) {
-		step := newUserStep()
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.User
-		step.Edge.Schema = schemaConfig.DiscussionComment
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
 // HasParent applies the HasEdge predicate on the "parent" edge.
 func HasParent() predicate.DiscussionComment {
 	return predicate.DiscussionComment(func(s *sql.Selector) {
@@ -434,6 +405,35 @@ func HasParentWith(preds ...predicate.DiscussionComment) predicate.DiscussionCom
 		step := newParentStep()
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.DiscussionComment
+		step.Edge.Schema = schemaConfig.DiscussionComment
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasUser applies the HasEdge predicate on the "user" edge.
+func HasUser() predicate.DiscussionComment {
+	return predicate.DiscussionComment(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, UserTable, UserColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.User
+		step.Edge.Schema = schemaConfig.DiscussionComment
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasUserWith applies the HasEdge predicate on the "user" edge with a given conditions (other predicates).
+func HasUserWith(preds ...predicate.User) predicate.DiscussionComment {
+	return predicate.DiscussionComment(func(s *sql.Selector) {
+		step := newUserStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.User
 		step.Edge.Schema = schemaConfig.DiscussionComment
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

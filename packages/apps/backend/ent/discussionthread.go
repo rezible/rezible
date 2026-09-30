@@ -34,8 +34,6 @@ type DiscussionThread struct {
 	RetrospectiveID *uuid.UUID `json:"retrospective_id,omitempty"`
 	// UserID holds the value of the "user_id" field.
 	UserID uuid.UUID `json:"user_id,omitempty"`
-	// Kind holds the value of the "kind" field.
-	Kind discussionthread.Kind `json:"kind,omitempty"`
 	// TargetKind holds the value of the "target_kind" field.
 	TargetKind *discussionthread.TargetKind `json:"target_kind,omitempty"`
 	// TargetID holds the value of the "target_id" field.
@@ -133,7 +131,7 @@ func (*DiscussionThread) scanValues(columns []string) ([]any, error) {
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case discussionthread.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case discussionthread.FieldKind, discussionthread.FieldTargetKind, discussionthread.FieldResolutionState, discussionthread.FieldResolutionNote:
+		case discussionthread.FieldTargetKind, discussionthread.FieldResolutionState, discussionthread.FieldResolutionNote:
 			values[i] = new(sql.NullString)
 		case discussionthread.FieldCreatedAt, discussionthread.FieldUpdatedAt, discussionthread.FieldResolvedAt:
 			values[i] = new(sql.NullTime)
@@ -197,12 +195,6 @@ func (_m *DiscussionThread) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field user_id", values[i])
 			} else if value != nil {
 				_m.UserID = *value
-			}
-		case discussionthread.FieldKind:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field kind", values[i])
-			} else if value.Valid {
-				_m.Kind = discussionthread.Kind(value.String)
 			}
 		case discussionthread.FieldTargetKind:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -328,9 +320,6 @@ func (_m *DiscussionThread) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("user_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.UserID))
-	builder.WriteString(", ")
-	builder.WriteString("kind=")
-	builder.WriteString(fmt.Sprintf("%v", _m.Kind))
 	builder.WriteString(", ")
 	if v := _m.TargetKind; v != nil {
 		builder.WriteString("target_kind=")

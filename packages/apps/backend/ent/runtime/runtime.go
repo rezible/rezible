@@ -533,7 +533,7 @@ func init() {
 	// incident.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	incident.UpdateDefaultUpdatedAt = incidentDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// incidentDescOpenedAt is the schema descriptor for opened_at field.
-	incidentDescOpenedAt := incidentFields[7].Descriptor()
+	incidentDescOpenedAt := incidentFields[8].Descriptor()
 	// incident.DefaultOpenedAt holds the default value on creation for the opened_at field.
 	incident.DefaultOpenedAt = incidentDescOpenedAt.Default.(func() time.Time)
 	// incidentDescID is the schema descriptor for id field.
@@ -1729,6 +1729,12 @@ func init() {
 	organizationpreferencesDescEnableIncidentManagement := organizationpreferencesFields[3].Descriptor()
 	// organizationpreferences.DefaultEnableIncidentManagement holds the default value on creation for the enable_incident_management field.
 	organizationpreferences.DefaultEnableIncidentManagement = organizationpreferencesDescEnableIncidentManagement.Default.(bool)
+	// organizationpreferencesDescRequiredReviewerCount is the schema descriptor for required_reviewer_count field.
+	organizationpreferencesDescRequiredReviewerCount := organizationpreferencesFields[4].Descriptor()
+	// organizationpreferences.DefaultRequiredReviewerCount holds the default value on creation for the required_reviewer_count field.
+	organizationpreferences.DefaultRequiredReviewerCount = organizationpreferencesDescRequiredReviewerCount.Default.(int)
+	// organizationpreferences.RequiredReviewerCountValidator is a validator for the "required_reviewer_count" field. It is called by the builders before save.
+	organizationpreferences.RequiredReviewerCountValidator = organizationpreferencesDescRequiredReviewerCount.Validators[0].(func(int) error)
 	// organizationpreferencesDescID is the schema descriptor for id field.
 	organizationpreferencesDescID := organizationpreferencesFields[0].Descriptor()
 	// organizationpreferences.DefaultID holds the default value on creation for the id field.
@@ -2022,13 +2028,17 @@ func init() {
 	// systemanalysisentry.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	systemanalysisentry.UpdateDefaultUpdatedAt = systemanalysisentryDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// systemanalysisentryDescSequence is the schema descriptor for sequence field.
-	systemanalysisentryDescSequence := systemanalysisentryFields[5].Descriptor()
+	systemanalysisentryDescSequence := systemanalysisentryFields[6].Descriptor()
 	// systemanalysisentry.DefaultSequence holds the default value on creation for the sequence field.
 	systemanalysisentry.DefaultSequence = systemanalysisentryDescSequence.Default.(int)
 	// systemanalysisentryDescTitle is the schema descriptor for title field.
-	systemanalysisentryDescTitle := systemanalysisentryFields[6].Descriptor()
+	systemanalysisentryDescTitle := systemanalysisentryFields[7].Descriptor()
 	// systemanalysisentry.TitleValidator is a validator for the "title" field. It is called by the builders before save.
 	systemanalysisentry.TitleValidator = systemanalysisentryDescTitle.Validators[0].(func(string) error)
+	// systemanalysisentryDescVersion is the schema descriptor for version field.
+	systemanalysisentryDescVersion := systemanalysisentryFields[9].Descriptor()
+	// systemanalysisentry.DefaultVersion holds the default value on creation for the version field.
+	systemanalysisentry.DefaultVersion = systemanalysisentryDescVersion.Default.(int)
 	// systemanalysisentryDescID is the schema descriptor for id field.
 	systemanalysisentryDescID := systemanalysisentryFields[0].Descriptor()
 	// systemanalysisentry.DefaultID holds the default value on creation for the id field.
@@ -2183,6 +2193,11 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
+	taskMixinHooks3 := taskMixin[3].Hooks()
+
+	task.Hooks[1] = taskMixinHooks3[0]
+	taskMixinInters3 := taskMixin[3].Interceptors()
+	task.Interceptors[0] = taskMixinInters3[0]
 	taskMixinFields2 := taskMixin[2].Fields()
 	_ = taskMixinFields2
 	taskFields := schema.Task{}.Fields()
@@ -2197,6 +2212,14 @@ func init() {
 	task.DefaultUpdatedAt = taskDescUpdatedAt.Default.(func() time.Time)
 	// task.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	task.UpdateDefaultUpdatedAt = taskDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// taskDescVersion is the schema descriptor for version field.
+	taskDescVersion := taskFields[1].Descriptor()
+	// task.DefaultVersion holds the default value on creation for the version field.
+	task.DefaultVersion = taskDescVersion.Default.(int)
+	// taskDescDescription is the schema descriptor for description field.
+	taskDescDescription := taskFields[3].Descriptor()
+	// task.DefaultDescription holds the default value on creation for the description field.
+	task.DefaultDescription = taskDescDescription.Default.(string)
 	// taskDescID is the schema descriptor for id field.
 	taskDescID := taskFields[0].Descriptor()
 	// task.DefaultID holds the default value on creation for the id field.

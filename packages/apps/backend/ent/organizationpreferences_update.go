@@ -80,6 +80,27 @@ func (_u *OrganizationPreferencesUpdate) SetNillableEnableIncidentManagement(v *
 	return _u
 }
 
+// SetRequiredReviewerCount sets the "required_reviewer_count" field.
+func (_u *OrganizationPreferencesUpdate) SetRequiredReviewerCount(v int) *OrganizationPreferencesUpdate {
+	_u.mutation.ResetRequiredReviewerCount()
+	_u.mutation.SetRequiredReviewerCount(v)
+	return _u
+}
+
+// SetNillableRequiredReviewerCount sets the "required_reviewer_count" field if the given value is not nil.
+func (_u *OrganizationPreferencesUpdate) SetNillableRequiredReviewerCount(v *int) *OrganizationPreferencesUpdate {
+	if v != nil {
+		_u.SetRequiredReviewerCount(*v)
+	}
+	return _u
+}
+
+// AddRequiredReviewerCount adds value to the "required_reviewer_count" field.
+func (_u *OrganizationPreferencesUpdate) AddRequiredReviewerCount(v int) *OrganizationPreferencesUpdate {
+	_u.mutation.AddRequiredReviewerCount(v)
+	return _u
+}
+
 // SetTimezone sets the "timezone" field.
 func (_u *OrganizationPreferencesUpdate) SetTimezone(v string) *OrganizationPreferencesUpdate {
 	_u.mutation.SetTimezone(v)
@@ -145,6 +166,11 @@ func (_u *OrganizationPreferencesUpdate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *OrganizationPreferencesUpdate) check() error {
+	if v, ok := _u.mutation.RequiredReviewerCount(); ok {
+		if err := organizationpreferences.RequiredReviewerCountValidator(v); err != nil {
+			return &ValidationError{Name: "required_reviewer_count", err: fmt.Errorf(`ent: validator failed for field "OrganizationPreferences.required_reviewer_count": %w`, err)}
+		}
+	}
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "OrganizationPreferences.tenant"`)
 	}
@@ -180,6 +206,12 @@ func (_u *OrganizationPreferencesUpdate) sqlSave(ctx context.Context) (_node int
 	}
 	if value, ok := _u.mutation.EnableIncidentManagement(); ok {
 		_spec.SetField(organizationpreferences.FieldEnableIncidentManagement, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.RequiredReviewerCount(); ok {
+		_spec.SetField(organizationpreferences.FieldRequiredReviewerCount, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedRequiredReviewerCount(); ok {
+		_spec.AddField(organizationpreferences.FieldRequiredReviewerCount, field.TypeInt, value)
 	}
 	if value, ok := _u.mutation.Timezone(); ok {
 		_spec.SetField(organizationpreferences.FieldTimezone, field.TypeString, value)
@@ -290,6 +322,27 @@ func (_u *OrganizationPreferencesUpdateOne) SetNillableEnableIncidentManagement(
 	return _u
 }
 
+// SetRequiredReviewerCount sets the "required_reviewer_count" field.
+func (_u *OrganizationPreferencesUpdateOne) SetRequiredReviewerCount(v int) *OrganizationPreferencesUpdateOne {
+	_u.mutation.ResetRequiredReviewerCount()
+	_u.mutation.SetRequiredReviewerCount(v)
+	return _u
+}
+
+// SetNillableRequiredReviewerCount sets the "required_reviewer_count" field if the given value is not nil.
+func (_u *OrganizationPreferencesUpdateOne) SetNillableRequiredReviewerCount(v *int) *OrganizationPreferencesUpdateOne {
+	if v != nil {
+		_u.SetRequiredReviewerCount(*v)
+	}
+	return _u
+}
+
+// AddRequiredReviewerCount adds value to the "required_reviewer_count" field.
+func (_u *OrganizationPreferencesUpdateOne) AddRequiredReviewerCount(v int) *OrganizationPreferencesUpdateOne {
+	_u.mutation.AddRequiredReviewerCount(v)
+	return _u
+}
+
 // SetTimezone sets the "timezone" field.
 func (_u *OrganizationPreferencesUpdateOne) SetTimezone(v string) *OrganizationPreferencesUpdateOne {
 	_u.mutation.SetTimezone(v)
@@ -368,6 +421,11 @@ func (_u *OrganizationPreferencesUpdateOne) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *OrganizationPreferencesUpdateOne) check() error {
+	if v, ok := _u.mutation.RequiredReviewerCount(); ok {
+		if err := organizationpreferences.RequiredReviewerCountValidator(v); err != nil {
+			return &ValidationError{Name: "required_reviewer_count", err: fmt.Errorf(`ent: validator failed for field "OrganizationPreferences.required_reviewer_count": %w`, err)}
+		}
+	}
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "OrganizationPreferences.tenant"`)
 	}
@@ -420,6 +478,12 @@ func (_u *OrganizationPreferencesUpdateOne) sqlSave(ctx context.Context) (_node 
 	}
 	if value, ok := _u.mutation.EnableIncidentManagement(); ok {
 		_spec.SetField(organizationpreferences.FieldEnableIncidentManagement, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.RequiredReviewerCount(); ok {
+		_spec.SetField(organizationpreferences.FieldRequiredReviewerCount, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedRequiredReviewerCount(); ok {
+		_spec.AddField(organizationpreferences.FieldRequiredReviewerCount, field.TypeInt, value)
 	}
 	if value, ok := _u.mutation.Timezone(); ok {
 		_spec.SetField(organizationpreferences.FieldTimezone, field.TypeString, value)

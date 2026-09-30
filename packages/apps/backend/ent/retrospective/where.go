@@ -155,26 +155,6 @@ func SystemAnalysisIDNotIn(vs ...uuid.UUID) predicate.Retrospective {
 	return predicate.Retrospective(sql.FieldNotIn(FieldSystemAnalysisID, vs...))
 }
 
-// KindEQ applies the EQ predicate on the "kind" field.
-func KindEQ(v Kind) predicate.Retrospective {
-	return predicate.Retrospective(sql.FieldEQ(FieldKind, v))
-}
-
-// KindNEQ applies the NEQ predicate on the "kind" field.
-func KindNEQ(v Kind) predicate.Retrospective {
-	return predicate.Retrospective(sql.FieldNEQ(FieldKind, v))
-}
-
-// KindIn applies the In predicate on the "kind" field.
-func KindIn(vs ...Kind) predicate.Retrospective {
-	return predicate.Retrospective(sql.FieldIn(FieldKind, vs...))
-}
-
-// KindNotIn applies the NotIn predicate on the "kind" field.
-func KindNotIn(vs ...Kind) predicate.Retrospective {
-	return predicate.Retrospective(sql.FieldNotIn(FieldKind, vs...))
-}
-
 // StateEQ applies the EQ predicate on the "state" field.
 func StateEQ(v State) predicate.Retrospective {
 	return predicate.Retrospective(sql.FieldEQ(FieldState, v))

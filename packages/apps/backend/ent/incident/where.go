@@ -112,6 +112,11 @@ func OpenedAt(v time.Time) predicate.Incident {
 	return predicate.Incident(sql.FieldEQ(FieldOpenedAt, v))
 }
 
+// ResolvedAt applies equality check predicate on the "resolved_at" field. It's identical to ResolvedAtEQ.
+func ResolvedAt(v time.Time) predicate.Incident {
+	return predicate.Incident(sql.FieldEQ(FieldResolvedAt, v))
+}
+
 // TenantIDEQ applies the EQ predicate on the "tenant_id" field.
 func TenantIDEQ(v int) predicate.Incident {
 	return predicate.Incident(sql.FieldEQ(FieldTenantID, v))
@@ -392,6 +397,16 @@ func SeverityIDNotIn(vs ...uuid.UUID) predicate.Incident {
 	return predicate.Incident(sql.FieldNotIn(FieldSeverityID, vs...))
 }
 
+// SeverityIDIsNil applies the IsNil predicate on the "severity_id" field.
+func SeverityIDIsNil() predicate.Incident {
+	return predicate.Incident(sql.FieldIsNull(FieldSeverityID))
+}
+
+// SeverityIDNotNil applies the NotNil predicate on the "severity_id" field.
+func SeverityIDNotNil() predicate.Incident {
+	return predicate.Incident(sql.FieldNotNull(FieldSeverityID))
+}
+
 // TypeIDEQ applies the EQ predicate on the "type_id" field.
 func TypeIDEQ(v uuid.UUID) predicate.Incident {
 	return predicate.Incident(sql.FieldEQ(FieldTypeID, v))
@@ -410,6 +425,16 @@ func TypeIDIn(vs ...uuid.UUID) predicate.Incident {
 // TypeIDNotIn applies the NotIn predicate on the "type_id" field.
 func TypeIDNotIn(vs ...uuid.UUID) predicate.Incident {
 	return predicate.Incident(sql.FieldNotIn(FieldTypeID, vs...))
+}
+
+// TypeIDIsNil applies the IsNil predicate on the "type_id" field.
+func TypeIDIsNil() predicate.Incident {
+	return predicate.Incident(sql.FieldIsNull(FieldTypeID))
+}
+
+// TypeIDNotNil applies the NotNil predicate on the "type_id" field.
+func TypeIDNotNil() predicate.Incident {
+	return predicate.Incident(sql.FieldNotNull(FieldTypeID))
 }
 
 // SummaryEQ applies the EQ predicate on the "summary" field.
@@ -562,6 +587,26 @@ func ChatChannelIDContainsFold(v string) predicate.Incident {
 	return predicate.Incident(sql.FieldContainsFold(FieldChatChannelID, v))
 }
 
+// ResponseStateEQ applies the EQ predicate on the "response_state" field.
+func ResponseStateEQ(v ResponseState) predicate.Incident {
+	return predicate.Incident(sql.FieldEQ(FieldResponseState, v))
+}
+
+// ResponseStateNEQ applies the NEQ predicate on the "response_state" field.
+func ResponseStateNEQ(v ResponseState) predicate.Incident {
+	return predicate.Incident(sql.FieldNEQ(FieldResponseState, v))
+}
+
+// ResponseStateIn applies the In predicate on the "response_state" field.
+func ResponseStateIn(vs ...ResponseState) predicate.Incident {
+	return predicate.Incident(sql.FieldIn(FieldResponseState, vs...))
+}
+
+// ResponseStateNotIn applies the NotIn predicate on the "response_state" field.
+func ResponseStateNotIn(vs ...ResponseState) predicate.Incident {
+	return predicate.Incident(sql.FieldNotIn(FieldResponseState, vs...))
+}
+
 // OpenedAtEQ applies the EQ predicate on the "opened_at" field.
 func OpenedAtEQ(v time.Time) predicate.Incident {
 	return predicate.Incident(sql.FieldEQ(FieldOpenedAt, v))
@@ -600,6 +645,56 @@ func OpenedAtLT(v time.Time) predicate.Incident {
 // OpenedAtLTE applies the LTE predicate on the "opened_at" field.
 func OpenedAtLTE(v time.Time) predicate.Incident {
 	return predicate.Incident(sql.FieldLTE(FieldOpenedAt, v))
+}
+
+// ResolvedAtEQ applies the EQ predicate on the "resolved_at" field.
+func ResolvedAtEQ(v time.Time) predicate.Incident {
+	return predicate.Incident(sql.FieldEQ(FieldResolvedAt, v))
+}
+
+// ResolvedAtNEQ applies the NEQ predicate on the "resolved_at" field.
+func ResolvedAtNEQ(v time.Time) predicate.Incident {
+	return predicate.Incident(sql.FieldNEQ(FieldResolvedAt, v))
+}
+
+// ResolvedAtIn applies the In predicate on the "resolved_at" field.
+func ResolvedAtIn(vs ...time.Time) predicate.Incident {
+	return predicate.Incident(sql.FieldIn(FieldResolvedAt, vs...))
+}
+
+// ResolvedAtNotIn applies the NotIn predicate on the "resolved_at" field.
+func ResolvedAtNotIn(vs ...time.Time) predicate.Incident {
+	return predicate.Incident(sql.FieldNotIn(FieldResolvedAt, vs...))
+}
+
+// ResolvedAtGT applies the GT predicate on the "resolved_at" field.
+func ResolvedAtGT(v time.Time) predicate.Incident {
+	return predicate.Incident(sql.FieldGT(FieldResolvedAt, v))
+}
+
+// ResolvedAtGTE applies the GTE predicate on the "resolved_at" field.
+func ResolvedAtGTE(v time.Time) predicate.Incident {
+	return predicate.Incident(sql.FieldGTE(FieldResolvedAt, v))
+}
+
+// ResolvedAtLT applies the LT predicate on the "resolved_at" field.
+func ResolvedAtLT(v time.Time) predicate.Incident {
+	return predicate.Incident(sql.FieldLT(FieldResolvedAt, v))
+}
+
+// ResolvedAtLTE applies the LTE predicate on the "resolved_at" field.
+func ResolvedAtLTE(v time.Time) predicate.Incident {
+	return predicate.Incident(sql.FieldLTE(FieldResolvedAt, v))
+}
+
+// ResolvedAtIsNil applies the IsNil predicate on the "resolved_at" field.
+func ResolvedAtIsNil() predicate.Incident {
+	return predicate.Incident(sql.FieldIsNull(FieldResolvedAt))
+}
+
+// ResolvedAtNotNil applies the NotNil predicate on the "resolved_at" field.
+func ResolvedAtNotNil() predicate.Incident {
+	return predicate.Incident(sql.FieldNotNull(FieldResolvedAt))
 }
 
 // HasTenant applies the HasEdge predicate on the "tenant" edge.
@@ -776,35 +871,6 @@ func HasRetrospectiveWith(preds ...predicate.Retrospective) predicate.Incident {
 	})
 }
 
-// HasUsers applies the HasEdge predicate on the "users" edge.
-func HasUsers() predicate.Incident {
-	return predicate.Incident(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, UsersTable, UsersPrimaryKey...),
-		)
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.User
-		step.Edge.Schema = schemaConfig.IncidentRoleAssignment
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasUsersWith applies the HasEdge predicate on the "users" edge with a given conditions (other predicates).
-func HasUsersWith(preds ...predicate.User) predicate.Incident {
-	return predicate.Incident(func(s *sql.Selector) {
-		step := newUsersStep()
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.User
-		step.Edge.Schema = schemaConfig.IncidentRoleAssignment
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
 // HasRoleAssignments applies the HasEdge predicate on the "role_assignments" edge.
 func HasRoleAssignments() predicate.Incident {
 	return predicate.Incident(func(s *sql.Selector) {
@@ -921,35 +987,6 @@ func HasFieldSelectionsWith(preds ...predicate.IncidentFieldOption) predicate.In
 	})
 }
 
-// HasTasks applies the HasEdge predicate on the "tasks" edge.
-func HasTasks() predicate.Incident {
-	return predicate.Incident(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, TasksTable, TasksColumn),
-		)
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.Task
-		step.Edge.Schema = schemaConfig.Task
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasTasksWith applies the HasEdge predicate on the "tasks" edge with a given conditions (other predicates).
-func HasTasksWith(preds ...predicate.Task) predicate.Incident {
-	return predicate.Incident(func(s *sql.Selector) {
-		step := newTasksStep()
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.Task
-		step.Edge.Schema = schemaConfig.Task
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
 // HasTagAssignments applies the HasEdge predicate on the "tag_assignments" edge.
 func HasTagAssignments() predicate.Incident {
 	return predicate.Incident(func(s *sql.Selector) {
@@ -1037,41 +1074,12 @@ func HasDebriefsWith(preds ...predicate.IncidentDebrief) predicate.Incident {
 	})
 }
 
-// HasReviewSessions applies the HasEdge predicate on the "review_sessions" edge.
-func HasReviewSessions() predicate.Incident {
-	return predicate.Incident(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, ReviewSessionsTable, ReviewSessionsPrimaryKey...),
-		)
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.MeetingSession
-		step.Edge.Schema = schemaConfig.IncidentReviewSessions
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasReviewSessionsWith applies the HasEdge predicate on the "review_sessions" edge with a given conditions (other predicates).
-func HasReviewSessionsWith(preds ...predicate.MeetingSession) predicate.Incident {
-	return predicate.Incident(func(s *sql.Selector) {
-		step := newReviewSessionsStep()
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.MeetingSession
-		step.Edge.Schema = schemaConfig.IncidentReviewSessions
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
 // HasVideoConferences applies the HasEdge predicate on the "video_conferences" edge.
 func HasVideoConferences() predicate.Incident {
 	return predicate.Incident(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, VideoConferencesTable, VideoConferencesColumn),
+			sqlgraph.Edge(sqlgraph.O2M, true, VideoConferencesTable, VideoConferencesColumn),
 		)
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.VideoConference
@@ -1087,35 +1095,6 @@ func HasVideoConferencesWith(preds ...predicate.VideoConference) predicate.Incid
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.VideoConference
 		step.Edge.Schema = schemaConfig.VideoConference
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasUserRoles applies the HasEdge predicate on the "user_roles" edge.
-func HasUserRoles() predicate.Incident {
-	return predicate.Incident(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, UserRolesTable, UserRolesColumn),
-		)
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.IncidentRoleAssignment
-		step.Edge.Schema = schemaConfig.IncidentRoleAssignment
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasUserRolesWith applies the HasEdge predicate on the "user_roles" edge with a given conditions (other predicates).
-func HasUserRolesWith(preds ...predicate.IncidentRoleAssignment) predicate.Incident {
-	return predicate.Incident(func(s *sql.Selector) {
-		step := newUserRolesStep()
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.IncidentRoleAssignment
-		step.Edge.Schema = schemaConfig.IncidentRoleAssignment
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

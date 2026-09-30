@@ -10,7 +10,7 @@ import (
 func (ims IncidentMilestones) GetLatest() *IncidentMilestone {
 	var latest *IncidentMilestone
 	for _, im := range ims {
-		if latest == nil || latest.Timestamp.After(im.Timestamp) {
+		if latest == nil || latest.Timestamp.IsZero() || im.Timestamp.After(latest.Timestamp) {
 			latest = im
 		}
 	}
@@ -44,11 +44,12 @@ func (vcs VideoConferences) GetPrimary() *VideoConference {
 }
 
 func (ie IncidentEdges) GetPrimaryVideoConference() *VideoConference {
-	conferences, confErr := ie.VideoConferencesOrErr()
-	if confErr != nil || len(conferences) == 0 {
-		return nil
-	}
-	return VideoConferences(conferences).GetPrimary()
+	//conferences, confErr := ie.VideoConferencesOrErr()
+	//if confErr != nil || len(conferences) == 0 {
+	//	return nil
+	//}
+	//return VideoConferences(conferences).GetPrimary()
+	return nil
 }
 
 func (aliases KnowledgeSubjectAliasSlice) LatestEvidence() *KnowledgeEvidence {

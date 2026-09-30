@@ -44,8 +44,7 @@ func (VideoConference) Fields() []ent.Field {
 
 func (VideoConference) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.From("incident", Incident.Type).
-			Ref("video_conferences").
+		edge.To("incident", Incident.Type).
 			Unique().
 			Field("incident_id"),
 		edge.From("meeting_session", MeetingSession.Type).

@@ -134,6 +134,9 @@ func (s *OrganizationService) SetPreferences(ctx context.Context, orgId uuid.UUI
 		}
 		m := mutator.Mutation()
 		setFn(m)
+		if requiredReviewerCount, changed := m.RequiredReviewerCount(); changed && requiredReviewerCount < 0 {
+			return fmt.Errorf("%w: required reviewer count cannot be negative", rez.ErrInvalidInput)
+		}
 
 		updated, saveErr := mutator.Save(ctx)
 		if saveErr != nil {
@@ -142,5 +145,14 @@ func (s *OrganizationService) SetPreferences(ctx context.Context, orgId uuid.UUI
 
 		prefs = updated
 		return nil
+	})
+}
+
+func (s *OrganizationService) SetRequiredReviewerCount(ctx context.Context, orgId uuid.UUID, count int) (*ent.OrganizationPreferences, error) {
+	if count < 0 {
+		return nil, fmt.Errorf("%w: required reviewer count cannot be negative", rez.ErrInvalidInput)
+	}
+	return s.SetPreferences(ctx, orgId, func(m *ent.OrganizationPreferencesMutation) {
+		m.SetRequiredReviewerCount(count)
 	})
 }

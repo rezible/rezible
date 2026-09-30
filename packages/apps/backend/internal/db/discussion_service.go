@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
@@ -37,38 +38,63 @@ func (s *DiscussionService) ListThreads(ctx context.Context, params rez.ListDisc
 	if params.RetrospectiveID != uuid.Nil {
 		query = query.Where(dt.RetrospectiveID(params.RetrospectiveID))
 	}
-	if params.Kind != "" {
-		query = query.Where(dt.KindEQ(dt.Kind(params.Kind)))
-	}
 	if params.TargetKind != "" {
-		query = query.Where(dt.TargetKindEQ(dt.TargetKind(params.TargetKind)))
+		query = query.Where(dt.TargetKindEQ(params.TargetKind))
 	}
 	if params.TargetID != uuid.Nil {
 		query = query.Where(dt.TargetID(params.TargetID))
 	}
-	if params.ResolutionState != "" {
-		query = query.Where(dt.ResolutionStateEQ(dt.ResolutionState(params.ResolutionState)))
+	if params.Resolved != nil {
+		pred := dt.ResolvedAtIsNil()
+		if *params.Resolved {
+			pred = dt.ResolvedAtNotNil()
+		}
+		query = query.Where(pred)
 	}
 	order := params.ListParams.GetOrder()
 	query = query.Order(dt.ByCreatedAt(order), dt.ByID(order))
 	return ent.DoListQuery[ent.DiscussionThread, *ent.DiscussionThreadQuery](ctx, query, params.ListParams)
 }
 
+func (s *DiscussionService) CreateThread(ctx context.Context, params rez.CreateDiscussionThreadParams) (*ent.DiscussionThread, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
 func (s *DiscussionService) GetThread(ctx context.Context, id uuid.UUID) (*ent.DiscussionThread, error) {
-	return s.db.Client(ctx).DiscussionThread.Get(ctx, id)
+	thread, queryErr := s.db.Client(ctx).DiscussionThread.Get(ctx, id)
+	if queryErr != nil {
+		return nil, queryErr
+	}
+	return thread, nil
 }
 
 func (s *DiscussionService) ListComments(ctx context.Context, params rez.ListDiscussionCommentsParams) (*ent.ListResult[ent.DiscussionComment], error) {
-	query := s.db.Client(ctx).DiscussionComment.Query().Where(dc.ThreadID(params.ThreadID))
 	if params.ParentID != uuid.Nil {
-		query = query.Where(dc.ParentID(params.ParentID))
+		return nil, fmt.Errorf("%w: discussion replies use a flat stream", rez.ErrInvalidInput)
 	}
-	query = query.Order(dc.ByCreatedAt(), dc.ByID())
+	if params.PageSize < 1 || params.PageSize > 50 {
+		params.PageSize = 50
+	}
+	query := s.db.Client(ctx).DiscussionComment.Query().
+		Where(dc.ThreadID(params.ThreadID)).
+		Where(dc.ParentIDIsNil()).
+		Order(dc.ByCreatedAt(), dc.ByID())
 	return ent.DoListQuery[ent.DiscussionComment, *ent.DiscussionCommentQuery](ctx, query, params.ListParams)
 }
 
 func (s *DiscussionService) GetComment(ctx context.Context, id uuid.UUID) (*ent.DiscussionComment, error) {
 	return s.db.Client(ctx).DiscussionComment.Get(ctx, id)
+}
+
+func (s *DiscussionService) CreateComment(ctx context.Context, params rez.CreateDiscussionCommentParams) (*ent.DiscussionComment, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (s *DiscussionService) UpdateComment(ctx context.Context, u uuid.UUID, params rez.UpdateDiscussionCommentParams) (*ent.DiscussionComment, error) {
+	//TODO implement me
+	panic("implement me")
 }
 
 func (s *DiscussionService) ListReviews(ctx context.Context, params rez.ListReviewsParams) (*ent.ListResult[ent.Review], error) {
@@ -85,4 +111,9 @@ func (s *DiscussionService) ListReviews(ctx context.Context, params rez.ListRevi
 
 func (s *DiscussionService) GetReview(ctx context.Context, id uuid.UUID) (*ent.Review, error) {
 	return s.db.Client(ctx).Review.Get(ctx, id)
+}
+
+func (s *DiscussionService) CreateReviewRequest(ctx context.Context, params rez.CreateReviewRequestParams) (*ent.Review, error) {
+	//TODO implement me
+	panic("implement me")
 }

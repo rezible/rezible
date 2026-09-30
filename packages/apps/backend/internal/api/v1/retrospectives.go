@@ -38,13 +38,29 @@ func (h *retrospectivesHandler) UpdateRetrospective(ctx context.Context, req *oa
 }
 
 func (h *retrospectivesHandler) GetRetrospective(ctx context.Context, input *oapi.GetRetrospectiveRequest) (*oapi.GetRetrospectiveResponse, error) {
-	var resp oapi.GetRetrospectiveResponse
-
 	retro, retroErr := h.retros.Get(ctx, retrospective.ID(input.Id))
 	if retroErr != nil {
 		return nil, oapi.Error(ctx, "failed to get retrospective", retroErr)
 	}
+	var resp oapi.GetRetrospectiveResponse
 	resp.Body.Data = oapi.RetrospectiveFromEnt(retro)
-
 	return &resp, nil
+}
+
+func (h *retrospectivesHandler) RequestRetrospectiveReview(ctx context.Context, input *oapi.RequestRetrospectiveReviewRequest) (*oapi.RequestRetrospectiveReviewResponse, error) {
+	return nil, oapi.Error(ctx, "not implemented", rez.ErrNotImplemented)
+}
+
+func (h *retrospectivesHandler) GetRetrospectiveReportComposition(ctx context.Context, input *oapi.GetRetrospectiveReportCompositionRequest) (*oapi.GetRetrospectiveReportCompositionResponse, error) {
+	composition, queryErr := h.retros.GetReportComposition(ctx, input.Id)
+	if queryErr != nil {
+		return nil, oapi.Error(ctx, "failed to get report composition", queryErr)
+	}
+	var resp oapi.GetRetrospectiveReportCompositionResponse
+	resp.Body.Data = oapi.RetrospectiveReportCompositionFromRez(composition)
+	return &resp, nil
+}
+
+func (h *retrospectivesHandler) SetRetrospectiveReportFindingSelection(ctx context.Context, input *oapi.SetRetrospectiveReportFindingSelectionRequest) (*oapi.SetRetrospectiveReportFindingSelectionResponse, error) {
+	return nil, oapi.Error(ctx, "not implemented", rez.ErrNotImplemented)
 }

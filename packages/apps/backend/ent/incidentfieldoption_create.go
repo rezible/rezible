@@ -215,7 +215,7 @@ func (_c *IncidentFieldOptionCreate) createSpec() (*IncidentFieldOption, *sqlgra
 	}
 	if value, ok := _c.mutation.ArchiveTime(); ok {
 		_spec.SetField(incidentfieldoption.FieldArchiveTime, field.TypeTime, value)
-		_node.ArchiveTime = value
+		_node.ArchiveTime = &value
 	}
 	if value, ok := _c.mutation.GetType(); ok {
 		_spec.SetField(incidentfieldoption.FieldType, field.TypeEnum, value)

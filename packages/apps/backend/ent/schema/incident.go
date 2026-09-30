@@ -23,17 +23,21 @@ func (Incident) Mixin() []ent.Mixin {
 	}
 }
 
+var incidentResponseStates = []string{"unknown", "started", "mitigated", "resolved"}
+
 // Fields of the Incident.
 func (Incident) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.New()).Default(uuid.New),
 		field.String("slug").Unique(),
 		field.String("title"),
-		field.UUID("severity_id", uuid.UUID{}),
-		field.UUID("type_id", uuid.UUID{}),
+		field.UUID("severity_id", uuid.UUID{}).Optional().Nillable(),
+		field.UUID("type_id", uuid.UUID{}).Optional().Nillable(),
 		field.String("summary").Optional(),
 		field.String("chat_channel_id").Optional(),
+		field.Enum("response_state").Values(incidentResponseStates...).Default("unknown"),
 		field.Time("opened_at").Default(time.Now),
+		field.Time("resolved_at").Optional().Nillable(),
 	}
 }
 
@@ -42,21 +46,15 @@ func (Incident) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("severity", IncidentSeverity.Type).
 			Unique().
-			Required().
 			Field("severity_id"),
 		edge.To("type", IncidentType.Type).
 			Unique().
-			Required().
 			Field("type_id"),
 
 		edge.To("milestones", IncidentMilestone.Type),
 
 		edge.To("retrospective", Retrospective.Type).
 			Unique(),
-
-		edge.From("users", User.Type).
-			Ref("incidents").
-			Through("user_roles", IncidentRoleAssignment.Type),
 
 		edge.From("role_assignments", IncidentRoleAssignment.Type).
 			Ref("incident"),
@@ -67,13 +65,12 @@ func (Incident) Edges() []ent.Edge {
 		edge.To("situations", Situation.Type),
 
 		edge.To("field_selections", IncidentFieldOption.Type),
-		edge.To("tasks", Task.Type),
 		edge.To("tag_assignments", IncidentTag.Type),
 		edge.From("impacts", IncidentImpact.Type).
 			Ref("incident"),
 		edge.To("debriefs", IncidentDebrief.Type),
-		edge.To("review_sessions", MeetingSession.Type),
-		edge.To("video_conferences", VideoConference.Type),
+		edge.From("video_conferences", VideoConference.Type).
+			Ref("incident"),
 	}
 }
 

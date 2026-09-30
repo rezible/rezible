@@ -109,20 +109,6 @@ func (_u *DiscussionThreadUpdate) SetNillableUserID(v *uuid.UUID) *DiscussionThr
 	return _u
 }
 
-// SetKind sets the "kind" field.
-func (_u *DiscussionThreadUpdate) SetKind(v discussionthread.Kind) *DiscussionThreadUpdate {
-	_u.mutation.SetKind(v)
-	return _u
-}
-
-// SetNillableKind sets the "kind" field if the given value is not nil.
-func (_u *DiscussionThreadUpdate) SetNillableKind(v *discussionthread.Kind) *DiscussionThreadUpdate {
-	if v != nil {
-		_u.SetKind(*v)
-	}
-	return _u
-}
-
 // SetTargetKind sets the "target_kind" field.
 func (_u *DiscussionThreadUpdate) SetTargetKind(v discussionthread.TargetKind) *DiscussionThreadUpdate {
 	_u.mutation.SetTargetKind(v)
@@ -361,11 +347,6 @@ func (_u *DiscussionThreadUpdate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *DiscussionThreadUpdate) check() error {
-	if v, ok := _u.mutation.Kind(); ok {
-		if err := discussionthread.KindValidator(v); err != nil {
-			return &ValidationError{Name: "kind", err: fmt.Errorf(`ent: validator failed for field "DiscussionThread.kind": %w`, err)}
-		}
-	}
 	if v, ok := _u.mutation.TargetKind(); ok {
 		if err := discussionthread.TargetKindValidator(v); err != nil {
 			return &ValidationError{Name: "target_kind", err: fmt.Errorf(`ent: validator failed for field "DiscussionThread.target_kind": %w`, err)}
@@ -408,9 +389,6 @@ func (_u *DiscussionThreadUpdate) sqlSave(ctx context.Context) (_node int, err e
 	}
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(discussionthread.FieldUpdatedAt, field.TypeTime, value)
-	}
-	if value, ok := _u.mutation.Kind(); ok {
-		_spec.SetField(discussionthread.FieldKind, field.TypeEnum, value)
 	}
 	if value, ok := _u.mutation.TargetKind(); ok {
 		_spec.SetField(discussionthread.FieldTargetKind, field.TypeEnum, value)
@@ -687,20 +665,6 @@ func (_u *DiscussionThreadUpdateOne) SetNillableUserID(v *uuid.UUID) *Discussion
 	return _u
 }
 
-// SetKind sets the "kind" field.
-func (_u *DiscussionThreadUpdateOne) SetKind(v discussionthread.Kind) *DiscussionThreadUpdateOne {
-	_u.mutation.SetKind(v)
-	return _u
-}
-
-// SetNillableKind sets the "kind" field if the given value is not nil.
-func (_u *DiscussionThreadUpdateOne) SetNillableKind(v *discussionthread.Kind) *DiscussionThreadUpdateOne {
-	if v != nil {
-		_u.SetKind(*v)
-	}
-	return _u
-}
-
 // SetTargetKind sets the "target_kind" field.
 func (_u *DiscussionThreadUpdateOne) SetTargetKind(v discussionthread.TargetKind) *DiscussionThreadUpdateOne {
 	_u.mutation.SetTargetKind(v)
@@ -952,11 +916,6 @@ func (_u *DiscussionThreadUpdateOne) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *DiscussionThreadUpdateOne) check() error {
-	if v, ok := _u.mutation.Kind(); ok {
-		if err := discussionthread.KindValidator(v); err != nil {
-			return &ValidationError{Name: "kind", err: fmt.Errorf(`ent: validator failed for field "DiscussionThread.kind": %w`, err)}
-		}
-	}
 	if v, ok := _u.mutation.TargetKind(); ok {
 		if err := discussionthread.TargetKindValidator(v); err != nil {
 			return &ValidationError{Name: "target_kind", err: fmt.Errorf(`ent: validator failed for field "DiscussionThread.target_kind": %w`, err)}
@@ -1016,9 +975,6 @@ func (_u *DiscussionThreadUpdateOne) sqlSave(ctx context.Context) (_node *Discus
 	}
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(discussionthread.FieldUpdatedAt, field.TypeTime, value)
-	}
-	if value, ok := _u.mutation.Kind(); ok {
-		_spec.SetField(discussionthread.FieldKind, field.TypeEnum, value)
 	}
 	if value, ok := _u.mutation.TargetKind(); ok {
 		_spec.SetField(discussionthread.FieldTargetKind, field.TypeEnum, value)

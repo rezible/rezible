@@ -18,10 +18,8 @@ import (
 	"github.com/rezible/rezible/ent/discussionthread"
 	"github.com/rezible/rezible/ent/documentaccess"
 	"github.com/rezible/rezible/ent/eventannotation"
-	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/incidentdebrief"
 	"github.com/rezible/rezible/ent/incidentmilestone"
-	"github.com/rezible/rezible/ent/incidentroleassignment"
 	"github.com/rezible/rezible/ent/integrationuserinstallstate"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/knowledgeentity"
@@ -32,7 +30,6 @@ import (
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/review"
 	"github.com/rezible/rezible/ent/situationhazardassessment"
-	"github.com/rezible/rezible/ent/task"
 	"github.com/rezible/rezible/ent/team"
 	"github.com/rezible/rezible/ent/teammembership"
 	"github.com/rezible/rezible/ent/tenant"
@@ -56,18 +53,14 @@ type UserQuery struct {
 	withEventAnnotations           *EventAnnotationQuery
 	withSituationHazardAssessments *SituationHazardAssessmentQuery
 	withIntegrationOauthStates     *IntegrationUserInstallStateQuery
-	withIncidents                  *IncidentQuery
 	withIncidentMilestones         *IncidentMilestoneQuery
 	withIncidentDebriefs           *IncidentDebriefQuery
-	withAssignedTasks              *TaskQuery
-	withCreatedTasks               *TaskQuery
 	withReviewRequests             *ReviewQuery
 	withReviewResponses            *ReviewQuery
 	withDiscussionThreads          *DiscussionThreadQuery
 	withDiscussionComments         *DiscussionCommentQuery
 	withDocumentAccesses           *DocumentAccessQuery
 	withTeamMemberships            *TeamMembershipQuery
-	withRoleAssignments            *IncidentRoleAssignmentQuery
 	modifiers                      []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -355,31 +348,6 @@ func (_q *UserQuery) QueryIntegrationOauthStates() *IntegrationUserInstallStateQ
 	return query
 }
 
-// QueryIncidents chains the current query on the "incidents" edge.
-func (_q *UserQuery) QueryIncidents() *IncidentQuery {
-	query := (&IncidentClient{config: _q.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := _q.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := _q.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(user.Table, user.FieldID, selector),
-			sqlgraph.To(incident.Table, incident.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, user.IncidentsTable, user.IncidentsPrimaryKey...),
-		)
-		schemaConfig := _q.schemaConfig
-		step.To.Schema = schemaConfig.Incident
-		step.Edge.Schema = schemaConfig.IncidentRoleAssignment
-		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
 // QueryIncidentMilestones chains the current query on the "incident_milestones" edge.
 func (_q *UserQuery) QueryIncidentMilestones() *IncidentMilestoneQuery {
 	query := (&IncidentMilestoneClient{config: _q.config}).Query()
@@ -424,56 +392,6 @@ func (_q *UserQuery) QueryIncidentDebriefs() *IncidentDebriefQuery {
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.IncidentDebrief
 		step.Edge.Schema = schemaConfig.IncidentDebrief
-		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryAssignedTasks chains the current query on the "assigned_tasks" edge.
-func (_q *UserQuery) QueryAssignedTasks() *TaskQuery {
-	query := (&TaskClient{config: _q.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := _q.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := _q.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(user.Table, user.FieldID, selector),
-			sqlgraph.To(task.Table, task.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, user.AssignedTasksTable, user.AssignedTasksColumn),
-		)
-		schemaConfig := _q.schemaConfig
-		step.To.Schema = schemaConfig.Task
-		step.Edge.Schema = schemaConfig.Task
-		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryCreatedTasks chains the current query on the "created_tasks" edge.
-func (_q *UserQuery) QueryCreatedTasks() *TaskQuery {
-	query := (&TaskClient{config: _q.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := _q.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := _q.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(user.Table, user.FieldID, selector),
-			sqlgraph.To(task.Table, task.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, user.CreatedTasksTable, user.CreatedTasksColumn),
-		)
-		schemaConfig := _q.schemaConfig
-		step.To.Schema = schemaConfig.Task
-		step.Edge.Schema = schemaConfig.Task
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -624,31 +542,6 @@ func (_q *UserQuery) QueryTeamMemberships() *TeamMembershipQuery {
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.TeamMembership
 		step.Edge.Schema = schemaConfig.TeamMembership
-		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryRoleAssignments chains the current query on the "role_assignments" edge.
-func (_q *UserQuery) QueryRoleAssignments() *IncidentRoleAssignmentQuery {
-	query := (&IncidentRoleAssignmentClient{config: _q.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := _q.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := _q.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(user.Table, user.FieldID, selector),
-			sqlgraph.To(incidentroleassignment.Table, incidentroleassignment.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, user.RoleAssignmentsTable, user.RoleAssignmentsColumn),
-		)
-		schemaConfig := _q.schemaConfig
-		step.To.Schema = schemaConfig.IncidentRoleAssignment
-		step.Edge.Schema = schemaConfig.IncidentRoleAssignment
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -857,18 +750,14 @@ func (_q *UserQuery) Clone() *UserQuery {
 		withEventAnnotations:           _q.withEventAnnotations.Clone(),
 		withSituationHazardAssessments: _q.withSituationHazardAssessments.Clone(),
 		withIntegrationOauthStates:     _q.withIntegrationOauthStates.Clone(),
-		withIncidents:                  _q.withIncidents.Clone(),
 		withIncidentMilestones:         _q.withIncidentMilestones.Clone(),
 		withIncidentDebriefs:           _q.withIncidentDebriefs.Clone(),
-		withAssignedTasks:              _q.withAssignedTasks.Clone(),
-		withCreatedTasks:               _q.withCreatedTasks.Clone(),
 		withReviewRequests:             _q.withReviewRequests.Clone(),
 		withReviewResponses:            _q.withReviewResponses.Clone(),
 		withDiscussionThreads:          _q.withDiscussionThreads.Clone(),
 		withDiscussionComments:         _q.withDiscussionComments.Clone(),
 		withDocumentAccesses:           _q.withDocumentAccesses.Clone(),
 		withTeamMemberships:            _q.withTeamMemberships.Clone(),
-		withRoleAssignments:            _q.withRoleAssignments.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
 		path:      _q.path,
@@ -986,17 +875,6 @@ func (_q *UserQuery) WithIntegrationOauthStates(opts ...func(*IntegrationUserIns
 	return _q
 }
 
-// WithIncidents tells the query-builder to eager-load the nodes that are connected to
-// the "incidents" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *UserQuery) WithIncidents(opts ...func(*IncidentQuery)) *UserQuery {
-	query := (&IncidentClient{config: _q.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	_q.withIncidents = query
-	return _q
-}
-
 // WithIncidentMilestones tells the query-builder to eager-load the nodes that are connected to
 // the "incident_milestones" edge. The optional arguments are used to configure the query builder of the edge.
 func (_q *UserQuery) WithIncidentMilestones(opts ...func(*IncidentMilestoneQuery)) *UserQuery {
@@ -1016,28 +894,6 @@ func (_q *UserQuery) WithIncidentDebriefs(opts ...func(*IncidentDebriefQuery)) *
 		opt(query)
 	}
 	_q.withIncidentDebriefs = query
-	return _q
-}
-
-// WithAssignedTasks tells the query-builder to eager-load the nodes that are connected to
-// the "assigned_tasks" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *UserQuery) WithAssignedTasks(opts ...func(*TaskQuery)) *UserQuery {
-	query := (&TaskClient{config: _q.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	_q.withAssignedTasks = query
-	return _q
-}
-
-// WithCreatedTasks tells the query-builder to eager-load the nodes that are connected to
-// the "created_tasks" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *UserQuery) WithCreatedTasks(opts ...func(*TaskQuery)) *UserQuery {
-	query := (&TaskClient{config: _q.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	_q.withCreatedTasks = query
 	return _q
 }
 
@@ -1104,17 +960,6 @@ func (_q *UserQuery) WithTeamMemberships(opts ...func(*TeamMembershipQuery)) *Us
 		opt(query)
 	}
 	_q.withTeamMemberships = query
-	return _q
-}
-
-// WithRoleAssignments tells the query-builder to eager-load the nodes that are connected to
-// the "role_assignments" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *UserQuery) WithRoleAssignments(opts ...func(*IncidentRoleAssignmentQuery)) *UserQuery {
-	query := (&IncidentRoleAssignmentClient{config: _q.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	_q.withRoleAssignments = query
 	return _q
 }
 
@@ -1202,7 +1047,7 @@ func (_q *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 	var (
 		nodes       = []*User{}
 		_spec       = _q.querySpec()
-		loadedTypes = [22]bool{
+		loadedTypes = [18]bool{
 			_q.withTenant != nil,
 			_q.withKnowledgeEntity != nil,
 			_q.withOrganizationRole != nil,
@@ -1213,18 +1058,14 @@ func (_q *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 			_q.withEventAnnotations != nil,
 			_q.withSituationHazardAssessments != nil,
 			_q.withIntegrationOauthStates != nil,
-			_q.withIncidents != nil,
 			_q.withIncidentMilestones != nil,
 			_q.withIncidentDebriefs != nil,
-			_q.withAssignedTasks != nil,
-			_q.withCreatedTasks != nil,
 			_q.withReviewRequests != nil,
 			_q.withReviewResponses != nil,
 			_q.withDiscussionThreads != nil,
 			_q.withDiscussionComments != nil,
 			_q.withDocumentAccesses != nil,
 			_q.withTeamMemberships != nil,
-			_q.withRoleAssignments != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -1323,13 +1164,6 @@ func (_q *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 			return nil, err
 		}
 	}
-	if query := _q.withIncidents; query != nil {
-		if err := _q.loadIncidents(ctx, query, nodes,
-			func(n *User) { n.Edges.Incidents = []*Incident{} },
-			func(n *User, e *Incident) { n.Edges.Incidents = append(n.Edges.Incidents, e) }); err != nil {
-			return nil, err
-		}
-	}
 	if query := _q.withIncidentMilestones; query != nil {
 		if err := _q.loadIncidentMilestones(ctx, query, nodes,
 			func(n *User) { n.Edges.IncidentMilestones = []*IncidentMilestone{} },
@@ -1343,20 +1177,6 @@ func (_q *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 		if err := _q.loadIncidentDebriefs(ctx, query, nodes,
 			func(n *User) { n.Edges.IncidentDebriefs = []*IncidentDebrief{} },
 			func(n *User, e *IncidentDebrief) { n.Edges.IncidentDebriefs = append(n.Edges.IncidentDebriefs, e) }); err != nil {
-			return nil, err
-		}
-	}
-	if query := _q.withAssignedTasks; query != nil {
-		if err := _q.loadAssignedTasks(ctx, query, nodes,
-			func(n *User) { n.Edges.AssignedTasks = []*Task{} },
-			func(n *User, e *Task) { n.Edges.AssignedTasks = append(n.Edges.AssignedTasks, e) }); err != nil {
-			return nil, err
-		}
-	}
-	if query := _q.withCreatedTasks; query != nil {
-		if err := _q.loadCreatedTasks(ctx, query, nodes,
-			func(n *User) { n.Edges.CreatedTasks = []*Task{} },
-			func(n *User, e *Task) { n.Edges.CreatedTasks = append(n.Edges.CreatedTasks, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -1401,13 +1221,6 @@ func (_q *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 		if err := _q.loadTeamMemberships(ctx, query, nodes,
 			func(n *User) { n.Edges.TeamMemberships = []*TeamMembership{} },
 			func(n *User, e *TeamMembership) { n.Edges.TeamMemberships = append(n.Edges.TeamMemberships, e) }); err != nil {
-			return nil, err
-		}
-	}
-	if query := _q.withRoleAssignments; query != nil {
-		if err := _q.loadRoleAssignments(ctx, query, nodes,
-			func(n *User) { n.Edges.RoleAssignments = []*IncidentRoleAssignment{} },
-			func(n *User, e *IncidentRoleAssignment) { n.Edges.RoleAssignments = append(n.Edges.RoleAssignments, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -1780,68 +1593,6 @@ func (_q *UserQuery) loadIntegrationOauthStates(ctx context.Context, query *Inte
 	}
 	return nil
 }
-func (_q *UserQuery) loadIncidents(ctx context.Context, query *IncidentQuery, nodes []*User, init func(*User), assign func(*User, *Incident)) error {
-	edgeIDs := make([]driver.Value, len(nodes))
-	byID := make(map[uuid.UUID]*User)
-	nids := make(map[uuid.UUID]map[*User]struct{})
-	for i, node := range nodes {
-		edgeIDs[i] = node.ID
-		byID[node.ID] = node
-		if init != nil {
-			init(node)
-		}
-	}
-	query.Where(func(s *sql.Selector) {
-		joinT := sql.Table(user.IncidentsTable)
-		joinT.Schema(_q.schemaConfig.IncidentRoleAssignment)
-		s.Join(joinT).On(s.C(incident.FieldID), joinT.C(user.IncidentsPrimaryKey[1]))
-		s.Where(sql.InValues(joinT.C(user.IncidentsPrimaryKey[0]), edgeIDs...))
-		columns := s.SelectedColumns()
-		s.Select(joinT.C(user.IncidentsPrimaryKey[0]))
-		s.AppendSelect(columns...)
-		s.SetDistinct(false)
-	})
-	if err := query.prepareQuery(ctx); err != nil {
-		return err
-	}
-	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
-		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
-			assign := spec.Assign
-			values := spec.ScanValues
-			spec.ScanValues = func(columns []string) ([]any, error) {
-				values, err := values(columns[1:])
-				if err != nil {
-					return nil, err
-				}
-				return append([]any{new(uuid.UUID)}, values...), nil
-			}
-			spec.Assign = func(columns []string, values []any) error {
-				outValue := *values[0].(*uuid.UUID)
-				inValue := *values[1].(*uuid.UUID)
-				if nids[inValue] == nil {
-					nids[inValue] = map[*User]struct{}{byID[outValue]: {}}
-					return assign(columns[1:], values[1:])
-				}
-				nids[inValue][byID[outValue]] = struct{}{}
-				return nil
-			}
-		})
-	})
-	neighbors, err := withInterceptors[[]*Incident](ctx, query, qr, query.inters)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		nodes, ok := nids[n.ID]
-		if !ok {
-			return fmt.Errorf(`unexpected "incidents" node returned %v`, n.ID)
-		}
-		for kn := range nodes {
-			assign(kn, n)
-		}
-	}
-	return nil
-}
 func (_q *UserQuery) loadIncidentMilestones(ctx context.Context, query *IncidentMilestoneQuery, nodes []*User, init func(*User), assign func(*User, *IncidentMilestone)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*User)
@@ -1864,9 +1615,12 @@ func (_q *UserQuery) loadIncidentMilestones(ctx context.Context, query *Incident
 	}
 	for _, n := range neighbors {
 		fk := n.UserID
-		node, ok := nodeids[fk]
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "user_id" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "user_id" returned %v for node %v`, fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "user_id" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}
@@ -1897,66 +1651,6 @@ func (_q *UserQuery) loadIncidentDebriefs(ctx context.Context, query *IncidentDe
 		node, ok := nodeids[fk]
 		if !ok {
 			return fmt.Errorf(`unexpected referenced foreign-key "user_id" returned %v for node %v`, fk, n.ID)
-		}
-		assign(node, n)
-	}
-	return nil
-}
-func (_q *UserQuery) loadAssignedTasks(ctx context.Context, query *TaskQuery, nodes []*User, init func(*User), assign func(*User, *Task)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*User)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
-	}
-	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(task.FieldAssigneeID)
-	}
-	query.Where(predicate.Task(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(user.AssignedTasksColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		fk := n.AssigneeID
-		node, ok := nodeids[fk]
-		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "assignee_id" returned %v for node %v`, fk, n.ID)
-		}
-		assign(node, n)
-	}
-	return nil
-}
-func (_q *UserQuery) loadCreatedTasks(ctx context.Context, query *TaskQuery, nodes []*User, init func(*User), assign func(*User, *Task)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*User)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
-	}
-	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(task.FieldCreatorID)
-	}
-	query.Where(predicate.Task(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(user.CreatedTasksColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		fk := n.CreatorID
-		node, ok := nodeids[fk]
-		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "creator_id" returned %v for node %v`, fk, n.ID)
 		}
 		assign(node, n)
 	}
@@ -2127,36 +1821,6 @@ func (_q *UserQuery) loadTeamMemberships(ctx context.Context, query *TeamMembers
 	}
 	query.Where(predicate.TeamMembership(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(user.TeamMembershipsColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		fk := n.UserID
-		node, ok := nodeids[fk]
-		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "user_id" returned %v for node %v`, fk, n.ID)
-		}
-		assign(node, n)
-	}
-	return nil
-}
-func (_q *UserQuery) loadRoleAssignments(ctx context.Context, query *IncidentRoleAssignmentQuery, nodes []*User, init func(*User), assign func(*User, *IncidentRoleAssignment)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*User)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
-	}
-	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(incidentroleassignment.FieldUserID)
-	}
-	query.Where(predicate.IncidentRoleAssignment(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(user.RoleAssignmentsColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {

@@ -36,6 +36,7 @@ type (
 
 	OrganizationPreferences struct {
 		EnableIncidentManagement bool   `json:"enableIncidentManagement"`
+		RequiredReviewerCount    int    `json:"requiredReviewerCount"`
 		Timezone                 string `json:"timezone"`
 	}
 )
@@ -58,6 +59,7 @@ func OrganizationPreferencesFromEnt(prefs *ent.OrganizationPreferences) Organiza
 	}
 	return OrganizationPreferences{
 		EnableIncidentManagement: prefs.EnableIncidentManagement,
+		RequiredReviewerCount:    prefs.RequiredReviewerCount,
 		Timezone:                 cmp.Or(prefs.Timezone, "UTC"),
 	}
 }
@@ -104,6 +106,7 @@ var UpdateOrganizationPreferences = huma.Operation{
 
 type UpdateOrganizationPreferencesRequestAttributes struct {
 	EnableIncidentManagement *bool   `json:"enableIncidentManagement,omitempty"`
+	RequiredReviewerCount    *int    `json:"requiredReviewerCount,omitempty" minimum:"0"`
 	Timezone                 *string `json:"timezone,omitempty"`
 }
 type UpdateOrganizationPreferencesRequest IdRequestWithBody[UpdateOrganizationPreferencesRequestAttributes]

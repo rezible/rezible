@@ -24,12 +24,9 @@ import (
 	"github.com/rezible/rezible/ent/incidenttag"
 	"github.com/rezible/rezible/ent/incidenttype"
 	"github.com/rezible/rezible/ent/knowledgeentity"
-	"github.com/rezible/rezible/ent/meetingsession"
 	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/ent/situation"
-	"github.com/rezible/rezible/ent/task"
 	"github.com/rezible/rezible/ent/tenant"
-	"github.com/rezible/rezible/ent/user"
 	"github.com/rezible/rezible/ent/videoconference"
 )
 
@@ -107,9 +104,25 @@ func (_c *IncidentCreate) SetSeverityID(v uuid.UUID) *IncidentCreate {
 	return _c
 }
 
+// SetNillableSeverityID sets the "severity_id" field if the given value is not nil.
+func (_c *IncidentCreate) SetNillableSeverityID(v *uuid.UUID) *IncidentCreate {
+	if v != nil {
+		_c.SetSeverityID(*v)
+	}
+	return _c
+}
+
 // SetTypeID sets the "type_id" field.
 func (_c *IncidentCreate) SetTypeID(v uuid.UUID) *IncidentCreate {
 	_c.mutation.SetTypeID(v)
+	return _c
+}
+
+// SetNillableTypeID sets the "type_id" field if the given value is not nil.
+func (_c *IncidentCreate) SetNillableTypeID(v *uuid.UUID) *IncidentCreate {
+	if v != nil {
+		_c.SetTypeID(*v)
+	}
 	return _c
 }
 
@@ -141,6 +154,20 @@ func (_c *IncidentCreate) SetNillableChatChannelID(v *string) *IncidentCreate {
 	return _c
 }
 
+// SetResponseState sets the "response_state" field.
+func (_c *IncidentCreate) SetResponseState(v incident.ResponseState) *IncidentCreate {
+	_c.mutation.SetResponseState(v)
+	return _c
+}
+
+// SetNillableResponseState sets the "response_state" field if the given value is not nil.
+func (_c *IncidentCreate) SetNillableResponseState(v *incident.ResponseState) *IncidentCreate {
+	if v != nil {
+		_c.SetResponseState(*v)
+	}
+	return _c
+}
+
 // SetOpenedAt sets the "opened_at" field.
 func (_c *IncidentCreate) SetOpenedAt(v time.Time) *IncidentCreate {
 	_c.mutation.SetOpenedAt(v)
@@ -151,6 +178,20 @@ func (_c *IncidentCreate) SetOpenedAt(v time.Time) *IncidentCreate {
 func (_c *IncidentCreate) SetNillableOpenedAt(v *time.Time) *IncidentCreate {
 	if v != nil {
 		_c.SetOpenedAt(*v)
+	}
+	return _c
+}
+
+// SetResolvedAt sets the "resolved_at" field.
+func (_c *IncidentCreate) SetResolvedAt(v time.Time) *IncidentCreate {
+	_c.mutation.SetResolvedAt(v)
+	return _c
+}
+
+// SetNillableResolvedAt sets the "resolved_at" field if the given value is not nil.
+func (_c *IncidentCreate) SetNillableResolvedAt(v *time.Time) *IncidentCreate {
+	if v != nil {
+		_c.SetResolvedAt(*v)
 	}
 	return _c
 }
@@ -223,21 +264,6 @@ func (_c *IncidentCreate) SetRetrospective(v *Retrospective) *IncidentCreate {
 	return _c.SetRetrospectiveID(v.ID)
 }
 
-// AddUserIDs adds the "users" edge to the User entity by IDs.
-func (_c *IncidentCreate) AddUserIDs(ids ...uuid.UUID) *IncidentCreate {
-	_c.mutation.AddUserIDs(ids...)
-	return _c
-}
-
-// AddUsers adds the "users" edges to the User entity.
-func (_c *IncidentCreate) AddUsers(v ...*User) *IncidentCreate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _c.AddUserIDs(ids...)
-}
-
 // AddRoleAssignmentIDs adds the "role_assignments" edge to the IncidentRoleAssignment entity by IDs.
 func (_c *IncidentCreate) AddRoleAssignmentIDs(ids ...uuid.UUID) *IncidentCreate {
 	_c.mutation.AddRoleAssignmentIDs(ids...)
@@ -298,21 +324,6 @@ func (_c *IncidentCreate) AddFieldSelections(v ...*IncidentFieldOption) *Inciden
 	return _c.AddFieldSelectionIDs(ids...)
 }
 
-// AddTaskIDs adds the "tasks" edge to the Task entity by IDs.
-func (_c *IncidentCreate) AddTaskIDs(ids ...uuid.UUID) *IncidentCreate {
-	_c.mutation.AddTaskIDs(ids...)
-	return _c
-}
-
-// AddTasks adds the "tasks" edges to the Task entity.
-func (_c *IncidentCreate) AddTasks(v ...*Task) *IncidentCreate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _c.AddTaskIDs(ids...)
-}
-
 // AddTagAssignmentIDs adds the "tag_assignments" edge to the IncidentTag entity by IDs.
 func (_c *IncidentCreate) AddTagAssignmentIDs(ids ...uuid.UUID) *IncidentCreate {
 	_c.mutation.AddTagAssignmentIDs(ids...)
@@ -358,21 +369,6 @@ func (_c *IncidentCreate) AddDebriefs(v ...*IncidentDebrief) *IncidentCreate {
 	return _c.AddDebriefIDs(ids...)
 }
 
-// AddReviewSessionIDs adds the "review_sessions" edge to the MeetingSession entity by IDs.
-func (_c *IncidentCreate) AddReviewSessionIDs(ids ...uuid.UUID) *IncidentCreate {
-	_c.mutation.AddReviewSessionIDs(ids...)
-	return _c
-}
-
-// AddReviewSessions adds the "review_sessions" edges to the MeetingSession entity.
-func (_c *IncidentCreate) AddReviewSessions(v ...*MeetingSession) *IncidentCreate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _c.AddReviewSessionIDs(ids...)
-}
-
 // AddVideoConferenceIDs adds the "video_conferences" edge to the VideoConference entity by IDs.
 func (_c *IncidentCreate) AddVideoConferenceIDs(ids ...uuid.UUID) *IncidentCreate {
 	_c.mutation.AddVideoConferenceIDs(ids...)
@@ -386,21 +382,6 @@ func (_c *IncidentCreate) AddVideoConferences(v ...*VideoConference) *IncidentCr
 		ids[i] = v[i].ID
 	}
 	return _c.AddVideoConferenceIDs(ids...)
-}
-
-// AddUserRoleIDs adds the "user_roles" edge to the IncidentRoleAssignment entity by IDs.
-func (_c *IncidentCreate) AddUserRoleIDs(ids ...uuid.UUID) *IncidentCreate {
-	_c.mutation.AddUserRoleIDs(ids...)
-	return _c
-}
-
-// AddUserRoles adds the "user_roles" edges to the IncidentRoleAssignment entity.
-func (_c *IncidentCreate) AddUserRoles(v ...*IncidentRoleAssignment) *IncidentCreate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _c.AddUserRoleIDs(ids...)
 }
 
 // AddIncidentLinkIDs adds the "incident_links" edge to the IncidentLink entity by IDs.
@@ -469,6 +450,10 @@ func (_c *IncidentCreate) defaults() error {
 		v := incident.DefaultUpdatedAt()
 		_c.mutation.SetUpdatedAt(v)
 	}
+	if _, ok := _c.mutation.ResponseState(); !ok {
+		v := incident.DefaultResponseState
+		_c.mutation.SetResponseState(v)
+	}
 	if _, ok := _c.mutation.OpenedAt(); !ok {
 		if incident.DefaultOpenedAt == nil {
 			return fmt.Errorf("ent: uninitialized incident.DefaultOpenedAt (forgotten import ent/runtime?)")
@@ -503,23 +488,19 @@ func (_c *IncidentCreate) check() error {
 	if _, ok := _c.mutation.Title(); !ok {
 		return &ValidationError{Name: "title", err: errors.New(`ent: missing required field "Incident.title"`)}
 	}
-	if _, ok := _c.mutation.SeverityID(); !ok {
-		return &ValidationError{Name: "severity_id", err: errors.New(`ent: missing required field "Incident.severity_id"`)}
+	if _, ok := _c.mutation.ResponseState(); !ok {
+		return &ValidationError{Name: "response_state", err: errors.New(`ent: missing required field "Incident.response_state"`)}
 	}
-	if _, ok := _c.mutation.TypeID(); !ok {
-		return &ValidationError{Name: "type_id", err: errors.New(`ent: missing required field "Incident.type_id"`)}
+	if v, ok := _c.mutation.ResponseState(); ok {
+		if err := incident.ResponseStateValidator(v); err != nil {
+			return &ValidationError{Name: "response_state", err: fmt.Errorf(`ent: validator failed for field "Incident.response_state": %w`, err)}
+		}
 	}
 	if _, ok := _c.mutation.OpenedAt(); !ok {
 		return &ValidationError{Name: "opened_at", err: errors.New(`ent: missing required field "Incident.opened_at"`)}
 	}
 	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "Incident.tenant"`)}
-	}
-	if len(_c.mutation.SeverityIDs()) == 0 {
-		return &ValidationError{Name: "severity", err: errors.New(`ent: missing required edge "Incident.severity"`)}
-	}
-	if len(_c.mutation.TypeIDs()) == 0 {
-		return &ValidationError{Name: "type", err: errors.New(`ent: missing required edge "Incident.type"`)}
 	}
 	return nil
 }
@@ -582,9 +563,17 @@ func (_c *IncidentCreate) createSpec() (*Incident, *sqlgraph.CreateSpec) {
 		_spec.SetField(incident.FieldChatChannelID, field.TypeString, value)
 		_node.ChatChannelID = value
 	}
+	if value, ok := _c.mutation.ResponseState(); ok {
+		_spec.SetField(incident.FieldResponseState, field.TypeEnum, value)
+		_node.ResponseState = value
+	}
 	if value, ok := _c.mutation.OpenedAt(); ok {
 		_spec.SetField(incident.FieldOpenedAt, field.TypeTime, value)
 		_node.OpenedAt = value
+	}
+	if value, ok := _c.mutation.ResolvedAt(); ok {
+		_spec.SetField(incident.FieldResolvedAt, field.TypeTime, value)
+		_node.ResolvedAt = &value
 	}
 	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -637,7 +626,7 @@ func (_c *IncidentCreate) createSpec() (*Incident, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.SeverityID = nodes[0]
+		_node.SeverityID = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := _c.mutation.TypeIDs(); len(nodes) > 0 {
@@ -655,7 +644,7 @@ func (_c *IncidentCreate) createSpec() (*Incident, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.TypeID = nodes[0]
+		_node.TypeID = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := _c.mutation.MilestonesIDs(); len(nodes) > 0 {
@@ -689,30 +678,6 @@ func (_c *IncidentCreate) createSpec() (*Incident, *sqlgraph.CreateSpec) {
 		edge.Schema = _c.schemaConfig.Retrospective
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := _c.mutation.UsersIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   incident.UsersTable,
-			Columns: incident.UsersPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _c.schemaConfig.IncidentRoleAssignment
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		createE := &IncidentRoleAssignmentCreate{config: _c.config, mutation: newIncidentRoleAssignmentMutation(_c.config, OpCreate)}
-		_ = createE.defaults()
-		_, specE := createE.createSpec()
-		edge.Target.Fields = specE.Fields
-		if specE.ID.Value != nil {
-			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
@@ -784,23 +749,6 @@ func (_c *IncidentCreate) createSpec() (*Incident, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := _c.mutation.TasksIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   incident.TasksTable,
-			Columns: []string{incident.TasksColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _c.schemaConfig.Task
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
 	if nodes := _c.mutation.TagAssignmentsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
@@ -852,27 +800,10 @@ func (_c *IncidentCreate) createSpec() (*Incident, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := _c.mutation.ReviewSessionsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   incident.ReviewSessionsTable,
-			Columns: incident.ReviewSessionsPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(meetingsession.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _c.schemaConfig.IncidentReviewSessions
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
 	if nodes := _c.mutation.VideoConferencesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
-			Inverse: false,
+			Inverse: true,
 			Table:   incident.VideoConferencesTable,
 			Columns: []string{incident.VideoConferencesColumn},
 			Bidi:    false,
@@ -881,23 +812,6 @@ func (_c *IncidentCreate) createSpec() (*Incident, *sqlgraph.CreateSpec) {
 			},
 		}
 		edge.Schema = _c.schemaConfig.VideoConference
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := _c.mutation.UserRolesIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   incident.UserRolesTable,
-			Columns: []string{incident.UserRolesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incidentroleassignment.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _c.schemaConfig.IncidentRoleAssignment
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -1050,6 +964,12 @@ func (u *IncidentUpsert) UpdateSeverityID() *IncidentUpsert {
 	return u
 }
 
+// ClearSeverityID clears the value of the "severity_id" field.
+func (u *IncidentUpsert) ClearSeverityID() *IncidentUpsert {
+	u.SetNull(incident.FieldSeverityID)
+	return u
+}
+
 // SetTypeID sets the "type_id" field.
 func (u *IncidentUpsert) SetTypeID(v uuid.UUID) *IncidentUpsert {
 	u.Set(incident.FieldTypeID, v)
@@ -1059,6 +979,12 @@ func (u *IncidentUpsert) SetTypeID(v uuid.UUID) *IncidentUpsert {
 // UpdateTypeID sets the "type_id" field to the value that was provided on create.
 func (u *IncidentUpsert) UpdateTypeID() *IncidentUpsert {
 	u.SetExcluded(incident.FieldTypeID)
+	return u
+}
+
+// ClearTypeID clears the value of the "type_id" field.
+func (u *IncidentUpsert) ClearTypeID() *IncidentUpsert {
+	u.SetNull(incident.FieldTypeID)
 	return u
 }
 
@@ -1098,6 +1024,18 @@ func (u *IncidentUpsert) ClearChatChannelID() *IncidentUpsert {
 	return u
 }
 
+// SetResponseState sets the "response_state" field.
+func (u *IncidentUpsert) SetResponseState(v incident.ResponseState) *IncidentUpsert {
+	u.Set(incident.FieldResponseState, v)
+	return u
+}
+
+// UpdateResponseState sets the "response_state" field to the value that was provided on create.
+func (u *IncidentUpsert) UpdateResponseState() *IncidentUpsert {
+	u.SetExcluded(incident.FieldResponseState)
+	return u
+}
+
 // SetOpenedAt sets the "opened_at" field.
 func (u *IncidentUpsert) SetOpenedAt(v time.Time) *IncidentUpsert {
 	u.Set(incident.FieldOpenedAt, v)
@@ -1107,6 +1045,24 @@ func (u *IncidentUpsert) SetOpenedAt(v time.Time) *IncidentUpsert {
 // UpdateOpenedAt sets the "opened_at" field to the value that was provided on create.
 func (u *IncidentUpsert) UpdateOpenedAt() *IncidentUpsert {
 	u.SetExcluded(incident.FieldOpenedAt)
+	return u
+}
+
+// SetResolvedAt sets the "resolved_at" field.
+func (u *IncidentUpsert) SetResolvedAt(v time.Time) *IncidentUpsert {
+	u.Set(incident.FieldResolvedAt, v)
+	return u
+}
+
+// UpdateResolvedAt sets the "resolved_at" field to the value that was provided on create.
+func (u *IncidentUpsert) UpdateResolvedAt() *IncidentUpsert {
+	u.SetExcluded(incident.FieldResolvedAt)
+	return u
+}
+
+// ClearResolvedAt clears the value of the "resolved_at" field.
+func (u *IncidentUpsert) ClearResolvedAt() *IncidentUpsert {
+	u.SetNull(incident.FieldResolvedAt)
 	return u
 }
 
@@ -1252,6 +1208,13 @@ func (u *IncidentUpsertOne) UpdateSeverityID() *IncidentUpsertOne {
 	})
 }
 
+// ClearSeverityID clears the value of the "severity_id" field.
+func (u *IncidentUpsertOne) ClearSeverityID() *IncidentUpsertOne {
+	return u.Update(func(s *IncidentUpsert) {
+		s.ClearSeverityID()
+	})
+}
+
 // SetTypeID sets the "type_id" field.
 func (u *IncidentUpsertOne) SetTypeID(v uuid.UUID) *IncidentUpsertOne {
 	return u.Update(func(s *IncidentUpsert) {
@@ -1263,6 +1226,13 @@ func (u *IncidentUpsertOne) SetTypeID(v uuid.UUID) *IncidentUpsertOne {
 func (u *IncidentUpsertOne) UpdateTypeID() *IncidentUpsertOne {
 	return u.Update(func(s *IncidentUpsert) {
 		s.UpdateTypeID()
+	})
+}
+
+// ClearTypeID clears the value of the "type_id" field.
+func (u *IncidentUpsertOne) ClearTypeID() *IncidentUpsertOne {
+	return u.Update(func(s *IncidentUpsert) {
+		s.ClearTypeID()
 	})
 }
 
@@ -1308,6 +1278,20 @@ func (u *IncidentUpsertOne) ClearChatChannelID() *IncidentUpsertOne {
 	})
 }
 
+// SetResponseState sets the "response_state" field.
+func (u *IncidentUpsertOne) SetResponseState(v incident.ResponseState) *IncidentUpsertOne {
+	return u.Update(func(s *IncidentUpsert) {
+		s.SetResponseState(v)
+	})
+}
+
+// UpdateResponseState sets the "response_state" field to the value that was provided on create.
+func (u *IncidentUpsertOne) UpdateResponseState() *IncidentUpsertOne {
+	return u.Update(func(s *IncidentUpsert) {
+		s.UpdateResponseState()
+	})
+}
+
 // SetOpenedAt sets the "opened_at" field.
 func (u *IncidentUpsertOne) SetOpenedAt(v time.Time) *IncidentUpsertOne {
 	return u.Update(func(s *IncidentUpsert) {
@@ -1319,6 +1303,27 @@ func (u *IncidentUpsertOne) SetOpenedAt(v time.Time) *IncidentUpsertOne {
 func (u *IncidentUpsertOne) UpdateOpenedAt() *IncidentUpsertOne {
 	return u.Update(func(s *IncidentUpsert) {
 		s.UpdateOpenedAt()
+	})
+}
+
+// SetResolvedAt sets the "resolved_at" field.
+func (u *IncidentUpsertOne) SetResolvedAt(v time.Time) *IncidentUpsertOne {
+	return u.Update(func(s *IncidentUpsert) {
+		s.SetResolvedAt(v)
+	})
+}
+
+// UpdateResolvedAt sets the "resolved_at" field to the value that was provided on create.
+func (u *IncidentUpsertOne) UpdateResolvedAt() *IncidentUpsertOne {
+	return u.Update(func(s *IncidentUpsert) {
+		s.UpdateResolvedAt()
+	})
+}
+
+// ClearResolvedAt clears the value of the "resolved_at" field.
+func (u *IncidentUpsertOne) ClearResolvedAt() *IncidentUpsertOne {
+	return u.Update(func(s *IncidentUpsert) {
+		s.ClearResolvedAt()
 	})
 }
 
@@ -1631,6 +1636,13 @@ func (u *IncidentUpsertBulk) UpdateSeverityID() *IncidentUpsertBulk {
 	})
 }
 
+// ClearSeverityID clears the value of the "severity_id" field.
+func (u *IncidentUpsertBulk) ClearSeverityID() *IncidentUpsertBulk {
+	return u.Update(func(s *IncidentUpsert) {
+		s.ClearSeverityID()
+	})
+}
+
 // SetTypeID sets the "type_id" field.
 func (u *IncidentUpsertBulk) SetTypeID(v uuid.UUID) *IncidentUpsertBulk {
 	return u.Update(func(s *IncidentUpsert) {
@@ -1642,6 +1654,13 @@ func (u *IncidentUpsertBulk) SetTypeID(v uuid.UUID) *IncidentUpsertBulk {
 func (u *IncidentUpsertBulk) UpdateTypeID() *IncidentUpsertBulk {
 	return u.Update(func(s *IncidentUpsert) {
 		s.UpdateTypeID()
+	})
+}
+
+// ClearTypeID clears the value of the "type_id" field.
+func (u *IncidentUpsertBulk) ClearTypeID() *IncidentUpsertBulk {
+	return u.Update(func(s *IncidentUpsert) {
+		s.ClearTypeID()
 	})
 }
 
@@ -1687,6 +1706,20 @@ func (u *IncidentUpsertBulk) ClearChatChannelID() *IncidentUpsertBulk {
 	})
 }
 
+// SetResponseState sets the "response_state" field.
+func (u *IncidentUpsertBulk) SetResponseState(v incident.ResponseState) *IncidentUpsertBulk {
+	return u.Update(func(s *IncidentUpsert) {
+		s.SetResponseState(v)
+	})
+}
+
+// UpdateResponseState sets the "response_state" field to the value that was provided on create.
+func (u *IncidentUpsertBulk) UpdateResponseState() *IncidentUpsertBulk {
+	return u.Update(func(s *IncidentUpsert) {
+		s.UpdateResponseState()
+	})
+}
+
 // SetOpenedAt sets the "opened_at" field.
 func (u *IncidentUpsertBulk) SetOpenedAt(v time.Time) *IncidentUpsertBulk {
 	return u.Update(func(s *IncidentUpsert) {
@@ -1698,6 +1731,27 @@ func (u *IncidentUpsertBulk) SetOpenedAt(v time.Time) *IncidentUpsertBulk {
 func (u *IncidentUpsertBulk) UpdateOpenedAt() *IncidentUpsertBulk {
 	return u.Update(func(s *IncidentUpsert) {
 		s.UpdateOpenedAt()
+	})
+}
+
+// SetResolvedAt sets the "resolved_at" field.
+func (u *IncidentUpsertBulk) SetResolvedAt(v time.Time) *IncidentUpsertBulk {
+	return u.Update(func(s *IncidentUpsert) {
+		s.SetResolvedAt(v)
+	})
+}
+
+// UpdateResolvedAt sets the "resolved_at" field to the value that was provided on create.
+func (u *IncidentUpsertBulk) UpdateResolvedAt() *IncidentUpsertBulk {
+	return u.Update(func(s *IncidentUpsert) {
+		s.UpdateResolvedAt()
+	})
+}
+
+// ClearResolvedAt clears the value of the "resolved_at" field.
+func (u *IncidentUpsertBulk) ClearResolvedAt() *IncidentUpsertBulk {
+	return u.Update(func(s *IncidentUpsert) {
+		s.ClearResolvedAt()
 	})
 }
 

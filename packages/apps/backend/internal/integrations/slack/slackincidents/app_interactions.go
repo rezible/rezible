@@ -127,7 +127,7 @@ func (a *App) handleIncidentDetailsModalSubmission(ctx context.Context, ic *slac
 			return nil
 		}
 		_, msErr := a.incidents.SetIncidentMilestone(ctx, uuid.Nil, func(m *ent.IncidentMilestoneMutation) {
-			m.SetKind(incidentmilestone.KindOpened)
+			m.SetKind(incidentmilestone.KindDetection)
 			m.SetDescription("Incident declared via slack")
 			m.SetTimestamp(time.Now())
 			m.SetSource(integrationName)

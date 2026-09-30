@@ -68,18 +68,6 @@ func (_c *DiscussionCommentCreate) SetThreadID(v uuid.UUID) *DiscussionCommentCr
 	return _c
 }
 
-// SetUserID sets the "user_id" field.
-func (_c *DiscussionCommentCreate) SetUserID(v uuid.UUID) *DiscussionCommentCreate {
-	_c.mutation.SetUserID(v)
-	return _c
-}
-
-// SetContent sets the "content" field.
-func (_c *DiscussionCommentCreate) SetContent(v string) *DiscussionCommentCreate {
-	_c.mutation.SetContent(v)
-	return _c
-}
-
 // SetParentID sets the "parent_id" field.
 func (_c *DiscussionCommentCreate) SetParentID(v uuid.UUID) *DiscussionCommentCreate {
 	_c.mutation.SetParentID(v)
@@ -91,6 +79,18 @@ func (_c *DiscussionCommentCreate) SetNillableParentID(v *uuid.UUID) *Discussion
 	if v != nil {
 		_c.SetParentID(*v)
 	}
+	return _c
+}
+
+// SetUserID sets the "user_id" field.
+func (_c *DiscussionCommentCreate) SetUserID(v uuid.UUID) *DiscussionCommentCreate {
+	_c.mutation.SetUserID(v)
+	return _c
+}
+
+// SetContent sets the "content" field.
+func (_c *DiscussionCommentCreate) SetContent(v string) *DiscussionCommentCreate {
+	_c.mutation.SetContent(v)
 	return _c
 }
 
@@ -118,14 +118,14 @@ func (_c *DiscussionCommentCreate) SetThread(v *DiscussionThread) *DiscussionCom
 	return _c.SetThreadID(v.ID)
 }
 
-// SetUser sets the "user" edge to the User entity.
-func (_c *DiscussionCommentCreate) SetUser(v *User) *DiscussionCommentCreate {
-	return _c.SetUserID(v.ID)
-}
-
 // SetParent sets the "parent" edge to the DiscussionComment entity.
 func (_c *DiscussionCommentCreate) SetParent(v *DiscussionComment) *DiscussionCommentCreate {
 	return _c.SetParentID(v.ID)
+}
+
+// SetUser sets the "user" edge to the User entity.
+func (_c *DiscussionCommentCreate) SetUser(v *User) *DiscussionCommentCreate {
+	return _c.SetUserID(v.ID)
 }
 
 // AddReplyIDs adds the "replies" edge to the DiscussionComment entity by IDs.
@@ -333,24 +333,6 @@ func (_c *DiscussionCommentCreate) createSpec() (*DiscussionComment, *sqlgraph.C
 		_node.ThreadID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := _c.mutation.UserIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   discussioncomment.UserTable,
-			Columns: []string{discussioncomment.UserColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _c.schemaConfig.DiscussionComment
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_node.UserID = nodes[0]
-		_spec.Edges = append(_spec.Edges, edge)
-	}
 	if nodes := _c.mutation.ParentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -367,6 +349,24 @@ func (_c *DiscussionCommentCreate) createSpec() (*DiscussionComment, *sqlgraph.C
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.ParentID = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.UserIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   discussioncomment.UserTable,
+			Columns: []string{discussioncomment.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.DiscussionComment
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.UserID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := _c.mutation.RepliesIDs(); len(nodes) > 0 {
@@ -491,6 +491,24 @@ func (u *DiscussionCommentUpsert) UpdateThreadID() *DiscussionCommentUpsert {
 	return u
 }
 
+// SetParentID sets the "parent_id" field.
+func (u *DiscussionCommentUpsert) SetParentID(v uuid.UUID) *DiscussionCommentUpsert {
+	u.Set(discussioncomment.FieldParentID, v)
+	return u
+}
+
+// UpdateParentID sets the "parent_id" field to the value that was provided on create.
+func (u *DiscussionCommentUpsert) UpdateParentID() *DiscussionCommentUpsert {
+	u.SetExcluded(discussioncomment.FieldParentID)
+	return u
+}
+
+// ClearParentID clears the value of the "parent_id" field.
+func (u *DiscussionCommentUpsert) ClearParentID() *DiscussionCommentUpsert {
+	u.SetNull(discussioncomment.FieldParentID)
+	return u
+}
+
 // SetUserID sets the "user_id" field.
 func (u *DiscussionCommentUpsert) SetUserID(v uuid.UUID) *DiscussionCommentUpsert {
 	u.Set(discussioncomment.FieldUserID, v)
@@ -512,24 +530,6 @@ func (u *DiscussionCommentUpsert) SetContent(v string) *DiscussionCommentUpsert 
 // UpdateContent sets the "content" field to the value that was provided on create.
 func (u *DiscussionCommentUpsert) UpdateContent() *DiscussionCommentUpsert {
 	u.SetExcluded(discussioncomment.FieldContent)
-	return u
-}
-
-// SetParentID sets the "parent_id" field.
-func (u *DiscussionCommentUpsert) SetParentID(v uuid.UUID) *DiscussionCommentUpsert {
-	u.Set(discussioncomment.FieldParentID, v)
-	return u
-}
-
-// UpdateParentID sets the "parent_id" field to the value that was provided on create.
-func (u *DiscussionCommentUpsert) UpdateParentID() *DiscussionCommentUpsert {
-	u.SetExcluded(discussioncomment.FieldParentID)
-	return u
-}
-
-// ClearParentID clears the value of the "parent_id" field.
-func (u *DiscussionCommentUpsert) ClearParentID() *DiscussionCommentUpsert {
-	u.SetNull(discussioncomment.FieldParentID)
 	return u
 }
 
@@ -626,6 +626,27 @@ func (u *DiscussionCommentUpsertOne) UpdateThreadID() *DiscussionCommentUpsertOn
 	})
 }
 
+// SetParentID sets the "parent_id" field.
+func (u *DiscussionCommentUpsertOne) SetParentID(v uuid.UUID) *DiscussionCommentUpsertOne {
+	return u.Update(func(s *DiscussionCommentUpsert) {
+		s.SetParentID(v)
+	})
+}
+
+// UpdateParentID sets the "parent_id" field to the value that was provided on create.
+func (u *DiscussionCommentUpsertOne) UpdateParentID() *DiscussionCommentUpsertOne {
+	return u.Update(func(s *DiscussionCommentUpsert) {
+		s.UpdateParentID()
+	})
+}
+
+// ClearParentID clears the value of the "parent_id" field.
+func (u *DiscussionCommentUpsertOne) ClearParentID() *DiscussionCommentUpsertOne {
+	return u.Update(func(s *DiscussionCommentUpsert) {
+		s.ClearParentID()
+	})
+}
+
 // SetUserID sets the "user_id" field.
 func (u *DiscussionCommentUpsertOne) SetUserID(v uuid.UUID) *DiscussionCommentUpsertOne {
 	return u.Update(func(s *DiscussionCommentUpsert) {
@@ -651,27 +672,6 @@ func (u *DiscussionCommentUpsertOne) SetContent(v string) *DiscussionCommentUpse
 func (u *DiscussionCommentUpsertOne) UpdateContent() *DiscussionCommentUpsertOne {
 	return u.Update(func(s *DiscussionCommentUpsert) {
 		s.UpdateContent()
-	})
-}
-
-// SetParentID sets the "parent_id" field.
-func (u *DiscussionCommentUpsertOne) SetParentID(v uuid.UUID) *DiscussionCommentUpsertOne {
-	return u.Update(func(s *DiscussionCommentUpsert) {
-		s.SetParentID(v)
-	})
-}
-
-// UpdateParentID sets the "parent_id" field to the value that was provided on create.
-func (u *DiscussionCommentUpsertOne) UpdateParentID() *DiscussionCommentUpsertOne {
-	return u.Update(func(s *DiscussionCommentUpsert) {
-		s.UpdateParentID()
-	})
-}
-
-// ClearParentID clears the value of the "parent_id" field.
-func (u *DiscussionCommentUpsertOne) ClearParentID() *DiscussionCommentUpsertOne {
-	return u.Update(func(s *DiscussionCommentUpsert) {
-		s.ClearParentID()
 	})
 }
 
@@ -935,6 +935,27 @@ func (u *DiscussionCommentUpsertBulk) UpdateThreadID() *DiscussionCommentUpsertB
 	})
 }
 
+// SetParentID sets the "parent_id" field.
+func (u *DiscussionCommentUpsertBulk) SetParentID(v uuid.UUID) *DiscussionCommentUpsertBulk {
+	return u.Update(func(s *DiscussionCommentUpsert) {
+		s.SetParentID(v)
+	})
+}
+
+// UpdateParentID sets the "parent_id" field to the value that was provided on create.
+func (u *DiscussionCommentUpsertBulk) UpdateParentID() *DiscussionCommentUpsertBulk {
+	return u.Update(func(s *DiscussionCommentUpsert) {
+		s.UpdateParentID()
+	})
+}
+
+// ClearParentID clears the value of the "parent_id" field.
+func (u *DiscussionCommentUpsertBulk) ClearParentID() *DiscussionCommentUpsertBulk {
+	return u.Update(func(s *DiscussionCommentUpsert) {
+		s.ClearParentID()
+	})
+}
+
 // SetUserID sets the "user_id" field.
 func (u *DiscussionCommentUpsertBulk) SetUserID(v uuid.UUID) *DiscussionCommentUpsertBulk {
 	return u.Update(func(s *DiscussionCommentUpsert) {
@@ -960,27 +981,6 @@ func (u *DiscussionCommentUpsertBulk) SetContent(v string) *DiscussionCommentUps
 func (u *DiscussionCommentUpsertBulk) UpdateContent() *DiscussionCommentUpsertBulk {
 	return u.Update(func(s *DiscussionCommentUpsert) {
 		s.UpdateContent()
-	})
-}
-
-// SetParentID sets the "parent_id" field.
-func (u *DiscussionCommentUpsertBulk) SetParentID(v uuid.UUID) *DiscussionCommentUpsertBulk {
-	return u.Update(func(s *DiscussionCommentUpsert) {
-		s.SetParentID(v)
-	})
-}
-
-// UpdateParentID sets the "parent_id" field to the value that was provided on create.
-func (u *DiscussionCommentUpsertBulk) UpdateParentID() *DiscussionCommentUpsertBulk {
-	return u.Update(func(s *DiscussionCommentUpsert) {
-		s.UpdateParentID()
-	})
-}
-
-// ClearParentID clears the value of the "parent_id" field.
-func (u *DiscussionCommentUpsertBulk) ClearParentID() *DiscussionCommentUpsertBulk {
-	return u.Update(func(s *DiscussionCommentUpsert) {
-		s.ClearParentID()
 	})
 }
 

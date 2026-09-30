@@ -416,7 +416,7 @@ func (_c *VideoConferenceCreate) createSpec() (*VideoConference, *sqlgraph.Creat
 	if nodes := _c.mutation.IncidentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
-			Inverse: true,
+			Inverse: false,
 			Table:   videoconference.IncidentTable,
 			Columns: []string{videoconference.IncidentColumn},
 			Bidi:    false,

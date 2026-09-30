@@ -29,12 +29,12 @@ type DiscussionComment struct {
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// ThreadID holds the value of the "thread_id" field.
 	ThreadID uuid.UUID `json:"thread_id,omitempty"`
+	// ParentID holds the value of the "parent_id" field.
+	ParentID *uuid.UUID `json:"parent_id,omitempty"`
 	// UserID holds the value of the "user_id" field.
 	UserID uuid.UUID `json:"user_id,omitempty"`
 	// Content holds the value of the "content" field.
 	Content string `json:"content,omitempty"`
-	// ParentID holds the value of the "parent_id" field.
-	ParentID *uuid.UUID `json:"parent_id,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the DiscussionCommentQuery when eager-loading is set.
 	Edges        DiscussionCommentEdges `json:"edges"`
@@ -47,10 +47,10 @@ type DiscussionCommentEdges struct {
 	Tenant *Tenant `json:"tenant,omitempty"`
 	// Thread holds the value of the thread edge.
 	Thread *DiscussionThread `json:"thread,omitempty"`
-	// User holds the value of the user edge.
-	User *User `json:"user,omitempty"`
 	// Parent holds the value of the parent edge.
 	Parent *DiscussionComment `json:"parent,omitempty"`
+	// User holds the value of the user edge.
+	User *User `json:"user,omitempty"`
 	// Replies holds the value of the replies edge.
 	Replies []*DiscussionComment `json:"replies,omitempty"`
 	// Reviews holds the value of the reviews edge.
@@ -82,26 +82,26 @@ func (e DiscussionCommentEdges) ThreadOrErr() (*DiscussionThread, error) {
 	return nil, &NotLoadedError{edge: "thread"}
 }
 
-// UserOrErr returns the User value or an error if the edge
-// was not loaded in eager-loading, or loaded but was not found.
-func (e DiscussionCommentEdges) UserOrErr() (*User, error) {
-	if e.User != nil {
-		return e.User, nil
-	} else if e.loadedTypes[2] {
-		return nil, &NotFoundError{label: user.Label}
-	}
-	return nil, &NotLoadedError{edge: "user"}
-}
-
 // ParentOrErr returns the Parent value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
 func (e DiscussionCommentEdges) ParentOrErr() (*DiscussionComment, error) {
 	if e.Parent != nil {
 		return e.Parent, nil
-	} else if e.loadedTypes[3] {
+	} else if e.loadedTypes[2] {
 		return nil, &NotFoundError{label: discussioncomment.Label}
 	}
 	return nil, &NotLoadedError{edge: "parent"}
+}
+
+// UserOrErr returns the User value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e DiscussionCommentEdges) UserOrErr() (*User, error) {
+	if e.User != nil {
+		return e.User, nil
+	} else if e.loadedTypes[3] {
+		return nil, &NotFoundError{label: user.Label}
+	}
+	return nil, &NotLoadedError{edge: "user"}
 }
 
 // RepliesOrErr returns the Replies value or an error if the edge
@@ -182,6 +182,13 @@ func (_m *DiscussionComment) assignValues(columns []string, values []any) error 
 			} else if value != nil {
 				_m.ThreadID = *value
 			}
+		case discussioncomment.FieldParentID:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field parent_id", values[i])
+			} else if value.Valid {
+				_m.ParentID = new(uuid.UUID)
+				*_m.ParentID = *value.S.(*uuid.UUID)
+			}
 		case discussioncomment.FieldUserID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field user_id", values[i])
@@ -193,13 +200,6 @@ func (_m *DiscussionComment) assignValues(columns []string, values []any) error 
 				return fmt.Errorf("unexpected type %T for field content", values[i])
 			} else if value.Valid {
 				_m.Content = value.String
-			}
-		case discussioncomment.FieldParentID:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field parent_id", values[i])
-			} else if value.Valid {
-				_m.ParentID = new(uuid.UUID)
-				*_m.ParentID = *value.S.(*uuid.UUID)
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -224,14 +224,14 @@ func (_m *DiscussionComment) QueryThread() *DiscussionThreadQuery {
 	return NewDiscussionCommentClient(_m.config).QueryThread(_m)
 }
 
-// QueryUser queries the "user" edge of the DiscussionComment entity.
-func (_m *DiscussionComment) QueryUser() *UserQuery {
-	return NewDiscussionCommentClient(_m.config).QueryUser(_m)
-}
-
 // QueryParent queries the "parent" edge of the DiscussionComment entity.
 func (_m *DiscussionComment) QueryParent() *DiscussionCommentQuery {
 	return NewDiscussionCommentClient(_m.config).QueryParent(_m)
+}
+
+// QueryUser queries the "user" edge of the DiscussionComment entity.
+func (_m *DiscussionComment) QueryUser() *UserQuery {
+	return NewDiscussionCommentClient(_m.config).QueryUser(_m)
 }
 
 // QueryReplies queries the "replies" edge of the DiscussionComment entity.
@@ -279,16 +279,16 @@ func (_m *DiscussionComment) String() string {
 	builder.WriteString("thread_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.ThreadID))
 	builder.WriteString(", ")
+	if v := _m.ParentID; v != nil {
+		builder.WriteString("parent_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
 	builder.WriteString("user_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.UserID))
 	builder.WriteString(", ")
 	builder.WriteString("content=")
 	builder.WriteString(_m.Content)
-	builder.WriteString(", ")
-	if v := _m.ParentID; v != nil {
-		builder.WriteString("parent_id=")
-		builder.WriteString(fmt.Sprintf("%v", *v))
-	}
 	builder.WriteByte(')')
 	return builder.String()
 }

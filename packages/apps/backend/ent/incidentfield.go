@@ -22,7 +22,7 @@ type IncidentField struct {
 	// TenantID holds the value of the "tenant_id" field.
 	TenantID int `json:"tenant_id,omitempty"`
 	// ArchiveTime holds the value of the "archive_time" field.
-	ArchiveTime time.Time `json:"archive_time,omitempty"`
+	ArchiveTime *time.Time `json:"archive_time,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -117,7 +117,8 @@ func (_m *IncidentField) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field archive_time", values[i])
 			} else if value.Valid {
-				_m.ArchiveTime = value.Time
+				_m.ArchiveTime = new(time.Time)
+				*_m.ArchiveTime = value.Time
 			}
 		case incidentfield.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -179,8 +180,10 @@ func (_m *IncidentField) String() string {
 	builder.WriteString("tenant_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
 	builder.WriteString(", ")
-	builder.WriteString("archive_time=")
-	builder.WriteString(_m.ArchiveTime.Format(time.ANSIC))
+	if v := _m.ArchiveTime; v != nil {
+		builder.WriteString("archive_time=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
 	builder.WriteString(", ")
 	builder.WriteString("name=")
 	builder.WriteString(_m.Name)

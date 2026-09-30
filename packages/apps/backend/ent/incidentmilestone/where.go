@@ -147,6 +147,16 @@ func UserIDNotIn(vs ...uuid.UUID) predicate.IncidentMilestone {
 	return predicate.IncidentMilestone(sql.FieldNotIn(FieldUserID, vs...))
 }
 
+// UserIDIsNil applies the IsNil predicate on the "user_id" field.
+func UserIDIsNil() predicate.IncidentMilestone {
+	return predicate.IncidentMilestone(sql.FieldIsNull(FieldUserID))
+}
+
+// UserIDNotNil applies the NotNil predicate on the "user_id" field.
+func UserIDNotNil() predicate.IncidentMilestone {
+	return predicate.IncidentMilestone(sql.FieldNotNull(FieldUserID))
+}
+
 // KindEQ applies the EQ predicate on the "kind" field.
 func KindEQ(v Kind) predicate.IncidentMilestone {
 	return predicate.IncidentMilestone(sql.FieldEQ(FieldKind, v))

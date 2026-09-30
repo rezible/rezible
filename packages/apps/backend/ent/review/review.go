@@ -35,18 +35,20 @@ const (
 	FieldReviewerID = "reviewer_id"
 	// FieldState holds the string denoting the state field in the database.
 	FieldState = "state"
+	// FieldFeedback holds the string denoting the feedback field in the database.
+	FieldFeedback = "feedback"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
 	// EdgeRetrospective holds the string denoting the retrospective edge name in mutations.
 	EdgeRetrospective = "retrospective"
 	// EdgeAnalysisEntry holds the string denoting the analysis_entry edge name in mutations.
 	EdgeAnalysisEntry = "analysis_entry"
+	// EdgeComment holds the string denoting the comment edge name in mutations.
+	EdgeComment = "comment"
 	// EdgeRequester holds the string denoting the requester edge name in mutations.
 	EdgeRequester = "requester"
 	// EdgeReviewer holds the string denoting the reviewer edge name in mutations.
 	EdgeReviewer = "reviewer"
-	// EdgeComment holds the string denoting the comment edge name in mutations.
-	EdgeComment = "comment"
 	// Table holds the table name of the review in the database.
 	Table = "reviews"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -70,6 +72,13 @@ const (
 	AnalysisEntryInverseTable = "system_analysis_entries"
 	// AnalysisEntryColumn is the table column denoting the analysis_entry relation/edge.
 	AnalysisEntryColumn = "analysis_entry_id"
+	// CommentTable is the table that holds the comment relation/edge.
+	CommentTable = "reviews"
+	// CommentInverseTable is the table name for the DiscussionComment entity.
+	// It exists in this package in order to avoid circular dependency with the "discussioncomment" package.
+	CommentInverseTable = "discussion_comments"
+	// CommentColumn is the table column denoting the comment relation/edge.
+	CommentColumn = "comment_id"
 	// RequesterTable is the table that holds the requester relation/edge.
 	RequesterTable = "reviews"
 	// RequesterInverseTable is the table name for the User entity.
@@ -84,13 +93,6 @@ const (
 	ReviewerInverseTable = "users"
 	// ReviewerColumn is the table column denoting the reviewer relation/edge.
 	ReviewerColumn = "reviewer_id"
-	// CommentTable is the table that holds the comment relation/edge.
-	CommentTable = "reviews"
-	// CommentInverseTable is the table name for the DiscussionComment entity.
-	// It exists in this package in order to avoid circular dependency with the "discussioncomment" package.
-	CommentInverseTable = "discussion_comments"
-	// CommentColumn is the table column denoting the comment relation/edge.
-	CommentColumn = "comment_id"
 )
 
 // Columns holds all SQL columns for review fields.
@@ -105,6 +107,7 @@ var Columns = []string{
 	FieldRequesterID,
 	FieldReviewerID,
 	FieldState,
+	FieldFeedback,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -212,6 +215,11 @@ func ByState(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldState, opts...).ToFunc()
 }
 
+// ByFeedback orders the results by the feedback field.
+func ByFeedback(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldFeedback, opts...).ToFunc()
+}
+
 // ByTenantField orders the results by tenant field.
 func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -233,6 +241,13 @@ func ByAnalysisEntryField(field string, opts ...sql.OrderTermOption) OrderOption
 	}
 }
 
+// ByCommentField orders the results by comment field.
+func ByCommentField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newCommentStep(), sql.OrderByField(field, opts...))
+	}
+}
+
 // ByRequesterField orders the results by requester field.
 func ByRequesterField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -244,13 +259,6 @@ func ByRequesterField(field string, opts ...sql.OrderTermOption) OrderOption {
 func ByReviewerField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newReviewerStep(), sql.OrderByField(field, opts...))
-	}
-}
-
-// ByCommentField orders the results by comment field.
-func ByCommentField(field string, opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newCommentStep(), sql.OrderByField(field, opts...))
 	}
 }
 func newTenantStep() *sqlgraph.Step {
@@ -274,6 +282,13 @@ func newAnalysisEntryStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.M2O, false, AnalysisEntryTable, AnalysisEntryColumn),
 	)
 }
+func newCommentStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(CommentInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, CommentTable, CommentColumn),
+	)
+}
 func newRequesterStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -286,13 +301,6 @@ func newReviewerStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(ReviewerInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, false, ReviewerTable, ReviewerColumn),
-	)
-}
-func newCommentStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(CommentInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, false, CommentTable, CommentColumn),
 	)
 }
 

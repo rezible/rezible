@@ -68,6 +68,26 @@ func (_u *DiscussionCommentUpdate) SetNillableThreadID(v *uuid.UUID) *Discussion
 	return _u
 }
 
+// SetParentID sets the "parent_id" field.
+func (_u *DiscussionCommentUpdate) SetParentID(v uuid.UUID) *DiscussionCommentUpdate {
+	_u.mutation.SetParentID(v)
+	return _u
+}
+
+// SetNillableParentID sets the "parent_id" field if the given value is not nil.
+func (_u *DiscussionCommentUpdate) SetNillableParentID(v *uuid.UUID) *DiscussionCommentUpdate {
+	if v != nil {
+		_u.SetParentID(*v)
+	}
+	return _u
+}
+
+// ClearParentID clears the value of the "parent_id" field.
+func (_u *DiscussionCommentUpdate) ClearParentID() *DiscussionCommentUpdate {
+	_u.mutation.ClearParentID()
+	return _u
+}
+
 // SetUserID sets the "user_id" field.
 func (_u *DiscussionCommentUpdate) SetUserID(v uuid.UUID) *DiscussionCommentUpdate {
 	_u.mutation.SetUserID(v)
@@ -96,39 +116,19 @@ func (_u *DiscussionCommentUpdate) SetNillableContent(v *string) *DiscussionComm
 	return _u
 }
 
-// SetParentID sets the "parent_id" field.
-func (_u *DiscussionCommentUpdate) SetParentID(v uuid.UUID) *DiscussionCommentUpdate {
-	_u.mutation.SetParentID(v)
-	return _u
-}
-
-// SetNillableParentID sets the "parent_id" field if the given value is not nil.
-func (_u *DiscussionCommentUpdate) SetNillableParentID(v *uuid.UUID) *DiscussionCommentUpdate {
-	if v != nil {
-		_u.SetParentID(*v)
-	}
-	return _u
-}
-
-// ClearParentID clears the value of the "parent_id" field.
-func (_u *DiscussionCommentUpdate) ClearParentID() *DiscussionCommentUpdate {
-	_u.mutation.ClearParentID()
-	return _u
-}
-
 // SetThread sets the "thread" edge to the DiscussionThread entity.
 func (_u *DiscussionCommentUpdate) SetThread(v *DiscussionThread) *DiscussionCommentUpdate {
 	return _u.SetThreadID(v.ID)
 }
 
-// SetUser sets the "user" edge to the User entity.
-func (_u *DiscussionCommentUpdate) SetUser(v *User) *DiscussionCommentUpdate {
-	return _u.SetUserID(v.ID)
-}
-
 // SetParent sets the "parent" edge to the DiscussionComment entity.
 func (_u *DiscussionCommentUpdate) SetParent(v *DiscussionComment) *DiscussionCommentUpdate {
 	return _u.SetParentID(v.ID)
+}
+
+// SetUser sets the "user" edge to the User entity.
+func (_u *DiscussionCommentUpdate) SetUser(v *User) *DiscussionCommentUpdate {
+	return _u.SetUserID(v.ID)
 }
 
 // AddReplyIDs adds the "replies" edge to the DiscussionComment entity by IDs.
@@ -172,15 +172,15 @@ func (_u *DiscussionCommentUpdate) ClearThread() *DiscussionCommentUpdate {
 	return _u
 }
 
-// ClearUser clears the "user" edge to the User entity.
-func (_u *DiscussionCommentUpdate) ClearUser() *DiscussionCommentUpdate {
-	_u.mutation.ClearUser()
-	return _u
-}
-
 // ClearParent clears the "parent" edge to the DiscussionComment entity.
 func (_u *DiscussionCommentUpdate) ClearParent() *DiscussionCommentUpdate {
 	_u.mutation.ClearParent()
+	return _u
+}
+
+// ClearUser clears the "user" edge to the User entity.
+func (_u *DiscussionCommentUpdate) ClearUser() *DiscussionCommentUpdate {
+	_u.mutation.ClearUser()
 	return _u
 }
 
@@ -340,37 +340,6 @@ func (_u *DiscussionCommentUpdate) sqlSave(ctx context.Context) (_node int, err 
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if _u.mutation.UserCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   discussioncomment.UserTable,
-			Columns: []string{discussioncomment.UserColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.DiscussionComment
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.UserIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   discussioncomment.UserTable,
-			Columns: []string{discussioncomment.UserColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.DiscussionComment
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	if _u.mutation.ParentCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -394,6 +363,37 @@ func (_u *DiscussionCommentUpdate) sqlSave(ctx context.Context) (_node int, err 
 			Bidi:    true,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(discussioncomment.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.DiscussionComment
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.UserCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   discussioncomment.UserTable,
+			Columns: []string{discussioncomment.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.DiscussionComment
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.UserIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   discussioncomment.UserTable,
+			Columns: []string{discussioncomment.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _u.schemaConfig.DiscussionComment
@@ -556,6 +556,26 @@ func (_u *DiscussionCommentUpdateOne) SetNillableThreadID(v *uuid.UUID) *Discuss
 	return _u
 }
 
+// SetParentID sets the "parent_id" field.
+func (_u *DiscussionCommentUpdateOne) SetParentID(v uuid.UUID) *DiscussionCommentUpdateOne {
+	_u.mutation.SetParentID(v)
+	return _u
+}
+
+// SetNillableParentID sets the "parent_id" field if the given value is not nil.
+func (_u *DiscussionCommentUpdateOne) SetNillableParentID(v *uuid.UUID) *DiscussionCommentUpdateOne {
+	if v != nil {
+		_u.SetParentID(*v)
+	}
+	return _u
+}
+
+// ClearParentID clears the value of the "parent_id" field.
+func (_u *DiscussionCommentUpdateOne) ClearParentID() *DiscussionCommentUpdateOne {
+	_u.mutation.ClearParentID()
+	return _u
+}
+
 // SetUserID sets the "user_id" field.
 func (_u *DiscussionCommentUpdateOne) SetUserID(v uuid.UUID) *DiscussionCommentUpdateOne {
 	_u.mutation.SetUserID(v)
@@ -584,39 +604,19 @@ func (_u *DiscussionCommentUpdateOne) SetNillableContent(v *string) *DiscussionC
 	return _u
 }
 
-// SetParentID sets the "parent_id" field.
-func (_u *DiscussionCommentUpdateOne) SetParentID(v uuid.UUID) *DiscussionCommentUpdateOne {
-	_u.mutation.SetParentID(v)
-	return _u
-}
-
-// SetNillableParentID sets the "parent_id" field if the given value is not nil.
-func (_u *DiscussionCommentUpdateOne) SetNillableParentID(v *uuid.UUID) *DiscussionCommentUpdateOne {
-	if v != nil {
-		_u.SetParentID(*v)
-	}
-	return _u
-}
-
-// ClearParentID clears the value of the "parent_id" field.
-func (_u *DiscussionCommentUpdateOne) ClearParentID() *DiscussionCommentUpdateOne {
-	_u.mutation.ClearParentID()
-	return _u
-}
-
 // SetThread sets the "thread" edge to the DiscussionThread entity.
 func (_u *DiscussionCommentUpdateOne) SetThread(v *DiscussionThread) *DiscussionCommentUpdateOne {
 	return _u.SetThreadID(v.ID)
 }
 
-// SetUser sets the "user" edge to the User entity.
-func (_u *DiscussionCommentUpdateOne) SetUser(v *User) *DiscussionCommentUpdateOne {
-	return _u.SetUserID(v.ID)
-}
-
 // SetParent sets the "parent" edge to the DiscussionComment entity.
 func (_u *DiscussionCommentUpdateOne) SetParent(v *DiscussionComment) *DiscussionCommentUpdateOne {
 	return _u.SetParentID(v.ID)
+}
+
+// SetUser sets the "user" edge to the User entity.
+func (_u *DiscussionCommentUpdateOne) SetUser(v *User) *DiscussionCommentUpdateOne {
+	return _u.SetUserID(v.ID)
 }
 
 // AddReplyIDs adds the "replies" edge to the DiscussionComment entity by IDs.
@@ -660,15 +660,15 @@ func (_u *DiscussionCommentUpdateOne) ClearThread() *DiscussionCommentUpdateOne 
 	return _u
 }
 
-// ClearUser clears the "user" edge to the User entity.
-func (_u *DiscussionCommentUpdateOne) ClearUser() *DiscussionCommentUpdateOne {
-	_u.mutation.ClearUser()
-	return _u
-}
-
 // ClearParent clears the "parent" edge to the DiscussionComment entity.
 func (_u *DiscussionCommentUpdateOne) ClearParent() *DiscussionCommentUpdateOne {
 	_u.mutation.ClearParent()
+	return _u
+}
+
+// ClearUser clears the "user" edge to the User entity.
+func (_u *DiscussionCommentUpdateOne) ClearUser() *DiscussionCommentUpdateOne {
+	_u.mutation.ClearUser()
 	return _u
 }
 
@@ -858,37 +858,6 @@ func (_u *DiscussionCommentUpdateOne) sqlSave(ctx context.Context) (_node *Discu
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if _u.mutation.UserCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   discussioncomment.UserTable,
-			Columns: []string{discussioncomment.UserColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.DiscussionComment
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.UserIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   discussioncomment.UserTable,
-			Columns: []string{discussioncomment.UserColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.DiscussionComment
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	if _u.mutation.ParentCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -912,6 +881,37 @@ func (_u *DiscussionCommentUpdateOne) sqlSave(ctx context.Context) (_node *Discu
 			Bidi:    true,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(discussioncomment.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.DiscussionComment
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.UserCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   discussioncomment.UserTable,
+			Columns: []string{discussioncomment.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.DiscussionComment
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.UserIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   discussioncomment.UserTable,
+			Columns: []string{discussioncomment.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _u.schemaConfig.DiscussionComment

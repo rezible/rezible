@@ -215,7 +215,7 @@ func (_c *OncallScheduleCreate) createSpec() (*OncallSchedule, *sqlgraph.CreateS
 	}
 	if value, ok := _c.mutation.ArchiveTime(); ok {
 		_spec.SetField(oncallschedule.FieldArchiveTime, field.TypeTime, value)
-		_node.ArchiveTime = value
+		_node.ArchiveTime = &value
 	}
 	if value, ok := _c.mutation.Name(); ok {
 		_spec.SetField(oncallschedule.FieldName, field.TypeString, value)

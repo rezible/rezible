@@ -54,17 +54,16 @@ exclude_test_packages_pattern := "/ent/"
       -H "Content-Type: application/json" \
       -d '{"kind": "{{ KIND }}", "foo":"bar"}'
 
-@codegen:
-    go generate ./...
+@generate *ARGS:
+    GOFLAGS="${GOFLAGS:+$GOFLAGS }-p=1" GOMAXPROCS=2 GOMEMLIMIT=3GiB go generate {{ ARGS }}
 
-@gen-api:
-    go generate ./pkg/openapi
+codegen: (generate "./...")
 
-@gen-schema:
-    go generate ./ent
+gen-api: (generate "./pkg/openapi")
 
-@gen-mocks:
-    go generate ./test/mocks
+gen-schema: (generate "./ent")
+
+gen-mocks: (generate "./test/mocks")
 
 @gen-migration NAME:
     just run migrations create '{{ NAME }}'

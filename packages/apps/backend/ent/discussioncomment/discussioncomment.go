@@ -24,20 +24,20 @@ const (
 	FieldUpdatedAt = "updated_at"
 	// FieldThreadID holds the string denoting the thread_id field in the database.
 	FieldThreadID = "thread_id"
+	// FieldParentID holds the string denoting the parent_id field in the database.
+	FieldParentID = "parent_id"
 	// FieldUserID holds the string denoting the user_id field in the database.
 	FieldUserID = "user_id"
 	// FieldContent holds the string denoting the content field in the database.
 	FieldContent = "content"
-	// FieldParentID holds the string denoting the parent_id field in the database.
-	FieldParentID = "parent_id"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
 	// EdgeThread holds the string denoting the thread edge name in mutations.
 	EdgeThread = "thread"
-	// EdgeUser holds the string denoting the user edge name in mutations.
-	EdgeUser = "user"
 	// EdgeParent holds the string denoting the parent edge name in mutations.
 	EdgeParent = "parent"
+	// EdgeUser holds the string denoting the user edge name in mutations.
+	EdgeUser = "user"
 	// EdgeReplies holds the string denoting the replies edge name in mutations.
 	EdgeReplies = "replies"
 	// EdgeReviews holds the string denoting the reviews edge name in mutations.
@@ -58,6 +58,10 @@ const (
 	ThreadInverseTable = "discussion_threads"
 	// ThreadColumn is the table column denoting the thread relation/edge.
 	ThreadColumn = "thread_id"
+	// ParentTable is the table that holds the parent relation/edge.
+	ParentTable = "discussion_comments"
+	// ParentColumn is the table column denoting the parent relation/edge.
+	ParentColumn = "parent_id"
 	// UserTable is the table that holds the user relation/edge.
 	UserTable = "discussion_comments"
 	// UserInverseTable is the table name for the User entity.
@@ -65,10 +69,6 @@ const (
 	UserInverseTable = "users"
 	// UserColumn is the table column denoting the user relation/edge.
 	UserColumn = "user_id"
-	// ParentTable is the table that holds the parent relation/edge.
-	ParentTable = "discussion_comments"
-	// ParentColumn is the table column denoting the parent relation/edge.
-	ParentColumn = "parent_id"
 	// RepliesTable is the table that holds the replies relation/edge.
 	RepliesTable = "discussion_comments"
 	// RepliesColumn is the table column denoting the replies relation/edge.
@@ -89,9 +89,9 @@ var Columns = []string{
 	FieldCreatedAt,
 	FieldUpdatedAt,
 	FieldThreadID,
+	FieldParentID,
 	FieldUserID,
 	FieldContent,
-	FieldParentID,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -150,6 +150,11 @@ func ByThreadID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldThreadID, opts...).ToFunc()
 }
 
+// ByParentID orders the results by the parent_id field.
+func ByParentID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldParentID, opts...).ToFunc()
+}
+
 // ByUserID orders the results by the user_id field.
 func ByUserID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUserID, opts...).ToFunc()
@@ -158,11 +163,6 @@ func ByUserID(opts ...sql.OrderTermOption) OrderOption {
 // ByContent orders the results by the content field.
 func ByContent(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldContent, opts...).ToFunc()
-}
-
-// ByParentID orders the results by the parent_id field.
-func ByParentID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldParentID, opts...).ToFunc()
 }
 
 // ByTenantField orders the results by tenant field.
@@ -179,17 +179,17 @@ func ByThreadField(field string, opts ...sql.OrderTermOption) OrderOption {
 	}
 }
 
-// ByUserField orders the results by user field.
-func ByUserField(field string, opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newUserStep(), sql.OrderByField(field, opts...))
-	}
-}
-
 // ByParentField orders the results by parent field.
 func ByParentField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newParentStep(), sql.OrderByField(field, opts...))
+	}
+}
+
+// ByUserField orders the results by user field.
+func ByUserField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newUserStep(), sql.OrderByField(field, opts...))
 	}
 }
 
@@ -234,18 +234,18 @@ func newThreadStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.M2O, false, ThreadTable, ThreadColumn),
 	)
 }
-func newUserStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(UserInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, false, UserTable, UserColumn),
-	)
-}
 func newParentStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(Table, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, false, ParentTable, ParentColumn),
+	)
+}
+func newUserStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(UserInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, UserTable, UserColumn),
 	)
 }
 func newRepliesStep() *sqlgraph.Step {

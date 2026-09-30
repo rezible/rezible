@@ -107,7 +107,7 @@ func (_q *VideoConferenceQuery) QueryIncident() *IncidentQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(videoconference.Table, videoconference.FieldID, selector),
 			sqlgraph.To(incident.Table, incident.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, videoconference.IncidentTable, videoconference.IncidentColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, videoconference.IncidentTable, videoconference.IncidentColumn),
 		)
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.Incident

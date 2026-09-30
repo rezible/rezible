@@ -169,7 +169,7 @@ func (b *incidentDetailsModalViewBuilder) makeSeveritySelect(sevs ent.IncidentSe
 	initialOptIdx := 0
 	for i, sev := range sevs {
 		options[i] = slack.NewOptionBlockObject(sev.ID.String(), slackintegration.PlainTextBlock(sev.Name), slackintegration.PlainTextBlock(sev.Description))
-		if b.incident != nil && b.incident.SeverityID == sev.ID {
+		if b.incident != nil && b.incident.SeverityID != nil && *b.incident.SeverityID == sev.ID {
 			initialOptIdx = i
 		}
 	}
@@ -187,7 +187,7 @@ func (b *incidentDetailsModalViewBuilder) makeTypeSelect(types ent.IncidentTypes
 	initialOptIdx := 0
 	for i, t := range types {
 		options[i] = slack.NewOptionBlockObject(t.ID.String(), slackintegration.PlainTextBlock(t.Name), nil)
-		if b.incident != nil && b.incident.TypeID == t.ID {
+		if b.incident != nil && b.incident.TypeID != nil && *b.incident.TypeID == t.ID {
 			initialOptIdx = i
 		}
 	}

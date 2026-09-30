@@ -28,6 +28,8 @@ type OrganizationPreferences struct {
 	InitialSetupAt time.Time `json:"initial_setup_at,omitempty"`
 	// EnableIncidentManagement holds the value of the "enable_incident_management" field.
 	EnableIncidentManagement bool `json:"enable_incident_management,omitempty"`
+	// RequiredReviewerCount holds the value of the "required_reviewer_count" field.
+	RequiredReviewerCount int `json:"required_reviewer_count,omitempty"`
 	// Timezone holds the value of the "timezone" field.
 	Timezone string `json:"timezone,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -76,7 +78,7 @@ func (*OrganizationPreferences) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case organizationpreferences.FieldEnableIncidentManagement:
 			values[i] = new(sql.NullBool)
-		case organizationpreferences.FieldTenantID:
+		case organizationpreferences.FieldTenantID, organizationpreferences.FieldRequiredReviewerCount:
 			values[i] = new(sql.NullInt64)
 		case organizationpreferences.FieldTimezone:
 			values[i] = new(sql.NullString)
@@ -128,6 +130,12 @@ func (_m *OrganizationPreferences) assignValues(columns []string, values []any) 
 				return fmt.Errorf("unexpected type %T for field enable_incident_management", values[i])
 			} else if value.Valid {
 				_m.EnableIncidentManagement = value.Bool
+			}
+		case organizationpreferences.FieldRequiredReviewerCount:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field required_reviewer_count", values[i])
+			} else if value.Valid {
+				_m.RequiredReviewerCount = int(value.Int64)
 			}
 		case organizationpreferences.FieldTimezone:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -192,6 +200,9 @@ func (_m *OrganizationPreferences) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("enable_incident_management=")
 	builder.WriteString(fmt.Sprintf("%v", _m.EnableIncidentManagement))
+	builder.WriteString(", ")
+	builder.WriteString("required_reviewer_count=")
+	builder.WriteString(fmt.Sprintf("%v", _m.RequiredReviewerCount))
 	builder.WriteString(", ")
 	builder.WriteString("timezone=")
 	builder.WriteString(_m.Timezone)

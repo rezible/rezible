@@ -23,7 +23,7 @@ type Team struct {
 	// TenantID holds the value of the "tenant_id" field.
 	TenantID int `json:"tenant_id,omitempty"`
 	// ArchiveTime holds the value of the "archive_time" field.
-	ArchiveTime time.Time `json:"archive_time,omitempty"`
+	ArchiveTime *time.Time `json:"archive_time,omitempty"`
 	// KnowledgeEntityID holds the value of the "knowledge_entity_id" field.
 	KnowledgeEntityID *uuid.UUID `json:"knowledge_entity_id,omitempty"`
 	// Slug holds the value of the "slug" field.
@@ -174,7 +174,8 @@ func (_m *Team) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field archive_time", values[i])
 			} else if value.Valid {
-				_m.ArchiveTime = value.Time
+				_m.ArchiveTime = new(time.Time)
+				*_m.ArchiveTime = value.Time
 			}
 		case team.FieldKnowledgeEntityID:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
@@ -281,8 +282,10 @@ func (_m *Team) String() string {
 	builder.WriteString("tenant_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
 	builder.WriteString(", ")
-	builder.WriteString("archive_time=")
-	builder.WriteString(_m.ArchiveTime.Format(time.ANSIC))
+	if v := _m.ArchiveTime; v != nil {
+		builder.WriteString("archive_time=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
 	builder.WriteString(", ")
 	if v := _m.KnowledgeEntityID; v != nil {
 		builder.WriteString("knowledge_entity_id=")

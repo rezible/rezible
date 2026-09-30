@@ -16,6 +16,7 @@ import (
 	"github.com/rezible/rezible/ent/incident"
 	im "github.com/rezible/rezible/ent/incidentmilestone"
 	imodel "github.com/rezible/rezible/ent/incidentmilestone"
+	"github.com/rezible/rezible/ent/incidentrole"
 	ira "github.com/rezible/rezible/ent/incidentroleassignment"
 	"github.com/rezible/rezible/ent/incidentseverity"
 	"github.com/rezible/rezible/ent/predicate"
@@ -51,12 +52,11 @@ func (s *IncidentService) allQueryEdges(q *ent.IncidentQuery) {
 		raq.WithRole().WithUser()
 	})
 	q.WithMilestones(func(mq *ent.IncidentMilestoneQuery) {
-		mq.Order(ent.Desc(imodel.FieldTimestamp), ent.Desc(imodel.FieldID))
+		mq.Order(imodel.ByTimestamp(sql.OrderAsc()), imodel.ByID(sql.OrderAsc()))
 		mq.WithUser()
 	})
 	q.WithVideoConferences()
 	q.WithSituations()
-	q.WithTasks()
 }
 
 func (s *IncidentService) incidentQuery(ctx context.Context, pred predicate.Incident, edgesFn func(*ent.IncidentQuery)) *ent.IncidentQuery {
@@ -74,8 +74,8 @@ func (s *IncidentService) ListIncidents(ctx context.Context, params rez.ListInci
 	if params.SeverityId != uuid.Nil {
 		query.Where(incident.SeverityID(params.SeverityId))
 	}
-	if len(params.Statuses) > 0 {
-		// TODO: we should use some materialised view since status really just means "latest milestone status"
+	if len(params.ResponseStates) > 0 {
+		query.Where(incident.ResponseStateIn(params.ResponseStates...))
 	}
 	if !params.OpenedAfter.IsZero() {
 		query.Where(incident.OpenedAtGT(params.OpenedAfter))
@@ -84,10 +84,14 @@ func (s *IncidentService) ListIncidents(ctx context.Context, params rez.ListInci
 		query.Where(incident.OpenedAtLT(params.OpenedBefore))
 	}
 
-	// TODO: this is probably incorrect, should lookup role assignments first
 	if params.UserId != uuid.Nil {
+		preds := []predicate.IncidentRoleAssignment{
+			ira.HasRoleWith(incidentrole.ArchiveTimeIsNil()),
+			ira.UserID(params.UserId),
+		}
+		query.Where(incident.HasRoleAssignmentsWith(preds...))
 		query.WithRoleAssignments(func(q *ent.IncidentRoleAssignmentQuery) {
-			q.Where(ira.UserID(params.UserId))
+			q.Where(preds...).WithRole().WithUser()
 		})
 	}
 	s.allQueryEdges(query)
@@ -169,33 +173,6 @@ func (s *IncidentService) updateIncidentMutationSituation(ctx context.Context, i
 	return nil
 }
 
-func (s *IncidentService) SetIncidentMilestone(ctx context.Context, id uuid.UUID, setFn func(*ent.IncidentMilestoneMutation)) (*ent.IncidentMilestone, error) {
-	var updated *ent.IncidentMilestone
-	txErr := s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
-		var mutator ent.EntityMutator[*ent.IncidentMilestone, *ent.IncidentMilestoneMutation]
-		if id == uuid.Nil {
-			mutator = tx.IncidentMilestone.Create().SetID(uuid.New())
-		} else {
-			mutator = tx.IncidentMilestone.UpdateOneID(id)
-		}
-		mut := mutator.Mutation()
-		setFn(mut)
-		var saveErr error
-		updated, saveErr = mutator.Save(ctx)
-		if saveErr != nil {
-			return fmt.Errorf("save incident milestone: %w", saveErr)
-		}
-		if publishErr := s.msgs.Publish(ctx, rez.EventOnIncidentMilestoneUpdated{IncidentId: updated.IncidentID, MilestoneId: updated.ID, Created: id == uuid.Nil}); publishErr != nil {
-			return fmt.Errorf("publish incident milestone update: %w", publishErr)
-		}
-		return nil
-	})
-	if txErr != nil {
-		return nil, txErr
-	}
-	return s.GetIncidentMilestone(ctx, updated.ID)
-}
-
 func (s *IncidentService) Archive(ctx context.Context, id uuid.UUID) error {
 	return s.db.Client(ctx).Incident.DeleteOneID(id).Exec(ctx)
 }
@@ -246,11 +223,11 @@ func (s *IncidentService) generateIncidentSlug(ctx context.Context, openedAt tim
 	return uuidSlug, nil
 }
 
-func (s *IncidentService) ListIncidentRoles(ctx context.Context) ([]*ent.IncidentRole, error) {
-	return s.db.Client(ctx).IncidentRole.Query().All(ctx)
+func (s *IncidentService) ListIncidentRoles(ctx context.Context) (ent.IncidentRoles, error) {
+	return s.db.Client(ctx).IncidentRole.Query().Where(incidentrole.ArchiveTimeIsNil()).All(ctx)
 }
 
-func (s *IncidentService) ListIncidentSeverities(ctx context.Context) ([]*ent.IncidentSeverity, error) {
+func (s *IncidentService) ListIncidentSeverities(ctx context.Context) (ent.IncidentSeverities, error) {
 	return s.db.Client(ctx).IncidentSeverity.Query().All(ctx)
 }
 
@@ -258,25 +235,108 @@ func (s *IncidentService) GetIncidentSeverity(ctx context.Context, id uuid.UUID)
 	return s.db.Client(ctx).IncidentSeverity.Get(ctx, id)
 }
 
-func (s *IncidentService) GetIncidentMilestone(ctx context.Context, id uuid.UUID) (*ent.IncidentMilestone, error) {
-	query := s.db.Client(ctx).IncidentMilestone.Query().
-		Where(im.ID(id)).
-		WithUser()
-	return query.Only(ctx)
+func (s *IncidentService) GetIncidentRoleAssignment(ctx context.Context, id uuid.UUID) (*ent.IncidentRoleAssignment, error) {
+	return s.db.Client(ctx).IncidentRoleAssignment.Query().
+		Where(ira.ID(id)).
+		WithRole().
+		WithUser().
+		Only(ctx)
 }
 
-func (s *IncidentService) ListIncidentTypes(ctx context.Context) ([]*ent.IncidentType, error) {
+func (s *IncidentService) SetIncidentRoleAssignment(ctx context.Context, id uuid.UUID, params rez.SetIncidentRoleAssignmentParams) (*ent.IncidentRoleAssignment, error) {
+	client := s.db.Client(ctx)
+	var mut ent.EntityMutator[*ent.IncidentRoleAssignment, *ent.IncidentRoleAssignmentMutation]
+	if id != uuid.Nil {
+		if params.UserID == uuid.Nil && params.RoleID == uuid.Nil {
+			return nil, fmt.Errorf("%w: assignment requires a user or role", rez.ErrInvalidInput)
+		}
+
+		u := client.IncidentRoleAssignment.UpdateOneID(id)
+		if params.UserID != uuid.Nil {
+			u.SetUserID(params.UserID)
+		} else if params.RoleID != uuid.Nil {
+			u.SetRoleID(params.RoleID)
+		}
+		mut = u
+	} else {
+		if params.IncidentID == uuid.Nil || params.RoleID == uuid.Nil || params.UserID == uuid.Nil {
+			return nil, fmt.Errorf("%w: missing ids", rez.ErrInvalidInput)
+		}
+
+		mut = client.IncidentRoleAssignment.Create().
+			SetIncidentID(params.IncidentID).
+			SetUserID(params.UserID).
+			SetRoleID(params.RoleID)
+	}
+	if updateErr := mut.Exec(ctx); updateErr != nil {
+		return nil, fmt.Errorf("update incident role assignment: %w", updateErr)
+	}
+
+	return s.GetIncidentRoleAssignment(ctx, id)
+}
+
+func (s *IncidentService) DeleteIncidentRoleAssignment(ctx context.Context, id uuid.UUID) error {
+	return s.db.Client(ctx).IncidentRoleAssignment.DeleteOneID(id).Exec(ctx)
+}
+
+func (s *IncidentService) GetIncidentMilestone(ctx context.Context, id uuid.UUID) (*ent.IncidentMilestone, error) {
+	return s.db.Client(ctx).IncidentMilestone.Query().
+		Where(im.ID(id)).
+		WithUser().
+		Only(ctx)
+}
+
+func (s *IncidentService) ListMilestonesForIncident(ctx context.Context, incId uuid.UUID) (ent.IncidentMilestones, error) {
+	return s.db.Client(ctx).IncidentMilestone.Query().
+		Where(im.IncidentID(incId)).
+		Order(im.ByTimestamp(), im.ByID()).
+		WithUser().
+		All(ctx)
+}
+
+func (s *IncidentService) SetIncidentMilestone(ctx context.Context, id uuid.UUID, setFn func(*ent.IncidentMilestoneMutation)) (*ent.IncidentMilestone, error) {
+	var updated *ent.IncidentMilestone
+	return updated, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+		var mutator ent.EntityMutator[*ent.IncidentMilestone, *ent.IncidentMilestoneMutation]
+		if id == uuid.Nil {
+			mutator = tx.IncidentMilestone.Create().SetID(uuid.New())
+		} else {
+			mutator = tx.IncidentMilestone.UpdateOneID(id)
+		}
+		mut := mutator.Mutation()
+		setFn(mut)
+
+		var saveErr error
+		updated, saveErr = mutator.Save(ctx)
+		if saveErr != nil {
+			return fmt.Errorf("save incident milestone: %w", saveErr)
+		}
+
+		updatedEvent := rez.EventOnIncidentMilestoneUpdated{
+			IncidentId:  updated.IncidentID,
+			MilestoneId: updated.ID,
+			Created:     id == uuid.Nil,
+		}
+		if publishErr := s.msgs.Publish(ctx, updatedEvent); publishErr != nil {
+			return fmt.Errorf("publish incident milestone update: %w", publishErr)
+		}
+		return nil
+	})
+}
+
+func (s *IncidentService) ListIncidentTypes(ctx context.Context) (ent.IncidentTypes, error) {
 	return s.db.Client(ctx).IncidentType.Query().All(ctx)
 }
 
-func (s *IncidentService) ListIncidentFields(ctx context.Context) ([]*ent.IncidentField, error) {
+func (s *IncidentService) ListIncidentFields(ctx context.Context) (ent.IncidentFields, error) {
 	return s.db.Client(ctx).IncidentField.Query().
 		WithOptions().
 		All(ctx)
 }
 
-func (s *IncidentService) ListIncidentTags(ctx context.Context) ([]*ent.IncidentTag, error) {
-	return s.db.Client(ctx).IncidentTag.Query().All(ctx)
+func (s *IncidentService) ListIncidentTags(ctx context.Context) (ent.IncidentTags, error) {
+	return s.db.Client(ctx).IncidentTag.Query().
+		All(ctx)
 }
 
 func (s *IncidentService) GetIncidentMetadata(ctx context.Context) (*rez.IncidentMetadata, error) {

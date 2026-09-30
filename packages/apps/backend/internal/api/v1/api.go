@@ -23,7 +23,6 @@ type Handler struct {
 	*incidentsHandler
 	*incidentMetadataHandler
 	*incidentDebriefsHandler
-	*incidentMilestonesHandler
 	*investigationsHandler
 	*integrationsHandler
 	*meetingsHandler
@@ -64,6 +63,7 @@ func NewHandler(
 	oncallMetrics rez.OncallMetricsService,
 	playbooks rez.PlaybookService,
 	retros rez.RetrospectiveService,
+	tasks rez.TaskService,
 	discussions rez.DiscussionService,
 	systemAnalysis rez.SystemAnalysisService,
 	knowledge rez.KnowledgeGraphQueryService,
@@ -74,32 +74,31 @@ func NewHandler(
 	return &Handler{
 		SecurityProvider: securityProvider,
 
-		alertsHandler:             newAlertsHandler(alerts),
-		aiHandler:                 newAiHandler(agents, agentSessions, messages),
-		userSessionsHandler:       newUserSessionsHandler(bh, orgs),
-		documentsHandler:          newDocumentsHandler(bh, documents),
-		incidentDebriefsHandler:   newIncidentDebriefsHandler(bh, db, debriefs),
-		incidentMetadataHandler:   newIncidentMetadataHandler(db, incidents),
-		incidentMilestonesHandler: newIncidentMilestonesHandler(db),
-		tasksHandler:              newTasksHandler(db),
-		incidentsHandler:          newIncidentsHandler(incidents),
-		activityHandler:           newActivityHandler(),
-		integrationsHandler:       newIntegrationsHandler(integrations),
-		investigationsHandler:     newInvestigationsHandler(investigations),
-		meetingsHandler:           newMeetingsHandler(),
-		eventsHandler:             newEventsHandler(bh, events),
-		oncallRostersHandler:      newOncallRostersHandler(bh, incidents, rosters, shifts),
-		oncallShiftsHandler:       newOncallShiftsHandler(users, incidents, shifts),
-		oncallMetricsHandler:      newOncallMetricsHandler(oncallMetrics),
-		organizationsHandler:      newOrganizationsHandler(orgs),
-		playbooksHandler:          newPlaybooksHandler(playbooks),
-		retrospectivesHandler:     newRetrospectivesHandler(users, incidents, retros, documents),
-		systemAnalysisHandler:     newSystemAnalysisHandler(systemAnalysis),
-		knowledgeGraphHandler:     newKnowledgeGraphHandler(knowledge),
-		situationsHandler:         newSituationsHandler(bh, situations),
-		discussionHandler:         newDiscussionHandler(discussions),
-		teamsHandler:              newTeamsHandler(db),
-		usersHandler:              newUsersHandler(users),
+		alertsHandler:           newAlertsHandler(alerts),
+		aiHandler:               newAiHandler(agents, agentSessions, messages),
+		userSessionsHandler:     newUserSessionsHandler(bh, orgs),
+		documentsHandler:        newDocumentsHandler(bh, documents),
+		incidentDebriefsHandler: newIncidentDebriefsHandler(bh, db, debriefs),
+		incidentMetadataHandler: newIncidentMetadataHandler(db, incidents),
+		tasksHandler:            newTasksHandler(bh, tasks),
+		incidentsHandler:        newIncidentsHandler(bh, db, incidents),
+		activityHandler:         newActivityHandler(),
+		integrationsHandler:     newIntegrationsHandler(integrations),
+		investigationsHandler:   newInvestigationsHandler(investigations),
+		meetingsHandler:         newMeetingsHandler(),
+		eventsHandler:           newEventsHandler(bh, events),
+		oncallRostersHandler:    newOncallRostersHandler(bh, incidents, rosters, shifts),
+		oncallShiftsHandler:     newOncallShiftsHandler(users, incidents, shifts),
+		oncallMetricsHandler:    newOncallMetricsHandler(oncallMetrics),
+		organizationsHandler:    newOrganizationsHandler(orgs),
+		playbooksHandler:        newPlaybooksHandler(playbooks),
+		retrospectivesHandler:   newRetrospectivesHandler(users, incidents, retros, documents),
+		systemAnalysisHandler:   newSystemAnalysisHandler(systemAnalysis),
+		knowledgeGraphHandler:   newKnowledgeGraphHandler(knowledge),
+		situationsHandler:       newSituationsHandler(bh, situations),
+		discussionHandler:       newDiscussionHandler(discussions),
+		teamsHandler:            newTeamsHandler(db),
+		usersHandler:            newUsersHandler(users),
 	}
 }
 

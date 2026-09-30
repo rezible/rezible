@@ -74,6 +74,7 @@ var (
 
 	requestErrorMap = map[error]statusErrorFunc{
 		rez.ErrInvalidInput:       Err400InvalidInput,
+		rez.ErrUnprocessableInput: Err422InvalidInput,
 		rez.ErrAuthSessionMissing: Err401AuthSessionMissing,
 		rez.ErrAuthSessionExpired: Err401AuthSessionExpired,
 		rez.ErrAuthSessionInvalid: Err401AuthSessionInvalid,

@@ -9,14 +9,15 @@ import (
 	"github.com/google/uuid"
 
 	rez "github.com/rezible/rezible"
-	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/ent/incidentfield"
-	"github.com/rezible/rezible/ent/incidentfieldoption"
-	"github.com/rezible/rezible/ent/incidentseverity"
-	"github.com/rezible/rezible/ent/incidenttag"
-	"github.com/rezible/rezible/ent/incidenttype"
 	"github.com/rezible/rezible/ent/schema"
 	oapi "github.com/rezible/rezible/pkg/openapi/v1"
+
+	"github.com/rezible/rezible/ent"
+	incf "github.com/rezible/rezible/ent/incidentfield"
+	incfo "github.com/rezible/rezible/ent/incidentfieldoption"
+	incsev "github.com/rezible/rezible/ent/incidentseverity"
+	inctag "github.com/rezible/rezible/ent/incidenttag"
+	inctype "github.com/rezible/rezible/ent/incidenttype"
 )
 
 type incidentMetadataHandler struct {
@@ -52,9 +53,9 @@ func (h *incidentMetadataHandler) ListIncidentSeverities(ctx context.Context, re
 
 	query := h.db.Client(ctx).IncidentSeverity.Query()
 	if len(request.Search) > 0 {
-		query = query.Where(incidentseverity.NameContainsFold(request.Search))
+		query = query.Where(incsev.NameContainsFold(request.Search))
 	}
-	query.Order(incidentseverity.ByID())
+	query.Order(incsev.ByID())
 	params := request.ListParams()
 	params.Search = request.Search
 	params.IncludeArchived = request.IncludeArchived
@@ -142,9 +143,9 @@ func (h *incidentMetadataHandler) ListIncidentTypes(ctx context.Context, request
 
 	query := h.db.Client(ctx).IncidentType.Query()
 	if len(request.Search) > 0 {
-		query = query.Where(incidenttype.NameContainsFold(request.Search))
+		query = query.Where(inctype.NameContainsFold(request.Search))
 	}
-	query.Order(incidenttype.ByID())
+	query.Order(inctype.ByID())
 	params := request.ListParams()
 	params.Search = request.Search
 	params.IncludeArchived = request.IncludeArchived
@@ -313,9 +314,9 @@ func (h *incidentMetadataHandler) ListIncidentTags(ctx context.Context, request 
 
 	query := h.db.Client(ctx).IncidentTag.Query()
 	if len(request.Search) > 0 {
-		query = query.Where(incidenttag.ValueContainsFold(request.Search))
+		query = query.Where(inctag.ValueContainsFold(request.Search))
 	}
-	query.Order(incidenttag.ByID())
+	query.Order(inctag.ByID())
 	params := request.ListParams()
 	params.Search = request.Search
 	params.IncludeArchived = request.IncludeArchived
@@ -402,7 +403,7 @@ func (h *incidentMetadataHandler) ListIncidentFields(ctx context.Context, reques
 
 	query = query.WithOptions(func(q *ent.IncidentFieldOptionQuery) {
 		if !request.IncludeArchived {
-			q.Where(incidentfieldoption.ArchiveTimeIsNil())
+			q.Where(incfo.ArchiveTimeIsNil())
 		}
 	})
 
@@ -439,7 +440,7 @@ func (h *incidentMetadataHandler) CreateIncidentField(ctx context.Context, reque
 
 		createQuery := client.IncidentFieldOption.MapCreateBulk(attr.Options, func(c *ent.IncidentFieldOptionCreate, i int) {
 			opt := attr.Options[i]
-			c.SetType(incidentfieldoption.Type(opt.FieldOptionType)).
+			c.SetType(incfo.Type(opt.FieldOptionType)).
 				SetValue(opt.Value).
 				SetIncidentFieldID(field.ID)
 		})
@@ -464,7 +465,7 @@ func (h *incidentMetadataHandler) GetIncidentField(ctx context.Context, request 
 
 	ctx = schema.IncludeArchived(ctx)
 	field, queryErr := h.db.Client(ctx).IncidentField.Query().
-		Where(incidentfield.ID(request.Id)).
+		Where(incf.ID(request.Id)).
 		WithOptions().
 		Only(ctx)
 	if queryErr != nil {
@@ -477,24 +478,24 @@ func (h *incidentMetadataHandler) GetIncidentField(ctx context.Context, request 
 
 func (h *incidentMetadataHandler) updateIncidentFieldOptions(ctx context.Context, fieldId uuid.UUID, reqOptions []oapi.UpdateIncidentFieldOptionAttributes) error {
 	currentOptions, optionsErr := h.db.Client(ctx).IncidentFieldOption.Query().
-		Where(incidentfieldoption.IncidentFieldID(fieldId)).
+		Where(incfo.IncidentFieldID(fieldId)).
 		All(ctx)
 	if optionsErr != nil {
 		return oapi.Error(ctx, "Failed to get incident field options", optionsErr)
 	}
 
 	options := make(map[string]*ent.IncidentFieldOption)
-	var curType incidentfieldoption.Type
+	var curType incfo.Type
 	for _, opt := range currentOptions {
 		options[opt.ID.String()] = opt
 		curType = opt.Type
 	}
 
-	var reqType incidentfieldoption.Type
+	var reqType incfo.Type
 	for _, o := range reqOptions {
-		t := incidentfieldoption.Type(o.FieldOptionType)
+		t := incfo.Type(o.FieldOptionType)
 		if len(reqType) > 0 && t != reqType {
-			return oapi.Error(ctx, "multiple field option types", nil)
+			return oapi.Error(ctx, "invalid request", fmt.Errorf("multiple field option types"))
 		}
 		reqType = t
 	}
@@ -502,9 +503,9 @@ func (h *incidentMetadataHandler) updateIncidentFieldOptions(ctx context.Context
 	if curType != reqType {
 		//ctx = schema.IncludeArchived(ctx)
 		deleteOthers := h.db.Client(ctx).IncidentFieldOption.Delete().
-			Where(incidentfieldoption.And(
-				incidentfieldoption.IncidentFieldID(fieldId),
-				incidentfieldoption.TypeNEQ(reqType)))
+			Where(incfo.And(
+				incfo.IncidentFieldID(fieldId),
+				incfo.TypeNEQ(reqType)))
 		if _, err := deleteOthers.Exec(ctx); err != nil {
 			return oapi.Error(ctx, "Failed to delete existing options", err)
 		}
@@ -515,7 +516,7 @@ func (h *incidentMetadataHandler) updateIncidentFieldOptions(ctx context.Context
 		option := o
 		opt := &ent.IncidentFieldOption{
 			IncidentFieldID: fieldId,
-			Type:            incidentfieldoption.Type(option.FieldOptionType),
+			Type:            incfo.Type(option.FieldOptionType),
 			Value:           option.Value,
 		}
 		if option.Id == nil {
@@ -524,14 +525,13 @@ func (h *incidentMetadataHandler) updateIncidentFieldOptions(ctx context.Context
 		}
 		cur, exists := options[*option.Id]
 		if !exists {
-			err := fmt.Errorf("cannot update non-existant option id: %s", *option.Id)
-			return oapi.Error(ctx, "failed to update field option", err)
+			return oapi.Error(ctx, "failed to update field option", fmt.Errorf("cannot update non-existant option id: %s", *option.Id))
 		}
-		archiveTime := cur.ArchiveTime
-		if o.Archived && archiveTime.IsZero() {
-			archiveTime = time.Now()
+		archiveTime := time.Now()
+		if o.Archived && cur.ArchiveTime != nil {
+			archiveTime = *cur.ArchiveTime
 		}
-		needsUpdate := opt.Value != cur.Value || o.Archived != (!cur.ArchiveTime.IsZero())
+		needsUpdate := opt.Value != cur.Value || o.Archived != (cur.ArchiveTime != nil)
 		if needsUpdate {
 			update := h.db.Client(ctx).IncidentFieldOption.UpdateOneID(cur.ID).
 				SetType(opt.Type).
@@ -587,7 +587,7 @@ func (h *incidentMetadataHandler) UpdateIncidentField(ctx context.Context, reque
 			return oapi.Error(ctx, "Failed to update incident field", saveErr)
 		}
 		field, saveErr = tx.IncidentField.Query().
-			Where(incidentfield.ID(field.ID)).
+			Where(incf.ID(field.ID)).
 			WithOptions().
 			Only(ctx)
 		if saveErr != nil {

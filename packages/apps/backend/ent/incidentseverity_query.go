@@ -568,9 +568,12 @@ func (_q *IncidentSeverityQuery) loadIncidents(ctx context.Context, query *Incid
 	}
 	for _, n := range neighbors {
 		fk := n.SeverityID
-		node, ok := nodeids[fk]
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "severity_id" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "severity_id" returned %v for node %v`, fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "severity_id" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}

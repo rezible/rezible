@@ -105,13 +105,16 @@ func (s *IncidentServiceSuite) TestCreateIncidentWithMetadataRoundTrips() {
 
 	s.Equal("API outage", created.Title)
 	s.Equal(summary, created.Summary)
-	s.Equal(severity.ID, created.SeverityID)
-	s.Equal(incidentType.ID, created.TypeID)
+	s.NotNil(created.SeverityID)
+	s.Equal(severity.ID, *created.SeverityID)
+	s.NotNil(created.TypeID)
+	s.Equal(incidentType.ID, *created.TypeID)
 
 	loaded, err := svc.Get(ctx, incident.ID(created.ID))
 	s.Require().NoError(err)
 	s.Require().Len(loaded.Edges.TagAssignments, 1)
 	s.Equal(tag.ID, loaded.Edges.TagAssignments[0].ID)
+
 	s.Require().Len(loaded.Edges.FieldSelections, 1)
 	s.Equal(option.ID, loaded.Edges.FieldSelections[0].ID)
 	s.Require().NotNil(loaded.Edges.FieldSelections[0].Edges.IncidentField)

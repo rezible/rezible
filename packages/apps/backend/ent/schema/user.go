@@ -52,14 +52,9 @@ func (User) Edges() []ent.Edge {
 
 		edge.From("integration_oauth_states", IntegrationUserInstallState.Type).Ref("user"),
 
-		edge.To("incidents", Incident.Type).
-			Through("role_assignments", IncidentRoleAssignment.Type),
 		edge.To("incident_milestones", IncidentMilestone.Type),
 
 		edge.To("incident_debriefs", IncidentDebrief.Type),
-
-		edge.To("assigned_tasks", Task.Type),
-		edge.To("created_tasks", Task.Type),
 
 		edge.From("review_requests", Review.Type).Ref("requester"),
 		edge.From("review_responses", Review.Type).Ref("reviewer"),

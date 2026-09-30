@@ -2978,25 +2978,6 @@ func (c *DiscussionCommentClient) QueryThread(_m *DiscussionComment) *Discussion
 	return query
 }
 
-// QueryUser queries the user edge of a DiscussionComment.
-func (c *DiscussionCommentClient) QueryUser(_m *DiscussionComment) *UserQuery {
-	query := (&UserClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(discussioncomment.Table, discussioncomment.FieldID, id),
-			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, discussioncomment.UserTable, discussioncomment.UserColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.User
-		step.Edge.Schema = schemaConfig.DiscussionComment
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // QueryParent queries the parent edge of a DiscussionComment.
 func (c *DiscussionCommentClient) QueryParent(_m *DiscussionComment) *DiscussionCommentQuery {
 	query := (&DiscussionCommentClient{config: c.config}).Query()
@@ -3009,6 +2990,25 @@ func (c *DiscussionCommentClient) QueryParent(_m *DiscussionComment) *Discussion
 		)
 		schemaConfig := _m.schemaConfig
 		step.To.Schema = schemaConfig.DiscussionComment
+		step.Edge.Schema = schemaConfig.DiscussionComment
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryUser queries the user edge of a DiscussionComment.
+func (c *DiscussionCommentClient) QueryUser(_m *DiscussionComment) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(discussioncomment.Table, discussioncomment.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, discussioncomment.UserTable, discussioncomment.UserColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.User
 		step.Edge.Schema = schemaConfig.DiscussionComment
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -4142,25 +4142,6 @@ func (c *IncidentClient) QueryRetrospective(_m *Incident) *RetrospectiveQuery {
 	return query
 }
 
-// QueryUsers queries the users edge of a Incident.
-func (c *IncidentClient) QueryUsers(_m *Incident) *UserQuery {
-	query := (&UserClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(incident.Table, incident.FieldID, id),
-			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, incident.UsersTable, incident.UsersPrimaryKey...),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.User
-		step.Edge.Schema = schemaConfig.IncidentRoleAssignment
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // QueryRoleAssignments queries the role_assignments edge of a Incident.
 func (c *IncidentClient) QueryRoleAssignments(_m *Incident) *IncidentRoleAssignmentQuery {
 	query := (&IncidentRoleAssignmentClient{config: c.config}).Query()
@@ -4237,25 +4218,6 @@ func (c *IncidentClient) QueryFieldSelections(_m *Incident) *IncidentFieldOption
 	return query
 }
 
-// QueryTasks queries the tasks edge of a Incident.
-func (c *IncidentClient) QueryTasks(_m *Incident) *TaskQuery {
-	query := (&TaskClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(incident.Table, incident.FieldID, id),
-			sqlgraph.To(task.Table, task.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, incident.TasksTable, incident.TasksColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.Task
-		step.Edge.Schema = schemaConfig.Task
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // QueryTagAssignments queries the tag_assignments edge of a Incident.
 func (c *IncidentClient) QueryTagAssignments(_m *Incident) *IncidentTagQuery {
 	query := (&IncidentTagClient{config: c.config}).Query()
@@ -4313,25 +4275,6 @@ func (c *IncidentClient) QueryDebriefs(_m *Incident) *IncidentDebriefQuery {
 	return query
 }
 
-// QueryReviewSessions queries the review_sessions edge of a Incident.
-func (c *IncidentClient) QueryReviewSessions(_m *Incident) *MeetingSessionQuery {
-	query := (&MeetingSessionClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(incident.Table, incident.FieldID, id),
-			sqlgraph.To(meetingsession.Table, meetingsession.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, incident.ReviewSessionsTable, incident.ReviewSessionsPrimaryKey...),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.MeetingSession
-		step.Edge.Schema = schemaConfig.IncidentReviewSessions
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // QueryVideoConferences queries the video_conferences edge of a Incident.
 func (c *IncidentClient) QueryVideoConferences(_m *Incident) *VideoConferenceQuery {
 	query := (&VideoConferenceClient{config: c.config}).Query()
@@ -4340,30 +4283,11 @@ func (c *IncidentClient) QueryVideoConferences(_m *Incident) *VideoConferenceQue
 		step := sqlgraph.NewStep(
 			sqlgraph.From(incident.Table, incident.FieldID, id),
 			sqlgraph.To(videoconference.Table, videoconference.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, incident.VideoConferencesTable, incident.VideoConferencesColumn),
+			sqlgraph.Edge(sqlgraph.O2M, true, incident.VideoConferencesTable, incident.VideoConferencesColumn),
 		)
 		schemaConfig := _m.schemaConfig
 		step.To.Schema = schemaConfig.VideoConference
 		step.Edge.Schema = schemaConfig.VideoConference
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryUserRoles queries the user_roles edge of a Incident.
-func (c *IncidentClient) QueryUserRoles(_m *Incident) *IncidentRoleAssignmentQuery {
-	query := (&IncidentRoleAssignmentClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(incident.Table, incident.FieldID, id),
-			sqlgraph.To(incidentroleassignment.Table, incidentroleassignment.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, incident.UserRolesTable, incident.UserRolesColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.IncidentRoleAssignment
-		step.Edge.Schema = schemaConfig.IncidentRoleAssignment
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
 	}
@@ -11385,25 +11309,6 @@ func (c *MeetingSessionClient) QueryTenant(_m *MeetingSession) *TenantQuery {
 	return query
 }
 
-// QueryIncidents queries the incidents edge of a MeetingSession.
-func (c *MeetingSessionClient) QueryIncidents(_m *MeetingSession) *IncidentQuery {
-	query := (&IncidentClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(meetingsession.Table, meetingsession.FieldID, id),
-			sqlgraph.To(incident.Table, incident.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, meetingsession.IncidentsTable, meetingsession.IncidentsPrimaryKey...),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.Incident
-		step.Edge.Schema = schemaConfig.IncidentReviewSessions
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // QueryVideoConference queries the video_conference edge of a MeetingSession.
 func (c *MeetingSessionClient) QueryVideoConference(_m *MeetingSession) *VideoConferenceQuery {
 	query := (&VideoConferenceClient{config: c.config}).Query()
@@ -14786,6 +14691,25 @@ func (c *ReviewClient) QueryAnalysisEntry(_m *Review) *SystemAnalysisEntryQuery 
 	return query
 }
 
+// QueryComment queries the comment edge of a Review.
+func (c *ReviewClient) QueryComment(_m *Review) *DiscussionCommentQuery {
+	query := (&DiscussionCommentClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(review.Table, review.FieldID, id),
+			sqlgraph.To(discussioncomment.Table, discussioncomment.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, review.CommentTable, review.CommentColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.DiscussionComment
+		step.Edge.Schema = schemaConfig.Review
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryRequester queries the requester edge of a Review.
 func (c *ReviewClient) QueryRequester(_m *Review) *UserQuery {
 	query := (&UserClient{config: c.config}).Query()
@@ -14817,25 +14741,6 @@ func (c *ReviewClient) QueryReviewer(_m *Review) *UserQuery {
 		)
 		schemaConfig := _m.schemaConfig
 		step.To.Schema = schemaConfig.User
-		step.Edge.Schema = schemaConfig.Review
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryComment queries the comment edge of a Review.
-func (c *ReviewClient) QueryComment(_m *Review) *DiscussionCommentQuery {
-	query := (&DiscussionCommentClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(review.Table, review.FieldID, id),
-			sqlgraph.To(discussioncomment.Table, discussioncomment.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, review.CommentTable, review.CommentColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.DiscussionComment
 		step.Edge.Schema = schemaConfig.Review
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -16351,6 +16256,25 @@ func (c *SystemAnalysisEntryClient) QueryAnalysis(_m *SystemAnalysisEntry) *Syst
 	return query
 }
 
+// QueryAuthor queries the author edge of a SystemAnalysisEntry.
+func (c *SystemAnalysisEntryClient) QueryAuthor(_m *SystemAnalysisEntry) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(systemanalysisentry.Table, systemanalysisentry.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, systemanalysisentry.AuthorTable, systemanalysisentry.AuthorColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.User
+		step.Edge.Schema = schemaConfig.SystemAnalysisEntry
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QuerySubjects queries the subjects edge of a SystemAnalysisEntry.
 func (c *SystemAnalysisEntryClient) QuerySubjects(_m *SystemAnalysisEntry) *SystemAnalysisEntrySubjectQuery {
 	query := (&SystemAnalysisEntrySubjectClient{config: c.config}).Query()
@@ -17382,25 +17306,6 @@ func (c *TaskClient) QueryTickets(_m *Task) *TicketQuery {
 	return query
 }
 
-// QueryIncident queries the incident edge of a Task.
-func (c *TaskClient) QueryIncident(_m *Task) *IncidentQuery {
-	query := (&IncidentClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(task.Table, task.FieldID, id),
-			sqlgraph.To(incident.Table, incident.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, task.IncidentTable, task.IncidentColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.Incident
-		step.Edge.Schema = schemaConfig.Task
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // QueryOriginEntry queries the origin_entry edge of a Task.
 func (c *TaskClient) QueryOriginEntry(_m *Task) *SystemAnalysisEntryQuery {
 	query := (&SystemAnalysisEntryClient{config: c.config}).Query()
@@ -17420,6 +17325,25 @@ func (c *TaskClient) QueryOriginEntry(_m *Task) *SystemAnalysisEntryQuery {
 	return query
 }
 
+// QueryIncident queries the incident edge of a Task.
+func (c *TaskClient) QueryIncident(_m *Task) *IncidentQuery {
+	query := (&IncidentClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(task.Table, task.FieldID, id),
+			sqlgraph.To(incident.Table, incident.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, task.IncidentTable, task.IncidentColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.Incident
+		step.Edge.Schema = schemaConfig.Task
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryAssignee queries the assignee edge of a Task.
 func (c *TaskClient) QueryAssignee(_m *Task) *UserQuery {
 	query := (&UserClient{config: c.config}).Query()
@@ -17428,7 +17352,7 @@ func (c *TaskClient) QueryAssignee(_m *Task) *UserQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(task.Table, task.FieldID, id),
 			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, task.AssigneeTable, task.AssigneeColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, task.AssigneeTable, task.AssigneeColumn),
 		)
 		schemaConfig := _m.schemaConfig
 		step.To.Schema = schemaConfig.User
@@ -17447,7 +17371,7 @@ func (c *TaskClient) QueryCreator(_m *Task) *UserQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(task.Table, task.FieldID, id),
 			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, task.CreatorTable, task.CreatorColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, task.CreatorTable, task.CreatorColumn),
 		)
 		schemaConfig := _m.schemaConfig
 		step.To.Schema = schemaConfig.User
@@ -17466,7 +17390,8 @@ func (c *TaskClient) Hooks() []Hook {
 
 // Interceptors returns the client interceptors.
 func (c *TaskClient) Interceptors() []Interceptor {
-	return c.inters.Task
+	inters := c.inters.Task
+	return append(inters[:len(inters):len(inters)], task.Interceptors[:]...)
 }
 
 func (c *TaskClient) mutate(ctx context.Context, m *TaskMutation) (Value, error) {
@@ -18566,25 +18491,6 @@ func (c *UserClient) QueryIntegrationOauthStates(_m *User) *IntegrationUserInsta
 	return query
 }
 
-// QueryIncidents queries the incidents edge of a User.
-func (c *UserClient) QueryIncidents(_m *User) *IncidentQuery {
-	query := (&IncidentClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(user.Table, user.FieldID, id),
-			sqlgraph.To(incident.Table, incident.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, user.IncidentsTable, user.IncidentsPrimaryKey...),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.Incident
-		step.Edge.Schema = schemaConfig.IncidentRoleAssignment
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // QueryIncidentMilestones queries the incident_milestones edge of a User.
 func (c *UserClient) QueryIncidentMilestones(_m *User) *IncidentMilestoneQuery {
 	query := (&IncidentMilestoneClient{config: c.config}).Query()
@@ -18617,44 +18523,6 @@ func (c *UserClient) QueryIncidentDebriefs(_m *User) *IncidentDebriefQuery {
 		schemaConfig := _m.schemaConfig
 		step.To.Schema = schemaConfig.IncidentDebrief
 		step.Edge.Schema = schemaConfig.IncidentDebrief
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryAssignedTasks queries the assigned_tasks edge of a User.
-func (c *UserClient) QueryAssignedTasks(_m *User) *TaskQuery {
-	query := (&TaskClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(user.Table, user.FieldID, id),
-			sqlgraph.To(task.Table, task.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, user.AssignedTasksTable, user.AssignedTasksColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.Task
-		step.Edge.Schema = schemaConfig.Task
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryCreatedTasks queries the created_tasks edge of a User.
-func (c *UserClient) QueryCreatedTasks(_m *User) *TaskQuery {
-	query := (&TaskClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(user.Table, user.FieldID, id),
-			sqlgraph.To(task.Table, task.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, user.CreatedTasksTable, user.CreatedTasksColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.Task
-		step.Edge.Schema = schemaConfig.Task
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
 	}
@@ -18769,25 +18637,6 @@ func (c *UserClient) QueryTeamMemberships(_m *User) *TeamMembershipQuery {
 		schemaConfig := _m.schemaConfig
 		step.To.Schema = schemaConfig.TeamMembership
 		step.Edge.Schema = schemaConfig.TeamMembership
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryRoleAssignments queries the role_assignments edge of a User.
-func (c *UserClient) QueryRoleAssignments(_m *User) *IncidentRoleAssignmentQuery {
-	query := (&IncidentRoleAssignmentClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(user.Table, user.FieldID, id),
-			sqlgraph.To(incidentroleassignment.Table, incidentroleassignment.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, user.RoleAssignmentsTable, user.RoleAssignmentsColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.IncidentRoleAssignment
-		step.Edge.Schema = schemaConfig.IncidentRoleAssignment
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
 	}
@@ -19146,7 +18995,7 @@ func (c *VideoConferenceClient) QueryIncident(_m *VideoConference) *IncidentQuer
 		step := sqlgraph.NewStep(
 			sqlgraph.From(videoconference.Table, videoconference.FieldID, id),
 			sqlgraph.To(incident.Table, incident.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, videoconference.IncidentTable, videoconference.IncidentColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, videoconference.IncidentTable, videoconference.IncidentColumn),
 		)
 		schemaConfig := _m.schemaConfig
 		step.To.Schema = schemaConfig.Incident
@@ -19282,7 +19131,6 @@ var (
 		IncidentSituations:                    tableSchemas[0],
 		IncidentFieldSelections:               tableSchemas[0],
 		IncidentTagAssignments:                tableSchemas[0],
-		IncidentReviewSessions:                tableSchemas[0],
 		IncidentDebrief:                       tableSchemas[0],
 		IncidentDebriefMessage:                tableSchemas[0],
 		IncidentDebriefQuestion:               tableSchemas[0],
