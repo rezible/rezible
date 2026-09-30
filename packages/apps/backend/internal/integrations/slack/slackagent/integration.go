@@ -63,6 +63,10 @@ func (i *Integration) OAuthInstallRequired() bool {
 	return true
 }
 
+func (i *Integration) InstallationLinks() []rez.IntegrationInstallationLink {
+	return nil
+}
+
 func (i *Integration) WebhookHandler() http.Handler {
 	return i.appSvc.WebhookHandler()
 }

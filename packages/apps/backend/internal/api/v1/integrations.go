@@ -23,11 +23,11 @@ func newIntegrationsHandler(integrations rez.IntegrationService) *integrationsHa
 func (h *integrationsHandler) GetInstallableIntegrations(ctx context.Context, req *oapi.GetInstallableIntegrationsRequest) (*oapi.GetInstallableIntegrationsResponse, error) {
 	var resp oapi.GetInstallableIntegrationsResponse
 
-	available := h.integrations.GetAvailable()
-	resp.Body.Data = make([]oapi.InstallableIntegration, len(available))
-	for i, intg := range available {
-		resp.Body.Data[i] = oapi.InstallableIntegrationFromPackage(intg)
+	installable, listErr := h.integrations.ListInstallable(ctx)
+	if listErr != nil {
+		return nil, oapi.Error(ctx, "failed to list installable integrations", listErr)
 	}
+	resp.Body.Data = oapi.ConvertSlice(installable, oapi.InstallableIntegrationFromPackage)
 
 	return &resp, nil
 }

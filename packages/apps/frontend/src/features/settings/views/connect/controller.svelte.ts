@@ -53,8 +53,6 @@ export class ConnectIntegrationController {
 			this.finish(resp.data);
 		} catch (e) {
 			this.finish(undefined, e as ErrorModel);
-		} finally {
-			this.finish();
 		}
 	}
 

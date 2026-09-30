@@ -503,6 +503,7 @@ type (
 		IsAvailable() (bool, error)
 		MaxInstalls() *int
 		OAuthInstallRequired() bool
+		InstallationLinks() []IntegrationInstallationLink
 		ValidateInstallationConfig([]byte) (IntegrationInstallationConfig, error)
 		ValidateUserSettings(map[string]any) error
 		GetInstalledIntegration(*ent.Integration) (InstalledIntegration, error)
@@ -517,6 +518,13 @@ type (
 		Integration() *ent.Integration
 		Config() IntegrationInstallationConfig
 		Capabilities() []string
+	}
+
+	// IntegrationInstallationLink is an external page that helps users set up or manage an integration installation.
+	IntegrationInstallationLink struct {
+		Kind  string
+		Label string
+		URL   string
 	}
 
 	OAuth2FlowIntegration interface {
@@ -561,7 +569,7 @@ type (
 	}
 
 	IntegrationService interface {
-		GetAvailable() []IntegrationDefinition
+		ListInstallable(context.Context) ([]IntegrationDefinition, error)
 
 		InstallNew(context.Context, string, []byte) (InstalledIntegration, error)
 		ListUserInstallationTargets(ctx context.Context) ([]IntegrationInstallationTarget, error)

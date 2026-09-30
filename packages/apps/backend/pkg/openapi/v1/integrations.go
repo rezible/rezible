@@ -53,13 +53,20 @@ func (o operations) RegisterIntegrations(api huma.API) {
 
 type (
 	InstallableIntegration struct {
-		Name         string   `json:"name"`
-		DisplayName  string   `json:"displayName"`
-		Description  string   `json:"description"`
-		Provider     string   `json:"provider"`
-		MaxInstalls  *int     `json:"maxInstalls,omitempty"`
-		OAuthInstall bool     `json:"oauthInstall"`
-		Capabilities []string `json:"capabilities"`
+		Name         string                       `json:"name"`
+		DisplayName  string                       `json:"displayName"`
+		Description  string                       `json:"description"`
+		Provider     string                       `json:"provider"`
+		MaxInstalls  *int                         `json:"maxInstalls,omitempty"`
+		OAuthInstall bool                         `json:"oauthInstall"`
+		Capabilities []string                     `json:"capabilities"`
+		Links        []InstallableIntegrationLink `json:"links"`
+	}
+
+	InstallableIntegrationLink struct {
+		Kind  string `json:"kind" doc:"Stable identifier for the link purpose, such as install_app"`
+		Label string `json:"label"`
+		Url   string `json:"url" format:"uri"`
 	}
 
 	IntegrationInstallation struct {
@@ -105,6 +112,15 @@ type (
 )
 
 func InstallableIntegrationFromPackage(p rez.IntegrationDefinition) InstallableIntegration {
+	links := make([]InstallableIntegrationLink, 0)
+	for _, link := range p.InstallationLinks() {
+		apiLink := InstallableIntegrationLink{
+			Kind:  link.Kind,
+			Label: link.Label,
+			Url:   link.URL,
+		}
+		links = append(links, apiLink)
+	}
 	return InstallableIntegration{
 		Name:         p.Name(),
 		DisplayName:  p.DisplayName(),
@@ -113,6 +129,7 @@ func InstallableIntegrationFromPackage(p rez.IntegrationDefinition) InstallableI
 		OAuthInstall: p.OAuthInstallRequired(),
 		MaxInstalls:  p.MaxInstalls(),
 		Capabilities: p.Capabilities(),
+		Links:        links,
 	}
 }
 
@@ -177,6 +194,7 @@ var GetInstallableIntegrations = huma.Operation{
 	Method:      http.MethodGet,
 	Path:        "/integrations",
 	Summary:     "Get Installable Integrations",
+	Description: "Lists integrations that can be newly installed for the current organization.",
 	Tags:        integrationsTags,
 	Errors:      ErrorCodes(),
 }

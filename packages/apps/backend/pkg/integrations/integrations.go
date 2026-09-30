@@ -56,6 +56,18 @@ func (r *Registry) Get(name string) (rez.IntegrationDefinition, error) {
 	return p, nil
 }
 
+// IntegrationInstallState is the tenant state an integration may depend on before a new installation.
+type IntegrationInstallState struct {
+	Installed   []rez.InstalledIntegration
+	Preferences *ent.OrganizationPreferences
+}
+
+// IntegrationWithInstallRequirements is implemented by integrations that can only be newly installed in some tenant states.
+// Existing installations can always be updated or removed.
+type IntegrationWithInstallRequirements interface {
+	CheckInstallRequirements(*IntegrationInstallState) error
+}
+
 type IntegrationWithWebhookHandler interface {
 	WebhookHandler() http.Handler
 }

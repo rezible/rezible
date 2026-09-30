@@ -1532,6 +1532,8 @@ export const createIncidentUpdate = <ThrowOnError extends boolean = false>(optio
 
 /**
  * Get Installable Integrations
+ *
+ * Lists integrations that can be newly installed for the current organization.
  */
 export const getInstallableIntegrations = <ThrowOnError extends boolean = false>(options?: Options<GetInstallableIntegrationsData, ThrowOnError>): RequestResult<GetInstallableIntegrationsResponses, GetInstallableIntegrationsErrors, ThrowOnError> => (options?.client ?? client).get<GetInstallableIntegrationsResponses, GetInstallableIntegrationsErrors, ThrowOnError>({
     security: [{

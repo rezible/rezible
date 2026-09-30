@@ -2696,52 +2696,6 @@ func (_c *MockIntegrationService_DeleteInstalled_Call) RunAndReturn(run func(ctx
 	return _c
 }
 
-// GetAvailable provides a mock function for the type MockIntegrationService
-func (_mock *MockIntegrationService) GetAvailable() []rez.IntegrationDefinition {
-	ret := _mock.Called()
-
-	if len(ret) == 0 {
-		panic("no return value specified for GetAvailable")
-	}
-
-	var r0 []rez.IntegrationDefinition
-	if returnFunc, ok := ret.Get(0).(func() []rez.IntegrationDefinition); ok {
-		r0 = returnFunc()
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]rez.IntegrationDefinition)
-		}
-	}
-	return r0
-}
-
-// MockIntegrationService_GetAvailable_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetAvailable'
-type MockIntegrationService_GetAvailable_Call struct {
-	*mock.Call
-}
-
-// GetAvailable is a helper method to define mock.On call
-func (_e *MockIntegrationService_Expecter) GetAvailable() *MockIntegrationService_GetAvailable_Call {
-	return &MockIntegrationService_GetAvailable_Call{Call: _e.mock.On("GetAvailable")}
-}
-
-func (_c *MockIntegrationService_GetAvailable_Call) Run(run func()) *MockIntegrationService_GetAvailable_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		run()
-	})
-	return _c
-}
-
-func (_c *MockIntegrationService_GetAvailable_Call) Return(integrationDefinitions []rez.IntegrationDefinition) *MockIntegrationService_GetAvailable_Call {
-	_c.Call.Return(integrationDefinitions)
-	return _c
-}
-
-func (_c *MockIntegrationService_GetAvailable_Call) RunAndReturn(run func() []rez.IntegrationDefinition) *MockIntegrationService_GetAvailable_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
 // GetAvailableAgentTools provides a mock function for the type MockIntegrationService
 func (_mock *MockIntegrationService) GetAvailableAgentTools(context1 context.Context, getAvailableAiAgentToolsParams rez.GetAvailableAiAgentToolsParams) ([]ai.Tool, error) {
 	ret := _mock.Called(context1, getAvailableAiAgentToolsParams)
@@ -3029,6 +2983,68 @@ func (_c *MockIntegrationService_ListAllInstalled_Call) Return(installedIntegrat
 }
 
 func (_c *MockIntegrationService_ListAllInstalled_Call) RunAndReturn(run func(ctx context.Context, predicates ...predicate.Integration) ([]rez.InstalledIntegration, error)) *MockIntegrationService_ListAllInstalled_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// ListInstallable provides a mock function for the type MockIntegrationService
+func (_mock *MockIntegrationService) ListInstallable(context1 context.Context) ([]rez.IntegrationDefinition, error) {
+	ret := _mock.Called(context1)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ListInstallable")
+	}
+
+	var r0 []rez.IntegrationDefinition
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context) ([]rez.IntegrationDefinition, error)); ok {
+		return returnFunc(context1)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context) []rez.IntegrationDefinition); ok {
+		r0 = returnFunc(context1)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]rez.IntegrationDefinition)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context) error); ok {
+		r1 = returnFunc(context1)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockIntegrationService_ListInstallable_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ListInstallable'
+type MockIntegrationService_ListInstallable_Call struct {
+	*mock.Call
+}
+
+// ListInstallable is a helper method to define mock.On call
+//   - context1 context.Context
+func (_e *MockIntegrationService_Expecter) ListInstallable(context1 interface{}) *MockIntegrationService_ListInstallable_Call {
+	return &MockIntegrationService_ListInstallable_Call{Call: _e.mock.On("ListInstallable", context1)}
+}
+
+func (_c *MockIntegrationService_ListInstallable_Call) Run(run func(context1 context.Context)) *MockIntegrationService_ListInstallable_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		run(
+			arg0,
+		)
+	})
+	return _c
+}
+
+func (_c *MockIntegrationService_ListInstallable_Call) Return(integrationDefinitions []rez.IntegrationDefinition, err error) *MockIntegrationService_ListInstallable_Call {
+	_c.Call.Return(integrationDefinitions, err)
+	return _c
+}
+
+func (_c *MockIntegrationService_ListInstallable_Call) RunAndReturn(run func(context1 context.Context) ([]rez.IntegrationDefinition, error)) *MockIntegrationService_ListInstallable_Call {
 	_c.Call.Return(run)
 	return _c
 }

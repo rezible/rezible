@@ -17,100 +17,130 @@ type IntegrationOAuthMessage = {
 	error?: ErrorModel;
 };
 
+const popupBlockedError: ErrorModel = {
+	title: "Sign-in window blocked",
+	detail: "Allow pop-ups for Rezible and try again.",
+};
+
+const startFlowFailedError: ErrorModel = {
+	title: "Could not start sign-in",
+	detail: "The sign-in flow could not be started. Try again.",
+};
+
 export const postIntegrationOAuthCompleteMessage = (message: Omit<IntegrationOAuthMessage, "type">) => {
 	if (!browser || !window.opener) return false;
 	window.opener.postMessage({ type: OAuthMessageType, ...message }, window.location.origin);
 	return true;
 };
 
-export class IntegrationOAuthController {
-	inFlowForName = $state<string>();
-	error = $state<ErrorModel>();
-	popup = $state.raw<Window>();
-	private clearPopupInterval: VoidFunction | undefined;
-	private onSuccess: (res: IntegrationOAuthInstallResult) => void;
-	private onCancel: VoidFunction | undefined;
+type OAuthSuccessHandler = (name: string, result: IntegrationOAuthInstallResult) => void;
 
-	constructor(onSuccess: (res: IntegrationOAuthInstallResult) => void, onCancel?: () => void) {
+// The same integration can be installed from several buttons, such as one per Slack workspace.
+// The origin identifies which button started a flow, so only that button shows its progress and errors.
+export class IntegrationOAuthController {
+	pendingName = $state<string>();
+	private pendingOrigin = $state<string>();
+	inFlow = $derived(!!this.pendingName);
+
+	private failedOrigin = $state<string>();
+	private error = $state.raw<ErrorModel>();
+
+	private popup: Window | undefined;
+	private stopPopupCloseCheck: VoidFunction | undefined;
+	private onSuccess: OAuthSuccessHandler;
+
+	private startOAuthFlowMut = createMutation(() => startIntegrationOauthFlowMutation());
+
+	constructor(onSuccess: OAuthSuccessHandler) {
 		this.onSuccess = onSuccess;
-		this.onCancel = onCancel;
+
 		if (browser) {
 			window.addEventListener("message", this.handleOAuthMessage);
-			onDestroy(() => window.removeEventListener("message", this.handleOAuthMessage));
+			onDestroy(() => {
+				window.removeEventListener("message", this.handleOAuthMessage);
+				this.endFlow();
+			});
 		}
 	}
 
-	private setError(err: unknown) {
-		this.error = {
-			title: "Integration Setup Failed",
-			detail: err instanceof Error ? err.message : "An unknown issue occurred",
-		};
+	isPending(origin: string) {
+		return this.pendingOrigin === origin;
 	}
 
-	clearPopup() {
-		this.inFlowForName = undefined;
+	errorFor(origin: string) {
+		if (this.failedOrigin !== origin) {
+			return undefined;
+		}
+		return this.error;
+	}
+
+	clearError = () => {
+		this.failedOrigin = undefined;
 		this.error = undefined;
-		this.popup = undefined;
-		this.clearPopupInterval?.();
-	}
+	};
 
-	createPopupCloseCheck() {
-		const check = setInterval(() => {
-			if (!!this && this.popup?.closed) {
-				if (!!this.inFlowForName) {
-					this.onCancel?.();
-				}
-				this.clearPopup();
-			}
-		}, 500);
-		this.clearPopupInterval = () => {
-			clearInterval(check);
-			if (this) this.clearPopupInterval = undefined;
-		};
-	}
+	startFlowFor = async (name: string, origin = name) => {
+		if (!browser || this.inFlow) return;
+		this.clearError();
 
-	private startOAuthFlowMut = createMutation(() => ({
-		...startIntegrationOauthFlowMutation({}),
-	}));
-
-	async startFlowFor(name: string) {
-		if (!browser) return;
-		this.clearPopup();
-
-		this.inFlowForName = name;
-
+		// Open the popup synchronously with the click so browsers do not block it.
 		const popup = window.open("about:blank", `rezible-oauth-${name}`, "popup,width=640,height=760");
 		if (!popup) {
-			this.setError(new Error("Popup blocked. Allow popups and try again."));
-			this.inFlowForName = undefined;
+			this.fail(origin, popupBlockedError);
 			return;
 		}
 
+		this.pendingName = name;
+		this.pendingOrigin = origin;
 		this.popup = popup;
-		this.createPopupCloseCheck();
+		this.watchPopupClosed();
+
 		try {
 			const resp = await this.startOAuthFlowMut.mutateAsync({ path: { name } });
 			popup.location.assign(new URL(resp.data.flow_url));
 		} catch (e) {
 			popup.close();
-			this.setError(e);
-			this.inFlowForName = undefined;
-			this.popup = undefined;
+			this.endFlow();
+			this.fail(origin, (e as ErrorModel | undefined) ?? startFlowFailedError);
 		}
+	};
+
+	private fail(origin: string, error: ErrorModel) {
+		this.failedOrigin = origin;
+		this.error = error;
+	}
+
+	private endFlow() {
+		this.pendingName = undefined;
+		this.pendingOrigin = undefined;
+		this.popup = undefined;
+		this.stopPopupCloseCheck?.();
+		this.stopPopupCloseCheck = undefined;
+	}
+
+	// Closing the popup without finishing sign-in cancels the flow without an error.
+	private watchPopupClosed() {
+		const check = setInterval(() => {
+			if (this.popup?.closed) {
+				this.endFlow();
+			}
+		}, 500);
+		this.stopPopupCloseCheck = () => clearInterval(check);
 	}
 
 	private handleOAuthMessage = (event: MessageEvent<IntegrationOAuthMessage>) => {
 		if (event.origin !== window.location.origin) return;
 		if (event.data?.type !== OAuthMessageType) return;
-		if (this.inFlowForName && event.data.name !== this.inFlowForName) return;
 
-		this.clearPopup();
+		const name = this.pendingName;
+		const origin = this.pendingOrigin;
+		if (!name || !origin || event.data.name !== name) return;
+
+		this.endFlow();
 		if (event.data.error) {
-			this.error = event.data.error;
+			this.fail(origin, event.data.error);
 		} else if (event.data.result) {
-			this.onSuccess?.(event.data.result);
+			this.onSuccess(name, event.data.result);
 		}
 	};
-
-	inFlow = $derived(this.startOAuthFlowMut.isPending || !!this.inFlowForName);
 }

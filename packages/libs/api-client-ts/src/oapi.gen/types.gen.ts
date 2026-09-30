@@ -1926,10 +1926,20 @@ export type InstallableIntegration = {
     capabilities: Array<string>;
     description: string;
     displayName: string;
+    links: Array<InstallableIntegrationLink>;
     maxInstalls?: number;
     name: string;
     oauthInstall: boolean;
     provider: string;
+};
+
+export type InstallableIntegrationLink = {
+    /**
+     * Stable identifier for the link purpose, such as install_app
+     */
+    kind: string;
+    label: string;
+    url: string;
 };
 
 export type IntegrationEventSyncRun = {

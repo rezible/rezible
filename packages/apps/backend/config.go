@@ -176,6 +176,7 @@ type (
 		WebhookSecret string `cfg:"webhook_secret" validate:"required"`
 		App           struct {
 			AppID         int64  `cfg:"app_id"`
+			Slug          string `cfg:"slug"`
 			ClientID      string `cfg:"client_id"`
 			ClientSecret  string `cfg:"client_secret"`
 			PrivateKeyPEM string `cfg:"private_key_pem"`

@@ -4137,6 +4137,10 @@ components:
           type: string
         displayName:
           type: string
+        links:
+          items:
+            $ref: "#/components/schemas/InstallableIntegrationLink"
+          type: array
         maxInstalls:
           format: int64
           type: integer
@@ -4153,6 +4157,23 @@ components:
         - provider
         - oauthInstall
         - capabilities
+        - links
+      type: object
+    InstallableIntegrationLink:
+      additionalProperties: false
+      properties:
+        kind:
+          description: Stable identifier for the link purpose, such as install_app
+          type: string
+        label:
+          type: string
+        url:
+          format: uri
+          type: string
+      required:
+        - kind
+        - label
+        - url
       type: object
     IntegrationEventSyncRun:
       additionalProperties: false
@@ -13726,6 +13747,7 @@ paths:
         - Incidents
   /integrations:
     get:
+      description: Lists integrations that can be newly installed for the current organization.
       operationId: get-installable-integrations
       responses:
         "200":

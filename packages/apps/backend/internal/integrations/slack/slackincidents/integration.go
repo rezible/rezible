@@ -2,16 +2,22 @@ package slackincidents
 
 import (
 	"context"
+	"fmt"
 	"net/http"
+	"slices"
 
 	"github.com/go-viper/mapstructure/v2"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/internal/integrations/slack"
+	"github.com/rezible/rezible/pkg/integrations"
 	"golang.org/x/oauth2"
 )
 
-const integrationName = "slack_incidents"
+const (
+	integrationName              = "slack_incidents"
+	incidentManagementCapability = "incident_management"
+)
 
 func MakeIntegration(appSvc *slackintegration.AppService[*App]) *Integration {
 	return &Integration{appSvc: appSvc}
@@ -49,7 +55,7 @@ func (i *Integration) MessageHandlers() []rez.MessageEventHandler {
 }
 
 func (i *Integration) Capabilities() []string {
-	return []string{"incident_management"}
+	return []string{incidentManagementCapability}
 }
 
 func (i *Integration) IsAvailable() (bool, error) {
@@ -58,6 +64,10 @@ func (i *Integration) IsAvailable() (bool, error) {
 
 func (i *Integration) OAuthInstallRequired() bool {
 	return true
+}
+
+func (i *Integration) InstallationLinks() []rez.IntegrationInstallationLink {
+	return nil
 }
 
 func (i *Integration) OAuth2Config() *oauth2.Config {
@@ -78,6 +88,20 @@ func (i *Integration) WebhookHandler() http.Handler {
 
 func (i *Integration) ValidateInstallationConfig(m []byte) (rez.IntegrationInstallationConfig, error) {
 	return i.appSvc.ValidateInstallationConfig(m)
+}
+
+// CheckInstallRequirements only allows Slack incident management when Rezible incident management is enabled
+// and no other installed integration already manages incidents.
+func (i *Integration) CheckInstallRequirements(state *integrations.IntegrationInstallState) error {
+	if state.Preferences == nil || !state.Preferences.EnableIncidentManagement {
+		return fmt.Errorf("incident management is not enabled")
+	}
+	for _, ii := range state.Installed {
+		if slices.Contains(ii.Capabilities(), incidentManagementCapability) {
+			return fmt.Errorf("an incident management integration is already installed")
+		}
+	}
+	return nil
 }
 
 func (i *Integration) ValidateUserSettings(m map[string]any) error {
@@ -115,7 +139,7 @@ func (ii *InstalledIntegration) Config() rez.IntegrationInstallationConfig {
 }
 
 func (ii *InstalledIntegration) Capabilities() []string {
-	return []string{"incident_management"}
+	return []string{incidentManagementCapability}
 }
 
 type UserSettings struct {

@@ -1,13 +1,10 @@
+import { goto } from "$app/navigation";
+import { page } from "$app/state";
 import { Context, watch, type Getter } from "runed";
 import type { Component } from "svelte";
+import { toast } from "svelte-sonner";
 
-import {
-	type ErrorModel,
-	type InstallIntegrationRequestAttributes,
-	type IntegrationInstallation,
-	type IntegrationOAuthInstallResult,
-	type UpdateIntegrationInstallationRequestAttributes,
-} from "$lib/api";
+import type { ErrorModel, IntegrationInstallation, IntegrationOAuthInstallResult } from "$lib/api";
 
 import { IntegrationOAuthController } from "$features/settings/lib/integrationsOAuthController.svelte";
 import { useIntegrationsController } from "$features/settings/lib/integrationsController.svelte";
@@ -17,8 +14,6 @@ import GoogleProvider from "./google/GoogleProvider.svelte";
 import GithubProvider from "./github/GithubProvider.svelte";
 import DemoProvider from "./demo/DemoProvider.svelte";
 
-type ConfigMap = Record<string, unknown>;
-
 const providerComponents: Record<string, Component> = {
 	slack: SlackProvider,
 	google: GoogleProvider,
@@ -26,147 +21,159 @@ const providerComponents: Record<string, Component> = {
 	demo: DemoProvider,
 };
 
-export class IntegrationProviderConfigController {
+export class IntegrationProviderController {
 	integrations = useIntegrationsController();
-	oauth = new IntegrationOAuthController((res) => {
-		this.onOAuthResult(res);
+	oauth = new IntegrationOAuthController((name, result) => {
+		this.onOAuthComplete(name, result);
 	});
 
-	private name = $state.raw<string>();
-	nameValid = $derived(!!this.name);
+	private providerName = $state("");
 
-	installations = $derived(
-		!!this.name ? this.integrations.installationsByProvider.get(this.name) || [] : []
-	);
-	availableIntegrations = $derived(
-		!!this.name ? this.integrations.availableByProvider.get(this.name) || [] : []
-	);
+	provider = $derived(this.integrations.getProvider(this.providerName));
+	ProviderComponent = $derived(providerComponents[this.providerName]);
+	loading = $derived(this.integrations.loading);
+	error = $derived(this.integrations.error);
 
-	ProviderComponent = $derived(
-		!!this.name && this.name in providerComponents ? providerComponents[this.name] : undefined
-	);
-
-	loading = $derived(this.oauth.inFlow || this.integrations.loading);
-
-	constructor(nameFn: Getter<string>) {
-		watch(nameFn, (name) => {
-			this.name = name;
+	constructor(providerNameFn: Getter<string>) {
+		watch(providerNameFn, (name) => {
+			this.providerName = name;
 		});
 	}
 
-	async startOAuthFlow(name: string) {
-		if (this.loading) return;
+	// The connection whose settings are open when a page lists several connections, kept in the URL.
+	openConnectionId = $derived(page.url.searchParams.get("connection") ?? undefined);
+
+	isOpen(id: string) {
+		return this.openConnectionId === id;
+	}
+
+	toggleOpen = (id: string) => {
+		if (this.isOpen(id)) {
+			this.setOpenConnection(undefined);
+		} else {
+			this.setOpenConnection(id);
+		}
+	};
+
+	private async setOpenConnection(id: string | undefined) {
+		const url = new URL(page.url);
+		if (id) {
+			url.searchParams.set("connection", id);
+		} else {
+			url.searchParams.delete("connection");
+		}
+		await goto(url, { replaceState: true, noScroll: true, keepFocus: true });
+	}
+
+	private async onOAuthComplete(name: string, result: IntegrationOAuthInstallResult) {
+		await this.integrations.refresh();
+
+		const installed = result.installed ?? [];
+		const firstInstalled = installed.at(0);
+		if (firstInstalled) {
+			toast.success(`Connected ${firstInstalled.attributes.displayName}.`);
+		}
+	}
+
+	// Sign-in can return several targets, such as GitHub accounts, for the user to choose from.
+	installTargetsPendingName = $state<string>();
+	private installTargetsFailedName = $state<string>();
+	private installTargetsError = $state.raw<ErrorModel>();
+
+	installTargetsErrorFor(name: string) {
+		if (this.installTargetsFailedName !== name) {
+			return undefined;
+		}
+		return this.installTargetsError;
+	}
+
+	installFromTargets = async (name: string, resourceRefs: string[]) => {
+		if (this.installTargetsPendingName || resourceRefs.length === 0) return;
+
+		this.installTargetsPendingName = name;
+		this.installTargetsFailedName = undefined;
+		this.installTargetsError = undefined;
 		try {
-			await this.oauth.startFlowFor(name);
+			const installed = await this.integrations.installFromTargets(name, resourceRefs);
+			toast.success(
+				installed.length === 1 ? "Connected." : `Connected ${installed.length} connections.`
+			);
 		} catch (e) {
-			this.setConfigError(e);
+			this.installTargetsFailedName = name;
+			this.installTargetsError = e as ErrorModel;
+		} finally {
+			this.installTargetsPendingName = undefined;
 		}
-	}
+	};
 
-	private onOAuthResult(res: IntegrationOAuthInstallResult) {
-		this.integrations.refetchInstalled();
-		this.integrations.refetchInstallTargets();
-	}
+	// Installation through a form, for integrations that do not use sign-in.
+	installPendingName = $state<string>();
+	private installFailedName = $state<string>();
+	private installError = $state.raw<ErrorModel>();
 
-	oauthError = $derived(this.oauth.inFlow ? this.oauth.error : undefined);
-
-	configError = $state.raw<ErrorModel>();
-
-	private setConfigError(err?: unknown) {
-		if (!err) {
-			this.configError = undefined;
-			return;
+	installErrorFor(name: string) {
+		if (this.installFailedName !== name) {
+			return undefined;
 		}
-		this.configError = {
-			title: "Integration Setup Failed",
-			detail: err instanceof Error ? err.message : "An unknown issue occurred",
-		};
+		return this.installError;
 	}
 
-	editingIntegrationName = $state<string>();
-	editingInstallation = $state.raw<IntegrationInstallation>();
+	// Installing again for an existing target, such as the same Google customer ID,
+	// replaces its credentials and keeps its settings.
+	async install(name: string, config: Record<string, unknown>, successMessage?: string) {
+		if (this.installPendingName) return false;
 
-	userSettings = $state.raw<ConfigMap>({});
-	userSettingsValid = $state(false);
-
-	installConfig = $state.raw<ConfigMap>({});
-	installConfigValid = $state(false);
-
-	setEditing(name: string, installation?: IntegrationInstallation) {
-		this.editingIntegrationName = name;
-		this.editingInstallation = installation;
-	}
-
-	clearEditing() {
-		this.editingIntegrationName = undefined;
-		this.editingInstallation = undefined;
-
-		this.userSettings = {};
-		this.userSettingsValid = false;
-
-		this.installConfig = {};
-		this.installConfigValid = false;
-
-		this.setConfigError();
-	}
-
-	setUserSettings(settings: ConfigMap, valid = true) {
-		this.userSettings = settings;
-		this.userSettingsValid = valid;
-	}
-
-	setInstallConfig(config: ConfigMap, valid = true) {
-		this.installConfig = config;
-		this.installConfigValid = valid;
-	}
-
-	async saveInstall() {
-		if (!this.editingIntegrationName) return;
+		this.installPendingName = name;
+		this.installFailedName = undefined;
+		this.installError = undefined;
 		try {
-			if (!this.editingInstallation) {
-				const attributes: InstallIntegrationRequestAttributes = {
-					config: this.installConfig,
-				};
-				await this.integrations.installNew(this.editingIntegrationName, attributes);
-			} else {
-				const attributes: UpdateIntegrationInstallationRequestAttributes = {
-					userSettings: this.userSettings,
-				};
-				await this.integrations.updateInstallation(this.editingInstallation.id, attributes);
-			}
-			this.setConfigError();
+			const installation = await this.integrations.install(name, config);
+			toast.success(successMessage ?? `Connected ${installation.attributes.displayName}.`);
+			return true;
 		} catch (e) {
-			this.setConfigError(e);
+			this.installFailedName = name;
+			this.installError = e as ErrorModel;
+			return false;
+		} finally {
+			this.installPendingName = undefined;
 		}
 	}
 
-	availableIntegration(name: string) {
-		return this.integrations.availableByName.get(name);
-	}
+	// Disconnecting deletes the Rezible connection only; the provider's app stays installed.
+	removalCandidate = $state.raw<IntegrationInstallation>();
+	removing = $state(false);
+	removeError = $state.raw<ErrorModel>();
 
-	installationsFor(name: string) {
-		return this.integrations.installationsByName.get(name) ?? [];
-	}
+	requestRemoval = (installation: IntegrationInstallation) => {
+		this.removalCandidate = installation;
+		this.removeError = undefined;
+	};
 
-	installTargetOptionsFor(name: string) {
-		return this.integrations.installationTargetsByName.get(name) ?? [];
-	}
+	cancelRemoval = () => {
+		if (this.removing) return;
+		this.removalCandidate = undefined;
+		this.removeError = undefined;
+	};
 
-	isInstalled(name: string) {
-		return this.installationsFor(name).length > 0;
-	}
+	confirmRemoval = async () => {
+		const installation = this.removalCandidate;
+		if (!installation || this.removing) return;
 
-	async disconnect(id: string) {
+		this.removing = true;
+		this.removeError = undefined;
 		try {
-			await this.integrations.deleteInstallation(id);
-			this.setConfigError();
+			await this.integrations.remove(installation.id);
+			this.removalCandidate = undefined;
+			toast.success(`Disconnected ${installation.attributes.displayName}.`);
 		} catch (e) {
-			this.setConfigError(e);
+			this.removeError = e as ErrorModel;
+		} finally {
+			this.removing = false;
 		}
-	}
+	};
 }
 
-const ctx = new Context<IntegrationProviderConfigController>("IntegrationProviderConfigController");
-export const initIntegrationProviderConfigController = (nameFn: Getter<string>) =>
-	ctx.set(new IntegrationProviderConfigController(nameFn));
-export const useIntegrationProviderConfigController = () => ctx.get();
+const ctx = new Context<IntegrationProviderController>("IntegrationProviderController");
+export const initIntegrationProviderController = (providerNameFn: Getter<string>) =>
+	ctx.set(new IntegrationProviderController(providerNameFn));
+export const useIntegrationProviderController = () => ctx.get();

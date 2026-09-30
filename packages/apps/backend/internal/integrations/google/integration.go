@@ -75,6 +75,10 @@ func (i *Integration) OAuthInstallRequired() bool {
 	return false
 }
 
+func (i *Integration) InstallationLinks() []rez.IntegrationInstallationLink {
+	return nil
+}
+
 func (i *Integration) ValidateInstallationConfig(cfg []byte) (rez.IntegrationInstallationConfig, error) {
 	return i.decodeValidateInstallationConfig(cfg)
 }

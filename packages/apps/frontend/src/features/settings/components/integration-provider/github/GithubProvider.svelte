@@ -1,72 +1,88 @@
 <script lang="ts">
-	import * as Alert from "$components/ui/alert";
-	import { Badge } from "$components/ui/badge";
-	import { Button } from "$components/ui/button";
-	import * as Card from "$components/ui/card";
+	import RiExternalLinkLine from "remixicon-svelte/icons/external-link-line";
 	import RiGithubFill from "remixicon-svelte/icons/github-fill";
-	import { useIntegrationDataSyncController } from "../../integration-datasync-dialog/controller.svelte";
-	import { useIntegrationProviderConfigController } from "../controller.svelte";
 
-	const ctrl = useIntegrationProviderConfigController();
-	const sync = useIntegrationDataSyncController();
+	import * as Card from "$components/ui/card";
+	import * as Empty from "$components/ui/empty";
 
-	const installations = $derived(ctrl.installationsFor("github"));
+	import IntegrationConnections from "../../integration-connections/IntegrationConnections.svelte";
+	import IntegrationInstallTargetSelect from "../../integration-install-target-selection/IntegrationInstallTargetSelect.svelte";
+	import IntegrationOAuthInstall from "../../integration-oauth-install/IntegrationOAuthInstall.svelte";
+	import { useIntegrationProviderController } from "../controller.svelte";
 
-	const installationDetails = (curr: (typeof installations)[number]) => {
-		if (!curr) return;
-		const config = curr.attributes.sanitizedConfig;
-		const org = typeof config.org === "string" ? config.org : curr.attributes.displayName;
-		const installationId =
-			typeof config.installation_id === "number" || typeof config.installation_id === "string"
-				? String(config.installation_id)
-				: curr.attributes.providerInstallationRef;
-		return { org, installationId };
-	};
+	const integrationName = "github";
+
+	const ctrl = useIntegrationProviderController();
+
+	const canInstall = $derived(ctrl.integrations.canInstall(integrationName));
+	const hasConnections = $derived(ctrl.integrations.installationsFor(integrationName).length > 0);
+	const installAppLink = $derived(
+		ctrl.integrations
+			.installableIntegration(integrationName)
+			?.links.find((link) => link.kind === "install_app")
+	);
 </script>
 
-<div class="grid gap-4">
-	<Card.Root>
-		<Card.Header>
-			<Card.Title>GitHub</Card.Title>
-		</Card.Header>
-		<Card.Content class="grid gap-3">
-			{#if installations.length === 0}
-				<Alert.Root>
-					<Alert.Title>Connect GitHub</Alert.Title>
-					<Alert.Description>
-						Sign in with GitHub to install the GitHub app and grant repository/change event
-						access.
-					</Alert.Description>
-				</Alert.Root>
+{#snippet connectActions()}
+	{#if canInstall}
+		<div class="flex flex-wrap items-start gap-2">
+			<IntegrationOAuthInstall name={integrationName} label="Connect account">
+				{#snippet icon()}
+					<RiGithubFill />
+				{/snippet}
+			</IntegrationOAuthInstall>
+			{#if installAppLink}
+				<a
+					href={installAppLink.url}
+					target="_blank"
+					rel="noopener noreferrer"
+					class="inline-flex h-9 items-center gap-1.5 px-3 text-sm underline-offset-4 hover:underline"
+				>
+					{installAppLink.label}
+					<RiExternalLinkLine class="size-4" />
+				</a>
 			{/if}
+		</div>
+	{/if}
+{/snippet}
 
-			<Button onclick={() => ctrl.startOAuthFlow("github")} variant="outline" class="w-fit">
-				<RiGithubFill class="size-4" />
-				Connect GitHub
-			</Button>
-		</Card.Content>
-	</Card.Root>
+<Card.Root>
+	<Card.Header>
+		<Card.Title>Accounts</Card.Title>
+		<Card.Description>
+			Each connection is a GitHub user or organization account. Rezible can only find accounts where the
+			Rezible GitHub App is installed, so install the app on an account before connecting it.
+		</Card.Description>
+	</Card.Header>
 
-	{#each installations as installation (installation.id)}
-		{@const details = installationDetails(installation)}
-		<Card.Root>
-			<Card.Header>
-				<Card.Title>{details?.org ?? installation.attributes.displayName}</Card.Title>
-				<Card.Action>
-					<Badge variant="outline">
-						Installation {details?.installationId ??
-							installation.attributes.providerInstallationRef}
-					</Badge>
-				</Card.Action>
-			</Card.Header>
-			<Card.Footer class="gap-2">
-				{#if installation.attributes.capabilities.includes("event_sync")}
-					<Button variant="outline" onclick={() => sync.openFor(installation)}>Sync</Button>
-				{/if}
-				<Button variant="destructive" onclick={() => ctrl.disconnect(installation.id)}>
-					Disconnect
-				</Button>
-			</Card.Footer>
-		</Card.Root>
-	{/each}
-</div>
+	<Card.Content class="flex flex-col gap-4">
+		<IntegrationInstallTargetSelect
+			name={integrationName}
+			title="Choose accounts to connect"
+			description="Your GitHub sign-in can access these accounts with the Rezible GitHub App installed."
+		/>
+
+		<IntegrationConnections name={integrationName} referenceLabel="Account ID">
+			{#snippet empty()}
+				<Empty.Root class="border">
+					<Empty.Header>
+						<Empty.Media variant="icon">
+							<RiGithubFill />
+						</Empty.Media>
+						<Empty.Title>No accounts connected</Empty.Title>
+						<Empty.Description>
+							Connect a GitHub account to follow its repositories and changes.
+						</Empty.Description>
+					</Empty.Header>
+					<Empty.Content>
+						{@render connectActions()}
+					</Empty.Content>
+				</Empty.Root>
+			{/snippet}
+		</IntegrationConnections>
+
+		{#if hasConnections}
+			{@render connectActions()}
+		{/if}
+	</Card.Content>
+</Card.Root>

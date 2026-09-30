@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
+	"path"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
@@ -57,6 +59,23 @@ func (i *Integration) Capabilities() []string {
 
 func (i *Integration) MaxInstalls() *int {
 	return nil
+}
+
+func (i *Integration) InstallationLinks() []rez.IntegrationInstallationLink {
+	if i.cfg.App.Slug == "" {
+		return nil
+	}
+	installUrl := url.URL{
+		Scheme: "https",
+		Host:   "github.com",
+		Path:   path.Join("/apps", i.cfg.App.Slug, "installations/new"),
+	}
+	installLink := rez.IntegrationInstallationLink{
+		Kind:  "install_app",
+		Label: "Install the Rezible GitHub App",
+		URL:   installUrl.String(),
+	}
+	return []rez.IntegrationInstallationLink{installLink}
 }
 
 func (i *Integration) IsAvailable() (bool, error) {

@@ -4,195 +4,142 @@ import {
 	type InstallableIntegration,
 	listIntegrationInstallationsOptions,
 	installIntegrationMutation,
-	type InstallIntegrationRequestAttributes,
 	type IntegrationInstallation,
 	listIntegrationInstallTargetsOptions,
 	type IntegrationInstallTarget,
 	installIntegrationFromTargetsMutation,
 	updateIntegrationInstallationMutation,
-	type UpdateIntegrationInstallationRequestAttributes,
 	deleteIntegrationInstallationMutation,
 } from "$lib/api";
 
 import { useUserSessionState } from "$lib/user-session.svelte";
 
-import { SvelteMap } from "svelte/reactivity";
 import { createMutation, createQuery } from "@tanstack/svelte-query";
-import { Context } from "runed";
+import { Context, watch } from "runed";
 
-export type IntegrationProviderDisplayInfo = {
-	displayName: string;
-	description: string;
+import { getIntegrationProviderInfo, type IntegrationProviderInfo } from "./integrationProviders";
+
+type UserSettings = Record<string, unknown>;
+
+export type IntegrationProviderSummary = IntegrationProviderInfo & {
+	installable: InstallableIntegration[];
+	installations: IntegrationInstallation[];
 };
-
-export type IntegrationProvider = IntegrationProviderDisplayInfo & {
-	name: string;
-	integrations: InstallableIntegration[];
-};
-
-export const providerDisplays = new Map<string, IntegrationProviderDisplayInfo>([
-	["demo", { displayName: "Demo", description: "Demo Data" }],
-	["slack", { displayName: "Slack", description: "Slack Integration" }],
-	["google", { displayName: "Google", description: "Google Integration" }],
-	["github", { displayName: "Github", description: "Github Integration" }],
-]);
-
-const makeIntegrationProviderDisplay = (intg: InstallableIntegration): IntegrationProviderDisplayInfo => ({
-	displayName: intg.displayName,
-	description: intg.description,
-});
 
 export class IntegrationsController {
-	session = useUserSessionState();
+	private session = useUserSessionState();
 
-	private listAvailableQuery = createQuery(() => getInstallableIntegrationsOptions());
-	available = $derived(
-		this.listAvailableQuery.data?.data.toSorted((a, b) => a.name.localeCompare(b.name)) || []
-	);
-	availableByName = $derived(new Map(this.available.map((a) => [a.name, a])));
-	availableByProvider = $derived.by(() => {
-		const grouped = new SvelteMap<string, InstallableIntegration[]>();
-		for (const intg of this.available) {
-			const curr = grouped.get(intg.provider) ?? [];
-			grouped.set(intg.provider, [...curr, intg]);
+	private installableQuery = createQuery(() => getInstallableIntegrationsOptions());
+	private installedQuery = createQuery(() => listIntegrationInstallationsOptions());
+	private installTargetsQuery = createQuery(() => listIntegrationInstallTargetsOptions());
+
+	installable = $derived(this.installableQuery.data?.data ?? []);
+	installed = $derived(this.installedQuery.data?.data ?? []);
+	private installTargets = $derived(this.installTargetsQuery.data?.data ?? []);
+
+	installedCapabilities = $derived(new Set(this.installed.flatMap((intg) => intg.attributes.capabilities)));
+
+	providers = $derived.by<IntegrationProviderSummary[]>(() => {
+		const providerNames = new Set<string>();
+		for (const intg of this.installable) {
+			providerNames.add(intg.provider);
 		}
-		return grouped;
-	});
-
-	providers = $derived.by<IntegrationProvider[]>(() => {
-		if (!this.available || this.available.length === 0) return [];
-		const nameMap = new Map<string, Set<InstallableIntegration>>();
-		this.available.forEach((inst) => {
-			const instSet = nameMap.get(inst.provider) || new Set<InstallableIntegration>();
-			instSet.add(inst);
-			nameMap.set(inst.provider, instSet);
-		});
-		const provs = nameMap.entries().flatMap(([name, intgs]) => {
-			const knownDisp = providerDisplays.get(name);
-			const integrations = intgs.values().toArray();
-			const displayInfos = !!knownDisp ? [knownDisp] : integrations.map(makeIntegrationProviderDisplay);
-			return displayInfos.map((disp) => ({ name, integrations, ...disp }));
-		});
-		return provs.toArray();
-	});
-
-	private listInstalledQuery = createQuery(() => listIntegrationInstallationsOptions());
-	installed = $derived(this.listInstalledQuery.data?.data || []);
-	installedById = $derived(new SvelteMap(this.installed.map((intg) => [intg.id, intg])));
-	installationsByName = $derived.by(() => {
-		const grouped = new SvelteMap<string, IntegrationInstallation[]>();
-		for (const intg of this.installed) {
-			const curr = grouped.get(intg.attributes.name) ?? [];
-			grouped.set(intg.attributes.name, [...curr, intg]);
+		for (const installation of this.installed) {
+			providerNames.add(installation.attributes.provider);
 		}
-		return grouped;
-	});
-	installationsByProvider = $derived.by(() => {
-		const grouped = new Map<string, IntegrationInstallation[]>();
-		for (const intg of this.installed) {
-			const curr = grouped.get(intg.attributes.provider) ?? [];
-			grouped.set(intg.attributes.provider, [...curr, intg]);
-		}
-		return grouped;
-	});
-	installedCapabilities = $derived(new Set(this.installed.flatMap(intg => intg.attributes.capabilities)));
 
-	refetchInstalled() {
-		this.listInstalledQuery.refetch();
-		this.installingName = undefined;
-	}
-
-	refetchInstallTargets() {
-		this.listInstallTargetsQuery.refetch();
-	}
-
-	private onInstallationsMutated(installation?: IntegrationInstallation) {
-		this.refetchInstalled();
-	}
-
-	private installMut = createMutation(() => ({
-		...installIntegrationMutation({}),
-		onSuccess: ({ data }) => {
-			this.onInstallationsMutated(data);
-		},
-	}));
-
-	private updateInstalledMut = createMutation(() => ({
-		...updateIntegrationInstallationMutation({}),
-		onSuccess: ({ data }) => {
-			this.onInstallationsMutated(data);
-		},
-	}));
-
-	private deleteInstalledMut = createMutation(() => ({
-		...deleteIntegrationInstallationMutation({}),
-		onSuccess: () => {
-			this.refetchInstalled();
-		},
-	}));
-
-	private listInstallTargetsQuery = createQuery(() => listIntegrationInstallTargetsOptions());
-	private installationTargets = $derived(this.listInstallTargetsQuery.data?.data || []);
-	installationTargetsByName = $derived.by(() => {
-		const nameTargets = new Map<string, IntegrationInstallTarget[]>();
-		this.installationTargets.forEach((t) => {
-			const curr = nameTargets.get(t.resourceRef.providerNamespace) || [];
-			nameTargets.set(t.resourceRef.providerNamespace, [...curr, t]);
+		const summaries = Array.from(providerNames, (name) => {
+			const installable = this.installable.filter((intg) => intg.provider === name);
+			const installations = this.installed.filter((intg) => intg.attributes.provider === name);
+			const info = getIntegrationProviderInfo(name, installable);
+			return { ...info, installable, installations };
 		});
-		return nameTargets;
+		return summaries.toSorted((a, b) => a.displayName.localeCompare(b.displayName));
 	});
+	installedProviders = $derived(this.providers.filter((provider) => provider.installations.length > 0));
+	availableProviders = $derived(this.providers.filter((provider) => provider.installations.length === 0));
 
-	private selectIntegrationInstallTargetMut = createMutation(() => ({
-		...installIntegrationFromTargetsMutation({}),
-		onSuccess: () => {
-			this.refetchInstalled();
-			this.listInstallTargetsQuery.refetch();
-		},
-	}));
+	loading = $derived(this.installableQuery.isPending || this.installedQuery.isPending);
+	error = $derived((this.installableQuery.error ?? this.installedQuery.error) as ErrorModel | null);
+	installTargetsError = $derived(this.installTargetsQuery.error as ErrorModel | null);
 
-	installationPending = $derived(
-		this.installMut.isPending || this.selectIntegrationInstallTargetMut.isPending
-	);
-	installingName = $derived(
-		this.installMut.variables?.path?.name || this.selectIntegrationInstallTargetMut.variables?.path.name
-	);
-	installationErr = $derived(this.installMut.error || this.selectIntegrationInstallTargetMut.error);
-
-	async installNew(name: string, attributes: InstallIntegrationRequestAttributes) {
-		await this.installMut.mutateAsync({ path: { name }, body: { attributes } });
+	constructor() {
+		// Some integrations are only installable while incident management is enabled.
+		watch(
+			() => this.session.orgPreferences?.enableIncidentManagement,
+			() => {
+				this.installableQuery.refetch();
+			},
+			{ lazy: true }
+		);
 	}
 
-	async updateInstallation(id: string, attributes: UpdateIntegrationInstallationRequestAttributes) {
-		await this.updateInstalledMut.mutateAsync({ path: { id }, body: { attributes } });
+	getProvider(name: string) {
+		return this.providers.find((provider) => provider.name === name);
 	}
 
-	async deleteInstallation(id: string) {
-		await this.deleteInstalledMut.mutateAsync({ path: { id } });
+	installableIntegration(name: string) {
+		return this.installable.find((intg) => intg.name === name);
+	}
+
+	installationsFor(name: string) {
+		return this.installed.filter((intg) => intg.attributes.name === name);
+	}
+
+	installTargetsFor(name: string): IntegrationInstallTarget[] {
+		return this.installTargets.filter((target) => target.resourceRef.providerNamespace === name);
+	}
+
+	canInstall(name: string) {
+		const intg = this.installableIntegration(name);
+		if (!intg) {
+			return false;
+		}
+		if (intg.maxInstalls === undefined) {
+			return true;
+		}
+		return this.installationsFor(name).length < intg.maxInstalls;
+	}
+
+	async refresh() {
+		await Promise.all([
+			this.installableQuery.refetch(),
+			this.installedQuery.refetch(),
+			this.installTargetsQuery.refetch(),
+		]);
+	}
+
+	private installMut = createMutation(() => installIntegrationMutation());
+	private installFromTargetsMut = createMutation(() => installIntegrationFromTargetsMutation());
+	private updateMut = createMutation(() => updateIntegrationInstallationMutation());
+	private deleteMut = createMutation(() => deleteIntegrationInstallationMutation());
+
+	async install(name: string, config: Record<string, unknown>) {
+		const resp = await this.installMut.mutateAsync({ path: { name }, body: { attributes: { config } } });
+		await this.refresh();
+		return resp.data;
 	}
 
 	async installFromTargets(name: string, resourceRefs: string[]) {
-		if (this.installationPending || resourceRefs.length === 0) return;
-		try {
-			const attributes = { resourceRefs };
-			await this.selectIntegrationInstallTargetMut.mutateAsync({
-				path: { name },
-				body: { attributes },
-			});
-		} catch (e) {
-			console.error("failed to install targets", e);
-		}
+		const body = { attributes: { resourceRefs } };
+		const resp = await this.installFromTargetsMut.mutateAsync({ path: { name }, body });
+		await this.refresh();
+		return resp.data;
 	}
 
-	loading = $derived(
-		this.listAvailableQuery.isPending ||
-			this.listInstalledQuery.isPending ||
-			this.listInstallTargetsQuery.isPending
-	);
-	error = $derived(
-		(this.listAvailableQuery.error ??
-			this.listInstalledQuery.error ??
-			this.listInstallTargetsQuery.error) as ErrorModel | null
-	);
+	async updateSettings(id: string, userSettings: UserSettings) {
+		const resp = await this.updateMut.mutateAsync({
+			path: { id },
+			body: { attributes: { userSettings } },
+		});
+		await this.installedQuery.refetch();
+		return resp.data;
+	}
+
+	async remove(id: string) {
+		await this.deleteMut.mutateAsync({ path: { id } });
+		await this.refresh();
+	}
 }
 
 const ctx = new Context<IntegrationsController>("IntegrationsController");

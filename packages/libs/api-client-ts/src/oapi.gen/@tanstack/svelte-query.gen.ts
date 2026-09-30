@@ -2017,6 +2017,8 @@ export const getInstallableIntegrationsQueryKey = (options?: Options<GetInstalla
 
 /**
  * Get Installable Integrations
+ *
+ * Lists integrations that can be newly installed for the current organization.
  */
 export const getInstallableIntegrationsOptions = (options?: Options<GetInstallableIntegrationsData>) => queryOptions<GetInstallableIntegrationsResponse, GetInstallableIntegrationsError, GetInstallableIntegrationsResponse, ReturnType<typeof getInstallableIntegrationsQueryKey>>({
     queryFn: async ({ queryKey, signal }) => {

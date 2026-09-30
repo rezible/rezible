@@ -22,6 +22,7 @@ import (
 	"github.com/rezible/rezible/ent"
 	in "github.com/rezible/rezible/ent/integration"
 	"github.com/rezible/rezible/pkg/execution"
+	"github.com/rezible/rezible/pkg/integrations"
 	"github.com/rezible/rezible/pkg/jobs"
 )
 
@@ -49,8 +50,71 @@ func NewIntegrationsService(cfg rez.Config, db rez.Database, jobSvc rez.JobServi
 	return s, nil
 }
 
-func (s *IntegrationsService) GetAvailable() []rez.IntegrationDefinition {
-	return s.reg.GetAvailable()
+func (s *IntegrationsService) ListInstallable(ctx context.Context) ([]rez.IntegrationDefinition, error) {
+	state, stateErr := s.getInstallState(ctx)
+	if stateErr != nil {
+		return nil, fmt.Errorf("get install state: %w", stateErr)
+	}
+
+	available := s.reg.GetAvailable()
+	installable := make([]rez.IntegrationDefinition, 0, len(available))
+	for _, p := range available {
+		if requirementsErr := s.checkInstallRequirements(p, state); requirementsErr == nil {
+			installable = append(installable, p)
+		}
+	}
+	return installable, nil
+}
+
+func (s *IntegrationsService) getInstallState(ctx context.Context) (*integrations.IntegrationInstallState, error) {
+	installed, listErr := s.ListAllInstalled(ctx)
+	if listErr != nil {
+		return nil, fmt.Errorf("list installed: %w", listErr)
+	}
+
+	prefs, prefsErr := s.db.Client(ctx).OrganizationPreferences.Query().Only(ctx)
+	if prefsErr != nil && !ent.IsNotFound(prefsErr) {
+		return nil, fmt.Errorf("query organization preferences: %w", prefsErr)
+	}
+
+	return &integrations.IntegrationInstallState{
+		Installed:   installed,
+		Preferences: prefs,
+	}, nil
+}
+
+func (s *IntegrationsService) checkInstallRequirements(p rez.IntegrationDefinition, state *integrations.IntegrationInstallState) error {
+	ri, hasRequirements := p.(integrations.IntegrationWithInstallRequirements)
+	if !hasRequirements {
+		return nil
+	}
+	if requirementsErr := ri.CheckInstallRequirements(state); requirementsErr != nil {
+		return fmt.Errorf("%w: %w", rez.ErrConflict, requirementsErr)
+	}
+	return nil
+}
+
+// checkCanInstallNew applies installation limits and requirements to a new installation.
+// Updating an existing installation for the same provider target is always allowed.
+func (s *IntegrationsService) checkCanInstallNew(ctx context.Context, p rez.IntegrationDefinition) error {
+	state, stateErr := s.getInstallState(ctx)
+	if stateErr != nil {
+		return fmt.Errorf("get install state: %w", stateErr)
+	}
+
+	if maxInstalls := p.MaxInstalls(); maxInstalls != nil {
+		installCount := 0
+		for _, ii := range state.Installed {
+			if ii.Integration().Name == p.Name() {
+				installCount++
+			}
+		}
+		if installCount >= *maxInstalls {
+			return fmt.Errorf("%w: %s allows at most %d installation(s)", rez.ErrConflict, p.DisplayName(), *maxInstalls)
+		}
+	}
+
+	return s.checkInstallRequirements(p, state)
 }
 
 func (s *IntegrationsService) ListInstalled(ctx context.Context, params rez.ListIntegrationsParams) (*ent.ListResult[ent.Integration], error) {
@@ -168,6 +232,11 @@ func (s *IntegrationsService) InstallFromTarget(ctx context.Context, target rez.
 	installationID, queryExistingErr := existingQuery.OnlyID(ctx)
 	if queryExistingErr != nil && !ent.IsNotFound(queryExistingErr) {
 		return nil, fmt.Errorf("query existing installation: %w", queryExistingErr)
+	}
+	if ent.IsNotFound(queryExistingErr) {
+		if installErr := s.checkCanInstallNew(ctx, p); installErr != nil {
+			return nil, fmt.Errorf("check can install: %w", installErr)
+		}
 	}
 	intg, setErr := s.set(ctx, installationID, setFn)
 	if setErr != nil {
@@ -370,6 +439,17 @@ func (s *IntegrationsService) StartOAuth2Flow(ctx context.Context, integrationNa
 	_, cfg, intgErr := s.getOAuthIntegration(integrationName)
 	if intgErr != nil {
 		return "", fmt.Errorf("failed to get integration: %w", intgErr)
+	}
+	p, pErr := s.reg.Get(integrationName)
+	if pErr != nil {
+		return "", fmt.Errorf("get integration package %s: %w", integrationName, pErr)
+	}
+	installState, installStateErr := s.getInstallState(ctx)
+	if installStateErr != nil {
+		return "", fmt.Errorf("get install state: %w", installStateErr)
+	}
+	if requirementsErr := s.checkInstallRequirements(p, installState); requirementsErr != nil {
+		return "", fmt.Errorf("check install requirements: %w", requirementsErr)
 	}
 	state, stateErr := s.makeUserOAuthInstallationState(ctx, userId, integrationName)
 	if stateErr != nil {

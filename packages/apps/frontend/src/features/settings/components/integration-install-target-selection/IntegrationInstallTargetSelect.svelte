@@ -1,50 +1,70 @@
 <script lang="ts">
-	import { Button } from "$components/ui/button";
-	import Spinner from "$components/ui/spinner/spinner.svelte";
-	import { Checkbox } from "$components/ui/checkbox";
-	import type { IntegrationInstallTarget } from "@rezible/api-client-ts";
 	import { SvelteSet } from "svelte/reactivity";
 
+	import InlineAlert from "$components/layout/error-alert/ErrorAlert.svelte";
+	import { Button } from "$components/ui/button";
+	import { Checkbox } from "$components/ui/checkbox";
+	import { Spinner } from "$components/ui/spinner";
+
+	import { useIntegrationProviderController } from "../integration-provider/controller.svelte";
+
 	type Props = {
-		options: IntegrationInstallTarget[];
-		onConfirm: (refs: string[]) => void;
+		name: string;
+		title: string;
+		description: string;
 	};
-	const { options, onConfirm }: Props = $props();
+	const { name, title, description }: Props = $props();
 
-	let selectedRefs = new SvelteSet<string>();
+	const ctrl = useIntegrationProviderController();
 
-	const toggleInstallationTargetSelection = (ref: string, selected: boolean) => {
+	const options = $derived(ctrl.integrations.installTargetsFor(name));
+	const pending = $derived(ctrl.installTargetsPendingName === name);
+	const error = $derived(ctrl.installTargetsErrorFor(name));
+
+	const selectedRefs = new SvelteSet<string>();
+
+	const toggle = (ref: string, selected: boolean) => {
 		if (selected) {
 			selectedRefs.add(ref);
 		} else {
 			selectedRefs.delete(ref);
 		}
 	};
+
+	const confirm = () => {
+		ctrl.installFromTargets(name, Array.from(selectedRefs));
+	};
 </script>
 
-<div class="flex flex-col gap-3 rounded-md border p-3">
-	<div class="flex flex-col gap-1">
-		<span class="text-sm font-medium">Select installations</span>
-		<span class="text-sm text-muted-foreground">Choose which accounts to connect.</span>
-	</div>
-	<div class="flex flex-col gap-2">
-		{#each options as option (option.resourceRef.resourceRef)}
-			<label class="flex items-center gap-3 rounded-md border p-3 text-sm">
-				<Checkbox
-					checked={selectedRefs.has(option.resourceRef.resourceRef)}
-					onCheckedChange={(checked) =>
-						toggleInstallationTargetSelection(option.resourceRef.resourceRef, !!checked)}
-				/>
-				<span class="flex flex-col">
+{#if options.length > 0}
+	<div class="flex flex-col gap-3 border border-primary/40 bg-muted/40 p-4">
+		<div class="flex flex-col gap-1">
+			<span class="text-sm font-medium">{title}</span>
+			<span class="text-sm text-muted-foreground">{description}</span>
+		</div>
+
+		<div class="flex flex-col gap-2">
+			{#each options as option (option.resourceRef.resourceRef)}
+				{@const ref = option.resourceRef.resourceRef}
+				<label class="flex items-center gap-3 border bg-background p-3 text-sm">
+					<Checkbox
+						checked={selectedRefs.has(ref)}
+						onCheckedChange={(checked) => toggle(ref, !!checked)}
+					/>
 					<span class="font-medium">{option.displayName}</span>
-					<span class="text-muted-foreground">
-						{option.resourceRef.providerNamespace} · {option.resourceRef.resourceRef}
-					</span>
-				</span>
-			</label>
-		{/each}
+				</label>
+			{/each}
+		</div>
+
+		{#if error}
+			<InlineAlert {error} dismissable={false} />
+		{/if}
+
+		<Button class="w-fit" disabled={selectedRefs.size === 0 || pending} onclick={confirm}>
+			{#if pending}
+				<Spinner />
+			{/if}
+			Connect selected
+		</Button>
 	</div>
-	<Button disabled={selectedRefs.size === 0} onclick={() => onConfirm(selectedRefs.values().toArray())}>
-		Connect selected
-	</Button>
-</div>
+{/if}

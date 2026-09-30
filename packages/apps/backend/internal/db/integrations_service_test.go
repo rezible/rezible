@@ -103,6 +103,74 @@ func (s *IntegrationsServiceSuite) TestInstallSameTargetUpdatesExistingInstallat
 	s.Equal(1, count)
 }
 
+func (s *IntegrationsServiceSuite) TestInstallRejectsNewTargetsBeyondMaxInstalls() {
+	ctx := s.SeedTenantContext()
+	tdb := s.CreateTestDatabase()
+
+	i := &testIntegration{
+		maxInstalls: new(1),
+	}
+	svc := s.newService(tdb, s.newRegistry(i))
+	first := s.installTestIntegration(ctx, svc, i, "target-a")
+
+	secondTarget := rez.IntegrationInstallationTarget{
+		DisplayName: i.DisplayName(),
+		Config: &testInstalledIntegrationConfig{
+			TestRef:           "target-b",
+			ProviderNamespace: i.Name(),
+		},
+	}
+	_, secondErr := svc.InstallFromTarget(ctx, secondTarget)
+	s.Require().ErrorIs(secondErr, rez.ErrConflict)
+
+	reinstalled := s.installTestIntegration(ctx, svc, i, "target-a")
+	s.Equal(first.Integration().ID, reinstalled.Integration().ID)
+}
+
+func (s *IntegrationsServiceSuite) TestInstallRequirementsUseOrganizationPreferences() {
+	ctx := s.SeedTenantContext()
+	tdb := s.CreateTestDatabase()
+
+	createRequiredPrefs := tdb.Client(ctx).OrganizationPreferences.Create().
+		SetOrganizationID(s.SeedOrganizationId()).
+		SetEnableIncidentManagement(true)
+
+	unrestrictedIntg := &testIntegration{name: "unrestricted"}
+
+	requiresIncidentMgmtIntg := &testIntegration{
+		name: "restricted",
+		checkStateFn: func(state *integrations.IntegrationInstallState) error {
+			if state.Preferences == nil || !state.Preferences.EnableIncidentManagement {
+				return fmt.Errorf("incident management not enabled")
+			}
+			return nil
+		},
+	}
+	svc := s.newService(tdb, s.newRegistry(unrestrictedIntg, requiresIncidentMgmtIntg))
+
+	installable, listErr := svc.ListInstallable(ctx)
+	s.Require().NoError(listErr)
+	s.Equal([]rez.IntegrationDefinition{unrestrictedIntg}, installable)
+
+	restrictedTarget := rez.IntegrationInstallationTarget{
+		DisplayName: requiresIncidentMgmtIntg.DisplayName(),
+		Config: &testInstalledIntegrationConfig{
+			TestRef:           "target-a",
+			ProviderNamespace: requiresIncidentMgmtIntg.Name(),
+		},
+	}
+	_, installErr := svc.InstallFromTarget(ctx, restrictedTarget)
+	s.Require().ErrorIs(installErr, rez.ErrConflict)
+
+	s.Require().NoError(createRequiredPrefs.Exec(ctx))
+
+	installable, listErr = svc.ListInstallable(ctx)
+	s.Require().NoError(listErr)
+	s.ElementsMatch([]rez.IntegrationDefinition{unrestrictedIntg, requiresIncidentMgmtIntg}, installable)
+
+	s.installTestIntegration(ctx, svc, requiresIncidentMgmtIntg, "target-a")
+}
+
 func (s *IntegrationsServiceSuite) TestGetAvailableAgentToolsSkipsIntegrationsWithoutTools() {
 	ctx := s.SeedTenantContext()
 	tdb := s.CreateTestDatabase()
@@ -140,10 +208,11 @@ func (s *IntegrationsServiceSuite) TestGetAvailableAgentToolsRejectsDuplicateToo
 }
 
 type testIntegration struct {
-	name        string
-	unavailable bool
-	maxInstalls *int
-	tools       []ai.Tool
+	name         string
+	unavailable  bool
+	maxInstalls  *int
+	checkStateFn func(*integrations.IntegrationInstallState) error
+	tools        []ai.Tool
 }
 
 func (p *testIntegration) Name() string {
@@ -175,6 +244,17 @@ func (p *testIntegration) IsAvailable() (bool, error) {
 
 func (p *testIntegration) MaxInstalls() *int {
 	return p.maxInstalls
+}
+
+func (p *testIntegration) CheckInstallRequirements(state *integrations.IntegrationInstallState) error {
+	if p.checkStateFn != nil {
+		return p.checkStateFn(state)
+	}
+	return nil
+}
+
+func (p *testIntegration) InstallationLinks() []rez.IntegrationInstallationLink {
+	return nil
 }
 
 func (p *testIntegration) OAuthInstallRequired() bool {
