@@ -26,7 +26,6 @@ func (s *ProjectionServiceSuite) createUserProjectionEvent(tdb rez.Database, res
 		SetOccurredAt(occurredAt).
 		SetReceivedAt(occurredAt).
 		SetAttributes(encoded)
-
 	ev, eventErr := createEvent.Save(ctx)
 	r.NoError(eventErr)
 	return ev
@@ -53,8 +52,8 @@ func (s *ProjectionServiceSuite) TestUserProjectionCreatesAndLinksKnowledgeEntit
 
 	findUser := tdb.Client(ctx).User.Query().
 		Where(entuser.Email(attrs.Email))
-	created, err := findUser.Only(ctx)
-	r.NoError(err)
+	created, createdErr := findUser.Only(ctx)
+	r.NoError(createdErr)
 	r.NotNil(created.KnowledgeEntityID)
 	r.Equal("Projected User", created.Name)
 	r.Equal("U123", created.ChatID)
@@ -65,7 +64,8 @@ func (s *ProjectionServiceSuite) TestUserProjectionMatchesAliasesByEmail() {
 	tdb := s.CreateTestDatabase()
 	projector := s.projectionService(tdb)
 	email := "same-user+" + uuid.NewString() + "@example.com"
-	initialUserCount := tdb.Client(ctx).User.Query().CountX(ctx)
+	initialUserCount, initialUserCountErr := tdb.Client(ctx).User.Query().Count(ctx)
+	s.Require().NoError(initialUserCountErr)
 
 	first := s.createUserProjectionEvent(tdb, "provider-user-1", projections.UserEventAttributes{
 		Name:  "Alice",
@@ -81,9 +81,18 @@ func (s *ProjectionServiceSuite) TestUserProjectionMatchesAliasesByEmail() {
 	_, secondErr := runProjection(ctx, projector, second)
 	s.Require().NoError(secondErr)
 
-	s.Equal(1, tdb.Client(ctx).KnowledgeEntity.Query().CountX(ctx))
-	s.Equal(2, tdb.Client(ctx).KnowledgeSubjectAlias.Query().CountX(ctx))
-	s.Equal(initialUserCount+1, tdb.Client(ctx).User.Query().CountX(ctx))
+	knowledgeEntityCount, knowledgeEntityCountErr := tdb.Client(ctx).KnowledgeEntity.Query().Count(ctx)
+	s.Require().NoError(knowledgeEntityCountErr)
+
+	s.Equal(1, knowledgeEntityCount)
+	knowledgeSubjectAliasCount, knowledgeSubjectAliasCountErr := tdb.Client(ctx).KnowledgeSubjectAlias.Query().Count(ctx)
+	s.Require().NoError(knowledgeSubjectAliasCountErr)
+
+	s.Equal(2, knowledgeSubjectAliasCount)
+	userCount, userCountErr := tdb.Client(ctx).User.Query().Count(ctx)
+	s.Require().NoError(userCountErr)
+
+	s.Equal(initialUserCount+1, userCount)
 }
 
 func (s *ProjectionServiceSuite) TestUserProjectionReusesExistingEmailUser() {

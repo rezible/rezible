@@ -107,6 +107,15 @@ type ModelDefinition[Config any] struct {
 	fn        ai.ModelActionFunc[Config]
 }
 
+// NewModelDefinition constructs a model option without exposing runtime internals.
+func NewModelDefinition[C any](name string, options *ai.ModelOptions, action ai.ModelActionFunc[C]) ModelDefinition[C] {
+	return ModelDefinition[C]{
+		Name: name,
+		opts: options,
+		fn:   action,
+	}
+}
+
 func WithDefinedModel[Config any](def ModelDefinition[Config]) AiRuntimeOption {
 	opt := AiRuntimeOption{
 		kind: AiRuntimeOptionKindModel,

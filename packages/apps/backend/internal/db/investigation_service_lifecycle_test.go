@@ -22,10 +22,12 @@ import (
 )
 
 func (s *InvestigationServiceSuite) userContext(tdb rez.Database, ctx context.Context) context.Context {
-	user := tdb.Client(ctx).User.Create().
+	createUser := tdb.Client(ctx).User.Create().
 		SetEmail(uuid.NewString() + "@example.com").
-		SetName("Investigation user").
-		SaveX(ctx)
+		SetName("Investigation user")
+	user, userErr := createUser.Save(ctx)
+	s.Require().NoError(userErr)
+
 	return execution.NewUserContext(ctx, &ent.UserAuthSession{
 		UserID:    user.ID,
 		TenantID:  user.TenantID,
@@ -35,27 +37,44 @@ func (s *InvestigationServiceSuite) userContext(tdb rez.Database, ctx context.Co
 
 func (s *InvestigationServiceSuite) expectReconcileJobs(jobService *mocks.MockJobService, investigationID uuid.UUID, times int) {
 	jobService.EXPECT().
-		Insert(mock.Anything, jobs.ReconcileInvestigation{InvestigationID: investigationID}, (*river.InsertOpts)(nil)).
-		Return(&rivertype.JobInsertResult{Job: &rivertype.JobRow{ID: 2001}}, nil).
+		Insert(mock.Anything, jobs.ReconcileInvestigation{
+			InvestigationID: investigationID,
+		}, (*river.InsertOpts)(nil)).
+		Return(&rivertype.JobInsertResult{
+			Job: &rivertype.JobRow{
+				ID: 2001,
+			},
+		}, nil).
 		Times(times)
 }
 
 func (s *InvestigationServiceSuite) expectInvokeJobs(jobService *mocks.MockJobService, times int, insertErr error) {
 	jobService.EXPECT().
 		Insert(mock.Anything, mock.IsType(jobs.InvokeAgentTurn{}), (*river.InsertOpts)(nil)).
-		Return(&rivertype.JobInsertResult{Job: &rivertype.JobRow{ID: 3001}}, insertErr).
+		Return(&rivertype.JobInsertResult{
+			Job: &rivertype.JobRow{
+				ID: 3001,
+			},
+		}, insertErr).
 		Times(times)
 }
 
 func (s *InvestigationServiceSuite) createLifecycleInvestigation(ctx context.Context, tdb rez.Database, jobService *mocks.MockJobService) (*InvestigationService, *ent.Investigation) {
 	analysis := s.createAnalysis(tdb, ctx)
-	s.expectStartJob(jobService, &rivertype.JobInsertResult{Job: &rivertype.JobRow{ID: 1001}}, nil)
+	s.expectStartJob(jobService, &rivertype.JobInsertResult{
+		Job: &rivertype.JobRow{
+			ID: 1001,
+		},
+	}, nil)
 	service := s.newService(tdb, jobService)
-	investigation, createErr := service.CreateInvestigation(ctx, rez.CreateInvestigationParams{
+	investigationParams := rez.CreateInvestigationParams{
 		AnalysisID: analysis.ID,
 		Query:      "Why are payment retries increasing?",
-	})
+	}
+
+	investigation, createErr := service.CreateInvestigation(ctx, investigationParams)
 	s.Require().NoError(createErr)
+
 	return service, investigation
 }
 
@@ -64,13 +83,16 @@ func (s *InvestigationServiceSuite) createTerminalTurn(ctx context.Context, tdb 
 }
 
 func (s *InvestigationServiceSuite) createTurn(ctx context.Context, tdb rez.Database, sessionID uuid.UUID, sequence int, status agentturn.Status) *ent.AgentTurn {
-	return tdb.Client(ctx).AgentTurn.Create().
+	createAgentTurn := tdb.Client(ctx).AgentTurn.Create().
 		SetID(uuid.New()).
 		SetAgentSessionID(sessionID).
 		SetSequence(sequence).
 		SetRiverJobID(int64(1000 + sequence)).
-		SetStatus(status).
-		SaveX(ctx)
+		SetStatus(status)
+	agentTurn, agentTurnErr := createAgentTurn.Save(ctx)
+	s.Require().NoError(agentTurnErr)
+
+	return agentTurn
 }
 
 func (s *InvestigationServiceSuite) TestInvestigationInputsAndEvidenceRevisionsDeduplicateByKeys() {
@@ -88,6 +110,7 @@ func (s *InvestigationServiceSuite) TestInvestigationInputsAndEvidenceRevisionsD
 	}
 	firstInput, firstInputErr := service.SubmitInvestigationUserInput(userCtx, inputParams)
 	s.Require().NoError(firstInputErr)
+
 	repeatedInput, repeatedInputErr := service.SubmitInvestigationUserInput(userCtx, inputParams)
 	s.Require().NoError(repeatedInputErr)
 	s.Equal(firstInput.ID, repeatedInput.ID)
@@ -105,6 +128,7 @@ func (s *InvestigationServiceSuite) TestInvestigationInputsAndEvidenceRevisionsD
 	}
 	firstEvidence, firstEvidenceErr := service.RecordInvestigationEvidenceRevision(ctx, evidenceParams)
 	s.Require().NoError(firstEvidenceErr)
+
 	repeatedEvidence, repeatedEvidenceErr := service.RecordInvestigationEvidenceRevision(ctx, evidenceParams)
 	s.Require().NoError(repeatedEvidenceErr)
 	s.Equal(firstEvidence.ID, repeatedEvidence.ID)
@@ -115,11 +139,19 @@ func (s *InvestigationServiceSuite) TestInvestigationInputsAndEvidenceRevisionsD
 	_, changedEvidenceErr := service.RecordInvestigationEvidenceRevision(ctx, changedEvidenceParams)
 	s.ErrorIs(changedEvidenceErr, rez.ErrConflict)
 
-	inputs, inputsErr := service.ListInvestigationUserInputs(ctx, investigation.ID, ent.ListParams{OrderAsc: true})
+	inputsParams := ent.ListParams{
+		OrderAsc: true,
+	}
+
+	inputs, inputsErr := service.ListInvestigationUserInputs(ctx, investigation.ID, inputsParams)
 	s.Require().NoError(inputsErr)
 	s.Require().Len(inputs.Data, 1)
 	s.Equal(firstInput.ID, inputs.Data[0].ID)
-	requests, requestsErr := service.ListInvestigationEvidenceRevisions(ctx, investigation.ID, ent.ListParams{OrderAsc: true})
+	requestsParams := ent.ListParams{
+		OrderAsc: true,
+	}
+
+	requests, requestsErr := service.ListInvestigationEvidenceRevisions(ctx, investigation.ID, requestsParams)
 	s.Require().NoError(requestsErr)
 	s.Require().Len(requests.Data, 1)
 	s.Equal(firstEvidence.ID, requests.Data[0].ID)
@@ -134,37 +166,59 @@ func (s *InvestigationServiceSuite) TestReconcileRetainsFailedTurnAssignmentsAnd
 	initialTurn := s.createTurn(ctx, tdb, investigation.AgentSessionID, 1, agentturn.StatusRunning)
 	s.expectReconcileJobs(jobService, investigation.ID, 5)
 
-	_, submitOneErr := service.SubmitInvestigationUserInput(userCtx, rez.SubmitInvestigationUserInputParams{
+	submitOneParams := rez.SubmitInvestigationUserInputParams{
 		InvestigationID: investigation.ID,
 		Text:            "Question one",
 		SubmissionKey:   "question-one",
-	})
+	}
+
+	_, submitOneErr := service.SubmitInvestigationUserInput(userCtx, submitOneParams)
 	s.Require().NoError(submitOneErr)
-	_, submitTwoErr := service.SubmitInvestigationUserInput(userCtx, rez.SubmitInvestigationUserInputParams{
+
+	submitTwoParams := rez.SubmitInvestigationUserInputParams{
 		InvestigationID: investigation.ID,
 		Text:            "Question two",
 		SubmissionKey:   "question-two",
-	})
+	}
+
+	_, submitTwoErr := service.SubmitInvestigationUserInput(userCtx, submitTwoParams)
 	s.Require().NoError(submitTwoErr)
-	_, evidenceOneErr := service.RecordInvestigationEvidenceRevision(ctx, rez.RecordInvestigationEvidenceRevisionParams{
+
+	evidenceOneParams := rez.RecordInvestigationEvidenceRevisionParams{
 		InvestigationID: investigation.ID,
 		Explanation:     "First evidence change",
 		CallerKey:       "evidence-one",
-	})
+	}
+
+	_, evidenceOneErr := service.RecordInvestigationEvidenceRevision(ctx, evidenceOneParams)
 	s.Require().NoError(evidenceOneErr)
-	_, evidenceTwoErr := service.RecordInvestigationEvidenceRevision(ctx, rez.RecordInvestigationEvidenceRevisionParams{
+
+	evidenceTwoParams := rez.RecordInvestigationEvidenceRevisionParams{
 		InvestigationID: investigation.ID,
 		Explanation:     "Second evidence change",
 		CallerKey:       "evidence-two",
-	})
+	}
+
+	_, evidenceTwoErr := service.RecordInvestigationEvidenceRevision(ctx, evidenceTwoParams)
 	s.Require().NoError(evidenceTwoErr)
+
 	busyReconcileErr := service.ReconcileInvestigation(ctx, investigation.ID)
 	s.Require().NoError(busyReconcileErr)
-	s.Equal(1, tdb.Client(ctx).AgentTurn.Query().Where(agentturn.AgentSessionID(investigation.AgentSessionID)).CountX(ctx))
-	tdb.Client(ctx).AgentTurn.UpdateOneID(initialTurn.ID).SetStatus(agentturn.StatusCompleted).ExecX(ctx)
+
+	queryAgentTurn := tdb.Client(ctx).AgentTurn.Query().
+		Where(agentturn.AgentSessionID(investigation.AgentSessionID))
+	agentTurnCount, agentTurnCountErr := queryAgentTurn.Count(ctx)
+	s.Require().NoError(agentTurnCountErr)
+
+	s.Equal(1, agentTurnCount)
+	completeInitialTurn := tdb.Client(ctx).AgentTurn.UpdateOneID(initialTurn.ID).
+		SetStatus(agentturn.StatusCompleted)
+	completeInitialTurnErr := completeInitialTurn.Exec(ctx)
+	s.Require().NoError(completeInitialTurnErr)
 
 	orderedInputs, orderedInputsErr := service.ListInvestigationUserInputs(ctx, investigation.ID, ent.ListParams{})
 	s.Require().NoError(orderedInputsErr)
+
 	orderedEvidence, orderedEvidenceErr := service.ListInvestigationEvidenceRevisions(ctx, investigation.ID, ent.ListParams{})
 	s.Require().NoError(orderedEvidenceErr)
 	s.Require().Len(orderedInputs.Data, 2)
@@ -173,53 +227,85 @@ func (s *InvestigationServiceSuite) TestReconcileRetainsFailedTurnAssignmentsAnd
 
 	firstReconcileErr := service.ReconcileInvestigation(ctx, investigation.ID)
 	s.Require().NoError(firstReconcileErr)
-	firstFollowUpTurn := tdb.Client(ctx).AgentTurn.Query().
-		Where(agentturn.AgentSessionID(investigation.AgentSessionID), agentturn.Sequence(2)).
-		OnlyX(ctx)
-	firstInputMessage := tdb.Client(ctx).AgentMessage.GetX(ctx, *firstFollowUpTurn.InputMessageID)
+
+	queryFirstFollowUpTurn := tdb.Client(ctx).AgentTurn.Query().
+		Where(agentturn.AgentSessionID(investigation.AgentSessionID), agentturn.Sequence(2))
+	firstFollowUpTurn, firstFollowUpTurnErr := queryFirstFollowUpTurn.Only(ctx)
+	s.Require().NoError(firstFollowUpTurnErr)
+
+	firstInputMessage, firstInputMessageErr := tdb.Client(ctx).AgentMessage.Get(ctx, *firstFollowUpTurn.InputMessageID)
+	s.Require().NoError(firstInputMessageErr)
 	s.Equal("User question:\n"+orderedInputs.Data[0].Text+"\n\nEvidence revised:\n"+orderedEvidence.Data[0].Explanation, firstInputMessage.Content[0].Text)
 
-	assignedInput := tdb.Client(ctx).InvestigationUserInput.GetX(ctx, orderedInputs.Data[0].ID)
+	assignedInput, assignedInputErr := tdb.Client(ctx).InvestigationUserInput.Get(ctx, orderedInputs.Data[0].ID)
+	s.Require().NoError(assignedInputErr)
 	s.Equal(firstFollowUpTurn.ID, *assignedInput.AgentTurnID)
-	assignedEvidence := tdb.Client(ctx).InvestigationEvidenceRevision.GetX(ctx, orderedEvidence.Data[0].ID)
+	assignedEvidence, assignedEvidenceErr := tdb.Client(ctx).InvestigationEvidenceRevision.Get(ctx, orderedEvidence.Data[0].ID)
+	s.Require().NoError(assignedEvidenceErr)
 	s.Equal(firstFollowUpTurn.ID, *assignedEvidence.AgentTurnID)
-	waitingEvidence := tdb.Client(ctx).InvestigationEvidenceRevision.GetX(ctx, orderedEvidence.Data[1].ID)
+	waitingEvidence, waitingEvidenceErr := tdb.Client(ctx).InvestigationEvidenceRevision.Get(ctx, orderedEvidence.Data[1].ID)
+	s.Require().NoError(waitingEvidenceErr)
 	s.Nil(waitingEvidence.AgentTurnID)
-	waitingInput := tdb.Client(ctx).InvestigationUserInput.GetX(ctx, orderedInputs.Data[1].ID)
+	waitingInput, waitingInputErr := tdb.Client(ctx).InvestigationUserInput.Get(ctx, orderedInputs.Data[1].ID)
+	s.Require().NoError(waitingInputErr)
 	s.Nil(waitingInput.AgentTurnID)
 
 	queuedMessage := firstInputMessage.Content[0].Text
-	_, thirdInputErr := service.SubmitInvestigationUserInput(userCtx, rez.SubmitInvestigationUserInputParams{
+	thirdInputParams := rez.SubmitInvestigationUserInputParams{
 		InvestigationID: investigation.ID,
 		Text:            "Question while a turn is queued",
 		SubmissionKey:   "question-three",
-	})
+	}
+
+	_, thirdInputErr := service.SubmitInvestigationUserInput(userCtx, thirdInputParams)
 	s.Require().NoError(thirdInputErr)
-	queuedInputMessage := tdb.Client(ctx).AgentMessage.GetX(ctx, *firstFollowUpTurn.InputMessageID)
+
+	queuedInputMessage, queuedInputMessageErr := tdb.Client(ctx).AgentMessage.Get(ctx, *firstFollowUpTurn.InputMessageID)
+	s.Require().NoError(queuedInputMessageErr)
 	s.Equal(queuedMessage, queuedInputMessage.Content[0].Text)
 	queuedReconcileErr := service.ReconcileInvestigation(ctx, investigation.ID)
 	s.Require().NoError(queuedReconcileErr)
-	s.Equal(2, tdb.Client(ctx).AgentTurn.Query().Where(agentturn.AgentSessionID(investigation.AgentSessionID)).CountX(ctx))
+
+	queryAgentTurn2 := tdb.Client(ctx).AgentTurn.Query().
+		Where(agentturn.AgentSessionID(investigation.AgentSessionID))
+	agentTurn2Count, agentTurn2CountErr := queryAgentTurn2.Count(ctx)
+	s.Require().NoError(agentTurn2CountErr)
+
+	s.Equal(2, agentTurn2Count)
 	s.expectReconcileJobs(jobService, investigation.ID, 1)
-	replayedAssignedInput, replayAssignedErr := service.SubmitInvestigationUserInput(userCtx, rez.SubmitInvestigationUserInputParams{
+	replayedAssignedInputParams := rez.SubmitInvestigationUserInputParams{
 		InvestigationID: investigation.ID,
 		Text:            "Question one",
 		SubmissionKey:   "question-one",
-	})
+	}
+
+	replayedAssignedInput, replayAssignedErr := service.SubmitInvestigationUserInput(userCtx, replayedAssignedInputParams)
 	s.Require().NoError(replayAssignedErr)
 	s.Equal(firstFollowUpTurn.ID, *replayedAssignedInput.AgentTurnID)
 
-	tdb.Client(ctx).AgentTurn.UpdateOneID(firstFollowUpTurn.ID).SetStatus(agentturn.StatusFailed).ExecX(ctx)
+	failFollowUpTurn := tdb.Client(ctx).AgentTurn.UpdateOneID(firstFollowUpTurn.ID).
+		SetStatus(agentturn.StatusFailed)
+	failFollowUpTurnErr := failFollowUpTurn.Exec(ctx)
+	s.Require().NoError(failFollowUpTurnErr)
+
 	secondReconcileErr := service.ReconcileInvestigation(ctx, investigation.ID)
 	s.Require().NoError(secondReconcileErr)
-	secondFollowUpTurn := tdb.Client(ctx).AgentTurn.Query().
-		Where(agentturn.AgentSessionID(investigation.AgentSessionID), agentturn.Sequence(3)).
-		OnlyX(ctx)
-	secondInputMessage := tdb.Client(ctx).AgentMessage.GetX(ctx, *secondFollowUpTurn.InputMessageID)
+
+	querySecondFollowUpTurn := tdb.Client(ctx).AgentTurn.Query().
+		Where(agentturn.AgentSessionID(investigation.AgentSessionID), agentturn.Sequence(3))
+	secondFollowUpTurn, secondFollowUpTurnErr := querySecondFollowUpTurn.Only(ctx)
+	s.Require().NoError(secondFollowUpTurnErr)
+
+	secondInputMessage, secondInputMessageErr := tdb.Client(ctx).AgentMessage.Get(ctx, *secondFollowUpTurn.InputMessageID)
+	s.Require().NoError(secondInputMessageErr)
 	s.Equal("User question:\n"+orderedInputs.Data[1].Text+"\n\nEvidence revised:\n"+orderedEvidence.Data[1].Explanation, secondInputMessage.Content[0].Text)
 
-	assignedInput = tdb.Client(ctx).InvestigationUserInput.GetX(ctx, orderedInputs.Data[0].ID)
-	assignedEvidence = tdb.Client(ctx).InvestigationEvidenceRevision.GetX(ctx, orderedEvidence.Data[0].ID)
+	var reloadAssignedInputErr error
+	assignedInput, reloadAssignedInputErr = tdb.Client(ctx).InvestigationUserInput.Get(ctx, orderedInputs.Data[0].ID)
+	s.Require().NoError(reloadAssignedInputErr)
+	var reloadAssignedEvidenceErr error
+	assignedEvidence, reloadAssignedEvidenceErr = tdb.Client(ctx).InvestigationEvidenceRevision.Get(ctx, orderedEvidence.Data[0].ID)
+	s.Require().NoError(reloadAssignedEvidenceErr)
 	s.Equal(firstFollowUpTurn.ID, *assignedInput.AgentTurnID)
 	s.Equal(firstFollowUpTurn.ID, *assignedEvidence.AgentTurnID)
 }
@@ -231,25 +317,44 @@ func (s *InvestigationServiceSuite) TestReconcileLeavesWorkForStartupAndRollsBac
 	service, investigation := s.createLifecycleInvestigation(ctx, tdb, jobService)
 	userCtx := s.userContext(tdb, ctx)
 	s.expectReconcileJobs(jobService, investigation.ID, 1)
-	input, submitErr := service.SubmitInvestigationUserInput(userCtx, rez.SubmitInvestigationUserInputParams{
+	inputParams := rez.SubmitInvestigationUserInputParams{
 		InvestigationID: investigation.ID,
 		Text:            "Waiting for initial execution",
 		SubmissionKey:   "waiting-input",
-	})
+	}
+
+	input, submitErr := service.SubmitInvestigationUserInput(userCtx, inputParams)
 	s.Require().NoError(submitErr)
 
 	noTurnReconcileErr := service.ReconcileInvestigation(ctx, investigation.ID)
 	s.Require().NoError(noTurnReconcileErr)
-	s.Zero(tdb.Client(ctx).AgentTurn.Query().Where(agentturn.AgentSessionID(investigation.AgentSessionID)).CountX(ctx))
-	s.Nil(tdb.Client(ctx).InvestigationUserInput.GetX(ctx, input.ID).AgentTurnID)
+
+	queryAgentTurn := tdb.Client(ctx).AgentTurn.Query().
+		Where(agentturn.AgentSessionID(investigation.AgentSessionID))
+	agentTurnCount, agentTurnCountErr := queryAgentTurn.Count(ctx)
+	s.Require().NoError(agentTurnCountErr)
+
+	s.Zero(agentTurnCount)
+	waitingInput, waitingInputErr := tdb.Client(ctx).InvestigationUserInput.Get(ctx, input.ID)
+	s.Require().NoError(waitingInputErr)
+
+	s.Nil(waitingInput.AgentTurnID)
 
 	s.createTerminalTurn(ctx, tdb, investigation.AgentSessionID, 1)
 	queueFailure := errors.New("agent turn queue unavailable")
 	s.expectInvokeJobs(jobService, 1, queueFailure)
 	failedReconcileErr := service.ReconcileInvestigation(ctx, investigation.ID)
 	s.ErrorContains(failedReconcileErr, "agent turn queue unavailable")
-	s.Equal(1, tdb.Client(ctx).AgentTurn.Query().Where(agentturn.AgentSessionID(investigation.AgentSessionID)).CountX(ctx))
-	s.Nil(tdb.Client(ctx).InvestigationUserInput.GetX(ctx, input.ID).AgentTurnID)
+	queryAgentTurn2 := tdb.Client(ctx).AgentTurn.Query().
+		Where(agentturn.AgentSessionID(investigation.AgentSessionID))
+	agentTurn2Count, agentTurn2CountErr := queryAgentTurn2.Count(ctx)
+	s.Require().NoError(agentTurn2CountErr)
+
+	s.Equal(1, agentTurn2Count)
+	afterFailureInput, afterFailureInputErr := tdb.Client(ctx).InvestigationUserInput.Get(ctx, input.ID)
+	s.Require().NoError(afterFailureInputErr)
+
+	s.Nil(afterFailureInput.AgentTurnID)
 }
 
 func (s *InvestigationServiceSuite) TestEvidenceAnalysisChangeAndRevisionShareCallerTransaction() {
@@ -260,6 +365,7 @@ func (s *InvestigationServiceSuite) TestEvidenceAnalysisChangeAndRevisionShareCa
 	s.expectReconcileJobs(jobService, investigation.ID, 1)
 	queryService, queryServiceErr := NewKnowledgeGraphQueryService(tdb)
 	s.Require().NoError(queryServiceErr)
+
 	analysisService, analysisServiceErr := NewSystemAnalysisService(tdb, queryService)
 	s.Require().NoError(analysisServiceErr)
 
@@ -272,11 +378,13 @@ func (s *InvestigationServiceSuite) TestEvidenceAnalysisChangeAndRevisionShareCa
 		if updateErr != nil {
 			return updateErr
 		}
-		_, requestErr := service.RecordInvestigationEvidenceRevision(txCtx, rez.RecordInvestigationEvidenceRevisionParams{
+		requestParams := rez.RecordInvestigationEvidenceRevisionParams{
 			InvestigationID: investigation.ID,
 			Explanation:     "New evidence was linked to the analysis.",
 			CallerKey:       "analysis-update-rollback",
-		})
+		}
+
+		_, requestErr := service.RecordInvestigationEvidenceRevision(txCtx, requestParams)
 		if requestErr != nil {
 			return requestErr
 		}
@@ -284,11 +392,17 @@ func (s *InvestigationServiceSuite) TestEvidenceAnalysisChangeAndRevisionShareCa
 	})
 	s.ErrorIs(transactionErr, rollbackErr)
 
-	analysis := tdb.Client(ctx).SystemAnalysis.GetX(ctx, investigation.SystemAnalysisID)
+	analysis, analysisErr := tdb.Client(ctx).SystemAnalysis.Get(ctx, investigation.SystemAnalysisID)
+	s.Require().NoError(analysisErr)
 	s.Nil(analysis.ReferenceTime)
-	s.Zero(tdb.Client(ctx).InvestigationEvidenceRevision.Query().Where(
-		investigationevidencerevision.InvestigationID(investigation.ID),
-	).CountX(ctx))
+	queryInvestigationEvidenceRevision := tdb.Client(ctx).InvestigationEvidenceRevision.Query().
+		Where(
+			investigationevidencerevision.InvestigationID(investigation.ID),
+		)
+	investigationEvidenceRevisionCount, investigationEvidenceRevisionCountErr := queryInvestigationEvidenceRevision.Count(ctx)
+	s.Require().NoError(investigationEvidenceRevisionCountErr)
+
+	s.Zero(investigationEvidenceRevisionCount)
 }
 
 func (s *InvestigationServiceSuite) TestTerminalEventAndInputRaceCanDispatchDuplicateJobsOnlyOnce() {
@@ -312,11 +426,13 @@ func (s *InvestigationServiceSuite) TestTerminalEventAndInputRaceCanDispatchDupl
 	wait.Add(2)
 	go func() {
 		defer wait.Done()
-		_, submitErr := service.SubmitInvestigationUserInput(userCtx, rez.SubmitInvestigationUserInputParams{
+		submitParams := rez.SubmitInvestigationUserInputParams{
 			InvestigationID: investigation.ID,
 			Text:            "Question submitted as the previous turn completes",
 			SubmissionKey:   "terminal-race",
-		})
+		}
+
+		_, submitErr := service.SubmitInvestigationUserInput(userCtx, submitParams)
 		operationErrors <- submitErr
 	}()
 	go func() {
@@ -348,10 +464,19 @@ func (s *InvestigationServiceSuite) TestTerminalEventAndInputRaceCanDispatchDupl
 		s.Require().NoError(reconcileErr)
 	}
 
-	s.Equal(2, tdb.Client(ctx).AgentTurn.Query().Where(agentturn.AgentSessionID(investigation.AgentSessionID)).CountX(ctx))
-	inputs := tdb.Client(ctx).InvestigationUserInput.Query().
-		Where(investigationuserinput.InvestigationID(investigation.ID), investigationuserinput.AgentTurnIDNotNil()).
-		AllX(ctx)
+	queryAgentTurn := tdb.Client(ctx).AgentTurn.Query().
+		Where(agentturn.AgentSessionID(investigation.AgentSessionID))
+	agentTurnCount, agentTurnCountErr := queryAgentTurn.Count(ctx)
+	s.Require().NoError(agentTurnCountErr)
+
+	s.Equal(2, agentTurnCount)
+	queryInputs := tdb.Client(ctx).InvestigationUserInput.Query().
+		Where(investigationuserinput.InvestigationID(investigation.ID), investigationuserinput.AgentTurnIDNotNil())
+	inputs, inputsErr := queryInputs.All(ctx)
+	s.Require().NoError(inputsErr)
 	s.Require().Len(inputs, 1)
-	s.Equal(2, tdb.Client(ctx).AgentTurn.GetX(ctx, *inputs[0].AgentTurnID).Sequence)
+	assignedTurn, assignedTurnErr := tdb.Client(ctx).AgentTurn.Get(ctx, *inputs[0].AgentTurnID)
+	s.Require().NoError(assignedTurnErr)
+
+	s.Equal(2, assignedTurn.Sequence)
 }

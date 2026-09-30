@@ -16,7 +16,9 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	kne "github.com/rezible/rezible/ent/knowledgeentity"
+	ke "github.com/rezible/rezible/ent/knowledgeevidence"
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
+	ksa "github.com/rezible/rezible/ent/knowledgesubjectalias"
 	"github.com/rezible/rezible/ent/team"
 	"github.com/rezible/rezible/ent/teammembership"
 	"github.com/rezible/rezible/ent/user"
@@ -30,51 +32,76 @@ type ProjectionServiceSuite struct {
 }
 
 func TestProjectionServiceSuite(t *testing.T) {
-	suite.Run(t, &ProjectionServiceSuite{Suite: test.NewSuite()})
+	suite.Run(t, &ProjectionServiceSuite{
+		Suite: test.NewSuite(),
+	})
 }
 
 func (s *ProjectionServiceSuite) projectionService(tdb rez.Database) *ProjectionService {
-	users, _ := db.NewUserService(tdb, mocks.NewMockOrganizationService(s.T()))
+	users, usersErr := db.NewUserService(tdb, mocks.NewMockOrganizationService(s.T()))
+	s.Require().NoError(usersErr)
 
 	messageService := mocks.NewMockMessageQueue(s.T())
 
-	retrospectives, _ := db.NewRetrospectiveService(tdb)
-	incidents, _ := db.NewIncidentService(tdb, messageService, nil, retrospectives)
+	retrospectives, retrospectivesErr := db.NewRetrospectiveService(tdb)
+	s.Require().NoError(retrospectivesErr)
 
-	knowledge, _ := db.NewKnowledgeGraphIngestionService(tdb)
-	knowledgeQuery, _ := db.NewKnowledgeGraphQueryService(tdb)
-	analysisService, _ := db.NewSystemAnalysisService(tdb, knowledgeQuery)
+	incidents, incidentsErr := db.NewIncidentService(tdb, messageService, nil, retrospectives)
+	s.Require().NoError(incidentsErr)
+
+	knowledge, knowledgeErr := db.NewKnowledgeGraphIngestionService(tdb)
+	s.Require().NoError(knowledgeErr)
+
+	knowledgeQuery, knowledgeQueryErr := db.NewKnowledgeGraphQueryService(tdb)
+	s.Require().NoError(knowledgeQueryErr)
+
+	analysisService, analysisServiceErr := db.NewSystemAnalysisService(tdb, knowledgeQuery)
+	s.Require().NoError(analysisServiceErr)
 
 	jobService := mocks.NewMockJobService(s.T())
 	agentService := mocks.NewMockAiAgentSessionService(s.T())
-	agentService.EXPECT().CreateAgentSession(mock.Anything, mock.Anything).
+	agentService.EXPECT().
+		CreateAgentSession(mock.Anything, mock.Anything).
 		RunAndReturn(func(ctx context.Context, params rez.CreateAiAgentSessionParams) (*ent.AgentSession, error) {
-			input, marshalErr := json.Marshal(params.Input)
-			if marshalErr != nil {
-				return nil, marshalErr
-			}
-			metadata := params.Metadata
-			if metadata == nil {
-				metadata = map[string]any{}
-			}
-			return tdb.Client(ctx).AgentSession.Create().
-				SetAgentName(params.AgentName).
-				SetInput(input).
-				SetScopes(params.PermissionScopes).
-				SetMetadata(metadata).
-				Save(ctx)
-		}).Maybe()
-	jobService.EXPECT().Insert(mock.Anything, mock.Anything, mock.Anything).
-		Return(&rivertype.JobInsertResult{Job: &rivertype.JobRow{ID: 1}}, nil).
+			return s.persistProjectionAgentSession(ctx, tdb, params)
+		}).
+		Maybe()
+	jobService.EXPECT().
+		Insert(mock.Anything, mock.Anything, mock.Anything).
+		Return(&rivertype.JobInsertResult{
+			Job: &rivertype.JobRow{
+				ID: 1,
+			},
+		}, nil).
 		Maybe()
 	investigationService := db.NewInvestigationService(tdb, agentService, jobService)
-	situations, err := db.NewSituationService(tdb, investigationService, analysisService, knowledgeQuery)
-	s.Require().NoError(err)
-	alerts, err := db.NewAlertService(tdb, situations, knowledge)
-	s.Require().NoError(err)
-	service, err := NewProjectionService(tdb, knowledge, knowledgeQuery, users, incidents, alerts)
-	s.Require().NoError(err)
+	situations, situationsErr := db.NewSituationService(tdb, investigationService, analysisService, knowledgeQuery)
+	s.Require().NoError(situationsErr)
+
+	alerts, alertsErr := db.NewAlertService(tdb, situations, knowledge)
+	s.Require().NoError(alertsErr)
+
+	service, serviceErr := NewProjectionService(tdb, knowledge, knowledgeQuery, users, incidents, alerts)
+	s.Require().NoError(serviceErr)
+
 	return service
+}
+
+func (s *ProjectionServiceSuite) persistProjectionAgentSession(ctx context.Context, tdb rez.Database, params rez.CreateAiAgentSessionParams) (*ent.AgentSession, error) {
+	input, marshalErr := json.Marshal(params.Input)
+	if marshalErr != nil {
+		return nil, fmt.Errorf("marshal projection agent input: %w", marshalErr)
+	}
+	metadata := params.Metadata
+	if metadata == nil {
+		metadata = map[string]any{}
+	}
+	createSession := tdb.Client(ctx).AgentSession.Create().
+		SetAgentName(params.AgentName).
+		SetInput(input).
+		SetScopes(params.PermissionScopes).
+		SetMetadata(metadata)
+	return createSession.Save(ctx)
 }
 
 func runProjection(ctx context.Context, service rez.EventProjectionService, event *ent.NormalizedEvent) ([]rez.ProjectedEntityRef, error) {
@@ -100,9 +127,9 @@ func (s *ProjectionServiceSuite) createNormalizedEvent(tdb rez.Database, kind st
 		SetOccurredAt(occurredAt).
 		SetReceivedAt(occurredAt.Add(time.Minute)).
 		SetAttributes(encodedAttributes)
-
 	event, createErr := create.Save(ctx)
 	s.Require().NoError(createErr)
+
 	return event
 }
 
@@ -148,13 +175,74 @@ func (s *ProjectionServiceSuite) TestProjectsSystemTopologyRelationship() {
 	_, projectionErr := runProjection(ctx, service, event)
 	s.Require().NoError(projectionErr)
 
+	client := tdb.Client(ctx)
+	sourceAliasQuery := client.KnowledgeSubjectAlias.Query().
+		Where(
+			ksa.Provider(sourceRef.Provider),
+			ksa.ProviderNamespace(sourceRef.ProviderNamespace),
+			ksa.ProviderResourceRef(sourceRef.ResourceRef),
+		).
+		WithEntity()
+	sourceAlias, sourceAliasErr := sourceAliasQuery.Only(ctx)
+	s.Require().NoError(sourceAliasErr)
+
+	targetAliasQuery := client.KnowledgeSubjectAlias.Query().
+		Where(
+			ksa.Provider(targetRef.Provider),
+			ksa.ProviderNamespace(targetRef.ProviderNamespace),
+			ksa.ProviderResourceRef(targetRef.ResourceRef),
+		).
+		WithEntity()
+	targetAlias, targetAliasErr := targetAliasQuery.Only(ctx)
+	s.Require().NoError(targetAliasErr)
+	s.Require().NotNil(sourceAlias.Edges.Entity)
+	s.Require().NotNil(targetAlias.Edges.Entity)
+	s.NotEqual(sourceAlias.Edges.Entity.ID, targetAlias.Edges.Entity.ID)
+	projectedRelationship, relationshipErr := client.KnowledgeRelationship.Query().Only(ctx)
+	s.Require().NoError(relationshipErr)
+	s.Equal(knr.PredicateUses, projectedRelationship.Predicate)
+	s.Equal(sourceAlias.Edges.Entity.ID, projectedRelationship.SourceEntityID, "API is the source of uses")
+	s.Equal(targetAlias.Edges.Entity.ID, projectedRelationship.TargetEntityID, "database is the target of uses")
+
+	evidenceQuery := client.KnowledgeEvidence.Query().
+		Where(ke.EventID(event.ID)).
+		WithSubjectAlias()
+	evidence, evidenceErr := evidenceQuery.All(ctx)
+	s.Require().NoError(evidenceErr)
+	s.Require().Len(evidence, 3)
+	var entityAliasIDs []uuid.UUID
+	var relationshipAliasIDs []uuid.UUID
+	for _, item := range evidence {
+		s.Equal(event.ID, item.EventID)
+		s.Require().NotNil(item.Edges.SubjectAlias)
+		alias := item.Edges.SubjectAlias
+		if alias.RelationshipID != nil {
+			s.Equal(projectedRelationship.ID, *alias.RelationshipID)
+			s.Equal(knowledgeAssertionSystemRelationshipExists, item.Assertion)
+			relationshipAliasIDs = append(relationshipAliasIDs, alias.ID)
+		} else {
+			entityAliasIDs = append(entityAliasIDs, alias.ID)
+		}
+	}
+	s.ElementsMatch([]uuid.UUID{sourceAlias.ID, targetAlias.ID}, entityAliasIDs)
+	s.Len(relationshipAliasIDs, 1)
+
 	entityQuery := tdb.Client(ctx).KnowledgeEntity.Query()
 	entityQuery.Where(kne.CategoryEQ(kne.CategoryContainer), kne.KindIn("service", "database"))
-	s.Equal(2, entityQuery.CountX(ctx))
+	entityCount, entityCountErr := entityQuery.Count(ctx)
+	s.Require().NoError(entityCountErr)
+
+	s.Equal(2, entityCount)
 	relationshipQuery := tdb.Client(ctx).KnowledgeRelationship.Query()
 	relationshipQuery.Where(knr.PredicateEQ(knr.PredicateUses))
-	s.Equal(1, relationshipQuery.CountX(ctx))
-	s.Equal(3, tdb.Client(ctx).KnowledgeEvidence.Query().CountX(ctx))
+	relationshipCount, relationshipCountErr := relationshipQuery.Count(ctx)
+	s.Require().NoError(relationshipCountErr)
+
+	s.Equal(1, relationshipCount)
+	knowledgeEvidenceCount, knowledgeEvidenceCountErr := tdb.Client(ctx).KnowledgeEvidence.Query().Count(ctx)
+	s.Require().NoError(knowledgeEvidenceCountErr)
+
+	s.Equal(3, knowledgeEvidenceCount)
 }
 
 func (s *ProjectionServiceSuite) TestProjectsTeamMembershipIntoDomainAndGraph() {
@@ -198,21 +286,33 @@ func (s *ProjectionServiceSuite) TestProjectsTeamMembershipIntoDomainAndGraph() 
 
 	userQuery := tdb.Client(ctx).User.Query()
 	userQuery.Where(user.Email(attributes.User.Email))
-	createdUser := userQuery.OnlyX(ctx)
+	createdUser, createdUserErr := userQuery.Only(ctx)
+	s.Require().NoError(createdUserErr)
+
 	teamQuery := tdb.Client(ctx).Team.Query()
 	teamQuery.Where(team.Slug(attributes.Team.Slug))
-	createdTeam := teamQuery.OnlyX(ctx)
+	createdTeam, createdTeamErr := teamQuery.Only(ctx)
+	s.Require().NoError(createdTeamErr)
 	s.NotNil(createdUser.KnowledgeEntityID)
 	s.NotNil(createdTeam.KnowledgeEntityID)
 	membershipQuery := tdb.Client(ctx).TeamMembership.Query()
 	membershipQuery.Where(teammembership.TeamID(createdTeam.ID), teammembership.UserID(createdUser.ID))
-	s.Equal(1, membershipQuery.CountX(ctx))
+	membershipCount, membershipCountErr := membershipQuery.Count(ctx)
+	s.Require().NoError(membershipCountErr)
+
+	s.Equal(1, membershipCount)
 	relationshipQuery := tdb.Client(ctx).KnowledgeRelationship.Query()
 	relationshipQuery.Where(
 		knr.PredicateEQ(knr.PredicateMemberOf),
 		knr.SourceEntityID(*createdUser.KnowledgeEntityID),
 		knr.TargetEntityID(*createdTeam.KnowledgeEntityID),
 	)
-	s.Equal(1, relationshipQuery.CountX(ctx))
-	s.Equal(3, tdb.Client(ctx).KnowledgeEvidence.Query().CountX(ctx))
+	relationshipCount, relationshipCountErr := relationshipQuery.Count(ctx)
+	s.Require().NoError(relationshipCountErr)
+
+	s.Equal(1, relationshipCount)
+	knowledgeEvidenceCount, knowledgeEvidenceCountErr := tdb.Client(ctx).KnowledgeEvidence.Query().Count(ctx)
+	s.Require().NoError(knowledgeEvidenceCountErr)
+
+	s.Equal(3, knowledgeEvidenceCount)
 }

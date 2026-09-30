@@ -3,11 +3,15 @@ package river_test
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"testing"
+	"time"
 
+	mapset "github.com/deckarep/golang-set/v2"
+	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/internal/opentelemetry"
+	"github.com/rezible/rezible/ent/user"
 	"github.com/rezible/rezible/internal/postgres"
 	"github.com/rezible/rezible/internal/postgres/pgtestdb"
 	jobriver "github.com/rezible/rezible/internal/postgres/river"
@@ -24,16 +28,25 @@ type tenantJobArgs struct {
 	Payload string `json:"payload" river:"unique"`
 }
 
-func (*tenantJobArgs) Kind() string { return "test-tenant-job" }
+func (*tenantJobArgs) Kind() string {
+	return "test-tenant-job"
+}
+
 func (*tenantJobArgs) InsertOpts() river.InsertOpts {
 	return river.InsertOpts{UniqueOpts: river.UniqueOpts{ByArgs: true}}
 }
 
+type jobObservation struct {
+	ID      int64
+	Context execution.Context
+}
+
 type JobServiceSuite struct {
 	test.Suite
-	service *jobriver.JobService
-	db      rez.Database
-	pool    *postgres.ConnectionPool
+	service      *jobriver.JobService
+	db           rez.Database
+	pool         *postgres.ConnectionPool
+	observations chan jobObservation
 }
 
 func TestJobServiceSuite(t *testing.T) {
@@ -43,23 +56,39 @@ func TestJobServiceSuite(t *testing.T) {
 func (s *JobServiceSuite) SetupTest() {
 	testDB, dbErr := pgtestdb.New(s.Config().Postgres)
 	s.Require().NoError(dbErr)
-	s.T().Cleanup(func() { s.Require().NoError(testDB.Shutdown()) })
+	s.T().Cleanup(func() {
+		s.NoError(testDB.Shutdown())
+	})
 	pool, poolErr := postgres.MakePgxPool(s.T().Context(), testDB.Config(), false)
 	s.Require().NoError(poolErr)
-	s.T().Cleanup(func() { s.Require().NoError(pool.Shutdown()) })
+	s.T().Cleanup(func() {
+		s.NoError(pool.Shutdown())
+	})
 	s.pool = pool
 	database, databaseErr := postgres.NewPgxPoolDatabaseClient(pool)
 	s.Require().NoError(databaseErr)
-	s.T().Cleanup(func() { s.Require().NoError(database.Shutdown()) })
+	s.T().Cleanup(func() {
+		s.NoError(database.Shutdown())
+	})
 	s.db = database
 
-	tel, telemetryErr := opentelemetry.NewOpenTelemetryService(s.T().Context(), rez.Config{})
-	s.Require().NoError(telemetryErr)
-	s.T().Cleanup(func() { s.Require().NoError(tel.Shutdown(context.WithoutCancel(s.T().Context()))) })
-	service, serviceErr := jobriver.NewJobService(s.Config(), pool.Pool, tel)
+	service, serviceErr := jobriver.NewJobService(s.Config(), pool.Pool, s.Telemetry())
 	s.Require().NoError(serviceErr)
+
+	s.observations = make(chan jobObservation, 2)
 	definition := jobs.Definition{Workers: []jobs.WorkerDefinition{
-		jobs.DefineWorkerFunc(func(context.Context, *tenantJobArgs) error { return nil }),
+		jobs.DefineWorker(river.WorkFunc(func(ctx context.Context, job *river.Job[*tenantJobArgs]) error {
+			observation := jobObservation{
+				ID:      job.ID,
+				Context: execution.GetContext(ctx),
+			}
+			select {
+			case s.observations <- observation:
+				return nil
+			case <-ctx.Done():
+				return ctx.Err()
+			}
+		})),
 		jobs.DefineWorkerFunc(func(context.Context, jobs.ScanOncallShifts) error { return nil }),
 	}}
 	s.Require().NoError(service.Register(definition))
@@ -142,4 +171,166 @@ func (s *JobServiceSuite) TestPreparationFailureInsertsNoJobs() {
 	s.Zero(count)
 	_, insertErr := s.service.Insert(s.SystemContext(), jobs.ScanOncallShifts{}, nil)
 	s.Require().NoError(insertErr)
+}
+
+func (s *JobServiceSuite) TestDomainAndJobsTransaction() {
+	ctx, identity := s.NewIdentity(s.db, "Transaction owner")
+	cases := []struct {
+		name     string
+		batch    bool
+		rollback bool
+	}{
+		{name: "single/commit"},
+		{name: "single/rollback", rollback: true},
+		{name: "batch/commit", batch: true},
+		{name: "batch/rollback", batch: true, rollback: true},
+	}
+
+	for _, tc := range cases {
+		s.Run(tc.name, func() {
+			rowID := uuid.New()
+
+			var inserted []*rivertype.JobInsertResult
+			sentinel := errors.New("rollback after domain and job inserts")
+			txErr := s.db.WithTx(ctx, func(txCtx context.Context, client *ent.Client) error {
+				createUser := client.User.Create().
+					SetID(rowID).
+					SetName("transaction marker").
+					SetEmail(rowID.String() + "@example.com")
+				if createErr := createUser.Exec(txCtx); createErr != nil {
+					return createErr
+				}
+				if tc.batch {
+					var insertErr error
+					params := []river.InsertManyParams{
+						{Args: &tenantJobArgs{Payload: rowID.String()}},
+						{Args: &tenantJobArgs{Payload: rowID.String() + "-second"}},
+					}
+					inserted, insertErr = s.service.InsertMany(txCtx, params)
+					if insertErr != nil {
+						return insertErr
+					}
+				} else {
+					result, insertErr := s.service.Insert(txCtx, &tenantJobArgs{Payload: rowID.String()}, nil)
+					if insertErr != nil {
+						return insertErr
+					}
+					inserted = []*rivertype.JobInsertResult{result}
+				}
+				if tc.rollback {
+					return sentinel
+				}
+				return nil
+			})
+			if tc.rollback {
+				s.Require().ErrorIs(txErr, sentinel)
+			} else {
+				s.Require().NoError(txErr)
+			}
+
+			// Read outside the transaction to verify what actually committed.
+			queryMarker := s.db.Client(ctx).User.Query().
+				Where(user.ID(rowID))
+			exists, queryErr := queryMarker.Exist(ctx)
+			s.Require().NoError(queryErr)
+			s.Equal(!tc.rollback, exists)
+			s.Require().NotEmpty(inserted)
+
+			for _, result := range inserted {
+				var count int
+				countErr := s.pool.QueryRow(ctx, "SELECT count(*) FROM river.river_job WHERE id = $1", result.Job.ID).Scan(&count)
+				s.Require().NoError(countErr)
+				if tc.rollback {
+					s.Zero(count)
+					continue
+				}
+
+				s.Equal(1, count)
+				var args, metadata []byte
+				queryJob := "SELECT args, metadata FROM river.river_job WHERE id = $1"
+				readErr := s.pool.QueryRow(ctx, queryJob, result.Job.ID).Scan(&args, &metadata)
+				s.Require().NoError(readErr)
+
+				var decoded tenantJobArgs
+				s.Require().NoError(json.Unmarshal(args, &decoded))
+				s.Equal(identity.Session.TenantID, decoded.TenantID)
+
+				var meta struct {
+					Execution []byte `json:"ec"`
+				}
+				s.Require().NoError(json.Unmarshal(metadata, &meta))
+				observed, decodeErr := execution.DecodeContext(meta.Execution)
+				s.Require().NoError(decodeErr)
+				s.Equal(execution.GetContext(ctx), observed)
+			}
+		})
+	}
+}
+
+func (s *JobServiceSuite) TestWorkerPreservesExecutionContext() {
+	firstCtx, first := s.NewIdentity(s.db, "Alice")
+	secondCtx, second := s.NewIdentity(s.db, "Bob")
+	expected := make(map[int64]execution.Context)
+	enqueue := func(ctx context.Context, identity test.Identity) {
+		ctx = execution.NewRootContext(ctx, execution.KindAnonymous, execution.SourceHTTP)
+		ctx = execution.NewUserContext(ctx, identity.Session)
+		inserted, insertErr := s.service.Insert(ctx, &tenantJobArgs{Payload: "same payload"}, nil)
+		s.Require().NoError(insertErr)
+		s.Require().False(inserted.UniqueSkippedAsDuplicate)
+		expected[inserted.Job.ID] = execution.GetContext(ctx)
+	}
+
+	enqueue(firstCtx, first)
+	enqueue(secondCtx, second)
+
+	// Run the real worker and compare its context with the submitted context.
+	ctx, cancel := context.WithTimeout(s.T().Context(), 10*time.Second)
+	ready := make(chan struct{})
+	finished := make(chan error, 1)
+	go func() {
+		finished <- s.service.Run(ctx, ready)
+	}()
+	s.T().Cleanup(func() {
+		defer cancel()
+		stopCtx, stop := context.WithTimeout(context.WithoutCancel(ctx), 5*time.Second)
+		defer stop()
+		s.NoError(s.service.Shutdown(stopCtx))
+		select {
+		case runErr := <-finished:
+			s.NoError(runErr)
+		case <-stopCtx.Done():
+			s.Error(stopCtx.Err(), "worker did not stop")
+		}
+	})
+	select {
+	case <-ready:
+	case runErr := <-finished:
+		finished <- runErr
+		s.Require().NoError(runErr)
+		s.FailNow("worker stopped before ready")
+	case <-ctx.Done():
+		s.FailNow("worker startup timed out")
+	}
+
+	seen := mapset.NewSet[int64]()
+	for range 2 {
+		select {
+		case result := <-s.observations:
+			want, found := expected[result.ID]
+			s.Require().True(found)
+			s.False(seen.Contains(result.ID), "duplicate worker observation")
+			seen.Add(result.ID)
+			s.Equal(want, result.Context)
+		case <-ctx.Done():
+			s.FailNow("worker observations timed out")
+		}
+	}
+
+	for id := range expected {
+		s.Require().Eventually(func() bool {
+			var state string
+			queryErr := s.pool.QueryRow(ctx, "SELECT state FROM river.river_job WHERE id = $1", id).Scan(&state)
+			return queryErr == nil && state == "completed"
+		}, 5*time.Second, 10*time.Millisecond, "job %d did not complete", id)
+	}
 }

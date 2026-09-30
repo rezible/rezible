@@ -132,17 +132,24 @@ func (a *Application) invokeBaseLifecycleServices() []rez.LifecycleService {
 	return svcs
 }
 
+// startLifecycle runs the lifecycle in the background. ready closes once all
+// services have started; done receives the lifecycle result exactly once.
+func (a *Application) startLifecycle(ctx context.Context) (ready <-chan struct{}, done <-chan error) {
+	a.ready = make(chan struct{})
+	lifecycleResult := make(chan error, 1)
+	go func() {
+		lifecycleResult <- a.RunLifecycle(ctx)
+	}()
+	return a.ready, lifecycleResult
+}
+
 func (a *Application) runLifecycleFunc(ctx context.Context, fn func(context.Context) error) error {
 	runCtx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	a.ready = make(chan struct{})
-	lifecycleResult := make(chan error, 1)
-	go func() {
-		lifecycleResult <- a.RunLifecycle(runCtx)
-	}()
+	ready, lifecycleResult := a.startLifecycle(runCtx)
 	select {
-	case <-a.ready:
+	case <-ready:
 	case lifecycleErr := <-lifecycleResult:
 		return lifecycleErr
 	}
@@ -395,20 +402,20 @@ func (a *Application) seedDevelopmentIdentity(ctx context.Context) error {
 
 	queryOrgRole := client.OrganizationRole.Query().
 		Where(organizationrole.OrganizationID(org.ID), organizationrole.UserID(sess.UserID))
-	role, queryRoleErr := queryOrgRole.Only(ctx)
-	if queryRoleErr != nil && !ent.IsNotFound(queryRoleErr) {
-		return fmt.Errorf("load development admin role: %w", queryRoleErr)
+	orgRole, queryOrgRoleErr := queryOrgRole.Only(ctx)
+	if queryOrgRoleErr != nil && !ent.IsNotFound(queryOrgRoleErr) {
+		return fmt.Errorf("load development admin role: %w", queryOrgRoleErr)
 	}
 
 	var roleErr error
-	if role == nil {
+	if orgRole == nil {
 		roleErr = client.OrganizationRole.Create().
 			SetOrganizationID(org.ID).
 			SetUserID(sess.UserID).
 			SetRole(organizationrole.RoleAdmin).
 			Exec(ctx)
-	} else if role.Role != organizationrole.RoleAdmin {
-		roleErr = role.Update().
+	} else if orgRole.Role != organizationrole.RoleAdmin {
+		roleErr = orgRole.Update().
 			SetRole(organizationrole.RoleAdmin).
 			Exec(ctx)
 	}

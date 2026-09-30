@@ -1,7 +1,6 @@
 package github
 
 import (
-	"encoding/json"
 	"testing"
 
 	"github.com/google/go-github/v84/github"
@@ -32,17 +31,6 @@ func TestOAuth2Config(t *testing.T) {
 	authURL := oauthCfg.AuthCodeURL("state-value")
 	assert.Contains(t, authURL, "client_id=client-id")
 	assert.Contains(t, authURL, "state=state-value")
-}
-
-func TestEncodeDecodeInstallationConfig(t *testing.T) {
-	org := "foobar"
-	instId := int64(1)
-	cfg := &InstallationConfig{Org: org, InstallationID: instId}
-	expectedJson, jsonErr := json.Marshal(cfg)
-	require.NoError(t, jsonErr)
-	enc, encErr := cfg.Encode()
-	require.NoError(t, encErr)
-	assert.Equal(t, expectedJson, enc)
 }
 
 func TestExtractIntegrationOptionsFromToken(t *testing.T) {

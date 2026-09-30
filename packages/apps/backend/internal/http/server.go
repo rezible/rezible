@@ -172,6 +172,10 @@ func (s *Server) Run(ctx context.Context, ready chan<- struct{}) error {
 	return nil
 }
 
+func (s *Server) Handler() http.Handler {
+	return s.server.Handler
+}
+
 func (s *Server) makeListener() (net.Listener, error) {
 	s.listenerMu.Lock()
 	defer s.listenerMu.Unlock()

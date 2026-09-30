@@ -31,6 +31,9 @@ func (s *Service) Shutdown(ctx context.Context) error {
 }
 
 func (s *Service) NewLogger(opts rez.NewLoggerOptions) *slog.Logger {
+	if opts.Parent == nil {
+		opts.Parent = s.logger
+	}
 	return NewLogger(opts)
 }
 

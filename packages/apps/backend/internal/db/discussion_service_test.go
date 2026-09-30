@@ -3,10 +3,11 @@ package db
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
+	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/ent/discussioncomment"
 	"github.com/rezible/rezible/ent/discussionthread"
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/systemanalysis"
@@ -16,15 +17,34 @@ import (
 
 type DiscussionSuite struct{ test.Suite }
 
-func TestDiscussionSuite(t *testing.T) { suite.Run(t, &DiscussionSuite{Suite: test.NewSuite()}) }
+func TestDiscussionSuite(t *testing.T) {
+	suite.Run(t, &DiscussionSuite{
+		Suite: test.NewSuite(),
+	})
+}
 
 func (s *DiscussionSuite) createIncident(client *ent.Client, ctx context.Context) *ent.Incident {
-	severity, severityErr := client.IncidentSeverity.Create().SetName(uuid.NewString()).SetRank(1).SetDescription("critical").Save(ctx)
+	createSeverity := client.IncidentSeverity.Create().
+		SetName(uuid.NewString()).
+		SetRank(1).
+		SetDescription("critical")
+	severity, severityErr := createSeverity.Save(ctx)
 	s.Require().NoError(severityErr)
-	kind, kindErr := client.IncidentType.Create().SetName(uuid.NewString()).Save(ctx)
+
+	createKind := client.IncidentType.Create().
+		SetName(uuid.NewString())
+	kind, kindErr := createKind.Save(ctx)
 	s.Require().NoError(kindErr)
-	incident, incidentErr := client.Incident.Create().SetSlug(uuid.NewString()).SetTitle("outage").SetResponseState(incident.ResponseStateResolved).SetSeverity(severity).SetType(kind).Save(ctx)
+
+	createIncident := client.Incident.Create().
+		SetSlug(uuid.NewString()).
+		SetTitle("outage").
+		SetResponseState(incident.ResponseStateResolved).
+		SetSeverity(severity).
+		SetType(kind)
+	incident, incidentErr := createIncident.Save(ctx)
 	s.Require().NoError(incidentErr)
+
 	return incident
 }
 
@@ -34,24 +54,47 @@ func (s *DiscussionSuite) TestThreadRequiresExactlyOneOwnerAndReverseEdges() {
 	client := db.Client(ctx)
 	user, userErr := client.User.Query().Only(ctx)
 	s.Require().NoError(userErr)
+
 	analysis, analysisErr := client.SystemAnalysis.Create().Save(ctx)
 	s.Require().NoError(analysisErr)
+
 	incident := s.createIncident(client, ctx)
-	retro, retroErr := (&RetrospectiveService{db: db}).CreateForIncident(ctx, incident.ID)
+	retrospectives, retrospectiveServiceErr := NewRetrospectiveService(db)
+	s.Require().NoError(retrospectiveServiceErr)
+
+	retro, retroErr := retrospectives.CreateForIncident(ctx, incident.ID)
 	s.Require().NoError(retroErr)
 
-	_, bothErr := client.DiscussionThread.Create().SetUser(user).SetAnalysis(analysis).SetRetrospective(retro).Save(ctx)
+	createMultipleOwnerThread := client.DiscussionThread.Create().
+		SetUser(user).
+		SetAnalysis(analysis).
+		SetRetrospective(retro)
+	_, bothErr := createMultipleOwnerThread.Save(ctx)
 	s.Error(bothErr)
-	_, neitherErr := client.DiscussionThread.Create().SetUser(user).Save(ctx)
+	createOwnerlessThread := client.DiscussionThread.Create().
+		SetUser(user)
+	_, neitherErr := createOwnerlessThread.Save(ctx)
 	s.Error(neitherErr)
 
-	thread, createErr := client.DiscussionThread.Create().SetUser(user).SetAnalysis(analysis).Save(ctx)
+	createThread := client.DiscussionThread.Create().
+		SetUser(user).
+		SetAnalysis(analysis)
+	thread, createErr := createThread.Save(ctx)
 	s.Require().NoError(createErr)
-	fetchedAnalysis, fetchErr := client.SystemAnalysis.Query().Where(systemanalysis.ID(analysis.ID)).WithDiscussionThreads().Only(ctx)
+
+	queryFetchedAnalysis := client.SystemAnalysis.Query().
+		Where(systemanalysis.ID(analysis.ID)).
+		WithDiscussionThreads()
+	fetchedAnalysis, fetchErr := queryFetchedAnalysis.Only(ctx)
 	s.Require().NoError(fetchErr)
+	s.Require().Len(fetchedAnalysis.Edges.DiscussionThreads, 1)
 	s.Equal(thread.ID, fetchedAnalysis.Edges.DiscussionThreads[0].ID)
-	fetchedThread, fetchThreadErr := client.DiscussionThread.Query().Where(discussionthread.ID(thread.ID)).WithAnalysis().Only(ctx)
+	queryFetchedThread := client.DiscussionThread.Query().
+		Where(discussionthread.ID(thread.ID)).
+		WithAnalysis()
+	fetchedThread, fetchThreadErr := queryFetchedThread.Only(ctx)
 	s.Require().NoError(fetchThreadErr)
+	s.Require().NotNil(fetchedThread.Edges.Analysis)
 	s.Equal(analysis.ID, fetchedThread.Edges.Analysis.ID)
 }
 
@@ -61,17 +104,69 @@ func (s *DiscussionSuite) TestCommentListIsThreadScopedAndPaginated() {
 	client := db.Client(ctx)
 	user, userErr := client.User.Query().Only(ctx)
 	s.Require().NoError(userErr)
+
 	analysis, analysisErr := client.SystemAnalysis.Create().Save(ctx)
 	s.Require().NoError(analysisErr)
-	thread, createErr := client.DiscussionThread.Create().SetUser(user).SetAnalysis(analysis).Save(ctx)
+
+	createThread := client.DiscussionThread.Create().
+		SetUser(user).
+		SetAnalysis(analysis)
+	thread, createErr := createThread.Save(ctx)
 	s.Require().NoError(createErr)
-	for range 3 {
-		_, commentErr := client.DiscussionComment.Create().SetThread(thread).SetUser(user).SetContent(uuid.NewString()).Save(ctx)
+
+	createOtherThread := client.DiscussionThread.Create().
+		SetUser(user).
+		SetAnalysis(analysis)
+	otherThread, otherThreadErr := createOtherThread.Save(ctx)
+	s.Require().NoError(otherThreadErr)
+
+	baseTime := time.Date(2026, 6, 4, 9, 30, 0, 0, time.UTC)
+	comments := make([]*ent.DiscussionComment, 3)
+	// Insert out of chronological order so insertion order cannot satisfy the assertion.
+	for _, index := range []int{2, 0, 1} {
+		createComment := client.DiscussionComment.Create().
+			SetThread(thread).
+			SetUser(user).
+			SetContent(uuid.NewString()).
+			SetCreatedAt(baseTime.Add(time.Duration(index) * time.Minute))
+		comment, commentErr := createComment.Save(ctx)
 		s.Require().NoError(commentErr)
+		comments[index] = comment
 	}
-	query := client.DiscussionComment.Query().Where(discussioncomment.ThreadID(thread.ID))
-	result, listErr := ent.DoListQuery[ent.DiscussionComment, *ent.DiscussionCommentQuery](ctx, query, ent.ListParams{Page: 2, PageSize: 2})
-	s.Require().NoError(listErr)
-	s.Len(result.Data, 1)
-	s.Equal(3, result.Total)
+	createOtherComment := client.DiscussionComment.Create().
+		SetThread(otherThread).
+		SetUser(user).
+		SetContent("other thread").
+		SetCreatedAt(baseTime.Add(30 * time.Second))
+	otherComment, otherCommentErr := createOtherComment.Save(ctx)
+	s.Require().NoError(otherCommentErr)
+
+	service := NewDiscussionService(db)
+	params := rez.ListDiscussionCommentsParams{
+		ThreadID: thread.ID,
+		ListParams: ent.ListParams{
+			Page:     1,
+			PageSize: 2,
+		},
+	}
+
+	firstPage, firstPageErr := service.ListComments(ctx, params)
+	s.Require().NoError(firstPageErr)
+	s.Equal(3, firstPage.Total)
+	s.Require().Len(firstPage.Data, 2)
+	s.Equal(comments[0].ID, firstPage.Data[0].ID)
+	s.Equal(comments[1].ID, firstPage.Data[1].ID)
+
+	params.Page = 2
+	secondPage, secondPageErr := service.ListComments(ctx, params)
+	s.Require().NoError(secondPageErr)
+	s.Equal(3, secondPage.Total)
+	s.Require().Len(secondPage.Data, 1)
+	s.Equal(comments[2].ID, secondPage.Data[0].ID)
+	for _, page := range []*ent.ListResult[ent.DiscussionComment]{firstPage, secondPage} {
+		for _, comment := range page.Data {
+			s.Equal(thread.ID, comment.ThreadID)
+			s.NotEqual(otherComment.ID, comment.ID)
+		}
+	}
 }

@@ -7,6 +7,7 @@ import (
 	"strings"
 	"sync"
 
+	mapset "github.com/deckarep/golang-set/v2"
 	gkai "github.com/firebase/genkit/go/ai"
 	"github.com/firebase/genkit/go/core"
 	gk "github.com/firebase/genkit/go/genkit"
@@ -19,14 +20,14 @@ type WorkflowBuilder struct {
 	runner  rez.AiWorkflowRunner
 
 	mu            sync.Mutex
-	workflowNames map[string]struct{}
+	workflowNames mapset.Set[string]
 }
 
 func NewWorkflowBuilder(runtime *AiRuntime, runner rez.AiWorkflowRunner) *WorkflowBuilder {
 	return &WorkflowBuilder{
 		runtime:       runtime,
 		runner:        runner,
-		workflowNames: make(map[string]struct{}),
+		workflowNames: mapset.NewSet[string](),
 	}
 }
 
@@ -49,11 +50,10 @@ func (b *WorkflowBuilder) DefineWorkflow[I, O any](name string, run func(context
 	}
 
 	b.mu.Lock()
-	if _, exists := b.workflowNames[name]; exists {
+	if !b.workflowNames.Add(name) {
 		b.mu.Unlock()
 		return nil, fmt.Errorf("workflow %q is already defined", name)
 	}
-	b.workflowNames[name] = struct{}{}
 	b.mu.Unlock()
 
 	flow := gk.DefineFlow(b.runtime.gk, name, func(ctx context.Context, input I) (output O, executeErr error) {

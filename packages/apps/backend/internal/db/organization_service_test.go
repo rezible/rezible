@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/organization"
 	"github.com/rezible/rezible/test"
 	"github.com/stretchr/testify/suite"
 
@@ -23,13 +24,23 @@ func (s *OrganizationsServiceSuite) TestSetPreferencesSetsTimestamp() {
 	tdb := s.CreateTestDatabase()
 	jobs := mocks.NewMockJobService(s.T())
 
-	orgs, _ := NewOrganizationService(tdb, jobs)
+	orgs, serviceErr := NewOrganizationService(tdb, jobs)
+	s.Require().NoError(serviceErr)
+	setupAt := time.Date(2026, 6, 4, 9, 30, 0, 0, time.UTC)
 
 	tenantCtx := s.SeedTenantContext()
 	prefs, setErr := orgs.SetPreferences(tenantCtx, s.SeedOrganizationId(), func(m *ent.OrganizationPreferencesMutation) {
-		m.SetInitialSetupAt(time.Now().UTC())
+		m.SetInitialSetupAt(setupAt)
 	})
 	s.Require().NoError(setErr)
 
-	s.False(prefs.InitialSetupAt.IsZero())
+	s.Equal(setupAt, prefs.InitialSetupAt.UTC())
+	s.Equal(s.SeedOrganizationId(), prefs.OrganizationID)
+
+	loaded, queryErr := orgs.Get(tenantCtx, organization.ID(s.SeedOrganizationId()))
+	s.Require().NoError(queryErr)
+	s.Require().NotNil(loaded.Edges.Preferences)
+	s.Equal(prefs.ID, loaded.Edges.Preferences.ID)
+	s.Equal(setupAt, loaded.Edges.Preferences.InitialSetupAt.UTC())
+	s.Equal(loaded.ID, loaded.Edges.Preferences.OrganizationID)
 }

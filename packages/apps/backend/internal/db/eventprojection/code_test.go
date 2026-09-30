@@ -34,13 +34,21 @@ func (s *ProjectionServiceSuite) TestCodeChangeProjectionPersistsEvidenceAndIsId
 		DisplayName: "main@abc123",
 		ImpactedEntities: []projections.EntityObservation{
 			{
-				Ref:         rez.ProviderResourceRef{Provider: "test", ProviderNamespace: "account-a", ResourceRef: "service-1"},
+				Ref: rez.ProviderResourceRef{
+					Provider:          "test",
+					ProviderNamespace: "account-a",
+					ResourceRef:       "service-1",
+				},
 				Category:    kne.CategoryContainer,
 				Kind:        "service",
 				DisplayName: "Service A",
 			},
 			{
-				Ref:         rez.ProviderResourceRef{Provider: "test", ProviderNamespace: "account-b", ResourceRef: "service-1"},
+				Ref: rez.ProviderResourceRef{
+					Provider:          "test",
+					ProviderNamespace: "account-b",
+					ResourceRef:       "service-1",
+				},
 				Category:    kne.CategoryContainer,
 				Kind:        "service",
 				DisplayName: "Service B",
@@ -66,10 +74,10 @@ func (s *ProjectionServiceSuite) TestCodeChangeProjectionPersistsEvidenceAndIsId
 	relationshipCount, relationshipErr := queryRelations.Count(ctx)
 	s.Require().NoError(relationshipErr)
 	s.Equal(1, relationshipCount)
-	impactRelationships, impactErr := client.KnowledgeRelationship.Query().
+	queryImpactRelationships := client.KnowledgeRelationship.Query().
 		Where(knr.PredicateEQ(knr.PredicateImpacts)).
-		WithAliases().
-		All(ctx)
+		WithAliases()
+	impactRelationships, impactErr := queryImpactRelationships.All(ctx)
 	s.Require().NoError(impactErr)
 	s.Require().Len(impactRelationships, 2)
 	s.NotEqual(impactRelationships[0].Edges.Aliases[0].ProviderResourceRef, impactRelationships[1].Edges.Aliases[0].ProviderResourceRef)

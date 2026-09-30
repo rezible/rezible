@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"sync"
 	"testing"
 	"time"
 
@@ -13,6 +12,7 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/tenant"
 	"github.com/rezible/rezible/ent/user"
 	dbservices "github.com/rezible/rezible/internal/db"
 	"github.com/rezible/rezible/internal/postgres"
@@ -71,13 +71,33 @@ func (s *DatabaseClientSuite) TestWithTxRollsBackOnError() {
 	tdb := s.CreateTestDatabase()
 	before := s.tenantCount(ctx, tdb)
 
-	expectedErr := fmt.Errorf("force rollback")
+	expectedErr := errors.New("force rollback")
+	var createdID int
 	txErr := tdb.WithTx(ctx, func(txCtx context.Context, client *ent.Client) error {
-		_ = s.createTenant(txCtx, client)
+		created, createErr := client.Tenant.Create().Save(txCtx)
+		if createErr != nil {
+			return fmt.Errorf("create tenant before rollback: %w", createErr)
+		}
+		createdID = created.ID
+		queryTenant := client.Tenant.Query().
+			Where(tenant.ID(createdID))
+		exists, queryErr := queryTenant.Exist(txCtx)
+		if queryErr != nil {
+			return fmt.Errorf("read tenant inside transaction: %w", queryErr)
+		}
+		if !exists {
+			return errors.New("created tenant is not visible inside transaction")
+		}
 		return expectedErr
 	})
 	s.ErrorIs(txErr, expectedErr)
 	s.Equal(before, s.tenantCount(ctx, tdb))
+	s.Require().NotZero(createdID)
+	queryTenant := tdb.Client(ctx).Tenant.Query().
+		Where(tenant.ID(createdID))
+	exists, queryErr := queryTenant.Exist(ctx)
+	s.Require().NoError(queryErr)
+	s.False(exists, "rolled-back tenant must not persist")
 }
 
 func (s *DatabaseClientSuite) TestNestedWithTxSharesOuterTransaction() {
@@ -207,27 +227,28 @@ func (s *DatabaseClientSuite) TestAcquireTxLocksWorksInsideTransaction() {
 	s.Require().NoError(err)
 }
 
-func (s *DatabaseClientSuite) TestAcquireTxLocksSortsOppositeInputOrder() {
-	ctx := s.SeedTenantContext()
+func (s *DatabaseClientSuite) TestConcurrentTxLockRequestsWithOppositeInputOrderSucceed() {
+	ctx, cancel := context.WithTimeout(s.SeedTenantContext(), 10*time.Second)
+	defer cancel()
 	tdb := s.CreateTestDatabase()
-	var wg sync.WaitGroup
-	errs := make(chan error, 2)
+	results := make(chan error, 2)
 	lockFn := func(keys ...string) {
-		defer wg.Done()
-		err := tdb.WithTx(ctx, func(txCtx context.Context, _ *ent.Client) error {
+		transactionErr := tdb.WithTx(ctx, func(txCtx context.Context, _ *ent.Client) error {
 			return tdb.AcquireTxLocks(txCtx, "test", keys...)
 		})
-		errs <- err
+		results <- transactionErr
 	}
 
-	wg.Add(2)
 	go lockFn("b", "a")
 	go lockFn("a", "b")
-	wg.Wait()
-	close(errs)
 
-	for err := range errs {
-		s.Require().NoError(err)
+	for range 2 {
+		select {
+		case transactionErr := <-results:
+			s.Require().NoError(transactionErr)
+		case <-ctx.Done():
+			s.FailNow("concurrent transaction lock requests did not finish", ctx.Err().Error())
+		}
 	}
 }
 

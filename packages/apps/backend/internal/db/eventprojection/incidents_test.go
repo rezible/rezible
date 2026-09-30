@@ -28,17 +28,21 @@ func (s *ProjectionServiceSuite) incidentService(tdb rez.Database, events *[]rez
 		}).
 		Return(nil).
 		Maybe()
-	retrospectives, _ := db.NewRetrospectiveService(tdb)
-	service, err := db.NewIncidentService(tdb, messageService, nil, retrospectives)
-	s.Require().NoError(err)
+	retrospectives, retrospectiveServiceErr := db.NewRetrospectiveService(tdb)
+	s.Require().NoError(retrospectiveServiceErr)
+
+	service, serviceErr := db.NewIncidentService(tdb, messageService, nil, retrospectives)
+	s.Require().NoError(serviceErr)
+
 	return service
 }
 
 func (s *ProjectionServiceSuite) createIncidentProjectionEvent(tdb rez.Database, subjectRef string, occurredAt time.Time, attrs projections.IncidentEventAttributes) *ent.NormalizedEvent {
 	ctx := s.SeedTenantContext()
-	encoded, err := projections.EncodeAttributes(attrs)
-	s.Require().NoError(err)
-	event, err := tdb.Client(ctx).NormalizedEvent.Create().
+	encoded, encodedErr := projections.EncodeAttributes(attrs)
+	s.Require().NoError(encodedErr)
+
+	createEvent := tdb.Client(ctx).NormalizedEvent.Create().
 		SetProvider("test").
 		SetProviderNamespace("projection-tests").
 		SetProviderResourceRef(subjectRef).
@@ -47,9 +51,10 @@ func (s *ProjectionServiceSuite) createIncidentProjectionEvent(tdb rez.Database,
 		SetKind(projections.KindIncident).
 		SetOccurredAt(occurredAt).
 		SetReceivedAt(occurredAt).
-		SetAttributes(encoded).
-		Save(ctx)
-	s.Require().NoError(err)
+		SetAttributes(encoded)
+	event, eventErr := createEvent.Save(ctx)
+	s.Require().NoError(eventErr)
+
 	return event
 }
 
@@ -78,10 +83,10 @@ func (s *ProjectionServiceSuite) TestIncidentProjectionPublishesCreateChangeAndS
 	s.Require().Len(events, 1)
 	s.True(events[0].Created)
 
-	created, err := tdb.Client(ctx).Incident.Query().
-		Where(incident.Title(attrs.Title)).
-		Only(ctx)
-	s.Require().NoError(err)
+	queryCreated := tdb.Client(ctx).Incident.Query().
+		Where(incident.Title(attrs.Title))
+	created, createdErr := queryCreated.Only(ctx)
+	s.Require().NoError(createdErr)
 	s.True(created.OpenedAt.Equal(openedAt))
 	s.Contains(created.Slug, "260601-")
 
@@ -99,15 +104,15 @@ func (s *ProjectionServiceSuite) TestIncidentProjectionPublishesCreateChangeAndS
 	s.Require().Len(events, 2)
 	s.False(events[1].Created)
 
-	severityCount, err := tdb.Client(ctx).IncidentSeverity.Query().
-		Where(incsev.Name("SEV-1")).
-		Count(ctx)
-	s.Require().NoError(err)
+	querySeverityCount := tdb.Client(ctx).IncidentSeverity.Query().
+		Where(incsev.Name("SEV-1"))
+	severityCount, severityCountErr := querySeverityCount.Count(ctx)
+	s.Require().NoError(severityCountErr)
 	s.Equal(1, severityCount)
 
-	typeCount, err := tdb.Client(ctx).IncidentType.Query().
-		Where(inctype.Name("Customer Impact")).
-		Count(ctx)
-	s.Require().NoError(err)
+	queryTypeCount := tdb.Client(ctx).IncidentType.Query().
+		Where(inctype.Name("Customer Impact"))
+	typeCount, typeCountErr := queryTypeCount.Count(ctx)
+	s.Require().NoError(typeCountErr)
 	s.Equal(1, typeCount)
 }

@@ -25,17 +25,11 @@ import (
 
 	otelmetric "go.opentelemetry.io/otel/metric"
 	noopmetric "go.opentelemetry.io/otel/metric/noop"
-
-	oteltrace "go.opentelemetry.io/otel/trace"
-	nooptrace "go.opentelemetry.io/otel/trace/noop"
 )
 
+// NewOpenTelemetryService builds providers without touching process globals.
+// Call Init once from the process entrypoint to install them.
 func NewOpenTelemetryService(ctx context.Context, cfg rez.Config) (*Service, error) {
-	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(
-		propagation.TraceContext{},
-		propagation.Baggage{},
-	))
-
 	s := &Service{}
 
 	resOpts := []sdkresource.Option{
@@ -74,6 +68,19 @@ func NewOpenTelemetryService(ctx context.Context, cfg rez.Config) (*Service, err
 	return s, nil
 }
 
+// Init installs the service as the process-wide OpenTelemetry and slog default.
+// Genkit reads the global tracer provider and requires an SDK implementation.
+func (s *Service) Init() error {
+	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(
+		propagation.TraceContext{},
+		propagation.Baggage{},
+	))
+	otel.SetTracerProvider(s.tracerProvider)
+	otel.SetMeterProvider(s.meterProvider)
+	slog.SetDefault(s.logger)
+	return runtime.Start(runtime.WithMeterProvider(s.meterProvider))
+}
+
 func isOtelEnvDisabled() bool {
 	return strings.EqualFold(os.Getenv("OTEL_SDK_DISABLED"), "true")
 }
@@ -91,7 +98,6 @@ func (s *Service) initLogger(cfg rez.LoggingConfig) error {
 		//lp = nooplog.NewLoggerProvider()
 	}
 	s.logger = slog.New(slog.NewMultiHandler(slogHandlers...))
-	slog.SetDefault(s.logger)
 
 	return nil
 }
@@ -125,21 +131,21 @@ func (s *Service) makeSlogConsoleHandler(w io.Writer, cfg rez.LoggingConfig) slo
 	})
 }
 
+// initTracerProvider always uses the SDK, since Genkit requires it; disabling
+// tracing only omits the exporter.
 func (s *Service) initTracerProvider(ctx context.Context, r *sdkresource.Resource, cfg rez.TracingConfig) error {
-	var tp oteltrace.TracerProvider
+	tpOpts := []sdktrace.TracerProviderOption{sdktrace.WithResource(r)}
 	if !isOtelEnvDisabled() && cfg.Enabled {
 		traceExporter, traceExporterErr := otlptracegrpc.New(ctx)
 		if traceExporterErr != nil {
 			return fmt.Errorf("otlp trace exporter: %w", traceExporterErr)
 		}
-		sdkTp := sdktrace.NewTracerProvider(sdktrace.WithResource(r), sdktrace.WithBatcher(traceExporter))
-		s.shutdownFns = append(s.shutdownFns, sdkTp.Shutdown)
-		tp = sdkTp
+		tpOpts = append(tpOpts, sdktrace.WithBatcher(traceExporter))
 	} else {
-		slog.Info("tracing disabled")
-		tp = nooptrace.NewTracerProvider()
+		s.logger.Info("tracing disabled")
 	}
-	otel.SetTracerProvider(tp)
+	tp := sdktrace.NewTracerProvider(tpOpts...)
+	s.shutdownFns = append(s.shutdownFns, tp.Shutdown)
 	s.tracerProvider = tp
 	return nil
 }
@@ -162,12 +168,8 @@ func (s *Service) initMetricsProvider(ctx context.Context, r *sdkresource.Resour
 		s.shutdownFns = append(s.shutdownFns, sdkMp.Shutdown)
 		mp = sdkMp
 	} else {
-		slog.Info("metrics disabled")
+		s.logger.Info("metrics disabled")
 		mp = noopmetric.NewMeterProvider()
-	}
-	otel.SetMeterProvider(mp)
-	if startErr := runtime.Start(runtime.WithMeterProvider(mp)); startErr != nil {
-		slog.Warn("failed to start runtime metrics", "error", startErr)
 	}
 	s.meterProvider = mp
 	return nil

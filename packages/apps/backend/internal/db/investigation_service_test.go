@@ -38,7 +38,9 @@ type InvestigationServiceSuite struct {
 }
 
 func TestInvestigationServiceSuite(t *testing.T) {
-	suite.Run(t, &InvestigationServiceSuite{Suite: test.NewSuite()})
+	suite.Run(t, &InvestigationServiceSuite{
+		Suite: test.NewSuite(),
+	})
 }
 
 func (s *InvestigationServiceSuite) newService(tdb rez.Database, jobService *mocks.MockJobService) *InvestigationService {
@@ -58,7 +60,9 @@ func (s *InvestigationServiceSuite) expectStartJob(jobService *mocks.MockJobServ
 }
 
 func (s *InvestigationServiceSuite) createAnalysis(tdb rez.Database, ctx context.Context) *ent.SystemAnalysis {
-	analysis := tdb.Client(ctx).SystemAnalysis.Create().SaveX(ctx)
+	analysis, analysisErr := tdb.Client(ctx).SystemAnalysis.Create().Save(ctx)
+	s.Require().NoError(analysisErr)
+
 	return analysis
 }
 
@@ -68,18 +72,30 @@ func (s *InvestigationServiceSuite) TestCreateInvestigationUsesPreparedAnalysisA
 	client := tdb.Client(ctx)
 	now := time.Now().UTC()
 
-	source := client.KnowledgeEntity.Create().SetCategory(kne.CategoryContainer).SetKind("service").SaveX(ctx)
-	target := client.KnowledgeEntity.Create().SetCategory(kne.CategoryContainer).SetKind("database").SaveX(ctx)
-	relationship := client.KnowledgeRelationship.Create().
+	createSource := client.KnowledgeEntity.Create().
+		SetCategory(kne.CategoryContainer).
+		SetKind("service")
+	source, sourceErr := createSource.Save(ctx)
+	s.Require().NoError(sourceErr)
+
+	createTarget := client.KnowledgeEntity.Create().
+		SetCategory(kne.CategoryContainer).
+		SetKind("database")
+	target, targetErr := createTarget.Save(ctx)
+	s.Require().NoError(targetErr)
+
+	createRelationship := client.KnowledgeRelationship.Create().
 		SetPredicate(knr.PredicateUses).
 		SetSourceEntityID(source.ID).
-		SetTargetEntityID(target.ID).
-		SaveX(ctx)
+		SetTargetEntityID(target.ID)
+	relationship, relationshipErr := createRelationship.Save(ctx)
+	s.Require().NoError(relationshipErr)
 
 	encodedAttributes, encodeErr := projections.EncodeAttributes(struct{}{})
 	s.Require().NoError(encodeErr)
+
 	providerResourceRef := "service:" + uuid.NewString()
-	event := client.NormalizedEvent.Create().
+	createEvent := client.NormalizedEvent.Create().
 		SetProvider("test").
 		SetProviderNamespace("investigation-tests").
 		SetProviderResourceRef(providerResourceRef).
@@ -88,54 +104,81 @@ func (s *InvestigationServiceSuite) TestCreateInvestigationUsesPreparedAnalysisA
 		SetKind("deployment").
 		SetAttributes(encodedAttributes).
 		SetOccurredAt(now).
-		SetReceivedAt(now).
-		SaveX(ctx)
-	alias := client.KnowledgeSubjectAlias.Create().
+		SetReceivedAt(now)
+	event, eventErr := createEvent.Save(ctx)
+	s.Require().NoError(eventErr)
+
+	createAlias := client.KnowledgeSubjectAlias.Create().
 		SetSubjectKind(ksa.SubjectKindEntity).
 		SetProvider("test").
 		SetProviderNamespace("investigation-tests").
 		SetProviderResourceRef(providerResourceRef).
-		SetEntityID(source.ID).
-		SaveX(ctx)
-	evidence := client.KnowledgeEvidence.Create().
+		SetEntityID(source.ID)
+	alias, aliasErr := createAlias.Save(ctx)
+	s.Require().NoError(aliasErr)
+
+	createEvidence := client.KnowledgeEvidence.Create().
 		SetEventID(event.ID).
 		SetSubjectAliasID(alias.ID).
 		SetKind(kev.KindObserved).
 		SetAssertion("deployment_observed").
 		SetEffectiveAt(now).
-		SetSubjectState(schematypes.KnowledgeGraphSubjectState{DisplayName: "Checkout API"}).
-		SaveX(ctx)
+		SetSubjectState(schematypes.KnowledgeGraphSubjectState{
+			DisplayName: "Checkout API",
+		})
+	evidence, evidenceErr := createEvidence.Save(ctx)
+	s.Require().NoError(evidenceErr)
 
 	queryService, queryServiceErr := NewKnowledgeGraphQueryService(tdb)
 	s.Require().NoError(queryServiceErr)
+
 	analysisService, analysisServiceErr := NewSystemAnalysisService(tdb, queryService)
 	s.Require().NoError(analysisServiceErr)
+
 	analysis := s.createAnalysis(tdb, ctx)
-	s.Require().NoError(analysisService.IncludeSystemAnalysisSubjects(ctx, rez.IncludeSystemAnalysisSubjectsParams{
+	includeSystemAnalysisSubjectsParams := rez.IncludeSystemAnalysisSubjectsParams{
 		AnalysisId:      analysis.ID,
 		RelationshipIds: []uuid.UUID{relationship.ID},
-	}))
+	}
+
+	s.Require().NoError(analysisService.IncludeSystemAnalysisSubjects(ctx, includeSystemAnalysisSubjectsParams))
+
 	entryParams := rez.SetSystemAnalysisEntryParams{
 		AnalysisID: analysis.ID,
 		Kind:       "observation",
 		Title:      "Payment error rate increased",
 		Body:       "A deployment preceded the increase.",
 		SetSubjects: []rez.SetSystemAnalysisEntrySubjectParams{
-			{Role: "primary", KnowledgeEntityID: &source.ID},
-			{Role: "affected", KnowledgeRelationshipID: &relationship.ID},
-			{Role: "evidence_for", KnowledgeEvidenceID: &evidence.ID},
+			{
+				Role:              "primary",
+				KnowledgeEntityID: &source.ID,
+			},
+			{
+				Role:                    "affected",
+				KnowledgeRelationshipID: &relationship.ID,
+			},
+			{
+				Role:                "evidence_for",
+				KnowledgeEvidenceID: &evidence.ID,
+			},
 		},
 	}
 	entry, entryErr := analysisService.SetSystemAnalysisEntry(ctx, uuid.Nil, entryParams)
 	s.Require().NoError(entryErr)
 
 	jobService := mocks.NewMockJobService(s.T())
-	s.expectStartJob(jobService, &rivertype.JobInsertResult{Job: &rivertype.JobRow{ID: 1001}}, nil)
+	s.expectStartJob(jobService, &rivertype.JobInsertResult{
+		Job: &rivertype.JobRow{
+			ID: 1001,
+		},
+	}, nil)
 	service := s.newService(tdb, jobService)
-	investigation, createErr := service.CreateInvestigation(ctx, rez.CreateInvestigationParams{
+	investigationParams := rez.CreateInvestigationParams{
 		AnalysisID: analysis.ID,
 		Query:      "  Why did the payment error rate increase?  ",
-	})
+	}
+
+	investigation, createErr := service.CreateInvestigation(ctx, investigationParams)
 	s.Require().NoError(createErr)
 	s.NotEqual(uuid.Nil, investigation.ID)
 	s.Equal(analysis.ID, investigation.SystemAnalysisID)
@@ -145,10 +188,23 @@ func (s *InvestigationServiceSuite) TestCreateInvestigationUsesPreparedAnalysisA
 	var sessionInput rezai.InvestigationAgentSessionInput
 	s.Require().NoError(json.Unmarshal(investigation.Edges.AgentSession.Input, &sessionInput))
 	s.Equal("Why did the payment error rate increase?", sessionInput.Query)
-	s.Equal(2, client.SystemAnalysisEntity.Query().Where(sae.AnalysisID(analysis.ID)).CountX(ctx))
-	s.Equal(1, client.SystemAnalysisRelationship.Query().Where(sar.AnalysisID(analysis.ID)).CountX(ctx))
+	querySystemAnalysisEntity := client.SystemAnalysisEntity.Query().
+		Where(sae.AnalysisID(analysis.ID))
+	systemAnalysisEntityCount, systemAnalysisEntityCountErr := querySystemAnalysisEntity.Count(ctx)
+	s.Require().NoError(systemAnalysisEntityCountErr)
 
-	entrySubjects := client.SystemAnalysisEntrySubject.Query().Where(saes.EntryID(entry.ID)).AllX(ctx)
+	s.Equal(2, systemAnalysisEntityCount)
+	querySystemAnalysisRelationship := client.SystemAnalysisRelationship.Query().
+		Where(sar.AnalysisID(analysis.ID))
+	systemAnalysisRelationshipCount, systemAnalysisRelationshipCountErr := querySystemAnalysisRelationship.Count(ctx)
+	s.Require().NoError(systemAnalysisRelationshipCountErr)
+
+	s.Equal(1, systemAnalysisRelationshipCount)
+
+	queryEntrySubjects := client.SystemAnalysisEntrySubject.Query().
+		Where(saes.EntryID(entry.ID))
+	entrySubjects, entrySubjectsErr := queryEntrySubjects.All(ctx)
+	s.Require().NoError(entrySubjectsErr)
 	s.Require().Len(entrySubjects, 3)
 	var attachedEvidence bool
 	for _, subject := range entrySubjects {
@@ -162,32 +218,67 @@ func (s *InvestigationServiceSuite) TestCreateInvestigationValidatesOwnershipQue
 	tdb := s.CreateTestDatabase()
 	analysis := s.createAnalysis(tdb, ctx)
 	jobService := mocks.NewMockJobService(s.T())
-	s.expectStartJob(jobService, &rivertype.JobInsertResult{Job: &rivertype.JobRow{ID: 1001}}, nil)
+	s.expectStartJob(jobService, &rivertype.JobInsertResult{
+		Job: &rivertype.JobRow{
+			ID: 1001,
+		},
+	}, nil)
 	service := s.newService(tdb, jobService)
 
-	_, missingAnalysisErr := service.CreateInvestigation(ctx, rez.CreateInvestigationParams{Query: "question"})
+	missingAnalysisParams := rez.CreateInvestigationParams{
+		Query: "question",
+	}
+
+	_, missingAnalysisErr := service.CreateInvestigation(ctx, missingAnalysisParams)
 	s.ErrorIs(missingAnalysisErr, rez.ErrInvalidInput)
-	_, missingQuestionErr := service.CreateInvestigation(ctx, rez.CreateInvestigationParams{AnalysisID: analysis.ID, Query: " \t "})
+	missingQuestionParams := rez.CreateInvestigationParams{
+		AnalysisID: analysis.ID,
+		Query:      " \t ",
+	}
+
+	_, missingQuestionErr := service.CreateInvestigation(ctx, missingQuestionParams)
 	s.ErrorIs(missingQuestionErr, rez.ErrInvalidInput)
 
-	investigation, createErr := service.CreateInvestigation(ctx, rez.CreateInvestigationParams{
+	investigationParams := rez.CreateInvestigationParams{
 		AnalysisID: analysis.ID,
 		Query:      "Question about empty context",
-	})
+	}
+
+	investigation, createErr := service.CreateInvestigation(ctx, investigationParams)
 	s.Require().NoError(createErr)
 	s.NotEqual(uuid.Nil, investigation.ID)
-	s.Equal(0, tdb.Client(ctx).SystemAnalysisEntity.Query().Where(sae.AnalysisID(analysis.ID)).CountX(ctx))
-	s.Equal(0, tdb.Client(ctx).SystemAnalysisRelationship.Query().Where(sar.AnalysisID(analysis.ID)).CountX(ctx))
-	_, tenantInputErr := service.SubmitInvestigationUserInput(ctx, rez.SubmitInvestigationUserInputParams{
+	querySystemAnalysisEntity := tdb.Client(ctx).SystemAnalysisEntity.Query().
+		Where(sae.AnalysisID(analysis.ID))
+	systemAnalysisEntityCount, systemAnalysisEntityCountErr := querySystemAnalysisEntity.Count(ctx)
+	s.Require().NoError(systemAnalysisEntityCountErr)
+
+	s.Equal(0, systemAnalysisEntityCount)
+	querySystemAnalysisRelationship := tdb.Client(ctx).SystemAnalysisRelationship.Query().
+		Where(sar.AnalysisID(analysis.ID))
+	systemAnalysisRelationshipCount, systemAnalysisRelationshipCountErr := querySystemAnalysisRelationship.Count(ctx)
+	s.Require().NoError(systemAnalysisRelationshipCountErr)
+
+	s.Equal(0, systemAnalysisRelationshipCount)
+	tenantInputParams := rez.SubmitInvestigationUserInputParams{
 		InvestigationID: investigation.ID,
 		Text:            "follow-up question",
 		SubmissionKey:   "tenant-context-is-not-a-user",
-	})
+	}
+
+	_, tenantInputErr := service.SubmitInvestigationUserInput(ctx, tenantInputParams)
 	s.ErrorIs(tenantInputErr, rez.ErrInvalidInput)
 
-	_, inUseErr := service.CreateInvestigation(ctx, rez.CreateInvestigationParams{AnalysisID: analysis.ID, Query: "second question"})
+	inUseParams := rez.CreateInvestigationParams{
+		AnalysisID: analysis.ID,
+		Query:      "second question",
+	}
+
+	_, inUseErr := service.CreateInvestigation(ctx, inUseParams)
 	s.ErrorIs(inUseErr, rez.ErrConflict)
-	s.Equal(1, tdb.Client(ctx).Investigation.Query().CountX(ctx))
+	investigationCount, investigationCountErr := tdb.Client(ctx).Investigation.Query().Count(ctx)
+	s.Require().NoError(investigationCountErr)
+
+	s.Equal(1, investigationCount)
 }
 
 func (s *InvestigationServiceSuite) TestCreateInvestigationRollsBackWhenSessionStartupCannotBeQueued() {
@@ -198,13 +289,21 @@ func (s *InvestigationServiceSuite) TestCreateInvestigationRollsBackWhenSessionS
 	s.expectStartJob(jobService, nil, errors.New("queue unavailable"))
 	service := s.newService(tdb, jobService)
 
-	_, createErr := service.CreateInvestigation(ctx, rez.CreateInvestigationParams{
+	createParams := rez.CreateInvestigationParams{
 		AnalysisID: analysis.ID,
 		Query:      "Question requiring a queued agent",
-	})
+	}
+
+	_, createErr := service.CreateInvestigation(ctx, createParams)
 	s.Error(createErr)
-	s.Equal(0, tdb.Client(ctx).Investigation.Query().CountX(ctx))
-	s.Equal(0, tdb.Client(ctx).AgentSession.Query().CountX(ctx))
+	investigationCount, investigationCountErr := tdb.Client(ctx).Investigation.Query().Count(ctx)
+	s.Require().NoError(investigationCountErr)
+
+	s.Equal(0, investigationCount)
+	agentSessionCount, agentSessionCountErr := tdb.Client(ctx).AgentSession.Query().Count(ctx)
+	s.Require().NoError(agentSessionCountErr)
+
+	s.Equal(0, agentSessionCount)
 }
 
 func (s *InvestigationServiceSuite) TestConcurrentInvestigationsClaimAnalysisOnlyOnce() {
@@ -221,15 +320,21 @@ func (s *InvestigationServiceSuite) TestConcurrentInvestigationsClaimAnalysisOnl
 			enteredSessionStart <- struct{}{}
 			<-releaseSessionStart
 		}).
-		Return(&rivertype.JobInsertResult{Job: &rivertype.JobRow{ID: 1001}}, nil).
+		Return(&rivertype.JobInsertResult{
+			Job: &rivertype.JobRow{
+				ID: 1001,
+			},
+		}, nil).
 		Twice()
 	service := s.newService(tdb, jobService)
 	for range 2 {
 		go func() {
-			_, createErr := service.CreateInvestigation(ctx, rez.CreateInvestigationParams{
+			createParams := rez.CreateInvestigationParams{
 				AnalysisID: analysis.ID,
 				Query:      "Concurrent analysis question",
-			})
+			}
+
+			_, createErr := service.CreateInvestigation(ctx, createParams)
 			createResults <- createErr
 		}()
 	}
@@ -253,6 +358,12 @@ func (s *InvestigationServiceSuite) TestConcurrentInvestigationsClaimAnalysisOnl
 		}
 	}
 	s.Equal(1, conflictCount)
-	s.Equal(1, tdb.Client(ctx).Investigation.Query().CountX(ctx))
-	s.Equal(1, tdb.Client(ctx).AgentSession.Query().CountX(ctx))
+	investigationCount, investigationCountErr := tdb.Client(ctx).Investigation.Query().Count(ctx)
+	s.Require().NoError(investigationCountErr)
+
+	s.Equal(1, investigationCount)
+	agentSessionCount, agentSessionCountErr := tdb.Client(ctx).AgentSession.Query().Count(ctx)
+	s.Require().NoError(agentSessionCountErr)
+
+	s.Equal(1, agentSessionCount)
 }

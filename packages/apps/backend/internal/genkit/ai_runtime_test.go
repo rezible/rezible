@@ -2,7 +2,6 @@ package genkit
 
 import (
 	"context"
-	"os"
 	"testing"
 
 	gkai "github.com/firebase/genkit/go/ai"
@@ -20,12 +19,6 @@ type AiRuntimeSuite struct {
 
 func TestAiRuntimeSuite(t *testing.T) {
 	suite.Run(t, &AiRuntimeSuite{Suite: test.NewSuite()})
-}
-
-func (s *AiRuntimeSuite) checkSkip(name string) {
-	if os.Getenv("AI_TESTS_ALL") != "true" && os.Getenv("AI_TESTS_"+name) != "true" {
-		s.T().Skipf("Skipping live AI test '%s'", name)
-	}
 }
 
 func (s *AiRuntimeSuite) makeRuntime(ctx context.Context, opts ...AiRuntimeOption) *AiRuntime {
@@ -74,11 +67,22 @@ func (s *AiRuntimeSuite) TestIntegrationToolsMiddlewareLoadsToolsPerTurn() {
 		},
 	)
 
+	nextTool := gkai.NewTool[any, map[string]any](
+		"test_next_lookup",
+		"next tool",
+		func(ctx *gkai.ToolContext, input any) (map[string]any, error) {
+			return map[string]any{"next": true}, nil
+		},
+	)
 	intgs := mocks.NewMockIntegrationService(s.T())
 	intgs.EXPECT().
 		GetAvailableAgentTools(mock.Anything, rez.GetAvailableAiAgentToolsParams{AgentName: agentName}).
 		Return([]gkai.Tool{tool}, nil).
-		Twice()
+		Once()
+	intgs.EXPECT().
+		GetAvailableAgentTools(mock.Anything, rez.GetAvailableAiAgentToolsParams{AgentName: agentName}).
+		Return([]gkai.Tool{nextTool}, nil).
+		Once()
 
 	ctx := s.T().Context()
 
@@ -90,6 +94,6 @@ func (s *AiRuntimeSuite) TestIntegrationToolsMiddlewareLoadsToolsPerTurn() {
 
 	secondHooks, secondErr := mw.New(ctx)
 	s.Require().NoError(secondErr, "second middleware init")
-	s.Require().NotEmpty(secondHooks.Tools, "no tools supplied")
-	s.Require().Equal(tool.Name(), secondHooks.Tools[0].Name(), "unexpected tool name")
+	s.Require().Len(secondHooks.Tools, 1)
+	s.Require().Equal(nextTool.Name(), secondHooks.Tools[0].Name(), "unexpected tool name")
 }

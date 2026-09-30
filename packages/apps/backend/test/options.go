@@ -1,8 +1,7 @@
 package test
 
 type options struct {
-	configOverrides          map[string]any
-	configAllowValidationErr bool
+	configOverrides map[string]any
 
 	skipSeedOrganization bool
 	skipSeedUser         bool
@@ -20,8 +19,4 @@ func WithSkipSeedUser() SuiteOption {
 
 func WithConfigOverrides(overrides map[string]any) SuiteOption {
 	return func(o *options) { o.configOverrides = overrides }
-}
-
-func WithAllowConfigValidationErrors() SuiteOption {
-	return func(o *options) { o.configAllowValidationErr = true }
 }

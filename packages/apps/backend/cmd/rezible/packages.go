@@ -69,7 +69,14 @@ func withEnvironmentConfig(ctx context.Context) func(do.Injector) {
 func withOpenTelemetry(ctx context.Context) func(do.Injector) {
 	return do.Package(
 		do.Lazy(func(i do.Injector) (rez.TelemetryService, error) {
-			return opentelemetry.NewOpenTelemetryService(ctx, do.MustInvoke[rez.Config](i))
+			svc, svcErr := opentelemetry.NewOpenTelemetryService(ctx, do.MustInvoke[rez.Config](i))
+			if svcErr != nil {
+				return nil, svcErr
+			}
+			if initErr := svc.Init(); initErr != nil {
+				return nil, fmt.Errorf("init: %w", initErr)
+			}
+			return svc, nil
 		}),
 	)
 }

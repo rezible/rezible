@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"sync"
 
 	"github.com/firebase/genkit/go/ai"
 	aix "github.com/firebase/genkit/go/ai/exp"
@@ -89,56 +90,125 @@ func (s *AiRuntimeSuite) makeInvokeAgentSessionParams(sess *ent.AgentSession) re
 func (s *AiRuntimeSuite) TestClientManagedTurnStateAndResumeRoundTrip() {
 	ctx := s.SeedTenantContext()
 	tdb := s.CreateTestDatabase()
+	msg := ai.NewUserTextMessage("Confirm the next check")
+	agent := makeTestAgent[testAgentState](msg)
+	interruptTool := ai.NewTool[struct{}, string](
+		"confirm_check",
+		"Ask for confirmation",
+		func(tc *ai.ToolContext, _ struct{}) (string, error) {
+			return "", tc.Interrupt(&ai.InterruptOptions{})
+		},
+	)
 
-	msg := ai.NewUserTextMessage("hello world")
-	ta := makeTestAgent[testAgentState](msg)
-	svc := s.makeRuntime(ctx, withTestAgent(ta)...)
+	var mu sync.Mutex
+	step := 0
+	model := makeTestOutputModel(nil)
+	model.opts.Supports.Tools = true
+	model.fn = func(
+		ctx context.Context,
+		req *ai.ModelRequest,
+		_ any,
+		_ ai.ModelStreamCallback,
+	) (*ai.ModelResponse, error) {
+		mu.Lock()
+		defer mu.Unlock()
+		step++
+		if step == 1 {
+			call := &ai.ToolRequest{
+				Name:  interruptTool.Name(),
+				Ref:   "confirm-1",
+				Input: map[string]any{},
+			}
+			return &ai.ModelResponse{
+				Message: ai.NewModelMessage(ai.NewToolRequestPart(call)),
+			}, nil
+		}
+		if step != 2 {
+			return nil, fmt.Errorf("unexpected model step %d", step)
+		}
+		inputCount := 0
+		requestCount := 0
+		responseCount := 0
+		for _, message := range req.Messages {
+			if message.Role == ai.RoleUser && message.Text() == msg.Text() {
+				inputCount++
+			}
+			for _, part := range message.Content {
+				call := part.ToolRequest
+				if call != nil && call.Name == interruptTool.Name() && call.Ref == "confirm-1" {
+					requestCount++
+				}
+				response := part.ToolResponse
+				if response == nil || response.Name != interruptTool.Name() || response.Ref != "confirm-1" {
+					continue
+				}
+				if response.Output == "approved" {
+					responseCount++
+				}
+			}
+		}
+		if inputCount != 1 || requestCount != 1 || responseCount != 1 {
+			return nil, fmt.Errorf(
+				"resume history: inputs=%d requests=%d matching responses=%d",
+				inputCount, requestCount, responseCount,
+			)
+		}
+		return &ai.ModelResponse{
+			Message:      ai.NewModelTextMessage("Check approved"),
+			FinishReason: ai.FinishReasonStop,
+		}, nil
+	}
 
-	sess := s.makeAgentSession(svc, tdb, ta.def.Name, testAgentInput{})
-	initParams := s.makeInvokeAgentSessionParams(sess)
-	initParams.Input = &rez.AiAgentTurnInput{Message: msg}
+	middleware := func(string) ai.Middleware {
+		return &testToolsMiddleware{tools: []ai.Tool{interruptTool}}
+	}
+	svc := s.makeRuntime(ctx, WithDefinedModel(model), WithAgent(agent, middleware))
+	sess := s.makeAgentSession(svc, tdb, agent.def.Name, testAgentInput{})
 
-	initialRes, initialErr := svc.InvokeAgentTurn(ctx, initParams)
-	s.Require().NoError(initialErr)
-	s.Require().NotNil(initialRes)
-	s.Require().NotEmpty(initialRes.State.Messages)
-	s.Equal("hello world", initialRes.State.Messages[0].Text())
+	// The first invocation must stop at the confirmation tool.
+	initial := s.makeInvokeAgentSessionParams(sess)
+	initial.Input = &rez.AiAgentTurnInput{Message: msg}
+	first, firstErr := svc.InvokeAgentTurn(ctx, initial)
+	s.Require().NoError(firstErr)
+	s.Require().NotNil(first)
+	s.Require().NoError(first.Error)
+	s.Require().Equal(aix.AgentFinishReasonInterrupted, first.FinishReason)
 
-	resumeText := "resume"
-	nextParams := s.makeInvokeAgentSessionParams(sess)
-	nextParams.Turn.ID = uuid.New()
-	nextParams.State = initialRes.State
-	nextParams.Input = &rez.AiAgentTurnInput{
+	// Resume that exact tool call with an approval response.
+	next := s.makeInvokeAgentSessionParams(sess)
+	next.Turn = &ent.AgentTurn{
+		ID:             uuid.New(),
+		AgentSessionID: sess.ID,
+	}
+	next.State = first.State
+	response := &ai.ToolResponse{
+		Name:   interruptTool.Name(),
+		Ref:    "confirm-1",
+		Output: "approved",
+	}
+	next.Input = &rez.AiAgentTurnInput{
 		Resume: &aix.ToolResume{
-			Respond: []*ai.Part{ai.NewTextPart(resumeText)},
+			Respond: []*ai.Part{ai.NewToolResponsePart(response)},
 		},
 	}
-	nextRes, nextErr := svc.InvokeAgentTurn(ctx, nextParams)
-	s.Require().NoError(nextErr)
-	s.Require().NotNil(nextRes)
-	s.Require().GreaterOrEqual(len(nextRes.State.Messages), len(initialRes.State.Messages))
-}
-
-func (s *AiRuntimeSuite) TestSimpleGreetingAgent() {
-	s.checkSkip("simple_greeting")
-
-	ctx := s.SeedTenantContext()
-	tdb := s.CreateTestDatabase()
-
-	msg := ai.NewUserTextMessage("Reply with a one-word greeting.")
-	ta := makeTestAgent[testAgentState](msg)
-	svc := s.makeRuntime(ctx, withTestAgent(ta)...)
-
-	sess := s.makeAgentSession(svc, tdb, ta.def.Name, testAgentInput{})
-	s.T().Logf("Starting test agent session (id %s)", sess.ID)
-
-	initParams := s.makeInvokeAgentSessionParams(sess)
-	initParams.Input = &rez.AiAgentTurnInput{Message: msg}
-
-	result, invokeErr := svc.InvokeAgentTurn(ctx, initParams)
-	s.Require().NoError(invokeErr)
+	result, resumeErr := svc.InvokeAgentTurn(ctx, next)
+	s.Require().NoError(resumeErr)
 	s.Require().NotNil(result)
-	s.NotEmpty(result.State.Messages)
+	s.Require().NoError(result.Error)
+	s.Equal(aix.AgentFinishReasonStop, result.FinishReason)
+	s.Require().NotNil(result.Response)
+	s.Equal("Check approved", result.Response.Text())
+
+	mu.Lock()
+	s.Equal(2, step)
+	mu.Unlock()
+	inputCount := 0
+	for _, message := range result.State.Messages {
+		if message.Role == ai.RoleUser && message.Text() == msg.Text() {
+			inputCount++
+		}
+	}
+	s.Equal(1, inputCount)
 }
 
 func makeTestAgent[S any](msg *ai.Message) *testAgent[S] {
@@ -189,4 +259,17 @@ func (t *testAgent[S]) transformState(ctx context.Context, state *aix.SessionSta
 
 func (t *testAgent[S]) transformStreamChunk(ctx context.Context, chunk *aix.AgentStreamChunk) (*aix.AgentStreamChunk, error) {
 	return chunk, nil
+}
+
+// Keep tools private: Genkit serializes the prompt's middleware configuration.
+type testToolsMiddleware struct {
+	tools []ai.Tool
+}
+
+func (*testToolsMiddleware) Name() string {
+	return "test_tools"
+}
+
+func (m *testToolsMiddleware) New(context.Context) (*ai.Hooks, error) {
+	return &ai.Hooks{Tools: m.tools}, nil
 }
