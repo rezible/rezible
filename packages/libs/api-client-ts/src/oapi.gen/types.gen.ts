@@ -623,6 +623,14 @@ export type CreateIncidentResponseBody = {
     data: Incident;
 };
 
+export type CreateIncidentRetrospectiveResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Retrospective;
+};
+
 export type CreateIncidentRoleAssignmentAttributes = {
     roleId: string;
     userId: string;
@@ -7599,6 +7607,57 @@ export type ListIncidentMilestonesResponses = {
 };
 
 export type ListIncidentMilestonesResponse = ListIncidentMilestonesResponses[keyof ListIncidentMilestonesResponses];
+
+export type CreateIncidentRetrospectiveData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/incidents/{id}/retrospective';
+};
+
+export type CreateIncidentRetrospectiveErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Conflict
+     */
+    409: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type CreateIncidentRetrospectiveError = CreateIncidentRetrospectiveErrors[keyof CreateIncidentRetrospectiveErrors];
+
+export type CreateIncidentRetrospectiveResponses = {
+    /**
+     * OK
+     */
+    200: CreateIncidentRetrospectiveResponseBody;
+};
+
+export type CreateIncidentRetrospectiveResponse = CreateIncidentRetrospectiveResponses[keyof CreateIncidentRetrospectiveResponses];
 
 export type CreateIncidentRoleAssignmentData = {
     body: CreateIncidentRoleAssignmentRequestBody;

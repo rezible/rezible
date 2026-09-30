@@ -46,7 +46,7 @@
 				<Button type="button" variant="outline" disabled={editor.loading} onclick={editor.clear}>
 					Cancel
 				</Button>
-				<Button type="submit" disabled={!editor.title.trim() || editor.loading}>
+				<Button type="submit" disabled={!editor.canEdit || !editor.title.trim() || editor.loading}>
 					{editor.loading ? "Saving…" : "Save entry"}
 				</Button>
 			</Dialog.Footer>

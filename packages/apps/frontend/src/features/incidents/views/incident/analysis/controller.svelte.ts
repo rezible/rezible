@@ -1,5 +1,12 @@
 import type { ComponentProps } from "svelte";
-import type { SystemAnalysisEntry, SystemAnalysisNode } from "$lib/api";
+import {
+	getSystemAnalysisEntryOptions,
+	listIncidentMilestonesOptions,
+	type IncidentMilestone,
+	type SystemAnalysisEntry,
+	type SystemAnalysisNode,
+} from "$lib/api";
+import { createQuery } from "@tanstack/svelte-query";
 import { Context } from "runed";
 import { page } from "$app/state";
 import { goto } from "$app/navigation";
@@ -10,12 +17,18 @@ import { initEventDialog } from "./incident-timeline/event-dialog/controller.sve
 import IncidentTimelineContextMenu from "./incident-timeline/IncidentTimelineContextMenu.svelte";
 
 type ContextMenuProps = { timeline?: ComponentProps<typeof IncidentTimelineContextMenu> };
-type IncidentSelection = { entryId?: string; mapSelection?: MapSelection };
+type IncidentSelection = { entryId?: string; milestoneId?: string; mapSelection?: MapSelection };
 
 export type InspectorEntry = {
 	kind: "entry";
 	attrs: SystemAnalysisEntry["attributes"];
 	occurredAtLabel: string | undefined;
+};
+
+export type InspectorMilestone = {
+	kind: "milestone";
+	attrs: IncidentMilestone["attributes"];
+	occurredAtLabel: string;
 };
 
 export type InspectorSubject = {
@@ -46,6 +59,7 @@ function mapSelectionFromUrl(): MapSelection | undefined {
 
 function selectionKey(selection: IncidentSelection): string {
 	if (selection.entryId) return `entry:${selection.entryId}`;
+	if (selection.milestoneId) return `milestone:${selection.milestoneId}`;
 	const graphSelection = selection.mapSelection;
 	if (!graphSelection) return "";
 	if (graphSelection.kind === "entity") return `entity:${graphSelection.entityId}`;
@@ -61,7 +75,11 @@ export class IncidentAnalysisController {
 		() => ({ interaction: this.graphInteraction })
 	);
 
-	entryEditor = initEventDialog(() => this.systemAnalysis.refreshEntries());
+	entryEditor = initEventDialog(() => {
+		void this.systemAnalysis.refreshEntries();
+		if (this.selectedEntryId) void this.selectedEntryQuery.refetch();
+	});
+	canEdit = $derived(this.incident.documentAccess?.canEdit ?? false);
 
 	contextMenu = $state.raw<ContextMenuProps>({});
 
@@ -80,7 +98,22 @@ export class IncidentAnalysisController {
 	mapSelection = $derived(mapSelectionFromUrl());
 
 	selectedEntryId = $derived(page.url.searchParams.get("entry"));
-	selectedEntry = $derived(this.systemAnalysis.entries.find((entry) => entry.id === this.selectedEntryId));
+	selectedEntryQuery = createQuery(() => ({
+		...getSystemAnalysisEntryOptions({ path: { id: this.selectedEntryId ?? "" } }),
+		enabled: !!this.selectedEntryId && !!this.incident.systemAnalysisId,
+	}));
+	selectedEntry = $derived.by(() => {
+		const entry = this.selectedEntryQuery.data?.data;
+		return entry?.attributes.analysisId === this.incident.systemAnalysisId ? entry : undefined;
+	});
+	selectedMilestoneId = $derived(this.selectedEntryId ? null : page.url.searchParams.get("milestone"));
+	milestonesQuery = createQuery(() => ({
+		...listIncidentMilestonesOptions({ path: { id: this.incident.incidentId } }),
+		enabled: !!this.incident.incidentId,
+	}));
+	selectedMilestone = $derived(
+		this.milestonesQuery.data?.data.find((item) => item.id === this.selectedMilestoneId)
+	);
 
 	attachedEntries = $derived.by(() => {
 		const selection = this.mapSelection;
@@ -122,37 +155,32 @@ export class IncidentAnalysisController {
 	subjects = $derived(
 		(this.selectedEntry?.attributes.subjects ?? []).map((subject) => {
 			const attrs = subject.attributes;
-			const node = attrs.knowledgeEntityId
-				? this.systemAnalysis.nodeByEntityId.get(attrs.knowledgeEntityId)
-				: undefined;
-			const edge = attrs.knowledgeRelationshipId
-				? this.systemAnalysis.edgeByRelationshipId.get(attrs.knowledgeRelationshipId)
-				: undefined;
-			const mapSelection = node
-				? { kind: "entity" as const, entityId: node.attributes.knowledgeEntity.id }
-				: edge
-					? {
-							kind: "relationship" as const,
-							relationshipId: edge.attributes.knowledgeRelationship.id,
-						}
+			const node =
+				attrs.available && attrs.knowledgeEntityId
+					? this.systemAnalysis.nodeByEntityId.get(attrs.knowledgeEntityId)
 					: undefined;
-			const label = node
-				? nodeTitle(node)
-				: (edge?.attributes.labelOverride ??
-					edge?.attributes.knowledgeRelationship.attributes.predicate);
-			return {
-				node,
-				edge,
-				mapSelection,
-				label,
-				id: subject.id,
-				role: attrs.role,
-				unavailable: attrs.knowledgeEvidenceId
-					? "Evidence details unavailable"
-					: "Subject details unavailable",
-				reference:
-					attrs.knowledgeEvidenceId ?? attrs.knowledgeEntityId ?? attrs.knowledgeRelationshipId,
-			};
+			const edge =
+				attrs.available && attrs.knowledgeRelationshipId
+					? this.systemAnalysis.edgeByRelationshipId.get(attrs.knowledgeRelationshipId)
+					: undefined;
+			let mapSelection: MapSelection | undefined;
+			let label = "Reference unavailable";
+			if (attrs.available) {
+				label = attrs.preview?.label ?? "Reference details unavailable";
+				if (node) {
+					mapSelection = { kind: "entity", entityId: node.attributes.knowledgeEntity.id };
+					label = nodeTitle(node);
+				} else if (edge) {
+					mapSelection = {
+						kind: "relationship",
+						relationshipId: edge.attributes.knowledgeRelationship.id,
+					};
+					label =
+						edge.attributes.labelOverride ??
+						edge.attributes.knowledgeRelationship.attributes.predicate;
+				}
+			}
+			return { id: subject.id, role: attrs.role, label, mapSelection };
 		})
 	);
 
@@ -167,7 +195,7 @@ export class IncidentAnalysisController {
 		}
 	});
 
-	inspectorDetails = $derived.by<InspectorEntry | InspectorSubject | undefined>(() => {
+	inspectorDetails = $derived.by<InspectorEntry | InspectorMilestone | InspectorSubject | undefined>(() => {
 		if (this.selectedEntry) {
 			const attrs = this.selectedEntry.attributes;
 			return {
@@ -176,6 +204,11 @@ export class IncidentAnalysisController {
 				occurredAtLabel: attrs.occurredAt ? new Date(attrs.occurredAt).toLocaleString() : undefined,
 			};
 		}
+		if (this.selectedMilestone) {
+			const attrs = this.selectedMilestone.attributes;
+			return { kind: "milestone", attrs, occurredAtLabel: new Date(attrs.timestamp).toLocaleString() };
+		}
+		if (this.selectedEntryId || this.selectedMilestoneId) return undefined;
 		if (this.selectedEntity) {
 			const attrs = this.selectedEntity.attributes;
 			const entityAttrs = attrs.knowledgeEntity.attributes;
@@ -202,14 +235,26 @@ export class IncidentAnalysisController {
 		return undefined;
 	});
 
-	selectedRecordLoading = $derived(
-		this.systemAnalysis.entriesQuery.isPending || this.systemAnalysis.graphLoading
-	);
+	selectedRecordLoading = $derived.by(() => {
+		if (this.selectedEntryId) return this.selectedEntryQuery.isPending;
+		if (this.selectedMilestoneId) return this.milestonesQuery.isPending;
+		return this.systemAnalysis.graphLoading;
+	});
+
+	retrySelection = () => {
+		if (this.selectedEntryId) void this.selectedEntryQuery.refetch();
+		else if (this.selectedMilestoneId) void this.milestonesQuery.refetch();
+		else void this.systemAnalysis.refreshAll();
+	};
 
 	selectionKey = $derived(
-		selectionKey({ entryId: this.selectedEntryId ?? undefined, mapSelection: this.mapSelection })
+		selectionKey({
+			entryId: this.selectedEntryId ?? undefined,
+			milestoneId: this.selectedMilestoneId ?? undefined,
+			mapSelection: this.mapSelection,
+		})
 	);
-	hasSelection = $derived(!!(this.selectedEntryId || this.mapSelection));
+	hasSelection = $derived(!!(this.selectedEntryId || this.selectedMilestoneId || this.mapSelection));
 	private dismissedSelection = $state<string>();
 	private inventoryRequested = $state(false);
 
@@ -226,14 +271,18 @@ export class IncidentAnalysisController {
 			entityIds: [
 				...new Set(
 					subjects.flatMap(({ attributes }) =>
-						attributes.knowledgeEntityId ? [attributes.knowledgeEntityId] : []
+						attributes.available && attributes.knowledgeEntityId
+							? [attributes.knowledgeEntityId]
+							: []
 					)
 				),
 			],
 			relationshipIds: [
 				...new Set(
 					subjects.flatMap(({ attributes }) =>
-						attributes.knowledgeRelationshipId ? [attributes.knowledgeRelationshipId] : []
+						attributes.available && attributes.knowledgeRelationshipId
+							? [attributes.knowledgeRelationshipId]
+							: []
 					)
 				),
 			],
@@ -248,10 +297,19 @@ export class IncidentAnalysisController {
 
 	selectionUrl(selection: IncidentSelection) {
 		const url = new URL(page.url);
-		for (const key of ["entry", "entity", "relationship", "summary", "node", "edge"] as const) {
+		for (const key of [
+			"entry",
+			"milestone",
+			"entity",
+			"relationship",
+			"summary",
+			"node",
+			"edge",
+		] as const) {
 			url.searchParams.delete(key);
 		}
 		if (selection.entryId) url.searchParams.set("entry", selection.entryId);
+		else if (selection.milestoneId) url.searchParams.set("milestone", selection.milestoneId);
 
 		const graphSelection = selection.mapSelection;
 		if (graphSelection?.kind === "entity") {
@@ -298,7 +356,7 @@ export class IncidentAnalysisController {
 	};
 
 	editSelectedEntry = () => {
-		if (this.selectedEntry) this.entryEditor.setEditing(this.selectedEntry);
+		if (this.canEdit && this.selectedEntry) this.entryEditor.setEditing(this.selectedEntry);
 	};
 
 	dismissInspector = () => {
@@ -316,6 +374,8 @@ export class IncidentAnalysisController {
 	};
 
 	selectEntry = (id: string, trigger?: HTMLElement) => this.select({ entryId: id }, trigger);
+
+	selectMilestone = (id: string, trigger?: HTMLElement) => this.select({ milestoneId: id }, trigger);
 
 	openInspector = (event: MouseEvent) => {
 		if (event.currentTarget instanceof HTMLElement) this.returnFocus = event.currentTarget;

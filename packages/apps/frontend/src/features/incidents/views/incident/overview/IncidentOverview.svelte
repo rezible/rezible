@@ -1,113 +1,151 @@
 <script lang="ts">
 	import { resolve } from "$app/paths";
-	import * as Card from "$components/ui/card";
-	import * as Field from "$components/ui/field";
-	import { Separator } from "$components/ui/separator";
 	import { Badge } from "$components/ui/badge";
-	import { Button } from "$components/ui/button";
-	import { Input } from "$components/ui/input";
-	import { Textarea } from "$components/ui/textarea";
+	import LoadingQueryWrapper from "$components/layout/loading-query-wrapper/LoadingQueryWrapper.svelte";
 	import { initIncidentOverviewController } from "./controller.svelte";
 
-	const statusLabel = (status: string) => status.replace("_", " ").replace(/^./, (c) => c.toUpperCase());
-
 	const overview = initIncidentOverviewController();
-	const incAttrs = $derived(overview.incident?.attributes);
-	const start = $derived(incAttrs?.openedAt ? new Date(incAttrs.openedAt).toLocaleString() : undefined);
-
-	const retroAttrs = $derived(overview.retrospective?.attributes);
+	const attrs = $derived(overview.attributes);
 </script>
 
 <div class="min-h-0 flex-1 overflow-y-auto">
 	<div class="mx-auto grid w-full max-w-[1240px] gap-8 p-6 lg:grid-cols-[minmax(0,1fr)_320px]">
-		<main class="min-w-0">
-			<div class="mb-6 flex items-start justify-between gap-4">
-				<div class="min-w-0 flex-1">
-					{#if overview.editing}
-						<Field.FieldGroup>
-							<Field.Field>
-								<Field.FieldLabel for="incident-title">Title</Field.FieldLabel>
-								<Input id="incident-title" bind:value={overview.title} />
-							</Field.Field>
-							<Field.Field>
-								<Field.FieldLabel for="incident-summary">Summary</Field.FieldLabel>
-								<Textarea id="incident-summary" bind:value={overview.summary} rows={3} />
-							</Field.Field>
-						</Field.FieldGroup>
-					{:else}
-						<h1 class="text-3xl font-semibold tracking-tight">
-							{incAttrs?.title ?? "Incident"}
-						</h1>
-						<p class="mt-2 text-lg text-muted-foreground">{incAttrs?.summary}</p>
-					{/if}
-				</div>
-				{#if overview.editing}
-					<div class="flex w-full shrink-0 flex-col gap-2 sm:w-auto sm:flex-row">
-						<Button
-							variant="outline"
-							disabled={overview.saving}
-							onclick={() => (overview.editing = false)}
-						>
-							Cancel
-						</Button>
-						<Button disabled={overview.saving} onclick={overview.save}>
-							{overview.saving ? "Saving…" : "Save"}
-						</Button>
+		<main class="flex min-w-0 flex-col gap-6">
+			<h1 class="text-2xl font-semibold">{attrs?.title ?? "Incident"}</h1>
+			{#if attrs}
+				<p class="whitespace-pre-wrap text-muted-foreground">{attrs.summary}</p>
+				<dl class="grid gap-4 text-sm sm:grid-cols-3">
+					<div>
+						<dt class="text-muted-foreground">Response state</dt>
+						<dd class="capitalize">{attrs.responseState}</dd>
 					</div>
-				{:else}
-					<Button variant="ghost" onclick={overview.beginEdit}>Edit</Button>
+					<div>
+						<dt class="text-muted-foreground">Severity</dt>
+						<dd>{attrs.severity?.attributes?.name ?? "Unspecified"}</dd>
+					</div>
+					<div>
+						<dt class="text-muted-foreground">Type</dt>
+						<dd>{attrs.type?.attributes?.name ?? "Unspecified"}</dd>
+					</div>
+					<div>
+						<dt class="text-muted-foreground">Opened</dt>
+						<dd>{overview.dateLabel(attrs.openedAt)}</dd>
+					</div>
+					<div>
+						<dt class="text-muted-foreground">Resolved</dt>
+						<dd>{overview.dateLabel(attrs.resolvedAt)}</dd>
+					</div>
+					<div>
+						<dt class="text-muted-foreground">Updated</dt>
+						<dd>{overview.dateLabel(attrs.updatedAt)}</dd>
+					</div>
+					{#each attrs.fieldSelections as field (field.fieldId)}
+						<div>
+							<dt class="text-muted-foreground">{field.fieldName}</dt>
+							<dd>{field.option.attributes.value}</dd>
+						</div>
+					{/each}
+				</dl>
+				{#if attrs.tags.length}
+					<div class="flex flex-wrap gap-2" aria-label="Tags">
+						{#each attrs.tags as tag (tag.id)}
+							<Badge variant="secondary">{tag.attributes.key}: {tag.attributes.value}</Badge>
+						{/each}
+					</div>
 				{/if}
-			</div>
-
-			{#if overview.error}
-				<p class="mb-4 text-sm text-destructive" role="alert">{overview.error}</p>
+				{#if overview.milestones.length}
+					<section class="flex flex-col gap-3 border-t pt-4" aria-labelledby="incident-milestones">
+						<h2 id="incident-milestones" class="font-semibold">Milestones</h2>
+						<ol class="flex flex-col gap-3 text-sm">
+							{#each overview.milestones as milestone (milestone.id)}
+								<li>
+									<div class="flex flex-wrap justify-between gap-2">
+										<span class="font-medium capitalize">
+											{milestone.attributes.kind}
+										</span>
+										<time datetime={milestone.attributes.timestamp}>
+											{overview.dateLabel(milestone.attributes.timestamp)}
+										</time>
+									</div>
+									<p class="whitespace-pre-wrap text-muted-foreground">
+										{milestone.attributes.description}
+									</p>
+								</li>
+							{/each}
+						</ol>
+					</section>
+				{/if}
+				{#if overview.impacts.length}
+					<section class="flex flex-col gap-3 border-t pt-4" aria-labelledby="incident-impacts">
+						<h2 id="incident-impacts" class="font-semibold">Impacts</h2>
+						{#each overview.impacts as impact (impact.id)}
+							<div class="text-sm">
+								<p class="font-medium">{impact.name}</p>
+								<p class="whitespace-pre-wrap">{impact.note}</p>
+								{#if impact.source}
+									<p class="text-muted-foreground">Source: {impact.source}</p>
+								{/if}
+							</div>
+						{/each}
+					</section>
+				{/if}
 			{/if}
-
-			<Card.Root>
-				<Card.Header><Card.Title>Incident details</Card.Title></Card.Header>
-				<Card.Content class="grid gap-5">
-					<div class="grid gap-5 sm:grid-cols-3">
-						<div>
-							<p class="text-sm text-muted-foreground">Severity</p>
-							<Badge class="mt-2">{incAttrs?.severity.attributes.name ?? "—"}</Badge>
-						</div>
-						<div>
-							<p class="text-sm text-muted-foreground">Status</p>
-							<p class="mt-2 font-medium text-primary">
-								{statusLabel(incAttrs?.currentStatus ?? "")}
-							</p>
-						</div>
-					</div>
-					<Separator />
-					<div class="grid gap-5 sm:grid-cols-3">
-						<div>
-							<p class="text-sm text-muted-foreground">Started</p>
-							<p class="mt-2 font-medium">{start ?? "—"}</p>
-						</div>
-					</div>
-				</Card.Content>
-			</Card.Root>
 		</main>
-		<aside class="min-w-0">
-			<Card.Root>
-				<Card.Header><Card.Title>Review status</Card.Title></Card.Header>
-				<Card.Content>
-					{#if incAttrs && retroAttrs}
-						{@const reportHref = resolve("/incidents/[slug]/[[view=incidentView]]", {
-							slug: incAttrs.slug,
-							view: "report",
-						})}
-						<p class="font-medium">{statusLabel(retroAttrs.state)}</p>
-						<a href={reportHref} class="mt-5 inline-block font-medium text-primary underline">
+		<aside class="flex min-w-0 flex-col gap-6 text-sm">
+			<section class="flex flex-col gap-3" aria-labelledby="incident-retrospective">
+				<h2 id="incident-retrospective" class="font-semibold">Retrospective</h2>
+				{#if overview.view.incidentRetrospectiveId}
+					<LoadingQueryWrapper query={overview.view.retrospectiveQuery} feedbackOnly />
+					{#if overview.retrospective && attrs}
+						<p class="capitalize">{overview.retrospectiveState}</p>
+						<a
+							class="underline"
+							href={resolve("/incidents/[slug]/[[view=incidentView]]", {
+								slug: attrs.slug,
+								view: "report",
+							})}
+						>
 							Open report
 						</a>
-					{:else}
-						<p class="text-sm text-muted-foreground">
-							No retrospective is associated with this incident.
-						</p>
 					{/if}
-				</Card.Content>
-			</Card.Root>
+				{:else}
+					<p class="text-muted-foreground">No retrospective is associated with this incident.</p>
+				{/if}
+			</section>
+			{#if overview.roles.length}
+				<section class="flex flex-col gap-3 border-t pt-4" aria-labelledby="incident-roles">
+					<h2 id="incident-roles" class="font-semibold">Roles</h2>
+					{#each overview.roles as assignment (assignment.id)}
+						<div>
+							<p>{assignment.user}</p>
+							<p class="text-muted-foreground">{assignment.role}</p>
+						</div>
+					{/each}
+				</section>
+			{/if}
+			{#if overview.view.situations.length}
+				<section class="flex flex-col gap-3 border-t pt-4" aria-labelledby="incident-situations">
+					<h2 id="incident-situations" class="font-semibold">Linked situations</h2>
+					{#each overview.view.situations as situation (situation.id)}
+						<div>
+							<a
+								class="underline"
+								href={resolve("/situations/[id]/[[view=situationView]]", {
+									id: situation.id,
+								})}
+							>
+								{situation.title}
+							</a>
+							<p class="text-muted-foreground">{situation.summary}</p>
+						</div>
+					{/each}
+				</section>
+			{/if}
+			{#if overview.ticketUrl}
+				<a class="underline" href={overview.ticketUrl} target="_blank" rel="noreferrer">
+					{attrs?.externalTicket?.title || "Open external ticket"}
+				</a>
+			{/if}
 		</aside>
 	</div>
 </div>

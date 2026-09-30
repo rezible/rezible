@@ -17,6 +17,16 @@
 		<div class="flex min-w-0 flex-col gap-3 break-words text-sm">
 			{#if details?.kind === "entry"}
 				<EntryDetails {details} />
+			{:else if details?.kind === "milestone"}
+				<h3 class="font-semibold capitalize">{details.attrs.kind}</h3>
+				<time datetime={details.attrs.timestamp}>{details.occurredAtLabel}</time>
+				<p class="whitespace-pre-wrap">{details.attrs.description}</p>
+				{#if details.attrs.source}
+					<p class="text-muted-foreground">Source: {details.attrs.source}</p>
+				{/if}
+				{#if details.attrs.user?.attributes?.name}
+					<p>{details.attrs.user.attributes.name}</p>
+				{/if}
 			{:else if details?.kind === "subject"}
 				<SubjectDetails {details} />
 			{:else if controller.mapSelection?.kind === "summary"}
@@ -25,7 +35,7 @@
 				<p role="status">Loading selected record…</p>
 			{:else}
 				<p role="status">The selected record is unavailable.</p>
-				<Button variant="outline" size="sm" onclick={controller.systemAnalysis.refreshAll}>
+				<Button variant="outline" size="sm" onclick={controller.retrySelection}>
 					Retry analysis
 				</Button>
 			{/if}

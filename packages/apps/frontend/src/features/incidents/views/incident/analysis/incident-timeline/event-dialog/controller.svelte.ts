@@ -5,7 +5,8 @@ import {
 	type SystemAnalysisEntry,
 } from "$lib/api";
 import { createMutation } from "@tanstack/svelte-query";
-import { Context } from "runed";
+import { entryInput } from "./entry-input";
+import { Context, watch } from "runed";
 import {
 	fromDate,
 	getLocalTimeZone,
@@ -20,6 +21,7 @@ export class IncidentEventDialogController {
 	analysis = useSystemAnalysisController();
 	incident = useIncidentView();
 	open = $state(false);
+	canEdit = $derived(this.incident.documentAccess?.canEdit ?? false);
 	editingEntry = $state.raw<SystemAnalysisEntry>();
 	title = $state("");
 	kind = $state<SystemAnalysisEntry["attributes"]["kind"]>("observation");
@@ -35,9 +37,16 @@ export class IncidentEventDialogController {
 
 	constructor(onChanged: () => unknown) {
 		this.onChanged = onChanged;
+		watch(
+			() => this.incident.incidentId,
+			() => {
+				this.open = false;
+			}
+		);
 	}
 
 	setCreating = (attributes?: { timestamp?: string }) => {
+		if (!this.canEdit) return;
 		this.editingEntry = undefined;
 		this.title = "";
 		this.kind = "observation";
@@ -48,6 +57,7 @@ export class IncidentEventDialogController {
 		this.show();
 	};
 	setEditing = (entry: SystemAnalysisEntry) => {
+		if (!this.canEdit) return;
 		this.editingEntry = entry;
 		this.title = entry.attributes.title;
 		this.kind = entry.attributes.kind;
@@ -71,14 +81,18 @@ export class IncidentEventDialogController {
 	};
 
 	confirm = async () => {
-		if (this.loading || !this.title.trim() || !this.analysis.analysisId) return;
+		if (!this.canEdit || this.loading || !this.title.trim() || !this.analysis.analysisId) return;
 		this.error = undefined;
-		const attributes = {
-			title: this.title.trim(),
-			kind: this.kind,
-			body: this.body,
-			...(this.hasTimestamp ? { occurredAt: this.timestamp.toAbsoluteString() } : {}),
-		};
+		const analysisId = this.analysis.analysisId;
+		const attributes = entryInput(
+			{
+				title: this.title.trim(),
+				kind: this.kind,
+				body: this.body,
+				occurredAt: this.hasTimestamp ? this.timestamp.toAbsoluteString() : null,
+			},
+			this.editingEntry
+		);
 		try {
 			if (this.editingEntry) {
 				await this.updateEntryMut.mutateAsync({
@@ -91,10 +105,12 @@ export class IncidentEventDialogController {
 					body: { attributes },
 				});
 			}
-			void this.onChanged();
-			this.open = false;
+			if (analysisId === this.analysis.analysisId) {
+				void this.onChanged();
+				this.open = false;
+			}
 		} catch (error) {
-			this.error = error as ErrorModel;
+			if (analysisId === this.analysis.analysisId) this.error = error as ErrorModel;
 		}
 	};
 }

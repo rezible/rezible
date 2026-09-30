@@ -10,25 +10,20 @@
 	};
 	const { entity }: Props = $props();
 
-	type IncidentStatus = IncidentAttributes["currentStatus"];
+	type IncidentStatus = IncidentAttributes["responseState"];
 
 	const statusLabels: Record<IncidentStatus, string> = {
+		unknown: "Unknown",
 		started: "Started",
 		mitigated: "Mitigated",
 		resolved: "Resolved",
-	};
-
-	const statusClasses: Record<IncidentStatus, string> = {
-		started: "border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300",
-		mitigated: "border-sky-500/40 bg-sky-500/10 text-sky-700 dark:text-sky-300",
-		resolved: "border-emerald-500/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
 	};
 
 	const query = createQuery(() => getIncidentOptions({ path: { id: entity.entityId } }));
 	const incident = $derived(query.data?.data);
 
 	function normalizeStatus(value: string | undefined): IncidentStatus {
-		return value && value in statusLabels ? (value as IncidentStatus) : "started";
+		return value && value in statusLabels ? (value as IncidentStatus) : "unknown";
 	}
 </script>
 
@@ -38,17 +33,17 @@
 	<span>invalid incident</span>
 {:else}
 	{@const attrs = incident.attributes}
-	{@const status = normalizeStatus(attrs.currentStatus)}
+	{@const status = normalizeStatus(attrs.responseState)}
 	<a
 		href={resolve("/incidents/[slug]/[[view=incidentView]]", { slug: attrs.slug || incident.id })}
 		class="grid gap-2 rounded-md border bg-muted/20 p-3 transition hover:border-primary/40 hover:bg-muted/40"
 	>
 		<div class="flex flex-wrap items-center gap-2">
-			<Badge variant="outline" class={statusClasses[status]}>{statusLabels[status]}</Badge>
-			{#if attrs.severity?.attributes.name}
+			<Badge variant="outline">{statusLabels[status]}</Badge>
+			{#if attrs.severity?.attributes?.name}
 				<Badge variant="secondary">{attrs.severity.attributes.name}</Badge>
 			{/if}
-			{#if attrs.type?.attributes.name}
+			{#if attrs.type?.attributes?.name}
 				<Badge variant="outline">{attrs.type.attributes.name}</Badge>
 			{/if}
 			<Badge variant="outline">incident</Badge>

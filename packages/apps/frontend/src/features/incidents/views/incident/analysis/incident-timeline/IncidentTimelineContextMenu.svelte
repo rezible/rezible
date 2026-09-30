@@ -39,10 +39,12 @@
 
 <ContextMenu title="Timeline Actions" {containerRect} {clickPos}>
 	<div id="timeline-ctx-container" onclick={onClicked} role="presentation">
-		{#if event}
+		{#if event && eventDialog.canEdit}
 			<Button onclick={onEditEventClick}>Edit Event</Button>
 		{/if}
 
-		<Button onclick={onAddEventClick}>Add New Event</Button>
+		{#if eventDialog.canEdit}
+			<Button onclick={onAddEventClick}>Add New Event</Button>
+		{/if}
 	</div>
 </ContextMenu>

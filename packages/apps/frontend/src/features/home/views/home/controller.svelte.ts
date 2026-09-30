@@ -23,7 +23,7 @@ class HomeController {
 
 	incidentsQuery = createQuery(() =>
 		listIncidentsOptions({
-			query: { page: 1, pageSize: 3, statuses: ["started", "mitigated"] },
+			query: { page: 1, pageSize: 3, responseStates: ["started", "mitigated"] },
 		})
 	);
 

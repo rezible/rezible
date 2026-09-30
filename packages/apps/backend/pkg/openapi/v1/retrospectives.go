@@ -12,6 +12,7 @@ import (
 )
 
 type RetrospectivesHandler interface {
+	CreateIncidentRetrospective(context.Context, *CreateIncidentRetrospectiveRequest) (*CreateIncidentRetrospectiveResponse, error)
 	ListRetrospectives(context.Context, *ListRetrospectivesRequest) (*ListRetrospectivesResponse, error)
 	GetRetrospective(context.Context, *GetRetrospectiveRequest) (*GetRetrospectiveResponse, error)
 	UpdateRetrospective(context.Context, *UpdateRetrospectiveRequest) (*UpdateRetrospectiveResponse, error)
@@ -23,6 +24,7 @@ type RetrospectivesHandler interface {
 }
 
 func (o operations) RegisterRetrospectives(api huma.API) {
+	huma.Register(api, CreateIncidentRetrospective, o.CreateIncidentRetrospective)
 	huma.Register(api, ListRetrospectives, o.ListRetrospectives)
 	huma.Register(api, GetRetrospective, o.GetRetrospective)
 	huma.Register(api, UpdateRetrospective, o.UpdateRetrospective)
@@ -216,3 +218,15 @@ type SetRetrospectiveReportFindingSelectionRequestAttributes struct {
 
 type SetRetrospectiveReportFindingSelectionRequest IdRequestWithBody[SetRetrospectiveReportFindingSelectionRequestAttributes]
 type SetRetrospectiveReportFindingSelectionResponse CollectionResponse[SystemAnalysisEntry]
+
+var CreateIncidentRetrospective = huma.Operation{
+	OperationID: "create-incident-retrospective",
+	Method:      http.MethodPost,
+	Path:        "/incidents/{id}/retrospective",
+	Summary:     "Start a retrospective for a resolved incident",
+	Tags:        retrospectivesTags,
+	Errors:      ErrorCodes(http.StatusConflict),
+}
+
+type CreateIncidentRetrospectiveRequest IdRequest
+type CreateIncidentRetrospectiveResponse ItemResponse[Retrospective]

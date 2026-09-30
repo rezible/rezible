@@ -24,7 +24,9 @@
 	<p class="whitespace-pre-wrap">{attrs.body}</p>
 {/if}
 
-<Button variant="outline" size="sm" onclick={controller.editSelectedEntry}>Edit entry</Button>
+{#if controller.canEdit}
+	<Button variant="outline" size="sm" onclick={controller.editSelectedEntry}>Edit entry</Button>
+{/if}
 
 {#if attrs.reference}
 	<Separator />
@@ -57,8 +59,7 @@
 						{subject.label}
 					</a>
 				{:else}
-					<p class="text-muted-foreground">{subject.unavailable}</p>
-					<span class="text-xs">{subject.reference}</span>
+					<p class="text-muted-foreground">{subject.label}</p>
 				{/if}
 			</div>
 		{/each}

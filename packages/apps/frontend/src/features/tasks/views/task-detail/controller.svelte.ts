@@ -1,18 +1,8 @@
-import {
-	getTaskOptions,
-	updateTaskMutation,
-	getIncidentOptions,
-	getUserOptions,
-	getSystemAnalysisEntryOptions,
-	listInboxItemsQueryKey,
-	type Task,
-} from "$lib/api";
-import { createMutation, createQuery, useQueryClient } from "@tanstack/svelte-query";
+import { getTaskOptions, getIncidentOptions, getUserOptions } from "$lib/api";
+import { createQuery } from "@tanstack/svelte-query";
 import { Context, watch, type Getter } from "runed";
 
 export class TaskDetailController {
-	private queryClient = useQueryClient();
-
 	private taskId = $state("");
 	taskQuery = createQuery(() => ({
 		...getTaskOptions({ path: { id: this.taskId } }),
@@ -27,55 +17,31 @@ export class TaskDetailController {
 	}));
 	incident = $derived(this.incidentQuery.data?.data);
 
-	private ownerId = $derived(this.task?.attributes.ownerId ?? "");
+	private ownerId = $derived(this.task?.attributes.ownerId?.id ?? "");
 	ownerQuery = createQuery(() => ({
 		...getUserOptions({ path: { id: this.ownerId } }),
-		enabled: !!this.ownerId,
+		enabled: !!this.ownerId && !this.task?.attributes.ownerId?.attributes,
 	}));
 
-	private findingId = $derived(this.task?.attributes.originEntryId ?? "");
-	findingQuery = createQuery(() => ({
-		...getSystemAnalysisEntryOptions({ path: { id: this.findingId } }),
-		enabled: !!this.findingId,
-	}));
-
-	draftState = $state<Task["attributes"]["state"]>("open");
-	private initializedFor = "";
-
-	update = createMutation(() => ({
-		...updateTaskMutation(),
-		onSuccess: (response) => {
-			this.queryClient.setQueryData(
-				getTaskOptions({ path: { id: response.data.id } }).queryKey,
-				response
-			);
-			this.draftState = response.data.attributes.state;
-			void this.queryClient.invalidateQueries({ queryKey: listInboxItemsQueryKey() });
-		},
-	}));
+	ownerName = $derived.by(() => {
+		const owner = this.task?.attributes.ownerId;
+		if (!owner) return "Unassigned";
+		return owner.attributes?.name ?? this.ownerQuery.data?.data.attributes.name ?? "Unavailable user";
+	});
+	tickets = $derived(
+		(this.task?.attributes.externalTickets ?? []).map((ticket) => ({
+			id: ticket.id,
+			title: ticket.title || ticket.reference || "External ticket",
+			href: ticket.url && /^https?:\/\//i.test(ticket.url) ? ticket.url : undefined,
+		}))
+	);
 
 	constructor(idFn: Getter<string>) {
+		this.taskId = idFn();
 		watch(idFn, (id) => {
 			this.taskId = id;
 		});
-		watch(
-			() => this.task,
-			(task) => {
-				if (!task || this.initializedFor === task.id) return;
-				this.initializedFor = task.id;
-				this.draftState = task.attributes.state;
-			}
-		);
 	}
-
-	setState = (state: Task["attributes"]["state"]) => {
-		this.draftState = state;
-	};
-
-	save = () => {
-		if (!this.task || this.update.isPending) return;
-		this.update.mutate({ path: { id: this.task.id }, body: { attributes: { state: this.draftState } } });
-	};
 }
 
 const ctx = new Context<TaskDetailController>("TaskDetailController");

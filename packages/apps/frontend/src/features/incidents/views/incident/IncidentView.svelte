@@ -4,6 +4,7 @@
 	import { initIncidentViewController } from "./controller.svelte";
 	import { initIncidentCollaborationController } from "./collaboration.svelte";
 
+	import LoadingQueryWrapper from "$components/layout/loading-query-wrapper/LoadingQueryWrapper.svelte";
 	import FeatureNavigationRail from "$components/layout/feature-navigation-rail/FeatureNavigationRail.svelte";
 	import IncidentPageActions from "./PageActions.svelte";
 	import IncidentOverview from "./overview/IncidentOverview.svelte";
@@ -24,7 +25,7 @@
 
 	registerPageDescriptor(() => ({
 		title: view.incident?.attributes.title ?? "Incident",
-		status: view.incident?.attributes.currentStatus,
+		status: view.incident?.attributes.responseState,
 		parents: [{ label: "Incidents", path: resolve("/incidents") }],
 		pageActions: actions,
 	}));
@@ -34,27 +35,31 @@
 	<IncidentPageActions controller={view} />
 {/snippet}
 
-<FeatureNavigationRail
-	route="/incidents/[slug]/[[view=incidentView]]"
-	label="Incident"
-	entries={[
-		{
-			label: "Overview",
-			icon: RiDashboardLine,
-			component: IncidentOverview,
-			params: { slug },
-		},
-		{
-			label: "Analysis",
-			icon: RiBarChartLine,
-			component: IncidentAnalysis,
-			params: { slug, view: "analysis" },
-		},
-		{
-			label: "Report",
-			icon: RiArticleLine,
-			component: IncidentReport,
-			params: { slug, view: "report" },
-		},
-	]}
-/>
+<LoadingQueryWrapper query={view.incidentQuery} feedbackOnly />
+
+{#if view.incident}
+	<FeatureNavigationRail
+		route="/incidents/[slug]/[[view=incidentView]]"
+		label="Incident"
+		entries={[
+			{
+				label: "Overview",
+				icon: RiDashboardLine,
+				component: IncidentOverview,
+				params: { slug },
+			},
+			{
+				label: "Analysis",
+				icon: RiBarChartLine,
+				component: IncidentAnalysis,
+				params: { slug, view: "analysis" },
+			},
+			{
+				label: "Report",
+				icon: RiArticleLine,
+				component: IncidentReport,
+				params: { slug, view: "report" },
+			},
+		]}
+	/>
+{/if}

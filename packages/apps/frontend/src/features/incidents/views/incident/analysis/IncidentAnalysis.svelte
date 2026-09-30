@@ -1,4 +1,5 @@
 <script lang="ts">
+	import RetrospectiveEmptyState from "../retrospective-empty-state/RetrospectiveEmptyState.svelte";
 	import { Button } from "$components/ui/button";
 	import ErrorAlert from "$components/layout/error-alert/ErrorAlert.svelte";
 	import { initIncidentAnalysisController } from "./controller.svelte";
@@ -15,16 +16,22 @@
 </script>
 
 <div class="flex h-full min-h-0 min-w-0 flex-col gap-3 overflow-hidden">
-	{#if incAttrs?.retrospectiveId && viewController.retrospectiveQuery.isPending}
+	{#if incAttrs?.retrospective?.id && viewController.retrospectiveQuery.isPending}
 		<p role="status" class="p-6 text-sm text-muted-foreground">Loading analysis...</p>
 	{:else if retroQuery.error && !viewController.retrospective}
 		<div role="alert" class="p-4">
 			<ErrorAlert error={retroQuery.error} />
 			<Button variant="outline" onclick={() => retroQuery.refetch()}>Retry analysis</Button>
 		</div>
+	{:else if !viewController.incidentRetrospectiveId}
+		<RetrospectiveEmptyState />
 	{:else if !controller.systemAnalysis.analysisId}
 		<p class="p-6 text-sm text-muted-foreground">No analysis is associated with this incident.</p>
 	{:else}
+		{#if retroQuery.error}
+			<ErrorAlert error={retroQuery.error} />
+			<Button variant="outline" onclick={() => retroQuery.refetch()}>Retry analysis</Button>
+		{/if}
 		<div class="flex shrink-0 flex-wrap items-center gap-2">
 			<Button variant="outline" size="sm" onclick={controller.systemAnalysis.refreshAll}>
 				Refresh analysis

@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { onMount } from "svelte";
-	import type { Editor } from "@tiptap/core";
 	import type { HocuspocusProvider } from "@hocuspocus/provider";
 	import {
 		configureBaseExtensions,
@@ -16,6 +15,7 @@
 	import TiptapEditor, { Editor as SvelteEditor } from "$components/tiptap-editor/TiptapEditor.svelte";
 	import { RezUserSuggestion } from "$components/tiptap-editor/user-suggestions/user-suggestion.svelte";
 	import { activeAnnotation, activeEditor } from "../activeEditor.svelte";
+	import { useIncidentView } from "../../controller.svelte";
 	import { useIncidentCollaboration } from "../../collaboration.svelte";
 	import MenuBar from "./MenuBar.svelte";
 	import { watch } from "runed";
@@ -29,7 +29,8 @@
 	const session = useUserSessionState();
 	const collab = useIncidentCollaboration();
 
-	const isEditable = $derived(true);
+	const view = useIncidentView();
+	const isEditable = $derived(!!view.documentAccess?.canEdit && collab.canEdit && collab.initialSynced);
 
 	// TODO: load this
 	const userAccentColor = "#a33333";
@@ -48,10 +49,15 @@
 
 	let editor = $state<SvelteEditor>();
 	const createEditor = (provider?: HocuspocusProvider) => {
+		if (editor) {
+			if (activeEditor.editor === editor) activeEditor.clear();
+			editor.destroy();
+			editor = undefined;
+		}
 		if (!provider) return;
 		editor = new SvelteEditor({
 			extensions: configureEditorExtensions(section.field, provider),
-			editable: true,
+			editable: isEditable,
 			autofocus: false,
 			editorProps: {
 				attributes: {
@@ -60,9 +66,6 @@
 			},
 			onFocus({ editor }) {
 				activeEditor.set(editor, section.field);
-			},
-			onBlur() {
-				// setIsActive(undefined)
 			},
 		});
 	};
@@ -106,6 +109,8 @@
 	onfocus={onEditorContainerFocused}
 >
 	{#if editor}
-		<TiptapEditor bind:editor />
+		{#key editor}
+			<TiptapEditor bind:editor />
+		{/key}
 	{/if}
 </div>

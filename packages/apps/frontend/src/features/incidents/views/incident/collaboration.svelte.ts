@@ -1,135 +1,164 @@
 import { HocuspocusProvider, WebSocketStatus, type StatesArray } from "@hocuspocus/provider";
-import type { DocumentSessionAuth } from "@rezible/api-client-ts";
-import { requestDocumentSessionAuthMutation } from "@rezible/api-client-ts/svelte-query";
+import { requestDocumentSessionAuthMutation, type DocumentSessionAuth } from "$lib/api";
 import { createMutation } from "@tanstack/svelte-query";
 import { Context, watch, type Getter } from "runed";
 import { onMount } from "svelte";
-
-const shouldRetryStatus = (status?: number) => {
-	return !(status === undefined || status === 408 || status === 429 || (status >= 500 && status < 600))
-}
+import { Doc } from "yjs";
 
 export class IncidentCollaborationController {
-	private documentId = $state.raw<string>();
-	private token = $state.raw<string>();
+	private documentId?: string;
+	private document?: Doc;
+	private generation = 0;
+	private connecting = false;
+	private initialToken?: string;
 
 	provider = $state.raw<HocuspocusProvider>();
 	awareness = $state.raw<StatesArray>([]);
 	status = $state.raw<WebSocketStatus>(WebSocketStatus.Disconnected);
 	error = $state.raw<Error>();
-
+	canEdit = $state(false);
 	initialSynced = $state(false);
 	unsyncedChanges = $state(0);
 
 	constructor(idFn: Getter<string | undefined>) {
-		watch(idFn, (id) => {
-			this.connect(id);
-		});
-		onMount(() => {
-			return () => {
-				this.cleanup();
-			};
-		});
+		watch(idFn, (id) => void this.connect(id));
+		onMount(() => () => this.cleanup());
 	}
 
-	private getToken = async () => {
-		
-	}
-
-	private createProvider({serverUrl: url, name, token}: DocumentSessionAuth) {
-		this.provider = new HocuspocusProvider({
-			url,
-			name,
-			token: async () => {
-				let t = token;
-				if (!!this.token) {
-					const { data } = await this.requestSessionAuthMut.mutateAsync({
-						path: {id: name}
-					});
-					t = data.token;
-				}
-				this.token = t;
-				return t;
-			},
-			onAwarenessChange: ({ states }) => {
-				console.log("awareness", states);
-				this.awareness = states;
-			},
-			onStatus: ({ status }) => {
-				this.status = status;
-			},
-			onAuthenticated: () => {
-				this.error = undefined;
-			},
-			onAuthenticationFailed: ({ reason }) => {
-				console.log("auth failed", reason);
-				if (this.documentId !== name) return;
-				if (!this.error) this.error = new Error(reason);
-				this.provider?.disconnect();
-			},
-			onSynced: () => {
-				this.initialSynced = true;
-			},
-			onUnsyncedChanges: ({ number }) => {
-				this.unsyncedChanges = number;
-			},
-		});
-	}
-
-	private requestSessionAuthMut = createMutation(() => ({
+	private requestSessionAuth = createMutation(() => ({
 		...requestDocumentSessionAuthMutation(),
 		retryDelay: 250,
 		retry: (failureCount, error) => {
-			return failureCount < 2 && shouldRetryStatus(error.status);
-		},
-		onError: (error, variables) => {
-			if (variables.path.id !== this.documentId) return;
-			const prefix = error.status ? `(HTTP ${error.status}) ` : "";
-			this.error = new Error(prefix + (error.detail ?? "Error"));
+			const status = error.status;
+			return (
+				failureCount < 2 &&
+				(status === undefined ||
+					status === 0 ||
+					status === 408 ||
+					status === 429 ||
+					(status >= 500 && status < 600))
+			);
 		},
 	}));
 
-	async connect(id?: string) {
-		if (!id) {
-			this.cleanup();
-			return;
+	private createProvider(auth: DocumentSessionAuth, generation: number) {
+		this.initialToken = auth.token;
+		const current = () => this.generation === generation;
+		this.provider = new HocuspocusProvider({
+			url: auth.serverUrl,
+			name: auth.name,
+			document: this.document,
+			token: async () => {
+				if (!current()) return "";
+				if (this.initialToken) {
+					const token = this.initialToken;
+					this.initialToken = undefined;
+					return token;
+				}
+				try {
+					const { data } = await this.requestSessionAuth.mutateAsync({ path: { id: auth.name } });
+					return current() ? data.token : "";
+				} catch (error) {
+					if (current()) {
+						this.setError(error);
+						this.provider?.configuration.websocketProvider.disconnect();
+					}
+					return "";
+				}
+			},
+			onAwarenessChange: ({ states }) => {
+				if (current()) this.awareness = states;
+			},
+			onStatus: ({ status }) => {
+				if (current()) this.status = status;
+			},
+			onAuthenticated: ({ scope }) => {
+				if (!current()) return;
+				this.error = undefined;
+				this.canEdit = scope === "read-write";
+			},
+			onAuthenticationFailed: ({ reason }) => {
+				if (!current()) return;
+				this.setError(new Error(reason));
+				this.provider?.configuration.websocketProvider.disconnect();
+			},
+			onSynced: ({ state }) => {
+				if (current()) this.initialSynced = state;
+			},
+			onUnsyncedChanges: ({ number }) => {
+				if (current()) this.unsyncedChanges = number;
+			},
+		});
+	}
+
+	private setError(error: unknown) {
+		this.canEdit = false;
+		if (error instanceof Error) {
+			this.error = error;
+		} else if (
+			error &&
+			typeof error === "object" &&
+			"detail" in error &&
+			typeof error.detail === "string"
+		) {
+			this.error = new Error(error.detail);
+		} else {
+			this.error = new Error("Unable to connect to the report.");
 		}
-		if (id === this.documentId && this.provider) return;
+	}
+
+	async connect(id?: string) {
 		if (id !== this.documentId) this.cleanup();
+		if (!id || this.provider || this.connecting) return;
 		this.documentId = id;
+		this.document ??= new Doc();
+		const generation = this.generation;
+		this.connecting = true;
 		this.error = undefined;
 		try {
-			const { data: auth } = await this.requestSessionAuthMut.mutateAsync({ path: { id } });
-			if (this.documentId === id && !this.provider) this.createProvider(auth);
-		} catch {
-			// The mutation error handler exposes the failure to the report.
+			const { data } = await this.requestSessionAuth.mutateAsync({ path: { id } });
+			if (generation === this.generation) this.createProvider(data, generation);
+		} catch (error) {
+			if (generation === this.generation) this.setError(error);
+		} finally {
+			if (generation === this.generation) this.connecting = false;
 		}
 	}
 
 	retry = () => {
+		if (this.connecting) return;
+		this.initialToken = undefined;
 		this.error = undefined;
 		if (this.provider) {
-			void this.provider.connect();
-			return;
+			// Reuse the document and provider; the token callback obtains fresh credentials.
+			const socket = this.provider.configuration.websocketProvider;
+			socket.disconnect();
+			const generation = this.generation;
+			void socket.connect().catch((error: unknown) => {
+				if (generation === this.generation) this.setError(error);
+			});
+		} else {
+			void this.connect(this.documentId);
 		}
-		void this.connect(this.documentId);
 	};
 
 	cleanup() {
-		// https://github.com/ueberdosis/hocuspocus/issues/845
-		try {
-			if (this.provider?.isSynced) this.provider.disconnect();
-			this.provider?.destroy();
-			this.provider = undefined;
-		} catch (e) {
-			console.error("failed to disconnect collaboration provider ", e);
-		}
+		this.generation += 1;
+		const provider = this.provider;
+		this.provider = undefined;
+		provider?.configuration.websocketProvider.disconnect();
+		provider?.destroy();
+		this.document?.destroy();
+		this.document = undefined;
+		this.documentId = undefined;
+		this.initialToken = undefined;
+		this.connecting = false;
 		this.awareness = [];
 		this.status = WebSocketStatus.Disconnected;
 		this.error = undefined;
+		this.canEdit = false;
 		this.initialSynced = false;
 		this.unsyncedChanges = 0;
-		this.documentId = "";
 	}
 }
 

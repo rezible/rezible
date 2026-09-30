@@ -8,11 +8,7 @@
 	type Props = { controller: IncidentViewController };
 	let { controller }: Props = $props();
 
-	const situations = $derived(
-		controller.situationsQuery
-			.map((query) => query.data?.data)
-			.filter((situation): situation is NonNullable<typeof situation> => !!situation)
-	);
+	const situations = $derived(controller.situations);
 </script>
 
 <div class="flex shrink-0 items-center justify-end gap-1 sm:gap-2">
@@ -22,7 +18,7 @@
 			class="inline-flex items-center gap-2 rounded-md border border-border px-3 py-2 text-sm"
 			href={resolve("/situations/[id]/[[view=situationView]]", { id: situation.id })}
 		>
-			<span class="max-w-40 truncate">{situation.attributes.title}</span>
+			<span class="max-w-40 truncate">{situation.title}</span>
 			<RiExternalLinkLine aria-hidden="true" />
 		</a>
 	{:else if situations.length > 1}
@@ -40,10 +36,11 @@
 						class="flex items-center justify-between gap-3 rounded-md px-2 py-1 text-sm hover:bg-muted"
 						href={resolve("/situations/[id]/[[view=situationView]]", { id: situation.id })}
 					>
-						{situation.attributes.title}<RiExternalLinkLine aria-hidden="true" />
+						{situation.title}<RiExternalLinkLine aria-hidden="true" />
 					</a>
 				{/each}
 			</Popover.Content>
 		</Popover.Root>
 	{/if}
+	<Button variant="outline" size="sm" onclick={controller.share}>Share</Button>
 </div>

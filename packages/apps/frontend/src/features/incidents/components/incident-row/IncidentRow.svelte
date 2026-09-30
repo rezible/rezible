@@ -19,8 +19,8 @@
 >
 	<div class="flex flex-wrap items-center gap-2">
 		<span class="min-w-0 break-words text-sm font-medium">{attrs.title}</span>
-		<Badge variant="outline" class="capitalize">{attrs.currentStatus}</Badge>
-		{#if attrs.severity?.attributes.name}
+		<Badge variant="outline" class="capitalize">{attrs.responseState}</Badge>
+		{#if attrs.severity?.attributes?.name}
 			<IncidentSeverity severity={attrs.severity} />
 		{/if}
 	</div>

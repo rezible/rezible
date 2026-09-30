@@ -1367,6 +1367,21 @@ components:
       required:
         - data
       type: object
+    CreateIncidentRetrospectiveResponseBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/CreateIncidentRetrospectiveResponseBody.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          $ref: "#/components/schemas/Retrospective"
+      required:
+        - data
+      type: object
     CreateIncidentRoleAssignmentAttributes:
       additionalProperties: false
       properties:
@@ -13317,6 +13332,67 @@ paths:
       summary: List Milestones for Incident
       tags:
         - Incidents
+  /incidents/{id}/retrospective:
+    post:
+      operationId: create-incident-retrospective
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreateIncidentRetrospectiveResponseBody"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Conflict
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: Start a retrospective for a resolved incident
+      tags:
+        - Retrospectives
   /incidents/{id}/role-assignments:
     post:
       operationId: create-incident-role-assignment

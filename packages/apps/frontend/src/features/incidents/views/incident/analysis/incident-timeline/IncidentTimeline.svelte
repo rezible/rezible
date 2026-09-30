@@ -9,7 +9,6 @@
 	import type { TimelineItem } from "vis-timeline";
 
 	import IncidentTimelineActionsBar from "./IncidentTimelineActionsBar.svelte";
-	import MilestonesDialog from "./milestones-dialog/MilestonesDialog.svelte";
 	import IncidentTimelineMinimap from "./IncidentTimelineMinimap.svelte";
 	import IncidentTimelineContextMenu from "./IncidentTimelineContextMenu.svelte";
 	import { useIncidentAnalysis } from "../controller.svelte";
@@ -93,5 +92,3 @@
 {#if !!analysis.contextMenu.timeline}
 	<IncidentTimelineContextMenu {...analysis.contextMenu.timeline} />
 {/if}
-
-<MilestonesDialog />

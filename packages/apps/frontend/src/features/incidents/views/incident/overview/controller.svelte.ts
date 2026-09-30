@@ -1,49 +1,46 @@
 import { Context } from "runed";
-import { getIncidentOptions, listIncidentsQueryKey, updateIncidentMutation } from "$lib/api";
-import { createMutation, useQueryClient } from "@tanstack/svelte-query";
 import { useIncidentView } from "../controller.svelte";
 
 class IncidentOverviewController {
-	viewController = useIncidentView();
-	incident = $derived(this.viewController.incident);
-	retrospective = $derived(this.viewController.retrospective);
-
-	editing = $state(false);
-	title = $state("");
-	summary = $state("");
-	error = $state("");
-	saving = $state(false);
-
-	queryClient = useQueryClient();
-	updateMutation = createMutation(() => ({ ...updateIncidentMutation() }));
-	async updateSummary(title: string, summary: string) {
-		await this.updateMutation.mutateAsync({
-			path: { id: this.viewController.incidentId },
-			body: { attributes: { title, summary } },
-		});
-		await this.queryClient.invalidateQueries({
-			queryKey: getIncidentOptions({ path: { id: this.viewController.slug } }).queryKey,
-		});
-		await this.queryClient.invalidateQueries({ queryKey: listIncidentsQueryKey() });
-	}
-	beginEdit = () => {
-		this.title = this.incident?.attributes.title ?? "";
-		this.summary = this.incident?.attributes.summary ?? "";
-		this.error = "";
-		this.editing = true;
-	};
-	save = async () => {
-		if (this.saving) return;
-		this.saving = true;
+	view = useIncidentView();
+	incident = $derived(this.view.incident);
+	retrospective = $derived(this.view.retrospective);
+	retrospectiveState = $derived(this.retrospective?.attributes.state.replaceAll("_", " "));
+	attributes = $derived(this.incident?.attributes);
+	milestones = $derived(
+		[...(this.attributes?.milestones ?? [])].sort(
+			(left, right) => Date.parse(left.attributes.timestamp) - Date.parse(right.attributes.timestamp)
+		)
+	);
+	impacts = $derived(
+		(this.attributes?.impacts ?? []).map((impact) => ({
+			id: impact.id,
+			name: impact.knowledgeEntity.attributes?.latestState?.displayName ?? "Unavailable entity",
+			note: impact.note,
+			source: impact.source,
+		}))
+	);
+	roles = $derived(
+		(this.attributes?.roles ?? []).map(({ id, attributes }) => ({
+			id,
+			user: attributes.user.attributes?.name ?? "Unknown user",
+			role: attributes.role.attributes?.name ?? "Unknown role",
+		}))
+	);
+	ticketUrl = $derived.by(() => {
+		const value = this.attributes?.externalTicket?.url;
+		if (!value) return undefined;
 		try {
-			await this.updateSummary(this.title, this.summary);
-			this.editing = false;
-		} catch (error) {
-			this.error = error instanceof Error ? error.message : "Unable to save changes";
-		} finally {
-			this.saving = false;
+			const url = new URL(value);
+			if (url.protocol === "https:" || url.protocol === "http:") return url.href;
+		} catch {
+			return undefined;
 		}
-	};
+	});
+
+	dateLabel(value: string | null | undefined) {
+		return value ? new Date(value).toLocaleString() : "Not recorded";
+	}
 }
 
 const context = new Context<IncidentOverviewController>("IncidentOverviewController");

@@ -23,7 +23,6 @@ import IncidentTimelineMilestoneItemContent, {
 	type Props as TimelineMilestoneComponentProps,
 } from "./IncidentTimelineMilestoneItemContent.svelte";
 import { SvelteSet } from "svelte/reactivity";
-import { initMilestonesDialog } from "./milestones-dialog/controller.svelte";
 import { systemAnalysisEntryToTimelineEntry, type TimelineAnalysisEntry } from "./entry-model";
 import { useSystemAnalysisController } from "$src/components/system-analysis";
 
@@ -262,7 +261,8 @@ class TimelineMilestoneElement {
 	ref = document.createElement("div");
 	component: ReturnType<typeof mount> | undefined;
 
-	constructor(milestone: IncidentMilestone) {
+	constructor(milestone: IncidentMilestone, onSelect: TimelineMilestoneComponentProps["onSelect"]) {
+		this.props.onSelect = onSelect;
 		this.ref.setAttribute("milestone-id", $state.snapshot(milestone.id));
 		this.props.milestone = milestone;
 		tick().then(() => {
@@ -280,11 +280,14 @@ class TimelineMilestoneElement {
 }
 
 class TimelineMilestonesState {
+	private analysis = useIncidentAnalysis();
 	items: DataSet<TimelineItem>;
 	timeline = $state.raw<Timeline>();
 	timelineElements = new Map<string, TimelineMilestoneElement>();
 	incident = $state.raw<Incident>();
-	incidentEnd = $derived(this.incident ? new Date(this.incident.attributes.closedAt) : new Date());
+	incidentEnd = $derived(
+		this.incident?.attributes.resolvedAt ? new Date(this.incident.attributes.resolvedAt) : new Date()
+	);
 
 	milestonesQuery = createQuery(() => ({
 		...listIncidentMilestonesOptions({ path: { id: this.incident?.id ?? "" } }),
@@ -340,10 +343,11 @@ class TimelineMilestonesState {
 	setMilestone(ms: IncidentMilestone, nextMs?: IncidentMilestone) {
 		let el = this.timelineElements.get(ms.id);
 		if (!el) {
-			el = new TimelineMilestoneElement(ms);
+			el = new TimelineMilestoneElement(ms, this.analysis.selectMilestone);
 			this.timelineElements.set(ms.id, el);
 		}
 
+		el.props.milestone = ms;
 		const endDate = nextMs ? new Date(nextMs.attributes.timestamp) : this.incidentEnd;
 		const msItems = createMilestoneTimelineItems(el, ms, endDate);
 		this.items.update(msItems);
@@ -387,12 +391,10 @@ export class IncidentTimelineController {
 	selectedItems = new SvelteSet<string>();
 
 	constructor() {
-		initMilestonesDialog();
-
 		this.items.clear();
 
 		watch(
-			() => this.incidentAnalysis.selectedEntryId,
+			() => [this.incidentAnalysis.selectedEntryId, this.incidentAnalysis.selectedMilestoneId],
 			() => this.applyEntrySelection()
 		);
 
@@ -478,7 +480,7 @@ export class IncidentTimelineController {
 
 	setIncidentWindow(inc: Incident) {
 		const start = new Date(inc.attributes.openedAt).valueOf();
-		const closedAt = new Date(inc.attributes.closedAt).valueOf();
+		const closedAt = inc.attributes.resolvedAt ? Date.parse(inc.attributes.resolvedAt) : NaN;
 		const closed = Number.isFinite(closedAt) && closedAt >= start;
 		const end = closed ? closedAt : start;
 
@@ -513,29 +515,46 @@ export class IncidentTimelineController {
 		this.timeline?.destroy();
 	}
 
-	private focusedEntryId?: string;
+	private focusedItemId?: string;
 	applyEntrySelection() {
-		const id = this.incidentAnalysis.selectedEntryId;
-		for (const selected of this.selectedItems) this.events.setSelected(selected, false);
+		for (const selected of this.selectedItems) {
+			this.events.setSelected(selected, false);
+			this.milestones.setSelected(selected, false);
+		}
 		this.selectedItems.clear();
-		if (id && this.events.timelineElements.has(id)) {
+		const entryId = this.incidentAnalysis.selectedEntryId;
+		const milestoneId = this.incidentAnalysis.selectedMilestoneId;
+		let id: string | undefined;
+		if (entryId && this.events.timelineElements.has(entryId)) {
+			id = entryId;
 			this.events.setSelected(id, true);
+		} else if (milestoneId && this.milestones.timelineElements.has(milestoneId)) {
+			id = milestoneId + "_box";
+			this.milestones.setSelected(id, true);
+		}
+		this.timeline?.setSelection(id ? [id] : []);
+		if (id) {
 			this.selectedItems.add(id);
-			this.timeline?.setSelection([id]);
-			if (this.timeline && this.focusedEntryId !== id) {
+			if (this.timeline && this.focusedItemId !== id) {
 				const item = this.items.get(id);
 				if (item) this.timeline.moveTo(item.start, { animation: false });
-				this.focusedEntryId = id;
 			}
-		} else {
-			this.timeline?.setSelection([]);
-			this.focusedEntryId = undefined;
 		}
+		this.focusedItemId = id;
 	}
 
 	onTimelineSelect(e: TimelineSelectEvent) {
-		const id = e.items.map(String).find((id) => this.events.timelineElements.has(id));
-		if (id) this.incidentAnalysis.selectEntry(id, this.events.timelineElements.get(id)?.ref);
+		const id = e.items.map(String)[0];
+		if (!id) return;
+		if (this.events.timelineElements.has(id)) {
+			void this.incidentAnalysis.selectEntry(id, this.events.timelineElements.get(id)?.ref);
+		} else if (this.items.get(id)?.group === MilestonesGroup) {
+			const milestoneId = id.split("_")[0];
+			void this.incidentAnalysis.selectMilestone(
+				milestoneId,
+				this.milestones.timelineElements.get(milestoneId)?.ref
+			);
+		}
 	}
 
 	onTimelineRangeChanged(e: TimelineRangeChangeEvent) {
@@ -546,10 +565,6 @@ export class IncidentTimelineController {
 
 	onEventChanged() {
 		this.events.onEventChanged();
-	}
-
-	onMilestoneAdded(_ms: IncidentMilestone) {
-		// this.milestones.onMilestoneAdded(ms);
 	}
 }
 

@@ -47,7 +47,6 @@ export const createDiscussionsController = (retrospectiveId: () => string) => {
 				body: {
 					attributes: {
 						retrospectiveId: retrospectiveId(),
-						kind: "comment",
 						initialMessage: JSON.stringify(editor.getJSON()),
 					},
 				},

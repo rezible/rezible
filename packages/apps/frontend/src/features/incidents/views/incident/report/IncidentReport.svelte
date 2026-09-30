@@ -1,4 +1,5 @@
 <script lang="ts">
+	import RetrospectiveEmptyState from "../retrospective-empty-state/RetrospectiveEmptyState.svelte";
 	import "./styles.css";
 	import { useIncidentView } from "$features/incidents/views/incident";
 
@@ -28,13 +29,18 @@
 	</div>
 {/snippet}
 
-{#if !report.retrospectiveId}
-	<p class="p-6 text-sm text-muted-foreground">No report is associated with this incident.</p>
+{#if !incident.incidentRetrospectiveId}
+	<RetrospectiveEmptyState />
 {:else}
 	<LoadingQueryWrapper query={incident.retrospectiveQuery}>
 		{#snippet view()}
 			<div class="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-6">
-				{#if docSessionQuery.isError && !docSessionQuery.data}
+				{#if !incident.retrospectiveDocumentId}
+					{@render errorWithRetry(
+						"The report document is unavailable.",
+						incident.retrospectiveQuery.refetch
+					)}
+				{:else if docSessionQuery.isError && !docSessionQuery.data}
 					{@render errorWithRetry("Unable to load report access.", docSessionQuery.refetch)}
 				{:else if docSessionQuery.isPending && !docSessionQuery.data}
 					<div class="flex items-center gap-3 p-4">
@@ -51,7 +57,7 @@
 					{/if}
 					<div class="grid min-h-0 gap-6 lg:grid-cols-[minmax(0,1fr)_260px]">
 						<div class="min-w-0 rounded-lg border border-border bg-card p-6">
-							<div class="w-full overflow-y-auto flex flex-col gap-4">
+							<div class="flex w-full flex-col gap-4">
 								{#if !incident.retrospective}
 									<p
 										class="rounded-md border border-border p-6 text-sm text-muted-foreground"
@@ -91,7 +97,7 @@
 						</div>
 
 						<aside class="rounded-lg border border-border bg-card p-5">
-							<h2 class="font-semibold">Review</h2>
+							<h2 class="font-semibold">Retrospective</h2>
 							<p class="mt-3 text-sm text-muted-foreground">
 								{incident.retrospective?.attributes.state}
 							</p>

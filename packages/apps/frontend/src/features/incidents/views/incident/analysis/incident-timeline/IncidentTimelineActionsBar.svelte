@@ -5,4 +5,6 @@
 	const editor = useEventDialog();
 </script>
 
-<Button variant="outline" size="sm" onclick={() => editor.setCreating()}>Create entry</Button>
+{#if editor.canEdit}
+	<Button variant="outline" size="sm" onclick={() => editor.setCreating()}>Create entry</Button>
+{/if}

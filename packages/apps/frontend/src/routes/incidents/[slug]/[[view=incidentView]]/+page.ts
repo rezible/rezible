@@ -1,3 +1,4 @@
+import { incidentSlugUrl } from "$features/incidents/lib/incident-url";
 import { getIncidentOptions } from "$lib/api";
 import { redirect } from "@sveltejs/kit";
 import { validate as isValidUUID } from "uuid";
@@ -10,7 +11,7 @@ const validateSlugParamOrRedirect = async (param: string, url: URL, qc: QueryCli
 	const res = await qc.fetchQuery(getIncidentOptions({ path: { id: param } }));
 	const slug = res.data.attributes.slug;
 	qc.setQueryData(getIncidentOptions({ path: { id: slug } }).queryKey, res);
-	const slugPath = url.pathname.replaceAll(slug, slug) + url.search;
+	const slugPath = incidentSlugUrl(url, param, slug);
 	throw redirect(301, slugPath);
 };
 

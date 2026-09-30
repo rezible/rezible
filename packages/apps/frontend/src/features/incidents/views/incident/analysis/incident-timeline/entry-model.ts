@@ -1,5 +1,4 @@
 import type {
-	CreateSystemAnalysisEntryAttributes,
 	SystemAnalysisEntry,
 	SystemAnalysisEntryAttributes,
 	SystemAnalysisEntrySubject,
@@ -132,12 +131,3 @@ export const systemAnalysisEntryToTimelineEntry = (
 		},
 	};
 };
-
-export const timelineEntryProperties = (
-	attributes: TimelineAnalysisEntryAttributes
-): CreateSystemAnalysisEntryAttributes["properties"] => ({
-	isKey: attributes.isKey,
-	decisionContext: attributes.decisionContext,
-	contributingFactors: attributes.contributingFactors,
-	evidence: attributes.evidence,
-});

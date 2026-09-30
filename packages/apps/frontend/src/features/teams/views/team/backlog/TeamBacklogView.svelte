@@ -11,8 +11,8 @@
 	{#each tasks as task (task.id)}
 		{@const attr = task.attributes}
 		<div>
-			<span>task: {attr.name}</span>
-			<!-- <ListItem title={attr.name} classes={{ root: "hover:bg-muted", title: "text-lg" }}>
+			<span>task: {attr.title}</span>
+			<!-- <ListItem title={attr.title} classes={{ root: "hover:bg-muted", title: "text-lg" }}>
 					<div slot="subheading">
 						<span class="text-foreground/80">{attr.description}</span>
 					</div>

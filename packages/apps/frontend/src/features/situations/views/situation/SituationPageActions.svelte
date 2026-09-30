@@ -40,7 +40,7 @@
 						>
 							<span class="min-w-0 truncate">{attrs.title}</span>
 							<span class="shrink-0 text-status-warning-foreground">
-								{attrs.currentStatus}
+								{attrs.responseState}
 							</span>
 						</Button>
 					{/snippet}
