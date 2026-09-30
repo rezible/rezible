@@ -18,7 +18,7 @@ func TestAppSuite(t *testing.T) {
 }
 
 func (s *AppSuite) TestProcessUserEventUsesNativeUserResourceRef() {
-	events, err := (&Integration{}).ProcessProviderEvent(context.Background(), rez.ProviderEvent{
+	events, err := EventProcessor{}.ProcessProviderEvent(context.Background(), rez.ProviderEvent{
 		ProviderNamespace:   "workspace",
 		ProviderEventSource: sourceUsers,
 		ProviderEventRef:    "event-1",
@@ -32,7 +32,7 @@ func (s *AppSuite) TestProcessUserEventUsesNativeUserResourceRef() {
 }
 
 func (s *AppSuite) TestProcessTeamMembershipEventUsesTypedResourceRef() {
-	events, err := (&Integration{}).ProcessProviderEvent(context.Background(), rez.ProviderEvent{
+	events, err := EventProcessor{}.ProcessProviderEvent(context.Background(), rez.ProviderEvent{
 		ProviderNamespace:   "workspace",
 		ProviderEventSource: sourceTeamMemberships,
 		ProviderEventRef:    "event-1",

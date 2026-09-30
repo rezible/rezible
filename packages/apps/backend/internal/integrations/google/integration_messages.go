@@ -5,40 +5,35 @@ import (
 	"fmt"
 
 	rez "github.com/rezible/rezible"
-	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/integration"
 	"github.com/rezible/rezible/pkg/messages"
 )
 
 type eventHandler struct {
-	integrations rez.IntegrationService
-	incidents    rez.IncidentService
+	intg *Integration
 }
 
 func (i *Integration) MessageHandlers() []rez.MessageEventHandler {
-	mh := &eventHandler{
-		integrations: i.integrations,
-		incidents:    i.incidents,
-	}
+	mh := &eventHandler{intg: i}
 	return []rez.MessageEventHandler{
 		messages.NewEventHandler("Google.OnIncidentUpdate", mh.onIncidentUpdate),
 	}
 }
 
 func (h *eventHandler) withInstallation(ctx context.Context, fn func(*InstalledIntegration) error) error {
-	intgs, lookupErr := h.integrations.ListAllInstalled(ctx, integration.Name(integrationName))
-	if lookupErr != nil && !ent.IsNotFound(lookupErr) {
-		return fmt.Errorf("error looking up Integration: %w", lookupErr)
+	rows, listErr := h.intg.installations.ListInstallations(ctx, integration.Name(integrationName))
+	if listErr != nil {
+		return fmt.Errorf("list google installations: %w", listErr)
 	}
-	if len(intgs) == 0 {
+	if len(rows) == 0 {
 		return nil
 	}
-	if len(intgs) > 1 {
-		return fmt.Errorf("found multiple Integrations with name %q", integrationName)
+	if len(rows) > 1 {
+		return fmt.Errorf("found multiple installations for integration %q", integrationName)
 	}
-	ii, ok := intgs[0].(*InstalledIntegration)
-	if !ok {
-		return fmt.Errorf("invalid configured Integration: %w", lookupErr)
+	ii, installedErr := h.intg.newInstalledIntegration(rows[0])
+	if installedErr != nil {
+		return fmt.Errorf("load google installation: %w", installedErr)
 	}
 	return fn(ii)
 }

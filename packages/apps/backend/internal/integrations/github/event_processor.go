@@ -16,7 +16,10 @@ import (
 
 const zeroSHA = "0000000000000000000000000000000000000000"
 
-func (i *Integration) ProcessProviderEvent(ctx context.Context, prov rez.ProviderEvent) (ent.NormalizedEvents, error) {
+// EventProcessor normalizes GitHub provider events. It has no dependencies.
+type EventProcessor struct{}
+
+func (p EventProcessor) ProcessProviderEvent(ctx context.Context, prov rez.ProviderEvent) (ent.NormalizedEvents, error) {
 	return (&eventProcessor{event: &prov}).process()
 }
 
@@ -55,7 +58,7 @@ func (p *eventProcessor) processPushEvent() (ent.NormalizedEvents, error) {
 	}
 	repositoryObservation := projections.EntityObservation{
 		Ref: rez.ProviderResourceRef{
-			Provider:          providerName,
+			Provider:          ProviderName,
 			ProviderNamespace: p.event.ProviderNamespace,
 			ResourceRef:       strconv.FormatInt(repository.GetID(), 10),
 		},
@@ -73,7 +76,7 @@ func (p *eventProcessor) processPushEvent() (ent.NormalizedEvents, error) {
 		return nil, fmt.Errorf("encode change event attributes: %w", encodeErr)
 	}
 	result := &ent.NormalizedEvent{
-		Provider:            providerName,
+		Provider:            ProviderName,
 		ProviderNamespace:   p.event.ProviderNamespace,
 		ProviderResourceRef: fmt.Sprintf("change:%d:%s", repository.GetID(), event.GetAfter()),
 		ProviderEventSource: p.event.ProviderEventSource,
@@ -98,7 +101,7 @@ func (p *eventProcessor) processPullRequest() (ent.NormalizedEvents, error) {
 	}
 	repositoryObservation := projections.EntityObservation{
 		Ref: rez.ProviderResourceRef{
-			Provider:          providerName,
+			Provider:          ProviderName,
 			ProviderNamespace: p.event.ProviderNamespace,
 			ResourceRef:       strconv.FormatInt(repository.GetID(), 10),
 		},
@@ -116,7 +119,7 @@ func (p *eventProcessor) processPullRequest() (ent.NormalizedEvents, error) {
 		return nil, fmt.Errorf("encode pull request attributes: %w", encodeErr)
 	}
 	result := &ent.NormalizedEvent{
-		Provider:            providerName,
+		Provider:            ProviderName,
 		ProviderNamespace:   p.event.ProviderNamespace,
 		ProviderResourceRef: fmt.Sprintf("change:%d:pr:%d", repository.GetID(), pullRequest.GetNumber()),
 		ProviderEventSource: p.event.ProviderEventSource,
@@ -160,7 +163,7 @@ func (p *eventProcessor) processRepoObserved() (ent.NormalizedEvents, error) {
 		receivedAt = occurredAt
 	}
 	result := &ent.NormalizedEvent{
-		Provider:            providerName,
+		Provider:            ProviderName,
 		ProviderNamespace:   p.event.ProviderNamespace,
 		ProviderResourceRef: strconv.FormatInt(payload.ID, 10),
 		ProviderEventSource: p.event.ProviderEventSource,

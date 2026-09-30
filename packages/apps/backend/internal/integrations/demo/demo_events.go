@@ -114,7 +114,7 @@ func (p codeChangeObservedPayload) resourceRef() string {
 
 func relatedComponent(id string, category kne.Category, kind string, displayName string) projections.EntityObservation {
 	resourceRef := rez.ProviderResourceRef{
-		Provider:          providerName,
+		Provider:          ProviderName,
 		ProviderNamespace: integrationName,
 		ResourceRef:       componentRef(id),
 	}

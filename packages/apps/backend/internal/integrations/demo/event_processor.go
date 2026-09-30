@@ -23,7 +23,10 @@ const (
 	sourceTopology    = "system_topology"
 )
 
-func (i *Integration) ProcessProviderEvent(ctx context.Context, prov rez.ProviderEvent) (ent.NormalizedEvents, error) {
+// EventProcessor normalizes demo provider events. It has no dependencies.
+type EventProcessor struct{}
+
+func (p EventProcessor) ProcessProviderEvent(ctx context.Context, prov rez.ProviderEvent) (ent.NormalizedEvents, error) {
 	return (&eventProcessor{event: &prov}).process()
 }
 
@@ -76,7 +79,7 @@ func (p *eventProcessor) processTeam() (ent.NormalizedEvents, error) {
 		return nil, fmt.Errorf("encode team observed attributes: %w", encodeErr)
 	}
 	result := &ent.NormalizedEvent{
-		Provider:            providerName,
+		Provider:            ProviderName,
 		ProviderNamespace:   p.event.ProviderNamespace,
 		ProviderResourceRef: payload.resourceRef(),
 		ProviderEventSource: p.event.ProviderEventSource,
@@ -96,13 +99,13 @@ func (p *eventProcessor) processTeamMembership() (ent.NormalizedEvents, error) {
 	}
 	attrs := projections.TeamMembershipEventAttributes{
 		Team: projections.TeamMembershipTeamAttributes{
-			ProviderResourceRef: rez.ProviderResourceRef{Provider: providerName, ProviderNamespace: integrationName, ResourceRef: "demo:team:" + payload.TeamResourceID},
+			ProviderResourceRef: rez.ProviderResourceRef{Provider: ProviderName, ProviderNamespace: integrationName, ResourceRef: "demo:team:" + payload.TeamResourceID},
 			Name:                "Search Platform",
 			Slug:                "search-platform",
 			ChatChannelId:       "CSEARCH123",
 		},
 		User: projections.TeamMembershipUserAttributes{
-			ProviderResourceRef: rez.ProviderResourceRef{Provider: providerName, ProviderNamespace: integrationName, ResourceRef: "demo:user:" + payload.UserExternalID},
+			ProviderResourceRef: rez.ProviderResourceRef{Provider: ProviderName, ProviderNamespace: integrationName, ResourceRef: "demo:user:" + payload.UserExternalID},
 			Name:                "Ava Patel",
 			Email:               "ava.patel@rezible.example",
 			ChatId:              "UAVA123",
@@ -119,7 +122,7 @@ func (p *eventProcessor) processTeamMembership() (ent.NormalizedEvents, error) {
 		occurredAt = time.Now().UTC()
 	}
 	result := &ent.NormalizedEvent{
-		Provider:            providerName,
+		Provider:            ProviderName,
 		ProviderNamespace:   p.event.ProviderNamespace,
 		ProviderResourceRef: payload.resourceRef(),
 		ProviderEventSource: p.event.ProviderEventSource,
@@ -159,7 +162,7 @@ func (p *eventProcessor) processAlert() (ent.NormalizedEvents, error) {
 		receivedAt = occurredAt
 	}
 	result := &ent.NormalizedEvent{
-		Provider:            providerName,
+		Provider:            ProviderName,
 		ProviderNamespace:   p.event.ProviderNamespace,
 		ProviderResourceRef: payload.resourceRef(),
 		ProviderEventSource: p.event.ProviderEventSource,
@@ -195,7 +198,7 @@ func (p *eventProcessor) processUser() (ent.NormalizedEvents, error) {
 		return nil, fmt.Errorf("encode user observed attributes: %w", encodeErr)
 	}
 	result := &ent.NormalizedEvent{
-		Provider:            providerName,
+		Provider:            ProviderName,
 		ProviderNamespace:   p.event.ProviderNamespace,
 		ProviderResourceRef: payload.resourceRef(),
 		ProviderEventSource: p.event.ProviderEventSource,
@@ -229,7 +232,7 @@ func (p *eventProcessor) processCodeRepository() (ent.NormalizedEvents, error) {
 		return nil, fmt.Errorf("encode code repository attributes: %w", encodeErr)
 	}
 	result := &ent.NormalizedEvent{
-		Provider:            providerName,
+		Provider:            ProviderName,
 		ProviderNamespace:   p.event.ProviderNamespace,
 		ProviderResourceRef: payload.resourceRef(),
 		ProviderEventSource: p.event.ProviderEventSource,
@@ -256,7 +259,7 @@ func (p *eventProcessor) processCodeChange() (ent.NormalizedEvents, error) {
 	}
 	repository := projections.EntityObservation{
 		Ref: rez.ProviderResourceRef{
-			Provider:          providerName,
+			Provider:          ProviderName,
 			ProviderNamespace: p.event.ProviderNamespace,
 			ResourceRef:       payload.RepositoryRef,
 		},
@@ -274,7 +277,7 @@ func (p *eventProcessor) processCodeChange() (ent.NormalizedEvents, error) {
 		return nil, fmt.Errorf("encode code change attributes: %w", encodeErr)
 	}
 	result := &ent.NormalizedEvent{
-		Provider:            providerName,
+		Provider:            ProviderName,
 		ProviderNamespace:   p.event.ProviderNamespace,
 		ProviderResourceRef: payload.resourceRef(),
 		ProviderEventSource: p.event.ProviderEventSource,
@@ -327,7 +330,7 @@ func (p *eventProcessor) processIncident() (ent.NormalizedEvents, error) {
 		receivedAt = occurredAt
 	}
 	result := &ent.NormalizedEvent{
-		Provider:            providerName,
+		Provider:            ProviderName,
 		ProviderNamespace:   p.event.ProviderNamespace,
 		ProviderResourceRef: payload.resourceRef(),
 		ProviderEventSource: p.event.ProviderEventSource,
@@ -374,7 +377,7 @@ func (p *eventProcessor) processTopology() (ent.NormalizedEvents, error) {
 		occurredAt = time.Now().UTC()
 	}
 	result := &ent.NormalizedEvent{
-		Provider:            providerName,
+		Provider:            ProviderName,
 		ProviderNamespace:   p.event.ProviderNamespace,
 		ProviderResourceRef: resourceRef,
 		ProviderEventSource: p.event.ProviderEventSource,

@@ -3049,6 +3049,87 @@ func (_c *MockIntegrationService_ListInstallable_Call) RunAndReturn(run func(con
 	return _c
 }
 
+// ListInstallations provides a mock function for the type MockIntegrationService
+func (_mock *MockIntegrationService) ListInstallations(context1 context.Context, integrations ...predicate.Integration) ([]*ent.Integration, error) {
+	// predicate.Integration
+	_va := make([]interface{}, len(integrations))
+	for _i := range integrations {
+		_va[_i] = integrations[_i]
+	}
+	var _ca []interface{}
+	_ca = append(_ca, context1)
+	_ca = append(_ca, _va...)
+	ret := _mock.Called(_ca...)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ListInstallations")
+	}
+
+	var r0 []*ent.Integration
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, ...predicate.Integration) ([]*ent.Integration, error)); ok {
+		return returnFunc(context1, integrations...)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, ...predicate.Integration) []*ent.Integration); ok {
+		r0 = returnFunc(context1, integrations...)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*ent.Integration)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, ...predicate.Integration) error); ok {
+		r1 = returnFunc(context1, integrations...)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockIntegrationService_ListInstallations_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ListInstallations'
+type MockIntegrationService_ListInstallations_Call struct {
+	*mock.Call
+}
+
+// ListInstallations is a helper method to define mock.On call
+//   - context1 context.Context
+//   - integrations ...predicate.Integration
+func (_e *MockIntegrationService_Expecter) ListInstallations(context1 interface{}, integrations ...interface{}) *MockIntegrationService_ListInstallations_Call {
+	return &MockIntegrationService_ListInstallations_Call{Call: _e.mock.On("ListInstallations",
+		append([]interface{}{context1}, integrations...)...)}
+}
+
+func (_c *MockIntegrationService_ListInstallations_Call) Run(run func(context1 context.Context, integrations ...predicate.Integration)) *MockIntegrationService_ListInstallations_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 []predicate.Integration
+		variadicArgs := make([]predicate.Integration, len(args)-1)
+		for i, a := range args[1:] {
+			if a != nil {
+				variadicArgs[i] = a.(predicate.Integration)
+			}
+		}
+		arg1 = variadicArgs
+		run(
+			arg0,
+			arg1...,
+		)
+	})
+	return _c
+}
+
+func (_c *MockIntegrationService_ListInstallations_Call) Return(integrations1 []*ent.Integration, err error) *MockIntegrationService_ListInstallations_Call {
+	_c.Call.Return(integrations1, err)
+	return _c
+}
+
+func (_c *MockIntegrationService_ListInstallations_Call) RunAndReturn(run func(context1 context.Context, integrations ...predicate.Integration) ([]*ent.Integration, error)) *MockIntegrationService_ListInstallations_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // ListIntegrationEventSyncRuns provides a mock function for the type MockIntegrationService
 func (_mock *MockIntegrationService) ListIntegrationEventSyncRuns(ctx context.Context, id uuid.UUID) ([]*ent.IntegrationEventSyncRun, error) {
 	ret := _mock.Called(ctx, id)

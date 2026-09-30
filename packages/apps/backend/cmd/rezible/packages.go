@@ -230,12 +230,17 @@ var pkgWatermill = do.Package(
 )
 
 var pkgIntegrations = do.Package(
-	do.Lazy(func(i do.Injector) (rez.IntegrationRegistry, error) {
-		return integrations.NewRegistry(), nil
+	do.Lazy(func(i do.Injector) (*integrations.Registry, error) {
+		return integrations.NewRegistry(do.MustInvoke[[]rez.IntegrationDefinition](i)...)
 	}),
 
+	// Event processors have no dependencies, so the pipeline can be built before the integrations that use it.
 	do.Lazy(func(i do.Injector) (rez.ProviderEventProcessorRegistry, error) {
-		return rez.ProviderEventProcessorRegistry{}, nil
+		return rez.ProviderEventProcessorRegistry{
+			demoprovider.ProviderName:     demoprovider.EventProcessor{},
+			github.ProviderName:           github.EventProcessor{},
+			slackintegration.ProviderName: slackagent.EventProcessor{},
+		}, nil
 	}),
 
 	do.Lazy(func(i do.Injector) (rez.EventProjectionService, error) {
@@ -267,7 +272,7 @@ var pkgIntegrations = do.Package(
 		return google.MakeIntegration(
 			do.MustInvoke[rez.Config](i),
 			do.MustInvoke[rez.UserService](i),
-			do.MustInvoke[rez.IntegrationService](i),
+			do.MustInvoke[rez.IntegrationInstallationLookup](i),
 			do.MustInvoke[rez.IncidentService](i),
 			do.MustInvoke[rez.EventsService](i),
 		)
@@ -276,7 +281,7 @@ var pkgIntegrations = do.Package(
 	do.Lazy(func(i do.Injector) (*slackintegration.AppServiceDependencies, error) {
 		return &slackintegration.AppServiceDependencies{
 			MessageQueue:                 do.MustInvoke[rez.MessageQueue](i),
-			IntegrationService:           do.MustInvoke[rez.IntegrationService](i),
+			Installations:                do.MustInvoke[rez.IntegrationInstallationLookup](i),
 			UserService:                  do.MustInvoke[rez.UserService](i),
 			ProviderEventPipelineService: do.MustInvoke[rez.ProviderEventPipelineService](i),
 		}, nil
@@ -287,7 +292,7 @@ var pkgIntegrations = do.Package(
 			do.MustInvoke[rez.Config](i),
 			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.JobService](i),
-			do.MustInvoke[rez.IntegrationService](i),
+			do.MustInvoke[rez.IntegrationInstallationLookup](i),
 			do.MustInvoke[rez.UserService](i),
 			do.MustInvoke[rez.AiAgentSessionService](i),
 			do.MustInvoke[rez.EventsService](i),
@@ -328,17 +333,6 @@ var pkgIntegrations = do.Package(
 	}),
 )
 
-func getAvailableIntegrationsWith[T any](i do.Injector) []T {
-	ir := do.MustInvoke[rez.IntegrationRegistry](i)
-	var pt []T
-	for _, intg := range ir.GetAvailable() {
-		if ls, ok := intg.(T); ok {
-			pt = append(pt, ls)
-		}
-	}
-	return pt
-}
-
 var pkgDatabase = do.Package(
 	do.Lazy(func(i do.Injector) (*db.AiWorkflowRunner, error) {
 		return db.NewAiWorkflowRunner(do.MustInvoke[rez.TelemetryService](i)), nil
@@ -356,12 +350,18 @@ var pkgDatabase = do.Package(
 	}),
 	do.Bind[*db.ProviderEventPipelineService, rez.ProviderEventPipelineService](),
 
+	do.Lazy(func(i do.Injector) (*db.IntegrationInstallationsService, error) {
+		return db.NewIntegrationInstallationsService(do.MustInvoke[rez.Database](i))
+	}),
+	do.Bind[*db.IntegrationInstallationsService, rez.IntegrationInstallationLookup](),
+
 	do.Lazy(func(i do.Injector) (rez.IntegrationService, error) {
 		return db.NewIntegrationsService(
 			do.MustInvoke[rez.Config](i),
 			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.JobService](i),
-			do.MustInvoke[rez.IntegrationRegistry](i),
+			do.MustInvoke[rez.IntegrationInstallationLookup](i),
+			do.MustInvoke[*integrations.Registry](i),
 		)
 	}),
 
@@ -372,7 +372,7 @@ var pkgDatabase = do.Package(
 			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.MessageQueue](i),
 			do.MustInvoke[rez.IntegrationService](i),
-			do.MustInvoke[rez.IntegrationRegistry](i),
+			do.MustInvoke[*integrations.Registry](i),
 			do.MustInvoke[rez.ProviderEventPipelineService](i),
 		)
 	}),
@@ -636,7 +636,7 @@ var pkgHttp = do.Package(
 	pkgOpenApiV1,
 
 	do.Lazy(func(i do.Injector) (http.WebhookHandlers, error) {
-		return do.MustInvoke[rez.IntegrationRegistry](i).GetAvailableWebhookHandlers(), nil
+		return do.MustInvoke[*integrations.Registry](i).GetAvailableWebhookHandlers(), nil
 	}),
 
 	do.Lazy(func(i do.Injector) (*http.Server, error) {
@@ -705,7 +705,7 @@ var pkgJobs = do.Package(
 		p.addInvokedProviderFunc(db.NewEnsureShiftHandoverReminderSentWorker)
 		p.addInvokedProviderFunc(db.NewGenerateShiftMetricsWorker)
 
-		for _, intgProv := range getAvailableIntegrationsWith[jobs.WorkerProvider](i) {
+		for _, intgProv := range do.MustInvoke[*integrations.Registry](i).All[jobs.WorkerProvider]() {
 			p.add(intgProv.JobWorkers()...)
 		}
 
@@ -744,7 +744,7 @@ var pkgMessages = do.Package(
 
 		p.addInvokedProvider[*db.InvestigationService]()
 
-		for _, intgProv := range getAvailableIntegrationsWith[messages.MessageHandlerProvider](i) {
+		for _, intgProv := range do.MustInvoke[*integrations.Registry](i).All[messages.MessageHandlerProvider]() {
 			p.add(intgProv.MessageHandlers()...)
 		}
 

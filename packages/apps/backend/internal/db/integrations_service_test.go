@@ -24,21 +24,22 @@ func TestIntegrationsServiceSuite(t *testing.T) {
 	suite.Run(t, &IntegrationsServiceSuite{Suite: test.NewSuite()})
 }
 
-func (s *IntegrationsServiceSuite) newRegistry(pkgs ...rez.IntegrationDefinition) rez.IntegrationRegistry {
-	reg := integrations.NewRegistry()
-	for _, pkg := range pkgs {
-		s.Require().NoError(reg.Register(pkg))
-	}
+func (s *IntegrationsServiceSuite) newRegistry(defs ...rez.IntegrationDefinition) *integrations.Registry {
+	reg, registryErr := integrations.NewRegistry(defs...)
+	s.Require().NoError(registryErr)
 	return reg
 }
 
-func (s *IntegrationsServiceSuite) newService(tdb rez.Database, reg rez.IntegrationRegistry) *IntegrationsService {
+func (s *IntegrationsServiceSuite) newService(tdb rez.Database, reg *integrations.Registry) *IntegrationsService {
 	jobs := mocks.NewMockJobService(s.T())
 	jobs.EXPECT().Insert(mock.Anything, mock.Anything, mock.Anything).
 		Return(nil, nil)
 
-	svc, err := NewIntegrationsService(s.Config(), tdb, jobs, reg)
-	s.Require().NoError(err)
+	installations, installationsErr := NewIntegrationInstallationsService(tdb)
+	s.Require().NoError(installationsErr)
+
+	svc, serviceErr := NewIntegrationsService(s.Config(), tdb, jobs, installations, reg)
+	s.Require().NoError(serviceErr)
 
 	return svc
 }

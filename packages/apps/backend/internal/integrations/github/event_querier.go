@@ -95,7 +95,7 @@ func (q *eventQuerier) pullRepositoryEvents(ctx context.Context, cursorAfter str
 
 			res := &rez.ProviderEventQueryResult{
 				Event: rez.ProviderEvent{
-					Provider:            providerName,
+					Provider:            ProviderName,
 					ProviderNamespace:   strconv.FormatInt(q.ii.config.AccountID, 10),
 					ProviderEventSource: sourceRepositories,
 					ProviderEventRef:    fmt.Sprintf("github:repositories:%s:%s", deliveryRefID, receivedAt.Format(time.RFC3339Nano)),

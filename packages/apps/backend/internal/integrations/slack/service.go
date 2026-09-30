@@ -45,9 +45,9 @@ type AppService[A App] struct {
 	app             A
 	integrationName string
 
-	msgs  rez.MessageQueue
-	intgs rez.IntegrationService
-	users rez.UserService
+	msgs          rez.MessageQueue
+	installations rez.IntegrationInstallationLookup
+	users         rez.UserService
 
 	oauthHandler                *oauthHandler
 	webhookHandler              http.Handler
@@ -61,7 +61,7 @@ func (s *AppService[A]) App() A { return s.app }
 
 type AppServiceDependencies struct {
 	MessageQueue                 rez.MessageQueue
-	IntegrationService           rez.IntegrationService
+	Installations                rez.IntegrationInstallationLookup
 	UserService                  rez.UserService
 	ProviderEventPipelineService rez.ProviderEventPipelineService
 }
@@ -72,7 +72,7 @@ func NewAppService[A App](app A, d *AppServiceDependencies) (*AppService[A], err
 		app:                         app,
 		integrationName:             app.IntegrationName(),
 		msgs:                        d.MessageQueue,
-		intgs:                       d.IntegrationService,
+		installations:               d.Installations,
 		users:                       d.UserService,
 		oauthHandler:                newOAuthHandler(cfg.OAuthClientId, cfg.OAuthClientSecret, app.OAuthScopes()),
 		webhookHandler:              http.NotFoundHandler(),
@@ -173,7 +173,7 @@ func (s *AppService[A]) RetrieveInstallationTargetOptions(ctx context.Context, t
 
 func (s *AppService[A]) createInstallationContext(ctx context.Context, ids InstallationIds) (*ent.Integration, context.Context, error) {
 	lookupIntegrationsPred := in.And(in.Name(s.integrationName), in.ProviderInstallationRef(ids.InstallationTargetResourceRef()))
-	intg, lookupErr := s.intgs.LookupInstallation(execution.NewSystemContext(ctx), lookupIntegrationsPred)
+	intg, lookupErr := s.installations.LookupInstallation(execution.NewSystemContext(ctx), lookupIntegrationsPred)
 	if lookupErr != nil {
 		return nil, ctx, fmt.Errorf("listing configured integrations: %w", lookupErr)
 	}

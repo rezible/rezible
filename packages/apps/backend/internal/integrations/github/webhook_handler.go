@@ -71,7 +71,7 @@ func (h *webhookHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	pe := rez.ProviderEvent{
-		Provider:            providerName,
+		Provider:            ProviderName,
 		ProviderNamespace:   providerNamespace,
 		ProviderEventSource: eventType,
 		ProviderEventRef:    deliveryRef,

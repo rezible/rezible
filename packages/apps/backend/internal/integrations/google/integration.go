@@ -17,26 +17,26 @@ const (
 )
 
 type Integration struct {
-	cfg          rez.IntegrationsConfigGoogle
-	users        rez.UserService
-	integrations rez.IntegrationService
-	incidents    rez.IncidentService
-	events       rez.EventsService
+	cfg           rez.IntegrationsConfigGoogle
+	users         rez.UserService
+	installations rez.IntegrationInstallationLookup
+	incidents     rez.IncidentService
+	events        rez.EventsService
 }
 
 func MakeIntegration(
 	cfg rez.Config,
 	users rez.UserService,
-	integrations rez.IntegrationService,
+	installations rez.IntegrationInstallationLookup,
 	incidents rez.IncidentService,
 	events rez.EventsService,
 ) (*Integration, error) {
 	i := &Integration{
-		cfg:          cfg.Integrations.Google,
-		users:        users,
-		integrations: integrations,
-		incidents:    incidents,
-		events:       events,
+		cfg:           cfg.Integrations.Google,
+		users:         users,
+		installations: installations,
+		incidents:     incidents,
+		events:        events,
 	}
 
 	return i, nil

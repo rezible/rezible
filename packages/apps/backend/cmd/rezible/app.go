@@ -21,6 +21,7 @@ import (
 	"github.com/rezible/rezible/internal/watermill"
 	rezai "github.com/rezible/rezible/pkg/ai"
 	"github.com/rezible/rezible/pkg/execution"
+	"github.com/rezible/rezible/pkg/integrations"
 	"github.com/rezible/rezible/pkg/jobs"
 	"github.com/rezible/rezible/pkg/messages"
 )
@@ -124,7 +125,8 @@ func (a *Application) invokeBaseLifecycleServices() []rez.LifecycleService {
 		a.mustInvoke[*watermill.MessageQueue](),
 		a.mustInvoke[*river.JobService](),
 	}
-	for _, intg := range getAvailableIntegrationsWith[rez.LifecycleServiceProvider](a.i) {
+	ir := a.mustInvoke[*integrations.Registry]()
+	for _, intg := range ir.All[rez.LifecycleServiceProvider]() {
 		if ls := intg.LifecycleService(); ls != nil {
 			svcs = append(svcs, ls)
 		}
@@ -287,10 +289,6 @@ func (a *Application) shutdownServices(ctx context.Context) error {
 }
 
 func (a *Application) setup(ctx context.Context) error {
-	if intgsErr := a.registerIntegrations(); intgsErr != nil {
-		return fmt.Errorf("register integrations: %w", intgsErr)
-	}
-
 	if jobsErr := a.registerJobWorkers(); jobsErr != nil {
 		return fmt.Errorf("register job workers: %w", jobsErr)
 	}
@@ -303,24 +301,6 @@ func (a *Application) setup(ctx context.Context) error {
 		return fmt.Errorf("register dev: %w", devErr)
 	}
 
-	return nil
-}
-
-func (a *Application) registerIntegrations() error {
-	intgReg := a.mustInvoke[rez.IntegrationRegistry]()
-	eventProcessors := a.mustInvoke[rez.ProviderEventProcessorRegistry]()
-	for _, def := range a.mustInvoke[[]rez.IntegrationDefinition]() {
-		if regErr := intgReg.Register(def); regErr != nil {
-			return fmt.Errorf("failed to register integration package: %w", regErr)
-		}
-		if procPkg, isEventProcessor := def.(rez.ProviderEventProcessor); isEventProcessor {
-			provider := def.Provider()
-			if _, exists := eventProcessors[provider]; exists {
-				return fmt.Errorf("failed to register event processor for provider %q: provider already registered", provider)
-			}
-			eventProcessors[provider] = procPkg
-		}
-	}
 	return nil
 }
 

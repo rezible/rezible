@@ -83,8 +83,8 @@ func (d *dataSeeder) seedData(ctx context.Context) error {
 func (d *dataSeeder) lookupAlias(ctx context.Context, resourceRef string) (*ent.KnowledgeSubjectAlias, error) {
 	params := rez.ListKnowledgeSubjectAliasesParams{
 		Predicates: []predicate.KnowledgeSubjectAlias{
-			ksa.Provider(providerName),
-			ksa.ProviderNamespace(providerName),
+			ksa.Provider(ProviderName),
+			ksa.ProviderNamespace(ProviderName),
 			ksa.ProviderResourceRef(resourceRef),
 		},
 	}

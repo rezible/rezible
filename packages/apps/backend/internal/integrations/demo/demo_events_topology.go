@@ -127,12 +127,12 @@ func (p topologyRelationshipObservedPayload) resourceRef() string {
 
 func (p topologyRelationshipObservedPayload) getAttributes(namespace string) projections.SystemRelationshipEventAttributes {
 	sourceRef := rez.ProviderResourceRef{
-		Provider:          providerName,
+		Provider:          ProviderName,
 		ProviderNamespace: namespace,
 		ResourceRef:       p.Source.ResourceRef,
 	}
 	targetRef := rez.ProviderResourceRef{
-		Provider:          providerName,
+		Provider:          ProviderName,
 		ProviderNamespace: namespace,
 		ResourceRef:       p.Target.ResourceRef,
 	}

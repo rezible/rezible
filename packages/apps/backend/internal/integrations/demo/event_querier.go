@@ -79,7 +79,7 @@ func pullPayloadEvents[P demoEventPayload](source string, items []P, cursor stri
 				return
 			}
 			ev := rez.ProviderEvent{
-				Provider:            providerName,
+				Provider:            ProviderName,
 				ProviderNamespace:   integrationName,
 				ProviderEventSource: source,
 				ProviderEventRef:    providerEventRef,

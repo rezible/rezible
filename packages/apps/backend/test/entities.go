@@ -91,6 +91,5 @@ func (s *Suite) NewIdentity(db rez.Database, label string) (context.Context, Ide
 	session, sessionErr := createSession.Save(ctx)
 	s.Require().NoError(sessionErr, "create session for %s identity", label)
 
-	userCtx := execution.NewUserContext(s.T().Context(), session)
-	return userCtx, Identity{Session: session}
+	return execution.NewUserContext(s.T().Context(), session), Identity{Session: session}
 }

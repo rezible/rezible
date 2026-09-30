@@ -10,7 +10,7 @@ import (
 
 const (
 	integrationName = "demo"
-	providerName    = "demo"
+	ProviderName    = "demo"
 )
 
 type Integration struct {
@@ -40,7 +40,7 @@ func (i *Integration) Description() string {
 }
 
 func (i *Integration) Provider() string {
-	return providerName
+	return ProviderName
 }
 
 func (i *Integration) Capabilities() []string {
@@ -105,7 +105,7 @@ func (i *InstallationConfig) Encode() ([]byte, error) {
 
 func (i *InstallationConfig) InstallationTargetRef() rez.ProviderResourceRef {
 	return rez.ProviderResourceRef{
-		Provider:          providerName,
+		Provider:          ProviderName,
 		ProviderNamespace: integrationName,
 		ResourceRef:       "demo",
 	}

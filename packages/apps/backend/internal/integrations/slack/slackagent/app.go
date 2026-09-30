@@ -19,13 +19,13 @@ import (
 )
 
 type App struct {
-	db     rez.Database
-	cfg    rez.Config
-	jobs   rez.JobService
-	intgs  rez.IntegrationService
-	users  rez.UserService
-	agents rez.AiAgentSessionService
-	events rez.EventsService
+	db            rez.Database
+	cfg           rez.Config
+	jobs          rez.JobService
+	installations rez.IntegrationInstallationLookup
+	users         rez.UserService
+	agents        rez.AiAgentSessionService
+	events        rez.EventsService
 
 	responseClassifier rezai.AiClassifyAgentThreadResponseWorkflow
 }
@@ -34,12 +34,12 @@ type AppSuite struct {
 	test.Suite
 }
 
-func MakeApp(cfg rez.Config, db rez.Database, jobSvc rez.JobService, intgs rez.IntegrationService, users rez.UserService, agents rez.AiAgentSessionService, events rez.EventsService, responseClassifier rezai.AiClassifyAgentThreadResponseWorkflow) *App {
+func MakeApp(cfg rez.Config, db rez.Database, jobSvc rez.JobService, installations rez.IntegrationInstallationLookup, users rez.UserService, agents rez.AiAgentSessionService, events rez.EventsService, responseClassifier rezai.AiClassifyAgentThreadResponseWorkflow) *App {
 	return &App{
 		db:                 db,
 		cfg:                cfg,
 		jobs:               jobSvc,
-		intgs:              intgs,
+		installations:      installations,
 		users:              users,
 		agents:             agents,
 		events:             events,
@@ -113,7 +113,7 @@ func (a *App) findMessageIdForAlertEvent(ctx context.Context, alertID uuid.UUID)
 
 func (a *App) GetIntegrationClientWrapper(ctx context.Context, preds ...predicate.Integration) (*slackintegration.ClientWrapper, error) {
 	preds = append(preds, in.Name(integrationName))
-	intg, intgErr := a.intgs.LookupInstallation(ctx, in.And(preds...))
+	intg, intgErr := a.installations.LookupInstallation(ctx, in.And(preds...))
 	if intgErr != nil {
 		return nil, fmt.Errorf("query slack agent integration: %w", intgErr)
 	}

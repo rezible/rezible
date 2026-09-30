@@ -532,16 +532,6 @@ type (
 		RetrieveInstallationTargetOptions(context.Context, *oauth2.Token) ([]IntegrationInstallationTarget, error)
 	}
 
-	IntegrationRegistry interface {
-		Register(IntegrationDefinition) error
-		GetAvailable() []IntegrationDefinition
-		Get(string) (IntegrationDefinition, error)
-		GetAvailableWebhookHandlers() map[string]http.Handler
-		GetOAuth2FlowIntegration(string) (OAuth2FlowIntegration, error)
-		GetProviderEventQuerier(InstalledIntegration) (ProviderEventQuerier, error)
-		GetAvailableAgentTools(context.Context, []InstalledIntegration, GetAvailableAiAgentToolsParams) (map[IntegrationDefinition][]ai.Tool, error)
-	}
-
 	ListIntegrationsParams struct {
 		ent.ListParams
 		Predicates []predicate.Integration
@@ -568,14 +558,22 @@ type (
 		AgentName string
 	}
 
+	// IntegrationInstallationLookup reads saved installations without resolving integration definitions,
+	// so integrations can depend on it without depending on the integration registry.
+	IntegrationInstallationLookup interface {
+		LookupInstallation(context.Context, predicate.Integration) (*ent.Integration, error)
+		ListInstallations(context.Context, ...predicate.Integration) ([]*ent.Integration, error)
+	}
+
 	IntegrationService interface {
+		IntegrationInstallationLookup
+
 		ListInstallable(context.Context) ([]IntegrationDefinition, error)
 
 		InstallNew(context.Context, string, []byte) (InstalledIntegration, error)
 		ListUserInstallationTargets(ctx context.Context) ([]IntegrationInstallationTarget, error)
 		InstallFromTarget(context.Context, IntegrationInstallationTarget) (InstalledIntegration, error)
 
-		LookupInstallation(context.Context, predicate.Integration) (*ent.Integration, error)
 		ListAllInstalled(ctx context.Context, predicates ...predicate.Integration) ([]InstalledIntegration, error)
 		UpdateInstallation(ctx context.Context, id uuid.UUID, setFn func(*ent.IntegrationMutation)) (InstalledIntegration, error)
 		DeleteInstalled(ctx context.Context, id uuid.UUID) error

@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	providerName       = "github"
+	ProviderName       = "github"
 	integrationName    = "github"
 	sourcePushEvent    = "push"
 	sourcePullEvent    = "pull_request"
@@ -50,7 +50,7 @@ func (i *Integration) Description() string {
 }
 
 func (i *Integration) Provider() string {
-	return providerName
+	return ProviderName
 }
 
 func (i *Integration) Capabilities() []string {

@@ -18,15 +18,18 @@ const (
 	sourceEventsApiCallback = "events_api/callback"
 )
 
-func (i *Integration) ProcessProviderEvent(ctx context.Context, prov rez.ProviderEvent) (ent.NormalizedEvents, error) {
+// EventProcessor normalizes Slack provider events. It has no dependencies.
+type EventProcessor struct{}
+
+func (p EventProcessor) ProcessProviderEvent(ctx context.Context, prov rez.ProviderEvent) (ent.NormalizedEvents, error) {
 	_ = ctx
 	switch prov.ProviderEventSource {
 	case sourceUsers:
-		return i.processUserObservedEvent(prov)
+		return p.processUserObservedEvent(prov)
 	case sourceTeams:
-		return i.processTeamObservedEvent(prov)
+		return p.processTeamObservedEvent(prov)
 	case sourceTeamMemberships:
-		return i.processTeamMembershipObservedEvent(prov)
+		return p.processTeamMembershipObservedEvent(prov)
 	case sourceEventsApiCallback:
 		return ent.NormalizedEvents{}, nil
 	default:
@@ -34,7 +37,7 @@ func (i *Integration) ProcessProviderEvent(ctx context.Context, prov rez.Provide
 	}
 }
 
-func (i *Integration) processTeamObservedEvent(ev rez.ProviderEvent) (ent.NormalizedEvents, error) {
+func (p EventProcessor) processTeamObservedEvent(ev rez.ProviderEvent) (ent.NormalizedEvents, error) {
 	var payload teamObservedPayload
 	if jsonErr := json.Unmarshal(ev.Attributes, &payload); jsonErr != nil {
 		return nil, fmt.Errorf("unmarshal team observed payload: %w", jsonErr)
@@ -57,7 +60,7 @@ func (i *Integration) processTeamObservedEvent(ev rez.ProviderEvent) (ent.Normal
 	return ent.NormalizedEvents{result}, nil
 }
 
-func (i *Integration) processTeamMembershipObservedEvent(ev rez.ProviderEvent) (ent.NormalizedEvents, error) {
+func (p EventProcessor) processTeamMembershipObservedEvent(ev rez.ProviderEvent) (ent.NormalizedEvents, error) {
 	var payload teamMembershipObservedPayload
 	if jsonErr := json.Unmarshal(ev.Attributes, &payload); jsonErr != nil {
 		return nil, fmt.Errorf("unmarshal team membership observed payload: %w", jsonErr)
@@ -106,7 +109,7 @@ func (i *Integration) processTeamMembershipObservedEvent(ev rez.ProviderEvent) (
 	return ent.NormalizedEvents{result}, nil
 }
 
-func (i *Integration) processUserObservedEvent(ev rez.ProviderEvent) (ent.NormalizedEvents, error) {
+func (p EventProcessor) processUserObservedEvent(ev rez.ProviderEvent) (ent.NormalizedEvents, error) {
 	var payload userObservedPayload
 	if jsonErr := json.Unmarshal(ev.Attributes, &payload); jsonErr != nil {
 		return nil, fmt.Errorf("unmarshal user observed payload: %w", jsonErr)

@@ -12,6 +12,7 @@ import (
 	"github.com/rezible/rezible/ent"
 	in "github.com/rezible/rezible/ent/integration"
 	iesr "github.com/rezible/rezible/ent/integrationeventsyncrun"
+	"github.com/rezible/rezible/pkg/integrations"
 	"github.com/rezible/rezible/pkg/jobs"
 	"github.com/riverqueue/river"
 )
@@ -22,14 +23,14 @@ type IntegrationEventsSyncWorker struct {
 	db       rez.Database
 	msgs     rez.MessageQueue
 	intgs    rez.IntegrationService
-	registry rez.IntegrationRegistry
+	registry *integrations.Registry
 	pipeline rez.ProviderEventPipelineService
 
 	logger  *slog.Logger
 	timeout time.Duration
 }
 
-func NewIntegrationEventsSyncWorker(cfg rez.Config, tel rez.TelemetryService, db rez.Database, msgs rez.MessageQueue, intgs rez.IntegrationService, reg rez.IntegrationRegistry, pipeline rez.ProviderEventPipelineService) (*IntegrationEventsSyncWorker, error) {
+func NewIntegrationEventsSyncWorker(cfg rez.Config, tel rez.TelemetryService, db rez.Database, msgs rez.MessageQueue, intgs rez.IntegrationService, reg *integrations.Registry, pipeline rez.ProviderEventPipelineService) (*IntegrationEventsSyncWorker, error) {
 	w := &IntegrationEventsSyncWorker{
 		db:       db,
 		msgs:     msgs,

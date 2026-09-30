@@ -36,7 +36,7 @@ func (ic *InstallationConfig) Encode() ([]byte, error) {
 
 func (ic *InstallationConfig) InstallationTargetRef() rez.ProviderResourceRef {
 	return rez.ProviderResourceRef{
-		Provider:          providerName,
+		Provider:          ProviderName,
 		ProviderNamespace: integrationName,
 		ResourceRef:       strconv.FormatInt(ic.AccountID, 10),
 	}
