@@ -73,3 +73,22 @@ func (s *SlackIntegrationSuite) TestGetValidatedConfig() {
 		})
 	}
 }
+
+func (s *SlackIntegrationSuite) TestDisplayName() {
+	team := &InstallationConfig{
+		Team: &TeamInfo{Id: "T123", Name: "Rezible"},
+	}
+	s.Equal("Rezible", team.DisplayName())
+
+	enterpriseTeam := &InstallationConfig{
+		Team:       &TeamInfo{Id: "T123", Name: "Engineering"},
+		Enterprise: &TeamInfo{Id: "E123", Name: "Rezible"},
+	}
+	s.Equal("Engineering (Rezible)", enterpriseTeam.DisplayName())
+
+	sameNames := &InstallationConfig{
+		Team:       &TeamInfo{Id: "T123", Name: "Rezible"},
+		Enterprise: &TeamInfo{Id: "E123", Name: "Rezible"},
+	}
+	s.Equal("Rezible", sameNames.DisplayName())
+}

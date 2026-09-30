@@ -13,6 +13,8 @@ export type IntegrationProviderInfo = {
 	displayName: string;
 	description: string;
 	icon: Component;
+	// Plural noun for this provider's connections, such as "workspaces".
+	connectionNoun: string;
 };
 
 const knownProviders: Record<string, Omit<IntegrationProviderInfo, "name">> = {
@@ -20,21 +22,25 @@ const knownProviders: Record<string, Omit<IntegrationProviderInfo, "name">> = {
 		displayName: "GitHub",
 		description: "Follow repositories, pushes, and pull requests from your GitHub accounts.",
 		icon: RiGithubFill,
+		connectionNoun: "accounts",
 	},
 	slack: {
 		displayName: "Slack",
 		description: "Chat with the Rezible agent and run incidents in dedicated Slack channels.",
 		icon: RiSlackFill,
+		connectionNoun: "workspaces",
 	},
 	google: {
 		displayName: "Google Workspace",
 		description: "Create Google Meet video conferences for incidents.",
 		icon: RiGoogleFill,
+		connectionNoun: "workspaces",
 	},
 	demo: {
 		displayName: "Demo",
 		description: "Sample data for exploring Rezible.",
 		icon: RiFlaskLine,
+		connectionNoun: "connections",
 	},
 };
 
@@ -53,5 +59,6 @@ export const getIntegrationProviderInfo = (
 		displayName: firstIntegration?.displayName ?? name,
 		description: firstIntegration?.description ?? "",
 		icon: RiPlugLine,
+		connectionNoun: "connections",
 	};
 };

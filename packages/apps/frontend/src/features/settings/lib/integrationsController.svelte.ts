@@ -17,6 +17,7 @@ import { useUserSessionState } from "$lib/user-session.svelte";
 import { createMutation, createQuery } from "@tanstack/svelte-query";
 import { Context, watch } from "runed";
 
+import { capabilityPills, connectionStatus } from "./integrationCatalogue";
 import { getIntegrationProviderInfo, type IntegrationProviderInfo } from "./integrationProviders";
 
 type UserSettings = Record<string, unknown>;
@@ -24,6 +25,9 @@ type UserSettings = Record<string, unknown>;
 export type IntegrationProviderSummary = IntegrationProviderInfo & {
 	installable: InstallableIntegration[];
 	installations: IntegrationInstallation[];
+	capabilityPills: string[];
+	// What is connected, or undefined when nothing is.
+	status?: string;
 };
 
 export class IntegrationsController {
@@ -52,7 +56,12 @@ export class IntegrationsController {
 			const installable = this.installable.filter((intg) => intg.provider === name);
 			const installations = this.installed.filter((intg) => intg.attributes.provider === name);
 			const info = getIntegrationProviderInfo(name, installable);
-			return { ...info, installable, installations };
+			const catalogueInput = { ...info, installable, installations };
+			return {
+				...catalogueInput,
+				capabilityPills: capabilityPills(catalogueInput),
+				status: connectionStatus(catalogueInput),
+			};
 		});
 		return summaries.toSorted((a, b) => a.displayName.localeCompare(b.displayName));
 	});

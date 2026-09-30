@@ -100,5 +100,8 @@ func (c *InstallationConfig) DisplayName() string {
 	if c.Team == nil {
 		return c.Enterprise.Name + " (Enterprise)"
 	}
+	if c.Team.Name == c.Enterprise.Name {
+		return c.Team.Name
+	}
 	return fmt.Sprintf("%s (%s)", c.Team.Name, c.Enterprise.Name)
 }
