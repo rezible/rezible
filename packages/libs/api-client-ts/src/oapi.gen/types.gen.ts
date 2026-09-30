@@ -2068,6 +2068,7 @@ export type InvestigationReportAttributes = {
     createdAt: string;
     provisional: boolean;
     references: Array<InvestigationReference>;
+    summary: string;
     text: string;
     turnStatus: string;
 };

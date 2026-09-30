@@ -6,6 +6,7 @@ import (
 	"io"
 	"log/slog"
 	"sort"
+	"strings"
 	"sync"
 	"time"
 
@@ -303,6 +304,44 @@ func (s *InvestigationServiceSuite) TestInvestigationReportPublicationSelectionA
 	newTurnB, newTurnBErr := service.PublishInvestigationReport(ctx, thirdTurnScope, newTurnBParams)
 	s.Require().NoError(newTurnBErr)
 	s.NotEqual(reportB.ID, newTurnB.ID)
+}
+
+func (s *InvestigationServiceSuite) TestInvestigationReportSummary() {
+	ctx := s.SeedTenantContext()
+	tdb := s.CreateTestDatabase()
+	jobService := mocks.NewMockJobService(s.T())
+	service, investigation, turn := s.outputFixture(ctx, tdb, jobService)
+	scope := rez.InvestigationPublicationScope{
+		InvestigationID: investigation.ID,
+		AgentTurnID:     turn.ID,
+	}
+
+	tooLong := rez.PublishInvestigationReportParams{
+		Text:    "# Report",
+		Summary: strings.Repeat("é", 401),
+	}
+	_, tooLongErr := service.PublishInvestigationReport(ctx, scope, tooLong)
+	s.Require().ErrorIs(tooLongErr, rez.ErrInvalidInput)
+
+	first, firstErr := service.PublishInvestigationReport(ctx, scope, rez.PublishInvestigationReportParams{
+		Text:    "# Report\n\nRedis pressure rose after the deployment.",
+		Summary: " Redis pressure is the strongest signal; the cause is unconfirmed. ",
+	})
+	s.Require().NoError(firstErr)
+	s.Equal("Redis pressure is the strongest signal; the cause is unconfirmed.", first.Summary)
+
+	read, readErr := service.ReadInvestigationReport(ctx, investigation.ID, rez.ReadInvestigationReportParams{})
+	s.Require().NoError(readErr)
+	s.Equal(first.ID, read.ID)
+	s.Equal(first.Summary, read.Summary)
+
+	revised, revisedErr := service.PublishInvestigationReport(ctx, scope, rez.PublishInvestigationReportParams{
+		Text:    "# Report\n\nRedis pressure rose after the deployment.",
+		Summary: "The deployment is the likely cause.",
+	})
+	s.Require().NoError(revisedErr)
+	s.NotEqual(first.ID, revised.ID)
+	s.Equal("The deployment is the likely cause.", revised.Summary)
 }
 
 func (s *InvestigationServiceSuite) TestInvestigationAnswerOwnershipAndRevisions() {

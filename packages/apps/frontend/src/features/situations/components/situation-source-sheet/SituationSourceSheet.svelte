@@ -14,7 +14,7 @@
 	let { target, onClose }: Props = $props();
 
 	const controller = initSituationSourceSheetController(() => target);
-	
+
 	const directRecord = $derived(controller.directRecord);
 	const evidence = $derived(controller.evidence);
 	const evidenceAttributes = $derived(controller.evidenceAttributes);
@@ -45,7 +45,7 @@
 				</div>
 				<div>
 					<dt class="text-muted-foreground">{directRecord.timeLabel}</dt>
-					<dd><time datetime={directRecord.time.iso}>{directRecord.time.label}</time></dd>
+					<dd><time datetime={directRecord.time.iso}>{directRecord.time.absolute}</time></dd>
 				</div>
 				<div>
 					<dt class="text-muted-foreground">Source content</dt>
@@ -127,7 +127,7 @@
 						<dt class="text-muted-foreground">Effective time</dt>
 						<dd>
 							<time datetime={controller.evidenceTime.iso}>
-								{controller.evidenceTime.label}
+								{controller.evidenceTime.absolute}
 							</time>
 						</dd>
 					</div>

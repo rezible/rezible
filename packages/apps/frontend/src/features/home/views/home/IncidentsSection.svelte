@@ -1,125 +1,86 @@
 <script lang="ts">
-	import { resolve } from "$app/paths";
-	import { useHomeController } from "./controller.svelte";
-	import DisplayTime from "./DisplayTime.svelte";
+	import { Button } from "$components/ui/button";
+	import SectionHeading from "$components/common/section-heading/SectionHeading.svelte";
+	import StatusBadge from "$components/common/status-badge/StatusBadge.svelte";
+	import Timestamp from "$components/common/timestamp/Timestamp.svelte";
+	import { cn } from "$lib/utils";
 	import LoadingQueryWrapper from "$components/layout/loading-query-wrapper/LoadingQueryWrapper.svelte";
-	import IncidentSeverity from "$features/incidents/components/incident-severity/IncidentSeverity.svelte";
-	import { Badge } from "$components/ui/badge";
-	import {
-		incidentPriorityClasses,
-		incidentSeverityVariant,
-	} from "$features/incidents/components/incident-severity/severity";
-	import { Skeleton } from "$components/ui/skeleton";
+	import ListSkeleton from "$components/layout/list-skeleton/ListSkeleton.svelte";
+	import { useHomeController } from "./controller.svelte";
 
 	const controller = useHomeController();
-	const query = $derived(controller.incidentsQuery);
+	const rows = $derived(controller.incidentRows);
+	const total = $derived(controller.incidentsTotal);
 
-	const numIncidents = $derived(query.data?.pagination.total ?? "-");
+	const accentClasses = {
+		danger: "inset-shadow-[3px_0_var(--color-status-danger-foreground)]",
+		warning: "inset-shadow-[3px_0_var(--color-status-warning-foreground)]",
+		none: "",
+	};
 </script>
 
-<section aria-labelledby="home-incidents" class="min-w-0">
-	<header class="mb-3 flex items-center justify-between gap-3">
-		<h2 id="home-incidents" class="text-lg font-semibold">
-			Active incidents
-			<span class="ml-2 text-sm font-normal text-muted-foreground">{numIncidents}</span>
-		</h2>
-		<a
-			class="text-sm text-primary hover:underline focus-visible:outline-ring"
-			href={"/incidents?status=active"}
-		>
-			View all
-		</a>
-	</header>
-	<div class="overflow-hidden rounded-md border border-border bg-card">
-		<LoadingQueryWrapper {query} feedbackOnly>
-			{#snippet loading()}
-				<div class="divide-y" aria-label="Loading incidents">
-					{#each [1, 2, 3] as row (row)}
-						<div class="space-y-2 px-4 py-3">
-							<Skeleton class="h-4 w-3/5" />
-							<Skeleton class="h-3 w-4/5" />
-						</div>
-					{/each}
-				</div>
-			{/snippet}
-		</LoadingQueryWrapper>
+{#snippet headingActions()}
+	{#if total !== undefined && total > rows.length}
+		<Button variant="link" size="inline" href="/incidents?status=active">View all {total}</Button>
+	{/if}
+{/snippet}
 
-		{#if query.data?.data.length}
-			<table
-				class="hidden w-full text-left text-sm @min-[760px]/main:table [&_th]:px-4 [&_th]:py-3 [&_th]:align-top [&_th]:font-medium [&_td]:px-4 [&_td]:py-3 [&_td]:align-top [&_td:first-child]:wrap-anywhere"
-			>
-				<thead class="bg-muted/40 text-xs text-muted-foreground">
-					<tr>
-						<th scope="col">Incident</th>
-						<th scope="col">Severity</th>
-						<th scope="col">Services</th>
-						<th scope="col" class="text-right">Updated</th>
-					</tr>
-				</thead>
-				<tbody>
-					{#each query.data.data as item, index (item.id)}
-						{@const attrs = item.attributes}
-						<tr
-							class={[
-								"border-t border-border",
-								index === 0 &&
-									incidentPriorityClasses[incidentSeverityVariant(attrs.severity)],
-							]}
-						>
-							<td class="w-full">
+<section aria-labelledby="home-incidents" class="flex min-w-0 flex-col gap-3">
+	<SectionHeading id="home-incidents" title="Active incidents" count={total} actions={headingActions} />
+	<LoadingQueryWrapper
+		query={controller.incidentsQuery}
+		feedback="quiet"
+		isEmpty={(items) => items.length === 0}
+	>
+		{#snippet loading()}
+			<ListSkeleton label="Loading active incidents" />
+		{/snippet}
+		{#snippet error()}
+			<span>Could not load active incidents.</span>
+		{/snippet}
+		{#snippet empty()}
+			<p class="text-sm text-muted-foreground">No active incidents.</p>
+		{/snippet}
+		{#snippet view()}
+			<ul class="divide-y overflow-hidden rounded-lg border bg-card">
+				{#each rows as row (row.id)}
+					<li class={cn("flex min-h-[60px] gap-4 px-4 py-3", accentClasses[row.accent])}>
+						<div class="flex min-w-0 flex-1 flex-col gap-1">
+							<div class="flex flex-wrap items-center gap-x-2 gap-y-1">
 								<a
-									class="font-medium hover:underline focus-visible:outline-ring"
-									href={resolve("/incidents/[slug]/[[view=incidentView]]", {
-										slug: attrs.slug,
-									})}
+									class="rounded-sm text-[15px] leading-[22px] font-medium wrap-anywhere hover:underline focus-visible:outline-2 focus-visible:outline-ring"
+									href={row.href}
 								>
-									{attrs.title}
+									{row.title}
 								</a>
-								<p class="mt-1 line-clamp-2 text-muted-foreground">{attrs.summary}</p>
-							</td>
-							<td>
-								<IncidentSeverity severity={attrs.severity} />
-							</td>
-							<td>
-								<Badge variant="secondary" class="text-muted-foreground">TODO</Badge>
-							</td>
-							<td class="text-right text-xs text-muted-foreground">
-								<DisplayTime value={attrs.updatedAt} />
-							</td>
-						</tr>
-					{/each}
-				</tbody>
-			</table>
-			<ul class="divide-y divide-border @min-[760px]/main:hidden">
-				{#each query.data.data as item, index (item.id)}
-					{@const attrs = item.attributes}
-					<li
-						class={[
-							"px-4 py-3",
-							incidentPriorityClasses[incidentSeverityVariant(attrs.severity)],
-						]}
-					>
-						<div class="flex items-start justify-between gap-3">
-							<a
-								class="min-w-0 break-words text-sm font-medium hover:underline focus-visible:outline-ring"
-								href={resolve("/incidents/[slug]/[[view=incidentView]]", {
-									slug: attrs.slug,
-								})}
-							>
-								{attrs.title}
-							</a>
-							<IncidentSeverity severity={attrs.severity} />
+								<StatusBadge status={row.severity} />
+								<StatusBadge status={row.response} variant="inline" />
+							</div>
+							{#if row.summary}
+								<p class="line-clamp-1 text-sm text-muted-foreground">{row.summary}</p>
+							{/if}
+							<p class="flex flex-wrap items-center gap-x-1.5 text-xs text-muted-foreground">
+								<span>Opened</span>
+								<Timestamp value={row.openedAt} />
+								{#if row.openFor}
+									<span>· {row.openFor}</span>
+								{/if}
+								{#if row.services.length}
+									<span>
+										· {row.services.join(
+											", "
+										)}{#if row.moreServices > 0}&nbsp;+{row.moreServices}{/if}
+									</span>
+								{/if}
+							</p>
 						</div>
-						<p class="mt-1 line-clamp-2 text-sm text-muted-foreground">{attrs.summary}</p>
-						<div class="mt-3 flex items-center justify-between gap-3">
-							<Badge variant="secondary" class="text-muted-foreground">TODO</Badge>
-							<DisplayTime value={attrs.updatedAt} />
-						</div>
+						<p class="shrink-0 text-xs text-muted-foreground max-sm:hidden">
+							Updated
+							<Timestamp value={row.updatedAt} />
+						</p>
 					</li>
 				{/each}
 			</ul>
-		{:else if query.data}
-			<p class="p-6 text-center text-sm text-muted-foreground">No active incidents.</p>
-		{/if}
-	</div>
+		{/snippet}
+	</LoadingQueryWrapper>
 </section>

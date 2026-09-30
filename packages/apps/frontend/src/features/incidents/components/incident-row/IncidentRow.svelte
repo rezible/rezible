@@ -2,7 +2,8 @@
 	import { resolve } from "$app/paths";
 	import type { Incident } from "$lib/api";
 	import { Badge } from "$components/ui/badge";
-	import IncidentSeverity from "$features/incidents/components/incident-severity/IncidentSeverity.svelte";
+	import StatusBadge from "$components/common/status-badge/StatusBadge.svelte";
+	import { incidentSeverityStatus } from "$features/incidents/lib/status";
 
 	type Props = {
 		incident: Incident;
@@ -21,7 +22,7 @@
 		<span class="min-w-0 break-words text-sm font-medium">{attrs.title}</span>
 		<Badge variant="outline" class="capitalize">{attrs.responseState}</Badge>
 		{#if attrs.severity?.attributes?.name}
-			<IncidentSeverity severity={attrs.severity} />
+			<StatusBadge status={incidentSeverityStatus(attrs.severity)} />
 		{/if}
 	</div>
 	<div class="flex flex-wrap justify-between gap-x-3 text-xs text-muted-foreground">

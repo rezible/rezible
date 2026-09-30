@@ -28,6 +28,8 @@ const (
 	FieldAgentTurnID = "agent_turn_id"
 	// FieldText holds the string denoting the text field in the database.
 	FieldText = "text"
+	// FieldSummary holds the string denoting the summary field in the database.
+	FieldSummary = "summary"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
 	// EdgeInvestigation holds the string denoting the investigation edge name in mutations.
@@ -77,6 +79,7 @@ var Columns = []string{
 	FieldInvestigationID,
 	FieldAgentTurnID,
 	FieldText,
+	FieldSummary,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -103,6 +106,8 @@ var (
 	FingerprintValidator func(string) error
 	// TextValidator is a validator for the "text" field. It is called by the builders before save.
 	TextValidator func(string) error
+	// DefaultSummary holds the default value on creation for the "summary" field.
+	DefaultSummary string
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
@@ -143,6 +148,11 @@ func ByAgentTurnID(opts ...sql.OrderTermOption) OrderOption {
 // ByText orders the results by the text field.
 func ByText(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldText, opts...).ToFunc()
+}
+
+// BySummary orders the results by the summary field.
+func BySummary(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldSummary, opts...).ToFunc()
 }
 
 // ByTenantField orders the results by tenant field.

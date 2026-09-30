@@ -464,6 +464,7 @@ func (i *investigationInvocation) publishReport(ctx context.Context, input rezai
 	}
 	params := rez.PublishInvestigationReportParams{
 		Text:        input.Text,
+		Summary:     input.Summary,
 		EvidenceIDs: evidenceIDs,
 	}
 	scope := rez.InvestigationPublicationScope{InvestigationID: i.investigationID, AgentTurnID: i.turnID}
@@ -661,6 +662,7 @@ func (i *investigationInvocation) reportToolResult(result *rez.InvestigationRepo
 	}
 	return &rezai.InvestigationReportToolResult{
 		Text:         result.Text,
+		Summary:      result.Summary,
 		EvidenceRefs: i.formatRefs(result.EvidenceIDs),
 		TurnStatus:   string(result.TurnStatus),
 		Provisional:  result.TurnStatus == at.StatusRunning,

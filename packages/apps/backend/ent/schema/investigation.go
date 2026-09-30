@@ -467,6 +467,7 @@ func (InvestigationReport) Fields() []ent.Field {
 		field.UUID("investigation_id", uuid.UUID{}).Immutable(),
 		field.UUID("agent_turn_id", uuid.UUID{}).Immutable(),
 		field.Text("text").NotEmpty().Immutable(),
+		field.Text("summary").Default("").Immutable(),
 	}
 }
 

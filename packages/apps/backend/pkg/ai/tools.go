@@ -93,11 +93,13 @@ var ReadAnalysisEvidenceTool = defineTool[ToolDefinition[ReadAnalysisEvidenceArg
 type (
 	PublishInvestigationReportToolInput struct {
 		Text         string   `json:"text"`
+		Summary      string   `json:"summary" jsonschema:"description=One or two plain sentences stating the current conclusion and how certain it is; no Markdown; at most 400 characters"`
 		EvidenceRefs []string `json:"evidence_refs" jsonschema:"description=Knowledge-evidence refs cited by this report; may be empty"`
 	}
 
 	InvestigationReportToolResult struct {
 		Text         string    `json:"text"`
+		Summary      string    `json:"summary"`
 		EvidenceRefs []string  `json:"evidence_refs"`
 		TurnStatus   string    `json:"turn_status"`
 		Provisional  bool      `json:"provisional"`
@@ -107,7 +109,7 @@ type (
 
 var PublishInvestigationReportTool = defineTool[ToolDefinition[PublishInvestigationReportToolInput, *InvestigationReportToolResult]](
 	"publish_investigation_report",
-	"Publish an explicit plain-text investigation report with knowledge-evidence citations. Empty evidence_refs is valid.",
+	"Publish an investigation report. text is Markdown. summary is one or two plain sentences stating the current conclusion and its certainty. Cite knowledge-evidence refs; empty evidence_refs is valid.",
 )
 
 type (

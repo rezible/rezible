@@ -10,11 +10,34 @@
 		query: CreateQueryResult<{ data: QueryData }, ErrorModel>;
 		view?: Snippet<[QueryData]>;
 		loading?: Snippet;
+		/** Error content. In "quiet" feedback this is the one-line message beside Retry. */
 		error?: Snippet<[ErrorModel]>;
+		/** Rendered instead of `view` when `isEmpty` returns true. */
+		empty?: Snippet;
+		isEmpty?: (data: QueryData) => boolean;
+		/** "quiet" drops the refreshing indicator and uses one-line error states, for polled previews. */
+		feedback?: "full" | "quiet";
 		feedbackOnly?: boolean;
 	};
-	const { query, view, loading, error, feedbackOnly = false }: Props = $props();
+	const {
+		query,
+		view,
+		loading,
+		error,
+		empty,
+		isEmpty,
+		feedback = "full",
+		feedbackOnly = false,
+	}: Props = $props();
+
+	const showEmpty = $derived(!!empty && !!query.data && !!isEmpty?.(query.data.data));
 </script>
+
+{#snippet retryButton(variant: "outline" | "ghost")}
+	<Button {variant} size="sm" onclick={() => query.refetch()}>
+		{feedback === "quiet" ? "Retry" : "Try again"}
+	</Button>
+{/snippet}
 
 {#if query.isPending && !query.data}
 	{#if loading}
@@ -23,26 +46,50 @@
 		<LoadingIndicator />
 	{/if}
 {:else if query.isError && !query.data}
-	<div role="alert" class="space-y-2">
-		{#if error}
-			{@render error(query.error as ErrorModel)}
-		{:else}
-			<InlineAlert error={query.error} />
-		{/if}
-		<Button variant="outline" size="sm" onclick={() => query.refetch()}>Try again</Button>
-	</div>
-{:else}
-	{#if query.isFetching}
-		<p role="status" class="px-3 text-xs text-muted-foreground">Refreshing…</p>
-	{/if}
-	{#if query.isError && query.data}
-		<div role="alert" class="space-y-2 p-3">
-			<p class="text-sm text-destructive">Refresh failed. Showing previously loaded data.</p>
-			<InlineAlert error={query.error} />
-			<Button variant="outline" size="sm" onclick={() => query.refetch()}>Try again</Button>
+	{#if feedback === "quiet"}
+		<div role="alert" class="flex flex-wrap items-center gap-3 text-sm">
+			{#if error}
+				{@render error(query.error as ErrorModel)}
+			{:else}
+				<span>Could not load data.</span>
+			{/if}
+			{@render retryButton("outline")}
+		</div>
+	{:else}
+		<div role="alert" class="space-y-2">
+			{#if error}
+				{@render error(query.error as ErrorModel)}
+			{:else}
+				<InlineAlert error={query.error} />
+			{/if}
+			{@render retryButton("outline")}
 		</div>
 	{/if}
-	{#if !feedbackOnly && query.data && view}
-		{@render view(query.data.data)}
+{:else}
+	{#if feedback === "quiet"}
+		{#if query.isError && query.data}
+			<div role="status" class="flex items-center gap-3 text-xs text-muted-foreground">
+				<span>Refresh failed. Showing previously loaded data.</span>
+				{@render retryButton("ghost")}
+			</div>
+		{/if}
+	{:else}
+		{#if query.isFetching}
+			<p role="status" class="px-3 text-xs text-muted-foreground">Refreshing…</p>
+		{/if}
+		{#if query.isError && query.data}
+			<div role="alert" class="space-y-2 p-3">
+				<p class="text-sm text-destructive">Refresh failed. Showing previously loaded data.</p>
+				<InlineAlert error={query.error} />
+				{@render retryButton("outline")}
+			</div>
+		{/if}
+	{/if}
+	{#if !feedbackOnly && query.data}
+		{#if showEmpty && empty}
+			{@render empty()}
+		{:else if view}
+			{@render view(query.data.data)}
+		{/if}
 	{/if}
 {/if}

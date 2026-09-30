@@ -72,6 +72,20 @@ func (_c *InvestigationReportCreate) SetText(v string) *InvestigationReportCreat
 	return _c
 }
 
+// SetSummary sets the "summary" field.
+func (_c *InvestigationReportCreate) SetSummary(v string) *InvestigationReportCreate {
+	_c.mutation.SetSummary(v)
+	return _c
+}
+
+// SetNillableSummary sets the "summary" field if the given value is not nil.
+func (_c *InvestigationReportCreate) SetNillableSummary(v *string) *InvestigationReportCreate {
+	if v != nil {
+		_c.SetSummary(*v)
+	}
+	return _c
+}
+
 // SetID sets the "id" field.
 func (_c *InvestigationReportCreate) SetID(v uuid.UUID) *InvestigationReportCreate {
 	_c.mutation.SetID(v)
@@ -160,6 +174,10 @@ func (_c *InvestigationReportCreate) defaults() error {
 		v := investigationreport.DefaultCreatedAt()
 		_c.mutation.SetCreatedAt(v)
 	}
+	if _, ok := _c.mutation.Summary(); !ok {
+		v := investigationreport.DefaultSummary
+		_c.mutation.SetSummary(v)
+	}
 	if _, ok := _c.mutation.ID(); !ok {
 		if investigationreport.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized investigationreport.DefaultID (forgotten import ent/runtime?)")
@@ -199,6 +217,9 @@ func (_c *InvestigationReportCreate) check() error {
 		if err := investigationreport.TextValidator(v); err != nil {
 			return &ValidationError{Name: "text", err: fmt.Errorf(`ent: validator failed for field "InvestigationReport.text": %w`, err)}
 		}
+	}
+	if _, ok := _c.mutation.Summary(); !ok {
+		return &ValidationError{Name: "summary", err: errors.New(`ent: missing required field "InvestigationReport.summary"`)}
 	}
 	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "InvestigationReport.tenant"`)}
@@ -257,6 +278,10 @@ func (_c *InvestigationReportCreate) createSpec() (*InvestigationReport, *sqlgra
 	if value, ok := _c.mutation.Text(); ok {
 		_spec.SetField(investigationreport.FieldText, field.TypeString, value)
 		_node.Text = value
+	}
+	if value, ok := _c.mutation.Summary(); ok {
+		_spec.SetField(investigationreport.FieldSummary, field.TypeString, value)
+		_node.Summary = value
 	}
 	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -415,6 +440,9 @@ func (u *InvestigationReportUpsertOne) UpdateNewValues() *InvestigationReportUps
 		}
 		if _, exists := u.create.mutation.Text(); exists {
 			s.SetIgnore(investigationreport.FieldText)
+		}
+		if _, exists := u.create.mutation.Summary(); exists {
+			s.SetIgnore(investigationreport.FieldSummary)
 		}
 	}))
 	return u
@@ -647,6 +675,9 @@ func (u *InvestigationReportUpsertBulk) UpdateNewValues() *InvestigationReportUp
 			}
 			if _, exists := b.mutation.Text(); exists {
 				s.SetIgnore(investigationreport.FieldText)
+			}
+			if _, exists := b.mutation.Summary(); exists {
+				s.SetIgnore(investigationreport.FieldSummary)
 			}
 		}
 	}))

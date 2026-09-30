@@ -3,6 +3,8 @@
 	import * as Card from "$components/ui/card";
 	import * as Command from "$components/ui/command";
 	import * as Table from "$components/ui/table";
+	import StatusAndTimeSpecimen from "./StatusAndTimeSpecimen.svelte";
+	import RichTextSpecimen from "./RichTextSpecimen.svelte";
 
 	let selectedPattern = $state("None selected");
 </script>
@@ -72,4 +74,7 @@
 			</Table.Root>
 		</Card.Content>
 	</Card.Root>
+
+	<StatusAndTimeSpecimen />
+	<RichTextSpecimen />
 </section>

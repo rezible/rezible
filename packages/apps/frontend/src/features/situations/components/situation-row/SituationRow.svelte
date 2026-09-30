@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { resolve } from "$app/paths";
 	import type { Situation } from "$lib/api";
-	import SituationStatus from "$features/situations/components/situation-status/SituationStatus.svelte";
+	import StatusBadge from "$components/common/status-badge/StatusBadge.svelte";
+	import { situationStatus } from "$features/situations/lib/status";
 
 	type Props = {
 		situation: Situation;
@@ -18,7 +19,7 @@
 >
 	<div class="flex flex-wrap items-center gap-2">
 		<span class="min-w-0 break-words text-sm font-medium">{attrs.title}</span>
-		<SituationStatus attributes={attrs} />
+		<StatusBadge status={situationStatus(attrs)} variant="inline" />
 	</div>
 	{#if attrs.summary}
 		<p class="line-clamp-2 text-sm text-muted-foreground">{attrs.summary}</p>

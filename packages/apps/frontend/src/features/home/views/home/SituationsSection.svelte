@@ -1,112 +1,82 @@
 <script lang="ts">
-	import { resolve } from "$app/paths";
-	import { useHomeController } from "./controller.svelte";
-	import LoadingQueryWrapper from "$components/layout/loading-query-wrapper/LoadingQueryWrapper.svelte";
-	import SituationStatus from "$features/situations/components/situation-status/SituationStatus.svelte";
-	import { Badge } from "$components/ui/badge";
+	import { Button } from "$components/ui/button";
 	import { Skeleton } from "$components/ui/skeleton";
+	import SectionHeading from "$components/common/section-heading/SectionHeading.svelte";
+	import StatusBadge from "$components/common/status-badge/StatusBadge.svelte";
+	import Timestamp from "$components/common/timestamp/Timestamp.svelte";
+	import LoadingQueryWrapper from "$components/layout/loading-query-wrapper/LoadingQueryWrapper.svelte";
+	import ListSkeleton from "$components/layout/list-skeleton/ListSkeleton.svelte";
+	import { useHomeController } from "./controller.svelte";
 
 	const controller = useHomeController();
-	const query = $derived(controller.situationsQuery);
+	const rows = $derived(controller.situationRows);
+	const total = $derived(controller.situationsTotal);
 </script>
 
-<section aria-labelledby="home-situations" class="min-w-0">
-	<header class="mb-3 flex items-center justify-between gap-3">
-		<h2 id="home-situations" class="text-lg font-semibold">
-			Situations <span class="ml-2 text-sm font-normal text-muted-foreground">
-				{query.data?.pagination.total ?? "—"}
-			</span>
-		</h2>
-		<a
-			class="text-sm text-primary hover:underline focus-visible:outline-ring"
-			href={"/situations?status=active"}
-		>
-			View all
-		</a>
-	</header>
-	<div class="overflow-hidden rounded-md border border-border bg-card">
-		<LoadingQueryWrapper {query} feedbackOnly>
-			{#snippet loading()}
-				<div class="divide-y" aria-label="Loading situations">
-					{#each [1, 2, 3] as row (row)}
-						<div class="space-y-2 px-4 py-3">
-							<Skeleton class="h-4 w-3/5" />
-							<Skeleton class="h-3 w-4/5" />
-						</div>
-					{/each}
-				</div>
-			{/snippet}
-		</LoadingQueryWrapper>
+{#snippet headingActions()}
+	{#if total !== undefined && total > rows.length}
+		<Button variant="link" size="inline" href="/situations?status=active">View all {total}</Button>
+	{/if}
+{/snippet}
 
-		{#if query.data?.data.length}
-			<table
-				class="hidden w-full text-left text-sm @min-[760px]/main:table [&_th]:px-4 [&_th]:py-3 [&_th]:align-top [&_th]:font-medium [&_td]:px-4 [&_td]:py-3 [&_td]:align-top [&_td:first-child]:wrap-anywhere"
-			>
-				<thead class="bg-muted/40 text-xs text-muted-foreground">
-					<tr>
-						<th scope="col">Situation</th>
-						<th scope="col">Service</th>
-						<th scope="col">Signals</th>
-						<th scope="col">Status</th>
-					</tr>
-				</thead>
-				<tbody>
-					{#each query.data.data as item (item.id)}
-						{@const attrs = item.attributes}
-						<tr class="border-t border-border">
-							<td class="w-full">
-								<a
-									class="font-medium hover:underline focus-visible:outline-ring"
-									href={resolve("/situations/[id]/[[view=situationView]]", { id: item.id })}
-								>
-									{attrs.title}
-								</a>
-								<p class="mt-1 line-clamp-2 text-muted-foreground">{attrs.summary}</p>
-							</td>
-							<td>
-								<Badge variant="secondary" class="text-muted-foreground">TODO</Badge>
-							</td>
-							<td class="text-xs text-muted-foreground">
-								<span class="whitespace-nowrap">
-									{attrs.signalCount} contributing {attrs.signalCount === 1
-										? "signal"
-										: "signals"}
-								</span>
-							</td>
-							<td>
-								<SituationStatus attributes={attrs} />
-							</td>
-						</tr>
-					{/each}
-				</tbody>
-			</table>
-			<ul class="divide-y divide-border @min-[760px]/main:hidden">
-				{#each query.data.data as item (item.id)}
-					{@const attrs = item.attributes}
-					<li class="px-4 py-3">
-						<div class="flex items-start justify-between gap-3">
+<section aria-labelledby="home-situations" class="flex min-w-0 flex-col gap-3">
+	<SectionHeading id="home-situations" title="Open situations" count={total} actions={headingActions} />
+	<LoadingQueryWrapper
+		query={controller.situationsQuery}
+		feedback="quiet"
+		isEmpty={(items) => items.length === 0}
+	>
+		{#snippet loading()}
+			<ListSkeleton label="Loading open situations" />
+		{/snippet}
+		{#snippet error()}
+			<span>Could not load open situations.</span>
+		{/snippet}
+		{#snippet empty()}
+			<p class="text-sm text-muted-foreground">No open situations.</p>
+		{/snippet}
+		{#snippet view()}
+			<ul class="divide-y rounded-lg border bg-card">
+				{#each rows as row (row.id)}
+					<li class="flex min-h-[60px] flex-col gap-1 px-4 py-3">
+						<div class="flex flex-wrap items-center gap-x-2 gap-y-1">
 							<a
-								class="min-w-0 break-words text-sm font-medium hover:underline focus-visible:outline-ring"
-								href={resolve("/situations/[id]/[[view=situationView]]", { id: item.id })}
+								class="rounded-sm text-[15px] leading-[22px] font-medium wrap-anywhere hover:underline focus-visible:outline-2 focus-visible:outline-ring"
+								href={row.href}
 							>
-								{attrs.title}
+								{row.title}
 							</a>
-							<SituationStatus attributes={attrs} />
+							<StatusBadge status={row.status} variant="inline" />
 						</div>
-						<p class="mt-1 line-clamp-2 text-sm text-muted-foreground">{attrs.summary}</p>
-						<div class="mt-3 flex items-center gap-3">
-							<Badge variant="secondary" class="text-muted-foreground">TODO</Badge>
-							<span class="text-xs text-muted-foreground">
-								{attrs.signalCount} contributing {attrs.signalCount === 1
-									? "signal"
-									: "signals"}
-							</span>
-						</div>
+						{#if row.conclusion.kind === "loading"}
+							<Skeleton class="h-4 w-3/4" />
+						{:else if row.conclusion.kind === "text"}
+							<p class="line-clamp-2 text-sm">
+								<span class="text-muted-foreground">Latest conclusion ·</span>
+								{row.conclusion.text}
+							</p>
+						{:else if row.summary}
+							<p class="line-clamp-1 text-sm text-muted-foreground">{row.summary}</p>
+						{/if}
+						<p class="flex flex-wrap items-center gap-x-1.5 text-xs text-muted-foreground">
+							<span>Opened</span>
+							<Timestamp value={row.openedAt} />
+							{#if row.sourceCount > 0}
+								<span class="tabular-nums">
+									· {row.sourceCount}
+									{row.sourceCount === 1 ? "source" : "sources"}
+								</span>
+							{/if}
+							{#if row.linkedIncidentCount > 0}
+								<span class="tabular-nums">
+									· Linked to {row.linkedIncidentCount}
+									{row.linkedIncidentCount === 1 ? "incident" : "incidents"}
+								</span>
+							{/if}
+						</p>
 					</li>
 				{/each}
 			</ul>
-		{:else if query.data}
-			<p class="p-6 text-center text-sm text-muted-foreground">No active situations.</p>
-		{/if}
-	</div>
+		{/snippet}
+	</LoadingQueryWrapper>
 </section>

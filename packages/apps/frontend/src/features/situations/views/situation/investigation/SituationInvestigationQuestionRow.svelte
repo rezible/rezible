@@ -19,7 +19,7 @@
 	<div class="flex flex-wrap items-center justify-between gap-2">
 		<Badge variant="secondary">{row.statusLabel}</Badge>
 		<time datetime={row.submittedAt.iso} class="text-xs text-muted-foreground">
-			Asked {row.submittedAt.label}
+			Asked {row.submittedAt.absolute}
 		</time>
 	</div>
 	<p class="whitespace-pre-wrap text-sm leading-relaxed wrap-anywhere">
@@ -68,7 +68,7 @@
 					{/if}
 					<div class="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
 						<time datetime={row.answerPublishedAt.iso}>
-							Published {row.answerPublishedAt.label}
+							Published {row.answerPublishedAt.absolute}
 						</time>
 						<Badge variant={answer.turnStatus === "running" ? "outline" : "secondary"}>
 							{answer.turnStatus === "running" ? "Running" : "Completed"}

@@ -47,11 +47,11 @@
 
 <div class="flex h-full min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-background md:flex-row">
 	<aside
-		class="bg-feature text-feature-foreground flex min-h-0 w-full min-w-0 shrink-0 flex-col overflow-hidden border-b md:w-[180px] md:border-e md:border-b-0"
+		class="bg-feature text-feature-foreground flex min-h-0 w-full min-w-0 shrink-0 flex-col overflow-hidden border-b md:w-[calc(var(--sidebar-width)-var(--sidebar-width-icon))] md:border-e md:border-b-0"
 	>
 		<nav
 			aria-label={label}
-			class="flex shrink-0 flex-row gap-1 overflow-x-auto md:flex-col md:overflow-visible"
+			class="flex shrink-0 flex-row gap-1 overflow-x-auto md:flex-col md:gap-0.5 md:overflow-visible md:p-2"
 		>
 			{#each entries as entry, index (index)}
 				{@const href = paths[index] + page.url.search}
@@ -62,7 +62,7 @@
 					data-sveltekit-noscroll
 					aria-current={isActive ? "page" : undefined}
 					data-active={isActive ? "true" : undefined}
-					class="hover:bg-accent focus-visible:outline-ring data-[active=true]:bg-selection data-[active=true]:text-selection-foreground relative flex h-9 min-w-0 shrink-0 items-center gap-2 px-3 text-sm font-medium text-muted-foreground outline-none hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 after:bg-brand after:absolute after:inset-x-2 after:bottom-0 after:h-0.5 after:opacity-0 data-[active=true]:after:opacity-100 md:after:inset-x-auto md:after:inset-y-0 md:after:right-0 md:after:h-auto md:after:w-0.5"
+					class="hover:bg-accent focus-visible:outline-ring data-[active=true]:bg-selection data-[active=true]:text-selection-foreground relative flex h-9 min-w-0 shrink-0 items-center gap-2 px-3 text-sm font-medium text-muted-foreground outline-none hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 after:bg-brand after:absolute after:inset-x-2 after:bottom-0 after:h-0.5 after:opacity-0 data-[active=true]:after:opacity-100 md:rounded-md md:after:inset-x-auto md:after:inset-y-2 md:after:left-0 md:after:right-auto md:after:h-auto md:after:w-0.5 md:after:rounded-full"
 				>
 					{#if entry.icon}
 						<entry.icon class="size-4 shrink-0" aria-hidden="true" />

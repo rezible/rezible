@@ -10,7 +10,7 @@ import {
 	type AppSidebarModel,
 } from "$lib/app-shell.svelte";
 
-import RiDashboardLine from "remixicon-svelte/icons/dashboard-horizontal-line";
+import RiHome5Line from "remixicon-svelte/icons/home-5-line";
 import RiFireLine from "remixicon-svelte/icons/fire-line";
 import RiArticleLine from "remixicon-svelte/icons/article-line";
 import RiPulseLine from "remixicon-svelte/icons/pulse-line";
@@ -63,7 +63,7 @@ const defaultSidebarModel: AppSidebarModel = {
 		{
 			// label: "General",
 			items: [
-				{ label: "Home", href: "/", icon: RiDashboardLine },
+				{ label: "Home", href: "/", icon: RiHome5Line },
 				{ label: "Incidents", href: "/incidents", icon: RiFireLine },
 				{ label: "Situations", href: "/situations", icon: RiArticleLine },
 				{ label: "Signals", href: "/signals", icon: RiPulseLine },
@@ -87,8 +87,8 @@ class AppSidebarController {
 
 	private sidebarState = useSidebar();
 
-	isOpen = $derived(this.sidebarState.effectiveOpen);
-	collapsed = $derived(this.sidebarState.state === "collapsed");
+	/** Labels are shown; false when the page collapses the sidebar to the icon rail. */
+	expanded = $derived(this.sidebarState.expanded);
 
 	isDefault = $derived(!this.shell.childSidebar);
 	model = $derived(!this.shell.childSidebar ? defaultSidebarModel : this.shell.childSidebar);

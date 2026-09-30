@@ -4510,12 +4510,15 @@ components:
           items:
             $ref: "#/components/schemas/InvestigationReference"
           type: array
+        summary:
+          type: string
         text:
           type: string
         turnStatus:
           type: string
       required:
         - text
+        - summary
         - references
         - agentTurnId
         - turnStatus

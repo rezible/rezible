@@ -19,7 +19,11 @@
 
 {#if !item.subItems}
 	<Sidebar.MenuItem>
-		<Sidebar.MenuButton {isActive} tooltipContent={item.label}>
+		<Sidebar.MenuButton
+			{isActive}
+			tooltipContent={item.label}
+			class="text-sidebar-foreground/70 hover:text-sidebar-foreground data-active:text-sidebar-selection-foreground"
+		>
 			{#snippet child({ props })}
 				<a
 					href={resolve(item.href as any)}
@@ -30,7 +34,7 @@
 					{#if !!item.icon && typeof item.icon === "function"}
 						<item.icon />
 					{/if}
-					{#if !controller.collapsed}
+					{#if controller.expanded}
 						{item.label}
 					{/if}
 				</a>

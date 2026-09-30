@@ -1,6 +1,7 @@
 import { Context, watch, type Getter } from "runed";
 import { onDestroy, type Component, type Snippet } from "svelte";
 import type { ResolvedPathname } from "$app/types";
+import type { StatusPresentation } from "$components/common/status-badge/status";
 
 export type AppSidebarItem = {
 	label: string;
@@ -29,10 +30,29 @@ export type PageBreadcrumb = {
 	path: ResolvedPathname;
 };
 
+export type PageRelatedLink = {
+	/** Stable key for keyed each blocks, e.g. the object ID. */
+	key: string;
+	/** Singular object kind, sentence case: "Incident", "Situation". */
+	kind: string;
+	icon: Component;
+	label: string;
+	path: ResolvedPathname;
+	status?: StatusPresentation;
+};
+
 export type PageDescriptor = {
 	title: string;
-	status?: string;
+	/** The page object's primary status. Rendered once, in the header. */
+	status?: StatusPresentation;
 	parents?: readonly PageBreadcrumb[];
+	/** Objects this page's object is linked to (situation ↔ incident). */
+	related?: readonly PageRelatedLink[];
+	/**
+	 * When true, the view renders its own <h1> in content and the header's current
+	 * breadcrumb is a non-heading element. Default false (header crumb is the <h1>).
+	 */
+	contentHeading?: boolean;
 	pageActions?: Snippet;
 };
 

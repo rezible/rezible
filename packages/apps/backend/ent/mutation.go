@@ -37722,6 +37722,7 @@ type InvestigationReportMutation struct {
 	created_at               *time.Time
 	fingerprint              *string
 	text                     *string
+	summary                  *string
 	clearedFields            map[string]struct{}
 	tenant                   *int
 	clearedtenant            bool
@@ -38057,6 +38058,42 @@ func (m *InvestigationReportMutation) ResetText() {
 	m.text = nil
 }
 
+// SetSummary sets the "summary" field.
+func (m *InvestigationReportMutation) SetSummary(s string) {
+	m.summary = &s
+}
+
+// Summary returns the value of the "summary" field in the mutation.
+func (m *InvestigationReportMutation) Summary() (r string, exists bool) {
+	v := m.summary
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSummary returns the old "summary" field's value of the InvestigationReport entity.
+// If the InvestigationReport object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InvestigationReportMutation) OldSummary(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSummary is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSummary requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSummary: %w", err)
+	}
+	return oldValue.Summary, nil
+}
+
+// ResetSummary resets all changes to the "summary" field.
+func (m *InvestigationReportMutation) ResetSummary() {
+	m.summary = nil
+}
+
 // ClearTenant clears the "tenant" edge to the Tenant entity.
 func (m *InvestigationReportMutation) ClearTenant() {
 	m.clearedtenant = true
@@ -38226,7 +38263,7 @@ func (m *InvestigationReportMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *InvestigationReportMutation) Fields() []string {
-	fields := make([]string, 0, 6)
+	fields := make([]string, 0, 7)
 	if m.tenant != nil {
 		fields = append(fields, investigationreport.FieldTenantID)
 	}
@@ -38244,6 +38281,9 @@ func (m *InvestigationReportMutation) Fields() []string {
 	}
 	if m.text != nil {
 		fields = append(fields, investigationreport.FieldText)
+	}
+	if m.summary != nil {
+		fields = append(fields, investigationreport.FieldSummary)
 	}
 	return fields
 }
@@ -38265,6 +38305,8 @@ func (m *InvestigationReportMutation) Field(name string) (ent.Value, bool) {
 		return m.AgentTurnID()
 	case investigationreport.FieldText:
 		return m.Text()
+	case investigationreport.FieldSummary:
+		return m.Summary()
 	}
 	return nil, false
 }
@@ -38286,6 +38328,8 @@ func (m *InvestigationReportMutation) OldField(ctx context.Context, name string)
 		return m.OldAgentTurnID(ctx)
 	case investigationreport.FieldText:
 		return m.OldText(ctx)
+	case investigationreport.FieldSummary:
+		return m.OldSummary(ctx)
 	}
 	return nil, fmt.Errorf("unknown InvestigationReport field %s", name)
 }
@@ -38336,6 +38380,13 @@ func (m *InvestigationReportMutation) SetField(name string, value ent.Value) err
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetText(v)
+		return nil
+	case investigationreport.FieldSummary:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSummary(v)
 		return nil
 	}
 	return fmt.Errorf("unknown InvestigationReport field %s", name)
@@ -38406,6 +38457,9 @@ func (m *InvestigationReportMutation) ResetField(name string) error {
 		return nil
 	case investigationreport.FieldText:
 		m.ResetText()
+		return nil
+	case investigationreport.FieldSummary:
+		m.ResetSummary()
 		return nil
 	}
 	return fmt.Errorf("unknown InvestigationReport field %s", name)

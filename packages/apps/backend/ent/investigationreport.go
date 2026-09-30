@@ -33,6 +33,8 @@ type InvestigationReport struct {
 	AgentTurnID uuid.UUID `json:"agent_turn_id,omitempty"`
 	// Text holds the value of the "text" field.
 	Text string `json:"text,omitempty"`
+	// Summary holds the value of the "summary" field.
+	Summary string `json:"summary,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the InvestigationReportQuery when eager-loading is set.
 	Edges        InvestigationReportEdges `json:"edges"`
@@ -103,7 +105,7 @@ func (*InvestigationReport) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case investigationreport.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case investigationreport.FieldFingerprint, investigationreport.FieldText:
+		case investigationreport.FieldFingerprint, investigationreport.FieldText, investigationreport.FieldSummary:
 			values[i] = new(sql.NullString)
 		case investigationreport.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
@@ -165,6 +167,12 @@ func (_m *InvestigationReport) assignValues(columns []string, values []any) erro
 				return fmt.Errorf("unexpected type %T for field text", values[i])
 			} else if value.Valid {
 				_m.Text = value.String
+			}
+		case investigationreport.FieldSummary:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field summary", values[i])
+			} else if value.Valid {
+				_m.Summary = value.String
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -239,6 +247,9 @@ func (_m *InvestigationReport) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("text=")
 	builder.WriteString(_m.Text)
+	builder.WriteString(", ")
+	builder.WriteString("summary=")
+	builder.WriteString(_m.Summary)
 	builder.WriteByte(')')
 	return builder.String()
 }

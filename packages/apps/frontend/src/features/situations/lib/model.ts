@@ -1,19 +1,16 @@
-import type { AlertEpisode, Event, InvestigationAttributes, SituationObservationGroup } from "$lib/api";
-
-export function timestamp(value?: string) {
-	if (!value) {
-		return { value: undefined, iso: undefined, label: "Time unavailable" };
-	}
-	const date = new Date(value);
-	if (!Number.isFinite(date.getTime()) || date.getUTCFullYear() <= 1) {
-		return { value: undefined, iso: undefined, label: "Time unavailable" };
-	}
-	return {
-		value: date.getTime(),
-		iso: date.toISOString(),
-		label: date.toLocaleString(undefined, { timeZoneName: "short" }),
-	};
-}
+import type {
+	AlertEpisode,
+	Event,
+	InvestigationReport,
+	InvestigationReportAttributes,
+	SituationObservationGroup,
+} from "$lib/api";
+import { formatTime, type FormattedTime } from "$lib/time";
+import { safeExternalUrl } from "$lib/utils";
+import { markdownSummary } from "$components/rich-text-view/markdown-summary";
+import type { Component } from "svelte";
+import RiAlarmWarningLine from "remixicon-svelte/icons/alarm-warning-line";
+import RiPulseLine from "remixicon-svelte/icons/pulse-line";
 
 export type SourceRecord = {
 	key: string;
@@ -21,7 +18,7 @@ export type SourceRecord = {
 	type: "Event" | "Alert episode";
 	title: string;
 	source: string;
-	time: ReturnType<typeof timestamp>;
+	time: FormattedTime;
 	timeLabel: string;
 	content: string;
 	fields: { label: string; value: string }[];
@@ -71,18 +68,6 @@ function readableField(fields: Record<string, unknown> | undefined, name: string
 		return undefined;
 	}
 	return value.trim();
-}
-
-function safeExternalUrl(value: string) {
-	try {
-		const url = new URL(value);
-		if (url.protocol === "https:" || url.protocol === "http:") {
-			return url.href;
-		}
-	} catch {
-		// Stored references are not always URLs.
-	}
-	return undefined;
 }
 
 function eventContent(payload: ReturnType<typeof readablePayload>) {
@@ -139,7 +124,7 @@ function eventSourceRecord(record: Event): SourceRecord {
 		eventId: record.id,
 		title,
 		source: attributes.resourceRef.provider || attributes.providerEventSource || "Source unavailable",
-		time: timestamp(attributes.occurredAt),
+		time: formatTime(attributes.occurredAt),
 		timeLabel: "Occurred",
 		content,
 		fields: [
@@ -150,7 +135,7 @@ function eventSourceRecord(record: Event): SourceRecord {
 			{ label: "Provider event source", value: attributes.providerEventSource },
 			{ label: "Provider event reference", value: attributes.providerEventRef },
 			{ label: "Integration ID", value: attributes.integrationId ?? "" },
-			{ label: "Received", value: timestamp(attributes.receivedAt).label },
+			{ label: "Received", value: formatTime(attributes.receivedAt).absolute },
 		].filter((field) => field.value),
 		links,
 	};
@@ -160,10 +145,10 @@ function episodeSourceRecord(record: AlertEpisode): SourceRecord {
 	const attributes = record.attributes;
 	const fields = [
 		{ label: "Status", value: attributes.status },
-		{ label: "Last observed", value: timestamp(attributes.lastObservedAt).label },
+		{ label: "Last observed", value: formatTime(attributes.lastObservedAt).absolute },
 	];
 	if (attributes.closedAt) {
-		fields.push({ label: "Closed", value: timestamp(attributes.closedAt).label });
+		fields.push({ label: "Closed", value: formatTime(attributes.closedAt).absolute });
 	}
 	fields.push({ label: "Definition", value: attributes.definition?.attributes.definition ?? "" });
 	return {
@@ -172,13 +157,28 @@ function episodeSourceRecord(record: AlertEpisode): SourceRecord {
 		type: "Alert episode",
 		title: attributes.definition?.attributes.title || "Alert episode",
 		source: "Alert episode",
-		time: timestamp(attributes.startedAt),
+		time: formatTime(attributes.startedAt),
 		timeLabel: "Started",
 		content: attributes.definition?.attributes.description || "",
 		definitionId: attributes.definition?.id,
 		fields: fields.filter((field) => field.value),
 		links: [],
 	};
+}
+
+/** "Alert episode" or "Event · datadog"; never repeats the type. */
+export function sourceMeta(record: SourceRecord): string {
+	if (record.source && record.source !== record.type) {
+		return `${record.type} · ${record.source}`;
+	}
+	return record.type;
+}
+
+export function sourceIcon(record: SourceRecord): Component {
+	if (record.type === "Event") {
+		return RiPulseLine;
+	}
+	return RiAlarmWarningLine;
 }
 
 function isEventRecord(record: Event | AlertEpisode): record is Event {
@@ -193,8 +193,8 @@ export function sourceRecord(record: Event | AlertEpisode): SourceRecord {
 }
 
 function compareSources(first: SourceRecord, second: SourceRecord) {
-	const firstTime = first.time.value ?? Infinity;
-	const secondTime = second.time.value ?? Infinity;
+	const firstTime = first.time.epochMs ?? Infinity;
+	const secondTime = second.time.epochMs ?? Infinity;
 	if (firstTime < secondTime) {
 		return -1;
 	}
@@ -220,45 +220,63 @@ export function observationGroups(groups: SituationObservationGroup[]) {
 	});
 }
 
-export type InvestigationExecution = {
-	label: string;
-	message?: string;
-};
-
-export function investigationExecution(attributes?: InvestigationAttributes): InvestigationExecution {
-	if (attributes?.activeTurn?.status === "queued") {
-		return { label: "Queued" };
-	}
-	if (attributes?.activeTurn?.status === "running") {
-		return { label: "Running" };
-	}
-
-	switch (attributes?.latestTurn?.status) {
-		case "completed":
-			return { label: "Completed" };
-		case "failed":
-			return {
-				label: "Failed",
-				message: "The investigation turn could not finish.",
-			};
-		case "aborted":
-			return {
-				label: "Aborted",
-				message: "The investigation turn was stopped.",
-			};
-		default:
-			return { label: "Waiting to start" };
-	}
-}
-
 export const SITUATION_POLL_INTERVAL_MS = 30_000;
 
-export function reportExcerpt(text: string, limit = 400) {
-	const characters = Array.from(text);
-	if (characters.length <= limit) {
-		return text;
+/** One- or two-sentence conclusion for lists, cards and headers. */
+export function reportSummary(report: InvestigationReportAttributes): string | undefined {
+	const summary = report.summary.trim();
+	if (summary) {
+		return summary;
 	}
-	return `${characters.slice(0, limit).join("")}…`;
+	return markdownSummary(report.text);
+}
+
+export type ReportState =
+	| { kind: "loading" }
+	| { kind: "none" }
+	| { kind: "unavailable" }
+	| { kind: "error" }
+	| {
+			kind: "published";
+			attributes: InvestigationReportAttributes;
+			summary: string | undefined;
+			provisional: boolean;
+			refreshFailed: boolean;
+	  };
+
+/** A report is provisional while the turn that published it has not finished. */
+export function isProvisionalReport(report: InvestigationReportAttributes) {
+	return report.provisional || report.turnStatus === "running";
+}
+
+export type SituationConclusion = { kind: "loading" } | { kind: "none" } | { kind: "text"; text: string };
+
+type ReportQueryState = {
+	isPending: boolean;
+	isError: boolean;
+	data?: { data: InvestigationReport };
+};
+
+/** Maps a report query (or its absence, when there is no investigation) to a conclusion. */
+export function situationConclusion(reportQuery: ReportQueryState | undefined): SituationConclusion {
+	if (!reportQuery) {
+		return { kind: "none" };
+	}
+
+	const report = reportQuery.data?.data;
+	if (report) {
+		const text = reportSummary(report.attributes);
+		if (text) {
+			return { kind: "text", text };
+		}
+		return { kind: "none" };
+	}
+
+	if (reportQuery.isPending) {
+		return { kind: "loading" };
+	}
+
+	return { kind: "none" };
 }
 
 export function isDefinitiveUnavailableError(error?: { status?: number } | null) {

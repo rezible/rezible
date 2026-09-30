@@ -1,32 +1,17 @@
 import { IsMobile } from "$lib/hooks/is-mobile.svelte.js";
 import { getContext, setContext } from "svelte";
-import { SIDEBAR_KEYBOARD_SHORTCUT } from "./constants.js";
 
 type Getter<T> = () => T;
 
 export type SidebarStateProps = {
-	/**
-	 * A getter function that returns the current open state of the sidebar.
-	 * We use a getter function here to support `bind:open` on the `Sidebar.Provider`
-	 * component.
-	 */
-	open: Getter<boolean>;
-
-	/**
-	 * A function that sets the open state of the sidebar. To support `bind:open`, we need
-	 * a source of truth for changing the open state to ensure it will be synced throughout
-	 * the sub-components and any `bind:` references.
-	 */
-	setOpen: (open: boolean) => void;
-	railActive?: Getter<boolean>;
+	/** Desktop only: collapse to the icon rail. Decided by the page, not toggled by the user. */
+	collapsed: Getter<boolean>;
 };
 
 class SidebarState {
 	#isMobile: IsMobile;
-	setOpen: SidebarStateProps["setOpen"];
 
 	constructor(readonly props: SidebarStateProps) {
-		this.setOpen = props.setOpen;
 		this.#isMobile = new IsMobile();
 	}
 
@@ -36,42 +21,24 @@ class SidebarState {
 		return this.#isMobile.current;
 	}
 
-	featureRailOpen = $state(false);
 	openMobile = $state(false);
 
-	get open() {
-		return this.props.open();
-	}
-
-	get railActive() {
-		return this.props.railActive?.() ?? false;
-	}
-
-	get effectiveOpen() {
-		if (this.isMobile) return this.openMobile;
-		return this.railActive ? this.featureRailOpen : this.open;
+	/** Whether labels are shown: always in the mobile sheet, and on desktop unless collapsed. */
+	get expanded() {
+		return this.isMobile || !this.props.collapsed();
 	}
 
 	get state() {
-		return this.effectiveOpen ? "expanded" : "collapsed";
+		return this.expanded ? "expanded" : "collapsed";
 	}
-
-	// Event handler to apply to the `<svelte:window>`
-	handleShortcutKeydown = (e: KeyboardEvent) => {
-		if (e.key === SIDEBAR_KEYBOARD_SHORTCUT && (e.metaKey || e.ctrlKey)) {
-			e.preventDefault();
-			this.toggle();
-		}
-	};
 
 	setOpenMobile = (value: boolean) => {
 		this.openMobile = value;
 	};
 
+	/** Opens or closes the mobile sheet. The desktop sidebar has no toggle. */
 	toggle = () => {
-		if (this.isMobile) return (this.openMobile = !this.openMobile);
-		if (this.railActive) return (this.featureRailOpen = !this.featureRailOpen);
-		return this.setOpen(!this.open);
+		this.openMobile = !this.openMobile;
 	};
 }
 

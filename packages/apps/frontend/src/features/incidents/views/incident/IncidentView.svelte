@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { resolve } from "$app/paths";
 	import { registerPageDescriptor } from "$lib/app-shell.svelte";
+	import { incidentResponseStatus } from "$features/incidents/lib/status";
 	import { initIncidentViewController } from "./controller.svelte";
 	import { initIncidentCollaborationController } from "./collaboration.svelte";
 
@@ -25,8 +26,10 @@
 
 	registerPageDescriptor(() => ({
 		title: view.incident?.attributes.title ?? "Incident",
-		status: view.incident?.attributes.responseState,
+		status: view.incident ? incidentResponseStatus(view.incident.attributes.responseState) : undefined,
 		parents: [{ label: "Incidents", path: resolve("/incidents") }],
+		related: view.relatedLinks,
+		contentHeading: view.activeView === undefined,
 		pageActions: actions,
 	}));
 </script>

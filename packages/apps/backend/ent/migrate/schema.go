@@ -1941,6 +1941,7 @@ var (
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "fingerprint", Type: field.TypeString, Size: 64},
 		{Name: "text", Type: field.TypeString, Size: 2147483647},
+		{Name: "summary", Type: field.TypeString, Size: 2147483647, Default: ""},
 		{Name: "investigation_id", Type: field.TypeUUID},
 		{Name: "tenant_id", Type: field.TypeInt},
 		{Name: "agent_turn_id", Type: field.TypeUUID},
@@ -1953,19 +1954,19 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "investigation_reports_investigations_reports",
-				Columns:    []*schema.Column{InvestigationReportsColumns[4]},
+				Columns:    []*schema.Column{InvestigationReportsColumns[5]},
 				RefColumns: []*schema.Column{InvestigationsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
 				Symbol:     "investigation_reports_tenants_tenant",
-				Columns:    []*schema.Column{InvestigationReportsColumns[5]},
+				Columns:    []*schema.Column{InvestigationReportsColumns[6]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "investigation_reports_agent_turns_agent_turn",
-				Columns:    []*schema.Column{InvestigationReportsColumns[6]},
+				Columns:    []*schema.Column{InvestigationReportsColumns[7]},
 				RefColumns: []*schema.Column{AgentTurnsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -1974,17 +1975,17 @@ var (
 			{
 				Name:    "investigationreport_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{InvestigationReportsColumns[5]},
+				Columns: []*schema.Column{InvestigationReportsColumns[6]},
 			},
 			{
 				Name:    "investigationreport_tenant_id_agent_turn_id_fingerprint",
 				Unique:  true,
-				Columns: []*schema.Column{InvestigationReportsColumns[5], InvestigationReportsColumns[6], InvestigationReportsColumns[2]},
+				Columns: []*schema.Column{InvestigationReportsColumns[6], InvestigationReportsColumns[7], InvestigationReportsColumns[2]},
 			},
 			{
 				Name:    "investigationreport_tenant_id_investigation_id_agent_turn_id_created_at_id",
 				Unique:  false,
-				Columns: []*schema.Column{InvestigationReportsColumns[5], InvestigationReportsColumns[4], InvestigationReportsColumns[6], InvestigationReportsColumns[1], InvestigationReportsColumns[0]},
+				Columns: []*schema.Column{InvestigationReportsColumns[6], InvestigationReportsColumns[5], InvestigationReportsColumns[7], InvestigationReportsColumns[1], InvestigationReportsColumns[0]},
 			},
 		},
 	}

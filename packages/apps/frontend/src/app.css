@@ -193,6 +193,16 @@ html {
 	--color-brand-foreground: var(--brand-foreground);
 }
 
+/* Small uppercase label for regions within a page (Atlas "Region labels"). */
+@utility region-label {
+	font-size: 11px;
+	line-height: 16px;
+	font-weight: 600;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	color: var(--muted-foreground);
+}
+
 @layer base {
 	* {
 		@apply border-border outline-ring/50;

@@ -9,6 +9,7 @@ import (
 	"sort"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
@@ -31,16 +32,23 @@ import (
 
 const investigationAnswerKeyPrefix = "answer:"
 
+const maxInvestigationReportSummaryLength = 400
+
 func (s *InvestigationService) PublishInvestigationReport(ctx context.Context, scope rez.InvestigationPublicationScope, params rez.PublishInvestigationReportParams) (*rez.InvestigationReportResult, error) {
 	invId := scope.InvestigationID
 	text := strings.TrimSpace(params.Text)
 	if invId == uuid.Nil || scope.AgentTurnID == uuid.Nil || text == "" {
 		return nil, fmt.Errorf("%w: investigation, turn and report text are required", rez.ErrInvalidInput)
 	}
+	summary := strings.TrimSpace(params.Summary)
+	if utf8.RuneCountInString(summary) > maxInvestigationReportSummaryLength {
+		return nil, fmt.Errorf("%w: report summary must be at most %d characters", rez.ErrInvalidInput, maxInvestigationReportSummaryLength)
+	}
 	evidenceIDs := s.normalizeInvestigationEvidenceIDs(params.EvidenceIDs)
 
 	fpPayload := investigationReportFingerprintPayload{
 		Text:        text,
+		Summary:     summary,
 		EvidenceIDs: evidenceIDs,
 	}
 	fingerprint, fingerprintErr := s.investigationOutputFingerprint("report", invId.String(), fpPayload)
@@ -74,6 +82,7 @@ func (s *InvestigationService) PublishInvestigationReport(ctx context.Context, s
 			SetInvestigationID(current.ID).
 			SetAgentTurnID(turn.ID).
 			SetText(text).
+			SetSummary(summary).
 			SetFingerprint(fingerprint)
 		created, saveErr := createReport.Save(ctx)
 		if saveErr != nil {
@@ -625,6 +634,7 @@ type (
 
 	investigationReportFingerprintPayload struct {
 		Text        string      `json:"text"`
+		Summary     string      `json:"summary,omitempty"`
 		EvidenceIDs []uuid.UUID `json:"evidence_ids"`
 	}
 
@@ -724,7 +734,9 @@ func (s *InvestigationService) investigationReportResult(ctx context.Context, re
 	}
 	return &rez.InvestigationReportResult{
 		InvestigationPublicationMeta: s.investigationPublicationMeta(report.ID, turn, report.CreatedAt),
-		Text:                         report.Text, EvidenceIDs: evidenceIDs,
+		Text:                         report.Text,
+		Summary:                      report.Summary,
+		EvidenceIDs:                  evidenceIDs,
 	}, nil
 }
 

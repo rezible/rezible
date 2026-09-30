@@ -268,10 +268,15 @@ func (s *IncidentService) SetIncidentRoleAssignment(ctx context.Context, id uuid
 			return nil, fmt.Errorf("%w: missing ids", rez.ErrInvalidInput)
 		}
 
-		mut = client.IncidentRoleAssignment.Create().
+		createRoleAssignment := client.IncidentRoleAssignment.Create().
 			SetIncidentID(params.IncidentID).
 			SetUserID(params.UserID).
 			SetRoleID(params.RoleID)
+		created, createErr := createRoleAssignment.Save(ctx)
+		if createErr != nil {
+			return nil, fmt.Errorf("create incident role assignment: %w", createErr)
+		}
+		return s.GetIncidentRoleAssignment(ctx, created.ID)
 	}
 	if updateErr := mut.Exec(ctx); updateErr != nil {
 		return nil, fmt.Errorf("update incident role assignment: %w", updateErr)

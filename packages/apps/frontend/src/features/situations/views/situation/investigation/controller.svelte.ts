@@ -1,9 +1,16 @@
-import { createMutation, createQueries, useQueryClient } from "@tanstack/svelte-query";
+import {
+	createMutation,
+	createQueries,
+	useQueryClient,
+	type CreateQueryResult,
+} from "@tanstack/svelte-query";
 import { SvelteSet } from "svelte/reactivity";
 import {
 	getInvestigationFindingOptions,
 	getInvestigationOptions,
 	getInvestigationReportOptions,
+	listInvestigationFindingsOptions,
+	listInvestigationHypothesesOptions,
 	listInvestigationUserInputsOptions,
 	listInvestigationUserInputsQueryKey,
 	retryAgentTurnMutation,
@@ -16,16 +23,24 @@ import {
 } from "$lib/api";
 import { createPaginatedQuery } from "$lib/api/queryPaginator.svelte";
 import { Context, watch } from "runed";
+import { SITUATION_POLL_INTERVAL_MS, isDefinitiveUnavailableError } from "$features/situations/lib/model";
+import { formatTime } from "$lib/time";
 import {
-	SITUATION_POLL_INTERVAL_MS,
-	isDefinitiveUnavailableError,
-	timestamp,
-} from "$features/situations/lib/model";
+	buildCitationIndex,
+	buildFindingViews,
+	buildHypothesisViews,
+	citationViews,
+	findingRow,
+	hypothesisRow,
+	type CitationView,
+	type OutputRow,
+} from "$features/situations/lib/investigation-outputs";
 
 import { useSituationController } from "../controller.svelte";
 import { SourceInspection } from "$features/situations/lib/sourceInspection.svelte";
 
 export const QUESTION_PAGE_SIZE = 25;
+export const OUTPUT_PAGE_SIZE = 50;
 
 const idPath = (id?: string) => ({ id: id ?? "" });
 
@@ -62,6 +77,14 @@ function errorMessage(error: unknown, fallback: string) {
 	}
 	return fallback;
 }
+
+type OutputList = {
+	name: string;
+	label: string;
+	query: CreateQueryResult<{ data: unknown[] }, ErrorModel>;
+	rows: OutputRow[];
+	total: number;
+};
 
 export class SituationInvestigationController {
 	private pageController = useSituationController();
@@ -108,6 +131,56 @@ export class SituationInvestigationController {
 		keepPreviousQueryData: false,
 	});
 	questionQuery = $derived(this.questionPage.query);
+
+	private findingsPage = createPaginatedQuery({
+		source: "local",
+		queryOptions: () => ({
+			...listInvestigationFindingsOptions({
+				path: idPath(this.investigationId),
+				query: { page: 1, pageSize: OUTPUT_PAGE_SIZE },
+			}),
+			enabled: !!this.investigationId,
+			refetchInterval: (query: { state: { error: ErrorModel | null } }) =>
+				this.outputRefetchInterval(query.state.error),
+			refetchIntervalInBackground: false,
+			retry: (failureCount, error) => !isDefinitiveUnavailableError(error) && failureCount < 2,
+		}),
+	});
+	findingsQuery = $derived(this.findingsPage.query);
+
+	private hypothesesPage = createPaginatedQuery({
+		source: "local",
+		queryOptions: () => ({
+			...listInvestigationHypothesesOptions({
+				path: idPath(this.investigationId),
+				query: { page: 1, pageSize: OUTPUT_PAGE_SIZE },
+			}),
+			enabled: !!this.investigationId,
+			refetchInterval: (query: { state: { error: ErrorModel | null } }) =>
+				this.outputRefetchInterval(query.state.error),
+			refetchIntervalInBackground: false,
+			retry: (failureCount, error) => !isDefinitiveUnavailableError(error) && failureCount < 2,
+		}),
+	});
+	hypothesesQuery = $derived(this.hypothesesPage.query);
+
+	private findingItems = $derived(this.findingsQuery.data?.data ?? []);
+	private hypothesisItems = $derived(this.hypothesesQuery.data?.data ?? []);
+	private citationIndex = $derived(
+		buildCitationIndex(this.reportAttributes, this.findingItems, this.hypothesisItems)
+	);
+
+	findings = $derived(buildFindingViews(this.findingItems, this.citationIndex));
+	hypotheses = $derived(buildHypothesisViews(this.hypothesisItems, this.citationIndex));
+	findingRows = $derived(this.findings.map(findingRow));
+	hypothesisRows = $derived(this.hypotheses.map(hypothesisRow));
+	private findingsTotal = $derived(this.findingsQuery.data?.pagination.total ?? 0);
+	private hypothesesTotal = $derived(this.hypothesesQuery.data?.pagination.total ?? 0);
+	reportCitations = $derived(citationViews(this.reportAttributes?.references ?? [], this.citationIndex));
+	citedEvidenceCount = $derived(this.citationIndex.size);
+	conclusion = $derived(this.getConclusion());
+	expandedOutputIds = new SvelteSet<string>();
+	runNotice = $derived(this.getRunNotice());
 	questionTotal = $derived(this.questionQuery.data?.pagination.total ?? 0);
 	lastQuestionPage = $derived(Math.max(1, Math.ceil(this.questionTotal / QUESTION_PAGE_SIZE)));
 	questionFetching = $derived(this.questionQuery.isFetching);
@@ -164,29 +237,61 @@ export class SituationInvestigationController {
 		return this.pageController.investigationUnavailable;
 	}
 
-	get execution() {
-		return this.pageController.execution;
+	get run() {
+		return this.pageController.runStatus;
 	}
 
-	get reportQuery() {
-		return this.pageController.reportQuery;
+	get startPending() {
+		return this.pageController.requestInvestigationMutation.isPending;
 	}
 
 	get reportAttributes() {
 		return this.pageController.reportAttributes;
 	}
 
-	get reportPublishedAt() {
-		return this.pageController.reportPublishedAt;
+	get reportState() {
+		return this.pageController.reportState;
 	}
 
-	get reportAccessLost() {
-		return this.pageController.reportAccessLost;
+	retryReport = () => {
+		this.pageController.retryReport();
+	};
+
+	startInvestigation = () => {
+		this.pageController.startInvestigation();
+	};
+
+	toggleOutput = (id: string) => {
+		if (this.expandedOutputIds.has(id)) {
+			this.expandedOutputIds.delete(id);
+			return;
+		}
+		this.expandedOutputIds.add(id);
+	};
+
+	/** Everything a findings or hypotheses list needs to render. */
+	outputList(kind: "findings" | "hypotheses"): OutputList {
+		if (kind === "findings") {
+			return {
+				name: "findings",
+				label: "Findings",
+				query: this.findingsQuery,
+				rows: this.findingRows,
+				total: this.findingsTotal,
+			};
+		}
+		return {
+			name: "hypotheses",
+			label: "Hypotheses",
+			query: this.hypothesesQuery,
+			rows: this.hypothesisRows,
+			total: this.hypothesesTotal,
+		};
 	}
 
-	get reportReferences() {
-		return this.pageController.reportReferences;
-	}
+	openCitation = (citation: CitationView, trigger: HTMLElement) => {
+		this.inspection.openEvidence(citation.id, trigger);
+	};
 
 	constructor() {
 		watch(
@@ -396,7 +501,38 @@ export class SituationInvestigationController {
 		return !this.retryNeedsRefresh;
 	}
 
+	private getConclusion() {
+		const report = this.pageController.reportState;
+		if (report.kind === "published") {
+			return report.summary;
+		}
+		return undefined;
+	}
+
+	private getRunNotice() {
+		const run = this.pageController.runStatus;
+		if (this.investigationAttributes?.activeTurn) {
+			return "The investigation is running. Findings and the report update as they are published.";
+		}
+		const latestStatus = this.investigationAttributes?.latestTurn?.status;
+		if (latestStatus === "failed" || latestStatus === "aborted") {
+			return run.description;
+		}
+		if (this.investigationAttributes?.hasPendingWork) {
+			return "Follow-up work is waiting to run.";
+		}
+		return undefined;
+	}
+
+	private outputRefetchInterval(error: ErrorModel | null) {
+		if (isDefinitiveUnavailableError(error) || this.investigationUnavailable) {
+			return false;
+		}
+		return SITUATION_POLL_INTERVAL_MS;
+	}
+
 	private resetInteractionState() {
+		this.expandedOutputIds.clear();
 		this.inspection.reset();
 		this.questionDraft = "";
 		this.questionValidationError = false;
@@ -461,8 +597,8 @@ export class SituationInvestigationController {
 			const turn = input.attributes.agentTurn;
 			rows.push({
 				input,
-				submittedAt: timestamp(input.attributes.createdAt),
-				answerPublishedAt: timestamp(answer?.attributes.createdAt),
+				submittedAt: formatTime(input.attributes.createdAt),
+				answerPublishedAt: formatTime(answer?.attributes.createdAt),
 				statusLabel: userInputStatusLabel(turn),
 				noAnswerPublished: turn?.status === "completed" && !input.attributes.answerVersionId,
 				hasSelectedAnswer: !!versionId,

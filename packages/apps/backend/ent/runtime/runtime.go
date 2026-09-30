@@ -1240,6 +1240,10 @@ func init() {
 	investigationreportDescText := investigationreportFields[3].Descriptor()
 	// investigationreport.TextValidator is a validator for the "text" field. It is called by the builders before save.
 	investigationreport.TextValidator = investigationreportDescText.Validators[0].(func(string) error)
+	// investigationreportDescSummary is the schema descriptor for summary field.
+	investigationreportDescSummary := investigationreportFields[4].Descriptor()
+	// investigationreport.DefaultSummary holds the default value on creation for the summary field.
+	investigationreport.DefaultSummary = investigationreportDescSummary.Default.(string)
 	// investigationreportDescID is the schema descriptor for id field.
 	investigationreportDescID := investigationreportFields[0].Descriptor()
 	// investigationreport.DefaultID holds the default value on creation for the id field.

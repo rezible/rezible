@@ -6,6 +6,8 @@ import {
 	getHandoverExtensions,
 	getDiscussionExtensions,
 	getPlaybookExtensions,
+	getReadOnlyDocumentExtensions,
+	type ReadOnlyDocumentOptions,
 } from "@rezible/tiptap-extensions";
 import { RezUserSuggestion } from "$src/components/tiptap-editor/user-suggestions/user-suggestion.svelte";
 
@@ -56,5 +58,17 @@ export const createPlaybookEditor = (options: Partial<EditorOptions>) => {
 			},
 		},
 		...options,
+	});
+};
+
+export const createReadOnlyDocumentEditor = (markdown: string, options?: ReadOnlyDocumentOptions) => {
+	return new SvelteEditor({
+		editable: false,
+		extensions: getReadOnlyDocumentExtensions(options),
+		content: markdown,
+		contentType: "markdown",
+		editorProps: {
+			attributes: { class: "rich-text-content" },
+		},
 	});
 };

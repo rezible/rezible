@@ -916,6 +916,7 @@ type (
 
 	PublishInvestigationReportParams struct {
 		Text        string
+		Summary     string
 		EvidenceIDs []uuid.UUID
 	}
 
@@ -952,6 +953,7 @@ type (
 	InvestigationReportResult struct {
 		InvestigationPublicationMeta
 		Text        string
+		Summary     string
 		EvidenceIDs []uuid.UUID
 	}
 

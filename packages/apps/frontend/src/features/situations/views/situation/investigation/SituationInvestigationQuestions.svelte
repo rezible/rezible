@@ -5,6 +5,7 @@
 	import * as Pagination from "$components/ui/pagination";
 	import { Spinner } from "$components/ui/spinner";
 	import { Textarea } from "$components/ui/textarea";
+	import SectionHeading from "$components/common/section-heading/SectionHeading.svelte";
 	import SituationInvestigationQuestionRow from "./SituationInvestigationQuestionRow.svelte";
 	import { useSituationInvestigationController, QUESTION_PAGE_SIZE } from "./controller.svelte";
 
@@ -12,7 +13,7 @@
 </script>
 
 <section aria-labelledby="follow-up-questions-title" class="flex flex-col gap-4">
-	<h2 id="follow-up-questions-title" class="text-lg font-semibold">Questions and answers</h2>
+	<SectionHeading id="follow-up-questions-title" title="Questions and answers" />
 
 	<form
 		class="flex flex-col items-start gap-3"

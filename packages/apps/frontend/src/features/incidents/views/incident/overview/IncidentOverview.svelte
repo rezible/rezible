@@ -1,151 +1,185 @@
 <script lang="ts">
-	import { resolve } from "$app/paths";
+	import { Button } from "$components/ui/button";
+	import * as Tooltip from "$components/ui/tooltip";
 	import { Badge } from "$components/ui/badge";
-	import LoadingQueryWrapper from "$components/layout/loading-query-wrapper/LoadingQueryWrapper.svelte";
+	import { Skeleton } from "$components/ui/skeleton";
+	import PageCanvas from "$components/layout/page-canvas/PageCanvas.svelte";
+	import SectionHeading from "$components/common/section-heading/SectionHeading.svelte";
+	import StatusBadge from "$components/common/status-badge/StatusBadge.svelte";
+	import Timestamp from "$components/common/timestamp/Timestamp.svelte";
+	import Timeline from "$components/common/timeline/Timeline.svelte";
+	import RiArrowRightLine from "remixicon-svelte/icons/arrow-right-line";
+	import RiServerLine from "remixicon-svelte/icons/server-line";
 	import { initIncidentOverviewController } from "./controller.svelte";
+	import IncidentOverviewContext from "./IncidentOverviewContext.svelte";
 
 	const overview = initIncidentOverviewController();
-	const attrs = $derived(overview.attributes);
 </script>
 
-<div class="min-h-0 flex-1 overflow-y-auto">
-	<div class="mx-auto grid w-full max-w-[1240px] gap-8 p-6 lg:grid-cols-[minmax(0,1fr)_320px]">
-		<main class="flex min-w-0 flex-col gap-6">
-			<h1 class="text-2xl font-semibold">{attrs?.title ?? "Incident"}</h1>
-			{#if attrs}
-				<p class="whitespace-pre-wrap text-muted-foreground">{attrs.summary}</p>
-				<dl class="grid gap-4 text-sm sm:grid-cols-3">
-					<div>
-						<dt class="text-muted-foreground">Response state</dt>
-						<dd class="capitalize">{attrs.responseState}</dd>
-					</div>
-					<div>
-						<dt class="text-muted-foreground">Severity</dt>
-						<dd>{attrs.severity?.attributes?.name ?? "Unspecified"}</dd>
-					</div>
-					<div>
-						<dt class="text-muted-foreground">Type</dt>
-						<dd>{attrs.type?.attributes?.name ?? "Unspecified"}</dd>
-					</div>
-					<div>
-						<dt class="text-muted-foreground">Opened</dt>
-						<dd>{overview.dateLabel(attrs.openedAt)}</dd>
-					</div>
-					<div>
-						<dt class="text-muted-foreground">Resolved</dt>
-						<dd>{overview.dateLabel(attrs.resolvedAt)}</dd>
-					</div>
-					<div>
-						<dt class="text-muted-foreground">Updated</dt>
-						<dd>{overview.dateLabel(attrs.updatedAt)}</dd>
-					</div>
-					{#each attrs.fieldSelections as field (field.fieldId)}
-						<div>
-							<dt class="text-muted-foreground">{field.fieldName}</dt>
-							<dd>{field.option.attributes.value}</dd>
-						</div>
+{#snippet context()}
+	<IncidentOverviewContext />
+{/snippet}
+
+{#snippet servicePill(name: string)}
+	<RiServerLine class="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+	{name}
+{/snippet}
+
+{#if overview.attributes}
+	<PageCanvas {context} contextLabel="Incident context">
+		<header class="flex flex-col gap-3">
+			<h1 class="text-[28px] leading-9 font-semibold tracking-tight wrap-anywhere">{overview.title}</h1>
+			{#if overview.summary}
+				<p
+					class="max-w-[72ch] text-[15px] leading-6 whitespace-pre-wrap text-muted-foreground wrap-anywhere"
+				>
+					{overview.summary}
+				</p>
+			{/if}
+		</header>
+
+		<dl class="grid grid-cols-2 gap-x-6 gap-y-4 border-y py-4 sm:grid-cols-3">
+			{#each overview.facts as fact (fact.key)}
+				<div class="flex min-w-0 flex-col gap-1">
+					<dt class="text-xs text-muted-foreground">{fact.label}</dt>
+					<dd class="text-sm font-medium wrap-anywhere">
+						{#if fact.kind === "status"}
+							<StatusBadge status={fact.status} />
+						{:else if fact.kind === "time"}
+							{#if fact.value}
+								<Timestamp value={fact.value} format="absolute" />
+							{:else}
+								<span class="font-normal text-muted-foreground">{fact.fallback}</span>
+							{/if}
+						{:else}
+							{fact.text}
+						{/if}
+					</dd>
+				</div>
+			{/each}
+		</dl>
+
+		<section aria-labelledby="affected-services-title" class="flex flex-col gap-3">
+			<SectionHeading
+				id="affected-services-title"
+				title="Affected services"
+				count={overview.services.length}
+			/>
+			{#if overview.services.length}
+				<ul class="flex flex-wrap gap-2">
+					{#each overview.services as service (service.key)}
+						<li>
+							{#if service.note || service.source}
+								<Tooltip.Root>
+									<Tooltip.Trigger
+										class="inline-flex h-8 items-center gap-2 rounded-full border bg-card px-3 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+									>
+										{@render servicePill(service.name)}
+									</Tooltip.Trigger>
+									<Tooltip.Content class="max-w-72">
+										{#if service.note}
+											<p>{service.note}</p>
+										{/if}
+										{#if service.source}
+											<p>Source: {service.source}</p>
+										{/if}
+									</Tooltip.Content>
+								</Tooltip.Root>
+							{:else}
+								<span
+									class="inline-flex h-8 items-center gap-2 rounded-full border bg-card px-3 text-sm"
+								>
+									{@render servicePill(service.name)}
+								</span>
+							{/if}
+						</li>
 					{/each}
-				</dl>
-				{#if attrs.tags.length}
-					<div class="flex flex-wrap gap-2" aria-label="Tags">
-						{#each attrs.tags as tag (tag.id)}
-							<Badge variant="secondary">{tag.attributes.key}: {tag.attributes.value}</Badge>
-						{/each}
-					</div>
-				{/if}
-				{#if overview.milestones.length}
-					<section class="flex flex-col gap-3 border-t pt-4" aria-labelledby="incident-milestones">
-						<h2 id="incident-milestones" class="font-semibold">Milestones</h2>
-						<ol class="flex flex-col gap-3 text-sm">
-							{#each overview.milestones as milestone (milestone.id)}
-								<li>
-									<div class="flex flex-wrap justify-between gap-2">
-										<span class="font-medium capitalize">
-											{milestone.attributes.kind}
-										</span>
-										<time datetime={milestone.attributes.timestamp}>
-											{overview.dateLabel(milestone.attributes.timestamp)}
-										</time>
-									</div>
-									<p class="whitespace-pre-wrap text-muted-foreground">
-										{milestone.attributes.description}
-									</p>
-								</li>
-							{/each}
-						</ol>
-					</section>
-				{/if}
-				{#if overview.impacts.length}
-					<section class="flex flex-col gap-3 border-t pt-4" aria-labelledby="incident-impacts">
-						<h2 id="incident-impacts" class="font-semibold">Impacts</h2>
-						{#each overview.impacts as impact (impact.id)}
-							<div class="text-sm">
-								<p class="font-medium">{impact.name}</p>
-								<p class="whitespace-pre-wrap">{impact.note}</p>
-								{#if impact.source}
-									<p class="text-muted-foreground">Source: {impact.source}</p>
+				</ul>
+			{:else}
+				<p class="text-sm text-muted-foreground">No affected services recorded.</p>
+			{/if}
+		</section>
+
+		<section aria-labelledby="understanding-title" class="flex flex-col gap-3">
+			<div class="flex flex-col gap-1">
+				<SectionHeading id="understanding-title" title="Current understanding" />
+				<p class="text-sm text-muted-foreground">
+					Latest conclusions from investigations on linked situations.
+				</p>
+			</div>
+			{#if overview.understanding.length}
+				<ul class="divide-y rounded-lg border bg-card">
+					{#each overview.understanding as item (item.id)}
+						<li class="flex min-h-[60px] flex-col gap-2 px-4 py-3">
+							<div class="flex flex-wrap items-center gap-x-2 gap-y-1">
+								<a
+									class="rounded-sm text-[15px] leading-[22px] font-medium wrap-anywhere hover:underline focus-visible:outline-2 focus-visible:outline-ring"
+									href={item.href}
+								>
+									{item.title}
+								</a>
+								{#if item.status}
+									<StatusBadge status={item.status} variant="inline" />
 								{/if}
 							</div>
-						{/each}
-					</section>
+							{#if item.conclusion.kind === "loading"}
+								<Skeleton class="h-4 w-3/4" />
+							{:else if item.conclusion.kind === "text"}
+								<p class="max-w-[65ch] text-[15px] leading-6">{item.conclusion.text}</p>
+							{:else}
+								<p class="text-sm text-muted-foreground">No investigation conclusion yet.</p>
+							{/if}
+							{#if item.reportHref}
+								<Button
+									variant="link"
+									size="inline"
+									class="self-start"
+									href={item.reportHref}
+								>
+									Read report
+									<RiArrowRightLine aria-hidden="true" />
+								</Button>
+							{/if}
+						</li>
+					{/each}
+				</ul>
+				{#if overview.moreLinkedSituations > 0}
+					<p class="text-sm text-muted-foreground">
+						{overview.moreLinkedSituations} more linked
+						{overview.moreLinkedSituations === 1 ? "situation" : "situations"}
+					</p>
 				{/if}
+			{:else}
+				<p class="text-sm text-muted-foreground">No situations are linked to this incident.</p>
 			{/if}
-		</main>
-		<aside class="flex min-w-0 flex-col gap-6 text-sm">
-			<section class="flex flex-col gap-3" aria-labelledby="incident-retrospective">
-				<h2 id="incident-retrospective" class="font-semibold">Retrospective</h2>
-				{#if overview.view.incidentRetrospectiveId}
-					<LoadingQueryWrapper query={overview.view.retrospectiveQuery} feedbackOnly />
-					{#if overview.retrospective && attrs}
-						<p class="capitalize">{overview.retrospectiveState}</p>
-						<a
-							class="underline"
-							href={resolve("/incidents/[slug]/[[view=incidentView]]", {
-								slug: attrs.slug,
-								view: "report",
-							})}
-						>
-							Open report
-						</a>
-					{/if}
-				{:else}
-					<p class="text-muted-foreground">No retrospective is associated with this incident.</p>
-				{/if}
+		</section>
+
+		<section aria-labelledby="milestones-title" class="flex flex-col gap-3">
+			<SectionHeading id="milestones-title" title="Milestones" count={overview.milestones.length} />
+			{#if overview.milestones.length}
+				<Timeline entries={overview.milestones} label="Incident milestones" timeFormat="absolute" />
+			{:else}
+				<p class="text-sm text-muted-foreground">No milestones recorded.</p>
+			{/if}
+		</section>
+
+		{#if overview.tags.length}
+			<section aria-labelledby="tags-title" class="flex flex-col gap-2">
+				<h2 id="tags-title" class="region-label">Tags</h2>
+				<ul class="flex flex-wrap gap-2" aria-label="Tags">
+					{#each overview.tags as tag (tag.id)}
+						<li><Badge variant="neutral">{tag.label}</Badge></li>
+					{/each}
+				</ul>
 			</section>
-			{#if overview.roles.length}
-				<section class="flex flex-col gap-3 border-t pt-4" aria-labelledby="incident-roles">
-					<h2 id="incident-roles" class="font-semibold">Roles</h2>
-					{#each overview.roles as assignment (assignment.id)}
-						<div>
-							<p>{assignment.user}</p>
-							<p class="text-muted-foreground">{assignment.role}</p>
-						</div>
-					{/each}
-				</section>
-			{/if}
-			{#if overview.view.situations.length}
-				<section class="flex flex-col gap-3 border-t pt-4" aria-labelledby="incident-situations">
-					<h2 id="incident-situations" class="font-semibold">Linked situations</h2>
-					{#each overview.view.situations as situation (situation.id)}
-						<div>
-							<a
-								class="underline"
-								href={resolve("/situations/[id]/[[view=situationView]]", {
-									id: situation.id,
-								})}
-							>
-								{situation.title}
-							</a>
-							<p class="text-muted-foreground">{situation.summary}</p>
-						</div>
-					{/each}
-				</section>
-			{/if}
-			{#if overview.ticketUrl}
-				<a class="underline" href={overview.ticketUrl} target="_blank" rel="noreferrer">
-					{attrs?.externalTicket?.title || "Open external ticket"}
-				</a>
-			{/if}
-		</aside>
-	</div>
-</div>
+		{/if}
+	</PageCanvas>
+{:else}
+	<PageCanvas>
+		<div class="flex flex-col gap-3" aria-label="Loading incident">
+			<Skeleton class="h-9 w-2/3" />
+			<Skeleton class="h-5 w-full" />
+			<Skeleton class="h-5 w-4/5" />
+		</div>
+	</PageCanvas>
+{/if}

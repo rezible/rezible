@@ -8,7 +8,11 @@ import { getLocalTimeZone } from "@internationalized/date";
 import { createMutation, createQuery } from "@tanstack/svelte-query";
 import { Context, watch, type Getter } from "runed";
 import { page } from "$app/state";
+import { resolve } from "$app/paths";
 import { toast } from "svelte-sonner";
+import type { PageRelatedLink } from "$lib/app-shell.svelte";
+import { convertIncidentViewParam } from "$src/params/incidentView";
+import RiArticleLine from "remixicon-svelte/icons/article-line";
 
 export class IncidentViewController {
 	slug = $state("");
@@ -29,6 +33,17 @@ export class IncidentViewController {
 	incidentId = $derived(this.incident?.id ?? "");
 
 	situations = $derived(this.incident?.attributes.situations ?? []);
+	relatedLinks = $derived<PageRelatedLink[]>(
+		this.situations.map((situation) => ({
+			key: situation.id,
+			kind: "Situation",
+			icon: RiArticleLine,
+			label: situation.title,
+			path: resolve("/situations/[id]/[[view=situationView]]", { id: situation.id }),
+		}))
+	);
+
+	activeView = $derived(convertIncidentViewParam(page.params.view));
 
 	timezone = $derived(getLocalTimeZone());
 

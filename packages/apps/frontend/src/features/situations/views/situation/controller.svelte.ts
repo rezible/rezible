@@ -2,10 +2,12 @@ import { SvelteSet } from "svelte/reactivity";
 import { Context, watch, type Getter } from "runed";
 import { createMutation, createQueries, createQuery, useQueryClient } from "@tanstack/svelte-query";
 import { goto } from "$app/navigation";
+import { resolve } from "$app/paths";
 import { page } from "$app/state";
 import { toast } from "svelte-sonner";
 import {
 	getIncidentOptions,
+	type Incident,
 	getSituationOptions,
 	getInvestigationOptions,
 	getInvestigationReportOptions,
@@ -14,11 +16,16 @@ import {
 } from "$lib/api";
 import {
 	isDefinitiveUnavailableError,
-	investigationExecution,
-	timestamp,
+	isProvisionalReport,
+	reportSummary,
 	SITUATION_POLL_INTERVAL_MS,
+	type ReportState,
 } from "$features/situations/lib/model";
 import { situationHref } from "$features/situations/lib/routes";
+import { investigationRunStatus } from "$features/situations/lib/status";
+import { incidentResponseStatus } from "$features/incidents/lib/status";
+import type { PageRelatedLink } from "$lib/app-shell.svelte";
+import RiFireLine from "remixicon-svelte/icons/fire-line";
 
 const idPath = (id?: string) => ({ id: id ?? "" });
 
@@ -71,6 +78,20 @@ export class SituationController {
 		queries: this.incidentIds.map((id) => getIncidentOptions({ path: { id } })),
 	}));
 
+	/** Loaded linked incidents in `linkedIncidentIds` order; loading or failed ones are omitted. */
+	linkedIncidents = $derived(this.getLinkedIncidents());
+	linkedIncidentsLoading = $derived(this.incidentsQuery.some((query) => query.isPending && !query.data));
+	relatedLinks = $derived<PageRelatedLink[]>(
+		this.linkedIncidents.map((incident) => ({
+			key: incident.id,
+			kind: "Incident",
+			icon: RiFireLine,
+			label: incident.attributes.title,
+			path: resolve("/incidents/[slug]/[[view=incidentView]]", { slug: incident.attributes.slug }),
+			status: incidentResponseStatus(incident.attributes.responseState),
+		}))
+	);
+
 	situationInvestigation = $derived(this.situation?.attributes.investigation);
 	investigationId = $derived(this.situationInvestigation?.investigation.id);
 	investigationHref = $derived(situationHref(this.situationId ?? "", "investigation", page.url.search));
@@ -113,10 +134,51 @@ export class SituationController {
 	);
 	reportAccessLost = $derived([401, 403].includes(this.reportQuery.error?.status ?? 0));
 
-	execution = $derived(investigationExecution(this.investigationAttributes));
+	runStatus = $derived(investigationRunStatus(this.investigationAttributes));
 	reportAttributes = $derived(this.report?.attributes);
-	reportPublishedAt = $derived(timestamp(this.reportAttributes?.createdAt));
-	reportReferences = $derived(this.reportAttributes?.references ?? []);
+	reportState = $derived(this.getReportState());
+
+	retryInvestigation = () => {
+		this.investigationQuery.refetch();
+	};
+
+	retryReport = () => {
+		this.reportQuery.refetch();
+	};
+
+	private getReportState(): ReportState {
+		const report = this.reportAttributes;
+		if (report) {
+			return {
+				kind: "published",
+				attributes: report,
+				summary: reportSummary(report),
+				provisional: isProvisionalReport(report),
+				refreshFailed: this.reportQuery.isError,
+			};
+		}
+		if (this.reportAccessLost) {
+			return { kind: "unavailable" };
+		}
+		if (this.reportQuery.isPending) {
+			return { kind: "loading" };
+		}
+		if (this.reportQuery.isError && this.reportQuery.error?.status !== 404) {
+			return { kind: "error" };
+		}
+		return { kind: "none" };
+	}
+
+	private getLinkedIncidents() {
+		const incidents: Incident[] = [];
+		for (const query of this.incidentsQuery) {
+			const incident = query.data?.data;
+			if (incident) {
+				incidents.push(incident);
+			}
+		}
+		return incidents;
+	}
 }
 
 const ctx = new Context<SituationController>("SituationController");

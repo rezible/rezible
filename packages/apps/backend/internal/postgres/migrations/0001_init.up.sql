@@ -265,7 +265,7 @@ CREATE INDEX "investigationoutputreference_tenant_id_finding_version_id" ON "inv
 -- create index "investigationoutputreference_tenant_id_hypothesis_version_id" to table: "investigation_output_references"
 CREATE INDEX "investigationoutputreference_tenant_id_hypothesis_version_id" ON "investigation_output_references" ("tenant_id", "hypothesis_version_id");
 -- create "investigation_reports" table
-CREATE TABLE "investigation_reports" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "fingerprint" character varying NOT NULL, "text" text NOT NULL, "investigation_id" uuid NOT NULL, "tenant_id" bigint NOT NULL, "agent_turn_id" uuid NOT NULL, PRIMARY KEY ("id"));
+CREATE TABLE "investigation_reports" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "fingerprint" character varying NOT NULL, "text" text NOT NULL, "summary" text NOT NULL DEFAULT '', "investigation_id" uuid NOT NULL, "tenant_id" bigint NOT NULL, "agent_turn_id" uuid NOT NULL, PRIMARY KEY ("id"));
 -- create index "investigationreport_tenant_id" to table: "investigation_reports"
 CREATE INDEX "investigationreport_tenant_id" ON "investigation_reports" ("tenant_id");
 -- create index "investigationreport_tenant_id_agent_turn_id_fingerprint" to table: "investigation_reports"

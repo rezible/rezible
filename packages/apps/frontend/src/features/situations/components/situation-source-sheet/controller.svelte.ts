@@ -1,7 +1,8 @@
 import { createQuery } from "@tanstack/svelte-query";
 import { getKnowledgeGraphEvidenceOptions } from "$lib/api";
 import { Context, type Getter } from "runed";
-import { isDefinitiveUnavailableError, timestamp, type SourceTarget } from "$features/situations/lib/model";
+import { isDefinitiveUnavailableError, type SourceTarget } from "$features/situations/lib/model";
+import { formatTime } from "$lib/time";
 
 export class SituationSourceSheetController {
 	private getTarget = $state<Getter<SourceTarget | undefined>>(() => undefined);
@@ -21,7 +22,7 @@ export class SituationSourceSheetController {
 	evidenceUnavailable = $derived(isDefinitiveUnavailableError(this.evidenceQuery.error));
 
 	evidenceAttributes = $derived(this.evidence?.attributes);
-	evidenceTime = $derived(timestamp(this.evidenceAttributes?.effectiveAt));
+	evidenceTime = $derived(formatTime(this.evidenceAttributes?.effectiveAt));
 	evidenceKindLabel = $derived(this.evidenceAttributes?.kind === "observed" ? "Observed" : "Deleted");
 	title = $derived(this.getTitle());
 	description = $derived(this.getDescription());

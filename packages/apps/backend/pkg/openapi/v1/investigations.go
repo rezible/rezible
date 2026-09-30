@@ -69,6 +69,7 @@ type (
 
 	InvestigationReportAttributes struct {
 		Text        string                   `json:"text"`
+		Summary     string                   `json:"summary"`
 		References  []InvestigationReference `json:"references"`
 		AgentTurnId uuid.UUID                `json:"agentTurnId"`
 		TurnStatus  string                   `json:"turnStatus"`
@@ -168,6 +169,7 @@ func InvestigationFromDetail(detail *rez.InvestigationDetail) Investigation {
 func InvestigationReportFromResult(report *rez.InvestigationReportResult) InvestigationReport {
 	attrs := InvestigationReportAttributes{
 		Text:        report.Text,
+		Summary:     report.Summary,
 		References:  ConvertSlice(report.EvidenceIDs, InvestigationReferenceFromEvidenceID),
 		AgentTurnId: report.AgentTurnID,
 		TurnStatus:  string(report.TurnStatus),
