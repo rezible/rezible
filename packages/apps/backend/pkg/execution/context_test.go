@@ -44,7 +44,6 @@ func TestTenantContextReplacesParentAuthAndRoundTrips(t *testing.T) {
 			TenantID:            new(7),
 			UserID:              new(uuid.New()),
 			AgentSessionID:      new(uuid.New()),
-			AgentTurnID:         new(uuid.New()),
 			ImpersonatingUserID: new(uuid.New()),
 			Scopes:              []string{"admin"},
 		},

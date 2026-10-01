@@ -80,7 +80,7 @@ func (r *AiRuntime) InvokeAgentTurn(ctx context.Context, params rez.InvokeAiAgen
 	if agentErr != nil {
 		return nil, agentErr
 	}
-	return agent.Invoke(execution.NewAiAgentContext(ctx, params.Session, params.Turn), params)
+	return agent.Invoke(execution.NewAiAgentContext(ctx, params.Session), params)
 }
 
 type AiRuntimeOption struct {

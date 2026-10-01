@@ -23,7 +23,6 @@ type (
 		Scopes              []string   `json:"scopes,omitempty"`
 		UserID              *uuid.UUID `json:"user_id,omitempty"`
 		AgentSessionID      *uuid.UUID `json:"agent_session_id,omitempty"`
-		AgentTurnID         *uuid.UUID `json:"agent_turn_id,omitempty"`
 		ImpersonatingUserID *uuid.UUID `json:"impersonating_user_id,omitempty"`
 		ExpiresAt           *time.Time `json:"exp,omitempty"`
 	}
@@ -84,13 +83,6 @@ func (c Context) AgentSessionID() (uuid.UUID, bool) {
 		return uuid.Nil, false
 	}
 	return *c.Auth.AgentSessionID, true
-}
-
-func (c Context) AgentTurnID() (uuid.UUID, bool) {
-	if c.Auth.AgentTurnID == nil {
-		return uuid.Nil, false
-	}
-	return *c.Auth.AgentTurnID, true
 }
 
 type ctxKey struct{}
@@ -174,14 +166,13 @@ func NewUserContext(ctx context.Context, sess *ent.UserAuthSession) context.Cont
 	return SetContext(ctx, c)
 }
 
-func NewAiAgentContext(ctx context.Context, sess *ent.AgentSession, turn *ent.AgentTurn) context.Context {
+func NewAiAgentContext(ctx context.Context, sess *ent.AgentSession) context.Context {
 	c := GetContext(ctx)
 	c.ActorKind = KindAiAgent
 	c.Auth = Auth{
 		TenantID:       &sess.TenantID,
 		AgentSessionID: &sess.ID,
-		AgentTurnID:    &turn.ID,
-		Scopes:         sess.Scopes, // TODO: scopes for turn
+		Scopes:         sess.Scopes, // TODO: scopes for session?
 	}
 	return SetContext(ctx, c)
 }
@@ -196,7 +187,7 @@ func (c Context) validate() error {
 		if c.Auth.TenantID == nil {
 			return fmt.Errorf("tenant actor missing tenant id")
 		}
-		if c.Auth.UserID != nil || c.Auth.AgentSessionID != nil || c.Auth.AgentTurnID != nil || c.Auth.ImpersonatingUserID != nil || c.Auth.ExpiresAt != nil || len(c.Auth.Scopes) > 0 {
+		if c.Auth.UserID != nil || c.Auth.AgentSessionID != nil || c.Auth.ImpersonatingUserID != nil || c.Auth.ExpiresAt != nil || len(c.Auth.Scopes) > 0 {
 			return fmt.Errorf("tenant actor cannot carry user or agent auth")
 		}
 	case KindUser:
@@ -212,9 +203,6 @@ func (c Context) validate() error {
 		}
 		if c.Auth.AgentSessionID == nil {
 			return fmt.Errorf("agent actor missing session id")
-		}
-		if c.Auth.AgentTurnID == nil {
-			return fmt.Errorf("agent actor missing turn id")
 		}
 	case KindSystem:
 	default:
