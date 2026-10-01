@@ -24,8 +24,8 @@ func TestKnowledgeGraphQueryServiceSuite(t *testing.T) {
 }
 
 func (s *KnowledgeGraphQueryServiceSuite) newService() (context.Context, rez.Database, *KnowledgeGraphQueryService) {
-	ctx := s.SeedTenantContext()
-	database := s.CreateTestDatabase()
+	// These fixtures reuse fixed entity and relationship primary keys, which are unique across tenants.
+	ctx, database := s.SetupTestDatabase(test.WithFreshDatabase())
 	service, serviceErr := NewKnowledgeGraphQueryService(database)
 	s.Require().NoError(serviceErr)
 	return ctx, database, service

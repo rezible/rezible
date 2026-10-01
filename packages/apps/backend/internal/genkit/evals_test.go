@@ -97,7 +97,7 @@ func (s *EvaluationServiceSuite) runEval(ctx context.Context, tdb rez.Database, 
 }
 
 func (s *EvaluationServiceSuite) TestRunsAgentAndProducesPassingReport() {
-	ctx := s.SeedTenantContext()
+	ctx, tdb := s.SetupTestDatabase()
 	response := &ai.ModelResponse{
 		Message:      ai.NewModelTextMessage("hello"),
 		FinishReason: ai.FinishReasonStop,
@@ -107,7 +107,6 @@ func (s *EvaluationServiceSuite) TestRunsAgentAndProducesPassingReport() {
 	agent.def.Model = testModel.Name
 	runtime := s.makeRuntime(ctx, WithDefinedModel(testModel), WithAgent(agent))
 
-	tdb := s.CreateTestDatabase()
 	scenario := testEvalScenario{
 		agentName: agent.def.Name,
 		passed:    true,
@@ -122,7 +121,7 @@ func (s *EvaluationServiceSuite) TestRunsAgentAndProducesPassingReport() {
 }
 
 func (s *EvaluationServiceSuite) TestReportsGradeErrorsAtGradeStage() {
-	ctx := s.SeedTenantContext()
+	ctx, tdb := s.SetupTestDatabase()
 	response := &ai.ModelResponse{
 		Message:      ai.NewModelTextMessage("hello"),
 		FinishReason: ai.FinishReasonStop,
@@ -133,7 +132,6 @@ func (s *EvaluationServiceSuite) TestReportsGradeErrorsAtGradeStage() {
 	runtime := s.makeRuntime(ctx, WithDefinedModel(testModel), WithAgent(agent))
 	expectedErr := errors.New("grading unavailable")
 
-	tdb := s.CreateTestDatabase()
 	scenario := testEvalScenario{
 		agentName: agent.def.Name,
 		gradeErr:  expectedErr,

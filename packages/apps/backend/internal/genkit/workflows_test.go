@@ -9,6 +9,7 @@ import (
 	gkai "github.com/firebase/genkit/go/ai"
 	rez "github.com/rezible/rezible"
 	rezai "github.com/rezible/rezible/pkg/ai"
+	"github.com/rezible/rezible/pkg/execution"
 )
 
 type (
@@ -47,7 +48,7 @@ func (s *AiRuntimeSuite) makeWorkflowOutputModel(output *testWorkflowOutput) Mod
 }
 
 func (s *AiRuntimeSuite) TestDefinePromptWorkflowValidatesInput() {
-	ctx := s.SeedTenantContext()
+	ctx := execution.NewSystemContext(s.T().Context())
 
 	model := s.makeWorkflowOutputModel(&testWorkflowOutput{OK: true})
 	svc := s.makeRuntime(ctx, WithDefinedModel(model))
@@ -70,7 +71,7 @@ func (s *AiRuntimeSuite) TestDefinePromptWorkflowValidatesInput() {
 }
 
 func (s *AiRuntimeSuite) TestDefinePromptWorkflowRunsTypedOutput() {
-	ctx := s.SeedTenantContext()
+	ctx := execution.NewSystemContext(s.T().Context())
 
 	model := s.makeWorkflowOutputModel(&testWorkflowOutput{OK: true})
 	svc := s.makeRuntime(ctx, WithDefinedModel(model))
@@ -95,7 +96,7 @@ func (s *AiRuntimeSuite) TestDefinePromptWorkflowRunsTypedOutput() {
 }
 
 func (s *AiRuntimeSuite) TestDefineWorkflowRejectsDuplicateNames() {
-	ctx := s.SeedTenantContext()
+	ctx := execution.NewSystemContext(s.T().Context())
 
 	model := s.makeWorkflowOutputModel(&testWorkflowOutput{OK: true})
 	svc := s.makeRuntime(ctx, WithDefinedModel(model))

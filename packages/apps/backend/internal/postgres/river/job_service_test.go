@@ -169,7 +169,7 @@ func (s *JobServiceSuite) TestPreparationFailureInsertsNoJobs() {
 	queryErr := s.pool.QueryRow(s.T().Context(), "SELECT count(*) FROM river.river_job").Scan(&count)
 	s.Require().NoError(queryErr)
 	s.Zero(count)
-	_, insertErr := s.service.Insert(s.SystemContext(), jobs.ScanOncallShifts{}, nil)
+	_, insertErr := s.service.Insert(execution.NewSystemContext(s.T().Context()), jobs.ScanOncallShifts{}, nil)
 	s.Require().NoError(insertErr)
 }
 

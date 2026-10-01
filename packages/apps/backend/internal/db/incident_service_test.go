@@ -57,8 +57,7 @@ func (s *IncidentServiceSuite) createBasicIncident(ctx context.Context, client *
 }
 
 func (s *IncidentServiceSuite) TestCreateIncidentWithMetadataRoundTrips() {
-	ctx := s.SeedTenantContext()
-	tdb := s.CreateTestDatabase()
+	ctx, tdb := s.SetupTestDatabase()
 	svc := s.newService(tdb)
 
 	client := tdb.Client(ctx)
@@ -131,8 +130,7 @@ func (s *IncidentServiceSuite) TestCreateIncidentWithMetadataRoundTrips() {
 }
 
 func (s *IncidentServiceSuite) TestListIncidentsUsesFilteredTotalsAndStablePages() {
-	ctx := s.SeedTenantContext()
-	tdb := s.CreateTestDatabase()
+	ctx, tdb := s.SetupTestDatabase()
 	svc := s.newService(tdb)
 	client := tdb.Client(ctx)
 	openedAt := time.Now().UTC()
@@ -199,8 +197,7 @@ func (s *IncidentServiceSuite) TestListIncidentsUsesFilteredTotalsAndStablePages
 }
 
 func (s *IncidentServiceSuite) TestDoListQueryUsesSameArchiveContextForTotalAndPage() {
-	ctx := s.SeedTenantContext()
-	tdb := s.CreateTestDatabase()
+	ctx, tdb := s.SetupTestDatabase()
 	client := tdb.Client(ctx)
 
 	active := client.IncidentSeverity.Create().
@@ -234,8 +231,7 @@ func (s *IncidentServiceSuite) TestDoListQueryUsesSameArchiveContextForTotalAndP
 }
 
 func (s *IncidentServiceSuite) TestResolutionCreatesAndPreservesRetrospective() {
-	ctx := s.SeedTenantContext()
-	tdb := s.CreateTestDatabase()
+	ctx, tdb := s.SetupTestDatabase()
 	svc := s.newService(tdb)
 	inc := s.createBasicIncident(ctx, tdb.Client(ctx), svc, "Response lifecycle")
 	s.Nil(inc.Edges.Retrospective)
@@ -255,8 +251,7 @@ func (s *IncidentServiceSuite) TestResolutionCreatesAndPreservesRetrospective() 
 }
 
 func (s *IncidentServiceSuite) TestCreateResolvedIncidentStartsRetrospective() {
-	ctx := s.SeedTenantContext()
-	tdb := s.CreateTestDatabase()
+	ctx, tdb := s.SetupTestDatabase()
 	svc := s.newService(tdb)
 	inc, createErr := svc.Set(ctx, uuid.Nil, func(m *ent.IncidentMutation) {
 		m.SetTitle("Imported resolved incident")

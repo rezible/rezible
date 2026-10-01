@@ -21,23 +21,24 @@ func TestOrganizationsServiceSuite(t *testing.T) {
 }
 
 func (s *OrganizationsServiceSuite) TestSetPreferencesSetsTimestamp() {
-	tdb := s.CreateTestDatabase()
+	tenantCtx, tdb := s.SetupTestDatabase()
+	organizationID, organizationErr := tdb.Client(tenantCtx).Organization.Query().OnlyID(tenantCtx)
+	s.Require().NoError(organizationErr)
 	jobs := mocks.NewMockJobService(s.T())
 
 	orgs, serviceErr := NewOrganizationService(tdb, jobs)
 	s.Require().NoError(serviceErr)
 	setupAt := time.Date(2026, 6, 4, 9, 30, 0, 0, time.UTC)
 
-	tenantCtx := s.SeedTenantContext()
-	prefs, setErr := orgs.SetPreferences(tenantCtx, s.SeedOrganizationId(), func(m *ent.OrganizationPreferencesMutation) {
+	prefs, setErr := orgs.SetPreferences(tenantCtx, organizationID, func(m *ent.OrganizationPreferencesMutation) {
 		m.SetInitialSetupAt(setupAt)
 	})
 	s.Require().NoError(setErr)
 
 	s.Equal(setupAt, prefs.InitialSetupAt.UTC())
-	s.Equal(s.SeedOrganizationId(), prefs.OrganizationID)
+	s.Equal(organizationID, prefs.OrganizationID)
 
-	loaded, queryErr := orgs.Get(tenantCtx, organization.ID(s.SeedOrganizationId()))
+	loaded, queryErr := orgs.Get(tenantCtx, organization.ID(organizationID))
 	s.Require().NoError(queryErr)
 	s.Require().NotNil(loaded.Edges.Preferences)
 	s.Equal(prefs.ID, loaded.Edges.Preferences.ID)

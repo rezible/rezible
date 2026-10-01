@@ -21,7 +21,7 @@ func TestAuthSessionServiceSuite(t *testing.T) {
 }
 
 func (s *AuthSessionServiceSuite) TestCreatingSessionPreservesExistingSessions() {
-	database := s.CreateTestDatabase()
+	_, database := s.SetupTestDatabase()
 	jobs := mocks.NewMockJobService(s.T())
 	organizations, _ := NewOrganizationService(database, jobs)
 	users, _ := NewUserService(database, organizations)
@@ -44,7 +44,7 @@ func (s *AuthSessionServiceSuite) TestCreatingSessionPreservesExistingSessions()
 }
 
 func (s *AuthSessionServiceSuite) TestLookupSessionMissingSessionIsNotFound() {
-	database := s.CreateTestDatabase()
+	_, database := s.SetupTestDatabase()
 	jobs := mocks.NewMockJobService(s.T())
 	organizations, _ := NewOrganizationService(database, jobs)
 	users, _ := NewUserService(database, organizations)

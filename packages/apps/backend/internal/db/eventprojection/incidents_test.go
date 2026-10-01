@@ -37,8 +37,7 @@ func (s *ProjectionServiceSuite) incidentService(tdb rez.Database, events *[]rez
 	return service
 }
 
-func (s *ProjectionServiceSuite) createIncidentProjectionEvent(tdb rez.Database, subjectRef string, occurredAt time.Time, attrs projections.IncidentEventAttributes) *ent.NormalizedEvent {
-	ctx := s.SeedTenantContext()
+func (s *ProjectionServiceSuite) createIncidentProjectionEvent(ctx context.Context, tdb rez.Database, subjectRef string, occurredAt time.Time, attrs projections.IncidentEventAttributes) *ent.NormalizedEvent {
 	encoded, encodedErr := projections.EncodeAttributes(attrs)
 	s.Require().NoError(encodedErr)
 
@@ -59,8 +58,7 @@ func (s *ProjectionServiceSuite) createIncidentProjectionEvent(tdb rez.Database,
 }
 
 func (s *ProjectionServiceSuite) TestIncidentProjectionPublishesCreateChangeAndSkipsIdenticalRepeat() {
-	ctx := s.SeedTenantContext()
-	tdb := s.CreateTestDatabase()
+	ctx, tdb := s.SetupTestDatabase()
 
 	projector := s.projectionService(tdb)
 	var events []rez.EventOnIncidentUpdated
@@ -76,7 +74,7 @@ func (s *ProjectionServiceSuite) TestIncidentProjectionPublishesCreateChangeAndS
 		OpenedAt:        openedAt,
 		SourceUpdatedAt: &sourceUpdatedAt,
 	}
-	first := s.createIncidentProjectionEvent(tdb, "incident-1", openedAt, attrs)
+	first := s.createIncidentProjectionEvent(ctx, tdb, "incident-1", openedAt, attrs)
 
 	_, projErr := runProjection(ctx, projector, first)
 	s.Require().NoError(projErr)
@@ -97,7 +95,7 @@ func (s *ProjectionServiceSuite) TestIncidentProjectionPublishesCreateChangeAndS
 	attrs.Title = "Search outage updated"
 	updatedSourceAt := sourceUpdatedAt.Add(time.Minute)
 	attrs.SourceUpdatedAt = &updatedSourceAt
-	second := s.createIncidentProjectionEvent(tdb, "incident-1", openedAt.Add(time.Minute), attrs)
+	second := s.createIncidentProjectionEvent(ctx, tdb, "incident-1", openedAt.Add(time.Minute), attrs)
 
 	_, projSecondErr := runProjection(ctx, projector, second)
 	s.Require().NoError(projSecondErr)

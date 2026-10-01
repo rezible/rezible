@@ -16,6 +16,7 @@ import (
 	"github.com/rezible/rezible/ent/user"
 	dbservices "github.com/rezible/rezible/internal/db"
 	"github.com/rezible/rezible/internal/postgres"
+	"github.com/rezible/rezible/pkg/execution"
 	"github.com/rezible/rezible/test"
 	"github.com/stretchr/testify/suite"
 )
@@ -47,8 +48,8 @@ func (s *DatabaseClientSuite) tenantCount(ctx context.Context, tdb rez.Database)
 }
 
 func (s *DatabaseClientSuite) TestClientOutsideTransaction() {
-	ctx := s.SystemContext()
-	tdb := s.CreateTestDatabase()
+	ctx := execution.NewSystemContext(s.T().Context())
+	_, tdb := s.SetupTestDatabase(test.WithFreshDatabase())
 	client := tdb.Client(ctx)
 
 	s.NotNil(client)
@@ -58,8 +59,8 @@ func (s *DatabaseClientSuite) TestClientOutsideTransaction() {
 }
 
 func (s *DatabaseClientSuite) TestWithTxCommits() {
-	ctx := s.SystemContext()
-	tdb := s.CreateTestDatabase()
+	ctx := execution.NewSystemContext(s.T().Context())
+	_, tdb := s.SetupTestDatabase(test.WithFreshDatabase())
 
 	before := s.tenantCount(ctx, tdb)
 	s.Require().NoError(tdb.WithTx(ctx, s.createTenant))
@@ -67,8 +68,8 @@ func (s *DatabaseClientSuite) TestWithTxCommits() {
 }
 
 func (s *DatabaseClientSuite) TestWithTxRollsBackOnError() {
-	ctx := s.SystemContext()
-	tdb := s.CreateTestDatabase()
+	ctx := execution.NewSystemContext(s.T().Context())
+	_, tdb := s.SetupTestDatabase(test.WithFreshDatabase())
 	before := s.tenantCount(ctx, tdb)
 
 	expectedErr := errors.New("force rollback")
@@ -101,9 +102,9 @@ func (s *DatabaseClientSuite) TestWithTxRollsBackOnError() {
 }
 
 func (s *DatabaseClientSuite) TestNestedWithTxSharesOuterTransaction() {
-	ctx := s.SystemContext()
+	ctx := execution.NewSystemContext(s.T().Context())
 
-	tdb := s.CreateTestDatabase()
+	_, tdb := s.SetupTestDatabase(test.WithFreshDatabase())
 	before := s.tenantCount(ctx, tdb)
 
 	s.Require().NoError(tdb.WithTx(ctx, func(txCtx context.Context, _ *ent.Client) error {
@@ -127,7 +128,7 @@ func (s *DatabaseClientSuite) TestNestedWithTxSharesOuterTransaction() {
 
 func (s *DatabaseClientSuite) TestNestedWithTxErrorRollsBackOuterTransaction() {
 	expectedErr := errors.New("nested rollback")
-	tdb := s.CreateTestDatabase()
+	_, tdb := s.SetupTestDatabase(test.WithFreshDatabase())
 	nestedTx := func(ctx context.Context, _ *ent.Client) error {
 		s.requireCreateTenant(ctx, tdb)
 		return expectedErr
@@ -137,7 +138,7 @@ func (s *DatabaseClientSuite) TestNestedWithTxErrorRollsBackOuterTransaction() {
 		return tdb.WithTx(ctx, nestedTx)
 	}
 
-	ctx := s.SystemContext()
+	ctx := execution.NewSystemContext(s.T().Context())
 	before := s.tenantCount(ctx, tdb)
 	err := tdb.WithTx(ctx, outerTx)
 	s.ErrorIs(err, expectedErr)
@@ -145,9 +146,9 @@ func (s *DatabaseClientSuite) TestNestedWithTxErrorRollsBackOuterTransaction() {
 }
 
 func (s *DatabaseClientSuite) TestWithTxCommitHook() {
-	ctx := s.SystemContext()
+	ctx := execution.NewSystemContext(s.T().Context())
 	committed := false
-	tdb := s.CreateTestDatabase()
+	_, tdb := s.SetupTestDatabase(test.WithFreshDatabase())
 	hook := func(next ent.Committer) ent.Committer {
 		return ent.CommitFunc(func(ctx context.Context, tx *ent.Tx) error {
 			if err := next.Commit(ctx, tx); err != nil {
@@ -165,9 +166,9 @@ func (s *DatabaseClientSuite) TestWithTxCommitHook() {
 }
 
 func (s *DatabaseClientSuite) TestWithTxRollbackHook() {
-	ctx := s.SystemContext()
+	ctx := execution.NewSystemContext(s.T().Context())
 	rolledBack := false
-	tdb := s.CreateTestDatabase()
+	_, tdb := s.SetupTestDatabase(test.WithFreshDatabase())
 	hook := func(next ent.Rollbacker) ent.Rollbacker {
 		return ent.RollbackFunc(func(ctx context.Context, tx *ent.Tx) error {
 			if err := next.Rollback(ctx, tx); err != nil {
@@ -190,8 +191,8 @@ func (s *DatabaseClientSuite) TestWithTxRollbackHook() {
 }
 
 func (s *DatabaseClientSuite) TestWithTxRollsBackOnPanic() {
-	ctx := s.SystemContext()
-	tdb := s.CreateTestDatabase()
+	ctx := execution.NewSystemContext(s.T().Context())
+	_, tdb := s.SetupTestDatabase(test.WithFreshDatabase())
 
 	panicErr := "expected"
 	panicFn := func() {
@@ -207,8 +208,7 @@ func (s *DatabaseClientSuite) TestWithTxRollsBackOnPanic() {
 }
 
 func (s *DatabaseClientSuite) TestAcquireTxLocksRequiresTransaction() {
-	ctx := s.SeedTenantContext()
-	tdb := s.CreateTestDatabase()
+	ctx, tdb := s.SetupTestDatabase(test.WithFreshDatabase())
 
 	err := tdb.AcquireTxLocks(ctx, "test", "a")
 
@@ -217,8 +217,7 @@ func (s *DatabaseClientSuite) TestAcquireTxLocksRequiresTransaction() {
 }
 
 func (s *DatabaseClientSuite) TestAcquireTxLocksWorksInsideTransaction() {
-	ctx := s.SeedTenantContext()
-	tdb := s.CreateTestDatabase()
+	ctx, tdb := s.SetupTestDatabase(test.WithFreshDatabase())
 
 	err := tdb.WithTx(ctx, func(txCtx context.Context, _ *ent.Client) error {
 		return tdb.AcquireTxLocks(txCtx, "test", "b", "a", "a")
@@ -228,9 +227,9 @@ func (s *DatabaseClientSuite) TestAcquireTxLocksWorksInsideTransaction() {
 }
 
 func (s *DatabaseClientSuite) TestConcurrentTxLockRequestsWithOppositeInputOrderSucceed() {
-	ctx, cancel := context.WithTimeout(s.SeedTenantContext(), 10*time.Second)
+	tenantCtx, tdb := s.SetupTestDatabase(test.WithFreshDatabase())
+	ctx, cancel := context.WithTimeout(tenantCtx, 10*time.Second)
 	defer cancel()
-	tdb := s.CreateTestDatabase()
 	results := make(chan error, 2)
 	lockFn := func(keys ...string) {
 		transactionErr := tdb.WithTx(ctx, func(txCtx context.Context, _ *ent.Client) error {
@@ -261,8 +260,7 @@ func (s *DatabaseClientSuite) TestIsTransientErrorClassifiesPostgresConcurrencyE
 }
 
 func (s *DatabaseClientSuite) TestWithTxReturningNestedServiceRollback() {
-	tdb := s.CreateTestDatabase()
-	ctx := s.SeedTenantContext()
+	ctx, tdb := s.SetupTestDatabase(test.WithFreshDatabase())
 	txCtx, cancelTx := context.WithTimeout(ctx, 10*time.Second)
 	defer cancelTx()
 

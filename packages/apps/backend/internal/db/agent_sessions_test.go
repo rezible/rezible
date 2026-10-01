@@ -46,8 +46,8 @@ type agentSessionFixture struct {
 	service *AiAgentSessionService
 }
 
-func (s *AiAgentSessionServiceSuite) newAgentSessionFixture() *agentSessionFixture {
-	tdb := s.CreateTestDatabase()
+func (s *AiAgentSessionServiceSuite) newAgentSessionFixture() (context.Context, *agentSessionFixture) {
+	ctx, tdb := s.SetupTestDatabase()
 	jobService := mocks.NewMockJobService(s.T())
 	messageService := mocks.NewMockMessageQueue(s.T())
 	messageService.EXPECT().
@@ -61,7 +61,7 @@ func (s *AiAgentSessionServiceSuite) newAgentSessionFixture() *agentSessionFixtu
 		jobs:   jobService,
 		msgs:   messageService,
 	}
-	return &agentSessionFixture{
+	return ctx, &agentSessionFixture{
 		tdb:     tdb,
 		jobs:    jobService,
 		msgs:    messageService,
@@ -215,8 +215,7 @@ func (i testAgentInput) Validate() error {
 }
 
 func (s *AiAgentSessionServiceSuite) TestCreateAgentSessionCreatesQueuedStartAtomically() {
-	ctx := s.SeedTenantContext()
-	h := s.newAgentSessionFixture()
+	ctx, h := s.newAgentSessionFixture()
 
 	h.jobs.EXPECT().
 		Insert(mock.Anything, mock.IsType(jobs.StartAgentSession{}), mock.Anything).
@@ -239,8 +238,7 @@ func (s *AiAgentSessionServiceSuite) TestCreateAgentSessionCreatesQueuedStartAto
 }
 
 func (s *AiAgentSessionServiceSuite) TestCreateAgentSessionCreatesRequestedBindings() {
-	ctx := s.SeedTenantContext()
-	h := s.newAgentSessionFixture()
+	ctx, h := s.newAgentSessionFixture()
 	resourceRef := uuid.NewString()
 
 	h.jobs.EXPECT().
@@ -281,8 +279,7 @@ func (s *AiAgentSessionServiceSuite) TestCreateAgentSessionCreatesRequestedBindi
 }
 
 func (s *AiAgentSessionServiceSuite) TestCreateAgentSessionRejectsExternalBindingWithoutNamespace() {
-	ctx := s.SeedTenantContext()
-	h := s.newAgentSessionFixture()
+	ctx, h := s.newAgentSessionFixture()
 	params := rez.CreateAiAgentSessionParams{
 		AgentName: "test-agent",
 		Input: testAgentInput{
@@ -310,8 +307,7 @@ func (s *AiAgentSessionServiceSuite) TestCreateAgentSessionRejectsExternalBindin
 }
 
 func (s *AiAgentSessionServiceSuite) TestCreateAgentSessionRejectsIntegrationProviderMismatchAtomically() {
-	ctx := s.SeedTenantContext()
-	h := s.newAgentSessionFixture()
+	ctx, h := s.newAgentSessionFixture()
 	createIntg := h.tdb.Client(ctx).Integration.Create().
 		SetProvider("github").
 		SetName("github").
@@ -350,8 +346,7 @@ func (s *AiAgentSessionServiceSuite) TestCreateAgentSessionRejectsIntegrationPro
 }
 
 func (s *AiAgentSessionServiceSuite) TestSetAgentSessionBindingCreatesBindingAfterSession() {
-	ctx := s.SeedTenantContext()
-	h := s.newAgentSessionFixture()
+	ctx, h := s.newAgentSessionFixture()
 	session := s.createAgentSession(ctx, h.tdb, testAgentInput{
 		Foo: "bar",
 	})
@@ -389,8 +384,7 @@ func (s *AiAgentSessionServiceSuite) TestSetAgentSessionBindingCreatesBindingAft
 }
 
 func (s *AiAgentSessionServiceSuite) TestSetAgentSessionBindingValidatesNewBinding() {
-	ctx := s.SeedTenantContext()
-	h := s.newAgentSessionFixture()
+	ctx, h := s.newAgentSessionFixture()
 	session := s.createAgentSession(ctx, h.tdb, testAgentInput{
 		Foo: "bar",
 	})
@@ -409,8 +403,7 @@ func (s *AiAgentSessionServiceSuite) TestSetAgentSessionBindingValidatesNewBindi
 }
 
 func (s *AiAgentSessionServiceSuite) TestSetAgentSessionBindingKeepsNamespacesDistinct() {
-	ctx := s.SeedTenantContext()
-	h := s.newAgentSessionFixture()
+	ctx, h := s.newAgentSessionFixture()
 	firstSession := s.createAgentSession(ctx, h.tdb, testAgentInput{
 		Foo: "first",
 	})
@@ -439,8 +432,7 @@ func (s *AiAgentSessionServiceSuite) TestSetAgentSessionBindingKeepsNamespacesDi
 }
 
 func (s *AiAgentSessionServiceSuite) TestCreateAgentSessionRollsBackWhenJobInsertFails() {
-	ctx := s.SeedTenantContext()
-	h := s.newAgentSessionFixture()
+	ctx, h := s.newAgentSessionFixture()
 	client := h.tdb.Client(ctx)
 
 	insertJobErr := errors.New("job insert failed")
@@ -476,8 +468,7 @@ func (s *AiAgentSessionServiceSuite) TestCreateAgentSessionRollsBackWhenJobInser
 }
 
 func (s *AiAgentSessionServiceSuite) TestRequestAgentTurnValidatesInputAndCompletedRoot() {
-	ctx := s.SeedTenantContext()
-	h := s.newAgentSessionFixture()
+	ctx, h := s.newAgentSessionFixture()
 	session := s.createAgentSession(ctx, h.tdb, testAgentInput{
 		Foo: "bar",
 	})
@@ -537,8 +528,7 @@ func (s *AiAgentSessionServiceSuite) TestRequestAgentTurnValidatesInputAndComple
 }
 
 func (s *AiAgentSessionServiceSuite) TestWorkerPersistsSuccessfulResultAndPublishesEvent() {
-	ctx := s.SeedTenantContext()
-	h := s.newAgentSessionFixture()
+	ctx, h := s.newAgentSessionFixture()
 	runtime := mocks.NewMockAiAgentRuntime(s.T())
 	worker := &InvokeAgentTurnWorker{
 		db:     h.tdb,
@@ -657,8 +647,7 @@ func (s *AiAgentSessionServiceSuite) TestWorkerPersistsSuccessfulResultAndPublis
 }
 
 func (s *AiAgentSessionServiceSuite) TestWorkerFailsTurnWhenAgentReturnsNilResult() {
-	ctx := s.SeedTenantContext()
-	h := s.newAgentSessionFixture()
+	ctx, h := s.newAgentSessionFixture()
 	runtime := mocks.NewMockAiAgentRuntime(s.T())
 	worker := &InvokeAgentTurnWorker{
 		db:     h.tdb,
@@ -704,8 +693,7 @@ func (s *AiAgentSessionServiceSuite) TestWorkerFailsTurnWhenAgentReturnsNilResul
 }
 
 func (s *AiAgentSessionServiceSuite) TestWorkerDoesNotMutateConcurrentRunningDelivery() {
-	ctx := s.SeedTenantContext()
-	h := s.newAgentSessionFixture()
+	ctx, h := s.newAgentSessionFixture()
 	runtime := mocks.NewMockAiAgentRuntime(s.T())
 	worker := &InvokeAgentTurnWorker{
 		db:     h.tdb,
@@ -741,8 +729,7 @@ func (s *AiAgentSessionServiceSuite) TestWorkerDoesNotMutateConcurrentRunningDel
 }
 
 func (s *AiAgentSessionServiceSuite) TestAbortAgentTurnIsIdempotent() {
-	ctx := s.SeedTenantContext()
-	h := s.newAgentSessionFixture()
+	ctx, h := s.newAgentSessionFixture()
 	session := s.createAgentSession(ctx, h.tdb, testAgentInput{})
 	turn := s.createAgentTurn(ctx, h.tdb, session, agentTurnSeed{
 		riverJobID: 701,
@@ -768,8 +755,7 @@ func (s *AiAgentSessionServiceSuite) TestAbortAgentTurnIsIdempotent() {
 }
 
 func (s *AiAgentSessionServiceSuite) TestRetryAgentTurnRequeuesSameTurnAndClearsTerminalState() {
-	ctx := s.SeedTenantContext()
-	h := s.newAgentSessionFixture()
+	ctx, h := s.newAgentSessionFixture()
 	session := s.createAgentSession(ctx, h.tdb, testAgentInput{})
 
 	root := s.createAgentTurn(ctx, h.tdb, session, agentTurnSeed{

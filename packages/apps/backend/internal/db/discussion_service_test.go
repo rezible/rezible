@@ -49,8 +49,7 @@ func (s *DiscussionSuite) createIncident(client *ent.Client, ctx context.Context
 }
 
 func (s *DiscussionSuite) TestThreadRequiresExactlyOneOwnerAndReverseEdges() {
-	ctx := s.SeedTenantContext()
-	db := s.CreateTestDatabase()
+	ctx, db := s.SetupTestDatabase()
 	client := db.Client(ctx)
 	user, userErr := client.User.Query().Only(ctx)
 	s.Require().NoError(userErr)
@@ -99,8 +98,7 @@ func (s *DiscussionSuite) TestThreadRequiresExactlyOneOwnerAndReverseEdges() {
 }
 
 func (s *DiscussionSuite) TestCommentListIsThreadScopedAndPaginated() {
-	ctx := s.SeedTenantContext()
-	db := s.CreateTestDatabase()
+	ctx, db := s.SetupTestDatabase()
 	client := db.Client(ctx)
 	user, userErr := client.User.Query().Only(ctx)
 	s.Require().NoError(userErr)

@@ -25,9 +25,7 @@ func TestRetrospectiveServiceSuite(t *testing.T) {
 	suite.Run(t, &RetrospectiveServiceSuite{Suite: test.NewSuite()})
 }
 
-func (s *RetrospectiveServiceSuite) createIncident(client *ent.Client) *ent.Incident {
-	ctx := s.SeedTenantContext()
-
+func (s *RetrospectiveServiceSuite) createIncident(ctx context.Context, client *ent.Client) *ent.Incident {
 	severity, err := client.IncidentSeverity.Create().
 		SetName("SEV-1 " + uuid.NewString()).
 		SetRank(1).
@@ -52,12 +50,11 @@ func (s *RetrospectiveServiceSuite) createIncident(client *ent.Client) *ent.Inci
 }
 
 func (s *RetrospectiveServiceSuite) TestCreateFullRetrospective() {
-	ctx := s.SeedTenantContext()
-	tdb := s.CreateTestDatabase()
+	ctx, tdb := s.SetupTestDatabase()
 	svc := &RetrospectiveService{db: tdb}
 
 	client := tdb.Client(ctx)
-	inc := s.createIncident(client)
+	inc := s.createIncident(ctx, client)
 
 	retro, err := svc.CreateForIncident(ctx, inc.ID)
 	s.Require().NoError(err)
@@ -69,10 +66,9 @@ func (s *RetrospectiveServiceSuite) TestCreateFullRetrospective() {
 }
 
 func (s *RetrospectiveServiceSuite) TestRejectUnresolvedIncident() {
-	ctx := s.SeedTenantContext()
-	tdb := s.CreateTestDatabase()
+	ctx, tdb := s.SetupTestDatabase()
 	client := tdb.Client(ctx)
-	inc := s.createIncident(client)
+	inc := s.createIncident(ctx, client)
 	updateIncident := client.Incident.UpdateOneID(inc.ID).SetResponseState(incident.ResponseStateStarted)
 	s.Require().NoError(updateIncident.Exec(ctx))
 	svc := &RetrospectiveService{db: tdb}
@@ -85,10 +81,9 @@ func (s *RetrospectiveServiceSuite) TestRejectUnresolvedIncident() {
 }
 
 func (s *RetrospectiveServiceSuite) TestConcurrentCreationReusesWorkspace() {
-	ctx := s.SeedTenantContext()
-	tdb := s.CreateTestDatabase()
+	ctx, tdb := s.SetupTestDatabase()
 	client := tdb.Client(ctx)
-	inc := s.createIncident(client)
+	inc := s.createIncident(ctx, client)
 	svc := &RetrospectiveService{db: tdb}
 	const callers = 8
 	results := make([]*ent.Retrospective, callers)
@@ -115,10 +110,9 @@ func (s *RetrospectiveServiceSuite) TestConcurrentCreationReusesWorkspace() {
 }
 
 func (s *RetrospectiveServiceSuite) TestCreationRollsBackWithTransaction() {
-	ctx := s.SeedTenantContext()
-	tdb := s.CreateTestDatabase()
+	ctx, tdb := s.SetupTestDatabase()
 	client := tdb.Client(ctx)
-	inc := s.createIncident(client)
+	inc := s.createIncident(ctx, client)
 	svc := &RetrospectiveService{db: tdb}
 	abort := fmt.Errorf("abort incident update")
 	txErr := tdb.WithTx(ctx, func(txCtx context.Context, _ *ent.Client) error {

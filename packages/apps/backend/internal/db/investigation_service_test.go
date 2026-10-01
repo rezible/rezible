@@ -67,8 +67,7 @@ func (s *InvestigationServiceSuite) createAnalysis(tdb rez.Database, ctx context
 }
 
 func (s *InvestigationServiceSuite) TestCreateInvestigationUsesPreparedAnalysisAndPreservesContext() {
-	ctx := s.SeedTenantContext()
-	tdb := s.CreateTestDatabase()
+	ctx, tdb := s.SetupTestDatabase()
 	client := tdb.Client(ctx)
 	now := time.Now().UTC()
 
@@ -214,8 +213,7 @@ func (s *InvestigationServiceSuite) TestCreateInvestigationUsesPreparedAnalysisA
 }
 
 func (s *InvestigationServiceSuite) TestCreateInvestigationValidatesOwnershipQuestionAndEmptyAnalysis() {
-	ctx := s.SeedTenantContext()
-	tdb := s.CreateTestDatabase()
+	ctx, tdb := s.SetupTestDatabase()
 	analysis := s.createAnalysis(tdb, ctx)
 	jobService := mocks.NewMockJobService(s.T())
 	s.expectStartJob(jobService, &rivertype.JobInsertResult{
@@ -282,8 +280,7 @@ func (s *InvestigationServiceSuite) TestCreateInvestigationValidatesOwnershipQue
 }
 
 func (s *InvestigationServiceSuite) TestCreateInvestigationRollsBackWhenSessionStartupCannotBeQueued() {
-	ctx := s.SeedTenantContext()
-	tdb := s.CreateTestDatabase()
+	ctx, tdb := s.SetupTestDatabase()
 	analysis := s.createAnalysis(tdb, ctx)
 	jobService := mocks.NewMockJobService(s.T())
 	s.expectStartJob(jobService, nil, errors.New("queue unavailable"))
@@ -307,8 +304,7 @@ func (s *InvestigationServiceSuite) TestCreateInvestigationRollsBackWhenSessionS
 }
 
 func (s *InvestigationServiceSuite) TestConcurrentInvestigationsClaimAnalysisOnlyOnce() {
-	ctx := s.SeedTenantContext()
-	tdb := s.CreateTestDatabase()
+	ctx, tdb := s.SetupTestDatabase()
 	analysis := s.createAnalysis(tdb, ctx)
 	jobService := mocks.NewMockJobService(s.T())
 	enteredSessionStart := make(chan struct{}, 2)

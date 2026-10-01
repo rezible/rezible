@@ -143,8 +143,7 @@ func (s *SituationServiceSuite) createEpisode(ctx context.Context, client *ent.C
 }
 
 func (s *SituationServiceSuite) TestCreateSituationCreatesInvestigationFromEvidence() {
-	ctx := s.SeedTenantContext()
-	tdb := s.CreateTestDatabase()
+	ctx, tdb := s.SetupTestDatabase()
 	h := s.newFixture(tdb)
 
 	event := s.situationTestEvent(ctx, tdb)
@@ -183,8 +182,7 @@ func (s *SituationServiceSuite) TestCreateSituationCreatesInvestigationFromEvide
 }
 
 func (s *SituationServiceSuite) TestSituationInvestigationMaterializationNormalizesAndDeduplicatesSubjects() {
-	ctx := s.SeedTenantContext()
-	tdb := s.CreateTestDatabase()
+	ctx, tdb := s.SetupTestDatabase()
 	h := s.newFixture(tdb)
 	client := tdb.Client(ctx)
 	event := s.situationTestEvent(ctx, tdb)
@@ -285,8 +283,7 @@ func (s *SituationServiceSuite) TestSituationInvestigationMaterializationNormali
 }
 
 func (s *SituationServiceSuite) TestListSituationsFiltersByStatusAndSearch() {
-	ctx := s.SeedTenantContext()
-	tdb := s.CreateTestDatabase()
+	ctx, tdb := s.SetupTestDatabase()
 	h := s.newFixture(tdb)
 
 	openSituation := s.createSituation(ctx, tdb, h, "Checkout degradation")
@@ -327,8 +324,7 @@ func (s *SituationServiceSuite) TestListSituationsFiltersByStatusAndSearch() {
 }
 
 func (s *SituationServiceSuite) TestSituationCloseIsIdempotentAndNeverReopens() {
-	ctx := s.SeedTenantContext()
-	tdb := s.CreateTestDatabase()
+	ctx, tdb := s.SetupTestDatabase()
 	h := s.newFixture(tdb)
 
 	sit := s.createSituation(ctx, tdb, h, "Checkout degradation")
@@ -343,8 +339,7 @@ func (s *SituationServiceSuite) TestSituationCloseIsIdempotentAndNeverReopens() 
 }
 
 func (s *SituationServiceSuite) TestCreateSituationRejectsEvidenceFreeSourcesAtomically() {
-	ctx := s.SeedTenantContext()
-	tdb := s.CreateTestDatabase()
+	ctx, tdb := s.SetupTestDatabase()
 	h := s.newFixture(tdb)
 
 	createParams := rez.CreateSituationParams{
@@ -372,8 +367,7 @@ func (s *SituationServiceSuite) TestCreateSituationRejectsEvidenceFreeSourcesAto
 }
 
 func (s *SituationServiceSuite) TestSituationCanStartFromEpisodeWithoutInstances() {
-	ctx := s.SeedTenantContext()
-	tdb := s.CreateTestDatabase()
+	ctx, tdb := s.SetupTestDatabase()
 	h := s.newFixture(tdb)
 	episode := s.createEpisode(ctx, tdb.Client(ctx))
 	h.expectStartAgentSessionJobInserted(1)
@@ -433,8 +427,7 @@ func (s *SituationServiceSuite) TestSituationCanStartFromEpisodeWithoutInstances
 }
 
 func (s *SituationServiceSuite) TestSystemHazardRetirementAndRiskAssessmentRevisions() {
-	ctx := s.SeedTenantContext()
-	tdb := s.CreateTestDatabase()
+	ctx, tdb := s.SetupTestDatabase()
 
 	knowledge, knowledgeServiceErr := NewKnowledgeGraphIngestionService(tdb)
 	s.Require().NoError(knowledgeServiceErr)
@@ -486,8 +479,7 @@ func (s *SituationServiceSuite) TestSystemHazardRetirementAndRiskAssessmentRevis
 }
 
 func (s *SituationServiceSuite) TestSituationHazardAssessmentRevisionsAndAssessorConstraint() {
-	ctx := s.SeedTenantContext()
-	tdb := s.CreateTestDatabase()
+	ctx, tdb := s.SetupTestDatabase()
 
 	knowledge, knowledgeServiceErr := NewKnowledgeGraphIngestionService(tdb)
 	s.Require().NoError(knowledgeServiceErr)

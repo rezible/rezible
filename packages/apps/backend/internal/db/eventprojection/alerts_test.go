@@ -1,6 +1,7 @@
 package eventprojection
 
 import (
+	"context"
 	"time"
 
 	"github.com/google/uuid"
@@ -13,8 +14,7 @@ import (
 	"github.com/rezible/rezible/pkg/projections"
 )
 
-func (s *ProjectionServiceSuite) createAlertProjectionEvent(db rez.Database, subjectRef string, attrs projections.AlertInstanceEventAttributes) *ent.NormalizedEvent {
-	ctx := s.SeedTenantContext()
+func (s *ProjectionServiceSuite) createAlertProjectionEvent(ctx context.Context, db rez.Database, subjectRef string, attrs projections.AlertInstanceEventAttributes) *ent.NormalizedEvent {
 	encoded, encodeErr := projections.EncodeAttributes(attrs)
 	s.Require().NoError(encodeErr)
 
@@ -36,8 +36,7 @@ func (s *ProjectionServiceSuite) createAlertProjectionEvent(db rez.Database, sub
 }
 
 func (s *ProjectionServiceSuite) TestAlertProjectionCreatesUpdatesAndRecordsEvidence() {
-	ctx := s.SeedTenantContext()
-	tdb := s.CreateTestDatabase()
+	ctx, tdb := s.SetupTestDatabase()
 	client := tdb.Client(ctx)
 	service := s.projectionService(tdb)
 
@@ -56,7 +55,7 @@ func (s *ProjectionServiceSuite) TestAlertProjectionCreatesUpdatesAndRecordsEvid
 			DisplayName: "Search API",
 		}},
 	}
-	first := s.createAlertProjectionEvent(tdb, "alert-1", attrs)
+	first := s.createAlertProjectionEvent(ctx, tdb, "alert-1", attrs)
 
 	_, projectErr := runProjection(ctx, service, first)
 	s.Require().NoError(projectErr)
@@ -71,7 +70,7 @@ func (s *ProjectionServiceSuite) TestAlertProjectionCreatesUpdatesAndRecordsEvid
 	s.NotNil(alerts[0].KnowledgeEntityID)
 
 	attrs.Title = "Search latency critical"
-	second := s.createAlertProjectionEvent(tdb, "alert-1", attrs)
+	second := s.createAlertProjectionEvent(ctx, tdb, "alert-1", attrs)
 	_, projectErr = runProjection(ctx, service, second)
 	s.Require().NoError(projectErr)
 

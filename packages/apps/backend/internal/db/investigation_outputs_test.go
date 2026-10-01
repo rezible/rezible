@@ -158,8 +158,7 @@ func (s *InvestigationServiceSuite) outputCitationFixture(ctx context.Context, t
 }
 
 func (s *InvestigationServiceSuite) TestInvestigationReportPublicationSelectionAndRetry() {
-	ctx := s.SeedTenantContext()
-	tdb := s.CreateTestDatabase()
+	ctx, tdb := s.SetupTestDatabase()
 	jobService := mocks.NewMockJobService(s.T())
 	service, investigation, firstTurn := s.outputFixture(ctx, tdb, jobService)
 
@@ -307,8 +306,7 @@ func (s *InvestigationServiceSuite) TestInvestigationReportPublicationSelectionA
 }
 
 func (s *InvestigationServiceSuite) TestInvestigationReportSummary() {
-	ctx := s.SeedTenantContext()
-	tdb := s.CreateTestDatabase()
+	ctx, tdb := s.SetupTestDatabase()
 	jobService := mocks.NewMockJobService(s.T())
 	service, investigation, turn := s.outputFixture(ctx, tdb, jobService)
 	scope := rez.InvestigationPublicationScope{
@@ -345,8 +343,7 @@ func (s *InvestigationServiceSuite) TestInvestigationReportSummary() {
 }
 
 func (s *InvestigationServiceSuite) TestInvestigationAnswerOwnershipAndRevisions() {
-	ctx := s.SeedTenantContext()
-	tdb := s.CreateTestDatabase()
+	ctx, tdb := s.SetupTestDatabase()
 	jobService := mocks.NewMockJobService(s.T())
 	service, investigation, turn := s.outputFixture(ctx, tdb, jobService)
 	turnScope := rez.InvestigationPublicationScope{
@@ -489,8 +486,7 @@ func (s *InvestigationServiceSuite) TestInvestigationAnswerOwnershipAndRevisions
 }
 
 func (s *InvestigationServiceSuite) TestInvestigationFindingCitationValidation() {
-	ctx := s.SeedTenantContext()
-	tdb := s.CreateTestDatabase()
+	ctx, tdb := s.SetupTestDatabase()
 	jobService := mocks.NewMockJobService(s.T())
 	service, investigation, firstTurn := s.outputFixture(ctx, tdb, jobService)
 	citations := s.outputCitationFixture(ctx, tdb, investigation.SystemAnalysisID)
@@ -582,8 +578,7 @@ func (s *InvestigationServiceSuite) TestInvestigationFindingCitationValidation()
 }
 
 func (s *InvestigationServiceSuite) TestInvestigationHypothesisStatusValidationAndSelection() {
-	ctx := s.SeedTenantContext()
-	tdb := s.CreateTestDatabase()
+	ctx, tdb := s.SetupTestDatabase()
 	jobService := mocks.NewMockJobService(s.T())
 	service, investigation, firstTurn := s.outputFixture(ctx, tdb, jobService)
 	firstTurnScope := rez.InvestigationPublicationScope{
@@ -638,8 +633,7 @@ func (s *InvestigationServiceSuite) TestInvestigationHypothesisStatusValidationA
 }
 
 func (s *InvestigationServiceSuite) TestInvestigationFindingPaginationInvalidationAndRevision() {
-	ctx := s.SeedTenantContext()
-	tdb := s.CreateTestDatabase()
+	ctx, tdb := s.SetupTestDatabase()
 	jobService := mocks.NewMockJobService(s.T())
 	service, investigation, firstTurn := s.outputFixture(ctx, tdb, jobService)
 	citations := s.outputCitationFixture(ctx, tdb, investigation.SystemAnalysisID)
@@ -739,8 +733,7 @@ func (s *InvestigationServiceSuite) TestInvestigationFindingPaginationInvalidati
 }
 
 func (s *InvestigationServiceSuite) TestConcurrentInvestigationReportWritesDeduplicate() {
-	ctx := s.SeedTenantContext()
-	tdb := s.CreateTestDatabase()
+	ctx, tdb := s.SetupTestDatabase()
 	jobService := mocks.NewMockJobService(s.T())
 	service, investigation, turn := s.outputFixture(ctx, tdb, jobService)
 	citations := s.outputCitationFixture(ctx, tdb, investigation.SystemAnalysisID)
@@ -796,8 +789,7 @@ func (s *InvestigationServiceSuite) TestConcurrentInvestigationReportWritesDedup
 }
 
 func (s *InvestigationServiceSuite) TestInvestigationPublicationCannotRaceTurnCompletion() {
-	ctx := s.SeedTenantContext()
-	tdb := s.CreateTestDatabase()
+	ctx, tdb := s.SetupTestDatabase()
 	jobService := mocks.NewMockJobService(s.T())
 	service, investigation, turn := s.outputFixture(ctx, tdb, jobService)
 	start := make(chan struct{})

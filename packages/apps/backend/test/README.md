@@ -13,13 +13,28 @@ Run backend tests from the repository root with `just test backend`, optionally 
 
 ## Database and identity ownership
 
-`Suite.CreateTestDatabase()` creates a fresh migrated database on every call and seeds a default tenant, organization and user. The seed tenant is always ID 1 (seeding fails if it is not), so `SeedTenantContext()` may be called before the database exists. Existing skip-seeding options retain their behavior. Cleanup is registered as resources are acquired; dependent services must stop before database cleanup.
+`Suite.SetupTestDatabase(opts...)` returns `(context.Context, rez.Database)`. Every call creates
+a new tenant, seeds one organization and one user in it, and returns that tenant's context. No
+tenant, organization or user ID is fixed.
 
-`Suite.NewIdentity(database, label)` adds a fresh tenant, organization, user and persisted session to a supplied database. It returns `(context.Context, Identity)`; `Identity` contains the persisted session, and the context stays local to the caller. Use it for multi-tenant tests; use `SeedTenantContext()` for existing seeded service fixtures.
+By default the database is shared by the whole suite: it is created on first use and dropped
+after the suite's last test. Tests are isolated by tenant, not by database. Pass
+`WithFreshDatabase()` when a test asserts on state that is not tenant-scoped (for example counts
+taken with a system context, or transaction and lock behaviour); that database is dropped when
+the test ends. `WithoutSeedUser()` and `WithoutSeedOrganization()` control seeding per call.
+
+Pass the returned context explicitly to helpers; do not store it in fixtures. For a system
+context call `execution.NewSystemContext(s.T().Context())`. A suite that defines its own
+`SetupSuite` must call `s.Suite.SetupSuite()`.
+
+`Suite.NewIdentity(database, label)` adds a fresh tenant, organization, user and persisted
+session to a supplied database. It returns `(context.Context, Identity)`; `Identity` contains
+the persisted session, and the context stays local to the caller. Use it when a test needs a
+user session.
 
 The two application scenarios, `TestIngestAndQuery` and `TestInvestigation`, live together in `cmd/rezible/app_test.go`. Shared application setup, bounded waits and the scripted model live in `app_helpers_test.go`.
 
-The application suite follows the CLI evaluation path: its injector creates and owns the isolated database and dependent services. It does not also call `CreateTestDatabase`. Its harness runs `Application.RunLifecycle` and waits for lifecycle completion before shutting down injector-owned resources. It wraps the application's registered v1 API with `humatest.Wrap` and dispatches through the complete production `Server.Handler()`. Requests use plain test contexts; the outer server middleware initializes the HTTP execution context, and production cookies and Huma security middleware handle authentication. No OIDC login calls or live model/provider calls are involved.
+The application suite follows the CLI evaluation path: its injector creates and owns the isolated database and dependent services. It does not also call `SetupTestDatabase`. Its harness runs `Application.RunLifecycle` and waits for lifecycle completion before shutting down injector-owned resources. It wraps the application's registered v1 API with `humatest.Wrap` and dispatches through the complete production `Server.Handler()`. Requests use plain test contexts; the outer server middleware initializes the HTTP execution context, and production cookies and Huma security middleware handle authentication. No OIDC login calls or live model/provider calls are involved.
 
 Focused service tests stay in their existing suites. Application journeys use real workers and production registrations with periodic scheduling disabled; their model is scripted. They assert specific committed records and job states rather than waiting for an empty queue.
 

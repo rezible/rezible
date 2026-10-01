@@ -1,6 +1,7 @@
 package eventprojection
 
 import (
+	"context"
 	"time"
 
 	"github.com/google/uuid"
@@ -10,8 +11,7 @@ import (
 	"github.com/rezible/rezible/pkg/projections"
 )
 
-func (s *ProjectionServiceSuite) createUserProjectionEvent(tdb rez.Database, resourceRef string, attrs projections.UserEventAttributes) *ent.NormalizedEvent {
-	ctx := s.SeedTenantContext()
+func (s *ProjectionServiceSuite) createUserProjectionEvent(ctx context.Context, tdb rez.Database, resourceRef string, attrs projections.UserEventAttributes) *ent.NormalizedEvent {
 	r := s.Require()
 	encoded, attrsErr := projections.EncodeAttributes(attrs)
 	r.NoError(attrsErr)
@@ -32,8 +32,7 @@ func (s *ProjectionServiceSuite) createUserProjectionEvent(tdb rez.Database, res
 }
 
 func (s *ProjectionServiceSuite) TestUserProjectionCreatesAndLinksKnowledgeEntity() {
-	ctx := s.SeedTenantContext()
-	tdb := s.CreateTestDatabase()
+	ctx, tdb := s.SetupTestDatabase()
 
 	projector := s.projectionService(tdb)
 
@@ -43,7 +42,7 @@ func (s *ProjectionServiceSuite) TestUserProjectionCreatesAndLinksKnowledgeEntit
 		ChatId:   "U123",
 		Timezone: "Australia/Sydney",
 	}
-	ev := s.createUserProjectionEvent(tdb, "user-1", attrs)
+	ev := s.createUserProjectionEvent(ctx, tdb, "user-1", attrs)
 
 	r := s.Require()
 
@@ -60,18 +59,17 @@ func (s *ProjectionServiceSuite) TestUserProjectionCreatesAndLinksKnowledgeEntit
 }
 
 func (s *ProjectionServiceSuite) TestUserProjectionMatchesAliasesByEmail() {
-	ctx := s.SeedTenantContext()
-	tdb := s.CreateTestDatabase()
+	ctx, tdb := s.SetupTestDatabase()
 	projector := s.projectionService(tdb)
 	email := "same-user+" + uuid.NewString() + "@example.com"
 	initialUserCount, initialUserCountErr := tdb.Client(ctx).User.Query().Count(ctx)
 	s.Require().NoError(initialUserCountErr)
 
-	first := s.createUserProjectionEvent(tdb, "provider-user-1", projections.UserEventAttributes{
+	first := s.createUserProjectionEvent(ctx, tdb, "provider-user-1", projections.UserEventAttributes{
 		Name:  "Alice",
 		Email: email,
 	})
-	second := s.createUserProjectionEvent(tdb, "provider-user-2", projections.UserEventAttributes{
+	second := s.createUserProjectionEvent(ctx, tdb, "provider-user-2", projections.UserEventAttributes{
 		Name:  "Alice Smith",
 		Email: email,
 	})
@@ -96,8 +94,7 @@ func (s *ProjectionServiceSuite) TestUserProjectionMatchesAliasesByEmail() {
 }
 
 func (s *ProjectionServiceSuite) TestUserProjectionReusesExistingEmailUser() {
-	ctx := s.SeedTenantContext()
-	tdb := s.CreateTestDatabase()
+	ctx, tdb := s.SetupTestDatabase()
 
 	r := s.Require()
 
@@ -115,7 +112,7 @@ func (s *ProjectionServiceSuite) TestUserProjectionReusesExistingEmailUser() {
 		Name:  "Existing Updated",
 		Email: email,
 	}
-	ev := s.createUserProjectionEvent(tdb, "user-2", attrs)
+	ev := s.createUserProjectionEvent(ctx, tdb, "user-2", attrs)
 
 	_, projErr := runProjection(ctx, projector, ev)
 	r.NoError(projErr)
@@ -130,8 +127,7 @@ func (s *ProjectionServiceSuite) TestUserProjectionReusesExistingEmailUser() {
 }
 
 func (s *ProjectionServiceSuite) TestUserProjectionFailsWhenKnowledgeLinkConflictsWithEmailOwner() {
-	ctx := s.SeedTenantContext()
-	tdb := s.CreateTestDatabase()
+	ctx, tdb := s.SetupTestDatabase()
 
 	r := s.Require()
 
@@ -140,7 +136,7 @@ func (s *ProjectionServiceSuite) TestUserProjectionFailsWhenKnowledgeLinkConflic
 		Name:  "Linked User",
 		Email: "linked+" + uuid.NewString() + "@example.com",
 	}
-	first := s.createUserProjectionEvent(tdb, userRef, firstAttrs)
+	first := s.createUserProjectionEvent(ctx, tdb, userRef, firstAttrs)
 
 	projector := s.projectionService(tdb)
 
@@ -157,7 +153,7 @@ func (s *ProjectionServiceSuite) TestUserProjectionFailsWhenKnowledgeLinkConflic
 		Name:  "Linked User",
 		Email: conflictEmail,
 	}
-	second := s.createUserProjectionEvent(tdb, userRef, secondAttrs)
+	second := s.createUserProjectionEvent(ctx, tdb, userRef, secondAttrs)
 	evidenceBefore, queryEvidenceErr := tdb.Client(ctx).KnowledgeEvidence.Query().Count(ctx)
 	r.NoError(queryEvidenceErr)
 

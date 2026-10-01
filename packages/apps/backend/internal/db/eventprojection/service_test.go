@@ -112,8 +112,7 @@ func runProjection(ctx context.Context, service rez.EventProjectionService, even
 	return projector(ctx, event)
 }
 
-func (s *ProjectionServiceSuite) createNormalizedEvent(tdb rez.Database, kind string, providerResourceRef string, occurredAt time.Time, attributes any) *ent.NormalizedEvent {
-	ctx := s.SeedTenantContext()
+func (s *ProjectionServiceSuite) createNormalizedEvent(ctx context.Context, tdb rez.Database, kind string, providerResourceRef string, occurredAt time.Time, attributes any) *ent.NormalizedEvent {
 	encodedAttributes, encodeErr := projections.EncodeAttributes(attributes)
 	s.Require().NoError(encodeErr)
 
@@ -134,8 +133,7 @@ func (s *ProjectionServiceSuite) createNormalizedEvent(tdb rez.Database, kind st
 }
 
 func (s *ProjectionServiceSuite) TestProjectsSystemTopologyRelationship() {
-	ctx := s.SeedTenantContext()
-	tdb := s.CreateTestDatabase()
+	ctx, tdb := s.SetupTestDatabase()
 	service := s.projectionService(tdb)
 	now := time.Now().UTC()
 
@@ -166,6 +164,7 @@ func (s *ProjectionServiceSuite) TestProjectsSystemTopologyRelationship() {
 		},
 	}
 	event := s.createNormalizedEvent(
+		ctx,
 		tdb,
 		projections.KindSystemRelationship,
 		"api-uses-database",
@@ -246,8 +245,7 @@ func (s *ProjectionServiceSuite) TestProjectsSystemTopologyRelationship() {
 }
 
 func (s *ProjectionServiceSuite) TestProjectsTeamMembershipIntoDomainAndGraph() {
-	ctx := s.SeedTenantContext()
-	tdb := s.CreateTestDatabase()
+	ctx, tdb := s.SetupTestDatabase()
 	service := s.projectionService(tdb)
 	suffix := uuid.NewString()
 	teamRef := rez.ProviderResourceRef{
@@ -275,6 +273,7 @@ func (s *ProjectionServiceSuite) TestProjectsTeamMembershipIntoDomainAndGraph() 
 		Role: "member",
 	}
 	event := s.createNormalizedEvent(
+		ctx,
 		tdb,
 		projections.KindTeamMembership,
 		"membership:group-"+suffix+":user-"+suffix,

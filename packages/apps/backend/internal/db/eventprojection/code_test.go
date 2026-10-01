@@ -12,8 +12,7 @@ import (
 )
 
 func (s *ProjectionServiceSuite) TestCodeChangeProjectionPersistsEvidenceAndIsIdempotent() {
-	ctx := s.SeedTenantContext()
-	tdb := s.CreateTestDatabase()
+	ctx, tdb := s.SetupTestDatabase()
 	service := s.projectionService(tdb)
 	occurredAt := time.Date(2026, 6, 1, 10, 0, 0, 0, time.UTC)
 
@@ -55,7 +54,7 @@ func (s *ProjectionServiceSuite) TestCodeChangeProjectionPersistsEvidenceAndIsId
 			},
 		},
 	}
-	event := s.createNormalizedEvent(tdb, projections.KindCodeChange, codeChangeRef, occurredAt, attrs)
+	event := s.createNormalizedEvent(ctx, tdb, projections.KindCodeChange, codeChangeRef, occurredAt, attrs)
 
 	_, projectErr := runProjection(ctx, service, event)
 	s.Require().NoError(projectErr)

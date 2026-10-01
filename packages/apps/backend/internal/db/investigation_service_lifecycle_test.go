@@ -96,8 +96,7 @@ func (s *InvestigationServiceSuite) createTurn(ctx context.Context, tdb rez.Data
 }
 
 func (s *InvestigationServiceSuite) TestInvestigationInputsAndEvidenceRevisionsDeduplicateByKeys() {
-	ctx := s.SeedTenantContext()
-	tdb := s.CreateTestDatabase()
+	ctx, tdb := s.SetupTestDatabase()
 	jobService := mocks.NewMockJobService(s.T())
 	service, investigation := s.createLifecycleInvestigation(ctx, tdb, jobService)
 	userCtx := s.userContext(tdb, ctx)
@@ -158,8 +157,7 @@ func (s *InvestigationServiceSuite) TestInvestigationInputsAndEvidenceRevisionsD
 }
 
 func (s *InvestigationServiceSuite) TestReconcileRetainsFailedTurnAssignmentsAndContinuesWaitingWork() {
-	ctx := s.SeedTenantContext()
-	tdb := s.CreateTestDatabase()
+	ctx, tdb := s.SetupTestDatabase()
 	jobService := mocks.NewMockJobService(s.T())
 	service, investigation := s.createLifecycleInvestigation(ctx, tdb, jobService)
 	userCtx := s.userContext(tdb, ctx)
@@ -311,8 +309,7 @@ func (s *InvestigationServiceSuite) TestReconcileRetainsFailedTurnAssignmentsAnd
 }
 
 func (s *InvestigationServiceSuite) TestReconcileLeavesWorkForStartupAndRollsBackWhenTurnJobFails() {
-	ctx := s.SeedTenantContext()
-	tdb := s.CreateTestDatabase()
+	ctx, tdb := s.SetupTestDatabase()
 	jobService := mocks.NewMockJobService(s.T())
 	service, investigation := s.createLifecycleInvestigation(ctx, tdb, jobService)
 	userCtx := s.userContext(tdb, ctx)
@@ -358,8 +355,7 @@ func (s *InvestigationServiceSuite) TestReconcileLeavesWorkForStartupAndRollsBac
 }
 
 func (s *InvestigationServiceSuite) TestEvidenceAnalysisChangeAndRevisionShareCallerTransaction() {
-	ctx := s.SeedTenantContext()
-	tdb := s.CreateTestDatabase()
+	ctx, tdb := s.SetupTestDatabase()
 	jobService := mocks.NewMockJobService(s.T())
 	service, investigation := s.createLifecycleInvestigation(ctx, tdb, jobService)
 	s.expectReconcileJobs(jobService, investigation.ID, 1)
@@ -406,8 +402,7 @@ func (s *InvestigationServiceSuite) TestEvidenceAnalysisChangeAndRevisionShareCa
 }
 
 func (s *InvestigationServiceSuite) TestTerminalEventAndInputRaceCanDispatchDuplicateJobsOnlyOnce() {
-	ctx := s.SeedTenantContext()
-	tdb := s.CreateTestDatabase()
+	ctx, tdb := s.SetupTestDatabase()
 	jobService := mocks.NewMockJobService(s.T())
 	service, investigation := s.createLifecycleInvestigation(ctx, tdb, jobService)
 	userCtx := s.userContext(tdb, ctx)

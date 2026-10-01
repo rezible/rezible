@@ -1,6 +1,7 @@
 package db
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -44,16 +45,14 @@ func (s *SystemAnalysisServiceSuite) service(tdb rez.Database, knowledge rez.Kno
 	return svc
 }
 
-func (s *SystemAnalysisServiceSuite) createAnalysis(tdb rez.Database) *ent.SystemAnalysis {
-	ctx := s.SeedTenantContext()
+func (s *SystemAnalysisServiceSuite) createAnalysis(ctx context.Context, tdb rez.Database) *ent.SystemAnalysis {
 	create := tdb.Client(ctx).SystemAnalysis.Create()
 	analysis, createErr := create.Save(ctx)
 	s.Require().NoError(createErr)
 	return analysis
 }
 
-func (s *SystemAnalysisServiceSuite) createNormalizedEvent(tdb rez.Database, subjectRef string) *ent.NormalizedEvent {
-	ctx := s.SeedTenantContext()
+func (s *SystemAnalysisServiceSuite) createNormalizedEvent(ctx context.Context, tdb rez.Database, subjectRef string) *ent.NormalizedEvent {
 	now := time.Now().UTC()
 	encodedAttributes, encodeErr := projections.EncodeAttributes(struct{}{})
 	s.Require().NoError(encodeErr)
@@ -72,8 +71,7 @@ func (s *SystemAnalysisServiceSuite) createNormalizedEvent(tdb rez.Database, sub
 	return event
 }
 
-func (s *SystemAnalysisServiceSuite) createGraphFixture(tdb rez.Database) systemAnalysisGraphFixture {
-	ctx := s.SeedTenantContext()
+func (s *SystemAnalysisServiceSuite) createGraphFixture(ctx context.Context, tdb rez.Database) systemAnalysisGraphFixture {
 	client := tdb.Client(ctx)
 	now := time.Now().UTC()
 
@@ -103,7 +101,7 @@ func (s *SystemAnalysisServiceSuite) createGraphFixture(tdb rez.Database) system
 	alias, aliasErr := createAlias.Save(ctx)
 	s.Require().NoError(aliasErr)
 	createEvidence := client.KnowledgeEvidence.Create().
-		SetEventID(s.createNormalizedEvent(tdb, alias.ProviderResourceRef).ID).
+		SetEventID(s.createNormalizedEvent(ctx, tdb, alias.ProviderResourceRef).ID).
 		SetSubjectAliasID(alias.ID).
 		SetKind(kev.KindObserved).
 		SetAssertion("component_exists").
@@ -121,11 +119,10 @@ func (s *SystemAnalysisServiceSuite) createGraphFixture(tdb rez.Database) system
 }
 
 func (s *SystemAnalysisServiceSuite) TestAnalysisEntityMutationsAndDelete() {
-	ctx := s.SeedTenantContext()
-	tdb := s.CreateTestDatabase()
-	fixture := s.createGraphFixture(tdb)
+	ctx, tdb := s.SetupTestDatabase()
+	fixture := s.createGraphFixture(ctx, tdb)
 	svc := s.service(tdb, &KnowledgeGraphQueryService{db: tdb})
-	analysis := s.createAnalysis(tdb)
+	analysis := s.createAnalysis(ctx, tdb)
 
 	node, createErr := svc.SetSystemAnalysisEntity(ctx, uuid.Nil, func(m *ent.SystemAnalysisEntityMutation) {
 		m.SetAnalysisID(analysis.ID)
@@ -171,11 +168,10 @@ func (s *SystemAnalysisServiceSuite) TestAnalysisEntityMutationsAndDelete() {
 }
 
 func (s *SystemAnalysisServiceSuite) TestAnalysisRelationshipDerivesEndpointEntities() {
-	ctx := s.SeedTenantContext()
-	tdb := s.CreateTestDatabase()
-	fixture := s.createGraphFixture(tdb)
+	ctx, tdb := s.SetupTestDatabase()
+	fixture := s.createGraphFixture(ctx, tdb)
 	svc := s.service(tdb, &KnowledgeGraphQueryService{db: tdb})
-	analysis := s.createAnalysis(tdb)
+	analysis := s.createAnalysis(ctx, tdb)
 
 	relationship, createErr := svc.SetSystemAnalysisRelationship(ctx, uuid.Nil, func(m *ent.SystemAnalysisRelationshipMutation) {
 		m.SetAnalysisID(analysis.ID)
@@ -227,11 +223,10 @@ func (s *SystemAnalysisServiceSuite) TestAnalysisRelationshipDerivesEndpointEnti
 }
 
 func (s *SystemAnalysisServiceSuite) TestListEntriesOrdersAndLoadsSubjects() {
-	ctx := s.SeedTenantContext()
-	tdb := s.CreateTestDatabase()
-	fixture := s.createGraphFixture(tdb)
+	ctx, tdb := s.SetupTestDatabase()
+	fixture := s.createGraphFixture(ctx, tdb)
 	svc := s.service(tdb, &KnowledgeGraphQueryService{db: tdb})
-	analysis := s.createAnalysis(tdb)
+	analysis := s.createAnalysis(ctx, tdb)
 	s.Require().NoError(svc.IncludeSystemAnalysisSubjects(ctx, rez.IncludeSystemAnalysisSubjectsParams{
 		AnalysisId: analysis.ID,
 		EntityIds:  []uuid.UUID{fixture.Source.ID},
@@ -295,11 +290,10 @@ func (s *SystemAnalysisServiceSuite) TestListEntriesOrdersAndLoadsSubjects() {
 }
 
 func (s *SystemAnalysisServiceSuite) TestEntryMutationsValidateUpdateAndDelete() {
-	ctx := s.SeedTenantContext()
-	tdb := s.CreateTestDatabase()
-	fixture := s.createGraphFixture(tdb)
+	ctx, tdb := s.SetupTestDatabase()
+	fixture := s.createGraphFixture(ctx, tdb)
 	svc := s.service(tdb, &KnowledgeGraphQueryService{db: tdb})
-	analysis := s.createAnalysis(tdb)
+	analysis := s.createAnalysis(ctx, tdb)
 	s.Require().NoError(svc.IncludeSystemAnalysisSubjects(ctx, rez.IncludeSystemAnalysisSubjectsParams{
 		AnalysisId: analysis.ID,
 		EntityIds:  []uuid.UUID{fixture.Source.ID},
@@ -347,11 +341,10 @@ func (s *SystemAnalysisServiceSuite) TestEntryMutationsValidateUpdateAndDelete()
 }
 
 func (s *SystemAnalysisServiceSuite) TestEntrySubjectRequiresExactlyOneGraphReference() {
-	ctx := s.SeedTenantContext()
-	tdb := s.CreateTestDatabase()
-	fixture := s.createGraphFixture(tdb)
+	ctx, tdb := s.SetupTestDatabase()
+	fixture := s.createGraphFixture(ctx, tdb)
 	svc := s.service(tdb, &KnowledgeGraphQueryService{db: tdb})
-	analysis := s.createAnalysis(tdb)
+	analysis := s.createAnalysis(ctx, tdb)
 	s.Require().NoError(svc.IncludeSystemAnalysisSubjects(ctx, rez.IncludeSystemAnalysisSubjectsParams{
 		AnalysisId:      analysis.ID,
 		RelationshipIds: []uuid.UUID{fixture.Relationship.ID},
@@ -412,11 +405,10 @@ func (s *SystemAnalysisServiceSuite) TestEntrySubjectRequiresExactlyOneGraphRefe
 }
 
 func (s *SystemAnalysisServiceSuite) TestIncludeSystemAnalysisSubjectsAddsRelationshipEndpoints() {
-	ctx := s.SeedTenantContext()
-	tdb := s.CreateTestDatabase()
+	ctx, tdb := s.SetupTestDatabase()
 	client := tdb.Client(ctx)
-	fixture := s.createGraphFixture(tdb)
-	analysis := s.createAnalysis(tdb)
+	fixture := s.createGraphFixture(ctx, tdb)
+	analysis := s.createAnalysis(ctx, tdb)
 	svc := s.service(tdb, &KnowledgeGraphQueryService{db: tdb})
 
 	includeParams := rez.IncludeSystemAnalysisSubjectsParams{
@@ -443,11 +435,10 @@ func (s *SystemAnalysisServiceSuite) TestIncludeSystemAnalysisSubjectsAddsRelati
 }
 
 func (s *SystemAnalysisServiceSuite) TestEntrySubjectDatabaseRequiresExactlyOneGraphReference() {
-	ctx := s.SeedTenantContext()
-	tdb := s.CreateTestDatabase()
+	ctx, tdb := s.SetupTestDatabase()
 	client := tdb.Client(ctx)
-	fixture := s.createGraphFixture(tdb)
-	analysis := s.createAnalysis(tdb)
+	fixture := s.createGraphFixture(ctx, tdb)
+	analysis := s.createAnalysis(ctx, tdb)
 	entry := client.SystemAnalysisEntry.Create().
 		SetAnalysisID(analysis.ID).
 		SetKind(sae.KindObservation).
@@ -469,11 +460,10 @@ func (s *SystemAnalysisServiceSuite) TestEntrySubjectDatabaseRequiresExactlyOneG
 }
 
 func (s *SystemAnalysisServiceSuite) TestSetSystemAnalysisEntryCreatesSubjectsAtomicallyAndAppends() {
-	ctx := s.SeedTenantContext()
-	tdb := s.CreateTestDatabase()
+	ctx, tdb := s.SetupTestDatabase()
 	client := tdb.Client(ctx)
-	fixture := s.createGraphFixture(tdb)
-	analysis := s.createAnalysis(tdb)
+	fixture := s.createGraphFixture(ctx, tdb)
+	analysis := s.createAnalysis(ctx, tdb)
 	svc := s.service(tdb, &KnowledgeGraphQueryService{db: tdb})
 	s.Require().NoError(svc.IncludeSystemAnalysisSubjects(ctx, rez.IncludeSystemAnalysisSubjectsParams{
 		AnalysisId:      analysis.ID,

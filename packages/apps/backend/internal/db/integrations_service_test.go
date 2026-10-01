@@ -60,8 +60,7 @@ func (s *IntegrationsServiceSuite) installTestIntegration(ctx context.Context, s
 }
 
 func (s *IntegrationsServiceSuite) TestInstallIntegration() {
-	ctx := s.SeedTenantContext()
-	tdb := s.CreateTestDatabase()
+	ctx, tdb := s.SetupTestDatabase()
 
 	i := &testIntegration{
 		maxInstalls: new(1),
@@ -88,8 +87,7 @@ func (s *IntegrationsServiceSuite) TestInstallIntegration() {
 }
 
 func (s *IntegrationsServiceSuite) TestInstallSameTargetUpdatesExistingInstallation() {
-	ctx := s.SeedTenantContext()
-	tdb := s.CreateTestDatabase()
+	ctx, tdb := s.SetupTestDatabase()
 
 	i := &testIntegration{}
 	svc := s.newService(tdb, s.newRegistry(i))
@@ -105,8 +103,7 @@ func (s *IntegrationsServiceSuite) TestInstallSameTargetUpdatesExistingInstallat
 }
 
 func (s *IntegrationsServiceSuite) TestInstallRejectsNewTargetsBeyondMaxInstalls() {
-	ctx := s.SeedTenantContext()
-	tdb := s.CreateTestDatabase()
+	ctx, tdb := s.SetupTestDatabase()
 
 	i := &testIntegration{
 		maxInstalls: new(1),
@@ -129,11 +126,12 @@ func (s *IntegrationsServiceSuite) TestInstallRejectsNewTargetsBeyondMaxInstalls
 }
 
 func (s *IntegrationsServiceSuite) TestInstallRequirementsUseOrganizationPreferences() {
-	ctx := s.SeedTenantContext()
-	tdb := s.CreateTestDatabase()
+	ctx, tdb := s.SetupTestDatabase()
+	organizationID, organizationErr := tdb.Client(ctx).Organization.Query().OnlyID(ctx)
+	s.Require().NoError(organizationErr)
 
 	createRequiredPrefs := tdb.Client(ctx).OrganizationPreferences.Create().
-		SetOrganizationID(s.SeedOrganizationId()).
+		SetOrganizationID(organizationID).
 		SetEnableIncidentManagement(true)
 
 	unrestrictedIntg := &testIntegration{name: "unrestricted"}
@@ -173,8 +171,7 @@ func (s *IntegrationsServiceSuite) TestInstallRequirementsUseOrganizationPrefere
 }
 
 func (s *IntegrationsServiceSuite) TestGetAvailableAgentToolsSkipsIntegrationsWithoutTools() {
-	ctx := s.SeedTenantContext()
-	tdb := s.CreateTestDatabase()
+	ctx, tdb := s.SetupTestDatabase()
 	client := tdb.Client(ctx)
 
 	intgs := client.Integration.Query().AllX(ctx)
@@ -192,8 +189,7 @@ func (s *IntegrationsServiceSuite) TestGetAvailableAgentToolsSkipsIntegrationsWi
 }
 
 func (s *IntegrationsServiceSuite) TestGetAvailableAgentToolsRejectsDuplicateToolNames() {
-	ctx := s.SeedTenantContext()
-	tdb := s.CreateTestDatabase()
+	ctx, tdb := s.SetupTestDatabase()
 
 	tools := []ai.Tool{newTestAgentTool("duplicate_tool")}
 	i1 := &testIntegration{name: "pkg-a", tools: tools}

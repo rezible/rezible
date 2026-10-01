@@ -16,7 +16,7 @@ import (
 	rezai "github.com/rezible/rezible/pkg/ai"
 )
 
-func (s *AiRuntimeSuite) makeAgentSession(svc *AiRuntime, tdb rez.Database, name string, sessInput rez.ValidatingInput) *ent.AgentSession {
+func (s *AiRuntimeSuite) makeAgentSession(ctx context.Context, svc *AiRuntime, tdb rez.Database, name string, sessInput rez.ValidatingInput) *ent.AgentSession {
 	sessInputJson, sessInputJsonErr := json.Marshal(sessInput)
 	s.Require().NoError(sessInputJsonErr)
 
@@ -70,7 +70,7 @@ func (s *AiRuntimeSuite) makeAgentSession(svc *AiRuntime, tdb rez.Database, name
 
 		return session, nil
 	}
-	session, txErr := ent.WithTxReturning(s.SeedTenantContext(), tdb, txFn)
+	session, txErr := ent.WithTxReturning(ctx, tdb, txFn)
 	s.Require().NoError(txErr)
 	return session
 }
@@ -88,8 +88,7 @@ func (s *AiRuntimeSuite) makeInvokeAgentSessionParams(sess *ent.AgentSession) re
 }
 
 func (s *AiRuntimeSuite) TestClientManagedTurnStateAndResumeRoundTrip() {
-	ctx := s.SeedTenantContext()
-	tdb := s.CreateTestDatabase()
+	ctx, tdb := s.SetupTestDatabase()
 	msg := ai.NewUserTextMessage("Confirm the next check")
 	agent := makeTestAgent[testAgentState](msg)
 	interruptTool := ai.NewTool[struct{}, string](
@@ -163,7 +162,7 @@ func (s *AiRuntimeSuite) TestClientManagedTurnStateAndResumeRoundTrip() {
 		return &testToolsMiddleware{tools: []ai.Tool{interruptTool}}
 	}
 	svc := s.makeRuntime(ctx, WithDefinedModel(model), WithAgent(agent, middleware))
-	sess := s.makeAgentSession(svc, tdb, agent.def.Name, testAgentInput{})
+	sess := s.makeAgentSession(ctx, svc, tdb, agent.def.Name, testAgentInput{})
 
 	// The first invocation must stop at the confirmation tool.
 	initial := s.makeInvokeAgentSessionParams(sess)

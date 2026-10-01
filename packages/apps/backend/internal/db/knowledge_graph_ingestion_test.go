@@ -1,6 +1,7 @@
 package db
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -29,8 +30,7 @@ func (s *KnowledgeGraphIngestionServiceSuite) makeService(tdb rez.Database) *Kno
 	return &KnowledgeGraphIngestionService{db: tdb}
 }
 
-func (s *KnowledgeGraphIngestionServiceSuite) createEvent(tdb rez.Database, resourceRef string, occurredAt time.Time) *ent.NormalizedEvent {
-	ctx := s.SeedTenantContext()
+func (s *KnowledgeGraphIngestionServiceSuite) createEvent(ctx context.Context, tdb rez.Database, resourceRef string, occurredAt time.Time) *ent.NormalizedEvent {
 	event, err := tdb.Client(ctx).NormalizedEvent.Create().
 		SetProvider("test").
 		SetProviderNamespace("knowledge-graph-tests").
@@ -55,8 +55,7 @@ func (s *KnowledgeGraphIngestionServiceSuite) testProviderRef(resourceRef string
 }
 
 func (s *KnowledgeGraphIngestionServiceSuite) TestKnowledgeSubjectAliasCannotMapOneResourceToDifferentSubjects() {
-	ctx := s.SeedTenantContext()
-	tdb := s.CreateTestDatabase()
+	ctx, tdb := s.SetupTestDatabase()
 	client := tdb.Client(ctx)
 	service := s.makeService(tdb)
 
@@ -96,7 +95,7 @@ func (s *KnowledgeGraphIngestionServiceSuite) TestKnowledgeSubjectAliasCannotMap
 		SubjectState: schematypes.KnowledgeGraphSubjectState{DisplayName: "Second"},
 		Subject:      rez.KnowledgeSubjectRef{Entity: &entityRef},
 	}
-	event := s.createEvent(tdb, "event:shared-resource", evidence.EffectiveAt)
+	event := s.createEvent(ctx, tdb, "event:shared-resource", evidence.EffectiveAt)
 	s.Require().Error(secondAliasErr)
 	err := service.IngestEvidence(ctx, event, evidence)
 	s.Require().NoError(err)
@@ -111,8 +110,7 @@ func (a testEntityLinkingAttributes) Values() map[string]string {
 }
 
 func (s *KnowledgeGraphIngestionServiceSuite) TestEntityAliasesMatchLinkingAttributes() {
-	ctx := s.SeedTenantContext()
-	tdb := s.CreateTestDatabase()
+	ctx, tdb := s.SetupTestDatabase()
 	svc := s.makeService(tdb)
 	now := time.Now().UTC()
 
@@ -145,8 +143,8 @@ func (s *KnowledgeGraphIngestionServiceSuite) TestEntityAliasesMatchLinkingAttri
 	}
 	secondEvidence := firstEvidence
 	secondEvidence.Subject.Entity = &secondRef
-	s.Require().NoError(svc.IngestEvidence(ctx, s.createEvent(tdb, "event:first", now), firstEvidence))
-	s.Require().NoError(svc.IngestEvidence(ctx, s.createEvent(tdb, "event:second", now.Add(time.Minute)), secondEvidence))
+	s.Require().NoError(svc.IngestEvidence(ctx, s.createEvent(ctx, tdb, "event:first", now), firstEvidence))
+	s.Require().NoError(svc.IngestEvidence(ctx, s.createEvent(ctx, tdb, "event:second", now.Add(time.Minute)), secondEvidence))
 
 	client := tdb.Client(ctx)
 	s.Equal(1, client.KnowledgeEntity.Query().Where(kne.CategoryEQ(kne.CategoryActor), kne.KindEQ("user")).CountX(ctx))
@@ -156,8 +154,7 @@ func (s *KnowledgeGraphIngestionServiceSuite) TestEntityAliasesMatchLinkingAttri
 }
 
 func (s *KnowledgeGraphIngestionServiceSuite) TestEntityLinkingAttributeConflictRollsBackEvidence() {
-	ctx := s.SeedTenantContext()
-	tdb := s.CreateTestDatabase()
+	ctx, tdb := s.SetupTestDatabase()
 	svc := s.makeService(tdb)
 	now := time.Now().UTC()
 	makeRef := func(resourceRef string, values map[string]string) rez.KnowledgeEntityRef {
@@ -179,14 +176,14 @@ func (s *KnowledgeGraphIngestionServiceSuite) TestEntityLinkingAttributeConflict
 	}
 	firstRef := makeRef("first", map[string]string{"user.email": "first@example.com"})
 	secondRef := makeRef("second", map[string]string{"user.employee_id": "second"})
-	s.Require().NoError(svc.IngestEvidence(ctx, s.createEvent(tdb, "event:first", now), makeEvidence(&firstRef)))
-	s.Require().NoError(svc.IngestEvidence(ctx, s.createEvent(tdb, "event:second", now), makeEvidence(&secondRef)))
+	s.Require().NoError(svc.IngestEvidence(ctx, s.createEvent(ctx, tdb, "event:first", now), makeEvidence(&firstRef)))
+	s.Require().NoError(svc.IngestEvidence(ctx, s.createEvent(ctx, tdb, "event:second", now), makeEvidence(&secondRef)))
 
 	conflictRef := makeRef("third", map[string]string{
 		"user.email":       "first@example.com",
 		"user.employee_id": "second",
 	})
-	conflictEvent := s.createEvent(tdb, "event:third", now.Add(time.Minute))
+	conflictEvent := s.createEvent(ctx, tdb, "event:third", now.Add(time.Minute))
 	conflictErr := svc.IngestEvidence(ctx, conflictEvent, makeEvidence(&conflictRef))
 	s.Require().ErrorIs(conflictErr, rez.ErrConflict)
 	s.Equal(2, tdb.Client(ctx).KnowledgeEntity.Query().CountX(ctx))
@@ -196,8 +193,7 @@ func (s *KnowledgeGraphIngestionServiceSuite) TestEntityLinkingAttributeConflict
 }
 
 func (s *KnowledgeGraphIngestionServiceSuite) TestRelationshipAliasesConvergeThroughLinkedEndpointEntities() {
-	ctx := s.SeedTenantContext()
-	tdb := s.CreateTestDatabase()
+	ctx, tdb := s.SetupTestDatabase()
 	service := s.makeService(tdb)
 	now := time.Now().UTC()
 	targetRef := rez.KnowledgeEntityRef{
@@ -234,7 +230,7 @@ func (s *KnowledgeGraphIngestionServiceSuite) TestRelationshipAliasesConvergeThr
 			Subject:     rez.KnowledgeSubjectRef{Relationship: ref},
 		}
 	}
-	s.Require().NoError(service.IngestEvidence(ctx, s.createEvent(tdb, "event:relationship:one", now),
+	s.Require().NoError(service.IngestEvidence(ctx, s.createEvent(ctx, tdb, "event:relationship:one", now),
 		entityEvidence(&firstSourceRef, "Alice"),
 		entityEvidence(&targetRef, "API"),
 		relationshipEvidence(&firstRelationshipRef),
@@ -249,7 +245,7 @@ func (s *KnowledgeGraphIngestionServiceSuite) TestRelationshipAliasesConvergeThr
 	secondRelationshipRef := firstRelationshipRef
 	secondRelationshipRef.ProviderResourceRef = s.testProviderRef("relationship:two")
 	secondRelationshipRef.Source = secondSourceRef
-	s.Require().NoError(service.IngestEvidence(ctx, s.createEvent(tdb, "event:relationship:two", now.Add(time.Minute)),
+	s.Require().NoError(service.IngestEvidence(ctx, s.createEvent(ctx, tdb, "event:relationship:two", now.Add(time.Minute)),
 		entityEvidence(&secondSourceRef, "Alice"),
 		relationshipEvidence(&secondRelationshipRef),
 	))
@@ -261,8 +257,7 @@ func (s *KnowledgeGraphIngestionServiceSuite) TestRelationshipAliasesConvergeThr
 }
 
 func (s *KnowledgeGraphIngestionServiceSuite) TestRelationshipIngestionRollsBackWhenEndpointHasNoEvidence() {
-	ctx := s.SeedTenantContext()
-	tdb := s.CreateTestDatabase()
+	ctx, tdb := s.SetupTestDatabase()
 	client := tdb.Client(ctx)
 	service := s.makeService(tdb)
 	now := time.Now().UTC()
@@ -296,7 +291,7 @@ func (s *KnowledgeGraphIngestionServiceSuite) TestRelationshipIngestionRollsBack
 		EffectiveAt: now,
 		Subject:     rez.KnowledgeSubjectRef{Relationship: &relationshipRef},
 	}
-	event := s.createEvent(tdb, relationshipRef.ProviderResourceRef.ResourceRef, now)
+	event := s.createEvent(ctx, tdb, relationshipRef.ProviderResourceRef.ResourceRef, now)
 
 	ingestErr := service.IngestEvidence(ctx, event, relationshipEvidence, sourceEvidence)
 	s.Require().Error(ingestErr)
@@ -308,8 +303,7 @@ func (s *KnowledgeGraphIngestionServiceSuite) TestRelationshipIngestionRollsBack
 }
 
 func (s *KnowledgeGraphIngestionServiceSuite) TestRelationshipIngestionEvidenceBacksEndpointsRegardlessOfInputOrder() {
-	ctx := s.SeedTenantContext()
-	tdb := s.CreateTestDatabase()
+	ctx, tdb := s.SetupTestDatabase()
 	client := tdb.Client(ctx)
 	service := s.makeService(tdb)
 	now := time.Now().UTC()
@@ -350,7 +344,7 @@ func (s *KnowledgeGraphIngestionServiceSuite) TestRelationshipIngestionEvidenceB
 		EffectiveAt: now,
 		Subject:     rez.KnowledgeSubjectRef{Relationship: &relationshipRef},
 	}
-	event := s.createEvent(tdb, relationshipRef.ProviderResourceRef.ResourceRef, now)
+	event := s.createEvent(ctx, tdb, relationshipRef.ProviderResourceRef.ResourceRef, now)
 
 	ingestErr := service.IngestEvidence(ctx, event, relationshipEvidence, targetEvidence, sourceEvidence)
 	s.Require().NoError(ingestErr)
