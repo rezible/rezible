@@ -27,7 +27,6 @@ import (
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/schema/schematypes"
 
-	at "github.com/rezible/rezible/ent/agentturn"
 	dt "github.com/rezible/rezible/ent/discussionthread"
 	"github.com/rezible/rezible/ent/incident"
 	ifvl "github.com/rezible/rezible/ent/investigationfindingversionlink"
@@ -37,7 +36,9 @@ import (
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/situation"
 	sha "github.com/rezible/rezible/ent/situationhazardassessment"
+	saent "github.com/rezible/rezible/ent/systemanalysisentity"
 	sae "github.com/rezible/rezible/ent/systemanalysisentry"
+	sarel "github.com/rezible/rezible/ent/systemanalysisrelationship"
 )
 
 var (
@@ -55,37 +56,6 @@ var (
 	ErrNotFound             = fmt.Errorf("not found")
 	ErrNotImplemented       = fmt.Errorf("not implemented")
 )
-
-type SystemAnalysisEntryConflictError struct {
-	Current *ent.SystemAnalysisEntry
-}
-
-func (e *SystemAnalysisEntryConflictError) Error() string {
-	return "system analysis entry version conflict"
-}
-func (e *SystemAnalysisEntryConflictError) Unwrap() error { return ErrConflict }
-
-type DiscussionCommentConflictError struct {
-	Current *ent.DiscussionComment
-}
-
-func (e *DiscussionCommentConflictError) Error() string { return "discussion comment version conflict" }
-func (e *DiscussionCommentConflictError) Unwrap() error { return ErrConflict }
-
-type ReportSelectionConflictError struct {
-	SelectedEntryIDs []uuid.UUID
-	Version          int
-}
-
-func (e *ReportSelectionConflictError) Error() string { return "report selection version conflict" }
-func (e *ReportSelectionConflictError) Unwrap() error { return ErrConflict }
-
-type TaskConflictError struct {
-	Current *ent.Task
-}
-
-func (e *TaskConflictError) Error() string { return "task version conflict" }
-func (e *TaskConflictError) Unwrap() error { return ErrConflict }
 
 type (
 	// LifecycleService runs until it is shut down or fails. Run closes ready
@@ -232,8 +202,8 @@ type (
 		Kind         ke.Kind
 		Assertion    string
 		EffectiveAt  time.Time
-		SubjectState KnowledgeSubjectState
 		Subject      KnowledgeSubjectRef
+		SubjectState KnowledgeSubjectState
 	}
 
 	KnowledgeGraphIngestionService interface {
@@ -280,14 +250,12 @@ type (
 		ExpandGraphRelationships(context.Context, ExpandKnowledgeGraphRelationshipsParams) (*KnowledgeGraphRelationshipsPage, error)
 	}
 
-	EntitySelectionRef          string
-	EntitySelectionCursor       string
-	RelationshipExpansionCursor string
-
 	KnowledgeEntityFilter struct {
 		Categories []kne.Category
 		Kinds      []string
 	}
+
+	EntitySelectionCursor string
 
 	SelectKnowledgeGraphEntitiesParams struct {
 		Filter KnowledgeEntityFilter
@@ -295,11 +263,15 @@ type (
 		Limit  *int
 	}
 
+	EntitySelectionRef string
+
 	KnowledgeGraphEntitiesPage struct {
 		Entities           []*ent.KnowledgeEntity
 		EntitySelectionRef EntitySelectionRef
 		NextCursor         *EntitySelectionCursor
 	}
+
+	RelationshipExpansionCursor string
 
 	ExpandKnowledgeGraphRelationshipsParams struct {
 		EntitySelectionRef EntitySelectionRef
@@ -314,64 +286,27 @@ type (
 	}
 )
 
-type KnowledgeGraphStructureLevel int
-
-const (
-	KnowledgeGraphStructureLevelLandscape      KnowledgeGraphStructureLevel = 0
-	KnowledgeGraphStructureLevelSystems        KnowledgeGraphStructureLevel = 1
-	KnowledgeGraphStructureLevelRuntime        KnowledgeGraphStructureLevel = 2
-	KnowledgeGraphStructureLevelImplementation KnowledgeGraphStructureLevel = 3
-)
-
-var KnowledgeGraphCategoryStructureLevels = map[kne.Category]KnowledgeGraphStructureLevel{
-	kne.CategorySystemFunction: KnowledgeGraphStructureLevelLandscape,
-	kne.CategorySystem:         KnowledgeGraphStructureLevelSystems,
-	kne.CategoryContainer:      KnowledgeGraphStructureLevelRuntime,
-	kne.CategoryInfrastructure: KnowledgeGraphStructureLevelRuntime,
-	kne.CategoryComponent:      KnowledgeGraphStructureLevelImplementation,
-	kne.CategoryCode:           KnowledgeGraphStructureLevelImplementation,
-}
-
-type (
-	// SystemAnalysisSubjectOrder selects the ordering used for analysis entity and relationship memberships.
-	SystemAnalysisSubjectOrder int
-
-	// SystemAnalysisEntryOrder selects the ordering used for analysis entries.
-	SystemAnalysisEntryOrder int
-)
-
-const (
-	// SystemAnalysisSubjectOrderCreatedAt orders by membership creation time, then membership ID ascending.
-	SystemAnalysisSubjectOrderCreatedAt SystemAnalysisSubjectOrder = iota
-	// SystemAnalysisSubjectOrderCanonicalID orders by canonical subject ID, then membership ID ascending.
-	SystemAnalysisSubjectOrderCanonicalID
-)
-
-const (
-	// SystemAnalysisEntryOrderOccurrence orders by occurrence time, sequence, then entry ID ascending.
-	SystemAnalysisEntryOrderOccurrence SystemAnalysisEntryOrder = iota
-	// SystemAnalysisEntryOrderSequence orders by sequence, then entry ID ascending.
-	SystemAnalysisEntryOrderSequence
-)
-
 type (
 	ListSystemAnalysisEntitiesParams struct {
 		ent.ListParams
 		Predicates []predicate.SystemAnalysisEntity
-		Order      SystemAnalysisSubjectOrder
+		// OrderBy defaults to creation time, then ID ascending.
+		OrderBy []saent.OrderOption
 	}
 
 	ListSystemAnalysisRelationshipsParams struct {
 		ent.ListParams
-		Predicates    []predicate.SystemAnalysisRelationship
-		Order         SystemAnalysisSubjectOrder
+		Predicates []predicate.SystemAnalysisRelationship
+		// OrderBy defaults to creation time, then ID ascending.
+		OrderBy       []sarel.OrderOption
 		WithEndpoints bool
 	}
 
 	ListSystemAnalysisEntriesParams struct {
 		ent.ListParams
-		Predicates  []predicate.SystemAnalysisEntry
-		Order       SystemAnalysisEntryOrder
+		Predicates []predicate.SystemAnalysisEntry
+		// OrderBy defaults to occurrence time, sequence, then ID ascending.
+		OrderBy     []sae.OrderOption
 		SummaryOnly bool
 		Kinds       []sae.Kind
 	}
@@ -898,18 +833,57 @@ type (
 		SubmissionKey   string
 	}
 
+	ListInvestigationUserInputsParams struct {
+		ent.ListParams
+		InvestigationID uuid.UUID
+	}
+
 	RecordInvestigationEvidenceRevisionParams struct {
 		InvestigationID uuid.UUID
 		Explanation     string
 		CallerKey       string
 	}
 
+	ListInvestigationEvidenceRevisionsParams struct {
+		ent.ListParams
+		InvestigationID uuid.UUID
+	}
+
+	InvestigationDetail struct {
+		Investigation  *ent.Investigation
+		Query          string
+		HasPendingWork bool
+		LatestTurn     *ent.AgentTurn
+		ActiveTurn     *ent.AgentTurn
+	}
+
+	InvestigationService interface {
+		CreateInvestigation(context.Context, CreateInvestigationParams) (*ent.Investigation, error)
+		LookupInvestigation(context.Context, ...predicate.Investigation) (*ent.Investigation, error)
+		ReadInvestigationDetail(context.Context, uuid.UUID) (*InvestigationDetail, error)
+
+		SubmitInvestigationUserInput(context.Context, SubmitInvestigationUserInputParams) (*ent.InvestigationUserInput, error)
+		ListInvestigationUserInputs(context.Context, ListInvestigationUserInputsParams) (*ent.ListResult[ent.InvestigationUserInput], error)
+
+		RecordInvestigationEvidenceRevision(context.Context, RecordInvestigationEvidenceRevisionParams) (*ent.InvestigationEvidenceRevision, error)
+		ListInvestigationEvidenceRevisions(context.Context, ListInvestigationEvidenceRevisionsParams) (*ent.ListResult[ent.InvestigationEvidenceRevision], error)
+	}
+)
+
+type InvestigationReportSelection string
+
+const (
+	InvestigationReportSelectionLatest    InvestigationReportSelection = "latest"
+	InvestigationReportSelectionCompleted InvestigationReportSelection = "completed"
+)
+
+type (
 	InvestigationPublicationScope struct {
 		InvestigationID uuid.UUID
 		AgentTurnID     uuid.UUID
 	}
 
-	FindingVersionReference struct {
+	InvestigationFindingVersionReference struct {
 		VersionID uuid.UUID
 		Relation  ifvl.Relation
 	}
@@ -925,14 +899,14 @@ type (
 		Title             string
 		Body              string
 		EvidenceIDs       []uuid.UUID
-		FindingReferences []FindingVersionReference
+		FindingReferences []InvestigationFindingVersionReference
 	}
 
 	PublishInvestigationAnswerParams struct {
 		Title             string
 		Body              string
 		EvidenceIDs       []uuid.UUID
-		FindingReferences []FindingVersionReference
+		FindingReferences []InvestigationFindingVersionReference
 	}
 
 	PublishInvestigationHypothesisParams struct {
@@ -943,90 +917,33 @@ type (
 		EvidenceIDs   []uuid.UUID
 	}
 
-	InvestigationPublicationMeta struct {
-		ID          uuid.UUID
-		AgentTurnID uuid.UUID
-		TurnStatus  at.Status
-		CreatedAt   time.Time
-	}
-
-	InvestigationReportResult struct {
-		InvestigationPublicationMeta
-		Text        string
-		Summary     string
-		EvidenceIDs []uuid.UUID
-	}
-
-	InvestigationFindingVersion struct {
-		InvestigationPublicationMeta
-		FindingID               uuid.UUID
-		Key                     string
-		UserInputID             *uuid.UUID
-		Title                   string
-		Body                    string
-		EvidenceIDs             []uuid.UUID
-		FindingReferences       []FindingVersionReference
-		InvalidatedByVersionIDs []uuid.UUID
-	}
-
-	InvestigationHypothesisVersion struct {
-		InvestigationPublicationMeta
-		HypothesisID  uuid.UUID
-		Key           string
-		Title         string
-		Justification string
-		Status        ihv.Status
-		EvidenceIDs   []uuid.UUID
-	}
-
-	InvestigationDetail struct {
-		Investigation  *ent.Investigation
-		Query          string
-		HasPendingWork bool
-		LatestTurn     *ent.AgentTurn
-		ActiveTurn     *ent.AgentTurn
-	}
-
-	InvestigationUserInput struct {
-		ID              uuid.UUID
-		Text            string
-		UserID          uuid.UUID
-		SubmissionKey   string
-		CreatedAt       time.Time
-		AgentTurnID     *uuid.UUID
-		TurnStatus      *at.Status
-		AnswerVersionID *uuid.UUID
-	}
-
 	ReadInvestigationReportParams struct {
-		Selection InvestigationReportSelection
+		InvestigationID uuid.UUID
+		Selection       InvestigationReportSelection
 	}
 
-	InvestigationService interface {
-		CreateInvestigation(context.Context, CreateInvestigationParams) (*ent.Investigation, error)
-		LookupInvestigation(context.Context, ...predicate.Investigation) (*ent.Investigation, error)
-		ReadInvestigationDetail(context.Context, uuid.UUID) (*InvestigationDetail, error)
-		ListInvestigationUserInputs(context.Context, uuid.UUID, ent.ListParams) (*ent.ListResult[InvestigationUserInput], error)
-		ListInvestigationEvidenceRevisions(context.Context, uuid.UUID, ent.ListParams) (*ent.ListResult[ent.InvestigationEvidenceRevision], error)
-		SubmitInvestigationUserInput(context.Context, SubmitInvestigationUserInputParams) (*InvestigationUserInput, error)
-		RecordInvestigationEvidenceRevision(context.Context, RecordInvestigationEvidenceRevisionParams) (*ent.InvestigationEvidenceRevision, error)
-		PublishInvestigationReport(context.Context, InvestigationPublicationScope, PublishInvestigationReportParams) (*InvestigationReportResult, error)
-		PublishInvestigationFinding(context.Context, InvestigationPublicationScope, PublishInvestigationFindingParams) (*InvestigationFindingVersion, error)
-		PublishInvestigationAnswer(context.Context, InvestigationPublicationScope, PublishInvestigationAnswerParams) (*InvestigationFindingVersion, error)
-		PublishInvestigationHypothesis(context.Context, InvestigationPublicationScope, PublishInvestigationHypothesisParams) (*InvestigationHypothesisVersion, error)
-		ReadInvestigationReport(context.Context, uuid.UUID, ReadInvestigationReportParams) (*InvestigationReportResult, error)
-		GetInvestigationFindingVersion(context.Context, uuid.UUID, uuid.UUID) (*InvestigationFindingVersion, error)
-		GetInvestigationHypothesisVersion(context.Context, uuid.UUID, uuid.UUID) (*InvestigationHypothesisVersion, error)
-		ListInvestigationFindings(context.Context, uuid.UUID, ent.ListParams) (*ent.ListResult[InvestigationFindingVersion], error)
-		ListInvestigationHypotheses(context.Context, uuid.UUID, ent.ListParams) (*ent.ListResult[InvestigationHypothesisVersion], error)
+	ListInvestigationFindingsParams struct {
+		ent.ListParams
+		InvestigationID uuid.UUID
 	}
-)
 
-type InvestigationReportSelection string
+	ListInvestigationHypothesesParams struct {
+		ent.ListParams
+		InvestigationID uuid.UUID
+	}
 
-const (
-	InvestigationReportSelectionLatest    InvestigationReportSelection = "latest"
-	InvestigationReportSelectionCompleted InvestigationReportSelection = "completed"
+	InvestigationOutputService interface {
+		PublishInvestigationReport(context.Context, InvestigationPublicationScope, PublishInvestigationReportParams) (*ent.InvestigationReport, error)
+		PublishInvestigationFinding(context.Context, InvestigationPublicationScope, PublishInvestigationFindingParams) (*ent.InvestigationFindingVersion, error)
+		PublishInvestigationAnswer(context.Context, InvestigationPublicationScope, PublishInvestigationAnswerParams) (*ent.InvestigationFindingVersion, error)
+		PublishInvestigationHypothesis(context.Context, InvestigationPublicationScope, PublishInvestigationHypothesisParams) (*ent.InvestigationHypothesisVersion, error)
+
+		ReadInvestigationReport(context.Context, ReadInvestigationReportParams) (*ent.InvestigationReport, error)
+		GetInvestigationFindingVersion(ctx context.Context, investigationID uuid.UUID, versionID uuid.UUID) (*ent.InvestigationFindingVersion, error)
+		ListInvestigationFindings(context.Context, ListInvestigationFindingsParams) (*ent.ListResult[ent.InvestigationFindingVersion], error)
+		GetInvestigationHypothesisVersion(ctx context.Context, investigationID uuid.UUID, versionID uuid.UUID) (*ent.InvestigationHypothesisVersion, error)
+		ListInvestigationHypotheses(context.Context, ListInvestigationHypothesesParams) (*ent.ListResult[ent.InvestigationHypothesisVersion], error)
+	}
 )
 
 type (

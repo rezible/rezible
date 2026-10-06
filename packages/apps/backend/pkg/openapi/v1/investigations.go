@@ -166,73 +166,93 @@ func InvestigationFromDetail(detail *rez.InvestigationDetail) Investigation {
 	}
 	return Investigation{Id: inv.ID, Attributes: attrs}
 }
-func InvestigationReportFromResult(report *rez.InvestigationReportResult) InvestigationReport {
+func InvestigationReportFromEnt(report *ent.InvestigationReport) InvestigationReport {
+	turn := report.Edges.AgentTurn
 	attrs := InvestigationReportAttributes{
 		Text:        report.Text,
 		Summary:     report.Summary,
-		References:  ConvertSlice(report.EvidenceIDs, InvestigationReferenceFromEvidenceID),
+		References:  investigationReferencesFromEnt(report.Edges.OutputReferences),
 		AgentTurnId: report.AgentTurnID,
-		TurnStatus:  string(report.TurnStatus),
-		Provisional: report.TurnStatus == agentturn.StatusRunning,
+		TurnStatus:  investigationTurnStatus(turn),
+		Provisional: investigationTurnProvisional(turn),
 		CreatedAt:   report.CreatedAt,
 	}
 	return InvestigationReport{Id: report.ID, Attributes: attrs}
 }
 
-func InvestigationFindingFromResult(finding *rez.InvestigationFindingVersion) InvestigationFinding {
+func InvestigationFindingFromEnt(version *ent.InvestigationFindingVersion) InvestigationFinding {
+	turn := version.Edges.AgentTurn
 	attrs := InvestigationFindingAttributes{
-		FindingId:               finding.FindingID,
-		Key:                     finding.Key,
-		UserInputId:             finding.UserInputID,
-		Title:                   finding.Title,
-		Body:                    finding.Body,
-		References:              ConvertSlice(finding.EvidenceIDs, InvestigationReferenceFromEvidenceID),
-		FindingReferences:       ConvertSlice(finding.FindingReferences, FindingVersionReferenceFromRez),
-		InvalidatedByVersionIds: append([]uuid.UUID{}, finding.InvalidatedByVersionIDs...),
-		AgentTurnId:             finding.AgentTurnID,
-		TurnStatus:              string(finding.TurnStatus),
-		Provisional:             finding.TurnStatus == agentturn.StatusRunning,
-		CreatedAt:               finding.CreatedAt,
+		FindingId:               version.FindingID,
+		Title:                   version.Title,
+		Body:                    version.Body,
+		References:              investigationReferencesFromEnt(version.Edges.OutputReferences),
+		FindingReferences:       ConvertSlice(version.Edges.OutgoingLinks, FindingVersionReferenceFromEnt),
+		InvalidatedByVersionIds: version.InvalidatedByVersionIDs(),
+		AgentTurnId:             version.AgentTurnID,
+		TurnStatus:              investigationTurnStatus(turn),
+		Provisional:             investigationTurnProvisional(turn),
+		CreatedAt:               version.CreatedAt,
 	}
-	return InvestigationFinding{Id: finding.ID, Attributes: attrs}
+	if finding := version.Edges.Finding; finding != nil {
+		attrs.Key = finding.Key
+		attrs.UserInputId = finding.UserInputID
+	}
+	return InvestigationFinding{Id: version.ID, Attributes: attrs}
 }
 
-func InvestigationHypothesisFromResult(hypo *rez.InvestigationHypothesisVersion) InvestigationHypothesis {
+func InvestigationHypothesisFromEnt(version *ent.InvestigationHypothesisVersion) InvestigationHypothesis {
+	turn := version.Edges.AgentTurn
 	attrs := InvestigationHypothesisAttributes{
-		HypothesisId:  hypo.HypothesisID,
-		Key:           hypo.Key,
-		Title:         hypo.Title,
-		Justification: hypo.Justification,
-		Status:        string(hypo.Status),
-		References:    ConvertSlice(hypo.EvidenceIDs, InvestigationReferenceFromEvidenceID),
-		AgentTurnId:   hypo.AgentTurnID,
-		TurnStatus:    string(hypo.TurnStatus),
-		Provisional:   hypo.TurnStatus == agentturn.StatusRunning,
-		CreatedAt:     hypo.CreatedAt,
+		HypothesisId:  version.HypothesisID,
+		Title:         version.Title,
+		Justification: version.Justification,
+		Status:        string(version.Status),
+		References:    investigationReferencesFromEnt(version.Edges.OutputReferences),
+		AgentTurnId:   version.AgentTurnID,
+		TurnStatus:    investigationTurnStatus(turn),
+		Provisional:   investigationTurnProvisional(turn),
+		CreatedAt:     version.CreatedAt,
 	}
-	return InvestigationHypothesis{Id: hypo.ID, Attributes: attrs}
+	if hypothesis := version.Edges.Hypothesis; hypothesis != nil {
+		attrs.Key = hypothesis.Key
+	}
+	return InvestigationHypothesis{Id: version.ID, Attributes: attrs}
+}
+
+func investigationTurnStatus(turn *ent.AgentTurn) string {
+	if turn == nil {
+		return ""
+	}
+	return string(turn.Status)
+}
+
+func investigationTurnProvisional(turn *ent.AgentTurn) bool {
+	return turn != nil && turn.Status == agentturn.StatusRunning
+}
+
+func investigationReferencesFromEnt(refs ent.InvestigationOutputReferences) []InvestigationReference {
+	return ConvertSlice(refs.KnowledgeEvidenceIDs(), InvestigationReferenceFromEvidenceID)
 }
 
 func InvestigationReferenceFromEvidenceID(evidenceID uuid.UUID) InvestigationReference {
 	return InvestigationReference{Kind: "knowledge_evidence", Id: evidenceID}
 }
 
-func FindingVersionReferenceFromRez(reference rez.FindingVersionReference) FindingVersionReference {
-	return FindingVersionReference{VersionId: reference.VersionID, Relation: string(reference.Relation)}
+func FindingVersionReferenceFromEnt(link *ent.InvestigationFindingVersionLink) FindingVersionReference {
+	return FindingVersionReference{VersionId: link.TargetVersionID, Relation: string(link.Relation)}
 }
 
-func InvestigationUserInputFromRez(input *rez.InvestigationUserInput) InvestigationUserInput {
-	var turnOverview *AgentTurnStatusOverview
-	if input.AgentTurnID != nil && input.TurnStatus != nil {
-		turnOverview = &AgentTurnStatusOverview{Id: *input.AgentTurnID, Status: *input.TurnStatus}
-	}
+func InvestigationUserInputFromEnt(input *ent.InvestigationUserInput) InvestigationUserInput {
 	attrs := InvestigationUserInputAttributes{
-		Text:            input.Text,
-		UserId:          input.UserID,
-		SubmissionKey:   input.SubmissionKey,
-		CreatedAt:       input.CreatedAt,
-		AgentTurn:       turnOverview,
-		AnswerVersionId: input.AnswerVersionID,
+		Text:          input.Text,
+		UserId:        input.UserID,
+		SubmissionKey: input.Key,
+		CreatedAt:     input.CreatedAt,
+		AgentTurn:     AgentTurnStatusOverviewFromDetail(input.Edges.AgentTurn),
+	}
+	if answer := input.CurrentAnswerVersion(); answer != nil {
+		attrs.AnswerVersionId = &answer.ID
 	}
 	return InvestigationUserInput{Id: input.ID, Attributes: attrs}
 }

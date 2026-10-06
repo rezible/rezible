@@ -15,6 +15,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/agentturn"
 	"github.com/rezible/rezible/ent/investigation"
+	"github.com/rezible/rezible/ent/investigationfinding"
 	"github.com/rezible/rezible/ent/investigationuserinput"
 	"github.com/rezible/rezible/ent/tenant"
 )
@@ -112,6 +113,21 @@ func (_c *InvestigationUserInputCreate) SetInvestigation(v *Investigation) *Inve
 // SetAgentTurn sets the "agent_turn" edge to the AgentTurn entity.
 func (_c *InvestigationUserInputCreate) SetAgentTurn(v *AgentTurn) *InvestigationUserInputCreate {
 	return _c.SetAgentTurnID(v.ID)
+}
+
+// AddFindingIDs adds the "findings" edge to the InvestigationFinding entity by IDs.
+func (_c *InvestigationUserInputCreate) AddFindingIDs(ids ...uuid.UUID) *InvestigationUserInputCreate {
+	_c.mutation.AddFindingIDs(ids...)
+	return _c
+}
+
+// AddFindings adds the "findings" edges to the InvestigationFinding entity.
+func (_c *InvestigationUserInputCreate) AddFindings(v ...*InvestigationFinding) *InvestigationUserInputCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddFindingIDs(ids...)
 }
 
 // Mutation returns the InvestigationUserInputMutation object of the builder.
@@ -309,6 +325,23 @@ func (_c *InvestigationUserInputCreate) createSpec() (*InvestigationUserInput, *
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.AgentTurnID = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.FindingsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   investigationuserinput.FindingsTable,
+			Columns: []string{investigationuserinput.FindingsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(investigationfinding.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.InvestigationFinding
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

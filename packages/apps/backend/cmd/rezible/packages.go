@@ -161,6 +161,7 @@ var pkgGenkit = do.Package(
 		chatAgent := genkit.NewChatAgent()
 		investigationAgent := genkit.NewInvestigationAgent(
 			do.MustInvoke[rez.InvestigationService](i),
+			do.MustInvoke[rez.InvestigationOutputService](i),
 			do.MustInvoke[rez.SystemAnalysisService](i),
 			do.MustInvoke[rez.KnowledgeGraphQueryService](i),
 		)
@@ -548,6 +549,7 @@ var pkgDatabase = do.Package(
 		), nil
 	}),
 	do.Bind[*db.InvestigationService, rez.InvestigationService](),
+	do.Bind[*db.InvestigationService, rez.InvestigationOutputService](),
 	do.Lazy(func(i do.Injector) (jobs.Worker[jobs.ReconcileInvestigation], error) {
 		return db.NewReconcileInvestigationWorker(
 			do.MustInvoke[*db.InvestigationService](i),
@@ -593,6 +595,7 @@ var pkgOpenApiV1 = do.Package(
 			do.MustInvoke[rez.IncidentService](i),
 			do.MustInvoke[rez.IntegrationService](i),
 			do.MustInvoke[rez.InvestigationService](i),
+			do.MustInvoke[rez.InvestigationOutputService](i),
 			do.MustInvoke[rez.EventsService](i),
 			do.MustInvoke[rez.OncallRostersService](i),
 			do.MustInvoke[rez.OncallShiftsService](i),

@@ -16,6 +16,7 @@ import (
 	"github.com/rezible/rezible/ent/agentturn"
 	"github.com/rezible/rezible/ent/investigationfinding"
 	"github.com/rezible/rezible/ent/investigationfindingversion"
+	"github.com/rezible/rezible/ent/investigationfindingversionlink"
 	"github.com/rezible/rezible/ent/investigationhypothesisversion"
 	"github.com/rezible/rezible/ent/investigationoutputreference"
 	"github.com/rezible/rezible/ent/investigationreport"
@@ -173,9 +174,8 @@ func (s *InvestigationServiceSuite) TestInvestigationReportPublicationSelectionA
 	reportA, publishAErr := service.PublishInvestigationReport(ctx, firstTurnScope, reportAParams)
 	s.Require().NoError(publishAErr)
 	s.Equal("Initial report.", reportA.Text)
-	s.NotNil(reportA.EvidenceIDs)
-	s.Empty(reportA.EvidenceIDs)
-	s.Equal(agentturn.StatusRunning, reportA.TurnStatus)
+	s.Empty(reportA.Edges.OutputReferences)
+	s.Equal(agentturn.StatusRunning, reportA.Edges.AgentTurn.Status)
 	firstTurnCompleted := tdb.Client(ctx).AgentTurn.UpdateOneID(firstTurn.ID).
 		SetStatus(agentturn.StatusCompleted)
 	firstTurnCompletedErr := firstTurnCompleted.Exec(ctx)
@@ -200,15 +200,16 @@ func (s *InvestigationServiceSuite) TestInvestigationReportPublicationSelectionA
 	repeatedB, repeatBErr := service.PublishInvestigationReport(ctx, secondTurnScope, repeatedBParams)
 	s.Require().NoError(repeatBErr)
 	s.Equal(reportB.ID, repeatedB.ID)
-	s.Equal(agentturn.StatusRunning, repeatedB.TurnStatus)
-	latest, latestErr := service.ReadInvestigationReport(ctx, investigation.ID, rez.ReadInvestigationReportParams{})
+	s.Equal(agentturn.StatusRunning, repeatedB.Edges.AgentTurn.Status)
+	latest, latestErr := service.ReadInvestigationReport(ctx, rez.ReadInvestigationReportParams{InvestigationID: investigation.ID})
 	s.Require().NoError(latestErr)
 	s.Equal(reportB.ID, latest.ID)
 	completedParams := rez.ReadInvestigationReportParams{
-		Selection: "completed",
+		InvestigationID: investigation.ID,
+		Selection:       rez.InvestigationReportSelectionCompleted,
 	}
 
-	completed, completedErr := service.ReadInvestigationReport(ctx, investigation.ID, completedParams)
+	completed, completedErr := service.ReadInvestigationReport(ctx, completedParams)
 	s.Require().NoError(completedErr)
 	s.Equal(reportA.ID, completed.ID)
 
@@ -225,7 +226,7 @@ func (s *InvestigationServiceSuite) TestInvestigationReportPublicationSelectionA
 	automaticRetryErr := worker.saveInvocationResult(ctx, makeAgentTurnJob(secondTurn, 1), nil, nil, errors.New("temporary model failure"))
 	s.Require().NoError(automaticRetryErr)
 
-	queued, queuedErr := service.ReadInvestigationReport(ctx, investigation.ID, rez.ReadInvestigationReportParams{})
+	queued, queuedErr := service.ReadInvestigationReport(ctx, rez.ReadInvestigationReportParams{InvestigationID: investigation.ID})
 	s.Require().NoError(queuedErr)
 	s.Equal(reportA.ID, queued.ID)
 	secondTurnRunning := tdb.Client(ctx).AgentTurn.UpdateOneID(secondTurn.ID).
@@ -233,7 +234,7 @@ func (s *InvestigationServiceSuite) TestInvestigationReportPublicationSelectionA
 	secondTurnRunningErr := secondTurnRunning.Exec(ctx)
 	s.Require().NoError(secondTurnRunningErr)
 
-	automaticRetryVisible, automaticRetryVisibleErr := service.ReadInvestigationReport(ctx, investigation.ID, rez.ReadInvestigationReportParams{})
+	automaticRetryVisible, automaticRetryVisibleErr := service.ReadInvestigationReport(ctx, rez.ReadInvestigationReportParams{InvestigationID: investigation.ID})
 	s.Require().NoError(automaticRetryVisibleErr)
 	s.Equal(reportB.ID, automaticRetryVisible.ID)
 
@@ -267,7 +268,7 @@ func (s *InvestigationServiceSuite) TestInvestigationReportPublicationSelectionA
 	retriedTurn, retryErr := sessionService.RetryAgentTurn(ctx, secondTurn.ID)
 	s.Require().NoError(retryErr)
 	s.Equal(agentturn.StatusQueued, retriedTurn.Status)
-	queuedAgain, queuedAgainErr := service.ReadInvestigationReport(ctx, investigation.ID, rez.ReadInvestigationReportParams{})
+	queuedAgain, queuedAgainErr := service.ReadInvestigationReport(ctx, rez.ReadInvestigationReportParams{InvestigationID: investigation.ID})
 	s.Require().NoError(queuedAgainErr)
 	s.Equal(reportA.ID, queuedAgain.ID)
 	startRetriedTurn := tdb.Client(ctx).AgentTurn.UpdateOneID(secondTurn.ID).
@@ -275,7 +276,7 @@ func (s *InvestigationServiceSuite) TestInvestigationReportPublicationSelectionA
 	startRetriedTurnErr := startRetriedTurn.Exec(ctx)
 	s.Require().NoError(startRetriedTurnErr)
 
-	sharedRetryVisible, sharedRetryVisibleErr := service.ReadInvestigationReport(ctx, investigation.ID, rez.ReadInvestigationReportParams{})
+	sharedRetryVisible, sharedRetryVisibleErr := service.ReadInvestigationReport(ctx, rez.ReadInvestigationReportParams{InvestigationID: investigation.ID})
 	s.Require().NoError(sharedRetryVisibleErr)
 	s.Equal(reportB.ID, sharedRetryVisible.ID)
 
@@ -285,10 +286,11 @@ func (s *InvestigationServiceSuite) TestInvestigationReportPublicationSelectionA
 	s.Require().NoError(secondTurnCompletedErr)
 
 	completedBParams := rez.ReadInvestigationReportParams{
-		Selection: "completed",
+		InvestigationID: investigation.ID,
+		Selection:       rez.InvestigationReportSelectionCompleted,
 	}
 
-	completedB, completedBErr := service.ReadInvestigationReport(ctx, investigation.ID, completedBParams)
+	completedB, completedBErr := service.ReadInvestigationReport(ctx, completedBParams)
 	s.Require().NoError(completedBErr)
 	s.Equal(reportB.ID, completedB.ID)
 	thirdTurn := s.createTurn(ctx, tdb, investigation.AgentSessionID, 3, agentturn.StatusRunning)
@@ -328,7 +330,7 @@ func (s *InvestigationServiceSuite) TestInvestigationReportSummary() {
 	s.Require().NoError(firstErr)
 	s.Equal("Redis pressure is the strongest signal; the cause is unconfirmed.", first.Summary)
 
-	read, readErr := service.ReadInvestigationReport(ctx, investigation.ID, rez.ReadInvestigationReportParams{})
+	read, readErr := service.ReadInvestigationReport(ctx, rez.ReadInvestigationReportParams{InvestigationID: investigation.ID})
 	s.Require().NoError(readErr)
 	s.Equal(first.ID, read.ID)
 	s.Equal(first.Summary, read.Summary)
@@ -388,13 +390,13 @@ func (s *InvestigationServiceSuite) TestInvestigationAnswerOwnershipAndRevisions
 
 	answer, publishErr := service.PublishInvestigationAnswer(ctx, turnScope, answerParams)
 	s.Require().NoError(publishErr)
-	s.Equal(firstInput.ID, *answer.UserInputID)
-	s.Equal("answer:"+firstInput.ID.String(), answer.Key)
+	s.Equal(firstInput.ID, *answer.Edges.Finding.UserInputID)
+	s.Equal("answer:"+firstInput.ID.String(), answer.Edges.Finding.Key)
 	expectedEvidenceIDs := []uuid.UUID{citations.evidence.ID, citations.secondEvidence.ID}
 	sort.Slice(expectedEvidenceIDs, func(i, j int) bool {
 		return expectedEvidenceIDs[i].String() < expectedEvidenceIDs[j].String()
 	})
-	s.Equal(expectedEvidenceIDs, answer.EvidenceIDs)
+	s.Equal(expectedEvidenceIDs, ent.InvestigationOutputReferences(answer.Edges.OutputReferences).KnowledgeEvidenceIDs())
 	repeatedAnswerParams := rez.PublishInvestigationAnswerParams{
 		Title:       " Retry increase ",
 		Body:        "The supplied analysis has attached evidence records, including one deleted-kind record. ",
@@ -414,7 +416,7 @@ func (s *InvestigationServiceSuite) TestInvestigationAnswerOwnershipAndRevisions
 	s.Require().NoError(reviseErr)
 	s.NotEqual(answer.ID, changedAnswer.ID)
 	s.Equal(answer.FindingID, changedAnswer.FindingID)
-	s.Equal(firstInput.ID, *changedAnswer.UserInputID)
+	s.Equal(firstInput.ID, *changedAnswer.Edges.Finding.UserInputID)
 	queryInvestigationFindingVersion := tdb.Client(ctx).InvestigationFindingVersion.Query().
 		Where(investigationfindingversion.HasFindingWith(investigationfinding.UserInputID(firstInput.ID)))
 	investigationFindingVersionCount, investigationFindingVersionCountErr := queryInvestigationFindingVersion.Count(ctx)
@@ -472,7 +474,7 @@ func (s *InvestigationServiceSuite) TestInvestigationAnswerOwnershipAndRevisions
 	noQuestionAnswer, noQuestionErr := service.PublishInvestigationAnswer(ctx, secondTurnScope, noQuestionAnswerParams)
 	s.Nil(noQuestionAnswer)
 	s.ErrorIs(noQuestionErr, rez.ErrInvalidInput)
-	noQuestionLatest, noQuestionLatestErr := service.ListInvestigationFindings(ctx, investigation.ID, ent.ListParams{})
+	noQuestionLatest, noQuestionLatestErr := service.ListInvestigationFindings(ctx, rez.ListInvestigationFindingsParams{InvestigationID: investigation.ID})
 	s.Require().NoError(noQuestionLatestErr)
 	s.Equal(1, noQuestionLatest.Total)
 	queryInvestigationUserInput2 := tdb.Client(ctx).InvestigationUserInput.Query().
@@ -591,7 +593,7 @@ func (s *InvestigationServiceSuite) TestInvestigationHypothesisStatusValidationA
 		investigationhypothesisversion.StatusDisproven,
 		investigationhypothesisversion.StatusInconclusive,
 	}
-	hypothesisVersions := make([]*rez.InvestigationHypothesisVersion, 0, len(statuses))
+	hypothesisVersions := make([]*ent.InvestigationHypothesisVersion, 0, len(statuses))
 	for _, status := range statuses {
 		versionParams := rez.PublishInvestigationHypothesisParams{
 			Key:           "hypothesis-" + string(status),
@@ -618,14 +620,14 @@ func (s *InvestigationServiceSuite) TestInvestigationHypothesisStatusValidationA
 		readVersion, readErr := service.GetInvestigationHypothesisVersion(ctx, investigation.ID, version.ID)
 		s.Require().NoError(readErr)
 		s.Equal(version.Status, readVersion.Status)
-		s.Equal(agentturn.StatusRunning, readVersion.TurnStatus)
+		s.Equal(agentturn.StatusRunning, readVersion.Edges.AgentTurn.Status)
 	}
-	hypothesisPageParams := ent.ListParams{
-		Page:     1,
-		PageSize: 2,
+	hypothesisPageParams := rez.ListInvestigationHypothesesParams{
+		ListParams:      ent.ListParams{Page: 1, PageSize: 2},
+		InvestigationID: investigation.ID,
 	}
 
-	hypothesisPage, pageErr := service.ListInvestigationHypotheses(ctx, investigation.ID, hypothesisPageParams)
+	hypothesisPage, pageErr := service.ListInvestigationHypotheses(ctx, hypothesisPageParams)
 	s.Require().NoError(pageErr)
 	s.Equal(4, hypothesisPage.Total)
 	s.Len(hypothesisPage.Data, 2)
@@ -665,7 +667,7 @@ func (s *InvestigationServiceSuite) TestInvestigationFindingPaginationInvalidati
 		Key:   "reasoning",
 		Title: "Candidate explanation",
 		Body:  "The deployment may have contributed.",
-		FindingReferences: []rez.FindingVersionReference{{
+		FindingReferences: []rez.InvestigationFindingVersionReference{{
 			VersionID: initial.ID,
 			Relation:  "invalidates",
 		}},
@@ -674,22 +676,21 @@ func (s *InvestigationServiceSuite) TestInvestigationFindingPaginationInvalidati
 	invalidator, invalidatorErr := service.PublishInvestigationFinding(ctx, secondTurnScope, invalidatorParams)
 	s.Require().NoError(invalidatorErr)
 
-	selectedParams := ent.ListParams{
-		Page:     1,
-		PageSize: 1,
+	selectedParams := rez.ListInvestigationFindingsParams{
+		ListParams:      ent.ListParams{Page: 1, PageSize: 1},
+		InvestigationID: investigation.ID,
 	}
 
-	selected, selectedErr := service.ListInvestigationFindings(ctx, investigation.ID, selectedParams)
+	selected, selectedErr := service.ListInvestigationFindings(ctx, selectedParams)
 	s.Require().NoError(selectedErr)
 	s.Equal(2, selected.Total)
 	s.Less(selected.Page*selected.PageSize, selected.Total)
 	firstVersion, firstVersionErr := service.GetInvestigationFindingVersion(ctx, investigation.ID, initial.ID)
 	s.Require().NoError(firstVersionErr)
-	s.Equal([]uuid.UUID{invalidator.ID}, firstVersion.InvalidatedByVersionIDs)
-	s.Equal([]rez.FindingVersionReference{{
-		VersionID: initial.ID,
-		Relation:  "invalidates",
-	}}, invalidator.FindingReferences)
+	s.Equal([]uuid.UUID{invalidator.ID}, firstVersion.InvalidatedByVersionIDs())
+	s.Require().Len(invalidator.Edges.OutgoingLinks, 1)
+	s.Equal(initial.ID, invalidator.Edges.OutgoingLinks[0].TargetVersionID)
+	s.Equal(investigationfindingversionlink.RelationInvalidates, invalidator.Edges.OutgoingLinks[0].Relation)
 
 	secondTurnCompleted := tdb.Client(ctx).AgentTurn.UpdateOneID(secondTurn.ID).
 		SetStatus(agentturn.StatusCompleted)
@@ -712,18 +713,18 @@ func (s *InvestigationServiceSuite) TestInvestigationFindingPaginationInvalidati
 	s.NotEqual(invalidator.ID, currentReasoning.ID)
 	firstVersionAfterRevision, firstVersionAfterRevisionErr := service.GetInvestigationFindingVersion(ctx, investigation.ID, initial.ID)
 	s.Require().NoError(firstVersionAfterRevisionErr)
-	s.Empty(firstVersionAfterRevision.InvalidatedByVersionIDs)
-	currentPageParams := ent.ListParams{
-		Page:     1,
-		PageSize: 25,
+	s.Empty(firstVersionAfterRevision.InvalidatedByVersionIDs())
+	currentPageParams := rez.ListInvestigationFindingsParams{
+		ListParams:      ent.ListParams{Page: 1, PageSize: 25},
+		InvestigationID: investigation.ID,
 	}
 
-	currentPage, currentPageErr := service.ListInvestigationFindings(ctx, investigation.ID, currentPageParams)
+	currentPage, currentPageErr := service.ListInvestigationFindings(ctx, currentPageParams)
 	s.Require().NoError(currentPageErr)
 	s.Equal(2, currentPage.Total)
 	var currentReasoningID uuid.UUID
 	for _, item := range currentPage.Data {
-		if item.Key == "reasoning" {
+		if item.Edges.Finding.Key == "reasoning" {
 			currentReasoningID = item.ID
 		}
 	}
@@ -742,7 +743,7 @@ func (s *InvestigationServiceSuite) TestConcurrentInvestigationReportWritesDedup
 		EvidenceIDs: []uuid.UUID{citations.evidence.ID},
 	}
 	type writeResult struct {
-		publication *rez.InvestigationReportResult
+		publication *ent.InvestigationReport
 		publishErr  error
 	}
 	results := make(chan writeResult, 2)
@@ -794,7 +795,7 @@ func (s *InvestigationServiceSuite) TestInvestigationPublicationCannotRaceTurnCo
 	service, investigation, turn := s.outputFixture(ctx, tdb, jobService)
 	start := make(chan struct{})
 	var workers sync.WaitGroup
-	var publication *rez.InvestigationReportResult
+	var publication *ent.InvestigationReport
 	var publishErr error
 	var completionErr error
 	workers.Add(2)

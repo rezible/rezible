@@ -34,8 +34,15 @@ const (
 	analysisToolTruncationMarker = "\n[truncated: complete tool result is limited to 12,000 characters]"
 )
 
+var (
+	analysisEntitiesByCanonicalID      = []saent.OrderOption{saent.ByKnowledgeEntityID(), saent.ByID()}
+	analysisRelationshipsByCanonicalID = []sarel.OrderOption{sarel.ByKnowledgeRelationshipID(), sarel.ByID()}
+	analysisEntriesBySequence          = []sae.OrderOption{sae.BySequence(), sae.ByID()}
+)
+
 type investigationInvocation struct {
 	investigations rez.InvestigationService
+	outputs        rez.InvestigationOutputService
 	analyses       rez.SystemAnalysisService
 	knowledge      rez.KnowledgeGraphQueryService
 
@@ -91,7 +98,6 @@ func (i *investigationInvocation) makeIntroduction(
 	entities, entitiesErr := i.analyses.ListSystemAnalysisEntities(ctx, rez.ListSystemAnalysisEntitiesParams{
 		ListParams: countParams,
 		Predicates: []predicate.SystemAnalysisEntity{saent.AnalysisID(i.analysisID)},
-		Order:      rez.SystemAnalysisSubjectOrderCanonicalID,
 	})
 	if entitiesErr != nil {
 		return "", fmt.Errorf("count included analysis entities: %w", entitiesErr)
@@ -99,7 +105,6 @@ func (i *investigationInvocation) makeIntroduction(
 	relationships, relationshipsErr := i.analyses.ListSystemAnalysisRelationships(ctx, rez.ListSystemAnalysisRelationshipsParams{
 		ListParams: countParams,
 		Predicates: []predicate.SystemAnalysisRelationship{sarel.AnalysisID(i.analysisID)},
-		Order:      rez.SystemAnalysisSubjectOrderCanonicalID,
 	})
 	if relationshipsErr != nil {
 		return "", fmt.Errorf("count included analysis relationships: %w", relationshipsErr)
@@ -110,7 +115,6 @@ func (i *investigationInvocation) makeIntroduction(
 			sae.AnalysisID(i.analysisID),
 			sae.KindIn(sae.KindObservation, sae.KindContext),
 		},
-		Order:       rez.SystemAnalysisEntryOrderSequence,
 		SummaryOnly: true,
 	})
 	if entriesErr != nil {
@@ -184,7 +188,7 @@ func (i *investigationInvocation) listSubjects(ctx context.Context, input rezai.
 		params := rez.ListSystemAnalysisEntitiesParams{
 			ListParams: page,
 			Predicates: []predicate.SystemAnalysisEntity{saent.AnalysisID(i.analysisID)},
-			Order:      rez.SystemAnalysisSubjectOrderCanonicalID,
+			OrderBy:    analysisEntitiesByCanonicalID,
 		}
 		entities, listErr := i.analyses.ListSystemAnalysisEntities(ctx, params)
 		if listErr != nil {
@@ -205,7 +209,7 @@ func (i *investigationInvocation) listSubjects(ctx context.Context, input rezai.
 		params := rez.ListSystemAnalysisRelationshipsParams{
 			ListParams:    page,
 			Predicates:    []predicate.SystemAnalysisRelationship{sarel.AnalysisID(i.analysisID)},
-			Order:         rez.SystemAnalysisSubjectOrderCanonicalID,
+			OrderBy:       analysisRelationshipsByCanonicalID,
 			WithEndpoints: true,
 		}
 		relationships, listErr := i.analyses.ListSystemAnalysisRelationships(ctx, params)
@@ -239,7 +243,7 @@ func (i *investigationInvocation) listEntries(ctx context.Context, input rezai.A
 			sae.AnalysisID(i.analysisID),
 			sae.KindIn(sae.KindObservation, sae.KindContext),
 		},
-		Order:       rez.SystemAnalysisEntryOrderSequence,
+		OrderBy:     analysisEntriesBySequence,
 		SummaryOnly: true,
 	}
 	entries, listErr := i.analyses.ListSystemAnalysisEntries(ctx, params)
@@ -269,7 +273,6 @@ func (i *investigationInvocation) inspectSubject(ctx context.Context, input reza
 				saent.AnalysisID(i.analysisID),
 				saent.KnowledgeEntityID(subjectID),
 			},
-			Order: rez.SystemAnalysisSubjectOrderCanonicalID,
 		}
 		memberships, listErr := i.analyses.ListSystemAnalysisEntities(ctx, params)
 		if listErr != nil {
@@ -294,7 +297,6 @@ func (i *investigationInvocation) inspectSubject(ctx context.Context, input reza
 				sarel.AnalysisID(i.analysisID),
 				sarel.KnowledgeRelationshipID(subjectID),
 			},
-			Order:         rez.SystemAnalysisSubjectOrderCanonicalID,
 			WithEndpoints: true,
 		}
 		memberships, listErr := i.analyses.ListSystemAnalysisRelationships(ctx, params)
@@ -337,7 +339,7 @@ func (i *investigationInvocation) readEntry(ctx context.Context, input rezai.Rea
 			sae.ID(entryID),
 			sae.KindIn(sae.KindObservation, sae.KindContext),
 		},
-		Order:       rez.SystemAnalysisEntryOrderSequence,
+		OrderBy:     analysisEntriesBySequence,
 		SummaryOnly: true,
 	}
 	entries, listErr := i.analyses.ListSystemAnalysisEntries(ctx, entryParams)
@@ -418,7 +420,7 @@ func (i *investigationInvocation) readEvidence(ctx context.Context, input rezai.
 			sae.KindIn(sae.KindObservation, sae.KindContext),
 			sae.HasSubjectsWith(attachmentPredicate),
 		},
-		Order:       rez.SystemAnalysisEntryOrderSequence,
+		OrderBy:     analysisEntriesBySequence,
 		SummaryOnly: true,
 	}
 	linkedEntries, linkedEntriesErr := i.analyses.ListSystemAnalysisEntries(ctx, params)
@@ -468,7 +470,7 @@ func (i *investigationInvocation) publishReport(ctx context.Context, input rezai
 		EvidenceIDs: evidenceIDs,
 	}
 	scope := rez.InvestigationPublicationScope{InvestigationID: i.investigationID, AgentTurnID: i.turnID}
-	result, publishErr := i.investigations.PublishInvestigationReport(ctx, scope, params)
+	result, publishErr := i.outputs.PublishInvestigationReport(ctx, scope, params)
 	if publishErr != nil {
 		return nil, fmt.Errorf("publish investigation report: %w", publishErr)
 	}
@@ -492,7 +494,7 @@ func (i *investigationInvocation) publishFinding(ctx context.Context, input reza
 		FindingReferences: findingReferences,
 	}
 	scope := rez.InvestigationPublicationScope{InvestigationID: i.investigationID, AgentTurnID: i.turnID}
-	result, publishErr := i.investigations.PublishInvestigationFinding(ctx, scope, params)
+	result, publishErr := i.outputs.PublishInvestigationFinding(ctx, scope, params)
 	if publishErr != nil {
 		return nil, fmt.Errorf("publish investigation finding: %w", publishErr)
 	}
@@ -515,7 +517,7 @@ func (i *investigationInvocation) publishAnswer(ctx context.Context, input rezai
 		FindingReferences: findingReferences,
 	}
 	scope := rez.InvestigationPublicationScope{InvestigationID: i.investigationID, AgentTurnID: i.turnID}
-	result, publishErr := i.investigations.PublishInvestigationAnswer(ctx, scope, params)
+	result, publishErr := i.outputs.PublishInvestigationAnswer(ctx, scope, params)
 	if publishErr != nil {
 		return nil, fmt.Errorf("publish investigation answer: %w", publishErr)
 	}
@@ -539,7 +541,7 @@ func (i *investigationInvocation) publishHypothesis(ctx context.Context, input r
 		EvidenceIDs:   evidenceIDs,
 	}
 	scope := rez.InvestigationPublicationScope{InvestigationID: i.investigationID, AgentTurnID: i.turnID}
-	result, publishErr := i.investigations.PublishInvestigationHypothesis(ctx, scope, params)
+	result, publishErr := i.outputs.PublishInvestigationHypothesis(ctx, scope, params)
 	if publishErr != nil {
 		return nil, fmt.Errorf("publish investigation hypothesis: %w", publishErr)
 	}
@@ -547,21 +549,11 @@ func (i *investigationInvocation) publishHypothesis(ctx context.Context, input r
 }
 
 func (i *investigationInvocation) readReport(ctx context.Context, input rezai.ReadInvestigationReportToolInput) (*rezai.InvestigationReportToolResult, error) {
-	selection := strings.TrimSpace(input.Selection)
-	if selection != "" && selection != "latest" && selection != "completed" {
-		return nil, fmt.Errorf("%w: selection must be latest or completed", rez.ErrInvalidInput)
+	params := rez.ReadInvestigationReportParams{
+		InvestigationID: i.investigationID,
+		Selection:       rez.InvestigationReportSelection(strings.TrimSpace(input.Selection)),
 	}
-	var reportSelection rez.InvestigationReportSelection
-	switch selection {
-	case "", string(rez.InvestigationReportSelectionLatest):
-		reportSelection = rez.InvestigationReportSelectionLatest
-	case string(rez.InvestigationReportSelectionCompleted):
-		reportSelection = rez.InvestigationReportSelectionCompleted
-	default:
-		return nil, fmt.Errorf("%w: selection must be latest or completed", rez.ErrInvalidInput)
-	}
-	params := rez.ReadInvestigationReportParams{Selection: reportSelection}
-	result, readErr := i.investigations.ReadInvestigationReport(ctx, i.investigationID, params)
+	result, readErr := i.outputs.ReadInvestigationReport(ctx, params)
 	if readErr != nil {
 		return nil, fmt.Errorf("read investigation report: %w", readErr)
 	}
@@ -573,7 +565,8 @@ func (i *investigationInvocation) listFindings(ctx context.Context, input rezai.
 	if pageErr != nil {
 		return nil, pageErr
 	}
-	result, listErr := i.investigations.ListInvestigationFindings(ctx, i.investigationID, page)
+	params := rez.ListInvestigationFindingsParams{ListParams: page, InvestigationID: i.investigationID}
+	result, listErr := i.outputs.ListInvestigationFindings(ctx, params)
 	if listErr != nil {
 		return nil, fmt.Errorf("list investigation findings: %w", listErr)
 	}
@@ -596,7 +589,8 @@ func (i *investigationInvocation) listHypotheses(ctx context.Context, input reza
 	if pageErr != nil {
 		return nil, pageErr
 	}
-	result, listErr := i.investigations.ListInvestigationHypotheses(ctx, i.investigationID, page)
+	params := rez.ListInvestigationHypothesesParams{ListParams: page, InvestigationID: i.investigationID}
+	result, listErr := i.outputs.ListInvestigationHypotheses(ctx, params)
 	if listErr != nil {
 		return nil, fmt.Errorf("list investigation hypotheses: %w", listErr)
 	}
@@ -619,7 +613,7 @@ func (i *investigationInvocation) readFinding(ctx context.Context, input rezai.R
 	if resolveErr != nil {
 		return nil, fmt.Errorf("version_ref: %w", resolveErr)
 	}
-	result, readErr := i.investigations.GetInvestigationFindingVersion(ctx, i.investigationID, versionID)
+	result, readErr := i.outputs.GetInvestigationFindingVersion(ctx, i.investigationID, versionID)
 	if readErr != nil {
 		return nil, fmt.Errorf("read investigation finding version: %w", readErr)
 	}
@@ -631,15 +625,15 @@ func (i *investigationInvocation) readHypothesis(ctx context.Context, input reza
 	if resolveErr != nil {
 		return nil, fmt.Errorf("version_ref: %w", resolveErr)
 	}
-	result, readErr := i.investigations.GetInvestigationHypothesisVersion(ctx, i.investigationID, versionID)
+	result, readErr := i.outputs.GetInvestigationHypothesisVersion(ctx, i.investigationID, versionID)
 	if readErr != nil {
 		return nil, fmt.Errorf("read investigation hypothesis version: %w", readErr)
 	}
 	return i.hypothesisToolResult(result), nil
 }
 
-func (i *investigationInvocation) findingVersionReferences(inputs []rezai.InvestigationFindingReferenceInput) ([]rez.FindingVersionReference, error) {
-	references := make([]rez.FindingVersionReference, 0, len(inputs))
+func (i *investigationInvocation) findingVersionReferences(inputs []rezai.InvestigationFindingReferenceInput) ([]rez.InvestigationFindingVersionReference, error) {
+	references := make([]rez.InvestigationFindingVersionReference, 0, len(inputs))
 	for index, input := range inputs {
 		versionID, resolveErr := i.resolveRef(input.VersionRef)
 		if resolveErr != nil {
@@ -651,70 +645,74 @@ func (i *investigationInvocation) findingVersionReferences(inputs []rezai.Invest
 		default:
 			return nil, fmt.Errorf("%w: relation must be supports, contradicts, or invalidates", rez.ErrInvalidInput)
 		}
-		references = append(references, rez.FindingVersionReference{VersionID: versionID, Relation: relation})
+		references = append(references, rez.InvestigationFindingVersionReference{VersionID: versionID, Relation: relation})
 	}
 	return references, nil
 }
 
-func (i *investigationInvocation) reportToolResult(result *rez.InvestigationReportResult) *rezai.InvestigationReportToolResult {
-	if result == nil {
+func (i *investigationInvocation) reportToolResult(report *ent.InvestigationReport) *rezai.InvestigationReportToolResult {
+	if report == nil {
 		return nil
 	}
+	turnStatus := report.Edges.AgentTurn.Status
 	return &rezai.InvestigationReportToolResult{
-		Text:         result.Text,
-		Summary:      result.Summary,
-		EvidenceRefs: i.formatRefs(result.EvidenceIDs),
-		TurnStatus:   string(result.TurnStatus),
-		Provisional:  result.TurnStatus == at.StatusRunning,
-		CreatedAt:    result.CreatedAt,
+		Text:         report.Text,
+		Summary:      report.Summary,
+		EvidenceRefs: i.formatRefs(ent.InvestigationOutputReferences(report.Edges.OutputReferences).KnowledgeEvidenceIDs()),
+		TurnStatus:   string(turnStatus),
+		Provisional:  turnStatus == at.StatusRunning,
+		CreatedAt:    report.CreatedAt,
 	}
 }
 
-func (i *investigationInvocation) findingToolResult(result *rez.InvestigationFindingVersion) *rezai.InvestigationFindingVersionToolResult {
-	if result == nil {
+func (i *investigationInvocation) findingToolResult(version *ent.InvestigationFindingVersion) *rezai.InvestigationFindingVersionToolResult {
+	if version == nil {
 		return nil
 	}
-	key := result.Key
-	isAnswer := result.UserInputID != nil
+	finding := version.Edges.Finding
+	key := finding.Key
+	isAnswer := finding.UserInputID != nil
 	if isAnswer {
 		key = ""
 	}
-	findingReferences := make([]rezai.InvestigationFindingReference, 0, len(result.FindingReferences))
-	for _, reference := range result.FindingReferences {
+	findingReferences := make([]rezai.InvestigationFindingReference, 0, len(version.Edges.OutgoingLinks))
+	for _, link := range version.Edges.OutgoingLinks {
 		findingReferences = append(findingReferences, rezai.InvestigationFindingReference{
-			VersionRef: i.formatRef(reference.VersionID),
-			Relation:   string(reference.Relation),
+			VersionRef: i.formatRef(link.TargetVersionID),
+			Relation:   string(link.Relation),
 		})
 	}
+	turnStatus := version.Edges.AgentTurn.Status
 	return &rezai.InvestigationFindingVersionToolResult{
-		VersionRef:               i.formatRef(result.ID),
+		VersionRef:               i.formatRef(version.ID),
 		Key:                      key,
 		IsAnswer:                 isAnswer,
-		Title:                    result.Title,
-		Body:                     result.Body,
-		EvidenceRefs:             i.formatRefs(result.EvidenceIDs),
+		Title:                    version.Title,
+		Body:                     version.Body,
+		EvidenceRefs:             i.formatRefs(ent.InvestigationOutputReferences(version.Edges.OutputReferences).KnowledgeEvidenceIDs()),
 		FindingReferences:        findingReferences,
-		InvalidatedByVersionRefs: i.formatRefs(result.InvalidatedByVersionIDs),
-		TurnStatus:               string(result.TurnStatus),
-		Provisional:              result.TurnStatus == at.StatusRunning,
-		CreatedAt:                result.CreatedAt,
+		InvalidatedByVersionRefs: i.formatRefs(version.InvalidatedByVersionIDs()),
+		TurnStatus:               string(turnStatus),
+		Provisional:              turnStatus == at.StatusRunning,
+		CreatedAt:                version.CreatedAt,
 	}
 }
 
-func (i *investigationInvocation) hypothesisToolResult(result *rez.InvestigationHypothesisVersion) *rezai.InvestigationHypothesisVersionToolResult {
-	if result == nil {
+func (i *investigationInvocation) hypothesisToolResult(version *ent.InvestigationHypothesisVersion) *rezai.InvestigationHypothesisVersionToolResult {
+	if version == nil {
 		return nil
 	}
+	turnStatus := version.Edges.AgentTurn.Status
 	return &rezai.InvestigationHypothesisVersionToolResult{
-		VersionRef:    i.formatRef(result.ID),
-		Key:           result.Key,
-		Title:         result.Title,
-		Justification: result.Justification,
-		Status:        string(result.Status),
-		EvidenceRefs:  i.formatRefs(result.EvidenceIDs),
-		TurnStatus:    string(result.TurnStatus),
-		Provisional:   result.TurnStatus == at.StatusRunning,
-		CreatedAt:     result.CreatedAt,
+		VersionRef:    i.formatRef(version.ID),
+		Key:           version.Edges.Hypothesis.Key,
+		Title:         version.Title,
+		Justification: version.Justification,
+		Status:        string(version.Status),
+		EvidenceRefs:  i.formatRefs(ent.InvestigationOutputReferences(version.Edges.OutputReferences).KnowledgeEvidenceIDs()),
+		TurnStatus:    string(turnStatus),
+		Provisional:   turnStatus == at.StatusRunning,
+		CreatedAt:     version.CreatedAt,
 	}
 }
 
@@ -789,7 +787,7 @@ func (i *investigationInvocation) entriesForSubject(ctx context.Context, kind st
 			sae.KindIn(sae.KindObservation, sae.KindContext),
 			sae.HasSubjectsWith(subjectPredicate),
 		},
-		Order:       rez.SystemAnalysisEntryOrderSequence,
+		OrderBy:     analysisEntriesBySequence,
 		SummaryOnly: true,
 	}
 	return i.analyses.ListSystemAnalysisEntries(ctx, params)

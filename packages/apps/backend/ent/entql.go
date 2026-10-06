@@ -3869,6 +3869,18 @@ var schemaGraph = func() *sqlgraph.Schema {
 		"AgentTurn",
 	)
 	graph.MustAddE(
+		"findings",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   investigationuserinput.FindingsTable,
+			Columns: []string{investigationuserinput.FindingsColumn},
+			Bidi:    false,
+		},
+		"InvestigationUserInput",
+		"InvestigationFinding",
+	)
+	graph.MustAddE(
 		"tenant",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -11534,6 +11546,20 @@ func (f *InvestigationUserInputFilter) WhereHasAgentTurn() {
 // WhereHasAgentTurnWith applies a predicate to check if query has an edge agent_turn with a given conditions (other predicates).
 func (f *InvestigationUserInputFilter) WhereHasAgentTurnWith(preds ...predicate.AgentTurn) {
 	f.Where(entql.HasEdgeWith("agent_turn", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasFindings applies a predicate to check if query has an edge findings.
+func (f *InvestigationUserInputFilter) WhereHasFindings() {
+	f.Where(entql.HasEdge("findings"))
+}
+
+// WhereHasFindingsWith applies a predicate to check if query has an edge findings with a given conditions (other predicates).
+func (f *InvestigationUserInputFilter) WhereHasFindingsWith(preds ...predicate.InvestigationFinding) {
+	f.Where(entql.HasEdgeWith("findings", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}

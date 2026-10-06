@@ -459,6 +459,35 @@ func HasAgentTurnWith(preds ...predicate.AgentTurn) predicate.InvestigationUserI
 	})
 }
 
+// HasFindings applies the HasEdge predicate on the "findings" edge.
+func HasFindings() predicate.InvestigationUserInput {
+	return predicate.InvestigationUserInput(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, FindingsTable, FindingsColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.InvestigationFinding
+		step.Edge.Schema = schemaConfig.InvestigationFinding
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasFindingsWith applies the HasEdge predicate on the "findings" edge with a given conditions (other predicates).
+func HasFindingsWith(preds ...predicate.InvestigationFinding) predicate.InvestigationUserInput {
+	return predicate.InvestigationUserInput(func(s *sql.Selector) {
+		step := newFindingsStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.InvestigationFinding
+		step.Edge.Schema = schemaConfig.InvestigationFinding
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.InvestigationUserInput) predicate.InvestigationUserInput {
 	return predicate.InvestigationUserInput(sql.AndPredicates(predicates...))

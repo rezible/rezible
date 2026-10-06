@@ -13,11 +13,10 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	inv "github.com/rezible/rezible/ent/investigation"
-	"github.com/rezible/rezible/ent/predicate"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/predicate"
 
 	at "github.com/rezible/rezible/ent/agentturn"
 	invf "github.com/rezible/rezible/ent/investigationfinding"
@@ -34,7 +33,7 @@ const investigationAnswerKeyPrefix = "answer:"
 
 const maxInvestigationReportSummaryLength = 400
 
-func (s *InvestigationService) PublishInvestigationReport(ctx context.Context, scope rez.InvestigationPublicationScope, params rez.PublishInvestigationReportParams) (*rez.InvestigationReportResult, error) {
+func (s *InvestigationService) PublishInvestigationReport(ctx context.Context, scope rez.InvestigationPublicationScope, params rez.PublishInvestigationReportParams) (*ent.InvestigationReport, error) {
 	invId := scope.InvestigationID
 	text := strings.TrimSpace(params.Text)
 	if invId == uuid.Nil || scope.AgentTurnID == uuid.Nil || text == "" {
@@ -56,23 +55,21 @@ func (s *InvestigationService) PublishInvestigationReport(ctx context.Context, s
 		return nil, fmt.Errorf("fingerprint investigation report: %w", fingerprintErr)
 	}
 
-	return ent.WithTxReturning(ctx, s.db, func(ctx context.Context, tx *ent.Client) (*rez.InvestigationReportResult, error) {
+	return ent.WithTxReturning(ctx, s.db, func(ctx context.Context, tx *ent.Client) (*ent.InvestigationReport, error) {
 		current, turn, prepareErr := s.prepareInvestigationOutputWrite(ctx, invId, scope.AgentTurnID)
 		if prepareErr != nil {
 			return nil, prepareErr
 		}
 
-		reportPreds := []predicate.InvestigationReport{
-			invr.InvestigationID(current.ID),
-			invr.AgentTurnID(turn.ID),
-			invr.Fingerprint(fingerprint),
-		}
-		queryReport := tx.InvestigationReport.Query().
-			Where(reportPreds...).
-			WithAgentTurn()
-		existing, queryErr := queryReport.Only(ctx)
+		queryExisting := tx.InvestigationReport.Query().
+			Where(
+				invr.InvestigationID(current.ID),
+				invr.AgentTurnID(turn.ID),
+				invr.Fingerprint(fingerprint),
+			)
+		existingID, queryErr := queryExisting.OnlyID(ctx)
 		if queryErr == nil {
-			return s.investigationReportResult(ctx, existing)
+			return s.getInvestigationReport(ctx, existingID)
 		}
 		if !ent.IsNotFound(queryErr) {
 			return nil, fmt.Errorf("find repeated investigation report: %w", queryErr)
@@ -90,17 +87,10 @@ func (s *InvestigationService) PublishInvestigationReport(ctx context.Context, s
 		}
 
 		owner := investigationReferenceOwner{reportID: &created.ID}
-		if referenceErr := s.saveInvestigationEvidenceIDs(ctx, owner, params.EvidenceIDs); referenceErr != nil {
+		if referenceErr := s.saveInvestigationEvidenceIDs(ctx, owner, evidenceIDs); referenceErr != nil {
 			return nil, referenceErr
 		}
-		queryCreated := tx.InvestigationReport.Query().
-			Where(invr.ID(created.ID)).
-			WithAgentTurn()
-		loaded, loadErr := queryCreated.Only(ctx)
-		if loadErr != nil {
-			return nil, fmt.Errorf("load saved investigation report: %w", loadErr)
-		}
-		return s.investigationReportResult(ctx, loaded)
+		return s.getInvestigationReport(ctx, created.ID)
 	})
 }
 
@@ -112,7 +102,7 @@ func (s *InvestigationService) makeFindingVersionPreds(turnId uuid.UUID, fingerp
 	}
 }
 
-func (s *InvestigationService) PublishInvestigationFinding(ctx context.Context, scope rez.InvestigationPublicationScope, input rez.PublishInvestigationFindingParams) (*rez.InvestigationFindingVersion, error) {
+func (s *InvestigationService) PublishInvestigationFinding(ctx context.Context, scope rez.InvestigationPublicationScope, input rez.PublishInvestigationFindingParams) (*ent.InvestigationFindingVersion, error) {
 	investigationID, turnID := scope.InvestigationID, scope.AgentTurnID
 	params := rez.PublishInvestigationFindingParams{
 		Key:               strings.TrimSpace(input.Key),
@@ -138,19 +128,17 @@ func (s *InvestigationService) PublishInvestigationFinding(ctx context.Context, 
 	if fingerprintErr != nil {
 		return nil, fmt.Errorf("fingerprint investigation finding: %w", fingerprintErr)
 	}
-	return ent.WithTxReturning(ctx, s.db, func(ctx context.Context, tx *ent.Client) (*rez.InvestigationFindingVersion, error) {
+	return ent.WithTxReturning(ctx, s.db, func(ctx context.Context, tx *ent.Client) (*ent.InvestigationFindingVersion, error) {
 		current, turn, prepareErr := s.prepareInvestigationOutputWrite(ctx, investigationID, turnID)
 		if prepareErr != nil {
 			return nil, prepareErr
 		}
 
 		queryExisting := tx.InvestigationFindingVersion.Query().
-			Where(s.makeFindingVersionPreds(turn.ID, fingerprint, invf.InvestigationID(current.ID))...).
-			WithFinding().
-			WithAgentTurn()
-		existing, queryErr := queryExisting.Only(ctx)
+			Where(s.makeFindingVersionPreds(turn.ID, fingerprint, invf.InvestigationID(current.ID))...)
+		existingID, queryErr := queryExisting.OnlyID(ctx)
 		if queryErr == nil {
-			return s.investigationFindingResult(ctx, existing)
+			return s.getFindingVersion(ctx, current.ID, existingID)
 		}
 		if !ent.IsNotFound(queryErr) {
 			return nil, fmt.Errorf("find repeated investigation finding: %w", queryErr)
@@ -178,20 +166,11 @@ func (s *InvestigationService) PublishInvestigationFinding(ctx context.Context, 
 		if linkErr := s.saveFindingVersionReferences(ctx, created.ID, params.FindingReferences); linkErr != nil {
 			return nil, linkErr
 		}
-
-		queryVersion := tx.InvestigationFindingVersion.Query().
-			Where(invfv.ID(created.ID)).
-			WithFinding().
-			WithAgentTurn()
-		loaded, loadErr := queryVersion.Only(ctx)
-		if loadErr != nil {
-			return nil, fmt.Errorf("load saved investigation finding version: %w", loadErr)
-		}
-		return s.investigationFindingResult(ctx, loaded)
+		return s.getFindingVersion(ctx, current.ID, created.ID)
 	})
 }
 
-func (s *InvestigationService) PublishInvestigationAnswer(ctx context.Context, scope rez.InvestigationPublicationScope, input rez.PublishInvestigationAnswerParams) (*rez.InvestigationFindingVersion, error) {
+func (s *InvestigationService) PublishInvestigationAnswer(ctx context.Context, scope rez.InvestigationPublicationScope, input rez.PublishInvestigationAnswerParams) (*ent.InvestigationFindingVersion, error) {
 	investigationID, turnID := scope.InvestigationID, scope.AgentTurnID
 	params := rez.PublishInvestigationAnswerParams{
 		Title:             strings.TrimSpace(input.Title),
@@ -202,7 +181,7 @@ func (s *InvestigationService) PublishInvestigationAnswer(ctx context.Context, s
 	if investigationID == uuid.Nil || turnID == uuid.Nil || params.Title == "" || params.Body == "" {
 		return nil, fmt.Errorf("%w: investigation, turn, title and body are required", rez.ErrInvalidInput)
 	}
-	return ent.WithTxReturning(ctx, s.db, func(ctx context.Context, tx *ent.Client) (*rez.InvestigationFindingVersion, error) {
+	return ent.WithTxReturning(ctx, s.db, func(ctx context.Context, tx *ent.Client) (*ent.InvestigationFindingVersion, error) {
 		current, turn, prepareErr := s.prepareInvestigationOutputWrite(ctx, investigationID, turnID)
 		if prepareErr != nil {
 			return nil, prepareErr
@@ -234,12 +213,10 @@ func (s *InvestigationService) PublishInvestigationAnswer(ctx context.Context, s
 			invf.Key(key),
 		)
 		queryExisting := tx.InvestigationFindingVersion.Query().
-			Where(s.makeFindingVersionPreds(turn.ID, fingerprint, findingPred)...).
-			WithFinding().
-			WithAgentTurn()
-		existing, queryErr := queryExisting.Only(ctx)
+			Where(s.makeFindingVersionPreds(turn.ID, fingerprint, findingPred)...)
+		existingID, queryErr := queryExisting.OnlyID(ctx)
 		if queryErr == nil {
-			return s.investigationFindingResult(ctx, existing)
+			return s.getFindingVersion(ctx, current.ID, existingID)
 		}
 		if !ent.IsNotFound(queryErr) {
 			return nil, fmt.Errorf("find repeated investigation answer: %w", queryErr)
@@ -266,19 +243,11 @@ func (s *InvestigationService) PublishInvestigationAnswer(ctx context.Context, s
 		if linkErr := s.saveFindingVersionReferences(ctx, created.ID, params.FindingReferences); linkErr != nil {
 			return nil, linkErr
 		}
-		queryVersion := tx.InvestigationFindingVersion.Query().
-			Where(invfv.ID(created.ID)).
-			WithFinding().
-			WithAgentTurn()
-		loaded, loadErr := queryVersion.Only(ctx)
-		if loadErr != nil {
-			return nil, fmt.Errorf("load saved investigation answer version: %w", loadErr)
-		}
-		return s.investigationFindingResult(ctx, loaded)
+		return s.getFindingVersion(ctx, current.ID, created.ID)
 	})
 }
 
-func (s *InvestigationService) PublishInvestigationHypothesis(ctx context.Context, scope rez.InvestigationPublicationScope, params rez.PublishInvestigationHypothesisParams) (*rez.InvestigationHypothesisVersion, error) {
+func (s *InvestigationService) PublishInvestigationHypothesis(ctx context.Context, scope rez.InvestigationPublicationScope, params rez.PublishInvestigationHypothesisParams) (*ent.InvestigationHypothesisVersion, error) {
 	investigationID, turnID := scope.InvestigationID, scope.AgentTurnID
 	params.Key = strings.TrimSpace(params.Key)
 	params.Title = strings.TrimSpace(params.Title)
@@ -304,36 +273,24 @@ func (s *InvestigationService) PublishInvestigationHypothesis(ctx context.Contex
 	if fingerprintErr != nil {
 		return nil, fmt.Errorf("fingerprint investigation hypothesis: %w", fingerprintErr)
 	}
-	return ent.WithTxReturning(ctx, s.db, func(ctx context.Context, tx *ent.Client) (*rez.InvestigationHypothesisVersion, error) {
+	return ent.WithTxReturning(ctx, s.db, func(ctx context.Context, tx *ent.Client) (*ent.InvestigationHypothesisVersion, error) {
 		current, turn, prepareErr := s.prepareInvestigationOutputWrite(ctx, investigationID, turnID)
 		if prepareErr != nil {
 			return nil, prepareErr
 		}
 
-		lookupResult := func(preds ...predicate.InvestigationHypothesisVersion) (*rez.InvestigationHypothesisVersion, error) {
-			queryVersion := tx.InvestigationHypothesisVersion.Query().
-				Where(preds...).
-				WithHypothesis().
-				WithAgentTurn()
-			ver, queryErr := queryVersion.Only(ctx)
-			if queryErr != nil {
-				return nil, queryErr
-			}
-			return s.investigationHypothesisResult(ctx, ver)
+		queryExisting := tx.InvestigationHypothesisVersion.Query().
+			Where(
+				invhv.AgentTurnID(turn.ID),
+				invhv.Fingerprint(fingerprint),
+				invhv.HasHypothesisWith(invh.InvestigationID(current.ID), invh.Key(params.Key)),
+			)
+		existingID, queryErr := queryExisting.OnlyID(ctx)
+		if queryErr == nil {
+			return s.getHypothesisVersion(ctx, current.ID, existingID)
 		}
-
-		versionPreds := []predicate.InvestigationHypothesisVersion{
-			invhv.AgentTurnID(turn.ID),
-			invhv.Fingerprint(fingerprint),
-			invhv.HasHypothesisWith(
-				invh.InvestigationID(current.ID),
-				invh.Key(params.Key),
-			),
-		}
-
-		_, existingResultErr := lookupResult(versionPreds...)
-		if existingResultErr != nil && !ent.IsNotFound(existingResultErr) {
-			return nil, fmt.Errorf("find repeated investigation hypothesis: %w", existingResultErr)
+		if !ent.IsNotFound(queryErr) {
+			return nil, fmt.Errorf("find repeated investigation hypothesis: %w", queryErr)
 		}
 
 		stable, stableErr := s.findOrCreateInvestigationHypothesis(ctx, current.ID, params.Key)
@@ -357,11 +314,11 @@ func (s *InvestigationService) PublishInvestigationHypothesis(ctx context.Contex
 		if refErr := s.saveInvestigationEvidenceIDs(ctx, refOwner, params.EvidenceIDs); refErr != nil {
 			return nil, refErr
 		}
-		return lookupResult(invhv.ID(created.ID))
+		return s.getHypothesisVersion(ctx, current.ID, created.ID)
 	})
 }
 
-func (s *InvestigationService) ReadInvestigationReport(ctx context.Context, investigationID uuid.UUID, params rez.ReadInvestigationReportParams) (*rez.InvestigationReportResult, error) {
+func (s *InvestigationService) ReadInvestigationReport(ctx context.Context, params rez.ReadInvestigationReportParams) (*ent.InvestigationReport, error) {
 	selection := params.Selection
 	if selection == "" {
 		selection = rez.InvestigationReportSelectionLatest
@@ -370,9 +327,8 @@ func (s *InvestigationService) ReadInvestigationReport(ctx context.Context, inve
 		return nil, fmt.Errorf("%w: report selection must be latest or completed", rez.ErrInvalidInput)
 	}
 
-	queryReports := s.db.Client(ctx).InvestigationReport.Query().
-		Where(invr.InvestigationID(investigationID)).
-		WithAgentTurn()
+	queryReports := s.investigationReportsQuery(ctx).
+		Where(invr.InvestigationID(params.InvestigationID))
 	reports, queryErr := queryReports.All(ctx)
 	if queryErr != nil {
 		return nil, fmt.Errorf("list investigation report publications: %w", queryErr)
@@ -390,110 +346,145 @@ func (s *InvestigationService) ReadInvestigationReport(ctx context.Context, inve
 	if len(eligible) == 0 {
 		return nil, nil
 	}
-	return s.investigationReportResult(ctx, eligible[0])
+	return eligible[0], nil
 }
 
-func (s *InvestigationService) GetInvestigationFindingVersion(ctx context.Context, investigationID, versionID uuid.UUID) (*rez.InvestigationFindingVersion, error) {
+func (s *InvestigationService) GetInvestigationFindingVersion(ctx context.Context, investigationID, versionID uuid.UUID) (*ent.InvestigationFindingVersion, error) {
 	if investigationID == uuid.Nil || versionID == uuid.Nil {
 		return nil, fmt.Errorf("%w: investigation and version IDs are required", rez.ErrInvalidInput)
 	}
-	queryInvestigation := s.db.Client(ctx).Investigation.Query().
-		Where(inv.ID(investigationID))
-	invExists, lookupInvErr := queryInvestigation.Exist(ctx)
-	if !invExists {
-		return nil, fmt.Errorf("%w: investigation not found", rez.ErrNotFound)
-	} else if lookupInvErr != nil {
-		return nil, fmt.Errorf("load investigation for finding read: %w", lookupInvErr)
+	return s.getFindingVersion(ctx, investigationID, versionID)
+}
+
+func (s *InvestigationService) GetInvestigationHypothesisVersion(ctx context.Context, investigationID, versionID uuid.UUID) (*ent.InvestigationHypothesisVersion, error) {
+	if investigationID == uuid.Nil || versionID == uuid.Nil {
+		return nil, fmt.Errorf("%w: investigation and version IDs are required", rez.ErrInvalidInput)
+	}
+	return s.getHypothesisVersion(ctx, investigationID, versionID)
+}
+
+func (s *InvestigationService) ListInvestigationFindings(ctx context.Context, params rez.ListInvestigationFindingsParams) (*ent.ListResult[ent.InvestigationFindingVersion], error) {
+	current, currentErr := s.latestInvestigationFindingVersions(ctx, params.InvestigationID)
+	if currentErr != nil {
+		return nil, currentErr
+	}
+	page, pageSize := params.GetPage(), params.GetPageSize()
+	start, end := s.outputPageBounds(len(current), page, pageSize)
+	pageIDs := make([]uuid.UUID, 0, end-start)
+	for _, version := range current[start:end] {
+		pageIDs = append(pageIDs, version.ID)
 	}
 
-	queryVersion := s.db.Client(ctx).InvestigationFindingVersion.Query().
-		Where(invfv.ID(versionID), invfv.HasFindingWith(invf.InvestigationID(investigationID))).
-		WithFinding().
-		WithAgentTurn()
-	version, queryErr := queryVersion.Only(ctx)
+	queryPage := s.findingVersionsQuery(ctx, current).
+		Where(invfv.IDIn(pageIDs...))
+	versions, queryErr := queryPage.All(ctx)
 	if queryErr != nil {
-		if ent.IsNotFound(queryErr) {
-			return nil, fmt.Errorf("%w: investigation finding version not found", rez.ErrNotFound)
-		}
+		return nil, fmt.Errorf("load investigation finding versions: %w", queryErr)
+	}
+	byID := make(map[uuid.UUID]*ent.InvestigationFindingVersion, len(versions))
+	for _, version := range versions {
+		byID[version.ID] = version
+	}
+	result := &ent.ListResult[ent.InvestigationFindingVersion]{
+		Data:     make([]*ent.InvestigationFindingVersion, 0, len(pageIDs)),
+		Page:     page,
+		PageSize: pageSize,
+		Total:    len(current),
+	}
+	for _, id := range pageIDs {
+		result.Data = append(result.Data, byID[id])
+	}
+	return result, nil
+}
+
+func (s *InvestigationService) ListInvestigationHypotheses(ctx context.Context, params rez.ListInvestigationHypothesesParams) (*ent.ListResult[ent.InvestigationHypothesisVersion], error) {
+	current, currentErr := s.latestInvestigationHypothesisVersions(ctx, params.InvestigationID)
+	if currentErr != nil {
+		return nil, currentErr
+	}
+	page, pageSize := params.GetPage(), params.GetPageSize()
+	start, end := s.outputPageBounds(len(current), page, pageSize)
+	return &ent.ListResult[ent.InvestigationHypothesisVersion]{
+		Data:     current[start:end],
+		Page:     page,
+		PageSize: pageSize,
+		Total:    len(current),
+	}, nil
+}
+
+func (s *InvestigationService) orderOutputReferences(q *ent.InvestigationOutputReferenceQuery) {
+	q.Order(invor.ByKnowledgeEvidenceID())
+}
+
+func (s *InvestigationService) investigationReportsQuery(ctx context.Context) *ent.InvestigationReportQuery {
+	return s.db.Client(ctx).InvestigationReport.Query().
+		WithAgentTurn().
+		WithOutputReferences(s.orderOutputReferences)
+}
+
+func (s *InvestigationService) getInvestigationReport(ctx context.Context, id uuid.UUID) (*ent.InvestigationReport, error) {
+	queryReport := s.investigationReportsQuery(ctx).
+		Where(invr.ID(id))
+	report, queryErr := queryReport.Only(ctx)
+	if queryErr != nil {
+		return nil, fmt.Errorf("load investigation report: %w", queryErr)
+	}
+	return report, nil
+}
+
+// findingVersionsQuery loads finding versions with the edges rez.InvestigationOutputService documents.
+// Incoming invalidation links are limited to those from the current versions.
+func (s *InvestigationService) findingVersionsQuery(ctx context.Context, current []*ent.InvestigationFindingVersion) *ent.InvestigationFindingVersionQuery {
+	currentIDs := make([]uuid.UUID, 0, len(current))
+	for _, version := range current {
+		currentIDs = append(currentIDs, version.ID)
+	}
+	return s.db.Client(ctx).InvestigationFindingVersion.Query().
+		WithFinding().
+		WithAgentTurn().
+		WithOutputReferences(s.orderOutputReferences).
+		WithOutgoingLinks(func(q *ent.InvestigationFindingVersionLinkQuery) {
+			q.Order(invfvl.ByRelation(), invfvl.ByTargetVersionID())
+		}).
+		WithIncomingLinks(func(q *ent.InvestigationFindingVersionLinkQuery) {
+			q.Where(invfvl.RelationEQ(invfvl.RelationInvalidates), invfvl.SourceVersionIDIn(currentIDs...)).
+				Order(invfvl.BySourceVersionID())
+		})
+}
+
+func (s *InvestigationService) getFindingVersion(ctx context.Context, investigationID, versionID uuid.UUID) (*ent.InvestigationFindingVersion, error) {
+	current, currentErr := s.latestInvestigationFindingVersions(ctx, investigationID)
+	if currentErr != nil {
+		return nil, currentErr
+	}
+	queryVersion := s.findingVersionsQuery(ctx, current).
+		Where(invfv.ID(versionID), invfv.HasFindingWith(invf.InvestigationID(investigationID)))
+	version, queryErr := queryVersion.Only(ctx)
+	if ent.IsNotFound(queryErr) {
+		return nil, fmt.Errorf("%w: investigation finding version not found", rez.ErrNotFound)
+	} else if queryErr != nil {
 		return nil, fmt.Errorf("load investigation finding version: %w", queryErr)
 	}
-	current, currentErr := s.latestInvestigationFindingVersions(ctx, investigationID)
-	if currentErr != nil {
-		return nil, currentErr
-	}
-	invalidated, invalidatedErr := s.invalidatedFindingVersions(ctx, current)
-	if invalidatedErr != nil {
-		return nil, invalidatedErr
-	}
-	return s.investigationFindingResultWithInvalidations(ctx, version, invalidated)
+	return version, nil
 }
 
-func (s *InvestigationService) GetInvestigationHypothesisVersion(ctx context.Context, investigationID, versionID uuid.UUID) (*rez.InvestigationHypothesisVersion, error) {
-	if investigationID == uuid.Nil || versionID == uuid.Nil {
-		return nil, fmt.Errorf("%w: investigation and version IDs are required", rez.ErrInvalidInput)
-	}
-	queryVersion := s.db.Client(ctx).InvestigationHypothesisVersion.Query().
-		Where(invhv.ID(versionID), invhv.HasHypothesisWith(invh.InvestigationID(investigationID))).
+func (s *InvestigationService) hypothesisVersionsQuery(ctx context.Context) *ent.InvestigationHypothesisVersionQuery {
+	return s.db.Client(ctx).InvestigationHypothesisVersion.Query().
 		WithHypothesis().
-		WithAgentTurn()
+		WithAgentTurn().
+		WithOutputReferences(s.orderOutputReferences)
+}
+
+func (s *InvestigationService) getHypothesisVersion(ctx context.Context, investigationID, versionID uuid.UUID) (*ent.InvestigationHypothesisVersion, error) {
+	queryVersion := s.hypothesisVersionsQuery(ctx).
+		Where(invhv.ID(versionID), invhv.HasHypothesisWith(invh.InvestigationID(investigationID)))
 	version, queryErr := queryVersion.Only(ctx)
-	if queryErr != nil {
-		if ent.IsNotFound(queryErr) {
-			return nil, fmt.Errorf("%w: investigation hypothesis version not found", rez.ErrNotFound)
-		}
+	if ent.IsNotFound(queryErr) {
+		return nil, fmt.Errorf("%w: investigation hypothesis version not found", rez.ErrNotFound)
+	} else if queryErr != nil {
 		return nil, fmt.Errorf("load investigation hypothesis version: %w", queryErr)
 	}
-	return s.investigationHypothesisResult(ctx, version)
-}
-
-func (s *InvestigationService) ListInvestigationFindings(ctx context.Context, investigationID uuid.UUID, params ent.ListParams) (*ent.ListResult[rez.InvestigationFindingVersion], error) {
-	current, currentErr := s.latestInvestigationFindingVersions(ctx, investigationID)
-	if currentErr != nil {
-		return nil, currentErr
-	}
-	invalidated, invalidatedErr := s.invalidatedFindingVersions(ctx, current)
-	if invalidatedErr != nil {
-		return nil, invalidatedErr
-	}
-	page, pageSize := params.GetPage(), params.GetPageSize()
-	start, end := s.outputPageBounds(len(current), page, pageSize)
-	result := &ent.ListResult[rez.InvestigationFindingVersion]{
-		Data:     make([]*rez.InvestigationFindingVersion, 0, end-start),
-		Page:     page,
-		PageSize: pageSize,
-		Total:    len(current),
-	}
-	for _, version := range current[start:end] {
-		item, itemErr := s.investigationFindingResultWithInvalidations(ctx, version, invalidated)
-		if itemErr != nil {
-			return nil, itemErr
-		}
-		result.Data = append(result.Data, item)
-	}
-	return result, nil
-}
-
-func (s *InvestigationService) ListInvestigationHypotheses(ctx context.Context, investigationID uuid.UUID, params ent.ListParams) (*ent.ListResult[rez.InvestigationHypothesisVersion], error) {
-	current, currentErr := s.latestInvestigationHypothesisVersions(ctx, investigationID)
-	if currentErr != nil {
-		return nil, currentErr
-	}
-	page, pageSize := params.GetPage(), params.GetPageSize()
-	start, end := s.outputPageBounds(len(current), page, pageSize)
-	result := &ent.ListResult[rez.InvestigationHypothesisVersion]{
-		Data:     make([]*rez.InvestigationHypothesisVersion, 0, end-start),
-		Page:     page,
-		PageSize: pageSize,
-		Total:    len(current),
-	}
-	for _, version := range current[start:end] {
-		item, itemErr := s.investigationHypothesisResult(ctx, version)
-		if itemErr != nil {
-			return nil, itemErr
-		}
-		result.Data = append(result.Data, item)
-	}
-	return result, nil
+	return version, nil
 }
 
 func (s *InvestigationService) prepareInvestigationOutputWrite(ctx context.Context, invId, turnID uuid.UUID) (*ent.Investigation, *ent.AgentTurn, error) {
@@ -602,8 +593,8 @@ func (s *InvestigationService) normalizeInvestigationEvidenceIDs(ids []uuid.UUID
 	return unique
 }
 
-func (s *InvestigationService) normalizeFindingVersionReferences(refs []rez.FindingVersionReference) []rez.FindingVersionReference {
-	normalized := make([]rez.FindingVersionReference, 0, len(refs))
+func (s *InvestigationService) normalizeFindingVersionReferences(refs []rez.InvestigationFindingVersionReference) []rez.InvestigationFindingVersionReference {
+	normalized := make([]rez.InvestigationFindingVersionReference, 0, len(refs))
 	for _, ref := range refs {
 		ref.Relation = invfvl.Relation(strings.TrimSpace(string(ref.Relation)))
 		normalized = append(normalized, ref)
@@ -615,7 +606,7 @@ func (s *InvestigationService) normalizeFindingVersionReferences(refs []rez.Find
 		return normalized[i].VersionID.String() < normalized[j].VersionID.String()
 	})
 	if len(normalized) == 0 {
-		return []rez.FindingVersionReference{}
+		return []rez.InvestigationFindingVersionReference{}
 	}
 	unique := normalized[:0]
 	for _, ref := range normalized {
@@ -668,7 +659,7 @@ type (
 	}
 )
 
-func (s *InvestigationService) fingerprintFindingReferences(references []rez.FindingVersionReference) []findingVersionReferenceFingerprint {
+func (s *InvestigationService) fingerprintFindingReferences(references []rez.InvestigationFindingVersionReference) []findingVersionReferenceFingerprint {
 	fingerprints := make([]findingVersionReferenceFingerprint, 0, len(references))
 	for _, reference := range references {
 		fingerprints = append(fingerprints, findingVersionReferenceFingerprint{
@@ -710,164 +701,13 @@ func (s *InvestigationService) saveInvestigationEvidenceIDs(ctx context.Context,
 	return s.db.Client(ctx).InvestigationOutputReference.MapCreateBulk(ids, createFn).Exec(ctx)
 }
 
-func (s *InvestigationService) saveFindingVersionReferences(ctx context.Context, sourceID uuid.UUID, refs []rez.FindingVersionReference) error {
+func (s *InvestigationService) saveFindingVersionReferences(ctx context.Context, sourceID uuid.UUID, refs []rez.InvestigationFindingVersionReference) error {
 	createFn := func(c *ent.InvestigationFindingVersionLinkCreate, i int) {
 		c.SetSourceVersionID(sourceID)
 		c.SetTargetVersionID(refs[i].VersionID)
 		c.SetRelation(refs[i].Relation)
 	}
 	return s.db.Client(ctx).InvestigationFindingVersionLink.MapCreateBulk(refs, createFn).Exec(ctx)
-}
-
-func (s *InvestigationService) investigationReportResult(ctx context.Context, report *ent.InvestigationReport) (*rez.InvestigationReportResult, error) {
-	turn := report.Edges.AgentTurn
-	if turn == nil {
-		loaded, loadErr := s.db.Client(ctx).InvestigationReport.QueryAgentTurn(report).Only(ctx)
-		if loadErr != nil {
-			return nil, fmt.Errorf("load producing turn for report: %w", loadErr)
-		}
-		turn = loaded
-	}
-	evidenceIDs, evidenceErr := s.investigationEvidenceIDsForOwner(ctx, investigationReferenceOwner{reportID: &report.ID})
-	if evidenceErr != nil {
-		return nil, evidenceErr
-	}
-	return &rez.InvestigationReportResult{
-		InvestigationPublicationMeta: s.investigationPublicationMeta(report.ID, turn, report.CreatedAt),
-		Text:                         report.Text,
-		Summary:                      report.Summary,
-		EvidenceIDs:                  evidenceIDs,
-	}, nil
-}
-
-func (s *InvestigationService) investigationFindingResult(ctx context.Context, version *ent.InvestigationFindingVersion) (*rez.InvestigationFindingVersion, error) {
-	current, currentErr := s.latestInvestigationFindingVersions(ctx, version.Edges.Finding.InvestigationID)
-	if currentErr != nil {
-		return nil, currentErr
-	}
-	invalidated, invalidatedErr := s.invalidatedFindingVersions(ctx, current)
-	if invalidatedErr != nil {
-		return nil, invalidatedErr
-	}
-	return s.investigationFindingResultWithInvalidations(ctx, version, invalidated)
-}
-
-func (s *InvestigationService) investigationFindingResultWithInvalidations(ctx context.Context, version *ent.InvestigationFindingVersion, invalidated map[uuid.UUID][]uuid.UUID) (*rez.InvestigationFindingVersion, error) {
-	finding := version.Edges.Finding
-	if finding == nil {
-		loaded, loadErr := s.db.Client(ctx).InvestigationFindingVersion.QueryFinding(version).Only(ctx)
-		if loadErr != nil {
-			return nil, fmt.Errorf("load stable finding identity: %w", loadErr)
-		}
-		finding = loaded
-	}
-	turn := version.Edges.AgentTurn
-	if turn == nil {
-		loaded, loadErr := s.db.Client(ctx).InvestigationFindingVersion.QueryAgentTurn(version).Only(ctx)
-		if loadErr != nil {
-			return nil, fmt.Errorf("load producing turn for finding: %w", loadErr)
-		}
-		turn = loaded
-	}
-	evidenceIDs, evidenceErr := s.investigationEvidenceIDsForOwner(ctx, investigationReferenceOwner{findingVersionID: &version.ID})
-	if evidenceErr != nil {
-		return nil, evidenceErr
-	}
-	findingReferences, findingReferenceErr := s.findingVersionReferencesForSource(ctx, version.ID)
-	if findingReferenceErr != nil {
-		return nil, findingReferenceErr
-	}
-	invalidatedBy := invalidated[version.ID]
-	if invalidatedBy == nil {
-		invalidatedBy = []uuid.UUID{}
-	}
-	return &rez.InvestigationFindingVersion{
-		InvestigationPublicationMeta: s.investigationPublicationMeta(version.ID, turn, version.CreatedAt),
-		FindingID:                    finding.ID, Key: finding.Key, UserInputID: finding.UserInputID,
-		Title: version.Title, Body: version.Body,
-		EvidenceIDs: evidenceIDs, FindingReferences: findingReferences,
-		InvalidatedByVersionIDs: append([]uuid.UUID{}, invalidatedBy...),
-	}, nil
-}
-
-func (s *InvestigationService) investigationHypothesisResult(ctx context.Context, version *ent.InvestigationHypothesisVersion) (*rez.InvestigationHypothesisVersion, error) {
-	hypothesis := version.Edges.Hypothesis
-	if hypothesis == nil {
-		loaded, loadErr := s.db.Client(ctx).InvestigationHypothesisVersion.QueryHypothesis(version).Only(ctx)
-		if loadErr != nil {
-			return nil, fmt.Errorf("load stable hypothesis identity: %w", loadErr)
-		}
-		hypothesis = loaded
-	}
-	turn := version.Edges.AgentTurn
-	if turn == nil {
-		loaded, loadErr := s.db.Client(ctx).InvestigationHypothesisVersion.QueryAgentTurn(version).Only(ctx)
-		if loadErr != nil {
-			return nil, fmt.Errorf("load producing turn for hypothesis: %w", loadErr)
-		}
-		turn = loaded
-	}
-	evidenceIDs, evidenceErr := s.investigationEvidenceIDsForOwner(ctx, investigationReferenceOwner{hypothesisVersionID: &version.ID})
-	if evidenceErr != nil {
-		return nil, evidenceErr
-	}
-	return &rez.InvestigationHypothesisVersion{
-		InvestigationPublicationMeta: s.investigationPublicationMeta(version.ID, turn, version.CreatedAt),
-		HypothesisID:                 hypothesis.ID, Key: hypothesis.Key, Title: version.Title,
-		Justification: version.Justification, Status: version.Status, EvidenceIDs: evidenceIDs,
-	}, nil
-}
-
-func (s *InvestigationService) investigationPublicationMeta(id uuid.UUID, turn *ent.AgentTurn, createdAt time.Time) rez.InvestigationPublicationMeta {
-	return rez.InvestigationPublicationMeta{
-		ID:          id,
-		AgentTurnID: turn.ID,
-		TurnStatus:  turn.Status,
-		CreatedAt:   createdAt,
-	}
-}
-
-func (s *InvestigationService) investigationEvidenceIDsForOwner(ctx context.Context, owner investigationReferenceOwner) ([]uuid.UUID, error) {
-	var pred predicate.InvestigationOutputReference
-	switch {
-	case owner.reportID != nil:
-		pred = invor.ReportID(*owner.reportID)
-	case owner.findingVersionID != nil:
-		pred = invor.FindingVersionID(*owner.findingVersionID)
-	case owner.hypothesisVersionID != nil:
-		pred = invor.HypothesisVersionID(*owner.hypothesisVersionID)
-	default:
-		return []uuid.UUID{}, nil
-	}
-	selectIds := s.db.Client(ctx).InvestigationOutputReference.Query().
-		Where(pred).
-		Select(invor.FieldKnowledgeEvidenceID)
-	records, queryErr := selectIds.All(ctx)
-	if queryErr != nil {
-		return nil, fmt.Errorf("load investigation output evidence: %w", queryErr)
-	}
-	evidenceIDs := make([]uuid.UUID, 0, len(records))
-	for _, record := range records {
-		evidenceIDs = append(evidenceIDs, record.KnowledgeEvidenceID)
-	}
-	return s.normalizeInvestigationEvidenceIDs(evidenceIDs), nil
-}
-
-func (s *InvestigationService) findingVersionReferencesForSource(ctx context.Context, sourceID uuid.UUID) ([]rez.FindingVersionReference, error) {
-	queryLinks := s.db.Client(ctx).InvestigationFindingVersionLink.Query().
-		Where(invfvl.SourceVersionID(sourceID))
-	links, queryErr := queryLinks.All(ctx)
-	if queryErr != nil {
-		return nil, fmt.Errorf("load finding version references: %w", queryErr)
-	}
-	refs := make([]rez.FindingVersionReference, len(links))
-	for i, link := range links {
-		refs[i] = rez.FindingVersionReference{
-			VersionID: link.TargetVersionID,
-			Relation:  link.Relation,
-		}
-	}
-	return s.normalizeFindingVersionReferences(refs), nil
 }
 
 func (s *InvestigationService) latestInvestigationFindingVersions(ctx context.Context, invId uuid.UUID) ([]*ent.InvestigationFindingVersion, error) {
@@ -902,10 +742,8 @@ func (s *InvestigationService) latestInvestigationFindingVersions(ctx context.Co
 }
 
 func (s *InvestigationService) latestInvestigationHypothesisVersions(ctx context.Context, invId uuid.UUID) ([]*ent.InvestigationHypothesisVersion, error) {
-	queryVersions := s.db.Client(ctx).InvestigationHypothesisVersion.Query().
-		Where(invhv.HasHypothesisWith(invh.InvestigationID(invId))).
-		WithHypothesis().
-		WithAgentTurn()
+	queryVersions := s.hypothesisVersionsQuery(ctx).
+		Where(invhv.HasHypothesisWith(invh.InvestigationID(invId)))
 	versions, queryErr := queryVersions.All(ctx)
 	if queryErr != nil {
 		return nil, fmt.Errorf("list investigation hypothesis versions: %w", queryErr)
@@ -930,33 +768,6 @@ func (s *InvestigationService) latestInvestigationHypothesisVersions(ctx context
 		return s.outputPublicationNewer(result[i].Edges.AgentTurn, result[i].CreatedAt, result[i].ID, result[j].Edges.AgentTurn, result[j].CreatedAt, result[j].ID)
 	})
 	return result, nil
-}
-
-func (s *InvestigationService) invalidatedFindingVersions(ctx context.Context, current []*ent.InvestigationFindingVersion) (map[uuid.UUID][]uuid.UUID, error) {
-	sourceIDs := make([]uuid.UUID, 0, len(current))
-	for _, version := range current {
-		sourceIDs = append(sourceIDs, version.ID)
-	}
-	if len(sourceIDs) == 0 {
-		return map[uuid.UUID][]uuid.UUID{}, nil
-	}
-	queryLinks := s.db.Client(ctx).InvestigationFindingVersionLink.Query().
-		Where(
-			invfvl.SourceVersionIDIn(sourceIDs...),
-			invfvl.RelationEQ(invfvl.RelationInvalidates),
-		)
-	links, queryErr := queryLinks.All(ctx)
-	if queryErr != nil {
-		return nil, fmt.Errorf("list current finding invalidations: %w", queryErr)
-	}
-	byTarget := make(map[uuid.UUID][]uuid.UUID)
-	for _, link := range links {
-		byTarget[link.TargetVersionID] = append(byTarget[link.TargetVersionID], link.SourceVersionID)
-	}
-	for targetID := range byTarget {
-		sort.Slice(byTarget[targetID], func(i, j int) bool { return byTarget[targetID][i].String() < byTarget[targetID][j].String() })
-	}
-	return byTarget, nil
 }
 
 func (s *InvestigationService) eligibleTurnStatus(status at.Status, completedOnly bool) bool {

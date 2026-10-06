@@ -36,13 +36,6 @@ func (s *SystemAnalysisService) systemAnalysisEntrySubjectsQuery(q *ent.SystemAn
 		WithKnowledgeEvidence()
 }
 
-func (s *SystemAnalysisService) systemAnalysisEntitiesQuery(q *ent.SystemAnalysisEntityQuery) {
-	q.Order(ent.Asc(saent.FieldCreatedAt), ent.Asc(saent.FieldID)).
-		WithKnowledgeEntity(func(eq *ent.KnowledgeEntityQuery) {
-			eq.WithAliases(subjectAliasWithEvidence())
-		})
-}
-
 func (s *SystemAnalysisService) checkSaveErr(saveErr error, kind string) error {
 	if ent.IsValidationError(saveErr) || ent.IsConstraintError(saveErr) {
 		return fmt.Errorf("%w: save %s: %w", rez.ErrInvalidInput, kind, saveErr)
@@ -222,17 +215,14 @@ func (s *SystemAnalysisService) includeAnalysisEntities(ctx context.Context, tx 
 
 func (s *SystemAnalysisService) ListSystemAnalysisEntities(ctx context.Context, params rez.ListSystemAnalysisEntitiesParams) (*ent.ListResult[ent.SystemAnalysisEntity], error) {
 	query := s.db.Client(ctx).SystemAnalysisEntity.Query().
-		Where(params.Predicates...)
-	switch params.Order {
-	case rez.SystemAnalysisSubjectOrderCreatedAt:
-		s.systemAnalysisEntitiesQuery(query)
-	case rez.SystemAnalysisSubjectOrderCanonicalID:
-		query.Order(saent.ByKnowledgeEntityID(sql.OrderAsc()), saent.ByID(sql.OrderAsc())).
-			WithKnowledgeEntity(func(eq *ent.KnowledgeEntityQuery) {
-				eq.WithAliases(subjectAliasWithEvidence())
-			})
-	default:
-		return nil, fmt.Errorf("%w: invalid system analysis subject order %d", rez.ErrInvalidInput, params.Order)
+		Where(params.Predicates...).
+		WithKnowledgeEntity(func(eq *ent.KnowledgeEntityQuery) {
+			eq.WithAliases(subjectAliasWithEvidence())
+		})
+	if len(params.OrderBy) > 0 {
+		query.Order(params.OrderBy...)
+	} else {
+		query.Order(saent.ByCreatedAt(), saent.ByID())
 	}
 	return ent.DoListQuery[ent.SystemAnalysisEntity, *ent.SystemAnalysisEntityQuery](ctx, query, params.ListParams)
 }
@@ -297,13 +287,10 @@ func (s *SystemAnalysisService) DeleteSystemAnalysisEntity(ctx context.Context, 
 func (s *SystemAnalysisService) ListSystemAnalysisRelationships(ctx context.Context, params rez.ListSystemAnalysisRelationshipsParams) (*ent.ListResult[ent.SystemAnalysisRelationship], error) {
 	query := s.db.Client(ctx).SystemAnalysisRelationship.Query().
 		Where(params.Predicates...)
-	switch params.Order {
-	case rez.SystemAnalysisSubjectOrderCreatedAt:
-		query.Order(ent.Asc(sarel.FieldCreatedAt), ent.Asc(sarel.FieldID))
-	case rez.SystemAnalysisSubjectOrderCanonicalID:
-		query.Order(sarel.ByKnowledgeRelationshipID(sql.OrderAsc()), sarel.ByID(sql.OrderAsc()))
-	default:
-		return nil, fmt.Errorf("%w: invalid system analysis subject order %d", rez.ErrInvalidInput, params.Order)
+	if len(params.OrderBy) > 0 {
+		query.Order(params.OrderBy...)
+	} else {
+		query.Order(sarel.ByCreatedAt(), sarel.ByID())
 	}
 	query.WithKnowledgeRelationship(func(rq *ent.KnowledgeRelationshipQuery) {
 		rq.WithAliases(subjectAliasWithEvidence())
@@ -371,13 +358,10 @@ func (s *SystemAnalysisService) DeleteSystemAnalysisRelationship(ctx context.Con
 func (s *SystemAnalysisService) ListSystemAnalysisEntries(ctx context.Context, params rez.ListSystemAnalysisEntriesParams) (*ent.ListResult[ent.SystemAnalysisEntry], error) {
 	query := s.db.Client(ctx).SystemAnalysisEntry.Query().
 		Where(params.Predicates...)
-	switch params.Order {
-	case rez.SystemAnalysisEntryOrderOccurrence:
-		query.Order(ent.Asc(sae.FieldOccurredAt), ent.Asc(sae.FieldSequence), ent.Asc(sae.FieldID))
-	case rez.SystemAnalysisEntryOrderSequence:
-		query.Order(sae.BySequence(sql.OrderAsc()), sae.ByID(sql.OrderAsc()))
-	default:
-		return nil, fmt.Errorf("%w: invalid system analysis entry order %d", rez.ErrInvalidInput, params.Order)
+	if len(params.OrderBy) > 0 {
+		query.Order(params.OrderBy...)
+	} else {
+		query.Order(sae.ByOccurredAt(), sae.BySequence(), sae.ByID())
 	}
 	if !params.SummaryOnly {
 		query.WithReviews().WithSubjects(s.systemAnalysisEntrySubjectsQuery)

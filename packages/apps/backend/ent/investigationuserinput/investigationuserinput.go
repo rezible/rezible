@@ -36,6 +36,8 @@ const (
 	EdgeInvestigation = "investigation"
 	// EdgeAgentTurn holds the string denoting the agent_turn edge name in mutations.
 	EdgeAgentTurn = "agent_turn"
+	// EdgeFindings holds the string denoting the findings edge name in mutations.
+	EdgeFindings = "findings"
 	// Table holds the table name of the investigationuserinput in the database.
 	Table = "investigation_user_inputs"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -59,6 +61,13 @@ const (
 	AgentTurnInverseTable = "agent_turns"
 	// AgentTurnColumn is the table column denoting the agent_turn relation/edge.
 	AgentTurnColumn = "agent_turn_id"
+	// FindingsTable is the table that holds the findings relation/edge.
+	FindingsTable = "investigation_findings"
+	// FindingsInverseTable is the table name for the InvestigationFinding entity.
+	// It exists in this package in order to avoid circular dependency with the "investigationfinding" package.
+	FindingsInverseTable = "investigation_findings"
+	// FindingsColumn is the table column denoting the findings relation/edge.
+	FindingsColumn = "user_input_id"
 )
 
 // Columns holds all SQL columns for investigationuserinput fields.
@@ -164,6 +173,20 @@ func ByAgentTurnField(field string, opts ...sql.OrderTermOption) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newAgentTurnStep(), sql.OrderByField(field, opts...))
 	}
 }
+
+// ByFindingsCount orders the results by findings count.
+func ByFindingsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newFindingsStep(), opts...)
+	}
+}
+
+// ByFindings orders the results by findings terms.
+func ByFindings(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newFindingsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newTenantStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -183,5 +206,12 @@ func newAgentTurnStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(AgentTurnInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, false, AgentTurnTable, AgentTurnColumn),
+	)
+}
+func newFindingsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(FindingsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, FindingsTable, FindingsColumn),
 	)
 }

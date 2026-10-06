@@ -9952,6 +9952,25 @@ func (c *InvestigationUserInputClient) QueryAgentTurn(_m *InvestigationUserInput
 	return query
 }
 
+// QueryFindings queries the findings edge of a InvestigationUserInput.
+func (c *InvestigationUserInputClient) QueryFindings(_m *InvestigationUserInput) *InvestigationFindingQuery {
+	query := (&InvestigationFindingClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(investigationuserinput.Table, investigationuserinput.FieldID, id),
+			sqlgraph.To(investigationfinding.Table, investigationfinding.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, investigationuserinput.FindingsTable, investigationuserinput.FindingsColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.InvestigationFinding
+		step.Edge.Schema = schemaConfig.InvestigationFinding
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *InvestigationUserInputClient) Hooks() []Hook {
 	hooks := c.hooks.InvestigationUserInput

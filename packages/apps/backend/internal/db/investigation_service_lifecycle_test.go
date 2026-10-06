@@ -138,19 +138,21 @@ func (s *InvestigationServiceSuite) TestInvestigationInputsAndEvidenceRevisionsD
 	_, changedEvidenceErr := service.RecordInvestigationEvidenceRevision(ctx, changedEvidenceParams)
 	s.ErrorIs(changedEvidenceErr, rez.ErrConflict)
 
-	inputsParams := ent.ListParams{
-		OrderAsc: true,
+	inputsParams := rez.ListInvestigationUserInputsParams{
+		ListParams:      ent.ListParams{OrderAsc: true},
+		InvestigationID: investigation.ID,
 	}
 
-	inputs, inputsErr := service.ListInvestigationUserInputs(ctx, investigation.ID, inputsParams)
+	inputs, inputsErr := service.ListInvestigationUserInputs(ctx, inputsParams)
 	s.Require().NoError(inputsErr)
 	s.Require().Len(inputs.Data, 1)
 	s.Equal(firstInput.ID, inputs.Data[0].ID)
-	requestsParams := ent.ListParams{
-		OrderAsc: true,
+	requestsParams := rez.ListInvestigationEvidenceRevisionsParams{
+		ListParams:      ent.ListParams{OrderAsc: true},
+		InvestigationID: investigation.ID,
 	}
 
-	requests, requestsErr := service.ListInvestigationEvidenceRevisions(ctx, investigation.ID, requestsParams)
+	requests, requestsErr := service.ListInvestigationEvidenceRevisions(ctx, requestsParams)
 	s.Require().NoError(requestsErr)
 	s.Require().Len(requests.Data, 1)
 	s.Equal(firstEvidence.ID, requests.Data[0].ID)
@@ -214,10 +216,10 @@ func (s *InvestigationServiceSuite) TestReconcileRetainsFailedTurnAssignmentsAnd
 	completeInitialTurnErr := completeInitialTurn.Exec(ctx)
 	s.Require().NoError(completeInitialTurnErr)
 
-	orderedInputs, orderedInputsErr := service.ListInvestigationUserInputs(ctx, investigation.ID, ent.ListParams{})
+	orderedInputs, orderedInputsErr := service.ListInvestigationUserInputs(ctx, rez.ListInvestigationUserInputsParams{InvestigationID: investigation.ID})
 	s.Require().NoError(orderedInputsErr)
 
-	orderedEvidence, orderedEvidenceErr := service.ListInvestigationEvidenceRevisions(ctx, investigation.ID, ent.ListParams{})
+	orderedEvidence, orderedEvidenceErr := service.ListInvestigationEvidenceRevisions(ctx, rez.ListInvestigationEvidenceRevisionsParams{InvestigationID: investigation.ID})
 	s.Require().NoError(orderedEvidenceErr)
 	s.Require().Len(orderedInputs.Data, 2)
 	s.Require().Len(orderedEvidence.Data, 2)

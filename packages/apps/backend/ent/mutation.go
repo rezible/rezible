@@ -38620,6 +38620,9 @@ type InvestigationUserInputMutation struct {
 	clearedinvestigation bool
 	agent_turn           *uuid.UUID
 	clearedagent_turn    bool
+	findings             map[uuid.UUID]struct{}
+	removedfindings      map[uuid.UUID]struct{}
+	clearedfindings      bool
 	done                 bool
 	oldValue             func(context.Context) (*InvestigationUserInput, error)
 	predicates           []predicate.InvestigationUserInput
@@ -39075,6 +39078,60 @@ func (m *InvestigationUserInputMutation) ResetAgentTurn() {
 	m.clearedagent_turn = false
 }
 
+// AddFindingIDs adds the "findings" edge to the InvestigationFinding entity by ids.
+func (m *InvestigationUserInputMutation) AddFindingIDs(ids ...uuid.UUID) {
+	if m.findings == nil {
+		m.findings = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.findings[ids[i]] = struct{}{}
+	}
+}
+
+// ClearFindings clears the "findings" edge to the InvestigationFinding entity.
+func (m *InvestigationUserInputMutation) ClearFindings() {
+	m.clearedfindings = true
+}
+
+// FindingsCleared reports if the "findings" edge to the InvestigationFinding entity was cleared.
+func (m *InvestigationUserInputMutation) FindingsCleared() bool {
+	return m.clearedfindings
+}
+
+// RemoveFindingIDs removes the "findings" edge to the InvestigationFinding entity by IDs.
+func (m *InvestigationUserInputMutation) RemoveFindingIDs(ids ...uuid.UUID) {
+	if m.removedfindings == nil {
+		m.removedfindings = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.findings, ids[i])
+		m.removedfindings[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedFindings returns the removed IDs of the "findings" edge to the InvestigationFinding entity.
+func (m *InvestigationUserInputMutation) RemovedFindingsIDs() (ids []uuid.UUID) {
+	for id := range m.removedfindings {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// FindingsIDs returns the "findings" edge IDs in the mutation.
+func (m *InvestigationUserInputMutation) FindingsIDs() (ids []uuid.UUID) {
+	for id := range m.findings {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetFindings resets all changes to the "findings" edge.
+func (m *InvestigationUserInputMutation) ResetFindings() {
+	m.findings = nil
+	m.clearedfindings = false
+	m.removedfindings = nil
+}
+
 // Where appends a list predicates to the InvestigationUserInputMutation builder.
 func (m *InvestigationUserInputMutation) Where(ps ...predicate.InvestigationUserInput) {
 	m.predicates = append(m.predicates, ps...)
@@ -39322,7 +39379,7 @@ func (m *InvestigationUserInputMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *InvestigationUserInputMutation) AddedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.tenant != nil {
 		edges = append(edges, investigationuserinput.EdgeTenant)
 	}
@@ -39331,6 +39388,9 @@ func (m *InvestigationUserInputMutation) AddedEdges() []string {
 	}
 	if m.agent_turn != nil {
 		edges = append(edges, investigationuserinput.EdgeAgentTurn)
+	}
+	if m.findings != nil {
+		edges = append(edges, investigationuserinput.EdgeFindings)
 	}
 	return edges
 }
@@ -39351,25 +39411,42 @@ func (m *InvestigationUserInputMutation) AddedIDs(name string) []ent.Value {
 		if id := m.agent_turn; id != nil {
 			return []ent.Value{*id}
 		}
+	case investigationuserinput.EdgeFindings:
+		ids := make([]ent.Value, 0, len(m.findings))
+		for id := range m.findings {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *InvestigationUserInputMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
+	if m.removedfindings != nil {
+		edges = append(edges, investigationuserinput.EdgeFindings)
+	}
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *InvestigationUserInputMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case investigationuserinput.EdgeFindings:
+		ids := make([]ent.Value, 0, len(m.removedfindings))
+		for id := range m.removedfindings {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *InvestigationUserInputMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.clearedtenant {
 		edges = append(edges, investigationuserinput.EdgeTenant)
 	}
@@ -39378,6 +39455,9 @@ func (m *InvestigationUserInputMutation) ClearedEdges() []string {
 	}
 	if m.clearedagent_turn {
 		edges = append(edges, investigationuserinput.EdgeAgentTurn)
+	}
+	if m.clearedfindings {
+		edges = append(edges, investigationuserinput.EdgeFindings)
 	}
 	return edges
 }
@@ -39392,6 +39472,8 @@ func (m *InvestigationUserInputMutation) EdgeCleared(name string) bool {
 		return m.clearedinvestigation
 	case investigationuserinput.EdgeAgentTurn:
 		return m.clearedagent_turn
+	case investigationuserinput.EdgeFindings:
+		return m.clearedfindings
 	}
 	return false
 }
@@ -39425,6 +39507,9 @@ func (m *InvestigationUserInputMutation) ResetEdge(name string) error {
 		return nil
 	case investigationuserinput.EdgeAgentTurn:
 		m.ResetAgentTurn()
+		return nil
+	case investigationuserinput.EdgeFindings:
+		m.ResetFindings()
 		return nil
 	}
 	return fmt.Errorf("unknown InvestigationUserInput edge %s", name)

@@ -4,6 +4,7 @@ import (
 	mapset "github.com/deckarep/golang-set/v2"
 	"github.com/firebase/genkit/go/ai"
 	"github.com/google/uuid"
+	invfvl "github.com/rezible/rezible/ent/investigationfindingversionlink"
 	vc "github.com/rezible/rezible/ent/videoconference"
 )
 
@@ -106,4 +107,35 @@ func (sogs SituationObservationGroups) SignalCount() int {
 		total += count
 	}
 	return total
+}
+
+// KnowledgeEvidenceIDs returns the evidence IDs cited by the references, in loaded order.
+func (refs InvestigationOutputReferences) KnowledgeEvidenceIDs() []uuid.UUID {
+	ids := make([]uuid.UUID, len(refs))
+	for i, ref := range refs {
+		ids[i] = ref.KnowledgeEvidenceID
+	}
+	return ids
+}
+
+// InvalidatedByVersionIDs returns the source versions of the loaded incoming invalidation links.
+func (v *InvestigationFindingVersion) InvalidatedByVersionIDs() []uuid.UUID {
+	ids := make([]uuid.UUID, 0, len(v.Edges.IncomingLinks))
+	for _, link := range v.Edges.IncomingLinks {
+		if link.Relation == invfvl.RelationInvalidates {
+			ids = append(ids, link.SourceVersionID)
+		}
+	}
+	return ids
+}
+
+// CurrentAnswerVersion returns the first loaded version of the input's answer finding.
+// Investigation services load answer versions newest first.
+func (ui *InvestigationUserInput) CurrentAnswerVersion() *InvestigationFindingVersion {
+	for _, finding := range ui.Edges.Findings {
+		if len(finding.Edges.Versions) > 0 {
+			return finding.Edges.Versions[0]
+		}
+	}
+	return nil
 }

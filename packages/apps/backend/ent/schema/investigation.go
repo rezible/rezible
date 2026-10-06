@@ -99,6 +99,8 @@ func (InvestigationUserInput) Edges() []ent.Edge {
 			Unique().
 			Field("agent_turn_id").
 			Annotations(entsql.OnDelete(entsql.Restrict)),
+		edge.From("findings", InvestigationFinding.Type).
+			Ref("user_input"),
 	}
 }
 

@@ -16,17 +16,20 @@ import (
 
 type InvestigationAgent struct {
 	investigations rez.InvestigationService
+	outputs        rez.InvestigationOutputService
 	analyses       rez.SystemAnalysisService
 	knowledge      rez.KnowledgeGraphQueryService
 }
 
 func NewInvestigationAgent(
 	investigations rez.InvestigationService,
+	outputs rez.InvestigationOutputService,
 	analyses rez.SystemAnalysisService,
 	knowledge rez.KnowledgeGraphQueryService,
 ) *InvestigationAgent {
 	return &InvestigationAgent{
 		investigations: investigations,
+		outputs:        outputs,
 		analyses:       analyses,
 		knowledge:      knowledge,
 	}
@@ -40,6 +43,7 @@ func (a *InvestigationAgent) makeMiddleware() []ai.Middleware {
 	return []ai.Middleware{
 		&investigationCapabilitiesMiddleware{
 			investigations: a.investigations,
+			outputs:        a.outputs,
 			analyses:       a.analyses,
 			knowledge:      a.knowledge,
 		},
@@ -64,6 +68,7 @@ func (a *InvestigationAgent) transformStreamChunk(ctx context.Context, chunk *ai
 
 type investigationCapabilitiesMiddleware struct {
 	investigations rez.InvestigationService
+	outputs        rez.InvestigationOutputService
 	analyses       rez.SystemAnalysisService
 	knowledge      rez.KnowledgeGraphQueryService
 }
@@ -97,6 +102,7 @@ func (m *investigationCapabilitiesMiddleware) New(ctx context.Context) (*ai.Hook
 
 	i := &investigationInvocation{
 		investigations:  m.investigations,
+		outputs:         m.outputs,
 		analyses:        m.analyses,
 		knowledge:       m.knowledge,
 		investigationID: current.ID,

@@ -13,6 +13,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/agentturn"
 	"github.com/rezible/rezible/ent/internal"
+	"github.com/rezible/rezible/ent/investigationfinding"
 	"github.com/rezible/rezible/ent/investigationuserinput"
 	"github.com/rezible/rezible/ent/predicate"
 )
@@ -56,6 +57,21 @@ func (_u *InvestigationUserInputUpdate) SetAgentTurn(v *AgentTurn) *Investigatio
 	return _u.SetAgentTurnID(v.ID)
 }
 
+// AddFindingIDs adds the "findings" edge to the InvestigationFinding entity by IDs.
+func (_u *InvestigationUserInputUpdate) AddFindingIDs(ids ...uuid.UUID) *InvestigationUserInputUpdate {
+	_u.mutation.AddFindingIDs(ids...)
+	return _u
+}
+
+// AddFindings adds the "findings" edges to the InvestigationFinding entity.
+func (_u *InvestigationUserInputUpdate) AddFindings(v ...*InvestigationFinding) *InvestigationUserInputUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddFindingIDs(ids...)
+}
+
 // Mutation returns the InvestigationUserInputMutation object of the builder.
 func (_u *InvestigationUserInputUpdate) Mutation() *InvestigationUserInputMutation {
 	return _u.mutation
@@ -65,6 +81,27 @@ func (_u *InvestigationUserInputUpdate) Mutation() *InvestigationUserInputMutati
 func (_u *InvestigationUserInputUpdate) ClearAgentTurn() *InvestigationUserInputUpdate {
 	_u.mutation.ClearAgentTurn()
 	return _u
+}
+
+// ClearFindings clears all "findings" edges to the InvestigationFinding entity.
+func (_u *InvestigationUserInputUpdate) ClearFindings() *InvestigationUserInputUpdate {
+	_u.mutation.ClearFindings()
+	return _u
+}
+
+// RemoveFindingIDs removes the "findings" edge to InvestigationFinding entities by IDs.
+func (_u *InvestigationUserInputUpdate) RemoveFindingIDs(ids ...uuid.UUID) *InvestigationUserInputUpdate {
+	_u.mutation.RemoveFindingIDs(ids...)
+	return _u
+}
+
+// RemoveFindings removes "findings" edges to InvestigationFinding entities.
+func (_u *InvestigationUserInputUpdate) RemoveFindings(v ...*InvestigationFinding) *InvestigationUserInputUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveFindingIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -154,6 +191,54 @@ func (_u *InvestigationUserInputUpdate) sqlSave(ctx context.Context) (_node int,
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.FindingsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   investigationuserinput.FindingsTable,
+			Columns: []string{investigationuserinput.FindingsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(investigationfinding.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.InvestigationFinding
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedFindingsIDs(); len(nodes) > 0 && !_u.mutation.FindingsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   investigationuserinput.FindingsTable,
+			Columns: []string{investigationuserinput.FindingsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(investigationfinding.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.InvestigationFinding
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.FindingsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   investigationuserinput.FindingsTable,
+			Columns: []string{investigationuserinput.FindingsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(investigationfinding.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.InvestigationFinding
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	_spec.Node.Schema = _u.schemaConfig.InvestigationUserInput
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
 	_spec.AddModifiers(_u.modifiers...)
@@ -203,6 +288,21 @@ func (_u *InvestigationUserInputUpdateOne) SetAgentTurn(v *AgentTurn) *Investiga
 	return _u.SetAgentTurnID(v.ID)
 }
 
+// AddFindingIDs adds the "findings" edge to the InvestigationFinding entity by IDs.
+func (_u *InvestigationUserInputUpdateOne) AddFindingIDs(ids ...uuid.UUID) *InvestigationUserInputUpdateOne {
+	_u.mutation.AddFindingIDs(ids...)
+	return _u
+}
+
+// AddFindings adds the "findings" edges to the InvestigationFinding entity.
+func (_u *InvestigationUserInputUpdateOne) AddFindings(v ...*InvestigationFinding) *InvestigationUserInputUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddFindingIDs(ids...)
+}
+
 // Mutation returns the InvestigationUserInputMutation object of the builder.
 func (_u *InvestigationUserInputUpdateOne) Mutation() *InvestigationUserInputMutation {
 	return _u.mutation
@@ -212,6 +312,27 @@ func (_u *InvestigationUserInputUpdateOne) Mutation() *InvestigationUserInputMut
 func (_u *InvestigationUserInputUpdateOne) ClearAgentTurn() *InvestigationUserInputUpdateOne {
 	_u.mutation.ClearAgentTurn()
 	return _u
+}
+
+// ClearFindings clears all "findings" edges to the InvestigationFinding entity.
+func (_u *InvestigationUserInputUpdateOne) ClearFindings() *InvestigationUserInputUpdateOne {
+	_u.mutation.ClearFindings()
+	return _u
+}
+
+// RemoveFindingIDs removes the "findings" edge to InvestigationFinding entities by IDs.
+func (_u *InvestigationUserInputUpdateOne) RemoveFindingIDs(ids ...uuid.UUID) *InvestigationUserInputUpdateOne {
+	_u.mutation.RemoveFindingIDs(ids...)
+	return _u
+}
+
+// RemoveFindings removes "findings" edges to InvestigationFinding entities.
+func (_u *InvestigationUserInputUpdateOne) RemoveFindings(v ...*InvestigationFinding) *InvestigationUserInputUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveFindingIDs(ids...)
 }
 
 // Where appends a list predicates to the InvestigationUserInputUpdate builder.
@@ -326,6 +447,54 @@ func (_u *InvestigationUserInputUpdateOne) sqlSave(ctx context.Context) (_node *
 			},
 		}
 		edge.Schema = _u.schemaConfig.InvestigationUserInput
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.FindingsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   investigationuserinput.FindingsTable,
+			Columns: []string{investigationuserinput.FindingsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(investigationfinding.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.InvestigationFinding
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedFindingsIDs(); len(nodes) > 0 && !_u.mutation.FindingsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   investigationuserinput.FindingsTable,
+			Columns: []string{investigationuserinput.FindingsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(investigationfinding.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.InvestigationFinding
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.FindingsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   investigationuserinput.FindingsTable,
+			Columns: []string{investigationuserinput.FindingsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(investigationfinding.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.InvestigationFinding
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

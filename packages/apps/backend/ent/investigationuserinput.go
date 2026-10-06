@@ -49,9 +49,11 @@ type InvestigationUserInputEdges struct {
 	Investigation *Investigation `json:"investigation,omitempty"`
 	// AgentTurn holds the value of the agent_turn edge.
 	AgentTurn *AgentTurn `json:"agent_turn,omitempty"`
+	// Findings holds the value of the findings edge.
+	Findings []*InvestigationFinding `json:"findings,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes [4]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -85,6 +87,15 @@ func (e InvestigationUserInputEdges) AgentTurnOrErr() (*AgentTurn, error) {
 		return nil, &NotFoundError{label: agentturn.Label}
 	}
 	return nil, &NotLoadedError{edge: "agent_turn"}
+}
+
+// FindingsOrErr returns the Findings value or an error if the edge
+// was not loaded in eager-loading.
+func (e InvestigationUserInputEdges) FindingsOrErr() ([]*InvestigationFinding, error) {
+	if e.loadedTypes[3] {
+		return e.Findings, nil
+	}
+	return nil, &NotLoadedError{edge: "findings"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -192,6 +203,11 @@ func (_m *InvestigationUserInput) QueryInvestigation() *InvestigationQuery {
 // QueryAgentTurn queries the "agent_turn" edge of the InvestigationUserInput entity.
 func (_m *InvestigationUserInput) QueryAgentTurn() *AgentTurnQuery {
 	return NewInvestigationUserInputClient(_m.config).QueryAgentTurn(_m)
+}
+
+// QueryFindings queries the "findings" edge of the InvestigationUserInput entity.
+func (_m *InvestigationUserInput) QueryFindings() *InvestigationFindingQuery {
+	return NewInvestigationUserInputClient(_m.config).QueryFindings(_m)
 }
 
 // Update returns a builder for updating this InvestigationUserInput.
