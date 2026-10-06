@@ -21,9 +21,8 @@ import (
 // OncallHandoverTemplateUpdate is the builder for updating OncallHandoverTemplate entities.
 type OncallHandoverTemplateUpdate struct {
 	config
-	hooks     []Hook
-	mutation  *OncallHandoverTemplateMutation
-	modifiers []func(*sql.UpdateBuilder)
+	hooks    []Hook
+	mutation *OncallHandoverTemplateMutation
 }
 
 // Where appends a list predicates to the OncallHandoverTemplateUpdate builder.
@@ -156,12 +155,6 @@ func (_u *OncallHandoverTemplateUpdate) check() error {
 	return nil
 }
 
-// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (_u *OncallHandoverTemplateUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *OncallHandoverTemplateUpdate {
-	_u.modifiers = append(_u.modifiers, modifiers...)
-	return _u
-}
-
 func (_u *OncallHandoverTemplateUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -236,7 +229,6 @@ func (_u *OncallHandoverTemplateUpdate) sqlSave(ctx context.Context) (_node int,
 	}
 	_spec.Node.Schema = _u.schemaConfig.OncallHandoverTemplate
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
-	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{oncallhandovertemplate.Label}
@@ -252,10 +244,9 @@ func (_u *OncallHandoverTemplateUpdate) sqlSave(ctx context.Context) (_node int,
 // OncallHandoverTemplateUpdateOne is the builder for updating a single OncallHandoverTemplate entity.
 type OncallHandoverTemplateUpdateOne struct {
 	config
-	fields    []string
-	hooks     []Hook
-	mutation  *OncallHandoverTemplateMutation
-	modifiers []func(*sql.UpdateBuilder)
+	fields   []string
+	hooks    []Hook
+	mutation *OncallHandoverTemplateMutation
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -395,12 +386,6 @@ func (_u *OncallHandoverTemplateUpdateOne) check() error {
 	return nil
 }
 
-// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (_u *OncallHandoverTemplateUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *OncallHandoverTemplateUpdateOne {
-	_u.modifiers = append(_u.modifiers, modifiers...)
-	return _u
-}
-
 func (_u *OncallHandoverTemplateUpdateOne) sqlSave(ctx context.Context) (_node *OncallHandoverTemplate, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -492,7 +477,6 @@ func (_u *OncallHandoverTemplateUpdateOne) sqlSave(ctx context.Context) (_node *
 	}
 	_spec.Node.Schema = _u.schemaConfig.OncallHandoverTemplate
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
-	_spec.AddModifiers(_u.modifiers...)
 	_node = &OncallHandoverTemplate{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues

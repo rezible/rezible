@@ -20,9 +20,8 @@ import (
 // InvestigationHypothesisVersionUpdate is the builder for updating InvestigationHypothesisVersion entities.
 type InvestigationHypothesisVersionUpdate struct {
 	config
-	hooks     []Hook
-	mutation  *InvestigationHypothesisVersionMutation
-	modifiers []func(*sql.UpdateBuilder)
+	hooks    []Hook
+	mutation *InvestigationHypothesisVersionMutation
 }
 
 // Where appends a list predicates to the InvestigationHypothesisVersionUpdate builder.
@@ -113,12 +112,6 @@ func (_u *InvestigationHypothesisVersionUpdate) check() error {
 	return nil
 }
 
-// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (_u *InvestigationHypothesisVersionUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *InvestigationHypothesisVersionUpdate {
-	_u.modifiers = append(_u.modifiers, modifiers...)
-	return _u
-}
-
 func (_u *InvestigationHypothesisVersionUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -181,7 +174,6 @@ func (_u *InvestigationHypothesisVersionUpdate) sqlSave(ctx context.Context) (_n
 	}
 	_spec.Node.Schema = _u.schemaConfig.InvestigationHypothesisVersion
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
-	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{investigationhypothesisversion.Label}
@@ -197,10 +189,9 @@ func (_u *InvestigationHypothesisVersionUpdate) sqlSave(ctx context.Context) (_n
 // InvestigationHypothesisVersionUpdateOne is the builder for updating a single InvestigationHypothesisVersion entity.
 type InvestigationHypothesisVersionUpdateOne struct {
 	config
-	fields    []string
-	hooks     []Hook
-	mutation  *InvestigationHypothesisVersionMutation
-	modifiers []func(*sql.UpdateBuilder)
+	fields   []string
+	hooks    []Hook
+	mutation *InvestigationHypothesisVersionMutation
 }
 
 // AddOutputReferenceIDs adds the "output_references" edge to the InvestigationOutputReference entity by IDs.
@@ -298,12 +289,6 @@ func (_u *InvestigationHypothesisVersionUpdateOne) check() error {
 	return nil
 }
 
-// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (_u *InvestigationHypothesisVersionUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *InvestigationHypothesisVersionUpdateOne {
-	_u.modifiers = append(_u.modifiers, modifiers...)
-	return _u
-}
-
 func (_u *InvestigationHypothesisVersionUpdateOne) sqlSave(ctx context.Context) (_node *InvestigationHypothesisVersion, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -383,7 +368,6 @@ func (_u *InvestigationHypothesisVersionUpdateOne) sqlSave(ctx context.Context) 
 	}
 	_spec.Node.Schema = _u.schemaConfig.InvestigationHypothesisVersion
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
-	_spec.AddModifiers(_u.modifiers...)
 	_node = &InvestigationHypothesisVersion{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues

@@ -21,9 +21,8 @@ import (
 // InvestigationHypothesisUpdate is the builder for updating InvestigationHypothesis entities.
 type InvestigationHypothesisUpdate struct {
 	config
-	hooks     []Hook
-	mutation  *InvestigationHypothesisMutation
-	modifiers []func(*sql.UpdateBuilder)
+	hooks    []Hook
+	mutation *InvestigationHypothesisMutation
 }
 
 // Where appends a list predicates to the InvestigationHypothesisUpdate builder.
@@ -146,12 +145,6 @@ func (_u *InvestigationHypothesisUpdate) check() error {
 	return nil
 }
 
-// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (_u *InvestigationHypothesisUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *InvestigationHypothesisUpdate {
-	_u.modifiers = append(_u.modifiers, modifiers...)
-	return _u
-}
-
 func (_u *InvestigationHypothesisUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -220,7 +213,6 @@ func (_u *InvestigationHypothesisUpdate) sqlSave(ctx context.Context) (_node int
 	}
 	_spec.Node.Schema = _u.schemaConfig.InvestigationHypothesis
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
-	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{investigationhypothesis.Label}
@@ -236,10 +228,9 @@ func (_u *InvestigationHypothesisUpdate) sqlSave(ctx context.Context) (_node int
 // InvestigationHypothesisUpdateOne is the builder for updating a single InvestigationHypothesis entity.
 type InvestigationHypothesisUpdateOne struct {
 	config
-	fields    []string
-	hooks     []Hook
-	mutation  *InvestigationHypothesisMutation
-	modifiers []func(*sql.UpdateBuilder)
+	fields   []string
+	hooks    []Hook
+	mutation *InvestigationHypothesisMutation
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -369,12 +360,6 @@ func (_u *InvestigationHypothesisUpdateOne) check() error {
 	return nil
 }
 
-// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (_u *InvestigationHypothesisUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *InvestigationHypothesisUpdateOne {
-	_u.modifiers = append(_u.modifiers, modifiers...)
-	return _u
-}
-
 func (_u *InvestigationHypothesisUpdateOne) sqlSave(ctx context.Context) (_node *InvestigationHypothesis, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -460,7 +445,6 @@ func (_u *InvestigationHypothesisUpdateOne) sqlSave(ctx context.Context) (_node 
 	}
 	_spec.Node.Schema = _u.schemaConfig.InvestigationHypothesis
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
-	_spec.AddModifiers(_u.modifiers...)
 	_node = &InvestigationHypothesis{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues

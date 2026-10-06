@@ -10,6 +10,7 @@ import (
 	"math"
 
 	"entgo.io/ent"
+	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -396,9 +397,8 @@ func (_q *DiscussionThreadQuery) Clone() *DiscussionThreadQuery {
 		withUser:          _q.withUser.Clone(),
 		withComments:      _q.withComments.Clone(),
 		// clone intermediate query.
-		sql:       _q.sql.Clone(),
-		path:      _q.path,
-		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
+		sql:  _q.sql.Clone(),
+		path: _q.path,
 	}
 }
 
@@ -863,10 +863,30 @@ func (_q *DiscussionThreadQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	return selector
 }
 
-// Modify adds a query modifier for attaching custom logic to queries.
-func (_q *DiscussionThreadQuery) Modify(modifiers ...func(s *sql.Selector)) *DiscussionThreadSelect {
-	_q.modifiers = append(_q.modifiers, modifiers...)
-	return _q.Select()
+// ForUpdate locks the selected rows against concurrent updates, and prevent them from being
+// updated, deleted or "selected ... for update" by other sessions, until the transaction is
+// either committed or rolled-back.
+func (_q *DiscussionThreadQuery) ForUpdate(opts ...sql.LockOption) *DiscussionThreadQuery {
+	if _q.driver.Dialect() == dialect.Postgres {
+		_q.Unique(false)
+	}
+	_q.modifiers = append(_q.modifiers, func(s *sql.Selector) {
+		s.ForUpdate(opts...)
+	})
+	return _q
+}
+
+// ForShare behaves similarly to ForUpdate, except that it acquires a shared mode lock
+// on any rows that are read. Other sessions can read the rows, but cannot modify them
+// until your transaction commits.
+func (_q *DiscussionThreadQuery) ForShare(opts ...sql.LockOption) *DiscussionThreadQuery {
+	if _q.driver.Dialect() == dialect.Postgres {
+		_q.Unique(false)
+	}
+	_q.modifiers = append(_q.modifiers, func(s *sql.Selector) {
+		s.ForShare(opts...)
+	})
+	return _q
 }
 
 // DiscussionThreadGroupBy is the group-by builder for DiscussionThread entities.
@@ -957,10 +977,4 @@ func (_s *DiscussionThreadSelect) sqlScan(ctx context.Context, root *DiscussionT
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
-}
-
-// Modify adds a query modifier for attaching custom logic to queries.
-func (_s *DiscussionThreadSelect) Modify(modifiers ...func(s *sql.Selector)) *DiscussionThreadSelect {
-	_s.modifiers = append(_s.modifiers, modifiers...)
-	return _s
 }

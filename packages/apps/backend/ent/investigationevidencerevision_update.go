@@ -20,9 +20,8 @@ import (
 // InvestigationEvidenceRevisionUpdate is the builder for updating InvestigationEvidenceRevision entities.
 type InvestigationEvidenceRevisionUpdate struct {
 	config
-	hooks     []Hook
-	mutation  *InvestigationEvidenceRevisionMutation
-	modifiers []func(*sql.UpdateBuilder)
+	hooks    []Hook
+	mutation *InvestigationEvidenceRevisionMutation
 }
 
 // Where appends a list predicates to the InvestigationEvidenceRevisionUpdate builder.
@@ -105,12 +104,6 @@ func (_u *InvestigationEvidenceRevisionUpdate) check() error {
 	return nil
 }
 
-// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (_u *InvestigationEvidenceRevisionUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *InvestigationEvidenceRevisionUpdate {
-	_u.modifiers = append(_u.modifiers, modifiers...)
-	return _u
-}
-
 func (_u *InvestigationEvidenceRevisionUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -156,7 +149,6 @@ func (_u *InvestigationEvidenceRevisionUpdate) sqlSave(ctx context.Context) (_no
 	}
 	_spec.Node.Schema = _u.schemaConfig.InvestigationEvidenceRevision
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
-	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{investigationevidencerevision.Label}
@@ -172,10 +164,9 @@ func (_u *InvestigationEvidenceRevisionUpdate) sqlSave(ctx context.Context) (_no
 // InvestigationEvidenceRevisionUpdateOne is the builder for updating a single InvestigationEvidenceRevision entity.
 type InvestigationEvidenceRevisionUpdateOne struct {
 	config
-	fields    []string
-	hooks     []Hook
-	mutation  *InvestigationEvidenceRevisionMutation
-	modifiers []func(*sql.UpdateBuilder)
+	fields   []string
+	hooks    []Hook
+	mutation *InvestigationEvidenceRevisionMutation
 }
 
 // SetAgentTurnID sets the "agent_turn_id" field.
@@ -265,12 +256,6 @@ func (_u *InvestigationEvidenceRevisionUpdateOne) check() error {
 	return nil
 }
 
-// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (_u *InvestigationEvidenceRevisionUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *InvestigationEvidenceRevisionUpdateOne {
-	_u.modifiers = append(_u.modifiers, modifiers...)
-	return _u
-}
-
 func (_u *InvestigationEvidenceRevisionUpdateOne) sqlSave(ctx context.Context) (_node *InvestigationEvidenceRevision, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -333,7 +318,6 @@ func (_u *InvestigationEvidenceRevisionUpdateOne) sqlSave(ctx context.Context) (
 	}
 	_spec.Node.Schema = _u.schemaConfig.InvestigationEvidenceRevision
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
-	_spec.AddModifiers(_u.modifiers...)
 	_node = &InvestigationEvidenceRevision{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues

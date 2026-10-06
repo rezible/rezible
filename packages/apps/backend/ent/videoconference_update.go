@@ -24,9 +24,8 @@ import (
 // VideoConferenceUpdate is the builder for updating VideoConference entities.
 type VideoConferenceUpdate struct {
 	config
-	hooks     []Hook
-	mutation  *VideoConferenceMutation
-	modifiers []func(*sql.UpdateBuilder)
+	hooks    []Hook
+	mutation *VideoConferenceMutation
 }
 
 // Where appends a list predicates to the VideoConferenceUpdate builder.
@@ -337,12 +336,6 @@ func (_u *VideoConferenceUpdate) check() error {
 	return nil
 }
 
-// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (_u *VideoConferenceUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *VideoConferenceUpdate {
-	_u.modifiers = append(_u.modifiers, modifiers...)
-	return _u
-}
-
 func (_u *VideoConferenceUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -475,7 +468,6 @@ func (_u *VideoConferenceUpdate) sqlSave(ctx context.Context) (_node int, err er
 	}
 	_spec.Node.Schema = _u.schemaConfig.VideoConference
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
-	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{videoconference.Label}
@@ -491,10 +483,9 @@ func (_u *VideoConferenceUpdate) sqlSave(ctx context.Context) (_node int, err er
 // VideoConferenceUpdateOne is the builder for updating a single VideoConference entity.
 type VideoConferenceUpdateOne struct {
 	config
-	fields    []string
-	hooks     []Hook
-	mutation  *VideoConferenceMutation
-	modifiers []func(*sql.UpdateBuilder)
+	fields   []string
+	hooks    []Hook
+	mutation *VideoConferenceMutation
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -812,12 +803,6 @@ func (_u *VideoConferenceUpdateOne) check() error {
 	return nil
 }
 
-// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (_u *VideoConferenceUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *VideoConferenceUpdateOne {
-	_u.modifiers = append(_u.modifiers, modifiers...)
-	return _u
-}
-
 func (_u *VideoConferenceUpdateOne) sqlSave(ctx context.Context) (_node *VideoConference, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -967,7 +952,6 @@ func (_u *VideoConferenceUpdateOne) sqlSave(ctx context.Context) (_node *VideoCo
 	}
 	_spec.Node.Schema = _u.schemaConfig.VideoConference
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
-	_spec.AddModifiers(_u.modifiers...)
 	_node = &VideoConference{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues

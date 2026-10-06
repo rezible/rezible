@@ -26,9 +26,8 @@ import (
 // InvestigationUpdate is the builder for updating Investigation entities.
 type InvestigationUpdate struct {
 	config
-	hooks     []Hook
-	mutation  *InvestigationMutation
-	modifiers []func(*sql.UpdateBuilder)
+	hooks    []Hook
+	mutation *InvestigationMutation
 }
 
 // Where appends a list predicates to the InvestigationUpdate builder.
@@ -332,12 +331,6 @@ func (_u *InvestigationUpdate) check() error {
 		return errors.New(`ent: clearing a required unique edge "Investigation.system_analysis"`)
 	}
 	return nil
-}
-
-// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (_u *InvestigationUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *InvestigationUpdate {
-	_u.modifiers = append(_u.modifiers, modifiers...)
-	return _u
 }
 
 func (_u *InvestigationUpdate) sqlSave(ctx context.Context) (_node int, err error) {
@@ -648,7 +641,6 @@ func (_u *InvestigationUpdate) sqlSave(ctx context.Context) (_node int, err erro
 	}
 	_spec.Node.Schema = _u.schemaConfig.Investigation
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
-	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{investigation.Label}
@@ -664,10 +656,9 @@ func (_u *InvestigationUpdate) sqlSave(ctx context.Context) (_node int, err erro
 // InvestigationUpdateOne is the builder for updating a single Investigation entity.
 type InvestigationUpdateOne struct {
 	config
-	fields    []string
-	hooks     []Hook
-	mutation  *InvestigationMutation
-	modifiers []func(*sql.UpdateBuilder)
+	fields   []string
+	hooks    []Hook
+	mutation *InvestigationMutation
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -978,12 +969,6 @@ func (_u *InvestigationUpdateOne) check() error {
 		return errors.New(`ent: clearing a required unique edge "Investigation.system_analysis"`)
 	}
 	return nil
-}
-
-// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (_u *InvestigationUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *InvestigationUpdateOne {
-	_u.modifiers = append(_u.modifiers, modifiers...)
-	return _u
 }
 
 func (_u *InvestigationUpdateOne) sqlSave(ctx context.Context) (_node *Investigation, err error) {
@@ -1311,7 +1296,6 @@ func (_u *InvestigationUpdateOne) sqlSave(ctx context.Context) (_node *Investiga
 	}
 	_spec.Node.Schema = _u.schemaConfig.Investigation
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
-	_spec.AddModifiers(_u.modifiers...)
 	_node = &Investigation{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues

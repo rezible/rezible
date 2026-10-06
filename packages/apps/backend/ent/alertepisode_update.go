@@ -22,9 +22,8 @@ import (
 // AlertEpisodeUpdate is the builder for updating AlertEpisode entities.
 type AlertEpisodeUpdate struct {
 	config
-	hooks     []Hook
-	mutation  *AlertEpisodeMutation
-	modifiers []func(*sql.UpdateBuilder)
+	hooks    []Hook
+	mutation *AlertEpisodeMutation
 }
 
 // Where appends a list predicates to the AlertEpisodeUpdate builder.
@@ -245,12 +244,6 @@ func (_u *AlertEpisodeUpdate) check() error {
 	return nil
 }
 
-// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (_u *AlertEpisodeUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *AlertEpisodeUpdate {
-	_u.modifiers = append(_u.modifiers, modifiers...)
-	return _u
-}
-
 func (_u *AlertEpisodeUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -365,7 +358,6 @@ func (_u *AlertEpisodeUpdate) sqlSave(ctx context.Context) (_node int, err error
 	}
 	_spec.Node.Schema = _u.schemaConfig.AlertEpisode
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
-	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{alertepisode.Label}
@@ -381,10 +373,9 @@ func (_u *AlertEpisodeUpdate) sqlSave(ctx context.Context) (_node int, err error
 // AlertEpisodeUpdateOne is the builder for updating a single AlertEpisode entity.
 type AlertEpisodeUpdateOne struct {
 	config
-	fields    []string
-	hooks     []Hook
-	mutation  *AlertEpisodeMutation
-	modifiers []func(*sql.UpdateBuilder)
+	fields   []string
+	hooks    []Hook
+	mutation *AlertEpisodeMutation
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -612,12 +603,6 @@ func (_u *AlertEpisodeUpdateOne) check() error {
 	return nil
 }
 
-// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (_u *AlertEpisodeUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *AlertEpisodeUpdateOne {
-	_u.modifiers = append(_u.modifiers, modifiers...)
-	return _u
-}
-
 func (_u *AlertEpisodeUpdateOne) sqlSave(ctx context.Context) (_node *AlertEpisode, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -749,7 +734,6 @@ func (_u *AlertEpisodeUpdateOne) sqlSave(ctx context.Context) (_node *AlertEpiso
 	}
 	_spec.Node.Schema = _u.schemaConfig.AlertEpisode
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
-	_spec.AddModifiers(_u.modifiers...)
 	_node = &AlertEpisode{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues

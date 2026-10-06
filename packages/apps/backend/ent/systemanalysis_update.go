@@ -26,9 +26,8 @@ import (
 // SystemAnalysisUpdate is the builder for updating SystemAnalysis entities.
 type SystemAnalysisUpdate struct {
 	config
-	hooks     []Hook
-	mutation  *SystemAnalysisMutation
-	modifiers []func(*sql.UpdateBuilder)
+	hooks    []Hook
+	mutation *SystemAnalysisMutation
 }
 
 // Where appends a list predicates to the SystemAnalysisUpdate builder.
@@ -363,12 +362,6 @@ func (_u *SystemAnalysisUpdate) check() error {
 	return nil
 }
 
-// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (_u *SystemAnalysisUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *SystemAnalysisUpdate {
-	_u.modifiers = append(_u.modifiers, modifiers...)
-	return _u
-}
-
 func (_u *SystemAnalysisUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -680,7 +673,6 @@ func (_u *SystemAnalysisUpdate) sqlSave(ctx context.Context) (_node int, err err
 	}
 	_spec.Node.Schema = _u.schemaConfig.SystemAnalysis
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
-	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{systemanalysis.Label}
@@ -696,10 +688,9 @@ func (_u *SystemAnalysisUpdate) sqlSave(ctx context.Context) (_node int, err err
 // SystemAnalysisUpdateOne is the builder for updating a single SystemAnalysis entity.
 type SystemAnalysisUpdateOne struct {
 	config
-	fields    []string
-	hooks     []Hook
-	mutation  *SystemAnalysisMutation
-	modifiers []func(*sql.UpdateBuilder)
+	fields   []string
+	hooks    []Hook
+	mutation *SystemAnalysisMutation
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -1041,12 +1032,6 @@ func (_u *SystemAnalysisUpdateOne) check() error {
 	return nil
 }
 
-// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (_u *SystemAnalysisUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *SystemAnalysisUpdateOne {
-	_u.modifiers = append(_u.modifiers, modifiers...)
-	return _u
-}
-
 func (_u *SystemAnalysisUpdateOne) sqlSave(ctx context.Context) (_node *SystemAnalysis, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -1375,7 +1360,6 @@ func (_u *SystemAnalysisUpdateOne) sqlSave(ctx context.Context) (_node *SystemAn
 	}
 	_spec.Node.Schema = _u.schemaConfig.SystemAnalysis
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
-	_spec.AddModifiers(_u.modifiers...)
 	_node = &SystemAnalysis{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues

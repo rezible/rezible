@@ -21,9 +21,8 @@ import (
 // IntegrationEventSyncRunUpdate is the builder for updating IntegrationEventSyncRun entities.
 type IntegrationEventSyncRunUpdate struct {
 	config
-	hooks     []Hook
-	mutation  *IntegrationEventSyncRunMutation
-	modifiers []func(*sql.UpdateBuilder)
+	hooks    []Hook
+	mutation *IntegrationEventSyncRunMutation
 }
 
 // Where appends a list predicates to the IntegrationEventSyncRunUpdate builder.
@@ -262,12 +261,6 @@ func (_u *IntegrationEventSyncRunUpdate) check() error {
 	return nil
 }
 
-// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (_u *IntegrationEventSyncRunUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IntegrationEventSyncRunUpdate {
-	_u.modifiers = append(_u.modifiers, modifiers...)
-	return _u
-}
-
 func (_u *IntegrationEventSyncRunUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -358,7 +351,6 @@ func (_u *IntegrationEventSyncRunUpdate) sqlSave(ctx context.Context) (_node int
 	}
 	_spec.Node.Schema = _u.schemaConfig.IntegrationEventSyncRun
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
-	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{integrationeventsyncrun.Label}
@@ -374,10 +366,9 @@ func (_u *IntegrationEventSyncRunUpdate) sqlSave(ctx context.Context) (_node int
 // IntegrationEventSyncRunUpdateOne is the builder for updating a single IntegrationEventSyncRun entity.
 type IntegrationEventSyncRunUpdateOne struct {
 	config
-	fields    []string
-	hooks     []Hook
-	mutation  *IntegrationEventSyncRunMutation
-	modifiers []func(*sql.UpdateBuilder)
+	fields   []string
+	hooks    []Hook
+	mutation *IntegrationEventSyncRunMutation
 }
 
 // SetIntegrationID sets the "integration_id" field.
@@ -623,12 +614,6 @@ func (_u *IntegrationEventSyncRunUpdateOne) check() error {
 	return nil
 }
 
-// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (_u *IntegrationEventSyncRunUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IntegrationEventSyncRunUpdateOne {
-	_u.modifiers = append(_u.modifiers, modifiers...)
-	return _u
-}
-
 func (_u *IntegrationEventSyncRunUpdateOne) sqlSave(ctx context.Context) (_node *IntegrationEventSyncRun, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -736,7 +721,6 @@ func (_u *IntegrationEventSyncRunUpdateOne) sqlSave(ctx context.Context) (_node 
 	}
 	_spec.Node.Schema = _u.schemaConfig.IntegrationEventSyncRun
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
-	_spec.AddModifiers(_u.modifiers...)
 	_node = &IntegrationEventSyncRun{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues

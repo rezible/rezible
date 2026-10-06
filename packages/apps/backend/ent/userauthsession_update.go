@@ -23,9 +23,8 @@ import (
 // UserAuthSessionUpdate is the builder for updating UserAuthSession entities.
 type UserAuthSessionUpdate struct {
 	config
-	hooks     []Hook
-	mutation  *UserAuthSessionMutation
-	modifiers []func(*sql.UpdateBuilder)
+	hooks    []Hook
+	mutation *UserAuthSessionMutation
 }
 
 // Where appends a list predicates to the UserAuthSessionUpdate builder.
@@ -162,12 +161,6 @@ func (_u *UserAuthSessionUpdate) check() error {
 	return nil
 }
 
-// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (_u *UserAuthSessionUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *UserAuthSessionUpdate {
-	_u.modifiers = append(_u.modifiers, modifiers...)
-	return _u
-}
-
 func (_u *UserAuthSessionUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -258,7 +251,6 @@ func (_u *UserAuthSessionUpdate) sqlSave(ctx context.Context) (_node int, err er
 	}
 	_spec.Node.Schema = _u.schemaConfig.UserAuthSession
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
-	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{userauthsession.Label}
@@ -274,10 +266,9 @@ func (_u *UserAuthSessionUpdate) sqlSave(ctx context.Context) (_node int, err er
 // UserAuthSessionUpdateOne is the builder for updating a single UserAuthSession entity.
 type UserAuthSessionUpdateOne struct {
 	config
-	fields    []string
-	hooks     []Hook
-	mutation  *UserAuthSessionMutation
-	modifiers []func(*sql.UpdateBuilder)
+	fields   []string
+	hooks    []Hook
+	mutation *UserAuthSessionMutation
 }
 
 // SetUserID sets the "user_id" field.
@@ -421,12 +412,6 @@ func (_u *UserAuthSessionUpdateOne) check() error {
 	return nil
 }
 
-// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (_u *UserAuthSessionUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *UserAuthSessionUpdateOne {
-	_u.modifiers = append(_u.modifiers, modifiers...)
-	return _u
-}
-
 func (_u *UserAuthSessionUpdateOne) sqlSave(ctx context.Context) (_node *UserAuthSession, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -534,7 +519,6 @@ func (_u *UserAuthSessionUpdateOne) sqlSave(ctx context.Context) (_node *UserAut
 	}
 	_spec.Node.Schema = _u.schemaConfig.UserAuthSession
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
-	_spec.AddModifiers(_u.modifiers...)
 	_node = &UserAuthSession{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues

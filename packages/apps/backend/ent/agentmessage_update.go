@@ -21,9 +21,8 @@ import (
 // AgentMessageUpdate is the builder for updating AgentMessage entities.
 type AgentMessageUpdate struct {
 	config
-	hooks     []Hook
-	mutation  *AgentMessageMutation
-	modifiers []func(*sql.UpdateBuilder)
+	hooks    []Hook
+	mutation *AgentMessageMutation
 }
 
 // Where appends a list predicates to the AgentMessageUpdate builder.
@@ -164,12 +163,6 @@ func (_u *AgentMessageUpdate) check() error {
 	return nil
 }
 
-// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (_u *AgentMessageUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *AgentMessageUpdate {
-	_u.modifiers = append(_u.modifiers, modifiers...)
-	return _u
-}
-
 func (_u *AgentMessageUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -207,7 +200,6 @@ func (_u *AgentMessageUpdate) sqlSave(ctx context.Context) (_node int, err error
 	}
 	_spec.Node.Schema = _u.schemaConfig.AgentMessage
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
-	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{agentmessage.Label}
@@ -223,10 +215,9 @@ func (_u *AgentMessageUpdate) sqlSave(ctx context.Context) (_node int, err error
 // AgentMessageUpdateOne is the builder for updating a single AgentMessage entity.
 type AgentMessageUpdateOne struct {
 	config
-	fields    []string
-	hooks     []Hook
-	mutation  *AgentMessageMutation
-	modifiers []func(*sql.UpdateBuilder)
+	fields   []string
+	hooks    []Hook
+	mutation *AgentMessageMutation
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -374,12 +365,6 @@ func (_u *AgentMessageUpdateOne) check() error {
 	return nil
 }
 
-// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (_u *AgentMessageUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *AgentMessageUpdateOne {
-	_u.modifiers = append(_u.modifiers, modifiers...)
-	return _u
-}
-
 func (_u *AgentMessageUpdateOne) sqlSave(ctx context.Context) (_node *AgentMessage, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -434,7 +419,6 @@ func (_u *AgentMessageUpdateOne) sqlSave(ctx context.Context) (_node *AgentMessa
 	}
 	_spec.Node.Schema = _u.schemaConfig.AgentMessage
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
-	_spec.AddModifiers(_u.modifiers...)
 	_node = &AgentMessage{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues

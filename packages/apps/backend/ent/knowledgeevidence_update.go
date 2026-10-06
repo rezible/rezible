@@ -18,9 +18,8 @@ import (
 // KnowledgeEvidenceUpdate is the builder for updating KnowledgeEvidence entities.
 type KnowledgeEvidenceUpdate struct {
 	config
-	hooks     []Hook
-	mutation  *KnowledgeEvidenceMutation
-	modifiers []func(*sql.UpdateBuilder)
+	hooks    []Hook
+	mutation *KnowledgeEvidenceMutation
 }
 
 // Where appends a list predicates to the KnowledgeEvidenceUpdate builder.
@@ -75,12 +74,6 @@ func (_u *KnowledgeEvidenceUpdate) check() error {
 	return nil
 }
 
-// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (_u *KnowledgeEvidenceUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *KnowledgeEvidenceUpdate {
-	_u.modifiers = append(_u.modifiers, modifiers...)
-	return _u
-}
-
 func (_u *KnowledgeEvidenceUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -95,7 +88,6 @@ func (_u *KnowledgeEvidenceUpdate) sqlSave(ctx context.Context) (_node int, err 
 	}
 	_spec.Node.Schema = _u.schemaConfig.KnowledgeEvidence
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
-	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{knowledgeevidence.Label}
@@ -111,10 +103,9 @@ func (_u *KnowledgeEvidenceUpdate) sqlSave(ctx context.Context) (_node int, err 
 // KnowledgeEvidenceUpdateOne is the builder for updating a single KnowledgeEvidence entity.
 type KnowledgeEvidenceUpdateOne struct {
 	config
-	fields    []string
-	hooks     []Hook
-	mutation  *KnowledgeEvidenceMutation
-	modifiers []func(*sql.UpdateBuilder)
+	fields   []string
+	hooks    []Hook
+	mutation *KnowledgeEvidenceMutation
 }
 
 // Mutation returns the KnowledgeEvidenceMutation object of the builder.
@@ -176,12 +167,6 @@ func (_u *KnowledgeEvidenceUpdateOne) check() error {
 	return nil
 }
 
-// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (_u *KnowledgeEvidenceUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *KnowledgeEvidenceUpdateOne {
-	_u.modifiers = append(_u.modifiers, modifiers...)
-	return _u
-}
-
 func (_u *KnowledgeEvidenceUpdateOne) sqlSave(ctx context.Context) (_node *KnowledgeEvidence, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -213,7 +198,6 @@ func (_u *KnowledgeEvidenceUpdateOne) sqlSave(ctx context.Context) (_node *Knowl
 	}
 	_spec.Node.Schema = _u.schemaConfig.KnowledgeEvidence
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
-	_spec.AddModifiers(_u.modifiers...)
 	_node = &KnowledgeEvidence{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues

@@ -21,9 +21,8 @@ import (
 // OncallScheduleParticipantUpdate is the builder for updating OncallScheduleParticipant entities.
 type OncallScheduleParticipantUpdate struct {
 	config
-	hooks     []Hook
-	mutation  *OncallScheduleParticipantMutation
-	modifiers []func(*sql.UpdateBuilder)
+	hooks    []Hook
+	mutation *OncallScheduleParticipantMutation
 }
 
 // Where appends a list predicates to the OncallScheduleParticipantUpdate builder.
@@ -149,12 +148,6 @@ func (_u *OncallScheduleParticipantUpdate) check() error {
 	return nil
 }
 
-// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (_u *OncallScheduleParticipantUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *OncallScheduleParticipantUpdate {
-	_u.modifiers = append(_u.modifiers, modifiers...)
-	return _u
-}
-
 func (_u *OncallScheduleParticipantUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -237,7 +230,6 @@ func (_u *OncallScheduleParticipantUpdate) sqlSave(ctx context.Context) (_node i
 	}
 	_spec.Node.Schema = _u.schemaConfig.OncallScheduleParticipant
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
-	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{oncallscheduleparticipant.Label}
@@ -253,10 +245,9 @@ func (_u *OncallScheduleParticipantUpdate) sqlSave(ctx context.Context) (_node i
 // OncallScheduleParticipantUpdateOne is the builder for updating a single OncallScheduleParticipant entity.
 type OncallScheduleParticipantUpdateOne struct {
 	config
-	fields    []string
-	hooks     []Hook
-	mutation  *OncallScheduleParticipantMutation
-	modifiers []func(*sql.UpdateBuilder)
+	fields   []string
+	hooks    []Hook
+	mutation *OncallScheduleParticipantMutation
 }
 
 // SetScheduleID sets the "schedule_id" field.
@@ -389,12 +380,6 @@ func (_u *OncallScheduleParticipantUpdateOne) check() error {
 	return nil
 }
 
-// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (_u *OncallScheduleParticipantUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *OncallScheduleParticipantUpdateOne {
-	_u.modifiers = append(_u.modifiers, modifiers...)
-	return _u
-}
-
 func (_u *OncallScheduleParticipantUpdateOne) sqlSave(ctx context.Context) (_node *OncallScheduleParticipant, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -494,7 +479,6 @@ func (_u *OncallScheduleParticipantUpdateOne) sqlSave(ctx context.Context) (_nod
 	}
 	_spec.Node.Schema = _u.schemaConfig.OncallScheduleParticipant
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
-	_spec.AddModifiers(_u.modifiers...)
 	_node = &OncallScheduleParticipant{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues

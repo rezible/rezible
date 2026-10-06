@@ -21,9 +21,8 @@ import (
 // IntegrationUpdate is the builder for updating Integration entities.
 type IntegrationUpdate struct {
 	config
-	hooks     []Hook
-	mutation  *IntegrationMutation
-	modifiers []func(*sql.UpdateBuilder)
+	hooks    []Hook
+	mutation *IntegrationMutation
 }
 
 // Where appends a list predicates to the IntegrationUpdate builder.
@@ -202,12 +201,6 @@ func (_u *IntegrationUpdate) check() error {
 	return nil
 }
 
-// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (_u *IntegrationUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IntegrationUpdate {
-	_u.modifiers = append(_u.modifiers, modifiers...)
-	return _u
-}
-
 func (_u *IntegrationUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -254,7 +247,6 @@ func (_u *IntegrationUpdate) sqlSave(ctx context.Context) (_node int, err error)
 	}
 	_spec.Node.Schema = _u.schemaConfig.Integration
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
-	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{integration.Label}
@@ -270,10 +262,9 @@ func (_u *IntegrationUpdate) sqlSave(ctx context.Context) (_node int, err error)
 // IntegrationUpdateOne is the builder for updating a single Integration entity.
 type IntegrationUpdateOne struct {
 	config
-	fields    []string
-	hooks     []Hook
-	mutation  *IntegrationMutation
-	modifiers []func(*sql.UpdateBuilder)
+	fields   []string
+	hooks    []Hook
+	mutation *IntegrationMutation
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -459,12 +450,6 @@ func (_u *IntegrationUpdateOne) check() error {
 	return nil
 }
 
-// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (_u *IntegrationUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IntegrationUpdateOne {
-	_u.modifiers = append(_u.modifiers, modifiers...)
-	return _u
-}
-
 func (_u *IntegrationUpdateOne) sqlSave(ctx context.Context) (_node *Integration, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -528,7 +513,6 @@ func (_u *IntegrationUpdateOne) sqlSave(ctx context.Context) (_node *Integration
 	}
 	_spec.Node.Schema = _u.schemaConfig.Integration
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
-	_spec.AddModifiers(_u.modifiers...)
 	_node = &Integration{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues

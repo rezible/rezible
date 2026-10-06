@@ -22,9 +22,8 @@ import (
 // OncallScheduleUpdate is the builder for updating OncallSchedule entities.
 type OncallScheduleUpdate struct {
 	config
-	hooks     []Hook
-	mutation  *OncallScheduleMutation
-	modifiers []func(*sql.UpdateBuilder)
+	hooks    []Hook
+	mutation *OncallScheduleMutation
 }
 
 // Where appends a list predicates to the OncallScheduleUpdate builder.
@@ -191,12 +190,6 @@ func (_u *OncallScheduleUpdate) check() error {
 	return nil
 }
 
-// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (_u *OncallScheduleUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *OncallScheduleUpdate {
-	_u.modifiers = append(_u.modifiers, modifiers...)
-	return _u
-}
-
 func (_u *OncallScheduleUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -305,7 +298,6 @@ func (_u *OncallScheduleUpdate) sqlSave(ctx context.Context) (_node int, err err
 	}
 	_spec.Node.Schema = _u.schemaConfig.OncallSchedule
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
-	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{oncallschedule.Label}
@@ -321,10 +313,9 @@ func (_u *OncallScheduleUpdate) sqlSave(ctx context.Context) (_node int, err err
 // OncallScheduleUpdateOne is the builder for updating a single OncallSchedule entity.
 type OncallScheduleUpdateOne struct {
 	config
-	fields    []string
-	hooks     []Hook
-	mutation  *OncallScheduleMutation
-	modifiers []func(*sql.UpdateBuilder)
+	fields   []string
+	hooks    []Hook
+	mutation *OncallScheduleMutation
 }
 
 // SetArchiveTime sets the "archive_time" field.
@@ -498,12 +489,6 @@ func (_u *OncallScheduleUpdateOne) check() error {
 	return nil
 }
 
-// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (_u *OncallScheduleUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *OncallScheduleUpdateOne {
-	_u.modifiers = append(_u.modifiers, modifiers...)
-	return _u
-}
-
 func (_u *OncallScheduleUpdateOne) sqlSave(ctx context.Context) (_node *OncallSchedule, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -629,7 +614,6 @@ func (_u *OncallScheduleUpdateOne) sqlSave(ctx context.Context) (_node *OncallSc
 	}
 	_spec.Node.Schema = _u.schemaConfig.OncallSchedule
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
-	_spec.AddModifiers(_u.modifiers...)
 	_node = &OncallSchedule{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues

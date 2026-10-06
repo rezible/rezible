@@ -21,9 +21,8 @@ import (
 // InvestigationFindingVersionUpdate is the builder for updating InvestigationFindingVersion entities.
 type InvestigationFindingVersionUpdate struct {
 	config
-	hooks     []Hook
-	mutation  *InvestigationFindingVersionMutation
-	modifiers []func(*sql.UpdateBuilder)
+	hooks    []Hook
+	mutation *InvestigationFindingVersionMutation
 }
 
 // Where appends a list predicates to the InvestigationFindingVersionUpdate builder.
@@ -186,12 +185,6 @@ func (_u *InvestigationFindingVersionUpdate) check() error {
 	return nil
 }
 
-// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (_u *InvestigationFindingVersionUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *InvestigationFindingVersionUpdate {
-	_u.modifiers = append(_u.modifiers, modifiers...)
-	return _u
-}
-
 func (_u *InvestigationFindingVersionUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -350,7 +343,6 @@ func (_u *InvestigationFindingVersionUpdate) sqlSave(ctx context.Context) (_node
 	}
 	_spec.Node.Schema = _u.schemaConfig.InvestigationFindingVersion
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
-	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{investigationfindingversion.Label}
@@ -366,10 +358,9 @@ func (_u *InvestigationFindingVersionUpdate) sqlSave(ctx context.Context) (_node
 // InvestigationFindingVersionUpdateOne is the builder for updating a single InvestigationFindingVersion entity.
 type InvestigationFindingVersionUpdateOne struct {
 	config
-	fields    []string
-	hooks     []Hook
-	mutation  *InvestigationFindingVersionMutation
-	modifiers []func(*sql.UpdateBuilder)
+	fields   []string
+	hooks    []Hook
+	mutation *InvestigationFindingVersionMutation
 }
 
 // AddOutputReferenceIDs adds the "output_references" edge to the InvestigationOutputReference entity by IDs.
@@ -537,12 +528,6 @@ func (_u *InvestigationFindingVersionUpdateOne) check() error {
 		return errors.New(`ent: clearing a required unique edge "InvestigationFindingVersion.agent_turn"`)
 	}
 	return nil
-}
-
-// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (_u *InvestigationFindingVersionUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *InvestigationFindingVersionUpdateOne {
-	_u.modifiers = append(_u.modifiers, modifiers...)
-	return _u
 }
 
 func (_u *InvestigationFindingVersionUpdateOne) sqlSave(ctx context.Context) (_node *InvestigationFindingVersion, err error) {
@@ -720,7 +705,6 @@ func (_u *InvestigationFindingVersionUpdateOne) sqlSave(ctx context.Context) (_n
 	}
 	_spec.Node.Schema = _u.schemaConfig.InvestigationFindingVersion
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
-	_spec.AddModifiers(_u.modifiers...)
 	_node = &InvestigationFindingVersion{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues

@@ -22,9 +22,8 @@ import (
 // IncidentImpactUpdate is the builder for updating IncidentImpact entities.
 type IncidentImpactUpdate struct {
 	config
-	hooks     []Hook
-	mutation  *IncidentImpactMutation
-	modifiers []func(*sql.UpdateBuilder)
+	hooks    []Hook
+	mutation *IncidentImpactMutation
 }
 
 // Where appends a list predicates to the IncidentImpactUpdate builder.
@@ -204,12 +203,6 @@ func (_u *IncidentImpactUpdate) check() error {
 	return nil
 }
 
-// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (_u *IncidentImpactUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentImpactUpdate {
-	_u.modifiers = append(_u.modifiers, modifiers...)
-	return _u
-}
-
 func (_u *IncidentImpactUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -304,7 +297,6 @@ func (_u *IncidentImpactUpdate) sqlSave(ctx context.Context) (_node int, err err
 	}
 	_spec.Node.Schema = _u.schemaConfig.IncidentImpact
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
-	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{incidentimpact.Label}
@@ -320,10 +312,9 @@ func (_u *IncidentImpactUpdate) sqlSave(ctx context.Context) (_node int, err err
 // IncidentImpactUpdateOne is the builder for updating a single IncidentImpact entity.
 type IncidentImpactUpdateOne struct {
 	config
-	fields    []string
-	hooks     []Hook
-	mutation  *IncidentImpactMutation
-	modifiers []func(*sql.UpdateBuilder)
+	fields   []string
+	hooks    []Hook
+	mutation *IncidentImpactMutation
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -510,12 +501,6 @@ func (_u *IncidentImpactUpdateOne) check() error {
 	return nil
 }
 
-// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (_u *IncidentImpactUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentImpactUpdateOne {
-	_u.modifiers = append(_u.modifiers, modifiers...)
-	return _u
-}
-
 func (_u *IncidentImpactUpdateOne) sqlSave(ctx context.Context) (_node *IncidentImpact, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -627,7 +612,6 @@ func (_u *IncidentImpactUpdateOne) sqlSave(ctx context.Context) (_node *Incident
 	}
 	_spec.Node.Schema = _u.schemaConfig.IncidentImpact
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
-	_spec.AddModifiers(_u.modifiers...)
 	_node = &IncidentImpact{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues

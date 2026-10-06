@@ -22,9 +22,8 @@ import (
 // NormalizedEventUpdate is the builder for updating NormalizedEvent entities.
 type NormalizedEventUpdate struct {
 	config
-	hooks     []Hook
-	mutation  *NormalizedEventMutation
-	modifiers []func(*sql.UpdateBuilder)
+	hooks    []Hook
+	mutation *NormalizedEventMutation
 }
 
 // Where appends a list predicates to the NormalizedEventUpdate builder.
@@ -165,12 +164,6 @@ func (_u *NormalizedEventUpdate) check() error {
 	return nil
 }
 
-// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (_u *NormalizedEventUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *NormalizedEventUpdate {
-	_u.modifiers = append(_u.modifiers, modifiers...)
-	return _u
-}
-
 func (_u *NormalizedEventUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -295,7 +288,6 @@ func (_u *NormalizedEventUpdate) sqlSave(ctx context.Context) (_node int, err er
 	}
 	_spec.Node.Schema = _u.schemaConfig.NormalizedEvent
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
-	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{normalizedevent.Label}
@@ -311,10 +303,9 @@ func (_u *NormalizedEventUpdate) sqlSave(ctx context.Context) (_node int, err er
 // NormalizedEventUpdateOne is the builder for updating a single NormalizedEvent entity.
 type NormalizedEventUpdateOne struct {
 	config
-	fields    []string
-	hooks     []Hook
-	mutation  *NormalizedEventMutation
-	modifiers []func(*sql.UpdateBuilder)
+	fields   []string
+	hooks    []Hook
+	mutation *NormalizedEventMutation
 }
 
 // SetIntegrationID sets the "integration_id" field.
@@ -462,12 +453,6 @@ func (_u *NormalizedEventUpdateOne) check() error {
 	return nil
 }
 
-// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (_u *NormalizedEventUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *NormalizedEventUpdateOne {
-	_u.modifiers = append(_u.modifiers, modifiers...)
-	return _u
-}
-
 func (_u *NormalizedEventUpdateOne) sqlSave(ctx context.Context) (_node *NormalizedEvent, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -609,7 +594,6 @@ func (_u *NormalizedEventUpdateOne) sqlSave(ctx context.Context) (_node *Normali
 	}
 	_spec.Node.Schema = _u.schemaConfig.NormalizedEvent
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
-	_spec.AddModifiers(_u.modifiers...)
 	_node = &NormalizedEvent{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues

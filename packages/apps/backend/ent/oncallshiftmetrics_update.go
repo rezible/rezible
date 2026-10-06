@@ -21,9 +21,8 @@ import (
 // OncallShiftMetricsUpdate is the builder for updating OncallShiftMetrics entities.
 type OncallShiftMetricsUpdate struct {
 	config
-	hooks     []Hook
-	mutation  *OncallShiftMetricsMutation
-	modifiers []func(*sql.UpdateBuilder)
+	hooks    []Hook
+	mutation *OncallShiftMetricsMutation
 }
 
 // Where appends a list predicates to the OncallShiftMetricsUpdate builder.
@@ -387,12 +386,6 @@ func (_u *OncallShiftMetricsUpdate) check() error {
 	return nil
 }
 
-// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (_u *OncallShiftMetricsUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *OncallShiftMetricsUpdate {
-	_u.modifiers = append(_u.modifiers, modifiers...)
-	return _u
-}
-
 func (_u *OncallShiftMetricsUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -519,7 +512,6 @@ func (_u *OncallShiftMetricsUpdate) sqlSave(ctx context.Context) (_node int, err
 	}
 	_spec.Node.Schema = _u.schemaConfig.OncallShiftMetrics
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
-	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{oncallshiftmetrics.Label}
@@ -535,10 +527,9 @@ func (_u *OncallShiftMetricsUpdate) sqlSave(ctx context.Context) (_node int, err
 // OncallShiftMetricsUpdateOne is the builder for updating a single OncallShiftMetrics entity.
 type OncallShiftMetricsUpdateOne struct {
 	config
-	fields    []string
-	hooks     []Hook
-	mutation  *OncallShiftMetricsMutation
-	modifiers []func(*sql.UpdateBuilder)
+	fields   []string
+	hooks    []Hook
+	mutation *OncallShiftMetricsMutation
 }
 
 // SetShiftID sets the "shift_id" field.
@@ -909,12 +900,6 @@ func (_u *OncallShiftMetricsUpdateOne) check() error {
 	return nil
 }
 
-// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (_u *OncallShiftMetricsUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *OncallShiftMetricsUpdateOne {
-	_u.modifiers = append(_u.modifiers, modifiers...)
-	return _u
-}
-
 func (_u *OncallShiftMetricsUpdateOne) sqlSave(ctx context.Context) (_node *OncallShiftMetrics, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -1058,7 +1043,6 @@ func (_u *OncallShiftMetricsUpdateOne) sqlSave(ctx context.Context) (_node *Onca
 	}
 	_spec.Node.Schema = _u.schemaConfig.OncallShiftMetrics
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
-	_spec.AddModifiers(_u.modifiers...)
 	_node = &OncallShiftMetrics{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues

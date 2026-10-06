@@ -21,9 +21,8 @@ import (
 // OrganizationPreferencesUpdate is the builder for updating OrganizationPreferences entities.
 type OrganizationPreferencesUpdate struct {
 	config
-	hooks     []Hook
-	mutation  *OrganizationPreferencesMutation
-	modifiers []func(*sql.UpdateBuilder)
+	hooks    []Hook
+	mutation *OrganizationPreferencesMutation
 }
 
 // Where appends a list predicates to the OrganizationPreferencesUpdate builder.
@@ -180,12 +179,6 @@ func (_u *OrganizationPreferencesUpdate) check() error {
 	return nil
 }
 
-// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (_u *OrganizationPreferencesUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *OrganizationPreferencesUpdate {
-	_u.modifiers = append(_u.modifiers, modifiers...)
-	return _u
-}
-
 func (_u *OrganizationPreferencesUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -252,7 +245,6 @@ func (_u *OrganizationPreferencesUpdate) sqlSave(ctx context.Context) (_node int
 	}
 	_spec.Node.Schema = _u.schemaConfig.OrganizationPreferences
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
-	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{organizationpreferences.Label}
@@ -268,10 +260,9 @@ func (_u *OrganizationPreferencesUpdate) sqlSave(ctx context.Context) (_node int
 // OrganizationPreferencesUpdateOne is the builder for updating a single OrganizationPreferences entity.
 type OrganizationPreferencesUpdateOne struct {
 	config
-	fields    []string
-	hooks     []Hook
-	mutation  *OrganizationPreferencesMutation
-	modifiers []func(*sql.UpdateBuilder)
+	fields   []string
+	hooks    []Hook
+	mutation *OrganizationPreferencesMutation
 }
 
 // SetOrganizationID sets the "organization_id" field.
@@ -435,12 +426,6 @@ func (_u *OrganizationPreferencesUpdateOne) check() error {
 	return nil
 }
 
-// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (_u *OrganizationPreferencesUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *OrganizationPreferencesUpdateOne {
-	_u.modifiers = append(_u.modifiers, modifiers...)
-	return _u
-}
-
 func (_u *OrganizationPreferencesUpdateOne) sqlSave(ctx context.Context) (_node *OrganizationPreferences, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -524,7 +509,6 @@ func (_u *OrganizationPreferencesUpdateOne) sqlSave(ctx context.Context) (_node 
 	}
 	_spec.Node.Schema = _u.schemaConfig.OrganizationPreferences
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
-	_spec.AddModifiers(_u.modifiers...)
 	_node = &OrganizationPreferences{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues

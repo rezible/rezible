@@ -21,9 +21,8 @@ import (
 // InvestigationUserInputUpdate is the builder for updating InvestigationUserInput entities.
 type InvestigationUserInputUpdate struct {
 	config
-	hooks     []Hook
-	mutation  *InvestigationUserInputMutation
-	modifiers []func(*sql.UpdateBuilder)
+	hooks    []Hook
+	mutation *InvestigationUserInputMutation
 }
 
 // Where appends a list predicates to the InvestigationUserInputUpdate builder.
@@ -142,12 +141,6 @@ func (_u *InvestigationUserInputUpdate) check() error {
 	return nil
 }
 
-// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (_u *InvestigationUserInputUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *InvestigationUserInputUpdate {
-	_u.modifiers = append(_u.modifiers, modifiers...)
-	return _u
-}
-
 func (_u *InvestigationUserInputUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -241,7 +234,6 @@ func (_u *InvestigationUserInputUpdate) sqlSave(ctx context.Context) (_node int,
 	}
 	_spec.Node.Schema = _u.schemaConfig.InvestigationUserInput
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
-	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{investigationuserinput.Label}
@@ -257,10 +249,9 @@ func (_u *InvestigationUserInputUpdate) sqlSave(ctx context.Context) (_node int,
 // InvestigationUserInputUpdateOne is the builder for updating a single InvestigationUserInput entity.
 type InvestigationUserInputUpdateOne struct {
 	config
-	fields    []string
-	hooks     []Hook
-	mutation  *InvestigationUserInputMutation
-	modifiers []func(*sql.UpdateBuilder)
+	fields   []string
+	hooks    []Hook
+	mutation *InvestigationUserInputMutation
 }
 
 // SetAgentTurnID sets the "agent_turn_id" field.
@@ -386,12 +377,6 @@ func (_u *InvestigationUserInputUpdateOne) check() error {
 	return nil
 }
 
-// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (_u *InvestigationUserInputUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *InvestigationUserInputUpdateOne {
-	_u.modifiers = append(_u.modifiers, modifiers...)
-	return _u
-}
-
 func (_u *InvestigationUserInputUpdateOne) sqlSave(ctx context.Context) (_node *InvestigationUserInput, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -502,7 +487,6 @@ func (_u *InvestigationUserInputUpdateOne) sqlSave(ctx context.Context) (_node *
 	}
 	_spec.Node.Schema = _u.schemaConfig.InvestigationUserInput
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
-	_spec.AddModifiers(_u.modifiers...)
 	_node = &InvestigationUserInput{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues

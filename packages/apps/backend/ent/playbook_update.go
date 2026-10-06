@@ -20,9 +20,8 @@ import (
 // PlaybookUpdate is the builder for updating Playbook entities.
 type PlaybookUpdate struct {
 	config
-	hooks     []Hook
-	mutation  *PlaybookMutation
-	modifiers []func(*sql.UpdateBuilder)
+	hooks    []Hook
+	mutation *PlaybookMutation
 }
 
 // Where appends a list predicates to the PlaybookUpdate builder.
@@ -127,12 +126,6 @@ func (_u *PlaybookUpdate) check() error {
 	return nil
 }
 
-// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (_u *PlaybookUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *PlaybookUpdate {
-	_u.modifiers = append(_u.modifiers, modifiers...)
-	return _u
-}
-
 func (_u *PlaybookUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -201,7 +194,6 @@ func (_u *PlaybookUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	_spec.Node.Schema = _u.schemaConfig.Playbook
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
-	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{playbook.Label}
@@ -217,10 +209,9 @@ func (_u *PlaybookUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 // PlaybookUpdateOne is the builder for updating a single Playbook entity.
 type PlaybookUpdateOne struct {
 	config
-	fields    []string
-	hooks     []Hook
-	mutation  *PlaybookMutation
-	modifiers []func(*sql.UpdateBuilder)
+	fields   []string
+	hooks    []Hook
+	mutation *PlaybookMutation
 }
 
 // SetTitle sets the "title" field.
@@ -332,12 +323,6 @@ func (_u *PlaybookUpdateOne) check() error {
 	return nil
 }
 
-// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (_u *PlaybookUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *PlaybookUpdateOne {
-	_u.modifiers = append(_u.modifiers, modifiers...)
-	return _u
-}
-
 func (_u *PlaybookUpdateOne) sqlSave(ctx context.Context) (_node *Playbook, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -423,7 +408,6 @@ func (_u *PlaybookUpdateOne) sqlSave(ctx context.Context) (_node *Playbook, err 
 	}
 	_spec.Node.Schema = _u.schemaConfig.Playbook
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
-	_spec.AddModifiers(_u.modifiers...)
 	_node = &Playbook{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues

@@ -23,9 +23,8 @@ import (
 // IncidentDebriefUpdate is the builder for updating IncidentDebrief entities.
 type IncidentDebriefUpdate struct {
 	config
-	hooks     []Hook
-	mutation  *IncidentDebriefMutation
-	modifiers []func(*sql.UpdateBuilder)
+	hooks    []Hook
+	mutation *IncidentDebriefMutation
 }
 
 // Where appends a list predicates to the IncidentDebriefUpdate builder.
@@ -230,12 +229,6 @@ func (_u *IncidentDebriefUpdate) check() error {
 	return nil
 }
 
-// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (_u *IncidentDebriefUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentDebriefUpdate {
-	_u.modifiers = append(_u.modifiers, modifiers...)
-	return _u
-}
-
 func (_u *IncidentDebriefUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -414,7 +407,6 @@ func (_u *IncidentDebriefUpdate) sqlSave(ctx context.Context) (_node int, err er
 	}
 	_spec.Node.Schema = _u.schemaConfig.IncidentDebrief
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
-	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{incidentdebrief.Label}
@@ -430,10 +422,9 @@ func (_u *IncidentDebriefUpdate) sqlSave(ctx context.Context) (_node int, err er
 // IncidentDebriefUpdateOne is the builder for updating a single IncidentDebrief entity.
 type IncidentDebriefUpdateOne struct {
 	config
-	fields    []string
-	hooks     []Hook
-	mutation  *IncidentDebriefMutation
-	modifiers []func(*sql.UpdateBuilder)
+	fields   []string
+	hooks    []Hook
+	mutation *IncidentDebriefMutation
 }
 
 // SetIncidentID sets the "incident_id" field.
@@ -645,12 +636,6 @@ func (_u *IncidentDebriefUpdateOne) check() error {
 	return nil
 }
 
-// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (_u *IncidentDebriefUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentDebriefUpdateOne {
-	_u.modifiers = append(_u.modifiers, modifiers...)
-	return _u
-}
-
 func (_u *IncidentDebriefUpdateOne) sqlSave(ctx context.Context) (_node *IncidentDebrief, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -846,7 +831,6 @@ func (_u *IncidentDebriefUpdateOne) sqlSave(ctx context.Context) (_node *Inciden
 	}
 	_spec.Node.Schema = _u.schemaConfig.IncidentDebrief
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
-	_spec.AddModifiers(_u.modifiers...)
 	_node = &IncidentDebrief{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues

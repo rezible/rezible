@@ -50,9 +50,9 @@ func main() {
 			gen.FeatureEntQL,
 			gen.FeatureIntercept,
 			gen.FeatureUpsert,
-			gen.FeatureModifier,
 			gen.FeaturePrivacy,
 			gen.FeatureSchemaConfig,
+			gen.FeatureLock,
 		},
 		Templates: []*gen.Template{
 			debugTemplate,

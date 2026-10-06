@@ -20,9 +20,8 @@ import (
 // IncidentDebriefSuggestionUpdate is the builder for updating IncidentDebriefSuggestion entities.
 type IncidentDebriefSuggestionUpdate struct {
 	config
-	hooks     []Hook
-	mutation  *IncidentDebriefSuggestionMutation
-	modifiers []func(*sql.UpdateBuilder)
+	hooks    []Hook
+	mutation *IncidentDebriefSuggestionMutation
 }
 
 // Where appends a list predicates to the IncidentDebriefSuggestionUpdate builder.
@@ -105,12 +104,6 @@ func (_u *IncidentDebriefSuggestionUpdate) check() error {
 	return nil
 }
 
-// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (_u *IncidentDebriefSuggestionUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentDebriefSuggestionUpdate {
-	_u.modifiers = append(_u.modifiers, modifiers...)
-	return _u
-}
-
 func (_u *IncidentDebriefSuggestionUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -159,7 +152,6 @@ func (_u *IncidentDebriefSuggestionUpdate) sqlSave(ctx context.Context) (_node i
 	}
 	_spec.Node.Schema = _u.schemaConfig.IncidentDebriefSuggestion
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
-	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{incidentdebriefsuggestion.Label}
@@ -175,10 +167,9 @@ func (_u *IncidentDebriefSuggestionUpdate) sqlSave(ctx context.Context) (_node i
 // IncidentDebriefSuggestionUpdateOne is the builder for updating a single IncidentDebriefSuggestion entity.
 type IncidentDebriefSuggestionUpdateOne struct {
 	config
-	fields    []string
-	hooks     []Hook
-	mutation  *IncidentDebriefSuggestionMutation
-	modifiers []func(*sql.UpdateBuilder)
+	fields   []string
+	hooks    []Hook
+	mutation *IncidentDebriefSuggestionMutation
 }
 
 // SetContent sets the "content" field.
@@ -268,12 +259,6 @@ func (_u *IncidentDebriefSuggestionUpdateOne) check() error {
 	return nil
 }
 
-// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (_u *IncidentDebriefSuggestionUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentDebriefSuggestionUpdateOne {
-	_u.modifiers = append(_u.modifiers, modifiers...)
-	return _u
-}
-
 func (_u *IncidentDebriefSuggestionUpdateOne) sqlSave(ctx context.Context) (_node *IncidentDebriefSuggestion, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -339,7 +324,6 @@ func (_u *IncidentDebriefSuggestionUpdateOne) sqlSave(ctx context.Context) (_nod
 	}
 	_spec.Node.Schema = _u.schemaConfig.IncidentDebriefSuggestion
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
-	_spec.AddModifiers(_u.modifiers...)
 	_node = &IncidentDebriefSuggestion{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues

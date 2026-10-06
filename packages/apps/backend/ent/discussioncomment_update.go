@@ -23,9 +23,8 @@ import (
 // DiscussionCommentUpdate is the builder for updating DiscussionComment entities.
 type DiscussionCommentUpdate struct {
 	config
-	hooks     []Hook
-	mutation  *DiscussionCommentMutation
-	modifiers []func(*sql.UpdateBuilder)
+	hooks    []Hook
+	mutation *DiscussionCommentMutation
 }
 
 // Where appends a list predicates to the DiscussionCommentUpdate builder.
@@ -282,12 +281,6 @@ func (_u *DiscussionCommentUpdate) check() error {
 	return nil
 }
 
-// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (_u *DiscussionCommentUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *DiscussionCommentUpdate {
-	_u.modifiers = append(_u.modifiers, modifiers...)
-	return _u
-}
-
 func (_u *DiscussionCommentUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -500,7 +493,6 @@ func (_u *DiscussionCommentUpdate) sqlSave(ctx context.Context) (_node int, err 
 	}
 	_spec.Node.Schema = _u.schemaConfig.DiscussionComment
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
-	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{discussioncomment.Label}
@@ -516,10 +508,9 @@ func (_u *DiscussionCommentUpdate) sqlSave(ctx context.Context) (_node int, err 
 // DiscussionCommentUpdateOne is the builder for updating a single DiscussionComment entity.
 type DiscussionCommentUpdateOne struct {
 	config
-	fields    []string
-	hooks     []Hook
-	mutation  *DiscussionCommentMutation
-	modifiers []func(*sql.UpdateBuilder)
+	fields   []string
+	hooks    []Hook
+	mutation *DiscussionCommentMutation
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -783,12 +774,6 @@ func (_u *DiscussionCommentUpdateOne) check() error {
 	return nil
 }
 
-// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (_u *DiscussionCommentUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *DiscussionCommentUpdateOne {
-	_u.modifiers = append(_u.modifiers, modifiers...)
-	return _u
-}
-
 func (_u *DiscussionCommentUpdateOne) sqlSave(ctx context.Context) (_node *DiscussionComment, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -1018,7 +1003,6 @@ func (_u *DiscussionCommentUpdateOne) sqlSave(ctx context.Context) (_node *Discu
 	}
 	_spec.Node.Schema = _u.schemaConfig.DiscussionComment
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
-	_spec.AddModifiers(_u.modifiers...)
 	_node = &DiscussionComment{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues

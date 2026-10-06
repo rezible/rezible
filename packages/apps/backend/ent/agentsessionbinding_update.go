@@ -19,9 +19,8 @@ import (
 // AgentSessionBindingUpdate is the builder for updating AgentSessionBinding entities.
 type AgentSessionBindingUpdate struct {
 	config
-	hooks     []Hook
-	mutation  *AgentSessionBindingMutation
-	modifiers []func(*sql.UpdateBuilder)
+	hooks    []Hook
+	mutation *AgentSessionBindingMutation
 }
 
 // Where appends a list predicates to the AgentSessionBindingUpdate builder.
@@ -140,12 +139,6 @@ func (_u *AgentSessionBindingUpdate) check() error {
 	return nil
 }
 
-// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (_u *AgentSessionBindingUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *AgentSessionBindingUpdate {
-	_u.modifiers = append(_u.modifiers, modifiers...)
-	return _u
-}
-
 func (_u *AgentSessionBindingUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -178,7 +171,6 @@ func (_u *AgentSessionBindingUpdate) sqlSave(ctx context.Context) (_node int, er
 	}
 	_spec.Node.Schema = _u.schemaConfig.AgentSessionBinding
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
-	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{agentsessionbinding.Label}
@@ -194,10 +186,9 @@ func (_u *AgentSessionBindingUpdate) sqlSave(ctx context.Context) (_node int, er
 // AgentSessionBindingUpdateOne is the builder for updating a single AgentSessionBinding entity.
 type AgentSessionBindingUpdateOne struct {
 	config
-	fields    []string
-	hooks     []Hook
-	mutation  *AgentSessionBindingMutation
-	modifiers []func(*sql.UpdateBuilder)
+	fields   []string
+	hooks    []Hook
+	mutation *AgentSessionBindingMutation
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -323,12 +314,6 @@ func (_u *AgentSessionBindingUpdateOne) check() error {
 	return nil
 }
 
-// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (_u *AgentSessionBindingUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *AgentSessionBindingUpdateOne {
-	_u.modifiers = append(_u.modifiers, modifiers...)
-	return _u
-}
-
 func (_u *AgentSessionBindingUpdateOne) sqlSave(ctx context.Context) (_node *AgentSessionBinding, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -378,7 +363,6 @@ func (_u *AgentSessionBindingUpdateOne) sqlSave(ctx context.Context) (_node *Age
 	}
 	_spec.Node.Schema = _u.schemaConfig.AgentSessionBinding
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
-	_spec.AddModifiers(_u.modifiers...)
 	_node = &AgentSessionBinding{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues

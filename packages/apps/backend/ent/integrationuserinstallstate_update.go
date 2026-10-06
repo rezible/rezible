@@ -22,9 +22,8 @@ import (
 // IntegrationUserInstallStateUpdate is the builder for updating IntegrationUserInstallState entities.
 type IntegrationUserInstallStateUpdate struct {
 	config
-	hooks     []Hook
-	mutation  *IntegrationUserInstallStateMutation
-	modifiers []func(*sql.UpdateBuilder)
+	hooks    []Hook
+	mutation *IntegrationUserInstallStateMutation
 }
 
 // Where appends a list predicates to the IntegrationUserInstallStateUpdate builder.
@@ -161,12 +160,6 @@ func (_u *IntegrationUserInstallStateUpdate) check() error {
 	return nil
 }
 
-// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (_u *IntegrationUserInstallStateUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IntegrationUserInstallStateUpdate {
-	_u.modifiers = append(_u.modifiers, modifiers...)
-	return _u
-}
-
 func (_u *IntegrationUserInstallStateUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -230,7 +223,6 @@ func (_u *IntegrationUserInstallStateUpdate) sqlSave(ctx context.Context) (_node
 	}
 	_spec.Node.Schema = _u.schemaConfig.IntegrationUserInstallState
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
-	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{integrationuserinstallstate.Label}
@@ -246,10 +238,9 @@ func (_u *IntegrationUserInstallStateUpdate) sqlSave(ctx context.Context) (_node
 // IntegrationUserInstallStateUpdateOne is the builder for updating a single IntegrationUserInstallState entity.
 type IntegrationUserInstallStateUpdateOne struct {
 	config
-	fields    []string
-	hooks     []Hook
-	mutation  *IntegrationUserInstallStateMutation
-	modifiers []func(*sql.UpdateBuilder)
+	fields   []string
+	hooks    []Hook
+	mutation *IntegrationUserInstallStateMutation
 }
 
 // SetUserID sets the "user_id" field.
@@ -393,12 +384,6 @@ func (_u *IntegrationUserInstallStateUpdateOne) check() error {
 	return nil
 }
 
-// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (_u *IntegrationUserInstallStateUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IntegrationUserInstallStateUpdateOne {
-	_u.modifiers = append(_u.modifiers, modifiers...)
-	return _u
-}
-
 func (_u *IntegrationUserInstallStateUpdateOne) sqlSave(ctx context.Context) (_node *IntegrationUserInstallState, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -479,7 +464,6 @@ func (_u *IntegrationUserInstallStateUpdateOne) sqlSave(ctx context.Context) (_n
 	}
 	_spec.Node.Schema = _u.schemaConfig.IntegrationUserInstallState
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
-	_spec.AddModifiers(_u.modifiers...)
 	_node = &IntegrationUserInstallState{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues

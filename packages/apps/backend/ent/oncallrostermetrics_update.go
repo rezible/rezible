@@ -20,9 +20,8 @@ import (
 // OncallRosterMetricsUpdate is the builder for updating OncallRosterMetrics entities.
 type OncallRosterMetricsUpdate struct {
 	config
-	hooks     []Hook
-	mutation  *OncallRosterMetricsMutation
-	modifiers []func(*sql.UpdateBuilder)
+	hooks    []Hook
+	mutation *OncallRosterMetricsMutation
 }
 
 // Where appends a list predicates to the OncallRosterMetricsUpdate builder.
@@ -99,12 +98,6 @@ func (_u *OncallRosterMetricsUpdate) check() error {
 	return nil
 }
 
-// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (_u *OncallRosterMetricsUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *OncallRosterMetricsUpdate {
-	_u.modifiers = append(_u.modifiers, modifiers...)
-	return _u
-}
-
 func (_u *OncallRosterMetricsUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -150,7 +143,6 @@ func (_u *OncallRosterMetricsUpdate) sqlSave(ctx context.Context) (_node int, er
 	}
 	_spec.Node.Schema = _u.schemaConfig.OncallRosterMetrics
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
-	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{oncallrostermetrics.Label}
@@ -166,10 +158,9 @@ func (_u *OncallRosterMetricsUpdate) sqlSave(ctx context.Context) (_node int, er
 // OncallRosterMetricsUpdateOne is the builder for updating a single OncallRosterMetrics entity.
 type OncallRosterMetricsUpdateOne struct {
 	config
-	fields    []string
-	hooks     []Hook
-	mutation  *OncallRosterMetricsMutation
-	modifiers []func(*sql.UpdateBuilder)
+	fields   []string
+	hooks    []Hook
+	mutation *OncallRosterMetricsMutation
 }
 
 // SetRosterID sets the "roster_id" field.
@@ -253,12 +244,6 @@ func (_u *OncallRosterMetricsUpdateOne) check() error {
 	return nil
 }
 
-// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (_u *OncallRosterMetricsUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *OncallRosterMetricsUpdateOne {
-	_u.modifiers = append(_u.modifiers, modifiers...)
-	return _u
-}
-
 func (_u *OncallRosterMetricsUpdateOne) sqlSave(ctx context.Context) (_node *OncallRosterMetrics, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -321,7 +306,6 @@ func (_u *OncallRosterMetricsUpdateOne) sqlSave(ctx context.Context) (_node *Onc
 	}
 	_spec.Node.Schema = _u.schemaConfig.OncallRosterMetrics
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
-	_spec.AddModifiers(_u.modifiers...)
 	_node = &OncallRosterMetrics{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues

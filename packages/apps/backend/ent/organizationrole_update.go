@@ -21,9 +21,8 @@ import (
 // OrganizationRoleUpdate is the builder for updating OrganizationRole entities.
 type OrganizationRoleUpdate struct {
 	config
-	hooks     []Hook
-	mutation  *OrganizationRoleMutation
-	modifiers []func(*sql.UpdateBuilder)
+	hooks    []Hook
+	mutation *OrganizationRoleMutation
 }
 
 // Where appends a list predicates to the OrganizationRoleUpdate builder.
@@ -147,12 +146,6 @@ func (_u *OrganizationRoleUpdate) check() error {
 	return nil
 }
 
-// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (_u *OrganizationRoleUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *OrganizationRoleUpdate {
-	_u.modifiers = append(_u.modifiers, modifiers...)
-	return _u
-}
-
 func (_u *OrganizationRoleUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -232,7 +225,6 @@ func (_u *OrganizationRoleUpdate) sqlSave(ctx context.Context) (_node int, err e
 	}
 	_spec.Node.Schema = _u.schemaConfig.OrganizationRole
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
-	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{organizationrole.Label}
@@ -248,10 +240,9 @@ func (_u *OrganizationRoleUpdate) sqlSave(ctx context.Context) (_node int, err e
 // OrganizationRoleUpdateOne is the builder for updating a single OrganizationRole entity.
 type OrganizationRoleUpdateOne struct {
 	config
-	fields    []string
-	hooks     []Hook
-	mutation  *OrganizationRoleMutation
-	modifiers []func(*sql.UpdateBuilder)
+	fields   []string
+	hooks    []Hook
+	mutation *OrganizationRoleMutation
 }
 
 // SetOrganizationID sets the "organization_id" field.
@@ -382,12 +373,6 @@ func (_u *OrganizationRoleUpdateOne) check() error {
 	return nil
 }
 
-// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (_u *OrganizationRoleUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *OrganizationRoleUpdateOne {
-	_u.modifiers = append(_u.modifiers, modifiers...)
-	return _u
-}
-
 func (_u *OrganizationRoleUpdateOne) sqlSave(ctx context.Context) (_node *OrganizationRole, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -484,7 +469,6 @@ func (_u *OrganizationRoleUpdateOne) sqlSave(ctx context.Context) (_node *Organi
 	}
 	_spec.Node.Schema = _u.schemaConfig.OrganizationRole
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
-	_spec.AddModifiers(_u.modifiers...)
 	_node = &OrganizationRole{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues

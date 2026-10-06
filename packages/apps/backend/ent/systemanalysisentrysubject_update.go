@@ -19,9 +19,8 @@ import (
 // SystemAnalysisEntrySubjectUpdate is the builder for updating SystemAnalysisEntrySubject entities.
 type SystemAnalysisEntrySubjectUpdate struct {
 	config
-	hooks     []Hook
-	mutation  *SystemAnalysisEntrySubjectMutation
-	modifiers []func(*sql.UpdateBuilder)
+	hooks    []Hook
+	mutation *SystemAnalysisEntrySubjectMutation
 }
 
 // Where appends a list predicates to the SystemAnalysisEntrySubjectUpdate builder.
@@ -127,12 +126,6 @@ func (_u *SystemAnalysisEntrySubjectUpdate) check() error {
 	return nil
 }
 
-// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (_u *SystemAnalysisEntrySubjectUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *SystemAnalysisEntrySubjectUpdate {
-	_u.modifiers = append(_u.modifiers, modifiers...)
-	return _u
-}
-
 func (_u *SystemAnalysisEntrySubjectUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -156,7 +149,6 @@ func (_u *SystemAnalysisEntrySubjectUpdate) sqlSave(ctx context.Context) (_node 
 	}
 	_spec.Node.Schema = _u.schemaConfig.SystemAnalysisEntrySubject
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
-	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{systemanalysisentrysubject.Label}
@@ -172,10 +164,9 @@ func (_u *SystemAnalysisEntrySubjectUpdate) sqlSave(ctx context.Context) (_node 
 // SystemAnalysisEntrySubjectUpdateOne is the builder for updating a single SystemAnalysisEntrySubject entity.
 type SystemAnalysisEntrySubjectUpdateOne struct {
 	config
-	fields    []string
-	hooks     []Hook
-	mutation  *SystemAnalysisEntrySubjectMutation
-	modifiers []func(*sql.UpdateBuilder)
+	fields   []string
+	hooks    []Hook
+	mutation *SystemAnalysisEntrySubjectMutation
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -288,12 +279,6 @@ func (_u *SystemAnalysisEntrySubjectUpdateOne) check() error {
 	return nil
 }
 
-// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (_u *SystemAnalysisEntrySubjectUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *SystemAnalysisEntrySubjectUpdateOne {
-	_u.modifiers = append(_u.modifiers, modifiers...)
-	return _u
-}
-
 func (_u *SystemAnalysisEntrySubjectUpdateOne) sqlSave(ctx context.Context) (_node *SystemAnalysisEntrySubject, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -334,7 +319,6 @@ func (_u *SystemAnalysisEntrySubjectUpdateOne) sqlSave(ctx context.Context) (_no
 	}
 	_spec.Node.Schema = _u.schemaConfig.SystemAnalysisEntrySubject
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
-	_spec.AddModifiers(_u.modifiers...)
 	_node = &SystemAnalysisEntrySubject{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues

@@ -22,9 +22,8 @@ import (
 // IncidentTypeUpdate is the builder for updating IncidentType entities.
 type IncidentTypeUpdate struct {
 	config
-	hooks     []Hook
-	mutation  *IncidentTypeMutation
-	modifiers []func(*sql.UpdateBuilder)
+	hooks    []Hook
+	mutation *IncidentTypeMutation
 }
 
 // Where appends a list predicates to the IncidentTypeUpdate builder.
@@ -179,12 +178,6 @@ func (_u *IncidentTypeUpdate) check() error {
 	return nil
 }
 
-// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (_u *IncidentTypeUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentTypeUpdate {
-	_u.modifiers = append(_u.modifiers, modifiers...)
-	return _u
-}
-
 func (_u *IncidentTypeUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -304,7 +297,6 @@ func (_u *IncidentTypeUpdate) sqlSave(ctx context.Context) (_node int, err error
 	}
 	_spec.Node.Schema = _u.schemaConfig.IncidentType
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
-	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{incidenttype.Label}
@@ -320,10 +312,9 @@ func (_u *IncidentTypeUpdate) sqlSave(ctx context.Context) (_node int, err error
 // IncidentTypeUpdateOne is the builder for updating a single IncidentType entity.
 type IncidentTypeUpdateOne struct {
 	config
-	fields    []string
-	hooks     []Hook
-	mutation  *IncidentTypeMutation
-	modifiers []func(*sql.UpdateBuilder)
+	fields   []string
+	hooks    []Hook
+	mutation *IncidentTypeMutation
 }
 
 // SetArchiveTime sets the "archive_time" field.
@@ -485,12 +476,6 @@ func (_u *IncidentTypeUpdateOne) check() error {
 	return nil
 }
 
-// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (_u *IncidentTypeUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentTypeUpdateOne {
-	_u.modifiers = append(_u.modifiers, modifiers...)
-	return _u
-}
-
 func (_u *IncidentTypeUpdateOne) sqlSave(ctx context.Context) (_node *IncidentType, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -627,7 +612,6 @@ func (_u *IncidentTypeUpdateOne) sqlSave(ctx context.Context) (_node *IncidentTy
 	}
 	_spec.Node.Schema = _u.schemaConfig.IncidentType
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
-	_spec.AddModifiers(_u.modifiers...)
 	_node = &IncidentType{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues

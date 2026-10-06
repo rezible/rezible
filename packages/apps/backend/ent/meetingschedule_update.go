@@ -23,9 +23,8 @@ import (
 // MeetingScheduleUpdate is the builder for updating MeetingSchedule entities.
 type MeetingScheduleUpdate struct {
 	config
-	hooks     []Hook
-	mutation  *MeetingScheduleMutation
-	modifiers []func(*sql.UpdateBuilder)
+	hooks    []Hook
+	mutation *MeetingScheduleMutation
 }
 
 // Where appends a list predicates to the MeetingScheduleUpdate builder.
@@ -391,12 +390,6 @@ func (_u *MeetingScheduleUpdate) check() error {
 	return nil
 }
 
-// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (_u *MeetingScheduleUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *MeetingScheduleUpdate {
-	_u.modifiers = append(_u.modifiers, modifiers...)
-	return _u
-}
-
 func (_u *MeetingScheduleUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -578,7 +571,6 @@ func (_u *MeetingScheduleUpdate) sqlSave(ctx context.Context) (_node int, err er
 	}
 	_spec.Node.Schema = _u.schemaConfig.MeetingSchedule
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
-	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{meetingschedule.Label}
@@ -594,10 +586,9 @@ func (_u *MeetingScheduleUpdate) sqlSave(ctx context.Context) (_node int, err er
 // MeetingScheduleUpdateOne is the builder for updating a single MeetingSchedule entity.
 type MeetingScheduleUpdateOne struct {
 	config
-	fields    []string
-	hooks     []Hook
-	mutation  *MeetingScheduleMutation
-	modifiers []func(*sql.UpdateBuilder)
+	fields   []string
+	hooks    []Hook
+	mutation *MeetingScheduleMutation
 }
 
 // SetArchiveTime sets the "archive_time" field.
@@ -970,12 +961,6 @@ func (_u *MeetingScheduleUpdateOne) check() error {
 	return nil
 }
 
-// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (_u *MeetingScheduleUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *MeetingScheduleUpdateOne {
-	_u.modifiers = append(_u.modifiers, modifiers...)
-	return _u
-}
-
 func (_u *MeetingScheduleUpdateOne) sqlSave(ctx context.Context) (_node *MeetingSchedule, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -1174,7 +1159,6 @@ func (_u *MeetingScheduleUpdateOne) sqlSave(ctx context.Context) (_node *Meeting
 	}
 	_spec.Node.Schema = _u.schemaConfig.MeetingSchedule
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
-	_spec.AddModifiers(_u.modifiers...)
 	_node = &MeetingSchedule{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues

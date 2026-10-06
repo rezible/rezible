@@ -23,9 +23,8 @@ import (
 // AgentTurnUpdate is the builder for updating AgentTurn entities.
 type AgentTurnUpdate struct {
 	config
-	hooks     []Hook
-	mutation  *AgentTurnMutation
-	modifiers []func(*sql.UpdateBuilder)
+	hooks    []Hook
+	mutation *AgentTurnMutation
 }
 
 // Where appends a list predicates to the AgentTurnUpdate builder.
@@ -341,12 +340,6 @@ func (_u *AgentTurnUpdate) check() error {
 	return nil
 }
 
-// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (_u *AgentTurnUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *AgentTurnUpdate {
-	_u.modifiers = append(_u.modifiers, modifiers...)
-	return _u
-}
-
 func (_u *AgentTurnUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -530,7 +523,6 @@ func (_u *AgentTurnUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	_spec.Node.Schema = _u.schemaConfig.AgentTurn
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
-	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{agentturn.Label}
@@ -546,10 +538,9 @@ func (_u *AgentTurnUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 // AgentTurnUpdateOne is the builder for updating a single AgentTurn entity.
 type AgentTurnUpdateOne struct {
 	config
-	fields    []string
-	hooks     []Hook
-	mutation  *AgentTurnMutation
-	modifiers []func(*sql.UpdateBuilder)
+	fields   []string
+	hooks    []Hook
+	mutation *AgentTurnMutation
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -872,12 +863,6 @@ func (_u *AgentTurnUpdateOne) check() error {
 	return nil
 }
 
-// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (_u *AgentTurnUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *AgentTurnUpdateOne {
-	_u.modifiers = append(_u.modifiers, modifiers...)
-	return _u
-}
-
 func (_u *AgentTurnUpdateOne) sqlSave(ctx context.Context) (_node *AgentTurn, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -1078,7 +1063,6 @@ func (_u *AgentTurnUpdateOne) sqlSave(ctx context.Context) (_node *AgentTurn, er
 	}
 	_spec.Node.Schema = _u.schemaConfig.AgentTurn
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
-	_spec.AddModifiers(_u.modifiers...)
 	_node = &AgentTurn{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues

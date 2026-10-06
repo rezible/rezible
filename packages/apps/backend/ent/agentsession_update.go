@@ -26,9 +26,8 @@ import (
 // AgentSessionUpdate is the builder for updating AgentSession entities.
 type AgentSessionUpdate struct {
 	config
-	hooks     []Hook
-	mutation  *AgentSessionMutation
-	modifiers []func(*sql.UpdateBuilder)
+	hooks    []Hook
+	mutation *AgentSessionMutation
 }
 
 // Where appends a list predicates to the AgentSessionUpdate builder.
@@ -330,12 +329,6 @@ func (_u *AgentSessionUpdate) check() error {
 	return nil
 }
 
-// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (_u *AgentSessionUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *AgentSessionUpdate {
-	_u.modifiers = append(_u.modifiers, modifiers...)
-	return _u
-}
-
 func (_u *AgentSessionUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -599,7 +592,6 @@ func (_u *AgentSessionUpdate) sqlSave(ctx context.Context) (_node int, err error
 	}
 	_spec.Node.Schema = _u.schemaConfig.AgentSession
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
-	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{agentsession.Label}
@@ -615,10 +607,9 @@ func (_u *AgentSessionUpdate) sqlSave(ctx context.Context) (_node int, err error
 // AgentSessionUpdateOne is the builder for updating a single AgentSession entity.
 type AgentSessionUpdateOne struct {
 	config
-	fields    []string
-	hooks     []Hook
-	mutation  *AgentSessionMutation
-	modifiers []func(*sql.UpdateBuilder)
+	fields   []string
+	hooks    []Hook
+	mutation *AgentSessionMutation
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -927,12 +918,6 @@ func (_u *AgentSessionUpdateOne) check() error {
 	return nil
 }
 
-// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (_u *AgentSessionUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *AgentSessionUpdateOne {
-	_u.modifiers = append(_u.modifiers, modifiers...)
-	return _u
-}
-
 func (_u *AgentSessionUpdateOne) sqlSave(ctx context.Context) (_node *AgentSession, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -1213,7 +1198,6 @@ func (_u *AgentSessionUpdateOne) sqlSave(ctx context.Context) (_node *AgentSessi
 	}
 	_spec.Node.Schema = _u.schemaConfig.AgentSession
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
-	_spec.AddModifiers(_u.modifiers...)
 	_node = &AgentSession{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues

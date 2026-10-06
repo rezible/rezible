@@ -25,9 +25,8 @@ import (
 // IncidentDebriefQuestionUpdate is the builder for updating IncidentDebriefQuestion entities.
 type IncidentDebriefQuestionUpdate struct {
 	config
-	hooks     []Hook
-	mutation  *IncidentDebriefQuestionMutation
-	modifiers []func(*sql.UpdateBuilder)
+	hooks    []Hook
+	mutation *IncidentDebriefQuestionMutation
 }
 
 // Where appends a list predicates to the IncidentDebriefQuestionUpdate builder.
@@ -304,12 +303,6 @@ func (_u *IncidentDebriefQuestionUpdate) check() error {
 		return errors.New(`ent: clearing a required unique edge "IncidentDebriefQuestion.tenant"`)
 	}
 	return nil
-}
-
-// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (_u *IncidentDebriefQuestionUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentDebriefQuestionUpdate {
-	_u.modifiers = append(_u.modifiers, modifiers...)
-	return _u
 }
 
 func (_u *IncidentDebriefQuestionUpdate) sqlSave(ctx context.Context) (_node int, err error) {
@@ -617,7 +610,6 @@ func (_u *IncidentDebriefQuestionUpdate) sqlSave(ctx context.Context) (_node int
 	}
 	_spec.Node.Schema = _u.schemaConfig.IncidentDebriefQuestion
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
-	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{incidentdebriefquestion.Label}
@@ -633,10 +625,9 @@ func (_u *IncidentDebriefQuestionUpdate) sqlSave(ctx context.Context) (_node int
 // IncidentDebriefQuestionUpdateOne is the builder for updating a single IncidentDebriefQuestion entity.
 type IncidentDebriefQuestionUpdateOne struct {
 	config
-	fields    []string
-	hooks     []Hook
-	mutation  *IncidentDebriefQuestionMutation
-	modifiers []func(*sql.UpdateBuilder)
+	fields   []string
+	hooks    []Hook
+	mutation *IncidentDebriefQuestionMutation
 }
 
 // SetContent sets the "content" field.
@@ -920,12 +911,6 @@ func (_u *IncidentDebriefQuestionUpdateOne) check() error {
 		return errors.New(`ent: clearing a required unique edge "IncidentDebriefQuestion.tenant"`)
 	}
 	return nil
-}
-
-// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (_u *IncidentDebriefQuestionUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentDebriefQuestionUpdateOne {
-	_u.modifiers = append(_u.modifiers, modifiers...)
-	return _u
 }
 
 func (_u *IncidentDebriefQuestionUpdateOne) sqlSave(ctx context.Context) (_node *IncidentDebriefQuestion, err error) {
@@ -1250,7 +1235,6 @@ func (_u *IncidentDebriefQuestionUpdateOne) sqlSave(ctx context.Context) (_node 
 	}
 	_spec.Node.Schema = _u.schemaConfig.IncidentDebriefQuestion
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
-	_spec.AddModifiers(_u.modifiers...)
 	_node = &IncidentDebriefQuestion{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues

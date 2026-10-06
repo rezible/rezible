@@ -23,9 +23,8 @@ import (
 // SituationObservationGroupUpdate is the builder for updating SituationObservationGroup entities.
 type SituationObservationGroupUpdate struct {
 	config
-	hooks     []Hook
-	mutation  *SituationObservationGroupMutation
-	modifiers []func(*sql.UpdateBuilder)
+	hooks    []Hook
+	mutation *SituationObservationGroupMutation
 }
 
 // Where appends a list predicates to the SituationObservationGroupUpdate builder.
@@ -248,12 +247,6 @@ func (_u *SituationObservationGroupUpdate) check() error {
 	return nil
 }
 
-// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (_u *SituationObservationGroupUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *SituationObservationGroupUpdate {
-	_u.modifiers = append(_u.modifiers, modifiers...)
-	return _u
-}
-
 func (_u *SituationObservationGroupUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -410,7 +403,6 @@ func (_u *SituationObservationGroupUpdate) sqlSave(ctx context.Context) (_node i
 	}
 	_spec.Node.Schema = _u.schemaConfig.SituationObservationGroup
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
-	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{situationobservationgroup.Label}
@@ -426,10 +418,9 @@ func (_u *SituationObservationGroupUpdate) sqlSave(ctx context.Context) (_node i
 // SituationObservationGroupUpdateOne is the builder for updating a single SituationObservationGroup entity.
 type SituationObservationGroupUpdateOne struct {
 	config
-	fields    []string
-	hooks     []Hook
-	mutation  *SituationObservationGroupMutation
-	modifiers []func(*sql.UpdateBuilder)
+	fields   []string
+	hooks    []Hook
+	mutation *SituationObservationGroupMutation
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -659,12 +650,6 @@ func (_u *SituationObservationGroupUpdateOne) check() error {
 	return nil
 }
 
-// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (_u *SituationObservationGroupUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *SituationObservationGroupUpdateOne {
-	_u.modifiers = append(_u.modifiers, modifiers...)
-	return _u
-}
-
 func (_u *SituationObservationGroupUpdateOne) sqlSave(ctx context.Context) (_node *SituationObservationGroup, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -838,7 +823,6 @@ func (_u *SituationObservationGroupUpdateOne) sqlSave(ctx context.Context) (_nod
 	}
 	_spec.Node.Schema = _u.schemaConfig.SituationObservationGroup
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
-	_spec.AddModifiers(_u.modifiers...)
 	_node = &SituationObservationGroup{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
