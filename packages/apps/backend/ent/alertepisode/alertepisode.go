@@ -10,6 +10,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/schema/schematypes"
 )
 
 const (
@@ -27,14 +28,14 @@ const (
 	FieldKnowledgeEntityID = "knowledge_entity_id"
 	// FieldAlertDefinitionID holds the string denoting the alert_definition_id field in the database.
 	FieldAlertDefinitionID = "alert_definition_id"
-	// FieldStatus holds the string denoting the status field in the database.
-	FieldStatus = "status"
 	// FieldStartedAt holds the string denoting the started_at field in the database.
 	FieldStartedAt = "started_at"
-	// FieldLastObservedAt holds the string denoting the last_observed_at field in the database.
-	FieldLastObservedAt = "last_observed_at"
 	// FieldClosedAt holds the string denoting the closed_at field in the database.
 	FieldClosedAt = "closed_at"
+	// FieldHighestSeverity holds the string denoting the highest_severity field in the database.
+	FieldHighestSeverity = "highest_severity"
+	// FieldIdentityGroupLabels holds the string denoting the identity_group_labels field in the database.
+	FieldIdentityGroupLabels = "identity_group_labels"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
 	// EdgeKnowledgeEntity holds the string denoting the knowledge_entity edge name in mutations.
@@ -83,27 +84,16 @@ var Columns = []string{
 	FieldUpdatedAt,
 	FieldKnowledgeEntityID,
 	FieldAlertDefinitionID,
-	FieldStatus,
 	FieldStartedAt,
-	FieldLastObservedAt,
 	FieldClosedAt,
-}
-
-// ForeignKeys holds the SQL foreign-keys that are owned by the "alert_episodes"
-// table and are not defined as standalone fields in the schema.
-var ForeignKeys = []string{
-	"situation_observation_group_alert_episodes",
+	FieldHighestSeverity,
+	FieldIdentityGroupLabels,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
-			return true
-		}
-	}
-	for i := range ForeignKeys {
-		if column == ForeignKeys[i] {
 			return true
 		}
 	}
@@ -128,29 +118,15 @@ var (
 	DefaultID func() uuid.UUID
 )
 
-// Status defines the type for the "status" enum field.
-type Status string
+const DefaultHighestSeverity schematypes.SignalSeverity = "unknown"
 
-// StatusOpen is the default value of the Status enum.
-const DefaultStatus = StatusOpen
-
-// Status values.
-const (
-	StatusOpen   Status = "open"
-	StatusClosed Status = "closed"
-)
-
-func (s Status) String() string {
-	return string(s)
-}
-
-// StatusValidator is a validator for the "status" field enum values. It is called by the builders before save.
-func StatusValidator(s Status) error {
-	switch s {
-	case StatusOpen, StatusClosed:
+// HighestSeverityValidator is a validator for the "highest_severity" field enum values. It is called by the builders before save.
+func HighestSeverityValidator(hs schematypes.SignalSeverity) error {
+	switch hs {
+	case "unknown", "info", "warning", "critical":
 		return nil
 	default:
-		return fmt.Errorf("alertepisode: invalid enum value for status field: %q", s)
+		return fmt.Errorf("alertepisode: invalid enum value for highest_severity field: %q", hs)
 	}
 }
 
@@ -187,24 +163,19 @@ func ByAlertDefinitionID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldAlertDefinitionID, opts...).ToFunc()
 }
 
-// ByStatus orders the results by the status field.
-func ByStatus(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldStatus, opts...).ToFunc()
-}
-
 // ByStartedAt orders the results by the started_at field.
 func ByStartedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldStartedAt, opts...).ToFunc()
 }
 
-// ByLastObservedAt orders the results by the last_observed_at field.
-func ByLastObservedAt(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldLastObservedAt, opts...).ToFunc()
-}
-
 // ByClosedAt orders the results by the closed_at field.
 func ByClosedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldClosedAt, opts...).ToFunc()
+}
+
+// ByHighestSeverity orders the results by the highest_severity field.
+func ByHighestSeverity(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldHighestSeverity, opts...).ToFunc()
 }
 
 // ByTenantField orders the results by tenant field.
@@ -268,10 +239,4 @@ func newInstancesStep() *sqlgraph.Step {
 		sqlgraph.To(InstancesInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, InstancesTable, InstancesColumn),
 	)
-}
-
-// StatusValues contains all permitted values. Treat this slice as read-only.
-var StatusValues = []string{
-	"open",
-	"closed",
 }

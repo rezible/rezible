@@ -10,6 +10,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/schema/schematypes"
 )
 
 // ID filters vertices based on their ID field.
@@ -85,11 +86,6 @@ func AlertDefinitionID(v uuid.UUID) predicate.AlertEpisode {
 // StartedAt applies equality check predicate on the "started_at" field. It's identical to StartedAtEQ.
 func StartedAt(v time.Time) predicate.AlertEpisode {
 	return predicate.AlertEpisode(sql.FieldEQ(FieldStartedAt, v))
-}
-
-// LastObservedAt applies equality check predicate on the "last_observed_at" field. It's identical to LastObservedAtEQ.
-func LastObservedAt(v time.Time) predicate.AlertEpisode {
-	return predicate.AlertEpisode(sql.FieldEQ(FieldLastObservedAt, v))
 }
 
 // ClosedAt applies equality check predicate on the "closed_at" field. It's identical to ClosedAtEQ.
@@ -247,26 +243,6 @@ func AlertDefinitionIDNotIn(vs ...uuid.UUID) predicate.AlertEpisode {
 	return predicate.AlertEpisode(sql.FieldNotIn(FieldAlertDefinitionID, vs...))
 }
 
-// StatusEQ applies the EQ predicate on the "status" field.
-func StatusEQ(v Status) predicate.AlertEpisode {
-	return predicate.AlertEpisode(sql.FieldEQ(FieldStatus, v))
-}
-
-// StatusNEQ applies the NEQ predicate on the "status" field.
-func StatusNEQ(v Status) predicate.AlertEpisode {
-	return predicate.AlertEpisode(sql.FieldNEQ(FieldStatus, v))
-}
-
-// StatusIn applies the In predicate on the "status" field.
-func StatusIn(vs ...Status) predicate.AlertEpisode {
-	return predicate.AlertEpisode(sql.FieldIn(FieldStatus, vs...))
-}
-
-// StatusNotIn applies the NotIn predicate on the "status" field.
-func StatusNotIn(vs ...Status) predicate.AlertEpisode {
-	return predicate.AlertEpisode(sql.FieldNotIn(FieldStatus, vs...))
-}
-
 // StartedAtEQ applies the EQ predicate on the "started_at" field.
 func StartedAtEQ(v time.Time) predicate.AlertEpisode {
 	return predicate.AlertEpisode(sql.FieldEQ(FieldStartedAt, v))
@@ -305,46 +281,6 @@ func StartedAtLT(v time.Time) predicate.AlertEpisode {
 // StartedAtLTE applies the LTE predicate on the "started_at" field.
 func StartedAtLTE(v time.Time) predicate.AlertEpisode {
 	return predicate.AlertEpisode(sql.FieldLTE(FieldStartedAt, v))
-}
-
-// LastObservedAtEQ applies the EQ predicate on the "last_observed_at" field.
-func LastObservedAtEQ(v time.Time) predicate.AlertEpisode {
-	return predicate.AlertEpisode(sql.FieldEQ(FieldLastObservedAt, v))
-}
-
-// LastObservedAtNEQ applies the NEQ predicate on the "last_observed_at" field.
-func LastObservedAtNEQ(v time.Time) predicate.AlertEpisode {
-	return predicate.AlertEpisode(sql.FieldNEQ(FieldLastObservedAt, v))
-}
-
-// LastObservedAtIn applies the In predicate on the "last_observed_at" field.
-func LastObservedAtIn(vs ...time.Time) predicate.AlertEpisode {
-	return predicate.AlertEpisode(sql.FieldIn(FieldLastObservedAt, vs...))
-}
-
-// LastObservedAtNotIn applies the NotIn predicate on the "last_observed_at" field.
-func LastObservedAtNotIn(vs ...time.Time) predicate.AlertEpisode {
-	return predicate.AlertEpisode(sql.FieldNotIn(FieldLastObservedAt, vs...))
-}
-
-// LastObservedAtGT applies the GT predicate on the "last_observed_at" field.
-func LastObservedAtGT(v time.Time) predicate.AlertEpisode {
-	return predicate.AlertEpisode(sql.FieldGT(FieldLastObservedAt, v))
-}
-
-// LastObservedAtGTE applies the GTE predicate on the "last_observed_at" field.
-func LastObservedAtGTE(v time.Time) predicate.AlertEpisode {
-	return predicate.AlertEpisode(sql.FieldGTE(FieldLastObservedAt, v))
-}
-
-// LastObservedAtLT applies the LT predicate on the "last_observed_at" field.
-func LastObservedAtLT(v time.Time) predicate.AlertEpisode {
-	return predicate.AlertEpisode(sql.FieldLT(FieldLastObservedAt, v))
-}
-
-// LastObservedAtLTE applies the LTE predicate on the "last_observed_at" field.
-func LastObservedAtLTE(v time.Time) predicate.AlertEpisode {
-	return predicate.AlertEpisode(sql.FieldLTE(FieldLastObservedAt, v))
 }
 
 // ClosedAtEQ applies the EQ predicate on the "closed_at" field.
@@ -395,6 +331,46 @@ func ClosedAtIsNil() predicate.AlertEpisode {
 // ClosedAtNotNil applies the NotNil predicate on the "closed_at" field.
 func ClosedAtNotNil() predicate.AlertEpisode {
 	return predicate.AlertEpisode(sql.FieldNotNull(FieldClosedAt))
+}
+
+// HighestSeverityEQ applies the EQ predicate on the "highest_severity" field.
+func HighestSeverityEQ(v schematypes.SignalSeverity) predicate.AlertEpisode {
+	vc := v
+	return predicate.AlertEpisode(sql.FieldEQ(FieldHighestSeverity, vc))
+}
+
+// HighestSeverityNEQ applies the NEQ predicate on the "highest_severity" field.
+func HighestSeverityNEQ(v schematypes.SignalSeverity) predicate.AlertEpisode {
+	vc := v
+	return predicate.AlertEpisode(sql.FieldNEQ(FieldHighestSeverity, vc))
+}
+
+// HighestSeverityIn applies the In predicate on the "highest_severity" field.
+func HighestSeverityIn(vs ...schematypes.SignalSeverity) predicate.AlertEpisode {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.AlertEpisode(sql.FieldIn(FieldHighestSeverity, v...))
+}
+
+// HighestSeverityNotIn applies the NotIn predicate on the "highest_severity" field.
+func HighestSeverityNotIn(vs ...schematypes.SignalSeverity) predicate.AlertEpisode {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.AlertEpisode(sql.FieldNotIn(FieldHighestSeverity, v...))
+}
+
+// IdentityGroupLabelsIsNil applies the IsNil predicate on the "identity_group_labels" field.
+func IdentityGroupLabelsIsNil() predicate.AlertEpisode {
+	return predicate.AlertEpisode(sql.FieldIsNull(FieldIdentityGroupLabels))
+}
+
+// IdentityGroupLabelsNotNil applies the NotNil predicate on the "identity_group_labels" field.
+func IdentityGroupLabelsNotNil() predicate.AlertEpisode {
+	return predicate.AlertEpisode(sql.FieldNotNull(FieldIdentityGroupLabels))
 }
 
 // HasTenant applies the HasEdge predicate on the "tenant" edge.

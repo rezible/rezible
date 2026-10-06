@@ -4,8 +4,6 @@ ALTER TABLE "user_watched_oncall_rosters" DROP CONSTRAINT "user_watched_oncall_r
 ALTER TABLE "team_oncall_rosters" DROP CONSTRAINT "team_oncall_rosters_oncall_roster_id", DROP CONSTRAINT "team_oncall_rosters_team_id";
 -- reverse: modify "task_tickets" table
 ALTER TABLE "task_tickets" DROP CONSTRAINT "task_tickets_ticket_id", DROP CONSTRAINT "task_tickets_task_id";
--- reverse: modify "situation_observation_group_events" table
-ALTER TABLE "situation_observation_group_events" DROP CONSTRAINT "situation_observation_group_events_normalized_event_id", DROP CONSTRAINT "situation_observation_group_ev_5117e8421909dd51448df3fbedc8d96c";
 -- reverse: modify "playbook_alert_definitions" table
 ALTER TABLE "playbook_alert_definitions" DROP CONSTRAINT "playbook_alert_definitions_alert_definition_id", DROP CONSTRAINT "playbook_alert_definitions_playbook_id";
 -- reverse: modify "oncall_shift_handover_pinned_annotations" table
@@ -56,14 +54,26 @@ ALTER TABLE "system_analysis_entries" DROP CONSTRAINT "system_analysis_entries_u
 ALTER TABLE "system_analysis_entities" DROP CONSTRAINT "system_analysis_entities_knowledge_entities_knowledge_entity", DROP CONSTRAINT "system_analysis_entities_system_analyses_analysis", DROP CONSTRAINT "system_analysis_entities_tenants_tenant";
 -- reverse: modify "system_analyses" table
 ALTER TABLE "system_analyses" DROP CONSTRAINT "system_analyses_knowledge_entities_subject_entity", DROP CONSTRAINT "system_analyses_knowledge_entities_scope_entity", DROP CONSTRAINT "system_analyses_tenants_tenant";
+-- reverse: modify "situation_signal_attentions" table
+ALTER TABLE "situation_signal_attentions" DROP CONSTRAINT "situation_signal_attentions_users_set_by_user", DROP CONSTRAINT "situation_signal_attentions_tenants_tenant";
+-- reverse: modify "situation_signals" table
+ALTER TABLE "situation_signals" DROP CONSTRAINT "situation_signals_knowledge_entities_knowledge_entity", DROP CONSTRAINT "situation_signals_situation_ob_7c144cc0858f0af8a955c45ef673e259", DROP CONSTRAINT "situation_signals_situations_situation", DROP CONSTRAINT "situation_signals_tenants_tenant";
 -- reverse: modify "situation_observation_groups" table
 ALTER TABLE "situation_observation_groups" DROP CONSTRAINT "situation_observation_groups_situations_situation", DROP CONSTRAINT "situation_observation_groups_tenants_tenant";
+-- reverse: modify "situation_links" table
+ALTER TABLE "situation_links" DROP CONSTRAINT "situation_links_situations_linked_situation", DROP CONSTRAINT "situation_links_situations_situation", DROP CONSTRAINT "situation_links_tenants_tenant";
+-- reverse: modify "situation_judgments" table
+ALTER TABLE "situation_judgments" DROP CONSTRAINT "situation_judgments_situations_situation", DROP CONSTRAINT "situation_judgments_tenants_tenant";
 -- reverse: modify "situation_investigations" table
 ALTER TABLE "situation_investigations" DROP CONSTRAINT "situation_investigations_tenants_tenant", DROP CONSTRAINT "situation_investigations_situations_investigation", DROP CONSTRAINT "situation_investigations_investigations_situations";
 -- reverse: modify "situation_hazard_assessments" table
 ALTER TABLE "situation_hazard_assessments" DROP CONSTRAINT "situation_hazard_assessments_s_4cfd09fc46fb5f66a4f31cc2a855fdad", DROP CONSTRAINT "situation_hazard_assessments_agent_turns_agent_turn", DROP CONSTRAINT "situation_hazard_assessments_users_user", DROP CONSTRAINT "situation_hazard_assessments_system_hazards_system_hazard", DROP CONSTRAINT "situation_hazard_assessments_situations_situation", DROP CONSTRAINT "situation_hazard_assessments_tenants_tenant";
+-- reverse: modify "situation_entities" table
+ALTER TABLE "situation_entities" DROP CONSTRAINT "situation_entities_knowledge_entities_knowledge_entity", DROP CONSTRAINT "situation_entities_situations_situation", DROP CONSTRAINT "situation_entities_tenants_tenant";
+-- reverse: modify "situation_actions" table
+ALTER TABLE "situation_actions" DROP CONSTRAINT "situation_actions_users_user", DROP CONSTRAINT "situation_actions_situations_situation", DROP CONSTRAINT "situation_actions_tenants_tenant";
 -- reverse: modify "situations" table
-ALTER TABLE "situations" DROP CONSTRAINT "situations_tenants_tenant";
+ALTER TABLE "situations" DROP CONSTRAINT "situations_situation_judgments_latest_judgment", DROP CONSTRAINT "situations_tenants_tenant";
 -- reverse: modify "reviews" table
 ALTER TABLE "reviews" DROP CONSTRAINT "reviews_users_reviewer", DROP CONSTRAINT "reviews_users_requester", DROP CONSTRAINT "reviews_discussion_comments_comment", DROP CONSTRAINT "reviews_system_analysis_entries_analysis_entry", DROP CONSTRAINT "reviews_retrospectives_retrospective", DROP CONSTRAINT "reviews_tenants_tenant";
 -- reverse: modify "retrospectives" table
@@ -180,14 +190,16 @@ ALTER TABLE "documents" DROP CONSTRAINT "documents_tenants_tenant";
 ALTER TABLE "discussion_threads" DROP CONSTRAINT "discussion_threads_users_user", DROP CONSTRAINT "discussion_threads_retrospectives_retrospective", DROP CONSTRAINT "discussion_threads_system_analyses_analysis", DROP CONSTRAINT "discussion_threads_tenants_tenant";
 -- reverse: modify "discussion_comments" table
 ALTER TABLE "discussion_comments" DROP CONSTRAINT "discussion_comments_users_user", DROP CONSTRAINT "discussion_comments_discussion_threads_thread", DROP CONSTRAINT "discussion_comments_tenants_tenant";
+-- reverse: modify "alert_instance_events" table
+ALTER TABLE "alert_instance_events" DROP CONSTRAINT "alert_instance_events_normalized_events_event", DROP CONSTRAINT "alert_instance_events_tenants_tenant", DROP CONSTRAINT "alert_instance_events_alert_instances_events";
 -- reverse: modify "alert_instances" table
-ALTER TABLE "alert_instances" DROP CONSTRAINT "alert_instances_normalized_events_event", DROP CONSTRAINT "alert_instances_tenants_tenant", DROP CONSTRAINT "alert_instances_alert_episodes_instances";
+ALTER TABLE "alert_instances" DROP CONSTRAINT "alert_instances_tenants_tenant", DROP CONSTRAINT "alert_instances_alert_episodes_instances";
 -- reverse: modify "alert_feedbacks" table
 ALTER TABLE "alert_feedbacks" DROP CONSTRAINT "alert_feedbacks_alert_instances_alert_instance", DROP CONSTRAINT "alert_feedbacks_tenants_tenant";
 -- reverse: modify "alert_episodes" table
-ALTER TABLE "alert_episodes" DROP CONSTRAINT "alert_episodes_situation_observation_groups_alert_episodes", DROP CONSTRAINT "alert_episodes_knowledge_entities_knowledge_entity", DROP CONSTRAINT "alert_episodes_tenants_tenant", DROP CONSTRAINT "alert_episodes_alert_definitions_episodes";
+ALTER TABLE "alert_episodes" DROP CONSTRAINT "alert_episodes_knowledge_entities_knowledge_entity", DROP CONSTRAINT "alert_episodes_tenants_tenant", DROP CONSTRAINT "alert_episodes_alert_definitions_episodes";
 -- reverse: modify "alert_definitions" table
-ALTER TABLE "alert_definitions" DROP CONSTRAINT "alert_definitions_knowledge_entities_knowledge_entity", DROP CONSTRAINT "alert_definitions_tenants_tenant";
+ALTER TABLE "alert_definitions" DROP CONSTRAINT "alert_definitions_situation_si_54a9b6b2ff32fbaefab626ae358862d7", DROP CONSTRAINT "alert_definitions_knowledge_entities_knowledge_entity", DROP CONSTRAINT "alert_definitions_tenants_tenant";
 -- reverse: modify "agent_turns" table
 ALTER TABLE "agent_turns" DROP CONSTRAINT "agent_turns_agent_messages_input_message", DROP CONSTRAINT "agent_turns_tenants_tenant", DROP CONSTRAINT "agent_turns_agent_sessions_turns";
 -- reverse: modify "agent_session_bindings" table
@@ -204,8 +216,6 @@ DROP TABLE "user_watched_oncall_rosters";
 DROP TABLE "team_oncall_rosters";
 -- reverse: create "task_tickets" table
 DROP TABLE "task_tickets";
--- reverse: create "situation_observation_group_events" table
-DROP TABLE "situation_observation_group_events";
 -- reverse: create "playbook_alert_definitions" table
 DROP TABLE "playbook_alert_definitions";
 -- reverse: create "oncall_shift_handover_pinned_annotations" table
@@ -344,10 +354,36 @@ DROP INDEX "systemanalysis_tenant_id_scope_entity_id";
 DROP INDEX "systemanalysis_tenant_id";
 -- reverse: create "system_analyses" table
 DROP TABLE "system_analyses";
+-- reverse: create index "situationsignalattention_tenant_id" to table: "situation_signal_attentions"
+DROP INDEX "situationsignalattention_tenant_id";
+-- reverse: create "situation_signal_attentions" table
+DROP TABLE "situation_signal_attentions";
+-- reverse: create index "situationsignal_tenant_id_source_entity_id" to table: "situation_signals"
+DROP INDEX "situationsignal_tenant_id_source_entity_id";
+-- reverse: create index "situationsignal_tenant_id_situation_id" to table: "situation_signals"
+DROP INDEX "situationsignal_tenant_id_situation_id";
+-- reverse: create index "situationsignal_tenant_id_knowledge_entity_id" to table: "situation_signals"
+DROP INDEX "situationsignal_tenant_id_knowledge_entity_id";
+-- reverse: create index "situationsignal_tenant_id" to table: "situation_signals"
+DROP INDEX "situationsignal_tenant_id";
+-- reverse: create "situation_signals" table
+DROP TABLE "situation_signals";
 -- reverse: create index "situationobservationgroup_tenant_id" to table: "situation_observation_groups"
 DROP INDEX "situationobservationgroup_tenant_id";
 -- reverse: create "situation_observation_groups" table
 DROP TABLE "situation_observation_groups";
+-- reverse: create index "situationlink_tenant_id_situation_id_linked_situation_id_kind" to table: "situation_links"
+DROP INDEX "situationlink_tenant_id_situation_id_linked_situation_id_kind";
+-- reverse: create index "situationlink_tenant_id" to table: "situation_links"
+DROP INDEX "situationlink_tenant_id";
+-- reverse: create "situation_links" table
+DROP TABLE "situation_links";
+-- reverse: create index "situationjudgment_tenant_id_situation_id_judged_at" to table: "situation_judgments"
+DROP INDEX "situationjudgment_tenant_id_situation_id_judged_at";
+-- reverse: create index "situationjudgment_tenant_id" to table: "situation_judgments"
+DROP INDEX "situationjudgment_tenant_id";
+-- reverse: create "situation_judgments" table
+DROP TABLE "situation_judgments";
 -- reverse: create index "situationinvestigation_tenant_id_investigation_id" to table: "situation_investigations"
 DROP INDEX "situationinvestigation_tenant_id_investigation_id";
 -- reverse: create index "situationinvestigation_tenant_id_situation_id" to table: "situation_investigations"
@@ -368,6 +404,22 @@ DROP INDEX "situationhazardassessment_tena_cb32fa264c6edabff58104f36323e533";
 DROP INDEX "situationhazardassessment_tenant_id";
 -- reverse: create "situation_hazard_assessments" table
 DROP TABLE "situation_hazard_assessments";
+-- reverse: create index "situationentity_tenant_id_knowledge_entity_id" to table: "situation_entities"
+DROP INDEX "situationentity_tenant_id_knowledge_entity_id";
+-- reverse: create index "situationentity_tenant_id_situation_id_knowledge_entity_id" to table: "situation_entities"
+DROP INDEX "situationentity_tenant_id_situation_id_knowledge_entity_id";
+-- reverse: create index "situationentity_tenant_id" to table: "situation_entities"
+DROP INDEX "situationentity_tenant_id";
+-- reverse: create "situation_entities" table
+DROP TABLE "situation_entities";
+-- reverse: create index "situationaction_tenant_id_situation_id_at" to table: "situation_actions"
+DROP INDEX "situationaction_tenant_id_situation_id_at";
+-- reverse: create index "situationaction_tenant_id" to table: "situation_actions"
+DROP INDEX "situationaction_tenant_id";
+-- reverse: create "situation_actions" table
+DROP TABLE "situation_actions";
+-- reverse: create index "situation_tenant_id_closed_at" to table: "situations"
+DROP INDEX "situation_tenant_id_closed_at";
 -- reverse: create index "situation_tenant_id_opened_at" to table: "situations"
 DROP INDEX "situation_tenant_id_opened_at";
 -- reverse: create index "situation_tenant_id" to table: "situations"
@@ -740,8 +792,14 @@ DROP TABLE "discussion_threads";
 DROP INDEX "discussioncomment_tenant_id";
 -- reverse: create "discussion_comments" table
 DROP TABLE "discussion_comments";
--- reverse: create index "alertinstance_tenant_id_normalized_event_id" to table: "alert_instances"
-DROP INDEX "alertinstance_tenant_id_normalized_event_id";
+-- reverse: create index "alertinstanceevent_tenant_id_event_id" to table: "alert_instance_events"
+DROP INDEX "alertinstanceevent_tenant_id_event_id";
+-- reverse: create index "alertinstanceevent_tenant_id" to table: "alert_instance_events"
+DROP INDEX "alertinstanceevent_tenant_id";
+-- reverse: create "alert_instance_events" table
+DROP TABLE "alert_instance_events";
+-- reverse: create index "alertinstance_tenant_id_alert_episode_id_instance_key_fired_at" to table: "alert_instances"
+DROP INDEX "alertinstance_tenant_id_alert_episode_id_instance_key_fired_at";
 -- reverse: create index "alertinstance_tenant_id" to table: "alert_instances"
 DROP INDEX "alertinstance_tenant_id";
 -- reverse: create "alert_instances" table
@@ -750,14 +808,16 @@ DROP TABLE "alert_instances";
 DROP INDEX "alertfeedback_tenant_id";
 -- reverse: create "alert_feedbacks" table
 DROP TABLE "alert_feedbacks";
--- reverse: create index "alertepisode_tenant_id_alert_definition_id" to table: "alert_episodes"
-DROP INDEX "alertepisode_tenant_id_alert_definition_id";
+-- reverse: create index "alertepisode_tenant_id_alert_definition_id_started_at" to table: "alert_episodes"
+DROP INDEX "alertepisode_tenant_id_alert_definition_id_started_at";
 -- reverse: create index "alertepisode_tenant_id_knowledge_entity_id" to table: "alert_episodes"
 DROP INDEX "alertepisode_tenant_id_knowledge_entity_id";
 -- reverse: create index "alertepisode_tenant_id" to table: "alert_episodes"
 DROP INDEX "alertepisode_tenant_id";
 -- reverse: create "alert_episodes" table
 DROP TABLE "alert_episodes";
+-- reverse: create index "alertdefinition_situation_signal_attention_id" to table: "alert_definitions"
+DROP INDEX "alertdefinition_situation_signal_attention_id";
 -- reverse: create index "alertdefinition_tenant_id_knowledge_entity_id" to table: "alert_definitions"
 DROP INDEX "alertdefinition_tenant_id_knowledge_entity_id";
 -- reverse: create index "alertdefinition_tenant_id" to table: "alert_definitions"

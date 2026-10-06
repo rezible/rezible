@@ -125,17 +125,6 @@ var pkgClock = do.Package(
 	do.Lazy(func(i do.Injector) (rez.Clock, error) { return systemClock{}, nil }),
 )
 
-func invokedProviderFn[D any, R any](fn func(D) (R, error)) do.Provider[R] {
-	return func(i do.Injector) (R, error) {
-		d, dErr := do.Invoke[D](i)
-		if dErr != nil {
-			var r R
-			return r, fmt.Errorf("failed to invoke: %w", dErr)
-		}
-		return fn(d)
-	}
-}
-
 var pkgRiver = do.Package(
 	do.Lazy(func(i do.Injector) (*river.JobService, error) {
 		return river.NewJobService(
@@ -153,12 +142,17 @@ func providePostgresTestDatabaseConfig(i do.Injector) (rez.PostgresConfig, error
 }
 
 var pkgGenkit = do.Package(
-	//do.Lazy(invokedProviderFn(func(b *genkit.WorkflowBuilder) (rezai.AiClassifyAgentThreadResponseWorkflow, error) {
-	//	return b.DefinePromptWorkflow(rezai.ClassifyAgentThreadResponseDefinition)
-	//})),
 	do.Lazy(func(i do.Injector) (rezai.AiClassifyAgentThreadResponseWorkflow, error) {
 		builder := do.MustInvoke[*genkit.WorkflowBuilder](i)
 		return builder.DefinePromptWorkflow(rezai.ClassifyAgentThreadResponseDefinition)
+	}),
+
+	do.Lazy(func(i do.Injector) (rezai.JudgeSituationCandidateWorkflow, error) {
+		if !do.MustInvoke[rez.Config](i).AI.SituationJudge.Enabled {
+			return nil, nil
+		}
+		builder := do.MustInvoke[*genkit.WorkflowBuilder](i)
+		return builder.DefinePromptWorkflow(rezai.JudgeSituationCandidateDefinition)
 	}),
 
 	do.Lazy(func(i do.Injector) (*genkit.WorkflowBuilder, error) {
@@ -410,7 +404,10 @@ var pkgDatabase = do.Package(
 	}),
 
 	do.Lazy(func(i do.Injector) (rez.EventsService, error) {
-		return db.NewEventsService(do.MustInvoke[rez.Database](i))
+		return db.NewEventsService(
+			do.MustInvoke[rez.Database](i),
+			do.MustInvoke[rez.SituationService](i),
+		)
 	}),
 
 	do.Lazy(func(i do.Injector) (rez.AuthSessionService, error) {
@@ -491,16 +488,20 @@ var pkgDatabase = do.Package(
 		return db.NewDiscussionService(do.MustInvoke[rez.Database](i)), nil
 	}),
 
-	do.Lazy(func(i do.Injector) (rez.AlertService, error) {
+	do.Lazy(func(i do.Injector) (*db.AlertService, error) {
 		return db.NewAlertService(
+			do.MustInvoke[rez.Config](i).Alerts,
+			do.MustInvoke[rez.Clock](i),
 			do.MustInvoke[rez.Database](i),
-			do.MustInvoke[rez.SituationService](i),
+			do.MustInvoke[rez.JobService](i),
 			do.MustInvoke[rez.KnowledgeGraphIngestionService](i),
+			do.MustInvoke[rez.SituationSignalService](i),
 		)
 	}),
+	do.Bind[*db.AlertService, rez.AlertService](),
 
-	do.Lazy(func(i do.Injector) (jobs.Worker[jobs.CloseInactiveAlertEpisodes], error) {
-		return db.NewCloseInactiveAlertEpisodesWorker(do.MustInvoke[rez.AlertService](i))
+	do.Lazy(func(i do.Injector) (rez.SituationSignalService, error) {
+		return db.NewSituationSignalService(do.MustInvoke[rez.JobService](i)), nil
 	}),
 
 	do.Lazy(func(i do.Injector) (rez.PlaybookService, error) {
@@ -548,9 +549,13 @@ var pkgDatabase = do.Package(
 	do.Lazy(func(i do.Injector) (*db.SituationService, error) {
 		return db.NewSituationService(
 			do.MustInvoke[rez.Database](i),
+			do.MustInvoke[rez.Clock](i),
+			do.MustInvoke[rez.JobService](i),
 			do.MustInvoke[rez.InvestigationService](i),
 			do.MustInvoke[rez.SystemAnalysisService](i),
 			do.MustInvoke[rez.KnowledgeGraphQueryService](i),
+			do.MustInvoke[rezai.JudgeSituationCandidateWorkflow](i),
+			do.MustInvoke[*db.AlertService](i),
 		)
 	}),
 	do.Bind[*db.SituationService, rez.SituationService](),
@@ -691,21 +696,15 @@ func (p *jobDefinitionProvider) addInvokedProvider[P jobs.WorkerProvider]() {
 	p.add(do.MustInvoke[P](p.i).JobWorkers()...)
 }
 
-func (p *jobDefinitionProvider) getDefinition() jobs.Definition {
-	return jobs.Definition{
-		Workers: p.workers,
-		PeriodicJobs: []*jobs.PeriodicJob{
-			jobs.CloseInactiveAlertEpisodesPeriodicJob,
-		},
-	}
+func (p *jobDefinitionProvider) getWorkerDefinitions() ([]jobs.WorkerDefinition, error) {
+	return p.workers, nil
 }
 
 var pkgJobs = do.Package(
-	do.LazyNamed("jobs-default", func(i do.Injector) (jobs.Definition, error) {
+	do.Lazy(func(i do.Injector) ([]jobs.WorkerDefinition, error) {
 		p := newJobDefinitionProvider(i)
 
 		p.addProvidedArgs[jobs.ReconcileInvestigation]()
-		p.addProvidedArgs[jobs.CloseInactiveAlertEpisodes]()
 		p.addProvidedArgs[jobs.StartAgentSession]()
 		p.addProvidedArgs[jobs.InvokeAgentTurn]()
 		p.addProvidedArgs[jobs.SyncIntegrationSourceEvents]()
@@ -717,6 +716,9 @@ var pkgJobs = do.Package(
 		p.addInvokedProviderFunc(db.NewGenerateIncidentDebriefResponseWorker)
 		p.addInvokedProviderFunc(db.NewGenerateIncidentDebriefSuggestionsWorker)
 		p.addInvokedProviderFunc(db.NewScanOncallShiftsWorker)
+		p.addInvokedProviderFunc(db.NewSettleAlertEpisodeWorker)
+		p.addInvokedProviderFunc(db.NewProcessSituationSignalWorker)
+		p.addInvokedProviderFunc(db.NewEvaluateSituationWorker)
 		p.addInvokedProviderFunc(db.NewEnsureShiftHandoverSentWorker)
 		p.addInvokedProviderFunc(db.NewEnsureShiftHandoverReminderSentWorker)
 		p.addInvokedProviderFunc(db.NewGenerateShiftMetricsWorker)
@@ -725,7 +727,20 @@ var pkgJobs = do.Package(
 			p.add(intgProv.JobWorkers()...)
 		}
 
-		return p.getDefinition(), nil
+		return p.getWorkerDefinitions()
+	}),
+
+	do.Lazy(func(i do.Injector) ([]*jobs.PeriodicJob, error) {
+		var jobs []*jobs.PeriodicJob
+
+		return jobs, nil
+	}),
+
+	do.Lazy(func(i do.Injector) (jobs.Definition, error) {
+		return jobs.Definition{
+			Workers:      do.MustInvoke[[]jobs.WorkerDefinition](i),
+			PeriodicJobs: do.MustInvoke[[]*jobs.PeriodicJob](i),
+		}, nil
 	}),
 )
 
@@ -746,8 +761,8 @@ func (p *messagesDefinitionProvider) addInvokedProvider[P messages.MessageHandle
 	p.add(do.MustInvoke[P](p.i).MessageHandlers()...)
 }
 
-func (p *messagesDefinitionProvider) getDefinition() messages.Definition {
-	return messages.Definition{Handlers: p.handlers}
+func (p *messagesDefinitionProvider) getDefinition() (messages.Definition, error) {
+	return messages.Definition{Handlers: p.handlers}, nil
 }
 
 var pkgMessages = do.Package(
@@ -755,7 +770,7 @@ var pkgMessages = do.Package(
 		return do.MustInvoke[rez.Config](i).MessageQueue, nil
 	}),
 
-	do.LazyNamed("messages-default", func(i do.Injector) (messages.Definition, error) {
+	do.Lazy(func(i do.Injector) (messages.Definition, error) {
 		p := newMessagesDefinitionProvider(i)
 
 		p.addInvokedProvider[*db.InvestigationService]()
@@ -764,6 +779,6 @@ var pkgMessages = do.Package(
 			p.add(intgProv.MessageHandlers()...)
 		}
 
-		return p.getDefinition(), nil
+		return p.getDefinition()
 	}),
 )

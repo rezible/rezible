@@ -76,6 +76,14 @@ func (c *AlertInstanceClient) Debug() *AlertInstanceClient {
 	return &AlertInstanceClient{config: cfg}
 }
 
+func (c *AlertInstanceEventClient) Debug() *AlertInstanceEventClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &AlertInstanceEventClient{config: cfg}
+}
+
 func (c *AlertMetricsClient) Debug() *AlertMetricsClient {
 	if c.debug {
 		return c
@@ -556,6 +564,22 @@ func (c *SituationClient) Debug() *SituationClient {
 	return &SituationClient{config: cfg}
 }
 
+func (c *SituationActionClient) Debug() *SituationActionClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &SituationActionClient{config: cfg}
+}
+
+func (c *SituationEntityClient) Debug() *SituationEntityClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &SituationEntityClient{config: cfg}
+}
+
 func (c *SituationHazardAssessmentClient) Debug() *SituationHazardAssessmentClient {
 	if c.debug {
 		return c
@@ -572,12 +596,44 @@ func (c *SituationInvestigationClient) Debug() *SituationInvestigationClient {
 	return &SituationInvestigationClient{config: cfg}
 }
 
+func (c *SituationJudgmentClient) Debug() *SituationJudgmentClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &SituationJudgmentClient{config: cfg}
+}
+
+func (c *SituationLinkClient) Debug() *SituationLinkClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &SituationLinkClient{config: cfg}
+}
+
 func (c *SituationObservationGroupClient) Debug() *SituationObservationGroupClient {
 	if c.debug {
 		return c
 	}
 	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
 	return &SituationObservationGroupClient{config: cfg}
+}
+
+func (c *SituationSignalClient) Debug() *SituationSignalClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &SituationSignalClient{config: cfg}
+}
+
+func (c *SituationSignalAttentionClient) Debug() *SituationSignalAttentionClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &SituationSignalAttentionClient{config: cfg}
 }
 
 func (c *SystemAnalysisClient) Debug() *SystemAnalysisClient {

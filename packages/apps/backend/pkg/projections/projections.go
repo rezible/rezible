@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"maps"
 	"reflect"
 	"slices"
 	"strings"
@@ -104,6 +105,44 @@ func SortEntityObservations(observations []EntityObservation) []EntityObservatio
 		return strings.Compare(left.DisplayName, right.DisplayName)
 	})
 	return sorted
+}
+
+// AlertInstanceKey identifies a source instance within its definition: the provider's instance ID when
+// supplied, otherwise a stable digest of all labels sorted by name, and empty with neither.
+func AlertInstanceKey(instanceID string, labels map[string]string) string {
+	if instanceID != "" {
+		return instanceID
+	}
+	if len(labels) == 0 {
+		return ""
+	}
+	return alertLabelsDigest("labels:v1", slices.Sorted(maps.Keys(labels)), labels)
+}
+
+// AlertGroupingKey groups alert instances for detection counts. With identity group labels it digests
+// those label names and values in list order, a missing label contributing an empty value; otherwise
+// it is the instance key.
+func AlertGroupingKey(identityGroupLabels []string, labels map[string]string, instanceKey string) string {
+	if len(identityGroupLabels) == 0 {
+		return instanceKey
+	}
+	return alertLabelsDigest("group:v1", identityGroupLabels, labels)
+}
+
+func alertLabelsDigest(version string, names []string, labels map[string]string) string {
+	digest := sha256.New()
+	writeString := func(value string) {
+		var length [8]byte
+		binary.BigEndian.PutUint64(length[:], uint64(len(value)))
+		digest.Write(length[:])
+		digest.Write([]byte(value))
+	}
+	writeString(version)
+	for _, name := range names {
+		writeString(name)
+		writeString(labels[name])
+	}
+	return fmt.Sprintf("%s:%x", version, digest.Sum(nil))
 }
 
 func DerivedRelationshipRef(predicate knr.Predicate, source, target rez.ProviderResourceRef) rez.ProviderResourceRef {

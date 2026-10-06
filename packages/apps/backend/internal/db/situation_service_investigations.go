@@ -4,9 +4,10 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"maps"
+	"slices"
 	"time"
 
-	"entgo.io/ent/dialect/sql"
 	mapset "github.com/deckarep/golang-set/v2"
 	"github.com/google/uuid"
 
@@ -14,8 +15,6 @@ import (
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/predicate"
 
-	ale "github.com/rezible/rezible/ent/alertepisode"
-	ali "github.com/rezible/rezible/ent/alertinstance"
 	kne "github.com/rezible/rezible/ent/knowledgeentity"
 	knev "github.com/rezible/rezible/ent/knowledgeevidence"
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
@@ -23,9 +22,8 @@ import (
 	ev "github.com/rezible/rezible/ent/normalizedevent"
 	sae "github.com/rezible/rezible/ent/systemanalysisentry"
 	saes "github.com/rezible/rezible/ent/systemanalysisentrysubject"
+	"github.com/rezible/rezible/pkg/situations"
 )
-
-const maxSituationEvidenceQueryPageSize = 100
 
 type situationEvidenceEntry struct {
 	reference string
@@ -47,62 +45,66 @@ func makeSetSituationEntrySubject(id uuid.UUID, kind string, role string) (strin
 	return kind + ":" + id.String() + ":" + role, params
 }
 
-func (s *SituationService) prepareOrRefreshSituationAnalysis(ctx context.Context, analysisID uuid.UUID, directEventIDs, episodeIDs []uuid.UUID) error {
+const maxSituationEvidenceQueryPageSize = 100
+
+// createInvestigation starts the situation's investigation over a system analysis prepared from its
+// signals' events, and records that it saw each signal's current revision.
+func (s *SituationService) createInvestigation(ctx context.Context, situationID uuid.UUID) error {
+	memberIDs, membersErr := s.memberEntityIDs(ctx, situationID)
+	if membersErr != nil {
+		return membersErr
+	}
+	signals, loadErr := s.loadSignals(ctx, memberIDs, situations.LoadSignalsOptions{})
+	if loadErr != nil {
+		return loadErr
+	}
+	eventIDs := mapset.NewSet[uuid.UUID]()
+	for _, signal := range signals {
+		eventIDs.Append(signal.EventIDs...)
+	}
+	analysis, analysisErr := s.analyses.SetSystemAnalysis(ctx, uuid.Nil, func(*ent.SystemAnalysisMutation) {})
+	if analysisErr != nil {
+		return fmt.Errorf("create situation investigation analysis: %w", analysisErr)
+	}
+	if prepareErr := s.prepareOrRefreshSituationAnalysis(ctx, analysis.ID, eventIDs.ToSlice()); prepareErr != nil {
+		return fmt.Errorf("prepare situation investigation analysis: %w", prepareErr)
+	}
+	investigationParams := rez.CreateInvestigationParams{
+		AnalysisID: analysis.ID,
+		Query:      defaultSituationInvestigationQuestion,
+	}
+	investigation, investigationErr := s.investigations.CreateInvestigation(ctx, investigationParams)
+	if investigationErr != nil {
+		return fmt.Errorf("create situation investigation: %w", investigationErr)
+	}
+	createLink := s.db.Client(ctx).SituationInvestigation.Create().
+		SetSituationID(situationID).
+		SetInvestigationID(investigation.ID)
+	if linkErr := createLink.Exec(ctx); linkErr != nil {
+		return fmt.Errorf("link situation investigation: %w", linkErr)
+	}
+	return s.observeRevisions(ctx, situationID, slices.Collect(maps.Values(signals)))
+}
+
+// prepareOrRefreshSituationAnalysis adds or refreshes one observation per event in the analysis, attaching
+// the graph subjects linked to the event through its knowledge evidence.
+func (s *SituationService) prepareOrRefreshSituationAnalysis(ctx context.Context, analysisID uuid.UUID, eventIDs []uuid.UUID) error {
 	if analysisID == uuid.Nil {
 		return fmt.Errorf("%w: system analysis ID is required", rez.ErrInvalidInput)
 	}
-	directEventIDs = mapset.NewSet(directEventIDs...).ToSlice()
-	episodeIDs = mapset.NewSet(episodeIDs...).ToSlice()
-	if validateErr := s.validateSituationSources(ctx, directEventIDs, episodeIDs); validateErr != nil {
-		return validateErr
+	allEventIDs := mapset.NewSet(eventIDs...)
+	if allEventIDs.IsEmpty() {
+		return nil
 	}
-
-	episodes := make(map[uuid.UUID]*ent.AlertEpisode, len(episodeIDs))
-	if len(episodeIDs) > 0 {
-		queryEpisodes := s.db.Client(ctx).AlertEpisode.Query().
-			Where(ale.IDIn(episodeIDs...)).
-			WithAlertDefinition()
-		loadedEpisodes, queryErr := queryEpisodes.All(ctx)
-		if queryErr != nil {
-			return fmt.Errorf("load alert episodes for analysis: %w", queryErr)
-		}
-		for _, episode := range loadedEpisodes {
-			episodes[episode.ID] = episode
-		}
+	queryEvents := s.db.Client(ctx).NormalizedEvent.Query().
+		Where(ev.IDIn(allEventIDs.ToSlice()...)).
+		Order(ev.ByOccurredAt(), ev.ByID())
+	events, queryErr := queryEvents.All(ctx)
+	if queryErr != nil {
+		return fmt.Errorf("load normalized events for analysis: %w", queryErr)
 	}
-
-	eventsByID := make(map[uuid.UUID]*ent.NormalizedEvent)
-	for _, eventID := range directEventIDs {
-		eventsByID[eventID] = nil
-	}
-	episodeEvents := make(map[uuid.UUID][]uuid.UUID, len(episodeIDs))
-	if len(episodeIDs) > 0 {
-		queryInstances := s.db.Client(ctx).AlertInstance.Query().
-			Where(ali.AlertEpisodeIDIn(episodeIDs...)).
-			Order(ali.ByID(sql.OrderAsc()))
-		instances, queryErr := queryInstances.All(ctx)
-		if queryErr != nil {
-			return fmt.Errorf("load alert episode instances for analysis: %w", queryErr)
-		}
-		for _, instance := range instances {
-			episodeEvents[instance.AlertEpisodeID] = append(episodeEvents[instance.AlertEpisodeID], instance.NormalizedEventID)
-			eventsByID[instance.NormalizedEventID] = nil
-		}
-	}
-	allEventIDs := mapset.NewSetFromMapKeys(eventsByID)
-	if !allEventIDs.IsEmpty() {
-		queryEvents := s.db.Client(ctx).NormalizedEvent.Query().
-			Where(ev.IDIn(allEventIDs.ToSlice()...))
-		events, queryErr := queryEvents.All(ctx)
-		if queryErr != nil {
-			return fmt.Errorf("load normalized events for analysis: %w", queryErr)
-		}
-		for _, event := range events {
-			eventsByID[event.ID] = event
-		}
-		if len(events) != allEventIDs.Cardinality() {
-			return fmt.Errorf("%w: normalized event from situation evidence is unavailable", rez.ErrNotFound)
-		}
+	if len(events) != allEventIDs.Cardinality() {
+		return fmt.Errorf("%w: normalized event from situation evidence is unavailable", rez.ErrNotFound)
 	}
 
 	gctx, graphErr := s.loadSituationEventGraphContext(ctx, allEventIDs)
@@ -123,29 +125,14 @@ func (s *SituationService) prepareOrRefreshSituationAnalysis(ctx context.Context
 		}
 	}
 
-	entries := make([]situationEvidenceEntry, 0, len(directEventIDs)+len(episodeIDs))
-	for _, eventID := range directEventIDs {
-		event := eventsByID[eventID]
+	entries := make([]situationEvidenceEntry, 0, len(events))
+	for _, event := range events {
 		entries = append(entries, situationEvidenceEntry{
 			reference: "normalized_event:" + event.ID.String(),
 			title:     event.Kind + " event",
 			body:      fmt.Sprintf("provider_event_source: %s\nprovider_event_ref: %s", event.ProviderEventSource, event.ProviderEventRef),
 			occurred:  event.OccurredAt,
 			eventIDs:  []uuid.UUID{event.ID},
-		})
-	}
-	for _, episodeID := range episodeIDs {
-		episode := episodes[episodeID]
-		definition, definitionErr := episode.Edges.AlertDefinitionOrErr()
-		if definitionErr != nil {
-			return fmt.Errorf("load alert episode definition: %w", definitionErr)
-		}
-		entries = append(entries, situationEvidenceEntry{
-			reference: "alert_episode:" + episode.ID.String(),
-			title:     definition.Title,
-			body:      fmt.Sprintf("episode_id: %s\nstatus: %s", episode.ID, episode.Status),
-			occurred:  episode.StartedAt,
-			eventIDs:  mapset.NewSet(episodeEvents[episodeID]...).ToSlice(),
 		})
 	}
 

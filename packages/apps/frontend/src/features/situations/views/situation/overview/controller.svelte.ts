@@ -3,12 +3,22 @@ import type { StatusPresentation } from "$components/common/status-badge/status"
 import { isValidTime } from "$lib/time";
 import type { TimelineEntry } from "$components/common/timeline/Timeline.svelte";
 import { useSituationController } from "../controller.svelte";
-import { observationGroups, type ReportState, type SourceRecord } from "$features/situations/lib/model";
+import {
+	observationGroups,
+	situationLinkKindLabel,
+	situationSourceCount,
+	type ReportState,
+	type SourceRecord,
+} from "$features/situations/lib/model";
+import { situationHref } from "$features/situations/lib/routes";
+import { closeReasonLabel, muteReasonLabel, situationStageStatus } from "$features/situations/lib/status";
 import { SourceInspection } from "$features/situations/lib/sourceInspection.svelte";
+import { whyPanelState } from "$features/situations/lib/why";
+import type { InvestigationOffer } from "../controller.svelte";
 
 export type UnderstandingState =
 	| { kind: "loading" }
-	| { kind: "none" }
+	| { kind: "none"; offer: InvestigationOffer }
 	| { kind: "unavailable" }
 	| { kind: "error" }
 	| {
@@ -22,20 +32,39 @@ export type UnderstandingState =
 			href: string;
 	  };
 
+export type HeaderFact = { key: string; label: string; at: string; detail?: string };
+
+export type RelatedSituation = {
+	key: string;
+	kindLabel: string;
+	title: string;
+	href: string;
+	status: StatusPresentation;
+};
+
 export class SituationOverviewController {
 	private pageController = useSituationController();
 
 	inspection = new SourceInspection();
 
 	situationAttributes = $derived(this.pageController.situation?.attributes);
-	openedAt = $derived(this.situationAttributes?.openedAt);
-	closedAt = $derived(this.situationAttributes?.closedAt);
-	closeReason = $derived(this.getCloseReason());
+	headerFacts = $derived(this.getHeaderFacts());
+	why = $derived(
+		this.situationAttributes
+			? whyPanelState(this.situationAttributes, this.pageController.origin)
+			: undefined
+	);
+	relatedSituations = $derived(this.getRelatedSituations());
 
 	understanding = $derived(this.getUnderstanding());
 
-	observations = $derived(observationGroups(this.situationAttributes?.observationGroups ?? []));
-	sourceCount = $derived(this.observations.reduce((total, group) => total + group.records.length, 0));
+	observations = $derived(
+		observationGroups(
+			this.situationAttributes?.observationGroups ?? [],
+			this.pageController.episodesByEntity
+		)
+	);
+	sourceCount = $derived(this.situationAttributes ? situationSourceCount(this.situationAttributes) : 0);
 	private initialGroupId = $derived(this.situationAttributes?.observationGroups[0]?.id);
 	private groupChoices = $state<Record<string, boolean>>({});
 
@@ -57,8 +86,20 @@ export class SituationOverviewController {
 		return this.pageController.situationUnavailable;
 	}
 
-	get startPending() {
-		return this.pageController.requestInvestigationMutation.isPending;
+	get originLoading() {
+		return this.pageController.originLoading;
+	}
+
+	get longRunning() {
+		return this.pageController.longRunning;
+	}
+
+	get raisePending() {
+		return this.pageController.raiseMutation.isPending;
+	}
+
+	get actionPending() {
+		return this.pageController.actionPending;
 	}
 
 	get linkedIncidents() {
@@ -69,8 +110,12 @@ export class SituationOverviewController {
 		return this.pageController.linkedIncidentsLoading;
 	}
 
-	startInvestigation = () => {
-		this.pageController.startInvestigation();
+	raise = () => {
+		this.pageController.raise();
+	};
+
+	unmute = () => {
+		this.pageController.unmute();
 	};
 
 	retryInvestigation = () => {
@@ -109,15 +154,48 @@ export class SituationOverviewController {
 		this.groupChoices = choices;
 	}
 
-	private getCloseReason() {
-		switch (this.situationAttributes?.closeReason) {
-			case "stabilized":
-				return "Stabilized";
-			case "dismissed":
-				return "Dismissed";
-			default:
-				return undefined;
+	private getHeaderFacts() {
+		const attributes = this.situationAttributes;
+		if (!attributes) {
+			return [];
 		}
+
+		const facts: HeaderFact[] = [{ key: "first-signal", label: "First signal", at: attributes.openedAt }];
+		facts.push({ key: "watching", label: "Watching since", at: attributes.createdAt });
+		if (attributes.raisedAt) {
+			facts.push({ key: "raised", label: "Raised", at: attributes.raisedAt });
+		}
+		if (attributes.mutedAt) {
+			facts.push({
+				key: "muted",
+				label: "Muted",
+				at: attributes.mutedAt,
+				detail: muteReasonLabel(attributes.muteReason),
+			});
+		}
+		if (this.pageController.holdUntil) {
+			facts.push({ key: "held", label: "Held until", at: this.pageController.holdUntil });
+		}
+		if (attributes.closedAt) {
+			facts.push({
+				key: "closed",
+				label: "Closed",
+				at: attributes.closedAt,
+				detail: closeReasonLabel(attributes.closeReason),
+			});
+		}
+		return facts.filter((fact) => isValidTime(fact.at));
+	}
+
+	private getRelatedSituations() {
+		const links = this.situationAttributes?.links ?? [];
+		return links.map((link): RelatedSituation => ({
+			key: `${link.kind}:${link.situationId}`,
+			kindLabel: situationLinkKindLabel(link.kind),
+			title: link.title,
+			href: situationHref(link.situationId),
+			status: situationStageStatus(link.stage),
+		}));
 	}
 
 	private getUnderstanding(): UnderstandingState {
@@ -126,8 +204,8 @@ export class SituationOverviewController {
 		if (!this.situationAttributes) {
 			return { kind: "loading" };
 		}
-		if (!page.investigationId) {
-			return { kind: "none" };
+		if (page.investigationOffer) {
+			return { kind: "none", offer: page.investigationOffer };
 		}
 		if (page.investigationUnavailable) {
 			return { kind: "unavailable" };
@@ -168,7 +246,18 @@ export class SituationOverviewController {
 		const candidates: TimelineEntry[] = [];
 
 		if (attributes) {
-			candidates.push({ key: "opened", label: "Situation opened", at: attributes.openedAt });
+			candidates.push({ key: "opened", label: "First signal", at: attributes.openedAt });
+		}
+		if (attributes?.raisedAt) {
+			candidates.push({ key: "raised", label: "Situation raised", at: attributes.raisedAt });
+		}
+		if (attributes?.mutedAt) {
+			candidates.push({
+				key: "muted",
+				label: "Situation muted",
+				at: attributes.mutedAt,
+				description: muteReasonLabel(attributes.muteReason),
+			});
 		}
 		if (investigation) {
 			candidates.push({
@@ -194,7 +283,7 @@ export class SituationOverviewController {
 				key: "closed",
 				label: "Situation closed",
 				at: attributes.closedAt,
-				description: this.closeReason,
+				description: closeReasonLabel(attributes.closeReason),
 			});
 		}
 

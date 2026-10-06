@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -13,6 +14,7 @@ import (
 	"github.com/rezible/rezible/ent/alertdefinition"
 	"github.com/rezible/rezible/ent/alertepisode"
 	"github.com/rezible/rezible/ent/knowledgeentity"
+	"github.com/rezible/rezible/ent/schema/schematypes"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
@@ -31,19 +33,18 @@ type AlertEpisode struct {
 	KnowledgeEntityID *uuid.UUID `json:"knowledge_entity_id,omitempty"`
 	// AlertDefinitionID holds the value of the "alert_definition_id" field.
 	AlertDefinitionID uuid.UUID `json:"alert_definition_id,omitempty"`
-	// Status holds the value of the "status" field.
-	Status alertepisode.Status `json:"status,omitempty"`
-	// StartedAt holds the value of the "started_at" field.
+	// Earliest window start
 	StartedAt time.Time `json:"started_at,omitempty"`
-	// LastObservedAt holds the value of the "last_observed_at" field.
-	LastObservedAt time.Time `json:"last_observed_at,omitempty"`
-	// ClosedAt holds the value of the "closed_at" field.
+	// Effective closure; nil while open
 	ClosedAt *time.Time `json:"closed_at,omitempty"`
+	// Highest severity of the episode's windows
+	HighestSeverity schematypes.SignalSeverity `json:"highest_severity,omitempty"`
+	// The definition's identity group labels when the episode opened
+	IdentityGroupLabels []string `json:"identity_group_labels,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the AlertEpisodeQuery when eager-loading is set.
-	Edges                                      AlertEpisodeEdges `json:"edges"`
-	situation_observation_group_alert_episodes *uuid.UUID
-	selectValues                               sql.SelectValues
+	Edges        AlertEpisodeEdges `json:"edges"`
+	selectValues sql.SelectValues
 }
 
 // AlertEpisodeEdges holds the relations/edges for other nodes in the graph.
@@ -110,16 +111,16 @@ func (*AlertEpisode) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case alertepisode.FieldKnowledgeEntityID:
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
+		case alertepisode.FieldIdentityGroupLabels:
+			values[i] = new([]byte)
 		case alertepisode.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case alertepisode.FieldStatus:
+		case alertepisode.FieldHighestSeverity:
 			values[i] = new(sql.NullString)
-		case alertepisode.FieldCreatedAt, alertepisode.FieldUpdatedAt, alertepisode.FieldStartedAt, alertepisode.FieldLastObservedAt, alertepisode.FieldClosedAt:
+		case alertepisode.FieldCreatedAt, alertepisode.FieldUpdatedAt, alertepisode.FieldStartedAt, alertepisode.FieldClosedAt:
 			values[i] = new(sql.NullTime)
 		case alertepisode.FieldID, alertepisode.FieldAlertDefinitionID:
 			values[i] = new(uuid.UUID)
-		case alertepisode.ForeignKeys[0]: // situation_observation_group_alert_episodes
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -172,23 +173,11 @@ func (_m *AlertEpisode) assignValues(columns []string, values []any) error {
 			} else if value != nil {
 				_m.AlertDefinitionID = *value
 			}
-		case alertepisode.FieldStatus:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field status", values[i])
-			} else if value.Valid {
-				_m.Status = alertepisode.Status(value.String)
-			}
 		case alertepisode.FieldStartedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field started_at", values[i])
 			} else if value.Valid {
 				_m.StartedAt = value.Time
-			}
-		case alertepisode.FieldLastObservedAt:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field last_observed_at", values[i])
-			} else if value.Valid {
-				_m.LastObservedAt = value.Time
 			}
 		case alertepisode.FieldClosedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -197,12 +186,19 @@ func (_m *AlertEpisode) assignValues(columns []string, values []any) error {
 				_m.ClosedAt = new(time.Time)
 				*_m.ClosedAt = value.Time
 			}
-		case alertepisode.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field situation_observation_group_alert_episodes", values[i])
+		case alertepisode.FieldHighestSeverity:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field highest_severity", values[i])
 			} else if value.Valid {
-				_m.situation_observation_group_alert_episodes = new(uuid.UUID)
-				*_m.situation_observation_group_alert_episodes = *value.S.(*uuid.UUID)
+				_m.HighestSeverity = schematypes.SignalSeverity(value.String)
+			}
+		case alertepisode.FieldIdentityGroupLabels:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field identity_group_labels", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &_m.IdentityGroupLabels); err != nil {
+					return fmt.Errorf("unmarshal field identity_group_labels: %w", err)
+				}
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -277,19 +273,19 @@ func (_m *AlertEpisode) String() string {
 	builder.WriteString("alert_definition_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.AlertDefinitionID))
 	builder.WriteString(", ")
-	builder.WriteString("status=")
-	builder.WriteString(fmt.Sprintf("%v", _m.Status))
-	builder.WriteString(", ")
 	builder.WriteString("started_at=")
 	builder.WriteString(_m.StartedAt.Format(time.ANSIC))
-	builder.WriteString(", ")
-	builder.WriteString("last_observed_at=")
-	builder.WriteString(_m.LastObservedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	if v := _m.ClosedAt; v != nil {
 		builder.WriteString("closed_at=")
 		builder.WriteString(v.Format(time.ANSIC))
 	}
+	builder.WriteString(", ")
+	builder.WriteString("highest_severity=")
+	builder.WriteString(fmt.Sprintf("%v", _m.HighestSeverity))
+	builder.WriteString(", ")
+	builder.WriteString("identity_group_labels=")
+	builder.WriteString(fmt.Sprintf("%v", _m.IdentityGroupLabels))
 	builder.WriteByte(')')
 	return builder.String()
 }

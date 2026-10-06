@@ -15,9 +15,14 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/situation"
+	"github.com/rezible/rezible/ent/situationaction"
+	"github.com/rezible/rezible/ent/situationentity"
 	"github.com/rezible/rezible/ent/situationhazardassessment"
 	"github.com/rezible/rezible/ent/situationinvestigation"
+	"github.com/rezible/rezible/ent/situationjudgment"
+	"github.com/rezible/rezible/ent/situationlink"
 	"github.com/rezible/rezible/ent/situationobservationgroup"
+	"github.com/rezible/rezible/ent/situationsignal"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
@@ -89,6 +94,62 @@ func (_c *SituationCreate) SetOpenedAt(v time.Time) *SituationCreate {
 	return _c
 }
 
+// SetRaisedAt sets the "raised_at" field.
+func (_c *SituationCreate) SetRaisedAt(v time.Time) *SituationCreate {
+	_c.mutation.SetRaisedAt(v)
+	return _c
+}
+
+// SetNillableRaisedAt sets the "raised_at" field if the given value is not nil.
+func (_c *SituationCreate) SetNillableRaisedAt(v *time.Time) *SituationCreate {
+	if v != nil {
+		_c.SetRaisedAt(*v)
+	}
+	return _c
+}
+
+// SetMutedAt sets the "muted_at" field.
+func (_c *SituationCreate) SetMutedAt(v time.Time) *SituationCreate {
+	_c.mutation.SetMutedAt(v)
+	return _c
+}
+
+// SetNillableMutedAt sets the "muted_at" field if the given value is not nil.
+func (_c *SituationCreate) SetNillableMutedAt(v *time.Time) *SituationCreate {
+	if v != nil {
+		_c.SetMutedAt(*v)
+	}
+	return _c
+}
+
+// SetMuteReason sets the "mute_reason" field.
+func (_c *SituationCreate) SetMuteReason(v situation.MuteReason) *SituationCreate {
+	_c.mutation.SetMuteReason(v)
+	return _c
+}
+
+// SetNillableMuteReason sets the "mute_reason" field if the given value is not nil.
+func (_c *SituationCreate) SetNillableMuteReason(v *situation.MuteReason) *SituationCreate {
+	if v != nil {
+		_c.SetMuteReason(*v)
+	}
+	return _c
+}
+
+// SetHoldUntil sets the "hold_until" field.
+func (_c *SituationCreate) SetHoldUntil(v time.Time) *SituationCreate {
+	_c.mutation.SetHoldUntil(v)
+	return _c
+}
+
+// SetNillableHoldUntil sets the "hold_until" field if the given value is not nil.
+func (_c *SituationCreate) SetNillableHoldUntil(v *time.Time) *SituationCreate {
+	if v != nil {
+		_c.SetHoldUntil(*v)
+	}
+	return _c
+}
+
 // SetClosedAt sets the "closed_at" field.
 func (_c *SituationCreate) SetClosedAt(v time.Time) *SituationCreate {
 	_c.mutation.SetClosedAt(v)
@@ -113,6 +174,26 @@ func (_c *SituationCreate) SetCloseReason(v situation.CloseReason) *SituationCre
 func (_c *SituationCreate) SetNillableCloseReason(v *situation.CloseReason) *SituationCreate {
 	if v != nil {
 		_c.SetCloseReason(*v)
+	}
+	return _c
+}
+
+// SetSeedEntityID sets the "seed_entity_id" field.
+func (_c *SituationCreate) SetSeedEntityID(v uuid.UUID) *SituationCreate {
+	_c.mutation.SetSeedEntityID(v)
+	return _c
+}
+
+// SetLatestJudgmentID sets the "latest_judgment_id" field.
+func (_c *SituationCreate) SetLatestJudgmentID(v uuid.UUID) *SituationCreate {
+	_c.mutation.SetLatestJudgmentID(v)
+	return _c
+}
+
+// SetNillableLatestJudgmentID sets the "latest_judgment_id" field if the given value is not nil.
+func (_c *SituationCreate) SetNillableLatestJudgmentID(v *uuid.UUID) *SituationCreate {
+	if v != nil {
+		_c.SetLatestJudgmentID(*v)
 	}
 	return _c
 }
@@ -200,6 +281,71 @@ func (_c *SituationCreate) AddIncidents(v ...*Incident) *SituationCreate {
 	return _c.AddIncidentIDs(ids...)
 }
 
+// AddSignalIDs adds the "signals" edge to the SituationSignal entity by IDs.
+func (_c *SituationCreate) AddSignalIDs(ids ...uuid.UUID) *SituationCreate {
+	_c.mutation.AddSignalIDs(ids...)
+	return _c
+}
+
+// AddSignals adds the "signals" edges to the SituationSignal entity.
+func (_c *SituationCreate) AddSignals(v ...*SituationSignal) *SituationCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddSignalIDs(ids...)
+}
+
+// AddEntityIDs adds the "entities" edge to the SituationEntity entity by IDs.
+func (_c *SituationCreate) AddEntityIDs(ids ...uuid.UUID) *SituationCreate {
+	_c.mutation.AddEntityIDs(ids...)
+	return _c
+}
+
+// AddEntities adds the "entities" edges to the SituationEntity entity.
+func (_c *SituationCreate) AddEntities(v ...*SituationEntity) *SituationCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddEntityIDs(ids...)
+}
+
+// AddLinkIDs adds the "links" edge to the SituationLink entity by IDs.
+func (_c *SituationCreate) AddLinkIDs(ids ...uuid.UUID) *SituationCreate {
+	_c.mutation.AddLinkIDs(ids...)
+	return _c
+}
+
+// AddLinks adds the "links" edges to the SituationLink entity.
+func (_c *SituationCreate) AddLinks(v ...*SituationLink) *SituationCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddLinkIDs(ids...)
+}
+
+// AddActionIDs adds the "actions" edge to the SituationAction entity by IDs.
+func (_c *SituationCreate) AddActionIDs(ids ...uuid.UUID) *SituationCreate {
+	_c.mutation.AddActionIDs(ids...)
+	return _c
+}
+
+// AddActions adds the "actions" edges to the SituationAction entity.
+func (_c *SituationCreate) AddActions(v ...*SituationAction) *SituationCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddActionIDs(ids...)
+}
+
+// SetLatestJudgment sets the "latest_judgment" edge to the SituationJudgment entity.
+func (_c *SituationCreate) SetLatestJudgment(v *SituationJudgment) *SituationCreate {
+	return _c.SetLatestJudgmentID(v.ID)
+}
+
 // Mutation returns the SituationMutation object of the builder.
 func (_c *SituationCreate) Mutation() *SituationMutation {
 	return _c.mutation
@@ -283,10 +429,18 @@ func (_c *SituationCreate) check() error {
 	if _, ok := _c.mutation.OpenedAt(); !ok {
 		return &ValidationError{Name: "opened_at", err: errors.New(`ent: missing required field "Situation.opened_at"`)}
 	}
+	if v, ok := _c.mutation.MuteReason(); ok {
+		if err := situation.MuteReasonValidator(v); err != nil {
+			return &ValidationError{Name: "mute_reason", err: fmt.Errorf(`ent: validator failed for field "Situation.mute_reason": %w`, err)}
+		}
+	}
 	if v, ok := _c.mutation.CloseReason(); ok {
 		if err := situation.CloseReasonValidator(v); err != nil {
 			return &ValidationError{Name: "close_reason", err: fmt.Errorf(`ent: validator failed for field "Situation.close_reason": %w`, err)}
 		}
+	}
+	if _, ok := _c.mutation.SeedEntityID(); !ok {
+		return &ValidationError{Name: "seed_entity_id", err: errors.New(`ent: missing required field "Situation.seed_entity_id"`)}
 	}
 	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "Situation.tenant"`)}
@@ -348,6 +502,22 @@ func (_c *SituationCreate) createSpec() (*Situation, *sqlgraph.CreateSpec) {
 		_spec.SetField(situation.FieldOpenedAt, field.TypeTime, value)
 		_node.OpenedAt = value
 	}
+	if value, ok := _c.mutation.RaisedAt(); ok {
+		_spec.SetField(situation.FieldRaisedAt, field.TypeTime, value)
+		_node.RaisedAt = &value
+	}
+	if value, ok := _c.mutation.MutedAt(); ok {
+		_spec.SetField(situation.FieldMutedAt, field.TypeTime, value)
+		_node.MutedAt = &value
+	}
+	if value, ok := _c.mutation.MuteReason(); ok {
+		_spec.SetField(situation.FieldMuteReason, field.TypeEnum, value)
+		_node.MuteReason = &value
+	}
+	if value, ok := _c.mutation.HoldUntil(); ok {
+		_spec.SetField(situation.FieldHoldUntil, field.TypeTime, value)
+		_node.HoldUntil = &value
+	}
 	if value, ok := _c.mutation.ClosedAt(); ok {
 		_spec.SetField(situation.FieldClosedAt, field.TypeTime, value)
 		_node.ClosedAt = &value
@@ -355,6 +525,10 @@ func (_c *SituationCreate) createSpec() (*Situation, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.CloseReason(); ok {
 		_spec.SetField(situation.FieldCloseReason, field.TypeEnum, value)
 		_node.CloseReason = &value
+	}
+	if value, ok := _c.mutation.SeedEntityID(); ok {
+		_spec.SetField(situation.FieldSeedEntityID, field.TypeUUID, value)
+		_node.SeedEntityID = value
 	}
 	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -440,6 +614,92 @@ func (_c *SituationCreate) createSpec() (*Situation, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.SignalsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   situation.SignalsTable,
+			Columns: []string{situation.SignalsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(situationsignal.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.SituationSignal
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.EntitiesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   situation.EntitiesTable,
+			Columns: []string{situation.EntitiesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(situationentity.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.SituationEntity
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.LinksIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   situation.LinksTable,
+			Columns: []string{situation.LinksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(situationlink.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.SituationLink
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.ActionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   situation.ActionsTable,
+			Columns: []string{situation.ActionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(situationaction.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.SituationAction
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.LatestJudgmentIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   situation.LatestJudgmentTable,
+			Columns: []string{situation.LatestJudgmentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(situationjudgment.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.Situation
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.LatestJudgmentID = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
@@ -560,6 +820,78 @@ func (u *SituationUpsert) UpdateOpenedAt() *SituationUpsert {
 	return u
 }
 
+// SetRaisedAt sets the "raised_at" field.
+func (u *SituationUpsert) SetRaisedAt(v time.Time) *SituationUpsert {
+	u.Set(situation.FieldRaisedAt, v)
+	return u
+}
+
+// UpdateRaisedAt sets the "raised_at" field to the value that was provided on create.
+func (u *SituationUpsert) UpdateRaisedAt() *SituationUpsert {
+	u.SetExcluded(situation.FieldRaisedAt)
+	return u
+}
+
+// ClearRaisedAt clears the value of the "raised_at" field.
+func (u *SituationUpsert) ClearRaisedAt() *SituationUpsert {
+	u.SetNull(situation.FieldRaisedAt)
+	return u
+}
+
+// SetMutedAt sets the "muted_at" field.
+func (u *SituationUpsert) SetMutedAt(v time.Time) *SituationUpsert {
+	u.Set(situation.FieldMutedAt, v)
+	return u
+}
+
+// UpdateMutedAt sets the "muted_at" field to the value that was provided on create.
+func (u *SituationUpsert) UpdateMutedAt() *SituationUpsert {
+	u.SetExcluded(situation.FieldMutedAt)
+	return u
+}
+
+// ClearMutedAt clears the value of the "muted_at" field.
+func (u *SituationUpsert) ClearMutedAt() *SituationUpsert {
+	u.SetNull(situation.FieldMutedAt)
+	return u
+}
+
+// SetMuteReason sets the "mute_reason" field.
+func (u *SituationUpsert) SetMuteReason(v situation.MuteReason) *SituationUpsert {
+	u.Set(situation.FieldMuteReason, v)
+	return u
+}
+
+// UpdateMuteReason sets the "mute_reason" field to the value that was provided on create.
+func (u *SituationUpsert) UpdateMuteReason() *SituationUpsert {
+	u.SetExcluded(situation.FieldMuteReason)
+	return u
+}
+
+// ClearMuteReason clears the value of the "mute_reason" field.
+func (u *SituationUpsert) ClearMuteReason() *SituationUpsert {
+	u.SetNull(situation.FieldMuteReason)
+	return u
+}
+
+// SetHoldUntil sets the "hold_until" field.
+func (u *SituationUpsert) SetHoldUntil(v time.Time) *SituationUpsert {
+	u.Set(situation.FieldHoldUntil, v)
+	return u
+}
+
+// UpdateHoldUntil sets the "hold_until" field to the value that was provided on create.
+func (u *SituationUpsert) UpdateHoldUntil() *SituationUpsert {
+	u.SetExcluded(situation.FieldHoldUntil)
+	return u
+}
+
+// ClearHoldUntil clears the value of the "hold_until" field.
+func (u *SituationUpsert) ClearHoldUntil() *SituationUpsert {
+	u.SetNull(situation.FieldHoldUntil)
+	return u
+}
+
 // SetClosedAt sets the "closed_at" field.
 func (u *SituationUpsert) SetClosedAt(v time.Time) *SituationUpsert {
 	u.Set(situation.FieldClosedAt, v)
@@ -596,6 +928,24 @@ func (u *SituationUpsert) ClearCloseReason() *SituationUpsert {
 	return u
 }
 
+// SetLatestJudgmentID sets the "latest_judgment_id" field.
+func (u *SituationUpsert) SetLatestJudgmentID(v uuid.UUID) *SituationUpsert {
+	u.Set(situation.FieldLatestJudgmentID, v)
+	return u
+}
+
+// UpdateLatestJudgmentID sets the "latest_judgment_id" field to the value that was provided on create.
+func (u *SituationUpsert) UpdateLatestJudgmentID() *SituationUpsert {
+	u.SetExcluded(situation.FieldLatestJudgmentID)
+	return u
+}
+
+// ClearLatestJudgmentID clears the value of the "latest_judgment_id" field.
+func (u *SituationUpsert) ClearLatestJudgmentID() *SituationUpsert {
+	u.SetNull(situation.FieldLatestJudgmentID)
+	return u
+}
+
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
@@ -615,6 +965,9 @@ func (u *SituationUpsertOne) UpdateNewValues() *SituationUpsertOne {
 		}
 		if _, exists := u.create.mutation.TenantID(); exists {
 			s.SetIgnore(situation.FieldTenantID)
+		}
+		if _, exists := u.create.mutation.SeedEntityID(); exists {
+			s.SetIgnore(situation.FieldSeedEntityID)
 		}
 	}))
 	return u
@@ -724,6 +1077,90 @@ func (u *SituationUpsertOne) UpdateOpenedAt() *SituationUpsertOne {
 	})
 }
 
+// SetRaisedAt sets the "raised_at" field.
+func (u *SituationUpsertOne) SetRaisedAt(v time.Time) *SituationUpsertOne {
+	return u.Update(func(s *SituationUpsert) {
+		s.SetRaisedAt(v)
+	})
+}
+
+// UpdateRaisedAt sets the "raised_at" field to the value that was provided on create.
+func (u *SituationUpsertOne) UpdateRaisedAt() *SituationUpsertOne {
+	return u.Update(func(s *SituationUpsert) {
+		s.UpdateRaisedAt()
+	})
+}
+
+// ClearRaisedAt clears the value of the "raised_at" field.
+func (u *SituationUpsertOne) ClearRaisedAt() *SituationUpsertOne {
+	return u.Update(func(s *SituationUpsert) {
+		s.ClearRaisedAt()
+	})
+}
+
+// SetMutedAt sets the "muted_at" field.
+func (u *SituationUpsertOne) SetMutedAt(v time.Time) *SituationUpsertOne {
+	return u.Update(func(s *SituationUpsert) {
+		s.SetMutedAt(v)
+	})
+}
+
+// UpdateMutedAt sets the "muted_at" field to the value that was provided on create.
+func (u *SituationUpsertOne) UpdateMutedAt() *SituationUpsertOne {
+	return u.Update(func(s *SituationUpsert) {
+		s.UpdateMutedAt()
+	})
+}
+
+// ClearMutedAt clears the value of the "muted_at" field.
+func (u *SituationUpsertOne) ClearMutedAt() *SituationUpsertOne {
+	return u.Update(func(s *SituationUpsert) {
+		s.ClearMutedAt()
+	})
+}
+
+// SetMuteReason sets the "mute_reason" field.
+func (u *SituationUpsertOne) SetMuteReason(v situation.MuteReason) *SituationUpsertOne {
+	return u.Update(func(s *SituationUpsert) {
+		s.SetMuteReason(v)
+	})
+}
+
+// UpdateMuteReason sets the "mute_reason" field to the value that was provided on create.
+func (u *SituationUpsertOne) UpdateMuteReason() *SituationUpsertOne {
+	return u.Update(func(s *SituationUpsert) {
+		s.UpdateMuteReason()
+	})
+}
+
+// ClearMuteReason clears the value of the "mute_reason" field.
+func (u *SituationUpsertOne) ClearMuteReason() *SituationUpsertOne {
+	return u.Update(func(s *SituationUpsert) {
+		s.ClearMuteReason()
+	})
+}
+
+// SetHoldUntil sets the "hold_until" field.
+func (u *SituationUpsertOne) SetHoldUntil(v time.Time) *SituationUpsertOne {
+	return u.Update(func(s *SituationUpsert) {
+		s.SetHoldUntil(v)
+	})
+}
+
+// UpdateHoldUntil sets the "hold_until" field to the value that was provided on create.
+func (u *SituationUpsertOne) UpdateHoldUntil() *SituationUpsertOne {
+	return u.Update(func(s *SituationUpsert) {
+		s.UpdateHoldUntil()
+	})
+}
+
+// ClearHoldUntil clears the value of the "hold_until" field.
+func (u *SituationUpsertOne) ClearHoldUntil() *SituationUpsertOne {
+	return u.Update(func(s *SituationUpsert) {
+		s.ClearHoldUntil()
+	})
+}
+
 // SetClosedAt sets the "closed_at" field.
 func (u *SituationUpsertOne) SetClosedAt(v time.Time) *SituationUpsertOne {
 	return u.Update(func(s *SituationUpsert) {
@@ -763,6 +1200,27 @@ func (u *SituationUpsertOne) UpdateCloseReason() *SituationUpsertOne {
 func (u *SituationUpsertOne) ClearCloseReason() *SituationUpsertOne {
 	return u.Update(func(s *SituationUpsert) {
 		s.ClearCloseReason()
+	})
+}
+
+// SetLatestJudgmentID sets the "latest_judgment_id" field.
+func (u *SituationUpsertOne) SetLatestJudgmentID(v uuid.UUID) *SituationUpsertOne {
+	return u.Update(func(s *SituationUpsert) {
+		s.SetLatestJudgmentID(v)
+	})
+}
+
+// UpdateLatestJudgmentID sets the "latest_judgment_id" field to the value that was provided on create.
+func (u *SituationUpsertOne) UpdateLatestJudgmentID() *SituationUpsertOne {
+	return u.Update(func(s *SituationUpsert) {
+		s.UpdateLatestJudgmentID()
+	})
+}
+
+// ClearLatestJudgmentID clears the value of the "latest_judgment_id" field.
+func (u *SituationUpsertOne) ClearLatestJudgmentID() *SituationUpsertOne {
+	return u.Update(func(s *SituationUpsert) {
+		s.ClearLatestJudgmentID()
 	})
 }
 
@@ -952,6 +1410,9 @@ func (u *SituationUpsertBulk) UpdateNewValues() *SituationUpsertBulk {
 			if _, exists := b.mutation.TenantID(); exists {
 				s.SetIgnore(situation.FieldTenantID)
 			}
+			if _, exists := b.mutation.SeedEntityID(); exists {
+				s.SetIgnore(situation.FieldSeedEntityID)
+			}
 		}
 	}))
 	return u
@@ -1061,6 +1522,90 @@ func (u *SituationUpsertBulk) UpdateOpenedAt() *SituationUpsertBulk {
 	})
 }
 
+// SetRaisedAt sets the "raised_at" field.
+func (u *SituationUpsertBulk) SetRaisedAt(v time.Time) *SituationUpsertBulk {
+	return u.Update(func(s *SituationUpsert) {
+		s.SetRaisedAt(v)
+	})
+}
+
+// UpdateRaisedAt sets the "raised_at" field to the value that was provided on create.
+func (u *SituationUpsertBulk) UpdateRaisedAt() *SituationUpsertBulk {
+	return u.Update(func(s *SituationUpsert) {
+		s.UpdateRaisedAt()
+	})
+}
+
+// ClearRaisedAt clears the value of the "raised_at" field.
+func (u *SituationUpsertBulk) ClearRaisedAt() *SituationUpsertBulk {
+	return u.Update(func(s *SituationUpsert) {
+		s.ClearRaisedAt()
+	})
+}
+
+// SetMutedAt sets the "muted_at" field.
+func (u *SituationUpsertBulk) SetMutedAt(v time.Time) *SituationUpsertBulk {
+	return u.Update(func(s *SituationUpsert) {
+		s.SetMutedAt(v)
+	})
+}
+
+// UpdateMutedAt sets the "muted_at" field to the value that was provided on create.
+func (u *SituationUpsertBulk) UpdateMutedAt() *SituationUpsertBulk {
+	return u.Update(func(s *SituationUpsert) {
+		s.UpdateMutedAt()
+	})
+}
+
+// ClearMutedAt clears the value of the "muted_at" field.
+func (u *SituationUpsertBulk) ClearMutedAt() *SituationUpsertBulk {
+	return u.Update(func(s *SituationUpsert) {
+		s.ClearMutedAt()
+	})
+}
+
+// SetMuteReason sets the "mute_reason" field.
+func (u *SituationUpsertBulk) SetMuteReason(v situation.MuteReason) *SituationUpsertBulk {
+	return u.Update(func(s *SituationUpsert) {
+		s.SetMuteReason(v)
+	})
+}
+
+// UpdateMuteReason sets the "mute_reason" field to the value that was provided on create.
+func (u *SituationUpsertBulk) UpdateMuteReason() *SituationUpsertBulk {
+	return u.Update(func(s *SituationUpsert) {
+		s.UpdateMuteReason()
+	})
+}
+
+// ClearMuteReason clears the value of the "mute_reason" field.
+func (u *SituationUpsertBulk) ClearMuteReason() *SituationUpsertBulk {
+	return u.Update(func(s *SituationUpsert) {
+		s.ClearMuteReason()
+	})
+}
+
+// SetHoldUntil sets the "hold_until" field.
+func (u *SituationUpsertBulk) SetHoldUntil(v time.Time) *SituationUpsertBulk {
+	return u.Update(func(s *SituationUpsert) {
+		s.SetHoldUntil(v)
+	})
+}
+
+// UpdateHoldUntil sets the "hold_until" field to the value that was provided on create.
+func (u *SituationUpsertBulk) UpdateHoldUntil() *SituationUpsertBulk {
+	return u.Update(func(s *SituationUpsert) {
+		s.UpdateHoldUntil()
+	})
+}
+
+// ClearHoldUntil clears the value of the "hold_until" field.
+func (u *SituationUpsertBulk) ClearHoldUntil() *SituationUpsertBulk {
+	return u.Update(func(s *SituationUpsert) {
+		s.ClearHoldUntil()
+	})
+}
+
 // SetClosedAt sets the "closed_at" field.
 func (u *SituationUpsertBulk) SetClosedAt(v time.Time) *SituationUpsertBulk {
 	return u.Update(func(s *SituationUpsert) {
@@ -1100,6 +1645,27 @@ func (u *SituationUpsertBulk) UpdateCloseReason() *SituationUpsertBulk {
 func (u *SituationUpsertBulk) ClearCloseReason() *SituationUpsertBulk {
 	return u.Update(func(s *SituationUpsert) {
 		s.ClearCloseReason()
+	})
+}
+
+// SetLatestJudgmentID sets the "latest_judgment_id" field.
+func (u *SituationUpsertBulk) SetLatestJudgmentID(v uuid.UUID) *SituationUpsertBulk {
+	return u.Update(func(s *SituationUpsert) {
+		s.SetLatestJudgmentID(v)
+	})
+}
+
+// UpdateLatestJudgmentID sets the "latest_judgment_id" field to the value that was provided on create.
+func (u *SituationUpsertBulk) UpdateLatestJudgmentID() *SituationUpsertBulk {
+	return u.Update(func(s *SituationUpsert) {
+		s.UpdateLatestJudgmentID()
+	})
+}
+
+// ClearLatestJudgmentID clears the value of the "latest_judgment_id" field.
+func (u *SituationUpsertBulk) ClearLatestJudgmentID() *SituationUpsertBulk {
+	return u.Update(func(s *SituationUpsert) {
+		s.ClearLatestJudgmentID()
 	})
 }
 

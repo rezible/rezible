@@ -39,6 +39,13 @@ func (s *AiRuntimeSuite) makeRuntime(ctx context.Context, opts ...AiRuntimeOptio
 	return svc
 }
 
+func (s *AiRuntimeSuite) TestSituationJudgeRequiresADefaultModel() {
+	enabled := rez.AiConfig{SituationJudge: rez.AiSituationJudgeConfig{Enabled: true}}
+	s.Error((&AiRuntime{cfg: enabled}).validateConfig(), "enabling the judge without a default model fails")
+	s.NoError((&AiRuntime{cfg: enabled, defaultModel: "test/output"}).validateConfig())
+	s.NoError((&AiRuntime{}).validateConfig(), "the judge is disabled by default")
+}
+
 func makeTestOutputModel(response *gkai.ModelResponse) ModelDefinition[any] {
 	return ModelDefinition[any]{
 		Name:      "test/output",

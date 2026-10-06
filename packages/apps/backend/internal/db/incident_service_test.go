@@ -31,8 +31,11 @@ func (s *IncidentServiceSuite) newService(tdb rez.Database) *IncidentService {
 	msgs := mocks.NewMockMessageQueue(s.T())
 	msgs.EXPECT().Publish(mock.Anything, mock.Anything).Return(nil).Maybe()
 
+	situations := mocks.NewMockSituationService(s.T())
+	situations.EXPECT().SyncIncidentLinks(mock.Anything, mock.Anything, mock.Anything).Return(nil).Maybe()
+
 	retrospectives, _ := NewRetrospectiveService(tdb)
-	svc, err := NewIncidentService(tdb, msgs, nil, retrospectives)
+	svc, err := NewIncidentService(tdb, msgs, situations, retrospectives)
 	s.Require().NoError(err)
 	return svc
 }

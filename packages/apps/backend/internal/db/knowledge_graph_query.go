@@ -371,7 +371,7 @@ func (s *KnowledgeGraphQueryService) ResolveStructure(ctx context.Context, param
 			}
 			graph.Links = append(graph.Links, structureLink)
 			if parent := link.Edges.SourceEntity; parent != nil {
-				if !graph.IsLoaded(parent.ID) {
+				if graph.IsLoaded(parent.ID) {
 					continue
 				}
 				graph.Categories[parent.ID] = parent.Category

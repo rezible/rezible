@@ -20,6 +20,10 @@ func DefaultConfig() Config {
 				OrgName: "Default",
 			},
 		},
+		Alerts: AlertsConfig{
+			FlapGrace:                5 * time.Minute,
+			DefaultResolutionTimeout: 12 * time.Hour,
+		},
 		AI: AiConfig{
 			Agents: AiAgentsConfig{
 				MaxWorkers:    4,
@@ -67,6 +71,7 @@ func DefaultConfig() Config {
 type Config struct {
 	App          AppConfig          `cfg:"app"`
 	AI           AiConfig           `cfg:"ai"`
+	Alerts       AlertsConfig       `cfg:"alerts"`
 	HttpServer   HttpServerConfig   `cfg:"http"`
 	Documents    DocumentsConfig    `cfg:"documents"`
 	Integrations IntegrationsConfig `cfg:"integrations"`
@@ -105,13 +110,28 @@ func (a AppConfig) GetFrontendUrl(paths ...string) (*url.URL, error) {
 }
 
 type (
+	AlertsConfig struct {
+		// FlapGrace is how long an alert episode stays open after its last window ends.
+		FlapGrace time.Duration `cfg:"flap_grace" validate:"gte=0"`
+		// DefaultResolutionTimeout is a new definition's resolution timeout when its source sets none.
+		DefaultResolutionTimeout time.Duration `cfg:"default_resolution_timeout" validate:"gte=0"`
+	}
+)
+
+type (
 	AiConfig struct {
-		Agents AiAgentsConfig         `cfg:"agents"`
-		Gemini AiProviderConfigGemini `cfg:"gemini"`
+		Agents         AiAgentsConfig         `cfg:"agents"`
+		Gemini         AiProviderConfigGemini `cfg:"gemini"`
+		SituationJudge AiSituationJudgeConfig `cfg:"situation_judge"`
 	}
 	AiAgentsConfig struct {
 		MaxWorkers    int           `cfg:"max_workers" validate:"min=1"`
 		WorkerTimeout time.Duration `cfg:"worker_timeout" validate:"gt=0"`
+	}
+	AiSituationJudgeConfig struct {
+		// Enabled lets a model decide candidate situations that need a decision, instead of the rules. It is
+		// independent of enabling a model provider, and requires a default model.
+		Enabled bool `cfg:"enabled"`
 	}
 	AiProviderConfigGemini struct {
 		Enabled bool   `cfg:"enabled"`

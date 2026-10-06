@@ -26,6 +26,17 @@
 	</Button>
 {/snippet}
 
+{#snippet raiseButton(label: string)}
+	<Button disabled={controller.actionPending} onclick={controller.raise}>
+		{#if controller.raisePending}
+			<Spinner data-icon="inline-start" />
+			Starting…
+		{:else}
+			{label}
+		{/if}
+	</Button>
+{/snippet}
+
 {#snippet retryLine(message: string, retry: () => void)}
 	<div role="alert" class="flex flex-wrap items-center gap-3 text-sm">
 		<span>{message}</span>
@@ -59,17 +70,21 @@
 	{#if understanding.kind === "loading"}
 		{@render skeletonLines()}
 	{:else if understanding.kind === "none"}
-		<p class="text-sm text-muted-foreground">No investigation has been run for this situation.</p>
-		<div>
-			<Button disabled={controller.startPending} onclick={controller.startInvestigation}>
-				{#if controller.startPending}
-					<Spinner data-icon="inline-start" />
-					Starting…
-				{:else}
-					Start investigation
-				{/if}
-			</Button>
-		</div>
+		{#if understanding.offer === "raise"}
+			<p class="text-sm text-muted-foreground">
+				Rezible is watching this. It has not been raised, so no investigation has run.
+			</p>
+			<div>{@render raiseButton("Raise and investigate")}</div>
+		{:else if understanding.offer === "start"}
+			<p class="text-sm text-muted-foreground">No investigation has been run for this situation.</p>
+			<div>{@render raiseButton("Start investigation")}</div>
+		{:else if understanding.offer === "muted"}
+			<p class="text-sm text-muted-foreground">
+				This situation is muted. It keeps gathering evidence but is not raised or investigated.
+			</p>
+		{:else}
+			<p class="text-sm text-muted-foreground">No investigation was run for this situation.</p>
+		{/if}
 	{:else if understanding.kind === "unavailable"}
 		<p class="text-sm text-muted-foreground">The investigation is unavailable.</p>
 	{:else if understanding.kind === "error"}

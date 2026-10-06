@@ -7,7 +7,9 @@ import (
 	"strings"
 
 	gkai "github.com/firebase/genkit/go/ai"
+	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/ent/schema/schematypes"
 	rezai "github.com/rezible/rezible/pkg/ai"
 	"github.com/rezible/rezible/pkg/execution"
 )
@@ -112,3 +114,53 @@ func (s *AiRuntimeSuite) TestDefineWorkflowRejectsDuplicateNames() {
 }
 
 var _ rez.AiWorkflow[testWorkflowInput, testWorkflowOutput] = (*typedWorkflow[testWorkflowInput, testWorkflowOutput])(nil)
+
+func (s *AiRuntimeSuite) TestJudgeSituationCandidateWorkflowAcceptsFactsAndRejectsMalformedAnswers() {
+	ctx := execution.NewSystemContext(s.T().Context())
+	entityID := uuid.New()
+	input := rezai.SituationJudgeInput{
+		Facts: schematypes.SituationFacts{
+			Signals: []schematypes.SituationSignalFacts{{
+				Ref:            "s1",
+				EntityID:       uuid.New(),
+				SourceEntityID: new(uuid.New()),
+				EntityIDs:      []uuid.UUID{entityID},
+				Alert: &schematypes.SituationAlertFacts{
+					Severity:        schematypes.SignalSeverityCritical,
+					ActiveInstances: []schematypes.SituationAlertInstanceFacts{},
+				},
+			}},
+			LinkedIncidents: []schematypes.SituationIncidentFacts{},
+			Entities:        []schematypes.SituationEntityFacts{{ID: entityID, Properties: map[string]any{"tier": "core"}, Matching: true}},
+			Relationships:   []schematypes.SituationRelationshipFacts{},
+			Earlier:         []schematypes.SituationEarlierFacts{},
+		},
+		Reasons:   []schematypes.SituationReasonResult{{Reason: schematypes.SituationRaiseReasonBreadth, Met: true}},
+		Truncated: []string{},
+	}
+	answers := []struct {
+		name      string
+		response  string
+		malformed bool
+	}{
+		{name: "decision", response: `{"decision": "hold", "reasons": [], "explanation": "Not enough evidence."}`},
+		{name: "malformed", response: `{"decision": "raise", "reasons": "breadth"}`, malformed: true},
+	}
+	for _, answer := range answers {
+		s.Run(answer.name, func() {
+			response := &gkai.ModelResponse{Message: gkai.NewModelTextMessage(answer.response)}
+			svc := s.makeRuntime(ctx, WithDefinedModel(makeTestOutputModel(response)))
+			builder := NewWorkflowBuilder(svc, &testWorkflowRunner{})
+			workflow, workflowErr := builder.DefinePromptWorkflow(rezai.JudgeSituationCandidateDefinition)
+			s.Require().NoError(workflowErr)
+
+			output, runErr := workflow.Run(ctx, input)
+			if answer.malformed {
+				s.Require().ErrorIs(runErr, rezai.ErrWorkflowInvalidOutput)
+				return
+			}
+			s.Require().NoError(runErr, "the facts, with their UUIDs and empty lists, match the workflow's input schema")
+			s.Equal("hold", output.Decision)
+		})
+	}
+}

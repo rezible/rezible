@@ -9,6 +9,8 @@
 	import { initSituationController } from "./controller.svelte";
 	import SituationOverviewView from "./overview/SituationOverviewView.svelte";
 	import SituationInvestigationView from "./investigation/SituationInvestigationView.svelte";
+	import SituationPageActions from "./SituationPageActions.svelte";
+	import SituationActionDialogs from "./SituationActionDialogs.svelte";
 
 	type Props = { id: string };
 	const { id }: Props = $props();
@@ -21,8 +23,13 @@
 		parents: [{ label: "Situations", path: resolve("/situations") }],
 		related: controller.relatedLinks,
 		contentHeading: true,
+		pageActions: actions,
 	}));
 </script>
+
+{#snippet actions()}
+	<SituationPageActions {controller} />
+{/snippet}
 
 <FeatureNavigationRail
 	label="Situation views"
@@ -42,3 +49,5 @@
 		},
 	]}
 />
+
+<SituationActionDialogs {controller} />

@@ -17,6 +17,7 @@ import (
 	"github.com/rezible/rezible/ent/alertepisode"
 	"github.com/rezible/rezible/ent/alertinstance"
 	"github.com/rezible/rezible/ent/knowledgeentity"
+	"github.com/rezible/rezible/ent/schema/schematypes"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
@@ -82,29 +83,9 @@ func (_c *AlertEpisodeCreate) SetAlertDefinitionID(v uuid.UUID) *AlertEpisodeCre
 	return _c
 }
 
-// SetStatus sets the "status" field.
-func (_c *AlertEpisodeCreate) SetStatus(v alertepisode.Status) *AlertEpisodeCreate {
-	_c.mutation.SetStatus(v)
-	return _c
-}
-
-// SetNillableStatus sets the "status" field if the given value is not nil.
-func (_c *AlertEpisodeCreate) SetNillableStatus(v *alertepisode.Status) *AlertEpisodeCreate {
-	if v != nil {
-		_c.SetStatus(*v)
-	}
-	return _c
-}
-
 // SetStartedAt sets the "started_at" field.
 func (_c *AlertEpisodeCreate) SetStartedAt(v time.Time) *AlertEpisodeCreate {
 	_c.mutation.SetStartedAt(v)
-	return _c
-}
-
-// SetLastObservedAt sets the "last_observed_at" field.
-func (_c *AlertEpisodeCreate) SetLastObservedAt(v time.Time) *AlertEpisodeCreate {
-	_c.mutation.SetLastObservedAt(v)
 	return _c
 }
 
@@ -119,6 +100,26 @@ func (_c *AlertEpisodeCreate) SetNillableClosedAt(v *time.Time) *AlertEpisodeCre
 	if v != nil {
 		_c.SetClosedAt(*v)
 	}
+	return _c
+}
+
+// SetHighestSeverity sets the "highest_severity" field.
+func (_c *AlertEpisodeCreate) SetHighestSeverity(v schematypes.SignalSeverity) *AlertEpisodeCreate {
+	_c.mutation.SetHighestSeverity(v)
+	return _c
+}
+
+// SetNillableHighestSeverity sets the "highest_severity" field if the given value is not nil.
+func (_c *AlertEpisodeCreate) SetNillableHighestSeverity(v *schematypes.SignalSeverity) *AlertEpisodeCreate {
+	if v != nil {
+		_c.SetHighestSeverity(*v)
+	}
+	return _c
+}
+
+// SetIdentityGroupLabels sets the "identity_group_labels" field.
+func (_c *AlertEpisodeCreate) SetIdentityGroupLabels(v []string) *AlertEpisodeCreate {
+	_c.mutation.SetIdentityGroupLabels(v)
 	return _c
 }
 
@@ -217,9 +218,9 @@ func (_c *AlertEpisodeCreate) defaults() error {
 		v := alertepisode.DefaultUpdatedAt()
 		_c.mutation.SetUpdatedAt(v)
 	}
-	if _, ok := _c.mutation.Status(); !ok {
-		v := alertepisode.DefaultStatus
-		_c.mutation.SetStatus(v)
+	if _, ok := _c.mutation.HighestSeverity(); !ok {
+		v := alertepisode.DefaultHighestSeverity
+		_c.mutation.SetHighestSeverity(v)
 	}
 	if _, ok := _c.mutation.ID(); !ok {
 		if alertepisode.DefaultID == nil {
@@ -245,19 +246,16 @@ func (_c *AlertEpisodeCreate) check() error {
 	if _, ok := _c.mutation.AlertDefinitionID(); !ok {
 		return &ValidationError{Name: "alert_definition_id", err: errors.New(`ent: missing required field "AlertEpisode.alert_definition_id"`)}
 	}
-	if _, ok := _c.mutation.Status(); !ok {
-		return &ValidationError{Name: "status", err: errors.New(`ent: missing required field "AlertEpisode.status"`)}
-	}
-	if v, ok := _c.mutation.Status(); ok {
-		if err := alertepisode.StatusValidator(v); err != nil {
-			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "AlertEpisode.status": %w`, err)}
-		}
-	}
 	if _, ok := _c.mutation.StartedAt(); !ok {
 		return &ValidationError{Name: "started_at", err: errors.New(`ent: missing required field "AlertEpisode.started_at"`)}
 	}
-	if _, ok := _c.mutation.LastObservedAt(); !ok {
-		return &ValidationError{Name: "last_observed_at", err: errors.New(`ent: missing required field "AlertEpisode.last_observed_at"`)}
+	if _, ok := _c.mutation.HighestSeverity(); !ok {
+		return &ValidationError{Name: "highest_severity", err: errors.New(`ent: missing required field "AlertEpisode.highest_severity"`)}
+	}
+	if v, ok := _c.mutation.HighestSeverity(); ok {
+		if err := alertepisode.HighestSeverityValidator(v); err != nil {
+			return &ValidationError{Name: "highest_severity", err: fmt.Errorf(`ent: validator failed for field "AlertEpisode.highest_severity": %w`, err)}
+		}
 	}
 	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "AlertEpisode.tenant"`)}
@@ -310,21 +308,21 @@ func (_c *AlertEpisodeCreate) createSpec() (*AlertEpisode, *sqlgraph.CreateSpec)
 		_spec.SetField(alertepisode.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
 	}
-	if value, ok := _c.mutation.Status(); ok {
-		_spec.SetField(alertepisode.FieldStatus, field.TypeEnum, value)
-		_node.Status = value
-	}
 	if value, ok := _c.mutation.StartedAt(); ok {
 		_spec.SetField(alertepisode.FieldStartedAt, field.TypeTime, value)
 		_node.StartedAt = value
 	}
-	if value, ok := _c.mutation.LastObservedAt(); ok {
-		_spec.SetField(alertepisode.FieldLastObservedAt, field.TypeTime, value)
-		_node.LastObservedAt = value
-	}
 	if value, ok := _c.mutation.ClosedAt(); ok {
 		_spec.SetField(alertepisode.FieldClosedAt, field.TypeTime, value)
 		_node.ClosedAt = &value
+	}
+	if value, ok := _c.mutation.HighestSeverity(); ok {
+		_spec.SetField(alertepisode.FieldHighestSeverity, field.TypeEnum, value)
+		_node.HighestSeverity = value
+	}
+	if value, ok := _c.mutation.IdentityGroupLabels(); ok {
+		_spec.SetField(alertepisode.FieldIdentityGroupLabels, field.TypeJSON, value)
+		_node.IdentityGroupLabels = value
 	}
 	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -491,18 +489,6 @@ func (u *AlertEpisodeUpsert) ClearKnowledgeEntityID() *AlertEpisodeUpsert {
 	return u
 }
 
-// SetStatus sets the "status" field.
-func (u *AlertEpisodeUpsert) SetStatus(v alertepisode.Status) *AlertEpisodeUpsert {
-	u.Set(alertepisode.FieldStatus, v)
-	return u
-}
-
-// UpdateStatus sets the "status" field to the value that was provided on create.
-func (u *AlertEpisodeUpsert) UpdateStatus() *AlertEpisodeUpsert {
-	u.SetExcluded(alertepisode.FieldStatus)
-	return u
-}
-
 // SetStartedAt sets the "started_at" field.
 func (u *AlertEpisodeUpsert) SetStartedAt(v time.Time) *AlertEpisodeUpsert {
 	u.Set(alertepisode.FieldStartedAt, v)
@@ -512,18 +498,6 @@ func (u *AlertEpisodeUpsert) SetStartedAt(v time.Time) *AlertEpisodeUpsert {
 // UpdateStartedAt sets the "started_at" field to the value that was provided on create.
 func (u *AlertEpisodeUpsert) UpdateStartedAt() *AlertEpisodeUpsert {
 	u.SetExcluded(alertepisode.FieldStartedAt)
-	return u
-}
-
-// SetLastObservedAt sets the "last_observed_at" field.
-func (u *AlertEpisodeUpsert) SetLastObservedAt(v time.Time) *AlertEpisodeUpsert {
-	u.Set(alertepisode.FieldLastObservedAt, v)
-	return u
-}
-
-// UpdateLastObservedAt sets the "last_observed_at" field to the value that was provided on create.
-func (u *AlertEpisodeUpsert) UpdateLastObservedAt() *AlertEpisodeUpsert {
-	u.SetExcluded(alertepisode.FieldLastObservedAt)
 	return u
 }
 
@@ -542,6 +516,18 @@ func (u *AlertEpisodeUpsert) UpdateClosedAt() *AlertEpisodeUpsert {
 // ClearClosedAt clears the value of the "closed_at" field.
 func (u *AlertEpisodeUpsert) ClearClosedAt() *AlertEpisodeUpsert {
 	u.SetNull(alertepisode.FieldClosedAt)
+	return u
+}
+
+// SetHighestSeverity sets the "highest_severity" field.
+func (u *AlertEpisodeUpsert) SetHighestSeverity(v schematypes.SignalSeverity) *AlertEpisodeUpsert {
+	u.Set(alertepisode.FieldHighestSeverity, v)
+	return u
+}
+
+// UpdateHighestSeverity sets the "highest_severity" field to the value that was provided on create.
+func (u *AlertEpisodeUpsert) UpdateHighestSeverity() *AlertEpisodeUpsert {
+	u.SetExcluded(alertepisode.FieldHighestSeverity)
 	return u
 }
 
@@ -567,6 +553,9 @@ func (u *AlertEpisodeUpsertOne) UpdateNewValues() *AlertEpisodeUpsertOne {
 		}
 		if _, exists := u.create.mutation.AlertDefinitionID(); exists {
 			s.SetIgnore(alertepisode.FieldAlertDefinitionID)
+		}
+		if _, exists := u.create.mutation.IdentityGroupLabels(); exists {
+			s.SetIgnore(alertepisode.FieldIdentityGroupLabels)
 		}
 	}))
 	return u
@@ -648,20 +637,6 @@ func (u *AlertEpisodeUpsertOne) ClearKnowledgeEntityID() *AlertEpisodeUpsertOne 
 	})
 }
 
-// SetStatus sets the "status" field.
-func (u *AlertEpisodeUpsertOne) SetStatus(v alertepisode.Status) *AlertEpisodeUpsertOne {
-	return u.Update(func(s *AlertEpisodeUpsert) {
-		s.SetStatus(v)
-	})
-}
-
-// UpdateStatus sets the "status" field to the value that was provided on create.
-func (u *AlertEpisodeUpsertOne) UpdateStatus() *AlertEpisodeUpsertOne {
-	return u.Update(func(s *AlertEpisodeUpsert) {
-		s.UpdateStatus()
-	})
-}
-
 // SetStartedAt sets the "started_at" field.
 func (u *AlertEpisodeUpsertOne) SetStartedAt(v time.Time) *AlertEpisodeUpsertOne {
 	return u.Update(func(s *AlertEpisodeUpsert) {
@@ -673,20 +648,6 @@ func (u *AlertEpisodeUpsertOne) SetStartedAt(v time.Time) *AlertEpisodeUpsertOne
 func (u *AlertEpisodeUpsertOne) UpdateStartedAt() *AlertEpisodeUpsertOne {
 	return u.Update(func(s *AlertEpisodeUpsert) {
 		s.UpdateStartedAt()
-	})
-}
-
-// SetLastObservedAt sets the "last_observed_at" field.
-func (u *AlertEpisodeUpsertOne) SetLastObservedAt(v time.Time) *AlertEpisodeUpsertOne {
-	return u.Update(func(s *AlertEpisodeUpsert) {
-		s.SetLastObservedAt(v)
-	})
-}
-
-// UpdateLastObservedAt sets the "last_observed_at" field to the value that was provided on create.
-func (u *AlertEpisodeUpsertOne) UpdateLastObservedAt() *AlertEpisodeUpsertOne {
-	return u.Update(func(s *AlertEpisodeUpsert) {
-		s.UpdateLastObservedAt()
 	})
 }
 
@@ -708,6 +669,20 @@ func (u *AlertEpisodeUpsertOne) UpdateClosedAt() *AlertEpisodeUpsertOne {
 func (u *AlertEpisodeUpsertOne) ClearClosedAt() *AlertEpisodeUpsertOne {
 	return u.Update(func(s *AlertEpisodeUpsert) {
 		s.ClearClosedAt()
+	})
+}
+
+// SetHighestSeverity sets the "highest_severity" field.
+func (u *AlertEpisodeUpsertOne) SetHighestSeverity(v schematypes.SignalSeverity) *AlertEpisodeUpsertOne {
+	return u.Update(func(s *AlertEpisodeUpsert) {
+		s.SetHighestSeverity(v)
+	})
+}
+
+// UpdateHighestSeverity sets the "highest_severity" field to the value that was provided on create.
+func (u *AlertEpisodeUpsertOne) UpdateHighestSeverity() *AlertEpisodeUpsertOne {
+	return u.Update(func(s *AlertEpisodeUpsert) {
+		s.UpdateHighestSeverity()
 	})
 }
 
@@ -900,6 +875,9 @@ func (u *AlertEpisodeUpsertBulk) UpdateNewValues() *AlertEpisodeUpsertBulk {
 			if _, exists := b.mutation.AlertDefinitionID(); exists {
 				s.SetIgnore(alertepisode.FieldAlertDefinitionID)
 			}
+			if _, exists := b.mutation.IdentityGroupLabels(); exists {
+				s.SetIgnore(alertepisode.FieldIdentityGroupLabels)
+			}
 		}
 	}))
 	return u
@@ -981,20 +959,6 @@ func (u *AlertEpisodeUpsertBulk) ClearKnowledgeEntityID() *AlertEpisodeUpsertBul
 	})
 }
 
-// SetStatus sets the "status" field.
-func (u *AlertEpisodeUpsertBulk) SetStatus(v alertepisode.Status) *AlertEpisodeUpsertBulk {
-	return u.Update(func(s *AlertEpisodeUpsert) {
-		s.SetStatus(v)
-	})
-}
-
-// UpdateStatus sets the "status" field to the value that was provided on create.
-func (u *AlertEpisodeUpsertBulk) UpdateStatus() *AlertEpisodeUpsertBulk {
-	return u.Update(func(s *AlertEpisodeUpsert) {
-		s.UpdateStatus()
-	})
-}
-
 // SetStartedAt sets the "started_at" field.
 func (u *AlertEpisodeUpsertBulk) SetStartedAt(v time.Time) *AlertEpisodeUpsertBulk {
 	return u.Update(func(s *AlertEpisodeUpsert) {
@@ -1006,20 +970,6 @@ func (u *AlertEpisodeUpsertBulk) SetStartedAt(v time.Time) *AlertEpisodeUpsertBu
 func (u *AlertEpisodeUpsertBulk) UpdateStartedAt() *AlertEpisodeUpsertBulk {
 	return u.Update(func(s *AlertEpisodeUpsert) {
 		s.UpdateStartedAt()
-	})
-}
-
-// SetLastObservedAt sets the "last_observed_at" field.
-func (u *AlertEpisodeUpsertBulk) SetLastObservedAt(v time.Time) *AlertEpisodeUpsertBulk {
-	return u.Update(func(s *AlertEpisodeUpsert) {
-		s.SetLastObservedAt(v)
-	})
-}
-
-// UpdateLastObservedAt sets the "last_observed_at" field to the value that was provided on create.
-func (u *AlertEpisodeUpsertBulk) UpdateLastObservedAt() *AlertEpisodeUpsertBulk {
-	return u.Update(func(s *AlertEpisodeUpsert) {
-		s.UpdateLastObservedAt()
 	})
 }
 
@@ -1041,6 +991,20 @@ func (u *AlertEpisodeUpsertBulk) UpdateClosedAt() *AlertEpisodeUpsertBulk {
 func (u *AlertEpisodeUpsertBulk) ClearClosedAt() *AlertEpisodeUpsertBulk {
 	return u.Update(func(s *AlertEpisodeUpsert) {
 		s.ClearClosedAt()
+	})
+}
+
+// SetHighestSeverity sets the "highest_severity" field.
+func (u *AlertEpisodeUpsertBulk) SetHighestSeverity(v schematypes.SignalSeverity) *AlertEpisodeUpsertBulk {
+	return u.Update(func(s *AlertEpisodeUpsert) {
+		s.SetHighestSeverity(v)
+	})
+}
+
+// UpdateHighestSeverity sets the "highest_severity" field to the value that was provided on create.
+func (u *AlertEpisodeUpsertBulk) UpdateHighestSeverity() *AlertEpisodeUpsertBulk {
+	return u.Update(func(s *AlertEpisodeUpsert) {
+		s.UpdateHighestSeverity()
 	})
 }
 

@@ -61,6 +61,7 @@ func NewJobService(cfg rez.Config, pool *pgxpool.Pool, tel rez.TelemetryService)
 		Queues: map[string]river.QueueConfig{
 			river.QueueDefault:   {MaxWorkers: 20},
 			jobs.AgentTurnsQueue: {MaxWorkers: cfg.AI.Agents.MaxWorkers},
+			jobs.SituationsQueue: {MaxWorkers: 4},
 		},
 	}
 	return s, nil

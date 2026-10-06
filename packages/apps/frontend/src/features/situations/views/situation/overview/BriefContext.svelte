@@ -41,6 +41,30 @@
 	{/if}
 </section>
 
+<section aria-labelledby="related-situations-title" class="flex flex-col gap-3">
+	<SectionHeading id="related-situations-title" title="Related situations" level={3} />
+	{#if controller.relatedSituations.length}
+		<ul class="flex max-h-80 flex-col gap-3 overflow-y-auto">
+			{#each controller.relatedSituations as related (related.key)}
+				<li class="flex min-w-0 flex-col gap-1">
+					<span class="text-xs text-muted-foreground">{related.kindLabel}</span>
+					<a
+						class="rounded-sm text-sm font-medium wrap-anywhere hover:underline focus-visible:outline-2 focus-visible:outline-ring"
+						href={related.href}
+					>
+						{related.title}
+					</a>
+					<div>
+						<StatusBadge status={related.status} variant="inline" />
+					</div>
+				</li>
+			{/each}
+		</ul>
+	{:else}
+		<p class="text-sm text-muted-foreground">No related situations.</p>
+	{/if}
+</section>
+
 <section aria-labelledby="brief-timeline-title" class="flex flex-col gap-3">
 	<SectionHeading id="brief-timeline-title" title="Timeline" level={3} />
 	{#if controller.timeline.length}

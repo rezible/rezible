@@ -19,6 +19,8 @@ type AiRuntime struct {
 	cfg       rez.AiConfig
 	catalogue *agentCatalogue
 	gk        *genkit.Genkit
+	// defaultModel is the model generation uses when a request names none, or "".
+	defaultModel string
 }
 
 func NewAiRuntime(cfg rez.Config) *AiRuntime {
@@ -38,6 +40,9 @@ func (r *AiRuntime) Init(ctx context.Context, opts ...AiRuntimeOption) error {
 		if len(opt.plugins) > 0 {
 			plugins = append(plugins, opt.plugins...)
 		}
+		if opt.defaultModel != "" {
+			r.defaultModel = opt.defaultModel
+		}
 		for _, gkOpt := range opt.genkitOpts {
 			gkOpts = append(gkOpts, gkOpt)
 		}
@@ -50,6 +55,19 @@ func (r *AiRuntime) Init(ctx context.Context, opts ...AiRuntimeOption) error {
 		return fmt.Errorf("apply service options: %w", optsErr)
 	}
 
+	return r.validateConfig()
+}
+
+// DefaultModel is the name of the default model, or "" when none is configured.
+func (r *AiRuntime) DefaultModel() string {
+	return r.defaultModel
+}
+
+// validateConfig checks the AI configuration against the models the runtime has.
+func (r *AiRuntime) validateConfig() error {
+	if r.cfg.SituationJudge.Enabled && r.DefaultModel() == "" {
+		return fmt.Errorf("ai.situation_judge.enabled requires a default model: enable a model provider such as ai.gemini")
+	}
 	return nil
 }
 
@@ -88,6 +106,8 @@ type AiRuntimeOption struct {
 	runtimeFn  func(*AiRuntime) error
 	genkitOpts []genkit.GenkitOption
 	plugins    []gkapi.Plugin
+	// defaultModel names the default model the option configures, if any.
+	defaultModel string
 }
 
 // TODO: remove these, don't use option kinds (just different functions eg `opt.agentFn`)
@@ -126,6 +146,7 @@ func WithDefinedModel[Config any](def ModelDefinition[Config]) AiRuntimeOption {
 	}
 	if def.IsDefault {
 		opt.genkitOpts = append(opt.genkitOpts, genkit.WithDefaultModel(def.Name))
+		opt.defaultModel = def.Name
 	}
 	return opt
 }
@@ -141,6 +162,7 @@ func WithGeminiPlugin(cfg rez.AiProviderConfigGemini) AiRuntimeOption {
 
 		// TODO: don't hardcode
 		opt.genkitOpts = append(opt.genkitOpts, genkit.WithDefaultModel(geminiFlashModel.Name()))
+		opt.defaultModel = geminiFlashModel.Name()
 	}
 	return opt
 }

@@ -48,8 +48,6 @@ func (NormalizedEvent) Edges() []ent.Edge {
 			Field("integration_id").
 			Annotations(entsql.OnDelete(entsql.SetNull)),
 		edge.To("projection", NormalizedEventProjection.Type).Unique(),
-
-		edge.From("situation_observation_groups", SituationObservationGroup.Type).Ref("events"),
 	}
 }
 

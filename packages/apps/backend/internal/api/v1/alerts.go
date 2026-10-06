@@ -74,3 +74,40 @@ func (h *alertsHandler) ListAlertIncidentLinks(context.Context, *oapi.ListAlertI
 
 	return &resp, nil
 }
+
+func (h *alertsHandler) ListSituationAlertEpisodes(ctx context.Context, req *oapi.ListSituationAlertEpisodesRequest) (*oapi.ListSituationAlertEpisodesResponse, error) {
+	var resp oapi.ListSituationAlertEpisodesResponse
+
+	params := rez.ListAlertEpisodesParams{
+		ListParams:  req.ListParams(),
+		SituationID: req.Id,
+	}
+	params.OrderAsc = true
+	episodes, listErr := h.alerts.ListAlertEpisodes(ctx, params)
+	if listErr != nil {
+		return nil, oapi.Error(ctx, "list situation alert episodes", listErr)
+	}
+	resp.Body = oapi.ConvertPaginatedResultBody(episodes, oapi.AlertEpisodeFromEnt)
+
+	return &resp, nil
+}
+
+func (h *alertsHandler) SetAlertIdentityGroupLabels(ctx context.Context, request *oapi.SetAlertIdentityGroupLabelsRequest) (*oapi.SetAlertIdentityGroupLabelsResponse, error) {
+	updated, setErr := h.alerts.SetAlertIdentityGroupLabels(ctx, request.Id, request.Body.Attributes.Labels)
+	if setErr != nil {
+		return nil, oapi.Error(ctx, "set alert identity group labels", setErr)
+	}
+	var response oapi.SetAlertIdentityGroupLabelsResponse
+	response.Body.Data = oapi.AlertDefinitionFromEnt(updated)
+	return &response, nil
+}
+
+func (h *alertsHandler) SetAlertSituationSignalAttention(ctx context.Context, request *oapi.SetAlertSituationSignalAttentionRequest) (*oapi.SetAlertSituationSignalAttentionResponse, error) {
+	updated, setErr := h.alerts.SetAlertSituationSignalAttention(ctx, request.Id, request.Body.Attributes.Level)
+	if setErr != nil {
+		return nil, oapi.Error(ctx, "set alert situation signal attention", setErr)
+	}
+	var response oapi.SetAlertSituationSignalAttentionResponse
+	response.Body.Data = oapi.AlertDefinitionFromEnt(updated)
+	return &response, nil
+}

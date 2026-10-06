@@ -242,7 +242,15 @@ export class SituationInvestigationController {
 	}
 
 	get startPending() {
-		return this.pageController.requestInvestigationMutation.isPending;
+		return this.pageController.raiseMutation.isPending;
+	}
+
+	get actionPending() {
+		return this.pageController.actionPending;
+	}
+
+	get investigationOffer() {
+		return this.pageController.investigationOffer;
 	}
 
 	get reportAttributes() {
@@ -258,7 +266,7 @@ export class SituationInvestigationController {
 	};
 
 	startInvestigation = () => {
-		this.pageController.startInvestigation();
+		this.pageController.raise();
 	};
 
 	toggleOutput = (id: string) => {

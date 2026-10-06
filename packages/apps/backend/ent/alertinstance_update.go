@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -13,8 +14,10 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/alertfeedback"
 	"github.com/rezible/rezible/ent/alertinstance"
+	"github.com/rezible/rezible/ent/alertinstanceevent"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/schema/schematypes"
 )
 
 // AlertInstanceUpdate is the builder for updating AlertInstance entities.
@@ -28,6 +31,141 @@ type AlertInstanceUpdate struct {
 func (_u *AlertInstanceUpdate) Where(ps ...predicate.AlertInstance) *AlertInstanceUpdate {
 	_u.mutation.Where(ps...)
 	return _u
+}
+
+// SetLabels sets the "labels" field.
+func (_u *AlertInstanceUpdate) SetLabels(v map[string]string) *AlertInstanceUpdate {
+	_u.mutation.SetLabels(v)
+	return _u
+}
+
+// ClearLabels clears the value of the "labels" field.
+func (_u *AlertInstanceUpdate) ClearLabels() *AlertInstanceUpdate {
+	_u.mutation.ClearLabels()
+	return _u
+}
+
+// SetSummary sets the "summary" field.
+func (_u *AlertInstanceUpdate) SetSummary(v string) *AlertInstanceUpdate {
+	_u.mutation.SetSummary(v)
+	return _u
+}
+
+// SetNillableSummary sets the "summary" field if the given value is not nil.
+func (_u *AlertInstanceUpdate) SetNillableSummary(v *string) *AlertInstanceUpdate {
+	if v != nil {
+		_u.SetSummary(*v)
+	}
+	return _u
+}
+
+// ClearSummary clears the value of the "summary" field.
+func (_u *AlertInstanceUpdate) ClearSummary() *AlertInstanceUpdate {
+	_u.mutation.ClearSummary()
+	return _u
+}
+
+// SetSeverity sets the "severity" field.
+func (_u *AlertInstanceUpdate) SetSeverity(v schematypes.SignalSeverity) *AlertInstanceUpdate {
+	_u.mutation.SetSeverity(v)
+	return _u
+}
+
+// SetNillableSeverity sets the "severity" field if the given value is not nil.
+func (_u *AlertInstanceUpdate) SetNillableSeverity(v *schematypes.SignalSeverity) *AlertInstanceUpdate {
+	if v != nil {
+		_u.SetSeverity(*v)
+	}
+	return _u
+}
+
+// SetLastObservedAt sets the "last_observed_at" field.
+func (_u *AlertInstanceUpdate) SetLastObservedAt(v time.Time) *AlertInstanceUpdate {
+	_u.mutation.SetLastObservedAt(v)
+	return _u
+}
+
+// SetNillableLastObservedAt sets the "last_observed_at" field if the given value is not nil.
+func (_u *AlertInstanceUpdate) SetNillableLastObservedAt(v *time.Time) *AlertInstanceUpdate {
+	if v != nil {
+		_u.SetLastObservedAt(*v)
+	}
+	return _u
+}
+
+// SetResolvedAt sets the "resolved_at" field.
+func (_u *AlertInstanceUpdate) SetResolvedAt(v time.Time) *AlertInstanceUpdate {
+	_u.mutation.SetResolvedAt(v)
+	return _u
+}
+
+// SetNillableResolvedAt sets the "resolved_at" field if the given value is not nil.
+func (_u *AlertInstanceUpdate) SetNillableResolvedAt(v *time.Time) *AlertInstanceUpdate {
+	if v != nil {
+		_u.SetResolvedAt(*v)
+	}
+	return _u
+}
+
+// ClearResolvedAt clears the value of the "resolved_at" field.
+func (_u *AlertInstanceUpdate) ClearResolvedAt() *AlertInstanceUpdate {
+	_u.mutation.ClearResolvedAt()
+	return _u
+}
+
+// SetEndedAt sets the "ended_at" field.
+func (_u *AlertInstanceUpdate) SetEndedAt(v time.Time) *AlertInstanceUpdate {
+	_u.mutation.SetEndedAt(v)
+	return _u
+}
+
+// SetNillableEndedAt sets the "ended_at" field if the given value is not nil.
+func (_u *AlertInstanceUpdate) SetNillableEndedAt(v *time.Time) *AlertInstanceUpdate {
+	if v != nil {
+		_u.SetEndedAt(*v)
+	}
+	return _u
+}
+
+// ClearEndedAt clears the value of the "ended_at" field.
+func (_u *AlertInstanceUpdate) ClearEndedAt() *AlertInstanceUpdate {
+	_u.mutation.ClearEndedAt()
+	return _u
+}
+
+// SetEndReason sets the "end_reason" field.
+func (_u *AlertInstanceUpdate) SetEndReason(v alertinstance.EndReason) *AlertInstanceUpdate {
+	_u.mutation.SetEndReason(v)
+	return _u
+}
+
+// SetNillableEndReason sets the "end_reason" field if the given value is not nil.
+func (_u *AlertInstanceUpdate) SetNillableEndReason(v *alertinstance.EndReason) *AlertInstanceUpdate {
+	if v != nil {
+		_u.SetEndReason(*v)
+	}
+	return _u
+}
+
+// ClearEndReason clears the value of the "end_reason" field.
+func (_u *AlertInstanceUpdate) ClearEndReason() *AlertInstanceUpdate {
+	_u.mutation.ClearEndReason()
+	return _u
+}
+
+// AddEventIDs adds the "events" edge to the AlertInstanceEvent entity by IDs.
+func (_u *AlertInstanceUpdate) AddEventIDs(ids ...uuid.UUID) *AlertInstanceUpdate {
+	_u.mutation.AddEventIDs(ids...)
+	return _u
+}
+
+// AddEvents adds the "events" edges to the AlertInstanceEvent entity.
+func (_u *AlertInstanceUpdate) AddEvents(v ...*AlertInstanceEvent) *AlertInstanceUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddEventIDs(ids...)
 }
 
 // AddFeedbackIDs adds the "feedback" edge to the AlertFeedback entity by IDs.
@@ -48,6 +186,27 @@ func (_u *AlertInstanceUpdate) AddFeedback(v ...*AlertFeedback) *AlertInstanceUp
 // Mutation returns the AlertInstanceMutation object of the builder.
 func (_u *AlertInstanceUpdate) Mutation() *AlertInstanceMutation {
 	return _u.mutation
+}
+
+// ClearEvents clears all "events" edges to the AlertInstanceEvent entity.
+func (_u *AlertInstanceUpdate) ClearEvents() *AlertInstanceUpdate {
+	_u.mutation.ClearEvents()
+	return _u
+}
+
+// RemoveEventIDs removes the "events" edge to AlertInstanceEvent entities by IDs.
+func (_u *AlertInstanceUpdate) RemoveEventIDs(ids ...uuid.UUID) *AlertInstanceUpdate {
+	_u.mutation.RemoveEventIDs(ids...)
+	return _u
+}
+
+// RemoveEvents removes "events" edges to AlertInstanceEvent entities.
+func (_u *AlertInstanceUpdate) RemoveEvents(v ...*AlertInstanceEvent) *AlertInstanceUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveEventIDs(ids...)
 }
 
 // ClearFeedback clears all "feedback" edges to the AlertFeedback entity.
@@ -100,14 +259,21 @@ func (_u *AlertInstanceUpdate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *AlertInstanceUpdate) check() error {
+	if v, ok := _u.mutation.Severity(); ok {
+		if err := alertinstance.SeverityValidator(v); err != nil {
+			return &ValidationError{Name: "severity", err: fmt.Errorf(`ent: validator failed for field "AlertInstance.severity": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.EndReason(); ok {
+		if err := alertinstance.EndReasonValidator(v); err != nil {
+			return &ValidationError{Name: "end_reason", err: fmt.Errorf(`ent: validator failed for field "AlertInstance.end_reason": %w`, err)}
+		}
+	}
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "AlertInstance.tenant"`)
 	}
 	if _u.mutation.EpisodeCleared() && len(_u.mutation.EpisodeIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "AlertInstance.episode"`)
-	}
-	if _u.mutation.EventCleared() && len(_u.mutation.EventIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "AlertInstance.event"`)
 	}
 	return nil
 }
@@ -123,6 +289,90 @@ func (_u *AlertInstanceUpdate) sqlSave(ctx context.Context) (_node int, err erro
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := _u.mutation.Labels(); ok {
+		_spec.SetField(alertinstance.FieldLabels, field.TypeJSON, value)
+	}
+	if _u.mutation.LabelsCleared() {
+		_spec.ClearField(alertinstance.FieldLabels, field.TypeJSON)
+	}
+	if value, ok := _u.mutation.Summary(); ok {
+		_spec.SetField(alertinstance.FieldSummary, field.TypeString, value)
+	}
+	if _u.mutation.SummaryCleared() {
+		_spec.ClearField(alertinstance.FieldSummary, field.TypeString)
+	}
+	if value, ok := _u.mutation.Severity(); ok {
+		_spec.SetField(alertinstance.FieldSeverity, field.TypeEnum, value)
+	}
+	if value, ok := _u.mutation.LastObservedAt(); ok {
+		_spec.SetField(alertinstance.FieldLastObservedAt, field.TypeTime, value)
+	}
+	if value, ok := _u.mutation.ResolvedAt(); ok {
+		_spec.SetField(alertinstance.FieldResolvedAt, field.TypeTime, value)
+	}
+	if _u.mutation.ResolvedAtCleared() {
+		_spec.ClearField(alertinstance.FieldResolvedAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.EndedAt(); ok {
+		_spec.SetField(alertinstance.FieldEndedAt, field.TypeTime, value)
+	}
+	if _u.mutation.EndedAtCleared() {
+		_spec.ClearField(alertinstance.FieldEndedAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.EndReason(); ok {
+		_spec.SetField(alertinstance.FieldEndReason, field.TypeEnum, value)
+	}
+	if _u.mutation.EndReasonCleared() {
+		_spec.ClearField(alertinstance.FieldEndReason, field.TypeEnum)
+	}
+	if _u.mutation.EventsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   alertinstance.EventsTable,
+			Columns: []string{alertinstance.EventsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(alertinstanceevent.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AlertInstanceEvent
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedEventsIDs(); len(nodes) > 0 && !_u.mutation.EventsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   alertinstance.EventsTable,
+			Columns: []string{alertinstance.EventsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(alertinstanceevent.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AlertInstanceEvent
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.EventsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   alertinstance.EventsTable,
+			Columns: []string{alertinstance.EventsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(alertinstanceevent.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AlertInstanceEvent
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if _u.mutation.FeedbackCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -194,6 +444,141 @@ type AlertInstanceUpdateOne struct {
 	mutation *AlertInstanceMutation
 }
 
+// SetLabels sets the "labels" field.
+func (_u *AlertInstanceUpdateOne) SetLabels(v map[string]string) *AlertInstanceUpdateOne {
+	_u.mutation.SetLabels(v)
+	return _u
+}
+
+// ClearLabels clears the value of the "labels" field.
+func (_u *AlertInstanceUpdateOne) ClearLabels() *AlertInstanceUpdateOne {
+	_u.mutation.ClearLabels()
+	return _u
+}
+
+// SetSummary sets the "summary" field.
+func (_u *AlertInstanceUpdateOne) SetSummary(v string) *AlertInstanceUpdateOne {
+	_u.mutation.SetSummary(v)
+	return _u
+}
+
+// SetNillableSummary sets the "summary" field if the given value is not nil.
+func (_u *AlertInstanceUpdateOne) SetNillableSummary(v *string) *AlertInstanceUpdateOne {
+	if v != nil {
+		_u.SetSummary(*v)
+	}
+	return _u
+}
+
+// ClearSummary clears the value of the "summary" field.
+func (_u *AlertInstanceUpdateOne) ClearSummary() *AlertInstanceUpdateOne {
+	_u.mutation.ClearSummary()
+	return _u
+}
+
+// SetSeverity sets the "severity" field.
+func (_u *AlertInstanceUpdateOne) SetSeverity(v schematypes.SignalSeverity) *AlertInstanceUpdateOne {
+	_u.mutation.SetSeverity(v)
+	return _u
+}
+
+// SetNillableSeverity sets the "severity" field if the given value is not nil.
+func (_u *AlertInstanceUpdateOne) SetNillableSeverity(v *schematypes.SignalSeverity) *AlertInstanceUpdateOne {
+	if v != nil {
+		_u.SetSeverity(*v)
+	}
+	return _u
+}
+
+// SetLastObservedAt sets the "last_observed_at" field.
+func (_u *AlertInstanceUpdateOne) SetLastObservedAt(v time.Time) *AlertInstanceUpdateOne {
+	_u.mutation.SetLastObservedAt(v)
+	return _u
+}
+
+// SetNillableLastObservedAt sets the "last_observed_at" field if the given value is not nil.
+func (_u *AlertInstanceUpdateOne) SetNillableLastObservedAt(v *time.Time) *AlertInstanceUpdateOne {
+	if v != nil {
+		_u.SetLastObservedAt(*v)
+	}
+	return _u
+}
+
+// SetResolvedAt sets the "resolved_at" field.
+func (_u *AlertInstanceUpdateOne) SetResolvedAt(v time.Time) *AlertInstanceUpdateOne {
+	_u.mutation.SetResolvedAt(v)
+	return _u
+}
+
+// SetNillableResolvedAt sets the "resolved_at" field if the given value is not nil.
+func (_u *AlertInstanceUpdateOne) SetNillableResolvedAt(v *time.Time) *AlertInstanceUpdateOne {
+	if v != nil {
+		_u.SetResolvedAt(*v)
+	}
+	return _u
+}
+
+// ClearResolvedAt clears the value of the "resolved_at" field.
+func (_u *AlertInstanceUpdateOne) ClearResolvedAt() *AlertInstanceUpdateOne {
+	_u.mutation.ClearResolvedAt()
+	return _u
+}
+
+// SetEndedAt sets the "ended_at" field.
+func (_u *AlertInstanceUpdateOne) SetEndedAt(v time.Time) *AlertInstanceUpdateOne {
+	_u.mutation.SetEndedAt(v)
+	return _u
+}
+
+// SetNillableEndedAt sets the "ended_at" field if the given value is not nil.
+func (_u *AlertInstanceUpdateOne) SetNillableEndedAt(v *time.Time) *AlertInstanceUpdateOne {
+	if v != nil {
+		_u.SetEndedAt(*v)
+	}
+	return _u
+}
+
+// ClearEndedAt clears the value of the "ended_at" field.
+func (_u *AlertInstanceUpdateOne) ClearEndedAt() *AlertInstanceUpdateOne {
+	_u.mutation.ClearEndedAt()
+	return _u
+}
+
+// SetEndReason sets the "end_reason" field.
+func (_u *AlertInstanceUpdateOne) SetEndReason(v alertinstance.EndReason) *AlertInstanceUpdateOne {
+	_u.mutation.SetEndReason(v)
+	return _u
+}
+
+// SetNillableEndReason sets the "end_reason" field if the given value is not nil.
+func (_u *AlertInstanceUpdateOne) SetNillableEndReason(v *alertinstance.EndReason) *AlertInstanceUpdateOne {
+	if v != nil {
+		_u.SetEndReason(*v)
+	}
+	return _u
+}
+
+// ClearEndReason clears the value of the "end_reason" field.
+func (_u *AlertInstanceUpdateOne) ClearEndReason() *AlertInstanceUpdateOne {
+	_u.mutation.ClearEndReason()
+	return _u
+}
+
+// AddEventIDs adds the "events" edge to the AlertInstanceEvent entity by IDs.
+func (_u *AlertInstanceUpdateOne) AddEventIDs(ids ...uuid.UUID) *AlertInstanceUpdateOne {
+	_u.mutation.AddEventIDs(ids...)
+	return _u
+}
+
+// AddEvents adds the "events" edges to the AlertInstanceEvent entity.
+func (_u *AlertInstanceUpdateOne) AddEvents(v ...*AlertInstanceEvent) *AlertInstanceUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddEventIDs(ids...)
+}
+
 // AddFeedbackIDs adds the "feedback" edge to the AlertFeedback entity by IDs.
 func (_u *AlertInstanceUpdateOne) AddFeedbackIDs(ids ...uuid.UUID) *AlertInstanceUpdateOne {
 	_u.mutation.AddFeedbackIDs(ids...)
@@ -212,6 +597,27 @@ func (_u *AlertInstanceUpdateOne) AddFeedback(v ...*AlertFeedback) *AlertInstanc
 // Mutation returns the AlertInstanceMutation object of the builder.
 func (_u *AlertInstanceUpdateOne) Mutation() *AlertInstanceMutation {
 	return _u.mutation
+}
+
+// ClearEvents clears all "events" edges to the AlertInstanceEvent entity.
+func (_u *AlertInstanceUpdateOne) ClearEvents() *AlertInstanceUpdateOne {
+	_u.mutation.ClearEvents()
+	return _u
+}
+
+// RemoveEventIDs removes the "events" edge to AlertInstanceEvent entities by IDs.
+func (_u *AlertInstanceUpdateOne) RemoveEventIDs(ids ...uuid.UUID) *AlertInstanceUpdateOne {
+	_u.mutation.RemoveEventIDs(ids...)
+	return _u
+}
+
+// RemoveEvents removes "events" edges to AlertInstanceEvent entities.
+func (_u *AlertInstanceUpdateOne) RemoveEvents(v ...*AlertInstanceEvent) *AlertInstanceUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveEventIDs(ids...)
 }
 
 // ClearFeedback clears all "feedback" edges to the AlertFeedback entity.
@@ -277,14 +683,21 @@ func (_u *AlertInstanceUpdateOne) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *AlertInstanceUpdateOne) check() error {
+	if v, ok := _u.mutation.Severity(); ok {
+		if err := alertinstance.SeverityValidator(v); err != nil {
+			return &ValidationError{Name: "severity", err: fmt.Errorf(`ent: validator failed for field "AlertInstance.severity": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.EndReason(); ok {
+		if err := alertinstance.EndReasonValidator(v); err != nil {
+			return &ValidationError{Name: "end_reason", err: fmt.Errorf(`ent: validator failed for field "AlertInstance.end_reason": %w`, err)}
+		}
+	}
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "AlertInstance.tenant"`)
 	}
 	if _u.mutation.EpisodeCleared() && len(_u.mutation.EpisodeIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "AlertInstance.episode"`)
-	}
-	if _u.mutation.EventCleared() && len(_u.mutation.EventIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "AlertInstance.event"`)
 	}
 	return nil
 }
@@ -317,6 +730,90 @@ func (_u *AlertInstanceUpdateOne) sqlSave(ctx context.Context) (_node *AlertInst
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := _u.mutation.Labels(); ok {
+		_spec.SetField(alertinstance.FieldLabels, field.TypeJSON, value)
+	}
+	if _u.mutation.LabelsCleared() {
+		_spec.ClearField(alertinstance.FieldLabels, field.TypeJSON)
+	}
+	if value, ok := _u.mutation.Summary(); ok {
+		_spec.SetField(alertinstance.FieldSummary, field.TypeString, value)
+	}
+	if _u.mutation.SummaryCleared() {
+		_spec.ClearField(alertinstance.FieldSummary, field.TypeString)
+	}
+	if value, ok := _u.mutation.Severity(); ok {
+		_spec.SetField(alertinstance.FieldSeverity, field.TypeEnum, value)
+	}
+	if value, ok := _u.mutation.LastObservedAt(); ok {
+		_spec.SetField(alertinstance.FieldLastObservedAt, field.TypeTime, value)
+	}
+	if value, ok := _u.mutation.ResolvedAt(); ok {
+		_spec.SetField(alertinstance.FieldResolvedAt, field.TypeTime, value)
+	}
+	if _u.mutation.ResolvedAtCleared() {
+		_spec.ClearField(alertinstance.FieldResolvedAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.EndedAt(); ok {
+		_spec.SetField(alertinstance.FieldEndedAt, field.TypeTime, value)
+	}
+	if _u.mutation.EndedAtCleared() {
+		_spec.ClearField(alertinstance.FieldEndedAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.EndReason(); ok {
+		_spec.SetField(alertinstance.FieldEndReason, field.TypeEnum, value)
+	}
+	if _u.mutation.EndReasonCleared() {
+		_spec.ClearField(alertinstance.FieldEndReason, field.TypeEnum)
+	}
+	if _u.mutation.EventsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   alertinstance.EventsTable,
+			Columns: []string{alertinstance.EventsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(alertinstanceevent.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AlertInstanceEvent
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedEventsIDs(); len(nodes) > 0 && !_u.mutation.EventsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   alertinstance.EventsTable,
+			Columns: []string{alertinstance.EventsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(alertinstanceevent.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AlertInstanceEvent
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.EventsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   alertinstance.EventsTable,
+			Columns: []string{alertinstance.EventsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(alertinstanceevent.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AlertInstanceEvent
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if _u.mutation.FeedbackCleared() {
 		edge := &sqlgraph.EdgeSpec{

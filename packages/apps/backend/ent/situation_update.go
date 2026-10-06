@@ -16,9 +16,14 @@ import (
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/situation"
+	"github.com/rezible/rezible/ent/situationaction"
+	"github.com/rezible/rezible/ent/situationentity"
 	"github.com/rezible/rezible/ent/situationhazardassessment"
 	"github.com/rezible/rezible/ent/situationinvestigation"
+	"github.com/rezible/rezible/ent/situationjudgment"
+	"github.com/rezible/rezible/ent/situationlink"
 	"github.com/rezible/rezible/ent/situationobservationgroup"
+	"github.com/rezible/rezible/ent/situationsignal"
 )
 
 // SituationUpdate is the builder for updating Situation entities.
@@ -102,6 +107,86 @@ func (_u *SituationUpdate) SetNillableOpenedAt(v *time.Time) *SituationUpdate {
 	return _u
 }
 
+// SetRaisedAt sets the "raised_at" field.
+func (_u *SituationUpdate) SetRaisedAt(v time.Time) *SituationUpdate {
+	_u.mutation.SetRaisedAt(v)
+	return _u
+}
+
+// SetNillableRaisedAt sets the "raised_at" field if the given value is not nil.
+func (_u *SituationUpdate) SetNillableRaisedAt(v *time.Time) *SituationUpdate {
+	if v != nil {
+		_u.SetRaisedAt(*v)
+	}
+	return _u
+}
+
+// ClearRaisedAt clears the value of the "raised_at" field.
+func (_u *SituationUpdate) ClearRaisedAt() *SituationUpdate {
+	_u.mutation.ClearRaisedAt()
+	return _u
+}
+
+// SetMutedAt sets the "muted_at" field.
+func (_u *SituationUpdate) SetMutedAt(v time.Time) *SituationUpdate {
+	_u.mutation.SetMutedAt(v)
+	return _u
+}
+
+// SetNillableMutedAt sets the "muted_at" field if the given value is not nil.
+func (_u *SituationUpdate) SetNillableMutedAt(v *time.Time) *SituationUpdate {
+	if v != nil {
+		_u.SetMutedAt(*v)
+	}
+	return _u
+}
+
+// ClearMutedAt clears the value of the "muted_at" field.
+func (_u *SituationUpdate) ClearMutedAt() *SituationUpdate {
+	_u.mutation.ClearMutedAt()
+	return _u
+}
+
+// SetMuteReason sets the "mute_reason" field.
+func (_u *SituationUpdate) SetMuteReason(v situation.MuteReason) *SituationUpdate {
+	_u.mutation.SetMuteReason(v)
+	return _u
+}
+
+// SetNillableMuteReason sets the "mute_reason" field if the given value is not nil.
+func (_u *SituationUpdate) SetNillableMuteReason(v *situation.MuteReason) *SituationUpdate {
+	if v != nil {
+		_u.SetMuteReason(*v)
+	}
+	return _u
+}
+
+// ClearMuteReason clears the value of the "mute_reason" field.
+func (_u *SituationUpdate) ClearMuteReason() *SituationUpdate {
+	_u.mutation.ClearMuteReason()
+	return _u
+}
+
+// SetHoldUntil sets the "hold_until" field.
+func (_u *SituationUpdate) SetHoldUntil(v time.Time) *SituationUpdate {
+	_u.mutation.SetHoldUntil(v)
+	return _u
+}
+
+// SetNillableHoldUntil sets the "hold_until" field if the given value is not nil.
+func (_u *SituationUpdate) SetNillableHoldUntil(v *time.Time) *SituationUpdate {
+	if v != nil {
+		_u.SetHoldUntil(*v)
+	}
+	return _u
+}
+
+// ClearHoldUntil clears the value of the "hold_until" field.
+func (_u *SituationUpdate) ClearHoldUntil() *SituationUpdate {
+	_u.mutation.ClearHoldUntil()
+	return _u
+}
+
 // SetClosedAt sets the "closed_at" field.
 func (_u *SituationUpdate) SetClosedAt(v time.Time) *SituationUpdate {
 	_u.mutation.SetClosedAt(v)
@@ -139,6 +224,26 @@ func (_u *SituationUpdate) SetNillableCloseReason(v *situation.CloseReason) *Sit
 // ClearCloseReason clears the value of the "close_reason" field.
 func (_u *SituationUpdate) ClearCloseReason() *SituationUpdate {
 	_u.mutation.ClearCloseReason()
+	return _u
+}
+
+// SetLatestJudgmentID sets the "latest_judgment_id" field.
+func (_u *SituationUpdate) SetLatestJudgmentID(v uuid.UUID) *SituationUpdate {
+	_u.mutation.SetLatestJudgmentID(v)
+	return _u
+}
+
+// SetNillableLatestJudgmentID sets the "latest_judgment_id" field if the given value is not nil.
+func (_u *SituationUpdate) SetNillableLatestJudgmentID(v *uuid.UUID) *SituationUpdate {
+	if v != nil {
+		_u.SetLatestJudgmentID(*v)
+	}
+	return _u
+}
+
+// ClearLatestJudgmentID clears the value of the "latest_judgment_id" field.
+func (_u *SituationUpdate) ClearLatestJudgmentID() *SituationUpdate {
+	_u.mutation.ClearLatestJudgmentID()
 	return _u
 }
 
@@ -204,6 +309,71 @@ func (_u *SituationUpdate) AddIncidents(v ...*Incident) *SituationUpdate {
 		ids[i] = v[i].ID
 	}
 	return _u.AddIncidentIDs(ids...)
+}
+
+// AddSignalIDs adds the "signals" edge to the SituationSignal entity by IDs.
+func (_u *SituationUpdate) AddSignalIDs(ids ...uuid.UUID) *SituationUpdate {
+	_u.mutation.AddSignalIDs(ids...)
+	return _u
+}
+
+// AddSignals adds the "signals" edges to the SituationSignal entity.
+func (_u *SituationUpdate) AddSignals(v ...*SituationSignal) *SituationUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddSignalIDs(ids...)
+}
+
+// AddEntityIDs adds the "entities" edge to the SituationEntity entity by IDs.
+func (_u *SituationUpdate) AddEntityIDs(ids ...uuid.UUID) *SituationUpdate {
+	_u.mutation.AddEntityIDs(ids...)
+	return _u
+}
+
+// AddEntities adds the "entities" edges to the SituationEntity entity.
+func (_u *SituationUpdate) AddEntities(v ...*SituationEntity) *SituationUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddEntityIDs(ids...)
+}
+
+// AddLinkIDs adds the "links" edge to the SituationLink entity by IDs.
+func (_u *SituationUpdate) AddLinkIDs(ids ...uuid.UUID) *SituationUpdate {
+	_u.mutation.AddLinkIDs(ids...)
+	return _u
+}
+
+// AddLinks adds the "links" edges to the SituationLink entity.
+func (_u *SituationUpdate) AddLinks(v ...*SituationLink) *SituationUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddLinkIDs(ids...)
+}
+
+// AddActionIDs adds the "actions" edge to the SituationAction entity by IDs.
+func (_u *SituationUpdate) AddActionIDs(ids ...uuid.UUID) *SituationUpdate {
+	_u.mutation.AddActionIDs(ids...)
+	return _u
+}
+
+// AddActions adds the "actions" edges to the SituationAction entity.
+func (_u *SituationUpdate) AddActions(v ...*SituationAction) *SituationUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddActionIDs(ids...)
+}
+
+// SetLatestJudgment sets the "latest_judgment" edge to the SituationJudgment entity.
+func (_u *SituationUpdate) SetLatestJudgment(v *SituationJudgment) *SituationUpdate {
+	return _u.SetLatestJudgmentID(v.ID)
 }
 
 // Mutation returns the SituationMutation object of the builder.
@@ -280,6 +450,96 @@ func (_u *SituationUpdate) RemoveIncidents(v ...*Incident) *SituationUpdate {
 	return _u.RemoveIncidentIDs(ids...)
 }
 
+// ClearSignals clears all "signals" edges to the SituationSignal entity.
+func (_u *SituationUpdate) ClearSignals() *SituationUpdate {
+	_u.mutation.ClearSignals()
+	return _u
+}
+
+// RemoveSignalIDs removes the "signals" edge to SituationSignal entities by IDs.
+func (_u *SituationUpdate) RemoveSignalIDs(ids ...uuid.UUID) *SituationUpdate {
+	_u.mutation.RemoveSignalIDs(ids...)
+	return _u
+}
+
+// RemoveSignals removes "signals" edges to SituationSignal entities.
+func (_u *SituationUpdate) RemoveSignals(v ...*SituationSignal) *SituationUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveSignalIDs(ids...)
+}
+
+// ClearEntities clears all "entities" edges to the SituationEntity entity.
+func (_u *SituationUpdate) ClearEntities() *SituationUpdate {
+	_u.mutation.ClearEntities()
+	return _u
+}
+
+// RemoveEntityIDs removes the "entities" edge to SituationEntity entities by IDs.
+func (_u *SituationUpdate) RemoveEntityIDs(ids ...uuid.UUID) *SituationUpdate {
+	_u.mutation.RemoveEntityIDs(ids...)
+	return _u
+}
+
+// RemoveEntities removes "entities" edges to SituationEntity entities.
+func (_u *SituationUpdate) RemoveEntities(v ...*SituationEntity) *SituationUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveEntityIDs(ids...)
+}
+
+// ClearLinks clears all "links" edges to the SituationLink entity.
+func (_u *SituationUpdate) ClearLinks() *SituationUpdate {
+	_u.mutation.ClearLinks()
+	return _u
+}
+
+// RemoveLinkIDs removes the "links" edge to SituationLink entities by IDs.
+func (_u *SituationUpdate) RemoveLinkIDs(ids ...uuid.UUID) *SituationUpdate {
+	_u.mutation.RemoveLinkIDs(ids...)
+	return _u
+}
+
+// RemoveLinks removes "links" edges to SituationLink entities.
+func (_u *SituationUpdate) RemoveLinks(v ...*SituationLink) *SituationUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveLinkIDs(ids...)
+}
+
+// ClearActions clears all "actions" edges to the SituationAction entity.
+func (_u *SituationUpdate) ClearActions() *SituationUpdate {
+	_u.mutation.ClearActions()
+	return _u
+}
+
+// RemoveActionIDs removes the "actions" edge to SituationAction entities by IDs.
+func (_u *SituationUpdate) RemoveActionIDs(ids ...uuid.UUID) *SituationUpdate {
+	_u.mutation.RemoveActionIDs(ids...)
+	return _u
+}
+
+// RemoveActions removes "actions" edges to SituationAction entities.
+func (_u *SituationUpdate) RemoveActions(v ...*SituationAction) *SituationUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveActionIDs(ids...)
+}
+
+// ClearLatestJudgment clears the "latest_judgment" edge to the SituationJudgment entity.
+func (_u *SituationUpdate) ClearLatestJudgment() *SituationUpdate {
+	_u.mutation.ClearLatestJudgment()
+	return _u
+}
+
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (_u *SituationUpdate) Save(ctx context.Context) (int, error) {
 	if err := _u.defaults(); err != nil {
@@ -329,6 +589,11 @@ func (_u *SituationUpdate) check() error {
 			return &ValidationError{Name: "title", err: fmt.Errorf(`ent: validator failed for field "Situation.title": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.MuteReason(); ok {
+		if err := situation.MuteReasonValidator(v); err != nil {
+			return &ValidationError{Name: "mute_reason", err: fmt.Errorf(`ent: validator failed for field "Situation.mute_reason": %w`, err)}
+		}
+	}
 	if v, ok := _u.mutation.CloseReason(); ok {
 		if err := situation.CloseReasonValidator(v); err != nil {
 			return &ValidationError{Name: "close_reason", err: fmt.Errorf(`ent: validator failed for field "Situation.close_reason": %w`, err)}
@@ -369,6 +634,30 @@ func (_u *SituationUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if value, ok := _u.mutation.OpenedAt(); ok {
 		_spec.SetField(situation.FieldOpenedAt, field.TypeTime, value)
+	}
+	if value, ok := _u.mutation.RaisedAt(); ok {
+		_spec.SetField(situation.FieldRaisedAt, field.TypeTime, value)
+	}
+	if _u.mutation.RaisedAtCleared() {
+		_spec.ClearField(situation.FieldRaisedAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.MutedAt(); ok {
+		_spec.SetField(situation.FieldMutedAt, field.TypeTime, value)
+	}
+	if _u.mutation.MutedAtCleared() {
+		_spec.ClearField(situation.FieldMutedAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.MuteReason(); ok {
+		_spec.SetField(situation.FieldMuteReason, field.TypeEnum, value)
+	}
+	if _u.mutation.MuteReasonCleared() {
+		_spec.ClearField(situation.FieldMuteReason, field.TypeEnum)
+	}
+	if value, ok := _u.mutation.HoldUntil(); ok {
+		_spec.SetField(situation.FieldHoldUntil, field.TypeTime, value)
+	}
+	if _u.mutation.HoldUntilCleared() {
+		_spec.ClearField(situation.FieldHoldUntil, field.TypeTime)
 	}
 	if value, ok := _u.mutation.ClosedAt(); ok {
 		_spec.SetField(situation.FieldClosedAt, field.TypeTime, value)
@@ -552,6 +841,229 @@ func (_u *SituationUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			},
 		}
 		edge.Schema = _u.schemaConfig.IncidentSituations
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.SignalsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   situation.SignalsTable,
+			Columns: []string{situation.SignalsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(situationsignal.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SituationSignal
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedSignalsIDs(); len(nodes) > 0 && !_u.mutation.SignalsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   situation.SignalsTable,
+			Columns: []string{situation.SignalsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(situationsignal.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SituationSignal
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.SignalsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   situation.SignalsTable,
+			Columns: []string{situation.SignalsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(situationsignal.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SituationSignal
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.EntitiesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   situation.EntitiesTable,
+			Columns: []string{situation.EntitiesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(situationentity.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SituationEntity
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedEntitiesIDs(); len(nodes) > 0 && !_u.mutation.EntitiesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   situation.EntitiesTable,
+			Columns: []string{situation.EntitiesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(situationentity.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SituationEntity
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.EntitiesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   situation.EntitiesTable,
+			Columns: []string{situation.EntitiesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(situationentity.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SituationEntity
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.LinksCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   situation.LinksTable,
+			Columns: []string{situation.LinksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(situationlink.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SituationLink
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedLinksIDs(); len(nodes) > 0 && !_u.mutation.LinksCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   situation.LinksTable,
+			Columns: []string{situation.LinksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(situationlink.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SituationLink
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.LinksIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   situation.LinksTable,
+			Columns: []string{situation.LinksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(situationlink.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SituationLink
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.ActionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   situation.ActionsTable,
+			Columns: []string{situation.ActionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(situationaction.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SituationAction
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedActionsIDs(); len(nodes) > 0 && !_u.mutation.ActionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   situation.ActionsTable,
+			Columns: []string{situation.ActionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(situationaction.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SituationAction
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ActionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   situation.ActionsTable,
+			Columns: []string{situation.ActionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(situationaction.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SituationAction
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.LatestJudgmentCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   situation.LatestJudgmentTable,
+			Columns: []string{situation.LatestJudgmentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(situationjudgment.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.Situation
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.LatestJudgmentIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   situation.LatestJudgmentTable,
+			Columns: []string{situation.LatestJudgmentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(situationjudgment.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.Situation
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -647,6 +1159,86 @@ func (_u *SituationUpdateOne) SetNillableOpenedAt(v *time.Time) *SituationUpdate
 	return _u
 }
 
+// SetRaisedAt sets the "raised_at" field.
+func (_u *SituationUpdateOne) SetRaisedAt(v time.Time) *SituationUpdateOne {
+	_u.mutation.SetRaisedAt(v)
+	return _u
+}
+
+// SetNillableRaisedAt sets the "raised_at" field if the given value is not nil.
+func (_u *SituationUpdateOne) SetNillableRaisedAt(v *time.Time) *SituationUpdateOne {
+	if v != nil {
+		_u.SetRaisedAt(*v)
+	}
+	return _u
+}
+
+// ClearRaisedAt clears the value of the "raised_at" field.
+func (_u *SituationUpdateOne) ClearRaisedAt() *SituationUpdateOne {
+	_u.mutation.ClearRaisedAt()
+	return _u
+}
+
+// SetMutedAt sets the "muted_at" field.
+func (_u *SituationUpdateOne) SetMutedAt(v time.Time) *SituationUpdateOne {
+	_u.mutation.SetMutedAt(v)
+	return _u
+}
+
+// SetNillableMutedAt sets the "muted_at" field if the given value is not nil.
+func (_u *SituationUpdateOne) SetNillableMutedAt(v *time.Time) *SituationUpdateOne {
+	if v != nil {
+		_u.SetMutedAt(*v)
+	}
+	return _u
+}
+
+// ClearMutedAt clears the value of the "muted_at" field.
+func (_u *SituationUpdateOne) ClearMutedAt() *SituationUpdateOne {
+	_u.mutation.ClearMutedAt()
+	return _u
+}
+
+// SetMuteReason sets the "mute_reason" field.
+func (_u *SituationUpdateOne) SetMuteReason(v situation.MuteReason) *SituationUpdateOne {
+	_u.mutation.SetMuteReason(v)
+	return _u
+}
+
+// SetNillableMuteReason sets the "mute_reason" field if the given value is not nil.
+func (_u *SituationUpdateOne) SetNillableMuteReason(v *situation.MuteReason) *SituationUpdateOne {
+	if v != nil {
+		_u.SetMuteReason(*v)
+	}
+	return _u
+}
+
+// ClearMuteReason clears the value of the "mute_reason" field.
+func (_u *SituationUpdateOne) ClearMuteReason() *SituationUpdateOne {
+	_u.mutation.ClearMuteReason()
+	return _u
+}
+
+// SetHoldUntil sets the "hold_until" field.
+func (_u *SituationUpdateOne) SetHoldUntil(v time.Time) *SituationUpdateOne {
+	_u.mutation.SetHoldUntil(v)
+	return _u
+}
+
+// SetNillableHoldUntil sets the "hold_until" field if the given value is not nil.
+func (_u *SituationUpdateOne) SetNillableHoldUntil(v *time.Time) *SituationUpdateOne {
+	if v != nil {
+		_u.SetHoldUntil(*v)
+	}
+	return _u
+}
+
+// ClearHoldUntil clears the value of the "hold_until" field.
+func (_u *SituationUpdateOne) ClearHoldUntil() *SituationUpdateOne {
+	_u.mutation.ClearHoldUntil()
+	return _u
+}
+
 // SetClosedAt sets the "closed_at" field.
 func (_u *SituationUpdateOne) SetClosedAt(v time.Time) *SituationUpdateOne {
 	_u.mutation.SetClosedAt(v)
@@ -684,6 +1276,26 @@ func (_u *SituationUpdateOne) SetNillableCloseReason(v *situation.CloseReason) *
 // ClearCloseReason clears the value of the "close_reason" field.
 func (_u *SituationUpdateOne) ClearCloseReason() *SituationUpdateOne {
 	_u.mutation.ClearCloseReason()
+	return _u
+}
+
+// SetLatestJudgmentID sets the "latest_judgment_id" field.
+func (_u *SituationUpdateOne) SetLatestJudgmentID(v uuid.UUID) *SituationUpdateOne {
+	_u.mutation.SetLatestJudgmentID(v)
+	return _u
+}
+
+// SetNillableLatestJudgmentID sets the "latest_judgment_id" field if the given value is not nil.
+func (_u *SituationUpdateOne) SetNillableLatestJudgmentID(v *uuid.UUID) *SituationUpdateOne {
+	if v != nil {
+		_u.SetLatestJudgmentID(*v)
+	}
+	return _u
+}
+
+// ClearLatestJudgmentID clears the value of the "latest_judgment_id" field.
+func (_u *SituationUpdateOne) ClearLatestJudgmentID() *SituationUpdateOne {
+	_u.mutation.ClearLatestJudgmentID()
 	return _u
 }
 
@@ -749,6 +1361,71 @@ func (_u *SituationUpdateOne) AddIncidents(v ...*Incident) *SituationUpdateOne {
 		ids[i] = v[i].ID
 	}
 	return _u.AddIncidentIDs(ids...)
+}
+
+// AddSignalIDs adds the "signals" edge to the SituationSignal entity by IDs.
+func (_u *SituationUpdateOne) AddSignalIDs(ids ...uuid.UUID) *SituationUpdateOne {
+	_u.mutation.AddSignalIDs(ids...)
+	return _u
+}
+
+// AddSignals adds the "signals" edges to the SituationSignal entity.
+func (_u *SituationUpdateOne) AddSignals(v ...*SituationSignal) *SituationUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddSignalIDs(ids...)
+}
+
+// AddEntityIDs adds the "entities" edge to the SituationEntity entity by IDs.
+func (_u *SituationUpdateOne) AddEntityIDs(ids ...uuid.UUID) *SituationUpdateOne {
+	_u.mutation.AddEntityIDs(ids...)
+	return _u
+}
+
+// AddEntities adds the "entities" edges to the SituationEntity entity.
+func (_u *SituationUpdateOne) AddEntities(v ...*SituationEntity) *SituationUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddEntityIDs(ids...)
+}
+
+// AddLinkIDs adds the "links" edge to the SituationLink entity by IDs.
+func (_u *SituationUpdateOne) AddLinkIDs(ids ...uuid.UUID) *SituationUpdateOne {
+	_u.mutation.AddLinkIDs(ids...)
+	return _u
+}
+
+// AddLinks adds the "links" edges to the SituationLink entity.
+func (_u *SituationUpdateOne) AddLinks(v ...*SituationLink) *SituationUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddLinkIDs(ids...)
+}
+
+// AddActionIDs adds the "actions" edge to the SituationAction entity by IDs.
+func (_u *SituationUpdateOne) AddActionIDs(ids ...uuid.UUID) *SituationUpdateOne {
+	_u.mutation.AddActionIDs(ids...)
+	return _u
+}
+
+// AddActions adds the "actions" edges to the SituationAction entity.
+func (_u *SituationUpdateOne) AddActions(v ...*SituationAction) *SituationUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddActionIDs(ids...)
+}
+
+// SetLatestJudgment sets the "latest_judgment" edge to the SituationJudgment entity.
+func (_u *SituationUpdateOne) SetLatestJudgment(v *SituationJudgment) *SituationUpdateOne {
+	return _u.SetLatestJudgmentID(v.ID)
 }
 
 // Mutation returns the SituationMutation object of the builder.
@@ -825,6 +1502,96 @@ func (_u *SituationUpdateOne) RemoveIncidents(v ...*Incident) *SituationUpdateOn
 	return _u.RemoveIncidentIDs(ids...)
 }
 
+// ClearSignals clears all "signals" edges to the SituationSignal entity.
+func (_u *SituationUpdateOne) ClearSignals() *SituationUpdateOne {
+	_u.mutation.ClearSignals()
+	return _u
+}
+
+// RemoveSignalIDs removes the "signals" edge to SituationSignal entities by IDs.
+func (_u *SituationUpdateOne) RemoveSignalIDs(ids ...uuid.UUID) *SituationUpdateOne {
+	_u.mutation.RemoveSignalIDs(ids...)
+	return _u
+}
+
+// RemoveSignals removes "signals" edges to SituationSignal entities.
+func (_u *SituationUpdateOne) RemoveSignals(v ...*SituationSignal) *SituationUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveSignalIDs(ids...)
+}
+
+// ClearEntities clears all "entities" edges to the SituationEntity entity.
+func (_u *SituationUpdateOne) ClearEntities() *SituationUpdateOne {
+	_u.mutation.ClearEntities()
+	return _u
+}
+
+// RemoveEntityIDs removes the "entities" edge to SituationEntity entities by IDs.
+func (_u *SituationUpdateOne) RemoveEntityIDs(ids ...uuid.UUID) *SituationUpdateOne {
+	_u.mutation.RemoveEntityIDs(ids...)
+	return _u
+}
+
+// RemoveEntities removes "entities" edges to SituationEntity entities.
+func (_u *SituationUpdateOne) RemoveEntities(v ...*SituationEntity) *SituationUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveEntityIDs(ids...)
+}
+
+// ClearLinks clears all "links" edges to the SituationLink entity.
+func (_u *SituationUpdateOne) ClearLinks() *SituationUpdateOne {
+	_u.mutation.ClearLinks()
+	return _u
+}
+
+// RemoveLinkIDs removes the "links" edge to SituationLink entities by IDs.
+func (_u *SituationUpdateOne) RemoveLinkIDs(ids ...uuid.UUID) *SituationUpdateOne {
+	_u.mutation.RemoveLinkIDs(ids...)
+	return _u
+}
+
+// RemoveLinks removes "links" edges to SituationLink entities.
+func (_u *SituationUpdateOne) RemoveLinks(v ...*SituationLink) *SituationUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveLinkIDs(ids...)
+}
+
+// ClearActions clears all "actions" edges to the SituationAction entity.
+func (_u *SituationUpdateOne) ClearActions() *SituationUpdateOne {
+	_u.mutation.ClearActions()
+	return _u
+}
+
+// RemoveActionIDs removes the "actions" edge to SituationAction entities by IDs.
+func (_u *SituationUpdateOne) RemoveActionIDs(ids ...uuid.UUID) *SituationUpdateOne {
+	_u.mutation.RemoveActionIDs(ids...)
+	return _u
+}
+
+// RemoveActions removes "actions" edges to SituationAction entities.
+func (_u *SituationUpdateOne) RemoveActions(v ...*SituationAction) *SituationUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveActionIDs(ids...)
+}
+
+// ClearLatestJudgment clears the "latest_judgment" edge to the SituationJudgment entity.
+func (_u *SituationUpdateOne) ClearLatestJudgment() *SituationUpdateOne {
+	_u.mutation.ClearLatestJudgment()
+	return _u
+}
+
 // Where appends a list predicates to the SituationUpdate builder.
 func (_u *SituationUpdateOne) Where(ps ...predicate.Situation) *SituationUpdateOne {
 	_u.mutation.Where(ps...)
@@ -887,6 +1654,11 @@ func (_u *SituationUpdateOne) check() error {
 			return &ValidationError{Name: "title", err: fmt.Errorf(`ent: validator failed for field "Situation.title": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.MuteReason(); ok {
+		if err := situation.MuteReasonValidator(v); err != nil {
+			return &ValidationError{Name: "mute_reason", err: fmt.Errorf(`ent: validator failed for field "Situation.mute_reason": %w`, err)}
+		}
+	}
 	if v, ok := _u.mutation.CloseReason(); ok {
 		if err := situation.CloseReasonValidator(v); err != nil {
 			return &ValidationError{Name: "close_reason", err: fmt.Errorf(`ent: validator failed for field "Situation.close_reason": %w`, err)}
@@ -944,6 +1716,30 @@ func (_u *SituationUpdateOne) sqlSave(ctx context.Context) (_node *Situation, er
 	}
 	if value, ok := _u.mutation.OpenedAt(); ok {
 		_spec.SetField(situation.FieldOpenedAt, field.TypeTime, value)
+	}
+	if value, ok := _u.mutation.RaisedAt(); ok {
+		_spec.SetField(situation.FieldRaisedAt, field.TypeTime, value)
+	}
+	if _u.mutation.RaisedAtCleared() {
+		_spec.ClearField(situation.FieldRaisedAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.MutedAt(); ok {
+		_spec.SetField(situation.FieldMutedAt, field.TypeTime, value)
+	}
+	if _u.mutation.MutedAtCleared() {
+		_spec.ClearField(situation.FieldMutedAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.MuteReason(); ok {
+		_spec.SetField(situation.FieldMuteReason, field.TypeEnum, value)
+	}
+	if _u.mutation.MuteReasonCleared() {
+		_spec.ClearField(situation.FieldMuteReason, field.TypeEnum)
+	}
+	if value, ok := _u.mutation.HoldUntil(); ok {
+		_spec.SetField(situation.FieldHoldUntil, field.TypeTime, value)
+	}
+	if _u.mutation.HoldUntilCleared() {
+		_spec.ClearField(situation.FieldHoldUntil, field.TypeTime)
 	}
 	if value, ok := _u.mutation.ClosedAt(); ok {
 		_spec.SetField(situation.FieldClosedAt, field.TypeTime, value)
@@ -1127,6 +1923,229 @@ func (_u *SituationUpdateOne) sqlSave(ctx context.Context) (_node *Situation, er
 			},
 		}
 		edge.Schema = _u.schemaConfig.IncidentSituations
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.SignalsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   situation.SignalsTable,
+			Columns: []string{situation.SignalsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(situationsignal.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SituationSignal
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedSignalsIDs(); len(nodes) > 0 && !_u.mutation.SignalsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   situation.SignalsTable,
+			Columns: []string{situation.SignalsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(situationsignal.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SituationSignal
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.SignalsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   situation.SignalsTable,
+			Columns: []string{situation.SignalsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(situationsignal.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SituationSignal
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.EntitiesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   situation.EntitiesTable,
+			Columns: []string{situation.EntitiesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(situationentity.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SituationEntity
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedEntitiesIDs(); len(nodes) > 0 && !_u.mutation.EntitiesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   situation.EntitiesTable,
+			Columns: []string{situation.EntitiesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(situationentity.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SituationEntity
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.EntitiesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   situation.EntitiesTable,
+			Columns: []string{situation.EntitiesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(situationentity.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SituationEntity
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.LinksCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   situation.LinksTable,
+			Columns: []string{situation.LinksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(situationlink.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SituationLink
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedLinksIDs(); len(nodes) > 0 && !_u.mutation.LinksCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   situation.LinksTable,
+			Columns: []string{situation.LinksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(situationlink.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SituationLink
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.LinksIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   situation.LinksTable,
+			Columns: []string{situation.LinksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(situationlink.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SituationLink
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.ActionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   situation.ActionsTable,
+			Columns: []string{situation.ActionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(situationaction.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SituationAction
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedActionsIDs(); len(nodes) > 0 && !_u.mutation.ActionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   situation.ActionsTable,
+			Columns: []string{situation.ActionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(situationaction.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SituationAction
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ActionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   situation.ActionsTable,
+			Columns: []string{situation.ActionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(situationaction.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SituationAction
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.LatestJudgmentCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   situation.LatestJudgmentTable,
+			Columns: []string{situation.LatestJudgmentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(situationjudgment.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.Situation
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.LatestJudgmentIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   situation.LatestJudgmentTable,
+			Columns: []string{situation.LatestJudgmentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(situationjudgment.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.Situation
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

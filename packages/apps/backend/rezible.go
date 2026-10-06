@@ -36,6 +36,7 @@ import (
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/situation"
 	sha "github.com/rezible/rezible/ent/situationhazardassessment"
+	"github.com/rezible/rezible/ent/situationsignalattention"
 	saent "github.com/rezible/rezible/ent/systemanalysisentity"
 	sae "github.com/rezible/rezible/ent/systemanalysisentry"
 	sarel "github.com/rezible/rezible/ent/systemanalysisrelationship"
@@ -830,14 +831,53 @@ type (
 		To       time.Time
 	}
 
+	RecordAlertInstanceParams struct {
+		Event      *ent.NormalizedEvent
+		Definition AlertDefinitionValues
+		Instance   AlertInstanceValues
+	}
+
+	AlertDefinitionValues struct {
+		KnowledgeEntityID        uuid.UUID
+		Title                    string
+		Description              string
+		Definition               string
+		ResolutionTimeoutSeconds *int
+		IdentityGroupLabels      []string
+	}
+
+	AlertInstanceValues struct {
+		InstanceID string
+		Labels     map[string]string
+		Summary    string
+		Severity   schematypes.SignalSeverity
+		Firing     bool
+		StartedAt  time.Time
+		EndedAt    *time.Time
+	}
+
+	ListAlertEpisodesParams struct {
+		ent.ListParams
+		// SituationID lists the episodes that are signals of the situation.
+		SituationID uuid.UUID
+	}
+
+	SituationSignalService interface {
+		// NotifySignalChanged tells situations that a signal's stored state changed. Call it inside the
+		// transaction that changed it.
+		NotifySignalChanged(ctx context.Context, signalEntityID uuid.UUID) error
+	}
+
 	AlertService interface {
 		ListAlerts(context.Context, ListAlertsParams) (*ent.ListResult[ent.AlertDefinition], error)
+		ListAlertEpisodes(context.Context, ListAlertEpisodesParams) (*ent.ListResult[ent.AlertEpisode], error)
 		GetAlert(context.Context, uuid.UUID) (*ent.AlertDefinition, error)
 		GetAlertInstance(context.Context, uuid.UUID) (*ent.AlertInstance, error)
 		GetAlertMetrics(context.Context, GetAlertMetricsParams) (*ent.AlertMetrics, error)
 
-		CloseInactiveAlertEpisodes(context.Context) error
-		RecordAlertDefinitionInstance(context.Context, uuid.UUID, *ent.NormalizedEvent) (*ent.AlertInstance, error)
+		RecordAlertInstance(context.Context, RecordAlertInstanceParams) (*ent.AlertDefinition, error)
+		SetAlertIdentityGroupLabels(ctx context.Context, id uuid.UUID, labels []string) (*ent.AlertDefinition, error)
+		SetAlertSituationSignalAttention(ctx context.Context, id uuid.UUID, level situationsignalattention.Level) (*ent.AlertDefinition, error)
 	}
 )
 
@@ -967,27 +1007,65 @@ type (
 )
 
 type (
+	// SituationStage is derived from stored times: closed if closed, raised if raised, otherwise a candidate.
+	SituationStage string
+
 	ListSituationsParams struct {
 		ent.ListParams
-		Active           *bool
-		HasInvestigation *bool
-		OpenedAfter      *time.Time
+		Stages      []SituationStage
+		Muted       *bool
+		OpenedAfter *time.Time
+	}
+
+	ListSituationJudgmentsParams struct {
+		ent.ListParams
+		SituationID uuid.UUID
 	}
 
 	CreateSituationParams struct {
-		Title              string
-		Summary            string
-		OpenedAt           time.Time
-		IncidentIDs        []uuid.UUID
-		ObservationGroups  []SituationObservationGroupParams
-		StartInvestigation bool
+		Title   string
+		Summary string
+		// SeedEntityID is the signal that started the situation; it must be one of the groups' signals.
+		SeedEntityID      uuid.UUID
+		ObservationGroups []SituationObservationGroupParams
+		// Raise raises the new situation; nil leaves it a candidate.
+		Raise *RaiseSituationParams
 	}
 
 	SituationObservationGroupParams struct {
-		Title              string
-		Body               *string
-		NormalizedEventIDs []uuid.UUID
-		AlertEpisodeIDs    []uuid.UUID
+		Title           string
+		Body            *string
+		SignalEntityIDs []uuid.UUID
+	}
+
+	RaiseSituationParams struct {
+		StartInvestigation bool
+		Reason             string
+	}
+
+	SituationMute struct {
+		Reason situation.MuteReason
+	}
+
+	SituationHold struct {
+		// Until is when the hold ends; nil holds for the default length.
+		Until *time.Time
+	}
+
+	CloseSituationParams struct {
+		// Note is stored on the closed action. The close reason is decided from the situation's state.
+		Note string
+	}
+
+	MergeSituationsParams struct {
+		SourceID    uuid.UUID
+		TargetID    uuid.UUID
+		Explanation string
+	}
+
+	IncidentSituationLinkChanges struct {
+		Added   []uuid.UUID
+		Removed []uuid.UUID
 	}
 
 	ListSituationHazardAssessmentsParams struct {
@@ -1008,20 +1086,35 @@ type (
 
 	SituationService interface {
 		ListSituations(context.Context, ListSituationsParams) (*ent.ListResult[ent.Situation], error)
-		CreateSituation(context.Context, CreateSituationParams) (*ent.Situation, error)
-		AddSituationObservationGroup(context.Context, uuid.UUID, SituationObservationGroupParams) (*ent.SituationObservationGroup, error)
 		GetSituation(context.Context, uuid.UUID) (*ent.Situation, error)
-		RequestSituationInvestigation(context.Context, uuid.UUID) (*ent.SituationInvestigation, error)
-		CloseSituation(context.Context, uuid.UUID, situation.CloseReason) error
+		CreateSituation(context.Context, CreateSituationParams) (*ent.Situation, error)
 
-		AddIncidentToSituation(context.Context, uuid.UUID, uuid.UUID) error
-		RemoveIncidentFromSituation(context.Context, uuid.UUID, uuid.UUID) error
+		RaiseSituation(context.Context, uuid.UUID, RaiseSituationParams) (*ent.Situation, error)
+		ListSituationJudgments(context.Context, ListSituationJudgmentsParams) (*ent.ListResult[ent.SituationJudgment], error)
+		MergeSituations(context.Context, MergeSituationsParams) (*ent.Situation, error)
+		CloseSituation(context.Context, uuid.UUID, CloseSituationParams) (*ent.Situation, error)
 
-		RefreshSituationEpisodeAnalysis(context.Context, uuid.UUID, uuid.UUID) error
+		// SetSituationMute mutes the situation, or clears its mute when nil.
+		SetSituationMute(context.Context, uuid.UUID, *SituationMute) (*ent.Situation, error)
+
+		// SetSituationHold delays the situation's automatic closure, or clears the hold when nil.
+		SetSituationHold(context.Context, uuid.UUID, *SituationHold) (*ent.Situation, error)
+
+		// ListSituationEventIDs lists the events of the situation's signals.
+		ListSituationEventIDs(context.Context, uuid.UUID) ([]uuid.UUID, error)
+
+		// SyncIncidentLinks applies an incident write's situation link changes inside its transaction.
+		SyncIncidentLinks(ctx context.Context, incidentID uuid.UUID, changes IncidentSituationLinkChanges) error
 
 		ListSituationHazardAssessments(context.Context, ListSituationHazardAssessmentsParams) (*ent.ListResult[ent.SituationHazardAssessment], error)
 		AddSituationHazardAssessment(context.Context, AddSituationHazardAssessmentParams) (*ent.SituationHazardAssessment, error)
 	}
+)
+
+const (
+	SituationStageCandidate SituationStage = "candidate"
+	SituationStageRaised    SituationStage = "raised"
+	SituationStageClosed    SituationStage = "closed"
 )
 
 type (

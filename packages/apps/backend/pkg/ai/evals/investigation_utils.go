@@ -12,6 +12,7 @@ import (
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/agentturn"
 	"github.com/rezible/rezible/ent/investigationreport"
+	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/situationinvestigation"
 	"github.com/rezible/rezible/ent/systemanalysisentry"
 	rezai "github.com/rezible/rezible/pkg/ai"
@@ -49,10 +50,19 @@ func seedBaseInvestigation(ctx context.Context, client *ent.Client, referenceTim
 		return investigationFixture{}, rezai.EvalScenarioSeed{}, fmt.Errorf("create evidence: %w", eventErr)
 	}
 
+	createSeed := client.KnowledgeEntity.Create().
+		SetCategory(knowledgeentity.CategoryEvent).
+		SetKind("alert_episode")
+	seed, seedErr := createSeed.Save(ctx)
+	if seedErr != nil {
+		return investigationFixture{}, rezai.EvalScenarioSeed{}, fmt.Errorf("create situation seed: %w", seedErr)
+	}
+
 	createSituation := client.Situation.Create().
 		SetTitle("Checkout API degradation").
 		SetSummary(description).
-		SetOpenedAt(referenceTime)
+		SetOpenedAt(referenceTime).
+		SetSeedEntityID(seed.ID)
 	createdSituation, situationErr := createSituation.Save(ctx)
 	if situationErr != nil {
 		return investigationFixture{}, rezai.EvalScenarioSeed{}, fmt.Errorf("create situation: %w", situationErr)
@@ -65,13 +75,6 @@ func seedBaseInvestigation(ctx context.Context, client *ent.Client, referenceTim
 		return investigationFixture{}, rezai.EvalScenarioSeed{}, fmt.Errorf("create system analysis: %w", analysisErr)
 	}
 
-	createGroup := client.SituationObservationGroup.Create().
-		SetSituationID(createdSituation.ID).
-		SetTitle("Initial normalized event").
-		AddEventIDs(event.ID)
-	if groupErr := createGroup.Exec(ctx); groupErr != nil {
-		return investigationFixture{}, rezai.EvalScenarioSeed{}, fmt.Errorf("create situation evidence group: %w", groupErr)
-	}
 	createAnalysisEntry := client.SystemAnalysisEntry.Create().
 		SetAnalysisID(analysis.ID).
 		SetReference("normalized_event:" + event.ID.String()).

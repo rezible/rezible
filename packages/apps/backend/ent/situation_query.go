@@ -19,9 +19,14 @@ import (
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/situation"
+	"github.com/rezible/rezible/ent/situationaction"
+	"github.com/rezible/rezible/ent/situationentity"
 	"github.com/rezible/rezible/ent/situationhazardassessment"
 	"github.com/rezible/rezible/ent/situationinvestigation"
+	"github.com/rezible/rezible/ent/situationjudgment"
+	"github.com/rezible/rezible/ent/situationlink"
 	"github.com/rezible/rezible/ent/situationobservationgroup"
+	"github.com/rezible/rezible/ent/situationsignal"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
@@ -37,6 +42,11 @@ type SituationQuery struct {
 	withHazardAssessments *SituationHazardAssessmentQuery
 	withObservationGroups *SituationObservationGroupQuery
 	withIncidents         *IncidentQuery
+	withSignals           *SituationSignalQuery
+	withEntities          *SituationEntityQuery
+	withLinks             *SituationLinkQuery
+	withActions           *SituationActionQuery
+	withLatestJudgment    *SituationJudgmentQuery
 	modifiers             []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -193,6 +203,131 @@ func (_q *SituationQuery) QueryIncidents() *IncidentQuery {
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.Incident
 		step.Edge.Schema = schemaConfig.IncidentSituations
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QuerySignals chains the current query on the "signals" edge.
+func (_q *SituationQuery) QuerySignals() *SituationSignalQuery {
+	query := (&SituationSignalClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(situation.Table, situation.FieldID, selector),
+			sqlgraph.To(situationsignal.Table, situationsignal.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, situation.SignalsTable, situation.SignalsColumn),
+		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.SituationSignal
+		step.Edge.Schema = schemaConfig.SituationSignal
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryEntities chains the current query on the "entities" edge.
+func (_q *SituationQuery) QueryEntities() *SituationEntityQuery {
+	query := (&SituationEntityClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(situation.Table, situation.FieldID, selector),
+			sqlgraph.To(situationentity.Table, situationentity.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, situation.EntitiesTable, situation.EntitiesColumn),
+		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.SituationEntity
+		step.Edge.Schema = schemaConfig.SituationEntity
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryLinks chains the current query on the "links" edge.
+func (_q *SituationQuery) QueryLinks() *SituationLinkQuery {
+	query := (&SituationLinkClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(situation.Table, situation.FieldID, selector),
+			sqlgraph.To(situationlink.Table, situationlink.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, situation.LinksTable, situation.LinksColumn),
+		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.SituationLink
+		step.Edge.Schema = schemaConfig.SituationLink
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryActions chains the current query on the "actions" edge.
+func (_q *SituationQuery) QueryActions() *SituationActionQuery {
+	query := (&SituationActionClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(situation.Table, situation.FieldID, selector),
+			sqlgraph.To(situationaction.Table, situationaction.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, situation.ActionsTable, situation.ActionsColumn),
+		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.SituationAction
+		step.Edge.Schema = schemaConfig.SituationAction
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryLatestJudgment chains the current query on the "latest_judgment" edge.
+func (_q *SituationQuery) QueryLatestJudgment() *SituationJudgmentQuery {
+	query := (&SituationJudgmentClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(situation.Table, situation.FieldID, selector),
+			sqlgraph.To(situationjudgment.Table, situationjudgment.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, situation.LatestJudgmentTable, situation.LatestJudgmentColumn),
+		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.SituationJudgment
+		step.Edge.Schema = schemaConfig.Situation
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -396,6 +531,11 @@ func (_q *SituationQuery) Clone() *SituationQuery {
 		withHazardAssessments: _q.withHazardAssessments.Clone(),
 		withObservationGroups: _q.withObservationGroups.Clone(),
 		withIncidents:         _q.withIncidents.Clone(),
+		withSignals:           _q.withSignals.Clone(),
+		withEntities:          _q.withEntities.Clone(),
+		withLinks:             _q.withLinks.Clone(),
+		withActions:           _q.withActions.Clone(),
+		withLatestJudgment:    _q.withLatestJudgment.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
@@ -454,6 +594,61 @@ func (_q *SituationQuery) WithIncidents(opts ...func(*IncidentQuery)) *Situation
 		opt(query)
 	}
 	_q.withIncidents = query
+	return _q
+}
+
+// WithSignals tells the query-builder to eager-load the nodes that are connected to
+// the "signals" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *SituationQuery) WithSignals(opts ...func(*SituationSignalQuery)) *SituationQuery {
+	query := (&SituationSignalClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withSignals = query
+	return _q
+}
+
+// WithEntities tells the query-builder to eager-load the nodes that are connected to
+// the "entities" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *SituationQuery) WithEntities(opts ...func(*SituationEntityQuery)) *SituationQuery {
+	query := (&SituationEntityClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withEntities = query
+	return _q
+}
+
+// WithLinks tells the query-builder to eager-load the nodes that are connected to
+// the "links" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *SituationQuery) WithLinks(opts ...func(*SituationLinkQuery)) *SituationQuery {
+	query := (&SituationLinkClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withLinks = query
+	return _q
+}
+
+// WithActions tells the query-builder to eager-load the nodes that are connected to
+// the "actions" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *SituationQuery) WithActions(opts ...func(*SituationActionQuery)) *SituationQuery {
+	query := (&SituationActionClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withActions = query
+	return _q
+}
+
+// WithLatestJudgment tells the query-builder to eager-load the nodes that are connected to
+// the "latest_judgment" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *SituationQuery) WithLatestJudgment(opts ...func(*SituationJudgmentQuery)) *SituationQuery {
+	query := (&SituationJudgmentClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withLatestJudgment = query
 	return _q
 }
 
@@ -541,12 +736,17 @@ func (_q *SituationQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Si
 	var (
 		nodes       = []*Situation{}
 		_spec       = _q.querySpec()
-		loadedTypes = [5]bool{
+		loadedTypes = [10]bool{
 			_q.withTenant != nil,
 			_q.withInvestigation != nil,
 			_q.withHazardAssessments != nil,
 			_q.withObservationGroups != nil,
 			_q.withIncidents != nil,
+			_q.withSignals != nil,
+			_q.withEntities != nil,
+			_q.withLinks != nil,
+			_q.withActions != nil,
+			_q.withLatestJudgment != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -606,6 +806,40 @@ func (_q *SituationQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Si
 		if err := _q.loadIncidents(ctx, query, nodes,
 			func(n *Situation) { n.Edges.Incidents = []*Incident{} },
 			func(n *Situation, e *Incident) { n.Edges.Incidents = append(n.Edges.Incidents, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withSignals; query != nil {
+		if err := _q.loadSignals(ctx, query, nodes,
+			func(n *Situation) { n.Edges.Signals = []*SituationSignal{} },
+			func(n *Situation, e *SituationSignal) { n.Edges.Signals = append(n.Edges.Signals, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withEntities; query != nil {
+		if err := _q.loadEntities(ctx, query, nodes,
+			func(n *Situation) { n.Edges.Entities = []*SituationEntity{} },
+			func(n *Situation, e *SituationEntity) { n.Edges.Entities = append(n.Edges.Entities, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withLinks; query != nil {
+		if err := _q.loadLinks(ctx, query, nodes,
+			func(n *Situation) { n.Edges.Links = []*SituationLink{} },
+			func(n *Situation, e *SituationLink) { n.Edges.Links = append(n.Edges.Links, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withActions; query != nil {
+		if err := _q.loadActions(ctx, query, nodes,
+			func(n *Situation) { n.Edges.Actions = []*SituationAction{} },
+			func(n *Situation, e *SituationAction) { n.Edges.Actions = append(n.Edges.Actions, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withLatestJudgment; query != nil {
+		if err := _q.loadLatestJudgment(ctx, query, nodes, nil,
+			func(n *Situation, e *SituationJudgment) { n.Edges.LatestJudgment = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -791,6 +1025,158 @@ func (_q *SituationQuery) loadIncidents(ctx context.Context, query *IncidentQuer
 	}
 	return nil
 }
+func (_q *SituationQuery) loadSignals(ctx context.Context, query *SituationSignalQuery, nodes []*Situation, init func(*Situation), assign func(*Situation, *SituationSignal)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Situation)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(situationsignal.FieldSituationID)
+	}
+	query.Where(predicate.SituationSignal(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(situation.SignalsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.SituationID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "situation_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *SituationQuery) loadEntities(ctx context.Context, query *SituationEntityQuery, nodes []*Situation, init func(*Situation), assign func(*Situation, *SituationEntity)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Situation)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(situationentity.FieldSituationID)
+	}
+	query.Where(predicate.SituationEntity(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(situation.EntitiesColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.SituationID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "situation_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *SituationQuery) loadLinks(ctx context.Context, query *SituationLinkQuery, nodes []*Situation, init func(*Situation), assign func(*Situation, *SituationLink)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Situation)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(situationlink.FieldSituationID)
+	}
+	query.Where(predicate.SituationLink(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(situation.LinksColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.SituationID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "situation_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *SituationQuery) loadActions(ctx context.Context, query *SituationActionQuery, nodes []*Situation, init func(*Situation), assign func(*Situation, *SituationAction)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Situation)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(situationaction.FieldSituationID)
+	}
+	query.Where(predicate.SituationAction(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(situation.ActionsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.SituationID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "situation_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *SituationQuery) loadLatestJudgment(ctx context.Context, query *SituationJudgmentQuery, nodes []*Situation, init func(*Situation), assign func(*Situation, *SituationJudgment)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*Situation)
+	for i := range nodes {
+		if nodes[i].LatestJudgmentID == nil {
+			continue
+		}
+		fk := *nodes[i].LatestJudgmentID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(situationjudgment.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "latest_judgment_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
 
 func (_q *SituationQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := _q.querySpec()
@@ -824,6 +1210,9 @@ func (_q *SituationQuery) querySpec() *sqlgraph.QuerySpec {
 		}
 		if _q.withTenant != nil {
 			_spec.Node.AddColumnOnce(situation.FieldTenantID)
+		}
+		if _q.withLatestJudgment != nil {
+			_spec.Node.AddColumnOnce(situation.FieldLatestJudgmentID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {

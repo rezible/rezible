@@ -55,8 +55,11 @@
 		{
 			label: "Situation",
 			statuses: [
-				situationStatus(situation({})),
-				situationStatus(situation({ investigation: { investigation: { id: "illustrative" } } })),
+				situationStatus(situation({ stage: "candidate" })),
+				situationStatus(situation({ stage: "raised" })),
+				situationStatus(
+					situation({ stage: "raised", mutedAt: "2026-05-14T04:45:00Z", muteReason: "expected" })
+				),
 				situationStatus(situation({ closedAt: "2026-05-14T04:45:00Z", closeReason: "stabilized" })),
 			],
 		},

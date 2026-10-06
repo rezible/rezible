@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
@@ -15,7 +16,8 @@ import (
 	"github.com/rezible/rezible/ent/alertepisode"
 	"github.com/rezible/rezible/ent/alertfeedback"
 	"github.com/rezible/rezible/ent/alertinstance"
-	"github.com/rezible/rezible/ent/normalizedevent"
+	"github.com/rezible/rezible/ent/alertinstanceevent"
+	"github.com/rezible/rezible/ent/schema/schematypes"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
@@ -39,9 +41,103 @@ func (_c *AlertInstanceCreate) SetAlertEpisodeID(v uuid.UUID) *AlertInstanceCrea
 	return _c
 }
 
-// SetNormalizedEventID sets the "normalized_event_id" field.
-func (_c *AlertInstanceCreate) SetNormalizedEventID(v uuid.UUID) *AlertInstanceCreate {
-	_c.mutation.SetNormalizedEventID(v)
+// SetInstanceKey sets the "instance_key" field.
+func (_c *AlertInstanceCreate) SetInstanceKey(v string) *AlertInstanceCreate {
+	_c.mutation.SetInstanceKey(v)
+	return _c
+}
+
+// SetGroupingKey sets the "grouping_key" field.
+func (_c *AlertInstanceCreate) SetGroupingKey(v string) *AlertInstanceCreate {
+	_c.mutation.SetGroupingKey(v)
+	return _c
+}
+
+// SetLabels sets the "labels" field.
+func (_c *AlertInstanceCreate) SetLabels(v map[string]string) *AlertInstanceCreate {
+	_c.mutation.SetLabels(v)
+	return _c
+}
+
+// SetSummary sets the "summary" field.
+func (_c *AlertInstanceCreate) SetSummary(v string) *AlertInstanceCreate {
+	_c.mutation.SetSummary(v)
+	return _c
+}
+
+// SetNillableSummary sets the "summary" field if the given value is not nil.
+func (_c *AlertInstanceCreate) SetNillableSummary(v *string) *AlertInstanceCreate {
+	if v != nil {
+		_c.SetSummary(*v)
+	}
+	return _c
+}
+
+// SetSeverity sets the "severity" field.
+func (_c *AlertInstanceCreate) SetSeverity(v schematypes.SignalSeverity) *AlertInstanceCreate {
+	_c.mutation.SetSeverity(v)
+	return _c
+}
+
+// SetNillableSeverity sets the "severity" field if the given value is not nil.
+func (_c *AlertInstanceCreate) SetNillableSeverity(v *schematypes.SignalSeverity) *AlertInstanceCreate {
+	if v != nil {
+		_c.SetSeverity(*v)
+	}
+	return _c
+}
+
+// SetFiredAt sets the "fired_at" field.
+func (_c *AlertInstanceCreate) SetFiredAt(v time.Time) *AlertInstanceCreate {
+	_c.mutation.SetFiredAt(v)
+	return _c
+}
+
+// SetLastObservedAt sets the "last_observed_at" field.
+func (_c *AlertInstanceCreate) SetLastObservedAt(v time.Time) *AlertInstanceCreate {
+	_c.mutation.SetLastObservedAt(v)
+	return _c
+}
+
+// SetResolvedAt sets the "resolved_at" field.
+func (_c *AlertInstanceCreate) SetResolvedAt(v time.Time) *AlertInstanceCreate {
+	_c.mutation.SetResolvedAt(v)
+	return _c
+}
+
+// SetNillableResolvedAt sets the "resolved_at" field if the given value is not nil.
+func (_c *AlertInstanceCreate) SetNillableResolvedAt(v *time.Time) *AlertInstanceCreate {
+	if v != nil {
+		_c.SetResolvedAt(*v)
+	}
+	return _c
+}
+
+// SetEndedAt sets the "ended_at" field.
+func (_c *AlertInstanceCreate) SetEndedAt(v time.Time) *AlertInstanceCreate {
+	_c.mutation.SetEndedAt(v)
+	return _c
+}
+
+// SetNillableEndedAt sets the "ended_at" field if the given value is not nil.
+func (_c *AlertInstanceCreate) SetNillableEndedAt(v *time.Time) *AlertInstanceCreate {
+	if v != nil {
+		_c.SetEndedAt(*v)
+	}
+	return _c
+}
+
+// SetEndReason sets the "end_reason" field.
+func (_c *AlertInstanceCreate) SetEndReason(v alertinstance.EndReason) *AlertInstanceCreate {
+	_c.mutation.SetEndReason(v)
+	return _c
+}
+
+// SetNillableEndReason sets the "end_reason" field if the given value is not nil.
+func (_c *AlertInstanceCreate) SetNillableEndReason(v *alertinstance.EndReason) *AlertInstanceCreate {
+	if v != nil {
+		_c.SetEndReason(*v)
+	}
 	return _c
 }
 
@@ -75,15 +171,19 @@ func (_c *AlertInstanceCreate) SetEpisode(v *AlertEpisode) *AlertInstanceCreate 
 	return _c.SetEpisodeID(v.ID)
 }
 
-// SetEventID sets the "event" edge to the NormalizedEvent entity by ID.
-func (_c *AlertInstanceCreate) SetEventID(id uuid.UUID) *AlertInstanceCreate {
-	_c.mutation.SetEventID(id)
+// AddEventIDs adds the "events" edge to the AlertInstanceEvent entity by IDs.
+func (_c *AlertInstanceCreate) AddEventIDs(ids ...uuid.UUID) *AlertInstanceCreate {
+	_c.mutation.AddEventIDs(ids...)
 	return _c
 }
 
-// SetEvent sets the "event" edge to the NormalizedEvent entity.
-func (_c *AlertInstanceCreate) SetEvent(v *NormalizedEvent) *AlertInstanceCreate {
-	return _c.SetEventID(v.ID)
+// AddEvents adds the "events" edges to the AlertInstanceEvent entity.
+func (_c *AlertInstanceCreate) AddEvents(v ...*AlertInstanceEvent) *AlertInstanceCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddEventIDs(ids...)
 }
 
 // AddFeedbackIDs adds the "feedback" edge to the AlertFeedback entity by IDs.
@@ -138,6 +238,10 @@ func (_c *AlertInstanceCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (_c *AlertInstanceCreate) defaults() error {
+	if _, ok := _c.mutation.Severity(); !ok {
+		v := alertinstance.DefaultSeverity
+		_c.mutation.SetSeverity(v)
+	}
 	if _, ok := _c.mutation.ID(); !ok {
 		if alertinstance.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized alertinstance.DefaultID (forgotten import ent/runtime?)")
@@ -156,17 +260,36 @@ func (_c *AlertInstanceCreate) check() error {
 	if _, ok := _c.mutation.AlertEpisodeID(); !ok {
 		return &ValidationError{Name: "alert_episode_id", err: errors.New(`ent: missing required field "AlertInstance.alert_episode_id"`)}
 	}
-	if _, ok := _c.mutation.NormalizedEventID(); !ok {
-		return &ValidationError{Name: "normalized_event_id", err: errors.New(`ent: missing required field "AlertInstance.normalized_event_id"`)}
+	if _, ok := _c.mutation.InstanceKey(); !ok {
+		return &ValidationError{Name: "instance_key", err: errors.New(`ent: missing required field "AlertInstance.instance_key"`)}
+	}
+	if _, ok := _c.mutation.GroupingKey(); !ok {
+		return &ValidationError{Name: "grouping_key", err: errors.New(`ent: missing required field "AlertInstance.grouping_key"`)}
+	}
+	if _, ok := _c.mutation.Severity(); !ok {
+		return &ValidationError{Name: "severity", err: errors.New(`ent: missing required field "AlertInstance.severity"`)}
+	}
+	if v, ok := _c.mutation.Severity(); ok {
+		if err := alertinstance.SeverityValidator(v); err != nil {
+			return &ValidationError{Name: "severity", err: fmt.Errorf(`ent: validator failed for field "AlertInstance.severity": %w`, err)}
+		}
+	}
+	if _, ok := _c.mutation.FiredAt(); !ok {
+		return &ValidationError{Name: "fired_at", err: errors.New(`ent: missing required field "AlertInstance.fired_at"`)}
+	}
+	if _, ok := _c.mutation.LastObservedAt(); !ok {
+		return &ValidationError{Name: "last_observed_at", err: errors.New(`ent: missing required field "AlertInstance.last_observed_at"`)}
+	}
+	if v, ok := _c.mutation.EndReason(); ok {
+		if err := alertinstance.EndReasonValidator(v); err != nil {
+			return &ValidationError{Name: "end_reason", err: fmt.Errorf(`ent: validator failed for field "AlertInstance.end_reason": %w`, err)}
+		}
 	}
 	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "AlertInstance.tenant"`)}
 	}
 	if len(_c.mutation.EpisodeIDs()) == 0 {
 		return &ValidationError{Name: "episode", err: errors.New(`ent: missing required edge "AlertInstance.episode"`)}
-	}
-	if len(_c.mutation.EventIDs()) == 0 {
-		return &ValidationError{Name: "event", err: errors.New(`ent: missing required edge "AlertInstance.event"`)}
 	}
 	return nil
 }
@@ -205,6 +328,46 @@ func (_c *AlertInstanceCreate) createSpec() (*AlertInstance, *sqlgraph.CreateSpe
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
+	if value, ok := _c.mutation.InstanceKey(); ok {
+		_spec.SetField(alertinstance.FieldInstanceKey, field.TypeString, value)
+		_node.InstanceKey = value
+	}
+	if value, ok := _c.mutation.GroupingKey(); ok {
+		_spec.SetField(alertinstance.FieldGroupingKey, field.TypeString, value)
+		_node.GroupingKey = value
+	}
+	if value, ok := _c.mutation.Labels(); ok {
+		_spec.SetField(alertinstance.FieldLabels, field.TypeJSON, value)
+		_node.Labels = value
+	}
+	if value, ok := _c.mutation.Summary(); ok {
+		_spec.SetField(alertinstance.FieldSummary, field.TypeString, value)
+		_node.Summary = value
+	}
+	if value, ok := _c.mutation.Severity(); ok {
+		_spec.SetField(alertinstance.FieldSeverity, field.TypeEnum, value)
+		_node.Severity = value
+	}
+	if value, ok := _c.mutation.FiredAt(); ok {
+		_spec.SetField(alertinstance.FieldFiredAt, field.TypeTime, value)
+		_node.FiredAt = value
+	}
+	if value, ok := _c.mutation.LastObservedAt(); ok {
+		_spec.SetField(alertinstance.FieldLastObservedAt, field.TypeTime, value)
+		_node.LastObservedAt = value
+	}
+	if value, ok := _c.mutation.ResolvedAt(); ok {
+		_spec.SetField(alertinstance.FieldResolvedAt, field.TypeTime, value)
+		_node.ResolvedAt = &value
+	}
+	if value, ok := _c.mutation.EndedAt(); ok {
+		_spec.SetField(alertinstance.FieldEndedAt, field.TypeTime, value)
+		_node.EndedAt = &value
+	}
+	if value, ok := _c.mutation.EndReason(); ok {
+		_spec.SetField(alertinstance.FieldEndReason, field.TypeEnum, value)
+		_node.EndReason = &value
+	}
 	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -241,22 +404,21 @@ func (_c *AlertInstanceCreate) createSpec() (*AlertInstance, *sqlgraph.CreateSpe
 		_node.AlertEpisodeID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := _c.mutation.EventIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.EventsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   alertinstance.EventTable,
-			Columns: []string{alertinstance.EventColumn},
+			Table:   alertinstance.EventsTable,
+			Columns: []string{alertinstance.EventsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(normalizedevent.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(alertinstanceevent.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _c.schemaConfig.AlertInstance
+		edge.Schema = _c.schemaConfig.AlertInstanceEvent
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.NormalizedEventID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := _c.mutation.FeedbackIDs(); len(nodes) > 0 {
@@ -328,6 +490,120 @@ type (
 	}
 )
 
+// SetLabels sets the "labels" field.
+func (u *AlertInstanceUpsert) SetLabels(v map[string]string) *AlertInstanceUpsert {
+	u.Set(alertinstance.FieldLabels, v)
+	return u
+}
+
+// UpdateLabels sets the "labels" field to the value that was provided on create.
+func (u *AlertInstanceUpsert) UpdateLabels() *AlertInstanceUpsert {
+	u.SetExcluded(alertinstance.FieldLabels)
+	return u
+}
+
+// ClearLabels clears the value of the "labels" field.
+func (u *AlertInstanceUpsert) ClearLabels() *AlertInstanceUpsert {
+	u.SetNull(alertinstance.FieldLabels)
+	return u
+}
+
+// SetSummary sets the "summary" field.
+func (u *AlertInstanceUpsert) SetSummary(v string) *AlertInstanceUpsert {
+	u.Set(alertinstance.FieldSummary, v)
+	return u
+}
+
+// UpdateSummary sets the "summary" field to the value that was provided on create.
+func (u *AlertInstanceUpsert) UpdateSummary() *AlertInstanceUpsert {
+	u.SetExcluded(alertinstance.FieldSummary)
+	return u
+}
+
+// ClearSummary clears the value of the "summary" field.
+func (u *AlertInstanceUpsert) ClearSummary() *AlertInstanceUpsert {
+	u.SetNull(alertinstance.FieldSummary)
+	return u
+}
+
+// SetSeverity sets the "severity" field.
+func (u *AlertInstanceUpsert) SetSeverity(v schematypes.SignalSeverity) *AlertInstanceUpsert {
+	u.Set(alertinstance.FieldSeverity, v)
+	return u
+}
+
+// UpdateSeverity sets the "severity" field to the value that was provided on create.
+func (u *AlertInstanceUpsert) UpdateSeverity() *AlertInstanceUpsert {
+	u.SetExcluded(alertinstance.FieldSeverity)
+	return u
+}
+
+// SetLastObservedAt sets the "last_observed_at" field.
+func (u *AlertInstanceUpsert) SetLastObservedAt(v time.Time) *AlertInstanceUpsert {
+	u.Set(alertinstance.FieldLastObservedAt, v)
+	return u
+}
+
+// UpdateLastObservedAt sets the "last_observed_at" field to the value that was provided on create.
+func (u *AlertInstanceUpsert) UpdateLastObservedAt() *AlertInstanceUpsert {
+	u.SetExcluded(alertinstance.FieldLastObservedAt)
+	return u
+}
+
+// SetResolvedAt sets the "resolved_at" field.
+func (u *AlertInstanceUpsert) SetResolvedAt(v time.Time) *AlertInstanceUpsert {
+	u.Set(alertinstance.FieldResolvedAt, v)
+	return u
+}
+
+// UpdateResolvedAt sets the "resolved_at" field to the value that was provided on create.
+func (u *AlertInstanceUpsert) UpdateResolvedAt() *AlertInstanceUpsert {
+	u.SetExcluded(alertinstance.FieldResolvedAt)
+	return u
+}
+
+// ClearResolvedAt clears the value of the "resolved_at" field.
+func (u *AlertInstanceUpsert) ClearResolvedAt() *AlertInstanceUpsert {
+	u.SetNull(alertinstance.FieldResolvedAt)
+	return u
+}
+
+// SetEndedAt sets the "ended_at" field.
+func (u *AlertInstanceUpsert) SetEndedAt(v time.Time) *AlertInstanceUpsert {
+	u.Set(alertinstance.FieldEndedAt, v)
+	return u
+}
+
+// UpdateEndedAt sets the "ended_at" field to the value that was provided on create.
+func (u *AlertInstanceUpsert) UpdateEndedAt() *AlertInstanceUpsert {
+	u.SetExcluded(alertinstance.FieldEndedAt)
+	return u
+}
+
+// ClearEndedAt clears the value of the "ended_at" field.
+func (u *AlertInstanceUpsert) ClearEndedAt() *AlertInstanceUpsert {
+	u.SetNull(alertinstance.FieldEndedAt)
+	return u
+}
+
+// SetEndReason sets the "end_reason" field.
+func (u *AlertInstanceUpsert) SetEndReason(v alertinstance.EndReason) *AlertInstanceUpsert {
+	u.Set(alertinstance.FieldEndReason, v)
+	return u
+}
+
+// UpdateEndReason sets the "end_reason" field to the value that was provided on create.
+func (u *AlertInstanceUpsert) UpdateEndReason() *AlertInstanceUpsert {
+	u.SetExcluded(alertinstance.FieldEndReason)
+	return u
+}
+
+// ClearEndReason clears the value of the "end_reason" field.
+func (u *AlertInstanceUpsert) ClearEndReason() *AlertInstanceUpsert {
+	u.SetNull(alertinstance.FieldEndReason)
+	return u
+}
+
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
@@ -351,8 +627,14 @@ func (u *AlertInstanceUpsertOne) UpdateNewValues() *AlertInstanceUpsertOne {
 		if _, exists := u.create.mutation.AlertEpisodeID(); exists {
 			s.SetIgnore(alertinstance.FieldAlertEpisodeID)
 		}
-		if _, exists := u.create.mutation.NormalizedEventID(); exists {
-			s.SetIgnore(alertinstance.FieldNormalizedEventID)
+		if _, exists := u.create.mutation.InstanceKey(); exists {
+			s.SetIgnore(alertinstance.FieldInstanceKey)
+		}
+		if _, exists := u.create.mutation.GroupingKey(); exists {
+			s.SetIgnore(alertinstance.FieldGroupingKey)
+		}
+		if _, exists := u.create.mutation.FiredAt(); exists {
+			s.SetIgnore(alertinstance.FieldFiredAt)
 		}
 	}))
 	return u
@@ -383,6 +665,139 @@ func (u *AlertInstanceUpsertOne) Update(set func(*AlertInstanceUpsert)) *AlertIn
 		set(&AlertInstanceUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetLabels sets the "labels" field.
+func (u *AlertInstanceUpsertOne) SetLabels(v map[string]string) *AlertInstanceUpsertOne {
+	return u.Update(func(s *AlertInstanceUpsert) {
+		s.SetLabels(v)
+	})
+}
+
+// UpdateLabels sets the "labels" field to the value that was provided on create.
+func (u *AlertInstanceUpsertOne) UpdateLabels() *AlertInstanceUpsertOne {
+	return u.Update(func(s *AlertInstanceUpsert) {
+		s.UpdateLabels()
+	})
+}
+
+// ClearLabels clears the value of the "labels" field.
+func (u *AlertInstanceUpsertOne) ClearLabels() *AlertInstanceUpsertOne {
+	return u.Update(func(s *AlertInstanceUpsert) {
+		s.ClearLabels()
+	})
+}
+
+// SetSummary sets the "summary" field.
+func (u *AlertInstanceUpsertOne) SetSummary(v string) *AlertInstanceUpsertOne {
+	return u.Update(func(s *AlertInstanceUpsert) {
+		s.SetSummary(v)
+	})
+}
+
+// UpdateSummary sets the "summary" field to the value that was provided on create.
+func (u *AlertInstanceUpsertOne) UpdateSummary() *AlertInstanceUpsertOne {
+	return u.Update(func(s *AlertInstanceUpsert) {
+		s.UpdateSummary()
+	})
+}
+
+// ClearSummary clears the value of the "summary" field.
+func (u *AlertInstanceUpsertOne) ClearSummary() *AlertInstanceUpsertOne {
+	return u.Update(func(s *AlertInstanceUpsert) {
+		s.ClearSummary()
+	})
+}
+
+// SetSeverity sets the "severity" field.
+func (u *AlertInstanceUpsertOne) SetSeverity(v schematypes.SignalSeverity) *AlertInstanceUpsertOne {
+	return u.Update(func(s *AlertInstanceUpsert) {
+		s.SetSeverity(v)
+	})
+}
+
+// UpdateSeverity sets the "severity" field to the value that was provided on create.
+func (u *AlertInstanceUpsertOne) UpdateSeverity() *AlertInstanceUpsertOne {
+	return u.Update(func(s *AlertInstanceUpsert) {
+		s.UpdateSeverity()
+	})
+}
+
+// SetLastObservedAt sets the "last_observed_at" field.
+func (u *AlertInstanceUpsertOne) SetLastObservedAt(v time.Time) *AlertInstanceUpsertOne {
+	return u.Update(func(s *AlertInstanceUpsert) {
+		s.SetLastObservedAt(v)
+	})
+}
+
+// UpdateLastObservedAt sets the "last_observed_at" field to the value that was provided on create.
+func (u *AlertInstanceUpsertOne) UpdateLastObservedAt() *AlertInstanceUpsertOne {
+	return u.Update(func(s *AlertInstanceUpsert) {
+		s.UpdateLastObservedAt()
+	})
+}
+
+// SetResolvedAt sets the "resolved_at" field.
+func (u *AlertInstanceUpsertOne) SetResolvedAt(v time.Time) *AlertInstanceUpsertOne {
+	return u.Update(func(s *AlertInstanceUpsert) {
+		s.SetResolvedAt(v)
+	})
+}
+
+// UpdateResolvedAt sets the "resolved_at" field to the value that was provided on create.
+func (u *AlertInstanceUpsertOne) UpdateResolvedAt() *AlertInstanceUpsertOne {
+	return u.Update(func(s *AlertInstanceUpsert) {
+		s.UpdateResolvedAt()
+	})
+}
+
+// ClearResolvedAt clears the value of the "resolved_at" field.
+func (u *AlertInstanceUpsertOne) ClearResolvedAt() *AlertInstanceUpsertOne {
+	return u.Update(func(s *AlertInstanceUpsert) {
+		s.ClearResolvedAt()
+	})
+}
+
+// SetEndedAt sets the "ended_at" field.
+func (u *AlertInstanceUpsertOne) SetEndedAt(v time.Time) *AlertInstanceUpsertOne {
+	return u.Update(func(s *AlertInstanceUpsert) {
+		s.SetEndedAt(v)
+	})
+}
+
+// UpdateEndedAt sets the "ended_at" field to the value that was provided on create.
+func (u *AlertInstanceUpsertOne) UpdateEndedAt() *AlertInstanceUpsertOne {
+	return u.Update(func(s *AlertInstanceUpsert) {
+		s.UpdateEndedAt()
+	})
+}
+
+// ClearEndedAt clears the value of the "ended_at" field.
+func (u *AlertInstanceUpsertOne) ClearEndedAt() *AlertInstanceUpsertOne {
+	return u.Update(func(s *AlertInstanceUpsert) {
+		s.ClearEndedAt()
+	})
+}
+
+// SetEndReason sets the "end_reason" field.
+func (u *AlertInstanceUpsertOne) SetEndReason(v alertinstance.EndReason) *AlertInstanceUpsertOne {
+	return u.Update(func(s *AlertInstanceUpsert) {
+		s.SetEndReason(v)
+	})
+}
+
+// UpdateEndReason sets the "end_reason" field to the value that was provided on create.
+func (u *AlertInstanceUpsertOne) UpdateEndReason() *AlertInstanceUpsertOne {
+	return u.Update(func(s *AlertInstanceUpsert) {
+		s.UpdateEndReason()
+	})
+}
+
+// ClearEndReason clears the value of the "end_reason" field.
+func (u *AlertInstanceUpsertOne) ClearEndReason() *AlertInstanceUpsertOne {
+	return u.Update(func(s *AlertInstanceUpsert) {
+		s.ClearEndReason()
+	})
 }
 
 // Exec executes the query.
@@ -574,8 +989,14 @@ func (u *AlertInstanceUpsertBulk) UpdateNewValues() *AlertInstanceUpsertBulk {
 			if _, exists := b.mutation.AlertEpisodeID(); exists {
 				s.SetIgnore(alertinstance.FieldAlertEpisodeID)
 			}
-			if _, exists := b.mutation.NormalizedEventID(); exists {
-				s.SetIgnore(alertinstance.FieldNormalizedEventID)
+			if _, exists := b.mutation.InstanceKey(); exists {
+				s.SetIgnore(alertinstance.FieldInstanceKey)
+			}
+			if _, exists := b.mutation.GroupingKey(); exists {
+				s.SetIgnore(alertinstance.FieldGroupingKey)
+			}
+			if _, exists := b.mutation.FiredAt(); exists {
+				s.SetIgnore(alertinstance.FieldFiredAt)
 			}
 		}
 	}))
@@ -607,6 +1028,139 @@ func (u *AlertInstanceUpsertBulk) Update(set func(*AlertInstanceUpsert)) *AlertI
 		set(&AlertInstanceUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetLabels sets the "labels" field.
+func (u *AlertInstanceUpsertBulk) SetLabels(v map[string]string) *AlertInstanceUpsertBulk {
+	return u.Update(func(s *AlertInstanceUpsert) {
+		s.SetLabels(v)
+	})
+}
+
+// UpdateLabels sets the "labels" field to the value that was provided on create.
+func (u *AlertInstanceUpsertBulk) UpdateLabels() *AlertInstanceUpsertBulk {
+	return u.Update(func(s *AlertInstanceUpsert) {
+		s.UpdateLabels()
+	})
+}
+
+// ClearLabels clears the value of the "labels" field.
+func (u *AlertInstanceUpsertBulk) ClearLabels() *AlertInstanceUpsertBulk {
+	return u.Update(func(s *AlertInstanceUpsert) {
+		s.ClearLabels()
+	})
+}
+
+// SetSummary sets the "summary" field.
+func (u *AlertInstanceUpsertBulk) SetSummary(v string) *AlertInstanceUpsertBulk {
+	return u.Update(func(s *AlertInstanceUpsert) {
+		s.SetSummary(v)
+	})
+}
+
+// UpdateSummary sets the "summary" field to the value that was provided on create.
+func (u *AlertInstanceUpsertBulk) UpdateSummary() *AlertInstanceUpsertBulk {
+	return u.Update(func(s *AlertInstanceUpsert) {
+		s.UpdateSummary()
+	})
+}
+
+// ClearSummary clears the value of the "summary" field.
+func (u *AlertInstanceUpsertBulk) ClearSummary() *AlertInstanceUpsertBulk {
+	return u.Update(func(s *AlertInstanceUpsert) {
+		s.ClearSummary()
+	})
+}
+
+// SetSeverity sets the "severity" field.
+func (u *AlertInstanceUpsertBulk) SetSeverity(v schematypes.SignalSeverity) *AlertInstanceUpsertBulk {
+	return u.Update(func(s *AlertInstanceUpsert) {
+		s.SetSeverity(v)
+	})
+}
+
+// UpdateSeverity sets the "severity" field to the value that was provided on create.
+func (u *AlertInstanceUpsertBulk) UpdateSeverity() *AlertInstanceUpsertBulk {
+	return u.Update(func(s *AlertInstanceUpsert) {
+		s.UpdateSeverity()
+	})
+}
+
+// SetLastObservedAt sets the "last_observed_at" field.
+func (u *AlertInstanceUpsertBulk) SetLastObservedAt(v time.Time) *AlertInstanceUpsertBulk {
+	return u.Update(func(s *AlertInstanceUpsert) {
+		s.SetLastObservedAt(v)
+	})
+}
+
+// UpdateLastObservedAt sets the "last_observed_at" field to the value that was provided on create.
+func (u *AlertInstanceUpsertBulk) UpdateLastObservedAt() *AlertInstanceUpsertBulk {
+	return u.Update(func(s *AlertInstanceUpsert) {
+		s.UpdateLastObservedAt()
+	})
+}
+
+// SetResolvedAt sets the "resolved_at" field.
+func (u *AlertInstanceUpsertBulk) SetResolvedAt(v time.Time) *AlertInstanceUpsertBulk {
+	return u.Update(func(s *AlertInstanceUpsert) {
+		s.SetResolvedAt(v)
+	})
+}
+
+// UpdateResolvedAt sets the "resolved_at" field to the value that was provided on create.
+func (u *AlertInstanceUpsertBulk) UpdateResolvedAt() *AlertInstanceUpsertBulk {
+	return u.Update(func(s *AlertInstanceUpsert) {
+		s.UpdateResolvedAt()
+	})
+}
+
+// ClearResolvedAt clears the value of the "resolved_at" field.
+func (u *AlertInstanceUpsertBulk) ClearResolvedAt() *AlertInstanceUpsertBulk {
+	return u.Update(func(s *AlertInstanceUpsert) {
+		s.ClearResolvedAt()
+	})
+}
+
+// SetEndedAt sets the "ended_at" field.
+func (u *AlertInstanceUpsertBulk) SetEndedAt(v time.Time) *AlertInstanceUpsertBulk {
+	return u.Update(func(s *AlertInstanceUpsert) {
+		s.SetEndedAt(v)
+	})
+}
+
+// UpdateEndedAt sets the "ended_at" field to the value that was provided on create.
+func (u *AlertInstanceUpsertBulk) UpdateEndedAt() *AlertInstanceUpsertBulk {
+	return u.Update(func(s *AlertInstanceUpsert) {
+		s.UpdateEndedAt()
+	})
+}
+
+// ClearEndedAt clears the value of the "ended_at" field.
+func (u *AlertInstanceUpsertBulk) ClearEndedAt() *AlertInstanceUpsertBulk {
+	return u.Update(func(s *AlertInstanceUpsert) {
+		s.ClearEndedAt()
+	})
+}
+
+// SetEndReason sets the "end_reason" field.
+func (u *AlertInstanceUpsertBulk) SetEndReason(v alertinstance.EndReason) *AlertInstanceUpsertBulk {
+	return u.Update(func(s *AlertInstanceUpsert) {
+		s.SetEndReason(v)
+	})
+}
+
+// UpdateEndReason sets the "end_reason" field to the value that was provided on create.
+func (u *AlertInstanceUpsertBulk) UpdateEndReason() *AlertInstanceUpsertBulk {
+	return u.Update(func(s *AlertInstanceUpsert) {
+		s.UpdateEndReason()
+	})
+}
+
+// ClearEndReason clears the value of the "end_reason" field.
+func (u *AlertInstanceUpsertBulk) ClearEndReason() *AlertInstanceUpsertBulk {
+	return u.Update(func(s *AlertInstanceUpsert) {
+		s.ClearEndReason()
+	})
 }
 
 // Exec executes the query.

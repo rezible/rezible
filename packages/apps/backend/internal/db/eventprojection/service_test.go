@@ -2,7 +2,6 @@ package eventprojection
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"testing"
 	"time"
@@ -46,7 +45,10 @@ func (s *ProjectionServiceSuite) projectionService(tdb rez.Database) *Projection
 	retrospectives, retrospectivesErr := db.NewRetrospectiveService(tdb)
 	s.Require().NoError(retrospectivesErr)
 
-	incidents, incidentsErr := db.NewIncidentService(tdb, messageService, nil, retrospectives)
+	situations := mocks.NewMockSituationService(s.T())
+	situations.EXPECT().SyncIncidentLinks(mock.Anything, mock.Anything, mock.Anything).Return(nil).Maybe()
+
+	incidents, incidentsErr := db.NewIncidentService(tdb, messageService, situations, retrospectives)
 	s.Require().NoError(incidentsErr)
 
 	knowledge, knowledgeErr := db.NewKnowledgeGraphIngestionService(tdb)
@@ -55,17 +57,7 @@ func (s *ProjectionServiceSuite) projectionService(tdb rez.Database) *Projection
 	knowledgeQuery, knowledgeQueryErr := db.NewKnowledgeGraphQueryService(tdb)
 	s.Require().NoError(knowledgeQueryErr)
 
-	analysisService, analysisServiceErr := db.NewSystemAnalysisService(tdb, knowledgeQuery)
-	s.Require().NoError(analysisServiceErr)
-
 	jobService := mocks.NewMockJobService(s.T())
-	agentService := mocks.NewMockAiAgentSessionService(s.T())
-	agentService.EXPECT().
-		CreateAgentSession(mock.Anything, mock.Anything).
-		RunAndReturn(func(ctx context.Context, params rez.CreateAiAgentSessionParams) (*ent.AgentSession, error) {
-			return s.persistProjectionAgentSession(ctx, tdb, params)
-		}).
-		Maybe()
 	jobService.EXPECT().
 		Insert(mock.Anything, mock.Anything, mock.Anything).
 		Return(&rivertype.JobInsertResult{
@@ -74,34 +66,14 @@ func (s *ProjectionServiceSuite) projectionService(tdb rez.Database) *Projection
 			},
 		}, nil).
 		Maybe()
-	investigationService := db.NewInvestigationService(tdb, agentService, jobService)
-	situations, situationsErr := db.NewSituationService(tdb, investigationService, analysisService, knowledgeQuery)
-	s.Require().NoError(situationsErr)
-
-	alerts, alertsErr := db.NewAlertService(tdb, situations, knowledge)
+	clock := test.NewClock(time.Date(2026, 6, 1, 10, 0, 0, 0, time.UTC))
+	alerts, alertsErr := db.NewAlertService(rez.DefaultConfig().Alerts, clock, tdb, jobService, knowledge, db.NewSituationSignalService(jobService))
 	s.Require().NoError(alertsErr)
 
 	service, serviceErr := NewProjectionService(tdb, knowledge, knowledgeQuery, users, incidents, alerts)
 	s.Require().NoError(serviceErr)
 
 	return service
-}
-
-func (s *ProjectionServiceSuite) persistProjectionAgentSession(ctx context.Context, tdb rez.Database, params rez.CreateAiAgentSessionParams) (*ent.AgentSession, error) {
-	input, marshalErr := json.Marshal(params.Input)
-	if marshalErr != nil {
-		return nil, fmt.Errorf("marshal projection agent input: %w", marshalErr)
-	}
-	metadata := params.Metadata
-	if metadata == nil {
-		metadata = map[string]any{}
-	}
-	createSession := tdb.Client(ctx).AgentSession.Create().
-		SetAgentName(params.AgentName).
-		SetInput(input).
-		SetScopes(params.PermissionScopes).
-		SetMetadata(metadata)
-	return createSession.Save(ctx)
 }
 
 func runProjection(ctx context.Context, service rez.EventProjectionService, event *ent.NormalizedEvent) ([]rez.ProjectedEntityRef, error) {

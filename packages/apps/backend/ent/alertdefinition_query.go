@@ -21,21 +21,23 @@ import (
 	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/playbook"
 	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/situationsignalattention"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
 // AlertDefinitionQuery is the builder for querying AlertDefinition entities.
 type AlertDefinitionQuery struct {
 	config
-	ctx                 *QueryContext
-	order               []alertdefinition.OrderOption
-	inters              []Interceptor
-	predicates          []predicate.AlertDefinition
-	withTenant          *TenantQuery
-	withKnowledgeEntity *KnowledgeEntityQuery
-	withPlaybooks       *PlaybookQuery
-	withEpisodes        *AlertEpisodeQuery
-	modifiers           []func(*sql.Selector)
+	ctx                          *QueryContext
+	order                        []alertdefinition.OrderOption
+	inters                       []Interceptor
+	predicates                   []predicate.AlertDefinition
+	withTenant                   *TenantQuery
+	withKnowledgeEntity          *KnowledgeEntityQuery
+	withPlaybooks                *PlaybookQuery
+	withEpisodes                 *AlertEpisodeQuery
+	withSituationSignalAttention *SituationSignalAttentionQuery
+	modifiers                    []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -166,6 +168,31 @@ func (_q *AlertDefinitionQuery) QueryEpisodes() *AlertEpisodeQuery {
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.AlertEpisode
 		step.Edge.Schema = schemaConfig.AlertEpisode
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QuerySituationSignalAttention chains the current query on the "situation_signal_attention" edge.
+func (_q *AlertDefinitionQuery) QuerySituationSignalAttention() *SituationSignalAttentionQuery {
+	query := (&SituationSignalAttentionClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(alertdefinition.Table, alertdefinition.FieldID, selector),
+			sqlgraph.To(situationsignalattention.Table, situationsignalattention.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, alertdefinition.SituationSignalAttentionTable, alertdefinition.SituationSignalAttentionColumn),
+		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.SituationSignalAttention
+		step.Edge.Schema = schemaConfig.AlertDefinition
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -359,15 +386,16 @@ func (_q *AlertDefinitionQuery) Clone() *AlertDefinitionQuery {
 		return nil
 	}
 	return &AlertDefinitionQuery{
-		config:              _q.config,
-		ctx:                 _q.ctx.Clone(),
-		order:               append([]alertdefinition.OrderOption{}, _q.order...),
-		inters:              append([]Interceptor{}, _q.inters...),
-		predicates:          append([]predicate.AlertDefinition{}, _q.predicates...),
-		withTenant:          _q.withTenant.Clone(),
-		withKnowledgeEntity: _q.withKnowledgeEntity.Clone(),
-		withPlaybooks:       _q.withPlaybooks.Clone(),
-		withEpisodes:        _q.withEpisodes.Clone(),
+		config:                       _q.config,
+		ctx:                          _q.ctx.Clone(),
+		order:                        append([]alertdefinition.OrderOption{}, _q.order...),
+		inters:                       append([]Interceptor{}, _q.inters...),
+		predicates:                   append([]predicate.AlertDefinition{}, _q.predicates...),
+		withTenant:                   _q.withTenant.Clone(),
+		withKnowledgeEntity:          _q.withKnowledgeEntity.Clone(),
+		withPlaybooks:                _q.withPlaybooks.Clone(),
+		withEpisodes:                 _q.withEpisodes.Clone(),
+		withSituationSignalAttention: _q.withSituationSignalAttention.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
@@ -415,6 +443,17 @@ func (_q *AlertDefinitionQuery) WithEpisodes(opts ...func(*AlertEpisodeQuery)) *
 		opt(query)
 	}
 	_q.withEpisodes = query
+	return _q
+}
+
+// WithSituationSignalAttention tells the query-builder to eager-load the nodes that are connected to
+// the "situation_signal_attention" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *AlertDefinitionQuery) WithSituationSignalAttention(opts ...func(*SituationSignalAttentionQuery)) *AlertDefinitionQuery {
+	query := (&SituationSignalAttentionClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withSituationSignalAttention = query
 	return _q
 }
 
@@ -502,11 +541,12 @@ func (_q *AlertDefinitionQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 	var (
 		nodes       = []*AlertDefinition{}
 		_spec       = _q.querySpec()
-		loadedTypes = [4]bool{
+		loadedTypes = [5]bool{
 			_q.withTenant != nil,
 			_q.withKnowledgeEntity != nil,
 			_q.withPlaybooks != nil,
 			_q.withEpisodes != nil,
+			_q.withSituationSignalAttention != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -555,6 +595,12 @@ func (_q *AlertDefinitionQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 		if err := _q.loadEpisodes(ctx, query, nodes,
 			func(n *AlertDefinition) { n.Edges.Episodes = []*AlertEpisode{} },
 			func(n *AlertDefinition, e *AlertEpisode) { n.Edges.Episodes = append(n.Edges.Episodes, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withSituationSignalAttention; query != nil {
+		if err := _q.loadSituationSignalAttention(ctx, query, nodes, nil,
+			func(n *AlertDefinition, e *SituationSignalAttention) { n.Edges.SituationSignalAttention = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -694,7 +740,6 @@ func (_q *AlertDefinitionQuery) loadEpisodes(ctx context.Context, query *AlertEp
 			init(nodes[i])
 		}
 	}
-	query.withFKs = true
 	if len(query.ctx.Fields) > 0 {
 		query.ctx.AppendFieldOnce(alertepisode.FieldAlertDefinitionID)
 	}
@@ -712,6 +757,38 @@ func (_q *AlertDefinitionQuery) loadEpisodes(ctx context.Context, query *AlertEp
 			return fmt.Errorf(`unexpected referenced foreign-key "alert_definition_id" returned %v for node %v`, fk, n.ID)
 		}
 		assign(node, n)
+	}
+	return nil
+}
+func (_q *AlertDefinitionQuery) loadSituationSignalAttention(ctx context.Context, query *SituationSignalAttentionQuery, nodes []*AlertDefinition, init func(*AlertDefinition), assign func(*AlertDefinition, *SituationSignalAttention)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*AlertDefinition)
+	for i := range nodes {
+		if nodes[i].SituationSignalAttentionID == nil {
+			continue
+		}
+		fk := *nodes[i].SituationSignalAttentionID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(situationsignalattention.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "situation_signal_attention_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
 	}
 	return nil
 }
@@ -751,6 +828,9 @@ func (_q *AlertDefinitionQuery) querySpec() *sqlgraph.QuerySpec {
 		}
 		if _q.withKnowledgeEntity != nil {
 			_spec.Node.AddColumnOnce(alertdefinition.FieldKnowledgeEntityID)
+		}
+		if _q.withSituationSignalAttention != nil {
+			_spec.Node.AddColumnOnce(alertdefinition.FieldSituationSignalAttentionID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {

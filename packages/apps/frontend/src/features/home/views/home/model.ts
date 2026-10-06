@@ -200,19 +200,6 @@ export function incidentRow(incident: Incident): HomeIncidentRow {
 	};
 }
 
-function sourceCount(situation: Situation) {
-	const keys = new Set<string>();
-	for (const group of situation.attributes.observationGroups) {
-		for (const event of group.attributes.events) {
-			keys.add(`event:${event.id}`);
-		}
-		for (const episode of group.attributes.alertEpisodes) {
-			keys.add(`alert-episode:${episode.id}`);
-		}
-	}
-	return keys.size;
-}
-
 export function situationRow(situation: Situation, conclusion: SituationConclusion): HomeSituationRow {
 	const attributes = situation.attributes;
 	return {
@@ -222,7 +209,7 @@ export function situationRow(situation: Situation, conclusion: SituationConclusi
 		href: resolve("/situations/[id]/[[view=situationView]]", { id: situation.id }),
 		status: situationStatus(attributes),
 		openedAt: attributes.openedAt,
-		sourceCount: sourceCount(situation),
+		sourceCount: attributes.signalCount,
 		linkedIncidentCount: attributes.linkedIncidentIds.length,
 		conclusion,
 	};

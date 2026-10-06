@@ -32,10 +32,8 @@ const (
 	EdgeTenant = "tenant"
 	// EdgeSituation holds the string denoting the situation edge name in mutations.
 	EdgeSituation = "situation"
-	// EdgeEvents holds the string denoting the events edge name in mutations.
-	EdgeEvents = "events"
-	// EdgeAlertEpisodes holds the string denoting the alert_episodes edge name in mutations.
-	EdgeAlertEpisodes = "alert_episodes"
+	// EdgeSignals holds the string denoting the signals edge name in mutations.
+	EdgeSignals = "signals"
 	// Table holds the table name of the situationobservationgroup in the database.
 	Table = "situation_observation_groups"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -52,18 +50,13 @@ const (
 	SituationInverseTable = "situations"
 	// SituationColumn is the table column denoting the situation relation/edge.
 	SituationColumn = "situation_id"
-	// EventsTable is the table that holds the events relation/edge. The primary key declared below.
-	EventsTable = "situation_observation_group_events"
-	// EventsInverseTable is the table name for the NormalizedEvent entity.
-	// It exists in this package in order to avoid circular dependency with the "normalizedevent" package.
-	EventsInverseTable = "normalized_events"
-	// AlertEpisodesTable is the table that holds the alert_episodes relation/edge.
-	AlertEpisodesTable = "alert_episodes"
-	// AlertEpisodesInverseTable is the table name for the AlertEpisode entity.
-	// It exists in this package in order to avoid circular dependency with the "alertepisode" package.
-	AlertEpisodesInverseTable = "alert_episodes"
-	// AlertEpisodesColumn is the table column denoting the alert_episodes relation/edge.
-	AlertEpisodesColumn = "situation_observation_group_alert_episodes"
+	// SignalsTable is the table that holds the signals relation/edge.
+	SignalsTable = "situation_signals"
+	// SignalsInverseTable is the table name for the SituationSignal entity.
+	// It exists in this package in order to avoid circular dependency with the "situationsignal" package.
+	SignalsInverseTable = "situation_signals"
+	// SignalsColumn is the table column denoting the signals relation/edge.
+	SignalsColumn = "observation_group_id"
 )
 
 // Columns holds all SQL columns for situationobservationgroup fields.
@@ -76,12 +69,6 @@ var Columns = []string{
 	FieldTitle,
 	FieldBody,
 }
-
-var (
-	// EventsPrimaryKey and EventsColumn2 are the table columns denoting the
-	// primary key for the events relation (M2M).
-	EventsPrimaryKey = []string{"situation_observation_group_id", "normalized_event_id"}
-)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
@@ -165,31 +152,17 @@ func BySituationField(field string, opts ...sql.OrderTermOption) OrderOption {
 	}
 }
 
-// ByEventsCount orders the results by events count.
-func ByEventsCount(opts ...sql.OrderTermOption) OrderOption {
+// BySignalsCount orders the results by signals count.
+func BySignalsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newEventsStep(), opts...)
+		sqlgraph.OrderByNeighborsCount(s, newSignalsStep(), opts...)
 	}
 }
 
-// ByEvents orders the results by events terms.
-func ByEvents(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+// BySignals orders the results by signals terms.
+func BySignals(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newEventsStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
-
-// ByAlertEpisodesCount orders the results by alert_episodes count.
-func ByAlertEpisodesCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newAlertEpisodesStep(), opts...)
-	}
-}
-
-// ByAlertEpisodes orders the results by alert_episodes terms.
-func ByAlertEpisodes(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newAlertEpisodesStep(), append([]sql.OrderTerm{term}, terms...)...)
+		sqlgraph.OrderByNeighborTerms(s, newSignalsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
 func newTenantStep() *sqlgraph.Step {
@@ -206,17 +179,10 @@ func newSituationStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.M2O, false, SituationTable, SituationColumn),
 	)
 }
-func newEventsStep() *sqlgraph.Step {
+func newSignalsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(EventsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2M, false, EventsTable, EventsPrimaryKey...),
-	)
-}
-func newAlertEpisodesStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(AlertEpisodesInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, AlertEpisodesTable, AlertEpisodesColumn),
+		sqlgraph.To(SignalsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, SignalsTable, SignalsColumn),
 	)
 }

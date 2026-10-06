@@ -3,6 +3,8 @@
 package alertdefinition
 
 import (
+	"time"
+
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
@@ -78,6 +80,26 @@ func Description(v string) predicate.AlertDefinition {
 // Definition applies equality check predicate on the "definition" field. It's identical to DefinitionEQ.
 func Definition(v string) predicate.AlertDefinition {
 	return predicate.AlertDefinition(sql.FieldEQ(FieldDefinition, v))
+}
+
+// ResolutionTimeoutSeconds applies equality check predicate on the "resolution_timeout_seconds" field. It's identical to ResolutionTimeoutSecondsEQ.
+func ResolutionTimeoutSeconds(v int) predicate.AlertDefinition {
+	return predicate.AlertDefinition(sql.FieldEQ(FieldResolutionTimeoutSeconds, v))
+}
+
+// MetadataObservedAt applies equality check predicate on the "metadata_observed_at" field. It's identical to MetadataObservedAtEQ.
+func MetadataObservedAt(v time.Time) predicate.AlertDefinition {
+	return predicate.AlertDefinition(sql.FieldEQ(FieldMetadataObservedAt, v))
+}
+
+// MetadataEventRef applies equality check predicate on the "metadata_event_ref" field. It's identical to MetadataEventRefEQ.
+func MetadataEventRef(v string) predicate.AlertDefinition {
+	return predicate.AlertDefinition(sql.FieldEQ(FieldMetadataEventRef, v))
+}
+
+// SituationSignalAttentionID applies equality check predicate on the "situation_signal_attention_id" field. It's identical to SituationSignalAttentionIDEQ.
+func SituationSignalAttentionID(v uuid.UUID) predicate.AlertDefinition {
+	return predicate.AlertDefinition(sql.FieldEQ(FieldSituationSignalAttentionID, v))
 }
 
 // TenantIDEQ applies the EQ predicate on the "tenant_id" field.
@@ -345,6 +367,191 @@ func DefinitionContainsFold(v string) predicate.AlertDefinition {
 	return predicate.AlertDefinition(sql.FieldContainsFold(FieldDefinition, v))
 }
 
+// ResolutionTimeoutSecondsEQ applies the EQ predicate on the "resolution_timeout_seconds" field.
+func ResolutionTimeoutSecondsEQ(v int) predicate.AlertDefinition {
+	return predicate.AlertDefinition(sql.FieldEQ(FieldResolutionTimeoutSeconds, v))
+}
+
+// ResolutionTimeoutSecondsNEQ applies the NEQ predicate on the "resolution_timeout_seconds" field.
+func ResolutionTimeoutSecondsNEQ(v int) predicate.AlertDefinition {
+	return predicate.AlertDefinition(sql.FieldNEQ(FieldResolutionTimeoutSeconds, v))
+}
+
+// ResolutionTimeoutSecondsIn applies the In predicate on the "resolution_timeout_seconds" field.
+func ResolutionTimeoutSecondsIn(vs ...int) predicate.AlertDefinition {
+	return predicate.AlertDefinition(sql.FieldIn(FieldResolutionTimeoutSeconds, vs...))
+}
+
+// ResolutionTimeoutSecondsNotIn applies the NotIn predicate on the "resolution_timeout_seconds" field.
+func ResolutionTimeoutSecondsNotIn(vs ...int) predicate.AlertDefinition {
+	return predicate.AlertDefinition(sql.FieldNotIn(FieldResolutionTimeoutSeconds, vs...))
+}
+
+// ResolutionTimeoutSecondsGT applies the GT predicate on the "resolution_timeout_seconds" field.
+func ResolutionTimeoutSecondsGT(v int) predicate.AlertDefinition {
+	return predicate.AlertDefinition(sql.FieldGT(FieldResolutionTimeoutSeconds, v))
+}
+
+// ResolutionTimeoutSecondsGTE applies the GTE predicate on the "resolution_timeout_seconds" field.
+func ResolutionTimeoutSecondsGTE(v int) predicate.AlertDefinition {
+	return predicate.AlertDefinition(sql.FieldGTE(FieldResolutionTimeoutSeconds, v))
+}
+
+// ResolutionTimeoutSecondsLT applies the LT predicate on the "resolution_timeout_seconds" field.
+func ResolutionTimeoutSecondsLT(v int) predicate.AlertDefinition {
+	return predicate.AlertDefinition(sql.FieldLT(FieldResolutionTimeoutSeconds, v))
+}
+
+// ResolutionTimeoutSecondsLTE applies the LTE predicate on the "resolution_timeout_seconds" field.
+func ResolutionTimeoutSecondsLTE(v int) predicate.AlertDefinition {
+	return predicate.AlertDefinition(sql.FieldLTE(FieldResolutionTimeoutSeconds, v))
+}
+
+// IdentityGroupLabelsIsNil applies the IsNil predicate on the "identity_group_labels" field.
+func IdentityGroupLabelsIsNil() predicate.AlertDefinition {
+	return predicate.AlertDefinition(sql.FieldIsNull(FieldIdentityGroupLabels))
+}
+
+// IdentityGroupLabelsNotNil applies the NotNil predicate on the "identity_group_labels" field.
+func IdentityGroupLabelsNotNil() predicate.AlertDefinition {
+	return predicate.AlertDefinition(sql.FieldNotNull(FieldIdentityGroupLabels))
+}
+
+// MetadataObservedAtEQ applies the EQ predicate on the "metadata_observed_at" field.
+func MetadataObservedAtEQ(v time.Time) predicate.AlertDefinition {
+	return predicate.AlertDefinition(sql.FieldEQ(FieldMetadataObservedAt, v))
+}
+
+// MetadataObservedAtNEQ applies the NEQ predicate on the "metadata_observed_at" field.
+func MetadataObservedAtNEQ(v time.Time) predicate.AlertDefinition {
+	return predicate.AlertDefinition(sql.FieldNEQ(FieldMetadataObservedAt, v))
+}
+
+// MetadataObservedAtIn applies the In predicate on the "metadata_observed_at" field.
+func MetadataObservedAtIn(vs ...time.Time) predicate.AlertDefinition {
+	return predicate.AlertDefinition(sql.FieldIn(FieldMetadataObservedAt, vs...))
+}
+
+// MetadataObservedAtNotIn applies the NotIn predicate on the "metadata_observed_at" field.
+func MetadataObservedAtNotIn(vs ...time.Time) predicate.AlertDefinition {
+	return predicate.AlertDefinition(sql.FieldNotIn(FieldMetadataObservedAt, vs...))
+}
+
+// MetadataObservedAtGT applies the GT predicate on the "metadata_observed_at" field.
+func MetadataObservedAtGT(v time.Time) predicate.AlertDefinition {
+	return predicate.AlertDefinition(sql.FieldGT(FieldMetadataObservedAt, v))
+}
+
+// MetadataObservedAtGTE applies the GTE predicate on the "metadata_observed_at" field.
+func MetadataObservedAtGTE(v time.Time) predicate.AlertDefinition {
+	return predicate.AlertDefinition(sql.FieldGTE(FieldMetadataObservedAt, v))
+}
+
+// MetadataObservedAtLT applies the LT predicate on the "metadata_observed_at" field.
+func MetadataObservedAtLT(v time.Time) predicate.AlertDefinition {
+	return predicate.AlertDefinition(sql.FieldLT(FieldMetadataObservedAt, v))
+}
+
+// MetadataObservedAtLTE applies the LTE predicate on the "metadata_observed_at" field.
+func MetadataObservedAtLTE(v time.Time) predicate.AlertDefinition {
+	return predicate.AlertDefinition(sql.FieldLTE(FieldMetadataObservedAt, v))
+}
+
+// MetadataEventRefEQ applies the EQ predicate on the "metadata_event_ref" field.
+func MetadataEventRefEQ(v string) predicate.AlertDefinition {
+	return predicate.AlertDefinition(sql.FieldEQ(FieldMetadataEventRef, v))
+}
+
+// MetadataEventRefNEQ applies the NEQ predicate on the "metadata_event_ref" field.
+func MetadataEventRefNEQ(v string) predicate.AlertDefinition {
+	return predicate.AlertDefinition(sql.FieldNEQ(FieldMetadataEventRef, v))
+}
+
+// MetadataEventRefIn applies the In predicate on the "metadata_event_ref" field.
+func MetadataEventRefIn(vs ...string) predicate.AlertDefinition {
+	return predicate.AlertDefinition(sql.FieldIn(FieldMetadataEventRef, vs...))
+}
+
+// MetadataEventRefNotIn applies the NotIn predicate on the "metadata_event_ref" field.
+func MetadataEventRefNotIn(vs ...string) predicate.AlertDefinition {
+	return predicate.AlertDefinition(sql.FieldNotIn(FieldMetadataEventRef, vs...))
+}
+
+// MetadataEventRefGT applies the GT predicate on the "metadata_event_ref" field.
+func MetadataEventRefGT(v string) predicate.AlertDefinition {
+	return predicate.AlertDefinition(sql.FieldGT(FieldMetadataEventRef, v))
+}
+
+// MetadataEventRefGTE applies the GTE predicate on the "metadata_event_ref" field.
+func MetadataEventRefGTE(v string) predicate.AlertDefinition {
+	return predicate.AlertDefinition(sql.FieldGTE(FieldMetadataEventRef, v))
+}
+
+// MetadataEventRefLT applies the LT predicate on the "metadata_event_ref" field.
+func MetadataEventRefLT(v string) predicate.AlertDefinition {
+	return predicate.AlertDefinition(sql.FieldLT(FieldMetadataEventRef, v))
+}
+
+// MetadataEventRefLTE applies the LTE predicate on the "metadata_event_ref" field.
+func MetadataEventRefLTE(v string) predicate.AlertDefinition {
+	return predicate.AlertDefinition(sql.FieldLTE(FieldMetadataEventRef, v))
+}
+
+// MetadataEventRefContains applies the Contains predicate on the "metadata_event_ref" field.
+func MetadataEventRefContains(v string) predicate.AlertDefinition {
+	return predicate.AlertDefinition(sql.FieldContains(FieldMetadataEventRef, v))
+}
+
+// MetadataEventRefHasPrefix applies the HasPrefix predicate on the "metadata_event_ref" field.
+func MetadataEventRefHasPrefix(v string) predicate.AlertDefinition {
+	return predicate.AlertDefinition(sql.FieldHasPrefix(FieldMetadataEventRef, v))
+}
+
+// MetadataEventRefHasSuffix applies the HasSuffix predicate on the "metadata_event_ref" field.
+func MetadataEventRefHasSuffix(v string) predicate.AlertDefinition {
+	return predicate.AlertDefinition(sql.FieldHasSuffix(FieldMetadataEventRef, v))
+}
+
+// MetadataEventRefEqualFold applies the EqualFold predicate on the "metadata_event_ref" field.
+func MetadataEventRefEqualFold(v string) predicate.AlertDefinition {
+	return predicate.AlertDefinition(sql.FieldEqualFold(FieldMetadataEventRef, v))
+}
+
+// MetadataEventRefContainsFold applies the ContainsFold predicate on the "metadata_event_ref" field.
+func MetadataEventRefContainsFold(v string) predicate.AlertDefinition {
+	return predicate.AlertDefinition(sql.FieldContainsFold(FieldMetadataEventRef, v))
+}
+
+// SituationSignalAttentionIDEQ applies the EQ predicate on the "situation_signal_attention_id" field.
+func SituationSignalAttentionIDEQ(v uuid.UUID) predicate.AlertDefinition {
+	return predicate.AlertDefinition(sql.FieldEQ(FieldSituationSignalAttentionID, v))
+}
+
+// SituationSignalAttentionIDNEQ applies the NEQ predicate on the "situation_signal_attention_id" field.
+func SituationSignalAttentionIDNEQ(v uuid.UUID) predicate.AlertDefinition {
+	return predicate.AlertDefinition(sql.FieldNEQ(FieldSituationSignalAttentionID, v))
+}
+
+// SituationSignalAttentionIDIn applies the In predicate on the "situation_signal_attention_id" field.
+func SituationSignalAttentionIDIn(vs ...uuid.UUID) predicate.AlertDefinition {
+	return predicate.AlertDefinition(sql.FieldIn(FieldSituationSignalAttentionID, vs...))
+}
+
+// SituationSignalAttentionIDNotIn applies the NotIn predicate on the "situation_signal_attention_id" field.
+func SituationSignalAttentionIDNotIn(vs ...uuid.UUID) predicate.AlertDefinition {
+	return predicate.AlertDefinition(sql.FieldNotIn(FieldSituationSignalAttentionID, vs...))
+}
+
+// SituationSignalAttentionIDIsNil applies the IsNil predicate on the "situation_signal_attention_id" field.
+func SituationSignalAttentionIDIsNil() predicate.AlertDefinition {
+	return predicate.AlertDefinition(sql.FieldIsNull(FieldSituationSignalAttentionID))
+}
+
+// SituationSignalAttentionIDNotNil applies the NotNil predicate on the "situation_signal_attention_id" field.
+func SituationSignalAttentionIDNotNil() predicate.AlertDefinition {
+	return predicate.AlertDefinition(sql.FieldNotNull(FieldSituationSignalAttentionID))
+}
+
 // HasTenant applies the HasEdge predicate on the "tenant" edge.
 func HasTenant() predicate.AlertDefinition {
 	return predicate.AlertDefinition(func(s *sql.Selector) {
@@ -453,6 +660,35 @@ func HasEpisodesWith(preds ...predicate.AlertEpisode) predicate.AlertDefinition 
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.AlertEpisode
 		step.Edge.Schema = schemaConfig.AlertEpisode
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasSituationSignalAttention applies the HasEdge predicate on the "situation_signal_attention" edge.
+func HasSituationSignalAttention() predicate.AlertDefinition {
+	return predicate.AlertDefinition(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, SituationSignalAttentionTable, SituationSignalAttentionColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SituationSignalAttention
+		step.Edge.Schema = schemaConfig.AlertDefinition
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasSituationSignalAttentionWith applies the HasEdge predicate on the "situation_signal_attention" edge with a given conditions (other predicates).
+func HasSituationSignalAttentionWith(preds ...predicate.SituationSignalAttention) predicate.AlertDefinition {
+	return predicate.AlertDefinition(func(s *sql.Selector) {
+		step := newSituationSignalAttentionStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SituationSignalAttention
+		step.Edge.Schema = schemaConfig.AlertDefinition
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

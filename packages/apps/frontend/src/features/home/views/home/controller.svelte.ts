@@ -35,7 +35,7 @@ class HomeController {
 		source: "local",
 		queryOptions: () =>
 			listSituationsOptions({
-				query: { page: 1, pageSize: PREVIEW_PAGE_SIZE, status: "active" },
+				query: { page: 1, pageSize: PREVIEW_PAGE_SIZE, stage: ["candidate", "raised"] },
 			}),
 	});
 	situationsQuery = $derived(this.situationsPage.query);

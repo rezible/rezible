@@ -32,11 +32,11 @@ session to a supplied database. It returns `(context.Context, Identity)`; `Ident
 the persisted session, and the context stays local to the caller. Use it when a test needs a
 user session.
 
-The two application scenarios, `TestIngestAndQuery` and `TestInvestigation`, live together in `cmd/rezible/app_test.go`. Shared application setup, bounded waits and the scripted model live in `app_helpers_test.go`.
+Application suite setup, the harness and shared bounded waits live in `cmd/rezible/app_test.go`. The ingestion, investigation and situation detection journeys live in `app_ingest_test.go`, `app_investigation_test.go` and `app_situation_detection_test.go`, respectively, alongside their scenario-specific helpers and models.
 
 The application suite follows the CLI evaluation path: its injector creates and owns the isolated database and dependent services. It does not also call `SetupTestDatabase`. Its harness runs `Application.RunLifecycle` and waits for lifecycle completion before shutting down injector-owned resources. It wraps the application's registered v1 API with `humatest.Wrap` and dispatches through the complete production `Server.Handler()`. Requests use plain test contexts; the outer server middleware initializes the HTTP execution context, and production cookies and Huma security middleware handle authentication. No OIDC login calls or live model/provider calls are involved.
 
-Focused service tests stay in their existing suites. Application journeys use real workers and production registrations with periodic scheduling disabled; their model is scripted. They assert specific committed records and job states rather than waiting for an empty queue.
+Focused service tests stay in their existing suites. Application journeys use real workers and production registrations with periodic scheduling disabled; the harness defaults to rejecting model calls and asserts no unexpected calls after worker shutdown. Ingestion uses that default; investigation supplies its script through `appTestOptions.ModelAction`, and situation detection supplies a successful fake response for incidental investigation turns. They assert specific committed records and job states rather than waiting for an empty queue.
 
 `Suite.Telemetry()` provides an exporter-free `rez.TelemetryService` (SDK tracer, no-op metrics, quiet logger) for injection. It never installs process globals; only the production entrypoint calls `opentelemetry.Service.Init`. Genkit falls back to its own global SDK tracer provider when none is installed.
 

@@ -3,11 +3,14 @@
 package alertinstance
 
 import (
+	"time"
+
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/schema/schematypes"
 )
 
 // ID filters vertices based on their ID field.
@@ -65,9 +68,39 @@ func AlertEpisodeID(v uuid.UUID) predicate.AlertInstance {
 	return predicate.AlertInstance(sql.FieldEQ(FieldAlertEpisodeID, v))
 }
 
-// NormalizedEventID applies equality check predicate on the "normalized_event_id" field. It's identical to NormalizedEventIDEQ.
-func NormalizedEventID(v uuid.UUID) predicate.AlertInstance {
-	return predicate.AlertInstance(sql.FieldEQ(FieldNormalizedEventID, v))
+// InstanceKey applies equality check predicate on the "instance_key" field. It's identical to InstanceKeyEQ.
+func InstanceKey(v string) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldEQ(FieldInstanceKey, v))
+}
+
+// GroupingKey applies equality check predicate on the "grouping_key" field. It's identical to GroupingKeyEQ.
+func GroupingKey(v string) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldEQ(FieldGroupingKey, v))
+}
+
+// Summary applies equality check predicate on the "summary" field. It's identical to SummaryEQ.
+func Summary(v string) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldEQ(FieldSummary, v))
+}
+
+// FiredAt applies equality check predicate on the "fired_at" field. It's identical to FiredAtEQ.
+func FiredAt(v time.Time) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldEQ(FieldFiredAt, v))
+}
+
+// LastObservedAt applies equality check predicate on the "last_observed_at" field. It's identical to LastObservedAtEQ.
+func LastObservedAt(v time.Time) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldEQ(FieldLastObservedAt, v))
+}
+
+// ResolvedAt applies equality check predicate on the "resolved_at" field. It's identical to ResolvedAtEQ.
+func ResolvedAt(v time.Time) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldEQ(FieldResolvedAt, v))
+}
+
+// EndedAt applies equality check predicate on the "ended_at" field. It's identical to EndedAtEQ.
+func EndedAt(v time.Time) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldEQ(FieldEndedAt, v))
 }
 
 // TenantIDEQ applies the EQ predicate on the "tenant_id" field.
@@ -110,24 +143,459 @@ func AlertEpisodeIDNotIn(vs ...uuid.UUID) predicate.AlertInstance {
 	return predicate.AlertInstance(sql.FieldNotIn(FieldAlertEpisodeID, vs...))
 }
 
-// NormalizedEventIDEQ applies the EQ predicate on the "normalized_event_id" field.
-func NormalizedEventIDEQ(v uuid.UUID) predicate.AlertInstance {
-	return predicate.AlertInstance(sql.FieldEQ(FieldNormalizedEventID, v))
+// InstanceKeyEQ applies the EQ predicate on the "instance_key" field.
+func InstanceKeyEQ(v string) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldEQ(FieldInstanceKey, v))
 }
 
-// NormalizedEventIDNEQ applies the NEQ predicate on the "normalized_event_id" field.
-func NormalizedEventIDNEQ(v uuid.UUID) predicate.AlertInstance {
-	return predicate.AlertInstance(sql.FieldNEQ(FieldNormalizedEventID, v))
+// InstanceKeyNEQ applies the NEQ predicate on the "instance_key" field.
+func InstanceKeyNEQ(v string) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldNEQ(FieldInstanceKey, v))
 }
 
-// NormalizedEventIDIn applies the In predicate on the "normalized_event_id" field.
-func NormalizedEventIDIn(vs ...uuid.UUID) predicate.AlertInstance {
-	return predicate.AlertInstance(sql.FieldIn(FieldNormalizedEventID, vs...))
+// InstanceKeyIn applies the In predicate on the "instance_key" field.
+func InstanceKeyIn(vs ...string) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldIn(FieldInstanceKey, vs...))
 }
 
-// NormalizedEventIDNotIn applies the NotIn predicate on the "normalized_event_id" field.
-func NormalizedEventIDNotIn(vs ...uuid.UUID) predicate.AlertInstance {
-	return predicate.AlertInstance(sql.FieldNotIn(FieldNormalizedEventID, vs...))
+// InstanceKeyNotIn applies the NotIn predicate on the "instance_key" field.
+func InstanceKeyNotIn(vs ...string) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldNotIn(FieldInstanceKey, vs...))
+}
+
+// InstanceKeyGT applies the GT predicate on the "instance_key" field.
+func InstanceKeyGT(v string) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldGT(FieldInstanceKey, v))
+}
+
+// InstanceKeyGTE applies the GTE predicate on the "instance_key" field.
+func InstanceKeyGTE(v string) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldGTE(FieldInstanceKey, v))
+}
+
+// InstanceKeyLT applies the LT predicate on the "instance_key" field.
+func InstanceKeyLT(v string) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldLT(FieldInstanceKey, v))
+}
+
+// InstanceKeyLTE applies the LTE predicate on the "instance_key" field.
+func InstanceKeyLTE(v string) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldLTE(FieldInstanceKey, v))
+}
+
+// InstanceKeyContains applies the Contains predicate on the "instance_key" field.
+func InstanceKeyContains(v string) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldContains(FieldInstanceKey, v))
+}
+
+// InstanceKeyHasPrefix applies the HasPrefix predicate on the "instance_key" field.
+func InstanceKeyHasPrefix(v string) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldHasPrefix(FieldInstanceKey, v))
+}
+
+// InstanceKeyHasSuffix applies the HasSuffix predicate on the "instance_key" field.
+func InstanceKeyHasSuffix(v string) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldHasSuffix(FieldInstanceKey, v))
+}
+
+// InstanceKeyEqualFold applies the EqualFold predicate on the "instance_key" field.
+func InstanceKeyEqualFold(v string) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldEqualFold(FieldInstanceKey, v))
+}
+
+// InstanceKeyContainsFold applies the ContainsFold predicate on the "instance_key" field.
+func InstanceKeyContainsFold(v string) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldContainsFold(FieldInstanceKey, v))
+}
+
+// GroupingKeyEQ applies the EQ predicate on the "grouping_key" field.
+func GroupingKeyEQ(v string) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldEQ(FieldGroupingKey, v))
+}
+
+// GroupingKeyNEQ applies the NEQ predicate on the "grouping_key" field.
+func GroupingKeyNEQ(v string) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldNEQ(FieldGroupingKey, v))
+}
+
+// GroupingKeyIn applies the In predicate on the "grouping_key" field.
+func GroupingKeyIn(vs ...string) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldIn(FieldGroupingKey, vs...))
+}
+
+// GroupingKeyNotIn applies the NotIn predicate on the "grouping_key" field.
+func GroupingKeyNotIn(vs ...string) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldNotIn(FieldGroupingKey, vs...))
+}
+
+// GroupingKeyGT applies the GT predicate on the "grouping_key" field.
+func GroupingKeyGT(v string) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldGT(FieldGroupingKey, v))
+}
+
+// GroupingKeyGTE applies the GTE predicate on the "grouping_key" field.
+func GroupingKeyGTE(v string) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldGTE(FieldGroupingKey, v))
+}
+
+// GroupingKeyLT applies the LT predicate on the "grouping_key" field.
+func GroupingKeyLT(v string) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldLT(FieldGroupingKey, v))
+}
+
+// GroupingKeyLTE applies the LTE predicate on the "grouping_key" field.
+func GroupingKeyLTE(v string) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldLTE(FieldGroupingKey, v))
+}
+
+// GroupingKeyContains applies the Contains predicate on the "grouping_key" field.
+func GroupingKeyContains(v string) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldContains(FieldGroupingKey, v))
+}
+
+// GroupingKeyHasPrefix applies the HasPrefix predicate on the "grouping_key" field.
+func GroupingKeyHasPrefix(v string) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldHasPrefix(FieldGroupingKey, v))
+}
+
+// GroupingKeyHasSuffix applies the HasSuffix predicate on the "grouping_key" field.
+func GroupingKeyHasSuffix(v string) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldHasSuffix(FieldGroupingKey, v))
+}
+
+// GroupingKeyEqualFold applies the EqualFold predicate on the "grouping_key" field.
+func GroupingKeyEqualFold(v string) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldEqualFold(FieldGroupingKey, v))
+}
+
+// GroupingKeyContainsFold applies the ContainsFold predicate on the "grouping_key" field.
+func GroupingKeyContainsFold(v string) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldContainsFold(FieldGroupingKey, v))
+}
+
+// LabelsIsNil applies the IsNil predicate on the "labels" field.
+func LabelsIsNil() predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldIsNull(FieldLabels))
+}
+
+// LabelsNotNil applies the NotNil predicate on the "labels" field.
+func LabelsNotNil() predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldNotNull(FieldLabels))
+}
+
+// SummaryEQ applies the EQ predicate on the "summary" field.
+func SummaryEQ(v string) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldEQ(FieldSummary, v))
+}
+
+// SummaryNEQ applies the NEQ predicate on the "summary" field.
+func SummaryNEQ(v string) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldNEQ(FieldSummary, v))
+}
+
+// SummaryIn applies the In predicate on the "summary" field.
+func SummaryIn(vs ...string) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldIn(FieldSummary, vs...))
+}
+
+// SummaryNotIn applies the NotIn predicate on the "summary" field.
+func SummaryNotIn(vs ...string) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldNotIn(FieldSummary, vs...))
+}
+
+// SummaryGT applies the GT predicate on the "summary" field.
+func SummaryGT(v string) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldGT(FieldSummary, v))
+}
+
+// SummaryGTE applies the GTE predicate on the "summary" field.
+func SummaryGTE(v string) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldGTE(FieldSummary, v))
+}
+
+// SummaryLT applies the LT predicate on the "summary" field.
+func SummaryLT(v string) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldLT(FieldSummary, v))
+}
+
+// SummaryLTE applies the LTE predicate on the "summary" field.
+func SummaryLTE(v string) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldLTE(FieldSummary, v))
+}
+
+// SummaryContains applies the Contains predicate on the "summary" field.
+func SummaryContains(v string) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldContains(FieldSummary, v))
+}
+
+// SummaryHasPrefix applies the HasPrefix predicate on the "summary" field.
+func SummaryHasPrefix(v string) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldHasPrefix(FieldSummary, v))
+}
+
+// SummaryHasSuffix applies the HasSuffix predicate on the "summary" field.
+func SummaryHasSuffix(v string) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldHasSuffix(FieldSummary, v))
+}
+
+// SummaryIsNil applies the IsNil predicate on the "summary" field.
+func SummaryIsNil() predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldIsNull(FieldSummary))
+}
+
+// SummaryNotNil applies the NotNil predicate on the "summary" field.
+func SummaryNotNil() predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldNotNull(FieldSummary))
+}
+
+// SummaryEqualFold applies the EqualFold predicate on the "summary" field.
+func SummaryEqualFold(v string) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldEqualFold(FieldSummary, v))
+}
+
+// SummaryContainsFold applies the ContainsFold predicate on the "summary" field.
+func SummaryContainsFold(v string) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldContainsFold(FieldSummary, v))
+}
+
+// SeverityEQ applies the EQ predicate on the "severity" field.
+func SeverityEQ(v schematypes.SignalSeverity) predicate.AlertInstance {
+	vc := v
+	return predicate.AlertInstance(sql.FieldEQ(FieldSeverity, vc))
+}
+
+// SeverityNEQ applies the NEQ predicate on the "severity" field.
+func SeverityNEQ(v schematypes.SignalSeverity) predicate.AlertInstance {
+	vc := v
+	return predicate.AlertInstance(sql.FieldNEQ(FieldSeverity, vc))
+}
+
+// SeverityIn applies the In predicate on the "severity" field.
+func SeverityIn(vs ...schematypes.SignalSeverity) predicate.AlertInstance {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.AlertInstance(sql.FieldIn(FieldSeverity, v...))
+}
+
+// SeverityNotIn applies the NotIn predicate on the "severity" field.
+func SeverityNotIn(vs ...schematypes.SignalSeverity) predicate.AlertInstance {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.AlertInstance(sql.FieldNotIn(FieldSeverity, v...))
+}
+
+// FiredAtEQ applies the EQ predicate on the "fired_at" field.
+func FiredAtEQ(v time.Time) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldEQ(FieldFiredAt, v))
+}
+
+// FiredAtNEQ applies the NEQ predicate on the "fired_at" field.
+func FiredAtNEQ(v time.Time) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldNEQ(FieldFiredAt, v))
+}
+
+// FiredAtIn applies the In predicate on the "fired_at" field.
+func FiredAtIn(vs ...time.Time) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldIn(FieldFiredAt, vs...))
+}
+
+// FiredAtNotIn applies the NotIn predicate on the "fired_at" field.
+func FiredAtNotIn(vs ...time.Time) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldNotIn(FieldFiredAt, vs...))
+}
+
+// FiredAtGT applies the GT predicate on the "fired_at" field.
+func FiredAtGT(v time.Time) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldGT(FieldFiredAt, v))
+}
+
+// FiredAtGTE applies the GTE predicate on the "fired_at" field.
+func FiredAtGTE(v time.Time) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldGTE(FieldFiredAt, v))
+}
+
+// FiredAtLT applies the LT predicate on the "fired_at" field.
+func FiredAtLT(v time.Time) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldLT(FieldFiredAt, v))
+}
+
+// FiredAtLTE applies the LTE predicate on the "fired_at" field.
+func FiredAtLTE(v time.Time) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldLTE(FieldFiredAt, v))
+}
+
+// LastObservedAtEQ applies the EQ predicate on the "last_observed_at" field.
+func LastObservedAtEQ(v time.Time) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldEQ(FieldLastObservedAt, v))
+}
+
+// LastObservedAtNEQ applies the NEQ predicate on the "last_observed_at" field.
+func LastObservedAtNEQ(v time.Time) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldNEQ(FieldLastObservedAt, v))
+}
+
+// LastObservedAtIn applies the In predicate on the "last_observed_at" field.
+func LastObservedAtIn(vs ...time.Time) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldIn(FieldLastObservedAt, vs...))
+}
+
+// LastObservedAtNotIn applies the NotIn predicate on the "last_observed_at" field.
+func LastObservedAtNotIn(vs ...time.Time) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldNotIn(FieldLastObservedAt, vs...))
+}
+
+// LastObservedAtGT applies the GT predicate on the "last_observed_at" field.
+func LastObservedAtGT(v time.Time) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldGT(FieldLastObservedAt, v))
+}
+
+// LastObservedAtGTE applies the GTE predicate on the "last_observed_at" field.
+func LastObservedAtGTE(v time.Time) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldGTE(FieldLastObservedAt, v))
+}
+
+// LastObservedAtLT applies the LT predicate on the "last_observed_at" field.
+func LastObservedAtLT(v time.Time) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldLT(FieldLastObservedAt, v))
+}
+
+// LastObservedAtLTE applies the LTE predicate on the "last_observed_at" field.
+func LastObservedAtLTE(v time.Time) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldLTE(FieldLastObservedAt, v))
+}
+
+// ResolvedAtEQ applies the EQ predicate on the "resolved_at" field.
+func ResolvedAtEQ(v time.Time) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldEQ(FieldResolvedAt, v))
+}
+
+// ResolvedAtNEQ applies the NEQ predicate on the "resolved_at" field.
+func ResolvedAtNEQ(v time.Time) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldNEQ(FieldResolvedAt, v))
+}
+
+// ResolvedAtIn applies the In predicate on the "resolved_at" field.
+func ResolvedAtIn(vs ...time.Time) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldIn(FieldResolvedAt, vs...))
+}
+
+// ResolvedAtNotIn applies the NotIn predicate on the "resolved_at" field.
+func ResolvedAtNotIn(vs ...time.Time) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldNotIn(FieldResolvedAt, vs...))
+}
+
+// ResolvedAtGT applies the GT predicate on the "resolved_at" field.
+func ResolvedAtGT(v time.Time) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldGT(FieldResolvedAt, v))
+}
+
+// ResolvedAtGTE applies the GTE predicate on the "resolved_at" field.
+func ResolvedAtGTE(v time.Time) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldGTE(FieldResolvedAt, v))
+}
+
+// ResolvedAtLT applies the LT predicate on the "resolved_at" field.
+func ResolvedAtLT(v time.Time) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldLT(FieldResolvedAt, v))
+}
+
+// ResolvedAtLTE applies the LTE predicate on the "resolved_at" field.
+func ResolvedAtLTE(v time.Time) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldLTE(FieldResolvedAt, v))
+}
+
+// ResolvedAtIsNil applies the IsNil predicate on the "resolved_at" field.
+func ResolvedAtIsNil() predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldIsNull(FieldResolvedAt))
+}
+
+// ResolvedAtNotNil applies the NotNil predicate on the "resolved_at" field.
+func ResolvedAtNotNil() predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldNotNull(FieldResolvedAt))
+}
+
+// EndedAtEQ applies the EQ predicate on the "ended_at" field.
+func EndedAtEQ(v time.Time) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldEQ(FieldEndedAt, v))
+}
+
+// EndedAtNEQ applies the NEQ predicate on the "ended_at" field.
+func EndedAtNEQ(v time.Time) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldNEQ(FieldEndedAt, v))
+}
+
+// EndedAtIn applies the In predicate on the "ended_at" field.
+func EndedAtIn(vs ...time.Time) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldIn(FieldEndedAt, vs...))
+}
+
+// EndedAtNotIn applies the NotIn predicate on the "ended_at" field.
+func EndedAtNotIn(vs ...time.Time) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldNotIn(FieldEndedAt, vs...))
+}
+
+// EndedAtGT applies the GT predicate on the "ended_at" field.
+func EndedAtGT(v time.Time) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldGT(FieldEndedAt, v))
+}
+
+// EndedAtGTE applies the GTE predicate on the "ended_at" field.
+func EndedAtGTE(v time.Time) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldGTE(FieldEndedAt, v))
+}
+
+// EndedAtLT applies the LT predicate on the "ended_at" field.
+func EndedAtLT(v time.Time) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldLT(FieldEndedAt, v))
+}
+
+// EndedAtLTE applies the LTE predicate on the "ended_at" field.
+func EndedAtLTE(v time.Time) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldLTE(FieldEndedAt, v))
+}
+
+// EndedAtIsNil applies the IsNil predicate on the "ended_at" field.
+func EndedAtIsNil() predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldIsNull(FieldEndedAt))
+}
+
+// EndedAtNotNil applies the NotNil predicate on the "ended_at" field.
+func EndedAtNotNil() predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldNotNull(FieldEndedAt))
+}
+
+// EndReasonEQ applies the EQ predicate on the "end_reason" field.
+func EndReasonEQ(v EndReason) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldEQ(FieldEndReason, v))
+}
+
+// EndReasonNEQ applies the NEQ predicate on the "end_reason" field.
+func EndReasonNEQ(v EndReason) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldNEQ(FieldEndReason, v))
+}
+
+// EndReasonIn applies the In predicate on the "end_reason" field.
+func EndReasonIn(vs ...EndReason) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldIn(FieldEndReason, vs...))
+}
+
+// EndReasonNotIn applies the NotIn predicate on the "end_reason" field.
+func EndReasonNotIn(vs ...EndReason) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldNotIn(FieldEndReason, vs...))
+}
+
+// EndReasonIsNil applies the IsNil predicate on the "end_reason" field.
+func EndReasonIsNil() predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldIsNull(FieldEndReason))
+}
+
+// EndReasonNotNil applies the NotNil predicate on the "end_reason" field.
+func EndReasonNotNil() predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldNotNull(FieldEndReason))
 }
 
 // HasTenant applies the HasEdge predicate on the "tenant" edge.
@@ -188,27 +656,27 @@ func HasEpisodeWith(preds ...predicate.AlertEpisode) predicate.AlertInstance {
 	})
 }
 
-// HasEvent applies the HasEdge predicate on the "event" edge.
-func HasEvent() predicate.AlertInstance {
+// HasEvents applies the HasEdge predicate on the "events" edge.
+func HasEvents() predicate.AlertInstance {
 	return predicate.AlertInstance(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, EventTable, EventColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, EventsTable, EventsColumn),
 		)
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.NormalizedEvent
-		step.Edge.Schema = schemaConfig.AlertInstance
+		step.To.Schema = schemaConfig.AlertInstanceEvent
+		step.Edge.Schema = schemaConfig.AlertInstanceEvent
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasEventWith applies the HasEdge predicate on the "event" edge with a given conditions (other predicates).
-func HasEventWith(preds ...predicate.NormalizedEvent) predicate.AlertInstance {
+// HasEventsWith applies the HasEdge predicate on the "events" edge with a given conditions (other predicates).
+func HasEventsWith(preds ...predicate.AlertInstanceEvent) predicate.AlertInstance {
 	return predicate.AlertInstance(func(s *sql.Selector) {
-		step := newEventStep()
+		step := newEventsStep()
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.NormalizedEvent
-		step.Edge.Schema = schemaConfig.AlertInstance
+		step.To.Schema = schemaConfig.AlertInstanceEvent
+		step.Edge.Schema = schemaConfig.AlertInstanceEvent
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

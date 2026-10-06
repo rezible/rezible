@@ -60,11 +60,9 @@ type NormalizedEventEdges struct {
 	Integration *Integration `json:"integration,omitempty"`
 	// Projection holds the value of the projection edge.
 	Projection *NormalizedEventProjection `json:"projection,omitempty"`
-	// SituationObservationGroups holds the value of the situation_observation_groups edge.
-	SituationObservationGroups []*SituationObservationGroup `json:"situation_observation_groups,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [4]bool
+	loadedTypes [3]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -98,15 +96,6 @@ func (e NormalizedEventEdges) ProjectionOrErr() (*NormalizedEventProjection, err
 		return nil, &NotFoundError{label: normalizedeventprojection.Label}
 	}
 	return nil, &NotLoadedError{edge: "projection"}
-}
-
-// SituationObservationGroupsOrErr returns the SituationObservationGroups value or an error if the edge
-// was not loaded in eager-loading.
-func (e NormalizedEventEdges) SituationObservationGroupsOrErr() ([]*SituationObservationGroup, error) {
-	if e.loadedTypes[3] {
-		return e.SituationObservationGroups, nil
-	}
-	return nil, &NotLoadedError{edge: "situation_observation_groups"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -255,11 +244,6 @@ func (_m *NormalizedEvent) QueryIntegration() *IntegrationQuery {
 // QueryProjection queries the "projection" edge of the NormalizedEvent entity.
 func (_m *NormalizedEvent) QueryProjection() *NormalizedEventProjectionQuery {
 	return NewNormalizedEventClient(_m.config).QueryProjection(_m)
-}
-
-// QuerySituationObservationGroups queries the "situation_observation_groups" edge of the NormalizedEvent entity.
-func (_m *NormalizedEvent) QuerySituationObservationGroups() *SituationObservationGroupQuery {
-	return NewNormalizedEventClient(_m.config).QuerySituationObservationGroups(_m)
 }
 
 // Update returns a builder for updating this NormalizedEvent.

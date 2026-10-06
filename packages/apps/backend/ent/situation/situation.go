@@ -29,10 +29,22 @@ const (
 	FieldSummary = "summary"
 	// FieldOpenedAt holds the string denoting the opened_at field in the database.
 	FieldOpenedAt = "opened_at"
+	// FieldRaisedAt holds the string denoting the raised_at field in the database.
+	FieldRaisedAt = "raised_at"
+	// FieldMutedAt holds the string denoting the muted_at field in the database.
+	FieldMutedAt = "muted_at"
+	// FieldMuteReason holds the string denoting the mute_reason field in the database.
+	FieldMuteReason = "mute_reason"
+	// FieldHoldUntil holds the string denoting the hold_until field in the database.
+	FieldHoldUntil = "hold_until"
 	// FieldClosedAt holds the string denoting the closed_at field in the database.
 	FieldClosedAt = "closed_at"
 	// FieldCloseReason holds the string denoting the close_reason field in the database.
 	FieldCloseReason = "close_reason"
+	// FieldSeedEntityID holds the string denoting the seed_entity_id field in the database.
+	FieldSeedEntityID = "seed_entity_id"
+	// FieldLatestJudgmentID holds the string denoting the latest_judgment_id field in the database.
+	FieldLatestJudgmentID = "latest_judgment_id"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
 	// EdgeInvestigation holds the string denoting the investigation edge name in mutations.
@@ -43,6 +55,16 @@ const (
 	EdgeObservationGroups = "observation_groups"
 	// EdgeIncidents holds the string denoting the incidents edge name in mutations.
 	EdgeIncidents = "incidents"
+	// EdgeSignals holds the string denoting the signals edge name in mutations.
+	EdgeSignals = "signals"
+	// EdgeEntities holds the string denoting the entities edge name in mutations.
+	EdgeEntities = "entities"
+	// EdgeLinks holds the string denoting the links edge name in mutations.
+	EdgeLinks = "links"
+	// EdgeActions holds the string denoting the actions edge name in mutations.
+	EdgeActions = "actions"
+	// EdgeLatestJudgment holds the string denoting the latest_judgment edge name in mutations.
+	EdgeLatestJudgment = "latest_judgment"
 	// Table holds the table name of the situation in the database.
 	Table = "situations"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -78,6 +100,41 @@ const (
 	// IncidentsInverseTable is the table name for the Incident entity.
 	// It exists in this package in order to avoid circular dependency with the "incident" package.
 	IncidentsInverseTable = "incidents"
+	// SignalsTable is the table that holds the signals relation/edge.
+	SignalsTable = "situation_signals"
+	// SignalsInverseTable is the table name for the SituationSignal entity.
+	// It exists in this package in order to avoid circular dependency with the "situationsignal" package.
+	SignalsInverseTable = "situation_signals"
+	// SignalsColumn is the table column denoting the signals relation/edge.
+	SignalsColumn = "situation_id"
+	// EntitiesTable is the table that holds the entities relation/edge.
+	EntitiesTable = "situation_entities"
+	// EntitiesInverseTable is the table name for the SituationEntity entity.
+	// It exists in this package in order to avoid circular dependency with the "situationentity" package.
+	EntitiesInverseTable = "situation_entities"
+	// EntitiesColumn is the table column denoting the entities relation/edge.
+	EntitiesColumn = "situation_id"
+	// LinksTable is the table that holds the links relation/edge.
+	LinksTable = "situation_links"
+	// LinksInverseTable is the table name for the SituationLink entity.
+	// It exists in this package in order to avoid circular dependency with the "situationlink" package.
+	LinksInverseTable = "situation_links"
+	// LinksColumn is the table column denoting the links relation/edge.
+	LinksColumn = "situation_id"
+	// ActionsTable is the table that holds the actions relation/edge.
+	ActionsTable = "situation_actions"
+	// ActionsInverseTable is the table name for the SituationAction entity.
+	// It exists in this package in order to avoid circular dependency with the "situationaction" package.
+	ActionsInverseTable = "situation_actions"
+	// ActionsColumn is the table column denoting the actions relation/edge.
+	ActionsColumn = "situation_id"
+	// LatestJudgmentTable is the table that holds the latest_judgment relation/edge.
+	LatestJudgmentTable = "situations"
+	// LatestJudgmentInverseTable is the table name for the SituationJudgment entity.
+	// It exists in this package in order to avoid circular dependency with the "situationjudgment" package.
+	LatestJudgmentInverseTable = "situation_judgments"
+	// LatestJudgmentColumn is the table column denoting the latest_judgment relation/edge.
+	LatestJudgmentColumn = "latest_judgment_id"
 )
 
 // Columns holds all SQL columns for situation fields.
@@ -89,8 +146,14 @@ var Columns = []string{
 	FieldTitle,
 	FieldSummary,
 	FieldOpenedAt,
+	FieldRaisedAt,
+	FieldMutedAt,
+	FieldMuteReason,
+	FieldHoldUntil,
 	FieldClosedAt,
 	FieldCloseReason,
+	FieldSeedEntityID,
+	FieldLatestJudgmentID,
 }
 
 var (
@@ -129,12 +192,37 @@ var (
 	DefaultID func() uuid.UUID
 )
 
+// MuteReason defines the type for the "mute_reason" enum field.
+type MuteReason string
+
+// MuteReason values.
+const (
+	MuteReasonNotNoteworthy MuteReason = "not_noteworthy"
+	MuteReasonExpected      MuteReason = "expected"
+)
+
+func (mr MuteReason) String() string {
+	return string(mr)
+}
+
+// MuteReasonValidator is a validator for the "mute_reason" field enum values. It is called by the builders before save.
+func MuteReasonValidator(mr MuteReason) error {
+	switch mr {
+	case MuteReasonNotNoteworthy, MuteReasonExpected:
+		return nil
+	default:
+		return fmt.Errorf("situation: invalid enum value for mute_reason field: %q", mr)
+	}
+}
+
 // CloseReason defines the type for the "close_reason" enum field.
 type CloseReason string
 
 // CloseReason values.
 const (
 	CloseReasonStabilized CloseReason = "stabilized"
+	CloseReasonExpired    CloseReason = "expired"
+	CloseReasonMerged     CloseReason = "merged"
 	CloseReasonDismissed  CloseReason = "dismissed"
 )
 
@@ -145,7 +233,7 @@ func (cr CloseReason) String() string {
 // CloseReasonValidator is a validator for the "close_reason" field enum values. It is called by the builders before save.
 func CloseReasonValidator(cr CloseReason) error {
 	switch cr {
-	case CloseReasonStabilized, CloseReasonDismissed:
+	case CloseReasonStabilized, CloseReasonExpired, CloseReasonMerged, CloseReasonDismissed:
 		return nil
 	default:
 		return fmt.Errorf("situation: invalid enum value for close_reason field: %q", cr)
@@ -190,6 +278,26 @@ func ByOpenedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldOpenedAt, opts...).ToFunc()
 }
 
+// ByRaisedAt orders the results by the raised_at field.
+func ByRaisedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldRaisedAt, opts...).ToFunc()
+}
+
+// ByMutedAt orders the results by the muted_at field.
+func ByMutedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldMutedAt, opts...).ToFunc()
+}
+
+// ByMuteReason orders the results by the mute_reason field.
+func ByMuteReason(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldMuteReason, opts...).ToFunc()
+}
+
+// ByHoldUntil orders the results by the hold_until field.
+func ByHoldUntil(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldHoldUntil, opts...).ToFunc()
+}
+
 // ByClosedAt orders the results by the closed_at field.
 func ByClosedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldClosedAt, opts...).ToFunc()
@@ -198,6 +306,16 @@ func ByClosedAt(opts ...sql.OrderTermOption) OrderOption {
 // ByCloseReason orders the results by the close_reason field.
 func ByCloseReason(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldCloseReason, opts...).ToFunc()
+}
+
+// BySeedEntityID orders the results by the seed_entity_id field.
+func BySeedEntityID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldSeedEntityID, opts...).ToFunc()
+}
+
+// ByLatestJudgmentID orders the results by the latest_judgment_id field.
+func ByLatestJudgmentID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldLatestJudgmentID, opts...).ToFunc()
 }
 
 // ByTenantField orders the results by tenant field.
@@ -255,6 +373,69 @@ func ByIncidents(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newIncidentsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// BySignalsCount orders the results by signals count.
+func BySignalsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newSignalsStep(), opts...)
+	}
+}
+
+// BySignals orders the results by signals terms.
+func BySignals(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newSignalsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByEntitiesCount orders the results by entities count.
+func ByEntitiesCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newEntitiesStep(), opts...)
+	}
+}
+
+// ByEntities orders the results by entities terms.
+func ByEntities(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newEntitiesStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByLinksCount orders the results by links count.
+func ByLinksCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newLinksStep(), opts...)
+	}
+}
+
+// ByLinks orders the results by links terms.
+func ByLinks(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newLinksStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByActionsCount orders the results by actions count.
+func ByActionsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newActionsStep(), opts...)
+	}
+}
+
+// ByActions orders the results by actions terms.
+func ByActions(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newActionsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByLatestJudgmentField orders the results by latest_judgment field.
+func ByLatestJudgmentField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newLatestJudgmentStep(), sql.OrderByField(field, opts...))
+	}
+}
 func newTenantStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -290,9 +471,52 @@ func newIncidentsStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.M2M, true, IncidentsTable, IncidentsPrimaryKey...),
 	)
 }
+func newSignalsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(SignalsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, SignalsTable, SignalsColumn),
+	)
+}
+func newEntitiesStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(EntitiesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, EntitiesTable, EntitiesColumn),
+	)
+}
+func newLinksStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(LinksInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, LinksTable, LinksColumn),
+	)
+}
+func newActionsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ActionsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, ActionsTable, ActionsColumn),
+	)
+}
+func newLatestJudgmentStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(LatestJudgmentInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, LatestJudgmentTable, LatestJudgmentColumn),
+	)
+}
+
+// MuteReasonValues contains all permitted values. Treat this slice as read-only.
+var MuteReasonValues = []string{
+	"not_noteworthy",
+	"expected",
+}
 
 // CloseReasonValues contains all permitted values. Treat this slice as read-only.
 var CloseReasonValues = []string{
 	"stabilized",
+	"expired",
+	"merged",
 	"dismissed",
 }

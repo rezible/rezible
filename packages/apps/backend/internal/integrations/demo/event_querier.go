@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"iter"
+	"time"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
@@ -32,7 +33,7 @@ func (q *eventQuerier) QueryProviderEvents(ctx context.Context, cursors rez.Prov
 			makeEventPuller(cursors, yield, sourceTeamMembers, demoTeamMembershipEvents),
 			makeEventPuller(cursors, yield, sourceCodeRepos, demoCodeRepositoryEvents),
 			makeEventPuller(cursors, yield, sourceCodeChanges, demoCodeChangeEvents),
-			makeEventPuller(cursors, yield, sourceAlerts, demoAlertEvents),
+			makeEventPuller(cursors, yield, sourceAlerts, demoAlertEventsAt(q.ii.intg.CreatedAt)),
 			makeEventPuller(cursors, yield, sourceIncidents, demoIncidentEvents),
 			makeEventPuller(cursors, yield, sourceTopology, demoComponents),
 			makeEventPuller(cursors, yield, sourceTopology, demoRelationships),
@@ -73,6 +74,10 @@ func pullPayloadEvents[P demoEventPayload](source string, items []P, cursor stri
 			if cursor != "" && cursorAfter <= cursor {
 				continue
 			}
+			receivedAt := demoObservedAt
+			if delivered, ok := any(p).(interface{ receivedAt() time.Time }); ok {
+				receivedAt = delivered.receivedAt()
+			}
 			enc, jsonErr := json.Marshal(p)
 			if jsonErr != nil {
 				yield(nil, fmt.Errorf("marshal demo event: %w", jsonErr))
@@ -83,7 +88,7 @@ func pullPayloadEvents[P demoEventPayload](source string, items []P, cursor stri
 				ProviderNamespace:   integrationName,
 				ProviderEventSource: source,
 				ProviderEventRef:    providerEventRef,
-				ReceivedAt:          demoObservedAt,
+				ReceivedAt:          receivedAt,
 				Attributes:          enc,
 			}
 			res := &rez.ProviderEventQueryResult{Event: ev, ProviderEventSourceCursorAfter: new(cursorAfter)}

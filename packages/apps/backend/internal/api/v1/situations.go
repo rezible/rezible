@@ -18,19 +18,16 @@ func newSituationsHandler(bh *baseHandler, situations rez.SituationService) *sit
 
 func (h *situationsHandler) ListSituations(ctx context.Context, request *oapi.ListSituationsRequest) (*oapi.ListSituationsResponse, error) {
 	params := rez.ListSituationsParams{ListParams: request.ListParams()}
-	if request.Status != "" {
-		if request.Status == "active" {
-			params.Active = new(true)
-		} else if request.Status == "investigating" {
-			params.HasInvestigation = new(true)
-		} else if request.Status == "closed" {
-			params.Active = new(false)
-		}
+	params.Search = request.Search
+	for _, stage := range request.Stage {
+		params.Stages = append(params.Stages, rez.SituationStage(stage))
+	}
+	if request.Muted.IsSet {
+		params.Muted = &request.Muted.Value
 	}
 	if !request.OpenedAfter.IsZero() {
 		params.OpenedAfter = &request.OpenedAfter
 	}
-	params.Search = request.Search
 	result, listErr := h.situations.ListSituations(ctx, params)
 	if listErr != nil {
 		return nil, oapi.Error(ctx, "failed to list situations", listErr)
@@ -48,17 +45,14 @@ func (h *situationsHandler) GetSituation(ctx context.Context, request *oapi.GetS
 	return &response, nil
 }
 
-func (h *situationsHandler) RequestSituationInvestigation(ctx context.Context, request *oapi.RequestSituationInvestigationRequest) (*oapi.RequestSituationInvestigationResponse, error) {
-	_, invErr := h.situations.RequestSituationInvestigation(ctx, request.Id)
-	if invErr != nil {
-		return nil, oapi.Error(ctx, "failed to request situation investigation", invErr)
+func (h *situationsHandler) RaiseSituation(ctx context.Context, request *oapi.RaiseSituationRequest) (*oapi.RaiseSituationResponse, error) {
+	params := rez.RaiseSituationParams{StartInvestigation: true}
+	raised, raiseErr := h.situations.RaiseSituation(ctx, request.Id, params)
+	if raiseErr != nil {
+		return nil, oapi.Error(ctx, "failed to raise situation", raiseErr)
 	}
-	situ, situErr := h.situations.GetSituation(ctx, request.Id)
-	if situErr != nil {
-		return nil, oapi.Error(ctx, "failed to get situation", situErr)
-	}
-	var response oapi.RequestSituationInvestigationResponse
-	response.Body.Data = oapi.SituationFromEnt(situ)
+	var response oapi.RaiseSituationResponse
+	response.Body.Data = oapi.SituationFromEnt(raised)
 	return &response, nil
 }
 
@@ -91,4 +85,79 @@ func (h *situationsHandler) AddSituationHazardAssessment(ctx context.Context, re
 	}
 	response.Body.Data = oapi.SituationHazardAssessmentFromEnt(assessment)
 	return &response, nil
+}
+
+func (h *situationsHandler) SetSituationMute(ctx context.Context, request *oapi.SetSituationMuteRequest) (*oapi.SetSituationMuteResponse, error) {
+	updated, changeErr := h.situations.SetSituationMute(ctx, request.Id, &rez.SituationMute{Reason: request.Body.Attributes.Reason})
+	if changeErr != nil {
+		return nil, oapi.Error(ctx, "set situation mute", changeErr)
+	}
+	var response oapi.SetSituationMuteResponse
+	response.Body.Data = oapi.SituationFromEnt(updated)
+	return &response, nil
+}
+
+func (h *situationsHandler) ClearSituationMute(ctx context.Context, request *oapi.ClearSituationMuteRequest) (*oapi.ClearSituationMuteResponse, error) {
+	updated, changeErr := h.situations.SetSituationMute(ctx, request.Id, nil)
+	if changeErr != nil {
+		return nil, oapi.Error(ctx, "clear situation mute", changeErr)
+	}
+	var response oapi.ClearSituationMuteResponse
+	response.Body.Data = oapi.SituationFromEnt(updated)
+	return &response, nil
+}
+
+func (h *situationsHandler) SetSituationHold(ctx context.Context, request *oapi.SetSituationHoldRequest) (*oapi.SetSituationHoldResponse, error) {
+	updated, changeErr := h.situations.SetSituationHold(ctx, request.Id, &rez.SituationHold{Until: request.Body.Attributes.Until})
+	if changeErr != nil {
+		return nil, oapi.Error(ctx, "set situation hold", changeErr)
+	}
+	var response oapi.SetSituationHoldResponse
+	response.Body.Data = oapi.SituationFromEnt(updated)
+	return &response, nil
+}
+
+func (h *situationsHandler) ClearSituationHold(ctx context.Context, request *oapi.ClearSituationHoldRequest) (*oapi.ClearSituationHoldResponse, error) {
+	updated, changeErr := h.situations.SetSituationHold(ctx, request.Id, nil)
+	if changeErr != nil {
+		return nil, oapi.Error(ctx, "clear situation hold", changeErr)
+	}
+	var response oapi.ClearSituationHoldResponse
+	response.Body.Data = oapi.SituationFromEnt(updated)
+	return &response, nil
+}
+
+func (h *situationsHandler) CloseSituation(ctx context.Context, request *oapi.CloseSituationRequest) (*oapi.CloseSituationResponse, error) {
+	params := rez.CloseSituationParams{Note: request.Body.Attributes.Note}
+	updated, changeErr := h.situations.CloseSituation(ctx, request.Id, params)
+	if changeErr != nil {
+		return nil, oapi.Error(ctx, "close situation", changeErr)
+	}
+	var response oapi.CloseSituationResponse
+	response.Body.Data = oapi.SituationFromEnt(updated)
+	return &response, nil
+}
+
+func (h *situationsHandler) MergeSituation(ctx context.Context, request *oapi.MergeSituationRequest) (*oapi.MergeSituationResponse, error) {
+	params := rez.MergeSituationsParams{
+		SourceID:    request.Id,
+		TargetID:    request.Body.Attributes.TargetId,
+		Explanation: request.Body.Attributes.Explanation,
+	}
+	updated, changeErr := h.situations.MergeSituations(ctx, params)
+	if changeErr != nil {
+		return nil, oapi.Error(ctx, "merge situation", changeErr)
+	}
+	var response oapi.MergeSituationResponse
+	response.Body.Data = oapi.SituationFromEnt(updated)
+	return &response, nil
+}
+
+func (h *situationsHandler) ListSituationJudgments(ctx context.Context, request *oapi.ListSituationJudgmentsRequest) (*oapi.ListSituationJudgmentsResponse, error) {
+	params := rez.ListSituationJudgmentsParams{ListParams: request.ListParams(), SituationID: request.Id}
+	result, listErr := h.situations.ListSituationJudgments(ctx, params)
+	if listErr != nil {
+		return nil, oapi.Error(ctx, "list situation judgments", listErr)
+	}
+	return &oapi.ListSituationJudgmentsResponse{Body: oapi.ConvertPaginatedResultBody(result, oapi.SituationJudgmentHistoryItemFromEnt)}, nil
 }

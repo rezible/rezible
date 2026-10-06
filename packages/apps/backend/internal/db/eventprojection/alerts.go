@@ -6,7 +6,6 @@ import (
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	ad "github.com/rezible/rezible/ent/alertdefinition"
 	kne "github.com/rezible/rezible/ent/knowledgeentity"
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/schema/schematypes"
@@ -84,8 +83,7 @@ func (s *ProjectionService) handleAlertInstanceEvent(ctx context.Context, e *pro
 		supportingEvidence = append(supportingEvidence, entityEvidence, relationshipEvidence)
 	}
 
-	return ent.WithTxReturning(ctx, s.db, func(ctx context.Context, tx *ent.Client) ([]rez.ProjectedEntityRef, error) {
-		var projected []rez.ProjectedEntityRef
+	return ent.WithTxReturning(ctx, s.db, func(ctx context.Context, _ *ent.Client) ([]rez.ProjectedEntityRef, error) {
 		subj, ingestErr := s.ingestSubjectEvidence(ctx, event, alertEntityEvidence, supportingEvidence...)
 		if ingestErr != nil {
 			return nil, fmt.Errorf("alert knowledge evidence: %w", ingestErr)
@@ -93,27 +91,35 @@ func (s *ProjectionService) handleAlertInstanceEvent(ctx context.Context, e *pro
 			return nil, fmt.Errorf("nil subject entity")
 		}
 
-		upsertDefinition := tx.AlertDefinition.Create().
-			SetKnowledgeEntityID(*subj.EntityID).
-			SetTitle(attrs.Title).
-			SetDescription(attrs.Description).
-			SetDefinition(attrs.Definition).
-			OnConflictColumns(ad.FieldTenantID, ad.FieldKnowledgeEntityID).
-			UpdateNewValues()
-		definitionId, alertErr := upsertDefinition.ID(ctx)
-		if alertErr != nil {
-			return nil, fmt.Errorf("upsert alert: %w", alertErr)
+		recordParams := rez.RecordAlertInstanceParams{
+			Event: event,
+			Definition: rez.AlertDefinitionValues{
+				KnowledgeEntityID:        *subj.EntityID,
+				Title:                    attrs.Title,
+				Description:              attrs.Description,
+				Definition:               attrs.Definition,
+				ResolutionTimeoutSeconds: attrs.ResolutionTimeoutSeconds,
+				IdentityGroupLabels:      attrs.IdentityGroupLabels,
+			},
+			Instance: rez.AlertInstanceValues{
+				InstanceID: attrs.InstanceID,
+				Labels:     attrs.Labels,
+				Summary:    attrs.Summary,
+				Severity:   schematypes.SignalSeverity(attrs.Severity),
+				Firing:     attrs.State == projections.AlertStateFiring,
+				StartedAt:  attrs.StartedAt,
+				EndedAt:    attrs.EndedAt,
+			},
+		}
+		definition, recordErr := s.alerts.RecordAlertInstance(ctx, recordParams)
+		if recordErr != nil {
+			return nil, fmt.Errorf("record alert instance: %w", recordErr)
 		}
 
-		if _, eventErr := s.alerts.RecordAlertDefinitionInstance(ctx, definitionId, event); eventErr != nil {
-			return nil, fmt.Errorf("record alert definition instance: %w", eventErr)
-		}
-
-		projected = append(projected, rez.ProjectedEntityRef{
+		projected := []rez.ProjectedEntityRef{{
 			Kind: knowledgeEntityKindAlert,
-			Id:   definitionId,
-		})
-
+			Id:   definition.ID,
+		}}
 		return projected, nil
 	})
 }

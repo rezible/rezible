@@ -8,6 +8,9 @@ import (
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/alertepisode"
+	"github.com/rezible/rezible/ent/alertinstance"
+	"github.com/rezible/rezible/ent/alertinstanceevent"
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/incidentimpact"
 	"github.com/rezible/rezible/ent/incidentmilestone"
@@ -15,9 +18,16 @@ import (
 	ksa "github.com/rezible/rezible/ent/knowledgesubjectalias"
 	"github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/situationsignal"
 	sae "github.com/rezible/rezible/ent/systemanalysisentity"
 	"github.com/rezible/rezible/pkg/execution"
 )
+
+// SignalProcessor places a recorded signal into situations, as the process-situation-signal job does.
+// Processing a signal again is safe.
+type SignalProcessor interface {
+	ProcessSignal(ctx context.Context, signalEntityID uuid.UUID) error
+}
 
 func SeedDemoData(
 	ctx context.Context,
@@ -28,6 +38,7 @@ func SeedDemoData(
 	systemAnalysis rez.SystemAnalysisService,
 	events rez.EventsService,
 	situations rez.SituationService,
+	signals SignalProcessor,
 ) error {
 	s := &dataSeeder{
 		db:             db,
@@ -37,6 +48,7 @@ func SeedDemoData(
 		systemAnalysis: systemAnalysis,
 		events:         events,
 		situations:     situations,
+		signals:        signals,
 	}
 	return s.seedData(ctx)
 }
@@ -49,6 +61,7 @@ type dataSeeder struct {
 	systemAnalysis rez.SystemAnalysisService
 	events         rez.EventsService
 	situations     rez.SituationService
+	signals        SignalProcessor
 }
 
 func (d *dataSeeder) seedData(ctx context.Context) error {
@@ -69,7 +82,7 @@ func (d *dataSeeder) seedData(ctx context.Context) error {
 	if impactsErr := d.createImpacts(ctx, inc); impactsErr != nil {
 		return impactsErr
 	}
-	if situationErr := d.createSituation(ctx, inc); situationErr != nil {
+	if situationErr := d.linkSituation(ctx, inc); situationErr != nil {
 		return situationErr
 	}
 
@@ -219,61 +232,57 @@ func (d *dataSeeder) createImpacts(ctx context.Context, inc *ent.Incident) error
 	return nil
 }
 
-func (d *dataSeeder) createSituation(ctx context.Context, inc *ent.Incident) error {
-	const situationTitle = "Checkout search enrichment is degraded"
-	situationBody := "The alert observed high search API response times and included checkout as an impacted component."
+// linkSituation places the demo incident's alerts into situations, as signal processing does, and links the
+// incident to the situation holding its search latency alert. Background signal processing may already have
+// placed them; processing again changes nothing.
+func (d *dataSeeder) linkSituation(ctx context.Context, inc *ent.Incident) error {
+	var latencyEntityID uuid.UUID
+	for _, firing := range []alertObservedPayload{demoSearchLatencyFiring, demoElasticsearchCPUFiring} {
+		entityID, episodeErr := d.alertEpisodeEntity(ctx, firing.eventRef())
+		if episodeErr != nil {
+			return episodeErr
+		}
+		if processErr := d.signals.ProcessSignal(ctx, entityID); processErr != nil {
+			return fmt.Errorf("place demo alert %s: %w", firing.DefinitionRef, processErr)
+		}
+		if firing.DefinitionRef == demoSearchLatencyFiring.DefinitionRef {
+			latencyEntityID = entityID
+		}
+	}
+
+	queryMembership := d.db.Client(ctx).SituationSignal.Query().
+		Where(situationsignal.KnowledgeEntityID(latencyEntityID))
+	membership, membershipErr := queryMembership.Only(ctx)
+	if membershipErr != nil {
+		return fmt.Errorf("find demo incident situation: %w", membershipErr)
+	}
+	links := rez.IncidentSituationLinkChanges{Added: []uuid.UUID{membership.SituationID}}
+	if linkErr := d.situations.SyncIncidentLinks(ctx, inc.ID, links); linkErr != nil {
+		return fmt.Errorf("link demo incident to situation: %w", linkErr)
+	}
+	return nil
+}
+
+// alertEpisodeEntity returns the knowledge entity of the alert episode holding the notification.
+func (d *dataSeeder) alertEpisodeEntity(ctx context.Context, eventRef string) (uuid.UUID, error) {
 	eventParams := rez.ListEventsParams{
-		PageSize: 1,
-		Predicates: []predicate.NormalizedEvent{
-			normalizedevent.ProviderResourceRef("demo:alert_instance:search-api-latency-20260512T091500Z"),
-		},
+		PageSize:   1,
+		Predicates: []predicate.NormalizedEvent{normalizedevent.ProviderEventRef(eventRef)},
 	}
 	alertEvents, listErr := d.events.ListEvents(ctx, eventParams)
 	if listErr != nil {
-		return fmt.Errorf("find demo alert for incident situation: %w", listErr)
+		return uuid.Nil, fmt.Errorf("find demo alert %s: %w", eventRef, listErr)
 	}
 	if len(alertEvents.Data) == 0 {
-		return fmt.Errorf("demo alert for incident situation was not found")
+		return uuid.Nil, fmt.Errorf("demo alert %s was not found", eventRef)
 	}
-
-	situationParams := rez.ListSituationsParams{ListParams: ent.ListParams{Search: situationTitle, PageSize: 50}}
-	existingSituations, queryErr := d.situations.ListSituations(ctx, situationParams)
-	if queryErr != nil {
-		return fmt.Errorf("find demo incident situation: %w", queryErr)
+	queryEpisode := d.db.Client(ctx).AlertEpisode.Query().
+		Where(alertepisode.HasInstancesWith(alertinstance.HasEventsWith(alertinstanceevent.EventID(alertEvents.Data[0].ID))))
+	episode, episodeErr := queryEpisode.Only(ctx)
+	if episodeErr != nil {
+		return uuid.Nil, fmt.Errorf("find demo alert episode %s: %w", eventRef, episodeErr)
 	}
-	for _, existing := range existingSituations.Data {
-		if existing.Title != situationTitle {
-			continue
-		}
-		loaded, getErr := d.situations.GetSituation(ctx, existing.ID)
-		if getErr != nil {
-			return fmt.Errorf("load demo incident situation: %w", getErr)
-		}
-		for _, linkedIncident := range loaded.Edges.Incidents {
-			if linkedIncident.ID == inc.ID {
-				return nil
-			}
-		}
-		if linkErr := d.situations.AddIncidentToSituation(ctx, loaded.ID, inc.ID); linkErr != nil {
-			return fmt.Errorf("link demo incident to situation: %w", linkErr)
-		}
-		return nil
-	}
-	_, createErr := d.situations.CreateSituation(ctx, rez.CreateSituationParams{
-		Title:       situationTitle,
-		Summary:     "Search enrichment latency is causing a subset of checkout requests to time out.",
-		OpenedAt:    alertEvents.Data[0].OccurredAt,
-		IncidentIDs: []uuid.UUID{inc.ID},
-		ObservationGroups: []rez.SituationObservationGroupParams{{
-			Title:              "Search API latency is affecting checkout",
-			Body:               &situationBody,
-			NormalizedEventIDs: []uuid.UUID{alertEvents.Data[0].ID},
-		}},
-	})
-	if createErr != nil {
-		return fmt.Errorf("create demo incident situation: %w", createErr)
-	}
-	return nil
+	return *episode.KnowledgeEntityID, nil
 }
 
 func (d *dataSeeder) createRetrospective(ctx context.Context, inc *ent.Incident) error {

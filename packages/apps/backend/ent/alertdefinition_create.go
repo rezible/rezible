@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
@@ -16,6 +17,7 @@ import (
 	"github.com/rezible/rezible/ent/alertepisode"
 	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/playbook"
+	"github.com/rezible/rezible/ent/situationsignalattention"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
@@ -81,6 +83,44 @@ func (_c *AlertDefinitionCreate) SetNillableDefinition(v *string) *AlertDefiniti
 	return _c
 }
 
+// SetResolutionTimeoutSeconds sets the "resolution_timeout_seconds" field.
+func (_c *AlertDefinitionCreate) SetResolutionTimeoutSeconds(v int) *AlertDefinitionCreate {
+	_c.mutation.SetResolutionTimeoutSeconds(v)
+	return _c
+}
+
+// SetIdentityGroupLabels sets the "identity_group_labels" field.
+func (_c *AlertDefinitionCreate) SetIdentityGroupLabels(v []string) *AlertDefinitionCreate {
+	_c.mutation.SetIdentityGroupLabels(v)
+	return _c
+}
+
+// SetMetadataObservedAt sets the "metadata_observed_at" field.
+func (_c *AlertDefinitionCreate) SetMetadataObservedAt(v time.Time) *AlertDefinitionCreate {
+	_c.mutation.SetMetadataObservedAt(v)
+	return _c
+}
+
+// SetMetadataEventRef sets the "metadata_event_ref" field.
+func (_c *AlertDefinitionCreate) SetMetadataEventRef(v string) *AlertDefinitionCreate {
+	_c.mutation.SetMetadataEventRef(v)
+	return _c
+}
+
+// SetSituationSignalAttentionID sets the "situation_signal_attention_id" field.
+func (_c *AlertDefinitionCreate) SetSituationSignalAttentionID(v uuid.UUID) *AlertDefinitionCreate {
+	_c.mutation.SetSituationSignalAttentionID(v)
+	return _c
+}
+
+// SetNillableSituationSignalAttentionID sets the "situation_signal_attention_id" field if the given value is not nil.
+func (_c *AlertDefinitionCreate) SetNillableSituationSignalAttentionID(v *uuid.UUID) *AlertDefinitionCreate {
+	if v != nil {
+		_c.SetSituationSignalAttentionID(*v)
+	}
+	return _c
+}
+
 // SetID sets the "id" field.
 func (_c *AlertDefinitionCreate) SetID(v uuid.UUID) *AlertDefinitionCreate {
 	_c.mutation.SetID(v)
@@ -133,6 +173,11 @@ func (_c *AlertDefinitionCreate) AddEpisodes(v ...*AlertEpisode) *AlertDefinitio
 		ids[i] = v[i].ID
 	}
 	return _c.AddEpisodeIDs(ids...)
+}
+
+// SetSituationSignalAttention sets the "situation_signal_attention" edge to the SituationSignalAttention entity.
+func (_c *AlertDefinitionCreate) SetSituationSignalAttention(v *SituationSignalAttention) *AlertDefinitionCreate {
+	return _c.SetSituationSignalAttentionID(v.ID)
 }
 
 // Mutation returns the AlertDefinitionMutation object of the builder.
@@ -190,6 +235,20 @@ func (_c *AlertDefinitionCreate) check() error {
 	if _, ok := _c.mutation.Title(); !ok {
 		return &ValidationError{Name: "title", err: errors.New(`ent: missing required field "AlertDefinition.title"`)}
 	}
+	if _, ok := _c.mutation.ResolutionTimeoutSeconds(); !ok {
+		return &ValidationError{Name: "resolution_timeout_seconds", err: errors.New(`ent: missing required field "AlertDefinition.resolution_timeout_seconds"`)}
+	}
+	if v, ok := _c.mutation.ResolutionTimeoutSeconds(); ok {
+		if err := alertdefinition.ResolutionTimeoutSecondsValidator(v); err != nil {
+			return &ValidationError{Name: "resolution_timeout_seconds", err: fmt.Errorf(`ent: validator failed for field "AlertDefinition.resolution_timeout_seconds": %w`, err)}
+		}
+	}
+	if _, ok := _c.mutation.MetadataObservedAt(); !ok {
+		return &ValidationError{Name: "metadata_observed_at", err: errors.New(`ent: missing required field "AlertDefinition.metadata_observed_at"`)}
+	}
+	if _, ok := _c.mutation.MetadataEventRef(); !ok {
+		return &ValidationError{Name: "metadata_event_ref", err: errors.New(`ent: missing required field "AlertDefinition.metadata_event_ref"`)}
+	}
 	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "AlertDefinition.tenant"`)}
 	}
@@ -241,6 +300,22 @@ func (_c *AlertDefinitionCreate) createSpec() (*AlertDefinition, *sqlgraph.Creat
 	if value, ok := _c.mutation.Definition(); ok {
 		_spec.SetField(alertdefinition.FieldDefinition, field.TypeString, value)
 		_node.Definition = value
+	}
+	if value, ok := _c.mutation.ResolutionTimeoutSeconds(); ok {
+		_spec.SetField(alertdefinition.FieldResolutionTimeoutSeconds, field.TypeInt, value)
+		_node.ResolutionTimeoutSeconds = value
+	}
+	if value, ok := _c.mutation.IdentityGroupLabels(); ok {
+		_spec.SetField(alertdefinition.FieldIdentityGroupLabels, field.TypeJSON, value)
+		_node.IdentityGroupLabels = value
+	}
+	if value, ok := _c.mutation.MetadataObservedAt(); ok {
+		_spec.SetField(alertdefinition.FieldMetadataObservedAt, field.TypeTime, value)
+		_node.MetadataObservedAt = value
+	}
+	if value, ok := _c.mutation.MetadataEventRef(); ok {
+		_spec.SetField(alertdefinition.FieldMetadataEventRef, field.TypeString, value)
+		_node.MetadataEventRef = value
 	}
 	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -310,6 +385,24 @@ func (_c *AlertDefinitionCreate) createSpec() (*AlertDefinition, *sqlgraph.Creat
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.SituationSignalAttentionIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   alertdefinition.SituationSignalAttentionTable,
+			Columns: []string{alertdefinition.SituationSignalAttentionColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(situationsignalattention.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.AlertDefinition
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.SituationSignalAttentionID = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
@@ -427,6 +520,84 @@ func (u *AlertDefinitionUpsert) UpdateDefinition() *AlertDefinitionUpsert {
 // ClearDefinition clears the value of the "definition" field.
 func (u *AlertDefinitionUpsert) ClearDefinition() *AlertDefinitionUpsert {
 	u.SetNull(alertdefinition.FieldDefinition)
+	return u
+}
+
+// SetResolutionTimeoutSeconds sets the "resolution_timeout_seconds" field.
+func (u *AlertDefinitionUpsert) SetResolutionTimeoutSeconds(v int) *AlertDefinitionUpsert {
+	u.Set(alertdefinition.FieldResolutionTimeoutSeconds, v)
+	return u
+}
+
+// UpdateResolutionTimeoutSeconds sets the "resolution_timeout_seconds" field to the value that was provided on create.
+func (u *AlertDefinitionUpsert) UpdateResolutionTimeoutSeconds() *AlertDefinitionUpsert {
+	u.SetExcluded(alertdefinition.FieldResolutionTimeoutSeconds)
+	return u
+}
+
+// AddResolutionTimeoutSeconds adds v to the "resolution_timeout_seconds" field.
+func (u *AlertDefinitionUpsert) AddResolutionTimeoutSeconds(v int) *AlertDefinitionUpsert {
+	u.Add(alertdefinition.FieldResolutionTimeoutSeconds, v)
+	return u
+}
+
+// SetIdentityGroupLabels sets the "identity_group_labels" field.
+func (u *AlertDefinitionUpsert) SetIdentityGroupLabels(v []string) *AlertDefinitionUpsert {
+	u.Set(alertdefinition.FieldIdentityGroupLabels, v)
+	return u
+}
+
+// UpdateIdentityGroupLabels sets the "identity_group_labels" field to the value that was provided on create.
+func (u *AlertDefinitionUpsert) UpdateIdentityGroupLabels() *AlertDefinitionUpsert {
+	u.SetExcluded(alertdefinition.FieldIdentityGroupLabels)
+	return u
+}
+
+// ClearIdentityGroupLabels clears the value of the "identity_group_labels" field.
+func (u *AlertDefinitionUpsert) ClearIdentityGroupLabels() *AlertDefinitionUpsert {
+	u.SetNull(alertdefinition.FieldIdentityGroupLabels)
+	return u
+}
+
+// SetMetadataObservedAt sets the "metadata_observed_at" field.
+func (u *AlertDefinitionUpsert) SetMetadataObservedAt(v time.Time) *AlertDefinitionUpsert {
+	u.Set(alertdefinition.FieldMetadataObservedAt, v)
+	return u
+}
+
+// UpdateMetadataObservedAt sets the "metadata_observed_at" field to the value that was provided on create.
+func (u *AlertDefinitionUpsert) UpdateMetadataObservedAt() *AlertDefinitionUpsert {
+	u.SetExcluded(alertdefinition.FieldMetadataObservedAt)
+	return u
+}
+
+// SetMetadataEventRef sets the "metadata_event_ref" field.
+func (u *AlertDefinitionUpsert) SetMetadataEventRef(v string) *AlertDefinitionUpsert {
+	u.Set(alertdefinition.FieldMetadataEventRef, v)
+	return u
+}
+
+// UpdateMetadataEventRef sets the "metadata_event_ref" field to the value that was provided on create.
+func (u *AlertDefinitionUpsert) UpdateMetadataEventRef() *AlertDefinitionUpsert {
+	u.SetExcluded(alertdefinition.FieldMetadataEventRef)
+	return u
+}
+
+// SetSituationSignalAttentionID sets the "situation_signal_attention_id" field.
+func (u *AlertDefinitionUpsert) SetSituationSignalAttentionID(v uuid.UUID) *AlertDefinitionUpsert {
+	u.Set(alertdefinition.FieldSituationSignalAttentionID, v)
+	return u
+}
+
+// UpdateSituationSignalAttentionID sets the "situation_signal_attention_id" field to the value that was provided on create.
+func (u *AlertDefinitionUpsert) UpdateSituationSignalAttentionID() *AlertDefinitionUpsert {
+	u.SetExcluded(alertdefinition.FieldSituationSignalAttentionID)
+	return u
+}
+
+// ClearSituationSignalAttentionID clears the value of the "situation_signal_attention_id" field.
+func (u *AlertDefinitionUpsert) ClearSituationSignalAttentionID() *AlertDefinitionUpsert {
+	u.SetNull(alertdefinition.FieldSituationSignalAttentionID)
 	return u
 }
 
@@ -555,6 +726,97 @@ func (u *AlertDefinitionUpsertOne) UpdateDefinition() *AlertDefinitionUpsertOne 
 func (u *AlertDefinitionUpsertOne) ClearDefinition() *AlertDefinitionUpsertOne {
 	return u.Update(func(s *AlertDefinitionUpsert) {
 		s.ClearDefinition()
+	})
+}
+
+// SetResolutionTimeoutSeconds sets the "resolution_timeout_seconds" field.
+func (u *AlertDefinitionUpsertOne) SetResolutionTimeoutSeconds(v int) *AlertDefinitionUpsertOne {
+	return u.Update(func(s *AlertDefinitionUpsert) {
+		s.SetResolutionTimeoutSeconds(v)
+	})
+}
+
+// AddResolutionTimeoutSeconds adds v to the "resolution_timeout_seconds" field.
+func (u *AlertDefinitionUpsertOne) AddResolutionTimeoutSeconds(v int) *AlertDefinitionUpsertOne {
+	return u.Update(func(s *AlertDefinitionUpsert) {
+		s.AddResolutionTimeoutSeconds(v)
+	})
+}
+
+// UpdateResolutionTimeoutSeconds sets the "resolution_timeout_seconds" field to the value that was provided on create.
+func (u *AlertDefinitionUpsertOne) UpdateResolutionTimeoutSeconds() *AlertDefinitionUpsertOne {
+	return u.Update(func(s *AlertDefinitionUpsert) {
+		s.UpdateResolutionTimeoutSeconds()
+	})
+}
+
+// SetIdentityGroupLabels sets the "identity_group_labels" field.
+func (u *AlertDefinitionUpsertOne) SetIdentityGroupLabels(v []string) *AlertDefinitionUpsertOne {
+	return u.Update(func(s *AlertDefinitionUpsert) {
+		s.SetIdentityGroupLabels(v)
+	})
+}
+
+// UpdateIdentityGroupLabels sets the "identity_group_labels" field to the value that was provided on create.
+func (u *AlertDefinitionUpsertOne) UpdateIdentityGroupLabels() *AlertDefinitionUpsertOne {
+	return u.Update(func(s *AlertDefinitionUpsert) {
+		s.UpdateIdentityGroupLabels()
+	})
+}
+
+// ClearIdentityGroupLabels clears the value of the "identity_group_labels" field.
+func (u *AlertDefinitionUpsertOne) ClearIdentityGroupLabels() *AlertDefinitionUpsertOne {
+	return u.Update(func(s *AlertDefinitionUpsert) {
+		s.ClearIdentityGroupLabels()
+	})
+}
+
+// SetMetadataObservedAt sets the "metadata_observed_at" field.
+func (u *AlertDefinitionUpsertOne) SetMetadataObservedAt(v time.Time) *AlertDefinitionUpsertOne {
+	return u.Update(func(s *AlertDefinitionUpsert) {
+		s.SetMetadataObservedAt(v)
+	})
+}
+
+// UpdateMetadataObservedAt sets the "metadata_observed_at" field to the value that was provided on create.
+func (u *AlertDefinitionUpsertOne) UpdateMetadataObservedAt() *AlertDefinitionUpsertOne {
+	return u.Update(func(s *AlertDefinitionUpsert) {
+		s.UpdateMetadataObservedAt()
+	})
+}
+
+// SetMetadataEventRef sets the "metadata_event_ref" field.
+func (u *AlertDefinitionUpsertOne) SetMetadataEventRef(v string) *AlertDefinitionUpsertOne {
+	return u.Update(func(s *AlertDefinitionUpsert) {
+		s.SetMetadataEventRef(v)
+	})
+}
+
+// UpdateMetadataEventRef sets the "metadata_event_ref" field to the value that was provided on create.
+func (u *AlertDefinitionUpsertOne) UpdateMetadataEventRef() *AlertDefinitionUpsertOne {
+	return u.Update(func(s *AlertDefinitionUpsert) {
+		s.UpdateMetadataEventRef()
+	})
+}
+
+// SetSituationSignalAttentionID sets the "situation_signal_attention_id" field.
+func (u *AlertDefinitionUpsertOne) SetSituationSignalAttentionID(v uuid.UUID) *AlertDefinitionUpsertOne {
+	return u.Update(func(s *AlertDefinitionUpsert) {
+		s.SetSituationSignalAttentionID(v)
+	})
+}
+
+// UpdateSituationSignalAttentionID sets the "situation_signal_attention_id" field to the value that was provided on create.
+func (u *AlertDefinitionUpsertOne) UpdateSituationSignalAttentionID() *AlertDefinitionUpsertOne {
+	return u.Update(func(s *AlertDefinitionUpsert) {
+		s.UpdateSituationSignalAttentionID()
+	})
+}
+
+// ClearSituationSignalAttentionID clears the value of the "situation_signal_attention_id" field.
+func (u *AlertDefinitionUpsertOne) ClearSituationSignalAttentionID() *AlertDefinitionUpsertOne {
+	return u.Update(func(s *AlertDefinitionUpsert) {
+		s.ClearSituationSignalAttentionID()
 	})
 }
 
@@ -850,6 +1112,97 @@ func (u *AlertDefinitionUpsertBulk) UpdateDefinition() *AlertDefinitionUpsertBul
 func (u *AlertDefinitionUpsertBulk) ClearDefinition() *AlertDefinitionUpsertBulk {
 	return u.Update(func(s *AlertDefinitionUpsert) {
 		s.ClearDefinition()
+	})
+}
+
+// SetResolutionTimeoutSeconds sets the "resolution_timeout_seconds" field.
+func (u *AlertDefinitionUpsertBulk) SetResolutionTimeoutSeconds(v int) *AlertDefinitionUpsertBulk {
+	return u.Update(func(s *AlertDefinitionUpsert) {
+		s.SetResolutionTimeoutSeconds(v)
+	})
+}
+
+// AddResolutionTimeoutSeconds adds v to the "resolution_timeout_seconds" field.
+func (u *AlertDefinitionUpsertBulk) AddResolutionTimeoutSeconds(v int) *AlertDefinitionUpsertBulk {
+	return u.Update(func(s *AlertDefinitionUpsert) {
+		s.AddResolutionTimeoutSeconds(v)
+	})
+}
+
+// UpdateResolutionTimeoutSeconds sets the "resolution_timeout_seconds" field to the value that was provided on create.
+func (u *AlertDefinitionUpsertBulk) UpdateResolutionTimeoutSeconds() *AlertDefinitionUpsertBulk {
+	return u.Update(func(s *AlertDefinitionUpsert) {
+		s.UpdateResolutionTimeoutSeconds()
+	})
+}
+
+// SetIdentityGroupLabels sets the "identity_group_labels" field.
+func (u *AlertDefinitionUpsertBulk) SetIdentityGroupLabels(v []string) *AlertDefinitionUpsertBulk {
+	return u.Update(func(s *AlertDefinitionUpsert) {
+		s.SetIdentityGroupLabels(v)
+	})
+}
+
+// UpdateIdentityGroupLabels sets the "identity_group_labels" field to the value that was provided on create.
+func (u *AlertDefinitionUpsertBulk) UpdateIdentityGroupLabels() *AlertDefinitionUpsertBulk {
+	return u.Update(func(s *AlertDefinitionUpsert) {
+		s.UpdateIdentityGroupLabels()
+	})
+}
+
+// ClearIdentityGroupLabels clears the value of the "identity_group_labels" field.
+func (u *AlertDefinitionUpsertBulk) ClearIdentityGroupLabels() *AlertDefinitionUpsertBulk {
+	return u.Update(func(s *AlertDefinitionUpsert) {
+		s.ClearIdentityGroupLabels()
+	})
+}
+
+// SetMetadataObservedAt sets the "metadata_observed_at" field.
+func (u *AlertDefinitionUpsertBulk) SetMetadataObservedAt(v time.Time) *AlertDefinitionUpsertBulk {
+	return u.Update(func(s *AlertDefinitionUpsert) {
+		s.SetMetadataObservedAt(v)
+	})
+}
+
+// UpdateMetadataObservedAt sets the "metadata_observed_at" field to the value that was provided on create.
+func (u *AlertDefinitionUpsertBulk) UpdateMetadataObservedAt() *AlertDefinitionUpsertBulk {
+	return u.Update(func(s *AlertDefinitionUpsert) {
+		s.UpdateMetadataObservedAt()
+	})
+}
+
+// SetMetadataEventRef sets the "metadata_event_ref" field.
+func (u *AlertDefinitionUpsertBulk) SetMetadataEventRef(v string) *AlertDefinitionUpsertBulk {
+	return u.Update(func(s *AlertDefinitionUpsert) {
+		s.SetMetadataEventRef(v)
+	})
+}
+
+// UpdateMetadataEventRef sets the "metadata_event_ref" field to the value that was provided on create.
+func (u *AlertDefinitionUpsertBulk) UpdateMetadataEventRef() *AlertDefinitionUpsertBulk {
+	return u.Update(func(s *AlertDefinitionUpsert) {
+		s.UpdateMetadataEventRef()
+	})
+}
+
+// SetSituationSignalAttentionID sets the "situation_signal_attention_id" field.
+func (u *AlertDefinitionUpsertBulk) SetSituationSignalAttentionID(v uuid.UUID) *AlertDefinitionUpsertBulk {
+	return u.Update(func(s *AlertDefinitionUpsert) {
+		s.SetSituationSignalAttentionID(v)
+	})
+}
+
+// UpdateSituationSignalAttentionID sets the "situation_signal_attention_id" field to the value that was provided on create.
+func (u *AlertDefinitionUpsertBulk) UpdateSituationSignalAttentionID() *AlertDefinitionUpsertBulk {
+	return u.Update(func(s *AlertDefinitionUpsert) {
+		s.UpdateSituationSignalAttentionID()
+	})
+}
+
+// ClearSituationSignalAttentionID clears the value of the "situation_signal_attention_id" field.
+func (u *AlertDefinitionUpsertBulk) ClearSituationSignalAttentionID() *AlertDefinitionUpsertBulk {
+	return u.Update(func(s *AlertDefinitionUpsert) {
+		s.ClearSituationSignalAttentionID()
 	})
 }
 

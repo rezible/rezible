@@ -46,8 +46,6 @@ const (
 	EdgeIntegration = "integration"
 	// EdgeProjection holds the string denoting the projection edge name in mutations.
 	EdgeProjection = "projection"
-	// EdgeSituationObservationGroups holds the string denoting the situation_observation_groups edge name in mutations.
-	EdgeSituationObservationGroups = "situation_observation_groups"
 	// Table holds the table name of the normalizedevent in the database.
 	Table = "normalized_events"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -71,11 +69,6 @@ const (
 	ProjectionInverseTable = "normalized_event_projections"
 	// ProjectionColumn is the table column denoting the projection relation/edge.
 	ProjectionColumn = "normalized_event_projection"
-	// SituationObservationGroupsTable is the table that holds the situation_observation_groups relation/edge. The primary key declared below.
-	SituationObservationGroupsTable = "situation_observation_group_events"
-	// SituationObservationGroupsInverseTable is the table name for the SituationObservationGroup entity.
-	// It exists in this package in order to avoid circular dependency with the "situationobservationgroup" package.
-	SituationObservationGroupsInverseTable = "situation_observation_groups"
 )
 
 // Columns holds all SQL columns for normalizedevent fields.
@@ -100,12 +93,6 @@ var Columns = []string{
 var ForeignKeys = []string{
 	"normalized_event_projection",
 }
-
-var (
-	// SituationObservationGroupsPrimaryKey and SituationObservationGroupsColumn2 are the table columns denoting the
-	// primary key for the situation_observation_groups relation (M2M).
-	SituationObservationGroupsPrimaryKey = []string{"situation_observation_group_id", "normalized_event_id"}
-)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
@@ -229,20 +216,6 @@ func ByProjectionField(field string, opts ...sql.OrderTermOption) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newProjectionStep(), sql.OrderByField(field, opts...))
 	}
 }
-
-// BySituationObservationGroupsCount orders the results by situation_observation_groups count.
-func BySituationObservationGroupsCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newSituationObservationGroupsStep(), opts...)
-	}
-}
-
-// BySituationObservationGroups orders the results by situation_observation_groups terms.
-func BySituationObservationGroups(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newSituationObservationGroupsStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
 func newTenantStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -262,12 +235,5 @@ func newProjectionStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(ProjectionInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, false, ProjectionTable, ProjectionColumn),
-	)
-}
-func newSituationObservationGroupsStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(SituationObservationGroupsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2M, true, SituationObservationGroupsTable, SituationObservationGroupsPrimaryKey...),
 	)
 }

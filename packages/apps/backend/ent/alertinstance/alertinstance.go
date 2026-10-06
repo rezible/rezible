@@ -3,10 +3,13 @@
 package alertinstance
 
 import (
+	"fmt"
+
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/schema/schematypes"
 )
 
 const (
@@ -18,14 +21,32 @@ const (
 	FieldTenantID = "tenant_id"
 	// FieldAlertEpisodeID holds the string denoting the alert_episode_id field in the database.
 	FieldAlertEpisodeID = "alert_episode_id"
-	// FieldNormalizedEventID holds the string denoting the normalized_event_id field in the database.
-	FieldNormalizedEventID = "normalized_event_id"
+	// FieldInstanceKey holds the string denoting the instance_key field in the database.
+	FieldInstanceKey = "instance_key"
+	// FieldGroupingKey holds the string denoting the grouping_key field in the database.
+	FieldGroupingKey = "grouping_key"
+	// FieldLabels holds the string denoting the labels field in the database.
+	FieldLabels = "labels"
+	// FieldSummary holds the string denoting the summary field in the database.
+	FieldSummary = "summary"
+	// FieldSeverity holds the string denoting the severity field in the database.
+	FieldSeverity = "severity"
+	// FieldFiredAt holds the string denoting the fired_at field in the database.
+	FieldFiredAt = "fired_at"
+	// FieldLastObservedAt holds the string denoting the last_observed_at field in the database.
+	FieldLastObservedAt = "last_observed_at"
+	// FieldResolvedAt holds the string denoting the resolved_at field in the database.
+	FieldResolvedAt = "resolved_at"
+	// FieldEndedAt holds the string denoting the ended_at field in the database.
+	FieldEndedAt = "ended_at"
+	// FieldEndReason holds the string denoting the end_reason field in the database.
+	FieldEndReason = "end_reason"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
 	// EdgeEpisode holds the string denoting the episode edge name in mutations.
 	EdgeEpisode = "episode"
-	// EdgeEvent holds the string denoting the event edge name in mutations.
-	EdgeEvent = "event"
+	// EdgeEvents holds the string denoting the events edge name in mutations.
+	EdgeEvents = "events"
 	// EdgeFeedback holds the string denoting the feedback edge name in mutations.
 	EdgeFeedback = "feedback"
 	// Table holds the table name of the alertinstance in the database.
@@ -44,13 +65,13 @@ const (
 	EpisodeInverseTable = "alert_episodes"
 	// EpisodeColumn is the table column denoting the episode relation/edge.
 	EpisodeColumn = "alert_episode_id"
-	// EventTable is the table that holds the event relation/edge.
-	EventTable = "alert_instances"
-	// EventInverseTable is the table name for the NormalizedEvent entity.
-	// It exists in this package in order to avoid circular dependency with the "normalizedevent" package.
-	EventInverseTable = "normalized_events"
-	// EventColumn is the table column denoting the event relation/edge.
-	EventColumn = "normalized_event_id"
+	// EventsTable is the table that holds the events relation/edge.
+	EventsTable = "alert_instance_events"
+	// EventsInverseTable is the table name for the AlertInstanceEvent entity.
+	// It exists in this package in order to avoid circular dependency with the "alertinstanceevent" package.
+	EventsInverseTable = "alert_instance_events"
+	// EventsColumn is the table column denoting the events relation/edge.
+	EventsColumn = "alert_instance_id"
 	// FeedbackTable is the table that holds the feedback relation/edge.
 	FeedbackTable = "alert_feedbacks"
 	// FeedbackInverseTable is the table name for the AlertFeedback entity.
@@ -65,7 +86,16 @@ var Columns = []string{
 	FieldID,
 	FieldTenantID,
 	FieldAlertEpisodeID,
-	FieldNormalizedEventID,
+	FieldInstanceKey,
+	FieldGroupingKey,
+	FieldLabels,
+	FieldSummary,
+	FieldSeverity,
+	FieldFiredAt,
+	FieldLastObservedAt,
+	FieldResolvedAt,
+	FieldEndedAt,
+	FieldEndReason,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -90,6 +120,42 @@ var (
 	DefaultID func() uuid.UUID
 )
 
+const DefaultSeverity schematypes.SignalSeverity = "unknown"
+
+// SeverityValidator is a validator for the "severity" field enum values. It is called by the builders before save.
+func SeverityValidator(s schematypes.SignalSeverity) error {
+	switch s {
+	case "unknown", "info", "warning", "critical":
+		return nil
+	default:
+		return fmt.Errorf("alertinstance: invalid enum value for severity field: %q", s)
+	}
+}
+
+// EndReason defines the type for the "end_reason" enum field.
+type EndReason string
+
+// EndReason values.
+const (
+	EndReasonResolved   EndReason = "resolved"
+	EndReasonSuperseded EndReason = "superseded"
+	EndReasonTimeout    EndReason = "timeout"
+)
+
+func (er EndReason) String() string {
+	return string(er)
+}
+
+// EndReasonValidator is a validator for the "end_reason" field enum values. It is called by the builders before save.
+func EndReasonValidator(er EndReason) error {
+	switch er {
+	case EndReasonResolved, EndReasonSuperseded, EndReasonTimeout:
+		return nil
+	default:
+		return fmt.Errorf("alertinstance: invalid enum value for end_reason field: %q", er)
+	}
+}
+
 // OrderOption defines the ordering options for the AlertInstance queries.
 type OrderOption func(*sql.Selector)
 
@@ -108,9 +174,49 @@ func ByAlertEpisodeID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldAlertEpisodeID, opts...).ToFunc()
 }
 
-// ByNormalizedEventID orders the results by the normalized_event_id field.
-func ByNormalizedEventID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldNormalizedEventID, opts...).ToFunc()
+// ByInstanceKey orders the results by the instance_key field.
+func ByInstanceKey(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldInstanceKey, opts...).ToFunc()
+}
+
+// ByGroupingKey orders the results by the grouping_key field.
+func ByGroupingKey(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldGroupingKey, opts...).ToFunc()
+}
+
+// BySummary orders the results by the summary field.
+func BySummary(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldSummary, opts...).ToFunc()
+}
+
+// BySeverity orders the results by the severity field.
+func BySeverity(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldSeverity, opts...).ToFunc()
+}
+
+// ByFiredAt orders the results by the fired_at field.
+func ByFiredAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldFiredAt, opts...).ToFunc()
+}
+
+// ByLastObservedAt orders the results by the last_observed_at field.
+func ByLastObservedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldLastObservedAt, opts...).ToFunc()
+}
+
+// ByResolvedAt orders the results by the resolved_at field.
+func ByResolvedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldResolvedAt, opts...).ToFunc()
+}
+
+// ByEndedAt orders the results by the ended_at field.
+func ByEndedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldEndedAt, opts...).ToFunc()
+}
+
+// ByEndReason orders the results by the end_reason field.
+func ByEndReason(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldEndReason, opts...).ToFunc()
 }
 
 // ByTenantField orders the results by tenant field.
@@ -127,10 +233,17 @@ func ByEpisodeField(field string, opts ...sql.OrderTermOption) OrderOption {
 	}
 }
 
-// ByEventField orders the results by event field.
-func ByEventField(field string, opts ...sql.OrderTermOption) OrderOption {
+// ByEventsCount orders the results by events count.
+func ByEventsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newEventStep(), sql.OrderByField(field, opts...))
+		sqlgraph.OrderByNeighborsCount(s, newEventsStep(), opts...)
+	}
+}
+
+// ByEvents orders the results by events terms.
+func ByEvents(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newEventsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
 
@@ -161,11 +274,11 @@ func newEpisodeStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.M2O, true, EpisodeTable, EpisodeColumn),
 	)
 }
-func newEventStep() *sqlgraph.Step {
+func newEventsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(EventInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, false, EventTable, EventColumn),
+		sqlgraph.To(EventsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, EventsTable, EventsColumn),
 	)
 }
 func newFeedbackStep() *sqlgraph.Step {
@@ -174,4 +287,11 @@ func newFeedbackStep() *sqlgraph.Step {
 		sqlgraph.To(FeedbackInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, true, FeedbackTable, FeedbackColumn),
 	)
+}
+
+// EndReasonValues contains all permitted values. Treat this slice as read-only.
+var EndReasonValues = []string{
+	"resolved",
+	"superseded",
+	"timeout",
 }

@@ -87,9 +87,34 @@ func OpenedAt(v time.Time) predicate.Situation {
 	return predicate.Situation(sql.FieldEQ(FieldOpenedAt, v))
 }
 
+// RaisedAt applies equality check predicate on the "raised_at" field. It's identical to RaisedAtEQ.
+func RaisedAt(v time.Time) predicate.Situation {
+	return predicate.Situation(sql.FieldEQ(FieldRaisedAt, v))
+}
+
+// MutedAt applies equality check predicate on the "muted_at" field. It's identical to MutedAtEQ.
+func MutedAt(v time.Time) predicate.Situation {
+	return predicate.Situation(sql.FieldEQ(FieldMutedAt, v))
+}
+
+// HoldUntil applies equality check predicate on the "hold_until" field. It's identical to HoldUntilEQ.
+func HoldUntil(v time.Time) predicate.Situation {
+	return predicate.Situation(sql.FieldEQ(FieldHoldUntil, v))
+}
+
 // ClosedAt applies equality check predicate on the "closed_at" field. It's identical to ClosedAtEQ.
 func ClosedAt(v time.Time) predicate.Situation {
 	return predicate.Situation(sql.FieldEQ(FieldClosedAt, v))
+}
+
+// SeedEntityID applies equality check predicate on the "seed_entity_id" field. It's identical to SeedEntityIDEQ.
+func SeedEntityID(v uuid.UUID) predicate.Situation {
+	return predicate.Situation(sql.FieldEQ(FieldSeedEntityID, v))
+}
+
+// LatestJudgmentID applies equality check predicate on the "latest_judgment_id" field. It's identical to LatestJudgmentIDEQ.
+func LatestJudgmentID(v uuid.UUID) predicate.Situation {
+	return predicate.Situation(sql.FieldEQ(FieldLatestJudgmentID, v))
 }
 
 // TenantIDEQ applies the EQ predicate on the "tenant_id" field.
@@ -372,6 +397,186 @@ func OpenedAtLTE(v time.Time) predicate.Situation {
 	return predicate.Situation(sql.FieldLTE(FieldOpenedAt, v))
 }
 
+// RaisedAtEQ applies the EQ predicate on the "raised_at" field.
+func RaisedAtEQ(v time.Time) predicate.Situation {
+	return predicate.Situation(sql.FieldEQ(FieldRaisedAt, v))
+}
+
+// RaisedAtNEQ applies the NEQ predicate on the "raised_at" field.
+func RaisedAtNEQ(v time.Time) predicate.Situation {
+	return predicate.Situation(sql.FieldNEQ(FieldRaisedAt, v))
+}
+
+// RaisedAtIn applies the In predicate on the "raised_at" field.
+func RaisedAtIn(vs ...time.Time) predicate.Situation {
+	return predicate.Situation(sql.FieldIn(FieldRaisedAt, vs...))
+}
+
+// RaisedAtNotIn applies the NotIn predicate on the "raised_at" field.
+func RaisedAtNotIn(vs ...time.Time) predicate.Situation {
+	return predicate.Situation(sql.FieldNotIn(FieldRaisedAt, vs...))
+}
+
+// RaisedAtGT applies the GT predicate on the "raised_at" field.
+func RaisedAtGT(v time.Time) predicate.Situation {
+	return predicate.Situation(sql.FieldGT(FieldRaisedAt, v))
+}
+
+// RaisedAtGTE applies the GTE predicate on the "raised_at" field.
+func RaisedAtGTE(v time.Time) predicate.Situation {
+	return predicate.Situation(sql.FieldGTE(FieldRaisedAt, v))
+}
+
+// RaisedAtLT applies the LT predicate on the "raised_at" field.
+func RaisedAtLT(v time.Time) predicate.Situation {
+	return predicate.Situation(sql.FieldLT(FieldRaisedAt, v))
+}
+
+// RaisedAtLTE applies the LTE predicate on the "raised_at" field.
+func RaisedAtLTE(v time.Time) predicate.Situation {
+	return predicate.Situation(sql.FieldLTE(FieldRaisedAt, v))
+}
+
+// RaisedAtIsNil applies the IsNil predicate on the "raised_at" field.
+func RaisedAtIsNil() predicate.Situation {
+	return predicate.Situation(sql.FieldIsNull(FieldRaisedAt))
+}
+
+// RaisedAtNotNil applies the NotNil predicate on the "raised_at" field.
+func RaisedAtNotNil() predicate.Situation {
+	return predicate.Situation(sql.FieldNotNull(FieldRaisedAt))
+}
+
+// MutedAtEQ applies the EQ predicate on the "muted_at" field.
+func MutedAtEQ(v time.Time) predicate.Situation {
+	return predicate.Situation(sql.FieldEQ(FieldMutedAt, v))
+}
+
+// MutedAtNEQ applies the NEQ predicate on the "muted_at" field.
+func MutedAtNEQ(v time.Time) predicate.Situation {
+	return predicate.Situation(sql.FieldNEQ(FieldMutedAt, v))
+}
+
+// MutedAtIn applies the In predicate on the "muted_at" field.
+func MutedAtIn(vs ...time.Time) predicate.Situation {
+	return predicate.Situation(sql.FieldIn(FieldMutedAt, vs...))
+}
+
+// MutedAtNotIn applies the NotIn predicate on the "muted_at" field.
+func MutedAtNotIn(vs ...time.Time) predicate.Situation {
+	return predicate.Situation(sql.FieldNotIn(FieldMutedAt, vs...))
+}
+
+// MutedAtGT applies the GT predicate on the "muted_at" field.
+func MutedAtGT(v time.Time) predicate.Situation {
+	return predicate.Situation(sql.FieldGT(FieldMutedAt, v))
+}
+
+// MutedAtGTE applies the GTE predicate on the "muted_at" field.
+func MutedAtGTE(v time.Time) predicate.Situation {
+	return predicate.Situation(sql.FieldGTE(FieldMutedAt, v))
+}
+
+// MutedAtLT applies the LT predicate on the "muted_at" field.
+func MutedAtLT(v time.Time) predicate.Situation {
+	return predicate.Situation(sql.FieldLT(FieldMutedAt, v))
+}
+
+// MutedAtLTE applies the LTE predicate on the "muted_at" field.
+func MutedAtLTE(v time.Time) predicate.Situation {
+	return predicate.Situation(sql.FieldLTE(FieldMutedAt, v))
+}
+
+// MutedAtIsNil applies the IsNil predicate on the "muted_at" field.
+func MutedAtIsNil() predicate.Situation {
+	return predicate.Situation(sql.FieldIsNull(FieldMutedAt))
+}
+
+// MutedAtNotNil applies the NotNil predicate on the "muted_at" field.
+func MutedAtNotNil() predicate.Situation {
+	return predicate.Situation(sql.FieldNotNull(FieldMutedAt))
+}
+
+// MuteReasonEQ applies the EQ predicate on the "mute_reason" field.
+func MuteReasonEQ(v MuteReason) predicate.Situation {
+	return predicate.Situation(sql.FieldEQ(FieldMuteReason, v))
+}
+
+// MuteReasonNEQ applies the NEQ predicate on the "mute_reason" field.
+func MuteReasonNEQ(v MuteReason) predicate.Situation {
+	return predicate.Situation(sql.FieldNEQ(FieldMuteReason, v))
+}
+
+// MuteReasonIn applies the In predicate on the "mute_reason" field.
+func MuteReasonIn(vs ...MuteReason) predicate.Situation {
+	return predicate.Situation(sql.FieldIn(FieldMuteReason, vs...))
+}
+
+// MuteReasonNotIn applies the NotIn predicate on the "mute_reason" field.
+func MuteReasonNotIn(vs ...MuteReason) predicate.Situation {
+	return predicate.Situation(sql.FieldNotIn(FieldMuteReason, vs...))
+}
+
+// MuteReasonIsNil applies the IsNil predicate on the "mute_reason" field.
+func MuteReasonIsNil() predicate.Situation {
+	return predicate.Situation(sql.FieldIsNull(FieldMuteReason))
+}
+
+// MuteReasonNotNil applies the NotNil predicate on the "mute_reason" field.
+func MuteReasonNotNil() predicate.Situation {
+	return predicate.Situation(sql.FieldNotNull(FieldMuteReason))
+}
+
+// HoldUntilEQ applies the EQ predicate on the "hold_until" field.
+func HoldUntilEQ(v time.Time) predicate.Situation {
+	return predicate.Situation(sql.FieldEQ(FieldHoldUntil, v))
+}
+
+// HoldUntilNEQ applies the NEQ predicate on the "hold_until" field.
+func HoldUntilNEQ(v time.Time) predicate.Situation {
+	return predicate.Situation(sql.FieldNEQ(FieldHoldUntil, v))
+}
+
+// HoldUntilIn applies the In predicate on the "hold_until" field.
+func HoldUntilIn(vs ...time.Time) predicate.Situation {
+	return predicate.Situation(sql.FieldIn(FieldHoldUntil, vs...))
+}
+
+// HoldUntilNotIn applies the NotIn predicate on the "hold_until" field.
+func HoldUntilNotIn(vs ...time.Time) predicate.Situation {
+	return predicate.Situation(sql.FieldNotIn(FieldHoldUntil, vs...))
+}
+
+// HoldUntilGT applies the GT predicate on the "hold_until" field.
+func HoldUntilGT(v time.Time) predicate.Situation {
+	return predicate.Situation(sql.FieldGT(FieldHoldUntil, v))
+}
+
+// HoldUntilGTE applies the GTE predicate on the "hold_until" field.
+func HoldUntilGTE(v time.Time) predicate.Situation {
+	return predicate.Situation(sql.FieldGTE(FieldHoldUntil, v))
+}
+
+// HoldUntilLT applies the LT predicate on the "hold_until" field.
+func HoldUntilLT(v time.Time) predicate.Situation {
+	return predicate.Situation(sql.FieldLT(FieldHoldUntil, v))
+}
+
+// HoldUntilLTE applies the LTE predicate on the "hold_until" field.
+func HoldUntilLTE(v time.Time) predicate.Situation {
+	return predicate.Situation(sql.FieldLTE(FieldHoldUntil, v))
+}
+
+// HoldUntilIsNil applies the IsNil predicate on the "hold_until" field.
+func HoldUntilIsNil() predicate.Situation {
+	return predicate.Situation(sql.FieldIsNull(FieldHoldUntil))
+}
+
+// HoldUntilNotNil applies the NotNil predicate on the "hold_until" field.
+func HoldUntilNotNil() predicate.Situation {
+	return predicate.Situation(sql.FieldNotNull(FieldHoldUntil))
+}
+
 // ClosedAtEQ applies the EQ predicate on the "closed_at" field.
 func ClosedAtEQ(v time.Time) predicate.Situation {
 	return predicate.Situation(sql.FieldEQ(FieldClosedAt, v))
@@ -450,6 +655,76 @@ func CloseReasonIsNil() predicate.Situation {
 // CloseReasonNotNil applies the NotNil predicate on the "close_reason" field.
 func CloseReasonNotNil() predicate.Situation {
 	return predicate.Situation(sql.FieldNotNull(FieldCloseReason))
+}
+
+// SeedEntityIDEQ applies the EQ predicate on the "seed_entity_id" field.
+func SeedEntityIDEQ(v uuid.UUID) predicate.Situation {
+	return predicate.Situation(sql.FieldEQ(FieldSeedEntityID, v))
+}
+
+// SeedEntityIDNEQ applies the NEQ predicate on the "seed_entity_id" field.
+func SeedEntityIDNEQ(v uuid.UUID) predicate.Situation {
+	return predicate.Situation(sql.FieldNEQ(FieldSeedEntityID, v))
+}
+
+// SeedEntityIDIn applies the In predicate on the "seed_entity_id" field.
+func SeedEntityIDIn(vs ...uuid.UUID) predicate.Situation {
+	return predicate.Situation(sql.FieldIn(FieldSeedEntityID, vs...))
+}
+
+// SeedEntityIDNotIn applies the NotIn predicate on the "seed_entity_id" field.
+func SeedEntityIDNotIn(vs ...uuid.UUID) predicate.Situation {
+	return predicate.Situation(sql.FieldNotIn(FieldSeedEntityID, vs...))
+}
+
+// SeedEntityIDGT applies the GT predicate on the "seed_entity_id" field.
+func SeedEntityIDGT(v uuid.UUID) predicate.Situation {
+	return predicate.Situation(sql.FieldGT(FieldSeedEntityID, v))
+}
+
+// SeedEntityIDGTE applies the GTE predicate on the "seed_entity_id" field.
+func SeedEntityIDGTE(v uuid.UUID) predicate.Situation {
+	return predicate.Situation(sql.FieldGTE(FieldSeedEntityID, v))
+}
+
+// SeedEntityIDLT applies the LT predicate on the "seed_entity_id" field.
+func SeedEntityIDLT(v uuid.UUID) predicate.Situation {
+	return predicate.Situation(sql.FieldLT(FieldSeedEntityID, v))
+}
+
+// SeedEntityIDLTE applies the LTE predicate on the "seed_entity_id" field.
+func SeedEntityIDLTE(v uuid.UUID) predicate.Situation {
+	return predicate.Situation(sql.FieldLTE(FieldSeedEntityID, v))
+}
+
+// LatestJudgmentIDEQ applies the EQ predicate on the "latest_judgment_id" field.
+func LatestJudgmentIDEQ(v uuid.UUID) predicate.Situation {
+	return predicate.Situation(sql.FieldEQ(FieldLatestJudgmentID, v))
+}
+
+// LatestJudgmentIDNEQ applies the NEQ predicate on the "latest_judgment_id" field.
+func LatestJudgmentIDNEQ(v uuid.UUID) predicate.Situation {
+	return predicate.Situation(sql.FieldNEQ(FieldLatestJudgmentID, v))
+}
+
+// LatestJudgmentIDIn applies the In predicate on the "latest_judgment_id" field.
+func LatestJudgmentIDIn(vs ...uuid.UUID) predicate.Situation {
+	return predicate.Situation(sql.FieldIn(FieldLatestJudgmentID, vs...))
+}
+
+// LatestJudgmentIDNotIn applies the NotIn predicate on the "latest_judgment_id" field.
+func LatestJudgmentIDNotIn(vs ...uuid.UUID) predicate.Situation {
+	return predicate.Situation(sql.FieldNotIn(FieldLatestJudgmentID, vs...))
+}
+
+// LatestJudgmentIDIsNil applies the IsNil predicate on the "latest_judgment_id" field.
+func LatestJudgmentIDIsNil() predicate.Situation {
+	return predicate.Situation(sql.FieldIsNull(FieldLatestJudgmentID))
+}
+
+// LatestJudgmentIDNotNil applies the NotNil predicate on the "latest_judgment_id" field.
+func LatestJudgmentIDNotNil() predicate.Situation {
+	return predicate.Situation(sql.FieldNotNull(FieldLatestJudgmentID))
 }
 
 // HasTenant applies the HasEdge predicate on the "tenant" edge.
@@ -589,6 +864,151 @@ func HasIncidentsWith(preds ...predicate.Incident) predicate.Situation {
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.Incident
 		step.Edge.Schema = schemaConfig.IncidentSituations
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasSignals applies the HasEdge predicate on the "signals" edge.
+func HasSignals() predicate.Situation {
+	return predicate.Situation(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, SignalsTable, SignalsColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SituationSignal
+		step.Edge.Schema = schemaConfig.SituationSignal
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasSignalsWith applies the HasEdge predicate on the "signals" edge with a given conditions (other predicates).
+func HasSignalsWith(preds ...predicate.SituationSignal) predicate.Situation {
+	return predicate.Situation(func(s *sql.Selector) {
+		step := newSignalsStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SituationSignal
+		step.Edge.Schema = schemaConfig.SituationSignal
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasEntities applies the HasEdge predicate on the "entities" edge.
+func HasEntities() predicate.Situation {
+	return predicate.Situation(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, EntitiesTable, EntitiesColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SituationEntity
+		step.Edge.Schema = schemaConfig.SituationEntity
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasEntitiesWith applies the HasEdge predicate on the "entities" edge with a given conditions (other predicates).
+func HasEntitiesWith(preds ...predicate.SituationEntity) predicate.Situation {
+	return predicate.Situation(func(s *sql.Selector) {
+		step := newEntitiesStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SituationEntity
+		step.Edge.Schema = schemaConfig.SituationEntity
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasLinks applies the HasEdge predicate on the "links" edge.
+func HasLinks() predicate.Situation {
+	return predicate.Situation(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, LinksTable, LinksColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SituationLink
+		step.Edge.Schema = schemaConfig.SituationLink
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasLinksWith applies the HasEdge predicate on the "links" edge with a given conditions (other predicates).
+func HasLinksWith(preds ...predicate.SituationLink) predicate.Situation {
+	return predicate.Situation(func(s *sql.Selector) {
+		step := newLinksStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SituationLink
+		step.Edge.Schema = schemaConfig.SituationLink
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasActions applies the HasEdge predicate on the "actions" edge.
+func HasActions() predicate.Situation {
+	return predicate.Situation(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, ActionsTable, ActionsColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SituationAction
+		step.Edge.Schema = schemaConfig.SituationAction
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasActionsWith applies the HasEdge predicate on the "actions" edge with a given conditions (other predicates).
+func HasActionsWith(preds ...predicate.SituationAction) predicate.Situation {
+	return predicate.Situation(func(s *sql.Selector) {
+		step := newActionsStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SituationAction
+		step.Edge.Schema = schemaConfig.SituationAction
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasLatestJudgment applies the HasEdge predicate on the "latest_judgment" edge.
+func HasLatestJudgment() predicate.Situation {
+	return predicate.Situation(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, LatestJudgmentTable, LatestJudgmentColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SituationJudgment
+		step.Edge.Schema = schemaConfig.Situation
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasLatestJudgmentWith applies the HasEdge predicate on the "latest_judgment" edge with a given conditions (other predicates).
+func HasLatestJudgmentWith(preds ...predicate.SituationJudgment) predicate.Situation {
+	return predicate.Situation(func(s *sql.Selector) {
+		step := newLatestJudgmentStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SituationJudgment
+		step.Edge.Schema = schemaConfig.Situation
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

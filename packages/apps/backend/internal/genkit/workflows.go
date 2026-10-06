@@ -2,6 +2,7 @@ package genkit
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"strings"
@@ -10,6 +11,7 @@ import (
 	mapset "github.com/deckarep/golang-set/v2"
 	gkai "github.com/firebase/genkit/go/ai"
 	"github.com/firebase/genkit/go/core"
+	"github.com/firebase/genkit/go/core/status"
 	gk "github.com/firebase/genkit/go/genkit"
 	rez "github.com/rezible/rezible"
 	rezai "github.com/rezible/rezible/pkg/ai"
@@ -81,6 +83,9 @@ func (b *WorkflowBuilder) DefinePromptWorkflow[I rez.ValidatingInput, O any](def
 		}
 
 		generated, response, generateErr := gk.GenerateData[O](ctx, b.runtime.gk, b.buildPromptWorkflowOpts(def, input)...)
+		if errors.Is(generateErr, status.ErrInvalidOutput) {
+			return output, fmt.Errorf("%w: %w", rezai.ErrWorkflowInvalidOutput, generateErr)
+		}
 		if generateErr != nil {
 			return output, generateErr
 		}

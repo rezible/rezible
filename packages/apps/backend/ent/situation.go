@@ -12,6 +12,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/situation"
 	"github.com/rezible/rezible/ent/situationinvestigation"
+	"github.com/rezible/rezible/ent/situationjudgment"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
@@ -30,12 +31,24 @@ type Situation struct {
 	Title string `json:"title,omitempty"`
 	// Summary holds the value of the "summary" field.
 	Summary string `json:"summary,omitempty"`
-	// OpenedAt holds the value of the "opened_at" field.
+	// The earliest start of its signals; lowered when an earlier signal joins, never raised
 	OpenedAt time.Time `json:"opened_at,omitempty"`
+	// Processing time it was raised; unset while a candidate
+	RaisedAt *time.Time `json:"raised_at,omitempty"`
+	// MutedAt holds the value of the "muted_at" field.
+	MutedAt *time.Time `json:"muted_at,omitempty"`
+	// MuteReason holds the value of the "mute_reason" field.
+	MuteReason *situation.MuteReason `json:"mute_reason,omitempty"`
+	// Automatic closure is delayed until this time
+	HoldUntil *time.Time `json:"hold_until,omitempty"`
 	// ClosedAt holds the value of the "closed_at" field.
 	ClosedAt *time.Time `json:"closed_at,omitempty"`
 	// CloseReason holds the value of the "close_reason" field.
 	CloseReason *situation.CloseReason `json:"close_reason,omitempty"`
+	// Knowledge entity of the signal that started it; kept after merges
+	SeedEntityID uuid.UUID `json:"seed_entity_id,omitempty"`
+	// Its most recently recorded judgment
+	LatestJudgmentID *uuid.UUID `json:"latest_judgment_id,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the SituationQuery when eager-loading is set.
 	Edges        SituationEdges `json:"edges"`
@@ -54,9 +67,19 @@ type SituationEdges struct {
 	ObservationGroups []*SituationObservationGroup `json:"observation_groups,omitempty"`
 	// Incidents holds the value of the incidents edge.
 	Incidents []*Incident `json:"incidents,omitempty"`
+	// Signals holds the value of the signals edge.
+	Signals []*SituationSignal `json:"signals,omitempty"`
+	// Entities holds the value of the entities edge.
+	Entities []*SituationEntity `json:"entities,omitempty"`
+	// Links holds the value of the links edge.
+	Links []*SituationLink `json:"links,omitempty"`
+	// Actions holds the value of the actions edge.
+	Actions []*SituationAction `json:"actions,omitempty"`
+	// LatestJudgment holds the value of the latest_judgment edge.
+	LatestJudgment *SituationJudgment `json:"latest_judgment,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [5]bool
+	loadedTypes [10]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -108,18 +131,67 @@ func (e SituationEdges) IncidentsOrErr() ([]*Incident, error) {
 	return nil, &NotLoadedError{edge: "incidents"}
 }
 
+// SignalsOrErr returns the Signals value or an error if the edge
+// was not loaded in eager-loading.
+func (e SituationEdges) SignalsOrErr() ([]*SituationSignal, error) {
+	if e.loadedTypes[5] {
+		return e.Signals, nil
+	}
+	return nil, &NotLoadedError{edge: "signals"}
+}
+
+// EntitiesOrErr returns the Entities value or an error if the edge
+// was not loaded in eager-loading.
+func (e SituationEdges) EntitiesOrErr() ([]*SituationEntity, error) {
+	if e.loadedTypes[6] {
+		return e.Entities, nil
+	}
+	return nil, &NotLoadedError{edge: "entities"}
+}
+
+// LinksOrErr returns the Links value or an error if the edge
+// was not loaded in eager-loading.
+func (e SituationEdges) LinksOrErr() ([]*SituationLink, error) {
+	if e.loadedTypes[7] {
+		return e.Links, nil
+	}
+	return nil, &NotLoadedError{edge: "links"}
+}
+
+// ActionsOrErr returns the Actions value or an error if the edge
+// was not loaded in eager-loading.
+func (e SituationEdges) ActionsOrErr() ([]*SituationAction, error) {
+	if e.loadedTypes[8] {
+		return e.Actions, nil
+	}
+	return nil, &NotLoadedError{edge: "actions"}
+}
+
+// LatestJudgmentOrErr returns the LatestJudgment value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e SituationEdges) LatestJudgmentOrErr() (*SituationJudgment, error) {
+	if e.LatestJudgment != nil {
+		return e.LatestJudgment, nil
+	} else if e.loadedTypes[9] {
+		return nil, &NotFoundError{label: situationjudgment.Label}
+	}
+	return nil, &NotLoadedError{edge: "latest_judgment"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*Situation) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case situation.FieldLatestJudgmentID:
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case situation.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case situation.FieldTitle, situation.FieldSummary, situation.FieldCloseReason:
+		case situation.FieldTitle, situation.FieldSummary, situation.FieldMuteReason, situation.FieldCloseReason:
 			values[i] = new(sql.NullString)
-		case situation.FieldCreatedAt, situation.FieldUpdatedAt, situation.FieldOpenedAt, situation.FieldClosedAt:
+		case situation.FieldCreatedAt, situation.FieldUpdatedAt, situation.FieldOpenedAt, situation.FieldRaisedAt, situation.FieldMutedAt, situation.FieldHoldUntil, situation.FieldClosedAt:
 			values[i] = new(sql.NullTime)
-		case situation.FieldID:
+		case situation.FieldID, situation.FieldSeedEntityID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -178,6 +250,34 @@ func (_m *Situation) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.OpenedAt = value.Time
 			}
+		case situation.FieldRaisedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field raised_at", values[i])
+			} else if value.Valid {
+				_m.RaisedAt = new(time.Time)
+				*_m.RaisedAt = value.Time
+			}
+		case situation.FieldMutedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field muted_at", values[i])
+			} else if value.Valid {
+				_m.MutedAt = new(time.Time)
+				*_m.MutedAt = value.Time
+			}
+		case situation.FieldMuteReason:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field mute_reason", values[i])
+			} else if value.Valid {
+				_m.MuteReason = new(situation.MuteReason)
+				*_m.MuteReason = situation.MuteReason(value.String)
+			}
+		case situation.FieldHoldUntil:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field hold_until", values[i])
+			} else if value.Valid {
+				_m.HoldUntil = new(time.Time)
+				*_m.HoldUntil = value.Time
+			}
 		case situation.FieldClosedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field closed_at", values[i])
@@ -191,6 +291,19 @@ func (_m *Situation) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.CloseReason = new(situation.CloseReason)
 				*_m.CloseReason = situation.CloseReason(value.String)
+			}
+		case situation.FieldSeedEntityID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field seed_entity_id", values[i])
+			} else if value != nil {
+				_m.SeedEntityID = *value
+			}
+		case situation.FieldLatestJudgmentID:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field latest_judgment_id", values[i])
+			} else if value.Valid {
+				_m.LatestJudgmentID = new(uuid.UUID)
+				*_m.LatestJudgmentID = *value.S.(*uuid.UUID)
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -228,6 +341,31 @@ func (_m *Situation) QueryObservationGroups() *SituationObservationGroupQuery {
 // QueryIncidents queries the "incidents" edge of the Situation entity.
 func (_m *Situation) QueryIncidents() *IncidentQuery {
 	return NewSituationClient(_m.config).QueryIncidents(_m)
+}
+
+// QuerySignals queries the "signals" edge of the Situation entity.
+func (_m *Situation) QuerySignals() *SituationSignalQuery {
+	return NewSituationClient(_m.config).QuerySignals(_m)
+}
+
+// QueryEntities queries the "entities" edge of the Situation entity.
+func (_m *Situation) QueryEntities() *SituationEntityQuery {
+	return NewSituationClient(_m.config).QueryEntities(_m)
+}
+
+// QueryLinks queries the "links" edge of the Situation entity.
+func (_m *Situation) QueryLinks() *SituationLinkQuery {
+	return NewSituationClient(_m.config).QueryLinks(_m)
+}
+
+// QueryActions queries the "actions" edge of the Situation entity.
+func (_m *Situation) QueryActions() *SituationActionQuery {
+	return NewSituationClient(_m.config).QueryActions(_m)
+}
+
+// QueryLatestJudgment queries the "latest_judgment" edge of the Situation entity.
+func (_m *Situation) QueryLatestJudgment() *SituationJudgmentQuery {
+	return NewSituationClient(_m.config).QueryLatestJudgment(_m)
 }
 
 // Update returns a builder for updating this Situation.
@@ -271,6 +409,26 @@ func (_m *Situation) String() string {
 	builder.WriteString("opened_at=")
 	builder.WriteString(_m.OpenedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
+	if v := _m.RaisedAt; v != nil {
+		builder.WriteString("raised_at=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
+	builder.WriteString(", ")
+	if v := _m.MutedAt; v != nil {
+		builder.WriteString("muted_at=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
+	builder.WriteString(", ")
+	if v := _m.MuteReason; v != nil {
+		builder.WriteString("mute_reason=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	if v := _m.HoldUntil; v != nil {
+		builder.WriteString("hold_until=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
+	builder.WriteString(", ")
 	if v := _m.ClosedAt; v != nil {
 		builder.WriteString("closed_at=")
 		builder.WriteString(v.Format(time.ANSIC))
@@ -278,6 +436,14 @@ func (_m *Situation) String() string {
 	builder.WriteString(", ")
 	if v := _m.CloseReason; v != nil {
 		builder.WriteString("close_reason=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	builder.WriteString("seed_entity_id=")
+	builder.WriteString(fmt.Sprintf("%v", _m.SeedEntityID))
+	builder.WriteString(", ")
+	if v := _m.LatestJudgmentID; v != nil {
+		builder.WriteString("latest_judgment_id=")
 		builder.WriteString(fmt.Sprintf("%v", *v))
 	}
 	builder.WriteByte(')')

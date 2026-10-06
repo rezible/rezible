@@ -21,6 +21,7 @@ import (
 	"github.com/rezible/rezible/ent/alertepisode"
 	"github.com/rezible/rezible/ent/alertfeedback"
 	"github.com/rezible/rezible/ent/alertinstance"
+	"github.com/rezible/rezible/ent/alertinstanceevent"
 	"github.com/rezible/rezible/ent/alertmetrics"
 	"github.com/rezible/rezible/ent/discussioncomment"
 	"github.com/rezible/rezible/ent/discussionthread"
@@ -81,9 +82,15 @@ import (
 	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/ent/review"
 	"github.com/rezible/rezible/ent/situation"
+	"github.com/rezible/rezible/ent/situationaction"
+	"github.com/rezible/rezible/ent/situationentity"
 	"github.com/rezible/rezible/ent/situationhazardassessment"
 	"github.com/rezible/rezible/ent/situationinvestigation"
+	"github.com/rezible/rezible/ent/situationjudgment"
+	"github.com/rezible/rezible/ent/situationlink"
 	"github.com/rezible/rezible/ent/situationobservationgroup"
+	"github.com/rezible/rezible/ent/situationsignal"
+	"github.com/rezible/rezible/ent/situationsignalattention"
 	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/systemanalysisentity"
 	"github.com/rezible/rezible/ent/systemanalysisentry"
@@ -168,6 +175,7 @@ func checkColumn(t, c string) error {
 			alertepisode.Table:                    alertepisode.ValidColumn,
 			alertfeedback.Table:                   alertfeedback.ValidColumn,
 			alertinstance.Table:                   alertinstance.ValidColumn,
+			alertinstanceevent.Table:              alertinstanceevent.ValidColumn,
 			alertmetrics.Table:                    alertmetrics.ValidColumn,
 			discussioncomment.Table:               discussioncomment.ValidColumn,
 			discussionthread.Table:                discussionthread.ValidColumn,
@@ -228,9 +236,15 @@ func checkColumn(t, c string) error {
 			retrospective.Table:                   retrospective.ValidColumn,
 			review.Table:                          review.ValidColumn,
 			situation.Table:                       situation.ValidColumn,
+			situationaction.Table:                 situationaction.ValidColumn,
+			situationentity.Table:                 situationentity.ValidColumn,
 			situationhazardassessment.Table:       situationhazardassessment.ValidColumn,
 			situationinvestigation.Table:          situationinvestigation.ValidColumn,
+			situationjudgment.Table:               situationjudgment.ValidColumn,
+			situationlink.Table:                   situationlink.ValidColumn,
 			situationobservationgroup.Table:       situationobservationgroup.ValidColumn,
+			situationsignal.Table:                 situationsignal.ValidColumn,
+			situationsignalattention.Table:        situationsignalattention.ValidColumn,
 			systemanalysis.Table:                  systemanalysis.ValidColumn,
 			systemanalysisentity.Table:            systemanalysisentity.ValidColumn,
 			systemanalysisentry.Table:             systemanalysisentry.ValidColumn,

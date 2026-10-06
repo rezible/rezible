@@ -405,56 +405,27 @@ func HasSituationWith(preds ...predicate.Situation) predicate.SituationObservati
 	})
 }
 
-// HasEvents applies the HasEdge predicate on the "events" edge.
-func HasEvents() predicate.SituationObservationGroup {
+// HasSignals applies the HasEdge predicate on the "signals" edge.
+func HasSignals() predicate.SituationObservationGroup {
 	return predicate.SituationObservationGroup(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, EventsTable, EventsPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2M, true, SignalsTable, SignalsColumn),
 		)
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.NormalizedEvent
-		step.Edge.Schema = schemaConfig.SituationObservationGroupEvents
+		step.To.Schema = schemaConfig.SituationSignal
+		step.Edge.Schema = schemaConfig.SituationSignal
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasEventsWith applies the HasEdge predicate on the "events" edge with a given conditions (other predicates).
-func HasEventsWith(preds ...predicate.NormalizedEvent) predicate.SituationObservationGroup {
+// HasSignalsWith applies the HasEdge predicate on the "signals" edge with a given conditions (other predicates).
+func HasSignalsWith(preds ...predicate.SituationSignal) predicate.SituationObservationGroup {
 	return predicate.SituationObservationGroup(func(s *sql.Selector) {
-		step := newEventsStep()
+		step := newSignalsStep()
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.NormalizedEvent
-		step.Edge.Schema = schemaConfig.SituationObservationGroupEvents
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasAlertEpisodes applies the HasEdge predicate on the "alert_episodes" edge.
-func HasAlertEpisodes() predicate.SituationObservationGroup {
-	return predicate.SituationObservationGroup(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, AlertEpisodesTable, AlertEpisodesColumn),
-		)
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.AlertEpisode
-		step.Edge.Schema = schemaConfig.AlertEpisode
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasAlertEpisodesWith applies the HasEdge predicate on the "alert_episodes" edge with a given conditions (other predicates).
-func HasAlertEpisodesWith(preds ...predicate.AlertEpisode) predicate.SituationObservationGroup {
-	return predicate.SituationObservationGroup(func(s *sql.Selector) {
-		step := newAlertEpisodesStep()
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.AlertEpisode
-		step.Edge.Schema = schemaConfig.AlertEpisode
+		step.To.Schema = schemaConfig.SituationSignal
+		step.Edge.Schema = schemaConfig.SituationSignal
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

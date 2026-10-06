@@ -6,9 +6,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/dialect/sql/sqljson"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/alertdefinition"
@@ -17,6 +19,7 @@ import (
 	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/playbook"
 	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/situationsignalattention"
 )
 
 // AlertDefinitionUpdate is the builder for updating AlertDefinition entities.
@@ -106,6 +109,93 @@ func (_u *AlertDefinitionUpdate) ClearDefinition() *AlertDefinitionUpdate {
 	return _u
 }
 
+// SetResolutionTimeoutSeconds sets the "resolution_timeout_seconds" field.
+func (_u *AlertDefinitionUpdate) SetResolutionTimeoutSeconds(v int) *AlertDefinitionUpdate {
+	_u.mutation.ResetResolutionTimeoutSeconds()
+	_u.mutation.SetResolutionTimeoutSeconds(v)
+	return _u
+}
+
+// SetNillableResolutionTimeoutSeconds sets the "resolution_timeout_seconds" field if the given value is not nil.
+func (_u *AlertDefinitionUpdate) SetNillableResolutionTimeoutSeconds(v *int) *AlertDefinitionUpdate {
+	if v != nil {
+		_u.SetResolutionTimeoutSeconds(*v)
+	}
+	return _u
+}
+
+// AddResolutionTimeoutSeconds adds value to the "resolution_timeout_seconds" field.
+func (_u *AlertDefinitionUpdate) AddResolutionTimeoutSeconds(v int) *AlertDefinitionUpdate {
+	_u.mutation.AddResolutionTimeoutSeconds(v)
+	return _u
+}
+
+// SetIdentityGroupLabels sets the "identity_group_labels" field.
+func (_u *AlertDefinitionUpdate) SetIdentityGroupLabels(v []string) *AlertDefinitionUpdate {
+	_u.mutation.SetIdentityGroupLabels(v)
+	return _u
+}
+
+// AppendIdentityGroupLabels appends value to the "identity_group_labels" field.
+func (_u *AlertDefinitionUpdate) AppendIdentityGroupLabels(v []string) *AlertDefinitionUpdate {
+	_u.mutation.AppendIdentityGroupLabels(v)
+	return _u
+}
+
+// ClearIdentityGroupLabels clears the value of the "identity_group_labels" field.
+func (_u *AlertDefinitionUpdate) ClearIdentityGroupLabels() *AlertDefinitionUpdate {
+	_u.mutation.ClearIdentityGroupLabels()
+	return _u
+}
+
+// SetMetadataObservedAt sets the "metadata_observed_at" field.
+func (_u *AlertDefinitionUpdate) SetMetadataObservedAt(v time.Time) *AlertDefinitionUpdate {
+	_u.mutation.SetMetadataObservedAt(v)
+	return _u
+}
+
+// SetNillableMetadataObservedAt sets the "metadata_observed_at" field if the given value is not nil.
+func (_u *AlertDefinitionUpdate) SetNillableMetadataObservedAt(v *time.Time) *AlertDefinitionUpdate {
+	if v != nil {
+		_u.SetMetadataObservedAt(*v)
+	}
+	return _u
+}
+
+// SetMetadataEventRef sets the "metadata_event_ref" field.
+func (_u *AlertDefinitionUpdate) SetMetadataEventRef(v string) *AlertDefinitionUpdate {
+	_u.mutation.SetMetadataEventRef(v)
+	return _u
+}
+
+// SetNillableMetadataEventRef sets the "metadata_event_ref" field if the given value is not nil.
+func (_u *AlertDefinitionUpdate) SetNillableMetadataEventRef(v *string) *AlertDefinitionUpdate {
+	if v != nil {
+		_u.SetMetadataEventRef(*v)
+	}
+	return _u
+}
+
+// SetSituationSignalAttentionID sets the "situation_signal_attention_id" field.
+func (_u *AlertDefinitionUpdate) SetSituationSignalAttentionID(v uuid.UUID) *AlertDefinitionUpdate {
+	_u.mutation.SetSituationSignalAttentionID(v)
+	return _u
+}
+
+// SetNillableSituationSignalAttentionID sets the "situation_signal_attention_id" field if the given value is not nil.
+func (_u *AlertDefinitionUpdate) SetNillableSituationSignalAttentionID(v *uuid.UUID) *AlertDefinitionUpdate {
+	if v != nil {
+		_u.SetSituationSignalAttentionID(*v)
+	}
+	return _u
+}
+
+// ClearSituationSignalAttentionID clears the value of the "situation_signal_attention_id" field.
+func (_u *AlertDefinitionUpdate) ClearSituationSignalAttentionID() *AlertDefinitionUpdate {
+	_u.mutation.ClearSituationSignalAttentionID()
+	return _u
+}
+
 // SetKnowledgeEntity sets the "knowledge_entity" edge to the KnowledgeEntity entity.
 func (_u *AlertDefinitionUpdate) SetKnowledgeEntity(v *KnowledgeEntity) *AlertDefinitionUpdate {
 	return _u.SetKnowledgeEntityID(v.ID)
@@ -139,6 +229,11 @@ func (_u *AlertDefinitionUpdate) AddEpisodes(v ...*AlertEpisode) *AlertDefinitio
 		ids[i] = v[i].ID
 	}
 	return _u.AddEpisodeIDs(ids...)
+}
+
+// SetSituationSignalAttention sets the "situation_signal_attention" edge to the SituationSignalAttention entity.
+func (_u *AlertDefinitionUpdate) SetSituationSignalAttention(v *SituationSignalAttention) *AlertDefinitionUpdate {
+	return _u.SetSituationSignalAttentionID(v.ID)
 }
 
 // Mutation returns the AlertDefinitionMutation object of the builder.
@@ -194,6 +289,12 @@ func (_u *AlertDefinitionUpdate) RemoveEpisodes(v ...*AlertEpisode) *AlertDefini
 	return _u.RemoveEpisodeIDs(ids...)
 }
 
+// ClearSituationSignalAttention clears the "situation_signal_attention" edge to the SituationSignalAttention entity.
+func (_u *AlertDefinitionUpdate) ClearSituationSignalAttention() *AlertDefinitionUpdate {
+	_u.mutation.ClearSituationSignalAttention()
+	return _u
+}
+
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (_u *AlertDefinitionUpdate) Save(ctx context.Context) (int, error) {
 	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
@@ -223,6 +324,11 @@ func (_u *AlertDefinitionUpdate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *AlertDefinitionUpdate) check() error {
+	if v, ok := _u.mutation.ResolutionTimeoutSeconds(); ok {
+		if err := alertdefinition.ResolutionTimeoutSecondsValidator(v); err != nil {
+			return &ValidationError{Name: "resolution_timeout_seconds", err: fmt.Errorf(`ent: validator failed for field "AlertDefinition.resolution_timeout_seconds": %w`, err)}
+		}
+	}
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "AlertDefinition.tenant"`)
 	}
@@ -255,6 +361,29 @@ func (_u *AlertDefinitionUpdate) sqlSave(ctx context.Context) (_node int, err er
 	}
 	if _u.mutation.DefinitionCleared() {
 		_spec.ClearField(alertdefinition.FieldDefinition, field.TypeString)
+	}
+	if value, ok := _u.mutation.ResolutionTimeoutSeconds(); ok {
+		_spec.SetField(alertdefinition.FieldResolutionTimeoutSeconds, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedResolutionTimeoutSeconds(); ok {
+		_spec.AddField(alertdefinition.FieldResolutionTimeoutSeconds, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.IdentityGroupLabels(); ok {
+		_spec.SetField(alertdefinition.FieldIdentityGroupLabels, field.TypeJSON, value)
+	}
+	if value, ok := _u.mutation.AppendedIdentityGroupLabels(); ok {
+		_spec.AddModifier(func(u *sql.UpdateBuilder) {
+			sqljson.Append(u, alertdefinition.FieldIdentityGroupLabels, value)
+		})
+	}
+	if _u.mutation.IdentityGroupLabelsCleared() {
+		_spec.ClearField(alertdefinition.FieldIdentityGroupLabels, field.TypeJSON)
+	}
+	if value, ok := _u.mutation.MetadataObservedAt(); ok {
+		_spec.SetField(alertdefinition.FieldMetadataObservedAt, field.TypeTime, value)
+	}
+	if value, ok := _u.mutation.MetadataEventRef(); ok {
+		_spec.SetField(alertdefinition.FieldMetadataEventRef, field.TypeString, value)
 	}
 	if _u.mutation.KnowledgeEntityCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -378,6 +507,37 @@ func (_u *AlertDefinitionUpdate) sqlSave(ctx context.Context) (_node int, err er
 			},
 		}
 		edge.Schema = _u.schemaConfig.AlertEpisode
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.SituationSignalAttentionCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   alertdefinition.SituationSignalAttentionTable,
+			Columns: []string{alertdefinition.SituationSignalAttentionColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(situationsignalattention.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AlertDefinition
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.SituationSignalAttentionIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   alertdefinition.SituationSignalAttentionTable,
+			Columns: []string{alertdefinition.SituationSignalAttentionColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(situationsignalattention.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AlertDefinition
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -479,6 +639,93 @@ func (_u *AlertDefinitionUpdateOne) ClearDefinition() *AlertDefinitionUpdateOne 
 	return _u
 }
 
+// SetResolutionTimeoutSeconds sets the "resolution_timeout_seconds" field.
+func (_u *AlertDefinitionUpdateOne) SetResolutionTimeoutSeconds(v int) *AlertDefinitionUpdateOne {
+	_u.mutation.ResetResolutionTimeoutSeconds()
+	_u.mutation.SetResolutionTimeoutSeconds(v)
+	return _u
+}
+
+// SetNillableResolutionTimeoutSeconds sets the "resolution_timeout_seconds" field if the given value is not nil.
+func (_u *AlertDefinitionUpdateOne) SetNillableResolutionTimeoutSeconds(v *int) *AlertDefinitionUpdateOne {
+	if v != nil {
+		_u.SetResolutionTimeoutSeconds(*v)
+	}
+	return _u
+}
+
+// AddResolutionTimeoutSeconds adds value to the "resolution_timeout_seconds" field.
+func (_u *AlertDefinitionUpdateOne) AddResolutionTimeoutSeconds(v int) *AlertDefinitionUpdateOne {
+	_u.mutation.AddResolutionTimeoutSeconds(v)
+	return _u
+}
+
+// SetIdentityGroupLabels sets the "identity_group_labels" field.
+func (_u *AlertDefinitionUpdateOne) SetIdentityGroupLabels(v []string) *AlertDefinitionUpdateOne {
+	_u.mutation.SetIdentityGroupLabels(v)
+	return _u
+}
+
+// AppendIdentityGroupLabels appends value to the "identity_group_labels" field.
+func (_u *AlertDefinitionUpdateOne) AppendIdentityGroupLabels(v []string) *AlertDefinitionUpdateOne {
+	_u.mutation.AppendIdentityGroupLabels(v)
+	return _u
+}
+
+// ClearIdentityGroupLabels clears the value of the "identity_group_labels" field.
+func (_u *AlertDefinitionUpdateOne) ClearIdentityGroupLabels() *AlertDefinitionUpdateOne {
+	_u.mutation.ClearIdentityGroupLabels()
+	return _u
+}
+
+// SetMetadataObservedAt sets the "metadata_observed_at" field.
+func (_u *AlertDefinitionUpdateOne) SetMetadataObservedAt(v time.Time) *AlertDefinitionUpdateOne {
+	_u.mutation.SetMetadataObservedAt(v)
+	return _u
+}
+
+// SetNillableMetadataObservedAt sets the "metadata_observed_at" field if the given value is not nil.
+func (_u *AlertDefinitionUpdateOne) SetNillableMetadataObservedAt(v *time.Time) *AlertDefinitionUpdateOne {
+	if v != nil {
+		_u.SetMetadataObservedAt(*v)
+	}
+	return _u
+}
+
+// SetMetadataEventRef sets the "metadata_event_ref" field.
+func (_u *AlertDefinitionUpdateOne) SetMetadataEventRef(v string) *AlertDefinitionUpdateOne {
+	_u.mutation.SetMetadataEventRef(v)
+	return _u
+}
+
+// SetNillableMetadataEventRef sets the "metadata_event_ref" field if the given value is not nil.
+func (_u *AlertDefinitionUpdateOne) SetNillableMetadataEventRef(v *string) *AlertDefinitionUpdateOne {
+	if v != nil {
+		_u.SetMetadataEventRef(*v)
+	}
+	return _u
+}
+
+// SetSituationSignalAttentionID sets the "situation_signal_attention_id" field.
+func (_u *AlertDefinitionUpdateOne) SetSituationSignalAttentionID(v uuid.UUID) *AlertDefinitionUpdateOne {
+	_u.mutation.SetSituationSignalAttentionID(v)
+	return _u
+}
+
+// SetNillableSituationSignalAttentionID sets the "situation_signal_attention_id" field if the given value is not nil.
+func (_u *AlertDefinitionUpdateOne) SetNillableSituationSignalAttentionID(v *uuid.UUID) *AlertDefinitionUpdateOne {
+	if v != nil {
+		_u.SetSituationSignalAttentionID(*v)
+	}
+	return _u
+}
+
+// ClearSituationSignalAttentionID clears the value of the "situation_signal_attention_id" field.
+func (_u *AlertDefinitionUpdateOne) ClearSituationSignalAttentionID() *AlertDefinitionUpdateOne {
+	_u.mutation.ClearSituationSignalAttentionID()
+	return _u
+}
+
 // SetKnowledgeEntity sets the "knowledge_entity" edge to the KnowledgeEntity entity.
 func (_u *AlertDefinitionUpdateOne) SetKnowledgeEntity(v *KnowledgeEntity) *AlertDefinitionUpdateOne {
 	return _u.SetKnowledgeEntityID(v.ID)
@@ -512,6 +759,11 @@ func (_u *AlertDefinitionUpdateOne) AddEpisodes(v ...*AlertEpisode) *AlertDefini
 		ids[i] = v[i].ID
 	}
 	return _u.AddEpisodeIDs(ids...)
+}
+
+// SetSituationSignalAttention sets the "situation_signal_attention" edge to the SituationSignalAttention entity.
+func (_u *AlertDefinitionUpdateOne) SetSituationSignalAttention(v *SituationSignalAttention) *AlertDefinitionUpdateOne {
+	return _u.SetSituationSignalAttentionID(v.ID)
 }
 
 // Mutation returns the AlertDefinitionMutation object of the builder.
@@ -567,6 +819,12 @@ func (_u *AlertDefinitionUpdateOne) RemoveEpisodes(v ...*AlertEpisode) *AlertDef
 	return _u.RemoveEpisodeIDs(ids...)
 }
 
+// ClearSituationSignalAttention clears the "situation_signal_attention" edge to the SituationSignalAttention entity.
+func (_u *AlertDefinitionUpdateOne) ClearSituationSignalAttention() *AlertDefinitionUpdateOne {
+	_u.mutation.ClearSituationSignalAttention()
+	return _u
+}
+
 // Where appends a list predicates to the AlertDefinitionUpdate builder.
 func (_u *AlertDefinitionUpdateOne) Where(ps ...predicate.AlertDefinition) *AlertDefinitionUpdateOne {
 	_u.mutation.Where(ps...)
@@ -609,6 +867,11 @@ func (_u *AlertDefinitionUpdateOne) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *AlertDefinitionUpdateOne) check() error {
+	if v, ok := _u.mutation.ResolutionTimeoutSeconds(); ok {
+		if err := alertdefinition.ResolutionTimeoutSecondsValidator(v); err != nil {
+			return &ValidationError{Name: "resolution_timeout_seconds", err: fmt.Errorf(`ent: validator failed for field "AlertDefinition.resolution_timeout_seconds": %w`, err)}
+		}
+	}
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "AlertDefinition.tenant"`)
 	}
@@ -658,6 +921,29 @@ func (_u *AlertDefinitionUpdateOne) sqlSave(ctx context.Context) (_node *AlertDe
 	}
 	if _u.mutation.DefinitionCleared() {
 		_spec.ClearField(alertdefinition.FieldDefinition, field.TypeString)
+	}
+	if value, ok := _u.mutation.ResolutionTimeoutSeconds(); ok {
+		_spec.SetField(alertdefinition.FieldResolutionTimeoutSeconds, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedResolutionTimeoutSeconds(); ok {
+		_spec.AddField(alertdefinition.FieldResolutionTimeoutSeconds, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.IdentityGroupLabels(); ok {
+		_spec.SetField(alertdefinition.FieldIdentityGroupLabels, field.TypeJSON, value)
+	}
+	if value, ok := _u.mutation.AppendedIdentityGroupLabels(); ok {
+		_spec.AddModifier(func(u *sql.UpdateBuilder) {
+			sqljson.Append(u, alertdefinition.FieldIdentityGroupLabels, value)
+		})
+	}
+	if _u.mutation.IdentityGroupLabelsCleared() {
+		_spec.ClearField(alertdefinition.FieldIdentityGroupLabels, field.TypeJSON)
+	}
+	if value, ok := _u.mutation.MetadataObservedAt(); ok {
+		_spec.SetField(alertdefinition.FieldMetadataObservedAt, field.TypeTime, value)
+	}
+	if value, ok := _u.mutation.MetadataEventRef(); ok {
+		_spec.SetField(alertdefinition.FieldMetadataEventRef, field.TypeString, value)
 	}
 	if _u.mutation.KnowledgeEntityCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -781,6 +1067,37 @@ func (_u *AlertDefinitionUpdateOne) sqlSave(ctx context.Context) (_node *AlertDe
 			},
 		}
 		edge.Schema = _u.schemaConfig.AlertEpisode
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.SituationSignalAttentionCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   alertdefinition.SituationSignalAttentionTable,
+			Columns: []string{alertdefinition.SituationSignalAttentionColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(situationsignalattention.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AlertDefinition
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.SituationSignalAttentionIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   alertdefinition.SituationSignalAttentionTable,
+			Columns: []string{alertdefinition.SituationSignalAttentionColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(situationsignalattention.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AlertDefinition
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

@@ -2,6 +2,8 @@
 	import { useAlertViewController } from "$features/signals/views/signal";
 	import Avatar from "$components/common/entity-avatar/EntityAvatar.svelte";
 	import AlertMetrics from "./AlertMetrics.svelte";
+	import AttentionPanel from "./AttentionPanel.svelte";
+	import IdentityLabelsPanel from "./IdentityLabelsPanel.svelte";
 
 	const view = useAlertViewController();
 
@@ -9,8 +11,13 @@
 	const roster = $derived(attrs?.roster);
 </script>
 
-<div class="flex gap-2">
-	<div class="flex flex-col gap-2 min-w-96 max-w-xl">
+<div class="flex flex-col gap-2 lg:flex-row">
+	<div class="flex min-w-0 flex-col gap-2 lg:max-w-xl lg:min-w-96">
+		{#if view.alert}
+			<AttentionPanel />
+			<IdentityLabelsPanel />
+		{/if}
+
 		<div class="flex flex-col gap-2 border p-2 h-fit">
 			<span class="uppercase font-semibold text-foreground/90">Description</span>
 			{#if !!attrs && !attrs?.description}

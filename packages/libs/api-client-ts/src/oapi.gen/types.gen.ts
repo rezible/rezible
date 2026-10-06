@@ -246,7 +246,17 @@ export type AlertDefinition = {
 export type AlertDefinitionAttributes = {
     definition: string;
     description: string;
+    /**
+     * Label names that group the alert's instances
+     */
+    identityGroupLabels: Array<string>;
+    knowledgeEntityId?: string;
+    /**
+     * How long after its last firing notification a window is assumed ended; 0 never
+     */
+    resolutionTimeoutSeconds: number;
     roster?: ExpandableOncallRosterAttributes;
+    situationSignalAttention: AlertSituationSignalAttention;
     title: string;
 };
 
@@ -258,7 +268,9 @@ export type AlertEpisode = {
 export type AlertEpisodeAttributes = {
     closedAt?: string;
     definition?: AlertDefinition;
-    lastObservedAt: string;
+    highestSeverity: 'unknown' | 'info' | 'warning' | 'critical';
+    instances: Array<AlertInstance>;
+    knowledgeEntityId?: string;
     startedAt: string;
     status: 'open' | 'closed';
 };
@@ -274,6 +286,34 @@ export type AlertIncidentLinkAttributes = {
     incidentId: string;
 };
 
+export type AlertInstance = {
+    attributes: AlertInstanceAttributes;
+    id: string;
+};
+
+export type AlertInstanceAttributes = {
+    endReason?: 'resolved' | 'superseded' | 'timeout';
+    endedAt?: string;
+    feedback?: AlertInstanceFeedback;
+    firedAt: string;
+    groupingKey: string;
+    instanceKey: string;
+    labels: {
+        [key: string]: string;
+    };
+    lastObservedAt: string;
+    severity: 'unknown' | 'info' | 'warning' | 'critical';
+    summary: string;
+};
+
+export type AlertInstanceFeedback = {
+    accurate: 'yes' | 'no' | 'unknown';
+    actionable: boolean;
+    documentationAvailable: boolean;
+    documentationNeedsUpdate: boolean;
+    userId: string;
+};
+
 export type AlertMetrics = {
     accurate: number;
     accurateUnknown: number;
@@ -287,6 +327,11 @@ export type AlertMetrics = {
     triggers: number;
 };
 
+export type AlertSituationSignalAttention = {
+    level: 'default' | 'watch_only' | 'join_only';
+    setAt?: string;
+};
+
 export type AttributesStruct = {
     body: string;
 };
@@ -295,6 +340,42 @@ export type AttributesStruct1 = {
     status: 'suspected' | 'confirmed' | 'disproven';
     summary: string;
     systemHazardId: string;
+};
+
+export type ClearSituationHoldResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Situation;
+};
+
+export type ClearSituationMuteResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Situation;
+};
+
+export type CloseSituationAttributes = {
+    note?: string;
+};
+
+export type CloseSituationRequestBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    attributes: CloseSituationAttributes;
+};
+
+export type CloseSituationResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Situation;
 };
 
 export type CollectionResponseBodyAiAgentConfig = {
@@ -2246,6 +2327,27 @@ export type MeetingSessionAttributes = {
     title: string;
 };
 
+export type MergeSituationAttributes = {
+    explanation?: string;
+    targetId: string;
+};
+
+export type MergeSituationRequestBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    attributes: MergeSituationAttributes;
+};
+
+export type MergeSituationResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Situation;
+};
+
 export type OncallRoster = {
     attributes: OncallRosterAttributes;
     id: string;
@@ -2429,6 +2531,15 @@ export type PaginatedResponseBodyAlertDefinition = {
      */
     readonly $schema?: string;
     data: Array<AlertDefinition>;
+    pagination: Pagination;
+};
+
+export type PaginatedResponseBodyAlertEpisode = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<AlertEpisode>;
     pagination: Pagination;
 };
 
@@ -2666,6 +2777,15 @@ export type PaginatedResponseBodySituationHazardAssessment = {
     pagination: Pagination;
 };
 
+export type PaginatedResponseBodySituationJudgmentHistoryItem = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<SituationJudgmentHistoryItem>;
+    pagination: Pagination;
+};
+
 export type PaginatedResponseBodySystemAnalysisEdge = {
     /**
      * A URL to the JSON Schema for this object.
@@ -2775,6 +2895,14 @@ export type ProviderResourceRef = {
     resourceRef: string;
 };
 
+export type RaiseSituationResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Situation;
+};
+
 export type RequestAgentTurnRequestAttributes = {
     message?: string;
     resume?: AgentTurnResume;
@@ -2835,14 +2963,6 @@ export type RequestRetrospectiveReviewResponseBody = {
      */
     readonly $schema?: string;
     data: Review;
-};
-
-export type RequestSituationInvestigationResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Situation;
 };
 
 export type ResourcePart = {
@@ -2933,6 +3053,46 @@ export type SendOncallShiftHandoverResponseBody = {
     data: OncallShiftHandover;
 };
 
+export type SetAlertIdentityGroupLabelsAttributes = {
+    labels: Array<string>;
+};
+
+export type SetAlertIdentityGroupLabelsRequestBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    attributes: SetAlertIdentityGroupLabelsAttributes;
+};
+
+export type SetAlertIdentityGroupLabelsResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: AlertDefinition;
+};
+
+export type SetAlertSituationSignalAttentionAttributes = {
+    level: 'default' | 'watch_only' | 'join_only';
+};
+
+export type SetAlertSituationSignalAttentionRequestBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    attributes: SetAlertSituationSignalAttentionAttributes;
+};
+
+export type SetAlertSituationSignalAttentionResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: AlertDefinition;
+};
+
 export type SetRetrospectiveReportFindingSelectionRequestAttributes = {
     analysisEntryIDs: Array<string>;
 };
@@ -2945,22 +3105,151 @@ export type SetRetrospectiveReportFindingSelectionRequestBody = {
     attributes: SetRetrospectiveReportFindingSelectionRequestAttributes;
 };
 
+export type SetSituationHoldAttributes = {
+    until?: string;
+};
+
+export type SetSituationHoldRequestBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    attributes: SetSituationHoldAttributes;
+};
+
+export type SetSituationHoldResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Situation;
+};
+
+export type SetSituationMuteAttributes = {
+    reason: 'not_noteworthy' | 'expected';
+};
+
+export type SetSituationMuteRequestBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    attributes: SetSituationMuteAttributes;
+};
+
+export type SetSituationMuteResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Situation;
+};
+
 export type Situation = {
     attributes: SituationAttributes;
     id: string;
 };
 
+export type SituationAlertFacts = {
+    active: boolean;
+    active_group_count: number;
+    active_instance_count: number;
+    active_instances: Array<SituationAlertInstanceFacts>;
+    active_seconds: number;
+    baseline: SituationBaselineFacts;
+    definition?: string;
+    description?: string;
+    flap_count: number;
+    identity_group_labels?: Array<string>;
+    instance_count: number;
+    severity: string;
+    timed_out_instance_count: number;
+};
+
+export type SituationAlertInstanceFacts = {
+    grouping_key: string;
+    instance_key: string;
+    labels?: {
+        [key: string]: string;
+    };
+};
+
 export type SituationAttributes = {
-    closeReason?: 'stabilized' | 'dismissed';
+    closeReason?: 'stabilized' | 'expired' | 'merged' | 'dismissed';
     closedAt?: string;
+    /**
+     * When watching began
+     */
+    createdAt: string;
+    entities: Array<SituationEntity>;
+    holdUntil?: string;
     investigation?: SituationInvestigation;
+    latestJudgment?: SituationJudgment;
     linkedIncidentIds: Array<string>;
+    links: Array<SituationLink>;
+    muteReason?: 'not_noteworthy' | 'expected';
+    mutedAt?: string;
     observationGroups: Array<SituationObservationGroup>;
     openedAt: string;
+    raisedAt?: string;
+    raisedBy?: SituationRaisedBy;
+    seedEntityId: string;
     signalCount: number;
+    stage: 'candidate' | 'raised' | 'closed';
     summary: string;
     title: string;
     updatedAt: string;
+};
+
+export type SituationBaselineFacts = {
+    has_sufficient_history: boolean;
+    median_duration_seconds?: number;
+    observed_history_age_days: number;
+    occurrences: number;
+};
+
+export type SituationEarlierFacts = {
+    close_reason?: string;
+    closed_at?: string;
+    incident_linked: boolean;
+    mute_reason?: string;
+    situation_id: string;
+    was_raised: boolean;
+};
+
+export type SituationEntity = {
+    category: string;
+    displayName: string;
+    /**
+     * The knowledge entity
+     */
+    id: string;
+    kind: string;
+    /**
+     * Whether it attracts related signals
+     */
+    matching: boolean;
+};
+
+export type SituationEntityFacts = {
+    category: string;
+    display_name?: string;
+    id: string;
+    kind: string;
+    matching: boolean;
+    properties?: {
+        [key: string]: unknown;
+    };
+};
+
+export type SituationFacts = {
+    as_of: string;
+    earlier?: Array<SituationEarlierFacts>;
+    entities?: Array<SituationEntityFacts>;
+    linked_incidents: Array<SituationIncidentFacts>;
+    opened_at: string;
+    relationships?: Array<SituationRelationshipFacts>;
+    signals: Array<SituationSignalFacts>;
 };
 
 export type SituationHazardAssessment = {
@@ -2978,8 +3267,47 @@ export type SituationHazardAssessmentAttrs = {
     userId?: string;
 };
 
+export type SituationIncidentFacts = {
+    id: string;
+    response_state: string;
+    title: string;
+};
+
 export type SituationInvestigation = {
     investigation: ExpandableInvestigationAttributes;
+};
+
+export type SituationJudgment = {
+    citedReasons: Array<string>;
+    decision: 'hold' | 'raise';
+    explanation: string;
+    judge: string;
+    judgedAt: string;
+    outcome: 'no_reason' | 'needs_decision' | 'raise';
+    reasons: Array<SituationReason>;
+};
+
+export type SituationJudgmentHistoryAttributes = {
+    citedReasons: Array<string>;
+    decision: 'hold' | 'raise';
+    explanation: string;
+    facts: SituationFacts;
+    judge: string;
+    judgedAt: string;
+    outcome: 'no_reason' | 'needs_decision' | 'raise';
+    reasons: Array<SituationReason>;
+};
+
+export type SituationJudgmentHistoryItem = {
+    attributes: SituationJudgmentHistoryAttributes;
+    id: string;
+};
+
+export type SituationLink = {
+    kind: 'recurrence_of' | 'merged_into';
+    situationId: string;
+    stage: 'candidate' | 'raised' | 'closed';
+    title: string;
 };
 
 export type SituationObservationGroup = {
@@ -2988,10 +3316,58 @@ export type SituationObservationGroup = {
 };
 
 export type SituationObservationGroupAttributes = {
-    alertEpisodes: Array<AlertEpisode>;
     body?: string;
-    events: Array<Event>;
+    signals: Array<SituationSignal>;
     situationId: string;
+    title: string;
+};
+
+export type SituationPriorOutcomeFacts = {
+    incident_linked: number;
+    muted_not_noteworthy: number;
+    raised: number;
+};
+
+export type SituationRaisedBy = {
+    reason: string;
+    userId?: string;
+};
+
+export type SituationReason = {
+    detail: string;
+    hard: boolean;
+    met: boolean;
+    reason: 'linked_incident' | 'breadth' | 'novelty' | 'persistence' | 'past_incident';
+};
+
+export type SituationRelationshipFacts = {
+    predicate: string;
+    source_id: string;
+    target_id: string;
+};
+
+export type SituationSignal = {
+    attachedAt: string;
+    kind: string;
+    knowledgeEntityId: string;
+    matchKind: 'seed' | 'shared_entity' | 'dependency' | 'dependent' | 'adjacent' | 'manual';
+    sourceEntityId?: string;
+};
+
+export type SituationSignalFacts = {
+    alert?: SituationAlertFacts;
+    attention: string;
+    attention_set_at?: string;
+    entity_id: string;
+    entity_ids?: Array<string>;
+    finished_at?: string;
+    kind: string;
+    match_kind: string;
+    prior_outcomes?: SituationPriorOutcomeFacts;
+    ref: string;
+    seeding: boolean;
+    source_entity_id?: string;
+    started_at: string;
     title: string;
 };
 
@@ -4592,6 +4968,53 @@ export type GetAlertResponses = {
 
 export type GetAlertResponse = GetAlertResponses[keyof GetAlertResponses];
 
+export type SetAlertIdentityGroupLabelsData = {
+    body: SetAlertIdentityGroupLabelsRequestBody;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/alerts/{id}/identity_group_labels';
+};
+
+export type SetAlertIdentityGroupLabelsErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type SetAlertIdentityGroupLabelsError = SetAlertIdentityGroupLabelsErrors[keyof SetAlertIdentityGroupLabelsErrors];
+
+export type SetAlertIdentityGroupLabelsResponses = {
+    /**
+     * OK
+     */
+    200: SetAlertIdentityGroupLabelsResponseBody;
+};
+
+export type SetAlertIdentityGroupLabelsResponse = SetAlertIdentityGroupLabelsResponses[keyof SetAlertIdentityGroupLabelsResponses];
+
 export type ListAlertIncidentLinksData = {
     body?: never;
     path: {
@@ -4689,6 +5112,53 @@ export type GetAlertMetricsResponses = {
 };
 
 export type GetAlertMetricsResponse = GetAlertMetricsResponses[keyof GetAlertMetricsResponses];
+
+export type SetAlertSituationSignalAttentionData = {
+    body: SetAlertSituationSignalAttentionRequestBody;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/alerts/{id}/situation_signal_attention';
+};
+
+export type SetAlertSituationSignalAttentionErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type SetAlertSituationSignalAttentionError = SetAlertSituationSignalAttentionErrors[keyof SetAlertSituationSignalAttentionErrors];
+
+export type SetAlertSituationSignalAttentionResponses = {
+    /**
+     * OK
+     */
+    200: SetAlertSituationSignalAttentionResponseBody;
+};
+
+export type SetAlertSituationSignalAttentionResponse = SetAlertSituationSignalAttentionResponses[keyof SetAlertSituationSignalAttentionResponses];
 
 export type ListUserNotificationsData = {
     body?: never;
@@ -11705,7 +12175,8 @@ export type ListSituationsData = {
         page?: number;
         pageSize?: number;
         search?: string;
-        status?: 'active' | 'investigating' | 'closed';
+        stage?: Array<'candidate' | 'raised' | 'closed'>;
+        muted?: boolean;
         openedAfter?: string;
     };
     url: '/situations';
@@ -11795,6 +12266,107 @@ export type GetSituationResponses = {
 };
 
 export type GetSituationResponse = GetSituationResponses[keyof GetSituationResponses];
+
+export type ListSituationAlertEpisodesData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: {
+        page?: number;
+        pageSize?: number;
+    };
+    url: '/situations/{id}/alert_episodes';
+};
+
+export type ListSituationAlertEpisodesErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type ListSituationAlertEpisodesError = ListSituationAlertEpisodesErrors[keyof ListSituationAlertEpisodesErrors];
+
+export type ListSituationAlertEpisodesResponses = {
+    /**
+     * OK
+     */
+    200: PaginatedResponseBodyAlertEpisode;
+};
+
+export type ListSituationAlertEpisodesResponse = ListSituationAlertEpisodesResponses[keyof ListSituationAlertEpisodesResponses];
+
+export type CloseSituationData = {
+    body: CloseSituationRequestBody;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/situations/{id}/close';
+};
+
+export type CloseSituationErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Conflict
+     */
+    409: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type CloseSituationError = CloseSituationErrors[keyof CloseSituationErrors];
+
+export type CloseSituationResponses = {
+    /**
+     * OK
+     */
+    200: CloseSituationResponseBody;
+};
+
+export type CloseSituationResponse = CloseSituationResponses[keyof CloseSituationResponses];
 
 export type ListSituationHazardAssessmentsData = {
     body?: never;
@@ -11893,16 +12465,121 @@ export type AddSituationHazardAssessmentResponses = {
 
 export type AddSituationHazardAssessmentResponse = AddSituationHazardAssessmentResponses[keyof AddSituationHazardAssessmentResponses];
 
-export type RequestSituationInvestigationData = {
+export type ClearSituationHoldData = {
     body?: never;
     path: {
         id: string;
     };
     query?: never;
-    url: '/situations/{id}/investigation';
+    url: '/situations/{id}/hold';
 };
 
-export type RequestSituationInvestigationErrors = {
+export type ClearSituationHoldErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Conflict
+     */
+    409: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type ClearSituationHoldError = ClearSituationHoldErrors[keyof ClearSituationHoldErrors];
+
+export type ClearSituationHoldResponses = {
+    /**
+     * OK
+     */
+    200: ClearSituationHoldResponseBody;
+};
+
+export type ClearSituationHoldResponse = ClearSituationHoldResponses[keyof ClearSituationHoldResponses];
+
+export type SetSituationHoldData = {
+    body: SetSituationHoldRequestBody;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/situations/{id}/hold';
+};
+
+export type SetSituationHoldErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Conflict
+     */
+    409: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type SetSituationHoldError = SetSituationHoldErrors[keyof SetSituationHoldErrors];
+
+export type SetSituationHoldResponses = {
+    /**
+     * OK
+     */
+    200: SetSituationHoldResponseBody;
+};
+
+export type SetSituationHoldResponse = SetSituationHoldResponses[keyof SetSituationHoldResponses];
+
+export type ListSituationJudgmentsData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: {
+        page?: number;
+        pageSize?: number;
+    };
+    url: '/situations/{id}/judgments';
+};
+
+export type ListSituationJudgmentsErrors = {
     /**
      * Bad Request
      */
@@ -11929,16 +12606,220 @@ export type RequestSituationInvestigationErrors = {
     500: ErrorModel;
 };
 
-export type RequestSituationInvestigationError = RequestSituationInvestigationErrors[keyof RequestSituationInvestigationErrors];
+export type ListSituationJudgmentsError = ListSituationJudgmentsErrors[keyof ListSituationJudgmentsErrors];
 
-export type RequestSituationInvestigationResponses = {
+export type ListSituationJudgmentsResponses = {
     /**
      * OK
      */
-    200: RequestSituationInvestigationResponseBody;
+    200: PaginatedResponseBodySituationJudgmentHistoryItem;
 };
 
-export type RequestSituationInvestigationResponse = RequestSituationInvestigationResponses[keyof RequestSituationInvestigationResponses];
+export type ListSituationJudgmentsResponse = ListSituationJudgmentsResponses[keyof ListSituationJudgmentsResponses];
+
+export type MergeSituationData = {
+    body: MergeSituationRequestBody;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/situations/{id}/merge';
+};
+
+export type MergeSituationErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Conflict
+     */
+    409: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type MergeSituationError = MergeSituationErrors[keyof MergeSituationErrors];
+
+export type MergeSituationResponses = {
+    /**
+     * OK
+     */
+    200: MergeSituationResponseBody;
+};
+
+export type MergeSituationResponse = MergeSituationResponses[keyof MergeSituationResponses];
+
+export type ClearSituationMuteData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/situations/{id}/mute';
+};
+
+export type ClearSituationMuteErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Conflict
+     */
+    409: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type ClearSituationMuteError = ClearSituationMuteErrors[keyof ClearSituationMuteErrors];
+
+export type ClearSituationMuteResponses = {
+    /**
+     * OK
+     */
+    200: ClearSituationMuteResponseBody;
+};
+
+export type ClearSituationMuteResponse = ClearSituationMuteResponses[keyof ClearSituationMuteResponses];
+
+export type SetSituationMuteData = {
+    body: SetSituationMuteRequestBody;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/situations/{id}/mute';
+};
+
+export type SetSituationMuteErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Conflict
+     */
+    409: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type SetSituationMuteError = SetSituationMuteErrors[keyof SetSituationMuteErrors];
+
+export type SetSituationMuteResponses = {
+    /**
+     * OK
+     */
+    200: SetSituationMuteResponseBody;
+};
+
+export type SetSituationMuteResponse = SetSituationMuteResponses[keyof SetSituationMuteResponses];
+
+export type RaiseSituationData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/situations/{id}/raise';
+};
+
+export type RaiseSituationErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Conflict
+     */
+    409: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type RaiseSituationError = RaiseSituationErrors[keyof RaiseSituationErrors];
+
+export type RaiseSituationResponses = {
+    /**
+     * OK
+     */
+    200: RaiseSituationResponseBody;
+};
+
+export type RaiseSituationResponse = RaiseSituationResponses[keyof RaiseSituationResponses];
 
 export type GetSystemAnalysisData = {
     body?: never;

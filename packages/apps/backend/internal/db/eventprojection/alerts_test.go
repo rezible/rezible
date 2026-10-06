@@ -14,11 +14,10 @@ import (
 	"github.com/rezible/rezible/pkg/projections"
 )
 
-func (s *ProjectionServiceSuite) createAlertProjectionEvent(ctx context.Context, db rez.Database, subjectRef string, attrs projections.AlertInstanceEventAttributes) *ent.NormalizedEvent {
+func (s *ProjectionServiceSuite) createAlertProjectionEvent(ctx context.Context, db rez.Database, subjectRef string, occurredAt time.Time, attrs projections.AlertInstanceEventAttributes) *ent.NormalizedEvent {
 	encoded, encodeErr := projections.EncodeAttributes(attrs)
 	s.Require().NoError(encodeErr)
 
-	occurredAt := time.Date(2026, 6, 1, 10, 0, 0, 0, time.UTC)
 	createEvent := db.Client(ctx).NormalizedEvent.Create().
 		SetProvider("test").
 		SetProviderNamespace("projection-tests").
@@ -40,10 +39,14 @@ func (s *ProjectionServiceSuite) TestAlertProjectionCreatesUpdatesAndRecordsEvid
 	client := tdb.Client(ctx)
 	service := s.projectionService(tdb)
 
+	startedAt := time.Date(2026, 6, 1, 10, 0, 0, 0, time.UTC)
 	attrs := projections.AlertInstanceEventAttributes{
 		Title:       "Search latency high",
 		Description: "p95 latency above threshold",
 		Definition:  "latency > 2000",
+		State:       projections.AlertStateFiring,
+		Severity:    "warning",
+		StartedAt:   startedAt,
 		ObservedEntities: []projections.EntityObservation{{
 			Ref: rez.ProviderResourceRef{
 				Provider:          "test",
@@ -55,7 +58,7 @@ func (s *ProjectionServiceSuite) TestAlertProjectionCreatesUpdatesAndRecordsEvid
 			DisplayName: "Search API",
 		}},
 	}
-	first := s.createAlertProjectionEvent(ctx, tdb, "alert-1", attrs)
+	first := s.createAlertProjectionEvent(ctx, tdb, "alert-1", startedAt, attrs)
 
 	_, projectErr := runProjection(ctx, service, first)
 	s.Require().NoError(projectErr)
@@ -70,7 +73,7 @@ func (s *ProjectionServiceSuite) TestAlertProjectionCreatesUpdatesAndRecordsEvid
 	s.NotNil(alerts[0].KnowledgeEntityID)
 
 	attrs.Title = "Search latency critical"
-	second := s.createAlertProjectionEvent(ctx, tdb, "alert-1", attrs)
+	second := s.createAlertProjectionEvent(ctx, tdb, "alert-1", startedAt.Add(time.Minute), attrs)
 	_, projectErr = runProjection(ctx, service, second)
 	s.Require().NoError(projectErr)
 

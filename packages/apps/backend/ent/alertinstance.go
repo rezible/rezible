@@ -3,15 +3,17 @@
 package ent
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
+	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/alertepisode"
 	"github.com/rezible/rezible/ent/alertinstance"
-	"github.com/rezible/rezible/ent/normalizedevent"
+	"github.com/rezible/rezible/ent/schema/schematypes"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
@@ -24,8 +26,26 @@ type AlertInstance struct {
 	TenantID int `json:"tenant_id,omitempty"`
 	// AlertEpisodeID holds the value of the "alert_episode_id" field.
 	AlertEpisodeID uuid.UUID `json:"alert_episode_id,omitempty"`
-	// NormalizedEventID holds the value of the "normalized_event_id" field.
-	NormalizedEventID uuid.UUID `json:"normalized_event_id,omitempty"`
+	// The source instance's identity
+	InstanceKey string `json:"instance_key,omitempty"`
+	// Grouping for detection counts
+	GroupingKey string `json:"grouping_key,omitempty"`
+	// From the window's newest notification
+	Labels map[string]string `json:"labels,omitempty"`
+	// From the window's newest notification
+	Summary string `json:"summary,omitempty"`
+	// Peak severity of the window's notifications
+	Severity schematypes.SignalSeverity `json:"severity,omitempty"`
+	// The provider's window start
+	FiredAt time.Time `json:"fired_at,omitempty"`
+	// Latest firing notification; a timeout counts from it
+	LastObservedAt time.Time `json:"last_observed_at,omitempty"`
+	// Latest reported resolution
+	ResolvedAt *time.Time `json:"resolved_at,omitempty"`
+	// Effective end; nil while firing
+	EndedAt *time.Time `json:"ended_at,omitempty"`
+	// EndReason holds the value of the "end_reason" field.
+	EndReason *alertinstance.EndReason `json:"end_reason,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the AlertInstanceQuery when eager-loading is set.
 	Edges        AlertInstanceEdges `json:"edges"`
@@ -38,8 +58,8 @@ type AlertInstanceEdges struct {
 	Tenant *Tenant `json:"tenant,omitempty"`
 	// Episode holds the value of the episode edge.
 	Episode *AlertEpisode `json:"episode,omitempty"`
-	// Event holds the value of the event edge.
-	Event *NormalizedEvent `json:"event,omitempty"`
+	// Events holds the value of the events edge.
+	Events []*AlertInstanceEvent `json:"events,omitempty"`
 	// Feedback holds the value of the feedback edge.
 	Feedback []*AlertFeedback `json:"feedback,omitempty"`
 	// loadedTypes holds the information for reporting if a
@@ -69,15 +89,13 @@ func (e AlertInstanceEdges) EpisodeOrErr() (*AlertEpisode, error) {
 	return nil, &NotLoadedError{edge: "episode"}
 }
 
-// EventOrErr returns the Event value or an error if the edge
-// was not loaded in eager-loading, or loaded but was not found.
-func (e AlertInstanceEdges) EventOrErr() (*NormalizedEvent, error) {
-	if e.Event != nil {
-		return e.Event, nil
-	} else if e.loadedTypes[2] {
-		return nil, &NotFoundError{label: normalizedevent.Label}
+// EventsOrErr returns the Events value or an error if the edge
+// was not loaded in eager-loading.
+func (e AlertInstanceEdges) EventsOrErr() ([]*AlertInstanceEvent, error) {
+	if e.loadedTypes[2] {
+		return e.Events, nil
 	}
-	return nil, &NotLoadedError{edge: "event"}
+	return nil, &NotLoadedError{edge: "events"}
 }
 
 // FeedbackOrErr returns the Feedback value or an error if the edge
@@ -94,9 +112,15 @@ func (*AlertInstance) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case alertinstance.FieldLabels:
+			values[i] = new([]byte)
 		case alertinstance.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case alertinstance.FieldID, alertinstance.FieldAlertEpisodeID, alertinstance.FieldNormalizedEventID:
+		case alertinstance.FieldInstanceKey, alertinstance.FieldGroupingKey, alertinstance.FieldSummary, alertinstance.FieldSeverity, alertinstance.FieldEndReason:
+			values[i] = new(sql.NullString)
+		case alertinstance.FieldFiredAt, alertinstance.FieldLastObservedAt, alertinstance.FieldResolvedAt, alertinstance.FieldEndedAt:
+			values[i] = new(sql.NullTime)
+		case alertinstance.FieldID, alertinstance.FieldAlertEpisodeID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -131,11 +155,70 @@ func (_m *AlertInstance) assignValues(columns []string, values []any) error {
 			} else if value != nil {
 				_m.AlertEpisodeID = *value
 			}
-		case alertinstance.FieldNormalizedEventID:
-			if value, ok := values[i].(*uuid.UUID); !ok {
-				return fmt.Errorf("unexpected type %T for field normalized_event_id", values[i])
-			} else if value != nil {
-				_m.NormalizedEventID = *value
+		case alertinstance.FieldInstanceKey:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field instance_key", values[i])
+			} else if value.Valid {
+				_m.InstanceKey = value.String
+			}
+		case alertinstance.FieldGroupingKey:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field grouping_key", values[i])
+			} else if value.Valid {
+				_m.GroupingKey = value.String
+			}
+		case alertinstance.FieldLabels:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field labels", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &_m.Labels); err != nil {
+					return fmt.Errorf("unmarshal field labels: %w", err)
+				}
+			}
+		case alertinstance.FieldSummary:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field summary", values[i])
+			} else if value.Valid {
+				_m.Summary = value.String
+			}
+		case alertinstance.FieldSeverity:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field severity", values[i])
+			} else if value.Valid {
+				_m.Severity = schematypes.SignalSeverity(value.String)
+			}
+		case alertinstance.FieldFiredAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field fired_at", values[i])
+			} else if value.Valid {
+				_m.FiredAt = value.Time
+			}
+		case alertinstance.FieldLastObservedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field last_observed_at", values[i])
+			} else if value.Valid {
+				_m.LastObservedAt = value.Time
+			}
+		case alertinstance.FieldResolvedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field resolved_at", values[i])
+			} else if value.Valid {
+				_m.ResolvedAt = new(time.Time)
+				*_m.ResolvedAt = value.Time
+			}
+		case alertinstance.FieldEndedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field ended_at", values[i])
+			} else if value.Valid {
+				_m.EndedAt = new(time.Time)
+				*_m.EndedAt = value.Time
+			}
+		case alertinstance.FieldEndReason:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field end_reason", values[i])
+			} else if value.Valid {
+				_m.EndReason = new(alertinstance.EndReason)
+				*_m.EndReason = alertinstance.EndReason(value.String)
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -160,9 +243,9 @@ func (_m *AlertInstance) QueryEpisode() *AlertEpisodeQuery {
 	return NewAlertInstanceClient(_m.config).QueryEpisode(_m)
 }
 
-// QueryEvent queries the "event" edge of the AlertInstance entity.
-func (_m *AlertInstance) QueryEvent() *NormalizedEventQuery {
-	return NewAlertInstanceClient(_m.config).QueryEvent(_m)
+// QueryEvents queries the "events" edge of the AlertInstance entity.
+func (_m *AlertInstance) QueryEvents() *AlertInstanceEventQuery {
+	return NewAlertInstanceClient(_m.config).QueryEvents(_m)
 }
 
 // QueryFeedback queries the "feedback" edge of the AlertInstance entity.
@@ -199,8 +282,41 @@ func (_m *AlertInstance) String() string {
 	builder.WriteString("alert_episode_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.AlertEpisodeID))
 	builder.WriteString(", ")
-	builder.WriteString("normalized_event_id=")
-	builder.WriteString(fmt.Sprintf("%v", _m.NormalizedEventID))
+	builder.WriteString("instance_key=")
+	builder.WriteString(_m.InstanceKey)
+	builder.WriteString(", ")
+	builder.WriteString("grouping_key=")
+	builder.WriteString(_m.GroupingKey)
+	builder.WriteString(", ")
+	builder.WriteString("labels=")
+	builder.WriteString(fmt.Sprintf("%v", _m.Labels))
+	builder.WriteString(", ")
+	builder.WriteString("summary=")
+	builder.WriteString(_m.Summary)
+	builder.WriteString(", ")
+	builder.WriteString("severity=")
+	builder.WriteString(fmt.Sprintf("%v", _m.Severity))
+	builder.WriteString(", ")
+	builder.WriteString("fired_at=")
+	builder.WriteString(_m.FiredAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("last_observed_at=")
+	builder.WriteString(_m.LastObservedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	if v := _m.ResolvedAt; v != nil {
+		builder.WriteString("resolved_at=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
+	builder.WriteString(", ")
+	if v := _m.EndedAt; v != nil {
+		builder.WriteString("ended_at=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
+	builder.WriteString(", ")
+	if v := _m.EndReason; v != nil {
+		builder.WriteString("end_reason=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
 	builder.WriteByte(')')
 	return builder.String()
 }

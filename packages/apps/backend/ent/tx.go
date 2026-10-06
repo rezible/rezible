@@ -30,6 +30,8 @@ type Tx struct {
 	AlertFeedback *AlertFeedbackClient
 	// AlertInstance is the client for interacting with the AlertInstance builders.
 	AlertInstance *AlertInstanceClient
+	// AlertInstanceEvent is the client for interacting with the AlertInstanceEvent builders.
+	AlertInstanceEvent *AlertInstanceEventClient
 	// AlertMetrics is the client for interacting with the AlertMetrics builders.
 	AlertMetrics *AlertMetricsClient
 	// DiscussionComment is the client for interacting with the DiscussionComment builders.
@@ -150,12 +152,24 @@ type Tx struct {
 	Review *ReviewClient
 	// Situation is the client for interacting with the Situation builders.
 	Situation *SituationClient
+	// SituationAction is the client for interacting with the SituationAction builders.
+	SituationAction *SituationActionClient
+	// SituationEntity is the client for interacting with the SituationEntity builders.
+	SituationEntity *SituationEntityClient
 	// SituationHazardAssessment is the client for interacting with the SituationHazardAssessment builders.
 	SituationHazardAssessment *SituationHazardAssessmentClient
 	// SituationInvestigation is the client for interacting with the SituationInvestigation builders.
 	SituationInvestigation *SituationInvestigationClient
+	// SituationJudgment is the client for interacting with the SituationJudgment builders.
+	SituationJudgment *SituationJudgmentClient
+	// SituationLink is the client for interacting with the SituationLink builders.
+	SituationLink *SituationLinkClient
 	// SituationObservationGroup is the client for interacting with the SituationObservationGroup builders.
 	SituationObservationGroup *SituationObservationGroupClient
+	// SituationSignal is the client for interacting with the SituationSignal builders.
+	SituationSignal *SituationSignalClient
+	// SituationSignalAttention is the client for interacting with the SituationSignalAttention builders.
+	SituationSignalAttention *SituationSignalAttentionClient
 	// SystemAnalysis is the client for interacting with the SystemAnalysis builders.
 	SystemAnalysis *SystemAnalysisClient
 	// SystemAnalysisEntity is the client for interacting with the SystemAnalysisEntity builders.
@@ -326,6 +340,7 @@ func (tx *Tx) init() {
 	tx.AlertEpisode = NewAlertEpisodeClient(tx.config)
 	tx.AlertFeedback = NewAlertFeedbackClient(tx.config)
 	tx.AlertInstance = NewAlertInstanceClient(tx.config)
+	tx.AlertInstanceEvent = NewAlertInstanceEventClient(tx.config)
 	tx.AlertMetrics = NewAlertMetricsClient(tx.config)
 	tx.DiscussionComment = NewDiscussionCommentClient(tx.config)
 	tx.DiscussionThread = NewDiscussionThreadClient(tx.config)
@@ -386,9 +401,15 @@ func (tx *Tx) init() {
 	tx.Retrospective = NewRetrospectiveClient(tx.config)
 	tx.Review = NewReviewClient(tx.config)
 	tx.Situation = NewSituationClient(tx.config)
+	tx.SituationAction = NewSituationActionClient(tx.config)
+	tx.SituationEntity = NewSituationEntityClient(tx.config)
 	tx.SituationHazardAssessment = NewSituationHazardAssessmentClient(tx.config)
 	tx.SituationInvestigation = NewSituationInvestigationClient(tx.config)
+	tx.SituationJudgment = NewSituationJudgmentClient(tx.config)
+	tx.SituationLink = NewSituationLinkClient(tx.config)
 	tx.SituationObservationGroup = NewSituationObservationGroupClient(tx.config)
+	tx.SituationSignal = NewSituationSignalClient(tx.config)
+	tx.SituationSignalAttention = NewSituationSignalAttentionClient(tx.config)
 	tx.SystemAnalysis = NewSystemAnalysisClient(tx.config)
 	tx.SystemAnalysisEntity = NewSystemAnalysisEntityClient(tx.config)
 	tx.SystemAnalysisEntry = NewSystemAnalysisEntryClient(tx.config)

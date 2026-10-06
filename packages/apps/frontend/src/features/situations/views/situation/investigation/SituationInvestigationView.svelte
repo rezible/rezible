@@ -39,16 +39,20 @@
 					Start an investigation to gather evidence, findings and hypotheses for this situation.
 				</Empty.Description>
 			</Empty.Header>
-			<Empty.Content>
-				<Button disabled={controller.startPending} onclick={controller.startInvestigation}>
-					{#if controller.startPending}
-						<Spinner data-icon="inline-start" />
-						Starting…
-					{:else}
-						Start investigation
-					{/if}
-				</Button>
-			</Empty.Content>
+			{#if controller.investigationOffer === "raise" || controller.investigationOffer === "start"}
+				<Empty.Content>
+					<Button disabled={controller.actionPending} onclick={controller.startInvestigation}>
+						{#if controller.startPending}
+							<Spinner data-icon="inline-start" />
+							Starting…
+						{:else if controller.investigationOffer === "raise"}
+							Raise and investigate
+						{:else}
+							Start investigation
+						{/if}
+					</Button>
+				</Empty.Content>
+			{/if}
 		</Empty.Root>
 	</PageCanvas>
 {:else if controller.investigationUnavailable}

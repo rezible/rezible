@@ -35,7 +35,6 @@ type AlertEpisodeQuery struct {
 	withKnowledgeEntity *KnowledgeEntityQuery
 	withAlertDefinition *AlertDefinitionQuery
 	withInstances       *AlertInstanceQuery
-	withFKs             bool
 	modifiers           []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -502,7 +501,6 @@ func (_q *AlertEpisodeQuery) prepareQuery(ctx context.Context) error {
 func (_q *AlertEpisodeQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*AlertEpisode, error) {
 	var (
 		nodes       = []*AlertEpisode{}
-		withFKs     = _q.withFKs
 		_spec       = _q.querySpec()
 		loadedTypes = [4]bool{
 			_q.withTenant != nil,
@@ -511,9 +509,6 @@ func (_q *AlertEpisodeQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]
 			_q.withInstances != nil,
 		}
 	)
-	if withFKs {
-		_spec.Node.Columns = append(_spec.Node.Columns, alertepisode.ForeignKeys...)
-	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*AlertEpisode).scanValues(nil, columns)
 	}

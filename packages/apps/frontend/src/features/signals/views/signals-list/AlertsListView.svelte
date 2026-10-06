@@ -7,6 +7,8 @@
 	import SearchInput from "$src/components/forms/search-input/SearchInput.svelte";
 	import PaginatedQueryListBox from "$components/layout/paginated-query-listbox/PaginatedQueryListBox.svelte";
 	import LoadingQueryWrapper from "$src/components/layout/loading-query-wrapper/LoadingQueryWrapper.svelte";
+	import StatusBadge from "$components/common/status-badge/StatusBadge.svelte";
+	import { attentionStatus } from "$features/signals/lib/attention";
 
 	registerPageDescriptor(() => ({ title: "Signals" }));
 
@@ -25,8 +27,12 @@
 {/snippet}
 
 {#snippet alertListItem(a: AlertDefinition)}
-	<a href={resolve(`/signals/${a.id}`)}>
+	{@const attention = attentionStatus(a.attributes.situationSignalAttention)}
+	<a href={resolve(`/signals/${a.id}`)} class="flex flex-wrap items-center gap-2">
 		<span>{a.attributes.title}</span>
+		{#if attention}
+			<StatusBadge status={attention} variant="inline" />
+		{/if}
 	</a>
 {/snippet}
 

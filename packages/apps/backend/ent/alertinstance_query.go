@@ -18,8 +18,8 @@ import (
 	"github.com/rezible/rezible/ent/alertepisode"
 	"github.com/rezible/rezible/ent/alertfeedback"
 	"github.com/rezible/rezible/ent/alertinstance"
+	"github.com/rezible/rezible/ent/alertinstanceevent"
 	"github.com/rezible/rezible/ent/internal"
-	"github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/tenant"
 )
@@ -33,7 +33,7 @@ type AlertInstanceQuery struct {
 	predicates   []predicate.AlertInstance
 	withTenant   *TenantQuery
 	withEpisode  *AlertEpisodeQuery
-	withEvent    *NormalizedEventQuery
+	withEvents   *AlertInstanceEventQuery
 	withFeedback *AlertFeedbackQuery
 	modifiers    []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
@@ -122,9 +122,9 @@ func (_q *AlertInstanceQuery) QueryEpisode() *AlertEpisodeQuery {
 	return query
 }
 
-// QueryEvent chains the current query on the "event" edge.
-func (_q *AlertInstanceQuery) QueryEvent() *NormalizedEventQuery {
-	query := (&NormalizedEventClient{config: _q.config}).Query()
+// QueryEvents chains the current query on the "events" edge.
+func (_q *AlertInstanceQuery) QueryEvents() *AlertInstanceEventQuery {
+	query := (&AlertInstanceEventClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -135,12 +135,12 @@ func (_q *AlertInstanceQuery) QueryEvent() *NormalizedEventQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(alertinstance.Table, alertinstance.FieldID, selector),
-			sqlgraph.To(normalizedevent.Table, normalizedevent.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, alertinstance.EventTable, alertinstance.EventColumn),
+			sqlgraph.To(alertinstanceevent.Table, alertinstanceevent.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, alertinstance.EventsTable, alertinstance.EventsColumn),
 		)
 		schemaConfig := _q.schemaConfig
-		step.To.Schema = schemaConfig.NormalizedEvent
-		step.Edge.Schema = schemaConfig.AlertInstance
+		step.To.Schema = schemaConfig.AlertInstanceEvent
+		step.Edge.Schema = schemaConfig.AlertInstanceEvent
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -366,7 +366,7 @@ func (_q *AlertInstanceQuery) Clone() *AlertInstanceQuery {
 		predicates:   append([]predicate.AlertInstance{}, _q.predicates...),
 		withTenant:   _q.withTenant.Clone(),
 		withEpisode:  _q.withEpisode.Clone(),
-		withEvent:    _q.withEvent.Clone(),
+		withEvents:   _q.withEvents.Clone(),
 		withFeedback: _q.withFeedback.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
@@ -396,14 +396,14 @@ func (_q *AlertInstanceQuery) WithEpisode(opts ...func(*AlertEpisodeQuery)) *Ale
 	return _q
 }
 
-// WithEvent tells the query-builder to eager-load the nodes that are connected to
-// the "event" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *AlertInstanceQuery) WithEvent(opts ...func(*NormalizedEventQuery)) *AlertInstanceQuery {
-	query := (&NormalizedEventClient{config: _q.config}).Query()
+// WithEvents tells the query-builder to eager-load the nodes that are connected to
+// the "events" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *AlertInstanceQuery) WithEvents(opts ...func(*AlertInstanceEventQuery)) *AlertInstanceQuery {
+	query := (&AlertInstanceEventClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	_q.withEvent = query
+	_q.withEvents = query
 	return _q
 }
 
@@ -505,7 +505,7 @@ func (_q *AlertInstanceQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([
 		loadedTypes = [4]bool{
 			_q.withTenant != nil,
 			_q.withEpisode != nil,
-			_q.withEvent != nil,
+			_q.withEvents != nil,
 			_q.withFeedback != nil,
 		}
 	)
@@ -544,9 +544,10 @@ func (_q *AlertInstanceQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([
 			return nil, err
 		}
 	}
-	if query := _q.withEvent; query != nil {
-		if err := _q.loadEvent(ctx, query, nodes, nil,
-			func(n *AlertInstance, e *NormalizedEvent) { n.Edges.Event = e }); err != nil {
+	if query := _q.withEvents; query != nil {
+		if err := _q.loadEvents(ctx, query, nodes,
+			func(n *AlertInstance) { n.Edges.Events = []*AlertInstanceEvent{} },
+			func(n *AlertInstance, e *AlertInstanceEvent) { n.Edges.Events = append(n.Edges.Events, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -618,32 +619,33 @@ func (_q *AlertInstanceQuery) loadEpisode(ctx context.Context, query *AlertEpiso
 	}
 	return nil
 }
-func (_q *AlertInstanceQuery) loadEvent(ctx context.Context, query *NormalizedEventQuery, nodes []*AlertInstance, init func(*AlertInstance), assign func(*AlertInstance, *NormalizedEvent)) error {
-	ids := make([]uuid.UUID, 0, len(nodes))
-	nodeids := make(map[uuid.UUID][]*AlertInstance)
+func (_q *AlertInstanceQuery) loadEvents(ctx context.Context, query *AlertInstanceEventQuery, nodes []*AlertInstance, init func(*AlertInstance), assign func(*AlertInstance, *AlertInstanceEvent)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*AlertInstance)
 	for i := range nodes {
-		fk := nodes[i].NormalizedEventID
-		if _, ok := nodeids[fk]; !ok {
-			ids = append(ids, fk)
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
 		}
-		nodeids[fk] = append(nodeids[fk], nodes[i])
 	}
-	if len(ids) == 0 {
-		return nil
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(alertinstanceevent.FieldAlertInstanceID)
 	}
-	query.Where(normalizedevent.IDIn(ids...))
+	query.Where(predicate.AlertInstanceEvent(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(alertinstance.EventsColumn), fks...))
+	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err
 	}
 	for _, n := range neighbors {
-		nodes, ok := nodeids[n.ID]
+		fk := n.AlertInstanceID
+		node, ok := nodeids[fk]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "normalized_event_id" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "alert_instance_id" returned %v for node %v`, fk, n.ID)
 		}
-		for i := range nodes {
-			assign(nodes[i], n)
-		}
+		assign(node, n)
 	}
 	return nil
 }
@@ -713,9 +715,6 @@ func (_q *AlertInstanceQuery) querySpec() *sqlgraph.QuerySpec {
 		}
 		if _q.withEpisode != nil {
 			_spec.Node.AddColumnOnce(alertinstance.FieldAlertEpisodeID)
-		}
-		if _q.withEvent != nil {
-			_spec.Node.AddColumnOnce(alertinstance.FieldNormalizedEventID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {

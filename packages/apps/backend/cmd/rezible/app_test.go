@@ -1,23 +1,41 @@
 package main
 
 import (
-	"net/http"
+	"context"
+	"encoding/json"
+	"fmt"
+	"net/http/httptest"
+	"sync/atomic"
 	"testing"
 	"time"
 
+	"github.com/firebase/genkit/go/ai"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
+	"github.com/riverqueue/river"
+	"github.com/riverqueue/river/riverdriver/riverpgxv5"
+	"github.com/riverqueue/river/rivertype"
+	"github.com/samber/do/v2"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 
 	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/ent"
 	at "github.com/rezible/rezible/ent/agentturn"
-	ke "github.com/rezible/rezible/ent/knowledgeevidence"
-	ksa "github.com/rezible/rezible/ent/knowledgesubjectalias"
 	ne "github.com/rezible/rezible/ent/normalizedevent"
 	nep "github.com/rezible/rezible/ent/normalizedeventprojection"
-	usr "github.com/rezible/rezible/ent/user"
+	"github.com/rezible/rezible/internal/genkit"
+	"github.com/rezible/rezible/internal/http"
+	demo "github.com/rezible/rezible/internal/integrations/demo"
+	"github.com/rezible/rezible/internal/postgres"
+	"github.com/rezible/rezible/pkg/jobs"
+	oapi "github.com/rezible/rezible/pkg/openapi"
 	oapiv1 "github.com/rezible/rezible/pkg/openapi/v1"
 	"github.com/rezible/rezible/test"
 )
+
+// Waits return as soon as their condition holds; this only bounds failures.
+const appWaitTimeout = 30 * time.Second
 
 type BackendSuite struct {
 	test.Suite
@@ -27,272 +45,393 @@ func TestBackendSuite(t *testing.T) {
 	suite.Run(t, &BackendSuite{Suite: test.NewSuite()})
 }
 
-func (s *BackendSuite) TestIngestAndQuery() {
-	ah := s.newAppHarness(nil)
-	ctx, owner := ah.NewIdentity("Provider owner")
-	api := ah.API(owner)
-	requestCtx := s.T().Context()
-	client := ah.Client(ctx)
-	pipeline, pipelineErr := ah.app.invoke[rez.ProviderEventPipelineService]()
-	s.Require().NoError(pipelineErr, "resolve provider pipeline")
+type appTestOptions struct {
+	ModelAction ai.ModelActionFunc[any]
+}
 
-	event := rez.ProviderEvent{
-		Provider:            "demo",
-		ProviderNamespace:   "app-test",
-		ProviderEventSource: "users",
-		ProviderEventRef:    "alice-delivery",
-		ReceivedAt:          time.Date(2026, 6, 1, 10, 0, 0, 0, time.UTC),
-		Attributes: []byte(`{
-			"external_id": "alice",
-			"name": "Alice",
-			"email": "alice@example.com",
-			"chat_id": "UALICE",
-			"timezone": "Australia/Perth",
-			"updated_at": "2026-06-01T10:00:00Z"
-		}`),
+type appHarness struct {
+	suite *BackendSuite
+	app   *Application
+	// clock is the application's clock. It starts at real time and only moves forward, so jobs scheduled
+	// from it run when RunDueJobs makes them available rather than on their own.
+	clock    *test.Clock
+	database rez.Database
+	jobs     *river.Client[pgx.Tx]
+	api      *oapi.TestAPI
+	cookie   rez.AppAuthSessionCookie
+}
+
+func (s *BackendSuite) newAppHarness(options appTestOptions) *appHarness {
+	t := s.T()
+	t.Helper()
+
+	modelAction := options.ModelAction
+	var unexpectedModelCalls atomic.Int64
+	if modelAction == nil {
+		// Workers record unexpected calls; cleanup asserts only after they have stopped.
+		modelAction = func(context.Context, *ai.ModelRequest, any, ai.ModelStreamCallback) (*ai.ModelResponse, error) {
+			unexpectedModelCalls.Add(1)
+			return nil, fmt.Errorf("unexpected model call in application test")
+		}
 	}
 
-	// Ingest the delivery and wait for its real process and projection workers.
-	ingestErr := pipeline.Ingest(ctx, event)
-	s.Require().NoError(ingestErr, "ingest demo user delivery")
-	projection := ah.AwaitProjection(ctx, owner.Session.TenantID, event)
-	s.Require().Len(projection.ProcessJobIDs, 1, "delivery should have one process job")
+	app := NewApplication()
 
-	// Independently read the projected user, its alias, and its event evidence.
-	queryUser := client.User.Query().
-		Where(usr.Email("alice@example.com"))
-	projectedUser, userErr := queryUser.Only(ctx)
-	s.Require().NoError(userErr, "read projected Alice user")
+	// The injector owns services and the database. The harness owns the lifecycle goroutine.
+	var lifecycleDone <-chan error
+	ctx, cancel := context.WithCancel(t.Context())
 
-	queryAlias := client.KnowledgeSubjectAlias.Query().
-		Where(
-			ksa.Provider(event.Provider),
-			ksa.ProviderNamespace(event.ProviderNamespace),
-			ksa.ProviderResourceRef("demo:user:alice"),
-		)
-	alias, aliasErr := queryAlias.Only(ctx)
-	s.Require().NoError(aliasErr, "read demo user alias")
-	s.Require().NotNil(alias.EntityID)
-	s.Equal(projectedUser.KnowledgeEntityID, alias.EntityID)
+	t.Cleanup(func() {
+		cancel()
+		stopCtx, stop := context.WithTimeout(context.WithoutCancel(ctx), 35*time.Second)
+		defer stop()
+		if lifecycleDone != nil {
+			select {
+			case lifecycleErr := <-lifecycleDone:
+				assert.NoError(t, lifecycleErr, "stop application lifecycle")
+			case <-stopCtx.Done():
+				t.Errorf("application lifecycle did not stop: %v", stopCtx.Err())
+				return
+			}
+		}
+		assert.NoError(t, app.Shutdown(stopCtx), "release application resources")
+		if options.ModelAction == nil {
+			assert.Zero(t, unexpectedModelCalls.Load(), "application test must not call the model without an explicit ModelAction")
+		}
+	})
 
-	queryEvidence := client.KnowledgeEvidence.Query().
-		Where(ke.EventID(projection.Event.ID))
-	evidence, evidenceErr := queryEvidence.Only(ctx)
-	s.Require().NoError(evidenceErr, "read delivery evidence")
-	s.Equal(alias.ID, evidence.SubjectAliasID)
-	s.Equal("UALICE", projectedUser.ChatID)
+	_, initErr := app.Init(ctx)
+	s.Require().NoError(initErr, "initialize application")
 
-	// Query the projected user through the registered, authenticated v1 operation.
-	getUser := api.Operation[
-		oapiv1.GetUserRequest,
-		oapiv1.GetUserResponse,
-	](oapiv1.GetUser)
-	userRequest := oapiv1.GetUserRequest{Id: projectedUser.ID}
-	userResponse := getUser.Call(requestCtx, userRequest)
-	s.Equal(projectedUser.ID, userResponse.Body.Data.Id)
-	s.Equal("Alice", userResponse.Body.Data.Attributes.Name)
-	s.Equal("alice@example.com", userResponse.Body.Data.Attributes.Email)
+	app.Override[rez.Config](func(do.Injector) (rez.Config, error) {
+		return s.Config(), nil
+	})
 
-	// The same endpoint requires a session when called through the full server.
-	anonymousGetUser := ah.api.Operation[
-		oapiv1.GetUserRequest,
-		oapiv1.GetUserResponse,
-	](oapiv1.GetUser)
-	anonymousGetUser.ExpectStatus(requestCtx, userRequest, http.StatusUnauthorized)
+	app.Override[rez.TelemetryService](func(do.Injector) (rez.TelemetryService, error) {
+		return s.Telemetry(), nil
+	})
 
-	// A repeated delivery reuses the completed process job and persisted records.
-	repeatErr := pipeline.Ingest(ctx, event)
-	s.Require().NoError(repeatErr, "repeat demo user delivery")
-	repeatedJobIDs := ah.ProcessJobIDs(ctx, owner.Session.TenantID, event)
-	s.Equal(projection.ProcessJobIDs, repeatedJobIDs)
-	for _, jobID := range repeatedJobIDs {
-		ah.AwaitJob(ctx, jobID)
+	app.Override[rez.PostgresConfig](providePostgresTestDatabaseConfig)
+
+	testClock := test.NewClock(time.Now())
+	app.Override[rez.Clock](func(do.Injector) (rez.Clock, error) {
+		return testClock, nil
+	})
+
+	// Select the real demo processor without installing its unrelated sync jobs.
+	app.Override[[]rez.IntegrationDefinition](func(i do.Injector) ([]rez.IntegrationDefinition, error) {
+		integration, integrationErr := do.Invoke[*demo.Integration](i)
+		if integrationErr != nil {
+			return nil, fmt.Errorf("resolve demo integration: %w", integrationErr)
+		}
+		return []rez.IntegrationDefinition{integration}, nil
+	})
+
+	baseOpts := do.MustInvoke[[]genkit.AiRuntimeOption](app.i)
+	app.Override[[]genkit.AiRuntimeOption](func(i do.Injector) ([]genkit.AiRuntimeOption, error) {
+		modelOptions := &ai.ModelOptions{
+			Supports: &ai.ModelSupports{
+				Tools:      true,
+				Multiturn:  true,
+				SystemRole: true,
+			},
+		}
+		model := genkit.NewModelDefinition("test/application", modelOptions, modelAction)
+		model.IsDefault = true
+		return append(baseOpts, genkit.WithDefinedModel(model)), nil
+	})
+
+	app.Override[[]*jobs.PeriodicJob](func(i do.Injector) ([]*jobs.PeriodicJob, error) {
+		return nil, nil
+	})
+
+	ready, done := app.startLifecycle(ctx)
+	lifecycleDone = done
+
+	startupCtx, stopStartup := context.WithTimeout(ctx, appWaitTimeout)
+	defer stopStartup()
+
+	select {
+	case <-ready:
+	case lifecycleErr := <-done:
+		lifecycleDone = nil // The result has been consumed; cleanup must not wait again.
+		t.Fatalf("application stopped before readiness: %v", lifecycleErr)
+	case <-startupCtx.Done():
+		t.Fatalf("application readiness timed out: %v", startupCtx.Err())
 	}
 
-	repeatedUser, repeatedUserErr := queryUser.Only(ctx)
-	s.Require().NoError(repeatedUserErr, "read user after repeated delivery")
-	s.Equal(projectedUser.ID, repeatedUser.ID)
+	database, databaseErr := app.invoke[rez.Database]()
+	s.Require().NoError(databaseErr, "resolve application database")
 
-	repeatedEvidence, repeatedEvidenceErr := queryEvidence.Only(ctx)
-	s.Require().NoError(repeatedEvidenceErr, "read evidence after repeated delivery")
-	s.Equal(evidence.ID, repeatedEvidence.ID)
+	pool, poolErr := app.invoke[*postgres.ConnectionPool]()
+	s.Require().NoError(poolErr, "resolve application pool")
 
-	queryEvent := client.NormalizedEvent.Query().
+	// TODO: just invoke this?
+	jobConfig := &river.Config{
+		Schema: "river",
+		Logger: app.mustInvoke[rez.TelemetryService]().Logger(),
+	}
+	jobReader, jobReaderErr := river.NewClient(riverpgxv5.New(pool.Pool), jobConfig)
+	s.Require().NoError(jobReaderErr, "create read-only River client")
+
+	cookie, cookieErr := app.invoke[rez.AppAuthSessionCookie]()
+	s.Require().NoError(cookieErr, "resolve application authentication")
+
+	api, apiErr := app.invoke[oapiv1.API]()
+	s.Require().NoError(apiErr, "resolve application v1 API")
+
+	server, serverErr := app.invoke[*http.Server]()
+	s.Require().NoError(serverErr, "resolve application HTTP server")
+
+	httpBasePath := app.mustInvoke[rez.Config]().HttpServer.BasePath
+	testAPI := oapiv1.NewTestAPI(t, api).WithHandler(server.Handler(), httpBasePath+oapiv1.VersionPrefix)
+	return &appHarness{
+		suite:    s,
+		app:      app,
+		clock:    testClock,
+		database: database,
+		jobs:     jobReader,
+		cookie:   cookie,
+		api:      testAPI,
+	}
+}
+
+func (ah *appHarness) Client(ctx context.Context) *ent.Client {
+	return ah.database.Client(ctx)
+}
+
+func (ah *appHarness) NewIdentity(label string) (context.Context, test.Identity) {
+	ah.suite.T().Helper()
+	return ah.suite.NewIdentity(ah.database, label)
+}
+
+func (ah *appHarness) API(identity test.Identity) *oapi.TestAPI {
+	t := ah.suite.T()
+	t.Helper()
+	recorder := httptest.NewRecorder()
+	ah.cookie.Set(recorder, identity.Session)
+	response := recorder.Result()
+	defer response.Body.Close()
+	return ah.api.WithCookies(response.Cookies()...)
+}
+
+func (ah *appHarness) await(ctx context.Context, label string, probe func(context.Context) (bool, string, error)) {
+	t := ah.suite.T()
+	t.Helper()
+	waitCtx, cancel := context.WithTimeout(ctx, appWaitTimeout)
+	defer cancel()
+
+	ticker := time.NewTicker(10 * time.Millisecond)
+	defer ticker.Stop()
+
+	diagnostic := "not yet probed"
+	for {
+		ready, nextDiagnostic, probeErr := probe(waitCtx)
+		diagnostic = nextDiagnostic
+		if waitCtx.Err() != nil {
+			t.Fatalf("%s timed out: %s (%v)", label, diagnostic, waitCtx.Err())
+		}
+		ah.suite.Require().NoError(probeErr, "%s: %s", label, diagnostic)
+		if ready {
+			return
+		}
+		select {
+		case <-ticker.C:
+		case <-waitCtx.Done():
+			t.Fatalf("%s timed out: %s", label, diagnostic)
+		}
+	}
+}
+
+func (ah *appHarness) AwaitJob(ctx context.Context, id int64) {
+	ah.suite.T().Helper()
+	ah.await(ctx, fmt.Sprintf("job %d", id), func(waitCtx context.Context) (bool, string, error) {
+		job, queryErr := ah.jobs.JobGet(waitCtx, id)
+		if queryErr != nil {
+			return false, "read job", queryErr
+		}
+		diagnostic := fmt.Sprintf("state=%s attempt=%d errors=%v", job.State, job.Attempt, job.Errors)
+		if job.State == rivertype.JobStateCancelled || job.State == rivertype.JobStateDiscarded {
+			return false, diagnostic, fmt.Errorf("job reached terminal failure state")
+		}
+		return job.State == rivertype.JobStateCompleted, diagnostic, nil
+	})
+}
+
+// RunDueJobs processes the jobs returned by one paginated listing: available or running jobs, plus
+// scheduled jobs due by at. Jobs enqueued after that listing (including same-kind follow-ups) are not
+// guaranteed to complete here; journeys must wait for their next stage explicitly.
+func (ah *appHarness) RunDueJobs(ctx context.Context, kind string, at time.Time) {
+	ah.suite.T().Helper()
+	rows, listErr := ah.jobsOfKind(ctx, kind)
+	ah.suite.Require().NoError(listErr, "list %s jobs", kind)
+	for _, job := range rows {
+		switch job.State {
+		case rivertype.JobStateAvailable, rivertype.JobStateRunning:
+		case rivertype.JobStateScheduled:
+			if job.ScheduledAt.After(at) {
+				continue
+			}
+			_, retryErr := ah.jobs.JobRetry(ctx, job.ID)
+			ah.suite.Require().NoError(retryErr, "make %s job %d available", kind, job.ID)
+		default:
+			continue
+		}
+		ah.AwaitJob(ctx, job.ID)
+	}
+}
+
+func (ah *appHarness) jobsOfKind(ctx context.Context, kind string) ([]*rivertype.JobRow, error) {
+	params := river.NewJobListParams().
+		Kinds(kind).
+		OrderBy(river.JobListOrderByID, river.SortOrderAsc).
+		First(100)
+	var rows []*rivertype.JobRow
+	for {
+		page, listErr := ah.jobs.JobList(ctx, params)
+		if listErr != nil {
+			return nil, fmt.Errorf("list %s jobs: %w", kind, listErr)
+		}
+		rows = append(rows, page.Jobs...)
+		if len(page.Jobs) < 100 {
+			return rows, nil
+		}
+		params = params.After(page.LastCursor)
+	}
+}
+
+func (ah *appHarness) processJobs(ctx context.Context, tenantID int, event rez.ProviderEvent) ([]*rivertype.JobRow, error) {
+	rows, listErr := ah.jobsOfKind(ctx, (&jobs.ProcessProviderEventArgs{}).Kind())
+	if listErr != nil {
+		return nil, listErr
+	}
+	var matches []*rivertype.JobRow
+	for _, row := range rows {
+		var args jobs.ProcessProviderEventArgs
+		if decodeErr := json.Unmarshal(row.EncodedArgs, &args); decodeErr != nil {
+			return nil, fmt.Errorf("decode process job %d: %w", row.ID, decodeErr)
+		}
+		if args.TenantID != tenantID || args.Event.Provider != event.Provider ||
+			args.Event.ProviderNamespace != event.ProviderNamespace ||
+			args.Event.ProviderEventSource != event.ProviderEventSource ||
+			args.Event.ProviderEventRef != event.ProviderEventRef {
+			continue
+		}
+		matches = append(matches, row)
+	}
+	return matches, nil
+}
+
+func (ah *appHarness) projectionJobs(ctx context.Context, eventID uuid.UUID) ([]*rivertype.JobRow, error) {
+	rows, listErr := ah.jobsOfKind(ctx, (jobs.ProjectNormalizedEvent{}).Kind())
+	if listErr != nil {
+		return nil, listErr
+	}
+	var matches []*rivertype.JobRow
+	for _, row := range rows {
+		var args jobs.ProjectNormalizedEvent
+		if decodeErr := json.Unmarshal(row.EncodedArgs, &args); decodeErr != nil {
+			return nil, fmt.Errorf("decode projection job %d: %w", row.ID, decodeErr)
+		}
+		if args.EventId == eventID {
+			matches = append(matches, row)
+		}
+	}
+	return matches, nil
+}
+
+func (ah *appHarness) ProcessJobIDs(ctx context.Context, tenantID int, event rez.ProviderEvent) []int64 {
+	ah.suite.T().Helper()
+	rows, listErr := ah.processJobs(ctx, tenantID, event)
+	ah.suite.Require().NoError(listErr, "read jobs for provider delivery %s", event.ProviderEventRef)
+	ids := make([]int64, 0, len(rows))
+	for _, row := range rows {
+		ids = append(ids, row.ID)
+	}
+	return ids
+}
+
+type providerProjection struct {
+	Event         *ent.NormalizedEvent
+	Receipt       *ent.NormalizedEventProjection
+	ProcessJobIDs []int64
+}
+
+func (ah *appHarness) AwaitProjection(ctx context.Context, tenantID int, event rez.ProviderEvent) providerProjection {
+	ah.suite.T().Helper()
+	var processRows []*rivertype.JobRow
+	ah.await(ctx, "provider process job", func(waitCtx context.Context) (bool, string, error) {
+		rows, listErr := ah.processJobs(waitCtx, tenantID, event)
+		processRows = rows
+		return len(rows) > 0, "delivery has no process job yet", listErr
+	})
+	var processIDs []int64
+	for _, row := range processRows {
+		ah.AwaitJob(ctx, row.ID)
+		processIDs = append(processIDs, row.ID)
+	}
+
+	queryEvent := ah.Client(ctx).NormalizedEvent.Query().
 		Where(
 			ne.Provider(event.Provider),
 			ne.ProviderNamespace(event.ProviderNamespace),
 			ne.ProviderEventSource(event.ProviderEventSource),
 			ne.ProviderEventRef(event.ProviderEventRef),
 		)
-	repeatedEvent, repeatedEventErr := queryEvent.Only(ctx)
-	s.Require().NoError(repeatedEventErr, "read normalized event after repeated delivery")
-	s.Equal(projection.Event.ID, repeatedEvent.ID)
+	normalized, eventErr := queryEvent.Only(ctx)
+	ah.suite.Require().NoError(eventErr, "read normalized delivery after process job completion")
 
-	queryReceipt := client.NormalizedEventProjection.Query().
-		Where(nep.EventID(projection.Event.ID))
-	repeatedReceipt, repeatedReceiptErr := queryReceipt.Only(ctx)
-	s.Require().NoError(repeatedReceiptErr, "read receipt after repeated delivery")
-	s.Equal(projection.Receipt.ID, repeatedReceipt.ID)
+	var projectRows []*rivertype.JobRow
+	ah.await(ctx, "normalized event projection job", func(waitCtx context.Context) (bool, string, error) {
+		rows, listErr := ah.projectionJobs(waitCtx, normalized.ID)
+		projectRows = rows
+		return len(rows) > 0, "normalized event has no projection job yet", listErr
+	})
+	for _, row := range projectRows {
+		ah.AwaitJob(ctx, row.ID)
+	}
+
+	queryReceipt := ah.Client(ctx).NormalizedEventProjection.Query().
+		Where(nep.EventID(normalized.ID))
+	receipt, receiptErr := queryReceipt.Only(ctx)
+	ah.suite.Require().NoError(receiptErr, "read committed projection receipt")
+
+	return providerProjection{
+		Event:         normalized,
+		Receipt:       receipt,
+		ProcessJobIDs: processIDs,
+	}
 }
 
-func (s *BackendSuite) TestInvestigation() {
-	model := &investigationModel{}
-	ah := s.newAppHarness(model.generate)
-	ctx, alice := ah.NewIdentity("Alice")
-	_, bob := ah.NewIdentity("Bob")
-	aliceAPI := ah.API(alice)
-	requestCtx := s.T().Context()
+func (ah *appHarness) AwaitInvestigationTurn(ctx context.Context, sessionID uuid.UUID, sequence int) *ent.AgentTurn {
+	ah.suite.T().Helper()
+	var turn *ent.AgentTurn
+	ah.await(ctx, fmt.Sprintf("session %s turn %d", sessionID, sequence), func(waitCtx context.Context) (bool, string, error) {
+		query := ah.Client(waitCtx).AgentTurn.Query().
+			Where(
+				at.AgentSessionID(sessionID),
+				at.Sequence(sequence),
+			)
+		row, queryErr := query.Only(waitCtx)
+		if ent.IsNotFound(queryErr) {
+			return false, "turn not yet created", nil
+		}
+		if queryErr != nil {
+			return false, "query turn", queryErr
+		}
+		turn = row
+		turnError := ""
+		if row.Error != nil {
+			turnError = *row.Error
+		}
+		diagnostic := fmt.Sprintf("id=%s status=%s error=%s job=%d", row.ID, row.Status, turnError, row.RiverJobID)
+		if row.Status == at.StatusFailed {
+			return false, diagnostic, fmt.Errorf("investigation turn failed")
+		}
+		return row.Status == at.StatusCompleted, diagnostic, nil
+	})
 
-	client := ah.Client(ctx)
-	situations, situationsErr := ah.app.invoke[rez.SituationService]()
-	s.Require().NoError(situationsErr, "resolve situation service")
+	ah.AwaitJob(ctx, turn.RiverJobID)
 
-	// Seed evidence and create a situation without starting an investigation.
-	occurredAt := time.Date(2026, 6, 1, 10, 0, 0, 0, time.UTC)
-	createEvent := client.NormalizedEvent.Create().
-		SetProvider("test").
-		SetProviderNamespace("investigations").
-		SetProviderResourceRef("checkout-alert").
-		SetKind("alert").
-		SetProviderEventSource("app-test").
-		SetProviderEventRef("checkout-alert-1").
-		SetAttributes([]byte(`{"message":"checkout errors increased"}`)).
-		SetOccurredAt(occurredAt).
-		SetReceivedAt(occurredAt)
-	event, eventErr := createEvent.Save(ctx)
-	s.Require().NoError(eventErr, "seed checkout alert evidence")
-
-	observationGroup := rez.SituationObservationGroupParams{
-		Title:              "Source evidence",
-		NormalizedEventIDs: []uuid.UUID{event.ID},
-	}
-	params := rez.CreateSituationParams{
-		Title:              "Checkout errors",
-		StartInvestigation: false,
-		ObservationGroups:  []rez.SituationObservationGroupParams{observationGroup},
-	}
-	situation, situationErr := situations.CreateSituation(ctx, params)
-	s.Require().NoError(situationErr, "create checkout situation")
-
-	// Start through HTTP and capture the investigation's linked identities.
-	startInvestigation := aliceAPI.Operation[
-		oapiv1.RequestSituationInvestigationRequest,
-		oapiv1.RequestSituationInvestigationResponse,
-	](oapiv1.RequestSituationInvestigation)
-	startRequest := oapiv1.RequestSituationInvestigationRequest{Id: situation.ID}
-	startResponse := startInvestigation.Call(requestCtx, startRequest)
-	s.Require().NotNil(startResponse.Body.Data.Attributes.Investigation)
-	investigationID := startResponse.Body.Data.Attributes.Investigation.Investigation.Id
-	s.Require().NotEqual(uuid.Nil, investigationID)
-
-	getInvestigation := aliceAPI.Operation[
-		oapiv1.GetInvestigationRequest,
-		oapiv1.GetInvestigationResponse,
-	](oapiv1.GetInvestigation)
-	detailRequest := oapiv1.GetInvestigationRequest{Id: investigationID}
-	detailResponse := getInvestigation.Call(requestCtx, detailRequest)
-	s.Equal(investigationID, detailResponse.Body.Data.Id)
-	sessionID := detailResponse.Body.Data.Attributes.SessionId
-	analysisID := detailResponse.Body.Data.Attributes.AnalysisId
-	s.Require().NotEqual(uuid.Nil, sessionID)
-	s.Require().NotEqual(uuid.Nil, analysisID)
-
-	// The initial turn publishes the exact completed report through the real tool.
-	firstTurn := ah.AwaitInvestigationTurn(ctx, sessionID, 1)
-	getReport := aliceAPI.Operation[
-		oapiv1.GetInvestigationReportRequest,
-		oapiv1.GetInvestigationReportResponse,
-	](oapiv1.GetInvestigationReport)
-	reportRequest := oapiv1.GetInvestigationReportRequest{
-		Id:        investigationID,
-		Selection: "completed",
-	}
-	reportResponse := getReport.Call(requestCtx, reportRequest)
-	report := reportResponse.Body.Data.Attributes
-	s.Equal(investigationReportText, report.Text)
-	s.Equal(firstTurn.ID, report.AgentTurnId)
-	s.Equal(string(at.StatusCompleted), report.TurnStatus)
-	s.False(report.Provisional)
-
-	// Repeating start preserves the investigation, analysis, session, and first turn.
-	repeatedStartResponse := startInvestigation.Call(requestCtx, startRequest)
-	s.Require().NotNil(repeatedStartResponse.Body.Data.Attributes.Investigation)
-	s.Equal(investigationID, repeatedStartResponse.Body.Data.Attributes.Investigation.Investigation.Id)
-	repeatedDetailResponse := getInvestigation.Call(requestCtx, detailRequest)
-	s.Equal(sessionID, repeatedDetailResponse.Body.Data.Attributes.SessionId)
-	s.Equal(analysisID, repeatedDetailResponse.Body.Data.Attributes.AnalysisId)
-	queryTurns := client.AgentTurn.Query().
-		Where(at.AgentSessionID(sessionID))
-	initialTurnCount, initialCountErr := queryTurns.Count(ctx)
-	s.Require().NoError(initialCountErr, "count initial investigation turns")
-	s.Equal(1, initialTurnCount)
-
-	// Submit a follow-up; the second turn publishes its answer through the real tool.
-	submitInput := aliceAPI.Operation[
-		oapiv1.SubmitInvestigationUserInputRequest,
-		oapiv1.SubmitInvestigationUserInputResponse,
-	](oapiv1.SubmitInvestigationUserInput)
-	questionRequest := oapiv1.SubmitInvestigationUserInputRequest{Id: investigationID}
-	questionRequest.Body.Text = investigationQuestion
-	questionRequest.Body.SubmissionKey = "follow-up-1"
-	submittedResponse := submitInput.Call(requestCtx, questionRequest)
-	inputID := submittedResponse.Body.Data.Id
-	s.Require().NotEqual(uuid.Nil, inputID)
-	secondTurn := ah.AwaitInvestigationTurn(ctx, sessionID, 2)
-
-	listFindings := aliceAPI.Operation[
-		oapiv1.ListInvestigationFindingsRequest,
-		oapiv1.ListInvestigationFindingsResponse,
-	](oapiv1.ListInvestigationFindings)
-	findingsRequest := oapiv1.ListInvestigationFindingsRequest{Id: investigationID}
-	findingsResponse := listFindings.Call(requestCtx, findingsRequest)
-	s.Require().Len(findingsResponse.Body.Data, 1)
-	answer := findingsResponse.Body.Data[0]
-	s.Equal(investigationAnswerTitle, answer.Attributes.Title)
-	s.Equal(investigationAnswerBody, answer.Attributes.Body)
-	s.Require().NotNil(answer.Attributes.UserInputId)
-	s.Equal(inputID, *answer.Attributes.UserInputId)
-	s.Equal(secondTurn.ID, answer.Attributes.AgentTurnId)
-	s.Equal(string(at.StatusCompleted), answer.Attributes.TurnStatus)
-
-	// The input points back to the exact answer version and producing turn.
-	listInputs := aliceAPI.Operation[
-		oapiv1.ListInvestigationUserInputsRequest,
-		oapiv1.ListInvestigationUserInputsResponse,
-	](oapiv1.ListInvestigationUserInputs)
-	inputsRequest := oapiv1.ListInvestigationUserInputsRequest{Id: investigationID}
-	inputsResponse := listInputs.Call(requestCtx, inputsRequest)
-	s.Require().Len(inputsResponse.Body.Data, 1)
-	input := inputsResponse.Body.Data[0]
-	s.Equal(inputID, input.Id)
-	s.Equal(investigationQuestion, input.Attributes.Text)
-	s.Require().NotNil(input.Attributes.AnswerVersionId)
-	s.Equal(answer.Id, *input.Attributes.AnswerVersionId)
-	s.Require().NotNil(input.Attributes.AgentTurn)
-	s.Equal(secondTurn.ID, input.Attributes.AgentTurn.Id)
-	s.Equal(at.StatusCompleted, input.Attributes.AgentTurn.Status)
-
-	// Bob's tenant cannot read or add input to Alice's investigation.
-	bobAPI := ah.API(bob)
-	bobGetInvestigation := bobAPI.Operation[
-		oapiv1.GetInvestigationRequest,
-		oapiv1.GetInvestigationResponse,
-	](oapiv1.GetInvestigation)
-	bobGetInvestigation.ExpectStatus(requestCtx, detailRequest, http.StatusNotFound)
-	rejectedRequest := oapiv1.SubmitInvestigationUserInputRequest{Id: investigationID}
-	rejectedRequest.Body.Text = "Unauthorized question"
-	rejectedRequest.Body.SubmissionKey = "bob-1"
-	bobSubmitInput := bobAPI.Operation[
-		oapiv1.SubmitInvestigationUserInputRequest,
-		oapiv1.SubmitInvestigationUserInputResponse,
-	](oapiv1.SubmitInvestigationUserInput)
-	bobSubmitInput.ExpectStatus(requestCtx, rejectedRequest, http.StatusNotFound)
-
-	retainedInputsResponse := listInputs.Call(requestCtx, inputsRequest)
-	s.Require().Len(retainedInputsResponse.Body.Data, 1)
-	s.Equal(inputID, retainedInputsResponse.Body.Data[0].Id)
-	finalTurnCount, finalCountErr := queryTurns.Count(ctx)
-	s.Require().NoError(finalCountErr, "count turns after rejected input")
-	s.Equal(2, finalTurnCount)
-	model.AssertComplete(s.T())
+	return turn
 }

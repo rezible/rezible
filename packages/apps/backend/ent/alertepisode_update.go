@@ -17,6 +17,7 @@ import (
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/schema/schematypes"
 )
 
 // AlertEpisodeUpdate is the builder for updating AlertEpisode entities.
@@ -72,20 +73,6 @@ func (_u *AlertEpisodeUpdate) ClearKnowledgeEntityID() *AlertEpisodeUpdate {
 	return _u
 }
 
-// SetStatus sets the "status" field.
-func (_u *AlertEpisodeUpdate) SetStatus(v alertepisode.Status) *AlertEpisodeUpdate {
-	_u.mutation.SetStatus(v)
-	return _u
-}
-
-// SetNillableStatus sets the "status" field if the given value is not nil.
-func (_u *AlertEpisodeUpdate) SetNillableStatus(v *alertepisode.Status) *AlertEpisodeUpdate {
-	if v != nil {
-		_u.SetStatus(*v)
-	}
-	return _u
-}
-
 // SetStartedAt sets the "started_at" field.
 func (_u *AlertEpisodeUpdate) SetStartedAt(v time.Time) *AlertEpisodeUpdate {
 	_u.mutation.SetStartedAt(v)
@@ -96,20 +83,6 @@ func (_u *AlertEpisodeUpdate) SetStartedAt(v time.Time) *AlertEpisodeUpdate {
 func (_u *AlertEpisodeUpdate) SetNillableStartedAt(v *time.Time) *AlertEpisodeUpdate {
 	if v != nil {
 		_u.SetStartedAt(*v)
-	}
-	return _u
-}
-
-// SetLastObservedAt sets the "last_observed_at" field.
-func (_u *AlertEpisodeUpdate) SetLastObservedAt(v time.Time) *AlertEpisodeUpdate {
-	_u.mutation.SetLastObservedAt(v)
-	return _u
-}
-
-// SetNillableLastObservedAt sets the "last_observed_at" field if the given value is not nil.
-func (_u *AlertEpisodeUpdate) SetNillableLastObservedAt(v *time.Time) *AlertEpisodeUpdate {
-	if v != nil {
-		_u.SetLastObservedAt(*v)
 	}
 	return _u
 }
@@ -131,6 +104,20 @@ func (_u *AlertEpisodeUpdate) SetNillableClosedAt(v *time.Time) *AlertEpisodeUpd
 // ClearClosedAt clears the value of the "closed_at" field.
 func (_u *AlertEpisodeUpdate) ClearClosedAt() *AlertEpisodeUpdate {
 	_u.mutation.ClearClosedAt()
+	return _u
+}
+
+// SetHighestSeverity sets the "highest_severity" field.
+func (_u *AlertEpisodeUpdate) SetHighestSeverity(v schematypes.SignalSeverity) *AlertEpisodeUpdate {
+	_u.mutation.SetHighestSeverity(v)
+	return _u
+}
+
+// SetNillableHighestSeverity sets the "highest_severity" field if the given value is not nil.
+func (_u *AlertEpisodeUpdate) SetNillableHighestSeverity(v *schematypes.SignalSeverity) *AlertEpisodeUpdate {
+	if v != nil {
+		_u.SetHighestSeverity(*v)
+	}
 	return _u
 }
 
@@ -230,9 +217,9 @@ func (_u *AlertEpisodeUpdate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *AlertEpisodeUpdate) check() error {
-	if v, ok := _u.mutation.Status(); ok {
-		if err := alertepisode.StatusValidator(v); err != nil {
-			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "AlertEpisode.status": %w`, err)}
+	if v, ok := _u.mutation.HighestSeverity(); ok {
+		if err := alertepisode.HighestSeverityValidator(v); err != nil {
+			return &ValidationError{Name: "highest_severity", err: fmt.Errorf(`ent: validator failed for field "AlertEpisode.highest_severity": %w`, err)}
 		}
 	}
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
@@ -262,20 +249,20 @@ func (_u *AlertEpisodeUpdate) sqlSave(ctx context.Context) (_node int, err error
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(alertepisode.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if value, ok := _u.mutation.Status(); ok {
-		_spec.SetField(alertepisode.FieldStatus, field.TypeEnum, value)
-	}
 	if value, ok := _u.mutation.StartedAt(); ok {
 		_spec.SetField(alertepisode.FieldStartedAt, field.TypeTime, value)
-	}
-	if value, ok := _u.mutation.LastObservedAt(); ok {
-		_spec.SetField(alertepisode.FieldLastObservedAt, field.TypeTime, value)
 	}
 	if value, ok := _u.mutation.ClosedAt(); ok {
 		_spec.SetField(alertepisode.FieldClosedAt, field.TypeTime, value)
 	}
 	if _u.mutation.ClosedAtCleared() {
 		_spec.ClearField(alertepisode.FieldClosedAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.HighestSeverity(); ok {
+		_spec.SetField(alertepisode.FieldHighestSeverity, field.TypeEnum, value)
+	}
+	if _u.mutation.IdentityGroupLabelsCleared() {
+		_spec.ClearField(alertepisode.FieldIdentityGroupLabels, field.TypeJSON)
 	}
 	if _u.mutation.KnowledgeEntityCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -418,20 +405,6 @@ func (_u *AlertEpisodeUpdateOne) ClearKnowledgeEntityID() *AlertEpisodeUpdateOne
 	return _u
 }
 
-// SetStatus sets the "status" field.
-func (_u *AlertEpisodeUpdateOne) SetStatus(v alertepisode.Status) *AlertEpisodeUpdateOne {
-	_u.mutation.SetStatus(v)
-	return _u
-}
-
-// SetNillableStatus sets the "status" field if the given value is not nil.
-func (_u *AlertEpisodeUpdateOne) SetNillableStatus(v *alertepisode.Status) *AlertEpisodeUpdateOne {
-	if v != nil {
-		_u.SetStatus(*v)
-	}
-	return _u
-}
-
 // SetStartedAt sets the "started_at" field.
 func (_u *AlertEpisodeUpdateOne) SetStartedAt(v time.Time) *AlertEpisodeUpdateOne {
 	_u.mutation.SetStartedAt(v)
@@ -442,20 +415,6 @@ func (_u *AlertEpisodeUpdateOne) SetStartedAt(v time.Time) *AlertEpisodeUpdateOn
 func (_u *AlertEpisodeUpdateOne) SetNillableStartedAt(v *time.Time) *AlertEpisodeUpdateOne {
 	if v != nil {
 		_u.SetStartedAt(*v)
-	}
-	return _u
-}
-
-// SetLastObservedAt sets the "last_observed_at" field.
-func (_u *AlertEpisodeUpdateOne) SetLastObservedAt(v time.Time) *AlertEpisodeUpdateOne {
-	_u.mutation.SetLastObservedAt(v)
-	return _u
-}
-
-// SetNillableLastObservedAt sets the "last_observed_at" field if the given value is not nil.
-func (_u *AlertEpisodeUpdateOne) SetNillableLastObservedAt(v *time.Time) *AlertEpisodeUpdateOne {
-	if v != nil {
-		_u.SetLastObservedAt(*v)
 	}
 	return _u
 }
@@ -477,6 +436,20 @@ func (_u *AlertEpisodeUpdateOne) SetNillableClosedAt(v *time.Time) *AlertEpisode
 // ClearClosedAt clears the value of the "closed_at" field.
 func (_u *AlertEpisodeUpdateOne) ClearClosedAt() *AlertEpisodeUpdateOne {
 	_u.mutation.ClearClosedAt()
+	return _u
+}
+
+// SetHighestSeverity sets the "highest_severity" field.
+func (_u *AlertEpisodeUpdateOne) SetHighestSeverity(v schematypes.SignalSeverity) *AlertEpisodeUpdateOne {
+	_u.mutation.SetHighestSeverity(v)
+	return _u
+}
+
+// SetNillableHighestSeverity sets the "highest_severity" field if the given value is not nil.
+func (_u *AlertEpisodeUpdateOne) SetNillableHighestSeverity(v *schematypes.SignalSeverity) *AlertEpisodeUpdateOne {
+	if v != nil {
+		_u.SetHighestSeverity(*v)
+	}
 	return _u
 }
 
@@ -589,9 +562,9 @@ func (_u *AlertEpisodeUpdateOne) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *AlertEpisodeUpdateOne) check() error {
-	if v, ok := _u.mutation.Status(); ok {
-		if err := alertepisode.StatusValidator(v); err != nil {
-			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "AlertEpisode.status": %w`, err)}
+	if v, ok := _u.mutation.HighestSeverity(); ok {
+		if err := alertepisode.HighestSeverityValidator(v); err != nil {
+			return &ValidationError{Name: "highest_severity", err: fmt.Errorf(`ent: validator failed for field "AlertEpisode.highest_severity": %w`, err)}
 		}
 	}
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
@@ -638,20 +611,20 @@ func (_u *AlertEpisodeUpdateOne) sqlSave(ctx context.Context) (_node *AlertEpiso
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(alertepisode.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if value, ok := _u.mutation.Status(); ok {
-		_spec.SetField(alertepisode.FieldStatus, field.TypeEnum, value)
-	}
 	if value, ok := _u.mutation.StartedAt(); ok {
 		_spec.SetField(alertepisode.FieldStartedAt, field.TypeTime, value)
-	}
-	if value, ok := _u.mutation.LastObservedAt(); ok {
-		_spec.SetField(alertepisode.FieldLastObservedAt, field.TypeTime, value)
 	}
 	if value, ok := _u.mutation.ClosedAt(); ok {
 		_spec.SetField(alertepisode.FieldClosedAt, field.TypeTime, value)
 	}
 	if _u.mutation.ClosedAtCleared() {
 		_spec.ClearField(alertepisode.FieldClosedAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.HighestSeverity(); ok {
+		_spec.SetField(alertepisode.FieldHighestSeverity, field.TypeEnum, value)
+	}
+	if _u.mutation.IdentityGroupLabelsCleared() {
+		_spec.ClearField(alertepisode.FieldIdentityGroupLabels, field.TypeJSON)
 	}
 	if _u.mutation.KnowledgeEntityCleared() {
 		edge := &sqlgraph.EdgeSpec{

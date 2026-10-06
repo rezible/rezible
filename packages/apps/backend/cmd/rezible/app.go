@@ -10,6 +10,7 @@ import (
 	"slices"
 	"time"
 
+	"github.com/rezible/rezible/internal/db"
 	demoprovider "github.com/rezible/rezible/internal/integrations/demo"
 	"github.com/samber/do/v2"
 
@@ -305,7 +306,7 @@ func (a *Application) setup(ctx context.Context) error {
 }
 
 func (a *Application) registerJobWorkers() error {
-	def, defErr := do.InvokeNamed[jobs.Definition](a.i, "jobs-default")
+	def, defErr := do.Invoke[jobs.Definition](a.i)
 	if defErr != nil {
 		return fmt.Errorf("get jobs definition: %w", defErr)
 	}
@@ -315,7 +316,7 @@ func (a *Application) registerJobWorkers() error {
 }
 
 func (a *Application) registerMessageHandlers() error {
-	def, defErr := do.InvokeNamed[messages.Definition](a.i, "messages-default")
+	def, defErr := do.Invoke[messages.Definition](a.i)
 	if defErr != nil {
 		return fmt.Errorf("get messages definition: %w", defErr)
 	}
@@ -449,6 +450,7 @@ func (a *Application) setupDemo(ctx context.Context) error {
 			a.mustInvoke[rez.SystemAnalysisService](),
 			a.mustInvoke[rez.EventsService](),
 			a.mustInvoke[rez.SituationService](),
+			a.mustInvoke[*db.SituationService](),
 		)
 	})
 }

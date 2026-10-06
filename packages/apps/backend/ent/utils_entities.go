@@ -1,7 +1,6 @@
 package ent
 
 import (
-	mapset "github.com/deckarep/golang-set/v2"
 	"github.com/firebase/genkit/go/ai"
 	"github.com/google/uuid"
 	invfvl "github.com/rezible/rezible/ent/investigationfindingversionlink"
@@ -82,31 +81,6 @@ func (r *KnowledgeRelationship) LatestEvidence() *KnowledgeEvidence {
 
 func (am *AgentMessage) MakeGenkitMessage() *ai.Message {
 	return ai.NewMessage(ai.Role(am.Role), am.Metadata, am.Content...)
-}
-
-func (sogs SituationObservationGroups) SignalGroupCounts() map[string]int {
-	eventCounts := mapset.NewSet[uuid.UUID]()
-	alertEpCounts := mapset.NewSet[uuid.UUID]()
-	for _, group := range sogs {
-		for _, event := range group.Edges.Events {
-			eventCounts.Add(event.ID)
-		}
-		for _, ep := range group.Edges.AlertEpisodes {
-			alertEpCounts.Add(ep.ID)
-		}
-	}
-	return map[string]int{
-		"event":         eventCounts.Cardinality(),
-		"alert_episode": alertEpCounts.Cardinality(),
-	}
-}
-
-func (sogs SituationObservationGroups) SignalCount() int {
-	total := 0
-	for _, count := range sogs.SignalGroupCounts() {
-		total += count
-	}
-	return total
 }
 
 // KnowledgeEvidenceIDs returns the evidence IDs cited by the references, in loaded order.

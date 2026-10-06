@@ -179,11 +179,36 @@ type (
 
 	// AlertInstanceEventAttributes are the provider-neutral attributes persisted for alert observations.
 	AlertInstanceEventAttributes struct {
-		Title            string              `json:"title" validate:"required"`
-		Description      string              `json:"description"`
-		Definition       string              `json:"definition"`
-		ObservedEntities []EntityObservation `json:"observed_entities"`
+		// Title is the definition's stable name.
+		Title       string `json:"title" validate:"required"`
+		Description string `json:"description"`
+		Definition  string `json:"definition"`
+		State       string `json:"state" validate:"required,oneof=firing resolved"`
+		// InstanceID is the provider's identity for the source instance (Alertmanager's fingerprint), when it has one.
+		InstanceID string            `json:"instance_id,omitempty"`
+		Labels     map[string]string `json:"labels,omitempty"`
+		// Summary is the rendered text for this instance.
+		Summary string `json:"summary,omitempty"`
+		// IdentityGroupLabels is the source's proposal for which labels group instances. It applies only to a
+		// definition with no identity group labels.
+		IdentityGroupLabels []string `json:"identity_group_labels,omitempty"`
+		// Severity is normalized; SeverityRef keeps the provider's raw value.
+		Severity    string `json:"severity" validate:"required,oneof=unknown info warning critical"`
+		SeverityRef string `json:"severity_ref,omitempty"`
+		// StartedAt is the provider's window start. An integration whose source has none must synthesize a stable one.
+		StartedAt time.Time `json:"started_at" validate:"required"`
+		// EndedAt is the provider's end, read only from a resolved notification.
+		EndedAt *time.Time `json:"ended_at,omitempty"`
+		// ResolutionTimeoutSeconds is how long after the last firing notification a window is assumed ended: 0
+		// never; omitted keeps the stored value, or the configured default for a new definition.
+		ResolutionTimeoutSeconds *int                `json:"resolution_timeout_seconds,omitempty" validate:"omitempty,gte=0"`
+		ObservedEntities         []EntityObservation `json:"observed_entities"`
 	}
+)
+
+const (
+	AlertStateFiring   = "firing"
+	AlertStateResolved = "resolved"
 )
 
 const KindAlertInstance = "alert_instance"

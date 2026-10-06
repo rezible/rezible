@@ -10,17 +10,17 @@ import (
 	ea "github.com/rezible/rezible/ent/eventannotation"
 	ne "github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/ent/predicate"
-	"github.com/rezible/rezible/ent/situation"
-	sog "github.com/rezible/rezible/ent/situationobservationgroup"
 )
 
 type EventsService struct {
-	db rez.Database
+	db         rez.Database
+	situations rez.SituationService
 }
 
-func NewEventsService(db rez.Database) (*EventsService, error) {
+func NewEventsService(db rez.Database, situations rez.SituationService) (*EventsService, error) {
 	s := &EventsService{
-		db: db,
+		db:         db,
+		situations: situations,
 	}
 
 	return s, nil
@@ -54,7 +54,11 @@ func (s *EventsService) ListEvents(ctx context.Context, params rez.ListEventsPar
 		query.Where(ne.OccurredAtLTE(params.To))
 	}
 	if params.SituationID != uuid.Nil {
-		query.Where(ne.HasSituationObservationGroupsWith(sog.HasSituationWith(situation.ID(params.SituationID))))
+		situationEventIDs, situationErr := s.situations.ListSituationEventIDs(ctx, params.SituationID)
+		if situationErr != nil {
+			return nil, fmt.Errorf("list situation events: %w", situationErr)
+		}
+		query.Where(ne.IDIn(situationEventIDs...))
 	}
 	if params.AnalysisID != uuid.Nil {
 		// TODO

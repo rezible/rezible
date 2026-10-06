@@ -24,6 +24,16 @@ const (
 	FieldDescription = "description"
 	// FieldDefinition holds the string denoting the definition field in the database.
 	FieldDefinition = "definition"
+	// FieldResolutionTimeoutSeconds holds the string denoting the resolution_timeout_seconds field in the database.
+	FieldResolutionTimeoutSeconds = "resolution_timeout_seconds"
+	// FieldIdentityGroupLabels holds the string denoting the identity_group_labels field in the database.
+	FieldIdentityGroupLabels = "identity_group_labels"
+	// FieldMetadataObservedAt holds the string denoting the metadata_observed_at field in the database.
+	FieldMetadataObservedAt = "metadata_observed_at"
+	// FieldMetadataEventRef holds the string denoting the metadata_event_ref field in the database.
+	FieldMetadataEventRef = "metadata_event_ref"
+	// FieldSituationSignalAttentionID holds the string denoting the situation_signal_attention_id field in the database.
+	FieldSituationSignalAttentionID = "situation_signal_attention_id"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
 	// EdgeKnowledgeEntity holds the string denoting the knowledge_entity edge name in mutations.
@@ -32,6 +42,8 @@ const (
 	EdgePlaybooks = "playbooks"
 	// EdgeEpisodes holds the string denoting the episodes edge name in mutations.
 	EdgeEpisodes = "episodes"
+	// EdgeSituationSignalAttention holds the string denoting the situation_signal_attention edge name in mutations.
+	EdgeSituationSignalAttention = "situation_signal_attention"
 	// Table holds the table name of the alertdefinition in the database.
 	Table = "alert_definitions"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -60,6 +72,13 @@ const (
 	EpisodesInverseTable = "alert_episodes"
 	// EpisodesColumn is the table column denoting the episodes relation/edge.
 	EpisodesColumn = "alert_definition_id"
+	// SituationSignalAttentionTable is the table that holds the situation_signal_attention relation/edge.
+	SituationSignalAttentionTable = "alert_definitions"
+	// SituationSignalAttentionInverseTable is the table name for the SituationSignalAttention entity.
+	// It exists in this package in order to avoid circular dependency with the "situationsignalattention" package.
+	SituationSignalAttentionInverseTable = "situation_signal_attentions"
+	// SituationSignalAttentionColumn is the table column denoting the situation_signal_attention relation/edge.
+	SituationSignalAttentionColumn = "situation_signal_attention_id"
 )
 
 // Columns holds all SQL columns for alertdefinition fields.
@@ -70,6 +89,11 @@ var Columns = []string{
 	FieldTitle,
 	FieldDescription,
 	FieldDefinition,
+	FieldResolutionTimeoutSeconds,
+	FieldIdentityGroupLabels,
+	FieldMetadataObservedAt,
+	FieldMetadataEventRef,
+	FieldSituationSignalAttentionID,
 }
 
 var (
@@ -96,6 +120,8 @@ func ValidColumn(column string) bool {
 var (
 	Hooks  [1]ent.Hook
 	Policy ent.Policy
+	// ResolutionTimeoutSecondsValidator is a validator for the "resolution_timeout_seconds" field. It is called by the builders before save.
+	ResolutionTimeoutSecondsValidator func(int) error
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
@@ -131,6 +157,26 @@ func ByDescription(opts ...sql.OrderTermOption) OrderOption {
 // ByDefinition orders the results by the definition field.
 func ByDefinition(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldDefinition, opts...).ToFunc()
+}
+
+// ByResolutionTimeoutSeconds orders the results by the resolution_timeout_seconds field.
+func ByResolutionTimeoutSeconds(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldResolutionTimeoutSeconds, opts...).ToFunc()
+}
+
+// ByMetadataObservedAt orders the results by the metadata_observed_at field.
+func ByMetadataObservedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldMetadataObservedAt, opts...).ToFunc()
+}
+
+// ByMetadataEventRef orders the results by the metadata_event_ref field.
+func ByMetadataEventRef(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldMetadataEventRef, opts...).ToFunc()
+}
+
+// BySituationSignalAttentionID orders the results by the situation_signal_attention_id field.
+func BySituationSignalAttentionID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldSituationSignalAttentionID, opts...).ToFunc()
 }
 
 // ByTenantField orders the results by tenant field.
@@ -174,6 +220,13 @@ func ByEpisodes(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newEpisodesStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// BySituationSignalAttentionField orders the results by situation_signal_attention field.
+func BySituationSignalAttentionField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newSituationSignalAttentionStep(), sql.OrderByField(field, opts...))
+	}
+}
 func newTenantStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -200,5 +253,12 @@ func newEpisodesStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(EpisodesInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, EpisodesTable, EpisodesColumn),
+	)
+}
+func newSituationSignalAttentionStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(SituationSignalAttentionInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, SituationSignalAttentionTable, SituationSignalAttentionColumn),
 	)
 }

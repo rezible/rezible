@@ -16,6 +16,7 @@ import (
 	"github.com/rezible/rezible/ent/alertepisode"
 	"github.com/rezible/rezible/ent/alertfeedback"
 	"github.com/rezible/rezible/ent/alertinstance"
+	"github.com/rezible/rezible/ent/alertinstanceevent"
 	"github.com/rezible/rezible/ent/alertmetrics"
 	"github.com/rezible/rezible/ent/discussioncomment"
 	"github.com/rezible/rezible/ent/discussionthread"
@@ -77,9 +78,15 @@ import (
 	"github.com/rezible/rezible/ent/review"
 	"github.com/rezible/rezible/ent/schema"
 	"github.com/rezible/rezible/ent/situation"
+	"github.com/rezible/rezible/ent/situationaction"
+	"github.com/rezible/rezible/ent/situationentity"
 	"github.com/rezible/rezible/ent/situationhazardassessment"
 	"github.com/rezible/rezible/ent/situationinvestigation"
+	"github.com/rezible/rezible/ent/situationjudgment"
+	"github.com/rezible/rezible/ent/situationlink"
 	"github.com/rezible/rezible/ent/situationobservationgroup"
+	"github.com/rezible/rezible/ent/situationsignal"
+	"github.com/rezible/rezible/ent/situationsignalattention"
 	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/systemanalysisentity"
 	"github.com/rezible/rezible/ent/systemanalysisentry"
@@ -298,6 +305,10 @@ func init() {
 	}
 	alertdefinitionFields := schema.AlertDefinition{}.Fields()
 	_ = alertdefinitionFields
+	// alertdefinitionDescResolutionTimeoutSeconds is the schema descriptor for resolution_timeout_seconds field.
+	alertdefinitionDescResolutionTimeoutSeconds := alertdefinitionFields[4].Descriptor()
+	// alertdefinition.ResolutionTimeoutSecondsValidator is a validator for the "resolution_timeout_seconds" field. It is called by the builders before save.
+	alertdefinition.ResolutionTimeoutSecondsValidator = alertdefinitionDescResolutionTimeoutSeconds.Validators[0].(func(int) error)
 	// alertdefinitionDescID is the schema descriptor for id field.
 	alertdefinitionDescID := alertdefinitionFields[0].Descriptor()
 	// alertdefinition.DefaultID holds the default value on creation for the id field.
@@ -362,6 +373,22 @@ func init() {
 	alertinstanceDescID := alertinstanceFields[0].Descriptor()
 	// alertinstance.DefaultID holds the default value on creation for the id field.
 	alertinstance.DefaultID = alertinstanceDescID.Default.(func() uuid.UUID)
+	alertinstanceeventMixin := schema.AlertInstanceEvent{}.Mixin()
+	alertinstanceevent.Policy = privacy.NewPolicies(alertinstanceeventMixin[0], alertinstanceeventMixin[1], schema.AlertInstanceEvent{})
+	alertinstanceevent.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := alertinstanceevent.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	alertinstanceeventFields := schema.AlertInstanceEvent{}.Fields()
+	_ = alertinstanceeventFields
+	// alertinstanceeventDescID is the schema descriptor for id field.
+	alertinstanceeventDescID := alertinstanceeventFields[0].Descriptor()
+	// alertinstanceevent.DefaultID holds the default value on creation for the id field.
+	alertinstanceevent.DefaultID = alertinstanceeventDescID.Default.(func() uuid.UUID)
 	alertmetricsMixin := schema.AlertMetrics{}.Mixin()
 	alertmetrics.Policy = privacy.NewPolicies(alertmetricsMixin[0], schema.AlertMetrics{})
 	alertmetrics.Hooks[0] = func(next ent.Mutator) ent.Mutator {
@@ -1851,6 +1878,38 @@ func init() {
 	situationDescID := situationFields[0].Descriptor()
 	// situation.DefaultID holds the default value on creation for the id field.
 	situation.DefaultID = situationDescID.Default.(func() uuid.UUID)
+	situationactionMixin := schema.SituationAction{}.Mixin()
+	situationaction.Policy = privacy.NewPolicies(situationactionMixin[0], situationactionMixin[1], schema.SituationAction{})
+	situationaction.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := situationaction.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	situationactionFields := schema.SituationAction{}.Fields()
+	_ = situationactionFields
+	// situationactionDescID is the schema descriptor for id field.
+	situationactionDescID := situationactionFields[0].Descriptor()
+	// situationaction.DefaultID holds the default value on creation for the id field.
+	situationaction.DefaultID = situationactionDescID.Default.(func() uuid.UUID)
+	situationentityMixin := schema.SituationEntity{}.Mixin()
+	situationentity.Policy = privacy.NewPolicies(situationentityMixin[0], situationentityMixin[1], schema.SituationEntity{})
+	situationentity.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := situationentity.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	situationentityFields := schema.SituationEntity{}.Fields()
+	_ = situationentityFields
+	// situationentityDescID is the schema descriptor for id field.
+	situationentityDescID := situationentityFields[0].Descriptor()
+	// situationentity.DefaultID holds the default value on creation for the id field.
+	situationentity.DefaultID = situationentityDescID.Default.(func() uuid.UUID)
 	situationhazardassessmentMixin := schema.SituationHazardAssessment{}.Mixin()
 	situationhazardassessment.Policy = privacy.NewPolicies(situationhazardassessmentMixin[0], situationhazardassessmentMixin[1], schema.SituationHazardAssessment{})
 	situationhazardassessment.Hooks[0] = func(next ent.Mutator) ent.Mutator {
@@ -1915,6 +1974,38 @@ func init() {
 	situationinvestigationDescID := situationinvestigationFields[0].Descriptor()
 	// situationinvestigation.DefaultID holds the default value on creation for the id field.
 	situationinvestigation.DefaultID = situationinvestigationDescID.Default.(func() uuid.UUID)
+	situationjudgmentMixin := schema.SituationJudgment{}.Mixin()
+	situationjudgment.Policy = privacy.NewPolicies(situationjudgmentMixin[0], situationjudgmentMixin[1], schema.SituationJudgment{})
+	situationjudgment.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := situationjudgment.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	situationjudgmentFields := schema.SituationJudgment{}.Fields()
+	_ = situationjudgmentFields
+	// situationjudgmentDescID is the schema descriptor for id field.
+	situationjudgmentDescID := situationjudgmentFields[0].Descriptor()
+	// situationjudgment.DefaultID holds the default value on creation for the id field.
+	situationjudgment.DefaultID = situationjudgmentDescID.Default.(func() uuid.UUID)
+	situationlinkMixin := schema.SituationLink{}.Mixin()
+	situationlink.Policy = privacy.NewPolicies(situationlinkMixin[0], situationlinkMixin[1], schema.SituationLink{})
+	situationlink.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := situationlink.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	situationlinkFields := schema.SituationLink{}.Fields()
+	_ = situationlinkFields
+	// situationlinkDescID is the schema descriptor for id field.
+	situationlinkDescID := situationlinkFields[0].Descriptor()
+	// situationlink.DefaultID holds the default value on creation for the id field.
+	situationlink.DefaultID = situationlinkDescID.Default.(func() uuid.UUID)
 	situationobservationgroupMixin := schema.SituationObservationGroup{}.Mixin()
 	situationobservationgroup.Policy = privacy.NewPolicies(situationobservationgroupMixin[0], situationobservationgroupMixin[1], schema.SituationObservationGroup{})
 	situationobservationgroup.Hooks[0] = func(next ent.Mutator) ent.Mutator {
@@ -1947,6 +2038,46 @@ func init() {
 	situationobservationgroupDescID := situationobservationgroupFields[0].Descriptor()
 	// situationobservationgroup.DefaultID holds the default value on creation for the id field.
 	situationobservationgroup.DefaultID = situationobservationgroupDescID.Default.(func() uuid.UUID)
+	situationsignalMixin := schema.SituationSignal{}.Mixin()
+	situationsignal.Policy = privacy.NewPolicies(situationsignalMixin[0], situationsignalMixin[1], schema.SituationSignal{})
+	situationsignal.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := situationsignal.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	situationsignalFields := schema.SituationSignal{}.Fields()
+	_ = situationsignalFields
+	// situationsignalDescKind is the schema descriptor for kind field.
+	situationsignalDescKind := situationsignalFields[4].Descriptor()
+	// situationsignal.KindValidator is a validator for the "kind" field. It is called by the builders before save.
+	situationsignal.KindValidator = situationsignalDescKind.Validators[0].(func(string) error)
+	// situationsignalDescObservedRevision is the schema descriptor for observed_revision field.
+	situationsignalDescObservedRevision := situationsignalFields[10].Descriptor()
+	// situationsignal.DefaultObservedRevision holds the default value on creation for the observed_revision field.
+	situationsignal.DefaultObservedRevision = situationsignalDescObservedRevision.Default.(int)
+	// situationsignalDescID is the schema descriptor for id field.
+	situationsignalDescID := situationsignalFields[0].Descriptor()
+	// situationsignal.DefaultID holds the default value on creation for the id field.
+	situationsignal.DefaultID = situationsignalDescID.Default.(func() uuid.UUID)
+	situationsignalattentionMixin := schema.SituationSignalAttention{}.Mixin()
+	situationsignalattention.Policy = privacy.NewPolicies(situationsignalattentionMixin[0], situationsignalattentionMixin[1], schema.SituationSignalAttention{})
+	situationsignalattention.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := situationsignalattention.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	situationsignalattentionFields := schema.SituationSignalAttention{}.Fields()
+	_ = situationsignalattentionFields
+	// situationsignalattentionDescID is the schema descriptor for id field.
+	situationsignalattentionDescID := situationsignalattentionFields[0].Descriptor()
+	// situationsignalattention.DefaultID holds the default value on creation for the id field.
+	situationsignalattention.DefaultID = situationsignalattentionDescID.Default.(func() uuid.UUID)
 	systemanalysisMixin := schema.SystemAnalysis{}.Mixin()
 	systemanalysis.Policy = privacy.NewPolicies(systemanalysisMixin[0], systemanalysisMixin[1], schema.SystemAnalysis{})
 	systemanalysis.Hooks[0] = func(next ent.Mutator) ent.Mutator {

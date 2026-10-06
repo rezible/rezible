@@ -194,29 +194,51 @@ func (ReconcileInvestigation) Kind() string {
 	return "reconcile-investigation"
 }
 
-type CloseInactiveAlertEpisodes struct{}
-
-func (CloseInactiveAlertEpisodes) Kind() string {
-	return "close-inactive-alert-episodes"
+// SettleAlertEpisode recomputes an alert episode's state at a deadline: a window timeout, a supersession
+// or the episode's closing time. It is unique by args, so repeated scheduling of one deadline is one job.
+type SettleAlertEpisode struct {
+	EpisodeID uuid.UUID `json:"episode_id"`
+	DueAt     time.Time `json:"due_at"`
 }
 
-func (CloseInactiveAlertEpisodes) WorkerExecutionContext() execution.ActorKind {
-	return execution.KindSystem
+func (SettleAlertEpisode) Kind() string {
+	return "settle-alert-episode"
 }
 
-func (CloseInactiveAlertEpisodes) InsertOpts() river.InsertOpts {
-	return river.InsertOpts{
-		UniqueOpts: river.UniqueOpts{
-			ByArgs:  true,
-			ByState: UniqueStateNonCompleted,
-		},
+func (SettleAlertEpisode) InsertOpts() river.InsertOpts {
+	return river.InsertOpts{UniqueOpts: river.UniqueOpts{ByArgs: true}}
+}
+
+// ProcessSituationSignal places a changed signal into situations, or refreshes the situation holding it.
+// It is not unique: a trigger dropped while an identical job runs would miss the change, so its handler is
+// idempotent instead.
+type ProcessSituationSignal struct {
+	SignalEntityID uuid.UUID `json:"signal_entity_id"`
+}
+
+func (ProcessSituationSignal) Kind() string {
+	return "process-situation-signal"
+}
+
+// SituationsQueue runs situation evaluations, which may wait on a model judge, apart from the default queue.
+const SituationsQueue = "situations"
+
+// EvaluateSituation brings a situation's closure, investigation and judgment up to date. An immediate
+// trigger has no due time and is not unique: a trigger dropped while an identical job runs would miss the
+// change, so its handler is idempotent instead. A deadline carries its due time and is unique by args, so
+// repeated scheduling of one deadline is one job.
+type EvaluateSituation struct {
+	SituationID uuid.UUID  `json:"situation_id"`
+	DueAt       *time.Time `json:"due_at,omitempty"`
+}
+
+func (EvaluateSituation) Kind() string {
+	return "evaluate-situation"
+}
+
+func (a EvaluateSituation) InsertOpts() river.InsertOpts {
+	if a.DueAt == nil {
+		return river.InsertOpts{Queue: SituationsQueue}
 	}
+	return river.InsertOpts{Queue: SituationsQueue, UniqueOpts: river.UniqueOpts{ByArgs: true}}
 }
-
-var CloseInactiveAlertEpisodesPeriodicJob = river.NewPeriodicJob(
-	river.PeriodicInterval(time.Minute),
-	func() (river.JobArgs, *river.InsertOpts) {
-		return CloseInactiveAlertEpisodes{}, nil
-	},
-	nil,
-)

@@ -3,14 +3,17 @@
 package ent
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
+	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/alertdefinition"
 	"github.com/rezible/rezible/ent/knowledgeentity"
+	"github.com/rezible/rezible/ent/situationsignalattention"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
@@ -29,6 +32,16 @@ type AlertDefinition struct {
 	Description string `json:"description,omitempty"`
 	// Definition holds the value of the "definition" field.
 	Definition string `json:"definition,omitempty"`
+	// How long after its last firing notification a window is assumed ended; 0 never
+	ResolutionTimeoutSeconds int `json:"resolution_timeout_seconds,omitempty"`
+	// Label names that group instances
+	IdentityGroupLabels []string `json:"identity_group_labels,omitempty"`
+	// occurred_at of the notification whose metadata is stored
+	MetadataObservedAt time.Time `json:"metadata_observed_at,omitempty"`
+	// provider_event_ref of that notification, which breaks ties
+	MetadataEventRef string `json:"metadata_event_ref,omitempty"`
+	// SituationSignalAttentionID holds the value of the "situation_signal_attention_id" field.
+	SituationSignalAttentionID *uuid.UUID `json:"situation_signal_attention_id,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the AlertDefinitionQuery when eager-loading is set.
 	Edges        AlertDefinitionEdges `json:"edges"`
@@ -45,9 +58,11 @@ type AlertDefinitionEdges struct {
 	Playbooks []*Playbook `json:"playbooks,omitempty"`
 	// Episodes holds the value of the episodes edge.
 	Episodes []*AlertEpisode `json:"episodes,omitempty"`
+	// SituationSignalAttention holds the value of the situation_signal_attention edge.
+	SituationSignalAttention *SituationSignalAttention `json:"situation_signal_attention,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [4]bool
+	loadedTypes [5]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -90,17 +105,32 @@ func (e AlertDefinitionEdges) EpisodesOrErr() ([]*AlertEpisode, error) {
 	return nil, &NotLoadedError{edge: "episodes"}
 }
 
+// SituationSignalAttentionOrErr returns the SituationSignalAttention value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e AlertDefinitionEdges) SituationSignalAttentionOrErr() (*SituationSignalAttention, error) {
+	if e.SituationSignalAttention != nil {
+		return e.SituationSignalAttention, nil
+	} else if e.loadedTypes[4] {
+		return nil, &NotFoundError{label: situationsignalattention.Label}
+	}
+	return nil, &NotLoadedError{edge: "situation_signal_attention"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*AlertDefinition) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case alertdefinition.FieldKnowledgeEntityID:
+		case alertdefinition.FieldKnowledgeEntityID, alertdefinition.FieldSituationSignalAttentionID:
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case alertdefinition.FieldTenantID:
+		case alertdefinition.FieldIdentityGroupLabels:
+			values[i] = new([]byte)
+		case alertdefinition.FieldTenantID, alertdefinition.FieldResolutionTimeoutSeconds:
 			values[i] = new(sql.NullInt64)
-		case alertdefinition.FieldTitle, alertdefinition.FieldDescription, alertdefinition.FieldDefinition:
+		case alertdefinition.FieldTitle, alertdefinition.FieldDescription, alertdefinition.FieldDefinition, alertdefinition.FieldMetadataEventRef:
 			values[i] = new(sql.NullString)
+		case alertdefinition.FieldMetadataObservedAt:
+			values[i] = new(sql.NullTime)
 		case alertdefinition.FieldID:
 			values[i] = new(uuid.UUID)
 		default:
@@ -155,6 +185,39 @@ func (_m *AlertDefinition) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.Definition = value.String
 			}
+		case alertdefinition.FieldResolutionTimeoutSeconds:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field resolution_timeout_seconds", values[i])
+			} else if value.Valid {
+				_m.ResolutionTimeoutSeconds = int(value.Int64)
+			}
+		case alertdefinition.FieldIdentityGroupLabels:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field identity_group_labels", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &_m.IdentityGroupLabels); err != nil {
+					return fmt.Errorf("unmarshal field identity_group_labels: %w", err)
+				}
+			}
+		case alertdefinition.FieldMetadataObservedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field metadata_observed_at", values[i])
+			} else if value.Valid {
+				_m.MetadataObservedAt = value.Time
+			}
+		case alertdefinition.FieldMetadataEventRef:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field metadata_event_ref", values[i])
+			} else if value.Valid {
+				_m.MetadataEventRef = value.String
+			}
+		case alertdefinition.FieldSituationSignalAttentionID:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field situation_signal_attention_id", values[i])
+			} else if value.Valid {
+				_m.SituationSignalAttentionID = new(uuid.UUID)
+				*_m.SituationSignalAttentionID = *value.S.(*uuid.UUID)
+			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
 		}
@@ -186,6 +249,11 @@ func (_m *AlertDefinition) QueryPlaybooks() *PlaybookQuery {
 // QueryEpisodes queries the "episodes" edge of the AlertDefinition entity.
 func (_m *AlertDefinition) QueryEpisodes() *AlertEpisodeQuery {
 	return NewAlertDefinitionClient(_m.config).QueryEpisodes(_m)
+}
+
+// QuerySituationSignalAttention queries the "situation_signal_attention" edge of the AlertDefinition entity.
+func (_m *AlertDefinition) QuerySituationSignalAttention() *SituationSignalAttentionQuery {
+	return NewAlertDefinitionClient(_m.config).QuerySituationSignalAttention(_m)
 }
 
 // Update returns a builder for updating this AlertDefinition.
@@ -227,6 +295,23 @@ func (_m *AlertDefinition) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("definition=")
 	builder.WriteString(_m.Definition)
+	builder.WriteString(", ")
+	builder.WriteString("resolution_timeout_seconds=")
+	builder.WriteString(fmt.Sprintf("%v", _m.ResolutionTimeoutSeconds))
+	builder.WriteString(", ")
+	builder.WriteString("identity_group_labels=")
+	builder.WriteString(fmt.Sprintf("%v", _m.IdentityGroupLabels))
+	builder.WriteString(", ")
+	builder.WriteString("metadata_observed_at=")
+	builder.WriteString(_m.MetadataObservedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("metadata_event_ref=")
+	builder.WriteString(_m.MetadataEventRef)
+	builder.WriteString(", ")
+	if v := _m.SituationSignalAttentionID; v != nil {
+		builder.WriteString("situation_signal_attention_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
 	builder.WriteByte(')')
 	return builder.String()
 }

@@ -31,7 +31,10 @@ func (s *ProjectionServiceSuite) incidentService(tdb rez.Database, events *[]rez
 	retrospectives, retrospectiveServiceErr := db.NewRetrospectiveService(tdb)
 	s.Require().NoError(retrospectiveServiceErr)
 
-	service, serviceErr := db.NewIncidentService(tdb, messageService, nil, retrospectives)
+	situations := mocks.NewMockSituationService(s.T())
+	situations.EXPECT().SyncIncidentLinks(mock.Anything, mock.Anything, mock.Anything).Return(nil).Maybe()
+
+	service, serviceErr := db.NewIncidentService(tdb, messageService, situations, retrospectives)
 	s.Require().NoError(serviceErr)
 
 	return service

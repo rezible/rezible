@@ -804,35 +804,6 @@ func HasProjectionWith(preds ...predicate.NormalizedEventProjection) predicate.N
 	})
 }
 
-// HasSituationObservationGroups applies the HasEdge predicate on the "situation_observation_groups" edge.
-func HasSituationObservationGroups() predicate.NormalizedEvent {
-	return predicate.NormalizedEvent(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, SituationObservationGroupsTable, SituationObservationGroupsPrimaryKey...),
-		)
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.SituationObservationGroup
-		step.Edge.Schema = schemaConfig.SituationObservationGroupEvents
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasSituationObservationGroupsWith applies the HasEdge predicate on the "situation_observation_groups" edge with a given conditions (other predicates).
-func HasSituationObservationGroupsWith(preds ...predicate.SituationObservationGroup) predicate.NormalizedEvent {
-	return predicate.NormalizedEvent(func(s *sql.Selector) {
-		step := newSituationObservationGroupsStep()
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.SituationObservationGroup
-		step.Edge.Schema = schemaConfig.SituationObservationGroupEvents
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.NormalizedEvent) predicate.NormalizedEvent {
 	return predicate.NormalizedEvent(sql.AndPredicates(predicates...))

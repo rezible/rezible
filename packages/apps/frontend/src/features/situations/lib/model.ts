@@ -1,12 +1,16 @@
 import type {
 	AlertEpisode,
-	Event,
+	AlertInstanceAttributes,
 	InvestigationReport,
 	InvestigationReportAttributes,
+	SituationAttributes,
+	SituationLink,
 	SituationObservationGroup,
+	SituationSignal,
 } from "$lib/api";
+import type { StatusPresentation } from "$components/common/status-badge/status";
+import { attentionStatus } from "$features/signals/lib/attention";
 import { formatTime, type FormattedTime } from "$lib/time";
-import { safeExternalUrl } from "$lib/utils";
 import { markdownSummary } from "$components/rich-text-view/markdown-summary";
 import type { Component } from "svelte";
 import RiAlarmWarningLine from "remixicon-svelte/icons/alarm-warning-line";
@@ -25,145 +29,92 @@ export type SourceRecord = {
 	links: { label: string; href: string }[];
 	eventId?: string;
 	definitionId?: string;
+	/** A watch-only or join-only definition's signal attention. */
+	attention?: StatusPresentation;
 };
 
 export type SourceTarget =
 	| { kind: "direct"; record: SourceRecord; observationGroupTitle: string }
 	| { kind: "knowledgeEvidence"; id: string };
 
-function hasBinaryControls(value: string) {
-	return [...value].some((character) => {
-		const code = character.codePointAt(0)!;
-		return (code < 32 && ![9, 10, 13].includes(code)) || (code >= 127 && code <= 159);
-	});
-}
-
-function readablePayload(value: string) {
-	let decoded = "";
-	try {
-		const bytes = Uint8Array.from(atob(value), (character) => character.charCodeAt(0));
-		decoded = new TextDecoder("utf-8", { fatal: true }).decode(bytes);
-	} catch {
-		return undefined;
-	}
-
-	if (hasBinaryControls(decoded)) {
-		return undefined;
-	}
-
-	try {
-		const parsed: unknown = JSON.parse(decoded);
-		if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
-			return { decoded, fields: parsed as Record<string, unknown> };
-		}
-		return { decoded, fields: undefined };
-	} catch {
-		return { decoded, fields: undefined };
+function windowEndLabel(reason: AlertInstanceAttributes["endReason"]) {
+	switch (reason) {
+		case "resolved":
+			return "Resolved";
+		case "superseded":
+			return "Superseded";
+		case "timeout":
+			return "Timed out without a notification";
+		default:
+			return "Ended";
 	}
 }
 
-function readableField(fields: Record<string, unknown> | undefined, name: string) {
-	const value = fields?.[name];
-	if (typeof value !== "string" || !value.trim() || hasBinaryControls(value)) {
-		return undefined;
+function windowDescription(window: AlertInstanceAttributes) {
+	const fired = `Fired ${formatTime(window.firedAt).absolute}`;
+	if (!window.endedAt) {
+		return `${fired} · Still firing`;
 	}
-	return value.trim();
+	return `${fired} · ${windowEndLabel(window.endReason)} ${formatTime(window.endedAt).absolute}`;
 }
 
-function eventContent(payload: ReturnType<typeof readablePayload>) {
-	const message = readableField(payload?.fields, "message");
-	if (message) {
-		return message;
-	}
-	const description = readableField(payload?.fields, "description");
-	if (description) {
-		return description;
-	}
-	if (payload?.fields) {
-		return JSON.stringify(payload.fields, null, 2);
-	}
-	return payload?.decoded ?? "";
-}
-
-function eventTitle(fields: Record<string, unknown> | undefined, kind: string) {
-	const title = readableField(fields, "title");
-	if (title) {
-		return title;
-	}
-	const message = readableField(fields, "message");
-	if (message) {
-		return message;
-	}
-	return kind || "Event";
-}
-
-function eventSourceRecord(record: Event): SourceRecord {
-	const attributes = record.attributes;
-	const payload = readablePayload(attributes.attributes);
-	const fields = payload?.fields;
-	const content = eventContent(payload);
-	const title = eventTitle(fields, attributes.kind);
-	const links: SourceRecord["links"] = [];
-	const references: [string, string][] = [
-		["Provider event reference", attributes.providerEventRef],
-		["Provider event source", attributes.providerEventSource],
-		["Resource reference", attributes.resourceRef.resourceRef],
-	];
-
-	for (const [label, reference] of references) {
-		const href = safeExternalUrl(reference);
-		if (href) {
-			links.push({ label, href });
-		}
-	}
-
-	return {
-		key: `event:${record.id}`,
-		id: record.id,
-		type: "Event",
-		eventId: record.id,
-		title,
-		source: attributes.resourceRef.provider || attributes.providerEventSource || "Source unavailable",
-		time: formatTime(attributes.occurredAt),
-		timeLabel: "Occurred",
-		content,
-		fields: [
-			{ label: "Kind", value: attributes.kind },
-			{ label: "Provider", value: attributes.resourceRef.provider },
-			{ label: "Provider namespace", value: attributes.resourceRef.providerNamespace },
-			{ label: "Resource reference", value: attributes.resourceRef.resourceRef },
-			{ label: "Provider event source", value: attributes.providerEventSource },
-			{ label: "Provider event reference", value: attributes.providerEventRef },
-			{ label: "Integration ID", value: attributes.integrationId ?? "" },
-			{ label: "Received", value: formatTime(attributes.receivedAt).absolute },
-		].filter((field) => field.value),
-		links,
-	};
-}
-
-function episodeSourceRecord(record: AlertEpisode): SourceRecord {
-	const attributes = record.attributes;
-	const fields = [
-		{ label: "Status", value: attributes.status },
-		{ label: "Last observed", value: formatTime(attributes.lastObservedAt).absolute },
-	];
-	if (attributes.closedAt) {
-		fields.push({ label: "Closed", value: formatTime(attributes.closedAt).absolute });
-	}
-	fields.push({ label: "Definition", value: attributes.definition?.attributes.definition ?? "" });
-	return {
-		key: `alert-episode:${record.id}`,
-		id: record.id,
+/** A signal's record; an alert episode, when loaded, adds its definition and firing windows. */
+function signalSourceRecord(
+	signal: SituationSignal,
+	groupTitle: string,
+	episode?: AlertEpisode
+): SourceRecord {
+	const record: SourceRecord = {
+		key: `signal:${signal.knowledgeEntityId}`,
+		id: signal.knowledgeEntityId,
 		type: "Alert episode",
-		title: attributes.definition?.attributes.title || "Alert episode",
+		title: groupTitle,
 		source: "Alert episode",
-		time: formatTime(attributes.startedAt),
-		timeLabel: "Started",
-		content: attributes.definition?.attributes.description || "",
-		definitionId: attributes.definition?.id,
-		fields: fields.filter((field) => field.value),
+		time: formatTime(signal.attachedAt),
+		timeLabel: "Attached",
+		content: "",
+		fields: [{ label: "Match", value: signal.matchKind }],
 		links: [],
 	};
+	if (!episode) {
+		return record;
+	}
+
+	const attributes = episode.attributes;
+	const definition = attributes.definition;
+	if (definition) {
+		record.title = definition.attributes.title;
+		record.definitionId = definition.id;
+		record.attention = attentionStatus(definition.attributes.situationSignalAttention);
+	}
+	record.time = formatTime(attributes.startedAt);
+	record.timeLabel = "Started";
+	record.content = attributes.instances.at(-1)?.attributes.summary ?? "";
+	record.fields.push({ label: "Severity", value: attributes.highestSeverity });
+	attributes.instances.forEach((instance, index) => {
+		record.fields.push({ label: `Window ${index + 1}`, value: windowDescription(instance.attributes) });
+	});
+	return record;
+}
+
+/** Distinct sources: each alert definition once, and each signal without a source (a code change) once. */
+export function situationSourceCount(attributes: SituationAttributes) {
+	const keys = new Set<string>();
+	for (const group of attributes.observationGroups) {
+		for (const signal of group.attributes.signals) {
+			keys.add(signal.sourceEntityId ?? signal.knowledgeEntityId);
+		}
+	}
+	return keys.size;
+}
+
+export function situationLinkKindLabel(kind: SituationLink["kind"]) {
+	switch (kind) {
+		case "recurrence_of":
+			return "Recurrence of";
+		case "merged_into":
+			return "Merged into";
+	}
 }
 
 /** "Alert episode" or "Event · datadog"; never repeats the type. */
@@ -181,41 +132,20 @@ export function sourceIcon(record: SourceRecord): Component {
 	return RiAlarmWarningLine;
 }
 
-function isEventRecord(record: Event | AlertEpisode): record is Event {
-	return "occurredAt" in record.attributes;
-}
-
-export function sourceRecord(record: Event | AlertEpisode): SourceRecord {
-	if (isEventRecord(record)) {
-		return eventSourceRecord(record);
-	}
-	return episodeSourceRecord(record);
-}
-
-function compareSources(first: SourceRecord, second: SourceRecord) {
-	const firstTime = first.time.epochMs ?? Infinity;
-	const secondTime = second.time.epochMs ?? Infinity;
-	if (firstTime < secondTime) {
-		return -1;
-	}
-	if (firstTime > secondTime) {
-		return 1;
-	}
-	return first.key.localeCompare(second.key);
-}
-
-export function observationGroups(groups: SituationObservationGroup[]) {
+/** Groups with their records, enriched by the situation's alert episodes keyed by knowledge entity. */
+export function observationGroups(
+	groups: SituationObservationGroup[],
+	episodesByEntity: Map<string, AlertEpisode>
+) {
 	return groups.map((group) => {
-		const records = new Map<string, SourceRecord>();
-		for (const record of [...group.attributes.events, ...group.attributes.alertEpisodes]) {
-			const source = sourceRecord(record);
-			records.set(source.key, source);
-		}
+		const records = group.attributes.signals.map((signal) =>
+			signalSourceRecord(signal, group.attributes.title, episodesByEntity.get(signal.knowledgeEntityId))
+		);
 		return {
 			id: group.id,
 			title: group.attributes.title,
 			body: group.attributes.body,
-			records: [...records.values()].sort(compareSources),
+			records,
 		};
 	});
 }

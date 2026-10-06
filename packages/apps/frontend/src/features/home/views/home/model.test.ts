@@ -1,5 +1,5 @@
 import { expect, mock, test } from "bun:test";
-import type { ActivityRecord, InboxItem, Incident, Situation } from "$lib/api";
+import type { ActivityRecord, InboxItem, Incident } from "$lib/api";
 
 // SvelteKit's $app modules are unavailable under bun; resolve route IDs literally.
 mock.module("$app/paths", () => ({
@@ -9,8 +9,7 @@ mock.module("$app/paths", () => ({
 			.replace(/\[(\w+)(=\w+)?\]/g, (_, name) => params[name] ?? ""),
 }));
 
-const { activityHref, activityRow, inboxItemHref, inboxRow, incidentRow, situationRow } =
-	await import("./model");
+const { activityHref, activityRow, inboxItemHref, inboxRow, incidentRow } = await import("./model");
 
 const now = Date.parse("2026-05-14T12:00:00Z");
 
@@ -103,30 +102,6 @@ test("incident rows dedupe and limit service names", () => {
 	expect(row.moreServices).toBe(1);
 	expect(row.summary).toBe("Summary");
 	expect(row.response.label).toBe("Active");
-});
-
-test("situation source count dedupes sources within groups", () => {
-	const situation = {
-		id: "situation",
-		attributes: {
-			title: "Situation",
-			summary: "",
-			openedAt: "2026-05-14T10:00:00Z",
-			linkedIncidentIds: ["i1"],
-			observationGroups: [
-				{
-					id: "g1",
-					attributes: { events: [{ id: "e1" }, { id: "e1" }], alertEpisodes: [{ id: "a1" }] },
-				},
-				{ id: "g2", attributes: { events: [{ id: "e2" }], alertEpisodes: [] } },
-			],
-		},
-	} as unknown as Situation;
-
-	const row = situationRow(situation, { kind: "none" });
-	expect(row.sourceCount).toBe(3);
-	expect(row.linkedIncidentCount).toBe(1);
-	expect(row.href).toBe("/situations/situation");
 });
 
 test("activity rows group by local day", () => {

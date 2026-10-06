@@ -21,6 +21,7 @@ import (
 	"github.com/rezible/rezible/ent/incidentseverity"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/retrospective"
+	"github.com/rezible/rezible/ent/situation"
 )
 
 type IncidentService struct {
@@ -126,6 +127,11 @@ func (s *IncidentService) Set(ctx context.Context, id uuid.UUID, setFn func(*ent
 		}
 		mut := mutator.Mutation()
 		setFn(mut)
+		// Situation links are made by the situation service, which raises the situations it links.
+		links, linksErr := s.takeSituationLinkChanges(ctx, id, mut)
+		if linksErr != nil {
+			return uuid.Nil, linksErr
+		}
 		if isCreate {
 			openedAt := time.Now()
 			if at, exists := mut.OpenedAt(); exists {
@@ -146,8 +152,9 @@ func (s *IncidentService) Set(ctx context.Context, id uuid.UUID, setFn func(*ent
 				return uuid.Nil, fmt.Errorf("create incident retrospective: %w", createErr)
 			}
 		}
-		if sitErr := s.updateIncidentMutationSituation(ctx, updated.ID, mut); sitErr != nil {
-			return uuid.Nil, fmt.Errorf("update incident situation: %w", sitErr)
+		// Every write is synced, so a change such as resolution reaches the incident's situations.
+		if sitErr := s.situations.SyncIncidentLinks(ctx, updated.ID, links); sitErr != nil {
+			return uuid.Nil, fmt.Errorf("sync incident situations: %w", sitErr)
 		}
 		if publishErr := s.msgs.Publish(ctx, rez.EventOnIncidentUpdated{Created: isCreate, IncidentId: updated.ID}); publishErr != nil {
 			return uuid.Nil, fmt.Errorf("publish incident update: %w", publishErr)
@@ -160,22 +167,24 @@ func (s *IncidentService) Set(ctx context.Context, id uuid.UUID, setFn func(*ent
 	return s.Get(ctx, incident.ID(updatedID))
 }
 
-func (s *IncidentService) updateIncidentMutationSituation(ctx context.Context, incId uuid.UUID, mut *ent.IncidentMutation) error {
-	if addedSituationIds := mut.SituationsIDs(); len(addedSituationIds) > 0 {
-		for _, sitId := range addedSituationIds {
-			if situationErr := s.situations.AddIncidentToSituation(ctx, sitId, incId); situationErr != nil {
-				return fmt.Errorf("add incident situation link: %w", situationErr)
-			}
-		}
+// takeSituationLinkChanges removes the situation link changes from the mutation before it is saved. Clearing
+// the incident's situations becomes removing every situation it links now.
+func (s *IncidentService) takeSituationLinkChanges(ctx context.Context, id uuid.UUID, mut *ent.IncidentMutation) (rez.IncidentSituationLinkChanges, error) {
+	links := rez.IncidentSituationLinkChanges{
+		Added:   mut.SituationsIDs(),
+		Removed: mut.RemovedSituationsIDs(),
 	}
-	if removedSituationIds := mut.RemovedSituationsIDs(); len(removedSituationIds) > 0 {
-		for _, sitId := range removedSituationIds {
-			if situationErr := s.situations.RemoveIncidentFromSituation(ctx, sitId, incId); situationErr != nil {
-				return fmt.Errorf("remove incident situation link: %w", situationErr)
-			}
+	if mut.SituationsCleared() && id != uuid.Nil {
+		queryLinked := s.db.Client(ctx).Situation.Query().
+			Where(situation.HasIncidentsWith(incident.ID(id)))
+		linkedIDs, queryErr := queryLinked.IDs(ctx)
+		if queryErr != nil {
+			return links, fmt.Errorf("query incident situations: %w", queryErr)
 		}
+		links.Removed = append(links.Removed, linkedIDs...)
 	}
-	return nil
+	mut.ResetSituations()
+	return links, nil
 }
 
 func (s *IncidentService) Archive(ctx context.Context, id uuid.UUID) error {

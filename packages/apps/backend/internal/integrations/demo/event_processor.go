@@ -147,11 +147,25 @@ func (p *eventProcessor) processAlert() (ent.NormalizedEvents, error) {
 	if occurredAt.IsZero() {
 		occurredAt = time.Now().UTC()
 	}
+	severity := payload.Severity
+	if severity == "" {
+		severity = "unknown"
+	}
 	attrs := projections.AlertInstanceEventAttributes{
-		Title:            payload.Title,
-		Description:      payload.Description,
-		Definition:       payload.Definition,
-		ObservedEntities: payload.ObservedEntities,
+		Title:                    payload.Title,
+		Description:              payload.Description,
+		Definition:               payload.Definition,
+		State:                    payload.State,
+		InstanceID:               payload.InstanceID,
+		Labels:                   payload.Labels,
+		Summary:                  payload.Summary,
+		IdentityGroupLabels:      payload.IdentityGroupLabels,
+		Severity:                 severity,
+		SeverityRef:              payload.Severity,
+		StartedAt:                payload.StartedAt,
+		EndedAt:                  payload.EndedAt,
+		ResolutionTimeoutSeconds: payload.ResolutionTimeoutSeconds,
+		ObservedEntities:         payload.ObservedEntities,
 	}
 	encodedAttrs, encodeErr := projections.EncodeAttributes(attrs)
 	if encodeErr != nil {

@@ -2,6 +2,8 @@
 	import * as Collapsible from "$components/ui/collapsible";
 	import { Button } from "$components/ui/button";
 	import SectionHeading from "$components/common/section-heading/SectionHeading.svelte";
+	import { resolve } from "$app/paths";
+	import StatusBadge from "$components/common/status-badge/StatusBadge.svelte";
 	import Timestamp from "$components/common/timestamp/Timestamp.svelte";
 	import { sourceIcon, sourceMeta } from "$features/situations/lib/model";
 	import RiArrowDownSLine from "remixicon-svelte/icons/arrow-down-s-line";
@@ -80,8 +82,20 @@
 									aria-hidden="true"
 								/>
 								<div class="flex min-w-0 flex-col gap-1">
-									<p class="text-[15px] leading-[22px] font-medium wrap-anywhere">
+									<p
+										class="flex flex-wrap items-center gap-x-2 gap-y-1 text-[15px] leading-[22px] font-medium wrap-anywhere"
+									>
 										{record.title}
+										{#if record.attention && record.definitionId}
+											<a
+												class="rounded-sm hover:underline focus-visible:outline-2 focus-visible:outline-ring"
+												href={resolve("/signals/[id]/[[view=signalView]]", {
+													id: record.definitionId,
+												})}
+											>
+												<StatusBadge status={record.attention} variant="inline" />
+											</a>
+										{/if}
 									</p>
 									<p
 										class="line-clamp-2 text-sm whitespace-pre-wrap text-muted-foreground wrap-anywhere"
