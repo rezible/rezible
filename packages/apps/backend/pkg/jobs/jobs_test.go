@@ -24,11 +24,11 @@ func TestSetExecutionContextArgs(t *testing.T) {
 	require.Equal(t, "event", args.Payload)
 
 	otherCtx := execution.NewTenantContext(t.Context(), 202)
-	require.NoError(t, jobs.SetContextualArgs(otherCtx, args))
-	require.Equal(t, 202, args.TenantID)
+	require.ErrorIs(t, jobs.SetContextualArgs(otherCtx, args), rez.ErrForbidden)
+	require.Equal(t, 101, args.TenantID)
 
 	require.ErrorIs(t, jobs.SetContextualArgs(t.Context(), args), rez.ErrTenantContextMissing)
-	require.Equal(t, 202, args.TenantID)
+	require.Equal(t, 101, args.TenantID)
 
 	ordinary := jobs.SyncIntegrationSourceEvents{Sources: []string{"events"}, SyncReason: "manual"}
 	want := ordinary

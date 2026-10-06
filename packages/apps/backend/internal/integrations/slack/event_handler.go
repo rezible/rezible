@@ -17,6 +17,8 @@ import (
 type appEventHandler struct {
 	integrationName string
 
+	createInstallationCtx createInstallationCtxFunc
+
 	pipeline          rez.ProviderEventPipelineService
 	publishEventTypes mapset.Set[slackevents.EventsAPIType]
 
@@ -24,13 +26,14 @@ type appEventHandler struct {
 	respondEventTypes mapset.Set[slackevents.EventsAPIType]
 }
 
-func makeAppEventHandler(app App, mq rez.MessageQueue, pipeline rez.ProviderEventPipelineService) *appEventHandler {
+func makeAppEventHandler(app App, mq rez.MessageQueue, pipeline rez.ProviderEventPipelineService, ctxFn createInstallationCtxFunc) *appEventHandler {
 	return &appEventHandler{
-		integrationName:   app.IntegrationName(),
-		mq:                mq,
-		pipeline:          pipeline,
-		publishEventTypes: mapset.NewSet(app.PublishEventTypes()...),
-		respondEventTypes: mapset.NewSet(app.RespondEventTypes()...),
+		integrationName:       app.IntegrationName(),
+		createInstallationCtx: ctxFn,
+		mq:                    mq,
+		pipeline:              pipeline,
+		publishEventTypes:     mapset.NewSet(app.PublishEventTypes()...),
+		respondEventTypes:     mapset.NewSet(app.RespondEventTypes()...),
 	}
 }
 
@@ -89,6 +92,11 @@ func (h *appEventHandler) OnEventsApiCallback(ctx context.Context, ev *slackeven
 		}
 	}
 	if h.publishEventTypes.Contains(innerType) {
+		installationCtx, installationErr := h.createInstallationCtx(ctx, InstallationIds{TeamId: ev.TeamID, EnterpriseId: ev.EnterpriseID})
+		if installationErr != nil {
+			return fmt.Errorf("lookup integration: %w", installationErr)
+		}
+
 		namespace := ev.TeamID
 		if namespace == "" {
 			namespace = ev.EnterpriseID
@@ -101,7 +109,7 @@ func (h *appEventHandler) OnEventsApiCallback(ctx context.Context, ev *slackeven
 			Attributes:          data,
 			ReceivedAt:          time.Now().UTC(),
 		}
-		if ingestErr := h.pipeline.Ingest(ctx, pe); ingestErr != nil {
+		if ingestErr := h.pipeline.Ingest(installationCtx, pe); ingestErr != nil {
 			return fmt.Errorf("ingest event: %w", ingestErr)
 		}
 	}

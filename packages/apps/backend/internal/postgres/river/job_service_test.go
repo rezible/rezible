@@ -36,6 +36,30 @@ func (*tenantJobArgs) InsertOpts() river.InsertOpts {
 	return river.InsertOpts{UniqueOpts: river.UniqueOpts{ByArgs: true}}
 }
 
+type userJobArgs struct {
+	Payload string `json:"payload"`
+}
+
+func (userJobArgs) Kind() string {
+	return "test-user-job"
+}
+
+func (userJobArgs) WorkerExecutionContext() execution.ActorKind {
+	return execution.KindUser
+}
+
+type systemJobArgs struct {
+	Payload string `json:"payload"`
+}
+
+func (systemJobArgs) Kind() string {
+	return "test-system-job"
+}
+
+func (systemJobArgs) WorkerExecutionContext() execution.ActorKind {
+	return execution.KindSystem
+}
+
 type jobObservation struct {
 	ID      int64
 	Context execution.Context
@@ -75,24 +99,34 @@ func (s *JobServiceSuite) SetupTest() {
 	service, serviceErr := jobriver.NewJobService(s.Config(), pool.Pool, s.Telemetry())
 	s.Require().NoError(serviceErr)
 
-	s.observations = make(chan jobObservation, 2)
+	s.observations = make(chan jobObservation, 4)
 	definition := jobs.Definition{Workers: []jobs.WorkerDefinition{
 		jobs.DefineWorker(river.WorkFunc(func(ctx context.Context, job *river.Job[*tenantJobArgs]) error {
-			observation := jobObservation{
-				ID:      job.ID,
-				Context: execution.GetContext(ctx),
-			}
-			select {
-			case s.observations <- observation:
-				return nil
-			case <-ctx.Done():
-				return ctx.Err()
-			}
+			return s.observe(ctx, job.ID)
+		})),
+		jobs.DefineWorker(river.WorkFunc(func(ctx context.Context, job *river.Job[userJobArgs]) error {
+			return s.observe(ctx, job.ID)
+		})),
+		jobs.DefineWorker(river.WorkFunc(func(ctx context.Context, job *river.Job[systemJobArgs]) error {
+			return s.observe(ctx, job.ID)
 		})),
 		jobs.DefineWorkerFunc(func(context.Context, jobs.ScanOncallShifts) error { return nil }),
 	}}
 	s.Require().NoError(service.Register(definition))
 	s.service = service
+}
+
+func (s *JobServiceSuite) observe(ctx context.Context, id int64) error {
+	observation := jobObservation{
+		ID:      id,
+		Context: execution.GetContext(ctx),
+	}
+	select {
+	case s.observations <- observation:
+		return nil
+	case <-ctx.Done():
+		return ctx.Err()
+	}
 }
 
 func (s *JobServiceSuite) TestInsertionPreparesArgsWithAndWithoutTransaction() {
@@ -103,7 +137,6 @@ func (s *JobServiceSuite) TestInsertionPreparesArgsWithAndWithoutTransaction() {
 			var inserted []*rivertype.JobInsertResult
 			insert := func(ctx context.Context, _ *ent.Client) error {
 				args := &tenantJobArgs{Payload: payload}
-				args.TenantID = 999
 				one, insertErr := s.service.Insert(ctx, args, nil)
 				if insertErr != nil {
 					return insertErr
@@ -169,7 +202,7 @@ func (s *JobServiceSuite) TestPreparationFailureInsertsNoJobs() {
 	queryErr := s.pool.QueryRow(s.T().Context(), "SELECT count(*) FROM river.river_job").Scan(&count)
 	s.Require().NoError(queryErr)
 	s.Zero(count)
-	_, insertErr := s.service.Insert(execution.NewSystemContext(s.T().Context()), jobs.ScanOncallShifts{}, nil)
+	_, insertErr := s.service.Insert(execution.NewTenantContext(s.T().Context(), 101), jobs.ScanOncallShifts{}, nil)
 	s.Require().NoError(insertErr)
 }
 
@@ -261,29 +294,77 @@ func (s *JobServiceSuite) TestDomainAndJobsTransaction() {
 				s.Require().NoError(json.Unmarshal(metadata, &meta))
 				observed, decodeErr := execution.DecodeContext(meta.Execution)
 				s.Require().NoError(decodeErr)
-				s.Equal(execution.GetContext(ctx), observed)
+				s.Equal(execution.GetContext(execution.NewTenantContext(ctx, identity.Session.TenantID)), observed)
 			}
 		})
 	}
 }
 
-func (s *JobServiceSuite) TestWorkerPreservesExecutionContext() {
+func (s *JobServiceSuite) TestInsertRejectsIdentityNotHeldByCaller() {
+	userCtx, identity := s.NewIdentity(s.db, "Alice")
+	tenantCtx := execution.NewTenantContext(s.T().Context(), identity.Session.TenantID)
+	systemCtx := execution.NewSystemContext(s.T().Context())
+	otherTenantArgs := &tenantJobArgs{Payload: "other tenant"}
+	otherTenantArgs.TenantID = identity.Session.TenantID + 1
+
+	cases := []struct {
+		name    string
+		ctx     context.Context
+		args    river.JobArgs
+		wantErr error
+	}{
+		{name: "default/system", ctx: systemCtx, args: jobs.ScanOncallShifts{}, wantErr: rez.ErrTenantContextMissing},
+		{name: "user/tenant", ctx: tenantCtx, args: userJobArgs{}, wantErr: rez.ErrForbidden},
+		{name: "system/user", ctx: userCtx, args: systemJobArgs{}, wantErr: rez.ErrForbidden},
+		{name: "tenant args/other tenant", ctx: userCtx, args: otherTenantArgs, wantErr: rez.ErrForbidden},
+	}
+	for _, tc := range cases {
+		s.Run(tc.name, func() {
+			_, insertErr := s.service.Insert(tc.ctx, tc.args, nil)
+			s.Require().ErrorIs(insertErr, tc.wantErr)
+		})
+	}
+
+	var count int
+	queryErr := s.pool.QueryRow(s.T().Context(), "SELECT count(*) FROM river.river_job").Scan(&count)
+	s.Require().NoError(queryErr)
+	s.Zero(count)
+}
+
+func (s *JobServiceSuite) TestWorkerExecutionContext() {
 	firstCtx, first := s.NewIdentity(s.db, "Alice")
 	secondCtx, second := s.NewIdentity(s.db, "Bob")
 	expected := make(map[int64]execution.Context)
-	enqueue := func(ctx context.Context, identity test.Identity) {
-		ctx = execution.NewRootContext(ctx, execution.KindAnonymous, execution.SourceHTTP)
-		ctx = execution.NewUserContext(ctx, identity.Session)
-		inserted, insertErr := s.service.Insert(ctx, &tenantJobArgs{Payload: "same payload"}, nil)
+	insert := func(ctx context.Context, args river.JobArgs) int64 {
+		inserted, insertErr := s.service.Insert(ctx, args, nil)
 		s.Require().NoError(insertErr)
 		s.Require().False(inserted.UniqueSkippedAsDuplicate)
-		expected[inserted.Job.ID] = execution.GetContext(ctx)
+		return inserted.Job.ID
+	}
+	userCtx := func(ctx context.Context, identity test.Identity) context.Context {
+		ctx = execution.NewRootContext(ctx, execution.KindAnonymous, execution.SourceHTTP)
+		return execution.NewUserContext(ctx, identity.Session)
 	}
 
-	enqueue(firstCtx, first)
-	enqueue(secondCtx, second)
+	// Default jobs run as the inserting user's tenant, without the user.
+	for _, identity := range []struct {
+		ctx      context.Context
+		identity test.Identity
+	}{{firstCtx, first}, {secondCtx, second}} {
+		ctx := userCtx(identity.ctx, identity.identity)
+		id := insert(ctx, &tenantJobArgs{Payload: "same payload"})
+		expected[id] = execution.GetContext(execution.NewTenantContext(ctx, identity.identity.Session.TenantID))
+	}
 
-	// Run the real worker and compare its context with the submitted context.
+	// User jobs run as the inserting user.
+	firstUserCtx := userCtx(firstCtx, first)
+	userJobID := insert(firstUserCtx, userJobArgs{Payload: "user"})
+	expected[userJobID] = execution.GetContext(firstUserCtx)
+
+	// System jobs run under the job client's system root context.
+	systemJobID := insert(execution.NewSystemContext(s.T().Context()), systemJobArgs{Payload: "system"})
+
+	// Run the real worker and compare its context with the expected identity.
 	ctx, cancel := context.WithTimeout(s.T().Context(), 10*time.Second)
 	ready := make(chan struct{})
 	finished := make(chan error, 1)
@@ -313,20 +394,26 @@ func (s *JobServiceSuite) TestWorkerPreservesExecutionContext() {
 	}
 
 	seen := mapset.NewSet[int64]()
-	for range 2 {
+	for range len(expected) + 1 {
 		select {
 		case result := <-s.observations:
-			want, found := expected[result.ID]
-			s.Require().True(found)
 			s.False(seen.Contains(result.ID), "duplicate worker observation")
 			seen.Add(result.ID)
+			if result.ID == systemJobID {
+				s.True(result.Context.IsSystem())
+				_, hasTenant := result.Context.TenantID()
+				s.False(hasTenant)
+				continue
+			}
+			want, found := expected[result.ID]
+			s.Require().True(found)
 			s.Equal(want, result.Context)
 		case <-ctx.Done():
 			s.FailNow("worker observations timed out")
 		}
 	}
 
-	for id := range expected {
+	for _, id := range seen.ToSlice() {
 		s.Require().Eventually(func() bool {
 			var state string
 			queryErr := s.pool.QueryRow(ctx, "SELECT state FROM river.river_job WHERE id = $1", id).Scan(&state)

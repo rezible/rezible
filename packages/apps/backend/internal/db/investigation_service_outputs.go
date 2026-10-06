@@ -11,7 +11,6 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 
 	rez "github.com/rezible/rezible"
@@ -499,9 +498,7 @@ func (s *InvestigationService) prepareInvestigationOutputWrite(ctx context.Conte
 
 	queryTurn := client.AgentTurn.Query().
 		Where(at.ID(turnID)).
-		Modify(func(s *sql.Selector) {
-			s.ForUpdate()
-		})
+		ForUpdate()
 	turn, turnErr := queryTurn.Only(ctx)
 	if turnErr != nil {
 		if ent.IsNotFound(turnErr) {

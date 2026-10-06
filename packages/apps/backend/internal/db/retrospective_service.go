@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log/slog"
 
-	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 
 	rez "github.com/rezible/rezible"
@@ -70,7 +69,7 @@ func (s *RetrospectiveService) CreateForIncident(ctx context.Context, incidentID
 	return ent.WithTxReturning(ctx, s.db, func(txCtx context.Context, tx *ent.Client) (*ent.Retrospective, error) {
 		// Coordinate automatic and manual creation, including concurrent status changes.
 		queryIncident := tx.Incident.Query().Where(incident.ID(incidentID)).
-			Modify(func(selector *sql.Selector) { selector.ForUpdate() })
+			ForUpdate()
 		inc, incidentErr := queryIncident.Only(txCtx)
 		if incidentErr != nil {
 			return nil, fmt.Errorf("get incident: %w", incidentErr)

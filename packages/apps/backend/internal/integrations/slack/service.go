@@ -41,6 +41,8 @@ type App interface {
 	RespondEventTypes() []slackevents.EventsAPIType
 }
 
+type createInstallationCtxFunc func(context.Context, InstallationIds) (context.Context, error)
+
 type AppService[A App] struct {
 	app             A
 	integrationName string
@@ -82,7 +84,11 @@ func NewAppService[A App](app A, d *AppServiceDependencies) (*AppService[A], err
 	}
 
 	if cfg.Enabled {
-		eventHandler := makeAppEventHandler(app, d.MessageQueue, d.ProviderEventPipelineService)
+		instCtxFn := func(ctx context.Context, ids InstallationIds) (context.Context, error) {
+			_, instCtx, lookupErr := s.createInstallationContext(ctx, ids)
+			return instCtx, lookupErr
+		}
+		eventHandler := makeAppEventHandler(app, d.MessageQueue, d.ProviderEventPipelineService, instCtxFn)
 
 		if cfg.EnableSocketMode {
 			socketModeClient := slack.New(cfg.BotToken, slack.OptionAppLevelToken(cfg.AppToken))

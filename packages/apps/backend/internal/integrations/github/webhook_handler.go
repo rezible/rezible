@@ -1,6 +1,7 @@
 package github
 
 import (
+	"context"
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/hex"
@@ -13,15 +14,19 @@ import (
 	"time"
 
 	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/ent"
+	in "github.com/rezible/rezible/ent/integration"
+	"github.com/rezible/rezible/pkg/execution"
 )
 
 type webhookHandler struct {
-	secret     string
-	provEvents rez.ProviderEventPipelineService
+	secret        string
+	provEvents    rez.ProviderEventPipelineService
+	installations rez.IntegrationInstallationLookup
 }
 
-func newWebhookHandler(secret string, provEvents rez.ProviderEventPipelineService) http.Handler {
-	return &webhookHandler{secret: secret, provEvents: provEvents}
+func newWebhookHandler(secret string, provEvents rez.ProviderEventPipelineService, installations rez.IntegrationInstallationLookup) http.Handler {
+	return &webhookHandler{secret: secret, provEvents: provEvents, installations: installations}
 }
 
 func (h *webhookHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -79,13 +84,34 @@ func (h *webhookHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		ReceivedAt:          time.Now().UTC(),
 	}
 
-	if ingestErr := h.provEvents.Ingest(r.Context(), pe); ingestErr != nil {
-		slog.ErrorContext(r.Context(), "failed to ingest github webhook event", "error", ingestErr)
-		http.Error(w, "internal error", http.StatusInternalServerError)
+	code, ingestErr := h.ingestEvent(r.Context(), pe)
+	if ingestErr != nil {
+		http.Error(w, ingestErr.Error(), code)
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
+	w.WriteHeader(code)
+}
+
+func (h *webhookHandler) ingestEvent(ctx context.Context, pe rez.ProviderEvent) (int, error) {
+	lookupInstallation := in.And(in.Name(integrationName), in.ProviderInstallationRef(pe.ProviderNamespace))
+	intg, lookupErr := h.installations.LookupInstallation(execution.NewSystemContext(ctx), lookupInstallation)
+	if lookupErr != nil {
+		if ent.IsNotFound(lookupErr) {
+			return http.StatusNotFound, fmt.Errorf("no installation for github account")
+		}
+		slog.ErrorContext(ctx, "failed to lookup github installation", "error", lookupErr)
+		return http.StatusInternalServerError, lookupErr
+	}
+
+	ctx = execution.NewTenantContext(ctx, intg.TenantID)
+
+	if ingestErr := h.provEvents.Ingest(ctx, pe); ingestErr != nil {
+		slog.ErrorContext(ctx, "failed to ingest github webhook event", "error", ingestErr)
+		return http.StatusInternalServerError, ingestErr
+	}
+
+	return http.StatusOK, nil
 }
 
 type pushEventPayload struct {

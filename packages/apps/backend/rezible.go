@@ -97,6 +97,13 @@ type (
 )
 
 type (
+	// Clock is the source of processing time for decisions that depend on it.
+	Clock interface {
+		Now() time.Time
+	}
+)
+
+type (
 	NewLoggerOptions struct {
 		Parent *slog.Logger
 		Name   string

@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/samber/do/v2"
 
@@ -45,6 +46,7 @@ func applicationPackages(ctx context.Context) Package {
 }
 
 var basePackages = do.Package(
+	pkgClock,
 	pkgRiver,
 	pkgWatermill,
 	pkgGenkit,
@@ -112,6 +114,16 @@ func withPostgresDatabase(ctx context.Context) func(do.Injector) {
 		}),
 	)
 }
+
+type systemClock struct{}
+
+func (systemClock) Now() time.Time {
+	return time.Now().UTC()
+}
+
+var pkgClock = do.Package(
+	do.Lazy(func(i do.Injector) (rez.Clock, error) { return systemClock{}, nil }),
+)
 
 func invokedProviderFn[D any, R any](fn func(D) (R, error)) do.Provider[R] {
 	return func(i do.Injector) (R, error) {
@@ -266,6 +278,7 @@ var pkgIntegrations = do.Package(
 		return github.MakeIntegration(
 			do.MustInvoke[rez.Config](i),
 			do.MustInvoke[rez.ProviderEventPipelineService](i),
+			do.MustInvoke[rez.IntegrationInstallationLookup](i),
 		)
 	}),
 

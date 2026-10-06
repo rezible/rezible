@@ -24,14 +24,14 @@ type Integration struct {
 	webhookHandler http.Handler
 }
 
-func MakeIntegration(cfg rez.Config, events rez.ProviderEventPipelineService) (*Integration, error) {
+func MakeIntegration(cfg rez.Config, events rez.ProviderEventPipelineService, installations rez.IntegrationInstallationLookup) (*Integration, error) {
 	i := &Integration{
 		cfg:            cfg.Integrations.Github,
 		webhookHandler: http.NotFoundHandler(),
 	}
 
 	if i.cfg.Enabled {
-		i.webhookHandler = newWebhookHandler(i.cfg.WebhookSecret, events)
+		i.webhookHandler = newWebhookHandler(i.cfg.WebhookSecret, events, installations)
 	}
 
 	return i, nil

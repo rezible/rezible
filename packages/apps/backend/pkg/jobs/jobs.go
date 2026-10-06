@@ -2,6 +2,7 @@ package jobs
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -12,25 +13,42 @@ import (
 	rez "github.com/rezible/rezible"
 )
 
+// ArgsWithWorkerExecutionContext lets a job's args choose the identity its worker runs with,
+// instead of the default tenant actor.
+type ArgsWithWorkerExecutionContext interface {
+	WorkerExecutionContext() execution.ActorKind
+}
+
 // SetContextualArgs populates context-derived fields before River encodes arguments and calculates uniqueness. Ordinary arguments are unchanged.
 func SetContextualArgs(ctx context.Context, args JobArgs) error {
-	if setter, hasTenantID := args.(tenantIDSetter); hasTenantID {
+	if tenantArgs, hasTenantID := args.(tenantIDArgs); hasTenantID {
 		tenantID, tenantOK := execution.GetContext(ctx).TenantID()
 		if !tenantOK {
 			return rez.ErrTenantContextMissing
 		}
-		setter.setTenantID(tenantID)
+		if current := tenantArgs.tenantID(); current != 0 && current != tenantID {
+			return fmt.Errorf("%w: job tenant does not match the inserting context", rez.ErrForbidden)
+		}
+		tenantArgs.setTenantID(tenantID)
 	}
 	return nil
 }
 
-type tenantIDSetter interface{ setTenantID(int) }
+type tenantIDArgs interface {
+	tenantID() int
+	setTenantID(int)
+}
 
-// TenantArgs scopes job identity to the enqueueing tenant. Embed it by value
-// and define Kind on a pointer receiver so context fields can be populated.
-// Other unique fields must also carry river:"unique" tags.
+// TenantArgs scopes job uniqueness to the enqueueing tenant; it does not affect
+// the worker's identity. Embed it by value and define Kind on a pointer receiver
+// so context fields can be populated. Other unique fields must also carry
+// river:"unique" tags.
 type TenantArgs struct {
 	TenantID int `json:"tenant_id" river:"unique"`
+}
+
+func (a *TenantArgs) tenantID() int {
+	return a.TenantID
 }
 
 func (a *TenantArgs) setTenantID(tenantID int) {
@@ -181,6 +199,11 @@ type CloseInactiveAlertEpisodes struct{}
 func (CloseInactiveAlertEpisodes) Kind() string {
 	return "close-inactive-alert-episodes"
 }
+
+func (CloseInactiveAlertEpisodes) WorkerExecutionContext() execution.ActorKind {
+	return execution.KindSystem
+}
+
 func (CloseInactiveAlertEpisodes) InsertOpts() river.InsertOpts {
 	return river.InsertOpts{
 		UniqueOpts: river.UniqueOpts{
