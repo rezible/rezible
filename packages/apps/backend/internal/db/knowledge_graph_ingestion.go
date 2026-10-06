@@ -12,6 +12,7 @@ import (
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	kne "github.com/rezible/rezible/ent/knowledgeentity"
 	kela "github.com/rezible/rezible/ent/knowledgeentitylinkingattribute"
 	ke "github.com/rezible/rezible/ent/knowledgeevidence"
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
@@ -422,6 +423,11 @@ func (s *KnowledgeGraphIngestionService) ingestEvidenceRefs(ctx context.Context,
 		if aliasErr != nil {
 			return fmt.Errorf("resolve subject alias: %w", aliasErr)
 		}
+		if ref.Subject.Entity != nil && ref.Kind == ke.KindObserved {
+			if stateErr := s.updateEntityState(ctx, resolved.subjectId, ref); stateErr != nil {
+				return fmt.Errorf("update entity state: %w", stateErr)
+			}
+		}
 		builders = append(builders, evClient.Create().
 			SetEventID(eventID).
 			SetSubjectAliasID(resolved.aliasId).
@@ -437,6 +443,30 @@ func (s *KnowledgeGraphIngestionService) ingestEvidenceRefs(ctx context.Context,
 		return fmt.Errorf("create knowledge evidence: %w", createErr)
 	}
 	return nil
+}
+
+// updateEntityState merges observed evidence into the entity's current state. Evidence with an empty state
+// changes nothing, and evidence older than the stored state is skipped. The read-modify-write is safe
+// without another lock because IngestEvidence holds the entity identity locks for its whole transaction.
+func (s *KnowledgeGraphIngestionService) updateEntityState(ctx context.Context, entityID uuid.UUID, ref rez.KnowledgeEvidenceRef) error {
+	if ref.SubjectState.IsEmpty() {
+		return nil
+	}
+	client := s.db.Client(ctx)
+	entityQuery := client.KnowledgeEntity.Query().
+		Where(kne.ID(entityID)).
+		Select(kne.FieldState, kne.FieldStateEffectiveAt)
+	entity, queryErr := entityQuery.Only(ctx)
+	if queryErr != nil {
+		return fmt.Errorf("load entity: %w", queryErr)
+	}
+	if entity.StateEffectiveAt != nil && ref.EffectiveAt.Before(*entity.StateEffectiveAt) {
+		return nil
+	}
+	updateState := client.KnowledgeEntity.UpdateOneID(entityID).
+		SetState(entity.State.MergeFrom(ref.SubjectState)).
+		SetStateEffectiveAt(ref.EffectiveAt)
+	return updateState.Exec(ctx)
 }
 
 const knowledgeEntityIdentityLockNamespace = "knowledge_entity_identity"

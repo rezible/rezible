@@ -39525,6 +39525,8 @@ type KnowledgeEntityMutation struct {
 	updated_at                  *time.Time
 	category                    *knowledgeentity.Category
 	kind                        *string
+	state                       *schematypes.KnowledgeGraphSubjectState
+	state_effective_at          *time.Time
 	clearedFields               map[string]struct{}
 	tenant                      *int
 	clearedtenant               bool
@@ -39829,6 +39831,104 @@ func (m *KnowledgeEntityMutation) ResetKind() {
 	m.kind = nil
 }
 
+// SetState sets the "state" field.
+func (m *KnowledgeEntityMutation) SetState(sgss schematypes.KnowledgeGraphSubjectState) {
+	m.state = &sgss
+}
+
+// State returns the value of the "state" field in the mutation.
+func (m *KnowledgeEntityMutation) State() (r schematypes.KnowledgeGraphSubjectState, exists bool) {
+	v := m.state
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldState returns the old "state" field's value of the KnowledgeEntity entity.
+// If the KnowledgeEntity object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *KnowledgeEntityMutation) OldState(ctx context.Context) (v schematypes.KnowledgeGraphSubjectState, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldState is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldState requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldState: %w", err)
+	}
+	return oldValue.State, nil
+}
+
+// ClearState clears the value of the "state" field.
+func (m *KnowledgeEntityMutation) ClearState() {
+	m.state = nil
+	m.clearedFields[knowledgeentity.FieldState] = struct{}{}
+}
+
+// StateCleared returns if the "state" field was cleared in this mutation.
+func (m *KnowledgeEntityMutation) StateCleared() bool {
+	_, ok := m.clearedFields[knowledgeentity.FieldState]
+	return ok
+}
+
+// ResetState resets all changes to the "state" field.
+func (m *KnowledgeEntityMutation) ResetState() {
+	m.state = nil
+	delete(m.clearedFields, knowledgeentity.FieldState)
+}
+
+// SetStateEffectiveAt sets the "state_effective_at" field.
+func (m *KnowledgeEntityMutation) SetStateEffectiveAt(t time.Time) {
+	m.state_effective_at = &t
+}
+
+// StateEffectiveAt returns the value of the "state_effective_at" field in the mutation.
+func (m *KnowledgeEntityMutation) StateEffectiveAt() (r time.Time, exists bool) {
+	v := m.state_effective_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStateEffectiveAt returns the old "state_effective_at" field's value of the KnowledgeEntity entity.
+// If the KnowledgeEntity object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *KnowledgeEntityMutation) OldStateEffectiveAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldStateEffectiveAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldStateEffectiveAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStateEffectiveAt: %w", err)
+	}
+	return oldValue.StateEffectiveAt, nil
+}
+
+// ClearStateEffectiveAt clears the value of the "state_effective_at" field.
+func (m *KnowledgeEntityMutation) ClearStateEffectiveAt() {
+	m.state_effective_at = nil
+	m.clearedFields[knowledgeentity.FieldStateEffectiveAt] = struct{}{}
+}
+
+// StateEffectiveAtCleared returns if the "state_effective_at" field was cleared in this mutation.
+func (m *KnowledgeEntityMutation) StateEffectiveAtCleared() bool {
+	_, ok := m.clearedFields[knowledgeentity.FieldStateEffectiveAt]
+	return ok
+}
+
+// ResetStateEffectiveAt resets all changes to the "state_effective_at" field.
+func (m *KnowledgeEntityMutation) ResetStateEffectiveAt() {
+	m.state_effective_at = nil
+	delete(m.clearedFields, knowledgeentity.FieldStateEffectiveAt)
+}
+
 // ClearTenant clears the "tenant" edge to the Tenant entity.
 func (m *KnowledgeEntityMutation) ClearTenant() {
 	m.clearedtenant = true
@@ -40106,7 +40206,7 @@ func (m *KnowledgeEntityMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *KnowledgeEntityMutation) Fields() []string {
-	fields := make([]string, 0, 5)
+	fields := make([]string, 0, 7)
 	if m.tenant != nil {
 		fields = append(fields, knowledgeentity.FieldTenantID)
 	}
@@ -40121,6 +40221,12 @@ func (m *KnowledgeEntityMutation) Fields() []string {
 	}
 	if m.kind != nil {
 		fields = append(fields, knowledgeentity.FieldKind)
+	}
+	if m.state != nil {
+		fields = append(fields, knowledgeentity.FieldState)
+	}
+	if m.state_effective_at != nil {
+		fields = append(fields, knowledgeentity.FieldStateEffectiveAt)
 	}
 	return fields
 }
@@ -40140,6 +40246,10 @@ func (m *KnowledgeEntityMutation) Field(name string) (ent.Value, bool) {
 		return m.Category()
 	case knowledgeentity.FieldKind:
 		return m.Kind()
+	case knowledgeentity.FieldState:
+		return m.State()
+	case knowledgeentity.FieldStateEffectiveAt:
+		return m.StateEffectiveAt()
 	}
 	return nil, false
 }
@@ -40159,6 +40269,10 @@ func (m *KnowledgeEntityMutation) OldField(ctx context.Context, name string) (en
 		return m.OldCategory(ctx)
 	case knowledgeentity.FieldKind:
 		return m.OldKind(ctx)
+	case knowledgeentity.FieldState:
+		return m.OldState(ctx)
+	case knowledgeentity.FieldStateEffectiveAt:
+		return m.OldStateEffectiveAt(ctx)
 	}
 	return nil, fmt.Errorf("unknown KnowledgeEntity field %s", name)
 }
@@ -40203,6 +40317,20 @@ func (m *KnowledgeEntityMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetKind(v)
 		return nil
+	case knowledgeentity.FieldState:
+		v, ok := value.(schematypes.KnowledgeGraphSubjectState)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetState(v)
+		return nil
+	case knowledgeentity.FieldStateEffectiveAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStateEffectiveAt(v)
+		return nil
 	}
 	return fmt.Errorf("unknown KnowledgeEntity field %s", name)
 }
@@ -40235,7 +40363,14 @@ func (m *KnowledgeEntityMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *KnowledgeEntityMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(knowledgeentity.FieldState) {
+		fields = append(fields, knowledgeentity.FieldState)
+	}
+	if m.FieldCleared(knowledgeentity.FieldStateEffectiveAt) {
+		fields = append(fields, knowledgeentity.FieldStateEffectiveAt)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -40248,6 +40383,14 @@ func (m *KnowledgeEntityMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *KnowledgeEntityMutation) ClearField(name string) error {
+	switch name {
+	case knowledgeentity.FieldState:
+		m.ClearState()
+		return nil
+	case knowledgeentity.FieldStateEffectiveAt:
+		m.ClearStateEffectiveAt()
+		return nil
+	}
 	return fmt.Errorf("unknown KnowledgeEntity nullable field %s", name)
 }
 
@@ -40269,6 +40412,12 @@ func (m *KnowledgeEntityMutation) ResetField(name string) error {
 		return nil
 	case knowledgeentity.FieldKind:
 		m.ResetKind()
+		return nil
+	case knowledgeentity.FieldState:
+		m.ResetState()
+		return nil
+	case knowledgeentity.FieldStateEffectiveAt:
+		m.ResetStateEffectiveAt()
 		return nil
 	}
 	return fmt.Errorf("unknown KnowledgeEntity field %s", name)

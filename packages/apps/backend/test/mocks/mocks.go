@@ -1099,6 +1099,74 @@ func (_c *MockKnowledgeGraphQueryService_ListSubjectAliases_Call) RunAndReturn(r
 	return _c
 }
 
+// ResolveStructure provides a mock function for the type MockKnowledgeGraphQueryService
+func (_mock *MockKnowledgeGraphQueryService) ResolveStructure(context1 context.Context, resolveStructureParams rez.ResolveStructureParams) (map[uuid.UUID][]uuid.UUID, error) {
+	ret := _mock.Called(context1, resolveStructureParams)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ResolveStructure")
+	}
+
+	var r0 map[uuid.UUID][]uuid.UUID
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.ResolveStructureParams) (map[uuid.UUID][]uuid.UUID, error)); ok {
+		return returnFunc(context1, resolveStructureParams)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.ResolveStructureParams) map[uuid.UUID][]uuid.UUID); ok {
+		r0 = returnFunc(context1, resolveStructureParams)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(map[uuid.UUID][]uuid.UUID)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, rez.ResolveStructureParams) error); ok {
+		r1 = returnFunc(context1, resolveStructureParams)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockKnowledgeGraphQueryService_ResolveStructure_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ResolveStructure'
+type MockKnowledgeGraphQueryService_ResolveStructure_Call struct {
+	*mock.Call
+}
+
+// ResolveStructure is a helper method to define mock.On call
+//   - context1 context.Context
+//   - resolveStructureParams rez.ResolveStructureParams
+func (_e *MockKnowledgeGraphQueryService_Expecter) ResolveStructure(context1 interface{}, resolveStructureParams interface{}) *MockKnowledgeGraphQueryService_ResolveStructure_Call {
+	return &MockKnowledgeGraphQueryService_ResolveStructure_Call{Call: _e.mock.On("ResolveStructure", context1, resolveStructureParams)}
+}
+
+func (_c *MockKnowledgeGraphQueryService_ResolveStructure_Call) Run(run func(context1 context.Context, resolveStructureParams rez.ResolveStructureParams)) *MockKnowledgeGraphQueryService_ResolveStructure_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 rez.ResolveStructureParams
+		if args[1] != nil {
+			arg1 = args[1].(rez.ResolveStructureParams)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockKnowledgeGraphQueryService_ResolveStructure_Call) Return(uUIDToUUIDs map[uuid.UUID][]uuid.UUID, err error) *MockKnowledgeGraphQueryService_ResolveStructure_Call {
+	_c.Call.Return(uUIDToUUIDs, err)
+	return _c
+}
+
+func (_c *MockKnowledgeGraphQueryService_ResolveStructure_Call) RunAndReturn(run func(context1 context.Context, resolveStructureParams rez.ResolveStructureParams) (map[uuid.UUID][]uuid.UUID, error)) *MockKnowledgeGraphQueryService_ResolveStructure_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // SelectGraphEntities provides a mock function for the type MockKnowledgeGraphQueryService
 func (_mock *MockKnowledgeGraphQueryService) SelectGraphEntities(context1 context.Context, selectKnowledgeGraphEntitiesParams rez.SelectKnowledgeGraphEntitiesParams) (*rez.KnowledgeGraphEntitiesPage, error) {
 	ret := _mock.Called(context1, selectKnowledgeGraphEntitiesParams)

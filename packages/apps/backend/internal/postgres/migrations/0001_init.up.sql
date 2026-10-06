@@ -283,7 +283,7 @@ CREATE UNIQUE INDEX "investigationuserinput_investigation_id_agent_turn_id" ON "
 -- create index "investigationuserinput_investigation_id_created_at_id" to table: "investigation_user_inputs"
 CREATE INDEX "investigationuserinput_investigation_id_created_at_id" ON "investigation_user_inputs" ("investigation_id", "created_at", "id");
 -- create "knowledge_entities" table
-CREATE TABLE "knowledge_entities" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "category" character varying NOT NULL, "kind" character varying NOT NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
+CREATE TABLE "knowledge_entities" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "category" character varying NOT NULL, "kind" character varying NOT NULL, "state" jsonb NULL, "state_effective_at" timestamptz NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
 -- create index "knowledgeentity_tenant_id" to table: "knowledge_entities"
 CREATE INDEX "knowledgeentity_tenant_id" ON "knowledge_entities" ("tenant_id");
 -- create index "knowledgeentity_tenant_id_category_kind" to table: "knowledge_entities"

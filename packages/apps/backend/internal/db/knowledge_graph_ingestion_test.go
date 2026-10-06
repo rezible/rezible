@@ -353,3 +353,91 @@ func (s *KnowledgeGraphIngestionServiceSuite) TestRelationshipIngestionEvidenceB
 	s.Equal(3, client.KnowledgeSubjectAlias.Query().CountX(ctx))
 	s.Equal(3, client.KnowledgeEvidence.Query().CountX(ctx))
 }
+
+func (s *KnowledgeGraphIngestionServiceSuite) ingestEntityState(ctx context.Context, tdb rez.Database, ref *rez.KnowledgeEntityRef, effectiveAt time.Time, state schematypes.KnowledgeGraphSubjectState) *ent.KnowledgeEntity {
+	evidence := rez.KnowledgeEvidenceRef{
+		Kind:         ke.KindObserved,
+		Assertion:    "service_observed",
+		EffectiveAt:  effectiveAt,
+		SubjectState: state,
+		Subject:      rez.KnowledgeSubjectRef{Entity: ref},
+	}
+	event := s.createEvent(ctx, tdb, "event:"+uuid.NewString(), effectiveAt)
+	s.Require().NoError(s.makeService(tdb).IngestEvidence(ctx, event, evidence))
+
+	entityQuery := tdb.Client(ctx).KnowledgeEntity.Query().
+		Where(kne.HasAliasesWith(ksa.ProviderResourceRef(ref.ProviderResourceRef.ResourceRef)))
+	entity, queryErr := entityQuery.Only(ctx)
+	s.Require().NoError(queryErr)
+	return entity
+}
+
+func (s *KnowledgeGraphIngestionServiceSuite) serviceEntityRef() *rez.KnowledgeEntityRef {
+	return &rez.KnowledgeEntityRef{
+		Category:            kne.CategoryContainer,
+		Kind:                "service",
+		ProviderResourceRef: s.testProviderRef("service:checkout"),
+	}
+}
+
+func (s *KnowledgeGraphIngestionServiceSuite) TestEntityStateStoresNewestObservedEvidence() {
+	ctx, tdb := s.SetupTestDatabase()
+	ref := s.serviceEntityRef()
+	older := time.Now().UTC().Truncate(time.Microsecond)
+	newer := older.Add(time.Minute)
+
+	s.ingestEntityState(ctx, tdb, ref, older, schematypes.KnowledgeGraphSubjectState{
+		DisplayName: "checkout",
+		Description: "Takes payments",
+		Properties:  map[string]any{"tier": "2"},
+	})
+	entity := s.ingestEntityState(ctx, tdb, ref, newer, schematypes.KnowledgeGraphSubjectState{
+		DisplayName: "Checkout",
+		Properties:  map[string]any{"tier": "1"},
+	})
+
+	s.Equal("Checkout", entity.State.DisplayName)
+	s.Equal("Takes payments", entity.State.Description)
+	s.Equal(map[string]any{"tier": "1"}, entity.State.Properties)
+	s.Require().NotNil(entity.StateEffectiveAt)
+	s.True(newer.Equal(*entity.StateEffectiveAt))
+}
+
+func (s *KnowledgeGraphIngestionServiceSuite) TestEntityStateIgnoresOlderEvidenceArrivingLater() {
+	ctx, tdb := s.SetupTestDatabase()
+	ref := s.serviceEntityRef()
+	newer := time.Now().UTC().Truncate(time.Microsecond)
+	older := newer.Add(-time.Minute)
+
+	s.ingestEntityState(ctx, tdb, ref, newer, schematypes.KnowledgeGraphSubjectState{
+		DisplayName: "Checkout",
+		Properties:  map[string]any{"tier": "1"},
+	})
+	entity := s.ingestEntityState(ctx, tdb, ref, older, schematypes.KnowledgeGraphSubjectState{
+		DisplayName: "checkout-legacy",
+		Description: "Old description",
+		Properties:  map[string]any{"tier": "3"},
+	})
+
+	s.Equal("Checkout", entity.State.DisplayName)
+	s.Empty(entity.State.Description)
+	s.Equal(map[string]any{"tier": "1"}, entity.State.Properties)
+	s.Require().NotNil(entity.StateEffectiveAt)
+	s.True(newer.Equal(*entity.StateEffectiveAt))
+}
+
+func (s *KnowledgeGraphIngestionServiceSuite) TestEntityStateEmptyEvidenceDoesNotBlockOlderEvidence() {
+	ctx, tdb := s.SetupTestDatabase()
+	ref := s.serviceEntityRef()
+	older := time.Now().UTC().Truncate(time.Microsecond)
+	newer := older.Add(time.Minute)
+
+	s.ingestEntityState(ctx, tdb, ref, newer, schematypes.KnowledgeGraphSubjectState{})
+	entity := s.ingestEntityState(ctx, tdb, ref, older, schematypes.KnowledgeGraphSubjectState{
+		DisplayName: "Checkout",
+	})
+
+	s.Equal("Checkout", entity.State.DisplayName)
+	s.Require().NotNil(entity.StateEffectiveAt)
+	s.True(older.Equal(*entity.StateEffectiveAt))
+}

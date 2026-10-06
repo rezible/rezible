@@ -18,6 +18,7 @@ import (
 	"github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/knowledgesubjectalias"
 	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/schema/schematypes"
 )
 
 // KnowledgeEntityUpdate is the builder for updating KnowledgeEntity entities.
@@ -50,6 +51,46 @@ func (_u *KnowledgeEntityUpdate) SetNillableCreatedAt(v *time.Time) *KnowledgeEn
 // SetUpdatedAt sets the "updated_at" field.
 func (_u *KnowledgeEntityUpdate) SetUpdatedAt(v time.Time) *KnowledgeEntityUpdate {
 	_u.mutation.SetUpdatedAt(v)
+	return _u
+}
+
+// SetState sets the "state" field.
+func (_u *KnowledgeEntityUpdate) SetState(v schematypes.KnowledgeGraphSubjectState) *KnowledgeEntityUpdate {
+	_u.mutation.SetState(v)
+	return _u
+}
+
+// SetNillableState sets the "state" field if the given value is not nil.
+func (_u *KnowledgeEntityUpdate) SetNillableState(v *schematypes.KnowledgeGraphSubjectState) *KnowledgeEntityUpdate {
+	if v != nil {
+		_u.SetState(*v)
+	}
+	return _u
+}
+
+// ClearState clears the value of the "state" field.
+func (_u *KnowledgeEntityUpdate) ClearState() *KnowledgeEntityUpdate {
+	_u.mutation.ClearState()
+	return _u
+}
+
+// SetStateEffectiveAt sets the "state_effective_at" field.
+func (_u *KnowledgeEntityUpdate) SetStateEffectiveAt(v time.Time) *KnowledgeEntityUpdate {
+	_u.mutation.SetStateEffectiveAt(v)
+	return _u
+}
+
+// SetNillableStateEffectiveAt sets the "state_effective_at" field if the given value is not nil.
+func (_u *KnowledgeEntityUpdate) SetNillableStateEffectiveAt(v *time.Time) *KnowledgeEntityUpdate {
+	if v != nil {
+		_u.SetStateEffectiveAt(*v)
+	}
+	return _u
+}
+
+// ClearStateEffectiveAt clears the value of the "state_effective_at" field.
+func (_u *KnowledgeEntityUpdate) ClearStateEffectiveAt() *KnowledgeEntityUpdate {
+	_u.mutation.ClearStateEffectiveAt()
 	return _u
 }
 
@@ -269,6 +310,18 @@ func (_u *KnowledgeEntityUpdate) sqlSave(ctx context.Context) (_node int, err er
 	}
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(knowledgeentity.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if value, ok := _u.mutation.State(); ok {
+		_spec.SetField(knowledgeentity.FieldState, field.TypeJSON, value)
+	}
+	if _u.mutation.StateCleared() {
+		_spec.ClearField(knowledgeentity.FieldState, field.TypeJSON)
+	}
+	if value, ok := _u.mutation.StateEffectiveAt(); ok {
+		_spec.SetField(knowledgeentity.FieldStateEffectiveAt, field.TypeTime, value)
+	}
+	if _u.mutation.StateEffectiveAtCleared() {
+		_spec.ClearField(knowledgeentity.FieldStateEffectiveAt, field.TypeTime)
 	}
 	if _u.mutation.AliasesCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -501,6 +554,46 @@ func (_u *KnowledgeEntityUpdateOne) SetNillableCreatedAt(v *time.Time) *Knowledg
 // SetUpdatedAt sets the "updated_at" field.
 func (_u *KnowledgeEntityUpdateOne) SetUpdatedAt(v time.Time) *KnowledgeEntityUpdateOne {
 	_u.mutation.SetUpdatedAt(v)
+	return _u
+}
+
+// SetState sets the "state" field.
+func (_u *KnowledgeEntityUpdateOne) SetState(v schematypes.KnowledgeGraphSubjectState) *KnowledgeEntityUpdateOne {
+	_u.mutation.SetState(v)
+	return _u
+}
+
+// SetNillableState sets the "state" field if the given value is not nil.
+func (_u *KnowledgeEntityUpdateOne) SetNillableState(v *schematypes.KnowledgeGraphSubjectState) *KnowledgeEntityUpdateOne {
+	if v != nil {
+		_u.SetState(*v)
+	}
+	return _u
+}
+
+// ClearState clears the value of the "state" field.
+func (_u *KnowledgeEntityUpdateOne) ClearState() *KnowledgeEntityUpdateOne {
+	_u.mutation.ClearState()
+	return _u
+}
+
+// SetStateEffectiveAt sets the "state_effective_at" field.
+func (_u *KnowledgeEntityUpdateOne) SetStateEffectiveAt(v time.Time) *KnowledgeEntityUpdateOne {
+	_u.mutation.SetStateEffectiveAt(v)
+	return _u
+}
+
+// SetNillableStateEffectiveAt sets the "state_effective_at" field if the given value is not nil.
+func (_u *KnowledgeEntityUpdateOne) SetNillableStateEffectiveAt(v *time.Time) *KnowledgeEntityUpdateOne {
+	if v != nil {
+		_u.SetStateEffectiveAt(*v)
+	}
+	return _u
+}
+
+// ClearStateEffectiveAt clears the value of the "state_effective_at" field.
+func (_u *KnowledgeEntityUpdateOne) ClearStateEffectiveAt() *KnowledgeEntityUpdateOne {
+	_u.mutation.ClearStateEffectiveAt()
 	return _u
 }
 
@@ -750,6 +843,18 @@ func (_u *KnowledgeEntityUpdateOne) sqlSave(ctx context.Context) (_node *Knowled
 	}
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(knowledgeentity.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if value, ok := _u.mutation.State(); ok {
+		_spec.SetField(knowledgeentity.FieldState, field.TypeJSON, value)
+	}
+	if _u.mutation.StateCleared() {
+		_spec.ClearField(knowledgeentity.FieldState, field.TypeJSON)
+	}
+	if value, ok := _u.mutation.StateEffectiveAt(); ok {
+		_spec.SetField(knowledgeentity.FieldStateEffectiveAt, field.TypeTime, value)
+	}
+	if _u.mutation.StateEffectiveAtCleared() {
+		_spec.ClearField(knowledgeentity.FieldStateEffectiveAt, field.TypeTime)
 	}
 	if _u.mutation.AliasesCleared() {
 		edge := &sqlgraph.EdgeSpec{

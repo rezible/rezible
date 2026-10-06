@@ -2055,6 +2055,8 @@ var (
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "category", Type: field.TypeEnum, Enums: []string{"system_function", "actor", "system", "container", "infrastructure", "component", "code", "process", "concern", "decision", "event", "signal"}},
 		{Name: "kind", Type: field.TypeString},
+		{Name: "state", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
+		{Name: "state_effective_at", Type: field.TypeTime, Nullable: true},
 		{Name: "tenant_id", Type: field.TypeInt},
 	}
 	// KnowledgeEntitiesTable holds the schema information for the "knowledge_entities" table.
@@ -2065,7 +2067,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "knowledge_entities_tenants_tenant",
-				Columns:    []*schema.Column{KnowledgeEntitiesColumns[5]},
+				Columns:    []*schema.Column{KnowledgeEntitiesColumns[7]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -2074,12 +2076,12 @@ var (
 			{
 				Name:    "knowledgeentity_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{KnowledgeEntitiesColumns[5]},
+				Columns: []*schema.Column{KnowledgeEntitiesColumns[7]},
 			},
 			{
 				Name:    "knowledgeentity_tenant_id_category_kind",
 				Unique:  false,
-				Columns: []*schema.Column{KnowledgeEntitiesColumns[5], KnowledgeEntitiesColumns[3], KnowledgeEntitiesColumns[4]},
+				Columns: []*schema.Column{KnowledgeEntitiesColumns[7], KnowledgeEntitiesColumns[3], KnowledgeEntitiesColumns[4]},
 			},
 		},
 	}

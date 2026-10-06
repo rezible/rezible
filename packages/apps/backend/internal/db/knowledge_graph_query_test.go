@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
@@ -11,7 +12,10 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	kne "github.com/rezible/rezible/ent/knowledgeentity"
+	ke "github.com/rezible/rezible/ent/knowledgeevidence"
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
+	ksa "github.com/rezible/rezible/ent/knowledgesubjectalias"
+	"github.com/rezible/rezible/pkg/knowledgegraph"
 	"github.com/rezible/rezible/test"
 )
 
@@ -430,4 +434,105 @@ func relationshipPageIDs(page *rez.KnowledgeGraphRelationshipsPage) []uuid.UUID 
 		ids[index] = relationship.ID
 	}
 	return ids
+}
+
+func (s *KnowledgeGraphQueryServiceSuite) structureEntityRef(name string, category kne.Category) *rez.KnowledgeEntityRef {
+	return &rez.KnowledgeEntityRef{
+		Category: category,
+		Kind:     string(category),
+		ProviderResourceRef: rez.ProviderResourceRef{
+			Provider:          "test",
+			ProviderNamespace: "knowledge-graph-tests",
+			ResourceRef:       "entity:" + name,
+		},
+	}
+}
+
+func (s *KnowledgeGraphQueryServiceSuite) observeEntity(ref *rez.KnowledgeEntityRef) rez.KnowledgeEvidenceRef {
+	return rez.KnowledgeEvidenceRef{
+		Kind:        ke.KindObserved,
+		Assertion:   "entity_observed",
+		EffectiveAt: time.Now().UTC(),
+		Subject:     rez.KnowledgeSubjectRef{Entity: ref},
+	}
+}
+
+func (s *KnowledgeGraphQueryServiceSuite) observeContains(parent *rez.KnowledgeEntityRef, child *rez.KnowledgeEntityRef) rez.KnowledgeEvidenceRef {
+	ref := rez.KnowledgeRelationshipRef{
+		Predicate: knr.PredicateContains,
+		ProviderResourceRef: rez.ProviderResourceRef{
+			Provider:          "test",
+			ProviderNamespace: "knowledge-graph-tests",
+			ResourceRef:       "contains:" + parent.ProviderResourceRef.ResourceRef + ":" + child.ProviderResourceRef.ResourceRef,
+		},
+		Source: *parent,
+		Target: *child,
+	}
+	return rez.KnowledgeEvidenceRef{
+		Kind:        ke.KindObserved,
+		Assertion:   "relationship_observed",
+		EffectiveAt: time.Now().UTC(),
+		Subject:     rez.KnowledgeSubjectRef{Relationship: &ref},
+	}
+}
+
+func (s *KnowledgeGraphQueryServiceSuite) ingestStructure(ctx context.Context, database rez.Database, evidence ...rez.KnowledgeEvidenceRef) {
+	now := time.Now().UTC()
+	createEvent := database.Client(ctx).NormalizedEvent.Create().
+		SetProvider("test").
+		SetProviderNamespace("knowledge-graph-tests").
+		SetProviderResourceRef("structure").
+		SetProviderEventSource("knowledge-graph-tests").
+		SetProviderEventRef("event-" + uuid.NewString()).
+		SetKind("system_component").
+		SetOccurredAt(now).
+		SetReceivedAt(now).
+		SetAttributes([]byte(`{}`))
+	event, createErr := createEvent.Save(ctx)
+	s.Require().NoError(createErr)
+
+	ingestion, ingestionErr := NewKnowledgeGraphIngestionService(database)
+	s.Require().NoError(ingestionErr)
+	s.Require().NoError(ingestion.IngestEvidence(ctx, event, evidence...))
+}
+
+func (s *KnowledgeGraphQueryServiceSuite) ingestedEntityID(ctx context.Context, database rez.Database, ref *rez.KnowledgeEntityRef) uuid.UUID {
+	entityQuery := database.Client(ctx).KnowledgeEntity.Query().
+		Where(kne.HasAliasesWith(ksa.ProviderResourceRef(ref.ProviderResourceRef.ResourceRef)))
+	id, queryErr := entityQuery.OnlyID(ctx)
+	s.Require().NoError(queryErr)
+	return id
+}
+
+func (s *KnowledgeGraphQueryServiceSuite) TestResolveStructureClimbsStoredRelationships() {
+	ctx, database := s.SetupTestDatabase()
+	service, serviceErr := NewKnowledgeGraphQueryService(database)
+	s.Require().NoError(serviceErr)
+	checkout := s.structureEntityRef("checkout", kne.CategoryContainer)
+	orders := s.structureEntityRef("orders", kne.CategoryComponent)
+	pricing := s.structureEntityRef("pricing", kne.CategoryComponent)
+	s.ingestStructure(ctx, database,
+		s.observeEntity(checkout),
+		s.observeEntity(orders),
+		s.observeEntity(pricing),
+		s.observeContains(checkout, orders),
+		s.observeContains(orders, pricing),
+	)
+	checkoutID := s.ingestedEntityID(ctx, database, checkout)
+	pricingID := s.ingestedEntityID(ctx, database, pricing)
+
+	// The container is exactly MaxDepth steps away, so loading one step too few would miss it.
+	params := rez.ResolveStructureParams{
+		EntityIDs:        []uuid.UUID{pricingID, checkoutID},
+		TargetCategories: knowledgegraph.StructureLevelRuntime.Categories(),
+		MaxDepth:         2,
+	}
+	resolved, resolveErr := service.ResolveStructure(ctx, params)
+	s.Require().NoError(resolveErr)
+
+	expected := map[uuid.UUID][]uuid.UUID{
+		pricingID:  {checkoutID},
+		checkoutID: {checkoutID},
+	}
+	s.Equal(expected, resolved)
 }

@@ -27,6 +27,10 @@ const (
 	FieldCategory = "category"
 	// FieldKind holds the string denoting the kind field in the database.
 	FieldKind = "kind"
+	// FieldState holds the string denoting the state field in the database.
+	FieldState = "state"
+	// FieldStateEffectiveAt holds the string denoting the state_effective_at field in the database.
+	FieldStateEffectiveAt = "state_effective_at"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
 	// EdgeAliases holds the string denoting the aliases edge name in mutations.
@@ -84,6 +88,8 @@ var Columns = []string{
 	FieldUpdatedAt,
 	FieldCategory,
 	FieldKind,
+	FieldState,
+	FieldStateEffectiveAt,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -180,6 +186,11 @@ func ByCategory(opts ...sql.OrderTermOption) OrderOption {
 // ByKind orders the results by the kind field.
 func ByKind(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldKind, opts...).ToFunc()
+}
+
+// ByStateEffectiveAt orders the results by the state_effective_at field.
+func ByStateEffectiveAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldStateEffectiveAt, opts...).ToFunc()
 }
 
 // ByTenantField orders the results by tenant field.

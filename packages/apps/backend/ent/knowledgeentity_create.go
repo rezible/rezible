@@ -17,6 +17,7 @@ import (
 	"github.com/rezible/rezible/ent/knowledgeentitylinkingattribute"
 	"github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/knowledgesubjectalias"
+	"github.com/rezible/rezible/ent/schema/schematypes"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
@@ -71,6 +72,34 @@ func (_c *KnowledgeEntityCreate) SetCategory(v knowledgeentity.Category) *Knowle
 // SetKind sets the "kind" field.
 func (_c *KnowledgeEntityCreate) SetKind(v string) *KnowledgeEntityCreate {
 	_c.mutation.SetKind(v)
+	return _c
+}
+
+// SetState sets the "state" field.
+func (_c *KnowledgeEntityCreate) SetState(v schematypes.KnowledgeGraphSubjectState) *KnowledgeEntityCreate {
+	_c.mutation.SetState(v)
+	return _c
+}
+
+// SetNillableState sets the "state" field if the given value is not nil.
+func (_c *KnowledgeEntityCreate) SetNillableState(v *schematypes.KnowledgeGraphSubjectState) *KnowledgeEntityCreate {
+	if v != nil {
+		_c.SetState(*v)
+	}
+	return _c
+}
+
+// SetStateEffectiveAt sets the "state_effective_at" field.
+func (_c *KnowledgeEntityCreate) SetStateEffectiveAt(v time.Time) *KnowledgeEntityCreate {
+	_c.mutation.SetStateEffectiveAt(v)
+	return _c
+}
+
+// SetNillableStateEffectiveAt sets the "state_effective_at" field if the given value is not nil.
+func (_c *KnowledgeEntityCreate) SetNillableStateEffectiveAt(v *time.Time) *KnowledgeEntityCreate {
+	if v != nil {
+		_c.SetStateEffectiveAt(*v)
+	}
 	return _c
 }
 
@@ -297,6 +326,14 @@ func (_c *KnowledgeEntityCreate) createSpec() (*KnowledgeEntity, *sqlgraph.Creat
 		_spec.SetField(knowledgeentity.FieldKind, field.TypeString, value)
 		_node.Kind = value
 	}
+	if value, ok := _c.mutation.State(); ok {
+		_spec.SetField(knowledgeentity.FieldState, field.TypeJSON, value)
+		_node.State = value
+	}
+	if value, ok := _c.mutation.StateEffectiveAt(); ok {
+		_spec.SetField(knowledgeentity.FieldStateEffectiveAt, field.TypeTime, value)
+		_node.StateEffectiveAt = &value
+	}
 	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -459,6 +496,42 @@ func (u *KnowledgeEntityUpsert) UpdateUpdatedAt() *KnowledgeEntityUpsert {
 	return u
 }
 
+// SetState sets the "state" field.
+func (u *KnowledgeEntityUpsert) SetState(v schematypes.KnowledgeGraphSubjectState) *KnowledgeEntityUpsert {
+	u.Set(knowledgeentity.FieldState, v)
+	return u
+}
+
+// UpdateState sets the "state" field to the value that was provided on create.
+func (u *KnowledgeEntityUpsert) UpdateState() *KnowledgeEntityUpsert {
+	u.SetExcluded(knowledgeentity.FieldState)
+	return u
+}
+
+// ClearState clears the value of the "state" field.
+func (u *KnowledgeEntityUpsert) ClearState() *KnowledgeEntityUpsert {
+	u.SetNull(knowledgeentity.FieldState)
+	return u
+}
+
+// SetStateEffectiveAt sets the "state_effective_at" field.
+func (u *KnowledgeEntityUpsert) SetStateEffectiveAt(v time.Time) *KnowledgeEntityUpsert {
+	u.Set(knowledgeentity.FieldStateEffectiveAt, v)
+	return u
+}
+
+// UpdateStateEffectiveAt sets the "state_effective_at" field to the value that was provided on create.
+func (u *KnowledgeEntityUpsert) UpdateStateEffectiveAt() *KnowledgeEntityUpsert {
+	u.SetExcluded(knowledgeentity.FieldStateEffectiveAt)
+	return u
+}
+
+// ClearStateEffectiveAt clears the value of the "state_effective_at" field.
+func (u *KnowledgeEntityUpsert) ClearStateEffectiveAt() *KnowledgeEntityUpsert {
+	u.SetNull(knowledgeentity.FieldStateEffectiveAt)
+	return u
+}
+
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
@@ -541,6 +614,48 @@ func (u *KnowledgeEntityUpsertOne) SetUpdatedAt(v time.Time) *KnowledgeEntityUps
 func (u *KnowledgeEntityUpsertOne) UpdateUpdatedAt() *KnowledgeEntityUpsertOne {
 	return u.Update(func(s *KnowledgeEntityUpsert) {
 		s.UpdateUpdatedAt()
+	})
+}
+
+// SetState sets the "state" field.
+func (u *KnowledgeEntityUpsertOne) SetState(v schematypes.KnowledgeGraphSubjectState) *KnowledgeEntityUpsertOne {
+	return u.Update(func(s *KnowledgeEntityUpsert) {
+		s.SetState(v)
+	})
+}
+
+// UpdateState sets the "state" field to the value that was provided on create.
+func (u *KnowledgeEntityUpsertOne) UpdateState() *KnowledgeEntityUpsertOne {
+	return u.Update(func(s *KnowledgeEntityUpsert) {
+		s.UpdateState()
+	})
+}
+
+// ClearState clears the value of the "state" field.
+func (u *KnowledgeEntityUpsertOne) ClearState() *KnowledgeEntityUpsertOne {
+	return u.Update(func(s *KnowledgeEntityUpsert) {
+		s.ClearState()
+	})
+}
+
+// SetStateEffectiveAt sets the "state_effective_at" field.
+func (u *KnowledgeEntityUpsertOne) SetStateEffectiveAt(v time.Time) *KnowledgeEntityUpsertOne {
+	return u.Update(func(s *KnowledgeEntityUpsert) {
+		s.SetStateEffectiveAt(v)
+	})
+}
+
+// UpdateStateEffectiveAt sets the "state_effective_at" field to the value that was provided on create.
+func (u *KnowledgeEntityUpsertOne) UpdateStateEffectiveAt() *KnowledgeEntityUpsertOne {
+	return u.Update(func(s *KnowledgeEntityUpsert) {
+		s.UpdateStateEffectiveAt()
+	})
+}
+
+// ClearStateEffectiveAt clears the value of the "state_effective_at" field.
+func (u *KnowledgeEntityUpsertOne) ClearStateEffectiveAt() *KnowledgeEntityUpsertOne {
+	return u.Update(func(s *KnowledgeEntityUpsert) {
+		s.ClearStateEffectiveAt()
 	})
 }
 
@@ -793,6 +908,48 @@ func (u *KnowledgeEntityUpsertBulk) SetUpdatedAt(v time.Time) *KnowledgeEntityUp
 func (u *KnowledgeEntityUpsertBulk) UpdateUpdatedAt() *KnowledgeEntityUpsertBulk {
 	return u.Update(func(s *KnowledgeEntityUpsert) {
 		s.UpdateUpdatedAt()
+	})
+}
+
+// SetState sets the "state" field.
+func (u *KnowledgeEntityUpsertBulk) SetState(v schematypes.KnowledgeGraphSubjectState) *KnowledgeEntityUpsertBulk {
+	return u.Update(func(s *KnowledgeEntityUpsert) {
+		s.SetState(v)
+	})
+}
+
+// UpdateState sets the "state" field to the value that was provided on create.
+func (u *KnowledgeEntityUpsertBulk) UpdateState() *KnowledgeEntityUpsertBulk {
+	return u.Update(func(s *KnowledgeEntityUpsert) {
+		s.UpdateState()
+	})
+}
+
+// ClearState clears the value of the "state" field.
+func (u *KnowledgeEntityUpsertBulk) ClearState() *KnowledgeEntityUpsertBulk {
+	return u.Update(func(s *KnowledgeEntityUpsert) {
+		s.ClearState()
+	})
+}
+
+// SetStateEffectiveAt sets the "state_effective_at" field.
+func (u *KnowledgeEntityUpsertBulk) SetStateEffectiveAt(v time.Time) *KnowledgeEntityUpsertBulk {
+	return u.Update(func(s *KnowledgeEntityUpsert) {
+		s.SetStateEffectiveAt(v)
+	})
+}
+
+// UpdateStateEffectiveAt sets the "state_effective_at" field to the value that was provided on create.
+func (u *KnowledgeEntityUpsertBulk) UpdateStateEffectiveAt() *KnowledgeEntityUpsertBulk {
+	return u.Update(func(s *KnowledgeEntityUpsert) {
+		s.UpdateStateEffectiveAt()
+	})
+}
+
+// ClearStateEffectiveAt clears the value of the "state_effective_at" field.
+func (u *KnowledgeEntityUpsertBulk) ClearStateEffectiveAt() *KnowledgeEntityUpsertBulk {
+	return u.Update(func(s *KnowledgeEntityUpsert) {
+		s.ClearStateEffectiveAt()
 	})
 }
 

@@ -83,6 +83,14 @@ func (KnowledgeEntity) Fields() []ent.Field {
 		field.String("kind").NotEmpty().
 			Comment("Canonical domain type within the entity category.").
 			Immutable(),
+		field.JSON("state", schematypes.KnowledgeGraphSubjectState{}).
+			Optional().
+			SchemaType(schemaTypeJsonB).
+			Comment("Current display name, description and properties, merged from observed evidence."),
+		field.Time("state_effective_at").
+			Optional().
+			Nillable().
+			Comment("Effective time of the evidence that last changed the state."),
 	}
 }
 

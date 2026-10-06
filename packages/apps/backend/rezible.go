@@ -255,6 +255,11 @@ type (
 
 		SelectGraphEntities(context.Context, SelectKnowledgeGraphEntitiesParams) (*KnowledgeGraphEntitiesPage, error)
 		ExpandGraphRelationships(context.Context, ExpandKnowledgeGraphRelationshipsParams) (*KnowledgeGraphRelationshipsPage, error)
+
+		// ResolveStructure returns, for each entity, the entities in TargetCategories that represent it: itself
+		// if it is in one, otherwise its nearest ancestors in one, climbing the structure hierarchy at most
+		// MaxDepth steps. Entities represented by nothing are omitted.
+		ResolveStructure(context.Context, ResolveStructureParams) (map[uuid.UUID][]uuid.UUID, error)
 	}
 
 	KnowledgeEntityFilter struct {
@@ -290,6 +295,14 @@ type (
 	KnowledgeGraphRelationshipsPage struct {
 		Relationships []*ent.KnowledgeRelationship
 		NextCursor    *RelationshipExpansionCursor
+	}
+
+	ResolveStructureParams struct {
+		EntityIDs []uuid.UUID
+		// TargetCategories are the categories that represent an entity, for example
+		// knowledgegraph.StructureLevelRuntime.Categories().
+		TargetCategories []kne.Category
+		MaxDepth         int
 	}
 )
 

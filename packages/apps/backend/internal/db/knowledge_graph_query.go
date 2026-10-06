@@ -12,6 +12,7 @@ import (
 	"slices"
 	"strings"
 
+	mapset "github.com/deckarep/golang-set/v2"
 	"github.com/google/uuid"
 
 	rez "github.com/rezible/rezible"
@@ -21,6 +22,7 @@ import (
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
 	ksa "github.com/rezible/rezible/ent/knowledgesubjectalias"
 	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/pkg/knowledgegraph"
 )
 
 type KnowledgeGraphQueryService struct {
@@ -299,6 +301,89 @@ func (s *KnowledgeGraphQueryService) ExpandGraphRelationships(ctx context.Contex
 		page.Relationships = relationships
 	}
 	return page, nil
+}
+
+func (s *KnowledgeGraphQueryService) validateResolveStructureParams(p rez.ResolveStructureParams) error {
+	if len(p.TargetCategories) == 0 {
+		return fmt.Errorf("%w: target categories are required", rez.ErrInvalidInput)
+	}
+	for _, category := range p.TargetCategories {
+		if validationErr := kne.CategoryValidator(category); validationErr != nil {
+			return fmt.Errorf("%w: invalid target category", rez.ErrInvalidInput)
+		}
+	}
+	if p.MaxDepth < 0 {
+		return fmt.Errorf("%w: max depth must not be negative", rez.ErrInvalidInput)
+	}
+	return nil
+}
+
+func (s *KnowledgeGraphQueryService) ResolveStructure(ctx context.Context, params rez.ResolveStructureParams) (map[uuid.UUID][]uuid.UUID, error) {
+	if paramsErr := s.validateResolveStructureParams(params); paramsErr != nil {
+		return nil, paramsErr
+	}
+	if len(params.EntityIDs) == 0 {
+		return make(map[uuid.UUID][]uuid.UUID), nil
+	}
+
+	client := s.db.Client(ctx)
+	entitiesQuery := client.KnowledgeEntity.Query().
+		Where(kne.IDIn(params.EntityIDs...)).
+		Select(kne.FieldID, kne.FieldCategory)
+	entities, entitiesErr := entitiesQuery.All(ctx)
+	if entitiesErr != nil {
+		return nil, fmt.Errorf("load entity categories: %w", entitiesErr)
+	}
+
+	graph := knowledgegraph.StructureGraph{
+		Categories: make(map[uuid.UUID]kne.Category),
+	}
+	targets := mapset.NewSet(params.TargetCategories...)
+	frontier := mapset.NewSet[uuid.UUID]()
+	for _, entity := range entities {
+		graph.Categories[entity.ID] = entity.Category
+		if !targets.Contains(entity.Category) {
+			frontier.Add(entity.ID)
+		}
+	}
+
+	// Load one step of the hierarchy above the frontier at a time, with the parents' categories. Entities
+	// already loaded are not climbed again, so a cycle ends the loading.
+	for depth := 0; depth < params.MaxDepth && !frontier.IsEmpty(); depth++ {
+		linksQuery := client.KnowledgeRelationship.Query().
+			Where(
+				knr.PredicateIn(knowledgegraph.StructuralPredicates...),
+				knr.TargetEntityIDIn(frontier.ToSlice()...),
+			).
+			Select(knr.FieldSourceEntityID, knr.FieldTargetEntityID).
+			WithSourceEntity(func(pq *ent.KnowledgeEntityQuery) {
+				pq.Select(kne.FieldID, kne.FieldCategory)
+			})
+		links, linksErr := linksQuery.All(ctx)
+		if linksErr != nil {
+			return nil, fmt.Errorf("load structure links: %w", linksErr)
+		}
+		next := mapset.NewSet[uuid.UUID]()
+		for _, link := range links {
+			structureLink := knowledgegraph.StructureLink{
+				Parent: link.SourceEntityID,
+				Child:  link.TargetEntityID,
+			}
+			graph.Links = append(graph.Links, structureLink)
+			if parent := link.Edges.SourceEntity; parent != nil {
+				if !graph.IsLoaded(parent.ID) {
+					continue
+				}
+				graph.Categories[parent.ID] = parent.Category
+				if !targets.Contains(parent.Category) {
+					next.Add(parent.ID)
+				}
+			}
+		}
+		frontier = next
+	}
+
+	return knowledgegraph.Resolve(graph, params.EntityIDs, params.TargetCategories, params.MaxDepth), nil
 }
 
 const knowledgeGraphQueryVersion = 1

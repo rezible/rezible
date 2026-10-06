@@ -77,6 +77,11 @@ func Kind(v string) predicate.KnowledgeEntity {
 	return predicate.KnowledgeEntity(sql.FieldEQ(FieldKind, v))
 }
 
+// StateEffectiveAt applies equality check predicate on the "state_effective_at" field. It's identical to StateEffectiveAtEQ.
+func StateEffectiveAt(v time.Time) predicate.KnowledgeEntity {
+	return predicate.KnowledgeEntity(sql.FieldEQ(FieldStateEffectiveAt, v))
+}
+
 // TenantIDEQ applies the EQ predicate on the "tenant_id" field.
 func TenantIDEQ(v int) predicate.KnowledgeEntity {
 	return predicate.KnowledgeEntity(sql.FieldEQ(FieldTenantID, v))
@@ -260,6 +265,66 @@ func KindEqualFold(v string) predicate.KnowledgeEntity {
 // KindContainsFold applies the ContainsFold predicate on the "kind" field.
 func KindContainsFold(v string) predicate.KnowledgeEntity {
 	return predicate.KnowledgeEntity(sql.FieldContainsFold(FieldKind, v))
+}
+
+// StateIsNil applies the IsNil predicate on the "state" field.
+func StateIsNil() predicate.KnowledgeEntity {
+	return predicate.KnowledgeEntity(sql.FieldIsNull(FieldState))
+}
+
+// StateNotNil applies the NotNil predicate on the "state" field.
+func StateNotNil() predicate.KnowledgeEntity {
+	return predicate.KnowledgeEntity(sql.FieldNotNull(FieldState))
+}
+
+// StateEffectiveAtEQ applies the EQ predicate on the "state_effective_at" field.
+func StateEffectiveAtEQ(v time.Time) predicate.KnowledgeEntity {
+	return predicate.KnowledgeEntity(sql.FieldEQ(FieldStateEffectiveAt, v))
+}
+
+// StateEffectiveAtNEQ applies the NEQ predicate on the "state_effective_at" field.
+func StateEffectiveAtNEQ(v time.Time) predicate.KnowledgeEntity {
+	return predicate.KnowledgeEntity(sql.FieldNEQ(FieldStateEffectiveAt, v))
+}
+
+// StateEffectiveAtIn applies the In predicate on the "state_effective_at" field.
+func StateEffectiveAtIn(vs ...time.Time) predicate.KnowledgeEntity {
+	return predicate.KnowledgeEntity(sql.FieldIn(FieldStateEffectiveAt, vs...))
+}
+
+// StateEffectiveAtNotIn applies the NotIn predicate on the "state_effective_at" field.
+func StateEffectiveAtNotIn(vs ...time.Time) predicate.KnowledgeEntity {
+	return predicate.KnowledgeEntity(sql.FieldNotIn(FieldStateEffectiveAt, vs...))
+}
+
+// StateEffectiveAtGT applies the GT predicate on the "state_effective_at" field.
+func StateEffectiveAtGT(v time.Time) predicate.KnowledgeEntity {
+	return predicate.KnowledgeEntity(sql.FieldGT(FieldStateEffectiveAt, v))
+}
+
+// StateEffectiveAtGTE applies the GTE predicate on the "state_effective_at" field.
+func StateEffectiveAtGTE(v time.Time) predicate.KnowledgeEntity {
+	return predicate.KnowledgeEntity(sql.FieldGTE(FieldStateEffectiveAt, v))
+}
+
+// StateEffectiveAtLT applies the LT predicate on the "state_effective_at" field.
+func StateEffectiveAtLT(v time.Time) predicate.KnowledgeEntity {
+	return predicate.KnowledgeEntity(sql.FieldLT(FieldStateEffectiveAt, v))
+}
+
+// StateEffectiveAtLTE applies the LTE predicate on the "state_effective_at" field.
+func StateEffectiveAtLTE(v time.Time) predicate.KnowledgeEntity {
+	return predicate.KnowledgeEntity(sql.FieldLTE(FieldStateEffectiveAt, v))
+}
+
+// StateEffectiveAtIsNil applies the IsNil predicate on the "state_effective_at" field.
+func StateEffectiveAtIsNil() predicate.KnowledgeEntity {
+	return predicate.KnowledgeEntity(sql.FieldIsNull(FieldStateEffectiveAt))
+}
+
+// StateEffectiveAtNotNil applies the NotNil predicate on the "state_effective_at" field.
+func StateEffectiveAtNotNil() predicate.KnowledgeEntity {
+	return predicate.KnowledgeEntity(sql.FieldNotNull(FieldStateEffectiveAt))
 }
 
 // HasTenant applies the HasEdge predicate on the "tenant" edge.

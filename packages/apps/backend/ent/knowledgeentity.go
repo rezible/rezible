@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -11,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/knowledgeentity"
+	"github.com/rezible/rezible/ent/schema/schematypes"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
@@ -29,6 +31,10 @@ type KnowledgeEntity struct {
 	Category knowledgeentity.Category `json:"category,omitempty"`
 	// Canonical domain type within the entity category.
 	Kind string `json:"kind,omitempty"`
+	// Current display name, description and properties, merged from observed evidence.
+	State schematypes.KnowledgeGraphSubjectState `json:"state,omitempty"`
+	// Effective time of the evidence that last changed the state.
+	StateEffectiveAt *time.Time `json:"state_effective_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the KnowledgeEntityQuery when eager-loading is set.
 	Edges        KnowledgeEntityEdges `json:"edges"`
@@ -104,11 +110,13 @@ func (*KnowledgeEntity) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case knowledgeentity.FieldState:
+			values[i] = new([]byte)
 		case knowledgeentity.FieldTenantID:
 			values[i] = new(sql.NullInt64)
 		case knowledgeentity.FieldCategory, knowledgeentity.FieldKind:
 			values[i] = new(sql.NullString)
-		case knowledgeentity.FieldCreatedAt, knowledgeentity.FieldUpdatedAt:
+		case knowledgeentity.FieldCreatedAt, knowledgeentity.FieldUpdatedAt, knowledgeentity.FieldStateEffectiveAt:
 			values[i] = new(sql.NullTime)
 		case knowledgeentity.FieldID:
 			values[i] = new(uuid.UUID)
@@ -162,6 +170,21 @@ func (_m *KnowledgeEntity) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field kind", values[i])
 			} else if value.Valid {
 				_m.Kind = value.String
+			}
+		case knowledgeentity.FieldState:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field state", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &_m.State); err != nil {
+					return fmt.Errorf("unmarshal field state: %w", err)
+				}
+			}
+		case knowledgeentity.FieldStateEffectiveAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field state_effective_at", values[i])
+			} else if value.Valid {
+				_m.StateEffectiveAt = new(time.Time)
+				*_m.StateEffectiveAt = value.Time
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -238,6 +261,14 @@ func (_m *KnowledgeEntity) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("kind=")
 	builder.WriteString(_m.Kind)
+	builder.WriteString(", ")
+	builder.WriteString("state=")
+	builder.WriteString(fmt.Sprintf("%v", _m.State))
+	builder.WriteString(", ")
+	if v := _m.StateEffectiveAt; v != nil {
+		builder.WriteString("state_effective_at=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
 	builder.WriteByte(')')
 	return builder.String()
 }

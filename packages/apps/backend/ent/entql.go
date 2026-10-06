@@ -971,11 +971,13 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "KnowledgeEntity",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			knowledgeentity.FieldTenantID:  {Type: field.TypeInt, Column: knowledgeentity.FieldTenantID},
-			knowledgeentity.FieldCreatedAt: {Type: field.TypeTime, Column: knowledgeentity.FieldCreatedAt},
-			knowledgeentity.FieldUpdatedAt: {Type: field.TypeTime, Column: knowledgeentity.FieldUpdatedAt},
-			knowledgeentity.FieldCategory:  {Type: field.TypeEnum, Column: knowledgeentity.FieldCategory},
-			knowledgeentity.FieldKind:      {Type: field.TypeString, Column: knowledgeentity.FieldKind},
+			knowledgeentity.FieldTenantID:         {Type: field.TypeInt, Column: knowledgeentity.FieldTenantID},
+			knowledgeentity.FieldCreatedAt:        {Type: field.TypeTime, Column: knowledgeentity.FieldCreatedAt},
+			knowledgeentity.FieldUpdatedAt:        {Type: field.TypeTime, Column: knowledgeentity.FieldUpdatedAt},
+			knowledgeentity.FieldCategory:         {Type: field.TypeEnum, Column: knowledgeentity.FieldCategory},
+			knowledgeentity.FieldKind:             {Type: field.TypeString, Column: knowledgeentity.FieldKind},
+			knowledgeentity.FieldState:            {Type: field.TypeJSON, Column: knowledgeentity.FieldState},
+			knowledgeentity.FieldStateEffectiveAt: {Type: field.TypeTime, Column: knowledgeentity.FieldStateEffectiveAt},
 		},
 	}
 	graph.Nodes[45] = &sqlgraph.Node{
@@ -11629,6 +11631,16 @@ func (f *KnowledgeEntityFilter) WhereCategory(p entql.StringP) {
 // WhereKind applies the entql string predicate on the kind field.
 func (f *KnowledgeEntityFilter) WhereKind(p entql.StringP) {
 	f.Where(p.Field(knowledgeentity.FieldKind))
+}
+
+// WhereState applies the entql json.RawMessage predicate on the state field.
+func (f *KnowledgeEntityFilter) WhereState(p entql.BytesP) {
+	f.Where(p.Field(knowledgeentity.FieldState))
+}
+
+// WhereStateEffectiveAt applies the entql time.Time predicate on the state_effective_at field.
+func (f *KnowledgeEntityFilter) WhereStateEffectiveAt(p entql.TimeP) {
+	f.Where(p.Field(knowledgeentity.FieldStateEffectiveAt))
 }
 
 // WhereHasTenant applies a predicate to check if query has an edge tenant.
