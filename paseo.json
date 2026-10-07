@@ -2,6 +2,8 @@
   "worktree": {
     "setup": [
       "cp \"$PASEO_SOURCE_CHECKOUT_PATH/.env\" .env",
+      "cp -r \"$PASEO_SOURCE_CHECKOUT_PATH/.agents\" .agents",
+      "(cd \"$PASEO_SOURCE_CHECKOUT_PATH\" && find . -name AGENTS.md -type f -exec cp -v --parents -t \"$OLDPWD\" {} +)",
       "devbox run -q setup"
     ],
     "teardown": "devbox run -q teardown"
