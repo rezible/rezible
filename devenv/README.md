@@ -2,8 +2,8 @@
 
 ```sh
 just setup
-just dev verify
-just dev teardown
+just dev verify-workspace
+just dev cleanup-workspace
 ```
 
 Setup installs dependencies and generates `devenv/.workspace-env.sh` with this
