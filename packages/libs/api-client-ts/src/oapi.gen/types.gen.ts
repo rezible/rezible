@@ -361,6 +361,14 @@ export type ChatChannelsPage = {
     nextCursor?: string;
 };
 
+export type CheckIntegrationHealthResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: IntegrationHealthCheck;
+};
+
 export type ClearSituationHoldResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
@@ -2051,6 +2059,14 @@ export type IntegrationEventSyncRunAttributes = {
     finishedAt: string | null;
     startedAt: string;
     status: 'queued' | 'started' | 'complete' | 'error';
+};
+
+export type IntegrationHealthCheck = {
+    /**
+     * Why the check failed, when it did
+     */
+    error?: string;
+    ok: boolean;
 };
 
 export type IntegrationInstallTarget = {
@@ -8966,6 +8982,53 @@ export type ListIntegrationChatChannelsResponses = {
 };
 
 export type ListIntegrationChatChannelsResponse = ListIntegrationChatChannelsResponses[keyof ListIntegrationChatChannelsResponses];
+
+export type CheckIntegrationHealthData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/integrations/installations/{id}/health-check';
+};
+
+export type CheckIntegrationHealthErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type CheckIntegrationHealthError = CheckIntegrationHealthErrors[keyof CheckIntegrationHealthErrors];
+
+export type CheckIntegrationHealthResponses = {
+    /**
+     * OK
+     */
+    200: CheckIntegrationHealthResponseBody;
+};
+
+export type CheckIntegrationHealthResponse = CheckIntegrationHealthResponses[keyof CheckIntegrationHealthResponses];
 
 export type ListIntegrationEventSyncRunsData = {
     body?: never;

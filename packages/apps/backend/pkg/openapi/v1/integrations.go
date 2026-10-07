@@ -34,6 +34,7 @@ type IntegrationsHandler interface {
 	ListIntegrationEventSyncRun(context.Context, *ListIntegrationEventSyncRunRequest) (*ListIntegrationEventSyncRunResponse, error)
 
 	ListIntegrationChatChannels(context.Context, *ListIntegrationChatChannelsRequest) (*ListIntegrationChatChannelsResponse, error)
+	CheckIntegrationHealth(context.Context, *CheckIntegrationHealthRequest) (*CheckIntegrationHealthResponse, error)
 }
 
 func (o operations) RegisterIntegrations(api huma.API) {
@@ -56,6 +57,7 @@ func (o operations) RegisterIntegrations(api huma.API) {
 	huma.Register(api, ListIntegrationEventSyncRuns, o.ListIntegrationEventSyncRun)
 
 	huma.Register(api, ListIntegrationChatChannels, o.ListIntegrationChatChannels)
+	huma.Register(api, CheckIntegrationHealth, o.CheckIntegrationHealth)
 }
 
 type (
@@ -132,6 +134,11 @@ type (
 		IsPrivate  bool   `json:"isPrivate"`
 		IsArchived bool   `json:"isArchived"`
 		IsMember   bool   `json:"isMember" doc:"Whether the integration's bot is a member of the channel"`
+	}
+
+	IntegrationHealthCheck struct {
+		Ok    bool   `json:"ok"`
+		Error string `json:"error,omitempty" doc:"Why the check failed, when it did"`
 	}
 )
 
@@ -423,3 +430,16 @@ type ListIntegrationChatChannelsRequest struct {
 	Limit  int       `query:"limit" minimum:"1" maximum:"200" default:"100" required:"false" nullable:"false"`
 }
 type ListIntegrationChatChannelsResponse ItemResponse[ChatChannelsPage]
+
+var CheckIntegrationHealth = huma.Operation{
+	OperationID: "check-integration-health",
+	Method:      http.MethodPost,
+	Path:        "/integrations/installations/{id}/health-check",
+	Summary:     "Check an integration's connection",
+	Description: "Checks whether the installation can currently reach its provider. A failed check is a successful response with ok false.",
+	Tags:        integrationsTags,
+	Errors:      ErrorCodes(),
+}
+
+type CheckIntegrationHealthRequest IdRequest
+type CheckIntegrationHealthResponse ItemResponse[IntegrationHealthCheck]

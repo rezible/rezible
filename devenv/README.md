@@ -102,6 +102,20 @@ and reloads Alertmanager. The backend's port is assigned at launch, so run the r
 after each backend restart. Generating a new URL in settings stops the old one working; run the recipe with the
 new one.
 
+### Reading simulation telemetry through Grafana
+
+The Grafana integration reads Loki and Prometheus through the `otel-lgtm` Grafana's data source proxy. Start
+it with `just dev infra-up telemetry`.
+
+1. Run `just dev grafana-token create`. It creates a Viewer service account for this workspace in the shared
+   Grafana, replacing any earlier one, and prints the URL and token. Grafana shows a token only once.
+2. Install Grafana in Rezible with that URL (`http://localhost:$GRAFANA_PORT`; the backend runs on the host)
+   and token.
+3. Set the data source UIDs: `loki` for logs and `prometheus` for metrics. The simulation's services are named
+   by the `service_name` label in both, which is the default.
+
+`just dev grafana-token delete` removes the account and its tokens.
+
 ## Environment ownership
 
 | Source | Values |

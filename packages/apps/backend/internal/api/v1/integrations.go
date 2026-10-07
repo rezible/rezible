@@ -241,3 +241,18 @@ func (h *integrationsHandler) ListIntegrationChatChannels(ctx context.Context, r
 
 	return &resp, nil
 }
+
+func (h *integrationsHandler) CheckIntegrationHealth(ctx context.Context, req *oapi.CheckIntegrationHealthRequest) (*oapi.CheckIntegrationHealthResponse, error) {
+	var resp oapi.CheckIntegrationHealthResponse
+
+	checker, lookupErr := integrations.LookupInstallationAs[integrations.HealthChecker](ctx, h.integrations, req.Id)
+	if lookupErr != nil {
+		return nil, oapi.Error(ctx, "failed to get integration", lookupErr)
+	}
+	resp.Body.Data = oapi.IntegrationHealthCheck{Ok: true}
+	if checkErr := checker.CheckHealth(ctx); checkErr != nil {
+		resp.Body.Data = oapi.IntegrationHealthCheck{Ok: false, Error: checkErr.Error()}
+	}
+
+	return &resp, nil
+}

@@ -18,6 +18,7 @@ import (
 	"github.com/rezible/rezible/internal/integrations/demo"
 	"github.com/rezible/rezible/internal/integrations/github"
 	"github.com/rezible/rezible/internal/integrations/google"
+	"github.com/rezible/rezible/internal/integrations/grafana"
 	"github.com/rezible/rezible/internal/integrations/slack"
 	"github.com/rezible/rezible/internal/integrations/slack/slackagent"
 	"github.com/rezible/rezible/internal/integrations/slack/slackincidents"
@@ -279,6 +280,10 @@ var pkgIntegrations = do.Package(
 		)
 	}),
 
+	do.Lazy(func(i do.Injector) (*grafana.Integration, error) {
+		return grafana.MakeIntegration(do.MustInvoke[rez.Clock](i))
+	}),
+
 	do.Lazy(func(i do.Injector) (*github.Integration, error) {
 		return github.MakeIntegration(
 			do.MustInvoke[rez.Config](i),
@@ -347,6 +352,7 @@ var pkgIntegrations = do.Package(
 			do.MustInvoke[*demoprovider.Integration](i),
 			do.MustInvoke[*google.Integration](i),
 			do.MustInvoke[*github.Integration](i),
+			do.MustInvoke[*grafana.Integration](i),
 			do.MustInvoke[*slackagent.Integration](i),
 			do.MustInvoke[*slackincidents.Integration](i),
 		}, nil

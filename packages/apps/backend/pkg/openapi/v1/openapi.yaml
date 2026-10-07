@@ -852,6 +852,21 @@ components:
       required:
         - channels
       type: object
+    CheckIntegrationHealthResponseBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/CheckIntegrationHealthResponseBody.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          $ref: "#/components/schemas/IntegrationHealthCheck"
+      required:
+        - data
+      type: object
     ClearSituationHoldResponseBody:
       additionalProperties: false
       properties:
@@ -4439,6 +4454,17 @@ components:
         - status
         - startedAt
         - finishedAt
+      type: object
+    IntegrationHealthCheck:
+      additionalProperties: false
+      properties:
+        error:
+          description: Why the check failed, when it did
+          type: string
+        ok:
+          type: boolean
+      required:
+        - ok
       type: object
     IntegrationInstallTarget:
       additionalProperties: false
@@ -15525,6 +15551,62 @@ paths:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
       summary: List chat channels for an integration
+      tags:
+        - Integrations
+  /integrations/installations/{id}/health-check:
+    post:
+      description: Checks whether the installation can currently reach its provider. A failed check is a successful response with ok false.
+      operationId: check-integration-health
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CheckIntegrationHealthResponseBody"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: Check an integration's connection
       tags:
         - Integrations
   /integrations/installations/{id}/sync:

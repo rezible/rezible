@@ -6,6 +6,7 @@ import RiAlarmWarningLine from "remixicon-svelte/icons/alarm-warning-line";
 import RiFlaskLine from "remixicon-svelte/icons/flask-line";
 import RiGithubFill from "remixicon-svelte/icons/github-fill";
 import RiGoogleFill from "remixicon-svelte/icons/google-fill";
+import RiLineChartLine from "remixicon-svelte/icons/line-chart-line";
 import RiPlugLine from "remixicon-svelte/icons/plug-line";
 import RiSlackFill from "remixicon-svelte/icons/slack-fill";
 
@@ -36,6 +37,12 @@ const knownProviders: Record<string, Omit<IntegrationProviderInfo, "name">> = {
 		description: "Chat with the Rezible agent and run incidents in dedicated Slack channels.",
 		icon: RiSlackFill,
 		connectionNoun: "workspaces",
+	},
+	grafana: {
+		displayName: "Grafana",
+		description: "Read logs from Loki and metrics from Prometheus through Grafana.",
+		icon: RiLineChartLine,
+		connectionNoun: "installations",
 	},
 	google: {
 		displayName: "Google Workspace",

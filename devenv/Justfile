@@ -98,6 +98,11 @@ alertmanager-target URL: _ensure-alertmanager-target
       echo "Could not reach Alertmanager on port ${ALERTMANAGER_PORT} to reload it; it reads the target when it starts."
     fi
 
+[doc("Create (replacing any earlier one) or delete this workspace's Viewer token in the otel-lgtm Grafana")]
+[arg("OPERATION", pattern="create|delete")]
+@grafana-token OPERATION:
+    bun --no-env-file scripts/grafana-token.ts {{ OPERATION }}
+
 [doc("Stop named shared infrastructure services; affects all worktrees")]
 @infra-stop +SERVICES:
     just _docker-compose stop {{ SERVICES }}

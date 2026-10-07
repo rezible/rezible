@@ -7,6 +7,8 @@ const capabilityLabels: Record<string, string> = {
 	video_conferencing: "Video calls",
 	code_changes: "Code changes",
 	repositories: "Repositories",
+	logs: "Logs",
+	metrics: "Metrics",
 };
 
 const maxCapabilityPills = 3;
