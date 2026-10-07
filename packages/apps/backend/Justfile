@@ -20,25 +20,29 @@ export HTTP__AUTH__ENABLE_DEV_SKIP_MODE := env("SKIP_AUTH", "")
 @run *ARGS:
     go run ./cmd/rezible {{ ARGS }}
 
+[positional-arguments]
 @test *ARGS:
     POSTGRES__HOST="${POSTGRES_TEST_HOST}" \
       POSTGRES__PORT="${POSTGRES_TEST_PORT}" \
       POSTGRES__DATABASE="${POSTGRES_TEST_DB}" \
-      go test {{ ARGS }}
+      go test "$@"
 
 exclude_test_packages_pattern := "/ent/"
 
+[positional-arguments]
 @test-all *ARGS:
-    just test {{ ARGS }} $(go list ./... | grep -v '{{ exclude_test_packages_pattern }}')
+    just test "$@" $(go list ./... | grep -v '{{ exclude_test_packages_pattern }}')
 
+[positional-arguments]
 @test-selection *ARGS:
-    if [[ "{{ ARGS }}" == "" ]]; then just test-all; else just test {{ ARGS }}; fi
+    if [[ $# -eq 0 ]]; then just test-all; else just test "$@"; fi
 
+[positional-arguments]
 @test-package PACKAGE *ARGS:
-    just test '{{ PACKAGE }}' {{ ARGS }}
+    just test "$@"
 
 @test-pattern PATTERN:
-    just test $(go list ./... | grep -v '{{ exclude_test_packages_pattern }}') -run {{ PATTERN }}
+    just test $(go list ./... | grep -v '{{ exclude_test_packages_pattern }}') -run {{ quote(PATTERN) }}
 
 @_genkit *ARGS:
     bunx genkit-cli@1.42.0 --no-update-notification {{ ARGS }}

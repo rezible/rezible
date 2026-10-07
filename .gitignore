@@ -1,6 +1,7 @@
 node_modules/
 .env
 devenv/.workspace-env.sh
+devenv/simulations/.mode
 .agents/
 .devbox/
 .idea/

@@ -22,6 +22,3 @@ receivers:
           {{ with .Annotations.description }}{{ . }}{{ end }}
           {{ with .GeneratorURL }}{{ . }}{{ end }}
           {{ end }}
-    webhook_configs:
-      - url: http://host.docker.internal:7001/webhooks/alertmanager
-        send_resolved: true

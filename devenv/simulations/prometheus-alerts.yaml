@@ -1,0 +1,19 @@
+groups:
+  - name: checkout
+    interval: 15s
+    rules:
+      - alert: CheckoutHighErrorRate
+        expr: |
+          sum(rate(http_server_request_duration_seconds_count{job="checkout-api", http_response_status_code=~"5.."}[1m]))
+            / sum(rate(http_server_request_duration_seconds_count{job="checkout-api"}[1m]))
+            > 0.05
+        for: 1m
+        labels:
+          service: checkout-api
+          env: development
+          severity: critical
+        annotations:
+          summary: Checkout is failing for {{ $value | humanizePercentage }} of requests
+          description: >-
+            More than 5% of checkout-api requests have returned a 5xx response over the last minute.
+            Customers cannot complete orders. Check payments-api latency and recent checkout-api deploys.

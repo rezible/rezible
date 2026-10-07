@@ -53,8 +53,9 @@ just test frontend
 just test documents
 ```
 
-Tests use their own Process Compose configuration. Backend tests start a shared
-tmpfs PostgreSQL container and use the backend's isolated test databases.
+`just test` runs every suite in parallel, lets each finish even if another fails,
+and ends with one line per suite. Backend tests start a shared tmpfs PostgreSQL
+container and use the backend's isolated test databases.
 The test container remains running after tests finish.
 
 ## Infrastructure and scripts
@@ -69,6 +70,15 @@ just dev infra-stop telemetry
 ```
 
 Stopping shared infrastructure affects every worktree.
+
+`configs/prometheus.yaml` replaces the Prometheus configuration inside `otel-lgtm`: the image's
+default file plus the alert definitions in `configs/prometheus-alerts.yaml` and the Alertmanager target.
+
+## Simulations
+
+`devenv/simulations` holds simulated services that send real telemetry to `otel-lgtm` and fire a real alert
+through Alertmanager. Demos and launch-plan checks run against them. See
+[simulations/README.md](simulations/README.md); run them with `just sim`.
 
 `Justfile` defines lifecycle sequencing. `scripts/workspace-env.ts` generates the
 workspace configuration, `scripts/database.ts` manages its database, and

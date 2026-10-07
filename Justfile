@@ -1,6 +1,7 @@
 set shell := ["bash", "-uc"]
 
 mod dev 'devenv'
+mod sim 'devenv/simulations'
 mod test 'devenv/test.Justfile'
 mod backend 'packages/apps/backend'
 mod frontend 'packages/apps/frontend'

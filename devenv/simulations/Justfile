@@ -1,0 +1,15 @@
+set shell := ["bash", "-euc"]
+
+mode_file := source_dir() / ".mode"
+
+[doc("Start telemetry and Alertmanager, then run the simulated services until stopped")]
+[default]
+@run:
+    just --justfile {{ quote(source_dir() / ".." / "Justfile") }} infra-up telemetry alertmanager
+    bun --no-env-file generator.ts
+
+[doc("Set the simulation's mode: healthy, or unhealthy (payments-api slows down, checkout-api fails)")]
+[arg("MODE", pattern="healthy|unhealthy")]
+@set-mode MODE:
+    echo {{ MODE }} > {{ quote(mode_file) }}
+    echo "sim mode: {{ MODE }}"

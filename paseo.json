@@ -7,8 +7,11 @@
     "teardown": "devbox run -q teardown"
   },
   "scripts": {
-    "dev": {
+    "run-dev": {
       "command": "SKIP_AUTH=true PC_DISABLE_TUI=1 just dev"
+    },
+    "run-simulation": {
+      "command": "just sim"
     }
   }
 }
