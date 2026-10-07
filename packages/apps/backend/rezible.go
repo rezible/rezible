@@ -56,6 +56,7 @@ var (
 	ErrUnprocessableInput   = fmt.Errorf("unprocessable input")
 	ErrNotFound             = fmt.Errorf("not found")
 	ErrNotImplemented       = fmt.Errorf("not implemented")
+	ErrRateLimited          = fmt.Errorf("rate limited")
 )
 
 type (
@@ -521,8 +522,16 @@ type (
 		ListInstallations(context.Context, ...predicate.Integration) ([]*ent.Integration, error)
 	}
 
+	// InstalledIntegrationGetter resolves saved installations through their integration definitions.
+	// Unlike IntegrationInstallationLookup, it depends on the integration registry.
+	InstalledIntegrationGetter interface {
+		GetInstalledIntegration(context.Context, uuid.UUID) (InstalledIntegration, error)
+		ListAllInstalled(ctx context.Context, predicates ...predicate.Integration) ([]InstalledIntegration, error)
+	}
+
 	IntegrationService interface {
 		IntegrationInstallationLookup
+		InstalledIntegrationGetter
 
 		ListInstallable(context.Context) ([]IntegrationDefinition, error)
 
@@ -530,7 +539,6 @@ type (
 		ListUserInstallationTargets(ctx context.Context) ([]IntegrationInstallationTarget, error)
 		InstallFromTarget(context.Context, IntegrationInstallationTarget) (InstalledIntegration, error)
 
-		ListAllInstalled(ctx context.Context, predicates ...predicate.Integration) ([]InstalledIntegration, error)
 		UpdateInstallation(ctx context.Context, id uuid.UUID, setFn func(*ent.IntegrationMutation)) (InstalledIntegration, error)
 		DeleteInstalled(ctx context.Context, id uuid.UUID) error
 

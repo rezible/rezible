@@ -4,8 +4,10 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"reflect"
 
 	"github.com/firebase/genkit/go/ai"
+	"github.com/google/uuid"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
@@ -40,3 +42,23 @@ type (
 		GetAvailableAgentTools(context.Context, []rez.InstalledIntegration, rez.GetAvailableAiAgentToolsParams) ([]ai.Tool, error)
 	}
 )
+
+// As returns the installed integration as capability T, or ErrCapabilityNotSupported.
+func As[T any](ii rez.InstalledIntegration) (T, error) {
+	capability, supported := ii.(T)
+	if !supported {
+		return capability, fmt.Errorf("%w: %s does not implement %s", ErrCapabilityNotSupported, ii.Integration().Name, reflect.TypeFor[T]())
+	}
+	return capability, nil
+}
+
+// LookupInstallationAs returns the installation as capability T.
+// It returns rez.ErrNotFound or ErrCapabilityNotSupported.
+func LookupInstallationAs[T any](ctx context.Context, getter rez.InstalledIntegrationGetter, id uuid.UUID) (T, error) {
+	ii, getErr := getter.GetInstalledIntegration(ctx, id)
+	if getErr != nil {
+		var zero T
+		return zero, getErr
+	}
+	return As[T](ii)
+}

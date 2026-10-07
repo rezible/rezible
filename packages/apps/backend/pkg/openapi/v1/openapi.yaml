@@ -810,6 +810,39 @@ components:
         - status
         - summary
       type: object
+    ChatChannel:
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+        isArchived:
+          type: boolean
+        isMember:
+          description: Whether the integration's bot is a member of the channel
+          type: boolean
+        isPrivate:
+          type: boolean
+        name:
+          type: string
+      required:
+        - id
+        - name
+        - isPrivate
+        - isArchived
+        - isMember
+      type: object
+    ChatChannelsPage:
+      additionalProperties: false
+      properties:
+        channels:
+          items:
+            $ref: "#/components/schemas/ChatChannel"
+          type: array
+        nextCursor:
+          type: string
+      required:
+        - channels
+      type: object
     ClearSituationHoldResponseBody:
       additionalProperties: false
       properties:
@@ -5060,6 +5093,21 @@ components:
           type: string
         data:
           $ref: "#/components/schemas/IncidentSituationLink"
+      required:
+        - data
+      type: object
+    ListIntegrationChatChannelsResponseBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/ListIntegrationChatChannelsResponseBody.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          $ref: "#/components/schemas/ChatChannelsPage"
       required:
         - data
       type: object
@@ -15338,6 +15386,84 @@ paths:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
       summary: Update an installed Integration
+      tags:
+        - Integrations
+  /integrations/installations/{id}/chat-channels:
+    get:
+      description: Reads one page of public channels from the provider. Results are not stored.
+      operationId: list-integration-chat-channels
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+        - description: Opaque provider cursor from a previous page
+          explode: false
+          in: query
+          name: cursor
+          schema:
+            description: Opaque provider cursor from a previous page
+            type: string
+        - explode: false
+          in: query
+          name: limit
+          schema:
+            default: 100
+            format: int64
+            maximum: 200
+            minimum: 1
+            type: integer
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListIntegrationChatChannelsResponseBody"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "429":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Too Many Requests
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: List chat channels for an integration
       tags:
         - Integrations
   /integrations/installations/{id}/sync:

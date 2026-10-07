@@ -10,6 +10,7 @@
 	import SettingsFormActions from "$features/settings/components/settings-form-actions/SettingsFormActions.svelte";
 	import type { IntegrationSettingsForms } from "$features/settings/lib/integrationSettingsForms.svelte";
 
+	import SlackChannelPicker from "./SlackChannelPicker.svelte";
 	import { inviteModeOptions, type SlackIncidentSettings } from "./slackIncidentSettings";
 
 	type Props = {
@@ -52,15 +53,16 @@
 				</Field.Field>
 
 				<Field.Field data-invalid={!!errors.AnnouncementChannelID}>
-					<Field.Label for="{idPrefix}-announcement">Announcement channel ID</Field.Label>
-					<Input
+					<Field.Label for="{idPrefix}-announcement">Announcement channel</Field.Label>
+					<SlackChannelPicker
 						id="{idPrefix}-announcement"
-						placeholder="C0123456789"
+						installationId={installation.id}
 						bind:value={values.AnnouncementChannelID}
 						aria-invalid={!!errors.AnnouncementChannelID}
 					/>
 					<Field.Description>
-						Optional. New incidents are announced in this channel.
+						Optional. New incidents are announced in this channel. Only public channels are
+						listed.
 					</Field.Description>
 					<Field.Error>{errors.AnnouncementChannelID}</Field.Error>
 				</Field.Field>

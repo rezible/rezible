@@ -184,6 +184,9 @@ func (s *IntegrationsService) GetAvailableAgentTools(ctx context.Context, params
 func (s *IntegrationsService) GetInstalledIntegration(ctx context.Context, id uuid.UUID) (rez.InstalledIntegration, error) {
 	intg, getErr := s.LookupInstallation(ctx, in.ID(id))
 	if getErr != nil {
+		if ent.IsNotFound(getErr) {
+			return nil, fmt.Errorf("%w: integration installation %s", rez.ErrNotFound, id)
+		}
 		return nil, fmt.Errorf("failed to get integration: %w", getErr)
 	}
 	return s.AsInstalledIntegration(intg)

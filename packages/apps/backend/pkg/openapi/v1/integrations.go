@@ -10,6 +10,7 @@ import (
 	"github.com/rezible/rezible/ent"
 
 	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/pkg/integrations"
 )
 
 type IntegrationsHandler interface {
@@ -30,6 +31,8 @@ type IntegrationsHandler interface {
 
 	RequestIntegrationEventSync(context.Context, *RequestIntegrationEventSyncRequest) (*RequestIntegrationEventSyncResponse, error)
 	ListIntegrationEventSyncRun(context.Context, *ListIntegrationEventSyncRunRequest) (*ListIntegrationEventSyncRunResponse, error)
+
+	ListIntegrationChatChannels(context.Context, *ListIntegrationChatChannelsRequest) (*ListIntegrationChatChannelsResponse, error)
 }
 
 func (o operations) RegisterIntegrations(api huma.API) {
@@ -49,6 +52,8 @@ func (o operations) RegisterIntegrations(api huma.API) {
 
 	huma.Register(api, RequestIntegrationEventSync, o.RequestIntegrationEventSync)
 	huma.Register(api, ListIntegrationEventSyncRuns, o.ListIntegrationEventSyncRun)
+
+	huma.Register(api, ListIntegrationChatChannels, o.ListIntegrationChatChannels)
 }
 
 type (
@@ -108,6 +113,19 @@ type (
 		Status     string     `json:"status" enum:"queued,started,complete,error"`
 		StartedAt  time.Time  `json:"startedAt"`
 		FinishedAt *time.Time `json:"finishedAt"`
+	}
+
+	ChatChannelsPage struct {
+		Channels   []ChatChannel `json:"channels"`
+		NextCursor string        `json:"nextCursor,omitempty"`
+	}
+
+	ChatChannel struct {
+		Id         string `json:"id"`
+		Name       string `json:"name"`
+		IsPrivate  bool   `json:"isPrivate"`
+		IsArchived bool   `json:"isArchived"`
+		IsMember   bool   `json:"isMember" doc:"Whether the integration's bot is a member of the channel"`
 	}
 )
 
@@ -185,6 +203,20 @@ func IntegrationEventSyncRunFromEnt(r *ent.IntegrationEventSyncRun) IntegrationE
 		FinishedAt: r.FinishedAt,
 	}
 	return IntegrationEventSyncRun{Id: r.ID, Attributes: attrs}
+}
+
+func ChatChannelsPageFromIntegrations(page *integrations.ChatChannelPage) ChatChannelsPage {
+	channels := make([]ChatChannel, len(page.Channels))
+	for i, ch := range page.Channels {
+		channels[i] = ChatChannel{
+			Id:         ch.ID,
+			Name:       ch.Name,
+			IsPrivate:  ch.IsPrivate,
+			IsArchived: ch.IsArchived,
+			IsMember:   ch.IsMember,
+		}
+	}
+	return ChatChannelsPage{Channels: channels, NextCursor: page.NextCursor}
 }
 
 var integrationsTags = []string{"Integrations"}
@@ -350,3 +382,20 @@ var ListIntegrationEventSyncRuns = huma.Operation{
 
 type ListIntegrationEventSyncRunRequest IdRequest
 type ListIntegrationEventSyncRunResponse CollectionResponse[IntegrationEventSyncRun]
+
+var ListIntegrationChatChannels = huma.Operation{
+	OperationID: "list-integration-chat-channels",
+	Method:      http.MethodGet,
+	Path:        "/integrations/installations/{id}/chat-channels",
+	Summary:     "List chat channels for an integration",
+	Description: "Reads one page of public channels from the provider. Results are not stored.",
+	Tags:        integrationsTags,
+	Errors:      ErrorCodes(http.StatusTooManyRequests),
+}
+
+type ListIntegrationChatChannelsRequest struct {
+	Id     uuid.UUID `path:"id"`
+	Cursor string    `query:"cursor" required:"false" doc:"Opaque provider cursor from a previous page"`
+	Limit  int       `query:"limit" minimum:"1" maximum:"200" default:"100" required:"false" nullable:"false"`
+}
+type ListIntegrationChatChannelsResponse ItemResponse[ChatChannelsPage]

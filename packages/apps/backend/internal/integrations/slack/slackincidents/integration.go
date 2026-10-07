@@ -142,6 +142,16 @@ func (ii *InstalledIntegration) Capabilities() []string {
 	return []string{incidentManagementCapability}
 }
 
+var _ integrations.ChatChannelQuerier = (*InstalledIntegration)(nil)
+
+func (ii *InstalledIntegration) ListChatChannels(ctx context.Context, params integrations.ListChatChannelsParams) (*integrations.ChatChannelPage, error) {
+	cw, clientErr := slackintegration.NewClientWrapper(ii.intg)
+	if clientErr != nil {
+		return nil, fmt.Errorf("create slack client: %w", clientErr)
+	}
+	return slackintegration.ListChatChannels(ctx, cw.Client(), params)
+}
+
 type UserSettings struct {
 	Incidents UserSettingsIncidents
 }

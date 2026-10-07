@@ -66,6 +66,8 @@ var (
 
 	Err409Conflict = statusErrorWithCode("conflict", huma.Error409Conflict)
 
+	Err429RateLimited = statusErrorWithCode("rate_limited", huma.Error429TooManyRequests)
+
 	Err500Internal = statusErrorWithCode("internal_server_error", huma.Error500InternalServerError)
 
 	Err501NotImplemented = statusErrorWithCode("not_implemented", huma.Error501NotImplemented)
@@ -84,6 +86,7 @@ var (
 		rez.ErrForbidden:          Err403Forbidden,
 		rez.ErrNotFound:           Err404NotFound,
 		rez.ErrConflict:           Err409Conflict,
+		rez.ErrRateLimited:        Err429RateLimited,
 		rez.ErrNotImplemented:     Err501NotImplemented,
 	}
 )

@@ -9,6 +9,7 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/integration"
+	"github.com/rezible/rezible/pkg/integrations"
 	oapi "github.com/rezible/rezible/pkg/openapi/v1"
 )
 
@@ -204,6 +205,26 @@ func (h *integrationsHandler) ListIntegrationEventSyncRun(ctx context.Context, r
 	for i, r := range result {
 		resp.Body.Data[i] = oapi.IntegrationEventSyncRunFromEnt(r)
 	}
+
+	return &resp, nil
+}
+
+func (h *integrationsHandler) ListIntegrationChatChannels(ctx context.Context, req *oapi.ListIntegrationChatChannelsRequest) (*oapi.ListIntegrationChatChannelsResponse, error) {
+	var resp oapi.ListIntegrationChatChannelsResponse
+
+	querier, lookupErr := integrations.LookupInstallationAs[integrations.ChatChannelQuerier](ctx, h.integrations, req.Id)
+	if lookupErr != nil {
+		return nil, oapi.Error(ctx, "failed to get chat integration", lookupErr)
+	}
+	params := integrations.ListChatChannelsParams{
+		Cursor: req.Cursor,
+		Limit:  req.Limit,
+	}
+	page, listErr := querier.ListChatChannels(ctx, params)
+	if listErr != nil {
+		return nil, oapi.Error(ctx, "failed to list chat channels", listErr)
+	}
+	resp.Body.Data = oapi.ChatChannelsPageFromIntegrations(page)
 
 	return &resp, nil
 }

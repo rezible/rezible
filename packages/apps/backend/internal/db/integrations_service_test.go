@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/firebase/genkit/go/ai"
+	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/pkg/integrations"
@@ -84,6 +85,19 @@ func (s *IntegrationsServiceSuite) TestInstallIntegration() {
 	s.Require().NoError(installErr)
 
 	s.Require().Equal(cfg.TestRef, ii.Config().InstallationTargetRef().ResourceRef)
+}
+
+func (s *IntegrationsServiceSuite) TestGetInstalledIntegrationReportsMissingAsNotFound() {
+	ctx, tdb := s.SetupTestDatabase()
+	installations, installationsErr := NewIntegrationInstallationsService(tdb)
+	s.Require().NoError(installationsErr)
+	jobs := mocks.NewMockJobService(s.T())
+	svc, serviceErr := NewIntegrationsService(s.Config(), tdb, jobs, installations, s.newRegistry())
+	s.Require().NoError(serviceErr)
+
+	_, getErr := svc.GetInstalledIntegration(ctx, uuid.New())
+
+	s.Require().ErrorIs(getErr, rez.ErrNotFound)
 }
 
 func (s *IntegrationsServiceSuite) TestInstallSameTargetUpdatesExistingInstallation() {

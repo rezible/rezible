@@ -342,6 +342,22 @@ export type AttributesStruct1 = {
     systemHazardId: string;
 };
 
+export type ChatChannel = {
+    id: string;
+    isArchived: boolean;
+    /**
+     * Whether the integration's bot is a member of the channel
+     */
+    isMember: boolean;
+    isPrivate: boolean;
+    name: string;
+};
+
+export type ChatChannelsPage = {
+    channels: Array<ChatChannel>;
+    nextCursor?: string;
+};
+
 export type ClearSituationHoldResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
@@ -2272,6 +2288,14 @@ export type LinkIncidentSituationResponseBody = {
      */
     readonly $schema?: string;
     data: IncidentSituationLink;
+};
+
+export type ListIntegrationChatChannelsResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: ChatChannelsPage;
 };
 
 export type ListIntegrationInstallationsResponseBody = {
@@ -8855,6 +8879,63 @@ export type UpdateIntegrationInstallationResponses = {
 };
 
 export type UpdateIntegrationInstallationResponse = UpdateIntegrationInstallationResponses[keyof UpdateIntegrationInstallationResponses];
+
+export type ListIntegrationChatChannelsData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: {
+        /**
+         * Opaque provider cursor from a previous page
+         */
+        cursor?: string;
+        limit?: number;
+    };
+    url: '/integrations/installations/{id}/chat-channels';
+};
+
+export type ListIntegrationChatChannelsErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Too Many Requests
+     */
+    429: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type ListIntegrationChatChannelsError = ListIntegrationChatChannelsErrors[keyof ListIntegrationChatChannelsErrors];
+
+export type ListIntegrationChatChannelsResponses = {
+    /**
+     * OK
+     */
+    200: ListIntegrationChatChannelsResponseBody;
+};
+
+export type ListIntegrationChatChannelsResponse = ListIntegrationChatChannelsResponses[keyof ListIntegrationChatChannelsResponses];
 
 export type ListIntegrationEventSyncRunsData = {
     body?: never;
