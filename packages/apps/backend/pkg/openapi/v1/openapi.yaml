@@ -4516,6 +4516,16 @@ components:
       required:
         - targetSelectionRequired
       type: object
+    IntegrationWebhookUrl:
+      additionalProperties: false
+      properties:
+        url:
+          description: The installation's webhook URL. It contains a secret token and is shown only once.
+          format: uri
+          type: string
+      required:
+        - url
+      type: object
     Investigation:
       additionalProperties: false
       properties:
@@ -4805,6 +4815,21 @@ components:
         - createdAt
         - agentTurn
         - answerVersionId
+      type: object
+    IssueIntegrationWebhookTokenResponseBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/IssueIntegrationWebhookTokenResponseBody.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          $ref: "#/components/schemas/IntegrationWebhookUrl"
+      required:
+        - data
       type: object
     KnowledgeGraphEntitiesPage:
       additionalProperties: false
@@ -15612,6 +15637,66 @@ paths:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
       summary: Request a manual event sync for an integration
+      tags:
+        - Integrations
+  /integrations/installations/{id}/webhook-token:
+    post:
+      description: Issues a new webhook token for the installation, replacing any earlier one, and returns the full webhook URL. The URL is not stored and cannot be retrieved again.
+      operationId: issue-integration-webhook-token
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IssueIntegrationWebhookTokenResponseBody"
+          description: OK
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: Issue a webhook URL for an installed Integration
       tags:
         - Integrations
   /investigations/{id}:

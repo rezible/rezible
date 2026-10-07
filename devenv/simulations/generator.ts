@@ -2,7 +2,7 @@
 // The mode ("healthy" or "unhealthy") is read from devenv/simulations/.mode every tick.
 
 const endpoint = `http://localhost:${process.env.OTEL_HTTP_PORT || "4318"}`;
-const modeFile = Bun.file(new URL(".mode", import.meta.url));
+const modeUrl = new URL(".mode", import.meta.url);
 const tickMs = 1000;
 const startNs = nowNs();
 
@@ -157,6 +157,8 @@ async function tick() {
 
 let lastText: string | undefined;
 async function readMode(): Promise<Mode> {
+  // A fresh handle each tick: a reused Bun.file keeps the size it first saw, truncating longer modes.
+  const modeFile = Bun.file(modeUrl);
   const text = (await modeFile.exists()) ? (await modeFile.text()).trim() : "healthy";
   const mode: Mode = text === "unhealthy" ? "unhealthy" : "healthy";
   if (text !== lastText) {

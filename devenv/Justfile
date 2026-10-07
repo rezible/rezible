@@ -55,8 +55,48 @@ compose := 'docker compose --project-directory ' + quote(source_checkout) + ' -f
     docker compose --project-directory {{ quote(source_checkout) }} -f {{ quote(source_checkout / "docker-compose.yaml") }} {{ ARGS }}
 
 [doc("Start shared infrastructure services and wait until healthy")]
-@infra-up +SERVICES:
+@infra-up +SERVICES: _ensure-alertmanager-target
     just _docker-compose up -d --wait {{ SERVICES }}
+
+# Shared Alertmanager reads its Rezible webhook URL from this gitignored file in the checkout that owns the
+# shared infrastructure.
+alertmanager_target_dir := source_checkout / "devenv" / ".alertmanager"
+alertmanager_target_file := alertmanager_target_dir / "webhook-url"
+alertmanager_target_placeholder := "http://127.0.0.1:9/rezible-webhook-url-not-configured"
+
+# Create the webhook URL file with a placeholder, so Alertmanager starts before a URL is configured.
+@_ensure-alertmanager-target:
+    mkdir -p {{ quote(alertmanager_target_dir) }}
+    if [ ! -f {{ quote(alertmanager_target_file) }} ]; then \
+      printf '%s\n' {{ quote(alertmanager_target_placeholder) }} > {{ quote(alertmanager_target_file) }}; \
+    fi
+
+[doc("Point the shared Alertmanager at a Rezible webhook URL from Alertmanager settings")]
+alertmanager-target URL: _ensure-alertmanager-target
+    #!/usr/bin/env bash
+    set -euo pipefail
+    url={{ quote(URL) }}
+    if [[ ! "$url" =~ ^https?://([^/]+)((/[^/]+)*/webhooks/alertmanager/[^/]+)$ ]]; then
+      echo "expected a Rezible Alertmanager webhook URL: https://<api host>/webhooks/alertmanager/<token>" >&2
+      exit 1
+    fi
+    host="${BASH_REMATCH[1]}"
+    path="${BASH_REMATCH[2]}"
+    # The settings URL uses this worktree's HTTPS alias, which the container cannot resolve. Its Localias
+    # mapping names the backend's port, which the container reaches through the host gateway.
+    port="$(localias list | awk -v host="$host" '$1 == host && $2 == "->" { print $3 }')"
+    if [ -z "$port" ]; then
+      echo "no Localias mapping for $host; start the backend first" >&2
+      exit 1
+    fi
+    origin="http://host.docker.internal:$port"
+    printf '%s\n' "$origin$path" > {{ quote(alertmanager_target_file) }}
+    echo "Alertmanager webhook target: $origin${path%/*}/<token>"
+    if curl -fsS -X POST "http://localhost:${ALERTMANAGER_PORT}/-/reload" >/dev/null 2>&1; then
+      echo "Reloaded Alertmanager."
+    else
+      echo "Could not reach Alertmanager on port ${ALERTMANAGER_PORT} to reload it; it reads the target when it starts."
+    fi
 
 [doc("Stop named shared infrastructure services; affects all worktrees")]
 @infra-stop +SERVICES:

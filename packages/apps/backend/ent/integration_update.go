@@ -131,6 +131,18 @@ func (_u *IntegrationUpdate) ClearUserSettings() *IntegrationUpdate {
 	return _u
 }
 
+// SetWebhookTokenHash sets the "webhook_token_hash" field.
+func (_u *IntegrationUpdate) SetWebhookTokenHash(v []byte) *IntegrationUpdate {
+	_u.mutation.SetWebhookTokenHash(v)
+	return _u
+}
+
+// ClearWebhookTokenHash clears the value of the "webhook_token_hash" field.
+func (_u *IntegrationUpdate) ClearWebhookTokenHash() *IntegrationUpdate {
+	_u.mutation.ClearWebhookTokenHash()
+	return _u
+}
+
 // Mutation returns the IntegrationMutation object of the builder.
 func (_u *IntegrationUpdate) Mutation() *IntegrationMutation {
 	return _u.mutation
@@ -244,6 +256,12 @@ func (_u *IntegrationUpdate) sqlSave(ctx context.Context) (_node int, err error)
 	}
 	if _u.mutation.UserSettingsCleared() {
 		_spec.ClearField(integration.FieldUserSettings, field.TypeJSON)
+	}
+	if value, ok := _u.mutation.WebhookTokenHash(); ok {
+		_spec.SetField(integration.FieldWebhookTokenHash, field.TypeBytes, value)
+	}
+	if _u.mutation.WebhookTokenHashCleared() {
+		_spec.ClearField(integration.FieldWebhookTokenHash, field.TypeBytes)
 	}
 	_spec.Node.Schema = _u.schemaConfig.Integration
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
@@ -364,6 +382,18 @@ func (_u *IntegrationUpdateOne) SetUserSettings(v map[string]interface{}) *Integ
 // ClearUserSettings clears the value of the "user_settings" field.
 func (_u *IntegrationUpdateOne) ClearUserSettings() *IntegrationUpdateOne {
 	_u.mutation.ClearUserSettings()
+	return _u
+}
+
+// SetWebhookTokenHash sets the "webhook_token_hash" field.
+func (_u *IntegrationUpdateOne) SetWebhookTokenHash(v []byte) *IntegrationUpdateOne {
+	_u.mutation.SetWebhookTokenHash(v)
+	return _u
+}
+
+// ClearWebhookTokenHash clears the value of the "webhook_token_hash" field.
+func (_u *IntegrationUpdateOne) ClearWebhookTokenHash() *IntegrationUpdateOne {
+	_u.mutation.ClearWebhookTokenHash()
 	return _u
 }
 
@@ -510,6 +540,12 @@ func (_u *IntegrationUpdateOne) sqlSave(ctx context.Context) (_node *Integration
 	}
 	if _u.mutation.UserSettingsCleared() {
 		_spec.ClearField(integration.FieldUserSettings, field.TypeJSON)
+	}
+	if value, ok := _u.mutation.WebhookTokenHash(); ok {
+		_spec.SetField(integration.FieldWebhookTokenHash, field.TypeBytes, value)
+	}
+	if _u.mutation.WebhookTokenHashCleared() {
+		_spec.ClearField(integration.FieldWebhookTokenHash, field.TypeBytes)
 	}
 	_spec.Node.Schema = _u.schemaConfig.Integration
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)

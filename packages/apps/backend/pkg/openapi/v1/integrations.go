@@ -28,6 +28,7 @@ type IntegrationsHandler interface {
 	GetIntegrationInstallation(context.Context, *GetIntegrationInstallationRequest) (*GetIntegrationInstallationResponse, error)
 	UpdateIntegrationInstallation(context.Context, *UpdateIntegrationInstallationRequest) (*UpdateIntegrationInstallationResponse, error)
 	DeleteIntegrationInstallation(context.Context, *DeleteIntegrationInstallationRequest) (*DeleteIntegrationInstallationResponse, error)
+	IssueIntegrationWebhookToken(context.Context, *IssueIntegrationWebhookTokenRequest) (*IssueIntegrationWebhookTokenResponse, error)
 
 	RequestIntegrationEventSync(context.Context, *RequestIntegrationEventSyncRequest) (*RequestIntegrationEventSyncResponse, error)
 	ListIntegrationEventSyncRun(context.Context, *ListIntegrationEventSyncRunRequest) (*ListIntegrationEventSyncRunResponse, error)
@@ -49,6 +50,7 @@ func (o operations) RegisterIntegrations(api huma.API) {
 	huma.Register(api, ListIntegrationInstallations, o.ListIntegrationInstallations)
 	huma.Register(api, UpdateIntegrationInstallation, o.UpdateIntegrationInstallation)
 	huma.Register(api, DeleteIntegrationInstallation, o.DeleteIntegrationInstallation)
+	huma.Register(api, IssueIntegrationWebhookToken, o.IssueIntegrationWebhookToken)
 
 	huma.Register(api, RequestIntegrationEventSync, o.RequestIntegrationEventSync)
 	huma.Register(api, ListIntegrationEventSyncRuns, o.ListIntegrationEventSyncRun)
@@ -98,6 +100,10 @@ type (
 	IntegrationInstallTarget struct {
 		ResourceRef ProviderResourceRef `json:"resourceRef"`
 		DisplayName string              `json:"displayName"`
+	}
+
+	IntegrationWebhookUrl struct {
+		Url string `json:"url" format:"uri" doc:"The installation's webhook URL. It contains a secret token and is shown only once."`
 	}
 
 	IntegrationOAuthFlow struct {
@@ -355,6 +361,24 @@ var DeleteIntegrationInstallation = huma.Operation{
 
 type DeleteIntegrationInstallationRequest IdRequest
 type DeleteIntegrationInstallationResponse EmptyResponse
+
+var IssueIntegrationWebhookToken = huma.Operation{
+	OperationID: "issue-integration-webhook-token",
+	Method:      http.MethodPost,
+	Path:        "/integrations/installations/{id}/webhook-token",
+	Summary:     "Issue a webhook URL for an installed Integration",
+	Description: "Issues a new webhook token for the installation, replacing any earlier one, and returns the full webhook URL. The URL is not stored and cannot be retrieved again.",
+	Tags:        integrationsTags,
+	Errors:      ErrorCodes(),
+}
+
+type IssueIntegrationWebhookTokenRequest IdRequest
+type IssueIntegrationWebhookTokenResponse struct {
+	CacheControl string `header:"Cache-Control"`
+	Body         struct {
+		Data IntegrationWebhookUrl `json:"data"`
+	}
+}
 
 var RequestIntegrationEventSync = huma.Operation{
 	OperationID: "request-integration-event-sync",

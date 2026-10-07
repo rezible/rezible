@@ -2087,6 +2087,13 @@ export type IntegrationOAuthInstallResult = {
     targetSelectionRequired: boolean;
 };
 
+export type IntegrationWebhookUrl = {
+    /**
+     * The installation's webhook URL. It contains a secret token and is shown only once.
+     */
+    url: string;
+};
+
 export type Investigation = {
     attributes: InvestigationAttributes;
     id: string;
@@ -2188,6 +2195,14 @@ export type InvestigationUserInputAttributes = {
     submissionKey: string;
     text: string;
     userId: string;
+};
+
+export type IssueIntegrationWebhookTokenResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: IntegrationWebhookUrl;
 };
 
 export type KnowledgeGraphEntitiesPage = {
@@ -9045,6 +9060,53 @@ export type RequestIntegrationEventSyncResponses = {
 };
 
 export type RequestIntegrationEventSyncResponse = RequestIntegrationEventSyncResponses[keyof RequestIntegrationEventSyncResponses];
+
+export type IssueIntegrationWebhookTokenData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/integrations/installations/{id}/webhook-token';
+};
+
+export type IssueIntegrationWebhookTokenErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type IssueIntegrationWebhookTokenError = IssueIntegrationWebhookTokenErrors[keyof IssueIntegrationWebhookTokenErrors];
+
+export type IssueIntegrationWebhookTokenResponses = {
+    /**
+     * OK
+     */
+    200: IssueIntegrationWebhookTokenResponseBody;
+};
+
+export type IssueIntegrationWebhookTokenResponse = IssueIntegrationWebhookTokenResponses[keyof IssueIntegrationWebhookTokenResponses];
 
 export type GetInvestigationData = {
     body?: never;

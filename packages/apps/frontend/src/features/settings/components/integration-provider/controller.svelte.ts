@@ -13,12 +13,14 @@ import SlackProvider from "./slack/SlackProvider.svelte";
 import GoogleProvider from "./google/GoogleProvider.svelte";
 import GithubProvider from "./github/GithubProvider.svelte";
 import DemoProvider from "./demo/DemoProvider.svelte";
+import AlertmanagerProvider from "./alertmanager/AlertmanagerProvider.svelte";
 
 const providerComponents: Record<string, Component> = {
 	slack: SlackProvider,
 	google: GoogleProvider,
 	github: GithubProvider,
 	demo: DemoProvider,
+	alertmanager: AlertmanagerProvider,
 };
 
 export class IntegrationProviderController {

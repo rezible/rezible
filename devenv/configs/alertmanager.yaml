@@ -10,6 +10,12 @@ route:
 
 receivers:
   - name: rezible-dev
+    # The URL is written by `just dev alertmanager-target`; setup leaves a placeholder that fails delivery
+    # without affecting Slack.
+    webhook_configs:
+      - url_file: /etc/alertmanager/rezible/webhook-url
+        send_resolved: true
+        max_alerts: 0
     slack_configs:
       - api_url_file: /run/secrets/slack-webhook-url
         channel: "#alerts"

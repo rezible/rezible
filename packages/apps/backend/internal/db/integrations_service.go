@@ -49,6 +49,7 @@ type IntegrationsService struct {
 	registry      *integrations.Registry
 
 	oauthRedirectUrlBase *url.URL
+	webhookUrlBase       *url.URL
 }
 
 func NewIntegrationsService(cfg rez.Config, db rez.Database, jobSvc rez.JobService, installations rez.IntegrationInstallationLookup, reg *integrations.Registry) (*IntegrationsService, error) {
@@ -57,12 +58,18 @@ func NewIntegrationsService(cfg rez.Config, db rez.Database, jobSvc rez.JobServi
 		return nil, fmt.Errorf("invalid oauth callback url: %w", redirectUrlErr)
 	}
 
+	webhookUrl, webhookUrlErr := url.Parse("https://" + cfg.App.ApiDomain)
+	if webhookUrlErr != nil {
+		return nil, fmt.Errorf("invalid api domain: %w", webhookUrlErr)
+	}
+
 	s := &IntegrationsService{
 		db:                   db,
 		jobs:                 jobSvc,
 		installations:        installations,
 		registry:             reg,
 		oauthRedirectUrlBase: redirectUrl,
+		webhookUrlBase:       webhookUrl.JoinPath(cfg.HttpServer.BasePath, "webhooks"),
 	}
 
 	return s, nil
@@ -297,6 +304,26 @@ func (s *IntegrationsService) UpdateInstallation(ctx context.Context, id uuid.UU
 func (s *IntegrationsService) DeleteInstalled(ctx context.Context, id uuid.UUID) error {
 	deleteErr := s.db.Client(ctx).Integration.DeleteOneID(id).Exec(ctx)
 	return deleteErr
+}
+
+func (s *IntegrationsService) IssueWebhookToken(ctx context.Context, id uuid.UUID) (string, error) {
+	curr, currErr := s.LookupInstallation(ctx, in.ID(id))
+	if currErr != nil {
+		if ent.IsNotFound(currErr) {
+			return "", fmt.Errorf("%w: integration installation %s", rez.ErrNotFound, id)
+		}
+		return "", fmt.Errorf("get integration: %w", currErr)
+	}
+	token, tokenHash, tokenErr := integrations.NewWebhookToken()
+	if tokenErr != nil {
+		return "", fmt.Errorf("new webhook token: %w", tokenErr)
+	}
+	setToken := s.db.Client(ctx).Integration.UpdateOneID(curr.ID).
+		SetWebhookTokenHash(tokenHash)
+	if updateErr := setToken.Exec(ctx); updateErr != nil {
+		return "", fmt.Errorf("store webhook token: %w", updateErr)
+	}
+	return s.webhookUrlBase.JoinPath(curr.Name, token).String(), nil
 }
 
 func (s *IntegrationsService) listQuery(ctx context.Context, p rez.ListIntegrationsParams) *ent.IntegrationQuery {

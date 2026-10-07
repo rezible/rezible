@@ -77,6 +77,8 @@ services:
     ports: ["${ALERTMANAGER_PORT:-7013}:9093"]
     volumes:
       - "./configs/alertmanager.yaml:/etc/alertmanager/alertmanager.yaml:ro"
+      # Holds the gitignored Rezible webhook URL; a directory mount sees the file however it is rewritten.
+      - "./.alertmanager:/etc/alertmanager/rezible:ro"
     secrets:
       - source: slack_webhook_url
         target: slack-webhook-url

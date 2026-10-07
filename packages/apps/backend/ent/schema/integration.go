@@ -36,6 +36,13 @@ func (Integration) Fields() []ent.Field {
 		field.JSON("user_settings", map[string]any{}).
 			Optional().Default(map[string]any{}).
 			SchemaType(schemaTypeJsonB),
+		// WebhookTokenHash is the SHA-256 of the installation's webhook URL token. Only handlers that read it
+		// give it meaning.
+		field.Bytes("webhook_token_hash").
+			Optional().
+			Nillable().
+			Unique().
+			Sensitive(),
 	}
 }
 

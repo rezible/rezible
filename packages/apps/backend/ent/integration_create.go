@@ -96,6 +96,12 @@ func (_c *IntegrationCreate) SetUserSettings(v map[string]interface{}) *Integrat
 	return _c
 }
 
+// SetWebhookTokenHash sets the "webhook_token_hash" field.
+func (_c *IntegrationCreate) SetWebhookTokenHash(v []byte) *IntegrationCreate {
+	_c.mutation.SetWebhookTokenHash(v)
+	return _c
+}
+
 // SetID sets the "id" field.
 func (_c *IntegrationCreate) SetID(v uuid.UUID) *IntegrationCreate {
 	_c.mutation.SetID(v)
@@ -293,6 +299,10 @@ func (_c *IntegrationCreate) createSpec() (*Integration, *sqlgraph.CreateSpec) {
 		_spec.SetField(integration.FieldUserSettings, field.TypeJSON, value)
 		_node.UserSettings = value
 	}
+	if value, ok := _c.mutation.WebhookTokenHash(); ok {
+		_spec.SetField(integration.FieldWebhookTokenHash, field.TypeBytes, value)
+		_node.WebhookTokenHash = &value
+	}
 	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -465,6 +475,24 @@ func (u *IntegrationUpsert) ClearUserSettings() *IntegrationUpsert {
 	return u
 }
 
+// SetWebhookTokenHash sets the "webhook_token_hash" field.
+func (u *IntegrationUpsert) SetWebhookTokenHash(v []byte) *IntegrationUpsert {
+	u.Set(integration.FieldWebhookTokenHash, v)
+	return u
+}
+
+// UpdateWebhookTokenHash sets the "webhook_token_hash" field to the value that was provided on create.
+func (u *IntegrationUpsert) UpdateWebhookTokenHash() *IntegrationUpsert {
+	u.SetExcluded(integration.FieldWebhookTokenHash)
+	return u
+}
+
+// ClearWebhookTokenHash clears the value of the "webhook_token_hash" field.
+func (u *IntegrationUpsert) ClearWebhookTokenHash() *IntegrationUpsert {
+	u.SetNull(integration.FieldWebhookTokenHash)
+	return u
+}
+
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
@@ -632,6 +660,27 @@ func (u *IntegrationUpsertOne) UpdateUserSettings() *IntegrationUpsertOne {
 func (u *IntegrationUpsertOne) ClearUserSettings() *IntegrationUpsertOne {
 	return u.Update(func(s *IntegrationUpsert) {
 		s.ClearUserSettings()
+	})
+}
+
+// SetWebhookTokenHash sets the "webhook_token_hash" field.
+func (u *IntegrationUpsertOne) SetWebhookTokenHash(v []byte) *IntegrationUpsertOne {
+	return u.Update(func(s *IntegrationUpsert) {
+		s.SetWebhookTokenHash(v)
+	})
+}
+
+// UpdateWebhookTokenHash sets the "webhook_token_hash" field to the value that was provided on create.
+func (u *IntegrationUpsertOne) UpdateWebhookTokenHash() *IntegrationUpsertOne {
+	return u.Update(func(s *IntegrationUpsert) {
+		s.UpdateWebhookTokenHash()
+	})
+}
+
+// ClearWebhookTokenHash clears the value of the "webhook_token_hash" field.
+func (u *IntegrationUpsertOne) ClearWebhookTokenHash() *IntegrationUpsertOne {
+	return u.Update(func(s *IntegrationUpsert) {
+		s.ClearWebhookTokenHash()
 	})
 }
 
@@ -969,6 +1018,27 @@ func (u *IntegrationUpsertBulk) UpdateUserSettings() *IntegrationUpsertBulk {
 func (u *IntegrationUpsertBulk) ClearUserSettings() *IntegrationUpsertBulk {
 	return u.Update(func(s *IntegrationUpsert) {
 		s.ClearUserSettings()
+	})
+}
+
+// SetWebhookTokenHash sets the "webhook_token_hash" field.
+func (u *IntegrationUpsertBulk) SetWebhookTokenHash(v []byte) *IntegrationUpsertBulk {
+	return u.Update(func(s *IntegrationUpsert) {
+		s.SetWebhookTokenHash(v)
+	})
+}
+
+// UpdateWebhookTokenHash sets the "webhook_token_hash" field to the value that was provided on create.
+func (u *IntegrationUpsertBulk) UpdateWebhookTokenHash() *IntegrationUpsertBulk {
+	return u.Update(func(s *IntegrationUpsert) {
+		s.UpdateWebhookTokenHash()
+	})
+}
+
+// ClearWebhookTokenHash clears the value of the "webhook_token_hash" field.
+func (u *IntegrationUpsertBulk) ClearWebhookTokenHash() *IntegrationUpsertBulk {
+	return u.Update(func(s *IntegrationUpsert) {
+		s.ClearWebhookTokenHash()
 	})
 }
 

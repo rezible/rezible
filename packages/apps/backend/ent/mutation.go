@@ -28816,6 +28816,7 @@ type IntegrationMutation struct {
 	installation_config       *jsontext.Value
 	appendinstallation_config jsontext.Value
 	user_settings             *map[string]interface{}
+	webhook_token_hash        *[]byte
 	clearedFields             map[string]struct{}
 	tenant                    *int
 	clearedtenant             bool
@@ -29280,6 +29281,55 @@ func (m *IntegrationMutation) ResetUserSettings() {
 	delete(m.clearedFields, integration.FieldUserSettings)
 }
 
+// SetWebhookTokenHash sets the "webhook_token_hash" field.
+func (m *IntegrationMutation) SetWebhookTokenHash(b []byte) {
+	m.webhook_token_hash = &b
+}
+
+// WebhookTokenHash returns the value of the "webhook_token_hash" field in the mutation.
+func (m *IntegrationMutation) WebhookTokenHash() (r []byte, exists bool) {
+	v := m.webhook_token_hash
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldWebhookTokenHash returns the old "webhook_token_hash" field's value of the Integration entity.
+// If the Integration object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *IntegrationMutation) OldWebhookTokenHash(ctx context.Context) (v *[]byte, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldWebhookTokenHash is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldWebhookTokenHash requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldWebhookTokenHash: %w", err)
+	}
+	return oldValue.WebhookTokenHash, nil
+}
+
+// ClearWebhookTokenHash clears the value of the "webhook_token_hash" field.
+func (m *IntegrationMutation) ClearWebhookTokenHash() {
+	m.webhook_token_hash = nil
+	m.clearedFields[integration.FieldWebhookTokenHash] = struct{}{}
+}
+
+// WebhookTokenHashCleared returns if the "webhook_token_hash" field was cleared in this mutation.
+func (m *IntegrationMutation) WebhookTokenHashCleared() bool {
+	_, ok := m.clearedFields[integration.FieldWebhookTokenHash]
+	return ok
+}
+
+// ResetWebhookTokenHash resets all changes to the "webhook_token_hash" field.
+func (m *IntegrationMutation) ResetWebhookTokenHash() {
+	m.webhook_token_hash = nil
+	delete(m.clearedFields, integration.FieldWebhookTokenHash)
+}
+
 // ClearTenant clears the "tenant" edge to the Tenant entity.
 func (m *IntegrationMutation) ClearTenant() {
 	m.clearedtenant = true
@@ -29341,7 +29391,7 @@ func (m *IntegrationMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *IntegrationMutation) Fields() []string {
-	fields := make([]string, 0, 9)
+	fields := make([]string, 0, 10)
 	if m.tenant != nil {
 		fields = append(fields, integration.FieldTenantID)
 	}
@@ -29369,6 +29419,9 @@ func (m *IntegrationMutation) Fields() []string {
 	if m.user_settings != nil {
 		fields = append(fields, integration.FieldUserSettings)
 	}
+	if m.webhook_token_hash != nil {
+		fields = append(fields, integration.FieldWebhookTokenHash)
+	}
 	return fields
 }
 
@@ -29395,6 +29448,8 @@ func (m *IntegrationMutation) Field(name string) (ent.Value, bool) {
 		return m.InstallationConfig()
 	case integration.FieldUserSettings:
 		return m.UserSettings()
+	case integration.FieldWebhookTokenHash:
+		return m.WebhookTokenHash()
 	}
 	return nil, false
 }
@@ -29422,6 +29477,8 @@ func (m *IntegrationMutation) OldField(ctx context.Context, name string) (ent.Va
 		return m.OldInstallationConfig(ctx)
 	case integration.FieldUserSettings:
 		return m.OldUserSettings(ctx)
+	case integration.FieldWebhookTokenHash:
+		return m.OldWebhookTokenHash(ctx)
 	}
 	return nil, fmt.Errorf("unknown Integration field %s", name)
 }
@@ -29494,6 +29551,13 @@ func (m *IntegrationMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetUserSettings(v)
 		return nil
+	case integration.FieldWebhookTokenHash:
+		v, ok := value.([]byte)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetWebhookTokenHash(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Integration field %s", name)
 }
@@ -29530,6 +29594,9 @@ func (m *IntegrationMutation) ClearedFields() []string {
 	if m.FieldCleared(integration.FieldUserSettings) {
 		fields = append(fields, integration.FieldUserSettings)
 	}
+	if m.FieldCleared(integration.FieldWebhookTokenHash) {
+		fields = append(fields, integration.FieldWebhookTokenHash)
+	}
 	return fields
 }
 
@@ -29546,6 +29613,9 @@ func (m *IntegrationMutation) ClearField(name string) error {
 	switch name {
 	case integration.FieldUserSettings:
 		m.ClearUserSettings()
+		return nil
+	case integration.FieldWebhookTokenHash:
+		m.ClearWebhookTokenHash()
 		return nil
 	}
 	return fmt.Errorf("unknown Integration nullable field %s", name)
@@ -29581,6 +29651,9 @@ func (m *IntegrationMutation) ResetField(name string) error {
 		return nil
 	case integration.FieldUserSettings:
 		m.ResetUserSettings()
+		return nil
+	case integration.FieldWebhookTokenHash:
+		m.ResetWebhookTokenHash()
 		return nil
 	}
 	return fmt.Errorf("unknown Integration field %s", name)

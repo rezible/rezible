@@ -175,7 +175,9 @@ CREATE INDEX "incidenttype_tenant_id" ON "incident_types" ("tenant_id");
 -- create index "incidenttype_tenant_id_name" to table: "incident_types"
 CREATE UNIQUE INDEX "incidenttype_tenant_id_name" ON "incident_types" ("tenant_id", "name");
 -- create "integrations" table
-CREATE TABLE "integrations" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "provider" character varying NOT NULL, "name" character varying NOT NULL, "display_name" character varying NOT NULL, "provider_installation_ref" character varying NOT NULL, "installation_config" jsonb NOT NULL, "user_settings" jsonb NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
+CREATE TABLE "integrations" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "provider" character varying NOT NULL, "name" character varying NOT NULL, "display_name" character varying NOT NULL, "provider_installation_ref" character varying NOT NULL, "installation_config" jsonb NOT NULL, "user_settings" jsonb NULL, "webhook_token_hash" bytea NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
+-- create index "integrations_webhook_token_hash_key" to table: "integrations"
+CREATE UNIQUE INDEX "integrations_webhook_token_hash_key" ON "integrations" ("webhook_token_hash");
 -- create index "integration_tenant_id" to table: "integrations"
 CREATE INDEX "integration_tenant_id" ON "integrations" ("tenant_id");
 -- create index "integration_tenant_id_provider_name_provider_installation_ref" to table: "integrations"

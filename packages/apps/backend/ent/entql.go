@@ -742,6 +742,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			integration.FieldProviderInstallationRef: {Type: field.TypeString, Column: integration.FieldProviderInstallationRef},
 			integration.FieldInstallationConfig:      {Type: field.TypeJSON, Column: integration.FieldInstallationConfig},
 			integration.FieldUserSettings:            {Type: field.TypeJSON, Column: integration.FieldUserSettings},
+			integration.FieldWebhookTokenHash:        {Type: field.TypeBytes, Column: integration.FieldWebhookTokenHash},
 		},
 	}
 	graph.Nodes[32] = &sqlgraph.Node{
@@ -10529,6 +10530,11 @@ func (f *IntegrationFilter) WhereInstallationConfig(p entql.BytesP) {
 // WhereUserSettings applies the entql json.RawMessage predicate on the user_settings field.
 func (f *IntegrationFilter) WhereUserSettings(p entql.BytesP) {
 	f.Where(p.Field(integration.FieldUserSettings))
+}
+
+// WhereWebhookTokenHash applies the entql []byte predicate on the webhook_token_hash field.
+func (f *IntegrationFilter) WhereWebhookTokenHash(p entql.BytesP) {
+	f.Where(p.Field(integration.FieldWebhookTokenHash))
 }
 
 // WhereHasTenant applies a predicate to check if query has an edge tenant.

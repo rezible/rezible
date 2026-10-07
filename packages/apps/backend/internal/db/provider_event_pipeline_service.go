@@ -63,6 +63,32 @@ func (s *ProviderEventPipelineService) queueIngest(ctx context.Context, ev rez.P
 	return jobRes.UniqueSkippedAsDuplicate, nil
 }
 
+// IngestMany validates every event before queueing any, then queues them in one insert so a delivery is
+// queued together or not at all.
+func (s *ProviderEventPipelineService) IngestMany(ctx context.Context, evs []rez.ProviderEvent) error {
+	if len(evs) == 0 {
+		return nil
+	}
+	params := make([]river.InsertManyParams, len(evs))
+	for i, ev := range evs {
+		if validateErr := s.validateProviderEvent(ev); validateErr != nil {
+			return fmt.Errorf("event %d: %w", i, validateErr)
+		}
+		args := &jobs.ProcessProviderEventArgs{Event: ev}
+		insertOpts := args.InsertOpts()
+		params[i] = river.InsertManyParams{Args: args, InsertOpts: &insertOpts}
+	}
+	results, insertErr := s.jobs.InsertMany(ctx, params)
+	for i, ev := range evs {
+		duplicate := insertErr == nil && i < len(results) && results[i] != nil && results[i].UniqueSkippedAsDuplicate
+		s.telemetry.recordIngested(ctx, ev, duplicate, insertErr)
+	}
+	if insertErr != nil {
+		return fmt.Errorf("could not insert provider event jobs: %w", insertErr)
+	}
+	return nil
+}
+
 func (s *ProviderEventPipelineService) SyncEvents(ctx context.Context, querier rez.ProviderEventQuerier, sourceCursors rez.ProviderEventSourceCursors) rez.ProviderEventSyncResult {
 	res := rez.ProviderEventSyncResult{
 		SourceCursorsAfter:  sourceCursors,

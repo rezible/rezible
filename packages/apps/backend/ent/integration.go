@@ -39,6 +39,8 @@ type Integration struct {
 	InstallationConfig jsontext.Value `json:"installation_config,omitempty"`
 	// UserSettings holds the value of the "user_settings" field.
 	UserSettings map[string]interface{} `json:"user_settings,omitempty"`
+	// WebhookTokenHash holds the value of the "webhook_token_hash" field.
+	WebhookTokenHash *[]byte `json:"-"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the IntegrationQuery when eager-loading is set.
 	Edges        IntegrationEdges `json:"edges"`
@@ -70,7 +72,7 @@ func (*Integration) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case integration.FieldInstallationConfig, integration.FieldUserSettings:
+		case integration.FieldInstallationConfig, integration.FieldUserSettings, integration.FieldWebhookTokenHash:
 			values[i] = new([]byte)
 		case integration.FieldTenantID:
 			values[i] = new(sql.NullInt64)
@@ -159,6 +161,12 @@ func (_m *Integration) assignValues(columns []string, values []any) error {
 					return fmt.Errorf("unmarshal field user_settings: %w", err)
 				}
 			}
+		case integration.FieldWebhookTokenHash:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field webhook_token_hash", values[i])
+			} else if value != nil {
+				_m.WebhookTokenHash = value
+			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
 		}
@@ -226,6 +234,8 @@ func (_m *Integration) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("user_settings=")
 	builder.WriteString(fmt.Sprintf("%v", _m.UserSettings))
+	builder.WriteString(", ")
+	builder.WriteString("webhook_token_hash=<sensitive>")
 	builder.WriteByte(')')
 	return builder.String()
 }

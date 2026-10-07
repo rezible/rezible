@@ -85,6 +85,23 @@ workspace configuration, `scripts/database.ts` manages its database, and
 `scripts/dex-client` is a standalone Go module using Dex's official API.
 Service configuration files live in `configs/`.
 
+### Sending simulation alerts to Rezible
+
+The shared Alertmanager's `rezible-dev` receiver posts to Slack and to a Rezible webhook. It reads the webhook
+URL from `devenv/.alertmanager/webhook-url` (gitignored) in the checkout that owns the shared infrastructure.
+`just setup` and `just dev infra-up` create that file with a placeholder; deliveries to the placeholder fail in
+Alertmanager without affecting Slack. This assumes one devenv and one worktree sending alerts.
+
+1. Start the application (`just dev`), and in Settings → Integrations → Alertmanager, install Alertmanager.
+2. Generate a webhook URL there and copy it. It is shown once.
+3. Run `just dev alertmanager-target 'URL'` with the copied URL.
+
+The settings URL uses the worktree's HTTPS alias, which the container cannot resolve. The recipe looks up the
+backend's port in `localias list`, writes `http://host.docker.internal:<port>/webhooks/alertmanager/<token>`,
+and reloads Alertmanager. The backend's port is assigned at launch, so run the recipe again with the same URL
+after each backend restart. Generating a new URL in settings stops the old one working; run the recipe with the
+new one.
+
 ## Environment ownership
 
 | Source | Values |

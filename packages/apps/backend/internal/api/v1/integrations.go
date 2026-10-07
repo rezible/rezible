@@ -102,6 +102,19 @@ func (h *integrationsHandler) DeleteIntegrationInstallation(ctx context.Context,
 	return &resp, nil
 }
 
+func (h *integrationsHandler) IssueIntegrationWebhookToken(ctx context.Context, req *oapi.IssueIntegrationWebhookTokenRequest) (*oapi.IssueIntegrationWebhookTokenResponse, error) {
+	var resp oapi.IssueIntegrationWebhookTokenResponse
+
+	webhookUrl, issueErr := h.integrations.IssueWebhookToken(ctx, req.Id)
+	if issueErr != nil {
+		return nil, oapi.Error(ctx, "failed to issue webhook token", issueErr)
+	}
+	resp.CacheControl = "no-store"
+	resp.Body.Data = oapi.IntegrationWebhookUrl{Url: webhookUrl}
+
+	return &resp, nil
+}
+
 func (h *integrationsHandler) StartIntegrationOAuthFlow(ctx context.Context, req *oapi.StartIntegrationOAuthFlowRequest) (*oapi.StartIntegrationOAuthFlowResponse, error) {
 	var resp oapi.StartIntegrationOAuthFlowResponse
 

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/firebase/genkit/go/ai"
@@ -137,6 +138,42 @@ func (s *IntegrationsServiceSuite) TestInstallRejectsNewTargetsBeyondMaxInstalls
 
 	reinstalled := s.installTestIntegration(ctx, svc, i, "target-a")
 	s.Equal(first.Integration().ID, reinstalled.Integration().ID)
+}
+
+func (s *IntegrationsServiceSuite) TestIssueWebhookTokenReplacesEarlierToken() {
+	ctx, tdb := s.SetupTestDatabase()
+
+	i := &testIntegration{}
+	svc := s.newService(tdb, s.newRegistry(i))
+	installed := s.installTestIntegration(ctx, svc, i, "webhook-target")
+	id := installed.Integration().ID
+
+	storedHash := func() []byte {
+		intg, getErr := tdb.Client(ctx).Integration.Get(ctx, id)
+		s.Require().NoError(getErr)
+		s.Require().NotNil(intg.WebhookTokenHash)
+		return *intg.WebhookTokenHash
+	}
+	tokenOf := func(webhookUrl string) string {
+		prefix := "https://app.test/api/webhooks/" + i.Name() + "/"
+		s.Require().True(strings.HasPrefix(webhookUrl, prefix), webhookUrl)
+		return strings.TrimPrefix(webhookUrl, prefix)
+	}
+
+	firstUrl, firstErr := svc.IssueWebhookToken(ctx, id)
+	s.Require().NoError(firstErr)
+	firstToken := tokenOf(firstUrl)
+	s.Len(firstToken, 43, "32 random bytes, URL-safe base64")
+	s.Equal(integrations.WebhookTokenHash(firstToken), storedHash(), "only the token's hash is stored")
+
+	secondUrl, secondErr := svc.IssueWebhookToken(ctx, id)
+	s.Require().NoError(secondErr)
+	secondToken := tokenOf(secondUrl)
+	s.NotEqual(firstToken, secondToken)
+	s.Equal(integrations.WebhookTokenHash(secondToken), storedHash())
+
+	_, missingErr := svc.IssueWebhookToken(ctx, uuid.New())
+	s.ErrorIs(missingErr, rez.ErrNotFound)
 }
 
 func (s *IntegrationsServiceSuite) TestInstallRequirementsUseOrganizationPreferences() {

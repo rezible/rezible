@@ -41,6 +41,12 @@ type (
 const (
 	healthCheckPath    = "/health"
 	readinessCheckPath = "/ready"
+
+	// Alertmanager webhook URLs carry their secret token as the final path segment; the handler logs each
+	// delivery without it.
+	alertmanagerWebhookPathPrefix = "/webhooks/alertmanager/"
+	// Webhook token issuance responses carry a secret webhook URL.
+	webhookTokenPathSuffix = "/webhook-token"
 )
 
 func NewServer(
@@ -79,8 +85,8 @@ func NewServer(
 func (s *Server) makeServer(cfg rez.Config, r *chi.Mux) *http.Server {
 	handler := chi.NewRouter()
 	handler.Use(s.makeSetRootExecutionContextMiddleware())
-	handler.Use(s.makeRequestLoggerMiddleware(cfg.App.DebugMode))
 	httpCfg := cfg.HttpServer
+	handler.Use(s.makeRequestLoggerMiddleware(cfg.App.DebugMode, httpCfg.BasePath))
 	handler.Mount(ensureSlashPrefix(httpCfg.BasePath), http.StripPrefix(httpCfg.BasePath, r))
 	return &http.Server{
 		Addr:    net.JoinHostPort(httpCfg.Host, httpCfg.Port),
@@ -126,20 +132,25 @@ func (s *Server) makeReadyCheckHandler() http.HandlerFunc {
 	}
 }
 
-func (s *Server) makeRequestLoggerMiddleware(concise bool) func(http.Handler) http.Handler {
+func (s *Server) makeRequestLoggerMiddleware(concise bool, basePath string) func(http.Handler) http.Handler {
 	logFormat := httplog.SchemaECS.Concise(concise)
 	isDebugHeaderSet := func(r *http.Request) bool {
 		return r.Header.Get("Debug") == "reveal-body-logs"
 	}
+	isSecretResponse := func(r *http.Request) bool {
+		return strings.HasSuffix(r.URL.Path, webhookTokenPathSuffix)
+	}
 
 	skipPaths := mapset.NewThreadUnsafeSet(healthCheckPath, readinessCheckPath)
+	// The logged path includes the base path.
+	skipPathPrefix := basePath + alertmanagerWebhookPathPrefix
 	return httplog.RequestLogger(s.logger, &httplog.Options{
 		Level:         slog.LevelInfo,
 		Schema:        logFormat,
 		RecoverPanics: true,
 
 		Skip: func(req *http.Request, respStatus int) bool {
-			if skipPaths.Contains(req.URL.Path) {
+			if skipPaths.Contains(req.URL.Path) || strings.HasPrefix(req.URL.Path, skipPathPrefix) {
 				return true
 			}
 			return respStatus == 404 || respStatus == 405
@@ -148,8 +159,10 @@ func (s *Server) makeRequestLoggerMiddleware(concise bool) func(http.Handler) ht
 		LogRequestHeaders:  []string{"Origin"},
 		LogResponseHeaders: []string{},
 
-		LogRequestBody:  isDebugHeaderSet,
-		LogResponseBody: isDebugHeaderSet,
+		LogRequestBody: isDebugHeaderSet,
+		LogResponseBody: func(r *http.Request) bool {
+			return isDebugHeaderSet(r) && !isSecretResponse(r)
+		},
 	})
 }
 

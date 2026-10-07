@@ -26,6 +26,7 @@ import (
 	nep "github.com/rezible/rezible/ent/normalizedeventprojection"
 	"github.com/rezible/rezible/internal/genkit"
 	"github.com/rezible/rezible/internal/http"
+	"github.com/rezible/rezible/internal/integrations/alertmanager"
 	demo "github.com/rezible/rezible/internal/integrations/demo"
 	"github.com/rezible/rezible/internal/postgres"
 	"github.com/rezible/rezible/pkg/jobs"
@@ -118,13 +119,18 @@ func (s *BackendSuite) newAppHarness(options appTestOptions) *appHarness {
 		return testClock, nil
 	})
 
-	// Select the real demo processor without installing its unrelated sync jobs.
+	// Select the real demo processor without installing its unrelated sync jobs, and Alertmanager, which
+	// has no sync jobs.
 	app.Override[[]rez.IntegrationDefinition](func(i do.Injector) ([]rez.IntegrationDefinition, error) {
 		integration, integrationErr := do.Invoke[*demo.Integration](i)
 		if integrationErr != nil {
 			return nil, fmt.Errorf("resolve demo integration: %w", integrationErr)
 		}
-		return []rez.IntegrationDefinition{integration}, nil
+		alertmanagerIntegration, alertmanagerErr := do.Invoke[*alertmanager.Integration](i)
+		if alertmanagerErr != nil {
+			return nil, fmt.Errorf("resolve alertmanager integration: %w", alertmanagerErr)
+		}
+		return []rez.IntegrationDefinition{integration, alertmanagerIntegration}, nil
 	})
 
 	baseOpts := do.MustInvoke[[]genkit.AiRuntimeOption](app.i)

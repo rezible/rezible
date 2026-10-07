@@ -2482,6 +2482,63 @@ func (_c *MockProviderEventPipelineService_Ingest_Call) RunAndReturn(run func(co
 	return _c
 }
 
+// IngestMany provides a mock function for the type MockProviderEventPipelineService
+func (_mock *MockProviderEventPipelineService) IngestMany(context1 context.Context, providerEvents []rez.ProviderEvent) error {
+	ret := _mock.Called(context1, providerEvents)
+
+	if len(ret) == 0 {
+		panic("no return value specified for IngestMany")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, []rez.ProviderEvent) error); ok {
+		r0 = returnFunc(context1, providerEvents)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// MockProviderEventPipelineService_IngestMany_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'IngestMany'
+type MockProviderEventPipelineService_IngestMany_Call struct {
+	*mock.Call
+}
+
+// IngestMany is a helper method to define mock.On call
+//   - context1 context.Context
+//   - providerEvents []rez.ProviderEvent
+func (_e *MockProviderEventPipelineService_Expecter) IngestMany(context1 interface{}, providerEvents interface{}) *MockProviderEventPipelineService_IngestMany_Call {
+	return &MockProviderEventPipelineService_IngestMany_Call{Call: _e.mock.On("IngestMany", context1, providerEvents)}
+}
+
+func (_c *MockProviderEventPipelineService_IngestMany_Call) Run(run func(context1 context.Context, providerEvents []rez.ProviderEvent)) *MockProviderEventPipelineService_IngestMany_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 []rez.ProviderEvent
+		if args[1] != nil {
+			arg1 = args[1].([]rez.ProviderEvent)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockProviderEventPipelineService_IngestMany_Call) Return(err error) *MockProviderEventPipelineService_IngestMany_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockProviderEventPipelineService_IngestMany_Call) RunAndReturn(run func(context1 context.Context, providerEvents []rez.ProviderEvent) error) *MockProviderEventPipelineService_IngestMany_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // SyncEvents provides a mock function for the type MockProviderEventPipelineService
 func (_mock *MockProviderEventPipelineService) SyncEvents(context1 context.Context, providerEventQuerier rez.ProviderEventQuerier, providerEventSourceCursors rez.ProviderEventSourceCursors) rez.ProviderEventSyncResult {
 	ret := _mock.Called(context1, providerEventQuerier, providerEventSourceCursors)
@@ -3039,6 +3096,72 @@ func (_c *MockIntegrationService_InstallNew_Call) Return(installedIntegration re
 }
 
 func (_c *MockIntegrationService_InstallNew_Call) RunAndReturn(run func(context1 context.Context, s string, bytes []byte) (rez.InstalledIntegration, error)) *MockIntegrationService_InstallNew_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// IssueWebhookToken provides a mock function for the type MockIntegrationService
+func (_mock *MockIntegrationService) IssueWebhookToken(ctx context.Context, id uuid.UUID) (string, error) {
+	ret := _mock.Called(ctx, id)
+
+	if len(ret) == 0 {
+		panic("no return value specified for IssueWebhookToken")
+	}
+
+	var r0 string
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) (string, error)); ok {
+		return returnFunc(ctx, id)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) string); ok {
+		r0 = returnFunc(ctx, id)
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, id)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockIntegrationService_IssueWebhookToken_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'IssueWebhookToken'
+type MockIntegrationService_IssueWebhookToken_Call struct {
+	*mock.Call
+}
+
+// IssueWebhookToken is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id uuid.UUID
+func (_e *MockIntegrationService_Expecter) IssueWebhookToken(ctx interface{}, id interface{}) *MockIntegrationService_IssueWebhookToken_Call {
+	return &MockIntegrationService_IssueWebhookToken_Call{Call: _e.mock.On("IssueWebhookToken", ctx, id)}
+}
+
+func (_c *MockIntegrationService_IssueWebhookToken_Call) Run(run func(ctx context.Context, id uuid.UUID)) *MockIntegrationService_IssueWebhookToken_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockIntegrationService_IssueWebhookToken_Call) Return(s string, err error) *MockIntegrationService_IssueWebhookToken_Call {
+	_c.Call.Return(s, err)
+	return _c
+}
+
+func (_c *MockIntegrationService_IssueWebhookToken_Call) RunAndReturn(run func(ctx context.Context, id uuid.UUID) (string, error)) *MockIntegrationService_IssueWebhookToken_Call {
 	_c.Call.Return(run)
 	return _c
 }

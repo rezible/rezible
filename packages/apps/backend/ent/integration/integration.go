@@ -34,6 +34,8 @@ const (
 	FieldInstallationConfig = "installation_config"
 	// FieldUserSettings holds the string denoting the user_settings field in the database.
 	FieldUserSettings = "user_settings"
+	// FieldWebhookTokenHash holds the string denoting the webhook_token_hash field in the database.
+	FieldWebhookTokenHash = "webhook_token_hash"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
 	// Table holds the table name of the integration in the database.
@@ -59,6 +61,7 @@ var Columns = []string{
 	FieldProviderInstallationRef,
 	FieldInstallationConfig,
 	FieldUserSettings,
+	FieldWebhookTokenHash,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).

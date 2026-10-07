@@ -439,6 +439,8 @@ type (
 
 	ProviderEventPipelineService interface {
 		Ingest(context.Context, ProviderEvent) error
+		// IngestMany queues all of the events or none of them.
+		IngestMany(context.Context, []ProviderEvent) error
 		SyncEvents(context.Context, ProviderEventQuerier, ProviderEventSourceCursors) ProviderEventSyncResult
 	}
 )
@@ -541,6 +543,9 @@ type (
 
 		UpdateInstallation(ctx context.Context, id uuid.UUID, setFn func(*ent.IntegrationMutation)) (InstalledIntegration, error)
 		DeleteInstalled(ctx context.Context, id uuid.UUID) error
+		// IssueWebhookToken replaces the installation's webhook token and returns its full webhook URL. The URL
+		// is a secret and is only available here.
+		IssueWebhookToken(ctx context.Context, id uuid.UUID) (string, error)
 
 		AsInstalledIntegration(i *ent.Integration) (InstalledIntegration, error)
 		GetAvailableAgentTools(context.Context, GetAvailableAiAgentToolsParams) ([]ai.Tool, error)

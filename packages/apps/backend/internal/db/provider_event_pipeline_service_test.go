@@ -194,6 +194,40 @@ func (s *ProviderEventPipelineServiceSuite) TestSyncEventsEnqueuesEventPointers(
 	s.Equal(2, result.EventsIngested)
 }
 
+func (s *ProviderEventPipelineServiceSuite) TestIngestManyQueuesAllEventsInOneInsert() {
+	ctx, tdb := s.SetupTestDatabase()
+	event := s.makeTestEvent()
+	secondEvent := s.makeTestEvent()
+
+	jq := mocks.NewMockJobService(s.T())
+	jq.EXPECT().
+		InsertMany(mock.Anything, mock.Anything).
+		Run(func(_ context.Context, params []river.InsertManyParams) {
+			s.Require().Len(params, 2)
+			for i, param := range params {
+				args, argsOK := param.Args.(*jobs.ProcessProviderEventArgs)
+				s.Require().True(argsOK)
+				s.Equal([]rez.ProviderEvent{event, secondEvent}[i], args.Event)
+				s.True(param.InsertOpts.UniqueOpts.ByArgs)
+			}
+		}).
+		Return([]*rivertype.JobInsertResult{{}, {}}, nil).
+		Once()
+
+	svc := s.newPipelineService(tdb, jq, nil)
+	s.Require().NoError(svc.IngestMany(ctx, []rez.ProviderEvent{event, secondEvent}))
+}
+
+func (s *ProviderEventPipelineServiceSuite) TestIngestManyQueuesNothingWhenAnyEventIsInvalid() {
+	ctx, tdb := s.SetupTestDatabase()
+	invalid := s.makeTestEvent()
+	invalid.ProviderEventRef = ""
+
+	// The job service mock fails the test on any insert.
+	svc := s.newPipelineService(tdb, mocks.NewMockJobService(s.T()), nil)
+	s.Require().Error(svc.IngestMany(ctx, []rez.ProviderEvent{s.makeTestEvent(), invalid}))
+}
+
 type providerEventQuerierFunc func(func(*rez.ProviderEventQueryResult, error) bool)
 
 func (f providerEventQuerierFunc) QueryProviderEvents(context.Context, rez.ProviderEventSourceCursors) iter.Seq2[*rez.ProviderEventQueryResult, error] {

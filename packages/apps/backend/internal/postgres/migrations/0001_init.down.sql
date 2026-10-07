@@ -692,6 +692,8 @@ DROP INDEX "integration_tenant_id_provider_name";
 DROP INDEX "integration_tenant_id_provider_name_provider_installation_ref";
 -- reverse: create index "integration_tenant_id" to table: "integrations"
 DROP INDEX "integration_tenant_id";
+-- reverse: create index "integrations_webhook_token_hash_key" to table: "integrations"
+DROP INDEX "integrations_webhook_token_hash_key";
 -- reverse: create "integrations" table
 DROP TABLE "integrations";
 -- reverse: create index "incidenttype_tenant_id_name" to table: "incident_types"

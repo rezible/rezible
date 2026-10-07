@@ -1386,6 +1386,7 @@ var (
 		{Name: "provider_installation_ref", Type: field.TypeString},
 		{Name: "installation_config", Type: field.TypeJSON, SchemaType: map[string]string{"postgres": "jsonb"}},
 		{Name: "user_settings", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
+		{Name: "webhook_token_hash", Type: field.TypeBytes, Unique: true, Nullable: true},
 		{Name: "tenant_id", Type: field.TypeInt},
 	}
 	// IntegrationsTable holds the schema information for the "integrations" table.
@@ -1396,7 +1397,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "integrations_tenants_tenant",
-				Columns:    []*schema.Column{IntegrationsColumns[9]},
+				Columns:    []*schema.Column{IntegrationsColumns[10]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -1405,17 +1406,17 @@ var (
 			{
 				Name:    "integration_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{IntegrationsColumns[9]},
+				Columns: []*schema.Column{IntegrationsColumns[10]},
 			},
 			{
 				Name:    "integration_tenant_id_provider_name_provider_installation_ref",
 				Unique:  true,
-				Columns: []*schema.Column{IntegrationsColumns[9], IntegrationsColumns[3], IntegrationsColumns[4], IntegrationsColumns[6]},
+				Columns: []*schema.Column{IntegrationsColumns[10], IntegrationsColumns[3], IntegrationsColumns[4], IntegrationsColumns[6]},
 			},
 			{
 				Name:    "integration_tenant_id_provider_name",
 				Unique:  false,
-				Columns: []*schema.Column{IntegrationsColumns[9], IntegrationsColumns[3], IntegrationsColumns[4]},
+				Columns: []*schema.Column{IntegrationsColumns[10], IntegrationsColumns[3], IntegrationsColumns[4]},
 			},
 		},
 	}

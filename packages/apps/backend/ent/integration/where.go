@@ -92,6 +92,11 @@ func ProviderInstallationRef(v string) predicate.Integration {
 	return predicate.Integration(sql.FieldEQ(FieldProviderInstallationRef, v))
 }
 
+// WebhookTokenHash applies equality check predicate on the "webhook_token_hash" field. It's identical to WebhookTokenHashEQ.
+func WebhookTokenHash(v []byte) predicate.Integration {
+	return predicate.Integration(sql.FieldEQ(FieldWebhookTokenHash, v))
+}
+
 // TenantIDEQ applies the EQ predicate on the "tenant_id" field.
 func TenantIDEQ(v int) predicate.Integration {
 	return predicate.Integration(sql.FieldEQ(FieldTenantID, v))
@@ -460,6 +465,56 @@ func UserSettingsIsNil() predicate.Integration {
 // UserSettingsNotNil applies the NotNil predicate on the "user_settings" field.
 func UserSettingsNotNil() predicate.Integration {
 	return predicate.Integration(sql.FieldNotNull(FieldUserSettings))
+}
+
+// WebhookTokenHashEQ applies the EQ predicate on the "webhook_token_hash" field.
+func WebhookTokenHashEQ(v []byte) predicate.Integration {
+	return predicate.Integration(sql.FieldEQ(FieldWebhookTokenHash, v))
+}
+
+// WebhookTokenHashNEQ applies the NEQ predicate on the "webhook_token_hash" field.
+func WebhookTokenHashNEQ(v []byte) predicate.Integration {
+	return predicate.Integration(sql.FieldNEQ(FieldWebhookTokenHash, v))
+}
+
+// WebhookTokenHashIn applies the In predicate on the "webhook_token_hash" field.
+func WebhookTokenHashIn(vs ...[]byte) predicate.Integration {
+	return predicate.Integration(sql.FieldIn(FieldWebhookTokenHash, vs...))
+}
+
+// WebhookTokenHashNotIn applies the NotIn predicate on the "webhook_token_hash" field.
+func WebhookTokenHashNotIn(vs ...[]byte) predicate.Integration {
+	return predicate.Integration(sql.FieldNotIn(FieldWebhookTokenHash, vs...))
+}
+
+// WebhookTokenHashGT applies the GT predicate on the "webhook_token_hash" field.
+func WebhookTokenHashGT(v []byte) predicate.Integration {
+	return predicate.Integration(sql.FieldGT(FieldWebhookTokenHash, v))
+}
+
+// WebhookTokenHashGTE applies the GTE predicate on the "webhook_token_hash" field.
+func WebhookTokenHashGTE(v []byte) predicate.Integration {
+	return predicate.Integration(sql.FieldGTE(FieldWebhookTokenHash, v))
+}
+
+// WebhookTokenHashLT applies the LT predicate on the "webhook_token_hash" field.
+func WebhookTokenHashLT(v []byte) predicate.Integration {
+	return predicate.Integration(sql.FieldLT(FieldWebhookTokenHash, v))
+}
+
+// WebhookTokenHashLTE applies the LTE predicate on the "webhook_token_hash" field.
+func WebhookTokenHashLTE(v []byte) predicate.Integration {
+	return predicate.Integration(sql.FieldLTE(FieldWebhookTokenHash, v))
+}
+
+// WebhookTokenHashIsNil applies the IsNil predicate on the "webhook_token_hash" field.
+func WebhookTokenHashIsNil() predicate.Integration {
+	return predicate.Integration(sql.FieldIsNull(FieldWebhookTokenHash))
+}
+
+// WebhookTokenHashNotNil applies the NotNil predicate on the "webhook_token_hash" field.
+func WebhookTokenHashNotNil() predicate.Integration {
+	return predicate.Integration(sql.FieldNotNull(FieldWebhookTokenHash))
 }
 
 // HasTenant applies the HasEdge predicate on the "tenant" edge.

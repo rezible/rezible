@@ -14,6 +14,7 @@ import (
 	"github.com/rezible/rezible/internal/genkit"
 	"github.com/rezible/rezible/internal/http"
 	"github.com/rezible/rezible/internal/http/oidc"
+	"github.com/rezible/rezible/internal/integrations/alertmanager"
 	"github.com/rezible/rezible/internal/integrations/demo"
 	"github.com/rezible/rezible/internal/integrations/github"
 	"github.com/rezible/rezible/internal/integrations/google"
@@ -244,6 +245,7 @@ var pkgIntegrations = do.Package(
 	// Event processors have no dependencies, so the pipeline can be built before the integrations that use it.
 	do.Lazy(func(i do.Injector) (rez.ProviderEventProcessorRegistry, error) {
 		return rez.ProviderEventProcessorRegistry{
+			alertmanager.ProviderName:     alertmanager.EventProcessor{},
 			demoprovider.ProviderName:     demoprovider.EventProcessor{},
 			github.ProviderName:           github.EventProcessor{},
 			slackintegration.ProviderName: slackagent.EventProcessor{},
@@ -265,6 +267,15 @@ var pkgIntegrations = do.Package(
 		return demoprovider.MakeIntegration(
 			do.MustInvoke[rez.Config](i),
 			do.MustInvoke[rez.ProviderEventPipelineService](i),
+		)
+	}),
+
+	do.Lazy(func(i do.Injector) (*alertmanager.Integration, error) {
+		return alertmanager.MakeIntegration(
+			do.MustInvoke[rez.TelemetryService](i),
+			do.MustInvoke[rez.Clock](i),
+			do.MustInvoke[rez.ProviderEventPipelineService](i),
+			do.MustInvoke[rez.IntegrationInstallationLookup](i),
 		)
 	}),
 
@@ -332,6 +343,7 @@ var pkgIntegrations = do.Package(
 
 	do.Lazy(func(i do.Injector) ([]rez.IntegrationDefinition, error) {
 		return []rez.IntegrationDefinition{
+			do.MustInvoke[*alertmanager.Integration](i),
 			do.MustInvoke[*demoprovider.Integration](i),
 			do.MustInvoke[*google.Integration](i),
 			do.MustInvoke[*github.Integration](i),

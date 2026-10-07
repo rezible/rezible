@@ -2,6 +2,7 @@ import type { Component } from "svelte";
 
 import type { InstallableIntegration } from "$lib/api";
 
+import RiAlarmWarningLine from "remixicon-svelte/icons/alarm-warning-line";
 import RiFlaskLine from "remixicon-svelte/icons/flask-line";
 import RiGithubFill from "remixicon-svelte/icons/github-fill";
 import RiGoogleFill from "remixicon-svelte/icons/google-fill";
@@ -18,6 +19,12 @@ export type IntegrationProviderInfo = {
 };
 
 const knownProviders: Record<string, Omit<IntegrationProviderInfo, "name">> = {
+	alertmanager: {
+		displayName: "Alertmanager",
+		description: "Receive Prometheus alerts from an Alertmanager webhook receiver.",
+		icon: RiAlarmWarningLine,
+		connectionNoun: "installations",
+	},
 	github: {
 		displayName: "GitHub",
 		description: "Follow repositories, pushes, and pull requests from your GitHub accounts.",
