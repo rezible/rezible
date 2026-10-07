@@ -135,13 +135,15 @@ type (
 	}
 
 	AgentTurnUpdatedEvent struct {
-		SessionId    uuid.UUID `json:"sessionId"`
-		TurnId       uuid.UUID `json:"turnId"`
-		Status       string    `json:"status"`
-		FinishReason string    `json:"finishReason,omitempty"`
+		StartedAt    *time.Time `json:"startedAt,omitempty"`
+		SessionId    uuid.UUID  `json:"sessionId"`
+		TurnId       uuid.UUID  `json:"turnId"`
+		Status       string     `json:"status"`
+		FinishReason string     `json:"finishReason,omitempty"`
 	}
 
 	AgentTurnChunkEvent struct {
+		StartedAt *time.Time          `json:"startedAt,omitempty"`
 		SessionId uuid.UUID           `json:"sessionId"`
 		TurnId    uuid.UUID           `json:"turnId"`
 		Model     *AgentModelChunk    `json:"model,omitempty"`
@@ -179,13 +181,14 @@ func (agentTurnStatusSchema) Schema(huma.Registry) *huma.Schema {
 	return makeEnumStringSchema(agentturn.StatusValues)
 }
 
-func AgentTurnChunkEventFromRez(sessionId, turnId uuid.UUID, chunk rez.AiAgentTurnChunk) (*AgentTurnChunkEvent, error) {
+func AgentTurnChunkEventFromRez(sessionId, turnId uuid.UUID, startedAt *time.Time, chunk rez.AiAgentTurnChunk) (*AgentTurnChunkEvent, error) {
 	event := &AgentTurnChunkEvent{
+		StartedAt: startedAt,
 		SessionId: sessionId,
 		TurnId:    turnId,
 	}
 	if chunk.ModelChunk != nil {
-		parts, partsErr := MaybeConvertSlice(chunk.Artifact.Parts, AgentMessagePartFromGenkit)
+		parts, partsErr := MaybeConvertSlice(chunk.ModelChunk.Content, AgentMessagePartFromGenkit)
 		if partsErr != nil {
 			return nil, fmt.Errorf("model chunk: %w", partsErr)
 		}

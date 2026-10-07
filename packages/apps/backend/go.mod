@@ -13,7 +13,7 @@ require (
 	github.com/danielgtaylor/huma/v2 v2.39.0
 	github.com/deckarep/golang-set/v2 v2.9.0
 	github.com/dentech-floss/watermill-opentelemetry-go-extra v0.1.2
-	github.com/firebase/genkit/go v1.12.0
+	github.com/firebase/genkit/go v1.13.1
 	github.com/go-chi/chi/v5 v5.3.1
 	github.com/go-chi/httplog/v3 v3.4.0
 	github.com/go-playground/validator/v10 v10.30.3

@@ -188,9 +188,15 @@ func (w *wrappedAgent[SessionInput, State]) DecodeSessionInput(raw []byte) (rez.
 	return *input, nil
 }
 
-func (w *wrappedAgent[SessionInput, State]) normalizeTurnInput(input *rez.AiAgentTurnInput) (*aix.AgentInput, error) {
+func (w *wrappedAgent[SessionInput, State]) normalizeTurnInput(input *rez.AiAgentTurnInput, state *rez.AiAgentTurnState, continueFromState bool) (*aix.AgentInput, error) {
 	if input == nil {
 		return nil, rez.ErrInvalidInput
+	}
+	if continueFromState {
+		if state == nil || len(state.Messages) == 0 {
+			return nil, fmt.Errorf("%w: continuation requires committed messages", rez.ErrInvalidInput)
+		}
+		return &aix.AgentInput{}, nil
 	}
 	if input.Message != nil {
 		return &aix.AgentInput{Message: input.Message}, nil
@@ -215,7 +221,7 @@ func (w *wrappedAgent[SessionInput, State]) MakeInitialTurnInput(ctx context.Con
 		return nil, rez.ErrInvalidInput
 	}
 
-	normalized, normalizeErr := w.normalizeTurnInput(turnInput)
+	normalized, normalizeErr := w.normalizeTurnInput(turnInput, nil, false)
 	if normalizeErr != nil {
 		return nil, fmt.Errorf("normalize initial input: %w", normalizeErr)
 	}
@@ -223,7 +229,7 @@ func (w *wrappedAgent[SessionInput, State]) MakeInitialTurnInput(ctx context.Con
 	return &rez.AiAgentTurnInput{Message: normalized.Message, Resume: normalized.Resume}, nil
 }
 
-func (w *wrappedAgent[SessionInput, State]) getTurnState(ctx context.Context, params rez.InvokeAiAgentTurnParams) (*aix.SessionState[State], error) {
+func (w *wrappedAgent[SessionInput, State]) getTurnSessionState(ctx context.Context, params rez.InvokeAiAgentTurnParams) (*aix.SessionState[State], error) {
 	state := &aix.SessionState[State]{
 		SessionID: params.Session.ID.String(),
 		Messages:  make([]*ai.Message, len(params.State.Messages)),
@@ -272,12 +278,12 @@ func (w *wrappedAgent[SessionInput, State]) Invoke(ctx context.Context, params r
 	}
 	ctx = context.WithValue(ctx, agentInvocationContextKey{}, invCtx)
 
-	turnInput, inputErr := w.normalizeTurnInput(params.Input)
+	turnInput, inputErr := w.normalizeTurnInput(params.Input, &params.State, params.ContinueFromState)
 	if inputErr != nil {
 		return nil, fmt.Errorf("turn input: %w", inputErr)
 	}
 
-	state, stateErr := w.getTurnState(ctx, params)
+	state, stateErr := w.getTurnSessionState(ctx, params)
 	if stateErr != nil {
 		return nil, fmt.Errorf("turn state: %w", stateErr)
 	}
@@ -296,11 +302,29 @@ func (w *wrappedAgent[SessionInput, State]) Invoke(ctx context.Context, params r
 	}
 
 	if params.OnChunk != nil {
-		w.handleChunks(conn, params.OnChunk)
+		for chunk, receiveErr := range conn.Receive() {
+			if receiveErr != nil {
+				slog.Warn("error receiving chunk", "error", receiveErr.Error())
+			}
+			if chunk == nil {
+				continue
+			}
+			turnChunk := rez.AiAgentTurnChunk{
+				Artifact:   chunk.Artifact,
+				ModelChunk: chunk.ModelChunk,
+			}
+			if chunk.TurnEnd != nil {
+				turnChunk.TurnEndFinishReason = &chunk.TurnEnd.FinishReason
+			}
+			params.OnChunk(turnChunk)
+		}
 	}
 
 	out, outputErr := conn.Output()
-	if outputErr != nil {
+	if out == nil {
+		if outputErr == nil {
+			outputErr = fmt.Errorf("agent returned nil output")
+		}
 		return nil, fmt.Errorf("output: %w", outputErr)
 	}
 
@@ -308,28 +332,15 @@ func (w *wrappedAgent[SessionInput, State]) Invoke(ctx context.Context, params r
 		return nil, fmt.Errorf("output session ID %q does not match %q", out.SessionID, params.Session.ID)
 	}
 
-	fmt.Printf("invoke output: %+v\n", out)
-
-	return w.wrapInvocationOutput(out)
-}
-
-func (w *wrappedAgent[SessionInput, State]) handleChunks(conn *aix.AgentConnection[State], emitFn func(rez.AiAgentTurnChunk)) {
-	for chunk, receiveErr := range conn.Receive() {
-		if receiveErr != nil {
-			slog.Warn("error receiving chunk", "error", receiveErr.Error())
-		}
-		if emitFn == nil || chunk == nil {
-			continue
-		}
-		turnChunk := rez.AiAgentTurnChunk{
-			Artifact:   chunk.Artifact,
-			ModelChunk: chunk.ModelChunk,
-		}
-		if chunk.TurnEnd != nil {
-			turnChunk.TurnEndFinishReason = &chunk.TurnEnd.FinishReason
-		}
-		emitFn(turnChunk)
+	result, wrapErr := w.wrapInvocationOutput(out)
+	if wrapErr != nil {
+		return nil, wrapErr
 	}
+	if outputErr != nil && result.Error == nil {
+		result.FinishReason = aix.AgentFinishReasonFailed
+		result.Error = outputErr
+	}
+	return result, nil
 }
 
 func (w *wrappedAgent[SessionInput, State]) wrapInvocationOutput(out *aix.AgentOutput[State]) (*rez.AiAgentInvocationResult, error) {
@@ -337,10 +348,10 @@ func (w *wrappedAgent[SessionInput, State]) wrapInvocationOutput(out *aix.AgentO
 		return nil, fmt.Errorf("agent returned nil output")
 	}
 	if out.FinishReason == aix.AgentFinishReasonDetached {
-		return nil, fmt.Errorf("client-managed agent detached")
+		return nil, fmt.Errorf("agent detached")
 	}
 	if out.SnapshotID != "" {
-		return nil, fmt.Errorf("client-managed agent returned snapshot ID %q", out.SnapshotID)
+		return nil, fmt.Errorf("agent returned snapshot ID %q", out.SnapshotID)
 	}
 
 	result := &rez.AiAgentInvocationResult{
@@ -350,7 +361,7 @@ func (w *wrappedAgent[SessionInput, State]) wrapInvocationOutput(out *aix.AgentO
 	if out.Error != nil || result.FinishReason == aix.AgentFinishReasonFailed {
 		result.FinishReason = aix.AgentFinishReasonFailed
 		if out.Error != nil {
-			result.Error = out.Error.Unwrap()
+			result.Error = out.Error
 		} else {
 			result.Error = fmt.Errorf("agent failed with no error")
 		}

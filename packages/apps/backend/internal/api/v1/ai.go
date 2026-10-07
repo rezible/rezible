@@ -246,7 +246,7 @@ func (h *aiHandler) StreamAgentSessionEvents(ctx context.Context, req *oapi.Stre
 
 func (h *aiHandler) makeAgentSessionEventHandlers(sendEvent func(context.Context, any) error) []rez.MessageEventHandler {
 	onTurnChunkFn := func(ctx context.Context, event *rezai.EventOnAgentTurnChunk) error {
-		converted, convertErr := oapi.AgentTurnChunkEventFromRez(event.AgentSessionId, event.AgentTurnId, event.Chunk)
+		converted, convertErr := oapi.AgentTurnChunkEventFromRez(event.AgentSessionId, event.AgentTurnId, event.StartedAt, event.Chunk)
 		if convertErr != nil {
 			return convertErr
 		}
@@ -254,6 +254,7 @@ func (h *aiHandler) makeAgentSessionEventHandlers(sendEvent func(context.Context
 	}
 	onTurnUpdateFn := func(ctx context.Context, event *rezai.AgentTurnUpdated) error {
 		return sendEvent(ctx, oapi.AgentTurnUpdatedEvent{
+			StartedAt:    event.StartedAt,
 			SessionId:    event.AgentSessionId,
 			TurnId:       event.AgentTurnId,
 			Status:       event.Status.String(),

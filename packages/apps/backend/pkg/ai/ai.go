@@ -3,6 +3,7 @@ package ai
 import (
 	"github.com/firebase/genkit/go/ai"
 	aix "github.com/firebase/genkit/go/ai/exp"
+	"time"
 
 	"github.com/google/uuid"
 
@@ -34,6 +35,7 @@ func (e EventOnAgentTurnFinished) MessageScopes() rez.MessageEventScopes {
 }
 
 type AgentTurnUpdated struct {
+	StartedAt      *time.Time
 	AgentSessionId uuid.UUID
 	AgentTurnId    uuid.UUID
 	Status         agentturn.Status
@@ -49,6 +51,7 @@ func (e AgentTurnUpdated) MessageScopes() rez.MessageEventScopes {
 }
 
 type EventOnAgentTurnChunk struct {
+	StartedAt      *time.Time
 	AgentSessionId uuid.UUID
 	AgentTurnId    uuid.UUID
 	Chunk          rez.AiAgentTurnChunk

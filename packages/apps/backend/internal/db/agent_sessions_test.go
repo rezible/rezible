@@ -10,9 +10,18 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/uuid"
+
 	"github.com/firebase/genkit/go/ai"
 	aix "github.com/firebase/genkit/go/ai/exp"
-	"github.com/google/uuid"
+	"github.com/firebase/genkit/go/core/status"
+
+	"github.com/riverqueue/river"
+	"github.com/riverqueue/river/rivertype"
+
+	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/suite"
+
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/agentmessage"
@@ -23,10 +32,6 @@ import (
 	"github.com/rezible/rezible/pkg/jobs"
 	"github.com/rezible/rezible/test"
 	"github.com/rezible/rezible/test/mocks"
-	"github.com/riverqueue/river"
-	"github.com/riverqueue/river/rivertype"
-	"github.com/stretchr/testify/mock"
-	"github.com/stretchr/testify/suite"
 )
 
 type AiAgentSessionServiceSuite struct {
@@ -52,6 +57,12 @@ func (s *AiAgentSessionServiceSuite) newAgentSessionFixture() (context.Context, 
 	messageService := mocks.NewMockMessageQueue(s.T())
 	messageService.EXPECT().
 		Publish(mock.Anything, mock.IsType(rezai.AgentTurnUpdated{})).
+		Run(func(ctx context.Context, value any) {
+			event := value.(rezai.AgentTurnUpdated)
+			turn, lookupErr := tdb.Client(ctx).AgentTurn.Get(ctx, event.AgentTurnId)
+			s.Require().NoError(lookupErr)
+			s.Equal(turn.StartedAt, event.StartedAt, "status identifies the persisted attempt")
+		}).
 		Return(nil).
 		Maybe()
 	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
@@ -104,7 +115,7 @@ func (s *AiAgentSessionServiceSuite) createAgentTurn(ctx context.Context, tdb re
 		}
 	}
 
-	input, inputErr := normalizeAgentTurnInput(seed.input)
+	input, inputErr := normalizeAgentTurnInput(seed.input, true)
 	s.Require().NoError(inputErr)
 
 	turn, txErr := ent.WithTxReturning(ctx, tdb, func(ctx context.Context, client *ent.Client) (*ent.AgentTurn, error) {
@@ -804,4 +815,328 @@ func (s *AiAgentSessionServiceSuite) TestRetryAgentTurnRequeuesSameTurnAndClears
 	msgsAfter, msgsAfterErr := h.tdb.Client(ctx).AgentTurn.QueryMessages(retried).Count(ctx)
 	s.Require().NoError(msgsAfterErr)
 	s.Require().Equal(msgsBefore, msgsAfter)
+}
+
+// failedTurnFixture is a session with one completed turn and a queued turn whose input asks for a check.
+type failedTurnFixture struct {
+	worker   *InvokeAgentTurnWorker
+	runtime  *mocks.MockAiAgentRuntime
+	session  *ent.AgentSession
+	history  []*ai.Message
+	turn     *ent.AgentTurn
+	input    *ai.Message
+	toolCall *ai.Message
+	toolResp *ai.Message
+}
+
+func (s *AiAgentSessionServiceSuite) newFailedTurnFixture(ctx context.Context, h *agentSessionFixture, jobID int64) *failedTurnFixture {
+	runtime := mocks.NewMockAiAgentRuntime(s.T())
+	worker := &InvokeAgentTurnWorker{
+		db:     h.tdb,
+		agents: runtime,
+		msgs:   h.msgs,
+		logger: h.service.logger,
+	}
+	session := s.createAgentSession(ctx, h.tdb, testAgentInput{})
+	root := s.createAgentTurn(ctx, h.tdb, session, agentTurnSeed{
+		riverJobID:   jobID,
+		status:       at.StatusCompleted,
+		finishReason: string(aix.AgentFinishReasonStop),
+	})
+	rootReply := ai.NewModelTextMessage("ready")
+	s.createAgentMessage(ctx, h.tdb, session, root, rootReply)
+
+	input := ai.NewUserTextMessage("check the service")
+	turn := s.createAgentTurn(ctx, h.tdb, session, agentTurnSeed{
+		riverJobID: jobID + 1,
+		status:     at.StatusQueued,
+		input:      &rez.AiAgentTurnInput{Message: input},
+	})
+	call := &ai.ToolRequest{Name: "check_service", Ref: "check-1", Input: map[string]any{}}
+	response := &ai.ToolResponse{Name: "check_service", Ref: "check-1", Output: "healthy"}
+	return &failedTurnFixture{
+		worker:   worker,
+		runtime:  runtime,
+		session:  session,
+		history:  []*ai.Message{root.Edges.Messages[0].MakeGenkitMessage(), rootReply},
+		turn:     turn,
+		input:    input,
+		toolCall: ai.NewModelMessage(ai.NewToolRequestPart(call)),
+		toolResp: ai.NewMessage(ai.RoleTool, nil, ai.NewToolResponsePart(response)),
+	}
+}
+
+// failAfterTool expects one invocation that starts from the turn's input, commits a tool call and its response,
+// then fails with a model error.
+func (f *failedTurnFixture) failAfterTool(s *AiAgentSessionServiceSuite) {
+	failed := &rez.AiAgentInvocationResult{
+		State: rez.AiAgentTurnState{
+			Messages: append(append([]*ai.Message{}, f.history...), f.input, f.toolCall, f.toolResp),
+		},
+		FinishReason: aix.AgentFinishReasonFailed,
+		Error:        errors.New("model unavailable"),
+	}
+	f.runtime.EXPECT().
+		InvokeAgentTurn(mock.Anything, mock.Anything).
+		Run(func(_ context.Context, params rez.InvokeAiAgentTurnParams) {
+			s.Require().Len(params.State.Messages, 2)
+		}).
+		Return(failed, nil).
+		Once()
+}
+
+func (s *AiAgentSessionServiceSuite) turnMessageTexts(ctx context.Context, tdb rez.Database, turn *ent.AgentTurn) []string {
+	queryMessages := tdb.Client(ctx).AgentTurn.QueryMessages(turn).Order(agentmessage.BySequence())
+	msgs, queryErr := queryMessages.All(ctx)
+	s.Require().NoError(queryErr)
+	texts := make([]string, len(msgs))
+	for i, m := range msgs {
+		msg := m.MakeGenkitMessage()
+		texts[i] = string(msg.Role) + ":" + msg.Text()
+		for _, part := range msg.Content {
+			if part.ToolRequest != nil {
+				texts[i] += "request:" + part.ToolRequest.Ref
+			}
+			if part.ToolResponse != nil {
+				texts[i] += "response:" + part.ToolResponse.Ref
+			}
+		}
+	}
+	return texts
+}
+
+func (s *AiAgentSessionServiceSuite) TestFailedAttemptKeepsCommittedMessages() {
+	ctx, h := s.newAgentSessionFixture()
+	f := s.newFailedTurnFixture(ctx, h, 901)
+	f.failAfterTool(s)
+
+	// The last attempt fails the turn; its committed messages stay recorded against it.
+	workErr := f.worker.Work(ctx, makeAgentTurnJob(f.turn, 3))
+	s.Require().ErrorContains(workErr, "model unavailable")
+	failed, failedErr := h.tdb.Client(ctx).AgentTurn.Get(ctx, f.turn.ID)
+	s.Require().NoError(failedErr)
+	s.Equal(at.StatusFailed, failed.Status)
+	s.Equal(
+		[]string{"user:check the service", "model:request:check-1", "tool:response:check-1"},
+		s.turnMessageTexts(ctx, h.tdb, failed),
+	)
+
+	// A later turn's history is the completed turns only.
+	next := s.createAgentTurn(ctx, h.tdb, f.session, agentTurnSeed{
+		riverJobID: 911,
+		status:     at.StatusQueued,
+		input:      &rez.AiAgentTurnInput{Message: ai.NewUserTextMessage("next")},
+	})
+	nextReply := ai.NewModelTextMessage("done")
+	completed := &rez.AiAgentInvocationResult{
+		State: rez.AiAgentTurnState{
+			Messages: append(append([]*ai.Message{}, f.history...), ai.NewUserTextMessage("next"), nextReply),
+		},
+		Response:     nextReply,
+		FinishReason: aix.AgentFinishReasonStop,
+	}
+	f.runtime.EXPECT().
+		InvokeAgentTurn(mock.Anything, mock.Anything).
+		Run(func(_ context.Context, params rez.InvokeAiAgentTurnParams) {
+			s.Require().Len(params.State.Messages, 2, "history excludes the failed turn")
+			s.Equal("test", params.State.Messages[0].Text())
+			s.Equal("ready", params.State.Messages[1].Text())
+		}).
+		Return(completed, nil).
+		Once()
+	h.msgs.EXPECT().
+		Publish(mock.Anything, mock.IsType(&rezai.EventOnAgentTurnFinished{})).
+		Return(nil).
+		Once()
+	s.Require().NoError(f.worker.Work(ctx, makeAgentTurnJob(next, 1)))
+}
+
+func (s *AiAgentSessionServiceSuite) TestRetryResumesFromCommittedMessages() {
+	ctx, h := s.newAgentSessionFixture()
+	f := s.newFailedTurnFixture(ctx, h, 921)
+	f.failAfterTool(s)
+
+	workErr := f.worker.Work(ctx, makeAgentTurnJob(f.turn, 1))
+	s.Require().ErrorContains(workErr, "model unavailable")
+	queued, queuedErr := h.tdb.Client(ctx).AgentTurn.Get(ctx, f.turn.ID)
+	s.Require().NoError(queuedErr)
+	s.Equal(at.StatusQueued, queued.Status)
+
+	// River's retry continues from the committed messages instead of the input.
+	h.msgs.EXPECT().PublishLive(mock.Anything, mock.Anything).
+		Run(func(ctx context.Context, value any) {
+			event := value.(rezai.EventOnAgentTurnChunk)
+			turn, lookupErr := h.tdb.Client(ctx).AgentTurn.Get(ctx, event.AgentTurnId)
+			s.Require().NoError(lookupErr)
+			s.Require().NotNil(event.StartedAt)
+			s.Equal(turn.StartedAt, event.StartedAt, "chunk identifies the persisted attempt")
+		}).Return(nil).Once()
+	reply := ai.NewModelTextMessage("The service is healthy")
+	committed := []*ai.Message{f.input, f.toolCall, f.toolResp}
+	completed := &rez.AiAgentInvocationResult{
+		State: rez.AiAgentTurnState{
+			Messages: append(append(append([]*ai.Message{}, f.history...), committed...), reply),
+		},
+		Response:     reply,
+		FinishReason: aix.AgentFinishReasonStop,
+	}
+	f.runtime.EXPECT().
+		InvokeAgentTurn(mock.Anything, mock.Anything).
+		Run(func(_ context.Context, params rez.InvokeAiAgentTurnParams) {
+			s.Require().NotNil(params.Input)
+			s.Require().NotNil(params.Input.Message)
+			s.Equal("check the service", params.Input.Message.Text(), "preserve the assignment for middleware")
+			s.True(params.ContinueFromState)
+			params.OnChunk(rez.AiAgentTurnChunk{ModelChunk: &ai.ModelResponseChunk{Content: []*ai.Part{ai.NewTextPart("prefix")}}})
+			s.Nil(params.Input.Resume)
+			s.Require().Len(params.State.Messages, 5)
+			s.Equal("ready", params.State.Messages[1].Text())
+			s.Equal("check the service", params.State.Messages[2].Text())
+			s.Require().NotNil(params.State.Messages[4].Content[0].ToolResponse)
+			s.Equal("check-1", params.State.Messages[4].Content[0].ToolResponse.Ref)
+		}).
+		Return(completed, nil).
+		Once()
+	h.msgs.EXPECT().
+		Publish(mock.Anything, mock.IsType(&rezai.EventOnAgentTurnFinished{})).
+		Return(nil).
+		Once()
+	s.Require().NoError(f.worker.Work(ctx, makeAgentTurnJob(queued, 2)))
+
+	turn, turnErr := h.tdb.Client(ctx).AgentTurn.Get(ctx, f.turn.ID)
+	s.Require().NoError(turnErr)
+	s.Equal(at.StatusCompleted, turn.Status)
+	s.Equal(
+		[]string{
+			"user:check the service",
+			"model:request:check-1",
+			"tool:response:check-1",
+			"model:The service is healthy",
+		},
+		s.turnMessageTexts(ctx, h.tdb, turn),
+	)
+}
+
+func (s *AiAgentSessionServiceSuite) TestToolIterationLimitIsNotRetriedAutomatically() {
+	ctx, h := s.newAgentSessionFixture()
+	f := s.newFailedTurnFixture(ctx, h, 941)
+
+	limited := &rez.AiAgentInvocationResult{
+		State: rez.AiAgentTurnState{
+			Messages: append(append([]*ai.Message{}, f.history...), f.input, f.toolCall, f.toolResp),
+		},
+		FinishReason: aix.AgentFinishReasonFailed,
+		Error:        status.Errorf(ai.ErrMaxTurnsExceeded, "exceeded maximum tool call iterations (%d)", 1),
+	}
+	f.runtime.EXPECT().
+		InvokeAgentTurn(mock.Anything, mock.Anything).
+		Return(limited, nil).
+		Once()
+
+	workErr := f.worker.Work(ctx, makeAgentTurnJob(f.turn, 1))
+	var cancelErr *river.JobCancelError
+	s.Require().ErrorAs(workErr, &cancelErr, "River must not retry the iteration limit")
+
+	turn, turnErr := h.tdb.Client(ctx).AgentTurn.Get(ctx, f.turn.ID)
+	s.Require().NoError(turnErr)
+	s.Equal(at.StatusFailed, turn.Status)
+	s.Equal(string(aix.AgentFinishReasonFailed), turn.FinishReason)
+	s.Require().NotNil(turn.Error)
+	s.NotNil(turn.FinishedAt)
+}
+
+func (s *AiAgentSessionServiceSuite) TestRetryingOlderTurnKeepsSequencesAndHistoryOrder() {
+	ctx, h := s.newAgentSessionFixture()
+	runtime := mocks.NewMockAiAgentRuntime(s.T())
+	worker := &InvokeAgentTurnWorker{
+		db:     h.tdb,
+		agents: runtime,
+		msgs:   h.msgs,
+		logger: h.service.logger,
+	}
+	session := s.createAgentSession(ctx, h.tdb, testAgentInput{})
+	for _, jobID := range []int64{1001, 1002, 1003, 1004} {
+		h.jobs.EXPECT().
+			Insert(mock.Anything, mock.Anything, mock.Anything).
+			Return(makeJobInsertResult(jobID), nil).
+			Once()
+	}
+	h.msgs.EXPECT().
+		Publish(mock.Anything, mock.IsType(&rezai.EventOnAgentTurnFinished{})).
+		Return(nil).
+		Times(3)
+
+	request := func(text string) *ent.AgentTurn {
+		input := &rez.AiAgentTurnInput{Message: ai.NewUserTextMessage(text)}
+		turn, requestErr := h.service.RequestAgentTurn(ctx, session.ID, &rez.RequestAiAgentTurnParams{Input: input})
+		s.Require().NoError(requestErr, "request turn %q", text)
+		return turn
+	}
+	invoke := func(wantState []string, result *rez.AiAgentInvocationResult) {
+		runtime.EXPECT().
+			InvokeAgentTurn(mock.Anything, mock.Anything).
+			Run(func(_ context.Context, params rez.InvokeAiAgentTurnParams) {
+				got := make([]string, len(params.State.Messages))
+				for i, m := range params.State.Messages {
+					got[i] = m.Text()
+				}
+				s.Equal(wantState, got, "invocation state")
+			}).
+			Return(result, nil).
+			Once()
+	}
+	completed := func(messages ...*ai.Message) *rez.AiAgentInvocationResult {
+		return &rez.AiAgentInvocationResult{
+			State:        rez.AiAgentTurnState{Messages: messages},
+			Response:     messages[len(messages)-1],
+			FinishReason: aix.AgentFinishReasonStop,
+		}
+	}
+
+	inputA, inputB := ai.NewUserTextMessage("a"), ai.NewUserTextMessage("b")
+	stepA, replyA := ai.NewModelTextMessage("a step"), ai.NewModelTextMessage("a reply")
+	replyB := ai.NewModelTextMessage("b reply")
+
+	// Turn A fails on its last attempt after committing a step.
+	turnA := request("a")
+	invoke([]string{}, &rez.AiAgentInvocationResult{
+		State:        rez.AiAgentTurnState{Messages: []*ai.Message{inputA, stepA}},
+		FinishReason: aix.AgentFinishReasonFailed,
+		Error:        errors.New("model unavailable"),
+	})
+	s.Require().Error(worker.Work(ctx, makeAgentTurnJob(turnA, 3)))
+
+	// Turn B completes without A's messages.
+	turnB := request("b")
+	invoke([]string{}, completed(inputB, replyB))
+	s.Require().NoError(worker.Work(ctx, makeAgentTurnJob(turnB, 1)))
+
+	// A person retries A; it resumes from its step (its history is earlier turns only) and its output is
+	// re-sequenced after B's messages.
+	retriedA, retryErr := h.service.RetryAgentTurn(ctx, turnA.ID)
+	s.Require().NoError(retryErr)
+	invoke([]string{"a", "a step"}, completed(inputA, stepA, replyA))
+	s.Require().NoError(worker.Work(ctx, makeAgentTurnJob(retriedA, 1)))
+
+	// A new turn gets a free input sequence and its history keeps each turn's messages together.
+	turnC := request("c")
+	invoke([]string{"a", "a step", "a reply", "b", "b reply"}, completed(inputA, stepA, replyA, inputB, replyB, ai.NewUserTextMessage("c"), ai.NewModelTextMessage("c reply")))
+	s.Require().NoError(worker.Work(ctx, makeAgentTurnJob(turnC, 1)))
+
+	s.Equal([]string{"user:a", "model:a step", "model:a reply"}, s.turnMessageTexts(ctx, h.tdb, turnA))
+	s.Equal([]string{"user:b", "model:b reply"}, s.turnMessageTexts(ctx, h.tdb, turnB))
+	s.Equal([]string{"user:c", "model:c reply"}, s.turnMessageTexts(ctx, h.tdb, turnC))
+
+	// The session's message list keeps each turn's messages together too.
+	listParams := rez.ListAiAgentMessagesParams{
+		ListParams: ent.ListParams{Page: 1, PageSize: 50},
+		Predicates: []predicate.AgentMessage{agentmessage.AgentSessionID(session.ID)},
+	}
+	listed, listErr := h.service.ListAgentMessages(ctx, listParams)
+	s.Require().NoError(listErr)
+	listedTexts := make([]string, len(listed.Data))
+	for i, m := range listed.Data {
+		listedTexts[i] = m.MakeGenkitMessage().Text()
+	}
+	s.Equal([]string{"a", "a step", "a reply", "b", "b reply", "c", "c reply"}, listedTexts)
 }

@@ -3,6 +3,7 @@ package genkit
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"sync"
 
@@ -208,6 +209,197 @@ func (s *AiRuntimeSuite) TestClientManagedTurnStateAndResumeRoundTrip() {
 		}
 	}
 	s.Equal(1, inputCount)
+}
+
+// committedStepsModel calls check_service once, then fails or ends the next generation through failSecond, then
+// answers from the tool response.
+type committedStepsModel struct {
+	mu          sync.Mutex
+	input       string
+	modelCalls  int
+	toolCalls   int
+	failSecond  func(context.Context) error
+	checkTool   ai.Tool
+	finalAnswer string
+}
+
+func newCommittedStepsModel(input string, failSecond func(context.Context) error) *committedStepsModel {
+	m := &committedStepsModel{input: input, failSecond: failSecond, finalAnswer: "The service is healthy"}
+	m.checkTool = ai.NewTool[struct{}, string](
+		"check_service",
+		"Check the service",
+		func(*ai.ToolContext, struct{}) (string, error) {
+			m.mu.Lock()
+			defer m.mu.Unlock()
+			m.toolCalls++
+			return "healthy", nil
+		},
+	)
+	return m
+}
+
+func (m *committedStepsModel) generate(ctx context.Context, req *ai.ModelRequest, _ any, _ ai.ModelStreamCallback) (*ai.ModelResponse, error) {
+	m.mu.Lock()
+	m.modelCalls++
+	step := m.modelCalls
+	m.mu.Unlock()
+
+	switch step {
+	case 1:
+		call := &ai.ToolRequest{Name: m.checkTool.Name(), Ref: "check-1", Input: map[string]any{}}
+		return &ai.ModelResponse{Message: ai.NewModelMessage(ai.NewToolRequestPart(call))}, nil
+	case 2:
+		return nil, m.failSecond(ctx)
+	case 3:
+		invCtx := getAgentInvocationContext(ctx)
+		if invCtx == nil || invCtx.Input == nil || invCtx.Input.Message == nil || invCtx.Input.Message.Text() != m.input {
+			return nil, fmt.Errorf("resumed invocation lost its original assignment")
+		}
+		inputs, responses := 0, 0
+		for _, message := range req.Messages {
+			if message.Role == ai.RoleUser && message.Text() == m.input {
+				inputs++
+			}
+			for _, part := range message.Content {
+				if part.ToolResponse != nil && part.ToolResponse.Ref == "check-1" {
+					responses++
+				}
+			}
+		}
+		if inputs != 1 || responses != 1 {
+			return nil, fmt.Errorf("committed history: inputs=%d responses=%d", inputs, responses)
+		}
+		return &ai.ModelResponse{
+			Message:      ai.NewModelTextMessage(m.finalAnswer),
+			FinishReason: ai.FinishReasonStop,
+		}, nil
+	}
+	return nil, fmt.Errorf("unexpected model call %d", step)
+}
+
+// runFailAndResume fails a turn after its tool step, then resumes from the state the failure returned.
+func (s *AiRuntimeSuite) runFailAndResume(failSecond func(context.Context) error, firstCtx func(context.Context) context.Context) {
+	ctx, tdb := s.SetupTestDatabase()
+	msg := ai.NewUserTextMessage("Check the service")
+	agent := makeTestAgent[testAgentState](msg)
+	script := newCommittedStepsModel(msg.Text(), failSecond)
+
+	model := makeTestOutputModel(nil)
+	model.opts.Supports.Tools = true
+	model.fn = script.generate
+	agent.def.Model = model.Name
+	middleware := func(string) ai.Middleware {
+		return &testToolsMiddleware{tools: []ai.Tool{script.checkTool}}
+	}
+	svc := s.makeRuntime(ctx, WithDefinedModel(model), WithAgent(agent, middleware))
+	sess := s.makeAgentSession(ctx, svc, tdb, agent.def.Name, testAgentInput{})
+
+	first := s.makeInvokeAgentSessionParams(sess)
+	first.Input = &rez.AiAgentTurnInput{Message: msg}
+	failed, failedErr := svc.InvokeAgentTurn(firstCtx(ctx), first)
+	s.Require().NoError(failedErr)
+	s.Require().NotNil(failed)
+	s.Equal(aix.AgentFinishReasonFailed, failed.FinishReason)
+	s.Require().Error(failed.Error)
+	s.Require().Len(failed.State.Messages, 3, "the failure returns the committed tool step")
+	s.Require().NotNil(failed.State.Messages[2].Content[0].ToolResponse)
+
+	resume := s.makeInvokeAgentSessionParams(sess)
+	resume.Input = &rez.AiAgentTurnInput{Message: msg}
+	resume.ContinueFromState = true
+	resume.State = failed.State
+	result, resumeErr := svc.InvokeAgentTurn(ctx, resume)
+	s.Require().NoError(resumeErr)
+	s.Require().NotNil(result)
+	s.Require().NoError(result.Error)
+	s.Equal(aix.AgentFinishReasonStop, result.FinishReason)
+	s.Require().Len(result.State.Messages, 4)
+	s.Equal(script.finalAnswer, result.State.Messages[3].Text())
+
+	script.mu.Lock()
+	defer script.mu.Unlock()
+	s.Equal(3, script.modelCalls)
+	s.Equal(1, script.toolCalls, "the committed tool call is not repeated")
+}
+
+func (s *AiRuntimeSuite) TestContinuationRequiresExplicitIntentAndState() {
+	agent := &wrappedAgent[testAgentInput, testAgentState]{}
+	input := &rez.AiAgentTurnInput{Message: ai.NewUserTextMessage("Check the service")}
+	state := &rez.AiAgentTurnState{Messages: []*ai.Message{input.Message}}
+
+	_, missingStateErr := agent.normalizeTurnInput(input, &rez.AiAgentTurnState{}, true)
+	s.ErrorIs(missingStateErr, rez.ErrInvalidInput)
+
+	_, emptyInputErr := agent.normalizeTurnInput(&rez.AiAgentTurnInput{}, state, false)
+	s.ErrorIs(emptyInputErr, rez.ErrInvalidInput)
+
+	normalized, inputErr := agent.normalizeTurnInput(input, state, false)
+	s.Require().NoError(inputErr)
+	s.Same(input.Message, normalized.Message, "history alone must not suppress a new input")
+}
+
+func (s *AiRuntimeSuite) TestResumeAfterModelErrorDoesNotRepeatCommittedSteps() {
+	failSecond := func(context.Context) error { return errors.New("model unavailable") }
+	s.runFailAndResume(failSecond, func(ctx context.Context) context.Context { return ctx })
+}
+
+func (s *AiRuntimeSuite) TestResumeAfterCancelledContextDoesNotRepeatCommittedSteps() {
+	var cancel context.CancelFunc
+	firstCtx := func(ctx context.Context) context.Context {
+		var cancelCtx context.Context
+		cancelCtx, cancel = context.WithCancel(ctx)
+		return cancelCtx
+	}
+	// The job's context ends while the model is generating after the tool step.
+	failSecond := func(ctx context.Context) error {
+		cancel()
+		<-ctx.Done()
+		return ctx.Err()
+	}
+	s.runFailAndResume(failSecond, firstCtx)
+}
+
+func (s *AiRuntimeSuite) TestToolIterationLimitFailsWithMaxTurnsError() {
+	ctx, tdb := s.SetupTestDatabase()
+	msg := ai.NewUserTextMessage("Keep checking")
+	agent := makeTestAgent[testAgentState](msg)
+	agent.def.MaxToolIterations = 2
+	checkTool := ai.NewTool[struct{}, string](
+		"check_service",
+		"Check the service",
+		func(*ai.ToolContext, struct{}) (string, error) {
+			return "unknown", nil
+		},
+	)
+
+	var mu sync.Mutex
+	step := 0
+	model := makeTestOutputModel(nil)
+	model.opts.Supports.Tools = true
+	model.fn = func(context.Context, *ai.ModelRequest, any, ai.ModelStreamCallback) (*ai.ModelResponse, error) {
+		mu.Lock()
+		defer mu.Unlock()
+		step++
+		call := &ai.ToolRequest{Name: checkTool.Name(), Ref: fmt.Sprintf("check-%d", step), Input: map[string]any{}}
+		return &ai.ModelResponse{Message: ai.NewModelMessage(ai.NewToolRequestPart(call))}, nil
+	}
+	agent.def.Model = model.Name
+
+	middleware := func(string) ai.Middleware {
+		return &testToolsMiddleware{tools: []ai.Tool{checkTool}}
+	}
+	svc := s.makeRuntime(ctx, WithDefinedModel(model), WithAgent(agent, middleware))
+	sess := s.makeAgentSession(ctx, svc, tdb, agent.def.Name, testAgentInput{})
+
+	params := s.makeInvokeAgentSessionParams(sess)
+	params.Input = &rez.AiAgentTurnInput{Message: msg}
+	result, invokeErr := svc.InvokeAgentTurn(ctx, params)
+	s.Require().NoError(invokeErr)
+	s.Require().NotNil(result)
+	s.Equal(aix.AgentFinishReasonFailed, result.FinishReason)
+	s.Require().Error(result.Error)
+	s.ErrorIs(result.Error, ai.ErrMaxTurnsExceeded)
+	s.NotEmpty(result.State.Messages, "committed steps are the resume point")
 }
 
 func makeTestAgent[S any](msg *ai.Message) *testAgent[S] {

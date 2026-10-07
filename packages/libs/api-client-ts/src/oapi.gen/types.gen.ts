@@ -202,6 +202,7 @@ export type AgentTurnChunkEvent = {
     artifact?: AgentArtifactChunk;
     model?: AgentModelChunk;
     sessionId: string;
+    startedAt?: string;
     turnEnd?: AgentTurnEndChunk;
     turnId: string;
 };
@@ -229,6 +230,7 @@ export type AgentTurnStatusOverview = {
 export type AgentTurnUpdatedEvent = {
     finishReason?: string;
     sessionId: string;
+    startedAt?: string;
     status: string;
     turnId: string;
 };
@@ -2897,6 +2899,7 @@ export type Part = {
     custom?: {
         [key: string]: unknown;
     };
+    data?: unknown;
     kind?: number;
     metadata?: {
         [key: string]: unknown;

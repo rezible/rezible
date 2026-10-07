@@ -5,13 +5,13 @@ import {
 	listAgentArtifactsInfiniteOptions,
 	listAgentMessagesInfiniteOptions,
 	listAgentTurnsInfiniteOptions,
-	streamAgentSessionEvents,
 	type AgentTurnUpdatedEvent,
-	type StreamAgentSessionEventsResponse,
 } from "$lib/api";
 import { getNextPageParam } from "$lib/api/utils";
 import { flattenPages } from "$src/components/system-analysis/lib";
 import {
+	acceptAttempt,
+	closeAttempt,
 	applyArtifactChunk,
 	applyModelChunk,
 	emptyOverlay,
@@ -21,6 +21,7 @@ import {
 	reconcileTurn,
 } from "./model";
 import { onMount } from "svelte";
+import { consumeSessionEvents, type SessionStreamEvent } from "./stream";
 
 const terminalStatuses = new Set(["completed", "failed", "aborted"]);
 
@@ -154,17 +155,24 @@ export class SessionDetailController {
 			return;
 		}
 
+		if (event.startedAt) {
+			const accepted = acceptAttempt(this.overlay, event.turnId, event.startedAt);
+			if (!accepted) {
+				return;
+			}
+			this.overlay = accepted;
+		}
 		const isTerminalEvent = terminalStatuses.has(event.status);
-
-		if (isTerminalEvent) {
-			const newTurns = new Set(this.overlay.reconcilingTurns).add(event.turnId);
-			this.overlay = { ...this.overlay, reconcilingTurns: newTurns };
+		// A queued retry with startedAt closes the failed attempt; an unclaimed turn has none.
+		const closesAttempt = !!event.startedAt && (isTerminalEvent || event.status === "queued");
+		if (closesAttempt) {
+			this.overlay = closeAttempt(this.overlay, event.turnId, event.startedAt!);
 		}
 
 		await Promise.all([this.sessionQuery.refetch(), this.refetchAllQueryPages()]);
 
-		if (isTerminalEvent) {
-			this.overlay = reconcileTurn(this.overlay, event.turnId);
+		if (closesAttempt) {
+			this.overlay = reconcileTurn(this.overlay, event.turnId, event.startedAt!);
 			const analysisId = this.session?.attributes.systemAnalysisId;
 			if (analysisId)
 				await this.queryClient.invalidateQueries({
@@ -173,24 +181,25 @@ export class SessionDetailController {
 		}
 	}
 
-	private async onStreamResponse(events: StreamAgentSessionEventsResponse) {
-		for await (const { event, data } of events) {
-			if (!eventMatchesSession(this.sessionId, data)) {
-				continue;
+	private async onStreamEvent({ event, data }: SessionStreamEvent) {
+		if (!eventMatchesSession(this.sessionId, data)) {
+			return;
+		}
+
+		this.connection = "connected";
+
+		if (event === "turn-updated") {
+			await this.onTurnUpdated(data);
+		} else if (event === "turn-chunk") {
+			if (!data.startedAt) {
+				return;
 			}
-
-			this.connection = "connected";
-
-			if (event === "turn-updated") {
-				await this.onTurnUpdated(data);
-			} else if (event === "turn-chunk") {
-				if (data.model) {
-					this.overlay = applyModelChunk(this.overlay, data.turnId, data.model);
-				} else if (data.artifact) {
-					this.overlay = applyArtifactChunk(this.overlay, data.artifact);
-				} else {
-					console.log("unhandled turn chunk event");
-				}
+			if (data.model) {
+				this.overlay = applyModelChunk(this.overlay, data.turnId, data.startedAt, data.model);
+			} else if (data.artifact) {
+				this.overlay = applyArtifactChunk(this.overlay, data.turnId, data.startedAt, data.artifact);
+			} else {
+				console.log("unhandled turn chunk event");
 			}
 		}
 	}
@@ -200,18 +209,17 @@ export class SessionDetailController {
 
 		while (!abort.signal.aborted) {
 			try {
-				await streamAgentSessionEvents({
-					path: { id },
-					signal: abort.signal,
-					onSseError: () => {
-						this.connection = "reconnecting";
-						void this.refetchAllQueryPages();
+				await consumeSessionEvents(
+					{
+						path: { id },
+						signal: abort.signal,
+						onSseError: () => {
+							this.connection = "reconnecting";
+							void this.refetchAllQueryPages();
+						},
 					},
-					onSseEvent: (event) => {
-						this.onStreamResponse(event.data);
-					},
-				});
-				this.connection = "connected";
+					(event) => this.onStreamEvent(event)
+				);
 			} catch {
 				if (abort.signal.aborted) break;
 			}

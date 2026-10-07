@@ -11,15 +11,18 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqljson"
+
+	"github.com/google/uuid"
+
 	"github.com/firebase/genkit/go/ai"
 	aix "github.com/firebase/genkit/go/ai/exp"
-	"github.com/google/uuid"
+
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/ent/agentartifact"
-	"github.com/rezible/rezible/ent/agentmessage"
-	as "github.com/rezible/rezible/ent/agentsession"
-	at "github.com/rezible/rezible/ent/agentturn"
+	agta "github.com/rezible/rezible/ent/agentartifact"
+	agtm "github.com/rezible/rezible/ent/agentmessage"
+	agts "github.com/rezible/rezible/ent/agentsession"
+	agtt "github.com/rezible/rezible/ent/agentturn"
 	"github.com/rezible/rezible/ent/predicate"
 	rezai "github.com/rezible/rezible/pkg/ai"
 	"github.com/rezible/rezible/pkg/jobs"
@@ -44,18 +47,18 @@ func NewAiAgentSessionService(tel rez.TelemetryService, db rez.Database, jobSvc 
 
 func (s *AiAgentSessionService) GetAgentSession(ctx context.Context, id uuid.UUID) (*ent.AgentSession, error) {
 	query := s.db.Client(ctx).AgentSession.Query().
-		Where(as.ID(id))
+		Where(agts.ID(id))
 	return query.Only(ctx)
 }
 
 func (s *AiAgentSessionService) ListAgentSessions(ctx context.Context, params rez.ListAiAgentSessionsParams) (*ent.ListResult[ent.AgentSession], error) {
 	query := s.db.Client(ctx).AgentSession.Query().
-		Order(as.ByCreatedAt(sql.OrderDesc()), as.ByID(sql.OrderDesc())).
+		Order(agts.ByCreatedAt(sql.OrderDesc()), agts.ByID(sql.OrderDesc())).
 		Where(params.Predicates...)
 
 	for key, val := range params.Metadata {
 		query.Where(func(s *sql.Selector) {
-			s.Where(sqljson.ValueEQ(as.FieldMetadata, val, sqljson.DotPath(key)))
+			s.Where(sqljson.ValueEQ(agts.FieldMetadata, val, sqljson.DotPath(key)))
 		})
 	}
 
@@ -65,14 +68,19 @@ func (s *AiAgentSessionService) ListAgentSessions(ctx context.Context, params re
 func (s *AiAgentSessionService) ListAgentMessages(ctx context.Context, params rez.ListAiAgentMessagesParams) (*ent.ListResult[ent.AgentMessage], error) {
 	query := s.db.Client(ctx).AgentMessage.Query().
 		Where(params.Predicates...).
-		Order(agentmessage.BySequence(sql.OrderAsc()), agentmessage.ByID(sql.OrderAsc()))
+		// Ordered by turn so a retried turn's re-sequenced output stays with its input.
+		Order(
+			agtm.ByAgentTurnField(agtt.FieldSequence, sql.OrderAsc()),
+			agtm.BySequence(sql.OrderAsc()),
+			agtm.ByID(sql.OrderAsc()),
+		)
 	return ent.DoListQuery[ent.AgentMessage, *ent.AgentMessageQuery](ctx, query, params.ListParams)
 }
 
 func (s *AiAgentSessionService) ListAgentArtifacts(ctx context.Context, params rez.ListAiAgentArtifactsParams) (*ent.ListResult[ent.AgentArtifact], error) {
 	query := s.db.Client(ctx).AgentArtifact.Query().
 		Where(params.Predicates...).
-		Order(agentartifact.ByName(sql.OrderAsc()), agentartifact.ByID(sql.OrderAsc()))
+		Order(agta.ByName(sql.OrderAsc()), agta.ByID(sql.OrderAsc()))
 	return ent.DoListQuery[ent.AgentArtifact, *ent.AgentArtifactQuery](ctx, query, params.ListParams)
 }
 
@@ -231,34 +239,100 @@ func (s *AiAgentSessionService) SetAgentSessionBinding(ctx context.Context, bind
 	})
 }
 
-func normalizeAgentTurnInput(input *rez.AiAgentTurnInput) (*rez.AiAgentTurnInput, error) {
-	if input == nil {
-		return nil, rez.ErrInvalidInput
+func (s *AiAgentSessionService) queryAgentTurns(ctx context.Context) *ent.AgentTurnQuery {
+	return s.db.Client(ctx).AgentTurn.Query()
+}
+
+func (s *AiAgentSessionService) GetAgentTurn(ctx context.Context, id uuid.UUID) (*ent.AgentTurn, error) {
+	return s.queryAgentTurns(ctx).
+		Where(agtt.ID(id)).
+		Only(ctx)
+}
+
+func (s *AiAgentSessionService) ListAgentTurns(ctx context.Context, params rez.ListAiAgentTurnsParams) (*ent.ListResult[ent.AgentTurn], error) {
+	query := s.queryAgentTurns(ctx).
+		Where(params.Predicates...).
+		Order(agtt.BySequence(sql.OrderDesc()), agtt.ByID(sql.OrderDesc()))
+	return ent.DoListQuery[ent.AgentTurn, *ent.AgentTurnQuery](ctx, query, params.ListParams)
+}
+
+func (s *AiAgentSessionService) GetLatestTurnForSession(ctx context.Context, sessionId uuid.UUID) (*ent.AgentTurn, error) {
+	query := s.queryAgentTurns(ctx).
+		Where(agtt.AgentSessionID(sessionId)).
+		Order(agtt.BySequence(sql.OrderDesc()))
+	return query.First(ctx)
+}
+
+func (s *AiAgentSessionService) GetLastSuccessfulAgentTurn(ctx context.Context, sessionID uuid.UUID) (*ent.AgentTurn, error) {
+	queryTurn := s.queryAgentTurns(ctx).
+		Where(agtt.AgentSessionID(sessionID), agtt.StatusEQ(agtt.StatusCompleted)).
+		Order(agtt.BySequence(sql.OrderDesc()))
+	turn, turnErr := queryTurn.First(ctx)
+	if turnErr != nil && !ent.IsNotFound(turnErr) {
+		return nil, turnErr
 	}
-	norm := *input
-	if norm.Message != nil && norm.Message.Role != ai.RoleUser {
-		return nil, fmt.Errorf("input message must be user role")
+	return turn, nil
+}
+
+func (s *AiAgentSessionService) lookupAgentTurnSessionAndAcquireLock(ctx context.Context, tx *ent.Client, turnID uuid.UUID) (*ent.AgentSession, error) {
+	querySession := tx.AgentSession.Query().
+		Where(agts.HasTurnsWith(agtt.ID(turnID)))
+	sess, sessErr := querySession.Only(ctx)
+	if sessErr != nil {
+		return nil, sessErr
 	}
-	if res := norm.Resume; res != nil && len(res.Respond)+len(res.Restart) == 0 {
-		norm.Resume = nil
+	if lockErr := acquireAgentSessionTurnLock(ctx, s.db, sess.ID); lockErr != nil {
+		return nil, fmt.Errorf("lock agent session: %w", lockErr)
 	}
-	if (norm.Message == nil && norm.Resume == nil) || (norm.Message != nil && norm.Resume != nil) {
-		return nil, rez.ErrInvalidInput
-	}
-	return &norm, nil
+	return sess, nil
 }
 
 func acquireAgentSessionTurnLock(ctx context.Context, db rez.Database, sessionId uuid.UUID) error {
 	return db.AcquireTxLocks(ctx, "agent_session", sessionId.String())
 }
 
+func normalizeAgentTurnInput(input *rez.AiAgentTurnInput, allowContinue bool) (*rez.AiAgentTurnInput, error) {
+	if input == nil {
+		return nil, fmt.Errorf("no input")
+	}
+	msg := input.Message
+	if msg != nil && msg.Role != ai.RoleUser {
+		return nil, fmt.Errorf("input message must be user role")
+	}
+	resume := input.Resume
+	if resume != nil && len(resume.Respond)+len(resume.Restart) == 0 {
+		resume = nil
+	}
+	if msg != nil && resume != nil {
+		return nil, fmt.Errorf("cannot set message and resume")
+	}
+	if (msg == nil && resume == nil) && !allowContinue {
+		return nil, fmt.Errorf("empty input")
+	}
+	return &rez.AiAgentTurnInput{Message: msg, Resume: resume}, nil
+}
+
+func getNextAgentSessionMessageSequence(ctx context.Context, mc *ent.AgentMessageQuery) (int, error) {
+	queryLast := mc.
+		Order(agtm.BySequence(sql.OrderDesc())).
+		Select(agtm.FieldSequence)
+	lastMsg, lastMsgErr := queryLast.First(ctx)
+	if lastMsgErr != nil {
+		if ent.IsNotFound(lastMsgErr) {
+			return 1, nil
+		}
+		return 0, fmt.Errorf("query last agent message: %w", lastMsgErr)
+	}
+	return lastMsg.Sequence + 1, nil
+}
+
 func (s *AiAgentSessionService) RequestAgentTurn(ctx context.Context, sessionID uuid.UUID, params *rez.RequestAiAgentTurnParams) (*ent.AgentTurn, error) {
 	if params == nil {
 		return nil, fmt.Errorf("%w: turn input nil", rez.ErrInvalidInput)
 	}
-	input, inputErr := normalizeAgentTurnInput(params.Input)
+	input, inputErr := normalizeAgentTurnInput(params.Input, false)
 	if inputErr != nil {
-		return nil, fmt.Errorf("turn input: %w", inputErr)
+		return nil, fmt.Errorf("%w: turn input: %w", rez.ErrInvalidInput, inputErr)
 	}
 
 	return ent.WithTxReturning(ctx, s.db, func(ctx context.Context, tx *ent.Client) (*ent.AgentTurn, error) {
@@ -266,8 +340,7 @@ func (s *AiAgentSessionService) RequestAgentTurn(ctx context.Context, sessionID 
 			return nil, fmt.Errorf("acquire agent session lock: %w", lockErr)
 		}
 
-		querySession := tx.AgentSession.Query().Where(as.ID(sessionID))
-		sess, sessErr := querySession.Only(ctx)
+		sess, sessErr := tx.AgentSession.Get(ctx, sessionID)
 		if sessErr != nil {
 			return nil, fmt.Errorf("query agent session: %w", sessErr)
 		}
@@ -282,7 +355,7 @@ func (s *AiAgentSessionService) RequestAgentTurn(ctx context.Context, sessionID 
 		}
 
 		queryActiveTurns := sess.QueryTurns().
-			Where(at.StatusIn(at.StatusQueued, at.StatusRunning))
+			Where(agtt.StatusIn(agtt.StatusQueued, agtt.StatusRunning))
 		activeExists, activeErr := queryActiveTurns.Exist(ctx)
 		if activeErr != nil {
 			return nil, fmt.Errorf("query active agent turn: %w", activeErr)
@@ -303,45 +376,41 @@ func (s *AiAgentSessionService) RequestAgentTurn(ctx context.Context, sessionID 
 			SetSequence(countTurns + 1).
 			SetAgentSessionID(sessionID).
 			SetRiverJobID(jobID).
-			SetStatus(at.StatusQueued)
+			SetStatus(agtt.StatusQueued)
 		if input.Resume != nil {
 			createTurn.SetInputToolResume(input.Resume)
 		}
-		savedTurn, saveTurnErr := createTurn.Save(ctx)
+		turn, saveTurnErr := createTurn.Save(ctx)
 		if saveTurnErr != nil {
 			return nil, fmt.Errorf("create turn: %w", saveTurnErr)
 		}
 
-		turn := savedTurn
-
 		if input.Message != nil {
-			countMsgs, countMsgsErr := sess.QueryMessages().Count(ctx)
-			if countMsgsErr != nil {
-				return nil, fmt.Errorf("count agent messages: %w", countMsgsErr)
+			nextSequence, sequenceErr := getNextAgentSessionMessageSequence(ctx, sess.QueryMessages())
+			if sequenceErr != nil {
+				return nil, sequenceErr
 			}
 
-			role := agentmessage.Role(input.Message.Role)
-			if roleErr := agentmessage.RoleValidator(role); roleErr != nil {
+			role := agtm.Role(input.Message.Role)
+			if roleErr := agtm.RoleValidator(role); roleErr != nil {
 				return nil, fmt.Errorf("message role validator: %w", roleErr)
 			}
 
-			inputMsgId := uuid.New()
 			createInputMsg := tx.AgentMessage.Create().
-				SetID(inputMsgId).
 				SetAgentSessionID(sessionID).
 				SetAgentTurnID(turnID).
-				SetSequence(countMsgs + 1).
-				SetRole(agentmessage.RoleUser).
+				SetSequence(nextSequence).
+				SetRole(agtm.RoleUser).
 				SetMetadata(input.Message.Metadata).
 				SetContent(input.Message.Content)
-			if inputMsgErr := createInputMsg.Exec(ctx); inputMsgErr != nil {
+			inputMsg, inputMsgErr := createInputMsg.Save(ctx)
+			if inputMsgErr != nil {
 				return nil, fmt.Errorf("save input message: %w", inputMsgErr)
 			}
-			updateTurnMessageID := tx.AgentTurn.UpdateOneID(turnID).SetInputMessageID(inputMsgId)
-			if updateTurnErr := updateTurnMessageID.Exec(ctx); updateTurnErr != nil {
-				return nil, fmt.Errorf("set turn input message id: %w", updateTurnErr)
+			turn, saveTurnErr = turn.Update().SetInputMessage(inputMsg).Save(ctx)
+			if saveTurnErr != nil {
+				return nil, fmt.Errorf("set turn input message id: %w", saveTurnErr)
 			}
-			turn.InputMessageID = &inputMsgId
 		}
 
 		return turn, nil
@@ -366,54 +435,6 @@ func (s *AiAgentSessionService) insertInvokeAgentTurnJob(ctx context.Context, se
 	return result.Job.ID, nil
 }
 
-func (s *AiAgentSessionService) queryAgentTurns(ctx context.Context) *ent.AgentTurnQuery {
-	return s.db.Client(ctx).AgentTurn.Query()
-}
-
-func (s *AiAgentSessionService) GetAgentTurn(ctx context.Context, id uuid.UUID) (*ent.AgentTurn, error) {
-	return s.queryAgentTurns(ctx).
-		Where(at.ID(id)).
-		Only(ctx)
-}
-
-func (s *AiAgentSessionService) ListAgentTurns(ctx context.Context, params rez.ListAiAgentTurnsParams) (*ent.ListResult[ent.AgentTurn], error) {
-	query := s.queryAgentTurns(ctx).
-		Where(params.Predicates...).
-		Order(at.BySequence(sql.OrderDesc()), at.ByID(sql.OrderDesc()))
-	return ent.DoListQuery[ent.AgentTurn, *ent.AgentTurnQuery](ctx, query, params.ListParams)
-}
-
-func (s *AiAgentSessionService) GetLatestTurnForSession(ctx context.Context, sessionId uuid.UUID) (*ent.AgentTurn, error) {
-	query := s.queryAgentTurns(ctx).
-		Where(at.AgentSessionID(sessionId)).
-		Order(at.BySequence(sql.OrderDesc()))
-	return query.First(ctx)
-}
-
-func (s *AiAgentSessionService) GetLastSuccessfulAgentTurn(ctx context.Context, sessionID uuid.UUID) (*ent.AgentTurn, error) {
-	queryTurn := s.queryAgentTurns(ctx).
-		Where(at.AgentSessionID(sessionID), at.StatusEQ(at.StatusCompleted)).
-		Order(at.BySequence(sql.OrderDesc()))
-	turn, turnErr := queryTurn.First(ctx)
-	if turnErr != nil && !ent.IsNotFound(turnErr) {
-		return nil, turnErr
-	}
-	return turn, nil
-}
-
-func (s *AiAgentSessionService) lookupAgentTurnSessionAndAcquireLock(ctx context.Context, tx *ent.Client, turnID uuid.UUID) (*ent.AgentSession, error) {
-	querySession := tx.AgentSession.Query().
-		Where(as.HasTurnsWith(at.ID(turnID)))
-	sess, sessErr := querySession.Only(ctx)
-	if sessErr != nil {
-		return nil, sessErr
-	}
-	if lockErr := acquireAgentSessionTurnLock(ctx, s.db, sess.ID); lockErr != nil {
-		return nil, fmt.Errorf("lock agent session: %w", lockErr)
-	}
-	return sess, nil
-}
-
 func (s *AiAgentSessionService) AbortAgentTurn(ctx context.Context, turnID uuid.UUID) (*ent.AgentTurn, error) {
 	return ent.WithTxReturning(ctx, s.db, func(ctx context.Context, tx *ent.Client) (*ent.AgentTurn, error) {
 		_, sessErr := s.lookupAgentTurnSessionAndAcquireLock(ctx, tx, turnID)
@@ -424,10 +445,10 @@ func (s *AiAgentSessionService) AbortAgentTurn(ctx context.Context, turnID uuid.
 		if turnErr != nil {
 			return nil, turnErr
 		}
-		if turn.Status == at.StatusAborted {
+		if turn.Status == agtt.StatusAborted {
 			return turn, nil
 		}
-		if turn.Status != at.StatusQueued && turn.Status != at.StatusRunning {
+		if turn.Status != agtt.StatusQueued && turn.Status != agtt.StatusRunning {
 			return nil, fmt.Errorf("%w: only queued or running turns can be aborted", rez.ErrConflict)
 		}
 		if cancelErr := s.jobs.Cancel(ctx, turn.RiverJobID); cancelErr != nil {
@@ -435,10 +456,10 @@ func (s *AiAgentSessionService) AbortAgentTurn(ctx context.Context, turnID uuid.
 		}
 
 		update := turn.Update().
-			SetStatus(at.StatusAborted).
+			SetStatus(agtt.StatusAborted).
 			SetFinishReason(string(aix.AgentFinishReasonAborted)).
 			SetFinishedAt(time.Now().UTC())
-		if turn.Status == at.StatusQueued {
+		if turn.Status == agtt.StatusQueued {
 			update.ClearError()
 		}
 		savedTurn, saveTurnErr := update.Save(ctx)
@@ -464,10 +485,11 @@ func (s *AiAgentSessionService) RetryAgentTurn(ctx context.Context, turnID uuid.
 		if turnErr != nil {
 			return nil, turnErr
 		}
-		if turn.Status != at.StatusFailed {
+		if turn.Status != agtt.StatusFailed {
 			return nil, fmt.Errorf("%w: only failed turns can be retried", rez.ErrConflict)
 		}
-		queryActive := sess.QueryTurns().Where(at.IDNEQ(turn.ID), at.StatusIn(at.StatusQueued, at.StatusRunning))
+		queryActive := sess.QueryTurns().
+			Where(agtt.IDNEQ(turn.ID), agtt.StatusIn(agtt.StatusQueued, agtt.StatusRunning))
 		activeExists, activeErr := queryActive.Exist(ctx)
 		if activeErr != nil {
 			return nil, fmt.Errorf("query active agent turn: %w", activeErr)
@@ -487,7 +509,7 @@ func (s *AiAgentSessionService) RetryAgentTurn(ctx context.Context, turnID uuid.
 			ClearStartedAt().
 			ClearFinishedAt().
 			SetRiverJobID(jobID).
-			SetStatus(at.StatusQueued)
+			SetStatus(agtt.StatusQueued)
 		savedTurn, saveTurnErr := updateTurn.Save(ctx)
 		if saveTurnErr != nil {
 			return nil, fmt.Errorf("retry agent turn: %w", saveTurnErr)
@@ -503,6 +525,7 @@ func (s *AiAgentSessionService) RetryAgentTurn(ctx context.Context, turnID uuid.
 
 func (s *AiAgentSessionService) publishTurnUpdated(ctx context.Context, turn *ent.AgentTurn) error {
 	event := rezai.AgentTurnUpdated{
+		StartedAt:      turn.StartedAt,
 		AgentSessionId: turn.AgentSessionID,
 		AgentTurnId:    turn.ID,
 		Status:         turn.Status,

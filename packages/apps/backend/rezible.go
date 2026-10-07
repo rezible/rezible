@@ -728,7 +728,10 @@ type (
 		Turn    *ent.AgentTurn
 		State   AiAgentTurnState
 		Input   *AiAgentTurnInput
-		OnChunk func(AiAgentTurnChunk)
+		// ContinueFromState resumes committed messages without sending Input again.
+		// Input remains available to invocation middleware as the turn's assignment.
+		ContinueFromState bool
+		OnChunk           func(AiAgentTurnChunk)
 	}
 
 	AiAgentInvocationResult struct {

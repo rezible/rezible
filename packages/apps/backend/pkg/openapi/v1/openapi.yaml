@@ -443,6 +443,9 @@ components:
           $ref: "#/components/schemas/AgentModelChunk"
         sessionId:
           type: string
+        startedAt:
+          format: date-time
+          type: string
         turnEnd:
           $ref: "#/components/schemas/AgentTurnEndChunk"
         turnId:
@@ -508,6 +511,9 @@ components:
         finishReason:
           type: string
         sessionId:
+          type: string
+        startedAt:
+          format: date-time
           type: string
         status:
           type: string
@@ -6518,6 +6524,7 @@ components:
         custom:
           additionalProperties: {}
           type: object
+        data: {}
         kind:
           format: int32
           type: integer

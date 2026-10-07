@@ -30,12 +30,14 @@ type LiveOverlayModel = {
 
 export type LiveOverlay = {
 	models: Map<string, LiveOverlayModel>;
-	artifacts: Map<string, AgentArtifactChunk>;
+	artifacts: Map<string, AgentArtifactChunk & { turnId: string }>;
+	attempts: Map<string, { startedAt: string; closed: boolean }>;
 	reconcilingTurns: Set<string>;
 };
 
 export const emptyOverlay = (): LiveOverlay => ({
 	models: new Map(),
+	attempts: new Map(),
 	artifacts: new Map(),
 	reconcilingTurns: new Set(),
 });
@@ -43,8 +45,60 @@ export const emptyOverlay = (): LiveOverlay => ({
 export const eventMatchesSession = (openSessionId: string, event: { sessionId: string }) =>
 	event.sessionId === openSessionId;
 
-export const applyModelChunk = (overlay: LiveOverlay, turnId: string, chunk: AgentModelChunk) => {
-	const updatedOverlay = { ...overlay, models: new Map(overlay.models) };
+// Status events and chunks use separate subscriptions and can arrive out of order.
+// Either may introduce an attempt. Only a newer started_at resets its overlays;
+// delayed status events must preserve current chunks, and older attempts are ignored.
+// Preserve sub-millisecond precision: Date alone can merge distinct attempts.
+const attemptKey = (startedAt: string) => {
+	const seconds = new Date(startedAt).toISOString().slice(0, 19);
+	const fraction = startedAt.match(/\.(\d+)/)?.[1] ?? "";
+	return `${seconds}.${fraction.padEnd(9, "0")}Z`;
+};
+
+export const acceptAttempt = (
+	overlay: LiveOverlay,
+	turnId: string,
+	startedAt: string
+): LiveOverlay | null => {
+	const key = attemptKey(startedAt);
+	const previous = overlay.attempts.get(turnId);
+	if (previous && key < previous.startedAt) {
+		return null;
+	}
+	if (previous?.startedAt === key) {
+		return overlay;
+	}
+	const attempts = new Map(overlay.attempts).set(turnId, { startedAt: key, closed: false });
+	const models = new Map([...overlay.models].filter(([, model]) => model.turnId !== turnId));
+	const artifacts = new Map([...overlay.artifacts].filter(([, artifact]) => artifact.turnId !== turnId));
+	const reconcilingTurns = new Set(overlay.reconcilingTurns);
+	reconcilingTurns.delete(turnId);
+	return { models, artifacts, attempts, reconcilingTurns };
+};
+
+export const closeAttempt = (overlay: LiveOverlay, turnId: string, startedAt: string) => {
+	const accepted = acceptAttempt(overlay, turnId, startedAt);
+	if (!accepted) {
+		return overlay;
+	}
+	const attempts = new Map(accepted.attempts).set(turnId, {
+		startedAt: attemptKey(startedAt),
+		closed: true,
+	});
+	return { ...accepted, attempts, reconcilingTurns: new Set(accepted.reconcilingTurns).add(turnId) };
+};
+
+export const applyModelChunk = (
+	overlay: LiveOverlay,
+	turnId: string,
+	startedAt: string,
+	chunk: AgentModelChunk
+) => {
+	const accepted = acceptAttempt(overlay, turnId, startedAt);
+	if (!accepted || accepted.attempts.get(turnId)?.closed) {
+		return overlay;
+	}
+	const updatedOverlay = { ...accepted, models: new Map(accepted.models) };
 	const key = `${turnId}:${chunk.index}`;
 	const previous = updatedOverlay.models.get(key);
 	updatedOverlay.models.set(key, {
@@ -56,16 +110,28 @@ export const applyModelChunk = (overlay: LiveOverlay, turnId: string, chunk: Age
 	return updatedOverlay;
 };
 
-export const applyArtifactChunk = (overlay: LiveOverlay, chunk: AgentArtifactChunk) => ({
-	...overlay,
-	artifacts: new Map(overlay.artifacts).set(chunk.name, chunk),
-});
+export const applyArtifactChunk = (
+	overlay: LiveOverlay,
+	turnId: string,
+	startedAt: string,
+	chunk: AgentArtifactChunk
+) => {
+	const accepted = acceptAttempt(overlay, turnId, startedAt);
+	if (!accepted || accepted.attempts.get(turnId)?.closed) {
+		return overlay;
+	}
+	return { ...accepted, artifacts: new Map(accepted.artifacts).set(chunk.name, { ...chunk, turnId }) };
+};
 
-export const reconcileTurn = (overlay: LiveOverlay, turnId: string) => {
+export const reconcileTurn = (overlay: LiveOverlay, turnId: string, startedAt: string) => {
+	if (overlay.attempts.get(turnId)?.startedAt !== attemptKey(startedAt)) {
+		return overlay;
+	}
 	const models = new Map([...overlay.models].filter(([, model]) => model.turnId !== turnId));
+	const artifacts = new Map([...overlay.artifacts].filter(([, artifact]) => artifact.turnId !== turnId));
 	const reconcilingTurns = new Set(overlay.reconcilingTurns);
 	reconcilingTurns.delete(turnId);
-	return { models, artifacts: new Map(), reconcilingTurns };
+	return { ...overlay, models, artifacts, reconcilingTurns };
 };
 
 export const mergedArtifacts = (persisted: AgentArtifact[], overlay: LiveOverlay) => {
