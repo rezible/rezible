@@ -15,6 +15,7 @@ import (
 
 type InvestigationsHandler interface {
 	GetInvestigation(context.Context, *GetInvestigationRequest) (*GetInvestigationResponse, error)
+	UpdateInvestigation(context.Context, *UpdateInvestigationRequest) (*UpdateInvestigationResponse, error)
 
 	SubmitInvestigationUserInput(context.Context, *SubmitInvestigationUserInputRequest) (*SubmitInvestigationUserInputResponse, error)
 	ListInvestigationUserInputs(context.Context, *ListInvestigationUserInputsRequest) (*ListInvestigationUserInputsResponse, error)
@@ -31,6 +32,7 @@ type InvestigationsHandler interface {
 
 func (o operations) RegisterInvestigations(api huma.API) {
 	huma.Register(api, GetInvestigation, o.GetInvestigation)
+	huma.Register(api, UpdateInvestigation, o.UpdateInvestigation)
 
 	huma.Register(api, SubmitInvestigationUserInput, o.SubmitInvestigationUserInput)
 	huma.Register(api, ListInvestigationUserInputs, o.ListInvestigationUserInputs)
@@ -60,6 +62,10 @@ type (
 		HasPendingWork bool                     `json:"hasPendingWork"`
 		CreatedAt      time.Time                `json:"createdAt"`
 		UpdatedAt      time.Time                `json:"updatedAt"`
+
+		PendingEvidenceRevisions int       `json:"pendingEvidenceRevisions"`
+		AutomaticUpdatesPaused   bool      `json:"automaticUpdatesPaused"`
+		EvidenceCurrentAsOf      time.Time `json:"evidenceCurrentAsOf"`
 	}
 
 	InvestigationReport struct {
@@ -163,6 +169,10 @@ func InvestigationFromDetail(detail *rez.InvestigationDetail) Investigation {
 		HasPendingWork: detail.HasPendingWork,
 		CreatedAt:      inv.CreatedAt,
 		UpdatedAt:      inv.UpdatedAt,
+
+		PendingEvidenceRevisions: detail.PendingEvidenceRevisions,
+		AutomaticUpdatesPaused:   detail.AutomaticUpdatesPaused,
+		EvidenceCurrentAsOf:      detail.EvidenceCurrentAsOf,
 	}
 	return Investigation{Id: inv.ID, Attributes: attrs}
 }
@@ -280,6 +290,20 @@ var GetInvestigation = openapi.Operation{
 
 type GetInvestigationRequest IdRequest
 type GetInvestigationResponse ItemResponse[Investigation]
+
+// UpdateInvestigation starts one turn for pending work, even when automatic updates are paused. It does
+// nothing while a turn is queued or running, or when nothing is pending.
+var UpdateInvestigation = openapi.Operation{
+	OperationID: "update-investigation",
+	Method:      http.MethodPost,
+	Path:        "/investigations/{id}/update",
+	Summary:     "Update Investigation",
+	Tags:        investigationsTags,
+	Errors:      ErrorCodes(),
+}
+
+type UpdateInvestigationRequest IdRequest
+type UpdateInvestigationResponse ItemResponse[Investigation]
 
 var GetInvestigationReport = openapi.Operation{
 	OperationID: "get-investigation-report",

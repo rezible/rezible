@@ -221,7 +221,7 @@ CREATE INDEX "investigationevidencerevision_tenant_id" ON "investigation_evidenc
 -- create index "investigationevidencerevision_investigation_id_key" to table: "investigation_evidence_revisions"
 CREATE UNIQUE INDEX "investigationevidencerevision_investigation_id_key" ON "investigation_evidence_revisions" ("investigation_id", "key");
 -- create index "investigationevidencerevision_investigation_id_agent_turn_id" to table: "investigation_evidence_revisions"
-CREATE UNIQUE INDEX "investigationevidencerevision_investigation_id_agent_turn_id" ON "investigation_evidence_revisions" ("investigation_id", "agent_turn_id");
+CREATE INDEX "investigationevidencerevision_investigation_id_agent_turn_id" ON "investigation_evidence_revisions" ("investigation_id", "agent_turn_id");
 -- create index "investigationevidencerevision_investigation_id_created_at_id" to table: "investigation_evidence_revisions"
 CREATE INDEX "investigationevidencerevision_investigation_id_created_at_id" ON "investigation_evidence_revisions" ("investigation_id", "created_at", "id");
 -- create "investigation_findings" table

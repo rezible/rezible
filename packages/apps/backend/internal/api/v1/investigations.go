@@ -27,6 +27,19 @@ func (h *investigationsHandler) GetInvestigation(ctx context.Context, req *oapi.
 	return &resp, nil
 }
 
+func (h *investigationsHandler) UpdateInvestigation(ctx context.Context, req *oapi.UpdateInvestigationRequest) (*oapi.UpdateInvestigationResponse, error) {
+	if updateErr := h.investigations.UpdateInvestigation(ctx, req.Id); updateErr != nil {
+		return nil, oapi.Error(ctx, "update investigation", updateErr)
+	}
+	detail, getErr := h.investigations.ReadInvestigationDetail(ctx, req.Id)
+	if getErr != nil {
+		return nil, oapi.Error(ctx, "get updated investigation", getErr)
+	}
+	var resp oapi.UpdateInvestigationResponse
+	resp.Body.Data = oapi.InvestigationFromDetail(detail)
+	return &resp, nil
+}
+
 func (h *investigationsHandler) GetInvestigationReport(ctx context.Context, req *oapi.GetInvestigationReportRequest) (*oapi.GetInvestigationReportResponse, error) {
 	params := rez.ReadInvestigationReportParams{
 		InvestigationID: req.Id,

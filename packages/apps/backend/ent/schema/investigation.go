@@ -137,7 +137,7 @@ func (InvestigationEvidenceRevision) Fields() []ent.Field {
 func (InvestigationEvidenceRevision) Indexes() []ent.Index {
 	return []ent.Index{
 		index.Fields("investigation_id", "key").Unique(),
-		index.Fields("investigation_id", "agent_turn_id").Unique(),
+		index.Fields("investigation_id", "agent_turn_id"),
 		index.Fields("investigation_id", "created_at", "id"),
 	}
 }

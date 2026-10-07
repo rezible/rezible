@@ -1656,7 +1656,7 @@ var (
 			},
 			{
 				Name:    "investigationevidencerevision_investigation_id_agent_turn_id",
-				Unique:  true,
+				Unique:  false,
 				Columns: []*schema.Column{InvestigationEvidenceRevisionsColumns[4], InvestigationEvidenceRevisionsColumns[6]},
 			},
 			{

@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"entgo.io/ent/dialect/sql"
+	mapset "github.com/deckarep/golang-set/v2"
 	"github.com/firebase/genkit/go/ai"
 	"github.com/google/uuid"
 
@@ -179,17 +180,40 @@ func (s *InvestigationService) ReadInvestigationDetail(ctx context.Context, invI
 
 		queryPendingRevisions := curr.QueryEvidenceRevisions().
 			Where(inver.AgentTurnIDIsNil())
-		hasPendingRevisions, pendingRevisionsErr := queryPendingRevisions.Exist(ctx)
+		pendingRevisions, pendingRevisionsErr := queryPendingRevisions.Count(ctx)
 		if pendingRevisionsErr != nil {
-			return nil, fmt.Errorf("check pending investigation evidence revisions: %w", pendingRevisionsErr)
+			return nil, fmt.Errorf("count pending investigation evidence revisions: %w", pendingRevisionsErr)
+		}
+
+		automaticUpdatesPaused := false
+		if pendingRevisions > 0 {
+			evidenceTurns, countErr := s.countEvidenceTurns(ctx, curr.ID)
+			if countErr != nil {
+				return nil, countErr
+			}
+			automaticUpdatesPaused = evidenceTurns >= MaxEvidenceTurns
+		}
+
+		evidenceCurrentAsOf := curr.CreatedAt
+		queryReflectedRevision := curr.QueryEvidenceRevisions().
+			Where(inver.HasAgentTurnWith(at.StatusEQ(at.StatusCompleted))).
+			Order(inver.ByCreatedAt(sql.OrderDesc()), inver.ByID(sql.OrderDesc()))
+		reflectedRevision, reflectedErr := queryReflectedRevision.First(ctx)
+		if reflectedErr == nil {
+			evidenceCurrentAsOf = reflectedRevision.CreatedAt
+		} else if !ent.IsNotFound(reflectedErr) {
+			return nil, fmt.Errorf("load newest reflected investigation evidence revision: %w", reflectedErr)
 		}
 
 		detail := &rez.InvestigationDetail{
-			Investigation:  curr,
-			Query:          input.Query,
-			LatestTurn:     latestTurn,
-			ActiveTurn:     activeTurn,
-			HasPendingWork: hasPendingInputs || hasPendingRevisions,
+			Investigation:            curr,
+			Query:                    input.Query,
+			LatestTurn:               latestTurn,
+			ActiveTurn:               activeTurn,
+			HasPendingWork:           hasPendingInputs || pendingRevisions > 0,
+			PendingEvidenceRevisions: pendingRevisions,
+			AutomaticUpdatesPaused:   automaticUpdatesPaused,
+			EvidenceCurrentAsOf:      evidenceCurrentAsOf,
 		}
 		return detail, nil
 	})
@@ -351,7 +375,22 @@ func (s *InvestigationService) RecordInvestigationEvidenceRevision(ctx context.C
 	})
 }
 
+// MaxEvidenceTurns is how many turns driven only by evidence revisions an investigation runs on its own.
+// After that, pending revisions wait for a person to update it or ask a question.
+const MaxEvidenceTurns = 10
+
 func (s *InvestigationService) ReconcileInvestigation(ctx context.Context, investigationID uuid.UUID) error {
+	return s.reconcile(ctx, investigationID, false)
+}
+
+// UpdateInvestigation starts one turn for pending work, ignoring the automatic evidence turn limit.
+func (s *InvestigationService) UpdateInvestigation(ctx context.Context, investigationID uuid.UUID) error {
+	return s.reconcile(ctx, investigationID, true)
+}
+
+// reconcile gives the oldest pending question, if any, and every pending evidence revision to one new turn
+// when no turn is queued or running.
+func (s *InvestigationService) reconcile(ctx context.Context, investigationID uuid.UUID, ignoreLimit bool) error {
 	if investigationID == uuid.Nil {
 		return fmt.Errorf("%w: investigation ID is required", rez.ErrInvalidInput)
 	}
@@ -400,26 +439,30 @@ func (s *InvestigationService) ReconcileInvestigation(ctx context.Context, inves
 		if userInputErr != nil && !ent.IsNotFound(userInputErr) {
 			return fmt.Errorf("select next investigation user input: %w", userInputErr)
 		}
+		hasUserInput := userInputErr == nil
 
-		evidenceRevisionQuery := tx.InvestigationEvidenceRevision.Query().
+		evidenceRevisionsQuery := tx.InvestigationEvidenceRevision.Query().
 			Where(inver.InvestigationID(investigationID), inver.AgentTurnIDIsNil()).
 			Order(inver.ByCreatedAt(sql.OrderAsc()), inver.ByID(sql.OrderAsc()))
-		evidenceRevision, evidenceRevisionErr := evidenceRevisionQuery.First(ctx)
-		if evidenceRevisionErr != nil && !ent.IsNotFound(evidenceRevisionErr) {
-			return fmt.Errorf("select next investigation evidence revision: %w", evidenceRevisionErr)
+		evidenceRevisions, evidenceRevisionsErr := evidenceRevisionsQuery.All(ctx)
+		if evidenceRevisionsErr != nil {
+			return fmt.Errorf("select pending investigation evidence revisions: %w", evidenceRevisionsErr)
 		}
-		if ent.IsNotFound(userInputErr) && ent.IsNotFound(evidenceRevisionErr) {
+		if !hasUserInput && len(evidenceRevisions) == 0 {
 			return nil
 		}
 
-		messageSections := make([]string, 0, 2)
-		if userInputErr == nil {
-			messageSections = append(messageSections, "User question:\n"+userInput.Text)
+		if !hasUserInput && !ignoreLimit {
+			evidenceTurns, countErr := s.countEvidenceTurns(ctx, investigationID)
+			if countErr != nil {
+				return countErr
+			}
+			if evidenceTurns >= MaxEvidenceTurns {
+				return nil
+			}
 		}
-		if evidenceRevisionErr == nil {
-			messageSections = append(messageSections, "Evidence revised:\n"+evidenceRevision.Explanation)
-		}
-		turnInput := &rez.AiAgentTurnInput{Message: ai.NewUserTextMessage(strings.Join(messageSections, "\n\n"))}
+
+		turnInput := &rez.AiAgentTurnInput{Message: ai.NewUserTextMessage(s.turnMessage(userInput, evidenceRevisions))}
 		turn, requestTurnErr := s.agents.RequestAgentTurn(ctx, current.AgentSessionID, &rez.RequestAiAgentTurnParams{Input: turnInput})
 		if requestTurnErr != nil {
 			return fmt.Errorf("request investigation turn: %w", requestTurnErr)
@@ -435,7 +478,7 @@ func (s *InvestigationService) ReconcileInvestigation(ctx context.Context, inves
 			return fmt.Errorf("%w: requested turn belongs to another investigation", rez.ErrConflict)
 		}
 
-		if userInputErr == nil {
+		if hasUserInput {
 			assignInput := tx.InvestigationUserInput.Update().
 				Where(
 					invui.ID(userInput.ID),
@@ -451,22 +494,71 @@ func (s *InvestigationService) ReconcileInvestigation(ctx context.Context, inves
 				return fmt.Errorf("%w: investigation user input was assigned concurrently", rez.ErrConflict)
 			}
 		}
-		if evidenceRevisionErr == nil {
-			assignRevision := tx.InvestigationEvidenceRevision.Update().
+		if len(evidenceRevisions) > 0 {
+			revisionIDs := make([]uuid.UUID, 0, len(evidenceRevisions))
+			for _, revision := range evidenceRevisions {
+				revisionIDs = append(revisionIDs, revision.ID)
+			}
+			assignRevisions := tx.InvestigationEvidenceRevision.Update().
 				Where(
-					inver.ID(evidenceRevision.ID),
+					inver.IDIn(revisionIDs...),
 					inver.InvestigationID(investigationID),
 					inver.AgentTurnIDIsNil(),
 				).
 				SetAgentTurnID(turn.ID)
-			updated, updateErr := assignRevision.Save(ctx)
+			updated, updateErr := assignRevisions.Save(ctx)
 			if updateErr != nil {
-				return fmt.Errorf("assign investigation evidence revision to turn: %w", updateErr)
+				return fmt.Errorf("assign investigation evidence revisions to turn: %w", updateErr)
 			}
-			if updated != 1 {
-				return fmt.Errorf("%w: investigation evidence revision was assigned concurrently", rez.ErrConflict)
+			if updated != len(revisionIDs) {
+				return fmt.Errorf("%w: investigation evidence revisions were assigned concurrently", rez.ErrConflict)
 			}
 		}
 		return nil
 	})
+}
+
+// turnMessage lists the question, if any, then each distinct evidence revision explanation, oldest first.
+func (s *InvestigationService) turnMessage(userInput *ent.InvestigationUserInput, evidenceRevisions []*ent.InvestigationEvidenceRevision) string {
+	messageSections := make([]string, 0, 2)
+	if userInput != nil {
+		messageSections = append(messageSections, "User question:\n"+userInput.Text)
+	}
+	if len(evidenceRevisions) > 0 {
+		seen := mapset.NewSet[string]()
+		explanations := make([]string, 0, len(evidenceRevisions))
+		for _, revision := range evidenceRevisions {
+			if seen.Add(revision.Explanation) {
+				explanations = append(explanations, revision.Explanation)
+			}
+		}
+		messageSections = append(messageSections, "Evidence revised:\n"+strings.Join(explanations, "\n"))
+	}
+	return strings.Join(messageSections, "\n\n")
+}
+
+// countEvidenceTurns counts the investigation's turns that took evidence revisions and no question.
+func (s *InvestigationService) countEvidenceTurns(ctx context.Context, investigationID uuid.UUID) (int, error) {
+	client := s.db.Client(ctx)
+	queryQuestionTurns := client.InvestigationUserInput.Query().
+		Where(invui.InvestigationID(investigationID), invui.AgentTurnIDNotNil()).
+		Select(invui.FieldAgentTurnID)
+	var questionTurnIDs []uuid.UUID
+	if scanErr := queryQuestionTurns.Scan(ctx, &questionTurnIDs); scanErr != nil {
+		return 0, fmt.Errorf("list investigation question turns: %w", scanErr)
+	}
+
+	queryEvidenceTurns := client.InvestigationEvidenceRevision.Query().
+		Where(
+			inver.InvestigationID(investigationID),
+			inver.AgentTurnIDNotNil(),
+			inver.AgentTurnIDNotIn(questionTurnIDs...),
+		).
+		Unique(true).
+		Select(inver.FieldAgentTurnID)
+	evidenceTurns, countErr := queryEvidenceTurns.Count(ctx)
+	if countErr != nil {
+		return 0, fmt.Errorf("count investigation evidence turns: %w", countErr)
+	}
+	return evidenceTurns, nil
 }

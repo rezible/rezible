@@ -15,6 +15,7 @@ import {
 	listInvestigationUserInputsQueryKey,
 	retryAgentTurnMutation,
 	submitInvestigationUserInputMutation,
+	updateInvestigationMutation,
 	type InvestigationFinding,
 	type ListInvestigationUserInputsResponse,
 	type ErrorModel,
@@ -25,6 +26,7 @@ import { createPaginatedQuery } from "$lib/api/queryPaginator.svelte";
 import { Context, watch } from "runed";
 import { SITUATION_POLL_INTERVAL_MS, isDefinitiveUnavailableError } from "$features/situations/lib/model";
 import { formatTime } from "$lib/time";
+import { investigationUpdateNotice } from "$features/situations/lib/status";
 import {
 	buildCitationIndex,
 	buildFindingViews,
@@ -103,9 +105,11 @@ export class SituationInvestigationController {
 	retryNeedsRefresh = $state(false);
 	retryMessage = $state("");
 	retryError = $state("");
+	updateError = $state("");
 
 	questionSubmitMutation = createMutation(() => submitInvestigationUserInputMutation());
 	retryMutation = createMutation(() => retryAgentTurnMutation());
+	updateMutation = createMutation(() => updateInvestigationMutation());
 
 	questionPage = createPaginatedQuery<
 		ListInvestigationUserInputsResponse,
@@ -180,7 +184,7 @@ export class SituationInvestigationController {
 	citedEvidenceCount = $derived(this.citationIndex.size);
 	conclusion = $derived(this.getConclusion());
 	expandedOutputIds = new SvelteSet<string>();
-	runNotice = $derived(this.getRunNotice());
+	updateNotice = $derived(investigationUpdateNotice(this.investigationAttributes));
 	questionTotal = $derived(this.questionQuery.data?.pagination.total ?? 0);
 	lastQuestionPage = $derived(Math.max(1, Math.ceil(this.questionTotal / QUESTION_PAGE_SIZE)));
 	questionFetching = $derived(this.questionQuery.isFetching);
@@ -428,6 +432,22 @@ export class SituationInvestigationController {
 		}
 	};
 
+	updateNow = async () => {
+		if (!this.investigationId || this.updateMutation.isPending) {
+			return;
+		}
+
+		this.updateError = "";
+		const path = idPath(this.investigationId);
+		try {
+			const updated = await this.updateMutation.mutateAsync({ path });
+			this.queryClient.setQueryData(getInvestigationOptions({ path }).queryKey, updated);
+		} catch (error) {
+			this.updateError = errorMessage(error, "The update could not be started.");
+		}
+		await this.refreshVisibleInvestigationData();
+	};
+
 	refreshRetryStatus = async () => {
 		if (this.retryReconciling) {
 			return;
@@ -517,21 +537,6 @@ export class SituationInvestigationController {
 		return undefined;
 	}
 
-	private getRunNotice() {
-		const run = this.pageController.runStatus;
-		if (this.investigationAttributes?.activeTurn) {
-			return "The investigation is running. Findings and the report update as they are published.";
-		}
-		const latestStatus = this.investigationAttributes?.latestTurn?.status;
-		if (latestStatus === "failed" || latestStatus === "aborted") {
-			return run.description;
-		}
-		if (this.investigationAttributes?.hasPendingWork) {
-			return "Follow-up work is waiting to run.";
-		}
-		return undefined;
-	}
-
 	private outputRefetchInterval(error: ErrorModel | null) {
 		if (isDefinitiveUnavailableError(error) || this.investigationUnavailable) {
 			return false;
@@ -552,6 +557,7 @@ export class SituationInvestigationController {
 		this.retryMessage = "";
 		this.retryError = "";
 		this.retryNeedsRefresh = false;
+		this.updateError = "";
 	}
 
 	private getQuestionSuccessMessage() {

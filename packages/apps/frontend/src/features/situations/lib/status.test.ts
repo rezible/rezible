@@ -4,6 +4,7 @@ import {
 	activeHoldUntil,
 	hypothesisStatus,
 	investigationRunStatus,
+	investigationUpdateNotice,
 	longRunningStatus,
 	situationStatus,
 } from "./status";
@@ -99,6 +100,62 @@ test("investigationRunStatus prefers the active turn", () => {
 	expect(investigationRunStatus(investigation({ latestTurn: turn("failed") })).description).toBe(
 		"The investigation turn could not finish."
 	);
+});
+
+test("investigationUpdateNotice: updating, failed or stopped, paused, pending, then up to date", () => {
+	const failedTurn = { ...turn("failed"), finishedAt: at };
+	const cases: [Partial<InvestigationAttributes>, string | undefined, boolean][] = [
+		[
+			{ activeTurn: turn("running"), latestTurn: failedTurn, automaticUpdatesPaused: true },
+			"Running",
+			false,
+		],
+		[
+			{ latestTurn: failedTurn, pendingEvidenceRevisions: 2, automaticUpdatesPaused: true },
+			"Failed",
+			true,
+		],
+		[{ latestTurn: failedTurn, pendingEvidenceRevisions: 0 }, "Failed", false],
+		[{ latestTurn: turn("aborted"), pendingEvidenceRevisions: 2 }, "Stopped", true],
+		[{ latestTurn: turn("aborted"), pendingEvidenceRevisions: 0 }, "Stopped", false],
+		[
+			{ latestTurn: turn("completed"), pendingEvidenceRevisions: 2, automaticUpdatesPaused: true },
+			"Paused",
+			true,
+		],
+		[{ latestTurn: turn("completed"), pendingEvidenceRevisions: 2 }, "Pending", true],
+		[{ latestTurn: turn("completed"), pendingEvidenceRevisions: 0 }, "Completed", false],
+		[{ latestTurn: null, pendingEvidenceRevisions: 0 }, undefined, false],
+	];
+	for (const [attributes, label, offerUpdate] of cases) {
+		const notice = investigationUpdateNotice(investigation({ activeTurn: null, ...attributes }));
+		expect([notice?.status.label, notice?.offerUpdate ?? false]).toEqual([label, offerUpdate]);
+	}
+
+	const failed = investigationUpdateNotice(
+		investigation({ activeTurn: null, latestTurn: failedTurn, pendingEvidenceRevisions: 0 })
+	);
+	expect([failed?.at, failed?.pendingMessage]).toEqual([at, undefined]);
+
+	const failedWithPending = investigationUpdateNotice(
+		investigation({ activeTurn: null, latestTurn: failedTurn, pendingEvidenceRevisions: 3 })
+	);
+	expect(failedWithPending?.pendingMessage).toContain("3 evidence changes");
+
+	const stoppedWithPending = investigationUpdateNotice(
+		investigation({ activeTurn: null, latestTurn: turn("aborted"), pendingEvidenceRevisions: 1 })
+	);
+	expect(stoppedWithPending?.pendingMessage).toContain("1 evidence change");
+
+	const current = investigationUpdateNotice(
+		investigation({
+			activeTurn: null,
+			latestTurn: turn("completed"),
+			pendingEvidenceRevisions: 0,
+			evidenceCurrentAsOf: at,
+		})
+	);
+	expect(current?.at).toBe(at);
 });
 
 test("hypothesisStatus maps every status and falls back to Unknown", () => {

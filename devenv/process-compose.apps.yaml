@@ -27,8 +27,9 @@ processes:
     readiness_probe:
       exec:
         command: wget -q -O /dev/null "http://localhost:$${BACKEND_PORT}/ready"
+      initial_delay_seconds: 5
       period_seconds: 1
-      timeout_seconds: 2
+      timeout_seconds: 3
       failure_threshold: 30
     depends_on:
       localias-setup:

@@ -10,6 +10,7 @@ import RiHistoryLine from "remixicon-svelte/icons/history-line";
 import RiEyeLine from "remixicon-svelte/icons/eye-line";
 import RiHourglassLine from "remixicon-svelte/icons/hourglass-line";
 import RiLoader4Line from "remixicon-svelte/icons/loader-4-line";
+import RiPauseCircleLine from "remixicon-svelte/icons/pause-circle-line";
 import RiQuestionLine from "remixicon-svelte/icons/question-line";
 import RiStopCircleLine from "remixicon-svelte/icons/stop-circle-line";
 import RiTimeLine from "remixicon-svelte/icons/time-line";
@@ -158,6 +159,100 @@ export function investigationRunStatus(attributes?: InvestigationAttributes): St
 		default:
 			return { label: "Not started", tone: "neutral", icon: RiTimeLine };
 	}
+}
+
+export type InvestigationUpdateNotice = {
+	status: StatusPresentation;
+	message: string;
+	/** Shown after the message, as a time. */
+	at?: string;
+	/** Pending evidence changes, shown under a failed or stopped headline. */
+	pendingMessage?: string;
+	offerUpdate: boolean;
+};
+
+function evidenceChanges(count: number) {
+	if (count === 1) {
+		return "1 evidence change";
+	}
+	return `${count} evidence changes`;
+}
+
+function pendingEvidenceMessage(attributes: InvestigationAttributes) {
+	const pending = attributes.pendingEvidenceRevisions;
+	if (pending <= 0) {
+		return undefined;
+	}
+	if (attributes.automaticUpdatesPaused) {
+		return `Automatic updates paused. ${evidenceChanges(pending)} not yet reflected.`;
+	}
+	return `${evidenceChanges(pending)} not yet reflected.`;
+}
+
+/**
+ * Whether the investigation's account reflects the current evidence: updating, then a failed or stopped last
+ * update, then paused or pending evidence changes, otherwise up to date. Undefined before the first turn.
+ * Whenever no turn is queued or running, pending evidence changes are shown and can be updated now.
+ */
+export function investigationUpdateNotice(
+	attributes?: InvestigationAttributes
+): InvestigationUpdateNotice | undefined {
+	if (!attributes) {
+		return undefined;
+	}
+
+	const run = investigationRunStatus(attributes);
+	if (attributes.activeTurn) {
+		return {
+			status: run,
+			message: "Updating. Findings and the report change as they are published.",
+			offerUpdate: false,
+		};
+	}
+
+	const pendingMessage = pendingEvidenceMessage(attributes);
+	const offerUpdate = pendingMessage !== undefined;
+	const latestTurn = attributes.latestTurn;
+	if (latestTurn?.status === "failed") {
+		if (latestTurn.finishedAt) {
+			return {
+				status: run,
+				message: "The last update failed at",
+				at: latestTurn.finishedAt,
+				pendingMessage,
+				offerUpdate,
+			};
+		}
+		return { status: run, message: "The last update failed.", pendingMessage, offerUpdate };
+	}
+	if (latestTurn?.status === "aborted") {
+		return { status: run, message: "The last update was stopped.", pendingMessage, offerUpdate };
+	}
+
+	if (pendingMessage) {
+		if (attributes.automaticUpdatesPaused) {
+			return {
+				status: { label: "Paused", tone: "warning", icon: RiPauseCircleLine },
+				message: pendingMessage,
+				offerUpdate,
+			};
+		}
+		return {
+			status: { label: "Pending", tone: "neutral", icon: RiHourglassLine },
+			message: pendingMessage,
+			offerUpdate,
+		};
+	}
+
+	if (!latestTurn) {
+		return undefined;
+	}
+	return {
+		status: run,
+		message: "Up to date with evidence as of",
+		at: attributes.evidenceCurrentAsOf,
+		offerUpdate: false,
+	};
 }
 
 export function hypothesisStatus(status: string): StatusPresentation {

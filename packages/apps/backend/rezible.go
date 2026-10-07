@@ -923,12 +923,21 @@ type (
 		HasPendingWork bool
 		LatestTurn     *ent.AgentTurn
 		ActiveTurn     *ent.AgentTurn
+
+		// PendingEvidenceRevisions counts revisions not yet assigned to a turn.
+		PendingEvidenceRevisions int
+		// AutomaticUpdatesPaused is set when revisions are pending and the evidence turn limit is reached.
+		AutomaticUpdatesPaused bool
+		// EvidenceCurrentAsOf is when the newest revision reflected by a completed turn was recorded, or the
+		// investigation's creation if none is.
+		EvidenceCurrentAsOf time.Time
 	}
 
 	InvestigationService interface {
 		CreateInvestigation(context.Context, CreateInvestigationParams) (*ent.Investigation, error)
 		LookupInvestigation(context.Context, ...predicate.Investigation) (*ent.Investigation, error)
 		ReadInvestigationDetail(context.Context, uuid.UUID) (*InvestigationDetail, error)
+		UpdateInvestigation(context.Context, uuid.UUID) error
 
 		SubmitInvestigationUserInput(context.Context, SubmitInvestigationUserInputParams) (*ent.InvestigationUserInput, error)
 		ListInvestigationUserInputs(context.Context, ListInvestigationUserInputsParams) (*ent.ListResult[ent.InvestigationUserInput], error)

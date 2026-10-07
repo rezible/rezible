@@ -221,6 +221,7 @@ export type AgentTurnResume = {
 };
 
 export type AgentTurnStatusOverview = {
+    finishedAt?: string;
     id: string;
     status: 'queued' | 'running' | 'completed' | 'failed' | 'aborted';
 };
@@ -2092,9 +2093,12 @@ export type Investigation = {
 export type InvestigationAttributes = {
     activeTurn: AgentTurnStatusOverview | null;
     analysisId: string;
+    automaticUpdatesPaused: boolean;
     createdAt: string;
+    evidenceCurrentAsOf: string;
     hasPendingWork: boolean;
     latestTurn: AgentTurnStatusOverview | null;
+    pendingEvidenceRevisions: number;
     query: string;
     sessionId: string;
     updatedAt: string;
@@ -3825,6 +3829,14 @@ export type UpdateIntegrationInstallationResponseBody = {
      */
     readonly $schema?: string;
     data: IntegrationInstallation;
+};
+
+export type UpdateInvestigationResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Investigation;
 };
 
 export type UpdateMeetingScheduleAttributes = {
@@ -9372,6 +9384,53 @@ export type GetInvestigationReportResponses = {
 };
 
 export type GetInvestigationReportResponse = GetInvestigationReportResponses[keyof GetInvestigationReportResponses];
+
+export type UpdateInvestigationData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/investigations/{id}/update';
+};
+
+export type UpdateInvestigationErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type UpdateInvestigationError = UpdateInvestigationErrors[keyof UpdateInvestigationErrors];
+
+export type UpdateInvestigationResponses = {
+    /**
+     * OK
+     */
+    200: UpdateInvestigationResponseBody;
+};
+
+export type UpdateInvestigationResponse = UpdateInvestigationResponses[keyof UpdateInvestigationResponses];
 
 export type ListInvestigationUserInputsData = {
     body?: never;

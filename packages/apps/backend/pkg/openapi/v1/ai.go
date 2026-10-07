@@ -129,8 +129,9 @@ type (
 	}
 
 	AgentTurnStatusOverview struct {
-		Id     uuid.UUID        `json:"id"`
-		Status agentturn.Status `json:"status"`
+		Id         uuid.UUID        `json:"id"`
+		Status     agentturn.Status `json:"status"`
+		FinishedAt *time.Time       `json:"finishedAt,omitempty"`
 	}
 
 	AgentTurnUpdatedEvent struct {
@@ -235,7 +236,7 @@ func AgentTurnStatusOverviewFromDetail(t *ent.AgentTurn) *AgentTurnStatusOvervie
 	if t == nil {
 		return nil
 	}
-	return &AgentTurnStatusOverview{Id: t.ID, Status: t.Status}
+	return &AgentTurnStatusOverview{Id: t.ID, Status: t.Status, FinishedAt: t.FinishedAt}
 }
 
 func AgentMessagePartFromGenkit(part *ai.Part) (*AgentMessagePart, error) {

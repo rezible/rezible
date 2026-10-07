@@ -485,6 +485,9 @@ components:
     AgentTurnStatusOverview:
       additionalProperties: false
       properties:
+        finishedAt:
+          format: date-time
+          type: string
         id:
           type: string
         status:
@@ -4527,7 +4530,12 @@ components:
             - type: "null"
         analysisId:
           type: string
+        automaticUpdatesPaused:
+          type: boolean
         createdAt:
+          format: date-time
+          type: string
+        evidenceCurrentAsOf:
           format: date-time
           type: string
         hasPendingWork:
@@ -4536,6 +4544,9 @@ components:
           anyOf:
             - $ref: "#/components/schemas/AgentTurnStatusOverview"
             - type: "null"
+        pendingEvidenceRevisions:
+          format: int64
+          type: integer
         query:
           type: string
         sessionId:
@@ -4552,6 +4563,9 @@ components:
         - hasPendingWork
         - createdAt
         - updatedAt
+        - pendingEvidenceRevisions
+        - automaticUpdatesPaused
+        - evidenceCurrentAsOf
       type: object
     InvestigationEvidenceRevision:
       additionalProperties: false
@@ -8600,6 +8614,21 @@ components:
           type: string
         data:
           $ref: "#/components/schemas/IntegrationInstallation"
+      required:
+        - data
+      type: object
+    UpdateInvestigationResponseBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/UpdateInvestigationResponseBody.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          $ref: "#/components/schemas/Investigation"
       required:
         - data
       type: object
@@ -16031,6 +16060,61 @@ paths:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
       summary: Get Investigation Report
+      tags:
+        - Investigations
+  /investigations/{id}/update:
+    post:
+      operationId: update-investigation
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UpdateInvestigationResponseBody"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: Update Investigation
       tags:
         - Investigations
   /investigations/{id}/user-inputs:
