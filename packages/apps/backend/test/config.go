@@ -63,6 +63,10 @@ func loadConfig(ctx context.Context, overrides map[string]any) (rez.Config, erro
 
 		"ai.agents.max_workers":    1,
 		"ai.agents.worker_timeout": 30 * time.Second,
+
+		// River otherwise finds retried and newly due jobs only on its 1s fetch poll.
+		"jobs.fetch_poll_interval": 50 * time.Millisecond,
+		"jobs.fetch_cooldown":      50 * time.Millisecond,
 	}
 	maps.Copy(values, overrides)
 	options := koanf.Options{

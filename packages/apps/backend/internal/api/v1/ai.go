@@ -15,6 +15,7 @@ import (
 	"github.com/rezible/rezible/ent/agentturn"
 	"github.com/rezible/rezible/ent/predicate"
 	rezai "github.com/rezible/rezible/pkg/ai"
+	"github.com/rezible/rezible/pkg/errs"
 	"github.com/rezible/rezible/pkg/messages"
 	oapi "github.com/rezible/rezible/pkg/openapi/v1"
 	"golang.org/x/sync/errgroup"
@@ -157,7 +158,7 @@ func (h *aiHandler) RequestAgentTurn(ctx context.Context, req *oapi.RequestAgent
 	var resp oapi.RequestAgentTurnResponse
 	input, inputErr := h.makeTurnRequestInput(req.Body.Attributes)
 	if inputErr != nil {
-		return nil, oapi.Error(ctx, "invalid agent turn input", fmt.Errorf("%w: %w", rez.ErrInvalidInput, inputErr))
+		return nil, oapi.Error(ctx, "invalid agent turn input", fmt.Errorf("%w: %w", errs.ErrInvalidInput, inputErr))
 	}
 	params := &rez.RequestAiAgentTurnParams{
 		Input: input,

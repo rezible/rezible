@@ -12,6 +12,7 @@ import (
 	"github.com/rezible/rezible/ent"
 	inv "github.com/rezible/rezible/ent/investigation"
 	rezai "github.com/rezible/rezible/pkg/ai"
+	"github.com/rezible/rezible/pkg/errs"
 )
 
 type InvestigationAgent struct {
@@ -91,7 +92,7 @@ func (m *investigationCapabilitiesMiddleware) New(ctx context.Context) (*ai.Hook
 
 	current, lookupErr := m.investigations.LookupInvestigation(ctx, inv.AgentSessionID(invCtx.Session.ID))
 	if ent.IsNotFound(lookupErr) {
-		return nil, fmt.Errorf("investigation for agent session: %w", rez.ErrNotFound)
+		return nil, fmt.Errorf("investigation for agent session: %w", errs.ErrNotFound)
 	}
 	if lookupErr != nil {
 		return nil, fmt.Errorf("lookup investigation by agent session: %w", lookupErr)

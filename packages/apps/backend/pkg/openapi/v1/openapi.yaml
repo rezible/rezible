@@ -2552,6 +2552,20 @@ components:
           format: uri
           readOnly: true
           type: string
+        code:
+          description: A stable code for the kind of error.
+          enum:
+            - conflict
+            - forbidden
+            - internal
+            - invalid_input
+            - not_found
+            - not_implemented
+            - rate_limited
+            - unauthenticated
+            - unavailable
+            - unprocessable
+          type: string
         detail:
           description: A human-readable explanation specific to this occurrence of the problem.
           examples:
@@ -2586,6 +2600,8 @@ components:
             - https://example.com/errors/example
           format: uri
           type: string
+      required:
+        - code
       type: object
     Event:
       additionalProperties: false

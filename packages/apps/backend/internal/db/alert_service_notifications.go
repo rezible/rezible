@@ -22,6 +22,7 @@ import (
 	aie "github.com/rezible/rezible/ent/alertinstanceevent"
 	kne "github.com/rezible/rezible/ent/knowledgeentity"
 	nev "github.com/rezible/rezible/ent/normalizedevent"
+	"github.com/rezible/rezible/pkg/errs"
 	"github.com/rezible/rezible/pkg/jobs"
 	"github.com/rezible/rezible/pkg/projections"
 )
@@ -44,26 +45,26 @@ type alertNotification struct {
 func newAlertNotification(params rez.RecordAlertInstanceParams) (*alertNotification, error) {
 	event := params.Event
 	if event == nil || event.ID == uuid.Nil {
-		return nil, fmt.Errorf("%w: normalized event is required", rez.ErrInvalidInput)
+		return nil, fmt.Errorf("%w: normalized event is required", errs.ErrInvalidInput)
 	}
 	if params.Definition.KnowledgeEntityID == uuid.Nil {
-		return nil, fmt.Errorf("%w: alert definition knowledge entity is required", rez.ErrInvalidInput)
+		return nil, fmt.Errorf("%w: alert definition knowledge entity is required", errs.ErrInvalidInput)
 	}
 	if strings.TrimSpace(params.Definition.Title) == "" {
-		return nil, fmt.Errorf("%w: alert definition title is required", rez.ErrInvalidInput)
+		return nil, fmt.Errorf("%w: alert definition title is required", errs.ErrInvalidInput)
 	}
 	if timeout := params.Definition.ResolutionTimeoutSeconds; timeout != nil && *timeout < 0 {
-		return nil, fmt.Errorf("%w: alert resolution timeout must not be negative", rez.ErrInvalidInput)
+		return nil, fmt.Errorf("%w: alert resolution timeout must not be negative", errs.ErrInvalidInput)
 	}
 	if params.Instance.StartedAt.IsZero() {
-		return nil, fmt.Errorf("%w: alert window start is required", rez.ErrInvalidInput)
+		return nil, fmt.Errorf("%w: alert window start is required", errs.ErrInvalidInput)
 	}
 	instance := params.Instance
 	if instance.Severity == "" {
 		instance.Severity = schematypes.SignalSeverityUnknown
 	}
 	if severityErr := ali.SeverityValidator(instance.Severity); severityErr != nil {
-		return nil, fmt.Errorf("%w: %w", rez.ErrInvalidInput, severityErr)
+		return nil, fmt.Errorf("%w: %w", errs.ErrInvalidInput, severityErr)
 	}
 
 	occurredAt := event.OccurredAt.UTC().Truncate(time.Microsecond)
@@ -72,7 +73,7 @@ func newAlertNotification(params rez.RecordAlertInstanceParams) (*alertNotificat
 	if !instance.Firing && instance.EndedAt != nil {
 		end = instance.EndedAt.UTC().Truncate(time.Microsecond)
 		if end.Before(start) {
-			return nil, fmt.Errorf("%w: alert window ended before it started", rez.ErrInvalidInput)
+			return nil, fmt.Errorf("%w: alert window ended before it started", errs.ErrInvalidInput)
 		}
 	}
 	if end.Before(start) {

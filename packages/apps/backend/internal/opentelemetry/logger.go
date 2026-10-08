@@ -4,75 +4,41 @@ import (
 	"context"
 	"log/slog"
 
-	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/pkg/execution"
+	"go.opentelemetry.io/otel/trace"
 )
 
-type loggerContextKey struct{}
-
-func ContextWithLogger(ctx context.Context, logger *slog.Logger) context.Context {
-	if logger == nil {
-		logger = slog.Default()
-	}
-	return context.WithValue(ctx, loggerContextKey{}, logger)
+// contextHandler adds the trace and span IDs and the execution attributes of a record's context.
+type contextHandler struct {
+	base slog.Handler
 }
 
-func LoggerFromContext(ctx context.Context) *slog.Logger {
-	opts := rez.NewLoggerOptions{}
-	if ctx != nil {
-		if parent, ok := ctx.Value(loggerContextKey{}).(*slog.Logger); ok {
-			opts.Parent = parent
-		}
-	}
-	return NewLogger(opts)
+func (h contextHandler) Enabled(ctx context.Context, level slog.Level) bool {
+	return h.base.Enabled(ctx, level)
 }
 
-func NewLogger(opts rez.NewLoggerOptions) *slog.Logger {
-	logger := opts.Parent
-	if logger == nil {
-		logger = slog.Default()
+func (h contextHandler) Handle(ctx context.Context, record slog.Record) error {
+	var attrs []slog.Attr
+	if spanCtx := trace.SpanContextFromContext(ctx); spanCtx.IsValid() {
+		attrs = append(attrs,
+			slog.String("trace_id", spanCtx.TraceID().String()),
+			slog.String("span_id", spanCtx.SpanID().String()),
+		)
 	}
-	if opts.Level != nil {
-		logger = slog.New(levelHandler{
-			base:  logger.Handler(),
-			level: opts.Level,
-		})
+	for _, kv := range execution.Attrs(ctx) {
+		attrs = append(attrs, slog.Any(string(kv.Key), kv.Value.AsInterface()))
 	}
-	if len(opts.Attrs) > 0 {
-		args := make([]any, 0, len(opts.Attrs))
-		for _, attr := range opts.Attrs {
-			args = append(args, attr)
-		}
-		logger = logger.With(args...)
+	if len(attrs) > 0 {
+		record = record.Clone()
+		record.AddAttrs(attrs...)
 	}
-	for _, group := range opts.Groups {
-		logger = logger.WithGroup(group)
-	}
-	return logger
-}
-
-type levelHandler struct {
-	base  slog.Handler
-	level slog.Leveler
-}
-
-func (h levelHandler) Enabled(ctx context.Context, level slog.Level) bool {
-	return level >= h.level.Level() && h.base.Enabled(ctx, level)
-}
-
-func (h levelHandler) Handle(ctx context.Context, record slog.Record) error {
 	return h.base.Handle(ctx, record)
 }
 
-func (h levelHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
-	return levelHandler{
-		base:  h.base.WithAttrs(attrs),
-		level: h.level,
-	}
+func (h contextHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
+	return contextHandler{base: h.base.WithAttrs(attrs)}
 }
 
-func (h levelHandler) WithGroup(name string) slog.Handler {
-	return levelHandler{
-		base:  h.base.WithGroup(name),
-		level: h.level,
-	}
+func (h contextHandler) WithGroup(name string) slog.Handler {
+	return contextHandler{base: h.base.WithGroup(name)}
 }

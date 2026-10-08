@@ -2,7 +2,7 @@
 	import { createQuery, queryOptions, useQueryClient, type QueryState } from "@tanstack/svelte-query";
 	import {
 		listDebriefMessagesOptions,
-		type ErrorModel,
+		type ApiError,
 		type IncidentDebrief,
 		type IncidentDebriefMessage,
 		type PaginatedResponseBodyIncidentDebriefMessage,
@@ -42,7 +42,7 @@
 	const isUserMessage = (msg: IncidentDebriefMessage) => msg.attributes.type === "user";
 
 	const REFETCH_INTEVAL_MS = 1000;
-	const shouldQueryPoll = (state: QueryState<PaginatedResponseBodyIncidentDebriefMessage, ErrorModel>) => {
+	const shouldQueryPoll = (state: QueryState<PaginatedResponseBodyIncidentDebriefMessage, ApiError>) => {
 		if (state.error) return false;
 
 		const latestMessage = getLatestMessage(state.data?.data ?? []);

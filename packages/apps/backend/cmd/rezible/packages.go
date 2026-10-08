@@ -24,7 +24,6 @@ import (
 	"github.com/rezible/rezible/internal/integrations/slack/slackincidents"
 	"github.com/rezible/rezible/internal/integrations/webhook"
 	"github.com/rezible/rezible/internal/koanf"
-	"github.com/rezible/rezible/internal/opentelemetry"
 	"github.com/rezible/rezible/internal/postgres"
 	"github.com/rezible/rezible/internal/postgres/pgtestdb"
 	"github.com/rezible/rezible/internal/postgres/river"
@@ -42,7 +41,6 @@ import (
 func applicationPackages(ctx context.Context) Package {
 	return do.Package(
 		withEnvironmentConfig(ctx),
-		withOpenTelemetry(ctx),
 		withPostgresDatabase(ctx),
 		withGenkitAiRuntime(ctx),
 	)
@@ -67,21 +65,6 @@ func withEnvironmentConfig(ctx context.Context) func(do.Injector) {
 			return koanf.LoadConfig(ctx, koanf.Options{
 				LoadEnvironment: true,
 			})
-		}),
-	)
-}
-
-func withOpenTelemetry(ctx context.Context) func(do.Injector) {
-	return do.Package(
-		do.Lazy(func(i do.Injector) (rez.TelemetryService, error) {
-			svc, svcErr := opentelemetry.NewOpenTelemetryService(ctx, do.MustInvoke[rez.Config](i))
-			if svcErr != nil {
-				return nil, svcErr
-			}
-			if initErr := svc.Init(); initErr != nil {
-				return nil, fmt.Errorf("init: %w", initErr)
-			}
-			return svc, nil
 		}),
 	)
 }
@@ -133,7 +116,6 @@ var pkgRiver = do.Package(
 		return river.NewJobService(
 			do.MustInvoke[rez.Config](i),
 			do.MustInvoke[*postgres.ConnectionPool](i).Pool,
-			do.MustInvoke[rez.TelemetryService](i),
 		)
 	}),
 	do.Bind[*river.JobService, rez.JobService](),
@@ -231,7 +213,6 @@ var pkgWatermill = do.Package(
 	do.Lazy(func(i do.Injector) (*watermill.MessageQueue, error) {
 		return watermill.NewMessageQueue(
 			do.MustInvoke[rez.MessageQueueConfig](i),
-			do.MustInvoke[rez.TelemetryService](i),
 			do.MustInvoke[messages.Transport](i),
 		)
 	}),
@@ -275,7 +256,6 @@ var pkgIntegrations = do.Package(
 
 	do.Lazy(func(i do.Injector) (*alertmanager.Integration, error) {
 		return alertmanager.MakeIntegration(
-			do.MustInvoke[rez.TelemetryService](i),
 			do.MustInvoke[rez.Clock](i),
 			do.MustInvoke[rez.ProviderEventPipelineService](i),
 			do.MustInvoke[rez.IntegrationInstallationLookup](i),
@@ -284,7 +264,6 @@ var pkgIntegrations = do.Package(
 
 	do.Lazy(func(i do.Injector) (*webhook.Integration, error) {
 		return webhook.MakeIntegration(
-			do.MustInvoke[rez.TelemetryService](i),
 			do.MustInvoke[rez.Clock](i),
 			do.MustInvoke[rez.ProviderEventPipelineService](i),
 			do.MustInvoke[rez.IntegrationInstallationLookup](i),
@@ -373,13 +352,12 @@ var pkgIntegrations = do.Package(
 
 var pkgDatabase = do.Package(
 	do.Lazy(func(i do.Injector) (*db.AiWorkflowRunner, error) {
-		return db.NewAiWorkflowRunner(do.MustInvoke[rez.TelemetryService](i)), nil
+		return db.NewAiWorkflowRunner(), nil
 	}),
 	do.Bind[*db.AiWorkflowRunner, rez.AiWorkflowRunner](),
 
 	do.Lazy(func(i do.Injector) (*db.ProviderEventPipelineService, error) {
 		return db.NewProviderEventPipelineService(
-			do.MustInvoke[rez.TelemetryService](i),
 			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.JobService](i),
 			do.MustInvoke[rez.ProviderEventProcessorRegistry](i),
@@ -406,7 +384,6 @@ var pkgDatabase = do.Package(
 	do.Lazy(func(i do.Injector) (jobs.Worker[jobs.SyncIntegrationSourceEvents], error) {
 		return db.NewIntegrationEventsSyncWorker(
 			do.MustInvoke[rez.Config](i),
-			do.MustInvoke[rez.TelemetryService](i),
 			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.MessageQueue](i),
 			do.MustInvoke[rez.IntegrationService](i),
@@ -548,7 +525,6 @@ var pkgDatabase = do.Package(
 
 	do.Lazy(func(i do.Injector) (rez.AiAgentSessionService, error) {
 		return db.NewAiAgentSessionService(
-			do.MustInvoke[rez.TelemetryService](i),
 			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.JobService](i),
 			do.MustInvoke[rez.MessageQueue](i),
@@ -558,7 +534,6 @@ var pkgDatabase = do.Package(
 	do.Lazy(func(i do.Injector) (jobs.Worker[jobs.StartAgentSession], error) {
 		return db.NewStartAgentSessionWorker(
 			do.MustInvoke[rez.Config](i).AI,
-			do.MustInvoke[rez.TelemetryService](i),
 			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.AiAgentCatalogue](i),
 			do.MustInvoke[rez.AiAgentSessionService](i),
@@ -568,7 +543,6 @@ var pkgDatabase = do.Package(
 	do.Lazy(func(i do.Injector) (jobs.Worker[jobs.InvokeAgentTurn], error) {
 		return db.NewInvokeAgentTurnWorker(
 			do.MustInvoke[rez.Config](i).AI,
-			do.MustInvoke[rez.TelemetryService](i),
 			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.MessageQueue](i),
 			do.MustInvoke[rez.AiAgentRuntime](i),
@@ -658,15 +632,8 @@ var pkgOpenApiV1 = do.Package(
 		), nil
 	}),
 
-	do.Lazy(func(i do.Injector) ([]openapi.Middleware, error) {
-		return []openapi.Middleware{
-			oapiv1.MakeAPITelemetryMiddleware(do.MustInvoke[rez.TelemetryService](i)),
-		}, nil
-	}),
-
 	do.Lazy(func(i do.Injector) (oapiv1.API, error) {
-		mw := do.MustInvoke[[]openapi.Middleware](i)
-		return oapiv1.MakeApi(do.MustInvoke[oapiv1.Handler](i), mw...), nil
+		return oapiv1.MakeApi(do.MustInvoke[oapiv1.Handler](i)), nil
 	}),
 
 	do.Lazy(func(i do.Injector) (openapi.Adapter, error) {

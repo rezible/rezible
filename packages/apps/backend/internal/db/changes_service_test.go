@@ -18,6 +18,7 @@ import (
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
 	ksa "github.com/rezible/rezible/ent/knowledgesubjectalias"
 	"github.com/rezible/rezible/internal/db/eventprojection"
+	"github.com/rezible/rezible/pkg/errs"
 	"github.com/rezible/rezible/pkg/projections"
 	"github.com/rezible/rezible/test"
 	"github.com/rezible/rezible/test/mocks"
@@ -570,7 +571,7 @@ func (s *ChangesServiceSuite) TestInvalidRequests() {
 	overSevenDays := sevenDays
 	overSevenDays.End = sevenDays.End.Add(time.Second)
 	_, overErr := h.changes.ListServiceChanges(ctx, overSevenDays)
-	s.ErrorIs(overErr, rez.ErrInvalidInput)
+	s.ErrorIs(overErr, errs.ErrInvalidInput)
 	s.ErrorContains(overErr, "7 day limit")
 
 	invalid := map[string]rez.ListServiceChangesParams{
@@ -603,7 +604,7 @@ func (s *ChangesServiceSuite) TestInvalidRequests() {
 	}
 	for name, params := range invalid {
 		_, listErr := h.changes.ListServiceChanges(ctx, params)
-		s.ErrorIs(listErr, rez.ErrInvalidInput, name)
+		s.ErrorIs(listErr, errs.ErrInvalidInput, name)
 	}
 }
 

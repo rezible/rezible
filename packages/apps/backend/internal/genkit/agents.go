@@ -14,6 +14,7 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	rezai "github.com/rezible/rezible/pkg/ai"
+	"github.com/rezible/rezible/pkg/errs"
 )
 
 func WithAgent[I rez.ValidatingInput, S any](h agentHarness[I, S], mw ...AgentMiddlewareConstructorFn) AiRuntimeOption {
@@ -190,11 +191,11 @@ func (w *wrappedAgent[SessionInput, State]) DecodeSessionInput(raw []byte) (rez.
 
 func (w *wrappedAgent[SessionInput, State]) normalizeTurnInput(input *rez.AiAgentTurnInput, state *rez.AiAgentTurnState, continueFromState bool) (*aix.AgentInput, error) {
 	if input == nil {
-		return nil, rez.ErrInvalidInput
+		return nil, errs.ErrInvalidInput
 	}
 	if continueFromState {
 		if state == nil || len(state.Messages) == 0 {
-			return nil, fmt.Errorf("%w: continuation requires committed messages", rez.ErrInvalidInput)
+			return nil, fmt.Errorf("%w: continuation requires committed messages", errs.ErrInvalidInput)
 		}
 		return &aix.AgentInput{}, nil
 	}
@@ -204,7 +205,7 @@ func (w *wrappedAgent[SessionInput, State]) normalizeTurnInput(input *rez.AiAgen
 	if input.Resume != nil && len(input.Resume.Respond)+len(input.Resume.Restart) > 0 {
 		return &aix.AgentInput{Resume: input.Resume}, nil
 	}
-	return nil, fmt.Errorf("%w: agent turn message or resume is required", rez.ErrInvalidInput)
+	return nil, fmt.Errorf("%w: agent turn message or resume is required", errs.ErrInvalidInput)
 }
 
 func (w *wrappedAgent[SessionInput, State]) MakeInitialTurnInput(ctx context.Context, sess *ent.AgentSession) (*rez.AiAgentTurnInput, error) {
@@ -218,7 +219,7 @@ func (w *wrappedAgent[SessionInput, State]) MakeInitialTurnInput(ctx context.Con
 	if turnErr != nil {
 		return nil, fmt.Errorf("make turn: %w", turnErr)
 	} else if turnInput == nil {
-		return nil, rez.ErrInvalidInput
+		return nil, errs.ErrInvalidInput
 	}
 
 	normalized, normalizeErr := w.normalizeTurnInput(turnInput, nil, false)

@@ -23,6 +23,7 @@ import (
 	sitog "github.com/rezible/rezible/ent/situationobservationgroup"
 	sitsig "github.com/rezible/rezible/ent/situationsignal"
 	rezai "github.com/rezible/rezible/pkg/ai"
+	"github.com/rezible/rezible/pkg/errs"
 	"github.com/rezible/rezible/pkg/execution"
 	"github.com/rezible/rezible/pkg/situations"
 )
@@ -122,7 +123,7 @@ func (s *SituationService) ListSituations(ctx context.Context, params rez.ListSi
 			case rez.SituationStageClosed:
 				stagePredicates = append(stagePredicates, sit.ClosedAtNotNil())
 			default:
-				return nil, fmt.Errorf("%w: unknown situation stage %q", rez.ErrInvalidInput, stage)
+				return nil, fmt.Errorf("%w: unknown situation stage %q", errs.ErrInvalidInput, stage)
 			}
 		}
 		query.Where(sit.Or(stagePredicates...))
@@ -164,14 +165,14 @@ func (s *SituationService) ListSituationJudgments(ctx context.Context, params re
 func (s *SituationService) CreateSituation(ctx context.Context, params rez.CreateSituationParams) (*ent.Situation, error) {
 	title := strings.TrimSpace(params.Title)
 	if title == "" {
-		return nil, fmt.Errorf("%w: situation title is required", rez.ErrInvalidInput)
+		return nil, fmt.Errorf("%w: situation title is required", errs.ErrInvalidInput)
 	}
 	groups, signalIDs, normalizeErr := s.normalizeObservationGroups(params.ObservationGroups)
 	if normalizeErr != nil {
 		return nil, normalizeErr
 	}
 	if !slices.Contains(signalIDs, params.SeedEntityID) {
-		return nil, fmt.Errorf("%w: the seed must be one of the situation's signals", rez.ErrInvalidInput)
+		return nil, fmt.Errorf("%w: the seed must be one of the situation's signals", errs.ErrInvalidInput)
 	}
 
 	return ent.WithTxReturning(ctx, s.db, func(ctx context.Context, tx *ent.Client) (*ent.Situation, error) {
@@ -237,7 +238,7 @@ func (s *SituationService) normalizeObservationGroups(input []rez.SituationObser
 	for _, inputGroup := range input {
 		group := rez.SituationObservationGroupParams{Title: strings.TrimSpace(inputGroup.Title), Body: inputGroup.Body}
 		if group.Title == "" {
-			return nil, nil, fmt.Errorf("%w: observation group title is required", rez.ErrInvalidInput)
+			return nil, nil, fmt.Errorf("%w: observation group title is required", errs.ErrInvalidInput)
 		}
 		for _, signalID := range inputGroup.SignalEntityIDs {
 			if signalID != uuid.Nil && seen.Add(signalID) {
@@ -271,7 +272,7 @@ func (s *SituationService) loadSignals(ctx context.Context, entityIDs []uuid.UUI
 	for kind, ids := range idsByKind {
 		source, supported := s.sources[kind]
 		if !supported {
-			return nil, fmt.Errorf("%w: unsupported signal kind %q", rez.ErrInvalidInput, kind)
+			return nil, fmt.Errorf("%w: unsupported signal kind %q", errs.ErrInvalidInput, kind)
 		}
 		loaded, loadErr := source.LoadSignals(ctx, ids, opts)
 		if loadErr != nil {
@@ -282,7 +283,7 @@ func (s *SituationService) loadSignals(ctx context.Context, entityIDs []uuid.UUI
 		}
 	}
 	if len(signals) != len(entityIDs) {
-		return nil, fmt.Errorf("%w: signal not found", rez.ErrInvalidInput)
+		return nil, fmt.Errorf("%w: signal not found", errs.ErrInvalidInput)
 	}
 	return signals, nil
 }
@@ -314,7 +315,7 @@ func (s *SituationService) lockSituations(ctx context.Context, ids ...uuid.UUID)
 	}
 	for _, id := range ids {
 		if byID[id] == nil {
-			return nil, fmt.Errorf("%w: situation not found", rez.ErrNotFound)
+			return nil, fmt.Errorf("%w: situation not found", errs.ErrNotFound)
 		}
 	}
 	return byID, nil
@@ -385,17 +386,17 @@ var validSituationHazardAssessmentStatus = mapset.NewSet(sha.StatusSuspected, sh
 
 func (s *SituationService) AddSituationHazardAssessment(ctx context.Context, params rez.AddSituationHazardAssessmentParams) (*ent.SituationHazardAssessment, error) {
 	if params.SituationID == uuid.Nil || params.SystemHazardID == uuid.Nil {
-		return nil, fmt.Errorf("%w: situation and system hazard IDs are required", rez.ErrInvalidInput)
+		return nil, fmt.Errorf("%w: situation and system hazard IDs are required", errs.ErrInvalidInput)
 	}
 	if (params.UserID == nil) == (params.AgentTurnID == nil) {
-		return nil, fmt.Errorf("%w: exactly one assessor is required", rez.ErrInvalidInput)
+		return nil, fmt.Errorf("%w: exactly one assessor is required", errs.ErrInvalidInput)
 	}
 	if !validSituationHazardAssessmentStatus.Contains(params.Status) {
-		return nil, fmt.Errorf("%w: invalid situation hazard assessment status", rez.ErrInvalidInput)
+		return nil, fmt.Errorf("%w: invalid situation hazard assessment status", errs.ErrInvalidInput)
 	}
 	summary := strings.TrimSpace(params.Summary)
 	if summary == "" {
-		return nil, fmt.Errorf("%w: assessment summary is required", rez.ErrInvalidInput)
+		return nil, fmt.Errorf("%w: assessment summary is required", errs.ErrInvalidInput)
 	}
 	assessedAt := params.AssessedAt
 	if assessedAt.IsZero() {

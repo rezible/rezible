@@ -5,6 +5,7 @@ import (
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/pkg/errs"
 	oapi "github.com/rezible/rezible/pkg/openapi/v1"
 )
 
@@ -41,7 +42,7 @@ func (h *documentsHandler) GetDocumentSession(ctx context.Context, request *oapi
 		return nil, oapi.Error(ctx, "get access", docErr)
 	}
 	if docAccess == nil {
-		return nil, oapi.Error(ctx, "get access", rez.ErrForbidden)
+		return nil, oapi.Error(ctx, "get access", errs.ErrForbidden)
 	}
 	resp.Body.Data = oapi.DocumentSession{
 		User:   oapi.UserFromEnt(usr),

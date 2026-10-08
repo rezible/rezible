@@ -8,7 +8,7 @@ import {
 } from "@tanstack/svelte-query";
 import { watch, type Getter } from "runed";
 import { useSearchParams, type ReturnUseSearchParams } from "runed/kit";
-import type { ErrorModel, Pagination as ResponsePagination } from "$lib/api";
+import type { ApiError, Pagination as ResponsePagination } from "$lib/api";
 
 export const pageSizeOptions = [10, 25, 50] as const;
 export type PageSize = (typeof pageSizeOptions)[number];
@@ -78,7 +78,7 @@ export type PaginatedQueryResult = {
 };
 export type PaginatedQuery<R extends PaginatedQueryResult = PaginatedQueryResult> = CreateQueryResult<
 	R,
-	ErrorModel
+	ApiError
 >;
 
 export const createPaginatedQuery = <
@@ -95,7 +95,7 @@ export const createPaginatedQuery = <
 	resetWhen?: Getter<unknown>;
 	queryOptions: (
 		pagination: z.infer<typeof paginationParamsSchema>
-	) => CreateQueryOptions<TQueryData, ErrorModel, TData, TQueryKey>;
+	) => CreateQueryOptions<TQueryData, ApiError, TData, TQueryKey>;
 	keepPreviousQueryData?: boolean;
 }) => {
 	const paginator = new QueryPaginator(source, resetWhen);
@@ -128,7 +128,7 @@ export const createPaginatedQuerySimple = <
 	queryParams: Getter<TQueryParams>;
 	optsFn: (
 		query: TQueryParams & z.infer<typeof paginationParamsSchema>
-	) => CreateQueryOptions<TQueryData, ErrorModel, TData, TQueryKey>;
+	) => CreateQueryOptions<TQueryData, ApiError, TData, TQueryKey>;
 	keepPreviousQueryData?: boolean;
 }) => {
 	const paginator = new QueryPaginator(source);

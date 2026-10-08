@@ -1,7 +1,7 @@
 import { createInfiniteQuery } from "@tanstack/svelte-query";
 import { watch, type Getter } from "runed";
 
-import { type ChatChannel, type ErrorModel, listIntegrationChatChannels } from "$lib/api";
+import { type ChatChannel, type ApiError, listIntegrationChatChannels } from "$lib/api";
 
 // Loads public Slack channels page by page through the installation, only while the picker is open.
 export class SlackChannelPickerController {
@@ -34,7 +34,7 @@ export class SlackChannelPickerController {
 	});
 
 	channels: ChatChannel[] = $derived(this.channelsQuery.data?.pages.flatMap((page) => page.channels) ?? []);
-	loadError = $derived(this.channelsQuery.error as ErrorModel | null);
+	loadError = $derived(this.channelsQuery.error as ApiError | null);
 	loaded = $derived(!!this.channelsQuery.data);
 	hasMore = $derived(this.channelsQuery.hasNextPage);
 	loadingMore = $derived(this.channelsQuery.isFetchingNextPage);

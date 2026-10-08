@@ -18,6 +18,7 @@ import (
 	sae "github.com/rezible/rezible/ent/systemanalysisentry"
 	saes "github.com/rezible/rezible/ent/systemanalysisentrysubject"
 	sarel "github.com/rezible/rezible/ent/systemanalysisrelationship"
+	"github.com/rezible/rezible/pkg/errs"
 )
 
 type SystemAnalysisService struct {
@@ -38,7 +39,7 @@ func (s *SystemAnalysisService) systemAnalysisEntrySubjectsQuery(q *ent.SystemAn
 
 func (s *SystemAnalysisService) checkSaveErr(saveErr error, kind string) error {
 	if ent.IsValidationError(saveErr) || ent.IsConstraintError(saveErr) {
-		return fmt.Errorf("%w: save %s: %w", rez.ErrInvalidInput, kind, saveErr)
+		return fmt.Errorf("%w: save %s: %w", errs.ErrInvalidInput, kind, saveErr)
 	}
 	return fmt.Errorf("save %s: %w", kind, saveErr)
 }
@@ -49,7 +50,7 @@ func (s *SystemAnalysisService) GetSystemAnalysis(ctx context.Context, id uuid.U
 
 func (s *SystemAnalysisService) HasSystemAnalysisEntity(ctx context.Context, analysisID, knowledgeEntityID uuid.UUID) (bool, error) {
 	if analysisID == uuid.Nil || knowledgeEntityID == uuid.Nil {
-		return false, fmt.Errorf("%w: analysis and knowledge entity IDs are required", rez.ErrInvalidInput)
+		return false, fmt.Errorf("%w: analysis and knowledge entity IDs are required", errs.ErrInvalidInput)
 	}
 	query := s.db.Client(ctx).SystemAnalysisEntity.Query().
 		Where(saent.AnalysisID(analysisID), saent.KnowledgeEntityID(knowledgeEntityID))
@@ -92,14 +93,14 @@ func (s *SystemAnalysisService) SetSystemAnalysis(ctx context.Context, id uuid.U
 
 func (s *SystemAnalysisService) validateSystemAnalysisTarget(ctx context.Context, tx *ent.Client, analysisID uuid.UUID) error {
 	if analysisID == uuid.Nil {
-		return fmt.Errorf("%w: system analysis ID is required", rez.ErrInvalidInput)
+		return fmt.Errorf("%w: system analysis ID is required", errs.ErrInvalidInput)
 	}
 	accessible, queryErr := tx.SystemAnalysis.Query().Where(sa.ID(analysisID)).Exist(ctx)
 	if queryErr != nil {
 		return fmt.Errorf("check system analysis access: %w", queryErr)
 	}
 	if !accessible {
-		return fmt.Errorf("%w: system analysis is unavailable", rez.ErrInvalidInput)
+		return fmt.Errorf("%w: system analysis is unavailable", errs.ErrInvalidInput)
 	}
 	return nil
 }
@@ -114,14 +115,14 @@ func (s *SystemAnalysisService) validateKnowledgeEntityTargets(ctx context.Conte
 		return fmt.Errorf("check knowledge entity access: %w", queryErr)
 	}
 	if count != entityIDs.Cardinality() {
-		return fmt.Errorf("%w: one or more knowledge entities are unavailable", rez.ErrInvalidInput)
+		return fmt.Errorf("%w: one or more knowledge entities are unavailable", errs.ErrInvalidInput)
 	}
 	return nil
 }
 
 func (s *SystemAnalysisService) IncludeSystemAnalysisSubjects(ctx context.Context, params rez.IncludeSystemAnalysisSubjectsParams) error {
 	if params.AnalysisId == uuid.Nil || (len(params.EntityIds)+len(params.RelationshipIds) == 0) {
-		return fmt.Errorf("%w: system analysis ID is required", rez.ErrInvalidInput)
+		return fmt.Errorf("%w: system analysis ID is required", errs.ErrInvalidInput)
 	}
 
 	return s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
@@ -178,7 +179,7 @@ func (s *SystemAnalysisService) resolveRelationshipEntityIDs(ctx context.Context
 
 	numIds := relIds.Cardinality()
 	if len(relationships) != numIds {
-		return nil, fmt.Errorf("%w: one or more knowledge relationships do not exist", rez.ErrInvalidInput)
+		return nil, fmt.Errorf("%w: one or more knowledge relationships do not exist", errs.ErrInvalidInput)
 	}
 
 	entityIDs := mapset.NewSetWithSize[uuid.UUID](numIds * 2)
@@ -391,10 +392,10 @@ func (s *SystemAnalysisService) SetSystemAnalysisEntry(ctx context.Context, id u
 				return nil, queryErr
 			}
 			if params.AnalysisID != uuid.Nil && current.AnalysisID != params.AnalysisID {
-				return nil, fmt.Errorf("%w: analysis_id cannot be changed", rez.ErrInvalidInput)
+				return nil, fmt.Errorf("%w: analysis_id cannot be changed", errs.ErrInvalidInput)
 			}
 			if params.Reference != nil && (current.Reference == nil || *current.Reference != *params.Reference) {
-				return nil, fmt.Errorf("%w: reference cannot be changed", rez.ErrInvalidInput)
+				return nil, fmt.Errorf("%w: reference cannot be changed", errs.ErrInvalidInput)
 			}
 			mutator = tx.SystemAnalysisEntry.UpdateOneID(id)
 		}
@@ -479,14 +480,14 @@ func (s *SystemAnalysisService) validateMutationFields(m ent.Mutation, fields ..
 		v, isSet := m.Field(name)
 		if isCreate {
 			if !isSet {
-				return fmt.Errorf("%w: %s is required", rez.ErrInvalidInput, name)
+				return fmt.Errorf("%w: %s is required", errs.ErrInvalidInput, name)
 			}
 			if id, ok := v.(uuid.UUID); !ok || id == uuid.Nil {
-				return fmt.Errorf("%w: %s is invalid uuid", rez.ErrInvalidInput, name)
+				return fmt.Errorf("%w: %s is invalid uuid", errs.ErrInvalidInput, name)
 			}
 		} else {
 			if isSet || m.FieldCleared(name) {
-				return fmt.Errorf("%w: %s cannot be changed", rez.ErrInvalidInput, name)
+				return fmt.Errorf("%w: %s cannot be changed", errs.ErrInvalidInput, name)
 			}
 		}
 	}
@@ -508,7 +509,7 @@ func (s *SystemAnalysisService) DeleteSystemAnalysisEntry(ctx context.Context, i
 
 func (s *SystemAnalysisService) ListSystemAnalysisEntrySubjects(ctx context.Context, params rez.ListSystemAnalysisEntrySubjectsParams) (*ent.ListResult[ent.SystemAnalysisEntrySubject], error) {
 	if params.AnalysisID == uuid.Nil || params.EntryID == uuid.Nil {
-		return nil, fmt.Errorf("%w: analysis and entry IDs are required", rez.ErrInvalidInput)
+		return nil, fmt.Errorf("%w: analysis and entry IDs are required", errs.ErrInvalidInput)
 	}
 
 	entryExists, queryEntryErr := s.db.Client(ctx).SystemAnalysisEntry.Query().
@@ -518,7 +519,7 @@ func (s *SystemAnalysisService) ListSystemAnalysisEntrySubjects(ctx context.Cont
 		return nil, fmt.Errorf("check analysis entry access: %w", queryEntryErr)
 	}
 	if !entryExists {
-		return nil, rez.ErrNotFound
+		return nil, errs.ErrNotFound
 	}
 
 	query := s.db.Client(ctx).SystemAnalysisEntrySubject.Query().
@@ -564,13 +565,13 @@ func (s *SystemAnalysisService) validateEntrySubjectMutation(m *ent.SystemAnalys
 		if value, isSet := m.Field(name); isSet {
 			id, validUUID := value.(uuid.UUID)
 			if !validUUID || id == uuid.Nil {
-				return fmt.Errorf("%w: %s is invalid uuid", rez.ErrInvalidInput, name)
+				return fmt.Errorf("%w: %s is invalid uuid", errs.ErrInvalidInput, name)
 			}
 			count++
 		}
 	}
 	if count != 1 {
-		return fmt.Errorf("%w: exactly one graph reference is required", rez.ErrUnprocessableInput)
+		return fmt.Errorf("%w: exactly one graph reference is required", errs.ErrUnprocessableInput)
 	}
 	return nil
 }

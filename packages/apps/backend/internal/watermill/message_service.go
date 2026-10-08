@@ -37,15 +37,13 @@ type MessageQueue struct {
 	processor *cqrs.EventProcessor
 }
 
-func NewMessageQueue(cfg rez.MessageQueueConfig, ts rez.TelemetryService, transport messages.Transport) (*MessageQueue, error) {
-	logger := ts.NewLogger(rez.NewLoggerOptions{
-		Name:  "watermill",
-		Level: slog.LevelWarn,
-	})
+func NewMessageQueue(cfg rez.MessageQueueConfig, transport messages.Transport) (*MessageQueue, error) {
+	// Watermill logs routine operation at Info; keep it at Debug, below its warnings and errors.
+	logger := slog.Default().With("component", "watermill")
 	ms := &MessageQueue{
 		cfg:       cfg,
 		transport: transport,
-		logger:    watermill.NewSlogLogger(logger),
+		logger:    watermill.NewSlogLoggerWithLevelMapping(logger, map[slog.Level]slog.Level{slog.LevelInfo: slog.LevelDebug}),
 	}
 
 	rcfg := message.RouterConfig{
@@ -72,7 +70,7 @@ func NewMessageQueue(cfg rez.MessageQueueConfig, ts rez.TelemetryService, transp
 	}
 	ms.processor = proc
 
-	pubWrapper := newPublisherWrapper(ts)
+	pubWrapper := newPublisherWrapper()
 
 	//pubCfg := forwarder.PublisherConfig{
 	//	ForwarderTopic: "message_outbox",

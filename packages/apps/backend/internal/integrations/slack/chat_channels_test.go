@@ -7,7 +7,7 @@ import (
 
 	"github.com/slack-go/slack"
 
-	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/pkg/errs"
 	"github.com/rezible/rezible/pkg/integrations"
 )
 
@@ -99,9 +99,9 @@ func (s *SlackIntegrationSuite) TestListChatChannelsTranslatesErrors() {
 		slackError string
 		expected   error
 	}{
-		{slackError: "token_revoked", expected: rez.ErrForbidden},
-		{slackError: "missing_scope", expected: rez.ErrForbidden},
-		{slackError: "invalid_cursor", expected: rez.ErrInvalidInput},
+		{slackError: "token_revoked", expected: errs.ErrForbidden},
+		{slackError: "missing_scope", expected: errs.ErrForbidden},
+		{slackError: "invalid_cursor", expected: errs.ErrInvalidInput},
 	}
 	for _, tc := range testCases {
 		s.Run(tc.slackError, func() {
@@ -127,7 +127,7 @@ func (s *SlackIntegrationSuite) TestListChatChannelsTranslatesErrors() {
 		page, listErr := ListChatChannels(s.T().Context(), client, integrations.ListChatChannelsParams{})
 
 		s.Nil(page)
-		s.ErrorIs(listErr, rez.ErrRateLimited)
+		s.ErrorIs(listErr, errs.ErrRateLimited)
 		s.ErrorAs(listErr, new(*slack.RateLimitedError))
 	})
 
@@ -142,6 +142,6 @@ func (s *SlackIntegrationSuite) TestListChatChannelsTranslatesErrors() {
 
 		s.Nil(page)
 		s.ErrorContains(listErr, "internal_error")
-		s.NotErrorIs(listErr, rez.ErrForbidden)
+		s.NotErrorIs(listErr, errs.ErrForbidden)
 	})
 }

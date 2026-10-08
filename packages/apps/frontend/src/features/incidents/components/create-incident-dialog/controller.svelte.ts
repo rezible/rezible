@@ -4,7 +4,7 @@ import {
 	getIncidentMetadataOptions,
 	getIncidentMetadataQueryKey,
 	listIncidentsQueryKey,
-	type ErrorModel,
+	type ApiError,
 	type Incident,
 	type IncidentField,
 	type IncidentSeverity,
@@ -26,7 +26,7 @@ export class IncidentCreateDialogController {
 	private queryClient = useQueryClient();
 
 	open = $state(false);
-	error = $state<ErrorModel>();
+	error = $state<ApiError>();
 	form = $state<CreateIncidentFormState>(getEmptyCreateIncidentForm());
 
 	metadataQuery = createQuery(() => ({
@@ -75,7 +75,7 @@ export class IncidentCreateDialogController {
 			await this.onIncidentCreated(data);
 		},
 		onError: (err) => {
-			this.error = err as ErrorModel;
+			this.error = err as ApiError;
 		},
 	}));
 

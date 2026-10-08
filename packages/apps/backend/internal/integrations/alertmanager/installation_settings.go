@@ -6,7 +6,7 @@ import (
 
 	mapset "github.com/deckarep/golang-set/v2"
 
-	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/pkg/errs"
 )
 
 const settingServiceLabels = "service_labels"
@@ -35,20 +35,20 @@ func parseInstallationSettings(settings map[string]any) (*installationSettings, 
 			values = append(values, label)
 		}
 	default:
-		return nil, fmt.Errorf("%w: %s must be a list of label names", rez.ErrInvalidInput, settingServiceLabels)
+		return nil, fmt.Errorf("%w: %s must be a list of label names", errs.ErrInvalidInput, settingServiceLabels)
 	}
 	labels := make([]string, 0, len(values))
 	seen := mapset.NewThreadUnsafeSet[string]()
 	for i, value := range values {
 		label, isString := value.(string)
 		if !isString {
-			return nil, fmt.Errorf("%w: %s[%d] must be a string", rez.ErrInvalidInput, settingServiceLabels, i)
+			return nil, fmt.Errorf("%w: %s[%d] must be a string", errs.ErrInvalidInput, settingServiceLabels, i)
 		}
 		if strings.TrimSpace(label) == "" {
-			return nil, fmt.Errorf("%w: %s[%d] must not be empty", rez.ErrInvalidInput, settingServiceLabels, i)
+			return nil, fmt.Errorf("%w: %s[%d] must not be empty", errs.ErrInvalidInput, settingServiceLabels, i)
 		}
 		if !seen.Add(label) {
-			return nil, fmt.Errorf("%w: %s contains %q more than once", rez.ErrInvalidInput, settingServiceLabels, label)
+			return nil, fmt.Errorf("%w: %s contains %q more than once", errs.ErrInvalidInput, settingServiceLabels, label)
 		}
 		labels = append(labels, label)
 	}

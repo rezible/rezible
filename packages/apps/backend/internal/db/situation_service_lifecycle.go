@@ -14,6 +14,7 @@ import (
 	sit "github.com/rezible/rezible/ent/situation"
 	sitact "github.com/rezible/rezible/ent/situationaction"
 	siti "github.com/rezible/rezible/ent/situationinvestigation"
+	"github.com/rezible/rezible/pkg/errs"
 	"github.com/rezible/rezible/pkg/situations"
 )
 
@@ -31,7 +32,7 @@ func (s *SituationService) changeSituation(ctx context.Context, id uuid.UUID, ve
 			return nil, lockErr
 		}
 		if locked[id].ClosedAt != nil {
-			return nil, fmt.Errorf("%w: situation is closed", rez.ErrConflict)
+			return nil, fmt.Errorf("%w: situation is closed", errs.ErrConflict)
 		}
 		if verbErr := verb(ctx, locked[id], s.clock.Now()); verbErr != nil {
 			return nil, verbErr
@@ -86,7 +87,7 @@ func (s *SituationService) raiseLocked(ctx context.Context, situation *ent.Situa
 func (s *SituationService) SetSituationMute(ctx context.Context, id uuid.UUID, mute *rez.SituationMute) (*ent.Situation, error) {
 	if mute != nil {
 		if reasonErr := sit.MuteReasonValidator(mute.Reason); reasonErr != nil {
-			return nil, fmt.Errorf("%w: %w", rez.ErrInvalidInput, reasonErr)
+			return nil, fmt.Errorf("%w: %w", errs.ErrInvalidInput, reasonErr)
 		}
 	}
 	return s.changeSituation(ctx, id, func(ctx context.Context, situation *ent.Situation, now time.Time) error {
@@ -140,7 +141,7 @@ func (s *SituationService) SetSituationHold(ctx context.Context, id uuid.UUID, h
 		until := now.Add(situations.HoldDefault)
 		if hold.Until != nil {
 			if !hold.Until.After(now) {
-				return fmt.Errorf("%w: a hold must end in the future", rez.ErrInvalidInput)
+				return fmt.Errorf("%w: a hold must end in the future", errs.ErrInvalidInput)
 			}
 			until = *hold.Until
 		}
@@ -171,7 +172,7 @@ func (s *SituationService) CloseSituation(ctx context.Context, id uuid.UUID, par
 		}
 		if situation.ClosedAt != nil {
 			if *situation.CloseReason != reason {
-				return nil, fmt.Errorf("%w: situation is already closed as %s", rez.ErrConflict, *situation.CloseReason)
+				return nil, fmt.Errorf("%w: situation is already closed as %s", errs.ErrConflict, *situation.CloseReason)
 			}
 			return s.GetSituation(ctx, id)
 		}
@@ -266,7 +267,7 @@ func (s *SituationService) applyIncidentLinks(ctx context.Context, incidentID uu
 
 func (s *SituationService) linkIncidentLocked(ctx context.Context, situation *ent.Situation, incidentID uuid.UUID, now time.Time) error {
 	if situation.ClosedAt != nil {
-		return fmt.Errorf("%w: a closed situation cannot be linked to an incident", rez.ErrConflict)
+		return fmt.Errorf("%w: a closed situation cannot be linked to an incident", errs.ErrConflict)
 	}
 	client := s.db.Client(ctx)
 	queryLinked := client.Situation.Query().

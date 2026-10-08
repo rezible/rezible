@@ -2,6 +2,7 @@ import { describe, expect, mock, test } from "bun:test";
 import { compileModule } from "svelte/compiler";
 import { Doc } from "yjs";
 import type { HocuspocusProvider } from "@hocuspocus/provider";
+import type { ApiError } from "$lib/api";
 import type { IncidentCollaborationController } from "./collaboration.svelte";
 
 // Bun does not compile runes. Compile the real controller and supply its external
@@ -29,7 +30,7 @@ function setup(
 	})
 ) {
 	const providers: FakeProvider[] = [];
-	let retry!: (count: number, error: { status?: number }) => boolean;
+	let retry!: (count: number, error: Pick<ApiError, "code">) => boolean;
 	let unmount!: () => void;
 	class FakeProvider {
 		configuration = {
@@ -82,12 +83,20 @@ const auth = (name: string): Auth => ({ data: { name, serverUrl: "ws://localhost
 describe("incident collaboration lifecycle", () => {
 	test("retries only transient auth errors, with a two-retry limit", () => {
 		const { retry, unmount } = setup();
-		for (const status of [undefined, 0, 408, 429, 500, 503]) {
-			expect(retry(0, { status })).toBe(true);
-			expect(retry(1, { status })).toBe(true);
-			expect(retry(2, { status })).toBe(false);
+		for (const code of ["unavailable", "rate_limited", "internal"] as const) {
+			expect(retry(0, { code })).toBe(true);
+			expect(retry(1, { code })).toBe(true);
+			expect(retry(2, { code })).toBe(false);
 		}
-		for (const status of [400, 401, 403, 404, 422]) expect(retry(0, { status })).toBe(false);
+		for (const code of [
+			"invalid_input",
+			"unauthenticated",
+			"forbidden",
+			"not_found",
+			"unprocessable",
+		] as const) {
+			expect(retry(0, { code })).toBe(false);
+		}
 		unmount();
 	});
 

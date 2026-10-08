@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { createMutation } from "@tanstack/svelte-query";
-	import { createMeetingScheduleMutation, createMeetingSessionMutation, type ErrorModel } from "$lib/api";
+	import { createMeetingScheduleMutation, createMeetingSessionMutation, type ApiError } from "$lib/api";
 	import {
 		CreateMeetingFormSchema,
 		getEmptyForm,
@@ -33,11 +33,9 @@
 		onCreated();
 		resetMeetingState();
 	};
-	const onError = (resp: ErrorModel) => {
-		const err = resp as Error;
-		const model = JSON.parse(err.message) as ErrorModel;
+	const onError = (error: ApiError) => {
 		// TODO: handle this
-		console.log(model);
+		console.log(error);
 	};
 	const createScheduleMutation = createMutation(() => ({
 		...createMeetingScheduleMutation(),

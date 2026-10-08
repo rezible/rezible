@@ -8,18 +8,16 @@ import (
 	"github.com/ThreeDotsLabs/watermill/message"
 	"github.com/ThreeDotsLabs/watermill/pubsub/gochannel"
 	wotelfloss "github.com/dentech-floss/watermill-opentelemetry-go-extra/pkg/opentelemetry"
-	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/pkg/messages"
 	wotel "github.com/voi-oss/watermill-opentelemetry/pkg/opentelemetry"
+	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/metric"
 )
 
-type publisherWrapper struct {
-	telemetry rez.TelemetryService
-}
+type publisherWrapper struct{}
 
-func newPublisherWrapper(tel rez.TelemetryService) *publisherWrapper {
-	return &publisherWrapper{telemetry: tel}
+func newPublisherWrapper() *publisherWrapper {
+	return &publisherWrapper{}
 }
 
 func (w *publisherWrapper) wrap(pub message.Publisher) (message.Publisher, error) {
@@ -35,7 +33,7 @@ func (w *publisherWrapper) wrap(pub message.Publisher) (message.Publisher, error
 }
 
 func (w *publisherWrapper) wrapPublisherTelemetry(base message.Publisher) (message.Publisher, error) {
-	m := w.telemetry.DefaultMeter()
+	m := otel.Meter("github.com/rezible/rezible")
 	messagesPublished, messagesPublishedErr := m.Int64Counter("backend.messages.published",
 		metric.WithDescription("Watermill messages published"))
 	if messagesPublishedErr != nil {

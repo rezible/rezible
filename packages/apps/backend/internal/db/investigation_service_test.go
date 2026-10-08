@@ -4,8 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"io"
-	"log/slog"
 	"testing"
 	"time"
 
@@ -17,6 +15,7 @@ import (
 
 	rez "github.com/rezible/rezible"
 	rezai "github.com/rezible/rezible/pkg/ai"
+	"github.com/rezible/rezible/pkg/errs"
 	"github.com/rezible/rezible/pkg/jobs"
 	"github.com/rezible/rezible/pkg/projections"
 	"github.com/rezible/rezible/test"
@@ -45,9 +44,8 @@ func TestInvestigationServiceSuite(t *testing.T) {
 
 func (s *InvestigationServiceSuite) newService(tdb rez.Database, jobService *mocks.MockJobService) *InvestigationService {
 	agentService := &AiAgentSessionService{
-		logger: slog.New(slog.NewTextHandler(io.Discard, nil)),
-		db:     tdb,
-		jobs:   jobService,
+		db:   tdb,
+		jobs: jobService,
 	}
 	return NewInvestigationService(tdb, agentService, jobService)
 }
@@ -228,14 +226,14 @@ func (s *InvestigationServiceSuite) TestCreateInvestigationValidatesOwnershipQue
 	}
 
 	_, missingAnalysisErr := service.CreateInvestigation(ctx, missingAnalysisParams)
-	s.ErrorIs(missingAnalysisErr, rez.ErrInvalidInput)
+	s.ErrorIs(missingAnalysisErr, errs.ErrInvalidInput)
 	missingQuestionParams := rez.CreateInvestigationParams{
 		AnalysisID: analysis.ID,
 		Query:      " \t ",
 	}
 
 	_, missingQuestionErr := service.CreateInvestigation(ctx, missingQuestionParams)
-	s.ErrorIs(missingQuestionErr, rez.ErrInvalidInput)
+	s.ErrorIs(missingQuestionErr, errs.ErrInvalidInput)
 
 	investigationParams := rez.CreateInvestigationParams{
 		AnalysisID: analysis.ID,
@@ -264,7 +262,7 @@ func (s *InvestigationServiceSuite) TestCreateInvestigationValidatesOwnershipQue
 	}
 
 	_, tenantInputErr := service.SubmitInvestigationUserInput(ctx, tenantInputParams)
-	s.ErrorIs(tenantInputErr, rez.ErrInvalidInput)
+	s.ErrorIs(tenantInputErr, errs.ErrInvalidInput)
 
 	inUseParams := rez.CreateInvestigationParams{
 		AnalysisID: analysis.ID,
@@ -272,7 +270,7 @@ func (s *InvestigationServiceSuite) TestCreateInvestigationValidatesOwnershipQue
 	}
 
 	_, inUseErr := service.CreateInvestigation(ctx, inUseParams)
-	s.ErrorIs(inUseErr, rez.ErrConflict)
+	s.ErrorIs(inUseErr, errs.ErrConflict)
 	investigationCount, investigationCountErr := tdb.Client(ctx).Investigation.Query().Count(ctx)
 	s.Require().NoError(investigationCountErr)
 
@@ -349,7 +347,7 @@ func (s *InvestigationServiceSuite) TestConcurrentInvestigationsClaimAnalysisOnl
 	for range 2 {
 		createErr := <-createResults
 		if createErr != nil {
-			s.ErrorIs(createErr, rez.ErrConflict)
+			s.ErrorIs(createErr, errs.ErrConflict)
 			conflictCount++
 		}
 	}

@@ -1,7 +1,7 @@
 import { page } from "$app/state";
 import {
 	completeIntegrationOauthFlowMutation,
-	type ErrorModel,
+	type ApiError,
 	type IntegrationOAuthInstallResult,
 } from "$lib/api";
 import { createMutation } from "@tanstack/svelte-query";
@@ -10,8 +10,8 @@ import { onMount } from "svelte";
 
 import { postIntegrationOAuthCompleteMessage } from "$features/settings/lib/integrationsOAuthController.svelte";
 
-const missingParamsError: ErrorModel = {
-	title: "Integration Setup Failed",
+const missingParamsError: ApiError = {
+	code: "invalid_input",
 	detail: "The OAuth provider did not return the required code and state parameters.",
 	status: 400,
 };
@@ -31,7 +31,7 @@ export class ConnectIntegrationController {
 		});
 	}
 
-	private finish(result?: IntegrationOAuthInstallResult, error?: ErrorModel) {
+	private finish(result?: IntegrationOAuthInstallResult, error?: ApiError) {
 		postIntegrationOAuthCompleteMessage({ name: this.name, result, error });
 		setTimeout(() => window.close(), 50);
 	}
@@ -52,7 +52,7 @@ export class ConnectIntegrationController {
 			});
 			this.finish(resp.data);
 		} catch (e) {
-			this.finish(undefined, e as ErrorModel);
+			this.finish(undefined, e as ApiError);
 		}
 	}
 

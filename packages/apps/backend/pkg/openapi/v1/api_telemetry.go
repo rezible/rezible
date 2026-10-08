@@ -6,15 +6,29 @@ import (
 	"time"
 
 	"github.com/danielgtaylor/huma/v2"
+	"github.com/rezible/rezible/pkg/execution"
 	"github.com/rezible/rezible/pkg/openapi"
+	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/metric"
-
-	rez "github.com/rezible/rezible"
+	"go.opentelemetry.io/otel/trace"
 )
 
-func MakeAPITelemetryMiddleware(ts rez.TelemetryService) openapi.Middleware {
-	m := ts.DefaultMeter()
+// nameOperationSpan names the request's span after the API operation and sets its route before security
+// runs, so a rejected request's span is named too. The security middleware adds the identity.
+func nameOperationSpan(ctx huma.Context, next func(huma.Context)) {
+	if op := ctx.Operation(); op != nil {
+		span := trace.SpanFromContext(ctx.Context())
+		span.SetName(op.OperationID)
+		span.SetAttributes(attribute.String("http.route", op.Path))
+		span.SetAttributes(execution.Attrs(ctx.Context())...)
+	}
+	next(ctx)
+}
+
+// makeMetricsMiddleware records the API metrics.
+func makeMetricsMiddleware() openapi.Middleware {
+	m := otel.Meter("github.com/rezible/rezible")
 	requests, requestsErr := m.Int64Counter("rezible.backend.http.server.requests",
 		metric.WithDescription("HTTP requests handled by the backend"))
 	requestSeconds, requestSecondsErr := m.Float64Histogram("rezible.backend.http.server.duration",
@@ -29,16 +43,16 @@ func MakeAPITelemetryMiddleware(ts rez.TelemetryService) openapi.Middleware {
 
 		next(ctx)
 
-		status := ctx.Status()
-		if status == 0 {
-			status = http.StatusOK
-		}
 		op := ctx.Operation()
 		route := "unknown"
 		operationID := "unknown"
 		if op != nil {
 			route = op.Path
 			operationID = op.OperationID
+		}
+		status := ctx.Status()
+		if status == 0 {
+			status = http.StatusOK
 		}
 
 		attrs := []attribute.KeyValue{

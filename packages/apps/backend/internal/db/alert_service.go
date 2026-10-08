@@ -21,6 +21,7 @@ import (
 	"github.com/rezible/rezible/ent/schema/schematypes"
 	sitsig "github.com/rezible/rezible/ent/situationsignal"
 	ssa "github.com/rezible/rezible/ent/situationsignalattention"
+	"github.com/rezible/rezible/pkg/errs"
 	"github.com/rezible/rezible/pkg/execution"
 	"github.com/rezible/rezible/pkg/situations"
 )
@@ -147,11 +148,11 @@ func (s *AlertService) SetAlertIdentityGroupLabels(ctx context.Context, id uuid.
 
 func (s *AlertService) SetAlertSituationSignalAttention(ctx context.Context, id uuid.UUID, level ssa.Level) (*ent.AlertDefinition, error) {
 	if levelErr := ssa.LevelValidator(level); levelErr != nil {
-		return nil, fmt.Errorf("%w: %w", rez.ErrInvalidInput, levelErr)
+		return nil, fmt.Errorf("%w: %w", errs.ErrInvalidInput, levelErr)
 	}
 	userID, hasUser := execution.GetContext(ctx).UserID()
 	if !hasUser {
-		return nil, fmt.Errorf("%w: setting situation signal attention requires a user", rez.ErrForbidden)
+		return nil, fmt.Errorf("%w: setting situation signal attention requires a user", errs.ErrForbidden)
 	}
 	return ent.WithTxReturning(ctx, s.db, func(ctx context.Context, tx *ent.Client) (*ent.AlertDefinition, error) {
 		definition, lockErr := s.lockAlertDefinition(ctx, ald.ID(id))

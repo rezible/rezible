@@ -12,7 +12,6 @@ type Suite struct {
 
 	cfg             *rez.Config
 	configOverrides map[string]any
-	telemetry       *Telemetry
 
 	suiteT   *testing.T
 	sharedDB rez.Database
@@ -39,11 +38,4 @@ func (s *Suite) loadConfig() rez.Config {
 	cfg, configErr := loadConfig(s.T().Context(), s.configOverrides)
 	s.Require().NoError(configErr)
 	return cfg
-}
-
-func (s *Suite) Telemetry() *Telemetry {
-	if s.telemetry == nil {
-		s.telemetry = NewTelemetry()
-	}
-	return s.telemetry
 }

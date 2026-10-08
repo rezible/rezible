@@ -11,6 +11,7 @@ import (
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/pkg/errs"
 	"github.com/rezible/rezible/pkg/integrations"
 	"github.com/rezible/rezible/test"
 	"github.com/rezible/rezible/test/mocks"
@@ -98,7 +99,7 @@ func (s *IntegrationsServiceSuite) TestGetInstalledIntegrationReportsMissingAsNo
 
 	_, getErr := svc.GetInstalledIntegration(ctx, uuid.New())
 
-	s.Require().ErrorIs(getErr, rez.ErrNotFound)
+	s.Require().ErrorIs(getErr, errs.ErrNotFound)
 }
 
 func (s *IntegrationsServiceSuite) TestInstallSameTargetUpdatesExistingInstallation() {
@@ -134,7 +135,7 @@ func (s *IntegrationsServiceSuite) TestInstallRejectsNewTargetsBeyondMaxInstalls
 		},
 	}
 	_, secondErr := svc.InstallFromTarget(ctx, secondTarget)
-	s.Require().ErrorIs(secondErr, rez.ErrConflict)
+	s.Require().ErrorIs(secondErr, errs.ErrConflict)
 
 	reinstalled := s.installTestIntegration(ctx, svc, i, "target-a")
 	s.Equal(first.Integration().ID, reinstalled.Integration().ID)
@@ -173,7 +174,7 @@ func (s *IntegrationsServiceSuite) TestIssueWebhookTokenReplacesEarlierToken() {
 	s.Equal(integrations.WebhookTokenHash(secondToken), storedHash())
 
 	_, missingErr := svc.IssueWebhookToken(ctx, uuid.New())
-	s.ErrorIs(missingErr, rez.ErrNotFound)
+	s.ErrorIs(missingErr, errs.ErrNotFound)
 }
 
 func (s *IntegrationsServiceSuite) TestInstallRequirementsUseOrganizationPreferences() {
@@ -210,7 +211,7 @@ func (s *IntegrationsServiceSuite) TestInstallRequirementsUseOrganizationPrefere
 		},
 	}
 	_, installErr := svc.InstallFromTarget(ctx, restrictedTarget)
-	s.Require().ErrorIs(installErr, rez.ErrConflict)
+	s.Require().ErrorIs(installErr, errs.ErrConflict)
 
 	s.Require().NoError(createRequiredPrefs.Exec(ctx))
 

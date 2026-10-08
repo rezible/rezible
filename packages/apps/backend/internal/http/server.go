@@ -20,6 +20,8 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/pkg/execution"
 	oapiv1 "github.com/rezible/rezible/pkg/openapi/v1"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
+	"go.opentelemetry.io/otel/propagation"
 )
 
 type (
@@ -60,7 +62,7 @@ func NewServer(
 	healthFn HealthCheckFunc,
 ) (*Server, error) {
 	s := &Server{
-		logger: slog.Default().WithGroup("http"),
+		logger: slog.Default().With("component", "http"),
 	}
 
 	router := chi.NewMux()
@@ -81,13 +83,44 @@ func NewServer(
 
 func (s *Server) makeServer(cfg rez.Config, r *chi.Mux) *http.Server {
 	handler := chi.NewRouter()
+	handler.Use(s.makeTraceResponseHeaderMiddleware())
 	handler.Use(s.makeSetRootExecutionContextMiddleware())
 	httpCfg := cfg.HttpServer
 	handler.Use(s.makeRequestLoggerMiddleware(cfg.App.DebugMode, httpCfg.BasePath))
+	handler.Use(s.makeRecoverPanicsMiddleware())
 	handler.Mount(ensureSlashPrefix(httpCfg.BasePath), http.StripPrefix(httpCfg.BasePath, r))
 	return &http.Server{
 		Addr:    net.JoinHostPort(httpCfg.Host, httpCfg.Port),
-		Handler: handler,
+		Handler: s.makeTracingHandler(handler, httpCfg.BasePath),
+	}
+}
+
+// makeTracingHandler starts a span for each request, outside every other middleware so request logs and
+// the execution root sit inside it. The API names the span after its operation. Clients cannot choose the
+// trace: an incoming trace context is linked, not continued. Webhook requests are not traced, because the
+// recorded path would carry a webhook's secret token; neither are health checks.
+func (s *Server) makeTracingHandler(next http.Handler, basePath string) http.Handler {
+	untraced := mapset.NewThreadUnsafeSet(basePath+healthCheckPath, basePath+readinessCheckPath)
+	webhooksPrefix := basePath + webhooksPath + "/"
+	return otelhttp.NewHandler(next, "http.server",
+		otelhttp.WithPublicEndpointFn(func(*http.Request) bool { return true }),
+		otelhttp.WithFilter(func(r *http.Request) bool {
+			return !untraced.Contains(r.URL.Path) && !strings.HasPrefix(r.URL.Path, webhooksPrefix)
+		}),
+		otelhttp.WithSpanNameFormatter(func(_ string, r *http.Request) string {
+			return r.Method
+		}),
+	)
+}
+
+// makeTraceResponseHeaderMiddleware returns the request's trace context in a traceparent header, so a
+// reported problem carries its trace ID.
+func (s *Server) makeTraceResponseHeaderMiddleware() func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			propagation.TraceContext{}.Inject(r.Context(), propagation.HeaderCarrier(w.Header()))
+			next.ServeHTTP(w, r)
+		})
 	}
 }
 
@@ -157,6 +190,34 @@ func (s *Server) makeSetRootExecutionContextMiddleware() func(http.Handler) http
 	}
 }
 
+// makeRecoverPanicsMiddleware logs a handler's panic once, at Error, and responds 500. It runs inside the
+// request logger, which then logs the request at Info like any other.
+func (s *Server) makeRecoverPanicsMiddleware() func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			ww := middleware.NewWrapResponseWriter(w, r.ProtoMajor)
+			defer func() {
+				recovered := recover()
+				if recovered == nil {
+					return
+				}
+				if recovered == http.ErrAbortHandler {
+					panic(recovered)
+				}
+				if ww.Status() == 0 {
+					ww.WriteHeader(http.StatusInternalServerError)
+				}
+				s.logger.LogAttrs(r.Context(), slog.LevelError, "request panicked",
+					slog.String("method", r.Method),
+					slog.String("panic", fmt.Sprint(recovered)),
+					slog.String("stack", string(debug.Stack())),
+				)
+			}()
+			next.ServeHTTP(ww, r)
+		})
+	}
+}
+
 func (s *Server) makeHealthCheckHandler(hc HealthCheckFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// The injector reports every service it has created, with a nil error for each healthy one.
@@ -197,10 +258,13 @@ func (s *Server) makeRequestLoggerMiddleware(concise bool, basePath string) func
 	skipPaths := mapset.NewThreadUnsafeSet(healthCheckPath, readinessCheckPath)
 	// The logged path includes the base path.
 	skipPathPrefix := basePath + webhooksPath + "/"
-	return httplog.RequestLogger(s.logger, &httplog.Options{
+	// Each request is logged at Info whatever its status: errors are logged once where they are handled, at the
+	// level they need, and panics by the recover middleware.
+	accessLogger := slog.New(infoLevelHandler{Handler: s.logger.Handler()})
+	return httplog.RequestLogger(accessLogger, &httplog.Options{
 		Level:         slog.LevelInfo,
 		Schema:        logFormat,
-		RecoverPanics: true,
+		RecoverPanics: false, // The recover middleware handles panics.
 
 		Skip: func(req *http.Request, respStatus int) bool {
 			if skipPaths.Contains(req.URL.Path) || strings.HasPrefix(req.URL.Path, skipPathPrefix) {
@@ -311,4 +375,27 @@ func serveApiDocs(w http.ResponseWriter, r *http.Request) {
 	if _, wErr := w.Write(docsBodyScalar); wErr != nil {
 		slog.Error("failed to write embedded docs body", "error", wErr)
 	}
+}
+
+// infoLevelHandler writes records above Info at Info.
+type infoLevelHandler struct {
+	slog.Handler
+}
+
+// Enabled checks the level a record is written at, so the configured threshold still applies.
+func (h infoLevelHandler) Enabled(ctx context.Context, level slog.Level) bool {
+	return h.Handler.Enabled(ctx, min(level, slog.LevelInfo))
+}
+
+func (h infoLevelHandler) Handle(ctx context.Context, record slog.Record) error {
+	record.Level = min(record.Level, slog.LevelInfo)
+	return h.Handler.Handle(ctx, record)
+}
+
+func (h infoLevelHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
+	return infoLevelHandler{Handler: h.Handler.WithAttrs(attrs)}
+}
+
+func (h infoLevelHandler) WithGroup(name string) slog.Handler {
+	return infoLevelHandler{Handler: h.Handler.WithGroup(name)}
 }

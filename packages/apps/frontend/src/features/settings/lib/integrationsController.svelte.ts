@@ -1,5 +1,5 @@
 import {
-	type ErrorModel,
+	type ApiError,
 	getInstallableIntegrationsOptions,
 	type InstallableIntegration,
 	listIntegrationInstallationsOptions,
@@ -69,8 +69,8 @@ export class IntegrationsController {
 	availableProviders = $derived(this.providers.filter((provider) => provider.installations.length === 0));
 
 	loading = $derived(this.installableQuery.isPending || this.installedQuery.isPending);
-	error = $derived((this.installableQuery.error ?? this.installedQuery.error) as ErrorModel | null);
-	installTargetsError = $derived(this.installTargetsQuery.error as ErrorModel | null);
+	error = $derived((this.installableQuery.error ?? this.installedQuery.error) as ApiError | null);
+	installTargetsError = $derived(this.installTargetsQuery.error as ApiError | null);
 
 	constructor() {
 		// Some integrations are only installable while incident management is enabled.

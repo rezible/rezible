@@ -15,6 +15,7 @@ import (
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/pkg/errs"
 )
 
 const (
@@ -265,7 +266,7 @@ func (h *oidcHandler) extractVerifiedClaims(ctx context.Context, t *oauth2.Token
 	}
 
 	if claimsErr := id.Claims(&claims.IdentityClaims); claimsErr != nil {
-		return nil, rez.ErrAuthSessionInvalid
+		return nil, errs.ErrAuthSessionInvalid
 	}
 
 	return &claims, nil

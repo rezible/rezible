@@ -14,10 +14,10 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 	_ "github.com/jackc/pgx/v5/stdlib"
-	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/entpgx"
 	_ "github.com/rezible/rezible/ent/runtime"
+	"github.com/rezible/rezible/pkg/errs"
 	"github.com/rezible/rezible/pkg/execution"
 )
 
@@ -206,7 +206,7 @@ func (dbc *DatabaseClient) ensureTenantIdSetHook() ent.Hook {
 				if _, alreadySet := m.Field("tenant_id"); !alreadySet {
 					tenantId, tenantIdSet := execution.GetContext(ctx).TenantID()
 					if !tenantIdSet {
-						return nil, rez.ErrTenantContextMissing
+						return nil, errs.ErrTenantContextMissing
 					}
 					tm.SetTenantID(tenantId)
 				}

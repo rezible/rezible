@@ -52,9 +52,11 @@ type webhookHarness struct {
 
 func (s *WebhookHandlerSuite) newHarness(tdb rez.Database) *webhookHarness {
 	logs := &bytes.Buffer{}
-	logger := slog.New(slog.NewTextHandler(logs, &slog.HandlerOptions{Level: slog.LevelDebug}))
+	previous := slog.Default()
+	slog.SetDefault(slog.New(slog.NewTextHandler(logs, &slog.HandlerOptions{Level: slog.LevelDebug})))
+	s.T().Cleanup(func() { slog.SetDefault(previous) })
 	events := mocks.NewMockProviderEventPipelineService(s.T())
-	handler := newWebhookHandler(logger, test.NewClock(testReceivedAt), events, installationLookup{db: tdb})
+	handler := newWebhookHandler(test.NewClock(testReceivedAt), events, installationLookup{db: tdb})
 	return &webhookHarness{handler: handler, events: events, logs: logs}
 }
 

@@ -31,7 +31,7 @@ func makeApplicationCli(app *Application) *cli.Command {
 		Name:  "rezible",
 		Usage: "backend server control",
 		Before: func(ctx context.Context, command *cli.Command) (context.Context, error) {
-			return app.Init(ctx)
+			return app.Init(ctx, true)
 		},
 		Commands: makeCliCommands(app),
 		After: func(ctx context.Context, command *cli.Command) error {

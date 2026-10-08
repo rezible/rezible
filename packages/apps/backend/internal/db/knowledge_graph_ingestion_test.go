@@ -15,6 +15,7 @@ import (
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
 	ksa "github.com/rezible/rezible/ent/knowledgesubjectalias"
 	"github.com/rezible/rezible/ent/schema/schematypes"
+	"github.com/rezible/rezible/pkg/errs"
 	"github.com/rezible/rezible/test"
 )
 
@@ -185,7 +186,7 @@ func (s *KnowledgeGraphIngestionServiceSuite) TestEntityLinkingAttributeConflict
 	})
 	conflictEvent := s.createEvent(ctx, tdb, "event:third", now.Add(time.Minute))
 	conflictErr := svc.IngestEvidence(ctx, conflictEvent, makeEvidence(&conflictRef))
-	s.Require().ErrorIs(conflictErr, rez.ErrConflict)
+	s.Require().ErrorIs(conflictErr, errs.ErrConflict)
 	s.Equal(2, tdb.Client(ctx).KnowledgeEntity.Query().CountX(ctx))
 	s.Equal(2, tdb.Client(ctx).KnowledgeSubjectAlias.Query().CountX(ctx))
 	s.Equal(2, tdb.Client(ctx).KnowledgeEntityLinkingAttribute.Query().CountX(ctx))

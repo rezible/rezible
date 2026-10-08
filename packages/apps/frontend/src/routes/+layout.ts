@@ -1,12 +1,12 @@
 import { browser, dev } from "$app/environment";
 import type { LayoutLoad } from "./$types";
-import { QueryClient } from "@tanstack/svelte-query";
+import { createQueryClient } from "$lib/query-client";
 
 export const ssr = false;
 export const prerender = false;
 export const csr = true;
 
-const queryClient = new QueryClient({
+const queryClient = createQueryClient({
 	defaultOptions: {
 		queries: {
 			enabled: browser,

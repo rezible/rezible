@@ -2,7 +2,6 @@ package watermill
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"reflect"
 	"time"
@@ -12,8 +11,6 @@ import (
 	"github.com/ThreeDotsLabs/watermill/message/router/middleware"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/pkg/execution"
-	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/metric"
 )
 
 var eventMarshaller = cqrs.JSONMarshaler{
@@ -56,39 +53,6 @@ func (ms *MessageQueue) makeEventProcessor() (*cqrs.EventProcessor, error) {
 		Logger:    ms.logger,
 	}
 	return cqrs.NewEventProcessorWithConfig(ms.router, eventProcCfg)
-}
-
-func (ms *MessageQueue) makeTelemetryMiddleware(ts rez.TelemetryService) (message.HandlerMiddleware, error) {
-	m := ts.DefaultMeter()
-	messagesHandled, messagesHandledErr := m.Int64Counter("backend.messages.handled",
-		metric.WithDescription("Watermill messages handled"))
-	messageHandlingSeconds, messageHandlingSecondsErr := m.Float64Histogram("backend.messages.handle_duration",
-		metric.WithDescription("Watermill message handling duration"),
-		metric.WithUnit("s"))
-	if telErr := errors.Join(messagesHandledErr, messageHandlingSecondsErr); telErr != nil {
-		return nil, fmt.Errorf("failed to handle messages: %w", telErr)
-	}
-
-	return func(next message.HandlerFunc) message.HandlerFunc {
-		return func(msg *message.Message) ([]*message.Message, error) {
-			name := eventMarshaller.NameFromMessage(msg)
-			topic := message.SubscribeTopicFromCtx(msg.Context())
-
-			start := time.Now()
-			out, err := next(msg)
-
-			attrsOpts := metric.WithAttributes(
-				attribute.String("message.name", name),
-				attribute.String("topic", topic),
-				attribute.Bool("success", err == nil),
-			)
-			ctx := msg.Context()
-			messagesHandled.Add(ctx, 1, attrsOpts)
-			messageHandlingSeconds.Record(ctx, time.Since(start).Seconds(), attrsOpts)
-
-			return out, err
-		}
-	}, nil
 }
 
 func (ms *MessageQueue) makeRetryMiddleware() message.HandlerMiddleware {

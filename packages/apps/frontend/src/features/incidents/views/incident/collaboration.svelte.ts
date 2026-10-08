@@ -1,9 +1,16 @@
 import { HocuspocusProvider, WebSocketStatus, type StatesArray } from "@hocuspocus/provider";
-import { requestDocumentSessionAuthMutation, type DocumentSessionAuth } from "$lib/api";
+import {
+	requestDocumentSessionAuthMutation,
+	type ApiError,
+	type DocumentSessionAuth,
+	type ErrorCode,
+} from "$lib/api";
 import { createMutation } from "@tanstack/svelte-query";
 import { Context, watch, type Getter } from "runed";
 import { onMount } from "svelte";
 import { Doc } from "yjs";
+
+const retriedErrorCodes: ErrorCode[] = ["unavailable", "rate_limited", "internal"];
 
 export class IncidentCollaborationController {
 	private documentId?: string;
@@ -28,17 +35,7 @@ export class IncidentCollaborationController {
 	private requestSessionAuth = createMutation(() => ({
 		...requestDocumentSessionAuthMutation(),
 		retryDelay: 250,
-		retry: (failureCount, error) => {
-			const status = error.status;
-			return (
-				failureCount < 2 &&
-				(status === undefined ||
-					status === 0 ||
-					status === 408 ||
-					status === 429 ||
-					(status >= 500 && status < 600))
-			);
-		},
+		retry: (failureCount, error) => failureCount < 2 && retriedErrorCodes.includes(error.code),
 	}));
 
 	private createProvider(auth: DocumentSessionAuth, generation: number) {
@@ -91,20 +88,15 @@ export class IncidentCollaborationController {
 		});
 	}
 
+	// The session auth request rejects with an ApiError; the socket and provider with an Error.
 	private setError(error: unknown) {
 		this.canEdit = false;
 		if (error instanceof Error) {
 			this.error = error;
-		} else if (
-			error &&
-			typeof error === "object" &&
-			"detail" in error &&
-			typeof error.detail === "string"
-		) {
-			this.error = new Error(error.detail);
-		} else {
-			this.error = new Error("Unable to connect to the report.");
+			return;
 		}
+		const apiError = error as ApiError | undefined;
+		this.error = new Error(apiError?.detail ?? "Unable to connect to the report.");
 	}
 
 	async connect(id?: string) {

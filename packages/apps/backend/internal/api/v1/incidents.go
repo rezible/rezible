@@ -7,6 +7,7 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/pkg/errs"
 	oapi "github.com/rezible/rezible/pkg/openapi/v1"
 )
 
@@ -58,11 +59,11 @@ func (h *incidentsHandler) GetIncident(ctx context.Context, input *oapi.GetIncid
 }
 
 func (h *incidentsHandler) CreateIncident(ctx context.Context, input *oapi.CreateIncidentRequest) (*oapi.CreateIncidentResponse, error) {
-	return nil, oapi.Error(ctx, "create incident is not implemented", rez.ErrNotImplemented)
+	return nil, oapi.Error(ctx, "create incident is not implemented", errs.ErrNotImplemented)
 }
 
 func (h *incidentsHandler) UpdateIncident(ctx context.Context, request *oapi.UpdateIncidentRequest) (*oapi.UpdateIncidentResponse, error) {
-	return nil, oapi.Error(ctx, "incident is read-only", rez.ErrNotImplemented)
+	return nil, oapi.Error(ctx, "incident is read-only", errs.ErrNotImplemented)
 }
 
 func (h *incidentsHandler) ArchiveIncident(ctx context.Context, input *oapi.ArchiveIncidentRequest) (*oapi.ArchiveIncidentResponse, error) {
@@ -109,11 +110,11 @@ func (h *incidentsHandler) DeleteIncidentRoleAssignment(ctx context.Context, req
 }
 
 func (*incidentsHandler) LinkIncidentSituation(ctx context.Context, _ *oapi.LinkIncidentSituationRequest) (*oapi.LinkIncidentSituationResponse, error) {
-	return nil, oapi.Error(ctx, "incident situation links are not implemented", rez.ErrNotImplemented)
+	return nil, oapi.Error(ctx, "incident situation links are not implemented", errs.ErrNotImplemented)
 }
 
 func (*incidentsHandler) UnlinkIncidentSituation(ctx context.Context, _ *oapi.UnlinkIncidentSituationRequest) (*oapi.UnlinkIncidentSituationResponse, error) {
-	return nil, oapi.Error(ctx, "incident situation links are not implemented", rez.ErrNotImplemented)
+	return nil, oapi.Error(ctx, "incident situation links are not implemented", errs.ErrNotImplemented)
 }
 
 func (h *incidentsHandler) ListIncidentUpdates(ctx context.Context, req *oapi.ListIncidentUpdatesRequest) (*oapi.ListIncidentUpdatesResponse, error) {
@@ -127,5 +128,5 @@ func (h *incidentsHandler) ListIncidentUpdates(ctx context.Context, req *oapi.Li
 }
 
 func (*incidentsHandler) CreateIncidentUpdate(ctx context.Context, _ *oapi.CreateIncidentUpdateRequest) (*oapi.CreateIncidentUpdateResponse, error) {
-	return nil, oapi.Error(ctx, "incident updates are not implemented", rez.ErrNotImplemented)
+	return nil, oapi.Error(ctx, "incident updates are not implemented", errs.ErrNotImplemented)
 }

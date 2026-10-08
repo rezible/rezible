@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/pkg/errs"
 )
 
 func TestValidateUserSettings(t *testing.T) {
@@ -47,7 +47,7 @@ func TestValidateUserSettings(t *testing.T) {
 		t.Run("rejects "+tc.name, func(t *testing.T) {
 			validateErr := integration.ValidateUserSettings(tc.settings)
 
-			require.ErrorIs(t, validateErr, rez.ErrInvalidInput)
+			require.ErrorIs(t, validateErr, errs.ErrInvalidInput)
 			require.ErrorContains(t, validateErr, tc.contains)
 		})
 	}
@@ -100,7 +100,7 @@ func TestInstallationConfig(t *testing.T) {
 		t.Run("rejects "+tc.name, func(t *testing.T) {
 			_, configErr := integration.ValidateInstallationConfig([]byte(tc.raw))
 
-			require.ErrorIs(t, configErr, rez.ErrInvalidInput)
+			require.ErrorIs(t, configErr, errs.ErrInvalidInput)
 			require.NotContains(t, configErr.Error(), "glsa_secret")
 		})
 	}

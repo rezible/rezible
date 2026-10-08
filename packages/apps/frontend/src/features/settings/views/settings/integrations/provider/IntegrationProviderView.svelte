@@ -44,7 +44,7 @@
 	{:else if !ctrl.provider || !ctrl.ProviderComponent}
 		<InlineAlert
 			error={{
-				title: "Integration not found",
+				code: "not_found",
 				detail: `No integration provider named "${name}" is available.`,
 			}}
 			dismissable={false}

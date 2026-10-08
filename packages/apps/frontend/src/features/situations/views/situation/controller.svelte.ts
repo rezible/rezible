@@ -16,7 +16,7 @@ import {
 	clearSituationHoldMutation,
 	clearSituationMuteMutation,
 	closeSituationMutation,
-	type ErrorModel,
+	type ApiError,
 	getIncidentOptions,
 	type Incident,
 	getSituationOptions,
@@ -395,7 +395,7 @@ export class SituationController {
 		await this.queryClient.invalidateQueries({ queryKey: listSituationsQueryKey() });
 	}
 
-	private notifyError(title: string, error: ErrorModel) {
+	private notifyError(title: string, error: ApiError) {
 		toast.error(title, { description: error.detail });
 	}
 

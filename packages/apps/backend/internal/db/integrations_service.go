@@ -21,6 +21,7 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	in "github.com/rezible/rezible/ent/integration"
+	"github.com/rezible/rezible/pkg/errs"
 	"github.com/rezible/rezible/pkg/execution"
 	"github.com/rezible/rezible/pkg/integrations"
 	"github.com/rezible/rezible/pkg/jobs"
@@ -114,7 +115,7 @@ func (s *IntegrationsService) checkInstallRequirements(p rez.IntegrationDefiniti
 		return nil
 	}
 	if requirementsErr := ri.CheckInstallRequirements(state); requirementsErr != nil {
-		return fmt.Errorf("%w: %w", rez.ErrConflict, requirementsErr)
+		return fmt.Errorf("%w: %w", errs.ErrConflict, requirementsErr)
 	}
 	return nil
 }
@@ -135,7 +136,7 @@ func (s *IntegrationsService) checkCanInstallNew(ctx context.Context, p rez.Inte
 			}
 		}
 		if installCount >= *maxInstalls {
-			return fmt.Errorf("%w: %s allows at most %d installation(s)", rez.ErrConflict, p.DisplayName(), *maxInstalls)
+			return fmt.Errorf("%w: %s allows at most %d installation(s)", errs.ErrConflict, p.DisplayName(), *maxInstalls)
 		}
 	}
 
@@ -192,7 +193,7 @@ func (s *IntegrationsService) GetInstalledIntegration(ctx context.Context, id uu
 	intg, getErr := s.LookupInstallation(ctx, in.ID(id))
 	if getErr != nil {
 		if ent.IsNotFound(getErr) {
-			return nil, fmt.Errorf("%w: integration installation %s", rez.ErrNotFound, id)
+			return nil, fmt.Errorf("%w: integration installation %s", errs.ErrNotFound, id)
 		}
 		return nil, fmt.Errorf("failed to get integration: %w", getErr)
 	}
@@ -310,7 +311,7 @@ func (s *IntegrationsService) IssueWebhookToken(ctx context.Context, id uuid.UUI
 	curr, currErr := s.LookupInstallation(ctx, in.ID(id))
 	if currErr != nil {
 		if ent.IsNotFound(currErr) {
-			return "", fmt.Errorf("%w: integration installation %s", rez.ErrNotFound, id)
+			return "", fmt.Errorf("%w: integration installation %s", errs.ErrNotFound, id)
 		}
 		return "", fmt.Errorf("get integration: %w", currErr)
 	}
@@ -394,7 +395,7 @@ func (s *IntegrationsService) set(ctx context.Context, id uuid.UUID, setFn func(
 func (s *IntegrationsService) makeUserInstallStatePredicate(ctx context.Context, intgName string) (predicate.IntegrationUserInstallState, error) {
 	userId, ok := execution.GetContext(ctx).UserID()
 	if !ok {
-		return nil, rez.ErrAuthSessionMissing
+		return nil, errs.ErrAuthSessionMissing
 	}
 	return iuis.And(iuis.UserIDEQ(userId), iuis.IntegrationName(intgName)), nil
 }
@@ -471,7 +472,7 @@ func (s *IntegrationsService) getOAuthIntegration(name string) (rez.OAuth2FlowIn
 func (s *IntegrationsService) StartOAuth2Flow(ctx context.Context, integrationName string) (string, error) {
 	userId, ok := execution.GetContext(ctx).UserID()
 	if !ok {
-		return "", rez.ErrAuthSessionMissing
+		return "", errs.ErrAuthSessionMissing
 	}
 	_, cfg, intgErr := s.getOAuthIntegration(integrationName)
 	if intgErr != nil {
@@ -501,7 +502,7 @@ func (s *IntegrationsService) CompleteOAuth2Flow(ctx context.Context, integratio
 	}
 	userId, ok := execution.GetContext(ctx).UserID()
 	if !ok {
-		return nil, rez.ErrAuthSessionMissing
+		return nil, errs.ErrAuthSessionMissing
 	}
 
 	oi, cfg, intgErr := s.getOAuthIntegration(integrationName)
@@ -578,7 +579,7 @@ func (s *IntegrationsService) decodeStateInstallationTargets(state *ent.Integrat
 func (s *IntegrationsService) ListUserInstallationTargets(ctx context.Context) ([]rez.IntegrationInstallationTarget, error) {
 	userId, ok := execution.GetContext(ctx).UserID()
 	if !ok {
-		return nil, rez.ErrAuthSessionMissing
+		return nil, errs.ErrAuthSessionMissing
 	}
 	query := s.db.Client(ctx).IntegrationUserInstallState.Query().
 		Where(iuis.UserID(userId)).
@@ -601,7 +602,7 @@ func (s *IntegrationsService) ListUserInstallationTargets(ctx context.Context) (
 func (s *IntegrationsService) InstallFromUserInstallationTargets(ctx context.Context, intgName string, resourceRefs []string) ([]rez.InstalledIntegration, error) {
 	userId, ok := execution.GetContext(ctx).UserID()
 	if !ok {
-		return nil, rez.ErrAuthSessionMissing
+		return nil, errs.ErrAuthSessionMissing
 	}
 	state, stateErr := s.lookupUserInstallationState(ctx, userId, intgName)
 	if stateErr != nil {

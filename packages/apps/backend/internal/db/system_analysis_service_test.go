@@ -20,6 +20,7 @@ import (
 	sae "github.com/rezible/rezible/ent/systemanalysisentry"
 	saes "github.com/rezible/rezible/ent/systemanalysisentrysubject"
 	sarel "github.com/rezible/rezible/ent/systemanalysisrelationship"
+	"github.com/rezible/rezible/pkg/errs"
 	"github.com/rezible/rezible/pkg/projections"
 	"github.com/rezible/rezible/test"
 )
@@ -141,7 +142,7 @@ func (s *SystemAnalysisServiceSuite) TestAnalysisEntityMutationsAndDelete() {
 	_, retargetErr := svc.SetSystemAnalysisEntity(ctx, node.ID, func(m *ent.SystemAnalysisEntityMutation) {
 		m.SetKnowledgeEntityID(fixture.Target.ID)
 	})
-	s.ErrorIs(retargetErr, rez.ErrInvalidInput)
+	s.ErrorIs(retargetErr, errs.ErrInvalidInput)
 
 	updated, updateErr := svc.SetSystemAnalysisEntity(ctx, node.ID, func(m *ent.SystemAnalysisEntityMutation) {
 		m.SetPosX(30)
@@ -203,7 +204,7 @@ func (s *SystemAnalysisServiceSuite) TestAnalysisRelationshipDerivesEndpointEnti
 	_, retargetErr := svc.SetSystemAnalysisRelationship(ctx, relationship.ID, func(m *ent.SystemAnalysisRelationshipMutation) {
 		m.SetKnowledgeRelationshipID(uuid.New())
 	})
-	s.ErrorIs(retargetErr, rez.ErrInvalidInput)
+	s.ErrorIs(retargetErr, errs.ErrInvalidInput)
 
 	layout := map[string]any{"curve": "smooth"}
 	updated, updateErr := svc.SetSystemAnalysisRelationship(ctx, relationship.ID, func(m *ent.SystemAnalysisRelationshipMutation) {
@@ -362,7 +363,7 @@ func (s *SystemAnalysisServiceSuite) TestEntrySubjectRequiresExactlyOneGraphRefe
 		m.SetEntryID(entry.ID)
 		m.SetRole("missing")
 	})
-	s.ErrorIs(missingErr, rez.ErrUnprocessableInput)
+	s.ErrorIs(missingErr, errs.ErrUnprocessableInput)
 
 	_, multipleErr := svc.SetSystemAnalysisEntrySubject(ctx, uuid.Nil, func(m *ent.SystemAnalysisEntrySubjectMutation) {
 		m.SetEntryID(entry.ID)
@@ -370,7 +371,7 @@ func (s *SystemAnalysisServiceSuite) TestEntrySubjectRequiresExactlyOneGraphRefe
 		m.SetKnowledgeEntityID(fixture.Source.ID)
 		m.SetKnowledgeRelationshipID(fixture.Relationship.ID)
 	})
-	s.ErrorIs(multipleErr, rez.ErrUnprocessableInput)
+	s.ErrorIs(multipleErr, errs.ErrUnprocessableInput)
 
 	entitySubject, addErr := svc.SetSystemAnalysisEntrySubject(ctx, uuid.Nil, func(m *ent.SystemAnalysisEntrySubjectMutation) {
 		m.SetEntryID(entry.ID)
@@ -400,7 +401,7 @@ func (s *SystemAnalysisServiceSuite) TestEntrySubjectRequiresExactlyOneGraphRefe
 	_, retargetErr := svc.SetSystemAnalysisEntrySubject(ctx, entitySubject.ID, func(m *ent.SystemAnalysisEntrySubjectMutation) {
 		m.SetKnowledgeRelationshipID(fixture.Relationship.ID)
 	})
-	s.ErrorIs(retargetErr, rez.ErrInvalidInput)
+	s.ErrorIs(retargetErr, errs.ErrInvalidInput)
 
 }
 

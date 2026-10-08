@@ -24,15 +24,13 @@ const maxDeliveryBytes = 64 << 10
 // webhookHandler receives deliveries at /{token}. The token authenticates the delivery and identifies the
 // installation; it is a secret and is never logged.
 type webhookHandler struct {
-	logger        *slog.Logger
 	clock         rez.Clock
 	events        rez.ProviderEventPipelineService
 	installations rez.IntegrationInstallationLookup
 }
 
-func newWebhookHandler(logger *slog.Logger, clock rez.Clock, events rez.ProviderEventPipelineService, installations rez.IntegrationInstallationLookup) http.Handler {
+func newWebhookHandler(clock rez.Clock, events rez.ProviderEventPipelineService, installations rez.IntegrationInstallationLookup) http.Handler {
 	h := &webhookHandler{
-		logger:        logger,
 		clock:         clock,
 		events:        events,
 		installations: installations,
@@ -139,5 +137,5 @@ func (h *webhookHandler) logOutcome(ctx context.Context, outcome deliveryOutcome
 	if outcome.err != nil {
 		attrs = append(attrs, slog.String("error", outcome.err.Error()))
 	}
-	h.logger.LogAttrs(ctx, level, "webhook delivery", attrs...)
+	slog.LogAttrs(ctx, level, "webhook delivery", attrs...)
 }

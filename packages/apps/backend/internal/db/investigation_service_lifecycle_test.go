@@ -15,6 +15,7 @@ import (
 	"github.com/rezible/rezible/ent/investigationevidencerevision"
 	"github.com/rezible/rezible/ent/investigationuserinput"
 	rezai "github.com/rezible/rezible/pkg/ai"
+	"github.com/rezible/rezible/pkg/errs"
 	"github.com/rezible/rezible/pkg/execution"
 	"github.com/rezible/rezible/pkg/jobs"
 	"github.com/rezible/rezible/test/mocks"
@@ -120,7 +121,7 @@ func (s *InvestigationServiceSuite) TestInvestigationInputsAndEvidenceRevisionsD
 	changedInputParams := inputParams
 	changedInputParams.Text = "Why did latency spike?"
 	_, changedInputErr := service.SubmitInvestigationUserInput(userCtx, changedInputParams)
-	s.ErrorIs(changedInputErr, rez.ErrConflict)
+	s.ErrorIs(changedInputErr, errs.ErrConflict)
 
 	evidenceParams := rez.RecordInvestigationEvidenceRevisionParams{
 		InvestigationID: investigation.ID,
@@ -138,7 +139,7 @@ func (s *InvestigationServiceSuite) TestInvestigationInputsAndEvidenceRevisionsD
 	changedEvidenceParams := evidenceParams
 	changedEvidenceParams.Explanation = "A different alert episode was linked."
 	_, changedEvidenceErr := service.RecordInvestigationEvidenceRevision(ctx, changedEvidenceParams)
-	s.ErrorIs(changedEvidenceErr, rez.ErrConflict)
+	s.ErrorIs(changedEvidenceErr, errs.ErrConflict)
 
 	inputsParams := rez.ListInvestigationUserInputsParams{
 		ListParams:      ent.ListParams{OrderAsc: true},

@@ -16,6 +16,7 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/pkg/errs"
 
 	at "github.com/rezible/rezible/ent/agentturn"
 	invf "github.com/rezible/rezible/ent/investigationfinding"
@@ -36,11 +37,11 @@ func (s *InvestigationService) PublishInvestigationReport(ctx context.Context, s
 	invId := scope.InvestigationID
 	text := strings.TrimSpace(params.Text)
 	if invId == uuid.Nil || scope.AgentTurnID == uuid.Nil || text == "" {
-		return nil, fmt.Errorf("%w: investigation, turn and report text are required", rez.ErrInvalidInput)
+		return nil, fmt.Errorf("%w: investigation, turn and report text are required", errs.ErrInvalidInput)
 	}
 	summary := strings.TrimSpace(params.Summary)
 	if utf8.RuneCountInString(summary) > maxInvestigationReportSummaryLength {
-		return nil, fmt.Errorf("%w: report summary must be at most %d characters", rez.ErrInvalidInput, maxInvestigationReportSummaryLength)
+		return nil, fmt.Errorf("%w: report summary must be at most %d characters", errs.ErrInvalidInput, maxInvestigationReportSummaryLength)
 	}
 	evidenceIDs := s.normalizeInvestigationEvidenceIDs(params.EvidenceIDs)
 
@@ -111,10 +112,10 @@ func (s *InvestigationService) PublishInvestigationFinding(ctx context.Context, 
 		FindingReferences: s.normalizeFindingVersionReferences(input.FindingReferences),
 	}
 	if investigationID == uuid.Nil || turnID == uuid.Nil || params.Key == "" || params.Title == "" || params.Body == "" {
-		return nil, fmt.Errorf("%w: investigation, turn, key, title and body are required", rez.ErrInvalidInput)
+		return nil, fmt.Errorf("%w: investigation, turn, key, title and body are required", errs.ErrInvalidInput)
 	}
 	if strings.HasPrefix(params.Key, investigationAnswerKeyPrefix) {
-		return nil, fmt.Errorf("%w: finding keys beginning with %q are reserved", rez.ErrInvalidInput, investigationAnswerKeyPrefix)
+		return nil, fmt.Errorf("%w: finding keys beginning with %q are reserved", errs.ErrInvalidInput, investigationAnswerKeyPrefix)
 	}
 	fingerprintPayload := investigationFindingFingerprintPayload{
 		Key:               params.Key,
@@ -178,7 +179,7 @@ func (s *InvestigationService) PublishInvestigationAnswer(ctx context.Context, s
 		FindingReferences: s.normalizeFindingVersionReferences(input.FindingReferences),
 	}
 	if investigationID == uuid.Nil || turnID == uuid.Nil || params.Title == "" || params.Body == "" {
-		return nil, fmt.Errorf("%w: investigation, turn, title and body are required", rez.ErrInvalidInput)
+		return nil, fmt.Errorf("%w: investigation, turn, title and body are required", errs.ErrInvalidInput)
 	}
 	return ent.WithTxReturning(ctx, s.db, func(ctx context.Context, tx *ent.Client) (*ent.InvestigationFindingVersion, error) {
 		current, turn, prepareErr := s.prepareInvestigationOutputWrite(ctx, investigationID, turnID)
@@ -189,7 +190,7 @@ func (s *InvestigationService) PublishInvestigationAnswer(ctx context.Context, s
 			Where(invui.InvestigationID(current.ID), invui.AgentTurnID(turn.ID))
 		userInput, assignedErr := assignedQuery.Only(ctx)
 		if ent.IsNotFound(assignedErr) {
-			return nil, fmt.Errorf("%w: this turn has no assigned user question", rez.ErrInvalidInput)
+			return nil, fmt.Errorf("%w: this turn has no assigned user question", errs.ErrInvalidInput)
 		}
 		if assignedErr != nil {
 			return nil, fmt.Errorf("load assigned investigation question: %w", assignedErr)
@@ -254,12 +255,12 @@ func (s *InvestigationService) PublishInvestigationHypothesis(ctx context.Contex
 	params.Status = invhv.Status(strings.TrimSpace(string(params.Status)))
 	params.EvidenceIDs = s.normalizeInvestigationEvidenceIDs(params.EvidenceIDs)
 	if investigationID == uuid.Nil || turnID == uuid.Nil || params.Key == "" || params.Title == "" || params.Justification == "" {
-		return nil, fmt.Errorf("%w: investigation, turn, key, title and justification are required", rez.ErrInvalidInput)
+		return nil, fmt.Errorf("%w: investigation, turn, key, title and justification are required", errs.ErrInvalidInput)
 	}
 	switch params.Status {
 	case invhv.StatusOpen, invhv.StatusSupported, invhv.StatusDisproven, invhv.StatusInconclusive:
 	default:
-		return nil, fmt.Errorf("%w: invalid hypothesis status %q", rez.ErrInvalidInput, params.Status)
+		return nil, fmt.Errorf("%w: invalid hypothesis status %q", errs.ErrInvalidInput, params.Status)
 	}
 	fingerprintPayload := investigationHypothesisFingerprintPayload{
 		Key:           params.Key,
@@ -323,7 +324,7 @@ func (s *InvestigationService) ReadInvestigationReport(ctx context.Context, para
 		selection = rez.InvestigationReportSelectionLatest
 	}
 	if selection != rez.InvestigationReportSelectionLatest && selection != rez.InvestigationReportSelectionCompleted {
-		return nil, fmt.Errorf("%w: report selection must be latest or completed", rez.ErrInvalidInput)
+		return nil, fmt.Errorf("%w: report selection must be latest or completed", errs.ErrInvalidInput)
 	}
 
 	queryReports := s.investigationReportsQuery(ctx).
@@ -350,14 +351,14 @@ func (s *InvestigationService) ReadInvestigationReport(ctx context.Context, para
 
 func (s *InvestigationService) GetInvestigationFindingVersion(ctx context.Context, investigationID, versionID uuid.UUID) (*ent.InvestigationFindingVersion, error) {
 	if investigationID == uuid.Nil || versionID == uuid.Nil {
-		return nil, fmt.Errorf("%w: investigation and version IDs are required", rez.ErrInvalidInput)
+		return nil, fmt.Errorf("%w: investigation and version IDs are required", errs.ErrInvalidInput)
 	}
 	return s.getFindingVersion(ctx, investigationID, versionID)
 }
 
 func (s *InvestigationService) GetInvestigationHypothesisVersion(ctx context.Context, investigationID, versionID uuid.UUID) (*ent.InvestigationHypothesisVersion, error) {
 	if investigationID == uuid.Nil || versionID == uuid.Nil {
-		return nil, fmt.Errorf("%w: investigation and version IDs are required", rez.ErrInvalidInput)
+		return nil, fmt.Errorf("%w: investigation and version IDs are required", errs.ErrInvalidInput)
 	}
 	return s.getHypothesisVersion(ctx, investigationID, versionID)
 }
@@ -460,7 +461,7 @@ func (s *InvestigationService) getFindingVersion(ctx context.Context, investigat
 		Where(invfv.ID(versionID), invfv.HasFindingWith(invf.InvestigationID(investigationID)))
 	version, queryErr := queryVersion.Only(ctx)
 	if ent.IsNotFound(queryErr) {
-		return nil, fmt.Errorf("%w: investigation finding version not found", rez.ErrNotFound)
+		return nil, fmt.Errorf("%w: investigation finding version not found", errs.ErrNotFound)
 	} else if queryErr != nil {
 		return nil, fmt.Errorf("load investigation finding version: %w", queryErr)
 	}
@@ -479,7 +480,7 @@ func (s *InvestigationService) getHypothesisVersion(ctx context.Context, investi
 		Where(invhv.ID(versionID), invhv.HasHypothesisWith(invh.InvestigationID(investigationID)))
 	version, queryErr := queryVersion.Only(ctx)
 	if ent.IsNotFound(queryErr) {
-		return nil, fmt.Errorf("%w: investigation hypothesis version not found", rez.ErrNotFound)
+		return nil, fmt.Errorf("%w: investigation hypothesis version not found", errs.ErrNotFound)
 	} else if queryErr != nil {
 		return nil, fmt.Errorf("load investigation hypothesis version: %w", queryErr)
 	}
@@ -491,7 +492,7 @@ func (s *InvestigationService) prepareInvestigationOutputWrite(ctx context.Conte
 	current, investigationErr := client.Investigation.Get(ctx, invId)
 	if investigationErr != nil {
 		if ent.IsNotFound(investigationErr) {
-			return nil, nil, fmt.Errorf("%w: investigation not found", rez.ErrNotFound)
+			return nil, nil, fmt.Errorf("%w: investigation not found", errs.ErrNotFound)
 		}
 		return nil, nil, fmt.Errorf("load investigation for output publication: %w", investigationErr)
 	}
@@ -502,15 +503,15 @@ func (s *InvestigationService) prepareInvestigationOutputWrite(ctx context.Conte
 	turn, turnErr := queryTurn.Only(ctx)
 	if turnErr != nil {
 		if ent.IsNotFound(turnErr) {
-			return nil, nil, fmt.Errorf("%w: agent turn not found", rez.ErrNotFound)
+			return nil, nil, fmt.Errorf("%w: agent turn not found", errs.ErrNotFound)
 		}
 		return nil, nil, fmt.Errorf("lock producing agent turn: %w", turnErr)
 	}
 	if turn.AgentSessionID != current.AgentSessionID {
-		return nil, nil, fmt.Errorf("%w: agent turn does not belong to this investigation", rez.ErrConflict)
+		return nil, nil, fmt.Errorf("%w: agent turn does not belong to this investigation", errs.ErrConflict)
 	}
 	if turn.Status != at.StatusRunning {
-		return nil, nil, fmt.Errorf("%w: output can only be published by a running turn", rez.ErrConflict)
+		return nil, nil, fmt.Errorf("%w: output can only be published by a running turn", errs.ErrConflict)
 	}
 	return current, turn, nil
 }
@@ -529,7 +530,7 @@ func (s *InvestigationService) findOrCreateInvestigationFinding(ctx context.Cont
 			return nil, fmt.Errorf("load investigation finding identity: %w", queryExistingErr)
 		} else if existing != nil {
 			if inputID == nil && existing.UserInputID != nil || inputID != nil && (existing.UserInputID == nil || *existing.UserInputID != *inputID) {
-				return nil, fmt.Errorf("%w: finding identity is already bound to another user input", rez.ErrConflict)
+				return nil, fmt.Errorf("%w: finding identity is already bound to another user input", errs.ErrConflict)
 			}
 			return existing, nil
 		}

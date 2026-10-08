@@ -1,30 +1,8 @@
 import { goto } from "$app/navigation";
-import { useUserSessionState, ApiAuthErrorCategory } from "$src/lib/user-session.svelte";
-import type { ErrorModel } from "$lib/api";
+import { useUserSessionState } from "$src/lib/user-session.svelte";
+import type { ErrorDisplay } from "$lib/api";
 import { page } from "$app/state";
-
-const errorCategoryDisplays = new Map<ApiAuthErrorCategory, ErrorModel>([
-	[ApiAuthErrorCategory.SessionExpired, { title: "Session Expired", detail: "Your session has expired" }],
-	[ApiAuthErrorCategory.SessionInvalid, { title: "Invalid Session", detail: "Your session is invalid" }],
-	[
-		ApiAuthErrorCategory.ServerError,
-		{ title: "Server Error", detail: "Something went wrong while authenticating you" },
-	],
-	[
-		ApiAuthErrorCategory.Unknown,
-		{ title: "Server Error", detail: "Something went wrong while authenticating you" },
-	],
-]);
-
-const transformAuthSessionError = (cat?: ApiAuthErrorCategory) => {
-	if (!cat || cat === ApiAuthErrorCategory.NoSession) return;
-	const displayErr = errorCategoryDisplays.get(cat);
-	if (!displayErr) {
-		// log?
-		return errorCategoryDisplays.get(ApiAuthErrorCategory.Unknown);
-	}
-	return displayErr;
-};
+import { sessionNotice } from "./sessionNotice";
 
 const loginErrorDisplayText: Record<string, string> = {
 	["create_redirect"]: "Failed to redirect to identity provider",
@@ -34,11 +12,11 @@ const loginErrorDisplayText: Record<string, string> = {
 	["callback_exchange"]: "Failed to perform callback exchange with identity provider",
 	["identity_sync"]: "Failed to sync user & organization information",
 };
-const transformLoginErrorCode = (code: string | null) => {
+const transformLoginErrorCode = (code: string | null): ErrorDisplay | undefined => {
 	if (!code) return;
 	const title = "Login Error";
 	const detail = loginErrorDisplayText[code] || "An unknown problem occurred";
-	return { title, detail } as ErrorModel;
+	return { title, detail };
 };
 
 export class LoginViewController {
@@ -47,10 +25,9 @@ export class LoginViewController {
 	loaded = $state(false);
 	inFlow = $state(false);
 
-	authSessionError = $derived(transformAuthSessionError(this.session.error));
-	showLogout = $derived(this.session.error === ApiAuthErrorCategory.SessionInvalid);
+	sessionNotice = $derived(sessionNotice(this.session.error, this.session.hadSession));
 
-	loginError = $state<ErrorModel>();
+	loginError = $state<ErrorDisplay>();
 	constructor() {
 		const params = page.url.searchParams;
 
@@ -68,11 +45,6 @@ export class LoginViewController {
 	async doLogin() {
 		this.inFlow = true;
 		await goto("/api/auth/login");
-	}
-
-	async doLogout() {
-		this.inFlow = true;
-		await this.session.logout();
 	}
 
 	titleText = $derived("Authentication Required");

@@ -21,6 +21,7 @@ import (
 	sitlink "github.com/rezible/rezible/ent/situationlink"
 	sitog "github.com/rezible/rezible/ent/situationobservationgroup"
 	sitsig "github.com/rezible/rezible/ent/situationsignal"
+	"github.com/rezible/rezible/pkg/errs"
 	"github.com/rezible/rezible/pkg/knowledgegraph"
 	"github.com/rezible/rezible/pkg/situations"
 )
@@ -51,10 +52,10 @@ type situationMembership struct {
 func (s *SituationService) AttachSituationSignals(ctx context.Context, params AttachSituationSignalsParams) error {
 	title := strings.TrimSpace(params.GroupTitle)
 	if title == "" {
-		return fmt.Errorf("%w: observation group title is required", rez.ErrInvalidInput)
+		return fmt.Errorf("%w: observation group title is required", errs.ErrInvalidInput)
 	}
 	if matchErr := sitsig.MatchKindValidator(params.MatchKind); matchErr != nil {
-		return fmt.Errorf("%w: %w", rez.ErrInvalidInput, matchErr)
+		return fmt.Errorf("%w: %w", errs.ErrInvalidInput, matchErr)
 	}
 	return s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
 		now := s.clock.Now()
@@ -64,7 +65,7 @@ func (s *SituationService) AttachSituationSignals(ctx context.Context, params At
 		}
 		situation := locked[params.SituationID]
 		if situation.ClosedAt != nil {
-			return fmt.Errorf("%w: situation is closed", rez.ErrConflict)
+			return fmt.Errorf("%w: situation is closed", errs.ErrConflict)
 		}
 		memberIDs, membersErr := s.memberEntityIDs(ctx, situation.ID)
 		if membersErr != nil {
@@ -146,7 +147,7 @@ func (s *SituationService) createMemberships(ctx context.Context, situationID uu
 	})
 	if createErr := createMembers.Exec(ctx); createErr != nil {
 		if ent.IsConstraintError(createErr) {
-			return fmt.Errorf("%w: a signal already belongs to a situation", rez.ErrConflict)
+			return fmt.Errorf("%w: a signal already belongs to a situation", errs.ErrConflict)
 		}
 		return fmt.Errorf("create situation signals: %w", createErr)
 	}
@@ -268,10 +269,10 @@ func (s *SituationService) signalRuntimeEntities(ctx context.Context, signal sit
 // MergeSituations moves the source's signals into the target and closes the source as merged.
 func (s *SituationService) MergeSituations(ctx context.Context, params rez.MergeSituationsParams) (*ent.Situation, error) {
 	if params.SourceID == uuid.Nil || params.TargetID == uuid.Nil {
-		return nil, fmt.Errorf("%w: source and target situations are required", rez.ErrInvalidInput)
+		return nil, fmt.Errorf("%w: source and target situations are required", errs.ErrInvalidInput)
 	}
 	if params.SourceID == params.TargetID {
-		return nil, fmt.Errorf("%w: a situation cannot be merged into itself", rez.ErrInvalidInput)
+		return nil, fmt.Errorf("%w: a situation cannot be merged into itself", errs.ErrInvalidInput)
 	}
 	return ent.WithTxReturning(ctx, s.db, func(ctx context.Context, tx *ent.Client) (*ent.Situation, error) {
 		now := s.clock.Now()
@@ -282,7 +283,7 @@ func (s *SituationService) MergeSituations(ctx context.Context, params rez.Merge
 		source := locked[params.SourceID]
 		target := locked[params.TargetID]
 		if source.ClosedAt != nil || target.ClosedAt != nil {
-			return nil, fmt.Errorf("%w: closed situations cannot be merged", rez.ErrConflict)
+			return nil, fmt.Errorf("%w: closed situations cannot be merged", errs.ErrConflict)
 		}
 		explanation := strings.TrimSpace(params.Explanation)
 		if moveErr := s.moveSignals(ctx, source.ID, target.ID, explanation, now); moveErr != nil {

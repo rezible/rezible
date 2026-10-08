@@ -22,6 +22,7 @@ import (
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/ent/situation"
+	"github.com/rezible/rezible/pkg/errs"
 )
 
 type IncidentService struct {
@@ -262,7 +263,7 @@ func (s *IncidentService) SetIncidentRoleAssignment(ctx context.Context, id uuid
 	var mut ent.EntityMutator[*ent.IncidentRoleAssignment, *ent.IncidentRoleAssignmentMutation]
 	if id != uuid.Nil {
 		if params.UserID == uuid.Nil && params.RoleID == uuid.Nil {
-			return nil, fmt.Errorf("%w: assignment requires a user or role", rez.ErrInvalidInput)
+			return nil, fmt.Errorf("%w: assignment requires a user or role", errs.ErrInvalidInput)
 		}
 
 		u := client.IncidentRoleAssignment.UpdateOneID(id)
@@ -274,7 +275,7 @@ func (s *IncidentService) SetIncidentRoleAssignment(ctx context.Context, id uuid
 		mut = u
 	} else {
 		if params.IncidentID == uuid.Nil || params.RoleID == uuid.Nil || params.UserID == uuid.Nil {
-			return nil, fmt.Errorf("%w: missing ids", rez.ErrInvalidInput)
+			return nil, fmt.Errorf("%w: missing ids", errs.ErrInvalidInput)
 		}
 
 		createRoleAssignment := client.IncidentRoleAssignment.Create().

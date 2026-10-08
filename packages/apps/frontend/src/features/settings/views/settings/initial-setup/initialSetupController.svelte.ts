@@ -1,6 +1,6 @@
 import { createMutation } from "@tanstack/svelte-query";
 import { Context, watch } from "runed";
-import { completeOrgSetupMutation, type ErrorModel } from "$lib/api";
+import { completeOrgSetupMutation, type ApiError } from "$lib/api";
 import { useUserSessionState } from "$lib/user-session.svelte";
 
 export class InitialSetupController {
@@ -11,7 +11,7 @@ export class InitialSetupController {
 	timezone = $state("");
 
 	private setupMutation = createMutation(() => completeOrgSetupMutation());
-	error = $derived(this.setupMutation.error as ErrorModel | null);
+	error = $derived(this.setupMutation.error as ApiError | null);
 	loading = $derived(!this.session.ready && !this.session.error);
 	saving = $derived(this.setupMutation.isPending);
 

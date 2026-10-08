@@ -15,6 +15,7 @@ import (
 	"github.com/rezible/rezible/ent/agentmessage"
 	"github.com/rezible/rezible/ent/agentturn"
 	rezai "github.com/rezible/rezible/pkg/ai"
+	"github.com/rezible/rezible/pkg/errs"
 )
 
 func (s *AiRuntimeSuite) makeAgentSession(ctx context.Context, svc *AiRuntime, tdb rez.Database, name string, sessInput rez.ValidatingInput) *ent.AgentSession {
@@ -328,10 +329,10 @@ func (s *AiRuntimeSuite) TestContinuationRequiresExplicitIntentAndState() {
 	state := &rez.AiAgentTurnState{Messages: []*ai.Message{input.Message}}
 
 	_, missingStateErr := agent.normalizeTurnInput(input, &rez.AiAgentTurnState{}, true)
-	s.ErrorIs(missingStateErr, rez.ErrInvalidInput)
+	s.ErrorIs(missingStateErr, errs.ErrInvalidInput)
 
 	_, emptyInputErr := agent.normalizeTurnInput(&rez.AiAgentTurnInput{}, state, false)
-	s.ErrorIs(emptyInputErr, rez.ErrInvalidInput)
+	s.ErrorIs(emptyInputErr, errs.ErrInvalidInput)
 
 	normalized, inputErr := agent.normalizeTurnInput(input, state, false)
 	s.Require().NoError(inputErr)

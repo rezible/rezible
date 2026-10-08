@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"slices"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -12,6 +14,11 @@ import (
 	"github.com/firebase/genkit/go/ai"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	sdktrace "go.opentelemetry.io/otel/sdk/trace"
+	"go.opentelemetry.io/otel/sdk/trace/tracetest"
+	"go.opentelemetry.io/otel/trace"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
@@ -36,6 +43,11 @@ func (s *BackendSuite) TestInvestigation() {
 	t := s.T()
 	model := &investigationModel{}
 	t.Cleanup(func() { model.AssertComplete(t) })
+	// The application reads the global tracer provider as it is built.
+	spans := tracetest.NewSpanRecorder()
+	previousProvider := otel.GetTracerProvider()
+	otel.SetTracerProvider(sdktrace.NewTracerProvider(sdktrace.WithSpanProcessor(spans)))
+	t.Cleanup(func() { otel.SetTracerProvider(previousProvider) })
 	ah := s.newAppHarness(appTestOptions{ModelAction: model.generate})
 	ctx, alice := ah.NewIdentity("Alice")
 	_, bob := ah.NewIdentity("Bob")
@@ -139,6 +151,7 @@ func (s *BackendSuite) TestInvestigation() {
 	inputID := submittedResponse.Body.Data.Id
 	s.Require().NotEqual(uuid.Nil, inputID)
 	secondTurn := ah.AwaitInvestigationTurn(ctx, sessionID, 2)
+	s.requireTurnLinkedToRequest(spans, oapiv1.SubmitInvestigationUserInput.OperationID, secondTurn.ID, situation.ID)
 
 	listFindings := aliceAPI.Operation[
 		oapiv1.ListInvestigationFindingsRequest,
@@ -194,6 +207,66 @@ func (s *BackendSuite) TestInvestigation() {
 	finalTurnCount, finalCountErr := queryTurns.Count(ctx)
 	s.Require().NoError(finalCountErr, "count turns after rejected input")
 	s.Equal(2, finalTurnCount)
+}
+
+// requireTurnLinkedToRequest requires the turn to run in its own trace: its agent.turn span names the
+// situation, Genkit's spans nest beneath it, and its job's work span links back, through the job that
+// inserted it, to the API request that started the chain.
+func (s *BackendSuite) requireTurnLinkedToRequest(spans *tracetest.SpanRecorder, operationID string, turnID, situationID uuid.UUID) {
+	s.T().Helper()
+	var request, turn sdktrace.ReadOnlySpan
+	byID := make(map[trace.SpanID]sdktrace.ReadOnlySpan)
+	for _, span := range spans.Ended() {
+		byID[span.SpanContext().SpanID()] = span
+		if span.Name() == operationID {
+			request = span
+		}
+		if span.Name() == "agent.turn" && slices.Contains(span.Attributes(), attribute.String("agent_turn_id", turnID.String())) {
+			turn = span
+		}
+	}
+	s.Require().NotNil(request, "request span")
+	s.Require().NotNil(turn, "agent.turn span")
+	s.NotEqual(request.SpanContext().TraceID(), turn.SpanContext().TraceID(), "the turn runs in its job's trace")
+	s.Subset(turn.Attributes(), []attribute.KeyValue{
+		attribute.String("situation_id", situationID.String()),
+		attribute.String("outcome", "completed"),
+	})
+
+	// ancestors returns span's ancestors within its trace, nearest first.
+	ancestors := func(span sdktrace.ReadOnlySpan) []sdktrace.ReadOnlySpan {
+		var found []sdktrace.ReadOnlySpan
+		for parent, known := byID[span.Parent().SpanID()]; known && span.Parent().IsValid(); parent, known = byID[span.Parent().SpanID()] {
+			found = append(found, parent)
+			span = parent
+		}
+		return found
+	}
+
+	hasGenkitChild := false
+	for _, span := range spans.Ended() {
+		if span.InstrumentationScope().Name == "genkit-tracer" && slices.Contains(ancestors(span), turn) {
+			s.Equal(turn.SpanContext().TraceID(), span.SpanContext().TraceID())
+			hasGenkitChild = true
+		}
+	}
+	s.True(hasGenkitChild, "Genkit's spans nest beneath the turn")
+
+	// Follow each job's link to the span that inserted it until the request's trace is reached.
+	work := turn
+	for hop := 0; work.SpanContext().TraceID() != request.SpanContext().TraceID(); hop++ {
+		s.Require().Less(hop, 5, "the turn's trace links back to the request")
+		if chain := ancestors(work); len(chain) > 0 {
+			work = chain[len(chain)-1]
+		}
+		s.Require().True(strings.HasPrefix(work.Name(), "river.work/"), "a trace starts at a job's work span, not %s", work.Name())
+		s.Require().Len(work.Links(), 1, "%s links to the span that inserted its job", work.Name())
+		insert, known := byID[work.Links()[0].SpanContext.SpanID()]
+		s.Require().True(known, "%s links to a recorded span", work.Name())
+		s.Equal("river.insert_many", insert.Name())
+		work = insert
+	}
+	s.Contains(ancestors(work), request, "the request inserted the first job")
 }
 
 // recordAlert records the event as a firing notification of a checkout alert definition and returns its

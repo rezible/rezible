@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log/slog"
 	"maps"
 	"strings"
 	"time"
@@ -25,22 +24,21 @@ import (
 	agtt "github.com/rezible/rezible/ent/agentturn"
 	"github.com/rezible/rezible/ent/predicate"
 	rezai "github.com/rezible/rezible/pkg/ai"
+	"github.com/rezible/rezible/pkg/errs"
 	"github.com/rezible/rezible/pkg/jobs"
 )
 
 type AiAgentSessionService struct {
-	logger *slog.Logger
-	db     rez.Database
-	jobs   rez.JobService
-	msgs   rez.MessageQueue
+	db   rez.Database
+	jobs rez.JobService
+	msgs rez.MessageQueue
 }
 
-func NewAiAgentSessionService(tel rez.TelemetryService, db rez.Database, jobSvc rez.JobService, msgs rez.MessageQueue) (*AiAgentSessionService, error) {
+func NewAiAgentSessionService(db rez.Database, jobSvc rez.JobService, msgs rez.MessageQueue) (*AiAgentSessionService, error) {
 	s := &AiAgentSessionService{
-		logger: tel.NewLogger(rez.NewLoggerOptions{Name: "agent_session_service"}),
-		db:     db,
-		jobs:   jobSvc,
-		msgs:   msgs,
+		db:   db,
+		jobs: jobSvc,
+		msgs: msgs,
 	}
 	return s, nil
 }
@@ -87,7 +85,7 @@ func (s *AiAgentSessionService) ListAgentArtifacts(ctx context.Context, params r
 func (s *AiAgentSessionService) CreateAgentSession(ctx context.Context, params rez.CreateAiAgentSessionParams) (*ent.AgentSession, error) {
 	name := strings.TrimSpace(params.AgentName)
 	if name == "" {
-		return nil, fmt.Errorf("%w: agent name is required", rez.ErrInvalidInput)
+		return nil, fmt.Errorf("%w: agent name is required", errs.ErrInvalidInput)
 	}
 
 	sessionInput, inputErr := json.Marshal(params.Input)
@@ -99,7 +97,7 @@ func (s *AiAgentSessionService) CreateAgentSession(ctx context.Context, params r
 	maps.Copy(metadata, params.Metadata)
 	for i, binding := range params.Bindings {
 		if validateErr := binding.ProviderResourceRef.Validate(); validateErr != nil {
-			return nil, fmt.Errorf("%w: binding %d: %v", rez.ErrInvalidInput, i, validateErr)
+			return nil, fmt.Errorf("%w: binding %d: %v", errs.ErrInvalidInput, i, validateErr)
 		}
 	}
 
@@ -165,7 +163,7 @@ func (s *AiAgentSessionService) validateSessionBindingIntegration(ctx context.Co
 		return fmt.Errorf("load integration: %w", queryErr)
 	}
 	if intg.Provider != ref.Provider {
-		return fmt.Errorf("%w: binding provider %q does not match integration provider %q", rez.ErrInvalidInput, ref.Provider, intg.Provider)
+		return fmt.Errorf("%w: binding provider %q does not match integration provider %q", errs.ErrInvalidInput, ref.Provider, intg.Provider)
 	}
 	return nil
 }
@@ -225,7 +223,7 @@ func (s *AiAgentSessionService) SetAgentSessionBinding(ctx context.Context, bind
 			integrationID = nil
 		}
 		if validateErr := ref.Validate(); validateErr != nil {
-			return nil, fmt.Errorf("%w: binding: %v", rez.ErrInvalidInput, validateErr)
+			return nil, fmt.Errorf("%w: binding: %v", errs.ErrInvalidInput, validateErr)
 		}
 		if validateErr := s.validateSessionBindingIntegration(ctx, ref, integrationID); validateErr != nil {
 			return nil, validateErr
@@ -328,11 +326,11 @@ func getNextAgentSessionMessageSequence(ctx context.Context, mc *ent.AgentMessag
 
 func (s *AiAgentSessionService) RequestAgentTurn(ctx context.Context, sessionID uuid.UUID, params *rez.RequestAiAgentTurnParams) (*ent.AgentTurn, error) {
 	if params == nil {
-		return nil, fmt.Errorf("%w: turn input nil", rez.ErrInvalidInput)
+		return nil, fmt.Errorf("%w: turn input nil", errs.ErrInvalidInput)
 	}
 	input, inputErr := normalizeAgentTurnInput(params.Input, false)
 	if inputErr != nil {
-		return nil, fmt.Errorf("%w: turn input: %w", rez.ErrInvalidInput, inputErr)
+		return nil, fmt.Errorf("%w: turn input: %w", errs.ErrInvalidInput, inputErr)
 	}
 
 	return ent.WithTxReturning(ctx, s.db, func(ctx context.Context, tx *ent.Client) (*ent.AgentTurn, error) {
@@ -361,7 +359,7 @@ func (s *AiAgentSessionService) RequestAgentTurn(ctx context.Context, sessionID 
 			return nil, fmt.Errorf("query active agent turn: %w", activeErr)
 		}
 		if activeExists {
-			return nil, fmt.Errorf("%w: agent session already has an active turn", rez.ErrConflict)
+			return nil, fmt.Errorf("%w: agent session already has an active turn", errs.ErrConflict)
 		}
 
 		turnID := uuid.New()
@@ -430,7 +428,7 @@ func (s *AiAgentSessionService) insertInvokeAgentTurnJob(ctx context.Context, se
 		return 0, fmt.Errorf("no inserted job returned")
 	}
 	if result.UniqueSkippedAsDuplicate {
-		return 0, fmt.Errorf("%w: river skipped duplicate agent turn job", rez.ErrConflict)
+		return 0, fmt.Errorf("%w: river skipped duplicate agent turn job", errs.ErrConflict)
 	}
 	return result.Job.ID, nil
 }
@@ -449,7 +447,7 @@ func (s *AiAgentSessionService) AbortAgentTurn(ctx context.Context, turnID uuid.
 			return turn, nil
 		}
 		if turn.Status != agtt.StatusQueued && turn.Status != agtt.StatusRunning {
-			return nil, fmt.Errorf("%w: only queued or running turns can be aborted", rez.ErrConflict)
+			return nil, fmt.Errorf("%w: only queued or running turns can be aborted", errs.ErrConflict)
 		}
 		if cancelErr := s.jobs.Cancel(ctx, turn.RiverJobID); cancelErr != nil {
 			return nil, fmt.Errorf("failed to cancel job: %w", cancelErr)
@@ -486,7 +484,7 @@ func (s *AiAgentSessionService) RetryAgentTurn(ctx context.Context, turnID uuid.
 			return nil, turnErr
 		}
 		if turn.Status != agtt.StatusFailed {
-			return nil, fmt.Errorf("%w: only failed turns can be retried", rez.ErrConflict)
+			return nil, fmt.Errorf("%w: only failed turns can be retried", errs.ErrConflict)
 		}
 		queryActive := sess.QueryTurns().
 			Where(agtt.IDNEQ(turn.ID), agtt.StatusIn(agtt.StatusQueued, agtt.StatusRunning))
@@ -495,7 +493,7 @@ func (s *AiAgentSessionService) RetryAgentTurn(ctx context.Context, turnID uuid.
 			return nil, fmt.Errorf("query active agent turn: %w", activeErr)
 		}
 		if activeExists {
-			return nil, fmt.Errorf("%w: agent session already has an active turn", rez.ErrConflict)
+			return nil, fmt.Errorf("%w: agent session already has an active turn", errs.ErrConflict)
 		}
 
 		jobID, jobErr := s.insertInvokeAgentTurnJob(ctx, sess.ID, turn.ID)

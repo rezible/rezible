@@ -12,6 +12,7 @@ import (
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/retrospective"
+	"github.com/rezible/rezible/pkg/errs"
 )
 
 type RetrospectiveService struct {
@@ -83,7 +84,7 @@ func (s *RetrospectiveService) CreateForIncident(ctx context.Context, incidentID
 			return nil, fmt.Errorf("get incident retrospective: %w", queryErr)
 		}
 		if inc.ResponseState != incident.ResponseStateResolved {
-			return nil, fmt.Errorf("%w: incident must be resolved before starting a retrospective", rez.ErrConflict)
+			return nil, fmt.Errorf("%w: incident must be resolved before starting a retrospective", errs.ErrConflict)
 		}
 
 		createDoc := tx.Document.Create().

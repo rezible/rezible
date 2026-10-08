@@ -12,6 +12,7 @@ import (
 	"github.com/rezible/rezible/ent/organization"
 	"github.com/rezible/rezible/ent/organizationpreferences"
 	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/pkg/errs"
 )
 
 type OrganizationService struct {
@@ -52,16 +53,16 @@ func (s *OrganizationService) Set(ctx context.Context, id uuid.UUID, setFn func(
 func (s *OrganizationService) CompleteOrgSetup(ctx context.Context, orgId uuid.UUID, params rez.CompleteOrgSetupParams) (*ent.Organization, error) {
 	name := strings.TrimSpace(params.Name)
 	if name == "" {
-		return nil, fmt.Errorf("%w: organization name is required", rez.ErrInvalidInput)
+		return nil, fmt.Errorf("%w: organization name is required", errs.ErrInvalidInput)
 	}
 
 	timezone := strings.TrimSpace(params.Timezone)
 	if timezone != "" {
 		if timezone == "Local" {
-			return nil, fmt.Errorf("%w: Local is not a valid organization timezone", rez.ErrInvalidInput)
+			return nil, fmt.Errorf("%w: Local is not a valid organization timezone", errs.ErrInvalidInput)
 		}
 		if _, loadErr := time.LoadLocation(timezone); loadErr != nil {
-			return nil, fmt.Errorf("%w: invalid organization timezone", rez.ErrInvalidInput)
+			return nil, fmt.Errorf("%w: invalid organization timezone", errs.ErrInvalidInput)
 		}
 	}
 
@@ -78,7 +79,7 @@ func (s *OrganizationService) CompleteOrgSetup(ctx context.Context, orgId uuid.U
 		var prefsMut ent.EntityMutator[*ent.OrganizationPreferences, *ent.OrganizationPreferencesMutation]
 		if currPrefs := currOrg.Edges.Preferences; currPrefs != nil {
 			if !currPrefs.InitialSetupAt.IsZero() {
-				return nil, fmt.Errorf("%w: organization setup already completed", rez.ErrConflict)
+				return nil, fmt.Errorf("%w: organization setup already completed", errs.ErrConflict)
 			}
 
 			prefsMut = currPrefs.Update()
@@ -130,7 +131,7 @@ func (s *OrganizationService) SetPreferences(ctx context.Context, orgId uuid.UUI
 		m := mutator.Mutation()
 		setFn(m)
 		if requiredReviewerCount, changed := m.RequiredReviewerCount(); changed && requiredReviewerCount < 0 {
-			return nil, fmt.Errorf("%w: required reviewer count cannot be negative", rez.ErrInvalidInput)
+			return nil, fmt.Errorf("%w: required reviewer count cannot be negative", errs.ErrInvalidInput)
 		}
 
 		updated, saveErr := mutator.Save(ctx)
@@ -144,7 +145,7 @@ func (s *OrganizationService) SetPreferences(ctx context.Context, orgId uuid.UUI
 
 func (s *OrganizationService) SetRequiredReviewerCount(ctx context.Context, orgId uuid.UUID, count int) (*ent.OrganizationPreferences, error) {
 	if count < 0 {
-		return nil, fmt.Errorf("%w: required reviewer count cannot be negative", rez.ErrInvalidInput)
+		return nil, fmt.Errorf("%w: required reviewer count cannot be negative", errs.ErrInvalidInput)
 	}
 	return s.SetPreferences(ctx, orgId, func(m *ent.OrganizationPreferencesMutation) {
 		m.SetRequiredReviewerCount(count)

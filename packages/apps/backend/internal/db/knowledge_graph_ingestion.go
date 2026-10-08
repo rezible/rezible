@@ -17,6 +17,7 @@ import (
 	ke "github.com/rezible/rezible/ent/knowledgeevidence"
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
 	ksa "github.com/rezible/rezible/ent/knowledgesubjectalias"
+	"github.com/rezible/rezible/pkg/errs"
 )
 
 type KnowledgeGraphIngestionService struct {
@@ -129,7 +130,7 @@ func (s *KnowledgeGraphIngestionService) ensureAlias(ctx context.Context, ref re
 		if alias.SubjectKind != subjectKind ||
 			(entityID != uuid.Nil && (alias.EntityID == nil || *alias.EntityID != entityID)) ||
 			(relationshipID != uuid.Nil && (alias.RelationshipID == nil || *alias.RelationshipID != relationshipID)) {
-			return nil, fmt.Errorf("%w: provider resource is already mapped to another knowledge subject", rez.ErrConflict)
+			return nil, fmt.Errorf("%w: provider resource is already mapped to another knowledge subject", errs.ErrConflict)
 		}
 		return alias, nil
 	}
@@ -173,14 +174,14 @@ func (s *KnowledgeGraphIngestionService) lookupExistingEntityAlias(ctx context.C
 		return nil, fmt.Errorf("query entity alias: %w", queryErr)
 	}
 	if alias.SubjectKind != ksa.SubjectKindEntity {
-		return nil, fmt.Errorf("%w: resource already identifies a relationship", rez.ErrConflict)
+		return nil, fmt.Errorf("%w: resource already identifies a relationship", errs.ErrConflict)
 	}
 	entity, entityErr := alias.Edges.EntityOrErr()
 	if entityErr != nil {
 		return nil, fmt.Errorf("load alias entity: %w", entityErr)
 	}
 	if entity.Category != ref.Category || entity.Kind != ref.Kind {
-		return nil, fmt.Errorf("%w: alias identifies %q/%q, evidence expects %q/%q", rez.ErrConflict, entity.Category, entity.Kind, ref.Category, ref.Kind)
+		return nil, fmt.Errorf("%w: alias identifies %q/%q, evidence expects %q/%q", errs.ErrConflict, entity.Category, entity.Kind, ref.Category, ref.Kind)
 	}
 	return &resolvedSubjectAlias{aliasId: alias.ID, subjectId: entity.ID}, nil
 }
@@ -213,7 +214,7 @@ func (s *KnowledgeGraphIngestionService) lookupLinkedEntity(ctx context.Context,
 			continue
 		}
 		if linked.ID != entity.ID {
-			return nil, fmt.Errorf("%w: linking attributes identify multiple entities", rez.ErrConflict)
+			return nil, fmt.Errorf("%w: linking attributes identify multiple entities", errs.ErrConflict)
 		}
 	}
 	return linked, nil
@@ -244,7 +245,7 @@ func (s *KnowledgeGraphIngestionService) ensureEntityLinkingAttributes(ctx conte
 		return queryErr
 	}
 	if linked != nil && linked.ID != entityID {
-		return fmt.Errorf("%w: linking attribute is already mapped to another entity", rez.ErrConflict)
+		return fmt.Errorf("%w: linking attribute is already mapped to another entity", errs.ErrConflict)
 	}
 	return nil
 }
@@ -256,7 +257,7 @@ func getKnowledgeEntityLinkingValues(ref rez.KnowledgeEntityRef) (map[string]str
 	values := ref.LinkingAttributes.Values()
 	for attribute, value := range values {
 		if strings.TrimSpace(attribute) == "" || strings.TrimSpace(value) == "" {
-			return nil, fmt.Errorf("%w: linking attribute and value must be non-empty", rez.ErrInvalidInput)
+			return nil, fmt.Errorf("%w: linking attribute and value must be non-empty", errs.ErrInvalidInput)
 		}
 	}
 	return values, nil
@@ -280,7 +281,7 @@ func (s *KnowledgeGraphIngestionService) resolveEntityFromRef(ctx context.Contex
 			return nil, linkedErr
 		} else if linked != nil {
 			if linked.ID != existingAlias.subjectId {
-				return nil, fmt.Errorf("%w: linking attribute identifies another entity", rez.ErrConflict)
+				return nil, fmt.Errorf("%w: linking attribute identifies another entity", errs.ErrConflict)
 			}
 		}
 		resolvedAlias = existingAlias
@@ -291,7 +292,7 @@ func (s *KnowledgeGraphIngestionService) resolveEntityFromRef(ctx context.Contex
 		} else if entity != nil {
 			if entity.Category != ref.Category || entity.Kind != ref.Kind {
 				return nil, fmt.Errorf("%w: linking attribute identifies %q/%q, evidence expects %q/%q",
-					rez.ErrConflict, entity.Category, entity.Kind, ref.Category, ref.Kind)
+					errs.ErrConflict, entity.Category, entity.Kind, ref.Category, ref.Kind)
 			}
 		} else {
 			createEntity := s.db.Client(ctx).KnowledgeEntity.Create().
@@ -328,14 +329,14 @@ func (s *KnowledgeGraphIngestionService) lookupExistingRelationshipAlias(ctx con
 		return nil, fmt.Errorf("query relationship alias: %w", queryErr)
 	}
 	if alias.SubjectKind != ksa.SubjectKindRelationship {
-		return nil, fmt.Errorf("%w: resource already identifies an entity", rez.ErrConflict)
+		return nil, fmt.Errorf("%w: resource already identifies an entity", errs.ErrConflict)
 	}
 	rel, relationshipErr := alias.Edges.RelationshipOrErr()
 	if relationshipErr != nil {
 		return nil, fmt.Errorf("load aliased relationship: %w", relationshipErr)
 	}
 	if rel.Predicate != ref.Predicate || rel.SourceEntityID != sourceId || rel.TargetEntityID != targetId {
-		return nil, fmt.Errorf("%w: relationship alias identifies different topology", rez.ErrConflict)
+		return nil, fmt.Errorf("%w: relationship alias identifies different topology", errs.ErrConflict)
 	}
 	return &resolvedSubjectAlias{aliasId: alias.ID, subjectId: rel.ID}, nil
 }

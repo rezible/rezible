@@ -11,6 +11,7 @@ import (
 	"github.com/riverqueue/river"
 
 	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/pkg/errs"
 )
 
 // ArgsWithWorkerExecutionContext lets a job's args choose the identity its worker runs with,
@@ -24,10 +25,10 @@ func SetContextualArgs(ctx context.Context, args JobArgs) error {
 	if tenantArgs, hasTenantID := args.(tenantIDArgs); hasTenantID {
 		tenantID, tenantOK := execution.GetContext(ctx).TenantID()
 		if !tenantOK {
-			return rez.ErrTenantContextMissing
+			return errs.ErrTenantContextMissing
 		}
 		if current := tenantArgs.tenantID(); current != 0 && current != tenantID {
-			return fmt.Errorf("%w: job tenant does not match the inserting context", rez.ErrForbidden)
+			return fmt.Errorf("%w: job tenant does not match the inserting context", errs.ErrForbidden)
 		}
 		tenantArgs.setTenantID(tenantID)
 	}

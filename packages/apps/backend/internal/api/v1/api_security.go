@@ -12,6 +12,7 @@ import (
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/pkg/errs"
 	"github.com/rezible/rezible/pkg/execution"
 	oapi "github.com/rezible/rezible/pkg/openapi/v1"
 )
@@ -26,6 +27,15 @@ func NewRequestSecurityProvider(sess rez.AuthSessionService, cookie rez.AppAuthS
 }
 
 func (v *SecurityProvider) CreateRequestSecurityContext(w http.ResponseWriter, r *http.Request) (context.Context, error) {
+	ctx, sessErr := v.createRequestSecurityContext(r)
+	// A rejected cookie can never succeed again, so clear it rather than have the browser keep sending it.
+	if errors.Is(sessErr, errs.ErrAuthSessionExpired) || errors.Is(sessErr, errs.ErrAuthSessionInvalid) {
+		v.cookie.Clear(w)
+	}
+	return ctx, sessErr
+}
+
+func (v *SecurityProvider) createRequestSecurityContext(r *http.Request) (context.Context, error) {
 	sess, sessErr := v.extractRequestSession(r)
 	if sessErr != nil {
 		return nil, sessErr
@@ -42,10 +52,10 @@ func (v *SecurityProvider) makeVerifiedRequestContext(ctx context.Context, sess 
 
 func (v *SecurityProvider) verifySession(sess *ent.UserAuthSession) error {
 	if sess == nil {
-		return rez.ErrAuthSessionMissing
+		return errs.ErrAuthSessionMissing
 	}
 	if sess.ExpiresAt.Before(time.Now()) {
-		return rez.ErrAuthSessionExpired
+		return errs.ErrAuthSessionExpired
 	}
 	return nil
 }
@@ -53,13 +63,13 @@ func (v *SecurityProvider) verifySession(sess *ent.UserAuthSession) error {
 func (v *SecurityProvider) extractRequestSession(r *http.Request) (*ent.UserAuthSession, error) {
 	cookieId, cookieErr := v.cookie.Get(r)
 	if cookieErr != nil {
-		return nil, rez.ErrAuthSessionInvalid
+		return nil, errs.ErrAuthSessionInvalid
 	}
 	if cookieId != uuid.Nil {
 		sess, lookupErr := v.sessions.LookupSession(r.Context(), cookieId)
 		if lookupErr != nil {
 			if ent.IsNotFound(lookupErr) {
-				return nil, rez.ErrAuthSessionInvalid
+				return nil, errs.ErrAuthSessionInvalid
 			}
 			return nil, fmt.Errorf("lookup session: %w", lookupErr)
 		}
@@ -74,14 +84,14 @@ func (v *SecurityProvider) extractRequestSession(r *http.Request) (*ent.UserAuth
 		return v.sessions.CreateForToken(r.Context(), apiToken)
 	}
 
-	return nil, rez.ErrAuthSessionMissing
+	return nil, errs.ErrAuthSessionMissing
 }
 
 func (v *SecurityProvider) VerifyRequestSecurity(ctx context.Context, opts oapi.OperationSecurityOptions) error {
 	ec := execution.GetContext(ctx)
 
 	if ec.IsAnonymous() {
-		return rez.ErrAuthSessionMissing
+		return errs.ErrAuthSessionMissing
 	}
 
 	if len(ec.Auth.Scopes) > 0 {
@@ -96,7 +106,7 @@ func (v *SecurityProvider) VerifyRequestSecurity(ctx context.Context, opts oapi.
 			}
 		}
 		if !scopesSatisfied {
-			return rez.ErrAuthSessionInvalid
+			return errs.ErrAuthSessionInvalid
 		}
 	}
 
@@ -120,7 +130,7 @@ func NewDevelopmentSecurityProvider(sp *SecurityProvider, identity *rez.UserAuth
 func (p *DevelopmentSecurityProvider) CreateRequestSecurityContext(w http.ResponseWriter, r *http.Request) (context.Context, error) {
 	slog.Warn("Authenticating with development override")
 	sess, sessErr := p.sp.extractRequestSession(r)
-	if sessErr != nil && errors.Is(sessErr, rez.ErrAuthSessionMissing) {
+	if sessErr != nil && errors.Is(sessErr, errs.ErrAuthSessionMissing) {
 		sess, sessErr = p.sp.sessions.CreateFromUserAuthResponse(r.Context(), p.identity)
 		if sessErr != nil {
 			return nil, sessErr

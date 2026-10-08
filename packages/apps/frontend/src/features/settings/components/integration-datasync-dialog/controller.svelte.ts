@@ -1,7 +1,7 @@
 import { Context } from "runed";
 
 import {
-	type ErrorModel,
+	type ApiError,
 	type IntegrationEventSyncRun,
 	type IntegrationInstallation,
 	listIntegrationEventSyncRunsOptions,
@@ -53,7 +53,7 @@ export class IntegrationDataSyncController {
 
 	private syncRequestPolling = $state(false);
 	private syncPollTimeout: ReturnType<typeof setTimeout> | undefined;
-	private syncRequestError = $state<ErrorModel>();
+	private syncRequestError = $state<ApiError>();
 
 	private requestDataSyncMutation = createMutation(() => ({
 		...requestIntegrationEventSyncMutation(),
@@ -89,7 +89,7 @@ export class IntegrationDataSyncController {
 	}));
 
 	syncRuns = $derived<IntegrationEventSyncRun[]>(this.syncStatusQuery.data?.data ?? []);
-	syncRunsError = $derived((this.syncRequestError ?? this.syncStatusQuery.error) as ErrorModel | undefined);
+	syncRunsError = $derived((this.syncRequestError ?? this.syncStatusQuery.error) as ApiError | undefined);
 
 	latestSyncRun = $derived<string | undefined>(this.syncRuns[0]?.attributes.status);
 	latestSyncRunDisplay = $derived<SyncStatusDisplay | undefined>(formatSyncStatus(this.latestSyncRun));

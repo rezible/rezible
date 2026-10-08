@@ -10,6 +10,7 @@ import (
 	kne "github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/schema/schematypes"
 	"github.com/rezible/rezible/ent/user"
+	"github.com/rezible/rezible/pkg/errs"
 	"github.com/rezible/rezible/pkg/projections"
 )
 
@@ -87,10 +88,10 @@ func (s *ProjectionService) setUserFromProjection(ctx context.Context, knowledge
 		}
 		if emailOwner != nil {
 			if linked != nil && emailOwner.ID != linked.ID {
-				return uuid.Nil, fmt.Errorf("%w: email is already assigned to another user", rez.ErrConflict)
+				return uuid.Nil, fmt.Errorf("%w: email is already assigned to another user", errs.ErrConflict)
 			}
 			if emailOwner.KnowledgeEntityID != nil && *emailOwner.KnowledgeEntityID != knowledgeEntityId {
-				return uuid.Nil, fmt.Errorf("%w: email user is linked to another knowledge entity", rez.ErrConflict)
+				return uuid.Nil, fmt.Errorf("%w: email user is linked to another knowledge entity", errs.ErrConflict)
 			}
 			if linked == nil {
 				linked = emailOwner

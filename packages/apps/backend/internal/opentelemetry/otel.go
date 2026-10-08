@@ -81,21 +81,14 @@ func (s *Service) Init() error {
 	return runtime.Start(runtime.WithMeterProvider(s.meterProvider))
 }
 
-func isOtelEnvDisabled() bool {
+func IsOtelEnvDisabled() bool {
 	return strings.EqualFold(os.Getenv("OTEL_SDK_DISABLED"), "true")
 }
 
 func (s *Service) initLogger(cfg rez.LoggingConfig) error {
 	var slogHandlers []slog.Handler
 	if cfg.Console.Enabled {
-		slogHandlers = append(slogHandlers, s.makeSlogConsoleHandler(os.Stderr, cfg))
-	}
-
-	//var lp LoggerProvider
-	if !isOtelEnvDisabled() && cfg.OTel.Enabled {
-		// unused
-	} else {
-		//lp = nooplog.NewLoggerProvider()
+		slogHandlers = append(slogHandlers, contextHandler{base: s.makeSlogConsoleHandler(os.Stdout, cfg)})
 	}
 	s.logger = slog.New(slog.NewMultiHandler(slogHandlers...))
 
@@ -125,22 +118,20 @@ func (s *Service) makeSlogConsoleHandler(w io.Writer, cfg rez.LoggingConfig) slo
 	if !cfg.Console.Color {
 		return slog.NewTextHandler(w, opts)
 	}
-	return tint.NewHandler(w, &tint.Options{
+	return tint.NewTextHandler(w, &tint.Options{
 		Level:      opts.Level,
 		TimeFormat: time.Kitchen,
 	})
 }
 
-// initTracerProvider always uses the SDK, since Genkit requires it; disabling
-// tracing only omits the exporter.
 func (s *Service) initTracerProvider(ctx context.Context, r *sdkresource.Resource, cfg rez.TracingConfig) error {
 	tpOpts := []sdktrace.TracerProviderOption{sdktrace.WithResource(r)}
-	if !isOtelEnvDisabled() && cfg.Enabled {
+	if !IsOtelEnvDisabled() && cfg.Enabled {
 		traceExporter, traceExporterErr := otlptracegrpc.New(ctx)
 		if traceExporterErr != nil {
 			return fmt.Errorf("otlp trace exporter: %w", traceExporterErr)
 		}
-		tpOpts = append(tpOpts, sdktrace.WithBatcher(traceExporter))
+		tpOpts = append(tpOpts, sdktrace.WithBatcher(withAiContentPolicy(traceExporter, cfg.CaptureAiContent)))
 	} else {
 		s.logger.Info("tracing disabled")
 	}
@@ -152,7 +143,7 @@ func (s *Service) initTracerProvider(ctx context.Context, r *sdkresource.Resourc
 
 func (s *Service) initMetricsProvider(ctx context.Context, r *sdkresource.Resource, cfg rez.MetricsConfig) error {
 	var mp otelmetric.MeterProvider
-	if !isOtelEnvDisabled() && cfg.Enabled {
+	if !IsOtelEnvDisabled() && cfg.Enabled {
 		metricExporter, metricExporterErr := otlpmetricgrpc.New(ctx)
 		if metricExporterErr != nil {
 			return fmt.Errorf("otlp metric exporter: %w", metricExporterErr)

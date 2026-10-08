@@ -22,10 +22,9 @@ type Integration struct {
 	webhookHandler http.Handler
 }
 
-func MakeIntegration(ts rez.TelemetryService, clock rez.Clock, events rez.ProviderEventPipelineService, installations rez.IntegrationInstallationLookup) (*Integration, error) {
-	logger := ts.NewLogger(rez.NewLoggerOptions{Name: "alertmanager_webhooks"})
+func MakeIntegration(clock rez.Clock, events rez.ProviderEventPipelineService, installations rez.IntegrationInstallationLookup) (*Integration, error) {
 	i := &Integration{
-		webhookHandler: newWebhookHandler(logger, clock, events, installations),
+		webhookHandler: newWebhookHandler(clock, events, installations),
 	}
 	return i, nil
 }

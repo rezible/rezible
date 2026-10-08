@@ -75,6 +75,7 @@ type Config struct {
 	HttpServer   HttpServerConfig   `cfg:"http"`
 	Documents    DocumentsConfig    `cfg:"documents"`
 	Integrations IntegrationsConfig `cfg:"integrations"`
+	Jobs         JobsConfig         `cfg:"jobs"`
 	MessageQueue MessageQueueConfig `cfg:"messagequeue"`
 	Postgres     PostgresConfig     `cfg:"postgres"`
 	Redis        RedisConfig        `cfg:"redis"`
@@ -208,6 +209,15 @@ type (
 )
 
 type (
+	// JobsConfig tunes how often job workers look for work that arrived without a notification, such as
+	// retried or newly due jobs. Zero values keep River's defaults (1s and 100ms); tests shorten them.
+	JobsConfig struct {
+		FetchPollInterval time.Duration `cfg:"fetch_poll_interval"`
+		FetchCooldown     time.Duration `cfg:"fetch_cooldown"`
+	}
+)
+
+type (
 	MessageQueueConfig struct {
 		Namespace string `cfg:"namespace"`
 	}
@@ -250,7 +260,6 @@ type (
 
 	LoggingConfig struct {
 		Console   LoggingConsoleConfig `cfg:"console"`
-		OTel      LoggingOtelConfig    `cfg:"otel"`
 		AddSource bool                 `cfg:"add_source"`
 	}
 
@@ -261,13 +270,11 @@ type (
 		Color   bool   `cfg:"color"`
 	}
 
-	LoggingOtelConfig struct {
-		Enabled bool `cfg:"enabled"`
-	}
-
 	TracingConfig struct {
 		Enabled bool   `cfg:"enabled"`
 		Level   string `cfg:"level"`
+		// CaptureAiContent exports prompts, tool results and provider data recorded on AI spans.
+		CaptureAiContent bool `cfg:"capture_ai_content"`
 	}
 
 	MetricsConfig struct {

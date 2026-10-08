@@ -10,6 +10,7 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/task"
+	"github.com/rezible/rezible/pkg/errs"
 )
 
 type TaskService struct {
@@ -22,7 +23,7 @@ func NewTaskService(db rez.Database) (*TaskService, error) {
 
 func (s *TaskService) ListTasks(ctx context.Context, params rez.ListTasksParams) (*ent.ListResult[ent.Task], error) {
 	if params.State != "" {
-		return nil, fmt.Errorf("%w: unsupported task state", rez.ErrUnprocessableInput)
+		return nil, fmt.Errorf("%w: unsupported task state", errs.ErrUnprocessableInput)
 	}
 	query := s.db.Client(ctx).Task.Query()
 	if params.IncidentID != uuid.Nil {
@@ -86,7 +87,7 @@ func (s *TaskService) SetTask(ctx context.Context, id uuid.UUID, params rez.SetT
 
 func (s *TaskService) ArchiveTask(ctx context.Context, id uuid.UUID) error {
 	if id == uuid.Nil {
-		return fmt.Errorf("%w: task ID required", rez.ErrInvalidInput)
+		return fmt.Errorf("%w: task ID required", errs.ErrInvalidInput)
 	}
 	return s.db.Client(ctx).Task.DeleteOneID(id).Exec(ctx)
 }

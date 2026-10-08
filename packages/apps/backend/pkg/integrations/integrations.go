@@ -11,11 +11,12 @@ import (
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/pkg/errs"
 )
 
 var (
-	ErrUnknownIntegration     = fmt.Errorf("%w: unknown integration", rez.ErrNotFound)
-	ErrCapabilityNotSupported = fmt.Errorf("%w: integration capability not supported", rez.ErrUnprocessableInput)
+	ErrUnknownIntegration     = fmt.Errorf("%w: unknown integration", errs.ErrNotFound)
+	ErrCapabilityNotSupported = fmt.Errorf("%w: integration capability not supported", errs.ErrUnprocessableInput)
 )
 
 type (
@@ -59,7 +60,7 @@ func As[T any](ii rez.InstalledIntegration) (T, error) {
 }
 
 // LookupInstallationAs returns the installation as capability T.
-// It returns rez.ErrNotFound or ErrCapabilityNotSupported.
+// It returns errs.ErrNotFound or ErrCapabilityNotSupported.
 func LookupInstallationAs[T any](ctx context.Context, getter rez.InstalledIntegrationGetter, id uuid.UUID) (T, error) {
 	ii, getErr := getter.GetInstalledIntegration(ctx, id)
 	if getErr != nil {

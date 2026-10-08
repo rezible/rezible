@@ -2,14 +2,13 @@ package integrations
 
 import (
 	"fmt"
+	"github.com/rezible/rezible/pkg/errs"
 	"math"
 	"strings"
 	"time"
-
-	rez "github.com/rezible/rezible"
 )
 
-// Limits on log and metric reads. A request outside them is rez.ErrInvalidInput naming the limit; the
+// Limits on log and metric reads. A request outside them is errs.ErrInvalidInput naming the limit; the
 // others adjust the result, and the result's ReadRecord.Limits says so.
 const (
 	MaxTelemetryReadRange = 6 * time.Hour
@@ -27,10 +26,10 @@ func (p LogSearchParams) Validate() error {
 		return serviceErr
 	}
 	if p.Limit < 0 {
-		return fmt.Errorf("%w: limit must not be negative", rez.ErrInvalidInput)
+		return fmt.Errorf("%w: limit must not be negative", errs.ErrInvalidInput)
 	}
 	if p.Limit > MaxLogSearchLimit {
-		return fmt.Errorf("%w: limit of %d is above the maximum of %d lines", rez.ErrInvalidInput, p.Limit, MaxLogSearchLimit)
+		return fmt.Errorf("%w: limit of %d is above the maximum of %d lines", errs.ErrInvalidInput, p.Limit, MaxLogSearchLimit)
 	}
 	return validateReadRange(p.Start, p.End)
 }
@@ -48,7 +47,7 @@ func (p LogCountParams) Validate() error {
 		return serviceErr
 	}
 	if p.Step < 0 {
-		return fmt.Errorf("%w: step must not be negative", rez.ErrInvalidInput)
+		return fmt.Errorf("%w: step must not be negative", errs.ErrInvalidInput)
 	}
 	return validateReadRange(p.Start, p.End)
 }
@@ -62,27 +61,27 @@ func (p MetricNamesParams) Validate() error {
 
 func (p MetricRangeParams) Validate() error {
 	if strings.TrimSpace(p.Query) == "" {
-		return fmt.Errorf("%w: query is required", rez.ErrInvalidInput)
+		return fmt.Errorf("%w: query is required", errs.ErrInvalidInput)
 	}
 	if p.Step < 0 {
-		return fmt.Errorf("%w: step must not be negative", rez.ErrInvalidInput)
+		return fmt.Errorf("%w: step must not be negative", errs.ErrInvalidInput)
 	}
 	return validateReadRange(p.Start, p.End)
 }
 
 func validateReadService(service string) error {
 	if strings.TrimSpace(service) == "" {
-		return fmt.Errorf("%w: service is required", rez.ErrInvalidInput)
+		return fmt.Errorf("%w: service is required", errs.ErrInvalidInput)
 	}
 	return nil
 }
 
 func validateReadRange(start, end time.Time) error {
 	if !end.After(start) {
-		return fmt.Errorf("%w: end must be after start", rez.ErrInvalidInput)
+		return fmt.Errorf("%w: end must be after start", errs.ErrInvalidInput)
 	}
 	if end.Sub(start) > MaxTelemetryReadRange {
-		return fmt.Errorf("%w: range of %s is longer than the %s limit", rez.ErrInvalidInput, end.Sub(start), MaxTelemetryReadRange)
+		return fmt.Errorf("%w: range of %s is longer than the %s limit", errs.ErrInvalidInput, end.Sub(start), MaxTelemetryReadRange)
 	}
 	return nil
 }

@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"iter"
-	"log/slog"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -43,7 +42,6 @@ func TestProviderEventPipelineServiceSuite(t *testing.T) {
 
 func (s *ProviderEventPipelineServiceSuite) newPipelineService(tdb rez.Database, jobSvc rez.JobService, proj rez.EventProjectionService) *ProviderEventPipelineService {
 	return &ProviderEventPipelineService{
-		logger:     slog.Default(),
 		db:         tdb,
 		jobs:       jobSvc,
 		processors: map[string]rez.ProviderEventProcessor{pipelineTestProvider: pipelineTestProcessor{}},

@@ -10,7 +10,7 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/go-viper/mapstructure/v2"
 
-	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/pkg/errs"
 )
 
 const defaultServiceLabel = "service_name"
@@ -66,13 +66,13 @@ func parseInstallationSettings(raw map[string]any) (*installationSettings, error
 		return nil, fmt.Errorf("settings decoder: %w", decoderErr)
 	}
 	if decodeErr := decoder.Decode(raw); decodeErr != nil {
-		return nil, fmt.Errorf("%w: invalid settings: %w", rez.ErrInvalidInput, decodeErr)
+		return nil, fmt.Errorf("%w: invalid settings: %w", errs.ErrInvalidInput, decodeErr)
 	}
 	if validateErr := settingsValidator.Struct(settings); validateErr != nil {
 		var fieldErrs validator.ValidationErrors
 		if errors.As(validateErr, &fieldErrs) && len(fieldErrs) > 0 {
 			fieldErr := fieldErrs[0]
-			return nil, fmt.Errorf("%w: %s %q is not %s", rez.ErrInvalidInput,
+			return nil, fmt.Errorf("%w: %s %q is not %s", errs.ErrInvalidInput,
 				fieldErr.Field(), fieldErr.Value(), settingRuleDescriptions[fieldErr.Tag()])
 		}
 		return nil, fmt.Errorf("validate settings: %w", validateErr)

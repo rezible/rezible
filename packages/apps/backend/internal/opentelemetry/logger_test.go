@@ -1,59 +1,76 @@
 package opentelemetry
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"log/slog"
 	"testing"
 
-	rez "github.com/rezible/rezible"
+	"github.com/google/uuid"
+	"github.com/stretchr/testify/require"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	sdktrace "go.opentelemetry.io/otel/sdk/trace"
+	"go.opentelemetry.io/otel/trace"
+
+	"github.com/rezible/rezible/pkg/execution"
 )
 
-func TestLoggerMinLevel(t *testing.T) {
-	ctx := t.Context()
-	opts := rez.NewLoggerOptions{
-		Level: slog.LevelWarn,
-	}
-	logger := NewLogger(opts)
-
-	if logger.Enabled(ctx, slog.LevelInfo) {
-		t.Fatal("expected info to be disabled")
-	}
-	if !logger.Enabled(ctx, slog.LevelWarn) {
-		t.Fatal("expected warn to be enabled")
-	}
+func newJSONContextLogger() (*slog.Logger, *bytes.Buffer) {
+	var buf bytes.Buffer
+	return slog.New(contextHandler{base: slog.NewJSONHandler(&buf, nil)}), &buf
 }
 
-type testHandler struct {
-	attrs *[]slog.Attr
+func decodeLogLine(t *testing.T, buf *bytes.Buffer) map[string]any {
+	t.Helper()
+	var line map[string]any
+	require.NoError(t, json.Unmarshal(buf.Bytes(), &line), buf.String())
+	delete(line, "time")
+	return line
 }
 
-func newTestHandler() testHandler {
-	attrs := []slog.Attr{}
-	return testHandler{attrs: &attrs}
+func TestContextHandlerAddsTraceAndExecutionAttributes(t *testing.T) {
+	previous := otel.GetTracerProvider()
+	otel.SetTracerProvider(sdktrace.NewTracerProvider())
+	t.Cleanup(func() { otel.SetTracerProvider(previous) })
+
+	userID := uuid.New()
+	ctx := execution.SetContext(t.Context(), execution.Context{
+		ActorKind:  execution.KindUser,
+		Auth:       execution.Auth{TenantID: new(7), UserID: &userID},
+		Provenance: execution.Provenance{ID: "request-1", Source: execution.SourceHTTP},
+	})
+	logger, buf := newJSONContextLogger()
+
+	var spanCtx trace.SpanContext
+	doErr := execution.Do(ctx, "agent.turn", func(ctx context.Context) error {
+		spanCtx = trace.SpanContextFromContext(ctx)
+		logger.InfoContext(ctx, "turn started")
+		return nil
+	}, attribute.String("situation_id", "s-1"))
+	require.NoError(t, doErr)
+
+	require.Equal(t, map[string]any{
+		"level":        "INFO",
+		"msg":          "turn started",
+		"trace_id":     spanCtx.TraceID().String(),
+		"span_id":      spanCtx.SpanID().String(),
+		"tenant_id":    float64(7),
+		"actor":        "user",
+		"user_id":      userID.String(),
+		"request_id":   "request-1",
+		"situation_id": "s-1",
+	}, decodeLogLine(t, buf))
 }
 
-func (h testHandler) Enabled(context.Context, slog.Level) bool {
-	return true
-}
+func TestContextHandlerLeavesRecordsWithoutContextUnchanged(t *testing.T) {
+	logger, buf := newJSONContextLogger()
+	logger.Info("started", "component", "river")
 
-func (h testHandler) Handle(context.Context, slog.Record) error {
-	return nil
-}
-
-func (h testHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
-	*h.attrs = append(*h.attrs, attrs...)
-	return h
-}
-
-func (h testHandler) WithGroup(string) slog.Handler {
-	return h
-}
-
-func (h testHandler) hasAttr(key, value string) bool {
-	for _, attr := range *h.attrs {
-		if attr.Key == key && attr.Value.String() == value {
-			return true
-		}
-	}
-	return false
+	require.Equal(t, map[string]any{
+		"level":     "INFO",
+		"msg":       "started",
+		"component": "river",
+	}, decodeLogLine(t, buf))
 }

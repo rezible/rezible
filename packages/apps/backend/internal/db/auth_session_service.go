@@ -11,6 +11,7 @@ import (
 	"github.com/rezible/rezible/ent/organization"
 	"github.com/rezible/rezible/ent/organizationrole"
 	"github.com/rezible/rezible/ent/user"
+	"github.com/rezible/rezible/pkg/errs"
 	"github.com/rezible/rezible/pkg/execution"
 )
 
@@ -114,7 +115,7 @@ func (s *AuthSessionService) syncAuthProviderUser(ctx context.Context, pu *ent.U
 }
 
 func (s *AuthSessionService) CreateForToken(ctx context.Context, token string) (*ent.UserAuthSession, error) {
-	return nil, rez.ErrAuthSessionInvalid
+	return nil, errs.ErrAuthSessionInvalid
 }
 
 func (s *AuthSessionService) LookupSession(ctx context.Context, id uuid.UUID) (*ent.UserAuthSession, error) {

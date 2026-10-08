@@ -1,9 +1,9 @@
 import { createMutation } from "@tanstack/svelte-query";
 
-import { checkIntegrationHealthMutation, type ErrorModel, type IntegrationInstallation } from "$lib/api";
+import { checkIntegrationHealthMutation, type ApiError, type IntegrationInstallation } from "$lib/api";
 
 export type GrafanaHealthResult =
-	{ kind: "ok" } | { kind: "failed"; message: string } | { kind: "error"; error: ErrorModel };
+	{ kind: "ok" } | { kind: "failed"; message: string } | { kind: "error"; error: ApiError };
 
 type CheckedResult = {
 	// The settings the check ran with. A result for other settings no longer describes the connection.
@@ -57,7 +57,7 @@ export class GrafanaHealthCheck {
 				result = { kind: "failed", message: health.error ?? "The check failed without a reason." };
 			}
 		} catch (e) {
-			result = { kind: "error", error: e as ErrorModel };
+			result = { kind: "error", error: e as ApiError };
 		}
 
 		if (generation !== this.generation) return;

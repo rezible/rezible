@@ -2,7 +2,7 @@ import { describe, expect, mock, test } from "bun:test";
 import { compileModule } from "svelte/compiler";
 import { SvelteMap } from "svelte/reactivity";
 
-import type { ErrorModel, IntegrationInstallation } from "$lib/api";
+import type { ApiError, IntegrationInstallation } from "$lib/api";
 import type { IntegrationSettingsForms } from "$features/settings/lib/integrationSettingsForms.svelte";
 
 import { alertmanagerSettings, type AlertmanagerSettings } from "./alertmanagerSettings";
@@ -78,7 +78,8 @@ describe("alertmanager service labels form", () => {
 	});
 
 	test("a list the server rejects shows its error and keeps the edit", async () => {
-		const rejection: ErrorModel = {
+		const rejection: ApiError = {
+			code: "invalid_input",
 			title: "Bad Request",
 			status: 400,
 			detail: 'invalid user settings: service_labels contains "job" more than once',

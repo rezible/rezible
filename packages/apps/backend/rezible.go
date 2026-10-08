@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"iter"
-	"log/slog"
 	"net/http"
 	"net/url"
 	"strings"
@@ -19,8 +18,6 @@ import (
 	"github.com/riverqueue/river"
 	"github.com/riverqueue/river/rivertype"
 	"github.com/texm/prosemirror-go"
-	"go.opentelemetry.io/otel/metric"
-	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/oauth2"
 
 	"github.com/rezible/rezible/ent"
@@ -40,23 +37,6 @@ import (
 	saent "github.com/rezible/rezible/ent/systemanalysisentity"
 	sae "github.com/rezible/rezible/ent/systemanalysisentry"
 	sarel "github.com/rezible/rezible/ent/systemanalysisrelationship"
-)
-
-var (
-	ErrTenantContextMissing = fmt.Errorf("tenant access context not set")
-	ErrInvalidUser          = fmt.Errorf("user does not exist")
-	ErrDomainNotAllowed     = fmt.Errorf("domain not allowed")
-	ErrInvalidTenant        = fmt.Errorf("tenant does not exist")
-	ErrForbidden            = fmt.Errorf("forbidden")
-	ErrAuthSessionMissing   = fmt.Errorf("no auth session")
-	ErrAuthSessionExpired   = fmt.Errorf("auth session expired")
-	ErrAuthSessionInvalid   = fmt.Errorf("auth session invalid")
-	ErrConflict             = fmt.Errorf("conflict")
-	ErrInvalidInput         = fmt.Errorf("invalid input")
-	ErrUnprocessableInput   = fmt.Errorf("unprocessable input")
-	ErrNotFound             = fmt.Errorf("not found")
-	ErrNotImplemented       = fmt.Errorf("not implemented")
-	ErrRateLimited          = fmt.Errorf("rate limited")
 )
 
 type (
@@ -102,29 +82,6 @@ type (
 	// Clock is the source of processing time for decisions that depend on it.
 	Clock interface {
 		Now() time.Time
-	}
-)
-
-type (
-	NewLoggerOptions struct {
-		Parent *slog.Logger
-		Name   string
-		Level  slog.Leveler
-		Attrs  []slog.Attr
-		Groups []string
-	}
-
-	TelemetryService interface {
-		NewLogger(opts NewLoggerOptions) *slog.Logger
-		Logger() *slog.Logger
-
-		TracerProvider() trace.TracerProvider
-		Tracer(name string, opts ...trace.TracerOption) trace.Tracer
-		DefaultTracer() trace.Tracer
-
-		MeterProvider() metric.MeterProvider
-		Meter(name string, opts ...metric.MeterOption) metric.Meter
-		DefaultMeter() metric.Meter
 	}
 )
 

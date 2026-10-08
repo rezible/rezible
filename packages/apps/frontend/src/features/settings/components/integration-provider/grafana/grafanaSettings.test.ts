@@ -2,7 +2,7 @@ import { describe, expect, mock, test } from "bun:test";
 import { compileModule } from "svelte/compiler";
 import { SvelteMap } from "svelte/reactivity";
 
-import type { ErrorModel, IntegrationInstallation } from "$lib/api";
+import type { ApiError, IntegrationInstallation } from "$lib/api";
 import type { IntegrationSettingsForms } from "$features/settings/lib/integrationSettingsForms.svelte";
 
 import { grafanaSettings, type GrafanaSettings } from "./grafanaSettings";
@@ -95,7 +95,8 @@ describe("Grafana settings", () => {
 	});
 
 	test("a rejected save shows its error and keeps the edit", async () => {
-		const rejection: ErrorModel = {
+		const rejection: ApiError = {
+			code: "invalid_input",
 			title: "Bad Request",
 			status: 400,
 			detail: `invalid input: logs_data_source_uid "a/b" is not a Grafana data source UID`,

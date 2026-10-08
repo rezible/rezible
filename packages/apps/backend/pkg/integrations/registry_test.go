@@ -11,6 +11,7 @@ import (
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/pkg/errs"
 	"github.com/rezible/rezible/test"
 )
 
@@ -69,11 +70,11 @@ func (s *RegistrySuite) TestRegistryLookup() {
 	// The root errors let the API map these to 422 and 404.
 	_, unsupportedErr := reg.Lookup[IntegrationWithWebhookHandler]("plain")
 	s.Require().ErrorIs(unsupportedErr, ErrCapabilityNotSupported)
-	s.Require().ErrorIs(unsupportedErr, rez.ErrUnprocessableInput)
+	s.Require().ErrorIs(unsupportedErr, errs.ErrUnprocessableInput)
 
 	_, unknownErr := reg.Lookup[IntegrationWithWebhookHandler]("missing")
 	s.Require().ErrorIs(unknownErr, ErrUnknownIntegration)
-	s.Require().ErrorIs(unknownErr, rez.ErrNotFound)
+	s.Require().ErrorIs(unknownErr, errs.ErrNotFound)
 }
 
 func (s *RegistrySuite) TestRegistryAllReturnsImplementersInOrder() {

@@ -148,7 +148,6 @@ func (h *webhookHandler) validateHMAC(body []byte, signature string) bool {
 	expected := mac.Sum(nil)
 	if !hmac.Equal(sigBytes, expected) {
 		slog.Debug("github webhook signature mismatch",
-			"expected", fmt.Sprintf("%x", expected),
 			"got", fmt.Sprintf("%x", sigBytes),
 		)
 		return false

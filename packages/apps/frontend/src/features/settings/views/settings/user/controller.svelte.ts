@@ -1,7 +1,7 @@
 import {
 	getUserSessionOptions,
 	getUserSessionPreferencesOptions,
-	type ErrorModel,
+	type ApiError,
 	type UserSessionNotificationPreferences,
 	updateUserSessionPreferencesMutation,
 } from "$lib/api";
@@ -25,8 +25,8 @@ export class UserSettingsController {
 	private preferencesQuery = createQuery(() => getUserSessionPreferencesOptions());
 	preferences = $derived(this.preferencesQuery.data?.data);
 	loading = $derived(this.preferencesQuery.isPending);
-	error = $derived(this.preferencesQuery.error as ErrorModel | null);
-	saveError = $state<ErrorModel>();
+	error = $derived(this.preferencesQuery.error as ApiError | null);
+	saveError = $state<ApiError>();
 
 	name = $state("");
 	email = $state("");

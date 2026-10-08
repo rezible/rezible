@@ -4,7 +4,7 @@ import {
 	listEventsQueryKey,
 	type ListEventsData,
 	type ListEventsResponse,
-	type ErrorModel,
+	type ApiError,
 } from "$lib/api";
 import { queryOptions } from "@tanstack/svelte-query";
 
@@ -37,7 +37,7 @@ export const filteredEventsOptions = (
 	query: Omit<NonNullable<ListEventsData["query"]>, "kind" | "from" | "to">
 ) => {
 	const queryKey = listEventsQueryKey({ query: { ...query, kind: filters.kind.trim() || undefined } });
-	return queryOptions<ListEventsResponse, ErrorModel>({
+	return queryOptions<ListEventsResponse, ApiError>({
 		queryKey: [...queryKey, { time: filters.time }],
 		queryFn: async ({ signal }: { signal: AbortSignal }) => {
 			const { data } = await listEvents({

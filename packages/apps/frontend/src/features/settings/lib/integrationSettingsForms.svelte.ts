@@ -1,4 +1,4 @@
-import type { ErrorModel, IntegrationInstallation } from "$lib/api";
+import type { ApiError, IntegrationInstallation } from "$lib/api";
 
 import { watch, type Getter } from "runed";
 import { SvelteMap } from "svelte/reactivity";
@@ -31,7 +31,7 @@ export class IntegrationSettingsForms<T> {
 	private integrations = useIntegrationsController();
 	private definition: IntegrationSettingsDefinition<T>;
 	private drafts = new SettingsDraftList<SettingsFormItem<T>>();
-	private saveErrors = new SvelteMap<string, ErrorModel>();
+	private saveErrors = new SvelteMap<string, ApiError>();
 
 	savingId = $state<string>();
 
@@ -95,7 +95,7 @@ export class IntegrationSettingsForms<T> {
 			this.drafts.accept(this.toFormItem(updated));
 			toast.success("Settings saved.");
 		} catch (e) {
-			this.saveErrors.set(installation.id, e as ErrorModel);
+			this.saveErrors.set(installation.id, e as ApiError);
 		} finally {
 			this.savingId = undefined;
 		}

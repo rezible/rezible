@@ -25,6 +25,7 @@ import (
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
 	ksa "github.com/rezible/rezible/ent/knowledgesubjectalias"
 	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/pkg/errs"
 	"github.com/rezible/rezible/pkg/knowledgegraph"
 )
 
@@ -226,7 +227,7 @@ func (s *KnowledgeGraphQueryService) ExpandGraphRelationships(ctx context.Contex
 	predicates := slices.Clone(params.Predicates)
 	for _, relationshipPredicate := range predicates {
 		if validationErr := knr.PredicateValidator(relationshipPredicate); validationErr != nil {
-			return nil, fmt.Errorf("%w: invalid relationship predicate", rez.ErrInvalidInput)
+			return nil, fmt.Errorf("%w: invalid relationship predicate", errs.ErrInvalidInput)
 		}
 	}
 	slices.Sort(predicates)
@@ -235,7 +236,7 @@ func (s *KnowledgeGraphQueryService) ExpandGraphRelationships(ctx context.Contex
 	limit := defaultRelationshipLimit
 	if params.Limit != nil {
 		if *params.Limit < 1 || *params.Limit > maxRelationshipLimit {
-			return nil, fmt.Errorf("%w: limit is outside the supported range", rez.ErrInvalidInput)
+			return nil, fmt.Errorf("%w: limit is outside the supported range", errs.ErrInvalidInput)
 		}
 		limit = *params.Limit
 	}
@@ -308,15 +309,15 @@ func (s *KnowledgeGraphQueryService) ExpandGraphRelationships(ctx context.Contex
 
 func (s *KnowledgeGraphQueryService) validateResolveStructureParams(p rez.ResolveStructureParams) error {
 	if len(p.TargetCategories) == 0 {
-		return fmt.Errorf("%w: target categories are required", rez.ErrInvalidInput)
+		return fmt.Errorf("%w: target categories are required", errs.ErrInvalidInput)
 	}
 	for _, category := range p.TargetCategories {
 		if validationErr := kne.CategoryValidator(category); validationErr != nil {
-			return fmt.Errorf("%w: invalid target category", rez.ErrInvalidInput)
+			return fmt.Errorf("%w: invalid target category", errs.ErrInvalidInput)
 		}
 	}
 	if p.MaxDepth < 0 {
-		return fmt.Errorf("%w: max depth must not be negative", rez.ErrInvalidInput)
+		return fmt.Errorf("%w: max depth must not be negative", errs.ErrInvalidInput)
 	}
 	return nil
 }
@@ -394,22 +395,22 @@ var relatedEventPropertyKeyPattern = regexp.MustCompile(`^[A-Za-z0-9_]+$`)
 
 func (s *KnowledgeGraphQueryService) validateListRelatedEventsParams(p rez.ListRelatedEventsParams) error {
 	if p.Limit < 1 {
-		return fmt.Errorf("%w: limit must be positive", rez.ErrInvalidInput)
+		return fmt.Errorf("%w: limit must be positive", errs.ErrInvalidInput)
 	}
 	if p.Kind == "" {
-		return fmt.Errorf("%w: event kind is required", rez.ErrInvalidInput)
+		return fmt.Errorf("%w: event kind is required", errs.ErrInvalidInput)
 	}
 	if validationErr := knr.PredicateValidator(p.Predicate); validationErr != nil {
-		return fmt.Errorf("%w: invalid relationship predicate", rez.ErrInvalidInput)
+		return fmt.Errorf("%w: invalid relationship predicate", errs.ErrInvalidInput)
 	}
 	for key := range p.PropertyEquals {
 		if !relatedEventPropertyKeyPattern.MatchString(key) {
-			return fmt.Errorf("%w: invalid property key", rez.ErrInvalidInput)
+			return fmt.Errorf("%w: invalid property key", errs.ErrInvalidInput)
 		}
 	}
 	for _, key := range p.PropertyAbsent {
 		if !relatedEventPropertyKeyPattern.MatchString(key) {
-			return fmt.Errorf("%w: invalid property key", rez.ErrInvalidInput)
+			return fmt.Errorf("%w: invalid property key", errs.ErrInvalidInput)
 		}
 	}
 	return nil
@@ -486,12 +487,12 @@ type knowledgeEntitySelection struct {
 
 func (es *knowledgeEntitySelection) normalize() error {
 	if es.Limit < 1 || es.Limit > maxEntityQueryLimit {
-		return fmt.Errorf("%w: entity limit is outside the supported range", rez.ErrInvalidInput)
+		return fmt.Errorf("%w: entity limit is outside the supported range", errs.ErrInvalidInput)
 	}
 
 	for _, category := range es.Categories {
 		if validationErr := kne.CategoryValidator(category); validationErr != nil {
-			return fmt.Errorf("%w: invalid entity category", rez.ErrInvalidInput)
+			return fmt.Errorf("%w: invalid entity category", errs.ErrInvalidInput)
 		}
 	}
 	categories := slices.Clone(es.Categories)
@@ -499,7 +500,7 @@ func (es *knowledgeEntitySelection) normalize() error {
 
 	kinds := slices.Clone(es.Kinds)
 	if slices.Contains(kinds, "") {
-		return fmt.Errorf("%w: entity kinds must be non-empty", rez.ErrInvalidInput)
+		return fmt.Errorf("%w: entity kinds must be non-empty", errs.ErrInvalidInput)
 	}
 	slices.Sort(kinds)
 
@@ -563,7 +564,7 @@ func (s *KnowledgeGraphQueryService) encodeEntitySelectionRef(es *knowledgeEntit
 		reservedSize += knowledgeEntitySelectionBoundaryAllowance
 	}
 	if base64.RawURLEncoding.EncodedLen(reservedSize) > maxKnowledgeEntitySelectionRefSize {
-		return "", fmt.Errorf("%w: entity selection reference exceeds the maximum size", rez.ErrInvalidInput)
+		return "", fmt.Errorf("%w: entity selection reference exceeds the maximum size", errs.ErrInvalidInput)
 	}
 
 	return rez.EntitySelectionRef(base64.RawURLEncoding.EncodeToString(jsonBytes)), nil
@@ -572,33 +573,33 @@ func (s *KnowledgeGraphQueryService) encodeEntitySelectionRef(es *knowledgeEntit
 func (s *KnowledgeGraphQueryService) decodeRef[T any](ref string) (*T, error) {
 	refJson, decodeErr := base64.RawURLEncoding.Strict().DecodeString(ref)
 	if decodeErr != nil {
-		return nil, fmt.Errorf("%w: invalid encoding", rez.ErrInvalidInput)
+		return nil, fmt.Errorf("%w: invalid encoding", errs.ErrInvalidInput)
 	}
 	decoder := json.NewDecoder(bytes.NewReader(refJson))
 	decoder.DisallowUnknownFields()
 	var t T
 	if jsonErr := decoder.Decode(&t); jsonErr != nil {
-		return nil, fmt.Errorf("%w: invalid reference JSON", rez.ErrInvalidInput)
+		return nil, fmt.Errorf("%w: invalid reference JSON", errs.ErrInvalidInput)
 	}
 	if _, trailingErr := decoder.Token(); trailingErr != io.EOF {
-		return nil, fmt.Errorf("%w: trailing data in reference", rez.ErrInvalidInput)
+		return nil, fmt.Errorf("%w: trailing data in reference", errs.ErrInvalidInput)
 	}
 	return &t, nil
 }
 
 func (s *KnowledgeGraphQueryService) decodeEntitySelectionRef(ref rez.EntitySelectionRef) (*knowledgeEntitySelection, error) {
 	if ref == "" || len(ref) > maxKnowledgeEntitySelectionRefSize {
-		return nil, fmt.Errorf("%w: invalid entity selection reference size", rez.ErrInvalidInput)
+		return nil, fmt.Errorf("%w: invalid entity selection reference size", errs.ErrInvalidInput)
 	}
 	selection, decodeErr := s.decodeRef[knowledgeEntitySelection](string(ref))
 	if decodeErr != nil {
-		return nil, fmt.Errorf("%w: invalid entity selection reference: %w", rez.ErrInvalidInput, decodeErr)
+		return nil, fmt.Errorf("%w: invalid entity selection reference: %w", errs.ErrInvalidInput, decodeErr)
 	}
 	if selection.Version != knowledgeGraphQueryVersion {
-		return nil, fmt.Errorf("%w: unsupported entity selection reference", rez.ErrInvalidInput)
+		return nil, fmt.Errorf("%w: unsupported entity selection reference", errs.ErrInvalidInput)
 	}
 	if normalizeErr := selection.normalize(); normalizeErr != nil {
-		return nil, fmt.Errorf("%w: invalid entity selection reference", rez.ErrInvalidInput)
+		return nil, fmt.Errorf("%w: invalid entity selection reference", errs.ErrInvalidInput)
 	}
 	return selection, nil
 }
@@ -619,27 +620,27 @@ func (cursor *knowledgeGraphQueryCursor) encode() (string, error) {
 	}
 	encoded := base64.RawURLEncoding.EncodeToString(jsonBytes)
 	if len(encoded) > maxQueryCursorSize {
-		return "", fmt.Errorf("%w: query cursor exceeds the maximum size", rez.ErrInvalidInput)
+		return "", fmt.Errorf("%w: query cursor exceeds the maximum size", errs.ErrInvalidInput)
 	}
 	return encoded, nil
 }
 
 func (s *KnowledgeGraphQueryService) decodeGraphQueryCursor(encoded string, fingerprint string, isEntityQuery bool) (*knowledgeGraphQueryCursor, error) {
 	if encoded == "" || len(encoded) > maxQueryCursorSize {
-		return nil, fmt.Errorf("%w: invalid query cursor size", rez.ErrInvalidInput)
+		return nil, fmt.Errorf("%w: invalid query cursor size", errs.ErrInvalidInput)
 	}
 	cursor, decodeErr := s.decodeRef[knowledgeGraphQueryCursor](encoded)
 	if decodeErr != nil {
-		return nil, fmt.Errorf("%w: invalid cursor: %w", rez.ErrInvalidInput, decodeErr)
+		return nil, fmt.Errorf("%w: invalid cursor: %w", errs.ErrInvalidInput, decodeErr)
 	}
 	if cursor.Version != knowledgeGraphQueryVersion || cursor.IsEntityQuery != isEntityQuery {
-		return nil, fmt.Errorf("%w: unsupported query cursor", rez.ErrInvalidInput)
+		return nil, fmt.Errorf("%w: unsupported query cursor", errs.ErrInvalidInput)
 	}
 	if cursor.Fingerprint != fingerprint {
-		return nil, fmt.Errorf("%w: query cursor does not match the query", rez.ErrInvalidInput)
+		return nil, fmt.Errorf("%w: query cursor does not match the query", errs.ErrInvalidInput)
 	}
 	if cursor.AfterID == nil {
-		return nil, fmt.Errorf("%w: missing query cursor boundary", rez.ErrInvalidInput)
+		return nil, fmt.Errorf("%w: missing query cursor boundary", errs.ErrInvalidInput)
 	}
 	return cursor, nil
 }

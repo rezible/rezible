@@ -4,7 +4,7 @@ import { Context, watch, type Getter } from "runed";
 import type { Component } from "svelte";
 import { toast } from "svelte-sonner";
 
-import type { ErrorModel, IntegrationInstallation, IntegrationOAuthInstallResult } from "$lib/api";
+import type { ApiError, IntegrationInstallation, IntegrationOAuthInstallResult } from "$lib/api";
 
 import { IntegrationOAuthController } from "$features/settings/lib/integrationsOAuthController.svelte";
 import { useIntegrationsController } from "$features/settings/lib/integrationsController.svelte";
@@ -84,7 +84,7 @@ export class IntegrationProviderController {
 	// Sign-in can return several targets, such as GitHub accounts, for the user to choose from.
 	installTargetsPendingName = $state<string>();
 	private installTargetsFailedName = $state<string>();
-	private installTargetsError = $state.raw<ErrorModel>();
+	private installTargetsError = $state.raw<ApiError>();
 
 	installTargetsErrorFor(name: string) {
 		if (this.installTargetsFailedName !== name) {
@@ -106,7 +106,7 @@ export class IntegrationProviderController {
 			);
 		} catch (e) {
 			this.installTargetsFailedName = name;
-			this.installTargetsError = e as ErrorModel;
+			this.installTargetsError = e as ApiError;
 		} finally {
 			this.installTargetsPendingName = undefined;
 		}
@@ -115,7 +115,7 @@ export class IntegrationProviderController {
 	// Installation through a form, for integrations that do not use sign-in.
 	installPendingName = $state<string>();
 	private installFailedName = $state<string>();
-	private installError = $state.raw<ErrorModel>();
+	private installError = $state.raw<ApiError>();
 
 	installErrorFor(name: string) {
 		if (this.installFailedName !== name) {
@@ -138,7 +138,7 @@ export class IntegrationProviderController {
 			return true;
 		} catch (e) {
 			this.installFailedName = name;
-			this.installError = e as ErrorModel;
+			this.installError = e as ApiError;
 			return false;
 		} finally {
 			this.installPendingName = undefined;
@@ -148,7 +148,7 @@ export class IntegrationProviderController {
 	// Disconnecting deletes the Rezible connection only; the provider's app stays installed.
 	removalCandidate = $state.raw<IntegrationInstallation>();
 	removing = $state(false);
-	removeError = $state.raw<ErrorModel>();
+	removeError = $state.raw<ApiError>();
 
 	requestRemoval = (installation: IntegrationInstallation) => {
 		this.removalCandidate = installation;
@@ -172,7 +172,7 @@ export class IntegrationProviderController {
 			this.removalCandidate = undefined;
 			toast.success(`Disconnected ${installation.attributes.displayName}.`);
 		} catch (e) {
-			this.removeError = e as ErrorModel;
+			this.removeError = e as ApiError;
 		} finally {
 			this.removing = false;
 		}

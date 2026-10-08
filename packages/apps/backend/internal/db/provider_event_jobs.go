@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"fmt"
+	"log/slog"
 
 	"github.com/rezible/rezible/pkg/jobs"
 	"github.com/riverqueue/river"
@@ -37,7 +38,7 @@ func (s *ProviderEventPipelineService) HandleEventProjectionJob(ctx context.Cont
 	} else if jobs.IsRetryableError(projectionErr) {
 		return projectionErr
 	}
-	s.logger.ErrorContext(ctx, "fatal event projection error",
+	slog.ErrorContext(ctx, "fatal event projection error",
 		"error", projectionErr.Error(),
 		"ref", ev.ProviderEventRef,
 	)

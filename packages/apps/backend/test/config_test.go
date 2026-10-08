@@ -19,7 +19,7 @@ func TestConfigIgnoresAmbientApplicationSettings(t *testing.T) {
 	t.Setenv("REDIS__ENABLED", "true")
 	t.Setenv("TELEMETRY__TRACING__ENABLED", "true")
 	t.Setenv("TELEMETRY__METRICS__ENABLED", "true")
-	t.Setenv("TELEMETRY__LOGGING__OTEL__ENABLED", "true")
+	t.Setenv("TELEMETRY__TRACING__CAPTURE_AI_CONTENT", "true")
 
 	cfg, configErr := loadConfig(t.Context(), nil)
 	require.NoError(t, configErr)
@@ -37,7 +37,7 @@ func TestConfigIgnoresAmbientApplicationSettings(t *testing.T) {
 	require.False(t, cfg.Redis.Enabled)
 	require.False(t, cfg.Telemetry.Tracing.Enabled)
 	require.False(t, cfg.Telemetry.Metrics.Enabled)
-	require.False(t, cfg.Telemetry.Logging.OTel.Enabled)
+	require.False(t, cfg.Telemetry.Tracing.CaptureAiContent)
 }
 
 func TestConfigAppliesExplicitOverrides(t *testing.T) {

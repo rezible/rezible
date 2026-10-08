@@ -14,6 +14,7 @@ import (
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/pkg/errs"
 	oapi "github.com/rezible/rezible/pkg/openapi/v1"
 	"github.com/rezible/rezible/test/mocks"
 )
@@ -24,9 +25,9 @@ func TestRaiseSituationErrorMapping(t *testing.T) {
 		serviceErr error
 		status     int
 	}{
-		{"closed", rez.ErrConflict, http.StatusConflict},
-		{"absent", rez.ErrNotFound, http.StatusNotFound},
-		{"invalid", rez.ErrInvalidInput, http.StatusBadRequest},
+		{"closed", errs.ErrConflict, http.StatusConflict},
+		{"absent", errs.ErrNotFound, http.StatusNotFound},
+		{"invalid", errs.ErrInvalidInput, http.StatusBadRequest},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			ctx := t.Context()

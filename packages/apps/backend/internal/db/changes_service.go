@@ -15,6 +15,7 @@ import (
 	kela "github.com/rezible/rezible/ent/knowledgeentitylinkingattribute"
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
 	ksa "github.com/rezible/rezible/ent/knowledgesubjectalias"
+	"github.com/rezible/rezible/pkg/errs"
 	"github.com/rezible/rezible/pkg/projections"
 )
 
@@ -43,16 +44,16 @@ func NewChangesService(db rez.Database, graph rez.KnowledgeGraphQueryService) (*
 
 func (s *ChangesService) ListServiceChanges(ctx context.Context, params rez.ListServiceChangesParams) (*rez.ServiceChanges, error) {
 	if !params.End.After(params.Start) {
-		return nil, fmt.Errorf("%w: end must be after start", rez.ErrInvalidInput)
+		return nil, fmt.Errorf("%w: end must be after start", errs.ErrInvalidInput)
 	}
 	if params.End.Sub(params.Start) > changesMaxWindow {
-		return nil, fmt.Errorf("%w: the window is longer than the 7 day limit", rez.ErrInvalidInput)
+		return nil, fmt.Errorf("%w: the window is longer than the 7 day limit", errs.ErrInvalidInput)
 	}
 	environment := ""
 	if params.Environment != "" {
 		environment = projections.NormalizeServiceName(params.Environment)
 		if environment == "" {
-			return nil, fmt.Errorf("%w: environment %q has no name once normalized", rez.ErrInvalidInput, params.Environment)
+			return nil, fmt.Errorf("%w: environment %q has no name once normalized", errs.ErrInvalidInput, params.Environment)
 		}
 	}
 
@@ -66,7 +67,7 @@ func (s *ChangesService) ListServiceChanges(ctx context.Context, params rez.List
 	if serviceErr != nil {
 		return nil, fmt.Errorf("query service entity: %w", serviceErr)
 	} else if !isService {
-		return nil, fmt.Errorf("%w: %s is not a known service", rez.ErrInvalidInput, params.ServiceEntityID)
+		return nil, fmt.Errorf("%w: %s is not a known service", errs.ErrInvalidInput, params.ServiceEntityID)
 	}
 
 	listDeployments := rez.ListRelatedEventsParams{

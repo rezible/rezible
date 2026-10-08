@@ -2,8 +2,6 @@ package db
 
 import (
 	"context"
-	"io"
-	"log/slog"
 	"testing"
 	"time"
 
@@ -30,6 +28,7 @@ import (
 	sitsig "github.com/rezible/rezible/ent/situationsignal"
 	sae "github.com/rezible/rezible/ent/systemanalysisentry"
 	saes "github.com/rezible/rezible/ent/systemanalysisentrysubject"
+	"github.com/rezible/rezible/pkg/errs"
 	"github.com/rezible/rezible/pkg/jobs"
 	"github.com/rezible/rezible/pkg/situations"
 	"github.com/rezible/rezible/test"
@@ -78,9 +77,8 @@ func (s *SituationServiceSuite) newFixture(tdb rez.Database) *situationServiceFi
 		}).
 		Maybe()
 	agentService := &AiAgentSessionService{
-		logger: slog.New(slog.NewTextHandler(io.Discard, nil)),
-		db:     tdb,
-		jobs:   jobService,
+		db:   tdb,
+		jobs: jobService,
 	}
 	knowledgeQuery, queryServiceErr := NewKnowledgeGraphQueryService(tdb)
 	s.Require().NoError(queryServiceErr)
@@ -251,14 +249,14 @@ func (s *SituationServiceSuite) TestCreateAndAttach() {
 		SeedEntityID:      seed,
 		ObservationGroups: []rez.SituationObservationGroupParams{{Title: "Checkout", SignalEntityIDs: []uuid.UUID{seed}}},
 	})
-	s.ErrorIs(conflictErr, rez.ErrConflict)
+	s.ErrorIs(conflictErr, errs.ErrConflict)
 	containerID := s.entityID(ctx, h, checkout)
 	_, kindErr := h.situations.CreateSituation(ctx, rez.CreateSituationParams{
 		Title:             "Not a signal",
 		SeedEntityID:      containerID,
 		ObservationGroups: []rez.SituationObservationGroupParams{{Title: "Checkout", SignalEntityIDs: []uuid.UUID{containerID}}},
 	})
-	s.ErrorIs(kindErr, rez.ErrInvalidInput)
+	s.ErrorIs(kindErr, errs.ErrInvalidInput)
 
 	earlier := s.signal(ctx, tdb, h, "checkout-latency", 1, checkout)
 	attach := AttachSituationSignalsParams{
@@ -313,7 +311,7 @@ func (s *SituationServiceSuite) TestMerge() {
 	s.Equal(sitact.ActionMerged, closed.Edges.Actions[len(closed.Edges.Actions)-1].Action)
 
 	_, closedErr := h.situations.MergeSituations(ctx, params)
-	s.ErrorIs(closedErr, rez.ErrConflict)
+	s.ErrorIs(closedErr, errs.ErrConflict)
 }
 
 func (s *SituationServiceSuite) TestLifecycleVerbs() {
@@ -337,7 +335,7 @@ func (s *SituationServiceSuite) TestLifecycleVerbs() {
 	s.Require().NoError(holdErr)
 	s.True(h.clock.Now().Add(situations.HoldDefault).Equal(*held.HoldUntil))
 	_, pastErr := h.situations.SetSituationHold(ctx, created.ID, &rez.SituationHold{Until: new(situationTestStart)})
-	s.ErrorIs(pastErr, rez.ErrInvalidInput)
+	s.ErrorIs(pastErr, errs.ErrInvalidInput)
 
 	raised, raiseErr := h.situations.RaiseSituation(ctx, created.ID, rez.RaiseSituationParams{Reason: "looks real"})
 	s.Require().NoError(raiseErr)
@@ -354,7 +352,7 @@ func (s *SituationServiceSuite) TestLifecycleVerbs() {
 	_, repeatErr := h.situations.CloseSituation(ctx, created.ID, rez.CloseSituationParams{})
 	s.NoError(repeatErr)
 	_, closedMuteErr := h.situations.SetSituationMute(ctx, created.ID, nil)
-	s.ErrorIs(closedMuteErr, rez.ErrConflict)
+	s.ErrorIs(closedMuteErr, errs.ErrConflict)
 
 	other := s.signal(ctx, tdb, h, "payment-errors", 5)
 	dismissed := s.create(ctx, h, map[string][]uuid.UUID{"Payments": {other}}, other)
@@ -423,7 +421,7 @@ func (s *SituationServiceSuite) TestIncidentLinks() {
 		m.SetTitle("Renamed")
 		m.AddSituationIDs(closed.ID)
 	})
-	s.ErrorIs(closedErr, rez.ErrConflict)
+	s.ErrorIs(closedErr, errs.ErrConflict)
 	unchanged, incidentErr := incidents.Get(ctx, incident.ID(linked.ID))
 	s.Require().NoError(incidentErr)
 	s.Equal("Checkout outage", unchanged.Title, "the incident write rolls back")
@@ -635,7 +633,7 @@ func (s *SituationServiceSuite) TestSituationHazardAssessmentRevisionsAndAssesso
 	}
 
 	_, noAssessorErr := h.situations.AddSituationHazardAssessment(ctx, noAssessorParams)
-	s.ErrorIs(noAssessorErr, rez.ErrInvalidInput)
+	s.ErrorIs(noAssessorErr, errs.ErrInvalidInput)
 
 	twoAssessorsParams := rez.AddSituationHazardAssessmentParams{
 		SituationID:    situation.ID,
@@ -647,5 +645,5 @@ func (s *SituationServiceSuite) TestSituationHazardAssessmentRevisionsAndAssesso
 	}
 
 	_, twoAssessorsErr := h.situations.AddSituationHazardAssessment(ctx, twoAssessorsParams)
-	s.ErrorIs(twoAssessorsErr, rez.ErrInvalidInput)
+	s.ErrorIs(twoAssessorsErr, errs.ErrInvalidInput)
 }

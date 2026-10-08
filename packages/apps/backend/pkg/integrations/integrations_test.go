@@ -10,6 +10,7 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/pkg/errs"
 )
 
 func TestAs(t *testing.T) {
@@ -30,9 +31,9 @@ func TestLookupInstallationAs(t *testing.T) {
 	require.NoError(t, foundErr)
 	require.Same(t, chat, querier)
 
-	missing := fakeInstallationGetter{err: rez.ErrNotFound}
+	missing := fakeInstallationGetter{err: errs.ErrNotFound}
 	_, missingErr := LookupInstallationAs[ChatChannelQuerier](t.Context(), missing, uuid.New())
-	require.ErrorIs(t, missingErr, rez.ErrNotFound)
+	require.ErrorIs(t, missingErr, errs.ErrNotFound)
 }
 
 type fakeInstallationGetter struct {

@@ -1,7 +1,7 @@
 import {
 	createSystemAnalysisEntryMutation,
 	updateSystemAnalysisEntryMutation,
-	type ErrorModel,
+	type ApiError,
 	type SystemAnalysisEntry,
 } from "$lib/api";
 import { createMutation } from "@tanstack/svelte-query";
@@ -28,7 +28,7 @@ export class IncidentEventDialogController {
 	body = $state("");
 	timestamp = $state<ZonedDateTime>(now(getLocalTimeZone()));
 	hasTimestamp = $state(true);
-	error = $state<ErrorModel>();
+	error = $state<ApiError>();
 	private onChanged: () => unknown;
 	private returnFocus?: HTMLElement;
 	createEntryMut = createMutation(() => createSystemAnalysisEntryMutation());
@@ -110,7 +110,7 @@ export class IncidentEventDialogController {
 				this.open = false;
 			}
 		} catch (error) {
-			if (analysisId === this.analysis.analysisId) this.error = error as ErrorModel;
+			if (analysisId === this.analysis.analysisId) this.error = error as ApiError;
 		}
 	};
 }

@@ -1,7 +1,7 @@
 import {
 	expandKnowledgeGraphRelationshipsOptions,
 	selectKnowledgeGraphEntitiesOptions,
-	type ErrorModel,
+	type ApiError,
 	type KnowledgeGraphEntitySummary,
 } from "$lib/api";
 import type { QueryClient } from "@tanstack/svelte-query";
@@ -116,17 +116,17 @@ function linkAbortSignals(...signals: AbortSignal[]): AbortSignalLink {
 	return {
 		signal: controller.signal,
 		dispose() {
-			signals.forEach(signal => signal.removeEventListener("abort", abort));
+			signals.forEach((signal) => signal.removeEventListener("abort", abort));
 		},
 	};
 }
 
-function toErrorModel(error: unknown): ErrorModel {
-	if (error && typeof error === "object") {
-		if (error instanceof Error) return { title: "Error", detail: error.message };
-		return error as ErrorModel;
+// The API client rejects with an ApiError; anything else thrown while loading is internal.
+function toLoaderError(error: unknown): ApiError {
+	if (!!error && typeof error === "object" && !(error instanceof Error)) {
+		return error as ApiError;
 	}
-	return { title: "Error", detail: String(error) };
+	return { code: "internal" };
 }
 
 function makeGraph(
@@ -156,7 +156,7 @@ function makeGraph(
 export class GraphQueryController {
 	private readonly queryClient: QueryClient;
 	private currentStatus = $state<GraphQueryStatus>("idle");
-	private currentError = $state.raw<ErrorModel>();
+	private currentError = $state.raw<ApiError>();
 	private currentPublished = $state.raw<PublishedGraph>();
 	private generation = 0;
 	private activeRun: LoadRun | undefined;
@@ -194,7 +194,7 @@ export class GraphQueryController {
 		return this.currentStatus;
 	}
 
-	get error(): ErrorModel | undefined {
+	get error(): ApiError | undefined {
 		return this.currentError;
 	}
 
@@ -332,7 +332,7 @@ export class GraphQueryController {
 			if (this.isCurrent(run)) this.currentStatus = "success";
 		} catch (error) {
 			if (!this.isCurrent(run) || run.abortController.signal.aborted) return;
-			if (this.isCurrent(run)) this.currentError = toErrorModel(error);
+			if (this.isCurrent(run)) this.currentError = toLoaderError(error);
 			if (this.isCurrent(run)) this.currentStatus = "error";
 		} finally {
 			if (this.activeRun === run) this.activeRun = undefined;

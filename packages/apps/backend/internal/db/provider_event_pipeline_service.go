@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	"github.com/riverqueue/river"
+	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/metric"
 
@@ -25,19 +26,16 @@ import (
 type ProviderEventPipelineService struct {
 	db         rez.Database
 	jobs       rez.JobService
-	logger     *slog.Logger
 	telemetry  *providerEventTelemetry
 	processors map[string]rez.ProviderEventProcessor
 	projection rez.EventProjectionService
 }
 
-func NewProviderEventPipelineService(ts rez.TelemetryService, db rez.Database, jobSvc rez.JobService, processors map[string]rez.ProviderEventProcessor, projection rez.EventProjectionService) (*ProviderEventPipelineService, error) {
-	logger := ts.NewLogger(rez.NewLoggerOptions{Name: "provider_events"})
+func NewProviderEventPipelineService(db rez.Database, jobSvc rez.JobService, processors map[string]rez.ProviderEventProcessor, projection rez.EventProjectionService) (*ProviderEventPipelineService, error) {
 	pe := &ProviderEventPipelineService{
 		db:         db,
 		jobs:       jobSvc,
-		logger:     logger,
-		telemetry:  newProviderEventTelemetry(ts, logger),
+		telemetry:  newProviderEventTelemetry(),
 		processors: processors,
 		projection: projection,
 	}
@@ -103,7 +101,7 @@ func (s *ProviderEventPipelineService) SyncEvents(ctx context.Context, querier r
 		if len(batch) == 0 {
 			return true
 		}
-		s.logger.DebugContext(ctx, "flushing batch", "len", len(batch))
+		slog.DebugContext(ctx, "flushing batch", "len", len(batch))
 		params := make([]river.InsertManyParams, len(batch))
 		for i, item := range batch {
 			params[i] = river.InsertManyParams{
@@ -341,15 +339,14 @@ func (s *ProviderEventPipelineService) projectNormalizedEvent(ctx context.Contex
 }
 
 type providerEventTelemetry struct {
-	logger           *slog.Logger
 	ingested         metric.Int64Counter
 	processed        metric.Int64Counter
 	processSeconds   metric.Float64Histogram
 	normalizedEvents metric.Int64Counter
 }
 
-func newProviderEventTelemetry(ts rez.TelemetryService, logger *slog.Logger) *providerEventTelemetry {
-	meter := ts.DefaultMeter()
+func newProviderEventTelemetry() *providerEventTelemetry {
+	meter := otel.Meter("github.com/rezible/rezible")
 	processSeconds, processSecondsErr := meter.Float64Histogram("rezible.backend.provider_events.normalize_duration", metric.WithDescription("Provider event normalization processing duration"), metric.WithUnit("s"))
 	ingested, ingestedErr := meter.Int64Counter("rezible.backend.provider_events.ingested", metric.WithDescription("Provider events ingested"))
 	processed, processedErr := meter.Int64Counter("rezible.backend.provider_events.processed", metric.WithDescription("Provider events processed"))
@@ -359,7 +356,6 @@ func newProviderEventTelemetry(ts rez.TelemetryService, logger *slog.Logger) *pr
 		panic("telemetry instruments err: " + telErr.Error())
 	}
 	return &providerEventTelemetry{
-		logger:           logger,
 		ingested:         ingested,
 		processed:        processed,
 		processSeconds:   processSeconds,
@@ -378,7 +374,7 @@ func (m *providerEventTelemetry) recordIngested(ctx context.Context, ev rez.Prov
 		attribute.Bool("duplicate", duplicate),
 	))
 	if duplicate {
-		m.logger.Info("skipped ingesting duplicate provider event",
+		slog.InfoContext(ctx, "skipped ingesting duplicate provider event",
 			"provider", ev.Provider,
 			"provider_event_source", ev.ProviderEventSource,
 		)
@@ -411,5 +407,5 @@ func (m *providerEventTelemetry) recordProcessed(ctx context.Context, ev rez.Pro
 		}
 	}
 
-	m.logger.LogAttrs(ctx, slog.LevelInfo, "processed provider event", logAttrs...)
+	slog.LogAttrs(ctx, slog.LevelInfo, "processed provider event", logAttrs...)
 }

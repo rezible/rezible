@@ -26,34 +26,33 @@ const SchemaName = "river"
 type riverClient = river.Client[pgx.Tx]
 
 type JobService struct {
-	logger *slog.Logger
 	pool   *pgxpool.Pool
 	config *river.Config
 	client *riverClient
 }
 
-func NewJobService(cfg rez.Config, pool *pgxpool.Pool, tel rez.TelemetryService) (*JobService, error) {
+func NewJobService(cfg rez.Config, pool *pgxpool.Pool) (*JobService, error) {
 	s := &JobService{
 		pool: pool,
-		logger: tel.NewLogger(rez.NewLoggerOptions{
-			Name:  "river",
-			Level: slog.LevelInfo,
-		}),
 	}
 
 	telemetryMiddleware := otelriver.NewMiddleware(&otelriver.MiddlewareConfig{
 		DurationUnit:                "s",
 		EnableSemanticMetrics:       true,
+		EnableTracePropagation:      true,
 		EnableWorkSpanJobKindSuffix: true,
-		MeterProvider:               tel.MeterProvider(),
-		TracerProvider:              tel.TracerProvider(),
 	})
 
 	s.config = &river.Config{
-		Schema:          SchemaName,
-		Logger:          s.logger,
-		MaxAttempts:     3,
-		SoftStopTimeout: 5 * time.Second,
+		Schema:            SchemaName,
+		Logger:            slog.New(riverLogHandler{Handler: slog.Default().With("component", "river").Handler()}),
+		ErrorHandler:      jobErrorHandler{},
+		MaxAttempts:       3,
+		SoftStopTimeout:   5 * time.Second,
+		FetchPollInterval: cfg.Jobs.FetchPollInterval,
+		FetchCooldown:     cfg.Jobs.FetchCooldown,
+		// The telemetry middleware starts each job's work span in a new trace, linked to the span that
+		// inserted the job. The execution context is restored inside it, so the span carries the job's identity.
 		Middleware: []rivertype.Middleware{
 			telemetryMiddleware,
 			&accessContextMiddleware{},
@@ -90,7 +89,7 @@ func (s *JobService) Register(def jobs.Definition) error {
 		return fmt.Errorf("create river client: %w", clientErr)
 	}
 	s.client = client
-	s.logger.Info("initialized job service", "kinds", kinds)
+	slog.Info("initialized job service", "kinds", kinds)
 	return nil
 }
 

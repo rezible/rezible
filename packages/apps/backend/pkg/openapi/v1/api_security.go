@@ -10,7 +10,9 @@ import (
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/pkg/execution"
 	"github.com/rezible/rezible/pkg/openapi"
+	"go.opentelemetry.io/otel/trace"
 )
 
 type (
@@ -107,9 +109,9 @@ func makeRequestMethodSecurityMiddleware(api openapi.API, p SecurityProvider, un
 		return defaultSecurityOpts
 	}
 	writeSecurityError := func(c huma.Context, err error) {
-		statusErr := ConvertStatusError("verify request security", err)
-		if writeErr := huma.WriteErr(api, c, statusErr.GetStatus(), statusErr.Error()); writeErr != nil {
-			slog.Error("failed to write api error response", "error", writeErr)
+		apiErr := Error(c.Context(), "verify request security", err)
+		if writeErr := huma.WriteErr(api, c, apiErr.(huma.StatusError).GetStatus(), "", apiErr); writeErr != nil {
+			slog.ErrorContext(c.Context(), "failed to write api error response", "error", writeErr)
 		}
 	}
 	return func(c huma.Context, next func(huma.Context)) {
@@ -120,6 +122,8 @@ func makeRequestMethodSecurityMiddleware(api openapi.API, p SecurityProvider, un
 			return
 		}
 		c = huma.WithContext(c, secCtx)
+		// The identity is known from here, so a request rejected below is still attributed on its span.
+		trace.SpanFromContext(secCtx).SetAttributes(execution.Attrs(secCtx)...)
 
 		secOpts := getOperationSecurityOptions(c)
 		if secOpts != nil && len(secOpts) == 0 {

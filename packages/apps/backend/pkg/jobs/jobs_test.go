@@ -3,7 +3,7 @@ package jobs_test
 import (
 	"testing"
 
-	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/pkg/errs"
 	"github.com/rezible/rezible/pkg/execution"
 	"github.com/rezible/rezible/pkg/jobs"
 	"github.com/stretchr/testify/require"
@@ -24,10 +24,10 @@ func TestSetExecutionContextArgs(t *testing.T) {
 	require.Equal(t, "event", args.Payload)
 
 	otherCtx := execution.NewTenantContext(t.Context(), 202)
-	require.ErrorIs(t, jobs.SetContextualArgs(otherCtx, args), rez.ErrForbidden)
+	require.ErrorIs(t, jobs.SetContextualArgs(otherCtx, args), errs.ErrForbidden)
 	require.Equal(t, 101, args.TenantID)
 
-	require.ErrorIs(t, jobs.SetContextualArgs(t.Context(), args), rez.ErrTenantContextMissing)
+	require.ErrorIs(t, jobs.SetContextualArgs(t.Context(), args), errs.ErrTenantContextMissing)
 	require.Equal(t, 101, args.TenantID)
 
 	ordinary := jobs.SyncIntegrationSourceEvents{Sources: []string{"events"}, SyncReason: "manual"}

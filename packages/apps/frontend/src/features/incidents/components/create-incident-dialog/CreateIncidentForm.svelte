@@ -7,12 +7,12 @@
 	import * as Select from "$components/ui/select";
 	import { Textarea } from "$components/ui/textarea";
 	import { Checkbox } from "$components/ui/checkbox";
-	import type { ErrorModel } from "$lib/api";
+	import type { ApiError } from "$lib/api";
 	import { useIncidentCreateDialog } from "./controller.svelte";
 
 	const controller = useIncidentCreateDialog();
 
-	const metadataError = $derived(controller.metadataQuery.error as ErrorModel | undefined);
+	const metadataError = $derived(controller.metadataQuery.error as ApiError | undefined);
 
 	const titleError = $derived(!!controller.form.title ? controller.fieldErrors.title?.[0] : null);
 </script>

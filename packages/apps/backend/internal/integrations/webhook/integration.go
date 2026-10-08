@@ -9,6 +9,7 @@ import (
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/pkg/errs"
 )
 
 const (
@@ -22,10 +23,9 @@ type Integration struct {
 	webhookHandler http.Handler
 }
 
-func MakeIntegration(ts rez.TelemetryService, clock rez.Clock, events rez.ProviderEventPipelineService, installations rez.IntegrationInstallationLookup) (*Integration, error) {
-	logger := ts.NewLogger(rez.NewLoggerOptions{Name: "webhook_deliveries"})
+func MakeIntegration(clock rez.Clock, events rez.ProviderEventPipelineService, installations rez.IntegrationInstallationLookup) (*Integration, error) {
 	i := &Integration{
-		webhookHandler: newWebhookHandler(logger, clock, events, installations),
+		webhookHandler: newWebhookHandler(clock, events, installations),
 	}
 	return i, nil
 }
@@ -84,7 +84,7 @@ func (i *Integration) ValidateInstallationConfig(raw []byte) (rez.IntegrationIns
 // ValidateUserSettings rejects any setting: the webhook integration has none.
 func (i *Integration) ValidateUserSettings(settings map[string]any) error {
 	if len(settings) > 0 {
-		return fmt.Errorf("%w: the webhook integration has no settings", rez.ErrInvalidInput)
+		return fmt.Errorf("%w: the webhook integration has no settings", errs.ErrInvalidInput)
 	}
 	return nil
 }
@@ -132,11 +132,11 @@ func decodeInstallationConfig(raw []byte) (*InstallationConfig, error) {
 	var config InstallationConfig
 	if len(raw) > 0 {
 		if decodeErr := json.Unmarshal(raw, &config); decodeErr != nil {
-			return nil, fmt.Errorf("%w: invalid installation config: %w", rez.ErrInvalidInput, decodeErr)
+			return nil, fmt.Errorf("%w: invalid installation config: %w", errs.ErrInvalidInput, decodeErr)
 		}
 	}
 	if _, known := presets[config.Preset]; !known {
-		return nil, fmt.Errorf("%w: unknown preset %q", rez.ErrInvalidInput, config.Preset)
+		return nil, fmt.Errorf("%w: unknown preset %q", errs.ErrInvalidInput, config.Preset)
 	}
 	return &config, nil
 }

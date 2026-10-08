@@ -19,6 +19,7 @@ import (
 	sitent "github.com/rezible/rezible/ent/situationentity"
 	sitlink "github.com/rezible/rezible/ent/situationlink"
 	sitsig "github.com/rezible/rezible/ent/situationsignal"
+	"github.com/rezible/rezible/pkg/errs"
 	"github.com/rezible/rezible/pkg/jobs"
 	"github.com/rezible/rezible/pkg/knowledgegraph"
 	"github.com/rezible/rezible/pkg/situations"
@@ -39,7 +40,7 @@ func NewProcessSituationSignalWorker(service *SituationService) jobs.WorkerDefin
 func (s *SituationService) ProcessSignal(ctx context.Context, signalEntityID uuid.UUID) error {
 	signals, loadErr := s.loadSignals(ctx, []uuid.UUID{signalEntityID}, situations.LoadSignalsOptions{})
 	if loadErr != nil {
-		if errors.Is(loadErr, rez.ErrInvalidInput) {
+		if errors.Is(loadErr, errs.ErrInvalidInput) {
 			return nil
 		}
 		return loadErr

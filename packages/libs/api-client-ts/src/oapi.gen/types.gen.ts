@@ -1182,6 +1182,10 @@ export type ErrorModel = {
      */
     readonly $schema?: string;
     /**
+     * A stable code for the kind of error.
+     */
+    code: 'conflict' | 'forbidden' | 'internal' | 'invalid_input' | 'not_found' | 'not_implemented' | 'rate_limited' | 'unauthenticated' | 'unavailable' | 'unprocessable';
+    /**
      * A human-readable explanation specific to this occurrence of the problem.
      */
     detail?: string;

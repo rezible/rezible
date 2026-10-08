@@ -8,6 +8,7 @@ import (
 	"github.com/rezible/rezible/ent"
 	kne "github.com/rezible/rezible/ent/knowledgeentity"
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
+	"github.com/rezible/rezible/pkg/errs"
 	"github.com/rezible/rezible/pkg/projections"
 )
 
@@ -266,5 +267,5 @@ func (s *ProjectionServiceSuite) TestAliasBoundToAnotherEntityThanItsNameConflic
 	renamed := githubRepositoryObservation("42", "Acme/Payments", "acme/payments")
 	projectErr := s.projectGithubChange(ctx, tdb, service, "change:42:def456", renamed)
 
-	s.ErrorIs(projectErr, rez.ErrConflict)
+	s.ErrorIs(projectErr, errs.ErrConflict)
 }

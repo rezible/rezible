@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"net/http/httptest"
 	"sync/atomic"
 	"testing"
@@ -102,15 +103,11 @@ func (s *BackendSuite) newAppHarness(options appTestOptions) *appHarness {
 		}
 	})
 
-	_, initErr := app.Init(ctx)
+	_, initErr := app.Init(ctx, false)
 	s.Require().NoError(initErr, "initialize application")
 
 	app.Override[rez.Config](func(do.Injector) (rez.Config, error) {
 		return s.Config(), nil
-	})
-
-	app.Override[rez.TelemetryService](func(do.Injector) (rez.TelemetryService, error) {
-		return s.Telemetry(), nil
 	})
 
 	app.Override[rez.PostgresConfig](providePostgresTestDatabaseConfig)
@@ -180,7 +177,7 @@ func (s *BackendSuite) newAppHarness(options appTestOptions) *appHarness {
 	// TODO: just invoke this?
 	jobConfig := &river.Config{
 		Schema: "river",
-		Logger: app.mustInvoke[rez.TelemetryService]().Logger(),
+		Logger: slog.New(slog.DiscardHandler),
 	}
 	jobReader, jobReaderErr := river.NewClient(riverpgxv5.New(pool.Pool), jobConfig)
 	s.Require().NoError(jobReaderErr, "create read-only River client")

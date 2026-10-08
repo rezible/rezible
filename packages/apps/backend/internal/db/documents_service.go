@@ -14,6 +14,7 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	da "github.com/rezible/rezible/ent/documentaccess"
+	"github.com/rezible/rezible/pkg/errs"
 	"github.com/rezible/rezible/pkg/execution"
 )
 
@@ -51,7 +52,7 @@ func (s *DocumentsService) CreateDocumentEditorSessionAuth(ctx context.Context, 
 	}
 
 	if access == nil || (!access.CanManage && !access.CanEdit && !access.CanView) {
-		return nil, rez.ErrForbidden
+		return nil, errs.ErrForbidden
 	}
 
 	now := time.Now()

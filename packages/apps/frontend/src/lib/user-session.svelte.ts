@@ -1,63 +1,32 @@
 import { navigating, page } from "$app/state";
 import {
 	getUserSessionOptions,
-	type ErrorModel,
+	type ApiError,
 	type GetUserSessionResponseBody,
 	type UserSession,
 } from "$lib/api";
 import { parseAbsoluteToLocal, ZonedDateTime } from "@internationalized/date";
-import { createQuery, type CreateQueryResult } from "@tanstack/svelte-query";
+import { createQuery } from "@tanstack/svelte-query";
 import { Context, watch } from "runed";
 import { onMount, tick } from "svelte";
 import { beforeNavigate, goto } from "$app/navigation";
 import type { RouteId } from "$app/types";
 import { resolve } from "$app/paths";
 
-export enum ApiAuthErrorCategory {
-	NoSession = "auth_session_missing",
-	SessionExpired = "auth_session_expired",
-	SessionInvalid = "auth_session_invalid",
-	ServerError = "server_error",
-	Unknown = "unknown",
-}
-const authErrCategories = Object.values(ApiAuthErrorCategory);
+type ParsedUserSession = Omit<UserSession, "expiresAt"> & { expiresAt: ZonedDateTime };
 
-const parseAuthSessionResponseError = (err: ErrorModel): ApiAuthErrorCategory => {
-	if (err.status === 401) {
-		const mappedCategory = err.detail as ApiAuthErrorCategory;
-		if (authErrCategories.includes(mappedCategory)) {
-			return mappedCategory;
-		}
-	} else if (!err.status || err.status >= 500) {
-		return ApiAuthErrorCategory.ServerError;
+// A 401 ends the session even while the last loaded session is still cached.
+const parseUserSession = (data?: GetUserSessionResponseBody, error?: ApiError | null) => {
+	if (!data || error?.status === 401) {
+		return undefined;
 	}
-	return ApiAuthErrorCategory.Unknown;
-};
-
-type AuthSessionQueryResult = CreateQueryResult<GetUserSessionResponseBody, ErrorModel>;
-type ParsedAuthSessionQueryResult = {
-	session?: Omit<UserSession, "expiresAt"> & { expiresAt: ZonedDateTime };
-	error?: ApiAuthErrorCategory;
-};
-const parseAuthSessionQueryResponse = ({
-	data,
-	error,
-}: AuthSessionQueryResult): ParsedAuthSessionQueryResult => {
-	if (!!error && error.status === 401) {
-		return { error: parseAuthSessionResponseError(error) };
-	}
-	if (!!data) {
-		const res = data.data;
-		return {
-			session: {
-				user: res.user,
-				organization: res.organization,
-				organizationRole: res.organizationRole,
-				expiresAt: parseAbsoluteToLocal(res.expiresAt),
-			},
-		};
-	}
-	return error ? { error: parseAuthSessionResponseError(error) } : {};
+	const res = data.data;
+	return {
+		user: res.user,
+		organization: res.organization,
+		organizationRole: res.organizationRole,
+		expiresAt: parseAbsoluteToLocal(res.expiresAt),
+	} satisfies ParsedUserSession;
 };
 
 const DefaultRoute = resolve("/");
@@ -119,11 +88,13 @@ export class UserSessionState {
 	private query = createQuery(() => getUserSessionOptions());
 	private loaded = $derived(this.query.isFetched);
 
-	private parsedResponse = $derived(parseAuthSessionQueryResponse(this.query));
+	error = $derived(this.query.error ?? undefined);
 
-	error = $derived(this.parsedResponse.error);
+	private session = $derived(parseUserSession(this.query.data, this.query.error));
 
-	private session = $derived(this.parsedResponse.session);
+	/** Whether a session has loaded in this tab. It stays true after the session ends, until a reload. */
+	hadSession = $state(false);
+
 	private sessionExpiresAt = $derived(!!this.session ? this.session.expiresAt.toDate() : null);
 	user = $derived(this.session?.user);
 	org = $derived(this.session?.organization);
@@ -131,15 +102,27 @@ export class UserSessionState {
 	organizationRole = $derived(this.session?.organizationRole);
 	isAdmin = $derived(this.organizationRole === "admin");
 
-	isAuthenticated = $derived(!!this.session && !this.error);
+	isAuthenticated = $derived(!!this.session);
 	isSetup = $derived(this.isAuthenticated && !this.org?.attributes.setupRequired);
 	private isReady = $derived(this.isAuthenticated && this.isSetup);
 	private returnLocation = $derived(this.isReady ? page.url.pathname : null);
 
 	constructor() {
+		this.trackHadSession();
 		this.startSessionExpiryCheck();
 		this.addNavigationGuards();
 		this.trackReturnLocation();
+	}
+
+	private trackHadSession() {
+		watch(
+			() => this.session,
+			(session) => {
+				if (!!session) {
+					this.hadSession = true;
+				}
+			}
+		);
 	}
 
 	private trackReturnLocation() {
@@ -189,9 +172,7 @@ export class UserSessionState {
 			if (!this.sessionExpiresAt) return;
 			const timeLeft = this.sessionExpiresAt.valueOf() - Date.now();
 			if (timeLeft <= 0) {
-				// TODO: handle this better
-				// this.refetch();
-				console.log("user auth session expired");
+				this.refetch();
 			} else if (timeLeft <= CheckIntervalMs * 100) {
 				console.log("auth session expiring soon", timeLeft);
 				// this.refreshSessionMut.mutate({});

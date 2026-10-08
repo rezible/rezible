@@ -6,6 +6,7 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/retrospective"
+	"github.com/rezible/rezible/pkg/errs"
 	oapi "github.com/rezible/rezible/pkg/openapi/v1"
 )
 
@@ -34,7 +35,7 @@ func (h *retrospectivesHandler) ListRetrospectives(ctx context.Context, input *o
 }
 
 func (h *retrospectivesHandler) UpdateRetrospective(ctx context.Context, req *oapi.UpdateRetrospectiveRequest) (*oapi.UpdateRetrospectiveResponse, error) {
-	return nil, oapi.Error(ctx, "retrospective metadata updates are not implemented", rez.ErrNotImplemented)
+	return nil, oapi.Error(ctx, "retrospective metadata updates are not implemented", errs.ErrNotImplemented)
 }
 
 func (h *retrospectivesHandler) GetRetrospective(ctx context.Context, input *oapi.GetRetrospectiveRequest) (*oapi.GetRetrospectiveResponse, error) {
@@ -48,7 +49,7 @@ func (h *retrospectivesHandler) GetRetrospective(ctx context.Context, input *oap
 }
 
 func (h *retrospectivesHandler) RequestRetrospectiveReview(ctx context.Context, input *oapi.RequestRetrospectiveReviewRequest) (*oapi.RequestRetrospectiveReviewResponse, error) {
-	return nil, oapi.Error(ctx, "not implemented", rez.ErrNotImplemented)
+	return nil, oapi.Error(ctx, "not implemented", errs.ErrNotImplemented)
 }
 
 func (h *retrospectivesHandler) GetRetrospectiveReportComposition(ctx context.Context, input *oapi.GetRetrospectiveReportCompositionRequest) (*oapi.GetRetrospectiveReportCompositionResponse, error) {
@@ -62,7 +63,7 @@ func (h *retrospectivesHandler) GetRetrospectiveReportComposition(ctx context.Co
 }
 
 func (h *retrospectivesHandler) SetRetrospectiveReportFindingSelection(ctx context.Context, input *oapi.SetRetrospectiveReportFindingSelectionRequest) (*oapi.SetRetrospectiveReportFindingSelectionResponse, error) {
-	return nil, oapi.Error(ctx, "not implemented", rez.ErrNotImplemented)
+	return nil, oapi.Error(ctx, "not implemented", errs.ErrNotImplemented)
 }
 
 func (h *retrospectivesHandler) CreateIncidentRetrospective(ctx context.Context, request *oapi.CreateIncidentRetrospectiveRequest) (*oapi.CreateIncidentRetrospectiveResponse, error) {

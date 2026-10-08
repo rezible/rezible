@@ -11,6 +11,7 @@ import (
 
 	rez "github.com/rezible/rezible"
 	kne "github.com/rezible/rezible/ent/knowledgeentity"
+	"github.com/rezible/rezible/pkg/errs"
 	"github.com/rezible/rezible/pkg/projections"
 	"github.com/rezible/rezible/test"
 )
@@ -313,7 +314,7 @@ func (s *DeliverySuite) TestParseInstallationSettings() {
 	}
 	for _, value := range invalid {
 		_, parseErr := parseInstallationSettings(map[string]any{"service_labels": value})
-		s.Require().ErrorIs(parseErr, rez.ErrInvalidInput, "%#v", value)
+		s.Require().ErrorIs(parseErr, errs.ErrInvalidInput, "%#v", value)
 	}
 }
 

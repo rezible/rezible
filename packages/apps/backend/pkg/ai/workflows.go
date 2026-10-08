@@ -11,6 +11,7 @@ import (
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent/schema/schematypes"
+	"github.com/rezible/rezible/pkg/errs"
 )
 
 // ErrWorkflowInvalidOutput is returned by a prompt workflow whose model answered, but with output that does
@@ -96,7 +97,7 @@ type (
 
 func (i SituationJudgeInput) Validate() error {
 	if len(i.Reasons) == 0 {
-		return fmt.Errorf("%w: no reasons to judge", rez.ErrInvalidInput)
+		return fmt.Errorf("%w: no reasons to judge", errs.ErrInvalidInput)
 	}
 	return nil
 }

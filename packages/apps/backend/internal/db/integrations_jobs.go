@@ -26,18 +26,16 @@ type IntegrationEventsSyncWorker struct {
 	registry *integrations.Registry
 	pipeline rez.ProviderEventPipelineService
 
-	logger  *slog.Logger
 	timeout time.Duration
 }
 
-func NewIntegrationEventsSyncWorker(cfg rez.Config, tel rez.TelemetryService, db rez.Database, msgs rez.MessageQueue, intgs rez.IntegrationService, reg *integrations.Registry, pipeline rez.ProviderEventPipelineService) (*IntegrationEventsSyncWorker, error) {
+func NewIntegrationEventsSyncWorker(cfg rez.Config, db rez.Database, msgs rez.MessageQueue, intgs rez.IntegrationService, reg *integrations.Registry, pipeline rez.ProviderEventPipelineService) (*IntegrationEventsSyncWorker, error) {
 	w := &IntegrationEventsSyncWorker{
 		db:       db,
 		msgs:     msgs,
 		intgs:    intgs,
 		registry: reg,
 		pipeline: pipeline,
-		logger:   tel.NewLogger(rez.NewLoggerOptions{Name: "sync_integration_events_worker"}),
 		timeout:  time.Minute * 10,
 	}
 	return w, nil

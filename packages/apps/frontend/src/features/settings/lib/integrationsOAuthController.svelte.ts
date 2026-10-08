@@ -1,6 +1,6 @@
 import {
 	startIntegrationOauthFlowMutation,
-	type ErrorModel,
+	type ApiError,
 	type IntegrationOAuthInstallResult,
 } from "$lib/api";
 
@@ -14,17 +14,12 @@ type IntegrationOAuthMessage = {
 	type: typeof OAuthMessageType;
 	name: string;
 	result?: IntegrationOAuthInstallResult;
-	error?: ErrorModel;
+	error?: ApiError;
 };
 
-const popupBlockedError: ErrorModel = {
-	title: "Sign-in window blocked",
+const popupBlockedError: ApiError = {
+	code: "unprocessable",
 	detail: "Allow pop-ups for Rezible and try again.",
-};
-
-const startFlowFailedError: ErrorModel = {
-	title: "Could not start sign-in",
-	detail: "The sign-in flow could not be started. Try again.",
 };
 
 export const postIntegrationOAuthCompleteMessage = (message: Omit<IntegrationOAuthMessage, "type">) => {
@@ -43,7 +38,7 @@ export class IntegrationOAuthController {
 	inFlow = $derived(!!this.pendingName);
 
 	private failedOrigin = $state<string>();
-	private error = $state.raw<ErrorModel>();
+	private error = $state.raw<ApiError>();
 
 	private popup: Window | undefined;
 	private stopPopupCloseCheck: VoidFunction | undefined;
@@ -101,11 +96,11 @@ export class IntegrationOAuthController {
 		} catch (e) {
 			popup.close();
 			this.endFlow();
-			this.fail(origin, (e as ErrorModel | undefined) ?? startFlowFailedError);
+			this.fail(origin, e as ApiError);
 		}
 	};
 
-	private fail(origin: string, error: ErrorModel) {
+	private fail(origin: string, error: ApiError) {
 		this.failedOrigin = origin;
 		this.error = error;
 	}

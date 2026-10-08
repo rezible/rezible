@@ -14,6 +14,7 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/pkg/errs"
 
 	kne "github.com/rezible/rezible/ent/knowledgeentity"
 	knev "github.com/rezible/rezible/ent/knowledgeevidence"
@@ -90,7 +91,7 @@ func (s *SituationService) createInvestigation(ctx context.Context, situationID 
 // the graph subjects linked to the event through its knowledge evidence.
 func (s *SituationService) prepareOrRefreshSituationAnalysis(ctx context.Context, analysisID uuid.UUID, eventIDs []uuid.UUID) error {
 	if analysisID == uuid.Nil {
-		return fmt.Errorf("%w: system analysis ID is required", rez.ErrInvalidInput)
+		return fmt.Errorf("%w: system analysis ID is required", errs.ErrInvalidInput)
 	}
 	allEventIDs := mapset.NewSet(eventIDs...)
 	if allEventIDs.IsEmpty() {
@@ -104,7 +105,7 @@ func (s *SituationService) prepareOrRefreshSituationAnalysis(ctx context.Context
 		return fmt.Errorf("load normalized events for analysis: %w", queryErr)
 	}
 	if len(events) != allEventIDs.Cardinality() {
-		return fmt.Errorf("%w: normalized event from situation evidence is unavailable", rez.ErrNotFound)
+		return fmt.Errorf("%w: normalized event from situation evidence is unavailable", errs.ErrNotFound)
 	}
 
 	gctx, graphErr := s.loadSituationEventGraphContext(ctx, allEventIDs)

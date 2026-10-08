@@ -65,7 +65,7 @@ describe("Grafana connection check", () => {
 	});
 
 	test("shows a request that could not run", async () => {
-		const error = { title: "Forbidden", status: 403, detail: "" };
+		const error = { code: "forbidden", title: "Forbidden", status: 403, detail: "" } as const;
 		const { health } = setup(async () => {
 			throw error;
 		});

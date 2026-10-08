@@ -1,5 +1,5 @@
 import {
-	type ErrorModel,
+	type ApiError,
 	getAlertOptions,
 	getAlertQueryKey,
 	listAlertsQueryKey,
@@ -31,7 +31,7 @@ export class AlertViewController {
 	attentionMutation = createMutation(() => ({
 		...setAlertSituationSignalAttentionMutation(),
 		onSuccess: (response) => this.refreshAfterChange(response.data.id),
-		onError: (error: ErrorModel) => {
+		onError: (error: ApiError) => {
 			toast.error("Could not change the signal attention", { description: error.detail });
 		},
 	}));
@@ -46,7 +46,7 @@ export class AlertViewController {
 			}
 			await this.refreshAfterChange(definition.id);
 		},
-		onError: (error: ErrorModel) => {
+		onError: (error: ApiError) => {
 			toast.error("Could not change the identity group labels", { description: error.detail });
 		},
 	}));

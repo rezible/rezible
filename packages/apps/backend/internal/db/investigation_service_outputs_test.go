@@ -3,8 +3,6 @@ package db
 import (
 	"context"
 	"errors"
-	"io"
-	"log/slog"
 	"sort"
 	"strings"
 	"sync"
@@ -27,6 +25,7 @@ import (
 	"github.com/rezible/rezible/ent/schema/schematypes"
 	"github.com/rezible/rezible/ent/systemanalysisentry"
 	rezai "github.com/rezible/rezible/pkg/ai"
+	"github.com/rezible/rezible/pkg/errs"
 	"github.com/rezible/rezible/pkg/execution"
 	"github.com/rezible/rezible/pkg/jobs"
 	"github.com/rezible/rezible/pkg/projections"
@@ -219,11 +218,10 @@ func (s *InvestigationServiceSuite) TestInvestigationReportPublicationSelectionA
 		Return(nil).
 		Maybe()
 	worker := &InvokeAgentTurnWorker{
-		db:     tdb,
-		msgs:   workerMessages,
-		logger: slog.New(slog.NewTextHandler(io.Discard, nil)),
+		db:   tdb,
+		msgs: workerMessages,
 	}
-	automaticRetryErr := worker.saveInvocationResult(ctx, makeAgentTurnJob(secondTurn, 1), nil, nil, errors.New("temporary model failure"))
+	_, automaticRetryErr := worker.saveInvocationResult(ctx, makeAgentTurnJob(secondTurn, 1), nil, nil, errors.New("temporary model failure"))
 	s.Require().NoError(automaticRetryErr)
 
 	queued, queuedErr := service.ReadInvestigationReport(ctx, rez.ReadInvestigationReportParams{InvestigationID: investigation.ID})
@@ -321,7 +319,7 @@ func (s *InvestigationServiceSuite) TestInvestigationReportSummary() {
 		Summary: strings.Repeat("é", 401),
 	}
 	_, tooLongErr := service.PublishInvestigationReport(ctx, scope, tooLong)
-	s.Require().ErrorIs(tooLongErr, rez.ErrInvalidInput)
+	s.Require().ErrorIs(tooLongErr, errs.ErrInvalidInput)
 
 	first, firstErr := service.PublishInvestigationReport(ctx, scope, rez.PublishInvestigationReportParams{
 		Text:    "# Report\n\nRedis pressure rose after the deployment.",
@@ -359,7 +357,7 @@ func (s *InvestigationServiceSuite) TestInvestigationAnswerOwnershipAndRevisions
 
 	initialAnswer, initialAnswerErr := service.PublishInvestigationAnswer(ctx, turnScope, initialAnswerParams)
 	s.Nil(initialAnswer)
-	s.ErrorIs(initialAnswerErr, rez.ErrInvalidInput)
+	s.ErrorIs(initialAnswerErr, errs.ErrInvalidInput)
 	userCtx := s.userContext(tdb, ctx)
 	userID, userIDSet := execution.GetContext(userCtx).UserID()
 	s.Require().True(userIDSet)
@@ -446,7 +444,7 @@ func (s *InvestigationServiceSuite) TestInvestigationAnswerOwnershipAndRevisions
 
 	ordinaryReservedKey, reservedKeyErr := service.PublishInvestigationFinding(ctx, turnScope, ordinaryReservedKeyParams)
 	s.Nil(ordinaryReservedKey)
-	s.ErrorIs(reservedKeyErr, rez.ErrInvalidInput)
+	s.ErrorIs(reservedKeyErr, errs.ErrInvalidInput)
 
 	turnCompleted := tdb.Client(ctx).AgentTurn.UpdateOneID(turn.ID).
 		SetStatus(agentturn.StatusCompleted)
@@ -473,7 +471,7 @@ func (s *InvestigationServiceSuite) TestInvestigationAnswerOwnershipAndRevisions
 
 	noQuestionAnswer, noQuestionErr := service.PublishInvestigationAnswer(ctx, secondTurnScope, noQuestionAnswerParams)
 	s.Nil(noQuestionAnswer)
-	s.ErrorIs(noQuestionErr, rez.ErrInvalidInput)
+	s.ErrorIs(noQuestionErr, errs.ErrInvalidInput)
 	noQuestionLatest, noQuestionLatestErr := service.ListInvestigationFindings(ctx, rez.ListInvestigationFindingsParams{InvestigationID: investigation.ID})
 	s.Require().NoError(noQuestionLatestErr)
 	s.Equal(1, noQuestionLatest.Total)
@@ -836,7 +834,7 @@ func (s *InvestigationServiceSuite) TestInvestigationPublicationCannotRaceTurnCo
 		s.Require().NotNil(publication)
 		s.Equal(1, publicationCount)
 	} else {
-		s.ErrorIs(publishErr, rez.ErrConflict)
+		s.ErrorIs(publishErr, errs.ErrConflict)
 		s.Nil(publication)
 		s.Zero(publicationCount)
 	}

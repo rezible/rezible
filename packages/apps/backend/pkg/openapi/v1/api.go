@@ -76,12 +76,15 @@ func makeConfig() openapi.Config {
 	return cfg
 }
 
-func MakeApi(h Handler, middlewares ...openapi.Middleware) API {
+func MakeApi(h Handler) API {
 	o := operations{Handler: h}
 
 	api := humago.NewWithPrefix(http.NewServeMux(), VersionPrefix, makeConfig())
+	// Span naming runs before security, so a rejected request's span is named. Metrics run after it, so
+	// rejected requests are not counted.
+	api.UseMiddleware(nameOperationSpan)
 	api.UseMiddleware(makeRequestMethodSecurityMiddleware(api, o, humago.Unwrap))
-	api.UseMiddleware(middlewares...)
+	api.UseMiddleware(makeMetricsMiddleware())
 
 	autoRegisterEnumAliases(api, o)
 	huma.AutoRegister(api, o)

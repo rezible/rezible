@@ -13,6 +13,9 @@ import (
 	aix "github.com/firebase/genkit/go/ai/exp"
 	"github.com/riverqueue/river"
 
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
+
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	agta "github.com/rezible/rezible/ent/agentartifact"
@@ -20,6 +23,7 @@ import (
 	agts "github.com/rezible/rezible/ent/agentsession"
 	agtt "github.com/rezible/rezible/ent/agentturn"
 	rezai "github.com/rezible/rezible/pkg/ai"
+	"github.com/rezible/rezible/pkg/execution"
 	"github.com/rezible/rezible/pkg/jobs"
 )
 
@@ -29,16 +33,14 @@ type StartAgentSessionWorker struct {
 	db       rez.Database
 	agents   rez.AiAgentCatalogue
 	sessions rez.AiAgentSessionService
-	logger   *slog.Logger
 	timeout  time.Duration
 }
 
-func NewStartAgentSessionWorker(cfg rez.AiConfig, tel rez.TelemetryService, db rez.Database, agents rez.AiAgentCatalogue, sessions rez.AiAgentSessionService) (*StartAgentSessionWorker, error) {
+func NewStartAgentSessionWorker(cfg rez.AiConfig, db rez.Database, agents rez.AiAgentCatalogue, sessions rez.AiAgentSessionService) (*StartAgentSessionWorker, error) {
 	w := &StartAgentSessionWorker{
 		db:       db,
 		agents:   agents,
 		sessions: sessions,
-		logger:   tel.NewLogger(rez.NewLoggerOptions{Name: "start_agent_session_worker"}),
 		timeout:  cfg.Agents.WorkerTimeout,
 	}
 	return w, nil
@@ -49,8 +51,6 @@ func (w *StartAgentSessionWorker) Timeout(*river.Job[jobs.StartAgentSession]) ti
 }
 
 func (w *StartAgentSessionWorker) Work(ctx context.Context, job *river.Job[jobs.StartAgentSession]) error {
-	logger := w.logger.With("session_id", job.Args.SessionID)
-
 	return w.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
 		if lockErr := acquireAgentSessionTurnLock(ctx, w.db, job.Args.SessionID); lockErr != nil {
 			return lockErr
@@ -69,7 +69,7 @@ func (w *StartAgentSessionWorker) Work(ctx context.Context, job *river.Job[jobs.
 		} else if hasTurns {
 			return nil
 		}
-		logger.Info("making initial agent turn input")
+		slog.InfoContext(ctx, "making initial agent turn input", "agent_session_id", job.Args.SessionID)
 
 		initialInput, initErr := w.agents.MakeInitialTurnInput(ctx, sess)
 		if initErr != nil {
@@ -77,13 +77,13 @@ func (w *StartAgentSessionWorker) Work(ctx context.Context, job *river.Job[jobs.
 		} else if initialInput == nil {
 			return fmt.Errorf("prepare agent session: nil result")
 		}
-		logger.Info("requesting initial agent turn")
+		slog.InfoContext(ctx, "requesting initial agent turn", "agent_session_id", job.Args.SessionID)
 
 		turn, turnErr := w.sessions.RequestAgentTurn(ctx, sess.ID, &rez.RequestAiAgentTurnParams{Input: initialInput})
 		if turnErr != nil {
 			return fmt.Errorf("request agent turn: %w", turnErr)
 		}
-		logger.Info("requested initial agent turn", "turn_id", turn.ID)
+		slog.InfoContext(ctx, "requested initial agent turn", "agent_session_id", job.Args.SessionID, "agent_turn_id", turn.ID)
 		return nil
 	})
 }
@@ -95,17 +95,15 @@ type InvokeAgentTurnWorker struct {
 	msgs     rez.MessageQueue
 	agents   rez.AiAgentRuntime
 	sessions rez.AiAgentSessionService
-	logger   *slog.Logger
 	timeout  time.Duration
 }
 
-func NewInvokeAgentTurnWorker(cfg rez.AiConfig, tel rez.TelemetryService, db rez.Database, msgs rez.MessageQueue, aiSvc rez.AiAgentRuntime, aiSess rez.AiAgentSessionService) (*InvokeAgentTurnWorker, error) {
+func NewInvokeAgentTurnWorker(cfg rez.AiConfig, db rez.Database, msgs rez.MessageQueue, aiSvc rez.AiAgentRuntime, aiSess rez.AiAgentSessionService) (*InvokeAgentTurnWorker, error) {
 	w := &InvokeAgentTurnWorker{
 		db:       db,
 		msgs:     msgs,
 		agents:   aiSvc,
 		sessions: aiSess,
-		logger:   tel.NewLogger(rez.NewLoggerOptions{Name: "invoke_agent_turn_worker"}),
 		timeout:  cfg.Agents.WorkerTimeout,
 	}
 	return w, nil
@@ -128,7 +126,8 @@ func (w *InvokeAgentTurnWorker) Work(ctx context.Context, job *river.Job[jobs.In
 			return claimErr
 		}
 		if job.Attempt >= job.MaxAttempts {
-			return w.saveInvocationResult(ctx, job, nil, nil, claimErr)
+			_, saveErr := w.saveInvocationResult(ctx, job, nil, nil, claimErr)
+			return saveErr
 		}
 		return claimErr
 	}
@@ -136,8 +135,32 @@ func (w *InvokeAgentTurnWorker) Work(ctx context.Context, job *river.Job[jobs.In
 		return nil
 	}
 
+	return execution.Do(ctx, "agent.turn", func(ctx context.Context) error {
+		return w.runClaimedTurn(ctx, job, claim)
+	}, claim.spanAttributes()...)
+}
+
+// runClaimedTurn invokes the agent and saves the result, then sets how the attempt ended on the turn's span.
+// An attempt queued again for a retry failed.
+func (w *InvokeAgentTurnWorker) runClaimedTurn(ctx context.Context, job *river.Job[jobs.InvokeAgentTurn], claim *agentTurnClaim) error {
 	result, invokeErr := w.invokeTurn(ctx, *claim)
-	if saveResultErr := w.saveInvocationResult(ctx, job, claim, result, invokeErr); saveResultErr != nil {
+	saved, saveResultErr := w.saveInvocationResult(ctx, job, claim, result, invokeErr)
+
+	outcome := "failed"
+	if saved != nil {
+		switch saved.Status {
+		case agtt.StatusCompleted:
+			outcome = "completed"
+		case agtt.StatusAborted:
+			outcome = "aborted"
+		}
+		if saved.FinishReason != "" {
+			trace.SpanFromContext(ctx).SetAttributes(attribute.String("finish_reason", saved.FinishReason))
+		}
+	}
+	trace.SpanFromContext(ctx).SetAttributes(attribute.String("outcome", outcome))
+
+	if saveResultErr != nil {
 		return fmt.Errorf("save result: %w", saveResultErr)
 	}
 	if invokeErr != nil {
@@ -163,6 +186,22 @@ type agentTurnClaim struct {
 	// committed any. The attempt then continues from them instead of starting from its input.
 	resumeMessages []*ai.Message
 	input          *rez.AiAgentTurnInput
+}
+
+// spanAttributes identify the turn on its span and logs, with the situation when the session is a situation's
+// investigation.
+func (c *agentTurnClaim) spanAttributes() []attribute.KeyValue {
+	attrs := []attribute.KeyValue{
+		attribute.String("agent", c.session.AgentName),
+		attribute.String("agent_session_id", c.session.ID.String()),
+		attribute.String("agent_turn_id", c.turn.ID.String()),
+	}
+	if investigation := c.session.Edges.Investigation; investigation != nil {
+		for _, link := range investigation.Edges.Situations {
+			attrs = append(attrs, attribute.String("situation_id", link.SituationID.String()))
+		}
+	}
+	return attrs
 }
 
 func (c *agentTurnClaim) invocationState() rez.AiAgentTurnState {
@@ -197,7 +236,8 @@ func (w *InvokeAgentTurnWorker) claimAgentTurn(ctx context.Context, job *river.J
 
 		querySession := tx.AgentSession.Query().
 			Where(agts.ID(job.Args.AgentSessionID)).
-			WithArtifacts()
+			WithArtifacts().
+			WithInvestigation(func(q *ent.InvestigationQuery) { q.WithSituations() })
 		sess, sessErr := querySession.Only(ctx)
 		if sessErr != nil {
 			if ent.IsNotFound(sessErr) {
@@ -365,45 +405,45 @@ func (w *InvokeAgentTurnWorker) invokeTurn(ctx context.Context, claim agentTurnC
 				Chunk:          chunk,
 			}
 			if msgErr := w.msgs.PublishLive(ctx, chunkEvent); msgErr != nil {
-				w.logger.WarnContext(ctx, "failed to publish agent turn chunk", "error", msgErr)
+				slog.WarnContext(ctx, "failed to publish agent turn chunk", "error", msgErr)
 			}
 		},
 	})
 }
 
-func (w *InvokeAgentTurnWorker) saveInvocationResult(ctx context.Context, job *river.Job[jobs.InvokeAgentTurn], claim *agentTurnClaim, result *rez.AiAgentInvocationResult, invokeErr error) error {
+// saveInvocationResult records the attempt's result on the turn and returns the turn as saved, or as found when
+// the result no longer applies to it.
+func (w *InvokeAgentTurnWorker) saveInvocationResult(ctx context.Context, job *river.Job[jobs.InvokeAgentTurn], claim *agentTurnClaim, result *rez.AiAgentInvocationResult, invokeErr error) (*ent.AgentTurn, error) {
 	cleanupCancel := func() {}
 	if ctx.Err() != nil {
 		ctx, cleanupCancel = context.WithTimeout(context.WithoutCancel(ctx), 10*time.Second)
 	}
 	defer cleanupCancel()
 
-	return w.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+	saved, saveErr := ent.WithTxReturning(ctx, w.db, func(ctx context.Context, tx *ent.Client) (*ent.AgentTurn, error) {
 		if lockErr := acquireAgentSessionTurnLock(ctx, w.db, job.Args.AgentSessionID); lockErr != nil {
-			return fmt.Errorf("acquire agent session lock: %w", lockErr)
+			return nil, fmt.Errorf("acquire agent session lock: %w", lockErr)
 		}
 
 		turn, lookupTurnErr := tx.AgentTurn.Get(ctx, job.Args.AgentTurnID)
 		if lookupTurnErr != nil {
-			return fmt.Errorf("reload agent turn: %w", lookupTurnErr)
+			return nil, fmt.Errorf("reload agent turn: %w", lookupTurnErr)
 		}
 
 		if turn.AgentSessionID != job.Args.AgentSessionID {
-			return river.JobCancel(fmt.Errorf("invalid job turn session"))
+			return nil, river.JobCancel(fmt.Errorf("invalid job turn session"))
 		}
 		if turn.RiverJobID != job.ID {
-			return river.JobCancel(fmt.Errorf("stale agent turn job"))
+			return nil, river.JobCancel(fmt.Errorf("stale agent turn job"))
 		}
 
 		isQueued := turn.Status == agtt.StatusQueued && claim == nil && invokeErr != nil && job.Attempt >= job.MaxAttempts
 		if turn.Status != agtt.StatusRunning && !isQueued {
 			switch turn.Status {
-			case agtt.StatusCompleted, agtt.StatusFailed:
-				return nil
-			case agtt.StatusAborted:
-				return river.JobCancel(fmt.Errorf("agent turn was aborted"))
+			case agtt.StatusCompleted, agtt.StatusFailed, agtt.StatusAborted:
+				return turn, nil
 			}
-			return fmt.Errorf("agent turn is %s, expected running", turn.Status)
+			return nil, fmt.Errorf("agent turn is %s, expected running", turn.Status)
 		}
 
 		u := tx.AgentTurn.UpdateOne(turn).
@@ -437,15 +477,15 @@ func (w *InvokeAgentTurnWorker) saveInvocationResult(ctx context.Context, job *r
 
 		updated, updateErr := u.Save(ctx)
 		if updateErr != nil {
-			return fmt.Errorf("save agent turn result: %w", updateErr)
+			return nil, fmt.Errorf("save agent turn result: %w", updateErr)
 		}
 
 		if publishErr := w.publishTurnUpdated(ctx, updated); publishErr != nil {
-			return fmt.Errorf("publish agent turn update: %w", publishErr)
+			return nil, fmt.Errorf("publish agent turn update: %w", publishErr)
 		}
 
 		if result == nil || claim == nil {
-			return nil
+			return updated, nil
 		}
 
 		// A failed attempt's state is the resume point Genkit committed; keep it for the turn's next attempt.
@@ -453,12 +493,12 @@ func (w *InvokeAgentTurnWorker) saveInvocationResult(ctx context.Context, job *r
 		if updated.Status == agtt.StatusCompleted || len(result.State.Messages) > 0 {
 			newMessages := claim.newOutputMessagesFromState(result.State.Messages)
 			if replaceOutputErr := w.replaceTurnOutputMessages(ctx, turn, newMessages); replaceOutputErr != nil {
-				return replaceOutputErr
+				return nil, replaceOutputErr
 			}
 		}
 
 		if updated.Status != agtt.StatusCompleted {
-			return nil
+			return updated, nil
 		}
 
 		if artifacts := result.State.Artifacts; len(artifacts) > 0 {
@@ -480,7 +520,7 @@ func (w *InvokeAgentTurnWorker) saveInvocationResult(ctx context.Context, job *r
 					u.UpdateUpdatedAt()
 				})
 			if artifactsErr := upsertArtifacts.Exec(ctx); artifactsErr != nil {
-				return fmt.Errorf("update agent artifacts: %w", artifactsErr)
+				return nil, fmt.Errorf("update agent artifacts: %w", artifactsErr)
 			}
 		}
 
@@ -493,12 +533,19 @@ func (w *InvokeAgentTurnWorker) saveInvocationResult(ctx context.Context, job *r
 				Response:             result.Response,
 			}
 			if publishErr := w.msgs.Publish(ctx, ev); publishErr != nil {
-				return fmt.Errorf("publish agent turn finished event: %w", publishErr)
+				return nil, fmt.Errorf("publish agent turn finished event: %w", publishErr)
 			}
 		}
 
-		return nil
+		return updated, nil
 	})
+	if saveErr != nil {
+		return nil, saveErr
+	}
+	if saved.Status == agtt.StatusAborted {
+		return saved, river.JobCancel(fmt.Errorf("agent turn was aborted"))
+	}
+	return saved, nil
 }
 
 // replaceTurnOutputMessages replaces the turn's messages other than its input message. A resumed attempt's

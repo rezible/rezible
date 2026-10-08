@@ -12,6 +12,7 @@ import (
 	"github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/pkg/errs"
 
 	at "github.com/rezible/rezible/ent/agentturn"
 	inv "github.com/rezible/rezible/ent/investigation"
@@ -227,7 +228,7 @@ func (i *investigationInvocation) listSubjects(ctx context.Context, input rezai.
 		}
 		return i.analysisPageResult(strings.Join(lines, "\n"), page, relationships.Total, len(relationships.Data)), nil
 	default:
-		return nil, fmt.Errorf("%w: kind must be entity or relationship", rez.ErrInvalidInput)
+		return nil, fmt.Errorf("%w: kind must be entity or relationship", errs.ErrInvalidInput)
 	}
 }
 
@@ -279,7 +280,7 @@ func (i *investigationInvocation) inspectSubject(ctx context.Context, input reza
 			return nil, fmt.Errorf("verify included analysis entity: %w", listErr)
 		}
 		if memberships.Total == 0 {
-			return nil, rez.ErrNotFound
+			return nil, errs.ErrNotFound
 		}
 		subjectLine, listErr = i.renderEntityMembership(memberships.Data[0])
 		if listErr != nil {
@@ -304,7 +305,7 @@ func (i *investigationInvocation) inspectSubject(ctx context.Context, input reza
 			return nil, fmt.Errorf("verify included analysis relationship: %w", listErr)
 		}
 		if memberships.Total == 0 {
-			return nil, rez.ErrNotFound
+			return nil, errs.ErrNotFound
 		}
 		subjectLine, listErr = i.renderRelationshipMembership(memberships.Data[0])
 		if listErr != nil {
@@ -315,7 +316,7 @@ func (i *investigationInvocation) inspectSubject(ctx context.Context, input reza
 			return nil, fmt.Errorf("list entries linked to analysis relationship: %w", listErr)
 		}
 	default:
-		return nil, fmt.Errorf("%w: kind must be entity or relationship", rez.ErrInvalidInput)
+		return nil, fmt.Errorf("%w: kind must be entity or relationship", errs.ErrInvalidInput)
 	}
 
 	text := subjectLine + "\n" + i.formatEntryPage(entries.Data)
@@ -347,7 +348,7 @@ func (i *investigationInvocation) readEntry(ctx context.Context, input rezai.Rea
 		return nil, fmt.Errorf("read analysis entry: %w", listErr)
 	}
 	if entries.Total == 0 {
-		return nil, rez.ErrNotFound
+		return nil, errs.ErrNotFound
 	}
 	entry := entries.Data[0]
 
@@ -358,7 +359,7 @@ func (i *investigationInvocation) readEntry(ctx context.Context, input rezai.Rea
 	}
 	attachments, attachmentsErr := i.analyses.ListSystemAnalysisEntrySubjects(ctx, attachmentParams)
 	if ent.IsNotFound(attachmentsErr) {
-		return nil, rez.ErrNotFound
+		return nil, errs.ErrNotFound
 	}
 	if attachmentsErr != nil {
 		return nil, fmt.Errorf("list analysis entry attachments: %w", attachmentsErr)
@@ -428,12 +429,12 @@ func (i *investigationInvocation) readEvidence(ctx context.Context, input rezai.
 		return nil, fmt.Errorf("verify analysis evidence attachment: %w", linkedEntriesErr)
 	}
 	if linkedEntries.Total == 0 {
-		return nil, rez.ErrNotFound
+		return nil, errs.ErrNotFound
 	}
 
 	evidence, getEvidenceErr := i.knowledge.GetEvidence(ctx, evidenceID)
 	if ent.IsNotFound(getEvidenceErr) {
-		return nil, rez.ErrNotFound
+		return nil, errs.ErrNotFound
 	}
 	if getEvidenceErr != nil {
 		return nil, fmt.Errorf("read knowledge evidence: %w", getEvidenceErr)
@@ -531,7 +532,7 @@ func (i *investigationInvocation) publishHypothesis(ctx context.Context, input r
 	}
 	status := strings.TrimSpace(input.Status)
 	if status != "open" && status != "supported" && status != "disproven" && status != "inconclusive" {
-		return nil, fmt.Errorf("%w: status must be open, supported, disproven, or inconclusive", rez.ErrInvalidInput)
+		return nil, fmt.Errorf("%w: status must be open, supported, disproven, or inconclusive", errs.ErrInvalidInput)
 	}
 	params := rez.PublishInvestigationHypothesisParams{
 		Key:           input.Key,
@@ -643,7 +644,7 @@ func (i *investigationInvocation) findingVersionReferences(inputs []rezai.Invest
 		switch relation {
 		case invfvl.RelationSupports, invfvl.RelationContradicts, invfvl.RelationInvalidates:
 		default:
-			return nil, fmt.Errorf("%w: relation must be supports, contradicts, or invalidates", rez.ErrInvalidInput)
+			return nil, fmt.Errorf("%w: relation must be supports, contradicts, or invalidates", errs.ErrInvalidInput)
 		}
 		references = append(references, rez.InvestigationFindingVersionReference{VersionID: versionID, Relation: relation})
 	}
@@ -825,7 +826,7 @@ func analysisPageStatus(page ent.ListParams, total, returned int) (bool, string)
 
 func normalizeAnalysisPage(page, pageSize int) (ent.ListParams, error) {
 	if page < 0 || pageSize < 0 || pageSize > analysisToolMaxPageSize {
-		return ent.ListParams{}, fmt.Errorf("%w: page and page_size must be non-negative and page_size must not exceed %d", rez.ErrInvalidInput, analysisToolMaxPageSize)
+		return ent.ListParams{}, fmt.Errorf("%w: page and page_size must be non-negative and page_size must not exceed %d", errs.ErrInvalidInput, analysisToolMaxPageSize)
 	}
 	if page == 0 {
 		page = 1
@@ -835,7 +836,7 @@ func normalizeAnalysisPage(page, pageSize int) (ent.ListParams, error) {
 	}
 	maxInt := int(^uint(0) >> 1)
 	if page > maxInt/pageSize {
-		return ent.ListParams{}, fmt.Errorf("%w: page is too large", rez.ErrInvalidInput)
+		return ent.ListParams{}, fmt.Errorf("%w: page is too large", errs.ErrInvalidInput)
 	}
 	return ent.ListParams{Page: page, PageSize: pageSize}, nil
 }
@@ -910,7 +911,7 @@ func (i *investigationInvocation) analysisEntryAttachmentTarget(subject *ent.Sys
 func (i *investigationInvocation) resolveRef(ref string) (uuid.UUID, error) {
 	id, parseErr := uuid.Parse(ref)
 	if parseErr != nil || id == uuid.Nil {
-		return uuid.Nil, fmt.Errorf("%w: invalid reference; use a ref returned by a tool", rez.ErrInvalidInput)
+		return uuid.Nil, fmt.Errorf("%w: invalid reference; use a ref returned by a tool", errs.ErrInvalidInput)
 	}
 	return id, nil
 }

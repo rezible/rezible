@@ -1,17 +1,17 @@
 <script lang="ts" generics="QueryData">
 	import type { Snippet } from "svelte";
 	import type { CreateQueryResult } from "@tanstack/svelte-query";
-	import type { ErrorModel } from "$lib/api";
+	import type { ApiError } from "$lib/api";
 	import LoadingIndicator from "$components/layout/loading-indicator/LoadingIndicator.svelte";
 	import InlineAlert from "$components/layout/error-alert/ErrorAlert.svelte";
 	import { Button } from "$components/ui/button";
 
 	type Props = {
-		query: CreateQueryResult<{ data: QueryData }, ErrorModel>;
+		query: CreateQueryResult<{ data: QueryData }, ApiError>;
 		view?: Snippet<[QueryData]>;
 		loading?: Snippet;
 		/** Error content. In "quiet" feedback this is the one-line message beside Retry. */
-		error?: Snippet<[ErrorModel]>;
+		error?: Snippet<[ApiError]>;
 		/** Rendered instead of `view` when `isEmpty` returns true. */
 		empty?: Snippet;
 		isEmpty?: (data: QueryData) => boolean;
@@ -49,7 +49,7 @@
 	{#if feedback === "quiet"}
 		<div role="alert" class="flex flex-wrap items-center gap-3 text-sm">
 			{#if error}
-				{@render error(query.error as ErrorModel)}
+				{@render error(query.error as ApiError)}
 			{:else}
 				<span>Could not load data.</span>
 			{/if}
@@ -58,7 +58,7 @@
 	{:else}
 		<div role="alert" class="space-y-2">
 			{#if error}
-				{@render error(query.error as ErrorModel)}
+				{@render error(query.error as ApiError)}
 			{:else}
 				<InlineAlert error={query.error} />
 			{/if}

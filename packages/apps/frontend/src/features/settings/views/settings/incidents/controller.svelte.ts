@@ -7,7 +7,7 @@ import {
 	getIncidentMetadataOptions,
 	getIncidentMetadataQueryKey,
 	getUserSessionOptions,
-	type ErrorModel,
+	type ApiError,
 	type IncidentField,
 	type IncidentRole,
 	type IncidentSeverity,
@@ -43,8 +43,8 @@ export class IncidentSettingsController {
 	fields = new SettingsDraftList<IncidentField>();
 
 	loading = $derived(this.metadataQuery.isPending);
-	error = $derived(this.metadataQuery.error as ErrorModel | null);
-	saveError = $state<ErrorModel>();
+	error = $derived(this.metadataQuery.error as ApiError | null);
+	saveError = $state<ApiError>();
 
 	incidentIntegrationInstalled = $derived(
 		this.integrations.installed.some((intg) =>
@@ -108,7 +108,7 @@ export class IncidentSettingsController {
 				toast.success("Settings saved.");
 				await this.invalidateMetadata();
 			},
-			onError: (err: ErrorModel) => {
+			onError: (err: ApiError) => {
 				this.saveError = err;
 			},
 		};

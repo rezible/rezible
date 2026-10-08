@@ -10,6 +10,7 @@ import (
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/organization"
 	"github.com/rezible/rezible/ent/organizationrole"
+	"github.com/rezible/rezible/pkg/errs"
 	oapi "github.com/rezible/rezible/pkg/openapi/v1"
 )
 
@@ -141,5 +142,5 @@ func (h *userSessionsHandler) ListInboxItems(ctx context.Context, request *oapi.
 }
 
 func (h *userSessionsHandler) GetInboxItem(ctx context.Context, request *oapi.GetInboxItemRequest) (*oapi.GetInboxItemResponse, error) {
-	return nil, oapi.Error(ctx, "inbox item not found", rez.ErrNotFound)
+	return nil, oapi.Error(ctx, "inbox item not found", errs.ErrNotFound)
 }

@@ -5,6 +5,7 @@ import (
 
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/pkg/errs"
 	oapi "github.com/rezible/rezible/pkg/openapi/v1"
 )
 
@@ -21,7 +22,7 @@ func (h *discussionHandler) ListDiscussionThreads(ctx context.Context, request *
 
 	owner := request.DiscussionOwnerQuery
 	if (owner.AnalysisId == uuid.Nil) == (owner.RetrospectiveId == uuid.Nil) {
-		return nil, oapi.Error(ctx, "exactly one discussion owner is required", rez.ErrInvalidInput)
+		return nil, oapi.Error(ctx, "exactly one discussion owner is required", errs.ErrInvalidInput)
 	}
 	params := rez.ListDiscussionThreadsParams{
 		ListParams:      request.ListParams(),
@@ -101,13 +102,13 @@ func (h *discussionHandler) CreateDiscussionThread(ctx context.Context, request 
 }
 
 func (*discussionHandler) UpdateDiscussionThread(ctx context.Context, _ *oapi.UpdateDiscussionThreadRequest) (*oapi.UpdateDiscussionThreadResponse, error) {
-	return nil, oapi.Error(ctx, "discussion thread updates are not implemented", rez.ErrNotImplemented)
+	return nil, oapi.Error(ctx, "discussion thread updates are not implemented", errs.ErrNotImplemented)
 }
 
 func (h *discussionHandler) CreateDiscussionComment(ctx context.Context, request *oapi.CreateDiscussionCommentRequest) (*oapi.CreateDiscussionCommentResponse, error) {
 	attrs := request.Body.Attributes
 	if attrs.ParentId != nil {
-		return nil, oapi.Error(ctx, "discussion replies use a flat stream", rez.ErrInvalidInput)
+		return nil, oapi.Error(ctx, "discussion replies use a flat stream", errs.ErrInvalidInput)
 	}
 	params := rez.CreateDiscussionCommentParams{
 		ThreadID: request.Id,
@@ -140,7 +141,7 @@ func (h *discussionHandler) UpdateDiscussionComment(ctx context.Context, request
 func (h *discussionHandler) ListReviews(ctx context.Context, request *oapi.ListReviewsRequest) (*oapi.ListReviewsResponse, error) {
 	var resp oapi.ListReviewsResponse
 	if request.RetrospectiveId != uuid.Nil && request.AnalysisEntryId != uuid.Nil {
-		return nil, oapi.Error(ctx, "specify either retrospectiveId or analysisEntryId", rez.ErrInvalidInput)
+		return nil, oapi.Error(ctx, "specify either retrospectiveId or analysisEntryId", errs.ErrInvalidInput)
 	}
 	params := rez.ListReviewsParams{
 		ListParams:      request.ListParams(),
@@ -166,13 +167,13 @@ func (h *discussionHandler) GetReview(ctx context.Context, request *oapi.GetRevi
 }
 
 func (*discussionHandler) CreateReview(ctx context.Context, _ *oapi.CreateReviewRequest) (*oapi.CreateReviewResponse, error) {
-	return nil, oapi.Error(ctx, "create review is not implemented", rez.ErrNotImplemented)
+	return nil, oapi.Error(ctx, "create review is not implemented", errs.ErrNotImplemented)
 }
 
 func (*discussionHandler) UpdateReview(ctx context.Context, _ *oapi.UpdateReviewRequest) (*oapi.UpdateReviewResponse, error) {
-	return nil, oapi.Error(ctx, "update review is not implemented", rez.ErrNotImplemented)
+	return nil, oapi.Error(ctx, "update review is not implemented", errs.ErrNotImplemented)
 }
 
 func (*discussionHandler) ArchiveReview(ctx context.Context, _ *oapi.ArchiveReviewRequest) (*oapi.ArchiveReviewResponse, error) {
-	return nil, oapi.Error(ctx, "archive review is not implemented", rez.ErrNotImplemented)
+	return nil, oapi.Error(ctx, "archive review is not implemented", errs.ErrNotImplemented)
 }

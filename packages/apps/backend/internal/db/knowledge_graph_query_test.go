@@ -18,6 +18,7 @@ import (
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
 	ksa "github.com/rezible/rezible/ent/knowledgesubjectalias"
 	"github.com/rezible/rezible/ent/schema/schematypes"
+	"github.com/rezible/rezible/pkg/errs"
 	"github.com/rezible/rezible/pkg/knowledgegraph"
 	"github.com/rezible/rezible/test"
 )
@@ -354,7 +355,7 @@ func (s *KnowledgeGraphQueryServiceSuite) TestQueryValidation() {
 	invalidEntityLimits := []int{0, maxEntityQueryLimit + 1}
 	for _, invalidLimit := range invalidEntityLimits {
 		_, queryErr := service.SelectGraphEntities(ctx, rez.SelectKnowledgeGraphEntitiesParams{Limit: &invalidLimit})
-		s.ErrorIs(queryErr, rez.ErrInvalidInput)
+		s.ErrorIs(queryErr, errs.ErrInvalidInput)
 	}
 	invalidRelationshipLimits := []int{0, maxRelationshipLimit + 1}
 	for _, invalidLimit := range invalidRelationshipLimits {
@@ -362,31 +363,31 @@ func (s *KnowledgeGraphQueryServiceSuite) TestQueryValidation() {
 			EntitySelectionRef: emptySelection.EntitySelectionRef,
 			Limit:              &invalidLimit,
 		})
-		s.ErrorIs(queryErr, rez.ErrInvalidInput)
+		s.ErrorIs(queryErr, errs.ErrInvalidInput)
 	}
 
 	_, categoryErr := service.SelectGraphEntities(ctx, rez.SelectKnowledgeGraphEntitiesParams{
 		Filter: rez.KnowledgeEntityFilter{Categories: []kne.Category{"unknown_category"}},
 	})
-	s.ErrorIs(categoryErr, rez.ErrInvalidInput)
+	s.ErrorIs(categoryErr, errs.ErrInvalidInput)
 	_, kindErr := service.SelectGraphEntities(ctx, rez.SelectKnowledgeGraphEntitiesParams{
 		Filter: rez.KnowledgeEntityFilter{Kinds: []string{""}},
 	})
-	s.ErrorIs(kindErr, rez.ErrInvalidInput)
+	s.ErrorIs(kindErr, errs.ErrInvalidInput)
 	_, predicateErr := service.ExpandGraphRelationships(ctx, rez.ExpandKnowledgeGraphRelationshipsParams{
 		EntitySelectionRef: emptySelection.EntitySelectionRef,
 		Predicates:         []knr.Predicate{"unknown_predicate"},
 	})
-	s.ErrorIs(predicateErr, rez.ErrInvalidInput)
+	s.ErrorIs(predicateErr, errs.ErrInvalidInput)
 
 	emptyCursor := rez.RelationshipExpansionCursor("")
 	_, cursorErr := service.ExpandGraphRelationships(ctx, rez.ExpandKnowledgeGraphRelationshipsParams{
 		EntitySelectionRef: emptySelection.EntitySelectionRef,
 		Cursor:             &emptyCursor,
 	})
-	s.ErrorIs(cursorErr, rez.ErrInvalidInput)
+	s.ErrorIs(cursorErr, errs.ErrInvalidInput)
 	_, referenceErr := service.ExpandGraphRelationships(ctx, rez.ExpandKnowledgeGraphRelationshipsParams{})
-	s.ErrorIs(referenceErr, rez.ErrInvalidInput)
+	s.ErrorIs(referenceErr, errs.ErrInvalidInput)
 
 	selected := s.createEntity(ctx, database, queryTestUUID(1), kne.CategoryContainer, "service")
 	outside := s.createEntity(ctx, database, queryTestUUID(2), kne.CategoryContainer, "database")
@@ -403,7 +404,7 @@ func (s *KnowledgeGraphQueryServiceSuite) TestQueryValidation() {
 		Cursor: entityPage.NextCursor,
 		Limit:  &entityLimit,
 	})
-	s.ErrorIs(entityCursorErr, rez.ErrInvalidInput)
+	s.ErrorIs(entityCursorErr, errs.ErrInvalidInput)
 
 	selection := s.selectEntities(ctx, service, rez.SelectKnowledgeGraphEntitiesParams{
 		Filter: rez.KnowledgeEntityFilter{Kinds: []string{"service"}},
@@ -420,7 +421,7 @@ func (s *KnowledgeGraphQueryServiceSuite) TestQueryValidation() {
 		Cursor:             relationshipPage.NextCursor,
 		Limit:              &relationshipLimit,
 	})
-	s.ErrorIs(relationshipCursorErr, rez.ErrInvalidInput)
+	s.ErrorIs(relationshipCursorErr, errs.ErrInvalidInput)
 }
 
 func entityPageIDs(page *rez.KnowledgeGraphEntitiesPage) []uuid.UUID {
@@ -855,7 +856,7 @@ func (s *KnowledgeGraphQueryServiceSuite) TestListRelatedEventsLimit() {
 	for _, limit := range []int{0, -1} {
 		params.Limit = limit
 		_, listErr := service.ListRelatedEvents(ctx, params)
-		s.ErrorIs(listErr, rez.ErrInvalidInput, "limit %d", limit)
+		s.ErrorIs(listErr, errs.ErrInvalidInput, "limit %d", limit)
 	}
 }
 
@@ -923,7 +924,7 @@ func (s *KnowledgeGraphQueryServiceSuite) TestListRelatedEventsRejectsInvalidPar
 
 			_, listErr := service.ListRelatedEvents(ctx, params)
 
-			s.ErrorIs(listErr, rez.ErrInvalidInput)
+			s.ErrorIs(listErr, errs.ErrInvalidInput)
 		})
 	}
 }

@@ -1,25 +1,14 @@
-import { client, type ErrorModel } from "@rezible/api-client-ts";
+import { client } from "@rezible/api-client-ts";
+import { toApiError } from "./errors";
 
 client.setConfig({
 	baseUrl: "/api/v1",
 	credentials: "include",
 });
-client.interceptors.error.use(async (rawErr, resp, req, opts) => {
-	const status = resp?.status || 500;
-	if (!rawErr) return { title: "Unknown Error", status, detail: "" } as ErrorModel;
-	const err = rawErr as Error;
-	try {
-		if ("detail" in err) return err as ErrorModel;
-		return JSON.parse(err.message) as ErrorModel;
-	} catch {
-		return {
-			title: "Error",
-			detail: err.message ?? "Unknown Error",
-			status,
-		};
-	}
-});
+client.interceptors.error.use(async (caught, response) => toApiError(caught, response));
 
 export * from "@rezible/api-client-ts";
 export * from "@rezible/api-client-ts/svelte-query";
 export { client };
+export type { ApiError, ErrorCode } from "./errors";
+export { errorDisplay, type ErrorDisplay } from "./errorDisplay";

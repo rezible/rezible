@@ -13,6 +13,7 @@ import (
 	kne "github.com/rezible/rezible/ent/knowledgeentity"
 	sh "github.com/rezible/rezible/ent/systemhazard"
 	shra "github.com/rezible/rezible/ent/systemhazardriskassessment"
+	"github.com/rezible/rezible/pkg/errs"
 	"github.com/rezible/rezible/pkg/projections"
 )
 
@@ -28,7 +29,7 @@ func NewSystemHazardService(db rez.Database, knowledge rez.KnowledgeGraphIngesti
 func (s *SystemHazardService) CreateSystemHazard(ctx context.Context, params rez.CreateSystemHazardParams) (*ent.SystemHazard, error) {
 	title := strings.TrimSpace(params.Title)
 	if title == "" {
-		return nil, fmt.Errorf("%w: system hazard title is required", rez.ErrInvalidInput)
+		return nil, fmt.Errorf("%w: system hazard title is required", errs.ErrInvalidInput)
 	}
 
 	return ent.WithTxReturning(ctx, s.db, func(ctx context.Context, tx *ent.Client) (*ent.SystemHazard, error) {
@@ -75,7 +76,7 @@ const systemHazardLockNamespace = "system_hazard"
 
 func (s *SystemHazardService) RetireSystemHazard(ctx context.Context, id uuid.UUID) (*ent.SystemHazard, error) {
 	if id == uuid.Nil {
-		return nil, fmt.Errorf("%w: system hazard id is required", rez.ErrInvalidInput)
+		return nil, fmt.Errorf("%w: system hazard id is required", errs.ErrInvalidInput)
 	}
 
 	return ent.WithTxReturning(ctx, s.db, func(ctx context.Context, tx *ent.Client) (*ent.SystemHazard, error) {
@@ -103,13 +104,13 @@ func (s *SystemHazardService) RetireSystemHazard(ctx context.Context, id uuid.UU
 
 func (s *SystemHazardService) AddSystemHazardRiskAssessment(ctx context.Context, params rez.AddSystemHazardRiskAssessmentParams) (*ent.SystemHazardRiskAssessment, error) {
 	if params.SystemHazardID == uuid.Nil {
-		return nil, fmt.Errorf("%w: system hazard id is required", rez.ErrInvalidInput)
+		return nil, fmt.Errorf("%w: system hazard id is required", errs.ErrInvalidInput)
 	}
 	likelihood := strings.TrimSpace(params.Likelihood)
 	consequence := strings.TrimSpace(params.Consequence)
 	riskLevel := strings.TrimSpace(params.RiskLevel)
 	if likelihood == "" || consequence == "" || riskLevel == "" {
-		return nil, fmt.Errorf("%w: likelihood, consequence, and risk level are required", rez.ErrInvalidInput)
+		return nil, fmt.Errorf("%w: likelihood, consequence, and risk level are required", errs.ErrInvalidInput)
 	}
 	assessedAt := params.AssessedAt
 	if assessedAt.IsZero() {

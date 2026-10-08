@@ -8,7 +8,7 @@ import (
 
 	"github.com/slack-go/slack"
 
-	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/pkg/errs"
 	"github.com/rezible/rezible/pkg/integrations"
 )
 
@@ -30,13 +30,13 @@ func ListChatChannels(ctx context.Context, client *slack.Client, params integrat
 		if slackErr, isSlackErr := errors.AsType[slack.SlackErrorResponse](listErr); isSlackErr {
 			switch slackErr.Err {
 			case "invalid_auth", "token_revoked", "account_inactive", "missing_scope":
-				return nil, fmt.Errorf("%w: list slack channels: %w", rez.ErrForbidden, listErr)
+				return nil, fmt.Errorf("%w: list slack channels: %w", errs.ErrForbidden, listErr)
 			case "invalid_cursor":
-				return nil, fmt.Errorf("%w: list slack channels: %w", rez.ErrInvalidInput, listErr)
+				return nil, fmt.Errorf("%w: list slack channels: %w", errs.ErrInvalidInput, listErr)
 			}
 		}
 		if _, isRateLimited := errors.AsType[*slack.RateLimitedError](listErr); isRateLimited {
-			return nil, fmt.Errorf("%w: list slack channels: %w", rez.ErrRateLimited, listErr)
+			return nil, fmt.Errorf("%w: list slack channels: %w", errs.ErrRateLimited, listErr)
 		}
 		return nil, fmt.Errorf("list slack channels: %w", listErr)
 	}

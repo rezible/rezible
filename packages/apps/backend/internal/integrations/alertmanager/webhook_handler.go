@@ -23,15 +23,13 @@ const maxDeliveryBytes = 5 << 20
 // webhookHandler receives deliveries at /{token}. The token authenticates the delivery and identifies the
 // installation; it is a secret and is never logged.
 type webhookHandler struct {
-	logger        *slog.Logger
 	clock         rez.Clock
 	events        rez.ProviderEventPipelineService
 	installations rez.IntegrationInstallationLookup
 }
 
-func newWebhookHandler(logger *slog.Logger, clock rez.Clock, events rez.ProviderEventPipelineService, installations rez.IntegrationInstallationLookup) http.Handler {
+func newWebhookHandler(clock rez.Clock, events rez.ProviderEventPipelineService, installations rez.IntegrationInstallationLookup) http.Handler {
 	h := &webhookHandler{
-		logger:        logger,
 		clock:         clock,
 		events:        events,
 		installations: installations,
@@ -114,13 +112,13 @@ func (h *webhookHandler) receiveDelivery(w http.ResponseWriter, r *http.Request)
 
 func (h *webhookHandler) logDeliveryNotes(ctx context.Context, installationID uuid.UUID, delivery *mappedDelivery) {
 	for _, skipped := range delivery.skipped {
-		h.logger.WarnContext(ctx, "skipped invalid alertmanager alert",
+		slog.WarnContext(ctx, "skipped invalid alertmanager alert",
 			"integration_id", installationID,
 			"fingerprint", skipped.fingerprint,
 			"reason", skipped.reason)
 	}
 	if delivery.truncatedAlerts > 0 {
-		h.logger.WarnContext(ctx, "alertmanager truncated alerts from a delivery; set max_alerts: 0 on the Rezible receiver",
+		slog.WarnContext(ctx, "alertmanager truncated alerts from a delivery; set max_alerts: 0 on the Rezible receiver",
 			"integration_id", installationID,
 			"truncated_alerts", delivery.truncatedAlerts)
 	}
@@ -144,5 +142,5 @@ func (h *webhookHandler) logOutcome(ctx context.Context, outcome deliveryOutcome
 	if outcome.err != nil {
 		attrs = append(attrs, slog.String("error", outcome.err.Error()))
 	}
-	h.logger.LogAttrs(ctx, level, "alertmanager webhook delivery", attrs...)
+	slog.LogAttrs(ctx, level, "alertmanager webhook delivery", attrs...)
 }

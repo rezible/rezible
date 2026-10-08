@@ -12,6 +12,7 @@ import (
 
 	"github.com/rezible/rezible/internal/db"
 	demoprovider "github.com/rezible/rezible/internal/integrations/demo"
+	"github.com/rezible/rezible/internal/opentelemetry"
 	"github.com/samber/do/v2"
 
 	"github.com/rezible/rezible"
@@ -33,6 +34,7 @@ type (
 
 	Application struct {
 		i            do.Injector
+		telemetry    *opentelemetry.Service
 		ready        chan struct{}
 		cancelRunCtx context.CancelFunc
 		services     []appService
@@ -50,12 +52,35 @@ func NewApplication() *Application {
 	return &Application{i: i}
 }
 
-func (a *Application) Init(ctx context.Context) (context.Context, error) {
+func (a *Application) Init(ctx context.Context, withTelemetry bool) (context.Context, error) {
 	ctx = execution.NewRootContext(ctx, execution.KindAnonymous, execution.SourceCLI)
 
 	applicationPackages(ctx)(a.i)
 
+	if withTelemetry {
+		if telErr := a.initTelemetry(ctx); telErr != nil {
+			return nil, fmt.Errorf("telemetry: %w", telErr)
+		}
+	}
+
 	return ctx, nil
+}
+
+// initTelemetry installs the logger and the OpenTelemetry providers before any service is built, so every service logs and traces through them.
+func (a *Application) initTelemetry(ctx context.Context) error {
+	cfg, cfgErr := a.invoke[rez.Config]()
+	if cfgErr != nil {
+		return cfgErr
+	}
+	telemetry, telemetryErr := opentelemetry.NewOpenTelemetryService(ctx, cfg)
+	if telemetryErr != nil {
+		return fmt.Errorf("telemetry: %w", telemetryErr)
+	}
+	if initErr := telemetry.Init(); initErr != nil {
+		return fmt.Errorf("init telemetry: %w", initErr)
+	}
+	a.telemetry = telemetry
+	return nil
 }
 
 func (a *Application) Override[T any](prov Provider[T]) {
@@ -116,6 +141,12 @@ func (a *Application) Shutdown(ctx context.Context) error {
 		if !errors.Is(sErr, context.Canceled) {
 			fmt.Printf("\n\t[%s] ERROR: %s\n", sd.Service, sErr.Error())
 			shutdownErr = errors.Join(shutdownErr, sErr)
+		}
+	}
+	// Telemetry stops last, so it flushes what the services recorded while stopping.
+	if a.telemetry != nil {
+		if telemetryErr := a.telemetry.Shutdown(cancelCtx); telemetryErr != nil {
+			shutdownErr = errors.Join(shutdownErr, fmt.Errorf("shutdown telemetry: %w", telemetryErr))
 		}
 	}
 	return shutdownErr

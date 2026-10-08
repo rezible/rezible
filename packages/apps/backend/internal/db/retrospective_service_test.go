@@ -6,9 +6,9 @@ import (
 	"sync"
 	"testing"
 
-	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/retrospective"
+	"github.com/rezible/rezible/pkg/errs"
 
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/test"
@@ -73,7 +73,7 @@ func (s *RetrospectiveServiceSuite) TestRejectUnresolvedIncident() {
 	s.Require().NoError(updateIncident.Exec(ctx))
 	svc := &RetrospectiveService{db: tdb}
 	retro, createErr := svc.CreateForIncident(ctx, inc.ID)
-	s.ErrorIs(createErr, rez.ErrConflict)
+	s.ErrorIs(createErr, errs.ErrConflict)
 	s.Nil(retro)
 	s.Zero(client.Retrospective.Query().CountX(ctx))
 	s.Zero(client.Document.Query().CountX(ctx))

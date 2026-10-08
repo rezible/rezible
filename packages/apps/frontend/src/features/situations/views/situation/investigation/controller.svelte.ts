@@ -18,7 +18,7 @@ import {
 	updateInvestigationMutation,
 	type InvestigationFinding,
 	type ListInvestigationUserInputsResponse,
-	type ErrorModel,
+	type ApiError,
 	type InvestigationUserInput,
 	type AgentTurnStatusOverview,
 } from "$lib/api";
@@ -63,27 +63,10 @@ function userInputStatusLabel(turn: AgentTurnStatusOverview | null) {
 	}
 }
 
-function errorStatus(error: unknown) {
-	if (error && typeof error === "object" && "status" in error && typeof error.status === "number") {
-		return error.status;
-	}
-	return undefined;
-}
-
-function errorMessage(error: unknown, fallback: string) {
-	if (error && typeof error === "object" && "detail" in error && typeof error.detail === "string") {
-		return error.detail;
-	}
-	if (error instanceof Error && error.message) {
-		return error.message;
-	}
-	return fallback;
-}
-
 type OutputList = {
 	name: string;
 	label: string;
-	query: CreateQueryResult<{ data: unknown[] }, ErrorModel>;
+	query: CreateQueryResult<{ data: unknown[] }, ApiError>;
 	rows: OutputRow[];
 	total: number;
 };
@@ -144,7 +127,7 @@ export class SituationInvestigationController {
 				query: { page: 1, pageSize: OUTPUT_PAGE_SIZE },
 			}),
 			enabled: !!this.investigationId,
-			refetchInterval: (query: { state: { error: ErrorModel | null } }) =>
+			refetchInterval: (query: { state: { error: ApiError | null } }) =>
 				this.outputRefetchInterval(query.state.error),
 			refetchIntervalInBackground: false,
 			retry: (failureCount, error) => !isDefinitiveUnavailableError(error) && failureCount < 2,
@@ -160,7 +143,7 @@ export class SituationInvestigationController {
 				query: { page: 1, pageSize: OUTPUT_PAGE_SIZE },
 			}),
 			enabled: !!this.investigationId,
-			refetchInterval: (query: { state: { error: ErrorModel | null } }) =>
+			refetchInterval: (query: { state: { error: ApiError | null } }) =>
 				this.outputRefetchInterval(query.state.error),
 			refetchIntervalInBackground: false,
 			retry: (failureCount, error) => !isDefinitiveUnavailableError(error) && failureCount < 2,
@@ -202,14 +185,14 @@ export class SituationInvestigationController {
 			return {
 				...getInvestigationFindingOptions({ path: { id: this.investigationId ?? "", versionId } }),
 				enabled: !!this.investigationId && !!versionId,
-				refetchInterval: (query: { state: { error: ErrorModel | null } }) => {
+				refetchInterval: (query: { state: { error: ApiError | null } }) => {
 					if (isDefinitiveUnavailableError(query.state.error) || this.investigationUnavailable) {
 						return false;
 					}
 					return SITUATION_POLL_INTERVAL_MS;
 				},
 				refetchIntervalInBackground: false,
-				retry: (failureCount: number, error: ErrorModel) =>
+				retry: (failureCount: number, error: ApiError) =>
 					!isDefinitiveUnavailableError(error) && failureCount < 2,
 			};
 		}),
@@ -360,7 +343,7 @@ export class SituationInvestigationController {
 			});
 			submitted = response.data;
 		} catch (error) {
-			this.questionError = errorMessage(error, "The question could not be submitted.");
+			this.questionError = (error as ApiError).detail ?? "The question could not be submitted.";
 			return;
 		}
 
@@ -399,13 +382,14 @@ export class SituationInvestigationController {
 			accepted = true;
 			this.retryMessage = "Retry requested for the same turn.";
 		} catch (error) {
-			conflict = errorStatus(error) === 409;
+			const apiError = error as ApiError;
+			conflict = apiError.code === "conflict";
 			this.retryNeedsRefresh = true;
 			if (conflict) {
 				this.retryError =
 					"Execution changed while retrying. Current investigation state is being refreshed.";
 			} else {
-				const message = errorMessage(error, "The retry request could not be confirmed.");
+				const message = apiError.detail ?? "The retry request could not be confirmed.";
 				this.retryError = `${message} Current state is being refreshed before another retry is offered.`;
 			}
 		}
@@ -443,7 +427,7 @@ export class SituationInvestigationController {
 			const updated = await this.updateMutation.mutateAsync({ path });
 			this.queryClient.setQueryData(getInvestigationOptions({ path }).queryKey, updated);
 		} catch (error) {
-			this.updateError = errorMessage(error, "The update could not be started.");
+			this.updateError = (error as ApiError).detail ?? "The update could not be started.";
 		}
 		await this.refreshVisibleInvestigationData();
 	};
@@ -537,7 +521,7 @@ export class SituationInvestigationController {
 		return undefined;
 	}
 
-	private outputRefetchInterval(error: ErrorModel | null) {
+	private outputRefetchInterval(error: ApiError | null) {
 		if (isDefinitiveUnavailableError(error) || this.investigationUnavailable) {
 			return false;
 		}

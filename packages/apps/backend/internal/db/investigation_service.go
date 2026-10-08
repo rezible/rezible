@@ -15,6 +15,7 @@ import (
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/predicate"
 	rezai "github.com/rezible/rezible/pkg/ai"
+	"github.com/rezible/rezible/pkg/errs"
 	"github.com/rezible/rezible/pkg/execution"
 	"github.com/rezible/rezible/pkg/jobs"
 	"github.com/rezible/rezible/pkg/messages"
@@ -85,7 +86,7 @@ func (w *ReconcileInvestigationWorker) Work(ctx context.Context, job *jobs.Job[j
 func (s *InvestigationService) CreateInvestigation(ctx context.Context, params rez.CreateInvestigationParams) (*ent.Investigation, error) {
 	query := strings.TrimSpace(params.Query)
 	if params.AnalysisID == uuid.Nil || query == "" {
-		return nil, fmt.Errorf("%w: analysis ID and question are required", rez.ErrInvalidInput)
+		return nil, fmt.Errorf("%w: analysis ID and question are required", errs.ErrInvalidInput)
 	}
 	return ent.WithTxReturning(ctx, s.db, func(ctx context.Context, tx *ent.Client) (*ent.Investigation, error) {
 		inUseQuery := tx.Investigation.Query().
@@ -94,7 +95,7 @@ func (s *InvestigationService) CreateInvestigation(ctx context.Context, params r
 		if inUseErr != nil {
 			return nil, fmt.Errorf("check system analysis ownership: %w", inUseErr)
 		} else if inUse {
-			return nil, fmt.Errorf("%w: system analysis is already in use", rez.ErrConflict)
+			return nil, fmt.Errorf("%w: system analysis is already in use", errs.ErrConflict)
 		}
 
 		sessionParams := rez.CreateAiAgentSessionParams{
@@ -112,7 +113,7 @@ func (s *InvestigationService) CreateInvestigation(ctx context.Context, params r
 		created, saveErr := createInvestigation.Save(ctx)
 		if saveErr != nil {
 			if _, isConstraint := s.db.IsConstraintError(saveErr); isConstraint {
-				return nil, fmt.Errorf("%w: system analysis is already in use", rez.ErrConflict)
+				return nil, fmt.Errorf("%w: system analysis is already in use", errs.ErrConflict)
 			}
 			return nil, fmt.Errorf("create investigation: %w", saveErr)
 		}
@@ -250,7 +251,7 @@ func (s *InvestigationService) userInputsQuery(ctx context.Context) *ent.Investi
 func (s *InvestigationService) ListInvestigationEvidenceRevisions(ctx context.Context, params rez.ListInvestigationEvidenceRevisionsParams) (*ent.ListResult[ent.InvestigationEvidenceRevision], error) {
 	investigationID := params.InvestigationID
 	if investigationID == uuid.Nil {
-		return nil, fmt.Errorf("%w: investigation ID is required", rez.ErrInvalidInput)
+		return nil, fmt.Errorf("%w: investigation ID is required", errs.ErrInvalidInput)
 	}
 	client := s.db.Client(ctx)
 	if _, parentErr := client.Investigation.Get(ctx, investigationID); parentErr != nil {
@@ -270,11 +271,11 @@ func (s *InvestigationService) SubmitInvestigationUserInput(ctx context.Context,
 	text := strings.TrimSpace(params.Text)
 	submissionKey := strings.TrimSpace(params.SubmissionKey)
 	if params.InvestigationID == uuid.Nil || text == "" || submissionKey == "" {
-		return nil, fmt.Errorf("%w: investigation ID, text and submission key are required", rez.ErrInvalidInput)
+		return nil, fmt.Errorf("%w: investigation ID, text and submission key are required", errs.ErrInvalidInput)
 	}
 	userID, userIDSet := execution.GetContext(ctx).UserID()
 	if !userIDSet || userID == uuid.Nil {
-		return nil, fmt.Errorf("%w: authenticated user is required", rez.ErrInvalidInput)
+		return nil, fmt.Errorf("%w: authenticated user is required", errs.ErrInvalidInput)
 	}
 
 	inputID, txErr := ent.WithTxReturning(ctx, s.db, func(ctx context.Context, tx *ent.Client) (uuid.UUID, error) {
@@ -294,7 +295,7 @@ func (s *InvestigationService) SubmitInvestigationUserInput(ctx context.Context,
 		existing, queryErr := existingQuery.Only(ctx)
 		if queryErr == nil {
 			if existing.Text != text || existing.UserID != userID {
-				return uuid.Nil, fmt.Errorf("%w: submission key was already used for different content", rez.ErrConflict)
+				return uuid.Nil, fmt.Errorf("%w: submission key was already used for different content", errs.ErrConflict)
 			}
 			inputID = existing.ID
 		} else if !ent.IsNotFound(queryErr) {
@@ -333,7 +334,7 @@ func (s *InvestigationService) RecordInvestigationEvidenceRevision(ctx context.C
 	explanation := strings.TrimSpace(params.Explanation)
 	key := strings.TrimSpace(params.CallerKey)
 	if params.InvestigationID == uuid.Nil || explanation == "" || key == "" {
-		return nil, fmt.Errorf("%w: investigation ID, explanation and caller key are required", rez.ErrInvalidInput)
+		return nil, fmt.Errorf("%w: investigation ID, explanation and caller key are required", errs.ErrInvalidInput)
 	}
 
 	return ent.WithTxReturning(ctx, s.db, func(ctx context.Context, tx *ent.Client) (*ent.InvestigationEvidenceRevision, error) {
@@ -352,7 +353,7 @@ func (s *InvestigationService) RecordInvestigationEvidenceRevision(ctx context.C
 		existing, queryErr := existingQuery.Only(ctx)
 		if queryErr == nil {
 			if existing.Explanation != explanation {
-				return nil, fmt.Errorf("%w: evidence revision key was already used for a different explanation", rez.ErrConflict)
+				return nil, fmt.Errorf("%w: evidence revision key was already used for a different explanation", errs.ErrConflict)
 			}
 			return existing, nil
 		} else if !ent.IsNotFound(queryErr) {
@@ -392,7 +393,7 @@ func (s *InvestigationService) UpdateInvestigation(ctx context.Context, investig
 // when no turn is queued or running.
 func (s *InvestigationService) reconcile(ctx context.Context, investigationID uuid.UUID, ignoreLimit bool) error {
 	if investigationID == uuid.Nil {
-		return fmt.Errorf("%w: investigation ID is required", rez.ErrInvalidInput)
+		return fmt.Errorf("%w: investigation ID is required", errs.ErrInvalidInput)
 	}
 	return s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
 		queryInvestigation := tx.Investigation.Query().
@@ -475,7 +476,7 @@ func (s *InvestigationService) reconcile(ctx context.Context, investigationID uu
 			return fmt.Errorf("validate assigned investigation turn: %w", verifyTurnErr)
 		}
 		if !turnBelongsToSession {
-			return fmt.Errorf("%w: requested turn belongs to another investigation", rez.ErrConflict)
+			return fmt.Errorf("%w: requested turn belongs to another investigation", errs.ErrConflict)
 		}
 
 		if hasUserInput {
@@ -491,7 +492,7 @@ func (s *InvestigationService) reconcile(ctx context.Context, investigationID uu
 				return fmt.Errorf("assign investigation user input to turn: %w", updateErr)
 			}
 			if updated != 1 {
-				return fmt.Errorf("%w: investigation user input was assigned concurrently", rez.ErrConflict)
+				return fmt.Errorf("%w: investigation user input was assigned concurrently", errs.ErrConflict)
 			}
 		}
 		if len(evidenceRevisions) > 0 {
@@ -511,7 +512,7 @@ func (s *InvestigationService) reconcile(ctx context.Context, investigationID uu
 				return fmt.Errorf("assign investigation evidence revisions to turn: %w", updateErr)
 			}
 			if updated != len(revisionIDs) {
-				return fmt.Errorf("%w: investigation evidence revisions were assigned concurrently", rez.ErrConflict)
+				return fmt.Errorf("%w: investigation evidence revisions were assigned concurrently", errs.ErrConflict)
 			}
 		}
 		return nil

@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/pkg/errs"
 	oapi "github.com/rezible/rezible/pkg/openapi/v1"
 )
 
@@ -49,7 +50,7 @@ func (h *investigationsHandler) GetInvestigationReport(ctx context.Context, req 
 	if readErr != nil {
 		return nil, oapi.Error(ctx, "get investigation report", readErr)
 	} else if report == nil {
-		return nil, oapi.Error(ctx, "get investigation report", oapi.Err404NotFound())
+		return nil, oapi.Error(ctx, "get investigation report", errs.ErrNotFound)
 	}
 	var resp oapi.GetInvestigationReportResponse
 	resp.Body.Data = oapi.InvestigationReportFromEnt(report)
@@ -111,7 +112,7 @@ func (h *investigationsHandler) SubmitInvestigationUserInput(ctx context.Context
 		SubmissionKey:   strings.TrimSpace(request.Body.SubmissionKey),
 	}
 	if params.Text == "" || params.SubmissionKey == "" {
-		return nil, oapi.Error(ctx, "submit investigation user input", oapi.Err422InvalidInput(rez.ErrInvalidInput))
+		return nil, oapi.Error(ctx, "submit investigation user input", errs.ErrUnprocessableInput)
 	}
 	input, submitErr := h.investigations.SubmitInvestigationUserInput(ctx, params)
 	if submitErr != nil {

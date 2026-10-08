@@ -9,6 +9,7 @@ import (
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/pkg/errs"
 )
 
 const (
@@ -131,7 +132,7 @@ type InstallationConfig struct {
 func parseInstallationConfig(raw []byte) (*InstallationConfig, error) {
 	var config InstallationConfig
 	if decodeErr := json.Unmarshal(raw, &config); decodeErr != nil {
-		return nil, fmt.Errorf("%w: config must be an object with a url and a token", rez.ErrInvalidInput)
+		return nil, fmt.Errorf("%w: config must be an object with a url and a token", errs.ErrInvalidInput)
 	}
 	normalizedURL, urlErr := normalizeURL(config.URL)
 	if urlErr != nil {
@@ -140,7 +141,7 @@ func parseInstallationConfig(raw []byte) (*InstallationConfig, error) {
 	config.URL = normalizedURL
 	config.Token = strings.TrimSpace(config.Token)
 	if config.Token == "" {
-		return nil, fmt.Errorf("%w: a service account token is required", rez.ErrInvalidInput)
+		return nil, fmt.Errorf("%w: a service account token is required", errs.ErrInvalidInput)
 	}
 	return &config, nil
 }
@@ -149,14 +150,14 @@ func parseInstallationConfig(raw []byte) (*InstallationConfig, error) {
 func normalizeURL(raw string) (string, error) {
 	trimmed := strings.TrimSpace(raw)
 	if trimmed == "" {
-		return "", fmt.Errorf("%w: a Grafana URL is required", rez.ErrInvalidInput)
+		return "", fmt.Errorf("%w: a Grafana URL is required", errs.ErrInvalidInput)
 	}
 	parsed, parseErr := url.Parse(trimmed)
 	if parseErr != nil || parsed.Host == "" || (parsed.Scheme != "http" && parsed.Scheme != "https") {
-		return "", fmt.Errorf("%w: the Grafana URL must be an http or https URL", rez.ErrInvalidInput)
+		return "", fmt.Errorf("%w: the Grafana URL must be an http or https URL", errs.ErrInvalidInput)
 	}
 	if parsed.User != nil || parsed.RawQuery != "" || parsed.Fragment != "" {
-		return "", fmt.Errorf("%w: the Grafana URL must not contain credentials, a query or a fragment", rez.ErrInvalidInput)
+		return "", fmt.Errorf("%w: the Grafana URL must not contain credentials, a query or a fragment", errs.ErrInvalidInput)
 	}
 	base := parsed.Scheme + "://" + parsed.Host + parsed.EscapedPath()
 	return strings.TrimRight(base, "/"), nil

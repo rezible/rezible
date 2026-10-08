@@ -10,6 +10,7 @@ import (
 	dc "github.com/rezible/rezible/ent/discussioncomment"
 	dt "github.com/rezible/rezible/ent/discussionthread"
 	"github.com/rezible/rezible/ent/review"
+	"github.com/rezible/rezible/pkg/errs"
 )
 
 type DiscussionService struct {
@@ -71,7 +72,7 @@ func (s *DiscussionService) GetThread(ctx context.Context, id uuid.UUID) (*ent.D
 
 func (s *DiscussionService) ListComments(ctx context.Context, params rez.ListDiscussionCommentsParams) (*ent.ListResult[ent.DiscussionComment], error) {
 	if params.ParentID != uuid.Nil {
-		return nil, fmt.Errorf("%w: discussion replies use a flat stream", rez.ErrInvalidInput)
+		return nil, fmt.Errorf("%w: discussion replies use a flat stream", errs.ErrInvalidInput)
 	}
 	if params.PageSize < 1 || params.PageSize > 50 {
 		params.PageSize = 50

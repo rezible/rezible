@@ -10,7 +10,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/pkg/errs"
 	"github.com/rezible/rezible/pkg/integrations"
 )
 
@@ -83,7 +83,7 @@ func TestLogQueriesAreBoundToTheService(t *testing.T) {
 		}
 		_, searchErr := installed.SearchLogs(t.Context(), params)
 
-		require.ErrorIs(t, searchErr, rez.ErrInvalidInput)
+		require.ErrorIs(t, searchErr, errs.ErrInvalidInput)
 		require.ErrorContains(t, searchErr, "service is required")
 		require.Empty(t, fake.requests)
 	})
@@ -96,17 +96,17 @@ func TestReadLimits(t *testing.T) {
 
 		tooLong := integrations.LogSearchParams{Service: "checkout-api", Start: testEnd.Add(-7 * time.Hour), End: testEnd}
 		_, tooLongErr := installed.SearchLogs(t.Context(), tooLong)
-		require.ErrorIs(t, tooLongErr, rez.ErrInvalidInput)
+		require.ErrorIs(t, tooLongErr, errs.ErrInvalidInput)
 		require.ErrorContains(t, tooLongErr, "longer than the 6h0m0s limit")
 
 		backwards := integrations.MetricRangeParams{Query: "up", Start: testEnd, End: testEnd}
 		_, backwardsErr := installed.QueryMetricRange(t.Context(), backwards)
-		require.ErrorIs(t, backwardsErr, rez.ErrInvalidInput)
+		require.ErrorIs(t, backwardsErr, errs.ErrInvalidInput)
 		require.ErrorContains(t, backwardsErr, "end must be after start")
 
 		tooMany := integrations.LogSearchParams{Service: "checkout-api", Start: testStart, End: testEnd, Limit: 201}
 		_, tooManyErr := installed.SearchLogs(t.Context(), tooMany)
-		require.ErrorIs(t, tooManyErr, rez.ErrInvalidInput)
+		require.ErrorIs(t, tooManyErr, errs.ErrInvalidInput)
 		require.ErrorContains(t, tooManyErr, "maximum of 200 lines")
 
 		require.Empty(t, fake.requests)
