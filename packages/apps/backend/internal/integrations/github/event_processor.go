@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/google/go-github/v84/github"
@@ -62,10 +63,11 @@ func (p *eventProcessor) processPushEvent() (ent.NormalizedEvents, error) {
 			ProviderNamespace: p.event.ProviderNamespace,
 			ResourceRef:       strconv.FormatInt(repository.GetID(), 10),
 		},
-		Category:    kne.CategoryCode,
-		Kind:        "repository",
-		DisplayName: repository.GetFullName(),
-		Properties:  map[string]any{"url": repository.GetHTMLURL()},
+		Category:          kne.CategoryCode,
+		Kind:              "repository",
+		DisplayName:       repository.GetFullName(),
+		Properties:        map[string]any{"url": repository.GetHTMLURL()},
+		LinkingAttributes: projections.RepositoryLinkingAttributes(repository.GetFullName()),
 	}
 	attrs := projections.CodeChangeEventAttributes{
 		Repository:  repositoryObservation,
@@ -89,30 +91,51 @@ func (p *eventProcessor) processPushEvent() (ent.NormalizedEvents, error) {
 	return ent.NormalizedEvents{result}, nil
 }
 
+// processPullRequest records merges only: a pull request opened, edited or closed without merging is not a
+// change.
 func (p *eventProcessor) processPullRequest() (ent.NormalizedEvents, error) {
 	var event github.PullRequestEvent
-	if err := json.Unmarshal(p.event.Attributes, &event); err != nil {
-		return nil, fmt.Errorf("unmarshal pull request event: %w", err)
+	if unmarshalErr := json.Unmarshal(p.event.Attributes, &event); unmarshalErr != nil {
+		return nil, fmt.Errorf("unmarshal pull request event: %w", unmarshalErr)
 	}
 	repository := event.GetRepo()
 	pullRequest := event.GetPullRequest()
 	if repository == nil || repository.GetID() == 0 || pullRequest == nil {
 		return nil, fmt.Errorf("pull request event missing repository or pull request")
 	}
+	if event.GetAction() != "closed" || !pullRequest.GetMerged() {
+		return nil, nil
+	}
+	mergedAt := pullRequest.GetMergedAt().Time
+	mergeCommitSha := strings.ToLower(pullRequest.GetMergeCommitSHA())
+	if mergedAt.IsZero() || mergeCommitSha == "" {
+		return nil, fmt.Errorf("merged pull request missing merge time or merge commit")
+	}
+	baseRef := pullRequest.GetBase().GetRef()
 	repositoryObservation := projections.EntityObservation{
 		Ref: rez.ProviderResourceRef{
 			Provider:          ProviderName,
 			ProviderNamespace: p.event.ProviderNamespace,
 			ResourceRef:       strconv.FormatInt(repository.GetID(), 10),
 		},
-		Category:    kne.CategoryCode,
-		Kind:        "repository",
-		DisplayName: repository.GetFullName(),
-		Properties:  map[string]any{"url": repository.GetHTMLURL()},
+		Category:          kne.CategoryCode,
+		Kind:              "repository",
+		DisplayName:       repository.GetFullName(),
+		Properties:        map[string]any{"url": repository.GetHTMLURL()},
+		LinkingAttributes: projections.RepositoryLinkingAttributes(repository.GetFullName()),
 	}
 	attrs := projections.CodeChangeEventAttributes{
 		Repository:  repositoryObservation,
 		DisplayName: pullRequest.GetTitle(),
+		Merge: &projections.CodeChangeMerge{
+			MergedAt:          mergedAt,
+			MergeCommitSha:    mergeCommitSha,
+			BaseRef:           baseRef,
+			IntoDefaultBranch: baseRef != "" && baseRef == repository.GetDefaultBranch(),
+			Number:            pullRequest.GetNumber(),
+			URL:               pullRequest.GetHTMLURL(),
+			AuthorLogin:       pullRequest.GetUser().GetLogin(),
+		},
 	}
 	encodedAttrs, encodeErr := projections.EncodeAttributes(attrs)
 	if encodeErr != nil {
@@ -125,7 +148,7 @@ func (p *eventProcessor) processPullRequest() (ent.NormalizedEvents, error) {
 		ProviderEventSource: p.event.ProviderEventSource,
 		ProviderEventRef:    p.event.ProviderEventRef,
 		Kind:                projections.KindCodeChange,
-		OccurredAt:          pullRequest.GetCreatedAt().Time,
+		OccurredAt:          mergedAt,
 		ReceivedAt:          p.event.ReceivedAt,
 		Attributes:          encodedAttrs,
 	}
@@ -151,8 +174,9 @@ func (p *eventProcessor) processRepoObserved() (ent.NormalizedEvents, error) {
 		occurredAt = time.Now().UTC()
 	}
 	attrs := projections.CodeForgeEventAttributes{
-		DisplayName: payload.FullName,
-		URL:         payload.HTMLURL,
+		DisplayName:       payload.FullName,
+		URL:               payload.HTMLURL,
+		LinkingAttributes: projections.RepositoryLinkingAttributes(payload.FullName),
 	}
 	encodedAttrs, encodeErr := projections.EncodeAttributes(attrs)
 	if encodeErr != nil {

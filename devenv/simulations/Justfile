@@ -1,6 +1,7 @@
 set shell := ["bash", "-euc"]
 
 mode_file := source_dir() / ".mode"
+deployments_url_file := source_dir() / ".deployments-url"
 
 [doc("Start telemetry and Alertmanager, then run the simulated services until stopped")]
 [default]
@@ -8,8 +9,43 @@ mode_file := source_dir() / ".mode"
     just --justfile {{ quote(source_dir() / ".." / "Justfile") }} infra-up telemetry alertmanager
     bun --no-env-file generator.ts
 
-[doc("Set the simulation's mode: healthy, or unhealthy (payments-api slows down, checkout-api fails)")]
+[doc("Set the simulation's mode: healthy, or unhealthy (reports a checkout-api deployment, then payments-api slows down and checkout-api fails)")]
 [arg("MODE", pattern="healthy|unhealthy")]
-@set-mode MODE:
-    echo {{ MODE }} > {{ quote(mode_file) }}
+set-mode MODE:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    if [ {{ quote(MODE) }} = unhealthy ]; then
+      just --justfile {{ quote(source_file()) }} _report-deployment
+    fi
+    echo {{ quote(MODE) }} > {{ quote(mode_file) }}
     echo "sim mode: {{ MODE }}"
+
+[doc("Report the simulation's deployments to a Rezible webhook URL from Webhook settings (Deployments preset)")]
+deployments-target URL:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    url={{ quote(URL) }}
+    if [[ ! "$url" =~ ^https?://[^/]+(/[^/]+)*/webhooks/webhook/[^/]+$ ]]; then
+      echo "expected a Rezible webhook URL: https://<api host>/webhooks/webhook/<token>" >&2
+      exit 1
+    fi
+    printf '%s\n' "$url" > {{ quote(deployments_url_file) }}
+    echo "Deployment reports go to: ${url%/*}/<token>"
+
+# Report a succeeded deployment of checkout-api, the deploy that precedes the simulated failure. A failed
+# report does not stop the mode from switching.
+_report-deployment:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    if [ ! -f {{ quote(deployments_url_file) }} ]; then
+      echo "No deployment reported: install a Webhook with the Deployments preset in settings, generate its URL, then run: just sim deployments-target URL"
+      exit 0
+    fi
+    url="$(cat {{ quote(deployments_url_file) }})"
+    now="$(date +%s)"
+    report="$(printf '{"id":"sim-%s-%s","service":"checkout-api","environment":"development","status":"succeeded","version":"checkout-api@%s"}' "$now" "$RANDOM" "$now")"
+    if curl --fail-with-body -sS --max-time 10 -X POST "$url" -H 'Content-Type: application/json' -d "$report"; then
+      echo "Reported a deployment of checkout-api@$now to development."
+    else
+      echo "Could not report the deployment; switching mode anyway." >&2
+    fi

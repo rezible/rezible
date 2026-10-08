@@ -82,6 +82,17 @@ type EntityObservation struct {
 	DisplayName string                  `json:"display_name" validate:"required"`
 	Description string                  `json:"description,omitempty"`
 	Properties  map[string]any          `json:"properties,omitempty"`
+	// LinkingAttributes match this observation to an entity another provider observed by the same values.
+	LinkingAttributes LinkingAttributes `json:"linking_attributes,omitempty"`
+}
+
+func (o EntityObservation) KnowledgeEntityRef() rez.KnowledgeEntityRef {
+	return rez.KnowledgeEntityRef{
+		Category:            o.Category,
+		Kind:                o.Kind,
+		ProviderResourceRef: o.Ref,
+		LinkingAttributes:   o.LinkingAttributes,
+	}
 }
 
 func SortEntityObservations(observations []EntityObservation) []EntityObservation {

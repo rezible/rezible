@@ -262,6 +262,33 @@ type (
 		// if it is in one, otherwise its nearest ancestors in one, climbing the structure hierarchy at most
 		// MaxDepth steps. Entities represented by nothing are omitted.
 		ResolveStructure(context.Context, ResolveStructureParams) (map[uuid.UUID][]uuid.UUID, error)
+
+		// ListRelatedEvents lists event entities of one kind that relate to an entity, newest first.
+		ListRelatedEvents(context.Context, ListRelatedEventsParams) (*RelatedEvents, error)
+	}
+
+	ListRelatedEventsParams struct {
+		// EntityID is the related entity; the events are relationship sources.
+		EntityID uuid.UUID
+		// Predicate relates the events to the entity, for example impacts or touches.
+		Predicate knr.Predicate
+		// Kind is the event entities' kind, for example deployment.
+		Kind string
+		// From and To bound state_effective_at. A zero time leaves that side unbounded.
+		From, To                   time.Time
+		FromInclusive, ToInclusive bool
+		// PropertyEquals are state properties that must equal these values, compared as text.
+		PropertyEquals map[string]string
+		// PropertyAbsent are state properties that must be absent. An absent property never matches
+		// PropertyEquals.
+		PropertyAbsent []string
+		Limit          int
+	}
+
+	RelatedEvents struct {
+		Events []*ent.KnowledgeEntity
+		// Cut is set when more events matched than Limit.
+		Cut bool
 	}
 
 	KnowledgeEntityFilter struct {
@@ -895,6 +922,82 @@ type (
 		SetAlertIdentityGroupLabels(ctx context.Context, id uuid.UUID, labels []string) (*ent.AlertDefinition, error)
 		SetAlertSituationSignalAttention(ctx context.Context, id uuid.UUID, level situationsignalattention.Level) (*ent.AlertDefinition, error)
 	}
+)
+
+type (
+	ListServiceChangesParams struct {
+		// ServiceEntityID is a container/service entity.
+		ServiceEntityID uuid.UUID
+		Start, End      time.Time
+		// Environment is raw and normalized by the service. Empty lists every environment.
+		Environment string
+	}
+
+	ServiceChanges struct {
+		// Deployments are the service's deployments in the window, most recent first.
+		Deployments []ServiceDeployment
+		// Limits describes, in plain words, each limit that cut the result.
+		Limits []string
+	}
+
+	// ServiceDeployment is a deployment with the merged changes linked to it.
+	ServiceDeployment struct {
+		// Deployment is the deployment's event entity.
+		Deployment  *ent.KnowledgeEntity
+		DeployedAt  time.Time
+		Environment string
+		Status      string
+		Sha         string
+		Version     string
+		URL         string
+		// RepositoryEntityID is the repository the deployment touches; nil when it names none.
+		RepositoryEntityID *uuid.UUID
+		// RepositoryName is the repository's display name, empty when the deployment names none.
+		RepositoryName string
+		// RepositorySeenByCodeForge is whether a code forge has reported the repository. Merged changes are
+		// only linked when one has.
+		RepositorySeenByCodeForge bool
+		// PreviousDeployedAt is when the previous successful deployment of the same service, environment and
+		// repository was deployed, if there is one.
+		PreviousDeployedAt *time.Time
+		MergedChanges      []LinkedMergedChange
+		// MergedChangesCut is set when the merged change limit cut MergedChanges.
+		MergedChangesCut bool
+	}
+
+	// LinkedMergedChange is a merged change linked to a deployment.
+	LinkedMergedChange struct {
+		// Change is the code change's event entity; its display name is the change's title.
+		Change         *ent.KnowledgeEntity
+		MergedAt       time.Time
+		MergeCommitSha string
+		BaseRef        string
+		// IntoDefaultBranch is whether the change was merged into the repository's default branch.
+		IntoDefaultBranch bool
+		Number            int
+		URL               string
+		Author            string
+		Link              MergedChangeLink
+	}
+
+	// MergedChangeLink is how a merged change was linked to a deployment.
+	MergedChangeLink string
+
+	ChangesService interface {
+		// ListServiceChanges lists a service's deployments in a window with the merged changes linked to each.
+		ListServiceChanges(ctx context.Context, params ListServiceChangesParams) (*ServiceChanges, error)
+	}
+)
+
+const (
+	// MergedChangeLinkMergeCommit links a change whose merge commit is the deployed commit.
+	MergedChangeLinkMergeCommit MergedChangeLink = "merge_commit"
+	// MergedChangeLinkMergedSincePrevious links a change merged into the default branch after the previous
+	// deployment.
+	MergedChangeLinkMergedSincePrevious MergedChangeLink = "merged_since_previous_deployment"
+	// MergedChangeLinkMergedInLookback links a change merged into the default branch within the lookback
+	// before a deployment with no previous deployment.
+	MergedChangeLinkMergedInLookback MergedChangeLink = "merged_in_lookback"
 )
 
 type (

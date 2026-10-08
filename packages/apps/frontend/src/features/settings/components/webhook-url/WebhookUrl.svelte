@@ -8,17 +8,20 @@
 	import * as Field from "$components/ui/field";
 	import { Input } from "$components/ui/input";
 
-	import type { AlertmanagerProviderController } from "./alertmanagerProvider.svelte";
+	import type { WebhookUrlController } from "./webhookUrl.svelte";
 
 	type Props = {
 		installation: IntegrationInstallation;
-		alertmanager: AlertmanagerProviderController;
+		webhookUrls: WebhookUrlController;
+		// What sends to the URL, such as "Alertmanager sends alerts".
+		sender: string;
 	};
-	const { installation, alertmanager }: Props = $props();
+	const { installation, webhookUrls, sender }: Props = $props();
 
-	const issuedUrl = $derived(alertmanager.issuedUrl(installation.id));
-	const issueError = $derived(alertmanager.issueError(installation.id));
-	const inputId = $derived(`alertmanager-webhook-url-${installation.id}`);
+	const issuedUrl = $derived(webhookUrls.issuedUrl(installation.id));
+	const hasUrl = $derived(webhookUrls.hasUrl(installation));
+	const issueError = $derived(webhookUrls.issueError(installation.id));
+	const inputId = $derived(`webhook-url-${installation.id}`);
 </script>
 
 <Field.Field>
@@ -30,7 +33,7 @@
 				variant="outline"
 				size="icon"
 				aria-label="Copy webhook URL"
-				onclick={() => alertmanager.copy(issuedUrl, "Webhook URL")}
+				onclick={() => webhookUrls.copy(issuedUrl, "Webhook URL")}
 			>
 				<RiFileCopyLine />
 			</Button>
@@ -40,7 +43,7 @@
 		</Field.Description>
 	{:else}
 		<Field.Description>
-			Alertmanager sends alerts to this URL. Rezible shows it once, when it is generated.
+			{sender} to this URL. Rezible shows it once, when it is generated.
 		</Field.Description>
 	{/if}
 </Field.Field>
@@ -49,7 +52,12 @@
 	<InlineAlert error={issueError} dismissable={false} />
 {/if}
 
-<Button class="w-fit" variant="outline" onclick={() => alertmanager.requestGenerate(installation.id)}>
+<Button
+	class="w-fit"
+	variant="outline"
+	disabled={webhookUrls.issuingId === installation.id}
+	onclick={() => webhookUrls.requestGenerate(installation)}
+>
 	<RiLinkM />
-	Generate webhook URL
+	{hasUrl ? "Replace webhook URL" : "Generate webhook URL"}
 </Button>

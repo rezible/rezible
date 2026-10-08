@@ -41,6 +41,12 @@ type (
 	IntegrationWithAgentToolProvider interface {
 		GetAvailableAgentTools(context.Context, []rez.InstalledIntegration, rez.GetAvailableAiAgentToolsParams) ([]ai.Tool, error)
 	}
+
+	// InstalledIntegrationWithMetadata exposes read-only facts about an installation. They are returned to anyone
+	// who can see the installation, so they must never be secret.
+	InstalledIntegrationWithMetadata interface {
+		Metadata() map[string]string
+	}
 )
 
 // As returns the installed integration as capability T, or ErrCapabilityNotSupported.

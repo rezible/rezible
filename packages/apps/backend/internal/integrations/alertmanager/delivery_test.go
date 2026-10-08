@@ -7,10 +7,12 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/suite"
 
 	rez "github.com/rezible/rezible"
 	kne "github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/pkg/projections"
+	"github.com/rezible/rezible/test"
 )
 
 var (
@@ -51,55 +53,63 @@ func encode(t *testing.T, v any) []byte {
 	return encoded
 }
 
-func mapTestDelivery(t *testing.T, settings *installationSettings, payload map[string]any, receivedAt time.Time) *mappedDelivery {
-	t.Helper()
-	delivery, mapErr := mapDelivery(testInstallationID, settings, encode(t, payload), receivedAt)
-	require.NoError(t, mapErr)
+type DeliverySuite struct {
+	test.Suite
+}
+
+func TestDeliverySuite(t *testing.T) {
+	suite.Run(t, &DeliverySuite{Suite: test.NewSuite()})
+}
+
+func (s *DeliverySuite) mapTestDelivery(settings *installationSettings, payload map[string]any, receivedAt time.Time) *mappedDelivery {
+	s.T().Helper()
+	delivery, mapErr := mapDelivery(testInstallationID, settings, encode(s.T(), payload), receivedAt)
+	s.Require().NoError(mapErr)
 	return delivery
 }
 
 // normalize maps a provider event to its normalized alert instance attributes.
-func normalize(t *testing.T, event rez.ProviderEvent) (string, time.Time, projections.AlertInstanceEventAttributes) {
-	t.Helper()
-	normalized, processErr := EventProcessor{}.ProcessProviderEvent(t.Context(), event)
-	require.NoError(t, processErr)
-	require.Len(t, normalized, 1)
+func (s *DeliverySuite) normalize(event rez.ProviderEvent) (string, time.Time, projections.AlertInstanceEventAttributes) {
+	s.T().Helper()
+	normalized, processErr := EventProcessor{}.ProcessProviderEvent(s.T().Context(), event)
+	s.Require().NoError(processErr)
+	s.Require().Len(normalized, 1)
 	var attrs projections.AlertInstanceEventAttributes
-	require.NoError(t, json.Unmarshal(normalized[0].Attributes, &attrs))
-	require.Equal(t, projections.KindAlertInstance, normalized[0].Kind)
-	require.Equal(t, event.ProviderEventRef, normalized[0].ProviderEventRef)
+	s.Require().NoError(json.Unmarshal(normalized[0].Attributes, &attrs))
+	s.Require().Equal(projections.KindAlertInstance, normalized[0].Kind)
+	s.Require().Equal(event.ProviderEventRef, normalized[0].ProviderEventRef)
 	return normalized[0].ProviderResourceRef, normalized[0].OccurredAt, attrs
 }
 
-func TestMapFiringAndResolvedAlerts(t *testing.T) {
+func (s *DeliverySuite) TestMapFiringAndResolvedAlerts() {
 	labels := map[string]string{"alertname": "HighErrorRate", "service": "checkout-api", "severity": "page"}
 	payload := testPayload(testAlert("firing", labels), testAlert("resolved", labels))
 	// The group status does not stand in for each alert's status.
 	payload["status"] = "resolved"
-	delivery := mapTestDelivery(t, defaultSettings, payload, testReceivedAt)
-	require.Empty(t, delivery.skipped)
-	require.Len(t, delivery.events, 2)
+	delivery := s.mapTestDelivery(defaultSettings, payload, testReceivedAt)
+	s.Require().Empty(delivery.skipped)
+	s.Require().Len(delivery.events, 2)
 
 	firing := delivery.events[0]
-	require.Equal(t, ProviderName, firing.Provider)
-	require.Equal(t, testInstallationID.String(), firing.ProviderNamespace)
-	require.Equal(t, sourceAlerts, firing.ProviderEventSource)
-	require.Equal(t, testReceivedAt, firing.ReceivedAt)
+	s.Require().Equal(ProviderName, firing.Provider)
+	s.Require().Equal(testInstallationID.String(), firing.ProviderNamespace)
+	s.Require().Equal(sourceAlerts, firing.ProviderEventSource)
+	s.Require().Equal(testReceivedAt, firing.ReceivedAt)
 
-	definitionRef, occurredAt, attrs := normalize(t, firing)
-	require.Equal(t, "HighErrorRate", attrs.Title)
-	require.Equal(t, "Checkout errors above 5%", attrs.Summary)
-	require.Equal(t, "5xx rate is 12%", attrs.Description)
-	require.Equal(t, "http://prometheus/graph?g0.expr=rate", attrs.Definition)
-	require.Equal(t, projections.AlertStateFiring, attrs.State)
-	require.Equal(t, "c0ffee", attrs.InstanceID)
-	require.Equal(t, labels, attrs.Labels)
-	require.Equal(t, "critical", attrs.Severity)
-	require.Equal(t, "page", attrs.SeverityRef)
-	require.Equal(t, time.Date(2026, 6, 1, 10, 0, 0, 0, time.UTC), attrs.StartedAt)
-	require.Nil(t, attrs.EndedAt, "a firing alert's endsAt is not a resolution")
-	require.Nil(t, attrs.ResolutionTimeoutSeconds)
-	require.Equal(t, testReceivedAt, occurredAt)
+	definitionRef, occurredAt, attrs := s.normalize(firing)
+	s.Require().Equal("HighErrorRate", attrs.Title)
+	s.Require().Equal("Checkout errors above 5%", attrs.Summary)
+	s.Require().Equal("5xx rate is 12%", attrs.Description)
+	s.Require().Equal("http://prometheus/graph?g0.expr=rate", attrs.Definition)
+	s.Require().Equal(projections.AlertStateFiring, attrs.State)
+	s.Require().Equal("c0ffee", attrs.InstanceID)
+	s.Require().Equal(labels, attrs.Labels)
+	s.Require().Equal("critical", attrs.Severity)
+	s.Require().Equal("page", attrs.SeverityRef)
+	s.Require().Equal(time.Date(2026, 6, 1, 10, 0, 0, 0, time.UTC), attrs.StartedAt)
+	s.Require().Nil(attrs.EndedAt, "a firing alert's endsAt is not a resolution")
+	s.Require().Nil(attrs.ResolutionTimeoutSeconds)
+	s.Require().Equal(testReceivedAt, occurredAt)
 	expectedService := projections.EntityObservation{
 		Ref: rez.ProviderResourceRef{
 			Provider:          ProviderName,
@@ -109,18 +119,21 @@ func TestMapFiringAndResolvedAlerts(t *testing.T) {
 		Category:    kne.CategoryContainer,
 		Kind:        "service",
 		DisplayName: "checkout-api",
+		LinkingAttributes: projections.LinkingAttributes{
+			"service.name": "checkout-api",
+		},
 	}
-	require.Equal(t, []projections.EntityObservation{expectedService}, attrs.ObservedEntities)
+	s.Require().Equal([]projections.EntityObservation{expectedService}, attrs.ObservedEntities)
 
-	resolvedRef, resolvedAt, resolved := normalize(t, delivery.events[1])
+	resolvedRef, resolvedAt, resolved := s.normalize(delivery.events[1])
 	endedAt := time.Date(2026, 6, 1, 10, 3, 0, 0, time.UTC)
-	require.Equal(t, definitionRef, resolvedRef)
-	require.Equal(t, projections.AlertStateResolved, resolved.State)
-	require.Equal(t, &endedAt, resolved.EndedAt)
-	require.Equal(t, endedAt, resolvedAt)
+	s.Require().Equal(definitionRef, resolvedRef)
+	s.Require().Equal(projections.AlertStateResolved, resolved.State)
+	s.Require().Equal(&endedAt, resolved.EndedAt)
+	s.Require().Equal(endedAt, resolvedAt)
 }
 
-func TestMapSeverity(t *testing.T) {
+func (s *DeliverySuite) TestMapSeverity() {
 	cases := map[string]string{
 		"critical": "critical", "PAGE": "critical", "p1": "critical", "Sev1": "critical", "high": "critical",
 		"warning": "warning", "warn": "warning", "p2": "warning", "P3": "warning", "medium": "warning",
@@ -128,11 +141,11 @@ func TestMapSeverity(t *testing.T) {
 		"": "unknown", "error": "unknown", "sev2": "unknown",
 	}
 	for raw, expected := range cases {
-		require.Equal(t, expected, string(mapSeverity(raw)), "severity %q", raw)
+		s.Require().Equal(expected, string(mapSeverity(raw)), "severity %q", raw)
 	}
 }
 
-func TestMapSkipsInvalidAlerts(t *testing.T) {
+func (s *DeliverySuite) TestMapSkipsInvalidAlerts() {
 	valid := testAlert("firing", map[string]string{"alertname": "HighErrorRate"})
 	withChange := func(change func(map[string]any)) map[string]any {
 		alert := testAlert("firing", map[string]string{"alertname": "HighErrorRate"})
@@ -151,18 +164,18 @@ func TestMapSkipsInvalidAlerts(t *testing.T) {
 		withChange(func(a map[string]any) { a["status"] = "resolved"; a["endsAt"] = "2026-06-01T09:59:59Z" }),
 	}
 	alerts := append([]map[string]any{valid}, invalid...)
-	delivery := mapTestDelivery(t, defaultSettings, testPayload(alerts...), testReceivedAt)
+	delivery := s.mapTestDelivery(defaultSettings, testPayload(alerts...), testReceivedAt)
 
-	require.Len(t, delivery.events, 1)
-	require.Len(t, delivery.skipped, len(invalid))
+	s.Require().Len(delivery.events, 1)
+	s.Require().Len(delivery.skipped, len(invalid))
 	for _, skipped := range delivery.skipped {
-		require.NotEmpty(t, skipped.reason)
+		s.Require().NotEmpty(skipped.reason)
 	}
-	require.Equal(t, "c0ffee", delivery.skipped[0].fingerprint, "a skipped alert reports its fingerprint")
-	require.Empty(t, delivery.skipped[3].fingerprint)
+	s.Require().Equal("c0ffee", delivery.skipped[0].fingerprint, "a skipped alert reports its fingerprint")
+	s.Require().Empty(delivery.skipped[3].fingerprint)
 }
 
-func TestMapRejectsInvalidPayloads(t *testing.T) {
+func (s *DeliverySuite) TestMapRejectsInvalidPayloads() {
 	payloads := map[string]string{
 		"not json":         `{"version":`,
 		"version 3":        `{"version":"3","alerts":[]}`,
@@ -173,84 +186,85 @@ func TestMapRejectsInvalidPayloads(t *testing.T) {
 	}
 	for name, payload := range payloads {
 		_, mapErr := mapDelivery(testInstallationID, defaultSettings, []byte(payload), testReceivedAt)
-		require.Error(t, mapErr, name)
+		s.Require().Error(mapErr, name)
 	}
 
 	delivery, mapErr := mapDelivery(testInstallationID, defaultSettings, []byte(`{"version":"4","alerts":[],"extra":true}`), testReceivedAt)
-	require.NoError(t, mapErr, "unknown fields are ignored")
-	require.Empty(t, delivery.events)
+	s.Require().NoError(mapErr, "unknown fields are ignored")
+	s.Require().Empty(delivery.events)
 }
 
-func TestMapTruncatedPayloadKeepsItsAlerts(t *testing.T) {
+func (s *DeliverySuite) TestMapTruncatedPayloadKeepsItsAlerts() {
 	payload := testPayload(testAlert("firing", map[string]string{"alertname": "HighErrorRate"}))
 	payload["truncatedAlerts"] = 3
-	delivery := mapTestDelivery(t, defaultSettings, payload, testReceivedAt)
-	require.Equal(t, 3, delivery.truncatedAlerts)
-	require.Len(t, delivery.events, 1)
+	delivery := s.mapTestDelivery(defaultSettings, payload, testReceivedAt)
+	s.Require().Equal(3, delivery.truncatedAlerts)
+	s.Require().Len(delivery.events, 1)
 }
 
-func TestMapEventIdentity(t *testing.T) {
+func (s *DeliverySuite) TestMapEventIdentity() {
 	labels := map[string]string{"alertname": "HighErrorRate"}
 	firingRef := func(alert map[string]any, receivedAt time.Time) string {
-		return mapTestDelivery(t, defaultSettings, testPayload(alert), receivedAt).events[0].ProviderEventRef
+		return s.mapTestDelivery(defaultSettings, testPayload(alert), receivedAt).events[0].ProviderEventRef
 	}
 	firing := testAlert("firing", labels)
 	sameMinute := testReceivedAt.Add(20 * time.Second)
 	nextMinute := testReceivedAt.Add(time.Minute)
 
-	require.Equal(t, firingRef(firing, testReceivedAt), firingRef(firing, sameMinute))
-	require.NotEqual(t, firingRef(firing, testReceivedAt), firingRef(firing, nextMinute))
-	require.Regexp(t, `^[0-9a-f]{32}-202606011004$`, firingRef(firing, testReceivedAt))
+	s.Require().Equal(firingRef(firing, testReceivedAt), firingRef(firing, sameMinute))
+	s.Require().NotEqual(firingRef(firing, testReceivedAt), firingRef(firing, nextMinute))
+	s.Require().Regexp(`^[0-9a-f]{32}-202606011004$`, firingRef(firing, testReceivedAt))
 
 	// Equivalent timestamps have one identity.
 	offset := testAlert("firing", labels)
 	offset["startsAt"] = "2026-06-01T20:00:00.000+10:00"
-	require.Equal(t, firingRef(firing, testReceivedAt), firingRef(offset, testReceivedAt))
+	s.Require().Equal(firingRef(firing, testReceivedAt), firingRef(offset, testReceivedAt))
 
 	resolved := testAlert("resolved", labels)
 	resolvedOffset := testAlert("resolved", labels)
 	resolvedOffset["startsAt"] = "2026-06-01T10:00:00.000000Z"
 	resolvedOffset["endsAt"] = "2026-06-01T12:03:00+02:00"
 	resolvedRef := firingRef(resolved, testReceivedAt)
-	require.Equal(t, resolvedRef, firingRef(resolved, nextMinute.Add(time.Hour)), "a resolution's identity does not depend on receipt")
-	require.Equal(t, resolvedRef, firingRef(resolvedOffset, testReceivedAt))
-	require.Regexp(t, `^[0-9a-f]{32}$`, resolvedRef)
+	s.Require().Equal(resolvedRef, firingRef(resolved, nextMinute.Add(time.Hour)), "a resolution's identity does not depend on receipt")
+	s.Require().Equal(resolvedRef, firingRef(resolvedOffset, testReceivedAt))
+	s.Require().Regexp(`^[0-9a-f]{32}$`, resolvedRef)
 }
 
-func TestMapResolvesService(t *testing.T) {
+func (s *DeliverySuite) TestMapResolvesService() {
 	serviceOf := func(settings *installationSettings, labels map[string]string) *projections.EntityObservation {
 		labels["alertname"] = "HighErrorRate"
-		delivery := mapTestDelivery(t, settings, testPayload(testAlert("firing", labels)), testReceivedAt)
-		_, _, attrs := normalize(t, delivery.events[0])
+		delivery := s.mapTestDelivery(settings, testPayload(testAlert("firing", labels)), testReceivedAt)
+		_, _, attrs := s.normalize(delivery.events[0])
 		if len(attrs.ObservedEntities) == 0 {
 			return nil
 		}
-		require.Len(t, attrs.ObservedEntities, 1)
+		s.Require().Len(attrs.ObservedEntities, 1)
 		return &attrs.ObservedEntities[0]
 	}
 
 	checkout := serviceOf(defaultSettings, map[string]string{"service": "Checkout_API"})
-	require.Equal(t, "service:checkout-api", checkout.Ref.ResourceRef)
-	require.Equal(t, "Checkout_API", checkout.DisplayName)
+	s.Require().Equal("service:checkout-api", checkout.Ref.ResourceRef)
+	s.Require().Equal("Checkout_API", checkout.DisplayName)
+	s.Require().Equal(projections.LinkingAttributes{"service.name": "checkout-api"}, checkout.LinkingAttributes)
 
 	// Empty and invalid values fall back to the next configured label.
 	fallback := serviceOf(defaultSettings, map[string]string{"service": "---", "service_name": "", "app": "  Search..API  "})
-	require.Equal(t, "service:search-api", fallback.Ref.ResourceRef)
+	s.Require().Equal("service:search-api", fallback.Ref.ResourceRef)
 
-	require.Equal(t, "service:cart", serviceOf(defaultSettings, map[string]string{"app_kubernetes_io_name": "cart"}).Ref.ResourceRef)
-	require.Nil(t, serviceOf(defaultSettings, map[string]string{"job": "checkout"}), "job is not a default service label")
+	s.Require().Equal("service:cart", serviceOf(defaultSettings, map[string]string{"app_kubernetes_io_name": "cart"}).Ref.ResourceRef)
+	s.Require().Nil(serviceOf(defaultSettings, map[string]string{"job": "checkout"}), "job is not a default service label")
 
 	custom := &installationSettings{serviceLabels: []string{"job"}}
-	require.Equal(t, "service:checkout", serviceOf(custom, map[string]string{"job": "checkout", "service": "search"}).Ref.ResourceRef)
+	s.Require().Equal("service:checkout", serviceOf(custom, map[string]string{"job": "checkout", "service": "search"}).Ref.ResourceRef)
 
 	disabled := &installationSettings{serviceLabels: []string{}}
-	require.Nil(t, serviceOf(disabled, map[string]string{"service": "checkout"}))
+	s.Require().Nil(serviceOf(disabled, map[string]string{"service": "checkout"}))
 }
 
-func TestServiceAliasesShareOneDefinition(t *testing.T) {
+func (s *DeliverySuite) TestServiceAliasesShareOneDefinition() {
 	definitionOf := func(labels map[string]string) (string, rez.ProviderResourceRef) {
-		delivery := mapTestDelivery(t, defaultSettings, testPayload(testAlert("firing", labels)), testReceivedAt)
-		ref, _, attrs := normalize(t, delivery.events[0])
+		delivery := s.mapTestDelivery(defaultSettings, testPayload(testAlert("firing", labels)), testReceivedAt)
+		ref, _, attrs := s.normalize(delivery.events[0])
 		if len(attrs.ObservedEntities) == 0 {
 			return ref, rez.ProviderResourceRef{}
 		}
@@ -259,34 +273,34 @@ func TestServiceAliasesShareOneDefinition(t *testing.T) {
 
 	checkoutRef, checkoutService := definitionOf(map[string]string{"alertname": "HighErrorRate", "service": "Checkout_API"})
 	aliasRef, aliasService := definitionOf(map[string]string{"alertname": "HighErrorRate", "service_name": "checkout-api"})
-	require.Equal(t, checkoutRef, aliasRef)
-	require.Equal(t, checkoutService, aliasService)
-	require.Regexp(t, `^alert:[0-9a-f]{64}$`, checkoutRef)
+	s.Require().Equal(checkoutRef, aliasRef)
+	s.Require().Equal(checkoutService, aliasService)
+	s.Require().Regexp(`^alert:[0-9a-f]{64}$`, checkoutRef)
 
 	searchRef, _ := definitionOf(map[string]string{"alertname": "HighErrorRate", "service": "search"})
-	require.NotEqual(t, checkoutRef, searchRef)
+	s.Require().NotEqual(checkoutRef, searchRef)
 
 	noServiceRef, _ := definitionOf(map[string]string{"alertname": "HighErrorRate"})
-	require.NotEqual(t, checkoutRef, noServiceRef)
-	require.Equal(t, "alert:"+identityDigest("HighErrorRate", nil), noServiceRef)
+	s.Require().NotEqual(checkoutRef, noServiceRef)
+	s.Require().Equal("alert:"+identityDigest("HighErrorRate", nil), noServiceRef)
 }
 
-func TestParseInstallationSettings(t *testing.T) {
+func (s *DeliverySuite) TestParseInstallationSettings() {
 	missing, missingErr := parseInstallationSettings(nil)
-	require.NoError(t, missingErr)
-	require.Equal(t, defaultServiceLabels, missing.serviceLabels)
+	s.Require().NoError(missingErr)
+	s.Require().Equal(defaultServiceLabels, missing.serviceLabels)
 
 	other, otherErr := parseInstallationSettings(map[string]any{"other": true})
-	require.NoError(t, otherErr)
-	require.Equal(t, defaultServiceLabels, other.serviceLabels)
+	s.Require().NoError(otherErr)
+	s.Require().Equal(defaultServiceLabels, other.serviceLabels)
 
 	empty, emptyErr := parseInstallationSettings(map[string]any{"service_labels": []any{}})
-	require.NoError(t, emptyErr)
-	require.Empty(t, empty.serviceLabels)
+	s.Require().NoError(emptyErr)
+	s.Require().Empty(empty.serviceLabels)
 
 	custom, customErr := parseInstallationSettings(map[string]any{"service_labels": []any{"job", "service"}})
-	require.NoError(t, customErr)
-	require.Equal(t, []string{"job", "service"}, custom.serviceLabels)
+	s.Require().NoError(customErr)
+	s.Require().Equal([]string{"job", "service"}, custom.serviceLabels)
 
 	invalid := []any{
 		nil,
@@ -299,20 +313,20 @@ func TestParseInstallationSettings(t *testing.T) {
 	}
 	for _, value := range invalid {
 		_, parseErr := parseInstallationSettings(map[string]any{"service_labels": value})
-		require.ErrorIs(t, parseErr, rez.ErrInvalidInput, "%#v", value)
+		s.Require().ErrorIs(parseErr, rez.ErrInvalidInput, "%#v", value)
 	}
 }
 
-func TestInstallIgnoresClientConfig(t *testing.T) {
+func (s *DeliverySuite) TestInstallIgnoresClientConfig() {
 	i := &Integration{}
 	first, firstErr := i.ValidateInstallationConfig([]byte(`{"token":"client-supplied"}`))
-	require.NoError(t, firstErr)
+	s.Require().NoError(firstErr)
 	second, secondErr := i.ValidateInstallationConfig(nil)
-	require.NoError(t, secondErr)
+	s.Require().NoError(secondErr)
 
-	require.NotEqual(t, first.InstallationTargetRef().ResourceRef, second.InstallationTargetRef().ResourceRef)
-	require.NoError(t, first.InstallationTargetRef().Validate())
+	s.Require().NotEqual(first.InstallationTargetRef().ResourceRef, second.InstallationTargetRef().ResourceRef)
+	s.Require().NoError(first.InstallationTargetRef().Validate())
 	encoded, encodeErr := first.Encode()
-	require.NoError(t, encodeErr)
-	require.JSONEq(t, `{}`, string(encoded))
+	s.Require().NoError(encodeErr)
+	s.Require().JSONEq(`{}`, string(encoded))
 }

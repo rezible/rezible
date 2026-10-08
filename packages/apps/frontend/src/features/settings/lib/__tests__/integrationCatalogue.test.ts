@@ -23,7 +23,6 @@ const installation = (name: string, displayName: string, capabilities: string[] 
 			provider: "test",
 			providerInstallationRef: displayName,
 			capabilities,
-			sanitizedConfig: {},
 			userSettings: {},
 		},
 	}) as IntegrationInstallation;

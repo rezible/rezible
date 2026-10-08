@@ -4497,24 +4497,29 @@ components:
           type: array
         displayName:
           type: string
+        metadata:
+          additionalProperties:
+            type: string
+          description: Read-only facts about the installation, defined by its integration
+          type: object
         name:
           type: string
         provider:
           type: string
         providerInstallationRef:
           type: string
-        sanitizedConfig:
-          additionalProperties: {}
-          type: object
         userSettings:
           additionalProperties: {}
           type: object
+        webhookUrlIssued:
+          description: Whether a webhook URL has been issued; issuing another replaces it
+          type: boolean
       required:
         - provider
         - name
         - displayName
         - providerInstallationRef
-        - sanitizedConfig
+        - webhookUrlIssued
         - userSettings
         - capabilities
       type: object

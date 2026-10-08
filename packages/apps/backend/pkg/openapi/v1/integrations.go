@@ -84,13 +84,14 @@ type (
 	}
 
 	IntegrationInstallationAttributes struct {
-		Provider                string         `json:"provider"`
-		Name                    string         `json:"name"`
-		DisplayName             string         `json:"displayName"`
-		ProviderInstallationRef string         `json:"providerInstallationRef"`
-		SanitizedConfig         map[string]any `json:"sanitizedConfig"`
-		UserSettings            map[string]any `json:"userSettings"`
-		Capabilities            []string       `json:"capabilities"`
+		Provider                string            `json:"provider"`
+		Name                    string            `json:"name"`
+		DisplayName             string            `json:"displayName"`
+		ProviderInstallationRef string            `json:"providerInstallationRef"`
+		Metadata                map[string]string `json:"metadata,omitempty" doc:"Read-only facts about the installation, defined by its integration"`
+		WebhookUrlIssued        bool              `json:"webhookUrlIssued" doc:"Whether a webhook URL has been issued; issuing another replaces it"`
+		UserSettings            map[string]any    `json:"userSettings"`
+		Capabilities            []string          `json:"capabilities"`
 	}
 
 	IntegrationOAuthInstallResult struct {
@@ -166,10 +167,6 @@ func InstallableIntegrationFromPackage(p rez.IntegrationDefinition) InstallableI
 
 func IntegrationInstallationFromRez(ii rez.InstalledIntegration) IntegrationInstallation {
 	intg := ii.Integration()
-	//cfg, cfgErr := ii.Config().EncodeSanitized()
-	//if cfgErr != nil {
-	//	slog.Warn("failed to encode integration config", "error", cfgErr.Error())
-	//}
 	attrs := IntegrationInstallationAttributes{
 		Provider:                intg.Provider,
 		Name:                    intg.Name,
@@ -177,7 +174,11 @@ func IntegrationInstallationFromRez(ii rez.InstalledIntegration) IntegrationInst
 		ProviderInstallationRef: intg.ProviderInstallationRef,
 		UserSettings:            intg.UserSettings,
 		Capabilities:            ii.Capabilities(),
-		//SanitizedConfig: cfg,
+		// Ent scans a NULL hash into an empty slice, not a nil pointer.
+		WebhookUrlIssued: intg.WebhookTokenHash != nil && len(*intg.WebhookTokenHash) > 0,
+	}
+	if withMetadata, ok := ii.(integrations.InstalledIntegrationWithMetadata); ok {
+		attrs.Metadata = withMetadata.Metadata()
 	}
 	return IntegrationInstallation{Id: intg.ID, Attributes: attrs}
 }

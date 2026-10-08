@@ -28,6 +28,7 @@ import (
 	"github.com/rezible/rezible/internal/http"
 	"github.com/rezible/rezible/internal/integrations/alertmanager"
 	demo "github.com/rezible/rezible/internal/integrations/demo"
+	"github.com/rezible/rezible/internal/integrations/webhook"
 	"github.com/rezible/rezible/internal/postgres"
 	"github.com/rezible/rezible/pkg/jobs"
 	oapi "github.com/rezible/rezible/pkg/openapi"
@@ -119,8 +120,8 @@ func (s *BackendSuite) newAppHarness(options appTestOptions) *appHarness {
 		return testClock, nil
 	})
 
-	// Select the real demo processor without installing its unrelated sync jobs, and Alertmanager, which
-	// has no sync jobs.
+	// Select the real demo processor without installing its unrelated sync jobs, and Alertmanager and the
+	// webhook integration, which have no sync jobs.
 	app.Override[[]rez.IntegrationDefinition](func(i do.Injector) ([]rez.IntegrationDefinition, error) {
 		integration, integrationErr := do.Invoke[*demo.Integration](i)
 		if integrationErr != nil {
@@ -130,7 +131,11 @@ func (s *BackendSuite) newAppHarness(options appTestOptions) *appHarness {
 		if alertmanagerErr != nil {
 			return nil, fmt.Errorf("resolve alertmanager integration: %w", alertmanagerErr)
 		}
-		return []rez.IntegrationDefinition{integration, alertmanagerIntegration}, nil
+		webhookIntegration, webhookErr := do.Invoke[*webhook.Integration](i)
+		if webhookErr != nil {
+			return nil, fmt.Errorf("resolve webhook integration: %w", webhookErr)
+		}
+		return []rez.IntegrationDefinition{integration, alertmanagerIntegration, webhookIntegration}, nil
 	})
 
 	baseOpts := do.MustInvoke[[]genkit.AiRuntimeOption](app.i)

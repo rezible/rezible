@@ -90,7 +90,7 @@ func (KnowledgeEntity) Fields() []ent.Field {
 		field.Time("state_effective_at").
 			Optional().
 			Nillable().
-			Comment("Effective time of the evidence that last changed the state."),
+			Comment("Effective time of the evidence that last changed the state. For event entities this is when the event happened, as currently known: projections set an event's evidence effective time to the event's own time."),
 	}
 }
 
@@ -110,6 +110,7 @@ func (KnowledgeEntity) Edges() []ent.Edge {
 func (KnowledgeEntity) Indexes() []ent.Index {
 	return []ent.Index{
 		index.Fields("tenant_id", "category", "kind"),
+		index.Fields("tenant_id", "kind", "state_effective_at"),
 	}
 }
 

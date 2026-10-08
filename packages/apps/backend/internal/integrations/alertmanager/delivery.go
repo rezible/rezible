@@ -204,7 +204,7 @@ func (m *alertMapper) resolveService(labels map[string]string) (string, *project
 		if !present {
 			continue
 		}
-		name := normalizeServiceName(value)
+		name := projections.NormalizeServiceName(value)
 		if name == "" {
 			continue
 		}
@@ -217,27 +217,13 @@ func (m *alertMapper) resolveService(labels map[string]string) (string, *project
 			Category:    kne.CategoryContainer,
 			Kind:        "service",
 			DisplayName: value,
+			LinkingAttributes: projections.LinkingAttributes{
+				projections.LinkingAttributeServiceName: name,
+			},
 		}
 		return name, observation
 	}
 	return "", nil
-}
-
-// normalizeServiceName lower-cases the value, replaces every run of characters outside [a-z0-9] with `-`
-// and trims `-`.
-func normalizeServiceName(value string) string {
-	var b strings.Builder
-	separated := false
-	for _, r := range strings.ToLower(value) {
-		if (r >= 'a' && r <= 'z') || (r >= '0' && r <= '9') {
-			b.WriteRune(r)
-			separated = false
-		} else if !separated {
-			b.WriteByte('-')
-			separated = true
-		}
-	}
-	return strings.Trim(b.String(), "-")
 }
 
 // identityDigest is the SHA-256 hex digest of the JSON-encoded tuple.

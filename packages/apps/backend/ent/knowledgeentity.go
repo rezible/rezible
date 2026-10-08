@@ -33,7 +33,7 @@ type KnowledgeEntity struct {
 	Kind string `json:"kind,omitempty"`
 	// Current display name, description and properties, merged from observed evidence.
 	State schematypes.KnowledgeGraphSubjectState `json:"state,omitempty"`
-	// Effective time of the evidence that last changed the state.
+	// Effective time of the evidence that last changed the state. For event entities this is when the event happened, as currently known: projections set an event's evidence effective time to the event's own time.
 	StateEffectiveAt *time.Time `json:"state_effective_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the KnowledgeEntityQuery when eager-loading is set.

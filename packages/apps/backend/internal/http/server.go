@@ -7,12 +7,15 @@ import (
 	"log/slog"
 	"net"
 	"net/http"
+	"runtime/debug"
 	"strings"
 	"sync"
 	"sync/atomic"
+	"time"
 
 	mapset "github.com/deckarep/golang-set/v2"
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/httplog/v3"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/pkg/execution"
@@ -42,9 +45,9 @@ const (
 	healthCheckPath    = "/health"
 	readinessCheckPath = "/ready"
 
-	// Alertmanager webhook URLs carry their secret token as the final path segment; the handler logs each
-	// delivery without it.
-	alertmanagerWebhookPathPrefix = "/webhooks/alertmanager/"
+	// Webhook URLs may carry a secret in their path, so the request logger skips them and the webhooks
+	// router logs each request without the path below the handler's name.
+	webhooksPath = "/webhooks"
 	// Webhook token issuance responses carry a secret webhook URL.
 	webhookTokenPathSuffix = "/webhook-token"
 )
@@ -65,13 +68,7 @@ func NewServer(
 	router.Get(healthCheckPath, s.makeHealthCheckHandler(healthFn))
 	router.Get(readinessCheckPath, s.makeReadyCheckHandler())
 
-	webhooksHandler := chi.NewMux()
-	for prefix, wh := range webhooks {
-		route := ensureSlashPrefix(prefix)
-		slog.Debug("mounting webhook handler", "route", route)
-		webhooksHandler.Mount(route, wh)
-	}
-	router.Mount("/webhooks", webhooksHandler)
+	router.Mount(webhooksPath, s.makeWebhooksRouter(webhooks))
 
 	router.Mount("/auth", userAuth.MakeAuthHandler())
 
@@ -94,6 +91,56 @@ func (s *Server) makeServer(cfg rez.Config, r *chi.Mux) *http.Server {
 	}
 }
 
+func (s *Server) makeWebhooksRouter(webhooks WebhookHandlers) http.Handler {
+	router := chi.NewMux()
+	for prefix, wh := range webhooks {
+		route := ensureSlashPrefix(prefix)
+		slog.Debug("mounting webhook handler", "route", route)
+		router.With(s.makeWebhookRequestLoggerMiddleware(webhooksPath+route)).Mount(route, wh)
+	}
+	return router
+}
+
+// makeWebhookRequestLoggerMiddleware logs each request to one webhook handler by the handler's path, never the
+// rest of the request path. Handlers log their own deliveries. The request logger skips webhook requests, so
+// this middleware also recovers a handler's panic and logs it here, without the panic value, which may carry
+// the request path.
+func (s *Server) makeWebhookRequestLoggerMiddleware(handlerPath string) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			start := time.Now()
+			ww := middleware.NewWrapResponseWriter(w, r.ProtoMajor)
+			defer func() {
+				level := slog.LevelInfo
+				attrs := []slog.Attr{
+					slog.String("method", r.Method),
+					slog.String("path", handlerPath),
+				}
+				recovered := recover()
+				if recovered != nil {
+					if ww.Status() == 0 {
+						ww.WriteHeader(http.StatusInternalServerError)
+					}
+					level = slog.LevelError
+					attrs = append(attrs,
+						slog.String("panic", fmt.Sprintf("%T", recovered)),
+						slog.String("stack", string(debug.Stack())),
+					)
+				}
+				attrs = append(attrs,
+					slog.Int("status", ww.Status()),
+					slog.Duration("duration", time.Since(start)),
+				)
+				s.logger.LogAttrs(r.Context(), level, "webhook request", attrs...)
+				if recovered == http.ErrAbortHandler {
+					panic(recovered)
+				}
+			}()
+			next.ServeHTTP(ww, r)
+		})
+	}
+}
+
 func ensureSlashPrefix(s string) string {
 	if !strings.HasPrefix(s, "/") {
 		return "/" + s
@@ -112,13 +159,19 @@ func (s *Server) makeSetRootExecutionContextMiddleware() func(http.Handler) http
 
 func (s *Server) makeHealthCheckHandler(hc HealthCheckFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		checkErrors := hc(r.Context())
-		if len(checkErrors) > 0 {
-			slog.Debug("health check errors", "errors", checkErrors)
-			w.WriteHeader(http.StatusInternalServerError)
-		} else {
-			w.WriteHeader(http.StatusOK)
+		// The injector reports every service it has created, with a nil error for each healthy one.
+		failures := make(map[string]error)
+		for service, checkErr := range hc(r.Context()) {
+			if checkErr != nil {
+				failures[service] = checkErr
+			}
 		}
+		if len(failures) > 0 {
+			s.logger.WarnContext(r.Context(), "health check failed", "failures", failures)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
 	}
 }
 
@@ -143,7 +196,7 @@ func (s *Server) makeRequestLoggerMiddleware(concise bool, basePath string) func
 
 	skipPaths := mapset.NewThreadUnsafeSet(healthCheckPath, readinessCheckPath)
 	// The logged path includes the base path.
-	skipPathPrefix := basePath + alertmanagerWebhookPathPrefix
+	skipPathPrefix := basePath + webhooksPath + "/"
 	return httplog.RequestLogger(s.logger, &httplog.Options{
 		Level:         slog.LevelInfo,
 		Schema:        logFormat,

@@ -9,6 +9,7 @@ import RiGoogleFill from "remixicon-svelte/icons/google-fill";
 import RiLineChartLine from "remixicon-svelte/icons/line-chart-line";
 import RiPlugLine from "remixicon-svelte/icons/plug-line";
 import RiSlackFill from "remixicon-svelte/icons/slack-fill";
+import RiWebhookLine from "remixicon-svelte/icons/webhook-line";
 
 export type IntegrationProviderInfo = {
 	name: string;
@@ -43,6 +44,12 @@ const knownProviders: Record<string, Omit<IntegrationProviderInfo, "name">> = {
 		description: "Read logs from Loki and metrics from Prometheus through Grafana.",
 		icon: RiLineChartLine,
 		connectionNoun: "installations",
+	},
+	webhook: {
+		displayName: "Webhook",
+		description: "Receive deployment reports from the pipelines that deploy your services.",
+		icon: RiWebhookLine,
+		connectionNoun: "webhooks",
 	},
 	google: {
 		displayName: "Google Workspace",

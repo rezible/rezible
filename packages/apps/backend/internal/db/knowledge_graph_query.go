@@ -9,9 +9,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"regexp"
 	"slices"
 	"strings"
 
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqljson"
 	mapset "github.com/deckarep/golang-set/v2"
 	"github.com/google/uuid"
 
@@ -384,6 +387,91 @@ func (s *KnowledgeGraphQueryService) ResolveStructure(ctx context.Context, param
 	}
 
 	return knowledgegraph.Resolve(graph, params.EntityIDs, params.TargetCategories, params.MaxDepth), nil
+}
+
+// relatedEventPropertyKeyPattern bounds property filter keys, which the JSON path writes into the query text.
+var relatedEventPropertyKeyPattern = regexp.MustCompile(`^[A-Za-z0-9_]+$`)
+
+func (s *KnowledgeGraphQueryService) validateListRelatedEventsParams(p rez.ListRelatedEventsParams) error {
+	if p.Limit < 1 {
+		return fmt.Errorf("%w: limit must be positive", rez.ErrInvalidInput)
+	}
+	if p.Kind == "" {
+		return fmt.Errorf("%w: event kind is required", rez.ErrInvalidInput)
+	}
+	if validationErr := knr.PredicateValidator(p.Predicate); validationErr != nil {
+		return fmt.Errorf("%w: invalid relationship predicate", rez.ErrInvalidInput)
+	}
+	for key := range p.PropertyEquals {
+		if !relatedEventPropertyKeyPattern.MatchString(key) {
+			return fmt.Errorf("%w: invalid property key", rez.ErrInvalidInput)
+		}
+	}
+	for _, key := range p.PropertyAbsent {
+		if !relatedEventPropertyKeyPattern.MatchString(key) {
+			return fmt.Errorf("%w: invalid property key", rez.ErrInvalidInput)
+		}
+	}
+	return nil
+}
+
+func (s *KnowledgeGraphQueryService) ListRelatedEvents(ctx context.Context, params rez.ListRelatedEventsParams) (*rez.RelatedEvents, error) {
+	if paramsErr := s.validateListRelatedEventsParams(params); paramsErr != nil {
+		return nil, paramsErr
+	}
+
+	query := s.db.Client(ctx).KnowledgeEntity.Query().
+		Where(
+			kne.CategoryEQ(kne.CategoryEvent),
+			kne.Kind(params.Kind),
+			kne.StateEffectiveAtNotNil(),
+			kne.HasSourceRelationshipsWith(
+				knr.PredicateEQ(params.Predicate),
+				knr.TargetEntityID(params.EntityID),
+			),
+		)
+	if !params.From.IsZero() {
+		if params.FromInclusive {
+			query.Where(kne.StateEffectiveAtGTE(params.From))
+		} else {
+			query.Where(kne.StateEffectiveAtGT(params.From))
+		}
+	}
+	if !params.To.IsZero() {
+		if params.ToInclusive {
+			query.Where(kne.StateEffectiveAtLTE(params.To))
+		} else {
+			query.Where(kne.StateEffectiveAtLT(params.To))
+		}
+	}
+	for key, value := range params.PropertyEquals {
+		// state->'properties'->>key = value
+		query.Where(func(sel *sql.Selector) {
+			sel.Where(sqljson.ValueEQ(sel.C(kne.FieldState), value, sqljson.Path("properties", key)))
+		})
+	}
+	for _, key := range params.PropertyAbsent {
+		// state->'properties'->>key IS NULL
+		query.Where(func(sel *sql.Selector) {
+			sel.Where(sql.Not(sqljson.HasKey(sel.C(kne.FieldState), sqljson.Path("properties", key), sqljson.Unquote(true))))
+		})
+	}
+	query.
+		Order(kne.ByStateEffectiveAt(sql.OrderDesc()), kne.ByID()).
+		Limit(params.Limit + 1)
+
+	events, queryErr := query.All(ctx)
+	if queryErr != nil {
+		return nil, fmt.Errorf("query related events: %w", queryErr)
+	}
+	result := &rez.RelatedEvents{
+		Events: events,
+	}
+	if len(events) > params.Limit {
+		result.Events = events[:params.Limit]
+		result.Cut = true
+	}
+	return result, nil
 }
 
 const knowledgeGraphQueryVersion = 1

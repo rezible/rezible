@@ -2138,6 +2138,11 @@ var (
 				Unique:  false,
 				Columns: []*schema.Column{KnowledgeEntitiesColumns[7], KnowledgeEntitiesColumns[3], KnowledgeEntitiesColumns[4]},
 			},
+			{
+				Name:    "knowledgeentity_tenant_id_kind_state_effective_at",
+				Unique:  false,
+				Columns: []*schema.Column{KnowledgeEntitiesColumns[7], KnowledgeEntitiesColumns[4], KnowledgeEntitiesColumns[6]},
+			},
 		},
 	}
 	// KnowledgeEntityLinkingAttributesColumns holds the columns for the "knowledge_entity_linking_attributes" table.

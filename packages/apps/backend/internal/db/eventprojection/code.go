@@ -33,6 +33,7 @@ func (s *ProjectionService) handleCodeForgeEvent(ctx context.Context, event *pro
 		Category:            kne.CategoryCode,
 		Kind:                knowledgeEntityKindRepository,
 		ProviderResourceRef: repositoryResourceRef,
+		LinkingAttributes:   event.Attributes.LinkingAttributes,
 	}
 	evidence := rez.KnowledgeEvidenceRef{
 		Kind:        projectionEvidenceKind(event.Event),
@@ -74,12 +75,13 @@ func (s *ProjectionService) handleCodeChangeEvent(ctx context.Context, event *pr
 		},
 		Subject: rez.KnowledgeSubjectRef{Entity: &changeRef},
 	}
-
-	repositoryRef := rez.KnowledgeEntityRef{
-		Category:            attributes.Repository.Category,
-		Kind:                attributes.Repository.Kind,
-		ProviderResourceRef: attributes.Repository.Ref,
+	if attributes.Merge != nil {
+		// The change is an event at its merge time.
+		codeChangeEvidence.EffectiveAt = attributes.Merge.MergedAt
+		codeChangeEvidence.SubjectState.Properties = attributes.Merge.StateProperties()
 	}
+
+	repositoryRef := attributes.Repository.KnowledgeEntityRef()
 	repoEntityEvidence := rez.KnowledgeEvidenceRef{
 		Kind:        evidenceKind,
 		Assertion:   knowledgeAssertionCodeRepositoryObserved,
@@ -109,11 +111,7 @@ func (s *ProjectionService) handleCodeChangeEvent(ctx context.Context, event *pr
 	evidence := []rez.KnowledgeEvidenceRef{codeChangeEvidence, repoEntityEvidence, codeChangeRepoEvidence}
 
 	for _, related := range projections.SortEntityObservations(attributes.ImpactedEntities) {
-		relatedEntityRef := rez.KnowledgeEntityRef{
-			Category:            related.Category,
-			Kind:                related.Kind,
-			ProviderResourceRef: related.Ref,
-		}
+		relatedEntityRef := related.KnowledgeEntityRef()
 		relatedEntityEvidence := rez.KnowledgeEvidenceRef{
 			Kind:        evidenceKind,
 			Assertion:   knowledgeAssertionCodeEntityObserved,

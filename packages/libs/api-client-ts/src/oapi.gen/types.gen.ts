@@ -2082,15 +2082,22 @@ export type IntegrationInstallation = {
 export type IntegrationInstallationAttributes = {
     capabilities: Array<string>;
     displayName: string;
+    /**
+     * Read-only facts about the installation, defined by its integration
+     */
+    metadata?: {
+        [key: string]: string;
+    };
     name: string;
     provider: string;
     providerInstallationRef: string;
-    sanitizedConfig: {
-        [key: string]: unknown;
-    };
     userSettings: {
         [key: string]: unknown;
     };
+    /**
+     * Whether a webhook URL has been issued; issuing another replaces it
+     */
+    webhookUrlIssued: boolean;
 };
 
 export type IntegrationOAuthFlow = {

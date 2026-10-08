@@ -57,6 +57,7 @@ func (s *ProjectionService) registerProjectorFuncs() {
 		projections.KindCodeChange:         makeProjector(projections.DecodeCodeChangeEvent, s.handleCodeChangeEvent),
 		projections.KindIncident:           makeProjector(projections.DecodeIncidentEvent, s.handleIncidentEvent),
 		projections.KindAlertInstance:      makeProjector(projections.DecodeAlertInstanceEvent, s.handleAlertInstanceEvent),
+		projections.KindDeployment:         makeProjector(projections.DecodeDeploymentEvent, s.handleDeploymentEvent),
 	}
 }
 

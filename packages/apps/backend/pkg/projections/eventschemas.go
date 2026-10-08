@@ -2,6 +2,7 @@ package projections
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -39,8 +40,9 @@ type (
 
 	// CodeForgeEventAttributes are the provider-neutral attributes persisted for repository observations.
 	CodeForgeEventAttributes struct {
-		DisplayName string `json:"display_name" validate:"required"`
-		URL         string `json:"url"`
+		DisplayName       string            `json:"display_name" validate:"required"`
+		URL               string            `json:"url"`
+		LinkingAttributes LinkingAttributes `json:"linking_attributes,omitempty"`
 	}
 )
 
@@ -59,10 +61,54 @@ type (
 		Repository       EntityObservation   `json:"repository" validate:"required"`
 		DisplayName      string              `json:"display_name" validate:"required"`
 		ImpactedEntities []EntityObservation `json:"impacted_entities"`
+		// Merge is set when the change was merged.
+		Merge *CodeChangeMerge `json:"merge,omitempty"`
+	}
+
+	// CodeChangeMerge is what linking a merged change to deployments needs.
+	CodeChangeMerge struct {
+		MergedAt time.Time `json:"merged_at" validate:"required"`
+		// MergeCommitSha is lower-case.
+		MergeCommitSha string `json:"merge_commit_sha" validate:"required"`
+		BaseRef        string `json:"base_ref" validate:"required"`
+		// IntoDefaultBranch is whether the base ref is the repository's default branch.
+		IntoDefaultBranch bool   `json:"into_default_branch"`
+		Number            int    `json:"number" validate:"required"`
+		URL               string `json:"url"`
+		AuthorLogin       string `json:"author_login"`
 	}
 )
 
 const KindCodeChange = "code_change"
+
+// The merged code change entity's state properties. Every value is a string.
+const (
+	CodeChangePropertyMergedAt          = "merged_at"
+	CodeChangePropertyMergeCommitSha    = "merge_commit_sha"
+	CodeChangePropertyBaseRef           = "base_ref"
+	CodeChangePropertyIntoDefaultBranch = "into_default_branch"
+	CodeChangePropertyNumber            = "number"
+	CodeChangePropertyURL               = "url"
+	CodeChangePropertyAuthor            = "author"
+)
+
+// StateProperties are the merged code change entity's state properties, omitting an absent URL or author.
+func (m CodeChangeMerge) StateProperties() map[string]any {
+	properties := map[string]any{
+		CodeChangePropertyMergedAt:          m.MergedAt.UTC().Format(time.RFC3339Nano),
+		CodeChangePropertyMergeCommitSha:    m.MergeCommitSha,
+		CodeChangePropertyBaseRef:           m.BaseRef,
+		CodeChangePropertyIntoDefaultBranch: strconv.FormatBool(m.IntoDefaultBranch),
+		CodeChangePropertyNumber:            strconv.Itoa(m.Number),
+	}
+	if m.URL != "" {
+		properties[CodeChangePropertyURL] = m.URL
+	}
+	if m.AuthorLogin != "" {
+		properties[CodeChangePropertyAuthor] = m.AuthorLogin
+	}
+	return properties
+}
 
 func DecodeCodeChangeEvent(ev *ent.NormalizedEvent) (*CodeChangeEvent, error) {
 	return DecodeEventAttributes[CodeChangeEventAttributes](ev)
@@ -96,6 +142,54 @@ func (a UserEntityLinkingAttributes) Values() map[string]string {
 }
 
 const KindUser = "user"
+
+// Linking attributes shared by providers that name the same service or repository.
+const (
+	// LinkingAttributeServiceName is a service's name, normalized with NormalizeServiceName.
+	LinkingAttributeServiceName = "service.name"
+	// LinkingAttributeRepositoryFullName is a repository's `owner/name`, lower-cased.
+	LinkingAttributeRepositoryFullName = "repository.full_name"
+)
+
+// LinkingAttributes are an observation's linking attribute values, already normalized by the provider.
+type LinkingAttributes map[string]string
+
+func (a LinkingAttributes) Values() map[string]string {
+	return a
+}
+
+// NormalizeServiceName lower-cases the value, replaces every run of characters outside [a-z0-9] with `-`
+// and trims `-`.
+func NormalizeServiceName(value string) string {
+	var b strings.Builder
+	separated := false
+	for _, r := range strings.ToLower(value) {
+		if (r >= 'a' && r <= 'z') || (r >= '0' && r <= '9') {
+			b.WriteRune(r)
+			separated = false
+		} else if !separated {
+			b.WriteByte('-')
+			separated = true
+		}
+	}
+	return strings.Trim(b.String(), "-")
+}
+
+// NormalizeRepositoryFullName canonicalizes a repository's `owner/name` for matching across providers.
+func NormalizeRepositoryFullName(fullName string) string {
+	return strings.ToLower(strings.TrimSpace(fullName))
+}
+
+// RepositoryLinkingAttributes link a repository to other providers' observations of the same `owner/name`.
+func RepositoryLinkingAttributes(fullName string) LinkingAttributes {
+	normalized := NormalizeRepositoryFullName(fullName)
+	if normalized == "" {
+		return nil
+	}
+	return LinkingAttributes{
+		LinkingAttributeRepositoryFullName: normalized,
+	}
+}
 
 func DecodeUserEvent(ev *ent.NormalizedEvent) (*UserEvent, error) {
 	return DecodeEventAttributes[UserEventAttributes](ev)
@@ -256,4 +350,92 @@ const KindSystemRelationship = "system_relationship"
 
 func DecodeSystemRelationshipEvent(ev *ent.NormalizedEvent) (*SystemRelationshipEvent, error) {
 	return DecodeEventAttributes[SystemRelationshipEventAttributes](ev)
+}
+
+type (
+	// DeploymentEvent is one report of a deployment's progress.
+	DeploymentEvent = Event[DeploymentEventAttributes]
+
+	// DeploymentEventAttributes are the provider-neutral attributes persisted for a deployment report. The
+	// event's provider resource ref identifies the deployment.
+	DeploymentEventAttributes struct {
+		// ExternalID is the caller's ID for the deployment.
+		ExternalID  string                `json:"external_id" validate:"required"`
+		Status      string                `json:"status" validate:"required,oneof=started succeeded failed"`
+		Service     EntityObservation     `json:"service" validate:"required"`
+		Environment DeploymentEnvironment `json:"environment" validate:"required"`
+		Repository  *EntityObservation    `json:"repository,omitempty"`
+		Sha         string                `json:"sha,omitempty"`
+		Version     string                `json:"version,omitempty"`
+		URL         string                `json:"url,omitempty"`
+		StartedAt   *time.Time            `json:"started_at,omitempty"`
+		FinishedAt  *time.Time            `json:"finished_at,omitempty"`
+	}
+
+	// DeploymentEnvironment names where a deployment went. It is not an entity.
+	DeploymentEnvironment struct {
+		// Name is normalized with NormalizeServiceName.
+		Name        string `json:"name" validate:"required"`
+		DisplayName string `json:"display_name" validate:"required"`
+	}
+)
+
+const KindDeployment = "deployment"
+
+// The deployment entity's state properties. Every value is a string.
+const (
+	DeploymentPropertyEnvironment = "environment"
+	DeploymentPropertyStatus      = "status"
+	DeploymentPropertyExternalID  = "external_id"
+	DeploymentPropertySha         = "sha"
+	DeploymentPropertyVersion     = "version"
+	DeploymentPropertyURL         = "url"
+	DeploymentPropertyRepository  = "repository"
+	DeploymentPropertyStartedAt   = "started_at"
+	DeploymentPropertyFinishedAt  = "finished_at"
+)
+
+const (
+	DeploymentStatusStarted   = "started"
+	DeploymentStatusSucceeded = "succeeded"
+	DeploymentStatusFailed    = "failed"
+)
+
+// Finished reports whether the report's status is terminal.
+func (a DeploymentEventAttributes) Finished() bool {
+	return a.Status == DeploymentStatusSucceeded || a.Status == DeploymentStatusFailed
+}
+
+// StateProperties are the deployment entity's state properties, omitting absent values. A report is complete,
+// so they replace the previous report's properties whole.
+func (a DeploymentEventAttributes) StateProperties() map[string]any {
+	properties := map[string]any{
+		DeploymentPropertyEnvironment: a.Environment.Name,
+		DeploymentPropertyStatus:      a.Status,
+		DeploymentPropertyExternalID:  a.ExternalID,
+	}
+	optional := map[string]string{
+		DeploymentPropertySha:     a.Sha,
+		DeploymentPropertyVersion: a.Version,
+		DeploymentPropertyURL:     a.URL,
+	}
+	if a.Repository != nil {
+		optional[DeploymentPropertyRepository] = a.Repository.LinkingAttributes[LinkingAttributeRepositoryFullName]
+	}
+	if a.StartedAt != nil {
+		optional[DeploymentPropertyStartedAt] = a.StartedAt.UTC().Format(time.RFC3339Nano)
+	}
+	if a.FinishedAt != nil {
+		optional[DeploymentPropertyFinishedAt] = a.FinishedAt.UTC().Format(time.RFC3339Nano)
+	}
+	for key, value := range optional {
+		if value != "" {
+			properties[key] = value
+		}
+	}
+	return properties
+}
+
+func DecodeDeploymentEvent(ev *ent.NormalizedEvent) (*DeploymentEvent, error) {
+	return DecodeEventAttributes[DeploymentEventAttributes](ev)
 }

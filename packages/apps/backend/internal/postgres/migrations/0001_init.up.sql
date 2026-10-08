@@ -298,6 +298,8 @@ CREATE TABLE "knowledge_entities" ("id" uuid NOT NULL, "created_at" timestamptz 
 CREATE INDEX "knowledgeentity_tenant_id" ON "knowledge_entities" ("tenant_id");
 -- create index "knowledgeentity_tenant_id_category_kind" to table: "knowledge_entities"
 CREATE INDEX "knowledgeentity_tenant_id_category_kind" ON "knowledge_entities" ("tenant_id", "category", "kind");
+-- create index "knowledgeentity_tenant_id_kind_state_effective_at" to table: "knowledge_entities"
+CREATE INDEX "knowledgeentity_tenant_id_kind_state_effective_at" ON "knowledge_entities" ("tenant_id", "kind", "state_effective_at");
 -- create "knowledge_entity_linking_attributes" table
 CREATE TABLE "knowledge_entity_linking_attributes" ("id" uuid NOT NULL, "attribute" character varying NOT NULL, "value" character varying NOT NULL, "tenant_id" bigint NOT NULL, "entity_id" uuid NOT NULL, PRIMARY KEY ("id"));
 -- create index "knowledgeentitylinkingattribute_tenant_id" to table: "knowledge_entity_linking_attributes"

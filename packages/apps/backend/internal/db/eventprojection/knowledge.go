@@ -13,6 +13,7 @@ import (
 const (
 	knowledgeEntityKindAlert      = "alert"
 	knowledgeEntityKindCodeChange = "code_change"
+	knowledgeEntityKindDeployment = "deployment"
 	knowledgeEntityKindIncident   = "incident"
 	knowledgeEntityKindRepository = "repository"
 	knowledgeEntityKindTeam       = "team"

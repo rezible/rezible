@@ -49,11 +49,7 @@ func (s *ProjectionService) handleAlertInstanceEvent(ctx context.Context, e *pro
 	evidenceKind := projectionEvidenceKind(event)
 	supportingEvidence := make([]rez.KnowledgeEvidenceRef, 0, len(attrs.ObservedEntities)*2)
 	for _, observed := range projections.SortEntityObservations(attrs.ObservedEntities) {
-		observedEntityRef := rez.KnowledgeEntityRef{
-			Category:            observed.Category,
-			Kind:                observed.Kind,
-			ProviderResourceRef: observed.Ref,
-		}
+		observedEntityRef := observed.KnowledgeEntityRef()
 		entityEvidence := rez.KnowledgeEvidenceRef{
 			Kind:        evidenceKind,
 			Assertion:   knowledgeAssertionAlertEntityObserved,

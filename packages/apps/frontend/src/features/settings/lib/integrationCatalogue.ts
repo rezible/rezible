@@ -2,6 +2,7 @@ import type { InstallableIntegration, IntegrationInstallation } from "$lib/api";
 
 const capabilityLabels: Record<string, string> = {
 	alerts: "Alerts",
+	deployments: "Deployments",
 	chat_context: "Chat",
 	incident_management: "Incident channels",
 	video_conferencing: "Video calls",

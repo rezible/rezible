@@ -572,6 +572,8 @@ DROP INDEX "knowledgeentitylinkingattribute_tenant_id_attribute_value";
 DROP INDEX "knowledgeentitylinkingattribute_tenant_id";
 -- reverse: create "knowledge_entity_linking_attributes" table
 DROP TABLE "knowledge_entity_linking_attributes";
+-- reverse: create index "knowledgeentity_tenant_id_kind_state_effective_at" to table: "knowledge_entities"
+DROP INDEX "knowledgeentity_tenant_id_kind_state_effective_at";
 -- reverse: create index "knowledgeentity_tenant_id_category_kind" to table: "knowledge_entities"
 DROP INDEX "knowledgeentity_tenant_id_category_kind";
 -- reverse: create index "knowledgeentity_tenant_id" to table: "knowledge_entities"

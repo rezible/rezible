@@ -13,6 +13,7 @@ import (
 	"github.com/rezible/rezible/ent/schema/schematypes"
 	sitlink "github.com/rezible/rezible/ent/situationlink"
 	sitsig "github.com/rezible/rezible/ent/situationsignal"
+	"github.com/rezible/rezible/pkg/projections"
 	"github.com/rezible/rezible/pkg/situations"
 )
 
@@ -92,6 +93,28 @@ func (s *SituationServiceSuite) TestCorrelationBySharedEntity() {
 	memberships, countErr := tdb.Client(ctx).SituationSignal.Query().Count(ctx)
 	s.Require().NoError(countErr)
 	s.Equal(2, memberships)
+}
+
+func (s *SituationServiceSuite) TestCorrelationAcrossInstallationsThroughSharedService() {
+	ctx, tdb := s.SetupTestDatabase()
+	h := s.newFixture(tdb)
+	checkoutLinking := projections.LinkingAttributes{
+		projections.LinkingAttributeServiceName: "checkout-api",
+	}
+	checkoutFromA := s.entityRef(kne.CategoryContainer, "installation-a:checkout-api")
+	checkoutFromA.LinkingAttributes = checkoutLinking
+	checkoutFromB := s.entityRef(kne.CategoryContainer, "installation-b:checkout-api")
+	checkoutFromB.LinkingAttributes = checkoutLinking
+
+	first := s.signal(ctx, tdb, h, "checkout-errors", 5, checkoutFromA)
+	second := s.signal(ctx, tdb, h, "checkout-latency", 6, checkoutFromB)
+	s.processNotified(ctx, h)
+
+	placed := s.placed(ctx, tdb, h, first, second)
+	s.Require().NotNil(placed[0])
+	s.Require().NotNil(placed[1])
+	s.Equal(placed[0].ID, placed[1].ID)
+	s.Equal(sitsig.MatchKindSharedEntity, s.members(placed[1])[second].MatchKind)
 }
 
 func (s *SituationServiceSuite) TestCorrelationByDependency() {

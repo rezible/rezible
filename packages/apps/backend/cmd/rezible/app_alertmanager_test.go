@@ -149,8 +149,15 @@ func (s *BackendSuite) TestAlertmanagerDeliveries() {
 	s.NotEqual(first.Attributes.ProviderInstallationRef, second.Attributes.ProviderInstallationRef)
 	s.NotEqual("client-supplied", first.Attributes.ProviderInstallationRef)
 
-	// Issuing again replaces the earlier token.
+	// Issuing again replaces the earlier token; the installation says whether one was issued.
+	get := j.API(j.owner).Operation[oapiv1.GetIntegrationInstallationRequest, oapiv1.GetIntegrationInstallationResponse](oapiv1.GetIntegrationInstallation)
+	webhookUrlIssued := func() bool {
+		return get.Call(s.T().Context(), oapiv1.GetIntegrationInstallationRequest{Id: first.Id}).Body.Data.Attributes.WebhookUrlIssued
+	}
+	s.False(first.Attributes.WebhookUrlIssued)
+	s.False(webhookUrlIssued())
 	replacedPath := j.issueWebhookPath(first.Id)
+	s.True(webhookUrlIssued())
 	firstPath := j.issueWebhookPath(first.Id)
 	secondPath := j.issueWebhookPath(second.Id)
 

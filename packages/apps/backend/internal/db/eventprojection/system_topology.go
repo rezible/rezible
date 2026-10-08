@@ -56,17 +56,8 @@ func (s *ProjectionService) handleSystemRelationshipEvent(ctx context.Context, e
 	event := e.Event
 	attrs := e.Attributes
 
-	sourceEntityRef := rez.KnowledgeEntityRef{
-		Category:            attrs.Source.Category,
-		Kind:                attrs.Source.Kind,
-		ProviderResourceRef: attrs.Source.Ref,
-	}
-
-	targetEntityRef := rez.KnowledgeEntityRef{
-		Category:            attrs.Target.Category,
-		Kind:                attrs.Target.Kind,
-		ProviderResourceRef: attrs.Target.Ref,
-	}
+	sourceEntityRef := attrs.Source.KnowledgeEntityRef()
+	targetEntityRef := attrs.Target.KnowledgeEntityRef()
 	evidenceKind := projectionEvidenceKind(event)
 	sourceEvidenceRef := rez.KnowledgeEvidenceRef{
 		Kind:        evidenceKind,

@@ -15,6 +15,7 @@ import GithubProvider from "./github/GithubProvider.svelte";
 import DemoProvider from "./demo/DemoProvider.svelte";
 import AlertmanagerProvider from "./alertmanager/AlertmanagerProvider.svelte";
 import GrafanaProvider from "./grafana/GrafanaProvider.svelte";
+import WebhookProvider from "./webhook/WebhookProvider.svelte";
 
 const providerComponents: Record<string, Component> = {
 	slack: SlackProvider,
@@ -23,6 +24,7 @@ const providerComponents: Record<string, Component> = {
 	demo: DemoProvider,
 	alertmanager: AlertmanagerProvider,
 	grafana: GrafanaProvider,
+	webhook: WebhookProvider,
 };
 
 export class IntegrationProviderController {

@@ -22,6 +22,7 @@ import (
 	"github.com/rezible/rezible/internal/integrations/slack"
 	"github.com/rezible/rezible/internal/integrations/slack/slackagent"
 	"github.com/rezible/rezible/internal/integrations/slack/slackincidents"
+	"github.com/rezible/rezible/internal/integrations/webhook"
 	"github.com/rezible/rezible/internal/koanf"
 	"github.com/rezible/rezible/internal/opentelemetry"
 	"github.com/rezible/rezible/internal/postgres"
@@ -250,6 +251,7 @@ var pkgIntegrations = do.Package(
 			demoprovider.ProviderName:     demoprovider.EventProcessor{},
 			github.ProviderName:           github.EventProcessor{},
 			slackintegration.ProviderName: slackagent.EventProcessor{},
+			webhook.ProviderName:          webhook.EventProcessor{},
 		}, nil
 	}),
 
@@ -273,6 +275,15 @@ var pkgIntegrations = do.Package(
 
 	do.Lazy(func(i do.Injector) (*alertmanager.Integration, error) {
 		return alertmanager.MakeIntegration(
+			do.MustInvoke[rez.TelemetryService](i),
+			do.MustInvoke[rez.Clock](i),
+			do.MustInvoke[rez.ProviderEventPipelineService](i),
+			do.MustInvoke[rez.IntegrationInstallationLookup](i),
+		)
+	}),
+
+	do.Lazy(func(i do.Injector) (*webhook.Integration, error) {
+		return webhook.MakeIntegration(
 			do.MustInvoke[rez.TelemetryService](i),
 			do.MustInvoke[rez.Clock](i),
 			do.MustInvoke[rez.ProviderEventPipelineService](i),
@@ -355,6 +366,7 @@ var pkgIntegrations = do.Package(
 			do.MustInvoke[*grafana.Integration](i),
 			do.MustInvoke[*slackagent.Integration](i),
 			do.MustInvoke[*slackincidents.Integration](i),
+			do.MustInvoke[*webhook.Integration](i),
 		}, nil
 	}),
 )

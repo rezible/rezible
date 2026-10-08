@@ -14,10 +14,11 @@
 	import { IntegrationSettingsForms } from "$features/settings/lib/integrationSettingsForms.svelte";
 
 	import IntegrationConnections from "../../integration-connections/IntegrationConnections.svelte";
+	import WebhookUrl from "../../webhook-url/WebhookUrl.svelte";
+	import { WebhookUrlController } from "../../webhook-url/webhookUrl.svelte";
+	import WebhookUrlGenerateDialog from "../../webhook-url-generate-dialog/WebhookUrlGenerateDialog.svelte";
 	import { useIntegrationProviderController } from "../controller.svelte";
-	import AlertmanagerGenerateDialog from "./AlertmanagerGenerateDialog.svelte";
 	import AlertmanagerServiceLabelsForm from "./AlertmanagerServiceLabelsForm.svelte";
-	import AlertmanagerWebhookUrl from "./AlertmanagerWebhookUrl.svelte";
 	import { alertmanagerSettings, routingExample } from "./alertmanagerSettings";
 	import {
 		AlertmanagerProviderController,
@@ -34,6 +35,7 @@
 
 	const forms = new IntegrationSettingsForms(alertmanagerSettings, () => installations);
 	const alertmanager = new AlertmanagerProviderController(ctrl);
+	const webhookUrls = new WebhookUrlController();
 </script>
 
 {#snippet installButton(label: string)}
@@ -53,16 +55,16 @@
 {/snippet}
 
 {#snippet connectionBody(installation: IntegrationInstallation)}
-	{@const example = routingExample(alertmanager.issuedUrl(installation.id))}
+	{@const example = routingExample(webhookUrls.issuedUrl(installation.id))}
 	<div class="flex flex-col gap-6 border-t pt-4">
 		<div class="flex flex-col gap-3">
-			<AlertmanagerWebhookUrl {installation} {alertmanager} />
+			<WebhookUrl {installation} {webhookUrls} sender="Alertmanager sends alerts" />
 		</div>
 
 		<div class="flex flex-col gap-2">
 			<div class="flex items-center justify-between gap-2">
 				<h3 class="text-sm font-medium">Alertmanager configuration</h3>
-				<Button variant="ghost" size="sm" onclick={() => alertmanager.copy(example, "Configuration")}>
+				<Button variant="ghost" size="sm" onclick={() => webhookUrls.copy(example, "Configuration")}>
 					<RiFileCopyLine />
 					Copy
 				</Button>
@@ -129,4 +131,4 @@
 	</Card.Content>
 </Card.Root>
 
-<AlertmanagerGenerateDialog {alertmanager} />
+<WebhookUrlGenerateDialog {webhookUrls} users="Alertmanager receivers" />

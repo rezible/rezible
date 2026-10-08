@@ -4,33 +4,35 @@
 	import { Button } from "$components/ui/button";
 	import { Spinner } from "$components/ui/spinner";
 
-	import type { AlertmanagerProviderController } from "./alertmanagerProvider.svelte";
+	import type { WebhookUrlController } from "../webhook-url/webhookUrl.svelte";
 
 	type Props = {
-		alertmanager: AlertmanagerProviderController;
+		webhookUrls: WebhookUrlController;
+		// What uses the URL and must be updated, such as "Alertmanager receivers".
+		users: string;
 	};
-	const { alertmanager }: Props = $props();
+	const { webhookUrls, users }: Props = $props();
 
-	const issuing = $derived(!!alertmanager.issuingId);
-	const issueError = $derived(alertmanager.confirmingError);
+	const issuing = $derived(!!webhookUrls.issuingId);
+	const issueError = $derived(webhookUrls.confirmingError);
 </script>
 
 <AlertDialog.Root
 	bind:open={
-		() => !!alertmanager.confirmingId,
+		() => !!webhookUrls.confirmingId,
 		(open) => {
 			if (!open) {
-				alertmanager.cancelGenerate();
+				webhookUrls.cancelGenerate();
 			}
 		}
 	}
 >
 	<AlertDialog.Content>
 		<AlertDialog.Header>
-			<AlertDialog.Title>Generate a webhook URL?</AlertDialog.Title>
+			<AlertDialog.Title>Replace the webhook URL?</AlertDialog.Title>
 			<AlertDialog.Description>
-				Any URL generated earlier for this installation stops working at once. Alertmanager receivers
-				using it must be updated with the new URL.
+				The current URL for this installation stops working at once. {users} using it must be updated with
+				the new URL.
 			</AlertDialog.Description>
 		</AlertDialog.Header>
 
@@ -40,11 +42,11 @@
 
 		<AlertDialog.Footer>
 			<AlertDialog.Cancel disabled={issuing}>Cancel</AlertDialog.Cancel>
-			<Button disabled={issuing} onclick={alertmanager.confirmGenerate}>
+			<Button disabled={issuing} onclick={webhookUrls.confirmGenerate}>
 				{#if issuing}
 					<Spinner />
 				{/if}
-				Generate
+				Replace
 			</Button>
 		</AlertDialog.Footer>
 	</AlertDialog.Content>

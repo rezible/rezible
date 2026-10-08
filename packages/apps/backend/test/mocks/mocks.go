@@ -964,6 +964,74 @@ func (_c *MockKnowledgeGraphQueryService_ListEvidence_Call) RunAndReturn(run fun
 	return _c
 }
 
+// ListRelatedEvents provides a mock function for the type MockKnowledgeGraphQueryService
+func (_mock *MockKnowledgeGraphQueryService) ListRelatedEvents(context1 context.Context, listRelatedEventsParams rez.ListRelatedEventsParams) (*rez.RelatedEvents, error) {
+	ret := _mock.Called(context1, listRelatedEventsParams)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ListRelatedEvents")
+	}
+
+	var r0 *rez.RelatedEvents
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.ListRelatedEventsParams) (*rez.RelatedEvents, error)); ok {
+		return returnFunc(context1, listRelatedEventsParams)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.ListRelatedEventsParams) *rez.RelatedEvents); ok {
+		r0 = returnFunc(context1, listRelatedEventsParams)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*rez.RelatedEvents)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, rez.ListRelatedEventsParams) error); ok {
+		r1 = returnFunc(context1, listRelatedEventsParams)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockKnowledgeGraphQueryService_ListRelatedEvents_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ListRelatedEvents'
+type MockKnowledgeGraphQueryService_ListRelatedEvents_Call struct {
+	*mock.Call
+}
+
+// ListRelatedEvents is a helper method to define mock.On call
+//   - context1 context.Context
+//   - listRelatedEventsParams rez.ListRelatedEventsParams
+func (_e *MockKnowledgeGraphQueryService_Expecter) ListRelatedEvents(context1 interface{}, listRelatedEventsParams interface{}) *MockKnowledgeGraphQueryService_ListRelatedEvents_Call {
+	return &MockKnowledgeGraphQueryService_ListRelatedEvents_Call{Call: _e.mock.On("ListRelatedEvents", context1, listRelatedEventsParams)}
+}
+
+func (_c *MockKnowledgeGraphQueryService_ListRelatedEvents_Call) Run(run func(context1 context.Context, listRelatedEventsParams rez.ListRelatedEventsParams)) *MockKnowledgeGraphQueryService_ListRelatedEvents_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 rez.ListRelatedEventsParams
+		if args[1] != nil {
+			arg1 = args[1].(rez.ListRelatedEventsParams)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockKnowledgeGraphQueryService_ListRelatedEvents_Call) Return(relatedEvents *rez.RelatedEvents, err error) *MockKnowledgeGraphQueryService_ListRelatedEvents_Call {
+	_c.Call.Return(relatedEvents, err)
+	return _c
+}
+
+func (_c *MockKnowledgeGraphQueryService_ListRelatedEvents_Call) RunAndReturn(run func(context1 context.Context, listRelatedEventsParams rez.ListRelatedEventsParams) (*rez.RelatedEvents, error)) *MockKnowledgeGraphQueryService_ListRelatedEvents_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // ListRelationships provides a mock function for the type MockKnowledgeGraphQueryService
 func (_mock *MockKnowledgeGraphQueryService) ListRelationships(context1 context.Context, listKnowledgeRelationshipsParams rez.ListKnowledgeRelationshipsParams) (*ent.ListResult[ent.KnowledgeRelationship], error) {
 	ret := _mock.Called(context1, listKnowledgeRelationshipsParams)

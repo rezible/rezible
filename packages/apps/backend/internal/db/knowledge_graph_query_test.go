@@ -3,6 +3,8 @@ package db
 import (
 	"context"
 	"fmt"
+	"slices"
+	"strings"
 	"testing"
 	"time"
 
@@ -15,6 +17,7 @@ import (
 	ke "github.com/rezible/rezible/ent/knowledgeevidence"
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
 	ksa "github.com/rezible/rezible/ent/knowledgesubjectalias"
+	"github.com/rezible/rezible/ent/schema/schematypes"
 	"github.com/rezible/rezible/pkg/knowledgegraph"
 	"github.com/rezible/rezible/test"
 )
@@ -535,4 +538,412 @@ func (s *KnowledgeGraphQueryServiceSuite) TestResolveStructureClimbsStoredRelati
 		checkoutID: {checkoutID},
 	}
 	s.Equal(expected, resolved)
+}
+
+// relatedEventFixture is an entity related to a target, ingested with its state effective at a time.
+type relatedEventFixture struct {
+	name       string
+	category   kne.Category
+	kind       string
+	at         time.Time
+	properties map[string]any
+	predicate  knr.Predicate
+	target     *rez.KnowledgeEntityRef
+	// reversed makes the target the relationship's source.
+	reversed bool
+}
+
+func (s *KnowledgeGraphQueryServiceSuite) ingestRelatedEvent(ctx context.Context, database rez.Database, fixture relatedEventFixture) uuid.UUID {
+	ref := &rez.KnowledgeEntityRef{
+		Category: fixture.category,
+		Kind:     fixture.kind,
+		ProviderResourceRef: rez.ProviderResourceRef{
+			Provider:          "test",
+			ProviderNamespace: "knowledge-graph-tests",
+			ResourceRef:       "event:" + fixture.name,
+		},
+	}
+	eventEvidence := rez.KnowledgeEvidenceRef{
+		Kind:        ke.KindObserved,
+		Assertion:   "event_observed",
+		EffectiveAt: fixture.at,
+		SubjectState: schematypes.KnowledgeGraphSubjectState{
+			DisplayName: fixture.name,
+			Properties:  fixture.properties,
+		},
+		Subject: rez.KnowledgeSubjectRef{Entity: ref},
+	}
+	relationship := rez.KnowledgeRelationshipRef{
+		Predicate: fixture.predicate,
+		ProviderResourceRef: rez.ProviderResourceRef{
+			Provider:          "test",
+			ProviderNamespace: "knowledge-graph-tests",
+			ResourceRef:       "relationship:" + fixture.name,
+		},
+		Source: *ref,
+		Target: *fixture.target,
+	}
+	if fixture.reversed {
+		relationship.Source, relationship.Target = relationship.Target, relationship.Source
+	}
+	relationshipEvidence := rez.KnowledgeEvidenceRef{
+		Kind:        ke.KindObserved,
+		Assertion:   "relationship_observed",
+		EffectiveAt: fixture.at,
+		Subject:     rez.KnowledgeSubjectRef{Relationship: &relationship},
+	}
+	s.ingestStructure(ctx, database,
+		s.observeEntity(fixture.target),
+		eventEvidence,
+		relationshipEvidence,
+	)
+	return s.ingestedEntityID(ctx, database, ref)
+}
+
+type relatedEventsFixture struct {
+	service         uuid.UUID
+	at              time.Time
+	firstProduction uuid.UUID
+	staging         uuid.UUID
+	// failedProduction and laterProduction share a time.
+	failedProduction uuid.UUID
+	laterProduction  uuid.UUID
+}
+
+// seedRelatedEvents ingests checkout's deployments a minute apart, and entities that do not match a lookup
+// of checkout's deployments by impacts.
+func (s *KnowledgeGraphQueryServiceSuite) seedRelatedEvents(ctx context.Context, database rez.Database) *relatedEventsFixture {
+	at := time.Date(2026, 10, 7, 14, 0, 0, 0, time.UTC)
+	checkout := s.structureEntityRef("checkout", kne.CategoryContainer)
+	search := s.structureEntityRef("search", kne.CategoryContainer)
+	deployment := func(name string, offset time.Duration, environment string, status string) relatedEventFixture {
+		return relatedEventFixture{
+			name:     name,
+			category: kne.CategoryEvent,
+			kind:     "deployment",
+			at:       at.Add(offset),
+			properties: map[string]any{
+				"environment": environment,
+				"status":      status,
+			},
+			predicate: knr.PredicateImpacts,
+			target:    checkout,
+		}
+	}
+
+	f := &relatedEventsFixture{at: at}
+	f.firstProduction = s.ingestRelatedEvent(ctx, database, deployment("first-production", 0, "production", "succeeded"))
+	f.staging = s.ingestRelatedEvent(ctx, database, deployment("staging", time.Minute, "staging", "succeeded"))
+	f.failedProduction = s.ingestRelatedEvent(ctx, database, deployment("failed-production", 2*time.Minute, "production", "failed"))
+	laterProduction := deployment("later-production", 2*time.Minute, "production", "succeeded")
+	laterProduction.properties["attempt"] = 2
+	laterProduction.properties["rollback"] = true
+	laterProduction.properties["version"] = `v1 "beta" it's`
+	f.laterProduction = s.ingestRelatedEvent(ctx, database, laterProduction)
+
+	otherService := deployment("search-production", time.Minute, "production", "succeeded")
+	otherService.target = search
+	s.ingestRelatedEvent(ctx, database, otherService)
+
+	otherPredicate := deployment("touches-checkout", time.Minute, "production", "succeeded")
+	otherPredicate.predicate = knr.PredicateTouches
+	s.ingestRelatedEvent(ctx, database, otherPredicate)
+
+	otherKind := deployment("code-change", time.Minute, "production", "succeeded")
+	otherKind.kind = "code_change"
+	s.ingestRelatedEvent(ctx, database, otherKind)
+
+	// The service impacts the event: the relationship runs the other way.
+	reversed := deployment("reversed", time.Minute, "production", "succeeded")
+	reversed.reversed = true
+	s.ingestRelatedEvent(ctx, database, reversed)
+
+	// A Kubernetes Deployment is a deployment that is not an event.
+	notAnEvent := deployment("kubernetes-deployment", time.Minute, "production", "succeeded")
+	notAnEvent.category = kne.CategoryContainer
+	s.ingestRelatedEvent(ctx, database, notAnEvent)
+
+	f.service = s.ingestedEntityID(ctx, database, checkout)
+	return f
+}
+
+// tied orders events that share a time by ID.
+func (f *relatedEventsFixture) tied() []uuid.UUID {
+	ids := []uuid.UUID{f.failedProduction, f.laterProduction}
+	slices.SortFunc(ids, func(a, b uuid.UUID) int {
+		return strings.Compare(a.String(), b.String())
+	})
+	return ids
+}
+
+func (s *KnowledgeGraphQueryServiceSuite) listRelatedEvents(ctx context.Context, service *KnowledgeGraphQueryService, params rez.ListRelatedEventsParams) ([]uuid.UUID, bool) {
+	s.T().Helper()
+	related, listErr := service.ListRelatedEvents(ctx, params)
+	s.Require().NoError(listErr)
+	ids := make([]uuid.UUID, len(related.Events))
+	for index, event := range related.Events {
+		ids[index] = event.ID
+	}
+	return ids, related.Cut
+}
+
+func (s *KnowledgeGraphQueryServiceSuite) TestListRelatedEventsMatchesKindPredicateAndProperties() {
+	ctx, database := s.SetupTestDatabase()
+	service, serviceErr := NewKnowledgeGraphQueryService(database)
+	s.Require().NoError(serviceErr)
+	f := s.seedRelatedEvents(ctx, database)
+	params := rez.ListRelatedEventsParams{
+		EntityID:  f.service,
+		Predicate: knr.PredicateImpacts,
+		Kind:      "deployment",
+		Limit:     10,
+	}
+
+	all, _ := s.listRelatedEvents(ctx, service, params)
+	expectedAll := append(f.tied(), f.staging, f.firstProduction)
+	s.Equal(expectedAll, all, "only the entity's deployment events, newest first with ties by ID")
+
+	params.PropertyEquals = map[string]string{"environment": "production"}
+	production, _ := s.listRelatedEvents(ctx, service, params)
+	expectedProduction := append(f.tied(), f.firstProduction)
+	s.Equal(expectedProduction, production)
+
+	params.PropertyEquals = map[string]string{"environment": "production", "status": "succeeded"}
+	succeeded, _ := s.listRelatedEvents(ctx, service, params)
+	s.Equal([]uuid.UUID{f.laterProduction, f.firstProduction}, succeeded, "every property filter must match")
+}
+
+func (s *KnowledgeGraphQueryServiceSuite) TestListRelatedEventsMatchesAbsentProperties() {
+	ctx, database := s.SetupTestDatabase()
+	service, serviceErr := NewKnowledgeGraphQueryService(database)
+	s.Require().NoError(serviceErr)
+	f := s.seedRelatedEvents(ctx, database)
+	params := rez.ListRelatedEventsParams{
+		EntityID:       f.service,
+		Predicate:      knr.PredicateImpacts,
+		Kind:           "deployment",
+		PropertyAbsent: []string{"version"},
+		Limit:          10,
+	}
+
+	withoutVersion, _ := s.listRelatedEvents(ctx, service, params)
+	expected := []uuid.UUID{f.failedProduction, f.staging, f.firstProduction}
+	s.Equal(expected, withoutVersion, "only events without the property")
+
+	params.PropertyAbsent = []string{"version", "environment"}
+	withoutEither, _ := s.listRelatedEvents(ctx, service, params)
+	s.Empty(withoutEither, "every absent filter must match")
+
+	params.PropertyAbsent = nil
+	params.PropertyEquals = map[string]string{"version": ""}
+	emptyVersion, _ := s.listRelatedEvents(ctx, service, params)
+	s.Empty(emptyVersion, "an absent property never matches an equality filter")
+
+	checkout := s.structureEntityRef("checkout", kne.CategoryContainer)
+	nullVersion := relatedEventFixture{
+		name:       "null-version",
+		category:   kne.CategoryEvent,
+		kind:       "deployment",
+		at:         f.at.Add(-time.Minute),
+		properties: map[string]any{"version": nil},
+		predicate:  knr.PredicateImpacts,
+		target:     checkout,
+	}
+	nullVersionID := s.ingestRelatedEvent(ctx, database, nullVersion)
+	emptyStringVersion := relatedEventFixture{
+		name:       "empty-version",
+		category:   kne.CategoryEvent,
+		kind:       "deployment",
+		at:         f.at.Add(-2 * time.Minute),
+		properties: map[string]any{"version": ""},
+		predicate:  knr.PredicateImpacts,
+		target:     checkout,
+	}
+	emptyStringVersionID := s.ingestRelatedEvent(ctx, database, emptyStringVersion)
+
+	params.PropertyEquals = nil
+	params.PropertyAbsent = []string{"version"}
+	withNull, _ := s.listRelatedEvents(ctx, service, params)
+	expectedWithNull := []uuid.UUID{f.failedProduction, f.staging, f.firstProduction, nullVersionID}
+	s.Equal(expectedWithNull, withNull, "a JSON null is absent; an empty string is not")
+
+	params.PropertyAbsent = nil
+	params.PropertyEquals = map[string]string{"version": ""}
+	emptyString, _ := s.listRelatedEvents(ctx, service, params)
+	s.Equal([]uuid.UUID{emptyStringVersionID}, emptyString, "an empty string equals an empty value")
+}
+
+func (s *KnowledgeGraphQueryServiceSuite) TestListRelatedEventsWindowBounds() {
+	ctx, database := s.SetupTestDatabase()
+	service, serviceErr := NewKnowledgeGraphQueryService(database)
+	s.Require().NoError(serviceErr)
+	f := s.seedRelatedEvents(ctx, database)
+
+	cases := map[string]struct {
+		fromInclusive bool
+		toInclusive   bool
+		expected      []uuid.UUID
+	}{
+		"both inclusive": {
+			fromInclusive: true,
+			toInclusive:   true,
+			expected:      append(f.tied(), f.staging, f.firstProduction),
+		},
+		"both exclusive": {
+			expected: []uuid.UUID{f.staging},
+		},
+		"from inclusive": {
+			fromInclusive: true,
+			expected:      []uuid.UUID{f.staging, f.firstProduction},
+		},
+		"to inclusive": {
+			toInclusive: true,
+			expected:    append(f.tied(), f.staging),
+		},
+	}
+	for name, tc := range cases {
+		s.Run(name, func() {
+			params := rez.ListRelatedEventsParams{
+				EntityID:      f.service,
+				Predicate:     knr.PredicateImpacts,
+				Kind:          "deployment",
+				From:          f.at,
+				To:            f.at.Add(2 * time.Minute),
+				FromInclusive: tc.fromInclusive,
+				ToInclusive:   tc.toInclusive,
+				Limit:         10,
+			}
+
+			events, _ := s.listRelatedEvents(ctx, service, params)
+
+			s.Equal(tc.expected, events)
+		})
+	}
+
+	onlyFrom := rez.ListRelatedEventsParams{
+		EntityID:  f.service,
+		Predicate: knr.PredicateImpacts,
+		Kind:      "deployment",
+		From:      f.at.Add(time.Minute),
+		Limit:     10,
+	}
+	afterStart, _ := s.listRelatedEvents(ctx, service, onlyFrom)
+	s.Equal(f.tied(), afterStart, "a zero To leaves the window open")
+}
+
+func (s *KnowledgeGraphQueryServiceSuite) TestListRelatedEventsLimit() {
+	ctx, database := s.SetupTestDatabase()
+	service, serviceErr := NewKnowledgeGraphQueryService(database)
+	s.Require().NoError(serviceErr)
+	f := s.seedRelatedEvents(ctx, database)
+	params := rez.ListRelatedEventsParams{
+		EntityID:  f.service,
+		Predicate: knr.PredicateImpacts,
+		Kind:      "deployment",
+		Limit:     2,
+	}
+
+	cutEvents, cut := s.listRelatedEvents(ctx, service, params)
+	s.Equal(f.tied(), cutEvents)
+	s.True(cut, "more events matched than the limit")
+
+	params.Limit = 4
+	allEvents, allCut := s.listRelatedEvents(ctx, service, params)
+	s.Len(allEvents, 4)
+	s.False(allCut, "exactly the limit matched")
+
+	for _, limit := range []int{0, -1} {
+		params.Limit = limit
+		_, listErr := service.ListRelatedEvents(ctx, params)
+		s.ErrorIs(listErr, rez.ErrInvalidInput, "limit %d", limit)
+	}
+}
+
+func (s *KnowledgeGraphQueryServiceSuite) TestListRelatedEventsComparesPropertiesAsText() {
+	ctx, database := s.SetupTestDatabase()
+	service, serviceErr := NewKnowledgeGraphQueryService(database)
+	s.Require().NoError(serviceErr)
+	f := s.seedRelatedEvents(ctx, database)
+
+	cases := map[string]struct {
+		property string
+		value    string
+		expected []uuid.UUID
+	}{
+		"number":                {property: "attempt", value: "2", expected: []uuid.UUID{f.laterProduction}},
+		"boolean":               {property: "rollback", value: "true", expected: []uuid.UUID{f.laterProduction}},
+		"quoted value":          {property: "version", value: `v1 "beta" it's`, expected: []uuid.UUID{f.laterProduction}},
+		"injection-like value":  {property: "status", value: `succeeded' OR '1'='1`, expected: []uuid.UUID{}},
+		"value of another type": {property: "attempt", value: "two", expected: []uuid.UUID{}},
+	}
+	for name, tc := range cases {
+		s.Run(name, func() {
+			params := rez.ListRelatedEventsParams{
+				EntityID:       f.service,
+				Predicate:      knr.PredicateImpacts,
+				Kind:           "deployment",
+				PropertyEquals: map[string]string{tc.property: tc.value},
+				Limit:          10,
+			}
+
+			events, _ := s.listRelatedEvents(ctx, service, params)
+
+			s.Equal(tc.expected, events)
+		})
+	}
+}
+
+func (s *KnowledgeGraphQueryServiceSuite) TestListRelatedEventsRejectsInvalidParams() {
+	ctx, database := s.SetupTestDatabase()
+	service, serviceErr := NewKnowledgeGraphQueryService(database)
+	s.Require().NoError(serviceErr)
+	valid := rez.ListRelatedEventsParams{
+		EntityID:  uuid.New(),
+		Predicate: knr.PredicateImpacts,
+		Kind:      "deployment",
+		Limit:     10,
+	}
+
+	cases := map[string]func(*rez.ListRelatedEventsParams){
+		"zero limit":          func(p *rez.ListRelatedEventsParams) { p.Limit = 0 },
+		"negative limit":      func(p *rez.ListRelatedEventsParams) { p.Limit = -1 },
+		"empty kind":          func(p *rez.ListRelatedEventsParams) { p.Kind = "" },
+		"unknown predicate":   func(p *rez.ListRelatedEventsParams) { p.Predicate = "knows" },
+		"empty predicate":     func(p *rez.ListRelatedEventsParams) { p.Predicate = "" },
+		"quote in key":        func(p *rez.ListRelatedEventsParams) { p.PropertyEquals = map[string]string{`status' OR '1'='1`: "x"} },
+		"path operator key":   func(p *rez.ListRelatedEventsParams) { p.PropertyEquals = map[string]string{"status'->>'x": "x"} },
+		"empty property key":  func(p *rez.ListRelatedEventsParams) { p.PropertyEquals = map[string]string{"": "x"} },
+		"quote in absent key": func(p *rez.ListRelatedEventsParams) { p.PropertyAbsent = []string{`status' OR '1'='1`} },
+		"empty absent key":    func(p *rez.ListRelatedEventsParams) { p.PropertyAbsent = []string{""} },
+	}
+	for name, change := range cases {
+		s.Run(name, func() {
+			params := valid
+			change(&params)
+
+			_, listErr := service.ListRelatedEvents(ctx, params)
+
+			s.ErrorIs(listErr, rez.ErrInvalidInput)
+		})
+	}
+}
+
+func (s *KnowledgeGraphQueryServiceSuite) TestListRelatedEventsIsTenantScoped() {
+	ownerCtx, database := s.SetupTestDatabase()
+	service, serviceErr := NewKnowledgeGraphQueryService(database)
+	s.Require().NoError(serviceErr)
+	f := s.seedRelatedEvents(ownerCtx, database)
+	otherTenantCtx, _ := s.SetupTestDatabase()
+	params := rez.ListRelatedEventsParams{
+		EntityID:  f.service,
+		Predicate: knr.PredicateImpacts,
+		Kind:      "deployment",
+		Limit:     10,
+	}
+
+	ownerEvents, _ := s.listRelatedEvents(ownerCtx, service, params)
+	otherTenantEvents, _ := s.listRelatedEvents(otherTenantCtx, service, params)
+
+	s.Len(ownerEvents, 4)
+	s.Empty(otherTenantEvents, "another tenant's entity ID finds nothing")
 }
