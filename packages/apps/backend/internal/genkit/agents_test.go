@@ -403,6 +403,57 @@ func (s *AiRuntimeSuite) TestToolIterationLimitFailsWithMaxTurnsError() {
 	s.NotEmpty(result.State.Messages, "committed steps are the resume point")
 }
 
+func (s *AiRuntimeSuite) TestTurnUsageAddsEveryModelCall() {
+	ctx, tdb := s.SetupTestDatabase()
+	msg := ai.NewUserTextMessage("Check the service")
+	agent := makeTestAgent[testAgentState](msg)
+	checkTool := ai.NewTool[struct{}, string](
+		"check_service",
+		"Check the service",
+		func(*ai.ToolContext, struct{}) (string, error) {
+			return "healthy", nil
+		},
+	)
+
+	var mu sync.Mutex
+	step := 0
+	model := makeTestOutputModel(nil)
+	model.opts.Supports.Tools = true
+	model.fn = func(context.Context, *ai.ModelRequest, any, ai.ModelStreamCallback) (*ai.ModelResponse, error) {
+		mu.Lock()
+		defer mu.Unlock()
+		step++
+		if step == 1 {
+			call := &ai.ToolRequest{Name: checkTool.Name(), Ref: "check-1", Input: map[string]any{}}
+			return &ai.ModelResponse{
+				Message: ai.NewModelMessage(ai.NewToolRequestPart(call)),
+				Usage:   &ai.GenerationUsage{InputTokens: 100, OutputTokens: 10, ThoughtsTokens: 5},
+			}, nil
+		}
+		return &ai.ModelResponse{
+			Message:      ai.NewModelTextMessage("The service is healthy"),
+			FinishReason: ai.FinishReasonStop,
+			Usage:        &ai.GenerationUsage{InputTokens: 200, OutputTokens: 20, ThoughtsTokens: 7},
+		}, nil
+	}
+	agent.def.Model = model.Name
+
+	middleware := func(string) ai.Middleware {
+		return &testToolsMiddleware{tools: []ai.Tool{checkTool}}
+	}
+	svc := s.makeRuntime(ctx, WithDefinedModel(model), WithAgent(agent, middleware))
+	sess := s.makeAgentSession(ctx, svc, tdb, agent.def.Name, testAgentInput{})
+
+	params := s.makeInvokeAgentSessionParams(sess)
+	params.Input = &rez.AiAgentTurnInput{Message: msg}
+	turnCtx, totals := rezai.WithTurnUsage(ctx)
+	result, invokeErr := svc.InvokeAgentTurn(turnCtx, params)
+	s.Require().NoError(invokeErr)
+	s.Require().NoError(result.Error)
+
+	s.Equal(rezai.TurnUsage{Model: model.Name, InputTokens: 300, OutputTokens: 42}, totals())
+}
+
 func makeTestAgent[S any](msg *ai.Message) *testAgent[S] {
 	taDef := testAgentDef{
 		Name:         "test_agent",

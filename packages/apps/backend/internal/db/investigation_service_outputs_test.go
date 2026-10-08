@@ -221,7 +221,7 @@ func (s *InvestigationServiceSuite) TestInvestigationReportPublicationSelectionA
 		db:   tdb,
 		msgs: workerMessages,
 	}
-	_, automaticRetryErr := worker.saveInvocationResult(ctx, makeAgentTurnJob(secondTurn, 1), nil, nil, errors.New("temporary model failure"))
+	_, automaticRetryErr := worker.saveInvocationResult(ctx, makeAgentTurnJob(secondTurn, 1), nil, nil, rezai.TurnUsage{}, errors.New("temporary model failure"))
 	s.Require().NoError(automaticRetryErr)
 
 	queued, queuedErr := service.ReadInvestigationReport(ctx, rez.ReadInvestigationReportParams{InvestigationID: investigation.ID})

@@ -219,6 +219,9 @@ var schemaGraph = func() *sqlgraph.Schema {
 			agentturn.FieldFinishedAt:      {Type: field.TypeTime, Column: agentturn.FieldFinishedAt},
 			agentturn.FieldFinishReason:    {Type: field.TypeString, Column: agentturn.FieldFinishReason},
 			agentturn.FieldError:           {Type: field.TypeString, Column: agentturn.FieldError},
+			agentturn.FieldModel:           {Type: field.TypeString, Column: agentturn.FieldModel},
+			agentturn.FieldInputTokens:     {Type: field.TypeInt, Column: agentturn.FieldInputTokens},
+			agentturn.FieldOutputTokens:    {Type: field.TypeInt, Column: agentturn.FieldOutputTokens},
 		},
 	}
 	graph.Nodes[5] = &sqlgraph.Node{
@@ -7078,6 +7081,21 @@ func (f *AgentTurnFilter) WhereFinishReason(p entql.StringP) {
 // WhereError applies the entql string predicate on the error field.
 func (f *AgentTurnFilter) WhereError(p entql.StringP) {
 	f.Where(p.Field(agentturn.FieldError))
+}
+
+// WhereModel applies the entql string predicate on the model field.
+func (f *AgentTurnFilter) WhereModel(p entql.StringP) {
+	f.Where(p.Field(agentturn.FieldModel))
+}
+
+// WhereInputTokens applies the entql int predicate on the input_tokens field.
+func (f *AgentTurnFilter) WhereInputTokens(p entql.IntP) {
+	f.Where(p.Field(agentturn.FieldInputTokens))
+}
+
+// WhereOutputTokens applies the entql int predicate on the output_tokens field.
+func (f *AgentTurnFilter) WhereOutputTokens(p entql.IntP) {
+	f.Where(p.Field(agentturn.FieldOutputTokens))
 }
 
 // WhereHasTenant applies a predicate to check if query has an edge tenant.

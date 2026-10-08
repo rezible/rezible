@@ -66,17 +66,22 @@ func (ii *InstalledIntegration) SearchLogs(ctx context.Context, params integrati
 		ExploreURL:    ii.client.exploreURL(ds, query, params.Start, params.End),
 	}
 
-	var data queryData
-	if getErr := ii.client.get(ctx, ds, "/loki/api/v1/query_range", values, &data); getErr != nil {
-		return nil, fmt.Errorf("search logs: %w", getErr)
+	var lines []integrations.LogLine
+	searchErr := integrations.MeasureRead(ctx, ProviderName, "search_logs", func(ctx context.Context) (int, error) {
+		var data queryData
+		if getErr := ii.client.get(ctx, ds, "/loki/api/v1/query_range", values, &data); getErr != nil {
+			return 0, fmt.Errorf("search logs: %w", getErr)
+		}
+		var streams []lokiStream
+		if decodeErr := data.decode("streams", &streams); decodeErr != nil {
+			return 0, fmt.Errorf("search logs: %w", decodeErr)
+		}
+		lines, read.Limits = mergeLogStreams(streams, limit)
+		return len(lines), nil
+	})
+	if searchErr != nil {
+		return nil, searchErr
 	}
-	var streams []lokiStream
-	if decodeErr := data.decode("streams", &streams); decodeErr != nil {
-		return nil, fmt.Errorf("search logs: %w", decodeErr)
-	}
-
-	lines, limits := mergeLogStreams(streams, limit)
-	read.Limits = limits
 	return &integrations.LogSearchResult{Lines: lines, Read: read}, nil
 }
 
@@ -146,19 +151,24 @@ func (ii *InstalledIntegration) CountLogs(ctx context.Context, params integratio
 		read.Limits = append(read.Limits, stepLimit)
 	}
 
-	var data queryData
-	if getErr := ii.client.get(ctx, ds, "/loki/api/v1/query_range", values, &data); getErr != nil {
-		return nil, fmt.Errorf("count logs: %w", getErr)
-	}
-	var series []matrixSeries
-	if decodeErr := data.decode("matrix", &series); decodeErr != nil {
-		return nil, fmt.Errorf("count logs: %w", decodeErr)
-	}
-
 	// The sum is a single series, absent when no line matched.
 	points := make([]integrations.MetricPoint, 0)
-	if len(series) > 0 {
-		points = series[0].points()
+	countErr := integrations.MeasureRead(ctx, ProviderName, "count_logs", func(ctx context.Context) (int, error) {
+		var data queryData
+		if getErr := ii.client.get(ctx, ds, "/loki/api/v1/query_range", values, &data); getErr != nil {
+			return 0, fmt.Errorf("count logs: %w", getErr)
+		}
+		var series []matrixSeries
+		if decodeErr := data.decode("matrix", &series); decodeErr != nil {
+			return 0, fmt.Errorf("count logs: %w", decodeErr)
+		}
+		if len(series) > 0 {
+			points = series[0].points()
+		}
+		return len(points), nil
+	})
+	if countErr != nil {
+		return nil, countErr
 	}
 	return &integrations.LogCountResult{Points: points, Read: read}, nil
 }
@@ -186,14 +196,19 @@ func (ii *InstalledIntegration) ListMetricNames(ctx context.Context, params inte
 	}
 
 	var names []string
-	if getErr := ii.client.get(ctx, ds, "/api/v1/label/__name__/values", values, &names); getErr != nil {
-		return nil, fmt.Errorf("list metric names: %w", getErr)
-	}
-
-	slices.Sort(names)
-	if len(names) > integrations.MaxMetricNames {
-		read.Limits = append(read.Limits, fmt.Sprintf("kept the first %d of %d metric names, sorted by name", integrations.MaxMetricNames, len(names)))
-		names = names[:integrations.MaxMetricNames]
+	listErr := integrations.MeasureRead(ctx, ProviderName, "list_metric_names", func(ctx context.Context) (int, error) {
+		if getErr := ii.client.get(ctx, ds, "/api/v1/label/__name__/values", values, &names); getErr != nil {
+			return 0, fmt.Errorf("list metric names: %w", getErr)
+		}
+		slices.Sort(names)
+		if len(names) > integrations.MaxMetricNames {
+			read.Limits = append(read.Limits, fmt.Sprintf("kept the first %d of %d metric names, sorted by name", integrations.MaxMetricNames, len(names)))
+			names = names[:integrations.MaxMetricNames]
+		}
+		return len(names), nil
+	})
+	if listErr != nil {
+		return nil, listErr
 	}
 	return &integrations.MetricNamesResult{Names: names, Read: read}, nil
 }
@@ -226,25 +241,34 @@ func (ii *InstalledIntegration) QueryMetricRange(ctx context.Context, params int
 		read.Limits = append(read.Limits, stepLimit)
 	}
 
-	var data queryData
-	if getErr := ii.client.get(ctx, ds, "/api/v1/query_range", values, &data); getErr != nil {
-		return nil, fmt.Errorf("query metric range: %w", getErr)
-	}
-	var matrix []matrixSeries
-	if decodeErr := data.decode("matrix", &matrix); decodeErr != nil {
-		return nil, fmt.Errorf("query metric range: %w", decodeErr)
-	}
+	var series []integrations.MetricSeries
+	queryErr := integrations.MeasureRead(ctx, ProviderName, "query_metric_range", func(ctx context.Context) (int, error) {
+		var data queryData
+		if getErr := ii.client.get(ctx, ds, "/api/v1/query_range", values, &data); getErr != nil {
+			return 0, fmt.Errorf("query metric range: %w", getErr)
+		}
+		var matrix []matrixSeries
+		if decodeErr := data.decode("matrix", &matrix); decodeErr != nil {
+			return 0, fmt.Errorf("query metric range: %w", decodeErr)
+		}
 
-	slices.SortFunc(matrix, func(a, b matrixSeries) int {
-		return strings.Compare(a.labelSet(), b.labelSet())
+		slices.SortFunc(matrix, func(a, b matrixSeries) int {
+			return strings.Compare(a.labelSet(), b.labelSet())
+		})
+		if len(matrix) > integrations.MaxMetricSeries {
+			read.Limits = append(read.Limits, fmt.Sprintf("kept the first %d of %d series, ordered by labels", integrations.MaxMetricSeries, len(matrix)))
+			matrix = matrix[:integrations.MaxMetricSeries]
+		}
+		series = make([]integrations.MetricSeries, len(matrix))
+		points := 0
+		for i, s := range matrix {
+			series[i] = integrations.MetricSeries{Labels: s.Metric, Points: s.points()}
+			points += len(s.Values)
+		}
+		return points, nil
 	})
-	if len(matrix) > integrations.MaxMetricSeries {
-		read.Limits = append(read.Limits, fmt.Sprintf("kept the first %d of %d series, ordered by labels", integrations.MaxMetricSeries, len(matrix)))
-		matrix = matrix[:integrations.MaxMetricSeries]
-	}
-	series := make([]integrations.MetricSeries, len(matrix))
-	for i, s := range matrix {
-		series[i] = integrations.MetricSeries{Labels: s.Metric, Points: s.points()}
+	if queryErr != nil {
+		return nil, queryErr
 	}
 	return &integrations.MetricRangeResult{Series: series, Read: read}, nil
 }

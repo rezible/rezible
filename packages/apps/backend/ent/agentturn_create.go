@@ -163,6 +163,48 @@ func (_c *AgentTurnCreate) SetNillableError(v *string) *AgentTurnCreate {
 	return _c
 }
 
+// SetModel sets the "model" field.
+func (_c *AgentTurnCreate) SetModel(v string) *AgentTurnCreate {
+	_c.mutation.SetModel(v)
+	return _c
+}
+
+// SetNillableModel sets the "model" field if the given value is not nil.
+func (_c *AgentTurnCreate) SetNillableModel(v *string) *AgentTurnCreate {
+	if v != nil {
+		_c.SetModel(*v)
+	}
+	return _c
+}
+
+// SetInputTokens sets the "input_tokens" field.
+func (_c *AgentTurnCreate) SetInputTokens(v int) *AgentTurnCreate {
+	_c.mutation.SetInputTokens(v)
+	return _c
+}
+
+// SetNillableInputTokens sets the "input_tokens" field if the given value is not nil.
+func (_c *AgentTurnCreate) SetNillableInputTokens(v *int) *AgentTurnCreate {
+	if v != nil {
+		_c.SetInputTokens(*v)
+	}
+	return _c
+}
+
+// SetOutputTokens sets the "output_tokens" field.
+func (_c *AgentTurnCreate) SetOutputTokens(v int) *AgentTurnCreate {
+	_c.mutation.SetOutputTokens(v)
+	return _c
+}
+
+// SetNillableOutputTokens sets the "output_tokens" field if the given value is not nil.
+func (_c *AgentTurnCreate) SetNillableOutputTokens(v *int) *AgentTurnCreate {
+	if v != nil {
+		_c.SetOutputTokens(*v)
+	}
+	return _c
+}
+
 // SetID sets the "id" field.
 func (_c *AgentTurnCreate) SetID(v uuid.UUID) *AgentTurnCreate {
 	_c.mutation.SetID(v)
@@ -269,6 +311,18 @@ func (_c *AgentTurnCreate) defaults() error {
 		v := agentturn.DefaultFinishReason
 		_c.mutation.SetFinishReason(v)
 	}
+	if _, ok := _c.mutation.Model(); !ok {
+		v := agentturn.DefaultModel
+		_c.mutation.SetModel(v)
+	}
+	if _, ok := _c.mutation.InputTokens(); !ok {
+		v := agentturn.DefaultInputTokens
+		_c.mutation.SetInputTokens(v)
+	}
+	if _, ok := _c.mutation.OutputTokens(); !ok {
+		v := agentturn.DefaultOutputTokens
+		_c.mutation.SetOutputTokens(v)
+	}
 	return nil
 }
 
@@ -307,6 +361,25 @@ func (_c *AgentTurnCreate) check() error {
 	}
 	if _, ok := _c.mutation.FinishReason(); !ok {
 		return &ValidationError{Name: "finish_reason", err: errors.New(`ent: missing required field "AgentTurn.finish_reason"`)}
+	}
+	if _, ok := _c.mutation.Model(); !ok {
+		return &ValidationError{Name: "model", err: errors.New(`ent: missing required field "AgentTurn.model"`)}
+	}
+	if _, ok := _c.mutation.InputTokens(); !ok {
+		return &ValidationError{Name: "input_tokens", err: errors.New(`ent: missing required field "AgentTurn.input_tokens"`)}
+	}
+	if v, ok := _c.mutation.InputTokens(); ok {
+		if err := agentturn.InputTokensValidator(v); err != nil {
+			return &ValidationError{Name: "input_tokens", err: fmt.Errorf(`ent: validator failed for field "AgentTurn.input_tokens": %w`, err)}
+		}
+	}
+	if _, ok := _c.mutation.OutputTokens(); !ok {
+		return &ValidationError{Name: "output_tokens", err: errors.New(`ent: missing required field "AgentTurn.output_tokens"`)}
+	}
+	if v, ok := _c.mutation.OutputTokens(); ok {
+		if err := agentturn.OutputTokensValidator(v); err != nil {
+			return &ValidationError{Name: "output_tokens", err: fmt.Errorf(`ent: validator failed for field "AgentTurn.output_tokens": %w`, err)}
+		}
 	}
 	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "AgentTurn.tenant"`)}
@@ -390,6 +463,18 @@ func (_c *AgentTurnCreate) createSpec() (*AgentTurn, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.Error(); ok {
 		_spec.SetField(agentturn.FieldError, field.TypeString, value)
 		_node.Error = &value
+	}
+	if value, ok := _c.mutation.Model(); ok {
+		_spec.SetField(agentturn.FieldModel, field.TypeString, value)
+		_node.Model = value
+	}
+	if value, ok := _c.mutation.InputTokens(); ok {
+		_spec.SetField(agentturn.FieldInputTokens, field.TypeInt, value)
+		_node.InputTokens = value
+	}
+	if value, ok := _c.mutation.OutputTokens(); ok {
+		_spec.SetField(agentturn.FieldOutputTokens, field.TypeInt, value)
+		_node.OutputTokens = value
 	}
 	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -687,6 +772,54 @@ func (u *AgentTurnUpsert) ClearError() *AgentTurnUpsert {
 	return u
 }
 
+// SetModel sets the "model" field.
+func (u *AgentTurnUpsert) SetModel(v string) *AgentTurnUpsert {
+	u.Set(agentturn.FieldModel, v)
+	return u
+}
+
+// UpdateModel sets the "model" field to the value that was provided on create.
+func (u *AgentTurnUpsert) UpdateModel() *AgentTurnUpsert {
+	u.SetExcluded(agentturn.FieldModel)
+	return u
+}
+
+// SetInputTokens sets the "input_tokens" field.
+func (u *AgentTurnUpsert) SetInputTokens(v int) *AgentTurnUpsert {
+	u.Set(agentturn.FieldInputTokens, v)
+	return u
+}
+
+// UpdateInputTokens sets the "input_tokens" field to the value that was provided on create.
+func (u *AgentTurnUpsert) UpdateInputTokens() *AgentTurnUpsert {
+	u.SetExcluded(agentturn.FieldInputTokens)
+	return u
+}
+
+// AddInputTokens adds v to the "input_tokens" field.
+func (u *AgentTurnUpsert) AddInputTokens(v int) *AgentTurnUpsert {
+	u.Add(agentturn.FieldInputTokens, v)
+	return u
+}
+
+// SetOutputTokens sets the "output_tokens" field.
+func (u *AgentTurnUpsert) SetOutputTokens(v int) *AgentTurnUpsert {
+	u.Set(agentturn.FieldOutputTokens, v)
+	return u
+}
+
+// UpdateOutputTokens sets the "output_tokens" field to the value that was provided on create.
+func (u *AgentTurnUpsert) UpdateOutputTokens() *AgentTurnUpsert {
+	u.SetExcluded(agentturn.FieldOutputTokens)
+	return u
+}
+
+// AddOutputTokens adds v to the "output_tokens" field.
+func (u *AgentTurnUpsert) AddOutputTokens(v int) *AgentTurnUpsert {
+	u.Add(agentturn.FieldOutputTokens, v)
+	return u
+}
+
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
@@ -923,6 +1056,62 @@ func (u *AgentTurnUpsertOne) UpdateError() *AgentTurnUpsertOne {
 func (u *AgentTurnUpsertOne) ClearError() *AgentTurnUpsertOne {
 	return u.Update(func(s *AgentTurnUpsert) {
 		s.ClearError()
+	})
+}
+
+// SetModel sets the "model" field.
+func (u *AgentTurnUpsertOne) SetModel(v string) *AgentTurnUpsertOne {
+	return u.Update(func(s *AgentTurnUpsert) {
+		s.SetModel(v)
+	})
+}
+
+// UpdateModel sets the "model" field to the value that was provided on create.
+func (u *AgentTurnUpsertOne) UpdateModel() *AgentTurnUpsertOne {
+	return u.Update(func(s *AgentTurnUpsert) {
+		s.UpdateModel()
+	})
+}
+
+// SetInputTokens sets the "input_tokens" field.
+func (u *AgentTurnUpsertOne) SetInputTokens(v int) *AgentTurnUpsertOne {
+	return u.Update(func(s *AgentTurnUpsert) {
+		s.SetInputTokens(v)
+	})
+}
+
+// AddInputTokens adds v to the "input_tokens" field.
+func (u *AgentTurnUpsertOne) AddInputTokens(v int) *AgentTurnUpsertOne {
+	return u.Update(func(s *AgentTurnUpsert) {
+		s.AddInputTokens(v)
+	})
+}
+
+// UpdateInputTokens sets the "input_tokens" field to the value that was provided on create.
+func (u *AgentTurnUpsertOne) UpdateInputTokens() *AgentTurnUpsertOne {
+	return u.Update(func(s *AgentTurnUpsert) {
+		s.UpdateInputTokens()
+	})
+}
+
+// SetOutputTokens sets the "output_tokens" field.
+func (u *AgentTurnUpsertOne) SetOutputTokens(v int) *AgentTurnUpsertOne {
+	return u.Update(func(s *AgentTurnUpsert) {
+		s.SetOutputTokens(v)
+	})
+}
+
+// AddOutputTokens adds v to the "output_tokens" field.
+func (u *AgentTurnUpsertOne) AddOutputTokens(v int) *AgentTurnUpsertOne {
+	return u.Update(func(s *AgentTurnUpsert) {
+		s.AddOutputTokens(v)
+	})
+}
+
+// UpdateOutputTokens sets the "output_tokens" field to the value that was provided on create.
+func (u *AgentTurnUpsertOne) UpdateOutputTokens() *AgentTurnUpsertOne {
+	return u.Update(func(s *AgentTurnUpsert) {
+		s.UpdateOutputTokens()
 	})
 }
 
@@ -1329,6 +1518,62 @@ func (u *AgentTurnUpsertBulk) UpdateError() *AgentTurnUpsertBulk {
 func (u *AgentTurnUpsertBulk) ClearError() *AgentTurnUpsertBulk {
 	return u.Update(func(s *AgentTurnUpsert) {
 		s.ClearError()
+	})
+}
+
+// SetModel sets the "model" field.
+func (u *AgentTurnUpsertBulk) SetModel(v string) *AgentTurnUpsertBulk {
+	return u.Update(func(s *AgentTurnUpsert) {
+		s.SetModel(v)
+	})
+}
+
+// UpdateModel sets the "model" field to the value that was provided on create.
+func (u *AgentTurnUpsertBulk) UpdateModel() *AgentTurnUpsertBulk {
+	return u.Update(func(s *AgentTurnUpsert) {
+		s.UpdateModel()
+	})
+}
+
+// SetInputTokens sets the "input_tokens" field.
+func (u *AgentTurnUpsertBulk) SetInputTokens(v int) *AgentTurnUpsertBulk {
+	return u.Update(func(s *AgentTurnUpsert) {
+		s.SetInputTokens(v)
+	})
+}
+
+// AddInputTokens adds v to the "input_tokens" field.
+func (u *AgentTurnUpsertBulk) AddInputTokens(v int) *AgentTurnUpsertBulk {
+	return u.Update(func(s *AgentTurnUpsert) {
+		s.AddInputTokens(v)
+	})
+}
+
+// UpdateInputTokens sets the "input_tokens" field to the value that was provided on create.
+func (u *AgentTurnUpsertBulk) UpdateInputTokens() *AgentTurnUpsertBulk {
+	return u.Update(func(s *AgentTurnUpsert) {
+		s.UpdateInputTokens()
+	})
+}
+
+// SetOutputTokens sets the "output_tokens" field.
+func (u *AgentTurnUpsertBulk) SetOutputTokens(v int) *AgentTurnUpsertBulk {
+	return u.Update(func(s *AgentTurnUpsert) {
+		s.SetOutputTokens(v)
+	})
+}
+
+// AddOutputTokens adds v to the "output_tokens" field.
+func (u *AgentTurnUpsertBulk) AddOutputTokens(v int) *AgentTurnUpsertBulk {
+	return u.Update(func(s *AgentTurnUpsert) {
+		s.AddOutputTokens(v)
+	})
+}
+
+// UpdateOutputTokens sets the "output_tokens" field to the value that was provided on create.
+func (u *AgentTurnUpsertBulk) UpdateOutputTokens() *AgentTurnUpsertBulk {
+	return u.Update(func(s *AgentTurnUpsert) {
+		s.UpdateOutputTokens()
 	})
 }
 

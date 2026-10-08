@@ -194,6 +194,62 @@ func (_u *AgentTurnUpdate) ClearError() *AgentTurnUpdate {
 	return _u
 }
 
+// SetModel sets the "model" field.
+func (_u *AgentTurnUpdate) SetModel(v string) *AgentTurnUpdate {
+	_u.mutation.SetModel(v)
+	return _u
+}
+
+// SetNillableModel sets the "model" field if the given value is not nil.
+func (_u *AgentTurnUpdate) SetNillableModel(v *string) *AgentTurnUpdate {
+	if v != nil {
+		_u.SetModel(*v)
+	}
+	return _u
+}
+
+// SetInputTokens sets the "input_tokens" field.
+func (_u *AgentTurnUpdate) SetInputTokens(v int) *AgentTurnUpdate {
+	_u.mutation.ResetInputTokens()
+	_u.mutation.SetInputTokens(v)
+	return _u
+}
+
+// SetNillableInputTokens sets the "input_tokens" field if the given value is not nil.
+func (_u *AgentTurnUpdate) SetNillableInputTokens(v *int) *AgentTurnUpdate {
+	if v != nil {
+		_u.SetInputTokens(*v)
+	}
+	return _u
+}
+
+// AddInputTokens adds value to the "input_tokens" field.
+func (_u *AgentTurnUpdate) AddInputTokens(v int) *AgentTurnUpdate {
+	_u.mutation.AddInputTokens(v)
+	return _u
+}
+
+// SetOutputTokens sets the "output_tokens" field.
+func (_u *AgentTurnUpdate) SetOutputTokens(v int) *AgentTurnUpdate {
+	_u.mutation.ResetOutputTokens()
+	_u.mutation.SetOutputTokens(v)
+	return _u
+}
+
+// SetNillableOutputTokens sets the "output_tokens" field if the given value is not nil.
+func (_u *AgentTurnUpdate) SetNillableOutputTokens(v *int) *AgentTurnUpdate {
+	if v != nil {
+		_u.SetOutputTokens(*v)
+	}
+	return _u
+}
+
+// AddOutputTokens adds value to the "output_tokens" field.
+func (_u *AgentTurnUpdate) AddOutputTokens(v int) *AgentTurnUpdate {
+	_u.mutation.AddOutputTokens(v)
+	return _u
+}
+
 // SetInputMessage sets the "input_message" edge to the AgentMessage entity.
 func (_u *AgentTurnUpdate) SetInputMessage(v *AgentMessage) *AgentTurnUpdate {
 	return _u.SetInputMessageID(v.ID)
@@ -331,6 +387,16 @@ func (_u *AgentTurnUpdate) check() error {
 			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "AgentTurn.status": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.InputTokens(); ok {
+		if err := agentturn.InputTokensValidator(v); err != nil {
+			return &ValidationError{Name: "input_tokens", err: fmt.Errorf(`ent: validator failed for field "AgentTurn.input_tokens": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.OutputTokens(); ok {
+		if err := agentturn.OutputTokensValidator(v); err != nil {
+			return &ValidationError{Name: "output_tokens", err: fmt.Errorf(`ent: validator failed for field "AgentTurn.output_tokens": %w`, err)}
+		}
+	}
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "AgentTurn.tenant"`)
 	}
@@ -393,6 +459,21 @@ func (_u *AgentTurnUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if _u.mutation.ErrorCleared() {
 		_spec.ClearField(agentturn.FieldError, field.TypeString)
+	}
+	if value, ok := _u.mutation.Model(); ok {
+		_spec.SetField(agentturn.FieldModel, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.InputTokens(); ok {
+		_spec.SetField(agentturn.FieldInputTokens, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedInputTokens(); ok {
+		_spec.AddField(agentturn.FieldInputTokens, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.OutputTokens(); ok {
+		_spec.SetField(agentturn.FieldOutputTokens, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedOutputTokens(); ok {
+		_spec.AddField(agentturn.FieldOutputTokens, field.TypeInt, value)
 	}
 	if _u.mutation.InputMessageCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -704,6 +785,62 @@ func (_u *AgentTurnUpdateOne) ClearError() *AgentTurnUpdateOne {
 	return _u
 }
 
+// SetModel sets the "model" field.
+func (_u *AgentTurnUpdateOne) SetModel(v string) *AgentTurnUpdateOne {
+	_u.mutation.SetModel(v)
+	return _u
+}
+
+// SetNillableModel sets the "model" field if the given value is not nil.
+func (_u *AgentTurnUpdateOne) SetNillableModel(v *string) *AgentTurnUpdateOne {
+	if v != nil {
+		_u.SetModel(*v)
+	}
+	return _u
+}
+
+// SetInputTokens sets the "input_tokens" field.
+func (_u *AgentTurnUpdateOne) SetInputTokens(v int) *AgentTurnUpdateOne {
+	_u.mutation.ResetInputTokens()
+	_u.mutation.SetInputTokens(v)
+	return _u
+}
+
+// SetNillableInputTokens sets the "input_tokens" field if the given value is not nil.
+func (_u *AgentTurnUpdateOne) SetNillableInputTokens(v *int) *AgentTurnUpdateOne {
+	if v != nil {
+		_u.SetInputTokens(*v)
+	}
+	return _u
+}
+
+// AddInputTokens adds value to the "input_tokens" field.
+func (_u *AgentTurnUpdateOne) AddInputTokens(v int) *AgentTurnUpdateOne {
+	_u.mutation.AddInputTokens(v)
+	return _u
+}
+
+// SetOutputTokens sets the "output_tokens" field.
+func (_u *AgentTurnUpdateOne) SetOutputTokens(v int) *AgentTurnUpdateOne {
+	_u.mutation.ResetOutputTokens()
+	_u.mutation.SetOutputTokens(v)
+	return _u
+}
+
+// SetNillableOutputTokens sets the "output_tokens" field if the given value is not nil.
+func (_u *AgentTurnUpdateOne) SetNillableOutputTokens(v *int) *AgentTurnUpdateOne {
+	if v != nil {
+		_u.SetOutputTokens(*v)
+	}
+	return _u
+}
+
+// AddOutputTokens adds value to the "output_tokens" field.
+func (_u *AgentTurnUpdateOne) AddOutputTokens(v int) *AgentTurnUpdateOne {
+	_u.mutation.AddOutputTokens(v)
+	return _u
+}
+
 // SetInputMessage sets the "input_message" edge to the AgentMessage entity.
 func (_u *AgentTurnUpdateOne) SetInputMessage(v *AgentMessage) *AgentTurnUpdateOne {
 	return _u.SetInputMessageID(v.ID)
@@ -854,6 +991,16 @@ func (_u *AgentTurnUpdateOne) check() error {
 			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "AgentTurn.status": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.InputTokens(); ok {
+		if err := agentturn.InputTokensValidator(v); err != nil {
+			return &ValidationError{Name: "input_tokens", err: fmt.Errorf(`ent: validator failed for field "AgentTurn.input_tokens": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.OutputTokens(); ok {
+		if err := agentturn.OutputTokensValidator(v); err != nil {
+			return &ValidationError{Name: "output_tokens", err: fmt.Errorf(`ent: validator failed for field "AgentTurn.output_tokens": %w`, err)}
+		}
+	}
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "AgentTurn.tenant"`)
 	}
@@ -933,6 +1080,21 @@ func (_u *AgentTurnUpdateOne) sqlSave(ctx context.Context) (_node *AgentTurn, er
 	}
 	if _u.mutation.ErrorCleared() {
 		_spec.ClearField(agentturn.FieldError, field.TypeString)
+	}
+	if value, ok := _u.mutation.Model(); ok {
+		_spec.SetField(agentturn.FieldModel, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.InputTokens(); ok {
+		_spec.SetField(agentturn.FieldInputTokens, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedInputTokens(); ok {
+		_spec.AddField(agentturn.FieldInputTokens, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.OutputTokens(); ok {
+		_spec.SetField(agentturn.FieldOutputTokens, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedOutputTokens(); ok {
+		_spec.AddField(agentturn.FieldOutputTokens, field.TypeInt, value)
 	}
 	if _u.mutation.InputMessageCleared() {
 		edge := &sqlgraph.EdgeSpec{

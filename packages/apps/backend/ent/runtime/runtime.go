@@ -293,6 +293,22 @@ func init() {
 	agentturnDescFinishReason := agentturnFields[9].Descriptor()
 	// agentturn.DefaultFinishReason holds the default value on creation for the finish_reason field.
 	agentturn.DefaultFinishReason = agentturnDescFinishReason.Default.(string)
+	// agentturnDescModel is the schema descriptor for model field.
+	agentturnDescModel := agentturnFields[11].Descriptor()
+	// agentturn.DefaultModel holds the default value on creation for the model field.
+	agentturn.DefaultModel = agentturnDescModel.Default.(string)
+	// agentturnDescInputTokens is the schema descriptor for input_tokens field.
+	agentturnDescInputTokens := agentturnFields[12].Descriptor()
+	// agentturn.DefaultInputTokens holds the default value on creation for the input_tokens field.
+	agentturn.DefaultInputTokens = agentturnDescInputTokens.Default.(int)
+	// agentturn.InputTokensValidator is a validator for the "input_tokens" field. It is called by the builders before save.
+	agentturn.InputTokensValidator = agentturnDescInputTokens.Validators[0].(func(int) error)
+	// agentturnDescOutputTokens is the schema descriptor for output_tokens field.
+	agentturnDescOutputTokens := agentturnFields[13].Descriptor()
+	// agentturn.DefaultOutputTokens holds the default value on creation for the output_tokens field.
+	agentturn.DefaultOutputTokens = agentturnDescOutputTokens.Default.(int)
+	// agentturn.OutputTokensValidator is a validator for the "output_tokens" field. It is called by the builders before save.
+	agentturn.OutputTokensValidator = agentturnDescOutputTokens.Validators[0].(func(int) error)
 	alertdefinitionMixin := schema.AlertDefinition{}.Mixin()
 	alertdefinition.Policy = privacy.NewPolicies(alertdefinitionMixin[0], alertdefinitionMixin[1], schema.AlertDefinition{})
 	alertdefinition.Hooks[0] = func(next ent.Mutator) ent.Mutator {

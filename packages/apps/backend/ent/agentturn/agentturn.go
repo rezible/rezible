@@ -42,6 +42,12 @@ const (
 	FieldFinishReason = "finish_reason"
 	// FieldError holds the string denoting the error field in the database.
 	FieldError = "error"
+	// FieldModel holds the string denoting the model field in the database.
+	FieldModel = "model"
+	// FieldInputTokens holds the string denoting the input_tokens field in the database.
+	FieldInputTokens = "input_tokens"
+	// FieldOutputTokens holds the string denoting the output_tokens field in the database.
+	FieldOutputTokens = "output_tokens"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
 	// EdgeAgentSession holds the string denoting the agent_session edge name in mutations.
@@ -107,6 +113,9 @@ var Columns = []string{
 	FieldFinishedAt,
 	FieldFinishReason,
 	FieldError,
+	FieldModel,
+	FieldInputTokens,
+	FieldOutputTokens,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -137,6 +146,16 @@ var (
 	SequenceValidator func(int) error
 	// DefaultFinishReason holds the default value on creation for the "finish_reason" field.
 	DefaultFinishReason string
+	// DefaultModel holds the default value on creation for the "model" field.
+	DefaultModel string
+	// DefaultInputTokens holds the default value on creation for the "input_tokens" field.
+	DefaultInputTokens int
+	// InputTokensValidator is a validator for the "input_tokens" field. It is called by the builders before save.
+	InputTokensValidator func(int) error
+	// DefaultOutputTokens holds the default value on creation for the "output_tokens" field.
+	DefaultOutputTokens int
+	// OutputTokensValidator is a validator for the "output_tokens" field. It is called by the builders before save.
+	OutputTokensValidator func(int) error
 )
 
 // Status defines the type for the "status" enum field.
@@ -231,6 +250,21 @@ func ByFinishReason(opts ...sql.OrderTermOption) OrderOption {
 // ByError orders the results by the error field.
 func ByError(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldError, opts...).ToFunc()
+}
+
+// ByModel orders the results by the model field.
+func ByModel(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldModel, opts...).ToFunc()
+}
+
+// ByInputTokens orders the results by the input_tokens field.
+func ByInputTokens(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldInputTokens, opts...).ToFunc()
+}
+
+// ByOutputTokens orders the results by the output_tokens field.
+func ByOutputTokens(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldOutputTokens, opts...).ToFunc()
 }
 
 // ByTenantField orders the results by tenant field.

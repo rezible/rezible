@@ -6,6 +6,7 @@ import (
 
 	"github.com/firebase/genkit/go/ai"
 	rez "github.com/rezible/rezible"
+	rezai "github.com/rezible/rezible/pkg/ai"
 )
 
 type (
@@ -76,6 +77,34 @@ func (m *agentDebugMiddleware) New(ctx context.Context) (*ai.Hooks, error) {
 			//pretty.Println("model request", params.Request)
 			resp, respErr := next(ctx, params)
 			//pretty.Println("model response", resp, "error", respErr)
+			return resp, respErr
+		},
+	}, nil
+}
+
+// turnUsageMiddleware adds each model call's tokens to the turn's tally. Thinking tokens are billed as output.
+// The tool loop runs later iterations inside WrapGenerate's next, so only WrapModel sees one call's own response;
+// WrapGenerate passes it the model name through the context.
+type turnUsageMiddleware struct{}
+
+type turnUsageModelKey struct{}
+
+func (m *turnUsageMiddleware) Name() string {
+	return "turn_usage"
+}
+
+func (m *turnUsageMiddleware) New(ctx context.Context) (*ai.Hooks, error) {
+	return &ai.Hooks{
+		WrapGenerate: func(ctx context.Context, params *ai.GenerateParams, next ai.GenerateNext) (*ai.ModelResponse, error) {
+			return next(context.WithValue(ctx, turnUsageModelKey{}, params.Options.Model), params)
+		},
+		WrapModel: func(ctx context.Context, params *ai.ModelParams, next ai.ModelNext) (*ai.ModelResponse, error) {
+			resp, respErr := next(ctx, params)
+			if resp != nil && resp.Usage != nil {
+				model, _ := ctx.Value(turnUsageModelKey{}).(string)
+				usage := resp.Usage
+				rezai.AddModelUsage(ctx, model, usage.InputTokens, usage.OutputTokens+usage.ThoughtsTokens)
+			}
 			return resp, respErr
 		},
 	}, nil

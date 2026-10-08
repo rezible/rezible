@@ -112,6 +112,21 @@ func Error(v string) predicate.AgentTurn {
 	return predicate.AgentTurn(sql.FieldEQ(FieldError, v))
 }
 
+// Model applies equality check predicate on the "model" field. It's identical to ModelEQ.
+func Model(v string) predicate.AgentTurn {
+	return predicate.AgentTurn(sql.FieldEQ(FieldModel, v))
+}
+
+// InputTokens applies equality check predicate on the "input_tokens" field. It's identical to InputTokensEQ.
+func InputTokens(v int) predicate.AgentTurn {
+	return predicate.AgentTurn(sql.FieldEQ(FieldInputTokens, v))
+}
+
+// OutputTokens applies equality check predicate on the "output_tokens" field. It's identical to OutputTokensEQ.
+func OutputTokens(v int) predicate.AgentTurn {
+	return predicate.AgentTurn(sql.FieldEQ(FieldOutputTokens, v))
+}
+
 // TenantIDEQ applies the EQ predicate on the "tenant_id" field.
 func TenantIDEQ(v int) predicate.AgentTurn {
 	return predicate.AgentTurn(sql.FieldEQ(FieldTenantID, v))
@@ -610,6 +625,151 @@ func ErrorEqualFold(v string) predicate.AgentTurn {
 // ErrorContainsFold applies the ContainsFold predicate on the "error" field.
 func ErrorContainsFold(v string) predicate.AgentTurn {
 	return predicate.AgentTurn(sql.FieldContainsFold(FieldError, v))
+}
+
+// ModelEQ applies the EQ predicate on the "model" field.
+func ModelEQ(v string) predicate.AgentTurn {
+	return predicate.AgentTurn(sql.FieldEQ(FieldModel, v))
+}
+
+// ModelNEQ applies the NEQ predicate on the "model" field.
+func ModelNEQ(v string) predicate.AgentTurn {
+	return predicate.AgentTurn(sql.FieldNEQ(FieldModel, v))
+}
+
+// ModelIn applies the In predicate on the "model" field.
+func ModelIn(vs ...string) predicate.AgentTurn {
+	return predicate.AgentTurn(sql.FieldIn(FieldModel, vs...))
+}
+
+// ModelNotIn applies the NotIn predicate on the "model" field.
+func ModelNotIn(vs ...string) predicate.AgentTurn {
+	return predicate.AgentTurn(sql.FieldNotIn(FieldModel, vs...))
+}
+
+// ModelGT applies the GT predicate on the "model" field.
+func ModelGT(v string) predicate.AgentTurn {
+	return predicate.AgentTurn(sql.FieldGT(FieldModel, v))
+}
+
+// ModelGTE applies the GTE predicate on the "model" field.
+func ModelGTE(v string) predicate.AgentTurn {
+	return predicate.AgentTurn(sql.FieldGTE(FieldModel, v))
+}
+
+// ModelLT applies the LT predicate on the "model" field.
+func ModelLT(v string) predicate.AgentTurn {
+	return predicate.AgentTurn(sql.FieldLT(FieldModel, v))
+}
+
+// ModelLTE applies the LTE predicate on the "model" field.
+func ModelLTE(v string) predicate.AgentTurn {
+	return predicate.AgentTurn(sql.FieldLTE(FieldModel, v))
+}
+
+// ModelContains applies the Contains predicate on the "model" field.
+func ModelContains(v string) predicate.AgentTurn {
+	return predicate.AgentTurn(sql.FieldContains(FieldModel, v))
+}
+
+// ModelHasPrefix applies the HasPrefix predicate on the "model" field.
+func ModelHasPrefix(v string) predicate.AgentTurn {
+	return predicate.AgentTurn(sql.FieldHasPrefix(FieldModel, v))
+}
+
+// ModelHasSuffix applies the HasSuffix predicate on the "model" field.
+func ModelHasSuffix(v string) predicate.AgentTurn {
+	return predicate.AgentTurn(sql.FieldHasSuffix(FieldModel, v))
+}
+
+// ModelEqualFold applies the EqualFold predicate on the "model" field.
+func ModelEqualFold(v string) predicate.AgentTurn {
+	return predicate.AgentTurn(sql.FieldEqualFold(FieldModel, v))
+}
+
+// ModelContainsFold applies the ContainsFold predicate on the "model" field.
+func ModelContainsFold(v string) predicate.AgentTurn {
+	return predicate.AgentTurn(sql.FieldContainsFold(FieldModel, v))
+}
+
+// InputTokensEQ applies the EQ predicate on the "input_tokens" field.
+func InputTokensEQ(v int) predicate.AgentTurn {
+	return predicate.AgentTurn(sql.FieldEQ(FieldInputTokens, v))
+}
+
+// InputTokensNEQ applies the NEQ predicate on the "input_tokens" field.
+func InputTokensNEQ(v int) predicate.AgentTurn {
+	return predicate.AgentTurn(sql.FieldNEQ(FieldInputTokens, v))
+}
+
+// InputTokensIn applies the In predicate on the "input_tokens" field.
+func InputTokensIn(vs ...int) predicate.AgentTurn {
+	return predicate.AgentTurn(sql.FieldIn(FieldInputTokens, vs...))
+}
+
+// InputTokensNotIn applies the NotIn predicate on the "input_tokens" field.
+func InputTokensNotIn(vs ...int) predicate.AgentTurn {
+	return predicate.AgentTurn(sql.FieldNotIn(FieldInputTokens, vs...))
+}
+
+// InputTokensGT applies the GT predicate on the "input_tokens" field.
+func InputTokensGT(v int) predicate.AgentTurn {
+	return predicate.AgentTurn(sql.FieldGT(FieldInputTokens, v))
+}
+
+// InputTokensGTE applies the GTE predicate on the "input_tokens" field.
+func InputTokensGTE(v int) predicate.AgentTurn {
+	return predicate.AgentTurn(sql.FieldGTE(FieldInputTokens, v))
+}
+
+// InputTokensLT applies the LT predicate on the "input_tokens" field.
+func InputTokensLT(v int) predicate.AgentTurn {
+	return predicate.AgentTurn(sql.FieldLT(FieldInputTokens, v))
+}
+
+// InputTokensLTE applies the LTE predicate on the "input_tokens" field.
+func InputTokensLTE(v int) predicate.AgentTurn {
+	return predicate.AgentTurn(sql.FieldLTE(FieldInputTokens, v))
+}
+
+// OutputTokensEQ applies the EQ predicate on the "output_tokens" field.
+func OutputTokensEQ(v int) predicate.AgentTurn {
+	return predicate.AgentTurn(sql.FieldEQ(FieldOutputTokens, v))
+}
+
+// OutputTokensNEQ applies the NEQ predicate on the "output_tokens" field.
+func OutputTokensNEQ(v int) predicate.AgentTurn {
+	return predicate.AgentTurn(sql.FieldNEQ(FieldOutputTokens, v))
+}
+
+// OutputTokensIn applies the In predicate on the "output_tokens" field.
+func OutputTokensIn(vs ...int) predicate.AgentTurn {
+	return predicate.AgentTurn(sql.FieldIn(FieldOutputTokens, vs...))
+}
+
+// OutputTokensNotIn applies the NotIn predicate on the "output_tokens" field.
+func OutputTokensNotIn(vs ...int) predicate.AgentTurn {
+	return predicate.AgentTurn(sql.FieldNotIn(FieldOutputTokens, vs...))
+}
+
+// OutputTokensGT applies the GT predicate on the "output_tokens" field.
+func OutputTokensGT(v int) predicate.AgentTurn {
+	return predicate.AgentTurn(sql.FieldGT(FieldOutputTokens, v))
+}
+
+// OutputTokensGTE applies the GTE predicate on the "output_tokens" field.
+func OutputTokensGTE(v int) predicate.AgentTurn {
+	return predicate.AgentTurn(sql.FieldGTE(FieldOutputTokens, v))
+}
+
+// OutputTokensLT applies the LT predicate on the "output_tokens" field.
+func OutputTokensLT(v int) predicate.AgentTurn {
+	return predicate.AgentTurn(sql.FieldLT(FieldOutputTokens, v))
+}
+
+// OutputTokensLTE applies the LTE predicate on the "output_tokens" field.
+func OutputTokensLTE(v int) predicate.AgentTurn {
+	return predicate.AgentTurn(sql.FieldLTE(FieldOutputTokens, v))
 }
 
 // HasTenant applies the HasEdge predicate on the "tenant" edge.

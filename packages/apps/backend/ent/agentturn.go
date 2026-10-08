@@ -49,6 +49,12 @@ type AgentTurn struct {
 	FinishReason string `json:"finish_reason,omitempty"`
 	// Error holds the value of the "error" field.
 	Error *string `json:"error,omitempty"`
+	// Model holds the value of the "model" field.
+	Model string `json:"model,omitempty"`
+	// InputTokens holds the value of the "input_tokens" field.
+	InputTokens int `json:"input_tokens,omitempty"`
+	// OutputTokens holds the value of the "output_tokens" field.
+	OutputTokens int `json:"output_tokens,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the AgentTurnQuery when eager-loading is set.
 	Edges        AgentTurnEdges `json:"edges"`
@@ -132,9 +138,9 @@ func (*AgentTurn) scanValues(columns []string) ([]any, error) {
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case agentturn.FieldInputToolResume:
 			values[i] = new([]byte)
-		case agentturn.FieldTenantID, agentturn.FieldSequence, agentturn.FieldRiverJobID:
+		case agentturn.FieldTenantID, agentturn.FieldSequence, agentturn.FieldRiverJobID, agentturn.FieldInputTokens, agentturn.FieldOutputTokens:
 			values[i] = new(sql.NullInt64)
-		case agentturn.FieldStatus, agentturn.FieldFinishReason, agentturn.FieldError:
+		case agentturn.FieldStatus, agentturn.FieldFinishReason, agentturn.FieldError, agentturn.FieldModel:
 			values[i] = new(sql.NullString)
 		case agentturn.FieldCreatedAt, agentturn.FieldUpdatedAt, agentturn.FieldStartedAt, agentturn.FieldFinishedAt:
 			values[i] = new(sql.NullTime)
@@ -245,6 +251,24 @@ func (_m *AgentTurn) assignValues(columns []string, values []any) error {
 				_m.Error = new(string)
 				*_m.Error = value.String
 			}
+		case agentturn.FieldModel:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field model", values[i])
+			} else if value.Valid {
+				_m.Model = value.String
+			}
+		case agentturn.FieldInputTokens:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field input_tokens", values[i])
+			} else if value.Valid {
+				_m.InputTokens = int(value.Int64)
+			}
+		case agentturn.FieldOutputTokens:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field output_tokens", values[i])
+			} else if value.Valid {
+				_m.OutputTokens = int(value.Int64)
+			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
 		}
@@ -352,6 +376,15 @@ func (_m *AgentTurn) String() string {
 		builder.WriteString("error=")
 		builder.WriteString(*v)
 	}
+	builder.WriteString(", ")
+	builder.WriteString("model=")
+	builder.WriteString(_m.Model)
+	builder.WriteString(", ")
+	builder.WriteString("input_tokens=")
+	builder.WriteString(fmt.Sprintf("%v", _m.InputTokens))
+	builder.WriteString(", ")
+	builder.WriteString("output_tokens=")
+	builder.WriteString(fmt.Sprintf("%v", _m.OutputTokens))
 	builder.WriteByte(')')
 	return builder.String()
 }

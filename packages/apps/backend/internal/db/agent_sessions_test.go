@@ -543,11 +543,8 @@ func (s *AiAgentSessionServiceSuite) TestRequestAgentTurnValidatesInputAndComple
 func (s *AiAgentSessionServiceSuite) TestWorkerPersistsSuccessfulResultAndPublishesEvent() {
 	ctx, h := s.newAgentSessionFixture()
 	runtime := mocks.NewMockAiAgentRuntime(s.T())
-	worker := &InvokeAgentTurnWorker{
-		db:     h.tdb,
-		agents: runtime,
-		msgs:   h.msgs,
-	}
+	worker, workerErr := NewInvokeAgentTurnWorker(rez.AiConfig{}, h.tdb, h.msgs, runtime, nil)
+	s.Require().NoError(workerErr)
 	session := s.createAgentSession(ctx, h.tdb, testAgentInput{
 		Foo: "bar",
 	})
@@ -661,11 +658,8 @@ func (s *AiAgentSessionServiceSuite) TestWorkerPersistsSuccessfulResultAndPublis
 func (s *AiAgentSessionServiceSuite) TestWorkerFailsTurnWhenAgentReturnsNilResult() {
 	ctx, h := s.newAgentSessionFixture()
 	runtime := mocks.NewMockAiAgentRuntime(s.T())
-	worker := &InvokeAgentTurnWorker{
-		db:     h.tdb,
-		agents: runtime,
-		msgs:   h.msgs,
-	}
+	worker, workerErr := NewInvokeAgentTurnWorker(rez.AiConfig{}, h.tdb, h.msgs, runtime, nil)
+	s.Require().NoError(workerErr)
 	session := s.createAgentSession(ctx, h.tdb, testAgentInput{})
 
 	_ = s.createAgentTurn(ctx, h.tdb, session, agentTurnSeed{
@@ -709,13 +703,12 @@ func (s *AiAgentSessionServiceSuite) TestWorkerRecordsTurnSpan() {
 	otel.SetTracerProvider(sdktrace.NewTracerProvider(sdktrace.WithSpanProcessor(spans)))
 	s.T().Cleanup(func() { otel.SetTracerProvider(previousProvider) })
 
+	metrics := test.RecordMetrics(s.T())
+
 	ctx, h := s.newAgentSessionFixture()
 	runtime := mocks.NewMockAiAgentRuntime(s.T())
-	worker := &InvokeAgentTurnWorker{
-		db:     h.tdb,
-		agents: runtime,
-		msgs:   h.msgs,
-	}
+	worker, workerErr := NewInvokeAgentTurnWorker(rez.AiConfig{}, h.tdb, h.msgs, runtime, nil)
+	s.Require().NoError(workerErr)
 	// A session has one active turn, so each outcome has its own session.
 	queueTurn := func(riverJobID int64) (*ent.AgentSession, *ent.AgentTurn) {
 		session := s.createAgentSession(ctx, h.tdb, testAgentInput{})
@@ -737,6 +730,7 @@ func (s *AiAgentSessionServiceSuite) TestWorkerRecordsTurnSpan() {
 		InvokeAgentTurn(mock.Anything, mock.MatchedBy(func(params rez.InvokeAiAgentTurnParams) bool {
 			return params.Turn.ID == completed.ID
 		})).
+		Run(reportTurnUsage("test/span-model", 100, 20, 2)).
 		Return(&rez.AiAgentInvocationResult{Response: reply, FinishReason: aix.AgentFinishReasonStop}, nil).
 		Once()
 	h.msgs.EXPECT().
@@ -774,6 +768,10 @@ func (s *AiAgentSessionServiceSuite) TestWorkerRecordsTurnSpan() {
 		attribute.String("agent_session_id", session.ID.String()),
 		attribute.String("outcome", "completed"),
 		attribute.String("finish_reason", string(aix.AgentFinishReasonStop)),
+		attribute.String("model", "test/span-model"),
+		attribute.Int("input_tokens", 100),
+		attribute.Int("output_tokens", 20),
+		attribute.Int("read_count", 2),
 	})
 	s.Equal(codes.Unset, completedSpan.Status().Code)
 
@@ -782,21 +780,137 @@ func (s *AiAgentSessionServiceSuite) TestWorkerRecordsTurnSpan() {
 	s.Subset(failedSpan.Attributes(), []attribute.KeyValue{
 		attribute.String("outcome", "failed"),
 		attribute.String("finish_reason", string(aix.AgentFinishReasonFailed)),
+		attribute.String("model", "none"),
+		attribute.Int("input_tokens", 0),
+		attribute.Int("read_count", 0),
 	})
 	s.Equal(codes.Error, failedSpan.Status().Code)
 	s.Contains(failedSpan.Status().Description, "model unavailable")
 	s.Require().NotEmpty(failedSpan.Events())
 	s.Equal("exception", failedSpan.Events()[0].Name)
+
+	agent := attribute.String("agent", "test-agent")
+	model := attribute.String("model", "test/span-model")
+	s.EqualValues(1, metrics.Count("rezible.backend.agent.turn.duration", agent, model, attribute.String("outcome", "completed")))
+	s.EqualValues(1, metrics.Count("rezible.backend.agent.turn.duration", agent, attribute.String("model", "none"), attribute.String("outcome", "failed")))
+	s.EqualValues(2, metrics.Count("rezible.backend.agent.turn.duration", agent))
+	s.EqualValues(100, metrics.Count("rezible.backend.agent.turn.tokens", agent, model, attribute.String("token_type", "input")))
+	s.EqualValues(20, metrics.Count("rezible.backend.agent.turn.tokens", agent, model, attribute.String("token_type", "output")))
+	s.EqualValues(2, metrics.Count("rezible.backend.agent.turn.reads", agent))
+}
+
+// reportTurnUsage is an invocation that reports what it used to the attempt's tally.
+func reportTurnUsage(model string, inputTokens, outputTokens, reads int) func(context.Context, rez.InvokeAiAgentTurnParams) {
+	return func(ctx context.Context, _ rez.InvokeAiAgentTurnParams) {
+		rezai.AddModelUsage(ctx, model, inputTokens, outputTokens)
+		for range reads {
+			rezai.AddRead(ctx)
+		}
+	}
+}
+
+func (s *AiAgentSessionServiceSuite) requireTurnUsage(ctx context.Context, tdb rez.Database, turnID uuid.UUID, model string, inputTokens, outputTokens int) {
+	turn, turnErr := tdb.Client(ctx).AgentTurn.Get(ctx, turnID)
+	s.Require().NoError(turnErr)
+	s.Equal(model, turn.Model, "model")
+	s.Equal(inputTokens, turn.InputTokens, "input tokens")
+	s.Equal(outputTokens, turn.OutputTokens, "output tokens")
+}
+
+func (s *AiAgentSessionServiceSuite) TestWorkerAddsUsageAcrossAttempts() {
+	ctx, h := s.newAgentSessionFixture()
+	f := s.newFailedTurnFixture(ctx, h, 1001)
+
+	f.runtime.EXPECT().
+		InvokeAgentTurn(mock.Anything, mock.Anything).
+		Run(reportTurnUsage("test/first", 100, 10, 0)).
+		Return(nil, errors.New("model unavailable")).
+		Once()
+	s.Require().Error(f.worker.Work(ctx, makeAgentTurnJob(f.turn, 1)))
+	s.requireTurnUsage(ctx, h.tdb, f.turn.ID, "test/first", 100, 10)
+
+	reply := ai.NewModelTextMessage("done")
+	f.runtime.EXPECT().
+		InvokeAgentTurn(mock.Anything, mock.Anything).
+		Run(reportTurnUsage("test/second", 200, 20, 0)).
+		Return(&rez.AiAgentInvocationResult{Response: reply, FinishReason: aix.AgentFinishReasonStop}, nil).
+		Once()
+	h.msgs.EXPECT().
+		Publish(mock.Anything, mock.IsType(&rezai.EventOnAgentTurnFinished{})).
+		Return(nil).
+		Once()
+	s.Require().NoError(f.worker.Work(ctx, makeAgentTurnJob(f.turn, 2)))
+	s.requireTurnUsage(ctx, h.tdb, f.turn.ID, "test/second", 300, 30)
+}
+
+func (s *AiAgentSessionServiceSuite) TestRetriedTurnKeepsEarlierUsage() {
+	ctx, h := s.newAgentSessionFixture()
+	f := s.newFailedTurnFixture(ctx, h, 1011)
+
+	f.runtime.EXPECT().
+		InvokeAgentTurn(mock.Anything, mock.Anything).
+		Run(reportTurnUsage("test/model", 100, 10, 0)).
+		Return(nil, errors.New("model unavailable")).
+		Once()
+	s.Require().Error(f.worker.Work(ctx, makeAgentTurnJob(f.turn, 3)))
+
+	h.jobs.EXPECT().
+		Insert(mock.Anything, mock.Anything, mock.Anything).
+		Return(makeJobInsertResult(1013), nil).
+		Once()
+	retried, retryErr := h.service.RetryAgentTurn(ctx, f.turn.ID)
+	s.Require().NoError(retryErr)
+	s.Equal(100, retried.InputTokens, "a retry keeps what the turn has cost")
+
+	reply := ai.NewModelTextMessage("done")
+	f.runtime.EXPECT().
+		InvokeAgentTurn(mock.Anything, mock.Anything).
+		Run(func(ctx context.Context, _ rez.InvokeAiAgentTurnParams) {
+			rezai.AddModelUsage(ctx, "test/model", 50, 5)
+		}).
+		Return(&rez.AiAgentInvocationResult{Response: reply, FinishReason: aix.AgentFinishReasonStop}, nil).
+		Once()
+	h.msgs.EXPECT().
+		Publish(mock.Anything, mock.IsType(&rezai.EventOnAgentTurnFinished{})).
+		Return(nil).
+		Once()
+	s.Require().NoError(f.worker.Work(ctx, makeAgentTurnJob(retried, 1)))
+	s.requireTurnUsage(ctx, h.tdb, f.turn.ID, "test/model", 150, 15)
+}
+
+func (s *AiAgentSessionServiceSuite) TestTurnAbortedDuringAttemptKeepsItsUsage() {
+	ctx, h := s.newAgentSessionFixture()
+	f := s.newFailedTurnFixture(ctx, h, 1021)
+
+	h.jobs.EXPECT().
+		Cancel(mock.Anything, f.turn.RiverJobID).
+		Return(nil).
+		Once()
+	reply := ai.NewModelTextMessage("done")
+	f.runtime.EXPECT().
+		InvokeAgentTurn(mock.Anything, mock.Anything).
+		Run(func(ctx context.Context, params rez.InvokeAiAgentTurnParams) {
+			reportTurnUsage("test/model", 100, 10, 1)(ctx, params)
+			_, abortErr := h.service.AbortAgentTurn(ctx, f.turn.ID)
+			s.Require().NoError(abortErr)
+		}).
+		Return(&rez.AiAgentInvocationResult{Response: reply, FinishReason: aix.AgentFinishReasonStop}, nil).
+		Once()
+
+	workErr := f.worker.Work(ctx, makeAgentTurnJob(f.turn, 1))
+	s.Require().ErrorIs(workErr, &river.JobCancelError{})
+
+	aborted, abortedErr := h.tdb.Client(ctx).AgentTurn.Get(ctx, f.turn.ID)
+	s.Require().NoError(abortedErr)
+	s.Equal(at.StatusAborted, aborted.Status)
+	s.requireTurnUsage(ctx, h.tdb, f.turn.ID, "test/model", 100, 10)
 }
 
 func (s *AiAgentSessionServiceSuite) TestWorkerDoesNotMutateConcurrentRunningDelivery() {
 	ctx, h := s.newAgentSessionFixture()
 	runtime := mocks.NewMockAiAgentRuntime(s.T())
-	worker := &InvokeAgentTurnWorker{
-		db:     h.tdb,
-		agents: runtime,
-		msgs:   h.msgs,
-	}
+	worker, workerErr := NewInvokeAgentTurnWorker(rez.AiConfig{}, h.tdb, h.msgs, runtime, nil)
+	s.Require().NoError(workerErr)
 	session := s.createAgentSession(ctx, h.tdb, testAgentInput{})
 
 	_ = s.createAgentTurn(ctx, h.tdb, session, agentTurnSeed{
@@ -916,11 +1030,8 @@ type failedTurnFixture struct {
 
 func (s *AiAgentSessionServiceSuite) newFailedTurnFixture(ctx context.Context, h *agentSessionFixture, jobID int64) *failedTurnFixture {
 	runtime := mocks.NewMockAiAgentRuntime(s.T())
-	worker := &InvokeAgentTurnWorker{
-		db:     h.tdb,
-		agents: runtime,
-		msgs:   h.msgs,
-	}
+	worker, workerErr := NewInvokeAgentTurnWorker(rez.AiConfig{}, h.tdb, h.msgs, runtime, nil)
+	s.Require().NoError(workerErr)
 	session := s.createAgentSession(ctx, h.tdb, testAgentInput{})
 	root := s.createAgentTurn(ctx, h.tdb, session, agentTurnSeed{
 		riverJobID:   jobID,
@@ -1132,11 +1243,8 @@ func (s *AiAgentSessionServiceSuite) TestToolIterationLimitIsNotRetriedAutomatic
 func (s *AiAgentSessionServiceSuite) TestRetryingOlderTurnKeepsSequencesAndHistoryOrder() {
 	ctx, h := s.newAgentSessionFixture()
 	runtime := mocks.NewMockAiAgentRuntime(s.T())
-	worker := &InvokeAgentTurnWorker{
-		db:     h.tdb,
-		agents: runtime,
-		msgs:   h.msgs,
-	}
+	worker, workerErr := NewInvokeAgentTurnWorker(rez.AiConfig{}, h.tdb, h.msgs, runtime, nil)
+	s.Require().NoError(workerErr)
 	session := s.createAgentSession(ctx, h.tdb, testAgentInput{})
 	for _, jobID := range []int64{1001, 1002, 1003, 1004} {
 		h.jobs.EXPECT().

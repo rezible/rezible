@@ -13,7 +13,9 @@ import (
 	aix "github.com/firebase/genkit/go/ai/exp"
 	"github.com/riverqueue/river"
 
+	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/trace"
 
 	rez "github.com/rezible/rezible"
@@ -96,17 +98,58 @@ type InvokeAgentTurnWorker struct {
 	agents   rez.AiAgentRuntime
 	sessions rez.AiAgentSessionService
 	timeout  time.Duration
+	metrics  *agentTurnMetrics
 }
 
 func NewInvokeAgentTurnWorker(cfg rez.AiConfig, db rez.Database, msgs rez.MessageQueue, aiSvc rez.AiAgentRuntime, aiSess rez.AiAgentSessionService) (*InvokeAgentTurnWorker, error) {
+	metrics, metricsErr := newAgentTurnMetrics()
+	if metricsErr != nil {
+		return nil, fmt.Errorf("agent turn metrics: %w", metricsErr)
+	}
 	w := &InvokeAgentTurnWorker{
 		db:       db,
 		msgs:     msgs,
 		agents:   aiSvc,
 		sessions: aiSess,
 		timeout:  cfg.Agents.WorkerTimeout,
+		metrics:  metrics,
 	}
 	return w, nil
+}
+
+// agentTurnMetrics measure each attempt of an agent turn. Tenant, session and turn are on the span, not here.
+type agentTurnMetrics struct {
+	duration metric.Float64Histogram
+	tokens   metric.Int64Counter
+	reads    metric.Int64Counter
+}
+
+func newAgentTurnMetrics() (*agentTurnMetrics, error) {
+	meter := otel.Meter("github.com/rezible/rezible")
+	duration, durationErr := meter.Float64Histogram("rezible.backend.agent.turn.duration",
+		metric.WithDescription("Agent turn attempt duration"),
+		metric.WithUnit("s"),
+		metric.WithExplicitBucketBoundaries(1, 2, 5, 10, 20, 30, 60, 120, 300))
+	tokens, tokensErr := meter.Int64Counter("rezible.backend.agent.turn.tokens",
+		metric.WithDescription("Model tokens used by agent turn attempts"),
+		metric.WithUnit("{token}"))
+	reads, readsErr := meter.Int64Counter("rezible.backend.agent.turn.reads",
+		metric.WithDescription("Provider reads made by agent turn attempts"),
+		metric.WithUnit("{read}"))
+	if instrumentsErr := errors.Join(durationErr, tokensErr, readsErr); instrumentsErr != nil {
+		return nil, instrumentsErr
+	}
+	return &agentTurnMetrics{duration: duration, tokens: tokens, reads: reads}, nil
+}
+
+// record measures one attempt that invoked the agent. model is "none" when the attempt made no model call.
+func (m *agentTurnMetrics) record(ctx context.Context, agent, model, outcome string, usage rezai.TurnUsage, duration time.Duration) {
+	agentAttr := attribute.String("agent", agent)
+	modelAttr := attribute.String("model", model)
+	m.duration.Record(ctx, duration.Seconds(), metric.WithAttributes(agentAttr, modelAttr, attribute.String("outcome", outcome)))
+	m.tokens.Add(ctx, int64(usage.InputTokens), metric.WithAttributes(agentAttr, modelAttr, attribute.String("token_type", "input")))
+	m.tokens.Add(ctx, int64(usage.OutputTokens), metric.WithAttributes(agentAttr, modelAttr, attribute.String("token_type", "output")))
+	m.reads.Add(ctx, int64(usage.Reads), metric.WithAttributes(agentAttr))
 }
 
 func (w *InvokeAgentTurnWorker) Timeout(*river.Job[jobs.InvokeAgentTurn]) time.Duration {
@@ -126,7 +169,7 @@ func (w *InvokeAgentTurnWorker) Work(ctx context.Context, job *river.Job[jobs.In
 			return claimErr
 		}
 		if job.Attempt >= job.MaxAttempts {
-			_, saveErr := w.saveInvocationResult(ctx, job, nil, nil, claimErr)
+			_, saveErr := w.saveInvocationResult(ctx, job, nil, nil, rezai.TurnUsage{}, claimErr)
 			return saveErr
 		}
 		return claimErr
@@ -140,11 +183,15 @@ func (w *InvokeAgentTurnWorker) Work(ctx context.Context, job *river.Job[jobs.In
 	}, claim.spanAttributes()...)
 }
 
-// runClaimedTurn invokes the agent and saves the result, then sets how the attempt ended on the turn's span.
-// An attempt queued again for a retry failed.
+// runClaimedTurn invokes the agent and saves the result with what the attempt used, then records how the attempt
+// ended and what it used on the turn's span and metrics. An attempt queued again for a retry failed.
 func (w *InvokeAgentTurnWorker) runClaimedTurn(ctx context.Context, job *river.Job[jobs.InvokeAgentTurn], claim *agentTurnClaim) error {
-	result, invokeErr := w.invokeTurn(ctx, *claim)
-	saved, saveResultErr := w.saveInvocationResult(ctx, job, claim, result, invokeErr)
+	attemptCtx, attemptUsage := rezai.WithTurnUsage(ctx)
+	started := time.Now()
+	result, invokeErr := w.invokeTurn(attemptCtx, *claim)
+	duration := time.Since(started)
+	usage := attemptUsage()
+	saved, saveResultErr := w.saveInvocationResult(ctx, job, claim, result, usage, invokeErr)
 
 	outcome := "failed"
 	if saved != nil {
@@ -158,7 +205,18 @@ func (w *InvokeAgentTurnWorker) runClaimedTurn(ctx context.Context, job *river.J
 			trace.SpanFromContext(ctx).SetAttributes(attribute.String("finish_reason", saved.FinishReason))
 		}
 	}
-	trace.SpanFromContext(ctx).SetAttributes(attribute.String("outcome", outcome))
+	model := usage.Model
+	if model == "" {
+		model = "none"
+	}
+	trace.SpanFromContext(ctx).SetAttributes(
+		attribute.String("outcome", outcome),
+		attribute.String("model", model),
+		attribute.Int("input_tokens", usage.InputTokens),
+		attribute.Int("output_tokens", usage.OutputTokens),
+		attribute.Int("read_count", usage.Reads),
+	)
+	w.metrics.record(ctx, claim.session.AgentName, model, outcome, usage, duration)
 
 	if saveResultErr != nil {
 		return fmt.Errorf("save result: %w", saveResultErr)
@@ -411,9 +469,9 @@ func (w *InvokeAgentTurnWorker) invokeTurn(ctx context.Context, claim agentTurnC
 	})
 }
 
-// saveInvocationResult records the attempt's result on the turn and returns the turn as saved, or as found when
-// the result no longer applies to it.
-func (w *InvokeAgentTurnWorker) saveInvocationResult(ctx context.Context, job *river.Job[jobs.InvokeAgentTurn], claim *agentTurnClaim, result *rez.AiAgentInvocationResult, invokeErr error) (*ent.AgentTurn, error) {
+// saveInvocationResult records the attempt's result and usage on the turn and returns the turn as saved, or as
+// found when the result no longer applies to it. A turn aborted during the attempt still gets the attempt's usage.
+func (w *InvokeAgentTurnWorker) saveInvocationResult(ctx context.Context, job *river.Job[jobs.InvokeAgentTurn], claim *agentTurnClaim, result *rez.AiAgentInvocationResult, usage rezai.TurnUsage, invokeErr error) (*ent.AgentTurn, error) {
 	cleanupCancel := func() {}
 	if ctx.Err() != nil {
 		ctx, cleanupCancel = context.WithTimeout(context.WithoutCancel(ctx), 10*time.Second)
@@ -440,13 +498,19 @@ func (w *InvokeAgentTurnWorker) saveInvocationResult(ctx context.Context, job *r
 		isQueued := turn.Status == agtt.StatusQueued && claim == nil && invokeErr != nil && job.Attempt >= job.MaxAttempts
 		if turn.Status != agtt.StatusRunning && !isQueued {
 			switch turn.Status {
-			case agtt.StatusCompleted, agtt.StatusFailed, agtt.StatusAborted:
+			case agtt.StatusAborted:
+				if claim == nil {
+					return turn, nil
+				}
+				addAbortedUsage := w.addAttemptUsage(tx.AgentTurn.UpdateOne(turn), usage)
+				return addAbortedUsage.Save(ctx)
+			case agtt.StatusCompleted, agtt.StatusFailed:
 				return turn, nil
 			}
 			return nil, fmt.Errorf("agent turn is %s, expected running", turn.Status)
 		}
 
-		u := tx.AgentTurn.UpdateOne(turn).
+		u := w.addAttemptUsage(tx.AgentTurn.UpdateOne(turn), usage).
 			SetFinishedAt(time.Now().UTC())
 
 		setErrorFn := func(msg string, retryable bool) {
@@ -546,6 +610,14 @@ func (w *InvokeAgentTurnWorker) saveInvocationResult(ctx context.Context, job *r
 		return saved, river.JobCancel(fmt.Errorf("agent turn was aborted"))
 	}
 	return saved, nil
+}
+
+// addAttemptUsage adds one attempt's tokens to the turn, and its model when it called one.
+func (w *InvokeAgentTurnWorker) addAttemptUsage(u *ent.AgentTurnUpdateOne, usage rezai.TurnUsage) *ent.AgentTurnUpdateOne {
+	if usage.Model != "" {
+		u.SetModel(usage.Model)
+	}
+	return u.AddInputTokens(usage.InputTokens).AddOutputTokens(usage.OutputTokens)
 }
 
 // replaceTurnOutputMessages replaces the turn's messages other than its input message. A resumed attempt's

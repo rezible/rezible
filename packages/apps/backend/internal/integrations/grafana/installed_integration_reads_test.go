@@ -9,9 +9,11 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
+	"go.opentelemetry.io/otel/attribute"
 
 	"github.com/rezible/rezible/pkg/errs"
 	"github.com/rezible/rezible/pkg/integrations"
+	"github.com/rezible/rezible/test"
 )
 
 func TestLogQueriesAreBoundToTheService(t *testing.T) {
@@ -405,5 +407,60 @@ func TestGrafanaErrorsAreReported(t *testing.T) {
 		_, rangeErr := installed.QueryMetricRange(t.Context(), params)
 
 		require.EqualError(t, rangeErr, "no metrics data source configured")
+	})
+}
+
+func TestReadsAreMeasured(t *testing.T) {
+	metrics := test.RecordMetrics(t)
+	measured := func(operation string) (reads int64, items float64) {
+		attrs := []attribute.KeyValue{attribute.String("provider", ProviderName), attribute.String("operation", operation)}
+		return metrics.Count("rezible.backend.provider.read.duration", attrs...), metrics.Sum("rezible.backend.provider.read.result_size", attrs...)
+	}
+
+	fake := newFakeGrafana(t)
+	lines := testStream{
+		labels: map[string]string{"service_name": "checkout-api"},
+		lines:  map[time.Time]string{testEnd.Add(-2 * time.Minute): "first", testEnd.Add(-time.Minute): "second"},
+	}
+	fake.respond("loki", "/loki/api/v1/query_range", http.StatusOK, lokiStreamsBody(t, lines))
+	fake.respond("prometheus", "/api/v1/label/__name__/values", http.StatusOK, labelValuesBody(t, "a", "b", "c"))
+	fake.respond("prometheus", "/api/v1/query_range", http.StatusOK, matrixBody(t,
+		testSeries{labels: map[string]string{"pod": "a"}, points: map[time.Time]float64{testStart: 1, testEnd: 2}},
+		testSeries{labels: map[string]string{"pod": "b"}, points: map[time.Time]float64{testEnd: 3}},
+	))
+	installed := fake.install(testSettings)
+
+	_, searchErr := installed.SearchLogs(t.Context(), integrations.LogSearchParams{Service: "checkout-api", Start: testStart, End: testEnd})
+	require.NoError(t, searchErr)
+	_, namesErr := installed.ListMetricNames(t.Context(), integrations.MetricNamesParams{Service: "checkout-api", Start: testStart, End: testEnd})
+	require.NoError(t, namesErr)
+	_, rangeErr := installed.QueryMetricRange(t.Context(), integrations.MetricRangeParams{Query: "up", Start: testStart, End: testEnd})
+	require.NoError(t, rangeErr)
+
+	fake.respond("loki", "/loki/api/v1/query_range", http.StatusOK, matrixBody(t,
+		testSeries{points: map[time.Time]float64{testStart: 4, testEnd.Add(-time.Minute): 5, testEnd: 6, testEnd.Add(time.Minute): 7}},
+	))
+	_, countErr := installed.CountLogs(t.Context(), integrations.LogCountParams{Service: "checkout-api", Start: testStart, End: testEnd})
+	require.NoError(t, countErr)
+
+	for operation, items := range map[string]float64{"search_logs": 2, "count_logs": 4, "list_metric_names": 3, "query_metric_range": 3} {
+		reads, measuredItems := measured(operation)
+		require.EqualValues(t, 1, reads, operation)
+		require.Equal(t, items, measuredItems, operation)
+	}
+
+	t.Run("a read refused before reaching grafana is not measured", func(t *testing.T) {
+		invalid := integrations.LogSearchParams{Service: "checkout-api", Start: testEnd, End: testStart}
+		_, invalidErr := installed.SearchLogs(t.Context(), invalid)
+		require.ErrorIs(t, invalidErr, errs.ErrInvalidInput)
+
+		noDataSource := fake.install(map[string]any{})
+		_, noDataSourceErr := noDataSource.QueryMetricRange(t.Context(), integrations.MetricRangeParams{Query: "up", Start: testStart, End: testEnd})
+		require.Error(t, noDataSourceErr)
+
+		searches, _ := measured("search_logs")
+		ranges, _ := measured("query_metric_range")
+		require.EqualValues(t, 1, searches)
+		require.EqualValues(t, 1, ranges)
 	})
 }

@@ -67,6 +67,8 @@ services:
     volumes:
       - "./configs/prometheus.yaml:/otel-lgtm/prometheus.yaml:ro"
       - "./simulations/prometheus-alerts.yaml:/etc/prometheus/alerts.yaml:ro"
+      - "./configs/grafana/dashboards.yaml:/otel-lgtm/grafana/conf/provisioning/dashboards/rezible.yaml:ro"
+      - "./configs/grafana:/otel-lgtm/rezible-dashboards:ro"
     environment:
       ENABLE_LOGS_ALL: "false"
 
