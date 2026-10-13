@@ -86,6 +86,20 @@ func (r *AiRuntime) applyOptions(opts []AiRuntimeOption) error {
 	return nil
 }
 
+// RegisterAgents registers agents on the initialized runtime. Agents are registered after Init because their
+// services may depend on workflows defined on the runtime.
+func (r *AiRuntime) RegisterAgents(agents ...AiRuntimeOption) error {
+	if r.gk == nil {
+		return fmt.Errorf("AI runtime is not initialized")
+	}
+	for _, agent := range agents {
+		if agent.kind != AiRuntimeOptionKindAgent {
+			return fmt.Errorf("only agent options can be registered after init")
+		}
+	}
+	return r.applyOptions(agents)
+}
+
 func (r *AiRuntime) AgentCatalogue() rez.AiAgentCatalogue {
 	return r.catalogue
 }

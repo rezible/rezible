@@ -149,6 +149,16 @@ var pkgGenkit = do.Package(
 
 	do.Lazy(func(i do.Injector) ([]genkit.AiRuntimeOption, error) {
 		aiCfg := do.MustInvoke[rez.Config](i).AI
+		opts := []genkit.AiRuntimeOption{
+			genkit.WithDevEvals(),
+			genkit.WithGeminiPlugin(aiCfg.Gemini),
+		}
+		return opts, nil
+	}),
+
+	// Agents are registered once the runtime is initialized, since their services can depend on workflows
+	// defined on it.
+	do.Lazy(func(i do.Injector) (rez.AiAgentRuntime, error) {
 		chatAgent := genkit.NewChatAgent()
 		investigationAgent := genkit.NewInvestigationAgent(
 			do.MustInvoke[rez.InvestigationService](i),
@@ -156,16 +166,24 @@ var pkgGenkit = do.Package(
 			do.MustInvoke[rez.SystemAnalysisService](i),
 			do.MustInvoke[rez.KnowledgeGraphQueryService](i),
 		)
-		opts := []genkit.AiRuntimeOption{
-			genkit.WithDevEvals(),
-			genkit.WithGeminiPlugin(aiCfg.Gemini),
+		runtime := do.MustInvoke[*genkit.AiRuntime](i)
+		registerErr := runtime.RegisterAgents(
 			genkit.WithAgent(chatAgent),
 			genkit.WithAgent(investigationAgent),
+		)
+		if registerErr != nil {
+			return nil, fmt.Errorf("register agents: %w", registerErr)
 		}
-		return opts, nil
+		return runtime, nil
+	}),
+
+	do.Lazy(func(i do.Injector) (rez.AiAgentCatalogue, error) {
+		return do.MustInvoke[rez.AiAgentRuntime](i).AgentCatalogue(), nil
 	}),
 
 	do.Lazy(func(i do.Injector) (*genkit.EvaluationService, error) {
+		// Scenarios run agents, so they must be registered first.
+		do.MustInvoke[rez.AiAgentRuntime](i)
 		svc, svcErr := genkit.MakeEvaluationService(
 			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[*genkit.AiRuntime](i),
@@ -194,11 +212,6 @@ func withGenkitAiRuntime(ctx context.Context) func(do.Injector) {
 				return nil, fmt.Errorf("init genkit runtime: %w", initErr)
 			}
 			return svc, nil
-		}),
-		do.Bind[*genkit.AiRuntime, rez.AiAgentRuntime](),
-
-		do.Lazy(func(i do.Injector) (rez.AiAgentCatalogue, error) {
-			return do.MustInvoke[*genkit.AiRuntime](i).AgentCatalogue(), nil
 		}),
 	)
 }
