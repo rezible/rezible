@@ -557,8 +557,8 @@ func (_c *MockKnowledgeGraphQueryService_ExpandGraphRelationships_Call) RunAndRe
 }
 
 // GetEntity provides a mock function for the type MockKnowledgeGraphQueryService
-func (_mock *MockKnowledgeGraphQueryService) GetEntity(context1 context.Context, uUID uuid.UUID) (*ent.KnowledgeEntity, error) {
-	ret := _mock.Called(context1, uUID)
+func (_mock *MockKnowledgeGraphQueryService) GetEntity(context1 context.Context, uUID uuid.UUID, knowledgeEntityExpand rez.KnowledgeEntityExpand) (*ent.KnowledgeEntity, error) {
+	ret := _mock.Called(context1, uUID, knowledgeEntityExpand)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetEntity")
@@ -566,18 +566,18 @@ func (_mock *MockKnowledgeGraphQueryService) GetEntity(context1 context.Context,
 
 	var r0 *ent.KnowledgeEntity
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) (*ent.KnowledgeEntity, error)); ok {
-		return returnFunc(context1, uUID)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, rez.KnowledgeEntityExpand) (*ent.KnowledgeEntity, error)); ok {
+		return returnFunc(context1, uUID, knowledgeEntityExpand)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) *ent.KnowledgeEntity); ok {
-		r0 = returnFunc(context1, uUID)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, rez.KnowledgeEntityExpand) *ent.KnowledgeEntity); ok {
+		r0 = returnFunc(context1, uUID, knowledgeEntityExpand)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*ent.KnowledgeEntity)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID) error); ok {
-		r1 = returnFunc(context1, uUID)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, rez.KnowledgeEntityExpand) error); ok {
+		r1 = returnFunc(context1, uUID, knowledgeEntityExpand)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -592,11 +592,12 @@ type MockKnowledgeGraphQueryService_GetEntity_Call struct {
 // GetEntity is a helper method to define mock.On call
 //   - context1 context.Context
 //   - uUID uuid.UUID
-func (_e *MockKnowledgeGraphQueryService_Expecter) GetEntity(context1 interface{}, uUID interface{}) *MockKnowledgeGraphQueryService_GetEntity_Call {
-	return &MockKnowledgeGraphQueryService_GetEntity_Call{Call: _e.mock.On("GetEntity", context1, uUID)}
+//   - knowledgeEntityExpand rez.KnowledgeEntityExpand
+func (_e *MockKnowledgeGraphQueryService_Expecter) GetEntity(context1 interface{}, uUID interface{}, knowledgeEntityExpand interface{}) *MockKnowledgeGraphQueryService_GetEntity_Call {
+	return &MockKnowledgeGraphQueryService_GetEntity_Call{Call: _e.mock.On("GetEntity", context1, uUID, knowledgeEntityExpand)}
 }
 
-func (_c *MockKnowledgeGraphQueryService_GetEntity_Call) Run(run func(context1 context.Context, uUID uuid.UUID)) *MockKnowledgeGraphQueryService_GetEntity_Call {
+func (_c *MockKnowledgeGraphQueryService_GetEntity_Call) Run(run func(context1 context.Context, uUID uuid.UUID, knowledgeEntityExpand rez.KnowledgeEntityExpand)) *MockKnowledgeGraphQueryService_GetEntity_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -606,9 +607,14 @@ func (_c *MockKnowledgeGraphQueryService_GetEntity_Call) Run(run func(context1 c
 		if args[1] != nil {
 			arg1 = args[1].(uuid.UUID)
 		}
+		var arg2 rez.KnowledgeEntityExpand
+		if args[2] != nil {
+			arg2 = args[2].(rez.KnowledgeEntityExpand)
+		}
 		run(
 			arg0,
 			arg1,
+			arg2,
 		)
 	})
 	return _c
@@ -619,14 +625,14 @@ func (_c *MockKnowledgeGraphQueryService_GetEntity_Call) Return(knowledgeEntity 
 	return _c
 }
 
-func (_c *MockKnowledgeGraphQueryService_GetEntity_Call) RunAndReturn(run func(context1 context.Context, uUID uuid.UUID) (*ent.KnowledgeEntity, error)) *MockKnowledgeGraphQueryService_GetEntity_Call {
+func (_c *MockKnowledgeGraphQueryService_GetEntity_Call) RunAndReturn(run func(context1 context.Context, uUID uuid.UUID, knowledgeEntityExpand rez.KnowledgeEntityExpand) (*ent.KnowledgeEntity, error)) *MockKnowledgeGraphQueryService_GetEntity_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // GetEvidence provides a mock function for the type MockKnowledgeGraphQueryService
-func (_mock *MockKnowledgeGraphQueryService) GetEvidence(context1 context.Context, uUID uuid.UUID) (*ent.KnowledgeEvidence, error) {
-	ret := _mock.Called(context1, uUID)
+func (_mock *MockKnowledgeGraphQueryService) GetEvidence(context1 context.Context, uUID uuid.UUID, knowledgeEvidenceExpand rez.KnowledgeEvidenceExpand) (*ent.KnowledgeEvidence, error) {
+	ret := _mock.Called(context1, uUID, knowledgeEvidenceExpand)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetEvidence")
@@ -634,18 +640,18 @@ func (_mock *MockKnowledgeGraphQueryService) GetEvidence(context1 context.Contex
 
 	var r0 *ent.KnowledgeEvidence
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) (*ent.KnowledgeEvidence, error)); ok {
-		return returnFunc(context1, uUID)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, rez.KnowledgeEvidenceExpand) (*ent.KnowledgeEvidence, error)); ok {
+		return returnFunc(context1, uUID, knowledgeEvidenceExpand)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) *ent.KnowledgeEvidence); ok {
-		r0 = returnFunc(context1, uUID)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, rez.KnowledgeEvidenceExpand) *ent.KnowledgeEvidence); ok {
+		r0 = returnFunc(context1, uUID, knowledgeEvidenceExpand)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*ent.KnowledgeEvidence)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID) error); ok {
-		r1 = returnFunc(context1, uUID)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, rez.KnowledgeEvidenceExpand) error); ok {
+		r1 = returnFunc(context1, uUID, knowledgeEvidenceExpand)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -660,11 +666,12 @@ type MockKnowledgeGraphQueryService_GetEvidence_Call struct {
 // GetEvidence is a helper method to define mock.On call
 //   - context1 context.Context
 //   - uUID uuid.UUID
-func (_e *MockKnowledgeGraphQueryService_Expecter) GetEvidence(context1 interface{}, uUID interface{}) *MockKnowledgeGraphQueryService_GetEvidence_Call {
-	return &MockKnowledgeGraphQueryService_GetEvidence_Call{Call: _e.mock.On("GetEvidence", context1, uUID)}
+//   - knowledgeEvidenceExpand rez.KnowledgeEvidenceExpand
+func (_e *MockKnowledgeGraphQueryService_Expecter) GetEvidence(context1 interface{}, uUID interface{}, knowledgeEvidenceExpand interface{}) *MockKnowledgeGraphQueryService_GetEvidence_Call {
+	return &MockKnowledgeGraphQueryService_GetEvidence_Call{Call: _e.mock.On("GetEvidence", context1, uUID, knowledgeEvidenceExpand)}
 }
 
-func (_c *MockKnowledgeGraphQueryService_GetEvidence_Call) Run(run func(context1 context.Context, uUID uuid.UUID)) *MockKnowledgeGraphQueryService_GetEvidence_Call {
+func (_c *MockKnowledgeGraphQueryService_GetEvidence_Call) Run(run func(context1 context.Context, uUID uuid.UUID, knowledgeEvidenceExpand rez.KnowledgeEvidenceExpand)) *MockKnowledgeGraphQueryService_GetEvidence_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -674,9 +681,14 @@ func (_c *MockKnowledgeGraphQueryService_GetEvidence_Call) Run(run func(context1
 		if args[1] != nil {
 			arg1 = args[1].(uuid.UUID)
 		}
+		var arg2 rez.KnowledgeEvidenceExpand
+		if args[2] != nil {
+			arg2 = args[2].(rez.KnowledgeEvidenceExpand)
+		}
 		run(
 			arg0,
 			arg1,
+			arg2,
 		)
 	})
 	return _c
@@ -687,7 +699,7 @@ func (_c *MockKnowledgeGraphQueryService_GetEvidence_Call) Return(knowledgeEvide
 	return _c
 }
 
-func (_c *MockKnowledgeGraphQueryService_GetEvidence_Call) RunAndReturn(run func(context1 context.Context, uUID uuid.UUID) (*ent.KnowledgeEvidence, error)) *MockKnowledgeGraphQueryService_GetEvidence_Call {
+func (_c *MockKnowledgeGraphQueryService_GetEvidence_Call) RunAndReturn(run func(context1 context.Context, uUID uuid.UUID, knowledgeEvidenceExpand rez.KnowledgeEvidenceExpand) (*ent.KnowledgeEvidence, error)) *MockKnowledgeGraphQueryService_GetEvidence_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -1300,6 +1312,74 @@ func (_c *MockKnowledgeGraphQueryService_SelectGraphEntities_Call) Return(knowle
 }
 
 func (_c *MockKnowledgeGraphQueryService_SelectGraphEntities_Call) RunAndReturn(run func(context1 context.Context, selectKnowledgeGraphEntitiesParams rez.SelectKnowledgeGraphEntitiesParams) (*rez.KnowledgeGraphEntitiesPage, error)) *MockKnowledgeGraphQueryService_SelectGraphEntities_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// SummarizeEvidence provides a mock function for the type MockKnowledgeGraphQueryService
+func (_mock *MockKnowledgeGraphQueryService) SummarizeEvidence(context1 context.Context, summarizeKnowledgeEvidenceParams rez.SummarizeKnowledgeEvidenceParams) (*ent.ListResult[rez.KnowledgeEvidenceSummary], error) {
+	ret := _mock.Called(context1, summarizeKnowledgeEvidenceParams)
+
+	if len(ret) == 0 {
+		panic("no return value specified for SummarizeEvidence")
+	}
+
+	var r0 *ent.ListResult[rez.KnowledgeEvidenceSummary]
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.SummarizeKnowledgeEvidenceParams) (*ent.ListResult[rez.KnowledgeEvidenceSummary], error)); ok {
+		return returnFunc(context1, summarizeKnowledgeEvidenceParams)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.SummarizeKnowledgeEvidenceParams) *ent.ListResult[rez.KnowledgeEvidenceSummary]); ok {
+		r0 = returnFunc(context1, summarizeKnowledgeEvidenceParams)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*ent.ListResult[rez.KnowledgeEvidenceSummary])
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, rez.SummarizeKnowledgeEvidenceParams) error); ok {
+		r1 = returnFunc(context1, summarizeKnowledgeEvidenceParams)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockKnowledgeGraphQueryService_SummarizeEvidence_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'SummarizeEvidence'
+type MockKnowledgeGraphQueryService_SummarizeEvidence_Call struct {
+	*mock.Call
+}
+
+// SummarizeEvidence is a helper method to define mock.On call
+//   - context1 context.Context
+//   - summarizeKnowledgeEvidenceParams rez.SummarizeKnowledgeEvidenceParams
+func (_e *MockKnowledgeGraphQueryService_Expecter) SummarizeEvidence(context1 interface{}, summarizeKnowledgeEvidenceParams interface{}) *MockKnowledgeGraphQueryService_SummarizeEvidence_Call {
+	return &MockKnowledgeGraphQueryService_SummarizeEvidence_Call{Call: _e.mock.On("SummarizeEvidence", context1, summarizeKnowledgeEvidenceParams)}
+}
+
+func (_c *MockKnowledgeGraphQueryService_SummarizeEvidence_Call) Run(run func(context1 context.Context, summarizeKnowledgeEvidenceParams rez.SummarizeKnowledgeEvidenceParams)) *MockKnowledgeGraphQueryService_SummarizeEvidence_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 rez.SummarizeKnowledgeEvidenceParams
+		if args[1] != nil {
+			arg1 = args[1].(rez.SummarizeKnowledgeEvidenceParams)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockKnowledgeGraphQueryService_SummarizeEvidence_Call) Return(listResult *ent.ListResult[rez.KnowledgeEvidenceSummary], err error) *MockKnowledgeGraphQueryService_SummarizeEvidence_Call {
+	_c.Call.Return(listResult, err)
+	return _c
+}
+
+func (_c *MockKnowledgeGraphQueryService_SummarizeEvidence_Call) RunAndReturn(run func(context1 context.Context, summarizeKnowledgeEvidenceParams rez.SummarizeKnowledgeEvidenceParams) (*ent.ListResult[rez.KnowledgeEvidenceSummary], error)) *MockKnowledgeGraphQueryService_SummarizeEvidence_Call {
 	_c.Call.Return(run)
 	return _c
 }

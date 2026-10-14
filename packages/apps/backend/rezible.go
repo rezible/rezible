@@ -184,9 +184,70 @@ type (
 		Predicates []predicate.KnowledgeEntity
 	}
 
+	// KnowledgeEntityExpand names what GetEntity loads beyond the entity and its aliases.
+	KnowledgeEntityExpand struct {
+		// AliasEvidence loads every evidence row on each alias. SummarizeEvidence is cheaper when only counts
+		// and the latest evidence are needed.
+		AliasEvidence     bool
+		LinkingAttributes bool
+	}
+
 	ListKnowledgeRelationshipsParams struct {
 		ent.ListParams
 		Predicates []predicate.KnowledgeRelationship
+		// EntityID lists the entity's relationships in either direction.
+		EntityID uuid.UUID
+		// NeighbourCategories and ExcludedNeighbourCategories filter on the category of the other endpoint
+		// of the entity's relationships. They need EntityID.
+		NeighbourCategories         []kne.Category
+		ExcludedNeighbourCategories []kne.Category
+		// NewestEvidenceFirst orders by the effective time of each relationship's latest evidence, then ID,
+		// instead of by ID.
+		NewestEvidenceFirst bool
+		Expand              KnowledgeRelationshipExpand
+	}
+
+	// KnowledgeRelationshipExpand names what ListRelationships loads beyond the relationships and their aliases.
+	KnowledgeRelationshipExpand struct {
+		Endpoints bool
+	}
+
+	// KnowledgeEvidenceExpand names what GetEvidence loads beyond the evidence and its alias.
+	KnowledgeEvidenceExpand struct {
+		// Subject loads the alias's entity, or its relationship and the relationship's endpoints.
+		Subject bool
+	}
+
+	SummarizeKnowledgeEvidenceParams struct {
+		ent.ListParams
+		// EntityID summarizes the evidence on the entity and on its relationships. The entity must exist.
+		EntityID uuid.UUID
+		AliasIDs []uuid.UUID
+		// Start and End bound effective time. A zero time leaves that side unbounded.
+		Start, End time.Time
+		// ByAssertion summarizes each assertion on an alias separately.
+		ByAssertion bool
+		Expand      KnowledgeEvidenceSummaryExpand
+	}
+
+	// KnowledgeEvidenceSummaryExpand names what SummarizeEvidence loads beyond the summaries.
+	KnowledgeEvidenceSummaryExpand struct {
+		// Alias loads each summary's alias, and a relationship alias's relationship and its endpoints.
+		Alias bool
+	}
+
+	// KnowledgeEvidenceSummary describes the evidence recorded against one alias, or one alias and assertion.
+	KnowledgeEvidenceSummary struct {
+		SubjectAliasID uuid.UUID
+		// Alias is loaded when asked for.
+		Alias *ent.KnowledgeSubjectAlias
+		// Assertion is set when summarizing by assertion.
+		Assertion   string
+		Count       int
+		EarliestAt  time.Time
+		LatestAt    time.Time
+		LatestID    uuid.UUID
+		LatestState KnowledgeSubjectState
 	}
 
 	ListKnowledgeSubjectAliasesParams struct {
@@ -201,7 +262,7 @@ type (
 
 	KnowledgeGraphQueryService interface {
 		ListEntities(context.Context, ListKnowledgeEntitiesParams) (*ent.ListResult[ent.KnowledgeEntity], error)
-		GetEntity(context.Context, uuid.UUID) (*ent.KnowledgeEntity, error)
+		GetEntity(context.Context, uuid.UUID, KnowledgeEntityExpand) (*ent.KnowledgeEntity, error)
 
 		ListRelationships(context.Context, ListKnowledgeRelationshipsParams) (*ent.ListResult[ent.KnowledgeRelationship], error)
 		GetRelationship(context.Context, uuid.UUID) (*ent.KnowledgeRelationship, error)
@@ -210,7 +271,9 @@ type (
 		GetSubjectAlias(context.Context, uuid.UUID) (*ent.KnowledgeSubjectAlias, error)
 
 		ListEvidence(context.Context, ListKnowledgeEvidenceParams) (*ent.ListResult[ent.KnowledgeEvidence], error)
-		GetEvidence(context.Context, uuid.UUID) (*ent.KnowledgeEvidence, error)
+		GetEvidence(context.Context, uuid.UUID, KnowledgeEvidenceExpand) (*ent.KnowledgeEvidence, error)
+		// SummarizeEvidence groups evidence by alias, and by assertion when asked, newest group first.
+		SummarizeEvidence(context.Context, SummarizeKnowledgeEvidenceParams) (*ent.ListResult[KnowledgeEvidenceSummary], error)
 
 		SelectGraphEntities(context.Context, SelectKnowledgeGraphEntitiesParams) (*KnowledgeGraphEntitiesPage, error)
 		ExpandGraphRelationships(context.Context, ExpandKnowledgeGraphRelationshipsParams) (*KnowledgeGraphRelationshipsPage, error)

@@ -8,7 +8,9 @@ import (
 	"testing"
 	"time"
 
+	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
+	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 
 	rez "github.com/rezible/rezible"
@@ -947,4 +949,339 @@ func (s *KnowledgeGraphQueryServiceSuite) TestListRelatedEventsIsTenantScoped() 
 
 	s.Len(ownerEvents, 4)
 	s.Empty(otherTenantEvents, "another tenant's entity ID finds nothing")
+}
+
+// testGraph records evidence through ingestion, as providers do.
+type testGraph struct {
+	require   *require.Assertions
+	db        rez.Database
+	ingestion *KnowledgeGraphIngestionService
+}
+
+func newTestGraph(require *require.Assertions, tdb rez.Database) *testGraph {
+	return &testGraph{require: require, db: tdb, ingestion: &KnowledgeGraphIngestionService{db: tdb}}
+}
+
+func (g *testGraph) entity(category kne.Category, kind, provider, resource string) rez.KnowledgeEntityRef {
+	return rez.KnowledgeEntityRef{
+		Category: category,
+		Kind:     kind,
+		ProviderResourceRef: rez.ProviderResourceRef{
+			Provider:          provider,
+			ProviderNamespace: "tests",
+			ResourceRef:       resource,
+		},
+	}
+}
+
+func (g *testGraph) relationship(predicate knr.Predicate, source, target rez.KnowledgeEntityRef) rez.KnowledgeRelationshipRef {
+	providerRef := source.ProviderResourceRef
+	providerRef.ResourceRef = fmt.Sprintf("%s:%s:%s", source.ProviderResourceRef.ResourceRef, predicate, target.ProviderResourceRef.ResourceRef)
+	return rez.KnowledgeRelationshipRef{
+		Predicate:           predicate,
+		ProviderResourceRef: providerRef,
+		Source:              source,
+		Target:              target,
+	}
+}
+
+func (g *testGraph) observeEntity(ref rez.KnowledgeEntityRef, name string) rez.KnowledgeEvidenceRef {
+	return rez.KnowledgeEvidenceRef{
+		Kind:         ke.KindObserved,
+		Assertion:    ref.Kind + "_observed",
+		Subject:      rez.KnowledgeSubjectRef{Entity: &ref},
+		SubjectState: schematypes.KnowledgeGraphSubjectState{DisplayName: name},
+	}
+}
+
+func (g *testGraph) observeRelationship(ref rez.KnowledgeRelationshipRef) rez.KnowledgeEvidenceRef {
+	return rez.KnowledgeEvidenceRef{
+		Kind:      ke.KindObserved,
+		Assertion: string(ref.Predicate) + "_observed",
+		Subject:   rez.KnowledgeSubjectRef{Relationship: &ref},
+	}
+}
+
+// record ingests the evidence from one event effective at the given time.
+func (g *testGraph) record(ctx context.Context, effectiveAt time.Time, evidence ...rez.KnowledgeEvidenceRef) {
+	createEvent := g.db.Client(ctx).NormalizedEvent.Create().
+		SetProvider("test").
+		SetProviderNamespace("tests").
+		SetProviderResourceRef(uuid.NewString()).
+		SetProviderEventSource("tests").
+		SetProviderEventRef(uuid.NewString()).
+		SetKind("test").
+		SetOccurredAt(effectiveAt).
+		SetReceivedAt(effectiveAt).
+		SetAttributes([]byte(`{}`))
+	event, eventErr := createEvent.Save(ctx)
+	g.require.NoError(eventErr)
+	for index := range evidence {
+		evidence[index].EffectiveAt = effectiveAt
+	}
+	g.require.NoError(g.ingestion.IngestEvidence(ctx, event, evidence...))
+}
+
+func (g *testGraph) alias(ctx context.Context, ref rez.ProviderResourceRef) *ent.KnowledgeSubjectAlias {
+	queryAlias := g.db.Client(ctx).KnowledgeSubjectAlias.Query().
+		Where(ksa.Provider(ref.Provider), ksa.ProviderNamespace(ref.ProviderNamespace), ksa.ProviderResourceRef(ref.ResourceRef))
+	alias, aliasErr := queryAlias.Only(ctx)
+	g.require.NoError(aliasErr)
+	return alias
+}
+
+func (g *testGraph) entityID(ctx context.Context, ref rez.KnowledgeEntityRef) uuid.UUID {
+	return *g.alias(ctx, ref.ProviderResourceRef).EntityID
+}
+
+func (g *testGraph) relationshipID(ctx context.Context, ref rez.KnowledgeRelationshipRef) uuid.UUID {
+	return *g.alias(ctx, ref.ProviderResourceRef).RelationshipID
+}
+
+// latestEvidenceID returns the newest evidence recorded against the subject's alias.
+func (g *testGraph) latestEvidenceID(ctx context.Context, ref rez.ProviderResourceRef) uuid.UUID {
+	queryEvidence := g.db.Client(ctx).KnowledgeEvidence.Query().
+		Where(ke.SubjectAliasID(g.alias(ctx, ref).ID)).
+		Order(ke.ByEffectiveAt(sql.OrderDesc()))
+	evidence, evidenceErr := queryEvidence.First(ctx)
+	g.require.NoError(evidenceErr)
+	return evidence.ID
+}
+
+func (s *KnowledgeGraphQueryServiceSuite) TestGetEntityExpands() {
+	ctx, tdb := s.SetupTestDatabase()
+	service, serviceErr := NewKnowledgeGraphQueryService(tdb)
+	s.Require().NoError(serviceErr)
+	graph := newTestGraph(s.Require(), tdb)
+	checkout := graph.entity(kne.CategoryContainer, "service", "kubernetes", "checkout-api")
+	checkout.LinkingAttributes = testEntityLinkingAttributes{"service.name": "checkout-api"}
+	graph.record(ctx, time.Date(2026, 6, 1, 10, 0, 0, 0, time.UTC), graph.observeEntity(checkout, "checkout-api"))
+	checkoutID := graph.entityID(ctx, checkout)
+
+	plain, plainErr := service.GetEntity(ctx, checkoutID, rez.KnowledgeEntityExpand{})
+	s.Require().NoError(plainErr)
+	s.Require().Len(plain.Edges.Aliases, 1)
+	s.Nil(plain.Edges.Aliases[0].Edges.Evidence)
+	s.Nil(plain.Edges.LinkingAttributes)
+
+	expanded, expandedErr := service.GetEntity(ctx, checkoutID, rez.KnowledgeEntityExpand{AliasEvidence: true, LinkingAttributes: true})
+	s.Require().NoError(expandedErr)
+	s.Require().Len(expanded.Edges.Aliases, 1)
+	s.Len(expanded.Edges.Aliases[0].Edges.Evidence, 1)
+	s.Require().Len(expanded.Edges.LinkingAttributes, 1)
+	s.Equal("service.name", expanded.Edges.LinkingAttributes[0].Attribute)
+}
+
+func (s *KnowledgeGraphQueryServiceSuite) TestGetEvidenceExpandsSubject() {
+	ctx, tdb := s.SetupTestDatabase()
+	service, serviceErr := NewKnowledgeGraphQueryService(tdb)
+	s.Require().NoError(serviceErr)
+	graph := newTestGraph(s.Require(), tdb)
+	checkout := graph.entity(kne.CategoryContainer, "service", "kubernetes", "checkout-api")
+	database := graph.entity(kne.CategoryContainer, "database", "kubernetes", "orders-db")
+	dependsOn := graph.relationship(knr.PredicateDependsOn, checkout, database)
+	graph.record(ctx, time.Date(2026, 6, 1, 10, 0, 0, 0, time.UTC),
+		graph.observeEntity(checkout, "checkout-api"),
+		graph.observeEntity(database, "orders-db"),
+		graph.observeRelationship(dependsOn))
+
+	entityEvidenceID := graph.latestEvidenceID(ctx, checkout.ProviderResourceRef)
+	plain, plainErr := service.GetEvidence(ctx, entityEvidenceID, rez.KnowledgeEvidenceExpand{})
+	s.Require().NoError(plainErr)
+	s.Nil(plain.Edges.SubjectAlias.Edges.Entity)
+
+	onEntity, entityErr := service.GetEvidence(ctx, entityEvidenceID, rez.KnowledgeEvidenceExpand{Subject: true})
+	s.Require().NoError(entityErr)
+	s.Equal(graph.entityID(ctx, checkout), onEntity.Edges.SubjectAlias.Edges.Entity.ID)
+
+	relationshipEvidenceID := graph.latestEvidenceID(ctx, dependsOn.ProviderResourceRef)
+	onRelationship, relationshipErr := service.GetEvidence(ctx, relationshipEvidenceID, rez.KnowledgeEvidenceExpand{Subject: true})
+	s.Require().NoError(relationshipErr)
+	relationship := onRelationship.Edges.SubjectAlias.Edges.Relationship
+	s.Require().NotNil(relationship)
+	s.Equal(graph.entityID(ctx, checkout), relationship.Edges.SourceEntity.ID)
+	s.Equal(graph.entityID(ctx, database), relationship.Edges.TargetEntity.ID)
+}
+
+func (s *KnowledgeGraphQueryServiceSuite) TestListEntityRelationshipsByNeighbourAndNewestEvidence() {
+	ctx, tdb := s.SetupTestDatabase()
+	service, serviceErr := NewKnowledgeGraphQueryService(tdb)
+	s.Require().NoError(serviceErr)
+	graph := newTestGraph(s.Require(), tdb)
+	t0 := time.Date(2026, 6, 1, 10, 0, 0, 0, time.UTC)
+
+	checkout := graph.entity(kne.CategoryContainer, "service", "kubernetes", "checkout-api")
+	database := graph.entity(kne.CategoryContainer, "database", "kubernetes", "orders-db")
+	team := graph.entity(kne.CategoryActor, "team", "github", "payments")
+	queue := graph.entity(kne.CategoryContainer, "queue", "kubernetes", "orders-queue")
+	deployment := graph.entity(kne.CategoryEvent, "deployment", "argo", "checkout-42")
+	dependsOnDatabase := graph.relationship(knr.PredicateDependsOn, checkout, database)
+	ownsCheckout := graph.relationship(knr.PredicateOwns, team, checkout)
+	publishesToQueue := graph.relationship(knr.PredicatePublishesTo, checkout, queue)
+	deploymentImpacts := graph.relationship(knr.PredicateImpacts, deployment, checkout)
+
+	graph.record(ctx, t0,
+		graph.observeEntity(checkout, "checkout-api"),
+		graph.observeEntity(queue, "orders-queue"),
+		graph.observeRelationship(publishesToQueue))
+	graph.record(ctx, t0.Add(time.Minute),
+		graph.observeEntity(database, "orders-db"),
+		graph.observeRelationship(dependsOnDatabase))
+	graph.record(ctx, t0.Add(2*time.Minute),
+		graph.observeRelationship(dependsOnDatabase))
+	graph.record(ctx, t0.Add(3*time.Minute),
+		graph.observeEntity(team, "Payments"),
+		graph.observeRelationship(ownsCheckout))
+	graph.record(ctx, t0.Add(4*time.Minute),
+		graph.observeEntity(deployment, "checkout-42"),
+		graph.observeRelationship(deploymentImpacts))
+
+	checkoutID := graph.entityID(ctx, checkout)
+	params := rez.ListKnowledgeRelationshipsParams{
+		ListParams:                  ent.ListParams{Page: 1, PageSize: 2},
+		EntityID:                    checkoutID,
+		ExcludedNeighbourCategories: []kne.Category{kne.CategoryEvent},
+		NewestEvidenceFirst:         true,
+		Expand:                      rez.KnowledgeRelationshipExpand{Endpoints: true},
+	}
+	firstPage, firstErr := service.ListRelationships(ctx, params)
+	s.Require().NoError(firstErr)
+	s.Equal(3, firstPage.Total, "the deployment is excluded")
+	s.Require().Len(firstPage.Data, 2)
+	s.Equal(graph.relationshipID(ctx, ownsCheckout), firstPage.Data[0].ID)
+	s.Equal(graph.entityID(ctx, team), firstPage.Data[0].Edges.SourceEntity.ID, "an incoming relationship")
+	s.Equal(graph.relationshipID(ctx, dependsOnDatabase), firstPage.Data[1].ID)
+
+	params.Page = 2
+	secondPage, secondErr := service.ListRelationships(ctx, params)
+	s.Require().NoError(secondErr)
+	s.Require().Len(secondPage.Data, 1)
+	s.Equal(graph.relationshipID(ctx, publishesToQueue), secondPage.Data[0].ID)
+
+	events, eventsErr := service.ListRelationships(ctx, rez.ListKnowledgeRelationshipsParams{
+		EntityID:            checkoutID,
+		NeighbourCategories: []kne.Category{kne.CategoryEvent},
+	})
+	s.Require().NoError(eventsErr)
+	s.Require().Len(events.Data, 1)
+	s.Equal(graph.relationshipID(ctx, deploymentImpacts), events.Data[0].ID)
+
+	_, withoutEntityErr := service.ListRelationships(ctx, rez.ListKnowledgeRelationshipsParams{
+		NeighbourCategories: []kne.Category{kne.CategoryEvent},
+	})
+	s.ErrorIs(withoutEntityErr, errs.ErrInvalidInput)
+}
+
+func (s *KnowledgeGraphQueryServiceSuite) TestSummarizeEntityEvidence() {
+	ctx, tdb := s.SetupTestDatabase()
+	service, serviceErr := NewKnowledgeGraphQueryService(tdb)
+	s.Require().NoError(serviceErr)
+	graph := newTestGraph(s.Require(), tdb)
+	t0 := time.Date(2026, 6, 1, 10, 0, 0, 0, time.UTC)
+
+	checkout := graph.entity(kne.CategoryContainer, "service", "kubernetes", "checkout-api")
+	alert := graph.entity(kne.CategorySignal, "alert", "alertmanager", "CheckoutErrors")
+	deployment := graph.entity(kne.CategoryEvent, "deployment", "argo", "checkout-42")
+	alertObserves := graph.relationship(knr.PredicateObserves, alert, checkout)
+	deploymentImpacts := graph.relationship(knr.PredicateImpacts, deployment, checkout)
+
+	graph.record(ctx, t0, graph.observeEntity(checkout, "checkout-api"))
+	for firing := 1; firing <= 3; firing++ {
+		graph.record(ctx, t0.Add(time.Duration(firing)*time.Hour),
+			graph.observeEntity(alert, "CheckoutErrors"),
+			graph.observeRelationship(alertObserves))
+	}
+	graph.record(ctx, t0.Add(150*time.Minute),
+		graph.observeEntity(deployment, "checkout-42"),
+		graph.observeRelationship(deploymentImpacts))
+
+	params := rez.SummarizeKnowledgeEvidenceParams{
+		ListParams:  ent.ListParams{Page: 1, PageSize: 2},
+		EntityID:    graph.entityID(ctx, checkout),
+		ByAssertion: true,
+		Expand:      rez.KnowledgeEvidenceSummaryExpand{Alias: true},
+	}
+	summaries, summarizeErr := service.SummarizeEvidence(ctx, params)
+	s.Require().NoError(summarizeErr)
+	s.Equal(3, summaries.Total, "the alert's repeats, the deployment and the service itself")
+	s.Require().Len(summaries.Data, 2)
+
+	alertSummary := summaries.Data[0]
+	s.Equal(graph.relationshipID(ctx, alertObserves), alertSummary.Alias.Edges.Relationship.ID)
+	s.Equal("observes_observed", alertSummary.Assertion)
+	s.Equal(3, alertSummary.Count)
+	s.Equal(t0.Add(time.Hour), alertSummary.EarliestAt)
+	s.Equal(t0.Add(3*time.Hour), alertSummary.LatestAt)
+	s.Equal(graph.latestEvidenceID(ctx, alertObserves.ProviderResourceRef), alertSummary.LatestID)
+	s.Equal("alertmanager", alertSummary.Alias.Provider)
+
+	deploymentSummary := summaries.Data[1]
+	s.Equal(graph.relationshipID(ctx, deploymentImpacts), deploymentSummary.Alias.Edges.Relationship.ID)
+	s.Equal(1, deploymentSummary.Count)
+	s.Equal(graph.entityID(ctx, deployment), deploymentSummary.Alias.Edges.Relationship.Edges.SourceEntity.ID)
+
+	params.ListParams = ent.ListParams{}
+	params.Start = t0.Add(2 * time.Hour)
+	params.End = t0.Add(150 * time.Minute)
+	bounded, boundedErr := service.SummarizeEvidence(ctx, params)
+	s.Require().NoError(boundedErr)
+	s.Require().Len(bounded.Data, 2)
+	s.Equal(deploymentSummary.SubjectAliasID, bounded.Data[0].SubjectAliasID)
+	s.Equal(alertSummary.SubjectAliasID, bounded.Data[1].SubjectAliasID)
+	s.Equal(1, bounded.Data[1].Count, "only the alert's second firing is in the window")
+}
+
+func (s *KnowledgeGraphQueryServiceSuite) TestSummarizeAliasEvidence() {
+	ctx, tdb := s.SetupTestDatabase()
+	service, serviceErr := NewKnowledgeGraphQueryService(tdb)
+	s.Require().NoError(serviceErr)
+	graph := newTestGraph(s.Require(), tdb)
+	t0 := time.Date(2026, 6, 1, 10, 0, 0, 0, time.UTC)
+
+	checkout := graph.entity(kne.CategoryContainer, "service", "kubernetes", "checkout-api")
+	graph.record(ctx, t0, graph.observeEntity(checkout, "checkout"))
+	checkoutRestarted := graph.observeEntity(checkout, "checkout-api")
+	checkoutRestarted.Assertion = "service_restarted"
+	graph.record(ctx, t0.Add(time.Minute), checkoutRestarted)
+	aliasID := graph.alias(ctx, checkout.ProviderResourceRef).ID
+
+	summaries, summarizeErr := service.SummarizeEvidence(ctx, rez.SummarizeKnowledgeEvidenceParams{AliasIDs: []uuid.UUID{aliasID}})
+	s.Require().NoError(summarizeErr)
+	s.Equal(1, summaries.Total, "assertions are summarized together")
+	s.Require().Len(summaries.Data, 1)
+	summary := summaries.Data[0]
+	s.Equal(aliasID, summary.SubjectAliasID)
+	s.Nil(summary.Alias)
+	s.Empty(summary.Assertion)
+	s.Equal(2, summary.Count)
+	s.Equal(t0, summary.EarliestAt)
+	s.Equal(t0.Add(time.Minute), summary.LatestAt)
+	s.Equal("checkout-api", summary.LatestState.DisplayName)
+
+	nothing, nothingErr := service.SummarizeEvidence(ctx, rez.SummarizeKnowledgeEvidenceParams{})
+	s.Require().NoError(nothingErr)
+	s.Zero(nothing.Total)
+	s.Empty(nothing.Data)
+}
+
+func (s *KnowledgeGraphQueryServiceSuite) TestSummarizeEvidenceIsTenantScoped() {
+	ownerCtx, tdb := s.SetupTestDatabase()
+	service, serviceErr := NewKnowledgeGraphQueryService(tdb)
+	s.Require().NoError(serviceErr)
+	graph := newTestGraph(s.Require(), tdb)
+	checkout := graph.entity(kne.CategoryContainer, "service", "kubernetes", "checkout-api")
+	graph.record(ownerCtx, time.Now().UTC(), graph.observeEntity(checkout, "checkout-api"))
+	checkoutID := graph.entityID(ownerCtx, checkout)
+	aliasID := graph.alias(ownerCtx, checkout.ProviderResourceRef).ID
+	otherTenantCtx, _ := s.SetupTestDatabase()
+
+	owned, ownerErr := service.SummarizeEvidence(ownerCtx, rez.SummarizeKnowledgeEvidenceParams{EntityID: checkoutID})
+	s.Require().NoError(ownerErr)
+	s.Equal(1, owned.Total)
+
+	_, entityErr := service.SummarizeEvidence(otherTenantCtx, rez.SummarizeKnowledgeEvidenceParams{EntityID: checkoutID})
+	s.ErrorIs(entityErr, errs.ErrNotFound)
+	byAlias, aliasErr := service.SummarizeEvidence(otherTenantCtx, rez.SummarizeKnowledgeEvidenceParams{AliasIDs: []uuid.UUID{aliasID}})
+	s.Require().NoError(aliasErr)
+	s.Zero(byAlias.Total)
 }

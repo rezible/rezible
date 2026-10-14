@@ -60,7 +60,7 @@ func (h *knowledgeGraphHandler) ListKnowledgeGraphEntities(ctx context.Context, 
 
 func (h *knowledgeGraphHandler) GetKnowledgeGraphEntity(ctx context.Context, request *oapi.GetKnowledgeGraphEntityRequest) (*oapi.GetKnowledgeGraphEntityResponse, error) {
 	var response oapi.GetKnowledgeGraphEntityResponse
-	entity, entityErr := h.knowledge.GetEntity(ctx, request.Id)
+	entity, entityErr := h.knowledge.GetEntity(ctx, request.Id, rez.KnowledgeEntityExpand{AliasEvidence: true})
 	if entityErr != nil {
 		return nil, oapi.Error(ctx, "failed to get knowledge graph entity", entityErr)
 	}
@@ -81,9 +81,6 @@ func (h *knowledgeGraphHandler) ListKnowledgeGraphRelationships(ctx context.Cont
 		}
 		preds = append(preds, kr.PredicateIn(predicates...))
 	}
-	if request.EntityId != uuid.Nil {
-		preds = append(preds, kr.Or(kr.SourceEntityID(request.EntityId), kr.TargetEntityID(request.EntityId)))
-	}
 	if request.SourceEntityId != uuid.Nil {
 		preds = append(preds, kr.SourceEntityID(request.SourceEntityId))
 	}
@@ -93,6 +90,7 @@ func (h *knowledgeGraphHandler) ListKnowledgeGraphRelationships(ctx context.Cont
 	params := rez.ListKnowledgeRelationshipsParams{
 		ListParams: request.ListParams(),
 		Predicates: preds,
+		EntityID:   request.EntityId,
 	}
 	result, queryErr := h.knowledge.ListRelationships(ctx, params)
 	if queryErr != nil {
@@ -167,7 +165,7 @@ func (h *knowledgeGraphHandler) ListKnowledgeGraphEvidence(ctx context.Context, 
 }
 
 func (h *knowledgeGraphHandler) GetKnowledgeGraphEvidence(ctx context.Context, request *oapi.GetKnowledgeGraphEvidenceRequest) (*oapi.GetKnowledgeGraphEvidenceResponse, error) {
-	evidence, evidenceErr := h.knowledge.GetEvidence(ctx, request.Id)
+	evidence, evidenceErr := h.knowledge.GetEvidence(ctx, request.Id, rez.KnowledgeEvidenceExpand{})
 	if evidenceErr != nil {
 		return nil, oapi.Error(ctx, "failed to get knowledge graph evidence", evidenceErr)
 	}

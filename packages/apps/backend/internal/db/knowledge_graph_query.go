@@ -12,6 +12,7 @@ import (
 	"regexp"
 	"slices"
 	"strings"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqljson"
@@ -52,18 +53,66 @@ func (s *KnowledgeGraphQueryService) ListEntities(ctx context.Context, params re
 	return ent.DoListQuery[ent.KnowledgeEntity, *ent.KnowledgeEntityQuery](ctx, query, params.ListParams)
 }
 
-func (s *KnowledgeGraphQueryService) GetEntity(ctx context.Context, id uuid.UUID) (*ent.KnowledgeEntity, error) {
-	return s.entityQueryWithEvidence(ctx, id).Only(ctx)
+func (s *KnowledgeGraphQueryService) GetEntity(ctx context.Context, id uuid.UUID, expand rez.KnowledgeEntityExpand) (*ent.KnowledgeEntity, error) {
+	query := s.db.Client(ctx).KnowledgeEntity.Query().
+		Where(kne.ID(id))
+	if expand.AliasEvidence {
+		query.WithAliases(subjectAliasWithEvidence())
+	} else {
+		query.WithAliases()
+	}
+	if expand.LinkingAttributes {
+		query.WithLinkingAttributes()
+	}
+	return query.Only(ctx)
 }
 
 func (s *KnowledgeGraphQueryService) ListRelationships(ctx context.Context, params rez.ListKnowledgeRelationshipsParams) (*ent.ListResult[ent.KnowledgeRelationship], error) {
 	query := s.db.Client(ctx).KnowledgeRelationship.Query().
-		WithAliases().
-		Order(knr.ByID(params.GetOrder()))
+		WithAliases()
 	if len(params.Predicates) > 0 {
 		query.Where(params.Predicates...)
 	}
+	if params.EntityID != uuid.Nil {
+		var neighbour []predicate.KnowledgeEntity
+		if len(params.NeighbourCategories) > 0 {
+			neighbour = append(neighbour, kne.CategoryIn(params.NeighbourCategories...))
+		}
+		if len(params.ExcludedNeighbourCategories) > 0 {
+			neighbour = append(neighbour, kne.CategoryNotIn(params.ExcludedNeighbourCategories...))
+		}
+		query.Where(knr.Or(
+			knr.And(knr.SourceEntityID(params.EntityID), knr.HasTargetEntityWith(neighbour...)),
+			knr.And(knr.TargetEntityID(params.EntityID), knr.HasSourceEntityWith(neighbour...)),
+		))
+	} else if len(params.NeighbourCategories)+len(params.ExcludedNeighbourCategories) > 0 {
+		return nil, fmt.Errorf("%w: neighbour categories need an entity ID", errs.ErrInvalidInput)
+	}
+	if params.NewestEvidenceFirst {
+		query.Order(s.byLatestEvidence, knr.ByID())
+	} else {
+		query.Order(knr.ByID(params.GetOrder()))
+	}
+	if params.Expand.Endpoints {
+		query.WithSourceEntity().WithTargetEntity()
+	}
 	return ent.DoListQuery[ent.KnowledgeRelationship, *ent.KnowledgeRelationshipQuery](ctx, query, params.ListParams)
+}
+
+// byLatestEvidence orders relationships by the effective time of their latest evidence, newest first. Ent's
+// edge ordering can't take the maximum across two hops (aliases, then evidence), so this is a correlated
+// subquery.
+func (s *KnowledgeGraphQueryService) byLatestEvidence(sel *sql.Selector) {
+	aliases := sql.Table(ksa.Table)
+	evidence := sql.Table(ke.Table)
+	latest := sql.Dialect(sel.Dialect()).
+		Select(sql.Max(evidence.C(ke.FieldEffectiveAt))).
+		From(evidence).
+		Join(aliases).On(evidence.C(ke.FieldSubjectAliasID), aliases.C(ksa.FieldID)).
+		Where(sql.ColumnsEQ(aliases.C(ksa.FieldRelationshipID), sel.C(knr.FieldID)))
+	sel.OrderExprFunc(func(b *sql.Builder) {
+		b.WriteString("(").Join(latest).WriteString(") DESC NULLS LAST")
+	})
 }
 
 func (s *KnowledgeGraphQueryService) GetRelationship(ctx context.Context, id uuid.UUID) (*ent.KnowledgeRelationship, error) {
@@ -82,12 +131,6 @@ func (s *KnowledgeGraphQueryService) GetRelationship(ctx context.Context, id uui
 func (s *KnowledgeGraphQueryService) relationshipQueryWithEvidence(ctx context.Context, id uuid.UUID, evP ...predicate.KnowledgeEvidence) *ent.KnowledgeRelationshipQuery {
 	return s.db.Client(ctx).KnowledgeRelationship.Query().
 		Where(knr.ID(id)).
-		WithAliases(subjectAliasWithEvidence(evP...))
-}
-
-func (s *KnowledgeGraphQueryService) entityQueryWithEvidence(ctx context.Context, id uuid.UUID, evP ...predicate.KnowledgeEvidence) *ent.KnowledgeEntityQuery {
-	return s.db.Client(ctx).KnowledgeEntity.Query().
-		Where(kne.ID(id)).
 		WithAliases(subjectAliasWithEvidence(evP...))
 }
 
@@ -126,11 +169,171 @@ func (s *KnowledgeGraphQueryService) ListEvidence(ctx context.Context, params re
 	return ent.DoListQuery[ent.KnowledgeEvidence, *ent.KnowledgeEvidenceQuery](ctx, query, params.ListParams)
 }
 
-func (s *KnowledgeGraphQueryService) GetEvidence(ctx context.Context, id uuid.UUID) (*ent.KnowledgeEvidence, error) {
-	return s.db.Client(ctx).KnowledgeEvidence.Query().
-		Where(ke.ID(id)).
-		WithSubjectAlias().
-		Only(ctx)
+func (s *KnowledgeGraphQueryService) GetEvidence(ctx context.Context, id uuid.UUID, expand rez.KnowledgeEvidenceExpand) (*ent.KnowledgeEvidence, error) {
+	query := s.db.Client(ctx).KnowledgeEvidence.Query().
+		Where(ke.ID(id))
+	if expand.Subject {
+		query.WithSubjectAlias(withAliasSubject)
+	} else {
+		query.WithSubjectAlias()
+	}
+	return query.Only(ctx)
+}
+
+// withAliasSubject loads the alias's entity, or its relationship and the relationship's endpoints.
+func withAliasSubject(aq *ent.KnowledgeSubjectAliasQuery) {
+	aq.WithEntity().WithRelationship(func(rq *ent.KnowledgeRelationshipQuery) {
+		rq.WithSourceEntity().WithTargetEntity()
+	})
+}
+
+// SummarizeEvidence summarizes nothing when given neither an entity nor aliases.
+func (s *KnowledgeGraphQueryService) SummarizeEvidence(ctx context.Context, params rez.SummarizeKnowledgeEvidenceParams) (*ent.ListResult[rez.KnowledgeEvidenceSummary], error) {
+	page, pageSize := params.GetPage(), params.GetPageSize()
+	result := &ent.ListResult[rez.KnowledgeEvidenceSummary]{Data: make([]*rez.KnowledgeEvidenceSummary, 0), Page: page, PageSize: pageSize}
+	if params.EntityID == uuid.Nil && len(params.AliasIDs) == 0 {
+		return result, nil
+	}
+	client := s.db.Client(ctx)
+
+	var predicates []predicate.KnowledgeEvidence
+	if params.EntityID != uuid.Nil {
+		queryEntity := client.KnowledgeEntity.Query().
+			Where(kne.ID(params.EntityID))
+		entityExists, existsErr := queryEntity.Exist(ctx)
+		if existsErr != nil {
+			return nil, fmt.Errorf("check knowledge entity: %w", existsErr)
+		}
+		if !entityExists {
+			return nil, fmt.Errorf("%w: no knowledge entity %s", errs.ErrNotFound, params.EntityID)
+		}
+		onEntityOrRelationships := ksa.Or(
+			ksa.EntityID(params.EntityID),
+			ksa.HasRelationshipWith(knr.Or(knr.SourceEntityID(params.EntityID), knr.TargetEntityID(params.EntityID))),
+		)
+		predicates = append(predicates, ke.HasSubjectAliasWith(onEntityOrRelationships))
+	}
+	if len(params.AliasIDs) > 0 {
+		predicates = append(predicates, ke.SubjectAliasIDIn(params.AliasIDs...))
+	}
+	if !params.Start.IsZero() {
+		predicates = append(predicates, ke.EffectiveAtGTE(params.Start))
+	}
+	if !params.End.IsZero() {
+		predicates = append(predicates, ke.EffectiveAtLTE(params.End))
+	}
+	groupColumns := []string{ke.FieldSubjectAliasID}
+	if params.ByAssertion {
+		groupColumns = append(groupColumns, ke.FieldAssertion)
+	}
+
+	// Ent's group-by has no count of groups or order by an aggregate, so both are written as SQL expressions.
+	countGroups := client.KnowledgeEvidence.Query().
+		Where(predicates...).
+		Aggregate(func(sel *sql.Selector) string {
+			columns := make([]string, len(groupColumns))
+			for index, column := range groupColumns {
+				columns[index] = sel.C(column)
+			}
+			return fmt.Sprintf("count(DISTINCT (%s))", strings.Join(columns, ", "))
+		})
+	total, countErr := countGroups.Int(ctx)
+	if countErr != nil {
+		return nil, fmt.Errorf("count evidence groups: %w", countErr)
+	}
+	result.Total = total
+	if total == 0 {
+		return result, nil
+	}
+
+	newestGroupFirst := func(sel *sql.Selector) {
+		sel.OrderExpr(sql.Expr(fmt.Sprintf("max(%s) DESC", sel.C(ke.FieldEffectiveAt))))
+		for _, column := range groupColumns {
+			sel.OrderBy(sel.C(column))
+		}
+	}
+	// Postgres has no aggregate for the row holding the greatest value, so this takes the first of the
+	// ordered IDs.
+	latestID := func(sel *sql.Selector) string {
+		ordered := fmt.Sprintf("(array_agg(%s ORDER BY %s DESC, %s DESC))[1]",
+			sel.C(ke.FieldID), sel.C(ke.FieldEffectiveAt), sel.C(ke.FieldID))
+		return sql.As(ordered, "latest_id")
+	}
+	groupEvidence := client.KnowledgeEvidence.Query().
+		Where(predicates...).
+		Order(newestGroupFirst).
+		Offset((page-1)*pageSize).
+		Limit(pageSize).
+		GroupBy(groupColumns[0], groupColumns[1:]...).
+		Aggregate(
+			ent.Count(),
+			ent.As(ent.Min(ke.FieldEffectiveAt), "earliest_at"),
+			ent.As(ent.Max(ke.FieldEffectiveAt), "latest_at"),
+			latestID,
+		)
+	var groups []struct {
+		SubjectAliasID uuid.UUID `json:"subject_alias_id"`
+		Assertion      string    `json:"assertion"`
+		Count          int       `json:"count"`
+		EarliestAt     time.Time `json:"earliest_at"`
+		LatestAt       time.Time `json:"latest_at"`
+		LatestID       uuid.UUID `json:"latest_id"`
+	}
+	if scanErr := groupEvidence.Scan(ctx, &groups); scanErr != nil {
+		return nil, fmt.Errorf("group evidence: %w", scanErr)
+	}
+
+	aliasIDs := make([]uuid.UUID, len(groups))
+	latestIDs := make([]uuid.UUID, len(groups))
+	for index, group := range groups {
+		aliasIDs[index], latestIDs[index] = group.SubjectAliasID, group.LatestID
+	}
+	queryLatest := client.KnowledgeEvidence.Query().
+		Where(ke.IDIn(latestIDs...)).
+		Select(ke.FieldID, ke.FieldSubjectState)
+	latest, latestErr := queryLatest.All(ctx)
+	if latestErr != nil {
+		return nil, fmt.Errorf("query latest evidence: %w", latestErr)
+	}
+	latestByID := make(map[uuid.UUID]*ent.KnowledgeEvidence, len(latest))
+	for _, evidence := range latest {
+		latestByID[evidence.ID] = evidence
+	}
+	var aliasesByID map[uuid.UUID]*ent.KnowledgeSubjectAlias
+	if params.Expand.Alias {
+		queryAliases := client.KnowledgeSubjectAlias.Query().
+			Where(ksa.IDIn(aliasIDs...)).
+			WithRelationship(func(rq *ent.KnowledgeRelationshipQuery) {
+				rq.WithSourceEntity().WithTargetEntity()
+			})
+		aliases, aliasesErr := queryAliases.All(ctx)
+		if aliasesErr != nil {
+			return nil, fmt.Errorf("query evidence aliases: %w", aliasesErr)
+		}
+		aliasesByID = make(map[uuid.UUID]*ent.KnowledgeSubjectAlias, len(aliases))
+		for _, alias := range aliases {
+			aliasesByID[alias.ID] = alias
+		}
+	}
+
+	for _, group := range groups {
+		latestEvidence := latestByID[group.LatestID]
+		alias := aliasesByID[group.SubjectAliasID]
+		if latestEvidence == nil || (params.Expand.Alias && alias == nil) {
+			return nil, fmt.Errorf("evidence of alias %s changed while it was summarized", group.SubjectAliasID)
+		}
+		result.Data = append(result.Data, &rez.KnowledgeEvidenceSummary{
+			SubjectAliasID: group.SubjectAliasID,
+			Alias:          alias,
+			Assertion:      group.Assertion,
+			Count:          group.Count,
+			EarliestAt:     group.EarliestAt.UTC(),
+			LatestAt:       group.LatestAt.UTC(),
+			LatestID:       group.LatestID,
+			LatestState:    latestEvidence.SubjectState,
+		})
+	}
+	return result, nil
 }
 
 const (

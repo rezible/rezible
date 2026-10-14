@@ -432,7 +432,7 @@ func (i *investigationInvocation) readEvidence(ctx context.Context, input rezai.
 		return nil, errs.ErrNotFound
 	}
 
-	evidence, getEvidenceErr := i.knowledge.GetEvidence(ctx, evidenceID)
+	evidence, getEvidenceErr := i.knowledge.GetEvidence(ctx, evidenceID, rez.KnowledgeEvidenceExpand{})
 	if ent.IsNotFound(getEvidenceErr) {
 		return nil, errs.ErrNotFound
 	}
