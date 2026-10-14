@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 
+	rez "github.com/rezible/rezible"
 	inc "github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/schema/schematypes"
 	sit "github.com/rezible/rezible/ent/situation"
@@ -23,7 +24,7 @@ func at(minutes int) time.Time {
 // member is a seeding, default-attention alert signal attached at `attached`, finished at `finished` when
 // given, and otherwise active for `activeMinutes`.
 func member(attached int, finished *int, activeMinutes int) Member {
-	signal := Signal{
+	signal := rez.SituationSignal{
 		EntityID:        uuid.New(),
 		Severity:        schematypes.SignalSeverityCritical,
 		SignalAttention: ssa.LevelDefault,

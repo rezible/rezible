@@ -6078,6 +6078,80 @@ func (_c *MockAlertService_ListAlerts_Call) RunAndReturn(run func(context1 conte
 	return _c
 }
 
+// LoadSignals provides a mock function for the type MockAlertService
+func (_mock *MockAlertService) LoadSignals(ctx context.Context, entityIDs []uuid.UUID, opts rez.LoadSituationSignalsOptions) ([]rez.SituationSignal, error) {
+	ret := _mock.Called(ctx, entityIDs, opts)
+
+	if len(ret) == 0 {
+		panic("no return value specified for LoadSignals")
+	}
+
+	var r0 []rez.SituationSignal
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, []uuid.UUID, rez.LoadSituationSignalsOptions) ([]rez.SituationSignal, error)); ok {
+		return returnFunc(ctx, entityIDs, opts)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, []uuid.UUID, rez.LoadSituationSignalsOptions) []rez.SituationSignal); ok {
+		r0 = returnFunc(ctx, entityIDs, opts)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]rez.SituationSignal)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, []uuid.UUID, rez.LoadSituationSignalsOptions) error); ok {
+		r1 = returnFunc(ctx, entityIDs, opts)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockAlertService_LoadSignals_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'LoadSignals'
+type MockAlertService_LoadSignals_Call struct {
+	*mock.Call
+}
+
+// LoadSignals is a helper method to define mock.On call
+//   - ctx context.Context
+//   - entityIDs []uuid.UUID
+//   - opts rez.LoadSituationSignalsOptions
+func (_e *MockAlertService_Expecter) LoadSignals(ctx interface{}, entityIDs interface{}, opts interface{}) *MockAlertService_LoadSignals_Call {
+	return &MockAlertService_LoadSignals_Call{Call: _e.mock.On("LoadSignals", ctx, entityIDs, opts)}
+}
+
+func (_c *MockAlertService_LoadSignals_Call) Run(run func(ctx context.Context, entityIDs []uuid.UUID, opts rez.LoadSituationSignalsOptions)) *MockAlertService_LoadSignals_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 []uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].([]uuid.UUID)
+		}
+		var arg2 rez.LoadSituationSignalsOptions
+		if args[2] != nil {
+			arg2 = args[2].(rez.LoadSituationSignalsOptions)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockAlertService_LoadSignals_Call) Return(signals []rez.SituationSignal, err error) *MockAlertService_LoadSignals_Call {
+	_c.Call.Return(signals, err)
+	return _c
+}
+
+func (_c *MockAlertService_LoadSignals_Call) RunAndReturn(run func(ctx context.Context, entityIDs []uuid.UUID, opts rez.LoadSituationSignalsOptions) ([]rez.SituationSignal, error)) *MockAlertService_LoadSignals_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // RecordAlertInstance provides a mock function for the type MockAlertService
 func (_mock *MockAlertService) RecordAlertInstance(context1 context.Context, recordAlertInstanceParams rez.RecordAlertInstanceParams) (*ent.AlertDefinition, error) {
 	ret := _mock.Called(context1, recordAlertInstanceParams)
@@ -6290,6 +6364,50 @@ func (_c *MockAlertService_SetAlertSituationSignalAttention_Call) Return(alertDe
 }
 
 func (_c *MockAlertService_SetAlertSituationSignalAttention_Call) RunAndReturn(run func(ctx context.Context, id uuid.UUID, level situationsignalattention.Level) (*ent.AlertDefinition, error)) *MockAlertService_SetAlertSituationSignalAttention_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// SituationSignalKind provides a mock function for the type MockAlertService
+func (_mock *MockAlertService) SituationSignalKind() rez.SituationSignalKind {
+	ret := _mock.Called()
+
+	if len(ret) == 0 {
+		panic("no return value specified for SituationSignalKind")
+	}
+
+	var r0 rez.SituationSignalKind
+	if returnFunc, ok := ret.Get(0).(func() rez.SituationSignalKind); ok {
+		r0 = returnFunc()
+	} else {
+		r0 = ret.Get(0).(rez.SituationSignalKind)
+	}
+	return r0
+}
+
+// MockAlertService_SituationSignalKind_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'SituationSignalKind'
+type MockAlertService_SituationSignalKind_Call struct {
+	*mock.Call
+}
+
+// SituationSignalKind is a helper method to define mock.On call
+func (_e *MockAlertService_Expecter) SituationSignalKind() *MockAlertService_SituationSignalKind_Call {
+	return &MockAlertService_SituationSignalKind_Call{Call: _e.mock.On("SituationSignalKind")}
+}
+
+func (_c *MockAlertService_SituationSignalKind_Call) Run(run func()) *MockAlertService_SituationSignalKind_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run()
+	})
+	return _c
+}
+
+func (_c *MockAlertService_SituationSignalKind_Call) Return(signalKind rez.SituationSignalKind) *MockAlertService_SituationSignalKind_Call {
+	_c.Call.Return(signalKind)
+	return _c
+}
+
+func (_c *MockAlertService_SituationSignalKind_Call) RunAndReturn(run func() rez.SituationSignalKind) *MockAlertService_SituationSignalKind_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -7616,6 +7734,80 @@ func (_c *MockSituationService_ListSituations_Call) Return(listResult *ent.ListR
 }
 
 func (_c *MockSituationService_ListSituations_Call) RunAndReturn(run func(context1 context.Context, listSituationsParams rez.ListSituationsParams) (*ent.ListResult[ent.Situation], error)) *MockSituationService_ListSituations_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// LoadSignals provides a mock function for the type MockSituationService
+func (_mock *MockSituationService) LoadSignals(ctx context.Context, entityIDs []uuid.UUID, opts rez.LoadSituationSignalsOptions) ([]rez.SituationSignal, error) {
+	ret := _mock.Called(ctx, entityIDs, opts)
+
+	if len(ret) == 0 {
+		panic("no return value specified for LoadSignals")
+	}
+
+	var r0 []rez.SituationSignal
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, []uuid.UUID, rez.LoadSituationSignalsOptions) ([]rez.SituationSignal, error)); ok {
+		return returnFunc(ctx, entityIDs, opts)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, []uuid.UUID, rez.LoadSituationSignalsOptions) []rez.SituationSignal); ok {
+		r0 = returnFunc(ctx, entityIDs, opts)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]rez.SituationSignal)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, []uuid.UUID, rez.LoadSituationSignalsOptions) error); ok {
+		r1 = returnFunc(ctx, entityIDs, opts)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockSituationService_LoadSignals_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'LoadSignals'
+type MockSituationService_LoadSignals_Call struct {
+	*mock.Call
+}
+
+// LoadSignals is a helper method to define mock.On call
+//   - ctx context.Context
+//   - entityIDs []uuid.UUID
+//   - opts rez.LoadSituationSignalsOptions
+func (_e *MockSituationService_Expecter) LoadSignals(ctx interface{}, entityIDs interface{}, opts interface{}) *MockSituationService_LoadSignals_Call {
+	return &MockSituationService_LoadSignals_Call{Call: _e.mock.On("LoadSignals", ctx, entityIDs, opts)}
+}
+
+func (_c *MockSituationService_LoadSignals_Call) Run(run func(ctx context.Context, entityIDs []uuid.UUID, opts rez.LoadSituationSignalsOptions)) *MockSituationService_LoadSignals_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 []uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].([]uuid.UUID)
+		}
+		var arg2 rez.LoadSituationSignalsOptions
+		if args[2] != nil {
+			arg2 = args[2].(rez.LoadSituationSignalsOptions)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockSituationService_LoadSignals_Call) Return(signals []rez.SituationSignal, err error) *MockSituationService_LoadSignals_Call {
+	_c.Call.Return(signals, err)
+	return _c
+}
+
+func (_c *MockSituationService_LoadSignals_Call) RunAndReturn(run func(ctx context.Context, entityIDs []uuid.UUID, opts rez.LoadSituationSignalsOptions) ([]rez.SituationSignal, error)) *MockSituationService_LoadSignals_Call {
 	_c.Call.Return(run)
 	return _c
 }

@@ -23,7 +23,6 @@ import (
 	ev "github.com/rezible/rezible/ent/normalizedevent"
 	sae "github.com/rezible/rezible/ent/systemanalysisentry"
 	saes "github.com/rezible/rezible/ent/systemanalysisentrysubject"
-	"github.com/rezible/rezible/pkg/situations"
 )
 
 type situationEvidenceEntry struct {
@@ -55,7 +54,7 @@ func (s *SituationService) createInvestigation(ctx context.Context, situationID 
 	if membersErr != nil {
 		return membersErr
 	}
-	signals, loadErr := s.loadSignals(ctx, memberIDs, situations.LoadSignalsOptions{})
+	signals, loadErr := s.loadSignals(ctx, memberIDs, rez.LoadSituationSignalsOptions{})
 	if loadErr != nil {
 		return loadErr
 	}

@@ -508,7 +508,7 @@ func (s *SituationServiceSuite) TestInvestigationReadsItsSituation() {
 	s.Require().Len(listed.Data, 1)
 	s.Equal(created.ID, listed.Data[0].ID)
 
-	signals, signalsErr := h.situations.LoadSignals(ctx, []uuid.UUID{second, first}, situations.LoadSignalsOptions{})
+	signals, signalsErr := h.situations.LoadSignals(ctx, []uuid.UUID{second, first}, rez.LoadSituationSignalsOptions{})
 	s.Require().NoError(signalsErr)
 	s.Require().Len(signals, 2)
 	s.Equal(second, signals[0].EntityID, "signals keep the requested order")

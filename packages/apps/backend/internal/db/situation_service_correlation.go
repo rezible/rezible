@@ -38,7 +38,7 @@ func NewProcessSituationSignalWorker(service *SituationService) jobs.WorkerDefin
 // holding the signal, or places an eligible signal that no situation holds. Unknown signals and kinds
 // without a source are ignored.
 func (s *SituationService) ProcessSignal(ctx context.Context, signalEntityID uuid.UUID) error {
-	signals, loadErr := s.loadSignals(ctx, []uuid.UUID{signalEntityID}, situations.LoadSignalsOptions{})
+	signals, loadErr := s.loadSignals(ctx, []uuid.UUID{signalEntityID}, rez.LoadSituationSignalsOptions{})
 	if loadErr != nil {
 		if errors.Is(loadErr, errs.ErrInvalidInput) {
 			return nil
@@ -50,7 +50,7 @@ func (s *SituationService) ProcessSignal(ctx context.Context, signalEntityID uui
 	if heldErr != nil || held {
 		return heldErr
 	}
-	if !signal.EligibleAt(s.clock.Now()) {
+	if !situations.EligibleAt(signal, s.clock.Now()) {
 		return nil
 	}
 	return s.correlateSignal(ctx, signal)
@@ -86,7 +86,7 @@ func (s *SituationService) refreshHoldingSituation(ctx context.Context, signalEn
 
 // correlateSignal places the signal into a situation about the same or a related runtime entity, or into
 // a new candidate.
-func (s *SituationService) correlateSignal(ctx context.Context, signal situations.Signal) error {
+func (s *SituationService) correlateSignal(ctx context.Context, signal rez.SituationSignal) error {
 	return s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
 		// Without this lock, two signals about the same entities correlated at once could each find no
 		// match and each start a candidate. No row represents the tenant's situations about some entities,
@@ -235,7 +235,7 @@ func (s *SituationService) correlationSituations(ctx context.Context, reach maps
 		memberIDs[i] = member.KnowledgeEntityID
 	}
 
-	signals, loadErr := s.loadSignals(ctx, memberIDs, situations.LoadSignalsOptions{})
+	signals, loadErr := s.loadSignals(ctx, memberIDs, rez.LoadSituationSignalsOptions{})
 	if loadErr != nil {
 		return nil, loadErr
 	}
@@ -264,7 +264,7 @@ func (s *SituationService) correlationSituations(ctx context.Context, reach maps
 // startCandidate creates the signal's own candidate. It links the candidate as a recurrence of the most
 // recent situation, other than a merged one, that closed within RecurrenceLookback and held a signal of
 // the same source; equal closing times go to the lower ID.
-func (s *SituationService) startCandidate(ctx context.Context, signal situations.Signal, now time.Time) error {
+func (s *SituationService) startCandidate(ctx context.Context, signal rez.SituationSignal, now time.Time) error {
 	createParams := rez.CreateSituationParams{
 		Title:        signal.Title,
 		SeedEntityID: signal.EntityID,

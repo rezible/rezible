@@ -168,7 +168,6 @@ var pkgGenkit = do.Package(
 			do.MustInvoke[rez.InvestigationOutputService](i),
 			do.MustInvoke[rez.KnowledgeGraphQueryService](i),
 			do.MustInvoke[rez.SituationService](i),
-			do.MustInvoke[*db.SituationService](i),
 		)
 		return runtime, runtime.RegisterAgents(
 			genkit.WithAgent(chatAgent),

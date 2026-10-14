@@ -13,32 +13,26 @@ import (
 	"github.com/rezible/rezible/ent"
 	inv "github.com/rezible/rezible/ent/investigation"
 	rezai "github.com/rezible/rezible/pkg/ai"
-	"github.com/rezible/rezible/pkg/situations"
 )
 
 type InvestigationAgent struct {
-	investigations    rez.InvestigationService
-	outputs           rez.InvestigationOutputService
-	knowledge         rez.KnowledgeGraphQueryService
-	situationsService rez.SituationService
-	signals           situations.SignalLoader
+	investigations rez.InvestigationService
+	outputs        rez.InvestigationOutputService
+	knowledge      rez.KnowledgeGraphQueryService
+	situations     rez.SituationService
 }
 
-// NewInvestigationAgent takes the situation service twice: the root interface can't name situations.Signal, so
-// its signal loading comes as situations.SignalLoader.
 func NewInvestigationAgent(
 	investigations rez.InvestigationService,
 	outputs rez.InvestigationOutputService,
 	knowledge rez.KnowledgeGraphQueryService,
-	situationsService rez.SituationService,
-	signals situations.SignalLoader,
+	situations rez.SituationService,
 ) *InvestigationAgent {
 	return &InvestigationAgent{
-		investigations:    investigations,
-		outputs:           outputs,
-		knowledge:         knowledge,
-		situationsService: situationsService,
-		signals:           signals,
+		investigations: investigations,
+		outputs:        outputs,
+		knowledge:      knowledge,
+		situations:     situations,
 	}
 }
 
@@ -49,11 +43,10 @@ func (a *InvestigationAgent) agentDefinition() rezai.InvestigationAgentDefinitio
 func (a *InvestigationAgent) makeMiddleware() []ai.Middleware {
 	return []ai.Middleware{
 		&investigationCapabilitiesMiddleware{
-			investigations:    a.investigations,
-			outputs:           a.outputs,
-			knowledge:         a.knowledge,
-			situationsService: a.situationsService,
-			signals:           a.signals,
+			investigations: a.investigations,
+			outputs:        a.outputs,
+			knowledge:      a.knowledge,
+			situations:     a.situations,
 		},
 	}
 }
@@ -75,11 +68,10 @@ func (a *InvestigationAgent) transformStreamChunk(ctx context.Context, chunk *ai
 }
 
 type investigationCapabilitiesMiddleware struct {
-	investigations    rez.InvestigationService
-	outputs           rez.InvestigationOutputService
-	knowledge         rez.KnowledgeGraphQueryService
-	situationsService rez.SituationService
-	signals           situations.SignalLoader
+	investigations rez.InvestigationService
+	outputs        rez.InvestigationOutputService
+	knowledge      rez.KnowledgeGraphQueryService
+	situations     rez.SituationService
 }
 
 func (m *investigationCapabilitiesMiddleware) Name() string {
@@ -110,13 +102,12 @@ func (m *investigationCapabilitiesMiddleware) New(ctx context.Context) (*ai.Hook
 	}
 
 	i := &investigationInvocation{
-		investigations:    m.investigations,
-		outputs:           m.outputs,
-		knowledge:         m.knowledge,
-		situationsService: m.situationsService,
-		signals:           m.signals,
-		investigationID:   current.ID,
-		turnID:            invCtx.Turn.ID,
+		investigations:  m.investigations,
+		outputs:         m.outputs,
+		knowledge:       m.knowledge,
+		situations:      m.situations,
+		investigationID: current.ID,
+		turnID:          invCtx.Turn.ID,
 	}
 
 	return i.makeHooks(ctx, invCtx)

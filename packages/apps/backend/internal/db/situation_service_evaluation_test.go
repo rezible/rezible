@@ -350,7 +350,7 @@ func (s *SituationServiceSuite) TestEvaluationRefreshesTheTargetInvestigationAft
 	merged, _ := s.evaluate(ctx, h, target.ID)
 	s.Equal(1, revisions(), "the moved evidence reaches the target's investigation")
 
-	signals, loadErr := h.alerts.LoadSignals(ctx, []uuid.UUID{moved}, situations.LoadSignalsOptions{})
+	signals, loadErr := h.alerts.LoadSignals(ctx, []uuid.UUID{moved}, rez.LoadSituationSignalsOptions{})
 	s.Require().NoError(loadErr)
 	s.Require().Len(signals, 1)
 	s.Equal(signals[0].Revision, s.members(merged)[moved].ObservedRevision)

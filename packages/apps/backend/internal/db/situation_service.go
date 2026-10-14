@@ -26,7 +26,6 @@ import (
 	rezai "github.com/rezible/rezible/pkg/ai"
 	"github.com/rezible/rezible/pkg/errs"
 	"github.com/rezible/rezible/pkg/execution"
-	"github.com/rezible/rezible/pkg/situations"
 )
 
 const defaultSituationInvestigationQuestion = "Explain what is happening in this situation."
@@ -59,10 +58,10 @@ type SituationService struct {
 	analyses       rez.SystemAnalysisService
 	graph          rez.KnowledgeGraphQueryService
 	judge          rezai.JudgeSituationCandidateWorkflow
-	sources        map[situations.SignalKind]situations.SituationSignalSource
+	signalSources  map[rez.SituationSignalKind]rez.SituationSignalSource
 }
 
-func NewSituationService(db rez.Database, clock rez.Clock, js rez.JobService, investigations rez.InvestigationService, analyses rez.SystemAnalysisService, graph rez.KnowledgeGraphQueryService, judge rezai.JudgeSituationCandidateWorkflow, sources ...situations.SituationSignalSource) (*SituationService, error) {
+func NewSituationService(db rez.Database, clock rez.Clock, js rez.JobService, investigations rez.InvestigationService, analyses rez.SystemAnalysisService, graph rez.KnowledgeGraphQueryService, judge rezai.JudgeSituationCandidateWorkflow, signalSources ...rez.SituationSignalSource) (*SituationService, error) {
 	s := &SituationService{
 		db:             db,
 		clock:          clock,
@@ -71,10 +70,10 @@ func NewSituationService(db rez.Database, clock rez.Clock, js rez.JobService, in
 		analyses:       analyses,
 		graph:          graph,
 		judge:          judge,
-		sources:        make(map[situations.SignalKind]situations.SituationSignalSource, len(sources)),
+		signalSources:  make(map[rez.SituationSignalKind]rez.SituationSignalSource, len(signalSources)),
 	}
-	for _, source := range sources {
-		s.sources[source.SituationSignalKind()] = source
+	for _, source := range signalSources {
+		s.signalSources[source.SituationSignalKind()] = source
 	}
 	return s, nil
 }
@@ -181,7 +180,7 @@ func (s *SituationService) CreateSituation(ctx context.Context, params rez.Creat
 
 	return ent.WithTxReturning(ctx, s.db, func(ctx context.Context, tx *ent.Client) (*ent.Situation, error) {
 		now := s.clock.Now()
-		signals, loadErr := s.loadSignals(ctx, signalIDs, situations.LoadSignalsOptions{})
+		signals, loadErr := s.loadSignals(ctx, signalIDs, rez.LoadSituationSignalsOptions{})
 		if loadErr != nil {
 			return nil, loadErr
 		}
@@ -213,7 +212,7 @@ func (s *SituationService) CreateSituation(ctx context.Context, params rez.Creat
 				if signalID == params.SeedEntityID {
 					membership.matchKind = sitsig.MatchKindSeed
 				}
-				memberSignals := []situations.Signal{signals[signalID]}
+				memberSignals := []rez.SituationSignal{signals[signalID]}
 				if memberErr := s.createMemberships(ctx, created.ID, membership, memberSignals, now); memberErr != nil {
 					return nil, memberErr
 				}
@@ -258,12 +257,12 @@ func (s *SituationService) normalizeObservationGroups(input []rez.SituationObser
 }
 
 // LoadSignals loads signals of any kind from their sources, in the order of entityIDs.
-func (s *SituationService) LoadSignals(ctx context.Context, entityIDs []uuid.UUID, opts situations.LoadSignalsOptions) ([]situations.Signal, error) {
+func (s *SituationService) LoadSignals(ctx context.Context, entityIDs []uuid.UUID, opts rez.LoadSituationSignalsOptions) ([]rez.SituationSignal, error) {
 	loaded, loadErr := s.loadSignals(ctx, entityIDs, opts)
 	if loadErr != nil {
 		return nil, loadErr
 	}
-	signals := make([]situations.Signal, len(entityIDs))
+	signals := make([]rez.SituationSignal, len(entityIDs))
 	for i, entityID := range entityIDs {
 		signals[i] = loaded[entityID]
 	}
@@ -272,7 +271,7 @@ func (s *SituationService) LoadSignals(ctx context.Context, entityIDs []uuid.UUI
 
 // loadSignals loads each signal through the source for its knowledge entity's kind. An unknown entity or
 // a kind without a source is invalid input.
-func (s *SituationService) loadSignals(ctx context.Context, entityIDs []uuid.UUID, opts situations.LoadSignalsOptions) (map[uuid.UUID]situations.Signal, error) {
+func (s *SituationService) loadSignals(ctx context.Context, entityIDs []uuid.UUID, opts rez.LoadSituationSignalsOptions) (map[uuid.UUID]rez.SituationSignal, error) {
 	queryEntities := s.db.Client(ctx).KnowledgeEntity.Query().
 		Where(kne.IDIn(entityIDs...)).
 		Select(kne.FieldID, kne.FieldKind)
@@ -281,15 +280,15 @@ func (s *SituationService) loadSignals(ctx context.Context, entityIDs []uuid.UUI
 		return nil, fmt.Errorf("query signal entities: %w", queryErr)
 	}
 
-	idsByKind := make(map[situations.SignalKind][]uuid.UUID)
+	idsByKind := make(map[rez.SituationSignalKind][]uuid.UUID)
 	for _, entity := range entities {
-		kind := situations.SignalKind(entity.Kind)
+		kind := rez.SituationSignalKind(entity.Kind)
 		idsByKind[kind] = append(idsByKind[kind], entity.ID)
 	}
 
-	signals := make(map[uuid.UUID]situations.Signal, len(entityIDs))
+	signals := make(map[uuid.UUID]rez.SituationSignal, len(entityIDs))
 	for kind, ids := range idsByKind {
-		source, supported := s.sources[kind]
+		source, supported := s.signalSources[kind]
 		if !supported {
 			return nil, fmt.Errorf("%w: unsupported signal kind %q", errs.ErrInvalidInput, kind)
 		}
@@ -307,7 +306,7 @@ func (s *SituationService) loadSignals(ctx context.Context, entityIDs []uuid.UUI
 	return signals, nil
 }
 
-func (s *SituationService) earliestStart(signals map[uuid.UUID]situations.Signal) time.Time {
+func (s *SituationService) earliestStart(signals map[uuid.UUID]rez.SituationSignal) time.Time {
 	var earliest time.Time
 	for _, signal := range signals {
 		if earliest.IsZero() || signal.StartedAt.Before(earliest) {
@@ -362,7 +361,7 @@ func (s *SituationService) ListSituationEventIDs(ctx context.Context, id uuid.UU
 	if membersErr != nil || len(memberIDs) == 0 {
 		return nil, membersErr
 	}
-	signals, loadErr := s.loadSignals(ctx, memberIDs, situations.LoadSignalsOptions{})
+	signals, loadErr := s.loadSignals(ctx, memberIDs, rez.LoadSituationSignalsOptions{})
 	if loadErr != nil {
 		return nil, loadErr
 	}

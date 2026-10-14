@@ -908,13 +908,9 @@ type (
 		SituationID uuid.UUID
 	}
 
-	SituationSignalService interface {
-		// NotifySignalChanged tells situations that a signal's stored state changed. Call it inside the
-		// transaction that changed it.
-		NotifySignalChanged(ctx context.Context, signalEntityID uuid.UUID) error
-	}
-
 	AlertService interface {
+		SituationSignalSource
+
 		ListAlerts(context.Context, ListAlertsParams) (*ent.ListResult[ent.AlertDefinition], error)
 		ListAlertEpisodes(context.Context, ListAlertEpisodesParams) (*ent.ListResult[ent.AlertEpisode], error)
 		GetAlert(context.Context, uuid.UUID) (*ent.AlertDefinition, error)
@@ -1150,6 +1146,34 @@ type (
 )
 
 type (
+	SituationSignalKind string
+
+	SituationSignal struct {
+		EntityID             uuid.UUID
+		Kind                 SituationSignalKind
+		Title                string
+		SourceEntityID       *uuid.UUID
+		SignalAttention      situationsignalattention.Level
+		SignalAttentionSetAt *time.Time
+		Severity             schematypes.SignalSeverity
+		StartedAt            time.Time
+		FinishedAt           *time.Time
+		Active               bool
+		LastActivityAt       time.Time
+		EventIDs             []uuid.UUID
+		Revision             int
+		Alert                *schematypes.SituationAlertFacts
+	}
+
+	LoadSituationSignalsOptions struct {
+		History bool
+	}
+
+	SituationSignalSource interface {
+		SituationSignalKind() SituationSignalKind
+		LoadSignals(ctx context.Context, entityIDs []uuid.UUID, opts LoadSituationSignalsOptions) ([]SituationSignal, error)
+	}
+
 	// SituationStage is derived from stored times: closed if closed, raised if raised, otherwise a candidate.
 	SituationStage string
 
@@ -1253,8 +1277,19 @@ type (
 
 		ListSituationHazardAssessments(context.Context, ListSituationHazardAssessmentsParams) (*ent.ListResult[ent.SituationHazardAssessment], error)
 		AddSituationHazardAssessment(context.Context, AddSituationHazardAssessmentParams) (*ent.SituationHazardAssessment, error)
+
+		// LoadSignals loads signals of any kind from their sources, in the order of entityIDs. An unknown entity
+		// or a kind without a source is invalid input.
+		LoadSignals(ctx context.Context, entityIDs []uuid.UUID, opts LoadSituationSignalsOptions) ([]SituationSignal, error)
+	}
+
+	SituationSignalService interface {
+		// NotifySignalChanged tells situations that a signal's stored state changed
+		NotifySignalChanged(ctx context.Context, signalEntityID uuid.UUID) error
 	}
 )
+
+const SignalKindAlertEpisode SituationSignalKind = "alert_episode"
 
 const (
 	SituationStageCandidate SituationStage = "candidate"

@@ -14,7 +14,6 @@ import (
 	sitlink "github.com/rezible/rezible/ent/situationlink"
 	sitsig "github.com/rezible/rezible/ent/situationsignal"
 	"github.com/rezible/rezible/pkg/projections"
-	"github.com/rezible/rezible/pkg/situations"
 )
 
 // processNotified processes the captured signal notifications, as the process-situation-signal job does.
@@ -86,7 +85,7 @@ func (s *SituationServiceSuite) TestCorrelationBySharedEntity() {
 	s.Equal(sitsig.MatchKindSharedEntity, members[second].MatchKind)
 
 	// A second run for a signal that passed the first membership check finds it placed under the lock.
-	signals, loadErr := h.situations.loadSignals(ctx, []uuid.UUID{second}, situations.LoadSignalsOptions{})
+	signals, loadErr := h.situations.loadSignals(ctx, []uuid.UUID{second}, rez.LoadSituationSignalsOptions{})
 	s.Require().NoError(loadErr)
 	s.Require().NoError(h.situations.correlateSignal(ctx, signals[second]))
 	s.Require().NoError(h.situations.ProcessSignal(ctx, second))

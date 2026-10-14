@@ -9,6 +9,7 @@ import (
 	mapset "github.com/deckarep/golang-set/v2"
 	"github.com/google/uuid"
 
+	rez "github.com/rezible/rezible"
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
 	sitsig "github.com/rezible/rezible/ent/situationsignal"
 	"github.com/rezible/rezible/pkg/knowledgegraph"
@@ -17,7 +18,7 @@ import (
 // CorrelationInput is what correlating one signal reads, as of Now.
 type CorrelationInput struct {
 	Now    time.Time
-	Signal Signal
+	Signal rez.SituationSignal
 	// EntityIDs are the signal's runtime entities.
 	EntityIDs mapset.Set[uuid.UUID]
 	// Relationships are the depends-on and adjacent relationships touching the signal's entities.
@@ -160,7 +161,7 @@ func DecideCorrelation(input CorrelationInput) CorrelationDecision {
 			ViaRelationshipID: matches[0].via,
 		}
 	}
-	if input.Signal.Seeds() {
+	if Seeds(input.Signal) {
 		return CorrelationDecision{MatchKind: sitsig.MatchKindSeed}
 	}
 	return CorrelationDecision{}

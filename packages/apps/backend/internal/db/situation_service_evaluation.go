@@ -144,7 +144,7 @@ func (s *SituationService) loadEvaluationInput(ctx context.Context, situation *e
 	for i, member := range members {
 		memberIDs[i] = member.KnowledgeEntityID
 	}
-	signals, loadErr := s.loadSignals(ctx, memberIDs, situations.LoadSignalsOptions{History: true})
+	signals, loadErr := s.loadSignals(ctx, memberIDs, rez.LoadSituationSignalsOptions{History: true})
 	if loadErr != nil {
 		return input, nil, loadErr
 	}
@@ -211,7 +211,7 @@ func (s *SituationService) refreshInvestigation(ctx context.Context, situation *
 	for _, member := range members {
 		revisions[member.KnowledgeEntityID] = member.ObservedRevision
 	}
-	var changed []situations.Signal
+	var changed []rez.SituationSignal
 	var keyParts, titles []string
 	var changedEventIDs []uuid.UUID
 	for _, evaluated := range input.Members {
@@ -247,7 +247,7 @@ func (s *SituationService) refreshInvestigation(ctx context.Context, situation *
 }
 
 // observeRevisions records that the situation's investigation saw the signals' current revisions.
-func (s *SituationService) observeRevisions(ctx context.Context, situationID uuid.UUID, signals []situations.Signal) error {
+func (s *SituationService) observeRevisions(ctx context.Context, situationID uuid.UUID, signals []rez.SituationSignal) error {
 	for _, signal := range signals {
 		observeSignal := s.db.Client(ctx).SituationSignal.Update().
 			Where(sitsig.SituationID(situationID), sitsig.KnowledgeEntityID(signal.EntityID)).

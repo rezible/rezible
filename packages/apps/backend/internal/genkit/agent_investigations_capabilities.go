@@ -14,7 +14,6 @@ import (
 
 	"github.com/rezible/rezible"
 	"github.com/rezible/rezible/pkg/errs"
-	"github.com/rezible/rezible/pkg/situations"
 
 	"github.com/rezible/rezible/ent"
 	at "github.com/rezible/rezible/ent/agentturn"
@@ -37,11 +36,10 @@ const (
 )
 
 type investigationInvocation struct {
-	investigations    rez.InvestigationService
-	outputs           rez.InvestigationOutputService
-	knowledge         rez.KnowledgeGraphQueryService
-	situationsService rez.SituationService
-	signals           situations.SignalLoader
+	investigations rez.InvestigationService
+	outputs        rez.InvestigationOutputService
+	knowledge      rez.KnowledgeGraphQueryService
+	situations     rez.SituationService
 
 	investigationID uuid.UUID
 	turnID          uuid.UUID
@@ -123,7 +121,7 @@ func (i *investigationInvocation) introduceSituation(ctx context.Context) (*reza
 		PageSize:        1,
 		InvestigationID: i.investigationID,
 	}
-	listed, listErr := i.situationsService.ListSituations(ctx, listParams)
+	listed, listErr := i.situations.ListSituations(ctx, listParams)
 	if listErr != nil {
 		return nil, fmt.Errorf("list investigation situation: %w", listErr)
 	}
@@ -160,11 +158,11 @@ func (i *investigationInvocation) introduceSituation(ctx context.Context) (*reza
 		signalEntityIDs[index] = member.KnowledgeEntityID
 		sources[member.KnowledgeEntityID] = *member.SourceEntityID
 	}
-	signals, signalsErr := i.signals.LoadSignals(ctx, signalEntityIDs, situations.LoadSignalsOptions{})
+	signals, signalsErr := i.situations.LoadSignals(ctx, signalEntityIDs, rez.LoadSituationSignalsOptions{})
 	if signalsErr != nil {
 		return nil, fmt.Errorf("load situation signals: %w", signalsErr)
 	}
-	slices.SortFunc(signals, func(a, b situations.Signal) int {
+	slices.SortFunc(signals, func(a, b rez.SituationSignal) int {
 		return cmp.Or(b.StartedAt.Compare(a.StartedAt), strings.Compare(a.Title, b.Title))
 	})
 	for _, signal := range signals {

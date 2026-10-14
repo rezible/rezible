@@ -9,6 +9,7 @@ import (
 
 	"github.com/google/uuid"
 
+	rez "github.com/rezible/rezible"
 	inc "github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/schema/schematypes"
 	sit "github.com/rezible/rezible/ent/situation"
@@ -54,7 +55,7 @@ type JudgeContext struct {
 
 // Member is one of the situation's signals with its membership.
 type Member struct {
-	Signal     Signal
+	Signal     rez.SituationSignal
 	AttachedAt time.Time
 	MatchKind  sitsig.MatchKind
 }
@@ -162,7 +163,7 @@ func (in *EvaluationInput) NextDeadline() *time.Time {
 		for _, member := range in.Members {
 			signal := member.Signal
 			alert := signal.Alert
-			if !signal.Seeds() || signal.SignalAttention != ssa.LevelDefault || alert == nil || !alert.Active {
+			if !Seeds(signal) || signal.SignalAttention != ssa.LevelDefault || alert == nil || !alert.Active {
 				continue
 			}
 			active := time.Duration(alert.ActiveSeconds) * time.Second
@@ -207,7 +208,7 @@ func (in *EvaluationInput) Facts() schematypes.SituationFacts {
 			Kind:           string(signal.Kind),
 			Title:          signal.Title,
 			SourceEntityID: signal.SourceEntityID,
-			Seeding:        signal.Seeds(),
+			Seeding:        Seeds(signal),
 			Attention:      string(signal.SignalAttention),
 			AttentionSetAt: signal.SignalAttentionSetAt,
 			MatchKind:      string(member.MatchKind),

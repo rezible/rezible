@@ -76,7 +76,7 @@ func (s *SituationService) AttachSituationSignals(ctx context.Context, params At
 		if newIDs.IsEmpty() {
 			return nil
 		}
-		signals, loadErr := s.loadSignals(ctx, newIDs.ToSlice(), situations.LoadSignalsOptions{})
+		signals, loadErr := s.loadSignals(ctx, newIDs.ToSlice(), rez.LoadSituationSignalsOptions{})
 		if loadErr != nil {
 			return loadErr
 		}
@@ -91,7 +91,7 @@ func (s *SituationService) AttachSituationSignals(ctx context.Context, params At
 			viaRelationshipID: params.ViaRelationshipID,
 			explanation:       strings.TrimSpace(params.Explanation),
 		}
-		newSignals := make([]situations.Signal, 0, len(signals))
+		newSignals := make([]rez.SituationSignal, 0, len(signals))
 		for _, signal := range signals {
 			newSignals = append(newSignals, signal)
 		}
@@ -133,7 +133,7 @@ func (s *SituationService) observationGroupByTitle(ctx context.Context, situatio
 
 // createMemberships creates one membership per signal in the group. A signal belongs to at most one
 // situation; the unique index turns a second placement into a conflict.
-func (s *SituationService) createMemberships(ctx context.Context, situationID uuid.UUID, membership situationMembership, signals []situations.Signal, now time.Time) error {
+func (s *SituationService) createMemberships(ctx context.Context, situationID uuid.UUID, membership situationMembership, signals []rez.SituationSignal, now time.Time) error {
 	createMembers := s.db.Client(ctx).SituationSignal.MapCreateBulk(signals, func(c *ent.SituationSignalCreate, i int) {
 		c.SetSituationID(situationID).
 			SetObservationGroupID(membership.groupID).
@@ -177,7 +177,7 @@ func (s *SituationService) recomputeSituationEntities(ctx context.Context, situa
 	}
 	matching := make(map[uuid.UUID]bool)
 	if len(memberIDs) > 0 {
-		signals, loadErr := s.loadSignals(ctx, memberIDs, situations.LoadSignalsOptions{})
+		signals, loadErr := s.loadSignals(ctx, memberIDs, rez.LoadSituationSignalsOptions{})
 		if loadErr != nil {
 			return loadErr
 		}
@@ -216,7 +216,7 @@ func (s *SituationService) recomputeSituationEntities(ctx context.Context, situa
 // signalRuntimeEntities returns the runtime entities a signal is about: the entities its events observed,
 // and the endpoints of relationships they observed, resolved to the runtime structure level. Evidence that
 // an entity was deleted does not make a signal about it.
-func (s *SituationService) signalRuntimeEntities(ctx context.Context, signal situations.Signal) (mapset.Set[uuid.UUID], error) {
+func (s *SituationService) signalRuntimeEntities(ctx context.Context, signal rez.SituationSignal) (mapset.Set[uuid.UUID], error) {
 	runtime := mapset.NewSet[uuid.UUID]()
 	if len(signal.EventIDs) == 0 {
 		return runtime, nil

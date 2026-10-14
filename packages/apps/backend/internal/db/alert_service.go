@@ -35,8 +35,6 @@ type AlertService struct {
 	clock     rez.Clock
 }
 
-var _ situations.SituationSignalSource = (*AlertService)(nil)
-
 func NewAlertService(cfg rez.AlertsConfig, clock rez.Clock, db rez.Database, js rez.JobService, knowledge rez.KnowledgeGraphIngestionService, signals rez.SituationSignalService) (*AlertService, error) {
 	s := &AlertService{
 		cfg:       cfg,
@@ -213,13 +211,13 @@ func (s *AlertService) notifyUnclosedEpisodesChanged(ctx context.Context, defini
 	return nil
 }
 
-func (s *AlertService) SituationSignalKind() situations.SignalKind {
-	return situations.SignalKindAlertEpisode
+func (s *AlertService) SituationSignalKind() rez.SituationSignalKind {
+	return rez.SignalKindAlertEpisode
 }
 
 // LoadSignals describes the alert episodes with the given knowledge entities from their stored state, with
 // their definitions' baselines when asked for history.
-func (s *AlertService) LoadSignals(ctx context.Context, entityIDs []uuid.UUID, opts situations.LoadSignalsOptions) ([]situations.Signal, error) {
+func (s *AlertService) LoadSignals(ctx context.Context, entityIDs []uuid.UUID, opts rez.LoadSituationSignalsOptions) ([]rez.SituationSignal, error) {
 	if len(entityIDs) == 0 {
 		return nil, nil
 	}
@@ -251,7 +249,7 @@ func (s *AlertService) LoadSignals(ctx context.Context, entityIDs []uuid.UUID, o
 	}
 
 	asOf := s.clock.Now()
-	signals := make([]situations.Signal, 0, len(episodes))
+	signals := make([]rez.SituationSignal, 0, len(episodes))
 	for _, episode := range episodes {
 		definition := episode.Edges.AlertDefinition
 		windows := newAlertEpisodeState(episode.Edges.Instances)
@@ -282,9 +280,9 @@ func (s *AlertService) LoadSignals(ctx context.Context, entityIDs []uuid.UUID, o
 			return bytes.Compare(a[:], b[:])
 		})
 
-		signals = append(signals, situations.Signal{
+		signals = append(signals, rez.SituationSignal{
 			EntityID:             *episode.KnowledgeEntityID,
-			Kind:                 situations.SignalKindAlertEpisode,
+			Kind:                 rez.SignalKindAlertEpisode,
 			Title:                definition.Title,
 			SourceEntityID:       definition.KnowledgeEntityID,
 			SignalAttention:      attention,

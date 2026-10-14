@@ -8,6 +8,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 
+	rez "github.com/rezible/rezible"
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/schema/schematypes"
 	sitsig "github.com/rezible/rezible/ent/situationsignal"
@@ -52,14 +53,14 @@ type testRelationship struct {
 }
 
 func TestDecideCorrelation(t *testing.T) {
-	seeding := Signal{Severity: schematypes.SignalSeverityCritical, SignalAttention: ssa.LevelDefault}
-	info := Signal{Severity: schematypes.SignalSeverityInfo, SignalAttention: ssa.LevelDefault}
-	joinOnly := Signal{Severity: schematypes.SignalSeverityCritical, SignalAttention: ssa.LevelJoinOnly}
+	seeding := rez.SituationSignal{Severity: schematypes.SignalSeverityCritical, SignalAttention: ssa.LevelDefault}
+	info := rez.SituationSignal{Severity: schematypes.SignalSeverityInfo, SignalAttention: ssa.LevelDefault}
+	joinOnly := rez.SituationSignal{Severity: schematypes.SignalSeverityCritical, SignalAttention: ssa.LevelJoinOnly}
 	broadEntities := []string{"checkout", "payments", "search", "cart", "fleet"}
 
 	cases := []struct {
 		name          string
-		signal        Signal
+		signal        rez.SituationSignal
 		entities      []string
 		relationships []testRelationship
 		situations    []testSituation

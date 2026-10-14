@@ -18,7 +18,6 @@ import (
 	ke "github.com/rezible/rezible/ent/knowledgeevidence"
 	"github.com/rezible/rezible/ent/schema/schematypes"
 	rezai "github.com/rezible/rezible/pkg/ai"
-	"github.com/rezible/rezible/pkg/situations"
 	"github.com/rezible/rezible/test/mocks"
 )
 
@@ -26,7 +25,6 @@ type investigationHarness struct {
 	outputs    *mocks.MockInvestigationOutputService
 	knowledge  *mocks.MockKnowledgeGraphQueryService
 	situations *mocks.MockSituationService
-	signals    *testSignalLoader
 	invocation *investigationInvocation
 }
 
@@ -35,15 +33,13 @@ func (s *AiRuntimeSuite) newInvestigationHarness() *investigationHarness {
 		outputs:    mocks.NewMockInvestigationOutputService(s.T()),
 		knowledge:  mocks.NewMockKnowledgeGraphQueryService(s.T()),
 		situations: mocks.NewMockSituationService(s.T()),
-		signals:    &testSignalLoader{signals: make(map[uuid.UUID]situations.Signal)},
 	}
 	h.invocation = &investigationInvocation{
-		outputs:           h.outputs,
-		knowledge:         h.knowledge,
-		situationsService: h.situations,
-		signals:           h.signals,
-		investigationID:   uuid.New(),
-		turnID:            uuid.New(),
+		outputs:         h.outputs,
+		knowledge:       h.knowledge,
+		situations:      h.situations,
+		investigationID: uuid.New(),
+		turnID:          uuid.New(),
 	}
 	return h
 }
@@ -147,6 +143,7 @@ func (s *AiRuntimeSuite) TestInvestigationIntroduction() {
 	// Signals attached later started earlier, so the most recently attached are listed newest-started first.
 	group := &ent.SituationObservationGroup{}
 	var alertEntityIDs []uuid.UUID
+	signals := make(map[uuid.UUID]rez.SituationSignal)
 	for index := range 30 {
 		alertEntityID := uuid.New()
 		alertEntityIDs = append(alertEntityIDs, alertEntityID)
@@ -157,7 +154,7 @@ func (s *AiRuntimeSuite) TestInvestigationIntroduction() {
 			AttachedAt:        openedAt.Add(time.Duration(index) * time.Minute),
 		}
 		group.Edges.Signals = append(group.Edges.Signals, member)
-		h.signals.signals[member.KnowledgeEntityID] = situations.Signal{
+		signals[member.KnowledgeEntityID] = rez.SituationSignal{
 			EntityID:       member.KnowledgeEntityID,
 			Title:          fmt.Sprintf("CheckoutErrors %02d", index),
 			SourceEntityID: &alertEntityID,
@@ -169,6 +166,16 @@ func (s *AiRuntimeSuite) TestInvestigationIntroduction() {
 	sourceless := &ent.SituationSignal{ID: uuid.New(), KnowledgeEntityID: uuid.New(), AttachedAt: openedAt.Add(time.Hour)}
 	group.Edges.Signals = append(group.Edges.Signals, sourceless)
 	situation.Edges.ObservationGroups = []*ent.SituationObservationGroup{group}
+	var loaded []uuid.UUID
+	h.situations.EXPECT().LoadSignals(mock.Anything, mock.Anything, rez.LoadSituationSignalsOptions{}).
+		RunAndReturn(func(_ context.Context, entityIDs []uuid.UUID, _ rez.LoadSituationSignalsOptions) ([]rez.SituationSignal, error) {
+			loaded = append(loaded, entityIDs...)
+			listed := make([]rez.SituationSignal, len(entityIDs))
+			for index, entityID := range entityIDs {
+				listed[index] = signals[entityID]
+			}
+			return listed, nil
+		})
 	h.expectSituation(situation)
 	report := &ent.InvestigationReport{
 		ID:      uuid.New(),
@@ -184,8 +191,8 @@ func (s *AiRuntimeSuite) TestInvestigationIntroduction() {
 	s.Equal("Checkout is failing requests.", introduction.Situation.Summary)
 	s.Nil(introduction.Situation.ClosedAt)
 	s.Require().Len(introduction.Situation.Signals, introductionListLimit)
-	s.Len(h.signals.loaded, introductionListLimit, "only the listed signals are loaded")
-	s.NotContains(h.signals.loaded, sourceless.KnowledgeEntityID, "a signal without a source is left out")
+	s.Len(loaded, introductionListLimit, "only the listed signals are loaded")
+	s.NotContains(loaded, sourceless.KnowledgeEntityID, "a signal without a source is left out")
 	newest := introduction.Situation.Signals[0]
 	s.Equal(alertEntityIDs[5].String(), newest.Ref, "the most recently attached are listed newest-started first, by their source")
 	s.Equal("critical", newest.Severity)
@@ -467,18 +474,4 @@ func (s *AiRuntimeSuite) TestReadInvestigationOutput() {
 	s.Equal("hypothesis", hypothesisResult.Kind)
 	s.Require().NotNil(hypothesisResult.Hypothesis)
 	s.Equal("supported", hypothesisResult.Hypothesis.Status)
-}
-
-type testSignalLoader struct {
-	signals map[uuid.UUID]situations.Signal
-	loaded  []uuid.UUID
-}
-
-func (t *testSignalLoader) LoadSignals(_ context.Context, entityIDs []uuid.UUID, _ situations.LoadSignalsOptions) ([]situations.Signal, error) {
-	t.loaded = append(t.loaded, entityIDs...)
-	signals := make([]situations.Signal, len(entityIDs))
-	for index, entityID := range entityIDs {
-		signals[index] = t.signals[entityID]
-	}
-	return signals, nil
 }

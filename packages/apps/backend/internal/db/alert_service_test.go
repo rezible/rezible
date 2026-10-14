@@ -4,11 +4,12 @@ import (
 	"cmp"
 	"context"
 	"fmt"
-	"github.com/rezible/rezible/ent/schema/schematypes"
 	"math/rand/v2"
 	"slices"
 	"testing"
 	"time"
+
+	"github.com/rezible/rezible/ent/schema/schematypes"
 
 	"github.com/google/uuid"
 	"github.com/riverqueue/river"
@@ -25,7 +26,6 @@ import (
 	ssa "github.com/rezible/rezible/ent/situationsignalattention"
 	"github.com/rezible/rezible/pkg/jobs"
 	"github.com/rezible/rezible/pkg/projections"
-	"github.com/rezible/rezible/pkg/situations"
 	"github.com/rezible/rezible/test"
 	"github.com/rezible/rezible/test/mocks"
 )
@@ -427,12 +427,12 @@ func (s *AlertServiceSuite) TestLoadSignals() {
 	episodes := s.episodes(ctx, tdb)
 	s.Require().Len(episodes, 2)
 	entityIDs := []uuid.UUID{*episodes[0].KnowledgeEntityID, *episodes[1].KnowledgeEntityID}
-	signals, loadErr := h.alerts.LoadSignals(ctx, entityIDs, situations.LoadSignalsOptions{})
+	signals, loadErr := h.alerts.LoadSignals(ctx, entityIDs, rez.LoadSituationSignalsOptions{})
 	s.Require().NoError(loadErr)
 	s.Require().Len(signals, 2)
 
-	latency := signals[slices.IndexFunc(signals, func(signal situations.Signal) bool { return signal.Active })]
-	s.Equal(situations.SignalKindAlertEpisode, latency.Kind)
+	latency := signals[slices.IndexFunc(signals, func(signal rez.SituationSignal) bool { return signal.Active })]
+	s.Equal(rez.SignalKindAlertEpisode, latency.Kind)
 	s.Equal(schematypes.SignalSeverityCritical, latency.Severity)
 	s.Equal(ssa.LevelDefault, latency.SignalAttention)
 	s.Nil(latency.FinishedAt)
@@ -445,7 +445,7 @@ func (s *AlertServiceSuite) TestLoadSignals() {
 	s.Require().Len(latency.Alert.ActiveInstances, 1)
 	s.Equal("a", latency.Alert.ActiveInstances[0].Labels["pod"])
 
-	finished := signals[slices.IndexFunc(signals, func(signal situations.Signal) bool { return !signal.Active })]
+	finished := signals[slices.IndexFunc(signals, func(signal rez.SituationSignal) bool { return !signal.Active })]
 	s.Require().NotNil(finished.FinishedAt, "a resolved episode closes once the grace has passed")
 	s.Equal(1, finished.Revision)
 }
@@ -469,7 +469,7 @@ func (s *AlertServiceSuite) TestLoadSignalsBaseline() {
 
 	episodes := s.episodes(ctx, tdb)
 	s.Require().Len(episodes, 5)
-	signals, loadErr := h.alerts.LoadSignals(ctx, []uuid.UUID{*episodes[4].KnowledgeEntityID}, situations.LoadSignalsOptions{History: true})
+	signals, loadErr := h.alerts.LoadSignals(ctx, []uuid.UUID{*episodes[4].KnowledgeEntityID}, rez.LoadSituationSignalsOptions{History: true})
 	s.Require().NoError(loadErr)
 	s.Require().Len(signals, 1)
 
