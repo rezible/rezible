@@ -43,9 +43,9 @@ _report-deployment:
     fi
     url="$(cat {{ quote(deployments_url_file) }})"
     now="$(date +%s)"
-    report="$(printf '{"id":"sim-%s-%s","service":"checkout-api","environment":"development","status":"succeeded","version":"checkout-api@%s"}' "$now" "$RANDOM" "$now")"
+    report="$(printf '{"id":"sim-%s-%s","service":"checkout-api","environment":"production","status":"succeeded","version":"checkout-api@%s"}' "$now" "$RANDOM" "$now")"
     if curl --fail-with-body -sS --max-time 10 -X POST "$url" -H 'Content-Type: application/json' -d "$report"; then
-      echo "Reported a deployment of checkout-api@$now to development."
+      echo "Reported a deployment of checkout-api@$now to production."
     else
       echo "Could not report the deployment; switching mode anyway." >&2
     fi

@@ -26,7 +26,7 @@ The mode is kept in `devenv/simulations/.mode` (gitignored) and read every secon
 ## Deployments
 
 Setting the mode unhealthy first reports the deploy that precedes the failure: a `succeeded` deployment of
-`checkout-api` to `development`, with a fresh ID, a version such as `checkout-api@<unix time>` and no
+`checkout-api` to `production`, with a fresh ID, a version such as `checkout-api@<unix time>` and no
 repository. To receive it in Rezible:
 
 1. In settings, install the Webhook integration with the Deployments preset and generate its webhook URL.
@@ -43,7 +43,7 @@ Where to look:
   (add `| detected_level="error"` for failures), and Prometheus
   `sum by (job) (rate(http_server_request_duration_seconds_count[1m]))`.
 - Alertmanager at `http://localhost:$ALERTMANAGER_PORT`: `CheckoutHighErrorRate` with
-  `service="checkout-api"`, `env="development"`, `severity="critical"`.
+  `service="checkout-api"`, `env="production"`, `severity="critical"`.
 
 Files: `generator.ts` (the services), `prometheus-alerts.yaml` (the alert definition, mounted into
 `otel-lgtm`; its Prometheus configuration is `../configs/prometheus.yaml`).

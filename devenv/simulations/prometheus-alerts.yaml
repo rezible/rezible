@@ -10,7 +10,7 @@ groups:
         for: 1m
         labels:
           service: checkout-api
-          env: development
+          env: production
           severity: critical
         annotations:
           summary: Checkout is failing for {{ $value | humanizePercentage }} of requests

@@ -190,7 +190,7 @@ function resource(service: Service) {
   return {
     attributes: [
       stringAttribute("service.name", service.name),
-      stringAttribute("deployment.environment", "development"),
+      stringAttribute("deployment.environment", "production"),
     ],
   };
 }
