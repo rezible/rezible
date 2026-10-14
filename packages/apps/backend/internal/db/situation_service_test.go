@@ -90,7 +90,7 @@ func (s *SituationServiceSuite) newFixture(tdb rez.Database) *situationServiceFi
 	h.knowledge = knowledge
 	alerts, alertsErr := NewAlertService(rez.DefaultConfig().Alerts, h.clock, tdb, jobService, knowledge, NewSituationSignalService(jobService))
 	s.Require().NoError(alertsErr)
-	investigations := NewInvestigationService(tdb, agentService, jobService)
+	investigations := NewInvestigationService(tdb, agentService, jobService, analysisService)
 	situationService, situationServiceErr := NewSituationService(tdb, h.clock, jobService, investigations, analysisService, knowledgeQuery, nil, alerts)
 	s.Require().NoError(situationServiceErr)
 	h.alerts = alerts
@@ -483,6 +483,36 @@ func (s *SituationServiceSuite) TestListSituationsByStageAndMute() {
 	open := rez.ListSituationsParams{Stages: []rez.SituationStage{rez.SituationStageRaised, rez.SituationStageClosed}}
 	s.ElementsMatch([]uuid.UUID{ids["raised"], ids["closed"]}, list(open))
 	s.ElementsMatch([]uuid.UUID{ids["muted"]}, list(rez.ListSituationsParams{Muted: new(true)}))
+}
+
+func (s *SituationServiceSuite) TestInvestigationReadsItsSituation() {
+	ctx, tdb := s.SetupTestDatabase()
+	h := s.newFixture(tdb)
+	first := s.signal(ctx, tdb, h, "checkout-errors", 5)
+	second := s.signal(ctx, tdb, h, "checkout-latency", 6)
+	other := s.signal(ctx, tdb, h, "payment-errors", 5)
+	s.create(ctx, h, map[string][]uuid.UUID{"Payments": {other}}, other)
+	params := rez.CreateSituationParams{
+		Title:             "Checkout degradation",
+		SeedEntityID:      first,
+		ObservationGroups: []rez.SituationObservationGroupParams{{Title: "Checkout", SignalEntityIDs: []uuid.UUID{first, second}}},
+		Raise:             &rez.RaiseSituationParams{StartInvestigation: true},
+	}
+	created, createErr := h.situations.CreateSituation(ctx, params)
+	s.Require().NoError(createErr)
+	s.Require().NotNil(created.Edges.Investigation)
+
+	listParams := rez.ListSituationsParams{InvestigationID: created.Edges.Investigation.InvestigationID}
+	listed, listErr := h.situations.ListSituations(ctx, listParams)
+	s.Require().NoError(listErr)
+	s.Require().Len(listed.Data, 1)
+	s.Equal(created.ID, listed.Data[0].ID)
+
+	signals, signalsErr := h.situations.LoadSignals(ctx, []uuid.UUID{second, first}, situations.LoadSignalsOptions{})
+	s.Require().NoError(signalsErr)
+	s.Require().Len(signals, 2)
+	s.Equal(second, signals[0].EntityID, "signals keep the requested order")
+	s.Equal(first, signals[1].EntityID)
 }
 
 func (s *SituationServiceSuite) TestInvestigationAnalysisDeduplicatesSubjects() {

@@ -42,11 +42,11 @@ func (h *investigationsHandler) UpdateInvestigation(ctx context.Context, req *oa
 }
 
 func (h *investigationsHandler) GetInvestigationReport(ctx context.Context, req *oapi.GetInvestigationReportRequest) (*oapi.GetInvestigationReportResponse, error) {
-	params := rez.ReadInvestigationReportParams{
+	params := rez.GetInvestigationReportParams{
 		InvestigationID: req.Id,
 		Selection:       rez.InvestigationReportSelection(strings.TrimSpace(req.Selection)),
 	}
-	report, readErr := h.outputs.ReadInvestigationReport(ctx, params)
+	report, readErr := h.outputs.GetInvestigationReport(ctx, params)
 	if readErr != nil {
 		return nil, oapi.Error(ctx, "get investigation report", readErr)
 	} else if report == nil {

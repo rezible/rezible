@@ -5,12 +5,14 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"sort"
 	"strings"
 	"time"
 	"unicode/utf8"
 
+	mapset "github.com/deckarep/golang-set/v2"
 	"github.com/google/uuid"
 
 	rez "github.com/rezible/rezible"
@@ -27,6 +29,7 @@ import (
 	invor "github.com/rezible/rezible/ent/investigationoutputreference"
 	invr "github.com/rezible/rezible/ent/investigationreport"
 	invui "github.com/rezible/rezible/ent/investigationuserinput"
+	ke "github.com/rezible/rezible/ent/knowledgeevidence"
 )
 
 const investigationAnswerKeyPrefix = "answer:"
@@ -45,12 +48,16 @@ func (s *InvestigationService) PublishInvestigationReport(ctx context.Context, s
 	}
 	evidenceIDs := s.normalizeInvestigationEvidenceIDs(params.EvidenceIDs)
 
-	fpPayload := investigationReportFingerprintPayload{
-		Text:        text,
-		Summary:     summary,
-		EvidenceIDs: evidenceIDs,
+	fp := &investigationOutputFingerprintPayload{
+		OutputType: "report",
+		Identity:   invId.String(),
+		Payload: investigationReportFingerprintPayload{
+			Text:        text,
+			Summary:     summary,
+			EvidenceIDs: evidenceIDs,
+		},
 	}
-	fingerprint, fingerprintErr := s.investigationOutputFingerprint("report", invId.String(), fpPayload)
+	fingerprint, fingerprintErr := fp.Fingerprint()
 	if fingerprintErr != nil {
 		return nil, fmt.Errorf("fingerprint investigation report: %w", fingerprintErr)
 	}
@@ -86,8 +93,11 @@ func (s *InvestigationService) PublishInvestigationReport(ctx context.Context, s
 			return nil, fmt.Errorf("save investigation report publication: %w", saveErr)
 		}
 
-		owner := investigationReferenceOwner{reportID: &created.ID}
-		if referenceErr := s.saveInvestigationEvidenceIDs(ctx, owner, evidenceIDs); referenceErr != nil {
+		reportRef := investigationOutputRef{
+			analysisID: current.SystemAnalysisID,
+			reportID:   &created.ID,
+		}
+		if referenceErr := s.saveInvestigationEvidenceIDs(ctx, reportRef, evidenceIDs); referenceErr != nil {
 			return nil, referenceErr
 		}
 		return s.getInvestigationReport(ctx, created.ID)
@@ -117,14 +127,19 @@ func (s *InvestigationService) PublishInvestigationFinding(ctx context.Context, 
 	if strings.HasPrefix(params.Key, investigationAnswerKeyPrefix) {
 		return nil, fmt.Errorf("%w: finding keys beginning with %q are reserved", errs.ErrInvalidInput, investigationAnswerKeyPrefix)
 	}
-	fingerprintPayload := investigationFindingFingerprintPayload{
-		Key:               params.Key,
-		Title:             params.Title,
-		Body:              params.Body,
-		EvidenceIDs:       params.EvidenceIDs,
-		FindingReferences: s.fingerprintFindingReferences(params.FindingReferences),
+
+	fp := &investigationOutputFingerprintPayload{
+		OutputType: "finding",
+		Identity:   params.Key,
+		Payload: investigationFindingFingerprintPayload{
+			Key:               params.Key,
+			Title:             params.Title,
+			Body:              params.Body,
+			EvidenceIDs:       params.EvidenceIDs,
+			FindingReferences: s.fingerprintFindingReferences(params.FindingReferences),
+		},
 	}
-	fingerprint, fingerprintErr := s.investigationOutputFingerprint("finding", params.Key, fingerprintPayload)
+	fingerprint, fingerprintErr := fp.Fingerprint()
 	if fingerprintErr != nil {
 		return nil, fmt.Errorf("fingerprint investigation finding: %w", fingerprintErr)
 	}
@@ -159,8 +174,11 @@ func (s *InvestigationService) PublishInvestigationFinding(ctx context.Context, 
 			return nil, fmt.Errorf("save investigation finding version: %w", saveErr)
 		}
 
-		refOwner := investigationReferenceOwner{findingVersionID: &created.ID}
-		if refErr := s.saveInvestigationEvidenceIDs(ctx, refOwner, params.EvidenceIDs); refErr != nil {
+		findingRef := investigationOutputRef{
+			analysisID:       current.SystemAnalysisID,
+			findingVersionID: &created.ID,
+		}
+		if refErr := s.saveInvestigationEvidenceIDs(ctx, findingRef, params.EvidenceIDs); refErr != nil {
 			return nil, refErr
 		}
 		if linkErr := s.saveFindingVersionReferences(ctx, created.ID, params.FindingReferences); linkErr != nil {
@@ -195,18 +213,23 @@ func (s *InvestigationService) PublishInvestigationAnswer(ctx context.Context, s
 		if assignedErr != nil {
 			return nil, fmt.Errorf("load assigned investigation question: %w", assignedErr)
 		}
-		key := investigationAnswerKeyPrefix + userInput.ID.String()
-		fingerprintPayload := investigationAnswerFingerprintPayload{
-			Title:             params.Title,
-			Body:              params.Body,
-			EvidenceIDs:       params.EvidenceIDs,
-			FindingReferences: s.fingerprintFindingReferences(params.FindingReferences),
+
+		fp := &investigationOutputFingerprintPayload{
+			OutputType: "answer",
+			Identity:   userInput.ID.String(),
+			Payload: investigationAnswerFingerprintPayload{
+				Title:             params.Title,
+				Body:              params.Body,
+				EvidenceIDs:       params.EvidenceIDs,
+				FindingReferences: s.fingerprintFindingReferences(params.FindingReferences),
+			},
 		}
-		fingerprint, fingerprintErr := s.investigationOutputFingerprint("answer", userInput.ID.String(), fingerprintPayload)
+		fingerprint, fingerprintErr := fp.Fingerprint()
 		if fingerprintErr != nil {
 			return nil, fmt.Errorf("fingerprint investigation answer: %w", fingerprintErr)
 		}
 
+		key := investigationAnswerKeyPrefix + userInput.ID.String()
 		findingPred := invf.And(
 			invf.InvestigationID(current.ID),
 			invf.UserInputID(userInput.ID),
@@ -237,7 +260,12 @@ func (s *InvestigationService) PublishInvestigationAnswer(ctx context.Context, s
 		if saveErr != nil {
 			return nil, fmt.Errorf("save investigation answer version: %w", saveErr)
 		}
-		if referenceErr := s.saveInvestigationEvidenceIDs(ctx, investigationReferenceOwner{findingVersionID: &created.ID}, params.EvidenceIDs); referenceErr != nil {
+
+		findingRef := investigationOutputRef{
+			analysisID:       current.SystemAnalysisID,
+			findingVersionID: &created.ID,
+		}
+		if referenceErr := s.saveInvestigationEvidenceIDs(ctx, findingRef, params.EvidenceIDs); referenceErr != nil {
 			return nil, referenceErr
 		}
 		if linkErr := s.saveFindingVersionReferences(ctx, created.ID, params.FindingReferences); linkErr != nil {
@@ -262,14 +290,19 @@ func (s *InvestigationService) PublishInvestigationHypothesis(ctx context.Contex
 	default:
 		return nil, fmt.Errorf("%w: invalid hypothesis status %q", errs.ErrInvalidInput, params.Status)
 	}
-	fingerprintPayload := investigationHypothesisFingerprintPayload{
-		Key:           params.Key,
-		Title:         params.Title,
-		Justification: params.Justification,
-		Status:        params.Status,
-		EvidenceIDs:   params.EvidenceIDs,
+
+	fp := &investigationOutputFingerprintPayload{
+		OutputType: "hypothesis",
+		Identity:   params.Key,
+		Payload: investigationHypothesisFingerprintPayload{
+			Key:           params.Key,
+			Title:         params.Title,
+			Justification: params.Justification,
+			Status:        params.Status,
+			EvidenceIDs:   params.EvidenceIDs,
+		},
 	}
-	fingerprint, fingerprintErr := s.investigationOutputFingerprint("hypothesis", params.Key, fingerprintPayload)
+	fingerprint, fingerprintErr := fp.Fingerprint()
 	if fingerprintErr != nil {
 		return nil, fmt.Errorf("fingerprint investigation hypothesis: %w", fingerprintErr)
 	}
@@ -310,15 +343,19 @@ func (s *InvestigationService) PublishInvestigationHypothesis(ctx context.Contex
 			return nil, fmt.Errorf("save investigation hypothesis version: %w", saveErr)
 		}
 
-		refOwner := investigationReferenceOwner{hypothesisVersionID: &created.ID}
-		if refErr := s.saveInvestigationEvidenceIDs(ctx, refOwner, params.EvidenceIDs); refErr != nil {
+		hypRef := investigationOutputRef{
+			analysisID:          current.SystemAnalysisID,
+			hypothesisVersionID: &created.ID,
+		}
+		if refErr := s.saveInvestigationEvidenceIDs(ctx, hypRef, params.EvidenceIDs); refErr != nil {
 			return nil, refErr
 		}
 		return s.getHypothesisVersion(ctx, current.ID, created.ID)
 	})
 }
 
-func (s *InvestigationService) ReadInvestigationReport(ctx context.Context, params rez.ReadInvestigationReportParams) (*ent.InvestigationReport, error) {
+// GetInvestigationReport returns the newest report eligible for the selection, or nil when none is.
+func (s *InvestigationService) GetInvestigationReport(ctx context.Context, params rez.GetInvestigationReportParams) (*ent.InvestigationReport, error) {
 	selection := params.Selection
 	if selection == "" {
 		selection = rez.InvestigationReportSelectionLatest
@@ -361,6 +398,48 @@ func (s *InvestigationService) GetInvestigationHypothesisVersion(ctx context.Con
 		return nil, fmt.Errorf("%w: investigation and version IDs are required", errs.ErrInvalidInput)
 	}
 	return s.getHypothesisVersion(ctx, investigationID, versionID)
+}
+
+func (s *InvestigationService) GetInvestigationOutputVersion(ctx context.Context, investigationID, versionID uuid.UUID) (*rez.InvestigationOutputVersion, error) {
+	if investigationID == uuid.Nil || versionID == uuid.Nil {
+		return nil, fmt.Errorf("%w: investigation and version IDs are required", errs.ErrInvalidInput)
+	}
+	lookupReport := s.db.Client(ctx).InvestigationReport.Query().
+		Where(invr.ID(versionID), invr.InvestigationID(investigationID))
+	isReport, reportErr := lookupReport.Exist(ctx)
+	if reportErr != nil {
+		return nil, fmt.Errorf("check investigation report: %w", reportErr)
+	}
+	if isReport {
+		report, getErr := s.getInvestigationReport(ctx, versionID)
+		if getErr != nil {
+			return nil, getErr
+		}
+		return &rez.InvestigationOutputVersion{Report: report}, nil
+	}
+
+	lookupFinding := s.db.Client(ctx).InvestigationFindingVersion.Query().
+		Where(invfv.ID(versionID), invfv.HasFindingWith(invf.InvestigationID(investigationID)))
+	isFinding, findingErr := lookupFinding.Exist(ctx)
+	if findingErr != nil {
+		return nil, fmt.Errorf("check investigation finding version: %w", findingErr)
+	}
+	if isFinding {
+		finding, getErr := s.getFindingVersion(ctx, investigationID, versionID)
+		if getErr != nil {
+			return nil, getErr
+		}
+		return &rez.InvestigationOutputVersion{Finding: finding}, nil
+	}
+
+	hypothesis, hypothesisErr := s.getHypothesisVersion(ctx, investigationID, versionID)
+	if hypothesisErr != nil {
+		if errors.Is(hypothesisErr, errs.ErrNotFound) {
+			return nil, fmt.Errorf("%w: no output version %s in this investigation", errs.ErrNotFound, versionID)
+		}
+		return nil, hypothesisErr
+	}
+	return &rez.InvestigationOutputVersion{Hypothesis: hypothesis}, nil
 }
 
 func (s *InvestigationService) ListInvestigationFindings(ctx context.Context, params rez.ListInvestigationFindingsParams) (*ent.ListResult[ent.InvestigationFindingVersion], error) {
@@ -423,13 +502,9 @@ func (s *InvestigationService) investigationReportsQuery(ctx context.Context) *e
 }
 
 func (s *InvestigationService) getInvestigationReport(ctx context.Context, id uuid.UUID) (*ent.InvestigationReport, error) {
-	queryReport := s.investigationReportsQuery(ctx).
-		Where(invr.ID(id))
-	report, queryErr := queryReport.Only(ctx)
-	if queryErr != nil {
-		return nil, fmt.Errorf("load investigation report: %w", queryErr)
-	}
-	return report, nil
+	return s.investigationReportsQuery(ctx).
+		Where(invr.ID(id)).
+		Only(ctx)
 }
 
 // findingVersionsQuery loads finding versions with the edges rez.InvestigationOutputService documents.
@@ -537,10 +612,8 @@ func (s *InvestigationService) findOrCreateInvestigationFinding(ctx context.Cont
 
 		createFinding := tx.InvestigationFinding.Create().
 			SetInvestigationID(invId).
-			SetKey(key)
-		if inputID != nil {
-			createFinding.SetUserInputID(*inputID)
-		}
+			SetKey(key).
+			SetNillableUserInputID(inputID)
 		created, saveErr := createFinding.Save(ctx)
 		if saveErr != nil {
 			return nil, fmt.Errorf("create investigation finding identity: %w", saveErr)
@@ -616,15 +689,15 @@ func (s *InvestigationService) normalizeFindingVersionReferences(refs []rez.Inve
 }
 
 type (
-	findingVersionReferenceFingerprint struct {
-		VersionID uuid.UUID       `json:"version_id"`
-		Relation  invfvl.Relation `json:"relation"`
-	}
-
 	investigationReportFingerprintPayload struct {
 		Text        string      `json:"text"`
 		Summary     string      `json:"summary,omitempty"`
 		EvidenceIDs []uuid.UUID `json:"evidence_ids"`
+	}
+
+	findingVersionReferenceFingerprint struct {
+		VersionID uuid.UUID       `json:"version_id"`
+		Relation  invfvl.Relation `json:"relation"`
 	}
 
 	investigationFindingFingerprintPayload struct {
@@ -668,8 +741,8 @@ func (s *InvestigationService) fingerprintFindingReferences(references []rez.Inv
 	return fingerprints
 }
 
-func (s *InvestigationService) investigationOutputFingerprint(outputType, identity string, payload any) (string, error) {
-	encoded, marshalErr := json.Marshal(investigationOutputFingerprintPayload{outputType, identity, payload})
+func (p *investigationOutputFingerprintPayload) Fingerprint() (string, error) {
+	encoded, marshalErr := json.Marshal(p)
 	if marshalErr != nil {
 		return "", fmt.Errorf("marshal normalized payload: %w", marshalErr)
 	}
@@ -677,35 +750,65 @@ func (s *InvestigationService) investigationOutputFingerprint(outputType, identi
 	return hex.EncodeToString(digest[:]), nil
 }
 
-type investigationReferenceOwner struct {
+type investigationOutputRef struct {
+	analysisID uuid.UUID
+
 	reportID            *uuid.UUID
 	findingVersionID    *uuid.UUID
 	hypothesisVersionID *uuid.UUID
 }
 
-func (s *InvestigationService) saveInvestigationEvidenceIDs(ctx context.Context, owner investigationReferenceOwner, ids []uuid.UUID) error {
-	createFn := func(c *ent.InvestigationOutputReferenceCreate, i int) {
-		if owner.reportID != nil {
-			c.SetReportID(*owner.reportID)
-		}
-		if owner.findingVersionID != nil {
-			c.SetFindingVersionID(*owner.findingVersionID)
-		}
-		if owner.hypothesisVersionID != nil {
-			c.SetHypothesisVersionID(*owner.hypothesisVersionID)
-		}
-		c.SetKnowledgeEvidenceID(ids[i])
+// saveInvestigationEvidenceIDs saves the citations after checking each is evidence, and includes each evidence's subject in the investigation's analysis.
+func (s *InvestigationService) saveInvestigationEvidenceIDs(ctx context.Context, ref investigationOutputRef, ids []uuid.UUID) error {
+	if len(ids) == 0 {
+		return nil
 	}
-	return s.db.Client(ctx).InvestigationOutputReference.MapCreateBulk(ids, createFn).Exec(ctx)
+	queryEvidence := s.db.Client(ctx).KnowledgeEvidence.Query().
+		Where(ke.IDIn(ids...)).
+		WithSubjectAlias()
+	evidence, evidenceErr := queryEvidence.All(ctx)
+	if evidenceErr != nil {
+		return fmt.Errorf("load cited evidence: %w", evidenceErr)
+	}
+	include := rez.IncludeSystemAnalysisSubjectsParams{AnalysisId: ref.analysisID}
+	cited := mapset.NewSet[uuid.UUID]()
+	for _, item := range evidence {
+		cited.Add(item.ID)
+		alias := item.Edges.SubjectAlias
+		if alias.EntityID != nil {
+			include.EntityIds = append(include.EntityIds, *alias.EntityID)
+		}
+		if alias.RelationshipID != nil {
+			include.RelationshipIds = append(include.RelationshipIds, *alias.RelationshipID)
+		}
+	}
+	for _, id := range ids {
+		if !cited.Contains(id) {
+			return fmt.Errorf("%w: %s is not knowledge evidence", errs.ErrInvalidInput, id)
+		}
+	}
+	if includeErr := s.analyses.IncludeSystemAnalysisSubjects(ctx, include); includeErr != nil {
+		return fmt.Errorf("include cited subjects in the analysis: %w", includeErr)
+	}
+
+	return s.db.Client(ctx).InvestigationOutputReference.
+		MapCreateBulk(ids, func(c *ent.InvestigationOutputReferenceCreate, i int) {
+			c.SetNillableReportID(ref.reportID)
+			c.SetNillableFindingVersionID(ref.findingVersionID)
+			c.SetNillableHypothesisVersionID(ref.hypothesisVersionID)
+			c.SetKnowledgeEvidenceID(ids[i])
+		}).
+		Exec(ctx)
 }
 
 func (s *InvestigationService) saveFindingVersionReferences(ctx context.Context, sourceID uuid.UUID, refs []rez.InvestigationFindingVersionReference) error {
-	createFn := func(c *ent.InvestigationFindingVersionLinkCreate, i int) {
-		c.SetSourceVersionID(sourceID)
-		c.SetTargetVersionID(refs[i].VersionID)
-		c.SetRelation(refs[i].Relation)
-	}
-	return s.db.Client(ctx).InvestigationFindingVersionLink.MapCreateBulk(refs, createFn).Exec(ctx)
+	return s.db.Client(ctx).InvestigationFindingVersionLink.
+		MapCreateBulk(refs, func(c *ent.InvestigationFindingVersionLinkCreate, i int) {
+			c.SetSourceVersionID(sourceID)
+			c.SetTargetVersionID(refs[i].VersionID)
+			c.SetRelation(refs[i].Relation)
+		}).
+		Exec(ctx)
 }
 
 func (s *InvestigationService) latestInvestigationFindingVersions(ctx context.Context, invId uuid.UUID) ([]*ent.InvestigationFindingVersion, error) {
@@ -793,9 +896,6 @@ func (s *InvestigationService) outputPageBounds(total, page, pageSize int) (int,
 	if start >= total {
 		return total, total
 	}
-	end := start + pageSize
-	if end > total {
-		end = total
-	}
+	end := min(start+pageSize, total)
 	return start, end
 }

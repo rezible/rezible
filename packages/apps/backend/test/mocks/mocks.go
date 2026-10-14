@@ -1972,74 +1972,6 @@ func (_c *MockSystemAnalysisService_ListSystemAnalysisEntries_Call) RunAndReturn
 	return _c
 }
 
-// ListSystemAnalysisEntrySubjects provides a mock function for the type MockSystemAnalysisService
-func (_mock *MockSystemAnalysisService) ListSystemAnalysisEntrySubjects(context1 context.Context, listSystemAnalysisEntrySubjectsParams rez.ListSystemAnalysisEntrySubjectsParams) (*ent.ListResult[ent.SystemAnalysisEntrySubject], error) {
-	ret := _mock.Called(context1, listSystemAnalysisEntrySubjectsParams)
-
-	if len(ret) == 0 {
-		panic("no return value specified for ListSystemAnalysisEntrySubjects")
-	}
-
-	var r0 *ent.ListResult[ent.SystemAnalysisEntrySubject]
-	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.ListSystemAnalysisEntrySubjectsParams) (*ent.ListResult[ent.SystemAnalysisEntrySubject], error)); ok {
-		return returnFunc(context1, listSystemAnalysisEntrySubjectsParams)
-	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.ListSystemAnalysisEntrySubjectsParams) *ent.ListResult[ent.SystemAnalysisEntrySubject]); ok {
-		r0 = returnFunc(context1, listSystemAnalysisEntrySubjectsParams)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*ent.ListResult[ent.SystemAnalysisEntrySubject])
-		}
-	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, rez.ListSystemAnalysisEntrySubjectsParams) error); ok {
-		r1 = returnFunc(context1, listSystemAnalysisEntrySubjectsParams)
-	} else {
-		r1 = ret.Error(1)
-	}
-	return r0, r1
-}
-
-// MockSystemAnalysisService_ListSystemAnalysisEntrySubjects_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ListSystemAnalysisEntrySubjects'
-type MockSystemAnalysisService_ListSystemAnalysisEntrySubjects_Call struct {
-	*mock.Call
-}
-
-// ListSystemAnalysisEntrySubjects is a helper method to define mock.On call
-//   - context1 context.Context
-//   - listSystemAnalysisEntrySubjectsParams rez.ListSystemAnalysisEntrySubjectsParams
-func (_e *MockSystemAnalysisService_Expecter) ListSystemAnalysisEntrySubjects(context1 interface{}, listSystemAnalysisEntrySubjectsParams interface{}) *MockSystemAnalysisService_ListSystemAnalysisEntrySubjects_Call {
-	return &MockSystemAnalysisService_ListSystemAnalysisEntrySubjects_Call{Call: _e.mock.On("ListSystemAnalysisEntrySubjects", context1, listSystemAnalysisEntrySubjectsParams)}
-}
-
-func (_c *MockSystemAnalysisService_ListSystemAnalysisEntrySubjects_Call) Run(run func(context1 context.Context, listSystemAnalysisEntrySubjectsParams rez.ListSystemAnalysisEntrySubjectsParams)) *MockSystemAnalysisService_ListSystemAnalysisEntrySubjects_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 context.Context
-		if args[0] != nil {
-			arg0 = args[0].(context.Context)
-		}
-		var arg1 rez.ListSystemAnalysisEntrySubjectsParams
-		if args[1] != nil {
-			arg1 = args[1].(rez.ListSystemAnalysisEntrySubjectsParams)
-		}
-		run(
-			arg0,
-			arg1,
-		)
-	})
-	return _c
-}
-
-func (_c *MockSystemAnalysisService_ListSystemAnalysisEntrySubjects_Call) Return(listResult *ent.ListResult[ent.SystemAnalysisEntrySubject], err error) *MockSystemAnalysisService_ListSystemAnalysisEntrySubjects_Call {
-	_c.Call.Return(listResult, err)
-	return _c
-}
-
-func (_c *MockSystemAnalysisService_ListSystemAnalysisEntrySubjects_Call) RunAndReturn(run func(context1 context.Context, listSystemAnalysisEntrySubjectsParams rez.ListSystemAnalysisEntrySubjectsParams) (*ent.ListResult[ent.SystemAnalysisEntrySubject], error)) *MockSystemAnalysisService_ListSystemAnalysisEntrySubjects_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
 // ListSystemAnalysisRelationships provides a mock function for the type MockSystemAnalysisService
 func (_mock *MockSystemAnalysisService) ListSystemAnalysisRelationships(context1 context.Context, listSystemAnalysisRelationshipsParams rez.ListSystemAnalysisRelationshipsParams) (*ent.ListResult[ent.SystemAnalysisRelationship], error) {
 	ret := _mock.Called(context1, listSystemAnalysisRelationshipsParams)
@@ -6358,6 +6290,755 @@ func (_c *MockAlertService_SetAlertSituationSignalAttention_Call) Return(alertDe
 }
 
 func (_c *MockAlertService_SetAlertSituationSignalAttention_Call) RunAndReturn(run func(ctx context.Context, id uuid.UUID, level situationsignalattention.Level) (*ent.AlertDefinition, error)) *MockAlertService_SetAlertSituationSignalAttention_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// NewMockInvestigationOutputService creates a new instance of MockInvestigationOutputService. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
+// The first argument is typically a *testing.T value.
+func NewMockInvestigationOutputService(t interface {
+	mock.TestingT
+	Cleanup(func())
+}) *MockInvestigationOutputService {
+	mock := &MockInvestigationOutputService{}
+	mock.Mock.Test(t)
+
+	t.Cleanup(func() { mock.AssertExpectations(t) })
+
+	return mock
+}
+
+// MockInvestigationOutputService is an autogenerated mock type for the InvestigationOutputService type
+type MockInvestigationOutputService struct {
+	mock.Mock
+}
+
+type MockInvestigationOutputService_Expecter struct {
+	mock *mock.Mock
+}
+
+func (_m *MockInvestigationOutputService) EXPECT() *MockInvestigationOutputService_Expecter {
+	return &MockInvestigationOutputService_Expecter{mock: &_m.Mock}
+}
+
+// GetInvestigationFindingVersion provides a mock function for the type MockInvestigationOutputService
+func (_mock *MockInvestigationOutputService) GetInvestigationFindingVersion(ctx context.Context, investigationID uuid.UUID, versionID uuid.UUID) (*ent.InvestigationFindingVersion, error) {
+	ret := _mock.Called(ctx, investigationID, versionID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetInvestigationFindingVersion")
+	}
+
+	var r0 *ent.InvestigationFindingVersion
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, uuid.UUID) (*ent.InvestigationFindingVersion, error)); ok {
+		return returnFunc(ctx, investigationID, versionID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, uuid.UUID) *ent.InvestigationFindingVersion); ok {
+		r0 = returnFunc(ctx, investigationID, versionID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*ent.InvestigationFindingVersion)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, investigationID, versionID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockInvestigationOutputService_GetInvestigationFindingVersion_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetInvestigationFindingVersion'
+type MockInvestigationOutputService_GetInvestigationFindingVersion_Call struct {
+	*mock.Call
+}
+
+// GetInvestigationFindingVersion is a helper method to define mock.On call
+//   - ctx context.Context
+//   - investigationID uuid.UUID
+//   - versionID uuid.UUID
+func (_e *MockInvestigationOutputService_Expecter) GetInvestigationFindingVersion(ctx interface{}, investigationID interface{}, versionID interface{}) *MockInvestigationOutputService_GetInvestigationFindingVersion_Call {
+	return &MockInvestigationOutputService_GetInvestigationFindingVersion_Call{Call: _e.mock.On("GetInvestigationFindingVersion", ctx, investigationID, versionID)}
+}
+
+func (_c *MockInvestigationOutputService_GetInvestigationFindingVersion_Call) Run(run func(ctx context.Context, investigationID uuid.UUID, versionID uuid.UUID)) *MockInvestigationOutputService_GetInvestigationFindingVersion_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		var arg2 uuid.UUID
+		if args[2] != nil {
+			arg2 = args[2].(uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockInvestigationOutputService_GetInvestigationFindingVersion_Call) Return(investigationFindingVersion *ent.InvestigationFindingVersion, err error) *MockInvestigationOutputService_GetInvestigationFindingVersion_Call {
+	_c.Call.Return(investigationFindingVersion, err)
+	return _c
+}
+
+func (_c *MockInvestigationOutputService_GetInvestigationFindingVersion_Call) RunAndReturn(run func(ctx context.Context, investigationID uuid.UUID, versionID uuid.UUID) (*ent.InvestigationFindingVersion, error)) *MockInvestigationOutputService_GetInvestigationFindingVersion_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetInvestigationHypothesisVersion provides a mock function for the type MockInvestigationOutputService
+func (_mock *MockInvestigationOutputService) GetInvestigationHypothesisVersion(ctx context.Context, investigationID uuid.UUID, versionID uuid.UUID) (*ent.InvestigationHypothesisVersion, error) {
+	ret := _mock.Called(ctx, investigationID, versionID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetInvestigationHypothesisVersion")
+	}
+
+	var r0 *ent.InvestigationHypothesisVersion
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, uuid.UUID) (*ent.InvestigationHypothesisVersion, error)); ok {
+		return returnFunc(ctx, investigationID, versionID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, uuid.UUID) *ent.InvestigationHypothesisVersion); ok {
+		r0 = returnFunc(ctx, investigationID, versionID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*ent.InvestigationHypothesisVersion)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, investigationID, versionID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockInvestigationOutputService_GetInvestigationHypothesisVersion_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetInvestigationHypothesisVersion'
+type MockInvestigationOutputService_GetInvestigationHypothesisVersion_Call struct {
+	*mock.Call
+}
+
+// GetInvestigationHypothesisVersion is a helper method to define mock.On call
+//   - ctx context.Context
+//   - investigationID uuid.UUID
+//   - versionID uuid.UUID
+func (_e *MockInvestigationOutputService_Expecter) GetInvestigationHypothesisVersion(ctx interface{}, investigationID interface{}, versionID interface{}) *MockInvestigationOutputService_GetInvestigationHypothesisVersion_Call {
+	return &MockInvestigationOutputService_GetInvestigationHypothesisVersion_Call{Call: _e.mock.On("GetInvestigationHypothesisVersion", ctx, investigationID, versionID)}
+}
+
+func (_c *MockInvestigationOutputService_GetInvestigationHypothesisVersion_Call) Run(run func(ctx context.Context, investigationID uuid.UUID, versionID uuid.UUID)) *MockInvestigationOutputService_GetInvestigationHypothesisVersion_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		var arg2 uuid.UUID
+		if args[2] != nil {
+			arg2 = args[2].(uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockInvestigationOutputService_GetInvestigationHypothesisVersion_Call) Return(investigationHypothesisVersion *ent.InvestigationHypothesisVersion, err error) *MockInvestigationOutputService_GetInvestigationHypothesisVersion_Call {
+	_c.Call.Return(investigationHypothesisVersion, err)
+	return _c
+}
+
+func (_c *MockInvestigationOutputService_GetInvestigationHypothesisVersion_Call) RunAndReturn(run func(ctx context.Context, investigationID uuid.UUID, versionID uuid.UUID) (*ent.InvestigationHypothesisVersion, error)) *MockInvestigationOutputService_GetInvestigationHypothesisVersion_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetInvestigationOutputVersion provides a mock function for the type MockInvestigationOutputService
+func (_mock *MockInvestigationOutputService) GetInvestigationOutputVersion(ctx context.Context, investigationID uuid.UUID, versionID uuid.UUID) (*rez.InvestigationOutputVersion, error) {
+	ret := _mock.Called(ctx, investigationID, versionID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetInvestigationOutputVersion")
+	}
+
+	var r0 *rez.InvestigationOutputVersion
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, uuid.UUID) (*rez.InvestigationOutputVersion, error)); ok {
+		return returnFunc(ctx, investigationID, versionID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, uuid.UUID) *rez.InvestigationOutputVersion); ok {
+		r0 = returnFunc(ctx, investigationID, versionID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*rez.InvestigationOutputVersion)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, investigationID, versionID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockInvestigationOutputService_GetInvestigationOutputVersion_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetInvestigationOutputVersion'
+type MockInvestigationOutputService_GetInvestigationOutputVersion_Call struct {
+	*mock.Call
+}
+
+// GetInvestigationOutputVersion is a helper method to define mock.On call
+//   - ctx context.Context
+//   - investigationID uuid.UUID
+//   - versionID uuid.UUID
+func (_e *MockInvestigationOutputService_Expecter) GetInvestigationOutputVersion(ctx interface{}, investigationID interface{}, versionID interface{}) *MockInvestigationOutputService_GetInvestigationOutputVersion_Call {
+	return &MockInvestigationOutputService_GetInvestigationOutputVersion_Call{Call: _e.mock.On("GetInvestigationOutputVersion", ctx, investigationID, versionID)}
+}
+
+func (_c *MockInvestigationOutputService_GetInvestigationOutputVersion_Call) Run(run func(ctx context.Context, investigationID uuid.UUID, versionID uuid.UUID)) *MockInvestigationOutputService_GetInvestigationOutputVersion_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		var arg2 uuid.UUID
+		if args[2] != nil {
+			arg2 = args[2].(uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockInvestigationOutputService_GetInvestigationOutputVersion_Call) Return(investigationOutputVersion *rez.InvestigationOutputVersion, err error) *MockInvestigationOutputService_GetInvestigationOutputVersion_Call {
+	_c.Call.Return(investigationOutputVersion, err)
+	return _c
+}
+
+func (_c *MockInvestigationOutputService_GetInvestigationOutputVersion_Call) RunAndReturn(run func(ctx context.Context, investigationID uuid.UUID, versionID uuid.UUID) (*rez.InvestigationOutputVersion, error)) *MockInvestigationOutputService_GetInvestigationOutputVersion_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetInvestigationReport provides a mock function for the type MockInvestigationOutputService
+func (_mock *MockInvestigationOutputService) GetInvestigationReport(context1 context.Context, getInvestigationReportParams rez.GetInvestigationReportParams) (*ent.InvestigationReport, error) {
+	ret := _mock.Called(context1, getInvestigationReportParams)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetInvestigationReport")
+	}
+
+	var r0 *ent.InvestigationReport
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.GetInvestigationReportParams) (*ent.InvestigationReport, error)); ok {
+		return returnFunc(context1, getInvestigationReportParams)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.GetInvestigationReportParams) *ent.InvestigationReport); ok {
+		r0 = returnFunc(context1, getInvestigationReportParams)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*ent.InvestigationReport)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, rez.GetInvestigationReportParams) error); ok {
+		r1 = returnFunc(context1, getInvestigationReportParams)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockInvestigationOutputService_GetInvestigationReport_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetInvestigationReport'
+type MockInvestigationOutputService_GetInvestigationReport_Call struct {
+	*mock.Call
+}
+
+// GetInvestigationReport is a helper method to define mock.On call
+//   - context1 context.Context
+//   - getInvestigationReportParams rez.GetInvestigationReportParams
+func (_e *MockInvestigationOutputService_Expecter) GetInvestigationReport(context1 interface{}, getInvestigationReportParams interface{}) *MockInvestigationOutputService_GetInvestigationReport_Call {
+	return &MockInvestigationOutputService_GetInvestigationReport_Call{Call: _e.mock.On("GetInvestigationReport", context1, getInvestigationReportParams)}
+}
+
+func (_c *MockInvestigationOutputService_GetInvestigationReport_Call) Run(run func(context1 context.Context, getInvestigationReportParams rez.GetInvestigationReportParams)) *MockInvestigationOutputService_GetInvestigationReport_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 rez.GetInvestigationReportParams
+		if args[1] != nil {
+			arg1 = args[1].(rez.GetInvestigationReportParams)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockInvestigationOutputService_GetInvestigationReport_Call) Return(investigationReport *ent.InvestigationReport, err error) *MockInvestigationOutputService_GetInvestigationReport_Call {
+	_c.Call.Return(investigationReport, err)
+	return _c
+}
+
+func (_c *MockInvestigationOutputService_GetInvestigationReport_Call) RunAndReturn(run func(context1 context.Context, getInvestigationReportParams rez.GetInvestigationReportParams) (*ent.InvestigationReport, error)) *MockInvestigationOutputService_GetInvestigationReport_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// ListInvestigationFindings provides a mock function for the type MockInvestigationOutputService
+func (_mock *MockInvestigationOutputService) ListInvestigationFindings(context1 context.Context, listInvestigationFindingsParams rez.ListInvestigationFindingsParams) (*ent.ListResult[ent.InvestigationFindingVersion], error) {
+	ret := _mock.Called(context1, listInvestigationFindingsParams)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ListInvestigationFindings")
+	}
+
+	var r0 *ent.ListResult[ent.InvestigationFindingVersion]
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.ListInvestigationFindingsParams) (*ent.ListResult[ent.InvestigationFindingVersion], error)); ok {
+		return returnFunc(context1, listInvestigationFindingsParams)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.ListInvestigationFindingsParams) *ent.ListResult[ent.InvestigationFindingVersion]); ok {
+		r0 = returnFunc(context1, listInvestigationFindingsParams)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*ent.ListResult[ent.InvestigationFindingVersion])
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, rez.ListInvestigationFindingsParams) error); ok {
+		r1 = returnFunc(context1, listInvestigationFindingsParams)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockInvestigationOutputService_ListInvestigationFindings_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ListInvestigationFindings'
+type MockInvestigationOutputService_ListInvestigationFindings_Call struct {
+	*mock.Call
+}
+
+// ListInvestigationFindings is a helper method to define mock.On call
+//   - context1 context.Context
+//   - listInvestigationFindingsParams rez.ListInvestigationFindingsParams
+func (_e *MockInvestigationOutputService_Expecter) ListInvestigationFindings(context1 interface{}, listInvestigationFindingsParams interface{}) *MockInvestigationOutputService_ListInvestigationFindings_Call {
+	return &MockInvestigationOutputService_ListInvestigationFindings_Call{Call: _e.mock.On("ListInvestigationFindings", context1, listInvestigationFindingsParams)}
+}
+
+func (_c *MockInvestigationOutputService_ListInvestigationFindings_Call) Run(run func(context1 context.Context, listInvestigationFindingsParams rez.ListInvestigationFindingsParams)) *MockInvestigationOutputService_ListInvestigationFindings_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 rez.ListInvestigationFindingsParams
+		if args[1] != nil {
+			arg1 = args[1].(rez.ListInvestigationFindingsParams)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockInvestigationOutputService_ListInvestigationFindings_Call) Return(listResult *ent.ListResult[ent.InvestigationFindingVersion], err error) *MockInvestigationOutputService_ListInvestigationFindings_Call {
+	_c.Call.Return(listResult, err)
+	return _c
+}
+
+func (_c *MockInvestigationOutputService_ListInvestigationFindings_Call) RunAndReturn(run func(context1 context.Context, listInvestigationFindingsParams rez.ListInvestigationFindingsParams) (*ent.ListResult[ent.InvestigationFindingVersion], error)) *MockInvestigationOutputService_ListInvestigationFindings_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// ListInvestigationHypotheses provides a mock function for the type MockInvestigationOutputService
+func (_mock *MockInvestigationOutputService) ListInvestigationHypotheses(context1 context.Context, listInvestigationHypothesesParams rez.ListInvestigationHypothesesParams) (*ent.ListResult[ent.InvestigationHypothesisVersion], error) {
+	ret := _mock.Called(context1, listInvestigationHypothesesParams)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ListInvestigationHypotheses")
+	}
+
+	var r0 *ent.ListResult[ent.InvestigationHypothesisVersion]
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.ListInvestigationHypothesesParams) (*ent.ListResult[ent.InvestigationHypothesisVersion], error)); ok {
+		return returnFunc(context1, listInvestigationHypothesesParams)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.ListInvestigationHypothesesParams) *ent.ListResult[ent.InvestigationHypothesisVersion]); ok {
+		r0 = returnFunc(context1, listInvestigationHypothesesParams)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*ent.ListResult[ent.InvestigationHypothesisVersion])
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, rez.ListInvestigationHypothesesParams) error); ok {
+		r1 = returnFunc(context1, listInvestigationHypothesesParams)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockInvestigationOutputService_ListInvestigationHypotheses_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ListInvestigationHypotheses'
+type MockInvestigationOutputService_ListInvestigationHypotheses_Call struct {
+	*mock.Call
+}
+
+// ListInvestigationHypotheses is a helper method to define mock.On call
+//   - context1 context.Context
+//   - listInvestigationHypothesesParams rez.ListInvestigationHypothesesParams
+func (_e *MockInvestigationOutputService_Expecter) ListInvestigationHypotheses(context1 interface{}, listInvestigationHypothesesParams interface{}) *MockInvestigationOutputService_ListInvestigationHypotheses_Call {
+	return &MockInvestigationOutputService_ListInvestigationHypotheses_Call{Call: _e.mock.On("ListInvestigationHypotheses", context1, listInvestigationHypothesesParams)}
+}
+
+func (_c *MockInvestigationOutputService_ListInvestigationHypotheses_Call) Run(run func(context1 context.Context, listInvestigationHypothesesParams rez.ListInvestigationHypothesesParams)) *MockInvestigationOutputService_ListInvestigationHypotheses_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 rez.ListInvestigationHypothesesParams
+		if args[1] != nil {
+			arg1 = args[1].(rez.ListInvestigationHypothesesParams)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockInvestigationOutputService_ListInvestigationHypotheses_Call) Return(listResult *ent.ListResult[ent.InvestigationHypothesisVersion], err error) *MockInvestigationOutputService_ListInvestigationHypotheses_Call {
+	_c.Call.Return(listResult, err)
+	return _c
+}
+
+func (_c *MockInvestigationOutputService_ListInvestigationHypotheses_Call) RunAndReturn(run func(context1 context.Context, listInvestigationHypothesesParams rez.ListInvestigationHypothesesParams) (*ent.ListResult[ent.InvestigationHypothesisVersion], error)) *MockInvestigationOutputService_ListInvestigationHypotheses_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// PublishInvestigationAnswer provides a mock function for the type MockInvestigationOutputService
+func (_mock *MockInvestigationOutputService) PublishInvestigationAnswer(context1 context.Context, investigationPublicationScope rez.InvestigationPublicationScope, publishInvestigationAnswerParams rez.PublishInvestigationAnswerParams) (*ent.InvestigationFindingVersion, error) {
+	ret := _mock.Called(context1, investigationPublicationScope, publishInvestigationAnswerParams)
+
+	if len(ret) == 0 {
+		panic("no return value specified for PublishInvestigationAnswer")
+	}
+
+	var r0 *ent.InvestigationFindingVersion
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.InvestigationPublicationScope, rez.PublishInvestigationAnswerParams) (*ent.InvestigationFindingVersion, error)); ok {
+		return returnFunc(context1, investigationPublicationScope, publishInvestigationAnswerParams)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.InvestigationPublicationScope, rez.PublishInvestigationAnswerParams) *ent.InvestigationFindingVersion); ok {
+		r0 = returnFunc(context1, investigationPublicationScope, publishInvestigationAnswerParams)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*ent.InvestigationFindingVersion)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, rez.InvestigationPublicationScope, rez.PublishInvestigationAnswerParams) error); ok {
+		r1 = returnFunc(context1, investigationPublicationScope, publishInvestigationAnswerParams)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockInvestigationOutputService_PublishInvestigationAnswer_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'PublishInvestigationAnswer'
+type MockInvestigationOutputService_PublishInvestigationAnswer_Call struct {
+	*mock.Call
+}
+
+// PublishInvestigationAnswer is a helper method to define mock.On call
+//   - context1 context.Context
+//   - investigationPublicationScope rez.InvestigationPublicationScope
+//   - publishInvestigationAnswerParams rez.PublishInvestigationAnswerParams
+func (_e *MockInvestigationOutputService_Expecter) PublishInvestigationAnswer(context1 interface{}, investigationPublicationScope interface{}, publishInvestigationAnswerParams interface{}) *MockInvestigationOutputService_PublishInvestigationAnswer_Call {
+	return &MockInvestigationOutputService_PublishInvestigationAnswer_Call{Call: _e.mock.On("PublishInvestigationAnswer", context1, investigationPublicationScope, publishInvestigationAnswerParams)}
+}
+
+func (_c *MockInvestigationOutputService_PublishInvestigationAnswer_Call) Run(run func(context1 context.Context, investigationPublicationScope rez.InvestigationPublicationScope, publishInvestigationAnswerParams rez.PublishInvestigationAnswerParams)) *MockInvestigationOutputService_PublishInvestigationAnswer_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 rez.InvestigationPublicationScope
+		if args[1] != nil {
+			arg1 = args[1].(rez.InvestigationPublicationScope)
+		}
+		var arg2 rez.PublishInvestigationAnswerParams
+		if args[2] != nil {
+			arg2 = args[2].(rez.PublishInvestigationAnswerParams)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockInvestigationOutputService_PublishInvestigationAnswer_Call) Return(investigationFindingVersion *ent.InvestigationFindingVersion, err error) *MockInvestigationOutputService_PublishInvestigationAnswer_Call {
+	_c.Call.Return(investigationFindingVersion, err)
+	return _c
+}
+
+func (_c *MockInvestigationOutputService_PublishInvestigationAnswer_Call) RunAndReturn(run func(context1 context.Context, investigationPublicationScope rez.InvestigationPublicationScope, publishInvestigationAnswerParams rez.PublishInvestigationAnswerParams) (*ent.InvestigationFindingVersion, error)) *MockInvestigationOutputService_PublishInvestigationAnswer_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// PublishInvestigationFinding provides a mock function for the type MockInvestigationOutputService
+func (_mock *MockInvestigationOutputService) PublishInvestigationFinding(context1 context.Context, investigationPublicationScope rez.InvestigationPublicationScope, publishInvestigationFindingParams rez.PublishInvestigationFindingParams) (*ent.InvestigationFindingVersion, error) {
+	ret := _mock.Called(context1, investigationPublicationScope, publishInvestigationFindingParams)
+
+	if len(ret) == 0 {
+		panic("no return value specified for PublishInvestigationFinding")
+	}
+
+	var r0 *ent.InvestigationFindingVersion
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.InvestigationPublicationScope, rez.PublishInvestigationFindingParams) (*ent.InvestigationFindingVersion, error)); ok {
+		return returnFunc(context1, investigationPublicationScope, publishInvestigationFindingParams)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.InvestigationPublicationScope, rez.PublishInvestigationFindingParams) *ent.InvestigationFindingVersion); ok {
+		r0 = returnFunc(context1, investigationPublicationScope, publishInvestigationFindingParams)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*ent.InvestigationFindingVersion)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, rez.InvestigationPublicationScope, rez.PublishInvestigationFindingParams) error); ok {
+		r1 = returnFunc(context1, investigationPublicationScope, publishInvestigationFindingParams)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockInvestigationOutputService_PublishInvestigationFinding_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'PublishInvestigationFinding'
+type MockInvestigationOutputService_PublishInvestigationFinding_Call struct {
+	*mock.Call
+}
+
+// PublishInvestigationFinding is a helper method to define mock.On call
+//   - context1 context.Context
+//   - investigationPublicationScope rez.InvestigationPublicationScope
+//   - publishInvestigationFindingParams rez.PublishInvestigationFindingParams
+func (_e *MockInvestigationOutputService_Expecter) PublishInvestigationFinding(context1 interface{}, investigationPublicationScope interface{}, publishInvestigationFindingParams interface{}) *MockInvestigationOutputService_PublishInvestigationFinding_Call {
+	return &MockInvestigationOutputService_PublishInvestigationFinding_Call{Call: _e.mock.On("PublishInvestigationFinding", context1, investigationPublicationScope, publishInvestigationFindingParams)}
+}
+
+func (_c *MockInvestigationOutputService_PublishInvestigationFinding_Call) Run(run func(context1 context.Context, investigationPublicationScope rez.InvestigationPublicationScope, publishInvestigationFindingParams rez.PublishInvestigationFindingParams)) *MockInvestigationOutputService_PublishInvestigationFinding_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 rez.InvestigationPublicationScope
+		if args[1] != nil {
+			arg1 = args[1].(rez.InvestigationPublicationScope)
+		}
+		var arg2 rez.PublishInvestigationFindingParams
+		if args[2] != nil {
+			arg2 = args[2].(rez.PublishInvestigationFindingParams)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockInvestigationOutputService_PublishInvestigationFinding_Call) Return(investigationFindingVersion *ent.InvestigationFindingVersion, err error) *MockInvestigationOutputService_PublishInvestigationFinding_Call {
+	_c.Call.Return(investigationFindingVersion, err)
+	return _c
+}
+
+func (_c *MockInvestigationOutputService_PublishInvestigationFinding_Call) RunAndReturn(run func(context1 context.Context, investigationPublicationScope rez.InvestigationPublicationScope, publishInvestigationFindingParams rez.PublishInvestigationFindingParams) (*ent.InvestigationFindingVersion, error)) *MockInvestigationOutputService_PublishInvestigationFinding_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// PublishInvestigationHypothesis provides a mock function for the type MockInvestigationOutputService
+func (_mock *MockInvestigationOutputService) PublishInvestigationHypothesis(context1 context.Context, investigationPublicationScope rez.InvestigationPublicationScope, publishInvestigationHypothesisParams rez.PublishInvestigationHypothesisParams) (*ent.InvestigationHypothesisVersion, error) {
+	ret := _mock.Called(context1, investigationPublicationScope, publishInvestigationHypothesisParams)
+
+	if len(ret) == 0 {
+		panic("no return value specified for PublishInvestigationHypothesis")
+	}
+
+	var r0 *ent.InvestigationHypothesisVersion
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.InvestigationPublicationScope, rez.PublishInvestigationHypothesisParams) (*ent.InvestigationHypothesisVersion, error)); ok {
+		return returnFunc(context1, investigationPublicationScope, publishInvestigationHypothesisParams)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.InvestigationPublicationScope, rez.PublishInvestigationHypothesisParams) *ent.InvestigationHypothesisVersion); ok {
+		r0 = returnFunc(context1, investigationPublicationScope, publishInvestigationHypothesisParams)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*ent.InvestigationHypothesisVersion)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, rez.InvestigationPublicationScope, rez.PublishInvestigationHypothesisParams) error); ok {
+		r1 = returnFunc(context1, investigationPublicationScope, publishInvestigationHypothesisParams)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockInvestigationOutputService_PublishInvestigationHypothesis_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'PublishInvestigationHypothesis'
+type MockInvestigationOutputService_PublishInvestigationHypothesis_Call struct {
+	*mock.Call
+}
+
+// PublishInvestigationHypothesis is a helper method to define mock.On call
+//   - context1 context.Context
+//   - investigationPublicationScope rez.InvestigationPublicationScope
+//   - publishInvestigationHypothesisParams rez.PublishInvestigationHypothesisParams
+func (_e *MockInvestigationOutputService_Expecter) PublishInvestigationHypothesis(context1 interface{}, investigationPublicationScope interface{}, publishInvestigationHypothesisParams interface{}) *MockInvestigationOutputService_PublishInvestigationHypothesis_Call {
+	return &MockInvestigationOutputService_PublishInvestigationHypothesis_Call{Call: _e.mock.On("PublishInvestigationHypothesis", context1, investigationPublicationScope, publishInvestigationHypothesisParams)}
+}
+
+func (_c *MockInvestigationOutputService_PublishInvestigationHypothesis_Call) Run(run func(context1 context.Context, investigationPublicationScope rez.InvestigationPublicationScope, publishInvestigationHypothesisParams rez.PublishInvestigationHypothesisParams)) *MockInvestigationOutputService_PublishInvestigationHypothesis_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 rez.InvestigationPublicationScope
+		if args[1] != nil {
+			arg1 = args[1].(rez.InvestigationPublicationScope)
+		}
+		var arg2 rez.PublishInvestigationHypothesisParams
+		if args[2] != nil {
+			arg2 = args[2].(rez.PublishInvestigationHypothesisParams)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockInvestigationOutputService_PublishInvestigationHypothesis_Call) Return(investigationHypothesisVersion *ent.InvestigationHypothesisVersion, err error) *MockInvestigationOutputService_PublishInvestigationHypothesis_Call {
+	_c.Call.Return(investigationHypothesisVersion, err)
+	return _c
+}
+
+func (_c *MockInvestigationOutputService_PublishInvestigationHypothesis_Call) RunAndReturn(run func(context1 context.Context, investigationPublicationScope rez.InvestigationPublicationScope, publishInvestigationHypothesisParams rez.PublishInvestigationHypothesisParams) (*ent.InvestigationHypothesisVersion, error)) *MockInvestigationOutputService_PublishInvestigationHypothesis_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// PublishInvestigationReport provides a mock function for the type MockInvestigationOutputService
+func (_mock *MockInvestigationOutputService) PublishInvestigationReport(context1 context.Context, investigationPublicationScope rez.InvestigationPublicationScope, publishInvestigationReportParams rez.PublishInvestigationReportParams) (*ent.InvestigationReport, error) {
+	ret := _mock.Called(context1, investigationPublicationScope, publishInvestigationReportParams)
+
+	if len(ret) == 0 {
+		panic("no return value specified for PublishInvestigationReport")
+	}
+
+	var r0 *ent.InvestigationReport
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.InvestigationPublicationScope, rez.PublishInvestigationReportParams) (*ent.InvestigationReport, error)); ok {
+		return returnFunc(context1, investigationPublicationScope, publishInvestigationReportParams)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.InvestigationPublicationScope, rez.PublishInvestigationReportParams) *ent.InvestigationReport); ok {
+		r0 = returnFunc(context1, investigationPublicationScope, publishInvestigationReportParams)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*ent.InvestigationReport)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, rez.InvestigationPublicationScope, rez.PublishInvestigationReportParams) error); ok {
+		r1 = returnFunc(context1, investigationPublicationScope, publishInvestigationReportParams)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockInvestigationOutputService_PublishInvestigationReport_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'PublishInvestigationReport'
+type MockInvestigationOutputService_PublishInvestigationReport_Call struct {
+	*mock.Call
+}
+
+// PublishInvestigationReport is a helper method to define mock.On call
+//   - context1 context.Context
+//   - investigationPublicationScope rez.InvestigationPublicationScope
+//   - publishInvestigationReportParams rez.PublishInvestigationReportParams
+func (_e *MockInvestigationOutputService_Expecter) PublishInvestigationReport(context1 interface{}, investigationPublicationScope interface{}, publishInvestigationReportParams interface{}) *MockInvestigationOutputService_PublishInvestigationReport_Call {
+	return &MockInvestigationOutputService_PublishInvestigationReport_Call{Call: _e.mock.On("PublishInvestigationReport", context1, investigationPublicationScope, publishInvestigationReportParams)}
+}
+
+func (_c *MockInvestigationOutputService_PublishInvestigationReport_Call) Run(run func(context1 context.Context, investigationPublicationScope rez.InvestigationPublicationScope, publishInvestigationReportParams rez.PublishInvestigationReportParams)) *MockInvestigationOutputService_PublishInvestigationReport_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 rez.InvestigationPublicationScope
+		if args[1] != nil {
+			arg1 = args[1].(rez.InvestigationPublicationScope)
+		}
+		var arg2 rez.PublishInvestigationReportParams
+		if args[2] != nil {
+			arg2 = args[2].(rez.PublishInvestigationReportParams)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockInvestigationOutputService_PublishInvestigationReport_Call) Return(investigationReport *ent.InvestigationReport, err error) *MockInvestigationOutputService_PublishInvestigationReport_Call {
+	_c.Call.Return(investigationReport, err)
+	return _c
+}
+
+func (_c *MockInvestigationOutputService_PublishInvestigationReport_Call) RunAndReturn(run func(context1 context.Context, investigationPublicationScope rez.InvestigationPublicationScope, publishInvestigationReportParams rez.PublishInvestigationReportParams) (*ent.InvestigationReport, error)) *MockInvestigationOutputService_PublishInvestigationReport_Call {
 	_c.Call.Return(run)
 	return _c
 }

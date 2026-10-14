@@ -19,7 +19,7 @@ func defineTool[D ToolDefinition[I, O], I any, O any](name, description string) 
 	return D{name: name, description: description}
 }
 
-type AnalysisToolResult struct {
+type TextToolResult struct {
 	Text     string `json:"text"`
 	Page     int    `json:"page"`
 	PageSize int    `json:"page_size"`
@@ -28,66 +28,42 @@ type AnalysisToolResult struct {
 }
 
 type (
-	ListAnalysisSubjectsArgs struct {
-		Kind     string `json:"kind" jsonschema:"description=Membership collection to list,enum=entity,enum=relationship"`
+	ReadEntityArgs struct {
+		Ref      string `json:"ref" jsonschema:"description=Opaque entity ref from the introduction or a tool result"`
+		Page     int    `json:"page" jsonschema:"description=One-based relationship page number; zero uses the default,minimum=0"`
+		PageSize int    `json:"page_size" jsonschema:"description=Relationship page size from 1 to 50; zero uses the default,minimum=0,maximum=50"`
+	}
+)
+
+var ReadEntityTool = defineTool[ToolDefinition[ReadEntityArgs, *TextToolResult]](
+	"read_entity",
+	"Read a knowledge entity: its state, linking attributes, aliases and one page of its relationships with their latest evidence, newest first. Relationships to events are counted; list_entity_evidence covers them.",
+)
+
+type (
+	ListEntityEvidenceArgs struct {
+		Ref      string `json:"ref" jsonschema:"description=Opaque entity ref"`
+		Start    string `json:"start,omitempty" jsonschema:"description=Optional RFC 3339 earliest effective time"`
+		End      string `json:"end,omitempty" jsonschema:"description=Optional RFC 3339 latest effective time"`
 		Page     int    `json:"page" jsonschema:"description=One-based page number; zero uses the default,minimum=0"`
 		PageSize int    `json:"page_size" jsonschema:"description=Page size from 1 to 50; zero uses the default,minimum=0,maximum=50"`
 	}
 )
 
-var ListAnalysisSubjectsTool = defineTool[ToolDefinition[ListAnalysisSubjectsArgs, *AnalysisToolResult]](
-	"list_analysis_subjects",
-	"List entities or relationships included in this investigation's supplied analysis. Results include opaque refs and are paginated.",
+var ListEntityEvidenceTool = defineTool[ToolDefinition[ListEntityEvidenceArgs, *TextToolResult]](
+	"list_entity_evidence",
+	"List what Rezible has recorded about an entity and its relationships, one line per subject, assertion and source with a count, newest first.",
 )
 
 type (
-	AnalysisPageArgs struct {
-		Page     int `json:"page" jsonschema:"description=One-based page number; zero uses the default,minimum=0"`
-		PageSize int `json:"page_size" jsonschema:"description=Page size from 1 to 50; zero uses the default,minimum=0,maximum=50"`
+	ReadEvidenceArgs struct {
+		Ref string `json:"ref" jsonschema:"description=Opaque knowledge-evidence ref"`
 	}
 )
 
-var ListAnalysisEntriesTool = defineTool[ToolDefinition[AnalysisPageArgs, *AnalysisToolResult]](
-	"list_analysis_entries",
-	"List observation and context entries in the supplied analysis. Results include entry refs and titles, not full bodies.",
-)
-
-type (
-	InspectAnalysisSubjectArgs struct {
-		Kind     string `json:"kind" jsonschema:"description=Knowledge subject record type,enum=entity,enum=relationship"`
-		Ref      string `json:"ref" jsonschema:"description=Opaque entity or relationship ref returned by an analysis tool"`
-		Page     int    `json:"page" jsonschema:"description=One-based linked-entry page number; zero uses the default,minimum=0"`
-		PageSize int    `json:"page_size" jsonschema:"description=Linked-entry page size from 1 to 50; zero uses the default,minimum=0,maximum=50"`
-	}
-)
-
-var InspectAnalysisSubjectTool = defineTool[ToolDefinition[InspectAnalysisSubjectArgs, *AnalysisToolResult]](
-	"inspect_analysis_subject",
-	"Inspect an included entity or relationship by its ref and list linked observation and context entries. This does not search graph neighbors.",
-)
-
-type (
-	ReadAnalysisEntryArgs struct {
-		Ref      string `json:"ref" jsonschema:"description=Opaque entry ref returned by an analysis tool"`
-		Page     int    `json:"page" jsonschema:"description=One-based attachment page number; zero uses the default,minimum=0"`
-		PageSize int    `json:"page_size" jsonschema:"description=Attachment page size from 1 to 50; zero uses the default,minimum=0,maximum=50"`
-	}
-)
-
-var ReadAnalysisEntryTool = defineTool[ToolDefinition[ReadAnalysisEntryArgs, *AnalysisToolResult]](
-	"read_analysis_entry",
-	"Read an observation or context entry by its ref and page through its attached evidence and subjects.",
-)
-
-type (
-	ReadAnalysisEvidenceArgs struct {
-		Ref string `json:"ref" jsonschema:"description=Opaque knowledge-evidence ref returned by an analysis tool"`
-	}
-)
-
-var ReadAnalysisEvidenceTool = defineTool[ToolDefinition[ReadAnalysisEvidenceArgs, *AnalysisToolResult]](
-	"read_analysis_evidence",
-	"Read knowledge evidence attached to an observation or context entry in this analysis. Returns the evidence ref used for publication citations.",
+var ReadEvidenceTool = defineTool[ToolDefinition[ReadEvidenceArgs, *TextToolResult]](
+	"read_evidence",
+	"Read one piece of knowledge evidence: its subject, its source and the state it stated. Its ref is what publications cite.",
 )
 
 type (
@@ -98,6 +74,7 @@ type (
 	}
 
 	InvestigationReportToolResult struct {
+		VersionRef   string    `json:"version_ref"`
 		Text         string    `json:"text"`
 		Summary      string    `json:"summary"`
 		EvidenceRefs []string  `json:"evidence_refs"`
@@ -110,17 +87,6 @@ type (
 var PublishInvestigationReportTool = defineTool[ToolDefinition[PublishInvestigationReportToolInput, *InvestigationReportToolResult]](
 	"publish_investigation_report",
 	"Publish an investigation report. text is Markdown. summary is one or two plain sentences stating the current conclusion and its certainty. Cite knowledge-evidence refs; empty evidence_refs is valid.",
-)
-
-type (
-	ReadInvestigationReportToolInput struct {
-		Selection string `json:"selection,omitempty" jsonschema:"description=Report to read; omitted means latest,enum=latest,enum=completed"`
-	}
-)
-
-var ReadInvestigationReportTool = defineTool[ToolDefinition[ReadInvestigationReportToolInput, *InvestigationReportToolResult]](
-	"read_investigation_report",
-	"Read the latest eligible report or latest completed report. Returns null when none is eligible.",
 )
 
 type (
@@ -177,32 +143,6 @@ var PublishInvestigationAnswerTool = defineTool[ToolDefinition[PublishInvestigat
 )
 
 type (
-	ReadInvestigationFindingToolInput struct {
-		VersionRef string `json:"version_ref" jsonschema:"description=Exact finding-version ref returned by a tool"`
-	}
-)
-
-var ReadInvestigationFindingTool = defineTool[ToolDefinition[ReadInvestigationFindingToolInput, *InvestigationFindingVersionToolResult]](
-	"read_investigation_finding",
-	"Read an exact finding version, including historical or failed-turn output.",
-)
-
-type (
-	InvestigationOutputPage[T any] struct {
-		Items    []T  `json:"items"`
-		Page     int  `json:"page"`
-		PageSize int  `json:"page_size"`
-		Total    int  `json:"total"`
-		HasMore  bool `json:"has_more"`
-	}
-)
-
-var ListInvestigationFindingsTool = defineTool[ToolDefinition[AnalysisPageArgs, *InvestigationOutputPage[InvestigationFindingVersionToolResult]]](
-	"list_investigation_findings",
-	"List the latest eligible finding and answer versions, ordered by producing turn.",
-)
-
-type (
 	PublishInvestigationHypothesisToolInput struct {
 		Key           string   `json:"key"`
 		Title         string   `json:"title"`
@@ -230,17 +170,20 @@ var PublishInvestigationHypothesisTool = defineTool[ToolDefinition[PublishInvest
 )
 
 type (
-	ReadInvestigationHypothesisToolInput struct {
-		VersionRef string `json:"version_ref" jsonschema:"description=Exact hypothesis-version ref returned by a tool"`
+	ReadInvestigationOutputToolInput struct {
+		VersionRef string `json:"version_ref" jsonschema:"description=Exact report, finding or hypothesis version ref"`
+	}
+
+	// InvestigationOutputToolResult sets the output named by Kind: report, finding or hypothesis.
+	InvestigationOutputToolResult struct {
+		Kind       string                                    `json:"kind"`
+		Report     *InvestigationReportToolResult            `json:"report,omitempty"`
+		Finding    *InvestigationFindingVersionToolResult    `json:"finding,omitempty"`
+		Hypothesis *InvestigationHypothesisVersionToolResult `json:"hypothesis,omitempty"`
 	}
 )
 
-var ReadInvestigationHypothesisTool = defineTool[ToolDefinition[ReadInvestigationHypothesisToolInput, *InvestigationHypothesisVersionToolResult]](
-	"read_investigation_hypothesis",
-	"Read an exact hypothesis version, including historical or failed-turn output.",
-)
-
-var ListInvestigationHypothesesTool = defineTool[ToolDefinition[AnalysisPageArgs, *InvestigationOutputPage[InvestigationHypothesisVersionToolResult]]](
-	"list_investigation_hypotheses",
-	"List the latest eligible hypothesis versions, ordered by producing turn.",
+var ReadInvestigationOutputTool = defineTool[ToolDefinition[ReadInvestigationOutputToolInput, *InvestigationOutputToolResult]](
+	"read_investigation_output",
+	"Read one exact report, finding or hypothesis version of this investigation, including historical or failed-turn output.",
 )

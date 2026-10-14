@@ -19,6 +19,7 @@ import (
 	sit "github.com/rezible/rezible/ent/situation"
 	sitact "github.com/rezible/rezible/ent/situationaction"
 	sha "github.com/rezible/rezible/ent/situationhazardassessment"
+	siti "github.com/rezible/rezible/ent/situationinvestigation"
 	sitjudg "github.com/rezible/rezible/ent/situationjudgment"
 	sitog "github.com/rezible/rezible/ent/situationobservationgroup"
 	sitsig "github.com/rezible/rezible/ent/situationsignal"
@@ -138,6 +139,9 @@ func (s *SituationService) ListSituations(ctx context.Context, params rez.ListSi
 	if params.OpenedAfter != nil {
 		query.Where(sit.OpenedAtGTE(*params.OpenedAfter))
 	}
+	if params.InvestigationID != uuid.Nil {
+		query.Where(sit.HasInvestigationWith(siti.InvestigationID(params.InvestigationID)))
+	}
 	return ent.DoListQuery[ent.Situation, *ent.SituationQuery](ctx, query, params.ListParams)
 }
 
@@ -253,6 +257,19 @@ func (s *SituationService) normalizeObservationGroups(input []rez.SituationObser
 	return groups, signalIDs, nil
 }
 
+// LoadSignals loads signals of any kind from their sources, in the order of entityIDs.
+func (s *SituationService) LoadSignals(ctx context.Context, entityIDs []uuid.UUID, opts situations.LoadSignalsOptions) ([]situations.Signal, error) {
+	loaded, loadErr := s.loadSignals(ctx, entityIDs, opts)
+	if loadErr != nil {
+		return nil, loadErr
+	}
+	signals := make([]situations.Signal, len(entityIDs))
+	for i, entityID := range entityIDs {
+		signals[i] = loaded[entityID]
+	}
+	return signals, nil
+}
+
 // loadSignals loads each signal through the source for its knowledge entity's kind. An unknown entity or
 // a kind without a source is invalid input.
 func (s *SituationService) loadSignals(ctx context.Context, entityIDs []uuid.UUID, opts situations.LoadSignalsOptions) (map[uuid.UUID]situations.Signal, error) {
@@ -263,11 +280,13 @@ func (s *SituationService) loadSignals(ctx context.Context, entityIDs []uuid.UUI
 	if queryErr != nil {
 		return nil, fmt.Errorf("query signal entities: %w", queryErr)
 	}
+
 	idsByKind := make(map[situations.SignalKind][]uuid.UUID)
 	for _, entity := range entities {
 		kind := situations.SignalKind(entity.Kind)
 		idsByKind[kind] = append(idsByKind[kind], entity.ID)
 	}
+
 	signals := make(map[uuid.UUID]situations.Signal, len(entityIDs))
 	for kind, ids := range idsByKind {
 		source, supported := s.sources[kind]

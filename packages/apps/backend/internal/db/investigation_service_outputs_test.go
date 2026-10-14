@@ -21,9 +21,12 @@ import (
 	"github.com/rezible/rezible/ent/investigationuserinput"
 	kne "github.com/rezible/rezible/ent/knowledgeentity"
 	kev "github.com/rezible/rezible/ent/knowledgeevidence"
+	knr "github.com/rezible/rezible/ent/knowledgerelationship"
 	ksa "github.com/rezible/rezible/ent/knowledgesubjectalias"
 	"github.com/rezible/rezible/ent/schema/schematypes"
+	sae "github.com/rezible/rezible/ent/systemanalysisentity"
 	"github.com/rezible/rezible/ent/systemanalysisentry"
+	sar "github.com/rezible/rezible/ent/systemanalysisrelationship"
 	rezai "github.com/rezible/rezible/pkg/ai"
 	"github.com/rezible/rezible/pkg/errs"
 	"github.com/rezible/rezible/pkg/execution"
@@ -200,15 +203,15 @@ func (s *InvestigationServiceSuite) TestInvestigationReportPublicationSelectionA
 	s.Require().NoError(repeatBErr)
 	s.Equal(reportB.ID, repeatedB.ID)
 	s.Equal(agentturn.StatusRunning, repeatedB.Edges.AgentTurn.Status)
-	latest, latestErr := service.ReadInvestigationReport(ctx, rez.ReadInvestigationReportParams{InvestigationID: investigation.ID})
+	latest, latestErr := service.GetInvestigationReport(ctx, rez.GetInvestigationReportParams{InvestigationID: investigation.ID})
 	s.Require().NoError(latestErr)
 	s.Equal(reportB.ID, latest.ID)
-	completedParams := rez.ReadInvestigationReportParams{
+	completedParams := rez.GetInvestigationReportParams{
 		InvestigationID: investigation.ID,
 		Selection:       rez.InvestigationReportSelectionCompleted,
 	}
 
-	completed, completedErr := service.ReadInvestigationReport(ctx, completedParams)
+	completed, completedErr := service.GetInvestigationReport(ctx, completedParams)
 	s.Require().NoError(completedErr)
 	s.Equal(reportA.ID, completed.ID)
 
@@ -224,7 +227,7 @@ func (s *InvestigationServiceSuite) TestInvestigationReportPublicationSelectionA
 	_, automaticRetryErr := worker.saveInvocationResult(ctx, makeAgentTurnJob(secondTurn, 1), nil, nil, rezai.TurnUsage{}, errors.New("temporary model failure"))
 	s.Require().NoError(automaticRetryErr)
 
-	queued, queuedErr := service.ReadInvestigationReport(ctx, rez.ReadInvestigationReportParams{InvestigationID: investigation.ID})
+	queued, queuedErr := service.GetInvestigationReport(ctx, rez.GetInvestigationReportParams{InvestigationID: investigation.ID})
 	s.Require().NoError(queuedErr)
 	s.Equal(reportA.ID, queued.ID)
 	secondTurnRunning := tdb.Client(ctx).AgentTurn.UpdateOneID(secondTurn.ID).
@@ -232,7 +235,7 @@ func (s *InvestigationServiceSuite) TestInvestigationReportPublicationSelectionA
 	secondTurnRunningErr := secondTurnRunning.Exec(ctx)
 	s.Require().NoError(secondTurnRunningErr)
 
-	automaticRetryVisible, automaticRetryVisibleErr := service.ReadInvestigationReport(ctx, rez.ReadInvestigationReportParams{InvestigationID: investigation.ID})
+	automaticRetryVisible, automaticRetryVisibleErr := service.GetInvestigationReport(ctx, rez.GetInvestigationReportParams{InvestigationID: investigation.ID})
 	s.Require().NoError(automaticRetryVisibleErr)
 	s.Equal(reportB.ID, automaticRetryVisible.ID)
 
@@ -266,7 +269,7 @@ func (s *InvestigationServiceSuite) TestInvestigationReportPublicationSelectionA
 	retriedTurn, retryErr := sessionService.RetryAgentTurn(ctx, secondTurn.ID)
 	s.Require().NoError(retryErr)
 	s.Equal(agentturn.StatusQueued, retriedTurn.Status)
-	queuedAgain, queuedAgainErr := service.ReadInvestigationReport(ctx, rez.ReadInvestigationReportParams{InvestigationID: investigation.ID})
+	queuedAgain, queuedAgainErr := service.GetInvestigationReport(ctx, rez.GetInvestigationReportParams{InvestigationID: investigation.ID})
 	s.Require().NoError(queuedAgainErr)
 	s.Equal(reportA.ID, queuedAgain.ID)
 	startRetriedTurn := tdb.Client(ctx).AgentTurn.UpdateOneID(secondTurn.ID).
@@ -274,7 +277,7 @@ func (s *InvestigationServiceSuite) TestInvestigationReportPublicationSelectionA
 	startRetriedTurnErr := startRetriedTurn.Exec(ctx)
 	s.Require().NoError(startRetriedTurnErr)
 
-	sharedRetryVisible, sharedRetryVisibleErr := service.ReadInvestigationReport(ctx, rez.ReadInvestigationReportParams{InvestigationID: investigation.ID})
+	sharedRetryVisible, sharedRetryVisibleErr := service.GetInvestigationReport(ctx, rez.GetInvestigationReportParams{InvestigationID: investigation.ID})
 	s.Require().NoError(sharedRetryVisibleErr)
 	s.Equal(reportB.ID, sharedRetryVisible.ID)
 
@@ -283,12 +286,12 @@ func (s *InvestigationServiceSuite) TestInvestigationReportPublicationSelectionA
 	secondTurnCompletedErr := secondTurnCompleted.Exec(ctx)
 	s.Require().NoError(secondTurnCompletedErr)
 
-	completedBParams := rez.ReadInvestigationReportParams{
+	completedBParams := rez.GetInvestigationReportParams{
 		InvestigationID: investigation.ID,
 		Selection:       rez.InvestigationReportSelectionCompleted,
 	}
 
-	completedB, completedBErr := service.ReadInvestigationReport(ctx, completedBParams)
+	completedB, completedBErr := service.GetInvestigationReport(ctx, completedBParams)
 	s.Require().NoError(completedBErr)
 	s.Equal(reportB.ID, completedB.ID)
 	thirdTurn := s.createTurn(ctx, tdb, investigation.AgentSessionID, 3, agentturn.StatusRunning)
@@ -328,7 +331,7 @@ func (s *InvestigationServiceSuite) TestInvestigationReportSummary() {
 	s.Require().NoError(firstErr)
 	s.Equal("Redis pressure is the strongest signal; the cause is unconfirmed.", first.Summary)
 
-	read, readErr := service.ReadInvestigationReport(ctx, rez.ReadInvestigationReportParams{InvestigationID: investigation.ID})
+	read, readErr := service.GetInvestigationReport(ctx, rez.GetInvestigationReportParams{InvestigationID: investigation.ID})
 	s.Require().NoError(readErr)
 	s.Equal(first.ID, read.ID)
 	s.Equal(first.Summary, read.Summary)
@@ -340,6 +343,17 @@ func (s *InvestigationServiceSuite) TestInvestigationReportSummary() {
 	s.Require().NoError(revisedErr)
 	s.NotEqual(first.ID, revised.ID)
 	s.Equal("The deployment is the likely cause.", revised.Summary)
+
+	// An exact version stays readable after revision, but only through its own investigation.
+	firstVersion, firstVersionErr := service.GetInvestigationOutputVersion(ctx, investigation.ID, first.ID)
+	s.Require().NoError(firstVersionErr)
+	s.Require().NotNil(firstVersion.Report)
+	s.Nil(firstVersion.Finding)
+	s.Nil(firstVersion.Hypothesis)
+	s.Equal(first.Summary, firstVersion.Report.Summary)
+
+	_, wrongParentErr := service.GetInvestigationOutputVersion(ctx, uuid.New(), first.ID)
+	s.ErrorIs(wrongParentErr, errs.ErrNotFound)
 }
 
 func (s *InvestigationServiceSuite) TestInvestigationAnswerOwnershipAndRevisions() {
@@ -518,7 +532,8 @@ func (s *InvestigationServiceSuite) TestInvestigationFindingCitationValidation()
 	}
 
 	_, outsideCitationErr := service.PublishInvestigationFinding(ctx, firstTurnScope, outsideCitationParams)
-	s.Error(outsideCitationErr)
+	s.ErrorIs(outsideCitationErr, errs.ErrInvalidInput)
+	s.ErrorContains(outsideCitationErr, outsideAnalysisEntity.ID.String(), "the error names the cited ID")
 	createRelationship := tdb.Client(ctx).KnowledgeRelationship.Create().
 		SetPredicate("depends_on").
 		SetSourceEntityID(citations.entity.ID).
@@ -534,7 +549,7 @@ func (s *InvestigationServiceSuite) TestInvestigationFindingCitationValidation()
 	}
 
 	_, relationshipCitationErr := service.PublishInvestigationFinding(ctx, firstTurnScope, relationshipCitationParams)
-	s.Error(relationshipCitationErr)
+	s.ErrorIs(relationshipCitationErr, errs.ErrInvalidInput)
 	eventCitationParams := rez.PublishInvestigationFindingParams{
 		Key:         "event-citation",
 		Title:       "Event is not a citation",
@@ -543,7 +558,7 @@ func (s *InvestigationServiceSuite) TestInvestigationFindingCitationValidation()
 	}
 
 	_, eventCitationErr := service.PublishInvestigationFinding(ctx, firstTurnScope, eventCitationParams)
-	s.Error(eventCitationErr)
+	s.ErrorIs(eventCitationErr, errs.ErrInvalidInput)
 
 	missingEvidenceParams := rez.PublishInvestigationFindingParams{
 		Key:         "missing",
@@ -553,7 +568,7 @@ func (s *InvestigationServiceSuite) TestInvestigationFindingCitationValidation()
 	}
 
 	_, missingEvidenceErr := service.PublishInvestigationFinding(ctx, firstTurnScope, missingEvidenceParams)
-	s.Error(missingEvidenceErr)
+	s.ErrorIs(missingEvidenceErr, errs.ErrInvalidInput)
 	zeroEvidenceParams := rez.PublishInvestigationFindingParams{
 		Key:         "zero",
 		Title:       "Zero evidence ID",
@@ -562,7 +577,7 @@ func (s *InvestigationServiceSuite) TestInvestigationFindingCitationValidation()
 	}
 
 	_, zeroEvidenceErr := service.PublishInvestigationFinding(ctx, firstTurnScope, zeroEvidenceParams)
-	s.Error(zeroEvidenceErr)
+	s.ErrorIs(zeroEvidenceErr, errs.ErrInvalidInput)
 	queryInvestigationFinding := tdb.Client(ctx).InvestigationFinding.Query().
 		Where(investigationfinding.InvestigationID(investigation.ID))
 	investigationFindingCount, investigationFindingCountErr := queryInvestigationFinding.Count(ctx)
@@ -575,6 +590,84 @@ func (s *InvestigationServiceSuite) TestInvestigationFindingCitationValidation()
 	s.Require().NoError(investigationFindingVersionCountErr)
 
 	s.Equal(1, investigationFindingVersionCount)
+}
+
+func (s *InvestigationServiceSuite) TestCitedSubjectsJoinTheAnalysis() {
+	ctx, tdb := s.SetupTestDatabase()
+	jobService := mocks.NewMockJobService(s.T())
+	service, investigation, turn := s.outputFixture(ctx, tdb, jobService)
+	turnScope := rez.InvestigationPublicationScope{
+		InvestigationID: investigation.ID,
+		AgentTurnID:     turn.ID,
+	}
+	graph := newTestGraph(s.Require(), tdb)
+	checkout := graph.entity(kne.CategoryContainer, "service", "kubernetes", "checkout-api")
+	database := graph.entity(kne.CategoryContainer, "database", "kubernetes", "orders-db")
+	dependsOn := graph.relationship(knr.PredicateDependsOn, checkout, database)
+	graph.record(ctx, time.Now().UTC(),
+		graph.observeEntity(checkout, "checkout-api"),
+		graph.observeEntity(database, "orders-db"),
+		graph.observeRelationship(dependsOn))
+
+	analysisSubjects := func() ([]uuid.UUID, []uuid.UUID) {
+		var entityIDs, relationshipIDs []uuid.UUID
+		queryEntities := tdb.Client(ctx).SystemAnalysisEntity.Query().
+			Where(sae.AnalysisID(investigation.SystemAnalysisID)).
+			Select(sae.FieldKnowledgeEntityID)
+		s.Require().NoError(queryEntities.Scan(ctx, &entityIDs))
+		queryRelationships := tdb.Client(ctx).SystemAnalysisRelationship.Query().
+			Where(sar.AnalysisID(investigation.SystemAnalysisID)).
+			Select(sar.FieldKnowledgeRelationshipID)
+		s.Require().NoError(queryRelationships.Scan(ctx, &relationshipIDs))
+		return entityIDs, relationshipIDs
+	}
+
+	uncitedParams := rez.PublishInvestigationFindingParams{
+		Key:   "uncited",
+		Title: "Nothing cited",
+		Body:  "No evidence supports this yet.",
+	}
+	_, uncitedErr := service.PublishInvestigationFinding(ctx, turnScope, uncitedParams)
+	s.Require().NoError(uncitedErr)
+	entityIDs, relationshipIDs := analysisSubjects()
+	s.Empty(entityIDs, "an output with no citations includes nothing")
+	s.Empty(relationshipIDs)
+
+	citedParams := rez.PublishInvestigationFindingParams{
+		Key:   "cited",
+		Title: "Checkout depends on the orders database",
+		Body:  "Both are observed.",
+		EvidenceIDs: []uuid.UUID{
+			graph.latestEvidenceID(ctx, checkout.ProviderResourceRef),
+			graph.latestEvidenceID(ctx, dependsOn.ProviderResourceRef),
+		},
+	}
+	_, citedErr := service.PublishInvestigationFinding(ctx, turnScope, citedParams)
+	s.Require().NoError(citedErr)
+	entityIDs, relationshipIDs = analysisSubjects()
+	s.ElementsMatch([]uuid.UUID{graph.entityID(ctx, checkout), graph.entityID(ctx, database)}, entityIDs)
+	s.Equal([]uuid.UUID{graph.relationshipID(ctx, dependsOn)}, relationshipIDs)
+
+	otherTenantCtx, _ := s.SetupTestDatabase()
+	otherGraph := newTestGraph(s.Require(), tdb)
+	otherService := otherGraph.entity(kne.CategoryContainer, "service", "kubernetes", "billing-api")
+	otherGraph.record(otherTenantCtx, time.Now().UTC(), otherGraph.observeEntity(otherService, "billing-api"))
+	otherEvidenceID := otherGraph.latestEvidenceID(otherTenantCtx, otherService.ProviderResourceRef)
+	otherTenantParams := rez.PublishInvestigationFindingParams{
+		Key:         "other-tenant",
+		Title:       "Cites another tenant",
+		Body:        "This evidence belongs to another organization.",
+		EvidenceIDs: []uuid.UUID{otherEvidenceID},
+	}
+	_, otherTenantErr := service.PublishInvestigationFinding(ctx, turnScope, otherTenantParams)
+	s.ErrorIs(otherTenantErr, errs.ErrInvalidInput, "evidence from another tenant is not evidence here")
+
+	citedParams.Body = "Both are observed, again."
+	_, revisedErr := service.PublishInvestigationFinding(ctx, turnScope, citedParams)
+	s.Require().NoError(revisedErr)
+	revisedEntityIDs, revisedRelationshipIDs := analysisSubjects()
+	s.ElementsMatch(entityIDs, revisedEntityIDs, "publishing again changes nothing")
+	s.Equal(relationshipIDs, revisedRelationshipIDs)
 }
 
 func (s *InvestigationServiceSuite) TestInvestigationHypothesisStatusValidationAndSelection() {
@@ -619,6 +712,11 @@ func (s *InvestigationServiceSuite) TestInvestigationHypothesisStatusValidationA
 		s.Require().NoError(readErr)
 		s.Equal(version.Status, readVersion.Status)
 		s.Equal(agentturn.StatusRunning, readVersion.Edges.AgentTurn.Status)
+
+		outputVersion, outputErr := service.GetInvestigationOutputVersion(ctx, investigation.ID, version.ID)
+		s.Require().NoError(outputErr)
+		s.Require().NotNil(outputVersion.Hypothesis)
+		s.Equal(version.ID, outputVersion.Hypothesis.ID)
 	}
 	hypothesisPageParams := rez.ListInvestigationHypothesesParams{
 		ListParams:      ent.ListParams{Page: 1, PageSize: 2},
@@ -686,6 +784,10 @@ func (s *InvestigationServiceSuite) TestInvestigationFindingPaginationInvalidati
 	firstVersion, firstVersionErr := service.GetInvestigationFindingVersion(ctx, investigation.ID, initial.ID)
 	s.Require().NoError(firstVersionErr)
 	s.Equal([]uuid.UUID{invalidator.ID}, firstVersion.InvalidatedByVersionIDs())
+	firstOutput, firstOutputErr := service.GetInvestigationOutputVersion(ctx, investigation.ID, initial.ID)
+	s.Require().NoError(firstOutputErr)
+	s.Require().NotNil(firstOutput.Finding)
+	s.Equal([]uuid.UUID{invalidator.ID}, firstOutput.Finding.InvalidatedByVersionIDs())
 	s.Require().Len(invalidator.Edges.OutgoingLinks, 1)
 	s.Equal(initial.ID, invalidator.Edges.OutgoingLinks[0].TargetVersionID)
 	s.Equal(investigationfindingversionlink.RelationInvalidates, invalidator.Edges.OutgoingLinks[0].Relation)

@@ -14,7 +14,6 @@ import (
 	"github.com/rezible/rezible/ent/investigationreport"
 	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/situationinvestigation"
-	"github.com/rezible/rezible/ent/systemanalysisentry"
 	rezai "github.com/rezible/rezible/pkg/ai"
 )
 
@@ -28,28 +27,6 @@ func seedBaseInvestigation(ctx context.Context, client *ent.Client, referenceTim
 		"The production Checkout API 5xx error rate exceeded its warning threshold at %s.",
 		referenceTime.Format(time.RFC3339),
 	)
-	createEvent := client.NormalizedEvent.Create().
-		SetProvider("evaluation").
-		SetProviderNamespace("investigation").
-		SetProviderResourceRef("insufficient-context-" + uuid.NewString()).
-		SetKind("alert").
-		SetProviderEventSource("evaluation").
-		SetProviderEventRef(uuid.NewString()).
-		SetAttributes([]byte(`{"message":"checkout errors increased"}`)).
-		SetOccurredAt(referenceTime).
-		SetReceivedAt(referenceTime)
-	event, eventErr := createEvent.Save(ctx)
-	if eventErr != nil {
-		return investigationFixture{}, rezai.EvalScenarioSeed{}, fmt.Errorf("create normalized event: %w", eventErr)
-	}
-
-	createEvidence := client.KnowledgeEvidence.Create().
-		SetEventID(event.ID)
-	evidence, evidenceErr := createEvidence.Save(ctx)
-	if evidenceErr != nil {
-		return investigationFixture{}, rezai.EvalScenarioSeed{}, fmt.Errorf("create evidence: %w", eventErr)
-	}
-
 	createSeed := client.KnowledgeEntity.Create().
 		SetCategory(knowledgeentity.CategoryEvent).
 		SetKind("alert_episode")
@@ -73,26 +50,6 @@ func seedBaseInvestigation(ctx context.Context, client *ent.Client, referenceTim
 	analysis, analysisErr := createAnalysis.Save(ctx)
 	if analysisErr != nil {
 		return investigationFixture{}, rezai.EvalScenarioSeed{}, fmt.Errorf("create system analysis: %w", analysisErr)
-	}
-
-	createAnalysisEntry := client.SystemAnalysisEntry.Create().
-		SetAnalysisID(analysis.ID).
-		SetReference("normalized_event:" + event.ID.String()).
-		SetKind(systemanalysisentry.KindObservation).
-		SetOccurredAt(referenceTime).
-		SetSequence(1).
-		SetTitle("alert event").
-		SetBody("provider_event_source: evaluation\nprovider_event_ref: " + event.ProviderEventRef)
-	entry, entryErr := createAnalysisEntry.Save(ctx)
-	if entryErr != nil {
-		return investigationFixture{}, rezai.EvalScenarioSeed{}, fmt.Errorf("create system analysis observation: %w", entryErr)
-	}
-	createEntrySubject := client.SystemAnalysisEntrySubject.Create().
-		SetEntryID(entry.ID).
-		SetRole("evidence").
-		SetKnowledgeEvidence(evidence)
-	if subjectErr := createEntrySubject.Exec(ctx); subjectErr != nil {
-		return investigationFixture{}, rezai.EvalScenarioSeed{}, fmt.Errorf("attach source event to system analysis: %w", subjectErr)
 	}
 
 	fixture := investigationFixture{analysisID: analysis.ID, situationID: createdSituation.ID}

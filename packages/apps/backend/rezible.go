@@ -14,7 +14,6 @@ import (
 	"github.com/firebase/genkit/go/ai"
 	aix "github.com/firebase/genkit/go/ai/exp"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/task"
 	"github.com/riverqueue/river"
 	"github.com/riverqueue/river/rivertype"
 	"github.com/texm/prosemirror-go"
@@ -34,9 +33,8 @@ import (
 	"github.com/rezible/rezible/ent/situation"
 	sha "github.com/rezible/rezible/ent/situationhazardassessment"
 	"github.com/rezible/rezible/ent/situationsignalattention"
-	saent "github.com/rezible/rezible/ent/systemanalysisentity"
 	sae "github.com/rezible/rezible/ent/systemanalysisentry"
-	sarel "github.com/rezible/rezible/ent/systemanalysisrelationship"
+	"github.com/rezible/rezible/ent/task"
 )
 
 type (
@@ -359,25 +357,17 @@ type (
 	ListSystemAnalysisEntitiesParams struct {
 		ent.ListParams
 		Predicates []predicate.SystemAnalysisEntity
-		// OrderBy defaults to creation time, then ID ascending.
-		OrderBy []saent.OrderOption
 	}
 
 	ListSystemAnalysisRelationshipsParams struct {
 		ent.ListParams
 		Predicates []predicate.SystemAnalysisRelationship
-		// OrderBy defaults to creation time, then ID ascending.
-		OrderBy       []sarel.OrderOption
-		WithEndpoints bool
 	}
 
 	ListSystemAnalysisEntriesParams struct {
 		ent.ListParams
 		Predicates []predicate.SystemAnalysisEntry
-		// OrderBy defaults to occurrence time, sequence, then ID ascending.
-		OrderBy     []sae.OrderOption
-		SummaryOnly bool
-		Kinds       []sae.Kind
+		Kinds      []sae.Kind
 	}
 
 	SetSystemAnalysisEntryParams struct {
@@ -395,12 +385,6 @@ type (
 		KnowledgeEntityID       *uuid.UUID
 		KnowledgeRelationshipID *uuid.UUID
 		KnowledgeEvidenceID     *uuid.UUID
-	}
-
-	ListSystemAnalysisEntrySubjectsParams struct {
-		AnalysisID uuid.UUID
-		EntryID    uuid.UUID
-		ent.ListParams
 	}
 
 	IncludeSystemAnalysisSubjectsParams struct {
@@ -429,7 +413,6 @@ type (
 		SetSystemAnalysisEntry(context.Context, uuid.UUID, SetSystemAnalysisEntryParams) (*ent.SystemAnalysisEntry, error)
 		DeleteSystemAnalysisEntry(context.Context, uuid.UUID) error
 
-		ListSystemAnalysisEntrySubjects(context.Context, ListSystemAnalysisEntrySubjectsParams) (*ent.ListResult[ent.SystemAnalysisEntrySubject], error)
 		SetSystemAnalysisEntrySubject(context.Context, uuid.UUID, func(*ent.SystemAnalysisEntrySubjectMutation)) (*ent.SystemAnalysisEntrySubject, error)
 		DeleteSystemAnalysisEntrySubject(context.Context, uuid.UUID) error
 	}
@@ -1125,9 +1108,16 @@ type (
 		EvidenceIDs   []uuid.UUID
 	}
 
-	ReadInvestigationReportParams struct {
+	GetInvestigationReportParams struct {
 		InvestigationID uuid.UUID
 		Selection       InvestigationReportSelection
+	}
+
+	// InvestigationOutputVersion holds one output version: exactly one field is set.
+	InvestigationOutputVersion struct {
+		Report     *ent.InvestigationReport
+		Finding    *ent.InvestigationFindingVersion
+		Hypothesis *ent.InvestigationHypothesisVersion
 	}
 
 	ListInvestigationFindingsParams struct {
@@ -1146,11 +1136,16 @@ type (
 		PublishInvestigationAnswer(context.Context, InvestigationPublicationScope, PublishInvestigationAnswerParams) (*ent.InvestigationFindingVersion, error)
 		PublishInvestigationHypothesis(context.Context, InvestigationPublicationScope, PublishInvestigationHypothesisParams) (*ent.InvestigationHypothesisVersion, error)
 
-		ReadInvestigationReport(context.Context, ReadInvestigationReportParams) (*ent.InvestigationReport, error)
-		GetInvestigationFindingVersion(ctx context.Context, investigationID uuid.UUID, versionID uuid.UUID) (*ent.InvestigationFindingVersion, error)
+		GetInvestigationReport(context.Context, GetInvestigationReportParams) (*ent.InvestigationReport, error)
+
 		ListInvestigationFindings(context.Context, ListInvestigationFindingsParams) (*ent.ListResult[ent.InvestigationFindingVersion], error)
-		GetInvestigationHypothesisVersion(ctx context.Context, investigationID uuid.UUID, versionID uuid.UUID) (*ent.InvestigationHypothesisVersion, error)
+		GetInvestigationFindingVersion(ctx context.Context, investigationID uuid.UUID, versionID uuid.UUID) (*ent.InvestigationFindingVersion, error)
+
 		ListInvestigationHypotheses(context.Context, ListInvestigationHypothesesParams) (*ent.ListResult[ent.InvestigationHypothesisVersion], error)
+		GetInvestigationHypothesisVersion(ctx context.Context, investigationID uuid.UUID, versionID uuid.UUID) (*ent.InvestigationHypothesisVersion, error)
+
+		// GetInvestigationOutputVersion returns the investigation's report, finding version or hypothesis version with the ID, whichever it is.
+		GetInvestigationOutputVersion(ctx context.Context, investigationID uuid.UUID, versionID uuid.UUID) (*InvestigationOutputVersion, error)
 	}
 )
 
@@ -1163,6 +1158,8 @@ type (
 		Stages      []SituationStage
 		Muted       *bool
 		OpenedAfter *time.Time
+		// InvestigationID lists the situation investigated by that investigation.
+		InvestigationID uuid.UUID
 	}
 
 	ListSituationJudgmentsParams struct {

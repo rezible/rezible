@@ -7,32 +7,38 @@ import (
 	"github.com/firebase/genkit/go/ai"
 	aix "github.com/firebase/genkit/go/ai/exp"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/pkg/errs"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	inv "github.com/rezible/rezible/ent/investigation"
 	rezai "github.com/rezible/rezible/pkg/ai"
-	"github.com/rezible/rezible/pkg/errs"
+	"github.com/rezible/rezible/pkg/situations"
 )
 
 type InvestigationAgent struct {
-	investigations rez.InvestigationService
-	outputs        rez.InvestigationOutputService
-	analyses       rez.SystemAnalysisService
-	knowledge      rez.KnowledgeGraphQueryService
+	investigations    rez.InvestigationService
+	outputs           rez.InvestigationOutputService
+	knowledge         rez.KnowledgeGraphQueryService
+	situationsService rez.SituationService
+	signals           situations.SignalLoader
 }
 
+// NewInvestigationAgent takes the situation service twice: the root interface can't name situations.Signal, so
+// its signal loading comes as situations.SignalLoader.
 func NewInvestigationAgent(
 	investigations rez.InvestigationService,
 	outputs rez.InvestigationOutputService,
-	analyses rez.SystemAnalysisService,
 	knowledge rez.KnowledgeGraphQueryService,
+	situationsService rez.SituationService,
+	signals situations.SignalLoader,
 ) *InvestigationAgent {
 	return &InvestigationAgent{
-		investigations: investigations,
-		outputs:        outputs,
-		analyses:       analyses,
-		knowledge:      knowledge,
+		investigations:    investigations,
+		outputs:           outputs,
+		knowledge:         knowledge,
+		situationsService: situationsService,
+		signals:           signals,
 	}
 }
 
@@ -43,10 +49,11 @@ func (a *InvestigationAgent) agentDefinition() rezai.InvestigationAgentDefinitio
 func (a *InvestigationAgent) makeMiddleware() []ai.Middleware {
 	return []ai.Middleware{
 		&investigationCapabilitiesMiddleware{
-			investigations: a.investigations,
-			outputs:        a.outputs,
-			analyses:       a.analyses,
-			knowledge:      a.knowledge,
+			investigations:    a.investigations,
+			outputs:           a.outputs,
+			knowledge:         a.knowledge,
+			situationsService: a.situationsService,
+			signals:           a.signals,
 		},
 	}
 }
@@ -68,10 +75,11 @@ func (a *InvestigationAgent) transformStreamChunk(ctx context.Context, chunk *ai
 }
 
 type investigationCapabilitiesMiddleware struct {
-	investigations rez.InvestigationService
-	outputs        rez.InvestigationOutputService
-	analyses       rez.SystemAnalysisService
-	knowledge      rez.KnowledgeGraphQueryService
+	investigations    rez.InvestigationService
+	outputs           rez.InvestigationOutputService
+	knowledge         rez.KnowledgeGraphQueryService
+	situationsService rez.SituationService
+	signals           situations.SignalLoader
 }
 
 func (m *investigationCapabilitiesMiddleware) Name() string {
@@ -91,24 +99,24 @@ func (m *investigationCapabilitiesMiddleware) New(ctx context.Context) (*ai.Hook
 	}
 
 	current, lookupErr := m.investigations.LookupInvestigation(ctx, inv.AgentSessionID(invCtx.Session.ID))
-	if ent.IsNotFound(lookupErr) {
-		return nil, fmt.Errorf("investigation for agent session: %w", errs.ErrNotFound)
-	}
 	if lookupErr != nil {
+		if ent.IsNotFound(lookupErr) {
+			return nil, fmt.Errorf("investigation for agent session: %w", errs.ErrNotFound)
+		}
 		return nil, fmt.Errorf("lookup investigation by agent session: %w", lookupErr)
 	}
-	if current == nil || current.ID == uuid.Nil || current.AgentSessionID != invCtx.Session.ID || current.SystemAnalysisID == uuid.Nil {
-		return nil, fmt.Errorf("investigation is missing its session association or analysis ID")
+	if current == nil || current.ID == uuid.Nil || current.AgentSessionID != invCtx.Session.ID {
+		return nil, fmt.Errorf("investigation is missing its session association")
 	}
 
 	i := &investigationInvocation{
-		investigations:  m.investigations,
-		outputs:         m.outputs,
-		analyses:        m.analyses,
-		knowledge:       m.knowledge,
-		investigationID: current.ID,
-		analysisID:      current.SystemAnalysisID,
-		turnID:          invCtx.Turn.ID,
+		investigations:    m.investigations,
+		outputs:           m.outputs,
+		knowledge:         m.knowledge,
+		situationsService: m.situationsService,
+		signals:           m.signals,
+		investigationID:   current.ID,
+		turnID:            invCtx.Turn.ID,
 	}
 
 	return i.makeHooks(ctx, invCtx)

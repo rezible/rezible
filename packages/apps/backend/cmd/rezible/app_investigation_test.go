@@ -26,6 +26,7 @@ import (
 	ale "github.com/rezible/rezible/ent/alertepisode"
 	kne "github.com/rezible/rezible/ent/knowledgeentity"
 	ke "github.com/rezible/rezible/ent/knowledgeevidence"
+	knr "github.com/rezible/rezible/ent/knowledgerelationship"
 	ksa "github.com/rezible/rezible/ent/knowledgesubjectalias"
 	"github.com/rezible/rezible/ent/schema/schematypes"
 	rezai "github.com/rezible/rezible/pkg/ai"
@@ -72,7 +73,13 @@ func (s *BackendSuite) TestInvestigation() {
 		SetReceivedAt(occurredAt)
 	event, eventErr := createEvent.Save(ctx)
 	s.Require().NoError(eventErr, "seed checkout alert evidence")
-	episodeEntityID := s.recordAlert(ah, ctx, event)
+	episodeEntityID, alertEntityID := s.recordAlert(ah, ctx, event)
+	queryObserves := client.KnowledgeRelationship.Query().
+		Where(knr.PredicateEQ(knr.PredicateObserves))
+	observes, observesErr := queryObserves.Only(ctx)
+	s.Require().NoError(observesErr, "read the alert's observes relationship")
+	model.alertEntityID = alertEntityID
+	model.relationshipID = observes.ID
 
 	observationGroup := rez.SituationObservationGroupParams{
 		Title:           "Checkout errors",
@@ -269,9 +276,9 @@ func (s *BackendSuite) requireTurnLinkedToRequest(spans *tracetest.SpanRecorder,
 	s.Contains(ancestors(work), request, "the request inserted the first job")
 }
 
-// recordAlert records the event as a firing notification of a checkout alert definition and returns its
-// episode's knowledge entity.
-func (s *BackendSuite) recordAlert(ah *appHarness, ctx context.Context, event *ent.NormalizedEvent) uuid.UUID {
+// recordAlert records the event as a firing notification of a checkout alert definition that observes the
+// checkout service, and returns its episode's knowledge entity and the alert definition's.
+func (s *BackendSuite) recordAlert(ah *appHarness, ctx context.Context, event *ent.NormalizedEvent) (uuid.UUID, uuid.UUID) {
 	knowledge, knowledgeErr := ah.app.invoke[rez.KnowledgeGraphIngestionService]()
 	s.Require().NoError(knowledgeErr, "resolve knowledge ingestion")
 	alerts, alertsErr := ah.app.invoke[rez.AlertService]()
@@ -285,7 +292,28 @@ func (s *BackendSuite) recordAlert(ah *appHarness, ctx context.Context, event *e
 		EffectiveAt: event.OccurredAt,
 		Subject:     rez.KnowledgeSubjectRef{Entity: &definitionEntityRef},
 	}
-	ingestErr := knowledge.IngestEvidence(ctx, event, definitionEvidence)
+	serviceRef := rez.ProviderResourceRef{Provider: event.Provider, ProviderNamespace: event.ProviderNamespace, ResourceRef: "checkout-api"}
+	serviceEntityRef := rez.KnowledgeEntityRef{Category: kne.CategoryContainer, Kind: "service", ProviderResourceRef: serviceRef}
+	serviceEvidence := rez.KnowledgeEvidenceRef{
+		Kind:         ke.KindObserved,
+		Assertion:    "service_observed",
+		EffectiveAt:  event.OccurredAt,
+		Subject:      rez.KnowledgeSubjectRef{Entity: &serviceEntityRef},
+		SubjectState: schematypes.KnowledgeGraphSubjectState{DisplayName: "checkout-api"},
+	}
+	observesRef := rez.KnowledgeRelationshipRef{
+		Predicate:           knr.PredicateObserves,
+		ProviderResourceRef: rez.ProviderResourceRef{Provider: event.Provider, ProviderNamespace: event.ProviderNamespace, ResourceRef: "checkout-alert:observes:checkout-api"},
+		Source:              definitionEntityRef,
+		Target:              serviceEntityRef,
+	}
+	observesEvidence := rez.KnowledgeEvidenceRef{
+		Kind:        ke.KindObserved,
+		Assertion:   "alert_observes_service",
+		EffectiveAt: event.OccurredAt,
+		Subject:     rez.KnowledgeSubjectRef{Relationship: &observesRef},
+	}
+	ingestErr := knowledge.IngestEvidence(ctx, event, definitionEvidence, serviceEvidence, observesEvidence)
 	s.Require().NoError(ingestErr, "ingest alert definition evidence")
 
 	queryAlias := ah.Client(ctx).KnowledgeSubjectAlias.Query().
@@ -313,20 +341,54 @@ func (s *BackendSuite) recordAlert(ah *appHarness, ctx context.Context, event *e
 		Where(ale.AlertDefinitionID(definition.ID))
 	episode, episodeErr := queryEpisode.Only(ctx)
 	s.Require().NoError(episodeErr, "read checkout alert episode")
-	return *episode.KnowledgeEntityID
+	return *episode.KnowledgeEntityID, *alias.EntityID
 }
 
-// The script exercises real tools across two turns; it never writes domain data.
+// The script exercises real tools across two turns; it never writes domain data. The first turn makes invalid
+// calls, which return error results, then publishes its report.
 type investigationModel struct {
 	mu   sync.Mutex
 	step int
+
+	// alertEntityID is the situation's signal ref and relationshipID a ref that is not an entity, both set
+	// before the investigation starts.
+	alertEntityID  uuid.UUID
+	relationshipID uuid.UUID
+	reportRef      string
 }
 
 func (m *investigationModel) AssertComplete(t *testing.T) {
 	t.Helper()
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	assert.Equal(t, 4, m.step, "investigation model must consume all four calls")
+	assert.Equal(t, 5, m.step, "investigation model must consume all five calls")
+}
+
+// invalidCalls each return an error result instead of failing the turn.
+func (m *investigationModel) invalidCalls() []*ai.ToolRequest {
+	readUnknown := rezai.ReadEntityArgs{Ref: uuid.NewString()}
+	readMalformed := rezai.ReadEntityArgs{Ref: "checkout-api"}
+	readRelationship := rezai.ReadEntityArgs{Ref: m.relationshipID.String()}
+	listTooMany := rezai.ListEntityEvidenceArgs{Ref: m.alertEntityID.String(), PageSize: 51}
+	unknownStatus := rezai.PublishInvestigationHypothesisToolInput{
+		Key:           "checkout",
+		Title:         "Checkout is failing",
+		Justification: "The alert fired.",
+		Status:        "probable",
+		EvidenceRefs:  []string{},
+	}
+	citesEntity := rezai.PublishInvestigationReportToolInput{
+		Text:         investigationReportText,
+		EvidenceRefs: []string{m.alertEntityID.String()},
+	}
+	return []*ai.ToolRequest{
+		{Name: rezai.ReadEntityTool.Name(), Ref: "unknown", Input: readUnknown},
+		{Name: rezai.ReadEntityTool.Name(), Ref: "malformed", Input: readMalformed},
+		{Name: rezai.ReadEntityTool.Name(), Ref: "relationship", Input: readRelationship},
+		{Name: rezai.ListEntityEvidenceTool.Name(), Ref: "page-size", Input: listTooMany},
+		{Name: rezai.PublishInvestigationHypothesisTool.Name(), Ref: "status", Input: unknownStatus},
+		{Name: rezai.PublishInvestigationReportTool.Name(), Ref: "not-evidence", Input: citesEntity},
+	}
 }
 
 func (m *investigationModel) generate(
@@ -341,6 +403,44 @@ func (m *investigationModel) generate(
 
 	switch m.step {
 	case 1:
+		introduction, introductionErr := m.decodeIntroduction(request)
+		if introductionErr != nil {
+			return nil, introductionErr
+		}
+		situation := introduction.Situation
+		if situation == nil || situation.Title != "Checkout errors" {
+			return nil, fmt.Errorf("step 1: introduction situation=%+v, want the checkout situation", situation)
+		}
+		if len(situation.Signals) != 1 || situation.Signals[0].Ref != m.alertEntityID.String() {
+			return nil, fmt.Errorf("step 1: introduction signals=%+v, want the alert entity as ref", situation.Signals)
+		}
+		if len(situation.Entities) != 1 || situation.Entities[0].Name != "checkout-api" {
+			return nil, fmt.Errorf("step 1: introduction entities=%+v, want checkout-api", situation.Entities)
+		}
+		if introduction.Outputs.Report != nil {
+			return nil, fmt.Errorf("step 1: introduction report=%+v, want none", introduction.Outputs.Report)
+		}
+		calls := m.invalidCalls()
+		parts := make([]*ai.Part, 0, len(calls))
+		for _, call := range calls {
+			parts = append(parts, ai.NewToolRequestPart(call))
+		}
+		return &ai.ModelResponse{Message: ai.NewModelMessage(parts...)}, nil
+
+	case 2:
+		for _, call := range m.invalidCalls() {
+			var result map[string]any
+			if responseErr := m.decodeToolResult(request, call.Name, call.Ref, &result); responseErr != nil {
+				return nil, responseErr
+			}
+			errorText, isText := result["error"].(string)
+			if len(result) != 1 || !isText || errorText == "" {
+				return nil, fmt.Errorf("step 2: %s result=%v, want only an error", call.Ref, result)
+			}
+			if call.Ref == "not-evidence" && !strings.Contains(errorText, m.alertEntityID.String()) {
+				return nil, fmt.Errorf("step 2: citation error %q does not name the cited ID", errorText)
+			}
+		}
 		input := rezai.PublishInvestigationReportToolInput{
 			Text:         investigationReportText,
 			EvidenceRefs: []string{},
@@ -352,24 +452,32 @@ func (m *investigationModel) generate(
 		}
 		return m.requestTool(request, call)
 
-	case 2:
+	case 3:
 		var result rezai.InvestigationReportToolResult
 		responseErr := m.decodeToolResult(request, rezai.PublishInvestigationReportTool.Name(), "report-1", &result)
 		if responseErr != nil {
 			return nil, responseErr
 		}
 		if result.Text != investigationReportText {
-			return nil, fmt.Errorf("step 2: report text=%q, want %q", result.Text, investigationReportText)
+			return nil, fmt.Errorf("step 3: report text=%q, want %q", result.Text, investigationReportText)
 		}
 		if len(result.EvidenceRefs) != 0 {
-			return nil, fmt.Errorf("step 2: report evidence_refs=%v, want empty", result.EvidenceRefs)
+			return nil, fmt.Errorf("step 3: report evidence_refs=%v, want empty", result.EvidenceRefs)
 		}
+		m.reportRef = result.VersionRef
 		return &ai.ModelResponse{
 			Message:      ai.NewModelTextMessage("Recorded."),
 			FinishReason: ai.FinishReasonStop,
 		}, nil
 
-	case 3:
+	case 4:
+		introduction, introductionErr := m.decodeIntroduction(request)
+		if introductionErr != nil {
+			return nil, introductionErr
+		}
+		if report := introduction.Outputs.Report; report == nil || report.VersionRef != m.reportRef {
+			return nil, fmt.Errorf("step 4: introduction report=%+v, want version %s", report, m.reportRef)
+		}
 		expectedQuestion := "User question:\n" + investigationQuestion
 		questionFound := false
 		for _, message := range request.Messages {
@@ -379,7 +487,7 @@ func (m *investigationModel) generate(
 			}
 		}
 		if !questionFound {
-			return nil, fmt.Errorf("step 3: follow-up user question %q absent from model request", investigationQuestion)
+			return nil, fmt.Errorf("step 4: follow-up user question %q absent from model request", investigationQuestion)
 		}
 		input := rezai.PublishInvestigationAnswerToolInput{
 			Title:        investigationAnswerTitle,
@@ -393,23 +501,23 @@ func (m *investigationModel) generate(
 		}
 		return m.requestTool(request, call)
 
-	case 4:
+	case 5:
 		var result rezai.InvestigationFindingVersionToolResult
 		responseErr := m.decodeToolResult(request, rezai.PublishInvestigationAnswerTool.Name(), "answer-1", &result)
 		if responseErr != nil {
 			return nil, responseErr
 		}
 		if result.Title != investigationAnswerTitle {
-			return nil, fmt.Errorf("step 4: answer title=%q, want %q", result.Title, investigationAnswerTitle)
+			return nil, fmt.Errorf("step 5: answer title=%q, want %q", result.Title, investigationAnswerTitle)
 		}
 		if result.Body != investigationAnswerBody {
-			return nil, fmt.Errorf("step 4: answer body=%q, want %q", result.Body, investigationAnswerBody)
+			return nil, fmt.Errorf("step 5: answer body=%q, want %q", result.Body, investigationAnswerBody)
 		}
 		if !result.IsAnswer {
-			return nil, fmt.Errorf("step 4: published finding is not an answer")
+			return nil, fmt.Errorf("step 5: published finding is not an answer")
 		}
 		if len(result.EvidenceRefs) != 0 {
-			return nil, fmt.Errorf("step 4: answer evidence_refs=%v, want empty", result.EvidenceRefs)
+			return nil, fmt.Errorf("step 5: answer evidence_refs=%v, want empty", result.EvidenceRefs)
 		}
 		return &ai.ModelResponse{
 			Message:      ai.NewModelTextMessage("Recorded."),
@@ -419,6 +527,24 @@ func (m *investigationModel) generate(
 	default:
 		return nil, fmt.Errorf("unexpected model call %d", m.step)
 	}
+}
+
+// decodeIntroduction reads the introduction the agent injects into the system message.
+func (m *investigationModel) decodeIntroduction(request *ai.ModelRequest) (*rezai.InvestigationAgentIntroduction, error) {
+	for _, message := range request.Messages {
+		for _, part := range message.Content {
+			if marked, _ := part.Metadata["investigation-introduction"].(bool); !marked {
+				continue
+			}
+			encoded := strings.TrimSuffix(strings.TrimPrefix(part.Text, "<investigation-introduction>\n"), "\n</investigation-introduction>")
+			var introduction rezai.InvestigationAgentIntroduction
+			if decodeErr := json.Unmarshal([]byte(encoded), &introduction); decodeErr != nil {
+				return nil, fmt.Errorf("step %d: decode introduction: %w", m.step, decodeErr)
+			}
+			return &introduction, nil
+		}
+	}
+	return nil, fmt.Errorf("step %d: introduction absent from model request", m.step)
 }
 
 func (m *investigationModel) requestTool(request *ai.ModelRequest, call *ai.ToolRequest) (*ai.ModelResponse, error) {

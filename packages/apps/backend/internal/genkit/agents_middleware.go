@@ -2,11 +2,15 @@ package genkit
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/firebase/genkit/go/ai"
+	"github.com/firebase/genkit/go/core/status"
 	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/ent"
 	rezai "github.com/rezible/rezible/pkg/ai"
+	"github.com/rezible/rezible/pkg/errs"
 )
 
 type (
@@ -80,6 +84,34 @@ func (m *agentDebugMiddleware) New(ctx context.Context) (*ai.Hooks, error) {
 			return resp, respErr
 		},
 	}, nil
+}
+
+// toolErrorResultMiddleware returns invalid input and missing records to the agent as a result carrying only the
+// error, so the agent can correct the call or move on. It wraps Genkit's input schema validation too. Other errors
+// are Rezible's own failures and fail the turn.
+type toolErrorResultMiddleware struct{}
+
+func (m *toolErrorResultMiddleware) Name() string {
+	return "tool_error_result"
+}
+
+func (m *toolErrorResultMiddleware) New(ctx context.Context) (*ai.Hooks, error) {
+	return &ai.Hooks{
+		WrapTool: func(ctx context.Context, params *ai.ToolParams, next ai.ToolNext) (*ai.MultipartToolResponse, error) {
+			resp, toolErr := next(ctx, params)
+			if toolErr != nil && m.isAgentError(toolErr) {
+				return &ai.MultipartToolResponse{Output: map[string]string{"error": toolErr.Error()}}, nil
+			}
+			return resp, toolErr
+		},
+	}, nil
+}
+
+func (m *toolErrorResultMiddleware) isAgentError(toolErr error) bool {
+	return errors.Is(toolErr, status.ErrInvalidInput) ||
+		errors.Is(toolErr, errs.ErrInvalidInput) ||
+		errors.Is(toolErr, errs.ErrNotFound) ||
+		ent.IsNotFound(toolErr)
 }
 
 // turnUsageMiddleware adds each model call's tokens to the turn's tally. Thinking tokens are billed as output.

@@ -107,6 +107,7 @@ func (c *agentCatalogue) register[SessionInput rez.ValidatingInput, State any](g
 	}
 
 	middleware := []ai.Middleware{
+		&toolErrorResultMiddleware{},
 		&agentDebugMiddleware{},
 		&turnUsageMiddleware{},
 		&toolCallDisplayLabelMiddleware{},

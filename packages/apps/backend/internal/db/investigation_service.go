@@ -28,13 +28,14 @@ import (
 )
 
 type InvestigationService struct {
-	db     rez.Database
-	agents rez.AiAgentSessionService
-	jobs   rez.JobService
+	db       rez.Database
+	agents   rez.AiAgentSessionService
+	jobs     rez.JobService
+	analyses rez.SystemAnalysisService
 }
 
-func NewInvestigationService(database rez.Database, agents rez.AiAgentSessionService, jobService rez.JobService) *InvestigationService {
-	return &InvestigationService{db: database, agents: agents, jobs: jobService}
+func NewInvestigationService(database rez.Database, agents rez.AiAgentSessionService, jobService rez.JobService, analyses rez.SystemAnalysisService) *InvestigationService {
+	return &InvestigationService{db: database, agents: agents, jobs: jobService, analyses: analyses}
 }
 
 func (s *InvestigationService) MessageHandlers() []rez.MessageEventHandler {

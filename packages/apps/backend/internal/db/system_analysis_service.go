@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 
-	"entgo.io/ent/dialect/sql"
 	mapset "github.com/deckarep/golang-set/v2"
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
@@ -37,13 +36,6 @@ func (s *SystemAnalysisService) systemAnalysisEntrySubjectsQuery(q *ent.SystemAn
 		WithKnowledgeEvidence()
 }
 
-func (s *SystemAnalysisService) checkSaveErr(saveErr error, kind string) error {
-	if ent.IsValidationError(saveErr) || ent.IsConstraintError(saveErr) {
-		return fmt.Errorf("%w: save %s: %w", errs.ErrInvalidInput, kind, saveErr)
-	}
-	return fmt.Errorf("save %s: %w", kind, saveErr)
-}
-
 func (s *SystemAnalysisService) GetSystemAnalysis(ctx context.Context, id uuid.UUID) (*ent.SystemAnalysis, error) {
 	return s.db.Client(ctx).SystemAnalysis.Get(ctx, id)
 }
@@ -59,6 +51,25 @@ func (s *SystemAnalysisService) HasSystemAnalysisEntity(ctx context.Context, ana
 		return false, fmt.Errorf("query system analysis entity: %w", queryErr)
 	}
 	return exists, nil
+}
+
+func (s *SystemAnalysisService) checkMutationSave[T any, M ent.Mutation](ctx context.Context, m ent.EntityMutator[T, M]) (T, error) {
+	res, saveErr := m.Save(ctx)
+	if saveErr == nil {
+		return res, nil
+	}
+	var t T
+	if ent.IsValidationError(saveErr) || ent.IsConstraintError(saveErr) {
+		return t, fmt.Errorf("%w: save %T: %w", errs.ErrInvalidInput, t, saveErr)
+	}
+	return t, fmt.Errorf("save %T: %w", t, saveErr)
+}
+
+func (s *SystemAnalysisService) checkSaveErr(saveErr error, kind string) error {
+	if ent.IsValidationError(saveErr) || ent.IsConstraintError(saveErr) {
+		return fmt.Errorf("%w: save %s: %w", errs.ErrInvalidInput, kind, saveErr)
+	}
+	return fmt.Errorf("save %s: %w", kind, saveErr)
 }
 
 func (s *SystemAnalysisService) SetSystemAnalysis(ctx context.Context, id uuid.UUID, setFn func(*ent.SystemAnalysisMutation)) (*ent.SystemAnalysis, error) {
@@ -83,11 +94,7 @@ func (s *SystemAnalysisService) SetSystemAnalysis(ctx context.Context, id uuid.U
 			return nil, validateErr
 		}
 
-		saved, saveErr := mutator.Save(ctx)
-		if saveErr != nil {
-			return nil, s.checkSaveErr(saveErr, "system analysis")
-		}
-		return saved, nil
+		return s.checkMutationSave(ctx, mutator)
 	})
 }
 
@@ -196,7 +203,6 @@ func (s *SystemAnalysisService) includeAnalysisEntities(ctx context.Context, tx 
 	if entityIds.IsEmpty() {
 		return nil
 	}
-
 	if validateErr := s.validateKnowledgeEntityTargets(ctx, tx, entityIds); validateErr != nil {
 		return validateErr
 	}
@@ -219,12 +225,8 @@ func (s *SystemAnalysisService) ListSystemAnalysisEntities(ctx context.Context, 
 		Where(params.Predicates...).
 		WithKnowledgeEntity(func(eq *ent.KnowledgeEntityQuery) {
 			eq.WithAliases(subjectAliasWithEvidence())
-		})
-	if len(params.OrderBy) > 0 {
-		query.Order(params.OrderBy...)
-	} else {
-		query.Order(saent.ByCreatedAt(), saent.ByID())
-	}
+		}).
+		Order(saent.ByCreatedAt(), saent.ByID())
 	return ent.DoListQuery[ent.SystemAnalysisEntity, *ent.SystemAnalysisEntityQuery](ctx, query, params.ListParams)
 }
 
@@ -287,22 +289,11 @@ func (s *SystemAnalysisService) DeleteSystemAnalysisEntity(ctx context.Context, 
 
 func (s *SystemAnalysisService) ListSystemAnalysisRelationships(ctx context.Context, params rez.ListSystemAnalysisRelationshipsParams) (*ent.ListResult[ent.SystemAnalysisRelationship], error) {
 	query := s.db.Client(ctx).SystemAnalysisRelationship.Query().
-		Where(params.Predicates...)
-	if len(params.OrderBy) > 0 {
-		query.Order(params.OrderBy...)
-	} else {
-		query.Order(sarel.ByCreatedAt(), sarel.ByID())
-	}
-	query.WithKnowledgeRelationship(func(rq *ent.KnowledgeRelationshipQuery) {
-		rq.WithAliases(subjectAliasWithEvidence())
-		if params.WithEndpoints {
-			rq.WithSourceEntity(func(eq *ent.KnowledgeEntityQuery) {
-				eq.WithAliases(subjectAliasWithEvidence())
-			}).WithTargetEntity(func(eq *ent.KnowledgeEntityQuery) {
-				eq.WithAliases(subjectAliasWithEvidence())
-			})
-		}
-	})
+		Where(params.Predicates...).
+		Order(sarel.ByCreatedAt(), sarel.ByID()).
+		WithKnowledgeRelationship(func(rq *ent.KnowledgeRelationshipQuery) {
+			rq.WithAliases(subjectAliasWithEvidence())
+		})
 	return ent.DoListQuery[ent.SystemAnalysisRelationship, *ent.SystemAnalysisRelationshipQuery](ctx, query, params.ListParams)
 }
 
@@ -358,15 +349,10 @@ func (s *SystemAnalysisService) DeleteSystemAnalysisRelationship(ctx context.Con
 
 func (s *SystemAnalysisService) ListSystemAnalysisEntries(ctx context.Context, params rez.ListSystemAnalysisEntriesParams) (*ent.ListResult[ent.SystemAnalysisEntry], error) {
 	query := s.db.Client(ctx).SystemAnalysisEntry.Query().
-		Where(params.Predicates...)
-	if len(params.OrderBy) > 0 {
-		query.Order(params.OrderBy...)
-	} else {
-		query.Order(sae.ByOccurredAt(), sae.BySequence(), sae.ByID())
-	}
-	if !params.SummaryOnly {
-		query.WithReviews().WithSubjects(s.systemAnalysisEntrySubjectsQuery)
-	}
+		Where(params.Predicates...).
+		WithReviews().
+		WithSubjects(s.systemAnalysisEntrySubjectsQuery).
+		Order(sae.ByOccurredAt(), sae.BySequence(), sae.ByID())
 	return ent.DoListQuery[ent.SystemAnalysisEntry, *ent.SystemAnalysisEntryQuery](ctx, query, params.ListParams)
 }
 
@@ -505,27 +491,6 @@ func (s *SystemAnalysisService) LookupSystemAnalysisEntry(ctx context.Context, p
 func (s *SystemAnalysisService) DeleteSystemAnalysisEntry(ctx context.Context, id uuid.UUID) error {
 	// cascade delete
 	return s.db.Client(ctx).SystemAnalysisEntry.DeleteOneID(id).Exec(ctx)
-}
-
-func (s *SystemAnalysisService) ListSystemAnalysisEntrySubjects(ctx context.Context, params rez.ListSystemAnalysisEntrySubjectsParams) (*ent.ListResult[ent.SystemAnalysisEntrySubject], error) {
-	if params.AnalysisID == uuid.Nil || params.EntryID == uuid.Nil {
-		return nil, fmt.Errorf("%w: analysis and entry IDs are required", errs.ErrInvalidInput)
-	}
-
-	entryExists, queryEntryErr := s.db.Client(ctx).SystemAnalysisEntry.Query().
-		Where(sae.ID(params.EntryID), sae.AnalysisID(params.AnalysisID)).
-		Exist(ctx)
-	if queryEntryErr != nil {
-		return nil, fmt.Errorf("check analysis entry access: %w", queryEntryErr)
-	}
-	if !entryExists {
-		return nil, errs.ErrNotFound
-	}
-
-	query := s.db.Client(ctx).SystemAnalysisEntrySubject.Query().
-		Where(saes.EntryID(params.EntryID)).
-		Order(saes.ByID(sql.OrderAsc()))
-	return ent.DoListQuery[ent.SystemAnalysisEntrySubject, *ent.SystemAnalysisEntrySubjectQuery](ctx, query, params.ListParams)
 }
 
 func (s *SystemAnalysisService) SetSystemAnalysisEntrySubject(ctx context.Context, id uuid.UUID, setFn func(*ent.SystemAnalysisEntrySubjectMutation)) (*ent.SystemAnalysisEntrySubject, error) {

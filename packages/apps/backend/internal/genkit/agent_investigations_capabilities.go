@@ -1,28 +1,28 @@
 package genkit
 
 import (
+	"cmp"
 	"context"
 	"encoding/json"
 	"fmt"
+	"slices"
 	"strings"
+	"time"
 
 	"github.com/firebase/genkit/go/ai"
 	"github.com/google/uuid"
 
 	"github.com/rezible/rezible"
-	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/pkg/errs"
+	"github.com/rezible/rezible/pkg/situations"
 
+	"github.com/rezible/rezible/ent"
 	at "github.com/rezible/rezible/ent/agentturn"
 	inv "github.com/rezible/rezible/ent/investigation"
 	invfvl "github.com/rezible/rezible/ent/investigationfindingversionlink"
 	invhv "github.com/rezible/rezible/ent/investigationhypothesisversion"
 	invui "github.com/rezible/rezible/ent/investigationuserinput"
-	saent "github.com/rezible/rezible/ent/systemanalysisentity"
-	sae "github.com/rezible/rezible/ent/systemanalysisentry"
-	saes "github.com/rezible/rezible/ent/systemanalysisentrysubject"
-	sarel "github.com/rezible/rezible/ent/systemanalysisrelationship"
+	kne "github.com/rezible/rezible/ent/knowledgeentity"
 	rezai "github.com/rezible/rezible/pkg/ai"
 )
 
@@ -33,22 +33,17 @@ const (
 	analysisToolDescriptionLimit = 240
 	investigationIntroductionTag = "investigation-introduction"
 	analysisToolTruncationMarker = "\n[truncated: complete tool result is limited to 12,000 characters]"
-)
-
-var (
-	analysisEntitiesByCanonicalID      = []saent.OrderOption{saent.ByKnowledgeEntityID(), saent.ByID()}
-	analysisRelationshipsByCanonicalID = []sarel.OrderOption{sarel.ByKnowledgeRelationshipID(), sarel.ByID()}
-	analysisEntriesBySequence          = []sae.OrderOption{sae.BySequence(), sae.ByID()}
+	introductionListLimit        = 25
 )
 
 type investigationInvocation struct {
-	investigations rez.InvestigationService
-	outputs        rez.InvestigationOutputService
-	analyses       rez.SystemAnalysisService
-	knowledge      rez.KnowledgeGraphQueryService
+	investigations    rez.InvestigationService
+	outputs           rez.InvestigationOutputService
+	knowledge         rez.KnowledgeGraphQueryService
+	situationsService rez.SituationService
+	signals           situations.SignalLoader
 
 	investigationID uuid.UUID
-	analysisID      uuid.UUID
 	turnID          uuid.UUID
 
 	hasAssignedQuestion bool
@@ -95,31 +90,13 @@ func (i *investigationInvocation) makeIntroduction(
 	turnInput *rez.AiAgentTurnInput,
 	turnSequence int,
 ) (string, error) {
-	countParams := ent.ListParams{Page: 1, PageSize: 1}
-	entities, entitiesErr := i.analyses.ListSystemAnalysisEntities(ctx, rez.ListSystemAnalysisEntitiesParams{
-		ListParams: countParams,
-		Predicates: []predicate.SystemAnalysisEntity{saent.AnalysisID(i.analysisID)},
-	})
-	if entitiesErr != nil {
-		return "", fmt.Errorf("count included analysis entities: %w", entitiesErr)
+	situation, situationErr := i.introduceSituation(ctx)
+	if situationErr != nil {
+		return "", situationErr
 	}
-	relationships, relationshipsErr := i.analyses.ListSystemAnalysisRelationships(ctx, rez.ListSystemAnalysisRelationshipsParams{
-		ListParams: countParams,
-		Predicates: []predicate.SystemAnalysisRelationship{sarel.AnalysisID(i.analysisID)},
-	})
-	if relationshipsErr != nil {
-		return "", fmt.Errorf("count included analysis relationships: %w", relationshipsErr)
-	}
-	entries, entriesErr := i.analyses.ListSystemAnalysisEntries(ctx, rez.ListSystemAnalysisEntriesParams{
-		ListParams: countParams,
-		Predicates: []predicate.SystemAnalysisEntry{
-			sae.AnalysisID(i.analysisID),
-			sae.KindIn(sae.KindObservation, sae.KindContext),
-		},
-		SummaryOnly: true,
-	})
-	if entriesErr != nil {
-		return "", fmt.Errorf("count observation and context entries: %w", entriesErr)
+	outputs, outputsErr := i.introduceOutputs(ctx)
+	if outputsErr != nil {
+		return "", outputsErr
 	}
 
 	assignedWork := "Initial investigation"
@@ -133,31 +110,160 @@ func (i *investigationInvocation) makeIntroduction(
 	}
 
 	return rezai.FormatInvestigationAgentIntroduction(rezai.InvestigationAgentIntroduction{
-		OriginalQuestion: strings.TrimSpace(sessInput.Query),
-		AssignedWork:     assignedWork,
-		AvailableContent: rezai.InvestigationAvailableContent{
-			Entities:      entities.Total,
-			Relationships: relationships.Total,
-			Entries:       entries.Total,
-		},
+		OriginalQuestion:        strings.TrimSpace(sessInput.Query),
+		AssignedWork:            assignedWork,
+		HasAssignedUserQuestion: i.hasAssignedQuestion,
+		Situation:               situation,
+		Outputs:                 *outputs,
 	})
+}
+
+func (i *investigationInvocation) introduceSituation(ctx context.Context) (*rezai.InvestigationSituation, error) {
+	listParams := rez.ListSituationsParams{
+		PageSize:        1,
+		InvestigationID: i.investigationID,
+	}
+	listed, listErr := i.situationsService.ListSituations(ctx, listParams)
+	if listErr != nil {
+		return nil, fmt.Errorf("list investigation situation: %w", listErr)
+	}
+	if len(listed.Data) == 0 {
+		return nil, nil
+	}
+	situation := listed.Data[0]
+	introduced := &rezai.InvestigationSituation{
+		Title:    situation.Title,
+		Summary:  situation.Summary,
+		OpenedAt: situation.OpenedAt,
+		ClosedAt: situation.ClosedAt,
+		Signals:  make([]rezai.InvestigationSignal, 0),
+		Entities: make([]rezai.InvestigationEntity, 0),
+	}
+
+	// The signal's own entity is an internal episode without evidence, so its source is the ref. A signal
+	// without a source has nothing to read and is left out. Only the most recently attached are loaded.
+	var members []*ent.SituationSignal
+	for _, group := range situation.Edges.ObservationGroups {
+		for _, member := range group.Edges.Signals {
+			if member.SourceEntityID != nil {
+				members = append(members, member)
+			}
+		}
+	}
+	slices.SortFunc(members, func(a, b *ent.SituationSignal) int {
+		return cmp.Or(b.AttachedAt.Compare(a.AttachedAt), strings.Compare(a.ID.String(), b.ID.String()))
+	})
+	members = members[:min(len(members), introductionListLimit)]
+	signalEntityIDs := make([]uuid.UUID, len(members))
+	sources := make(map[uuid.UUID]uuid.UUID, len(members))
+	for index, member := range members {
+		signalEntityIDs[index] = member.KnowledgeEntityID
+		sources[member.KnowledgeEntityID] = *member.SourceEntityID
+	}
+	signals, signalsErr := i.signals.LoadSignals(ctx, signalEntityIDs, situations.LoadSignalsOptions{})
+	if signalsErr != nil {
+		return nil, fmt.Errorf("load situation signals: %w", signalsErr)
+	}
+	slices.SortFunc(signals, func(a, b situations.Signal) int {
+		return cmp.Or(b.StartedAt.Compare(a.StartedAt), strings.Compare(a.Title, b.Title))
+	})
+	for _, signal := range signals {
+		introduced.Signals = append(introduced.Signals, rezai.InvestigationSignal{
+			Ref:        i.formatRef(sources[signal.EntityID]),
+			Name:       signal.Title,
+			Severity:   string(signal.Severity),
+			StartedAt:  signal.StartedAt,
+			FinishedAt: signal.FinishedAt,
+			Active:     signal.Active,
+		})
+	}
+
+	entities := make([]*ent.KnowledgeEntity, 0, len(situation.Edges.Entities))
+	for _, member := range situation.Edges.Entities {
+		entities = append(entities, member.Edges.KnowledgeEntity)
+	}
+	slices.SortFunc(entities, func(a, b *ent.KnowledgeEntity) int {
+		return cmp.Or(strings.Compare(a.State.DisplayName, b.State.DisplayName), strings.Compare(a.ID.String(), b.ID.String()))
+	})
+	for _, entity := range entities[:min(len(entities), introductionListLimit)] {
+		introduced.Entities = append(introduced.Entities, rezai.InvestigationEntity{
+			Ref:      i.formatRef(entity.ID),
+			Name:     limitedAnalysisDescription(entity.State.DisplayName),
+			Category: entity.Category.String(),
+			Kind:     entity.Kind,
+		})
+	}
+	return introduced, nil
+}
+
+func (i *investigationInvocation) introduceOutputs(ctx context.Context) (*rezai.InvestigationOutputs, error) {
+	introduced := &rezai.InvestigationOutputs{}
+
+	reportParams := rez.GetInvestigationReportParams{InvestigationID: i.investigationID}
+	report, reportErr := i.outputs.GetInvestigationReport(ctx, reportParams)
+	if reportErr != nil {
+		return nil, fmt.Errorf("read investigation report: %w", reportErr)
+	}
+	if report != nil {
+		result := i.reportToolResult(report)
+		introduced.Report = &rezai.InvestigationReportSummary{
+			VersionRef:  result.VersionRef,
+			Summary:     result.Summary,
+			CreatedAt:   result.CreatedAt,
+			Provisional: result.Provisional,
+		}
+	}
+
+	firstPage := ent.ListParams{Page: 1, PageSize: introductionListLimit}
+	findingsParams := rez.ListInvestigationFindingsParams{ListParams: firstPage, InvestigationID: i.investigationID}
+	findings, findingsErr := i.outputs.ListInvestigationFindings(ctx, findingsParams)
+	if findingsErr != nil {
+		return nil, fmt.Errorf("list investigation findings: %w", findingsErr)
+	}
+	introduced.Findings = make([]rezai.InvestigationFindingSummary, len(findings.Data))
+	for fi, version := range findings.Data {
+		result := i.findingToolResult(version)
+		introduced.Findings[fi] = rezai.InvestigationFindingSummary{
+			VersionRef: result.VersionRef,
+			Key:        result.Key,
+			Title:      result.Title,
+			IsAnswer:   result.IsAnswer,
+		}
+	}
+	if findings.Total > len(findings.Data) {
+		introduced.FindingsTotal = findings.Total
+	}
+
+	hypothesesParams := rez.ListInvestigationHypothesesParams{ListParams: firstPage, InvestigationID: i.investigationID}
+	hypotheses, hypothesesErr := i.outputs.ListInvestigationHypotheses(ctx, hypothesesParams)
+	if hypothesesErr != nil {
+		return nil, fmt.Errorf("list investigation hypotheses: %w", hypothesesErr)
+	}
+	introduced.Hypotheses = make([]rezai.InvestigationHypothesisSummary, len(hypotheses.Data))
+	for hi, version := range hypotheses.Data {
+		introduced.Hypotheses[hi] = rezai.InvestigationHypothesisSummary{
+			VersionRef: i.formatRef(version.ID),
+			Key:        version.Edges.Hypothesis.Key,
+			Title:      version.Title,
+			Status:     string(version.Status),
+		}
+	}
+	if hypotheses.Total > len(hypotheses.Data) {
+		introduced.HypothesesTotal = hypotheses.Total
+	}
+
+	return introduced, nil
 }
 
 func (i *investigationInvocation) makeTools() []ai.Tool {
 	tools := []ai.Tool{
-		makeDefinedTool(rezai.ListAnalysisSubjectsTool, i.listSubjects),
-		makeDefinedTool(rezai.ListAnalysisEntriesTool, i.listEntries),
-		makeDefinedTool(rezai.InspectAnalysisSubjectTool, i.inspectSubject),
-		makeDefinedTool(rezai.ReadAnalysisEntryTool, i.readEntry),
-		makeDefinedTool(rezai.ReadAnalysisEvidenceTool, i.readEvidence),
+		makeDefinedTool(rezai.ReadEntityTool, i.readEntity),
+		makeDefinedTool(rezai.ListEntityEvidenceTool, i.listEntityEvidence),
+		makeDefinedTool(rezai.ReadEvidenceTool, i.readEvidence),
+		makeDefinedTool(rezai.ReadInvestigationOutputTool, i.readOutput),
 		makeDefinedTool(rezai.PublishInvestigationReportTool, i.publishReport),
 		makeDefinedTool(rezai.PublishInvestigationFindingTool, i.publishFinding),
 		makeDefinedTool(rezai.PublishInvestigationHypothesisTool, i.publishHypothesis),
-		makeDefinedTool(rezai.ReadInvestigationReportTool, i.readReport),
-		makeDefinedTool(rezai.ListInvestigationFindingsTool, i.listFindings),
-		makeDefinedTool(rezai.ListInvestigationHypothesesTool, i.listHypotheses),
-		makeDefinedTool(rezai.ReadInvestigationFindingTool, i.readFinding),
-		makeDefinedTool(rezai.ReadInvestigationHypothesisTool, i.readHypothesis),
 	}
 	if i.hasAssignedQuestion {
 		tools = append(tools, makeDefinedTool(rezai.PublishInvestigationAnswerTool, i.publishAnswer))
@@ -178,84 +284,8 @@ func (i *investigationInvocation) checkHasAssignedQuestion(ctx context.Context) 
 	return lookupErr == nil, nil
 }
 
-func (i *investigationInvocation) listSubjects(ctx context.Context, input rezai.ListAnalysisSubjectsArgs) (*rezai.AnalysisToolResult, error) {
-	page, pageErr := normalizeAnalysisPage(input.Page, input.PageSize)
-	if pageErr != nil {
-		return nil, pageErr
-	}
-
-	switch strings.TrimSpace(input.Kind) {
-	case "entity":
-		params := rez.ListSystemAnalysisEntitiesParams{
-			ListParams: page,
-			Predicates: []predicate.SystemAnalysisEntity{saent.AnalysisID(i.analysisID)},
-			OrderBy:    analysisEntitiesByCanonicalID,
-		}
-		entities, listErr := i.analyses.ListSystemAnalysisEntities(ctx, params)
-		if listErr != nil {
-			return nil, fmt.Errorf("list included analysis entities: %w", listErr)
-		}
-
-		lines := make([]string, 0, len(entities.Data))
-		for _, membership := range entities.Data {
-			line, renderErr := i.renderEntityMembership(membership)
-			if renderErr != nil {
-				return nil, renderErr
-			}
-			lines = append(lines, line)
-		}
-		return i.analysisPageResult(strings.Join(lines, "\n"), page, entities.Total, len(entities.Data)), nil
-
-	case "relationship":
-		params := rez.ListSystemAnalysisRelationshipsParams{
-			ListParams:    page,
-			Predicates:    []predicate.SystemAnalysisRelationship{sarel.AnalysisID(i.analysisID)},
-			OrderBy:       analysisRelationshipsByCanonicalID,
-			WithEndpoints: true,
-		}
-		relationships, listErr := i.analyses.ListSystemAnalysisRelationships(ctx, params)
-		if listErr != nil {
-			return nil, fmt.Errorf("list included analysis relationships: %w", listErr)
-		}
-
-		lines := make([]string, 0, len(relationships.Data))
-		for _, membership := range relationships.Data {
-			line, renderErr := i.renderRelationshipMembership(membership)
-			if renderErr != nil {
-				return nil, renderErr
-			}
-			lines = append(lines, line)
-		}
-		return i.analysisPageResult(strings.Join(lines, "\n"), page, relationships.Total, len(relationships.Data)), nil
-	default:
-		return nil, fmt.Errorf("%w: kind must be entity or relationship", errs.ErrInvalidInput)
-	}
-}
-
-func (i *investigationInvocation) listEntries(ctx context.Context, input rezai.AnalysisPageArgs) (*rezai.AnalysisToolResult, error) {
-	page, pageErr := normalizeAnalysisPage(input.Page, input.PageSize)
-	if pageErr != nil {
-		return nil, pageErr
-	}
-
-	params := rez.ListSystemAnalysisEntriesParams{
-		ListParams: page,
-		Predicates: []predicate.SystemAnalysisEntry{
-			sae.AnalysisID(i.analysisID),
-			sae.KindIn(sae.KindObservation, sae.KindContext),
-		},
-		OrderBy:     analysisEntriesBySequence,
-		SummaryOnly: true,
-	}
-	entries, listErr := i.analyses.ListSystemAnalysisEntries(ctx, params)
-	if listErr != nil {
-		return nil, fmt.Errorf("list observation and context entries: %w", listErr)
-	}
-	return i.analysisPageResult(i.formatEntryPage(entries.Data), page, entries.Total, len(entries.Data)), nil
-}
-
-func (i *investigationInvocation) inspectSubject(ctx context.Context, input rezai.InspectAnalysisSubjectArgs) (*rezai.AnalysisToolResult, error) {
-	subjectID, resolveErr := i.resolveRef(input.Ref)
+func (i *investigationInvocation) readEntity(ctx context.Context, input rezai.ReadEntityArgs) (*rezai.TextToolResult, error) {
+	entityID, resolveErr := i.resolveRef(input.Ref)
 	if resolveErr != nil {
 		return nil, fmt.Errorf("ref: %w", resolveErr)
 	}
@@ -263,68 +293,113 @@ func (i *investigationInvocation) inspectSubject(ctx context.Context, input reza
 	if pageErr != nil {
 		return nil, pageErr
 	}
-
-	var subjectLine string
-	var entries *ent.ListResult[ent.SystemAnalysisEntry]
-	switch strings.TrimSpace(input.Kind) {
-	case "entity":
-		params := rez.ListSystemAnalysisEntitiesParams{
-			ListParams: ent.ListParams{Page: 1, PageSize: 1},
-			Predicates: []predicate.SystemAnalysisEntity{
-				saent.AnalysisID(i.analysisID),
-				saent.KnowledgeEntityID(subjectID),
-			},
-		}
-		memberships, listErr := i.analyses.ListSystemAnalysisEntities(ctx, params)
-		if listErr != nil {
-			return nil, fmt.Errorf("verify included analysis entity: %w", listErr)
-		}
-		if memberships.Total == 0 {
-			return nil, errs.ErrNotFound
-		}
-		subjectLine, listErr = i.renderEntityMembership(memberships.Data[0])
-		if listErr != nil {
-			return nil, listErr
-		}
-		entries, listErr = i.entriesForSubject(ctx, "entity", subjectID, page)
-		if listErr != nil {
-			return nil, fmt.Errorf("list entries linked to analysis entity: %w", listErr)
-		}
-
-	case "relationship":
-		params := rez.ListSystemAnalysisRelationshipsParams{
-			ListParams: ent.ListParams{Page: 1, PageSize: 1},
-			Predicates: []predicate.SystemAnalysisRelationship{
-				sarel.AnalysisID(i.analysisID),
-				sarel.KnowledgeRelationshipID(subjectID),
-			},
-			WithEndpoints: true,
-		}
-		memberships, listErr := i.analyses.ListSystemAnalysisRelationships(ctx, params)
-		if listErr != nil {
-			return nil, fmt.Errorf("verify included analysis relationship: %w", listErr)
-		}
-		if memberships.Total == 0 {
-			return nil, errs.ErrNotFound
-		}
-		subjectLine, listErr = i.renderRelationshipMembership(memberships.Data[0])
-		if listErr != nil {
-			return nil, listErr
-		}
-		entries, listErr = i.entriesForSubject(ctx, "relationship", subjectID, page)
-		if listErr != nil {
-			return nil, fmt.Errorf("list entries linked to analysis relationship: %w", listErr)
-		}
-	default:
-		return nil, fmt.Errorf("%w: kind must be entity or relationship", errs.ErrInvalidInput)
+	entity, entityErr := i.knowledge.GetEntity(ctx, entityID, rez.KnowledgeEntityExpand{LinkingAttributes: true})
+	if entityErr != nil {
+		return nil, fmt.Errorf("read entity: %w", entityErr)
+	}
+	// A busy entity relates to many events, which list_entity_evidence covers, so they are only counted.
+	relationshipsParams := rez.ListKnowledgeRelationshipsParams{
+		ListParams:                  page,
+		EntityID:                    entityID,
+		ExcludedNeighbourCategories: []kne.Category{kne.CategoryEvent},
+		NewestEvidenceFirst:         true,
+		Expand:                      rez.KnowledgeRelationshipExpand{Endpoints: true},
+	}
+	relationships, relationshipsErr := i.knowledge.ListRelationships(ctx, relationshipsParams)
+	if relationshipsErr != nil {
+		return nil, fmt.Errorf("list entity relationships: %w", relationshipsErr)
+	}
+	aliases := slices.Clone(entity.Edges.Aliases)
+	for _, relationship := range relationships.Data {
+		aliases = append(aliases, relationship.Edges.Aliases...)
+	}
+	evidence, evidenceErr := i.summarizeAliasEvidence(ctx, aliases)
+	if evidenceErr != nil {
+		return nil, fmt.Errorf("summarize entity and relationship evidence: %w", evidenceErr)
+	}
+	eventsParams := rez.ListKnowledgeRelationshipsParams{
+		PageSize:            1,
+		EntityID:            entityID,
+		NeighbourCategories: []kne.Category{kne.CategoryEvent},
+	}
+	events, eventsErr := i.knowledge.ListRelationships(ctx, eventsParams)
+	if eventsErr != nil {
+		return nil, fmt.Errorf("count event relationships: %w", eventsErr)
 	}
 
-	text := subjectLine + "\n" + i.formatEntryPage(entries.Data)
-	return i.analysisPageResult(text, page, entries.Total, len(entries.Data)), nil
+	lines := []string{i.renderEntityLine(entity)}
+	if description := limitedAnalysisDescription(entity.State.Description); description != "" {
+		lines = append(lines, "description="+description)
+	}
+	if entity.StateEffectiveAt != nil {
+		lines = append(lines, "state_effective_at="+entity.StateEffectiveAt.UTC().Format(time.RFC3339Nano))
+	}
+	if len(entity.State.Properties) > 0 {
+		properties, marshalErr := json.Marshal(entity.State.Properties)
+		if marshalErr != nil {
+			return nil, fmt.Errorf("encode entity properties: %w", marshalErr)
+		}
+		lines = append(lines, "properties="+string(properties))
+	}
+	for _, attribute := range entity.Edges.LinkingAttributes {
+		lines = append(lines, "linking_attribute "+attribute.Attribute+"="+attribute.Value)
+	}
+	for _, alias := range entity.Edges.Aliases {
+		line := fmt.Sprintf("alias %s resource_ref=%s", i.aliasSource(alias), alias.ProviderResourceRef)
+		if summary, ok := evidence[alias.ID]; ok {
+			line += " latest_evidence_at=" + summary.LatestAt.UTC().Format(time.RFC3339Nano)
+		}
+		lines = append(lines, line)
+	}
+	for _, relationship := range relationships.Data {
+		var relationshipEvidence rez.KnowledgeEvidenceSummary
+		for _, alias := range relationship.Edges.Aliases {
+			if summary, ok := evidence[alias.ID]; ok {
+				i.addEvidenceSummary(&relationshipEvidence, summary)
+			}
+		}
+		lines = append(lines, i.renderRelationshipLine(entity.ID, relationship)+" "+i.renderEvidenceSummary(relationshipEvidence))
+	}
+	if events.Total > 0 {
+		lines = append(lines, fmt.Sprintf("event_relationships=%d (not listed; use list_entity_evidence)", events.Total))
+	}
+	return i.textPageResult(strings.Join(lines, "\n"), page, relationships.Total, len(relationships.Data)), nil
 }
 
-func (i *investigationInvocation) readEntry(ctx context.Context, input rezai.ReadAnalysisEntryArgs) (*rezai.AnalysisToolResult, error) {
-	entryID, resolveErr := i.resolveRef(input.Ref)
+// addEvidenceSummary adds one alias's evidence to a subject's, which may span several aliases.
+func (i *investigationInvocation) addEvidenceSummary(total *rez.KnowledgeEvidenceSummary, alias *rez.KnowledgeEvidenceSummary) {
+	if total.Count == 0 || alias.EarliestAt.Before(total.EarliestAt) {
+		total.EarliestAt = alias.EarliestAt
+	}
+	if total.Count == 0 || alias.LatestAt.After(total.LatestAt) {
+		total.LatestAt, total.LatestID, total.LatestState = alias.LatestAt, alias.LatestID, alias.LatestState
+	}
+	total.Count += alias.Count
+}
+
+// summarizeAliasEvidence summarizes the evidence on each alias, by alias ID.
+func (i *investigationInvocation) summarizeAliasEvidence(ctx context.Context, aliases []*ent.KnowledgeSubjectAlias) (map[uuid.UUID]*rez.KnowledgeEvidenceSummary, error) {
+	aliasIDs := make([]uuid.UUID, len(aliases))
+	for index, alias := range aliases {
+		aliasIDs[index] = alias.ID
+	}
+	params := rez.SummarizeKnowledgeEvidenceParams{
+		PageSize: len(aliasIDs),
+		AliasIDs: aliasIDs,
+	}
+	summaries, summarizeErr := i.knowledge.SummarizeEvidence(ctx, params)
+	if summarizeErr != nil {
+		return nil, summarizeErr
+	}
+	byAlias := make(map[uuid.UUID]*rez.KnowledgeEvidenceSummary, len(summaries.Data))
+	for _, summary := range summaries.Data {
+		byAlias[summary.SubjectAliasID] = summary
+	}
+	return byAlias, nil
+}
+
+func (i *investigationInvocation) listEntityEvidence(ctx context.Context, input rezai.ListEntityEvidenceArgs) (*rezai.TextToolResult, error) {
+	entityID, resolveErr := i.resolveRef(input.Ref)
 	if resolveErr != nil {
 		return nil, fmt.Errorf("ref: %w", resolveErr)
 	}
@@ -332,132 +407,105 @@ func (i *investigationInvocation) readEntry(ctx context.Context, input rezai.Rea
 	if pageErr != nil {
 		return nil, pageErr
 	}
-
-	entryParams := rez.ListSystemAnalysisEntriesParams{
-		ListParams: ent.ListParams{Page: 1, PageSize: 1},
-		Predicates: []predicate.SystemAnalysisEntry{
-			sae.AnalysisID(i.analysisID),
-			sae.ID(entryID),
-			sae.KindIn(sae.KindObservation, sae.KindContext),
-		},
-		OrderBy:     analysisEntriesBySequence,
-		SummaryOnly: true,
+	start, startErr := i.parseOptionalTime("start", input.Start)
+	if startErr != nil {
+		return nil, startErr
 	}
-	entries, listErr := i.analyses.ListSystemAnalysisEntries(ctx, entryParams)
-	if listErr != nil {
-		return nil, fmt.Errorf("read analysis entry: %w", listErr)
+	end, endErr := i.parseOptionalTime("end", input.End)
+	if endErr != nil {
+		return nil, endErr
 	}
-	if entries.Total == 0 {
-		return nil, errs.ErrNotFound
+	params := rez.SummarizeKnowledgeEvidenceParams{
+		ListParams:  page,
+		EntityID:    entityID,
+		Start:       start,
+		End:         end,
+		ByAssertion: true,
+		Expand:      rez.KnowledgeEvidenceSummaryExpand{Alias: true},
 	}
-	entry := entries.Data[0]
-
-	attachmentParams := rez.ListSystemAnalysisEntrySubjectsParams{
-		AnalysisID: i.analysisID,
-		EntryID:    entryID,
-		ListParams: page,
-	}
-	attachments, attachmentsErr := i.analyses.ListSystemAnalysisEntrySubjects(ctx, attachmentParams)
-	if ent.IsNotFound(attachmentsErr) {
-		return nil, errs.ErrNotFound
-	}
-	if attachmentsErr != nil {
-		return nil, fmt.Errorf("list analysis entry attachments: %w", attachmentsErr)
+	summaries, summarizeErr := i.knowledge.SummarizeEvidence(ctx, params)
+	if summarizeErr != nil {
+		return nil, fmt.Errorf("summarize entity evidence: %w", summarizeErr)
 	}
 
-	lines := []string{
-		"entry " + i.formatRef(entry.ID),
-		"kind=" + entry.Kind.String(),
-		"title=" + limitedAnalysisDescription(entry.Title),
-	}
-	if entry.OccurredAt != nil {
-		lines = append(lines, "occurred_at="+entry.OccurredAt.UTC().Format("2006-01-02T15:04:05.999999999Z07:00"))
-	}
-	var attachmentLines []string
-	for _, attachment := range attachments.Data {
-		kind, id, targetErr := i.analysisEntryAttachmentTarget(attachment)
-		if targetErr != nil {
-			return nil, targetErr
+	lines := make([]string, 0, len(summaries.Data))
+	for _, summary := range summaries.Data {
+		subject := "entity"
+		if relationship := summary.Alias.Edges.Relationship; relationship != nil {
+			subject = i.renderRelationshipLine(entityID, relationship)
 		}
-		if kind == "normalized_event" {
-			continue
+		line := fmt.Sprintf("%s assertion=%s first=%s %s source=%s",
+			subject, summary.Assertion, summary.EarliestAt.UTC().Format(time.RFC3339Nano),
+			i.renderEvidenceSummary(*summary), i.aliasSource(summary.Alias))
+		if name := limitedAnalysisDescription(summary.LatestState.DisplayName); name != "" {
+			line += fmt.Sprintf(" stated_name=%q", name)
 		}
-		line := kind + " " + i.formatRef(id)
-		if strings.TrimSpace(attachment.Role) != "" {
-			line += " role=" + limitedAnalysisDescription(attachment.Role)
-		}
-		attachmentLines = append(attachmentLines, line)
+		lines = append(lines, line)
 	}
-	if len(attachmentLines) == 0 {
-		lines = append(lines, "No supported attachments on this page.")
-	} else {
-		lines = append(lines, attachmentLines...)
-	}
-	content := strings.Join(lines, "\n")
-	if body := strings.TrimSpace(entry.Body); body != "" {
-		content += "\nbody:\n" + body
-	}
-	hasMore, pageStatus := analysisPageStatus(page, attachments.Total, len(attachments.Data))
-	return &rezai.AnalysisToolResult{
-		Text:     limitedAnalysisResultText("", content, "\n"+pageStatus),
-		Page:     page.Page,
-		PageSize: page.PageSize,
-		Total:    attachments.Total,
-		HasMore:  hasMore,
-	}, nil
+	return i.textPageResult(strings.Join(lines, "\n"), page, summaries.Total, len(summaries.Data)), nil
 }
 
-func (i *investigationInvocation) readEvidence(ctx context.Context, input rezai.ReadAnalysisEvidenceArgs) (*rezai.AnalysisToolResult, error) {
+func (i *investigationInvocation) readEvidence(ctx context.Context, input rezai.ReadEvidenceArgs) (*rezai.TextToolResult, error) {
 	evidenceID, resolveErr := i.resolveRef(input.Ref)
 	if resolveErr != nil {
 		return nil, fmt.Errorf("ref: %w", resolveErr)
 	}
-
-	attachmentPredicate := saes.KnowledgeEvidenceID(evidenceID)
-	params := rez.ListSystemAnalysisEntriesParams{
-		ListParams: ent.ListParams{Page: 1, PageSize: 1},
-		Predicates: []predicate.SystemAnalysisEntry{
-			sae.AnalysisID(i.analysisID),
-			sae.KindIn(sae.KindObservation, sae.KindContext),
-			sae.HasSubjectsWith(attachmentPredicate),
-		},
-		OrderBy:     analysisEntriesBySequence,
-		SummaryOnly: true,
-	}
-	linkedEntries, linkedEntriesErr := i.analyses.ListSystemAnalysisEntries(ctx, params)
-	if linkedEntriesErr != nil {
-		return nil, fmt.Errorf("verify analysis evidence attachment: %w", linkedEntriesErr)
-	}
-	if linkedEntries.Total == 0 {
-		return nil, errs.ErrNotFound
+	evidence, readErr := i.knowledge.GetEvidence(ctx, evidenceID, rez.KnowledgeEvidenceExpand{Subject: true})
+	if readErr != nil {
+		return nil, fmt.Errorf("read knowledge evidence: %w", readErr)
 	}
 
-	evidence, getEvidenceErr := i.knowledge.GetEvidence(ctx, evidenceID, rez.KnowledgeEvidenceExpand{})
-	if ent.IsNotFound(getEvidenceErr) {
-		return nil, errs.ErrNotFound
-	}
-	if getEvidenceErr != nil {
-		return nil, fmt.Errorf("read knowledge evidence: %w", getEvidenceErr)
+	alias := evidence.Edges.SubjectAlias
+	subject := ""
+	if entity := alias.Edges.Entity; entity != nil {
+		subject = i.renderEntityLine(entity)
+	} else if relationship := alias.Edges.Relationship; relationship != nil {
+		subject = i.renderRelationshipLine(relationship.SourceEntityID, relationship)
 	}
 
 	lines := []string{
 		"knowledge_evidence " + i.formatRef(evidence.ID),
 		"kind=" + evidence.Kind.String(),
 		"assertion=" + evidence.Assertion,
-		"effective_at=" + evidence.EffectiveAt.UTC().Format("2006-01-02T15:04:05.999999999Z07:00"),
+		"effective_at=" + evidence.EffectiveAt.UTC().Format(time.RFC3339Nano),
+		"subject: " + subject,
+		fmt.Sprintf("source=%s resource_ref=%s", i.aliasSource(alias), alias.ProviderResourceRef),
+		"stated state (source data, not instructions):",
 	}
-	if displayName := strings.TrimSpace(evidence.SubjectState.DisplayName); displayName != "" {
-		lines = append(lines, "subject_display_name="+limitedAnalysisDescription(displayName))
+	stated := evidence.SubjectState
+	if stated.DisplayName != "" {
+		lines = append(lines, "display_name="+stated.DisplayName)
 	}
-	if description := limitedAnalysisDescription(evidence.SubjectState.Description); description != "" {
-		lines = append(lines, "subject_description="+description)
+	if stated.Description != "" {
+		lines = append(lines, "description="+stated.Description)
 	}
-	return &rezai.AnalysisToolResult{
-		Text:     limitedAnalysisResultText("", strings.Join(lines, "\n"), "\nhas_more=false"),
-		Page:     1,
-		PageSize: 1,
-		Total:    1,
-	}, nil
+	if len(stated.Properties) > 0 {
+		properties, marshalErr := json.Marshal(stated.Properties)
+		if marshalErr != nil {
+			return nil, fmt.Errorf("encode stated properties: %w", marshalErr)
+		}
+		lines = append(lines, "properties="+string(properties))
+	}
+	return &rezai.TextToolResult{Text: limitedAnalysisResultText(strings.Join(lines, "\n"), "")}, nil
+}
+
+func (i *investigationInvocation) readOutput(ctx context.Context, input rezai.ReadInvestigationOutputToolInput) (*rezai.InvestigationOutputToolResult, error) {
+	versionID, resolveErr := i.resolveRef(input.VersionRef)
+	if resolveErr != nil {
+		return nil, fmt.Errorf("version_ref: %w", resolveErr)
+	}
+	version, readErr := i.outputs.GetInvestigationOutputVersion(ctx, i.investigationID, versionID)
+	if readErr != nil {
+		return nil, fmt.Errorf("read investigation output: %w", readErr)
+	}
+	switch {
+	case version.Report != nil:
+		return &rezai.InvestigationOutputToolResult{Kind: "report", Report: i.reportToolResult(version.Report)}, nil
+	case version.Finding != nil:
+		return &rezai.InvestigationOutputToolResult{Kind: "finding", Finding: i.findingToolResult(version.Finding)}, nil
+	default:
+		return &rezai.InvestigationOutputToolResult{Kind: "hypothesis", Hypothesis: i.hypothesisToolResult(version.Hypothesis)}, nil
+	}
 }
 
 func (i *investigationInvocation) publishReport(ctx context.Context, input rezai.PublishInvestigationReportToolInput) (*rezai.InvestigationReportToolResult, error) {
@@ -549,90 +597,6 @@ func (i *investigationInvocation) publishHypothesis(ctx context.Context, input r
 	return i.hypothesisToolResult(result), nil
 }
 
-func (i *investigationInvocation) readReport(ctx context.Context, input rezai.ReadInvestigationReportToolInput) (*rezai.InvestigationReportToolResult, error) {
-	params := rez.ReadInvestigationReportParams{
-		InvestigationID: i.investigationID,
-		Selection:       rez.InvestigationReportSelection(strings.TrimSpace(input.Selection)),
-	}
-	result, readErr := i.outputs.ReadInvestigationReport(ctx, params)
-	if readErr != nil {
-		return nil, fmt.Errorf("read investigation report: %w", readErr)
-	}
-	return i.reportToolResult(result), nil
-}
-
-func (i *investigationInvocation) listFindings(ctx context.Context, input rezai.AnalysisPageArgs) (*rezai.InvestigationOutputPage[rezai.InvestigationFindingVersionToolResult], error) {
-	page, pageErr := normalizeAnalysisPage(input.Page, input.PageSize)
-	if pageErr != nil {
-		return nil, pageErr
-	}
-	params := rez.ListInvestigationFindingsParams{ListParams: page, InvestigationID: i.investigationID}
-	result, listErr := i.outputs.ListInvestigationFindings(ctx, params)
-	if listErr != nil {
-		return nil, fmt.Errorf("list investigation findings: %w", listErr)
-	}
-	if result == nil {
-		return nil, nil
-	}
-
-	items := make([]rezai.InvestigationFindingVersionToolResult, 0, len(result.Data))
-	for _, finding := range result.Data {
-		items = append(items, *i.findingToolResult(finding))
-	}
-	return &rezai.InvestigationOutputPage[rezai.InvestigationFindingVersionToolResult]{
-		Items: items, Page: result.Page, PageSize: result.PageSize, Total: result.Total,
-		HasMore: result.Page*result.PageSize < result.Total,
-	}, nil
-}
-
-func (i *investigationInvocation) listHypotheses(ctx context.Context, input rezai.AnalysisPageArgs) (*rezai.InvestigationOutputPage[rezai.InvestigationHypothesisVersionToolResult], error) {
-	page, pageErr := normalizeAnalysisPage(input.Page, input.PageSize)
-	if pageErr != nil {
-		return nil, pageErr
-	}
-	params := rez.ListInvestigationHypothesesParams{ListParams: page, InvestigationID: i.investigationID}
-	result, listErr := i.outputs.ListInvestigationHypotheses(ctx, params)
-	if listErr != nil {
-		return nil, fmt.Errorf("list investigation hypotheses: %w", listErr)
-	}
-	if result == nil {
-		return nil, nil
-	}
-
-	items := make([]rezai.InvestigationHypothesisVersionToolResult, 0, len(result.Data))
-	for _, hypothesis := range result.Data {
-		items = append(items, *i.hypothesisToolResult(hypothesis))
-	}
-	return &rezai.InvestigationOutputPage[rezai.InvestigationHypothesisVersionToolResult]{
-		Items: items, Page: result.Page, PageSize: result.PageSize, Total: result.Total,
-		HasMore: result.Page*result.PageSize < result.Total,
-	}, nil
-}
-
-func (i *investigationInvocation) readFinding(ctx context.Context, input rezai.ReadInvestigationFindingToolInput) (*rezai.InvestigationFindingVersionToolResult, error) {
-	versionID, resolveErr := i.resolveRef(input.VersionRef)
-	if resolveErr != nil {
-		return nil, fmt.Errorf("version_ref: %w", resolveErr)
-	}
-	result, readErr := i.outputs.GetInvestigationFindingVersion(ctx, i.investigationID, versionID)
-	if readErr != nil {
-		return nil, fmt.Errorf("read investigation finding version: %w", readErr)
-	}
-	return i.findingToolResult(result), nil
-}
-
-func (i *investigationInvocation) readHypothesis(ctx context.Context, input rezai.ReadInvestigationHypothesisToolInput) (*rezai.InvestigationHypothesisVersionToolResult, error) {
-	versionID, resolveErr := i.resolveRef(input.VersionRef)
-	if resolveErr != nil {
-		return nil, fmt.Errorf("version_ref: %w", resolveErr)
-	}
-	result, readErr := i.outputs.GetInvestigationHypothesisVersion(ctx, i.investigationID, versionID)
-	if readErr != nil {
-		return nil, fmt.Errorf("read investigation hypothesis version: %w", readErr)
-	}
-	return i.hypothesisToolResult(result), nil
-}
-
 func (i *investigationInvocation) findingVersionReferences(inputs []rezai.InvestigationFindingReferenceInput) ([]rez.InvestigationFindingVersionReference, error) {
 	references := make([]rez.InvestigationFindingVersionReference, 0, len(inputs))
 	for index, input := range inputs {
@@ -657,6 +621,7 @@ func (i *investigationInvocation) reportToolResult(report *ent.InvestigationRepo
 	}
 	turnStatus := report.Edges.AgentTurn.Status
 	return &rezai.InvestigationReportToolResult{
+		VersionRef:   i.formatRef(report.ID),
 		Text:         report.Text,
 		Summary:      report.Summary,
 		EvidenceRefs: i.formatRefs(ent.InvestigationOutputReferences(report.Edges.OutputReferences).KnowledgeEvidenceIDs()),
@@ -717,194 +682,73 @@ func (i *investigationInvocation) hypothesisToolResult(version *ent.Investigatio
 	}
 }
 
-func (i *investigationInvocation) renderEntityMembership(membership *ent.SystemAnalysisEntity) (string, error) {
-	entity, entityErr := membership.Edges.KnowledgeEntityOrErr()
-	if entityErr != nil {
-		return "", fmt.Errorf("load included analysis entity: %w", entityErr)
-	}
-	name := i.entityDisplayName(entity)
-	description := i.entityDescription(entity)
-	if membership.LabelOverride != nil {
-		name = *membership.LabelOverride
-	}
-	if membership.DescriptionOverride != nil {
-		description = *membership.DescriptionOverride
-	}
-	return i.renderEntityLine(entity, name, description), nil
+func (i *investigationInvocation) renderEntityLine(entity *ent.KnowledgeEntity) string {
+	return "entity " + i.renderEntityRef(entity)
 }
 
-func (i *investigationInvocation) renderRelationshipMembership(membership *ent.SystemAnalysisRelationship) (string, error) {
-	relationship, relationshipErr := membership.Edges.KnowledgeRelationshipOrErr()
-	if relationshipErr != nil {
-		return "", fmt.Errorf("load included analysis relationship: %w", relationshipErr)
+// renderEntityRef renders the entity's ref, name, category and kind.
+func (i *investigationInvocation) renderEntityRef(entity *ent.KnowledgeEntity) string {
+	rendered := i.formatRef(entity.ID)
+	if name := limitedAnalysisDescription(entity.State.DisplayName); name != "" {
+		rendered += " " + name
 	}
-	source, sourceErr := relationship.Edges.SourceEntityOrErr()
-	if sourceErr != nil {
-		return "", fmt.Errorf("load relationship source entity: %w", sourceErr)
+	return rendered + " [" + entity.Category.String() + "/" + entity.Kind + "]"
+}
+
+// renderRelationshipLine describes the relationship from the viewpoint of one of its endpoints.
+func (i *investigationInvocation) renderRelationshipLine(viewpointID uuid.UUID, relationship *ent.KnowledgeRelationship) string {
+	direction, other := "outgoing", relationship.Edges.TargetEntity
+	if relationship.SourceEntityID != viewpointID {
+		direction, other = "incoming", relationship.Edges.SourceEntity
 	}
-	target, targetErr := relationship.Edges.TargetEntityOrErr()
-	if targetErr != nil {
-		return "", fmt.Errorf("load relationship target entity: %w", targetErr)
+	return fmt.Sprintf("relationship %s %s direction=%s other=%s",
+		i.formatRef(relationship.ID), relationship.Predicate, direction, i.renderEntityRef(other))
+}
+
+func (i *investigationInvocation) renderEvidenceSummary(summary rez.KnowledgeEvidenceSummary) string {
+	if summary.Count == 0 {
+		return "evidence=0"
 	}
-	line := fmt.Sprintf(
-		"relationship %s %s (%s) --%s--> %s (%s)",
-		i.formatRef(relationship.ID),
-		i.entityNameOrRef(source), i.formatRef(source.ID),
-		relationship.Predicate,
-		i.entityNameOrRef(target), i.formatRef(target.ID),
+	return fmt.Sprintf("evidence=%d latest=%s latest_evidence=%s",
+		summary.Count,
+		summary.LatestAt.UTC().Format(time.RFC3339Nano),
+		i.formatRef(summary.LatestID),
 	)
-	name := ""
-	description := ""
-	if evidence := relationship.LatestEvidence(); evidence != nil {
-		name = strings.TrimSpace(evidence.SubjectState.DisplayName)
-		description = evidence.SubjectState.Description
-	}
-	if membership.LabelOverride != nil {
-		name = strings.TrimSpace(*membership.LabelOverride)
-	}
-	if membership.DescriptionOverride != nil {
-		description = *membership.DescriptionOverride
-	}
-	if name != "" {
-		line += " name=" + limitedAnalysisDescription(name)
-	}
-	if description = limitedAnalysisDescription(description); description != "" {
-		line += " — " + description
-	}
-	return line, nil
 }
 
-func (i *investigationInvocation) entriesForSubject(ctx context.Context, kind string, subjectID uuid.UUID, page ent.ListParams) (*ent.ListResult[ent.SystemAnalysisEntry], error) {
-	var subjectPredicate predicate.SystemAnalysisEntrySubject
-	if kind == "entity" {
-		subjectPredicate = saes.KnowledgeEntityID(subjectID)
-	} else {
-		subjectPredicate = saes.KnowledgeRelationshipID(subjectID)
+func (i *investigationInvocation) parseOptionalTime(name, value string) (time.Time, error) {
+	if value == "" {
+		return time.Time{}, nil
 	}
-	params := rez.ListSystemAnalysisEntriesParams{
-		ListParams: page,
-		Predicates: []predicate.SystemAnalysisEntry{
-			sae.AnalysisID(i.analysisID),
-			sae.KindIn(sae.KindObservation, sae.KindContext),
-			sae.HasSubjectsWith(subjectPredicate),
-		},
-		OrderBy:     analysisEntriesBySequence,
-		SummaryOnly: true,
+	parsed, parseErr := time.Parse(time.RFC3339, value)
+	if parseErr != nil {
+		return time.Time{}, fmt.Errorf("%w: %s must be an RFC 3339 time", errs.ErrInvalidInput, name)
 	}
-	return i.analyses.ListSystemAnalysisEntries(ctx, params)
+	return parsed, nil
 }
 
-func (i *investigationInvocation) renderEntryLine(entry *ent.SystemAnalysisEntry) string {
-	line := fmt.Sprintf("entry %s %s: %s", i.formatRef(entry.ID), entry.Kind, limitedAnalysisDescription(entry.Title))
-	if entry.OccurredAt != nil {
-		line += " occurred_at=" + entry.OccurredAt.UTC().Format("2006-01-02T15:04:05.999999999Z07:00")
-	}
-	return line
+func (i *investigationInvocation) aliasSource(alias *ent.KnowledgeSubjectAlias) string {
+	return alias.Provider + "/" + alias.ProviderNamespace
 }
 
-func (i *investigationInvocation) analysisPageResult(text string, page ent.ListParams, total, returned int) *rezai.AnalysisToolResult {
+func (i *investigationInvocation) textPageResult(text string, page ent.ListParams, total, returned int) *rezai.TextToolResult {
 	if strings.TrimSpace(text) == "" {
 		text = "No items found."
 	}
-	hasMore, status := analysisPageStatus(page, total, returned)
-	return &rezai.AnalysisToolResult{
-		Text:     text + "\n" + status,
+	hasMore := false
+	status := "has_more=false"
+	offset := (page.Page - 1) * page.PageSize
+	if offset+returned < total {
+		status = fmt.Sprintf("has_more=true; request page=%d, page_size=%d to continue.", page.Page+1, page.PageSize)
+		hasMore = true
+	}
+	return &rezai.TextToolResult{
+		Text:     limitedAnalysisResultText(text, "\n"+status),
 		Page:     page.Page,
 		PageSize: page.PageSize,
 		Total:    total,
 		HasMore:  hasMore,
 	}
-}
-
-func analysisPageStatus(page ent.ListParams, total, returned int) (bool, string) {
-	offset := (page.Page - 1) * page.PageSize
-	if offset+returned < total {
-		return true, fmt.Sprintf("has_more=true; request page=%d, page_size=%d to continue.", page.Page+1, page.PageSize)
-	}
-	return false, "has_more=false"
-}
-
-func normalizeAnalysisPage(page, pageSize int) (ent.ListParams, error) {
-	if page < 0 || pageSize < 0 || pageSize > analysisToolMaxPageSize {
-		return ent.ListParams{}, fmt.Errorf("%w: page and page_size must be non-negative and page_size must not exceed %d", errs.ErrInvalidInput, analysisToolMaxPageSize)
-	}
-	if page == 0 {
-		page = 1
-	}
-	if pageSize == 0 {
-		pageSize = analysisToolDefaultPageSize
-	}
-	maxInt := int(^uint(0) >> 1)
-	if page > maxInt/pageSize {
-		return ent.ListParams{}, fmt.Errorf("%w: page is too large", errs.ErrInvalidInput)
-	}
-	return ent.ListParams{Page: page, PageSize: pageSize}, nil
-}
-
-func (i *investigationInvocation) formatEntryPage(entries []*ent.SystemAnalysisEntry) string {
-	lines := make([]string, 0, len(entries))
-	for _, entry := range entries {
-		lines = append(lines, i.renderEntryLine(entry))
-	}
-	return strings.Join(lines, "\n")
-}
-
-func (i *investigationInvocation) renderEntityLine(entity *ent.KnowledgeEntity, name, description string) string {
-	line := "entity " + i.formatRef(entity.ID)
-	if strings.TrimSpace(name) != "" {
-		line += " " + limitedAnalysisDescription(name)
-	}
-	line += " [" + entity.Kind + "]"
-	if description = limitedAnalysisDescription(description); description != "" {
-		line += " — " + description
-	}
-	return line
-}
-
-func (i *investigationInvocation) entityNameOrRef(entity *ent.KnowledgeEntity) string {
-	if name := i.entityDisplayName(entity); name != "" {
-		return limitedAnalysisDescription(name)
-	}
-	return i.formatRef(entity.ID)
-}
-
-func (i *investigationInvocation) entityDisplayName(entity *ent.KnowledgeEntity) string {
-	if evidence := entity.LatestEvidence(); evidence != nil {
-		return strings.TrimSpace(evidence.SubjectState.DisplayName)
-	}
-	return ""
-}
-
-func (i *investigationInvocation) entityDescription(entity *ent.KnowledgeEntity) string {
-	if evidence := entity.LatestEvidence(); evidence != nil {
-		return evidence.SubjectState.Description
-	}
-	return ""
-}
-
-func (i *investigationInvocation) analysisEntryAttachmentTarget(subject *ent.SystemAnalysisEntrySubject) (string, uuid.UUID, error) {
-	targetCount := 0
-	targetKind := ""
-	targetID := uuid.Nil
-	if subject.KnowledgeEntityID != nil {
-		targetCount++
-		targetKind = "entity"
-		targetID = *subject.KnowledgeEntityID
-	}
-	if subject.KnowledgeRelationshipID != nil {
-		targetCount++
-		targetKind = "relationship"
-		targetID = *subject.KnowledgeRelationshipID
-	}
-	if subject.KnowledgeEvidenceID != nil {
-		targetCount++
-		targetKind = "knowledge_evidence"
-		targetID = *subject.KnowledgeEvidenceID
-	}
-	if targetCount != 1 || targetID == uuid.Nil {
-		return "", uuid.Nil, fmt.Errorf("analysis entry attachment %s has an invalid target", subject.ID)
-	}
-	return targetKind, targetID, nil
 }
 
 // Refs currently use UUID strings; keep their representation at the tool boundary.
@@ -940,6 +784,25 @@ func (i *investigationInvocation) formatRefs(ids []uuid.UUID) []string {
 	return refs
 }
 
+var analysisPageErr = fmt.Errorf("%w: page and page_size must be non-negative and page_size must not exceed %d", errs.ErrInvalidInput, analysisToolMaxPageSize)
+
+func normalizeAnalysisPage(page, pageSize int) (ent.ListParams, error) {
+	if page < 0 || pageSize < 0 || pageSize > analysisToolMaxPageSize {
+		return ent.ListParams{}, analysisPageErr
+	}
+	if page == 0 {
+		page = 1
+	}
+	if pageSize == 0 {
+		pageSize = analysisToolDefaultPageSize
+	}
+	maxInt := int(^uint(0) >> 1)
+	if page > maxInt/pageSize {
+		return ent.ListParams{}, fmt.Errorf("%w: page is too large", errs.ErrInvalidInput)
+	}
+	return ent.ListParams{Page: page, PageSize: pageSize}, nil
+}
+
 func limitedAnalysisDescription(value string) string {
 	cleaned := strings.TrimSpace(value)
 	if len([]rune(cleaned)) <= analysisToolDescriptionLimit {
@@ -948,15 +811,13 @@ func limitedAnalysisDescription(value string) string {
 	return string([]rune(cleaned)[:analysisToolDescriptionLimit]) + "…"
 }
 
-func limitedAnalysisResultText(prefix, content, suffix string) string {
-	full := prefix + content + suffix
+func limitedAnalysisResultText(content, suffix string) string {
+	full := content + suffix
 	if len([]rune(full)) <= analysisToolTextLimit {
 		return full
 	}
 	contentRunes := []rune(content)
-	contentLimit := max(analysisToolTextLimit-len([]rune(prefix))-len([]rune(suffix))-len([]rune(analysisToolTruncationMarker)), 0)
-	if contentLimit > len(contentRunes) {
-		contentLimit = len(contentRunes)
-	}
-	return prefix + string(contentRunes[:contentLimit]) + analysisToolTruncationMarker + suffix
+	contentMax := max(analysisToolTextLimit-len([]rune(suffix))-len([]rune(analysisToolTruncationMarker)), 0)
+	contentLimit := min(contentMax, len(contentRunes))
+	return string(contentRunes[:contentLimit]) + analysisToolTruncationMarker + suffix
 }

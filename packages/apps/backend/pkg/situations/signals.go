@@ -46,18 +46,6 @@ type Signal struct {
 	Alert *schematypes.SituationAlertFacts
 }
 
-// SituationSignalSource loads the signals of one kind from its stored state.
-type SituationSignalSource interface {
-	SituationSignalKind() SignalKind
-	LoadSignals(ctx context.Context, entityIDs []uuid.UUID, opts LoadSignalsOptions) ([]Signal, error)
-}
-
-// LoadSignalsOptions asks for facts that cost more than stored state, which only evaluation needs.
-type LoadSignalsOptions struct {
-	// History adds facts computed from the source's history, such as an alert's baseline.
-	History bool
-}
-
 // Seeds reports whether the signal may start a candidate: its severity is not info and its source's
 // attention is not join-only.
 func (s Signal) Seeds() bool {
@@ -68,4 +56,21 @@ func (s Signal) Seeds() bool {
 // before now. A signal that resolved but has not finished, such as an episode in its flap grace, is eligible.
 func (s Signal) EligibleAt(now time.Time) bool {
 	return s.FinishedAt == nil || now.Sub(*s.FinishedAt) <= OneHopWindow
+}
+
+// SituationSignalSource loads the signals of one kind from its stored state.
+type SituationSignalSource interface {
+	SituationSignalKind() SignalKind
+	LoadSignals(ctx context.Context, entityIDs []uuid.UUID, opts LoadSignalsOptions) ([]Signal, error)
+}
+
+// SignalLoader loads signals of any kind.
+type SignalLoader interface {
+	LoadSignals(ctx context.Context, entityIDs []uuid.UUID, opts LoadSignalsOptions) ([]Signal, error)
+}
+
+// LoadSignalsOptions asks for facts that cost more than stored state, which only evaluation needs.
+type LoadSignalsOptions struct {
+	// History adds facts computed from the source's history, such as an alert's baseline.
+	History bool
 }
