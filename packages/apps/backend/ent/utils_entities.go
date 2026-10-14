@@ -83,11 +83,26 @@ func (am *AgentMessage) MakeGenkitMessage() *ai.Message {
 	return ai.NewMessage(ai.Role(am.Role), am.Metadata, am.Content...)
 }
 
+// CitedIDs returns the knowledge evidence or provider read each reference cites, in loaded order.
+func (refs InvestigationOutputReferences) CitedIDs() []uuid.UUID {
+	ids := make([]uuid.UUID, 0, len(refs))
+	for _, ref := range refs {
+		if ref.KnowledgeEvidenceID != nil {
+			ids = append(ids, *ref.KnowledgeEvidenceID)
+		} else if ref.AgentProviderReadID != nil {
+			ids = append(ids, *ref.AgentProviderReadID)
+		}
+	}
+	return ids
+}
+
 // KnowledgeEvidenceIDs returns the evidence IDs cited by the references, in loaded order.
 func (refs InvestigationOutputReferences) KnowledgeEvidenceIDs() []uuid.UUID {
-	ids := make([]uuid.UUID, len(refs))
-	for i, ref := range refs {
-		ids[i] = ref.KnowledgeEvidenceID
+	ids := make([]uuid.UUID, 0, len(refs))
+	for _, ref := range refs {
+		if ref.KnowledgeEvidenceID != nil {
+			ids = append(ids, *ref.KnowledgeEvidenceID)
+		}
 	}
 	return ids
 }

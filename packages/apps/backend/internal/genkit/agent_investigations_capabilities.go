@@ -36,15 +36,14 @@ const (
 )
 
 type investigationInvocation struct {
-	investigations rez.InvestigationService
-	outputs        rez.InvestigationOutputService
-	knowledge      rez.KnowledgeGraphQueryService
-	situations     rez.SituationService
+	investigationDependencies
 
 	investigationID uuid.UUID
 	turnID          uuid.UUID
 
 	hasAssignedQuestion bool
+	// providerReadWindow is set from the situation when the introduction is built; nil without a situation.
+	providerReadWindow *rezai.ProviderReadWindow
 }
 
 func (i *investigationInvocation) makeHooks(ctx context.Context, invCtx *agentInvocationContext) (*ai.Hooks, error) {
@@ -96,6 +95,11 @@ func (i *investigationInvocation) makeIntroduction(
 	if outputsErr != nil {
 		return "", outputsErr
 	}
+	readsUsed, countErr := i.providerReads.CountTurnProviderReads(ctx, i.turnID)
+	if countErr != nil {
+		return "", countErr
+	}
+	sources := i.introduceSources(ctx)
 
 	assignedWork := "Initial investigation"
 	if turnSequence > 1 {
@@ -109,10 +113,14 @@ func (i *investigationInvocation) makeIntroduction(
 
 	return rezai.FormatInvestigationAgentIntroduction(rezai.InvestigationAgentIntroduction{
 		OriginalQuestion:        strings.TrimSpace(sessInput.Query),
+		TurnStartedAt:           i.clock.Now().UTC(),
 		AssignedWork:            assignedWork,
 		HasAssignedUserQuestion: i.hasAssignedQuestion,
 		Situation:               situation,
 		Outputs:                 *outputs,
+		ProviderReadWindow:      i.providerReadWindow,
+		ProviderReadBudget:      rezai.ProviderReadBudget{Limit: rezai.MaxProviderReadsPerTurn, Used: readsUsed},
+		Sources:                 *sources,
 	})
 }
 
@@ -129,6 +137,10 @@ func (i *investigationInvocation) introduceSituation(ctx context.Context) (*reza
 		return nil, nil
 	}
 	situation := listed.Data[0]
+	i.providerReadWindow = &rezai.ProviderReadWindow{
+		Start: situation.OpenedAt.Add(-rezai.ProviderReadLeadIn),
+		End:   situation.ClosedAt,
+	}
 	introduced := &rezai.InvestigationSituation{
 		Title:    situation.Title,
 		Summary:  situation.Summary,
@@ -259,6 +271,10 @@ func (i *investigationInvocation) makeTools() []ai.Tool {
 		makeDefinedTool(rezai.ListEntityEvidenceTool, i.listEntityEvidence),
 		makeDefinedTool(rezai.ReadEvidenceTool, i.readEvidence),
 		makeDefinedTool(rezai.ReadInvestigationOutputTool, i.readOutput),
+		makeDefinedTool(rezai.FindServiceTool, i.findService),
+		makeDefinedTool(rezai.ListChangesTool, i.listChanges),
+		makeDefinedTool(rezai.SearchLogsTool, i.searchLogs),
+		makeDefinedTool(rezai.CountLogsTool, i.countLogs),
 		makeDefinedTool(rezai.PublishInvestigationReportTool, i.publishReport),
 		makeDefinedTool(rezai.PublishInvestigationFindingTool, i.publishFinding),
 		makeDefinedTool(rezai.PublishInvestigationHypothesisTool, i.publishHypothesis),
@@ -622,7 +638,7 @@ func (i *investigationInvocation) reportToolResult(report *ent.InvestigationRepo
 		VersionRef:   i.formatRef(report.ID),
 		Text:         report.Text,
 		Summary:      report.Summary,
-		EvidenceRefs: i.formatRefs(ent.InvestigationOutputReferences(report.Edges.OutputReferences).KnowledgeEvidenceIDs()),
+		EvidenceRefs: i.formatRefs(ent.InvestigationOutputReferences(report.Edges.OutputReferences).CitedIDs()),
 		TurnStatus:   string(turnStatus),
 		Provisional:  turnStatus == at.StatusRunning,
 		CreatedAt:    report.CreatedAt,
@@ -653,7 +669,7 @@ func (i *investigationInvocation) findingToolResult(version *ent.InvestigationFi
 		IsAnswer:                 isAnswer,
 		Title:                    version.Title,
 		Body:                     version.Body,
-		EvidenceRefs:             i.formatRefs(ent.InvestigationOutputReferences(version.Edges.OutputReferences).KnowledgeEvidenceIDs()),
+		EvidenceRefs:             i.formatRefs(ent.InvestigationOutputReferences(version.Edges.OutputReferences).CitedIDs()),
 		FindingReferences:        findingReferences,
 		InvalidatedByVersionRefs: i.formatRefs(version.InvalidatedByVersionIDs()),
 		TurnStatus:               string(turnStatus),
@@ -673,7 +689,7 @@ func (i *investigationInvocation) hypothesisToolResult(version *ent.Investigatio
 		Title:         version.Title,
 		Justification: version.Justification,
 		Status:        string(version.Status),
-		EvidenceRefs:  i.formatRefs(ent.InvestigationOutputReferences(version.Edges.OutputReferences).KnowledgeEvidenceIDs()),
+		EvidenceRefs:  i.formatRefs(ent.InvestigationOutputReferences(version.Edges.OutputReferences).CitedIDs()),
 		TurnStatus:    string(turnStatus),
 		Provisional:   turnStatus == at.StatusRunning,
 		CreatedAt:     version.CreatedAt,

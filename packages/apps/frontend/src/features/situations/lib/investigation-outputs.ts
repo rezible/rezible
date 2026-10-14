@@ -1,13 +1,36 @@
-import type { InvestigationFinding, InvestigationHypothesis, InvestigationReportAttributes } from "$lib/api";
+import type {
+	InvestigationFinding,
+	InvestigationHypothesis,
+	InvestigationProviderReadSummary,
+	InvestigationReference,
+	InvestigationReportAttributes,
+} from "$lib/api";
 import type { StatusPresentation } from "$components/common/status-badge/status";
 import { markdownSummary } from "$components/rich-text-view/markdown-summary";
 import { hypothesisStatus, invalidatedStatus, provisionalStatus } from "./status";
 
 export type CitationView = {
-	/** Knowledge-evidence ID passed to SourceInspection.openEvidence. */
+	/** Knowledge-evidence ID passed to SourceInspection.openEvidence, or a provider read's ID. */
 	id: string;
 	/** 1-based, stable across the whole page. */
 	number: number;
+	/** Set when the citation is a provider read rather than knowledge evidence. */
+	providerRead: ProviderReadView | undefined;
+};
+
+/** What a cited provider read read, and where to open it. */
+export type ProviderReadView = {
+	label: string;
+	serviceName: string;
+	/** The range read, with its date: a read can start the day before the situation opened. */
+	range: string;
+	query: string;
+	limits: string[];
+	/** Undefined when the read failed before the provider ran it. */
+	exploreUrl: string | undefined;
+	/** Names the provider the link opens in. */
+	exploreLabel: string;
+	failed: boolean;
 };
 
 export type FindingView = {
@@ -61,32 +84,86 @@ export function buildCitationIndex(
 	findings: InvestigationFinding[],
 	hypotheses: InvestigationHypothesis[]
 ): Map<string, number> {
-	const index = new Map<string, number>();
-	const add = (references: { id: string }[]) => {
-		for (const reference of references) {
-			if (!index.has(reference.id)) {
-				index.set(reference.id, index.size + 1);
-			}
-		}
-	};
-
-	add(report?.references ?? []);
+	const references = [...(report?.references ?? [])];
 	for (const finding of findings.filter(isFinding)) {
-		add(finding.attributes.references);
+		references.push(...finding.attributes.references);
 	}
 	for (const hypothesis of hypotheses) {
-		add(hypothesis.attributes.references);
+		references.push(...hypothesis.attributes.references);
 	}
-	return index;
+	return referenceNumbers(references);
 }
 
-export function citationViews(references: { id: string }[], citations: Map<string, number>): CitationView[] {
+const PROVIDER_READ_LABELS: Record<string, string> = {
+	search_logs: "Log search",
+	count_logs: "Log count",
+};
+
+const PROVIDER_READ_RANGE_FORMAT = new Intl.DateTimeFormat(undefined, {
+	month: "short",
+	day: "numeric",
+	hour: "2-digit",
+	minute: "2-digit",
+});
+
+export function providerReadRangeLabel(start: string, end: string): string {
+	const startDate = new Date(start);
+	const endDate = new Date(end);
+	if (!Number.isFinite(startDate.getTime()) || !Number.isFinite(endDate.getTime())) {
+		return "Range unavailable";
+	}
+	return PROVIDER_READ_RANGE_FORMAT.formatRange(startDate, endDate);
+}
+
+/** Numbers references 1-based in order of first appearance; a repeated reference keeps its first number. */
+export function referenceNumbers(references: { id: string }[]): Map<string, number> {
+	const numbers = new Map<string, number>();
+	for (const reference of references) {
+		if (!numbers.has(reference.id)) {
+			numbers.set(reference.id, numbers.size + 1);
+		}
+	}
+	return numbers;
+}
+
+export function providerReadView(summary: InvestigationProviderReadSummary): ProviderReadView {
+	let exploreUrl: string | undefined;
+	if (summary.exploreUrl) {
+		exploreUrl = summary.exploreUrl;
+	}
+
+	let exploreLabel = "Open in provider";
+	if (summary.providerDisplayName) {
+		exploreLabel = `Open in ${summary.providerDisplayName}`;
+	}
+
+	return {
+		label: PROVIDER_READ_LABELS[summary.toolName] ?? summary.toolName,
+		serviceName: summary.serviceName,
+		range: providerReadRangeLabel(summary.start, summary.end),
+		query: summary.query,
+		limits: summary.limits,
+		exploreUrl,
+		exploreLabel,
+		failed: summary.status === "failed",
+	};
+}
+
+export function citationViews(
+	references: InvestigationReference[],
+	citations: Map<string, number>
+): CitationView[] {
 	const views = new Map<string, CitationView>();
 	for (const reference of references) {
 		const number = citations.get(reference.id);
-		if (number !== undefined && !views.has(reference.id)) {
-			views.set(reference.id, { id: reference.id, number });
+		if (number === undefined || views.has(reference.id)) {
+			continue;
 		}
+		let providerRead: ProviderReadView | undefined;
+		if (reference.kind === "provider_read" && reference.providerRead) {
+			providerRead = providerReadView(reference.providerRead);
+		}
+		views.set(reference.id, { id: reference.id, number, providerRead });
 	}
 	return [...views.values()].sort((first, second) => first.number - second.number);
 }

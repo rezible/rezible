@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	riverqueue "github.com/riverqueue/river"
 	"github.com/samber/do/v2"
 
 	rez "github.com/rezible/rezible"
@@ -164,10 +165,14 @@ var pkgGenkit = do.Package(
 		}
 		chatAgent := genkit.NewChatAgent()
 		investigationAgent := genkit.NewInvestigationAgent(
+			do.MustInvoke[rez.Clock](i),
 			do.MustInvoke[rez.InvestigationService](i),
 			do.MustInvoke[rez.InvestigationOutputService](i),
 			do.MustInvoke[rez.KnowledgeGraphQueryService](i),
 			do.MustInvoke[rez.SituationService](i),
+			do.MustInvoke[rez.ChangesService](i),
+			do.MustInvoke[rez.IntegrationService](i),
+			do.MustInvoke[rez.AgentProviderReadService](i),
 		)
 		return runtime, runtime.RegisterAgents(
 			genkit.WithAgent(chatAgent),
@@ -242,6 +247,7 @@ var pkgIntegrations = do.Package(
 			alertmanager.ProviderName:     alertmanager.EventProcessor{},
 			demoprovider.ProviderName:     demoprovider.EventProcessor{},
 			github.ProviderName:           github.EventProcessor{},
+			grafana.ProviderName:          grafana.EventProcessor{},
 			slackintegration.ProviderName: slackagent.EventProcessor{},
 			webhook.ProviderName:          webhook.EventProcessor{},
 		}, nil
@@ -382,7 +388,7 @@ var pkgDatabase = do.Package(
 	}),
 	do.Bind[*db.IntegrationInstallationsService, rez.IntegrationInstallationLookup](),
 
-	do.Lazy(func(i do.Injector) (rez.IntegrationService, error) {
+	do.Lazy(func(i do.Injector) (*db.IntegrationsService, error) {
 		return db.NewIntegrationsService(
 			do.MustInvoke[rez.Config](i),
 			do.MustInvoke[rez.Database](i),
@@ -391,6 +397,7 @@ var pkgDatabase = do.Package(
 			do.MustInvoke[*integrations.Registry](i),
 		)
 	}),
+	do.Bind[*db.IntegrationsService, rez.IntegrationService](),
 
 	do.Lazy(func(i do.Injector) (jobs.Worker[jobs.SyncIntegrationSourceEvents], error) {
 		return db.NewIntegrationEventsSyncWorker(
@@ -473,6 +480,13 @@ var pkgDatabase = do.Package(
 		return db.NewKnowledgeGraphQueryService(do.MustInvoke[rez.Database](i))
 	}),
 
+	do.Lazy(func(i do.Injector) (rez.ChangesService, error) {
+		return db.NewChangesService(
+			do.MustInvoke[rez.Database](i),
+			do.MustInvoke[rez.KnowledgeGraphQueryService](i),
+		)
+	}),
+
 	do.Lazy(func(i do.Injector) (rez.KnowledgeGraphIngestionService, error) {
 		return db.NewKnowledgeGraphIngestionService(do.MustInvoke[rez.Database](i))
 	}),
@@ -540,6 +554,13 @@ var pkgDatabase = do.Package(
 			do.MustInvoke[rez.JobService](i),
 			do.MustInvoke[rez.MessageQueue](i),
 		)
+	}),
+
+	do.Lazy(func(i do.Injector) (rez.AgentProviderReadService, error) {
+		return db.NewAgentProviderReadService(
+			do.MustInvoke[rez.Database](i),
+			do.MustInvoke[rez.Clock](i),
+		), nil
 	}),
 
 	do.Lazy(func(i do.Injector) (jobs.Worker[jobs.StartAgentSession], error) {
@@ -731,6 +752,7 @@ var pkgJobs = do.Package(
 		p.addInvokedProviderFunc(db.NewEnsureShiftHandoverSentWorker)
 		p.addInvokedProviderFunc(db.NewEnsureShiftHandoverReminderSentWorker)
 		p.addInvokedProviderFunc(db.NewGenerateShiftMetricsWorker)
+		p.addInvokedProviderFunc(db.NewSyncScheduledIntegrationSourcesWorker)
 
 		for _, intgProv := range do.MustInvoke[*integrations.Registry](i).All[jobs.WorkerProvider]() {
 			p.add(intgProv.JobWorkers()...)
@@ -740,9 +762,14 @@ var pkgJobs = do.Package(
 	}),
 
 	do.Lazy(func(i do.Injector) ([]*jobs.PeriodicJob, error) {
-		var jobs []*jobs.PeriodicJob
-
-		return jobs, nil
+		periodicJobs := []*jobs.PeriodicJob{
+			riverqueue.NewPeriodicJob(
+				riverqueue.PeriodicInterval(time.Hour),
+				func() (jobs.JobArgs, *riverqueue.InsertOpts) { return jobs.SyncScheduledIntegrationSources{}, nil },
+				nil,
+			),
+		}
+		return periodicJobs, nil
 	}),
 
 	do.Lazy(func(i do.Injector) (jobs.Definition, error) {

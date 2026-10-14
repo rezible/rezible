@@ -17,6 +17,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/agentartifact"
 	"github.com/rezible/rezible/ent/agentmessage"
+	"github.com/rezible/rezible/ent/agentproviderread"
 	"github.com/rezible/rezible/ent/agentsession"
 	"github.com/rezible/rezible/ent/agentsessionbinding"
 	"github.com/rezible/rezible/ent/agentturn"
@@ -122,6 +123,7 @@ const (
 	// Node types.
 	TypeAgentArtifact                   = "AgentArtifact"
 	TypeAgentMessage                    = "AgentMessage"
+	TypeAgentProviderRead               = "AgentProviderRead"
 	TypeAgentSession                    = "AgentSession"
 	TypeAgentSessionBinding             = "AgentSessionBinding"
 	TypeAgentTurn                       = "AgentTurn"
@@ -2140,6 +2142,1310 @@ func (m *AgentMessageMutation) ResetEdge(name string) error {
 		return nil
 	}
 	return fmt.Errorf("unknown AgentMessage edge %s", name)
+}
+
+// AgentProviderReadMutation represents an operation that mutates the AgentProviderRead nodes in the graph.
+type AgentProviderReadMutation struct {
+	config
+	op                    Op
+	typ                   string
+	id                    *uuid.UUID
+	created_at            *time.Time
+	updated_at            *time.Time
+	tool_name             *string
+	input                 *jsontext.Value
+	appendinput           jsontext.Value
+	status                *agentproviderread.Status
+	read                  *jsontext.Value
+	appendread            jsontext.Value
+	result                *jsontext.Value
+	appendresult          jsontext.Value
+	error                 *string
+	finished_at           *time.Time
+	clearedFields         map[string]struct{}
+	tenant                *int
+	clearedtenant         bool
+	agent_session         *uuid.UUID
+	clearedagent_session  bool
+	agent_turn            *uuid.UUID
+	clearedagent_turn     bool
+	service_entity        *uuid.UUID
+	clearedservice_entity bool
+	done                  bool
+	oldValue              func(context.Context) (*AgentProviderRead, error)
+	predicates            []predicate.AgentProviderRead
+}
+
+var _ ent.Mutation = (*AgentProviderReadMutation)(nil)
+
+// agentproviderreadOption allows management of the mutation configuration using functional options.
+type agentproviderreadOption func(*AgentProviderReadMutation)
+
+// newAgentProviderReadMutation creates new mutation for the AgentProviderRead entity.
+func newAgentProviderReadMutation(c config, op Op, opts ...agentproviderreadOption) *AgentProviderReadMutation {
+	m := &AgentProviderReadMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeAgentProviderRead,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withAgentProviderReadID sets the ID field of the mutation.
+func withAgentProviderReadID(id uuid.UUID) agentproviderreadOption {
+	return func(m *AgentProviderReadMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *AgentProviderRead
+		)
+		m.oldValue = func(ctx context.Context) (*AgentProviderRead, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().AgentProviderRead.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withAgentProviderRead sets the old AgentProviderRead of the mutation.
+func withAgentProviderRead(node *AgentProviderRead) agentproviderreadOption {
+	return func(m *AgentProviderReadMutation) {
+		m.oldValue = func(context.Context) (*AgentProviderRead, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m AgentProviderReadMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m AgentProviderReadMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of AgentProviderRead entities.
+func (m *AgentProviderReadMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *AgentProviderReadMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *AgentProviderReadMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uuid.UUID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().AgentProviderRead.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (m *AgentProviderReadMutation) SetTenantID(i int) {
+	m.tenant = &i
+}
+
+// TenantID returns the value of the "tenant_id" field in the mutation.
+func (m *AgentProviderReadMutation) TenantID() (r int, exists bool) {
+	v := m.tenant
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTenantID returns the old "tenant_id" field's value of the AgentProviderRead entity.
+// If the AgentProviderRead object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AgentProviderReadMutation) OldTenantID(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTenantID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTenantID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTenantID: %w", err)
+	}
+	return oldValue.TenantID, nil
+}
+
+// ResetTenantID resets all changes to the "tenant_id" field.
+func (m *AgentProviderReadMutation) ResetTenantID() {
+	m.tenant = nil
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *AgentProviderReadMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *AgentProviderReadMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the AgentProviderRead entity.
+// If the AgentProviderRead object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AgentProviderReadMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *AgentProviderReadMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *AgentProviderReadMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *AgentProviderReadMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the AgentProviderRead entity.
+// If the AgentProviderRead object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AgentProviderReadMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *AgentProviderReadMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// SetAgentSessionID sets the "agent_session_id" field.
+func (m *AgentProviderReadMutation) SetAgentSessionID(u uuid.UUID) {
+	m.agent_session = &u
+}
+
+// AgentSessionID returns the value of the "agent_session_id" field in the mutation.
+func (m *AgentProviderReadMutation) AgentSessionID() (r uuid.UUID, exists bool) {
+	v := m.agent_session
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAgentSessionID returns the old "agent_session_id" field's value of the AgentProviderRead entity.
+// If the AgentProviderRead object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AgentProviderReadMutation) OldAgentSessionID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAgentSessionID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAgentSessionID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAgentSessionID: %w", err)
+	}
+	return oldValue.AgentSessionID, nil
+}
+
+// ResetAgentSessionID resets all changes to the "agent_session_id" field.
+func (m *AgentProviderReadMutation) ResetAgentSessionID() {
+	m.agent_session = nil
+}
+
+// SetAgentTurnID sets the "agent_turn_id" field.
+func (m *AgentProviderReadMutation) SetAgentTurnID(u uuid.UUID) {
+	m.agent_turn = &u
+}
+
+// AgentTurnID returns the value of the "agent_turn_id" field in the mutation.
+func (m *AgentProviderReadMutation) AgentTurnID() (r uuid.UUID, exists bool) {
+	v := m.agent_turn
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAgentTurnID returns the old "agent_turn_id" field's value of the AgentProviderRead entity.
+// If the AgentProviderRead object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AgentProviderReadMutation) OldAgentTurnID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAgentTurnID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAgentTurnID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAgentTurnID: %w", err)
+	}
+	return oldValue.AgentTurnID, nil
+}
+
+// ResetAgentTurnID resets all changes to the "agent_turn_id" field.
+func (m *AgentProviderReadMutation) ResetAgentTurnID() {
+	m.agent_turn = nil
+}
+
+// SetToolName sets the "tool_name" field.
+func (m *AgentProviderReadMutation) SetToolName(s string) {
+	m.tool_name = &s
+}
+
+// ToolName returns the value of the "tool_name" field in the mutation.
+func (m *AgentProviderReadMutation) ToolName() (r string, exists bool) {
+	v := m.tool_name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldToolName returns the old "tool_name" field's value of the AgentProviderRead entity.
+// If the AgentProviderRead object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AgentProviderReadMutation) OldToolName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldToolName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldToolName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldToolName: %w", err)
+	}
+	return oldValue.ToolName, nil
+}
+
+// ResetToolName resets all changes to the "tool_name" field.
+func (m *AgentProviderReadMutation) ResetToolName() {
+	m.tool_name = nil
+}
+
+// SetServiceEntityID sets the "service_entity_id" field.
+func (m *AgentProviderReadMutation) SetServiceEntityID(u uuid.UUID) {
+	m.service_entity = &u
+}
+
+// ServiceEntityID returns the value of the "service_entity_id" field in the mutation.
+func (m *AgentProviderReadMutation) ServiceEntityID() (r uuid.UUID, exists bool) {
+	v := m.service_entity
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldServiceEntityID returns the old "service_entity_id" field's value of the AgentProviderRead entity.
+// If the AgentProviderRead object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AgentProviderReadMutation) OldServiceEntityID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldServiceEntityID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldServiceEntityID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldServiceEntityID: %w", err)
+	}
+	return oldValue.ServiceEntityID, nil
+}
+
+// ResetServiceEntityID resets all changes to the "service_entity_id" field.
+func (m *AgentProviderReadMutation) ResetServiceEntityID() {
+	m.service_entity = nil
+}
+
+// SetInput sets the "input" field.
+func (m *AgentProviderReadMutation) SetInput(j jsontext.Value) {
+	m.input = &j
+	m.appendinput = nil
+}
+
+// Input returns the value of the "input" field in the mutation.
+func (m *AgentProviderReadMutation) Input() (r jsontext.Value, exists bool) {
+	v := m.input
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldInput returns the old "input" field's value of the AgentProviderRead entity.
+// If the AgentProviderRead object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AgentProviderReadMutation) OldInput(ctx context.Context) (v jsontext.Value, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldInput is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldInput requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldInput: %w", err)
+	}
+	return oldValue.Input, nil
+}
+
+// AppendInput adds j to the "input" field.
+func (m *AgentProviderReadMutation) AppendInput(j jsontext.Value) {
+	m.appendinput = append(m.appendinput, j...)
+}
+
+// AppendedInput returns the list of values that were appended to the "input" field in this mutation.
+func (m *AgentProviderReadMutation) AppendedInput() (jsontext.Value, bool) {
+	if len(m.appendinput) == 0 {
+		return nil, false
+	}
+	return m.appendinput, true
+}
+
+// ResetInput resets all changes to the "input" field.
+func (m *AgentProviderReadMutation) ResetInput() {
+	m.input = nil
+	m.appendinput = nil
+}
+
+// SetStatus sets the "status" field.
+func (m *AgentProviderReadMutation) SetStatus(a agentproviderread.Status) {
+	m.status = &a
+}
+
+// Status returns the value of the "status" field in the mutation.
+func (m *AgentProviderReadMutation) Status() (r agentproviderread.Status, exists bool) {
+	v := m.status
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStatus returns the old "status" field's value of the AgentProviderRead entity.
+// If the AgentProviderRead object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AgentProviderReadMutation) OldStatus(ctx context.Context) (v agentproviderread.Status, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldStatus is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldStatus requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStatus: %w", err)
+	}
+	return oldValue.Status, nil
+}
+
+// ResetStatus resets all changes to the "status" field.
+func (m *AgentProviderReadMutation) ResetStatus() {
+	m.status = nil
+}
+
+// SetRead sets the "read" field.
+func (m *AgentProviderReadMutation) SetRead(j jsontext.Value) {
+	m.read = &j
+	m.appendread = nil
+}
+
+// Read returns the value of the "read" field in the mutation.
+func (m *AgentProviderReadMutation) Read() (r jsontext.Value, exists bool) {
+	v := m.read
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRead returns the old "read" field's value of the AgentProviderRead entity.
+// If the AgentProviderRead object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AgentProviderReadMutation) OldRead(ctx context.Context) (v jsontext.Value, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRead is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRead requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRead: %w", err)
+	}
+	return oldValue.Read, nil
+}
+
+// AppendRead adds j to the "read" field.
+func (m *AgentProviderReadMutation) AppendRead(j jsontext.Value) {
+	m.appendread = append(m.appendread, j...)
+}
+
+// AppendedRead returns the list of values that were appended to the "read" field in this mutation.
+func (m *AgentProviderReadMutation) AppendedRead() (jsontext.Value, bool) {
+	if len(m.appendread) == 0 {
+		return nil, false
+	}
+	return m.appendread, true
+}
+
+// ClearRead clears the value of the "read" field.
+func (m *AgentProviderReadMutation) ClearRead() {
+	m.read = nil
+	m.appendread = nil
+	m.clearedFields[agentproviderread.FieldRead] = struct{}{}
+}
+
+// ReadCleared returns if the "read" field was cleared in this mutation.
+func (m *AgentProviderReadMutation) ReadCleared() bool {
+	_, ok := m.clearedFields[agentproviderread.FieldRead]
+	return ok
+}
+
+// ResetRead resets all changes to the "read" field.
+func (m *AgentProviderReadMutation) ResetRead() {
+	m.read = nil
+	m.appendread = nil
+	delete(m.clearedFields, agentproviderread.FieldRead)
+}
+
+// SetResult sets the "result" field.
+func (m *AgentProviderReadMutation) SetResult(j jsontext.Value) {
+	m.result = &j
+	m.appendresult = nil
+}
+
+// Result returns the value of the "result" field in the mutation.
+func (m *AgentProviderReadMutation) Result() (r jsontext.Value, exists bool) {
+	v := m.result
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldResult returns the old "result" field's value of the AgentProviderRead entity.
+// If the AgentProviderRead object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AgentProviderReadMutation) OldResult(ctx context.Context) (v jsontext.Value, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldResult is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldResult requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldResult: %w", err)
+	}
+	return oldValue.Result, nil
+}
+
+// AppendResult adds j to the "result" field.
+func (m *AgentProviderReadMutation) AppendResult(j jsontext.Value) {
+	m.appendresult = append(m.appendresult, j...)
+}
+
+// AppendedResult returns the list of values that were appended to the "result" field in this mutation.
+func (m *AgentProviderReadMutation) AppendedResult() (jsontext.Value, bool) {
+	if len(m.appendresult) == 0 {
+		return nil, false
+	}
+	return m.appendresult, true
+}
+
+// ClearResult clears the value of the "result" field.
+func (m *AgentProviderReadMutation) ClearResult() {
+	m.result = nil
+	m.appendresult = nil
+	m.clearedFields[agentproviderread.FieldResult] = struct{}{}
+}
+
+// ResultCleared returns if the "result" field was cleared in this mutation.
+func (m *AgentProviderReadMutation) ResultCleared() bool {
+	_, ok := m.clearedFields[agentproviderread.FieldResult]
+	return ok
+}
+
+// ResetResult resets all changes to the "result" field.
+func (m *AgentProviderReadMutation) ResetResult() {
+	m.result = nil
+	m.appendresult = nil
+	delete(m.clearedFields, agentproviderread.FieldResult)
+}
+
+// SetError sets the "error" field.
+func (m *AgentProviderReadMutation) SetError(s string) {
+	m.error = &s
+}
+
+// Error returns the value of the "error" field in the mutation.
+func (m *AgentProviderReadMutation) Error() (r string, exists bool) {
+	v := m.error
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldError returns the old "error" field's value of the AgentProviderRead entity.
+// If the AgentProviderRead object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AgentProviderReadMutation) OldError(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldError is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldError requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldError: %w", err)
+	}
+	return oldValue.Error, nil
+}
+
+// ClearError clears the value of the "error" field.
+func (m *AgentProviderReadMutation) ClearError() {
+	m.error = nil
+	m.clearedFields[agentproviderread.FieldError] = struct{}{}
+}
+
+// ErrorCleared returns if the "error" field was cleared in this mutation.
+func (m *AgentProviderReadMutation) ErrorCleared() bool {
+	_, ok := m.clearedFields[agentproviderread.FieldError]
+	return ok
+}
+
+// ResetError resets all changes to the "error" field.
+func (m *AgentProviderReadMutation) ResetError() {
+	m.error = nil
+	delete(m.clearedFields, agentproviderread.FieldError)
+}
+
+// SetFinishedAt sets the "finished_at" field.
+func (m *AgentProviderReadMutation) SetFinishedAt(t time.Time) {
+	m.finished_at = &t
+}
+
+// FinishedAt returns the value of the "finished_at" field in the mutation.
+func (m *AgentProviderReadMutation) FinishedAt() (r time.Time, exists bool) {
+	v := m.finished_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldFinishedAt returns the old "finished_at" field's value of the AgentProviderRead entity.
+// If the AgentProviderRead object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AgentProviderReadMutation) OldFinishedAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldFinishedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldFinishedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldFinishedAt: %w", err)
+	}
+	return oldValue.FinishedAt, nil
+}
+
+// ClearFinishedAt clears the value of the "finished_at" field.
+func (m *AgentProviderReadMutation) ClearFinishedAt() {
+	m.finished_at = nil
+	m.clearedFields[agentproviderread.FieldFinishedAt] = struct{}{}
+}
+
+// FinishedAtCleared returns if the "finished_at" field was cleared in this mutation.
+func (m *AgentProviderReadMutation) FinishedAtCleared() bool {
+	_, ok := m.clearedFields[agentproviderread.FieldFinishedAt]
+	return ok
+}
+
+// ResetFinishedAt resets all changes to the "finished_at" field.
+func (m *AgentProviderReadMutation) ResetFinishedAt() {
+	m.finished_at = nil
+	delete(m.clearedFields, agentproviderread.FieldFinishedAt)
+}
+
+// ClearTenant clears the "tenant" edge to the Tenant entity.
+func (m *AgentProviderReadMutation) ClearTenant() {
+	m.clearedtenant = true
+	m.clearedFields[agentproviderread.FieldTenantID] = struct{}{}
+}
+
+// TenantCleared reports if the "tenant" edge to the Tenant entity was cleared.
+func (m *AgentProviderReadMutation) TenantCleared() bool {
+	return m.clearedtenant
+}
+
+// TenantIDs returns the "tenant" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// TenantID instead. It exists only for internal usage by the builders.
+func (m *AgentProviderReadMutation) TenantIDs() (ids []int) {
+	if id := m.tenant; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetTenant resets all changes to the "tenant" edge.
+func (m *AgentProviderReadMutation) ResetTenant() {
+	m.tenant = nil
+	m.clearedtenant = false
+}
+
+// ClearAgentSession clears the "agent_session" edge to the AgentSession entity.
+func (m *AgentProviderReadMutation) ClearAgentSession() {
+	m.clearedagent_session = true
+	m.clearedFields[agentproviderread.FieldAgentSessionID] = struct{}{}
+}
+
+// AgentSessionCleared reports if the "agent_session" edge to the AgentSession entity was cleared.
+func (m *AgentProviderReadMutation) AgentSessionCleared() bool {
+	return m.clearedagent_session
+}
+
+// AgentSessionIDs returns the "agent_session" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// AgentSessionID instead. It exists only for internal usage by the builders.
+func (m *AgentProviderReadMutation) AgentSessionIDs() (ids []uuid.UUID) {
+	if id := m.agent_session; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetAgentSession resets all changes to the "agent_session" edge.
+func (m *AgentProviderReadMutation) ResetAgentSession() {
+	m.agent_session = nil
+	m.clearedagent_session = false
+}
+
+// ClearAgentTurn clears the "agent_turn" edge to the AgentTurn entity.
+func (m *AgentProviderReadMutation) ClearAgentTurn() {
+	m.clearedagent_turn = true
+	m.clearedFields[agentproviderread.FieldAgentTurnID] = struct{}{}
+}
+
+// AgentTurnCleared reports if the "agent_turn" edge to the AgentTurn entity was cleared.
+func (m *AgentProviderReadMutation) AgentTurnCleared() bool {
+	return m.clearedagent_turn
+}
+
+// AgentTurnIDs returns the "agent_turn" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// AgentTurnID instead. It exists only for internal usage by the builders.
+func (m *AgentProviderReadMutation) AgentTurnIDs() (ids []uuid.UUID) {
+	if id := m.agent_turn; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetAgentTurn resets all changes to the "agent_turn" edge.
+func (m *AgentProviderReadMutation) ResetAgentTurn() {
+	m.agent_turn = nil
+	m.clearedagent_turn = false
+}
+
+// ClearServiceEntity clears the "service_entity" edge to the KnowledgeEntity entity.
+func (m *AgentProviderReadMutation) ClearServiceEntity() {
+	m.clearedservice_entity = true
+	m.clearedFields[agentproviderread.FieldServiceEntityID] = struct{}{}
+}
+
+// ServiceEntityCleared reports if the "service_entity" edge to the KnowledgeEntity entity was cleared.
+func (m *AgentProviderReadMutation) ServiceEntityCleared() bool {
+	return m.clearedservice_entity
+}
+
+// ServiceEntityIDs returns the "service_entity" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ServiceEntityID instead. It exists only for internal usage by the builders.
+func (m *AgentProviderReadMutation) ServiceEntityIDs() (ids []uuid.UUID) {
+	if id := m.service_entity; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetServiceEntity resets all changes to the "service_entity" edge.
+func (m *AgentProviderReadMutation) ResetServiceEntity() {
+	m.service_entity = nil
+	m.clearedservice_entity = false
+}
+
+// Where appends a list predicates to the AgentProviderReadMutation builder.
+func (m *AgentProviderReadMutation) Where(ps ...predicate.AgentProviderRead) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the AgentProviderReadMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *AgentProviderReadMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.AgentProviderRead, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *AgentProviderReadMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *AgentProviderReadMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (AgentProviderRead).
+func (m *AgentProviderReadMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *AgentProviderReadMutation) Fields() []string {
+	fields := make([]string, 0, 13)
+	if m.tenant != nil {
+		fields = append(fields, agentproviderread.FieldTenantID)
+	}
+	if m.created_at != nil {
+		fields = append(fields, agentproviderread.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, agentproviderread.FieldUpdatedAt)
+	}
+	if m.agent_session != nil {
+		fields = append(fields, agentproviderread.FieldAgentSessionID)
+	}
+	if m.agent_turn != nil {
+		fields = append(fields, agentproviderread.FieldAgentTurnID)
+	}
+	if m.tool_name != nil {
+		fields = append(fields, agentproviderread.FieldToolName)
+	}
+	if m.service_entity != nil {
+		fields = append(fields, agentproviderread.FieldServiceEntityID)
+	}
+	if m.input != nil {
+		fields = append(fields, agentproviderread.FieldInput)
+	}
+	if m.status != nil {
+		fields = append(fields, agentproviderread.FieldStatus)
+	}
+	if m.read != nil {
+		fields = append(fields, agentproviderread.FieldRead)
+	}
+	if m.result != nil {
+		fields = append(fields, agentproviderread.FieldResult)
+	}
+	if m.error != nil {
+		fields = append(fields, agentproviderread.FieldError)
+	}
+	if m.finished_at != nil {
+		fields = append(fields, agentproviderread.FieldFinishedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *AgentProviderReadMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case agentproviderread.FieldTenantID:
+		return m.TenantID()
+	case agentproviderread.FieldCreatedAt:
+		return m.CreatedAt()
+	case agentproviderread.FieldUpdatedAt:
+		return m.UpdatedAt()
+	case agentproviderread.FieldAgentSessionID:
+		return m.AgentSessionID()
+	case agentproviderread.FieldAgentTurnID:
+		return m.AgentTurnID()
+	case agentproviderread.FieldToolName:
+		return m.ToolName()
+	case agentproviderread.FieldServiceEntityID:
+		return m.ServiceEntityID()
+	case agentproviderread.FieldInput:
+		return m.Input()
+	case agentproviderread.FieldStatus:
+		return m.Status()
+	case agentproviderread.FieldRead:
+		return m.Read()
+	case agentproviderread.FieldResult:
+		return m.Result()
+	case agentproviderread.FieldError:
+		return m.Error()
+	case agentproviderread.FieldFinishedAt:
+		return m.FinishedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *AgentProviderReadMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case agentproviderread.FieldTenantID:
+		return m.OldTenantID(ctx)
+	case agentproviderread.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case agentproviderread.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	case agentproviderread.FieldAgentSessionID:
+		return m.OldAgentSessionID(ctx)
+	case agentproviderread.FieldAgentTurnID:
+		return m.OldAgentTurnID(ctx)
+	case agentproviderread.FieldToolName:
+		return m.OldToolName(ctx)
+	case agentproviderread.FieldServiceEntityID:
+		return m.OldServiceEntityID(ctx)
+	case agentproviderread.FieldInput:
+		return m.OldInput(ctx)
+	case agentproviderread.FieldStatus:
+		return m.OldStatus(ctx)
+	case agentproviderread.FieldRead:
+		return m.OldRead(ctx)
+	case agentproviderread.FieldResult:
+		return m.OldResult(ctx)
+	case agentproviderread.FieldError:
+		return m.OldError(ctx)
+	case agentproviderread.FieldFinishedAt:
+		return m.OldFinishedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown AgentProviderRead field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *AgentProviderReadMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case agentproviderread.FieldTenantID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTenantID(v)
+		return nil
+	case agentproviderread.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case agentproviderread.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	case agentproviderread.FieldAgentSessionID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAgentSessionID(v)
+		return nil
+	case agentproviderread.FieldAgentTurnID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAgentTurnID(v)
+		return nil
+	case agentproviderread.FieldToolName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetToolName(v)
+		return nil
+	case agentproviderread.FieldServiceEntityID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetServiceEntityID(v)
+		return nil
+	case agentproviderread.FieldInput:
+		v, ok := value.(jsontext.Value)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetInput(v)
+		return nil
+	case agentproviderread.FieldStatus:
+		v, ok := value.(agentproviderread.Status)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStatus(v)
+		return nil
+	case agentproviderread.FieldRead:
+		v, ok := value.(jsontext.Value)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRead(v)
+		return nil
+	case agentproviderread.FieldResult:
+		v, ok := value.(jsontext.Value)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetResult(v)
+		return nil
+	case agentproviderread.FieldError:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetError(v)
+		return nil
+	case agentproviderread.FieldFinishedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetFinishedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown AgentProviderRead field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *AgentProviderReadMutation) AddedFields() []string {
+	var fields []string
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *AgentProviderReadMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *AgentProviderReadMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown AgentProviderRead numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *AgentProviderReadMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(agentproviderread.FieldRead) {
+		fields = append(fields, agentproviderread.FieldRead)
+	}
+	if m.FieldCleared(agentproviderread.FieldResult) {
+		fields = append(fields, agentproviderread.FieldResult)
+	}
+	if m.FieldCleared(agentproviderread.FieldError) {
+		fields = append(fields, agentproviderread.FieldError)
+	}
+	if m.FieldCleared(agentproviderread.FieldFinishedAt) {
+		fields = append(fields, agentproviderread.FieldFinishedAt)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *AgentProviderReadMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *AgentProviderReadMutation) ClearField(name string) error {
+	switch name {
+	case agentproviderread.FieldRead:
+		m.ClearRead()
+		return nil
+	case agentproviderread.FieldResult:
+		m.ClearResult()
+		return nil
+	case agentproviderread.FieldError:
+		m.ClearError()
+		return nil
+	case agentproviderread.FieldFinishedAt:
+		m.ClearFinishedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown AgentProviderRead nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *AgentProviderReadMutation) ResetField(name string) error {
+	switch name {
+	case agentproviderread.FieldTenantID:
+		m.ResetTenantID()
+		return nil
+	case agentproviderread.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case agentproviderread.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	case agentproviderread.FieldAgentSessionID:
+		m.ResetAgentSessionID()
+		return nil
+	case agentproviderread.FieldAgentTurnID:
+		m.ResetAgentTurnID()
+		return nil
+	case agentproviderread.FieldToolName:
+		m.ResetToolName()
+		return nil
+	case agentproviderread.FieldServiceEntityID:
+		m.ResetServiceEntityID()
+		return nil
+	case agentproviderread.FieldInput:
+		m.ResetInput()
+		return nil
+	case agentproviderread.FieldStatus:
+		m.ResetStatus()
+		return nil
+	case agentproviderread.FieldRead:
+		m.ResetRead()
+		return nil
+	case agentproviderread.FieldResult:
+		m.ResetResult()
+		return nil
+	case agentproviderread.FieldError:
+		m.ResetError()
+		return nil
+	case agentproviderread.FieldFinishedAt:
+		m.ResetFinishedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown AgentProviderRead field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *AgentProviderReadMutation) AddedEdges() []string {
+	edges := make([]string, 0, 4)
+	if m.tenant != nil {
+		edges = append(edges, agentproviderread.EdgeTenant)
+	}
+	if m.agent_session != nil {
+		edges = append(edges, agentproviderread.EdgeAgentSession)
+	}
+	if m.agent_turn != nil {
+		edges = append(edges, agentproviderread.EdgeAgentTurn)
+	}
+	if m.service_entity != nil {
+		edges = append(edges, agentproviderread.EdgeServiceEntity)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *AgentProviderReadMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case agentproviderread.EdgeTenant:
+		if id := m.tenant; id != nil {
+			return []ent.Value{*id}
+		}
+	case agentproviderread.EdgeAgentSession:
+		if id := m.agent_session; id != nil {
+			return []ent.Value{*id}
+		}
+	case agentproviderread.EdgeAgentTurn:
+		if id := m.agent_turn; id != nil {
+			return []ent.Value{*id}
+		}
+	case agentproviderread.EdgeServiceEntity:
+		if id := m.service_entity; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *AgentProviderReadMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 4)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *AgentProviderReadMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *AgentProviderReadMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 4)
+	if m.clearedtenant {
+		edges = append(edges, agentproviderread.EdgeTenant)
+	}
+	if m.clearedagent_session {
+		edges = append(edges, agentproviderread.EdgeAgentSession)
+	}
+	if m.clearedagent_turn {
+		edges = append(edges, agentproviderread.EdgeAgentTurn)
+	}
+	if m.clearedservice_entity {
+		edges = append(edges, agentproviderread.EdgeServiceEntity)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *AgentProviderReadMutation) EdgeCleared(name string) bool {
+	switch name {
+	case agentproviderread.EdgeTenant:
+		return m.clearedtenant
+	case agentproviderread.EdgeAgentSession:
+		return m.clearedagent_session
+	case agentproviderread.EdgeAgentTurn:
+		return m.clearedagent_turn
+	case agentproviderread.EdgeServiceEntity:
+		return m.clearedservice_entity
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *AgentProviderReadMutation) ClearEdge(name string) error {
+	switch name {
+	case agentproviderread.EdgeTenant:
+		m.ClearTenant()
+		return nil
+	case agentproviderread.EdgeAgentSession:
+		m.ClearAgentSession()
+		return nil
+	case agentproviderread.EdgeAgentTurn:
+		m.ClearAgentTurn()
+		return nil
+	case agentproviderread.EdgeServiceEntity:
+		m.ClearServiceEntity()
+		return nil
+	}
+	return fmt.Errorf("unknown AgentProviderRead unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *AgentProviderReadMutation) ResetEdge(name string) error {
+	switch name {
+	case agentproviderread.EdgeTenant:
+		m.ResetTenant()
+		return nil
+	case agentproviderread.EdgeAgentSession:
+		m.ResetAgentSession()
+		return nil
+	case agentproviderread.EdgeAgentTurn:
+		m.ResetAgentTurn()
+		return nil
+	case agentproviderread.EdgeServiceEntity:
+		m.ResetServiceEntity()
+		return nil
+	}
+	return fmt.Errorf("unknown AgentProviderRead edge %s", name)
 }
 
 // AgentSessionMutation represents an operation that mutates the AgentSession nodes in the graph.
@@ -4316,42 +5622,45 @@ func (m *AgentSessionBindingMutation) ResetEdge(name string) error {
 // AgentTurnMutation represents an operation that mutates the AgentTurn nodes in the graph.
 type AgentTurnMutation struct {
 	config
-	op                   Op
-	typ                  string
-	id                   *uuid.UUID
-	created_at           *time.Time
-	updated_at           *time.Time
-	sequence             *int
-	addsequence          *int
-	river_job_id         *int64
-	addriver_job_id      *int64
-	input_tool_resume    **exp.ToolResume
-	status               *agentturn.Status
-	started_at           *time.Time
-	finished_at          *time.Time
-	finish_reason        *string
-	error                *string
-	model                *string
-	input_tokens         *int
-	addinput_tokens      *int
-	output_tokens        *int
-	addoutput_tokens     *int
-	clearedFields        map[string]struct{}
-	tenant               *int
-	clearedtenant        bool
-	agent_session        *uuid.UUID
-	clearedagent_session bool
-	input_message        *uuid.UUID
-	clearedinput_message bool
-	messages             map[uuid.UUID]struct{}
-	removedmessages      map[uuid.UUID]struct{}
-	clearedmessages      bool
-	artifacts            map[uuid.UUID]struct{}
-	removedartifacts     map[uuid.UUID]struct{}
-	clearedartifacts     bool
-	done                 bool
-	oldValue             func(context.Context) (*AgentTurn, error)
-	predicates           []predicate.AgentTurn
+	op                    Op
+	typ                   string
+	id                    *uuid.UUID
+	created_at            *time.Time
+	updated_at            *time.Time
+	sequence              *int
+	addsequence           *int
+	river_job_id          *int64
+	addriver_job_id       *int64
+	input_tool_resume     **exp.ToolResume
+	status                *agentturn.Status
+	started_at            *time.Time
+	finished_at           *time.Time
+	finish_reason         *string
+	error                 *string
+	model                 *string
+	input_tokens          *int
+	addinput_tokens       *int
+	output_tokens         *int
+	addoutput_tokens      *int
+	clearedFields         map[string]struct{}
+	tenant                *int
+	clearedtenant         bool
+	agent_session         *uuid.UUID
+	clearedagent_session  bool
+	input_message         *uuid.UUID
+	clearedinput_message  bool
+	messages              map[uuid.UUID]struct{}
+	removedmessages       map[uuid.UUID]struct{}
+	clearedmessages       bool
+	artifacts             map[uuid.UUID]struct{}
+	removedartifacts      map[uuid.UUID]struct{}
+	clearedartifacts      bool
+	provider_reads        map[uuid.UUID]struct{}
+	removedprovider_reads map[uuid.UUID]struct{}
+	clearedprovider_reads bool
+	done                  bool
+	oldValue              func(context.Context) (*AgentTurn, error)
+	predicates            []predicate.AgentTurn
 }
 
 var _ ent.Mutation = (*AgentTurnMutation)(nil)
@@ -5368,6 +6677,60 @@ func (m *AgentTurnMutation) ResetArtifacts() {
 	m.removedartifacts = nil
 }
 
+// AddProviderReadIDs adds the "provider_reads" edge to the AgentProviderRead entity by ids.
+func (m *AgentTurnMutation) AddProviderReadIDs(ids ...uuid.UUID) {
+	if m.provider_reads == nil {
+		m.provider_reads = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.provider_reads[ids[i]] = struct{}{}
+	}
+}
+
+// ClearProviderReads clears the "provider_reads" edge to the AgentProviderRead entity.
+func (m *AgentTurnMutation) ClearProviderReads() {
+	m.clearedprovider_reads = true
+}
+
+// ProviderReadsCleared reports if the "provider_reads" edge to the AgentProviderRead entity was cleared.
+func (m *AgentTurnMutation) ProviderReadsCleared() bool {
+	return m.clearedprovider_reads
+}
+
+// RemoveProviderReadIDs removes the "provider_reads" edge to the AgentProviderRead entity by IDs.
+func (m *AgentTurnMutation) RemoveProviderReadIDs(ids ...uuid.UUID) {
+	if m.removedprovider_reads == nil {
+		m.removedprovider_reads = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.provider_reads, ids[i])
+		m.removedprovider_reads[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedProviderReads returns the removed IDs of the "provider_reads" edge to the AgentProviderRead entity.
+func (m *AgentTurnMutation) RemovedProviderReadsIDs() (ids []uuid.UUID) {
+	for id := range m.removedprovider_reads {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ProviderReadsIDs returns the "provider_reads" edge IDs in the mutation.
+func (m *AgentTurnMutation) ProviderReadsIDs() (ids []uuid.UUID) {
+	for id := range m.provider_reads {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetProviderReads resets all changes to the "provider_reads" edge.
+func (m *AgentTurnMutation) ResetProviderReads() {
+	m.provider_reads = nil
+	m.clearedprovider_reads = false
+	m.removedprovider_reads = nil
+}
+
 // Where appends a list predicates to the AgentTurnMutation builder.
 func (m *AgentTurnMutation) Where(ps ...predicate.AgentTurn) {
 	m.predicates = append(m.predicates, ps...)
@@ -5840,7 +7203,7 @@ func (m *AgentTurnMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *AgentTurnMutation) AddedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 6)
 	if m.tenant != nil {
 		edges = append(edges, agentturn.EdgeTenant)
 	}
@@ -5855,6 +7218,9 @@ func (m *AgentTurnMutation) AddedEdges() []string {
 	}
 	if m.artifacts != nil {
 		edges = append(edges, agentturn.EdgeArtifacts)
+	}
+	if m.provider_reads != nil {
+		edges = append(edges, agentturn.EdgeProviderReads)
 	}
 	return edges
 }
@@ -5887,18 +7253,27 @@ func (m *AgentTurnMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case agentturn.EdgeProviderReads:
+		ids := make([]ent.Value, 0, len(m.provider_reads))
+		for id := range m.provider_reads {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *AgentTurnMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 6)
 	if m.removedmessages != nil {
 		edges = append(edges, agentturn.EdgeMessages)
 	}
 	if m.removedartifacts != nil {
 		edges = append(edges, agentturn.EdgeArtifacts)
+	}
+	if m.removedprovider_reads != nil {
+		edges = append(edges, agentturn.EdgeProviderReads)
 	}
 	return edges
 }
@@ -5919,13 +7294,19 @@ func (m *AgentTurnMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case agentturn.EdgeProviderReads:
+		ids := make([]ent.Value, 0, len(m.removedprovider_reads))
+		for id := range m.removedprovider_reads {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *AgentTurnMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 6)
 	if m.clearedtenant {
 		edges = append(edges, agentturn.EdgeTenant)
 	}
@@ -5940,6 +7321,9 @@ func (m *AgentTurnMutation) ClearedEdges() []string {
 	}
 	if m.clearedartifacts {
 		edges = append(edges, agentturn.EdgeArtifacts)
+	}
+	if m.clearedprovider_reads {
+		edges = append(edges, agentturn.EdgeProviderReads)
 	}
 	return edges
 }
@@ -5958,6 +7342,8 @@ func (m *AgentTurnMutation) EdgeCleared(name string) bool {
 		return m.clearedmessages
 	case agentturn.EdgeArtifacts:
 		return m.clearedartifacts
+	case agentturn.EdgeProviderReads:
+		return m.clearedprovider_reads
 	}
 	return false
 }
@@ -5997,6 +7383,9 @@ func (m *AgentTurnMutation) ResetEdge(name string) error {
 		return nil
 	case agentturn.EdgeArtifacts:
 		m.ResetArtifacts()
+		return nil
+	case agentturn.EdgeProviderReads:
+		m.ResetProviderReads()
 		return nil
 	}
 	return fmt.Errorf("unknown AgentTurn edge %s", name)
@@ -38846,6 +40235,8 @@ type InvestigationOutputReferenceMutation struct {
 	clearedhypothesis_version bool
 	knowledge_evidence        *uuid.UUID
 	clearedknowledge_evidence bool
+	provider_read             *uuid.UUID
+	clearedprovider_read      bool
 	done                      bool
 	oldValue                  func(context.Context) (*InvestigationOutputReference, error)
 	predicates                []predicate.InvestigationOutputReference
@@ -39155,7 +40546,7 @@ func (m *InvestigationOutputReferenceMutation) KnowledgeEvidenceID() (r uuid.UUI
 // OldKnowledgeEvidenceID returns the old "knowledge_evidence_id" field's value of the InvestigationOutputReference entity.
 // If the InvestigationOutputReference object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *InvestigationOutputReferenceMutation) OldKnowledgeEvidenceID(ctx context.Context) (v uuid.UUID, err error) {
+func (m *InvestigationOutputReferenceMutation) OldKnowledgeEvidenceID(ctx context.Context) (v *uuid.UUID, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldKnowledgeEvidenceID is only allowed on UpdateOne operations")
 	}
@@ -39169,9 +40560,71 @@ func (m *InvestigationOutputReferenceMutation) OldKnowledgeEvidenceID(ctx contex
 	return oldValue.KnowledgeEvidenceID, nil
 }
 
+// ClearKnowledgeEvidenceID clears the value of the "knowledge_evidence_id" field.
+func (m *InvestigationOutputReferenceMutation) ClearKnowledgeEvidenceID() {
+	m.knowledge_evidence = nil
+	m.clearedFields[investigationoutputreference.FieldKnowledgeEvidenceID] = struct{}{}
+}
+
+// KnowledgeEvidenceIDCleared returns if the "knowledge_evidence_id" field was cleared in this mutation.
+func (m *InvestigationOutputReferenceMutation) KnowledgeEvidenceIDCleared() bool {
+	_, ok := m.clearedFields[investigationoutputreference.FieldKnowledgeEvidenceID]
+	return ok
+}
+
 // ResetKnowledgeEvidenceID resets all changes to the "knowledge_evidence_id" field.
 func (m *InvestigationOutputReferenceMutation) ResetKnowledgeEvidenceID() {
 	m.knowledge_evidence = nil
+	delete(m.clearedFields, investigationoutputreference.FieldKnowledgeEvidenceID)
+}
+
+// SetAgentProviderReadID sets the "agent_provider_read_id" field.
+func (m *InvestigationOutputReferenceMutation) SetAgentProviderReadID(u uuid.UUID) {
+	m.provider_read = &u
+}
+
+// AgentProviderReadID returns the value of the "agent_provider_read_id" field in the mutation.
+func (m *InvestigationOutputReferenceMutation) AgentProviderReadID() (r uuid.UUID, exists bool) {
+	v := m.provider_read
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAgentProviderReadID returns the old "agent_provider_read_id" field's value of the InvestigationOutputReference entity.
+// If the InvestigationOutputReference object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InvestigationOutputReferenceMutation) OldAgentProviderReadID(ctx context.Context) (v *uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAgentProviderReadID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAgentProviderReadID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAgentProviderReadID: %w", err)
+	}
+	return oldValue.AgentProviderReadID, nil
+}
+
+// ClearAgentProviderReadID clears the value of the "agent_provider_read_id" field.
+func (m *InvestigationOutputReferenceMutation) ClearAgentProviderReadID() {
+	m.provider_read = nil
+	m.clearedFields[investigationoutputreference.FieldAgentProviderReadID] = struct{}{}
+}
+
+// AgentProviderReadIDCleared returns if the "agent_provider_read_id" field was cleared in this mutation.
+func (m *InvestigationOutputReferenceMutation) AgentProviderReadIDCleared() bool {
+	_, ok := m.clearedFields[investigationoutputreference.FieldAgentProviderReadID]
+	return ok
+}
+
+// ResetAgentProviderReadID resets all changes to the "agent_provider_read_id" field.
+func (m *InvestigationOutputReferenceMutation) ResetAgentProviderReadID() {
+	m.provider_read = nil
+	delete(m.clearedFields, investigationoutputreference.FieldAgentProviderReadID)
 }
 
 // ClearTenant clears the "tenant" edge to the Tenant entity.
@@ -39290,7 +40743,7 @@ func (m *InvestigationOutputReferenceMutation) ClearKnowledgeEvidence() {
 
 // KnowledgeEvidenceCleared reports if the "knowledge_evidence" edge to the KnowledgeEvidence entity was cleared.
 func (m *InvestigationOutputReferenceMutation) KnowledgeEvidenceCleared() bool {
-	return m.clearedknowledge_evidence
+	return m.KnowledgeEvidenceIDCleared() || m.clearedknowledge_evidence
 }
 
 // KnowledgeEvidenceIDs returns the "knowledge_evidence" edge IDs in the mutation.
@@ -39307,6 +40760,46 @@ func (m *InvestigationOutputReferenceMutation) KnowledgeEvidenceIDs() (ids []uui
 func (m *InvestigationOutputReferenceMutation) ResetKnowledgeEvidence() {
 	m.knowledge_evidence = nil
 	m.clearedknowledge_evidence = false
+}
+
+// SetProviderReadID sets the "provider_read" edge to the AgentProviderRead entity by id.
+func (m *InvestigationOutputReferenceMutation) SetProviderReadID(id uuid.UUID) {
+	m.provider_read = &id
+}
+
+// ClearProviderRead clears the "provider_read" edge to the AgentProviderRead entity.
+func (m *InvestigationOutputReferenceMutation) ClearProviderRead() {
+	m.clearedprovider_read = true
+	m.clearedFields[investigationoutputreference.FieldAgentProviderReadID] = struct{}{}
+}
+
+// ProviderReadCleared reports if the "provider_read" edge to the AgentProviderRead entity was cleared.
+func (m *InvestigationOutputReferenceMutation) ProviderReadCleared() bool {
+	return m.AgentProviderReadIDCleared() || m.clearedprovider_read
+}
+
+// ProviderReadID returns the "provider_read" edge ID in the mutation.
+func (m *InvestigationOutputReferenceMutation) ProviderReadID() (id uuid.UUID, exists bool) {
+	if m.provider_read != nil {
+		return *m.provider_read, true
+	}
+	return
+}
+
+// ProviderReadIDs returns the "provider_read" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ProviderReadID instead. It exists only for internal usage by the builders.
+func (m *InvestigationOutputReferenceMutation) ProviderReadIDs() (ids []uuid.UUID) {
+	if id := m.provider_read; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetProviderRead resets all changes to the "provider_read" edge.
+func (m *InvestigationOutputReferenceMutation) ResetProviderRead() {
+	m.provider_read = nil
+	m.clearedprovider_read = false
 }
 
 // Where appends a list predicates to the InvestigationOutputReferenceMutation builder.
@@ -39343,7 +40836,7 @@ func (m *InvestigationOutputReferenceMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *InvestigationOutputReferenceMutation) Fields() []string {
-	fields := make([]string, 0, 5)
+	fields := make([]string, 0, 6)
 	if m.tenant != nil {
 		fields = append(fields, investigationoutputreference.FieldTenantID)
 	}
@@ -39358,6 +40851,9 @@ func (m *InvestigationOutputReferenceMutation) Fields() []string {
 	}
 	if m.knowledge_evidence != nil {
 		fields = append(fields, investigationoutputreference.FieldKnowledgeEvidenceID)
+	}
+	if m.provider_read != nil {
+		fields = append(fields, investigationoutputreference.FieldAgentProviderReadID)
 	}
 	return fields
 }
@@ -39377,6 +40873,8 @@ func (m *InvestigationOutputReferenceMutation) Field(name string) (ent.Value, bo
 		return m.HypothesisVersionID()
 	case investigationoutputreference.FieldKnowledgeEvidenceID:
 		return m.KnowledgeEvidenceID()
+	case investigationoutputreference.FieldAgentProviderReadID:
+		return m.AgentProviderReadID()
 	}
 	return nil, false
 }
@@ -39396,6 +40894,8 @@ func (m *InvestigationOutputReferenceMutation) OldField(ctx context.Context, nam
 		return m.OldHypothesisVersionID(ctx)
 	case investigationoutputreference.FieldKnowledgeEvidenceID:
 		return m.OldKnowledgeEvidenceID(ctx)
+	case investigationoutputreference.FieldAgentProviderReadID:
+		return m.OldAgentProviderReadID(ctx)
 	}
 	return nil, fmt.Errorf("unknown InvestigationOutputReference field %s", name)
 }
@@ -39440,6 +40940,13 @@ func (m *InvestigationOutputReferenceMutation) SetField(name string, value ent.V
 		}
 		m.SetKnowledgeEvidenceID(v)
 		return nil
+	case investigationoutputreference.FieldAgentProviderReadID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAgentProviderReadID(v)
+		return nil
 	}
 	return fmt.Errorf("unknown InvestigationOutputReference field %s", name)
 }
@@ -39482,6 +40989,12 @@ func (m *InvestigationOutputReferenceMutation) ClearedFields() []string {
 	if m.FieldCleared(investigationoutputreference.FieldHypothesisVersionID) {
 		fields = append(fields, investigationoutputreference.FieldHypothesisVersionID)
 	}
+	if m.FieldCleared(investigationoutputreference.FieldKnowledgeEvidenceID) {
+		fields = append(fields, investigationoutputreference.FieldKnowledgeEvidenceID)
+	}
+	if m.FieldCleared(investigationoutputreference.FieldAgentProviderReadID) {
+		fields = append(fields, investigationoutputreference.FieldAgentProviderReadID)
+	}
 	return fields
 }
 
@@ -39504,6 +41017,12 @@ func (m *InvestigationOutputReferenceMutation) ClearField(name string) error {
 		return nil
 	case investigationoutputreference.FieldHypothesisVersionID:
 		m.ClearHypothesisVersionID()
+		return nil
+	case investigationoutputreference.FieldKnowledgeEvidenceID:
+		m.ClearKnowledgeEvidenceID()
+		return nil
+	case investigationoutputreference.FieldAgentProviderReadID:
+		m.ClearAgentProviderReadID()
 		return nil
 	}
 	return fmt.Errorf("unknown InvestigationOutputReference nullable field %s", name)
@@ -39528,13 +41047,16 @@ func (m *InvestigationOutputReferenceMutation) ResetField(name string) error {
 	case investigationoutputreference.FieldKnowledgeEvidenceID:
 		m.ResetKnowledgeEvidenceID()
 		return nil
+	case investigationoutputreference.FieldAgentProviderReadID:
+		m.ResetAgentProviderReadID()
+		return nil
 	}
 	return fmt.Errorf("unknown InvestigationOutputReference field %s", name)
 }
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *InvestigationOutputReferenceMutation) AddedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 6)
 	if m.tenant != nil {
 		edges = append(edges, investigationoutputreference.EdgeTenant)
 	}
@@ -39549,6 +41071,9 @@ func (m *InvestigationOutputReferenceMutation) AddedEdges() []string {
 	}
 	if m.knowledge_evidence != nil {
 		edges = append(edges, investigationoutputreference.EdgeKnowledgeEvidence)
+	}
+	if m.provider_read != nil {
+		edges = append(edges, investigationoutputreference.EdgeProviderRead)
 	}
 	return edges
 }
@@ -39577,13 +41102,17 @@ func (m *InvestigationOutputReferenceMutation) AddedIDs(name string) []ent.Value
 		if id := m.knowledge_evidence; id != nil {
 			return []ent.Value{*id}
 		}
+	case investigationoutputreference.EdgeProviderRead:
+		if id := m.provider_read; id != nil {
+			return []ent.Value{*id}
+		}
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *InvestigationOutputReferenceMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 6)
 	return edges
 }
 
@@ -39595,7 +41124,7 @@ func (m *InvestigationOutputReferenceMutation) RemovedIDs(name string) []ent.Val
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *InvestigationOutputReferenceMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 6)
 	if m.clearedtenant {
 		edges = append(edges, investigationoutputreference.EdgeTenant)
 	}
@@ -39610,6 +41139,9 @@ func (m *InvestigationOutputReferenceMutation) ClearedEdges() []string {
 	}
 	if m.clearedknowledge_evidence {
 		edges = append(edges, investigationoutputreference.EdgeKnowledgeEvidence)
+	}
+	if m.clearedprovider_read {
+		edges = append(edges, investigationoutputreference.EdgeProviderRead)
 	}
 	return edges
 }
@@ -39628,6 +41160,8 @@ func (m *InvestigationOutputReferenceMutation) EdgeCleared(name string) bool {
 		return m.clearedhypothesis_version
 	case investigationoutputreference.EdgeKnowledgeEvidence:
 		return m.clearedknowledge_evidence
+	case investigationoutputreference.EdgeProviderRead:
+		return m.clearedprovider_read
 	}
 	return false
 }
@@ -39651,6 +41185,9 @@ func (m *InvestigationOutputReferenceMutation) ClearEdge(name string) error {
 	case investigationoutputreference.EdgeKnowledgeEvidence:
 		m.ClearKnowledgeEvidence()
 		return nil
+	case investigationoutputreference.EdgeProviderRead:
+		m.ClearProviderRead()
+		return nil
 	}
 	return fmt.Errorf("unknown InvestigationOutputReference unique edge %s", name)
 }
@@ -39673,6 +41210,9 @@ func (m *InvestigationOutputReferenceMutation) ResetEdge(name string) error {
 		return nil
 	case investigationoutputreference.EdgeKnowledgeEvidence:
 		m.ResetKnowledgeEvidence()
+		return nil
+	case investigationoutputreference.EdgeProviderRead:
+		m.ResetProviderRead()
 		return nil
 	}
 	return fmt.Errorf("unknown InvestigationOutputReference edge %s", name)

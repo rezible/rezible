@@ -86,9 +86,9 @@ func (m *agentDebugMiddleware) New(ctx context.Context) (*ai.Hooks, error) {
 	}, nil
 }
 
-// toolErrorResultMiddleware returns invalid input and missing records to the agent as a result carrying only the
-// error, so the agent can correct the call or move on. It wraps Genkit's input schema validation too. Other errors
-// are Rezible's own failures and fail the turn.
+// toolErrorResultMiddleware returns invalid input, missing records and refused calls to the agent as a result
+// carrying only the error, so the agent can correct the call or move on. It wraps Genkit's input schema validation
+// too. Other errors are Rezible's own failures and fail the turn.
 type toolErrorResultMiddleware struct{}
 
 func (m *toolErrorResultMiddleware) Name() string {
@@ -111,6 +111,7 @@ func (m *toolErrorResultMiddleware) isAgentError(toolErr error) bool {
 	return errors.Is(toolErr, status.ErrInvalidInput) ||
 		errors.Is(toolErr, errs.ErrInvalidInput) ||
 		errors.Is(toolErr, errs.ErrNotFound) ||
+		errors.Is(toolErr, rezai.ErrToolRefused) ||
 		ent.IsNotFound(toolErr)
 }
 

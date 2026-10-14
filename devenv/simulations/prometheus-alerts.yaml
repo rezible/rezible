@@ -17,3 +17,4 @@ groups:
           description: >-
             More than 5% of checkout-api requests have returned a 5xx response over the last minute.
             Customers cannot complete orders. Check payments-api latency and recent checkout-api deploys.
+          runbook_url: https://runbooks.example.com/checkout/high-error-rate

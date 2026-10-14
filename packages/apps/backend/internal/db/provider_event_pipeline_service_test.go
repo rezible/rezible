@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"iter"
@@ -617,4 +618,89 @@ func (p *transientDatabasePipelineProjector) GetEventProjectorFunc(*ent.Normaliz
 	return func(ctx context.Context, ev *ent.NormalizedEvent) ([]rez.ProjectedEntityRef, error) {
 		return nil, p.projectionErr
 	}, true
+}
+
+// listingTestProcessor observes one subject per value of a listing, as a provider that lists what it observes
+// does.
+type listingTestProcessor struct{}
+
+func (listingTestProcessor) ProcessProviderEvent(_ context.Context, ev rez.ProviderEvent) (ent.NormalizedEvents, error) {
+	var values []string
+	if decodeErr := json.Unmarshal(ev.Attributes, &values); decodeErr != nil {
+		return nil, decodeErr
+	}
+	events := make(ent.NormalizedEvents, len(values))
+	for i, value := range values {
+		events[i] = &ent.NormalizedEvent{
+			Provider:            ev.Provider,
+			ProviderNamespace:   ev.ProviderNamespace,
+			ProviderEventSource: ev.ProviderEventSource,
+			ProviderEventRef:    ev.ProviderEventRef,
+			ProviderResourceRef: "service:" + value,
+			Kind:                "pipeline_test",
+			OccurredAt:          ev.ReceivedAt,
+			ReceivedAt:          ev.ReceivedAt,
+			Attributes:          []byte(`{}`),
+		}
+	}
+	return events, nil
+}
+
+func (s *ProviderEventPipelineServiceSuite) TestSyncedListingIsIngestedOnce() {
+	ctx, tdb := s.SetupTestDatabase()
+	const listingProvider = "listing"
+
+	var processArgs []*jobs.ProcessProviderEventArgs
+	projected := 0
+	jobSvc := mocks.NewMockJobService(s.T())
+	jobSvc.EXPECT().
+		InsertMany(mock.Anything, mock.Anything).
+		RunAndReturn(func(_ context.Context, params []river.InsertManyParams) ([]*rivertype.JobInsertResult, error) {
+			for _, param := range params {
+				switch args := param.Args.(type) {
+				case *jobs.ProcessProviderEventArgs:
+					processArgs = append(processArgs, args)
+				case jobs.ProjectNormalizedEvent:
+					projected++
+				}
+			}
+			return make([]*rivertype.JobInsertResult, len(params)), nil
+		})
+	svc := &ProviderEventPipelineService{
+		db:         tdb,
+		jobs:       jobSvc,
+		processors: map[string]rez.ProviderEventProcessor{listingProvider: listingTestProcessor{}},
+	}
+
+	// Each sync lists the same values; only when it was received differs.
+	syncListing := func(receivedAt time.Time) {
+		listing := rez.ProviderEvent{
+			Provider:            listingProvider,
+			ProviderNamespace:   pipelineTestNamespace,
+			ProviderEventSource: "services",
+			ProviderEventRef:    "services:digest",
+			ReceivedAt:          receivedAt,
+			Attributes:          []byte(`["checkout-api","payments","search"]`),
+		}
+		querier := func(yield func(*rez.ProviderEventQueryResult, error) bool) {
+			yield(&rez.ProviderEventQueryResult{Event: listing, ProviderEventSourceCursorAfter: new("services")}, nil)
+		}
+		processArgs = nil
+		result := svc.SyncEvents(ctx, providerEventQuerierFunc(querier), rez.ProviderEventSourceCursors{})
+		s.Require().Empty(result.SyncErrors)
+		s.Require().Len(processArgs, 1)
+		s.Require().NoError(svc.HandleProcessEventJob(ctx, processArgs[0]))
+	}
+
+	syncListing(time.Date(2026, 10, 14, 9, 0, 0, 0, time.UTC))
+	s.Equal(3, projected)
+
+	syncListing(time.Date(2026, 10, 14, 10, 0, 0, 0, time.UTC))
+	s.Equal(3, projected, "the same listing again ingests nothing")
+
+	queryNormalized := tdb.Client(ctx).NormalizedEvent.Query().
+		Where(ne.Provider(listingProvider))
+	count, countErr := queryNormalized.Count(ctx)
+	s.Require().NoError(countErr)
+	s.Equal(3, count)
 }

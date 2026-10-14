@@ -420,6 +420,16 @@ func (m *investigationModel) generate(
 		if introduction.Outputs.Report != nil {
 			return nil, fmt.Errorf("step 1: introduction report=%+v, want none", introduction.Outputs.Report)
 		}
+		window := introduction.ProviderReadWindow
+		if window == nil || !window.Start.Equal(situation.OpenedAt.Add(-rezai.ProviderReadLeadIn)) || window.End != nil {
+			return nil, fmt.Errorf("step 1: provider read window=%+v, want from a day before the situation opened", window)
+		}
+		if logs := introduction.Sources.Logs; logs.Available || logs.Reason == "" {
+			return nil, fmt.Errorf("step 1: logs source=%+v, want unavailable without a logs integration", logs)
+		}
+		if budget := introduction.ProviderReadBudget; budget.Limit != rezai.MaxProviderReadsPerTurn || budget.Used != 0 {
+			return nil, fmt.Errorf("step 1: provider read budget=%+v, want none used", budget)
+		}
 		calls := m.invalidCalls()
 		parts := make([]*ai.Part, 0, len(calls))
 		for _, call := range calls {

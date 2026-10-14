@@ -45,6 +45,8 @@ type HealthChecker interface {
 type LogQuerier interface {
 	SearchLogs(ctx context.Context, params LogSearchParams) (*LogSearchResult, error)
 	CountLogs(ctx context.Context, params LogCountParams) (*LogCountResult, error)
+	// CheckLogsAvailable returns why the installation cannot read logs, or nil, without calling the provider.
+	CheckLogsAvailable() error
 }
 
 // MetricQuerier reads metrics on demand. Results are returned to the caller and
@@ -54,8 +56,22 @@ type MetricQuerier interface {
 	QueryMetricRange(ctx context.Context, params MetricRangeParams) (*MetricRangeResult, error)
 }
 
+// LogService identifies the service whose logs are read. The integration chooses the value to query by.
+type LogService struct {
+	DisplayName string
+	// Aliases are the reading installation's own provider resource refs for the service.
+	Aliases []string
+}
+
+// LogServiceName is the value an integration read a service's logs by.
+type LogServiceName struct {
+	Value string
+	// FromAlias is whether the value came from the installation's aliases rather than the display name.
+	FromAlias bool
+}
+
 type LogSearchParams struct {
-	Service  string // the value of the installation's log service label
+	Service  LogService
 	Start    time.Time
 	End      time.Time
 	Contains string // optional literal text each line must contain
@@ -63,7 +79,7 @@ type LogSearchParams struct {
 }
 
 type LogCountParams struct {
-	Service  string // the value of the installation's log service label
+	Service  LogService
 	Start    time.Time
 	End      time.Time
 	Contains string        // optional literal text each counted line must contain
@@ -102,8 +118,9 @@ type LogLine struct {
 }
 
 type LogSearchResult struct {
-	Lines []LogLine // newest first
-	Read  ReadRecord
+	Service LogServiceName
+	Lines   []LogLine // newest first
+	Read    ReadRecord
 }
 
 type MetricPoint struct {
@@ -112,8 +129,9 @@ type MetricPoint struct {
 }
 
 type LogCountResult struct {
-	Points []MetricPoint
-	Read   ReadRecord
+	Service LogServiceName
+	Points  []MetricPoint
+	Read    ReadRecord
 }
 
 type MetricSeries struct {

@@ -917,6 +917,35 @@ func HasArtifactsWith(preds ...predicate.AgentArtifact) predicate.AgentTurn {
 	})
 }
 
+// HasProviderReads applies the HasEdge predicate on the "provider_reads" edge.
+func HasProviderReads() predicate.AgentTurn {
+	return predicate.AgentTurn(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, ProviderReadsTable, ProviderReadsColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.AgentProviderRead
+		step.Edge.Schema = schemaConfig.AgentProviderRead
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasProviderReadsWith applies the HasEdge predicate on the "provider_reads" edge with a given conditions (other predicates).
+func HasProviderReadsWith(preds ...predicate.AgentProviderRead) predicate.AgentTurn {
+	return predicate.AgentTurn(func(s *sql.Selector) {
+		step := newProviderReadsStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.AgentProviderRead
+		step.Edge.Schema = schemaConfig.AgentProviderRead
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.AgentTurn) predicate.AgentTurn {
 	return predicate.AgentTurn(sql.AndPredicates(predicates...))

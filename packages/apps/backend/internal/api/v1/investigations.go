@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/pkg/errs"
 	oapi "github.com/rezible/rezible/pkg/openapi/v1"
 )
@@ -12,10 +13,17 @@ import (
 type investigationsHandler struct {
 	investigations rez.InvestigationService
 	outputs        rez.InvestigationOutputService
+	integrations   rez.IntegrationService
 }
 
-func newInvestigationsHandler(investigations rez.InvestigationService, outputs rez.InvestigationOutputService) *investigationsHandler {
-	return &investigationsHandler{investigations: investigations, outputs: outputs}
+func newInvestigationsHandler(investigations rez.InvestigationService, outputs rez.InvestigationOutputService, integrations rez.IntegrationService) *investigationsHandler {
+	return &investigationsHandler{investigations: investigations, outputs: outputs, integrations: integrations}
+}
+
+func (h *investigationsHandler) integrationDisplayNames(ctx context.Context) oapi.IntegrationDisplayNames {
+	return func(name string) string {
+		return h.integrations.GetIntegrationDisplayName(ctx, name)
+	}
 }
 
 func (h *investigationsHandler) GetInvestigation(ctx context.Context, req *oapi.GetInvestigationRequest) (*oapi.GetInvestigationResponse, error) {
@@ -53,7 +61,7 @@ func (h *investigationsHandler) GetInvestigationReport(ctx context.Context, req 
 		return nil, oapi.Error(ctx, "get investigation report", errs.ErrNotFound)
 	}
 	var resp oapi.GetInvestigationReportResponse
-	resp.Body.Data = oapi.InvestigationReportFromEnt(report)
+	resp.Body.Data = oapi.InvestigationReportFromEnt(report, h.integrationDisplayNames(ctx))
 	return &resp, nil
 }
 
@@ -67,7 +75,10 @@ func (h *investigationsHandler) ListInvestigationFindings(ctx context.Context, r
 		return nil, oapi.Error(ctx, "list investigation findings", listErr)
 	}
 	var resp oapi.ListInvestigationFindingsResponse
-	resp.Body = oapi.ConvertPaginatedResultBody(result, oapi.InvestigationFindingFromEnt)
+	displayNames := h.integrationDisplayNames(ctx)
+	resp.Body = oapi.ConvertPaginatedResultBody(result, func(version *ent.InvestigationFindingVersion) oapi.InvestigationFinding {
+		return oapi.InvestigationFindingFromEnt(version, displayNames)
+	})
 	return &resp, nil
 }
 
@@ -77,7 +88,7 @@ func (h *investigationsHandler) GetInvestigationFinding(ctx context.Context, req
 		return nil, oapi.Error(ctx, "get investigation finding", readErr)
 	}
 	var resp oapi.GetInvestigationFindingResponse
-	resp.Body.Data = oapi.InvestigationFindingFromEnt(finding)
+	resp.Body.Data = oapi.InvestigationFindingFromEnt(finding, h.integrationDisplayNames(ctx))
 	return &resp, nil
 }
 
@@ -91,7 +102,10 @@ func (h *investigationsHandler) ListInvestigationHypotheses(ctx context.Context,
 		return nil, oapi.Error(ctx, "list investigation hypotheses", listErr)
 	}
 	var resp oapi.ListInvestigationHypothesesResponse
-	resp.Body = oapi.ConvertPaginatedResultBody(result, oapi.InvestigationHypothesisFromEnt)
+	displayNames := h.integrationDisplayNames(ctx)
+	resp.Body = oapi.ConvertPaginatedResultBody(result, func(version *ent.InvestigationHypothesisVersion) oapi.InvestigationHypothesis {
+		return oapi.InvestigationHypothesisFromEnt(version, displayNames)
+	})
 	return &resp, nil
 }
 
@@ -101,7 +115,7 @@ func (h *investigationsHandler) GetInvestigationHypothesis(ctx context.Context, 
 		return nil, oapi.Error(ctx, "get investigation hypothesis", readErr)
 	}
 	var resp oapi.GetInvestigationHypothesisResponse
-	resp.Body.Data = oapi.InvestigationHypothesisFromEnt(hypothesis)
+	resp.Body.Data = oapi.InvestigationHypothesisFromEnt(hypothesis, h.integrationDisplayNames(ctx))
 	return &resp, nil
 }
 

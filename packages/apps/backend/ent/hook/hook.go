@@ -33,6 +33,18 @@ func (f AgentMessageFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AgentMessageMutation", m)
 }
 
+// The AgentProviderReadFunc type is an adapter to allow the use of ordinary
+// function as AgentProviderRead mutator.
+type AgentProviderReadFunc func(context.Context, *ent.AgentProviderReadMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f AgentProviderReadFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.AgentProviderReadMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AgentProviderReadMutation", m)
+}
+
 // The AgentSessionFunc type is an adapter to allow the use of ordinary
 // function as AgentSession mutator.
 type AgentSessionFunc func(context.Context, *ent.AgentSessionMutation) (ent.Value, error)

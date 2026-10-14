@@ -20,6 +20,14 @@ func (c *AgentMessageClient) Debug() *AgentMessageClient {
 	return &AgentMessageClient{config: cfg}
 }
 
+func (c *AgentProviderReadClient) Debug() *AgentProviderReadClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &AgentProviderReadClient{config: cfg}
+}
+
 func (c *AgentSessionClient) Debug() *AgentSessionClient {
 	if c.debug {
 		return c

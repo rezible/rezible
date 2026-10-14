@@ -17,6 +17,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/agentartifact"
 	"github.com/rezible/rezible/ent/agentmessage"
+	"github.com/rezible/rezible/ent/agentproviderread"
 	"github.com/rezible/rezible/ent/agentsession"
 	"github.com/rezible/rezible/ent/agentturn"
 	"github.com/rezible/rezible/ent/internal"
@@ -27,16 +28,17 @@ import (
 // AgentTurnQuery is the builder for querying AgentTurn entities.
 type AgentTurnQuery struct {
 	config
-	ctx              *QueryContext
-	order            []agentturn.OrderOption
-	inters           []Interceptor
-	predicates       []predicate.AgentTurn
-	withTenant       *TenantQuery
-	withAgentSession *AgentSessionQuery
-	withInputMessage *AgentMessageQuery
-	withMessages     *AgentMessageQuery
-	withArtifacts    *AgentArtifactQuery
-	modifiers        []func(*sql.Selector)
+	ctx               *QueryContext
+	order             []agentturn.OrderOption
+	inters            []Interceptor
+	predicates        []predicate.AgentTurn
+	withTenant        *TenantQuery
+	withAgentSession  *AgentSessionQuery
+	withInputMessage  *AgentMessageQuery
+	withMessages      *AgentMessageQuery
+	withArtifacts     *AgentArtifactQuery
+	withProviderReads *AgentProviderReadQuery
+	modifiers         []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -192,6 +194,31 @@ func (_q *AgentTurnQuery) QueryArtifacts() *AgentArtifactQuery {
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.AgentArtifact
 		step.Edge.Schema = schemaConfig.AgentArtifact
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryProviderReads chains the current query on the "provider_reads" edge.
+func (_q *AgentTurnQuery) QueryProviderReads() *AgentProviderReadQuery {
+	query := (&AgentProviderReadClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(agentturn.Table, agentturn.FieldID, selector),
+			sqlgraph.To(agentproviderread.Table, agentproviderread.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, agentturn.ProviderReadsTable, agentturn.ProviderReadsColumn),
+		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.AgentProviderRead
+		step.Edge.Schema = schemaConfig.AgentProviderRead
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -385,16 +412,17 @@ func (_q *AgentTurnQuery) Clone() *AgentTurnQuery {
 		return nil
 	}
 	return &AgentTurnQuery{
-		config:           _q.config,
-		ctx:              _q.ctx.Clone(),
-		order:            append([]agentturn.OrderOption{}, _q.order...),
-		inters:           append([]Interceptor{}, _q.inters...),
-		predicates:       append([]predicate.AgentTurn{}, _q.predicates...),
-		withTenant:       _q.withTenant.Clone(),
-		withAgentSession: _q.withAgentSession.Clone(),
-		withInputMessage: _q.withInputMessage.Clone(),
-		withMessages:     _q.withMessages.Clone(),
-		withArtifacts:    _q.withArtifacts.Clone(),
+		config:            _q.config,
+		ctx:               _q.ctx.Clone(),
+		order:             append([]agentturn.OrderOption{}, _q.order...),
+		inters:            append([]Interceptor{}, _q.inters...),
+		predicates:        append([]predicate.AgentTurn{}, _q.predicates...),
+		withTenant:        _q.withTenant.Clone(),
+		withAgentSession:  _q.withAgentSession.Clone(),
+		withInputMessage:  _q.withInputMessage.Clone(),
+		withMessages:      _q.withMessages.Clone(),
+		withArtifacts:     _q.withArtifacts.Clone(),
+		withProviderReads: _q.withProviderReads.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
@@ -453,6 +481,17 @@ func (_q *AgentTurnQuery) WithArtifacts(opts ...func(*AgentArtifactQuery)) *Agen
 		opt(query)
 	}
 	_q.withArtifacts = query
+	return _q
+}
+
+// WithProviderReads tells the query-builder to eager-load the nodes that are connected to
+// the "provider_reads" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *AgentTurnQuery) WithProviderReads(opts ...func(*AgentProviderReadQuery)) *AgentTurnQuery {
+	query := (&AgentProviderReadClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withProviderReads = query
 	return _q
 }
 
@@ -540,12 +579,13 @@ func (_q *AgentTurnQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Ag
 	var (
 		nodes       = []*AgentTurn{}
 		_spec       = _q.querySpec()
-		loadedTypes = [5]bool{
+		loadedTypes = [6]bool{
 			_q.withTenant != nil,
 			_q.withAgentSession != nil,
 			_q.withInputMessage != nil,
 			_q.withMessages != nil,
 			_q.withArtifacts != nil,
+			_q.withProviderReads != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -600,6 +640,13 @@ func (_q *AgentTurnQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Ag
 		if err := _q.loadArtifacts(ctx, query, nodes,
 			func(n *AgentTurn) { n.Edges.Artifacts = []*AgentArtifact{} },
 			func(n *AgentTurn, e *AgentArtifact) { n.Edges.Artifacts = append(n.Edges.Artifacts, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withProviderReads; query != nil {
+		if err := _q.loadProviderReads(ctx, query, nodes,
+			func(n *AgentTurn) { n.Edges.ProviderReads = []*AgentProviderRead{} },
+			func(n *AgentTurn, e *AgentProviderRead) { n.Edges.ProviderReads = append(n.Edges.ProviderReads, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -754,6 +801,36 @@ func (_q *AgentTurnQuery) loadArtifacts(ctx context.Context, query *AgentArtifac
 		node, ok := nodeids[*fk]
 		if !ok {
 			return fmt.Errorf(`unexpected referenced foreign-key "last_agent_turn_id" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *AgentTurnQuery) loadProviderReads(ctx context.Context, query *AgentProviderReadQuery, nodes []*AgentTurn, init func(*AgentTurn), assign func(*AgentTurn, *AgentProviderRead)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*AgentTurn)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(agentproviderread.FieldAgentTurnID)
+	}
+	query.Where(predicate.AgentProviderRead(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(agentturn.ProviderReadsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.AgentTurnID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "agent_turn_id" returned %v for node %v`, fk, n.ID)
 		}
 		assign(node, n)
 	}

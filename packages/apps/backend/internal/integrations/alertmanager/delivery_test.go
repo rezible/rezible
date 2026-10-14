@@ -331,3 +331,26 @@ func (s *DeliverySuite) TestInstallIgnoresClientConfig() {
 	s.Require().NoError(encodeErr)
 	s.Require().JSONEq(`{}`, string(encoded))
 }
+
+func (s *DeliverySuite) TestRunbookURLIsKeptOnlyWhenAbsoluteHTTP() {
+	cases := map[string]string{
+		"https://runbooks.example.com/checkout#errors": "https://runbooks.example.com/checkout#errors",
+		"http://wiki.internal/runbooks/checkout":       "http://wiki.internal/runbooks/checkout",
+		"/runbooks/checkout":                           "",
+		"runbooks.example.com/checkout":                "",
+		"ftp://runbooks.example.com/checkout":          "",
+		"https://user:token@wiki.internal/checkout":    "",
+		"javascript:alert(1)":                          "",
+		"":                                             "",
+	}
+	for runbook, expected := range cases {
+		alert := testAlert("firing", map[string]string{"alertname": "HighErrorRate", "service": "checkout-api"})
+		alert["annotations"] = map[string]string{"runbook_url": runbook}
+		delivery := s.mapTestDelivery(defaultSettings, testPayload(alert), testReceivedAt)
+		s.Require().Len(delivery.events, 1)
+
+		_, _, attrs := s.normalize(delivery.events[0])
+
+		s.Equal(expected, attrs.RunbookURL, "runbook_url %q", runbook)
+	}
+}

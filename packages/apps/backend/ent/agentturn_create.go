@@ -16,6 +16,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/agentartifact"
 	"github.com/rezible/rezible/ent/agentmessage"
+	"github.com/rezible/rezible/ent/agentproviderread"
 	"github.com/rezible/rezible/ent/agentsession"
 	"github.com/rezible/rezible/ent/agentturn"
 	"github.com/rezible/rezible/ent/tenant"
@@ -254,6 +255,21 @@ func (_c *AgentTurnCreate) AddArtifacts(v ...*AgentArtifact) *AgentTurnCreate {
 		ids[i] = v[i].ID
 	}
 	return _c.AddArtifactIDs(ids...)
+}
+
+// AddProviderReadIDs adds the "provider_reads" edge to the AgentProviderRead entity by IDs.
+func (_c *AgentTurnCreate) AddProviderReadIDs(ids ...uuid.UUID) *AgentTurnCreate {
+	_c.mutation.AddProviderReadIDs(ids...)
+	return _c
+}
+
+// AddProviderReads adds the "provider_reads" edges to the AgentProviderRead entity.
+func (_c *AgentTurnCreate) AddProviderReads(v ...*AgentProviderRead) *AgentTurnCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddProviderReadIDs(ids...)
 }
 
 // Mutation returns the AgentTurnMutation object of the builder.
@@ -559,6 +575,23 @@ func (_c *AgentTurnCreate) createSpec() (*AgentTurn, *sqlgraph.CreateSpec) {
 			},
 		}
 		edge.Schema = _c.schemaConfig.AgentArtifact
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.ProviderReadsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   agentturn.ProviderReadsTable,
+			Columns: []string{agentturn.ProviderReadsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentproviderread.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.AgentProviderRead
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

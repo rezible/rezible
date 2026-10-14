@@ -15,6 +15,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/agentartifact"
 	"github.com/rezible/rezible/ent/agentmessage"
+	"github.com/rezible/rezible/ent/agentproviderread"
 	"github.com/rezible/rezible/ent/agentturn"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
@@ -285,6 +286,21 @@ func (_u *AgentTurnUpdate) AddArtifacts(v ...*AgentArtifact) *AgentTurnUpdate {
 	return _u.AddArtifactIDs(ids...)
 }
 
+// AddProviderReadIDs adds the "provider_reads" edge to the AgentProviderRead entity by IDs.
+func (_u *AgentTurnUpdate) AddProviderReadIDs(ids ...uuid.UUID) *AgentTurnUpdate {
+	_u.mutation.AddProviderReadIDs(ids...)
+	return _u
+}
+
+// AddProviderReads adds the "provider_reads" edges to the AgentProviderRead entity.
+func (_u *AgentTurnUpdate) AddProviderReads(v ...*AgentProviderRead) *AgentTurnUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddProviderReadIDs(ids...)
+}
+
 // Mutation returns the AgentTurnMutation object of the builder.
 func (_u *AgentTurnUpdate) Mutation() *AgentTurnMutation {
 	return _u.mutation
@@ -336,6 +352,27 @@ func (_u *AgentTurnUpdate) RemoveArtifacts(v ...*AgentArtifact) *AgentTurnUpdate
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveArtifactIDs(ids...)
+}
+
+// ClearProviderReads clears all "provider_reads" edges to the AgentProviderRead entity.
+func (_u *AgentTurnUpdate) ClearProviderReads() *AgentTurnUpdate {
+	_u.mutation.ClearProviderReads()
+	return _u
+}
+
+// RemoveProviderReadIDs removes the "provider_reads" edge to AgentProviderRead entities by IDs.
+func (_u *AgentTurnUpdate) RemoveProviderReadIDs(ids ...uuid.UUID) *AgentTurnUpdate {
+	_u.mutation.RemoveProviderReadIDs(ids...)
+	return _u
+}
+
+// RemoveProviderReads removes "provider_reads" edges to AgentProviderRead entities.
+func (_u *AgentTurnUpdate) RemoveProviderReads(v ...*AgentProviderRead) *AgentTurnUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveProviderReadIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -597,6 +634,54 @@ func (_u *AgentTurnUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			},
 		}
 		edge.Schema = _u.schemaConfig.AgentArtifact
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.ProviderReadsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   agentturn.ProviderReadsTable,
+			Columns: []string{agentturn.ProviderReadsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentproviderread.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentProviderRead
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedProviderReadsIDs(); len(nodes) > 0 && !_u.mutation.ProviderReadsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   agentturn.ProviderReadsTable,
+			Columns: []string{agentturn.ProviderReadsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentproviderread.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentProviderRead
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ProviderReadsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   agentturn.ProviderReadsTable,
+			Columns: []string{agentturn.ProviderReadsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentproviderread.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentProviderRead
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -876,6 +961,21 @@ func (_u *AgentTurnUpdateOne) AddArtifacts(v ...*AgentArtifact) *AgentTurnUpdate
 	return _u.AddArtifactIDs(ids...)
 }
 
+// AddProviderReadIDs adds the "provider_reads" edge to the AgentProviderRead entity by IDs.
+func (_u *AgentTurnUpdateOne) AddProviderReadIDs(ids ...uuid.UUID) *AgentTurnUpdateOne {
+	_u.mutation.AddProviderReadIDs(ids...)
+	return _u
+}
+
+// AddProviderReads adds the "provider_reads" edges to the AgentProviderRead entity.
+func (_u *AgentTurnUpdateOne) AddProviderReads(v ...*AgentProviderRead) *AgentTurnUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddProviderReadIDs(ids...)
+}
+
 // Mutation returns the AgentTurnMutation object of the builder.
 func (_u *AgentTurnUpdateOne) Mutation() *AgentTurnMutation {
 	return _u.mutation
@@ -927,6 +1027,27 @@ func (_u *AgentTurnUpdateOne) RemoveArtifacts(v ...*AgentArtifact) *AgentTurnUpd
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveArtifactIDs(ids...)
+}
+
+// ClearProviderReads clears all "provider_reads" edges to the AgentProviderRead entity.
+func (_u *AgentTurnUpdateOne) ClearProviderReads() *AgentTurnUpdateOne {
+	_u.mutation.ClearProviderReads()
+	return _u
+}
+
+// RemoveProviderReadIDs removes the "provider_reads" edge to AgentProviderRead entities by IDs.
+func (_u *AgentTurnUpdateOne) RemoveProviderReadIDs(ids ...uuid.UUID) *AgentTurnUpdateOne {
+	_u.mutation.RemoveProviderReadIDs(ids...)
+	return _u
+}
+
+// RemoveProviderReads removes "provider_reads" edges to AgentProviderRead entities.
+func (_u *AgentTurnUpdateOne) RemoveProviderReads(v ...*AgentProviderRead) *AgentTurnUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveProviderReadIDs(ids...)
 }
 
 // Where appends a list predicates to the AgentTurnUpdate builder.
@@ -1218,6 +1339,54 @@ func (_u *AgentTurnUpdateOne) sqlSave(ctx context.Context) (_node *AgentTurn, er
 			},
 		}
 		edge.Schema = _u.schemaConfig.AgentArtifact
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.ProviderReadsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   agentturn.ProviderReadsTable,
+			Columns: []string{agentturn.ProviderReadsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentproviderread.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentProviderRead
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedProviderReadsIDs(); len(nodes) > 0 && !_u.mutation.ProviderReadsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   agentturn.ProviderReadsTable,
+			Columns: []string{agentturn.ProviderReadsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentproviderread.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentProviderRead
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ProviderReadsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   agentturn.ProviderReadsTable,
+			Columns: []string{agentturn.ProviderReadsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentproviderread.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentProviderRead
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

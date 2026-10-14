@@ -24,6 +24,8 @@ const (
 	FieldHypothesisVersionID = "hypothesis_version_id"
 	// FieldKnowledgeEvidenceID holds the string denoting the knowledge_evidence_id field in the database.
 	FieldKnowledgeEvidenceID = "knowledge_evidence_id"
+	// FieldAgentProviderReadID holds the string denoting the agent_provider_read_id field in the database.
+	FieldAgentProviderReadID = "agent_provider_read_id"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
 	// EdgeReport holds the string denoting the report edge name in mutations.
@@ -34,6 +36,8 @@ const (
 	EdgeHypothesisVersion = "hypothesis_version"
 	// EdgeKnowledgeEvidence holds the string denoting the knowledge_evidence edge name in mutations.
 	EdgeKnowledgeEvidence = "knowledge_evidence"
+	// EdgeProviderRead holds the string denoting the provider_read edge name in mutations.
+	EdgeProviderRead = "provider_read"
 	// Table holds the table name of the investigationoutputreference in the database.
 	Table = "investigation_output_references"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -71,6 +75,13 @@ const (
 	KnowledgeEvidenceInverseTable = "knowledge_evidences"
 	// KnowledgeEvidenceColumn is the table column denoting the knowledge_evidence relation/edge.
 	KnowledgeEvidenceColumn = "knowledge_evidence_id"
+	// ProviderReadTable is the table that holds the provider_read relation/edge.
+	ProviderReadTable = "investigation_output_references"
+	// ProviderReadInverseTable is the table name for the AgentProviderRead entity.
+	// It exists in this package in order to avoid circular dependency with the "agentproviderread" package.
+	ProviderReadInverseTable = "agent_provider_reads"
+	// ProviderReadColumn is the table column denoting the provider_read relation/edge.
+	ProviderReadColumn = "agent_provider_read_id"
 )
 
 // Columns holds all SQL columns for investigationoutputreference fields.
@@ -81,6 +92,7 @@ var Columns = []string{
 	FieldFindingVersionID,
 	FieldHypothesisVersionID,
 	FieldKnowledgeEvidenceID,
+	FieldAgentProviderReadID,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -138,6 +150,11 @@ func ByKnowledgeEvidenceID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldKnowledgeEvidenceID, opts...).ToFunc()
 }
 
+// ByAgentProviderReadID orders the results by the agent_provider_read_id field.
+func ByAgentProviderReadID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldAgentProviderReadID, opts...).ToFunc()
+}
+
 // ByTenantField orders the results by tenant field.
 func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -170,6 +187,13 @@ func ByHypothesisVersionField(field string, opts ...sql.OrderTermOption) OrderOp
 func ByKnowledgeEvidenceField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newKnowledgeEvidenceStep(), sql.OrderByField(field, opts...))
+	}
+}
+
+// ByProviderReadField orders the results by provider_read field.
+func ByProviderReadField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newProviderReadStep(), sql.OrderByField(field, opts...))
 	}
 }
 func newTenantStep() *sqlgraph.Step {
@@ -205,5 +229,12 @@ func newKnowledgeEvidenceStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(KnowledgeEvidenceInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, false, KnowledgeEvidenceTable, KnowledgeEvidenceColumn),
+	)
+}
+func newProviderReadStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ProviderReadInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, ProviderReadTable, ProviderReadColumn),
 	)
 }

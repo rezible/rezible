@@ -4771,6 +4771,46 @@ components:
         - provisional
         - createdAt
       type: object
+    InvestigationProviderReadSummary:
+      additionalProperties: false
+      properties:
+        end:
+          format: date-time
+          type: string
+        exploreUrl:
+          type: string
+        limits:
+          items:
+            type: string
+          type: array
+        providerDisplayName:
+          type: string
+        query:
+          type: string
+        serviceName:
+          type: string
+        start:
+          format: date-time
+          type: string
+        status:
+          enum:
+            - running
+            - succeeded
+            - failed
+          type: string
+        toolName:
+          type: string
+      required:
+        - toolName
+        - providerDisplayName
+        - serviceName
+        - start
+        - end
+        - query
+        - limits
+        - exploreUrl
+        - status
+      type: object
     InvestigationReference:
       additionalProperties: false
       properties:
@@ -4779,7 +4819,10 @@ components:
         kind:
           enum:
             - knowledge_evidence
+            - provider_read
           type: string
+        providerRead:
+          $ref: "#/components/schemas/InvestigationProviderReadSummary"
       required:
         - id
         - kind

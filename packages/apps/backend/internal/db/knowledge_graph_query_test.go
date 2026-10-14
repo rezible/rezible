@@ -1285,3 +1285,39 @@ func (s *KnowledgeGraphQueryServiceSuite) TestSummarizeEvidenceIsTenantScoped() 
 	s.Require().NoError(aliasErr)
 	s.Zero(byAlias.Total)
 }
+
+func (s *KnowledgeGraphQueryServiceSuite) TestListEntitiesByLinkingAttribute() {
+	ctx, tdb := s.SetupTestDatabase()
+	service, serviceErr := NewKnowledgeGraphQueryService(tdb)
+	s.Require().NoError(serviceErr)
+	graph := newTestGraph(s.Require(), tdb)
+	payments := graph.entity(kne.CategoryContainer, "service", "kubernetes", "payments-api")
+	payments.LinkingAttributes = testEntityLinkingAttributes{"service.name": "payments-api"}
+	paymentsDatabase := graph.entity(kne.CategoryContainer, "database", "kubernetes", "payments-api-db")
+	alert := graph.entity(kne.CategorySignal, "alert", "provider-a", "payments-alert")
+	alert.LinkingAttributes = testEntityLinkingAttributes{"service.name": "payments-alert"}
+	graph.record(ctx, time.Date(2026, 6, 1, 10, 0, 0, 0, time.UTC),
+		graph.observeEntity(payments, "payments-api"),
+		graph.observeEntity(paymentsDatabase, "payments-api"),
+		graph.observeEntity(alert, "payments-api"))
+
+	find := func(name string) []uuid.UUID {
+		params := rez.ListKnowledgeEntitiesParams{
+			Categories:       []kne.Category{kne.CategoryContainer},
+			LinkingAttribute: "service.name",
+			LinkingValue:     name,
+		}
+		listed, listErr := service.ListEntities(ctx, params)
+		s.Require().NoError(listErr)
+		ids := make([]uuid.UUID, len(listed.Data))
+		for index, entity := range listed.Data {
+			ids[index] = entity.ID
+		}
+		return ids
+	}
+
+	s.Equal([]uuid.UUID{graph.entityID(ctx, payments)}, find("payments-api"),
+		"only the entity holding the attribute, not one named alike without it")
+	s.Empty(find("payments-alert"), "an entity of another category is not listed")
+	s.Empty(find("orders-api"))
+}

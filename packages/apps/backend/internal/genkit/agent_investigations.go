@@ -16,24 +16,42 @@ import (
 )
 
 type InvestigationAgent struct {
+	deps investigationDependencies
+}
+
+// investigationDependencies are the services an investigation's tools read and write through.
+type investigationDependencies struct {
+	clock          rez.Clock
 	investigations rez.InvestigationService
 	outputs        rez.InvestigationOutputService
 	knowledge      rez.KnowledgeGraphQueryService
 	situations     rez.SituationService
+	changes        rez.ChangesService
+	integrations   rez.InstalledIntegrationGetter
+	providerReads  rez.AgentProviderReadService
 }
 
 func NewInvestigationAgent(
+	clock rez.Clock,
 	investigations rez.InvestigationService,
 	outputs rez.InvestigationOutputService,
 	knowledge rez.KnowledgeGraphQueryService,
 	situations rez.SituationService,
+	changes rez.ChangesService,
+	integrations rez.InstalledIntegrationGetter,
+	providerReads rez.AgentProviderReadService,
 ) *InvestigationAgent {
-	return &InvestigationAgent{
+	deps := investigationDependencies{
+		clock:          clock,
 		investigations: investigations,
 		outputs:        outputs,
 		knowledge:      knowledge,
 		situations:     situations,
+		changes:        changes,
+		integrations:   integrations,
+		providerReads:  providerReads,
 	}
+	return &InvestigationAgent{deps: deps}
 }
 
 func (a *InvestigationAgent) agentDefinition() rezai.InvestigationAgentDefinition {
@@ -42,12 +60,7 @@ func (a *InvestigationAgent) agentDefinition() rezai.InvestigationAgentDefinitio
 
 func (a *InvestigationAgent) makeMiddleware() []ai.Middleware {
 	return []ai.Middleware{
-		&investigationCapabilitiesMiddleware{
-			investigations: a.investigations,
-			outputs:        a.outputs,
-			knowledge:      a.knowledge,
-			situations:     a.situations,
-		},
+		&investigationCapabilitiesMiddleware{deps: a.deps},
 	}
 }
 
@@ -68,10 +81,7 @@ func (a *InvestigationAgent) transformStreamChunk(ctx context.Context, chunk *ai
 }
 
 type investigationCapabilitiesMiddleware struct {
-	investigations rez.InvestigationService
-	outputs        rez.InvestigationOutputService
-	knowledge      rez.KnowledgeGraphQueryService
-	situations     rez.SituationService
+	deps investigationDependencies
 }
 
 func (m *investigationCapabilitiesMiddleware) Name() string {
@@ -90,7 +100,7 @@ func (m *investigationCapabilitiesMiddleware) New(ctx context.Context) (*ai.Hook
 		return nil, fmt.Errorf("agent turn does not belong to supplied session")
 	}
 
-	current, lookupErr := m.investigations.LookupInvestigation(ctx, inv.AgentSessionID(invCtx.Session.ID))
+	current, lookupErr := m.deps.investigations.LookupInvestigation(ctx, inv.AgentSessionID(invCtx.Session.ID))
 	if lookupErr != nil {
 		if ent.IsNotFound(lookupErr) {
 			return nil, fmt.Errorf("investigation for agent session: %w", errs.ErrNotFound)
@@ -102,12 +112,9 @@ func (m *investigationCapabilitiesMiddleware) New(ctx context.Context) (*ai.Hook
 	}
 
 	i := &investigationInvocation{
-		investigations:  m.investigations,
-		outputs:         m.outputs,
-		knowledge:       m.knowledge,
-		situations:      m.situations,
-		investigationID: current.ID,
-		turnID:          invCtx.Turn.ID,
+		investigationDependencies: m.deps,
+		investigationID:           current.ID,
+		turnID:                    invCtx.Turn.ID,
 	}
 
 	return i.makeHooks(ctx, invCtx)

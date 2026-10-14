@@ -33,6 +33,7 @@ func (s *ProjectionService) handleSystemComponentEvent(ctx context.Context, e *p
 		Category:            attrs.Category,
 		Kind:                attrs.Kind,
 		ProviderResourceRef: componentResourceRef,
+		LinkingAttributes:   attrs.LinkingAttributes,
 	}
 	evidence := rez.KnowledgeEvidenceRef{
 		Kind:        projectionEvidenceKind(event),

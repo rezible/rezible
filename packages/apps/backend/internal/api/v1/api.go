@@ -85,7 +85,7 @@ func NewHandler(
 		incidentsHandler:        newIncidentsHandler(bh, db, incidents),
 		activityHandler:         newActivityHandler(),
 		integrationsHandler:     newIntegrationsHandler(integrations),
-		investigationsHandler:   newInvestigationsHandler(investigations, investigationOutputs),
+		investigationsHandler:   newInvestigationsHandler(investigations, investigationOutputs, integrations),
 		meetingsHandler:         newMeetingsHandler(),
 		eventsHandler:           newEventsHandler(bh, events),
 		oncallRostersHandler:    newOncallRostersHandler(bh, incidents, rosters, shifts),

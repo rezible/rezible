@@ -127,7 +127,7 @@ ALTER TABLE "investigation_user_inputs" DROP CONSTRAINT "investigation_user_inpu
 -- reverse: modify "investigation_reports" table
 ALTER TABLE "investigation_reports" DROP CONSTRAINT "investigation_reports_agent_turns_agent_turn", DROP CONSTRAINT "investigation_reports_tenants_tenant", DROP CONSTRAINT "investigation_reports_investigations_reports";
 -- reverse: modify "investigation_output_references" table
-ALTER TABLE "investigation_output_references" DROP CONSTRAINT "investigation_output_reference_19d5676cbf4c7efbfe0274329fc6dce2", DROP CONSTRAINT "investigation_output_reference_301855c5320da85fac0a55377fdf5c0d", DROP CONSTRAINT "investigation_output_reference_694e046dee9043d3d8ab666387b3b77b", DROP CONSTRAINT "investigation_output_references_investigation_reports_report", DROP CONSTRAINT "investigation_output_references_tenants_tenant";
+ALTER TABLE "investigation_output_references" DROP CONSTRAINT "investigation_output_reference_c4a4242a2483d597991f641c6395a984", DROP CONSTRAINT "investigation_output_reference_19d5676cbf4c7efbfe0274329fc6dce2", DROP CONSTRAINT "investigation_output_reference_301855c5320da85fac0a55377fdf5c0d", DROP CONSTRAINT "investigation_output_reference_694e046dee9043d3d8ab666387b3b77b", DROP CONSTRAINT "investigation_output_references_investigation_reports_report", DROP CONSTRAINT "investigation_output_references_tenants_tenant";
 -- reverse: modify "investigation_hypothesis_versions" table
 ALTER TABLE "investigation_hypothesis_versions" DROP CONSTRAINT "investigation_hypothesis_versions_agent_turns_agent_turn", DROP CONSTRAINT "investigation_hypothesis_versi_8a313c9666ec14f3a56be08b9114c170", DROP CONSTRAINT "investigation_hypothesis_versions_tenants_tenant";
 -- reverse: modify "investigation_hypotheses" table
@@ -206,6 +206,8 @@ ALTER TABLE "agent_turns" DROP CONSTRAINT "agent_turns_agent_messages_input_mess
 ALTER TABLE "agent_session_bindings" DROP CONSTRAINT "agent_session_bindings_integrations_integration", DROP CONSTRAINT "agent_session_bindings_tenants_tenant", DROP CONSTRAINT "agent_session_bindings_agent_sessions_bindings";
 -- reverse: modify "agent_sessions" table
 ALTER TABLE "agent_sessions" DROP CONSTRAINT "agent_sessions_tenants_tenant";
+-- reverse: modify "agent_provider_reads" table
+ALTER TABLE "agent_provider_reads" DROP CONSTRAINT "agent_provider_reads_agent_turns_provider_reads", DROP CONSTRAINT "agent_provider_reads_knowledge_entities_service_entity", DROP CONSTRAINT "agent_provider_reads_agent_sessions_agent_session", DROP CONSTRAINT "agent_provider_reads_tenants_tenant";
 -- reverse: modify "agent_messages" table
 ALTER TABLE "agent_messages" DROP CONSTRAINT "agent_messages_agent_turns_messages", DROP CONSTRAINT "agent_messages_agent_sessions_messages", DROP CONSTRAINT "agent_messages_tenants_tenant";
 -- reverse: modify "agent_artifacts" table
@@ -854,6 +856,12 @@ DROP INDEX "agentsession_tenant_id_agent_name_created_at";
 DROP INDEX "agentsession_tenant_id";
 -- reverse: create "agent_sessions" table
 DROP TABLE "agent_sessions";
+-- reverse: create index "agentproviderread_agent_turn_id" to table: "agent_provider_reads"
+DROP INDEX "agentproviderread_agent_turn_id";
+-- reverse: create index "agentproviderread_tenant_id" to table: "agent_provider_reads"
+DROP INDEX "agentproviderread_tenant_id";
+-- reverse: create "agent_provider_reads" table
+DROP TABLE "agent_provider_reads";
 -- reverse: create index "agentmessage_tenant_id_agent_turn_id_sequence" to table: "agent_messages"
 DROP INDEX "agentmessage_tenant_id_agent_turn_id_sequence";
 -- reverse: create index "agentmessage_tenant_id_agent_session_id_created_at" to table: "agent_messages"

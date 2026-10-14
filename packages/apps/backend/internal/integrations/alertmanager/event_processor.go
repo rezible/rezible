@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/url"
 	"strings"
 
 	rez "github.com/rezible/rezible"
@@ -30,6 +31,7 @@ func (p EventProcessor) ProcessProviderEvent(ctx context.Context, prov rez.Provi
 		Summary:          alert.Annotations["summary"],
 		Description:      alert.Annotations["description"],
 		Definition:       alert.GeneratorURL,
+		RunbookURL:       runbookURL(alert.Annotations["runbook_url"]),
 		State:            alert.Status,
 		InstanceID:       alert.Fingerprint,
 		Labels:           alert.Labels,
@@ -72,6 +74,17 @@ func alertDefinitionRef(alertname, serviceName string) string {
 		service = serviceName
 	}
 	return "alert:" + identityDigest(alertname, service)
+}
+
+// runbookURL keeps a runbook link only when it is an absolute http or https URL without credentials, since it
+// is stored where agents and people read it.
+func runbookURL(raw string) string {
+	trimmed := strings.TrimSpace(raw)
+	parsed, parseErr := url.Parse(trimmed)
+	if parseErr != nil || parsed.Host == "" || (parsed.Scheme != "http" && parsed.Scheme != "https") || parsed.User != nil {
+		return ""
+	}
+	return trimmed
 }
 
 func mapSeverity(raw string) schematypes.SignalSeverity {

@@ -156,6 +156,7 @@ func (AgentTurn) Edges() []ent.Edge {
 
 		edge.To("messages", AgentMessage.Type),
 		edge.To("artifacts", AgentArtifact.Type),
+		edge.To("provider_reads", AgentProviderRead.Type),
 	}
 }
 

@@ -65,9 +65,6 @@ func (_u *InvestigationOutputReferenceUpdate) check() error {
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "InvestigationOutputReference.tenant"`)
 	}
-	if _u.mutation.KnowledgeEvidenceCleared() && len(_u.mutation.KnowledgeEvidenceIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "InvestigationOutputReference.knowledge_evidence"`)
-	}
 	return nil
 }
 
@@ -154,9 +151,6 @@ func (_u *InvestigationOutputReferenceUpdateOne) ExecX(ctx context.Context) {
 func (_u *InvestigationOutputReferenceUpdateOne) check() error {
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "InvestigationOutputReference.tenant"`)
-	}
-	if _u.mutation.KnowledgeEvidenceCleared() && len(_u.mutation.KnowledgeEvidenceIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "InvestigationOutputReference.knowledge_evidence"`)
 	}
 	return nil
 }

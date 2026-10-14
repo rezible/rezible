@@ -58,6 +58,8 @@ const (
 	EdgeMessages = "messages"
 	// EdgeArtifacts holds the string denoting the artifacts edge name in mutations.
 	EdgeArtifacts = "artifacts"
+	// EdgeProviderReads holds the string denoting the provider_reads edge name in mutations.
+	EdgeProviderReads = "provider_reads"
 	// Table holds the table name of the agentturn in the database.
 	Table = "agent_turns"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -95,6 +97,13 @@ const (
 	ArtifactsInverseTable = "agent_artifacts"
 	// ArtifactsColumn is the table column denoting the artifacts relation/edge.
 	ArtifactsColumn = "last_agent_turn_id"
+	// ProviderReadsTable is the table that holds the provider_reads relation/edge.
+	ProviderReadsTable = "agent_provider_reads"
+	// ProviderReadsInverseTable is the table name for the AgentProviderRead entity.
+	// It exists in this package in order to avoid circular dependency with the "agentproviderread" package.
+	ProviderReadsInverseTable = "agent_provider_reads"
+	// ProviderReadsColumn is the table column denoting the provider_reads relation/edge.
+	ProviderReadsColumn = "agent_turn_id"
 )
 
 // Columns holds all SQL columns for agentturn fields.
@@ -315,6 +324,20 @@ func ByArtifacts(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newArtifactsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByProviderReadsCount orders the results by provider_reads count.
+func ByProviderReadsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newProviderReadsStep(), opts...)
+	}
+}
+
+// ByProviderReads orders the results by provider_reads terms.
+func ByProviderReads(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newProviderReadsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newTenantStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -348,6 +371,13 @@ func newArtifactsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(ArtifactsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, ArtifactsTable, ArtifactsColumn),
+	)
+}
+func newProviderReadsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ProviderReadsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, ProviderReadsTable, ProviderReadsColumn),
 	)
 }
 

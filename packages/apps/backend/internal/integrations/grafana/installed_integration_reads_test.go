@@ -23,7 +23,7 @@ func TestLogQueriesAreBoundToTheService(t *testing.T) {
 		installed := fake.install(testSettings)
 
 		params := integrations.LogSearchParams{
-			Service:  "checkout-api",
+			Service:  logService("checkout-api"),
 			Start:    testStart,
 			End:      testEnd,
 			Contains: `say "hi" \ there`,
@@ -43,7 +43,7 @@ func TestLogQueriesAreBoundToTheService(t *testing.T) {
 		installed := fake.install(testSettings)
 
 		params := integrations.LogCountParams{
-			Service: `checkout-api", service_name=~".+`,
+			Service: logService(`checkout-api", service_name=~".+`),
 			Start:   testStart,
 			End:     testEnd,
 		}
@@ -52,6 +52,35 @@ func TestLogQueriesAreBoundToTheService(t *testing.T) {
 		require.NoError(t, countErr)
 		query := fake.onlyRequest().URL.Query().Get("query")
 		require.Equal(t, `sum(count_over_time({service_name="checkout-api\", service_name=~\".+"} [12s]))`, query)
+	})
+
+	t.Run("the service is read by its logs alias under the current label", func(t *testing.T) {
+		cases := map[string]struct {
+			aliases []string
+			want    integrations.LogServiceName
+		}{
+			"alias under the current label": {
+				[]string{"logs:old_label:checkout", "logs:service_name:checkout-api"},
+				integrations.LogServiceName{Value: "checkout-api", FromAlias: true},
+			},
+			"alias under an old label": {[]string{"logs:old_label:checkout"}, integrations.LogServiceName{Value: "Checkout API"}},
+			"no alias":                 {nil, integrations.LogServiceName{Value: "Checkout API"}},
+		}
+		for name, tc := range cases {
+			t.Run(name, func(t *testing.T) {
+				fake := newFakeGrafana(t)
+				fake.respond("loki", "/loki/api/v1/query_range", http.StatusOK, lokiStreamsBody(t))
+				installed := fake.install(testSettings)
+
+				service := integrations.LogService{DisplayName: "Checkout API", Aliases: tc.aliases}
+				params := integrations.LogSearchParams{Service: service, Start: testStart, End: testEnd}
+				searched, searchErr := installed.SearchLogs(t.Context(), params)
+
+				require.NoError(t, searchErr)
+				require.Equal(t, tc.want, searched.Service)
+				require.Equal(t, fmt.Sprintf("{service_name=%q}", tc.want.Value), fake.onlyRequest().URL.Query().Get("query"))
+			})
+		}
 	})
 
 	t.Run("the configured label names the service", func(t *testing.T) {
@@ -79,7 +108,7 @@ func TestLogQueriesAreBoundToTheService(t *testing.T) {
 		installed := fake.install(testSettings)
 
 		params := integrations.LogSearchParams{
-			Service: " ",
+			Service: logService(" "),
 			Start:   testStart,
 			End:     testEnd,
 		}
@@ -91,12 +120,17 @@ func TestLogQueriesAreBoundToTheService(t *testing.T) {
 	})
 }
 
+// logService is a service known only by its display name.
+func logService(displayName string) integrations.LogService {
+	return integrations.LogService{DisplayName: displayName}
+}
+
 func TestReadLimits(t *testing.T) {
 	t.Run("requests outside the limits are errors naming the limit", func(t *testing.T) {
 		fake := newFakeGrafana(t)
 		installed := fake.install(testSettings)
 
-		tooLong := integrations.LogSearchParams{Service: "checkout-api", Start: testEnd.Add(-7 * time.Hour), End: testEnd}
+		tooLong := integrations.LogSearchParams{Service: logService("checkout-api"), Start: testEnd.Add(-7 * time.Hour), End: testEnd}
 		_, tooLongErr := installed.SearchLogs(t.Context(), tooLong)
 		require.ErrorIs(t, tooLongErr, errs.ErrInvalidInput)
 		require.ErrorContains(t, tooLongErr, "longer than the 6h0m0s limit")
@@ -106,7 +140,7 @@ func TestReadLimits(t *testing.T) {
 		require.ErrorIs(t, backwardsErr, errs.ErrInvalidInput)
 		require.ErrorContains(t, backwardsErr, "end must be after start")
 
-		tooMany := integrations.LogSearchParams{Service: "checkout-api", Start: testStart, End: testEnd, Limit: 201}
+		tooMany := integrations.LogSearchParams{Service: logService("checkout-api"), Start: testStart, End: testEnd, Limit: 201}
 		_, tooManyErr := installed.SearchLogs(t.Context(), tooMany)
 		require.ErrorIs(t, tooManyErr, errs.ErrInvalidInput)
 		require.ErrorContains(t, tooManyErr, "maximum of 200 lines")
@@ -132,7 +166,7 @@ func TestReadLimits(t *testing.T) {
 		fake.respond("loki", "/loki/api/v1/query_range", http.StatusOK, lokiStreamsBody(t, checkout, checkoutInfo))
 		installed := fake.install(testSettings)
 
-		params := integrations.LogSearchParams{Service: "checkout-api", Start: testStart, End: testEnd, Limit: 2}
+		params := integrations.LogSearchParams{Service: logService("checkout-api"), Start: testStart, End: testEnd, Limit: 2}
 		result, searchErr := installed.SearchLogs(t.Context(), params)
 
 		require.NoError(t, searchErr)
@@ -155,7 +189,7 @@ func TestReadLimits(t *testing.T) {
 		fake.respond("loki", "/loki/api/v1/query_range", http.StatusOK, lokiStreamsBody(t, stream))
 		installed := fake.install(testSettings)
 
-		params := integrations.LogSearchParams{Service: "checkout-api", Start: testStart, End: testEnd}
+		params := integrations.LogSearchParams{Service: logService("checkout-api"), Start: testStart, End: testEnd}
 		result, searchErr := installed.SearchLogs(t.Context(), params)
 
 		require.NoError(t, searchErr)
@@ -170,7 +204,7 @@ func TestReadLimits(t *testing.T) {
 		installed := fake.install(testSettings)
 		sixHours := testEnd.Add(-6 * time.Hour)
 
-		countParams := integrations.LogCountParams{Service: "checkout-api", Start: sixHours, End: testEnd, Step: time.Second}
+		countParams := integrations.LogCountParams{Service: logService("checkout-api"), Start: sixHours, End: testEnd, Step: time.Second}
 		count, countErr := installed.CountLogs(t.Context(), countParams)
 		require.NoError(t, countErr)
 
@@ -240,7 +274,7 @@ func TestReadRecordDescribesTheQuery(t *testing.T) {
 		fake.respond("loki", "/loki/api/v1/query_range", http.StatusOK, matrixBody(t, counts))
 		installed := fake.install(testSettings)
 
-		params := integrations.LogCountParams{Service: "checkout-api", Start: testStart, End: testEnd, Contains: "upstream timeout"}
+		params := integrations.LogCountParams{Service: logService("checkout-api"), Start: testStart, End: testEnd, Contains: "upstream timeout"}
 		result, countErr := installed.CountLogs(t.Context(), params)
 
 		require.NoError(t, countErr)
@@ -357,7 +391,7 @@ func TestGrafanaErrorsAreReported(t *testing.T) {
 			fake.respond("loki", "/loki/api/v1/query_range", tc.status, tc.body)
 			installed := fake.install(testSettings)
 
-			params := integrations.LogSearchParams{Service: "checkout-api", Start: testStart, End: testEnd}
+			params := integrations.LogSearchParams{Service: logService("checkout-api"), Start: testStart, End: testEnd}
 			_, searchErr := installed.SearchLogs(t.Context(), params)
 
 			require.ErrorContains(t, searchErr, tc.contains)
@@ -369,7 +403,7 @@ func TestGrafanaErrorsAreReported(t *testing.T) {
 		fake.respond("loki", "/loki/api/v1/query_range", http.StatusBadGateway, "<html>internal proxy page</html>")
 		installed := fake.install(testSettings)
 
-		params := integrations.LogSearchParams{Service: "checkout-api", Start: testStart, End: testEnd}
+		params := integrations.LogSearchParams{Service: logService("checkout-api"), Start: testStart, End: testEnd}
 		_, searchErr := installed.SearchLogs(t.Context(), params)
 
 		require.EqualError(t, searchErr, "search logs: grafana responded with status 502")
@@ -380,7 +414,7 @@ func TestGrafanaErrorsAreReported(t *testing.T) {
 		fake.respond("loki", "/loki/api/v1/query_range", http.StatusUnauthorized, `{"message":"invalid token `+testToken+`"}`)
 		installed := fake.install(testSettings)
 
-		params := integrations.LogSearchParams{Service: "checkout-api", Start: testStart, End: testEnd}
+		params := integrations.LogSearchParams{Service: logService("checkout-api"), Start: testStart, End: testEnd}
 		_, searchErr := installed.SearchLogs(t.Context(), params)
 
 		require.ErrorContains(t, searchErr, "invalid token [redacted]")
@@ -392,7 +426,7 @@ func TestGrafanaErrorsAreReported(t *testing.T) {
 		fake.respond("loki", "/loki/api/v1/query_range", http.StatusBadRequest, `{"message":"`+strings.Repeat("x", 1000)+`"}`)
 		installed := fake.install(testSettings)
 
-		params := integrations.LogSearchParams{Service: "checkout-api", Start: testStart, End: testEnd}
+		params := integrations.LogSearchParams{Service: logService("checkout-api"), Start: testStart, End: testEnd}
 		_, searchErr := installed.SearchLogs(t.Context(), params)
 
 		require.ErrorContains(t, searchErr, strings.Repeat("x", 300)+"…")
@@ -407,6 +441,14 @@ func TestGrafanaErrorsAreReported(t *testing.T) {
 		_, rangeErr := installed.QueryMetricRange(t.Context(), params)
 
 		require.EqualError(t, rangeErr, "no metrics data source configured")
+	})
+
+	t.Run("logs are unavailable without a logs data source", func(t *testing.T) {
+		fake := newFakeGrafana(t)
+
+		require.Error(t, fake.install(map[string]any{}).CheckLogsAvailable())
+		require.NoError(t, fake.install(testSettings).CheckLogsAvailable())
+		require.Empty(t, fake.requests)
 	})
 }
 
@@ -430,7 +472,7 @@ func TestReadsAreMeasured(t *testing.T) {
 	))
 	installed := fake.install(testSettings)
 
-	_, searchErr := installed.SearchLogs(t.Context(), integrations.LogSearchParams{Service: "checkout-api", Start: testStart, End: testEnd})
+	_, searchErr := installed.SearchLogs(t.Context(), integrations.LogSearchParams{Service: logService("checkout-api"), Start: testStart, End: testEnd})
 	require.NoError(t, searchErr)
 	_, namesErr := installed.ListMetricNames(t.Context(), integrations.MetricNamesParams{Service: "checkout-api", Start: testStart, End: testEnd})
 	require.NoError(t, namesErr)
@@ -440,7 +482,7 @@ func TestReadsAreMeasured(t *testing.T) {
 	fake.respond("loki", "/loki/api/v1/query_range", http.StatusOK, matrixBody(t,
 		testSeries{points: map[time.Time]float64{testStart: 4, testEnd.Add(-time.Minute): 5, testEnd: 6, testEnd.Add(time.Minute): 7}},
 	))
-	_, countErr := installed.CountLogs(t.Context(), integrations.LogCountParams{Service: "checkout-api", Start: testStart, End: testEnd})
+	_, countErr := installed.CountLogs(t.Context(), integrations.LogCountParams{Service: logService("checkout-api"), Start: testStart, End: testEnd})
 	require.NoError(t, countErr)
 
 	for operation, items := range map[string]float64{"search_logs": 2, "count_logs": 4, "list_metric_names": 3, "query_metric_range": 3} {
@@ -450,7 +492,7 @@ func TestReadsAreMeasured(t *testing.T) {
 	}
 
 	t.Run("a read refused before reaching grafana is not measured", func(t *testing.T) {
-		invalid := integrations.LogSearchParams{Service: "checkout-api", Start: testEnd, End: testStart}
+		invalid := integrations.LogSearchParams{Service: logService("checkout-api"), Start: testEnd, End: testStart}
 		_, invalidErr := installed.SearchLogs(t.Context(), invalid)
 		require.ErrorIs(t, invalidErr, errs.ErrInvalidInput)
 

@@ -2,6 +2,7 @@ package v1
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
 	"time"
 
@@ -10,6 +11,7 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/agentturn"
+	rezai "github.com/rezible/rezible/pkg/ai"
 	"github.com/rezible/rezible/pkg/openapi"
 )
 
@@ -123,7 +125,25 @@ type (
 
 	InvestigationReference struct {
 		Id   uuid.UUID `json:"id"`
-		Kind string    `json:"kind" enum:"knowledge_evidence"`
+		Kind string    `json:"kind" enum:"knowledge_evidence,provider_read"`
+		// ProviderRead summarizes a cited provider read; set when Kind is provider_read.
+		ProviderRead *InvestigationProviderReadSummary `json:"providerRead,omitempty"`
+	}
+
+	// InvestigationProviderReadSummary says what a provider read read: for which service and range, the native
+	// query that ran and a link to it in the provider. A failed read has no query or link.
+	InvestigationProviderReadSummary struct {
+		ToolName string `json:"toolName"`
+		// ProviderDisplayName is the display name of the integration that ran the read; empty when the read
+		// failed or the integration is not registered.
+		ProviderDisplayName string    `json:"providerDisplayName"`
+		ServiceName         string    `json:"serviceName"`
+		Start               time.Time `json:"start"`
+		End                 time.Time `json:"end"`
+		Query               string    `json:"query"`
+		Limits              []string  `json:"limits"`
+		ExploreUrl          string    `json:"exploreUrl"`
+		Status              string    `json:"status" enum:"running,succeeded,failed"`
 	}
 
 	FindingVersionReference struct {
@@ -176,12 +196,16 @@ func InvestigationFromDetail(detail *rez.InvestigationDetail) Investigation {
 	}
 	return Investigation{Id: inv.ID, Attributes: attrs}
 }
-func InvestigationReportFromEnt(report *ent.InvestigationReport) InvestigationReport {
+
+// IntegrationDisplayNames returns a named integration's display name, or empty when it is unknown.
+type IntegrationDisplayNames func(name string) string
+
+func InvestigationReportFromEnt(report *ent.InvestigationReport, displayNames IntegrationDisplayNames) InvestigationReport {
 	turn := report.Edges.AgentTurn
 	attrs := InvestigationReportAttributes{
 		Text:        report.Text,
 		Summary:     report.Summary,
-		References:  investigationReferencesFromEnt(report.Edges.OutputReferences),
+		References:  investigationReferencesFromEnt(report.Edges.OutputReferences, displayNames),
 		AgentTurnId: report.AgentTurnID,
 		TurnStatus:  investigationTurnStatus(turn),
 		Provisional: investigationTurnProvisional(turn),
@@ -190,13 +214,13 @@ func InvestigationReportFromEnt(report *ent.InvestigationReport) InvestigationRe
 	return InvestigationReport{Id: report.ID, Attributes: attrs}
 }
 
-func InvestigationFindingFromEnt(version *ent.InvestigationFindingVersion) InvestigationFinding {
+func InvestigationFindingFromEnt(version *ent.InvestigationFindingVersion, displayNames IntegrationDisplayNames) InvestigationFinding {
 	turn := version.Edges.AgentTurn
 	attrs := InvestigationFindingAttributes{
 		FindingId:               version.FindingID,
 		Title:                   version.Title,
 		Body:                    version.Body,
-		References:              investigationReferencesFromEnt(version.Edges.OutputReferences),
+		References:              investigationReferencesFromEnt(version.Edges.OutputReferences, displayNames),
 		FindingReferences:       ConvertSlice(version.Edges.OutgoingLinks, FindingVersionReferenceFromEnt),
 		InvalidatedByVersionIds: version.InvalidatedByVersionIDs(),
 		AgentTurnId:             version.AgentTurnID,
@@ -211,14 +235,14 @@ func InvestigationFindingFromEnt(version *ent.InvestigationFindingVersion) Inves
 	return InvestigationFinding{Id: version.ID, Attributes: attrs}
 }
 
-func InvestigationHypothesisFromEnt(version *ent.InvestigationHypothesisVersion) InvestigationHypothesis {
+func InvestigationHypothesisFromEnt(version *ent.InvestigationHypothesisVersion, displayNames IntegrationDisplayNames) InvestigationHypothesis {
 	turn := version.Edges.AgentTurn
 	attrs := InvestigationHypothesisAttributes{
 		HypothesisId:  version.HypothesisID,
 		Title:         version.Title,
 		Justification: version.Justification,
 		Status:        string(version.Status),
-		References:    investigationReferencesFromEnt(version.Edges.OutputReferences),
+		References:    investigationReferencesFromEnt(version.Edges.OutputReferences, displayNames),
 		AgentTurnId:   version.AgentTurnID,
 		TurnStatus:    investigationTurnStatus(turn),
 		Provisional:   investigationTurnProvisional(turn),
@@ -241,12 +265,51 @@ func investigationTurnProvisional(turn *ent.AgentTurn) bool {
 	return turn != nil && turn.Status == agentturn.StatusRunning
 }
 
-func investigationReferencesFromEnt(refs ent.InvestigationOutputReferences) []InvestigationReference {
-	return ConvertSlice(refs.KnowledgeEvidenceIDs(), InvestigationReferenceFromEvidenceID)
+func investigationReferencesFromEnt(refs ent.InvestigationOutputReferences, displayNames IntegrationDisplayNames) []InvestigationReference {
+	return ConvertSlice(refs, func(ref *ent.InvestigationOutputReference) InvestigationReference {
+		return InvestigationReferenceFromEnt(ref, displayNames)
+	})
 }
 
-func InvestigationReferenceFromEvidenceID(evidenceID uuid.UUID) InvestigationReference {
-	return InvestigationReference{Kind: "knowledge_evidence", Id: evidenceID}
+func InvestigationReferenceFromEnt(ref *ent.InvestigationOutputReference, displayNames IntegrationDisplayNames) InvestigationReference {
+	if ref.AgentProviderReadID == nil {
+		return InvestigationReference{Kind: "knowledge_evidence", Id: *ref.KnowledgeEvidenceID}
+	}
+	reference := InvestigationReference{Kind: "provider_read", Id: *ref.AgentProviderReadID}
+	if read := ref.Edges.ProviderRead; read != nil {
+		reference.ProviderRead = InvestigationProviderReadSummaryFromEnt(read, displayNames)
+	}
+	return reference
+}
+
+// InvestigationProviderReadSummaryFromEnt takes the range from the read's input, which a read that failed
+// also has, and the query and link from the read that ran.
+func InvestigationProviderReadSummaryFromEnt(read *ent.AgentProviderRead, displayNames IntegrationDisplayNames) *InvestigationProviderReadSummary {
+	summary := &InvestigationProviderReadSummary{
+		ToolName: read.ToolName,
+		Limits:   []string{},
+		Status:   string(read.Status),
+	}
+	if service := read.Edges.ServiceEntity; service != nil {
+		summary.ServiceName = service.State.DisplayName
+	}
+	var input struct {
+		Start time.Time `json:"start"`
+		End   time.Time `json:"end"`
+	}
+	if json.Unmarshal(read.Input, &input) == nil {
+		summary.Start, summary.End = input.Start, input.End
+	}
+	var record rezai.ProviderReadRecord
+	if len(read.Read) > 0 && json.Unmarshal(read.Read, &record) == nil {
+		summary.ProviderDisplayName = displayNames(record.Integration)
+		summary.Query = record.Query
+		summary.ExploreUrl = record.ExploreURL
+		if record.Limits != nil {
+			summary.Limits = record.Limits
+		}
+	}
+	return summary
 }
 
 func FindingVersionReferenceFromEnt(link *ent.InvestigationFindingVersionLink) FindingVersionReference {

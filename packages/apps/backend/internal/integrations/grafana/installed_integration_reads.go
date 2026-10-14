@@ -33,6 +33,11 @@ func (ii *InstalledIntegration) logsDataSource() (dataSource, error) {
 	return dataSource{kind: "loki", uid: ii.settings.LogsDataSourceUID}, nil
 }
 
+func (ii *InstalledIntegration) CheckLogsAvailable() error {
+	_, dsErr := ii.logsDataSource()
+	return dsErr
+}
+
 func (ii *InstalledIntegration) metricsDataSource() (dataSource, error) {
 	if ii.settings.MetricsDataSourceUID == "" {
 		return dataSource{}, errNoMetricsDataSource
@@ -49,7 +54,8 @@ func (ii *InstalledIntegration) SearchLogs(ctx context.Context, params integrati
 		return nil, dsErr
 	}
 	limit := params.EffectiveLimit()
-	query := ii.settings.logSelector(params.Service, params.Contains)
+	service := ii.settings.logServiceName(params.Service)
+	query := ii.settings.logSelector(service.Value, params.Contains)
 	values := url.Values{
 		"query":     {query},
 		"start":     {formatTime(params.Start)},
@@ -82,7 +88,7 @@ func (ii *InstalledIntegration) SearchLogs(ctx context.Context, params integrati
 	if searchErr != nil {
 		return nil, searchErr
 	}
-	return &integrations.LogSearchResult{Lines: lines, Read: read}, nil
+	return &integrations.LogSearchResult{Service: service, Lines: lines, Read: read}, nil
 }
 
 // mergeLogStreams merges lines across streams, newest first, keeping at most limit lines.
@@ -130,7 +136,8 @@ func (ii *InstalledIntegration) CountLogs(ctx context.Context, params integratio
 		return nil, dsErr
 	}
 	step, stepLimit := integrations.ReadStep(params.Start, params.End, params.Step)
-	selector := ii.settings.logSelector(params.Service, params.Contains)
+	service := ii.settings.logServiceName(params.Service)
+	selector := ii.settings.logSelector(service.Value, params.Contains)
 	query := fmt.Sprintf("sum(count_over_time(%s [%s]))", selector, formatDuration(step))
 	values := url.Values{
 		"query": {query},
@@ -170,7 +177,7 @@ func (ii *InstalledIntegration) CountLogs(ctx context.Context, params integratio
 	if countErr != nil {
 		return nil, countErr
 	}
-	return &integrations.LogCountResult{Points: points, Read: read}, nil
+	return &integrations.LogCountResult{Service: service, Points: points, Read: read}, nil
 }
 
 func (ii *InstalledIntegration) ListMetricNames(ctx context.Context, params integrations.MetricNamesParams) (*integrations.MetricNamesResult, error) {

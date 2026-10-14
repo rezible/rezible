@@ -22,6 +22,7 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	kne "github.com/rezible/rezible/ent/knowledgeentity"
+	kela "github.com/rezible/rezible/ent/knowledgeentitylinkingattribute"
 	ke "github.com/rezible/rezible/ent/knowledgeevidence"
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
 	ksa "github.com/rezible/rezible/ent/knowledgesubjectalias"
@@ -48,6 +49,15 @@ func (s *KnowledgeGraphQueryService) ListEntities(ctx context.Context, params re
 	}
 	if len(params.Predicates) > 0 {
 		query.Where(params.Predicates...)
+	}
+	if len(params.Categories) > 0 {
+		query.Where(kne.CategoryIn(params.Categories...))
+	}
+	if params.LinkingAttribute != "" {
+		query.Where(kne.HasLinkingAttributesWith(
+			kela.Attribute(params.LinkingAttribute),
+			kela.Value(params.LinkingValue),
+		))
 	}
 
 	return ent.DoListQuery[ent.KnowledgeEntity, *ent.KnowledgeEntityQuery](ctx, query, params.ListParams)

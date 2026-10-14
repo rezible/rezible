@@ -24,3 +24,5 @@ packages:
       SystemAnalysisService: {}
       SituationService: {}
       InvestigationOutputService: {}
+      ChangesService: {}
+      AgentProviderReadService: {}

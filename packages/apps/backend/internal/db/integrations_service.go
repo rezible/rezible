@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log/slog"
 	"net/url"
@@ -90,6 +91,14 @@ func (s *IntegrationsService) ListInstallable(ctx context.Context) ([]rez.Integr
 		}
 	}
 	return installable, nil
+}
+
+func (s *IntegrationsService) GetIntegrationDisplayName(_ context.Context, name string) string {
+	def, getErr := s.registry.Get(name)
+	if getErr != nil {
+		return ""
+	}
+	return def.DisplayName()
 }
 
 func (s *IntegrationsService) getInstallState(ctx context.Context) (*integrations.IntegrationInstallState, error) {
@@ -662,6 +671,47 @@ func (s *IntegrationsService) RequestIntegrationEventSync(ctx context.Context, i
 	}
 	_, insertErr := s.jobs.Insert(ctx, args, opts)
 	return insertErr
+}
+
+func NewSyncScheduledIntegrationSourcesWorker(service *IntegrationsService) jobs.WorkerDefinition {
+	return jobs.DefineWorkerFunc(service.syncScheduledIntegrationSources)
+}
+
+// syncScheduledIntegrationSources queues a sync of the scheduled sources of every installation whose integration
+// declares them, each under its own tenant. It runs as the system, since installations span organizations.
+func (s *IntegrationsService) syncScheduledIntegrationSources(ctx context.Context, _ jobs.SyncScheduledIntegrationSources) error {
+	installations, listErr := s.ListInstallations(ctx)
+	if listErr != nil {
+		return fmt.Errorf("list installations: %w", listErr)
+	}
+	var insertErrs []error
+	for _, installation := range installations {
+		scheduled, lookupErr := s.registry.Lookup[integrations.IntegrationWithScheduledSync](installation.Name)
+		if lookupErr != nil {
+			// Integrations without scheduled sources, or no longer available, are skipped.
+			continue
+		}
+		sources := scheduled.ScheduledSyncSources()
+		if len(sources) == 0 {
+			continue
+		}
+		tenantCtx := execution.NewTenantContext(ctx, installation.TenantID)
+		args := jobs.SyncIntegrationSourceEvents{
+			IntegrationId: installation.ID,
+			Sources:       sources,
+			SyncReason:    "scheduled",
+		}
+		opts := &river.InsertOpts{
+			UniqueOpts: river.UniqueOpts{
+				ByArgs:  true,
+				ByState: jobs.UniqueStateNonCompleted,
+			},
+		}
+		if _, insertErr := s.jobs.Insert(tenantCtx, args, opts); insertErr != nil {
+			insertErrs = append(insertErrs, fmt.Errorf("queue scheduled sync for %s: %w", installation.ID, insertErr))
+		}
+	}
+	return errors.Join(insertErrs...)
 }
 
 func (s *IntegrationsService) ListIntegrationEventSyncRuns(ctx context.Context, id uuid.UUID) ([]*ent.IntegrationEventSyncRun, error) {

@@ -9,6 +9,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/agentartifact"
 	"github.com/rezible/rezible/ent/agentmessage"
+	"github.com/rezible/rezible/ent/agentproviderread"
 	"github.com/rezible/rezible/ent/agentsession"
 	"github.com/rezible/rezible/ent/agentsessionbinding"
 	"github.com/rezible/rezible/ent/agentturn"
@@ -187,6 +188,38 @@ func init() {
 	agentmessageDescID := agentmessageFields[0].Descriptor()
 	// agentmessage.DefaultID holds the default value on creation for the id field.
 	agentmessage.DefaultID = agentmessageDescID.Default.(func() uuid.UUID)
+	agentproviderreadMixin := schema.AgentProviderRead{}.Mixin()
+	agentproviderread.Policy = privacy.NewPolicies(agentproviderreadMixin[0], agentproviderreadMixin[1], schema.AgentProviderRead{})
+	agentproviderread.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := agentproviderread.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	agentproviderreadMixinFields2 := agentproviderreadMixin[2].Fields()
+	_ = agentproviderreadMixinFields2
+	agentproviderreadFields := schema.AgentProviderRead{}.Fields()
+	_ = agentproviderreadFields
+	// agentproviderreadDescCreatedAt is the schema descriptor for created_at field.
+	agentproviderreadDescCreatedAt := agentproviderreadMixinFields2[0].Descriptor()
+	// agentproviderread.DefaultCreatedAt holds the default value on creation for the created_at field.
+	agentproviderread.DefaultCreatedAt = agentproviderreadDescCreatedAt.Default.(func() time.Time)
+	// agentproviderreadDescUpdatedAt is the schema descriptor for updated_at field.
+	agentproviderreadDescUpdatedAt := agentproviderreadMixinFields2[1].Descriptor()
+	// agentproviderread.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	agentproviderread.DefaultUpdatedAt = agentproviderreadDescUpdatedAt.Default.(func() time.Time)
+	// agentproviderread.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	agentproviderread.UpdateDefaultUpdatedAt = agentproviderreadDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// agentproviderreadDescToolName is the schema descriptor for tool_name field.
+	agentproviderreadDescToolName := agentproviderreadFields[3].Descriptor()
+	// agentproviderread.ToolNameValidator is a validator for the "tool_name" field. It is called by the builders before save.
+	agentproviderread.ToolNameValidator = agentproviderreadDescToolName.Validators[0].(func(string) error)
+	// agentproviderreadDescID is the schema descriptor for id field.
+	agentproviderreadDescID := agentproviderreadFields[0].Descriptor()
+	// agentproviderread.DefaultID holds the default value on creation for the id field.
+	agentproviderread.DefaultID = agentproviderreadDescID.Default.(func() uuid.UUID)
 	agentsessionMixin := schema.AgentSession{}.Mixin()
 	agentsession.Policy = privacy.NewPolicies(agentsessionMixin[0], agentsessionMixin[1], schema.AgentSession{})
 	agentsession.Hooks[0] = func(next ent.Mutator) ent.Mutator {

@@ -22,7 +22,7 @@ const (
 )
 
 func (p LogSearchParams) Validate() error {
-	if serviceErr := validateReadService(p.Service); serviceErr != nil {
+	if serviceErr := validateReadService(p.Service.DisplayName); serviceErr != nil {
 		return serviceErr
 	}
 	if p.Limit < 0 {
@@ -43,7 +43,7 @@ func (p LogSearchParams) EffectiveLimit() int {
 }
 
 func (p LogCountParams) Validate() error {
-	if serviceErr := validateReadService(p.Service); serviceErr != nil {
+	if serviceErr := validateReadService(p.Service.DisplayName); serviceErr != nil {
 		return serviceErr
 	}
 	if p.Step < 0 {

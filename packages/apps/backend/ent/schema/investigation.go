@@ -258,7 +258,8 @@ func (InvestigationOutputReference) Mixin() []ent.Mixin {
 
 func (InvestigationOutputReference) Annotations() []schema.Annotation {
 	return []schema.Annotation{entsql.Annotation{Checks: map[string]string{
-		"investigation_output_reference_exactly_one_owner": "num_nonnulls(report_id, finding_version_id, hypothesis_version_id) = 1",
+		"investigation_output_reference_exactly_one_owner":  "num_nonnulls(report_id, finding_version_id, hypothesis_version_id) = 1",
+		"investigation_output_reference_exactly_one_target": "num_nonnulls(knowledge_evidence_id, agent_provider_read_id) = 1",
 	}}}
 }
 
@@ -268,7 +269,8 @@ func (InvestigationOutputReference) Fields() []ent.Field {
 		field.UUID("report_id", uuid.UUID{}).Optional().Nillable().Immutable(),
 		field.UUID("finding_version_id", uuid.UUID{}).Optional().Nillable().Immutable(),
 		field.UUID("hypothesis_version_id", uuid.UUID{}).Optional().Nillable().Immutable(),
-		field.UUID("knowledge_evidence_id", uuid.UUID{}).Immutable(),
+		field.UUID("knowledge_evidence_id", uuid.UUID{}).Optional().Nillable().Immutable(),
+		field.UUID("agent_provider_read_id", uuid.UUID{}).Optional().Nillable().Immutable(),
 	}
 }
 
@@ -299,9 +301,13 @@ func (InvestigationOutputReference) Edges() []ent.Edge {
 			Annotations(entsql.OnDelete(entsql.Cascade)),
 		edge.To("knowledge_evidence", KnowledgeEvidence.Type).
 			Unique().
-			Required().
 			Immutable().
 			Field("knowledge_evidence_id").
+			Annotations(entsql.OnDelete(entsql.NoAction)),
+		edge.To("provider_read", AgentProviderRead.Type).
+			Unique().
+			Immutable().
+			Field("agent_provider_read_id").
 			Annotations(entsql.OnDelete(entsql.NoAction)),
 	}
 }

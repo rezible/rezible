@@ -9,6 +9,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/agentproviderread"
 	"github.com/rezible/rezible/ent/investigationfindingversion"
 	"github.com/rezible/rezible/ent/investigationhypothesisversion"
 	"github.com/rezible/rezible/ent/investigationoutputreference"
@@ -31,7 +32,9 @@ type InvestigationOutputReference struct {
 	// HypothesisVersionID holds the value of the "hypothesis_version_id" field.
 	HypothesisVersionID *uuid.UUID `json:"hypothesis_version_id,omitempty"`
 	// KnowledgeEvidenceID holds the value of the "knowledge_evidence_id" field.
-	KnowledgeEvidenceID uuid.UUID `json:"knowledge_evidence_id,omitempty"`
+	KnowledgeEvidenceID *uuid.UUID `json:"knowledge_evidence_id,omitempty"`
+	// AgentProviderReadID holds the value of the "agent_provider_read_id" field.
+	AgentProviderReadID *uuid.UUID `json:"agent_provider_read_id,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the InvestigationOutputReferenceQuery when eager-loading is set.
 	Edges        InvestigationOutputReferenceEdges `json:"edges"`
@@ -50,9 +53,11 @@ type InvestigationOutputReferenceEdges struct {
 	HypothesisVersion *InvestigationHypothesisVersion `json:"hypothesis_version,omitempty"`
 	// KnowledgeEvidence holds the value of the knowledge_evidence edge.
 	KnowledgeEvidence *KnowledgeEvidence `json:"knowledge_evidence,omitempty"`
+	// ProviderRead holds the value of the provider_read edge.
+	ProviderRead *AgentProviderRead `json:"provider_read,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [5]bool
+	loadedTypes [6]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -110,16 +115,27 @@ func (e InvestigationOutputReferenceEdges) KnowledgeEvidenceOrErr() (*KnowledgeE
 	return nil, &NotLoadedError{edge: "knowledge_evidence"}
 }
 
+// ProviderReadOrErr returns the ProviderRead value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e InvestigationOutputReferenceEdges) ProviderReadOrErr() (*AgentProviderRead, error) {
+	if e.ProviderRead != nil {
+		return e.ProviderRead, nil
+	} else if e.loadedTypes[5] {
+		return nil, &NotFoundError{label: agentproviderread.Label}
+	}
+	return nil, &NotLoadedError{edge: "provider_read"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*InvestigationOutputReference) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case investigationoutputreference.FieldReportID, investigationoutputreference.FieldFindingVersionID, investigationoutputreference.FieldHypothesisVersionID:
+		case investigationoutputreference.FieldReportID, investigationoutputreference.FieldFindingVersionID, investigationoutputreference.FieldHypothesisVersionID, investigationoutputreference.FieldKnowledgeEvidenceID, investigationoutputreference.FieldAgentProviderReadID:
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case investigationoutputreference.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case investigationoutputreference.FieldID, investigationoutputreference.FieldKnowledgeEvidenceID:
+		case investigationoutputreference.FieldID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -170,10 +186,18 @@ func (_m *InvestigationOutputReference) assignValues(columns []string, values []
 				*_m.HypothesisVersionID = *value.S.(*uuid.UUID)
 			}
 		case investigationoutputreference.FieldKnowledgeEvidenceID:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field knowledge_evidence_id", values[i])
-			} else if value != nil {
-				_m.KnowledgeEvidenceID = *value
+			} else if value.Valid {
+				_m.KnowledgeEvidenceID = new(uuid.UUID)
+				*_m.KnowledgeEvidenceID = *value.S.(*uuid.UUID)
+			}
+		case investigationoutputreference.FieldAgentProviderReadID:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field agent_provider_read_id", values[i])
+			} else if value.Valid {
+				_m.AgentProviderReadID = new(uuid.UUID)
+				*_m.AgentProviderReadID = *value.S.(*uuid.UUID)
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -211,6 +235,11 @@ func (_m *InvestigationOutputReference) QueryHypothesisVersion() *InvestigationH
 // QueryKnowledgeEvidence queries the "knowledge_evidence" edge of the InvestigationOutputReference entity.
 func (_m *InvestigationOutputReference) QueryKnowledgeEvidence() *KnowledgeEvidenceQuery {
 	return NewInvestigationOutputReferenceClient(_m.config).QueryKnowledgeEvidence(_m)
+}
+
+// QueryProviderRead queries the "provider_read" edge of the InvestigationOutputReference entity.
+func (_m *InvestigationOutputReference) QueryProviderRead() *AgentProviderReadQuery {
+	return NewInvestigationOutputReferenceClient(_m.config).QueryProviderRead(_m)
 }
 
 // Update returns a builder for updating this InvestigationOutputReference.
@@ -254,8 +283,15 @@ func (_m *InvestigationOutputReference) String() string {
 		builder.WriteString(fmt.Sprintf("%v", *v))
 	}
 	builder.WriteString(", ")
-	builder.WriteString("knowledge_evidence_id=")
-	builder.WriteString(fmt.Sprintf("%v", _m.KnowledgeEvidenceID))
+	if v := _m.KnowledgeEvidenceID; v != nil {
+		builder.WriteString("knowledge_evidence_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	if v := _m.AgentProviderReadID; v != nil {
+		builder.WriteString("agent_provider_read_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
 	builder.WriteByte(')')
 	return builder.String()
 }

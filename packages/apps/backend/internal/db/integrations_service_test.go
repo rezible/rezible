@@ -12,9 +12,13 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/pkg/errs"
+	"github.com/rezible/rezible/pkg/execution"
 	"github.com/rezible/rezible/pkg/integrations"
+	"github.com/rezible/rezible/pkg/jobs"
 	"github.com/rezible/rezible/test"
 	"github.com/rezible/rezible/test/mocks"
+	"github.com/riverqueue/river"
+	"github.com/riverqueue/river/rivertype"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 )
@@ -377,4 +381,62 @@ func newTestAgentTool(name string) ai.Tool {
 			return map[string]any{"ok": true}, nil
 		},
 	)
+}
+
+func (s *IntegrationsServiceSuite) TestScheduledSyncQueuesOneSyncPerDeclaringInstallation() {
+	firstCtx, tdb := s.SetupTestDatabase(test.WithFreshDatabase())
+	secondCtx, _ := s.NewIdentity(tdb, "second organization")
+
+	type queuedSync struct {
+		tenantID int
+		args     jobs.SyncIntegrationSourceEvents
+		opts     *river.InsertOpts
+	}
+	var queued []queuedSync
+	jobSvc := mocks.NewMockJobService(s.T())
+	jobSvc.EXPECT().
+		Insert(mock.Anything, mock.Anything, mock.Anything).
+		RunAndReturn(func(ctx context.Context, args river.JobArgs, opts *river.InsertOpts) (*rivertype.JobInsertResult, error) {
+			tenantID, _ := execution.GetContext(ctx).TenantID()
+			queued = append(queued, queuedSync{tenantID: tenantID, args: args.(jobs.SyncIntegrationSourceEvents), opts: opts})
+			return &rivertype.JobInsertResult{}, nil
+		})
+	installations, installationsErr := NewIntegrationInstallationsService(tdb)
+	s.Require().NoError(installationsErr)
+	declaring := &scheduledSyncTestIntegration{testIntegration: testIntegration{name: "provider-a"}, sources: []string{"services"}}
+	undeclared := &testIntegration{name: "provider-b"}
+	svc, serviceErr := NewIntegrationsService(s.Config(), tdb, jobSvc, installations, s.newRegistry(declaring, undeclared))
+	s.Require().NoError(serviceErr)
+
+	first := s.installTestIntegration(firstCtx, svc, declaring, "first.example.com")
+	s.installTestIntegration(firstCtx, svc, undeclared, "provider-b")
+	second := s.installTestIntegration(secondCtx, svc, declaring, "second.example.com")
+	queued = nil
+
+	syncErr := svc.syncScheduledIntegrationSources(execution.NewSystemContext(s.T().Context()), jobs.SyncScheduledIntegrationSources{})
+
+	s.Require().NoError(syncErr)
+	unique := &river.InsertOpts{
+		UniqueOpts: river.UniqueOpts{ByArgs: true, ByState: jobs.UniqueStateNonCompleted},
+	}
+	expected := []queuedSync{
+		{tenantID: first.Integration().TenantID, args: jobs.SyncIntegrationSourceEvents{
+			IntegrationId: first.Integration().ID, Sources: []string{"services"}, SyncReason: "scheduled",
+		}, opts: unique},
+		{tenantID: second.Integration().TenantID, args: jobs.SyncIntegrationSourceEvents{
+			IntegrationId: second.Integration().ID, Sources: []string{"services"}, SyncReason: "scheduled",
+		}, opts: unique},
+	}
+	s.NotEqual(expected[0].tenantID, expected[1].tenantID)
+	s.ElementsMatch(expected, queued)
+}
+
+// scheduledSyncTestIntegration declares sources to sync hourly.
+type scheduledSyncTestIntegration struct {
+	testIntegration
+	sources []string
+}
+
+func (p *scheduledSyncTestIntegration) ScheduledSyncSources() []string {
+	return p.sources
 }

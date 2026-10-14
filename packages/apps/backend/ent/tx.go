@@ -16,6 +16,8 @@ type Tx struct {
 	AgentArtifact *AgentArtifactClient
 	// AgentMessage is the client for interacting with the AgentMessage builders.
 	AgentMessage *AgentMessageClient
+	// AgentProviderRead is the client for interacting with the AgentProviderRead builders.
+	AgentProviderRead *AgentProviderReadClient
 	// AgentSession is the client for interacting with the AgentSession builders.
 	AgentSession *AgentSessionClient
 	// AgentSessionBinding is the client for interacting with the AgentSessionBinding builders.
@@ -333,6 +335,7 @@ func (tx *Tx) Client() *Client {
 func (tx *Tx) init() {
 	tx.AgentArtifact = NewAgentArtifactClient(tx.config)
 	tx.AgentMessage = NewAgentMessageClient(tx.config)
+	tx.AgentProviderRead = NewAgentProviderReadClient(tx.config)
 	tx.AgentSession = NewAgentSessionClient(tx.config)
 	tx.AgentSessionBinding = NewAgentSessionBindingClient(tx.config)
 	tx.AgentTurn = NewAgentTurnClient(tx.config)

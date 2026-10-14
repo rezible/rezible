@@ -32,6 +32,12 @@ func (s *ProjectionService) handleAlertInstanceEvent(ctx context.Context, e *pro
 		Kind:                knowledgeEntityKindAlert,
 		ProviderResourceRef: alertResourceRef,
 	}
+	alertProperties := map[string]any{
+		"definition": attrs.Definition,
+	}
+	if attrs.RunbookURL != "" {
+		alertProperties["runbook_url"] = attrs.RunbookURL
+	}
 	alertEntityEvidence := rez.KnowledgeEvidenceRef{
 		Kind:        projectionEvidenceKind(event),
 		Assertion:   knowledgeAssertionAlertDefinitionObserved,
@@ -39,9 +45,7 @@ func (s *ProjectionService) handleAlertInstanceEvent(ctx context.Context, e *pro
 		SubjectState: schematypes.KnowledgeGraphSubjectState{
 			DisplayName: attrs.Title,
 			Description: attrs.Description,
-			Properties: map[string]any{
-				"definition": attrs.Definition,
-			},
+			Properties:  alertProperties,
 		},
 		Subject: rez.KnowledgeSubjectRef{Entity: &alertEntityRef},
 	}

@@ -2,16 +2,20 @@
 	import type { CitationView } from "$features/situations/lib/investigation-outputs";
 	import { Button } from "$components/ui/button";
 	import { useSituationInvestigationController } from "./controller.svelte";
+	import ProviderReadCitation from "./ProviderReadCitation.svelte";
 
 	type Props = { citations: CitationView[] };
 	const { citations }: Props = $props();
 
 	const controller = useSituationInvestigationController();
+
+	const evidenceCitations = $derived(citations.filter((citation) => !citation.providerRead));
+	const providerReadCitations = $derived(citations.filter((citation) => !!citation.providerRead));
 </script>
 
-{#if citations.length}
+{#if evidenceCitations.length}
 	<div class="flex flex-wrap gap-1">
-		{#each citations as citation (citation.id)}
+		{#each evidenceCitations as citation (citation.id)}
 			<Button
 				variant="outline"
 				size="sm"
@@ -23,4 +27,15 @@
 			</Button>
 		{/each}
 	</div>
+{/if}
+{#if providerReadCitations.length}
+	<ul class="flex flex-col gap-1.5">
+		{#each providerReadCitations as citation (citation.id)}
+			{#if citation.providerRead}
+				<li>
+					<ProviderReadCitation number={citation.number} read={citation.providerRead} />
+				</li>
+			{/if}
+		{/each}
+	</ul>
 {/if}

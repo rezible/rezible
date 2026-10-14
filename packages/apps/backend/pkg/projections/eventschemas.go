@@ -277,7 +277,9 @@ type (
 		Title       string `json:"title" validate:"required"`
 		Description string `json:"description"`
 		Definition  string `json:"definition"`
-		State       string `json:"state" validate:"required,oneof=firing resolved"`
+		// RunbookURL is the definition's runbook link, an absolute http or https URL.
+		RunbookURL string `json:"runbook_url,omitempty"`
+		State      string `json:"state" validate:"required,oneof=firing resolved"`
 		// InstanceID is the provider's identity for the source instance (Alertmanager's fingerprint), when it has one.
 		InstanceID string            `json:"instance_id,omitempty"`
 		Labels     map[string]string `json:"labels,omitempty"`
@@ -317,11 +319,12 @@ type (
 
 	// SystemComponentEventAttributes are the provider-neutral attributes persisted for system component observations.
 	SystemComponentEventAttributes struct {
-		Category    kne.Category   `json:"category" validate:"required"`
-		Kind        string         `json:"kind" validate:"required"`
-		DisplayName string         `json:"display_name" validate:"required"`
-		Description string         `json:"description"`
-		Properties  map[string]any `json:"properties"`
+		Category          kne.Category      `json:"category" validate:"required"`
+		Kind              string            `json:"kind" validate:"required"`
+		DisplayName       string            `json:"display_name" validate:"required"`
+		Description       string            `json:"description"`
+		Properties        map[string]any    `json:"properties"`
+		LinkingAttributes LinkingAttributes `json:"linking_attributes,omitempty"`
 	}
 )
 

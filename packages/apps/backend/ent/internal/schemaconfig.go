@@ -9,6 +9,7 @@ import "context"
 type SchemaConfig struct {
 	AgentArtifact                             string // AgentArtifact table.
 	AgentMessage                              string // AgentMessage table.
+	AgentProviderRead                         string // AgentProviderRead table.
 	AgentSession                              string // AgentSession table.
 	AgentSessionBinding                       string // AgentSessionBinding table.
 	AgentTurn                                 string // AgentTurn table.

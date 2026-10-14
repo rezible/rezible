@@ -93,3 +93,27 @@ func (s *ProjectionServiceSuite) TestAlertProjectionCreatesUpdatesAndRecordsEvid
 
 	s.Equal(1, knowledgeRelationshipCount)
 }
+
+func (s *ProjectionServiceSuite) TestAlertEntityCarriesRunbookURL() {
+	ctx, tdb := s.SetupTestDatabase()
+	service := s.projectionService(tdb)
+	attrs := projections.AlertInstanceEventAttributes{
+		Title:      "CheckoutHighErrorRate",
+		Definition: "error_rate > 0.05",
+		RunbookURL: "https://runbooks.example.com/checkout-high-error-rate",
+		State:      projections.AlertStateFiring,
+		Severity:   "critical",
+		StartedAt:  linkingTestTime,
+	}
+	event := s.createAlertProjectionEvent(ctx, tdb, "alert:checkout", linkingTestTime, attrs)
+
+	_, projectErr := runProjection(ctx, service, event)
+	s.Require().NoError(projectErr)
+
+	alerts := s.entitiesOfKind(ctx, tdb, kne.CategorySignal, knowledgeEntityKindAlert)
+	s.Require().Len(alerts, 1)
+	s.Equal(map[string]any{
+		"definition":  attrs.Definition,
+		"runbook_url": attrs.RunbookURL,
+	}, alerts[0].State.Properties)
+}

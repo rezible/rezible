@@ -5,12 +5,15 @@ import (
 	"fmt"
 	"reflect"
 	"regexp"
+	"slices"
 	"strconv"
+	"strings"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/go-viper/mapstructure/v2"
 
 	"github.com/rezible/rezible/pkg/errs"
+	"github.com/rezible/rezible/pkg/integrations"
 )
 
 const defaultServiceLabel = "service_name"
@@ -84,6 +87,23 @@ func parseInstallationSettings(raw map[string]any) (*installationSettings, error
 		settings.MetricServiceLabel = defaultServiceLabel
 	}
 	return &settings, nil
+}
+
+// logServiceName chooses the value a service's logs carry under the current log service label: the value in
+// the service's logs alias for that label (see serviceResourceRef), else its display name. An alias under a
+// label the installation no longer uses is ignored. Several values under the current label pick the lowest.
+func (s *installationSettings) logServiceName(service integrations.LogService) integrations.LogServiceName {
+	prefix := serviceResourceRef(signalLogs, s.LogServiceLabel, "")
+	var values []string
+	for _, alias := range service.Aliases {
+		if value, found := strings.CutPrefix(alias, prefix); found && value != "" {
+			values = append(values, value)
+		}
+	}
+	if len(values) == 0 {
+		return integrations.LogServiceName{Value: service.DisplayName}
+	}
+	return integrations.LogServiceName{Value: slices.Min(values), FromAlias: true}
 }
 
 // logSelector selects the lines of one service, optionally only those containing some text. Values are

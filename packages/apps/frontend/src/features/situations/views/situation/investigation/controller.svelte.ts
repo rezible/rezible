@@ -32,6 +32,7 @@ import {
 	buildFindingViews,
 	buildHypothesisViews,
 	citationViews,
+	referenceNumbers,
 	findingRow,
 	hypothesisRow,
 	type CitationView,
@@ -592,6 +593,9 @@ export class SituationInvestigationController {
 				answer = queriedAnswer;
 			}
 
+			const answerReferences = answer?.attributes.references ?? [];
+			const answerNumbers = referenceNumbers(answerReferences);
+
 			const turn = input.attributes.agentTurn;
 			rows.push({
 				input,
@@ -603,6 +607,7 @@ export class SituationInvestigationController {
 				expanded,
 				answerQuery,
 				answer,
+				answerCitations: citationViews(answerReferences, answerNumbers),
 				answerUnavailable,
 				answerNeedsUpdate,
 				answerStale: !!answer && !!answerQuery?.isError,

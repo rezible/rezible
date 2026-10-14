@@ -4,22 +4,25 @@ import (
 	"context"
 	"time"
 
+	"github.com/google/uuid"
+
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	kne "github.com/rezible/rezible/ent/knowledgeentity"
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
+	ksa "github.com/rezible/rezible/ent/knowledgesubjectalias"
 	"github.com/rezible/rezible/pkg/errs"
 	"github.com/rezible/rezible/pkg/projections"
 )
 
 var linkingTestTime = time.Date(2026, 6, 1, 10, 0, 0, 0, time.UTC)
 
-// alertmanagerServiceObservation is the service observation an Alertmanager installation makes for a label value.
-func alertmanagerServiceObservation(installation string, label string) projections.EntityObservation {
+// alertServiceObservation is the service observation an alerting installation makes for a label value.
+func alertServiceObservation(installation string, label string) projections.EntityObservation {
 	name := projections.NormalizeServiceName(label)
 	return projections.EntityObservation{
 		Ref: rez.ProviderResourceRef{
-			Provider:          "alertmanager",
+			Provider:          "provider-a",
 			ProviderNamespace: installation,
 			ResourceRef:       "service:" + name,
 		},
@@ -38,7 +41,7 @@ func (s *ProjectionServiceSuite) projectServiceAlert(ctx context.Context, tdb re
 		State:            projections.AlertStateFiring,
 		Severity:         "critical",
 		StartedAt:        linkingTestTime,
-		ObservedEntities: []projections.EntityObservation{alertmanagerServiceObservation(installation, label)},
+		ObservedEntities: []projections.EntityObservation{alertServiceObservation(installation, label)},
 	}
 	event := s.createAlertProjectionEvent(ctx, tdb, installation+":HighErrorRate", linkingTestTime, attrs)
 
@@ -134,6 +137,80 @@ func (s *ProjectionServiceSuite) assertAlertsObserveOneService(ctx context.Conte
 	for _, relationship := range observes {
 		s.Equal(services[0].ID, relationship.TargetEntityID)
 	}
+}
+
+// projectServiceComponent projects the service observation an installation that lists the services it observes
+// makes for a name.
+func (s *ProjectionServiceSuite) projectServiceComponent(ctx context.Context, tdb rez.Database, service *ProjectionService, name string) {
+	attrs := projections.SystemComponentEventAttributes{
+		Category:    kne.CategoryContainer,
+		Kind:        "service",
+		DisplayName: name,
+		LinkingAttributes: projections.LinkingAttributes{
+			projections.LinkingAttributeServiceName: projections.NormalizeServiceName(name),
+		},
+	}
+	encoded, encodeErr := projections.EncodeAttributes(attrs)
+	s.Require().NoError(encodeErr)
+	create := tdb.Client(ctx).NormalizedEvent.Create().
+		SetProvider("provider-b").
+		SetProviderNamespace("installation-b").
+		SetProviderResourceRef("service:" + name).
+		SetProviderEventSource("services").
+		SetProviderEventRef("listing-" + uuid.NewString()).
+		SetKind(projections.KindSystemComponent).
+		SetOccurredAt(linkingTestTime).
+		SetReceivedAt(linkingTestTime).
+		SetAttributes(encoded)
+	event, createErr := create.Save(ctx)
+	s.Require().NoError(createErr)
+
+	_, projectErr := runProjection(ctx, service, event)
+	s.Require().NoError(projectErr)
+}
+
+func (s *ProjectionServiceSuite) TestServiceComponentLinksToAnotherProvidersService() {
+	s.Run("component first", func() {
+		ctx, tdb := s.SetupTestDatabase()
+		service := s.projectionService(tdb)
+
+		s.projectServiceComponent(ctx, tdb, service, "checkout-api")
+		s.projectServiceComponent(ctx, tdb, service, "checkout")
+		s.projectServiceAlert(ctx, tdb, service, "installation-a", "checkout-api")
+
+		s.assertServiceComponentLinks(ctx, tdb)
+	})
+
+	s.Run("alert first", func() {
+		ctx, tdb := s.SetupTestDatabase()
+		service := s.projectionService(tdb)
+
+		s.projectServiceAlert(ctx, tdb, service, "installation-a", "checkout-api")
+		s.projectServiceComponent(ctx, tdb, service, "checkout-api")
+		s.projectServiceComponent(ctx, tdb, service, "checkout")
+
+		s.assertServiceComponentLinks(ctx, tdb)
+	})
+}
+
+// assertServiceComponentLinks requires checkout-api to hold both providers' aliases, and checkout, a different
+// name, to stay a separate service.
+func (s *ProjectionServiceSuite) assertServiceComponentLinks(ctx context.Context, tdb rez.Database) {
+	aliasesByName := map[string][]string{}
+	for _, entity := range s.entitiesOfKind(ctx, tdb, kne.CategoryContainer, "service") {
+		queryAliases := tdb.Client(ctx).KnowledgeSubjectAlias.Query().
+			Where(ksa.EntityID(entity.ID)).
+			Order(ksa.ByProvider())
+		aliases, queryErr := queryAliases.All(ctx)
+		s.Require().NoError(queryErr)
+		for _, alias := range aliases {
+			aliasesByName[entity.State.DisplayName] = append(aliasesByName[entity.State.DisplayName], alias.Provider+"/"+alias.ProviderResourceRef)
+		}
+	}
+	s.Equal(map[string][]string{
+		"checkout-api": {"provider-a/service:checkout-api", "provider-b/service:checkout-api"},
+		"checkout":     {"provider-b/service:checkout"},
+	}, aliasesByName)
 }
 
 // topologyObservation is an entity observed by a topology fixture provider, linked when a service name is given.

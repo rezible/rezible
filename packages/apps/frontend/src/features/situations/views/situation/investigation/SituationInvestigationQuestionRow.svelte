@@ -4,6 +4,7 @@
 	import { Spinner } from "$components/ui/spinner";
 	import { cn } from "$lib/utils";
 	import { useSituationInvestigationController, type InvestigationQuestionRow } from "./controller.svelte";
+	import ProviderReadCitation from "./ProviderReadCitation.svelte";
 
 	type Props = { row: InvestigationQuestionRow };
 	const { row }: Props = $props();
@@ -86,22 +87,26 @@
 					{/if}
 					<div class="flex flex-col gap-2">
 						<h4 class="text-sm font-medium">Evidence references</h4>
-						{#if answer.references.length}
+						{#if row.answerCitations.length}
 							<ul class="flex flex-wrap gap-x-3 gap-y-1">
-								{#each answer.references as reference, index (reference.id)}
-									<li>
-										<Button
-											variant="link"
-											class="h-auto p-0"
-											aria-label={`Inspect Evidence ${index + 1}`}
-											onclick={(event) =>
-												controller.inspection.openEvidence(
-													reference.id,
-													event.currentTarget
-												)}
-										>
-											Evidence {index + 1}
-										</Button>
+								{#each row.answerCitations as citation (citation.id)}
+									<li class:basis-full={!!citation.providerRead}>
+										{#if citation.providerRead}
+											<ProviderReadCitation
+												number={citation.number}
+												read={citation.providerRead}
+											/>
+										{:else}
+											<Button
+												variant="link"
+												class="h-auto p-0"
+												aria-label={`Inspect Evidence ${citation.number}`}
+												onclick={(event) =>
+													controller.openCitation(citation, event.currentTarget)}
+											>
+												Evidence {citation.number}
+											</Button>
+										{/if}
 									</li>
 								{/each}
 							</ul>

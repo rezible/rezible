@@ -10,6 +10,7 @@ import (
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/agentartifact"
 	"github.com/rezible/rezible/ent/agentmessage"
+	"github.com/rezible/rezible/ent/agentproviderread"
 	"github.com/rezible/rezible/ent/agentsession"
 	"github.com/rezible/rezible/ent/agentsessionbinding"
 	"github.com/rezible/rezible/ent/agentturn"
@@ -213,6 +214,33 @@ func (f TraverseAgentMessage) Traverse(ctx context.Context, q ent.Query) error {
 		return f(ctx, q)
 	}
 	return fmt.Errorf("unexpected query type %T. expect *ent.AgentMessageQuery", q)
+}
+
+// The AgentProviderReadFunc type is an adapter to allow the use of ordinary function as a Querier.
+type AgentProviderReadFunc func(context.Context, *ent.AgentProviderReadQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f AgentProviderReadFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.AgentProviderReadQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.AgentProviderReadQuery", q)
+}
+
+// The TraverseAgentProviderRead type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseAgentProviderRead func(context.Context, *ent.AgentProviderReadQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseAgentProviderRead) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseAgentProviderRead) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.AgentProviderReadQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.AgentProviderReadQuery", q)
 }
 
 // The AgentSessionFunc type is an adapter to allow the use of ordinary function as a Querier.
@@ -2706,6 +2734,8 @@ func NewQuery(q ent.Query) (Query, error) {
 		return &query[*ent.AgentArtifactQuery, predicate.AgentArtifact, agentartifact.OrderOption]{typ: ent.TypeAgentArtifact, tq: q}, nil
 	case *ent.AgentMessageQuery:
 		return &query[*ent.AgentMessageQuery, predicate.AgentMessage, agentmessage.OrderOption]{typ: ent.TypeAgentMessage, tq: q}, nil
+	case *ent.AgentProviderReadQuery:
+		return &query[*ent.AgentProviderReadQuery, predicate.AgentProviderRead, agentproviderread.OrderOption]{typ: ent.TypeAgentProviderRead, tq: q}, nil
 	case *ent.AgentSessionQuery:
 		return &query[*ent.AgentSessionQuery, predicate.AgentSession, agentsession.OrderOption]{typ: ent.TypeAgentSession, tq: q}, nil
 	case *ent.AgentSessionBindingQuery:

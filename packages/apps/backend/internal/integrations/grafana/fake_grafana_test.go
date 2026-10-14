@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 
 	"github.com/rezible/rezible/ent"
@@ -79,6 +80,7 @@ func (f *fakeGrafana) install(settings map[string]any) *InstalledIntegration {
 	require.NoError(f.t, makeErr)
 
 	intg := &ent.Integration{
+		ID:                 uuid.New(),
 		InstallationConfig: config,
 		UserSettings:       settings,
 	}

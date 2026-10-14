@@ -3,6 +3,7 @@ package genkit
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -18,30 +19,52 @@ import (
 	ke "github.com/rezible/rezible/ent/knowledgeevidence"
 	"github.com/rezible/rezible/ent/schema/schematypes"
 	rezai "github.com/rezible/rezible/pkg/ai"
+	"github.com/rezible/rezible/test"
 	"github.com/rezible/rezible/test/mocks"
 )
 
 type investigationHarness struct {
-	outputs    *mocks.MockInvestigationOutputService
-	knowledge  *mocks.MockKnowledgeGraphQueryService
-	situations *mocks.MockSituationService
-	invocation *investigationInvocation
+	clock         *test.Clock
+	outputs       *mocks.MockInvestigationOutputService
+	knowledge     *mocks.MockKnowledgeGraphQueryService
+	situations    *mocks.MockSituationService
+	changes       *mocks.MockChangesService
+	integrations  *mocks.MockIntegrationService
+	providerReads *mocks.MockAgentProviderReadService
+	invocation    *investigationInvocation
 }
 
 func (s *AiRuntimeSuite) newInvestigationHarness() *investigationHarness {
 	h := &investigationHarness{
-		outputs:    mocks.NewMockInvestigationOutputService(s.T()),
-		knowledge:  mocks.NewMockKnowledgeGraphQueryService(s.T()),
-		situations: mocks.NewMockSituationService(s.T()),
+		clock:         test.NewClock(time.Date(2026, 6, 1, 12, 0, 0, 0, time.UTC)),
+		outputs:       mocks.NewMockInvestigationOutputService(s.T()),
+		knowledge:     mocks.NewMockKnowledgeGraphQueryService(s.T()),
+		situations:    mocks.NewMockSituationService(s.T()),
+		changes:       mocks.NewMockChangesService(s.T()),
+		integrations:  mocks.NewMockIntegrationService(s.T()),
+		providerReads: mocks.NewMockAgentProviderReadService(s.T()),
+	}
+	deps := investigationDependencies{
+		clock:         h.clock,
+		outputs:       h.outputs,
+		knowledge:     h.knowledge,
+		situations:    h.situations,
+		changes:       h.changes,
+		integrations:  h.integrations,
+		providerReads: h.providerReads,
 	}
 	h.invocation = &investigationInvocation{
-		outputs:         h.outputs,
-		knowledge:       h.knowledge,
-		situations:      h.situations,
-		investigationID: uuid.New(),
-		turnID:          uuid.New(),
+		investigationDependencies: deps,
+		investigationID:           uuid.New(),
+		turnID:                    uuid.New(),
 	}
 	return h
+}
+
+// expectProviderReadContext makes the turn's used provider reads and the organization's installations.
+func (h *investigationHarness) expectProviderReadContext(used int, installed ...rez.InstalledIntegration) {
+	h.providerReads.EXPECT().CountTurnProviderReads(mock.Anything, h.invocation.turnID).Return(used, nil)
+	h.integrations.EXPECT().ListAllInstalled(mock.Anything).Return(installed, nil)
 }
 
 // expectSituation makes the investigation's situation the given one, or none when nil.
@@ -183,6 +206,7 @@ func (s *AiRuntimeSuite) TestInvestigationIntroduction() {
 		Edges:   ent.InvestigationReportEdges{AgentTurn: &ent.AgentTurn{Status: at.StatusRunning}},
 	}
 	h.expectOutputs(report, 30, 2)
+	h.expectProviderReadContext(3, newFakeLogReader(""), newFakeInstallation("webhook", "deployments"))
 
 	introduction := s.introduction(ctx, h)
 
@@ -208,6 +232,17 @@ func (s *AiRuntimeSuite) TestInvestigationIntroduction() {
 	s.Equal(30, introduction.Outputs.FindingsTotal)
 	s.Len(introduction.Outputs.Hypotheses, 2)
 	s.Zero(introduction.Outputs.HypothesesTotal, "no total when every hypothesis is listed")
+
+	s.Equal(h.clock.Now(), introduction.TurnStartedAt)
+	s.Equal(time.UTC, introduction.TurnStartedAt.Location(), "the turn's start is in UTC")
+	s.Require().NotNil(introduction.ProviderReadWindow)
+	s.Equal(openedAt.Add(-rezai.ProviderReadLeadIn), introduction.ProviderReadWindow.Start)
+	s.Nil(introduction.ProviderReadWindow.End, "an open situation's window has no end")
+	s.Equal(rezai.ProviderReadBudget{Limit: rezai.MaxProviderReadsPerTurn, Used: 3}, introduction.ProviderReadBudget)
+	s.Equal(rezai.InvestigationSources{
+		Logs:    rezai.SourceAvailability{Available: true},
+		Changes: rezai.SourceAvailability{Available: true},
+	}, introduction.Sources)
 }
 
 func (s *AiRuntimeSuite) TestInvestigationIntroductionWithoutOutputs() {
@@ -215,10 +250,16 @@ func (s *AiRuntimeSuite) TestInvestigationIntroductionWithoutOutputs() {
 	h := s.newInvestigationHarness()
 	h.expectSituation(nil)
 	h.expectOutputs(nil, 0, 0)
+	h.expectProviderReadContext(0)
 
 	introduction := s.introduction(ctx, h)
 
 	s.Nil(introduction.Situation)
+	s.Nil(introduction.ProviderReadWindow, "no provider read window without a situation")
+	s.False(introduction.Sources.Logs.Available)
+	s.NotEmpty(introduction.Sources.Logs.Reason)
+	s.False(introduction.Sources.Changes.Available)
+	s.NotEmpty(introduction.Sources.Changes.Reason)
 	s.Nil(introduction.Outputs.Report)
 	s.NotNil(introduction.Outputs.Findings)
 	s.Empty(introduction.Outputs.Findings)
@@ -241,13 +282,17 @@ func (s *AiRuntimeSuite) TestInvestigationTools() {
 		"list_entity_evidence",
 		"read_evidence",
 		"read_investigation_output",
+		"find_service",
+		"list_changes",
+		"search_logs",
+		"count_logs",
 		"publish_investigation_report",
 		"publish_investigation_finding",
 		"publish_investigation_hypothesis",
 	}, toolNames())
 
 	h.invocation.hasAssignedQuestion = true
-	s.Len(toolNames(), 8)
+	s.Len(toolNames(), 12)
 	s.Contains(toolNames(), "publish_investigation_answer")
 }
 
@@ -474,4 +519,20 @@ func (s *AiRuntimeSuite) TestReadInvestigationOutput() {
 	s.Equal("hypothesis", hypothesisResult.Kind)
 	s.Require().NotNil(hypothesisResult.Hypothesis)
 	s.Equal("supported", hypothesisResult.Hypothesis.Status)
+}
+
+func (s *AiRuntimeSuite) TestInvestigationIntroductionWithUnloadableInstallations() {
+	ctx := s.T().Context()
+	h := s.newInvestigationHarness()
+	h.expectSituation(nil)
+	h.expectOutputs(nil, 0, 0)
+	h.providerReads.EXPECT().CountTurnProviderReads(mock.Anything, h.invocation.turnID).Return(0, nil)
+	h.integrations.EXPECT().ListAllInstalled(mock.Anything).Return(nil, errors.New("decode installation config"))
+
+	introduction := s.introduction(ctx, h)
+
+	s.False(introduction.Sources.Logs.Available, "the turn starts, with the sources unavailable")
+	s.NotEmpty(introduction.Sources.Logs.Reason)
+	s.False(introduction.Sources.Changes.Available)
+	s.NotEmpty(introduction.Sources.Changes.Reason)
 }

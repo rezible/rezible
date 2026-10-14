@@ -80,6 +80,11 @@ func KnowledgeEvidenceID(v uuid.UUID) predicate.InvestigationOutputReference {
 	return predicate.InvestigationOutputReference(sql.FieldEQ(FieldKnowledgeEvidenceID, v))
 }
 
+// AgentProviderReadID applies equality check predicate on the "agent_provider_read_id" field. It's identical to AgentProviderReadIDEQ.
+func AgentProviderReadID(v uuid.UUID) predicate.InvestigationOutputReference {
+	return predicate.InvestigationOutputReference(sql.FieldEQ(FieldAgentProviderReadID, v))
+}
+
 // TenantIDEQ applies the EQ predicate on the "tenant_id" field.
 func TenantIDEQ(v int) predicate.InvestigationOutputReference {
 	return predicate.InvestigationOutputReference(sql.FieldEQ(FieldTenantID, v))
@@ -208,6 +213,46 @@ func KnowledgeEvidenceIDIn(vs ...uuid.UUID) predicate.InvestigationOutputReferen
 // KnowledgeEvidenceIDNotIn applies the NotIn predicate on the "knowledge_evidence_id" field.
 func KnowledgeEvidenceIDNotIn(vs ...uuid.UUID) predicate.InvestigationOutputReference {
 	return predicate.InvestigationOutputReference(sql.FieldNotIn(FieldKnowledgeEvidenceID, vs...))
+}
+
+// KnowledgeEvidenceIDIsNil applies the IsNil predicate on the "knowledge_evidence_id" field.
+func KnowledgeEvidenceIDIsNil() predicate.InvestigationOutputReference {
+	return predicate.InvestigationOutputReference(sql.FieldIsNull(FieldKnowledgeEvidenceID))
+}
+
+// KnowledgeEvidenceIDNotNil applies the NotNil predicate on the "knowledge_evidence_id" field.
+func KnowledgeEvidenceIDNotNil() predicate.InvestigationOutputReference {
+	return predicate.InvestigationOutputReference(sql.FieldNotNull(FieldKnowledgeEvidenceID))
+}
+
+// AgentProviderReadIDEQ applies the EQ predicate on the "agent_provider_read_id" field.
+func AgentProviderReadIDEQ(v uuid.UUID) predicate.InvestigationOutputReference {
+	return predicate.InvestigationOutputReference(sql.FieldEQ(FieldAgentProviderReadID, v))
+}
+
+// AgentProviderReadIDNEQ applies the NEQ predicate on the "agent_provider_read_id" field.
+func AgentProviderReadIDNEQ(v uuid.UUID) predicate.InvestigationOutputReference {
+	return predicate.InvestigationOutputReference(sql.FieldNEQ(FieldAgentProviderReadID, v))
+}
+
+// AgentProviderReadIDIn applies the In predicate on the "agent_provider_read_id" field.
+func AgentProviderReadIDIn(vs ...uuid.UUID) predicate.InvestigationOutputReference {
+	return predicate.InvestigationOutputReference(sql.FieldIn(FieldAgentProviderReadID, vs...))
+}
+
+// AgentProviderReadIDNotIn applies the NotIn predicate on the "agent_provider_read_id" field.
+func AgentProviderReadIDNotIn(vs ...uuid.UUID) predicate.InvestigationOutputReference {
+	return predicate.InvestigationOutputReference(sql.FieldNotIn(FieldAgentProviderReadID, vs...))
+}
+
+// AgentProviderReadIDIsNil applies the IsNil predicate on the "agent_provider_read_id" field.
+func AgentProviderReadIDIsNil() predicate.InvestigationOutputReference {
+	return predicate.InvestigationOutputReference(sql.FieldIsNull(FieldAgentProviderReadID))
+}
+
+// AgentProviderReadIDNotNil applies the NotNil predicate on the "agent_provider_read_id" field.
+func AgentProviderReadIDNotNil() predicate.InvestigationOutputReference {
+	return predicate.InvestigationOutputReference(sql.FieldNotNull(FieldAgentProviderReadID))
 }
 
 // HasTenant applies the HasEdge predicate on the "tenant" edge.
@@ -346,6 +391,35 @@ func HasKnowledgeEvidenceWith(preds ...predicate.KnowledgeEvidence) predicate.In
 		step := newKnowledgeEvidenceStep()
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.KnowledgeEvidence
+		step.Edge.Schema = schemaConfig.InvestigationOutputReference
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasProviderRead applies the HasEdge predicate on the "provider_read" edge.
+func HasProviderRead() predicate.InvestigationOutputReference {
+	return predicate.InvestigationOutputReference(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, ProviderReadTable, ProviderReadColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.AgentProviderRead
+		step.Edge.Schema = schemaConfig.InvestigationOutputReference
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasProviderReadWith applies the HasEdge predicate on the "provider_read" edge with a given conditions (other predicates).
+func HasProviderReadWith(preds ...predicate.AgentProviderRead) predicate.InvestigationOutputReference {
+	return predicate.InvestigationOutputReference(func(s *sql.Selector) {
+		step := newProviderReadStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.AgentProviderRead
 		step.Edge.Schema = schemaConfig.InvestigationOutputReference
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

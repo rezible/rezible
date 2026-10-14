@@ -20,6 +20,7 @@ import (
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/pkg/errs"
 
+	apr "github.com/rezible/rezible/ent/agentproviderread"
 	at "github.com/rezible/rezible/ent/agentturn"
 	invf "github.com/rezible/rezible/ent/investigationfinding"
 	invfv "github.com/rezible/rezible/ent/investigationfindingversion"
@@ -94,8 +95,9 @@ func (s *InvestigationService) PublishInvestigationReport(ctx context.Context, s
 		}
 
 		reportRef := investigationOutputRef{
-			analysisID: current.SystemAnalysisID,
-			reportID:   &created.ID,
+			analysisID:     current.SystemAnalysisID,
+			agentSessionID: current.AgentSessionID,
+			reportID:       &created.ID,
 		}
 		if referenceErr := s.saveInvestigationEvidenceIDs(ctx, reportRef, evidenceIDs); referenceErr != nil {
 			return nil, referenceErr
@@ -176,6 +178,7 @@ func (s *InvestigationService) PublishInvestigationFinding(ctx context.Context, 
 
 		findingRef := investigationOutputRef{
 			analysisID:       current.SystemAnalysisID,
+			agentSessionID:   current.AgentSessionID,
 			findingVersionID: &created.ID,
 		}
 		if refErr := s.saveInvestigationEvidenceIDs(ctx, findingRef, params.EvidenceIDs); refErr != nil {
@@ -263,6 +266,7 @@ func (s *InvestigationService) PublishInvestigationAnswer(ctx context.Context, s
 
 		findingRef := investigationOutputRef{
 			analysisID:       current.SystemAnalysisID,
+			agentSessionID:   current.AgentSessionID,
 			findingVersionID: &created.ID,
 		}
 		if referenceErr := s.saveInvestigationEvidenceIDs(ctx, findingRef, params.EvidenceIDs); referenceErr != nil {
@@ -345,6 +349,7 @@ func (s *InvestigationService) PublishInvestigationHypothesis(ctx context.Contex
 
 		hypRef := investigationOutputRef{
 			analysisID:          current.SystemAnalysisID,
+			agentSessionID:      current.AgentSessionID,
 			hypothesisVersionID: &created.ID,
 		}
 		if refErr := s.saveInvestigationEvidenceIDs(ctx, hypRef, params.EvidenceIDs); refErr != nil {
@@ -491,8 +496,21 @@ func (s *InvestigationService) ListInvestigationHypotheses(ctx context.Context, 
 	}, nil
 }
 
+// orderOutputReferences orders references by what they cite, loading cited provider reads with their service.
+// A read's stored result can be large and no reader of an output needs it, so it is not selected.
 func (s *InvestigationService) orderOutputReferences(q *ent.InvestigationOutputReferenceQuery) {
-	q.Order(invor.ByKnowledgeEvidenceID())
+	q.Order(invor.ByKnowledgeEvidenceID(), invor.ByAgentProviderReadID()).
+		WithProviderRead(func(q *ent.AgentProviderReadQuery) {
+			q.Select(
+				apr.FieldAgentSessionID,
+				apr.FieldToolName,
+				apr.FieldServiceEntityID,
+				apr.FieldInput,
+				apr.FieldStatus,
+				apr.FieldRead,
+			).
+				WithServiceEntity()
+		})
 }
 
 func (s *InvestigationService) investigationReportsQuery(ctx context.Context) *ent.InvestigationReportQuery {
@@ -751,15 +769,61 @@ func (p *investigationOutputFingerprintPayload) Fingerprint() (string, error) {
 }
 
 type investigationOutputRef struct {
-	analysisID uuid.UUID
+	analysisID     uuid.UUID
+	agentSessionID uuid.UUID
 
 	reportID            *uuid.UUID
 	findingVersionID    *uuid.UUID
 	hypothesisVersionID *uuid.UUID
 }
 
-// saveInvestigationEvidenceIDs saves the citations after checking each is evidence, and includes each evidence's subject in the investigation's analysis.
+// saveInvestigationEvidenceIDs saves the citations. IDs that are provider reads of the investigation's agent
+// session cite those reads; every other ID must be knowledge evidence, whose subject is included in the
+// investigation's analysis. Provider reads are not graph subjects, so they add nothing to it.
 func (s *InvestigationService) saveInvestigationEvidenceIDs(ctx context.Context, ref investigationOutputRef, ids []uuid.UUID) error {
+	if len(ids) == 0 {
+		return nil
+	}
+	client := s.db.Client(ctx)
+	queryReads := client.AgentProviderRead.Query().
+		Where(apr.IDIn(ids...))
+	reads, readsErr := queryReads.All(ctx)
+	if readsErr != nil {
+		return fmt.Errorf("load cited provider reads: %w", readsErr)
+	}
+	providerReadIDs := mapset.NewSet[uuid.UUID]()
+	for _, read := range reads {
+		if read.AgentSessionID != ref.agentSessionID {
+			return fmt.Errorf("%w: provider read %s was made by another agent session", errs.ErrInvalidInput, read.ID)
+		}
+		providerReadIDs.Add(read.ID)
+	}
+	evidenceIDs := make([]uuid.UUID, 0, len(ids))
+	for _, id := range ids {
+		if !providerReadIDs.Contains(id) {
+			evidenceIDs = append(evidenceIDs, id)
+		}
+	}
+	if includeErr := s.includeCitedEvidenceSubjects(ctx, ref.analysisID, evidenceIDs); includeErr != nil {
+		return includeErr
+	}
+
+	return client.InvestigationOutputReference.
+		MapCreateBulk(ids, func(c *ent.InvestigationOutputReferenceCreate, i int) {
+			c.SetNillableReportID(ref.reportID)
+			c.SetNillableFindingVersionID(ref.findingVersionID)
+			c.SetNillableHypothesisVersionID(ref.hypothesisVersionID)
+			if providerReadIDs.Contains(ids[i]) {
+				c.SetAgentProviderReadID(ids[i])
+			} else {
+				c.SetKnowledgeEvidenceID(ids[i])
+			}
+		}).
+		Exec(ctx)
+}
+
+// includeCitedEvidenceSubjects checks that each ID is knowledge evidence and includes its subject in the analysis.
+func (s *InvestigationService) includeCitedEvidenceSubjects(ctx context.Context, analysisID uuid.UUID, ids []uuid.UUID) error {
 	if len(ids) == 0 {
 		return nil
 	}
@@ -770,7 +834,7 @@ func (s *InvestigationService) saveInvestigationEvidenceIDs(ctx context.Context,
 	if evidenceErr != nil {
 		return fmt.Errorf("load cited evidence: %w", evidenceErr)
 	}
-	include := rez.IncludeSystemAnalysisSubjectsParams{AnalysisId: ref.analysisID}
+	include := rez.IncludeSystemAnalysisSubjectsParams{AnalysisId: analysisID}
 	cited := mapset.NewSet[uuid.UUID]()
 	for _, item := range evidence {
 		cited.Add(item.ID)
@@ -784,21 +848,13 @@ func (s *InvestigationService) saveInvestigationEvidenceIDs(ctx context.Context,
 	}
 	for _, id := range ids {
 		if !cited.Contains(id) {
-			return fmt.Errorf("%w: %s is not knowledge evidence", errs.ErrInvalidInput, id)
+			return fmt.Errorf("%w: %s is not knowledge evidence or a provider read of this investigation", errs.ErrInvalidInput, id)
 		}
 	}
 	if includeErr := s.analyses.IncludeSystemAnalysisSubjects(ctx, include); includeErr != nil {
 		return fmt.Errorf("include cited subjects in the analysis: %w", includeErr)
 	}
-
-	return s.db.Client(ctx).InvestigationOutputReference.
-		MapCreateBulk(ids, func(c *ent.InvestigationOutputReferenceCreate, i int) {
-			c.SetNillableReportID(ref.reportID)
-			c.SetNillableFindingVersionID(ref.findingVersionID)
-			c.SetNillableHypothesisVersionID(ref.hypothesisVersionID)
-			c.SetKnowledgeEvidenceID(ids[i])
-		}).
-		Exec(ctx)
+	return nil
 }
 
 func (s *InvestigationService) saveFindingVersionReferences(ctx context.Context, sourceID uuid.UUID, refs []rez.InvestigationFindingVersionReference) error {

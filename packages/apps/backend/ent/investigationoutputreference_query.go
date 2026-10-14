@@ -14,6 +14,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/agentproviderread"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/investigationfindingversion"
 	"github.com/rezible/rezible/ent/investigationhypothesisversion"
@@ -36,6 +37,7 @@ type InvestigationOutputReferenceQuery struct {
 	withFindingVersion    *InvestigationFindingVersionQuery
 	withHypothesisVersion *InvestigationHypothesisVersionQuery
 	withKnowledgeEvidence *KnowledgeEvidenceQuery
+	withProviderRead      *AgentProviderReadQuery
 	modifiers             []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -191,6 +193,31 @@ func (_q *InvestigationOutputReferenceQuery) QueryKnowledgeEvidence() *Knowledge
 		)
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.KnowledgeEvidence
+		step.Edge.Schema = schemaConfig.InvestigationOutputReference
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryProviderRead chains the current query on the "provider_read" edge.
+func (_q *InvestigationOutputReferenceQuery) QueryProviderRead() *AgentProviderReadQuery {
+	query := (&AgentProviderReadClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(investigationoutputreference.Table, investigationoutputreference.FieldID, selector),
+			sqlgraph.To(agentproviderread.Table, agentproviderread.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, investigationoutputreference.ProviderReadTable, investigationoutputreference.ProviderReadColumn),
+		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.AgentProviderRead
 		step.Edge.Schema = schemaConfig.InvestigationOutputReference
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -395,6 +422,7 @@ func (_q *InvestigationOutputReferenceQuery) Clone() *InvestigationOutputReferen
 		withFindingVersion:    _q.withFindingVersion.Clone(),
 		withHypothesisVersion: _q.withHypothesisVersion.Clone(),
 		withKnowledgeEvidence: _q.withKnowledgeEvidence.Clone(),
+		withProviderRead:      _q.withProviderRead.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
@@ -453,6 +481,17 @@ func (_q *InvestigationOutputReferenceQuery) WithKnowledgeEvidence(opts ...func(
 		opt(query)
 	}
 	_q.withKnowledgeEvidence = query
+	return _q
+}
+
+// WithProviderRead tells the query-builder to eager-load the nodes that are connected to
+// the "provider_read" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *InvestigationOutputReferenceQuery) WithProviderRead(opts ...func(*AgentProviderReadQuery)) *InvestigationOutputReferenceQuery {
+	query := (&AgentProviderReadClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withProviderRead = query
 	return _q
 }
 
@@ -540,12 +579,13 @@ func (_q *InvestigationOutputReferenceQuery) sqlAll(ctx context.Context, hooks .
 	var (
 		nodes       = []*InvestigationOutputReference{}
 		_spec       = _q.querySpec()
-		loadedTypes = [5]bool{
+		loadedTypes = [6]bool{
 			_q.withTenant != nil,
 			_q.withReport != nil,
 			_q.withFindingVersion != nil,
 			_q.withHypothesisVersion != nil,
 			_q.withKnowledgeEvidence != nil,
+			_q.withProviderRead != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -600,6 +640,12 @@ func (_q *InvestigationOutputReferenceQuery) sqlAll(ctx context.Context, hooks .
 	if query := _q.withKnowledgeEvidence; query != nil {
 		if err := _q.loadKnowledgeEvidence(ctx, query, nodes, nil,
 			func(n *InvestigationOutputReference, e *KnowledgeEvidence) { n.Edges.KnowledgeEvidence = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withProviderRead; query != nil {
+		if err := _q.loadProviderRead(ctx, query, nodes, nil,
+			func(n *InvestigationOutputReference, e *AgentProviderRead) { n.Edges.ProviderRead = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -735,7 +781,10 @@ func (_q *InvestigationOutputReferenceQuery) loadKnowledgeEvidence(ctx context.C
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*InvestigationOutputReference)
 	for i := range nodes {
-		fk := nodes[i].KnowledgeEvidenceID
+		if nodes[i].KnowledgeEvidenceID == nil {
+			continue
+		}
+		fk := *nodes[i].KnowledgeEvidenceID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -753,6 +802,38 @@ func (_q *InvestigationOutputReferenceQuery) loadKnowledgeEvidence(ctx context.C
 		nodes, ok := nodeids[n.ID]
 		if !ok {
 			return fmt.Errorf(`unexpected foreign-key "knowledge_evidence_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (_q *InvestigationOutputReferenceQuery) loadProviderRead(ctx context.Context, query *AgentProviderReadQuery, nodes []*InvestigationOutputReference, init func(*InvestigationOutputReference), assign func(*InvestigationOutputReference, *AgentProviderRead)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*InvestigationOutputReference)
+	for i := range nodes {
+		if nodes[i].AgentProviderReadID == nil {
+			continue
+		}
+		fk := *nodes[i].AgentProviderReadID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(agentproviderread.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "agent_provider_read_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -805,6 +886,9 @@ func (_q *InvestigationOutputReferenceQuery) querySpec() *sqlgraph.QuerySpec {
 		}
 		if _q.withKnowledgeEvidence != nil {
 			_spec.Node.AddColumnOnce(investigationoutputreference.FieldKnowledgeEvidenceID)
+		}
+		if _q.withProviderRead != nil {
+			_spec.Node.AddColumnOnce(investigationoutputreference.FieldAgentProviderReadID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {

@@ -32,6 +32,7 @@ import (
 	"github.com/rezible/rezible/pkg/execution"
 	"github.com/rezible/rezible/pkg/jobs"
 	"github.com/rezible/rezible/pkg/projections"
+	"github.com/rezible/rezible/test"
 	"github.com/rezible/rezible/test/mocks"
 	"github.com/riverqueue/river/rivertype"
 	"github.com/stretchr/testify/mock"
@@ -940,4 +941,78 @@ func (s *InvestigationServiceSuite) TestInvestigationPublicationCannotRaceTurnCo
 		s.Nil(publication)
 		s.Zero(publicationCount)
 	}
+}
+
+func (s *InvestigationServiceSuite) TestOutputsCiteProviderReads() {
+	ctx, tdb := s.SetupTestDatabase()
+	jobService := mocks.NewMockJobService(s.T())
+	service, investigation, turn := s.outputFixture(ctx, tdb, jobService)
+	turnScope := rez.InvestigationPublicationScope{
+		InvestigationID: investigation.ID,
+		AgentTurnID:     turn.ID,
+	}
+	graph := newTestGraph(s.Require(), tdb)
+	checkout := graph.entity(kne.CategoryContainer, "service", "kubernetes", "checkout-api")
+	payments := graph.entity(kne.CategoryContainer, "service", "kubernetes", "payments-api")
+	graph.record(ctx, time.Now().UTC(),
+		graph.observeEntity(checkout, "checkout-api"),
+		graph.observeEntity(payments, "payments-api"))
+	evidenceID := graph.latestEvidenceID(ctx, checkout.ProviderResourceRef)
+
+	reads := NewAgentProviderReadService(tdb, test.NewClock(time.Now()))
+	startRead := func(turn *ent.AgentTurn) uuid.UUID {
+		params := rez.StartAgentProviderReadParams{
+			AgentTurnID:     turn.ID,
+			ToolName:        rezai.SearchLogsTool.Name(),
+			ServiceEntityID: graph.entityID(ctx, payments),
+			Input:           []byte(`{}`),
+		}
+		read, _, startErr := reads.StartProviderRead(ctx, params)
+		s.Require().NoError(startErr)
+		return read.ID
+	}
+	readID := startRead(turn)
+	finishParams := rez.FinishAgentProviderReadParams{
+		ID:     readID,
+		Read:   []byte(`{"query":"{service=\"payments-api\"}"}`),
+		Result: []byte(`{"lines":[]}`),
+	}
+	s.Require().NoError(reads.FinishProviderRead(ctx, finishParams))
+
+	params := rez.PublishInvestigationReportParams{
+		Text:        "Payments ran out of connections.",
+		EvidenceIDs: []uuid.UUID{readID, evidenceID},
+	}
+	report, publishErr := service.PublishInvestigationReport(ctx, turnScope, params)
+	s.Require().NoError(publishErr)
+
+	references := ent.InvestigationOutputReferences(report.Edges.OutputReferences)
+	s.Require().Len(references, 2, "one reference of each kind")
+	s.Equal([]uuid.UUID{evidenceID}, references.KnowledgeEvidenceIDs())
+	s.ElementsMatch([]uuid.UUID{evidenceID, readID}, references.CitedIDs())
+	for _, reference := range references {
+		if reference.AgentProviderReadID != nil {
+			s.Require().NotNil(reference.Edges.ProviderRead, "the cited read loads with the output")
+			cited := reference.Edges.ProviderRead
+			s.Equal(graph.entityID(ctx, payments), cited.Edges.ServiceEntity.ID)
+			s.JSONEq(string(finishParams.Read), string(cited.Read), "the summary's record loads")
+			s.Empty(cited.Result, "the stored result does not load with outputs")
+		}
+	}
+	var analysisEntityIDs []uuid.UUID
+	queryEntities := tdb.Client(ctx).SystemAnalysisEntity.Query().
+		Where(sae.AnalysisID(investigation.SystemAnalysisID)).
+		Select(sae.FieldKnowledgeEntityID)
+	s.Require().NoError(queryEntities.Scan(ctx, &analysisEntityIDs))
+	s.Equal([]uuid.UUID{graph.entityID(ctx, checkout)}, analysisEntityIDs, "only the evidence's subject joins the analysis")
+
+	_, otherInvestigation := s.createLifecycleInvestigation(ctx, tdb, jobService)
+	otherTurn := s.createTurn(ctx, tdb, otherInvestigation.AgentSessionID, 1, agentturn.StatusRunning)
+	otherReadID := startRead(otherTurn)
+	otherParams := rez.PublishInvestigationReportParams{
+		Text:        "Cites another session's read.",
+		EvidenceIDs: []uuid.UUID{otherReadID},
+	}
+	_, otherErr := service.PublishInvestigationReport(ctx, turnScope, otherParams)
+	s.ErrorIs(otherErr, errs.ErrInvalidInput, "a provider read of another session is invalid input")
 }

@@ -180,6 +180,11 @@ type (
 	ListKnowledgeEntitiesParams struct {
 		ent.ListParams
 		Predicates []predicate.KnowledgeEntity
+		// Categories, when set, limits the entities to these categories.
+		Categories []kne.Category
+		// LinkingAttribute and LinkingValue, when set, limit the entities to those holding that linking
+		// attribute with that value.
+		LinkingAttribute, LinkingValue string
 	}
 
 	// KnowledgeEntityExpand names what GetEntity loads beyond the entity and its aliases.
@@ -566,6 +571,9 @@ type (
 		InstalledIntegrationGetter
 
 		ListInstallable(context.Context) ([]IntegrationDefinition, error)
+		// GetIntegrationDisplayName returns the display name of the named registered integration, or empty
+		// when none is registered by that name.
+		GetIntegrationDisplayName(ctx context.Context, name string) string
 
 		InstallNew(context.Context, string, []byte) (InstalledIntegration, error)
 		ListUserInstallationTargets(ctx context.Context) ([]IntegrationInstallationTarget, error)
@@ -862,6 +870,37 @@ type (
 		ListAgentSessionBindings(context.Context, ListAiAgentSessionBindingsParams) (ent.AgentSessionBindings, error)
 		LookupAgentSessionBinding(context.Context, ...predicate.AgentSessionBinding) (*ent.AgentSessionBinding, error)
 		SetAgentSessionBinding(context.Context, uuid.UUID, func(*ent.AgentSessionBindingMutation)) (*ent.AgentSessionBinding, error)
+	}
+
+	StartAgentProviderReadParams struct {
+		AgentTurnID     uuid.UUID
+		ToolName        string
+		ServiceEntityID uuid.UUID
+		// Input is the tool's input as the agent sent it.
+		Input json.RawMessage
+	}
+
+	FinishAgentProviderReadParams struct {
+		ID uuid.UUID
+		// Read describes the read that ran, when the provider got as far as building it.
+		Read json.RawMessage
+		// Result is the tool result returned to the agent; empty when the read failed.
+		Result json.RawMessage
+		// Error is why the read failed; empty when it succeeded.
+		Error string
+	}
+
+	// AgentProviderReadService records the provider reads agents make and holds each turn to its budget.
+	AgentProviderReadService interface {
+		// StartProviderRead records a provider read as running, unless the turn's reads from all its attempts
+		// already use its budget, which is refused. It returns the read and how many the turn has used,
+		// including this one.
+		StartProviderRead(context.Context, StartAgentProviderReadParams) (*ent.AgentProviderRead, int, error)
+		// FinishProviderRead records the outcome of a started read.
+		FinishProviderRead(context.Context, FinishAgentProviderReadParams) error
+		// CountTurnProviderReads counts the turn's provider reads from all its attempts, including any left
+		// running.
+		CountTurnProviderReads(ctx context.Context, turnID uuid.UUID) (int, error)
 	}
 )
 

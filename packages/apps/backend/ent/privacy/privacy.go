@@ -159,6 +159,30 @@ func (f AgentMessageMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mu
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.AgentMessageMutation", m)
 }
 
+// The AgentProviderReadQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type AgentProviderReadQueryRuleFunc func(context.Context, *ent.AgentProviderReadQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f AgentProviderReadQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.AgentProviderReadQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.AgentProviderReadQuery", q)
+}
+
+// The AgentProviderReadMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type AgentProviderReadMutationRuleFunc func(context.Context, *ent.AgentProviderReadMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f AgentProviderReadMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.AgentProviderReadMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.AgentProviderReadMutation", m)
+}
+
 // The AgentSessionQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
 type AgentSessionQueryRuleFunc func(context.Context, *ent.AgentSessionQuery) error
@@ -2394,6 +2418,8 @@ func queryFilter(q ent.Query) (Filter, error) {
 		return q.Filter(), nil
 	case *ent.AgentMessageQuery:
 		return q.Filter(), nil
+	case *ent.AgentProviderReadQuery:
+		return q.Filter(), nil
 	case *ent.AgentSessionQuery:
 		return q.Filter(), nil
 	case *ent.AgentSessionBindingQuery:
@@ -2588,6 +2614,8 @@ func mutationFilter(m ent.Mutation) (Filter, error) {
 	case *ent.AgentArtifactMutation:
 		return m.Filter(), nil
 	case *ent.AgentMessageMutation:
+		return m.Filter(), nil
+	case *ent.AgentProviderReadMutation:
 		return m.Filter(), nil
 	case *ent.AgentSessionMutation:
 		return m.Filter(), nil

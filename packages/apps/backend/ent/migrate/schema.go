@@ -131,6 +131,67 @@ var (
 			},
 		},
 	}
+	// AgentProviderReadsColumns holds the columns for the "agent_provider_reads" table.
+	AgentProviderReadsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "tool_name", Type: field.TypeString},
+		{Name: "input", Type: field.TypeJSON, SchemaType: map[string]string{"postgres": "jsonb"}},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"running", "succeeded", "failed"}, Default: "running"},
+		{Name: "read", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
+		{Name: "result", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
+		{Name: "error", Type: field.TypeString, Nullable: true},
+		{Name: "finished_at", Type: field.TypeTime, Nullable: true},
+		{Name: "tenant_id", Type: field.TypeInt},
+		{Name: "agent_session_id", Type: field.TypeUUID},
+		{Name: "service_entity_id", Type: field.TypeUUID},
+		{Name: "agent_turn_id", Type: field.TypeUUID},
+	}
+	// AgentProviderReadsTable holds the schema information for the "agent_provider_reads" table.
+	AgentProviderReadsTable = &schema.Table{
+		Name:       "agent_provider_reads",
+		Columns:    AgentProviderReadsColumns,
+		PrimaryKey: []*schema.Column{AgentProviderReadsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "agent_provider_reads_tenants_tenant",
+				Columns:    []*schema.Column{AgentProviderReadsColumns[10]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "agent_provider_reads_agent_sessions_agent_session",
+				Columns:    []*schema.Column{AgentProviderReadsColumns[11]},
+				RefColumns: []*schema.Column{AgentSessionsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "agent_provider_reads_knowledge_entities_service_entity",
+				Columns:    []*schema.Column{AgentProviderReadsColumns[12]},
+				RefColumns: []*schema.Column{KnowledgeEntitiesColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "agent_provider_reads_agent_turns_provider_reads",
+				Columns:    []*schema.Column{AgentProviderReadsColumns[13]},
+				RefColumns: []*schema.Column{AgentTurnsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "agentproviderread_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{AgentProviderReadsColumns[10]},
+			},
+			{
+				Name:    "agentproviderread_agent_turn_id",
+				Unique:  false,
+				Columns: []*schema.Column{AgentProviderReadsColumns[13]},
+			},
+		},
+	}
 	// AgentSessionsColumns holds the columns for the "agent_sessions" table.
 	AgentSessionsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -1931,7 +1992,8 @@ var (
 		{Name: "report_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "finding_version_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "hypothesis_version_id", Type: field.TypeUUID, Nullable: true},
-		{Name: "knowledge_evidence_id", Type: field.TypeUUID},
+		{Name: "knowledge_evidence_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "agent_provider_read_id", Type: field.TypeUUID, Nullable: true},
 	}
 	// InvestigationOutputReferencesTable holds the schema information for the "investigation_output_references" table.
 	InvestigationOutputReferencesTable = &schema.Table{
@@ -1967,6 +2029,12 @@ var (
 				Symbol:     "investigation_output_references_knowledge_evidences_knowledge_evidence",
 				Columns:    []*schema.Column{InvestigationOutputReferencesColumns[5]},
 				RefColumns: []*schema.Column{KnowledgeEvidencesColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "investigation_output_references_agent_provider_reads_provider_read",
+				Columns:    []*schema.Column{InvestigationOutputReferencesColumns[6]},
+				RefColumns: []*schema.Column{AgentProviderReadsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 		},
@@ -4830,6 +4898,7 @@ var (
 	Tables = []*schema.Table{
 		AgentArtifactsTable,
 		AgentMessagesTable,
+		AgentProviderReadsTable,
 		AgentSessionsTable,
 		AgentSessionBindingsTable,
 		AgentTurnsTable,
@@ -4945,6 +5014,10 @@ func init() {
 	AgentMessagesTable.ForeignKeys[0].RefTable = TenantsTable
 	AgentMessagesTable.ForeignKeys[1].RefTable = AgentSessionsTable
 	AgentMessagesTable.ForeignKeys[2].RefTable = AgentTurnsTable
+	AgentProviderReadsTable.ForeignKeys[0].RefTable = TenantsTable
+	AgentProviderReadsTable.ForeignKeys[1].RefTable = AgentSessionsTable
+	AgentProviderReadsTable.ForeignKeys[2].RefTable = KnowledgeEntitiesTable
+	AgentProviderReadsTable.ForeignKeys[3].RefTable = AgentTurnsTable
 	AgentSessionsTable.ForeignKeys[0].RefTable = TenantsTable
 	AgentSessionBindingsTable.ForeignKeys[0].RefTable = AgentSessionsTable
 	AgentSessionBindingsTable.ForeignKeys[1].RefTable = TenantsTable
@@ -5054,9 +5127,11 @@ func init() {
 	InvestigationOutputReferencesTable.ForeignKeys[2].RefTable = InvestigationFindingVersionsTable
 	InvestigationOutputReferencesTable.ForeignKeys[3].RefTable = InvestigationHypothesisVersionsTable
 	InvestigationOutputReferencesTable.ForeignKeys[4].RefTable = KnowledgeEvidencesTable
+	InvestigationOutputReferencesTable.ForeignKeys[5].RefTable = AgentProviderReadsTable
 	InvestigationOutputReferencesTable.Annotation = &entsql.Annotation{}
 	InvestigationOutputReferencesTable.Annotation.Checks = map[string]string{
-		"investigation_output_reference_exactly_one_owner": "num_nonnulls(report_id, finding_version_id, hypothesis_version_id) = 1",
+		"investigation_output_reference_exactly_one_owner":  "num_nonnulls(report_id, finding_version_id, hypothesis_version_id) = 1",
+		"investigation_output_reference_exactly_one_target": "num_nonnulls(knowledge_evidence_id, agent_provider_read_id) = 1",
 	}
 	InvestigationReportsTable.ForeignKeys[0].RefTable = InvestigationsTable
 	InvestigationReportsTable.ForeignKeys[1].RefTable = TenantsTable

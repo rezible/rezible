@@ -2190,9 +2190,22 @@ export type InvestigationHypothesisAttributes = {
     turnStatus: string;
 };
 
+export type InvestigationProviderReadSummary = {
+    end: string;
+    exploreUrl: string;
+    limits: Array<string>;
+    providerDisplayName: string;
+    query: string;
+    serviceName: string;
+    start: string;
+    status: 'running' | 'succeeded' | 'failed';
+    toolName: string;
+};
+
 export type InvestigationReference = {
     id: string;
-    kind: 'knowledge_evidence';
+    kind: 'knowledge_evidence' | 'provider_read';
+    providerRead?: InvestigationProviderReadSummary;
 };
 
 export type InvestigationReport = {

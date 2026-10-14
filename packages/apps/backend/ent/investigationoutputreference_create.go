@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/agentproviderread"
 	"github.com/rezible/rezible/ent/investigationfindingversion"
 	"github.com/rezible/rezible/ent/investigationhypothesisversion"
 	"github.com/rezible/rezible/ent/investigationoutputreference"
@@ -82,6 +83,28 @@ func (_c *InvestigationOutputReferenceCreate) SetKnowledgeEvidenceID(v uuid.UUID
 	return _c
 }
 
+// SetNillableKnowledgeEvidenceID sets the "knowledge_evidence_id" field if the given value is not nil.
+func (_c *InvestigationOutputReferenceCreate) SetNillableKnowledgeEvidenceID(v *uuid.UUID) *InvestigationOutputReferenceCreate {
+	if v != nil {
+		_c.SetKnowledgeEvidenceID(*v)
+	}
+	return _c
+}
+
+// SetAgentProviderReadID sets the "agent_provider_read_id" field.
+func (_c *InvestigationOutputReferenceCreate) SetAgentProviderReadID(v uuid.UUID) *InvestigationOutputReferenceCreate {
+	_c.mutation.SetAgentProviderReadID(v)
+	return _c
+}
+
+// SetNillableAgentProviderReadID sets the "agent_provider_read_id" field if the given value is not nil.
+func (_c *InvestigationOutputReferenceCreate) SetNillableAgentProviderReadID(v *uuid.UUID) *InvestigationOutputReferenceCreate {
+	if v != nil {
+		_c.SetAgentProviderReadID(*v)
+	}
+	return _c
+}
+
 // SetID sets the "id" field.
 func (_c *InvestigationOutputReferenceCreate) SetID(v uuid.UUID) *InvestigationOutputReferenceCreate {
 	_c.mutation.SetID(v)
@@ -119,6 +142,25 @@ func (_c *InvestigationOutputReferenceCreate) SetHypothesisVersion(v *Investigat
 // SetKnowledgeEvidence sets the "knowledge_evidence" edge to the KnowledgeEvidence entity.
 func (_c *InvestigationOutputReferenceCreate) SetKnowledgeEvidence(v *KnowledgeEvidence) *InvestigationOutputReferenceCreate {
 	return _c.SetKnowledgeEvidenceID(v.ID)
+}
+
+// SetProviderReadID sets the "provider_read" edge to the AgentProviderRead entity by ID.
+func (_c *InvestigationOutputReferenceCreate) SetProviderReadID(id uuid.UUID) *InvestigationOutputReferenceCreate {
+	_c.mutation.SetProviderReadID(id)
+	return _c
+}
+
+// SetNillableProviderReadID sets the "provider_read" edge to the AgentProviderRead entity by ID if the given value is not nil.
+func (_c *InvestigationOutputReferenceCreate) SetNillableProviderReadID(id *uuid.UUID) *InvestigationOutputReferenceCreate {
+	if id != nil {
+		_c = _c.SetProviderReadID(*id)
+	}
+	return _c
+}
+
+// SetProviderRead sets the "provider_read" edge to the AgentProviderRead entity.
+func (_c *InvestigationOutputReferenceCreate) SetProviderRead(v *AgentProviderRead) *InvestigationOutputReferenceCreate {
+	return _c.SetProviderReadID(v.ID)
 }
 
 // Mutation returns the InvestigationOutputReferenceMutation object of the builder.
@@ -173,14 +215,8 @@ func (_c *InvestigationOutputReferenceCreate) check() error {
 	if _, ok := _c.mutation.TenantID(); !ok {
 		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "InvestigationOutputReference.tenant_id"`)}
 	}
-	if _, ok := _c.mutation.KnowledgeEvidenceID(); !ok {
-		return &ValidationError{Name: "knowledge_evidence_id", err: errors.New(`ent: missing required field "InvestigationOutputReference.knowledge_evidence_id"`)}
-	}
 	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "InvestigationOutputReference.tenant"`)}
-	}
-	if len(_c.mutation.KnowledgeEvidenceIDs()) == 0 {
-		return &ValidationError{Name: "knowledge_evidence", err: errors.New(`ent: missing required edge "InvestigationOutputReference.knowledge_evidence"`)}
 	}
 	return nil
 }
@@ -306,7 +342,25 @@ func (_c *InvestigationOutputReferenceCreate) createSpec() (*InvestigationOutput
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.KnowledgeEvidenceID = nodes[0]
+		_node.KnowledgeEvidenceID = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.ProviderReadIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   investigationoutputreference.ProviderReadTable,
+			Columns: []string{investigationoutputreference.ProviderReadColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentproviderread.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.InvestigationOutputReference
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.AgentProviderReadID = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
@@ -392,6 +446,9 @@ func (u *InvestigationOutputReferenceUpsertOne) UpdateNewValues() *Investigation
 		}
 		if _, exists := u.create.mutation.KnowledgeEvidenceID(); exists {
 			s.SetIgnore(investigationoutputreference.FieldKnowledgeEvidenceID)
+		}
+		if _, exists := u.create.mutation.AgentProviderReadID(); exists {
+			s.SetIgnore(investigationoutputreference.FieldAgentProviderReadID)
 		}
 	}))
 	return u
@@ -621,6 +678,9 @@ func (u *InvestigationOutputReferenceUpsertBulk) UpdateNewValues() *Investigatio
 			}
 			if _, exists := b.mutation.KnowledgeEvidenceID(); exists {
 				s.SetIgnore(investigationoutputreference.FieldKnowledgeEvidenceID)
+			}
+			if _, exists := b.mutation.AgentProviderReadID(); exists {
+				s.SetIgnore(investigationoutputreference.FieldAgentProviderReadID)
 			}
 		}
 	}))

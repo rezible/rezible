@@ -96,6 +96,19 @@ func (SyncIntegrationSourceEvents) Kind() string {
 	return "sync-integration-events"
 }
 
+// SyncScheduledIntegrationSources queues a sync of the scheduled sources of every installation whose integration
+// declares them, in every organization.
+type SyncScheduledIntegrationSources struct{}
+
+func (SyncScheduledIntegrationSources) Kind() string {
+	return "sync-scheduled-integration-sources"
+}
+
+// WorkerExecutionContext runs the job as the system, since it lists installations across organizations.
+func (SyncScheduledIntegrationSources) WorkerExecutionContext() execution.ActorKind {
+	return execution.KindSystem
+}
+
 type SendIncidentDebriefRequests struct {
 	IncidentId uuid.UUID
 }
