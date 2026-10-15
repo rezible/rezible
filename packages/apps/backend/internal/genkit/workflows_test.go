@@ -97,6 +97,34 @@ func (s *AiRuntimeSuite) TestDefinePromptWorkflowRunsTypedOutput() {
 	s.Equal(1, runner.calls)
 }
 
+func (s *AiRuntimeSuite) TestDefinePromptWorkflowCountsUsageWithTheDefaultModel() {
+	ctx := execution.NewSystemContext(s.T().Context())
+
+	out, jsonErr := json.Marshal(testWorkflowOutput{OK: true})
+	s.Require().NoError(jsonErr)
+	model := makeTestOutputModel(&gkai.ModelResponse{
+		Message: gkai.NewModelTextMessage(string(out)),
+		Usage:   &gkai.GenerationUsage{InputTokens: 120, OutputTokens: 8, ThoughtsTokens: 4},
+	})
+	svc := s.makeRuntime(ctx, WithDefinedModel(model))
+	builder := NewWorkflowBuilder(svc, &testWorkflowRunner{})
+	// No model named: the workflow runs on the default.
+	definition := rezai.AiPromptWorkflowDefinition[testWorkflowInput, testWorkflowOutput]{
+		Name: "test_workflow_usage",
+		Prompt: func(input testWorkflowInput) string {
+			return input.Message
+		},
+	}
+	workflow, workflowErr := builder.DefinePromptWorkflow(definition)
+	s.Require().NoError(workflowErr)
+
+	tallyCtx, totals := rezai.WithTurnUsage(ctx)
+	_, runErr := workflow.Run(tallyCtx, testWorkflowInput{Message: "hello"})
+	s.Require().NoError(runErr)
+
+	s.Equal(rezai.TurnUsage{Model: model.Name, InputTokens: 120, OutputTokens: 12}, totals())
+}
+
 func (s *AiRuntimeSuite) TestDefineWorkflowRejectsDuplicateNames() {
 	ctx := execution.NewSystemContext(s.T().Context())
 

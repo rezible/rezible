@@ -11,6 +11,7 @@ import (
 	rez "github.com/rezible/rezible"
 	apiv1 "github.com/rezible/rezible/internal/api/v1"
 	"github.com/rezible/rezible/internal/db"
+	"github.com/rezible/rezible/internal/db/evals"
 	"github.com/rezible/rezible/internal/db/eventprojection"
 	"github.com/rezible/rezible/internal/genkit"
 	"github.com/rezible/rezible/internal/http"
@@ -31,7 +32,6 @@ import (
 	"github.com/rezible/rezible/internal/watermill"
 
 	rezai "github.com/rezible/rezible/pkg/ai"
-	"github.com/rezible/rezible/pkg/ai/evals"
 	"github.com/rezible/rezible/pkg/integrations"
 	"github.com/rezible/rezible/pkg/jobs"
 	"github.com/rezible/rezible/pkg/messages"
@@ -46,6 +46,21 @@ func applicationPackages(ctx context.Context) Package {
 		withGenkitAiRuntime(ctx),
 	)
 }
+
+// AppProfile adjusts the application for one way of running it. It is a package of overrides, applied once when
+// the application is built and before anything is resolved. An override that changes a base provider's value
+// composes the named base provider rather than invoking the current value.
+type AppProfile = Package
+
+// override replaces the provider of T.
+func override[T any](provider Provider[T]) AppProfile {
+	return func(i do.Injector) {
+		do.Override(i, provider)
+	}
+}
+
+// testDatabaseProfile runs against a fresh, migrated database that is dropped when the application shuts down.
+var testDatabaseProfile = override(providePostgresTestDatabaseConfig)
 
 var basePackages = do.Package(
 	pkgClock,
@@ -148,14 +163,7 @@ var pkgGenkit = do.Package(
 		), nil
 	}),
 
-	do.Lazy(func(i do.Injector) ([]genkit.AiRuntimeOption, error) {
-		aiCfg := do.MustInvoke[rez.Config](i).AI
-		opts := []genkit.AiRuntimeOption{
-			genkit.WithDevEvals(),
-			genkit.WithGeminiPlugin(aiCfg.Gemini),
-		}
-		return opts, nil
-	}),
+	do.Lazy(provideAiRuntimeOptions),
 
 	// Agents are registered after runtime init, since their services can depend on runtime-supplied workflows
 	do.Lazy(func(i do.Injector) (rez.AiAgentRuntime, error) {
@@ -184,27 +192,20 @@ var pkgGenkit = do.Package(
 		return do.MustInvoke[rez.AiAgentRuntime](i).AgentCatalogue(), nil
 	}),
 
-	do.Lazy(func(i do.Injector) (*genkit.EvaluationService, error) {
-		// Scenarios run agents, so they must be registered first.
-		do.MustInvoke[rez.AiAgentRuntime](i)
-		svc, svcErr := genkit.MakeEvaluationService(
-			do.MustInvoke[rez.Database](i),
-			do.MustInvoke[*genkit.AiRuntime](i),
-			do.MustInvoke[*genkit.WorkflowBuilder](i),
-		)
-		if svcErr != nil {
-			return nil, fmt.Errorf("genkit.MakeEvaluationService: %w", svcErr)
-		}
-
-		for _, scenario := range evals.List() {
-			if regErr := svc.RegisterScenario(scenario); regErr != nil {
-				return nil, fmt.Errorf("register scenario %s: %w", scenario.Definition().Name, regErr)
+	do.Lazy(func(i do.Injector) ([]evals.WorkflowTarget, error) {
+		judge := do.MustInvoke[rezai.JudgeSituationCandidateWorkflow](i)
+		if judge == nil {
+			// The judge is off in this configuration, but can still be evaluated.
+			builder := do.MustInvoke[*genkit.WorkflowBuilder](i)
+			defined, defineErr := builder.DefinePromptWorkflow(rezai.JudgeSituationCandidateDefinition)
+			if defineErr != nil {
+				return nil, fmt.Errorf("define %s: %w", rezai.JudgeSituationCandidateDefinition.Name, defineErr)
 			}
+			judge = defined
 		}
-
-		return svc, nil
+		workflows := evals.Workflows{JudgeSituationCandidate: judge}
+		return workflows.Targets()
 	}),
-	do.Bind[*genkit.EvaluationService, rezai.EvalScenarioRunner](),
 )
 
 func withGenkitAiRuntime(ctx context.Context) func(do.Injector) {
@@ -241,17 +242,7 @@ var pkgIntegrations = do.Package(
 		return integrations.NewRegistry(do.MustInvoke[[]rez.IntegrationDefinition](i)...)
 	}),
 
-	// Event processors have no dependencies, so the pipeline can be built before the integrations that use it.
-	do.Lazy(func(i do.Injector) (rez.ProviderEventProcessorRegistry, error) {
-		return rez.ProviderEventProcessorRegistry{
-			alertmanager.ProviderName:     alertmanager.EventProcessor{},
-			demoprovider.ProviderName:     demoprovider.EventProcessor{},
-			github.ProviderName:           github.EventProcessor{},
-			grafana.ProviderName:          grafana.EventProcessor{},
-			slackintegration.ProviderName: slackagent.EventProcessor{},
-			webhook.ProviderName:          webhook.EventProcessor{},
-		}, nil
-	}),
+	do.Lazy(provideProviderEventProcessors),
 
 	do.Lazy(func(i do.Injector) (rez.EventProjectionService, error) {
 		return eventprojection.NewProjectionService(
@@ -353,18 +344,7 @@ var pkgIntegrations = do.Package(
 		return app.MakeIntegration(deps)
 	}),
 
-	do.Lazy(func(i do.Injector) ([]rez.IntegrationDefinition, error) {
-		return []rez.IntegrationDefinition{
-			do.MustInvoke[*alertmanager.Integration](i),
-			do.MustInvoke[*demoprovider.Integration](i),
-			do.MustInvoke[*google.Integration](i),
-			do.MustInvoke[*github.Integration](i),
-			do.MustInvoke[*grafana.Integration](i),
-			do.MustInvoke[*slackagent.Integration](i),
-			do.MustInvoke[*slackincidents.Integration](i),
-			do.MustInvoke[*webhook.Integration](i),
-		}, nil
-	}),
+	do.Lazy(provideIntegrationDefinitions),
 )
 
 var pkgDatabase = do.Package(
@@ -588,6 +568,19 @@ var pkgDatabase = do.Package(
 			do.MustInvoke[rez.AiAgentRuntime](i),
 			do.MustInvoke[rez.AiAgentSessionService](i),
 		)
+	}),
+
+	do.Lazy(func(i do.Injector) (*evals.AgentEvalService, error) {
+		return evals.NewAgentEvalService(
+			do.MustInvoke[rez.Database](i),
+			do.MustInvoke[rez.Clock](i),
+			do.MustInvoke[rez.AuthSessionService](i),
+			do.MustInvoke[rez.IntegrationService](i),
+			do.MustInvoke[rez.ProviderEventIngester](i),
+			do.MustInvoke[rez.EventProjectionService](i),
+			do.MustInvoke[rez.SituationService](i),
+			do.MustInvoke[rez.InvestigationService](i),
+		), nil
 	}),
 
 	do.Lazy(func(i do.Injector) (*db.SituationService, error) {
@@ -826,3 +819,33 @@ var pkgMessages = do.Package(
 		return p.getDefinition()
 	}),
 )
+
+// Event processors have no dependencies, so the pipeline can be built before the integrations that use it.
+func provideProviderEventProcessors(do.Injector) (rez.ProviderEventProcessorRegistry, error) {
+	return rez.ProviderEventProcessorRegistry{
+		alertmanager.ProviderName:     alertmanager.EventProcessor{},
+		demoprovider.ProviderName:     demoprovider.EventProcessor{},
+		github.ProviderName:           github.EventProcessor{},
+		grafana.ProviderName:          grafana.EventProcessor{},
+		slackintegration.ProviderName: slackagent.EventProcessor{},
+		webhook.ProviderName:          webhook.EventProcessor{},
+	}, nil
+}
+
+func provideAiRuntimeOptions(i do.Injector) ([]genkit.AiRuntimeOption, error) {
+	aiCfg := do.MustInvoke[rez.Config](i).AI
+	return []genkit.AiRuntimeOption{genkit.WithGeminiPlugin(aiCfg.Gemini)}, nil
+}
+
+func provideIntegrationDefinitions(i do.Injector) ([]rez.IntegrationDefinition, error) {
+	return []rez.IntegrationDefinition{
+		do.MustInvoke[*alertmanager.Integration](i),
+		do.MustInvoke[*demoprovider.Integration](i),
+		do.MustInvoke[*google.Integration](i),
+		do.MustInvoke[*github.Integration](i),
+		do.MustInvoke[*grafana.Integration](i),
+		do.MustInvoke[*slackagent.Integration](i),
+		do.MustInvoke[*slackincidents.Integration](i),
+		do.MustInvoke[*webhook.Integration](i),
+	}, nil
+}

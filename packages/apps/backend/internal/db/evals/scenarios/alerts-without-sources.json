@@ -1,0 +1,80 @@
+{
+  "description": "Two alerts on checkout-api and nothing to read, then a question: each output cites what there is.",
+  "agent": "investigation",
+  "events": [
+    {
+      "ref": "error-rate",
+      "kind": "alert_instance",
+      "resource_ref": "alert:CheckoutHighErrorRate",
+      "occurred_at": "{{-3m}}",
+      "attributes": {
+        "title": "CheckoutHighErrorRate",
+        "description": "Checkout requests are failing above the error budget.",
+        "state": "firing",
+        "severity": "critical",
+        "instance_id": "checkout-api-production",
+        "labels": {"service": "checkout-api", "env": "production"},
+        "summary": "Checkout is failing for 31% of requests",
+        "started_at": "{{-3m}}",
+        "observed_entities": [
+          {
+            "ref": {"resource_ref": "service:checkout-api"},
+            "category": "container",
+            "kind": "service",
+            "display_name": "checkout-api",
+            "linking_attributes": {"service.name": "checkout-api"}
+          }
+        ]
+      }
+    }
+  ],
+  "setup": {"situation": {"title": "Checkout errors", "signals": ["error-rate"]}},
+  "phases": [
+    {
+      "check": [
+        {"kind": "report_published"},
+        {"kind": "outputs_cite"},
+        {"kind": "cites_entity", "entity_kind": "alert", "name": "CheckoutHighErrorRate"}
+      ]
+    },
+    {
+      "events": [
+        {
+          "ref": "latency",
+          "kind": "alert_instance",
+          "resource_ref": "alert:CheckoutLatencyHigh",
+          "occurred_at": "{{-1m}}",
+          "attributes": {
+            "title": "CheckoutLatencyHigh",
+            "description": "Checkout p95 latency is above 2s.",
+            "state": "firing",
+            "severity": "warning",
+            "instance_id": "checkout-api-production",
+            "labels": {"service": "checkout-api", "env": "production"},
+            "summary": "Checkout p95 latency above 2s",
+            "started_at": "{{-1m}}",
+            "observed_entities": [
+              {
+                "ref": {"resource_ref": "service:checkout-api"},
+                "category": "container",
+                "kind": "service",
+                "display_name": "checkout-api",
+                "linking_attributes": {"service.name": "checkout-api"}
+              }
+            ]
+          }
+        }
+      ],
+      "check": [
+        {"kind": "outputs_cite"},
+        {"kind": "cites_entity", "entity_kind": "alert", "name": "CheckoutLatencyHigh"}
+      ]
+    },
+    {
+      "ask": "Is search-api affected?",
+      "check": [
+        {"kind": "answer_published"}
+      ]
+    }
+  ]
+}

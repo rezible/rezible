@@ -44,6 +44,10 @@ exclude_test_packages_pattern := "/ent/"
 @test-pattern PATTERN:
     just test $(go list ./... | grep -v '{{ exclude_test_packages_pattern }}') -run {{ quote(PATTERN) }}
 
+[doc("Run an AI evaluation target several times; results are written under .evals/")]
+@eval TARGET RUNS="3":
+    go run ./cmd/rezible ai evals run {{ quote(TARGET) }} --runs {{ RUNS }}
+
 @_genkit *ARGS:
     bunx genkit-cli@1.42.0 --no-update-notification {{ ARGS }}
 

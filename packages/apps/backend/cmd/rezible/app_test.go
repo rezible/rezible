@@ -45,6 +45,8 @@ func TestBackendSuite(t *testing.T) {
 
 type appTestOptions struct {
 	ModelAction ai.ModelActionFunc[any]
+	// AgentEvaluation prepares the application for agent evaluation scenarios.
+	AgentEvaluation bool
 }
 
 type appHarness struct {
@@ -73,9 +75,8 @@ func (s *BackendSuite) newAppHarness(options appTestOptions) *appHarness {
 		}
 	}
 
-	app := NewApplication()
-
 	// The injector owns services and the database. The harness owns the lifecycle goroutine.
+	var app *Application
 	var lifecycleDone <-chan error
 	ctx, cancel := context.WithCancel(t.Context())
 
@@ -98,46 +99,51 @@ func (s *BackendSuite) newAppHarness(options appTestOptions) *appHarness {
 		}
 	})
 
-	_, initErr := app.Init(ctx, false)
-	s.Require().NoError(initErr, "initialize application")
-
-	app.Override[rez.Config](func(do.Injector) (rez.Config, error) {
-		return s.Config(), nil
-	})
-
-	app.Override[rez.PostgresConfig](providePostgresTestDatabaseConfig)
-
 	testClock := test.NewClock(time.Now())
-	app.Override[rez.Clock](func(do.Injector) (rez.Clock, error) {
-		return testClock, nil
-	})
-
 	// Select the real demo integration without installing its unrelated sync jobs.
-	app.Override[[]rez.IntegrationDefinition](func(i do.Injector) ([]rez.IntegrationDefinition, error) {
+	demoDefinitions := func(i do.Injector) ([]rez.IntegrationDefinition, error) {
 		integration, integrationErr := do.Invoke[*demo.Integration](i)
 		if integrationErr != nil {
 			return nil, fmt.Errorf("resolve demo integration: %w", integrationErr)
 		}
 		return []rez.IntegrationDefinition{integration}, nil
-	})
-
-	baseOpts := do.MustInvoke[[]genkit.AiRuntimeOption](app.i)
-	app.Override[[]genkit.AiRuntimeOption](func(i do.Injector) ([]genkit.AiRuntimeOption, error) {
-		modelOptions := &ai.ModelOptions{
-			Supports: &ai.ModelSupports{
-				Tools:      true,
-				Multiturn:  true,
-				SystemRole: true,
-			},
-		}
-		model := genkit.NewModelDefinition("test/application", modelOptions, modelAction)
-		model.IsDefault = true
-		return append(baseOpts, genkit.WithDefinedModel(model)), nil
-	})
-
-	app.Override[[]*jobs.PeriodicJob](func(i do.Injector) ([]*jobs.PeriodicJob, error) {
-		return nil, nil
-	})
+	}
+	testProfile := do.Package(
+		testDatabaseProfile,
+		override(func(do.Injector) (rez.Config, error) {
+			return s.Config(), nil
+		}),
+		override(func(do.Injector) (rez.Clock, error) {
+			return testClock, nil
+		}),
+		override(demoDefinitions),
+		override(func(i do.Injector) ([]genkit.AiRuntimeOption, error) {
+			baseOpts, baseErr := provideAiRuntimeOptions(i)
+			if baseErr != nil {
+				return nil, baseErr
+			}
+			modelOptions := &ai.ModelOptions{
+				Supports: &ai.ModelSupports{
+					Tools:      true,
+					Multiturn:  true,
+					SystemRole: true,
+				},
+			}
+			model := genkit.NewModelDefinition("test/application", modelOptions, modelAction)
+			model.IsDefault = true
+			return append(baseOpts, genkit.WithDefinedModel(model)), nil
+		}),
+		override(func(do.Injector) ([]*jobs.PeriodicJob, error) {
+			return nil, nil
+		}),
+	)
+	profiles := []Package{testProfile}
+	if options.AgentEvaluation {
+		profiles = append(profiles, agentEvaluationProfile(demoDefinitions))
+	}
+	app = NewApplication(profiles...)
+	_, initErr := app.Init(ctx, false)
+	s.Require().NoError(initErr, "initialize application")
 
 	ready, done := app.startLifecycle(ctx)
 	lifecycleDone = done

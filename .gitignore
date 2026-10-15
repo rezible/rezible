@@ -12,4 +12,5 @@ devenv/*.crt
 **/AGENTS.md
 **/.codex
 .genkit/
+.evals/
 skills-lock.json

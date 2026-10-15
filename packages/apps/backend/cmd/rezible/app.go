@@ -2,26 +2,18 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"log/slog"
 	"slices"
 	"time"
 
-	"github.com/rezible/rezible/internal/db"
-	demoprovider "github.com/rezible/rezible/internal/integrations/demo"
-	"github.com/rezible/rezible/internal/opentelemetry"
 	"github.com/samber/do/v2"
 
 	"github.com/rezible/rezible"
-	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/ent/organization"
-	"github.com/rezible/rezible/ent/organizationrole"
+	"github.com/rezible/rezible/internal/opentelemetry"
 	"github.com/rezible/rezible/internal/postgres/river"
 	"github.com/rezible/rezible/internal/watermill"
-	rezai "github.com/rezible/rezible/pkg/ai"
 	"github.com/rezible/rezible/pkg/execution"
 	"github.com/rezible/rezible/pkg/integrations"
 	"github.com/rezible/rezible/pkg/jobs"
@@ -34,6 +26,8 @@ type (
 
 	Application struct {
 		i            do.Injector
+		profiles     []Package
+		prepared     bool
 		telemetry    *opentelemetry.Service
 		ready        chan struct{}
 		cancelRunCtx context.CancelFunc
@@ -47,15 +41,20 @@ type (
 	}
 )
 
-func NewApplication() *Application {
+// NewApplication builds the application's container. The profiles adjust it for one way of running it; they
+// are applied by Init, after the packages that need its context.
+func NewApplication(profiles ...Package) *Application {
 	i := do.NewWithOpts(&do.InjectorOpts{}, basePackages)
-	return &Application{i: i}
+	return &Application{i: i, profiles: profiles}
 }
 
 func (a *Application) Init(ctx context.Context, withTelemetry bool) (context.Context, error) {
 	ctx = execution.NewRootContext(ctx, execution.KindAnonymous, execution.SourceCLI)
 
 	applicationPackages(ctx)(a.i)
+	for _, profile := range a.profiles {
+		profile(a.i)
+	}
 
 	if withTelemetry {
 		if telErr := a.initTelemetry(ctx); telErr != nil {
@@ -83,10 +82,6 @@ func (a *Application) initTelemetry(ctx context.Context) error {
 	return nil
 }
 
-func (a *Application) Override[T any](prov Provider[T]) {
-	do.Override(a.i, prov)
-}
-
 func (a *Application) invoke[T any]() (T, error) {
 	t, invErr := do.Invoke[T](a.i)
 	if invErr != nil {
@@ -108,28 +103,10 @@ func (a *Application) With[T any](fn func(T) error) error {
 }
 
 func (a *Application) RunLifecycle(ctx context.Context, svcs ...rez.LifecycleService) error {
-	if bootstrapErr := a.setup(ctx); bootstrapErr != nil {
-		return fmt.Errorf("bootstrap: %w", bootstrapErr)
+	if prepareErr := a.prepare(); prepareErr != nil {
+		return fmt.Errorf("prepare: %w", prepareErr)
 	}
 	return a.runLifecycleServices(ctx, append(a.invokeBaseLifecycleServices(), svcs...))
-}
-
-func (a *Application) RunAiEvalScenario(ctx context.Context, evalName string, writer io.Writer) error {
-	return a.With(func(svc rezai.EvalScenarioRunner) error {
-		result, runErr := svc.RunScenario(ctx, evalName)
-		if runErr != nil {
-			return fmt.Errorf("failed to run evaluation %q: %w", evalName, runErr)
-		}
-		encoder := json.NewEncoder(writer)
-		encoder.SetIndent("", "  ")
-		if jsonErr := encoder.Encode(result); jsonErr != nil {
-			return fmt.Errorf("encode evaluation result: %w", jsonErr)
-		}
-		if result.Status != rezai.EvalRunStatusPassed {
-			return fmt.Errorf("evaluation %s", result.Status)
-		}
-		return nil
-	})
 }
 
 func (a *Application) Shutdown(ctx context.Context) error {
@@ -320,19 +297,18 @@ func (a *Application) shutdownServices(ctx context.Context) error {
 	return shutdownErr
 }
 
-func (a *Application) setup(ctx context.Context) error {
+// prepare registers the job workers and message handlers, once. Anything that inserts a job needs it first.
+func (a *Application) prepare() error {
+	if a.prepared {
+		return nil
+	}
 	if jobsErr := a.registerJobWorkers(); jobsErr != nil {
 		return fmt.Errorf("register job workers: %w", jobsErr)
 	}
-
 	if msgsErr := a.registerMessageHandlers(); msgsErr != nil {
 		return fmt.Errorf("register message handlers: %w", msgsErr)
 	}
-
-	if devErr := a.registerDevelopmentData(ctx); devErr != nil {
-		return fmt.Errorf("register dev: %w", devErr)
-	}
-
+	a.prepared = true
 	return nil
 }
 
@@ -353,136 +329,5 @@ func (a *Application) registerMessageHandlers() error {
 	}
 	return a.With(func(r messages.Registrar) error {
 		return r.Register(def)
-	})
-}
-
-func (a *Application) registerDevelopmentData(ctx context.Context) error {
-	// TODO: check current environment == dev
-
-	// used to ensure evals are registered when running the `serve` command
-	if _, workflowErr := do.Invoke[rezai.EvalScenarioRunner](a.i); workflowErr != nil {
-		return fmt.Errorf("initialize ai eval workflows: %w", workflowErr)
-	}
-	if seedErr := a.seedDevelopmentIdentity(ctx); seedErr != nil {
-		return fmt.Errorf("seed dev identity: %w", seedErr)
-	}
-	return nil
-}
-
-func (a *Application) makeDevelopmentAuthSession(ctx context.Context) (*ent.UserAuthSession, error) {
-	svc := a.mustInvoke[rez.AuthSessionService]()
-	sess, sessionErr := svc.CreateFromUserAuthResponse(execution.NewSystemContext(ctx), makeDevelopmentAuthSession())
-	if sessionErr != nil {
-		return nil, fmt.Errorf("http development session: %w", sessionErr)
-	}
-	return sess, nil
-}
-
-func makeDevelopmentAuthSession() *rez.UserAuthProviderSession {
-	return &rez.UserAuthProviderSession{
-		User: ent.User{
-			Email:          "test@dev.rezible.com",
-			Name:           "Dev User",
-			AuthProviderID: "dev-user",
-		},
-		Org: ent.Organization{
-			Name:           "Dev Org",
-			AuthProviderID: "dev-org",
-		},
-		ExpiresAt: time.Now().Add(time.Hour),
-	}
-}
-
-func (a *Application) seedDevelopmentIdentity(ctx context.Context) error {
-	if !a.mustInvoke[rez.Config]().HttpServer.Auth.EnableDevSkipMode {
-		return nil
-	}
-
-	sess, sessErr := a.makeDevelopmentAuthSession(ctx)
-	if sessErr != nil {
-		return fmt.Errorf("seed development identity: %w", sessErr)
-	}
-	ctx = execution.NewTenantContext(ctx, sess.TenantID)
-
-	orgs := a.mustInvoke[rez.OrganizationService]()
-	org, orgErr := orgs.Get(ctx, organization.ID(sess.OrganizationID))
-	if orgErr != nil {
-		return fmt.Errorf("load development organization: %w", orgErr)
-	}
-
-	client := a.mustInvoke[rez.Database]().Client(ctx)
-
-	queryOrgRole := client.OrganizationRole.Query().
-		Where(organizationrole.OrganizationID(org.ID), organizationrole.UserID(sess.UserID))
-	orgRole, queryOrgRoleErr := queryOrgRole.Only(ctx)
-	if queryOrgRoleErr != nil && !ent.IsNotFound(queryOrgRoleErr) {
-		return fmt.Errorf("load development admin role: %w", queryOrgRoleErr)
-	}
-
-	var roleErr error
-	if orgRole == nil {
-		roleErr = client.OrganizationRole.Create().
-			SetOrganizationID(org.ID).
-			SetUserID(sess.UserID).
-			SetRole(organizationrole.RoleAdmin).
-			Exec(ctx)
-	} else if orgRole.Role != organizationrole.RoleAdmin {
-		roleErr = orgRole.Update().
-			SetRole(organizationrole.RoleAdmin).
-			Exec(ctx)
-	}
-	if roleErr != nil {
-		return fmt.Errorf("set development admin role: %w", roleErr)
-	}
-
-	var prefsErr error
-	if org.Edges.Preferences == nil {
-		prefsErr = client.OrganizationPreferences.Create().
-			SetOrganizationID(org.ID).
-			SetInitialSetupAt(time.Now().UTC()).
-			Exec(ctx)
-	} else if org.Edges.Preferences.InitialSetupAt.IsZero() {
-		prefsErr = org.Edges.Preferences.Update().
-			SetInitialSetupAt(time.Now().UTC()).
-			Exec(ctx)
-	}
-	if prefsErr != nil {
-		return fmt.Errorf("complete development organization setup: %w", prefsErr)
-	}
-
-	return nil
-}
-
-func (a *Application) setupDemo(ctx context.Context) error {
-	return a.runLifecycleFunc(ctx, func(ctx context.Context) error {
-		sess, sessErr := a.makeDevelopmentAuthSession(ctx)
-		if sessErr != nil {
-			return fmt.Errorf("seed development identity: %w", sessErr)
-		}
-		ctx = execution.NewUserContext(ctx, sess)
-
-		var installation rez.InstalledIntegration
-		installErr := a.With(func(i rez.IntegrationService) error {
-			var installErr error
-			installation, installErr = i.InstallNew(ctx, "demo", []byte("{}"))
-			return installErr
-		})
-		if installErr != nil {
-			return fmt.Errorf("install demo integration: %w", installErr)
-		}
-
-		return demoprovider.SeedDemoData(
-			ctx,
-			a.mustInvoke[rez.Database](),
-			a.mustInvoke[rez.KnowledgeGraphQueryService](),
-			a.mustInvoke[rez.IncidentService](),
-			a.mustInvoke[rez.RetrospectiveService](),
-			a.mustInvoke[rez.SystemAnalysisService](),
-			a.mustInvoke[rez.EventsService](),
-			a.mustInvoke[rez.SituationService](),
-			a.mustInvoke[*db.SituationService](),
-			a.mustInvoke[rez.ProviderEventIngester](),
-			installation.Integration(),
-		)
 	})
 }

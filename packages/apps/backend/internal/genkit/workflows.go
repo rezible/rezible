@@ -108,6 +108,8 @@ func (b *WorkflowBuilder) buildPromptWorkflowOpts[I rez.ValidatingInput, O any](
 		opts = append(opts, gkai.WithSystem(def.SystemPrompt))
 	}
 	opts = append(opts, gkai.WithPrompt(def.Prompt(input)))
+	// Counts the workflow's tokens into the caller's tally, when there is one, as for agent turns.
+	opts = append(opts, gkai.WithUse(&turnUsageMiddleware{}))
 	return opts
 }
 
