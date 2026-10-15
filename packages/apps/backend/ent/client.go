@@ -64,6 +64,7 @@ import (
 	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/knowledgeentitylinkingattribute"
 	"github.com/rezible/rezible/ent/knowledgeevidence"
+	"github.com/rezible/rezible/ent/knowledgeproposal"
 	"github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/knowledgesubjectalias"
 	"github.com/rezible/rezible/ent/meetingschedule"
@@ -217,6 +218,8 @@ type Client struct {
 	KnowledgeEntityLinkingAttribute *KnowledgeEntityLinkingAttributeClient
 	// KnowledgeEvidence is the client for interacting with the KnowledgeEvidence builders.
 	KnowledgeEvidence *KnowledgeEvidenceClient
+	// KnowledgeProposal is the client for interacting with the KnowledgeProposal builders.
+	KnowledgeProposal *KnowledgeProposalClient
 	// KnowledgeRelationship is the client for interacting with the KnowledgeRelationship builders.
 	KnowledgeRelationship *KnowledgeRelationshipClient
 	// KnowledgeSubjectAlias is the client for interacting with the KnowledgeSubjectAlias builders.
@@ -369,6 +372,7 @@ func (c *Client) init() {
 	c.KnowledgeEntity = NewKnowledgeEntityClient(c.config)
 	c.KnowledgeEntityLinkingAttribute = NewKnowledgeEntityLinkingAttributeClient(c.config)
 	c.KnowledgeEvidence = NewKnowledgeEvidenceClient(c.config)
+	c.KnowledgeProposal = NewKnowledgeProposalClient(c.config)
 	c.KnowledgeRelationship = NewKnowledgeRelationshipClient(c.config)
 	c.KnowledgeSubjectAlias = NewKnowledgeSubjectAliasClient(c.config)
 	c.MeetingSchedule = NewMeetingScheduleClient(c.config)
@@ -559,6 +563,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		KnowledgeEntity:                 NewKnowledgeEntityClient(cfg),
 		KnowledgeEntityLinkingAttribute: NewKnowledgeEntityLinkingAttributeClient(cfg),
 		KnowledgeEvidence:               NewKnowledgeEvidenceClient(cfg),
+		KnowledgeProposal:               NewKnowledgeProposalClient(cfg),
 		KnowledgeRelationship:           NewKnowledgeRelationshipClient(cfg),
 		KnowledgeSubjectAlias:           NewKnowledgeSubjectAliasClient(cfg),
 		MeetingSchedule:                 NewMeetingScheduleClient(cfg),
@@ -673,6 +678,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		KnowledgeEntity:                 NewKnowledgeEntityClient(cfg),
 		KnowledgeEntityLinkingAttribute: NewKnowledgeEntityLinkingAttributeClient(cfg),
 		KnowledgeEvidence:               NewKnowledgeEvidenceClient(cfg),
+		KnowledgeProposal:               NewKnowledgeProposalClient(cfg),
 		KnowledgeRelationship:           NewKnowledgeRelationshipClient(cfg),
 		KnowledgeSubjectAlias:           NewKnowledgeSubjectAliasClient(cfg),
 		MeetingSchedule:                 NewMeetingScheduleClient(cfg),
@@ -763,12 +769,12 @@ func (c *Client) Use(hooks ...Hook) {
 		c.InvestigationHypothesis, c.InvestigationHypothesisVersion,
 		c.InvestigationOutputReference, c.InvestigationReport,
 		c.InvestigationUserInput, c.KnowledgeEntity, c.KnowledgeEntityLinkingAttribute,
-		c.KnowledgeEvidence, c.KnowledgeRelationship, c.KnowledgeSubjectAlias,
-		c.MeetingSchedule, c.MeetingSession, c.NormalizedEvent,
-		c.NormalizedEventProjection, c.NormalizedEventProjectionEntity,
-		c.OncallHandoverTemplate, c.OncallRoster, c.OncallRosterMetrics,
-		c.OncallSchedule, c.OncallScheduleParticipant, c.OncallShift,
-		c.OncallShiftHandover, c.OncallShiftMetrics, c.Organization,
+		c.KnowledgeEvidence, c.KnowledgeProposal, c.KnowledgeRelationship,
+		c.KnowledgeSubjectAlias, c.MeetingSchedule, c.MeetingSession,
+		c.NormalizedEvent, c.NormalizedEventProjection,
+		c.NormalizedEventProjectionEntity, c.OncallHandoverTemplate, c.OncallRoster,
+		c.OncallRosterMetrics, c.OncallSchedule, c.OncallScheduleParticipant,
+		c.OncallShift, c.OncallShiftHandover, c.OncallShiftMetrics, c.Organization,
 		c.OrganizationPreferences, c.OrganizationRole, c.Playbook, c.Retrospective,
 		c.Review, c.Situation, c.SituationAction, c.SituationEntity,
 		c.SituationHazardAssessment, c.SituationInvestigation, c.SituationJudgment,
@@ -802,12 +808,12 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 		c.InvestigationHypothesis, c.InvestigationHypothesisVersion,
 		c.InvestigationOutputReference, c.InvestigationReport,
 		c.InvestigationUserInput, c.KnowledgeEntity, c.KnowledgeEntityLinkingAttribute,
-		c.KnowledgeEvidence, c.KnowledgeRelationship, c.KnowledgeSubjectAlias,
-		c.MeetingSchedule, c.MeetingSession, c.NormalizedEvent,
-		c.NormalizedEventProjection, c.NormalizedEventProjectionEntity,
-		c.OncallHandoverTemplate, c.OncallRoster, c.OncallRosterMetrics,
-		c.OncallSchedule, c.OncallScheduleParticipant, c.OncallShift,
-		c.OncallShiftHandover, c.OncallShiftMetrics, c.Organization,
+		c.KnowledgeEvidence, c.KnowledgeProposal, c.KnowledgeRelationship,
+		c.KnowledgeSubjectAlias, c.MeetingSchedule, c.MeetingSession,
+		c.NormalizedEvent, c.NormalizedEventProjection,
+		c.NormalizedEventProjectionEntity, c.OncallHandoverTemplate, c.OncallRoster,
+		c.OncallRosterMetrics, c.OncallSchedule, c.OncallScheduleParticipant,
+		c.OncallShift, c.OncallShiftHandover, c.OncallShiftMetrics, c.Organization,
 		c.OrganizationPreferences, c.OrganizationRole, c.Playbook, c.Retrospective,
 		c.Review, c.Situation, c.SituationAction, c.SituationEntity,
 		c.SituationHazardAssessment, c.SituationInvestigation, c.SituationJudgment,
@@ -921,6 +927,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.KnowledgeEntityLinkingAttribute.mutate(ctx, m)
 	case *KnowledgeEvidenceMutation:
 		return c.KnowledgeEvidence.mutate(ctx, m)
+	case *KnowledgeProposalMutation:
+		return c.KnowledgeProposal.mutate(ctx, m)
 	case *KnowledgeRelationshipMutation:
 		return c.KnowledgeRelationship.mutate(ctx, m)
 	case *KnowledgeSubjectAliasMutation:
@@ -11115,6 +11123,178 @@ func (c *KnowledgeEvidenceClient) mutate(ctx context.Context, m *KnowledgeEviden
 	}
 }
 
+// KnowledgeProposalClient is a client for the KnowledgeProposal schema.
+type KnowledgeProposalClient struct {
+	config
+}
+
+// NewKnowledgeProposalClient returns a client for the KnowledgeProposal from the given config.
+func NewKnowledgeProposalClient(c config) *KnowledgeProposalClient {
+	return &KnowledgeProposalClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `knowledgeproposal.Hooks(f(g(h())))`.
+func (c *KnowledgeProposalClient) Use(hooks ...Hook) {
+	c.hooks.KnowledgeProposal = append(c.hooks.KnowledgeProposal, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `knowledgeproposal.Intercept(f(g(h())))`.
+func (c *KnowledgeProposalClient) Intercept(interceptors ...Interceptor) {
+	c.inters.KnowledgeProposal = append(c.inters.KnowledgeProposal, interceptors...)
+}
+
+// Create returns a builder for creating a KnowledgeProposal entity.
+func (c *KnowledgeProposalClient) Create() *KnowledgeProposalCreate {
+	mutation := newKnowledgeProposalMutation(c.config, OpCreate)
+	return &KnowledgeProposalCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of KnowledgeProposal entities.
+func (c *KnowledgeProposalClient) CreateBulk(builders ...*KnowledgeProposalCreate) *KnowledgeProposalCreateBulk {
+	return &KnowledgeProposalCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *KnowledgeProposalClient) MapCreateBulk(slice any, setFunc func(*KnowledgeProposalCreate, int)) *KnowledgeProposalCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &KnowledgeProposalCreateBulk{err: fmt.Errorf("calling to KnowledgeProposalClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*KnowledgeProposalCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &KnowledgeProposalCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for KnowledgeProposal.
+func (c *KnowledgeProposalClient) Update() *KnowledgeProposalUpdate {
+	mutation := newKnowledgeProposalMutation(c.config, OpUpdate)
+	return &KnowledgeProposalUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *KnowledgeProposalClient) UpdateOne(_m *KnowledgeProposal) *KnowledgeProposalUpdateOne {
+	mutation := newKnowledgeProposalMutation(c.config, OpUpdateOne, withKnowledgeProposal(_m))
+	return &KnowledgeProposalUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *KnowledgeProposalClient) UpdateOneID(id uuid.UUID) *KnowledgeProposalUpdateOne {
+	mutation := newKnowledgeProposalMutation(c.config, OpUpdateOne, withKnowledgeProposalID(id))
+	return &KnowledgeProposalUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for KnowledgeProposal.
+func (c *KnowledgeProposalClient) Delete() *KnowledgeProposalDelete {
+	mutation := newKnowledgeProposalMutation(c.config, OpDelete)
+	return &KnowledgeProposalDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *KnowledgeProposalClient) DeleteOne(_m *KnowledgeProposal) *KnowledgeProposalDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *KnowledgeProposalClient) DeleteOneID(id uuid.UUID) *KnowledgeProposalDeleteOne {
+	builder := c.Delete().Where(knowledgeproposal.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &KnowledgeProposalDeleteOne{builder}
+}
+
+// Query returns a query builder for KnowledgeProposal.
+func (c *KnowledgeProposalClient) Query() *KnowledgeProposalQuery {
+	return &KnowledgeProposalQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeKnowledgeProposal},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a KnowledgeProposal entity by its id.
+func (c *KnowledgeProposalClient) Get(ctx context.Context, id uuid.UUID) (*KnowledgeProposal, error) {
+	return c.Query().Where(knowledgeproposal.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *KnowledgeProposalClient) GetX(ctx context.Context, id uuid.UUID) *KnowledgeProposal {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryTenant queries the tenant edge of a KnowledgeProposal.
+func (c *KnowledgeProposalClient) QueryTenant(_m *KnowledgeProposal) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(knowledgeproposal.Table, knowledgeproposal.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, knowledgeproposal.TenantTable, knowledgeproposal.TenantColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.KnowledgeProposal
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryEvidence queries the evidence edge of a KnowledgeProposal.
+func (c *KnowledgeProposalClient) QueryEvidence(_m *KnowledgeProposal) *KnowledgeEvidenceQuery {
+	query := (&KnowledgeEvidenceClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(knowledgeproposal.Table, knowledgeproposal.FieldID, id),
+			sqlgraph.To(knowledgeevidence.Table, knowledgeevidence.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, knowledgeproposal.EvidenceTable, knowledgeproposal.EvidenceColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.KnowledgeEvidence
+		step.Edge.Schema = schemaConfig.KnowledgeProposal
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *KnowledgeProposalClient) Hooks() []Hook {
+	hooks := c.hooks.KnowledgeProposal
+	return append(hooks[:len(hooks):len(hooks)], knowledgeproposal.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *KnowledgeProposalClient) Interceptors() []Interceptor {
+	return c.inters.KnowledgeProposal
+}
+
+func (c *KnowledgeProposalClient) mutate(ctx context.Context, m *KnowledgeProposalMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&KnowledgeProposalCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&KnowledgeProposalUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&KnowledgeProposalUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&KnowledgeProposalDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown KnowledgeProposal mutation op: %q", m.Op())
+	}
+}
+
 // KnowledgeRelationshipClient is a client for the KnowledgeRelationship schema.
 type KnowledgeRelationshipClient struct {
 	config
@@ -20797,14 +20977,14 @@ type (
 		InvestigationHypothesis, InvestigationHypothesisVersion,
 		InvestigationOutputReference, InvestigationReport, InvestigationUserInput,
 		KnowledgeEntity, KnowledgeEntityLinkingAttribute, KnowledgeEvidence,
-		KnowledgeRelationship, KnowledgeSubjectAlias, MeetingSchedule, MeetingSession,
-		NormalizedEvent, NormalizedEventProjection, NormalizedEventProjectionEntity,
-		OncallHandoverTemplate, OncallRoster, OncallRosterMetrics, OncallSchedule,
-		OncallScheduleParticipant, OncallShift, OncallShiftHandover,
-		OncallShiftMetrics, Organization, OrganizationPreferences, OrganizationRole,
-		Playbook, Retrospective, Review, Situation, SituationAction, SituationEntity,
-		SituationHazardAssessment, SituationInvestigation, SituationJudgment,
-		SituationLink, SituationObservationGroup, SituationSignal,
+		KnowledgeProposal, KnowledgeRelationship, KnowledgeSubjectAlias,
+		MeetingSchedule, MeetingSession, NormalizedEvent, NormalizedEventProjection,
+		NormalizedEventProjectionEntity, OncallHandoverTemplate, OncallRoster,
+		OncallRosterMetrics, OncallSchedule, OncallScheduleParticipant, OncallShift,
+		OncallShiftHandover, OncallShiftMetrics, Organization, OrganizationPreferences,
+		OrganizationRole, Playbook, Retrospective, Review, Situation, SituationAction,
+		SituationEntity, SituationHazardAssessment, SituationInvestigation,
+		SituationJudgment, SituationLink, SituationObservationGroup, SituationSignal,
 		SituationSignalAttention, SystemAnalysis, SystemAnalysisEntity,
 		SystemAnalysisEntry, SystemAnalysisEntrySubject, SystemAnalysisRelationship,
 		SystemHazard, SystemHazardRiskAssessment, Task, Team, TeamMembership, Tenant,
@@ -20825,9 +21005,9 @@ type (
 		InvestigationFindingVersionLink, InvestigationHypothesis,
 		InvestigationHypothesisVersion, InvestigationOutputReference,
 		InvestigationReport, InvestigationUserInput, KnowledgeEntity,
-		KnowledgeEntityLinkingAttribute, KnowledgeEvidence, KnowledgeRelationship,
-		KnowledgeSubjectAlias, MeetingSchedule, MeetingSession, NormalizedEvent,
-		NormalizedEventProjection, NormalizedEventProjectionEntity,
+		KnowledgeEntityLinkingAttribute, KnowledgeEvidence, KnowledgeProposal,
+		KnowledgeRelationship, KnowledgeSubjectAlias, MeetingSchedule, MeetingSession,
+		NormalizedEvent, NormalizedEventProjection, NormalizedEventProjectionEntity,
 		OncallHandoverTemplate, OncallRoster, OncallRosterMetrics, OncallSchedule,
 		OncallScheduleParticipant, OncallShift, OncallShiftHandover,
 		OncallShiftMetrics, Organization, OrganizationPreferences, OrganizationRole,
@@ -20901,6 +21081,7 @@ var (
 		KnowledgeEntity:                           tableSchemas[0],
 		KnowledgeEntityLinkingAttribute:           tableSchemas[0],
 		KnowledgeEvidence:                         tableSchemas[0],
+		KnowledgeProposal:                         tableSchemas[0],
 		KnowledgeRelationship:                     tableSchemas[0],
 		KnowledgeSubjectAlias:                     tableSchemas[0],
 		MeetingSchedule:                           tableSchemas[0],

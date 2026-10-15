@@ -116,6 +116,8 @@ ALTER TABLE "meeting_schedules" DROP CONSTRAINT "meeting_schedules_tenants_tenan
 ALTER TABLE "knowledge_subject_alias" DROP CONSTRAINT "knowledge_subject_alias_knowledge_relationships_relationship", DROP CONSTRAINT "knowledge_subject_alias_knowledge_entities_entity", DROP CONSTRAINT "knowledge_subject_alias_tenants_tenant";
 -- reverse: modify "knowledge_relationships" table
 ALTER TABLE "knowledge_relationships" DROP CONSTRAINT "knowledge_relationships_knowledge_entities_target_entity", DROP CONSTRAINT "knowledge_relationships_knowledge_entities_source_entity", DROP CONSTRAINT "knowledge_relationships_tenants_tenant";
+-- reverse: modify "knowledge_proposals" table
+ALTER TABLE "knowledge_proposals" DROP CONSTRAINT "knowledge_proposals_knowledge_evidences_evidence", DROP CONSTRAINT "knowledge_proposals_tenants_tenant";
 -- reverse: modify "knowledge_evidences" table
 ALTER TABLE "knowledge_evidences" DROP CONSTRAINT "knowledge_evidences_knowledge_subject_alias_subject_alias", DROP CONSTRAINT "knowledge_evidences_normalized_events_event", DROP CONSTRAINT "knowledge_evidences_tenants_tenant";
 -- reverse: modify "knowledge_entity_linking_attributes" table
@@ -556,6 +558,14 @@ DROP INDEX "knowledgerelationship_tenant_i_370206a4e66194249f2742322d3eefc0";
 DROP INDEX "knowledgerelationship_tenant_id";
 -- reverse: create "knowledge_relationships" table
 DROP TABLE "knowledge_relationships";
+-- reverse: create index "knowledgeproposal_tenant_id_status" to table: "knowledge_proposals"
+DROP INDEX "knowledgeproposal_tenant_id_status";
+-- reverse: create index "knowledgeproposal_tenant_id_attribute_name_a_name_b" to table: "knowledge_proposals"
+DROP INDEX "knowledgeproposal_tenant_id_attribute_name_a_name_b";
+-- reverse: create index "knowledgeproposal_tenant_id" to table: "knowledge_proposals"
+DROP INDEX "knowledgeproposal_tenant_id";
+-- reverse: create "knowledge_proposals" table
+DROP TABLE "knowledge_proposals";
 -- reverse: create index "knowledgeevidence_tenant_id_event_id" to table: "knowledge_evidences"
 DROP INDEX "knowledgeevidence_tenant_id_event_id";
 -- reverse: create index "knowledgeevidence_tenant_id_subject_alias_id_effective_at" to table: "knowledge_evidences"

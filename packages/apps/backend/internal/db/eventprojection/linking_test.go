@@ -9,9 +9,12 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	kne "github.com/rezible/rezible/ent/knowledgeentity"
+	kela "github.com/rezible/rezible/ent/knowledgeentitylinkingattribute"
+	ke "github.com/rezible/rezible/ent/knowledgeevidence"
+	kp "github.com/rezible/rezible/ent/knowledgeproposal"
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
 	ksa "github.com/rezible/rezible/ent/knowledgesubjectalias"
-	"github.com/rezible/rezible/pkg/errs"
+	"github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/pkg/projections"
 )
 
@@ -333,7 +336,7 @@ func (s *ProjectionServiceSuite) assertChangeTouchesOneRepository(ctx context.Co
 	s.Equal(repositories[0].ID, touches[0].TargetEntityID)
 }
 
-func (s *ProjectionServiceSuite) TestAliasBoundToAnotherEntityThanItsNameConflicts() {
+func (s *ProjectionServiceSuite) TestRenamedRepositoryStaysOnItsAliasAndProposesTheMatch() {
 	ctx, tdb := s.SetupTestDatabase()
 	service := s.projectionService(tdb)
 	checkout := githubRepositoryObservation("42", "Acme/Checkout", "acme/checkout")
@@ -344,5 +347,24 @@ func (s *ProjectionServiceSuite) TestAliasBoundToAnotherEntityThanItsNameConflic
 	renamed := githubRepositoryObservation("42", "Acme/Payments", "acme/payments")
 	projectErr := s.projectGithubChange(ctx, tdb, service, "change:42:def456", renamed)
 
-	s.ErrorIs(projectErr, errs.ErrConflict)
+	s.Require().NoError(projectErr)
+	s.Len(s.entitiesOfKind(ctx, tdb, kne.CategoryCode, knowledgeEntityKindRepository), 2)
+	checkoutQuery := tdb.Client(ctx).KnowledgeEntityLinkingAttribute.Query().
+		Where(kela.Value("acme/checkout"))
+	checkoutRepository := checkoutQuery.OnlyX(ctx)
+	renamedEvidenceQuery := tdb.Client(ctx).KnowledgeEvidence.Query().
+		Where(
+			ke.HasEventWith(normalizedevent.ProviderResourceRef("change:42:def456")),
+			ke.HasSubjectAliasWith(ksa.ProviderResourceRef("42")),
+		).
+		WithSubjectAlias()
+	renamedEvidence := renamedEvidenceQuery.OnlyX(ctx)
+	s.Equal(checkoutRepository.EntityID, *renamedEvidence.Edges.SubjectAlias.EntityID)
+	proposals := tdb.Client(ctx).KnowledgeProposal.Query().AllX(ctx)
+	s.Require().Len(proposals, 1)
+	s.Equal(renamedEvidence.ID, proposals[0].EvidenceID)
+	s.Equal(kp.OriginIdentityConflict, proposals[0].Origin)
+	s.Equal(kp.StatusPending, proposals[0].Status)
+	s.Equal("acme/checkout", proposals[0].NameA)
+	s.Equal("acme/payments", proposals[0].NameB)
 }

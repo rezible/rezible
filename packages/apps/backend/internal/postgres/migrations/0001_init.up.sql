@@ -324,6 +324,14 @@ CREATE UNIQUE INDEX "knowledgeevidence_tenant_id_event_id_subject_alias_id" ON "
 CREATE INDEX "knowledgeevidence_tenant_id_subject_alias_id_effective_at" ON "knowledge_evidences" ("tenant_id", "subject_alias_id", "effective_at");
 -- create index "knowledgeevidence_tenant_id_event_id" to table: "knowledge_evidences"
 CREATE INDEX "knowledgeevidence_tenant_id_event_id" ON "knowledge_evidences" ("tenant_id", "event_id");
+-- create "knowledge_proposals" table
+CREATE TABLE "knowledge_proposals" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "category" character varying NOT NULL, "kind" character varying NOT NULL, "attribute" character varying NOT NULL, "name_a" character varying NOT NULL, "name_b" character varying NOT NULL, "status" character varying NOT NULL DEFAULT 'pending', "origin" character varying NOT NULL, "rationale" character varying NOT NULL, "tenant_id" bigint NOT NULL, "evidence_id" uuid NOT NULL, PRIMARY KEY ("id"));
+-- create index "knowledgeproposal_tenant_id" to table: "knowledge_proposals"
+CREATE INDEX "knowledgeproposal_tenant_id" ON "knowledge_proposals" ("tenant_id");
+-- create index "knowledgeproposal_tenant_id_attribute_name_a_name_b" to table: "knowledge_proposals"
+CREATE UNIQUE INDEX "knowledgeproposal_tenant_id_attribute_name_a_name_b" ON "knowledge_proposals" ("tenant_id", "attribute", "name_a", "name_b");
+-- create index "knowledgeproposal_tenant_id_status" to table: "knowledge_proposals"
+CREATE INDEX "knowledgeproposal_tenant_id_status" ON "knowledge_proposals" ("tenant_id", "status");
 -- create "knowledge_relationships" table
 CREATE TABLE "knowledge_relationships" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "predicate" character varying NOT NULL, "tenant_id" bigint NOT NULL, "source_entity_id" uuid NOT NULL, "target_entity_id" uuid NOT NULL, PRIMARY KEY ("id"));
 -- create index "knowledgerelationship_tenant_id" to table: "knowledge_relationships"
@@ -764,6 +772,8 @@ ALTER TABLE "knowledge_entities" ADD CONSTRAINT "knowledge_entities_tenants_tena
 ALTER TABLE "knowledge_entity_linking_attributes" ADD CONSTRAINT "knowledge_entity_linking_attributes_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "knowledge_entity_linking_attributes_knowledge_entities_entity" FOREIGN KEY ("entity_id") REFERENCES "knowledge_entities" ("id") ON DELETE CASCADE;
 -- modify "knowledge_evidences" table
 ALTER TABLE "knowledge_evidences" ADD CONSTRAINT "knowledge_evidences_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "knowledge_evidences_normalized_events_event" FOREIGN KEY ("event_id") REFERENCES "normalized_events" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "knowledge_evidences_knowledge_subject_alias_subject_alias" FOREIGN KEY ("subject_alias_id") REFERENCES "knowledge_subject_alias" ("id") ON DELETE NO ACTION;
+-- modify "knowledge_proposals" table
+ALTER TABLE "knowledge_proposals" ADD CONSTRAINT "knowledge_proposals_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "knowledge_proposals_knowledge_evidences_evidence" FOREIGN KEY ("evidence_id") REFERENCES "knowledge_evidences" ("id") ON DELETE NO ACTION;
 -- modify "knowledge_relationships" table
 ALTER TABLE "knowledge_relationships" ADD CONSTRAINT "knowledge_relationships_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "knowledge_relationships_knowledge_entities_source_entity" FOREIGN KEY ("source_entity_id") REFERENCES "knowledge_entities" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "knowledge_relationships_knowledge_entities_target_entity" FOREIGN KEY ("target_entity_id") REFERENCES "knowledge_entities" ("id") ON DELETE NO ACTION;
 -- modify "knowledge_subject_alias" table

@@ -2322,6 +2322,59 @@ var (
 			},
 		},
 	}
+	// KnowledgeProposalsColumns holds the columns for the "knowledge_proposals" table.
+	KnowledgeProposalsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "category", Type: field.TypeEnum, Enums: []string{"system_function", "actor", "system", "container", "infrastructure", "component", "code", "process", "concern", "decision", "event", "signal"}},
+		{Name: "kind", Type: field.TypeString},
+		{Name: "attribute", Type: field.TypeString},
+		{Name: "name_a", Type: field.TypeString},
+		{Name: "name_b", Type: field.TypeString},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"pending", "confirmed", "rejected"}, Default: "pending"},
+		{Name: "origin", Type: field.TypeEnum, Enums: []string{"name_similarity", "identity_conflict"}},
+		{Name: "rationale", Type: field.TypeString, Size: 1000},
+		{Name: "tenant_id", Type: field.TypeInt},
+		{Name: "evidence_id", Type: field.TypeUUID},
+	}
+	// KnowledgeProposalsTable holds the schema information for the "knowledge_proposals" table.
+	KnowledgeProposalsTable = &schema.Table{
+		Name:       "knowledge_proposals",
+		Columns:    KnowledgeProposalsColumns,
+		PrimaryKey: []*schema.Column{KnowledgeProposalsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "knowledge_proposals_tenants_tenant",
+				Columns:    []*schema.Column{KnowledgeProposalsColumns[11]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "knowledge_proposals_knowledge_evidences_evidence",
+				Columns:    []*schema.Column{KnowledgeProposalsColumns[12]},
+				RefColumns: []*schema.Column{KnowledgeEvidencesColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "knowledgeproposal_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{KnowledgeProposalsColumns[11]},
+			},
+			{
+				Name:    "knowledgeproposal_tenant_id_attribute_name_a_name_b",
+				Unique:  true,
+				Columns: []*schema.Column{KnowledgeProposalsColumns[11], KnowledgeProposalsColumns[5], KnowledgeProposalsColumns[6], KnowledgeProposalsColumns[7]},
+			},
+			{
+				Name:    "knowledgeproposal_tenant_id_status",
+				Unique:  false,
+				Columns: []*schema.Column{KnowledgeProposalsColumns[11], KnowledgeProposalsColumns[8]},
+			},
+		},
+	}
 	// KnowledgeRelationshipsColumns holds the columns for the "knowledge_relationships" table.
 	KnowledgeRelationshipsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -4945,6 +4998,7 @@ var (
 		KnowledgeEntitiesTable,
 		KnowledgeEntityLinkingAttributesTable,
 		KnowledgeEvidencesTable,
+		KnowledgeProposalsTable,
 		KnowledgeRelationshipsTable,
 		KnowledgeSubjectAliasTable,
 		MeetingSchedulesTable,
@@ -5146,6 +5200,8 @@ func init() {
 	KnowledgeEvidencesTable.ForeignKeys[0].RefTable = TenantsTable
 	KnowledgeEvidencesTable.ForeignKeys[1].RefTable = NormalizedEventsTable
 	KnowledgeEvidencesTable.ForeignKeys[2].RefTable = KnowledgeSubjectAliasTable
+	KnowledgeProposalsTable.ForeignKeys[0].RefTable = TenantsTable
+	KnowledgeProposalsTable.ForeignKeys[1].RefTable = KnowledgeEvidencesTable
 	KnowledgeRelationshipsTable.ForeignKeys[0].RefTable = TenantsTable
 	KnowledgeRelationshipsTable.ForeignKeys[1].RefTable = KnowledgeEntitiesTable
 	KnowledgeRelationshipsTable.ForeignKeys[2].RefTable = KnowledgeEntitiesTable

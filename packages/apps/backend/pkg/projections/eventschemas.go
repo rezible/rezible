@@ -2,6 +2,7 @@ package projections
 
 import (
 	"fmt"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -143,6 +144,12 @@ func (a UserEntityLinkingAttributes) Values() map[string]string {
 
 const KindUser = "user"
 
+// Knowledge entity kinds that providers link by name: a service is a container, a repository is code.
+const (
+	EntityKindService    = "service"
+	EntityKindRepository = "repository"
+)
+
 // Linking attributes shared by providers that name the same service or repository.
 const (
 	// LinkingAttributeServiceName is a service's name, normalized with NormalizeServiceName.
@@ -173,6 +180,64 @@ func NormalizeServiceName(value string) string {
 		}
 	}
 	return strings.Trim(b.String(), "-")
+}
+
+// GenericServiceNameTerms are the terms a team may add to a service's name without naming a different
+// process. Terms such as `worker`, `web` or `app` name a different process of the same product, so they are
+// not here.
+var GenericServiceNameTerms = []string{"api", "svc", "service", "server", "backend"}
+
+// ServiceNameStem returns the normalized name with one generic term removed from its end or, failing that,
+// its start, as a whole `-`-separated token. A name that is only a generic term has an empty stem.
+func ServiceNameStem(name string) string {
+	stem, _ := splitGenericServiceNameTerm(NormalizeServiceName(name))
+	return stem
+}
+
+func splitGenericServiceNameTerm(normalized string) (string, string) {
+	for _, term := range GenericServiceNameTerms {
+		if normalized == term {
+			return "", term
+		}
+	}
+	for _, term := range GenericServiceNameTerms {
+		if stem, found := strings.CutSuffix(normalized, "-"+term); found {
+			return stem, term
+		}
+	}
+	for _, term := range GenericServiceNameTerms {
+		if stem, found := strings.CutPrefix(normalized, term+"-"); found {
+			return stem, term
+		}
+	}
+	return normalized, ""
+}
+
+// SimilarServiceNames reports whether two service names differ, once normalized, only by a generic term, and
+// says which terms, for example "`checkout` and `checkout-api` differ only by the generic term `api`".
+func SimilarServiceNames(a, b string) (string, bool) {
+	names := []string{NormalizeServiceName(a), NormalizeServiceName(b)}
+	slices.Sort(names)
+	if names[0] == names[1] {
+		return "", false
+	}
+	stemA, termA := splitGenericServiceNameTerm(names[0])
+	stemB, termB := splitGenericServiceNameTerm(names[1])
+	if stemA == "" || stemA != stemB {
+		return "", false
+	}
+
+	terms := make([]string, 0, 2)
+	for _, term := range []string{termA, termB} {
+		if term != "" && !slices.Contains(terms, term) {
+			terms = append(terms, term)
+		}
+	}
+	differ := fmt.Sprintf("the generic term `%s`", terms[0])
+	if len(terms) == 2 {
+		differ = fmt.Sprintf("the generic terms `%s` and `%s`", terms[0], terms[1])
+	}
+	return fmt.Sprintf("`%s` and `%s` differ only by %s", names[0], names[1], differ), true
 }
 
 // NormalizeRepositoryFullName canonicalizes a repository's `owner/name` for matching across providers.

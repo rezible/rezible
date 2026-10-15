@@ -29,6 +29,7 @@ import (
 	ihv "github.com/rezible/rezible/ent/investigationhypothesisversion"
 	kne "github.com/rezible/rezible/ent/knowledgeentity"
 	ke "github.com/rezible/rezible/ent/knowledgeevidence"
+	kp "github.com/rezible/rezible/ent/knowledgeproposal"
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/situation"
 	sha "github.com/rezible/rezible/ent/situationhazardassessment"
@@ -312,6 +313,19 @@ type (
 		Events []*ent.KnowledgeEntity
 		// Cut is set when more events matched than Limit.
 		Cut bool
+	}
+
+	ListProposalsParams struct {
+		ent.ListParams
+		Statuses []kp.Status
+		// EntityIDs keeps proposals naming a linking value one of the entities holds now.
+		EntityIDs []uuid.UUID
+	}
+
+	// KnowledgeProposalService reads the identity matches Rezible proposes for people to decide on.
+	KnowledgeProposalService interface {
+		// ListProposals lists proposals, newest first unless OrderAsc, each with the evidence it cites and that evidence's alias.
+		ListProposals(context.Context, ListProposalsParams) (*ent.ListResult[ent.KnowledgeProposal], error)
 	}
 
 	KnowledgeEntityFilter struct {

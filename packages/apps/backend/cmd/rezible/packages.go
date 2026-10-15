@@ -479,6 +479,10 @@ var pkgDatabase = do.Package(
 		return db.NewKnowledgeGraphIngestionService(do.MustInvoke[rez.Database](i))
 	}),
 
+	do.Lazy(func(i do.Injector) (rez.KnowledgeProposalService, error) {
+		return db.NewKnowledgeProposalService(do.MustInvoke[rez.Database](i))
+	}),
+
 	do.Lazy(func(i do.Injector) (rez.SystemAnalysisService, error) {
 		return db.NewSystemAnalysisService(
 			do.MustInvoke[rez.Database](i),

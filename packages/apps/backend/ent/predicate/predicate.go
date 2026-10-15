@@ -153,6 +153,9 @@ type KnowledgeEntityLinkingAttribute func(*sql.Selector)
 // KnowledgeEvidence is the predicate function for knowledgeevidence builders.
 type KnowledgeEvidence func(*sql.Selector)
 
+// KnowledgeProposal is the predicate function for knowledgeproposal builders.
+type KnowledgeProposal func(*sql.Selector)
+
 // KnowledgeRelationship is the predicate function for knowledgerelationship builders.
 type KnowledgeRelationship func(*sql.Selector)
 

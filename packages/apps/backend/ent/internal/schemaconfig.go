@@ -65,6 +65,7 @@ type SchemaConfig struct {
 	KnowledgeEntity                           string // KnowledgeEntity table.
 	KnowledgeEntityLinkingAttribute           string // KnowledgeEntityLinkingAttribute table.
 	KnowledgeEvidence                         string // KnowledgeEvidence table.
+	KnowledgeProposal                         string // KnowledgeProposal table.
 	KnowledgeRelationship                     string // KnowledgeRelationship table.
 	KnowledgeSubjectAlias                     string // KnowledgeSubjectAlias table.
 	MeetingSchedule                           string // MeetingSchedule table.

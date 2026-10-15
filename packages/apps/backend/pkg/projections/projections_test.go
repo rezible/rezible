@@ -109,6 +109,29 @@ func (s *ProjectionsSuite) TestNormalizeServiceName() {
 	}
 }
 
+func (s *ProjectionsSuite) TestSimilarServiceNames() {
+	cases := []struct {
+		a, b   string
+		reason string
+	}{
+		{a: "checkout", b: "checkout-api", reason: "`checkout` and `checkout-api` differ only by the generic term `api`"},
+		{a: "svc-checkout", b: "checkout", reason: "`checkout` and `svc-checkout` differ only by the generic term `svc`"},
+		{a: "payments-api", b: "payments-svc", reason: "`payments-api` and `payments-svc` differ only by the generic terms `api` and `svc`"},
+		{a: "Checkout_API", b: "checkout", reason: "`checkout` and `checkout-api` differ only by the generic term `api`"},
+		{a: "payments-api", b: "payments-worker"},
+		{a: "checkout-api", b: "checkout-api-v2"},
+		{a: "api", b: "checkout-api"},
+		{a: "checkout-api", b: "checkout-api"},
+		{a: "checkout-api-svc", b: "checkout"},
+	}
+	for _, c := range cases {
+		reason, similar := SimilarServiceNames(c.a, c.b)
+
+		s.Equal(c.reason != "", similar, "%q and %q", c.a, c.b)
+		s.Equal(c.reason, reason, "%q and %q", c.a, c.b)
+	}
+}
+
 func (s *ProjectionsSuite) TestDerivedRelationshipRefUsesCompleteDirectionalIdentity() {
 	source := rez.ProviderResourceRef{Provider: "github", ProviderNamespace: "org-1", ResourceRef: "change-1"}
 	target := rez.ProviderResourceRef{Provider: "github", ProviderNamespace: "org-1", ResourceRef: "repo-1"}

@@ -24,8 +24,6 @@ const (
 	changesMaxDeployments          = 20
 	changesMaxMergedChanges        = 20
 	changesLookbackWithoutPrevious = 7 * 24 * time.Hour
-	changesServiceEntityKind       = "service"
-	changesRepositoryEntityKind    = "repository"
 	changesDeploymentEventKind     = "deployment"
 	changesCodeChangeEventKind     = "code_change"
 	// changesDeploymentReportProvider is the webhook integration's provider name. A repository with an alias
@@ -61,7 +59,7 @@ func (s *ChangesService) ListServiceChanges(ctx context.Context, params rez.List
 		Where(
 			kne.ID(params.ServiceEntityID),
 			kne.CategoryEQ(kne.CategoryContainer),
-			kne.Kind(changesServiceEntityKind),
+			kne.Kind(projections.EntityKindService),
 		)
 	isService, serviceErr := queryService.Exist(ctx)
 	if serviceErr != nil {
@@ -171,7 +169,7 @@ func (s *ChangesService) queryDeploymentRepository(ctx context.Context, deployme
 	queryRepository := s.db.Client(ctx).KnowledgeEntity.Query().
 		Where(
 			kne.CategoryEQ(kne.CategoryCode),
-			kne.Kind(changesRepositoryEntityKind),
+			kne.Kind(projections.EntityKindRepository),
 			kne.HasTargetRelationshipsWith(
 				knr.PredicateEQ(knr.PredicateTouches),
 				knr.SourceEntityID(deploymentID),

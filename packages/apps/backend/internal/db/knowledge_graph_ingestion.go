@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"maps"
 	"strings"
 
 	"entgo.io/ent/dialect/sql"
@@ -18,6 +19,7 @@ import (
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
 	ksa "github.com/rezible/rezible/ent/knowledgesubjectalias"
 	"github.com/rezible/rezible/pkg/errs"
+	"github.com/rezible/rezible/pkg/projections"
 )
 
 type KnowledgeGraphIngestionService struct {
@@ -88,6 +90,8 @@ func (s *KnowledgeGraphIngestionService) ResolveInternalSubject(ctx context.Cont
 			return nil, fmt.Errorf("lock knowledge entity identities: %w", lockErr)
 		}
 
+		// Internal subjects carry no evidence, so any proposals resolution finds have nothing to cite and are
+		// not written.
 		resolvedAlias, resolveErr := s.resolveSubjectAliasFromRef(ctx, ref, true)
 		if resolveErr != nil {
 			return nil, fmt.Errorf("resolve alias: %w", resolveErr)
@@ -104,6 +108,8 @@ func (s *KnowledgeGraphIngestionService) ResolveInternalSubject(ctx context.Cont
 type resolvedSubjectAlias struct {
 	aliasId   uuid.UUID
 	subjectId uuid.UUID
+	// proposals are the matches resolution found for the entity, written once the alias's evidence exists.
+	proposals []knowledgeProposalDraft
 }
 
 func (s *KnowledgeGraphIngestionService) makeAliasQuery(ctx context.Context, ref rez.ProviderResourceRef, preds ...predicate.KnowledgeSubjectAlias) *ent.KnowledgeSubjectAliasQuery {
@@ -186,11 +192,11 @@ func (s *KnowledgeGraphIngestionService) lookupExistingEntityAlias(ctx context.C
 	return &resolvedSubjectAlias{aliasId: alias.ID, subjectId: entity.ID}, nil
 }
 
-func (s *KnowledgeGraphIngestionService) lookupLinkedEntity(ctx context.Context, values map[string]string) (*ent.KnowledgeEntity, error) {
+// queryLinkingAttributes loads the stored linking attributes holding any of the values, with their entities.
+func (s *KnowledgeGraphIngestionService) queryLinkingAttributes(ctx context.Context, values map[string]string) ([]*ent.KnowledgeEntityLinkingAttribute, error) {
 	if len(values) == 0 {
 		return nil, nil
 	}
-
 	preds := make([]predicate.KnowledgeEntityLinkingAttribute, 0, len(values))
 	for attr, val := range values {
 		preds = append(preds, kela.And(kela.Attribute(attr), kela.Value(val)))
@@ -202,7 +208,11 @@ func (s *KnowledgeGraphIngestionService) lookupLinkedEntity(ctx context.Context,
 	if queryErr != nil {
 		return nil, fmt.Errorf("query entity linking attributes: %w", queryErr)
 	}
+	return linkingAttributes, nil
+}
 
+// linkedEntity returns the one entity holding the loaded linking attributes, if any.
+func (s *KnowledgeGraphIngestionService) linkedEntity(linkingAttributes []*ent.KnowledgeEntityLinkingAttribute) (*ent.KnowledgeEntity, error) {
 	var linked *ent.KnowledgeEntity
 	for _, linkingAttribute := range linkingAttributes {
 		entity, entityErr := linkingAttribute.Edges.EntityOrErr()
@@ -222,13 +232,20 @@ func (s *KnowledgeGraphIngestionService) lookupLinkedEntity(ctx context.Context,
 
 var knowledgeEntityLinkingAttributeUniqueColumns = sql.ConflictColumns(kela.FieldTenantID, kela.FieldAttribute, kela.FieldValue)
 
-func (s *KnowledgeGraphIngestionService) ensureEntityLinkingAttributes(ctx context.Context, entityID uuid.UUID, values map[string]string) error {
-	if len(values) == 0 {
-		return nil
+// ensureEntityLinkingAttributes adds the values not already stored and returns them. existing are the stored
+// linking attributes holding any of the values; callers have dropped or rejected values held by another entity.
+func (s *KnowledgeGraphIngestionService) ensureEntityLinkingAttributes(ctx context.Context, entityID uuid.UUID, values map[string]string, existing []*ent.KnowledgeEntityLinkingAttribute) (map[string]string, error) {
+	inserted := maps.Clone(values)
+	for _, linkingAttribute := range existing {
+		delete(inserted, linkingAttribute.Attribute)
 	}
+	if len(inserted) == 0 {
+		return nil, nil
+	}
+
 	attrClient := s.db.Client(ctx).KnowledgeEntityLinkingAttribute
-	builders := make([]*ent.KnowledgeEntityLinkingAttributeCreate, 0, len(values))
-	for attribute, value := range values {
+	builders := make([]*ent.KnowledgeEntityLinkingAttributeCreate, 0, len(inserted))
+	for attribute, value := range inserted {
 		builders = append(builders, attrClient.Create().
 			SetEntityID(entityID).
 			SetAttribute(attribute).
@@ -238,16 +255,9 @@ func (s *KnowledgeGraphIngestionService) ensureEntityLinkingAttributes(ctx conte
 		OnConflict(knowledgeEntityLinkingAttributeUniqueColumns).
 		Ignore()
 	if upsertErr := upsertAttrs.Exec(ctx); upsertErr != nil {
-		return fmt.Errorf("save entity linking attributes: %w", upsertErr)
+		return nil, fmt.Errorf("save entity linking attributes: %w", upsertErr)
 	}
-	linked, queryErr := s.lookupLinkedEntity(ctx, values)
-	if queryErr != nil {
-		return queryErr
-	}
-	if linked != nil && linked.ID != entityID {
-		return fmt.Errorf("%w: linking attribute is already mapped to another entity", errs.ErrConflict)
-	}
-	return nil
+	return inserted, nil
 }
 
 func getKnowledgeEntityLinkingValues(ref rez.KnowledgeEntityRef) (map[string]string, error) {
@@ -273,20 +283,21 @@ func (s *KnowledgeGraphIngestionService) resolveEntityFromRef(ctx context.Contex
 	if lookupAliasErr != nil {
 		return nil, fmt.Errorf("lookup existing alias: %w", lookupAliasErr)
 	}
+	existingValues, valuesQueryErr := s.queryLinkingAttributes(ctx, linkingValues)
+	if valuesQueryErr != nil {
+		return nil, valuesQueryErr
+	}
 
 	var resolvedAlias *resolvedSubjectAlias
 	if existingAlias != nil {
-		linked, linkedErr := s.lookupLinkedEntity(ctx, linkingValues)
-		if linkedErr != nil {
-			return nil, linkedErr
-		} else if linked != nil {
-			if linked.ID != existingAlias.subjectId {
-				return nil, fmt.Errorf("%w: linking attribute identifies another entity", errs.ErrConflict)
-			}
-		}
 		resolvedAlias = existingAlias
+		unconflicted, conflictErr := s.proposeIdentityConflicts(ctx, ref, resolvedAlias, linkingValues, existingValues)
+		if conflictErr != nil {
+			return nil, conflictErr
+		}
+		linkingValues = unconflicted
 	} else {
-		entity, linkedErr := s.lookupLinkedEntity(ctx, linkingValues)
+		entity, linkedErr := s.linkedEntity(existingValues)
 		if linkedErr != nil {
 			return nil, linkedErr
 		} else if entity != nil {
@@ -311,8 +322,15 @@ func (s *KnowledgeGraphIngestionService) resolveEntityFromRef(ctx context.Contex
 		resolvedAlias = &resolvedSubjectAlias{aliasId: alias.ID, subjectId: entity.ID}
 	}
 
-	if linkingErr := s.ensureEntityLinkingAttributes(ctx, resolvedAlias.subjectId, linkingValues); linkingErr != nil {
+	insertedValues, linkingErr := s.ensureEntityLinkingAttributes(ctx, resolvedAlias.subjectId, linkingValues, existingValues)
+	if linkingErr != nil {
 		return nil, linkingErr
+	}
+
+	if newName, isNewServiceName := insertedValues[projections.LinkingAttributeServiceName]; isNewServiceName && isKnowledgeServiceRef(ref) {
+		if similarErr := s.proposeSimilarServiceNames(ctx, ref, resolvedAlias, newName); similarErr != nil {
+			return nil, fmt.Errorf("propose similar service names: %w", similarErr)
+		}
 	}
 
 	return resolvedAlias, nil
@@ -419,10 +437,14 @@ func (s *KnowledgeGraphIngestionService) ingestEvidenceRefs(ctx context.Context,
 	}
 	evClient := s.db.Client(ctx).KnowledgeEvidence
 	builders := make([]*ent.KnowledgeEvidenceCreate, 0, len(refs))
+	proposing := make([]*resolvedSubjectAlias, 0)
 	for _, ref := range refs {
 		resolved, aliasErr := s.resolveSubjectAliasFromRef(ctx, ref.Subject, false)
 		if aliasErr != nil {
 			return fmt.Errorf("resolve subject alias: %w", aliasErr)
+		}
+		if len(resolved.proposals) > 0 {
+			proposing = append(proposing, resolved)
 		}
 		if ref.Subject.Entity != nil && ref.Kind == ke.KindObserved {
 			if stateErr := s.updateEntityState(ctx, resolved.subjectId, ref); stateErr != nil {
@@ -442,6 +464,9 @@ func (s *KnowledgeGraphIngestionService) ingestEvidenceRefs(ctx context.Context,
 		Ignore()
 	if createErr := createEvidence.Exec(ctx); createErr != nil {
 		return fmt.Errorf("create knowledge evidence: %w", createErr)
+	}
+	if proposalsErr := s.createProposals(ctx, eventID, proposing); proposalsErr != nil {
+		return fmt.Errorf("create knowledge proposals: %w", proposalsErr)
 	}
 	return nil
 }
@@ -490,6 +515,14 @@ func (k *knowledgeEntityIdentityLockKeys) addEntity(ref rez.KnowledgeEntityRef) 
 	k.keys = append(k.keys, k.makeKey("alias", rr.Provider, rr.ProviderNamespace, rr.ResourceRef))
 	for attribute, value := range values {
 		k.keys = append(k.keys, k.makeKey("attribute", attribute, value))
+		// Two events naming similar services, such as `checkout` and `checkout-api`, would each miss the other's
+		// uncommitted name and neither would propose the match. Locking on the stem serializes them, so the
+		// later one sees the earlier one's name.
+		if attribute == projections.LinkingAttributeServiceName {
+			if stem := projections.ServiceNameStem(value); stem != "" {
+				k.keys = append(k.keys, k.makeKey("service_name_stem", stem))
+			}
+		}
 	}
 	return nil
 }
