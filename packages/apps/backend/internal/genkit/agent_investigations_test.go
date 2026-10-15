@@ -282,7 +282,7 @@ func (s *AiRuntimeSuite) TestInvestigationTools() {
 		"list_entity_evidence",
 		"read_evidence",
 		"read_investigation_output",
-		"find_service",
+		"list_services",
 		"list_changes",
 		"search_logs",
 		"count_logs",

@@ -182,9 +182,9 @@ type (
 		Predicates []predicate.KnowledgeEntity
 		// Categories, when set, limits the entities to these categories.
 		Categories []kne.Category
-		// LinkingAttribute and LinkingValue, when set, limit the entities to those holding that linking
-		// attribute with that value.
-		LinkingAttribute, LinkingValue string
+		// LinkingAttribute, when set, limits the entities to those holding that linking attribute, and
+		// LinkingValueContains, when also set, to those whose value contains it.
+		LinkingAttribute, LinkingValueContains string
 	}
 
 	// KnowledgeEntityExpand names what GetEntity loads beyond the entity and its aliases.

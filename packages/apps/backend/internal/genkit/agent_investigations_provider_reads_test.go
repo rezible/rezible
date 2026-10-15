@@ -46,6 +46,8 @@ type fakeLogReader struct {
 	*fakeInstallation
 	unavailable string
 	readErr     error
+	// lines, when set, are what a search returns instead of one line at the range's end.
+	lines []integrations.LogLine
 
 	mu       sync.Mutex
 	searches []integrations.LogSearchParams
@@ -92,10 +94,13 @@ func (f *fakeLogReader) SearchLogs(_ context.Context, params integrations.LogSea
 		return nil, f.readErr
 	}
 	service := f.serviceName(params.Service)
-	line := integrations.LogLine{Time: params.End, Line: "upstream timeout", Labels: map[string]string{"service": service.Value}}
+	lines := f.lines
+	if lines == nil {
+		lines = []integrations.LogLine{{Time: params.End, Line: "upstream timeout", Labels: map[string]string{"service": service.Value}}}
+	}
 	result := &integrations.LogSearchResult{
 		Service: service,
-		Lines:   []integrations.LogLine{line},
+		Lines:   lines,
 		Read:    f.record(service, params.Start, params.End),
 	}
 	return result, nil
@@ -307,15 +312,16 @@ func (s *AiRuntimeSuite) TestProviderReadsAreRecorded() {
 			End:        f.openedAt.Add(time.Hour).Format(time.RFC3339),
 			Contains:   "timeout",
 		}
+		var raw map[string]any
+		s.runInvestigationToolResult(ctx, f.h, rezai.CountLogsTool.Name(), input, &raw)
+		s.NotContains(raw, "read", "the read record is not returned to the agent")
 		var result rezai.CountLogsToolResult
-		s.runInvestigationToolResult(ctx, f.h, rezai.CountLogsTool.Name(), input, &result)
+		encoded, encodeErr := json.Marshal(raw)
+		s.Require().NoError(encodeErr)
+		s.Require().NoError(json.Unmarshal(encoded, &result))
 
 		s.Equal(readID.String(), result.ProviderReadRef)
-		s.Equal(`{service="checkout-api"}`, result.Read.Query)
-		s.Equal(f.openedAt, result.Read.Start)
-		s.Equal("1m0s", result.Read.Step)
-		s.NotEmpty(result.Read.ExploreURL)
-		s.NotEmpty(result.Read.Limits)
+		s.Equal([]string{"reached the limit of 1 lines; more may exist"}, result.Limits)
 		s.Equal(rezai.MaxProviderReadsPerTurn-4, result.BudgetRemaining)
 		s.NotEmpty(result.Note, "a service with no lines says so")
 
@@ -325,12 +331,61 @@ func (s *AiRuntimeSuite) TestProviderReadsAreRecorded() {
 		s.Empty(outcome.Error)
 		var storedRecord rezai.ProviderReadRecord
 		s.Require().NoError(json.Unmarshal(outcome.Read, &storedRecord))
-		s.Equal(result.Read, storedRecord)
+		s.Equal(`{service="checkout-api"}`, storedRecord.Query)
+		s.Equal(f.openedAt, storedRecord.Start)
+		s.Equal("1m0s", storedRecord.Step)
+		s.NotEmpty(storedRecord.ExploreURL, "the stored record keeps the Explore link")
+		s.NotEmpty(storedRecord.Limits)
 		s.Equal(f.reader.Integration().Provider, storedRecord.Provider, "the record names the reading installation's provider")
 		s.Equal(f.reader.Integration().Name, storedRecord.Integration, "and its integration")
 		var storedResult rezai.CountLogsToolResult
 		s.Require().NoError(json.Unmarshal(outcome.Result, &storedResult))
 		s.Equal(result, storedResult, "the result is stored as returned to the agent")
+	})
+
+	s.Run("search lines collapsed", func() {
+		f := s.newProviderReadFixture()
+		end := f.openedAt.Add(time.Hour)
+		at := func(seconds int) time.Time { return end.Add(-time.Duration(seconds) * time.Second) }
+		labels := func(pod string) map[string]string {
+			return map[string]string{"service": "checkout-api", "level": "ERROR", "pod": pod}
+		}
+		f.reader.lines = []integrations.LogLine{
+			{Time: at(1), Line: "upstream timeout", Labels: labels("a")},
+			{Time: at(2), Line: "upstream timeout", Labels: labels("a")},
+			{Time: at(3), Line: "upstream timeout", Labels: labels("a")},
+			{Time: at(4), Line: "upstream timeout", Labels: labels("b")},
+			{Time: at(5), Line: "request completed", Labels: labels("b")},
+			{Time: at(6), Line: "upstream timeout", Labels: labels("b")},
+		}
+		f.expectService("checkout-api")
+		_, finished := f.expectRecorded(1)
+
+		var raw map[string]any
+		s.runInvestigationToolResult(ctx, f.h, rezai.SearchLogsTool.Name(), f.search(f.openedAt, end), &raw)
+		s.NotContains(raw, "read", "the read record is not returned to the agent")
+		encoded, encodeErr := json.Marshal(raw)
+		s.Require().NoError(encodeErr)
+		var result rezai.SearchLogsToolResult
+		s.Require().NoError(json.Unmarshal(encoded, &result))
+
+		s.Equal(map[string]string{"service": "checkout-api", "level": "ERROR"}, result.Labels, "shared labels are hoisted")
+		earliest := at(3)
+		s.Equal([]rezai.ProviderReadLogLine{
+			{Time: at(1), Line: "upstream timeout", Labels: map[string]string{"pod": "a"}, Count: 3, Earliest: &earliest},
+			{Time: at(4), Line: "upstream timeout", Labels: map[string]string{"pod": "b"}},
+			{Time: at(5), Line: "request completed", Labels: map[string]string{"pod": "b"}},
+			{Time: at(6), Line: "upstream timeout", Labels: map[string]string{"pod": "b"}},
+		}, result.Lines, "only consecutive identical lines merge")
+		s.Equal([]string{"reached the limit of 1 lines; more may exist"}, result.Limits)
+
+		s.Require().Len(*finished, 1)
+		var storedResult rezai.SearchLogsToolResult
+		s.Require().NoError(json.Unmarshal((*finished)[0].Result, &storedResult))
+		s.Equal(result, storedResult, "the result is stored as returned to the agent")
+		var storedRecord rezai.ProviderReadRecord
+		s.Require().NoError(json.Unmarshal((*finished)[0].Read, &storedRecord))
+		s.NotEmpty(storedRecord.ExploreURL, "the stored record keeps the Explore link")
 	})
 
 	s.Run("failed by the provider", func() {
@@ -496,7 +551,7 @@ func (s *AiRuntimeSuite) TestListChanges() {
 	})
 }
 
-func (s *AiRuntimeSuite) TestFindService() {
+func (s *AiRuntimeSuite) TestListServices() {
 	ctx := s.T().Context()
 	h := s.newInvestigationHarness()
 	payments := &ent.KnowledgeEntity{
@@ -505,25 +560,45 @@ func (s *AiRuntimeSuite) TestFindService() {
 		Kind:     "service",
 		State:    schematypes.KnowledgeGraphSubjectState{DisplayName: "payments-api"},
 	}
-	byName := func(name string) rez.ListKnowledgeEntitiesParams {
+	checkout := &ent.KnowledgeEntity{
+		ID:       uuid.New(),
+		Category: kne.CategoryContainer,
+		Kind:     "service",
+		State:    schematypes.KnowledgeGraphSubjectState{DisplayName: "checkout-api"},
+	}
+	listing := func(contains string, page ent.ListParams) rez.ListKnowledgeEntitiesParams {
 		return rez.ListKnowledgeEntitiesParams{
-			ListParams:       ent.ListParams{PageSize: 1},
-			Categories:       []kne.Category{kne.CategoryContainer},
-			LinkingAttribute: projections.LinkingAttributeServiceName,
-			LinkingValue:     name,
+			ListParams:           page,
+			Categories:           []kne.Category{kne.CategoryContainer},
+			LinkingAttribute:     projections.LinkingAttributeServiceName,
+			LinkingValueContains: contains,
 		}
 	}
-	found := &ent.ListResult[ent.KnowledgeEntity]{Data: []*ent.KnowledgeEntity{payments}, Total: 1}
-	h.knowledge.EXPECT().ListEntities(mock.Anything, byName("payments-api")).Return(found, nil)
-	h.knowledge.EXPECT().ListEntities(mock.Anything, byName("orders-api")).Return(&ent.ListResult[ent.KnowledgeEntity]{}, nil)
+	firstPage := ent.ListParams{Page: 1, PageSize: 25}
+	h.knowledge.EXPECT().ListEntities(mock.Anything, listing("payments-api", firstPage)).
+		Return(&ent.ListResult[ent.KnowledgeEntity]{Data: []*ent.KnowledgeEntity{payments}, Total: 1}, nil)
+	h.knowledge.EXPECT().ListEntities(mock.Anything, listing("", ent.ListParams{Page: 2, PageSize: 1})).
+		Return(&ent.ListResult[ent.KnowledgeEntity]{Data: []*ent.KnowledgeEntity{checkout}, Total: 3}, nil)
+	h.knowledge.EXPECT().ListEntities(mock.Anything, listing("orders", firstPage)).
+		Return(&ent.ListResult[ent.KnowledgeEntity]{}, nil)
 
-	var result rezai.TextToolResult
-	s.runInvestigationToolResult(ctx, h, rezai.FindServiceTool.Name(), rezai.FindServiceArgs{Name: "Payments_API"}, &result)
-	s.Contains(result.Text, payments.ID.String())
+	var named rezai.TextToolResult
+	s.runInvestigationToolResult(ctx, h, rezai.ListServicesTool.Name(), rezai.ListServicesArgs{Name: "Payments_API"}, &named)
+	s.Contains(named.Text, payments.ID.String(), "the name is normalized")
+	s.Equal(1, named.Total)
 
-	var unknown rezai.TextToolResult
-	s.runInvestigationToolResult(ctx, h, rezai.FindServiceTool.Name(), rezai.FindServiceArgs{Name: "orders-api"}, &unknown)
-	s.NotEmpty(unknown.Text)
-	// Only containers holding the name's service.name linking attribute are listed: see the query service's
-	// TestListEntitiesByLinkingAttribute.
+	var all rezai.TextToolResult
+	s.runInvestigationToolResult(ctx, h, rezai.ListServicesTool.Name(), rezai.ListServicesArgs{Page: 2, PageSize: 1}, &all)
+	s.Contains(all.Text, checkout.ID.String(), "no name lists every service")
+	s.Equal(3, all.Total)
+	s.True(all.HasMore)
+
+	var none rezai.TextToolResult
+	s.runInvestigationToolResult(ctx, h, rezai.ListServicesTool.Name(), rezai.ListServicesArgs{Name: "orders"}, &none)
+	s.Equal(`No service's name contains "orders".`, none.Text)
+
+	var invalid map[string]any
+	s.runInvestigationToolResult(ctx, h, rezai.ListServicesTool.Name(), rezai.ListServicesArgs{Name: "--"}, &invalid)
+	s.requireErrorResult(invalid, "no name once normalized")
+	// Which entities hold the attribute is a query: see the query service's TestListEntitiesByLinkingAttribute.
 }

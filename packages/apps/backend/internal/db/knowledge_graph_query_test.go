@@ -1293,19 +1293,22 @@ func (s *KnowledgeGraphQueryServiceSuite) TestListEntitiesByLinkingAttribute() {
 	graph := newTestGraph(s.Require(), tdb)
 	payments := graph.entity(kne.CategoryContainer, "service", "kubernetes", "payments-api")
 	payments.LinkingAttributes = testEntityLinkingAttributes{"service.name": "payments-api"}
+	checkout := graph.entity(kne.CategoryContainer, "service", "kubernetes", "checkout-api")
+	checkout.LinkingAttributes = testEntityLinkingAttributes{"service.name": "checkout-api"}
 	paymentsDatabase := graph.entity(kne.CategoryContainer, "database", "kubernetes", "payments-api-db")
 	alert := graph.entity(kne.CategorySignal, "alert", "provider-a", "payments-alert")
 	alert.LinkingAttributes = testEntityLinkingAttributes{"service.name": "payments-alert"}
 	graph.record(ctx, time.Date(2026, 6, 1, 10, 0, 0, 0, time.UTC),
 		graph.observeEntity(payments, "payments-api"),
 		graph.observeEntity(paymentsDatabase, "payments-api"),
-		graph.observeEntity(alert, "payments-api"))
+		graph.observeEntity(alert, "payments-api"),
+		graph.observeEntity(checkout, "checkout-api"))
 
-	find := func(name string) []uuid.UUID {
+	find := func(contains string) []uuid.UUID {
 		params := rez.ListKnowledgeEntitiesParams{
-			Categories:       []kne.Category{kne.CategoryContainer},
-			LinkingAttribute: "service.name",
-			LinkingValue:     name,
+			Categories:           []kne.Category{kne.CategoryContainer},
+			LinkingAttribute:     "service.name",
+			LinkingValueContains: contains,
 		}
 		listed, listErr := service.ListEntities(ctx, params)
 		s.Require().NoError(listErr)
@@ -1316,8 +1319,11 @@ func (s *KnowledgeGraphQueryServiceSuite) TestListEntitiesByLinkingAttribute() {
 		return ids
 	}
 
-	s.Equal([]uuid.UUID{graph.entityID(ctx, payments)}, find("payments-api"),
+	paymentsID, checkoutID := graph.entityID(ctx, payments), graph.entityID(ctx, checkout)
+	s.Equal([]uuid.UUID{paymentsID}, find("payments-api"),
 		"only the entity holding the attribute, not one named alike without it")
+	s.Equal([]uuid.UUID{paymentsID}, find("payments"), "a value containing the text")
+	s.ElementsMatch([]uuid.UUID{paymentsID, checkoutID}, find(""), "every entity holding the attribute")
 	s.Empty(find("payments-alert"), "an entity of another category is not listed")
 	s.Empty(find("orders-api"))
 }

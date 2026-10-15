@@ -7,10 +7,11 @@ import (
 
 // TurnUsage is what one attempt of an agent turn used.
 type TurnUsage struct {
-	Model        string
-	InputTokens  int
-	OutputTokens int
-	Reads        int
+	Model             string
+	InputTokens       int
+	CachedInputTokens int
+	OutputTokens      int
+	Reads             int
 }
 
 // turnTally collects one attempt's usage. Tool calls run concurrently, so it is locked.
@@ -42,11 +43,13 @@ func addTurnUsage(ctx context.Context, add func(*TurnUsage)) {
 	add(&tally.usage)
 }
 
-// AddModelUsage adds one model response to the tally in ctx. It does nothing outside a turn.
-func AddModelUsage(ctx context.Context, model string, inputTokens, outputTokens int) {
+// AddModelUsage adds one model response to the tally in ctx. cachedInputTokens is the part of inputTokens the
+// provider served from its cache, as the model plugin reports it. It does nothing outside a turn.
+func AddModelUsage(ctx context.Context, model string, inputTokens, cachedInputTokens, outputTokens int) {
 	addTurnUsage(ctx, func(u *TurnUsage) {
 		u.Model = model
 		u.InputTokens += inputTokens
+		u.CachedInputTokens += cachedInputTokens
 		u.OutputTokens += outputTokens
 	})
 }

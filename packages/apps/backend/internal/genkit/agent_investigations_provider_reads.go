@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"maps"
 	"slices"
 	"strconv"
 	"strings"
@@ -57,27 +58,39 @@ func (i *investigationInvocation) introduceSources(ctx context.Context) *rezai.I
 	return sources
 }
 
-// findService returns the service holding the name's service.name linking attribute. A linking attribute value
-// identifies one entity, so there is one service or none.
-func (i *investigationInvocation) findService(ctx context.Context, input rezai.FindServiceArgs) (*rezai.TextToolResult, error) {
+// listServices lists the containers holding a service.name linking attribute, optionally only those whose
+// normalized name contains the given name.
+func (i *investigationInvocation) listServices(ctx context.Context, input rezai.ListServicesArgs) (*rezai.TextToolResult, error) {
+	page, pageErr := normalizeAnalysisPage(input.Page, input.PageSize)
+	if pageErr != nil {
+		return nil, pageErr
+	}
 	name := projections.NormalizeServiceName(input.Name)
-	if name == "" {
+	if name == "" && strings.TrimSpace(input.Name) != "" {
 		return nil, fmt.Errorf("%w: name %q has no name once normalized", errs.ErrInvalidInput, input.Name)
 	}
 	params := rez.ListKnowledgeEntitiesParams{
-		ListParams:       ent.ListParams{PageSize: 1},
-		Categories:       []kne.Category{kne.CategoryContainer},
-		LinkingAttribute: projections.LinkingAttributeServiceName,
-		LinkingValue:     name,
+		ListParams:           page,
+		Categories:           []kne.Category{kne.CategoryContainer},
+		LinkingAttribute:     projections.LinkingAttributeServiceName,
+		LinkingValueContains: name,
 	}
 	services, listErr := i.knowledge.ListEntities(ctx, params)
 	if listErr != nil {
-		return nil, fmt.Errorf("find service: %w", listErr)
+		return nil, fmt.Errorf("list services: %w", listErr)
 	}
-	if len(services.Data) == 0 {
-		return &rezai.TextToolResult{Text: fmt.Sprintf("No service is named %q.", name)}, nil
+	if services.Total == 0 {
+		text := "No services are known."
+		if name != "" {
+			text = fmt.Sprintf("No service's name contains %q.", name)
+		}
+		return &rezai.TextToolResult{Text: text}, nil
 	}
-	return &rezai.TextToolResult{Text: i.renderEntityLine(services.Data[0])}, nil
+	lines := make([]string, len(services.Data))
+	for index, service := range services.Data {
+		lines[index] = i.renderEntityLine(service)
+	}
+	return i.textPageResult(strings.Join(lines, "\n"), page, services.Total, len(services.Data)), nil
 }
 
 func (i *investigationInvocation) listChanges(ctx context.Context, input rezai.ListChangesArgs) (*rezai.TextToolResult, error) {
@@ -246,21 +259,21 @@ func (i *investigationInvocation) searchLogs(ctx context.Context, input rezai.Se
 	if searchErr != nil {
 		return nil, i.failProviderRead(ctx, run, searchErr)
 	}
+	record := i.providerReadRecord(target.source, searched.Read)
+	labels, lines := i.collapseLogLines(searched.Lines)
 	result := &rezai.SearchLogsToolResult{
 		ProviderReadRef: i.formatRef(run.id),
 		ServiceRef:      i.formatRef(target.service.ID),
 		ServiceName:     searched.Service.Value,
-		Lines:           make([]rezai.ProviderReadLogLine, len(searched.Lines)),
-		Read:            i.providerReadRecord(target.source, searched.Read),
+		Labels:          labels,
+		Lines:           lines,
+		Limits:          searched.Read.Limits,
 		BudgetRemaining: run.budgetRemaining,
-	}
-	for index, line := range searched.Lines {
-		result.Lines[index] = rezai.ProviderReadLogLine{Time: line.Time, Line: line.Line, Labels: line.Labels}
 	}
 	if len(result.Lines) == 0 {
 		result.Note = noLogsNote("lines", searched.Service)
 	}
-	if finishErr := i.finishProviderRead(ctx, run, result.Read, result); finishErr != nil {
+	if finishErr := i.finishProviderRead(ctx, run, record, result); finishErr != nil {
 		return nil, finishErr
 	}
 	return result, nil
@@ -294,7 +307,7 @@ func (i *investigationInvocation) countLogs(ctx context.Context, input rezai.Cou
 		ServiceRef:      i.formatRef(target.service.ID),
 		ServiceName:     counted.Service.Value,
 		Points:          make([]rezai.ProviderReadPoint, len(counted.Points)),
-		Read:            i.providerReadRecord(target.source, counted.Read),
+		Limits:          counted.Read.Limits,
 		BudgetRemaining: run.budgetRemaining,
 	}
 	hasLines := false
@@ -305,10 +318,51 @@ func (i *investigationInvocation) countLogs(ctx context.Context, input rezai.Cou
 	if !hasLines {
 		result.Note = noLogsNote("lines counted", counted.Service)
 	}
-	if finishErr := i.finishProviderRead(ctx, run, result.Read, result); finishErr != nil {
+	record := i.providerReadRecord(target.source, counted.Read)
+	if finishErr := i.finishProviderRead(ctx, run, record, result); finishErr != nil {
 		return nil, finishErr
 	}
 	return result, nil
+}
+
+// collapseLogLines returns the labels every line carries with the same value, and the lines, newest first, each
+// keeping only its other labels, with consecutive identical lines merged into one entry with their count.
+func (i *investigationInvocation) collapseLogLines(lines []integrations.LogLine) (map[string]string, []rezai.ProviderReadLogLine) {
+	collapsed := make([]rezai.ProviderReadLogLine, 0, len(lines))
+	if len(lines) == 0 {
+		return nil, collapsed
+	}
+	shared := maps.Clone(lines[0].Labels)
+	for _, line := range lines[1:] {
+		maps.DeleteFunc(shared, func(key, value string) bool {
+			lineValue, present := line.Labels[key]
+			return !present || lineValue != value
+		})
+	}
+	for _, line := range lines {
+		own := maps.Clone(line.Labels)
+		maps.DeleteFunc(own, func(key, _ string) bool {
+			_, isShared := shared[key]
+			return isShared
+		})
+		if len(own) == 0 {
+			own = nil
+		}
+		if count := len(collapsed); count > 0 {
+			previous := &collapsed[count-1]
+			if previous.Line == line.Line && maps.Equal(previous.Labels, own) {
+				earliest := line.Time
+				previous.Count = max(previous.Count, 1) + 1
+				previous.Earliest = &earliest
+				continue
+			}
+		}
+		collapsed = append(collapsed, rezai.ProviderReadLogLine{Time: line.Time, Line: line.Line, Labels: own})
+	}
+	if len(shared) == 0 {
+		shared = nil
+	}
+	return shared, collapsed
 }
 
 // noLogsNote says that the service had no lines, and why that may be when it was read by its display name.

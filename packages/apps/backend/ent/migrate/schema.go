@@ -301,6 +301,7 @@ var (
 		{Name: "error", Type: field.TypeString, Nullable: true},
 		{Name: "model", Type: field.TypeString, Default: ""},
 		{Name: "input_tokens", Type: field.TypeInt, Default: 0},
+		{Name: "cached_input_tokens", Type: field.TypeInt, Default: 0},
 		{Name: "output_tokens", Type: field.TypeInt, Default: 0},
 		{Name: "agent_session_id", Type: field.TypeUUID},
 		{Name: "tenant_id", Type: field.TypeInt},
@@ -314,19 +315,19 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "agent_turns_agent_sessions_turns",
-				Columns:    []*schema.Column{AgentTurnsColumns[14]},
+				Columns:    []*schema.Column{AgentTurnsColumns[15]},
 				RefColumns: []*schema.Column{AgentSessionsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "agent_turns_tenants_tenant",
-				Columns:    []*schema.Column{AgentTurnsColumns[15]},
+				Columns:    []*schema.Column{AgentTurnsColumns[16]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "agent_turns_agent_messages_input_message",
-				Columns:    []*schema.Column{AgentTurnsColumns[16]},
+				Columns:    []*schema.Column{AgentTurnsColumns[17]},
 				RefColumns: []*schema.Column{AgentMessagesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -335,17 +336,17 @@ var (
 			{
 				Name:    "agentturn_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{AgentTurnsColumns[15]},
+				Columns: []*schema.Column{AgentTurnsColumns[16]},
 			},
 			{
 				Name:    "agentturn_agent_session_id_sequence",
 				Unique:  true,
-				Columns: []*schema.Column{AgentTurnsColumns[14], AgentTurnsColumns[3]},
+				Columns: []*schema.Column{AgentTurnsColumns[15], AgentTurnsColumns[3]},
 			},
 			{
 				Name:    "agent_turn_one_active_per_session",
 				Unique:  true,
-				Columns: []*schema.Column{AgentTurnsColumns[14]},
+				Columns: []*schema.Column{AgentTurnsColumns[15]},
 				Annotation: &entsql.IndexAnnotation{
 					Where: "status IN ('queued', 'running')",
 				},
@@ -353,7 +354,7 @@ var (
 			{
 				Name:    "agent_turn_input_message_unique",
 				Unique:  true,
-				Columns: []*schema.Column{AgentTurnsColumns[16]},
+				Columns: []*schema.Column{AgentTurnsColumns[17]},
 				Annotation: &entsql.IndexAnnotation{
 					Where: "input_message_id IS NOT NULL",
 				},
@@ -361,7 +362,7 @@ var (
 			{
 				Name:    "agentturn_tenant_id_agent_session_id_created_at",
 				Unique:  false,
-				Columns: []*schema.Column{AgentTurnsColumns[15], AgentTurnsColumns[14], AgentTurnsColumns[1]},
+				Columns: []*schema.Column{AgentTurnsColumns[16], AgentTurnsColumns[15], AgentTurnsColumns[1]},
 			},
 		},
 	}

@@ -1,0 +1,99 @@
+{
+  "description": "Checkout fails after a deployment because payments-api runs out of connections; its logs show it. Then a question.",
+  "agent": "investigation",
+  "events": [
+    {
+      "ref": "payments-api",
+      "kind": "system_component",
+      "resource_ref": "service:payments-api",
+      "occurred_at": "{{-2h}}",
+      "attributes": {
+        "category": "container",
+        "kind": "service",
+        "display_name": "payments-api",
+        "description": "Authorizes card payments.",
+        "linking_attributes": {"service.name": "payments-api"}
+      }
+    },
+    {
+      "ref": "deploy-2041",
+      "kind": "deployment",
+      "resource_ref": "deployment:checkout-api-2041",
+      "occurred_at": "{{-25m}}",
+      "attributes": {
+        "external_id": "checkout-api-2041",
+        "status": "succeeded",
+        "service": {
+          "ref": {"resource_ref": "service:checkout-api"},
+          "category": "container",
+          "kind": "service",
+          "display_name": "checkout-api",
+          "linking_attributes": {"service.name": "checkout-api"}
+        },
+        "environment": {"name": "production", "display_name": "Production"},
+        "sha": "9f3c2a1",
+        "version": "checkout-api@2041",
+        "started_at": "{{-27m}}",
+        "finished_at": "{{-25m}}"
+      }
+    },
+    {
+      "ref": "error-rate",
+      "kind": "alert_instance",
+      "resource_ref": "alert:CheckoutHighErrorRate",
+      "occurred_at": "{{-10m}}",
+      "attributes": {
+        "title": "CheckoutHighErrorRate",
+        "description": "Checkout requests are failing above the error budget.",
+        "state": "firing",
+        "severity": "critical",
+        "instance_id": "checkout-api-production",
+        "labels": {"service": "checkout-api", "env": "production"},
+        "summary": "Checkout is failing for 30% of requests",
+        "started_at": "{{-10m}}",
+        "observed_entities": [
+          {
+            "ref": {"resource_ref": "service:checkout-api"},
+            "category": "container",
+            "kind": "service",
+            "display_name": "checkout-api",
+            "linking_attributes": {"service.name": "checkout-api"}
+          }
+        ]
+      }
+    }
+  ],
+  "logs": [
+    {"service": "service:checkout-api", "labels": {"level": "INFO"},
+     "line": "POST /api/checkout 200 120ms: request completed",
+     "from": "{{-1h}}", "to": "{{now}}", "every": "5s"},
+    {"service": "service:checkout-api", "labels": {"level": "ERROR"},
+     "line": "POST /api/checkout 502 3020ms: payment authorization failed: upstream timeout after 3000ms (payments-api)",
+     "from": "{{-24m}}", "to": "{{now}}", "every": "3s"},
+    {"service": "service:payments-api", "labels": {"level": "INFO"},
+     "line": "POST /v1/authorizations 200 80ms: request completed",
+     "from": "{{-1h}}", "to": "{{now}}", "every": "5s"},
+    {"service": "service:payments-api", "labels": {"level": "WARN"},
+     "line": "POST /v1/authorizations 200 3010ms: connection pool exhausted (max=20)",
+     "from": "{{-25m}}", "to": "{{now}}", "every": "4s"}
+  ],
+  "setup": {"situation": {"title": "Checkout errors", "signals": ["error-rate"]}},
+  "phases": [
+    {
+      "check": [
+        {"kind": "report_published"},
+        {"kind": "outputs_cite"},
+        {"kind": "cites_entity", "entity_kind": "deployment", "property": {"version": "checkout-api@2041"}},
+        {"kind": "provider_reads", "service": "payments-api", "outcome": "succeeded", "min": 1},
+        {"kind": "cites_provider_read", "service": "checkout-api"}
+      ]
+    },
+    {
+      "ask": "Is payments-api the cause?",
+      "check": [
+        {"kind": "answer_published"},
+        {"kind": "cites_provider_read", "service": "payments-api"}
+      ]
+    }
+  ]
+}

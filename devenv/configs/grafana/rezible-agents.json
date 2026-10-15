@@ -258,7 +258,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum by (agent) (rate(rezible_backend_agent_turn_tokens_total{agent=~\"$agent\"}[$__rate_interval])) / sum by (agent) (rate(rezible_backend_agent_turn_duration_seconds_count{agent=~\"$agent\"}[$__rate_interval]))",
+          "expr": "sum by (agent) (rate(rezible_backend_agent_turn_tokens_total{agent=~\"$agent\",token_type!=\"cached_input\"}[$__rate_interval])) / sum by (agent) (rate(rezible_backend_agent_turn_duration_seconds_count{agent=~\"$agent\"}[$__rate_interval]))",
           "legendFormat": "{{agent}}",
           "refId": "A"
         }

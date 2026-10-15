@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"slices"
+	"strings"
 	"testing"
 	"time"
 
@@ -730,7 +732,7 @@ func (s *AiAgentSessionServiceSuite) TestWorkerRecordsTurnSpan() {
 		InvokeAgentTurn(mock.Anything, mock.MatchedBy(func(params rez.InvokeAiAgentTurnParams) bool {
 			return params.Turn.ID == completed.ID
 		})).
-		Run(reportTurnUsage("test/span-model", 100, 20, 2)).
+		Run(reportTurnUsage("test/span-model", 100, 60, 20, 2)).
 		Return(&rez.AiAgentInvocationResult{Response: reply, FinishReason: aix.AgentFinishReasonStop}, nil).
 		Once()
 	h.msgs.EXPECT().
@@ -770,6 +772,7 @@ func (s *AiAgentSessionServiceSuite) TestWorkerRecordsTurnSpan() {
 		attribute.String("finish_reason", string(aix.AgentFinishReasonStop)),
 		attribute.String("model", "test/span-model"),
 		attribute.Int("input_tokens", 100),
+		attribute.Int("cached_input_tokens", 60),
 		attribute.Int("output_tokens", 20),
 		attribute.Int("read_count", 2),
 	})
@@ -795,25 +798,27 @@ func (s *AiAgentSessionServiceSuite) TestWorkerRecordsTurnSpan() {
 	s.EqualValues(1, metrics.Count("rezible.backend.agent.turn.duration", agent, attribute.String("model", "none"), attribute.String("outcome", "failed")))
 	s.EqualValues(2, metrics.Count("rezible.backend.agent.turn.duration", agent))
 	s.EqualValues(100, metrics.Count("rezible.backend.agent.turn.tokens", agent, model, attribute.String("token_type", "input")))
+	s.EqualValues(60, metrics.Count("rezible.backend.agent.turn.tokens", agent, model, attribute.String("token_type", "cached_input")))
 	s.EqualValues(20, metrics.Count("rezible.backend.agent.turn.tokens", agent, model, attribute.String("token_type", "output")))
 	s.EqualValues(2, metrics.Count("rezible.backend.agent.turn.reads", agent))
 }
 
 // reportTurnUsage is an invocation that reports what it used to the attempt's tally.
-func reportTurnUsage(model string, inputTokens, outputTokens, reads int) func(context.Context, rez.InvokeAiAgentTurnParams) {
+func reportTurnUsage(model string, inputTokens, cachedInputTokens, outputTokens, reads int) func(context.Context, rez.InvokeAiAgentTurnParams) {
 	return func(ctx context.Context, _ rez.InvokeAiAgentTurnParams) {
-		rezai.AddModelUsage(ctx, model, inputTokens, outputTokens)
+		rezai.AddModelUsage(ctx, model, inputTokens, cachedInputTokens, outputTokens)
 		for range reads {
 			rezai.AddRead(ctx)
 		}
 	}
 }
 
-func (s *AiAgentSessionServiceSuite) requireTurnUsage(ctx context.Context, tdb rez.Database, turnID uuid.UUID, model string, inputTokens, outputTokens int) {
+func (s *AiAgentSessionServiceSuite) requireTurnUsage(ctx context.Context, tdb rez.Database, turnID uuid.UUID, model string, inputTokens, cachedInputTokens, outputTokens int) {
 	turn, turnErr := tdb.Client(ctx).AgentTurn.Get(ctx, turnID)
 	s.Require().NoError(turnErr)
 	s.Equal(model, turn.Model, "model")
 	s.Equal(inputTokens, turn.InputTokens, "input tokens")
+	s.Equal(cachedInputTokens, turn.CachedInputTokens, "cached input tokens")
 	s.Equal(outputTokens, turn.OutputTokens, "output tokens")
 }
 
@@ -823,16 +828,16 @@ func (s *AiAgentSessionServiceSuite) TestWorkerAddsUsageAcrossAttempts() {
 
 	f.runtime.EXPECT().
 		InvokeAgentTurn(mock.Anything, mock.Anything).
-		Run(reportTurnUsage("test/first", 100, 10, 0)).
+		Run(reportTurnUsage("test/first", 100, 60, 10, 0)).
 		Return(nil, errors.New("model unavailable")).
 		Once()
 	s.Require().Error(f.worker.Work(ctx, makeAgentTurnJob(f.turn, 1)))
-	s.requireTurnUsage(ctx, h.tdb, f.turn.ID, "test/first", 100, 10)
+	s.requireTurnUsage(ctx, h.tdb, f.turn.ID, "test/first", 100, 60, 10)
 
 	reply := ai.NewModelTextMessage("done")
 	f.runtime.EXPECT().
 		InvokeAgentTurn(mock.Anything, mock.Anything).
-		Run(reportTurnUsage("test/second", 200, 20, 0)).
+		Run(reportTurnUsage("test/second", 200, 120, 20, 0)).
 		Return(&rez.AiAgentInvocationResult{Response: reply, FinishReason: aix.AgentFinishReasonStop}, nil).
 		Once()
 	h.msgs.EXPECT().
@@ -840,7 +845,7 @@ func (s *AiAgentSessionServiceSuite) TestWorkerAddsUsageAcrossAttempts() {
 		Return(nil).
 		Once()
 	s.Require().NoError(f.worker.Work(ctx, makeAgentTurnJob(f.turn, 2)))
-	s.requireTurnUsage(ctx, h.tdb, f.turn.ID, "test/second", 300, 30)
+	s.requireTurnUsage(ctx, h.tdb, f.turn.ID, "test/second", 300, 180, 30)
 }
 
 func (s *AiAgentSessionServiceSuite) TestRetriedTurnKeepsEarlierUsage() {
@@ -849,7 +854,7 @@ func (s *AiAgentSessionServiceSuite) TestRetriedTurnKeepsEarlierUsage() {
 
 	f.runtime.EXPECT().
 		InvokeAgentTurn(mock.Anything, mock.Anything).
-		Run(reportTurnUsage("test/model", 100, 10, 0)).
+		Run(reportTurnUsage("test/model", 100, 60, 10, 0)).
 		Return(nil, errors.New("model unavailable")).
 		Once()
 	s.Require().Error(f.worker.Work(ctx, makeAgentTurnJob(f.turn, 3)))
@@ -861,12 +866,13 @@ func (s *AiAgentSessionServiceSuite) TestRetriedTurnKeepsEarlierUsage() {
 	retried, retryErr := h.service.RetryAgentTurn(ctx, f.turn.ID)
 	s.Require().NoError(retryErr)
 	s.Equal(100, retried.InputTokens, "a retry keeps what the turn has cost")
+	s.Equal(60, retried.CachedInputTokens)
 
 	reply := ai.NewModelTextMessage("done")
 	f.runtime.EXPECT().
 		InvokeAgentTurn(mock.Anything, mock.Anything).
 		Run(func(ctx context.Context, _ rez.InvokeAiAgentTurnParams) {
-			rezai.AddModelUsage(ctx, "test/model", 50, 5)
+			rezai.AddModelUsage(ctx, "test/model", 50, 30, 5)
 		}).
 		Return(&rez.AiAgentInvocationResult{Response: reply, FinishReason: aix.AgentFinishReasonStop}, nil).
 		Once()
@@ -875,7 +881,7 @@ func (s *AiAgentSessionServiceSuite) TestRetriedTurnKeepsEarlierUsage() {
 		Return(nil).
 		Once()
 	s.Require().NoError(f.worker.Work(ctx, makeAgentTurnJob(retried, 1)))
-	s.requireTurnUsage(ctx, h.tdb, f.turn.ID, "test/model", 150, 15)
+	s.requireTurnUsage(ctx, h.tdb, f.turn.ID, "test/model", 150, 90, 15)
 }
 
 func (s *AiAgentSessionServiceSuite) TestTurnAbortedDuringAttemptKeepsItsUsage() {
@@ -890,7 +896,7 @@ func (s *AiAgentSessionServiceSuite) TestTurnAbortedDuringAttemptKeepsItsUsage()
 	f.runtime.EXPECT().
 		InvokeAgentTurn(mock.Anything, mock.Anything).
 		Run(func(ctx context.Context, params rez.InvokeAiAgentTurnParams) {
-			reportTurnUsage("test/model", 100, 10, 1)(ctx, params)
+			reportTurnUsage("test/model", 100, 60, 10, 1)(ctx, params)
 			_, abortErr := h.service.AbortAgentTurn(ctx, f.turn.ID)
 			s.Require().NoError(abortErr)
 		}).
@@ -903,7 +909,7 @@ func (s *AiAgentSessionServiceSuite) TestTurnAbortedDuringAttemptKeepsItsUsage()
 	aborted, abortedErr := h.tdb.Client(ctx).AgentTurn.Get(ctx, f.turn.ID)
 	s.Require().NoError(abortedErr)
 	s.Equal(at.StatusAborted, aborted.Status)
-	s.requireTurnUsage(ctx, h.tdb, f.turn.ID, "test/model", 100, 10)
+	s.requireTurnUsage(ctx, h.tdb, f.turn.ID, "test/model", 100, 60, 10)
 }
 
 func (s *AiAgentSessionServiceSuite) TestWorkerDoesNotMutateConcurrentRunningDelivery() {
@@ -1330,4 +1336,77 @@ func (s *AiAgentSessionServiceSuite) TestRetryingOlderTurnKeepsSequencesAndHisto
 		listedTexts[i] = m.MakeGenkitMessage().Text()
 	}
 	s.Equal([]string{"a", "a step", "a reply", "b", "b reply", "c", "c reply"}, listedTexts)
+}
+
+// TestEarlierTurnsLargeToolResultsAreCompacted: the model sees an earlier turn's large tool result as a note,
+// while its small results, the current turn's own results and every stored message stay whole.
+func (s *AiAgentSessionServiceSuite) TestEarlierTurnsLargeToolResultsAreCompacted() {
+	ctx, h := s.newAgentSessionFixture()
+	runtime := mocks.NewMockAiAgentRuntime(s.T())
+	worker, workerErr := NewInvokeAgentTurnWorker(rez.AiConfig{}, h.tdb, h.msgs, runtime, nil)
+	s.Require().NoError(workerErr)
+	session := s.createAgentSession(ctx, h.tdb, testAgentInput{})
+
+	large := func(ref string) map[string]any {
+		return map[string]any{"provider_read_ref": ref, "lines": strings.Repeat("upstream timeout ", 100)}
+	}
+	root := s.createAgentTurn(ctx, h.tdb, session, agentTurnSeed{
+		riverJobID:   931,
+		status:       at.StatusCompleted,
+		finishReason: string(aix.AgentFinishReasonStop),
+	})
+	s.createAgentMessage(ctx, h.tdb, session, root, ai.NewModelMessage(
+		ai.NewToolRequestPart(&ai.ToolRequest{Name: "search_logs", Ref: "logs-1"}),
+		ai.NewToolRequestPart(&ai.ToolRequest{Name: "list_services", Ref: "find-1"}),
+	))
+	rootResults := s.createAgentMessage(ctx, h.tdb, session, root, ai.NewMessage(ai.RoleTool, nil,
+		ai.NewToolResponsePart(&ai.ToolResponse{Name: "search_logs", Ref: "logs-1", Output: large("read-1")}),
+		ai.NewToolResponsePart(&ai.ToolResponse{Name: "list_services", Ref: "find-1", Output: map[string]any{"text": "entity s-1 payments-api"}}),
+	))
+
+	// The queued turn's earlier attempt committed a large result of its own.
+	turn := s.createAgentTurn(ctx, h.tdb, session, agentTurnSeed{
+		riverJobID: 932,
+		status:     at.StatusQueued,
+		input:      &rez.AiAgentTurnInput{Message: ai.NewUserTextMessage("check again")},
+	})
+	s.createAgentMessage(ctx, h.tdb, session, turn, ai.NewModelMessage(ai.NewToolRequestPart(&ai.ToolRequest{Name: "search_logs", Ref: "logs-2"})))
+	s.createAgentMessage(ctx, h.tdb, session, turn, ai.NewMessage(ai.RoleTool, nil,
+		ai.NewToolResponsePart(&ai.ToolResponse{Name: "search_logs", Ref: "logs-2", Output: large("read-2")}),
+	))
+
+	reply := ai.NewModelTextMessage("done")
+	runtime.EXPECT().
+		InvokeAgentTurn(mock.Anything, mock.Anything).
+		RunAndReturn(func(_ context.Context, params rez.InvokeAiAgentTurnParams) (*rez.AiAgentInvocationResult, error) {
+			messages := params.State.Messages
+			s.Require().Len(messages, 6)
+			earlier := messages[2].Content
+			s.Equal(map[string]any{
+				"omitted":           "Result of a tool call in an earlier turn, removed to save space. Call the tool again if you need it.",
+				"provider_read_ref": "read-1",
+			}, earlier[0].ToolResponse.Output)
+			s.Equal(map[string]any{"text": "entity s-1 payments-api"}, earlier[1].ToolResponse.Output, "a small result is kept whole")
+			s.Equal(large("read-2"), messages[5].Content[0].ToolResponse.Output, "the current turn's results arrive whole")
+			result := &rez.AiAgentInvocationResult{
+				State:        rez.AiAgentTurnState{Messages: append(slices.Clone(messages), reply)},
+				Response:     reply,
+				FinishReason: aix.AgentFinishReasonStop,
+			}
+			return result, nil
+		}).
+		Once()
+	h.msgs.EXPECT().
+		Publish(mock.Anything, mock.IsType(&rezai.EventOnAgentTurnFinished{})).
+		Return(nil).
+		Once()
+	s.Require().NoError(worker.Work(ctx, makeAgentTurnJob(turn, 2)))
+
+	stored, storedErr := h.tdb.Client(ctx).AgentMessage.Get(ctx, rootResults.ID)
+	s.Require().NoError(storedErr)
+	s.Equal(large("read-1"), stored.MakeGenkitMessage().Content[0].ToolResponse.Output, "the earlier turn's stored result is unchanged")
+	s.Equal(
+		[]string{"user:check again", "model:request:logs-2", "tool:response:logs-2", "model:done"},
+		s.turnMessageTexts(ctx, h.tdb, turn),
+	)
 }

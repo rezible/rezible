@@ -136,7 +136,7 @@ func (m *turnUsageMiddleware) New(ctx context.Context) (*ai.Hooks, error) {
 			if resp != nil && resp.Usage != nil {
 				model, _ := ctx.Value(turnUsageModelKey{}).(string)
 				usage := resp.Usage
-				rezai.AddModelUsage(ctx, model, usage.InputTokens, usage.OutputTokens+usage.ThoughtsTokens)
+				rezai.AddModelUsage(ctx, model, usage.InputTokens, usage.CachedContentTokens, usage.OutputTokens+usage.ThoughtsTokens)
 			}
 			return resp, respErr
 		},

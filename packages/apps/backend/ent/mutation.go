@@ -5622,45 +5622,47 @@ func (m *AgentSessionBindingMutation) ResetEdge(name string) error {
 // AgentTurnMutation represents an operation that mutates the AgentTurn nodes in the graph.
 type AgentTurnMutation struct {
 	config
-	op                    Op
-	typ                   string
-	id                    *uuid.UUID
-	created_at            *time.Time
-	updated_at            *time.Time
-	sequence              *int
-	addsequence           *int
-	river_job_id          *int64
-	addriver_job_id       *int64
-	input_tool_resume     **exp.ToolResume
-	status                *agentturn.Status
-	started_at            *time.Time
-	finished_at           *time.Time
-	finish_reason         *string
-	error                 *string
-	model                 *string
-	input_tokens          *int
-	addinput_tokens       *int
-	output_tokens         *int
-	addoutput_tokens      *int
-	clearedFields         map[string]struct{}
-	tenant                *int
-	clearedtenant         bool
-	agent_session         *uuid.UUID
-	clearedagent_session  bool
-	input_message         *uuid.UUID
-	clearedinput_message  bool
-	messages              map[uuid.UUID]struct{}
-	removedmessages       map[uuid.UUID]struct{}
-	clearedmessages       bool
-	artifacts             map[uuid.UUID]struct{}
-	removedartifacts      map[uuid.UUID]struct{}
-	clearedartifacts      bool
-	provider_reads        map[uuid.UUID]struct{}
-	removedprovider_reads map[uuid.UUID]struct{}
-	clearedprovider_reads bool
-	done                  bool
-	oldValue              func(context.Context) (*AgentTurn, error)
-	predicates            []predicate.AgentTurn
+	op                     Op
+	typ                    string
+	id                     *uuid.UUID
+	created_at             *time.Time
+	updated_at             *time.Time
+	sequence               *int
+	addsequence            *int
+	river_job_id           *int64
+	addriver_job_id        *int64
+	input_tool_resume      **exp.ToolResume
+	status                 *agentturn.Status
+	started_at             *time.Time
+	finished_at            *time.Time
+	finish_reason          *string
+	error                  *string
+	model                  *string
+	input_tokens           *int
+	addinput_tokens        *int
+	cached_input_tokens    *int
+	addcached_input_tokens *int
+	output_tokens          *int
+	addoutput_tokens       *int
+	clearedFields          map[string]struct{}
+	tenant                 *int
+	clearedtenant          bool
+	agent_session          *uuid.UUID
+	clearedagent_session   bool
+	input_message          *uuid.UUID
+	clearedinput_message   bool
+	messages               map[uuid.UUID]struct{}
+	removedmessages        map[uuid.UUID]struct{}
+	clearedmessages        bool
+	artifacts              map[uuid.UUID]struct{}
+	removedartifacts       map[uuid.UUID]struct{}
+	clearedartifacts       bool
+	provider_reads         map[uuid.UUID]struct{}
+	removedprovider_reads  map[uuid.UUID]struct{}
+	clearedprovider_reads  bool
+	done                   bool
+	oldValue               func(context.Context) (*AgentTurn, error)
+	predicates             []predicate.AgentTurn
 }
 
 var _ ent.Mutation = (*AgentTurnMutation)(nil)
@@ -6432,6 +6434,62 @@ func (m *AgentTurnMutation) ResetInputTokens() {
 	m.addinput_tokens = nil
 }
 
+// SetCachedInputTokens sets the "cached_input_tokens" field.
+func (m *AgentTurnMutation) SetCachedInputTokens(i int) {
+	m.cached_input_tokens = &i
+	m.addcached_input_tokens = nil
+}
+
+// CachedInputTokens returns the value of the "cached_input_tokens" field in the mutation.
+func (m *AgentTurnMutation) CachedInputTokens() (r int, exists bool) {
+	v := m.cached_input_tokens
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCachedInputTokens returns the old "cached_input_tokens" field's value of the AgentTurn entity.
+// If the AgentTurn object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AgentTurnMutation) OldCachedInputTokens(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCachedInputTokens is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCachedInputTokens requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCachedInputTokens: %w", err)
+	}
+	return oldValue.CachedInputTokens, nil
+}
+
+// AddCachedInputTokens adds i to the "cached_input_tokens" field.
+func (m *AgentTurnMutation) AddCachedInputTokens(i int) {
+	if m.addcached_input_tokens != nil {
+		*m.addcached_input_tokens += i
+	} else {
+		m.addcached_input_tokens = &i
+	}
+}
+
+// AddedCachedInputTokens returns the value that was added to the "cached_input_tokens" field in this mutation.
+func (m *AgentTurnMutation) AddedCachedInputTokens() (r int, exists bool) {
+	v := m.addcached_input_tokens
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetCachedInputTokens resets all changes to the "cached_input_tokens" field.
+func (m *AgentTurnMutation) ResetCachedInputTokens() {
+	m.cached_input_tokens = nil
+	m.addcached_input_tokens = nil
+}
+
 // SetOutputTokens sets the "output_tokens" field.
 func (m *AgentTurnMutation) SetOutputTokens(i int) {
 	m.output_tokens = &i
@@ -6765,7 +6823,7 @@ func (m *AgentTurnMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *AgentTurnMutation) Fields() []string {
-	fields := make([]string, 0, 16)
+	fields := make([]string, 0, 17)
 	if m.tenant != nil {
 		fields = append(fields, agentturn.FieldTenantID)
 	}
@@ -6811,6 +6869,9 @@ func (m *AgentTurnMutation) Fields() []string {
 	if m.input_tokens != nil {
 		fields = append(fields, agentturn.FieldInputTokens)
 	}
+	if m.cached_input_tokens != nil {
+		fields = append(fields, agentturn.FieldCachedInputTokens)
+	}
 	if m.output_tokens != nil {
 		fields = append(fields, agentturn.FieldOutputTokens)
 	}
@@ -6852,6 +6913,8 @@ func (m *AgentTurnMutation) Field(name string) (ent.Value, bool) {
 		return m.Model()
 	case agentturn.FieldInputTokens:
 		return m.InputTokens()
+	case agentturn.FieldCachedInputTokens:
+		return m.CachedInputTokens()
 	case agentturn.FieldOutputTokens:
 		return m.OutputTokens()
 	}
@@ -6893,6 +6956,8 @@ func (m *AgentTurnMutation) OldField(ctx context.Context, name string) (ent.Valu
 		return m.OldModel(ctx)
 	case agentturn.FieldInputTokens:
 		return m.OldInputTokens(ctx)
+	case agentturn.FieldCachedInputTokens:
+		return m.OldCachedInputTokens(ctx)
 	case agentturn.FieldOutputTokens:
 		return m.OldOutputTokens(ctx)
 	}
@@ -7009,6 +7074,13 @@ func (m *AgentTurnMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetInputTokens(v)
 		return nil
+	case agentturn.FieldCachedInputTokens:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCachedInputTokens(v)
+		return nil
 	case agentturn.FieldOutputTokens:
 		v, ok := value.(int)
 		if !ok {
@@ -7033,6 +7105,9 @@ func (m *AgentTurnMutation) AddedFields() []string {
 	if m.addinput_tokens != nil {
 		fields = append(fields, agentturn.FieldInputTokens)
 	}
+	if m.addcached_input_tokens != nil {
+		fields = append(fields, agentturn.FieldCachedInputTokens)
+	}
 	if m.addoutput_tokens != nil {
 		fields = append(fields, agentturn.FieldOutputTokens)
 	}
@@ -7050,6 +7125,8 @@ func (m *AgentTurnMutation) AddedField(name string) (ent.Value, bool) {
 		return m.AddedRiverJobID()
 	case agentturn.FieldInputTokens:
 		return m.AddedInputTokens()
+	case agentturn.FieldCachedInputTokens:
+		return m.AddedCachedInputTokens()
 	case agentturn.FieldOutputTokens:
 		return m.AddedOutputTokens()
 	}
@@ -7081,6 +7158,13 @@ func (m *AgentTurnMutation) AddField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.AddInputTokens(v)
+		return nil
+	case agentturn.FieldCachedInputTokens:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddCachedInputTokens(v)
 		return nil
 	case agentturn.FieldOutputTokens:
 		v, ok := value.(int)
@@ -7193,6 +7277,9 @@ func (m *AgentTurnMutation) ResetField(name string) error {
 		return nil
 	case agentturn.FieldInputTokens:
 		m.ResetInputTokens()
+		return nil
+	case agentturn.FieldCachedInputTokens:
+		m.ResetCachedInputTokens()
 		return nil
 	case agentturn.FieldOutputTokens:
 		m.ResetOutputTokens()

@@ -26,6 +26,8 @@ type Scenario struct {
 	Agent       string `json:"agent"`
 	// Events are ingested before the setup.
 	Events []ScenarioEvent `json:"events"`
+	// Logs are the services' log lines, read through the evaluation integration for the whole scenario.
+	Logs []ScenarioLog `json:"logs,omitempty"`
 	// Setup is the agent's own, decoded by its harness.
 	Setup  json.RawMessage `json:"setup"`
 	Phases []ScenarioPhase `json:"phases"`
@@ -167,6 +169,9 @@ func (s *Scenario) validate(harness AgentHarness) error {
 	refs := mapset.NewSet[string]()
 	if eventsErr := validateEvents(s.Events, refs); eventsErr != nil {
 		return fmt.Errorf("events: %w", eventsErr)
+	}
+	if logsErr := validateLogs(s.Logs); logsErr != nil {
+		return fmt.Errorf("logs: %w", logsErr)
 	}
 	if setupErr := harness.ValidateSetup(s.Setup, refs.Clone()); setupErr != nil {
 		return fmt.Errorf("setup: %w", setupErr)

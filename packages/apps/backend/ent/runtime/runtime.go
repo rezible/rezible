@@ -336,8 +336,14 @@ func init() {
 	agentturn.DefaultInputTokens = agentturnDescInputTokens.Default.(int)
 	// agentturn.InputTokensValidator is a validator for the "input_tokens" field. It is called by the builders before save.
 	agentturn.InputTokensValidator = agentturnDescInputTokens.Validators[0].(func(int) error)
+	// agentturnDescCachedInputTokens is the schema descriptor for cached_input_tokens field.
+	agentturnDescCachedInputTokens := agentturnFields[13].Descriptor()
+	// agentturn.DefaultCachedInputTokens holds the default value on creation for the cached_input_tokens field.
+	agentturn.DefaultCachedInputTokens = agentturnDescCachedInputTokens.Default.(int)
+	// agentturn.CachedInputTokensValidator is a validator for the "cached_input_tokens" field. It is called by the builders before save.
+	agentturn.CachedInputTokensValidator = agentturnDescCachedInputTokens.Validators[0].(func(int) error)
 	// agentturnDescOutputTokens is the schema descriptor for output_tokens field.
-	agentturnDescOutputTokens := agentturnFields[13].Descriptor()
+	agentturnDescOutputTokens := agentturnFields[14].Descriptor()
 	// agentturn.DefaultOutputTokens holds the default value on creation for the output_tokens field.
 	agentturn.DefaultOutputTokens = agentturnDescOutputTokens.Default.(int)
 	// agentturn.OutputTokensValidator is a validator for the "output_tokens" field. It is called by the builders before save.

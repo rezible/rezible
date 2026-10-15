@@ -17,6 +17,10 @@ func TestEmbeddedScenariosLoad(t *testing.T) {
 	scenario, loadErr := loadScenario(targets[0].Name, referenceTime, newAgentHarnesses(&agentHarnessDeps{}))
 	require.NoError(t, loadErr)
 	require.NotContains(t, string(scenario.Events[0].Attributes), "{{", "placeholders render inside attributes")
+
+	checkout, checkoutErr := loadScenario("checkout-upstream-timeout", referenceTime, newAgentHarnesses(&agentHarnessDeps{}))
+	require.NoError(t, checkoutErr)
+	require.Equal(t, referenceTime.Add(-24*time.Minute), *checkout.Logs[1].From, "placeholders render inside logs")
 }
 
 func TestParseScenarioRejectsInvalidScenarios(t *testing.T) {
@@ -49,6 +53,9 @@ func TestParseScenarioRejectsInvalidScenarios(t *testing.T) {
 		{"a time that does not parse", func(s map[string]any) {
 			s["events"].([]any)[0].(map[string]any)["occurred_at"] = "{{-3 minutes}}"
 		}, "time placeholder"},
+		{"a log entry without a line", func(s map[string]any) {
+			s["logs"] = []any{map[string]any{"service": "service:first", "at": "{{now}}"}}
+		}, "logs: entry 1: no line"},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {

@@ -29,7 +29,7 @@ func agentEvaluationProfile(definitions Provider[[]rez.IntegrationDefinition]) P
 			if baseErr != nil {
 				return nil, baseErr
 			}
-			return append(base, evals.NewIntegration()), nil
+			return append(base, evals.NewIntegration(do.MustInvoke[rez.Clock](i))), nil
 		}),
 		override(func(i do.Injector) (rez.ProviderEventProcessorRegistry, error) {
 			registry, registryErr := provideProviderEventProcessors(i)

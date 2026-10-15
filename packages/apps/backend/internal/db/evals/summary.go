@@ -42,6 +42,7 @@ type TurnSummary struct {
 	Sequence             int      `json:"sequence"`
 	Repetitions          int      `json:"repetitions"`
 	InputTokens          IntRange `json:"input_tokens"`
+	CachedInputTokens    IntRange `json:"cached_input_tokens"`
 	OutputTokens         IntRange `json:"output_tokens"`
 	Reads                IntRange `json:"reads"`
 	DurationMilliseconds IntRange `json:"duration_ms"`
@@ -65,18 +66,19 @@ type UsageTotals struct {
 	byModel []ModelUsage
 }
 
-func (u *UsageTotals) Add(model string, inputTokens, outputTokens int) {
-	if inputTokens == 0 && outputTokens == 0 {
+func (u *UsageTotals) Add(model string, inputTokens, cachedInputTokens, outputTokens int) {
+	if inputTokens == 0 && cachedInputTokens == 0 && outputTokens == 0 {
 		return
 	}
 	for index := range u.byModel {
 		if u.byModel[index].Model == model {
 			u.byModel[index].InputTokens += inputTokens
+			u.byModel[index].CachedInputTokens += cachedInputTokens
 			u.byModel[index].OutputTokens += outputTokens
 			return
 		}
 	}
-	u.byModel = append(u.byModel, ModelUsage{Model: model, InputTokens: inputTokens, OutputTokens: outputTokens})
+	u.byModel = append(u.byModel, ModelUsage{Model: model, InputTokens: inputTokens, CachedInputTokens: cachedInputTokens, OutputTokens: outputTokens})
 }
 
 func (u *UsageTotals) List() []ModelUsage {
@@ -140,6 +142,7 @@ func Summarize(result RunResult) Summary {
 					Sequence:             turn.Sequence,
 					Repetitions:          1,
 					InputTokens:          rangeOf(int64(turn.InputTokens)),
+					CachedInputTokens:    rangeOf(int64(turn.CachedInputTokens)),
 					OutputTokens:         rangeOf(int64(turn.OutputTokens)),
 					Reads:                rangeOf(int64(turn.Reads)),
 					DurationMilliseconds: rangeOf(turn.DurationMilliseconds),
@@ -149,6 +152,7 @@ func Summarize(result RunResult) Summary {
 			turnSummary := &summary.Turns[index]
 			turnSummary.Repetitions++
 			turnSummary.InputTokens = turnSummary.InputTokens.widen(int64(turn.InputTokens))
+			turnSummary.CachedInputTokens = turnSummary.CachedInputTokens.widen(int64(turn.CachedInputTokens))
 			turnSummary.OutputTokens = turnSummary.OutputTokens.widen(int64(turn.OutputTokens))
 			turnSummary.Reads = turnSummary.Reads.widen(int64(turn.Reads))
 			turnSummary.DurationMilliseconds = turnSummary.DurationMilliseconds.widen(turn.DurationMilliseconds)
@@ -173,9 +177,10 @@ func (s Summary) Write(w io.Writer) error {
 		}
 	}
 	for _, turn := range s.Turns {
-		fmt.Fprintf(table, "turn %d\tinput %s\toutput %s\treads %s\t%s\n",
+		fmt.Fprintf(table, "turn %d\tinput %s (cached %s)\toutput %s\treads %s\t%s\n",
 			turn.Sequence,
 			formatRange(turn.InputTokens, formatTokens),
+			formatRange(turn.CachedInputTokens, formatTokens),
 			formatRange(turn.OutputTokens, formatTokens),
 			formatRange(turn.Reads, func(value int64) string { return fmt.Sprint(value) }),
 			formatRange(turn.DurationMilliseconds, formatMilliseconds))
@@ -186,8 +191,8 @@ func (s Summary) Write(w io.Writer) error {
 func formatUsage(usage []ModelUsage) string {
 	parts := make([]string, 0, len(usage))
 	for _, model := range usage {
-		parts = append(parts, fmt.Sprintf("%s input %s output %s",
-			model.Model, formatTokens(int64(model.InputTokens)), formatTokens(int64(model.OutputTokens))))
+		parts = append(parts, fmt.Sprintf("%s input %s (cached %s) output %s",
+			model.Model, formatTokens(int64(model.InputTokens)), formatTokens(int64(model.CachedInputTokens)), formatTokens(int64(model.OutputTokens))))
 	}
 	if len(parts) == 0 {
 		return "no model usage"

@@ -245,7 +245,7 @@ func runWorkflowRepetition(ctx context.Context, target WorkflowTarget, index int
 			caseCtx, totals := rezai.WithTurnUsage(ctx)
 			check, output, runErr := target.RunCase(caseCtx, caseIndex)
 			caseUsage := totals()
-			usage.Add(caseUsage.Model, caseUsage.InputTokens, caseUsage.OutputTokens)
+			usage.Add(caseUsage.Model, caseUsage.InputTokens, caseUsage.CachedInputTokens, caseUsage.OutputTokens)
 			if runErr != nil {
 				check = &Check{
 					ID:      datasetCase.TestCaseID,

@@ -14,12 +14,19 @@ import (
 // EvaluationProviderName names the evaluation integration and the provider of every event a scenario ingests.
 const EvaluationProviderName = "evaluation"
 
-// Integration is installed in each agent evaluation's tenant. Its event processor passes a scenario's events
-// into the pipeline. Only agent evaluation runs register it.
-type Integration struct{}
+// deploymentsCapability makes changes available to the agent, so list_changes reads whatever deployments a
+// scenario ingests.
+const deploymentsCapability = "deployments"
 
-func NewIntegration() *Integration {
-	return &Integration{}
+// Integration is installed in each agent evaluation's tenant. Its event processor passes a scenario's events
+// into the pipeline, and an installation whose scenario has logs reads them. Only agent evaluation runs
+// register it.
+type Integration struct {
+	clock rez.Clock
+}
+
+func NewIntegration(clock rez.Clock) *Integration {
+	return &Integration{clock: clock}
 }
 
 func (i *Integration) Name() string {
@@ -39,7 +46,7 @@ func (i *Integration) Provider() string {
 }
 
 func (i *Integration) Capabilities() []string {
-	return nil
+	return []string{deploymentsCapability}
 }
 
 func (i *Integration) MaxInstalls() *int {
@@ -74,12 +81,18 @@ func (i *Integration) ValidateUserSettings(map[string]any) error {
 	return nil
 }
 
+// GetInstalledIntegration returns an installation that reads logs only when its scenario has logs, so a
+// scenario without them has no log source.
 func (i *Integration) GetInstalledIntegration(intg *ent.Integration) (rez.InstalledIntegration, error) {
 	cfg, cfgErr := i.ValidateInstallationConfig(intg.InstallationConfig)
 	if cfgErr != nil {
 		return nil, cfgErr
 	}
-	return &installedIntegration{intg: intg, config: cfg}, nil
+	installed := &installedIntegration{intg: intg, config: cfg}
+	if logs := cfg.(*integrationConfig).Logs; len(logs) > 0 {
+		return &installedLogs{installedIntegration: installed, clock: i.clock, logs: logs}, nil
+	}
+	return installed, nil
 }
 
 type installedIntegration struct {
@@ -96,11 +109,13 @@ func (ii *installedIntegration) Config() rez.IntegrationInstallationConfig {
 }
 
 func (ii *installedIntegration) Capabilities() []string {
-	return nil
+	return []string{deploymentsCapability}
 }
 
 type integrationConfig struct {
 	InstallationRef string `json:"installation_ref"`
+	// Logs are the scenario's, unexpanded.
+	Logs []ScenarioLog `json:"logs,omitempty"`
 }
 
 func (c *integrationConfig) Encode() ([]byte, error) {

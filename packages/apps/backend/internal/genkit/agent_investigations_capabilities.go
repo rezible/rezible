@@ -271,7 +271,7 @@ func (i *investigationInvocation) makeTools() []ai.Tool {
 		makeDefinedTool(rezai.ListEntityEvidenceTool, i.listEntityEvidence),
 		makeDefinedTool(rezai.ReadEvidenceTool, i.readEvidence),
 		makeDefinedTool(rezai.ReadInvestigationOutputTool, i.readOutput),
-		makeDefinedTool(rezai.FindServiceTool, i.findService),
+		makeDefinedTool(rezai.ListServicesTool, i.listServices),
 		makeDefinedTool(rezai.ListChangesTool, i.listChanges),
 		makeDefinedTool(rezai.SearchLogsTool, i.searchLogs),
 		makeDefinedTool(rezai.CountLogsTool, i.countLogs),

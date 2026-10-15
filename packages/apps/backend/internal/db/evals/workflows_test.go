@@ -118,7 +118,7 @@ func judgeAnswering(t *testing.T, answer func(reference rezai.SituationJudgeOutp
 			key, _ := json.Marshal(input)
 			reference, found := references[string(key)]
 			require.True(t, found, "the judge is asked about a dataset case")
-			rezai.AddModelUsage(ctx, "test/model", 100, 10)
+			rezai.AddModelUsage(ctx, "test/model", 100, 60, 10)
 			return answer(reference)
 		})
 }
@@ -225,7 +225,7 @@ func TestRunWorkflow(t *testing.T) {
 			require.Len(t, repetition.Checks, caseCount)
 			require.Len(t, repetition.Outputs, caseCount)
 			require.Equal(t, []ModelUsage{
-				{Model: "test/model", InputTokens: 100 * caseCount, OutputTokens: 10 * caseCount},
+				{Model: "test/model", InputTokens: 100 * caseCount, CachedInputTokens: 60 * caseCount, OutputTokens: 10 * caseCount},
 			}, repetition.Usage)
 		}
 	})

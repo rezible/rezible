@@ -130,7 +130,10 @@ func (r *agentRun) run(ctx context.Context) (context.Context, *RunError) {
 	}
 	ctx = tenantCtx
 
-	if stepErr := r.step(ctx, "install", r.install); stepErr != nil {
+	install := func(ctx context.Context) error {
+		return r.install(ctx, scenario)
+	}
+	if stepErr := r.step(ctx, "install", install); stepErr != nil {
 		return ctx, stepErr
 	}
 	setup := func(ctx context.Context) error {
@@ -182,8 +185,13 @@ func (r *agentRun) enterTenant(ctx context.Context) (context.Context, error) {
 	return execution.NewUserContext(ctx, sess), nil
 }
 
-func (r *agentRun) install(ctx context.Context) error {
-	installed, installErr := r.service.integrations.InstallNew(ctx, EvaluationProviderName, []byte("{}"))
+// install installs the evaluation integration with the scenario's logs.
+func (r *agentRun) install(ctx context.Context, scenario *Scenario) error {
+	config, encodeErr := json.Marshal(integrationConfig{Logs: scenario.Logs})
+	if encodeErr != nil {
+		return fmt.Errorf("encode installation config: %w", encodeErr)
+	}
+	installed, installErr := r.service.integrations.InstallNew(ctx, EvaluationProviderName, config)
 	if installErr != nil {
 		return fmt.Errorf("install the evaluation integration: %w", installErr)
 	}
@@ -324,19 +332,20 @@ func (r *agentRun) collect(ctx context.Context) error {
 	var usage UsageTotals
 	for _, turn := range turns {
 		recorded := Turn{
-			Sequence:     turn.Sequence,
-			Status:       turn.Status.String(),
-			FinishReason: turn.FinishReason,
-			Model:        turn.Model,
-			InputTokens:  turn.InputTokens,
-			OutputTokens: turn.OutputTokens,
-			Reads:        len(turn.Edges.ProviderReads),
+			Sequence:          turn.Sequence,
+			Status:            turn.Status.String(),
+			FinishReason:      turn.FinishReason,
+			Model:             turn.Model,
+			InputTokens:       turn.InputTokens,
+			CachedInputTokens: turn.CachedInputTokens,
+			OutputTokens:      turn.OutputTokens,
+			Reads:             len(turn.Edges.ProviderReads),
 		}
 		if turn.FinishedAt != nil {
 			recorded.DurationMilliseconds = turn.FinishedAt.Sub(turn.CreatedAt).Milliseconds()
 		}
 		r.repetition.Turns = append(r.repetition.Turns, recorded)
-		usage.Add(turn.Model, turn.InputTokens, turn.OutputTokens)
+		usage.Add(turn.Model, turn.InputTokens, turn.CachedInputTokens, turn.OutputTokens)
 	}
 	r.repetition.Usage = usage.List()
 

@@ -148,6 +148,7 @@ func (m *agentTurnMetrics) record(ctx context.Context, agent, model, outcome str
 	modelAttr := attribute.String("model", model)
 	m.duration.Record(ctx, duration.Seconds(), metric.WithAttributes(agentAttr, modelAttr, attribute.String("outcome", outcome)))
 	m.tokens.Add(ctx, int64(usage.InputTokens), metric.WithAttributes(agentAttr, modelAttr, attribute.String("token_type", "input")))
+	m.tokens.Add(ctx, int64(usage.CachedInputTokens), metric.WithAttributes(agentAttr, modelAttr, attribute.String("token_type", "cached_input")))
 	m.tokens.Add(ctx, int64(usage.OutputTokens), metric.WithAttributes(agentAttr, modelAttr, attribute.String("token_type", "output")))
 	m.reads.Add(ctx, int64(usage.Reads), metric.WithAttributes(agentAttr))
 }
@@ -213,6 +214,7 @@ func (w *InvokeAgentTurnWorker) runClaimedTurn(ctx context.Context, job *river.J
 		attribute.String("outcome", outcome),
 		attribute.String("model", model),
 		attribute.Int("input_tokens", usage.InputTokens),
+		attribute.Int("cached_input_tokens", usage.CachedInputTokens),
 		attribute.Int("output_tokens", usage.OutputTokens),
 		attribute.Int("read_count", usage.Reads),
 	)
@@ -379,6 +381,9 @@ func (w *InvokeAgentTurnWorker) claimAgentTurn(ctx context.Context, job *river.J
 		for i, m := range msgs {
 			lastCompletedState.Messages[i] = m.MakeGenkitMessage()
 		}
+		// Earlier turns' large tool results reach the model as notes. Only messages after these are saved, so
+		// the stored messages keep every result in full.
+		lastCompletedState.Messages = rezai.CompactPriorTurnMessages(lastCompletedState.Messages)
 		for i, a := range sessArtifacts {
 			lastCompletedState.Artifacts[i] = &aix.Artifact{
 				Name:     a.Name,
@@ -617,7 +622,7 @@ func (w *InvokeAgentTurnWorker) addAttemptUsage(u *ent.AgentTurnUpdateOne, usage
 	if usage.Model != "" {
 		u.SetModel(usage.Model)
 	}
-	return u.AddInputTokens(usage.InputTokens).AddOutputTokens(usage.OutputTokens)
+	return u.AddInputTokens(usage.InputTokens).AddCachedInputTokens(usage.CachedInputTokens).AddOutputTokens(usage.OutputTokens)
 }
 
 // replaceTurnOutputMessages replaces the turn's messages other than its input message. A resumed attempt's

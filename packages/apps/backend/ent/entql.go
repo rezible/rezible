@@ -233,22 +233,23 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "AgentTurn",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			agentturn.FieldTenantID:        {Type: field.TypeInt, Column: agentturn.FieldTenantID},
-			agentturn.FieldCreatedAt:       {Type: field.TypeTime, Column: agentturn.FieldCreatedAt},
-			agentturn.FieldUpdatedAt:       {Type: field.TypeTime, Column: agentturn.FieldUpdatedAt},
-			agentturn.FieldAgentSessionID:  {Type: field.TypeUUID, Column: agentturn.FieldAgentSessionID},
-			agentturn.FieldSequence:        {Type: field.TypeInt, Column: agentturn.FieldSequence},
-			agentturn.FieldRiverJobID:      {Type: field.TypeInt64, Column: agentturn.FieldRiverJobID},
-			agentturn.FieldInputToolResume: {Type: field.TypeJSON, Column: agentturn.FieldInputToolResume},
-			agentturn.FieldInputMessageID:  {Type: field.TypeUUID, Column: agentturn.FieldInputMessageID},
-			agentturn.FieldStatus:          {Type: field.TypeEnum, Column: agentturn.FieldStatus},
-			agentturn.FieldStartedAt:       {Type: field.TypeTime, Column: agentturn.FieldStartedAt},
-			agentturn.FieldFinishedAt:      {Type: field.TypeTime, Column: agentturn.FieldFinishedAt},
-			agentturn.FieldFinishReason:    {Type: field.TypeString, Column: agentturn.FieldFinishReason},
-			agentturn.FieldError:           {Type: field.TypeString, Column: agentturn.FieldError},
-			agentturn.FieldModel:           {Type: field.TypeString, Column: agentturn.FieldModel},
-			agentturn.FieldInputTokens:     {Type: field.TypeInt, Column: agentturn.FieldInputTokens},
-			agentturn.FieldOutputTokens:    {Type: field.TypeInt, Column: agentturn.FieldOutputTokens},
+			agentturn.FieldTenantID:          {Type: field.TypeInt, Column: agentturn.FieldTenantID},
+			agentturn.FieldCreatedAt:         {Type: field.TypeTime, Column: agentturn.FieldCreatedAt},
+			agentturn.FieldUpdatedAt:         {Type: field.TypeTime, Column: agentturn.FieldUpdatedAt},
+			agentturn.FieldAgentSessionID:    {Type: field.TypeUUID, Column: agentturn.FieldAgentSessionID},
+			agentturn.FieldSequence:          {Type: field.TypeInt, Column: agentturn.FieldSequence},
+			agentturn.FieldRiverJobID:        {Type: field.TypeInt64, Column: agentturn.FieldRiverJobID},
+			agentturn.FieldInputToolResume:   {Type: field.TypeJSON, Column: agentturn.FieldInputToolResume},
+			agentturn.FieldInputMessageID:    {Type: field.TypeUUID, Column: agentturn.FieldInputMessageID},
+			agentturn.FieldStatus:            {Type: field.TypeEnum, Column: agentturn.FieldStatus},
+			agentturn.FieldStartedAt:         {Type: field.TypeTime, Column: agentturn.FieldStartedAt},
+			agentturn.FieldFinishedAt:        {Type: field.TypeTime, Column: agentturn.FieldFinishedAt},
+			agentturn.FieldFinishReason:      {Type: field.TypeString, Column: agentturn.FieldFinishReason},
+			agentturn.FieldError:             {Type: field.TypeString, Column: agentturn.FieldError},
+			agentturn.FieldModel:             {Type: field.TypeString, Column: agentturn.FieldModel},
+			agentturn.FieldInputTokens:       {Type: field.TypeInt, Column: agentturn.FieldInputTokens},
+			agentturn.FieldCachedInputTokens: {Type: field.TypeInt, Column: agentturn.FieldCachedInputTokens},
+			agentturn.FieldOutputTokens:      {Type: field.TypeInt, Column: agentturn.FieldOutputTokens},
 		},
 	}
 	graph.Nodes[6] = &sqlgraph.Node{
@@ -7352,6 +7353,11 @@ func (f *AgentTurnFilter) WhereModel(p entql.StringP) {
 // WhereInputTokens applies the entql int predicate on the input_tokens field.
 func (f *AgentTurnFilter) WhereInputTokens(p entql.IntP) {
 	f.Where(p.Field(agentturn.FieldInputTokens))
+}
+
+// WhereCachedInputTokens applies the entql int predicate on the cached_input_tokens field.
+func (f *AgentTurnFilter) WhereCachedInputTokens(p entql.IntP) {
+	f.Where(p.Field(agentturn.FieldCachedInputTokens))
 }
 
 // WhereOutputTokens applies the entql int predicate on the output_tokens field.

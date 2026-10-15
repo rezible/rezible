@@ -427,13 +427,13 @@ func (s *AiRuntimeSuite) TestTurnUsageAddsEveryModelCall() {
 			call := &ai.ToolRequest{Name: checkTool.Name(), Ref: "check-1", Input: map[string]any{}}
 			return &ai.ModelResponse{
 				Message: ai.NewModelMessage(ai.NewToolRequestPart(call)),
-				Usage:   &ai.GenerationUsage{InputTokens: 100, OutputTokens: 10, ThoughtsTokens: 5},
+				Usage:   &ai.GenerationUsage{InputTokens: 100, CachedContentTokens: 60, OutputTokens: 10, ThoughtsTokens: 5},
 			}, nil
 		}
 		return &ai.ModelResponse{
 			Message:      ai.NewModelTextMessage("The service is healthy"),
 			FinishReason: ai.FinishReasonStop,
-			Usage:        &ai.GenerationUsage{InputTokens: 200, OutputTokens: 20, ThoughtsTokens: 7},
+			Usage:        &ai.GenerationUsage{InputTokens: 200, CachedContentTokens: 120, OutputTokens: 20, ThoughtsTokens: 7},
 		}, nil
 	}
 	agent.def.Model = model.Name
@@ -451,7 +451,7 @@ func (s *AiRuntimeSuite) TestTurnUsageAddsEveryModelCall() {
 	s.Require().NoError(invokeErr)
 	s.Require().NoError(result.Error)
 
-	s.Equal(rezai.TurnUsage{Model: model.Name, InputTokens: 300, OutputTokens: 42}, totals())
+	s.Equal(rezai.TurnUsage{Model: model.Name, InputTokens: 300, CachedInputTokens: 180, OutputTokens: 42}, totals())
 }
 
 func makeTestAgent[S any](msg *ai.Message) *testAgent[S] {

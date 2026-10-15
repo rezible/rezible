@@ -192,6 +192,20 @@ func (_c *AgentTurnCreate) SetNillableInputTokens(v *int) *AgentTurnCreate {
 	return _c
 }
 
+// SetCachedInputTokens sets the "cached_input_tokens" field.
+func (_c *AgentTurnCreate) SetCachedInputTokens(v int) *AgentTurnCreate {
+	_c.mutation.SetCachedInputTokens(v)
+	return _c
+}
+
+// SetNillableCachedInputTokens sets the "cached_input_tokens" field if the given value is not nil.
+func (_c *AgentTurnCreate) SetNillableCachedInputTokens(v *int) *AgentTurnCreate {
+	if v != nil {
+		_c.SetCachedInputTokens(*v)
+	}
+	return _c
+}
+
 // SetOutputTokens sets the "output_tokens" field.
 func (_c *AgentTurnCreate) SetOutputTokens(v int) *AgentTurnCreate {
 	_c.mutation.SetOutputTokens(v)
@@ -335,6 +349,10 @@ func (_c *AgentTurnCreate) defaults() error {
 		v := agentturn.DefaultInputTokens
 		_c.mutation.SetInputTokens(v)
 	}
+	if _, ok := _c.mutation.CachedInputTokens(); !ok {
+		v := agentturn.DefaultCachedInputTokens
+		_c.mutation.SetCachedInputTokens(v)
+	}
 	if _, ok := _c.mutation.OutputTokens(); !ok {
 		v := agentturn.DefaultOutputTokens
 		_c.mutation.SetOutputTokens(v)
@@ -387,6 +405,14 @@ func (_c *AgentTurnCreate) check() error {
 	if v, ok := _c.mutation.InputTokens(); ok {
 		if err := agentturn.InputTokensValidator(v); err != nil {
 			return &ValidationError{Name: "input_tokens", err: fmt.Errorf(`ent: validator failed for field "AgentTurn.input_tokens": %w`, err)}
+		}
+	}
+	if _, ok := _c.mutation.CachedInputTokens(); !ok {
+		return &ValidationError{Name: "cached_input_tokens", err: errors.New(`ent: missing required field "AgentTurn.cached_input_tokens"`)}
+	}
+	if v, ok := _c.mutation.CachedInputTokens(); ok {
+		if err := agentturn.CachedInputTokensValidator(v); err != nil {
+			return &ValidationError{Name: "cached_input_tokens", err: fmt.Errorf(`ent: validator failed for field "AgentTurn.cached_input_tokens": %w`, err)}
 		}
 	}
 	if _, ok := _c.mutation.OutputTokens(); !ok {
@@ -487,6 +513,10 @@ func (_c *AgentTurnCreate) createSpec() (*AgentTurn, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.InputTokens(); ok {
 		_spec.SetField(agentturn.FieldInputTokens, field.TypeInt, value)
 		_node.InputTokens = value
+	}
+	if value, ok := _c.mutation.CachedInputTokens(); ok {
+		_spec.SetField(agentturn.FieldCachedInputTokens, field.TypeInt, value)
+		_node.CachedInputTokens = value
 	}
 	if value, ok := _c.mutation.OutputTokens(); ok {
 		_spec.SetField(agentturn.FieldOutputTokens, field.TypeInt, value)
@@ -835,6 +865,24 @@ func (u *AgentTurnUpsert) AddInputTokens(v int) *AgentTurnUpsert {
 	return u
 }
 
+// SetCachedInputTokens sets the "cached_input_tokens" field.
+func (u *AgentTurnUpsert) SetCachedInputTokens(v int) *AgentTurnUpsert {
+	u.Set(agentturn.FieldCachedInputTokens, v)
+	return u
+}
+
+// UpdateCachedInputTokens sets the "cached_input_tokens" field to the value that was provided on create.
+func (u *AgentTurnUpsert) UpdateCachedInputTokens() *AgentTurnUpsert {
+	u.SetExcluded(agentturn.FieldCachedInputTokens)
+	return u
+}
+
+// AddCachedInputTokens adds v to the "cached_input_tokens" field.
+func (u *AgentTurnUpsert) AddCachedInputTokens(v int) *AgentTurnUpsert {
+	u.Add(agentturn.FieldCachedInputTokens, v)
+	return u
+}
+
 // SetOutputTokens sets the "output_tokens" field.
 func (u *AgentTurnUpsert) SetOutputTokens(v int) *AgentTurnUpsert {
 	u.Set(agentturn.FieldOutputTokens, v)
@@ -1124,6 +1172,27 @@ func (u *AgentTurnUpsertOne) AddInputTokens(v int) *AgentTurnUpsertOne {
 func (u *AgentTurnUpsertOne) UpdateInputTokens() *AgentTurnUpsertOne {
 	return u.Update(func(s *AgentTurnUpsert) {
 		s.UpdateInputTokens()
+	})
+}
+
+// SetCachedInputTokens sets the "cached_input_tokens" field.
+func (u *AgentTurnUpsertOne) SetCachedInputTokens(v int) *AgentTurnUpsertOne {
+	return u.Update(func(s *AgentTurnUpsert) {
+		s.SetCachedInputTokens(v)
+	})
+}
+
+// AddCachedInputTokens adds v to the "cached_input_tokens" field.
+func (u *AgentTurnUpsertOne) AddCachedInputTokens(v int) *AgentTurnUpsertOne {
+	return u.Update(func(s *AgentTurnUpsert) {
+		s.AddCachedInputTokens(v)
+	})
+}
+
+// UpdateCachedInputTokens sets the "cached_input_tokens" field to the value that was provided on create.
+func (u *AgentTurnUpsertOne) UpdateCachedInputTokens() *AgentTurnUpsertOne {
+	return u.Update(func(s *AgentTurnUpsert) {
+		s.UpdateCachedInputTokens()
 	})
 }
 
@@ -1586,6 +1655,27 @@ func (u *AgentTurnUpsertBulk) AddInputTokens(v int) *AgentTurnUpsertBulk {
 func (u *AgentTurnUpsertBulk) UpdateInputTokens() *AgentTurnUpsertBulk {
 	return u.Update(func(s *AgentTurnUpsert) {
 		s.UpdateInputTokens()
+	})
+}
+
+// SetCachedInputTokens sets the "cached_input_tokens" field.
+func (u *AgentTurnUpsertBulk) SetCachedInputTokens(v int) *AgentTurnUpsertBulk {
+	return u.Update(func(s *AgentTurnUpsert) {
+		s.SetCachedInputTokens(v)
+	})
+}
+
+// AddCachedInputTokens adds v to the "cached_input_tokens" field.
+func (u *AgentTurnUpsertBulk) AddCachedInputTokens(v int) *AgentTurnUpsertBulk {
+	return u.Update(func(s *AgentTurnUpsert) {
+		s.AddCachedInputTokens(v)
+	})
+}
+
+// UpdateCachedInputTokens sets the "cached_input_tokens" field to the value that was provided on create.
+func (u *AgentTurnUpsertBulk) UpdateCachedInputTokens() *AgentTurnUpsertBulk {
+	return u.Update(func(s *AgentTurnUpsert) {
+		s.UpdateCachedInputTokens()
 	})
 }
 

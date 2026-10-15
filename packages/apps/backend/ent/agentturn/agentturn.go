@@ -46,6 +46,8 @@ const (
 	FieldModel = "model"
 	// FieldInputTokens holds the string denoting the input_tokens field in the database.
 	FieldInputTokens = "input_tokens"
+	// FieldCachedInputTokens holds the string denoting the cached_input_tokens field in the database.
+	FieldCachedInputTokens = "cached_input_tokens"
 	// FieldOutputTokens holds the string denoting the output_tokens field in the database.
 	FieldOutputTokens = "output_tokens"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
@@ -124,6 +126,7 @@ var Columns = []string{
 	FieldError,
 	FieldModel,
 	FieldInputTokens,
+	FieldCachedInputTokens,
 	FieldOutputTokens,
 }
 
@@ -161,6 +164,10 @@ var (
 	DefaultInputTokens int
 	// InputTokensValidator is a validator for the "input_tokens" field. It is called by the builders before save.
 	InputTokensValidator func(int) error
+	// DefaultCachedInputTokens holds the default value on creation for the "cached_input_tokens" field.
+	DefaultCachedInputTokens int
+	// CachedInputTokensValidator is a validator for the "cached_input_tokens" field. It is called by the builders before save.
+	CachedInputTokensValidator func(int) error
 	// DefaultOutputTokens holds the default value on creation for the "output_tokens" field.
 	DefaultOutputTokens int
 	// OutputTokensValidator is a validator for the "output_tokens" field. It is called by the builders before save.
@@ -269,6 +276,11 @@ func ByModel(opts ...sql.OrderTermOption) OrderOption {
 // ByInputTokens orders the results by the input_tokens field.
 func ByInputTokens(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldInputTokens, opts...).ToFunc()
+}
+
+// ByCachedInputTokens orders the results by the cached_input_tokens field.
+func ByCachedInputTokens(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCachedInputTokens, opts...).ToFunc()
 }
 
 // ByOutputTokens orders the results by the output_tokens field.

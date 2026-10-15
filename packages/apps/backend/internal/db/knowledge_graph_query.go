@@ -54,10 +54,11 @@ func (s *KnowledgeGraphQueryService) ListEntities(ctx context.Context, params re
 		query.Where(kne.CategoryIn(params.Categories...))
 	}
 	if params.LinkingAttribute != "" {
-		query.Where(kne.HasLinkingAttributesWith(
-			kela.Attribute(params.LinkingAttribute),
-			kela.Value(params.LinkingValue),
-		))
+		linking := []predicate.KnowledgeEntityLinkingAttribute{kela.Attribute(params.LinkingAttribute)}
+		if params.LinkingValueContains != "" {
+			linking = append(linking, kela.ValueContains(params.LinkingValueContains))
+		}
+		query.Where(kne.HasLinkingAttributesWith(linking...))
 	}
 
 	return ent.DoListQuery[ent.KnowledgeEntity, *ent.KnowledgeEntityQuery](ctx, query, params.ListParams)

@@ -53,6 +53,8 @@ type AgentTurn struct {
 	Model string `json:"model,omitempty"`
 	// InputTokens holds the value of the "input_tokens" field.
 	InputTokens int `json:"input_tokens,omitempty"`
+	// CachedInputTokens holds the value of the "cached_input_tokens" field.
+	CachedInputTokens int `json:"cached_input_tokens,omitempty"`
 	// OutputTokens holds the value of the "output_tokens" field.
 	OutputTokens int `json:"output_tokens,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -149,7 +151,7 @@ func (*AgentTurn) scanValues(columns []string) ([]any, error) {
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case agentturn.FieldInputToolResume:
 			values[i] = new([]byte)
-		case agentturn.FieldTenantID, agentturn.FieldSequence, agentturn.FieldRiverJobID, agentturn.FieldInputTokens, agentturn.FieldOutputTokens:
+		case agentturn.FieldTenantID, agentturn.FieldSequence, agentturn.FieldRiverJobID, agentturn.FieldInputTokens, agentturn.FieldCachedInputTokens, agentturn.FieldOutputTokens:
 			values[i] = new(sql.NullInt64)
 		case agentturn.FieldStatus, agentturn.FieldFinishReason, agentturn.FieldError, agentturn.FieldModel:
 			values[i] = new(sql.NullString)
@@ -273,6 +275,12 @@ func (_m *AgentTurn) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field input_tokens", values[i])
 			} else if value.Valid {
 				_m.InputTokens = int(value.Int64)
+			}
+		case agentturn.FieldCachedInputTokens:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field cached_input_tokens", values[i])
+			} else if value.Valid {
+				_m.CachedInputTokens = int(value.Int64)
 			}
 		case agentturn.FieldOutputTokens:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
@@ -398,6 +406,9 @@ func (_m *AgentTurn) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("input_tokens=")
 	builder.WriteString(fmt.Sprintf("%v", _m.InputTokens))
+	builder.WriteString(", ")
+	builder.WriteString("cached_input_tokens=")
+	builder.WriteString(fmt.Sprintf("%v", _m.CachedInputTokens))
 	builder.WriteString(", ")
 	builder.WriteString("output_tokens=")
 	builder.WriteString(fmt.Sprintf("%v", _m.OutputTokens))

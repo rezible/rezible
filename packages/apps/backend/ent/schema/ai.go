@@ -137,6 +137,7 @@ func (AgentTurn) Fields() []ent.Field {
 		// What the turn cost: the model of its latest attempt that called one, and tokens summed across attempts.
 		field.String("model").Default(""),
 		field.Int("input_tokens").Default(0).NonNegative(),
+		field.Int("cached_input_tokens").Default(0).NonNegative(),
 		field.Int("output_tokens").Default(0).NonNegative(),
 	}
 }

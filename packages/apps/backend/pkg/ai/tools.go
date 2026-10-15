@@ -219,14 +219,16 @@ var ReadInvestigationOutputTool = defineTool[ToolDefinition[ReadInvestigationOut
 )
 
 type (
-	FindServiceArgs struct {
-		Name string `json:"name" jsonschema:"description=A service name, for example one named in a log line"`
+	ListServicesArgs struct {
+		Name     string `json:"name,omitempty" jsonschema:"description=Optional text the service name must contain, compared after normalizing case and separators, for example a name from a log line; empty lists every service"`
+		Page     int    `json:"page" jsonschema:"description=One-based page number; zero uses the default,minimum=0"`
+		PageSize int    `json:"page_size" jsonschema:"description=Page size from 1 to 50; zero uses the default,minimum=0,maximum=50"`
 	}
 )
 
-var FindServiceTool = defineTool[ToolDefinition[FindServiceArgs, *TextToolResult]](
-	"find_service",
-	"Find the service with a name, compared after normalizing case and separators. Returns its ref for other tools, or says there is none. An exact name match, not a search.",
+var ListServicesTool = defineTool[ToolDefinition[ListServicesArgs, *TextToolResult]](
+	"list_services",
+	"List the organization's services with their refs for other tools, optionally only those whose name contains some text. Use it to find a service named in a log line, or to see which services exist.",
 )
 
 type (
@@ -256,17 +258,26 @@ type (
 		ProviderReadRef string `json:"provider_read_ref"`
 		ServiceRef      string `json:"service_ref"`
 		// ServiceName is the name the service's logs were read by.
-		ServiceName     string                `json:"service_name"`
-		Lines           []ProviderReadLogLine `json:"lines"`
-		Note            string                `json:"note,omitempty"`
-		Read            ProviderReadRecord    `json:"read"`
-		BudgetRemaining int                   `json:"budget_remaining"`
+		ServiceName string `json:"service_name"`
+		// Labels are the labels every returned line carries with the same value.
+		Labels map[string]string     `json:"labels,omitempty"`
+		Lines  []ProviderReadLogLine `json:"lines"`
+		// Limits are the read's limits that applied, such as a truncated result.
+		Limits          []string `json:"limits,omitempty"`
+		Note            string   `json:"note,omitempty"`
+		BudgetRemaining int      `json:"budget_remaining"`
 	}
 
 	ProviderReadLogLine struct {
-		Time   time.Time         `json:"time"`
-		Line   string            `json:"line"`
+		// Time is the newest line's time when Count is above one.
+		Time time.Time `json:"time"`
+		Line string    `json:"line"`
+		// Labels are this line's labels that are not in the result's Labels.
 		Labels map[string]string `json:"labels,omitempty"`
+		// Count is how many consecutive identical lines this entry stands for; omitted when one.
+		Count int `json:"count,omitempty"`
+		// Earliest is the oldest of those lines' times; omitted when Count is one.
+		Earliest *time.Time `json:"earliest,omitempty"`
 	}
 )
 
@@ -288,9 +299,10 @@ type (
 		ServiceRef      string              `json:"service_ref"`
 		ServiceName     string              `json:"service_name"`
 		Points          []ProviderReadPoint `json:"points"`
-		Note            string              `json:"note,omitempty"`
-		Read            ProviderReadRecord  `json:"read"`
-		BudgetRemaining int                 `json:"budget_remaining"`
+		// Limits are the read's limits that applied, such as a raised step.
+		Limits          []string `json:"limits,omitempty"`
+		Note            string   `json:"note,omitempty"`
+		BudgetRemaining int      `json:"budget_remaining"`
 	}
 
 	ProviderReadPoint struct {

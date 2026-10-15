@@ -65,9 +65,10 @@ type (
 	}
 
 	ModelUsage struct {
-		Model        string `json:"model"`
-		InputTokens  int    `json:"input_tokens"`
-		OutputTokens int    `json:"output_tokens"`
+		Model             string `json:"model"`
+		InputTokens       int    `json:"input_tokens"`
+		CachedInputTokens int    `json:"cached_input_tokens"`
+		OutputTokens      int    `json:"output_tokens"`
 	}
 
 	Turn struct {
@@ -76,6 +77,7 @@ type (
 		FinishReason         string `json:"finish_reason"`
 		Model                string `json:"model"`
 		InputTokens          int    `json:"input_tokens"`
+		CachedInputTokens    int    `json:"cached_input_tokens"`
 		OutputTokens         int    `json:"output_tokens"`
 		Reads                int    `json:"reads"`
 		DurationMilliseconds int64  `json:"duration_ms"`

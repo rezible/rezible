@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"slices"
+	"time"
 
 	mapset "github.com/deckarep/golang-set/v2"
 	"github.com/firebase/genkit/go/ai"
@@ -16,6 +17,7 @@ import (
 	"github.com/rezible/rezible/internal/db/evals"
 	rezai "github.com/rezible/rezible/pkg/ai"
 	"github.com/rezible/rezible/pkg/execution"
+	"github.com/rezible/rezible/pkg/integrations"
 )
 
 // TestAiEvalWorkflow runs the situation judge's dataset through the application, where the judge is disabled
@@ -73,6 +75,8 @@ type scenarioModel struct {
 	cited mapset.Set[string]
 	// loop calls a tool on every step, so the turn reaches its tool limit and fails.
 	loop bool
+	// sources are what the first turn was told it can read.
+	sources *rezai.InvestigationSources
 }
 
 var latestEvidencePattern = regexp.MustCompile(`assertion=alert_definition_observed .*latest_evidence=(\S+)`)
@@ -109,6 +113,9 @@ func (m *scenarioModel) generate(_ context.Context, request *ai.ModelRequest, _ 
 	if introductionErr != nil {
 		return nil, introductionErr
 	}
+	if m.sources == nil {
+		m.sources = &introduction.Sources
+	}
 	if introduction.HasAssignedUserQuestion {
 		answer := rezai.PublishInvestigationAnswerToolInput{Title: "No", Body: "Nothing points at search-api.", EvidenceRefs: []string{}}
 		return m.requestTool(request, &ai.ToolRequest{Name: rezai.PublishInvestigationAnswerTool.Name(), Ref: "answer", Input: answer})
@@ -123,10 +130,10 @@ func (m *scenarioModel) generate(_ context.Context, request *ai.ModelRequest, _ 
 	return stop, nil
 }
 
-// runScenario runs one repetition of the scenario in a new application.
-func (s *BackendSuite) runScenario(name string, model *scenarioModel) evals.Repetition {
-	model.cited = mapset.NewSet[string]()
-	ah := s.newAppHarness(appTestOptions{ModelAction: model.generate, AgentEvaluation: true})
+// runScenario runs one repetition of the scenario in a new application, with the model action playing the
+// agent.
+func (s *BackendSuite) runScenario(name string, generate ai.ModelActionFunc[any]) evals.Repetition {
+	ah := s.newAppHarness(appTestOptions{ModelAction: generate, AgentEvaluation: true})
 	agents, agentsErr := ah.app.invoke[*evals.AgentEvalService]()
 	s.Require().NoError(agentsErr)
 	ctx := execution.NewRootContext(s.T().Context(), execution.KindAnonymous, execution.SourceCLI)
@@ -138,7 +145,8 @@ func (s *BackendSuite) runScenario(name string, model *scenarioModel) evals.Repe
 
 func (s *BackendSuite) TestAiEvalScenario() {
 	s.Run("setup, new evidence and a question", func() {
-		repetition := s.runScenario("alerts-without-sources", &scenarioModel{})
+		model := &scenarioModel{cited: mapset.NewSet[string]()}
+		repetition := s.runScenario("alerts-without-sources", model.generate)
 		s.Require().Nil(repetition.Error)
 		outcomes := make(map[string]bool, len(repetition.Checks))
 		for _, check := range repetition.Checks {
@@ -156,13 +164,141 @@ func (s *BackendSuite) TestAiEvalScenario() {
 			"answer_published":                         true,
 		}, outcomes)
 		s.Len(repetition.Turns, 3)
+		s.Equal(&rezai.InvestigationSources{
+			Logs:    rezai.SourceAvailability{Reason: "no logs integration installed"},
+			Changes: rezai.SourceAvailability{Available: true},
+		}, model.sources)
 	})
 
 	s.Run("a failed turn", func() {
-		repetition := s.runScenario("alerts-without-sources", &scenarioModel{loop: true})
+		model := &scenarioModel{cited: mapset.NewSet[string](), loop: true}
+		repetition := s.runScenario("alerts-without-sources", model.generate)
 		s.Equal(evals.RunStatusError, repetition.Status)
 		s.Require().NotNil(repetition.Error)
 		s.Equal("setup", repetition.Error.Step)
 		s.Contains(repetition.Error.Message, "turn 1 failed")
 	})
+}
+
+// checkoutModel plays the investigation agent in checkout-upstream-timeout. Its first turn finds both
+// services by name, lists checkout-api's changes and searches both services' logs, then publishes a report and a
+// finding citing the deployment and the checkout-api read, and a hypothesis citing the payments-api read. It
+// answers the question citing the payments-api read.
+type checkoutModel struct {
+	investigationModel
+	checkoutSearch *rezai.SearchLogsToolResult
+	paymentsSearch *rezai.SearchLogsToolResult
+}
+
+var (
+	foundServicePattern  = regexp.MustCompile(`^entity (\S+) `)
+	deploymentEvidence   = regexp.MustCompile(`deployment .*version=checkout-api@2041 .*latest_evidence=(\S+)`)
+	checkoutServiceNames = []string{"checkout-api", "payments-api"}
+)
+
+func (m *checkoutModel) generate(_ context.Context, request *ai.ModelRequest, _ any, _ ai.ModelStreamCallback) (*ai.ModelResponse, error) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.step++
+	stop := &ai.ModelResponse{Message: ai.NewModelTextMessage("Recorded."), FinishReason: ai.FinishReasonStop}
+	introduction, introductionErr := m.decodeIntroduction(request)
+	if introductionErr != nil {
+		return nil, introductionErr
+	}
+	call := func(name, ref string, input any) *ai.Part {
+		return ai.NewToolRequestPart(&ai.ToolRequest{Name: name, Ref: ref, Input: input})
+	}
+
+	last := request.Messages[len(request.Messages)-1]
+	if last.Role != ai.RoleTool {
+		if introduction.HasAssignedUserQuestion {
+			answer := rezai.PublishInvestigationAnswerToolInput{
+				Title: "Yes", Body: "payments-api is exhausting its connection pool.",
+				EvidenceRefs: []string{m.paymentsSearch.ProviderReadRef},
+			}
+			return &ai.ModelResponse{Message: ai.NewModelMessage(call(rezai.PublishInvestigationAnswerTool.Name(), "answer", answer))}, nil
+		}
+		parts := make([]*ai.Part, len(checkoutServiceNames))
+		for index, name := range checkoutServiceNames {
+			parts[index] = call(rezai.ListServicesTool.Name(), "find-"+name, rezai.ListServicesArgs{Name: name})
+		}
+		return &ai.ModelResponse{Message: ai.NewModelMessage(parts...)}, nil
+	}
+
+	switch last.Content[0].ToolResponse.Name {
+	case rezai.ListServicesTool.Name():
+		refs := make(map[string]string, len(checkoutServiceNames))
+		for _, name := range checkoutServiceNames {
+			var found rezai.TextToolResult
+			if decodeErr := m.decodeToolResult(request, rezai.ListServicesTool.Name(), "find-"+name, &found); decodeErr != nil {
+				return nil, decodeErr
+			}
+			match := foundServicePattern.FindStringSubmatch(found.Text)
+			if match == nil {
+				return nil, fmt.Errorf("step %d: no service in %q", m.step, found.Text)
+			}
+			refs[name] = match[1]
+		}
+		start := introduction.TurnStartedAt.Add(-time.Hour).Format(time.RFC3339)
+		end := introduction.TurnStartedAt.Format(time.RFC3339)
+		changes := rezai.ListChangesArgs{ServiceRef: refs["checkout-api"], Start: start, End: end}
+		checkoutLogs := rezai.SearchLogsArgs{ServiceRef: refs["checkout-api"], Start: start, End: end, Contains: "upstream timeout"}
+		paymentsLogs := rezai.SearchLogsArgs{ServiceRef: refs["payments-api"], Start: start, End: end, Contains: "pool exhausted"}
+		return &ai.ModelResponse{Message: ai.NewModelMessage(
+			call(rezai.ListChangesTool.Name(), "changes", changes),
+			call(rezai.SearchLogsTool.Name(), "logs-checkout", checkoutLogs),
+			call(rezai.SearchLogsTool.Name(), "logs-payments", paymentsLogs),
+		)}, nil
+	case rezai.ListChangesTool.Name():
+		var changes rezai.TextToolResult
+		if decodeErr := m.decodeToolResult(request, rezai.ListChangesTool.Name(), "changes", &changes); decodeErr != nil {
+			return nil, decodeErr
+		}
+		match := deploymentEvidence.FindStringSubmatch(changes.Text)
+		if match == nil {
+			return nil, fmt.Errorf("step %d: no deployment in %q", m.step, changes.Text)
+		}
+		m.checkoutSearch, m.paymentsSearch = &rezai.SearchLogsToolResult{}, &rezai.SearchLogsToolResult{}
+		if decodeErr := m.decodeToolResult(request, rezai.SearchLogsTool.Name(), "logs-checkout", m.checkoutSearch); decodeErr != nil {
+			return nil, decodeErr
+		}
+		if decodeErr := m.decodeToolResult(request, rezai.SearchLogsTool.Name(), "logs-payments", m.paymentsSearch); decodeErr != nil {
+			return nil, decodeErr
+		}
+		checkoutRefs := []string{match[1], m.checkoutSearch.ProviderReadRef}
+		report := rezai.PublishInvestigationReportToolInput{Text: "Checkout times out on payments-api.", Summary: "Checkout times out.", EvidenceRefs: checkoutRefs}
+		finding := rezai.PublishInvestigationFindingToolInput{Key: "timeouts", Title: "Upstream timeouts", Body: "Checkout times out on payments-api since the deployment.", EvidenceRefs: checkoutRefs}
+		hypothesis := rezai.PublishInvestigationHypothesisToolInput{
+			Key: "pool", Title: "payments-api pool exhausted", Justification: "Its logs say so.", Status: "supported",
+			EvidenceRefs: []string{m.paymentsSearch.ProviderReadRef},
+		}
+		return &ai.ModelResponse{Message: ai.NewModelMessage(
+			call(rezai.PublishInvestigationReportTool.Name(), "report", report),
+			call(rezai.PublishInvestigationFindingTool.Name(), "finding", finding),
+			call(rezai.PublishInvestigationHypothesisTool.Name(), "hypothesis", hypothesis),
+		)}, nil
+	default:
+		return stop, nil
+	}
+}
+
+func (s *BackendSuite) TestAiEvalScenarioReads() {
+	model := &checkoutModel{}
+	repetition := s.runScenario("checkout-upstream-timeout", model.generate)
+	s.Require().Nil(repetition.Error)
+	for _, check := range repetition.Checks {
+		s.True(check.Passed, "%s: %s", check.ID, check.Summary)
+	}
+	s.Len(repetition.Checks, 9)
+	s.Require().Len(repetition.Turns, 2)
+	s.Equal(2, repetition.Turns[0].Reads)
+
+	s.Require().NotNil(model.checkoutSearch)
+	s.NotEmpty(model.checkoutSearch.Lines)
+	s.Equal("service:checkout-api", model.checkoutSearch.ServiceName)
+	s.Equal(map[string]string{"level": "ERROR"}, model.checkoutSearch.Labels)
+	s.Require().Len(model.checkoutSearch.Lines, 1, "the repeated line collapses into one entry")
+	s.Equal(integrations.DefaultLogSearchLimit, model.checkoutSearch.Lines[0].Count)
+	s.NotEmpty(model.checkoutSearch.Limits, "the evaluation reader records the cut")
+	s.NotEmpty(model.paymentsSearch.Lines)
 }

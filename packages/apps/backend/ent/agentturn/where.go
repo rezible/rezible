@@ -122,6 +122,11 @@ func InputTokens(v int) predicate.AgentTurn {
 	return predicate.AgentTurn(sql.FieldEQ(FieldInputTokens, v))
 }
 
+// CachedInputTokens applies equality check predicate on the "cached_input_tokens" field. It's identical to CachedInputTokensEQ.
+func CachedInputTokens(v int) predicate.AgentTurn {
+	return predicate.AgentTurn(sql.FieldEQ(FieldCachedInputTokens, v))
+}
+
 // OutputTokens applies equality check predicate on the "output_tokens" field. It's identical to OutputTokensEQ.
 func OutputTokens(v int) predicate.AgentTurn {
 	return predicate.AgentTurn(sql.FieldEQ(FieldOutputTokens, v))
@@ -730,6 +735,46 @@ func InputTokensLT(v int) predicate.AgentTurn {
 // InputTokensLTE applies the LTE predicate on the "input_tokens" field.
 func InputTokensLTE(v int) predicate.AgentTurn {
 	return predicate.AgentTurn(sql.FieldLTE(FieldInputTokens, v))
+}
+
+// CachedInputTokensEQ applies the EQ predicate on the "cached_input_tokens" field.
+func CachedInputTokensEQ(v int) predicate.AgentTurn {
+	return predicate.AgentTurn(sql.FieldEQ(FieldCachedInputTokens, v))
+}
+
+// CachedInputTokensNEQ applies the NEQ predicate on the "cached_input_tokens" field.
+func CachedInputTokensNEQ(v int) predicate.AgentTurn {
+	return predicate.AgentTurn(sql.FieldNEQ(FieldCachedInputTokens, v))
+}
+
+// CachedInputTokensIn applies the In predicate on the "cached_input_tokens" field.
+func CachedInputTokensIn(vs ...int) predicate.AgentTurn {
+	return predicate.AgentTurn(sql.FieldIn(FieldCachedInputTokens, vs...))
+}
+
+// CachedInputTokensNotIn applies the NotIn predicate on the "cached_input_tokens" field.
+func CachedInputTokensNotIn(vs ...int) predicate.AgentTurn {
+	return predicate.AgentTurn(sql.FieldNotIn(FieldCachedInputTokens, vs...))
+}
+
+// CachedInputTokensGT applies the GT predicate on the "cached_input_tokens" field.
+func CachedInputTokensGT(v int) predicate.AgentTurn {
+	return predicate.AgentTurn(sql.FieldGT(FieldCachedInputTokens, v))
+}
+
+// CachedInputTokensGTE applies the GTE predicate on the "cached_input_tokens" field.
+func CachedInputTokensGTE(v int) predicate.AgentTurn {
+	return predicate.AgentTurn(sql.FieldGTE(FieldCachedInputTokens, v))
+}
+
+// CachedInputTokensLT applies the LT predicate on the "cached_input_tokens" field.
+func CachedInputTokensLT(v int) predicate.AgentTurn {
+	return predicate.AgentTurn(sql.FieldLT(FieldCachedInputTokens, v))
+}
+
+// CachedInputTokensLTE applies the LTE predicate on the "cached_input_tokens" field.
+func CachedInputTokensLTE(v int) predicate.AgentTurn {
+	return predicate.AgentTurn(sql.FieldLTE(FieldCachedInputTokens, v))
 }
 
 // OutputTokensEQ applies the EQ predicate on the "output_tokens" field.

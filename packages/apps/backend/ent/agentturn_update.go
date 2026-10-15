@@ -230,6 +230,27 @@ func (_u *AgentTurnUpdate) AddInputTokens(v int) *AgentTurnUpdate {
 	return _u
 }
 
+// SetCachedInputTokens sets the "cached_input_tokens" field.
+func (_u *AgentTurnUpdate) SetCachedInputTokens(v int) *AgentTurnUpdate {
+	_u.mutation.ResetCachedInputTokens()
+	_u.mutation.SetCachedInputTokens(v)
+	return _u
+}
+
+// SetNillableCachedInputTokens sets the "cached_input_tokens" field if the given value is not nil.
+func (_u *AgentTurnUpdate) SetNillableCachedInputTokens(v *int) *AgentTurnUpdate {
+	if v != nil {
+		_u.SetCachedInputTokens(*v)
+	}
+	return _u
+}
+
+// AddCachedInputTokens adds value to the "cached_input_tokens" field.
+func (_u *AgentTurnUpdate) AddCachedInputTokens(v int) *AgentTurnUpdate {
+	_u.mutation.AddCachedInputTokens(v)
+	return _u
+}
+
 // SetOutputTokens sets the "output_tokens" field.
 func (_u *AgentTurnUpdate) SetOutputTokens(v int) *AgentTurnUpdate {
 	_u.mutation.ResetOutputTokens()
@@ -429,6 +450,11 @@ func (_u *AgentTurnUpdate) check() error {
 			return &ValidationError{Name: "input_tokens", err: fmt.Errorf(`ent: validator failed for field "AgentTurn.input_tokens": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.CachedInputTokens(); ok {
+		if err := agentturn.CachedInputTokensValidator(v); err != nil {
+			return &ValidationError{Name: "cached_input_tokens", err: fmt.Errorf(`ent: validator failed for field "AgentTurn.cached_input_tokens": %w`, err)}
+		}
+	}
 	if v, ok := _u.mutation.OutputTokens(); ok {
 		if err := agentturn.OutputTokensValidator(v); err != nil {
 			return &ValidationError{Name: "output_tokens", err: fmt.Errorf(`ent: validator failed for field "AgentTurn.output_tokens": %w`, err)}
@@ -505,6 +531,12 @@ func (_u *AgentTurnUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if value, ok := _u.mutation.AddedInputTokens(); ok {
 		_spec.AddField(agentturn.FieldInputTokens, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.CachedInputTokens(); ok {
+		_spec.SetField(agentturn.FieldCachedInputTokens, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedCachedInputTokens(); ok {
+		_spec.AddField(agentturn.FieldCachedInputTokens, field.TypeInt, value)
 	}
 	if value, ok := _u.mutation.OutputTokens(); ok {
 		_spec.SetField(agentturn.FieldOutputTokens, field.TypeInt, value)
@@ -905,6 +937,27 @@ func (_u *AgentTurnUpdateOne) AddInputTokens(v int) *AgentTurnUpdateOne {
 	return _u
 }
 
+// SetCachedInputTokens sets the "cached_input_tokens" field.
+func (_u *AgentTurnUpdateOne) SetCachedInputTokens(v int) *AgentTurnUpdateOne {
+	_u.mutation.ResetCachedInputTokens()
+	_u.mutation.SetCachedInputTokens(v)
+	return _u
+}
+
+// SetNillableCachedInputTokens sets the "cached_input_tokens" field if the given value is not nil.
+func (_u *AgentTurnUpdateOne) SetNillableCachedInputTokens(v *int) *AgentTurnUpdateOne {
+	if v != nil {
+		_u.SetCachedInputTokens(*v)
+	}
+	return _u
+}
+
+// AddCachedInputTokens adds value to the "cached_input_tokens" field.
+func (_u *AgentTurnUpdateOne) AddCachedInputTokens(v int) *AgentTurnUpdateOne {
+	_u.mutation.AddCachedInputTokens(v)
+	return _u
+}
+
 // SetOutputTokens sets the "output_tokens" field.
 func (_u *AgentTurnUpdateOne) SetOutputTokens(v int) *AgentTurnUpdateOne {
 	_u.mutation.ResetOutputTokens()
@@ -1117,6 +1170,11 @@ func (_u *AgentTurnUpdateOne) check() error {
 			return &ValidationError{Name: "input_tokens", err: fmt.Errorf(`ent: validator failed for field "AgentTurn.input_tokens": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.CachedInputTokens(); ok {
+		if err := agentturn.CachedInputTokensValidator(v); err != nil {
+			return &ValidationError{Name: "cached_input_tokens", err: fmt.Errorf(`ent: validator failed for field "AgentTurn.cached_input_tokens": %w`, err)}
+		}
+	}
 	if v, ok := _u.mutation.OutputTokens(); ok {
 		if err := agentturn.OutputTokensValidator(v); err != nil {
 			return &ValidationError{Name: "output_tokens", err: fmt.Errorf(`ent: validator failed for field "AgentTurn.output_tokens": %w`, err)}
@@ -1210,6 +1268,12 @@ func (_u *AgentTurnUpdateOne) sqlSave(ctx context.Context) (_node *AgentTurn, er
 	}
 	if value, ok := _u.mutation.AddedInputTokens(); ok {
 		_spec.AddField(agentturn.FieldInputTokens, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.CachedInputTokens(); ok {
+		_spec.SetField(agentturn.FieldCachedInputTokens, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedCachedInputTokens(); ok {
+		_spec.AddField(agentturn.FieldCachedInputTokens, field.TypeInt, value)
 	}
 	if value, ok := _u.mutation.OutputTokens(); ok {
 		_spec.SetField(agentturn.FieldOutputTokens, field.TypeInt, value)
