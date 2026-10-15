@@ -19,9 +19,6 @@ func (s *BackendSuite) TestSituationDetection() {
 	ah := s.newAppHarness(appTestOptions{ModelAction: incidentalInvestigationModel})
 	ctx, owner := ah.NewIdentity("Responder")
 	requestCtx := s.T().Context()
-	pipeline, pipelineErr := ah.app.invoke[rez.ProviderEventPipelineService]()
-	s.Require().NoError(pipelineErr, "resolve provider pipeline")
-
 	api := ah.API(owner)
 	listSituations := api.Operation[oapiv1.ListSituationsRequest, oapiv1.ListSituationsResponse](oapiv1.ListSituations)
 	situation := func() oapiv1.Situation {
@@ -36,8 +33,7 @@ func (s *BackendSuite) TestSituationDetection() {
 	// signal processing and evaluations it triggers.
 	deliver := func(definition string, resolved bool) {
 		event := s.demoAlertEvent(definition, firedAt, ah.clock.Now(), resolved)
-		s.Require().NoError(pipeline.Ingest(ctx, event), "ingest %s alert", definition)
-		ah.AwaitProjection(ctx, owner.Session.TenantID, event)
+		ah.IngestNow(ctx, event)
 		ah.RunDueJobs(ctx, processKind, ah.clock.Now())
 		ah.RunDueJobs(ctx, evaluateKind, ah.clock.Now())
 	}

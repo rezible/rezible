@@ -461,16 +461,15 @@ func (a *Application) setupDemo(ctx context.Context) error {
 		}
 		ctx = execution.NewUserContext(ctx, sess)
 
+		var installation rez.InstalledIntegration
 		installErr := a.With(func(i rez.IntegrationService) error {
-			_, installErr := i.InstallNew(ctx, "demo", []byte("{}"))
+			var installErr error
+			installation, installErr = i.InstallNew(ctx, "demo", []byte("{}"))
 			return installErr
 		})
 		if installErr != nil {
 			return fmt.Errorf("install demo integration: %w", installErr)
 		}
-
-		fmt.Printf("wait for integration data ingestion...\n")
-		time.Sleep(time.Second * 5)
 
 		return demoprovider.SeedDemoData(
 			ctx,
@@ -482,6 +481,8 @@ func (a *Application) setupDemo(ctx context.Context) error {
 			a.mustInvoke[rez.EventsService](),
 			a.mustInvoke[rez.SituationService](),
 			a.mustInvoke[*db.SituationService](),
+			a.mustInvoke[rez.ProviderEventIngester](),
+			installation.Integration(),
 		)
 	})
 }

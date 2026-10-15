@@ -39,8 +39,12 @@ func SeedDemoData(
 	events rez.EventsService,
 	situations rez.SituationService,
 	signals SignalProcessor,
+	ingester rez.ProviderEventIngester,
+	installation *ent.Integration,
 ) error {
 	s := &dataSeeder{
+		ingester:       ingester,
+		installation:   installation,
 		db:             db,
 		knowledge:      knowledge,
 		incidents:      incidents,
@@ -54,6 +58,8 @@ func SeedDemoData(
 }
 
 type dataSeeder struct {
+	ingester       rez.ProviderEventIngester
+	installation   *ent.Integration
 	db             rez.Database
 	knowledge      rez.KnowledgeGraphQueryService
 	incidents      rez.IncidentService
@@ -65,6 +71,10 @@ type dataSeeder struct {
 }
 
 func (d *dataSeeder) seedData(ctx context.Context) error {
+	if ingestErr := d.ingestEvents(ctx); ingestErr != nil {
+		return ingestErr
+	}
+
 	inc, lookupErr := d.lookupIncident(ctx)
 	if lookupErr != nil {
 		return lookupErr
@@ -90,6 +100,38 @@ func (d *dataSeeder) seedData(ctx context.Context) error {
 		return retrospectiveErr
 	}
 
+	return nil
+}
+
+// ingestEvents processes every demo event, then projects every stored demo event in the order it was saved,
+// so the seeding that follows reads them. The installation's own sync job may save some events first; those
+// are projected here too, and projecting an event already projected does nothing.
+func (d *dataSeeder) ingestEvents(ctx context.Context) error {
+	querier := newEventQuerier(&InstalledIntegration{intg: d.installation})
+	for result, queryErr := range querier.QueryProviderEvents(ctx, rez.ProviderEventSourceCursors{}) {
+		if queryErr != nil {
+			return fmt.Errorf("query demo events: %w", queryErr)
+		}
+		if _, processErr := d.ingester.ProcessProviderEvent(ctx, result.Event); processErr != nil {
+			return fmt.Errorf("process demo event %s: %w", result.Event.ProviderEventRef, processErr)
+		}
+	}
+
+	queryEvents := d.db.Client(ctx).NormalizedEvent.Query().
+		Where(
+			normalizedevent.Provider(ProviderName),
+			normalizedevent.ProviderNamespace(integrationName),
+		).
+		Order(ent.Asc(normalizedevent.FieldCreatedAt), ent.Asc(normalizedevent.FieldID))
+	eventIDs, queryErr := queryEvents.IDs(ctx)
+	if queryErr != nil {
+		return fmt.Errorf("query stored demo events: %w", queryErr)
+	}
+	for _, eventID := range eventIDs {
+		if projectErr := d.ingester.ProjectNormalizedEvent(ctx, eventID); projectErr != nil {
+			return fmt.Errorf("project demo event %s: %w", eventID, projectErr)
+		}
+	}
 	return nil
 }
 

@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"log/slog"
 	"net/http/httptest"
@@ -23,13 +22,9 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	at "github.com/rezible/rezible/ent/agentturn"
-	ne "github.com/rezible/rezible/ent/normalizedevent"
-	nep "github.com/rezible/rezible/ent/normalizedeventprojection"
 	"github.com/rezible/rezible/internal/genkit"
 	"github.com/rezible/rezible/internal/http"
-	"github.com/rezible/rezible/internal/integrations/alertmanager"
 	demo "github.com/rezible/rezible/internal/integrations/demo"
-	"github.com/rezible/rezible/internal/integrations/webhook"
 	"github.com/rezible/rezible/internal/postgres"
 	"github.com/rezible/rezible/pkg/jobs"
 	oapi "github.com/rezible/rezible/pkg/openapi"
@@ -117,22 +112,13 @@ func (s *BackendSuite) newAppHarness(options appTestOptions) *appHarness {
 		return testClock, nil
 	})
 
-	// Select the real demo processor without installing its unrelated sync jobs, and Alertmanager and the
-	// webhook integration, which have no sync jobs.
+	// Select the real demo integration without installing its unrelated sync jobs.
 	app.Override[[]rez.IntegrationDefinition](func(i do.Injector) ([]rez.IntegrationDefinition, error) {
 		integration, integrationErr := do.Invoke[*demo.Integration](i)
 		if integrationErr != nil {
 			return nil, fmt.Errorf("resolve demo integration: %w", integrationErr)
 		}
-		alertmanagerIntegration, alertmanagerErr := do.Invoke[*alertmanager.Integration](i)
-		if alertmanagerErr != nil {
-			return nil, fmt.Errorf("resolve alertmanager integration: %w", alertmanagerErr)
-		}
-		webhookIntegration, webhookErr := do.Invoke[*webhook.Integration](i)
-		if webhookErr != nil {
-			return nil, fmt.Errorf("resolve webhook integration: %w", webhookErr)
-		}
-		return []rez.IntegrationDefinition{integration, alertmanagerIntegration, webhookIntegration}, nil
+		return []rez.IntegrationDefinition{integration}, nil
 	})
 
 	baseOpts := do.MustInvoke[[]genkit.AiRuntimeOption](app.i)
@@ -308,106 +294,29 @@ func (ah *appHarness) jobsOfKind(ctx context.Context, kind string) ([]*rivertype
 	}
 }
 
-func (ah *appHarness) processJobs(ctx context.Context, tenantID int, event rez.ProviderEvent) ([]*rivertype.JobRow, error) {
-	rows, listErr := ah.jobsOfKind(ctx, (&jobs.ProcessProviderEventArgs{}).Kind())
-	if listErr != nil {
-		return nil, listErr
-	}
-	var matches []*rivertype.JobRow
-	for _, row := range rows {
-		var args jobs.ProcessProviderEventArgs
-		if decodeErr := json.Unmarshal(row.EncodedArgs, &args); decodeErr != nil {
-			return nil, fmt.Errorf("decode process job %d: %w", row.ID, decodeErr)
-		}
-		if args.TenantID != tenantID || args.Event.Provider != event.Provider ||
-			args.Event.ProviderNamespace != event.ProviderNamespace ||
-			args.Event.ProviderEventSource != event.ProviderEventSource ||
-			args.Event.ProviderEventRef != event.ProviderEventRef {
-			continue
-		}
-		matches = append(matches, row)
-	}
-	return matches, nil
-}
-
-func (ah *appHarness) projectionJobs(ctx context.Context, eventID uuid.UUID) ([]*rivertype.JobRow, error) {
-	rows, listErr := ah.jobsOfKind(ctx, (jobs.ProjectNormalizedEvent{}).Kind())
-	if listErr != nil {
-		return nil, listErr
-	}
-	var matches []*rivertype.JobRow
-	for _, row := range rows {
-		var args jobs.ProjectNormalizedEvent
-		if decodeErr := json.Unmarshal(row.EncodedArgs, &args); decodeErr != nil {
-			return nil, fmt.Errorf("decode projection job %d: %w", row.ID, decodeErr)
-		}
-		if args.EventId == eventID {
-			matches = append(matches, row)
-		}
-	}
-	return matches, nil
-}
-
-func (ah *appHarness) ProcessJobIDs(ctx context.Context, tenantID int, event rez.ProviderEvent) []int64 {
+// AwaitProviderEvents waits for every queued provider event to be processed, then for every projection
+// those queued.
+func (ah *appHarness) AwaitProviderEvents(ctx context.Context) {
 	ah.suite.T().Helper()
-	rows, listErr := ah.processJobs(ctx, tenantID, event)
-	ah.suite.Require().NoError(listErr, "read jobs for provider delivery %s", event.ProviderEventRef)
-	ids := make([]int64, 0, len(rows))
-	for _, row := range rows {
-		ids = append(ids, row.ID)
+	for _, kind := range []string{(&jobs.ProcessProviderEventArgs{}).Kind(), jobs.ProjectNormalizedEvent{}.Kind()} {
+		rows, listErr := ah.jobsOfKind(ctx, kind)
+		ah.suite.Require().NoError(listErr, "list %s jobs", kind)
+		for _, row := range rows {
+			ah.AwaitJob(ctx, row.ID)
+		}
 	}
-	return ids
 }
 
-type providerProjection struct {
-	Event         *ent.NormalizedEvent
-	Receipt       *ent.NormalizedEventProjection
-	ProcessJobIDs []int64
-}
-
-func (ah *appHarness) AwaitProjection(ctx context.Context, tenantID int, event rez.ProviderEvent) providerProjection {
+// IngestNow processes and projects the provider event before returning, without queueing it. Work that
+// projection queues still runs on the workers.
+func (ah *appHarness) IngestNow(ctx context.Context, event rez.ProviderEvent) {
 	ah.suite.T().Helper()
-	var processRows []*rivertype.JobRow
-	ah.await(ctx, "provider process job", func(waitCtx context.Context) (bool, string, error) {
-		rows, listErr := ah.processJobs(waitCtx, tenantID, event)
-		processRows = rows
-		return len(rows) > 0, "delivery has no process job yet", listErr
-	})
-	var processIDs []int64
-	for _, row := range processRows {
-		ah.AwaitJob(ctx, row.ID)
-		processIDs = append(processIDs, row.ID)
-	}
-
-	queryEvent := ah.Client(ctx).NormalizedEvent.Query().
-		Where(
-			ne.Provider(event.Provider),
-			ne.ProviderNamespace(event.ProviderNamespace),
-			ne.ProviderEventSource(event.ProviderEventSource),
-			ne.ProviderEventRef(event.ProviderEventRef),
-		)
-	normalized, eventErr := queryEvent.Only(ctx)
-	ah.suite.Require().NoError(eventErr, "read normalized delivery after process job completion")
-
-	var projectRows []*rivertype.JobRow
-	ah.await(ctx, "normalized event projection job", func(waitCtx context.Context) (bool, string, error) {
-		rows, listErr := ah.projectionJobs(waitCtx, normalized.ID)
-		projectRows = rows
-		return len(rows) > 0, "normalized event has no projection job yet", listErr
-	})
-	for _, row := range projectRows {
-		ah.AwaitJob(ctx, row.ID)
-	}
-
-	queryReceipt := ah.Client(ctx).NormalizedEventProjection.Query().
-		Where(nep.EventID(normalized.ID))
-	receipt, receiptErr := queryReceipt.Only(ctx)
-	ah.suite.Require().NoError(receiptErr, "read committed projection receipt")
-
-	return providerProjection{
-		Event:         normalized,
-		Receipt:       receipt,
-		ProcessJobIDs: processIDs,
+	ingester, ingesterErr := ah.app.invoke[rez.ProviderEventIngester]()
+	ah.suite.Require().NoError(ingesterErr, "resolve provider event ingester")
+	eventIDs, processErr := ingester.ProcessProviderEvent(ctx, event)
+	ah.suite.Require().NoError(processErr, "process provider event %s", event.ProviderEventRef)
+	for _, eventID := range eventIDs {
+		ah.suite.Require().NoError(ingester.ProjectNormalizedEvent(ctx, eventID), "project normalized event %s", eventID)
 	}
 }
 

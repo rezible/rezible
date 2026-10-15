@@ -9,7 +9,6 @@ import (
 	"strings"
 	"sync"
 	"testing"
-	"time"
 
 	"github.com/firebase/genkit/go/ai"
 	"github.com/google/uuid"
@@ -21,14 +20,8 @@ import (
 	"go.opentelemetry.io/otel/trace"
 
 	rez "github.com/rezible/rezible"
-	"github.com/rezible/rezible/ent"
 	at "github.com/rezible/rezible/ent/agentturn"
-	ale "github.com/rezible/rezible/ent/alertepisode"
-	kne "github.com/rezible/rezible/ent/knowledgeentity"
-	ke "github.com/rezible/rezible/ent/knowledgeevidence"
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
-	ksa "github.com/rezible/rezible/ent/knowledgesubjectalias"
-	"github.com/rezible/rezible/ent/schema/schematypes"
 	rezai "github.com/rezible/rezible/pkg/ai"
 	oapiv1 "github.com/rezible/rezible/pkg/openapi/v1"
 )
@@ -59,21 +52,14 @@ func (s *BackendSuite) TestInvestigation() {
 	situations, situationsErr := ah.app.invoke[rez.SituationService]()
 	s.Require().NoError(situationsErr, "resolve situation service")
 
-	// Record an alert and create a situation from its episode without starting an investigation.
-	occurredAt := time.Date(2026, 6, 1, 10, 0, 0, 0, time.UTC)
-	createEvent := client.NormalizedEvent.Create().
-		SetProvider("test").
-		SetProviderNamespace("investigations").
-		SetProviderResourceRef("checkout-alert").
-		SetKind("alert").
-		SetProviderEventSource("app-test").
-		SetProviderEventRef("checkout-alert-1").
-		SetAttributes([]byte(`{"message":"checkout errors increased"}`)).
-		SetOccurredAt(occurredAt).
-		SetReceivedAt(occurredAt)
-	event, eventErr := createEvent.Save(ctx)
-	s.Require().NoError(eventErr, "seed checkout alert evidence")
-	episodeEntityID, alertEntityID := s.recordAlert(ah, ctx, event)
+	// Ingest an alert and create a situation from its episode without starting an investigation.
+	ah.IngestNow(ctx, s.demoAlertEvent("checkout-errors", ah.clock.Now(), ah.clock.Now(), false))
+	queryEpisode := client.AlertEpisode.Query().
+		WithAlertDefinition()
+	episode, episodeErr := queryEpisode.Only(ctx)
+	s.Require().NoError(episodeErr, "read the alert's episode")
+	episodeEntityID := *episode.KnowledgeEntityID
+	alertEntityID := *episode.Edges.AlertDefinition.KnowledgeEntityID
 	queryObserves := client.KnowledgeRelationship.Query().
 		Where(knr.PredicateEQ(knr.PredicateObserves))
 	observes, observesErr := queryObserves.Only(ctx)
@@ -276,74 +262,6 @@ func (s *BackendSuite) requireTurnLinkedToRequest(spans *tracetest.SpanRecorder,
 	s.Contains(ancestors(work), request, "the request inserted the first job")
 }
 
-// recordAlert records the event as a firing notification of a checkout alert definition that observes the
-// checkout service, and returns its episode's knowledge entity and the alert definition's.
-func (s *BackendSuite) recordAlert(ah *appHarness, ctx context.Context, event *ent.NormalizedEvent) (uuid.UUID, uuid.UUID) {
-	knowledge, knowledgeErr := ah.app.invoke[rez.KnowledgeGraphIngestionService]()
-	s.Require().NoError(knowledgeErr, "resolve knowledge ingestion")
-	alerts, alertsErr := ah.app.invoke[rez.AlertService]()
-	s.Require().NoError(alertsErr, "resolve alert service")
-
-	definitionRef := rez.ProviderResourceRef{Provider: event.Provider, ProviderNamespace: event.ProviderNamespace, ResourceRef: event.ProviderResourceRef}
-	definitionEntityRef := rez.KnowledgeEntityRef{Category: kne.CategorySignal, Kind: "alert", ProviderResourceRef: definitionRef}
-	definitionEvidence := rez.KnowledgeEvidenceRef{
-		Kind:        ke.KindObserved,
-		Assertion:   "alert_definition_observed",
-		EffectiveAt: event.OccurredAt,
-		Subject:     rez.KnowledgeSubjectRef{Entity: &definitionEntityRef},
-	}
-	serviceRef := rez.ProviderResourceRef{Provider: event.Provider, ProviderNamespace: event.ProviderNamespace, ResourceRef: "checkout-api"}
-	serviceEntityRef := rez.KnowledgeEntityRef{Category: kne.CategoryContainer, Kind: "service", ProviderResourceRef: serviceRef}
-	serviceEvidence := rez.KnowledgeEvidenceRef{
-		Kind:         ke.KindObserved,
-		Assertion:    "service_observed",
-		EffectiveAt:  event.OccurredAt,
-		Subject:      rez.KnowledgeSubjectRef{Entity: &serviceEntityRef},
-		SubjectState: schematypes.KnowledgeGraphSubjectState{DisplayName: "checkout-api"},
-	}
-	observesRef := rez.KnowledgeRelationshipRef{
-		Predicate:           knr.PredicateObserves,
-		ProviderResourceRef: rez.ProviderResourceRef{Provider: event.Provider, ProviderNamespace: event.ProviderNamespace, ResourceRef: "checkout-alert:observes:checkout-api"},
-		Source:              definitionEntityRef,
-		Target:              serviceEntityRef,
-	}
-	observesEvidence := rez.KnowledgeEvidenceRef{
-		Kind:        ke.KindObserved,
-		Assertion:   "alert_observes_service",
-		EffectiveAt: event.OccurredAt,
-		Subject:     rez.KnowledgeSubjectRef{Relationship: &observesRef},
-	}
-	ingestErr := knowledge.IngestEvidence(ctx, event, definitionEvidence, serviceEvidence, observesEvidence)
-	s.Require().NoError(ingestErr, "ingest alert definition evidence")
-
-	queryAlias := ah.Client(ctx).KnowledgeSubjectAlias.Query().
-		Where(ksa.ProviderResourceRef(definitionRef.ResourceRef))
-	alias, aliasErr := queryAlias.Only(ctx)
-	s.Require().NoError(aliasErr, "read alert definition alias")
-
-	recordParams := rez.RecordAlertInstanceParams{
-		Event: event,
-		Definition: rez.AlertDefinitionValues{
-			KnowledgeEntityID: *alias.EntityID,
-			Title:             "Checkout errors",
-		},
-		Instance: rez.AlertInstanceValues{
-			InstanceID: "checkout",
-			Severity:   schematypes.SignalSeverityCritical,
-			Firing:     true,
-			StartedAt:  event.OccurredAt,
-		},
-	}
-	definition, recordErr := alerts.RecordAlertInstance(ctx, recordParams)
-	s.Require().NoError(recordErr, "record checkout alert")
-
-	queryEpisode := ah.Client(ctx).AlertEpisode.Query().
-		Where(ale.AlertDefinitionID(definition.ID))
-	episode, episodeErr := queryEpisode.Only(ctx)
-	s.Require().NoError(episodeErr, "read checkout alert episode")
-	return *episode.KnowledgeEntityID, *alias.EntityID
-}
-
 // The script exercises real tools across two turns; it never writes domain data. The first turn makes invalid
 // calls, which return error results, then publishes its report.
 type investigationModel struct {
@@ -414,8 +332,8 @@ func (m *investigationModel) generate(
 		if len(situation.Signals) != 1 || situation.Signals[0].Ref != m.alertEntityID.String() {
 			return nil, fmt.Errorf("step 1: introduction signals=%+v, want the alert entity as ref", situation.Signals)
 		}
-		if len(situation.Entities) != 1 || situation.Entities[0].Name != "checkout-api" {
-			return nil, fmt.Errorf("step 1: introduction entities=%+v, want checkout-api", situation.Entities)
+		if len(situation.Entities) != 1 || situation.Entities[0].Name != "Checkout" {
+			return nil, fmt.Errorf("step 1: introduction entities=%+v, want Checkout", situation.Entities)
 		}
 		if introduction.Outputs.Report != nil {
 			return nil, fmt.Errorf("step 1: introduction report=%+v, want none", introduction.Outputs.Report)

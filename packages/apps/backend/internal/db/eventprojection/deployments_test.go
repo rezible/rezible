@@ -6,9 +6,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/riverqueue/river"
-	"github.com/riverqueue/river/rivertype"
-	"github.com/stretchr/testify/mock"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
@@ -16,9 +13,7 @@ import (
 	ke "github.com/rezible/rezible/ent/knowledgeevidence"
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/internal/db"
-	"github.com/rezible/rezible/pkg/jobs"
 	"github.com/rezible/rezible/pkg/projections"
-	"github.com/rezible/rezible/test/mocks"
 )
 
 const (
@@ -122,38 +117,18 @@ func (deploymentFixtureProcessor) ProcessProviderEvent(ctx context.Context, prov
 	return ent.NormalizedEvents{normalized}, nil
 }
 
-// deploymentPipeline persists reports through the provider event pipeline, which drops redelivered reports by
+// deploymentPipeline persists reports through the provider event ingester, which drops redelivered reports by
 // the normalized event's unique index, and projects them when the test chooses.
 type deploymentPipeline struct {
 	suite    *ProjectionServiceSuite
-	pipeline *db.ProviderEventPipelineService
-	// queued are the projection jobs the last persisted report queued.
-	queued []uuid.UUID
+	ingester *db.ProviderEventIngester
 }
 
 func (s *ProjectionServiceSuite) newDeploymentPipeline(tdb rez.Database, service *ProjectionService) *deploymentPipeline {
-	p := &deploymentPipeline{suite: s}
-	jobService := mocks.NewMockJobService(s.T())
-	jobService.EXPECT().
-		InsertMany(mock.Anything, mock.Anything).
-		RunAndReturn(func(_ context.Context, params []river.InsertManyParams) ([]*rivertype.JobInsertResult, error) {
-			results := make([]*rivertype.JobInsertResult, 0, len(params))
-			for _, param := range params {
-				projectArgs := param.Args.(jobs.ProjectNormalizedEvent)
-				p.queued = append(p.queued, projectArgs.EventId)
-				results = append(results, &rivertype.JobInsertResult{Job: &rivertype.JobRow{}})
-			}
-			return results, nil
-		}).
-		Maybe()
 	processors := map[string]rez.ProviderEventProcessor{
 		"webhook": deploymentFixtureProcessor{},
 	}
-	ingester := db.NewProviderEventIngester(tdb, processors, service)
-	pipeline, pipelineErr := db.NewProviderEventPipelineService(tdb, jobService, ingester)
-	s.Require().NoError(pipelineErr)
-	p.pipeline = pipeline
-	return p
+	return &deploymentPipeline{suite: s, ingester: db.NewProviderEventIngester(tdb, processors, service)}
 }
 
 // persist processes a report's provider event and returns the normalized event it stored, or nil when the
@@ -169,20 +144,17 @@ func (p *deploymentPipeline) persist(ctx context.Context, report deploymentRepor
 		Attributes:          encoded,
 		ReceivedAt:          report.receivedAt,
 	}
-	p.queued = nil
-	processArgs := &jobs.ProcessProviderEventArgs{Event: event}
-	p.suite.Require().NoError(p.pipeline.HandleProcessEventJob(ctx, processArgs))
-
-	if len(p.queued) == 0 {
+	eventIDs, processErr := p.ingester.ProcessProviderEvent(ctx, event)
+	p.suite.Require().NoError(processErr)
+	if len(eventIDs) == 0 {
 		return nil
 	}
-	p.suite.Require().Len(p.queued, 1)
-	return &p.queued[0]
+	p.suite.Require().Len(eventIDs, 1)
+	return &eventIDs[0]
 }
 
 func (p *deploymentPipeline) project(ctx context.Context, eventID uuid.UUID) {
-	projectArgs := jobs.ProjectNormalizedEvent{EventId: eventID}
-	p.suite.Require().NoError(p.pipeline.HandleEventProjectionJob(ctx, projectArgs))
+	p.suite.Require().NoError(p.ingester.ProjectNormalizedEvent(ctx, eventID))
 }
 
 // receiveDeploymentReports persists and projects reports one at a time, in the order given.
