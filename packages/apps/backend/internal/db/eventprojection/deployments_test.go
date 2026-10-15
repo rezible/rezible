@@ -149,7 +149,8 @@ func (s *ProjectionServiceSuite) newDeploymentPipeline(tdb rez.Database, service
 	processors := map[string]rez.ProviderEventProcessor{
 		"webhook": deploymentFixtureProcessor{},
 	}
-	pipeline, pipelineErr := db.NewProviderEventPipelineService(tdb, jobService, processors, service)
+	ingester := db.NewProviderEventIngester(tdb, processors, service)
+	pipeline, pipelineErr := db.NewProviderEventPipelineService(tdb, jobService, ingester)
 	s.Require().NoError(pipelineErr)
 	p.pipeline = pipeline
 	return p

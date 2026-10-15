@@ -373,12 +373,20 @@ var pkgDatabase = do.Package(
 	}),
 	do.Bind[*db.AiWorkflowRunner, rez.AiWorkflowRunner](),
 
+	do.Lazy(func(i do.Injector) (*db.ProviderEventIngester, error) {
+		return db.NewProviderEventIngester(
+			do.MustInvoke[rez.Database](i),
+			do.MustInvoke[rez.ProviderEventProcessorRegistry](i),
+			do.MustInvoke[rez.EventProjectionService](i),
+		), nil
+	}),
+	do.Bind[*db.ProviderEventIngester, rez.ProviderEventIngester](),
+
 	do.Lazy(func(i do.Injector) (*db.ProviderEventPipelineService, error) {
 		return db.NewProviderEventPipelineService(
 			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.JobService](i),
-			do.MustInvoke[rez.ProviderEventProcessorRegistry](i),
-			do.MustInvoke[rez.EventProjectionService](i),
+			do.MustInvoke[rez.ProviderEventIngester](i),
 		)
 	}),
 	do.Bind[*db.ProviderEventPipelineService, rez.ProviderEventPipelineService](),

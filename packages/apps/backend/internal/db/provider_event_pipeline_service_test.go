@@ -42,11 +42,11 @@ func TestProviderEventPipelineServiceSuite(t *testing.T) {
 }
 
 func (s *ProviderEventPipelineServiceSuite) newPipelineService(tdb rez.Database, jobSvc rez.JobService, proj rez.EventProjectionService) *ProviderEventPipelineService {
+	processors := map[string]rez.ProviderEventProcessor{pipelineTestProvider: pipelineTestProcessor{}}
 	return &ProviderEventPipelineService{
-		db:         tdb,
-		jobs:       jobSvc,
-		processors: map[string]rez.ProviderEventProcessor{pipelineTestProvider: pipelineTestProcessor{}},
-		projection: proj,
+		db:       tdb,
+		jobs:     jobSvc,
+		ingester: NewProviderEventIngester(tdb, processors, proj),
 	}
 }
 
@@ -154,6 +154,28 @@ func (s *ProviderEventPipelineServiceSuite) TestIngestProcessAndProjectEndToEnd(
 	proj, projErr := queryProj.Only(ctx)
 	s.Require().NoError(projErr)
 	s.False(proj.CompletedAt.IsZero())
+}
+
+func (s *ProviderEventPipelineServiceSuite) TestIngesterProcessesAndProjectsDirectly() {
+	ctx, tdb := s.SetupTestDatabase()
+
+	projector := &countingEventProjectionService{}
+	processors := map[string]rez.ProviderEventProcessor{pipelineTestProvider: pipelineTestProcessor{}}
+	ingester := NewProviderEventIngester(tdb, processors, projector)
+	ev := s.makeTestEvent()
+
+	ids, processErr := ingester.ProcessProviderEvent(ctx, ev)
+	s.Require().NoError(processErr)
+	s.Require().Len(ids, 1)
+
+	s.Require().NoError(ingester.ProjectNormalizedEvent(ctx, ids[0]))
+	s.Equal(1, projector.calls)
+	_, projErr := s.getProjection(ctx, tdb, ids[0])
+	s.Require().NoError(projErr)
+
+	duplicateIDs, duplicateErr := ingester.ProcessProviderEvent(ctx, ev)
+	s.Require().NoError(duplicateErr)
+	s.Empty(duplicateIDs)
 }
 
 func (s *ProviderEventPipelineServiceSuite) TestSyncEventsEnqueuesEventPointers() {
@@ -273,9 +295,10 @@ func (s *ProviderEventPipelineServiceSuite) TestNormalizedEventIdentityIncludesN
 		Twice()
 
 	svc := s.newPipelineService(tdb, jobSvc, nil)
-	svc.processors = map[string]rez.ProviderEventProcessor{
+	processors := map[string]rez.ProviderEventProcessor{
 		pipelineTestProvider: multiResourcePipelineProcessor{},
 	}
+	svc.ingester = NewProviderEventIngester(tdb, processors, nil)
 	event := s.makeTestEvent()
 	event.ProviderEventRef = "same-delivery"
 
@@ -666,10 +689,11 @@ func (s *ProviderEventPipelineServiceSuite) TestSyncedListingIsIngestedOnce() {
 			}
 			return make([]*rivertype.JobInsertResult, len(params)), nil
 		})
+	processors := map[string]rez.ProviderEventProcessor{listingProvider: listingTestProcessor{}}
 	svc := &ProviderEventPipelineService{
-		db:         tdb,
-		jobs:       jobSvc,
-		processors: map[string]rez.ProviderEventProcessor{listingProvider: listingTestProcessor{}},
+		db:       tdb,
+		jobs:     jobSvc,
+		ingester: NewProviderEventIngester(tdb, processors, nil),
 	}
 
 	// Each sync lists the same values; only when it was received differs.

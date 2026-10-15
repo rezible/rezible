@@ -4,9 +4,13 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"time"
 
-	"github.com/rezible/rezible/pkg/jobs"
 	"github.com/riverqueue/river"
+
+	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/pkg/jobs"
 )
 
 func NewProcessProviderEventWorker(service *ProviderEventPipelineService) jobs.WorkerDefinition {
@@ -14,9 +18,33 @@ func NewProcessProviderEventWorker(service *ProviderEventPipelineService) jobs.W
 }
 
 func (s *ProviderEventPipelineService) HandleProcessEventJob(ctx context.Context, args *jobs.ProcessProviderEventArgs) error {
-	res := s.processProviderEvent(ctx, args.Event)
-	s.telemetry.recordProcessed(ctx, args.Event, res)
-	return res.error
+	start := time.Now()
+	savedCount, processErr := ent.WithTxReturning(ctx, s.db, func(ctx context.Context, tx *ent.Client) (int, error) {
+		return s.processAndQueueProjections(ctx, args.Event)
+	})
+	s.telemetry.recordProcessed(ctx, args.Event, time.Since(start), savedCount, processErr)
+	return processErr
+}
+
+func (s *ProviderEventPipelineService) processAndQueueProjections(ctx context.Context, ev rez.ProviderEvent) (int, error) {
+	ids, ingestErr := s.ingester.ProcessProviderEvent(ctx, ev)
+	if ingestErr != nil {
+		return 0, ingestErr
+	}
+	savedCount := len(ids)
+	var jobsErr error
+	if savedCount > 0 {
+		params := make([]river.InsertManyParams, savedCount)
+		for i, id := range ids {
+			params[i] = river.InsertManyParams{
+				Args: jobs.ProjectNormalizedEvent{EventId: id},
+			}
+		}
+		if _, insertErr := s.jobs.InsertMany(ctx, params); insertErr != nil {
+			jobsErr = fmt.Errorf("inserting project events: %w", insertErr)
+		}
+	}
+	return savedCount, jobsErr
 }
 
 func NewProjectNormalizedEventWorker(service *ProviderEventPipelineService) jobs.WorkerDefinition {
@@ -24,12 +52,7 @@ func NewProjectNormalizedEventWorker(service *ProviderEventPipelineService) jobs
 }
 
 func (s *ProviderEventPipelineService) HandleEventProjectionJob(ctx context.Context, args jobs.ProjectNormalizedEvent) error {
-	ev, queryErr := s.db.Client(ctx).NormalizedEvent.Get(ctx, args.EventId)
-	if queryErr != nil {
-		return fmt.Errorf("query event: %w", queryErr)
-	}
-
-	projectionErr := s.projectNormalizedEvent(ctx, ev)
+	projectionErr := s.ingester.ProjectNormalizedEvent(ctx, args.EventId)
 	if projectionErr == nil {
 		return projectionErr
 	}
@@ -40,7 +63,7 @@ func (s *ProviderEventPipelineService) HandleEventProjectionJob(ctx context.Cont
 	}
 	slog.ErrorContext(ctx, "fatal event projection error",
 		"error", projectionErr.Error(),
-		"ref", ev.ProviderEventRef,
+		"event_id", args.EventId,
 	)
 	return river.JobCancel(projectionErr)
 }

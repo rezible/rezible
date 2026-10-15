@@ -474,9 +474,13 @@ type (
 
 	ProviderEventPipelineService interface {
 		Ingest(context.Context, ProviderEvent) error
-		// IngestMany queues all of the events or none of them.
 		IngestMany(context.Context, []ProviderEvent) error
 		SyncEvents(context.Context, ProviderEventQuerier, ProviderEventSourceCursors) ProviderEventSyncResult
+	}
+
+	ProviderEventIngester interface {
+		ProcessProviderEvent(context.Context, ProviderEvent) ([]uuid.UUID, error)
+		ProjectNormalizedEvent(ctx context.Context, eventID uuid.UUID) error
 	}
 )
 
