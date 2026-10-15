@@ -64,6 +64,9 @@ const generateWorkspaceEnv = async () => {
     OTEL_EXPORTER_OTLP_ENDPOINT: "http://localhost:4317",
     OTEL_EXPORTER_OTLP_PROTOCOL: "grpc",
     OTEL_SERVICE_NAME: "rezible-backend",
+    // Agent harnesses can strip OTEL_* variables from tool processes, so the backend also reads its own.
+    TELEMETRY__SERVICE_NAME: "rezible-backend",
+    TELEMETRY__OTLP_ENDPOINT: "http://localhost:4317",
     TELEMETRY__TRACING__ENABLED: "true",
     TELEMETRY__TRACING__CAPTURE_AI_CONTENT: "true",
     TELEMETRY__METRICS__ENABLED: "true",

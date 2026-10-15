@@ -57,11 +57,11 @@ func NewOpenTelemetryService(ctx context.Context, cfg rez.Config) (*Service, err
 		return nil, fmt.Errorf("failed to initialize logger: %w", loggerErr)
 	}
 
-	if tracerErr := s.initTracerProvider(ctx, res, cfg.Telemetry.Tracing); tracerErr != nil {
+	if tracerErr := s.initTracerProvider(ctx, res, cfg.Telemetry.OtlpEndpoint, cfg.Telemetry.Tracing); tracerErr != nil {
 		return nil, fmt.Errorf("failed to initialize tracer: %w", tracerErr)
 	}
 
-	if metricsErr := s.initMetricsProvider(ctx, res, cfg.Telemetry.Metrics); metricsErr != nil {
+	if metricsErr := s.initMetricsProvider(ctx, res, cfg.Telemetry.OtlpEndpoint, cfg.Telemetry.Metrics); metricsErr != nil {
 		return nil, fmt.Errorf("failed to initialize metrics: %w", metricsErr)
 	}
 
@@ -124,10 +124,14 @@ func (s *Service) makeSlogConsoleHandler(w io.Writer, cfg rez.LoggingConfig) slo
 	})
 }
 
-func (s *Service) initTracerProvider(ctx context.Context, r *sdkresource.Resource, cfg rez.TracingConfig) error {
+func (s *Service) initTracerProvider(ctx context.Context, r *sdkresource.Resource, endpoint string, cfg rez.TracingConfig) error {
 	tpOpts := []sdktrace.TracerProviderOption{sdktrace.WithResource(r)}
 	if !IsOtelEnvDisabled() && cfg.Enabled {
-		traceExporter, traceExporterErr := otlptracegrpc.New(ctx)
+		var exporterOpts []otlptracegrpc.Option
+		if endpoint != "" {
+			exporterOpts = append(exporterOpts, otlptracegrpc.WithEndpointURL(endpoint))
+		}
+		traceExporter, traceExporterErr := otlptracegrpc.New(ctx, exporterOpts...)
 		if traceExporterErr != nil {
 			return fmt.Errorf("otlp trace exporter: %w", traceExporterErr)
 		}
@@ -141,10 +145,14 @@ func (s *Service) initTracerProvider(ctx context.Context, r *sdkresource.Resourc
 	return nil
 }
 
-func (s *Service) initMetricsProvider(ctx context.Context, r *sdkresource.Resource, cfg rez.MetricsConfig) error {
+func (s *Service) initMetricsProvider(ctx context.Context, r *sdkresource.Resource, endpoint string, cfg rez.MetricsConfig) error {
 	var mp otelmetric.MeterProvider
 	if !IsOtelEnvDisabled() && cfg.Enabled {
-		metricExporter, metricExporterErr := otlpmetricgrpc.New(ctx)
+		var exporterOpts []otlpmetricgrpc.Option
+		if endpoint != "" {
+			exporterOpts = append(exporterOpts, otlpmetricgrpc.WithEndpointURL(endpoint))
+		}
+		metricExporter, metricExporterErr := otlpmetricgrpc.New(ctx, exporterOpts...)
 		if metricExporterErr != nil {
 			return fmt.Errorf("otlp metric exporter: %w", metricExporterErr)
 		}

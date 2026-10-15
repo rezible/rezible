@@ -252,10 +252,13 @@ type (
 
 type (
 	TelemetryConfig struct {
-		ServiceName string        `cfg:"service_name"`
-		Logging     LoggingConfig `cfg:"logging"`
-		Tracing     TracingConfig `cfg:"tracing"`
-		Metrics     MetricsConfig `cfg:"metrics"`
+		ServiceName string `cfg:"service_name"`
+		// OtlpEndpoint is the OTLP gRPC collector URL for traces and metrics, such as http://localhost:4317.
+		// An http scheme connects without TLS. When empty, the exporters read the OTEL_EXPORTER_OTLP_* variables.
+		OtlpEndpoint string        `cfg:"otlp_endpoint"`
+		Logging      LoggingConfig `cfg:"logging"`
+		Tracing      TracingConfig `cfg:"tracing"`
+		Metrics      MetricsConfig `cfg:"metrics"`
 	}
 
 	LoggingConfig struct {
