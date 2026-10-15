@@ -56,7 +56,7 @@ compose := 'docker compose --project-directory ' + quote(source_checkout) + ' -f
 
 [doc("Start shared infrastructure services and wait until healthy")]
 @infra-up +SERVICES: _ensure-alertmanager-target
-    just _docker-compose up -d --wait {{ SERVICES }}
+    just _docker-compose --progress quiet up -d --wait {{ SERVICES }}
 
 # Shared Alertmanager reads its Rezible webhook URL from this gitignored file in the checkout that owns the
 # shared infrastructure.

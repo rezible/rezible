@@ -1,48 +1,29 @@
 set shell := ["bash", "-euc"]
 
-[doc("Run every suite in parallel. All run to completion, then a summary is printed.")]
+[doc("Run every suite in parallel. All run to completion; the run fails if any suite fails.")]
 [default]
+[parallel]
+all: (_suite "backend") (_suite "frontend") (_suite "documents")
+
+# Runs one suite with its output prefixed by the suite name, dropping lines that are noise in a combined run.
 [working-directory("..")]
-all:
-    #!/usr/bin/env bash
-    set -uo pipefail
-    suites=(backend frontend documents)
-    results=$(mktemp -d)
-    trap 'rm -rf "$results"' EXIT
-    for suite in "${suites[@]}"; do
-      (
-        just test "$suite" 2>&1 \
-          | sed -u -e '/\[no test files\]$/d' -e '/^ Container .* \(Running\|Waiting\|Healthy\) *$/d' -e "s/^/[$suite] /"
-        echo "${PIPESTATUS[0]}" > "$results/$suite"
-      ) &
-    done
-    wait
-    failed=0
-    echo
-    for suite in "${suites[@]}"; do
-      code=$(cat "$results/$suite")
-      if [[ "$code" == 0 ]]; then
-        echo "$suite: ok"
-      else
-        echo "$suite: FAILED (exit $code)"
-        failed=1
-      fi
-    done
-    exit "$failed"
+@_suite NAME:
+    set -o pipefail; just test {{ NAME }} 2>&1 \
+      | sed -u -e '/\[no test files\]$/d' -e 's/^/[{{ NAME }}] /'
 
 [doc("Run backend tests, optionally selecting packages or test arguments.")]
 [working-directory("..")]
 [positional-arguments]
-backend *ARGS:
+@backend *ARGS:
     just dev::infra-up postgres-test
     just backend::test-selection "$@"
 
 [doc("Test the frontend.")]
 [working-directory("..")]
-frontend:
+@frontend:
     just frontend::run test
 
 [doc("Run documents server tests.")]
 [working-directory("..")]
-documents:
+@documents:
     just documents-server::test
