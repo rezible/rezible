@@ -124,6 +124,9 @@ func (_u *InvestigationReportUpdate) sqlSave(ctx context.Context) (_node int, er
 			}
 		}
 	}
+	if _u.mutation.NextChecksCleared() {
+		_spec.ClearField(investigationreport.FieldNextChecks, field.TypeJSON)
+	}
 	if _u.mutation.OutputReferencesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -317,6 +320,9 @@ func (_u *InvestigationReportUpdateOne) sqlSave(ctx context.Context) (_node *Inv
 				ps[i](selector)
 			}
 		}
+	}
+	if _u.mutation.NextChecksCleared() {
+		_spec.ClearField(investigationreport.FieldNextChecks, field.TypeJSON)
 	}
 	if _u.mutation.OutputReferencesCleared() {
 		edge := &sqlgraph.EdgeSpec{

@@ -5,8 +5,13 @@
 	import StatusBadge from "$components/common/status-badge/StatusBadge.svelte";
 	import Timestamp from "$components/common/timestamp/Timestamp.svelte";
 	import { followUpPendingStatus, provisionalStatus } from "$features/situations/lib/status";
+	import type { NextCheckView } from "$features/situations/lib/brief";
 	import RiArrowRightLine from "remixicon-svelte/icons/arrow-right-line";
+	import InvestigationRunNotice from "../InvestigationRunNotice.svelte";
 	import { useSituationOverviewController } from "./controller.svelte";
+
+	type Props = { nextChecks: NextCheckView[] };
+	const { nextChecks }: Props = $props();
 
 	const controller = useSituationOverviewController();
 	const understanding = $derived(controller.understanding);
@@ -44,6 +49,20 @@
 	</div>
 {/snippet}
 
+{#snippet nextChecksList()}
+	<div class="flex flex-col gap-2">
+		<h3 class="text-sm font-semibold">Next checks</h3>
+		<ol class="flex list-decimal flex-col gap-2 pl-5 text-sm">
+			{#each nextChecks as nextCheck (nextCheck.key)}
+				<li>
+					<p class="font-medium wrap-anywhere">{nextCheck.check}</p>
+					<p class="text-muted-foreground wrap-anywhere">{nextCheck.reason}</p>
+				</li>
+			{/each}
+		</ol>
+	</div>
+{/snippet}
+
 {#snippet refreshFailedLine(retry: () => void)}
 	<div role="status" class="flex items-center gap-3 text-xs text-muted-foreground">
 		<span>Refresh failed. Showing previously loaded details.</span>
@@ -53,10 +72,12 @@
 
 <section aria-labelledby="understanding-title" class="flex flex-col gap-4 rounded-lg border bg-card p-5">
 	<div class="flex flex-wrap items-center justify-between gap-3">
-		<h2 id="understanding-title" class="region-label">Current understanding</h2>
+		<h2 id="understanding-title" class="region-label">Rezible's interpretation</h2>
 		{#if understanding.kind === "investigation"}
 			<div class="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-				<StatusBadge status={understanding.run} variant="inline" />
+				{#if understanding.showRunStatus}
+					<StatusBadge status={understanding.run} variant="inline" />
+				{/if}
 				{#if understanding.report.kind === "published"}
 					<span>
 						Published
@@ -91,6 +112,7 @@
 		{@render retryLine("The investigation could not be loaded.", controller.retryInvestigation)}
 	{:else}
 		{@const report = understanding.report}
+		<InvestigationRunNotice class="border-0 bg-muted/50 p-3" />
 		{#if report.kind === "published"}
 			{#if report.summary}
 				<p class="max-w-[65ch] text-lg leading-7 font-medium">{report.summary}</p>
@@ -101,6 +123,9 @@
 				{@render refreshFailedLine(controller.retryInvestigation)}
 			{:else if report.refreshFailed}
 				{@render refreshFailedLine(controller.retryReport)}
+			{/if}
+			{#if nextChecks.length > 0}
+				{@render nextChecksList()}
 			{/if}
 			<div class="flex flex-wrap items-center gap-x-6 gap-y-2 border-t pt-4 text-sm">
 				<Button variant="link" size="inline" href={understanding.href}>

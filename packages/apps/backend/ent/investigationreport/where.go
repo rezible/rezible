@@ -387,6 +387,16 @@ func SummaryContainsFold(v string) predicate.InvestigationReport {
 	return predicate.InvestigationReport(sql.FieldContainsFold(FieldSummary, v))
 }
 
+// NextChecksIsNil applies the IsNil predicate on the "next_checks" field.
+func NextChecksIsNil() predicate.InvestigationReport {
+	return predicate.InvestigationReport(sql.FieldIsNull(FieldNextChecks))
+}
+
+// NextChecksNotNil applies the NotNil predicate on the "next_checks" field.
+func NextChecksNotNil() predicate.InvestigationReport {
+	return predicate.InvestigationReport(sql.FieldNotNull(FieldNextChecks))
+}
+
 // HasTenant applies the HasEdge predicate on the "tenant" edge.
 func HasTenant() predicate.InvestigationReport {
 	return predicate.InvestigationReport(func(s *sql.Selector) {

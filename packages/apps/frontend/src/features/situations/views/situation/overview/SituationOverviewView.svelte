@@ -10,6 +10,9 @@
 	import UnderstandingPanel from "./UnderstandingPanel.svelte";
 	import WhyPanel from "./WhyPanel.svelte";
 	import ObservationsSection from "./ObservationsSection.svelte";
+	import ChangesSection from "./ChangesSection.svelte";
+	import CheckedSection from "./CheckedSection.svelte";
+	import UnseenSection from "./UnseenSection.svelte";
 	import BriefContext from "./BriefContext.svelte";
 
 	const controller = initSituationOverviewController();
@@ -67,9 +70,20 @@
 			</ul>
 		</section>
 
+		{#each controller.sections as section (section.kind)}
+			{#if section.kind === "interpretation"}
+				<UnderstandingPanel nextChecks={section.nextChecks} />
+			{:else if section.kind === "signals"}
+				<ObservationsSection />
+			{:else if section.kind === "changes"}
+				<ChangesSection state={section.state} />
+			{:else if section.kind === "checked"}
+				<CheckedSection state={section.state} />
+			{:else}
+				<UnseenSection state={section.state} />
+			{/if}
+		{/each}
 		<WhyPanel />
-		<UnderstandingPanel />
-		<ObservationsSection />
 	</PageCanvas>
 {:else if situationQuery.isError}
 	<PageCanvas width="reading">

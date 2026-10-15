@@ -7,6 +7,7 @@ import (
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
+	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/schema/schematypes"
 	"github.com/rezible/rezible/ent/situation"
@@ -18,6 +19,7 @@ import (
 type SituationsHandler interface {
 	ListSituations(context.Context, *ListSituationsRequest) (*ListSituationsResponse, error)
 	GetSituation(context.Context, *GetSituationRequest) (*GetSituationResponse, error)
+	GetSituationBrief(context.Context, *GetSituationBriefRequest) (*GetSituationBriefResponse, error)
 	RaiseSituation(context.Context, *RaiseSituationRequest) (*RaiseSituationResponse, error)
 	ListSituationJudgments(context.Context, *ListSituationJudgmentsRequest) (*ListSituationJudgmentsResponse, error)
 	CloseSituation(context.Context, *CloseSituationRequest) (*CloseSituationResponse, error)
@@ -36,6 +38,7 @@ type SituationsHandler interface {
 func (o operations) RegisterSituations(api huma.API) {
 	huma.Register(api, ListSituations, o.ListSituations)
 	huma.Register(api, GetSituation, o.GetSituation)
+	huma.Register(api, GetSituationBrief, o.GetSituationBrief)
 	huma.Register(api, RaiseSituation, o.RaiseSituation)
 	huma.Register(api, ListSituationJudgments, o.ListSituationJudgments)
 	huma.Register(api, CloseSituation, o.CloseSituation)
@@ -350,6 +353,178 @@ var GetSituation = openapi.Operation{
 
 type GetSituationRequest IdRequest
 type GetSituationResponse ItemResponse[Situation]
+
+// GetSituationBrief returns what Rezible states about a situation: its services, the changes before and after
+// it opened, and what Rezible cannot see.
+var GetSituationBrief = openapi.Operation{
+	OperationID: "get-situation-brief",
+	Method:      http.MethodGet,
+	Path:        "/situations/{id}/brief",
+	Summary:     "Get Situation Brief",
+	Tags:        situationsTags,
+	Errors:      ErrorCodes(),
+}
+
+type GetSituationBriefRequest IdRequest
+type GetSituationBriefResponse ItemResponse[SituationBrief]
+
+type (
+	SituationBrief struct {
+		Services []SituationBriefService `json:"services" doc:"Matching services first, then by name, at most 10"`
+		Changes  SituationBriefChanges   `json:"changes"`
+		Unseen   []SituationBriefUnseen  `json:"unseen"`
+	}
+
+	SituationBriefService struct {
+		EntityId           uuid.UUID                   `json:"entityId"`
+		DisplayName        string                      `json:"displayName"`
+		UnconfirmedMatches []SituationUnconfirmedMatch `json:"unconfirmedMatches"`
+	}
+
+	// SituationUnconfirmedMatch is a pending proposal that the service may be another one under another name.
+	SituationUnconfirmedMatch struct {
+		ProposalId  uuid.UUID `json:"proposalId"`
+		Name        string    `json:"name"`
+		EntityId    uuid.UUID `json:"entityId"`
+		DisplayName string    `json:"displayName"`
+		Rationale   string    `json:"rationale"`
+	}
+
+	SituationBriefChanges struct {
+		Available         bool                           `json:"available" doc:"Whether any integration reports deployments"`
+		UnavailableReason string                         `json:"unavailableReason"`
+		Start             time.Time                      `json:"start"`
+		OpenedAt          time.Time                      `json:"openedAt"`
+		End               time.Time                      `json:"end"`
+		Services          []SituationBriefServiceChanges `json:"services"`
+	}
+
+	SituationBriefServiceChanges struct {
+		ServiceId   uuid.UUID                  `json:"serviceId"`
+		Deployments []SituationBriefDeployment `json:"deployments" doc:"After the situation opened, then before it, each newest first"`
+		Limits      []string                   `json:"limits"`
+	}
+
+	SituationBriefDeployment struct {
+		Id               uuid.UUID  `json:"id" doc:"The deployment's knowledge entity"`
+		DeployedAt       time.Time  `json:"deployedAt"`
+		AfterOpened      bool       `json:"afterOpened"`
+		Environment      string     `json:"environment"`
+		Status           string     `json:"status"`
+		Sha              string     `json:"sha"`
+		Version          string     `json:"version"`
+		Url              string     `json:"url"`
+		LatestEvidenceId *uuid.UUID `json:"latestEvidenceId,omitempty"`
+		RepositoryName   string     `json:"repositoryName"`
+		// MergedChangesUnlinked says why merged changes cannot be linked; empty when they can.
+		MergedChangesUnlinked string                       `json:"mergedChangesUnlinked" enum:",no_repository,repository_not_from_code_forge"`
+		MergedChanges         []SituationBriefMergedChange `json:"mergedChanges"`
+		MergedChangesCut      bool                         `json:"mergedChangesCut"`
+	}
+
+	SituationBriefMergedChange struct {
+		Id       uuid.UUID `json:"id" doc:"The change's knowledge entity"`
+		Number   int       `json:"number"`
+		Title    string    `json:"title"`
+		Author   string    `json:"author"`
+		MergedAt time.Time `json:"mergedAt"`
+		Url      string    `json:"url"`
+		Link     string    `json:"link" enum:"merge_commit,merged_since_previous_deployment,merged_in_lookback"`
+	}
+
+	SituationBriefUnseen struct {
+		Kind string `json:"kind" enum:"source_unavailable,services_cut,not_read"`
+		Text string `json:"text"`
+	}
+)
+
+func SituationBriefFromRez(brief *rez.SituationBrief) SituationBrief {
+	converted := SituationBrief{
+		Services: make([]SituationBriefService, len(brief.Services)),
+		Changes: SituationBriefChanges{
+			Available:         brief.Changes.Available,
+			UnavailableReason: brief.Changes.UnavailableReason,
+			Start:             brief.Changes.Start,
+			OpenedAt:          brief.Changes.OpenedAt,
+			End:               brief.Changes.End,
+			Services:          make([]SituationBriefServiceChanges, len(brief.Changes.Services)),
+		},
+		Unseen: make([]SituationBriefUnseen, len(brief.Unseen)),
+	}
+	for index, service := range brief.Services {
+		converted.Services[index] = situationBriefServiceFromRez(service)
+	}
+	for index, changes := range brief.Changes.Services {
+		converted.Changes.Services[index] = situationBriefServiceChangesFromRez(changes)
+	}
+	for index, unseen := range brief.Unseen {
+		converted.Unseen[index] = SituationBriefUnseen{Kind: string(unseen.Kind), Text: unseen.Text}
+	}
+	return converted
+}
+
+func situationBriefServiceFromRez(service rez.BriefService) SituationBriefService {
+	converted := SituationBriefService{
+		EntityId:           service.Entity.ID,
+		DisplayName:        service.Entity.State.DisplayName,
+		UnconfirmedMatches: make([]SituationUnconfirmedMatch, len(service.UnconfirmedMatches)),
+	}
+	for index, match := range service.UnconfirmedMatches {
+		converted.UnconfirmedMatches[index] = SituationUnconfirmedMatch{
+			ProposalId:  match.ProposalID,
+			Name:        match.Name,
+			EntityId:    match.Entity.ID,
+			DisplayName: match.Entity.State.DisplayName,
+			Rationale:   match.Rationale,
+		}
+	}
+	return converted
+}
+
+func situationBriefServiceChangesFromRez(changes rez.SituationBriefServiceChanges) SituationBriefServiceChanges {
+	converted := SituationBriefServiceChanges{
+		ServiceId:   changes.ServiceEntityID,
+		Deployments: make([]SituationBriefDeployment, len(changes.Deployments)),
+		Limits:      changes.Limits,
+	}
+	if converted.Limits == nil {
+		converted.Limits = []string{}
+	}
+	for index, deployment := range changes.Deployments {
+		converted.Deployments[index] = situationBriefDeploymentFromRez(deployment)
+	}
+	return converted
+}
+
+func situationBriefDeploymentFromRez(deployment rez.SituationBriefDeployment) SituationBriefDeployment {
+	converted := SituationBriefDeployment{
+		Id:                    deployment.Deployment.ID,
+		DeployedAt:            deployment.DeployedAt,
+		AfterOpened:           deployment.AfterOpened,
+		Environment:           deployment.Environment,
+		Status:                deployment.Status,
+		Sha:                   deployment.Sha,
+		Version:               deployment.Version,
+		Url:                   deployment.URL,
+		LatestEvidenceId:      deployment.LatestEvidenceID,
+		RepositoryName:        deployment.RepositoryName,
+		MergedChangesUnlinked: string(deployment.MergedChangesUnlinked),
+		MergedChanges:         make([]SituationBriefMergedChange, len(deployment.MergedChanges)),
+		MergedChangesCut:      deployment.MergedChangesCut,
+	}
+	for index, change := range deployment.MergedChanges {
+		converted.MergedChanges[index] = SituationBriefMergedChange{
+			Id:       change.Change.ID,
+			Number:   change.Number,
+			Title:    change.Change.State.DisplayName,
+			Author:   change.Author,
+			MergedAt: change.MergedAt,
+			Url:      change.URL,
+			Link:     string(change.Link),
+		}
+	}
+	return converted
+}
 
 var RaiseSituation = openapi.Operation{
 	OperationID: "raise-situation",

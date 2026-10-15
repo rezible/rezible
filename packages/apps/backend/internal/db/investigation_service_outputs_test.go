@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"errors"
+	"slices"
 	"sort"
 	"strings"
 	"sync"
@@ -1015,4 +1016,124 @@ func (s *InvestigationServiceSuite) TestOutputsCiteProviderReads() {
 	}
 	_, otherErr := service.PublishInvestigationReport(ctx, turnScope, otherParams)
 	s.ErrorIs(otherErr, errs.ErrInvalidInput, "a provider read of another session is invalid input")
+}
+
+func (s *InvestigationServiceSuite) TestInvestigationReportNextChecks() {
+	ctx, tdb := s.SetupTestDatabase()
+	jobService := mocks.NewMockJobService(s.T())
+	service, investigation, turn := s.outputFixture(ctx, tdb, jobService)
+	scope := rez.InvestigationPublicationScope{
+		InvestigationID: investigation.ID,
+		AgentTurnID:     turn.ID,
+	}
+	nextChecks := []schematypes.InvestigationNextCheck{
+		{Check: "Open the payments dashboard", Reason: "Rezible does not read metrics."},
+		{Check: "Ask the payments on-call", Reason: "They know about the pool change."},
+		{Check: " Check the connection pool configuration ", Reason: " It changed in the deployment. "},
+	}
+	params := rez.PublishInvestigationReportParams{
+		Text:       "Payments ran out of connections.",
+		NextChecks: nextChecks,
+	}
+
+	published, publishErr := service.PublishInvestigationReport(ctx, scope, params)
+
+	s.Require().NoError(publishErr)
+	read, readErr := service.GetInvestigationReport(ctx, rez.GetInvestigationReportParams{InvestigationID: investigation.ID})
+	s.Require().NoError(readErr)
+	s.Equal(published.ID, read.ID)
+	s.Require().Len(read.NextChecks, 3)
+	s.Equal("Open the payments dashboard", read.NextChecks[0].Check, "checks keep their order")
+	s.Equal(schematypes.InvestigationNextCheck{
+		Check:  "Check the connection pool configuration",
+		Reason: "It changed in the deployment.",
+	}, read.NextChecks[2], "checks are trimmed")
+
+	s.Run("more than three checks are invalid", func() {
+		tooMany := params
+		tooMany.NextChecks = append(slices.Clone(nextChecks), schematypes.InvestigationNextCheck{Check: "One more", Reason: "Why not."})
+		_, tooManyErr := service.PublishInvestigationReport(ctx, scope, tooMany)
+		s.ErrorIs(tooManyErr, errs.ErrInvalidInput)
+	})
+
+	s.Run("an over-long check is invalid", func() {
+		overLong := params
+		overLong.NextChecks = []schematypes.InvestigationNextCheck{
+			{Check: strings.Repeat("é", rezai.MaxNextCheckLength+1), Reason: "Too long."},
+		}
+		_, overLongErr := service.PublishInvestigationReport(ctx, scope, overLong)
+		s.ErrorIs(overLongErr, errs.ErrInvalidInput)
+	})
+
+	s.Run("the same text with different checks is a new report", func() {
+		differentChecks := params
+		differentChecks.NextChecks = nextChecks[:1]
+		revised, revisedErr := service.PublishInvestigationReport(ctx, scope, differentChecks)
+		s.Require().NoError(revisedErr)
+		s.NotEqual(published.ID, revised.ID)
+		s.Len(revised.NextChecks, 1)
+	})
+
+	s.Run("a report without checks has none", func() {
+		withoutChecks := rez.PublishInvestigationReportParams{Text: "Payments ran out of connections."}
+		plain, plainErr := service.PublishInvestigationReport(ctx, scope, withoutChecks)
+		s.Require().NoError(plainErr)
+		s.Empty(plain.NextChecks)
+	})
+}
+
+func (s *InvestigationServiceSuite) TestGetCitedProviderRead() {
+	ctx, tdb := s.SetupTestDatabase()
+	jobService := mocks.NewMockJobService(s.T())
+	service, investigation, turn := s.outputFixture(ctx, tdb, jobService)
+	scope := rez.InvestigationPublicationScope{
+		InvestigationID: investigation.ID,
+		AgentTurnID:     turn.ID,
+	}
+	graph := newTestGraph(s.Require(), tdb)
+	payments := graph.entity(kne.CategoryContainer, "service", "provider-a", "payments-api")
+	graph.record(ctx, time.Now().UTC(), graph.observeEntity(payments, "payments-api"))
+
+	reads := NewAgentProviderReadService(tdb, test.NewClock(time.Now()))
+	recordRead := func(finish rez.FinishAgentProviderReadParams) uuid.UUID {
+		start := rez.StartAgentProviderReadParams{
+			AgentTurnID:     turn.ID,
+			ToolName:        rezai.SearchLogsTool.Name(),
+			ServiceEntityID: graph.entityID(ctx, payments),
+			Input:           []byte(`{}`),
+		}
+		read, _, startErr := reads.StartProviderRead(ctx, start)
+		s.Require().NoError(startErr)
+		finish.ID = read.ID
+		s.Require().NoError(reads.FinishProviderRead(ctx, finish))
+		return read.ID
+	}
+	citedID := recordRead(rez.FinishAgentProviderReadParams{
+		Read:   []byte(`{"query":"{service=\"payments-api\"}"}`),
+		Result: []byte(`{"lines":[{"time":"2026-10-15T10:00:00Z","line":"upstream timeout"}]}`),
+	})
+	failedID := recordRead(rez.FinishAgentProviderReadParams{Error: "provider said: connection refused"})
+	uncitedID := recordRead(rez.FinishAgentProviderReadParams{Result: []byte(`{"lines":[]}`)})
+	report := rez.PublishInvestigationReportParams{
+		Text:        "Payments timed out.",
+		EvidenceIDs: []uuid.UUID{citedID, failedID},
+	}
+	_, publishErr := service.PublishInvestigationReport(ctx, scope, report)
+	s.Require().NoError(publishErr)
+
+	cited, citedErr := service.GetCitedProviderRead(ctx, investigation.ID, citedID)
+	s.Require().NoError(citedErr)
+	s.JSONEq(`{"lines":[{"time":"2026-10-15T10:00:00Z","line":"upstream timeout"}]}`, string(cited.Result), "the stored result loads")
+	s.Equal("payments-api", cited.Edges.ServiceEntity.State.DisplayName)
+
+	failed, failedErr := service.GetCitedProviderRead(ctx, investigation.ID, failedID)
+	s.Require().NoError(failedErr)
+	s.Empty(failed.Result)
+
+	_, uncitedErr := service.GetCitedProviderRead(ctx, investigation.ID, uncitedID)
+	s.ErrorIs(uncitedErr, errs.ErrNotFound, "a read no output cites is not found")
+
+	_, otherInvestigation := s.createLifecycleInvestigation(ctx, tdb, jobService)
+	_, otherErr := service.GetCitedProviderRead(ctx, otherInvestigation.ID, citedID)
+	s.ErrorIs(otherErr, errs.ErrNotFound, "a read cited by another investigation is not found")
 }

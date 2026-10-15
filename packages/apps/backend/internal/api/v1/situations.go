@@ -10,10 +10,11 @@ import (
 type situationsHandler struct {
 	*baseHandler
 	situations rez.SituationService
+	briefs     rez.SituationBriefService
 }
 
-func newSituationsHandler(bh *baseHandler, situations rez.SituationService) *situationsHandler {
-	return &situationsHandler{bh, situations}
+func newSituationsHandler(bh *baseHandler, situations rez.SituationService, briefs rez.SituationBriefService) *situationsHandler {
+	return &situationsHandler{baseHandler: bh, situations: situations, briefs: briefs}
 }
 
 func (h *situationsHandler) ListSituations(ctx context.Context, request *oapi.ListSituationsRequest) (*oapi.ListSituationsResponse, error) {
@@ -42,6 +43,16 @@ func (h *situationsHandler) GetSituation(ctx context.Context, request *oapi.GetS
 		return nil, oapi.Error(ctx, "failed to get situation", getErr)
 	}
 	response.Body.Data = oapi.SituationFromEnt(s)
+	return &response, nil
+}
+
+func (h *situationsHandler) GetSituationBrief(ctx context.Context, request *oapi.GetSituationBriefRequest) (*oapi.GetSituationBriefResponse, error) {
+	brief, getErr := h.briefs.GetSituationBrief(ctx, request.Id)
+	if getErr != nil {
+		return nil, oapi.Error(ctx, "failed to get situation brief", getErr)
+	}
+	var response oapi.GetSituationBriefResponse
+	response.Body.Data = oapi.SituationBriefFromRez(brief)
 	return &response, nil
 }
 

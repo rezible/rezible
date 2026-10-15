@@ -5,15 +5,18 @@
 	import Timestamp from "$components/common/timestamp/Timestamp.svelte";
 	import { cn } from "$lib/utils";
 	import { statusToneTextClass } from "$components/common/status-badge/status";
-	import { useSituationInvestigationController } from "./controller.svelte";
+	import { useSituationController } from "./controller.svelte";
 
-	const controller = useSituationInvestigationController();
+	type Props = { class?: string };
+	const { class: className }: Props = $props();
+
+	const controller = useSituationController();
 
 	const notice = $derived(controller.updateNotice);
 </script>
 
 {#if notice}
-	<div role="status" class="flex items-start gap-3 rounded-lg border bg-card p-4">
+	<div role="status" class={cn("flex items-start gap-3 rounded-lg border bg-card p-4", className)}>
 		<notice.status.icon
 			class={cn("mt-0.5 size-5 shrink-0", statusToneTextClass[notice.status.tone])}
 			aria-hidden="true"

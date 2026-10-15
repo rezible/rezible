@@ -30,6 +30,8 @@ const (
 	FieldText = "text"
 	// FieldSummary holds the string denoting the summary field in the database.
 	FieldSummary = "summary"
+	// FieldNextChecks holds the string denoting the next_checks field in the database.
+	FieldNextChecks = "next_checks"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
 	// EdgeInvestigation holds the string denoting the investigation edge name in mutations.
@@ -80,6 +82,7 @@ var Columns = []string{
 	FieldAgentTurnID,
 	FieldText,
 	FieldSummary,
+	FieldNextChecks,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).

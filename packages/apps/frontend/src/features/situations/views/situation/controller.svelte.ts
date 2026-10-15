@@ -19,19 +19,23 @@ import {
 	type ApiError,
 	getIncidentOptions,
 	type Incident,
+	getSituationBriefOptions,
 	getSituationOptions,
 	getSituationQueryKey,
 	getInvestigationOptions,
 	getInvestigationReportOptions,
+	listInvestigationUserInputsOptions,
 	listSituationAlertEpisodesInfiniteOptions,
 	listSituationAlertEpisodesQueryKey,
 	listSituationsQueryKey,
 	mergeSituationMutation,
 	raiseSituationMutation,
+	retryAgentTurnMutation,
 	type SetSituationMuteAttributes,
 	setSituationHoldMutation,
 	setSituationMuteMutation,
 	type Situation,
+	updateInvestigationMutation,
 } from "$lib/api";
 import { getNextPageParam } from "$lib/api/utils";
 import {
@@ -42,7 +46,13 @@ import {
 	type ReportState,
 } from "$features/situations/lib/model";
 import { situationHref } from "$features/situations/lib/routes";
-import { activeHoldUntil, investigationRunStatus, longRunningStatus } from "$features/situations/lib/status";
+import {
+	activeHoldUntil,
+	investigationRunStatus,
+	investigationUpdateNotice,
+	longRunningStatus,
+} from "$features/situations/lib/status";
+import type { BriefLoad } from "$features/situations/lib/brief";
 import type { WhyOrigin } from "$features/situations/lib/why";
 import { incidentResponseStatus } from "$features/incidents/lib/status";
 import type { PageRelatedLink } from "$lib/app-shell.svelte";
@@ -88,6 +98,27 @@ export class SituationController {
 					this.episodesQuery.fetchNextPage();
 				}
 			}
+		);
+		// The brief is not polled: each load looks up changes per service. It reloads when what it reflects may
+		// have changed: the situation, the latest report or the investigation's latest turn.
+		watch(
+			() =>
+				[
+					this.situation?.attributes.updatedAt,
+					this.report?.id,
+					this.investigationAttributes?.latestTurn?.id,
+				] as const,
+			() => {
+				if (this.briefQuery.isFetched) {
+					this.briefQuery.refetch();
+				}
+			},
+			{ lazy: true }
+		);
+		watch(
+			() => this.investigationId,
+			() => this.resetRunActions(),
+			{ lazy: true }
 		);
 		// Refresh with each fetch, and again when a hold deadline passes so Release turns back into Keep open.
 		watch(
@@ -202,8 +233,17 @@ export class SituationController {
 	reportAccessLost = $derived([401, 403].includes(this.reportQuery.error?.status ?? 0));
 
 	runStatus = $derived(investigationRunStatus(this.investigationAttributes));
+	updateNotice = $derived(investigationUpdateNotice(this.investigationAttributes));
 	reportAttributes = $derived(this.report?.attributes);
 	reportState = $derived(this.getReportState());
+
+	briefQuery = createQuery(() => ({
+		...getSituationBriefOptions({ path: idPath(this.situationId) }),
+		enabled: !!this.situationId,
+		refetchOnWindowFocus: true,
+		retry: (failureCount, error) => !isDefinitiveUnavailableError(error) && failureCount < 2,
+	}));
+	briefLoad = $derived(this.getBriefLoad());
 
 	stage = $derived(this.situation?.attributes.stage);
 	holdUntil = $derived(this.situation ? activeHoldUntil(this.situation.attributes, this.now) : undefined);
@@ -281,6 +321,21 @@ export class SituationController {
 		},
 		onError: (error) => this.notifyError("Could not merge the situation", error),
 	}));
+
+	updateMutation = createMutation(() => updateInvestigationMutation());
+	retryMutation = createMutation(() => retryAgentTurnMutation());
+
+	updateError = $state("");
+	retryReconciling = $state(false);
+	retryNeedsRefresh = $state(false);
+	retryMessage = $state("");
+	retryError = $state("");
+
+	retryAvailable = $derived(
+		this.investigationAttributes?.latestTurn?.status === "failed" &&
+			!this.investigationAttributes.activeTurn
+	);
+	retryDisabled = $derived(this.retryMutation.isPending || this.retryReconciling || this.retryNeedsRefresh);
 
 	private mutations = $derived([
 		this.raiseMutation,
@@ -387,6 +442,137 @@ export class SituationController {
 	retryReport = () => {
 		this.reportQuery.refetch();
 	};
+
+	retryBrief = () => {
+		this.briefQuery.refetch();
+	};
+
+	/** Starts one turn for pending evidence, even when automatic updates are paused. */
+	updateNow = async () => {
+		if (!this.investigationId || this.updateMutation.isPending) {
+			return;
+		}
+
+		this.updateError = "";
+		const path = idPath(this.investigationId);
+		try {
+			const updated = await this.updateMutation.mutateAsync({ path });
+			this.queryClient.setQueryData(getInvestigationOptions({ path }).queryKey, updated);
+		} catch (error) {
+			this.updateError = (error as ApiError).detail ?? "The update could not be started.";
+		}
+		await this.refreshInvestigation();
+	};
+
+	retryLatestFailedTurn = async () => {
+		const latestTurn = this.investigationAttributes?.latestTurn;
+		if (!this.retryAvailable || this.retryDisabled || !latestTurn) {
+			return;
+		}
+
+		this.retryMessage = "";
+		this.retryError = "";
+		let accepted = false;
+		let conflict = false;
+		try {
+			await this.retryMutation.mutateAsync({ path: { id: latestTurn.id } });
+			accepted = true;
+			this.retryMessage = "Retry requested for the same turn.";
+		} catch (error) {
+			const apiError = error as ApiError;
+			conflict = apiError.code === "conflict";
+			this.retryNeedsRefresh = true;
+			if (conflict) {
+				this.retryError =
+					"Execution changed while retrying. Current investigation state is being refreshed.";
+			} else {
+				const message = apiError.detail ?? "The retry request could not be confirmed.";
+				this.retryError = `${message} Current state is being refreshed before another retry is offered.`;
+			}
+		}
+
+		const refreshed = await this.reconcileRetryStatus();
+		if (!refreshed) {
+			if (accepted) {
+				this.retryError =
+					"Retry was accepted, but the current state could not be confirmed. Refresh status to continue.";
+			} else {
+				this.retryError =
+					"Current investigation state could not be refreshed. Refresh status before retrying again.";
+			}
+			return;
+		}
+
+		if (accepted) {
+			this.retryError = "";
+		} else if (conflict) {
+			this.retryError =
+				"Execution changed while retrying. Current investigation state has been refreshed.";
+		} else {
+			this.retryError = "Retry response was uncertain. Current investigation state has been refreshed.";
+		}
+	};
+
+	refreshRetryStatus = async () => {
+		if (this.retryReconciling) {
+			return;
+		}
+
+		const refreshed = await this.reconcileRetryStatus();
+		if (refreshed) {
+			this.retryError = "";
+		} else {
+			this.retryError = "Investigation status could not be refreshed. Try again.";
+		}
+	};
+
+	/** Refreshes the investigation, its report and its questions after a run action. */
+	private async refreshInvestigation() {
+		if (!this.investigationId) {
+			return;
+		}
+		const path = idPath(this.investigationId);
+		await Promise.all([
+			this.queryClient.invalidateQueries({ queryKey: getInvestigationOptions({ path }).queryKey }),
+			this.queryClient.invalidateQueries({
+				queryKey: getInvestigationReportOptions({ path }).queryKey,
+			}),
+			this.queryClient.invalidateQueries({
+				queryKey: listInvestigationUserInputsOptions({ path, query: {} }).queryKey,
+			}),
+		]);
+	}
+
+	private async reconcileRetryStatus() {
+		this.retryReconciling = true;
+		try {
+			await this.refreshInvestigation();
+			this.retryNeedsRefresh = this.investigationQuery.isError;
+		} catch {
+			this.retryNeedsRefresh = true;
+		} finally {
+			this.retryReconciling = false;
+		}
+		return !this.retryNeedsRefresh;
+	}
+
+	private resetRunActions() {
+		this.updateError = "";
+		this.retryMessage = "";
+		this.retryError = "";
+		this.retryNeedsRefresh = false;
+	}
+
+	private getBriefLoad(): BriefLoad {
+		const brief = this.briefQuery.data?.data;
+		if (brief) {
+			return { kind: "loaded", brief };
+		}
+		if (this.briefQuery.isError) {
+			return { kind: "error" };
+		}
+		return { kind: "loading" };
+	}
 
 	/** Stores the returned situation under its own ID, then refreshes every list and the Watching count. */
 	private async applySituation(situation: Situation) {

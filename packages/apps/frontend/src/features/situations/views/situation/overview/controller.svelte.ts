@@ -1,4 +1,7 @@
 import { Context, watch } from "runed";
+import { SvelteSet } from "svelte/reactivity";
+import { createQueries } from "@tanstack/svelte-query";
+import { getInvestigationProviderReadOptions, type ApiError } from "$lib/api";
 import type { StatusPresentation } from "$components/common/status-badge/status";
 import { isValidTime } from "$lib/time";
 import type { TimelineEntry } from "$components/common/timeline/Timeline.svelte";
@@ -14,6 +17,12 @@ import { situationHref } from "$features/situations/lib/routes";
 import { closeReasonLabel, muteReasonLabel, situationStageStatus } from "$features/situations/lib/status";
 import { SourceInspection } from "$features/situations/lib/sourceInspection.svelte";
 import { whyPanelState } from "$features/situations/lib/why";
+import {
+	briefSections,
+	providerReadResultView,
+	type ProviderReadResultView,
+} from "$features/situations/lib/brief";
+import { isDefinitiveUnavailableError } from "$features/situations/lib/model";
 import type { InvestigationOffer } from "../controller.svelte";
 
 export type UnderstandingState =
@@ -24,6 +33,8 @@ export type UnderstandingState =
 	| {
 			kind: "investigation";
 			run: StatusPresentation;
+			/** The run notice shows the status itself, so the header shows it only without one. */
+			showRunStatus: boolean;
 			/** Shown when no report has been published. */
 			noReportMessage: string;
 			pendingFollowUp: boolean;
@@ -31,6 +42,10 @@ export type UnderstandingState =
 			refreshFailed: boolean;
 			href: string;
 	  };
+
+/** An expanded provider read: loading, failed to load, or what it returned. */
+export type ReadExpansion =
+	{ kind: "loading" } | { kind: "error"; retry: () => void } | ProviderReadResultView;
 
 export type HeaderFact = { key: string; label: string; at: string; detail?: string };
 
@@ -58,6 +73,22 @@ export class SituationOverviewController {
 
 	understanding = $derived(this.getUnderstanding());
 
+	sections = $derived(briefSections(this.pageController.briefLoad, this.pageController.reportAttributes));
+
+	expandedReadIds = new SvelteSet<string>();
+	private expandedReads = $derived([...this.expandedReadIds]);
+	private readQueries = createQueries(() => ({
+		queries: this.expandedReads.map((readId) => ({
+			...getInvestigationProviderReadOptions({
+				path: { id: this.pageController.investigationId ?? "", readId },
+			}),
+			enabled: !!this.pageController.investigationId,
+			retry: (failureCount: number, error: ApiError) =>
+				!isDefinitiveUnavailableError(error) && failureCount < 2,
+		})),
+	}));
+	readExpansions = $derived(this.getReadExpansions());
+
 	observations = $derived(
 		observationGroups(
 			this.situationAttributes?.observationGroups ?? [],
@@ -73,7 +104,10 @@ export class SituationOverviewController {
 	constructor() {
 		watch(
 			() => this.pageController.investigationId,
-			() => this.inspection.reset(),
+			() => {
+				this.inspection.reset();
+				this.expandedReadIds.clear();
+			},
 			{ lazy: true }
 		);
 	}
@@ -110,6 +144,10 @@ export class SituationOverviewController {
 		return this.pageController.linkedIncidentsLoading;
 	}
 
+	get briefRefreshFailed() {
+		return this.pageController.briefLoad.kind === "loaded" && this.pageController.briefQuery.isError;
+	}
+
 	raise = () => {
 		this.pageController.raise();
 	};
@@ -124,6 +162,23 @@ export class SituationOverviewController {
 
 	retryReport = () => {
 		this.pageController.retryReport();
+	};
+
+	retryBrief = () => {
+		this.pageController.retryBrief();
+	};
+
+	toggleRead = (readId: string) => {
+		if (this.expandedReadIds.has(readId)) {
+			this.expandedReadIds.delete(readId);
+			return;
+		}
+		this.expandedReadIds.add(readId);
+	};
+
+	/** Opens the evidence that reported a deployment with no link of its own. */
+	openDeploymentEvidence = (evidenceId: string, trigger: HTMLElement) => {
+		this.inspection.openEvidence(evidenceId, trigger);
 	};
 
 	groupOpen(id: string) {
@@ -145,6 +200,22 @@ export class SituationOverviewController {
 	inspectSource = (record: SourceRecord, groupTitle: string, trigger: HTMLElement) => {
 		this.inspection.open({ kind: "direct", record, observationGroupTitle: groupTitle }, trigger);
 	};
+
+	private getReadExpansions() {
+		const expansions = new Map<string, ReadExpansion>();
+		this.expandedReads.forEach((readId, index) => {
+			const query = this.readQueries[index];
+			const read = query?.data?.data;
+			if (read) {
+				expansions.set(readId, providerReadResultView(read));
+			} else if (query?.isError) {
+				expansions.set(readId, { kind: "error", retry: () => query.refetch() });
+			} else {
+				expansions.set(readId, { kind: "loading" });
+			}
+		});
+		return expansions;
+	}
 
 	private setAllGroups(open: boolean) {
 		const choices: Record<string, boolean> = {};
@@ -220,6 +291,7 @@ export class SituationOverviewController {
 		return {
 			kind: "investigation",
 			run: page.runStatus,
+			showRunStatus: !page.updateNotice,
 			noReportMessage: this.getNoReportMessage(),
 			pendingFollowUp: page.investigationAttributes.hasPendingWork,
 			report: page.reportState,

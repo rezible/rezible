@@ -29,6 +29,7 @@ type investigationDependencies struct {
 	changes        rez.ChangesService
 	integrations   rez.InstalledIntegrationGetter
 	providerReads  rez.AgentProviderReadService
+	proposals      rez.KnowledgeProposalService
 }
 
 func NewInvestigationAgent(
@@ -40,6 +41,7 @@ func NewInvestigationAgent(
 	changes rez.ChangesService,
 	integrations rez.InstalledIntegrationGetter,
 	providerReads rez.AgentProviderReadService,
+	proposals rez.KnowledgeProposalService,
 ) *InvestigationAgent {
 	deps := investigationDependencies{
 		clock:          clock,
@@ -50,6 +52,7 @@ func NewInvestigationAgent(
 		changes:        changes,
 		integrations:   integrations,
 		providerReads:  providerReads,
+		proposals:      proposals,
 	}
 	return &InvestigationAgent{deps: deps}
 }

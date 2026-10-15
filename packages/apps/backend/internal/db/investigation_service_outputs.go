@@ -18,6 +18,8 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/schema/schematypes"
+	rezai "github.com/rezible/rezible/pkg/ai"
 	"github.com/rezible/rezible/pkg/errs"
 
 	apr "github.com/rezible/rezible/ent/agentproviderread"
@@ -48,6 +50,10 @@ func (s *InvestigationService) PublishInvestigationReport(ctx context.Context, s
 		return nil, fmt.Errorf("%w: report summary must be at most %d characters", errs.ErrInvalidInput, maxInvestigationReportSummaryLength)
 	}
 	evidenceIDs := s.normalizeInvestigationEvidenceIDs(params.EvidenceIDs)
+	nextChecks, nextChecksErr := s.normalizeInvestigationNextChecks(params.NextChecks)
+	if nextChecksErr != nil {
+		return nil, nextChecksErr
+	}
 
 	fp := &investigationOutputFingerprintPayload{
 		OutputType: "report",
@@ -56,6 +62,7 @@ func (s *InvestigationService) PublishInvestigationReport(ctx context.Context, s
 			Text:        text,
 			Summary:     summary,
 			EvidenceIDs: evidenceIDs,
+			NextChecks:  nextChecks,
 		},
 	}
 	fingerprint, fingerprintErr := fp.Fingerprint()
@@ -88,6 +95,7 @@ func (s *InvestigationService) PublishInvestigationReport(ctx context.Context, s
 			SetAgentTurnID(turn.ID).
 			SetText(text).
 			SetSummary(summary).
+			SetNextChecks(nextChecks).
 			SetFingerprint(fingerprint)
 		created, saveErr := createReport.Save(ctx)
 		if saveErr != nil {
@@ -104,6 +112,32 @@ func (s *InvestigationService) PublishInvestigationReport(ctx context.Context, s
 		}
 		return s.getInvestigationReport(ctx, created.ID)
 	})
+}
+
+// normalizeInvestigationNextChecks trims each next check and rejects more than rezai.MaxNextChecks, an empty
+// check or an over-long one.
+func (s *InvestigationService) normalizeInvestigationNextChecks(checks []schematypes.InvestigationNextCheck) ([]schematypes.InvestigationNextCheck, error) {
+	if len(checks) > rezai.MaxNextChecks {
+		return nil, fmt.Errorf("%w: a report has at most %d next checks", errs.ErrInvalidInput, rezai.MaxNextChecks)
+	}
+	normalized := make([]schematypes.InvestigationNextCheck, len(checks))
+	for index, check := range checks {
+		next := schematypes.InvestigationNextCheck{
+			Check:  strings.TrimSpace(check.Check),
+			Reason: strings.TrimSpace(check.Reason),
+		}
+		if next.Check == "" || next.Reason == "" {
+			return nil, fmt.Errorf("%w: next check %d needs a check and a reason", errs.ErrInvalidInput, index+1)
+		}
+		if utf8.RuneCountInString(next.Check) > rezai.MaxNextCheckLength {
+			return nil, fmt.Errorf("%w: next check %d is longer than %d characters", errs.ErrInvalidInput, index+1, rezai.MaxNextCheckLength)
+		}
+		if utf8.RuneCountInString(next.Reason) > rezai.MaxNextCheckReasonLength {
+			return nil, fmt.Errorf("%w: next check %d's reason is longer than %d characters", errs.ErrInvalidInput, index+1, rezai.MaxNextCheckReasonLength)
+		}
+		normalized[index] = next
+	}
+	return normalized, nil
 }
 
 func (s *InvestigationService) makeFindingVersionPreds(turnId uuid.UUID, fingerprint string, findingPred predicate.InvestigationFinding) []predicate.InvestigationFindingVersion {
@@ -496,6 +530,32 @@ func (s *InvestigationService) ListInvestigationHypotheses(ctx context.Context, 
 	}, nil
 }
 
+func (s *InvestigationService) GetCitedProviderRead(ctx context.Context, investigationID, readID uuid.UUID) (*ent.AgentProviderRead, error) {
+	if investigationID == uuid.Nil || readID == uuid.Nil {
+		return nil, fmt.Errorf("%w: investigation and provider read IDs are required", errs.ErrInvalidInput)
+	}
+	lookupCitation := s.db.Client(ctx).InvestigationOutputReference.Query().
+		Where(
+			invor.AgentProviderReadID(readID),
+			invor.Or(
+				invor.HasReportWith(invr.InvestigationID(investigationID)),
+				invor.HasFindingVersionWith(invfv.HasFindingWith(invf.InvestigationID(investigationID))),
+				invor.HasHypothesisVersionWith(invhv.HasHypothesisWith(invh.InvestigationID(investigationID))),
+			),
+		)
+	isCited, citedErr := lookupCitation.Exist(ctx)
+	if citedErr != nil {
+		return nil, fmt.Errorf("check provider read citation: %w", citedErr)
+	}
+	if !isCited {
+		return nil, fmt.Errorf("%w: the investigation's outputs do not cite provider read %s", errs.ErrNotFound, readID)
+	}
+	queryRead := s.db.Client(ctx).AgentProviderRead.Query().
+		Where(apr.ID(readID)).
+		WithServiceEntity()
+	return queryRead.Only(ctx)
+}
+
 // orderOutputReferences orders references by what they cite, loading cited provider reads with their service.
 // A read's stored result can be large and no reader of an output needs it, so it is not selected.
 func (s *InvestigationService) orderOutputReferences(q *ent.InvestigationOutputReferenceQuery) {
@@ -708,9 +768,10 @@ func (s *InvestigationService) normalizeFindingVersionReferences(refs []rez.Inve
 
 type (
 	investigationReportFingerprintPayload struct {
-		Text        string      `json:"text"`
-		Summary     string      `json:"summary,omitempty"`
-		EvidenceIDs []uuid.UUID `json:"evidence_ids"`
+		Text        string                               `json:"text"`
+		Summary     string                               `json:"summary,omitempty"`
+		EvidenceIDs []uuid.UUID                          `json:"evidence_ids"`
+		NextChecks  []schematypes.InvestigationNextCheck `json:"next_checks,omitempty"`
 	}
 
 	findingVersionReferenceFingerprint struct {

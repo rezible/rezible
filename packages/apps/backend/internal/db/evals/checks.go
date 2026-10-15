@@ -20,6 +20,7 @@ const (
 	CheckCitesEntity       = "cites_entity"
 	CheckProviderReads     = "provider_reads"
 	CheckCitesProviderRead = "cites_provider_read"
+	CheckNextChecks        = "next_checks"
 	// CheckTurnCompleted is recorded for each turn a phase waits for; a scenario does not name it.
 	CheckTurnCompleted = "turn_completed"
 )
@@ -48,6 +49,7 @@ var genericCheckKinds = []string{CheckProviderReads}
 // investigationCheckKinds read an investigation's outputs.
 var investigationCheckKinds = []string{
 	CheckReportPublished, CheckAnswerPublished, CheckOutputCount, CheckOutputsCite, CheckCitesEntity, CheckCitesProviderRead,
+	CheckNextChecks,
 }
 
 // checkParameters lists the parameters each kind takes.
@@ -59,6 +61,7 @@ var checkParameters = map[string][]string{
 	CheckCitesEntity:       {"entity_kind", "name", "property"},
 	CheckProviderReads:     {"service", "tool", "outcome", "min", "max"},
 	CheckCitesProviderRead: {"service", "tool"},
+	CheckNextChecks:        {"min"},
 }
 
 func (c CheckSpec) given() []string {
@@ -78,6 +81,22 @@ func (c CheckSpec) given() []string {
 	add("tool", c.Tool != "")
 	add("outcome", c.Outcome != "")
 	return given
+}
+
+// UnmarshalJSON reads a check's parameters, filling those its kind assumes when absent: next_checks counts at
+// least one. The service already enforces the maximum.
+func (c *CheckSpec) UnmarshalJSON(data []byte) error {
+	type plain CheckSpec
+	var decoded plain
+	if decodeErr := decodeStrict(data, &decoded); decodeErr != nil {
+		return decodeErr
+	}
+	*c = CheckSpec(decoded)
+	if c.Kind == CheckNextChecks && c.Min == nil {
+		one := 1
+		c.Min = &one
+	}
+	return nil
 }
 
 func (c CheckSpec) validate() error {
@@ -100,6 +119,8 @@ func (c CheckSpec) validate() error {
 		if c.Outcome != "" && c.Outcome != "succeeded" && c.Outcome != "failed" {
 			return fmt.Errorf("%s: outcome must be succeeded or failed", c.Kind)
 		}
+		return c.validateBounds()
+	case CheckNextChecks:
 		return c.validateBounds()
 	case CheckCitesEntity:
 		if c.EntityKind == "" {
@@ -173,6 +194,8 @@ type RecordedOutput struct {
 	Text     string
 	Evidence []CitedEvidence
 	Reads    []RecordedRead
+	// NextChecks are a report's next checks, each its check and reason.
+	NextChecks []string
 }
 
 // CitedEvidence is the entities cited evidence is about: its subject, or a relationship's two ends.
@@ -261,6 +284,14 @@ func (c CheckSpec) Evaluate(checkID string, records Records) Check {
 		})
 		check.Expected = "an output citing a matching provider read"
 		check.Observed = len(records.Reads)
+	case CheckNextChecks:
+		nextChecks := 0
+		if len(investigation.Reports) > 0 {
+			nextChecks = len(investigation.Reports[len(investigation.Reports)-1].NextChecks)
+		}
+		check.Passed = c.withinBounds(nextChecks)
+		check.Expected = c.boundsText() + " next checks in the latest report"
+		check.Observed = nextChecks
 	}
 	check.Summary = fmt.Sprintf("Expected %v.", check.Expected)
 	if !check.Passed {
@@ -347,6 +378,7 @@ func (s *Scenario) PhaseCheckIDs() [][]string {
 // InvestigationOutputs is what an investigation published, for people to read in a result.
 type InvestigationOutputs struct {
 	Report     string   `json:"report"`
+	NextChecks []string `json:"next_checks"`
 	Findings   []string `json:"findings"`
 	Hypotheses []string `json:"hypotheses"`
 	Answers    []string `json:"answers"`
@@ -354,9 +386,11 @@ type InvestigationOutputs struct {
 
 // Outputs returns the latest report and the latest version of each other output.
 func (r InvestigationRecords) Outputs() InvestigationOutputs {
-	outputs := InvestigationOutputs{Findings: []string{}, Hypotheses: []string{}, Answers: []string{}}
+	outputs := InvestigationOutputs{NextChecks: []string{}, Findings: []string{}, Hypotheses: []string{}, Answers: []string{}}
 	if len(r.Reports) > 0 {
-		outputs.Report = r.Reports[len(r.Reports)-1].Text
+		latest := r.Reports[len(r.Reports)-1]
+		outputs.Report = latest.Text
+		outputs.NextChecks = append(outputs.NextChecks, latest.NextChecks...)
 	}
 	titled := func(output RecordedOutput) string {
 		return output.Title + "\n" + output.Text

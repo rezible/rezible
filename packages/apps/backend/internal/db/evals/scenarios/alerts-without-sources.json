@@ -34,7 +34,8 @@
       "check": [
         {"kind": "report_published"},
         {"kind": "outputs_cite"},
-        {"kind": "cites_entity", "entity_kind": "alert", "name": "CheckoutHighErrorRate"}
+        {"kind": "cites_entity", "entity_kind": "alert", "name": "CheckoutHighErrorRate"},
+        {"kind": "next_checks"}
       ]
     },
     {

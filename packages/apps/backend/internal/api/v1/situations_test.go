@@ -35,7 +35,7 @@ func TestRaiseSituationErrorMapping(t *testing.T) {
 			service := mocks.NewMockSituationService(t)
 			service.EXPECT().RaiseSituation(ctx, id, rez.RaiseSituationParams{StartInvestigation: true}).
 				Return(nil, fmt.Errorf("raise: %w", tc.serviceErr))
-			handler := newSituationsHandler(nil, service)
+			handler := newSituationsHandler(nil, service, nil)
 			response, raiseErr := handler.RaiseSituation(ctx, &oapi.RaiseSituationRequest{Id: id})
 			require.Nil(t, response)
 			var statusErr huma.StatusError
@@ -63,7 +63,7 @@ func TestListSituationsMutedQuery(t *testing.T) {
 					return &ent.ListResult[ent.Situation]{}, nil
 				})
 			_, api := humatest.New(t)
-			huma.Register(api, oapi.ListSituations, newSituationsHandler(nil, service).ListSituations)
+			huma.Register(api, oapi.ListSituations, newSituationsHandler(nil, service, nil).ListSituations)
 
 			response := api.Get("/situations" + tc.query)
 			require.Equal(t, http.StatusOK, response.Code, response.Body.String())
@@ -73,7 +73,7 @@ func TestListSituationsMutedQuery(t *testing.T) {
 	t.Run("invalid", func(t *testing.T) {
 		service := mocks.NewMockSituationService(t)
 		_, api := humatest.New(t)
-		huma.Register(api, oapi.ListSituations, newSituationsHandler(nil, service).ListSituations)
+		huma.Register(api, oapi.ListSituations, newSituationsHandler(nil, service, nil).ListSituations)
 
 		response := api.Get("/situations?muted=sometimes")
 		require.Equal(t, http.StatusUnprocessableEntity, response.Code, response.Body.String())

@@ -101,7 +101,8 @@ func (m *scenarioModel) generate(_ context.Context, request *ai.ModelRequest, _ 
 			return nil, fmt.Errorf("step %d: no alert evidence in %q", m.step, evidence.Text)
 		}
 		refs := []string{match[1]}
-		report := rezai.PublishInvestigationReportToolInput{Text: "Checkout is failing.", Summary: "Checkout is failing.", EvidenceRefs: refs}
+		nextChecks := []rezai.InvestigationNextCheck{{Check: "Open the checkout dashboard", Reason: "Rezible does not read metrics."}}
+		report := rezai.PublishInvestigationReportToolInput{Text: "Checkout is failing.", Summary: "Checkout is failing.", EvidenceRefs: refs, NextChecks: nextChecks}
 		finding := rezai.PublishInvestigationFindingToolInput{Key: fmt.Sprintf("alert-%d", m.step), Title: "An alert fired", Body: "An alert on checkout-api fired.", EvidenceRefs: refs}
 		return &ai.ModelResponse{Message: ai.NewModelMessage(
 			ai.NewToolRequestPart(&ai.ToolRequest{Name: rezai.PublishInvestigationReportTool.Name(), Ref: "report", Input: report}),
@@ -157,11 +158,12 @@ func (s *BackendSuite) TestAiEvalScenario() {
 			"report_published": true,
 			"outputs_cite":     true,
 			"cites_entity:alert:CheckoutHighErrorRate": true,
-			"turn_completed:2":                         true,
-			"outputs_cite@phase2":                      true,
-			"cites_entity:alert:CheckoutLatencyHigh":   true,
-			"turn_completed:3":                         true,
-			"answer_published":                         true,
+			"next_checks":                            true,
+			"turn_completed:2":                       true,
+			"outputs_cite@phase2":                    true,
+			"cites_entity:alert:CheckoutLatencyHigh": true,
+			"turn_completed:3":                       true,
+			"answer_published":                       true,
 		}, outcomes)
 		s.Len(repetition.Turns, 3)
 		s.Equal(&rezai.InvestigationSources{
@@ -266,7 +268,8 @@ func (m *checkoutModel) generate(_ context.Context, request *ai.ModelRequest, _ 
 			return nil, decodeErr
 		}
 		checkoutRefs := []string{match[1], m.checkoutSearch.ProviderReadRef}
-		report := rezai.PublishInvestigationReportToolInput{Text: "Checkout times out on payments-api.", Summary: "Checkout times out.", EvidenceRefs: checkoutRefs}
+		nextChecks := []rezai.InvestigationNextCheck{{Check: "Ask the payments-api on-call", Reason: "Its timeouts started first."}}
+		report := rezai.PublishInvestigationReportToolInput{Text: "Checkout times out on payments-api.", Summary: "Checkout times out.", EvidenceRefs: checkoutRefs, NextChecks: nextChecks}
 		finding := rezai.PublishInvestigationFindingToolInput{Key: "timeouts", Title: "Upstream timeouts", Body: "Checkout times out on payments-api since the deployment.", EvidenceRefs: checkoutRefs}
 		hypothesis := rezai.PublishInvestigationHypothesisToolInput{
 			Key: "pool", Title: "payments-api pool exhausted", Justification: "Its logs say so.", Status: "supported",
@@ -289,7 +292,7 @@ func (s *BackendSuite) TestAiEvalScenarioReads() {
 	for _, check := range repetition.Checks {
 		s.True(check.Passed, "%s: %s", check.ID, check.Summary)
 	}
-	s.Len(repetition.Checks, 9)
+	s.Len(repetition.Checks, 10)
 	s.Require().Len(repetition.Turns, 2)
 	s.Equal(2, repetition.Turns[0].Reads)
 

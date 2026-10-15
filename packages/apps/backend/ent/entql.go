@@ -1009,6 +1009,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			investigationreport.FieldAgentTurnID:     {Type: field.TypeUUID, Column: investigationreport.FieldAgentTurnID},
 			investigationreport.FieldText:            {Type: field.TypeString, Column: investigationreport.FieldText},
 			investigationreport.FieldSummary:         {Type: field.TypeString, Column: investigationreport.FieldSummary},
+			investigationreport.FieldNextChecks:      {Type: field.TypeJSON, Column: investigationreport.FieldNextChecks},
 		},
 	}
 	graph.Nodes[45] = &sqlgraph.Node{
@@ -12384,6 +12385,11 @@ func (f *InvestigationReportFilter) WhereText(p entql.StringP) {
 // WhereSummary applies the entql string predicate on the summary field.
 func (f *InvestigationReportFilter) WhereSummary(p entql.StringP) {
 	f.Where(p.Field(investigationreport.FieldSummary))
+}
+
+// WhereNextChecks applies the entql json.RawMessage predicate on the next_checks field.
+func (f *InvestigationReportFilter) WhereNextChecks(p entql.BytesP) {
+	f.Where(p.Field(investigationreport.FieldNextChecks))
 }
 
 // WhereHasTenant applies a predicate to check if query has an edge tenant.

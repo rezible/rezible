@@ -85,7 +85,8 @@
         {"kind": "outputs_cite"},
         {"kind": "cites_entity", "entity_kind": "deployment", "property": {"version": "checkout-api@2041"}},
         {"kind": "provider_reads", "service": "payments-api", "outcome": "succeeded", "min": 1},
-        {"kind": "cites_provider_read", "service": "checkout-api"}
+        {"kind": "cites_provider_read", "service": "checkout-api"},
+        {"kind": "next_checks"}
       ]
     },
     {

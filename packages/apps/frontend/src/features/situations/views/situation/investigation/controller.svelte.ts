@@ -13,9 +13,7 @@ import {
 	listInvestigationHypothesesOptions,
 	listInvestigationUserInputsOptions,
 	listInvestigationUserInputsQueryKey,
-	retryAgentTurnMutation,
 	submitInvestigationUserInputMutation,
-	updateInvestigationMutation,
 	type InvestigationFinding,
 	type ListInvestigationUserInputsResponse,
 	type ApiError,
@@ -26,7 +24,6 @@ import { createPaginatedQuery } from "$lib/api/queryPaginator.svelte";
 import { Context, watch } from "runed";
 import { SITUATION_POLL_INTERVAL_MS, isDefinitiveUnavailableError } from "$features/situations/lib/model";
 import { formatTime } from "$lib/time";
-import { investigationUpdateNotice } from "$features/situations/lib/status";
 import {
 	buildCitationIndex,
 	buildFindingViews,
@@ -85,15 +82,7 @@ export class SituationInvestigationController {
 	private submissionAttempt = $state<{ text: string; key: string }>();
 	private answerSelectionRefreshes = new SvelteSet<string>();
 
-	retryReconciling = $state(false);
-	retryNeedsRefresh = $state(false);
-	retryMessage = $state("");
-	retryError = $state("");
-	updateError = $state("");
-
 	questionSubmitMutation = createMutation(() => submitInvestigationUserInputMutation());
-	retryMutation = createMutation(() => retryAgentTurnMutation());
-	updateMutation = createMutation(() => updateInvestigationMutation());
 
 	questionPage = createPaginatedQuery<
 		ListInvestigationUserInputsResponse,
@@ -168,7 +157,6 @@ export class SituationInvestigationController {
 	citedEvidenceCount = $derived(this.citationIndex.size);
 	conclusion = $derived(this.getConclusion());
 	expandedOutputIds = new SvelteSet<string>();
-	updateNotice = $derived(investigationUpdateNotice(this.investigationAttributes));
 	questionTotal = $derived(this.questionQuery.data?.pagination.total ?? 0);
 	lastQuestionPage = $derived(Math.max(1, Math.ceil(this.questionTotal / QUESTION_PAGE_SIZE)));
 	questionFetching = $derived(this.questionQuery.isFetching);
@@ -202,12 +190,6 @@ export class SituationInvestigationController {
 	answerRows = $derived(this.buildAnswerRows());
 
 	questionSubmitting = $derived(this.questionSubmitMutation.isPending);
-
-	retryAvailable = $derived(
-		this.investigationAttributes?.latestTurn?.status === "failed" &&
-			!this.investigationAttributes.activeTurn
-	);
-	retryDisabled = $derived(this.retryMutation.isPending || this.retryReconciling || this.retryNeedsRefresh);
 
 	get investigationId() {
 		return this.pageController.investigationId;
@@ -368,84 +350,6 @@ export class SituationInvestigationController {
 		this.expandedQuestionIds.add(inputId);
 	};
 
-	retryLatestFailedTurn = async () => {
-		const latestTurn = this.investigationAttributes?.latestTurn;
-		if (!this.retryAvailable || this.retryDisabled || !latestTurn) {
-			return;
-		}
-
-		this.retryMessage = "";
-		this.retryError = "";
-		let accepted = false;
-		let conflict = false;
-		try {
-			await this.retryMutation.mutateAsync({ path: { id: latestTurn.id } });
-			accepted = true;
-			this.retryMessage = "Retry requested for the same turn.";
-		} catch (error) {
-			const apiError = error as ApiError;
-			conflict = apiError.code === "conflict";
-			this.retryNeedsRefresh = true;
-			if (conflict) {
-				this.retryError =
-					"Execution changed while retrying. Current investigation state is being refreshed.";
-			} else {
-				const message = apiError.detail ?? "The retry request could not be confirmed.";
-				this.retryError = `${message} Current state is being refreshed before another retry is offered.`;
-			}
-		}
-
-		const refreshed = await this.reconcileRetryStatus();
-		if (!refreshed) {
-			if (accepted) {
-				this.retryError =
-					"Retry was accepted, but the current state could not be confirmed. Refresh status to continue.";
-			} else {
-				this.retryError =
-					"Current investigation state could not be refreshed. Refresh status before retrying again.";
-			}
-			return;
-		}
-
-		if (accepted) {
-			this.retryError = "";
-		} else if (conflict) {
-			this.retryError =
-				"Execution changed while retrying. Current investigation state has been refreshed.";
-		} else {
-			this.retryError = "Retry response was uncertain. Current investigation state has been refreshed.";
-		}
-	};
-
-	updateNow = async () => {
-		if (!this.investigationId || this.updateMutation.isPending) {
-			return;
-		}
-
-		this.updateError = "";
-		const path = idPath(this.investigationId);
-		try {
-			const updated = await this.updateMutation.mutateAsync({ path });
-			this.queryClient.setQueryData(getInvestigationOptions({ path }).queryKey, updated);
-		} catch (error) {
-			this.updateError = (error as ApiError).detail ?? "The update could not be started.";
-		}
-		await this.refreshVisibleInvestigationData();
-	};
-
-	refreshRetryStatus = async () => {
-		if (this.retryReconciling) {
-			return;
-		}
-
-		const refreshed = await this.reconcileRetryStatus();
-		if (refreshed) {
-			this.retryError = "";
-		} else {
-			this.retryError = "Investigation status could not be refreshed. Try again.";
-		}
-	};
-
 	private async refreshVisibleInvestigationData() {
 		if (!this.investigationId) {
 			return this.questionQuery.refetch();
@@ -501,19 +405,6 @@ export class SituationInvestigationController {
 		}
 	}
 
-	private async reconcileRetryStatus() {
-		this.retryReconciling = true;
-		try {
-			await this.refreshVisibleInvestigationData();
-			this.retryNeedsRefresh = this.investigationQuery.isError;
-		} catch {
-			this.retryNeedsRefresh = true;
-		} finally {
-			this.retryReconciling = false;
-		}
-		return !this.retryNeedsRefresh;
-	}
-
 	private getConclusion() {
 		const report = this.pageController.reportState;
 		if (report.kind === "published") {
@@ -539,10 +430,6 @@ export class SituationInvestigationController {
 		this.submittedQuestion = undefined;
 		this.expandedQuestionIds.clear();
 		this.answerSelectionRefreshes.clear();
-		this.retryMessage = "";
-		this.retryError = "";
-		this.retryNeedsRefresh = false;
-		this.updateError = "";
 	}
 
 	private getQuestionSuccessMessage() {

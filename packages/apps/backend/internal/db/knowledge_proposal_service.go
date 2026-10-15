@@ -4,6 +4,9 @@ import (
 	"context"
 	"fmt"
 
+	mapset "github.com/deckarep/golang-set/v2"
+	"github.com/google/uuid"
+
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	kela "github.com/rezible/rezible/ent/knowledgeentitylinkingattribute"
@@ -38,6 +41,75 @@ func (s *KnowledgeProposalService) ListProposals(ctx context.Context, params rez
 	}
 
 	return ent.DoListQuery[ent.KnowledgeProposal, *ent.KnowledgeProposalQuery](ctx, query, params.ListParams)
+}
+
+// unconfirmedMatchesTotalCapPerEntity sets the total cap on pending proposals read across all the entities
+// asked about: ten times their number, shared, so one entity may have more than ten listed and another fewer.
+const unconfirmedMatchesTotalCapPerEntity = 10
+
+func (s *KnowledgeProposalService) ListUnconfirmedMatches(ctx context.Context, entityIDs []uuid.UUID) (map[uuid.UUID][]rez.UnconfirmedMatch, error) {
+	matches := make(map[uuid.UUID][]rez.UnconfirmedMatch)
+	if len(entityIDs) == 0 {
+		return matches, nil
+	}
+	listParams := rez.ListProposalsParams{
+		ListParams: ent.ListParams{PageSize: unconfirmedMatchesTotalCapPerEntity * len(entityIDs), OrderAsc: true},
+		Statuses:   []kp.Status{kp.StatusPending},
+		EntityIDs:  entityIDs,
+	}
+	proposals, listErr := s.ListProposals(ctx, listParams)
+	if listErr != nil {
+		return nil, fmt.Errorf("list pending proposals: %w", listErr)
+	}
+	if len(proposals.Data) == 0 {
+		return matches, nil
+	}
+
+	// Each proposal names two values; find the entity holding each.
+	var valuePreds []predicate.KnowledgeEntityLinkingAttribute
+	for _, proposal := range proposals.Data {
+		valuePreds = append(valuePreds, kela.And(
+			kela.Attribute(proposal.Attribute),
+			kela.ValueIn(proposal.NameA, proposal.NameB),
+		))
+	}
+	queryHolders := s.db.Client(ctx).KnowledgeEntityLinkingAttribute.Query().
+		Where(kela.Or(valuePreds...)).
+		WithEntity()
+	holders, holdersErr := queryHolders.All(ctx)
+	if holdersErr != nil {
+		return nil, fmt.Errorf("query proposal value holders: %w", holdersErr)
+	}
+	holderOf := make(map[[2]string]*ent.KnowledgeEntity, len(holders))
+	for _, holder := range holders {
+		holderOf[[2]string{holder.Attribute, holder.Value}] = holder.Edges.Entity
+	}
+
+	requested := mapset.NewSet(entityIDs...)
+	for _, proposal := range proposals.Data {
+		entityA := holderOf[[2]string{proposal.Attribute, proposal.NameA}]
+		entityB := holderOf[[2]string{proposal.Attribute, proposal.NameB}]
+		if entityA == nil || entityB == nil || entityA.ID == entityB.ID {
+			continue
+		}
+		if requested.Contains(entityA.ID) {
+			matches[entityA.ID] = append(matches[entityA.ID], rez.UnconfirmedMatch{
+				ProposalID: proposal.ID,
+				Rationale:  proposal.Rationale,
+				Name:       proposal.NameB,
+				Entity:     entityB,
+			})
+		}
+		if requested.Contains(entityB.ID) {
+			matches[entityB.ID] = append(matches[entityB.ID], rez.UnconfirmedMatch{
+				ProposalID: proposal.ID,
+				Rationale:  proposal.Rationale,
+				Name:       proposal.NameA,
+				Entity:     entityA,
+			})
+		}
+	}
+	return matches, nil
 }
 
 // namingEntities matches proposals naming a linking value the entities hold now. Proposals name values, not

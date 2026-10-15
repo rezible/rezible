@@ -65,6 +65,16 @@ func (h *investigationsHandler) GetInvestigationReport(ctx context.Context, req 
 	return &resp, nil
 }
 
+func (h *investigationsHandler) GetInvestigationProviderRead(ctx context.Context, req *oapi.GetInvestigationProviderReadRequest) (*oapi.GetInvestigationProviderReadResponse, error) {
+	read, readErr := h.outputs.GetCitedProviderRead(ctx, req.Id, req.ReadId)
+	if readErr != nil {
+		return nil, oapi.Error(ctx, "get investigation provider read", readErr)
+	}
+	var resp oapi.GetInvestigationProviderReadResponse
+	resp.Body.Data = oapi.InvestigationProviderReadFromEnt(read, h.integrationDisplayNames(ctx))
+	return &resp, nil
+}
+
 func (h *investigationsHandler) ListInvestigationFindings(ctx context.Context, request *oapi.ListInvestigationFindingsRequest) (*oapi.ListInvestigationFindingsResponse, error) {
 	params := rez.ListInvestigationFindingsParams{
 		ListParams:      request.ListParams(),

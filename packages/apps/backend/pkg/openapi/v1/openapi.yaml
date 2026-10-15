@@ -3194,6 +3194,21 @@ components:
       required:
         - data
       type: object
+    GetInvestigationProviderReadResponseBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/GetInvestigationProviderReadResponseBody.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          $ref: "#/components/schemas/InvestigationProviderRead"
+      required:
+        - data
+      type: object
     GetInvestigationReportResponseBody:
       additionalProperties: false
       properties:
@@ -3491,6 +3506,21 @@ components:
           type: string
         data:
           $ref: "#/components/schemas/Review"
+      required:
+        - data
+      type: object
+    GetSituationBriefResponseBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/GetSituationBriefResponseBody.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          $ref: "#/components/schemas/SituationBrief"
       required:
         - data
       type: object
@@ -4771,6 +4801,40 @@ components:
         - provisional
         - createdAt
       type: object
+    InvestigationNextCheck:
+      additionalProperties: false
+      properties:
+        check:
+          type: string
+        reason:
+          type: string
+      required:
+        - check
+        - reason
+      type: object
+    InvestigationProviderRead:
+      additionalProperties: false
+      properties:
+        attributes:
+          $ref: "#/components/schemas/InvestigationProviderReadAttributes"
+        id:
+          type: string
+      required:
+        - id
+        - attributes
+      type: object
+    InvestigationProviderReadAttributes:
+      additionalProperties: false
+      properties:
+        logCount:
+          $ref: "#/components/schemas/ProviderReadLogCountResult"
+        logSearch:
+          $ref: "#/components/schemas/ProviderReadLogSearchResult"
+        summary:
+          $ref: "#/components/schemas/InvestigationProviderReadSummary"
+      required:
+        - summary
+      type: object
     InvestigationProviderReadSummary:
       additionalProperties: false
       properties:
@@ -4846,6 +4910,11 @@ components:
         createdAt:
           format: date-time
           type: string
+        nextChecks:
+          description: Up to three things a responder can look at next, most useful first; empty for reports without them
+          items:
+            $ref: "#/components/schemas/InvestigationNextCheck"
+          type: array
         provisional:
           type: boolean
         references:
@@ -4861,6 +4930,7 @@ components:
       required:
         - text
         - summary
+        - nextChecks
         - references
         - agentTurnId
         - turnStatus
@@ -6677,6 +6747,77 @@ components:
         - title
         - content
       type: object
+    ProviderReadLogCountResult:
+      additionalProperties: false
+      properties:
+        points:
+          items:
+            $ref: "#/components/schemas/ProviderReadPoint"
+          type: array
+        stepSeconds:
+          description: Seconds between points; zero when unknown
+          format: int64
+          type: integer
+      required:
+        - points
+        - stepSeconds
+      type: object
+    ProviderReadLogLine:
+      additionalProperties: false
+      properties:
+        count:
+          description: How many consecutive identical lines this entry stands for
+          format: int64
+          type: integer
+        earliest:
+          format: date-time
+          type: string
+        labels:
+          additionalProperties:
+            type: string
+          description: This line's labels that are not shared by every line
+          type: object
+        line:
+          type: string
+        time:
+          description: The newest repeat's time when count is above one
+          format: date-time
+          type: string
+      required:
+        - time
+        - line
+        - labels
+        - count
+      type: object
+    ProviderReadLogSearchResult:
+      additionalProperties: false
+      properties:
+        labels:
+          additionalProperties:
+            type: string
+          type: object
+        lines:
+          description: Newest first
+          items:
+            $ref: "#/components/schemas/ProviderReadLogLine"
+          type: array
+      required:
+        - labels
+        - lines
+      type: object
+    ProviderReadPoint:
+      additionalProperties: false
+      properties:
+        time:
+          format: date-time
+          type: string
+        value:
+          format: double
+          type: number
+      required:
+        - time
+        - value
+      type: object
     ProviderResourceRef:
       additionalProperties: false
       properties:
@@ -7411,6 +7552,188 @@ components:
         - has_sufficient_history
         - occurrences
       type: object
+    SituationBrief:
+      additionalProperties: false
+      properties:
+        changes:
+          $ref: "#/components/schemas/SituationBriefChanges"
+        services:
+          description: Matching services first, then by name, at most 10
+          items:
+            $ref: "#/components/schemas/SituationBriefService"
+          type: array
+        unseen:
+          items:
+            $ref: "#/components/schemas/SituationBriefUnseen"
+          type: array
+      required:
+        - services
+        - changes
+        - unseen
+      type: object
+    SituationBriefChanges:
+      additionalProperties: false
+      properties:
+        available:
+          description: Whether any integration reports deployments
+          type: boolean
+        end:
+          format: date-time
+          type: string
+        openedAt:
+          format: date-time
+          type: string
+        services:
+          items:
+            $ref: "#/components/schemas/SituationBriefServiceChanges"
+          type: array
+        start:
+          format: date-time
+          type: string
+        unavailableReason:
+          type: string
+      required:
+        - available
+        - unavailableReason
+        - start
+        - openedAt
+        - end
+        - services
+      type: object
+    SituationBriefDeployment:
+      additionalProperties: false
+      properties:
+        afterOpened:
+          type: boolean
+        deployedAt:
+          format: date-time
+          type: string
+        environment:
+          type: string
+        id:
+          description: The deployment's knowledge entity
+          type: string
+        latestEvidenceId:
+          type: string
+        mergedChanges:
+          items:
+            $ref: "#/components/schemas/SituationBriefMergedChange"
+          type: array
+        mergedChangesCut:
+          type: boolean
+        mergedChangesUnlinked:
+          enum:
+            - ""
+            - no_repository
+            - repository_not_from_code_forge
+          type: string
+        repositoryName:
+          type: string
+        sha:
+          type: string
+        status:
+          type: string
+        url:
+          type: string
+        version:
+          type: string
+      required:
+        - id
+        - deployedAt
+        - afterOpened
+        - environment
+        - status
+        - sha
+        - version
+        - url
+        - repositoryName
+        - mergedChangesUnlinked
+        - mergedChanges
+        - mergedChangesCut
+      type: object
+    SituationBriefMergedChange:
+      additionalProperties: false
+      properties:
+        author:
+          type: string
+        id:
+          description: The change's knowledge entity
+          type: string
+        link:
+          enum:
+            - merge_commit
+            - merged_since_previous_deployment
+            - merged_in_lookback
+          type: string
+        mergedAt:
+          format: date-time
+          type: string
+        number:
+          format: int64
+          type: integer
+        title:
+          type: string
+        url:
+          type: string
+      required:
+        - id
+        - number
+        - title
+        - author
+        - mergedAt
+        - url
+        - link
+      type: object
+    SituationBriefService:
+      additionalProperties: false
+      properties:
+        displayName:
+          type: string
+        entityId:
+          type: string
+        unconfirmedMatches:
+          items:
+            $ref: "#/components/schemas/SituationUnconfirmedMatch"
+          type: array
+      required:
+        - entityId
+        - displayName
+        - unconfirmedMatches
+      type: object
+    SituationBriefServiceChanges:
+      additionalProperties: false
+      properties:
+        deployments:
+          description: After the situation opened, then before it, each newest first
+          items:
+            $ref: "#/components/schemas/SituationBriefDeployment"
+          type: array
+        limits:
+          items:
+            type: string
+          type: array
+        serviceId:
+          type: string
+      required:
+        - serviceId
+        - deployments
+        - limits
+      type: object
+    SituationBriefUnseen:
+      additionalProperties: false
+      properties:
+        kind:
+          enum:
+            - source_unavailable
+            - services_cut
+            - not_read
+          type: string
+        text:
+          type: string
+      required:
+        - kind
+        - text
+      type: object
     SituationEarlierFacts:
       additionalProperties: false
       properties:
@@ -7853,6 +8176,26 @@ components:
         - attention
         - match_kind
         - started_at
+      type: object
+    SituationUnconfirmedMatch:
+      additionalProperties: false
+      properties:
+        displayName:
+          type: string
+        entityId:
+          type: string
+        name:
+          type: string
+        proposalId:
+          type: string
+        rationale:
+          type: string
+      required:
+        - proposalId
+        - name
+        - entityId
+        - displayName
+        - rationale
       type: object
     StartIntegrationOAuthFlowResponseBody:
       additionalProperties: false
@@ -16236,6 +16579,66 @@ paths:
       summary: Get Investigation Hypothesis
       tags:
         - Investigations
+  /investigations/{id}/provider-reads/{readId}:
+    get:
+      operationId: get-investigation-provider-read
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: readId
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetInvestigationProviderReadResponseBody"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: Get Investigation Provider Read
+      tags:
+        - Investigations
   /investigations/{id}/report:
     get:
       operationId: get-investigation-report
@@ -20292,6 +20695,61 @@ paths:
       summary: List the Alert Episodes of a Situation
       tags:
         - Alerts
+  /situations/{id}/brief:
+    get:
+      operationId: get-situation-brief
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetSituationBriefResponseBody"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: Get Situation Brief
+      tags:
+        - Situations
   /situations/{id}/close:
     post:
       operationId: close-situation

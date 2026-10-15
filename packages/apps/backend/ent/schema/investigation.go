@@ -8,6 +8,8 @@ import (
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
 	"github.com/google/uuid"
+
+	"github.com/rezible/rezible/ent/schema/schematypes"
 )
 
 type Investigation struct {
@@ -476,6 +478,10 @@ func (InvestigationReport) Fields() []ent.Field {
 		field.UUID("agent_turn_id", uuid.UUID{}).Immutable(),
 		field.Text("text").NotEmpty().Immutable(),
 		field.Text("summary").Default("").Immutable(),
+		field.JSON("next_checks", []schematypes.InvestigationNextCheck{}).
+			Optional().
+			Immutable().
+			Comment("Up to three things a responder can look at next, most useful first"),
 	}
 }
 

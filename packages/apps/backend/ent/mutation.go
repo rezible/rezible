@@ -41317,6 +41317,8 @@ type InvestigationReportMutation struct {
 	fingerprint              *string
 	text                     *string
 	summary                  *string
+	next_checks              *[]schematypes.InvestigationNextCheck
+	appendnext_checks        []schematypes.InvestigationNextCheck
 	clearedFields            map[string]struct{}
 	tenant                   *int
 	clearedtenant            bool
@@ -41688,6 +41690,71 @@ func (m *InvestigationReportMutation) ResetSummary() {
 	m.summary = nil
 }
 
+// SetNextChecks sets the "next_checks" field.
+func (m *InvestigationReportMutation) SetNextChecks(snc []schematypes.InvestigationNextCheck) {
+	m.next_checks = &snc
+	m.appendnext_checks = nil
+}
+
+// NextChecks returns the value of the "next_checks" field in the mutation.
+func (m *InvestigationReportMutation) NextChecks() (r []schematypes.InvestigationNextCheck, exists bool) {
+	v := m.next_checks
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldNextChecks returns the old "next_checks" field's value of the InvestigationReport entity.
+// If the InvestigationReport object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InvestigationReportMutation) OldNextChecks(ctx context.Context) (v []schematypes.InvestigationNextCheck, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldNextChecks is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldNextChecks requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldNextChecks: %w", err)
+	}
+	return oldValue.NextChecks, nil
+}
+
+// AppendNextChecks adds snc to the "next_checks" field.
+func (m *InvestigationReportMutation) AppendNextChecks(snc []schematypes.InvestigationNextCheck) {
+	m.appendnext_checks = append(m.appendnext_checks, snc...)
+}
+
+// AppendedNextChecks returns the list of values that were appended to the "next_checks" field in this mutation.
+func (m *InvestigationReportMutation) AppendedNextChecks() ([]schematypes.InvestigationNextCheck, bool) {
+	if len(m.appendnext_checks) == 0 {
+		return nil, false
+	}
+	return m.appendnext_checks, true
+}
+
+// ClearNextChecks clears the value of the "next_checks" field.
+func (m *InvestigationReportMutation) ClearNextChecks() {
+	m.next_checks = nil
+	m.appendnext_checks = nil
+	m.clearedFields[investigationreport.FieldNextChecks] = struct{}{}
+}
+
+// NextChecksCleared returns if the "next_checks" field was cleared in this mutation.
+func (m *InvestigationReportMutation) NextChecksCleared() bool {
+	_, ok := m.clearedFields[investigationreport.FieldNextChecks]
+	return ok
+}
+
+// ResetNextChecks resets all changes to the "next_checks" field.
+func (m *InvestigationReportMutation) ResetNextChecks() {
+	m.next_checks = nil
+	m.appendnext_checks = nil
+	delete(m.clearedFields, investigationreport.FieldNextChecks)
+}
+
 // ClearTenant clears the "tenant" edge to the Tenant entity.
 func (m *InvestigationReportMutation) ClearTenant() {
 	m.clearedtenant = true
@@ -41857,7 +41924,7 @@ func (m *InvestigationReportMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *InvestigationReportMutation) Fields() []string {
-	fields := make([]string, 0, 7)
+	fields := make([]string, 0, 8)
 	if m.tenant != nil {
 		fields = append(fields, investigationreport.FieldTenantID)
 	}
@@ -41878,6 +41945,9 @@ func (m *InvestigationReportMutation) Fields() []string {
 	}
 	if m.summary != nil {
 		fields = append(fields, investigationreport.FieldSummary)
+	}
+	if m.next_checks != nil {
+		fields = append(fields, investigationreport.FieldNextChecks)
 	}
 	return fields
 }
@@ -41901,6 +41971,8 @@ func (m *InvestigationReportMutation) Field(name string) (ent.Value, bool) {
 		return m.Text()
 	case investigationreport.FieldSummary:
 		return m.Summary()
+	case investigationreport.FieldNextChecks:
+		return m.NextChecks()
 	}
 	return nil, false
 }
@@ -41924,6 +41996,8 @@ func (m *InvestigationReportMutation) OldField(ctx context.Context, name string)
 		return m.OldText(ctx)
 	case investigationreport.FieldSummary:
 		return m.OldSummary(ctx)
+	case investigationreport.FieldNextChecks:
+		return m.OldNextChecks(ctx)
 	}
 	return nil, fmt.Errorf("unknown InvestigationReport field %s", name)
 }
@@ -41982,6 +42056,13 @@ func (m *InvestigationReportMutation) SetField(name string, value ent.Value) err
 		}
 		m.SetSummary(v)
 		return nil
+	case investigationreport.FieldNextChecks:
+		v, ok := value.([]schematypes.InvestigationNextCheck)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetNextChecks(v)
+		return nil
 	}
 	return fmt.Errorf("unknown InvestigationReport field %s", name)
 }
@@ -42014,7 +42095,11 @@ func (m *InvestigationReportMutation) AddField(name string, value ent.Value) err
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *InvestigationReportMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(investigationreport.FieldNextChecks) {
+		fields = append(fields, investigationreport.FieldNextChecks)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -42027,6 +42112,11 @@ func (m *InvestigationReportMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *InvestigationReportMutation) ClearField(name string) error {
+	switch name {
+	case investigationreport.FieldNextChecks:
+		m.ClearNextChecks()
+		return nil
+	}
 	return fmt.Errorf("unknown InvestigationReport nullable field %s", name)
 }
 
@@ -42054,6 +42144,9 @@ func (m *InvestigationReportMutation) ResetField(name string) error {
 		return nil
 	case investigationreport.FieldSummary:
 		m.ResetSummary()
+		return nil
+	case investigationreport.FieldNextChecks:
+		m.ResetNextChecks()
 		return nil
 	}
 	return fmt.Errorf("unknown InvestigationReport field %s", name)

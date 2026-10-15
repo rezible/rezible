@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -13,6 +14,7 @@ import (
 	"github.com/rezible/rezible/ent/agentturn"
 	"github.com/rezible/rezible/ent/investigation"
 	"github.com/rezible/rezible/ent/investigationreport"
+	"github.com/rezible/rezible/ent/schema/schematypes"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
@@ -35,6 +37,8 @@ type InvestigationReport struct {
 	Text string `json:"text,omitempty"`
 	// Summary holds the value of the "summary" field.
 	Summary string `json:"summary,omitempty"`
+	// Up to three things a responder can look at next, most useful first
+	NextChecks []schematypes.InvestigationNextCheck `json:"next_checks,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the InvestigationReportQuery when eager-loading is set.
 	Edges        InvestigationReportEdges `json:"edges"`
@@ -103,6 +107,8 @@ func (*InvestigationReport) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case investigationreport.FieldNextChecks:
+			values[i] = new([]byte)
 		case investigationreport.FieldTenantID:
 			values[i] = new(sql.NullInt64)
 		case investigationreport.FieldFingerprint, investigationreport.FieldText, investigationreport.FieldSummary:
@@ -173,6 +179,14 @@ func (_m *InvestigationReport) assignValues(columns []string, values []any) erro
 				return fmt.Errorf("unexpected type %T for field summary", values[i])
 			} else if value.Valid {
 				_m.Summary = value.String
+			}
+		case investigationreport.FieldNextChecks:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field next_checks", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &_m.NextChecks); err != nil {
+					return fmt.Errorf("unmarshal field next_checks: %w", err)
+				}
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -250,6 +264,9 @@ func (_m *InvestigationReport) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("summary=")
 	builder.WriteString(_m.Summary)
+	builder.WriteString(", ")
+	builder.WriteString("next_checks=")
+	builder.WriteString(fmt.Sprintf("%v", _m.NextChecks))
 	builder.WriteByte(')')
 	return builder.String()
 }

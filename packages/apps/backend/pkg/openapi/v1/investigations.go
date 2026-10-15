@@ -10,6 +10,7 @@ import (
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/agentproviderread"
 	"github.com/rezible/rezible/ent/agentturn"
 	rezai "github.com/rezible/rezible/pkg/ai"
 	"github.com/rezible/rezible/pkg/openapi"
@@ -30,6 +31,7 @@ type InvestigationsHandler interface {
 	GetInvestigationHypothesis(context.Context, *GetInvestigationHypothesisRequest) (*GetInvestigationHypothesisResponse, error)
 
 	GetInvestigationReport(context.Context, *GetInvestigationReportRequest) (*GetInvestigationReportResponse, error)
+	GetInvestigationProviderRead(context.Context, *GetInvestigationProviderReadRequest) (*GetInvestigationProviderReadResponse, error)
 }
 
 func (o operations) RegisterInvestigations(api huma.API) {
@@ -47,6 +49,7 @@ func (o operations) RegisterInvestigations(api huma.API) {
 	huma.Register(api, GetInvestigationHypothesis, o.GetInvestigationHypothesis)
 
 	huma.Register(api, GetInvestigationReport, o.GetInvestigationReport)
+	huma.Register(api, GetInvestigationProviderRead, o.GetInvestigationProviderRead)
 }
 
 type (
@@ -78,11 +81,17 @@ type (
 	InvestigationReportAttributes struct {
 		Text        string                   `json:"text"`
 		Summary     string                   `json:"summary"`
+		NextChecks  []InvestigationNextCheck `json:"nextChecks" doc:"Up to three things a responder can look at next, most useful first; empty for reports without them"`
 		References  []InvestigationReference `json:"references"`
 		AgentTurnId uuid.UUID                `json:"agentTurnId"`
 		TurnStatus  string                   `json:"turnStatus"`
 		Provisional bool                     `json:"provisional"`
 		CreatedAt   time.Time                `json:"createdAt"`
+	}
+
+	InvestigationNextCheck struct {
+		Check  string `json:"check"`
+		Reason string `json:"reason"`
 	}
 
 	InvestigationFinding struct {
@@ -146,6 +155,44 @@ type (
 		Status              string    `json:"status" enum:"running,succeeded,failed"`
 	}
 
+	InvestigationProviderRead struct {
+		Id         uuid.UUID                           `json:"id"`
+		Attributes InvestigationProviderReadAttributes `json:"attributes"`
+	}
+
+	// InvestigationProviderReadAttributes is a cited provider read with what it returned. A failed read, or one
+	// stored in an earlier shape, has no result.
+	InvestigationProviderReadAttributes struct {
+		Summary   InvestigationProviderReadSummary `json:"summary"`
+		LogSearch *ProviderReadLogSearchResult     `json:"logSearch,omitempty"`
+		LogCount  *ProviderReadLogCountResult      `json:"logCount,omitempty"`
+	}
+
+	ProviderReadLogSearchResult struct {
+		// Labels are the labels every line carries with the same value.
+		Labels map[string]string     `json:"labels"`
+		Lines  []ProviderReadLogLine `json:"lines" doc:"Newest first"`
+	}
+
+	ProviderReadLogLine struct {
+		Time   time.Time         `json:"time" doc:"The newest repeat's time when count is above one"`
+		Line   string            `json:"line"`
+		Labels map[string]string `json:"labels" doc:"This line's labels that are not shared by every line"`
+		Count  int               `json:"count" doc:"How many consecutive identical lines this entry stands for"`
+		// Earliest is the oldest repeat's time; set when Count is above one.
+		Earliest *time.Time `json:"earliest,omitempty"`
+	}
+
+	ProviderReadLogCountResult struct {
+		Points      []ProviderReadPoint `json:"points"`
+		StepSeconds int                 `json:"stepSeconds" doc:"Seconds between points; zero when unknown"`
+	}
+
+	ProviderReadPoint struct {
+		Time  time.Time `json:"time"`
+		Value float64   `json:"value"`
+	}
+
 	FindingVersionReference struct {
 		VersionId uuid.UUID `json:"versionId"`
 		Relation  string    `json:"relation"`
@@ -205,11 +252,15 @@ func InvestigationReportFromEnt(report *ent.InvestigationReport, displayNames In
 	attrs := InvestigationReportAttributes{
 		Text:        report.Text,
 		Summary:     report.Summary,
+		NextChecks:  make([]InvestigationNextCheck, len(report.NextChecks)),
 		References:  investigationReferencesFromEnt(report.Edges.OutputReferences, displayNames),
 		AgentTurnId: report.AgentTurnID,
 		TurnStatus:  investigationTurnStatus(turn),
 		Provisional: investigationTurnProvisional(turn),
 		CreatedAt:   report.CreatedAt,
+	}
+	for index, check := range report.NextChecks {
+		attrs.NextChecks[index] = InvestigationNextCheck{Check: check.Check, Reason: check.Reason}
 	}
 	return InvestigationReport{Id: report.ID, Attributes: attrs}
 }
@@ -312,6 +363,78 @@ func InvestigationProviderReadSummaryFromEnt(read *ent.AgentProviderRead, displa
 	return summary
 }
 
+// InvestigationProviderReadFromEnt converts a provider read with its stored result. A result stored before
+// tool results hoisted shared labels carries the read record, and is left out.
+func InvestigationProviderReadFromEnt(read *ent.AgentProviderRead, displayNames IntegrationDisplayNames) InvestigationProviderRead {
+	attrs := InvestigationProviderReadAttributes{
+		Summary: *InvestigationProviderReadSummaryFromEnt(read, displayNames),
+	}
+	providerRead := InvestigationProviderRead{Id: read.ID, Attributes: attrs}
+	if read.Status != agentproviderread.StatusSucceeded || len(read.Result) == 0 {
+		return providerRead
+	}
+	var stored map[string]json.RawMessage
+	if json.Unmarshal(read.Result, &stored) != nil {
+		return providerRead
+	}
+	if _, earlierShape := stored["read"]; earlierShape {
+		return providerRead
+	}
+
+	switch read.ToolName {
+	case rezai.SearchLogsTool.Name():
+		var result rezai.SearchLogsToolResult
+		if json.Unmarshal(read.Result, &result) == nil {
+			providerRead.Attributes.LogSearch = providerReadLogSearchResult(result)
+		}
+	case rezai.CountLogsTool.Name():
+		var result rezai.CountLogsToolResult
+		if json.Unmarshal(read.Result, &result) == nil {
+			providerRead.Attributes.LogCount = providerReadLogCountResult(read, result)
+		}
+	}
+	return providerRead
+}
+
+func providerReadLogSearchResult(result rezai.SearchLogsToolResult) *ProviderReadLogSearchResult {
+	search := &ProviderReadLogSearchResult{
+		Labels: result.Labels,
+		Lines:  make([]ProviderReadLogLine, len(result.Lines)),
+	}
+	if search.Labels == nil {
+		search.Labels = map[string]string{}
+	}
+	for index, line := range result.Lines {
+		converted := ProviderReadLogLine{
+			Time:     line.Time,
+			Line:     line.Line,
+			Labels:   line.Labels,
+			Count:    max(line.Count, 1),
+			Earliest: line.Earliest,
+		}
+		if converted.Labels == nil {
+			converted.Labels = map[string]string{}
+		}
+		search.Lines[index] = converted
+	}
+	return search
+}
+
+// providerReadLogCountResult takes the step from the read's record.
+func providerReadLogCountResult(read *ent.AgentProviderRead, result rezai.CountLogsToolResult) *ProviderReadLogCountResult {
+	count := &ProviderReadLogCountResult{Points: make([]ProviderReadPoint, len(result.Points))}
+	for index, point := range result.Points {
+		count.Points[index] = ProviderReadPoint{Time: point.Time, Value: point.Value}
+	}
+	var record rezai.ProviderReadRecord
+	if len(read.Read) > 0 && json.Unmarshal(read.Read, &record) == nil && record.Step != "" {
+		if step, parseErr := time.ParseDuration(record.Step); parseErr == nil {
+			count.StepSeconds = int(step.Seconds())
+		}
+	}
+	return count
+}
+
 func FindingVersionReferenceFromEnt(link *ent.InvestigationFindingVersionLink) FindingVersionReference {
 	return FindingVersionReference{VersionId: link.TargetVersionID, Relation: string(link.Relation)}
 }
@@ -382,6 +505,23 @@ type GetInvestigationReportRequest struct {
 	Selection string    `query:"selection" enum:"latest,completed" default:"latest" required:"false"`
 }
 type GetInvestigationReportResponse ItemResponse[InvestigationReport]
+
+// GetInvestigationProviderRead returns a provider read one of the investigation's outputs cites, with what it
+// returned.
+var GetInvestigationProviderRead = openapi.Operation{
+	OperationID: "get-investigation-provider-read",
+	Method:      http.MethodGet,
+	Path:        "/investigations/{id}/provider-reads/{readId}",
+	Summary:     "Get Investigation Provider Read",
+	Tags:        investigationsTags,
+	Errors:      ErrorCodes(),
+}
+
+type GetInvestigationProviderReadRequest struct {
+	Id     uuid.UUID `path:"id"`
+	ReadId uuid.UUID `path:"readId"`
+}
+type GetInvestigationProviderReadResponse ItemResponse[InvestigationProviderRead]
 
 var ListInvestigationFindings = openapi.Operation{
 	OperationID: "list-investigation-findings",

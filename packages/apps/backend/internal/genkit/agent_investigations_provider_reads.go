@@ -5,9 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log/slog"
 	"maps"
-	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -25,37 +23,10 @@ import (
 	"github.com/rezible/rezible/pkg/projections"
 )
 
-// deploymentsCapability is what an installation that reports deployments, such as a webhook with the
-// deployment preset, says it provides.
-const deploymentsCapability = "deployments"
-
-// introduceSources says which sources the agent can read, and why not, without calling a provider. An
-// installation that cannot be loaded makes the sources unavailable rather than failing the turn.
+// introduceSources says which sources the agent can read, and why not, without calling a provider.
 func (i *investigationInvocation) introduceSources(ctx context.Context) *rezai.InvestigationSources {
-	installed, listErr := i.integrations.ListAllInstalled(ctx)
-	if listErr != nil {
-		slog.ErrorContext(ctx, "list installed integrations for investigation sources", "error", listErr)
-		unavailable := rezai.SourceAvailability{Reason: "installed integrations could not be loaded"}
-		return &rezai.InvestigationSources{Logs: unavailable, Changes: unavailable}
-	}
-	sources := &rezai.InvestigationSources{
-		Logs:    rezai.SourceAvailability{Available: true},
-		Changes: rezai.SourceAvailability{Reason: "no deployments integration installed"},
-	}
-	if _, logsErr := integrations.LookupLogSource(ctx, i.integrations); logsErr != nil {
-		var unavailable *integrations.UnavailableError
-		if !errors.As(logsErr, &unavailable) {
-			slog.ErrorContext(ctx, "look up log source for investigation sources", "error", logsErr)
-			unavailable = &integrations.UnavailableError{Reason: "the logs integration could not be loaded"}
-		}
-		sources.Logs = rezai.SourceAvailability{Reason: unavailable.Reason}
-	}
-	for _, ii := range installed {
-		if slices.Contains(ii.Capabilities(), deploymentsCapability) {
-			sources.Changes = rezai.SourceAvailability{Available: true}
-		}
-	}
-	return sources
+	sources := integrations.CheckSources(ctx, i.integrations)
+	return &rezai.InvestigationSources{Logs: sources.Logs, Changes: sources.Changes}
 }
 
 // listServices lists the containers holding a service.name linking attribute, optionally only those whose

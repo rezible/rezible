@@ -7,6 +7,7 @@ const report = (text: string, summary = ""): InvestigationReport => ({
 	attributes: {
 		agentTurnId: "turn",
 		createdAt: "2026-05-14T04:45:00Z",
+		nextChecks: [],
 		provisional: false,
 		references: [],
 		summary,

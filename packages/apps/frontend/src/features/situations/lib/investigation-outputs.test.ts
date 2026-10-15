@@ -58,6 +58,7 @@ const hypothesis = (
 const report = (references: string[]): InvestigationReportAttributes => ({
 	agentTurnId: "turn",
 	createdAt: "2026-05-14T04:45:00Z",
+	nextChecks: [],
 	provisional: false,
 	references: references.map(ref),
 	summary: "",

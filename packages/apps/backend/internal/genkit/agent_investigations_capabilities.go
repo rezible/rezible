@@ -22,7 +22,9 @@ import (
 	invhv "github.com/rezible/rezible/ent/investigationhypothesisversion"
 	invui "github.com/rezible/rezible/ent/investigationuserinput"
 	kne "github.com/rezible/rezible/ent/knowledgeentity"
+	"github.com/rezible/rezible/ent/schema/schematypes"
 	rezai "github.com/rezible/rezible/pkg/ai"
+	"github.com/rezible/rezible/pkg/projections"
 )
 
 const (
@@ -195,15 +197,45 @@ func (i *investigationInvocation) introduceSituation(ctx context.Context) (*reza
 	slices.SortFunc(entities, func(a, b *ent.KnowledgeEntity) int {
 		return cmp.Or(strings.Compare(a.State.DisplayName, b.State.DisplayName), strings.Compare(a.ID.String(), b.ID.String()))
 	})
-	for _, entity := range entities[:min(len(entities), introductionListLimit)] {
-		introduced.Entities = append(introduced.Entities, rezai.InvestigationEntity{
+	entities = entities[:min(len(entities), introductionListLimit)]
+	matches, matchesErr := i.unconfirmedServiceMatches(ctx, entities)
+	if matchesErr != nil {
+		return nil, matchesErr
+	}
+	for _, entity := range entities {
+		introducedEntity := rezai.InvestigationEntity{
 			Ref:      i.formatRef(entity.ID),
 			Name:     limitedAnalysisDescription(entity.State.DisplayName),
 			Category: entity.Category.String(),
 			Kind:     entity.Kind,
-		})
+		}
+		for _, match := range matches[entity.ID] {
+			introducedEntity.UnconfirmedMatches = append(introducedEntity.UnconfirmedMatches, rezai.InvestigationUnconfirmedMatch{
+				Ref:  i.formatRef(match.Entity.ID),
+				Name: limitedAnalysisDescription(match.Name),
+			})
+		}
+		introduced.Entities = append(introduced.Entities, introducedEntity)
 	}
 	return introduced, nil
+}
+
+// unconfirmedServiceMatches returns the pending proposals naming each of the entities that is a service.
+func (i *investigationInvocation) unconfirmedServiceMatches(ctx context.Context, entities []*ent.KnowledgeEntity) (map[uuid.UUID][]rez.UnconfirmedMatch, error) {
+	var serviceIDs []uuid.UUID
+	for _, entity := range entities {
+		if entity.Category == kne.CategoryContainer && entity.Kind == projections.EntityKindService {
+			serviceIDs = append(serviceIDs, entity.ID)
+		}
+	}
+	if len(serviceIDs) == 0 {
+		return nil, nil
+	}
+	matches, matchesErr := i.proposals.ListUnconfirmedMatches(ctx, serviceIDs)
+	if matchesErr != nil {
+		return nil, fmt.Errorf("list unconfirmed matches: %w", matchesErr)
+	}
+	return matches, nil
 }
 
 func (i *investigationInvocation) introduceOutputs(ctx context.Context) (*rezai.InvestigationOutputs, error) {
@@ -527,10 +559,15 @@ func (i *investigationInvocation) publishReport(ctx context.Context, input rezai
 	if resolveErr != nil {
 		return nil, fmt.Errorf("evidence_refs: %w", resolveErr)
 	}
+	nextChecks := make([]schematypes.InvestigationNextCheck, len(input.NextChecks))
+	for index, check := range input.NextChecks {
+		nextChecks[index] = schematypes.InvestigationNextCheck{Check: check.Check, Reason: check.Reason}
+	}
 	params := rez.PublishInvestigationReportParams{
 		Text:        input.Text,
 		Summary:     input.Summary,
 		EvidenceIDs: evidenceIDs,
+		NextChecks:  nextChecks,
 	}
 	scope := rez.InvestigationPublicationScope{InvestigationID: i.investigationID, AgentTurnID: i.turnID}
 	result, publishErr := i.outputs.PublishInvestigationReport(ctx, scope, params)
@@ -634,7 +671,7 @@ func (i *investigationInvocation) reportToolResult(report *ent.InvestigationRepo
 		return nil
 	}
 	turnStatus := report.Edges.AgentTurn.Status
-	return &rezai.InvestigationReportToolResult{
+	result := &rezai.InvestigationReportToolResult{
 		VersionRef:   i.formatRef(report.ID),
 		Text:         report.Text,
 		Summary:      report.Summary,
@@ -643,6 +680,10 @@ func (i *investigationInvocation) reportToolResult(report *ent.InvestigationRepo
 		Provisional:  turnStatus == at.StatusRunning,
 		CreatedAt:    report.CreatedAt,
 	}
+	for _, check := range report.NextChecks {
+		result.NextChecks = append(result.NextChecks, rezai.InvestigationNextCheck{Check: check.Check, Reason: check.Reason})
+	}
+	return result
 }
 
 func (i *investigationInvocation) findingToolResult(version *ent.InvestigationFindingVersion) *rezai.InvestigationFindingVersionToolResult {

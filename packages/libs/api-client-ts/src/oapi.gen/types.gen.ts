@@ -1505,6 +1505,14 @@ export type GetInvestigationHypothesisResponseBody = {
     data: InvestigationHypothesis;
 };
 
+export type GetInvestigationProviderReadResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: InvestigationProviderRead;
+};
+
 export type GetInvestigationReportResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
@@ -1663,6 +1671,14 @@ export type GetReviewResponseBody = {
      */
     readonly $schema?: string;
     data: Review;
+};
+
+export type GetSituationBriefResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: SituationBrief;
 };
 
 export type GetSituationResponseBody = {
@@ -2190,6 +2206,22 @@ export type InvestigationHypothesisAttributes = {
     turnStatus: string;
 };
 
+export type InvestigationNextCheck = {
+    check: string;
+    reason: string;
+};
+
+export type InvestigationProviderRead = {
+    attributes: InvestigationProviderReadAttributes;
+    id: string;
+};
+
+export type InvestigationProviderReadAttributes = {
+    logCount?: ProviderReadLogCountResult;
+    logSearch?: ProviderReadLogSearchResult;
+    summary: InvestigationProviderReadSummary;
+};
+
 export type InvestigationProviderReadSummary = {
     end: string;
     exploreUrl: string;
@@ -2216,6 +2248,10 @@ export type InvestigationReport = {
 export type InvestigationReportAttributes = {
     agentTurnId: string;
     createdAt: string;
+    /**
+     * Up to three things a responder can look at next, most useful first; empty for reports without them
+     */
+    nextChecks: Array<InvestigationNextCheck>;
     provisional: boolean;
     references: Array<InvestigationReference>;
     summary: string;
@@ -2975,6 +3011,48 @@ export type PlaybookAttributes = {
     title: string;
 };
 
+export type ProviderReadLogCountResult = {
+    points: Array<ProviderReadPoint>;
+    /**
+     * Seconds between points; zero when unknown
+     */
+    stepSeconds: number;
+};
+
+export type ProviderReadLogLine = {
+    /**
+     * How many consecutive identical lines this entry stands for
+     */
+    count: number;
+    earliest?: string;
+    /**
+     * This line's labels that are not shared by every line
+     */
+    labels: {
+        [key: string]: string;
+    };
+    line: string;
+    /**
+     * The newest repeat's time when count is above one
+     */
+    time: string;
+};
+
+export type ProviderReadLogSearchResult = {
+    labels: {
+        [key: string]: string;
+    };
+    /**
+     * Newest first
+     */
+    lines: Array<ProviderReadLogLine>;
+};
+
+export type ProviderReadPoint = {
+    time: string;
+    value: number;
+};
+
 export type ProviderResourceRef = {
     provider: string;
     providerNamespace: string;
@@ -3294,6 +3372,79 @@ export type SituationBaselineFacts = {
     occurrences: number;
 };
 
+export type SituationBrief = {
+    changes: SituationBriefChanges;
+    /**
+     * Matching services first, then by name, at most 10
+     */
+    services: Array<SituationBriefService>;
+    unseen: Array<SituationBriefUnseen>;
+};
+
+export type SituationBriefChanges = {
+    /**
+     * Whether any integration reports deployments
+     */
+    available: boolean;
+    end: string;
+    openedAt: string;
+    services: Array<SituationBriefServiceChanges>;
+    start: string;
+    unavailableReason: string;
+};
+
+export type SituationBriefDeployment = {
+    afterOpened: boolean;
+    deployedAt: string;
+    environment: string;
+    /**
+     * The deployment's knowledge entity
+     */
+    id: string;
+    latestEvidenceId?: string;
+    mergedChanges: Array<SituationBriefMergedChange>;
+    mergedChangesCut: boolean;
+    mergedChangesUnlinked: '' | 'no_repository' | 'repository_not_from_code_forge';
+    repositoryName: string;
+    sha: string;
+    status: string;
+    url: string;
+    version: string;
+};
+
+export type SituationBriefMergedChange = {
+    author: string;
+    /**
+     * The change's knowledge entity
+     */
+    id: string;
+    link: 'merge_commit' | 'merged_since_previous_deployment' | 'merged_in_lookback';
+    mergedAt: string;
+    number: number;
+    title: string;
+    url: string;
+};
+
+export type SituationBriefService = {
+    displayName: string;
+    entityId: string;
+    unconfirmedMatches: Array<SituationUnconfirmedMatch>;
+};
+
+export type SituationBriefServiceChanges = {
+    /**
+     * After the situation opened, then before it, each newest first
+     */
+    deployments: Array<SituationBriefDeployment>;
+    limits: Array<string>;
+    serviceId: string;
+};
+
+export type SituationBriefUnseen = {
+    kind: 'source_unavailable' | 'services_cut' | 'not_read';
+    text: string;
+};
+
 export type SituationEarlierFacts = {
     close_reason?: string;
     closed_at?: string;
@@ -3455,6 +3606,14 @@ export type SituationSignalFacts = {
     source_entity_id?: string;
     started_at: string;
     title: string;
+};
+
+export type SituationUnconfirmedMatch = {
+    displayName: string;
+    entityId: string;
+    name: string;
+    proposalId: string;
+    rationale: string;
 };
 
 export type StartIntegrationOAuthFlowResponseBody = {
@@ -9488,6 +9647,54 @@ export type GetInvestigationHypothesisResponses = {
 
 export type GetInvestigationHypothesisResponse = GetInvestigationHypothesisResponses[keyof GetInvestigationHypothesisResponses];
 
+export type GetInvestigationProviderReadData = {
+    body?: never;
+    path: {
+        id: string;
+        readId: string;
+    };
+    query?: never;
+    url: '/investigations/{id}/provider-reads/{readId}';
+};
+
+export type GetInvestigationProviderReadErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type GetInvestigationProviderReadError = GetInvestigationProviderReadErrors[keyof GetInvestigationProviderReadErrors];
+
+export type GetInvestigationProviderReadResponses = {
+    /**
+     * OK
+     */
+    200: GetInvestigationProviderReadResponseBody;
+};
+
+export type GetInvestigationProviderReadResponse = GetInvestigationProviderReadResponses[keyof GetInvestigationProviderReadResponses];
+
 export type GetInvestigationReportData = {
     body?: never;
     path: {
@@ -12608,6 +12815,53 @@ export type ListSituationAlertEpisodesResponses = {
 };
 
 export type ListSituationAlertEpisodesResponse = ListSituationAlertEpisodesResponses[keyof ListSituationAlertEpisodesResponses];
+
+export type GetSituationBriefData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/situations/{id}/brief';
+};
+
+export type GetSituationBriefErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type GetSituationBriefError = GetSituationBriefErrors[keyof GetSituationBriefErrors];
+
+export type GetSituationBriefResponses = {
+    /**
+     * OK
+     */
+    200: GetSituationBriefResponseBody;
+};
+
+export type GetSituationBriefResponse = GetSituationBriefResponses[keyof GetSituationBriefResponses];
 
 export type CloseSituationData = {
     body: CloseSituationRequestBody;

@@ -7,7 +7,7 @@
 	import SectionHeading from "$components/common/section-heading/SectionHeading.svelte";
 	import SituationSourceSheet from "$features/situations/components/situation-source-sheet/SituationSourceSheet.svelte";
 	import { initSituationInvestigationController } from "./controller.svelte";
-	import InvestigationRunNotice from "./InvestigationRunNotice.svelte";
+	import InvestigationRunNotice from "../InvestigationRunNotice.svelte";
 	import InvestigationOutputList from "./InvestigationOutputList.svelte";
 	import InvestigationReportSection from "./InvestigationReportSection.svelte";
 	import InvestigationContext from "./InvestigationContext.svelte";

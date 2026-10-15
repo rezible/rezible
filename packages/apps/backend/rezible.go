@@ -322,10 +322,23 @@ type (
 		EntityIDs []uuid.UUID
 	}
 
+	// UnconfirmedMatch is a pending proposal naming one of an entity's linking values, seen from that entity:
+	// the other name may be the same entity.
+	UnconfirmedMatch struct {
+		ProposalID uuid.UUID
+		Rationale  string
+		// Name is the proposal's other value, and Entity the entity that holds it now.
+		Name   string
+		Entity *ent.KnowledgeEntity
+	}
+
 	// KnowledgeProposalService reads the identity matches Rezible proposes for people to decide on.
 	KnowledgeProposalService interface {
 		// ListProposals lists proposals, newest first unless OrderAsc, each with the evidence it cites and that evidence's alias.
 		ListProposals(context.Context, ListProposalsParams) (*ent.ListResult[ent.KnowledgeProposal], error)
+		// ListUnconfirmedMatches lists, by entity ID, the pending proposals naming each entity, oldest first.
+		// A proposal whose other value no entity holds, or the same entity holds, is left out.
+		ListUnconfirmedMatches(ctx context.Context, entityIDs []uuid.UUID) (map[uuid.UUID][]UnconfirmedMatch, error)
 	}
 
 	KnowledgeEntityFilter struct {
@@ -1056,6 +1069,94 @@ const (
 	MergedChangeLinkMergedInLookback MergedChangeLink = "merged_in_lookback"
 )
 
+const (
+	// MaxBriefServices is how many of a situation's services its brief shows.
+	MaxBriefServices = 10
+	// BriefChangesLeadIn is how long before a situation opened its brief lists deployments.
+	BriefChangesLeadIn = 24 * time.Hour
+)
+
+type (
+	// SituationBrief is what code states about a situation: its services, their changes and what Rezible
+	// cannot see.
+	SituationBrief struct {
+		// Services are the situation's services, matching ones first, then by name, at most MaxBriefServices.
+		Services []BriefService
+		Changes  SituationBriefChanges
+		Unseen   []SituationBriefUnseen
+	}
+
+	// BriefService is one of a situation's services in its brief.
+	BriefService struct {
+		Entity             *ent.KnowledgeEntity
+		UnconfirmedMatches []UnconfirmedMatch
+	}
+
+	SituationBriefChanges struct {
+		// Available is whether any installation reports deployments; without one, nothing is looked up and
+		// UnavailableReason says why.
+		Available         bool
+		UnavailableReason string
+		// Start is BriefChangesLeadIn before the situation opened, and End when it closed, or now.
+		Start, OpenedAt, End time.Time
+		// Services holds the changes of each of Services, in the same order.
+		Services []SituationBriefServiceChanges
+	}
+
+	SituationBriefServiceChanges struct {
+		ServiceEntityID uuid.UUID
+		// Deployments are the deployments after the situation opened, then those before, each newest first.
+		Deployments []SituationBriefDeployment
+		// Limits describes, in plain words, each limit that cut the lookups.
+		Limits []string
+	}
+
+	SituationBriefDeployment struct {
+		ServiceDeployment
+		AfterOpened bool
+		// LatestEvidenceID is the deployment's latest knowledge evidence, if any.
+		LatestEvidenceID *uuid.UUID
+		// MergedChangesUnlinked says why merged changes cannot be linked; empty when they can.
+		MergedChangesUnlinked SituationBriefUnlinkedReason
+	}
+
+	SituationBriefUnlinkedReason string
+
+	SituationBriefUnseen struct {
+		Kind SituationBriefUnseenKind
+		// Text is written for people.
+		Text string
+	}
+
+	SituationBriefUnseenKind string
+
+	// SituationLatestDeployment is the newest deployment of one of a situation's services before it opened.
+	SituationLatestDeployment struct {
+		Service     *ent.KnowledgeEntity
+		DeployedAt  time.Time
+		Environment string
+		Status      string
+		Version     string
+		Sha         string
+	}
+
+	SituationBriefService interface {
+		GetSituationBrief(ctx context.Context, situationID uuid.UUID) (*SituationBrief, error)
+		// LatestDeploymentBefore returns the newest deployment of the brief's services from
+		// BriefChangesLeadIn before the situation opened until it opened, of any status, or nil.
+		LatestDeploymentBefore(ctx context.Context, situationID uuid.UUID) (*SituationLatestDeployment, error)
+	}
+)
+
+const (
+	SituationBriefUnlinkedNoRepository       SituationBriefUnlinkedReason = "no_repository"
+	SituationBriefUnlinkedRepositoryNotForge SituationBriefUnlinkedReason = "repository_not_from_code_forge"
+
+	SituationBriefUnseenSourceUnavailable SituationBriefUnseenKind = "source_unavailable"
+	SituationBriefUnseenServicesCut       SituationBriefUnseenKind = "services_cut"
+	SituationBriefUnseenNotRead           SituationBriefUnseenKind = "not_read"
+)
+
 type (
 	CreateInvestigationParams struct {
 		AnalysisID uuid.UUID
@@ -1136,6 +1237,8 @@ type (
 		Text        string
 		Summary     string
 		EvidenceIDs []uuid.UUID
+		// NextChecks are at most rezai.MaxNextChecks, most useful first.
+		NextChecks []schematypes.InvestigationNextCheck
 	}
 
 	PublishInvestigationFindingParams struct {
@@ -1199,6 +1302,10 @@ type (
 
 		// GetInvestigationOutputVersion returns the investigation's report, finding version or hypothesis version with the ID, whichever it is.
 		GetInvestigationOutputVersion(ctx context.Context, investigationID uuid.UUID, versionID uuid.UUID) (*InvestigationOutputVersion, error)
+
+		// GetCitedProviderRead returns a provider read one of the investigation's outputs cites, with its stored
+		// result and service. Any other read is not found.
+		GetCitedProviderRead(ctx context.Context, investigationID uuid.UUID, readID uuid.UUID) (*ent.AgentProviderRead, error)
 	}
 )
 

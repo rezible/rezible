@@ -17,6 +17,7 @@ import (
 	"github.com/rezible/rezible/ent/investigation"
 	"github.com/rezible/rezible/ent/investigationoutputreference"
 	"github.com/rezible/rezible/ent/investigationreport"
+	"github.com/rezible/rezible/ent/schema/schematypes"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
@@ -83,6 +84,12 @@ func (_c *InvestigationReportCreate) SetNillableSummary(v *string) *Investigatio
 	if v != nil {
 		_c.SetSummary(*v)
 	}
+	return _c
+}
+
+// SetNextChecks sets the "next_checks" field.
+func (_c *InvestigationReportCreate) SetNextChecks(v []schematypes.InvestigationNextCheck) *InvestigationReportCreate {
+	_c.mutation.SetNextChecks(v)
 	return _c
 }
 
@@ -283,6 +290,10 @@ func (_c *InvestigationReportCreate) createSpec() (*InvestigationReport, *sqlgra
 		_spec.SetField(investigationreport.FieldSummary, field.TypeString, value)
 		_node.Summary = value
 	}
+	if value, ok := _c.mutation.NextChecks(); ok {
+		_spec.SetField(investigationreport.FieldNextChecks, field.TypeJSON, value)
+		_node.NextChecks = value
+	}
 	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -443,6 +454,9 @@ func (u *InvestigationReportUpsertOne) UpdateNewValues() *InvestigationReportUps
 		}
 		if _, exists := u.create.mutation.Summary(); exists {
 			s.SetIgnore(investigationreport.FieldSummary)
+		}
+		if _, exists := u.create.mutation.NextChecks(); exists {
+			s.SetIgnore(investigationreport.FieldNextChecks)
 		}
 	}))
 	return u
@@ -678,6 +692,9 @@ func (u *InvestigationReportUpsertBulk) UpdateNewValues() *InvestigationReportUp
 			}
 			if _, exists := b.mutation.Summary(); exists {
 				s.SetIgnore(investigationreport.FieldSummary)
+			}
+			if _, exists := b.mutation.NextChecks(); exists {
+				s.SetIgnore(investigationreport.FieldNextChecks)
 			}
 		}
 	}))

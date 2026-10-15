@@ -32,6 +32,12 @@ const (
 	MaxProviderReadsPerTurn = 12
 	// ProviderReadLeadIn is how long before a situation opened its investigation may read, for a baseline.
 	ProviderReadLeadIn = 24 * time.Hour
+
+	// MaxNextChecks is how many next checks one report may suggest.
+	MaxNextChecks = 3
+	// MaxNextCheckLength and MaxNextCheckReasonLength bound a next check's text and its reason, in characters.
+	MaxNextCheckLength       = 200
+	MaxNextCheckReasonLength = 300
 )
 
 // ProviderReadRecord describes the read that ran: what the agent and a person see of it.
@@ -98,25 +104,32 @@ var ReadEvidenceTool = defineTool[ToolDefinition[ReadEvidenceArgs, *TextToolResu
 
 type (
 	PublishInvestigationReportToolInput struct {
-		Text         string   `json:"text"`
-		Summary      string   `json:"summary" jsonschema:"description=One or two plain sentences stating the current conclusion and how certain it is; no Markdown; at most 400 characters"`
-		EvidenceRefs []string `json:"evidence_refs" jsonschema:"description=Knowledge-evidence and provider read refs cited by this report; may be empty"`
+		Text         string                   `json:"text"`
+		Summary      string                   `json:"summary" jsonschema:"description=One or two plain sentences stating the current conclusion and how certain it is; no Markdown; at most 400 characters"`
+		EvidenceRefs []string                 `json:"evidence_refs" jsonschema:"description=Knowledge-evidence and provider read refs cited by this report; may be empty"`
+		NextChecks   []InvestigationNextCheck `json:"next_checks,omitempty" jsonschema:"description=Up to 3 things a responder can look at next, most useful first; may be empty,maxItems=3"`
+	}
+
+	InvestigationNextCheck struct {
+		Check  string `json:"check" jsonschema:"description=Something a responder can look at that Rezible could not read or did not settle; at most 200 characters"`
+		Reason string `json:"reason" jsonschema:"description=Why it is worth checking; at most 300 characters"`
 	}
 
 	InvestigationReportToolResult struct {
-		VersionRef   string    `json:"version_ref"`
-		Text         string    `json:"text"`
-		Summary      string    `json:"summary"`
-		EvidenceRefs []string  `json:"evidence_refs"`
-		TurnStatus   string    `json:"turn_status"`
-		Provisional  bool      `json:"provisional"`
-		CreatedAt    time.Time `json:"created_at"`
+		VersionRef   string                   `json:"version_ref"`
+		Text         string                   `json:"text"`
+		Summary      string                   `json:"summary"`
+		EvidenceRefs []string                 `json:"evidence_refs"`
+		NextChecks   []InvestigationNextCheck `json:"next_checks,omitempty"`
+		TurnStatus   string                   `json:"turn_status"`
+		Provisional  bool                     `json:"provisional"`
+		CreatedAt    time.Time                `json:"created_at"`
 	}
 )
 
 var PublishInvestigationReportTool = defineTool[ToolDefinition[PublishInvestigationReportToolInput, *InvestigationReportToolResult]](
 	"publish_investigation_report",
-	"Publish an investigation report. text is Markdown. summary is one or two plain sentences stating the current conclusion and its certainty. Cite knowledge-evidence and provider read refs; empty evidence_refs is valid.",
+	"Publish an investigation report. text is Markdown. summary is one or two plain sentences stating the current conclusion and its certainty. Cite knowledge-evidence and provider read refs; empty evidence_refs is valid. next_checks are up to 3 checks for a responder, each with why.",
 )
 
 type (

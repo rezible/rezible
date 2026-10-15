@@ -31,6 +31,7 @@ type investigationHarness struct {
 	changes       *mocks.MockChangesService
 	integrations  *mocks.MockIntegrationService
 	providerReads *mocks.MockAgentProviderReadService
+	proposals     *mocks.MockKnowledgeProposalService
 	invocation    *investigationInvocation
 }
 
@@ -43,6 +44,7 @@ func (s *AiRuntimeSuite) newInvestigationHarness() *investigationHarness {
 		changes:       mocks.NewMockChangesService(s.T()),
 		integrations:  mocks.NewMockIntegrationService(s.T()),
 		providerReads: mocks.NewMockAgentProviderReadService(s.T()),
+		proposals:     mocks.NewMockKnowledgeProposalService(s.T()),
 	}
 	deps := investigationDependencies{
 		clock:         h.clock,
@@ -52,6 +54,7 @@ func (s *AiRuntimeSuite) newInvestigationHarness() *investigationHarness {
 		changes:       h.changes,
 		integrations:  h.integrations,
 		providerReads: h.providerReads,
+		proposals:     h.proposals,
 	}
 	h.invocation = &investigationInvocation{
 		investigationDependencies: deps,
@@ -163,6 +166,17 @@ func (s *AiRuntimeSuite) TestInvestigationIntroduction() {
 		member := &ent.SituationEntity{Edges: ent.SituationEntityEdges{KnowledgeEntity: entity}}
 		situation.Edges.Entities = append(situation.Edges.Entities, member)
 	}
+	firstListed := situation.Edges.Entities[29].Edges.KnowledgeEntity
+	otherName := &ent.KnowledgeEntity{
+		ID:    uuid.New(),
+		State: schematypes.KnowledgeGraphSubjectState{DisplayName: "checkout"},
+	}
+	h.proposals.EXPECT().ListUnconfirmedMatches(mock.Anything, mock.Anything).
+		RunAndReturn(func(_ context.Context, entityIDs []uuid.UUID) (map[uuid.UUID][]rez.UnconfirmedMatch, error) {
+			s.Len(entityIDs, introductionListLimit, "only the listed services are looked up")
+			match := rez.UnconfirmedMatch{ProposalID: uuid.New(), Name: "checkout", Entity: otherName}
+			return map[uuid.UUID][]rez.UnconfirmedMatch{firstListed.ID: {match}}, nil
+		})
 	// Signals attached later started earlier, so the most recently attached are listed newest-started first.
 	group := &ent.SituationObservationGroup{}
 	var alertEntityIDs []uuid.UUID
@@ -206,7 +220,7 @@ func (s *AiRuntimeSuite) TestInvestigationIntroduction() {
 		Edges:   ent.InvestigationReportEdges{AgentTurn: &ent.AgentTurn{Status: at.StatusRunning}},
 	}
 	h.expectOutputs(report, 30, 2)
-	h.expectProviderReadContext(3, newFakeLogReader(""), newFakeInstallation("webhook", "deployments"))
+	h.expectProviderReadContext(3, newFakeLogReader(""), newFakeInstallation("webhook", "deployments"), newFakeInstallation("provider-b", "code_changes"))
 
 	introduction := s.introduction(ctx, h)
 
@@ -223,6 +237,9 @@ func (s *AiRuntimeSuite) TestInvestigationIntroduction() {
 	s.Equal(alertEntityIDs[29].String(), introduction.Situation.Signals[introductionListLimit-1].Ref)
 	s.Len(introduction.Situation.Entities, introductionListLimit)
 	s.Equal("service-00", introduction.Situation.Entities[0].Name, "entities are listed by name")
+	unconfirmed := []rezai.InvestigationUnconfirmedMatch{{Ref: otherName.ID.String(), Name: "checkout"}}
+	s.Equal(unconfirmed, introduction.Situation.Entities[0].UnconfirmedMatches)
+	s.Empty(introduction.Situation.Entities[1].UnconfirmedMatches)
 
 	s.Require().NotNil(introduction.Outputs.Report)
 	s.Equal(report.ID.String(), introduction.Outputs.Report.VersionRef)
@@ -242,7 +259,7 @@ func (s *AiRuntimeSuite) TestInvestigationIntroduction() {
 	s.Equal(rezai.InvestigationSources{
 		Logs:    rezai.SourceAvailability{Available: true},
 		Changes: rezai.SourceAvailability{Available: true},
-	}, introduction.Sources)
+	}, introduction.Sources, "code changes are not one of the agent's sources")
 }
 
 func (s *AiRuntimeSuite) TestInvestigationIntroductionWithoutOutputs() {

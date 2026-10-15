@@ -248,6 +248,9 @@ func (h *investigationHarness) Records(ctx context.Context, sessionID uuid.UUID)
 	for _, report := range reports {
 		citedEvidence, citedReads := cited(report.ID)
 		output := RecordedOutput{TurnID: report.AgentTurnID, Text: report.Text, Evidence: citedEvidence, Reads: citedReads}
+		for _, next := range report.NextChecks {
+			output.NextChecks = append(output.NextChecks, next.Check+" — "+next.Reason)
+		}
 		outputs.Reports = append(outputs.Reports, output)
 	}
 	for _, finding := range findings {

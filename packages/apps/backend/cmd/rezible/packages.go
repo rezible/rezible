@@ -181,6 +181,7 @@ var pkgGenkit = do.Package(
 			do.MustInvoke[rez.ChangesService](i),
 			do.MustInvoke[rez.IntegrationService](i),
 			do.MustInvoke[rez.AgentProviderReadService](i),
+			do.MustInvoke[rez.KnowledgeProposalService](i),
 		)
 		return runtime, runtime.RegisterAgents(
 			genkit.WithAgent(chatAgent),
@@ -483,6 +484,17 @@ var pkgDatabase = do.Package(
 		return db.NewKnowledgeProposalService(do.MustInvoke[rez.Database](i))
 	}),
 
+	do.Lazy(func(i do.Injector) (rez.SituationBriefService, error) {
+		return db.NewSituationBriefService(
+			do.MustInvoke[rez.Database](i),
+			do.MustInvoke[rez.Clock](i),
+			do.MustInvoke[rez.KnowledgeGraphQueryService](i),
+			do.MustInvoke[rez.ChangesService](i),
+			do.MustInvoke[rez.KnowledgeProposalService](i),
+			do.MustInvoke[rez.IntegrationService](i),
+		)
+	}),
+
 	do.Lazy(func(i do.Injector) (rez.SystemAnalysisService, error) {
 		return db.NewSystemAnalysisService(
 			do.MustInvoke[rez.Database](i),
@@ -667,6 +679,7 @@ var pkgOpenApiV1 = do.Package(
 			do.MustInvoke[rez.SystemAnalysisService](i),
 			do.MustInvoke[rez.KnowledgeGraphQueryService](i),
 			do.MustInvoke[rez.SituationService](i),
+			do.MustInvoke[rez.SituationBriefService](i),
 		), nil
 	}),
 
