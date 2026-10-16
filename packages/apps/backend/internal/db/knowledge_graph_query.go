@@ -45,7 +45,13 @@ func (s *KnowledgeGraphQueryService) ListEntities(ctx context.Context, params re
 		Order(kne.ByID(params.GetOrder()))
 
 	if search := strings.TrimSpace(params.Search); search != "" {
-		// explicitly do not support search for now
+		query.Where(kne.Or(
+			s.displayNameContainsFold(search),
+			kne.HasLinkingAttributesWith(kela.ValueContainsFold(search)),
+		))
+	}
+	if params.WithLinkingAttributes {
+		query.WithLinkingAttributes()
 	}
 	if len(params.Predicates) > 0 {
 		query.Where(params.Predicates...)
@@ -62,6 +68,17 @@ func (s *KnowledgeGraphQueryService) ListEntities(ctx context.Context, params re
 	}
 
 	return ent.DoListQuery[ent.KnowledgeEntity, *ent.KnowledgeEntityQuery](ctx, query, params.ListParams)
+}
+
+// displayNameContainsFold matches entities whose state's display name contains the text, ignoring case. Ent
+// has no case-folding predicate on a JSON value, so this joins its JSON path and LIKE predicates.
+func (s *KnowledgeGraphQueryService) displayNameContainsFold(text string) predicate.KnowledgeEntity {
+	return func(sel *sql.Selector) {
+		sel.Where(sql.P(func(b *sql.Builder) {
+			b.Join(sqljson.ValuePath(sel.C(kne.FieldState), sqljson.Path("display_name"), sqljson.Unquote(true)))
+			b.Join(sql.ContainsFold("", text))
+		}))
+	}
 }
 
 func (s *KnowledgeGraphQueryService) GetEntity(ctx context.Context, id uuid.UUID, expand rez.KnowledgeEntityExpand) (*ent.KnowledgeEntity, error) {
@@ -233,10 +250,12 @@ func (s *KnowledgeGraphQueryService) SummarizeEvidence(ctx context.Context, para
 	if !params.End.IsZero() {
 		predicates = append(predicates, ke.EffectiveAtLTE(params.End))
 	}
-	groupColumns := []string{ke.FieldSubjectAliasID}
-	if params.ByAssertion {
-		groupColumns = append(groupColumns, ke.FieldAssertion)
+	grouping := knowledgeEvidenceGrouping{
+		predicates:  predicates,
+		byAssertion: params.ByAssertion,
+		expandAlias: params.Expand.Alias,
 	}
+	groupColumns := grouping.columns()
 
 	// Ent's group-by has no count of groups or order by an aggregate, so both are written as SQL expressions.
 	countGroups := client.KnowledgeEvidence.Query().
@@ -256,7 +275,36 @@ func (s *KnowledgeGraphQueryService) SummarizeEvidence(ctx context.Context, para
 	if total == 0 {
 		return result, nil
 	}
+	summaries, summarizeErr := s.summarizeEvidenceGroups(ctx, grouping, (page-1)*pageSize, pageSize)
+	if summarizeErr != nil {
+		return nil, summarizeErr
+	}
+	result.Data = summaries
+	return result, nil
+}
 
+// knowledgeEvidenceGrouping is the evidence a summary groups, and how.
+type knowledgeEvidenceGrouping struct {
+	predicates []predicate.KnowledgeEvidence
+	// byAssertion groups each assertion on an alias separately.
+	byAssertion bool
+	// expandAlias loads each group's alias, and a relationship alias's relationship and its endpoints.
+	expandAlias bool
+}
+
+func (g knowledgeEvidenceGrouping) columns() []string {
+	columns := []string{ke.FieldSubjectAliasID}
+	if g.byAssertion {
+		columns = append(columns, ke.FieldAssertion)
+	}
+	return columns
+}
+
+// summarizeEvidenceGroups summarizes the groups of evidence, newest group first, skipping offset groups and
+// reading at most limit, or every group when limit is zero.
+func (s *KnowledgeGraphQueryService) summarizeEvidenceGroups(ctx context.Context, grouping knowledgeEvidenceGrouping, offset, limit int) ([]*rez.KnowledgeEvidenceSummary, error) {
+	client := s.db.Client(ctx)
+	groupColumns := grouping.columns()
 	newestGroupFirst := func(sel *sql.Selector) {
 		sel.OrderExpr(sql.Expr(fmt.Sprintf("max(%s) DESC", sel.C(ke.FieldEffectiveAt))))
 		for _, column := range groupColumns {
@@ -270,11 +318,13 @@ func (s *KnowledgeGraphQueryService) SummarizeEvidence(ctx context.Context, para
 			sel.C(ke.FieldID), sel.C(ke.FieldEffectiveAt), sel.C(ke.FieldID))
 		return sql.As(ordered, "latest_id")
 	}
-	groupEvidence := client.KnowledgeEvidence.Query().
-		Where(predicates...).
-		Order(newestGroupFirst).
-		Offset((page-1)*pageSize).
-		Limit(pageSize).
+	queryEvidence := client.KnowledgeEvidence.Query().
+		Where(grouping.predicates...).
+		Order(newestGroupFirst)
+	if limit > 0 {
+		queryEvidence.Offset(offset).Limit(limit)
+	}
+	groupEvidence := queryEvidence.
 		GroupBy(groupColumns[0], groupColumns[1:]...).
 		Aggregate(
 			ent.Count(),
@@ -311,7 +361,7 @@ func (s *KnowledgeGraphQueryService) SummarizeEvidence(ctx context.Context, para
 		latestByID[evidence.ID] = evidence
 	}
 	var aliasesByID map[uuid.UUID]*ent.KnowledgeSubjectAlias
-	if params.Expand.Alias {
+	if grouping.expandAlias {
 		queryAliases := client.KnowledgeSubjectAlias.Query().
 			Where(ksa.IDIn(aliasIDs...)).
 			WithRelationship(func(rq *ent.KnowledgeRelationshipQuery) {
@@ -327,13 +377,14 @@ func (s *KnowledgeGraphQueryService) SummarizeEvidence(ctx context.Context, para
 		}
 	}
 
+	summaries := make([]*rez.KnowledgeEvidenceSummary, 0, len(groups))
 	for _, group := range groups {
 		latestEvidence := latestByID[group.LatestID]
 		alias := aliasesByID[group.SubjectAliasID]
-		if latestEvidence == nil || (params.Expand.Alias && alias == nil) {
+		if latestEvidence == nil || (grouping.expandAlias && alias == nil) {
 			return nil, fmt.Errorf("evidence of alias %s changed while it was summarized", group.SubjectAliasID)
 		}
-		result.Data = append(result.Data, &rez.KnowledgeEvidenceSummary{
+		summaries = append(summaries, &rez.KnowledgeEvidenceSummary{
 			SubjectAliasID: group.SubjectAliasID,
 			Alias:          alias,
 			Assertion:      group.Assertion,
@@ -344,7 +395,7 @@ func (s *KnowledgeGraphQueryService) SummarizeEvidence(ctx context.Context, para
 			LatestState:    latestEvidence.SubjectState,
 		})
 	}
-	return result, nil
+	return summaries, nil
 }
 
 const (

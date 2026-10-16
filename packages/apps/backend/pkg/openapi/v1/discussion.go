@@ -7,8 +7,8 @@ import (
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
+	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	dt "github.com/rezible/rezible/ent/discussionthread"
 )
 
 type DiscussionHandler interface {
@@ -36,13 +36,17 @@ func (o operations) RegisterDiscussion(api huma.API) {
 }
 
 func (o operations) RegisterDiscussionEnums(api huma.API) {
-	registerEnumAlias[dt.TargetKind, discussionThreadTargetKindSchema](api)
+	registerEnumAlias[rez.DiscussionThreadTargetKind, discussionThreadTargetKindSchema](api)
 }
 
-type discussionThreadTargetKindSchema dt.TargetKind
+type discussionThreadTargetKindSchema rez.DiscussionThreadTargetKind
 
 func (discussionThreadTargetKindSchema) Schema(huma.Registry) *huma.Schema {
-	return makeEnumStringSchema(dt.TargetKindValues)
+	kinds := make([]string, len(rez.DiscussionThreadTargetKinds))
+	for i, kind := range rez.DiscussionThreadTargetKinds {
+		kinds[i] = string(kind)
+	}
+	return makeEnumStringSchema(kinds)
 }
 
 type (
@@ -52,14 +56,14 @@ type (
 	}
 
 	DiscussionThreadAttributes struct {
-		AnalysisId      *uuid.UUID                  `json:"analysisId,omitempty"`
-		RetrospectiveId *uuid.UUID                  `json:"retrospectiveId,omitempty"`
-		UserId          uuid.UUID                   `json:"userId"`
-		TargetKind      *dt.TargetKind              `json:"targetKind,omitempty"`
-		TargetId        *uuid.UUID                  `json:"targetId,omitempty"`
-		Resolution      *DiscussionThreadResolution `json:"resolution,omitempty"`
-		CreatedAt       time.Time                   `json:"createdAt"`
-		UpdatedAt       time.Time                   `json:"updatedAt"`
+		AnalysisId      *uuid.UUID                      `json:"analysisId,omitempty"`
+		RetrospectiveId *uuid.UUID                      `json:"retrospectiveId,omitempty"`
+		UserId          uuid.UUID                       `json:"userId"`
+		TargetKind      *rez.DiscussionThreadTargetKind `json:"targetKind,omitempty"`
+		TargetId        *uuid.UUID                      `json:"targetId,omitempty"`
+		Resolution      *DiscussionThreadResolution     `json:"resolution,omitempty"`
+		CreatedAt       time.Time                       `json:"createdAt"`
+		UpdatedAt       time.Time                       `json:"updatedAt"`
 	}
 
 	DiscussionThreadResolution struct {
@@ -89,10 +93,24 @@ func DiscussionThreadFromEnt(v *ent.DiscussionThread) DiscussionThread {
 		AnalysisId:      v.AnalysisID,
 		RetrospectiveId: v.RetrospectiveID,
 		UserId:          v.UserID,
-		TargetKind:      v.TargetKind,
-		TargetId:        v.TargetID,
 		CreatedAt:       v.CreatedAt,
 		UpdatedAt:       v.UpdatedAt,
+	}
+	targets := []struct {
+		kind rez.DiscussionThreadTargetKind
+		id   *uuid.UUID
+	}{
+		{rez.DiscussionThreadTargetFinding, v.TargetFindingID},
+		{rez.DiscussionThreadTargetEntry, v.TargetEntryID},
+		{rez.DiscussionThreadTargetKnowledgeEntity, v.TargetKnowledgeEntityID},
+		{rez.DiscussionThreadTargetKnowledgeRelationship, v.TargetKnowledgeRelationshipID},
+		{rez.DiscussionThreadTargetNormalizedEvent, v.TargetNormalizedEventID},
+	}
+	for _, target := range targets {
+		if target.id != nil {
+			attrs.TargetKind = new(target.kind)
+			attrs.TargetId = target.id
+		}
 	}
 	if v.ResolvedAt != nil {
 		attrs.Resolution = &DiscussionThreadResolution{
@@ -129,9 +147,9 @@ var ListDiscussionThreads = huma.Operation{
 type ListDiscussionThreadsRequest struct {
 	PaginationRequest
 	DiscussionOwnerQuery
-	TargetKind dt.TargetKind             `query:"targetKind,omitempty"`
-	TargetId   uuid.UUID                 `query:"targetId,omitempty"`
-	State      OmittableNullable[string] `query:"state,omitempty" enum:"open,resolved"`
+	TargetKind rez.DiscussionThreadTargetKind `query:"targetKind,omitempty"`
+	TargetId   uuid.UUID                      `query:"targetId,omitempty"`
+	State      OmittableNullable[string]      `query:"state,omitempty" enum:"open,resolved"`
 }
 type DiscussionOwnerQuery struct {
 	AnalysisId      uuid.UUID `query:"analysisId,omitempty"`
@@ -159,11 +177,11 @@ var CreateDiscussionThread = huma.Operation{
 }
 
 type CreateDiscussionThreadAttributes struct {
-	AnalysisId      *uuid.UUID     `json:"analysisId,omitempty"`
-	RetrospectiveId *uuid.UUID     `json:"retrospectiveId,omitempty"`
-	TargetKind      *dt.TargetKind `json:"targetKind,omitempty"`
-	TargetId        *uuid.UUID     `json:"targetId,omitempty"`
-	InitialMessage  string         `json:"initialMessage"`
+	AnalysisId      *uuid.UUID                      `json:"analysisId,omitempty"`
+	RetrospectiveId *uuid.UUID                      `json:"retrospectiveId,omitempty"`
+	TargetKind      *rez.DiscussionThreadTargetKind `json:"targetKind,omitempty"`
+	TargetId        *uuid.UUID                      `json:"targetId,omitempty"`
+	InitialMessage  string                          `json:"initialMessage"`
 }
 type CreateDiscussionThreadRequest RequestWithBodyAttributes[CreateDiscussionThreadAttributes]
 type CreateDiscussionThreadResponse ItemResponse[DiscussionThread]

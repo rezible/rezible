@@ -14,6 +14,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/knowledgeentity"
+	"github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/situation"
 	"github.com/rezible/rezible/ent/situationobservationgroup"
 	"github.com/rezible/rezible/ent/situationsignal"
@@ -160,6 +161,16 @@ func (_c *SituationSignalCreate) SetKnowledgeEntity(v *KnowledgeEntity) *Situati
 	return _c.SetKnowledgeEntityID(v.ID)
 }
 
+// SetSourceEntity sets the "source_entity" edge to the KnowledgeEntity entity.
+func (_c *SituationSignalCreate) SetSourceEntity(v *KnowledgeEntity) *SituationSignalCreate {
+	return _c.SetSourceEntityID(v.ID)
+}
+
+// SetViaRelationship sets the "via_relationship" edge to the KnowledgeRelationship entity.
+func (_c *SituationSignalCreate) SetViaRelationship(v *KnowledgeRelationship) *SituationSignalCreate {
+	return _c.SetViaRelationshipID(v.ID)
+}
+
 // Mutation returns the SituationSignalMutation object of the builder.
 func (_c *SituationSignalCreate) Mutation() *SituationSignalMutation {
 	return _c.mutation
@@ -300,10 +311,6 @@ func (_c *SituationSignalCreate) createSpec() (*SituationSignal, *sqlgraph.Creat
 		_spec.SetField(situationsignal.FieldKind, field.TypeString, value)
 		_node.Kind = value
 	}
-	if value, ok := _c.mutation.SourceEntityID(); ok {
-		_spec.SetField(situationsignal.FieldSourceEntityID, field.TypeUUID, value)
-		_node.SourceEntityID = &value
-	}
 	if value, ok := _c.mutation.AttachedAt(); ok {
 		_spec.SetField(situationsignal.FieldAttachedAt, field.TypeTime, value)
 		_node.AttachedAt = value
@@ -311,10 +318,6 @@ func (_c *SituationSignalCreate) createSpec() (*SituationSignal, *sqlgraph.Creat
 	if value, ok := _c.mutation.MatchKind(); ok {
 		_spec.SetField(situationsignal.FieldMatchKind, field.TypeEnum, value)
 		_node.MatchKind = value
-	}
-	if value, ok := _c.mutation.ViaRelationshipID(); ok {
-		_spec.SetField(situationsignal.FieldViaRelationshipID, field.TypeUUID, value)
-		_node.ViaRelationshipID = &value
 	}
 	if value, ok := _c.mutation.MatchExplanation(); ok {
 		_spec.SetField(situationsignal.FieldMatchExplanation, field.TypeString, value)
@@ -396,6 +399,42 @@ func (_c *SituationSignalCreate) createSpec() (*SituationSignal, *sqlgraph.Creat
 		_node.KnowledgeEntityID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
+	if nodes := _c.mutation.SourceEntityIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   situationsignal.SourceEntityTable,
+			Columns: []string{situationsignal.SourceEntityColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.SituationSignal
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.SourceEntityID = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.ViaRelationshipIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   situationsignal.ViaRelationshipTable,
+			Columns: []string{situationsignal.ViaRelationshipColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgerelationship.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.SituationSignal
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.ViaRelationshipID = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	return _node, _spec
 }
 
@@ -469,6 +508,18 @@ func (u *SituationSignalUpsert) SetObservationGroupID(v uuid.UUID) *SituationSig
 // UpdateObservationGroupID sets the "observation_group_id" field to the value that was provided on create.
 func (u *SituationSignalUpsert) UpdateObservationGroupID() *SituationSignalUpsert {
 	u.SetExcluded(situationsignal.FieldObservationGroupID)
+	return u
+}
+
+// SetKnowledgeEntityID sets the "knowledge_entity_id" field.
+func (u *SituationSignalUpsert) SetKnowledgeEntityID(v uuid.UUID) *SituationSignalUpsert {
+	u.Set(situationsignal.FieldKnowledgeEntityID, v)
+	return u
+}
+
+// UpdateKnowledgeEntityID sets the "knowledge_entity_id" field to the value that was provided on create.
+func (u *SituationSignalUpsert) UpdateKnowledgeEntityID() *SituationSignalUpsert {
+	u.SetExcluded(situationsignal.FieldKnowledgeEntityID)
 	return u
 }
 
@@ -600,9 +651,6 @@ func (u *SituationSignalUpsertOne) UpdateNewValues() *SituationSignalUpsertOne {
 		if _, exists := u.create.mutation.TenantID(); exists {
 			s.SetIgnore(situationsignal.FieldTenantID)
 		}
-		if _, exists := u.create.mutation.KnowledgeEntityID(); exists {
-			s.SetIgnore(situationsignal.FieldKnowledgeEntityID)
-		}
 	}))
 	return u
 }
@@ -659,6 +707,20 @@ func (u *SituationSignalUpsertOne) SetObservationGroupID(v uuid.UUID) *Situation
 func (u *SituationSignalUpsertOne) UpdateObservationGroupID() *SituationSignalUpsertOne {
 	return u.Update(func(s *SituationSignalUpsert) {
 		s.UpdateObservationGroupID()
+	})
+}
+
+// SetKnowledgeEntityID sets the "knowledge_entity_id" field.
+func (u *SituationSignalUpsertOne) SetKnowledgeEntityID(v uuid.UUID) *SituationSignalUpsertOne {
+	return u.Update(func(s *SituationSignalUpsert) {
+		s.SetKnowledgeEntityID(v)
+	})
+}
+
+// UpdateKnowledgeEntityID sets the "knowledge_entity_id" field to the value that was provided on create.
+func (u *SituationSignalUpsertOne) UpdateKnowledgeEntityID() *SituationSignalUpsertOne {
+	return u.Update(func(s *SituationSignalUpsert) {
+		s.UpdateKnowledgeEntityID()
 	})
 }
 
@@ -974,9 +1036,6 @@ func (u *SituationSignalUpsertBulk) UpdateNewValues() *SituationSignalUpsertBulk
 			if _, exists := b.mutation.TenantID(); exists {
 				s.SetIgnore(situationsignal.FieldTenantID)
 			}
-			if _, exists := b.mutation.KnowledgeEntityID(); exists {
-				s.SetIgnore(situationsignal.FieldKnowledgeEntityID)
-			}
 		}
 	}))
 	return u
@@ -1034,6 +1093,20 @@ func (u *SituationSignalUpsertBulk) SetObservationGroupID(v uuid.UUID) *Situatio
 func (u *SituationSignalUpsertBulk) UpdateObservationGroupID() *SituationSignalUpsertBulk {
 	return u.Update(func(s *SituationSignalUpsert) {
 		s.UpdateObservationGroupID()
+	})
+}
+
+// SetKnowledgeEntityID sets the "knowledge_entity_id" field.
+func (u *SituationSignalUpsertBulk) SetKnowledgeEntityID(v uuid.UUID) *SituationSignalUpsertBulk {
+	return u.Update(func(s *SituationSignalUpsert) {
+		s.SetKnowledgeEntityID(v)
+	})
+}
+
+// UpdateKnowledgeEntityID sets the "knowledge_entity_id" field to the value that was provided on create.
+func (u *SituationSignalUpsertBulk) UpdateKnowledgeEntityID() *SituationSignalUpsertBulk {
+	return u.Update(func(s *SituationSignalUpsert) {
+		s.UpdateKnowledgeEntityID()
 	})
 }
 

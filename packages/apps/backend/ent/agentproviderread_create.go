@@ -518,6 +518,18 @@ func (u *AgentProviderReadUpsert) UpdateUpdatedAt() *AgentProviderReadUpsert {
 	return u
 }
 
+// SetServiceEntityID sets the "service_entity_id" field.
+func (u *AgentProviderReadUpsert) SetServiceEntityID(v uuid.UUID) *AgentProviderReadUpsert {
+	u.Set(agentproviderread.FieldServiceEntityID, v)
+	return u
+}
+
+// UpdateServiceEntityID sets the "service_entity_id" field to the value that was provided on create.
+func (u *AgentProviderReadUpsert) UpdateServiceEntityID() *AgentProviderReadUpsert {
+	u.SetExcluded(agentproviderread.FieldServiceEntityID)
+	return u
+}
+
 // SetStatus sets the "status" field.
 func (u *AgentProviderReadUpsert) SetStatus(v agentproviderread.Status) *AgentProviderReadUpsert {
 	u.Set(agentproviderread.FieldStatus, v)
@@ -631,9 +643,6 @@ func (u *AgentProviderReadUpsertOne) UpdateNewValues() *AgentProviderReadUpsertO
 		if _, exists := u.create.mutation.ToolName(); exists {
 			s.SetIgnore(agentproviderread.FieldToolName)
 		}
-		if _, exists := u.create.mutation.ServiceEntityID(); exists {
-			s.SetIgnore(agentproviderread.FieldServiceEntityID)
-		}
 		if _, exists := u.create.mutation.Input(); exists {
 			s.SetIgnore(agentproviderread.FieldInput)
 		}
@@ -693,6 +702,20 @@ func (u *AgentProviderReadUpsertOne) SetUpdatedAt(v time.Time) *AgentProviderRea
 func (u *AgentProviderReadUpsertOne) UpdateUpdatedAt() *AgentProviderReadUpsertOne {
 	return u.Update(func(s *AgentProviderReadUpsert) {
 		s.UpdateUpdatedAt()
+	})
+}
+
+// SetServiceEntityID sets the "service_entity_id" field.
+func (u *AgentProviderReadUpsertOne) SetServiceEntityID(v uuid.UUID) *AgentProviderReadUpsertOne {
+	return u.Update(func(s *AgentProviderReadUpsert) {
+		s.SetServiceEntityID(v)
+	})
+}
+
+// UpdateServiceEntityID sets the "service_entity_id" field to the value that was provided on create.
+func (u *AgentProviderReadUpsertOne) UpdateServiceEntityID() *AgentProviderReadUpsertOne {
+	return u.Update(func(s *AgentProviderReadUpsert) {
+		s.UpdateServiceEntityID()
 	})
 }
 
@@ -989,9 +1012,6 @@ func (u *AgentProviderReadUpsertBulk) UpdateNewValues() *AgentProviderReadUpsert
 			if _, exists := b.mutation.ToolName(); exists {
 				s.SetIgnore(agentproviderread.FieldToolName)
 			}
-			if _, exists := b.mutation.ServiceEntityID(); exists {
-				s.SetIgnore(agentproviderread.FieldServiceEntityID)
-			}
 			if _, exists := b.mutation.Input(); exists {
 				s.SetIgnore(agentproviderread.FieldInput)
 			}
@@ -1052,6 +1072,20 @@ func (u *AgentProviderReadUpsertBulk) SetUpdatedAt(v time.Time) *AgentProviderRe
 func (u *AgentProviderReadUpsertBulk) UpdateUpdatedAt() *AgentProviderReadUpsertBulk {
 	return u.Update(func(s *AgentProviderReadUpsert) {
 		s.UpdateUpdatedAt()
+	})
+}
+
+// SetServiceEntityID sets the "service_entity_id" field.
+func (u *AgentProviderReadUpsertBulk) SetServiceEntityID(v uuid.UUID) *AgentProviderReadUpsertBulk {
+	return u.Update(func(s *AgentProviderReadUpsert) {
+		s.SetServiceEntityID(v)
+	})
+}
+
+// UpdateServiceEntityID sets the "service_entity_id" field to the value that was provided on create.
+func (u *AgentProviderReadUpsertBulk) UpdateServiceEntityID() *AgentProviderReadUpsertBulk {
+	return u.Update(func(s *AgentProviderReadUpsert) {
+		s.UpdateServiceEntityID()
 	})
 }
 

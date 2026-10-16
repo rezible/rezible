@@ -82,14 +82,14 @@ func Attribute(v string) predicate.KnowledgeProposal {
 	return predicate.KnowledgeProposal(sql.FieldEQ(FieldAttribute, v))
 }
 
-// NameA applies equality check predicate on the "name_a" field. It's identical to NameAEQ.
-func NameA(v string) predicate.KnowledgeProposal {
-	return predicate.KnowledgeProposal(sql.FieldEQ(FieldNameA, v))
+// ValueA applies equality check predicate on the "value_a" field. It's identical to ValueAEQ.
+func ValueA(v string) predicate.KnowledgeProposal {
+	return predicate.KnowledgeProposal(sql.FieldEQ(FieldValueA, v))
 }
 
-// NameB applies equality check predicate on the "name_b" field. It's identical to NameBEQ.
-func NameB(v string) predicate.KnowledgeProposal {
-	return predicate.KnowledgeProposal(sql.FieldEQ(FieldNameB, v))
+// ValueB applies equality check predicate on the "value_b" field. It's identical to ValueBEQ.
+func ValueB(v string) predicate.KnowledgeProposal {
+	return predicate.KnowledgeProposal(sql.FieldEQ(FieldValueB, v))
 }
 
 // Rationale applies equality check predicate on the "rationale" field. It's identical to RationaleEQ.
@@ -352,134 +352,134 @@ func AttributeContainsFold(v string) predicate.KnowledgeProposal {
 	return predicate.KnowledgeProposal(sql.FieldContainsFold(FieldAttribute, v))
 }
 
-// NameAEQ applies the EQ predicate on the "name_a" field.
-func NameAEQ(v string) predicate.KnowledgeProposal {
-	return predicate.KnowledgeProposal(sql.FieldEQ(FieldNameA, v))
+// ValueAEQ applies the EQ predicate on the "value_a" field.
+func ValueAEQ(v string) predicate.KnowledgeProposal {
+	return predicate.KnowledgeProposal(sql.FieldEQ(FieldValueA, v))
 }
 
-// NameANEQ applies the NEQ predicate on the "name_a" field.
-func NameANEQ(v string) predicate.KnowledgeProposal {
-	return predicate.KnowledgeProposal(sql.FieldNEQ(FieldNameA, v))
+// ValueANEQ applies the NEQ predicate on the "value_a" field.
+func ValueANEQ(v string) predicate.KnowledgeProposal {
+	return predicate.KnowledgeProposal(sql.FieldNEQ(FieldValueA, v))
 }
 
-// NameAIn applies the In predicate on the "name_a" field.
-func NameAIn(vs ...string) predicate.KnowledgeProposal {
-	return predicate.KnowledgeProposal(sql.FieldIn(FieldNameA, vs...))
+// ValueAIn applies the In predicate on the "value_a" field.
+func ValueAIn(vs ...string) predicate.KnowledgeProposal {
+	return predicate.KnowledgeProposal(sql.FieldIn(FieldValueA, vs...))
 }
 
-// NameANotIn applies the NotIn predicate on the "name_a" field.
-func NameANotIn(vs ...string) predicate.KnowledgeProposal {
-	return predicate.KnowledgeProposal(sql.FieldNotIn(FieldNameA, vs...))
+// ValueANotIn applies the NotIn predicate on the "value_a" field.
+func ValueANotIn(vs ...string) predicate.KnowledgeProposal {
+	return predicate.KnowledgeProposal(sql.FieldNotIn(FieldValueA, vs...))
 }
 
-// NameAGT applies the GT predicate on the "name_a" field.
-func NameAGT(v string) predicate.KnowledgeProposal {
-	return predicate.KnowledgeProposal(sql.FieldGT(FieldNameA, v))
+// ValueAGT applies the GT predicate on the "value_a" field.
+func ValueAGT(v string) predicate.KnowledgeProposal {
+	return predicate.KnowledgeProposal(sql.FieldGT(FieldValueA, v))
 }
 
-// NameAGTE applies the GTE predicate on the "name_a" field.
-func NameAGTE(v string) predicate.KnowledgeProposal {
-	return predicate.KnowledgeProposal(sql.FieldGTE(FieldNameA, v))
+// ValueAGTE applies the GTE predicate on the "value_a" field.
+func ValueAGTE(v string) predicate.KnowledgeProposal {
+	return predicate.KnowledgeProposal(sql.FieldGTE(FieldValueA, v))
 }
 
-// NameALT applies the LT predicate on the "name_a" field.
-func NameALT(v string) predicate.KnowledgeProposal {
-	return predicate.KnowledgeProposal(sql.FieldLT(FieldNameA, v))
+// ValueALT applies the LT predicate on the "value_a" field.
+func ValueALT(v string) predicate.KnowledgeProposal {
+	return predicate.KnowledgeProposal(sql.FieldLT(FieldValueA, v))
 }
 
-// NameALTE applies the LTE predicate on the "name_a" field.
-func NameALTE(v string) predicate.KnowledgeProposal {
-	return predicate.KnowledgeProposal(sql.FieldLTE(FieldNameA, v))
+// ValueALTE applies the LTE predicate on the "value_a" field.
+func ValueALTE(v string) predicate.KnowledgeProposal {
+	return predicate.KnowledgeProposal(sql.FieldLTE(FieldValueA, v))
 }
 
-// NameAContains applies the Contains predicate on the "name_a" field.
-func NameAContains(v string) predicate.KnowledgeProposal {
-	return predicate.KnowledgeProposal(sql.FieldContains(FieldNameA, v))
+// ValueAContains applies the Contains predicate on the "value_a" field.
+func ValueAContains(v string) predicate.KnowledgeProposal {
+	return predicate.KnowledgeProposal(sql.FieldContains(FieldValueA, v))
 }
 
-// NameAHasPrefix applies the HasPrefix predicate on the "name_a" field.
-func NameAHasPrefix(v string) predicate.KnowledgeProposal {
-	return predicate.KnowledgeProposal(sql.FieldHasPrefix(FieldNameA, v))
+// ValueAHasPrefix applies the HasPrefix predicate on the "value_a" field.
+func ValueAHasPrefix(v string) predicate.KnowledgeProposal {
+	return predicate.KnowledgeProposal(sql.FieldHasPrefix(FieldValueA, v))
 }
 
-// NameAHasSuffix applies the HasSuffix predicate on the "name_a" field.
-func NameAHasSuffix(v string) predicate.KnowledgeProposal {
-	return predicate.KnowledgeProposal(sql.FieldHasSuffix(FieldNameA, v))
+// ValueAHasSuffix applies the HasSuffix predicate on the "value_a" field.
+func ValueAHasSuffix(v string) predicate.KnowledgeProposal {
+	return predicate.KnowledgeProposal(sql.FieldHasSuffix(FieldValueA, v))
 }
 
-// NameAEqualFold applies the EqualFold predicate on the "name_a" field.
-func NameAEqualFold(v string) predicate.KnowledgeProposal {
-	return predicate.KnowledgeProposal(sql.FieldEqualFold(FieldNameA, v))
+// ValueAEqualFold applies the EqualFold predicate on the "value_a" field.
+func ValueAEqualFold(v string) predicate.KnowledgeProposal {
+	return predicate.KnowledgeProposal(sql.FieldEqualFold(FieldValueA, v))
 }
 
-// NameAContainsFold applies the ContainsFold predicate on the "name_a" field.
-func NameAContainsFold(v string) predicate.KnowledgeProposal {
-	return predicate.KnowledgeProposal(sql.FieldContainsFold(FieldNameA, v))
+// ValueAContainsFold applies the ContainsFold predicate on the "value_a" field.
+func ValueAContainsFold(v string) predicate.KnowledgeProposal {
+	return predicate.KnowledgeProposal(sql.FieldContainsFold(FieldValueA, v))
 }
 
-// NameBEQ applies the EQ predicate on the "name_b" field.
-func NameBEQ(v string) predicate.KnowledgeProposal {
-	return predicate.KnowledgeProposal(sql.FieldEQ(FieldNameB, v))
+// ValueBEQ applies the EQ predicate on the "value_b" field.
+func ValueBEQ(v string) predicate.KnowledgeProposal {
+	return predicate.KnowledgeProposal(sql.FieldEQ(FieldValueB, v))
 }
 
-// NameBNEQ applies the NEQ predicate on the "name_b" field.
-func NameBNEQ(v string) predicate.KnowledgeProposal {
-	return predicate.KnowledgeProposal(sql.FieldNEQ(FieldNameB, v))
+// ValueBNEQ applies the NEQ predicate on the "value_b" field.
+func ValueBNEQ(v string) predicate.KnowledgeProposal {
+	return predicate.KnowledgeProposal(sql.FieldNEQ(FieldValueB, v))
 }
 
-// NameBIn applies the In predicate on the "name_b" field.
-func NameBIn(vs ...string) predicate.KnowledgeProposal {
-	return predicate.KnowledgeProposal(sql.FieldIn(FieldNameB, vs...))
+// ValueBIn applies the In predicate on the "value_b" field.
+func ValueBIn(vs ...string) predicate.KnowledgeProposal {
+	return predicate.KnowledgeProposal(sql.FieldIn(FieldValueB, vs...))
 }
 
-// NameBNotIn applies the NotIn predicate on the "name_b" field.
-func NameBNotIn(vs ...string) predicate.KnowledgeProposal {
-	return predicate.KnowledgeProposal(sql.FieldNotIn(FieldNameB, vs...))
+// ValueBNotIn applies the NotIn predicate on the "value_b" field.
+func ValueBNotIn(vs ...string) predicate.KnowledgeProposal {
+	return predicate.KnowledgeProposal(sql.FieldNotIn(FieldValueB, vs...))
 }
 
-// NameBGT applies the GT predicate on the "name_b" field.
-func NameBGT(v string) predicate.KnowledgeProposal {
-	return predicate.KnowledgeProposal(sql.FieldGT(FieldNameB, v))
+// ValueBGT applies the GT predicate on the "value_b" field.
+func ValueBGT(v string) predicate.KnowledgeProposal {
+	return predicate.KnowledgeProposal(sql.FieldGT(FieldValueB, v))
 }
 
-// NameBGTE applies the GTE predicate on the "name_b" field.
-func NameBGTE(v string) predicate.KnowledgeProposal {
-	return predicate.KnowledgeProposal(sql.FieldGTE(FieldNameB, v))
+// ValueBGTE applies the GTE predicate on the "value_b" field.
+func ValueBGTE(v string) predicate.KnowledgeProposal {
+	return predicate.KnowledgeProposal(sql.FieldGTE(FieldValueB, v))
 }
 
-// NameBLT applies the LT predicate on the "name_b" field.
-func NameBLT(v string) predicate.KnowledgeProposal {
-	return predicate.KnowledgeProposal(sql.FieldLT(FieldNameB, v))
+// ValueBLT applies the LT predicate on the "value_b" field.
+func ValueBLT(v string) predicate.KnowledgeProposal {
+	return predicate.KnowledgeProposal(sql.FieldLT(FieldValueB, v))
 }
 
-// NameBLTE applies the LTE predicate on the "name_b" field.
-func NameBLTE(v string) predicate.KnowledgeProposal {
-	return predicate.KnowledgeProposal(sql.FieldLTE(FieldNameB, v))
+// ValueBLTE applies the LTE predicate on the "value_b" field.
+func ValueBLTE(v string) predicate.KnowledgeProposal {
+	return predicate.KnowledgeProposal(sql.FieldLTE(FieldValueB, v))
 }
 
-// NameBContains applies the Contains predicate on the "name_b" field.
-func NameBContains(v string) predicate.KnowledgeProposal {
-	return predicate.KnowledgeProposal(sql.FieldContains(FieldNameB, v))
+// ValueBContains applies the Contains predicate on the "value_b" field.
+func ValueBContains(v string) predicate.KnowledgeProposal {
+	return predicate.KnowledgeProposal(sql.FieldContains(FieldValueB, v))
 }
 
-// NameBHasPrefix applies the HasPrefix predicate on the "name_b" field.
-func NameBHasPrefix(v string) predicate.KnowledgeProposal {
-	return predicate.KnowledgeProposal(sql.FieldHasPrefix(FieldNameB, v))
+// ValueBHasPrefix applies the HasPrefix predicate on the "value_b" field.
+func ValueBHasPrefix(v string) predicate.KnowledgeProposal {
+	return predicate.KnowledgeProposal(sql.FieldHasPrefix(FieldValueB, v))
 }
 
-// NameBHasSuffix applies the HasSuffix predicate on the "name_b" field.
-func NameBHasSuffix(v string) predicate.KnowledgeProposal {
-	return predicate.KnowledgeProposal(sql.FieldHasSuffix(FieldNameB, v))
+// ValueBHasSuffix applies the HasSuffix predicate on the "value_b" field.
+func ValueBHasSuffix(v string) predicate.KnowledgeProposal {
+	return predicate.KnowledgeProposal(sql.FieldHasSuffix(FieldValueB, v))
 }
 
-// NameBEqualFold applies the EqualFold predicate on the "name_b" field.
-func NameBEqualFold(v string) predicate.KnowledgeProposal {
-	return predicate.KnowledgeProposal(sql.FieldEqualFold(FieldNameB, v))
+// ValueBEqualFold applies the EqualFold predicate on the "value_b" field.
+func ValueBEqualFold(v string) predicate.KnowledgeProposal {
+	return predicate.KnowledgeProposal(sql.FieldEqualFold(FieldValueB, v))
 }
 
-// NameBContainsFold applies the ContainsFold predicate on the "name_b" field.
-func NameBContainsFold(v string) predicate.KnowledgeProposal {
-	return predicate.KnowledgeProposal(sql.FieldContainsFold(FieldNameB, v))
+// ValueBContainsFold applies the ContainsFold predicate on the "value_b" field.
+func ValueBContainsFold(v string) predicate.KnowledgeProposal {
+	return predicate.KnowledgeProposal(sql.FieldContainsFold(FieldValueB, v))
 }
 
 // StatusEQ applies the EQ predicate on the "status" field.
@@ -657,6 +657,35 @@ func HasEvidenceWith(preds ...predicate.KnowledgeEvidence) predicate.KnowledgePr
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.KnowledgeEvidence
 		step.Edge.Schema = schemaConfig.KnowledgeProposal
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasDecisions applies the HasEdge predicate on the "decisions" edge.
+func HasDecisions() predicate.KnowledgeProposal {
+	return predicate.KnowledgeProposal(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, DecisionsTable, DecisionsColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.KnowledgeProposalDecision
+		step.Edge.Schema = schemaConfig.KnowledgeProposalDecision
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasDecisionsWith applies the HasEdge predicate on the "decisions" edge with a given conditions (other predicates).
+func HasDecisionsWith(preds ...predicate.KnowledgeProposalDecision) predicate.KnowledgeProposal {
+	return predicate.KnowledgeProposal(func(s *sql.Selector) {
+		step := newDecisionsStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.KnowledgeProposalDecision
+		step.Edge.Schema = schemaConfig.KnowledgeProposalDecision
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

@@ -14,7 +14,7 @@ export const errorDisplay = (error: ApiError): ErrorDisplay => {
 		case "unprocessable":
 			return { title: "Check the details", detail: error.detail };
 		case "conflict":
-			return { title: "Already exists", detail: error.detail };
+			return { title: "Can't do that", detail: error.detail };
 		case "not_found":
 			return { title: "Not found", detail: error.detail };
 		case "forbidden":

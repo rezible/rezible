@@ -11,22 +11,35 @@ import (
 	"github.com/rezible/rezible/ent"
 	kela "github.com/rezible/rezible/ent/knowledgeentitylinkingattribute"
 	kp "github.com/rezible/rezible/ent/knowledgeproposal"
+	kpd "github.com/rezible/rezible/ent/knowledgeproposaldecision"
 	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/pkg/integrations"
 )
 
 type KnowledgeProposalService struct {
-	db rez.Database
+	db        rez.Database
+	ingestion rez.KnowledgeGraphIngestionService
+	aliases   rez.KnowledgeEntityAliasService
+	names     integrationNames
 }
 
-func NewKnowledgeProposalService(db rez.Database) (*KnowledgeProposalService, error) {
-	return &KnowledgeProposalService{db: db}, nil
+func NewKnowledgeProposalService(db rez.Database, ingestion rez.KnowledgeGraphIngestionService, aliases rez.KnowledgeEntityAliasService, registry *integrations.Registry) (*KnowledgeProposalService, error) {
+	return &KnowledgeProposalService{db: db, ingestion: ingestion, aliases: aliases, names: integrationNames{registry: registry}}, nil
 }
 
-func (s *KnowledgeProposalService) ListProposals(ctx context.Context, params rez.ListProposalsParams) (*ent.ListResult[ent.KnowledgeProposal], error) {
-	query := s.db.Client(ctx).KnowledgeProposal.Query().
+// withProposalDetails loads a proposal's cited evidence with its alias, and its decisions with their users.
+func (s *KnowledgeProposalService) withProposalDetails(query *ent.KnowledgeProposalQuery) *ent.KnowledgeProposalQuery {
+	return query.
 		WithEvidence(func(eq *ent.KnowledgeEvidenceQuery) {
 			eq.WithSubjectAlias()
 		}).
+		WithDecisions(func(dq *ent.KnowledgeProposalDecisionQuery) {
+			dq.WithUser().Order(kpd.ByCreatedAt(), kpd.ByID())
+		})
+}
+
+func (s *KnowledgeProposalService) ListProposals(ctx context.Context, params rez.ListProposalsParams) (*ent.ListResult[ent.KnowledgeProposal], error) {
+	query := s.withProposalDetails(s.db.Client(ctx).KnowledgeProposal.Query()).
 		Order(kp.ByCreatedAt(params.GetOrder()), kp.ByID(params.GetOrder()))
 
 	if len(params.Statuses) > 0 {
@@ -41,6 +54,105 @@ func (s *KnowledgeProposalService) ListProposals(ctx context.Context, params rez
 	}
 
 	return ent.DoListQuery[ent.KnowledgeProposal, *ent.KnowledgeProposalQuery](ctx, query, params.ListParams)
+}
+
+func (s *KnowledgeProposalService) ListProposalsWithValues(ctx context.Context, params rez.ListProposalsParams) (*ent.ListResult[rez.KnowledgeProposalWithValues], error) {
+	proposals, listErr := s.ListProposals(ctx, params)
+	if listErr != nil {
+		return nil, listErr
+	}
+	withValues, valuesErr := s.withValues(ctx, proposals.Data)
+	if valuesErr != nil {
+		return nil, valuesErr
+	}
+	return &ent.ListResult[rez.KnowledgeProposalWithValues]{
+		Data:     withValues,
+		Page:     proposals.Page,
+		PageSize: proposals.PageSize,
+		Total:    proposals.Total,
+	}, nil
+}
+
+func (s *KnowledgeProposalService) getProposal(ctx context.Context, id uuid.UUID) (*ent.KnowledgeProposal, error) {
+	query := s.withProposalDetails(s.db.Client(ctx).KnowledgeProposal.Query()).
+		Where(kp.ID(id))
+	return query.Only(ctx)
+}
+
+func (s *KnowledgeProposalService) GetProposalWithValues(ctx context.Context, id uuid.UUID) (*rez.KnowledgeProposalWithValues, error) {
+	proposal, getErr := s.getProposal(ctx, id)
+	if getErr != nil {
+		return nil, getErr
+	}
+	withValues, valuesErr := s.withValues(ctx, []*ent.KnowledgeProposal{proposal})
+	if valuesErr != nil {
+		return nil, valuesErr
+	}
+	return withValues[0], nil
+}
+
+// withValues reads the entities holding the proposals' values now, with their aliases, in one query for the
+// holders and one for the aliases.
+func (s *KnowledgeProposalService) withValues(ctx context.Context, proposals []*ent.KnowledgeProposal) ([]*rez.KnowledgeProposalWithValues, error) {
+	holders, holdersErr := s.resolveProposalValues(ctx, proposals)
+	if holdersErr != nil {
+		return nil, fmt.Errorf("resolve proposal values: %w", holdersErr)
+	}
+	entityIDs := mapset.NewSet[uuid.UUID]()
+	for _, holder := range holders {
+		entityIDs.Add(holder.ID)
+	}
+	aliases, aliasesErr := s.aliases.ListEntityAliases(ctx, entityIDs.ToSlice())
+	if aliasesErr != nil {
+		return nil, fmt.Errorf("list entity aliases: %w", aliasesErr)
+	}
+
+	valueOf := func(value string, holder *ent.KnowledgeEntity) rez.KnowledgeProposalValue {
+		if holder == nil {
+			return rez.KnowledgeProposalValue{Value: value}
+		}
+		withAliases := &rez.KnowledgeEntityWithAliases{Entity: holder, Aliases: aliases[holder.ID]}
+		return rez.KnowledgeProposalValue{Value: value, Holder: withAliases}
+	}
+	withValues := make([]*rez.KnowledgeProposalWithValues, len(proposals))
+	for i, proposal := range proposals {
+		holderA, holderB := holders.Of(proposal)
+		withValues[i] = &rez.KnowledgeProposalWithValues{
+			Proposal: proposal,
+			ValueA:   valueOf(proposal.ValueA, holderA),
+			ValueB:   valueOf(proposal.ValueB, holderB),
+		}
+		if evidence := proposal.Edges.Evidence; evidence != nil && evidence.Edges.SubjectAlias != nil {
+			withValues[i].EvidenceIntegrationDisplayName = s.names.displayName(evidence.Edges.SubjectAlias.Provider)
+		}
+	}
+	return withValues, nil
+}
+
+// resolveProposalValues finds the entity holding each of the proposals' values now.
+func (s *KnowledgeProposalService) resolveProposalValues(ctx context.Context, proposals []*ent.KnowledgeProposal) (rez.KnowledgeValueHolders, error) {
+	holders := make(rez.KnowledgeValueHolders, 2*len(proposals))
+	if len(proposals) == 0 {
+		return holders, nil
+	}
+	valuePreds := make([]predicate.KnowledgeEntityLinkingAttribute, 0, len(proposals))
+	for _, proposal := range proposals {
+		valuePreds = append(valuePreds, kela.And(
+			kela.Attribute(proposal.Attribute),
+			kela.ValueIn(proposal.ValueA, proposal.ValueB),
+		))
+	}
+	queryHolders := s.db.Client(ctx).KnowledgeEntityLinkingAttribute.Query().
+		Where(kela.Or(valuePreds...)).
+		WithEntity()
+	values, holdersErr := queryHolders.All(ctx)
+	if holdersErr != nil {
+		return nil, fmt.Errorf("query proposal value holders: %w", holdersErr)
+	}
+	for _, value := range values {
+		holders[rez.KnowledgeLinkingValue{Attribute: value.Attribute, Value: value.Value}] = value.Edges.Entity
+	}
+	return holders, nil
 }
 
 // unconfirmedMatchesTotalCapPerEntity sets the total cap on pending proposals read across all the entities
@@ -65,30 +177,14 @@ func (s *KnowledgeProposalService) ListUnconfirmedMatches(ctx context.Context, e
 		return matches, nil
 	}
 
-	// Each proposal names two values; find the entity holding each.
-	var valuePreds []predicate.KnowledgeEntityLinkingAttribute
-	for _, proposal := range proposals.Data {
-		valuePreds = append(valuePreds, kela.And(
-			kela.Attribute(proposal.Attribute),
-			kela.ValueIn(proposal.NameA, proposal.NameB),
-		))
-	}
-	queryHolders := s.db.Client(ctx).KnowledgeEntityLinkingAttribute.Query().
-		Where(kela.Or(valuePreds...)).
-		WithEntity()
-	holders, holdersErr := queryHolders.All(ctx)
+	holders, holdersErr := s.resolveProposalValues(ctx, proposals.Data)
 	if holdersErr != nil {
-		return nil, fmt.Errorf("query proposal value holders: %w", holdersErr)
-	}
-	holderOf := make(map[[2]string]*ent.KnowledgeEntity, len(holders))
-	for _, holder := range holders {
-		holderOf[[2]string{holder.Attribute, holder.Value}] = holder.Edges.Entity
+		return nil, holdersErr
 	}
 
 	requested := mapset.NewSet(entityIDs...)
 	for _, proposal := range proposals.Data {
-		entityA := holderOf[[2]string{proposal.Attribute, proposal.NameA}]
-		entityB := holderOf[[2]string{proposal.Attribute, proposal.NameB}]
+		entityA, entityB := holders.Of(proposal)
 		if entityA == nil || entityB == nil || entityA.ID == entityB.ID {
 			continue
 		}
@@ -96,7 +192,7 @@ func (s *KnowledgeProposalService) ListUnconfirmedMatches(ctx context.Context, e
 			matches[entityA.ID] = append(matches[entityA.ID], rez.UnconfirmedMatch{
 				ProposalID: proposal.ID,
 				Rationale:  proposal.Rationale,
-				Name:       proposal.NameB,
+				Value:      proposal.ValueB,
 				Entity:     entityB,
 			})
 		}
@@ -104,7 +200,7 @@ func (s *KnowledgeProposalService) ListUnconfirmedMatches(ctx context.Context, e
 			matches[entityB.ID] = append(matches[entityB.ID], rez.UnconfirmedMatch{
 				ProposalID: proposal.ID,
 				Rationale:  proposal.Rationale,
-				Name:       proposal.NameA,
+				Value:      proposal.ValueA,
 				Entity:     entityA,
 			})
 		}
@@ -130,7 +226,7 @@ func (s *KnowledgeProposalService) namingEntities(ctx context.Context, params re
 	for attribute, attributeValues := range valuesByAttribute {
 		preds = append(preds, kp.And(
 			kp.Attribute(attribute),
-			kp.Or(kp.NameAIn(attributeValues...), kp.NameBIn(attributeValues...)),
+			kp.Or(kp.ValueAIn(attributeValues...), kp.ValueBIn(attributeValues...)),
 		))
 	}
 	if len(preds) == 0 {

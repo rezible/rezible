@@ -404,6 +404,14 @@ func (c *KnowledgeProposalClient) Debug() *KnowledgeProposalClient {
 	return &KnowledgeProposalClient{config: cfg}
 }
 
+func (c *KnowledgeProposalDecisionClient) Debug() *KnowledgeProposalDecisionClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &KnowledgeProposalDecisionClient{config: cfg}
+}
+
 func (c *KnowledgeRelationshipClient) Debug() *KnowledgeRelationshipClient {
 	if c.debug {
 		return c

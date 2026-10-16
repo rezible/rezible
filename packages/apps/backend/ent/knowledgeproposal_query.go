@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"database/sql/driver"
 	"errors"
 	"fmt"
 	"math"
@@ -17,6 +18,7 @@ import (
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/knowledgeevidence"
 	"github.com/rezible/rezible/ent/knowledgeproposal"
+	"github.com/rezible/rezible/ent/knowledgeproposaldecision"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/tenant"
 )
@@ -24,13 +26,14 @@ import (
 // KnowledgeProposalQuery is the builder for querying KnowledgeProposal entities.
 type KnowledgeProposalQuery struct {
 	config
-	ctx          *QueryContext
-	order        []knowledgeproposal.OrderOption
-	inters       []Interceptor
-	predicates   []predicate.KnowledgeProposal
-	withTenant   *TenantQuery
-	withEvidence *KnowledgeEvidenceQuery
-	modifiers    []func(*sql.Selector)
+	ctx           *QueryContext
+	order         []knowledgeproposal.OrderOption
+	inters        []Interceptor
+	predicates    []predicate.KnowledgeProposal
+	withTenant    *TenantQuery
+	withEvidence  *KnowledgeEvidenceQuery
+	withDecisions *KnowledgeProposalDecisionQuery
+	modifiers     []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -111,6 +114,31 @@ func (_q *KnowledgeProposalQuery) QueryEvidence() *KnowledgeEvidenceQuery {
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.KnowledgeEvidence
 		step.Edge.Schema = schemaConfig.KnowledgeProposal
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryDecisions chains the current query on the "decisions" edge.
+func (_q *KnowledgeProposalQuery) QueryDecisions() *KnowledgeProposalDecisionQuery {
+	query := (&KnowledgeProposalDecisionClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(knowledgeproposal.Table, knowledgeproposal.FieldID, selector),
+			sqlgraph.To(knowledgeproposaldecision.Table, knowledgeproposaldecision.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, knowledgeproposal.DecisionsTable, knowledgeproposal.DecisionsColumn),
+		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.KnowledgeProposalDecision
+		step.Edge.Schema = schemaConfig.KnowledgeProposalDecision
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -304,13 +332,14 @@ func (_q *KnowledgeProposalQuery) Clone() *KnowledgeProposalQuery {
 		return nil
 	}
 	return &KnowledgeProposalQuery{
-		config:       _q.config,
-		ctx:          _q.ctx.Clone(),
-		order:        append([]knowledgeproposal.OrderOption{}, _q.order...),
-		inters:       append([]Interceptor{}, _q.inters...),
-		predicates:   append([]predicate.KnowledgeProposal{}, _q.predicates...),
-		withTenant:   _q.withTenant.Clone(),
-		withEvidence: _q.withEvidence.Clone(),
+		config:        _q.config,
+		ctx:           _q.ctx.Clone(),
+		order:         append([]knowledgeproposal.OrderOption{}, _q.order...),
+		inters:        append([]Interceptor{}, _q.inters...),
+		predicates:    append([]predicate.KnowledgeProposal{}, _q.predicates...),
+		withTenant:    _q.withTenant.Clone(),
+		withEvidence:  _q.withEvidence.Clone(),
+		withDecisions: _q.withDecisions.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
@@ -336,6 +365,17 @@ func (_q *KnowledgeProposalQuery) WithEvidence(opts ...func(*KnowledgeEvidenceQu
 		opt(query)
 	}
 	_q.withEvidence = query
+	return _q
+}
+
+// WithDecisions tells the query-builder to eager-load the nodes that are connected to
+// the "decisions" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *KnowledgeProposalQuery) WithDecisions(opts ...func(*KnowledgeProposalDecisionQuery)) *KnowledgeProposalQuery {
+	query := (&KnowledgeProposalDecisionClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withDecisions = query
 	return _q
 }
 
@@ -423,9 +463,10 @@ func (_q *KnowledgeProposalQuery) sqlAll(ctx context.Context, hooks ...queryHook
 	var (
 		nodes       = []*KnowledgeProposal{}
 		_spec       = _q.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [3]bool{
 			_q.withTenant != nil,
 			_q.withEvidence != nil,
+			_q.withDecisions != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -460,6 +501,15 @@ func (_q *KnowledgeProposalQuery) sqlAll(ctx context.Context, hooks ...queryHook
 	if query := _q.withEvidence; query != nil {
 		if err := _q.loadEvidence(ctx, query, nodes, nil,
 			func(n *KnowledgeProposal, e *KnowledgeEvidence) { n.Edges.Evidence = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withDecisions; query != nil {
+		if err := _q.loadDecisions(ctx, query, nodes,
+			func(n *KnowledgeProposal) { n.Edges.Decisions = []*KnowledgeProposalDecision{} },
+			func(n *KnowledgeProposal, e *KnowledgeProposalDecision) {
+				n.Edges.Decisions = append(n.Edges.Decisions, e)
+			}); err != nil {
 			return nil, err
 		}
 	}
@@ -521,6 +571,36 @@ func (_q *KnowledgeProposalQuery) loadEvidence(ctx context.Context, query *Knowl
 		for i := range nodes {
 			assign(nodes[i], n)
 		}
+	}
+	return nil
+}
+func (_q *KnowledgeProposalQuery) loadDecisions(ctx context.Context, query *KnowledgeProposalDecisionQuery, nodes []*KnowledgeProposal, init func(*KnowledgeProposal), assign func(*KnowledgeProposal, *KnowledgeProposalDecision)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*KnowledgeProposal)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(knowledgeproposaldecision.FieldProposalID)
+	}
+	query.Where(predicate.KnowledgeProposalDecision(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(knowledgeproposal.DecisionsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.ProposalID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "proposal_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
 	}
 	return nil
 }

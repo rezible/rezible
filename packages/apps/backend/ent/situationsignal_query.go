@@ -16,6 +16,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/knowledgeentity"
+	"github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/situation"
 	"github.com/rezible/rezible/ent/situationobservationgroup"
@@ -34,6 +35,8 @@ type SituationSignalQuery struct {
 	withSituation        *SituationQuery
 	withObservationGroup *SituationObservationGroupQuery
 	withKnowledgeEntity  *KnowledgeEntityQuery
+	withSourceEntity     *KnowledgeEntityQuery
+	withViaRelationship  *KnowledgeRelationshipQuery
 	modifiers            []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -164,6 +167,56 @@ func (_q *SituationSignalQuery) QueryKnowledgeEntity() *KnowledgeEntityQuery {
 		)
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.KnowledgeEntity
+		step.Edge.Schema = schemaConfig.SituationSignal
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QuerySourceEntity chains the current query on the "source_entity" edge.
+func (_q *SituationSignalQuery) QuerySourceEntity() *KnowledgeEntityQuery {
+	query := (&KnowledgeEntityClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(situationsignal.Table, situationsignal.FieldID, selector),
+			sqlgraph.To(knowledgeentity.Table, knowledgeentity.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, situationsignal.SourceEntityTable, situationsignal.SourceEntityColumn),
+		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.KnowledgeEntity
+		step.Edge.Schema = schemaConfig.SituationSignal
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryViaRelationship chains the current query on the "via_relationship" edge.
+func (_q *SituationSignalQuery) QueryViaRelationship() *KnowledgeRelationshipQuery {
+	query := (&KnowledgeRelationshipClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(situationsignal.Table, situationsignal.FieldID, selector),
+			sqlgraph.To(knowledgerelationship.Table, knowledgerelationship.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, situationsignal.ViaRelationshipTable, situationsignal.ViaRelationshipColumn),
+		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.KnowledgeRelationship
 		step.Edge.Schema = schemaConfig.SituationSignal
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -367,6 +420,8 @@ func (_q *SituationSignalQuery) Clone() *SituationSignalQuery {
 		withSituation:        _q.withSituation.Clone(),
 		withObservationGroup: _q.withObservationGroup.Clone(),
 		withKnowledgeEntity:  _q.withKnowledgeEntity.Clone(),
+		withSourceEntity:     _q.withSourceEntity.Clone(),
+		withViaRelationship:  _q.withViaRelationship.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
@@ -414,6 +469,28 @@ func (_q *SituationSignalQuery) WithKnowledgeEntity(opts ...func(*KnowledgeEntit
 		opt(query)
 	}
 	_q.withKnowledgeEntity = query
+	return _q
+}
+
+// WithSourceEntity tells the query-builder to eager-load the nodes that are connected to
+// the "source_entity" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *SituationSignalQuery) WithSourceEntity(opts ...func(*KnowledgeEntityQuery)) *SituationSignalQuery {
+	query := (&KnowledgeEntityClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withSourceEntity = query
+	return _q
+}
+
+// WithViaRelationship tells the query-builder to eager-load the nodes that are connected to
+// the "via_relationship" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *SituationSignalQuery) WithViaRelationship(opts ...func(*KnowledgeRelationshipQuery)) *SituationSignalQuery {
+	query := (&KnowledgeRelationshipClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withViaRelationship = query
 	return _q
 }
 
@@ -501,11 +578,13 @@ func (_q *SituationSignalQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 	var (
 		nodes       = []*SituationSignal{}
 		_spec       = _q.querySpec()
-		loadedTypes = [4]bool{
+		loadedTypes = [6]bool{
 			_q.withTenant != nil,
 			_q.withSituation != nil,
 			_q.withObservationGroup != nil,
 			_q.withKnowledgeEntity != nil,
+			_q.withSourceEntity != nil,
+			_q.withViaRelationship != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -552,6 +631,18 @@ func (_q *SituationSignalQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 	if query := _q.withKnowledgeEntity; query != nil {
 		if err := _q.loadKnowledgeEntity(ctx, query, nodes, nil,
 			func(n *SituationSignal, e *KnowledgeEntity) { n.Edges.KnowledgeEntity = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withSourceEntity; query != nil {
+		if err := _q.loadSourceEntity(ctx, query, nodes, nil,
+			func(n *SituationSignal, e *KnowledgeEntity) { n.Edges.SourceEntity = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withViaRelationship; query != nil {
+		if err := _q.loadViaRelationship(ctx, query, nodes, nil,
+			func(n *SituationSignal, e *KnowledgeRelationship) { n.Edges.ViaRelationship = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -674,6 +765,70 @@ func (_q *SituationSignalQuery) loadKnowledgeEntity(ctx context.Context, query *
 	}
 	return nil
 }
+func (_q *SituationSignalQuery) loadSourceEntity(ctx context.Context, query *KnowledgeEntityQuery, nodes []*SituationSignal, init func(*SituationSignal), assign func(*SituationSignal, *KnowledgeEntity)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*SituationSignal)
+	for i := range nodes {
+		if nodes[i].SourceEntityID == nil {
+			continue
+		}
+		fk := *nodes[i].SourceEntityID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(knowledgeentity.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "source_entity_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (_q *SituationSignalQuery) loadViaRelationship(ctx context.Context, query *KnowledgeRelationshipQuery, nodes []*SituationSignal, init func(*SituationSignal), assign func(*SituationSignal, *KnowledgeRelationship)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*SituationSignal)
+	for i := range nodes {
+		if nodes[i].ViaRelationshipID == nil {
+			continue
+		}
+		fk := *nodes[i].ViaRelationshipID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(knowledgerelationship.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "via_relationship_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
 
 func (_q *SituationSignalQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := _q.querySpec()
@@ -716,6 +871,12 @@ func (_q *SituationSignalQuery) querySpec() *sqlgraph.QuerySpec {
 		}
 		if _q.withKnowledgeEntity != nil {
 			_spec.Node.AddColumnOnce(situationsignal.FieldKnowledgeEntityID)
+		}
+		if _q.withSourceEntity != nil {
+			_spec.Node.AddColumnOnce(situationsignal.FieldSourceEntityID)
+		}
+		if _q.withViaRelationship != nil {
+			_spec.Node.AddColumnOnce(situationsignal.FieldViaRelationshipID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {

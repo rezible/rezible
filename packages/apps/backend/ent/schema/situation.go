@@ -9,6 +9,7 @@ import (
 	"entgo.io/ent/schema/index"
 	"github.com/google/uuid"
 
+	"github.com/rezible/rezible/ent/schema/annotations"
 	"github.com/rezible/rezible/ent/schema/schematypes"
 )
 
@@ -50,8 +51,7 @@ func (Situation) Fields() []ent.Field {
 			Optional().
 			Nillable(),
 		field.UUID("seed_entity_id", uuid.UUID{}).
-			Immutable().
-			Comment("Knowledge entity of the signal that started it; kept after merges"),
+			Comment("Knowledge entity of the signal that started it; kept after situation merges, re-pointed by entity merges"),
 		field.UUID("latest_judgment_id", uuid.UUID{}).
 			Optional().
 			Nillable().
@@ -80,6 +80,13 @@ func (Situation) Edges() []ent.Edge {
 		edge.To("latest_judgment", SituationJudgment.Type).
 			Field("latest_judgment_id").
 			Unique(),
+		// No action on delete: an entity merge re-points the seed before it deletes the entity, so a missed
+		// re-point fails the merge instead of losing the reference.
+		edge.To("seed_entity", KnowledgeEntity.Type).
+			Field("seed_entity_id").
+			Required().
+			Unique().
+			Annotations(entsql.OnDelete(entsql.NoAction)),
 	}
 }
 
@@ -87,6 +94,7 @@ func (Situation) Indexes() []ent.Index {
 	return []ent.Index{
 		index.Fields("tenant_id", "opened_at"),
 		index.Fields("tenant_id", "closed_at"),
+		index.Fields("tenant_id", "seed_entity_id"),
 	}
 }
 
@@ -142,7 +150,7 @@ func (SituationSignal) Fields() []ent.Field {
 		field.UUID("situation_id", uuid.UUID{}),
 		field.UUID("observation_group_id", uuid.UUID{}).
 			Comment("A group of the same situation"),
-		field.UUID("knowledge_entity_id", uuid.UUID{}).Immutable(),
+		field.UUID("knowledge_entity_id", uuid.UUID{}),
 		field.String("kind").
 			NotEmpty().
 			Comment("The signal's kind, copied when attached"),
@@ -180,8 +188,18 @@ func (SituationSignal) Edges() []ent.Edge {
 		edge.To("knowledge_entity", KnowledgeEntity.Type).
 			Field("knowledge_entity_id").
 			Required().
+			Unique(),
+		// No action on delete, rather than Ent's default of setting null: an entity merge re-points these
+		// before it deletes an entity or a folded relationship, so a missed re-point fails the merge instead of
+		// losing the signal's provenance.
+		edge.To("source_entity", KnowledgeEntity.Type).
+			Field("source_entity_id").
 			Unique().
-			Immutable(),
+			Annotations(entsql.OnDelete(entsql.NoAction)),
+		edge.To("via_relationship", KnowledgeRelationship.Type).
+			Field("via_relationship_id").
+			Unique().
+			Annotations(entsql.OnDelete(entsql.NoAction)),
 	}
 }
 
@@ -190,6 +208,7 @@ func (SituationSignal) Indexes() []ent.Index {
 		index.Fields("tenant_id", "knowledge_entity_id").Unique(),
 		index.Fields("tenant_id", "situation_id"),
 		index.Fields("tenant_id", "source_entity_id"),
+		index.Fields("tenant_id", "via_relationship_id"),
 	}
 }
 
@@ -209,7 +228,7 @@ func (SituationEntity) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("situation_id", uuid.UUID{}).Immutable(),
-		field.UUID("knowledge_entity_id", uuid.UUID{}).Immutable(),
+		field.UUID("knowledge_entity_id", uuid.UUID{}),
 		field.Bool("matching").
 			Comment("Whether a signal that is not broad touches it, so it attracts related signals"),
 	}
@@ -222,11 +241,12 @@ func (SituationEntity) Edges() []ent.Edge {
 			Required().
 			Unique().
 			Immutable(),
+		// A merge keeps the survivor's membership, matching if either was.
 		edge.To("knowledge_entity", KnowledgeEntity.Type).
 			Field("knowledge_entity_id").
 			Required().
 			Unique().
-			Immutable(),
+			Annotations(annotations.EntityMergeDeletesDuplicateRows()),
 	}
 }
 

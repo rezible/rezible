@@ -8,6 +8,8 @@ import (
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
 	"github.com/google/uuid"
+
+	"github.com/rezible/rezible/ent/schema/annotations"
 )
 
 type SystemAnalysis struct {
@@ -86,8 +88,7 @@ func (SystemAnalysisEntity) Fields() []ent.Field {
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("analysis_id", uuid.UUID{}).
 			Immutable(),
-		field.UUID("knowledge_entity_id", uuid.UUID{}).
-			Immutable(),
+		field.UUID("knowledge_entity_id", uuid.UUID{}),
 		field.Float("pos_x").
 			Optional().
 			Nillable(),
@@ -118,8 +119,8 @@ func (SystemAnalysisEntity) Edges() []ent.Edge {
 		edge.To("knowledge_entity", KnowledgeEntity.Type).
 			Required().
 			Unique().
-			Immutable().
-			Field("knowledge_entity_id"),
+			Field("knowledge_entity_id").
+			Annotations(annotations.EntityMergeDeletesDuplicateRows()),
 	}
 }
 
@@ -147,8 +148,7 @@ func (SystemAnalysisRelationship) Fields() []ent.Field {
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("analysis_id", uuid.UUID{}).
 			Immutable(),
-		field.UUID("knowledge_relationship_id", uuid.UUID{}).
-			Immutable(),
+		field.UUID("knowledge_relationship_id", uuid.UUID{}),
 		field.Bool("hidden").
 			Default(false),
 		field.String("label_override").
@@ -176,8 +176,8 @@ func (SystemAnalysisRelationship) Edges() []ent.Edge {
 		edge.To("knowledge_relationship", KnowledgeRelationship.Type).
 			Required().
 			Unique().
-			Immutable().
-			Field("knowledge_relationship_id"),
+			Field("knowledge_relationship_id").
+			Annotations(annotations.EntityMergeDeletesDuplicateRows()),
 	}
 }
 
@@ -276,12 +276,10 @@ func (SystemAnalysisEntrySubject) Fields() []ent.Field {
 		field.UUID("entry_id", uuid.UUID{}).Immutable(),
 		field.UUID("knowledge_entity_id", uuid.UUID{}).
 			Optional().
-			Nillable().
-			Immutable(),
+			Nillable(),
 		field.UUID("knowledge_relationship_id", uuid.UUID{}).
 			Optional().
-			Nillable().
-			Immutable(),
+			Nillable(),
 		field.UUID("knowledge_evidence_id", uuid.UUID{}).
 			Optional().
 			Nillable().
@@ -309,12 +307,12 @@ func (SystemAnalysisEntrySubject) Edges() []ent.Edge {
 			Annotations(entsql.OnDelete(entsql.Cascade)),
 		edge.To("knowledge_entity", KnowledgeEntity.Type).
 			Unique().
-			Immutable().
-			Field("knowledge_entity_id"),
+			Field("knowledge_entity_id").
+			Annotations(annotations.EntityMergeDeletesDuplicateRows()),
 		edge.To("knowledge_relationship", KnowledgeRelationship.Type).
 			Unique().
-			Immutable().
-			Field("knowledge_relationship_id"),
+			Field("knowledge_relationship_id").
+			Annotations(annotations.EntityMergeDeletesDuplicateRows()),
 		edge.To("knowledge_evidence", KnowledgeEvidence.Type).
 			Unique().
 			Immutable().

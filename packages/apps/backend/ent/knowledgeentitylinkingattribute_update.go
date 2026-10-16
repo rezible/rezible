@@ -10,7 +10,9 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/internal"
+	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/knowledgeentitylinkingattribute"
 	"github.com/rezible/rezible/ent/predicate"
 )
@@ -28,9 +30,34 @@ func (_u *KnowledgeEntityLinkingAttributeUpdate) Where(ps ...predicate.Knowledge
 	return _u
 }
 
+// SetEntityID sets the "entity_id" field.
+func (_u *KnowledgeEntityLinkingAttributeUpdate) SetEntityID(v uuid.UUID) *KnowledgeEntityLinkingAttributeUpdate {
+	_u.mutation.SetEntityID(v)
+	return _u
+}
+
+// SetNillableEntityID sets the "entity_id" field if the given value is not nil.
+func (_u *KnowledgeEntityLinkingAttributeUpdate) SetNillableEntityID(v *uuid.UUID) *KnowledgeEntityLinkingAttributeUpdate {
+	if v != nil {
+		_u.SetEntityID(*v)
+	}
+	return _u
+}
+
+// SetEntity sets the "entity" edge to the KnowledgeEntity entity.
+func (_u *KnowledgeEntityLinkingAttributeUpdate) SetEntity(v *KnowledgeEntity) *KnowledgeEntityLinkingAttributeUpdate {
+	return _u.SetEntityID(v.ID)
+}
+
 // Mutation returns the KnowledgeEntityLinkingAttributeMutation object of the builder.
 func (_u *KnowledgeEntityLinkingAttributeUpdate) Mutation() *KnowledgeEntityLinkingAttributeMutation {
 	return _u.mutation
+}
+
+// ClearEntity clears the "entity" edge to the KnowledgeEntity entity.
+func (_u *KnowledgeEntityLinkingAttributeUpdate) ClearEntity() *KnowledgeEntityLinkingAttributeUpdate {
+	_u.mutation.ClearEntity()
+	return _u
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -83,6 +110,37 @@ func (_u *KnowledgeEntityLinkingAttributeUpdate) sqlSave(ctx context.Context) (_
 			}
 		}
 	}
+	if _u.mutation.EntityCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   knowledgeentitylinkingattribute.EntityTable,
+			Columns: []string{knowledgeentitylinkingattribute.EntityColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.KnowledgeEntityLinkingAttribute
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.EntityIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   knowledgeentitylinkingattribute.EntityTable,
+			Columns: []string{knowledgeentitylinkingattribute.EntityColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.KnowledgeEntityLinkingAttribute
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	_spec.Node.Schema = _u.schemaConfig.KnowledgeEntityLinkingAttribute
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
@@ -105,9 +163,34 @@ type KnowledgeEntityLinkingAttributeUpdateOne struct {
 	mutation *KnowledgeEntityLinkingAttributeMutation
 }
 
+// SetEntityID sets the "entity_id" field.
+func (_u *KnowledgeEntityLinkingAttributeUpdateOne) SetEntityID(v uuid.UUID) *KnowledgeEntityLinkingAttributeUpdateOne {
+	_u.mutation.SetEntityID(v)
+	return _u
+}
+
+// SetNillableEntityID sets the "entity_id" field if the given value is not nil.
+func (_u *KnowledgeEntityLinkingAttributeUpdateOne) SetNillableEntityID(v *uuid.UUID) *KnowledgeEntityLinkingAttributeUpdateOne {
+	if v != nil {
+		_u.SetEntityID(*v)
+	}
+	return _u
+}
+
+// SetEntity sets the "entity" edge to the KnowledgeEntity entity.
+func (_u *KnowledgeEntityLinkingAttributeUpdateOne) SetEntity(v *KnowledgeEntity) *KnowledgeEntityLinkingAttributeUpdateOne {
+	return _u.SetEntityID(v.ID)
+}
+
 // Mutation returns the KnowledgeEntityLinkingAttributeMutation object of the builder.
 func (_u *KnowledgeEntityLinkingAttributeUpdateOne) Mutation() *KnowledgeEntityLinkingAttributeMutation {
 	return _u.mutation
+}
+
+// ClearEntity clears the "entity" edge to the KnowledgeEntity entity.
+func (_u *KnowledgeEntityLinkingAttributeUpdateOne) ClearEntity() *KnowledgeEntityLinkingAttributeUpdateOne {
+	_u.mutation.ClearEntity()
+	return _u
 }
 
 // Where appends a list predicates to the KnowledgeEntityLinkingAttributeUpdate builder.
@@ -189,6 +272,37 @@ func (_u *KnowledgeEntityLinkingAttributeUpdateOne) sqlSave(ctx context.Context)
 				ps[i](selector)
 			}
 		}
+	}
+	if _u.mutation.EntityCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   knowledgeentitylinkingattribute.EntityTable,
+			Columns: []string{knowledgeentitylinkingattribute.EntityColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.KnowledgeEntityLinkingAttribute
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.EntityIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   knowledgeentitylinkingattribute.EntityTable,
+			Columns: []string{knowledgeentitylinkingattribute.EntityColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.KnowledgeEntityLinkingAttribute
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_spec.Node.Schema = _u.schemaConfig.KnowledgeEntityLinkingAttribute
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)

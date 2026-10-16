@@ -71,8 +71,6 @@ func (DiscussionThread) Mixin() []ent.Mixin {
 	}
 }
 
-var discussionThreadTargetKind = []string{"finding", "entry", "knowledge_entity", "knowledge_relationship", "normalized_event"}
-
 func (DiscussionThread) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.New()).Default(uuid.New),
@@ -80,8 +78,11 @@ func (DiscussionThread) Fields() []ent.Field {
 		field.UUID("retrospective_id", uuid.UUID{}).Optional().Nillable(),
 		field.UUID("user_id", uuid.UUID{}),
 
-		field.Enum("target_kind").Values(discussionThreadTargetKind...).Optional().Nillable(),
-		field.UUID("target_id", uuid.UUID{}).Optional().Nillable(),
+		field.UUID("target_finding_id", uuid.UUID{}).Optional().Nillable(),
+		field.UUID("target_entry_id", uuid.UUID{}).Optional().Nillable(),
+		field.UUID("target_knowledge_entity_id", uuid.UUID{}).Optional().Nillable(),
+		field.UUID("target_knowledge_relationship_id", uuid.UUID{}).Optional().Nillable(),
+		field.UUID("target_normalized_event_id", uuid.UUID{}).Optional().Nillable(),
 
 		field.Enum("resolution_state").Values("open", "resolved").Optional().Nillable(),
 		field.UUID("resolved_by_id", uuid.UUID{}).Optional().Nillable(),
@@ -95,6 +96,8 @@ func (DiscussionThread) Annotations() []entschema.Annotation {
 		entsql.Annotation{
 			Checks: map[string]string{
 				"discussion_thread_exactly_one_owner": "(analysis_id IS NOT NULL AND retrospective_id IS NULL) OR (analysis_id IS NULL AND retrospective_id IS NOT NULL)",
+				"discussion_thread_at_most_one_target": "num_nonnulls(target_finding_id, target_entry_id, target_knowledge_entity_id, " +
+					"target_knowledge_relationship_id, target_normalized_event_id) <= 1",
 			},
 		},
 	}
@@ -109,6 +112,39 @@ func (DiscussionThread) Edges() []ent.Edge {
 			Required().
 			Unique(),
 		edge.From("comments", DiscussionComment.Type).Ref("thread"),
+
+		// A thread keeps its owner and comments when an analysis entry, finding or event it targets is deleted.
+		edge.To("target_finding", InvestigationFinding.Type).
+			Field("target_finding_id").
+			Unique().
+			Annotations(entsql.OnDelete(entsql.SetNull)),
+		edge.To("target_entry", SystemAnalysisEntry.Type).
+			Field("target_entry_id").
+			Unique().
+			Annotations(entsql.OnDelete(entsql.SetNull)),
+		edge.To("target_normalized_event", NormalizedEvent.Type).
+			Field("target_normalized_event_id").
+			Unique().
+			Annotations(entsql.OnDelete(entsql.SetNull)),
+		// A knowledge merge re-points these before it deletes the merged entity or folded relationship.
+		edge.To("target_knowledge_entity", KnowledgeEntity.Type).
+			Field("target_knowledge_entity_id").
+			Unique().
+			Annotations(entsql.OnDelete(entsql.NoAction)),
+		edge.To("target_knowledge_relationship", KnowledgeRelationship.Type).
+			Field("target_knowledge_relationship_id").
+			Unique().
+			Annotations(entsql.OnDelete(entsql.NoAction)),
+	}
+}
+
+func (DiscussionThread) Indexes() []ent.Index {
+	return []ent.Index{
+		index.Fields("tenant_id", "target_finding_id"),
+		index.Fields("tenant_id", "target_entry_id"),
+		index.Fields("tenant_id", "target_knowledge_entity_id"),
+		index.Fields("tenant_id", "target_knowledge_relationship_id"),
+		index.Fields("tenant_id", "target_normalized_event_id"),
 	}
 }
 

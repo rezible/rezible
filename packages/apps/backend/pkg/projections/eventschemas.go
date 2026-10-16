@@ -12,6 +12,7 @@ import (
 	"github.com/rezible/rezible/ent"
 	kne "github.com/rezible/rezible/ent/knowledgeentity"
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
+	"github.com/rezible/rezible/pkg/knowledgegraph"
 )
 
 func InternalEntityResourceRef(id uuid.UUID) rez.ProviderResourceRef {
@@ -146,8 +147,8 @@ const KindUser = "user"
 
 // Knowledge entity kinds that providers link by name: a service is a container, a repository is code.
 const (
-	EntityKindService    = "service"
-	EntityKindRepository = "repository"
+	EntityKindService    = knowledgegraph.EntityKindService
+	EntityKindRepository = knowledgegraph.EntityKindRepository
 )
 
 // Linking attributes shared by providers that name the same service or repository.

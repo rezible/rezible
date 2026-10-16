@@ -14,6 +14,7 @@ import (
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/knowledgeevidence"
+	"github.com/rezible/rezible/ent/knowledgeproposal"
 	"github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/knowledgesubjectalias"
 	"github.com/rezible/rezible/ent/predicate"
@@ -72,6 +73,26 @@ func (_u *KnowledgeSubjectAliasUpdate) ClearRelationshipID() *KnowledgeSubjectAl
 	return _u
 }
 
+// SetMergedByProposalID sets the "merged_by_proposal_id" field.
+func (_u *KnowledgeSubjectAliasUpdate) SetMergedByProposalID(v uuid.UUID) *KnowledgeSubjectAliasUpdate {
+	_u.mutation.SetMergedByProposalID(v)
+	return _u
+}
+
+// SetNillableMergedByProposalID sets the "merged_by_proposal_id" field if the given value is not nil.
+func (_u *KnowledgeSubjectAliasUpdate) SetNillableMergedByProposalID(v *uuid.UUID) *KnowledgeSubjectAliasUpdate {
+	if v != nil {
+		_u.SetMergedByProposalID(*v)
+	}
+	return _u
+}
+
+// ClearMergedByProposalID clears the value of the "merged_by_proposal_id" field.
+func (_u *KnowledgeSubjectAliasUpdate) ClearMergedByProposalID() *KnowledgeSubjectAliasUpdate {
+	_u.mutation.ClearMergedByProposalID()
+	return _u
+}
+
 // SetEntity sets the "entity" edge to the KnowledgeEntity entity.
 func (_u *KnowledgeSubjectAliasUpdate) SetEntity(v *KnowledgeEntity) *KnowledgeSubjectAliasUpdate {
 	return _u.SetEntityID(v.ID)
@@ -80,6 +101,11 @@ func (_u *KnowledgeSubjectAliasUpdate) SetEntity(v *KnowledgeEntity) *KnowledgeS
 // SetRelationship sets the "relationship" edge to the KnowledgeRelationship entity.
 func (_u *KnowledgeSubjectAliasUpdate) SetRelationship(v *KnowledgeRelationship) *KnowledgeSubjectAliasUpdate {
 	return _u.SetRelationshipID(v.ID)
+}
+
+// SetMergedByProposal sets the "merged_by_proposal" edge to the KnowledgeProposal entity.
+func (_u *KnowledgeSubjectAliasUpdate) SetMergedByProposal(v *KnowledgeProposal) *KnowledgeSubjectAliasUpdate {
+	return _u.SetMergedByProposalID(v.ID)
 }
 
 // AddEvidenceIDs adds the "evidence" edge to the KnowledgeEvidence entity by IDs.
@@ -111,6 +137,12 @@ func (_u *KnowledgeSubjectAliasUpdate) ClearEntity() *KnowledgeSubjectAliasUpdat
 // ClearRelationship clears the "relationship" edge to the KnowledgeRelationship entity.
 func (_u *KnowledgeSubjectAliasUpdate) ClearRelationship() *KnowledgeSubjectAliasUpdate {
 	_u.mutation.ClearRelationship()
+	return _u
+}
+
+// ClearMergedByProposal clears the "merged_by_proposal" edge to the KnowledgeProposal entity.
+func (_u *KnowledgeSubjectAliasUpdate) ClearMergedByProposal() *KnowledgeSubjectAliasUpdate {
+	_u.mutation.ClearMergedByProposal()
 	return _u
 }
 
@@ -244,6 +276,37 @@ func (_u *KnowledgeSubjectAliasUpdate) sqlSave(ctx context.Context) (_node int, 
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.MergedByProposalCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   knowledgesubjectalias.MergedByProposalTable,
+			Columns: []string{knowledgesubjectalias.MergedByProposalColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeproposal.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.KnowledgeSubjectAlias
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.MergedByProposalIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   knowledgesubjectalias.MergedByProposalTable,
+			Columns: []string{knowledgesubjectalias.MergedByProposalColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeproposal.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.KnowledgeSubjectAlias
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _u.mutation.EvidenceCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -354,6 +417,26 @@ func (_u *KnowledgeSubjectAliasUpdateOne) ClearRelationshipID() *KnowledgeSubjec
 	return _u
 }
 
+// SetMergedByProposalID sets the "merged_by_proposal_id" field.
+func (_u *KnowledgeSubjectAliasUpdateOne) SetMergedByProposalID(v uuid.UUID) *KnowledgeSubjectAliasUpdateOne {
+	_u.mutation.SetMergedByProposalID(v)
+	return _u
+}
+
+// SetNillableMergedByProposalID sets the "merged_by_proposal_id" field if the given value is not nil.
+func (_u *KnowledgeSubjectAliasUpdateOne) SetNillableMergedByProposalID(v *uuid.UUID) *KnowledgeSubjectAliasUpdateOne {
+	if v != nil {
+		_u.SetMergedByProposalID(*v)
+	}
+	return _u
+}
+
+// ClearMergedByProposalID clears the value of the "merged_by_proposal_id" field.
+func (_u *KnowledgeSubjectAliasUpdateOne) ClearMergedByProposalID() *KnowledgeSubjectAliasUpdateOne {
+	_u.mutation.ClearMergedByProposalID()
+	return _u
+}
+
 // SetEntity sets the "entity" edge to the KnowledgeEntity entity.
 func (_u *KnowledgeSubjectAliasUpdateOne) SetEntity(v *KnowledgeEntity) *KnowledgeSubjectAliasUpdateOne {
 	return _u.SetEntityID(v.ID)
@@ -362,6 +445,11 @@ func (_u *KnowledgeSubjectAliasUpdateOne) SetEntity(v *KnowledgeEntity) *Knowled
 // SetRelationship sets the "relationship" edge to the KnowledgeRelationship entity.
 func (_u *KnowledgeSubjectAliasUpdateOne) SetRelationship(v *KnowledgeRelationship) *KnowledgeSubjectAliasUpdateOne {
 	return _u.SetRelationshipID(v.ID)
+}
+
+// SetMergedByProposal sets the "merged_by_proposal" edge to the KnowledgeProposal entity.
+func (_u *KnowledgeSubjectAliasUpdateOne) SetMergedByProposal(v *KnowledgeProposal) *KnowledgeSubjectAliasUpdateOne {
+	return _u.SetMergedByProposalID(v.ID)
 }
 
 // AddEvidenceIDs adds the "evidence" edge to the KnowledgeEvidence entity by IDs.
@@ -393,6 +481,12 @@ func (_u *KnowledgeSubjectAliasUpdateOne) ClearEntity() *KnowledgeSubjectAliasUp
 // ClearRelationship clears the "relationship" edge to the KnowledgeRelationship entity.
 func (_u *KnowledgeSubjectAliasUpdateOne) ClearRelationship() *KnowledgeSubjectAliasUpdateOne {
 	_u.mutation.ClearRelationship()
+	return _u
+}
+
+// ClearMergedByProposal clears the "merged_by_proposal" edge to the KnowledgeProposal entity.
+func (_u *KnowledgeSubjectAliasUpdateOne) ClearMergedByProposal() *KnowledgeSubjectAliasUpdateOne {
+	_u.mutation.ClearMergedByProposal()
 	return _u
 }
 
@@ -548,6 +642,37 @@ func (_u *KnowledgeSubjectAliasUpdateOne) sqlSave(ctx context.Context) (_node *K
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(knowledgerelationship.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.KnowledgeSubjectAlias
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.MergedByProposalCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   knowledgesubjectalias.MergedByProposalTable,
+			Columns: []string{knowledgesubjectalias.MergedByProposalColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeproposal.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.KnowledgeSubjectAlias
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.MergedByProposalIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   knowledgesubjectalias.MergedByProposalTable,
+			Columns: []string{knowledgesubjectalias.MergedByProposalColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeproposal.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _u.schemaConfig.KnowledgeSubjectAlias

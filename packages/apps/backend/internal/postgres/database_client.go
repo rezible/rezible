@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
+	"slices"
 	"sort"
 
 	"entgo.io/ent/dialect"
@@ -102,6 +103,16 @@ func (dbc *DatabaseClient) IsConstraintError(err error) (string, bool) {
 		return "", false
 	}
 	return pgErr.ConstraintName, true
+}
+
+// IsForeignKeyError reports whether opErr is a foreign key violation (SQLSTATE 23503) of one of the named
+// constraints.
+func (dbc *DatabaseClient) IsForeignKeyError(opErr error, constraints ...string) bool {
+	pgErr, ok := errors.AsType[*pgconn.PgError](opErr)
+	if !ok || pgErr.Code != "23503" {
+		return false
+	}
+	return slices.Contains(constraints, pgErr.ConstraintName)
 }
 
 func (dbc *DatabaseClient) WithTx(ctx context.Context, fn func(txCtx context.Context, tx *ent.Client) error, opts ...ent.TxOption) error {

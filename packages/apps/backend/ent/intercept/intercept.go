@@ -58,6 +58,7 @@ import (
 	"github.com/rezible/rezible/ent/knowledgeentitylinkingattribute"
 	"github.com/rezible/rezible/ent/knowledgeevidence"
 	"github.com/rezible/rezible/ent/knowledgeproposal"
+	"github.com/rezible/rezible/ent/knowledgeproposaldecision"
 	"github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/knowledgesubjectalias"
 	"github.com/rezible/rezible/ent/meetingschedule"
@@ -1513,6 +1514,33 @@ func (f TraverseKnowledgeProposal) Traverse(ctx context.Context, q ent.Query) er
 	return fmt.Errorf("unexpected query type %T. expect *ent.KnowledgeProposalQuery", q)
 }
 
+// The KnowledgeProposalDecisionFunc type is an adapter to allow the use of ordinary function as a Querier.
+type KnowledgeProposalDecisionFunc func(context.Context, *ent.KnowledgeProposalDecisionQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f KnowledgeProposalDecisionFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.KnowledgeProposalDecisionQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.KnowledgeProposalDecisionQuery", q)
+}
+
+// The TraverseKnowledgeProposalDecision type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseKnowledgeProposalDecision func(context.Context, *ent.KnowledgeProposalDecisionQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseKnowledgeProposalDecision) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseKnowledgeProposalDecision) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.KnowledgeProposalDecisionQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.KnowledgeProposalDecisionQuery", q)
+}
+
 // The KnowledgeRelationshipFunc type is an adapter to allow the use of ordinary function as a Querier.
 type KnowledgeRelationshipFunc func(context.Context, *ent.KnowledgeRelationshipQuery) (ent.Value, error)
 
@@ -2858,6 +2886,8 @@ func NewQuery(q ent.Query) (Query, error) {
 		return &query[*ent.KnowledgeEvidenceQuery, predicate.KnowledgeEvidence, knowledgeevidence.OrderOption]{typ: ent.TypeKnowledgeEvidence, tq: q}, nil
 	case *ent.KnowledgeProposalQuery:
 		return &query[*ent.KnowledgeProposalQuery, predicate.KnowledgeProposal, knowledgeproposal.OrderOption]{typ: ent.TypeKnowledgeProposal, tq: q}, nil
+	case *ent.KnowledgeProposalDecisionQuery:
+		return &query[*ent.KnowledgeProposalDecisionQuery, predicate.KnowledgeProposalDecision, knowledgeproposaldecision.OrderOption]{typ: ent.TypeKnowledgeProposalDecision, tq: q}, nil
 	case *ent.KnowledgeRelationshipQuery:
 		return &query[*ent.KnowledgeRelationshipQuery, predicate.KnowledgeRelationship, knowledgerelationship.OrderOption]{typ: ent.TypeKnowledgeRelationship, tq: q}, nil
 	case *ent.KnowledgeSubjectAliasQuery:

@@ -18,9 +18,14 @@ import (
 	"github.com/rezible/rezible/ent/discussioncomment"
 	"github.com/rezible/rezible/ent/discussionthread"
 	"github.com/rezible/rezible/ent/internal"
+	"github.com/rezible/rezible/ent/investigationfinding"
+	"github.com/rezible/rezible/ent/knowledgeentity"
+	"github.com/rezible/rezible/ent/knowledgerelationship"
+	"github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/ent/systemanalysis"
+	"github.com/rezible/rezible/ent/systemanalysisentry"
 	"github.com/rezible/rezible/ent/tenant"
 	"github.com/rezible/rezible/ent/user"
 )
@@ -28,16 +33,21 @@ import (
 // DiscussionThreadQuery is the builder for querying DiscussionThread entities.
 type DiscussionThreadQuery struct {
 	config
-	ctx               *QueryContext
-	order             []discussionthread.OrderOption
-	inters            []Interceptor
-	predicates        []predicate.DiscussionThread
-	withTenant        *TenantQuery
-	withAnalysis      *SystemAnalysisQuery
-	withRetrospective *RetrospectiveQuery
-	withUser          *UserQuery
-	withComments      *DiscussionCommentQuery
-	modifiers         []func(*sql.Selector)
+	ctx                             *QueryContext
+	order                           []discussionthread.OrderOption
+	inters                          []Interceptor
+	predicates                      []predicate.DiscussionThread
+	withTenant                      *TenantQuery
+	withAnalysis                    *SystemAnalysisQuery
+	withRetrospective               *RetrospectiveQuery
+	withUser                        *UserQuery
+	withComments                    *DiscussionCommentQuery
+	withTargetFinding               *InvestigationFindingQuery
+	withTargetEntry                 *SystemAnalysisEntryQuery
+	withTargetNormalizedEvent       *NormalizedEventQuery
+	withTargetKnowledgeEntity       *KnowledgeEntityQuery
+	withTargetKnowledgeRelationship *KnowledgeRelationshipQuery
+	modifiers                       []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -193,6 +203,131 @@ func (_q *DiscussionThreadQuery) QueryComments() *DiscussionCommentQuery {
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.DiscussionComment
 		step.Edge.Schema = schemaConfig.DiscussionComment
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryTargetFinding chains the current query on the "target_finding" edge.
+func (_q *DiscussionThreadQuery) QueryTargetFinding() *InvestigationFindingQuery {
+	query := (&InvestigationFindingClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(discussionthread.Table, discussionthread.FieldID, selector),
+			sqlgraph.To(investigationfinding.Table, investigationfinding.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, discussionthread.TargetFindingTable, discussionthread.TargetFindingColumn),
+		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.InvestigationFinding
+		step.Edge.Schema = schemaConfig.DiscussionThread
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryTargetEntry chains the current query on the "target_entry" edge.
+func (_q *DiscussionThreadQuery) QueryTargetEntry() *SystemAnalysisEntryQuery {
+	query := (&SystemAnalysisEntryClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(discussionthread.Table, discussionthread.FieldID, selector),
+			sqlgraph.To(systemanalysisentry.Table, systemanalysisentry.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, discussionthread.TargetEntryTable, discussionthread.TargetEntryColumn),
+		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.SystemAnalysisEntry
+		step.Edge.Schema = schemaConfig.DiscussionThread
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryTargetNormalizedEvent chains the current query on the "target_normalized_event" edge.
+func (_q *DiscussionThreadQuery) QueryTargetNormalizedEvent() *NormalizedEventQuery {
+	query := (&NormalizedEventClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(discussionthread.Table, discussionthread.FieldID, selector),
+			sqlgraph.To(normalizedevent.Table, normalizedevent.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, discussionthread.TargetNormalizedEventTable, discussionthread.TargetNormalizedEventColumn),
+		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.NormalizedEvent
+		step.Edge.Schema = schemaConfig.DiscussionThread
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryTargetKnowledgeEntity chains the current query on the "target_knowledge_entity" edge.
+func (_q *DiscussionThreadQuery) QueryTargetKnowledgeEntity() *KnowledgeEntityQuery {
+	query := (&KnowledgeEntityClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(discussionthread.Table, discussionthread.FieldID, selector),
+			sqlgraph.To(knowledgeentity.Table, knowledgeentity.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, discussionthread.TargetKnowledgeEntityTable, discussionthread.TargetKnowledgeEntityColumn),
+		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.KnowledgeEntity
+		step.Edge.Schema = schemaConfig.DiscussionThread
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryTargetKnowledgeRelationship chains the current query on the "target_knowledge_relationship" edge.
+func (_q *DiscussionThreadQuery) QueryTargetKnowledgeRelationship() *KnowledgeRelationshipQuery {
+	query := (&KnowledgeRelationshipClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(discussionthread.Table, discussionthread.FieldID, selector),
+			sqlgraph.To(knowledgerelationship.Table, knowledgerelationship.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, discussionthread.TargetKnowledgeRelationshipTable, discussionthread.TargetKnowledgeRelationshipColumn),
+		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.KnowledgeRelationship
+		step.Edge.Schema = schemaConfig.DiscussionThread
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -386,16 +521,21 @@ func (_q *DiscussionThreadQuery) Clone() *DiscussionThreadQuery {
 		return nil
 	}
 	return &DiscussionThreadQuery{
-		config:            _q.config,
-		ctx:               _q.ctx.Clone(),
-		order:             append([]discussionthread.OrderOption{}, _q.order...),
-		inters:            append([]Interceptor{}, _q.inters...),
-		predicates:        append([]predicate.DiscussionThread{}, _q.predicates...),
-		withTenant:        _q.withTenant.Clone(),
-		withAnalysis:      _q.withAnalysis.Clone(),
-		withRetrospective: _q.withRetrospective.Clone(),
-		withUser:          _q.withUser.Clone(),
-		withComments:      _q.withComments.Clone(),
+		config:                          _q.config,
+		ctx:                             _q.ctx.Clone(),
+		order:                           append([]discussionthread.OrderOption{}, _q.order...),
+		inters:                          append([]Interceptor{}, _q.inters...),
+		predicates:                      append([]predicate.DiscussionThread{}, _q.predicates...),
+		withTenant:                      _q.withTenant.Clone(),
+		withAnalysis:                    _q.withAnalysis.Clone(),
+		withRetrospective:               _q.withRetrospective.Clone(),
+		withUser:                        _q.withUser.Clone(),
+		withComments:                    _q.withComments.Clone(),
+		withTargetFinding:               _q.withTargetFinding.Clone(),
+		withTargetEntry:                 _q.withTargetEntry.Clone(),
+		withTargetNormalizedEvent:       _q.withTargetNormalizedEvent.Clone(),
+		withTargetKnowledgeEntity:       _q.withTargetKnowledgeEntity.Clone(),
+		withTargetKnowledgeRelationship: _q.withTargetKnowledgeRelationship.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
@@ -454,6 +594,61 @@ func (_q *DiscussionThreadQuery) WithComments(opts ...func(*DiscussionCommentQue
 		opt(query)
 	}
 	_q.withComments = query
+	return _q
+}
+
+// WithTargetFinding tells the query-builder to eager-load the nodes that are connected to
+// the "target_finding" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *DiscussionThreadQuery) WithTargetFinding(opts ...func(*InvestigationFindingQuery)) *DiscussionThreadQuery {
+	query := (&InvestigationFindingClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withTargetFinding = query
+	return _q
+}
+
+// WithTargetEntry tells the query-builder to eager-load the nodes that are connected to
+// the "target_entry" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *DiscussionThreadQuery) WithTargetEntry(opts ...func(*SystemAnalysisEntryQuery)) *DiscussionThreadQuery {
+	query := (&SystemAnalysisEntryClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withTargetEntry = query
+	return _q
+}
+
+// WithTargetNormalizedEvent tells the query-builder to eager-load the nodes that are connected to
+// the "target_normalized_event" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *DiscussionThreadQuery) WithTargetNormalizedEvent(opts ...func(*NormalizedEventQuery)) *DiscussionThreadQuery {
+	query := (&NormalizedEventClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withTargetNormalizedEvent = query
+	return _q
+}
+
+// WithTargetKnowledgeEntity tells the query-builder to eager-load the nodes that are connected to
+// the "target_knowledge_entity" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *DiscussionThreadQuery) WithTargetKnowledgeEntity(opts ...func(*KnowledgeEntityQuery)) *DiscussionThreadQuery {
+	query := (&KnowledgeEntityClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withTargetKnowledgeEntity = query
+	return _q
+}
+
+// WithTargetKnowledgeRelationship tells the query-builder to eager-load the nodes that are connected to
+// the "target_knowledge_relationship" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *DiscussionThreadQuery) WithTargetKnowledgeRelationship(opts ...func(*KnowledgeRelationshipQuery)) *DiscussionThreadQuery {
+	query := (&KnowledgeRelationshipClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withTargetKnowledgeRelationship = query
 	return _q
 }
 
@@ -541,12 +736,17 @@ func (_q *DiscussionThreadQuery) sqlAll(ctx context.Context, hooks ...queryHook)
 	var (
 		nodes       = []*DiscussionThread{}
 		_spec       = _q.querySpec()
-		loadedTypes = [5]bool{
+		loadedTypes = [10]bool{
 			_q.withTenant != nil,
 			_q.withAnalysis != nil,
 			_q.withRetrospective != nil,
 			_q.withUser != nil,
 			_q.withComments != nil,
+			_q.withTargetFinding != nil,
+			_q.withTargetEntry != nil,
+			_q.withTargetNormalizedEvent != nil,
+			_q.withTargetKnowledgeEntity != nil,
+			_q.withTargetKnowledgeRelationship != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -600,6 +800,36 @@ func (_q *DiscussionThreadQuery) sqlAll(ctx context.Context, hooks ...queryHook)
 		if err := _q.loadComments(ctx, query, nodes,
 			func(n *DiscussionThread) { n.Edges.Comments = []*DiscussionComment{} },
 			func(n *DiscussionThread, e *DiscussionComment) { n.Edges.Comments = append(n.Edges.Comments, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withTargetFinding; query != nil {
+		if err := _q.loadTargetFinding(ctx, query, nodes, nil,
+			func(n *DiscussionThread, e *InvestigationFinding) { n.Edges.TargetFinding = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withTargetEntry; query != nil {
+		if err := _q.loadTargetEntry(ctx, query, nodes, nil,
+			func(n *DiscussionThread, e *SystemAnalysisEntry) { n.Edges.TargetEntry = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withTargetNormalizedEvent; query != nil {
+		if err := _q.loadTargetNormalizedEvent(ctx, query, nodes, nil,
+			func(n *DiscussionThread, e *NormalizedEvent) { n.Edges.TargetNormalizedEvent = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withTargetKnowledgeEntity; query != nil {
+		if err := _q.loadTargetKnowledgeEntity(ctx, query, nodes, nil,
+			func(n *DiscussionThread, e *KnowledgeEntity) { n.Edges.TargetKnowledgeEntity = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withTargetKnowledgeRelationship; query != nil {
+		if err := _q.loadTargetKnowledgeRelationship(ctx, query, nodes, nil,
+			func(n *DiscussionThread, e *KnowledgeRelationship) { n.Edges.TargetKnowledgeRelationship = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -758,6 +988,166 @@ func (_q *DiscussionThreadQuery) loadComments(ctx context.Context, query *Discus
 	}
 	return nil
 }
+func (_q *DiscussionThreadQuery) loadTargetFinding(ctx context.Context, query *InvestigationFindingQuery, nodes []*DiscussionThread, init func(*DiscussionThread), assign func(*DiscussionThread, *InvestigationFinding)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*DiscussionThread)
+	for i := range nodes {
+		if nodes[i].TargetFindingID == nil {
+			continue
+		}
+		fk := *nodes[i].TargetFindingID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(investigationfinding.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "target_finding_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (_q *DiscussionThreadQuery) loadTargetEntry(ctx context.Context, query *SystemAnalysisEntryQuery, nodes []*DiscussionThread, init func(*DiscussionThread), assign func(*DiscussionThread, *SystemAnalysisEntry)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*DiscussionThread)
+	for i := range nodes {
+		if nodes[i].TargetEntryID == nil {
+			continue
+		}
+		fk := *nodes[i].TargetEntryID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(systemanalysisentry.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "target_entry_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (_q *DiscussionThreadQuery) loadTargetNormalizedEvent(ctx context.Context, query *NormalizedEventQuery, nodes []*DiscussionThread, init func(*DiscussionThread), assign func(*DiscussionThread, *NormalizedEvent)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*DiscussionThread)
+	for i := range nodes {
+		if nodes[i].TargetNormalizedEventID == nil {
+			continue
+		}
+		fk := *nodes[i].TargetNormalizedEventID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(normalizedevent.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "target_normalized_event_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (_q *DiscussionThreadQuery) loadTargetKnowledgeEntity(ctx context.Context, query *KnowledgeEntityQuery, nodes []*DiscussionThread, init func(*DiscussionThread), assign func(*DiscussionThread, *KnowledgeEntity)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*DiscussionThread)
+	for i := range nodes {
+		if nodes[i].TargetKnowledgeEntityID == nil {
+			continue
+		}
+		fk := *nodes[i].TargetKnowledgeEntityID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(knowledgeentity.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "target_knowledge_entity_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (_q *DiscussionThreadQuery) loadTargetKnowledgeRelationship(ctx context.Context, query *KnowledgeRelationshipQuery, nodes []*DiscussionThread, init func(*DiscussionThread), assign func(*DiscussionThread, *KnowledgeRelationship)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*DiscussionThread)
+	for i := range nodes {
+		if nodes[i].TargetKnowledgeRelationshipID == nil {
+			continue
+		}
+		fk := *nodes[i].TargetKnowledgeRelationshipID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(knowledgerelationship.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "target_knowledge_relationship_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
 
 func (_q *DiscussionThreadQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := _q.querySpec()
@@ -800,6 +1190,21 @@ func (_q *DiscussionThreadQuery) querySpec() *sqlgraph.QuerySpec {
 		}
 		if _q.withUser != nil {
 			_spec.Node.AddColumnOnce(discussionthread.FieldUserID)
+		}
+		if _q.withTargetFinding != nil {
+			_spec.Node.AddColumnOnce(discussionthread.FieldTargetFindingID)
+		}
+		if _q.withTargetEntry != nil {
+			_spec.Node.AddColumnOnce(discussionthread.FieldTargetEntryID)
+		}
+		if _q.withTargetNormalizedEvent != nil {
+			_spec.Node.AddColumnOnce(discussionthread.FieldTargetNormalizedEventID)
+		}
+		if _q.withTargetKnowledgeEntity != nil {
+			_spec.Node.AddColumnOnce(discussionthread.FieldTargetKnowledgeEntityID)
+		}
+		if _q.withTargetKnowledgeRelationship != nil {
+			_spec.Node.AddColumnOnce(discussionthread.FieldTargetKnowledgeRelationshipID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {

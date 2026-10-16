@@ -28,9 +28,9 @@ type KnowledgeRelationship struct {
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// Canonical directional meaning from source entity to target entity.
 	Predicate knowledgerelationship.Predicate `json:"predicate,omitempty"`
-	// SourceEntityID holds the value of the "source_entity_id" field.
+	// Changed only when a confirmed match merges two entities.
 	SourceEntityID uuid.UUID `json:"source_entity_id,omitempty"`
-	// TargetEntityID holds the value of the "target_entity_id" field.
+	// Changed only when a confirmed match merges two entities.
 	TargetEntityID uuid.UUID `json:"target_entity_id,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the KnowledgeRelationshipQuery when eager-loading is set.

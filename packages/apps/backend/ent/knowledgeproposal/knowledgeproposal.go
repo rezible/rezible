@@ -29,10 +29,10 @@ const (
 	FieldKind = "kind"
 	// FieldAttribute holds the string denoting the attribute field in the database.
 	FieldAttribute = "attribute"
-	// FieldNameA holds the string denoting the name_a field in the database.
-	FieldNameA = "name_a"
-	// FieldNameB holds the string denoting the name_b field in the database.
-	FieldNameB = "name_b"
+	// FieldValueA holds the string denoting the value_a field in the database.
+	FieldValueA = "value_a"
+	// FieldValueB holds the string denoting the value_b field in the database.
+	FieldValueB = "value_b"
 	// FieldStatus holds the string denoting the status field in the database.
 	FieldStatus = "status"
 	// FieldOrigin holds the string denoting the origin field in the database.
@@ -45,6 +45,8 @@ const (
 	EdgeTenant = "tenant"
 	// EdgeEvidence holds the string denoting the evidence edge name in mutations.
 	EdgeEvidence = "evidence"
+	// EdgeDecisions holds the string denoting the decisions edge name in mutations.
+	EdgeDecisions = "decisions"
 	// Table holds the table name of the knowledgeproposal in the database.
 	Table = "knowledge_proposals"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -61,6 +63,13 @@ const (
 	EvidenceInverseTable = "knowledge_evidences"
 	// EvidenceColumn is the table column denoting the evidence relation/edge.
 	EvidenceColumn = "evidence_id"
+	// DecisionsTable is the table that holds the decisions relation/edge.
+	DecisionsTable = "knowledge_proposal_decisions"
+	// DecisionsInverseTable is the table name for the KnowledgeProposalDecision entity.
+	// It exists in this package in order to avoid circular dependency with the "knowledgeproposaldecision" package.
+	DecisionsInverseTable = "knowledge_proposal_decisions"
+	// DecisionsColumn is the table column denoting the decisions relation/edge.
+	DecisionsColumn = "proposal_id"
 )
 
 // Columns holds all SQL columns for knowledgeproposal fields.
@@ -72,8 +81,8 @@ var Columns = []string{
 	FieldCategory,
 	FieldKind,
 	FieldAttribute,
-	FieldNameA,
-	FieldNameB,
+	FieldValueA,
+	FieldValueB,
 	FieldStatus,
 	FieldOrigin,
 	FieldRationale,
@@ -108,10 +117,10 @@ var (
 	KindValidator func(string) error
 	// AttributeValidator is a validator for the "attribute" field. It is called by the builders before save.
 	AttributeValidator func(string) error
-	// NameAValidator is a validator for the "name_a" field. It is called by the builders before save.
-	NameAValidator func(string) error
-	// NameBValidator is a validator for the "name_b" field. It is called by the builders before save.
-	NameBValidator func(string) error
+	// ValueAValidator is a validator for the "value_a" field. It is called by the builders before save.
+	ValueAValidator func(string) error
+	// ValueBValidator is a validator for the "value_b" field. It is called by the builders before save.
+	ValueBValidator func(string) error
 	// RationaleValidator is a validator for the "rationale" field. It is called by the builders before save.
 	RationaleValidator func(string) error
 	// DefaultID holds the default value on creation for the "id" field.
@@ -239,14 +248,14 @@ func ByAttribute(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldAttribute, opts...).ToFunc()
 }
 
-// ByNameA orders the results by the name_a field.
-func ByNameA(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldNameA, opts...).ToFunc()
+// ByValueA orders the results by the value_a field.
+func ByValueA(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldValueA, opts...).ToFunc()
 }
 
-// ByNameB orders the results by the name_b field.
-func ByNameB(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldNameB, opts...).ToFunc()
+// ByValueB orders the results by the value_b field.
+func ByValueB(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldValueB, opts...).ToFunc()
 }
 
 // ByStatus orders the results by the status field.
@@ -282,6 +291,20 @@ func ByEvidenceField(field string, opts ...sql.OrderTermOption) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newEvidenceStep(), sql.OrderByField(field, opts...))
 	}
 }
+
+// ByDecisionsCount orders the results by decisions count.
+func ByDecisionsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newDecisionsStep(), opts...)
+	}
+}
+
+// ByDecisions orders the results by decisions terms.
+func ByDecisions(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newDecisionsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newTenantStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -294,6 +317,13 @@ func newEvidenceStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(EvidenceInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, false, EvidenceTable, EvidenceColumn),
+	)
+}
+func newDecisionsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(DecisionsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, DecisionsTable, DecisionsColumn),
 	)
 }
 

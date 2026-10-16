@@ -62,6 +62,7 @@ import (
 	"github.com/rezible/rezible/ent/knowledgeentitylinkingattribute"
 	"github.com/rezible/rezible/ent/knowledgeevidence"
 	"github.com/rezible/rezible/ent/knowledgeproposal"
+	"github.com/rezible/rezible/ent/knowledgeproposaldecision"
 	"github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/knowledgesubjectalias"
 	"github.com/rezible/rezible/ent/meetingschedule"
@@ -218,6 +219,7 @@ func checkColumn(t, c string) error {
 			knowledgeentitylinkingattribute.Table: knowledgeentitylinkingattribute.ValidColumn,
 			knowledgeevidence.Table:               knowledgeevidence.ValidColumn,
 			knowledgeproposal.Table:               knowledgeproposal.ValidColumn,
+			knowledgeproposaldecision.Table:       knowledgeproposaldecision.ValidColumn,
 			knowledgerelationship.Table:           knowledgerelationship.ValidColumn,
 			knowledgesubjectalias.Table:           knowledgesubjectalias.ValidColumn,
 			meetingschedule.Table:                 meetingschedule.ValidColumn,

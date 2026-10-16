@@ -31,7 +31,7 @@ func (AgentProviderRead) Fields() []ent.Field {
 		field.UUID("agent_session_id", uuid.UUID{}).Immutable(),
 		field.UUID("agent_turn_id", uuid.UUID{}).Immutable(),
 		field.String("tool_name").NotEmpty().Immutable(),
-		field.UUID("service_entity_id", uuid.UUID{}).Immutable(),
+		field.UUID("service_entity_id", uuid.UUID{}),
 		// Input is the tool's input as the agent sent it.
 		field.JSON("input", json.RawMessage{}).
 			SchemaType(schemaTypeJsonB).
@@ -68,7 +68,6 @@ func (AgentProviderRead) Edges() []ent.Edge {
 		edge.To("service_entity", KnowledgeEntity.Type).
 			Required().
 			Unique().
-			Immutable().
 			Field("service_entity_id").
 			Annotations(entsql.OnDelete(entsql.NoAction)),
 	}

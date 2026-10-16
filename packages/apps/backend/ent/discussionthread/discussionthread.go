@@ -29,10 +29,16 @@ const (
 	FieldRetrospectiveID = "retrospective_id"
 	// FieldUserID holds the string denoting the user_id field in the database.
 	FieldUserID = "user_id"
-	// FieldTargetKind holds the string denoting the target_kind field in the database.
-	FieldTargetKind = "target_kind"
-	// FieldTargetID holds the string denoting the target_id field in the database.
-	FieldTargetID = "target_id"
+	// FieldTargetFindingID holds the string denoting the target_finding_id field in the database.
+	FieldTargetFindingID = "target_finding_id"
+	// FieldTargetEntryID holds the string denoting the target_entry_id field in the database.
+	FieldTargetEntryID = "target_entry_id"
+	// FieldTargetKnowledgeEntityID holds the string denoting the target_knowledge_entity_id field in the database.
+	FieldTargetKnowledgeEntityID = "target_knowledge_entity_id"
+	// FieldTargetKnowledgeRelationshipID holds the string denoting the target_knowledge_relationship_id field in the database.
+	FieldTargetKnowledgeRelationshipID = "target_knowledge_relationship_id"
+	// FieldTargetNormalizedEventID holds the string denoting the target_normalized_event_id field in the database.
+	FieldTargetNormalizedEventID = "target_normalized_event_id"
 	// FieldResolutionState holds the string denoting the resolution_state field in the database.
 	FieldResolutionState = "resolution_state"
 	// FieldResolvedByID holds the string denoting the resolved_by_id field in the database.
@@ -51,6 +57,16 @@ const (
 	EdgeUser = "user"
 	// EdgeComments holds the string denoting the comments edge name in mutations.
 	EdgeComments = "comments"
+	// EdgeTargetFinding holds the string denoting the target_finding edge name in mutations.
+	EdgeTargetFinding = "target_finding"
+	// EdgeTargetEntry holds the string denoting the target_entry edge name in mutations.
+	EdgeTargetEntry = "target_entry"
+	// EdgeTargetNormalizedEvent holds the string denoting the target_normalized_event edge name in mutations.
+	EdgeTargetNormalizedEvent = "target_normalized_event"
+	// EdgeTargetKnowledgeEntity holds the string denoting the target_knowledge_entity edge name in mutations.
+	EdgeTargetKnowledgeEntity = "target_knowledge_entity"
+	// EdgeTargetKnowledgeRelationship holds the string denoting the target_knowledge_relationship edge name in mutations.
+	EdgeTargetKnowledgeRelationship = "target_knowledge_relationship"
 	// Table holds the table name of the discussionthread in the database.
 	Table = "discussion_threads"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -88,6 +104,41 @@ const (
 	CommentsInverseTable = "discussion_comments"
 	// CommentsColumn is the table column denoting the comments relation/edge.
 	CommentsColumn = "thread_id"
+	// TargetFindingTable is the table that holds the target_finding relation/edge.
+	TargetFindingTable = "discussion_threads"
+	// TargetFindingInverseTable is the table name for the InvestigationFinding entity.
+	// It exists in this package in order to avoid circular dependency with the "investigationfinding" package.
+	TargetFindingInverseTable = "investigation_findings"
+	// TargetFindingColumn is the table column denoting the target_finding relation/edge.
+	TargetFindingColumn = "target_finding_id"
+	// TargetEntryTable is the table that holds the target_entry relation/edge.
+	TargetEntryTable = "discussion_threads"
+	// TargetEntryInverseTable is the table name for the SystemAnalysisEntry entity.
+	// It exists in this package in order to avoid circular dependency with the "systemanalysisentry" package.
+	TargetEntryInverseTable = "system_analysis_entries"
+	// TargetEntryColumn is the table column denoting the target_entry relation/edge.
+	TargetEntryColumn = "target_entry_id"
+	// TargetNormalizedEventTable is the table that holds the target_normalized_event relation/edge.
+	TargetNormalizedEventTable = "discussion_threads"
+	// TargetNormalizedEventInverseTable is the table name for the NormalizedEvent entity.
+	// It exists in this package in order to avoid circular dependency with the "normalizedevent" package.
+	TargetNormalizedEventInverseTable = "normalized_events"
+	// TargetNormalizedEventColumn is the table column denoting the target_normalized_event relation/edge.
+	TargetNormalizedEventColumn = "target_normalized_event_id"
+	// TargetKnowledgeEntityTable is the table that holds the target_knowledge_entity relation/edge.
+	TargetKnowledgeEntityTable = "discussion_threads"
+	// TargetKnowledgeEntityInverseTable is the table name for the KnowledgeEntity entity.
+	// It exists in this package in order to avoid circular dependency with the "knowledgeentity" package.
+	TargetKnowledgeEntityInverseTable = "knowledge_entities"
+	// TargetKnowledgeEntityColumn is the table column denoting the target_knowledge_entity relation/edge.
+	TargetKnowledgeEntityColumn = "target_knowledge_entity_id"
+	// TargetKnowledgeRelationshipTable is the table that holds the target_knowledge_relationship relation/edge.
+	TargetKnowledgeRelationshipTable = "discussion_threads"
+	// TargetKnowledgeRelationshipInverseTable is the table name for the KnowledgeRelationship entity.
+	// It exists in this package in order to avoid circular dependency with the "knowledgerelationship" package.
+	TargetKnowledgeRelationshipInverseTable = "knowledge_relationships"
+	// TargetKnowledgeRelationshipColumn is the table column denoting the target_knowledge_relationship relation/edge.
+	TargetKnowledgeRelationshipColumn = "target_knowledge_relationship_id"
 )
 
 // Columns holds all SQL columns for discussionthread fields.
@@ -99,8 +150,11 @@ var Columns = []string{
 	FieldAnalysisID,
 	FieldRetrospectiveID,
 	FieldUserID,
-	FieldTargetKind,
-	FieldTargetID,
+	FieldTargetFindingID,
+	FieldTargetEntryID,
+	FieldTargetKnowledgeEntityID,
+	FieldTargetKnowledgeRelationshipID,
+	FieldTargetNormalizedEventID,
 	FieldResolutionState,
 	FieldResolvedByID,
 	FieldResolvedAt,
@@ -134,32 +188,6 @@ var (
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
-
-// TargetKind defines the type for the "target_kind" enum field.
-type TargetKind string
-
-// TargetKind values.
-const (
-	TargetKindFinding               TargetKind = "finding"
-	TargetKindEntry                 TargetKind = "entry"
-	TargetKindKnowledgeEntity       TargetKind = "knowledge_entity"
-	TargetKindKnowledgeRelationship TargetKind = "knowledge_relationship"
-	TargetKindNormalizedEvent       TargetKind = "normalized_event"
-)
-
-func (tk TargetKind) String() string {
-	return string(tk)
-}
-
-// TargetKindValidator is a validator for the "target_kind" field enum values. It is called by the builders before save.
-func TargetKindValidator(tk TargetKind) error {
-	switch tk {
-	case TargetKindFinding, TargetKindEntry, TargetKindKnowledgeEntity, TargetKindKnowledgeRelationship, TargetKindNormalizedEvent:
-		return nil
-	default:
-		return fmt.Errorf("discussionthread: invalid enum value for target_kind field: %q", tk)
-	}
-}
 
 // ResolutionState defines the type for the "resolution_state" enum field.
 type ResolutionState string
@@ -222,14 +250,29 @@ func ByUserID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUserID, opts...).ToFunc()
 }
 
-// ByTargetKind orders the results by the target_kind field.
-func ByTargetKind(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldTargetKind, opts...).ToFunc()
+// ByTargetFindingID orders the results by the target_finding_id field.
+func ByTargetFindingID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTargetFindingID, opts...).ToFunc()
 }
 
-// ByTargetID orders the results by the target_id field.
-func ByTargetID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldTargetID, opts...).ToFunc()
+// ByTargetEntryID orders the results by the target_entry_id field.
+func ByTargetEntryID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTargetEntryID, opts...).ToFunc()
+}
+
+// ByTargetKnowledgeEntityID orders the results by the target_knowledge_entity_id field.
+func ByTargetKnowledgeEntityID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTargetKnowledgeEntityID, opts...).ToFunc()
+}
+
+// ByTargetKnowledgeRelationshipID orders the results by the target_knowledge_relationship_id field.
+func ByTargetKnowledgeRelationshipID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTargetKnowledgeRelationshipID, opts...).ToFunc()
+}
+
+// ByTargetNormalizedEventID orders the results by the target_normalized_event_id field.
+func ByTargetNormalizedEventID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTargetNormalizedEventID, opts...).ToFunc()
 }
 
 // ByResolutionState orders the results by the resolution_state field.
@@ -293,6 +336,41 @@ func ByComments(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newCommentsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByTargetFindingField orders the results by target_finding field.
+func ByTargetFindingField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newTargetFindingStep(), sql.OrderByField(field, opts...))
+	}
+}
+
+// ByTargetEntryField orders the results by target_entry field.
+func ByTargetEntryField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newTargetEntryStep(), sql.OrderByField(field, opts...))
+	}
+}
+
+// ByTargetNormalizedEventField orders the results by target_normalized_event field.
+func ByTargetNormalizedEventField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newTargetNormalizedEventStep(), sql.OrderByField(field, opts...))
+	}
+}
+
+// ByTargetKnowledgeEntityField orders the results by target_knowledge_entity field.
+func ByTargetKnowledgeEntityField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newTargetKnowledgeEntityStep(), sql.OrderByField(field, opts...))
+	}
+}
+
+// ByTargetKnowledgeRelationshipField orders the results by target_knowledge_relationship field.
+func ByTargetKnowledgeRelationshipField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newTargetKnowledgeRelationshipStep(), sql.OrderByField(field, opts...))
+	}
+}
 func newTenantStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -328,14 +406,40 @@ func newCommentsStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.O2M, true, CommentsTable, CommentsColumn),
 	)
 }
-
-// TargetKindValues contains all permitted values. Treat this slice as read-only.
-var TargetKindValues = []string{
-	"finding",
-	"entry",
-	"knowledge_entity",
-	"knowledge_relationship",
-	"normalized_event",
+func newTargetFindingStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(TargetFindingInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, TargetFindingTable, TargetFindingColumn),
+	)
+}
+func newTargetEntryStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(TargetEntryInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, TargetEntryTable, TargetEntryColumn),
+	)
+}
+func newTargetNormalizedEventStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(TargetNormalizedEventInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, TargetNormalizedEventTable, TargetNormalizedEventColumn),
+	)
+}
+func newTargetKnowledgeEntityStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(TargetKnowledgeEntityInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, TargetKnowledgeEntityTable, TargetKnowledgeEntityColumn),
+	)
+}
+func newTargetKnowledgeRelationshipStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(TargetKnowledgeRelationshipInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, TargetKnowledgeRelationshipTable, TargetKnowledgeRelationshipColumn),
+	)
 }
 
 // ResolutionStateValues contains all permitted values. Treat this slice as read-only.

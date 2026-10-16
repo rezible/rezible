@@ -128,7 +128,8 @@ func (KnowledgeEntityLinkingAttribute) Mixin() []ent.Mixin {
 func (KnowledgeEntityLinkingAttribute) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
-		field.UUID("entity_id", uuid.UUID{}).Immutable(),
+		field.UUID("entity_id", uuid.UUID{}).
+			Comment("Changed only when a confirmed match merges two entities."),
 		field.String("attribute").NotEmpty().Immutable(),
 		field.String("value").NotEmpty().Immutable(),
 	}
@@ -137,7 +138,7 @@ func (KnowledgeEntityLinkingAttribute) Fields() []ent.Field {
 func (KnowledgeEntityLinkingAttribute) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("entity", KnowledgeEntity.Type).
-			Required().Unique().Immutable().Field("entity_id").
+			Required().Unique().Field("entity_id").
 			Annotations(entsql.OnDelete(entsql.Cascade)),
 	}
 }
@@ -168,8 +169,10 @@ func (KnowledgeRelationship) Fields() []ent.Field {
 			Values(knowledgeRelationshipPredicates...).
 			Comment("Canonical directional meaning from source entity to target entity.").
 			Immutable(),
-		field.UUID("source_entity_id", uuid.UUID{}).Immutable(),
-		field.UUID("target_entity_id", uuid.UUID{}).Immutable(),
+		field.UUID("source_entity_id", uuid.UUID{}).
+			Comment("Changed only when a confirmed match merges two entities."),
+		field.UUID("target_entity_id", uuid.UUID{}).
+			Comment("Changed only when a confirmed match merges two entities."),
 	}
 }
 
@@ -178,12 +181,10 @@ func (KnowledgeRelationship) Edges() []ent.Edge {
 		edge.To("source_entity", KnowledgeEntity.Type).
 			Required().
 			Unique().
-			Immutable().
 			Field("source_entity_id"),
 		edge.To("target_entity", KnowledgeEntity.Type).
 			Required().
 			Unique().
-			Immutable().
 			Field("target_entity_id"),
 		edge.From("aliases", KnowledgeSubjectAlias.Type).
 			Ref("relationship"),
@@ -233,6 +234,10 @@ func (KnowledgeSubjectAlias) Fields() []ent.Field {
 		field.UUID("relationship_id", uuid.UUID{}).
 			Optional().
 			Nillable(),
+		field.UUID("merged_by_proposal_id", uuid.UUID{}).
+			Optional().
+			Nillable().
+			Comment("The confirmed proposal whose merge moved the alias to its current subject."),
 	}
 }
 
@@ -254,6 +259,10 @@ func (KnowledgeSubjectAlias) Edges() []ent.Edge {
 			Unique().
 			Field("relationship_id").
 			Annotations(entsql.OnDelete(entsql.Cascade)),
+
+		edge.To("merged_by_proposal", KnowledgeProposal.Type).
+			Unique().
+			Field("merged_by_proposal_id"),
 
 		edge.From("evidence", KnowledgeEvidence.Type).
 			Ref("subject_alias"),

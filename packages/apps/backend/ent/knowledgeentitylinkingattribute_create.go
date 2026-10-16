@@ -283,6 +283,18 @@ type (
 	}
 )
 
+// SetEntityID sets the "entity_id" field.
+func (u *KnowledgeEntityLinkingAttributeUpsert) SetEntityID(v uuid.UUID) *KnowledgeEntityLinkingAttributeUpsert {
+	u.Set(knowledgeentitylinkingattribute.FieldEntityID, v)
+	return u
+}
+
+// UpdateEntityID sets the "entity_id" field to the value that was provided on create.
+func (u *KnowledgeEntityLinkingAttributeUpsert) UpdateEntityID() *KnowledgeEntityLinkingAttributeUpsert {
+	u.SetExcluded(knowledgeentitylinkingattribute.FieldEntityID)
+	return u
+}
+
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
@@ -302,9 +314,6 @@ func (u *KnowledgeEntityLinkingAttributeUpsertOne) UpdateNewValues() *KnowledgeE
 		}
 		if _, exists := u.create.mutation.TenantID(); exists {
 			s.SetIgnore(knowledgeentitylinkingattribute.FieldTenantID)
-		}
-		if _, exists := u.create.mutation.EntityID(); exists {
-			s.SetIgnore(knowledgeentitylinkingattribute.FieldEntityID)
 		}
 		if _, exists := u.create.mutation.Attribute(); exists {
 			s.SetIgnore(knowledgeentitylinkingattribute.FieldAttribute)
@@ -341,6 +350,20 @@ func (u *KnowledgeEntityLinkingAttributeUpsertOne) Update(set func(*KnowledgeEnt
 		set(&KnowledgeEntityLinkingAttributeUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetEntityID sets the "entity_id" field.
+func (u *KnowledgeEntityLinkingAttributeUpsertOne) SetEntityID(v uuid.UUID) *KnowledgeEntityLinkingAttributeUpsertOne {
+	return u.Update(func(s *KnowledgeEntityLinkingAttributeUpsert) {
+		s.SetEntityID(v)
+	})
+}
+
+// UpdateEntityID sets the "entity_id" field to the value that was provided on create.
+func (u *KnowledgeEntityLinkingAttributeUpsertOne) UpdateEntityID() *KnowledgeEntityLinkingAttributeUpsertOne {
+	return u.Update(func(s *KnowledgeEntityLinkingAttributeUpsert) {
+		s.UpdateEntityID()
+	})
 }
 
 // Exec executes the query.
@@ -529,9 +552,6 @@ func (u *KnowledgeEntityLinkingAttributeUpsertBulk) UpdateNewValues() *Knowledge
 			if _, exists := b.mutation.TenantID(); exists {
 				s.SetIgnore(knowledgeentitylinkingattribute.FieldTenantID)
 			}
-			if _, exists := b.mutation.EntityID(); exists {
-				s.SetIgnore(knowledgeentitylinkingattribute.FieldEntityID)
-			}
 			if _, exists := b.mutation.Attribute(); exists {
 				s.SetIgnore(knowledgeentitylinkingattribute.FieldAttribute)
 			}
@@ -568,6 +588,20 @@ func (u *KnowledgeEntityLinkingAttributeUpsertBulk) Update(set func(*KnowledgeEn
 		set(&KnowledgeEntityLinkingAttributeUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetEntityID sets the "entity_id" field.
+func (u *KnowledgeEntityLinkingAttributeUpsertBulk) SetEntityID(v uuid.UUID) *KnowledgeEntityLinkingAttributeUpsertBulk {
+	return u.Update(func(s *KnowledgeEntityLinkingAttributeUpsert) {
+		s.SetEntityID(v)
+	})
+}
+
+// UpdateEntityID sets the "entity_id" field to the value that was provided on create.
+func (u *KnowledgeEntityLinkingAttributeUpsertBulk) UpdateEntityID() *KnowledgeEntityLinkingAttributeUpsertBulk {
+	return u.Update(func(s *KnowledgeEntityLinkingAttributeUpsert) {
+		s.UpdateEntityID()
+	})
 }
 
 // Exec executes the query.

@@ -13,6 +13,8 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/internal"
+	"github.com/rezible/rezible/ent/knowledgeentity"
+	"github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/situation"
 	"github.com/rezible/rezible/ent/situationobservationgroup"
@@ -56,6 +58,20 @@ func (_u *SituationSignalUpdate) SetObservationGroupID(v uuid.UUID) *SituationSi
 func (_u *SituationSignalUpdate) SetNillableObservationGroupID(v *uuid.UUID) *SituationSignalUpdate {
 	if v != nil {
 		_u.SetObservationGroupID(*v)
+	}
+	return _u
+}
+
+// SetKnowledgeEntityID sets the "knowledge_entity_id" field.
+func (_u *SituationSignalUpdate) SetKnowledgeEntityID(v uuid.UUID) *SituationSignalUpdate {
+	_u.mutation.SetKnowledgeEntityID(v)
+	return _u
+}
+
+// SetNillableKnowledgeEntityID sets the "knowledge_entity_id" field if the given value is not nil.
+func (_u *SituationSignalUpdate) SetNillableKnowledgeEntityID(v *uuid.UUID) *SituationSignalUpdate {
+	if v != nil {
+		_u.SetKnowledgeEntityID(*v)
 	}
 	return _u
 }
@@ -193,6 +209,21 @@ func (_u *SituationSignalUpdate) SetObservationGroup(v *SituationObservationGrou
 	return _u.SetObservationGroupID(v.ID)
 }
 
+// SetKnowledgeEntity sets the "knowledge_entity" edge to the KnowledgeEntity entity.
+func (_u *SituationSignalUpdate) SetKnowledgeEntity(v *KnowledgeEntity) *SituationSignalUpdate {
+	return _u.SetKnowledgeEntityID(v.ID)
+}
+
+// SetSourceEntity sets the "source_entity" edge to the KnowledgeEntity entity.
+func (_u *SituationSignalUpdate) SetSourceEntity(v *KnowledgeEntity) *SituationSignalUpdate {
+	return _u.SetSourceEntityID(v.ID)
+}
+
+// SetViaRelationship sets the "via_relationship" edge to the KnowledgeRelationship entity.
+func (_u *SituationSignalUpdate) SetViaRelationship(v *KnowledgeRelationship) *SituationSignalUpdate {
+	return _u.SetViaRelationshipID(v.ID)
+}
+
 // Mutation returns the SituationSignalMutation object of the builder.
 func (_u *SituationSignalUpdate) Mutation() *SituationSignalMutation {
 	return _u.mutation
@@ -207,6 +238,24 @@ func (_u *SituationSignalUpdate) ClearSituation() *SituationSignalUpdate {
 // ClearObservationGroup clears the "observation_group" edge to the SituationObservationGroup entity.
 func (_u *SituationSignalUpdate) ClearObservationGroup() *SituationSignalUpdate {
 	_u.mutation.ClearObservationGroup()
+	return _u
+}
+
+// ClearKnowledgeEntity clears the "knowledge_entity" edge to the KnowledgeEntity entity.
+func (_u *SituationSignalUpdate) ClearKnowledgeEntity() *SituationSignalUpdate {
+	_u.mutation.ClearKnowledgeEntity()
+	return _u
+}
+
+// ClearSourceEntity clears the "source_entity" edge to the KnowledgeEntity entity.
+func (_u *SituationSignalUpdate) ClearSourceEntity() *SituationSignalUpdate {
+	_u.mutation.ClearSourceEntity()
+	return _u
+}
+
+// ClearViaRelationship clears the "via_relationship" edge to the KnowledgeRelationship entity.
+func (_u *SituationSignalUpdate) ClearViaRelationship() *SituationSignalUpdate {
+	_u.mutation.ClearViaRelationship()
 	return _u
 }
 
@@ -279,23 +328,11 @@ func (_u *SituationSignalUpdate) sqlSave(ctx context.Context) (_node int, err er
 	if value, ok := _u.mutation.Kind(); ok {
 		_spec.SetField(situationsignal.FieldKind, field.TypeString, value)
 	}
-	if value, ok := _u.mutation.SourceEntityID(); ok {
-		_spec.SetField(situationsignal.FieldSourceEntityID, field.TypeUUID, value)
-	}
-	if _u.mutation.SourceEntityIDCleared() {
-		_spec.ClearField(situationsignal.FieldSourceEntityID, field.TypeUUID)
-	}
 	if value, ok := _u.mutation.AttachedAt(); ok {
 		_spec.SetField(situationsignal.FieldAttachedAt, field.TypeTime, value)
 	}
 	if value, ok := _u.mutation.MatchKind(); ok {
 		_spec.SetField(situationsignal.FieldMatchKind, field.TypeEnum, value)
-	}
-	if value, ok := _u.mutation.ViaRelationshipID(); ok {
-		_spec.SetField(situationsignal.FieldViaRelationshipID, field.TypeUUID, value)
-	}
-	if _u.mutation.ViaRelationshipIDCleared() {
-		_spec.ClearField(situationsignal.FieldViaRelationshipID, field.TypeUUID)
 	}
 	if value, ok := _u.mutation.MatchExplanation(); ok {
 		_spec.SetField(situationsignal.FieldMatchExplanation, field.TypeString, value)
@@ -371,6 +408,99 @@ func (_u *SituationSignalUpdate) sqlSave(ctx context.Context) (_node int, err er
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.KnowledgeEntityCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   situationsignal.KnowledgeEntityTable,
+			Columns: []string{situationsignal.KnowledgeEntityColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SituationSignal
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.KnowledgeEntityIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   situationsignal.KnowledgeEntityTable,
+			Columns: []string{situationsignal.KnowledgeEntityColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SituationSignal
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.SourceEntityCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   situationsignal.SourceEntityTable,
+			Columns: []string{situationsignal.SourceEntityColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SituationSignal
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.SourceEntityIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   situationsignal.SourceEntityTable,
+			Columns: []string{situationsignal.SourceEntityColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SituationSignal
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.ViaRelationshipCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   situationsignal.ViaRelationshipTable,
+			Columns: []string{situationsignal.ViaRelationshipColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgerelationship.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SituationSignal
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ViaRelationshipIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   situationsignal.ViaRelationshipTable,
+			Columns: []string{situationsignal.ViaRelationshipColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgerelationship.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SituationSignal
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	_spec.Node.Schema = _u.schemaConfig.SituationSignal
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
@@ -417,6 +547,20 @@ func (_u *SituationSignalUpdateOne) SetObservationGroupID(v uuid.UUID) *Situatio
 func (_u *SituationSignalUpdateOne) SetNillableObservationGroupID(v *uuid.UUID) *SituationSignalUpdateOne {
 	if v != nil {
 		_u.SetObservationGroupID(*v)
+	}
+	return _u
+}
+
+// SetKnowledgeEntityID sets the "knowledge_entity_id" field.
+func (_u *SituationSignalUpdateOne) SetKnowledgeEntityID(v uuid.UUID) *SituationSignalUpdateOne {
+	_u.mutation.SetKnowledgeEntityID(v)
+	return _u
+}
+
+// SetNillableKnowledgeEntityID sets the "knowledge_entity_id" field if the given value is not nil.
+func (_u *SituationSignalUpdateOne) SetNillableKnowledgeEntityID(v *uuid.UUID) *SituationSignalUpdateOne {
+	if v != nil {
+		_u.SetKnowledgeEntityID(*v)
 	}
 	return _u
 }
@@ -554,6 +698,21 @@ func (_u *SituationSignalUpdateOne) SetObservationGroup(v *SituationObservationG
 	return _u.SetObservationGroupID(v.ID)
 }
 
+// SetKnowledgeEntity sets the "knowledge_entity" edge to the KnowledgeEntity entity.
+func (_u *SituationSignalUpdateOne) SetKnowledgeEntity(v *KnowledgeEntity) *SituationSignalUpdateOne {
+	return _u.SetKnowledgeEntityID(v.ID)
+}
+
+// SetSourceEntity sets the "source_entity" edge to the KnowledgeEntity entity.
+func (_u *SituationSignalUpdateOne) SetSourceEntity(v *KnowledgeEntity) *SituationSignalUpdateOne {
+	return _u.SetSourceEntityID(v.ID)
+}
+
+// SetViaRelationship sets the "via_relationship" edge to the KnowledgeRelationship entity.
+func (_u *SituationSignalUpdateOne) SetViaRelationship(v *KnowledgeRelationship) *SituationSignalUpdateOne {
+	return _u.SetViaRelationshipID(v.ID)
+}
+
 // Mutation returns the SituationSignalMutation object of the builder.
 func (_u *SituationSignalUpdateOne) Mutation() *SituationSignalMutation {
 	return _u.mutation
@@ -568,6 +727,24 @@ func (_u *SituationSignalUpdateOne) ClearSituation() *SituationSignalUpdateOne {
 // ClearObservationGroup clears the "observation_group" edge to the SituationObservationGroup entity.
 func (_u *SituationSignalUpdateOne) ClearObservationGroup() *SituationSignalUpdateOne {
 	_u.mutation.ClearObservationGroup()
+	return _u
+}
+
+// ClearKnowledgeEntity clears the "knowledge_entity" edge to the KnowledgeEntity entity.
+func (_u *SituationSignalUpdateOne) ClearKnowledgeEntity() *SituationSignalUpdateOne {
+	_u.mutation.ClearKnowledgeEntity()
+	return _u
+}
+
+// ClearSourceEntity clears the "source_entity" edge to the KnowledgeEntity entity.
+func (_u *SituationSignalUpdateOne) ClearSourceEntity() *SituationSignalUpdateOne {
+	_u.mutation.ClearSourceEntity()
+	return _u
+}
+
+// ClearViaRelationship clears the "via_relationship" edge to the KnowledgeRelationship entity.
+func (_u *SituationSignalUpdateOne) ClearViaRelationship() *SituationSignalUpdateOne {
+	_u.mutation.ClearViaRelationship()
 	return _u
 }
 
@@ -670,23 +847,11 @@ func (_u *SituationSignalUpdateOne) sqlSave(ctx context.Context) (_node *Situati
 	if value, ok := _u.mutation.Kind(); ok {
 		_spec.SetField(situationsignal.FieldKind, field.TypeString, value)
 	}
-	if value, ok := _u.mutation.SourceEntityID(); ok {
-		_spec.SetField(situationsignal.FieldSourceEntityID, field.TypeUUID, value)
-	}
-	if _u.mutation.SourceEntityIDCleared() {
-		_spec.ClearField(situationsignal.FieldSourceEntityID, field.TypeUUID)
-	}
 	if value, ok := _u.mutation.AttachedAt(); ok {
 		_spec.SetField(situationsignal.FieldAttachedAt, field.TypeTime, value)
 	}
 	if value, ok := _u.mutation.MatchKind(); ok {
 		_spec.SetField(situationsignal.FieldMatchKind, field.TypeEnum, value)
-	}
-	if value, ok := _u.mutation.ViaRelationshipID(); ok {
-		_spec.SetField(situationsignal.FieldViaRelationshipID, field.TypeUUID, value)
-	}
-	if _u.mutation.ViaRelationshipIDCleared() {
-		_spec.ClearField(situationsignal.FieldViaRelationshipID, field.TypeUUID)
 	}
 	if value, ok := _u.mutation.MatchExplanation(); ok {
 		_spec.SetField(situationsignal.FieldMatchExplanation, field.TypeString, value)
@@ -754,6 +919,99 @@ func (_u *SituationSignalUpdateOne) sqlSave(ctx context.Context) (_node *Situati
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(situationobservationgroup.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SituationSignal
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.KnowledgeEntityCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   situationsignal.KnowledgeEntityTable,
+			Columns: []string{situationsignal.KnowledgeEntityColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SituationSignal
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.KnowledgeEntityIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   situationsignal.KnowledgeEntityTable,
+			Columns: []string{situationsignal.KnowledgeEntityColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SituationSignal
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.SourceEntityCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   situationsignal.SourceEntityTable,
+			Columns: []string{situationsignal.SourceEntityColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SituationSignal
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.SourceEntityIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   situationsignal.SourceEntityTable,
+			Columns: []string{situationsignal.SourceEntityColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SituationSignal
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.ViaRelationshipCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   situationsignal.ViaRelationshipTable,
+			Columns: []string{situationsignal.ViaRelationshipColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgerelationship.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SituationSignal
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ViaRelationshipIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   situationsignal.ViaRelationshipTable,
+			Columns: []string{situationsignal.ViaRelationshipColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgerelationship.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _u.schemaConfig.SituationSignal

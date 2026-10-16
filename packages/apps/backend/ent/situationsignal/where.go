@@ -272,26 +272,6 @@ func SourceEntityIDNotIn(vs ...uuid.UUID) predicate.SituationSignal {
 	return predicate.SituationSignal(sql.FieldNotIn(FieldSourceEntityID, vs...))
 }
 
-// SourceEntityIDGT applies the GT predicate on the "source_entity_id" field.
-func SourceEntityIDGT(v uuid.UUID) predicate.SituationSignal {
-	return predicate.SituationSignal(sql.FieldGT(FieldSourceEntityID, v))
-}
-
-// SourceEntityIDGTE applies the GTE predicate on the "source_entity_id" field.
-func SourceEntityIDGTE(v uuid.UUID) predicate.SituationSignal {
-	return predicate.SituationSignal(sql.FieldGTE(FieldSourceEntityID, v))
-}
-
-// SourceEntityIDLT applies the LT predicate on the "source_entity_id" field.
-func SourceEntityIDLT(v uuid.UUID) predicate.SituationSignal {
-	return predicate.SituationSignal(sql.FieldLT(FieldSourceEntityID, v))
-}
-
-// SourceEntityIDLTE applies the LTE predicate on the "source_entity_id" field.
-func SourceEntityIDLTE(v uuid.UUID) predicate.SituationSignal {
-	return predicate.SituationSignal(sql.FieldLTE(FieldSourceEntityID, v))
-}
-
 // SourceEntityIDIsNil applies the IsNil predicate on the "source_entity_id" field.
 func SourceEntityIDIsNil() predicate.SituationSignal {
 	return predicate.SituationSignal(sql.FieldIsNull(FieldSourceEntityID))
@@ -380,26 +360,6 @@ func ViaRelationshipIDIn(vs ...uuid.UUID) predicate.SituationSignal {
 // ViaRelationshipIDNotIn applies the NotIn predicate on the "via_relationship_id" field.
 func ViaRelationshipIDNotIn(vs ...uuid.UUID) predicate.SituationSignal {
 	return predicate.SituationSignal(sql.FieldNotIn(FieldViaRelationshipID, vs...))
-}
-
-// ViaRelationshipIDGT applies the GT predicate on the "via_relationship_id" field.
-func ViaRelationshipIDGT(v uuid.UUID) predicate.SituationSignal {
-	return predicate.SituationSignal(sql.FieldGT(FieldViaRelationshipID, v))
-}
-
-// ViaRelationshipIDGTE applies the GTE predicate on the "via_relationship_id" field.
-func ViaRelationshipIDGTE(v uuid.UUID) predicate.SituationSignal {
-	return predicate.SituationSignal(sql.FieldGTE(FieldViaRelationshipID, v))
-}
-
-// ViaRelationshipIDLT applies the LT predicate on the "via_relationship_id" field.
-func ViaRelationshipIDLT(v uuid.UUID) predicate.SituationSignal {
-	return predicate.SituationSignal(sql.FieldLT(FieldViaRelationshipID, v))
-}
-
-// ViaRelationshipIDLTE applies the LTE predicate on the "via_relationship_id" field.
-func ViaRelationshipIDLTE(v uuid.UUID) predicate.SituationSignal {
-	return predicate.SituationSignal(sql.FieldLTE(FieldViaRelationshipID, v))
 }
 
 // ViaRelationshipIDIsNil applies the IsNil predicate on the "via_relationship_id" field.
@@ -634,6 +594,64 @@ func HasKnowledgeEntityWith(preds ...predicate.KnowledgeEntity) predicate.Situat
 		step := newKnowledgeEntityStep()
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.KnowledgeEntity
+		step.Edge.Schema = schemaConfig.SituationSignal
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasSourceEntity applies the HasEdge predicate on the "source_entity" edge.
+func HasSourceEntity() predicate.SituationSignal {
+	return predicate.SituationSignal(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, SourceEntityTable, SourceEntityColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.KnowledgeEntity
+		step.Edge.Schema = schemaConfig.SituationSignal
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasSourceEntityWith applies the HasEdge predicate on the "source_entity" edge with a given conditions (other predicates).
+func HasSourceEntityWith(preds ...predicate.KnowledgeEntity) predicate.SituationSignal {
+	return predicate.SituationSignal(func(s *sql.Selector) {
+		step := newSourceEntityStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.KnowledgeEntity
+		step.Edge.Schema = schemaConfig.SituationSignal
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasViaRelationship applies the HasEdge predicate on the "via_relationship" edge.
+func HasViaRelationship() predicate.SituationSignal {
+	return predicate.SituationSignal(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, ViaRelationshipTable, ViaRelationshipColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.KnowledgeRelationship
+		step.Edge.Schema = schemaConfig.SituationSignal
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasViaRelationshipWith applies the HasEdge predicate on the "via_relationship" edge with a given conditions (other predicates).
+func HasViaRelationshipWith(preds ...predicate.KnowledgeRelationship) predicate.SituationSignal {
+	return predicate.SituationSignal(func(s *sql.Selector) {
+		step := newViaRelationshipStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.KnowledgeRelationship
 		step.Edge.Schema = schemaConfig.SituationSignal
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

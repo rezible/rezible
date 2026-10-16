@@ -57,6 +57,7 @@ import (
 	"github.com/rezible/rezible/ent/knowledgeentitylinkingattribute"
 	"github.com/rezible/rezible/ent/knowledgeevidence"
 	"github.com/rezible/rezible/ent/knowledgeproposal"
+	"github.com/rezible/rezible/ent/knowledgeproposaldecision"
 	"github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/knowledgesubjectalias"
 	"github.com/rezible/rezible/ent/meetingschedule"
@@ -1473,14 +1474,14 @@ func init() {
 	knowledgeproposalDescAttribute := knowledgeproposalFields[3].Descriptor()
 	// knowledgeproposal.AttributeValidator is a validator for the "attribute" field. It is called by the builders before save.
 	knowledgeproposal.AttributeValidator = knowledgeproposalDescAttribute.Validators[0].(func(string) error)
-	// knowledgeproposalDescNameA is the schema descriptor for name_a field.
-	knowledgeproposalDescNameA := knowledgeproposalFields[4].Descriptor()
-	// knowledgeproposal.NameAValidator is a validator for the "name_a" field. It is called by the builders before save.
-	knowledgeproposal.NameAValidator = knowledgeproposalDescNameA.Validators[0].(func(string) error)
-	// knowledgeproposalDescNameB is the schema descriptor for name_b field.
-	knowledgeproposalDescNameB := knowledgeproposalFields[5].Descriptor()
-	// knowledgeproposal.NameBValidator is a validator for the "name_b" field. It is called by the builders before save.
-	knowledgeproposal.NameBValidator = knowledgeproposalDescNameB.Validators[0].(func(string) error)
+	// knowledgeproposalDescValueA is the schema descriptor for value_a field.
+	knowledgeproposalDescValueA := knowledgeproposalFields[4].Descriptor()
+	// knowledgeproposal.ValueAValidator is a validator for the "value_a" field. It is called by the builders before save.
+	knowledgeproposal.ValueAValidator = knowledgeproposalDescValueA.Validators[0].(func(string) error)
+	// knowledgeproposalDescValueB is the schema descriptor for value_b field.
+	knowledgeproposalDescValueB := knowledgeproposalFields[5].Descriptor()
+	// knowledgeproposal.ValueBValidator is a validator for the "value_b" field. It is called by the builders before save.
+	knowledgeproposal.ValueBValidator = knowledgeproposalDescValueB.Validators[0].(func(string) error)
 	// knowledgeproposalDescRationale is the schema descriptor for rationale field.
 	knowledgeproposalDescRationale := knowledgeproposalFields[8].Descriptor()
 	// knowledgeproposal.RationaleValidator is a validator for the "rationale" field. It is called by the builders before save.
@@ -1503,6 +1504,26 @@ func init() {
 	knowledgeproposalDescID := knowledgeproposalFields[0].Descriptor()
 	// knowledgeproposal.DefaultID holds the default value on creation for the id field.
 	knowledgeproposal.DefaultID = knowledgeproposalDescID.Default.(func() uuid.UUID)
+	knowledgeproposaldecisionMixin := schema.KnowledgeProposalDecision{}.Mixin()
+	knowledgeproposaldecision.Policy = privacy.NewPolicies(knowledgeproposaldecisionMixin[0], knowledgeproposaldecisionMixin[1], schema.KnowledgeProposalDecision{})
+	knowledgeproposaldecision.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := knowledgeproposaldecision.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	knowledgeproposaldecisionFields := schema.KnowledgeProposalDecision{}.Fields()
+	_ = knowledgeproposaldecisionFields
+	// knowledgeproposaldecisionDescCreatedAt is the schema descriptor for created_at field.
+	knowledgeproposaldecisionDescCreatedAt := knowledgeproposaldecisionFields[5].Descriptor()
+	// knowledgeproposaldecision.DefaultCreatedAt holds the default value on creation for the created_at field.
+	knowledgeproposaldecision.DefaultCreatedAt = knowledgeproposaldecisionDescCreatedAt.Default.(func() time.Time)
+	// knowledgeproposaldecisionDescID is the schema descriptor for id field.
+	knowledgeproposaldecisionDescID := knowledgeproposaldecisionFields[0].Descriptor()
+	// knowledgeproposaldecision.DefaultID holds the default value on creation for the id field.
+	knowledgeproposaldecision.DefaultID = knowledgeproposaldecisionDescID.Default.(func() uuid.UUID)
 	knowledgerelationshipMixin := schema.KnowledgeRelationship{}.Mixin()
 	knowledgerelationship.Policy = privacy.NewPolicies(knowledgerelationshipMixin[0], knowledgerelationshipMixin[1], schema.KnowledgeRelationship{})
 	knowledgerelationship.Hooks[0] = func(next ent.Mutator) ent.Mutator {

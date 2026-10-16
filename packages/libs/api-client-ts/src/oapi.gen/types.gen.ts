@@ -568,6 +568,14 @@ export type CompleteOrgSetupResponseBody = {
     data: Organization;
 };
 
+export type ConfirmKnowledgeProposalResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: KnowledgeProposal;
+};
+
 export type CreateAgentSessionAttributes = {
     agentName: string;
     input: string;
@@ -1561,6 +1569,14 @@ export type GetKnowledgeGraphSubjectAliasResponseBody = {
     data: KnowledgeGraphSubjectAlias;
 };
 
+export type GetKnowledgeProposalResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: KnowledgeProposal;
+};
+
 export type GetMeetingScheduleResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
@@ -2281,6 +2297,12 @@ export type IssueIntegrationWebhookTokenResponseBody = {
     data: IntegrationWebhookUrl;
 };
 
+export type KnowledgeGraphAliasMerge = {
+    confirmedAt?: string;
+    confirmedBy?: KnowledgeProposalPerson;
+    proposalId: string;
+};
+
 export type KnowledgeGraphEntitiesPage = {
     entities: Array<KnowledgeGraphEntitySummary>;
     entitySelectionRef: string;
@@ -2292,12 +2314,24 @@ export type KnowledgeGraphEntity = {
     id: string;
 };
 
+export type KnowledgeGraphEntityAlias = {
+    attributes: KnowledgeGraphSubjectAliasAttributes;
+    id: string;
+    integrationDisplayName?: string;
+    lastRecordedAt?: string;
+    mergedByProposal?: KnowledgeGraphAliasMerge;
+    name?: string;
+    provider?: string;
+};
+
 export type KnowledgeGraphEntityAttributes = {
-    aliases: Array<KnowledgeGraphSubjectAlias>;
+    aliases: Array<KnowledgeGraphEntityAlias>;
     category: 'system_function' | 'actor' | 'system' | 'container' | 'infrastructure' | 'component' | 'code' | 'process' | 'concern' | 'decision' | 'event' | 'signal';
     createdAt: string;
+    displayName: string;
     kind: string;
     latestState?: KnowledgeGraphSubjectState;
+    linkingAttributes: Array<KnowledgeGraphLinkingAttribute>;
     updatedAt: string;
 };
 
@@ -2320,6 +2354,11 @@ export type KnowledgeGraphEvidenceAttributes = {
     kind: 'observed' | 'deleted';
     subjectAliasId: string;
     subjectState: KnowledgeGraphSubjectState;
+};
+
+export type KnowledgeGraphLinkingAttribute = {
+    attribute: string;
+    value: string;
 };
 
 export type KnowledgeGraphRelationship = {
@@ -2365,6 +2404,67 @@ export type KnowledgeGraphSubjectState = {
     properties: {
         [key: string]: unknown;
     };
+};
+
+export type KnowledgeProposal = {
+    attributes: KnowledgeProposalAttributes;
+    id: string;
+};
+
+export type KnowledgeProposalAttributes = {
+    attribute: string;
+    category: 'system_function' | 'actor' | 'system' | 'container' | 'infrastructure' | 'component' | 'code' | 'process' | 'concern' | 'decision' | 'event' | 'signal';
+    createdAt: string;
+    decisions: Array<KnowledgeProposalDecision>;
+    evidence: KnowledgeProposalEvidence;
+    implies?: Array<KnowledgeProposalImplication>;
+    kind: string;
+    origin: 'name_similarity' | 'identity_conflict';
+    rationale: string;
+    status: 'pending' | 'confirmed' | 'rejected';
+    values: Array<KnowledgeProposalValue>;
+};
+
+export type KnowledgeProposalDecision = {
+    createdAt: string;
+    impliedByProposalId?: string;
+    status: 'confirmed' | 'rejected';
+    user: KnowledgeProposalPerson;
+};
+
+export type KnowledgeProposalEvidence = {
+    assertion: string;
+    displayName: string;
+    effectiveAt: string;
+    id: string;
+    integrationDisplayName: string;
+    provider: string;
+    resourceRef: string;
+    subjectEntityId?: string;
+};
+
+export type KnowledgeProposalImplication = {
+    id: string;
+    rejectedAt?: string;
+    rejectedBy?: KnowledgeProposalPerson;
+    status: 'pending' | 'rejected';
+    values: Array<string>;
+};
+
+export type KnowledgeProposalPerson = {
+    id: string;
+    name: string;
+};
+
+export type KnowledgeProposalValue = {
+    entity?: KnowledgeProposalValueEntity;
+    value: string;
+};
+
+export type KnowledgeProposalValueEntity = {
+    aliases: Array<KnowledgeGraphEntityAlias>;
+    displayName: string;
+    id: string;
 };
 
 export type LinkIncidentSituationRequestAttributes = {
@@ -2835,6 +2935,15 @@ export type PaginatedResponseBodyKnowledgeGraphSubjectAlias = {
     pagination: Pagination;
 };
 
+export type PaginatedResponseBodyKnowledgeProposal = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<KnowledgeProposal>;
+    pagination: Pagination;
+};
+
 export type PaginatedResponseBodyOncallRoster = {
     /**
      * A URL to the JSON Schema for this object.
@@ -3065,6 +3174,14 @@ export type RaiseSituationResponseBody = {
      */
     readonly $schema?: string;
     data: Situation;
+};
+
+export type RejectKnowledgeProposalResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: KnowledgeProposal;
 };
 
 export type RequestAgentTurnRequestAttributes = {
@@ -3611,9 +3728,9 @@ export type SituationSignalFacts = {
 export type SituationUnconfirmedMatch = {
     displayName: string;
     entityId: string;
-    name: string;
     proposalId: string;
     rationale: string;
+    value: string;
 };
 
 export type StartIntegrationOAuthFlowResponseBody = {
@@ -10284,6 +10401,205 @@ export type ExpandKnowledgeGraphRelationshipsResponses = {
 };
 
 export type ExpandKnowledgeGraphRelationshipsResponse = ExpandKnowledgeGraphRelationshipsResponses[keyof ExpandKnowledgeGraphRelationshipsResponses];
+
+export type ListKnowledgeProposalsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        page?: number;
+        pageSize?: number;
+        status?: Array<'pending' | 'confirmed' | 'rejected'>;
+        entityId?: Array<string>;
+    };
+    url: '/knowledge/proposals';
+};
+
+export type ListKnowledgeProposalsErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type ListKnowledgeProposalsError = ListKnowledgeProposalsErrors[keyof ListKnowledgeProposalsErrors];
+
+export type ListKnowledgeProposalsResponses = {
+    /**
+     * OK
+     */
+    200: PaginatedResponseBodyKnowledgeProposal;
+};
+
+export type ListKnowledgeProposalsResponse = ListKnowledgeProposalsResponses[keyof ListKnowledgeProposalsResponses];
+
+export type GetKnowledgeProposalData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/knowledge/proposals/{id}';
+};
+
+export type GetKnowledgeProposalErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type GetKnowledgeProposalError = GetKnowledgeProposalErrors[keyof GetKnowledgeProposalErrors];
+
+export type GetKnowledgeProposalResponses = {
+    /**
+     * OK
+     */
+    200: GetKnowledgeProposalResponseBody;
+};
+
+export type GetKnowledgeProposalResponse = GetKnowledgeProposalResponses[keyof GetKnowledgeProposalResponses];
+
+export type ConfirmKnowledgeProposalData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/knowledge/proposals/{id}/confirm';
+};
+
+export type ConfirmKnowledgeProposalErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Conflict
+     */
+    409: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type ConfirmKnowledgeProposalError = ConfirmKnowledgeProposalErrors[keyof ConfirmKnowledgeProposalErrors];
+
+export type ConfirmKnowledgeProposalResponses = {
+    /**
+     * OK
+     */
+    200: ConfirmKnowledgeProposalResponseBody;
+};
+
+export type ConfirmKnowledgeProposalResponse = ConfirmKnowledgeProposalResponses[keyof ConfirmKnowledgeProposalResponses];
+
+export type RejectKnowledgeProposalData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/knowledge/proposals/{id}/reject';
+};
+
+export type RejectKnowledgeProposalErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Conflict
+     */
+    409: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type RejectKnowledgeProposalError = RejectKnowledgeProposalErrors[keyof RejectKnowledgeProposalErrors];
+
+export type RejectKnowledgeProposalResponses = {
+    /**
+     * OK
+     */
+    200: RejectKnowledgeProposalResponseBody;
+};
+
+export type RejectKnowledgeProposalResponse = RejectKnowledgeProposalResponses[keyof RejectKnowledgeProposalResponses];
 
 export type ListKnowledgeGraphRelationshipsData = {
     body?: never;

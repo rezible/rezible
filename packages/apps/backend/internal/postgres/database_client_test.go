@@ -259,6 +259,15 @@ func (s *DatabaseClientSuite) TestIsTransientErrorClassifiesPostgresConcurrencyE
 	s.False(tdb.IsTransientError(errors.New("plain error")))
 }
 
+func (s *DatabaseClientSuite) TestIsForeignKeyErrorMatchesNamedConstraints() {
+	tdb := postgres.DatabaseClient{}
+	violation := &pgconn.PgError{Code: "23503", ConstraintName: "named_fk"}
+	s.True(tdb.IsForeignKeyError(fmt.Errorf("wrapped: %w", violation), "other_fk", "named_fk"))
+	s.False(tdb.IsForeignKeyError(violation, "other_fk"))
+	s.False(tdb.IsForeignKeyError(&pgconn.PgError{Code: "23505", ConstraintName: "named_fk"}, "named_fk"))
+	s.False(tdb.IsForeignKeyError(errors.New("plain error"), "named_fk"))
+}
+
 func (s *DatabaseClientSuite) TestWithTxReturningNestedServiceRollback() {
 	ctx, tdb := s.SetupTestDatabase(test.WithFreshDatabase())
 	txCtx, cancelTx := context.WithTimeout(ctx, 10*time.Second)

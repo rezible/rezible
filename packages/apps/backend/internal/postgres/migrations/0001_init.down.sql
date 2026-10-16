@@ -57,7 +57,7 @@ ALTER TABLE "system_analyses" DROP CONSTRAINT "system_analyses_knowledge_entitie
 -- reverse: modify "situation_signal_attentions" table
 ALTER TABLE "situation_signal_attentions" DROP CONSTRAINT "situation_signal_attentions_users_set_by_user", DROP CONSTRAINT "situation_signal_attentions_tenants_tenant";
 -- reverse: modify "situation_signals" table
-ALTER TABLE "situation_signals" DROP CONSTRAINT "situation_signals_knowledge_entities_knowledge_entity", DROP CONSTRAINT "situation_signals_situation_ob_7c144cc0858f0af8a955c45ef673e259", DROP CONSTRAINT "situation_signals_situations_situation", DROP CONSTRAINT "situation_signals_tenants_tenant";
+ALTER TABLE "situation_signals" DROP CONSTRAINT "situation_signals_knowledge_relationships_via_relationship", DROP CONSTRAINT "situation_signals_knowledge_entities_source_entity", DROP CONSTRAINT "situation_signals_knowledge_entities_knowledge_entity", DROP CONSTRAINT "situation_signals_situation_ob_7c144cc0858f0af8a955c45ef673e259", DROP CONSTRAINT "situation_signals_situations_situation", DROP CONSTRAINT "situation_signals_tenants_tenant";
 -- reverse: modify "situation_observation_groups" table
 ALTER TABLE "situation_observation_groups" DROP CONSTRAINT "situation_observation_groups_situations_situation", DROP CONSTRAINT "situation_observation_groups_tenants_tenant";
 -- reverse: modify "situation_links" table
@@ -73,7 +73,7 @@ ALTER TABLE "situation_entities" DROP CONSTRAINT "situation_entities_knowledge_e
 -- reverse: modify "situation_actions" table
 ALTER TABLE "situation_actions" DROP CONSTRAINT "situation_actions_users_user", DROP CONSTRAINT "situation_actions_situations_situation", DROP CONSTRAINT "situation_actions_tenants_tenant";
 -- reverse: modify "situations" table
-ALTER TABLE "situations" DROP CONSTRAINT "situations_situation_judgments_latest_judgment", DROP CONSTRAINT "situations_tenants_tenant";
+ALTER TABLE "situations" DROP CONSTRAINT "situations_knowledge_entities_seed_entity", DROP CONSTRAINT "situations_situation_judgments_latest_judgment", DROP CONSTRAINT "situations_tenants_tenant";
 -- reverse: modify "reviews" table
 ALTER TABLE "reviews" DROP CONSTRAINT "reviews_users_reviewer", DROP CONSTRAINT "reviews_users_requester", DROP CONSTRAINT "reviews_discussion_comments_comment", DROP CONSTRAINT "reviews_system_analysis_entries_analysis_entry", DROP CONSTRAINT "reviews_retrospectives_retrospective", DROP CONSTRAINT "reviews_tenants_tenant";
 -- reverse: modify "retrospectives" table
@@ -113,9 +113,11 @@ ALTER TABLE "meeting_sessions" DROP CONSTRAINT "meeting_sessions_meeting_schedul
 -- reverse: modify "meeting_schedules" table
 ALTER TABLE "meeting_schedules" DROP CONSTRAINT "meeting_schedules_tenants_tenant";
 -- reverse: modify "knowledge_subject_alias" table
-ALTER TABLE "knowledge_subject_alias" DROP CONSTRAINT "knowledge_subject_alias_knowledge_relationships_relationship", DROP CONSTRAINT "knowledge_subject_alias_knowledge_entities_entity", DROP CONSTRAINT "knowledge_subject_alias_tenants_tenant";
+ALTER TABLE "knowledge_subject_alias" DROP CONSTRAINT "knowledge_subject_alias_knowledge_proposals_merged_by_proposal", DROP CONSTRAINT "knowledge_subject_alias_knowledge_relationships_relationship", DROP CONSTRAINT "knowledge_subject_alias_knowledge_entities_entity", DROP CONSTRAINT "knowledge_subject_alias_tenants_tenant";
 -- reverse: modify "knowledge_relationships" table
 ALTER TABLE "knowledge_relationships" DROP CONSTRAINT "knowledge_relationships_knowledge_entities_target_entity", DROP CONSTRAINT "knowledge_relationships_knowledge_entities_source_entity", DROP CONSTRAINT "knowledge_relationships_tenants_tenant";
+-- reverse: modify "knowledge_proposal_decisions" table
+ALTER TABLE "knowledge_proposal_decisions" DROP CONSTRAINT "knowledge_proposal_decisions_k_7c7504d2f9caa6c1d7271731ce6ddbdb", DROP CONSTRAINT "knowledge_proposal_decisions_users_user", DROP CONSTRAINT "knowledge_proposal_decisions_knowledge_proposals_proposal", DROP CONSTRAINT "knowledge_proposal_decisions_tenants_tenant";
 -- reverse: modify "knowledge_proposals" table
 ALTER TABLE "knowledge_proposals" DROP CONSTRAINT "knowledge_proposals_knowledge_evidences_evidence", DROP CONSTRAINT "knowledge_proposals_tenants_tenant";
 -- reverse: modify "knowledge_evidences" table
@@ -189,7 +191,7 @@ ALTER TABLE "document_accesses" DROP CONSTRAINT "document_accesses_teams_team", 
 -- reverse: modify "documents" table
 ALTER TABLE "documents" DROP CONSTRAINT "documents_tenants_tenant";
 -- reverse: modify "discussion_threads" table
-ALTER TABLE "discussion_threads" DROP CONSTRAINT "discussion_threads_users_user", DROP CONSTRAINT "discussion_threads_retrospectives_retrospective", DROP CONSTRAINT "discussion_threads_system_analyses_analysis", DROP CONSTRAINT "discussion_threads_tenants_tenant";
+ALTER TABLE "discussion_threads" DROP CONSTRAINT "discussion_threads_knowledge_r_ffaf506c4baef0b857b7dfa76ee423ab", DROP CONSTRAINT "discussion_threads_knowledge_entities_target_knowledge_entity", DROP CONSTRAINT "discussion_threads_normalized_events_target_normalized_event", DROP CONSTRAINT "discussion_threads_system_analysis_entries_target_entry", DROP CONSTRAINT "discussion_threads_investigation_findings_target_finding", DROP CONSTRAINT "discussion_threads_users_user", DROP CONSTRAINT "discussion_threads_retrospectives_retrospective", DROP CONSTRAINT "discussion_threads_system_analyses_analysis", DROP CONSTRAINT "discussion_threads_tenants_tenant";
 -- reverse: modify "discussion_comments" table
 ALTER TABLE "discussion_comments" DROP CONSTRAINT "discussion_comments_users_user", DROP CONSTRAINT "discussion_comments_discussion_threads_thread", DROP CONSTRAINT "discussion_comments_tenants_tenant";
 -- reverse: modify "alert_instance_events" table
@@ -362,6 +364,8 @@ DROP TABLE "system_analyses";
 DROP INDEX "situationsignalattention_tenant_id";
 -- reverse: create "situation_signal_attentions" table
 DROP TABLE "situation_signal_attentions";
+-- reverse: create index "situationsignal_tenant_id_via_relationship_id" to table: "situation_signals"
+DROP INDEX "situationsignal_tenant_id_via_relationship_id";
 -- reverse: create index "situationsignal_tenant_id_source_entity_id" to table: "situation_signals"
 DROP INDEX "situationsignal_tenant_id_source_entity_id";
 -- reverse: create index "situationsignal_tenant_id_situation_id" to table: "situation_signals"
@@ -422,6 +426,8 @@ DROP INDEX "situationaction_tenant_id_situation_id_at";
 DROP INDEX "situationaction_tenant_id";
 -- reverse: create "situation_actions" table
 DROP TABLE "situation_actions";
+-- reverse: create index "situation_tenant_id_seed_entity_id" to table: "situations"
+DROP INDEX "situation_tenant_id_seed_entity_id";
 -- reverse: create index "situation_tenant_id_closed_at" to table: "situations"
 DROP INDEX "situation_tenant_id_closed_at";
 -- reverse: create index "situation_tenant_id_opened_at" to table: "situations"
@@ -558,10 +564,16 @@ DROP INDEX "knowledgerelationship_tenant_i_370206a4e66194249f2742322d3eefc0";
 DROP INDEX "knowledgerelationship_tenant_id";
 -- reverse: create "knowledge_relationships" table
 DROP TABLE "knowledge_relationships";
+-- reverse: create index "knowledgeproposaldecision_tenant_id_proposal_id" to table: "knowledge_proposal_decisions"
+DROP INDEX "knowledgeproposaldecision_tenant_id_proposal_id";
+-- reverse: create index "knowledgeproposaldecision_tenant_id" to table: "knowledge_proposal_decisions"
+DROP INDEX "knowledgeproposaldecision_tenant_id";
+-- reverse: create "knowledge_proposal_decisions" table
+DROP TABLE "knowledge_proposal_decisions";
 -- reverse: create index "knowledgeproposal_tenant_id_status" to table: "knowledge_proposals"
 DROP INDEX "knowledgeproposal_tenant_id_status";
--- reverse: create index "knowledgeproposal_tenant_id_attribute_name_a_name_b" to table: "knowledge_proposals"
-DROP INDEX "knowledgeproposal_tenant_id_attribute_name_a_name_b";
+-- reverse: create index "knowledgeproposal_tenant_id_attribute_value_a_value_b" to table: "knowledge_proposals"
+DROP INDEX "knowledgeproposal_tenant_id_attribute_value_a_value_b";
 -- reverse: create index "knowledgeproposal_tenant_id" to table: "knowledge_proposals"
 DROP INDEX "knowledgeproposal_tenant_id";
 -- reverse: create "knowledge_proposals" table
@@ -800,6 +812,16 @@ DROP TABLE "document_accesses";
 DROP INDEX "document_tenant_id";
 -- reverse: create "documents" table
 DROP TABLE "documents";
+-- reverse: create index "discussionthread_tenant_id_target_normalized_event_id" to table: "discussion_threads"
+DROP INDEX "discussionthread_tenant_id_target_normalized_event_id";
+-- reverse: create index "discussionthread_tenant_id_target_knowledge_relationship_id" to table: "discussion_threads"
+DROP INDEX "discussionthread_tenant_id_target_knowledge_relationship_id";
+-- reverse: create index "discussionthread_tenant_id_target_knowledge_entity_id" to table: "discussion_threads"
+DROP INDEX "discussionthread_tenant_id_target_knowledge_entity_id";
+-- reverse: create index "discussionthread_tenant_id_target_entry_id" to table: "discussion_threads"
+DROP INDEX "discussionthread_tenant_id_target_entry_id";
+-- reverse: create index "discussionthread_tenant_id_target_finding_id" to table: "discussion_threads"
+DROP INDEX "discussionthread_tenant_id_target_finding_id";
 -- reverse: create index "discussionthread_tenant_id" to table: "discussion_threads"
 DROP INDEX "discussionthread_tenant_id";
 -- reverse: create "discussion_threads" table

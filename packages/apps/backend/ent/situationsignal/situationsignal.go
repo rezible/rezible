@@ -46,6 +46,10 @@ const (
 	EdgeObservationGroup = "observation_group"
 	// EdgeKnowledgeEntity holds the string denoting the knowledge_entity edge name in mutations.
 	EdgeKnowledgeEntity = "knowledge_entity"
+	// EdgeSourceEntity holds the string denoting the source_entity edge name in mutations.
+	EdgeSourceEntity = "source_entity"
+	// EdgeViaRelationship holds the string denoting the via_relationship edge name in mutations.
+	EdgeViaRelationship = "via_relationship"
 	// Table holds the table name of the situationsignal in the database.
 	Table = "situation_signals"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -76,6 +80,20 @@ const (
 	KnowledgeEntityInverseTable = "knowledge_entities"
 	// KnowledgeEntityColumn is the table column denoting the knowledge_entity relation/edge.
 	KnowledgeEntityColumn = "knowledge_entity_id"
+	// SourceEntityTable is the table that holds the source_entity relation/edge.
+	SourceEntityTable = "situation_signals"
+	// SourceEntityInverseTable is the table name for the KnowledgeEntity entity.
+	// It exists in this package in order to avoid circular dependency with the "knowledgeentity" package.
+	SourceEntityInverseTable = "knowledge_entities"
+	// SourceEntityColumn is the table column denoting the source_entity relation/edge.
+	SourceEntityColumn = "source_entity_id"
+	// ViaRelationshipTable is the table that holds the via_relationship relation/edge.
+	ViaRelationshipTable = "situation_signals"
+	// ViaRelationshipInverseTable is the table name for the KnowledgeRelationship entity.
+	// It exists in this package in order to avoid circular dependency with the "knowledgerelationship" package.
+	ViaRelationshipInverseTable = "knowledge_relationships"
+	// ViaRelationshipColumn is the table column denoting the via_relationship relation/edge.
+	ViaRelationshipColumn = "via_relationship_id"
 )
 
 // Columns holds all SQL columns for situationsignal fields.
@@ -237,6 +255,20 @@ func ByKnowledgeEntityField(field string, opts ...sql.OrderTermOption) OrderOpti
 		sqlgraph.OrderByNeighborTerms(s, newKnowledgeEntityStep(), sql.OrderByField(field, opts...))
 	}
 }
+
+// BySourceEntityField orders the results by source_entity field.
+func BySourceEntityField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newSourceEntityStep(), sql.OrderByField(field, opts...))
+	}
+}
+
+// ByViaRelationshipField orders the results by via_relationship field.
+func ByViaRelationshipField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newViaRelationshipStep(), sql.OrderByField(field, opts...))
+	}
+}
 func newTenantStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -263,6 +295,20 @@ func newKnowledgeEntityStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(KnowledgeEntityInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, false, KnowledgeEntityTable, KnowledgeEntityColumn),
+	)
+}
+func newSourceEntityStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(SourceEntityInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, SourceEntityTable, SourceEntityColumn),
+	)
+}
+func newViaRelationshipStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ViaRelationshipInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, ViaRelationshipTable, ViaRelationshipColumn),
 	)
 }
 

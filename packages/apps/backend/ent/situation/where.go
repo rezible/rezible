@@ -677,26 +677,6 @@ func SeedEntityIDNotIn(vs ...uuid.UUID) predicate.Situation {
 	return predicate.Situation(sql.FieldNotIn(FieldSeedEntityID, vs...))
 }
 
-// SeedEntityIDGT applies the GT predicate on the "seed_entity_id" field.
-func SeedEntityIDGT(v uuid.UUID) predicate.Situation {
-	return predicate.Situation(sql.FieldGT(FieldSeedEntityID, v))
-}
-
-// SeedEntityIDGTE applies the GTE predicate on the "seed_entity_id" field.
-func SeedEntityIDGTE(v uuid.UUID) predicate.Situation {
-	return predicate.Situation(sql.FieldGTE(FieldSeedEntityID, v))
-}
-
-// SeedEntityIDLT applies the LT predicate on the "seed_entity_id" field.
-func SeedEntityIDLT(v uuid.UUID) predicate.Situation {
-	return predicate.Situation(sql.FieldLT(FieldSeedEntityID, v))
-}
-
-// SeedEntityIDLTE applies the LTE predicate on the "seed_entity_id" field.
-func SeedEntityIDLTE(v uuid.UUID) predicate.Situation {
-	return predicate.Situation(sql.FieldLTE(FieldSeedEntityID, v))
-}
-
 // LatestJudgmentIDEQ applies the EQ predicate on the "latest_judgment_id" field.
 func LatestJudgmentIDEQ(v uuid.UUID) predicate.Situation {
 	return predicate.Situation(sql.FieldEQ(FieldLatestJudgmentID, v))
@@ -1008,6 +988,35 @@ func HasLatestJudgmentWith(preds ...predicate.SituationJudgment) predicate.Situa
 		step := newLatestJudgmentStep()
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.SituationJudgment
+		step.Edge.Schema = schemaConfig.Situation
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasSeedEntity applies the HasEdge predicate on the "seed_entity" edge.
+func HasSeedEntity() predicate.Situation {
+	return predicate.Situation(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, SeedEntityTable, SeedEntityColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.KnowledgeEntity
+		step.Edge.Schema = schemaConfig.Situation
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasSeedEntityWith applies the HasEdge predicate on the "seed_entity" edge with a given conditions (other predicates).
+func HasSeedEntityWith(preds ...predicate.KnowledgeEntity) predicate.Situation {
+	return predicate.Situation(func(s *sql.Selector) {
+		step := newSeedEntityStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.KnowledgeEntity
 		step.Edge.Schema = schemaConfig.Situation
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

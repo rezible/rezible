@@ -30,9 +30,10 @@ export type NextCheckView = { key: string; check: string; reason: string };
 
 export type UnconfirmedMatchView = {
 	key: string;
+	proposalId: string;
 	/** "May also be `checkout` (unconfirmed)". */
 	label: string;
-	name: string;
+	value: string;
 	rationale: string;
 };
 
@@ -135,8 +136,9 @@ export function nextCheckViews(nextChecks: InvestigationNextCheck[]): NextCheckV
 export function unconfirmedMatchViews(matches: SituationUnconfirmedMatch[]): UnconfirmedMatchView[] {
 	return matches.map((match) => ({
 		key: match.proposalId,
-		label: `May also be ${match.name} (unconfirmed)`,
-		name: match.name,
+		proposalId: match.proposalId,
+		label: `May also be ${match.value} (unconfirmed)`,
+		value: match.value,
 		rationale: match.rationale,
 	}));
 }

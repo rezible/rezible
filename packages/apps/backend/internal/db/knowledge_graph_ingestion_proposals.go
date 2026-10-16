@@ -16,30 +16,19 @@ import (
 	ke "github.com/rezible/rezible/ent/knowledgeevidence"
 	kp "github.com/rezible/rezible/ent/knowledgeproposal"
 	"github.com/rezible/rezible/pkg/errs"
+	"github.com/rezible/rezible/pkg/knowledgegraph"
 	"github.com/rezible/rezible/pkg/projections"
 )
 
 const knowledgeProposalRationaleMaxLen = 1000
-
-// isKnowledgeServiceRef reports whether the ref names a service, the only kind proposed by similar names.
-func isKnowledgeServiceRef(ref rez.KnowledgeEntityRef) bool {
-	return ref.Category == kne.CategoryContainer && ref.Kind == projections.EntityKindService
-}
-
-// isMergeableKnowledgeRef reports whether the ref names a kind a confirmed match can merge, so an identity
-// conflict on it becomes a proposal instead of failing.
-func isMergeableKnowledgeRef(ref rez.KnowledgeEntityRef) bool {
-	return isKnowledgeServiceRef(ref) ||
-		(ref.Category == kne.CategoryCode && ref.Kind == projections.EntityKindRepository)
-}
 
 // knowledgeProposalDraft is a proposal resolution found, written once the evidence it cites exists.
 type knowledgeProposalDraft struct {
 	category  kne.Category
 	kind      string
 	attribute string
-	nameA     string
-	nameB     string
+	valueA    string
+	valueB    string
 	origin    kp.Origin
 	rationale string
 }
@@ -59,8 +48,8 @@ func (r *resolvedSubjectAlias) propose(ref rez.KnowledgeEntityRef, attribute, fi
 		category:  ref.Category,
 		kind:      ref.Kind,
 		attribute: attribute,
-		nameA:     first,
-		nameB:     second,
+		valueA:    first,
+		valueB:    second,
 		origin:    origin,
 		rationale: rationale,
 	})
@@ -75,7 +64,8 @@ func (s *KnowledgeGraphIngestionService) proposeIdentityConflicts(ctx context.Co
 		if linkingAttribute.EntityID == resolved.subjectId {
 			continue
 		}
-		if !isMergeableKnowledgeRef(ref) {
+		// A kind a confirmed match can merge has an identity conflict proposed instead of failing.
+		if !knowledgegraph.IsMergeable(ref.Category, ref.Kind) {
 			return nil, fmt.Errorf("%w: linking attribute identifies another entity", errs.ErrConflict)
 		}
 		other, entityErr := linkingAttribute.Edges.EntityOrErr()
@@ -142,7 +132,7 @@ func (s *KnowledgeGraphIngestionService) proposeSimilarServiceNames(ctx context.
 	return nil
 }
 
-var knowledgeProposalUniqueColumns = sql.ConflictColumns(kp.FieldTenantID, kp.FieldAttribute, kp.FieldNameA, kp.FieldNameB)
+var knowledgeProposalUniqueColumns = sql.ConflictColumns(kp.FieldTenantID, kp.FieldAttribute, kp.FieldValueA, kp.FieldValueB)
 
 // createProposals writes the proposals resolution found, each citing the event's evidence on its alias. A pair
 // already proposed, in any status, is skipped: a constraint error would abort the transaction and lose the event.
@@ -164,8 +154,8 @@ func (s *KnowledgeGraphIngestionService) createProposals(ctx context.Context, ev
 				SetCategory(kp.Category(draft.category)).
 				SetKind(draft.kind).
 				SetAttribute(draft.attribute).
-				SetNameA(draft.nameA).
-				SetNameB(draft.nameB).
+				SetValueA(draft.valueA).
+				SetValueB(draft.valueB).
 				SetOrigin(draft.origin).
 				SetRationale(draft.rationale).
 				SetEvidenceID(evidenceID))

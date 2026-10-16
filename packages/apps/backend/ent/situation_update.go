@@ -14,6 +14,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/internal"
+	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/situation"
 	"github.com/rezible/rezible/ent/situationaction"
@@ -227,6 +228,20 @@ func (_u *SituationUpdate) ClearCloseReason() *SituationUpdate {
 	return _u
 }
 
+// SetSeedEntityID sets the "seed_entity_id" field.
+func (_u *SituationUpdate) SetSeedEntityID(v uuid.UUID) *SituationUpdate {
+	_u.mutation.SetSeedEntityID(v)
+	return _u
+}
+
+// SetNillableSeedEntityID sets the "seed_entity_id" field if the given value is not nil.
+func (_u *SituationUpdate) SetNillableSeedEntityID(v *uuid.UUID) *SituationUpdate {
+	if v != nil {
+		_u.SetSeedEntityID(*v)
+	}
+	return _u
+}
+
 // SetLatestJudgmentID sets the "latest_judgment_id" field.
 func (_u *SituationUpdate) SetLatestJudgmentID(v uuid.UUID) *SituationUpdate {
 	_u.mutation.SetLatestJudgmentID(v)
@@ -374,6 +389,11 @@ func (_u *SituationUpdate) AddActions(v ...*SituationAction) *SituationUpdate {
 // SetLatestJudgment sets the "latest_judgment" edge to the SituationJudgment entity.
 func (_u *SituationUpdate) SetLatestJudgment(v *SituationJudgment) *SituationUpdate {
 	return _u.SetLatestJudgmentID(v.ID)
+}
+
+// SetSeedEntity sets the "seed_entity" edge to the KnowledgeEntity entity.
+func (_u *SituationUpdate) SetSeedEntity(v *KnowledgeEntity) *SituationUpdate {
+	return _u.SetSeedEntityID(v.ID)
 }
 
 // Mutation returns the SituationMutation object of the builder.
@@ -540,6 +560,12 @@ func (_u *SituationUpdate) ClearLatestJudgment() *SituationUpdate {
 	return _u
 }
 
+// ClearSeedEntity clears the "seed_entity" edge to the KnowledgeEntity entity.
+func (_u *SituationUpdate) ClearSeedEntity() *SituationUpdate {
+	_u.mutation.ClearSeedEntity()
+	return _u
+}
+
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (_u *SituationUpdate) Save(ctx context.Context) (int, error) {
 	if err := _u.defaults(); err != nil {
@@ -601,6 +627,9 @@ func (_u *SituationUpdate) check() error {
 	}
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "Situation.tenant"`)
+	}
+	if _u.mutation.SeedEntityCleared() && len(_u.mutation.SeedEntityIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "Situation.seed_entity"`)
 	}
 	return nil
 }
@@ -1069,6 +1098,37 @@ func (_u *SituationUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.SeedEntityCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   situation.SeedEntityTable,
+			Columns: []string{situation.SeedEntityColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.Situation
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.SeedEntityIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   situation.SeedEntityTable,
+			Columns: []string{situation.SeedEntityColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.Situation
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	_spec.Node.Schema = _u.schemaConfig.Situation
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
@@ -1279,6 +1339,20 @@ func (_u *SituationUpdateOne) ClearCloseReason() *SituationUpdateOne {
 	return _u
 }
 
+// SetSeedEntityID sets the "seed_entity_id" field.
+func (_u *SituationUpdateOne) SetSeedEntityID(v uuid.UUID) *SituationUpdateOne {
+	_u.mutation.SetSeedEntityID(v)
+	return _u
+}
+
+// SetNillableSeedEntityID sets the "seed_entity_id" field if the given value is not nil.
+func (_u *SituationUpdateOne) SetNillableSeedEntityID(v *uuid.UUID) *SituationUpdateOne {
+	if v != nil {
+		_u.SetSeedEntityID(*v)
+	}
+	return _u
+}
+
 // SetLatestJudgmentID sets the "latest_judgment_id" field.
 func (_u *SituationUpdateOne) SetLatestJudgmentID(v uuid.UUID) *SituationUpdateOne {
 	_u.mutation.SetLatestJudgmentID(v)
@@ -1426,6 +1500,11 @@ func (_u *SituationUpdateOne) AddActions(v ...*SituationAction) *SituationUpdate
 // SetLatestJudgment sets the "latest_judgment" edge to the SituationJudgment entity.
 func (_u *SituationUpdateOne) SetLatestJudgment(v *SituationJudgment) *SituationUpdateOne {
 	return _u.SetLatestJudgmentID(v.ID)
+}
+
+// SetSeedEntity sets the "seed_entity" edge to the KnowledgeEntity entity.
+func (_u *SituationUpdateOne) SetSeedEntity(v *KnowledgeEntity) *SituationUpdateOne {
+	return _u.SetSeedEntityID(v.ID)
 }
 
 // Mutation returns the SituationMutation object of the builder.
@@ -1592,6 +1671,12 @@ func (_u *SituationUpdateOne) ClearLatestJudgment() *SituationUpdateOne {
 	return _u
 }
 
+// ClearSeedEntity clears the "seed_entity" edge to the KnowledgeEntity entity.
+func (_u *SituationUpdateOne) ClearSeedEntity() *SituationUpdateOne {
+	_u.mutation.ClearSeedEntity()
+	return _u
+}
+
 // Where appends a list predicates to the SituationUpdate builder.
 func (_u *SituationUpdateOne) Where(ps ...predicate.Situation) *SituationUpdateOne {
 	_u.mutation.Where(ps...)
@@ -1666,6 +1751,9 @@ func (_u *SituationUpdateOne) check() error {
 	}
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "Situation.tenant"`)
+	}
+	if _u.mutation.SeedEntityCleared() && len(_u.mutation.SeedEntityIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "Situation.seed_entity"`)
 	}
 	return nil
 }
@@ -2143,6 +2231,37 @@ func (_u *SituationUpdateOne) sqlSave(ctx context.Context) (_node *Situation, er
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(situationjudgment.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.Situation
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.SeedEntityCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   situation.SeedEntityTable,
+			Columns: []string{situation.SeedEntityColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.Situation
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.SeedEntityIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   situation.SeedEntityTable,
+			Columns: []string{situation.SeedEntityColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _u.schemaConfig.Situation

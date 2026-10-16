@@ -8,6 +8,7 @@ import (
 	rez "github.com/rezible/rezible"
 	kne "github.com/rezible/rezible/ent/knowledgeentity"
 	ke "github.com/rezible/rezible/ent/knowledgeevidence"
+	kp "github.com/rezible/rezible/ent/knowledgeproposal"
 	kr "github.com/rezible/rezible/ent/knowledgerelationship"
 	ksa "github.com/rezible/rezible/ent/knowledgesubjectalias"
 	"github.com/rezible/rezible/ent/predicate"
@@ -16,10 +17,12 @@ import (
 
 type knowledgeGraphHandler struct {
 	knowledge rez.KnowledgeGraphQueryService
+	aliases   rez.KnowledgeEntityAliasService
+	proposals rez.KnowledgeProposalService
 }
 
-func newKnowledgeGraphHandler(knowledge rez.KnowledgeGraphQueryService) *knowledgeGraphHandler {
-	return &knowledgeGraphHandler{knowledge: knowledge}
+func newKnowledgeGraphHandler(knowledge rez.KnowledgeGraphQueryService, aliases rez.KnowledgeEntityAliasService, proposals rez.KnowledgeProposalService) *knowledgeGraphHandler {
+	return &knowledgeGraphHandler{knowledge: knowledge, aliases: aliases, proposals: proposals}
 }
 
 func (h *knowledgeGraphHandler) ListKnowledgeGraphEntities(ctx context.Context, request *oapi.ListKnowledgeGraphEntitiesRequest) (*oapi.ListKnowledgeGraphEntitiesResponse, error) {
@@ -47,24 +50,26 @@ func (h *knowledgeGraphHandler) ListKnowledgeGraphEntities(ctx context.Context, 
 	listParams := request.ListParams()
 	listParams.Search = request.Search
 	params := rez.ListKnowledgeEntitiesParams{
-		ListParams: listParams,
-		Predicates: preds,
+		ListParams:            listParams,
+		Predicates:            preds,
+		WithLinkingAttributes: true,
 	}
-	result, listErr := h.knowledge.ListEntities(ctx, params)
+	result, listErr := h.aliases.ListEntitiesWithAliases(ctx, params)
 	if listErr != nil {
 		return nil, oapi.Error(ctx, "failed to list knowledge graph entities", listErr)
 	}
-	response.Body = oapi.ConvertPaginatedResultBody(result, oapi.KnowledgeGraphEntityFromEnt)
+	response.Body = oapi.ConvertPaginatedResultBody(result, oapi.KnowledgeGraphEntityWithAliasesFromRez)
 	return &response, nil
 }
 
 func (h *knowledgeGraphHandler) GetKnowledgeGraphEntity(ctx context.Context, request *oapi.GetKnowledgeGraphEntityRequest) (*oapi.GetKnowledgeGraphEntityResponse, error) {
 	var response oapi.GetKnowledgeGraphEntityResponse
-	entity, entityErr := h.knowledge.GetEntity(ctx, request.Id, rez.KnowledgeEntityExpand{AliasEvidence: true})
+	expand := rez.KnowledgeEntityExpand{AliasEvidence: true, LinkingAttributes: true}
+	result, entityErr := h.aliases.GetEntityWithAliases(ctx, request.Id, expand)
 	if entityErr != nil {
 		return nil, oapi.Error(ctx, "failed to get knowledge graph entity", entityErr)
 	}
-	response.Body.Data = oapi.KnowledgeGraphEntityFromEnt(entity)
+	response.Body.Data = oapi.KnowledgeGraphEntityWithAliasesFromRez(result)
 	return &response, nil
 }
 
@@ -226,4 +231,62 @@ func (h *knowledgeGraphHandler) ExpandKnowledgeGraphRelationships(ctx context.Co
 	}
 	resp.Body.Data = data
 	return &resp, nil
+}
+
+func (h *knowledgeGraphHandler) ListKnowledgeProposals(ctx context.Context, request *oapi.ListKnowledgeProposalsRequest) (*oapi.ListKnowledgeProposalsResponse, error) {
+	// The operation's enum has already checked each status.
+	statuses := make([]kp.Status, len(request.Status))
+	for i, value := range request.Status {
+		statuses[i] = kp.Status(value)
+	}
+	params := rez.ListProposalsParams{
+		ListParams: request.ListParams(),
+		Statuses:   statuses,
+		EntityIDs:  request.EntityId,
+	}
+	result, listErr := h.proposals.ListProposalsWithValues(ctx, params)
+	if listErr != nil {
+		return nil, oapi.Error(ctx, "failed to list knowledge proposals", listErr)
+	}
+
+	var response oapi.ListKnowledgeProposalsResponse
+	response.Body = oapi.ConvertPaginatedResultBody(result, oapi.KnowledgeProposalFromRez)
+	return &response, nil
+}
+
+func (h *knowledgeGraphHandler) GetKnowledgeProposal(ctx context.Context, request *oapi.GetKnowledgeProposalRequest) (*oapi.GetKnowledgeProposalResponse, error) {
+	proposal, getErr := h.proposals.GetProposalWithValues(ctx, request.Id)
+	if getErr != nil {
+		return nil, oapi.Error(ctx, "failed to get knowledge proposal", getErr)
+	}
+	implied, impliedErr := h.proposals.ListImpliedProposals(ctx, proposal.Proposal)
+	if impliedErr != nil {
+		return nil, oapi.Error(ctx, "failed to list implied knowledge proposals", impliedErr)
+	}
+	converted := oapi.KnowledgeProposalFromRez(proposal)
+	converted.Attributes.Implies = oapi.ConvertSlice(implied, oapi.KnowledgeProposalImplicationFromEnt)
+
+	var response oapi.GetKnowledgeProposalResponse
+	response.Body.Data = converted
+	return &response, nil
+}
+
+func (h *knowledgeGraphHandler) ConfirmKnowledgeProposal(ctx context.Context, request *oapi.ConfirmKnowledgeProposalRequest) (*oapi.ConfirmKnowledgeProposalResponse, error) {
+	proposal, confirmErr := h.proposals.ConfirmProposal(ctx, request.Id)
+	if confirmErr != nil {
+		return nil, oapi.Error(ctx, "failed to confirm knowledge proposal", confirmErr)
+	}
+	var response oapi.ConfirmKnowledgeProposalResponse
+	response.Body.Data = oapi.KnowledgeProposalFromRez(proposal)
+	return &response, nil
+}
+
+func (h *knowledgeGraphHandler) RejectKnowledgeProposal(ctx context.Context, request *oapi.RejectKnowledgeProposalRequest) (*oapi.RejectKnowledgeProposalResponse, error) {
+	proposal, rejectErr := h.proposals.RejectProposal(ctx, request.Id)
+	if rejectErr != nil {
+		return nil, oapi.Error(ctx, "failed to reject knowledge proposal", rejectErr)
+	}
+	var response oapi.RejectKnowledgeProposalResponse
+	response.Body.Data = oapi.KnowledgeProposalFromRez(proposal)
+	return &response, nil
 }

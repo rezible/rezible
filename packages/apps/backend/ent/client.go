@@ -65,6 +65,7 @@ import (
 	"github.com/rezible/rezible/ent/knowledgeentitylinkingattribute"
 	"github.com/rezible/rezible/ent/knowledgeevidence"
 	"github.com/rezible/rezible/ent/knowledgeproposal"
+	"github.com/rezible/rezible/ent/knowledgeproposaldecision"
 	"github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/knowledgesubjectalias"
 	"github.com/rezible/rezible/ent/meetingschedule"
@@ -220,6 +221,8 @@ type Client struct {
 	KnowledgeEvidence *KnowledgeEvidenceClient
 	// KnowledgeProposal is the client for interacting with the KnowledgeProposal builders.
 	KnowledgeProposal *KnowledgeProposalClient
+	// KnowledgeProposalDecision is the client for interacting with the KnowledgeProposalDecision builders.
+	KnowledgeProposalDecision *KnowledgeProposalDecisionClient
 	// KnowledgeRelationship is the client for interacting with the KnowledgeRelationship builders.
 	KnowledgeRelationship *KnowledgeRelationshipClient
 	// KnowledgeSubjectAlias is the client for interacting with the KnowledgeSubjectAlias builders.
@@ -373,6 +376,7 @@ func (c *Client) init() {
 	c.KnowledgeEntityLinkingAttribute = NewKnowledgeEntityLinkingAttributeClient(c.config)
 	c.KnowledgeEvidence = NewKnowledgeEvidenceClient(c.config)
 	c.KnowledgeProposal = NewKnowledgeProposalClient(c.config)
+	c.KnowledgeProposalDecision = NewKnowledgeProposalDecisionClient(c.config)
 	c.KnowledgeRelationship = NewKnowledgeRelationshipClient(c.config)
 	c.KnowledgeSubjectAlias = NewKnowledgeSubjectAliasClient(c.config)
 	c.MeetingSchedule = NewMeetingScheduleClient(c.config)
@@ -564,6 +568,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		KnowledgeEntityLinkingAttribute: NewKnowledgeEntityLinkingAttributeClient(cfg),
 		KnowledgeEvidence:               NewKnowledgeEvidenceClient(cfg),
 		KnowledgeProposal:               NewKnowledgeProposalClient(cfg),
+		KnowledgeProposalDecision:       NewKnowledgeProposalDecisionClient(cfg),
 		KnowledgeRelationship:           NewKnowledgeRelationshipClient(cfg),
 		KnowledgeSubjectAlias:           NewKnowledgeSubjectAliasClient(cfg),
 		MeetingSchedule:                 NewMeetingScheduleClient(cfg),
@@ -679,6 +684,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		KnowledgeEntityLinkingAttribute: NewKnowledgeEntityLinkingAttributeClient(cfg),
 		KnowledgeEvidence:               NewKnowledgeEvidenceClient(cfg),
 		KnowledgeProposal:               NewKnowledgeProposalClient(cfg),
+		KnowledgeProposalDecision:       NewKnowledgeProposalDecisionClient(cfg),
 		KnowledgeRelationship:           NewKnowledgeRelationshipClient(cfg),
 		KnowledgeSubjectAlias:           NewKnowledgeSubjectAliasClient(cfg),
 		MeetingSchedule:                 NewMeetingScheduleClient(cfg),
@@ -769,9 +775,9 @@ func (c *Client) Use(hooks ...Hook) {
 		c.InvestigationHypothesis, c.InvestigationHypothesisVersion,
 		c.InvestigationOutputReference, c.InvestigationReport,
 		c.InvestigationUserInput, c.KnowledgeEntity, c.KnowledgeEntityLinkingAttribute,
-		c.KnowledgeEvidence, c.KnowledgeProposal, c.KnowledgeRelationship,
-		c.KnowledgeSubjectAlias, c.MeetingSchedule, c.MeetingSession,
-		c.NormalizedEvent, c.NormalizedEventProjection,
+		c.KnowledgeEvidence, c.KnowledgeProposal, c.KnowledgeProposalDecision,
+		c.KnowledgeRelationship, c.KnowledgeSubjectAlias, c.MeetingSchedule,
+		c.MeetingSession, c.NormalizedEvent, c.NormalizedEventProjection,
 		c.NormalizedEventProjectionEntity, c.OncallHandoverTemplate, c.OncallRoster,
 		c.OncallRosterMetrics, c.OncallSchedule, c.OncallScheduleParticipant,
 		c.OncallShift, c.OncallShiftHandover, c.OncallShiftMetrics, c.Organization,
@@ -808,9 +814,9 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 		c.InvestigationHypothesis, c.InvestigationHypothesisVersion,
 		c.InvestigationOutputReference, c.InvestigationReport,
 		c.InvestigationUserInput, c.KnowledgeEntity, c.KnowledgeEntityLinkingAttribute,
-		c.KnowledgeEvidence, c.KnowledgeProposal, c.KnowledgeRelationship,
-		c.KnowledgeSubjectAlias, c.MeetingSchedule, c.MeetingSession,
-		c.NormalizedEvent, c.NormalizedEventProjection,
+		c.KnowledgeEvidence, c.KnowledgeProposal, c.KnowledgeProposalDecision,
+		c.KnowledgeRelationship, c.KnowledgeSubjectAlias, c.MeetingSchedule,
+		c.MeetingSession, c.NormalizedEvent, c.NormalizedEventProjection,
 		c.NormalizedEventProjectionEntity, c.OncallHandoverTemplate, c.OncallRoster,
 		c.OncallRosterMetrics, c.OncallSchedule, c.OncallScheduleParticipant,
 		c.OncallShift, c.OncallShiftHandover, c.OncallShiftMetrics, c.Organization,
@@ -929,6 +935,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.KnowledgeEvidence.mutate(ctx, m)
 	case *KnowledgeProposalMutation:
 		return c.KnowledgeProposal.mutate(ctx, m)
+	case *KnowledgeProposalDecisionMutation:
+		return c.KnowledgeProposalDecision.mutate(ctx, m)
 	case *KnowledgeRelationshipMutation:
 		return c.KnowledgeRelationship.mutate(ctx, m)
 	case *KnowledgeSubjectAliasMutation:
@@ -3792,6 +3800,101 @@ func (c *DiscussionThreadClient) QueryComments(_m *DiscussionThread) *Discussion
 		schemaConfig := _m.schemaConfig
 		step.To.Schema = schemaConfig.DiscussionComment
 		step.Edge.Schema = schemaConfig.DiscussionComment
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryTargetFinding queries the target_finding edge of a DiscussionThread.
+func (c *DiscussionThreadClient) QueryTargetFinding(_m *DiscussionThread) *InvestigationFindingQuery {
+	query := (&InvestigationFindingClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(discussionthread.Table, discussionthread.FieldID, id),
+			sqlgraph.To(investigationfinding.Table, investigationfinding.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, discussionthread.TargetFindingTable, discussionthread.TargetFindingColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.InvestigationFinding
+		step.Edge.Schema = schemaConfig.DiscussionThread
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryTargetEntry queries the target_entry edge of a DiscussionThread.
+func (c *DiscussionThreadClient) QueryTargetEntry(_m *DiscussionThread) *SystemAnalysisEntryQuery {
+	query := (&SystemAnalysisEntryClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(discussionthread.Table, discussionthread.FieldID, id),
+			sqlgraph.To(systemanalysisentry.Table, systemanalysisentry.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, discussionthread.TargetEntryTable, discussionthread.TargetEntryColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.SystemAnalysisEntry
+		step.Edge.Schema = schemaConfig.DiscussionThread
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryTargetNormalizedEvent queries the target_normalized_event edge of a DiscussionThread.
+func (c *DiscussionThreadClient) QueryTargetNormalizedEvent(_m *DiscussionThread) *NormalizedEventQuery {
+	query := (&NormalizedEventClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(discussionthread.Table, discussionthread.FieldID, id),
+			sqlgraph.To(normalizedevent.Table, normalizedevent.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, discussionthread.TargetNormalizedEventTable, discussionthread.TargetNormalizedEventColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.NormalizedEvent
+		step.Edge.Schema = schemaConfig.DiscussionThread
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryTargetKnowledgeEntity queries the target_knowledge_entity edge of a DiscussionThread.
+func (c *DiscussionThreadClient) QueryTargetKnowledgeEntity(_m *DiscussionThread) *KnowledgeEntityQuery {
+	query := (&KnowledgeEntityClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(discussionthread.Table, discussionthread.FieldID, id),
+			sqlgraph.To(knowledgeentity.Table, knowledgeentity.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, discussionthread.TargetKnowledgeEntityTable, discussionthread.TargetKnowledgeEntityColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.KnowledgeEntity
+		step.Edge.Schema = schemaConfig.DiscussionThread
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryTargetKnowledgeRelationship queries the target_knowledge_relationship edge of a DiscussionThread.
+func (c *DiscussionThreadClient) QueryTargetKnowledgeRelationship(_m *DiscussionThread) *KnowledgeRelationshipQuery {
+	query := (&KnowledgeRelationshipClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(discussionthread.Table, discussionthread.FieldID, id),
+			sqlgraph.To(knowledgerelationship.Table, knowledgerelationship.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, discussionthread.TargetKnowledgeRelationshipTable, discussionthread.TargetKnowledgeRelationshipColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.KnowledgeRelationship
+		step.Edge.Schema = schemaConfig.DiscussionThread
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
 	}
@@ -11269,6 +11372,25 @@ func (c *KnowledgeProposalClient) QueryEvidence(_m *KnowledgeProposal) *Knowledg
 	return query
 }
 
+// QueryDecisions queries the decisions edge of a KnowledgeProposal.
+func (c *KnowledgeProposalClient) QueryDecisions(_m *KnowledgeProposal) *KnowledgeProposalDecisionQuery {
+	query := (&KnowledgeProposalDecisionClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(knowledgeproposal.Table, knowledgeproposal.FieldID, id),
+			sqlgraph.To(knowledgeproposaldecision.Table, knowledgeproposaldecision.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, knowledgeproposal.DecisionsTable, knowledgeproposal.DecisionsColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.KnowledgeProposalDecision
+		step.Edge.Schema = schemaConfig.KnowledgeProposalDecision
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *KnowledgeProposalClient) Hooks() []Hook {
 	hooks := c.hooks.KnowledgeProposal
@@ -11292,6 +11414,216 @@ func (c *KnowledgeProposalClient) mutate(ctx context.Context, m *KnowledgePropos
 		return (&KnowledgeProposalDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown KnowledgeProposal mutation op: %q", m.Op())
+	}
+}
+
+// KnowledgeProposalDecisionClient is a client for the KnowledgeProposalDecision schema.
+type KnowledgeProposalDecisionClient struct {
+	config
+}
+
+// NewKnowledgeProposalDecisionClient returns a client for the KnowledgeProposalDecision from the given config.
+func NewKnowledgeProposalDecisionClient(c config) *KnowledgeProposalDecisionClient {
+	return &KnowledgeProposalDecisionClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `knowledgeproposaldecision.Hooks(f(g(h())))`.
+func (c *KnowledgeProposalDecisionClient) Use(hooks ...Hook) {
+	c.hooks.KnowledgeProposalDecision = append(c.hooks.KnowledgeProposalDecision, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `knowledgeproposaldecision.Intercept(f(g(h())))`.
+func (c *KnowledgeProposalDecisionClient) Intercept(interceptors ...Interceptor) {
+	c.inters.KnowledgeProposalDecision = append(c.inters.KnowledgeProposalDecision, interceptors...)
+}
+
+// Create returns a builder for creating a KnowledgeProposalDecision entity.
+func (c *KnowledgeProposalDecisionClient) Create() *KnowledgeProposalDecisionCreate {
+	mutation := newKnowledgeProposalDecisionMutation(c.config, OpCreate)
+	return &KnowledgeProposalDecisionCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of KnowledgeProposalDecision entities.
+func (c *KnowledgeProposalDecisionClient) CreateBulk(builders ...*KnowledgeProposalDecisionCreate) *KnowledgeProposalDecisionCreateBulk {
+	return &KnowledgeProposalDecisionCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *KnowledgeProposalDecisionClient) MapCreateBulk(slice any, setFunc func(*KnowledgeProposalDecisionCreate, int)) *KnowledgeProposalDecisionCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &KnowledgeProposalDecisionCreateBulk{err: fmt.Errorf("calling to KnowledgeProposalDecisionClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*KnowledgeProposalDecisionCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &KnowledgeProposalDecisionCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for KnowledgeProposalDecision.
+func (c *KnowledgeProposalDecisionClient) Update() *KnowledgeProposalDecisionUpdate {
+	mutation := newKnowledgeProposalDecisionMutation(c.config, OpUpdate)
+	return &KnowledgeProposalDecisionUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *KnowledgeProposalDecisionClient) UpdateOne(_m *KnowledgeProposalDecision) *KnowledgeProposalDecisionUpdateOne {
+	mutation := newKnowledgeProposalDecisionMutation(c.config, OpUpdateOne, withKnowledgeProposalDecision(_m))
+	return &KnowledgeProposalDecisionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *KnowledgeProposalDecisionClient) UpdateOneID(id uuid.UUID) *KnowledgeProposalDecisionUpdateOne {
+	mutation := newKnowledgeProposalDecisionMutation(c.config, OpUpdateOne, withKnowledgeProposalDecisionID(id))
+	return &KnowledgeProposalDecisionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for KnowledgeProposalDecision.
+func (c *KnowledgeProposalDecisionClient) Delete() *KnowledgeProposalDecisionDelete {
+	mutation := newKnowledgeProposalDecisionMutation(c.config, OpDelete)
+	return &KnowledgeProposalDecisionDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *KnowledgeProposalDecisionClient) DeleteOne(_m *KnowledgeProposalDecision) *KnowledgeProposalDecisionDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *KnowledgeProposalDecisionClient) DeleteOneID(id uuid.UUID) *KnowledgeProposalDecisionDeleteOne {
+	builder := c.Delete().Where(knowledgeproposaldecision.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &KnowledgeProposalDecisionDeleteOne{builder}
+}
+
+// Query returns a query builder for KnowledgeProposalDecision.
+func (c *KnowledgeProposalDecisionClient) Query() *KnowledgeProposalDecisionQuery {
+	return &KnowledgeProposalDecisionQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeKnowledgeProposalDecision},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a KnowledgeProposalDecision entity by its id.
+func (c *KnowledgeProposalDecisionClient) Get(ctx context.Context, id uuid.UUID) (*KnowledgeProposalDecision, error) {
+	return c.Query().Where(knowledgeproposaldecision.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *KnowledgeProposalDecisionClient) GetX(ctx context.Context, id uuid.UUID) *KnowledgeProposalDecision {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryTenant queries the tenant edge of a KnowledgeProposalDecision.
+func (c *KnowledgeProposalDecisionClient) QueryTenant(_m *KnowledgeProposalDecision) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(knowledgeproposaldecision.Table, knowledgeproposaldecision.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, knowledgeproposaldecision.TenantTable, knowledgeproposaldecision.TenantColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.KnowledgeProposalDecision
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryProposal queries the proposal edge of a KnowledgeProposalDecision.
+func (c *KnowledgeProposalDecisionClient) QueryProposal(_m *KnowledgeProposalDecision) *KnowledgeProposalQuery {
+	query := (&KnowledgeProposalClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(knowledgeproposaldecision.Table, knowledgeproposaldecision.FieldID, id),
+			sqlgraph.To(knowledgeproposal.Table, knowledgeproposal.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, knowledgeproposaldecision.ProposalTable, knowledgeproposaldecision.ProposalColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.KnowledgeProposal
+		step.Edge.Schema = schemaConfig.KnowledgeProposalDecision
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryUser queries the user edge of a KnowledgeProposalDecision.
+func (c *KnowledgeProposalDecisionClient) QueryUser(_m *KnowledgeProposalDecision) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(knowledgeproposaldecision.Table, knowledgeproposaldecision.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, knowledgeproposaldecision.UserTable, knowledgeproposaldecision.UserColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.User
+		step.Edge.Schema = schemaConfig.KnowledgeProposalDecision
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryImpliedByProposal queries the implied_by_proposal edge of a KnowledgeProposalDecision.
+func (c *KnowledgeProposalDecisionClient) QueryImpliedByProposal(_m *KnowledgeProposalDecision) *KnowledgeProposalQuery {
+	query := (&KnowledgeProposalClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(knowledgeproposaldecision.Table, knowledgeproposaldecision.FieldID, id),
+			sqlgraph.To(knowledgeproposal.Table, knowledgeproposal.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, knowledgeproposaldecision.ImpliedByProposalTable, knowledgeproposaldecision.ImpliedByProposalColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.KnowledgeProposal
+		step.Edge.Schema = schemaConfig.KnowledgeProposalDecision
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *KnowledgeProposalDecisionClient) Hooks() []Hook {
+	hooks := c.hooks.KnowledgeProposalDecision
+	return append(hooks[:len(hooks):len(hooks)], knowledgeproposaldecision.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *KnowledgeProposalDecisionClient) Interceptors() []Interceptor {
+	return c.inters.KnowledgeProposalDecision
+}
+
+func (c *KnowledgeProposalDecisionClient) mutate(ctx context.Context, m *KnowledgeProposalDecisionMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&KnowledgeProposalDecisionCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&KnowledgeProposalDecisionUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&KnowledgeProposalDecisionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&KnowledgeProposalDecisionDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown KnowledgeProposalDecision mutation op: %q", m.Op())
 	}
 }
 
@@ -11663,6 +11995,25 @@ func (c *KnowledgeSubjectAliasClient) QueryRelationship(_m *KnowledgeSubjectAlia
 		)
 		schemaConfig := _m.schemaConfig
 		step.To.Schema = schemaConfig.KnowledgeRelationship
+		step.Edge.Schema = schemaConfig.KnowledgeSubjectAlias
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryMergedByProposal queries the merged_by_proposal edge of a KnowledgeSubjectAlias.
+func (c *KnowledgeSubjectAliasClient) QueryMergedByProposal(_m *KnowledgeSubjectAlias) *KnowledgeProposalQuery {
+	query := (&KnowledgeProposalClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(knowledgesubjectalias.Table, knowledgesubjectalias.FieldID, id),
+			sqlgraph.To(knowledgeproposal.Table, knowledgeproposal.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, knowledgesubjectalias.MergedByProposalTable, knowledgesubjectalias.MergedByProposalColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.KnowledgeProposal
 		step.Edge.Schema = schemaConfig.KnowledgeSubjectAlias
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -15778,6 +16129,25 @@ func (c *SituationClient) QueryLatestJudgment(_m *Situation) *SituationJudgmentQ
 	return query
 }
 
+// QuerySeedEntity queries the seed_entity edge of a Situation.
+func (c *SituationClient) QuerySeedEntity(_m *Situation) *KnowledgeEntityQuery {
+	query := (&KnowledgeEntityClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(situation.Table, situation.FieldID, id),
+			sqlgraph.To(knowledgeentity.Table, knowledgeentity.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, situation.SeedEntityTable, situation.SeedEntityColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.KnowledgeEntity
+		step.Edge.Schema = schemaConfig.Situation
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *SituationClient) Hooks() []Hook {
 	hooks := c.hooks.Situation
@@ -17337,6 +17707,44 @@ func (c *SituationSignalClient) QueryKnowledgeEntity(_m *SituationSignal) *Knowl
 		)
 		schemaConfig := _m.schemaConfig
 		step.To.Schema = schemaConfig.KnowledgeEntity
+		step.Edge.Schema = schemaConfig.SituationSignal
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QuerySourceEntity queries the source_entity edge of a SituationSignal.
+func (c *SituationSignalClient) QuerySourceEntity(_m *SituationSignal) *KnowledgeEntityQuery {
+	query := (&KnowledgeEntityClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(situationsignal.Table, situationsignal.FieldID, id),
+			sqlgraph.To(knowledgeentity.Table, knowledgeentity.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, situationsignal.SourceEntityTable, situationsignal.SourceEntityColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.KnowledgeEntity
+		step.Edge.Schema = schemaConfig.SituationSignal
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryViaRelationship queries the via_relationship edge of a SituationSignal.
+func (c *SituationSignalClient) QueryViaRelationship(_m *SituationSignal) *KnowledgeRelationshipQuery {
+	query := (&KnowledgeRelationshipClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(situationsignal.Table, situationsignal.FieldID, id),
+			sqlgraph.To(knowledgerelationship.Table, knowledgerelationship.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, situationsignal.ViaRelationshipTable, situationsignal.ViaRelationshipColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.KnowledgeRelationship
 		step.Edge.Schema = schemaConfig.SituationSignal
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -20977,14 +21385,15 @@ type (
 		InvestigationHypothesis, InvestigationHypothesisVersion,
 		InvestigationOutputReference, InvestigationReport, InvestigationUserInput,
 		KnowledgeEntity, KnowledgeEntityLinkingAttribute, KnowledgeEvidence,
-		KnowledgeProposal, KnowledgeRelationship, KnowledgeSubjectAlias,
-		MeetingSchedule, MeetingSession, NormalizedEvent, NormalizedEventProjection,
-		NormalizedEventProjectionEntity, OncallHandoverTemplate, OncallRoster,
-		OncallRosterMetrics, OncallSchedule, OncallScheduleParticipant, OncallShift,
-		OncallShiftHandover, OncallShiftMetrics, Organization, OrganizationPreferences,
-		OrganizationRole, Playbook, Retrospective, Review, Situation, SituationAction,
-		SituationEntity, SituationHazardAssessment, SituationInvestigation,
-		SituationJudgment, SituationLink, SituationObservationGroup, SituationSignal,
+		KnowledgeProposal, KnowledgeProposalDecision, KnowledgeRelationship,
+		KnowledgeSubjectAlias, MeetingSchedule, MeetingSession, NormalizedEvent,
+		NormalizedEventProjection, NormalizedEventProjectionEntity,
+		OncallHandoverTemplate, OncallRoster, OncallRosterMetrics, OncallSchedule,
+		OncallScheduleParticipant, OncallShift, OncallShiftHandover,
+		OncallShiftMetrics, Organization, OrganizationPreferences, OrganizationRole,
+		Playbook, Retrospective, Review, Situation, SituationAction, SituationEntity,
+		SituationHazardAssessment, SituationInvestigation, SituationJudgment,
+		SituationLink, SituationObservationGroup, SituationSignal,
 		SituationSignalAttention, SystemAnalysis, SystemAnalysisEntity,
 		SystemAnalysisEntry, SystemAnalysisEntrySubject, SystemAnalysisRelationship,
 		SystemHazard, SystemHazardRiskAssessment, Task, Team, TeamMembership, Tenant,
@@ -21006,14 +21415,14 @@ type (
 		InvestigationHypothesisVersion, InvestigationOutputReference,
 		InvestigationReport, InvestigationUserInput, KnowledgeEntity,
 		KnowledgeEntityLinkingAttribute, KnowledgeEvidence, KnowledgeProposal,
-		KnowledgeRelationship, KnowledgeSubjectAlias, MeetingSchedule, MeetingSession,
-		NormalizedEvent, NormalizedEventProjection, NormalizedEventProjectionEntity,
-		OncallHandoverTemplate, OncallRoster, OncallRosterMetrics, OncallSchedule,
-		OncallScheduleParticipant, OncallShift, OncallShiftHandover,
-		OncallShiftMetrics, Organization, OrganizationPreferences, OrganizationRole,
-		Playbook, Retrospective, Review, Situation, SituationAction, SituationEntity,
-		SituationHazardAssessment, SituationInvestigation, SituationJudgment,
-		SituationLink, SituationObservationGroup, SituationSignal,
+		KnowledgeProposalDecision, KnowledgeRelationship, KnowledgeSubjectAlias,
+		MeetingSchedule, MeetingSession, NormalizedEvent, NormalizedEventProjection,
+		NormalizedEventProjectionEntity, OncallHandoverTemplate, OncallRoster,
+		OncallRosterMetrics, OncallSchedule, OncallScheduleParticipant, OncallShift,
+		OncallShiftHandover, OncallShiftMetrics, Organization, OrganizationPreferences,
+		OrganizationRole, Playbook, Retrospective, Review, Situation, SituationAction,
+		SituationEntity, SituationHazardAssessment, SituationInvestigation,
+		SituationJudgment, SituationLink, SituationObservationGroup, SituationSignal,
 		SituationSignalAttention, SystemAnalysis, SystemAnalysisEntity,
 		SystemAnalysisEntry, SystemAnalysisEntrySubject, SystemAnalysisRelationship,
 		SystemHazard, SystemHazardRiskAssessment, Task, Team, TeamMembership, Tenant,
@@ -21082,6 +21491,7 @@ var (
 		KnowledgeEntityLinkingAttribute:           tableSchemas[0],
 		KnowledgeEvidence:                         tableSchemas[0],
 		KnowledgeProposal:                         tableSchemas[0],
+		KnowledgeProposalDecision:                 tableSchemas[0],
 		KnowledgeRelationship:                     tableSchemas[0],
 		KnowledgeSubjectAlias:                     tableSchemas[0],
 		MeetingSchedule:                           tableSchemas[0],

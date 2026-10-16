@@ -21,6 +21,7 @@ packages:
       IntegrationService: {}
       IncidentService: {}
       KnowledgeGraphQueryService: {}
+      KnowledgeEntityAliasService: {}
       SystemAnalysisService: {}
       SituationService: {}
       InvestigationOutputService: {}

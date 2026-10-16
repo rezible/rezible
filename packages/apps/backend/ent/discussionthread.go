@@ -11,8 +11,13 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/discussionthread"
+	"github.com/rezible/rezible/ent/investigationfinding"
+	"github.com/rezible/rezible/ent/knowledgeentity"
+	"github.com/rezible/rezible/ent/knowledgerelationship"
+	"github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/ent/systemanalysis"
+	"github.com/rezible/rezible/ent/systemanalysisentry"
 	"github.com/rezible/rezible/ent/tenant"
 	"github.com/rezible/rezible/ent/user"
 )
@@ -34,10 +39,16 @@ type DiscussionThread struct {
 	RetrospectiveID *uuid.UUID `json:"retrospective_id,omitempty"`
 	// UserID holds the value of the "user_id" field.
 	UserID uuid.UUID `json:"user_id,omitempty"`
-	// TargetKind holds the value of the "target_kind" field.
-	TargetKind *discussionthread.TargetKind `json:"target_kind,omitempty"`
-	// TargetID holds the value of the "target_id" field.
-	TargetID *uuid.UUID `json:"target_id,omitempty"`
+	// TargetFindingID holds the value of the "target_finding_id" field.
+	TargetFindingID *uuid.UUID `json:"target_finding_id,omitempty"`
+	// TargetEntryID holds the value of the "target_entry_id" field.
+	TargetEntryID *uuid.UUID `json:"target_entry_id,omitempty"`
+	// TargetKnowledgeEntityID holds the value of the "target_knowledge_entity_id" field.
+	TargetKnowledgeEntityID *uuid.UUID `json:"target_knowledge_entity_id,omitempty"`
+	// TargetKnowledgeRelationshipID holds the value of the "target_knowledge_relationship_id" field.
+	TargetKnowledgeRelationshipID *uuid.UUID `json:"target_knowledge_relationship_id,omitempty"`
+	// TargetNormalizedEventID holds the value of the "target_normalized_event_id" field.
+	TargetNormalizedEventID *uuid.UUID `json:"target_normalized_event_id,omitempty"`
 	// ResolutionState holds the value of the "resolution_state" field.
 	ResolutionState *discussionthread.ResolutionState `json:"resolution_state,omitempty"`
 	// ResolvedByID holds the value of the "resolved_by_id" field.
@@ -64,9 +75,19 @@ type DiscussionThreadEdges struct {
 	User *User `json:"user,omitempty"`
 	// Comments holds the value of the comments edge.
 	Comments []*DiscussionComment `json:"comments,omitempty"`
+	// TargetFinding holds the value of the target_finding edge.
+	TargetFinding *InvestigationFinding `json:"target_finding,omitempty"`
+	// TargetEntry holds the value of the target_entry edge.
+	TargetEntry *SystemAnalysisEntry `json:"target_entry,omitempty"`
+	// TargetNormalizedEvent holds the value of the target_normalized_event edge.
+	TargetNormalizedEvent *NormalizedEvent `json:"target_normalized_event,omitempty"`
+	// TargetKnowledgeEntity holds the value of the target_knowledge_entity edge.
+	TargetKnowledgeEntity *KnowledgeEntity `json:"target_knowledge_entity,omitempty"`
+	// TargetKnowledgeRelationship holds the value of the target_knowledge_relationship edge.
+	TargetKnowledgeRelationship *KnowledgeRelationship `json:"target_knowledge_relationship,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [5]bool
+	loadedTypes [10]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -122,16 +143,71 @@ func (e DiscussionThreadEdges) CommentsOrErr() ([]*DiscussionComment, error) {
 	return nil, &NotLoadedError{edge: "comments"}
 }
 
+// TargetFindingOrErr returns the TargetFinding value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e DiscussionThreadEdges) TargetFindingOrErr() (*InvestigationFinding, error) {
+	if e.TargetFinding != nil {
+		return e.TargetFinding, nil
+	} else if e.loadedTypes[5] {
+		return nil, &NotFoundError{label: investigationfinding.Label}
+	}
+	return nil, &NotLoadedError{edge: "target_finding"}
+}
+
+// TargetEntryOrErr returns the TargetEntry value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e DiscussionThreadEdges) TargetEntryOrErr() (*SystemAnalysisEntry, error) {
+	if e.TargetEntry != nil {
+		return e.TargetEntry, nil
+	} else if e.loadedTypes[6] {
+		return nil, &NotFoundError{label: systemanalysisentry.Label}
+	}
+	return nil, &NotLoadedError{edge: "target_entry"}
+}
+
+// TargetNormalizedEventOrErr returns the TargetNormalizedEvent value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e DiscussionThreadEdges) TargetNormalizedEventOrErr() (*NormalizedEvent, error) {
+	if e.TargetNormalizedEvent != nil {
+		return e.TargetNormalizedEvent, nil
+	} else if e.loadedTypes[7] {
+		return nil, &NotFoundError{label: normalizedevent.Label}
+	}
+	return nil, &NotLoadedError{edge: "target_normalized_event"}
+}
+
+// TargetKnowledgeEntityOrErr returns the TargetKnowledgeEntity value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e DiscussionThreadEdges) TargetKnowledgeEntityOrErr() (*KnowledgeEntity, error) {
+	if e.TargetKnowledgeEntity != nil {
+		return e.TargetKnowledgeEntity, nil
+	} else if e.loadedTypes[8] {
+		return nil, &NotFoundError{label: knowledgeentity.Label}
+	}
+	return nil, &NotLoadedError{edge: "target_knowledge_entity"}
+}
+
+// TargetKnowledgeRelationshipOrErr returns the TargetKnowledgeRelationship value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e DiscussionThreadEdges) TargetKnowledgeRelationshipOrErr() (*KnowledgeRelationship, error) {
+	if e.TargetKnowledgeRelationship != nil {
+		return e.TargetKnowledgeRelationship, nil
+	} else if e.loadedTypes[9] {
+		return nil, &NotFoundError{label: knowledgerelationship.Label}
+	}
+	return nil, &NotLoadedError{edge: "target_knowledge_relationship"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*DiscussionThread) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case discussionthread.FieldAnalysisID, discussionthread.FieldRetrospectiveID, discussionthread.FieldTargetID, discussionthread.FieldResolvedByID:
+		case discussionthread.FieldAnalysisID, discussionthread.FieldRetrospectiveID, discussionthread.FieldTargetFindingID, discussionthread.FieldTargetEntryID, discussionthread.FieldTargetKnowledgeEntityID, discussionthread.FieldTargetKnowledgeRelationshipID, discussionthread.FieldTargetNormalizedEventID, discussionthread.FieldResolvedByID:
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case discussionthread.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case discussionthread.FieldTargetKind, discussionthread.FieldResolutionState, discussionthread.FieldResolutionNote:
+		case discussionthread.FieldResolutionState, discussionthread.FieldResolutionNote:
 			values[i] = new(sql.NullString)
 		case discussionthread.FieldCreatedAt, discussionthread.FieldUpdatedAt, discussionthread.FieldResolvedAt:
 			values[i] = new(sql.NullTime)
@@ -196,19 +272,40 @@ func (_m *DiscussionThread) assignValues(columns []string, values []any) error {
 			} else if value != nil {
 				_m.UserID = *value
 			}
-		case discussionthread.FieldTargetKind:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field target_kind", values[i])
-			} else if value.Valid {
-				_m.TargetKind = new(discussionthread.TargetKind)
-				*_m.TargetKind = discussionthread.TargetKind(value.String)
-			}
-		case discussionthread.FieldTargetID:
+		case discussionthread.FieldTargetFindingID:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field target_id", values[i])
+				return fmt.Errorf("unexpected type %T for field target_finding_id", values[i])
 			} else if value.Valid {
-				_m.TargetID = new(uuid.UUID)
-				*_m.TargetID = *value.S.(*uuid.UUID)
+				_m.TargetFindingID = new(uuid.UUID)
+				*_m.TargetFindingID = *value.S.(*uuid.UUID)
+			}
+		case discussionthread.FieldTargetEntryID:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field target_entry_id", values[i])
+			} else if value.Valid {
+				_m.TargetEntryID = new(uuid.UUID)
+				*_m.TargetEntryID = *value.S.(*uuid.UUID)
+			}
+		case discussionthread.FieldTargetKnowledgeEntityID:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field target_knowledge_entity_id", values[i])
+			} else if value.Valid {
+				_m.TargetKnowledgeEntityID = new(uuid.UUID)
+				*_m.TargetKnowledgeEntityID = *value.S.(*uuid.UUID)
+			}
+		case discussionthread.FieldTargetKnowledgeRelationshipID:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field target_knowledge_relationship_id", values[i])
+			} else if value.Valid {
+				_m.TargetKnowledgeRelationshipID = new(uuid.UUID)
+				*_m.TargetKnowledgeRelationshipID = *value.S.(*uuid.UUID)
+			}
+		case discussionthread.FieldTargetNormalizedEventID:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field target_normalized_event_id", values[i])
+			} else if value.Valid {
+				_m.TargetNormalizedEventID = new(uuid.UUID)
+				*_m.TargetNormalizedEventID = *value.S.(*uuid.UUID)
 			}
 		case discussionthread.FieldResolutionState:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -276,6 +373,31 @@ func (_m *DiscussionThread) QueryComments() *DiscussionCommentQuery {
 	return NewDiscussionThreadClient(_m.config).QueryComments(_m)
 }
 
+// QueryTargetFinding queries the "target_finding" edge of the DiscussionThread entity.
+func (_m *DiscussionThread) QueryTargetFinding() *InvestigationFindingQuery {
+	return NewDiscussionThreadClient(_m.config).QueryTargetFinding(_m)
+}
+
+// QueryTargetEntry queries the "target_entry" edge of the DiscussionThread entity.
+func (_m *DiscussionThread) QueryTargetEntry() *SystemAnalysisEntryQuery {
+	return NewDiscussionThreadClient(_m.config).QueryTargetEntry(_m)
+}
+
+// QueryTargetNormalizedEvent queries the "target_normalized_event" edge of the DiscussionThread entity.
+func (_m *DiscussionThread) QueryTargetNormalizedEvent() *NormalizedEventQuery {
+	return NewDiscussionThreadClient(_m.config).QueryTargetNormalizedEvent(_m)
+}
+
+// QueryTargetKnowledgeEntity queries the "target_knowledge_entity" edge of the DiscussionThread entity.
+func (_m *DiscussionThread) QueryTargetKnowledgeEntity() *KnowledgeEntityQuery {
+	return NewDiscussionThreadClient(_m.config).QueryTargetKnowledgeEntity(_m)
+}
+
+// QueryTargetKnowledgeRelationship queries the "target_knowledge_relationship" edge of the DiscussionThread entity.
+func (_m *DiscussionThread) QueryTargetKnowledgeRelationship() *KnowledgeRelationshipQuery {
+	return NewDiscussionThreadClient(_m.config).QueryTargetKnowledgeRelationship(_m)
+}
+
 // Update returns a builder for updating this DiscussionThread.
 // Note that you need to call DiscussionThread.Unwrap() before calling this method if this DiscussionThread
 // was returned from a transaction, and the transaction was committed or rolled back.
@@ -321,13 +443,28 @@ func (_m *DiscussionThread) String() string {
 	builder.WriteString("user_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.UserID))
 	builder.WriteString(", ")
-	if v := _m.TargetKind; v != nil {
-		builder.WriteString("target_kind=")
+	if v := _m.TargetFindingID; v != nil {
+		builder.WriteString("target_finding_id=")
 		builder.WriteString(fmt.Sprintf("%v", *v))
 	}
 	builder.WriteString(", ")
-	if v := _m.TargetID; v != nil {
-		builder.WriteString("target_id=")
+	if v := _m.TargetEntryID; v != nil {
+		builder.WriteString("target_entry_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	if v := _m.TargetKnowledgeEntityID; v != nil {
+		builder.WriteString("target_knowledge_entity_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	if v := _m.TargetKnowledgeRelationshipID; v != nil {
+		builder.WriteString("target_knowledge_relationship_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	if v := _m.TargetNormalizedEventID; v != nil {
+		builder.WriteString("target_normalized_event_id=")
 		builder.WriteString(fmt.Sprintf("%v", *v))
 	}
 	builder.WriteString(", ")

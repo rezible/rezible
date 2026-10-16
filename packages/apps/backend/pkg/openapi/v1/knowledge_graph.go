@@ -11,6 +11,8 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	kne "github.com/rezible/rezible/ent/knowledgeentity"
+	kp "github.com/rezible/rezible/ent/knowledgeproposal"
+	kpd "github.com/rezible/rezible/ent/knowledgeproposaldecision"
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/schema/schematypes"
 )
@@ -30,6 +32,11 @@ type KnowledgeGraphHandler interface {
 
 	SelectKnowledgeGraphEntities(context.Context, *SelectKnowledgeGraphEntitiesRequest) (*SelectKnowledgeGraphEntitiesResponse, error)
 	ExpandKnowledgeGraphRelationships(context.Context, *ExpandKnowledgeGraphRelationshipsRequest) (*ExpandKnowledgeGraphRelationshipsResponse, error)
+
+	ListKnowledgeProposals(context.Context, *ListKnowledgeProposalsRequest) (*ListKnowledgeProposalsResponse, error)
+	GetKnowledgeProposal(context.Context, *GetKnowledgeProposalRequest) (*GetKnowledgeProposalResponse, error)
+	ConfirmKnowledgeProposal(context.Context, *ConfirmKnowledgeProposalRequest) (*ConfirmKnowledgeProposalResponse, error)
+	RejectKnowledgeProposal(context.Context, *RejectKnowledgeProposalRequest) (*RejectKnowledgeProposalResponse, error)
 }
 
 func (o operations) RegisterKnowledgeGraph(api huma.API) {
@@ -47,6 +54,11 @@ func (o operations) RegisterKnowledgeGraph(api huma.API) {
 
 	huma.Register(api, SelectKnowledgeGraphEntities, o.SelectKnowledgeGraphEntities)
 	huma.Register(api, ExpandKnowledgeGraphRelationships, o.ExpandKnowledgeGraphRelationships)
+
+	huma.Register(api, ListKnowledgeProposals, o.ListKnowledgeProposals)
+	huma.Register(api, GetKnowledgeProposal, o.GetKnowledgeProposal)
+	huma.Register(api, ConfirmKnowledgeProposal, o.ConfirmKnowledgeProposal)
+	huma.Register(api, RejectKnowledgeProposal, o.RejectKnowledgeProposal)
 }
 
 type (
@@ -55,12 +67,41 @@ type (
 		Attributes KnowledgeGraphEntityAttributes `json:"attributes"`
 	}
 	KnowledgeGraphEntityAttributes struct {
-		Category    kne.Category                 `json:"category"`
-		Kind        string                       `json:"kind"`
-		Aliases     []KnowledgeGraphSubjectAlias `json:"aliases"`
-		LatestState *KnowledgeGraphSubjectState  `json:"latestState,omitempty"`
-		CreatedAt   time.Time                    `json:"createdAt"`
-		UpdatedAt   time.Time                    `json:"updatedAt"`
+		Category    kne.Category                `json:"category"`
+		Kind        string                      `json:"kind"`
+		DisplayName string                      `json:"displayName"`
+		LatestState *KnowledgeGraphSubjectState `json:"latestState,omitempty"`
+		// LinkingAttributes and the optional alias fields are filled by the entity list and get operations.
+		LinkingAttributes []KnowledgeGraphLinkingAttribute `json:"linkingAttributes"`
+		Aliases           []KnowledgeGraphEntityAlias      `json:"aliases"`
+		CreatedAt         time.Time                        `json:"createdAt"`
+		UpdatedAt         time.Time                        `json:"updatedAt"`
+	}
+
+	KnowledgeGraphLinkingAttribute struct {
+		Attribute string `json:"attribute"`
+		Value     string `json:"value"`
+	}
+
+	// KnowledgeGraphEntityAlias is one of an entity's aliases with its provider's name and when Rezible
+	// last recorded evidence from it.
+	KnowledgeGraphEntityAlias struct {
+		KnowledgeGraphSubjectAlias
+		IntegrationDisplayName string `json:"integrationDisplayName,omitempty"`
+		Provider               string `json:"provider,omitempty"`
+		// Name is the display name the alias's newest evidence states, or its resource ref when it states none.
+		Name string `json:"name,omitempty"`
+		// LastRecordedAt is when Rezible last stored evidence from the alias, not when the alias last reported
+		// the name.
+		LastRecordedAt *time.Time `json:"lastRecordedAt,omitempty"`
+		// MergedByProposal is set when the alias joined the entity through a confirmed match.
+		MergedByProposal *KnowledgeGraphAliasMerge `json:"mergedByProposal,omitempty"`
+	}
+
+	KnowledgeGraphAliasMerge struct {
+		ProposalId  uuid.UUID                `json:"proposalId"`
+		ConfirmedBy *KnowledgeProposalPerson `json:"confirmedBy,omitempty"`
+		ConfirmedAt *time.Time               `json:"confirmedAt,omitempty"`
 	}
 
 	KnowledgeGraphRelationship struct {
@@ -151,21 +192,62 @@ func (knowledgeRelationshipPredicateSchema) Schema(huma.Registry) *huma.Schema {
 
 func KnowledgeGraphEntityFromEnt(e *ent.KnowledgeEntity) KnowledgeGraphEntity {
 	attr := KnowledgeGraphEntityAttributes{
-		Category:  e.Category,
-		Kind:      e.Kind,
-		Aliases:   make([]KnowledgeGraphSubjectAlias, len(e.Edges.Aliases)),
-		CreatedAt: e.CreatedAt,
-		UpdatedAt: e.UpdatedAt,
+		Category:          e.Category,
+		Kind:              e.Kind,
+		DisplayName:       e.State.DisplayName,
+		LinkingAttributes: make([]KnowledgeGraphLinkingAttribute, len(e.Edges.LinkingAttributes)),
+		Aliases:           make([]KnowledgeGraphEntityAlias, len(e.Edges.Aliases)),
+		CreatedAt:         e.CreatedAt,
+		UpdatedAt:         e.UpdatedAt,
 	}
 	if latestEv := e.LatestEvidence(); latestEv != nil {
 		attr.LatestState = new(KnowledgeGraphSubjectStateFromEnt(latestEv.SubjectState))
 	}
 
 	for i, alias := range e.Edges.Aliases {
-		attr.Aliases[i] = KnowledgeGraphSubjectAliasFromEnt(alias)
+		attr.Aliases[i] = KnowledgeGraphEntityAlias{KnowledgeGraphSubjectAlias: KnowledgeGraphSubjectAliasFromEnt(alias)}
+	}
+	for i, linkingAttribute := range e.Edges.LinkingAttributes {
+		attr.LinkingAttributes[i] = KnowledgeGraphLinkingAttribute{
+			Attribute: linkingAttribute.Attribute,
+			Value:     linkingAttribute.Value,
+		}
 	}
 
 	return KnowledgeGraphEntity{Id: e.ID, Attributes: attr}
+}
+
+// KnowledgeGraphEntityWithAliasesFromRez converts an entity with its loaded linking attributes and its aliases.
+func KnowledgeGraphEntityWithAliasesFromRez(e *rez.KnowledgeEntityWithAliases) KnowledgeGraphEntity {
+	entity := KnowledgeGraphEntityFromEnt(e.Entity)
+	entity.Attributes.Aliases = make([]KnowledgeGraphEntityAlias, 0, len(e.Aliases))
+	for _, alias := range e.Aliases {
+		entity.Attributes.Aliases = append(entity.Attributes.Aliases, KnowledgeGraphEntityAliasFromRez(alias))
+	}
+	return entity
+}
+
+func KnowledgeGraphEntityAliasFromRez(alias rez.KnowledgeEntityAlias) KnowledgeGraphEntityAlias {
+	converted := KnowledgeGraphEntityAlias{
+		KnowledgeGraphSubjectAlias: KnowledgeGraphSubjectAliasFromEnt(alias.Alias),
+		IntegrationDisplayName:     alias.IntegrationDisplayName,
+		Provider:                   alias.Alias.Provider,
+		Name:                       alias.Name,
+	}
+	if !alias.LastRecordedAt.IsZero() {
+		converted.LastRecordedAt = new(alias.LastRecordedAt)
+	}
+	if proposal := alias.Alias.Edges.MergedByProposal; proposal != nil {
+		merge := &KnowledgeGraphAliasMerge{ProposalId: proposal.ID}
+		for _, decision := range proposal.Edges.Decisions {
+			if decision.Status == kpd.StatusConfirmed {
+				merge.ConfirmedBy = KnowledgeProposalPersonFromEnt(decision.Edges.User)
+				merge.ConfirmedAt = new(decision.CreatedAt)
+			}
+		}
+		converted.MergedByProposal = merge
+	}
+	return converted
 }
 
 func KnowledgeGraphEntitySummaryFromEnt(entity *ent.KnowledgeEntity) KnowledgeGraphEntitySummary {
@@ -389,3 +471,219 @@ type ExpandKnowledgeGraphRelationshipsRequest struct {
 }
 
 type ExpandKnowledgeGraphRelationshipsResponse ItemResponse[KnowledgeGraphRelationshipsPage]
+
+type (
+	KnowledgeProposal struct {
+		Id         uuid.UUID                   `json:"id"`
+		Attributes KnowledgeProposalAttributes `json:"attributes"`
+	}
+
+	// KnowledgeProposalAttributes describe a match Rezible suggests: two values of one linking attribute that may
+	// name one entity.
+	KnowledgeProposalAttributes struct {
+		Category  kne.Category `json:"category"`
+		Kind      string       `json:"kind"`
+		Attribute string       `json:"attribute"`
+		// Values are the two values, in order, each with the entity holding it now.
+		Values []KnowledgeProposalValue `json:"values"`
+		Status string                   `json:"status" enum:"pending,confirmed,rejected"`
+		// Origin is why Rezible proposed it: a similar name, or an alias naming an entity differently.
+		Origin string `json:"origin" enum:"name_similarity,identity_conflict"`
+		// Rationale is Rezible's suggestion, in its own words.
+		Rationale string                      `json:"rationale"`
+		Evidence  KnowledgeProposalEvidence   `json:"evidence"`
+		Decisions []KnowledgeProposalDecision `json:"decisions"`
+		CreatedAt time.Time                   `json:"createdAt"`
+		// Implies, set by get-knowledge-proposal, lists the other proposals confirming this one would settle.
+		Implies []KnowledgeProposalImplication `json:"implies,omitempty"`
+	}
+
+	KnowledgeProposalValue struct {
+		Value string `json:"value"`
+		// Entity is the entity holding the value, absent when none does.
+		Entity *KnowledgeProposalValueEntity `json:"entity,omitempty"`
+	}
+
+	KnowledgeProposalValueEntity struct {
+		Id          uuid.UUID                   `json:"id"`
+		DisplayName string                      `json:"displayName"`
+		Aliases     []KnowledgeGraphEntityAlias `json:"aliases"`
+	}
+
+	// KnowledgeProposalEvidence is the evidence that brought the value which caused the proposal.
+	KnowledgeProposalEvidence struct {
+		Id uuid.UUID `json:"id"`
+		// SubjectEntityId is the entity the evidence is recorded on now.
+		SubjectEntityId        *uuid.UUID `json:"subjectEntityId,omitempty"`
+		IntegrationDisplayName string     `json:"integrationDisplayName"`
+		Provider               string     `json:"provider"`
+		ResourceRef            string     `json:"resourceRef"`
+		Assertion              string     `json:"assertion"`
+		EffectiveAt            time.Time  `json:"effectiveAt"`
+		// DisplayName is the name the evidence states.
+		DisplayName string `json:"displayName"`
+	}
+
+	KnowledgeProposalDecision struct {
+		Status    string                  `json:"status" enum:"confirmed,rejected"`
+		User      KnowledgeProposalPerson `json:"user"`
+		CreatedAt time.Time               `json:"createdAt"`
+		// ImpliedByProposalId is set when the decision followed from confirming that proposal, whose merge put
+		// both values on one entity.
+		ImpliedByProposalId *uuid.UUID `json:"impliedByProposalId,omitempty"`
+	}
+
+	KnowledgeProposalPerson struct {
+		Id   uuid.UUID `json:"id"`
+		Name string    `json:"name"`
+	}
+
+	// KnowledgeProposalImplication is a proposal that confirming another would confirm with it.
+	KnowledgeProposalImplication struct {
+		Id     uuid.UUID `json:"id"`
+		Values []string  `json:"values"`
+		Status string    `json:"status" enum:"pending,rejected"`
+		// RejectedBy and RejectedAt are the latest rejection, when it is rejected.
+		RejectedBy *KnowledgeProposalPerson `json:"rejectedBy,omitempty"`
+		RejectedAt *time.Time               `json:"rejectedAt,omitempty"`
+	}
+)
+
+func KnowledgeProposalPersonFromEnt(user *ent.User) *KnowledgeProposalPerson {
+	if user == nil {
+		return nil
+	}
+	return &KnowledgeProposalPerson{Id: user.ID, Name: user.Name}
+}
+
+// KnowledgeProposalFromRez converts a proposal with the entities holding its values.
+func KnowledgeProposalFromRez(p *rez.KnowledgeProposalWithValues) KnowledgeProposal {
+	proposal := p.Proposal
+	attrs := KnowledgeProposalAttributes{
+		Category:  kne.Category(proposal.Category),
+		Kind:      proposal.Kind,
+		Attribute: proposal.Attribute,
+		Status:    proposal.Status.String(),
+		Origin:    proposal.Origin.String(),
+		Rationale: proposal.Rationale,
+		Decisions: make([]KnowledgeProposalDecision, len(proposal.Edges.Decisions)),
+		CreatedAt: proposal.CreatedAt,
+	}
+	attrs.Values = []KnowledgeProposalValue{
+		KnowledgeProposalValueFromRez(p.ValueA),
+		KnowledgeProposalValueFromRez(p.ValueB),
+	}
+	if evidence := proposal.Edges.Evidence; evidence != nil {
+		attrs.Evidence = KnowledgeProposalEvidence{
+			Id:          evidence.ID,
+			Assertion:   evidence.Assertion,
+			EffectiveAt: evidence.EffectiveAt,
+			DisplayName: evidence.SubjectState.DisplayName,
+		}
+		if alias := evidence.Edges.SubjectAlias; alias != nil {
+			attrs.Evidence.SubjectEntityId = alias.EntityID
+			attrs.Evidence.IntegrationDisplayName = p.EvidenceIntegrationDisplayName
+			attrs.Evidence.Provider = alias.Provider
+			attrs.Evidence.ResourceRef = alias.ProviderResourceRef
+		}
+	}
+	for i, decision := range proposal.Edges.Decisions {
+		attrs.Decisions[i] = KnowledgeProposalDecision{
+			Status:              decision.Status.String(),
+			CreatedAt:           decision.CreatedAt,
+			ImpliedByProposalId: decision.ImpliedByProposalID,
+		}
+		if person := KnowledgeProposalPersonFromEnt(decision.Edges.User); person != nil {
+			attrs.Decisions[i].User = *person
+		}
+	}
+	return KnowledgeProposal{Id: proposal.ID, Attributes: attrs}
+}
+
+// KnowledgeProposalValueFromRez converts a proposal's value with the entity holding it, if any.
+func KnowledgeProposalValueFromRez(value rez.KnowledgeProposalValue) KnowledgeProposalValue {
+	converted := KnowledgeProposalValue{Value: value.Value}
+	if value.Holder == nil {
+		return converted
+	}
+	converted.Entity = &KnowledgeProposalValueEntity{
+		Id:          value.Holder.Entity.ID,
+		DisplayName: value.Holder.Entity.State.DisplayName,
+		Aliases:     make([]KnowledgeGraphEntityAlias, 0),
+	}
+	for _, alias := range value.Holder.Aliases {
+		converted.Entity.Aliases = append(converted.Entity.Aliases, KnowledgeGraphEntityAliasFromRez(alias))
+	}
+	return converted
+}
+
+func KnowledgeProposalImplicationFromEnt(proposal *ent.KnowledgeProposal) KnowledgeProposalImplication {
+	implication := KnowledgeProposalImplication{
+		Id:     proposal.ID,
+		Values: []string{proposal.ValueA, proposal.ValueB},
+		Status: proposal.Status.String(),
+	}
+	if proposal.Status == kp.StatusRejected {
+		for _, decision := range proposal.Edges.Decisions {
+			if decision.Status == kpd.StatusRejected {
+				implication.RejectedBy = KnowledgeProposalPersonFromEnt(decision.Edges.User)
+				implication.RejectedAt = new(decision.CreatedAt)
+			}
+		}
+	}
+	return implication
+}
+
+var ListKnowledgeProposals = huma.Operation{
+	OperationID: "list-knowledge-proposals",
+	Method:      http.MethodGet,
+	Path:        "/knowledge/proposals",
+	Summary:     "List Knowledge Proposals",
+	Tags:        knowledgeTags,
+	Errors:      ErrorCodes(),
+}
+
+type ListKnowledgeProposalsRequest struct {
+	PaginationRequest
+	Status []string `query:"status" required:"false" enum:"pending,confirmed,rejected"`
+	// EntityId keeps proposals naming a value one of the entities holds now.
+	EntityId []uuid.UUID `query:"entityId" required:"false"`
+}
+type ListKnowledgeProposalsResponse PaginatedResponse[KnowledgeProposal]
+
+var GetKnowledgeProposal = huma.Operation{
+	OperationID: "get-knowledge-proposal",
+	Method:      http.MethodGet,
+	Path:        "/knowledge/proposals/{id}",
+	Summary:     "Get Knowledge Proposal",
+	Tags:        knowledgeTags,
+	Errors:      ErrorCodes(),
+}
+
+type GetKnowledgeProposalRequest IdRequest
+type GetKnowledgeProposalResponse ItemResponse[KnowledgeProposal]
+
+var ConfirmKnowledgeProposal = huma.Operation{
+	OperationID: "confirm-knowledge-proposal",
+	Method:      http.MethodPost,
+	Path:        "/knowledge/proposals/{id}/confirm",
+	Summary:     "Confirm Knowledge Proposal",
+	Description: "Confirms that the proposal's two values name one entity, and merges their entities. This can't be undone.",
+	Tags:        knowledgeTags,
+	Errors:      ErrorCodes(http.StatusConflict),
+}
+
+type ConfirmKnowledgeProposalRequest IdRequest
+type ConfirmKnowledgeProposalResponse ItemResponse[KnowledgeProposal]
+
+var RejectKnowledgeProposal = huma.Operation{
+	OperationID: "reject-knowledge-proposal",
+	Method:      http.MethodPost,
+	Path:        "/knowledge/proposals/{id}/reject",
+	Summary:     "Reject Knowledge Proposal",
+	Tags:        knowledgeTags,
+	Errors:      ErrorCodes(http.StatusConflict),
+}
+
+type RejectKnowledgeProposalRequest IdRequest
+type RejectKnowledgeProposalResponse ItemResponse[KnowledgeProposal]

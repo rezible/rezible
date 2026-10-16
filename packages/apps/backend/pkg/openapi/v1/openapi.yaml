@@ -1270,6 +1270,21 @@ components:
       required:
         - data
       type: object
+    ConfirmKnowledgeProposalResponseBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/ConfirmKnowledgeProposalResponseBody.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          $ref: "#/components/schemas/KnowledgeProposal"
+      required:
+        - data
+      type: object
     CreateAgentSessionAttributes:
       additionalProperties: false
       properties:
@@ -3299,6 +3314,21 @@ components:
       required:
         - data
       type: object
+    GetKnowledgeProposalResponseBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/GetKnowledgeProposalResponseBody.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          $ref: "#/components/schemas/KnowledgeProposal"
+      required:
+        - data
+      type: object
     GetMeetingScheduleResponseBody:
       additionalProperties: false
       properties:
@@ -4991,6 +5021,19 @@ components:
       required:
         - data
       type: object
+    KnowledgeGraphAliasMerge:
+      additionalProperties: false
+      properties:
+        confirmedAt:
+          format: date-time
+          type: string
+        confirmedBy:
+          $ref: "#/components/schemas/KnowledgeProposalPerson"
+        proposalId:
+          type: string
+      required:
+        - proposalId
+      type: object
     KnowledgeGraphEntitiesPage:
       additionalProperties: false
       properties:
@@ -5017,12 +5060,34 @@ components:
         - id
         - attributes
       type: object
+    KnowledgeGraphEntityAlias:
+      additionalProperties: false
+      properties:
+        attributes:
+          $ref: "#/components/schemas/KnowledgeGraphSubjectAliasAttributes"
+        id:
+          type: string
+        integrationDisplayName:
+          type: string
+        lastRecordedAt:
+          format: date-time
+          type: string
+        mergedByProposal:
+          $ref: "#/components/schemas/KnowledgeGraphAliasMerge"
+        name:
+          type: string
+        provider:
+          type: string
+      required:
+        - id
+        - attributes
+      type: object
     KnowledgeGraphEntityAttributes:
       additionalProperties: false
       properties:
         aliases:
           items:
-            $ref: "#/components/schemas/KnowledgeGraphSubjectAlias"
+            $ref: "#/components/schemas/KnowledgeGraphEntityAlias"
           type: array
         category:
           enum:
@@ -5042,16 +5107,24 @@ components:
         createdAt:
           format: date-time
           type: string
+        displayName:
+          type: string
         kind:
           type: string
         latestState:
           $ref: "#/components/schemas/KnowledgeGraphSubjectState"
+        linkingAttributes:
+          items:
+            $ref: "#/components/schemas/KnowledgeGraphLinkingAttribute"
+          type: array
         updatedAt:
           format: date-time
           type: string
       required:
         - category
         - kind
+        - displayName
+        - linkingAttributes
         - aliases
         - createdAt
         - updatedAt
@@ -5124,6 +5197,17 @@ components:
         - eventId
         - subjectAliasId
         - subjectState
+      type: object
+    KnowledgeGraphLinkingAttribute:
+      additionalProperties: false
+      properties:
+        attribute:
+          type: string
+        value:
+          type: string
+      required:
+        - attribute
+        - value
       type: object
     KnowledgeGraphRelationship:
       additionalProperties: false
@@ -5262,6 +5346,191 @@ components:
         - displayName
         - description
         - properties
+      type: object
+    KnowledgeProposal:
+      additionalProperties: false
+      properties:
+        attributes:
+          $ref: "#/components/schemas/KnowledgeProposalAttributes"
+        id:
+          type: string
+      required:
+        - id
+        - attributes
+      type: object
+    KnowledgeProposalAttributes:
+      additionalProperties: false
+      properties:
+        attribute:
+          type: string
+        category:
+          enum:
+            - system_function
+            - actor
+            - system
+            - container
+            - infrastructure
+            - component
+            - code
+            - process
+            - concern
+            - decision
+            - event
+            - signal
+          type: string
+        createdAt:
+          format: date-time
+          type: string
+        decisions:
+          items:
+            $ref: "#/components/schemas/KnowledgeProposalDecision"
+          type: array
+        evidence:
+          $ref: "#/components/schemas/KnowledgeProposalEvidence"
+        implies:
+          items:
+            $ref: "#/components/schemas/KnowledgeProposalImplication"
+          type: array
+        kind:
+          type: string
+        origin:
+          enum:
+            - name_similarity
+            - identity_conflict
+          type: string
+        rationale:
+          type: string
+        status:
+          enum:
+            - pending
+            - confirmed
+            - rejected
+          type: string
+        values:
+          items:
+            $ref: "#/components/schemas/KnowledgeProposalValue"
+          type: array
+      required:
+        - category
+        - kind
+        - attribute
+        - values
+        - status
+        - origin
+        - rationale
+        - evidence
+        - decisions
+        - createdAt
+      type: object
+    KnowledgeProposalDecision:
+      additionalProperties: false
+      properties:
+        createdAt:
+          format: date-time
+          type: string
+        impliedByProposalId:
+          type: string
+        status:
+          enum:
+            - confirmed
+            - rejected
+          type: string
+        user:
+          $ref: "#/components/schemas/KnowledgeProposalPerson"
+      required:
+        - status
+        - user
+        - createdAt
+      type: object
+    KnowledgeProposalEvidence:
+      additionalProperties: false
+      properties:
+        assertion:
+          type: string
+        displayName:
+          type: string
+        effectiveAt:
+          format: date-time
+          type: string
+        id:
+          type: string
+        integrationDisplayName:
+          type: string
+        provider:
+          type: string
+        resourceRef:
+          type: string
+        subjectEntityId:
+          type: string
+      required:
+        - id
+        - integrationDisplayName
+        - provider
+        - resourceRef
+        - assertion
+        - effectiveAt
+        - displayName
+      type: object
+    KnowledgeProposalImplication:
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+        rejectedAt:
+          format: date-time
+          type: string
+        rejectedBy:
+          $ref: "#/components/schemas/KnowledgeProposalPerson"
+        status:
+          enum:
+            - pending
+            - rejected
+          type: string
+        values:
+          items:
+            type: string
+          type: array
+      required:
+        - id
+        - values
+        - status
+      type: object
+    KnowledgeProposalPerson:
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+      required:
+        - id
+        - name
+      type: object
+    KnowledgeProposalValue:
+      additionalProperties: false
+      properties:
+        entity:
+          $ref: "#/components/schemas/KnowledgeProposalValueEntity"
+        value:
+          type: string
+      required:
+        - value
+      type: object
+    KnowledgeProposalValueEntity:
+      additionalProperties: false
+      properties:
+        aliases:
+          items:
+            $ref: "#/components/schemas/KnowledgeGraphEntityAlias"
+          type: array
+        displayName:
+          type: string
+        id:
+          type: string
+      required:
+        - id
+        - displayName
+        - aliases
       type: object
     LinkIncidentSituationRequestAttributes:
       additionalProperties: false
@@ -6364,6 +6633,26 @@ components:
         - data
         - pagination
       type: object
+    PaginatedResponseBodyKnowledgeProposal:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/PaginatedResponseBodyKnowledgeProposal.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          items:
+            $ref: "#/components/schemas/KnowledgeProposal"
+          type: array
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+      required:
+        - data
+        - pagination
+      type: object
     PaginatedResponseBodyOncallRoster:
       additionalProperties: false
       properties:
@@ -6844,6 +7133,21 @@ components:
           type: string
         data:
           $ref: "#/components/schemas/Situation"
+      required:
+        - data
+      type: object
+    RejectKnowledgeProposalResponseBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/RejectKnowledgeProposalResponseBody.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          $ref: "#/components/schemas/KnowledgeProposal"
       required:
         - data
       type: object
@@ -8184,15 +8488,15 @@ components:
           type: string
         entityId:
           type: string
-        name:
-          type: string
         proposalId:
           type: string
         rationale:
           type: string
+        value:
+          type: string
       required:
         - proposalId
-        - name
+        - value
         - entityId
         - displayName
         - rationale
@@ -17508,6 +17812,269 @@ paths:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
       summary: Expand Knowledge Graph Relationships
+      tags:
+        - Knowledge Graph
+  /knowledge/proposals:
+    get:
+      operationId: list-knowledge-proposals
+      parameters:
+        - explode: false
+          in: query
+          name: page
+          schema:
+            default: 1
+            format: int64
+            minimum: 1
+            type: integer
+        - explode: false
+          in: query
+          name: pageSize
+          schema:
+            default: 25
+            format: int64
+            maximum: 50
+            minimum: 1
+            type: integer
+        - explode: false
+          in: query
+          name: status
+          schema:
+            items:
+              enum:
+                - pending
+                - confirmed
+                - rejected
+              type: string
+            type: array
+        - explode: false
+          in: query
+          name: entityId
+          schema:
+            items:
+              type: string
+            type: array
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedResponseBodyKnowledgeProposal"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: List Knowledge Proposals
+      tags:
+        - Knowledge Graph
+  /knowledge/proposals/{id}:
+    get:
+      operationId: get-knowledge-proposal
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetKnowledgeProposalResponseBody"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: Get Knowledge Proposal
+      tags:
+        - Knowledge Graph
+  /knowledge/proposals/{id}/confirm:
+    post:
+      description: Confirms that the proposal's two values name one entity, and merges their entities. This can't be undone.
+      operationId: confirm-knowledge-proposal
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConfirmKnowledgeProposalResponseBody"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Conflict
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: Confirm Knowledge Proposal
+      tags:
+        - Knowledge Graph
+  /knowledge/proposals/{id}/reject:
+    post:
+      operationId: reject-knowledge-proposal
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RejectKnowledgeProposalResponseBody"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Conflict
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: Reject Knowledge Proposal
       tags:
         - Knowledge Graph
   /knowledge/relationships:

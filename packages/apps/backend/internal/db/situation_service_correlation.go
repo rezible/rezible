@@ -30,8 +30,18 @@ const situationCorrelationLock = "situation_correlation"
 
 func NewProcessSituationSignalWorker(service *SituationService) jobs.WorkerDefinition {
 	return jobs.DefineWorkerFunc(func(ctx context.Context, args jobs.ProcessSituationSignal) error {
-		return service.ProcessSignal(ctx, args.SignalEntityID)
+		return service.signalJobError(service.ProcessSignal(ctx, args.SignalEntityID))
 	})
+}
+
+// signalJobError marks processErr retryable when an entity merge deleted a knowledge subject that correlation
+// read: correlation found it gone, or a write referring to it failed on its foreign key. The next attempt reads
+// the merged graph.
+func (s *SituationService) signalJobError(processErr error) error {
+	if errors.Is(processErr, errs.ErrKnowledgeSubjectMerged) || s.db.IsForeignKeyError(processErr, ent.KnowledgeForeignKeyConstraints...) {
+		return jobs.MarkRetryableError(processErr)
+	}
+	return processErr
 }
 
 // ProcessSignal brings situations up to date with a signal's stored state. It refreshes the situation

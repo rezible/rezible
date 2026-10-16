@@ -15,6 +15,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/knowledgeevidence"
 	"github.com/rezible/rezible/ent/knowledgeproposal"
+	"github.com/rezible/rezible/ent/knowledgeproposaldecision"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
@@ -78,15 +79,15 @@ func (_c *KnowledgeProposalCreate) SetAttribute(v string) *KnowledgeProposalCrea
 	return _c
 }
 
-// SetNameA sets the "name_a" field.
-func (_c *KnowledgeProposalCreate) SetNameA(v string) *KnowledgeProposalCreate {
-	_c.mutation.SetNameA(v)
+// SetValueA sets the "value_a" field.
+func (_c *KnowledgeProposalCreate) SetValueA(v string) *KnowledgeProposalCreate {
+	_c.mutation.SetValueA(v)
 	return _c
 }
 
-// SetNameB sets the "name_b" field.
-func (_c *KnowledgeProposalCreate) SetNameB(v string) *KnowledgeProposalCreate {
-	_c.mutation.SetNameB(v)
+// SetValueB sets the "value_b" field.
+func (_c *KnowledgeProposalCreate) SetValueB(v string) *KnowledgeProposalCreate {
+	_c.mutation.SetValueB(v)
 	return _c
 }
 
@@ -144,6 +145,21 @@ func (_c *KnowledgeProposalCreate) SetTenant(v *Tenant) *KnowledgeProposalCreate
 // SetEvidence sets the "evidence" edge to the KnowledgeEvidence entity.
 func (_c *KnowledgeProposalCreate) SetEvidence(v *KnowledgeEvidence) *KnowledgeProposalCreate {
 	return _c.SetEvidenceID(v.ID)
+}
+
+// AddDecisionIDs adds the "decisions" edge to the KnowledgeProposalDecision entity by IDs.
+func (_c *KnowledgeProposalCreate) AddDecisionIDs(ids ...uuid.UUID) *KnowledgeProposalCreate {
+	_c.mutation.AddDecisionIDs(ids...)
+	return _c
+}
+
+// AddDecisions adds the "decisions" edges to the KnowledgeProposalDecision entity.
+func (_c *KnowledgeProposalCreate) AddDecisions(v ...*KnowledgeProposalDecision) *KnowledgeProposalCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddDecisionIDs(ids...)
 }
 
 // Mutation returns the KnowledgeProposalMutation object of the builder.
@@ -246,20 +262,20 @@ func (_c *KnowledgeProposalCreate) check() error {
 			return &ValidationError{Name: "attribute", err: fmt.Errorf(`ent: validator failed for field "KnowledgeProposal.attribute": %w`, err)}
 		}
 	}
-	if _, ok := _c.mutation.NameA(); !ok {
-		return &ValidationError{Name: "name_a", err: errors.New(`ent: missing required field "KnowledgeProposal.name_a"`)}
+	if _, ok := _c.mutation.ValueA(); !ok {
+		return &ValidationError{Name: "value_a", err: errors.New(`ent: missing required field "KnowledgeProposal.value_a"`)}
 	}
-	if v, ok := _c.mutation.NameA(); ok {
-		if err := knowledgeproposal.NameAValidator(v); err != nil {
-			return &ValidationError{Name: "name_a", err: fmt.Errorf(`ent: validator failed for field "KnowledgeProposal.name_a": %w`, err)}
+	if v, ok := _c.mutation.ValueA(); ok {
+		if err := knowledgeproposal.ValueAValidator(v); err != nil {
+			return &ValidationError{Name: "value_a", err: fmt.Errorf(`ent: validator failed for field "KnowledgeProposal.value_a": %w`, err)}
 		}
 	}
-	if _, ok := _c.mutation.NameB(); !ok {
-		return &ValidationError{Name: "name_b", err: errors.New(`ent: missing required field "KnowledgeProposal.name_b"`)}
+	if _, ok := _c.mutation.ValueB(); !ok {
+		return &ValidationError{Name: "value_b", err: errors.New(`ent: missing required field "KnowledgeProposal.value_b"`)}
 	}
-	if v, ok := _c.mutation.NameB(); ok {
-		if err := knowledgeproposal.NameBValidator(v); err != nil {
-			return &ValidationError{Name: "name_b", err: fmt.Errorf(`ent: validator failed for field "KnowledgeProposal.name_b": %w`, err)}
+	if v, ok := _c.mutation.ValueB(); ok {
+		if err := knowledgeproposal.ValueBValidator(v); err != nil {
+			return &ValidationError{Name: "value_b", err: fmt.Errorf(`ent: validator failed for field "KnowledgeProposal.value_b": %w`, err)}
 		}
 	}
 	if _, ok := _c.mutation.Status(); !ok {
@@ -352,13 +368,13 @@ func (_c *KnowledgeProposalCreate) createSpec() (*KnowledgeProposal, *sqlgraph.C
 		_spec.SetField(knowledgeproposal.FieldAttribute, field.TypeString, value)
 		_node.Attribute = value
 	}
-	if value, ok := _c.mutation.NameA(); ok {
-		_spec.SetField(knowledgeproposal.FieldNameA, field.TypeString, value)
-		_node.NameA = value
+	if value, ok := _c.mutation.ValueA(); ok {
+		_spec.SetField(knowledgeproposal.FieldValueA, field.TypeString, value)
+		_node.ValueA = value
 	}
-	if value, ok := _c.mutation.NameB(); ok {
-		_spec.SetField(knowledgeproposal.FieldNameB, field.TypeString, value)
-		_node.NameB = value
+	if value, ok := _c.mutation.ValueB(); ok {
+		_spec.SetField(knowledgeproposal.FieldValueB, field.TypeString, value)
+		_node.ValueB = value
 	}
 	if value, ok := _c.mutation.Status(); ok {
 		_spec.SetField(knowledgeproposal.FieldStatus, field.TypeEnum, value)
@@ -406,6 +422,23 @@ func (_c *KnowledgeProposalCreate) createSpec() (*KnowledgeProposal, *sqlgraph.C
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.EvidenceID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.DecisionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   knowledgeproposal.DecisionsTable,
+			Columns: []string{knowledgeproposal.DecisionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeproposaldecision.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.KnowledgeProposalDecision
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
@@ -525,11 +558,11 @@ func (u *KnowledgeProposalUpsertOne) UpdateNewValues() *KnowledgeProposalUpsertO
 		if _, exists := u.create.mutation.Attribute(); exists {
 			s.SetIgnore(knowledgeproposal.FieldAttribute)
 		}
-		if _, exists := u.create.mutation.NameA(); exists {
-			s.SetIgnore(knowledgeproposal.FieldNameA)
+		if _, exists := u.create.mutation.ValueA(); exists {
+			s.SetIgnore(knowledgeproposal.FieldValueA)
 		}
-		if _, exists := u.create.mutation.NameB(); exists {
-			s.SetIgnore(knowledgeproposal.FieldNameB)
+		if _, exists := u.create.mutation.ValueB(); exists {
+			s.SetIgnore(knowledgeproposal.FieldValueB)
 		}
 		if _, exists := u.create.mutation.Origin(); exists {
 			s.SetIgnore(knowledgeproposal.FieldOrigin)
@@ -808,11 +841,11 @@ func (u *KnowledgeProposalUpsertBulk) UpdateNewValues() *KnowledgeProposalUpsert
 			if _, exists := b.mutation.Attribute(); exists {
 				s.SetIgnore(knowledgeproposal.FieldAttribute)
 			}
-			if _, exists := b.mutation.NameA(); exists {
-				s.SetIgnore(knowledgeproposal.FieldNameA)
+			if _, exists := b.mutation.ValueA(); exists {
+				s.SetIgnore(knowledgeproposal.FieldValueA)
 			}
-			if _, exists := b.mutation.NameB(); exists {
-				s.SetIgnore(knowledgeproposal.FieldNameB)
+			if _, exists := b.mutation.ValueB(); exists {
+				s.SetIgnore(knowledgeproposal.FieldValueB)
 			}
 			if _, exists := b.mutation.Origin(); exists {
 				s.SetIgnore(knowledgeproposal.FieldOrigin)

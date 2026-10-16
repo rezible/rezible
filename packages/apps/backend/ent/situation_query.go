@@ -17,6 +17,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/internal"
+	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/situation"
 	"github.com/rezible/rezible/ent/situationaction"
@@ -47,6 +48,7 @@ type SituationQuery struct {
 	withLinks             *SituationLinkQuery
 	withActions           *SituationActionQuery
 	withLatestJudgment    *SituationJudgmentQuery
+	withSeedEntity        *KnowledgeEntityQuery
 	modifiers             []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -334,6 +336,31 @@ func (_q *SituationQuery) QueryLatestJudgment() *SituationJudgmentQuery {
 	return query
 }
 
+// QuerySeedEntity chains the current query on the "seed_entity" edge.
+func (_q *SituationQuery) QuerySeedEntity() *KnowledgeEntityQuery {
+	query := (&KnowledgeEntityClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(situation.Table, situation.FieldID, selector),
+			sqlgraph.To(knowledgeentity.Table, knowledgeentity.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, situation.SeedEntityTable, situation.SeedEntityColumn),
+		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.KnowledgeEntity
+		step.Edge.Schema = schemaConfig.Situation
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
 // First returns the first Situation entity from the query.
 // Returns a *NotFoundError when no Situation was found.
 func (_q *SituationQuery) First(ctx context.Context) (*Situation, error) {
@@ -536,6 +563,7 @@ func (_q *SituationQuery) Clone() *SituationQuery {
 		withLinks:             _q.withLinks.Clone(),
 		withActions:           _q.withActions.Clone(),
 		withLatestJudgment:    _q.withLatestJudgment.Clone(),
+		withSeedEntity:        _q.withSeedEntity.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
@@ -652,6 +680,17 @@ func (_q *SituationQuery) WithLatestJudgment(opts ...func(*SituationJudgmentQuer
 	return _q
 }
 
+// WithSeedEntity tells the query-builder to eager-load the nodes that are connected to
+// the "seed_entity" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *SituationQuery) WithSeedEntity(opts ...func(*KnowledgeEntityQuery)) *SituationQuery {
+	query := (&KnowledgeEntityClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withSeedEntity = query
+	return _q
+}
+
 // GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
 //
@@ -736,7 +775,7 @@ func (_q *SituationQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Si
 	var (
 		nodes       = []*Situation{}
 		_spec       = _q.querySpec()
-		loadedTypes = [10]bool{
+		loadedTypes = [11]bool{
 			_q.withTenant != nil,
 			_q.withInvestigation != nil,
 			_q.withHazardAssessments != nil,
@@ -747,6 +786,7 @@ func (_q *SituationQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Si
 			_q.withLinks != nil,
 			_q.withActions != nil,
 			_q.withLatestJudgment != nil,
+			_q.withSeedEntity != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -840,6 +880,12 @@ func (_q *SituationQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Si
 	if query := _q.withLatestJudgment; query != nil {
 		if err := _q.loadLatestJudgment(ctx, query, nodes, nil,
 			func(n *Situation, e *SituationJudgment) { n.Edges.LatestJudgment = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withSeedEntity; query != nil {
+		if err := _q.loadSeedEntity(ctx, query, nodes, nil,
+			func(n *Situation, e *KnowledgeEntity) { n.Edges.SeedEntity = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -1177,6 +1223,35 @@ func (_q *SituationQuery) loadLatestJudgment(ctx context.Context, query *Situati
 	}
 	return nil
 }
+func (_q *SituationQuery) loadSeedEntity(ctx context.Context, query *KnowledgeEntityQuery, nodes []*Situation, init func(*Situation), assign func(*Situation, *KnowledgeEntity)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*Situation)
+	for i := range nodes {
+		fk := nodes[i].SeedEntityID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(knowledgeentity.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "seed_entity_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
 
 func (_q *SituationQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := _q.querySpec()
@@ -1213,6 +1288,9 @@ func (_q *SituationQuery) querySpec() *sqlgraph.QuerySpec {
 		}
 		if _q.withLatestJudgment != nil {
 			_spec.Node.AddColumnOnce(situation.FieldLatestJudgmentID)
+		}
+		if _q.withSeedEntity != nil {
+			_spec.Node.AddColumnOnce(situation.FieldSeedEntityID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {

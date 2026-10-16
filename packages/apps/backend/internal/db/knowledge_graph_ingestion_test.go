@@ -28,7 +28,9 @@ func TestKnowledgeGraphIngestionServiceSuite(t *testing.T) {
 }
 
 func (s *KnowledgeGraphIngestionServiceSuite) makeService(tdb rez.Database) *KnowledgeGraphIngestionService {
-	return &KnowledgeGraphIngestionService{db: tdb}
+	service, serviceErr := NewKnowledgeGraphIngestionService(tdb)
+	s.Require().NoError(serviceErr)
+	return service
 }
 
 func (s *KnowledgeGraphIngestionServiceSuite) createEvent(ctx context.Context, tdb rez.Database, resourceRef string, occurredAt time.Time) *ent.NormalizedEvent {

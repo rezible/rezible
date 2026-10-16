@@ -144,7 +144,7 @@ test("changesState: deployments link to their source, else their evidence, and s
 				unconfirmedMatches: [
 					{
 						proposalId: "proposal",
-						name: "checkout",
+						value: "checkout",
 						entityId: "other",
 						displayName: "checkout",
 						rationale: "`checkout` and `checkout-api` differ only by the generic term `api`",

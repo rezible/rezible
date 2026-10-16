@@ -11,8 +11,10 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/knowledgeproposal"
+	"github.com/rezible/rezible/ent/knowledgeproposaldecision"
 	"github.com/rezible/rezible/ent/predicate"
 )
 
@@ -63,9 +65,45 @@ func (_u *KnowledgeProposalUpdate) SetNillableStatus(v *knowledgeproposal.Status
 	return _u
 }
 
+// AddDecisionIDs adds the "decisions" edge to the KnowledgeProposalDecision entity by IDs.
+func (_u *KnowledgeProposalUpdate) AddDecisionIDs(ids ...uuid.UUID) *KnowledgeProposalUpdate {
+	_u.mutation.AddDecisionIDs(ids...)
+	return _u
+}
+
+// AddDecisions adds the "decisions" edges to the KnowledgeProposalDecision entity.
+func (_u *KnowledgeProposalUpdate) AddDecisions(v ...*KnowledgeProposalDecision) *KnowledgeProposalUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddDecisionIDs(ids...)
+}
+
 // Mutation returns the KnowledgeProposalMutation object of the builder.
 func (_u *KnowledgeProposalUpdate) Mutation() *KnowledgeProposalMutation {
 	return _u.mutation
+}
+
+// ClearDecisions clears all "decisions" edges to the KnowledgeProposalDecision entity.
+func (_u *KnowledgeProposalUpdate) ClearDecisions() *KnowledgeProposalUpdate {
+	_u.mutation.ClearDecisions()
+	return _u
+}
+
+// RemoveDecisionIDs removes the "decisions" edge to KnowledgeProposalDecision entities by IDs.
+func (_u *KnowledgeProposalUpdate) RemoveDecisionIDs(ids ...uuid.UUID) *KnowledgeProposalUpdate {
+	_u.mutation.RemoveDecisionIDs(ids...)
+	return _u
+}
+
+// RemoveDecisions removes "decisions" edges to KnowledgeProposalDecision entities.
+func (_u *KnowledgeProposalUpdate) RemoveDecisions(v ...*KnowledgeProposalDecision) *KnowledgeProposalUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveDecisionIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -147,6 +185,54 @@ func (_u *KnowledgeProposalUpdate) sqlSave(ctx context.Context) (_node int, err 
 	if value, ok := _u.mutation.Status(); ok {
 		_spec.SetField(knowledgeproposal.FieldStatus, field.TypeEnum, value)
 	}
+	if _u.mutation.DecisionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   knowledgeproposal.DecisionsTable,
+			Columns: []string{knowledgeproposal.DecisionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeproposaldecision.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.KnowledgeProposalDecision
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedDecisionsIDs(); len(nodes) > 0 && !_u.mutation.DecisionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   knowledgeproposal.DecisionsTable,
+			Columns: []string{knowledgeproposal.DecisionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeproposaldecision.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.KnowledgeProposalDecision
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.DecisionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   knowledgeproposal.DecisionsTable,
+			Columns: []string{knowledgeproposal.DecisionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeproposaldecision.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.KnowledgeProposalDecision
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	_spec.Node.Schema = _u.schemaConfig.KnowledgeProposal
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
@@ -203,9 +289,45 @@ func (_u *KnowledgeProposalUpdateOne) SetNillableStatus(v *knowledgeproposal.Sta
 	return _u
 }
 
+// AddDecisionIDs adds the "decisions" edge to the KnowledgeProposalDecision entity by IDs.
+func (_u *KnowledgeProposalUpdateOne) AddDecisionIDs(ids ...uuid.UUID) *KnowledgeProposalUpdateOne {
+	_u.mutation.AddDecisionIDs(ids...)
+	return _u
+}
+
+// AddDecisions adds the "decisions" edges to the KnowledgeProposalDecision entity.
+func (_u *KnowledgeProposalUpdateOne) AddDecisions(v ...*KnowledgeProposalDecision) *KnowledgeProposalUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddDecisionIDs(ids...)
+}
+
 // Mutation returns the KnowledgeProposalMutation object of the builder.
 func (_u *KnowledgeProposalUpdateOne) Mutation() *KnowledgeProposalMutation {
 	return _u.mutation
+}
+
+// ClearDecisions clears all "decisions" edges to the KnowledgeProposalDecision entity.
+func (_u *KnowledgeProposalUpdateOne) ClearDecisions() *KnowledgeProposalUpdateOne {
+	_u.mutation.ClearDecisions()
+	return _u
+}
+
+// RemoveDecisionIDs removes the "decisions" edge to KnowledgeProposalDecision entities by IDs.
+func (_u *KnowledgeProposalUpdateOne) RemoveDecisionIDs(ids ...uuid.UUID) *KnowledgeProposalUpdateOne {
+	_u.mutation.RemoveDecisionIDs(ids...)
+	return _u
+}
+
+// RemoveDecisions removes "decisions" edges to KnowledgeProposalDecision entities.
+func (_u *KnowledgeProposalUpdateOne) RemoveDecisions(v ...*KnowledgeProposalDecision) *KnowledgeProposalUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveDecisionIDs(ids...)
 }
 
 // Where appends a list predicates to the KnowledgeProposalUpdate builder.
@@ -316,6 +438,54 @@ func (_u *KnowledgeProposalUpdateOne) sqlSave(ctx context.Context) (_node *Knowl
 	}
 	if value, ok := _u.mutation.Status(); ok {
 		_spec.SetField(knowledgeproposal.FieldStatus, field.TypeEnum, value)
+	}
+	if _u.mutation.DecisionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   knowledgeproposal.DecisionsTable,
+			Columns: []string{knowledgeproposal.DecisionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeproposaldecision.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.KnowledgeProposalDecision
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedDecisionsIDs(); len(nodes) > 0 && !_u.mutation.DecisionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   knowledgeproposal.DecisionsTable,
+			Columns: []string{knowledgeproposal.DecisionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeproposaldecision.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.KnowledgeProposalDecision
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.DecisionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   knowledgeproposal.DecisionsTable,
+			Columns: []string{knowledgeproposal.DecisionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeproposaldecision.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.KnowledgeProposalDecision
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_spec.Node.Schema = _u.schemaConfig.KnowledgeProposal
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)

@@ -7,6 +7,8 @@ import (
 
 	"entgo.io/ent/entc"
 	"entgo.io/ent/entc/gen"
+
+	"github.com/rezible/rezible/ent/schema/knowledgerefs"
 )
 
 var enumValuesTemplate = gen.MustParse(gen.NewTemplate("enum_values").Parse(`
@@ -59,7 +61,10 @@ func main() {
 			enumValuesTemplate,
 		},
 	}
-	if genErr := entc.Generate("./schema", cfg); genErr != nil {
+	opts := []entc.Option{
+		entc.Extensions(knowledgerefs.NewExtension()),
+	}
+	if genErr := entc.Generate("./schema", cfg, opts...); genErr != nil {
 		log.Fatalln("running ent codegen:", genErr)
 	}
 }

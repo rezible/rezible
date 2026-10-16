@@ -4,11 +4,13 @@ import (
 	"context"
 	"fmt"
 
+	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	dc "github.com/rezible/rezible/ent/discussioncomment"
 	dt "github.com/rezible/rezible/ent/discussionthread"
+	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/review"
 	"github.com/rezible/rezible/pkg/errs"
 )
@@ -40,10 +42,13 @@ func (s *DiscussionService) ListThreads(ctx context.Context, params rez.ListDisc
 		query = query.Where(dt.RetrospectiveID(params.RetrospectiveID))
 	}
 	if params.TargetKind != "" {
-		query = query.Where(dt.TargetKindEQ(params.TargetKind))
-	}
-	if params.TargetID != uuid.Nil {
-		query = query.Where(dt.TargetID(params.TargetID))
+		targetPredicate, targetErr := s.threadTargetPredicate(params.TargetKind, params.TargetID)
+		if targetErr != nil {
+			return nil, targetErr
+		}
+		query = query.Where(targetPredicate)
+	} else if params.TargetID != uuid.Nil {
+		return nil, fmt.Errorf("%w: a discussion target ID needs its kind", errs.ErrInvalidInput)
 	}
 	if params.Resolved != nil {
 		pred := dt.ResolvedAtIsNil()
@@ -55,6 +60,29 @@ func (s *DiscussionService) ListThreads(ctx context.Context, params rez.ListDisc
 	order := params.ListParams.GetOrder()
 	query = query.Order(dt.ByCreatedAt(order), dt.ByID(order))
 	return ent.DoListQuery[ent.DiscussionThread, *ent.DiscussionThreadQuery](ctx, query, params.ListParams)
+}
+
+// threadTargetPredicate matches threads with a target of the kind, or, given an ID, that target.
+func (s *DiscussionService) threadTargetPredicate(kind rez.DiscussionThreadTargetKind, id uuid.UUID) (predicate.DiscussionThread, error) {
+	var column string
+	switch kind {
+	case rez.DiscussionThreadTargetFinding:
+		column = dt.FieldTargetFindingID
+	case rez.DiscussionThreadTargetEntry:
+		column = dt.FieldTargetEntryID
+	case rez.DiscussionThreadTargetKnowledgeEntity:
+		column = dt.FieldTargetKnowledgeEntityID
+	case rez.DiscussionThreadTargetKnowledgeRelationship:
+		column = dt.FieldTargetKnowledgeRelationshipID
+	case rez.DiscussionThreadTargetNormalizedEvent:
+		column = dt.FieldTargetNormalizedEventID
+	default:
+		return nil, fmt.Errorf("%w: unknown discussion target kind %q", errs.ErrInvalidInput, kind)
+	}
+	if id == uuid.Nil {
+		return predicate.DiscussionThread(sql.FieldNotNull(column)), nil
+	}
+	return predicate.DiscussionThread(sql.FieldEQ(column, id)), nil
 }
 
 func (s *DiscussionService) CreateThread(ctx context.Context, params rez.CreateDiscussionThreadParams) (*ent.DiscussionThread, error) {

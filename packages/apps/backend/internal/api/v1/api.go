@@ -68,6 +68,8 @@ func NewHandler(
 	discussions rez.DiscussionService,
 	systemAnalysis rez.SystemAnalysisService,
 	knowledge rez.KnowledgeGraphQueryService,
+	knowledgeAliases rez.KnowledgeEntityAliasService,
+	proposals rez.KnowledgeProposalService,
 	situations rez.SituationService,
 	situationBriefs rez.SituationBriefService,
 ) *Handler {
@@ -96,7 +98,7 @@ func NewHandler(
 		playbooksHandler:        newPlaybooksHandler(playbooks),
 		retrospectivesHandler:   newRetrospectivesHandler(users, incidents, retros, documents),
 		systemAnalysisHandler:   newSystemAnalysisHandler(systemAnalysis),
-		knowledgeGraphHandler:   newKnowledgeGraphHandler(knowledge),
+		knowledgeGraphHandler:   newKnowledgeGraphHandler(knowledge, knowledgeAliases, proposals),
 		situationsHandler:       newSituationsHandler(bh, situations, situationBriefs),
 		discussionHandler:       newDiscussionHandler(discussions),
 		teamsHandler:            newTeamsHandler(db),

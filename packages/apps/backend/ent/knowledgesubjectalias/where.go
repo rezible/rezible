@@ -85,6 +85,11 @@ func RelationshipID(v uuid.UUID) predicate.KnowledgeSubjectAlias {
 	return predicate.KnowledgeSubjectAlias(sql.FieldEQ(FieldRelationshipID, v))
 }
 
+// MergedByProposalID applies equality check predicate on the "merged_by_proposal_id" field. It's identical to MergedByProposalIDEQ.
+func MergedByProposalID(v uuid.UUID) predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(sql.FieldEQ(FieldMergedByProposalID, v))
+}
+
 // TenantIDEQ applies the EQ predicate on the "tenant_id" field.
 func TenantIDEQ(v int) predicate.KnowledgeSubjectAlias {
 	return predicate.KnowledgeSubjectAlias(sql.FieldEQ(FieldTenantID, v))
@@ -380,6 +385,36 @@ func RelationshipIDNotNil() predicate.KnowledgeSubjectAlias {
 	return predicate.KnowledgeSubjectAlias(sql.FieldNotNull(FieldRelationshipID))
 }
 
+// MergedByProposalIDEQ applies the EQ predicate on the "merged_by_proposal_id" field.
+func MergedByProposalIDEQ(v uuid.UUID) predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(sql.FieldEQ(FieldMergedByProposalID, v))
+}
+
+// MergedByProposalIDNEQ applies the NEQ predicate on the "merged_by_proposal_id" field.
+func MergedByProposalIDNEQ(v uuid.UUID) predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(sql.FieldNEQ(FieldMergedByProposalID, v))
+}
+
+// MergedByProposalIDIn applies the In predicate on the "merged_by_proposal_id" field.
+func MergedByProposalIDIn(vs ...uuid.UUID) predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(sql.FieldIn(FieldMergedByProposalID, vs...))
+}
+
+// MergedByProposalIDNotIn applies the NotIn predicate on the "merged_by_proposal_id" field.
+func MergedByProposalIDNotIn(vs ...uuid.UUID) predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(sql.FieldNotIn(FieldMergedByProposalID, vs...))
+}
+
+// MergedByProposalIDIsNil applies the IsNil predicate on the "merged_by_proposal_id" field.
+func MergedByProposalIDIsNil() predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(sql.FieldIsNull(FieldMergedByProposalID))
+}
+
+// MergedByProposalIDNotNil applies the NotNil predicate on the "merged_by_proposal_id" field.
+func MergedByProposalIDNotNil() predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(sql.FieldNotNull(FieldMergedByProposalID))
+}
+
 // HasTenant applies the HasEdge predicate on the "tenant" edge.
 func HasTenant() predicate.KnowledgeSubjectAlias {
 	return predicate.KnowledgeSubjectAlias(func(s *sql.Selector) {
@@ -458,6 +493,35 @@ func HasRelationshipWith(preds ...predicate.KnowledgeRelationship) predicate.Kno
 		step := newRelationshipStep()
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.KnowledgeRelationship
+		step.Edge.Schema = schemaConfig.KnowledgeSubjectAlias
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasMergedByProposal applies the HasEdge predicate on the "merged_by_proposal" edge.
+func HasMergedByProposal() predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, MergedByProposalTable, MergedByProposalColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.KnowledgeProposal
+		step.Edge.Schema = schemaConfig.KnowledgeSubjectAlias
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasMergedByProposalWith applies the HasEdge predicate on the "merged_by_proposal" edge with a given conditions (other predicates).
+func HasMergedByProposalWith(preds ...predicate.KnowledgeProposal) predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(func(s *sql.Selector) {
+		step := newMergedByProposalStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.KnowledgeProposal
 		step.Edge.Schema = schemaConfig.KnowledgeSubjectAlias
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

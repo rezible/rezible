@@ -211,8 +211,8 @@ func (i *investigationInvocation) introduceSituation(ctx context.Context) (*reza
 		}
 		for _, match := range matches[entity.ID] {
 			introducedEntity.UnconfirmedMatches = append(introducedEntity.UnconfirmedMatches, rezai.InvestigationUnconfirmedMatch{
-				Ref:  i.formatRef(match.Entity.ID),
-				Name: limitedAnalysisDescription(match.Name),
+				Ref:   i.formatRef(match.Entity.ID),
+				Value: limitedAnalysisDescription(match.Value),
 			})
 		}
 		introduced.Entities = append(introduced.Entities, introducedEntity)

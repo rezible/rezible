@@ -57,7 +57,7 @@ func (s *KnowledgeGraphIngestionServiceSuite) mustObserve(ctx context.Context, t
 
 func (s *KnowledgeGraphIngestionServiceSuite) proposals(ctx context.Context, tdb rez.Database) []*ent.KnowledgeProposal {
 	queryProposals := tdb.Client(ctx).KnowledgeProposal.Query().
-		Order(kp.ByNameA(), kp.ByNameB())
+		Order(kp.ByValueA(), kp.ByValueB())
 	return queryProposals.AllX(ctx)
 }
 
@@ -105,8 +105,8 @@ func (s *KnowledgeGraphIngestionServiceSuite) TestSimilarNameBecomesProposal() {
 			s.Equal(kp.CategoryContainer, proposal.Category)
 			s.Equal("service", proposal.Kind)
 			s.Equal(projections.LinkingAttributeServiceName, proposal.Attribute)
-			s.Equal("checkout", proposal.NameA)
-			s.Equal("checkout-api", proposal.NameB)
+			s.Equal("checkout", proposal.ValueA)
+			s.Equal("checkout-api", proposal.ValueB)
 			s.Contains(proposal.Rationale, "differ only by the generic term `api`")
 			s.Equal(s.eventEvidenceID(ctx, tdb, secondEvent), proposal.EvidenceID)
 
@@ -159,8 +159,8 @@ func (s *KnowledgeGraphIngestionServiceSuite) TestSimilarNameBecomesProposal() {
 			SetCategory(kp.CategoryContainer).
 			SetKind("service").
 			SetAttribute(projections.LinkingAttributeServiceName).
-			SetNameA("checkout").
-			SetNameB("checkout-api").
+			SetValueA("checkout").
+			SetValueB("checkout-api").
 			SetStatus(kp.StatusRejected).
 			SetOrigin(kp.OriginNameSimilarity).
 			SetRationale("Rejected earlier.").
@@ -244,8 +244,8 @@ func (s *KnowledgeGraphIngestionServiceSuite) TestIdentityConflictBecomesProposa
 		s.Require().Len(proposals, 1)
 		s.Equal(kp.StatusPending, proposals[0].Status)
 		s.Equal(kp.OriginIdentityConflict, proposals[0].Origin)
-		s.Equal("checkout", proposals[0].NameA)
-		s.Equal("payments", proposals[0].NameB)
+		s.Equal("checkout", proposals[0].ValueA)
+		s.Equal("payments", proposals[0].ValueB)
 		s.Equal(conflictEvidence.ID, proposals[0].EvidenceID)
 
 		againErr := s.makeService(tdb).IngestEvidence(ctx, conflictEvent, rez.KnowledgeEvidenceRef{
@@ -297,14 +297,13 @@ func (s *KnowledgeGraphIngestionServiceSuite) TestIdentityConflictBecomesProposa
 func (s *KnowledgeGraphIngestionServiceSuite) TestListProposals() {
 	ctx, tdb := s.SetupTestDatabase()
 	client := tdb.Client(ctx)
-	proposalService, serviceErr := NewKnowledgeProposalService(tdb)
-	s.Require().NoError(serviceErr)
+	proposalService := s.makeProposalService(tdb)
 	s.mustObserve(ctx, tdb, s.proposalServiceRef("provider-a", "service:checkout-api", "checkout-api"))
 	s.mustObserve(ctx, tdb, s.proposalServiceRef("provider-b", "service:checkout", "checkout"))
 	s.mustObserve(ctx, tdb, s.proposalServiceRef("provider-a", "service:payments-api", "payments-api"))
 	s.mustObserve(ctx, tdb, s.proposalServiceRef("provider-b", "service:payments-svc", "payments-svc"))
 	rejectPayments := client.KnowledgeProposal.Update().
-		Where(kp.NameA("payments-api")).
+		Where(kp.ValueA("payments-api")).
 		SetStatus(kp.StatusRejected)
 	rejectPayments.ExecX(ctx)
 	checkoutID := s.entityNamed(ctx, tdb, projections.LinkingAttributeServiceName, "checkout")
@@ -318,11 +317,11 @@ func (s *KnowledgeGraphIngestionServiceSuite) TestListProposals() {
 	s.Run("by status", func() {
 		pending := list(rez.ListProposalsParams{Statuses: []kp.Status{kp.StatusPending}})
 		s.Require().Len(pending.Data, 1)
-		s.Equal("checkout", pending.Data[0].NameA)
+		s.Equal("checkout", pending.Data[0].ValueA)
 
 		rejected := list(rez.ListProposalsParams{Statuses: []kp.Status{kp.StatusRejected}})
 		s.Require().Len(rejected.Data, 1)
-		s.Equal("payments-api", rejected.Data[0].NameA)
+		s.Equal("payments-api", rejected.Data[0].ValueA)
 	})
 
 	s.Run("by entity, with evidence", func() {
@@ -330,7 +329,7 @@ func (s *KnowledgeGraphIngestionServiceSuite) TestListProposals() {
 
 		s.Require().Len(forCheckout.Data, 1)
 		proposal := forCheckout.Data[0]
-		s.Equal("checkout", proposal.NameA)
+		s.Equal("checkout", proposal.ValueA)
 		evidence, evidenceErr := proposal.Edges.EvidenceOrErr()
 		s.Require().NoError(evidenceErr)
 		alias, aliasErr := evidence.Edges.SubjectAliasOrErr()
@@ -359,7 +358,7 @@ func (s *KnowledgeGraphIngestionServiceSuite) TestListProposals() {
 		forMergedAway := list(rez.ListProposalsParams{EntityIDs: []uuid.UUID{checkoutID}})
 
 		s.Require().Len(forSurvivor.Data, 1)
-		s.Equal("checkout", forSurvivor.Data[0].NameA)
+		s.Equal("checkout", forSurvivor.Data[0].ValueA)
 		s.Empty(forMergedAway.Data)
 	})
 }

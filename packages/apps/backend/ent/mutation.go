@@ -64,6 +64,7 @@ import (
 	"github.com/rezible/rezible/ent/knowledgeentitylinkingattribute"
 	"github.com/rezible/rezible/ent/knowledgeevidence"
 	"github.com/rezible/rezible/ent/knowledgeproposal"
+	"github.com/rezible/rezible/ent/knowledgeproposaldecision"
 	"github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/knowledgesubjectalias"
 	"github.com/rezible/rezible/ent/meetingschedule"
@@ -172,6 +173,7 @@ const (
 	TypeKnowledgeEntityLinkingAttribute = "KnowledgeEntityLinkingAttribute"
 	TypeKnowledgeEvidence               = "KnowledgeEvidence"
 	TypeKnowledgeProposal               = "KnowledgeProposal"
+	TypeKnowledgeProposalDecision       = "KnowledgeProposalDecision"
 	TypeKnowledgeRelationship           = "KnowledgeRelationship"
 	TypeKnowledgeSubjectAlias           = "KnowledgeSubjectAlias"
 	TypeMeetingSchedule                 = "MeetingSchedule"
@@ -13497,32 +13499,40 @@ func (m *DiscussionCommentMutation) ResetEdge(name string) error {
 // DiscussionThreadMutation represents an operation that mutates the DiscussionThread nodes in the graph.
 type DiscussionThreadMutation struct {
 	config
-	op                   Op
-	typ                  string
-	id                   *uuid.UUID
-	created_at           *time.Time
-	updated_at           *time.Time
-	target_kind          *discussionthread.TargetKind
-	target_id            *uuid.UUID
-	resolution_state     *discussionthread.ResolutionState
-	resolved_by_id       *uuid.UUID
-	resolved_at          *time.Time
-	resolution_note      *string
-	clearedFields        map[string]struct{}
-	tenant               *int
-	clearedtenant        bool
-	analysis             *uuid.UUID
-	clearedanalysis      bool
-	retrospective        *uuid.UUID
-	clearedretrospective bool
-	user                 *uuid.UUID
-	cleareduser          bool
-	comments             map[uuid.UUID]struct{}
-	removedcomments      map[uuid.UUID]struct{}
-	clearedcomments      bool
-	done                 bool
-	oldValue             func(context.Context) (*DiscussionThread, error)
-	predicates           []predicate.DiscussionThread
+	op                                   Op
+	typ                                  string
+	id                                   *uuid.UUID
+	created_at                           *time.Time
+	updated_at                           *time.Time
+	resolution_state                     *discussionthread.ResolutionState
+	resolved_by_id                       *uuid.UUID
+	resolved_at                          *time.Time
+	resolution_note                      *string
+	clearedFields                        map[string]struct{}
+	tenant                               *int
+	clearedtenant                        bool
+	analysis                             *uuid.UUID
+	clearedanalysis                      bool
+	retrospective                        *uuid.UUID
+	clearedretrospective                 bool
+	user                                 *uuid.UUID
+	cleareduser                          bool
+	comments                             map[uuid.UUID]struct{}
+	removedcomments                      map[uuid.UUID]struct{}
+	clearedcomments                      bool
+	target_finding                       *uuid.UUID
+	clearedtarget_finding                bool
+	target_entry                         *uuid.UUID
+	clearedtarget_entry                  bool
+	target_normalized_event              *uuid.UUID
+	clearedtarget_normalized_event       bool
+	target_knowledge_entity              *uuid.UUID
+	clearedtarget_knowledge_entity       bool
+	target_knowledge_relationship        *uuid.UUID
+	clearedtarget_knowledge_relationship bool
+	done                                 bool
+	oldValue                             func(context.Context) (*DiscussionThread, error)
+	predicates                           []predicate.DiscussionThread
 }
 
 var _ ent.Mutation = (*DiscussionThreadMutation)(nil)
@@ -13871,102 +13881,249 @@ func (m *DiscussionThreadMutation) ResetUserID() {
 	m.user = nil
 }
 
-// SetTargetKind sets the "target_kind" field.
-func (m *DiscussionThreadMutation) SetTargetKind(dk discussionthread.TargetKind) {
-	m.target_kind = &dk
+// SetTargetFindingID sets the "target_finding_id" field.
+func (m *DiscussionThreadMutation) SetTargetFindingID(u uuid.UUID) {
+	m.target_finding = &u
 }
 
-// TargetKind returns the value of the "target_kind" field in the mutation.
-func (m *DiscussionThreadMutation) TargetKind() (r discussionthread.TargetKind, exists bool) {
-	v := m.target_kind
+// TargetFindingID returns the value of the "target_finding_id" field in the mutation.
+func (m *DiscussionThreadMutation) TargetFindingID() (r uuid.UUID, exists bool) {
+	v := m.target_finding
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldTargetKind returns the old "target_kind" field's value of the DiscussionThread entity.
+// OldTargetFindingID returns the old "target_finding_id" field's value of the DiscussionThread entity.
 // If the DiscussionThread object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *DiscussionThreadMutation) OldTargetKind(ctx context.Context) (v *discussionthread.TargetKind, err error) {
+func (m *DiscussionThreadMutation) OldTargetFindingID(ctx context.Context) (v *uuid.UUID, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldTargetKind is only allowed on UpdateOne operations")
+		return v, errors.New("OldTargetFindingID is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldTargetKind requires an ID field in the mutation")
+		return v, errors.New("OldTargetFindingID requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldTargetKind: %w", err)
+		return v, fmt.Errorf("querying old value for OldTargetFindingID: %w", err)
 	}
-	return oldValue.TargetKind, nil
+	return oldValue.TargetFindingID, nil
 }
 
-// ClearTargetKind clears the value of the "target_kind" field.
-func (m *DiscussionThreadMutation) ClearTargetKind() {
-	m.target_kind = nil
-	m.clearedFields[discussionthread.FieldTargetKind] = struct{}{}
+// ClearTargetFindingID clears the value of the "target_finding_id" field.
+func (m *DiscussionThreadMutation) ClearTargetFindingID() {
+	m.target_finding = nil
+	m.clearedFields[discussionthread.FieldTargetFindingID] = struct{}{}
 }
 
-// TargetKindCleared returns if the "target_kind" field was cleared in this mutation.
-func (m *DiscussionThreadMutation) TargetKindCleared() bool {
-	_, ok := m.clearedFields[discussionthread.FieldTargetKind]
+// TargetFindingIDCleared returns if the "target_finding_id" field was cleared in this mutation.
+func (m *DiscussionThreadMutation) TargetFindingIDCleared() bool {
+	_, ok := m.clearedFields[discussionthread.FieldTargetFindingID]
 	return ok
 }
 
-// ResetTargetKind resets all changes to the "target_kind" field.
-func (m *DiscussionThreadMutation) ResetTargetKind() {
-	m.target_kind = nil
-	delete(m.clearedFields, discussionthread.FieldTargetKind)
+// ResetTargetFindingID resets all changes to the "target_finding_id" field.
+func (m *DiscussionThreadMutation) ResetTargetFindingID() {
+	m.target_finding = nil
+	delete(m.clearedFields, discussionthread.FieldTargetFindingID)
 }
 
-// SetTargetID sets the "target_id" field.
-func (m *DiscussionThreadMutation) SetTargetID(u uuid.UUID) {
-	m.target_id = &u
+// SetTargetEntryID sets the "target_entry_id" field.
+func (m *DiscussionThreadMutation) SetTargetEntryID(u uuid.UUID) {
+	m.target_entry = &u
 }
 
-// TargetID returns the value of the "target_id" field in the mutation.
-func (m *DiscussionThreadMutation) TargetID() (r uuid.UUID, exists bool) {
-	v := m.target_id
+// TargetEntryID returns the value of the "target_entry_id" field in the mutation.
+func (m *DiscussionThreadMutation) TargetEntryID() (r uuid.UUID, exists bool) {
+	v := m.target_entry
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldTargetID returns the old "target_id" field's value of the DiscussionThread entity.
+// OldTargetEntryID returns the old "target_entry_id" field's value of the DiscussionThread entity.
 // If the DiscussionThread object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *DiscussionThreadMutation) OldTargetID(ctx context.Context) (v *uuid.UUID, err error) {
+func (m *DiscussionThreadMutation) OldTargetEntryID(ctx context.Context) (v *uuid.UUID, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldTargetID is only allowed on UpdateOne operations")
+		return v, errors.New("OldTargetEntryID is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldTargetID requires an ID field in the mutation")
+		return v, errors.New("OldTargetEntryID requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldTargetID: %w", err)
+		return v, fmt.Errorf("querying old value for OldTargetEntryID: %w", err)
 	}
-	return oldValue.TargetID, nil
+	return oldValue.TargetEntryID, nil
 }
 
-// ClearTargetID clears the value of the "target_id" field.
-func (m *DiscussionThreadMutation) ClearTargetID() {
-	m.target_id = nil
-	m.clearedFields[discussionthread.FieldTargetID] = struct{}{}
+// ClearTargetEntryID clears the value of the "target_entry_id" field.
+func (m *DiscussionThreadMutation) ClearTargetEntryID() {
+	m.target_entry = nil
+	m.clearedFields[discussionthread.FieldTargetEntryID] = struct{}{}
 }
 
-// TargetIDCleared returns if the "target_id" field was cleared in this mutation.
-func (m *DiscussionThreadMutation) TargetIDCleared() bool {
-	_, ok := m.clearedFields[discussionthread.FieldTargetID]
+// TargetEntryIDCleared returns if the "target_entry_id" field was cleared in this mutation.
+func (m *DiscussionThreadMutation) TargetEntryIDCleared() bool {
+	_, ok := m.clearedFields[discussionthread.FieldTargetEntryID]
 	return ok
 }
 
-// ResetTargetID resets all changes to the "target_id" field.
-func (m *DiscussionThreadMutation) ResetTargetID() {
-	m.target_id = nil
-	delete(m.clearedFields, discussionthread.FieldTargetID)
+// ResetTargetEntryID resets all changes to the "target_entry_id" field.
+func (m *DiscussionThreadMutation) ResetTargetEntryID() {
+	m.target_entry = nil
+	delete(m.clearedFields, discussionthread.FieldTargetEntryID)
+}
+
+// SetTargetKnowledgeEntityID sets the "target_knowledge_entity_id" field.
+func (m *DiscussionThreadMutation) SetTargetKnowledgeEntityID(u uuid.UUID) {
+	m.target_knowledge_entity = &u
+}
+
+// TargetKnowledgeEntityID returns the value of the "target_knowledge_entity_id" field in the mutation.
+func (m *DiscussionThreadMutation) TargetKnowledgeEntityID() (r uuid.UUID, exists bool) {
+	v := m.target_knowledge_entity
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTargetKnowledgeEntityID returns the old "target_knowledge_entity_id" field's value of the DiscussionThread entity.
+// If the DiscussionThread object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DiscussionThreadMutation) OldTargetKnowledgeEntityID(ctx context.Context) (v *uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTargetKnowledgeEntityID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTargetKnowledgeEntityID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTargetKnowledgeEntityID: %w", err)
+	}
+	return oldValue.TargetKnowledgeEntityID, nil
+}
+
+// ClearTargetKnowledgeEntityID clears the value of the "target_knowledge_entity_id" field.
+func (m *DiscussionThreadMutation) ClearTargetKnowledgeEntityID() {
+	m.target_knowledge_entity = nil
+	m.clearedFields[discussionthread.FieldTargetKnowledgeEntityID] = struct{}{}
+}
+
+// TargetKnowledgeEntityIDCleared returns if the "target_knowledge_entity_id" field was cleared in this mutation.
+func (m *DiscussionThreadMutation) TargetKnowledgeEntityIDCleared() bool {
+	_, ok := m.clearedFields[discussionthread.FieldTargetKnowledgeEntityID]
+	return ok
+}
+
+// ResetTargetKnowledgeEntityID resets all changes to the "target_knowledge_entity_id" field.
+func (m *DiscussionThreadMutation) ResetTargetKnowledgeEntityID() {
+	m.target_knowledge_entity = nil
+	delete(m.clearedFields, discussionthread.FieldTargetKnowledgeEntityID)
+}
+
+// SetTargetKnowledgeRelationshipID sets the "target_knowledge_relationship_id" field.
+func (m *DiscussionThreadMutation) SetTargetKnowledgeRelationshipID(u uuid.UUID) {
+	m.target_knowledge_relationship = &u
+}
+
+// TargetKnowledgeRelationshipID returns the value of the "target_knowledge_relationship_id" field in the mutation.
+func (m *DiscussionThreadMutation) TargetKnowledgeRelationshipID() (r uuid.UUID, exists bool) {
+	v := m.target_knowledge_relationship
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTargetKnowledgeRelationshipID returns the old "target_knowledge_relationship_id" field's value of the DiscussionThread entity.
+// If the DiscussionThread object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DiscussionThreadMutation) OldTargetKnowledgeRelationshipID(ctx context.Context) (v *uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTargetKnowledgeRelationshipID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTargetKnowledgeRelationshipID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTargetKnowledgeRelationshipID: %w", err)
+	}
+	return oldValue.TargetKnowledgeRelationshipID, nil
+}
+
+// ClearTargetKnowledgeRelationshipID clears the value of the "target_knowledge_relationship_id" field.
+func (m *DiscussionThreadMutation) ClearTargetKnowledgeRelationshipID() {
+	m.target_knowledge_relationship = nil
+	m.clearedFields[discussionthread.FieldTargetKnowledgeRelationshipID] = struct{}{}
+}
+
+// TargetKnowledgeRelationshipIDCleared returns if the "target_knowledge_relationship_id" field was cleared in this mutation.
+func (m *DiscussionThreadMutation) TargetKnowledgeRelationshipIDCleared() bool {
+	_, ok := m.clearedFields[discussionthread.FieldTargetKnowledgeRelationshipID]
+	return ok
+}
+
+// ResetTargetKnowledgeRelationshipID resets all changes to the "target_knowledge_relationship_id" field.
+func (m *DiscussionThreadMutation) ResetTargetKnowledgeRelationshipID() {
+	m.target_knowledge_relationship = nil
+	delete(m.clearedFields, discussionthread.FieldTargetKnowledgeRelationshipID)
+}
+
+// SetTargetNormalizedEventID sets the "target_normalized_event_id" field.
+func (m *DiscussionThreadMutation) SetTargetNormalizedEventID(u uuid.UUID) {
+	m.target_normalized_event = &u
+}
+
+// TargetNormalizedEventID returns the value of the "target_normalized_event_id" field in the mutation.
+func (m *DiscussionThreadMutation) TargetNormalizedEventID() (r uuid.UUID, exists bool) {
+	v := m.target_normalized_event
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTargetNormalizedEventID returns the old "target_normalized_event_id" field's value of the DiscussionThread entity.
+// If the DiscussionThread object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DiscussionThreadMutation) OldTargetNormalizedEventID(ctx context.Context) (v *uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTargetNormalizedEventID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTargetNormalizedEventID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTargetNormalizedEventID: %w", err)
+	}
+	return oldValue.TargetNormalizedEventID, nil
+}
+
+// ClearTargetNormalizedEventID clears the value of the "target_normalized_event_id" field.
+func (m *DiscussionThreadMutation) ClearTargetNormalizedEventID() {
+	m.target_normalized_event = nil
+	m.clearedFields[discussionthread.FieldTargetNormalizedEventID] = struct{}{}
+}
+
+// TargetNormalizedEventIDCleared returns if the "target_normalized_event_id" field was cleared in this mutation.
+func (m *DiscussionThreadMutation) TargetNormalizedEventIDCleared() bool {
+	_, ok := m.clearedFields[discussionthread.FieldTargetNormalizedEventID]
+	return ok
+}
+
+// ResetTargetNormalizedEventID resets all changes to the "target_normalized_event_id" field.
+func (m *DiscussionThreadMutation) ResetTargetNormalizedEventID() {
+	m.target_normalized_event = nil
+	delete(m.clearedFields, discussionthread.FieldTargetNormalizedEventID)
 }
 
 // SetResolutionState sets the "resolution_state" field.
@@ -14327,6 +14484,141 @@ func (m *DiscussionThreadMutation) ResetComments() {
 	m.removedcomments = nil
 }
 
+// ClearTargetFinding clears the "target_finding" edge to the InvestigationFinding entity.
+func (m *DiscussionThreadMutation) ClearTargetFinding() {
+	m.clearedtarget_finding = true
+	m.clearedFields[discussionthread.FieldTargetFindingID] = struct{}{}
+}
+
+// TargetFindingCleared reports if the "target_finding" edge to the InvestigationFinding entity was cleared.
+func (m *DiscussionThreadMutation) TargetFindingCleared() bool {
+	return m.TargetFindingIDCleared() || m.clearedtarget_finding
+}
+
+// TargetFindingIDs returns the "target_finding" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// TargetFindingID instead. It exists only for internal usage by the builders.
+func (m *DiscussionThreadMutation) TargetFindingIDs() (ids []uuid.UUID) {
+	if id := m.target_finding; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetTargetFinding resets all changes to the "target_finding" edge.
+func (m *DiscussionThreadMutation) ResetTargetFinding() {
+	m.target_finding = nil
+	m.clearedtarget_finding = false
+}
+
+// ClearTargetEntry clears the "target_entry" edge to the SystemAnalysisEntry entity.
+func (m *DiscussionThreadMutation) ClearTargetEntry() {
+	m.clearedtarget_entry = true
+	m.clearedFields[discussionthread.FieldTargetEntryID] = struct{}{}
+}
+
+// TargetEntryCleared reports if the "target_entry" edge to the SystemAnalysisEntry entity was cleared.
+func (m *DiscussionThreadMutation) TargetEntryCleared() bool {
+	return m.TargetEntryIDCleared() || m.clearedtarget_entry
+}
+
+// TargetEntryIDs returns the "target_entry" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// TargetEntryID instead. It exists only for internal usage by the builders.
+func (m *DiscussionThreadMutation) TargetEntryIDs() (ids []uuid.UUID) {
+	if id := m.target_entry; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetTargetEntry resets all changes to the "target_entry" edge.
+func (m *DiscussionThreadMutation) ResetTargetEntry() {
+	m.target_entry = nil
+	m.clearedtarget_entry = false
+}
+
+// ClearTargetNormalizedEvent clears the "target_normalized_event" edge to the NormalizedEvent entity.
+func (m *DiscussionThreadMutation) ClearTargetNormalizedEvent() {
+	m.clearedtarget_normalized_event = true
+	m.clearedFields[discussionthread.FieldTargetNormalizedEventID] = struct{}{}
+}
+
+// TargetNormalizedEventCleared reports if the "target_normalized_event" edge to the NormalizedEvent entity was cleared.
+func (m *DiscussionThreadMutation) TargetNormalizedEventCleared() bool {
+	return m.TargetNormalizedEventIDCleared() || m.clearedtarget_normalized_event
+}
+
+// TargetNormalizedEventIDs returns the "target_normalized_event" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// TargetNormalizedEventID instead. It exists only for internal usage by the builders.
+func (m *DiscussionThreadMutation) TargetNormalizedEventIDs() (ids []uuid.UUID) {
+	if id := m.target_normalized_event; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetTargetNormalizedEvent resets all changes to the "target_normalized_event" edge.
+func (m *DiscussionThreadMutation) ResetTargetNormalizedEvent() {
+	m.target_normalized_event = nil
+	m.clearedtarget_normalized_event = false
+}
+
+// ClearTargetKnowledgeEntity clears the "target_knowledge_entity" edge to the KnowledgeEntity entity.
+func (m *DiscussionThreadMutation) ClearTargetKnowledgeEntity() {
+	m.clearedtarget_knowledge_entity = true
+	m.clearedFields[discussionthread.FieldTargetKnowledgeEntityID] = struct{}{}
+}
+
+// TargetKnowledgeEntityCleared reports if the "target_knowledge_entity" edge to the KnowledgeEntity entity was cleared.
+func (m *DiscussionThreadMutation) TargetKnowledgeEntityCleared() bool {
+	return m.TargetKnowledgeEntityIDCleared() || m.clearedtarget_knowledge_entity
+}
+
+// TargetKnowledgeEntityIDs returns the "target_knowledge_entity" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// TargetKnowledgeEntityID instead. It exists only for internal usage by the builders.
+func (m *DiscussionThreadMutation) TargetKnowledgeEntityIDs() (ids []uuid.UUID) {
+	if id := m.target_knowledge_entity; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetTargetKnowledgeEntity resets all changes to the "target_knowledge_entity" edge.
+func (m *DiscussionThreadMutation) ResetTargetKnowledgeEntity() {
+	m.target_knowledge_entity = nil
+	m.clearedtarget_knowledge_entity = false
+}
+
+// ClearTargetKnowledgeRelationship clears the "target_knowledge_relationship" edge to the KnowledgeRelationship entity.
+func (m *DiscussionThreadMutation) ClearTargetKnowledgeRelationship() {
+	m.clearedtarget_knowledge_relationship = true
+	m.clearedFields[discussionthread.FieldTargetKnowledgeRelationshipID] = struct{}{}
+}
+
+// TargetKnowledgeRelationshipCleared reports if the "target_knowledge_relationship" edge to the KnowledgeRelationship entity was cleared.
+func (m *DiscussionThreadMutation) TargetKnowledgeRelationshipCleared() bool {
+	return m.TargetKnowledgeRelationshipIDCleared() || m.clearedtarget_knowledge_relationship
+}
+
+// TargetKnowledgeRelationshipIDs returns the "target_knowledge_relationship" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// TargetKnowledgeRelationshipID instead. It exists only for internal usage by the builders.
+func (m *DiscussionThreadMutation) TargetKnowledgeRelationshipIDs() (ids []uuid.UUID) {
+	if id := m.target_knowledge_relationship; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetTargetKnowledgeRelationship resets all changes to the "target_knowledge_relationship" edge.
+func (m *DiscussionThreadMutation) ResetTargetKnowledgeRelationship() {
+	m.target_knowledge_relationship = nil
+	m.clearedtarget_knowledge_relationship = false
+}
+
 // Where appends a list predicates to the DiscussionThreadMutation builder.
 func (m *DiscussionThreadMutation) Where(ps ...predicate.DiscussionThread) {
 	m.predicates = append(m.predicates, ps...)
@@ -14361,7 +14653,7 @@ func (m *DiscussionThreadMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *DiscussionThreadMutation) Fields() []string {
-	fields := make([]string, 0, 12)
+	fields := make([]string, 0, 15)
 	if m.tenant != nil {
 		fields = append(fields, discussionthread.FieldTenantID)
 	}
@@ -14380,11 +14672,20 @@ func (m *DiscussionThreadMutation) Fields() []string {
 	if m.user != nil {
 		fields = append(fields, discussionthread.FieldUserID)
 	}
-	if m.target_kind != nil {
-		fields = append(fields, discussionthread.FieldTargetKind)
+	if m.target_finding != nil {
+		fields = append(fields, discussionthread.FieldTargetFindingID)
 	}
-	if m.target_id != nil {
-		fields = append(fields, discussionthread.FieldTargetID)
+	if m.target_entry != nil {
+		fields = append(fields, discussionthread.FieldTargetEntryID)
+	}
+	if m.target_knowledge_entity != nil {
+		fields = append(fields, discussionthread.FieldTargetKnowledgeEntityID)
+	}
+	if m.target_knowledge_relationship != nil {
+		fields = append(fields, discussionthread.FieldTargetKnowledgeRelationshipID)
+	}
+	if m.target_normalized_event != nil {
+		fields = append(fields, discussionthread.FieldTargetNormalizedEventID)
 	}
 	if m.resolution_state != nil {
 		fields = append(fields, discussionthread.FieldResolutionState)
@@ -14418,10 +14719,16 @@ func (m *DiscussionThreadMutation) Field(name string) (ent.Value, bool) {
 		return m.RetrospectiveID()
 	case discussionthread.FieldUserID:
 		return m.UserID()
-	case discussionthread.FieldTargetKind:
-		return m.TargetKind()
-	case discussionthread.FieldTargetID:
-		return m.TargetID()
+	case discussionthread.FieldTargetFindingID:
+		return m.TargetFindingID()
+	case discussionthread.FieldTargetEntryID:
+		return m.TargetEntryID()
+	case discussionthread.FieldTargetKnowledgeEntityID:
+		return m.TargetKnowledgeEntityID()
+	case discussionthread.FieldTargetKnowledgeRelationshipID:
+		return m.TargetKnowledgeRelationshipID()
+	case discussionthread.FieldTargetNormalizedEventID:
+		return m.TargetNormalizedEventID()
 	case discussionthread.FieldResolutionState:
 		return m.ResolutionState()
 	case discussionthread.FieldResolvedByID:
@@ -14451,10 +14758,16 @@ func (m *DiscussionThreadMutation) OldField(ctx context.Context, name string) (e
 		return m.OldRetrospectiveID(ctx)
 	case discussionthread.FieldUserID:
 		return m.OldUserID(ctx)
-	case discussionthread.FieldTargetKind:
-		return m.OldTargetKind(ctx)
-	case discussionthread.FieldTargetID:
-		return m.OldTargetID(ctx)
+	case discussionthread.FieldTargetFindingID:
+		return m.OldTargetFindingID(ctx)
+	case discussionthread.FieldTargetEntryID:
+		return m.OldTargetEntryID(ctx)
+	case discussionthread.FieldTargetKnowledgeEntityID:
+		return m.OldTargetKnowledgeEntityID(ctx)
+	case discussionthread.FieldTargetKnowledgeRelationshipID:
+		return m.OldTargetKnowledgeRelationshipID(ctx)
+	case discussionthread.FieldTargetNormalizedEventID:
+		return m.OldTargetNormalizedEventID(ctx)
 	case discussionthread.FieldResolutionState:
 		return m.OldResolutionState(ctx)
 	case discussionthread.FieldResolvedByID:
@@ -14514,19 +14827,40 @@ func (m *DiscussionThreadMutation) SetField(name string, value ent.Value) error 
 		}
 		m.SetUserID(v)
 		return nil
-	case discussionthread.FieldTargetKind:
-		v, ok := value.(discussionthread.TargetKind)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetTargetKind(v)
-		return nil
-	case discussionthread.FieldTargetID:
+	case discussionthread.FieldTargetFindingID:
 		v, ok := value.(uuid.UUID)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetTargetID(v)
+		m.SetTargetFindingID(v)
+		return nil
+	case discussionthread.FieldTargetEntryID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTargetEntryID(v)
+		return nil
+	case discussionthread.FieldTargetKnowledgeEntityID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTargetKnowledgeEntityID(v)
+		return nil
+	case discussionthread.FieldTargetKnowledgeRelationshipID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTargetKnowledgeRelationshipID(v)
+		return nil
+	case discussionthread.FieldTargetNormalizedEventID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTargetNormalizedEventID(v)
 		return nil
 	case discussionthread.FieldResolutionState:
 		v, ok := value.(discussionthread.ResolutionState)
@@ -14595,11 +14929,20 @@ func (m *DiscussionThreadMutation) ClearedFields() []string {
 	if m.FieldCleared(discussionthread.FieldRetrospectiveID) {
 		fields = append(fields, discussionthread.FieldRetrospectiveID)
 	}
-	if m.FieldCleared(discussionthread.FieldTargetKind) {
-		fields = append(fields, discussionthread.FieldTargetKind)
+	if m.FieldCleared(discussionthread.FieldTargetFindingID) {
+		fields = append(fields, discussionthread.FieldTargetFindingID)
 	}
-	if m.FieldCleared(discussionthread.FieldTargetID) {
-		fields = append(fields, discussionthread.FieldTargetID)
+	if m.FieldCleared(discussionthread.FieldTargetEntryID) {
+		fields = append(fields, discussionthread.FieldTargetEntryID)
+	}
+	if m.FieldCleared(discussionthread.FieldTargetKnowledgeEntityID) {
+		fields = append(fields, discussionthread.FieldTargetKnowledgeEntityID)
+	}
+	if m.FieldCleared(discussionthread.FieldTargetKnowledgeRelationshipID) {
+		fields = append(fields, discussionthread.FieldTargetKnowledgeRelationshipID)
+	}
+	if m.FieldCleared(discussionthread.FieldTargetNormalizedEventID) {
+		fields = append(fields, discussionthread.FieldTargetNormalizedEventID)
 	}
 	if m.FieldCleared(discussionthread.FieldResolutionState) {
 		fields = append(fields, discussionthread.FieldResolutionState)
@@ -14633,11 +14976,20 @@ func (m *DiscussionThreadMutation) ClearField(name string) error {
 	case discussionthread.FieldRetrospectiveID:
 		m.ClearRetrospectiveID()
 		return nil
-	case discussionthread.FieldTargetKind:
-		m.ClearTargetKind()
+	case discussionthread.FieldTargetFindingID:
+		m.ClearTargetFindingID()
 		return nil
-	case discussionthread.FieldTargetID:
-		m.ClearTargetID()
+	case discussionthread.FieldTargetEntryID:
+		m.ClearTargetEntryID()
+		return nil
+	case discussionthread.FieldTargetKnowledgeEntityID:
+		m.ClearTargetKnowledgeEntityID()
+		return nil
+	case discussionthread.FieldTargetKnowledgeRelationshipID:
+		m.ClearTargetKnowledgeRelationshipID()
+		return nil
+	case discussionthread.FieldTargetNormalizedEventID:
+		m.ClearTargetNormalizedEventID()
 		return nil
 	case discussionthread.FieldResolutionState:
 		m.ClearResolutionState()
@@ -14677,11 +15029,20 @@ func (m *DiscussionThreadMutation) ResetField(name string) error {
 	case discussionthread.FieldUserID:
 		m.ResetUserID()
 		return nil
-	case discussionthread.FieldTargetKind:
-		m.ResetTargetKind()
+	case discussionthread.FieldTargetFindingID:
+		m.ResetTargetFindingID()
 		return nil
-	case discussionthread.FieldTargetID:
-		m.ResetTargetID()
+	case discussionthread.FieldTargetEntryID:
+		m.ResetTargetEntryID()
+		return nil
+	case discussionthread.FieldTargetKnowledgeEntityID:
+		m.ResetTargetKnowledgeEntityID()
+		return nil
+	case discussionthread.FieldTargetKnowledgeRelationshipID:
+		m.ResetTargetKnowledgeRelationshipID()
+		return nil
+	case discussionthread.FieldTargetNormalizedEventID:
+		m.ResetTargetNormalizedEventID()
 		return nil
 	case discussionthread.FieldResolutionState:
 		m.ResetResolutionState()
@@ -14701,7 +15062,7 @@ func (m *DiscussionThreadMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *DiscussionThreadMutation) AddedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 10)
 	if m.tenant != nil {
 		edges = append(edges, discussionthread.EdgeTenant)
 	}
@@ -14716,6 +15077,21 @@ func (m *DiscussionThreadMutation) AddedEdges() []string {
 	}
 	if m.comments != nil {
 		edges = append(edges, discussionthread.EdgeComments)
+	}
+	if m.target_finding != nil {
+		edges = append(edges, discussionthread.EdgeTargetFinding)
+	}
+	if m.target_entry != nil {
+		edges = append(edges, discussionthread.EdgeTargetEntry)
+	}
+	if m.target_normalized_event != nil {
+		edges = append(edges, discussionthread.EdgeTargetNormalizedEvent)
+	}
+	if m.target_knowledge_entity != nil {
+		edges = append(edges, discussionthread.EdgeTargetKnowledgeEntity)
+	}
+	if m.target_knowledge_relationship != nil {
+		edges = append(edges, discussionthread.EdgeTargetKnowledgeRelationship)
 	}
 	return edges
 }
@@ -14746,13 +15122,33 @@ func (m *DiscussionThreadMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case discussionthread.EdgeTargetFinding:
+		if id := m.target_finding; id != nil {
+			return []ent.Value{*id}
+		}
+	case discussionthread.EdgeTargetEntry:
+		if id := m.target_entry; id != nil {
+			return []ent.Value{*id}
+		}
+	case discussionthread.EdgeTargetNormalizedEvent:
+		if id := m.target_normalized_event; id != nil {
+			return []ent.Value{*id}
+		}
+	case discussionthread.EdgeTargetKnowledgeEntity:
+		if id := m.target_knowledge_entity; id != nil {
+			return []ent.Value{*id}
+		}
+	case discussionthread.EdgeTargetKnowledgeRelationship:
+		if id := m.target_knowledge_relationship; id != nil {
+			return []ent.Value{*id}
+		}
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *DiscussionThreadMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 10)
 	if m.removedcomments != nil {
 		edges = append(edges, discussionthread.EdgeComments)
 	}
@@ -14775,7 +15171,7 @@ func (m *DiscussionThreadMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *DiscussionThreadMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 10)
 	if m.clearedtenant {
 		edges = append(edges, discussionthread.EdgeTenant)
 	}
@@ -14790,6 +15186,21 @@ func (m *DiscussionThreadMutation) ClearedEdges() []string {
 	}
 	if m.clearedcomments {
 		edges = append(edges, discussionthread.EdgeComments)
+	}
+	if m.clearedtarget_finding {
+		edges = append(edges, discussionthread.EdgeTargetFinding)
+	}
+	if m.clearedtarget_entry {
+		edges = append(edges, discussionthread.EdgeTargetEntry)
+	}
+	if m.clearedtarget_normalized_event {
+		edges = append(edges, discussionthread.EdgeTargetNormalizedEvent)
+	}
+	if m.clearedtarget_knowledge_entity {
+		edges = append(edges, discussionthread.EdgeTargetKnowledgeEntity)
+	}
+	if m.clearedtarget_knowledge_relationship {
+		edges = append(edges, discussionthread.EdgeTargetKnowledgeRelationship)
 	}
 	return edges
 }
@@ -14808,6 +15219,16 @@ func (m *DiscussionThreadMutation) EdgeCleared(name string) bool {
 		return m.cleareduser
 	case discussionthread.EdgeComments:
 		return m.clearedcomments
+	case discussionthread.EdgeTargetFinding:
+		return m.clearedtarget_finding
+	case discussionthread.EdgeTargetEntry:
+		return m.clearedtarget_entry
+	case discussionthread.EdgeTargetNormalizedEvent:
+		return m.clearedtarget_normalized_event
+	case discussionthread.EdgeTargetKnowledgeEntity:
+		return m.clearedtarget_knowledge_entity
+	case discussionthread.EdgeTargetKnowledgeRelationship:
+		return m.clearedtarget_knowledge_relationship
 	}
 	return false
 }
@@ -14827,6 +15248,21 @@ func (m *DiscussionThreadMutation) ClearEdge(name string) error {
 		return nil
 	case discussionthread.EdgeUser:
 		m.ClearUser()
+		return nil
+	case discussionthread.EdgeTargetFinding:
+		m.ClearTargetFinding()
+		return nil
+	case discussionthread.EdgeTargetEntry:
+		m.ClearTargetEntry()
+		return nil
+	case discussionthread.EdgeTargetNormalizedEvent:
+		m.ClearTargetNormalizedEvent()
+		return nil
+	case discussionthread.EdgeTargetKnowledgeEntity:
+		m.ClearTargetKnowledgeEntity()
+		return nil
+	case discussionthread.EdgeTargetKnowledgeRelationship:
+		m.ClearTargetKnowledgeRelationship()
 		return nil
 	}
 	return fmt.Errorf("unknown DiscussionThread unique edge %s", name)
@@ -14850,6 +15286,21 @@ func (m *DiscussionThreadMutation) ResetEdge(name string) error {
 		return nil
 	case discussionthread.EdgeComments:
 		m.ResetComments()
+		return nil
+	case discussionthread.EdgeTargetFinding:
+		m.ResetTargetFinding()
+		return nil
+	case discussionthread.EdgeTargetEntry:
+		m.ResetTargetEntry()
+		return nil
+	case discussionthread.EdgeTargetNormalizedEvent:
+		m.ResetTargetNormalizedEvent()
+		return nil
+	case discussionthread.EdgeTargetKnowledgeEntity:
+		m.ResetTargetKnowledgeEntity()
+		return nil
+	case discussionthread.EdgeTargetKnowledgeRelationship:
+		m.ResetTargetKnowledgeRelationship()
 		return nil
 	}
 	return fmt.Errorf("unknown DiscussionThread edge %s", name)
@@ -45749,27 +46200,30 @@ func (m *KnowledgeEvidenceMutation) ResetEdge(name string) error {
 // KnowledgeProposalMutation represents an operation that mutates the KnowledgeProposal nodes in the graph.
 type KnowledgeProposalMutation struct {
 	config
-	op              Op
-	typ             string
-	id              *uuid.UUID
-	created_at      *time.Time
-	updated_at      *time.Time
-	category        *knowledgeproposal.Category
-	kind            *string
-	attribute       *string
-	name_a          *string
-	name_b          *string
-	status          *knowledgeproposal.Status
-	origin          *knowledgeproposal.Origin
-	rationale       *string
-	clearedFields   map[string]struct{}
-	tenant          *int
-	clearedtenant   bool
-	evidence        *uuid.UUID
-	clearedevidence bool
-	done            bool
-	oldValue        func(context.Context) (*KnowledgeProposal, error)
-	predicates      []predicate.KnowledgeProposal
+	op               Op
+	typ              string
+	id               *uuid.UUID
+	created_at       *time.Time
+	updated_at       *time.Time
+	category         *knowledgeproposal.Category
+	kind             *string
+	attribute        *string
+	value_a          *string
+	value_b          *string
+	status           *knowledgeproposal.Status
+	origin           *knowledgeproposal.Origin
+	rationale        *string
+	clearedFields    map[string]struct{}
+	tenant           *int
+	clearedtenant    bool
+	evidence         *uuid.UUID
+	clearedevidence  bool
+	decisions        map[uuid.UUID]struct{}
+	removeddecisions map[uuid.UUID]struct{}
+	cleareddecisions bool
+	done             bool
+	oldValue         func(context.Context) (*KnowledgeProposal, error)
+	predicates       []predicate.KnowledgeProposal
 }
 
 var _ ent.Mutation = (*KnowledgeProposalMutation)(nil)
@@ -46092,76 +46546,76 @@ func (m *KnowledgeProposalMutation) ResetAttribute() {
 	m.attribute = nil
 }
 
-// SetNameA sets the "name_a" field.
-func (m *KnowledgeProposalMutation) SetNameA(s string) {
-	m.name_a = &s
+// SetValueA sets the "value_a" field.
+func (m *KnowledgeProposalMutation) SetValueA(s string) {
+	m.value_a = &s
 }
 
-// NameA returns the value of the "name_a" field in the mutation.
-func (m *KnowledgeProposalMutation) NameA() (r string, exists bool) {
-	v := m.name_a
+// ValueA returns the value of the "value_a" field in the mutation.
+func (m *KnowledgeProposalMutation) ValueA() (r string, exists bool) {
+	v := m.value_a
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldNameA returns the old "name_a" field's value of the KnowledgeProposal entity.
+// OldValueA returns the old "value_a" field's value of the KnowledgeProposal entity.
 // If the KnowledgeProposal object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeProposalMutation) OldNameA(ctx context.Context) (v string, err error) {
+func (m *KnowledgeProposalMutation) OldValueA(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldNameA is only allowed on UpdateOne operations")
+		return v, errors.New("OldValueA is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldNameA requires an ID field in the mutation")
+		return v, errors.New("OldValueA requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldNameA: %w", err)
+		return v, fmt.Errorf("querying old value for OldValueA: %w", err)
 	}
-	return oldValue.NameA, nil
+	return oldValue.ValueA, nil
 }
 
-// ResetNameA resets all changes to the "name_a" field.
-func (m *KnowledgeProposalMutation) ResetNameA() {
-	m.name_a = nil
+// ResetValueA resets all changes to the "value_a" field.
+func (m *KnowledgeProposalMutation) ResetValueA() {
+	m.value_a = nil
 }
 
-// SetNameB sets the "name_b" field.
-func (m *KnowledgeProposalMutation) SetNameB(s string) {
-	m.name_b = &s
+// SetValueB sets the "value_b" field.
+func (m *KnowledgeProposalMutation) SetValueB(s string) {
+	m.value_b = &s
 }
 
-// NameB returns the value of the "name_b" field in the mutation.
-func (m *KnowledgeProposalMutation) NameB() (r string, exists bool) {
-	v := m.name_b
+// ValueB returns the value of the "value_b" field in the mutation.
+func (m *KnowledgeProposalMutation) ValueB() (r string, exists bool) {
+	v := m.value_b
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldNameB returns the old "name_b" field's value of the KnowledgeProposal entity.
+// OldValueB returns the old "value_b" field's value of the KnowledgeProposal entity.
 // If the KnowledgeProposal object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeProposalMutation) OldNameB(ctx context.Context) (v string, err error) {
+func (m *KnowledgeProposalMutation) OldValueB(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldNameB is only allowed on UpdateOne operations")
+		return v, errors.New("OldValueB is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldNameB requires an ID field in the mutation")
+		return v, errors.New("OldValueB requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldNameB: %w", err)
+		return v, fmt.Errorf("querying old value for OldValueB: %w", err)
 	}
-	return oldValue.NameB, nil
+	return oldValue.ValueB, nil
 }
 
-// ResetNameB resets all changes to the "name_b" field.
-func (m *KnowledgeProposalMutation) ResetNameB() {
-	m.name_b = nil
+// ResetValueB resets all changes to the "value_b" field.
+func (m *KnowledgeProposalMutation) ResetValueB() {
+	m.value_b = nil
 }
 
 // SetStatus sets the "status" field.
@@ -46362,6 +46816,60 @@ func (m *KnowledgeProposalMutation) ResetEvidence() {
 	m.clearedevidence = false
 }
 
+// AddDecisionIDs adds the "decisions" edge to the KnowledgeProposalDecision entity by ids.
+func (m *KnowledgeProposalMutation) AddDecisionIDs(ids ...uuid.UUID) {
+	if m.decisions == nil {
+		m.decisions = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.decisions[ids[i]] = struct{}{}
+	}
+}
+
+// ClearDecisions clears the "decisions" edge to the KnowledgeProposalDecision entity.
+func (m *KnowledgeProposalMutation) ClearDecisions() {
+	m.cleareddecisions = true
+}
+
+// DecisionsCleared reports if the "decisions" edge to the KnowledgeProposalDecision entity was cleared.
+func (m *KnowledgeProposalMutation) DecisionsCleared() bool {
+	return m.cleareddecisions
+}
+
+// RemoveDecisionIDs removes the "decisions" edge to the KnowledgeProposalDecision entity by IDs.
+func (m *KnowledgeProposalMutation) RemoveDecisionIDs(ids ...uuid.UUID) {
+	if m.removeddecisions == nil {
+		m.removeddecisions = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.decisions, ids[i])
+		m.removeddecisions[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedDecisions returns the removed IDs of the "decisions" edge to the KnowledgeProposalDecision entity.
+func (m *KnowledgeProposalMutation) RemovedDecisionsIDs() (ids []uuid.UUID) {
+	for id := range m.removeddecisions {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// DecisionsIDs returns the "decisions" edge IDs in the mutation.
+func (m *KnowledgeProposalMutation) DecisionsIDs() (ids []uuid.UUID) {
+	for id := range m.decisions {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetDecisions resets all changes to the "decisions" edge.
+func (m *KnowledgeProposalMutation) ResetDecisions() {
+	m.decisions = nil
+	m.cleareddecisions = false
+	m.removeddecisions = nil
+}
+
 // Where appends a list predicates to the KnowledgeProposalMutation builder.
 func (m *KnowledgeProposalMutation) Where(ps ...predicate.KnowledgeProposal) {
 	m.predicates = append(m.predicates, ps...)
@@ -46415,11 +46923,11 @@ func (m *KnowledgeProposalMutation) Fields() []string {
 	if m.attribute != nil {
 		fields = append(fields, knowledgeproposal.FieldAttribute)
 	}
-	if m.name_a != nil {
-		fields = append(fields, knowledgeproposal.FieldNameA)
+	if m.value_a != nil {
+		fields = append(fields, knowledgeproposal.FieldValueA)
 	}
-	if m.name_b != nil {
-		fields = append(fields, knowledgeproposal.FieldNameB)
+	if m.value_b != nil {
+		fields = append(fields, knowledgeproposal.FieldValueB)
 	}
 	if m.status != nil {
 		fields = append(fields, knowledgeproposal.FieldStatus)
@@ -46453,10 +46961,10 @@ func (m *KnowledgeProposalMutation) Field(name string) (ent.Value, bool) {
 		return m.Kind()
 	case knowledgeproposal.FieldAttribute:
 		return m.Attribute()
-	case knowledgeproposal.FieldNameA:
-		return m.NameA()
-	case knowledgeproposal.FieldNameB:
-		return m.NameB()
+	case knowledgeproposal.FieldValueA:
+		return m.ValueA()
+	case knowledgeproposal.FieldValueB:
+		return m.ValueB()
 	case knowledgeproposal.FieldStatus:
 		return m.Status()
 	case knowledgeproposal.FieldOrigin:
@@ -46486,10 +46994,10 @@ func (m *KnowledgeProposalMutation) OldField(ctx context.Context, name string) (
 		return m.OldKind(ctx)
 	case knowledgeproposal.FieldAttribute:
 		return m.OldAttribute(ctx)
-	case knowledgeproposal.FieldNameA:
-		return m.OldNameA(ctx)
-	case knowledgeproposal.FieldNameB:
-		return m.OldNameB(ctx)
+	case knowledgeproposal.FieldValueA:
+		return m.OldValueA(ctx)
+	case knowledgeproposal.FieldValueB:
+		return m.OldValueB(ctx)
 	case knowledgeproposal.FieldStatus:
 		return m.OldStatus(ctx)
 	case knowledgeproposal.FieldOrigin:
@@ -46549,19 +47057,19 @@ func (m *KnowledgeProposalMutation) SetField(name string, value ent.Value) error
 		}
 		m.SetAttribute(v)
 		return nil
-	case knowledgeproposal.FieldNameA:
+	case knowledgeproposal.FieldValueA:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetNameA(v)
+		m.SetValueA(v)
 		return nil
-	case knowledgeproposal.FieldNameB:
+	case knowledgeproposal.FieldValueB:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetNameB(v)
+		m.SetValueB(v)
 		return nil
 	case knowledgeproposal.FieldStatus:
 		v, ok := value.(knowledgeproposal.Status)
@@ -46661,11 +47169,11 @@ func (m *KnowledgeProposalMutation) ResetField(name string) error {
 	case knowledgeproposal.FieldAttribute:
 		m.ResetAttribute()
 		return nil
-	case knowledgeproposal.FieldNameA:
-		m.ResetNameA()
+	case knowledgeproposal.FieldValueA:
+		m.ResetValueA()
 		return nil
-	case knowledgeproposal.FieldNameB:
-		m.ResetNameB()
+	case knowledgeproposal.FieldValueB:
+		m.ResetValueB()
 		return nil
 	case knowledgeproposal.FieldStatus:
 		m.ResetStatus()
@@ -46685,12 +47193,15 @@ func (m *KnowledgeProposalMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *KnowledgeProposalMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.tenant != nil {
 		edges = append(edges, knowledgeproposal.EdgeTenant)
 	}
 	if m.evidence != nil {
 		edges = append(edges, knowledgeproposal.EdgeEvidence)
+	}
+	if m.decisions != nil {
+		edges = append(edges, knowledgeproposal.EdgeDecisions)
 	}
 	return edges
 }
@@ -46707,30 +47218,50 @@ func (m *KnowledgeProposalMutation) AddedIDs(name string) []ent.Value {
 		if id := m.evidence; id != nil {
 			return []ent.Value{*id}
 		}
+	case knowledgeproposal.EdgeDecisions:
+		ids := make([]ent.Value, 0, len(m.decisions))
+		for id := range m.decisions {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *KnowledgeProposalMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
+	if m.removeddecisions != nil {
+		edges = append(edges, knowledgeproposal.EdgeDecisions)
+	}
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *KnowledgeProposalMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case knowledgeproposal.EdgeDecisions:
+		ids := make([]ent.Value, 0, len(m.removeddecisions))
+		for id := range m.removeddecisions {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *KnowledgeProposalMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.clearedtenant {
 		edges = append(edges, knowledgeproposal.EdgeTenant)
 	}
 	if m.clearedevidence {
 		edges = append(edges, knowledgeproposal.EdgeEvidence)
+	}
+	if m.cleareddecisions {
+		edges = append(edges, knowledgeproposal.EdgeDecisions)
 	}
 	return edges
 }
@@ -46743,6 +47274,8 @@ func (m *KnowledgeProposalMutation) EdgeCleared(name string) bool {
 		return m.clearedtenant
 	case knowledgeproposal.EdgeEvidence:
 		return m.clearedevidence
+	case knowledgeproposal.EdgeDecisions:
+		return m.cleareddecisions
 	}
 	return false
 }
@@ -46771,8 +47304,830 @@ func (m *KnowledgeProposalMutation) ResetEdge(name string) error {
 	case knowledgeproposal.EdgeEvidence:
 		m.ResetEvidence()
 		return nil
+	case knowledgeproposal.EdgeDecisions:
+		m.ResetDecisions()
+		return nil
 	}
 	return fmt.Errorf("unknown KnowledgeProposal edge %s", name)
+}
+
+// KnowledgeProposalDecisionMutation represents an operation that mutates the KnowledgeProposalDecision nodes in the graph.
+type KnowledgeProposalDecisionMutation struct {
+	config
+	op                         Op
+	typ                        string
+	id                         *uuid.UUID
+	status                     *knowledgeproposaldecision.Status
+	created_at                 *time.Time
+	clearedFields              map[string]struct{}
+	tenant                     *int
+	clearedtenant              bool
+	proposal                   *uuid.UUID
+	clearedproposal            bool
+	user                       *uuid.UUID
+	cleareduser                bool
+	implied_by_proposal        *uuid.UUID
+	clearedimplied_by_proposal bool
+	done                       bool
+	oldValue                   func(context.Context) (*KnowledgeProposalDecision, error)
+	predicates                 []predicate.KnowledgeProposalDecision
+}
+
+var _ ent.Mutation = (*KnowledgeProposalDecisionMutation)(nil)
+
+// knowledgeproposaldecisionOption allows management of the mutation configuration using functional options.
+type knowledgeproposaldecisionOption func(*KnowledgeProposalDecisionMutation)
+
+// newKnowledgeProposalDecisionMutation creates new mutation for the KnowledgeProposalDecision entity.
+func newKnowledgeProposalDecisionMutation(c config, op Op, opts ...knowledgeproposaldecisionOption) *KnowledgeProposalDecisionMutation {
+	m := &KnowledgeProposalDecisionMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeKnowledgeProposalDecision,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withKnowledgeProposalDecisionID sets the ID field of the mutation.
+func withKnowledgeProposalDecisionID(id uuid.UUID) knowledgeproposaldecisionOption {
+	return func(m *KnowledgeProposalDecisionMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *KnowledgeProposalDecision
+		)
+		m.oldValue = func(ctx context.Context) (*KnowledgeProposalDecision, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().KnowledgeProposalDecision.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withKnowledgeProposalDecision sets the old KnowledgeProposalDecision of the mutation.
+func withKnowledgeProposalDecision(node *KnowledgeProposalDecision) knowledgeproposaldecisionOption {
+	return func(m *KnowledgeProposalDecisionMutation) {
+		m.oldValue = func(context.Context) (*KnowledgeProposalDecision, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m KnowledgeProposalDecisionMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m KnowledgeProposalDecisionMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of KnowledgeProposalDecision entities.
+func (m *KnowledgeProposalDecisionMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *KnowledgeProposalDecisionMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *KnowledgeProposalDecisionMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uuid.UUID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().KnowledgeProposalDecision.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (m *KnowledgeProposalDecisionMutation) SetTenantID(i int) {
+	m.tenant = &i
+}
+
+// TenantID returns the value of the "tenant_id" field in the mutation.
+func (m *KnowledgeProposalDecisionMutation) TenantID() (r int, exists bool) {
+	v := m.tenant
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTenantID returns the old "tenant_id" field's value of the KnowledgeProposalDecision entity.
+// If the KnowledgeProposalDecision object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *KnowledgeProposalDecisionMutation) OldTenantID(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTenantID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTenantID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTenantID: %w", err)
+	}
+	return oldValue.TenantID, nil
+}
+
+// ResetTenantID resets all changes to the "tenant_id" field.
+func (m *KnowledgeProposalDecisionMutation) ResetTenantID() {
+	m.tenant = nil
+}
+
+// SetProposalID sets the "proposal_id" field.
+func (m *KnowledgeProposalDecisionMutation) SetProposalID(u uuid.UUID) {
+	m.proposal = &u
+}
+
+// ProposalID returns the value of the "proposal_id" field in the mutation.
+func (m *KnowledgeProposalDecisionMutation) ProposalID() (r uuid.UUID, exists bool) {
+	v := m.proposal
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldProposalID returns the old "proposal_id" field's value of the KnowledgeProposalDecision entity.
+// If the KnowledgeProposalDecision object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *KnowledgeProposalDecisionMutation) OldProposalID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldProposalID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldProposalID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldProposalID: %w", err)
+	}
+	return oldValue.ProposalID, nil
+}
+
+// ResetProposalID resets all changes to the "proposal_id" field.
+func (m *KnowledgeProposalDecisionMutation) ResetProposalID() {
+	m.proposal = nil
+}
+
+// SetStatus sets the "status" field.
+func (m *KnowledgeProposalDecisionMutation) SetStatus(k knowledgeproposaldecision.Status) {
+	m.status = &k
+}
+
+// Status returns the value of the "status" field in the mutation.
+func (m *KnowledgeProposalDecisionMutation) Status() (r knowledgeproposaldecision.Status, exists bool) {
+	v := m.status
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStatus returns the old "status" field's value of the KnowledgeProposalDecision entity.
+// If the KnowledgeProposalDecision object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *KnowledgeProposalDecisionMutation) OldStatus(ctx context.Context) (v knowledgeproposaldecision.Status, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldStatus is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldStatus requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStatus: %w", err)
+	}
+	return oldValue.Status, nil
+}
+
+// ResetStatus resets all changes to the "status" field.
+func (m *KnowledgeProposalDecisionMutation) ResetStatus() {
+	m.status = nil
+}
+
+// SetUserID sets the "user_id" field.
+func (m *KnowledgeProposalDecisionMutation) SetUserID(u uuid.UUID) {
+	m.user = &u
+}
+
+// UserID returns the value of the "user_id" field in the mutation.
+func (m *KnowledgeProposalDecisionMutation) UserID() (r uuid.UUID, exists bool) {
+	v := m.user
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUserID returns the old "user_id" field's value of the KnowledgeProposalDecision entity.
+// If the KnowledgeProposalDecision object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *KnowledgeProposalDecisionMutation) OldUserID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUserID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUserID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUserID: %w", err)
+	}
+	return oldValue.UserID, nil
+}
+
+// ResetUserID resets all changes to the "user_id" field.
+func (m *KnowledgeProposalDecisionMutation) ResetUserID() {
+	m.user = nil
+}
+
+// SetImpliedByProposalID sets the "implied_by_proposal_id" field.
+func (m *KnowledgeProposalDecisionMutation) SetImpliedByProposalID(u uuid.UUID) {
+	m.implied_by_proposal = &u
+}
+
+// ImpliedByProposalID returns the value of the "implied_by_proposal_id" field in the mutation.
+func (m *KnowledgeProposalDecisionMutation) ImpliedByProposalID() (r uuid.UUID, exists bool) {
+	v := m.implied_by_proposal
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldImpliedByProposalID returns the old "implied_by_proposal_id" field's value of the KnowledgeProposalDecision entity.
+// If the KnowledgeProposalDecision object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *KnowledgeProposalDecisionMutation) OldImpliedByProposalID(ctx context.Context) (v *uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldImpliedByProposalID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldImpliedByProposalID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldImpliedByProposalID: %w", err)
+	}
+	return oldValue.ImpliedByProposalID, nil
+}
+
+// ClearImpliedByProposalID clears the value of the "implied_by_proposal_id" field.
+func (m *KnowledgeProposalDecisionMutation) ClearImpliedByProposalID() {
+	m.implied_by_proposal = nil
+	m.clearedFields[knowledgeproposaldecision.FieldImpliedByProposalID] = struct{}{}
+}
+
+// ImpliedByProposalIDCleared returns if the "implied_by_proposal_id" field was cleared in this mutation.
+func (m *KnowledgeProposalDecisionMutation) ImpliedByProposalIDCleared() bool {
+	_, ok := m.clearedFields[knowledgeproposaldecision.FieldImpliedByProposalID]
+	return ok
+}
+
+// ResetImpliedByProposalID resets all changes to the "implied_by_proposal_id" field.
+func (m *KnowledgeProposalDecisionMutation) ResetImpliedByProposalID() {
+	m.implied_by_proposal = nil
+	delete(m.clearedFields, knowledgeproposaldecision.FieldImpliedByProposalID)
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *KnowledgeProposalDecisionMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *KnowledgeProposalDecisionMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the KnowledgeProposalDecision entity.
+// If the KnowledgeProposalDecision object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *KnowledgeProposalDecisionMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *KnowledgeProposalDecisionMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// ClearTenant clears the "tenant" edge to the Tenant entity.
+func (m *KnowledgeProposalDecisionMutation) ClearTenant() {
+	m.clearedtenant = true
+	m.clearedFields[knowledgeproposaldecision.FieldTenantID] = struct{}{}
+}
+
+// TenantCleared reports if the "tenant" edge to the Tenant entity was cleared.
+func (m *KnowledgeProposalDecisionMutation) TenantCleared() bool {
+	return m.clearedtenant
+}
+
+// TenantIDs returns the "tenant" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// TenantID instead. It exists only for internal usage by the builders.
+func (m *KnowledgeProposalDecisionMutation) TenantIDs() (ids []int) {
+	if id := m.tenant; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetTenant resets all changes to the "tenant" edge.
+func (m *KnowledgeProposalDecisionMutation) ResetTenant() {
+	m.tenant = nil
+	m.clearedtenant = false
+}
+
+// ClearProposal clears the "proposal" edge to the KnowledgeProposal entity.
+func (m *KnowledgeProposalDecisionMutation) ClearProposal() {
+	m.clearedproposal = true
+	m.clearedFields[knowledgeproposaldecision.FieldProposalID] = struct{}{}
+}
+
+// ProposalCleared reports if the "proposal" edge to the KnowledgeProposal entity was cleared.
+func (m *KnowledgeProposalDecisionMutation) ProposalCleared() bool {
+	return m.clearedproposal
+}
+
+// ProposalIDs returns the "proposal" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ProposalID instead. It exists only for internal usage by the builders.
+func (m *KnowledgeProposalDecisionMutation) ProposalIDs() (ids []uuid.UUID) {
+	if id := m.proposal; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetProposal resets all changes to the "proposal" edge.
+func (m *KnowledgeProposalDecisionMutation) ResetProposal() {
+	m.proposal = nil
+	m.clearedproposal = false
+}
+
+// ClearUser clears the "user" edge to the User entity.
+func (m *KnowledgeProposalDecisionMutation) ClearUser() {
+	m.cleareduser = true
+	m.clearedFields[knowledgeproposaldecision.FieldUserID] = struct{}{}
+}
+
+// UserCleared reports if the "user" edge to the User entity was cleared.
+func (m *KnowledgeProposalDecisionMutation) UserCleared() bool {
+	return m.cleareduser
+}
+
+// UserIDs returns the "user" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// UserID instead. It exists only for internal usage by the builders.
+func (m *KnowledgeProposalDecisionMutation) UserIDs() (ids []uuid.UUID) {
+	if id := m.user; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetUser resets all changes to the "user" edge.
+func (m *KnowledgeProposalDecisionMutation) ResetUser() {
+	m.user = nil
+	m.cleareduser = false
+}
+
+// ClearImpliedByProposal clears the "implied_by_proposal" edge to the KnowledgeProposal entity.
+func (m *KnowledgeProposalDecisionMutation) ClearImpliedByProposal() {
+	m.clearedimplied_by_proposal = true
+	m.clearedFields[knowledgeproposaldecision.FieldImpliedByProposalID] = struct{}{}
+}
+
+// ImpliedByProposalCleared reports if the "implied_by_proposal" edge to the KnowledgeProposal entity was cleared.
+func (m *KnowledgeProposalDecisionMutation) ImpliedByProposalCleared() bool {
+	return m.ImpliedByProposalIDCleared() || m.clearedimplied_by_proposal
+}
+
+// ImpliedByProposalIDs returns the "implied_by_proposal" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ImpliedByProposalID instead. It exists only for internal usage by the builders.
+func (m *KnowledgeProposalDecisionMutation) ImpliedByProposalIDs() (ids []uuid.UUID) {
+	if id := m.implied_by_proposal; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetImpliedByProposal resets all changes to the "implied_by_proposal" edge.
+func (m *KnowledgeProposalDecisionMutation) ResetImpliedByProposal() {
+	m.implied_by_proposal = nil
+	m.clearedimplied_by_proposal = false
+}
+
+// Where appends a list predicates to the KnowledgeProposalDecisionMutation builder.
+func (m *KnowledgeProposalDecisionMutation) Where(ps ...predicate.KnowledgeProposalDecision) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the KnowledgeProposalDecisionMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *KnowledgeProposalDecisionMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.KnowledgeProposalDecision, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *KnowledgeProposalDecisionMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *KnowledgeProposalDecisionMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (KnowledgeProposalDecision).
+func (m *KnowledgeProposalDecisionMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *KnowledgeProposalDecisionMutation) Fields() []string {
+	fields := make([]string, 0, 6)
+	if m.tenant != nil {
+		fields = append(fields, knowledgeproposaldecision.FieldTenantID)
+	}
+	if m.proposal != nil {
+		fields = append(fields, knowledgeproposaldecision.FieldProposalID)
+	}
+	if m.status != nil {
+		fields = append(fields, knowledgeproposaldecision.FieldStatus)
+	}
+	if m.user != nil {
+		fields = append(fields, knowledgeproposaldecision.FieldUserID)
+	}
+	if m.implied_by_proposal != nil {
+		fields = append(fields, knowledgeproposaldecision.FieldImpliedByProposalID)
+	}
+	if m.created_at != nil {
+		fields = append(fields, knowledgeproposaldecision.FieldCreatedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *KnowledgeProposalDecisionMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case knowledgeproposaldecision.FieldTenantID:
+		return m.TenantID()
+	case knowledgeproposaldecision.FieldProposalID:
+		return m.ProposalID()
+	case knowledgeproposaldecision.FieldStatus:
+		return m.Status()
+	case knowledgeproposaldecision.FieldUserID:
+		return m.UserID()
+	case knowledgeproposaldecision.FieldImpliedByProposalID:
+		return m.ImpliedByProposalID()
+	case knowledgeproposaldecision.FieldCreatedAt:
+		return m.CreatedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *KnowledgeProposalDecisionMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case knowledgeproposaldecision.FieldTenantID:
+		return m.OldTenantID(ctx)
+	case knowledgeproposaldecision.FieldProposalID:
+		return m.OldProposalID(ctx)
+	case knowledgeproposaldecision.FieldStatus:
+		return m.OldStatus(ctx)
+	case knowledgeproposaldecision.FieldUserID:
+		return m.OldUserID(ctx)
+	case knowledgeproposaldecision.FieldImpliedByProposalID:
+		return m.OldImpliedByProposalID(ctx)
+	case knowledgeproposaldecision.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown KnowledgeProposalDecision field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *KnowledgeProposalDecisionMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case knowledgeproposaldecision.FieldTenantID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTenantID(v)
+		return nil
+	case knowledgeproposaldecision.FieldProposalID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetProposalID(v)
+		return nil
+	case knowledgeproposaldecision.FieldStatus:
+		v, ok := value.(knowledgeproposaldecision.Status)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStatus(v)
+		return nil
+	case knowledgeproposaldecision.FieldUserID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUserID(v)
+		return nil
+	case knowledgeproposaldecision.FieldImpliedByProposalID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetImpliedByProposalID(v)
+		return nil
+	case knowledgeproposaldecision.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown KnowledgeProposalDecision field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *KnowledgeProposalDecisionMutation) AddedFields() []string {
+	var fields []string
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *KnowledgeProposalDecisionMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *KnowledgeProposalDecisionMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown KnowledgeProposalDecision numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *KnowledgeProposalDecisionMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(knowledgeproposaldecision.FieldImpliedByProposalID) {
+		fields = append(fields, knowledgeproposaldecision.FieldImpliedByProposalID)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *KnowledgeProposalDecisionMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *KnowledgeProposalDecisionMutation) ClearField(name string) error {
+	switch name {
+	case knowledgeproposaldecision.FieldImpliedByProposalID:
+		m.ClearImpliedByProposalID()
+		return nil
+	}
+	return fmt.Errorf("unknown KnowledgeProposalDecision nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *KnowledgeProposalDecisionMutation) ResetField(name string) error {
+	switch name {
+	case knowledgeproposaldecision.FieldTenantID:
+		m.ResetTenantID()
+		return nil
+	case knowledgeproposaldecision.FieldProposalID:
+		m.ResetProposalID()
+		return nil
+	case knowledgeproposaldecision.FieldStatus:
+		m.ResetStatus()
+		return nil
+	case knowledgeproposaldecision.FieldUserID:
+		m.ResetUserID()
+		return nil
+	case knowledgeproposaldecision.FieldImpliedByProposalID:
+		m.ResetImpliedByProposalID()
+		return nil
+	case knowledgeproposaldecision.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown KnowledgeProposalDecision field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *KnowledgeProposalDecisionMutation) AddedEdges() []string {
+	edges := make([]string, 0, 4)
+	if m.tenant != nil {
+		edges = append(edges, knowledgeproposaldecision.EdgeTenant)
+	}
+	if m.proposal != nil {
+		edges = append(edges, knowledgeproposaldecision.EdgeProposal)
+	}
+	if m.user != nil {
+		edges = append(edges, knowledgeproposaldecision.EdgeUser)
+	}
+	if m.implied_by_proposal != nil {
+		edges = append(edges, knowledgeproposaldecision.EdgeImpliedByProposal)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *KnowledgeProposalDecisionMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case knowledgeproposaldecision.EdgeTenant:
+		if id := m.tenant; id != nil {
+			return []ent.Value{*id}
+		}
+	case knowledgeproposaldecision.EdgeProposal:
+		if id := m.proposal; id != nil {
+			return []ent.Value{*id}
+		}
+	case knowledgeproposaldecision.EdgeUser:
+		if id := m.user; id != nil {
+			return []ent.Value{*id}
+		}
+	case knowledgeproposaldecision.EdgeImpliedByProposal:
+		if id := m.implied_by_proposal; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *KnowledgeProposalDecisionMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 4)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *KnowledgeProposalDecisionMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *KnowledgeProposalDecisionMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 4)
+	if m.clearedtenant {
+		edges = append(edges, knowledgeproposaldecision.EdgeTenant)
+	}
+	if m.clearedproposal {
+		edges = append(edges, knowledgeproposaldecision.EdgeProposal)
+	}
+	if m.cleareduser {
+		edges = append(edges, knowledgeproposaldecision.EdgeUser)
+	}
+	if m.clearedimplied_by_proposal {
+		edges = append(edges, knowledgeproposaldecision.EdgeImpliedByProposal)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *KnowledgeProposalDecisionMutation) EdgeCleared(name string) bool {
+	switch name {
+	case knowledgeproposaldecision.EdgeTenant:
+		return m.clearedtenant
+	case knowledgeproposaldecision.EdgeProposal:
+		return m.clearedproposal
+	case knowledgeproposaldecision.EdgeUser:
+		return m.cleareduser
+	case knowledgeproposaldecision.EdgeImpliedByProposal:
+		return m.clearedimplied_by_proposal
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *KnowledgeProposalDecisionMutation) ClearEdge(name string) error {
+	switch name {
+	case knowledgeproposaldecision.EdgeTenant:
+		m.ClearTenant()
+		return nil
+	case knowledgeproposaldecision.EdgeProposal:
+		m.ClearProposal()
+		return nil
+	case knowledgeproposaldecision.EdgeUser:
+		m.ClearUser()
+		return nil
+	case knowledgeproposaldecision.EdgeImpliedByProposal:
+		m.ClearImpliedByProposal()
+		return nil
+	}
+	return fmt.Errorf("unknown KnowledgeProposalDecision unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *KnowledgeProposalDecisionMutation) ResetEdge(name string) error {
+	switch name {
+	case knowledgeproposaldecision.EdgeTenant:
+		m.ResetTenant()
+		return nil
+	case knowledgeproposaldecision.EdgeProposal:
+		m.ResetProposal()
+		return nil
+	case knowledgeproposaldecision.EdgeUser:
+		m.ResetUser()
+		return nil
+	case knowledgeproposaldecision.EdgeImpliedByProposal:
+		m.ResetImpliedByProposal()
+		return nil
+	}
+	return fmt.Errorf("unknown KnowledgeProposalDecision edge %s", name)
 }
 
 // KnowledgeRelationshipMutation represents an operation that mutates the KnowledgeRelationship nodes in the graph.
@@ -47614,26 +48969,28 @@ func (m *KnowledgeRelationshipMutation) ResetEdge(name string) error {
 // KnowledgeSubjectAliasMutation represents an operation that mutates the KnowledgeSubjectAlias nodes in the graph.
 type KnowledgeSubjectAliasMutation struct {
 	config
-	op                    Op
-	typ                   string
-	id                    *uuid.UUID
-	provider              *string
-	provider_namespace    *string
-	provider_resource_ref *string
-	subject_kind          *knowledgesubjectalias.SubjectKind
-	clearedFields         map[string]struct{}
-	tenant                *int
-	clearedtenant         bool
-	entity                *uuid.UUID
-	clearedentity         bool
-	relationship          *uuid.UUID
-	clearedrelationship   bool
-	evidence              map[uuid.UUID]struct{}
-	removedevidence       map[uuid.UUID]struct{}
-	clearedevidence       bool
-	done                  bool
-	oldValue              func(context.Context) (*KnowledgeSubjectAlias, error)
-	predicates            []predicate.KnowledgeSubjectAlias
+	op                        Op
+	typ                       string
+	id                        *uuid.UUID
+	provider                  *string
+	provider_namespace        *string
+	provider_resource_ref     *string
+	subject_kind              *knowledgesubjectalias.SubjectKind
+	clearedFields             map[string]struct{}
+	tenant                    *int
+	clearedtenant             bool
+	entity                    *uuid.UUID
+	clearedentity             bool
+	relationship              *uuid.UUID
+	clearedrelationship       bool
+	merged_by_proposal        *uuid.UUID
+	clearedmerged_by_proposal bool
+	evidence                  map[uuid.UUID]struct{}
+	removedevidence           map[uuid.UUID]struct{}
+	clearedevidence           bool
+	done                      bool
+	oldValue                  func(context.Context) (*KnowledgeSubjectAlias, error)
+	predicates                []predicate.KnowledgeSubjectAlias
 }
 
 var _ ent.Mutation = (*KnowledgeSubjectAliasMutation)(nil)
@@ -48018,6 +49375,55 @@ func (m *KnowledgeSubjectAliasMutation) ResetRelationshipID() {
 	delete(m.clearedFields, knowledgesubjectalias.FieldRelationshipID)
 }
 
+// SetMergedByProposalID sets the "merged_by_proposal_id" field.
+func (m *KnowledgeSubjectAliasMutation) SetMergedByProposalID(u uuid.UUID) {
+	m.merged_by_proposal = &u
+}
+
+// MergedByProposalID returns the value of the "merged_by_proposal_id" field in the mutation.
+func (m *KnowledgeSubjectAliasMutation) MergedByProposalID() (r uuid.UUID, exists bool) {
+	v := m.merged_by_proposal
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMergedByProposalID returns the old "merged_by_proposal_id" field's value of the KnowledgeSubjectAlias entity.
+// If the KnowledgeSubjectAlias object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *KnowledgeSubjectAliasMutation) OldMergedByProposalID(ctx context.Context) (v *uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldMergedByProposalID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldMergedByProposalID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMergedByProposalID: %w", err)
+	}
+	return oldValue.MergedByProposalID, nil
+}
+
+// ClearMergedByProposalID clears the value of the "merged_by_proposal_id" field.
+func (m *KnowledgeSubjectAliasMutation) ClearMergedByProposalID() {
+	m.merged_by_proposal = nil
+	m.clearedFields[knowledgesubjectalias.FieldMergedByProposalID] = struct{}{}
+}
+
+// MergedByProposalIDCleared returns if the "merged_by_proposal_id" field was cleared in this mutation.
+func (m *KnowledgeSubjectAliasMutation) MergedByProposalIDCleared() bool {
+	_, ok := m.clearedFields[knowledgesubjectalias.FieldMergedByProposalID]
+	return ok
+}
+
+// ResetMergedByProposalID resets all changes to the "merged_by_proposal_id" field.
+func (m *KnowledgeSubjectAliasMutation) ResetMergedByProposalID() {
+	m.merged_by_proposal = nil
+	delete(m.clearedFields, knowledgesubjectalias.FieldMergedByProposalID)
+}
+
 // ClearTenant clears the "tenant" edge to the Tenant entity.
 func (m *KnowledgeSubjectAliasMutation) ClearTenant() {
 	m.clearedtenant = true
@@ -48097,6 +49503,33 @@ func (m *KnowledgeSubjectAliasMutation) RelationshipIDs() (ids []uuid.UUID) {
 func (m *KnowledgeSubjectAliasMutation) ResetRelationship() {
 	m.relationship = nil
 	m.clearedrelationship = false
+}
+
+// ClearMergedByProposal clears the "merged_by_proposal" edge to the KnowledgeProposal entity.
+func (m *KnowledgeSubjectAliasMutation) ClearMergedByProposal() {
+	m.clearedmerged_by_proposal = true
+	m.clearedFields[knowledgesubjectalias.FieldMergedByProposalID] = struct{}{}
+}
+
+// MergedByProposalCleared reports if the "merged_by_proposal" edge to the KnowledgeProposal entity was cleared.
+func (m *KnowledgeSubjectAliasMutation) MergedByProposalCleared() bool {
+	return m.MergedByProposalIDCleared() || m.clearedmerged_by_proposal
+}
+
+// MergedByProposalIDs returns the "merged_by_proposal" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// MergedByProposalID instead. It exists only for internal usage by the builders.
+func (m *KnowledgeSubjectAliasMutation) MergedByProposalIDs() (ids []uuid.UUID) {
+	if id := m.merged_by_proposal; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetMergedByProposal resets all changes to the "merged_by_proposal" edge.
+func (m *KnowledgeSubjectAliasMutation) ResetMergedByProposal() {
+	m.merged_by_proposal = nil
+	m.clearedmerged_by_proposal = false
 }
 
 // AddEvidenceIDs adds the "evidence" edge to the KnowledgeEvidence entity by ids.
@@ -48187,7 +49620,7 @@ func (m *KnowledgeSubjectAliasMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *KnowledgeSubjectAliasMutation) Fields() []string {
-	fields := make([]string, 0, 7)
+	fields := make([]string, 0, 8)
 	if m.tenant != nil {
 		fields = append(fields, knowledgesubjectalias.FieldTenantID)
 	}
@@ -48208,6 +49641,9 @@ func (m *KnowledgeSubjectAliasMutation) Fields() []string {
 	}
 	if m.relationship != nil {
 		fields = append(fields, knowledgesubjectalias.FieldRelationshipID)
+	}
+	if m.merged_by_proposal != nil {
+		fields = append(fields, knowledgesubjectalias.FieldMergedByProposalID)
 	}
 	return fields
 }
@@ -48231,6 +49667,8 @@ func (m *KnowledgeSubjectAliasMutation) Field(name string) (ent.Value, bool) {
 		return m.EntityID()
 	case knowledgesubjectalias.FieldRelationshipID:
 		return m.RelationshipID()
+	case knowledgesubjectalias.FieldMergedByProposalID:
+		return m.MergedByProposalID()
 	}
 	return nil, false
 }
@@ -48254,6 +49692,8 @@ func (m *KnowledgeSubjectAliasMutation) OldField(ctx context.Context, name strin
 		return m.OldEntityID(ctx)
 	case knowledgesubjectalias.FieldRelationshipID:
 		return m.OldRelationshipID(ctx)
+	case knowledgesubjectalias.FieldMergedByProposalID:
+		return m.OldMergedByProposalID(ctx)
 	}
 	return nil, fmt.Errorf("unknown KnowledgeSubjectAlias field %s", name)
 }
@@ -48312,6 +49752,13 @@ func (m *KnowledgeSubjectAliasMutation) SetField(name string, value ent.Value) e
 		}
 		m.SetRelationshipID(v)
 		return nil
+	case knowledgesubjectalias.FieldMergedByProposalID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMergedByProposalID(v)
+		return nil
 	}
 	return fmt.Errorf("unknown KnowledgeSubjectAlias field %s", name)
 }
@@ -48351,6 +49798,9 @@ func (m *KnowledgeSubjectAliasMutation) ClearedFields() []string {
 	if m.FieldCleared(knowledgesubjectalias.FieldRelationshipID) {
 		fields = append(fields, knowledgesubjectalias.FieldRelationshipID)
 	}
+	if m.FieldCleared(knowledgesubjectalias.FieldMergedByProposalID) {
+		fields = append(fields, knowledgesubjectalias.FieldMergedByProposalID)
+	}
 	return fields
 }
 
@@ -48370,6 +49820,9 @@ func (m *KnowledgeSubjectAliasMutation) ClearField(name string) error {
 		return nil
 	case knowledgesubjectalias.FieldRelationshipID:
 		m.ClearRelationshipID()
+		return nil
+	case knowledgesubjectalias.FieldMergedByProposalID:
+		m.ClearMergedByProposalID()
 		return nil
 	}
 	return fmt.Errorf("unknown KnowledgeSubjectAlias nullable field %s", name)
@@ -48400,13 +49853,16 @@ func (m *KnowledgeSubjectAliasMutation) ResetField(name string) error {
 	case knowledgesubjectalias.FieldRelationshipID:
 		m.ResetRelationshipID()
 		return nil
+	case knowledgesubjectalias.FieldMergedByProposalID:
+		m.ResetMergedByProposalID()
+		return nil
 	}
 	return fmt.Errorf("unknown KnowledgeSubjectAlias field %s", name)
 }
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *KnowledgeSubjectAliasMutation) AddedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.tenant != nil {
 		edges = append(edges, knowledgesubjectalias.EdgeTenant)
 	}
@@ -48415,6 +49871,9 @@ func (m *KnowledgeSubjectAliasMutation) AddedEdges() []string {
 	}
 	if m.relationship != nil {
 		edges = append(edges, knowledgesubjectalias.EdgeRelationship)
+	}
+	if m.merged_by_proposal != nil {
+		edges = append(edges, knowledgesubjectalias.EdgeMergedByProposal)
 	}
 	if m.evidence != nil {
 		edges = append(edges, knowledgesubjectalias.EdgeEvidence)
@@ -48438,6 +49897,10 @@ func (m *KnowledgeSubjectAliasMutation) AddedIDs(name string) []ent.Value {
 		if id := m.relationship; id != nil {
 			return []ent.Value{*id}
 		}
+	case knowledgesubjectalias.EdgeMergedByProposal:
+		if id := m.merged_by_proposal; id != nil {
+			return []ent.Value{*id}
+		}
 	case knowledgesubjectalias.EdgeEvidence:
 		ids := make([]ent.Value, 0, len(m.evidence))
 		for id := range m.evidence {
@@ -48450,7 +49913,7 @@ func (m *KnowledgeSubjectAliasMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *KnowledgeSubjectAliasMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.removedevidence != nil {
 		edges = append(edges, knowledgesubjectalias.EdgeEvidence)
 	}
@@ -48473,7 +49936,7 @@ func (m *KnowledgeSubjectAliasMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *KnowledgeSubjectAliasMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.clearedtenant {
 		edges = append(edges, knowledgesubjectalias.EdgeTenant)
 	}
@@ -48482,6 +49945,9 @@ func (m *KnowledgeSubjectAliasMutation) ClearedEdges() []string {
 	}
 	if m.clearedrelationship {
 		edges = append(edges, knowledgesubjectalias.EdgeRelationship)
+	}
+	if m.clearedmerged_by_proposal {
+		edges = append(edges, knowledgesubjectalias.EdgeMergedByProposal)
 	}
 	if m.clearedevidence {
 		edges = append(edges, knowledgesubjectalias.EdgeEvidence)
@@ -48499,6 +49965,8 @@ func (m *KnowledgeSubjectAliasMutation) EdgeCleared(name string) bool {
 		return m.clearedentity
 	case knowledgesubjectalias.EdgeRelationship:
 		return m.clearedrelationship
+	case knowledgesubjectalias.EdgeMergedByProposal:
+		return m.clearedmerged_by_proposal
 	case knowledgesubjectalias.EdgeEvidence:
 		return m.clearedevidence
 	}
@@ -48518,6 +49986,9 @@ func (m *KnowledgeSubjectAliasMutation) ClearEdge(name string) error {
 	case knowledgesubjectalias.EdgeRelationship:
 		m.ClearRelationship()
 		return nil
+	case knowledgesubjectalias.EdgeMergedByProposal:
+		m.ClearMergedByProposal()
+		return nil
 	}
 	return fmt.Errorf("unknown KnowledgeSubjectAlias unique edge %s", name)
 }
@@ -48534,6 +50005,9 @@ func (m *KnowledgeSubjectAliasMutation) ResetEdge(name string) error {
 		return nil
 	case knowledgesubjectalias.EdgeRelationship:
 		m.ResetRelationship()
+		return nil
+	case knowledgesubjectalias.EdgeMergedByProposal:
+		m.ResetMergedByProposal()
 		return nil
 	case knowledgesubjectalias.EdgeEvidence:
 		m.ResetEvidence()
@@ -65361,7 +66835,6 @@ type SituationMutation struct {
 	hold_until                *time.Time
 	closed_at                 *time.Time
 	close_reason              *situation.CloseReason
-	seed_entity_id            *uuid.UUID
 	clearedFields             map[string]struct{}
 	tenant                    *int
 	clearedtenant             bool
@@ -65390,6 +66863,8 @@ type SituationMutation struct {
 	clearedactions            bool
 	latest_judgment           *uuid.UUID
 	clearedlatest_judgment    bool
+	seed_entity               *uuid.UUID
+	clearedseed_entity        bool
 	done                      bool
 	oldValue                  func(context.Context) (*Situation, error)
 	predicates                []predicate.Situation
@@ -66024,12 +67499,12 @@ func (m *SituationMutation) ResetCloseReason() {
 
 // SetSeedEntityID sets the "seed_entity_id" field.
 func (m *SituationMutation) SetSeedEntityID(u uuid.UUID) {
-	m.seed_entity_id = &u
+	m.seed_entity = &u
 }
 
 // SeedEntityID returns the value of the "seed_entity_id" field in the mutation.
 func (m *SituationMutation) SeedEntityID() (r uuid.UUID, exists bool) {
-	v := m.seed_entity_id
+	v := m.seed_entity
 	if v == nil {
 		return
 	}
@@ -66055,7 +67530,7 @@ func (m *SituationMutation) OldSeedEntityID(ctx context.Context) (v uuid.UUID, e
 
 // ResetSeedEntityID resets all changes to the "seed_entity_id" field.
 func (m *SituationMutation) ResetSeedEntityID() {
-	m.seed_entity_id = nil
+	m.seed_entity = nil
 }
 
 // SetLatestJudgmentID sets the "latest_judgment_id" field.
@@ -66578,6 +68053,33 @@ func (m *SituationMutation) ResetLatestJudgment() {
 	m.clearedlatest_judgment = false
 }
 
+// ClearSeedEntity clears the "seed_entity" edge to the KnowledgeEntity entity.
+func (m *SituationMutation) ClearSeedEntity() {
+	m.clearedseed_entity = true
+	m.clearedFields[situation.FieldSeedEntityID] = struct{}{}
+}
+
+// SeedEntityCleared reports if the "seed_entity" edge to the KnowledgeEntity entity was cleared.
+func (m *SituationMutation) SeedEntityCleared() bool {
+	return m.clearedseed_entity
+}
+
+// SeedEntityIDs returns the "seed_entity" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// SeedEntityID instead. It exists only for internal usage by the builders.
+func (m *SituationMutation) SeedEntityIDs() (ids []uuid.UUID) {
+	if id := m.seed_entity; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetSeedEntity resets all changes to the "seed_entity" edge.
+func (m *SituationMutation) ResetSeedEntity() {
+	m.seed_entity = nil
+	m.clearedseed_entity = false
+}
+
 // Where appends a list predicates to the SituationMutation builder.
 func (m *SituationMutation) Where(ps ...predicate.Situation) {
 	m.predicates = append(m.predicates, ps...)
@@ -66649,7 +68151,7 @@ func (m *SituationMutation) Fields() []string {
 	if m.close_reason != nil {
 		fields = append(fields, situation.FieldCloseReason)
 	}
-	if m.seed_entity_id != nil {
+	if m.seed_entity != nil {
 		fields = append(fields, situation.FieldSeedEntityID)
 	}
 	if m.latest_judgment != nil {
@@ -66986,7 +68488,7 @@ func (m *SituationMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *SituationMutation) AddedEdges() []string {
-	edges := make([]string, 0, 10)
+	edges := make([]string, 0, 11)
 	if m.tenant != nil {
 		edges = append(edges, situation.EdgeTenant)
 	}
@@ -67016,6 +68518,9 @@ func (m *SituationMutation) AddedEdges() []string {
 	}
 	if m.latest_judgment != nil {
 		edges = append(edges, situation.EdgeLatestJudgment)
+	}
+	if m.seed_entity != nil {
+		edges = append(edges, situation.EdgeSeedEntity)
 	}
 	return edges
 }
@@ -67078,13 +68583,17 @@ func (m *SituationMutation) AddedIDs(name string) []ent.Value {
 		if id := m.latest_judgment; id != nil {
 			return []ent.Value{*id}
 		}
+	case situation.EdgeSeedEntity:
+		if id := m.seed_entity; id != nil {
+			return []ent.Value{*id}
+		}
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *SituationMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 10)
+	edges := make([]string, 0, 11)
 	if m.removedhazard_assessments != nil {
 		edges = append(edges, situation.EdgeHazardAssessments)
 	}
@@ -67161,7 +68670,7 @@ func (m *SituationMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *SituationMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 10)
+	edges := make([]string, 0, 11)
 	if m.clearedtenant {
 		edges = append(edges, situation.EdgeTenant)
 	}
@@ -67192,6 +68701,9 @@ func (m *SituationMutation) ClearedEdges() []string {
 	if m.clearedlatest_judgment {
 		edges = append(edges, situation.EdgeLatestJudgment)
 	}
+	if m.clearedseed_entity {
+		edges = append(edges, situation.EdgeSeedEntity)
+	}
 	return edges
 }
 
@@ -67219,6 +68731,8 @@ func (m *SituationMutation) EdgeCleared(name string) bool {
 		return m.clearedactions
 	case situation.EdgeLatestJudgment:
 		return m.clearedlatest_judgment
+	case situation.EdgeSeedEntity:
+		return m.clearedseed_entity
 	}
 	return false
 }
@@ -67235,6 +68749,9 @@ func (m *SituationMutation) ClearEdge(name string) error {
 		return nil
 	case situation.EdgeLatestJudgment:
 		m.ClearLatestJudgment()
+		return nil
+	case situation.EdgeSeedEntity:
+		m.ClearSeedEntity()
 		return nil
 	}
 	return fmt.Errorf("unknown Situation unique edge %s", name)
@@ -67273,6 +68790,9 @@ func (m *SituationMutation) ResetEdge(name string) error {
 		return nil
 	case situation.EdgeLatestJudgment:
 		m.ResetLatestJudgment()
+		return nil
+	case situation.EdgeSeedEntity:
+		m.ResetSeedEntity()
 		return nil
 	}
 	return fmt.Errorf("unknown Situation edge %s", name)
@@ -73120,10 +74640,8 @@ type SituationSignalMutation struct {
 	typ                      string
 	id                       *uuid.UUID
 	kind                     *string
-	source_entity_id         *uuid.UUID
 	attached_at              *time.Time
 	match_kind               *situationsignal.MatchKind
-	via_relationship_id      *uuid.UUID
 	match_explanation        *string
 	observed_revision        *int
 	addobserved_revision     *int
@@ -73136,6 +74654,10 @@ type SituationSignalMutation struct {
 	clearedobservation_group bool
 	knowledge_entity         *uuid.UUID
 	clearedknowledge_entity  bool
+	source_entity            *uuid.UUID
+	clearedsource_entity     bool
+	via_relationship         *uuid.UUID
+	clearedvia_relationship  bool
 	done                     bool
 	oldValue                 func(context.Context) (*SituationSignal, error)
 	predicates               []predicate.SituationSignal
@@ -73427,12 +74949,12 @@ func (m *SituationSignalMutation) ResetKind() {
 
 // SetSourceEntityID sets the "source_entity_id" field.
 func (m *SituationSignalMutation) SetSourceEntityID(u uuid.UUID) {
-	m.source_entity_id = &u
+	m.source_entity = &u
 }
 
 // SourceEntityID returns the value of the "source_entity_id" field in the mutation.
 func (m *SituationSignalMutation) SourceEntityID() (r uuid.UUID, exists bool) {
-	v := m.source_entity_id
+	v := m.source_entity
 	if v == nil {
 		return
 	}
@@ -73458,7 +74980,7 @@ func (m *SituationSignalMutation) OldSourceEntityID(ctx context.Context) (v *uui
 
 // ClearSourceEntityID clears the value of the "source_entity_id" field.
 func (m *SituationSignalMutation) ClearSourceEntityID() {
-	m.source_entity_id = nil
+	m.source_entity = nil
 	m.clearedFields[situationsignal.FieldSourceEntityID] = struct{}{}
 }
 
@@ -73470,7 +74992,7 @@ func (m *SituationSignalMutation) SourceEntityIDCleared() bool {
 
 // ResetSourceEntityID resets all changes to the "source_entity_id" field.
 func (m *SituationSignalMutation) ResetSourceEntityID() {
-	m.source_entity_id = nil
+	m.source_entity = nil
 	delete(m.clearedFields, situationsignal.FieldSourceEntityID)
 }
 
@@ -73548,12 +75070,12 @@ func (m *SituationSignalMutation) ResetMatchKind() {
 
 // SetViaRelationshipID sets the "via_relationship_id" field.
 func (m *SituationSignalMutation) SetViaRelationshipID(u uuid.UUID) {
-	m.via_relationship_id = &u
+	m.via_relationship = &u
 }
 
 // ViaRelationshipID returns the value of the "via_relationship_id" field in the mutation.
 func (m *SituationSignalMutation) ViaRelationshipID() (r uuid.UUID, exists bool) {
-	v := m.via_relationship_id
+	v := m.via_relationship
 	if v == nil {
 		return
 	}
@@ -73579,7 +75101,7 @@ func (m *SituationSignalMutation) OldViaRelationshipID(ctx context.Context) (v *
 
 // ClearViaRelationshipID clears the value of the "via_relationship_id" field.
 func (m *SituationSignalMutation) ClearViaRelationshipID() {
-	m.via_relationship_id = nil
+	m.via_relationship = nil
 	m.clearedFields[situationsignal.FieldViaRelationshipID] = struct{}{}
 }
 
@@ -73591,7 +75113,7 @@ func (m *SituationSignalMutation) ViaRelationshipIDCleared() bool {
 
 // ResetViaRelationshipID resets all changes to the "via_relationship_id" field.
 func (m *SituationSignalMutation) ResetViaRelationshipID() {
-	m.via_relationship_id = nil
+	m.via_relationship = nil
 	delete(m.clearedFields, situationsignal.FieldViaRelationshipID)
 }
 
@@ -73808,6 +75330,60 @@ func (m *SituationSignalMutation) ResetKnowledgeEntity() {
 	m.clearedknowledge_entity = false
 }
 
+// ClearSourceEntity clears the "source_entity" edge to the KnowledgeEntity entity.
+func (m *SituationSignalMutation) ClearSourceEntity() {
+	m.clearedsource_entity = true
+	m.clearedFields[situationsignal.FieldSourceEntityID] = struct{}{}
+}
+
+// SourceEntityCleared reports if the "source_entity" edge to the KnowledgeEntity entity was cleared.
+func (m *SituationSignalMutation) SourceEntityCleared() bool {
+	return m.SourceEntityIDCleared() || m.clearedsource_entity
+}
+
+// SourceEntityIDs returns the "source_entity" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// SourceEntityID instead. It exists only for internal usage by the builders.
+func (m *SituationSignalMutation) SourceEntityIDs() (ids []uuid.UUID) {
+	if id := m.source_entity; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetSourceEntity resets all changes to the "source_entity" edge.
+func (m *SituationSignalMutation) ResetSourceEntity() {
+	m.source_entity = nil
+	m.clearedsource_entity = false
+}
+
+// ClearViaRelationship clears the "via_relationship" edge to the KnowledgeRelationship entity.
+func (m *SituationSignalMutation) ClearViaRelationship() {
+	m.clearedvia_relationship = true
+	m.clearedFields[situationsignal.FieldViaRelationshipID] = struct{}{}
+}
+
+// ViaRelationshipCleared reports if the "via_relationship" edge to the KnowledgeRelationship entity was cleared.
+func (m *SituationSignalMutation) ViaRelationshipCleared() bool {
+	return m.ViaRelationshipIDCleared() || m.clearedvia_relationship
+}
+
+// ViaRelationshipIDs returns the "via_relationship" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ViaRelationshipID instead. It exists only for internal usage by the builders.
+func (m *SituationSignalMutation) ViaRelationshipIDs() (ids []uuid.UUID) {
+	if id := m.via_relationship; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetViaRelationship resets all changes to the "via_relationship" edge.
+func (m *SituationSignalMutation) ResetViaRelationship() {
+	m.via_relationship = nil
+	m.clearedvia_relationship = false
+}
+
 // Where appends a list predicates to the SituationSignalMutation builder.
 func (m *SituationSignalMutation) Where(ps ...predicate.SituationSignal) {
 	m.predicates = append(m.predicates, ps...)
@@ -73858,7 +75434,7 @@ func (m *SituationSignalMutation) Fields() []string {
 	if m.kind != nil {
 		fields = append(fields, situationsignal.FieldKind)
 	}
-	if m.source_entity_id != nil {
+	if m.source_entity != nil {
 		fields = append(fields, situationsignal.FieldSourceEntityID)
 	}
 	if m.attached_at != nil {
@@ -73867,7 +75443,7 @@ func (m *SituationSignalMutation) Fields() []string {
 	if m.match_kind != nil {
 		fields = append(fields, situationsignal.FieldMatchKind)
 	}
-	if m.via_relationship_id != nil {
+	if m.via_relationship != nil {
 		fields = append(fields, situationsignal.FieldViaRelationshipID)
 	}
 	if m.match_explanation != nil {
@@ -74147,7 +75723,7 @@ func (m *SituationSignalMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *SituationSignalMutation) AddedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 6)
 	if m.tenant != nil {
 		edges = append(edges, situationsignal.EdgeTenant)
 	}
@@ -74159,6 +75735,12 @@ func (m *SituationSignalMutation) AddedEdges() []string {
 	}
 	if m.knowledge_entity != nil {
 		edges = append(edges, situationsignal.EdgeKnowledgeEntity)
+	}
+	if m.source_entity != nil {
+		edges = append(edges, situationsignal.EdgeSourceEntity)
+	}
+	if m.via_relationship != nil {
+		edges = append(edges, situationsignal.EdgeViaRelationship)
 	}
 	return edges
 }
@@ -74183,13 +75765,21 @@ func (m *SituationSignalMutation) AddedIDs(name string) []ent.Value {
 		if id := m.knowledge_entity; id != nil {
 			return []ent.Value{*id}
 		}
+	case situationsignal.EdgeSourceEntity:
+		if id := m.source_entity; id != nil {
+			return []ent.Value{*id}
+		}
+	case situationsignal.EdgeViaRelationship:
+		if id := m.via_relationship; id != nil {
+			return []ent.Value{*id}
+		}
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *SituationSignalMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 6)
 	return edges
 }
 
@@ -74201,7 +75791,7 @@ func (m *SituationSignalMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *SituationSignalMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 6)
 	if m.clearedtenant {
 		edges = append(edges, situationsignal.EdgeTenant)
 	}
@@ -74213,6 +75803,12 @@ func (m *SituationSignalMutation) ClearedEdges() []string {
 	}
 	if m.clearedknowledge_entity {
 		edges = append(edges, situationsignal.EdgeKnowledgeEntity)
+	}
+	if m.clearedsource_entity {
+		edges = append(edges, situationsignal.EdgeSourceEntity)
+	}
+	if m.clearedvia_relationship {
+		edges = append(edges, situationsignal.EdgeViaRelationship)
 	}
 	return edges
 }
@@ -74229,6 +75825,10 @@ func (m *SituationSignalMutation) EdgeCleared(name string) bool {
 		return m.clearedobservation_group
 	case situationsignal.EdgeKnowledgeEntity:
 		return m.clearedknowledge_entity
+	case situationsignal.EdgeSourceEntity:
+		return m.clearedsource_entity
+	case situationsignal.EdgeViaRelationship:
+		return m.clearedvia_relationship
 	}
 	return false
 }
@@ -74249,6 +75849,12 @@ func (m *SituationSignalMutation) ClearEdge(name string) error {
 	case situationsignal.EdgeKnowledgeEntity:
 		m.ClearKnowledgeEntity()
 		return nil
+	case situationsignal.EdgeSourceEntity:
+		m.ClearSourceEntity()
+		return nil
+	case situationsignal.EdgeViaRelationship:
+		m.ClearViaRelationship()
+		return nil
 	}
 	return fmt.Errorf("unknown SituationSignal unique edge %s", name)
 }
@@ -74268,6 +75874,12 @@ func (m *SituationSignalMutation) ResetEdge(name string) error {
 		return nil
 	case situationsignal.EdgeKnowledgeEntity:
 		m.ResetKnowledgeEntity()
+		return nil
+	case situationsignal.EdgeSourceEntity:
+		m.ResetSourceEntity()
+		return nil
+	case situationsignal.EdgeViaRelationship:
+		m.ResetViaRelationship()
 		return nil
 	}
 	return fmt.Errorf("unknown SituationSignal edge %s", name)

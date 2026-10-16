@@ -23,7 +23,6 @@ import (
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/schema/schematypes"
 
-	dt "github.com/rezible/rezible/ent/discussionthread"
 	"github.com/rezible/rezible/ent/incident"
 	ifvl "github.com/rezible/rezible/ent/investigationfindingversionlink"
 	ihv "github.com/rezible/rezible/ent/investigationhypothesisversion"
@@ -58,6 +57,8 @@ type (
 		AcquireTxLocks(context.Context, string, ...string) error
 		IsTransientError(error) bool
 		IsConstraintError(error) (string, bool)
+		// IsForeignKeyError reports whether an error violates one of the named foreign key constraints.
+		IsForeignKeyError(error, ...string) bool
 		Shutdown() error
 	}
 
@@ -174,11 +175,30 @@ type (
 	KnowledgeGraphIngestionService interface {
 		IngestEvidence(context.Context, *ent.NormalizedEvent, ...KnowledgeEvidenceRef) error
 		ResolveInternalSubject(context.Context, KnowledgeSubjectRef) (*ent.KnowledgeSubjectAlias, error)
+		// MergeEntities merges the two entities holding a proposal's values into the older one, in the caller's
+		// transaction when there is one. It refuses, with ErrConflict, entities that are not services or
+		// repositories of one kind.
+		MergeEntities(context.Context, MergeEntitiesParams) (*MergeEntitiesResult, error)
+	}
+
+	MergeEntitiesParams struct {
+		// ProposalID is the proposal being confirmed. Each moved alias is marked with it.
+		ProposalID uuid.UUID
+		// EntityIDs are the two entities the caller found holding the proposal's values.
+		EntityIDs [2]uuid.UUID
+	}
+
+	MergeEntitiesResult struct {
+		// SurvivorID is the entity that holds both values.
+		SurvivorID uuid.UUID
+		// Merged is false when the values were already on one entity, so nothing was merged.
+		Merged bool
 	}
 )
 
 type (
 	ListKnowledgeEntitiesParams struct {
+		// ListParams.Search keeps entities whose display name or a linking value contains it, ignoring case.
 		ent.ListParams
 		Predicates []predicate.KnowledgeEntity
 		// Categories, when set, limits the entities to these categories.
@@ -186,6 +206,8 @@ type (
 		// LinkingAttribute, when set, limits the entities to those holding that linking attribute, and
 		// LinkingValueContains, when also set, to those whose value contains it.
 		LinkingAttribute, LinkingValueContains string
+		// WithLinkingAttributes loads each entity's linking attributes.
+		WithLinkingAttributes bool
 	}
 
 	// KnowledgeEntityExpand names what GetEntity loads beyond the entity and its aliases.
@@ -254,6 +276,27 @@ type (
 		LatestState KnowledgeSubjectState
 	}
 
+	// KnowledgeEntityAlias is one of an entity's aliases, with the name its provider uses for the entity and when
+	// Rezible last recorded evidence from it.
+	KnowledgeEntityAlias struct {
+		// Alias is loaded with the proposal whose merge moved it, if any, and that proposal's decisions and their
+		// users.
+		Alias *ent.KnowledgeSubjectAlias
+		// IntegrationDisplayName is the display name of the integration named by the alias's provider, empty
+		// when none is registered by that name.
+		IntegrationDisplayName string
+		// Name is the display name the alias's newest evidence states, or its resource ref when it states none.
+		Name string
+		// LastRecordedAt is the effective time of the alias's newest evidence, zero when it has none.
+		LastRecordedAt time.Time
+	}
+
+	// KnowledgeEntityWithAliases is an entity with its aliases, most recently recorded first.
+	KnowledgeEntityWithAliases struct {
+		Entity  *ent.KnowledgeEntity
+		Aliases []KnowledgeEntityAlias
+	}
+
 	ListKnowledgeSubjectAliasesParams struct {
 		ent.ListParams
 		Predicates []predicate.KnowledgeSubjectAlias
@@ -291,6 +334,16 @@ type (
 		ListRelatedEvents(context.Context, ListRelatedEventsParams) (*RelatedEvents, error)
 	}
 
+	// KnowledgeEntityAliasService reads entities' aliases with what people need to review them.
+	KnowledgeEntityAliasService interface {
+		// ListEntityAliases lists, by entity ID, each entity's aliases, most recently recorded first.
+		ListEntityAliases(ctx context.Context, entityIDs []uuid.UUID) (map[uuid.UUID][]KnowledgeEntityAlias, error)
+		// ListEntitiesWithAliases lists entities as KnowledgeGraphQueryService.ListEntities does, with their aliases.
+		ListEntitiesWithAliases(context.Context, ListKnowledgeEntitiesParams) (*ent.ListResult[KnowledgeEntityWithAliases], error)
+		// GetEntityWithAliases gets an entity as KnowledgeGraphQueryService.GetEntity does, with its aliases.
+		GetEntityWithAliases(context.Context, uuid.UUID, KnowledgeEntityExpand) (*KnowledgeEntityWithAliases, error)
+	}
+
 	ListRelatedEventsParams struct {
 		// EntityID is the related entity; the events are relationship sources.
 		EntityID uuid.UUID
@@ -323,19 +376,58 @@ type (
 	}
 
 	// UnconfirmedMatch is a pending proposal naming one of an entity's linking values, seen from that entity:
-	// the other name may be the same entity.
+	// the other value may belong to the same entity.
 	UnconfirmedMatch struct {
 		ProposalID uuid.UUID
 		Rationale  string
-		// Name is the proposal's other value, and Entity the entity that holds it now.
-		Name   string
+		// Value is the proposal's other value, and Entity the entity that holds it now.
+		Value  string
 		Entity *ent.KnowledgeEntity
 	}
 
-	// KnowledgeProposalService reads the identity matches Rezible proposes for people to decide on.
+	// KnowledgeLinkingValue is one value of a linking attribute, such as service.name checkout.
+	KnowledgeLinkingValue struct {
+		Attribute string
+		Value     string
+	}
+
+	// KnowledgeValueHolders are the entities holding linking values now. A value no entity holds is absent.
+	KnowledgeValueHolders map[KnowledgeLinkingValue]*ent.KnowledgeEntity
+
+	// KnowledgeProposalValue is one of a proposal's values, with the entity holding it now.
+	KnowledgeProposalValue struct {
+		Value string
+		// Holder is the entity holding the value, with its aliases; nil when no entity holds it.
+		Holder *KnowledgeEntityWithAliases
+	}
+
+	// KnowledgeProposalWithValues is a proposal with the entities holding its values.
+	KnowledgeProposalWithValues struct {
+		Proposal       *ent.KnowledgeProposal
+		ValueA, ValueB KnowledgeProposalValue
+		// EvidenceIntegrationDisplayName is the display name of the integration named by the cited evidence's
+		// alias, empty when none is registered by that name.
+		EvidenceIntegrationDisplayName string
+	}
+
+	// KnowledgeProposalService reads the identity matches Rezible proposes, and records people's decisions on them.
 	KnowledgeProposalService interface {
-		// ListProposals lists proposals, newest first unless OrderAsc, each with the evidence it cites and that evidence's alias.
+		// ListProposals lists proposals, newest first unless OrderAsc, each with the evidence it cites and that
+		// evidence's alias, and its decisions with their users, oldest first.
 		ListProposals(context.Context, ListProposalsParams) (*ent.ListResult[ent.KnowledgeProposal], error)
+		// ListProposalsWithValues lists proposals as ListProposals does, with the entities holding their values.
+		ListProposalsWithValues(context.Context, ListProposalsParams) (*ent.ListResult[KnowledgeProposalWithValues], error)
+		// GetProposalWithValues gets a proposal in any status, loaded as ListProposals loads them, with the entities holding its values.
+		GetProposalWithValues(context.Context, uuid.UUID) (*KnowledgeProposalWithValues, error)
+		// ListImpliedProposals lists the other proposals that confirming the proposal would also confirm, because
+		// the merge would put both their values on one entity. It is empty when confirming would merge nothing.
+		ListImpliedProposals(context.Context, *ent.KnowledgeProposal) ([]*ent.KnowledgeProposal, error)
+		// ConfirmProposal confirms a pending or rejected proposal as the user in the context, merging the two
+		// entities holding its values. Confirming is final. It returns the proposal as GetProposalWithValues does.
+		ConfirmProposal(context.Context, uuid.UUID) (*KnowledgeProposalWithValues, error)
+		// RejectProposal rejects a pending proposal as the user in the context. It returns the proposal as
+		// GetProposalWithValues does.
+		RejectProposal(context.Context, uuid.UUID) (*KnowledgeProposalWithValues, error)
 		// ListUnconfirmedMatches lists, by entity ID, the pending proposals naming each entity, oldest first.
 		// A proposal whose other value no entity holds, or the same entity holds, is left out.
 		ListUnconfirmedMatches(ctx context.Context, entityIDs []uuid.UUID) (map[uuid.UUID][]UnconfirmedMatch, error)
@@ -384,6 +476,13 @@ type (
 		MaxDepth         int
 	}
 )
+
+// Of returns the entities holding the proposal's two values, nil for a value no entity holds.
+func (h KnowledgeValueHolders) Of(p *ent.KnowledgeProposal) (a, b *ent.KnowledgeEntity) {
+	a = h[KnowledgeLinkingValue{Attribute: p.Attribute, Value: p.ValueA}]
+	b = h[KnowledgeLinkingValue{Attribute: p.Attribute, Value: p.ValueB}]
+	return a, b
+}
 
 type (
 	ListSystemAnalysisEntitiesParams struct {
@@ -1590,10 +1689,14 @@ type (
 		ent.ListParams
 		AnalysisID      uuid.UUID
 		RetrospectiveID uuid.UUID
-		TargetKind      dt.TargetKind
-		TargetID        uuid.UUID
-		Resolved        *bool
+		// TargetKind, if set, lists threads with that kind of target; TargetID, which needs it, one target.
+		TargetKind DiscussionThreadTargetKind
+		TargetID   uuid.UUID
+		Resolved   *bool
 	}
+
+	// DiscussionThreadTargetKind is the kind of thing a discussion thread is about, within its owner.
+	DiscussionThreadTargetKind string
 
 	ListDiscussionCommentsParams struct {
 		ent.ListParams
@@ -1604,7 +1707,7 @@ type (
 	CreateDiscussionThreadParams struct {
 		AnalysisID      *uuid.UUID
 		RetrospectiveID *uuid.UUID
-		TargetKind      *dt.TargetKind
+		TargetKind      *DiscussionThreadTargetKind
 		TargetID        *uuid.UUID
 		InitialMessage  string
 	}
@@ -1631,6 +1734,22 @@ type (
 		ReviewService
 	}
 )
+
+const (
+	DiscussionThreadTargetFinding               DiscussionThreadTargetKind = "finding"
+	DiscussionThreadTargetEntry                 DiscussionThreadTargetKind = "entry"
+	DiscussionThreadTargetKnowledgeEntity       DiscussionThreadTargetKind = "knowledge_entity"
+	DiscussionThreadTargetKnowledgeRelationship DiscussionThreadTargetKind = "knowledge_relationship"
+	DiscussionThreadTargetNormalizedEvent       DiscussionThreadTargetKind = "normalized_event"
+)
+
+var DiscussionThreadTargetKinds = []DiscussionThreadTargetKind{
+	DiscussionThreadTargetFinding,
+	DiscussionThreadTargetEntry,
+	DiscussionThreadTargetKnowledgeEntity,
+	DiscussionThreadTargetKnowledgeRelationship,
+	DiscussionThreadTargetNormalizedEvent,
+}
 
 type (
 	ListReviewsParams struct {

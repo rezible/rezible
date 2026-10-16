@@ -6,6 +6,8 @@ import (
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
 	"github.com/google/uuid"
+
+	"github.com/rezible/rezible/ent/schema/annotations"
 )
 
 type IncidentImpact struct {
@@ -39,7 +41,8 @@ func (IncidentImpact) Edges() []ent.Edge {
 		edge.To("knowledge_entity", KnowledgeEntity.Type).
 			Required().
 			Unique().
-			Field("knowledge_entity_id"),
+			Field("knowledge_entity_id").
+			Annotations(annotations.EntityMergeDeletesDuplicateRows()),
 	}
 }
 

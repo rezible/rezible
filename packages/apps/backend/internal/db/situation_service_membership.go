@@ -131,6 +131,9 @@ func (s *SituationService) observationGroupByTitle(ctx context.Context, situatio
 	return created.ID, nil
 }
 
+// situationSignalMembershipIndex is the unique index that keeps a signal in at most one situation.
+const situationSignalMembershipIndex = "situationsignal_tenant_id_knowledge_entity_id"
+
 // createMemberships creates one membership per signal in the group. A signal belongs to at most one
 // situation; the unique index turns a second placement into a conflict.
 func (s *SituationService) createMemberships(ctx context.Context, situationID uuid.UUID, membership situationMembership, signals []rez.SituationSignal, now time.Time) error {
@@ -146,7 +149,7 @@ func (s *SituationService) createMemberships(ctx context.Context, situationID uu
 			SetMatchExplanation(membership.explanation)
 	})
 	if createErr := createMembers.Exec(ctx); createErr != nil {
-		if ent.IsConstraintError(createErr) {
+		if constraint, isUnique := s.db.IsConstraintError(createErr); isUnique && constraint == situationSignalMembershipIndex {
 			return fmt.Errorf("%w: a signal already belongs to a situation", errs.ErrConflict)
 		}
 		return fmt.Errorf("create situation signals: %w", createErr)

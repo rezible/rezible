@@ -3,6 +3,7 @@ package errs
 
 import (
 	"errors"
+	"fmt"
 	"slices"
 
 	"go.opentelemetry.io/otel/attribute"
@@ -59,6 +60,9 @@ var (
 	ErrNotFound             = New(CodeNotFound, "")
 	ErrNotImplemented       = New(CodeNotImplemented, "")
 	ErrRateLimited          = New(CodeRateLimited, "")
+	// ErrKnowledgeSubjectMerged is a knowledge entity or relationship that an entity merge deleted after the
+	// caller read it. Work retried against the merged graph finds the survivor.
+	ErrKnowledgeSubjectMerged = Wrap(fmt.Errorf("knowledge subject was merged into another: %w", ErrConflict), CodeConflict, "")
 )
 
 type Error struct {

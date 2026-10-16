@@ -2,11 +2,13 @@ package db
 
 import (
 	"context"
+	"encoding/json"
 	"strconv"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/firebase/genkit/go/ai"
 	"github.com/google/uuid"
 	"github.com/riverqueue/river/rivertype"
 	"github.com/stretchr/testify/mock"
@@ -14,14 +16,21 @@ import (
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/agentmessage"
+	apr "github.com/rezible/rezible/ent/agentproviderread"
+	"github.com/rezible/rezible/ent/agentturn"
 	ale "github.com/rezible/rezible/ent/alertepisode"
 	ali "github.com/rezible/rezible/ent/alertinstance"
 	aie "github.com/rezible/rezible/ent/alertinstanceevent"
 	kne "github.com/rezible/rezible/ent/knowledgeentity"
+	kela "github.com/rezible/rezible/ent/knowledgeentitylinkingattribute"
 	ke "github.com/rezible/rezible/ent/knowledgeevidence"
 	kp "github.com/rezible/rezible/ent/knowledgeproposal"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/schema/schematypes"
+	sitjudg "github.com/rezible/rezible/ent/situationjudgment"
+	sitsig "github.com/rezible/rezible/ent/situationsignal"
+	"github.com/rezible/rezible/pkg/execution"
 	"github.com/rezible/rezible/pkg/integrations"
 	"github.com/rezible/rezible/pkg/projections"
 	"github.com/rezible/rezible/test"
@@ -46,6 +55,7 @@ type briefFixture struct {
 	knowledge  *KnowledgeGraphIngestionService
 	alerts     *AlertService
 	situations *SituationService
+	proposals  *KnowledgeProposalService
 	installed  *briefInstallations
 	lookups    *countingChanges
 	briefs     *SituationBriefService
@@ -147,7 +157,9 @@ func (s *SituationBriefServiceSuite) newFixture(tdb rez.Database) *briefFixture 
 	investigations := NewInvestigationService(tdb, agentSessions, jobService, analyses)
 	situations, situationsErr := NewSituationService(tdb, h.clock, jobService, investigations, analyses, knowledgeQuery, nil, alerts)
 	s.Require().NoError(situationsErr)
-	proposals, proposalsErr := NewKnowledgeProposalService(tdb)
+	knowledgeAliases, aliasesErr := NewKnowledgeEntityAliasService(tdb, nil)
+	s.Require().NoError(aliasesErr)
+	proposals, proposalsErr := NewKnowledgeProposalService(tdb, knowledge, knowledgeAliases, nil)
 	s.Require().NoError(proposalsErr)
 
 	briefs, briefsErr := NewSituationBriefService(tdb, h.clock, knowledgeQuery, h.lookups, proposals, h.installed)
@@ -156,6 +168,7 @@ func (s *SituationBriefServiceSuite) newFixture(tdb rez.Database) *briefFixture 
 	h.knowledge = knowledge
 	h.alerts = alerts
 	h.situations = situations
+	h.proposals = proposals
 	h.briefs = briefs
 	return h
 }
@@ -526,7 +539,7 @@ func (s *SituationBriefServiceSuite) TestSituationBriefUnconfirmedMatches() {
 	h := s.newFixture(tdb)
 	situation := s.openSituation(ctx, h, s.serviceRef("checkout-api"))
 
-	// Proposals sort their names, so checkout-api is name_a for the other names but checkout.
+	// Proposals sort their values, so checkout-api is value_a for the other names but checkout.
 	otherNames := map[string]kp.Status{
 		"checkout-svc":    kp.StatusConfirmed,
 		"checkout-server": kp.StatusRejected,
@@ -537,7 +550,7 @@ func (s *SituationBriefServiceSuite) TestSituationBriefUnconfirmedMatches() {
 		s.openSituation(ctx, h, otherRef)
 		// Other names are proposed against each other too; only the proposal naming checkout-api matters.
 		updateStatus := tdb.Client(ctx).KnowledgeProposal.Update().
-			Where(kp.NameA("checkout-api"), kp.NameB(name)).
+			Where(kp.ValueA("checkout-api"), kp.ValueB(name)).
 			SetStatus(status)
 		updated, updateErr := updateStatus.Save(ctx)
 		s.Require().NoError(updateErr)
@@ -552,7 +565,145 @@ func (s *SituationBriefServiceSuite) TestSituationBriefUnconfirmedMatches() {
 	s.Require().Len(brief.Services, 1)
 	matches := brief.Services[0].UnconfirmedMatches
 	s.Require().Len(matches, 1, "confirmed and rejected proposals are not listed")
-	s.Equal("checkout", matches[0].Name)
+	s.Equal("checkout", matches[0].Value)
 	s.Equal("checkout", matches[0].Entity.State.DisplayName)
 	s.Contains(matches[0].Rationale, "`api`")
+}
+
+// TestReadersAfterServiceMerge checks the readers of history that names a service a confirmed match merged away:
+// a judgment's facts, a provider read's input and an agent's tool call and result keep the old ID, and are not
+// rewritten.
+func (s *SituationBriefServiceSuite) TestReadersAfterServiceMerge() {
+	ctx, tdb := s.SetupTestDatabase()
+	client := tdb.Client(ctx)
+	h := s.newFixture(tdb)
+	survivorSituation := s.openSituation(ctx, h, s.serviceRef("checkout-api"))
+	checkoutRef := s.serviceRef("checkout")
+	checkoutRef.ProviderResourceRef.Provider = "provider-b"
+	mergedSituation := s.openSituation(ctx, h, checkoutRef)
+	queryOther := client.KnowledgeEntity.Query().
+		Where(kne.HasLinkingAttributesWith(kela.Value("checkout")))
+	otherID := queryOther.OnlyIDX(ctx)
+	proposal := client.KnowledgeProposal.Query().OnlyX(ctx)
+
+	// A judgment of the merged-away service's situation, citing it in its facts.
+	mergedMembers := client.SituationSignal.Query().Where(sitsig.SituationID(mergedSituation.ID)).AllX(ctx)
+	s.Require().Len(mergedMembers, 1)
+	facts := schematypes.SituationFacts{
+		AsOf:     h.clock.Now(),
+		OpenedAt: briefOpenedAt,
+		Signals: []schematypes.SituationSignalFacts{
+			{Ref: "s1", EntityID: mergedMembers[0].KnowledgeEntityID, EntityIDs: []uuid.UUID{otherID}},
+		},
+		Entities: []schematypes.SituationEntityFacts{{ID: otherID, Category: "container", Kind: "service"}},
+	}
+	createJudgment := client.SituationJudgment.Create().
+		SetSituationID(mergedSituation.ID).
+		SetJudgedAt(h.clock.Now()).
+		SetOutcome(sitjudg.OutcomeNeedsDecision).
+		SetDecision(sitjudg.DecisionHold).
+		SetReasons([]schematypes.SituationReasonResult{}).
+		SetCitedReasons([]schematypes.SituationRaiseReason{}).
+		SetFacts(facts).
+		SetExplanation("Held.").
+		SetJudge("model").
+		SetFingerprint("before-the-merge")
+	judgment := createJudgment.SaveX(ctx)
+	client.Situation.UpdateOneID(mergedSituation.ID).SetLatestJudgmentID(judgment.ID).ExecX(ctx)
+
+	// An agent turn that read the merged-away service's logs, through a tool call naming it.
+	createSession := client.AgentSession.Create().
+		SetAgentName("investigation").
+		SetInput([]byte(`{}`))
+	session := createSession.SaveX(ctx)
+	createTurn := client.AgentTurn.Create().
+		SetID(uuid.New()).
+		SetAgentSessionID(session.ID).
+		SetSequence(1).
+		SetRiverJobID(1).
+		SetStatus(agentturn.StatusRunning)
+	turn := createTurn.SaveX(ctx)
+	readParams := rez.StartAgentProviderReadParams{
+		AgentTurnID:     turn.ID,
+		ToolName:        "search_logs",
+		ServiceEntityID: otherID,
+		Input:           json.RawMessage(`{"service":"` + otherID.String() + `"}`),
+	}
+	providerRead, _, readErr := NewAgentProviderReadService(tdb, h.clock).StartProviderRead(ctx, readParams)
+	s.Require().NoError(readErr)
+	toolCall := ai.NewToolRequestPart(&ai.ToolRequest{Name: "read_entity", Input: map[string]any{"ref": otherID.String()}})
+	toolResult := ai.NewToolResponsePart(&ai.ToolResponse{Name: "read_entity", Output: map[string]any{"id": otherID.String()}})
+	createMessage := client.AgentMessage.Create().
+		SetAgentSessionID(session.ID).
+		SetAgentTurnID(turn.ID).
+		SetSequence(1).
+		SetRole(agentmessage.RoleTool).
+		SetContent([]*ai.Part{toolCall, toolResult})
+	createMessage.ExecX(ctx)
+
+	createMember := client.User.Create().
+		SetEmail(uuid.NewString() + "@example.com").
+		SetName("Member")
+	member := createMember.SaveX(ctx)
+	memberCtx := execution.NewUserContext(ctx, &ent.UserAuthSession{
+		UserID:    member.ID,
+		TenantID:  member.TenantID,
+		ExpiresAt: time.Now().Add(time.Hour),
+	})
+	_, confirmErr := h.proposals.ConfirmProposal(memberCtx, proposal.ID)
+	s.Require().NoError(confirmErr)
+	survivorID := client.KnowledgeEntity.Query().Where(kne.Kind("service")).OnlyIDX(ctx)
+
+	s.Run("the brief reads both situations through the survivor", func() {
+		for _, situation := range []*ent.Situation{survivorSituation, mergedSituation} {
+			brief := s.brief(ctx, h, situation)
+			s.Require().Len(brief.Services, 1)
+			s.Equal(survivorID, brief.Services[0].Entity.ID)
+		}
+	})
+
+	s.Run("proposals still list", func() {
+		listed, listErr := h.proposals.ListProposals(ctx, rez.ListProposalsParams{})
+		s.Require().NoError(listErr)
+		s.Len(listed.Data, 1)
+		matches, matchesErr := h.proposals.ListUnconfirmedMatches(ctx, []uuid.UUID{survivorID})
+		s.Require().NoError(matchesErr)
+		s.Empty(matches)
+	})
+
+	s.Run("the investigation's introduction reads the situation and its signals", func() {
+		listed, listErr := h.situations.ListSituations(ctx, rez.ListSituationsParams{})
+		s.Require().NoError(listErr)
+		s.Len(listed.Data, 2)
+		_, signalsErr := h.situations.LoadSignals(ctx, []uuid.UUID{mergedMembers[0].KnowledgeEntityID}, rez.LoadSituationSignalsOptions{})
+		s.Require().NoError(signalsErr)
+	})
+
+	s.Run("a judgment citing the old service does not stop evaluation", func() {
+		s.Require().NoError(h.situations.EvaluateSituation(ctx, mergedSituation.ID))
+		stored := client.SituationJudgment.GetX(ctx, judgment.ID)
+		s.Equal([]uuid.UUID{otherID}, stored.Facts.Signals[0].EntityIDs, "facts are history and keep the old ID")
+	})
+
+	s.Run("the provider read names the survivor and keeps its input", func() {
+		queryRead := client.AgentProviderRead.Query().
+			Where(apr.ID(providerRead.ID)).
+			WithServiceEntity()
+		read := queryRead.OnlyX(ctx)
+		s.Equal(survivorID, read.Edges.ServiceEntity.ID)
+		s.Contains(string(read.Input), otherID.String())
+	})
+
+	s.Run("the agent's tool call still decodes, and reading the old ref is not found", func() {
+		messagesParams := rez.ListAiAgentMessagesParams{Predicates: []predicate.AgentMessage{agentmessage.AgentSessionID(session.ID)}}
+		messages, messagesErr := (&AiAgentSessionService{db: tdb}).ListAgentMessages(ctx, messagesParams)
+		s.Require().NoError(messagesErr)
+		s.Require().Len(messages.Data, 1)
+		s.Len(messages.Data[0].MakeGenkitMessage().Content, 2)
+
+		queryService, serviceErr := NewKnowledgeGraphQueryService(tdb)
+		s.Require().NoError(serviceErr)
+		_, getErr := queryService.GetEntity(ctx, otherID, rez.KnowledgeEntityExpand{})
+		s.True(ent.IsNotFound(getErr), "a tool reading the old ref gets a not-found result")
+	})
 }

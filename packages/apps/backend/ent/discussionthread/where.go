@@ -87,9 +87,29 @@ func UserID(v uuid.UUID) predicate.DiscussionThread {
 	return predicate.DiscussionThread(sql.FieldEQ(FieldUserID, v))
 }
 
-// TargetID applies equality check predicate on the "target_id" field. It's identical to TargetIDEQ.
-func TargetID(v uuid.UUID) predicate.DiscussionThread {
-	return predicate.DiscussionThread(sql.FieldEQ(FieldTargetID, v))
+// TargetFindingID applies equality check predicate on the "target_finding_id" field. It's identical to TargetFindingIDEQ.
+func TargetFindingID(v uuid.UUID) predicate.DiscussionThread {
+	return predicate.DiscussionThread(sql.FieldEQ(FieldTargetFindingID, v))
+}
+
+// TargetEntryID applies equality check predicate on the "target_entry_id" field. It's identical to TargetEntryIDEQ.
+func TargetEntryID(v uuid.UUID) predicate.DiscussionThread {
+	return predicate.DiscussionThread(sql.FieldEQ(FieldTargetEntryID, v))
+}
+
+// TargetKnowledgeEntityID applies equality check predicate on the "target_knowledge_entity_id" field. It's identical to TargetKnowledgeEntityIDEQ.
+func TargetKnowledgeEntityID(v uuid.UUID) predicate.DiscussionThread {
+	return predicate.DiscussionThread(sql.FieldEQ(FieldTargetKnowledgeEntityID, v))
+}
+
+// TargetKnowledgeRelationshipID applies equality check predicate on the "target_knowledge_relationship_id" field. It's identical to TargetKnowledgeRelationshipIDEQ.
+func TargetKnowledgeRelationshipID(v uuid.UUID) predicate.DiscussionThread {
+	return predicate.DiscussionThread(sql.FieldEQ(FieldTargetKnowledgeRelationshipID, v))
+}
+
+// TargetNormalizedEventID applies equality check predicate on the "target_normalized_event_id" field. It's identical to TargetNormalizedEventIDEQ.
+func TargetNormalizedEventID(v uuid.UUID) predicate.DiscussionThread {
+	return predicate.DiscussionThread(sql.FieldEQ(FieldTargetNormalizedEventID, v))
 }
 
 // ResolvedByID applies equality check predicate on the "resolved_by_id" field. It's identical to ResolvedByIDEQ.
@@ -287,84 +307,154 @@ func UserIDNotIn(vs ...uuid.UUID) predicate.DiscussionThread {
 	return predicate.DiscussionThread(sql.FieldNotIn(FieldUserID, vs...))
 }
 
-// TargetKindEQ applies the EQ predicate on the "target_kind" field.
-func TargetKindEQ(v TargetKind) predicate.DiscussionThread {
-	return predicate.DiscussionThread(sql.FieldEQ(FieldTargetKind, v))
+// TargetFindingIDEQ applies the EQ predicate on the "target_finding_id" field.
+func TargetFindingIDEQ(v uuid.UUID) predicate.DiscussionThread {
+	return predicate.DiscussionThread(sql.FieldEQ(FieldTargetFindingID, v))
 }
 
-// TargetKindNEQ applies the NEQ predicate on the "target_kind" field.
-func TargetKindNEQ(v TargetKind) predicate.DiscussionThread {
-	return predicate.DiscussionThread(sql.FieldNEQ(FieldTargetKind, v))
+// TargetFindingIDNEQ applies the NEQ predicate on the "target_finding_id" field.
+func TargetFindingIDNEQ(v uuid.UUID) predicate.DiscussionThread {
+	return predicate.DiscussionThread(sql.FieldNEQ(FieldTargetFindingID, v))
 }
 
-// TargetKindIn applies the In predicate on the "target_kind" field.
-func TargetKindIn(vs ...TargetKind) predicate.DiscussionThread {
-	return predicate.DiscussionThread(sql.FieldIn(FieldTargetKind, vs...))
+// TargetFindingIDIn applies the In predicate on the "target_finding_id" field.
+func TargetFindingIDIn(vs ...uuid.UUID) predicate.DiscussionThread {
+	return predicate.DiscussionThread(sql.FieldIn(FieldTargetFindingID, vs...))
 }
 
-// TargetKindNotIn applies the NotIn predicate on the "target_kind" field.
-func TargetKindNotIn(vs ...TargetKind) predicate.DiscussionThread {
-	return predicate.DiscussionThread(sql.FieldNotIn(FieldTargetKind, vs...))
+// TargetFindingIDNotIn applies the NotIn predicate on the "target_finding_id" field.
+func TargetFindingIDNotIn(vs ...uuid.UUID) predicate.DiscussionThread {
+	return predicate.DiscussionThread(sql.FieldNotIn(FieldTargetFindingID, vs...))
 }
 
-// TargetKindIsNil applies the IsNil predicate on the "target_kind" field.
-func TargetKindIsNil() predicate.DiscussionThread {
-	return predicate.DiscussionThread(sql.FieldIsNull(FieldTargetKind))
+// TargetFindingIDIsNil applies the IsNil predicate on the "target_finding_id" field.
+func TargetFindingIDIsNil() predicate.DiscussionThread {
+	return predicate.DiscussionThread(sql.FieldIsNull(FieldTargetFindingID))
 }
 
-// TargetKindNotNil applies the NotNil predicate on the "target_kind" field.
-func TargetKindNotNil() predicate.DiscussionThread {
-	return predicate.DiscussionThread(sql.FieldNotNull(FieldTargetKind))
+// TargetFindingIDNotNil applies the NotNil predicate on the "target_finding_id" field.
+func TargetFindingIDNotNil() predicate.DiscussionThread {
+	return predicate.DiscussionThread(sql.FieldNotNull(FieldTargetFindingID))
 }
 
-// TargetIDEQ applies the EQ predicate on the "target_id" field.
-func TargetIDEQ(v uuid.UUID) predicate.DiscussionThread {
-	return predicate.DiscussionThread(sql.FieldEQ(FieldTargetID, v))
+// TargetEntryIDEQ applies the EQ predicate on the "target_entry_id" field.
+func TargetEntryIDEQ(v uuid.UUID) predicate.DiscussionThread {
+	return predicate.DiscussionThread(sql.FieldEQ(FieldTargetEntryID, v))
 }
 
-// TargetIDNEQ applies the NEQ predicate on the "target_id" field.
-func TargetIDNEQ(v uuid.UUID) predicate.DiscussionThread {
-	return predicate.DiscussionThread(sql.FieldNEQ(FieldTargetID, v))
+// TargetEntryIDNEQ applies the NEQ predicate on the "target_entry_id" field.
+func TargetEntryIDNEQ(v uuid.UUID) predicate.DiscussionThread {
+	return predicate.DiscussionThread(sql.FieldNEQ(FieldTargetEntryID, v))
 }
 
-// TargetIDIn applies the In predicate on the "target_id" field.
-func TargetIDIn(vs ...uuid.UUID) predicate.DiscussionThread {
-	return predicate.DiscussionThread(sql.FieldIn(FieldTargetID, vs...))
+// TargetEntryIDIn applies the In predicate on the "target_entry_id" field.
+func TargetEntryIDIn(vs ...uuid.UUID) predicate.DiscussionThread {
+	return predicate.DiscussionThread(sql.FieldIn(FieldTargetEntryID, vs...))
 }
 
-// TargetIDNotIn applies the NotIn predicate on the "target_id" field.
-func TargetIDNotIn(vs ...uuid.UUID) predicate.DiscussionThread {
-	return predicate.DiscussionThread(sql.FieldNotIn(FieldTargetID, vs...))
+// TargetEntryIDNotIn applies the NotIn predicate on the "target_entry_id" field.
+func TargetEntryIDNotIn(vs ...uuid.UUID) predicate.DiscussionThread {
+	return predicate.DiscussionThread(sql.FieldNotIn(FieldTargetEntryID, vs...))
 }
 
-// TargetIDGT applies the GT predicate on the "target_id" field.
-func TargetIDGT(v uuid.UUID) predicate.DiscussionThread {
-	return predicate.DiscussionThread(sql.FieldGT(FieldTargetID, v))
+// TargetEntryIDIsNil applies the IsNil predicate on the "target_entry_id" field.
+func TargetEntryIDIsNil() predicate.DiscussionThread {
+	return predicate.DiscussionThread(sql.FieldIsNull(FieldTargetEntryID))
 }
 
-// TargetIDGTE applies the GTE predicate on the "target_id" field.
-func TargetIDGTE(v uuid.UUID) predicate.DiscussionThread {
-	return predicate.DiscussionThread(sql.FieldGTE(FieldTargetID, v))
+// TargetEntryIDNotNil applies the NotNil predicate on the "target_entry_id" field.
+func TargetEntryIDNotNil() predicate.DiscussionThread {
+	return predicate.DiscussionThread(sql.FieldNotNull(FieldTargetEntryID))
 }
 
-// TargetIDLT applies the LT predicate on the "target_id" field.
-func TargetIDLT(v uuid.UUID) predicate.DiscussionThread {
-	return predicate.DiscussionThread(sql.FieldLT(FieldTargetID, v))
+// TargetKnowledgeEntityIDEQ applies the EQ predicate on the "target_knowledge_entity_id" field.
+func TargetKnowledgeEntityIDEQ(v uuid.UUID) predicate.DiscussionThread {
+	return predicate.DiscussionThread(sql.FieldEQ(FieldTargetKnowledgeEntityID, v))
 }
 
-// TargetIDLTE applies the LTE predicate on the "target_id" field.
-func TargetIDLTE(v uuid.UUID) predicate.DiscussionThread {
-	return predicate.DiscussionThread(sql.FieldLTE(FieldTargetID, v))
+// TargetKnowledgeEntityIDNEQ applies the NEQ predicate on the "target_knowledge_entity_id" field.
+func TargetKnowledgeEntityIDNEQ(v uuid.UUID) predicate.DiscussionThread {
+	return predicate.DiscussionThread(sql.FieldNEQ(FieldTargetKnowledgeEntityID, v))
 }
 
-// TargetIDIsNil applies the IsNil predicate on the "target_id" field.
-func TargetIDIsNil() predicate.DiscussionThread {
-	return predicate.DiscussionThread(sql.FieldIsNull(FieldTargetID))
+// TargetKnowledgeEntityIDIn applies the In predicate on the "target_knowledge_entity_id" field.
+func TargetKnowledgeEntityIDIn(vs ...uuid.UUID) predicate.DiscussionThread {
+	return predicate.DiscussionThread(sql.FieldIn(FieldTargetKnowledgeEntityID, vs...))
 }
 
-// TargetIDNotNil applies the NotNil predicate on the "target_id" field.
-func TargetIDNotNil() predicate.DiscussionThread {
-	return predicate.DiscussionThread(sql.FieldNotNull(FieldTargetID))
+// TargetKnowledgeEntityIDNotIn applies the NotIn predicate on the "target_knowledge_entity_id" field.
+func TargetKnowledgeEntityIDNotIn(vs ...uuid.UUID) predicate.DiscussionThread {
+	return predicate.DiscussionThread(sql.FieldNotIn(FieldTargetKnowledgeEntityID, vs...))
+}
+
+// TargetKnowledgeEntityIDIsNil applies the IsNil predicate on the "target_knowledge_entity_id" field.
+func TargetKnowledgeEntityIDIsNil() predicate.DiscussionThread {
+	return predicate.DiscussionThread(sql.FieldIsNull(FieldTargetKnowledgeEntityID))
+}
+
+// TargetKnowledgeEntityIDNotNil applies the NotNil predicate on the "target_knowledge_entity_id" field.
+func TargetKnowledgeEntityIDNotNil() predicate.DiscussionThread {
+	return predicate.DiscussionThread(sql.FieldNotNull(FieldTargetKnowledgeEntityID))
+}
+
+// TargetKnowledgeRelationshipIDEQ applies the EQ predicate on the "target_knowledge_relationship_id" field.
+func TargetKnowledgeRelationshipIDEQ(v uuid.UUID) predicate.DiscussionThread {
+	return predicate.DiscussionThread(sql.FieldEQ(FieldTargetKnowledgeRelationshipID, v))
+}
+
+// TargetKnowledgeRelationshipIDNEQ applies the NEQ predicate on the "target_knowledge_relationship_id" field.
+func TargetKnowledgeRelationshipIDNEQ(v uuid.UUID) predicate.DiscussionThread {
+	return predicate.DiscussionThread(sql.FieldNEQ(FieldTargetKnowledgeRelationshipID, v))
+}
+
+// TargetKnowledgeRelationshipIDIn applies the In predicate on the "target_knowledge_relationship_id" field.
+func TargetKnowledgeRelationshipIDIn(vs ...uuid.UUID) predicate.DiscussionThread {
+	return predicate.DiscussionThread(sql.FieldIn(FieldTargetKnowledgeRelationshipID, vs...))
+}
+
+// TargetKnowledgeRelationshipIDNotIn applies the NotIn predicate on the "target_knowledge_relationship_id" field.
+func TargetKnowledgeRelationshipIDNotIn(vs ...uuid.UUID) predicate.DiscussionThread {
+	return predicate.DiscussionThread(sql.FieldNotIn(FieldTargetKnowledgeRelationshipID, vs...))
+}
+
+// TargetKnowledgeRelationshipIDIsNil applies the IsNil predicate on the "target_knowledge_relationship_id" field.
+func TargetKnowledgeRelationshipIDIsNil() predicate.DiscussionThread {
+	return predicate.DiscussionThread(sql.FieldIsNull(FieldTargetKnowledgeRelationshipID))
+}
+
+// TargetKnowledgeRelationshipIDNotNil applies the NotNil predicate on the "target_knowledge_relationship_id" field.
+func TargetKnowledgeRelationshipIDNotNil() predicate.DiscussionThread {
+	return predicate.DiscussionThread(sql.FieldNotNull(FieldTargetKnowledgeRelationshipID))
+}
+
+// TargetNormalizedEventIDEQ applies the EQ predicate on the "target_normalized_event_id" field.
+func TargetNormalizedEventIDEQ(v uuid.UUID) predicate.DiscussionThread {
+	return predicate.DiscussionThread(sql.FieldEQ(FieldTargetNormalizedEventID, v))
+}
+
+// TargetNormalizedEventIDNEQ applies the NEQ predicate on the "target_normalized_event_id" field.
+func TargetNormalizedEventIDNEQ(v uuid.UUID) predicate.DiscussionThread {
+	return predicate.DiscussionThread(sql.FieldNEQ(FieldTargetNormalizedEventID, v))
+}
+
+// TargetNormalizedEventIDIn applies the In predicate on the "target_normalized_event_id" field.
+func TargetNormalizedEventIDIn(vs ...uuid.UUID) predicate.DiscussionThread {
+	return predicate.DiscussionThread(sql.FieldIn(FieldTargetNormalizedEventID, vs...))
+}
+
+// TargetNormalizedEventIDNotIn applies the NotIn predicate on the "target_normalized_event_id" field.
+func TargetNormalizedEventIDNotIn(vs ...uuid.UUID) predicate.DiscussionThread {
+	return predicate.DiscussionThread(sql.FieldNotIn(FieldTargetNormalizedEventID, vs...))
+}
+
+// TargetNormalizedEventIDIsNil applies the IsNil predicate on the "target_normalized_event_id" field.
+func TargetNormalizedEventIDIsNil() predicate.DiscussionThread {
+	return predicate.DiscussionThread(sql.FieldIsNull(FieldTargetNormalizedEventID))
+}
+
+// TargetNormalizedEventIDNotNil applies the NotNil predicate on the "target_normalized_event_id" field.
+func TargetNormalizedEventIDNotNil() predicate.DiscussionThread {
+	return predicate.DiscussionThread(sql.FieldNotNull(FieldTargetNormalizedEventID))
 }
 
 // ResolutionStateEQ applies the EQ predicate on the "resolution_state" field.
@@ -709,6 +799,151 @@ func HasCommentsWith(preds ...predicate.DiscussionComment) predicate.DiscussionT
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.DiscussionComment
 		step.Edge.Schema = schemaConfig.DiscussionComment
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasTargetFinding applies the HasEdge predicate on the "target_finding" edge.
+func HasTargetFinding() predicate.DiscussionThread {
+	return predicate.DiscussionThread(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, TargetFindingTable, TargetFindingColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.InvestigationFinding
+		step.Edge.Schema = schemaConfig.DiscussionThread
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasTargetFindingWith applies the HasEdge predicate on the "target_finding" edge with a given conditions (other predicates).
+func HasTargetFindingWith(preds ...predicate.InvestigationFinding) predicate.DiscussionThread {
+	return predicate.DiscussionThread(func(s *sql.Selector) {
+		step := newTargetFindingStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.InvestigationFinding
+		step.Edge.Schema = schemaConfig.DiscussionThread
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasTargetEntry applies the HasEdge predicate on the "target_entry" edge.
+func HasTargetEntry() predicate.DiscussionThread {
+	return predicate.DiscussionThread(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, TargetEntryTable, TargetEntryColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SystemAnalysisEntry
+		step.Edge.Schema = schemaConfig.DiscussionThread
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasTargetEntryWith applies the HasEdge predicate on the "target_entry" edge with a given conditions (other predicates).
+func HasTargetEntryWith(preds ...predicate.SystemAnalysisEntry) predicate.DiscussionThread {
+	return predicate.DiscussionThread(func(s *sql.Selector) {
+		step := newTargetEntryStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SystemAnalysisEntry
+		step.Edge.Schema = schemaConfig.DiscussionThread
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasTargetNormalizedEvent applies the HasEdge predicate on the "target_normalized_event" edge.
+func HasTargetNormalizedEvent() predicate.DiscussionThread {
+	return predicate.DiscussionThread(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, TargetNormalizedEventTable, TargetNormalizedEventColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.NormalizedEvent
+		step.Edge.Schema = schemaConfig.DiscussionThread
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasTargetNormalizedEventWith applies the HasEdge predicate on the "target_normalized_event" edge with a given conditions (other predicates).
+func HasTargetNormalizedEventWith(preds ...predicate.NormalizedEvent) predicate.DiscussionThread {
+	return predicate.DiscussionThread(func(s *sql.Selector) {
+		step := newTargetNormalizedEventStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.NormalizedEvent
+		step.Edge.Schema = schemaConfig.DiscussionThread
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasTargetKnowledgeEntity applies the HasEdge predicate on the "target_knowledge_entity" edge.
+func HasTargetKnowledgeEntity() predicate.DiscussionThread {
+	return predicate.DiscussionThread(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, TargetKnowledgeEntityTable, TargetKnowledgeEntityColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.KnowledgeEntity
+		step.Edge.Schema = schemaConfig.DiscussionThread
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasTargetKnowledgeEntityWith applies the HasEdge predicate on the "target_knowledge_entity" edge with a given conditions (other predicates).
+func HasTargetKnowledgeEntityWith(preds ...predicate.KnowledgeEntity) predicate.DiscussionThread {
+	return predicate.DiscussionThread(func(s *sql.Selector) {
+		step := newTargetKnowledgeEntityStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.KnowledgeEntity
+		step.Edge.Schema = schemaConfig.DiscussionThread
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasTargetKnowledgeRelationship applies the HasEdge predicate on the "target_knowledge_relationship" edge.
+func HasTargetKnowledgeRelationship() predicate.DiscussionThread {
+	return predicate.DiscussionThread(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, TargetKnowledgeRelationshipTable, TargetKnowledgeRelationshipColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.KnowledgeRelationship
+		step.Edge.Schema = schemaConfig.DiscussionThread
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasTargetKnowledgeRelationshipWith applies the HasEdge predicate on the "target_knowledge_relationship" edge with a given conditions (other predicates).
+func HasTargetKnowledgeRelationshipWith(preds ...predicate.KnowledgeRelationship) predicate.DiscussionThread {
+	return predicate.DiscussionThread(func(s *sql.Selector) {
+		step := newTargetKnowledgeRelationshipStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.KnowledgeRelationship
+		step.Edge.Schema = schemaConfig.DiscussionThread
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

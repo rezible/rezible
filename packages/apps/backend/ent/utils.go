@@ -48,64 +48,6 @@ func (p ListParams) GetQueryContext(parent context.Context) context.Context {
 	return parent
 }
 
-type TxOption func(*TxOptions)
-
-type transactionRunner interface {
-	WithTx(context.Context, func(context.Context, *Client) error, ...TxOption) error
-}
-
-// WithTxReturning runs fn using db.WithTx and returns its value only when
-// WithTx succeeds. On error it returns the zero value of T.
-// It preserves entity transaction bindings; it does not unwrap entities.
-// When joining an existing transaction, success does not commit that transaction.
-func WithTxReturning[T any](
-	ctx context.Context,
-	db transactionRunner,
-	fn func(context.Context, *Client) (T, error),
-	opts ...TxOption,
-) (T, error) {
-	var result T
-	txFn := func(txCtx context.Context, tx *Client) error {
-		var callbackErr error
-		result, callbackErr = fn(txCtx, tx)
-		return callbackErr
-	}
-	if txErr := db.WithTx(ctx, txFn, opts...); txErr != nil {
-		var zero T
-		return zero, txErr
-	}
-	return result, nil
-}
-
-type TxOptions struct {
-	OnCommit   []CommitHook
-	OnRollback []RollbackHook
-}
-
-func WithCommitHook(h CommitHook) TxOption {
-	return func(opts *TxOptions) {
-		opts.OnCommit = append(opts.OnCommit, h)
-	}
-}
-
-func WithAfterCommitFunc(fn func()) TxOption {
-	return WithCommitHook(func(next Committer) Committer {
-		return CommitFunc(func(ctx context.Context, tx *Tx) error {
-			if err := next.Commit(ctx, tx); err != nil {
-				return err
-			}
-			fn()
-			return nil
-		})
-	})
-}
-
-func WithRollbackHook(h RollbackHook) TxOption {
-	return func(opts *TxOptions) {
-		opts.OnRollback = append(opts.OnRollback, h)
-	}
-}
-
 type EntityMutator[T any, M ent.Mutation] interface {
 	Save(context.Context) (T, error)
 	Exec(context.Context) error

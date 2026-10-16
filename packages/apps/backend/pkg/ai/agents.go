@@ -101,8 +101,8 @@ type (
 	}
 
 	InvestigationUnconfirmedMatch struct {
-		Ref  string `json:"ref"`
-		Name string `json:"name"`
+		Ref   string `json:"ref"`
+		Value string `json:"value"`
 	}
 
 	InvestigationOutputs struct {

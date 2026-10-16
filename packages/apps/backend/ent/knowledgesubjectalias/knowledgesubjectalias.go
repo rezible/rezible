@@ -30,12 +30,16 @@ const (
 	FieldEntityID = "entity_id"
 	// FieldRelationshipID holds the string denoting the relationship_id field in the database.
 	FieldRelationshipID = "relationship_id"
+	// FieldMergedByProposalID holds the string denoting the merged_by_proposal_id field in the database.
+	FieldMergedByProposalID = "merged_by_proposal_id"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
 	// EdgeEntity holds the string denoting the entity edge name in mutations.
 	EdgeEntity = "entity"
 	// EdgeRelationship holds the string denoting the relationship edge name in mutations.
 	EdgeRelationship = "relationship"
+	// EdgeMergedByProposal holds the string denoting the merged_by_proposal edge name in mutations.
+	EdgeMergedByProposal = "merged_by_proposal"
 	// EdgeEvidence holds the string denoting the evidence edge name in mutations.
 	EdgeEvidence = "evidence"
 	// Table holds the table name of the knowledgesubjectalias in the database.
@@ -61,6 +65,13 @@ const (
 	RelationshipInverseTable = "knowledge_relationships"
 	// RelationshipColumn is the table column denoting the relationship relation/edge.
 	RelationshipColumn = "relationship_id"
+	// MergedByProposalTable is the table that holds the merged_by_proposal relation/edge.
+	MergedByProposalTable = "knowledge_subject_alias"
+	// MergedByProposalInverseTable is the table name for the KnowledgeProposal entity.
+	// It exists in this package in order to avoid circular dependency with the "knowledgeproposal" package.
+	MergedByProposalInverseTable = "knowledge_proposals"
+	// MergedByProposalColumn is the table column denoting the merged_by_proposal relation/edge.
+	MergedByProposalColumn = "merged_by_proposal_id"
 	// EvidenceTable is the table that holds the evidence relation/edge.
 	EvidenceTable = "knowledge_evidences"
 	// EvidenceInverseTable is the table name for the KnowledgeEvidence entity.
@@ -80,6 +91,7 @@ var Columns = []string{
 	FieldSubjectKind,
 	FieldEntityID,
 	FieldRelationshipID,
+	FieldMergedByProposalID,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -174,6 +186,11 @@ func ByRelationshipID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldRelationshipID, opts...).ToFunc()
 }
 
+// ByMergedByProposalID orders the results by the merged_by_proposal_id field.
+func ByMergedByProposalID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldMergedByProposalID, opts...).ToFunc()
+}
+
 // ByTenantField orders the results by tenant field.
 func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -192,6 +209,13 @@ func ByEntityField(field string, opts ...sql.OrderTermOption) OrderOption {
 func ByRelationshipField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newRelationshipStep(), sql.OrderByField(field, opts...))
+	}
+}
+
+// ByMergedByProposalField orders the results by merged_by_proposal field.
+func ByMergedByProposalField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newMergedByProposalStep(), sql.OrderByField(field, opts...))
 	}
 }
 
@@ -227,6 +251,13 @@ func newRelationshipStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(RelationshipInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, false, RelationshipTable, RelationshipColumn),
+	)
+}
+func newMergedByProposalStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(MergedByProposalInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, MergedByProposalTable, MergedByProposalColumn),
 	)
 }
 func newEvidenceStep() *sqlgraph.Step {

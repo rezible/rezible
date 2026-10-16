@@ -365,6 +365,6 @@ func (s *ProjectionServiceSuite) TestRenamedRepositoryStaysOnItsAliasAndProposes
 	s.Equal(renamedEvidence.ID, proposals[0].EvidenceID)
 	s.Equal(kp.OriginIdentityConflict, proposals[0].Origin)
 	s.Equal(kp.StatusPending, proposals[0].Status)
-	s.Equal("acme/checkout", proposals[0].NameA)
-	s.Equal("acme/payments", proposals[0].NameB)
+	s.Equal("acme/checkout", proposals[0].ValueA)
+	s.Equal("acme/payments", proposals[0].ValueB)
 }

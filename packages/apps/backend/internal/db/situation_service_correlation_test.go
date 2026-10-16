@@ -2,9 +2,12 @@ package db
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgconn"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
@@ -13,6 +16,9 @@ import (
 	"github.com/rezible/rezible/ent/schema/schematypes"
 	sitlink "github.com/rezible/rezible/ent/situationlink"
 	sitsig "github.com/rezible/rezible/ent/situationsignal"
+	"github.com/rezible/rezible/pkg/errs"
+	"github.com/rezible/rezible/pkg/jobs"
+	"github.com/rezible/rezible/pkg/knowledgegraph"
 	"github.com/rezible/rezible/pkg/projections"
 )
 
@@ -136,6 +142,124 @@ func (s *SituationServiceSuite) TestCorrelationByDependency() {
 	member := s.members(placed[1])[searchLatency]
 	s.Equal(sitsig.MatchKindDependency, member.MatchKind)
 	s.Equal(&calls.ID, member.ViaRelationshipID)
+}
+
+func (s *SituationServiceSuite) TestAttachingThroughAMergedAwayRelationshipRetries() {
+	ctx, tdb := s.SetupTestDatabase()
+	h := s.newFixture(tdb)
+	client := tdb.Client(ctx)
+	checkout := s.entityRef(kne.CategoryContainer, "checkout")
+	search := s.entityRef(kne.CategoryContainer, "search")
+	checkoutErrors := s.signal(ctx, tdb, h, "checkout-errors", 5, checkout)
+	s.processNotified(ctx, h)
+	situation := s.placed(ctx, tdb, h, checkoutErrors)[0]
+	s.Require().NotNil(situation)
+	searchLatency := s.signal(ctx, tdb, h, "search-latency", 6, search)
+
+	// Correlation read a relationship that an entity merge then folded into another and deleted; the
+	// membership's foreign key refuses it.
+	mergedAway := uuid.New()
+	attach := AttachSituationSignalsParams{
+		SituationID:       situation.ID,
+		GroupTitle:        "Search",
+		SignalEntityIDs:   []uuid.UUID{searchLatency},
+		MatchKind:         sitsig.MatchKindDependency,
+		ViaRelationshipID: &mergedAway,
+	}
+	attachErr := h.situations.AttachSituationSignals(ctx, attach)
+
+	pgErr, isPgErr := errors.AsType[*pgconn.PgError](attachErr)
+	s.Require().True(isPgErr, "the foreign key refuses the membership")
+	s.Equal("23503", pgErr.Code)
+	s.True(jobs.IsRetryableError(h.situations.signalJobError(attachErr)), "the correlation job runs again on the merged graph")
+	s.False(client.SituationSignal.Query().Where(sitsig.KnowledgeEntityID(searchLatency)).ExistX(ctx))
+}
+
+func (s *SituationServiceSuite) TestSignalJobRetriesOnlyWhenAMergeDeletedASubject() {
+	_, tdb := s.SetupTestDatabase()
+	h := s.newFixture(tdb)
+	knowledgeFK := &pgconn.PgError{Code: "23503", ConstraintName: ent.KnowledgeForeignKeyConstraints[0]}
+	otherFK := &pgconn.PgError{Code: "23503", ConstraintName: "discussion_threads_users_user"}
+
+	s.True(jobs.IsRetryableError(h.situations.signalJobError(fmt.Errorf("correlate: %w", errs.ErrKnowledgeSubjectMerged))))
+	s.True(jobs.IsRetryableError(h.situations.signalJobError(fmt.Errorf("attach: %w", knowledgeFK))))
+
+	otherErr := h.situations.signalJobError(fmt.Errorf("attach: %w", otherFK))
+	s.False(jobs.IsRetryableError(otherErr))
+	s.ErrorIs(otherErr, otherFK)
+}
+
+func (s *SituationServiceSuite) TestAnEntityMergeMovesAViaRelationshipToTheKeptOne() {
+	ctx, tdb := s.SetupTestDatabase()
+	h := s.newFixture(tdb)
+	client := tdb.Client(ctx)
+	service := func(resource, name string) rez.KnowledgeEntityRef {
+		ref := s.entityRef(kne.CategoryContainer, resource)
+		ref.Kind = knowledgegraph.EntityKindService
+		ref.LinkingAttributes = projections.LinkingAttributes{projections.LinkingAttributeServiceName: name}
+		return ref
+	}
+	// `checkout-api` is seen first, so a merge keeps it and folds checkout's call to search into its own.
+	checkoutAPI := service("installation-a:checkout-api", "checkout-api")
+	checkout := service("installation-b:checkout", "checkout")
+	search := s.entityRef(kne.CategoryContainer, "search")
+	s.ingestRelationship(ctx, tdb, h, checkoutAPI, knr.PredicateCalls, search)
+	s.ingestRelationship(ctx, tdb, h, checkout, knr.PredicateCalls, search)
+	keptID := s.entityID(ctx, h, checkoutAPI)
+	otherID := s.entityID(ctx, h, checkout)
+	queryCalls := client.KnowledgeRelationship.Query().
+		Where(knr.PredicateEQ(knr.PredicateCalls))
+	callsBySource := make(map[uuid.UUID]uuid.UUID)
+	for _, calls := range queryCalls.AllX(ctx) {
+		callsBySource[calls.SourceEntityID] = calls.ID
+	}
+	keptCalls, foldedCalls := callsBySource[keptID], callsBySource[otherID]
+
+	checkoutErrors := s.signal(ctx, tdb, h, "checkout-errors", 5, checkoutAPI)
+	s.processNotified(ctx, h)
+	situation := s.placed(ctx, tdb, h, checkoutErrors)[0]
+	s.Require().NotNil(situation)
+	searchLatency := s.signal(ctx, tdb, h, "search-latency", 6, search)
+	attach := AttachSituationSignalsParams{
+		SituationID:       situation.ID,
+		GroupTitle:        "Search",
+		SignalEntityIDs:   []uuid.UUID{searchLatency},
+		MatchKind:         sitsig.MatchKindDependency,
+		ViaRelationshipID: &foldedCalls,
+	}
+	s.Require().NoError(h.situations.AttachSituationSignals(ctx, attach))
+
+	proposal := client.KnowledgeProposal.Query().OnlyX(ctx)
+	merge := rez.MergeEntitiesParams{ProposalID: proposal.ID, EntityIDs: [2]uuid.UUID{keptID, otherID}}
+	result, mergeErr := h.knowledge.MergeEntities(ctx, merge)
+
+	s.Require().NoError(mergeErr)
+	s.Equal(keptID, result.SurvivorID)
+	s.False(client.KnowledgeRelationship.Query().Where(knr.ID(foldedCalls)).ExistX(ctx))
+	membership := client.SituationSignal.Query().Where(sitsig.KnowledgeEntityID(searchLatency)).OnlyX(ctx)
+	s.Equal(&keptCalls, membership.ViaRelationshipID)
+}
+
+func (s *SituationServiceSuite) TestMembershipKeepsTheCauseOfOtherConstraintErrors() {
+	ctx, tdb := s.SetupTestDatabase()
+	h := s.newFixture(tdb)
+	checkoutErrors := s.signal(ctx, tdb, h, "checkout-errors", 5)
+	s.processNotified(ctx, h)
+	situation := s.placed(ctx, tdb, h, checkoutErrors)[0]
+	s.Require().NotNil(situation)
+	searchLatency := s.signal(ctx, tdb, h, "search-latency", 6)
+	signals, loadErr := h.situations.LoadSignals(ctx, []uuid.UUID{searchLatency}, rez.LoadSituationSignalsOptions{})
+	s.Require().NoError(loadErr)
+
+	// A group that does not exist violates a foreign key, not the one-situation-per-signal index.
+	membership := situationMembership{groupID: uuid.New(), matchKind: sitsig.MatchKindManual}
+	createErr := h.situations.createMemberships(ctx, situation.ID, membership, signals, situationTestStart)
+
+	s.Require().Error(createErr)
+	s.NotErrorIs(createErr, errs.ErrConflict)
+	pgErr, isPgErr := errors.AsType[*pgconn.PgError](createErr)
+	s.Require().True(isPgErr)
+	s.Equal("23503", pgErr.Code)
 }
 
 func (s *SituationServiceSuite) TestCorrelationEligibility() {

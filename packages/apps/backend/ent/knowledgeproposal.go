@@ -33,16 +33,16 @@ type KnowledgeProposal struct {
 	// Linking attribute whose two values name the matched entities, such as service.name.
 	Attribute string `json:"attribute,omitempty"`
 	// The value that sorts first.
-	NameA string `json:"name_a,omitempty"`
-	// NameB holds the value of the "name_b" field.
-	NameB string `json:"name_b,omitempty"`
+	ValueA string `json:"value_a,omitempty"`
+	// ValueB holds the value of the "value_b" field.
+	ValueB string `json:"value_b,omitempty"`
 	// Status holds the value of the "status" field.
 	Status knowledgeproposal.Status `json:"status,omitempty"`
 	// Origin holds the value of the "origin" field.
 	Origin knowledgeproposal.Origin `json:"origin,omitempty"`
-	// Rezible's own sentence saying why the names may match.
+	// Rezible's own sentence saying why the two values may name one entity.
 	Rationale string `json:"rationale,omitempty"`
-	// Evidence that brought the name which caused the proposal.
+	// Evidence that brought the value which caused the proposal.
 	EvidenceID uuid.UUID `json:"evidence_id,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the KnowledgeProposalQuery when eager-loading is set.
@@ -56,9 +56,11 @@ type KnowledgeProposalEdges struct {
 	Tenant *Tenant `json:"tenant,omitempty"`
 	// Evidence holds the value of the evidence edge.
 	Evidence *KnowledgeEvidence `json:"evidence,omitempty"`
+	// Decisions holds the value of the decisions edge.
+	Decisions []*KnowledgeProposalDecision `json:"decisions,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [3]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -83,6 +85,15 @@ func (e KnowledgeProposalEdges) EvidenceOrErr() (*KnowledgeEvidence, error) {
 	return nil, &NotLoadedError{edge: "evidence"}
 }
 
+// DecisionsOrErr returns the Decisions value or an error if the edge
+// was not loaded in eager-loading.
+func (e KnowledgeProposalEdges) DecisionsOrErr() ([]*KnowledgeProposalDecision, error) {
+	if e.loadedTypes[2] {
+		return e.Decisions, nil
+	}
+	return nil, &NotLoadedError{edge: "decisions"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*KnowledgeProposal) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
@@ -90,7 +101,7 @@ func (*KnowledgeProposal) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case knowledgeproposal.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case knowledgeproposal.FieldCategory, knowledgeproposal.FieldKind, knowledgeproposal.FieldAttribute, knowledgeproposal.FieldNameA, knowledgeproposal.FieldNameB, knowledgeproposal.FieldStatus, knowledgeproposal.FieldOrigin, knowledgeproposal.FieldRationale:
+		case knowledgeproposal.FieldCategory, knowledgeproposal.FieldKind, knowledgeproposal.FieldAttribute, knowledgeproposal.FieldValueA, knowledgeproposal.FieldValueB, knowledgeproposal.FieldStatus, knowledgeproposal.FieldOrigin, knowledgeproposal.FieldRationale:
 			values[i] = new(sql.NullString)
 		case knowledgeproposal.FieldCreatedAt, knowledgeproposal.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -153,17 +164,17 @@ func (_m *KnowledgeProposal) assignValues(columns []string, values []any) error 
 			} else if value.Valid {
 				_m.Attribute = value.String
 			}
-		case knowledgeproposal.FieldNameA:
+		case knowledgeproposal.FieldValueA:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field name_a", values[i])
+				return fmt.Errorf("unexpected type %T for field value_a", values[i])
 			} else if value.Valid {
-				_m.NameA = value.String
+				_m.ValueA = value.String
 			}
-		case knowledgeproposal.FieldNameB:
+		case knowledgeproposal.FieldValueB:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field name_b", values[i])
+				return fmt.Errorf("unexpected type %T for field value_b", values[i])
 			} else if value.Valid {
-				_m.NameB = value.String
+				_m.ValueB = value.String
 			}
 		case knowledgeproposal.FieldStatus:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -212,6 +223,11 @@ func (_m *KnowledgeProposal) QueryEvidence() *KnowledgeEvidenceQuery {
 	return NewKnowledgeProposalClient(_m.config).QueryEvidence(_m)
 }
 
+// QueryDecisions queries the "decisions" edge of the KnowledgeProposal entity.
+func (_m *KnowledgeProposal) QueryDecisions() *KnowledgeProposalDecisionQuery {
+	return NewKnowledgeProposalClient(_m.config).QueryDecisions(_m)
+}
+
 // Update returns a builder for updating this KnowledgeProposal.
 // Note that you need to call KnowledgeProposal.Unwrap() before calling this method if this KnowledgeProposal
 // was returned from a transaction, and the transaction was committed or rolled back.
@@ -253,11 +269,11 @@ func (_m *KnowledgeProposal) String() string {
 	builder.WriteString("attribute=")
 	builder.WriteString(_m.Attribute)
 	builder.WriteString(", ")
-	builder.WriteString("name_a=")
-	builder.WriteString(_m.NameA)
+	builder.WriteString("value_a=")
+	builder.WriteString(_m.ValueA)
 	builder.WriteString(", ")
-	builder.WriteString("name_b=")
-	builder.WriteString(_m.NameB)
+	builder.WriteString("value_b=")
+	builder.WriteString(_m.ValueB)
 	builder.WriteString(", ")
 	builder.WriteString("status=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Status))

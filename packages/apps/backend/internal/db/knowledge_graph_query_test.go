@@ -21,6 +21,7 @@ import (
 	ksa "github.com/rezible/rezible/ent/knowledgesubjectalias"
 	"github.com/rezible/rezible/ent/schema/schematypes"
 	"github.com/rezible/rezible/pkg/errs"
+	"github.com/rezible/rezible/pkg/integrations"
 	"github.com/rezible/rezible/pkg/knowledgegraph"
 	"github.com/rezible/rezible/test"
 )
@@ -959,7 +960,9 @@ type testGraph struct {
 }
 
 func newTestGraph(require *require.Assertions, tdb rez.Database) *testGraph {
-	return &testGraph{require: require, db: tdb, ingestion: &KnowledgeGraphIngestionService{db: tdb}}
+	ingestion, ingestionErr := NewKnowledgeGraphIngestionService(tdb)
+	require.NoError(ingestionErr)
+	return &testGraph{require: require, db: tdb, ingestion: ingestion}
 }
 
 func (g *testGraph) entity(category kne.Category, kind, provider, resource string) rez.KnowledgeEntityRef {
@@ -1326,4 +1329,73 @@ func (s *KnowledgeGraphQueryServiceSuite) TestListEntitiesByLinkingAttribute() {
 	s.ElementsMatch([]uuid.UUID{paymentsID, checkoutID}, find(""), "every entity holding the attribute")
 	s.Empty(find("payments-alert"), "an entity of another category is not listed")
 	s.Empty(find("orders-api"))
+}
+
+func (s *KnowledgeGraphQueryServiceSuite) TestListEntitiesSearch() {
+	ctx, tdb := s.SetupTestDatabase()
+	service, serviceErr := NewKnowledgeGraphQueryService(tdb)
+	s.Require().NoError(serviceErr)
+	graph := newTestGraph(s.Require(), tdb)
+	checkout := graph.entity(kne.CategoryContainer, "service", "provider-a", "checkout-api")
+	checkout.LinkingAttributes = testEntityLinkingAttributes{"service.name": "checkout-api"}
+	payments := graph.entity(kne.CategoryContainer, "service", "provider-a", "payments-svc")
+	payments.LinkingAttributes = testEntityLinkingAttributes{"service.name": "payments-svc"}
+	graph.record(ctx, time.Date(2026, 6, 1, 10, 0, 0, 0, time.UTC),
+		graph.observeEntity(checkout, "Checkout API"),
+		graph.observeEntity(payments, "Payments"),
+	)
+	search := func(text string) []*ent.KnowledgeEntity {
+		params := rez.ListKnowledgeEntitiesParams{
+			ListParams:            ent.ListParams{Search: text},
+			WithLinkingAttributes: true,
+		}
+		result, listErr := service.ListEntities(ctx, params)
+		s.Require().NoError(listErr)
+		return result.Data
+	}
+
+	byDisplayName := search("CHECKOUT a")
+	byLinkingValue := search("SVC")
+	byNeither := search("inventory")
+
+	s.Require().Len(byDisplayName, 1)
+	s.Equal(graph.entityID(ctx, checkout), byDisplayName[0].ID)
+	s.Require().Len(byDisplayName[0].Edges.LinkingAttributes, 1)
+	s.Equal("checkout-api", byDisplayName[0].Edges.LinkingAttributes[0].Value)
+	s.Require().Len(byLinkingValue, 1)
+	s.Equal(graph.entityID(ctx, payments), byLinkingValue[0].ID)
+	s.Empty(byNeither)
+}
+
+func (s *KnowledgeGraphQueryServiceSuite) TestListEntityAliases() {
+	ctx, tdb := s.SetupTestDatabase()
+	registry, registryErr := integrations.NewRegistry(&testIntegration{name: "provider-a"})
+	s.Require().NoError(registryErr)
+	service, serviceErr := NewKnowledgeEntityAliasService(tdb, registry)
+	s.Require().NoError(serviceErr)
+	graph := newTestGraph(s.Require(), tdb)
+	start := time.Date(2026, 6, 1, 10, 0, 0, 0, time.UTC)
+	fromAlerts := graph.entity(kne.CategoryContainer, "service", "provider-a", "service:checkout-api")
+	fromAlerts.LinkingAttributes = testEntityLinkingAttributes{"service.name": "checkout-api"}
+	fromLogs := graph.entity(kne.CategoryContainer, "service", "provider-b", "logs:service_name:checkout-api")
+	fromLogs.LinkingAttributes = testEntityLinkingAttributes{"service.name": "checkout-api"}
+	graph.record(ctx, start, graph.observeEntity(fromAlerts, "checkout-api"))
+	graph.record(ctx, start.Add(time.Hour), graph.observeEntity(fromLogs, ""))
+	graph.record(ctx, start.Add(2*time.Hour), graph.observeEntity(fromAlerts, "checkout-api"))
+	entityID := graph.entityID(ctx, fromAlerts)
+
+	aliases, aliasesErr := service.ListEntityAliases(ctx, []uuid.UUID{entityID})
+
+	s.Require().NoError(aliasesErr)
+	s.Require().Len(aliases[entityID], 2)
+	newest, older := aliases[entityID][0], aliases[entityID][1]
+	s.Equal("provider-a", newest.Alias.Provider)
+	s.Equal("Test Package", newest.IntegrationDisplayName)
+	s.Equal("checkout-api", newest.Name)
+	s.Equal(start.Add(2*time.Hour), newest.LastRecordedAt)
+	s.Nil(newest.Alias.Edges.MergedByProposal)
+	s.Equal("provider-b", older.Alias.Provider)
+	s.Empty(older.IntegrationDisplayName, "a provider with no registered integration has no display name")
+	s.Equal("logs:service_name:checkout-api", older.Name, "an alias stating no name is named by its resource ref")
+	s.Equal(start.Add(time.Hour), older.LastRecordedAt)
 }

@@ -13,13 +13,13 @@ import (
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	kne "github.com/rezible/rezible/ent/knowledgeentity"
 	ke "github.com/rezible/rezible/ent/knowledgeevidence"
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
 	ksa "github.com/rezible/rezible/ent/knowledgesubjectalias"
 	sit "github.com/rezible/rezible/ent/situation"
 	rezai "github.com/rezible/rezible/pkg/ai"
 	"github.com/rezible/rezible/pkg/integrations"
+	"github.com/rezible/rezible/pkg/knowledgegraph"
 	"github.com/rezible/rezible/pkg/projections"
 )
 
@@ -77,7 +77,7 @@ func (s *SituationBriefService) loadSituation(ctx context.Context, situationID u
 	var members []*ent.SituationEntity
 	for _, member := range situation.Edges.Entities {
 		entity := member.Edges.KnowledgeEntity
-		if entity != nil && entity.Category == kne.CategoryContainer && entity.Kind == projections.EntityKindService {
+		if entity != nil && knowledgegraph.IsService(entity.Category, entity.Kind) {
 			members = append(members, member)
 		}
 	}

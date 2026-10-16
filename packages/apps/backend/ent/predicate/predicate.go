@@ -156,6 +156,9 @@ type KnowledgeEvidence func(*sql.Selector)
 // KnowledgeProposal is the predicate function for knowledgeproposal builders.
 type KnowledgeProposal func(*sql.Selector)
 
+// KnowledgeProposalDecision is the predicate function for knowledgeproposaldecision builders.
+type KnowledgeProposalDecision func(*sql.Selector)
+
 // KnowledgeRelationship is the predicate function for knowledgerelationship builders.
 type KnowledgeRelationship func(*sql.Selector)
 

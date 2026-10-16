@@ -15,8 +15,13 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/discussioncomment"
 	"github.com/rezible/rezible/ent/discussionthread"
+	"github.com/rezible/rezible/ent/investigationfinding"
+	"github.com/rezible/rezible/ent/knowledgeentity"
+	"github.com/rezible/rezible/ent/knowledgerelationship"
+	"github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/ent/systemanalysis"
+	"github.com/rezible/rezible/ent/systemanalysisentry"
 	"github.com/rezible/rezible/ent/tenant"
 	"github.com/rezible/rezible/ent/user"
 )
@@ -97,30 +102,72 @@ func (_c *DiscussionThreadCreate) SetUserID(v uuid.UUID) *DiscussionThreadCreate
 	return _c
 }
 
-// SetTargetKind sets the "target_kind" field.
-func (_c *DiscussionThreadCreate) SetTargetKind(v discussionthread.TargetKind) *DiscussionThreadCreate {
-	_c.mutation.SetTargetKind(v)
+// SetTargetFindingID sets the "target_finding_id" field.
+func (_c *DiscussionThreadCreate) SetTargetFindingID(v uuid.UUID) *DiscussionThreadCreate {
+	_c.mutation.SetTargetFindingID(v)
 	return _c
 }
 
-// SetNillableTargetKind sets the "target_kind" field if the given value is not nil.
-func (_c *DiscussionThreadCreate) SetNillableTargetKind(v *discussionthread.TargetKind) *DiscussionThreadCreate {
+// SetNillableTargetFindingID sets the "target_finding_id" field if the given value is not nil.
+func (_c *DiscussionThreadCreate) SetNillableTargetFindingID(v *uuid.UUID) *DiscussionThreadCreate {
 	if v != nil {
-		_c.SetTargetKind(*v)
+		_c.SetTargetFindingID(*v)
 	}
 	return _c
 }
 
-// SetTargetID sets the "target_id" field.
-func (_c *DiscussionThreadCreate) SetTargetID(v uuid.UUID) *DiscussionThreadCreate {
-	_c.mutation.SetTargetID(v)
+// SetTargetEntryID sets the "target_entry_id" field.
+func (_c *DiscussionThreadCreate) SetTargetEntryID(v uuid.UUID) *DiscussionThreadCreate {
+	_c.mutation.SetTargetEntryID(v)
 	return _c
 }
 
-// SetNillableTargetID sets the "target_id" field if the given value is not nil.
-func (_c *DiscussionThreadCreate) SetNillableTargetID(v *uuid.UUID) *DiscussionThreadCreate {
+// SetNillableTargetEntryID sets the "target_entry_id" field if the given value is not nil.
+func (_c *DiscussionThreadCreate) SetNillableTargetEntryID(v *uuid.UUID) *DiscussionThreadCreate {
 	if v != nil {
-		_c.SetTargetID(*v)
+		_c.SetTargetEntryID(*v)
+	}
+	return _c
+}
+
+// SetTargetKnowledgeEntityID sets the "target_knowledge_entity_id" field.
+func (_c *DiscussionThreadCreate) SetTargetKnowledgeEntityID(v uuid.UUID) *DiscussionThreadCreate {
+	_c.mutation.SetTargetKnowledgeEntityID(v)
+	return _c
+}
+
+// SetNillableTargetKnowledgeEntityID sets the "target_knowledge_entity_id" field if the given value is not nil.
+func (_c *DiscussionThreadCreate) SetNillableTargetKnowledgeEntityID(v *uuid.UUID) *DiscussionThreadCreate {
+	if v != nil {
+		_c.SetTargetKnowledgeEntityID(*v)
+	}
+	return _c
+}
+
+// SetTargetKnowledgeRelationshipID sets the "target_knowledge_relationship_id" field.
+func (_c *DiscussionThreadCreate) SetTargetKnowledgeRelationshipID(v uuid.UUID) *DiscussionThreadCreate {
+	_c.mutation.SetTargetKnowledgeRelationshipID(v)
+	return _c
+}
+
+// SetNillableTargetKnowledgeRelationshipID sets the "target_knowledge_relationship_id" field if the given value is not nil.
+func (_c *DiscussionThreadCreate) SetNillableTargetKnowledgeRelationshipID(v *uuid.UUID) *DiscussionThreadCreate {
+	if v != nil {
+		_c.SetTargetKnowledgeRelationshipID(*v)
+	}
+	return _c
+}
+
+// SetTargetNormalizedEventID sets the "target_normalized_event_id" field.
+func (_c *DiscussionThreadCreate) SetTargetNormalizedEventID(v uuid.UUID) *DiscussionThreadCreate {
+	_c.mutation.SetTargetNormalizedEventID(v)
+	return _c
+}
+
+// SetNillableTargetNormalizedEventID sets the "target_normalized_event_id" field if the given value is not nil.
+func (_c *DiscussionThreadCreate) SetNillableTargetNormalizedEventID(v *uuid.UUID) *DiscussionThreadCreate {
+	if v != nil {
+		_c.SetTargetNormalizedEventID(*v)
 	}
 	return _c
 }
@@ -230,6 +277,31 @@ func (_c *DiscussionThreadCreate) AddComments(v ...*DiscussionComment) *Discussi
 	return _c.AddCommentIDs(ids...)
 }
 
+// SetTargetFinding sets the "target_finding" edge to the InvestigationFinding entity.
+func (_c *DiscussionThreadCreate) SetTargetFinding(v *InvestigationFinding) *DiscussionThreadCreate {
+	return _c.SetTargetFindingID(v.ID)
+}
+
+// SetTargetEntry sets the "target_entry" edge to the SystemAnalysisEntry entity.
+func (_c *DiscussionThreadCreate) SetTargetEntry(v *SystemAnalysisEntry) *DiscussionThreadCreate {
+	return _c.SetTargetEntryID(v.ID)
+}
+
+// SetTargetNormalizedEvent sets the "target_normalized_event" edge to the NormalizedEvent entity.
+func (_c *DiscussionThreadCreate) SetTargetNormalizedEvent(v *NormalizedEvent) *DiscussionThreadCreate {
+	return _c.SetTargetNormalizedEventID(v.ID)
+}
+
+// SetTargetKnowledgeEntity sets the "target_knowledge_entity" edge to the KnowledgeEntity entity.
+func (_c *DiscussionThreadCreate) SetTargetKnowledgeEntity(v *KnowledgeEntity) *DiscussionThreadCreate {
+	return _c.SetTargetKnowledgeEntityID(v.ID)
+}
+
+// SetTargetKnowledgeRelationship sets the "target_knowledge_relationship" edge to the KnowledgeRelationship entity.
+func (_c *DiscussionThreadCreate) SetTargetKnowledgeRelationship(v *KnowledgeRelationship) *DiscussionThreadCreate {
+	return _c.SetTargetKnowledgeRelationshipID(v.ID)
+}
+
 // Mutation returns the DiscussionThreadMutation object of the builder.
 func (_c *DiscussionThreadCreate) Mutation() *DiscussionThreadMutation {
 	return _c.mutation
@@ -305,11 +377,6 @@ func (_c *DiscussionThreadCreate) check() error {
 	if _, ok := _c.mutation.UserID(); !ok {
 		return &ValidationError{Name: "user_id", err: errors.New(`ent: missing required field "DiscussionThread.user_id"`)}
 	}
-	if v, ok := _c.mutation.TargetKind(); ok {
-		if err := discussionthread.TargetKindValidator(v); err != nil {
-			return &ValidationError{Name: "target_kind", err: fmt.Errorf(`ent: validator failed for field "DiscussionThread.target_kind": %w`, err)}
-		}
-	}
 	if v, ok := _c.mutation.ResolutionState(); ok {
 		if err := discussionthread.ResolutionStateValidator(v); err != nil {
 			return &ValidationError{Name: "resolution_state", err: fmt.Errorf(`ent: validator failed for field "DiscussionThread.resolution_state": %w`, err)}
@@ -365,14 +432,6 @@ func (_c *DiscussionThreadCreate) createSpec() (*DiscussionThread, *sqlgraph.Cre
 	if value, ok := _c.mutation.UpdatedAt(); ok {
 		_spec.SetField(discussionthread.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
-	}
-	if value, ok := _c.mutation.TargetKind(); ok {
-		_spec.SetField(discussionthread.FieldTargetKind, field.TypeEnum, value)
-		_node.TargetKind = &value
-	}
-	if value, ok := _c.mutation.TargetID(); ok {
-		_spec.SetField(discussionthread.FieldTargetID, field.TypeUUID, value)
-		_node.TargetID = &value
 	}
 	if value, ok := _c.mutation.ResolutionState(); ok {
 		_spec.SetField(discussionthread.FieldResolutionState, field.TypeEnum, value)
@@ -477,6 +536,96 @@ func (_c *DiscussionThreadCreate) createSpec() (*DiscussionThread, *sqlgraph.Cre
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.TargetFindingIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   discussionthread.TargetFindingTable,
+			Columns: []string{discussionthread.TargetFindingColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(investigationfinding.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.DiscussionThread
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.TargetFindingID = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.TargetEntryIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   discussionthread.TargetEntryTable,
+			Columns: []string{discussionthread.TargetEntryColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemanalysisentry.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.DiscussionThread
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.TargetEntryID = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.TargetNormalizedEventIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   discussionthread.TargetNormalizedEventTable,
+			Columns: []string{discussionthread.TargetNormalizedEventColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(normalizedevent.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.DiscussionThread
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.TargetNormalizedEventID = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.TargetKnowledgeEntityIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   discussionthread.TargetKnowledgeEntityTable,
+			Columns: []string{discussionthread.TargetKnowledgeEntityColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.DiscussionThread
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.TargetKnowledgeEntityID = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.TargetKnowledgeRelationshipIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   discussionthread.TargetKnowledgeRelationshipTable,
+			Columns: []string{discussionthread.TargetKnowledgeRelationshipColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgerelationship.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.DiscussionThread
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.TargetKnowledgeRelationshipID = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
@@ -603,39 +752,93 @@ func (u *DiscussionThreadUpsert) UpdateUserID() *DiscussionThreadUpsert {
 	return u
 }
 
-// SetTargetKind sets the "target_kind" field.
-func (u *DiscussionThreadUpsert) SetTargetKind(v discussionthread.TargetKind) *DiscussionThreadUpsert {
-	u.Set(discussionthread.FieldTargetKind, v)
+// SetTargetFindingID sets the "target_finding_id" field.
+func (u *DiscussionThreadUpsert) SetTargetFindingID(v uuid.UUID) *DiscussionThreadUpsert {
+	u.Set(discussionthread.FieldTargetFindingID, v)
 	return u
 }
 
-// UpdateTargetKind sets the "target_kind" field to the value that was provided on create.
-func (u *DiscussionThreadUpsert) UpdateTargetKind() *DiscussionThreadUpsert {
-	u.SetExcluded(discussionthread.FieldTargetKind)
+// UpdateTargetFindingID sets the "target_finding_id" field to the value that was provided on create.
+func (u *DiscussionThreadUpsert) UpdateTargetFindingID() *DiscussionThreadUpsert {
+	u.SetExcluded(discussionthread.FieldTargetFindingID)
 	return u
 }
 
-// ClearTargetKind clears the value of the "target_kind" field.
-func (u *DiscussionThreadUpsert) ClearTargetKind() *DiscussionThreadUpsert {
-	u.SetNull(discussionthread.FieldTargetKind)
+// ClearTargetFindingID clears the value of the "target_finding_id" field.
+func (u *DiscussionThreadUpsert) ClearTargetFindingID() *DiscussionThreadUpsert {
+	u.SetNull(discussionthread.FieldTargetFindingID)
 	return u
 }
 
-// SetTargetID sets the "target_id" field.
-func (u *DiscussionThreadUpsert) SetTargetID(v uuid.UUID) *DiscussionThreadUpsert {
-	u.Set(discussionthread.FieldTargetID, v)
+// SetTargetEntryID sets the "target_entry_id" field.
+func (u *DiscussionThreadUpsert) SetTargetEntryID(v uuid.UUID) *DiscussionThreadUpsert {
+	u.Set(discussionthread.FieldTargetEntryID, v)
 	return u
 }
 
-// UpdateTargetID sets the "target_id" field to the value that was provided on create.
-func (u *DiscussionThreadUpsert) UpdateTargetID() *DiscussionThreadUpsert {
-	u.SetExcluded(discussionthread.FieldTargetID)
+// UpdateTargetEntryID sets the "target_entry_id" field to the value that was provided on create.
+func (u *DiscussionThreadUpsert) UpdateTargetEntryID() *DiscussionThreadUpsert {
+	u.SetExcluded(discussionthread.FieldTargetEntryID)
 	return u
 }
 
-// ClearTargetID clears the value of the "target_id" field.
-func (u *DiscussionThreadUpsert) ClearTargetID() *DiscussionThreadUpsert {
-	u.SetNull(discussionthread.FieldTargetID)
+// ClearTargetEntryID clears the value of the "target_entry_id" field.
+func (u *DiscussionThreadUpsert) ClearTargetEntryID() *DiscussionThreadUpsert {
+	u.SetNull(discussionthread.FieldTargetEntryID)
+	return u
+}
+
+// SetTargetKnowledgeEntityID sets the "target_knowledge_entity_id" field.
+func (u *DiscussionThreadUpsert) SetTargetKnowledgeEntityID(v uuid.UUID) *DiscussionThreadUpsert {
+	u.Set(discussionthread.FieldTargetKnowledgeEntityID, v)
+	return u
+}
+
+// UpdateTargetKnowledgeEntityID sets the "target_knowledge_entity_id" field to the value that was provided on create.
+func (u *DiscussionThreadUpsert) UpdateTargetKnowledgeEntityID() *DiscussionThreadUpsert {
+	u.SetExcluded(discussionthread.FieldTargetKnowledgeEntityID)
+	return u
+}
+
+// ClearTargetKnowledgeEntityID clears the value of the "target_knowledge_entity_id" field.
+func (u *DiscussionThreadUpsert) ClearTargetKnowledgeEntityID() *DiscussionThreadUpsert {
+	u.SetNull(discussionthread.FieldTargetKnowledgeEntityID)
+	return u
+}
+
+// SetTargetKnowledgeRelationshipID sets the "target_knowledge_relationship_id" field.
+func (u *DiscussionThreadUpsert) SetTargetKnowledgeRelationshipID(v uuid.UUID) *DiscussionThreadUpsert {
+	u.Set(discussionthread.FieldTargetKnowledgeRelationshipID, v)
+	return u
+}
+
+// UpdateTargetKnowledgeRelationshipID sets the "target_knowledge_relationship_id" field to the value that was provided on create.
+func (u *DiscussionThreadUpsert) UpdateTargetKnowledgeRelationshipID() *DiscussionThreadUpsert {
+	u.SetExcluded(discussionthread.FieldTargetKnowledgeRelationshipID)
+	return u
+}
+
+// ClearTargetKnowledgeRelationshipID clears the value of the "target_knowledge_relationship_id" field.
+func (u *DiscussionThreadUpsert) ClearTargetKnowledgeRelationshipID() *DiscussionThreadUpsert {
+	u.SetNull(discussionthread.FieldTargetKnowledgeRelationshipID)
+	return u
+}
+
+// SetTargetNormalizedEventID sets the "target_normalized_event_id" field.
+func (u *DiscussionThreadUpsert) SetTargetNormalizedEventID(v uuid.UUID) *DiscussionThreadUpsert {
+	u.Set(discussionthread.FieldTargetNormalizedEventID, v)
+	return u
+}
+
+// UpdateTargetNormalizedEventID sets the "target_normalized_event_id" field to the value that was provided on create.
+func (u *DiscussionThreadUpsert) UpdateTargetNormalizedEventID() *DiscussionThreadUpsert {
+	u.SetExcluded(discussionthread.FieldTargetNormalizedEventID)
+	return u
+}
+
+// ClearTargetNormalizedEventID clears the value of the "target_normalized_event_id" field.
+func (u *DiscussionThreadUpsert) ClearTargetNormalizedEventID() *DiscussionThreadUpsert {
+	u.SetNull(discussionthread.FieldTargetNormalizedEventID)
 	return u
 }
 
@@ -846,45 +1049,108 @@ func (u *DiscussionThreadUpsertOne) UpdateUserID() *DiscussionThreadUpsertOne {
 	})
 }
 
-// SetTargetKind sets the "target_kind" field.
-func (u *DiscussionThreadUpsertOne) SetTargetKind(v discussionthread.TargetKind) *DiscussionThreadUpsertOne {
+// SetTargetFindingID sets the "target_finding_id" field.
+func (u *DiscussionThreadUpsertOne) SetTargetFindingID(v uuid.UUID) *DiscussionThreadUpsertOne {
 	return u.Update(func(s *DiscussionThreadUpsert) {
-		s.SetTargetKind(v)
+		s.SetTargetFindingID(v)
 	})
 }
 
-// UpdateTargetKind sets the "target_kind" field to the value that was provided on create.
-func (u *DiscussionThreadUpsertOne) UpdateTargetKind() *DiscussionThreadUpsertOne {
+// UpdateTargetFindingID sets the "target_finding_id" field to the value that was provided on create.
+func (u *DiscussionThreadUpsertOne) UpdateTargetFindingID() *DiscussionThreadUpsertOne {
 	return u.Update(func(s *DiscussionThreadUpsert) {
-		s.UpdateTargetKind()
+		s.UpdateTargetFindingID()
 	})
 }
 
-// ClearTargetKind clears the value of the "target_kind" field.
-func (u *DiscussionThreadUpsertOne) ClearTargetKind() *DiscussionThreadUpsertOne {
+// ClearTargetFindingID clears the value of the "target_finding_id" field.
+func (u *DiscussionThreadUpsertOne) ClearTargetFindingID() *DiscussionThreadUpsertOne {
 	return u.Update(func(s *DiscussionThreadUpsert) {
-		s.ClearTargetKind()
+		s.ClearTargetFindingID()
 	})
 }
 
-// SetTargetID sets the "target_id" field.
-func (u *DiscussionThreadUpsertOne) SetTargetID(v uuid.UUID) *DiscussionThreadUpsertOne {
+// SetTargetEntryID sets the "target_entry_id" field.
+func (u *DiscussionThreadUpsertOne) SetTargetEntryID(v uuid.UUID) *DiscussionThreadUpsertOne {
 	return u.Update(func(s *DiscussionThreadUpsert) {
-		s.SetTargetID(v)
+		s.SetTargetEntryID(v)
 	})
 }
 
-// UpdateTargetID sets the "target_id" field to the value that was provided on create.
-func (u *DiscussionThreadUpsertOne) UpdateTargetID() *DiscussionThreadUpsertOne {
+// UpdateTargetEntryID sets the "target_entry_id" field to the value that was provided on create.
+func (u *DiscussionThreadUpsertOne) UpdateTargetEntryID() *DiscussionThreadUpsertOne {
 	return u.Update(func(s *DiscussionThreadUpsert) {
-		s.UpdateTargetID()
+		s.UpdateTargetEntryID()
 	})
 }
 
-// ClearTargetID clears the value of the "target_id" field.
-func (u *DiscussionThreadUpsertOne) ClearTargetID() *DiscussionThreadUpsertOne {
+// ClearTargetEntryID clears the value of the "target_entry_id" field.
+func (u *DiscussionThreadUpsertOne) ClearTargetEntryID() *DiscussionThreadUpsertOne {
 	return u.Update(func(s *DiscussionThreadUpsert) {
-		s.ClearTargetID()
+		s.ClearTargetEntryID()
+	})
+}
+
+// SetTargetKnowledgeEntityID sets the "target_knowledge_entity_id" field.
+func (u *DiscussionThreadUpsertOne) SetTargetKnowledgeEntityID(v uuid.UUID) *DiscussionThreadUpsertOne {
+	return u.Update(func(s *DiscussionThreadUpsert) {
+		s.SetTargetKnowledgeEntityID(v)
+	})
+}
+
+// UpdateTargetKnowledgeEntityID sets the "target_knowledge_entity_id" field to the value that was provided on create.
+func (u *DiscussionThreadUpsertOne) UpdateTargetKnowledgeEntityID() *DiscussionThreadUpsertOne {
+	return u.Update(func(s *DiscussionThreadUpsert) {
+		s.UpdateTargetKnowledgeEntityID()
+	})
+}
+
+// ClearTargetKnowledgeEntityID clears the value of the "target_knowledge_entity_id" field.
+func (u *DiscussionThreadUpsertOne) ClearTargetKnowledgeEntityID() *DiscussionThreadUpsertOne {
+	return u.Update(func(s *DiscussionThreadUpsert) {
+		s.ClearTargetKnowledgeEntityID()
+	})
+}
+
+// SetTargetKnowledgeRelationshipID sets the "target_knowledge_relationship_id" field.
+func (u *DiscussionThreadUpsertOne) SetTargetKnowledgeRelationshipID(v uuid.UUID) *DiscussionThreadUpsertOne {
+	return u.Update(func(s *DiscussionThreadUpsert) {
+		s.SetTargetKnowledgeRelationshipID(v)
+	})
+}
+
+// UpdateTargetKnowledgeRelationshipID sets the "target_knowledge_relationship_id" field to the value that was provided on create.
+func (u *DiscussionThreadUpsertOne) UpdateTargetKnowledgeRelationshipID() *DiscussionThreadUpsertOne {
+	return u.Update(func(s *DiscussionThreadUpsert) {
+		s.UpdateTargetKnowledgeRelationshipID()
+	})
+}
+
+// ClearTargetKnowledgeRelationshipID clears the value of the "target_knowledge_relationship_id" field.
+func (u *DiscussionThreadUpsertOne) ClearTargetKnowledgeRelationshipID() *DiscussionThreadUpsertOne {
+	return u.Update(func(s *DiscussionThreadUpsert) {
+		s.ClearTargetKnowledgeRelationshipID()
+	})
+}
+
+// SetTargetNormalizedEventID sets the "target_normalized_event_id" field.
+func (u *DiscussionThreadUpsertOne) SetTargetNormalizedEventID(v uuid.UUID) *DiscussionThreadUpsertOne {
+	return u.Update(func(s *DiscussionThreadUpsert) {
+		s.SetTargetNormalizedEventID(v)
+	})
+}
+
+// UpdateTargetNormalizedEventID sets the "target_normalized_event_id" field to the value that was provided on create.
+func (u *DiscussionThreadUpsertOne) UpdateTargetNormalizedEventID() *DiscussionThreadUpsertOne {
+	return u.Update(func(s *DiscussionThreadUpsert) {
+		s.UpdateTargetNormalizedEventID()
+	})
+}
+
+// ClearTargetNormalizedEventID clears the value of the "target_normalized_event_id" field.
+func (u *DiscussionThreadUpsertOne) ClearTargetNormalizedEventID() *DiscussionThreadUpsertOne {
+	return u.Update(func(s *DiscussionThreadUpsert) {
+		s.ClearTargetNormalizedEventID()
 	})
 }
 
@@ -1274,45 +1540,108 @@ func (u *DiscussionThreadUpsertBulk) UpdateUserID() *DiscussionThreadUpsertBulk 
 	})
 }
 
-// SetTargetKind sets the "target_kind" field.
-func (u *DiscussionThreadUpsertBulk) SetTargetKind(v discussionthread.TargetKind) *DiscussionThreadUpsertBulk {
+// SetTargetFindingID sets the "target_finding_id" field.
+func (u *DiscussionThreadUpsertBulk) SetTargetFindingID(v uuid.UUID) *DiscussionThreadUpsertBulk {
 	return u.Update(func(s *DiscussionThreadUpsert) {
-		s.SetTargetKind(v)
+		s.SetTargetFindingID(v)
 	})
 }
 
-// UpdateTargetKind sets the "target_kind" field to the value that was provided on create.
-func (u *DiscussionThreadUpsertBulk) UpdateTargetKind() *DiscussionThreadUpsertBulk {
+// UpdateTargetFindingID sets the "target_finding_id" field to the value that was provided on create.
+func (u *DiscussionThreadUpsertBulk) UpdateTargetFindingID() *DiscussionThreadUpsertBulk {
 	return u.Update(func(s *DiscussionThreadUpsert) {
-		s.UpdateTargetKind()
+		s.UpdateTargetFindingID()
 	})
 }
 
-// ClearTargetKind clears the value of the "target_kind" field.
-func (u *DiscussionThreadUpsertBulk) ClearTargetKind() *DiscussionThreadUpsertBulk {
+// ClearTargetFindingID clears the value of the "target_finding_id" field.
+func (u *DiscussionThreadUpsertBulk) ClearTargetFindingID() *DiscussionThreadUpsertBulk {
 	return u.Update(func(s *DiscussionThreadUpsert) {
-		s.ClearTargetKind()
+		s.ClearTargetFindingID()
 	})
 }
 
-// SetTargetID sets the "target_id" field.
-func (u *DiscussionThreadUpsertBulk) SetTargetID(v uuid.UUID) *DiscussionThreadUpsertBulk {
+// SetTargetEntryID sets the "target_entry_id" field.
+func (u *DiscussionThreadUpsertBulk) SetTargetEntryID(v uuid.UUID) *DiscussionThreadUpsertBulk {
 	return u.Update(func(s *DiscussionThreadUpsert) {
-		s.SetTargetID(v)
+		s.SetTargetEntryID(v)
 	})
 }
 
-// UpdateTargetID sets the "target_id" field to the value that was provided on create.
-func (u *DiscussionThreadUpsertBulk) UpdateTargetID() *DiscussionThreadUpsertBulk {
+// UpdateTargetEntryID sets the "target_entry_id" field to the value that was provided on create.
+func (u *DiscussionThreadUpsertBulk) UpdateTargetEntryID() *DiscussionThreadUpsertBulk {
 	return u.Update(func(s *DiscussionThreadUpsert) {
-		s.UpdateTargetID()
+		s.UpdateTargetEntryID()
 	})
 }
 
-// ClearTargetID clears the value of the "target_id" field.
-func (u *DiscussionThreadUpsertBulk) ClearTargetID() *DiscussionThreadUpsertBulk {
+// ClearTargetEntryID clears the value of the "target_entry_id" field.
+func (u *DiscussionThreadUpsertBulk) ClearTargetEntryID() *DiscussionThreadUpsertBulk {
 	return u.Update(func(s *DiscussionThreadUpsert) {
-		s.ClearTargetID()
+		s.ClearTargetEntryID()
+	})
+}
+
+// SetTargetKnowledgeEntityID sets the "target_knowledge_entity_id" field.
+func (u *DiscussionThreadUpsertBulk) SetTargetKnowledgeEntityID(v uuid.UUID) *DiscussionThreadUpsertBulk {
+	return u.Update(func(s *DiscussionThreadUpsert) {
+		s.SetTargetKnowledgeEntityID(v)
+	})
+}
+
+// UpdateTargetKnowledgeEntityID sets the "target_knowledge_entity_id" field to the value that was provided on create.
+func (u *DiscussionThreadUpsertBulk) UpdateTargetKnowledgeEntityID() *DiscussionThreadUpsertBulk {
+	return u.Update(func(s *DiscussionThreadUpsert) {
+		s.UpdateTargetKnowledgeEntityID()
+	})
+}
+
+// ClearTargetKnowledgeEntityID clears the value of the "target_knowledge_entity_id" field.
+func (u *DiscussionThreadUpsertBulk) ClearTargetKnowledgeEntityID() *DiscussionThreadUpsertBulk {
+	return u.Update(func(s *DiscussionThreadUpsert) {
+		s.ClearTargetKnowledgeEntityID()
+	})
+}
+
+// SetTargetKnowledgeRelationshipID sets the "target_knowledge_relationship_id" field.
+func (u *DiscussionThreadUpsertBulk) SetTargetKnowledgeRelationshipID(v uuid.UUID) *DiscussionThreadUpsertBulk {
+	return u.Update(func(s *DiscussionThreadUpsert) {
+		s.SetTargetKnowledgeRelationshipID(v)
+	})
+}
+
+// UpdateTargetKnowledgeRelationshipID sets the "target_knowledge_relationship_id" field to the value that was provided on create.
+func (u *DiscussionThreadUpsertBulk) UpdateTargetKnowledgeRelationshipID() *DiscussionThreadUpsertBulk {
+	return u.Update(func(s *DiscussionThreadUpsert) {
+		s.UpdateTargetKnowledgeRelationshipID()
+	})
+}
+
+// ClearTargetKnowledgeRelationshipID clears the value of the "target_knowledge_relationship_id" field.
+func (u *DiscussionThreadUpsertBulk) ClearTargetKnowledgeRelationshipID() *DiscussionThreadUpsertBulk {
+	return u.Update(func(s *DiscussionThreadUpsert) {
+		s.ClearTargetKnowledgeRelationshipID()
+	})
+}
+
+// SetTargetNormalizedEventID sets the "target_normalized_event_id" field.
+func (u *DiscussionThreadUpsertBulk) SetTargetNormalizedEventID(v uuid.UUID) *DiscussionThreadUpsertBulk {
+	return u.Update(func(s *DiscussionThreadUpsert) {
+		s.SetTargetNormalizedEventID(v)
+	})
+}
+
+// UpdateTargetNormalizedEventID sets the "target_normalized_event_id" field to the value that was provided on create.
+func (u *DiscussionThreadUpsertBulk) UpdateTargetNormalizedEventID() *DiscussionThreadUpsertBulk {
+	return u.Update(func(s *DiscussionThreadUpsert) {
+		s.UpdateTargetNormalizedEventID()
+	})
+}
+
+// ClearTargetNormalizedEventID clears the value of the "target_normalized_event_id" field.
+func (u *DiscussionThreadUpsertBulk) ClearTargetNormalizedEventID() *DiscussionThreadUpsertBulk {
+	return u.Update(func(s *DiscussionThreadUpsert) {
+		s.ClearTargetNormalizedEventID()
 	})
 }
 

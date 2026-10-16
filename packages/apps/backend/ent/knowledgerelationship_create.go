@@ -414,6 +414,30 @@ func (u *KnowledgeRelationshipUpsert) UpdateUpdatedAt() *KnowledgeRelationshipUp
 	return u
 }
 
+// SetSourceEntityID sets the "source_entity_id" field.
+func (u *KnowledgeRelationshipUpsert) SetSourceEntityID(v uuid.UUID) *KnowledgeRelationshipUpsert {
+	u.Set(knowledgerelationship.FieldSourceEntityID, v)
+	return u
+}
+
+// UpdateSourceEntityID sets the "source_entity_id" field to the value that was provided on create.
+func (u *KnowledgeRelationshipUpsert) UpdateSourceEntityID() *KnowledgeRelationshipUpsert {
+	u.SetExcluded(knowledgerelationship.FieldSourceEntityID)
+	return u
+}
+
+// SetTargetEntityID sets the "target_entity_id" field.
+func (u *KnowledgeRelationshipUpsert) SetTargetEntityID(v uuid.UUID) *KnowledgeRelationshipUpsert {
+	u.Set(knowledgerelationship.FieldTargetEntityID, v)
+	return u
+}
+
+// UpdateTargetEntityID sets the "target_entity_id" field to the value that was provided on create.
+func (u *KnowledgeRelationshipUpsert) UpdateTargetEntityID() *KnowledgeRelationshipUpsert {
+	u.SetExcluded(knowledgerelationship.FieldTargetEntityID)
+	return u
+}
+
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
@@ -436,12 +460,6 @@ func (u *KnowledgeRelationshipUpsertOne) UpdateNewValues() *KnowledgeRelationshi
 		}
 		if _, exists := u.create.mutation.Predicate(); exists {
 			s.SetIgnore(knowledgerelationship.FieldPredicate)
-		}
-		if _, exists := u.create.mutation.SourceEntityID(); exists {
-			s.SetIgnore(knowledgerelationship.FieldSourceEntityID)
-		}
-		if _, exists := u.create.mutation.TargetEntityID(); exists {
-			s.SetIgnore(knowledgerelationship.FieldTargetEntityID)
 		}
 	}))
 	return u
@@ -499,6 +517,34 @@ func (u *KnowledgeRelationshipUpsertOne) SetUpdatedAt(v time.Time) *KnowledgeRel
 func (u *KnowledgeRelationshipUpsertOne) UpdateUpdatedAt() *KnowledgeRelationshipUpsertOne {
 	return u.Update(func(s *KnowledgeRelationshipUpsert) {
 		s.UpdateUpdatedAt()
+	})
+}
+
+// SetSourceEntityID sets the "source_entity_id" field.
+func (u *KnowledgeRelationshipUpsertOne) SetSourceEntityID(v uuid.UUID) *KnowledgeRelationshipUpsertOne {
+	return u.Update(func(s *KnowledgeRelationshipUpsert) {
+		s.SetSourceEntityID(v)
+	})
+}
+
+// UpdateSourceEntityID sets the "source_entity_id" field to the value that was provided on create.
+func (u *KnowledgeRelationshipUpsertOne) UpdateSourceEntityID() *KnowledgeRelationshipUpsertOne {
+	return u.Update(func(s *KnowledgeRelationshipUpsert) {
+		s.UpdateSourceEntityID()
+	})
+}
+
+// SetTargetEntityID sets the "target_entity_id" field.
+func (u *KnowledgeRelationshipUpsertOne) SetTargetEntityID(v uuid.UUID) *KnowledgeRelationshipUpsertOne {
+	return u.Update(func(s *KnowledgeRelationshipUpsert) {
+		s.SetTargetEntityID(v)
+	})
+}
+
+// UpdateTargetEntityID sets the "target_entity_id" field to the value that was provided on create.
+func (u *KnowledgeRelationshipUpsertOne) UpdateTargetEntityID() *KnowledgeRelationshipUpsertOne {
+	return u.Update(func(s *KnowledgeRelationshipUpsert) {
+		s.UpdateTargetEntityID()
 	})
 }
 
@@ -691,12 +737,6 @@ func (u *KnowledgeRelationshipUpsertBulk) UpdateNewValues() *KnowledgeRelationsh
 			if _, exists := b.mutation.Predicate(); exists {
 				s.SetIgnore(knowledgerelationship.FieldPredicate)
 			}
-			if _, exists := b.mutation.SourceEntityID(); exists {
-				s.SetIgnore(knowledgerelationship.FieldSourceEntityID)
-			}
-			if _, exists := b.mutation.TargetEntityID(); exists {
-				s.SetIgnore(knowledgerelationship.FieldTargetEntityID)
-			}
 		}
 	}))
 	return u
@@ -754,6 +794,34 @@ func (u *KnowledgeRelationshipUpsertBulk) SetUpdatedAt(v time.Time) *KnowledgeRe
 func (u *KnowledgeRelationshipUpsertBulk) UpdateUpdatedAt() *KnowledgeRelationshipUpsertBulk {
 	return u.Update(func(s *KnowledgeRelationshipUpsert) {
 		s.UpdateUpdatedAt()
+	})
+}
+
+// SetSourceEntityID sets the "source_entity_id" field.
+func (u *KnowledgeRelationshipUpsertBulk) SetSourceEntityID(v uuid.UUID) *KnowledgeRelationshipUpsertBulk {
+	return u.Update(func(s *KnowledgeRelationshipUpsert) {
+		s.SetSourceEntityID(v)
+	})
+}
+
+// UpdateSourceEntityID sets the "source_entity_id" field to the value that was provided on create.
+func (u *KnowledgeRelationshipUpsertBulk) UpdateSourceEntityID() *KnowledgeRelationshipUpsertBulk {
+	return u.Update(func(s *KnowledgeRelationshipUpsert) {
+		s.UpdateSourceEntityID()
+	})
+}
+
+// SetTargetEntityID sets the "target_entity_id" field.
+func (u *KnowledgeRelationshipUpsertBulk) SetTargetEntityID(v uuid.UUID) *KnowledgeRelationshipUpsertBulk {
+	return u.Update(func(s *KnowledgeRelationshipUpsert) {
+		s.SetTargetEntityID(v)
+	})
+}
+
+// UpdateTargetEntityID sets the "target_entity_id" field to the value that was provided on create.
+func (u *KnowledgeRelationshipUpsertBulk) UpdateTargetEntityID() *KnowledgeRelationshipUpsertBulk {
+	return u.Update(func(s *KnowledgeRelationshipUpsert) {
+		s.UpdateTargetEntityID()
 	})
 }
 

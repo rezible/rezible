@@ -94,7 +94,21 @@ func (s *IntegrationsService) ListInstallable(ctx context.Context) ([]rez.Integr
 }
 
 func (s *IntegrationsService) GetIntegrationDisplayName(_ context.Context, name string) string {
-	def, getErr := s.registry.Get(name)
+	return integrationNames{registry: s.registry}.displayName(name)
+}
+
+// integrationNames reads integrations' display names from the registry. A nil registry has no integrations.
+type integrationNames struct {
+	registry *integrations.Registry
+}
+
+// displayName returns the display name of the named registered integration, or empty when none is registered
+// by that name.
+func (n integrationNames) displayName(name string) string {
+	if n.registry == nil {
+		return ""
+	}
+	def, getErr := n.registry.Get(name)
 	if getErr != nil {
 		return ""
 	}

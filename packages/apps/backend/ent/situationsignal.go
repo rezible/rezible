@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/knowledgeentity"
+	"github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/situation"
 	"github.com/rezible/rezible/ent/situationobservationgroup"
 	"github.com/rezible/rezible/ent/situationsignal"
@@ -60,9 +61,13 @@ type SituationSignalEdges struct {
 	ObservationGroup *SituationObservationGroup `json:"observation_group,omitempty"`
 	// KnowledgeEntity holds the value of the knowledge_entity edge.
 	KnowledgeEntity *KnowledgeEntity `json:"knowledge_entity,omitempty"`
+	// SourceEntity holds the value of the source_entity edge.
+	SourceEntity *KnowledgeEntity `json:"source_entity,omitempty"`
+	// ViaRelationship holds the value of the via_relationship edge.
+	ViaRelationship *KnowledgeRelationship `json:"via_relationship,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [4]bool
+	loadedTypes [6]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -107,6 +112,28 @@ func (e SituationSignalEdges) KnowledgeEntityOrErr() (*KnowledgeEntity, error) {
 		return nil, &NotFoundError{label: knowledgeentity.Label}
 	}
 	return nil, &NotLoadedError{edge: "knowledge_entity"}
+}
+
+// SourceEntityOrErr returns the SourceEntity value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e SituationSignalEdges) SourceEntityOrErr() (*KnowledgeEntity, error) {
+	if e.SourceEntity != nil {
+		return e.SourceEntity, nil
+	} else if e.loadedTypes[4] {
+		return nil, &NotFoundError{label: knowledgeentity.Label}
+	}
+	return nil, &NotLoadedError{edge: "source_entity"}
+}
+
+// ViaRelationshipOrErr returns the ViaRelationship value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e SituationSignalEdges) ViaRelationshipOrErr() (*KnowledgeRelationship, error) {
+	if e.ViaRelationship != nil {
+		return e.ViaRelationship, nil
+	} else if e.loadedTypes[5] {
+		return nil, &NotFoundError{label: knowledgerelationship.Label}
+	}
+	return nil, &NotLoadedError{edge: "via_relationship"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -244,6 +271,16 @@ func (_m *SituationSignal) QueryObservationGroup() *SituationObservationGroupQue
 // QueryKnowledgeEntity queries the "knowledge_entity" edge of the SituationSignal entity.
 func (_m *SituationSignal) QueryKnowledgeEntity() *KnowledgeEntityQuery {
 	return NewSituationSignalClient(_m.config).QueryKnowledgeEntity(_m)
+}
+
+// QuerySourceEntity queries the "source_entity" edge of the SituationSignal entity.
+func (_m *SituationSignal) QuerySourceEntity() *KnowledgeEntityQuery {
+	return NewSituationSignalClient(_m.config).QuerySourceEntity(_m)
+}
+
+// QueryViaRelationship queries the "via_relationship" edge of the SituationSignal entity.
+func (_m *SituationSignal) QueryViaRelationship() *KnowledgeRelationshipQuery {
+	return NewSituationSignalClient(_m.config).QueryViaRelationship(_m)
 }
 
 // Update returns a builder for updating this SituationSignal.

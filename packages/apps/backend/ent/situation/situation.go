@@ -65,6 +65,8 @@ const (
 	EdgeActions = "actions"
 	// EdgeLatestJudgment holds the string denoting the latest_judgment edge name in mutations.
 	EdgeLatestJudgment = "latest_judgment"
+	// EdgeSeedEntity holds the string denoting the seed_entity edge name in mutations.
+	EdgeSeedEntity = "seed_entity"
 	// Table holds the table name of the situation in the database.
 	Table = "situations"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -135,6 +137,13 @@ const (
 	LatestJudgmentInverseTable = "situation_judgments"
 	// LatestJudgmentColumn is the table column denoting the latest_judgment relation/edge.
 	LatestJudgmentColumn = "latest_judgment_id"
+	// SeedEntityTable is the table that holds the seed_entity relation/edge.
+	SeedEntityTable = "situations"
+	// SeedEntityInverseTable is the table name for the KnowledgeEntity entity.
+	// It exists in this package in order to avoid circular dependency with the "knowledgeentity" package.
+	SeedEntityInverseTable = "knowledge_entities"
+	// SeedEntityColumn is the table column denoting the seed_entity relation/edge.
+	SeedEntityColumn = "seed_entity_id"
 )
 
 // Columns holds all SQL columns for situation fields.
@@ -436,6 +445,13 @@ func ByLatestJudgmentField(field string, opts ...sql.OrderTermOption) OrderOptio
 		sqlgraph.OrderByNeighborTerms(s, newLatestJudgmentStep(), sql.OrderByField(field, opts...))
 	}
 }
+
+// BySeedEntityField orders the results by seed_entity field.
+func BySeedEntityField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newSeedEntityStep(), sql.OrderByField(field, opts...))
+	}
+}
 func newTenantStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -504,6 +520,13 @@ func newLatestJudgmentStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(LatestJudgmentInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, false, LatestJudgmentTable, LatestJudgmentColumn),
+	)
+}
+func newSeedEntityStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(SeedEntityInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, SeedEntityTable, SeedEntityColumn),
 	)
 }
 

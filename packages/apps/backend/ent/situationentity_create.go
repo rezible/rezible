@@ -296,6 +296,18 @@ type (
 	}
 )
 
+// SetKnowledgeEntityID sets the "knowledge_entity_id" field.
+func (u *SituationEntityUpsert) SetKnowledgeEntityID(v uuid.UUID) *SituationEntityUpsert {
+	u.Set(situationentity.FieldKnowledgeEntityID, v)
+	return u
+}
+
+// UpdateKnowledgeEntityID sets the "knowledge_entity_id" field to the value that was provided on create.
+func (u *SituationEntityUpsert) UpdateKnowledgeEntityID() *SituationEntityUpsert {
+	u.SetExcluded(situationentity.FieldKnowledgeEntityID)
+	return u
+}
+
 // SetMatching sets the "matching" field.
 func (u *SituationEntityUpsert) SetMatching(v bool) *SituationEntityUpsert {
 	u.Set(situationentity.FieldMatching, v)
@@ -331,9 +343,6 @@ func (u *SituationEntityUpsertOne) UpdateNewValues() *SituationEntityUpsertOne {
 		if _, exists := u.create.mutation.SituationID(); exists {
 			s.SetIgnore(situationentity.FieldSituationID)
 		}
-		if _, exists := u.create.mutation.KnowledgeEntityID(); exists {
-			s.SetIgnore(situationentity.FieldKnowledgeEntityID)
-		}
 	}))
 	return u
 }
@@ -363,6 +372,20 @@ func (u *SituationEntityUpsertOne) Update(set func(*SituationEntityUpsert)) *Sit
 		set(&SituationEntityUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetKnowledgeEntityID sets the "knowledge_entity_id" field.
+func (u *SituationEntityUpsertOne) SetKnowledgeEntityID(v uuid.UUID) *SituationEntityUpsertOne {
+	return u.Update(func(s *SituationEntityUpsert) {
+		s.SetKnowledgeEntityID(v)
+	})
+}
+
+// UpdateKnowledgeEntityID sets the "knowledge_entity_id" field to the value that was provided on create.
+func (u *SituationEntityUpsertOne) UpdateKnowledgeEntityID() *SituationEntityUpsertOne {
+	return u.Update(func(s *SituationEntityUpsert) {
+		s.UpdateKnowledgeEntityID()
+	})
 }
 
 // SetMatching sets the "matching" field.
@@ -568,9 +591,6 @@ func (u *SituationEntityUpsertBulk) UpdateNewValues() *SituationEntityUpsertBulk
 			if _, exists := b.mutation.SituationID(); exists {
 				s.SetIgnore(situationentity.FieldSituationID)
 			}
-			if _, exists := b.mutation.KnowledgeEntityID(); exists {
-				s.SetIgnore(situationentity.FieldKnowledgeEntityID)
-			}
 		}
 	}))
 	return u
@@ -601,6 +621,20 @@ func (u *SituationEntityUpsertBulk) Update(set func(*SituationEntityUpsert)) *Si
 		set(&SituationEntityUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetKnowledgeEntityID sets the "knowledge_entity_id" field.
+func (u *SituationEntityUpsertBulk) SetKnowledgeEntityID(v uuid.UUID) *SituationEntityUpsertBulk {
+	return u.Update(func(s *SituationEntityUpsert) {
+		s.SetKnowledgeEntityID(v)
+	})
+}
+
+// UpdateKnowledgeEntityID sets the "knowledge_entity_id" field to the value that was provided on create.
+func (u *SituationEntityUpsertBulk) UpdateKnowledgeEntityID() *SituationEntityUpsertBulk {
+	return u.Update(func(s *SituationEntityUpsert) {
+		s.UpdateKnowledgeEntityID()
+	})
 }
 
 // SetMatching sets the "matching" field.

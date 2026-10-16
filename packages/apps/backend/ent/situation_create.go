@@ -14,6 +14,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/incident"
+	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/situation"
 	"github.com/rezible/rezible/ent/situationaction"
 	"github.com/rezible/rezible/ent/situationentity"
@@ -346,6 +347,11 @@ func (_c *SituationCreate) SetLatestJudgment(v *SituationJudgment) *SituationCre
 	return _c.SetLatestJudgmentID(v.ID)
 }
 
+// SetSeedEntity sets the "seed_entity" edge to the KnowledgeEntity entity.
+func (_c *SituationCreate) SetSeedEntity(v *KnowledgeEntity) *SituationCreate {
+	return _c.SetSeedEntityID(v.ID)
+}
+
 // Mutation returns the SituationMutation object of the builder.
 func (_c *SituationCreate) Mutation() *SituationMutation {
 	return _c.mutation
@@ -445,6 +451,9 @@ func (_c *SituationCreate) check() error {
 	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "Situation.tenant"`)}
 	}
+	if len(_c.mutation.SeedEntityIDs()) == 0 {
+		return &ValidationError{Name: "seed_entity", err: errors.New(`ent: missing required edge "Situation.seed_entity"`)}
+	}
 	return nil
 }
 
@@ -525,10 +534,6 @@ func (_c *SituationCreate) createSpec() (*Situation, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.CloseReason(); ok {
 		_spec.SetField(situation.FieldCloseReason, field.TypeEnum, value)
 		_node.CloseReason = &value
-	}
-	if value, ok := _c.mutation.SeedEntityID(); ok {
-		_spec.SetField(situation.FieldSeedEntityID, field.TypeUUID, value)
-		_node.SeedEntityID = value
 	}
 	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -700,6 +705,24 @@ func (_c *SituationCreate) createSpec() (*Situation, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.LatestJudgmentID = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.SeedEntityIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   situation.SeedEntityTable,
+			Columns: []string{situation.SeedEntityColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.Situation
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.SeedEntityID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
@@ -928,6 +951,18 @@ func (u *SituationUpsert) ClearCloseReason() *SituationUpsert {
 	return u
 }
 
+// SetSeedEntityID sets the "seed_entity_id" field.
+func (u *SituationUpsert) SetSeedEntityID(v uuid.UUID) *SituationUpsert {
+	u.Set(situation.FieldSeedEntityID, v)
+	return u
+}
+
+// UpdateSeedEntityID sets the "seed_entity_id" field to the value that was provided on create.
+func (u *SituationUpsert) UpdateSeedEntityID() *SituationUpsert {
+	u.SetExcluded(situation.FieldSeedEntityID)
+	return u
+}
+
 // SetLatestJudgmentID sets the "latest_judgment_id" field.
 func (u *SituationUpsert) SetLatestJudgmentID(v uuid.UUID) *SituationUpsert {
 	u.Set(situation.FieldLatestJudgmentID, v)
@@ -965,9 +1000,6 @@ func (u *SituationUpsertOne) UpdateNewValues() *SituationUpsertOne {
 		}
 		if _, exists := u.create.mutation.TenantID(); exists {
 			s.SetIgnore(situation.FieldTenantID)
-		}
-		if _, exists := u.create.mutation.SeedEntityID(); exists {
-			s.SetIgnore(situation.FieldSeedEntityID)
 		}
 	}))
 	return u
@@ -1203,6 +1235,20 @@ func (u *SituationUpsertOne) ClearCloseReason() *SituationUpsertOne {
 	})
 }
 
+// SetSeedEntityID sets the "seed_entity_id" field.
+func (u *SituationUpsertOne) SetSeedEntityID(v uuid.UUID) *SituationUpsertOne {
+	return u.Update(func(s *SituationUpsert) {
+		s.SetSeedEntityID(v)
+	})
+}
+
+// UpdateSeedEntityID sets the "seed_entity_id" field to the value that was provided on create.
+func (u *SituationUpsertOne) UpdateSeedEntityID() *SituationUpsertOne {
+	return u.Update(func(s *SituationUpsert) {
+		s.UpdateSeedEntityID()
+	})
+}
+
 // SetLatestJudgmentID sets the "latest_judgment_id" field.
 func (u *SituationUpsertOne) SetLatestJudgmentID(v uuid.UUID) *SituationUpsertOne {
 	return u.Update(func(s *SituationUpsert) {
@@ -1409,9 +1455,6 @@ func (u *SituationUpsertBulk) UpdateNewValues() *SituationUpsertBulk {
 			}
 			if _, exists := b.mutation.TenantID(); exists {
 				s.SetIgnore(situation.FieldTenantID)
-			}
-			if _, exists := b.mutation.SeedEntityID(); exists {
-				s.SetIgnore(situation.FieldSeedEntityID)
 			}
 		}
 	}))
@@ -1645,6 +1688,20 @@ func (u *SituationUpsertBulk) UpdateCloseReason() *SituationUpsertBulk {
 func (u *SituationUpsertBulk) ClearCloseReason() *SituationUpsertBulk {
 	return u.Update(func(s *SituationUpsert) {
 		s.ClearCloseReason()
+	})
+}
+
+// SetSeedEntityID sets the "seed_entity_id" field.
+func (u *SituationUpsertBulk) SetSeedEntityID(v uuid.UUID) *SituationUpsertBulk {
+	return u.Update(func(s *SituationUpsert) {
+		s.SetSeedEntityID(v)
+	})
+}
+
+// UpdateSeedEntityID sets the "seed_entity_id" field to the value that was provided on create.
+func (u *SituationUpsertBulk) UpdateSeedEntityID() *SituationUpsertBulk {
+	return u.Update(func(s *SituationUpsert) {
+		s.UpdateSeedEntityID()
 	})
 }
 

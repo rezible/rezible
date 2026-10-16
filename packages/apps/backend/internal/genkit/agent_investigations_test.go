@@ -174,7 +174,7 @@ func (s *AiRuntimeSuite) TestInvestigationIntroduction() {
 	h.proposals.EXPECT().ListUnconfirmedMatches(mock.Anything, mock.Anything).
 		RunAndReturn(func(_ context.Context, entityIDs []uuid.UUID) (map[uuid.UUID][]rez.UnconfirmedMatch, error) {
 			s.Len(entityIDs, introductionListLimit, "only the listed services are looked up")
-			match := rez.UnconfirmedMatch{ProposalID: uuid.New(), Name: "checkout", Entity: otherName}
+			match := rez.UnconfirmedMatch{ProposalID: uuid.New(), Value: "checkout", Entity: otherName}
 			return map[uuid.UUID][]rez.UnconfirmedMatch{firstListed.ID: {match}}, nil
 		})
 	// Signals attached later started earlier, so the most recently attached are listed newest-started first.
@@ -237,7 +237,7 @@ func (s *AiRuntimeSuite) TestInvestigationIntroduction() {
 	s.Equal(alertEntityIDs[29].String(), introduction.Situation.Signals[introductionListLimit-1].Ref)
 	s.Len(introduction.Situation.Entities, introductionListLimit)
 	s.Equal("service-00", introduction.Situation.Entities[0].Name, "entities are listed by name")
-	unconfirmed := []rezai.InvestigationUnconfirmedMatch{{Ref: otherName.ID.String(), Name: "checkout"}}
+	unconfirmed := []rezai.InvestigationUnconfirmedMatch{{Ref: otherName.ID.String(), Value: "checkout"}}
 	s.Equal(unconfirmed, introduction.Situation.Entities[0].UnconfirmedMatches)
 	s.Empty(introduction.Situation.Entities[1].UnconfirmedMatches)
 

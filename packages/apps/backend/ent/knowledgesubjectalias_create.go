@@ -14,6 +14,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/knowledgeevidence"
+	"github.com/rezible/rezible/ent/knowledgeproposal"
 	"github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/knowledgesubjectalias"
 	"github.com/rezible/rezible/ent/tenant"
@@ -85,6 +86,20 @@ func (_c *KnowledgeSubjectAliasCreate) SetNillableRelationshipID(v *uuid.UUID) *
 	return _c
 }
 
+// SetMergedByProposalID sets the "merged_by_proposal_id" field.
+func (_c *KnowledgeSubjectAliasCreate) SetMergedByProposalID(v uuid.UUID) *KnowledgeSubjectAliasCreate {
+	_c.mutation.SetMergedByProposalID(v)
+	return _c
+}
+
+// SetNillableMergedByProposalID sets the "merged_by_proposal_id" field if the given value is not nil.
+func (_c *KnowledgeSubjectAliasCreate) SetNillableMergedByProposalID(v *uuid.UUID) *KnowledgeSubjectAliasCreate {
+	if v != nil {
+		_c.SetMergedByProposalID(*v)
+	}
+	return _c
+}
+
 // SetID sets the "id" field.
 func (_c *KnowledgeSubjectAliasCreate) SetID(v uuid.UUID) *KnowledgeSubjectAliasCreate {
 	_c.mutation.SetID(v)
@@ -112,6 +127,11 @@ func (_c *KnowledgeSubjectAliasCreate) SetEntity(v *KnowledgeEntity) *KnowledgeS
 // SetRelationship sets the "relationship" edge to the KnowledgeRelationship entity.
 func (_c *KnowledgeSubjectAliasCreate) SetRelationship(v *KnowledgeRelationship) *KnowledgeSubjectAliasCreate {
 	return _c.SetRelationshipID(v.ID)
+}
+
+// SetMergedByProposal sets the "merged_by_proposal" edge to the KnowledgeProposal entity.
+func (_c *KnowledgeSubjectAliasCreate) SetMergedByProposal(v *KnowledgeProposal) *KnowledgeSubjectAliasCreate {
+	return _c.SetMergedByProposalID(v.ID)
 }
 
 // AddEvidenceIDs adds the "evidence" edge to the KnowledgeEvidence entity by IDs.
@@ -318,6 +338,24 @@ func (_c *KnowledgeSubjectAliasCreate) createSpec() (*KnowledgeSubjectAlias, *sq
 		_node.RelationshipID = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
+	if nodes := _c.mutation.MergedByProposalIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   knowledgesubjectalias.MergedByProposalTable,
+			Columns: []string{knowledgesubjectalias.MergedByProposalColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeproposal.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.KnowledgeSubjectAlias
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.MergedByProposalID = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	if nodes := _c.mutation.EvidenceIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -423,6 +461,24 @@ func (u *KnowledgeSubjectAliasUpsert) ClearRelationshipID() *KnowledgeSubjectAli
 	return u
 }
 
+// SetMergedByProposalID sets the "merged_by_proposal_id" field.
+func (u *KnowledgeSubjectAliasUpsert) SetMergedByProposalID(v uuid.UUID) *KnowledgeSubjectAliasUpsert {
+	u.Set(knowledgesubjectalias.FieldMergedByProposalID, v)
+	return u
+}
+
+// UpdateMergedByProposalID sets the "merged_by_proposal_id" field to the value that was provided on create.
+func (u *KnowledgeSubjectAliasUpsert) UpdateMergedByProposalID() *KnowledgeSubjectAliasUpsert {
+	u.SetExcluded(knowledgesubjectalias.FieldMergedByProposalID)
+	return u
+}
+
+// ClearMergedByProposalID clears the value of the "merged_by_proposal_id" field.
+func (u *KnowledgeSubjectAliasUpsert) ClearMergedByProposalID() *KnowledgeSubjectAliasUpsert {
+	u.SetNull(knowledgesubjectalias.FieldMergedByProposalID)
+	return u
+}
+
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
@@ -525,6 +581,27 @@ func (u *KnowledgeSubjectAliasUpsertOne) UpdateRelationshipID() *KnowledgeSubjec
 func (u *KnowledgeSubjectAliasUpsertOne) ClearRelationshipID() *KnowledgeSubjectAliasUpsertOne {
 	return u.Update(func(s *KnowledgeSubjectAliasUpsert) {
 		s.ClearRelationshipID()
+	})
+}
+
+// SetMergedByProposalID sets the "merged_by_proposal_id" field.
+func (u *KnowledgeSubjectAliasUpsertOne) SetMergedByProposalID(v uuid.UUID) *KnowledgeSubjectAliasUpsertOne {
+	return u.Update(func(s *KnowledgeSubjectAliasUpsert) {
+		s.SetMergedByProposalID(v)
+	})
+}
+
+// UpdateMergedByProposalID sets the "merged_by_proposal_id" field to the value that was provided on create.
+func (u *KnowledgeSubjectAliasUpsertOne) UpdateMergedByProposalID() *KnowledgeSubjectAliasUpsertOne {
+	return u.Update(func(s *KnowledgeSubjectAliasUpsert) {
+		s.UpdateMergedByProposalID()
+	})
+}
+
+// ClearMergedByProposalID clears the value of the "merged_by_proposal_id" field.
+func (u *KnowledgeSubjectAliasUpsertOne) ClearMergedByProposalID() *KnowledgeSubjectAliasUpsertOne {
+	return u.Update(func(s *KnowledgeSubjectAliasUpsert) {
+		s.ClearMergedByProposalID()
 	})
 }
 
@@ -797,6 +874,27 @@ func (u *KnowledgeSubjectAliasUpsertBulk) UpdateRelationshipID() *KnowledgeSubje
 func (u *KnowledgeSubjectAliasUpsertBulk) ClearRelationshipID() *KnowledgeSubjectAliasUpsertBulk {
 	return u.Update(func(s *KnowledgeSubjectAliasUpsert) {
 		s.ClearRelationshipID()
+	})
+}
+
+// SetMergedByProposalID sets the "merged_by_proposal_id" field.
+func (u *KnowledgeSubjectAliasUpsertBulk) SetMergedByProposalID(v uuid.UUID) *KnowledgeSubjectAliasUpsertBulk {
+	return u.Update(func(s *KnowledgeSubjectAliasUpsert) {
+		s.SetMergedByProposalID(v)
+	})
+}
+
+// UpdateMergedByProposalID sets the "merged_by_proposal_id" field to the value that was provided on create.
+func (u *KnowledgeSubjectAliasUpsertBulk) UpdateMergedByProposalID() *KnowledgeSubjectAliasUpsertBulk {
+	return u.Update(func(s *KnowledgeSubjectAliasUpsert) {
+		s.UpdateMergedByProposalID()
+	})
+}
+
+// ClearMergedByProposalID clears the value of the "merged_by_proposal_id" field.
+func (u *KnowledgeSubjectAliasUpsertBulk) ClearMergedByProposalID() *KnowledgeSubjectAliasUpsertBulk {
+	return u.Update(func(s *KnowledgeSubjectAliasUpsert) {
+		s.ClearMergedByProposalID()
 	})
 }
 

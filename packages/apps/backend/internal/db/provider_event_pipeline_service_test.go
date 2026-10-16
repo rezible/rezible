@@ -11,11 +11,13 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgconn"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/eventannotation"
 	ne "github.com/rezible/rezible/ent/normalizedevent"
 	nep "github.com/rezible/rezible/ent/normalizedeventprojection"
+	"github.com/rezible/rezible/pkg/errs"
 	"github.com/rezible/rezible/pkg/jobs"
 	"github.com/rezible/rezible/test"
 	"github.com/rezible/rezible/test/mocks"
@@ -442,6 +444,45 @@ func (s *ProviderEventPipelineServiceSuite) TestTransientDatabaseProjectionFailu
 
 	_, projErr := s.getProjection(ctx, tdb, ev.ID)
 	s.True(ent.IsNotFound(projErr))
+}
+
+func (s *ProviderEventPipelineServiceSuite) TestProjectionRetriesWhenAMergeDeletedASubject() {
+	ctx, tdb := s.SetupTestDatabase()
+	cases := map[string]struct {
+		projectionErr error
+		retryable     bool
+	}{
+		"found merged at its lock": {
+			projectionErr: fmt.Errorf("resolve entity: %w", errs.ErrKnowledgeSubjectMerged),
+			retryable:     true,
+		},
+		"refused by a knowledge foreign key": {
+			projectionErr: fmt.Errorf("create evidence: %w", &pgconn.PgError{Code: "23503", ConstraintName: ent.KnowledgeForeignKeyConstraints[0]}),
+			retryable:     true,
+		},
+		"refused by another foreign key": {
+			projectionErr: fmt.Errorf("create annotation: %w", &pgconn.PgError{Code: "23503", ConstraintName: "discussion_threads_users_user"}),
+		},
+	}
+	for name, tc := range cases {
+		s.Run(name, func() {
+			projector := &transientDatabasePipelineProjector{projectionErr: tc.projectionErr}
+			svc := s.newPipelineService(tdb, mocks.NewMockJobService(s.T()), projector)
+			ev := s.createPipelineNormalizedEvent(ctx, tdb)
+
+			projectionErr := svc.HandleEventProjectionJob(ctx, jobs.ProjectNormalizedEvent{
+				EventId: ev.ID,
+			})
+
+			s.Require().Error(projectionErr)
+			if tc.retryable {
+				s.True(jobs.IsRetryableError(projectionErr))
+				return
+			}
+			var cancelErr *river.JobCancelError
+			s.ErrorAs(projectionErr, &cancelErr)
+		})
+	}
 }
 
 func (s *ProviderEventPipelineServiceSuite) TestProjectionPanicCancelsJobWithoutReceipt() {

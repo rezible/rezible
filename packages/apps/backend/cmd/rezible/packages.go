@@ -469,6 +469,13 @@ var pkgDatabase = do.Package(
 		return db.NewKnowledgeGraphQueryService(do.MustInvoke[rez.Database](i))
 	}),
 
+	do.Lazy(func(i do.Injector) (rez.KnowledgeEntityAliasService, error) {
+		return db.NewKnowledgeEntityAliasService(
+			do.MustInvoke[rez.Database](i),
+			do.MustInvoke[*integrations.Registry](i),
+		)
+	}),
+
 	do.Lazy(func(i do.Injector) (rez.ChangesService, error) {
 		return db.NewChangesService(
 			do.MustInvoke[rez.Database](i),
@@ -481,7 +488,12 @@ var pkgDatabase = do.Package(
 	}),
 
 	do.Lazy(func(i do.Injector) (rez.KnowledgeProposalService, error) {
-		return db.NewKnowledgeProposalService(do.MustInvoke[rez.Database](i))
+		return db.NewKnowledgeProposalService(
+			do.MustInvoke[rez.Database](i),
+			do.MustInvoke[rez.KnowledgeGraphIngestionService](i),
+			do.MustInvoke[rez.KnowledgeEntityAliasService](i),
+			do.MustInvoke[*integrations.Registry](i),
+		)
 	}),
 
 	do.Lazy(func(i do.Injector) (rez.SituationBriefService, error) {
@@ -678,6 +690,8 @@ var pkgOpenApiV1 = do.Package(
 			do.MustInvoke[rez.DiscussionService](i),
 			do.MustInvoke[rez.SystemAnalysisService](i),
 			do.MustInvoke[rez.KnowledgeGraphQueryService](i),
+			do.MustInvoke[rez.KnowledgeEntityAliasService](i),
+			do.MustInvoke[rez.KnowledgeProposalService](i),
 			do.MustInvoke[rez.SituationService](i),
 			do.MustInvoke[rez.SituationBriefService](i),
 		), nil

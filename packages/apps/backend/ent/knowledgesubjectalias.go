@@ -10,6 +10,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/knowledgeentity"
+	"github.com/rezible/rezible/ent/knowledgeproposal"
 	"github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/knowledgesubjectalias"
 	"github.com/rezible/rezible/ent/tenant"
@@ -34,6 +35,8 @@ type KnowledgeSubjectAlias struct {
 	EntityID *uuid.UUID `json:"entity_id,omitempty"`
 	// RelationshipID holds the value of the "relationship_id" field.
 	RelationshipID *uuid.UUID `json:"relationship_id,omitempty"`
+	// The confirmed proposal whose merge moved the alias to its current subject.
+	MergedByProposalID *uuid.UUID `json:"merged_by_proposal_id,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the KnowledgeSubjectAliasQuery when eager-loading is set.
 	Edges        KnowledgeSubjectAliasEdges `json:"edges"`
@@ -48,11 +51,13 @@ type KnowledgeSubjectAliasEdges struct {
 	Entity *KnowledgeEntity `json:"entity,omitempty"`
 	// Relationship holds the value of the relationship edge.
 	Relationship *KnowledgeRelationship `json:"relationship,omitempty"`
+	// MergedByProposal holds the value of the merged_by_proposal edge.
+	MergedByProposal *KnowledgeProposal `json:"merged_by_proposal,omitempty"`
 	// Evidence holds the value of the evidence edge.
 	Evidence []*KnowledgeEvidence `json:"evidence,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [4]bool
+	loadedTypes [5]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -88,10 +93,21 @@ func (e KnowledgeSubjectAliasEdges) RelationshipOrErr() (*KnowledgeRelationship,
 	return nil, &NotLoadedError{edge: "relationship"}
 }
 
+// MergedByProposalOrErr returns the MergedByProposal value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e KnowledgeSubjectAliasEdges) MergedByProposalOrErr() (*KnowledgeProposal, error) {
+	if e.MergedByProposal != nil {
+		return e.MergedByProposal, nil
+	} else if e.loadedTypes[3] {
+		return nil, &NotFoundError{label: knowledgeproposal.Label}
+	}
+	return nil, &NotLoadedError{edge: "merged_by_proposal"}
+}
+
 // EvidenceOrErr returns the Evidence value or an error if the edge
 // was not loaded in eager-loading.
 func (e KnowledgeSubjectAliasEdges) EvidenceOrErr() ([]*KnowledgeEvidence, error) {
-	if e.loadedTypes[3] {
+	if e.loadedTypes[4] {
 		return e.Evidence, nil
 	}
 	return nil, &NotLoadedError{edge: "evidence"}
@@ -102,7 +118,7 @@ func (*KnowledgeSubjectAlias) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case knowledgesubjectalias.FieldEntityID, knowledgesubjectalias.FieldRelationshipID:
+		case knowledgesubjectalias.FieldEntityID, knowledgesubjectalias.FieldRelationshipID, knowledgesubjectalias.FieldMergedByProposalID:
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case knowledgesubjectalias.FieldTenantID:
 			values[i] = new(sql.NullInt64)
@@ -175,6 +191,13 @@ func (_m *KnowledgeSubjectAlias) assignValues(columns []string, values []any) er
 				_m.RelationshipID = new(uuid.UUID)
 				*_m.RelationshipID = *value.S.(*uuid.UUID)
 			}
+		case knowledgesubjectalias.FieldMergedByProposalID:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field merged_by_proposal_id", values[i])
+			} else if value.Valid {
+				_m.MergedByProposalID = new(uuid.UUID)
+				*_m.MergedByProposalID = *value.S.(*uuid.UUID)
+			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
 		}
@@ -201,6 +224,11 @@ func (_m *KnowledgeSubjectAlias) QueryEntity() *KnowledgeEntityQuery {
 // QueryRelationship queries the "relationship" edge of the KnowledgeSubjectAlias entity.
 func (_m *KnowledgeSubjectAlias) QueryRelationship() *KnowledgeRelationshipQuery {
 	return NewKnowledgeSubjectAliasClient(_m.config).QueryRelationship(_m)
+}
+
+// QueryMergedByProposal queries the "merged_by_proposal" edge of the KnowledgeSubjectAlias entity.
+func (_m *KnowledgeSubjectAlias) QueryMergedByProposal() *KnowledgeProposalQuery {
+	return NewKnowledgeSubjectAliasClient(_m.config).QueryMergedByProposal(_m)
 }
 
 // QueryEvidence queries the "evidence" edge of the KnowledgeSubjectAlias entity.
@@ -253,6 +281,11 @@ func (_m *KnowledgeSubjectAlias) String() string {
 	builder.WriteString(", ")
 	if v := _m.RelationshipID; v != nil {
 		builder.WriteString("relationship_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	if v := _m.MergedByProposalID; v != nil {
+		builder.WriteString("merged_by_proposal_id=")
 		builder.WriteString(fmt.Sprintf("%v", *v))
 	}
 	builder.WriteByte(')')

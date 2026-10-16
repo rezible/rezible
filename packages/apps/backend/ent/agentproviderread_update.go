@@ -13,8 +13,10 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/dialect/sql/sqljson"
 	"entgo.io/ent/schema/field"
+	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/agentproviderread"
 	"github.com/rezible/rezible/ent/internal"
+	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/predicate"
 )
 
@@ -48,6 +50,20 @@ func (_u *AgentProviderReadUpdate) SetNillableCreatedAt(v *time.Time) *AgentProv
 // SetUpdatedAt sets the "updated_at" field.
 func (_u *AgentProviderReadUpdate) SetUpdatedAt(v time.Time) *AgentProviderReadUpdate {
 	_u.mutation.SetUpdatedAt(v)
+	return _u
+}
+
+// SetServiceEntityID sets the "service_entity_id" field.
+func (_u *AgentProviderReadUpdate) SetServiceEntityID(v uuid.UUID) *AgentProviderReadUpdate {
+	_u.mutation.SetServiceEntityID(v)
+	return _u
+}
+
+// SetNillableServiceEntityID sets the "service_entity_id" field if the given value is not nil.
+func (_u *AgentProviderReadUpdate) SetNillableServiceEntityID(v *uuid.UUID) *AgentProviderReadUpdate {
+	if v != nil {
+		_u.SetServiceEntityID(*v)
+	}
 	return _u
 }
 
@@ -141,9 +157,20 @@ func (_u *AgentProviderReadUpdate) ClearFinishedAt() *AgentProviderReadUpdate {
 	return _u
 }
 
+// SetServiceEntity sets the "service_entity" edge to the KnowledgeEntity entity.
+func (_u *AgentProviderReadUpdate) SetServiceEntity(v *KnowledgeEntity) *AgentProviderReadUpdate {
+	return _u.SetServiceEntityID(v.ID)
+}
+
 // Mutation returns the AgentProviderReadMutation object of the builder.
 func (_u *AgentProviderReadUpdate) Mutation() *AgentProviderReadMutation {
 	return _u.mutation
+}
+
+// ClearServiceEntity clears the "service_entity" edge to the KnowledgeEntity entity.
+func (_u *AgentProviderReadUpdate) ClearServiceEntity() *AgentProviderReadUpdate {
+	_u.mutation.ClearServiceEntity()
+	return _u
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -265,6 +292,37 @@ func (_u *AgentProviderReadUpdate) sqlSave(ctx context.Context) (_node int, err 
 	if _u.mutation.FinishedAtCleared() {
 		_spec.ClearField(agentproviderread.FieldFinishedAt, field.TypeTime)
 	}
+	if _u.mutation.ServiceEntityCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   agentproviderread.ServiceEntityTable,
+			Columns: []string{agentproviderread.ServiceEntityColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentProviderRead
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ServiceEntityIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   agentproviderread.ServiceEntityTable,
+			Columns: []string{agentproviderread.ServiceEntityColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentProviderRead
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	_spec.Node.Schema = _u.schemaConfig.AgentProviderRead
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
@@ -304,6 +362,20 @@ func (_u *AgentProviderReadUpdateOne) SetNillableCreatedAt(v *time.Time) *AgentP
 // SetUpdatedAt sets the "updated_at" field.
 func (_u *AgentProviderReadUpdateOne) SetUpdatedAt(v time.Time) *AgentProviderReadUpdateOne {
 	_u.mutation.SetUpdatedAt(v)
+	return _u
+}
+
+// SetServiceEntityID sets the "service_entity_id" field.
+func (_u *AgentProviderReadUpdateOne) SetServiceEntityID(v uuid.UUID) *AgentProviderReadUpdateOne {
+	_u.mutation.SetServiceEntityID(v)
+	return _u
+}
+
+// SetNillableServiceEntityID sets the "service_entity_id" field if the given value is not nil.
+func (_u *AgentProviderReadUpdateOne) SetNillableServiceEntityID(v *uuid.UUID) *AgentProviderReadUpdateOne {
+	if v != nil {
+		_u.SetServiceEntityID(*v)
+	}
 	return _u
 }
 
@@ -397,9 +469,20 @@ func (_u *AgentProviderReadUpdateOne) ClearFinishedAt() *AgentProviderReadUpdate
 	return _u
 }
 
+// SetServiceEntity sets the "service_entity" edge to the KnowledgeEntity entity.
+func (_u *AgentProviderReadUpdateOne) SetServiceEntity(v *KnowledgeEntity) *AgentProviderReadUpdateOne {
+	return _u.SetServiceEntityID(v.ID)
+}
+
 // Mutation returns the AgentProviderReadMutation object of the builder.
 func (_u *AgentProviderReadUpdateOne) Mutation() *AgentProviderReadMutation {
 	return _u.mutation
+}
+
+// ClearServiceEntity clears the "service_entity" edge to the KnowledgeEntity entity.
+func (_u *AgentProviderReadUpdateOne) ClearServiceEntity() *AgentProviderReadUpdateOne {
+	_u.mutation.ClearServiceEntity()
+	return _u
 }
 
 // Where appends a list predicates to the AgentProviderReadUpdate builder.
@@ -550,6 +633,37 @@ func (_u *AgentProviderReadUpdateOne) sqlSave(ctx context.Context) (_node *Agent
 	}
 	if _u.mutation.FinishedAtCleared() {
 		_spec.ClearField(agentproviderread.FieldFinishedAt, field.TypeTime)
+	}
+	if _u.mutation.ServiceEntityCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   agentproviderread.ServiceEntityTable,
+			Columns: []string{agentproviderread.ServiceEntityColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentProviderRead
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ServiceEntityIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   agentproviderread.ServiceEntityTable,
+			Columns: []string{agentproviderread.ServiceEntityColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentProviderRead
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_spec.Node.Schema = _u.schemaConfig.AgentProviderRead
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)

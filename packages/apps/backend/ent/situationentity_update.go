@@ -10,7 +10,9 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/internal"
+	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/situationentity"
 )
@@ -28,6 +30,20 @@ func (_u *SituationEntityUpdate) Where(ps ...predicate.SituationEntity) *Situati
 	return _u
 }
 
+// SetKnowledgeEntityID sets the "knowledge_entity_id" field.
+func (_u *SituationEntityUpdate) SetKnowledgeEntityID(v uuid.UUID) *SituationEntityUpdate {
+	_u.mutation.SetKnowledgeEntityID(v)
+	return _u
+}
+
+// SetNillableKnowledgeEntityID sets the "knowledge_entity_id" field if the given value is not nil.
+func (_u *SituationEntityUpdate) SetNillableKnowledgeEntityID(v *uuid.UUID) *SituationEntityUpdate {
+	if v != nil {
+		_u.SetKnowledgeEntityID(*v)
+	}
+	return _u
+}
+
 // SetMatching sets the "matching" field.
 func (_u *SituationEntityUpdate) SetMatching(v bool) *SituationEntityUpdate {
 	_u.mutation.SetMatching(v)
@@ -42,9 +58,20 @@ func (_u *SituationEntityUpdate) SetNillableMatching(v *bool) *SituationEntityUp
 	return _u
 }
 
+// SetKnowledgeEntity sets the "knowledge_entity" edge to the KnowledgeEntity entity.
+func (_u *SituationEntityUpdate) SetKnowledgeEntity(v *KnowledgeEntity) *SituationEntityUpdate {
+	return _u.SetKnowledgeEntityID(v.ID)
+}
+
 // Mutation returns the SituationEntityMutation object of the builder.
 func (_u *SituationEntityUpdate) Mutation() *SituationEntityMutation {
 	return _u.mutation
+}
+
+// ClearKnowledgeEntity clears the "knowledge_entity" edge to the KnowledgeEntity entity.
+func (_u *SituationEntityUpdate) ClearKnowledgeEntity() *SituationEntityUpdate {
+	_u.mutation.ClearKnowledgeEntity()
+	return _u
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -103,6 +130,37 @@ func (_u *SituationEntityUpdate) sqlSave(ctx context.Context) (_node int, err er
 	if value, ok := _u.mutation.Matching(); ok {
 		_spec.SetField(situationentity.FieldMatching, field.TypeBool, value)
 	}
+	if _u.mutation.KnowledgeEntityCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   situationentity.KnowledgeEntityTable,
+			Columns: []string{situationentity.KnowledgeEntityColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SituationEntity
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.KnowledgeEntityIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   situationentity.KnowledgeEntityTable,
+			Columns: []string{situationentity.KnowledgeEntityColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SituationEntity
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	_spec.Node.Schema = _u.schemaConfig.SituationEntity
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
@@ -125,6 +183,20 @@ type SituationEntityUpdateOne struct {
 	mutation *SituationEntityMutation
 }
 
+// SetKnowledgeEntityID sets the "knowledge_entity_id" field.
+func (_u *SituationEntityUpdateOne) SetKnowledgeEntityID(v uuid.UUID) *SituationEntityUpdateOne {
+	_u.mutation.SetKnowledgeEntityID(v)
+	return _u
+}
+
+// SetNillableKnowledgeEntityID sets the "knowledge_entity_id" field if the given value is not nil.
+func (_u *SituationEntityUpdateOne) SetNillableKnowledgeEntityID(v *uuid.UUID) *SituationEntityUpdateOne {
+	if v != nil {
+		_u.SetKnowledgeEntityID(*v)
+	}
+	return _u
+}
+
 // SetMatching sets the "matching" field.
 func (_u *SituationEntityUpdateOne) SetMatching(v bool) *SituationEntityUpdateOne {
 	_u.mutation.SetMatching(v)
@@ -139,9 +211,20 @@ func (_u *SituationEntityUpdateOne) SetNillableMatching(v *bool) *SituationEntit
 	return _u
 }
 
+// SetKnowledgeEntity sets the "knowledge_entity" edge to the KnowledgeEntity entity.
+func (_u *SituationEntityUpdateOne) SetKnowledgeEntity(v *KnowledgeEntity) *SituationEntityUpdateOne {
+	return _u.SetKnowledgeEntityID(v.ID)
+}
+
 // Mutation returns the SituationEntityMutation object of the builder.
 func (_u *SituationEntityUpdateOne) Mutation() *SituationEntityMutation {
 	return _u.mutation
+}
+
+// ClearKnowledgeEntity clears the "knowledge_entity" edge to the KnowledgeEntity entity.
+func (_u *SituationEntityUpdateOne) ClearKnowledgeEntity() *SituationEntityUpdateOne {
+	_u.mutation.ClearKnowledgeEntity()
+	return _u
 }
 
 // Where appends a list predicates to the SituationEntityUpdate builder.
@@ -229,6 +312,37 @@ func (_u *SituationEntityUpdateOne) sqlSave(ctx context.Context) (_node *Situati
 	}
 	if value, ok := _u.mutation.Matching(); ok {
 		_spec.SetField(situationentity.FieldMatching, field.TypeBool, value)
+	}
+	if _u.mutation.KnowledgeEntityCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   situationentity.KnowledgeEntityTable,
+			Columns: []string{situationentity.KnowledgeEntityColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SituationEntity
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.KnowledgeEntityIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   situationentity.KnowledgeEntityTable,
+			Columns: []string{situationentity.KnowledgeEntityColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SituationEntity
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_spec.Node.Schema = _u.schemaConfig.SituationEntity
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)

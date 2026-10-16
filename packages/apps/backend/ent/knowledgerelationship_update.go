@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/internal"
+	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/knowledgesubjectalias"
 	"github.com/rezible/rezible/ent/predicate"
@@ -51,6 +52,44 @@ func (_u *KnowledgeRelationshipUpdate) SetUpdatedAt(v time.Time) *KnowledgeRelat
 	return _u
 }
 
+// SetSourceEntityID sets the "source_entity_id" field.
+func (_u *KnowledgeRelationshipUpdate) SetSourceEntityID(v uuid.UUID) *KnowledgeRelationshipUpdate {
+	_u.mutation.SetSourceEntityID(v)
+	return _u
+}
+
+// SetNillableSourceEntityID sets the "source_entity_id" field if the given value is not nil.
+func (_u *KnowledgeRelationshipUpdate) SetNillableSourceEntityID(v *uuid.UUID) *KnowledgeRelationshipUpdate {
+	if v != nil {
+		_u.SetSourceEntityID(*v)
+	}
+	return _u
+}
+
+// SetTargetEntityID sets the "target_entity_id" field.
+func (_u *KnowledgeRelationshipUpdate) SetTargetEntityID(v uuid.UUID) *KnowledgeRelationshipUpdate {
+	_u.mutation.SetTargetEntityID(v)
+	return _u
+}
+
+// SetNillableTargetEntityID sets the "target_entity_id" field if the given value is not nil.
+func (_u *KnowledgeRelationshipUpdate) SetNillableTargetEntityID(v *uuid.UUID) *KnowledgeRelationshipUpdate {
+	if v != nil {
+		_u.SetTargetEntityID(*v)
+	}
+	return _u
+}
+
+// SetSourceEntity sets the "source_entity" edge to the KnowledgeEntity entity.
+func (_u *KnowledgeRelationshipUpdate) SetSourceEntity(v *KnowledgeEntity) *KnowledgeRelationshipUpdate {
+	return _u.SetSourceEntityID(v.ID)
+}
+
+// SetTargetEntity sets the "target_entity" edge to the KnowledgeEntity entity.
+func (_u *KnowledgeRelationshipUpdate) SetTargetEntity(v *KnowledgeEntity) *KnowledgeRelationshipUpdate {
+	return _u.SetTargetEntityID(v.ID)
+}
+
 // AddAliasIDs adds the "aliases" edge to the KnowledgeSubjectAlias entity by IDs.
 func (_u *KnowledgeRelationshipUpdate) AddAliasIDs(ids ...uuid.UUID) *KnowledgeRelationshipUpdate {
 	_u.mutation.AddAliasIDs(ids...)
@@ -69,6 +108,18 @@ func (_u *KnowledgeRelationshipUpdate) AddAliases(v ...*KnowledgeSubjectAlias) *
 // Mutation returns the KnowledgeRelationshipMutation object of the builder.
 func (_u *KnowledgeRelationshipUpdate) Mutation() *KnowledgeRelationshipMutation {
 	return _u.mutation
+}
+
+// ClearSourceEntity clears the "source_entity" edge to the KnowledgeEntity entity.
+func (_u *KnowledgeRelationshipUpdate) ClearSourceEntity() *KnowledgeRelationshipUpdate {
+	_u.mutation.ClearSourceEntity()
+	return _u
+}
+
+// ClearTargetEntity clears the "target_entity" edge to the KnowledgeEntity entity.
+func (_u *KnowledgeRelationshipUpdate) ClearTargetEntity() *KnowledgeRelationshipUpdate {
+	_u.mutation.ClearTargetEntity()
+	return _u
 }
 
 // ClearAliases clears all "aliases" edges to the KnowledgeSubjectAlias entity.
@@ -166,6 +217,68 @@ func (_u *KnowledgeRelationshipUpdate) sqlSave(ctx context.Context) (_node int, 
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(knowledgerelationship.FieldUpdatedAt, field.TypeTime, value)
 	}
+	if _u.mutation.SourceEntityCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   knowledgerelationship.SourceEntityTable,
+			Columns: []string{knowledgerelationship.SourceEntityColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.KnowledgeRelationship
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.SourceEntityIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   knowledgerelationship.SourceEntityTable,
+			Columns: []string{knowledgerelationship.SourceEntityColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.KnowledgeRelationship
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.TargetEntityCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   knowledgerelationship.TargetEntityTable,
+			Columns: []string{knowledgerelationship.TargetEntityColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.KnowledgeRelationship
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.TargetEntityIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   knowledgerelationship.TargetEntityTable,
+			Columns: []string{knowledgerelationship.TargetEntityColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.KnowledgeRelationship
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _u.mutation.AliasesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -256,6 +369,44 @@ func (_u *KnowledgeRelationshipUpdateOne) SetUpdatedAt(v time.Time) *KnowledgeRe
 	return _u
 }
 
+// SetSourceEntityID sets the "source_entity_id" field.
+func (_u *KnowledgeRelationshipUpdateOne) SetSourceEntityID(v uuid.UUID) *KnowledgeRelationshipUpdateOne {
+	_u.mutation.SetSourceEntityID(v)
+	return _u
+}
+
+// SetNillableSourceEntityID sets the "source_entity_id" field if the given value is not nil.
+func (_u *KnowledgeRelationshipUpdateOne) SetNillableSourceEntityID(v *uuid.UUID) *KnowledgeRelationshipUpdateOne {
+	if v != nil {
+		_u.SetSourceEntityID(*v)
+	}
+	return _u
+}
+
+// SetTargetEntityID sets the "target_entity_id" field.
+func (_u *KnowledgeRelationshipUpdateOne) SetTargetEntityID(v uuid.UUID) *KnowledgeRelationshipUpdateOne {
+	_u.mutation.SetTargetEntityID(v)
+	return _u
+}
+
+// SetNillableTargetEntityID sets the "target_entity_id" field if the given value is not nil.
+func (_u *KnowledgeRelationshipUpdateOne) SetNillableTargetEntityID(v *uuid.UUID) *KnowledgeRelationshipUpdateOne {
+	if v != nil {
+		_u.SetTargetEntityID(*v)
+	}
+	return _u
+}
+
+// SetSourceEntity sets the "source_entity" edge to the KnowledgeEntity entity.
+func (_u *KnowledgeRelationshipUpdateOne) SetSourceEntity(v *KnowledgeEntity) *KnowledgeRelationshipUpdateOne {
+	return _u.SetSourceEntityID(v.ID)
+}
+
+// SetTargetEntity sets the "target_entity" edge to the KnowledgeEntity entity.
+func (_u *KnowledgeRelationshipUpdateOne) SetTargetEntity(v *KnowledgeEntity) *KnowledgeRelationshipUpdateOne {
+	return _u.SetTargetEntityID(v.ID)
+}
+
 // AddAliasIDs adds the "aliases" edge to the KnowledgeSubjectAlias entity by IDs.
 func (_u *KnowledgeRelationshipUpdateOne) AddAliasIDs(ids ...uuid.UUID) *KnowledgeRelationshipUpdateOne {
 	_u.mutation.AddAliasIDs(ids...)
@@ -274,6 +425,18 @@ func (_u *KnowledgeRelationshipUpdateOne) AddAliases(v ...*KnowledgeSubjectAlias
 // Mutation returns the KnowledgeRelationshipMutation object of the builder.
 func (_u *KnowledgeRelationshipUpdateOne) Mutation() *KnowledgeRelationshipMutation {
 	return _u.mutation
+}
+
+// ClearSourceEntity clears the "source_entity" edge to the KnowledgeEntity entity.
+func (_u *KnowledgeRelationshipUpdateOne) ClearSourceEntity() *KnowledgeRelationshipUpdateOne {
+	_u.mutation.ClearSourceEntity()
+	return _u
+}
+
+// ClearTargetEntity clears the "target_entity" edge to the KnowledgeEntity entity.
+func (_u *KnowledgeRelationshipUpdateOne) ClearTargetEntity() *KnowledgeRelationshipUpdateOne {
+	_u.mutation.ClearTargetEntity()
+	return _u
 }
 
 // ClearAliases clears all "aliases" edges to the KnowledgeSubjectAlias entity.
@@ -400,6 +563,68 @@ func (_u *KnowledgeRelationshipUpdateOne) sqlSave(ctx context.Context) (_node *K
 	}
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(knowledgerelationship.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if _u.mutation.SourceEntityCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   knowledgerelationship.SourceEntityTable,
+			Columns: []string{knowledgerelationship.SourceEntityColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.KnowledgeRelationship
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.SourceEntityIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   knowledgerelationship.SourceEntityTable,
+			Columns: []string{knowledgerelationship.SourceEntityColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.KnowledgeRelationship
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.TargetEntityCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   knowledgerelationship.TargetEntityTable,
+			Columns: []string{knowledgerelationship.TargetEntityColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.KnowledgeRelationship
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.TargetEntityIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   knowledgerelationship.TargetEntityTable,
+			Columns: []string{knowledgerelationship.TargetEntityColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.KnowledgeRelationship
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if _u.mutation.AliasesCleared() {
 		edge := &sqlgraph.EdgeSpec{

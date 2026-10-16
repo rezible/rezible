@@ -21,7 +21,7 @@ type KnowledgeEntityLinkingAttribute struct {
 	ID uuid.UUID `json:"id,omitempty"`
 	// TenantID holds the value of the "tenant_id" field.
 	TenantID int `json:"tenant_id,omitempty"`
-	// EntityID holds the value of the "entity_id" field.
+	// Changed only when a confirmed match merges two entities.
 	EntityID uuid.UUID `json:"entity_id,omitempty"`
 	// Attribute holds the value of the "attribute" field.
 	Attribute string `json:"attribute,omitempty"`

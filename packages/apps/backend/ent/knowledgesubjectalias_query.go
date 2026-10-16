@@ -18,6 +18,7 @@ import (
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/knowledgeevidence"
+	"github.com/rezible/rezible/ent/knowledgeproposal"
 	"github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/knowledgesubjectalias"
 	"github.com/rezible/rezible/ent/predicate"
@@ -27,15 +28,16 @@ import (
 // KnowledgeSubjectAliasQuery is the builder for querying KnowledgeSubjectAlias entities.
 type KnowledgeSubjectAliasQuery struct {
 	config
-	ctx              *QueryContext
-	order            []knowledgesubjectalias.OrderOption
-	inters           []Interceptor
-	predicates       []predicate.KnowledgeSubjectAlias
-	withTenant       *TenantQuery
-	withEntity       *KnowledgeEntityQuery
-	withRelationship *KnowledgeRelationshipQuery
-	withEvidence     *KnowledgeEvidenceQuery
-	modifiers        []func(*sql.Selector)
+	ctx                  *QueryContext
+	order                []knowledgesubjectalias.OrderOption
+	inters               []Interceptor
+	predicates           []predicate.KnowledgeSubjectAlias
+	withTenant           *TenantQuery
+	withEntity           *KnowledgeEntityQuery
+	withRelationship     *KnowledgeRelationshipQuery
+	withMergedByProposal *KnowledgeProposalQuery
+	withEvidence         *KnowledgeEvidenceQuery
+	modifiers            []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -140,6 +142,31 @@ func (_q *KnowledgeSubjectAliasQuery) QueryRelationship() *KnowledgeRelationship
 		)
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.KnowledgeRelationship
+		step.Edge.Schema = schemaConfig.KnowledgeSubjectAlias
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryMergedByProposal chains the current query on the "merged_by_proposal" edge.
+func (_q *KnowledgeSubjectAliasQuery) QueryMergedByProposal() *KnowledgeProposalQuery {
+	query := (&KnowledgeProposalClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(knowledgesubjectalias.Table, knowledgesubjectalias.FieldID, selector),
+			sqlgraph.To(knowledgeproposal.Table, knowledgeproposal.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, knowledgesubjectalias.MergedByProposalTable, knowledgesubjectalias.MergedByProposalColumn),
+		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.KnowledgeProposal
 		step.Edge.Schema = schemaConfig.KnowledgeSubjectAlias
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -359,15 +386,16 @@ func (_q *KnowledgeSubjectAliasQuery) Clone() *KnowledgeSubjectAliasQuery {
 		return nil
 	}
 	return &KnowledgeSubjectAliasQuery{
-		config:           _q.config,
-		ctx:              _q.ctx.Clone(),
-		order:            append([]knowledgesubjectalias.OrderOption{}, _q.order...),
-		inters:           append([]Interceptor{}, _q.inters...),
-		predicates:       append([]predicate.KnowledgeSubjectAlias{}, _q.predicates...),
-		withTenant:       _q.withTenant.Clone(),
-		withEntity:       _q.withEntity.Clone(),
-		withRelationship: _q.withRelationship.Clone(),
-		withEvidence:     _q.withEvidence.Clone(),
+		config:               _q.config,
+		ctx:                  _q.ctx.Clone(),
+		order:                append([]knowledgesubjectalias.OrderOption{}, _q.order...),
+		inters:               append([]Interceptor{}, _q.inters...),
+		predicates:           append([]predicate.KnowledgeSubjectAlias{}, _q.predicates...),
+		withTenant:           _q.withTenant.Clone(),
+		withEntity:           _q.withEntity.Clone(),
+		withRelationship:     _q.withRelationship.Clone(),
+		withMergedByProposal: _q.withMergedByProposal.Clone(),
+		withEvidence:         _q.withEvidence.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
@@ -404,6 +432,17 @@ func (_q *KnowledgeSubjectAliasQuery) WithRelationship(opts ...func(*KnowledgeRe
 		opt(query)
 	}
 	_q.withRelationship = query
+	return _q
+}
+
+// WithMergedByProposal tells the query-builder to eager-load the nodes that are connected to
+// the "merged_by_proposal" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *KnowledgeSubjectAliasQuery) WithMergedByProposal(opts ...func(*KnowledgeProposalQuery)) *KnowledgeSubjectAliasQuery {
+	query := (&KnowledgeProposalClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withMergedByProposal = query
 	return _q
 }
 
@@ -502,10 +541,11 @@ func (_q *KnowledgeSubjectAliasQuery) sqlAll(ctx context.Context, hooks ...query
 	var (
 		nodes       = []*KnowledgeSubjectAlias{}
 		_spec       = _q.querySpec()
-		loadedTypes = [4]bool{
+		loadedTypes = [5]bool{
 			_q.withTenant != nil,
 			_q.withEntity != nil,
 			_q.withRelationship != nil,
+			_q.withMergedByProposal != nil,
 			_q.withEvidence != nil,
 		}
 	)
@@ -547,6 +587,12 @@ func (_q *KnowledgeSubjectAliasQuery) sqlAll(ctx context.Context, hooks ...query
 	if query := _q.withRelationship; query != nil {
 		if err := _q.loadRelationship(ctx, query, nodes, nil,
 			func(n *KnowledgeSubjectAlias, e *KnowledgeRelationship) { n.Edges.Relationship = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withMergedByProposal; query != nil {
+		if err := _q.loadMergedByProposal(ctx, query, nodes, nil,
+			func(n *KnowledgeSubjectAlias, e *KnowledgeProposal) { n.Edges.MergedByProposal = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -653,6 +699,38 @@ func (_q *KnowledgeSubjectAliasQuery) loadRelationship(ctx context.Context, quer
 	}
 	return nil
 }
+func (_q *KnowledgeSubjectAliasQuery) loadMergedByProposal(ctx context.Context, query *KnowledgeProposalQuery, nodes []*KnowledgeSubjectAlias, init func(*KnowledgeSubjectAlias), assign func(*KnowledgeSubjectAlias, *KnowledgeProposal)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*KnowledgeSubjectAlias)
+	for i := range nodes {
+		if nodes[i].MergedByProposalID == nil {
+			continue
+		}
+		fk := *nodes[i].MergedByProposalID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(knowledgeproposal.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "merged_by_proposal_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
 func (_q *KnowledgeSubjectAliasQuery) loadEvidence(ctx context.Context, query *KnowledgeEvidenceQuery, nodes []*KnowledgeSubjectAlias, init func(*KnowledgeSubjectAlias), assign func(*KnowledgeSubjectAlias, *KnowledgeEvidence)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*KnowledgeSubjectAlias)
@@ -722,6 +800,9 @@ func (_q *KnowledgeSubjectAliasQuery) querySpec() *sqlgraph.QuerySpec {
 		}
 		if _q.withRelationship != nil {
 			_spec.Node.AddColumnOnce(knowledgesubjectalias.FieldRelationshipID)
+		}
+		if _q.withMergedByProposal != nil {
+			_spec.Node.AddColumnOnce(knowledgesubjectalias.FieldMergedByProposalID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {

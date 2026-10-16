@@ -10,7 +10,11 @@ import (
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/discussionthread"
 	"github.com/rezible/rezible/ent/incident"
+	kne "github.com/rezible/rezible/ent/knowledgeentity"
+	knr "github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/systemanalysis"
+	"github.com/rezible/rezible/ent/systemanalysisentry"
+	"github.com/rezible/rezible/pkg/errs"
 	"github.com/rezible/rezible/test"
 	"github.com/stretchr/testify/suite"
 )
@@ -167,4 +171,146 @@ func (s *DiscussionSuite) TestCommentListIsThreadScopedAndPaginated() {
 			s.NotEqual(otherComment.ID, comment.ID)
 		}
 	}
+}
+
+// createThreadTargets creates one thing of each kind a thread on the analysis can be about.
+func (s *DiscussionSuite) createThreadTargets(ctx context.Context, tdb rez.Database, analysis *ent.SystemAnalysis) map[rez.DiscussionThreadTargetKind]uuid.UUID {
+	client := tdb.Client(ctx)
+	graph := newTestGraph(s.Require(), tdb)
+	service := graph.entity(kne.CategoryContainer, "service", "provider-a", "service:"+uuid.NewString())
+	alert := graph.entity(kne.CategorySignal, "alert", "provider-a", "alert:"+uuid.NewString())
+	observes := graph.relationship(knr.PredicateObserves, alert, service)
+	graph.record(ctx, time.Date(2026, 6, 1, 10, 0, 0, 0, time.UTC),
+		graph.observeEntity(service, "checkout"),
+		graph.observeEntity(alert, "Checkout errors"),
+		graph.observeRelationship(observes),
+	)
+	createEvent := client.NormalizedEvent.Create().
+		SetProvider("test").
+		SetProviderNamespace("tests").
+		SetProviderResourceRef(uuid.NewString()).
+		SetProviderEventSource("tests").
+		SetProviderEventRef(uuid.NewString()).
+		SetKind("test").
+		SetOccurredAt(time.Date(2026, 6, 1, 10, 5, 0, 0, time.UTC)).
+		SetReceivedAt(time.Date(2026, 6, 1, 10, 5, 0, 0, time.UTC)).
+		SetAttributes([]byte(`{}`))
+	event, eventErr := createEvent.Save(ctx)
+	s.Require().NoError(eventErr)
+
+	createEntry := client.SystemAnalysisEntry.Create().
+		SetAnalysisID(analysis.ID).
+		SetKind(systemanalysisentry.KindObservation).
+		SetTitle("Checkout errors rose")
+	entry, entryErr := createEntry.Save(ctx)
+	s.Require().NoError(entryErr)
+
+	createSession := client.AgentSession.Create().
+		SetAgentName("investigation").
+		SetInput([]byte(`{}`))
+	session, sessionErr := createSession.Save(ctx)
+	s.Require().NoError(sessionErr)
+	createInvestigation := client.Investigation.Create().
+		SetAgentSessionID(session.ID).
+		SetSystemAnalysisID(analysis.ID)
+	investigation, investigationErr := createInvestigation.Save(ctx)
+	s.Require().NoError(investigationErr)
+	createFinding := client.InvestigationFinding.Create().
+		SetInvestigationID(investigation.ID).
+		SetKey("answer")
+	finding, findingErr := createFinding.Save(ctx)
+	s.Require().NoError(findingErr)
+
+	return map[rez.DiscussionThreadTargetKind]uuid.UUID{
+		rez.DiscussionThreadTargetFinding:               finding.ID,
+		rez.DiscussionThreadTargetEntry:                 entry.ID,
+		rez.DiscussionThreadTargetKnowledgeEntity:       graph.entityID(ctx, service),
+		rez.DiscussionThreadTargetKnowledgeRelationship: graph.relationshipID(ctx, observes),
+		rez.DiscussionThreadTargetNormalizedEvent:       event.ID,
+	}
+}
+
+// threadTargetColumns are the columns holding each kind of target.
+var threadTargetColumns = map[rez.DiscussionThreadTargetKind]string{
+	rez.DiscussionThreadTargetFinding:               discussionthread.FieldTargetFindingID,
+	rez.DiscussionThreadTargetEntry:                 discussionthread.FieldTargetEntryID,
+	rez.DiscussionThreadTargetKnowledgeEntity:       discussionthread.FieldTargetKnowledgeEntityID,
+	rez.DiscussionThreadTargetKnowledgeRelationship: discussionthread.FieldTargetKnowledgeRelationshipID,
+	rez.DiscussionThreadTargetNormalizedEvent:       discussionthread.FieldTargetNormalizedEventID,
+}
+
+func (s *DiscussionSuite) TestThreadHasAtMostOneTarget() {
+	ctx, db := s.SetupTestDatabase()
+	client := db.Client(ctx)
+	user, userErr := client.User.Query().Only(ctx)
+	s.Require().NoError(userErr)
+	analysis, analysisErr := client.SystemAnalysis.Create().Save(ctx)
+	s.Require().NoError(analysisErr)
+	targets := s.createThreadTargets(ctx, db, analysis)
+
+	createTwoTargetThread := client.DiscussionThread.Create().
+		SetUser(user).
+		SetAnalysis(analysis).
+		SetTargetEntryID(targets[rez.DiscussionThreadTargetEntry]).
+		SetTargetKnowledgeEntityID(targets[rez.DiscussionThreadTargetKnowledgeEntity])
+	_, twoTargetsErr := createTwoTargetThread.Save(ctx)
+	s.Require().Error(twoTargetsErr)
+	s.True(ent.IsConstraintError(twoTargetsErr))
+}
+
+func (s *DiscussionSuite) TestListThreadsByTarget() {
+	ctx, db := s.SetupTestDatabase()
+	client := db.Client(ctx)
+	user, userErr := client.User.Query().Only(ctx)
+	s.Require().NoError(userErr)
+	analysis, analysisErr := client.SystemAnalysis.Create().Save(ctx)
+	s.Require().NoError(analysisErr)
+	targets := s.createThreadTargets(ctx, db, analysis)
+
+	threads := make(map[rez.DiscussionThreadTargetKind]uuid.UUID, len(targets))
+	for kind, targetID := range targets {
+		createThread := client.DiscussionThread.Create().
+			SetUser(user).
+			SetAnalysis(analysis)
+		s.Require().NoError(createThread.Mutation().SetField(threadTargetColumns[kind], targetID))
+		thread, createErr := createThread.Save(ctx)
+		s.Require().NoError(createErr)
+		threads[kind] = thread.ID
+	}
+	createUntargeted := client.DiscussionThread.Create().
+		SetUser(user).
+		SetAnalysis(analysis)
+	s.Require().NoError(createUntargeted.Exec(ctx))
+
+	service := NewDiscussionService(db)
+	listThreadIDs := func(kind rez.DiscussionThreadTargetKind, targetID uuid.UUID) []uuid.UUID {
+		params := rez.ListDiscussionThreadsParams{AnalysisID: analysis.ID, TargetKind: kind, TargetID: targetID}
+		result, listErr := service.ListThreads(ctx, params)
+		s.Require().NoError(listErr)
+		ids := make([]uuid.UUID, len(result.Data))
+		for i, thread := range result.Data {
+			ids[i] = thread.ID
+		}
+		return ids
+	}
+
+	s.Len(listThreadIDs("", uuid.Nil), len(targets)+1)
+	for kind, targetID := range targets {
+		s.Run(string(kind), func() {
+			s.Equal([]uuid.UUID{threads[kind]}, listThreadIDs(kind, uuid.Nil))
+			s.Equal([]uuid.UUID{threads[kind]}, listThreadIDs(kind, targetID))
+			s.Empty(listThreadIDs(kind, uuid.New()))
+		})
+	}
+
+	s.Run("a target ID needs its kind", func() {
+		params := rez.ListDiscussionThreadsParams{AnalysisID: analysis.ID, TargetID: targets[rez.DiscussionThreadTargetEntry]}
+		_, listErr := service.ListThreads(ctx, params)
+		s.ErrorIs(listErr, errs.ErrInvalidInput)
+	})
+	s.Run("an unknown kind is refused", func() {
+		params := rez.ListDiscussionThreadsParams{AnalysisID: analysis.ID, TargetKind: "comment"}
+		_, listErr := service.ListThreads(ctx, params)
+		s.ErrorIs(listErr, errs.ErrInvalidInput)
+	})
 }

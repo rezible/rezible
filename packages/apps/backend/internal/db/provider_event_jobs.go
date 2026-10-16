@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"time"
@@ -10,6 +11,7 @@ import (
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/pkg/errs"
 	"github.com/rezible/rezible/pkg/jobs"
 )
 
@@ -56,7 +58,11 @@ func (s *ProviderEventPipelineService) HandleEventProjectionJob(ctx context.Cont
 	if projectionErr == nil {
 		return projectionErr
 	}
-	if s.db.IsTransientError(projectionErr) {
+	// A merge that deleted a knowledge subject the projection resolved, found gone at its lock or by a write's
+	// foreign key, leaves the projection to resolve it again.
+	mergedSubject := errors.Is(projectionErr, errs.ErrKnowledgeSubjectMerged) ||
+		s.db.IsForeignKeyError(projectionErr, ent.KnowledgeForeignKeyConstraints...)
+	if s.db.IsTransientError(projectionErr) || mergedSubject {
 		return jobs.MarkRetryableError(projectionErr)
 	} else if jobs.IsRetryableError(projectionErr) {
 		return projectionErr

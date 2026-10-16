@@ -19,6 +19,7 @@ import (
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
 	ksa "github.com/rezible/rezible/ent/knowledgesubjectalias"
 	"github.com/rezible/rezible/pkg/errs"
+	"github.com/rezible/rezible/pkg/knowledgegraph"
 	"github.com/rezible/rezible/pkg/projections"
 )
 
@@ -291,6 +292,9 @@ func (s *KnowledgeGraphIngestionService) resolveEntityFromRef(ctx context.Contex
 	var resolvedAlias *resolvedSubjectAlias
 	if existingAlias != nil {
 		resolvedAlias = existingAlias
+		if lockErr := s.lockResolvedEntity(ctx, resolvedAlias.subjectId); lockErr != nil {
+			return nil, lockErr
+		}
 		unconflicted, conflictErr := s.proposeIdentityConflicts(ctx, ref, resolvedAlias, linkingValues, existingValues)
 		if conflictErr != nil {
 			return nil, conflictErr
@@ -304,6 +308,9 @@ func (s *KnowledgeGraphIngestionService) resolveEntityFromRef(ctx context.Contex
 			if entity.Category != ref.Category || entity.Kind != ref.Kind {
 				return nil, fmt.Errorf("%w: linking attribute identifies %q/%q, evidence expects %q/%q",
 					errs.ErrConflict, entity.Category, entity.Kind, ref.Category, ref.Kind)
+			}
+			if lockErr := s.lockResolvedEntity(ctx, entity.ID); lockErr != nil {
+				return nil, lockErr
 			}
 		} else {
 			createEntity := s.db.Client(ctx).KnowledgeEntity.Create().
@@ -327,13 +334,35 @@ func (s *KnowledgeGraphIngestionService) resolveEntityFromRef(ctx context.Contex
 		return nil, linkingErr
 	}
 
-	if newName, isNewServiceName := insertedValues[projections.LinkingAttributeServiceName]; isNewServiceName && isKnowledgeServiceRef(ref) {
+	if newName, isNewServiceName := insertedValues[projections.LinkingAttributeServiceName]; isNewServiceName && knowledgegraph.IsService(ref.Category, ref.Kind) {
 		if similarErr := s.proposeSimilarServiceNames(ctx, ref, resolvedAlias, newName); similarErr != nil {
 			return nil, fmt.Errorf("propose similar service names: %w", similarErr)
 		}
 	}
 
 	return resolvedAlias, nil
+}
+
+// lockResolvedEntity key-share locks an existing entity's row before anything is written for it. A projection
+// can resolve an existing alias and write only evidence, which references the alias and not the entity, so no
+// foreign key protects the entity it resolved. A merge (MergeEntities) locks both its entities FOR UPDATE, in ID
+// order, and deletes the one merged away: with this lock, the merge waits for in-flight projections of the
+// entity, and a projection that resolved an entity the merge has since deleted finds no row and returns
+// errs.ErrKnowledgeSubjectMerged, so its job runs again on the merged graph. FOR KEY SHARE rather than FOR SHARE,
+// so projections of one entity still run side by side: they also update its state, which another projection's
+// FOR SHARE would block. A projection naming both of a merge's entities locks them one at a time, in its own
+// order; Postgres aborts one side of such a cycle as a deadlock, and its job or request retries.
+func (s *KnowledgeGraphIngestionService) lockResolvedEntity(ctx context.Context, entityID uuid.UUID) error {
+	lockEntity := s.db.Client(ctx).KnowledgeEntity.Query().
+		Where(kne.ID(entityID)).
+		ForShare(ent.KeyShareLock)
+	if _, lockErr := lockEntity.OnlyID(ctx); lockErr != nil {
+		if ent.IsNotFound(lockErr) {
+			return fmt.Errorf("%w: knowledge entity %s", errs.ErrKnowledgeSubjectMerged, entityID)
+		}
+		return fmt.Errorf("lock entity: %w", lockErr)
+	}
+	return nil
 }
 
 func (s *KnowledgeGraphIngestionService) lookupExistingRelationshipAlias(ctx context.Context, ref rez.KnowledgeRelationshipRef, sourceId, targetId uuid.UUID) (*resolvedSubjectAlias, error) {
@@ -426,6 +455,12 @@ func (s *KnowledgeGraphIngestionService) resolveSubjectAliasFromRef(ctx context.
 		if endpointErr != nil || target == nil {
 			return nil, fmt.Errorf("target: %w", errNoExistingEndpointEntityAlias)
 		}
+		if lockErr := s.lockResolvedEntity(ctx, source.subjectId); lockErr != nil {
+			return nil, fmt.Errorf("source: %w", lockErr)
+		}
+		if lockErr := s.lockResolvedEntity(ctx, target.subjectId); lockErr != nil {
+			return nil, fmt.Errorf("target: %w", lockErr)
+		}
 	}
 
 	return s.resolveRelationshipFromRef(ctx, *ref.Relationship, source, target)
@@ -472,8 +507,9 @@ func (s *KnowledgeGraphIngestionService) ingestEvidenceRefs(ctx context.Context,
 }
 
 // updateEntityState merges observed evidence into the entity's current state. Evidence with an empty state
-// changes nothing, and evidence older than the stored state is skipped. The read-modify-write is safe
-// without another lock because IngestEvidence holds the entity identity locks for its whole transaction.
+// changes nothing, and evidence older than the stored state is skipped. The identity locks do not serialize
+// projections of one entity under two names, which a merge leaves, so the read-modify-write locks the row
+// FOR NO KEY UPDATE; that does not conflict with the FOR KEY SHARE lock of lockResolvedEntity.
 func (s *KnowledgeGraphIngestionService) updateEntityState(ctx context.Context, entityID uuid.UUID, ref rez.KnowledgeEvidenceRef) error {
 	if ref.SubjectState.IsEmpty() {
 		return nil
@@ -481,7 +517,8 @@ func (s *KnowledgeGraphIngestionService) updateEntityState(ctx context.Context, 
 	client := s.db.Client(ctx)
 	entityQuery := client.KnowledgeEntity.Query().
 		Where(kne.ID(entityID)).
-		Select(kne.FieldState, kne.FieldStateEffectiveAt)
+		Select(kne.FieldState, kne.FieldStateEffectiveAt).
+		ForUpdate(ent.KeyUpdateLock)
 	entity, queryErr := entityQuery.Only(ctx)
 	if queryErr != nil {
 		return fmt.Errorf("load entity: %w", queryErr)

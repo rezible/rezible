@@ -381,10 +381,11 @@ type (
 		UnconfirmedMatches []SituationUnconfirmedMatch `json:"unconfirmedMatches"`
 	}
 
-	// SituationUnconfirmedMatch is a pending proposal that the service may be another one under another name.
+	// SituationUnconfirmedMatch is a pending proposal that the service may be another one under another value of its
+	// linking attribute.
 	SituationUnconfirmedMatch struct {
 		ProposalId  uuid.UUID `json:"proposalId"`
-		Name        string    `json:"name"`
+		Value       string    `json:"value"`
 		EntityId    uuid.UUID `json:"entityId"`
 		DisplayName string    `json:"displayName"`
 		Rationale   string    `json:"rationale"`
@@ -472,7 +473,7 @@ func situationBriefServiceFromRez(service rez.BriefService) SituationBriefServic
 	for index, match := range service.UnconfirmedMatches {
 		converted.UnconfirmedMatches[index] = SituationUnconfirmedMatch{
 			ProposalId:  match.ProposalID,
-			Name:        match.Name,
+			Value:       match.Value,
 			EntityId:    match.Entity.ID,
 			DisplayName: match.Entity.State.DisplayName,
 			Rationale:   match.Rationale,

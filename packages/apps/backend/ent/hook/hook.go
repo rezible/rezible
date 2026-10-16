@@ -597,6 +597,18 @@ func (f KnowledgeProposalFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.KnowledgeProposalMutation", m)
 }
 
+// The KnowledgeProposalDecisionFunc type is an adapter to allow the use of ordinary
+// function as KnowledgeProposalDecision mutator.
+type KnowledgeProposalDecisionFunc func(context.Context, *ent.KnowledgeProposalDecisionMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f KnowledgeProposalDecisionFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.KnowledgeProposalDecisionMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.KnowledgeProposalDecisionMutation", m)
+}
+
 // The KnowledgeRelationshipFunc type is an adapter to allow the use of ordinary
 // function as KnowledgeRelationship mutator.
 type KnowledgeRelationshipFunc func(context.Context, *ent.KnowledgeRelationshipMutation) (ent.Value, error)

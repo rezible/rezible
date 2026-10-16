@@ -16,6 +16,7 @@ import (
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
 	ksa "github.com/rezible/rezible/ent/knowledgesubjectalias"
 	"github.com/rezible/rezible/pkg/errs"
+	"github.com/rezible/rezible/pkg/knowledgegraph"
 	"github.com/rezible/rezible/pkg/projections"
 )
 
@@ -55,16 +56,11 @@ func (s *ChangesService) ListServiceChanges(ctx context.Context, params rez.List
 		}
 	}
 
-	queryService := s.db.Client(ctx).KnowledgeEntity.Query().
-		Where(
-			kne.ID(params.ServiceEntityID),
-			kne.CategoryEQ(kne.CategoryContainer),
-			kne.Kind(projections.EntityKindService),
-		)
-	isService, serviceErr := queryService.Exist(ctx)
-	if serviceErr != nil {
+	serviceEntity, serviceErr := s.db.Client(ctx).KnowledgeEntity.Get(ctx, params.ServiceEntityID)
+	if serviceErr != nil && !ent.IsNotFound(serviceErr) {
 		return nil, fmt.Errorf("query service entity: %w", serviceErr)
-	} else if !isService {
+	}
+	if serviceEntity == nil || !knowledgegraph.IsService(serviceEntity.Category, serviceEntity.Kind) {
 		return nil, fmt.Errorf("%w: %s is not a known service", errs.ErrInvalidInput, params.ServiceEntityID)
 	}
 

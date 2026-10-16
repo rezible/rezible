@@ -1299,6 +1299,30 @@ func (f KnowledgeProposalMutationRuleFunc) EvalMutation(ctx context.Context, m e
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.KnowledgeProposalMutation", m)
 }
 
+// The KnowledgeProposalDecisionQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type KnowledgeProposalDecisionQueryRuleFunc func(context.Context, *ent.KnowledgeProposalDecisionQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f KnowledgeProposalDecisionQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.KnowledgeProposalDecisionQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.KnowledgeProposalDecisionQuery", q)
+}
+
+// The KnowledgeProposalDecisionMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type KnowledgeProposalDecisionMutationRuleFunc func(context.Context, *ent.KnowledgeProposalDecisionMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f KnowledgeProposalDecisionMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.KnowledgeProposalDecisionMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.KnowledgeProposalDecisionMutation", m)
+}
+
 // The KnowledgeRelationshipQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
 type KnowledgeRelationshipQueryRuleFunc func(context.Context, *ent.KnowledgeRelationshipQuery) error
@@ -2538,6 +2562,8 @@ func queryFilter(q ent.Query) (Filter, error) {
 		return q.Filter(), nil
 	case *ent.KnowledgeProposalQuery:
 		return q.Filter(), nil
+	case *ent.KnowledgeProposalDecisionQuery:
+		return q.Filter(), nil
 	case *ent.KnowledgeRelationshipQuery:
 		return q.Filter(), nil
 	case *ent.KnowledgeSubjectAliasQuery:
@@ -2734,6 +2760,8 @@ func mutationFilter(m ent.Mutation) (Filter, error) {
 	case *ent.KnowledgeEvidenceMutation:
 		return m.Filter(), nil
 	case *ent.KnowledgeProposalMutation:
+		return m.Filter(), nil
+	case *ent.KnowledgeProposalDecisionMutation:
 		return m.Filter(), nil
 	case *ent.KnowledgeRelationshipMutation:
 		return m.Filter(), nil

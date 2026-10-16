@@ -112,6 +112,8 @@ type Tx struct {
 	KnowledgeEvidence *KnowledgeEvidenceClient
 	// KnowledgeProposal is the client for interacting with the KnowledgeProposal builders.
 	KnowledgeProposal *KnowledgeProposalClient
+	// KnowledgeProposalDecision is the client for interacting with the KnowledgeProposalDecision builders.
+	KnowledgeProposalDecision *KnowledgeProposalDecisionClient
 	// KnowledgeRelationship is the client for interacting with the KnowledgeRelationship builders.
 	KnowledgeRelationship *KnowledgeRelationshipClient
 	// KnowledgeSubjectAlias is the client for interacting with the KnowledgeSubjectAlias builders.
@@ -385,6 +387,7 @@ func (tx *Tx) init() {
 	tx.KnowledgeEntityLinkingAttribute = NewKnowledgeEntityLinkingAttributeClient(tx.config)
 	tx.KnowledgeEvidence = NewKnowledgeEvidenceClient(tx.config)
 	tx.KnowledgeProposal = NewKnowledgeProposalClient(tx.config)
+	tx.KnowledgeProposalDecision = NewKnowledgeProposalDecisionClient(tx.config)
 	tx.KnowledgeRelationship = NewKnowledgeRelationshipClient(tx.config)
 	tx.KnowledgeSubjectAlias = NewKnowledgeSubjectAliasClient(tx.config)
 	tx.MeetingSchedule = NewMeetingScheduleClient(tx.config)

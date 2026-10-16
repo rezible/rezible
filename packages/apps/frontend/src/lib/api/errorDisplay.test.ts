@@ -21,7 +21,7 @@ describe("errorDisplay", () => {
 			title: "Check the details",
 			detail: apiDetail,
 		});
-		expect(errorDisplay(error("conflict"))).toEqual({ title: "Already exists", detail: apiDetail });
+		expect(errorDisplay(error("conflict"))).toEqual({ title: "Can't do that", detail: apiDetail });
 		expect(errorDisplay(error("not_found"))).toEqual({ title: "Not found", detail: apiDetail });
 	});
 

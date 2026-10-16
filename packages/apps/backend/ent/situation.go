@@ -10,6 +10,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/situation"
 	"github.com/rezible/rezible/ent/situationinvestigation"
 	"github.com/rezible/rezible/ent/situationjudgment"
@@ -45,7 +46,7 @@ type Situation struct {
 	ClosedAt *time.Time `json:"closed_at,omitempty"`
 	// CloseReason holds the value of the "close_reason" field.
 	CloseReason *situation.CloseReason `json:"close_reason,omitempty"`
-	// Knowledge entity of the signal that started it; kept after merges
+	// Knowledge entity of the signal that started it; kept after situation merges, re-pointed by entity merges
 	SeedEntityID uuid.UUID `json:"seed_entity_id,omitempty"`
 	// Its most recently recorded judgment
 	LatestJudgmentID *uuid.UUID `json:"latest_judgment_id,omitempty"`
@@ -77,9 +78,11 @@ type SituationEdges struct {
 	Actions []*SituationAction `json:"actions,omitempty"`
 	// LatestJudgment holds the value of the latest_judgment edge.
 	LatestJudgment *SituationJudgment `json:"latest_judgment,omitempty"`
+	// SeedEntity holds the value of the seed_entity edge.
+	SeedEntity *KnowledgeEntity `json:"seed_entity,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [10]bool
+	loadedTypes [11]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -176,6 +179,17 @@ func (e SituationEdges) LatestJudgmentOrErr() (*SituationJudgment, error) {
 		return nil, &NotFoundError{label: situationjudgment.Label}
 	}
 	return nil, &NotLoadedError{edge: "latest_judgment"}
+}
+
+// SeedEntityOrErr returns the SeedEntity value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e SituationEdges) SeedEntityOrErr() (*KnowledgeEntity, error) {
+	if e.SeedEntity != nil {
+		return e.SeedEntity, nil
+	} else if e.loadedTypes[10] {
+		return nil, &NotFoundError{label: knowledgeentity.Label}
+	}
+	return nil, &NotLoadedError{edge: "seed_entity"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -366,6 +380,11 @@ func (_m *Situation) QueryActions() *SituationActionQuery {
 // QueryLatestJudgment queries the "latest_judgment" edge of the Situation entity.
 func (_m *Situation) QueryLatestJudgment() *SituationJudgmentQuery {
 	return NewSituationClient(_m.config).QueryLatestJudgment(_m)
+}
+
+// QuerySeedEntity queries the "seed_entity" edge of the Situation entity.
+func (_m *Situation) QuerySeedEntity() *KnowledgeEntityQuery {
+	return NewSituationClient(_m.config).QuerySeedEntity(_m)
 }
 
 // Update returns a builder for updating this Situation.

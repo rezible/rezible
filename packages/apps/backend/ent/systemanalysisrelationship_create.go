@@ -445,6 +445,18 @@ func (u *SystemAnalysisRelationshipUpsert) UpdateUpdatedAt() *SystemAnalysisRela
 	return u
 }
 
+// SetKnowledgeRelationshipID sets the "knowledge_relationship_id" field.
+func (u *SystemAnalysisRelationshipUpsert) SetKnowledgeRelationshipID(v uuid.UUID) *SystemAnalysisRelationshipUpsert {
+	u.Set(systemanalysisrelationship.FieldKnowledgeRelationshipID, v)
+	return u
+}
+
+// UpdateKnowledgeRelationshipID sets the "knowledge_relationship_id" field to the value that was provided on create.
+func (u *SystemAnalysisRelationshipUpsert) UpdateKnowledgeRelationshipID() *SystemAnalysisRelationshipUpsert {
+	u.SetExcluded(systemanalysisrelationship.FieldKnowledgeRelationshipID)
+	return u
+}
+
 // SetHidden sets the "hidden" field.
 func (u *SystemAnalysisRelationshipUpsert) SetHidden(v bool) *SystemAnalysisRelationshipUpsert {
 	u.Set(systemanalysisrelationship.FieldHidden, v)
@@ -552,9 +564,6 @@ func (u *SystemAnalysisRelationshipUpsertOne) UpdateNewValues() *SystemAnalysisR
 		if _, exists := u.create.mutation.AnalysisID(); exists {
 			s.SetIgnore(systemanalysisrelationship.FieldAnalysisID)
 		}
-		if _, exists := u.create.mutation.KnowledgeRelationshipID(); exists {
-			s.SetIgnore(systemanalysisrelationship.FieldKnowledgeRelationshipID)
-		}
 	}))
 	return u
 }
@@ -611,6 +620,20 @@ func (u *SystemAnalysisRelationshipUpsertOne) SetUpdatedAt(v time.Time) *SystemA
 func (u *SystemAnalysisRelationshipUpsertOne) UpdateUpdatedAt() *SystemAnalysisRelationshipUpsertOne {
 	return u.Update(func(s *SystemAnalysisRelationshipUpsert) {
 		s.UpdateUpdatedAt()
+	})
+}
+
+// SetKnowledgeRelationshipID sets the "knowledge_relationship_id" field.
+func (u *SystemAnalysisRelationshipUpsertOne) SetKnowledgeRelationshipID(v uuid.UUID) *SystemAnalysisRelationshipUpsertOne {
+	return u.Update(func(s *SystemAnalysisRelationshipUpsert) {
+		s.SetKnowledgeRelationshipID(v)
+	})
+}
+
+// UpdateKnowledgeRelationshipID sets the "knowledge_relationship_id" field to the value that was provided on create.
+func (u *SystemAnalysisRelationshipUpsertOne) UpdateKnowledgeRelationshipID() *SystemAnalysisRelationshipUpsertOne {
+	return u.Update(func(s *SystemAnalysisRelationshipUpsert) {
+		s.UpdateKnowledgeRelationshipID()
 	})
 }
 
@@ -901,9 +924,6 @@ func (u *SystemAnalysisRelationshipUpsertBulk) UpdateNewValues() *SystemAnalysis
 			if _, exists := b.mutation.AnalysisID(); exists {
 				s.SetIgnore(systemanalysisrelationship.FieldAnalysisID)
 			}
-			if _, exists := b.mutation.KnowledgeRelationshipID(); exists {
-				s.SetIgnore(systemanalysisrelationship.FieldKnowledgeRelationshipID)
-			}
 		}
 	}))
 	return u
@@ -961,6 +981,20 @@ func (u *SystemAnalysisRelationshipUpsertBulk) SetUpdatedAt(v time.Time) *System
 func (u *SystemAnalysisRelationshipUpsertBulk) UpdateUpdatedAt() *SystemAnalysisRelationshipUpsertBulk {
 	return u.Update(func(s *SystemAnalysisRelationshipUpsert) {
 		s.UpdateUpdatedAt()
+	})
+}
+
+// SetKnowledgeRelationshipID sets the "knowledge_relationship_id" field.
+func (u *SystemAnalysisRelationshipUpsertBulk) SetKnowledgeRelationshipID(v uuid.UUID) *SystemAnalysisRelationshipUpsertBulk {
+	return u.Update(func(s *SystemAnalysisRelationshipUpsert) {
+		s.SetKnowledgeRelationshipID(v)
+	})
+}
+
+// UpdateKnowledgeRelationshipID sets the "knowledge_relationship_id" field to the value that was provided on create.
+func (u *SystemAnalysisRelationshipUpsertBulk) UpdateKnowledgeRelationshipID() *SystemAnalysisRelationshipUpsertBulk {
+	return u.Update(func(s *SystemAnalysisRelationshipUpsert) {
+		s.UpdateKnowledgeRelationshipID()
 	})
 }
 
