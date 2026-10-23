@@ -29,6 +29,9 @@ func DefaultConfig() Config {
 				MaxWorkers:    4,
 				WorkerTimeout: 15 * time.Minute,
 			},
+			Anthropic: AiProviderConfigAnthropic{
+				Model: "claude-haiku-5-5",
+			},
 		},
 		HttpServer: HttpServerConfig{
 			Host:     cmp.Or(os.Getenv("HOST"), "0.0.0.0"),
@@ -121,9 +124,10 @@ type (
 
 type (
 	AiConfig struct {
-		Agents         AiAgentsConfig         `cfg:"agents"`
-		Gemini         AiProviderConfigGemini `cfg:"gemini"`
-		SituationJudge AiSituationJudgeConfig `cfg:"situation_judge"`
+		Agents         AiAgentsConfig            `cfg:"agents"`
+		Gemini         AiProviderConfigGemini    `cfg:"gemini"`
+		Anthropic      AiProviderConfigAnthropic `cfg:"anthropic"`
+		SituationJudge AiSituationJudgeConfig    `cfg:"situation_judge"`
 	}
 	AiAgentsConfig struct {
 		MaxWorkers    int           `cfg:"max_workers" validate:"min=1"`
@@ -137,6 +141,12 @@ type (
 	AiProviderConfigGemini struct {
 		Enabled bool   `cfg:"enabled"`
 		APIKey  string `cfg:"api_key"`
+	}
+	AiProviderConfigAnthropic struct {
+		Enabled bool   `cfg:"enabled"`
+		APIKey  string `cfg:"api_key"`
+		// Model is the Claude model ID used as the default model.
+		Model string `cfg:"model" validate:"required_if=Enabled true"`
 	}
 )
 

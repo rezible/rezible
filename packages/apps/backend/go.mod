@@ -25,7 +25,6 @@ require (
 	github.com/jackc/pgx/v5 v5.10.0
 	github.com/knadh/koanf/providers/env/v2 v2.0.0
 	github.com/knadh/koanf/v2 v2.3.5
-	github.com/kr/pretty v0.3.1
 	github.com/lmittmann/tint v1.2.0
 	github.com/peterldowns/pgtestdb v0.1.1
 	github.com/peterldowns/pgtestdb/migrators/golangmigrator v0.1.1
@@ -63,6 +62,7 @@ require (
 	cloud.google.com/go/auth/oauth2adapt v0.2.8 // indirect
 	cloud.google.com/go/compute/metadata v0.9.0 // indirect
 	github.com/agext/levenshtein v1.2.3 // indirect
+	github.com/anthropics/anthropic-sdk-go v1.23.0 // indirect
 	github.com/apparentlymart/go-textseg/v15 v15.0.0 // indirect
 	github.com/bahlo/generic-list-go v0.2.0 // indirect
 	github.com/bmatcuk/doublestar v1.3.4 // indirect
@@ -115,7 +115,6 @@ require (
 	github.com/knadh/koanf/providers/file v1.2.1 // indirect
 	github.com/knadh/koanf/providers/posflag v1.0.1 // indirect
 	github.com/knadh/koanf/providers/structs v1.0.0 // indirect
-	github.com/kr/text v0.2.0 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
 	github.com/lib/pq v1.10.9 // indirect
 	github.com/lithammer/shortuuid/v3 v3.0.7 // indirect
@@ -136,7 +135,6 @@ require (
 	github.com/riverqueue/river/cmd/river v0.31.0 // indirect
 	github.com/riverqueue/river/riverdriver/riversqlite v0.31.0 // indirect
 	github.com/riverqueue/river/rivershared v0.40.0 // indirect
-	github.com/rogpeppe/go-internal v1.14.1 // indirect
 	github.com/rs/zerolog v1.35.0 // indirect
 	github.com/samber/go-type-to-string v1.8.0 // indirect
 	github.com/sony/gobreaker v1.0.0 // indirect

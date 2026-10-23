@@ -9,6 +9,7 @@ import (
 	"github.com/firebase/genkit/go/ai"
 	gkapi "github.com/firebase/genkit/go/core/api"
 	"github.com/firebase/genkit/go/genkit"
+	"github.com/firebase/genkit/go/plugins/anthropic"
 	"github.com/firebase/genkit/go/plugins/googlegenai"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/pkg/execution"
@@ -41,6 +42,9 @@ func (r *AiRuntime) Init(ctx context.Context, opts ...AiRuntimeOption) error {
 			plugins = append(plugins, opt.plugins...)
 		}
 		if opt.defaultModel != "" {
+			if r.defaultModel != "" {
+				return fmt.Errorf("default model is set twice (%s and %s): enable one model provider", r.defaultModel, opt.defaultModel)
+			}
 			r.defaultModel = opt.defaultModel
 		}
 		for _, gkOpt := range opt.genkitOpts {
@@ -66,7 +70,7 @@ func (r *AiRuntime) DefaultModel() string {
 // validateConfig checks the AI configuration against the models the runtime has.
 func (r *AiRuntime) validateConfig() error {
 	if r.cfg.SituationJudge.Enabled && r.DefaultModel() == "" {
-		return fmt.Errorf("ai.situation_judge.enabled requires a default model: enable a model provider such as ai.gemini")
+		return fmt.Errorf("ai.situation_judge.enabled requires a default model: enable a model provider such as ai.gemini or ai.anthropic")
 	}
 	return nil
 }
@@ -177,6 +181,30 @@ func WithGeminiPlugin(cfg rez.AiProviderConfigGemini) AiRuntimeOption {
 		// TODO: don't hardcode
 		opt.genkitOpts = append(opt.genkitOpts, genkit.WithDefaultModel(geminiFlashModel.Name()))
 		opt.defaultModel = geminiFlashModel.Name()
+	}
+	return opt
+}
+
+func WithAnthropicPlugin(cfg rez.AiProviderConfigAnthropic) AiRuntimeOption {
+	opt := AiRuntimeOption{kind: AiRuntimeOptionKindPlugin}
+	if cfg.Enabled {
+		// The plugin only knows native structured output for the models it lists; current models support it.
+		structured := ai.ModelOptions{Supports: &ai.ModelSupports{
+			Multiturn:   true,
+			Tools:       true,
+			SystemRole:  true,
+			Media:       true,
+			Output:      []string{"text", "json"},
+			Constrained: ai.ConstrainedSupportAll,
+		}}
+		opt.plugins = append(opt.plugins, &anthropic.Anthropic{
+			APIKey: cfg.APIKey,
+			Models: map[string]ai.ModelOptions{cfg.Model: structured},
+		})
+
+		model := anthropic.ModelRef(cfg.Model, nil)
+		opt.genkitOpts = append(opt.genkitOpts, genkit.WithDefaultModel(model.Name()))
+		opt.defaultModel = model.Name()
 	}
 	return opt
 }

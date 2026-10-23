@@ -883,7 +883,10 @@ func provideProviderEventProcessors(do.Injector) (rez.ProviderEventProcessorRegi
 
 func provideAiRuntimeOptions(i do.Injector) ([]genkit.AiRuntimeOption, error) {
 	aiCfg := do.MustInvoke[rez.Config](i).AI
-	return []genkit.AiRuntimeOption{genkit.WithGeminiPlugin(aiCfg.Gemini)}, nil
+	return []genkit.AiRuntimeOption{
+		genkit.WithGeminiPlugin(aiCfg.Gemini),
+		genkit.WithAnthropicPlugin(aiCfg.Anthropic),
+	}, nil
 }
 
 func provideIntegrationDefinitions(i do.Injector) ([]rez.IntegrationDefinition, error) {
