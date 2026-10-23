@@ -18,8 +18,9 @@ import (
 	"golang.org/x/sync/errgroup"
 
 	"github.com/ThreeDotsLabs/watermill"
+	wsql "github.com/ThreeDotsLabs/watermill-sql/v4/pkg/sql"
 	"github.com/ThreeDotsLabs/watermill/components/cqrs"
-	//"github.com/ThreeDotsLabs/watermill/components/forwarder"
+	"github.com/ThreeDotsLabs/watermill/components/forwarder"
 	"github.com/ThreeDotsLabs/watermill/message"
 
 	rez "github.com/rezible/rezible"
@@ -28,24 +29,31 @@ import (
 	"github.com/rezible/rezible/pkg/messages"
 )
 
+// outboxTopic names the forwarder topic. MessageOutbox maps every topic to its one table, so it is only a name.
+const outboxTopic = "outbox"
+
 type MessageQueue struct {
 	cfg    rez.MessageQueueConfig
 	logger watermill.LoggerAdapter
 
-	transport messages.Transport
-	router    *message.Router
+	transport         messages.Transport
+	outboxDB          wsql.Beginner
+	outboxBacklog     metric.Registration
+	router            *message.Router
+	handlerMiddleware []message.HandlerMiddleware
 
 	bus       *cqrs.EventBus
 	liveBus   *cqrs.EventBus
 	processor *cqrs.EventProcessor
 }
 
-func NewMessageQueue(cfg rez.MessageQueueConfig, transport messages.Transport) (*MessageQueue, error) {
+func NewMessageQueue(cfg rez.MessageQueueConfig, transport messages.Transport, outboxConn wsql.Conn) (*MessageQueue, error) {
 	// Watermill logs routine operation at Info; keep it at Debug, below its warnings and errors.
 	logger := slog.Default().With("component", "watermill")
 	ms := &MessageQueue{
 		cfg:       cfg,
 		transport: transport,
+		outboxDB:  wsql.BeginnerFromPgx(outboxConn),
 		logger:    watermill.NewSlogLoggerWithLevelMapping(logger, map[slog.Level]slog.Level{slog.LevelInfo: slog.LevelDebug}),
 	}
 
@@ -58,20 +66,11 @@ func NewMessageQueue(cfg rez.MessageQueueConfig, transport messages.Transport) (
 	}
 	ms.router = router
 
-	poison, poisonErr := ms.makePoisonQueue()
-	if poisonErr != nil {
-		return nil, fmt.Errorf("poison queue: %w", poisonErr)
+	handlerMiddleware, middlewareErr := ms.makeHandlerMiddleware()
+	if middlewareErr != nil {
+		return nil, fmt.Errorf("handler middleware: %w", middlewareErr)
 	}
-	router.AddMiddleware(
-		poison,
-		ms.makeRetryMiddleware(),
-		ms.makeThrottleMiddleware(),
-		ms.attemptTimeout,
-		ms.restoreMessageAccessScope,
-		wotelfloss.ExtractRemoteParentSpanContext(),
-		wotel.Trace(),
-		middleware.Recoverer,
-	)
+	ms.handlerMiddleware = handlerMiddleware
 
 	proc, procErr := ms.makeEventProcessor()
 	if procErr != nil {
@@ -79,51 +78,43 @@ func NewMessageQueue(cfg rez.MessageQueueConfig, transport messages.Transport) (
 	}
 	ms.processor = proc
 
-	pubWrapper := newPublisherWrapper()
-
-	//pubCfg := forwarder.PublisherConfig{
-	//	ForwarderTopic: "message_outbox",
-	//}
-	//forwardedPublisher := forwarder.NewPublisher(deps.OutboxPublisher, pubCfg)
-
-	pub, pubErr := pubWrapper.wrap(transport.Publisher())
-	if pubErr != nil {
-		return nil, fmt.Errorf("decorate publisher: %w", pubErr)
+	transportPub, transportPubErr := ms.makeCountedTransportPublisher()
+	if transportPubErr != nil {
+		return nil, fmt.Errorf("transport publisher: %w", transportPubErr)
 	}
-	bus, busErr := ms.makeEventBus(pub)
+
+	if fwdErr := ms.makeForwarder(transportPub); fwdErr != nil {
+		return nil, fmt.Errorf("message outbox forwarder: %w", fwdErr)
+	}
+
+	bus, busErr := ms.makeOutboxEventBus()
 	if busErr != nil {
 		return nil, fmt.Errorf("event bus: %w", busErr)
 	}
 	ms.bus = bus
 
-	//livePub, livePubErr := ms.wrapPublisher(basePublisher)
-	//if livePubErr != nil {
-	//	return nil, fmt.Errorf("decorate live publisher: %w", livePubErr)
-	//}
-	//liveBus, liveBusErr := ms.makeEventBus(livePub)
-	//if liveBusErr != nil {
-	//	return nil, fmt.Errorf("live event bus: %w", liveBusErr)
-	//}
-	ms.liveBus = bus
+	liveBus, liveBusErr := ms.makeLiveEventBus(transportPub)
+	if liveBusErr != nil {
+		return nil, fmt.Errorf("live event bus: %w", liveBusErr)
+	}
+	ms.liveBus = liveBus
 
-	//fwdConfig := forwarder.Config{
-	//	ForwarderTopic:      "message_outbox",
-	//	AckWhenCannotUnwrap: false,
-	//}
-	//fwd, fwdErr := forwarder.NewForwarder(deps.OutboxSubscriber, deps.Transport.Publisher(), ms.logger, fwdConfig)
-	//if fwdErr != nil {
-	//	return nil, fmt.Errorf("message outbox forwarder: %w", fwdErr)
-	//}
-	//ms.forwarder = fwd
+	backlog, backlogErr := ms.registerOutboxBacklogGauge()
+	if backlogErr != nil {
+		return nil, fmt.Errorf("outbox backlog gauge: %w", backlogErr)
+	}
+	ms.outboxBacklog = backlog
 
 	return ms, nil
 }
 
 func (ms *MessageQueue) Register(def messages.Definition) error {
 	for _, handler := range def.Handlers {
-		if _, addErr := ms.processor.AddHandler(handler); addErr != nil {
+		routerHandler, addErr := ms.processor.AddHandler(handler)
+		if addErr != nil {
 			return fmt.Errorf("add message handler: %w", addErr)
 		}
+		routerHandler.AddMiddleware(ms.handlerMiddleware...)
 	}
 	return nil
 }
@@ -145,7 +136,55 @@ func (ms *MessageQueue) Run(ctx context.Context, ready chan<- struct{}) (runErr 
 }
 
 func (ms *MessageQueue) Shutdown(ctx context.Context) error {
-	return errors.Join(ms.router.Close(), ms.transport.Close())
+	return errors.Join(ms.router.Close(), ms.transport.Close(), ms.outboxBacklog.Unregister())
+}
+
+// makeHandlerMiddleware builds the middleware every event handler shares. The instances are shared, so the
+// throttle limits all handlers together.
+func (ms *MessageQueue) makeHandlerMiddleware() ([]message.HandlerMiddleware, error) {
+	poison, poisonErr := ms.makePoisonQueue()
+	if poisonErr != nil {
+		return nil, fmt.Errorf("poison queue: %w", poisonErr)
+	}
+	return []message.HandlerMiddleware{
+		poison,
+		ms.makeRetryMiddleware(),
+		ms.makeThrottleMiddleware(),
+		ms.attemptTimeout,
+		ms.restoreMessageAccessScope,
+		wotelfloss.ExtractRemoteParentSpanContext(),
+		wotel.Trace(),
+		middleware.Recoverer,
+	}, nil
+}
+
+// makeForwarder adds a handler to the router that moves committed events from the outbox to the transport.
+func (ms *MessageQueue) makeForwarder(transportPub message.Publisher) error {
+	outboxSub, outboxSubErr := ms.makeOutboxSubscriber()
+	if outboxSubErr != nil {
+		return fmt.Errorf("outbox subscriber: %w", outboxSubErr)
+	}
+	cfg := forwarder.Config{
+		Router:              ms.router,
+		ForwarderTopic:      outboxTopic,
+		AckWhenCannotUnwrap: false,
+		Middlewares:         []message.HandlerMiddleware{ms.awaitRouterRunning},
+	}
+	_, fwdErr := forwarder.NewForwarder(outboxSub, transportPub, ms.logger, cfg)
+	return fwdErr
+}
+
+// awaitRouterRunning holds a forwarded event until every handler has subscribed. The router starts handlers in
+// no fixed order, and the transport drops an event with no subscribers, so the outbox row would be deleted unhandled.
+func (ms *MessageQueue) awaitRouterRunning(next message.HandlerFunc) message.HandlerFunc {
+	return func(msg *message.Message) ([]*message.Message, error) {
+		select {
+		case <-ms.router.Running():
+			return next(msg)
+		case <-msg.Context().Done():
+			return nil, msg.Context().Err()
+		}
+	}
 }
 
 // makePoisonQueue sends a message whose handler still fails after its retries to the poison topic, where it
@@ -184,12 +223,6 @@ func (ms *MessageQueue) eventTopic(eventName string) string {
 	return ms.cfg.Namespace + ":events:" + eventName
 }
 
-func (ms *MessageQueue) verifyQueueReadyState() error {
-	// TODO: check message queue state
-	// rez.ErrMessageQueueNotRunning
-	return nil
-}
-
 func (ms *MessageQueue) Publish(ctx context.Context, ev any) error {
 	return ms.publish(ctx, ms.bus, ev)
 }
@@ -208,20 +241,12 @@ func (ms *MessageQueue) publish(ctx context.Context, bus *cqrs.EventBus, ev any)
 	if _, encodeErr := execution.GetContext(ctx).Encode(); encodeErr != nil {
 		return fmt.Errorf("encode execution context: %w", encodeErr)
 	}
-	if stateErr := ms.verifyQueueReadyState(); stateErr != nil {
-		return fmt.Errorf("queue state: %w", stateErr)
-	}
 	return bus.Publish(ctx, ev)
 }
 
 func (ms *MessageQueue) Subscribe(ctx context.Context, opts *rez.MessageEventSubscriptionOpts, handlers ...rez.MessageEventHandler) error {
 	if len(handlers) == 0 {
 		return fmt.Errorf("subscribe: at least one event handler is required")
-	}
-
-	adhocSub, ok := ms.transport.(messages.TransportWithAdhocSubscriber)
-	if !ok {
-		return fmt.Errorf("transport: adhoc subscribe not supported")
 	}
 
 	var scopes rez.MessageEventScopes
@@ -232,18 +257,18 @@ func (ms *MessageQueue) Subscribe(ctx context.Context, opts *rez.MessageEventSub
 	group, subCtx := errgroup.WithContext(ctx)
 	for _, handler := range handlers {
 		group.Go(func() error {
-			return ms.subscribe(subCtx, adhocSub, handler, scopes)
+			return ms.subscribe(subCtx, handler, scopes)
 		})
 	}
 	return group.Wait()
 }
 
-func (ms *MessageQueue) subscribe(ctx context.Context, t messages.TransportWithAdhocSubscriber, handler rez.MessageEventHandler, scopes rez.MessageEventScopes) error {
+func (ms *MessageQueue) subscribe(ctx context.Context, handler rez.MessageEventHandler, scopes rez.MessageEventScopes) error {
 	eventName := eventMarshaller.Name(handler.NewEvent())
 	topic := ms.eventTopic(eventName)
 
 	subscriberName := handler.HandlerName() + "-" + uuid.NewString()
-	sub, subErr := t.AdhocSubscriber(subscriberName)
+	sub, subErr := ms.transport.AdhocSubscriber(subscriberName)
 	if subErr != nil {
 		return fmt.Errorf("subscriber %q: %w", subscriberName, subErr)
 	}

@@ -13,6 +13,7 @@ import (
 	"github.com/rezible/rezible/internal/db"
 	"github.com/rezible/rezible/internal/http"
 	demoprovider "github.com/rezible/rezible/internal/integrations/demo"
+	"github.com/rezible/rezible/internal/watermill"
 	"github.com/rezible/rezible/pkg/execution"
 	oapiv1 "github.com/rezible/rezible/pkg/openapi/v1"
 	"github.com/urfave/cli/v3"
@@ -187,7 +188,7 @@ var migrationsCommands = &cli.Command{
 			}},
 			Action: func(ctx context.Context, cmd *cli.Command) error {
 				return withMigrations(ctx, func(ctx context.Context, ms rez.MigrationService) error {
-					return ms.CreateSchemaMigration(ctx, cmd.StringArg("name"))
+					return ms.CreateSchemaMigration(ctx, cmd.StringArg("name"), watermill.OutboxTable)
 				})
 			},
 		},

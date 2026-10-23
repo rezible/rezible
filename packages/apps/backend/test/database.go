@@ -72,11 +72,32 @@ func (s *Suite) sharedDatabase() rez.Database {
 	return s.sharedDB
 }
 
+// SetupTestPool creates a new migrated database and returns its pool. It is dropped when the current test ends.
+func (s *Suite) SetupTestPool() *postgres.ConnectionPool {
+	s.T().Helper()
+	return s.createPool(s.T())
+}
+
 // createDatabase creates a migrated database owned by owner: the pool is opened
 // with owner's context and cleanup is registered on owner.
 func (s *Suite) createDatabase(owner *testing.T) rez.Database {
 	s.T().Helper()
 	start := time.Now()
+	pool := s.createPool(owner)
+
+	db, dbErr := postgres.NewPgxPoolDatabaseClient(pool)
+	s.Require().NoError(dbErr)
+	owner.Cleanup(func() {
+		assert.NoError(owner, db.Shutdown())
+	})
+
+	s.T().Logf("created test database in %dms", time.Since(start).Milliseconds())
+	return db
+}
+
+// createPool creates a migrated database and opens its pool, both owned by owner.
+func (s *Suite) createPool(owner *testing.T) *postgres.ConnectionPool {
+	s.T().Helper()
 	cfg := s.Config().Postgres
 	s.Require().NotEmpty(cfg.AdminRole.Name, "postgres migrations admin config empty")
 
@@ -91,15 +112,7 @@ func (s *Suite) createDatabase(owner *testing.T) rez.Database {
 	owner.Cleanup(func() {
 		assert.NoError(owner, pool.Shutdown())
 	})
-
-	db, dbErr := postgres.NewPgxPoolDatabaseClient(pool)
-	s.Require().NoError(dbErr)
-	owner.Cleanup(func() {
-		assert.NoError(owner, db.Shutdown())
-	})
-
-	s.T().Logf("created test database in %dms", time.Since(start).Milliseconds())
-	return db
+	return pool
 }
 
 func (s *Suite) seedTenant(db rez.Database, opts testDatabaseOptions) context.Context {

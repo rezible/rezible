@@ -220,6 +220,8 @@ ALTER TABLE "agent_provider_reads" DROP CONSTRAINT "agent_provider_reads_agent_t
 ALTER TABLE "agent_messages" DROP CONSTRAINT "agent_messages_agent_turns_messages", DROP CONSTRAINT "agent_messages_agent_sessions_messages", DROP CONSTRAINT "agent_messages_tenants_tenant";
 -- reverse: modify "agent_artifacts" table
 ALTER TABLE "agent_artifacts" DROP CONSTRAINT "agent_artifacts_agent_turns_artifacts", DROP CONSTRAINT "agent_artifacts_agent_sessions_artifacts", DROP CONSTRAINT "agent_artifacts_tenants_tenant";
+-- reverse: create "message_outbox" table
+DROP TABLE "message_outbox";
 -- reverse: create "user_watched_oncall_rosters" table
 DROP TABLE "user_watched_oncall_rosters";
 -- reverse: create "team_oncall_rosters" table

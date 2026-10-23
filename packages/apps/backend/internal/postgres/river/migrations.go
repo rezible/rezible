@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"entgo.io/ent/dialect/sql/schema"
 	"github.com/jackc/pgx/v5/pgxpool"
 	rez "github.com/rezible/rezible"
 	"github.com/riverqueue/river/riverdriver"
@@ -15,11 +14,6 @@ import (
 var directions = map[rez.MigrationDirection]rivermigrate.Direction{
 	"down": rivermigrate.DirectionDown,
 	"up":   rivermigrate.DirectionUp,
-}
-
-// TODO
-func GetSchema() []*schema.Table {
-	return []*schema.Table{}
 }
 
 func RunMigration(ctx context.Context, pool *pgxpool.Pool, direction rez.MigrationDirection) error {

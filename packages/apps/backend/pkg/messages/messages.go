@@ -12,11 +12,8 @@ type (
 	Transport interface {
 		Publisher() message.Publisher
 		Subscriber(name string) (message.Subscriber, error)
-		Close() error
-	}
-
-	TransportWithAdhocSubscriber interface {
 		AdhocSubscriber(handlerName string) (message.Subscriber, error)
+		Close() error
 	}
 
 	EventHandler = rez.MessageEventHandler

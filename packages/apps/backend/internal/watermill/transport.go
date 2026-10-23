@@ -14,43 +14,24 @@ import (
 	"go.opentelemetry.io/otel/metric"
 )
 
-type publisherWrapper struct{}
-
-func newPublisherWrapper() *publisherWrapper {
-	return &publisherWrapper{}
+// decorateEventsPublisher carries the execution context and trace context in the message metadata, inside a
+// named publish span.
+func decorateEventsPublisher(pub message.Publisher) (message.Publisher, error) {
+	traced := wotel.NewNamedPublisherDecorator("pub", wotelfloss.NewTracePropagatingPublisherDecorator(pub))
+	return &messageExecutionContextPublisher{Publisher: traced}, nil
 }
 
-func (w *publisherWrapper) wrap(pub message.Publisher) (message.Publisher, error) {
-	telPub, wrapTelErr := w.wrapPublisherTelemetry(pub)
-	if wrapTelErr != nil {
-		return nil, fmt.Errorf("telemetry wrapper: %w", wrapTelErr)
-	}
-	pub = telPub
-
-	pub = &messageExecutionContextPublisher{Publisher: pub}
-
-	return pub, nil
-}
-
-func (w *publisherWrapper) wrapPublisherTelemetry(base message.Publisher) (message.Publisher, error) {
-	m := otel.Meter("github.com/rezible/rezible")
-	messagesPublished, messagesPublishedErr := m.Int64Counter("backend.messages.published",
+// makeCountedTransportPublisher counts the messages handed to the transport: forwarded and live events.
+func (ms *MessageQueue) makeCountedTransportPublisher() (message.Publisher, error) {
+	messagesPublished, messagesPublishedErr := otel.Meter("github.com/rezible/rezible").Int64Counter("backend.messages.published",
 		metric.WithDescription("Watermill messages published"))
 	if messagesPublishedErr != nil {
 		return nil, fmt.Errorf("messages published counter: %w", messagesPublishedErr)
 	}
-	msgMetricsFn := func(msg *message.Message) {
+	countMessage := func(msg *message.Message) {
 		messagesPublished.Add(msg.Context(), 1)
 	}
-
-	wrapped, wrapErr := message.MessageTransformPublisherDecorator(msgMetricsFn)(base)
-	if wrapErr != nil {
-		return nil, fmt.Errorf("wrap metric decorator: %w", wrapErr)
-	}
-
-	wrapped = wotel.NewNamedPublisherDecorator("pub", wotelfloss.NewTracePropagatingPublisherDecorator(wrapped))
-
-	return wrapped, nil
+	return message.MessageTransformPublisherDecorator(countMessage)(ms.transport.Publisher())
 }
 
 type messageExecutionContextPublisher struct {

@@ -124,10 +124,6 @@ func withPostgresDatabase(ctx context.Context) func(do.Injector) {
 		do.Lazy(func(i do.Injector) (rez.Database, error) {
 			return postgres.NewPgxPoolDatabaseClient(do.MustInvoke[*postgres.ConnectionPool](i))
 		}),
-
-		do.Lazy(func(i do.Injector) (*postgres.MessageTransport, error) {
-			return postgres.NewMessageTransport(do.MustInvoke[*postgres.ConnectionPool](i))
-		}),
 	)
 }
 
@@ -212,6 +208,7 @@ var pkgWatermill = do.Package(
 		return watermill.NewMessageQueue(
 			do.MustInvoke[rez.MessageQueueConfig](i),
 			do.MustInvoke[messages.Transport](i),
+			do.MustInvoke[*postgres.ConnectionPool](i).Pool,
 		)
 	}),
 	do.Bind[*watermill.MessageQueue, rez.MessageQueue](),

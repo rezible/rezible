@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/ThreeDotsLabs/watermill/components/cqrs"
+	"github.com/ThreeDotsLabs/watermill/components/forwarder"
 	"github.com/ThreeDotsLabs/watermill/message"
 	"github.com/ThreeDotsLabs/watermill/message/router/middleware"
 	rez "github.com/rezible/rezible"
@@ -25,6 +26,29 @@ var eventMarshaller = cqrs.JSONMarshaler{
 		}
 		return cqrs.FullyQualifiedStructName(v)
 	},
+}
+
+// makeOutboxEventBus publishes events to the outbox, in the caller's transaction when there is one.
+func (ms *MessageQueue) makeOutboxEventBus() (*cqrs.EventBus, error) {
+	outboxPub, outboxPubErr := ms.makeOutboxPublisher()
+	if outboxPubErr != nil {
+		return nil, fmt.Errorf("outbox publisher: %w", outboxPubErr)
+	}
+	fwdPub := forwarder.NewPublisher(outboxPub, forwarder.PublisherConfig{ForwarderTopic: outboxTopic})
+	pub, pubErr := decorateEventsPublisher(fwdPub)
+	if pubErr != nil {
+		return nil, fmt.Errorf("decorate publisher: %w", pubErr)
+	}
+	return ms.makeEventBus(pub)
+}
+
+// makeLiveEventBus publishes events straight to the transport, skipping the outbox.
+func (ms *MessageQueue) makeLiveEventBus(transportPub message.Publisher) (*cqrs.EventBus, error) {
+	pub, pubErr := decorateEventsPublisher(transportPub)
+	if pubErr != nil {
+		return nil, fmt.Errorf("decorate publisher: %w", pubErr)
+	}
+	return ms.makeEventBus(pub)
 }
 
 func (ms *MessageQueue) makeEventBus(publisher message.Publisher) (*cqrs.EventBus, error) {

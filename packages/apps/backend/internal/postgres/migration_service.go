@@ -107,7 +107,6 @@ func (m *MigrationService) Run(ctx context.Context, direction rez.MigrationDirec
 		return fmt.Errorf("schema migration: %w", schemaErr)
 	}
 
-	// TODO: pass tables to CreateSchemaMigration using river.GetSchema() instead
 	slog.Info("Running river migrations " + string(direction))
 	riverErr := river.RunMigration(ctx, m.pool.Pool, direction)
 	if riverErr != nil {
