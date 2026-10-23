@@ -15,9 +15,11 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/agentproviderread"
+	"github.com/rezible/rezible/ent/integration"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/schema/schematypes"
 )
 
 // AgentProviderReadUpdate is the builder for updating AgentProviderRead entities.
@@ -67,6 +69,26 @@ func (_u *AgentProviderReadUpdate) SetNillableServiceEntityID(v *uuid.UUID) *Age
 	return _u
 }
 
+// SetIntegrationID sets the "integration_id" field.
+func (_u *AgentProviderReadUpdate) SetIntegrationID(v uuid.UUID) *AgentProviderReadUpdate {
+	_u.mutation.SetIntegrationID(v)
+	return _u
+}
+
+// SetNillableIntegrationID sets the "integration_id" field if the given value is not nil.
+func (_u *AgentProviderReadUpdate) SetNillableIntegrationID(v *uuid.UUID) *AgentProviderReadUpdate {
+	if v != nil {
+		_u.SetIntegrationID(*v)
+	}
+	return _u
+}
+
+// ClearIntegrationID clears the value of the "integration_id" field.
+func (_u *AgentProviderReadUpdate) ClearIntegrationID() *AgentProviderReadUpdate {
+	_u.mutation.ClearIntegrationID()
+	return _u
+}
+
 // SetStatus sets the "status" field.
 func (_u *AgentProviderReadUpdate) SetStatus(v agentproviderread.Status) *AgentProviderReadUpdate {
 	_u.mutation.SetStatus(v)
@@ -99,21 +121,21 @@ func (_u *AgentProviderReadUpdate) ClearRead() *AgentProviderReadUpdate {
 	return _u
 }
 
-// SetResult sets the "result" field.
-func (_u *AgentProviderReadUpdate) SetResult(v jsontext.Value) *AgentProviderReadUpdate {
-	_u.mutation.SetResult(v)
+// SetHighlight sets the "highlight" field.
+func (_u *AgentProviderReadUpdate) SetHighlight(v []schematypes.ProviderReadItem) *AgentProviderReadUpdate {
+	_u.mutation.SetHighlight(v)
 	return _u
 }
 
-// AppendResult appends value to the "result" field.
-func (_u *AgentProviderReadUpdate) AppendResult(v jsontext.Value) *AgentProviderReadUpdate {
-	_u.mutation.AppendResult(v)
+// AppendHighlight appends value to the "highlight" field.
+func (_u *AgentProviderReadUpdate) AppendHighlight(v []schematypes.ProviderReadItem) *AgentProviderReadUpdate {
+	_u.mutation.AppendHighlight(v)
 	return _u
 }
 
-// ClearResult clears the value of the "result" field.
-func (_u *AgentProviderReadUpdate) ClearResult() *AgentProviderReadUpdate {
-	_u.mutation.ClearResult()
+// ClearHighlight clears the value of the "highlight" field.
+func (_u *AgentProviderReadUpdate) ClearHighlight() *AgentProviderReadUpdate {
+	_u.mutation.ClearHighlight()
 	return _u
 }
 
@@ -162,6 +184,11 @@ func (_u *AgentProviderReadUpdate) SetServiceEntity(v *KnowledgeEntity) *AgentPr
 	return _u.SetServiceEntityID(v.ID)
 }
 
+// SetIntegration sets the "integration" edge to the Integration entity.
+func (_u *AgentProviderReadUpdate) SetIntegration(v *Integration) *AgentProviderReadUpdate {
+	return _u.SetIntegrationID(v.ID)
+}
+
 // Mutation returns the AgentProviderReadMutation object of the builder.
 func (_u *AgentProviderReadUpdate) Mutation() *AgentProviderReadMutation {
 	return _u.mutation
@@ -170,6 +197,12 @@ func (_u *AgentProviderReadUpdate) Mutation() *AgentProviderReadMutation {
 // ClearServiceEntity clears the "service_entity" edge to the KnowledgeEntity entity.
 func (_u *AgentProviderReadUpdate) ClearServiceEntity() *AgentProviderReadUpdate {
 	_u.mutation.ClearServiceEntity()
+	return _u
+}
+
+// ClearIntegration clears the "integration" edge to the Integration entity.
+func (_u *AgentProviderReadUpdate) ClearIntegration() *AgentProviderReadUpdate {
+	_u.mutation.ClearIntegration()
 	return _u
 }
 
@@ -269,16 +302,16 @@ func (_u *AgentProviderReadUpdate) sqlSave(ctx context.Context) (_node int, err 
 	if _u.mutation.ReadCleared() {
 		_spec.ClearField(agentproviderread.FieldRead, field.TypeJSON)
 	}
-	if value, ok := _u.mutation.Result(); ok {
-		_spec.SetField(agentproviderread.FieldResult, field.TypeJSON, value)
+	if value, ok := _u.mutation.Highlight(); ok {
+		_spec.SetField(agentproviderread.FieldHighlight, field.TypeJSON, value)
 	}
-	if value, ok := _u.mutation.AppendedResult(); ok {
+	if value, ok := _u.mutation.AppendedHighlight(); ok {
 		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, agentproviderread.FieldResult, value)
+			sqljson.Append(u, agentproviderread.FieldHighlight, value)
 		})
 	}
-	if _u.mutation.ResultCleared() {
-		_spec.ClearField(agentproviderread.FieldResult, field.TypeJSON)
+	if _u.mutation.HighlightCleared() {
+		_spec.ClearField(agentproviderread.FieldHighlight, field.TypeJSON)
 	}
 	if value, ok := _u.mutation.Error(); ok {
 		_spec.SetField(agentproviderread.FieldError, field.TypeString, value)
@@ -315,6 +348,37 @@ func (_u *AgentProviderReadUpdate) sqlSave(ctx context.Context) (_node int, err 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentProviderRead
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.IntegrationCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   agentproviderread.IntegrationTable,
+			Columns: []string{agentproviderread.IntegrationColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(integration.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentProviderRead
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.IntegrationIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   agentproviderread.IntegrationTable,
+			Columns: []string{agentproviderread.IntegrationColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(integration.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _u.schemaConfig.AgentProviderRead
@@ -379,6 +443,26 @@ func (_u *AgentProviderReadUpdateOne) SetNillableServiceEntityID(v *uuid.UUID) *
 	return _u
 }
 
+// SetIntegrationID sets the "integration_id" field.
+func (_u *AgentProviderReadUpdateOne) SetIntegrationID(v uuid.UUID) *AgentProviderReadUpdateOne {
+	_u.mutation.SetIntegrationID(v)
+	return _u
+}
+
+// SetNillableIntegrationID sets the "integration_id" field if the given value is not nil.
+func (_u *AgentProviderReadUpdateOne) SetNillableIntegrationID(v *uuid.UUID) *AgentProviderReadUpdateOne {
+	if v != nil {
+		_u.SetIntegrationID(*v)
+	}
+	return _u
+}
+
+// ClearIntegrationID clears the value of the "integration_id" field.
+func (_u *AgentProviderReadUpdateOne) ClearIntegrationID() *AgentProviderReadUpdateOne {
+	_u.mutation.ClearIntegrationID()
+	return _u
+}
+
 // SetStatus sets the "status" field.
 func (_u *AgentProviderReadUpdateOne) SetStatus(v agentproviderread.Status) *AgentProviderReadUpdateOne {
 	_u.mutation.SetStatus(v)
@@ -411,21 +495,21 @@ func (_u *AgentProviderReadUpdateOne) ClearRead() *AgentProviderReadUpdateOne {
 	return _u
 }
 
-// SetResult sets the "result" field.
-func (_u *AgentProviderReadUpdateOne) SetResult(v jsontext.Value) *AgentProviderReadUpdateOne {
-	_u.mutation.SetResult(v)
+// SetHighlight sets the "highlight" field.
+func (_u *AgentProviderReadUpdateOne) SetHighlight(v []schematypes.ProviderReadItem) *AgentProviderReadUpdateOne {
+	_u.mutation.SetHighlight(v)
 	return _u
 }
 
-// AppendResult appends value to the "result" field.
-func (_u *AgentProviderReadUpdateOne) AppendResult(v jsontext.Value) *AgentProviderReadUpdateOne {
-	_u.mutation.AppendResult(v)
+// AppendHighlight appends value to the "highlight" field.
+func (_u *AgentProviderReadUpdateOne) AppendHighlight(v []schematypes.ProviderReadItem) *AgentProviderReadUpdateOne {
+	_u.mutation.AppendHighlight(v)
 	return _u
 }
 
-// ClearResult clears the value of the "result" field.
-func (_u *AgentProviderReadUpdateOne) ClearResult() *AgentProviderReadUpdateOne {
-	_u.mutation.ClearResult()
+// ClearHighlight clears the value of the "highlight" field.
+func (_u *AgentProviderReadUpdateOne) ClearHighlight() *AgentProviderReadUpdateOne {
+	_u.mutation.ClearHighlight()
 	return _u
 }
 
@@ -474,6 +558,11 @@ func (_u *AgentProviderReadUpdateOne) SetServiceEntity(v *KnowledgeEntity) *Agen
 	return _u.SetServiceEntityID(v.ID)
 }
 
+// SetIntegration sets the "integration" edge to the Integration entity.
+func (_u *AgentProviderReadUpdateOne) SetIntegration(v *Integration) *AgentProviderReadUpdateOne {
+	return _u.SetIntegrationID(v.ID)
+}
+
 // Mutation returns the AgentProviderReadMutation object of the builder.
 func (_u *AgentProviderReadUpdateOne) Mutation() *AgentProviderReadMutation {
 	return _u.mutation
@@ -482,6 +571,12 @@ func (_u *AgentProviderReadUpdateOne) Mutation() *AgentProviderReadMutation {
 // ClearServiceEntity clears the "service_entity" edge to the KnowledgeEntity entity.
 func (_u *AgentProviderReadUpdateOne) ClearServiceEntity() *AgentProviderReadUpdateOne {
 	_u.mutation.ClearServiceEntity()
+	return _u
+}
+
+// ClearIntegration clears the "integration" edge to the Integration entity.
+func (_u *AgentProviderReadUpdateOne) ClearIntegration() *AgentProviderReadUpdateOne {
+	_u.mutation.ClearIntegration()
 	return _u
 }
 
@@ -611,16 +706,16 @@ func (_u *AgentProviderReadUpdateOne) sqlSave(ctx context.Context) (_node *Agent
 	if _u.mutation.ReadCleared() {
 		_spec.ClearField(agentproviderread.FieldRead, field.TypeJSON)
 	}
-	if value, ok := _u.mutation.Result(); ok {
-		_spec.SetField(agentproviderread.FieldResult, field.TypeJSON, value)
+	if value, ok := _u.mutation.Highlight(); ok {
+		_spec.SetField(agentproviderread.FieldHighlight, field.TypeJSON, value)
 	}
-	if value, ok := _u.mutation.AppendedResult(); ok {
+	if value, ok := _u.mutation.AppendedHighlight(); ok {
 		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, agentproviderread.FieldResult, value)
+			sqljson.Append(u, agentproviderread.FieldHighlight, value)
 		})
 	}
-	if _u.mutation.ResultCleared() {
-		_spec.ClearField(agentproviderread.FieldResult, field.TypeJSON)
+	if _u.mutation.HighlightCleared() {
+		_spec.ClearField(agentproviderread.FieldHighlight, field.TypeJSON)
 	}
 	if value, ok := _u.mutation.Error(); ok {
 		_spec.SetField(agentproviderread.FieldError, field.TypeString, value)
@@ -657,6 +752,37 @@ func (_u *AgentProviderReadUpdateOne) sqlSave(ctx context.Context) (_node *Agent
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentProviderRead
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.IntegrationCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   agentproviderread.IntegrationTable,
+			Columns: []string{agentproviderread.IntegrationColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(integration.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentProviderRead
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.IntegrationIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   agentproviderread.IntegrationTable,
+			Columns: []string{agentproviderread.IntegrationColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(integration.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _u.schemaConfig.AgentProviderRead

@@ -1616,6 +1616,25 @@ func (c *AgentProviderReadClient) QueryServiceEntity(_m *AgentProviderRead) *Kno
 	return query
 }
 
+// QueryIntegration queries the integration edge of a AgentProviderRead.
+func (c *AgentProviderReadClient) QueryIntegration(_m *AgentProviderRead) *IntegrationQuery {
+	query := (&IntegrationClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(agentproviderread.Table, agentproviderread.FieldID, id),
+			sqlgraph.To(integration.Table, integration.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, agentproviderread.IntegrationTable, agentproviderread.IntegrationColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.Integration
+		step.Edge.Schema = schemaConfig.AgentProviderRead
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *AgentProviderReadClient) Hooks() []Hook {
 	hooks := c.hooks.AgentProviderRead

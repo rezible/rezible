@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 
 	rez "github.com/rezible/rezible"
@@ -27,7 +28,7 @@ func TestAgentProviderReadServiceSuite(t *testing.T) {
 }
 
 // runningTurn creates an agent session with one running turn, and a service its reads are of.
-func (s *AgentProviderReadServiceSuite) runningTurn(ctx context.Context, tdb rez.Database) (*ent.AgentTurn, uuid.UUID) {
+func (s *AgentProviderReadServiceSuite) runningTurn(ctx context.Context, tdb rez.Database) (*ent.AgentTurn, uuid.UUID, uuid.UUID) {
 	client := tdb.Client(ctx)
 	createSession := client.AgentSession.Create().
 		SetAgentName("investigation").
@@ -47,14 +48,28 @@ func (s *AgentProviderReadServiceSuite) runningTurn(ctx context.Context, tdb rez
 		SetKind("service")
 	service, serviceErr := createService.Save(ctx)
 	s.Require().NoError(serviceErr)
-	return turn, service.ID
+	return turn, service.ID, createTestLogIntegration(ctx, s.Require(), tdb)
 }
 
-func (s *AgentProviderReadServiceSuite) startParams(turn *ent.AgentTurn, serviceID uuid.UUID) rez.StartAgentProviderReadParams {
+// createTestLogIntegration creates an installation for provider reads to be made through.
+func createTestLogIntegration(ctx context.Context, require *require.Assertions, tdb rez.Database) uuid.UUID {
+	createIntegration := tdb.Client(ctx).Integration.Create().
+		SetProvider("provider-a").
+		SetName("provider-a").
+		SetDisplayName("Provider A").
+		SetProviderInstallationRef("installation-1").
+		SetInstallationConfig([]byte(`{}`))
+	integration, integrationErr := createIntegration.Save(ctx)
+	require.NoError(integrationErr)
+	return integration.ID
+}
+
+func (s *AgentProviderReadServiceSuite) startParams(turn *ent.AgentTurn, serviceID, integrationID uuid.UUID) rez.StartAgentProviderReadParams {
 	return rez.StartAgentProviderReadParams{
 		AgentTurnID:     turn.ID,
 		ToolName:        "search_logs",
 		ServiceEntityID: serviceID,
+		IntegrationID:   integrationID,
 		Input:           json.RawMessage(`{"start":"2026-06-01T10:00:00Z","end":"2026-06-01T11:00:00Z"}`),
 	}
 }
@@ -62,8 +77,8 @@ func (s *AgentProviderReadServiceSuite) startParams(turn *ent.AgentTurn, service
 func (s *AgentProviderReadServiceSuite) TestProviderReadBudgetCountsAcrossAttempts() {
 	ctx, tdb := s.SetupTestDatabase()
 	service := NewAgentProviderReadService(tdb, test.NewClock(time.Now()))
-	turn, serviceID := s.runningTurn(ctx, tdb)
-	params := s.startParams(turn, serviceID)
+	turn, serviceID, integrationID := s.runningTurn(ctx, tdb)
+	params := s.startParams(turn, serviceID, integrationID)
 
 	// Reads up to the budget start, and the next is refused.
 	for i := range rezai.MaxProviderReadsPerTurn {
@@ -92,19 +107,19 @@ func (s *AgentProviderReadServiceSuite) TestProviderReadsAreRecorded() {
 	ctx, tdb := s.SetupTestDatabase()
 	finishedAt := time.Date(2026, 6, 1, 11, 0, 0, 0, time.UTC)
 	service := NewAgentProviderReadService(tdb, test.NewClock(finishedAt))
-	turn, serviceID := s.runningTurn(ctx, tdb)
+	turn, serviceID, integrationID := s.runningTurn(ctx, tdb)
 
-	succeeded, used, startErr := service.StartProviderRead(ctx, s.startParams(turn, serviceID))
+	succeeded, used, startErr := service.StartProviderRead(ctx, s.startParams(turn, serviceID, integrationID))
 	s.Require().NoError(startErr)
 	s.Equal(1, used)
 	s.Equal(apr.StatusRunning, succeeded.Status)
 	s.Equal(turn.AgentSessionID, succeeded.AgentSessionID)
-	record := json.RawMessage(`{"query":"{service=\"checkout-api\"}","explore_url":"https://example.com/explore"}`)
-	result := json.RawMessage(`{"provider_read_ref":"x","lines":[]}`)
-	finishParams := rez.FinishAgentProviderReadParams{ID: succeeded.ID, Read: record, Result: result}
+	s.Equal(&integrationID, succeeded.IntegrationID)
+	record := json.RawMessage(`{"query":"{service=\"checkout-api\"}","source_url":"https://example.com/explore"}`)
+	finishParams := rez.FinishAgentProviderReadParams{ID: succeeded.ID, Read: record}
 	s.Require().NoError(service.FinishProviderRead(ctx, finishParams))
 
-	failed, used, failedStartErr := service.StartProviderRead(ctx, s.startParams(turn, serviceID))
+	failed, used, failedStartErr := service.StartProviderRead(ctx, s.startParams(turn, serviceID, integrationID))
 	s.Require().NoError(failedStartErr)
 	s.Equal(2, used)
 	failParams := rez.FinishAgentProviderReadParams{ID: failed.ID, Error: "logs: 503 Service Unavailable"}
@@ -114,8 +129,7 @@ func (s *AgentProviderReadServiceSuite) TestProviderReadsAreRecorded() {
 	s.Require().NoError(successErr)
 	s.Equal(apr.StatusSucceeded, storedSuccess.Status)
 	s.JSONEq(string(record), string(storedSuccess.Read))
-	s.JSONEq(string(result), string(storedSuccess.Result))
-	s.JSONEq(string(s.startParams(turn, serviceID).Input), string(storedSuccess.Input))
+	s.JSONEq(string(s.startParams(turn, serviceID, integrationID).Input), string(storedSuccess.Input))
 	s.Nil(storedSuccess.Error)
 	s.Require().NotNil(storedSuccess.FinishedAt)
 	s.True(finishedAt.Equal(*storedSuccess.FinishedAt))
@@ -125,5 +139,4 @@ func (s *AgentProviderReadServiceSuite) TestProviderReadsAreRecorded() {
 	s.Equal(apr.StatusFailed, storedFailure.Status)
 	s.Require().NotNil(storedFailure.Error)
 	s.Equal("logs: 503 Service Unavailable", *storedFailure.Error)
-	s.Empty(storedFailure.Result)
 }

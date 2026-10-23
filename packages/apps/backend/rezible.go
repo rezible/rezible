@@ -1006,6 +1006,8 @@ type (
 		AgentTurnID     uuid.UUID
 		ToolName        string
 		ServiceEntityID uuid.UUID
+		// IntegrationID is the installation that runs the read.
+		IntegrationID uuid.UUID
 		// Input is the tool's input as the agent sent it.
 		Input json.RawMessage
 	}
@@ -1014,8 +1016,6 @@ type (
 		ID uuid.UUID
 		// Read describes the read that ran, when the provider got as far as building it.
 		Read json.RawMessage
-		// Result is the tool result returned to the agent; empty when the read failed.
-		Result json.RawMessage
 		// Error is why the read failed; empty when it succeeded.
 		Error string
 	}
@@ -1338,22 +1338,28 @@ type (
 		Text        string
 		Summary     string
 		EvidenceIDs []uuid.UUID
+		// CitedItems are items of cited provider reads, by read ID, to merge into each read's highlight.
+		CitedItems map[uuid.UUID][]schematypes.ProviderReadItem
 		// NextChecks are at most rezai.MaxNextChecks, most useful first.
 		NextChecks []schematypes.InvestigationNextCheck
 	}
 
 	PublishInvestigationFindingParams struct {
-		Key               string
-		Title             string
-		Body              string
-		EvidenceIDs       []uuid.UUID
+		Key         string
+		Title       string
+		Body        string
+		EvidenceIDs []uuid.UUID
+		// CitedItems are items of cited provider reads, by read ID, to merge into each read's highlight.
+		CitedItems        map[uuid.UUID][]schematypes.ProviderReadItem
 		FindingReferences []InvestigationFindingVersionReference
 	}
 
 	PublishInvestigationAnswerParams struct {
-		Title             string
-		Body              string
-		EvidenceIDs       []uuid.UUID
+		Title       string
+		Body        string
+		EvidenceIDs []uuid.UUID
+		// CitedItems are items of cited provider reads, by read ID, to merge into each read's highlight.
+		CitedItems        map[uuid.UUID][]schematypes.ProviderReadItem
 		FindingReferences []InvestigationFindingVersionReference
 	}
 
@@ -1363,6 +1369,8 @@ type (
 		Justification string
 		Status        ihv.Status
 		EvidenceIDs   []uuid.UUID
+		// CitedItems are items of cited provider reads, by read ID, to merge into each read's highlight.
+		CitedItems map[uuid.UUID][]schematypes.ProviderReadItem
 	}
 
 	GetInvestigationReportParams struct {
@@ -1403,10 +1411,6 @@ type (
 
 		// GetInvestigationOutputVersion returns the investigation's report, finding version or hypothesis version with the ID, whichever it is.
 		GetInvestigationOutputVersion(ctx context.Context, investigationID uuid.UUID, versionID uuid.UUID) (*InvestigationOutputVersion, error)
-
-		// GetCitedProviderRead returns a provider read one of the investigation's outputs cites, with its stored
-		// result and service. Any other read is not found.
-		GetCitedProviderRead(ctx context.Context, investigationID uuid.UUID, readID uuid.UUID) (*ent.AgentProviderRead, error)
 	}
 )
 

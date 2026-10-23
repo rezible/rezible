@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	rez "github.com/rezible/rezible"
-	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/pkg/errs"
 	oapi "github.com/rezible/rezible/pkg/openapi/v1"
 )
@@ -13,17 +12,10 @@ import (
 type investigationsHandler struct {
 	investigations rez.InvestigationService
 	outputs        rez.InvestigationOutputService
-	integrations   rez.IntegrationService
 }
 
-func newInvestigationsHandler(investigations rez.InvestigationService, outputs rez.InvestigationOutputService, integrations rez.IntegrationService) *investigationsHandler {
-	return &investigationsHandler{investigations: investigations, outputs: outputs, integrations: integrations}
-}
-
-func (h *investigationsHandler) integrationDisplayNames(ctx context.Context) oapi.IntegrationDisplayNames {
-	return func(name string) string {
-		return h.integrations.GetIntegrationDisplayName(ctx, name)
-	}
+func newInvestigationsHandler(investigations rez.InvestigationService, outputs rez.InvestigationOutputService) *investigationsHandler {
+	return &investigationsHandler{investigations: investigations, outputs: outputs}
 }
 
 func (h *investigationsHandler) GetInvestigation(ctx context.Context, req *oapi.GetInvestigationRequest) (*oapi.GetInvestigationResponse, error) {
@@ -61,17 +53,7 @@ func (h *investigationsHandler) GetInvestigationReport(ctx context.Context, req 
 		return nil, oapi.Error(ctx, "get investigation report", errs.ErrNotFound)
 	}
 	var resp oapi.GetInvestigationReportResponse
-	resp.Body.Data = oapi.InvestigationReportFromEnt(report, h.integrationDisplayNames(ctx))
-	return &resp, nil
-}
-
-func (h *investigationsHandler) GetInvestigationProviderRead(ctx context.Context, req *oapi.GetInvestigationProviderReadRequest) (*oapi.GetInvestigationProviderReadResponse, error) {
-	read, readErr := h.outputs.GetCitedProviderRead(ctx, req.Id, req.ReadId)
-	if readErr != nil {
-		return nil, oapi.Error(ctx, "get investigation provider read", readErr)
-	}
-	var resp oapi.GetInvestigationProviderReadResponse
-	resp.Body.Data = oapi.InvestigationProviderReadFromEnt(read, h.integrationDisplayNames(ctx))
+	resp.Body.Data = oapi.InvestigationReportFromEnt(report)
 	return &resp, nil
 }
 
@@ -85,10 +67,7 @@ func (h *investigationsHandler) ListInvestigationFindings(ctx context.Context, r
 		return nil, oapi.Error(ctx, "list investigation findings", listErr)
 	}
 	var resp oapi.ListInvestigationFindingsResponse
-	displayNames := h.integrationDisplayNames(ctx)
-	resp.Body = oapi.ConvertPaginatedResultBody(result, func(version *ent.InvestigationFindingVersion) oapi.InvestigationFinding {
-		return oapi.InvestigationFindingFromEnt(version, displayNames)
-	})
+	resp.Body = oapi.ConvertPaginatedResultBody(result, oapi.InvestigationFindingFromEnt)
 	return &resp, nil
 }
 
@@ -98,7 +77,7 @@ func (h *investigationsHandler) GetInvestigationFinding(ctx context.Context, req
 		return nil, oapi.Error(ctx, "get investigation finding", readErr)
 	}
 	var resp oapi.GetInvestigationFindingResponse
-	resp.Body.Data = oapi.InvestigationFindingFromEnt(finding, h.integrationDisplayNames(ctx))
+	resp.Body.Data = oapi.InvestigationFindingFromEnt(finding)
 	return &resp, nil
 }
 
@@ -112,10 +91,7 @@ func (h *investigationsHandler) ListInvestigationHypotheses(ctx context.Context,
 		return nil, oapi.Error(ctx, "list investigation hypotheses", listErr)
 	}
 	var resp oapi.ListInvestigationHypothesesResponse
-	displayNames := h.integrationDisplayNames(ctx)
-	resp.Body = oapi.ConvertPaginatedResultBody(result, func(version *ent.InvestigationHypothesisVersion) oapi.InvestigationHypothesis {
-		return oapi.InvestigationHypothesisFromEnt(version, displayNames)
-	})
+	resp.Body = oapi.ConvertPaginatedResultBody(result, oapi.InvestigationHypothesisFromEnt)
 	return &resp, nil
 }
 
@@ -125,7 +101,7 @@ func (h *investigationsHandler) GetInvestigationHypothesis(ctx context.Context, 
 		return nil, oapi.Error(ctx, "get investigation hypothesis", readErr)
 	}
 	var resp oapi.GetInvestigationHypothesisResponse
-	resp.Body.Data = oapi.InvestigationHypothesisFromEnt(hypothesis, h.integrationDisplayNames(ctx))
+	resp.Body.Data = oapi.InvestigationHypothesisFromEnt(hypothesis)
 	return &resp, nil
 }
 

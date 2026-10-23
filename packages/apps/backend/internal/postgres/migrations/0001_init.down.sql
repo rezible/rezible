@@ -215,7 +215,7 @@ ALTER TABLE "agent_session_bindings" DROP CONSTRAINT "agent_session_bindings_int
 -- reverse: modify "agent_sessions" table
 ALTER TABLE "agent_sessions" DROP CONSTRAINT "agent_sessions_tenants_tenant";
 -- reverse: modify "agent_provider_reads" table
-ALTER TABLE "agent_provider_reads" DROP CONSTRAINT "agent_provider_reads_agent_turns_provider_reads", DROP CONSTRAINT "agent_provider_reads_knowledge_entities_service_entity", DROP CONSTRAINT "agent_provider_reads_agent_sessions_agent_session", DROP CONSTRAINT "agent_provider_reads_tenants_tenant";
+ALTER TABLE "agent_provider_reads" DROP CONSTRAINT "agent_provider_reads_agent_turns_provider_reads", DROP CONSTRAINT "agent_provider_reads_integrations_integration", DROP CONSTRAINT "agent_provider_reads_knowledge_entities_service_entity", DROP CONSTRAINT "agent_provider_reads_agent_sessions_agent_session", DROP CONSTRAINT "agent_provider_reads_tenants_tenant";
 -- reverse: modify "agent_messages" table
 ALTER TABLE "agent_messages" DROP CONSTRAINT "agent_messages_agent_turns_messages", DROP CONSTRAINT "agent_messages_agent_sessions_messages", DROP CONSTRAINT "agent_messages_tenants_tenant";
 -- reverse: modify "agent_artifacts" table

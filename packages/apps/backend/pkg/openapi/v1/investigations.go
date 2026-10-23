@@ -2,7 +2,6 @@ package v1
 
 import (
 	"context"
-	"encoding/json"
 	"net/http"
 	"time"
 
@@ -10,9 +9,7 @@ import (
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/ent/agentproviderread"
 	"github.com/rezible/rezible/ent/agentturn"
-	rezai "github.com/rezible/rezible/pkg/ai"
 	"github.com/rezible/rezible/pkg/openapi"
 )
 
@@ -31,7 +28,6 @@ type InvestigationsHandler interface {
 	GetInvestigationHypothesis(context.Context, *GetInvestigationHypothesisRequest) (*GetInvestigationHypothesisResponse, error)
 
 	GetInvestigationReport(context.Context, *GetInvestigationReportRequest) (*GetInvestigationReportResponse, error)
-	GetInvestigationProviderRead(context.Context, *GetInvestigationProviderReadRequest) (*GetInvestigationProviderReadResponse, error)
 }
 
 func (o operations) RegisterInvestigations(api huma.API) {
@@ -49,7 +45,6 @@ func (o operations) RegisterInvestigations(api huma.API) {
 	huma.Register(api, GetInvestigationHypothesis, o.GetInvestigationHypothesis)
 
 	huma.Register(api, GetInvestigationReport, o.GetInvestigationReport)
-	huma.Register(api, GetInvestigationProviderRead, o.GetInvestigationProviderRead)
 }
 
 type (
@@ -135,62 +130,8 @@ type (
 	InvestigationReference struct {
 		Id   uuid.UUID `json:"id"`
 		Kind string    `json:"kind" enum:"knowledge_evidence,provider_read"`
-		// ProviderRead summarizes a cited provider read; set when Kind is provider_read.
-		ProviderRead *InvestigationProviderReadSummary `json:"providerRead,omitempty"`
-	}
-
-	// InvestigationProviderReadSummary says what a provider read read: for which service and range, the native
-	// query that ran and a link to it in the provider. A failed read has no query or link.
-	InvestigationProviderReadSummary struct {
-		ToolName string `json:"toolName"`
-		// ProviderDisplayName is the display name of the integration that ran the read; empty when the read
-		// failed or the integration is not registered.
-		ProviderDisplayName string    `json:"providerDisplayName"`
-		ServiceName         string    `json:"serviceName"`
-		Start               time.Time `json:"start"`
-		End                 time.Time `json:"end"`
-		Query               string    `json:"query"`
-		Limits              []string  `json:"limits"`
-		ExploreUrl          string    `json:"exploreUrl"`
-		Status              string    `json:"status" enum:"running,succeeded,failed"`
-	}
-
-	InvestigationProviderRead struct {
-		Id         uuid.UUID                           `json:"id"`
-		Attributes InvestigationProviderReadAttributes `json:"attributes"`
-	}
-
-	// InvestigationProviderReadAttributes is a cited provider read with what it returned. A failed read, or one
-	// stored in an earlier shape, has no result.
-	InvestigationProviderReadAttributes struct {
-		Summary   InvestigationProviderReadSummary `json:"summary"`
-		LogSearch *ProviderReadLogSearchResult     `json:"logSearch,omitempty"`
-		LogCount  *ProviderReadLogCountResult      `json:"logCount,omitempty"`
-	}
-
-	ProviderReadLogSearchResult struct {
-		// Labels are the labels every line carries with the same value.
-		Labels map[string]string     `json:"labels"`
-		Lines  []ProviderReadLogLine `json:"lines" doc:"Newest first"`
-	}
-
-	ProviderReadLogLine struct {
-		Time   time.Time         `json:"time" doc:"The newest repeat's time when count is above one"`
-		Line   string            `json:"line"`
-		Labels map[string]string `json:"labels" doc:"This line's labels that are not shared by every line"`
-		Count  int               `json:"count" doc:"How many consecutive identical lines this entry stands for"`
-		// Earliest is the oldest repeat's time; set when Count is above one.
-		Earliest *time.Time `json:"earliest,omitempty"`
-	}
-
-	ProviderReadLogCountResult struct {
-		Points      []ProviderReadPoint `json:"points"`
-		StepSeconds int                 `json:"stepSeconds" doc:"Seconds between points; zero when unknown"`
-	}
-
-	ProviderReadPoint struct {
-		Time  time.Time `json:"time"`
-		Value float64   `json:"value"`
+		// ProviderRead is the cited provider read; set when Kind is provider_read.
+		ProviderRead *AgentProviderRead `json:"providerRead,omitempty"`
 	}
 
 	FindingVersionReference struct {
@@ -244,16 +185,13 @@ func InvestigationFromDetail(detail *rez.InvestigationDetail) Investigation {
 	return Investigation{Id: inv.ID, Attributes: attrs}
 }
 
-// IntegrationDisplayNames returns a named integration's display name, or empty when it is unknown.
-type IntegrationDisplayNames func(name string) string
-
-func InvestigationReportFromEnt(report *ent.InvestigationReport, displayNames IntegrationDisplayNames) InvestigationReport {
+func InvestigationReportFromEnt(report *ent.InvestigationReport) InvestigationReport {
 	turn := report.Edges.AgentTurn
 	attrs := InvestigationReportAttributes{
 		Text:        report.Text,
 		Summary:     report.Summary,
 		NextChecks:  make([]InvestigationNextCheck, len(report.NextChecks)),
-		References:  investigationReferencesFromEnt(report.Edges.OutputReferences, displayNames),
+		References:  investigationReferencesFromEnt(report.Edges.OutputReferences),
 		AgentTurnId: report.AgentTurnID,
 		TurnStatus:  investigationTurnStatus(turn),
 		Provisional: investigationTurnProvisional(turn),
@@ -265,13 +203,13 @@ func InvestigationReportFromEnt(report *ent.InvestigationReport, displayNames In
 	return InvestigationReport{Id: report.ID, Attributes: attrs}
 }
 
-func InvestigationFindingFromEnt(version *ent.InvestigationFindingVersion, displayNames IntegrationDisplayNames) InvestigationFinding {
+func InvestigationFindingFromEnt(version *ent.InvestigationFindingVersion) InvestigationFinding {
 	turn := version.Edges.AgentTurn
 	attrs := InvestigationFindingAttributes{
 		FindingId:               version.FindingID,
 		Title:                   version.Title,
 		Body:                    version.Body,
-		References:              investigationReferencesFromEnt(version.Edges.OutputReferences, displayNames),
+		References:              investigationReferencesFromEnt(version.Edges.OutputReferences),
 		FindingReferences:       ConvertSlice(version.Edges.OutgoingLinks, FindingVersionReferenceFromEnt),
 		InvalidatedByVersionIds: version.InvalidatedByVersionIDs(),
 		AgentTurnId:             version.AgentTurnID,
@@ -286,14 +224,14 @@ func InvestigationFindingFromEnt(version *ent.InvestigationFindingVersion, displ
 	return InvestigationFinding{Id: version.ID, Attributes: attrs}
 }
 
-func InvestigationHypothesisFromEnt(version *ent.InvestigationHypothesisVersion, displayNames IntegrationDisplayNames) InvestigationHypothesis {
+func InvestigationHypothesisFromEnt(version *ent.InvestigationHypothesisVersion) InvestigationHypothesis {
 	turn := version.Edges.AgentTurn
 	attrs := InvestigationHypothesisAttributes{
 		HypothesisId:  version.HypothesisID,
 		Title:         version.Title,
 		Justification: version.Justification,
 		Status:        string(version.Status),
-		References:    investigationReferencesFromEnt(version.Edges.OutputReferences, displayNames),
+		References:    investigationReferencesFromEnt(version.Edges.OutputReferences),
 		AgentTurnId:   version.AgentTurnID,
 		TurnStatus:    investigationTurnStatus(turn),
 		Provisional:   investigationTurnProvisional(turn),
@@ -316,123 +254,20 @@ func investigationTurnProvisional(turn *ent.AgentTurn) bool {
 	return turn != nil && turn.Status == agentturn.StatusRunning
 }
 
-func investigationReferencesFromEnt(refs ent.InvestigationOutputReferences, displayNames IntegrationDisplayNames) []InvestigationReference {
-	return ConvertSlice(refs, func(ref *ent.InvestigationOutputReference) InvestigationReference {
-		return InvestigationReferenceFromEnt(ref, displayNames)
-	})
+func investigationReferencesFromEnt(refs ent.InvestigationOutputReferences) []InvestigationReference {
+	return ConvertSlice(refs, InvestigationReferenceFromEnt)
 }
 
-func InvestigationReferenceFromEnt(ref *ent.InvestigationOutputReference, displayNames IntegrationDisplayNames) InvestigationReference {
+func InvestigationReferenceFromEnt(ref *ent.InvestigationOutputReference) InvestigationReference {
 	if ref.AgentProviderReadID == nil {
 		return InvestigationReference{Kind: "knowledge_evidence", Id: *ref.KnowledgeEvidenceID}
 	}
 	reference := InvestigationReference{Kind: "provider_read", Id: *ref.AgentProviderReadID}
 	if read := ref.Edges.ProviderRead; read != nil {
-		reference.ProviderRead = InvestigationProviderReadSummaryFromEnt(read, displayNames)
+		providerRead := AgentProviderReadFromEnt(read)
+		reference.ProviderRead = &providerRead
 	}
 	return reference
-}
-
-// InvestigationProviderReadSummaryFromEnt takes the range from the read's input, which a read that failed
-// also has, and the query and link from the read that ran.
-func InvestigationProviderReadSummaryFromEnt(read *ent.AgentProviderRead, displayNames IntegrationDisplayNames) *InvestigationProviderReadSummary {
-	summary := &InvestigationProviderReadSummary{
-		ToolName: read.ToolName,
-		Limits:   []string{},
-		Status:   string(read.Status),
-	}
-	if service := read.Edges.ServiceEntity; service != nil {
-		summary.ServiceName = service.State.DisplayName
-	}
-	var input struct {
-		Start time.Time `json:"start"`
-		End   time.Time `json:"end"`
-	}
-	if json.Unmarshal(read.Input, &input) == nil {
-		summary.Start, summary.End = input.Start, input.End
-	}
-	var record rezai.ProviderReadRecord
-	if len(read.Read) > 0 && json.Unmarshal(read.Read, &record) == nil {
-		summary.ProviderDisplayName = displayNames(record.Integration)
-		summary.Query = record.Query
-		summary.ExploreUrl = record.ExploreURL
-		if record.Limits != nil {
-			summary.Limits = record.Limits
-		}
-	}
-	return summary
-}
-
-// InvestigationProviderReadFromEnt converts a provider read with its stored result. A result stored before
-// tool results hoisted shared labels carries the read record, and is left out.
-func InvestigationProviderReadFromEnt(read *ent.AgentProviderRead, displayNames IntegrationDisplayNames) InvestigationProviderRead {
-	attrs := InvestigationProviderReadAttributes{
-		Summary: *InvestigationProviderReadSummaryFromEnt(read, displayNames),
-	}
-	providerRead := InvestigationProviderRead{Id: read.ID, Attributes: attrs}
-	if read.Status != agentproviderread.StatusSucceeded || len(read.Result) == 0 {
-		return providerRead
-	}
-	var stored map[string]json.RawMessage
-	if json.Unmarshal(read.Result, &stored) != nil {
-		return providerRead
-	}
-	if _, earlierShape := stored["read"]; earlierShape {
-		return providerRead
-	}
-
-	switch read.ToolName {
-	case rezai.SearchLogsTool.Name():
-		var result rezai.SearchLogsToolResult
-		if json.Unmarshal(read.Result, &result) == nil {
-			providerRead.Attributes.LogSearch = providerReadLogSearchResult(result)
-		}
-	case rezai.CountLogsTool.Name():
-		var result rezai.CountLogsToolResult
-		if json.Unmarshal(read.Result, &result) == nil {
-			providerRead.Attributes.LogCount = providerReadLogCountResult(read, result)
-		}
-	}
-	return providerRead
-}
-
-func providerReadLogSearchResult(result rezai.SearchLogsToolResult) *ProviderReadLogSearchResult {
-	search := &ProviderReadLogSearchResult{
-		Labels: result.Labels,
-		Lines:  make([]ProviderReadLogLine, len(result.Lines)),
-	}
-	if search.Labels == nil {
-		search.Labels = map[string]string{}
-	}
-	for index, line := range result.Lines {
-		converted := ProviderReadLogLine{
-			Time:     line.Time,
-			Line:     line.Line,
-			Labels:   line.Labels,
-			Count:    max(line.Count, 1),
-			Earliest: line.Earliest,
-		}
-		if converted.Labels == nil {
-			converted.Labels = map[string]string{}
-		}
-		search.Lines[index] = converted
-	}
-	return search
-}
-
-// providerReadLogCountResult takes the step from the read's record.
-func providerReadLogCountResult(read *ent.AgentProviderRead, result rezai.CountLogsToolResult) *ProviderReadLogCountResult {
-	count := &ProviderReadLogCountResult{Points: make([]ProviderReadPoint, len(result.Points))}
-	for index, point := range result.Points {
-		count.Points[index] = ProviderReadPoint{Time: point.Time, Value: point.Value}
-	}
-	var record rezai.ProviderReadRecord
-	if len(read.Read) > 0 && json.Unmarshal(read.Read, &record) == nil && record.Step != "" {
-		if step, parseErr := time.ParseDuration(record.Step); parseErr == nil {
-			count.StepSeconds = int(step.Seconds())
-		}
-	}
-	return count
 }
 
 func FindingVersionReferenceFromEnt(link *ent.InvestigationFindingVersionLink) FindingVersionReference {
@@ -505,23 +340,6 @@ type GetInvestigationReportRequest struct {
 	Selection string    `query:"selection" enum:"latest,completed" default:"latest" required:"false"`
 }
 type GetInvestigationReportResponse ItemResponse[InvestigationReport]
-
-// GetInvestigationProviderRead returns a provider read one of the investigation's outputs cites, with what it
-// returned.
-var GetInvestigationProviderRead = openapi.Operation{
-	OperationID: "get-investigation-provider-read",
-	Method:      http.MethodGet,
-	Path:        "/investigations/{id}/provider-reads/{readId}",
-	Summary:     "Get Investigation Provider Read",
-	Tags:        investigationsTags,
-	Errors:      ErrorCodes(),
-}
-
-type GetInvestigationProviderReadRequest struct {
-	Id     uuid.UUID `path:"id"`
-	ReadId uuid.UUID `path:"readId"`
-}
-type GetInvestigationProviderReadResponse ItemResponse[InvestigationProviderRead]
 
 var ListInvestigationFindings = openapi.Operation{
 	OperationID: "list-investigation-findings",

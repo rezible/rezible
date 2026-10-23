@@ -17,6 +17,7 @@ import (
 	"github.com/rezible/rezible/ent/agentproviderread"
 	"github.com/rezible/rezible/ent/agentsession"
 	"github.com/rezible/rezible/ent/agentturn"
+	"github.com/rezible/rezible/ent/integration"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/predicate"
@@ -34,6 +35,7 @@ type AgentProviderReadQuery struct {
 	withAgentSession  *AgentSessionQuery
 	withAgentTurn     *AgentTurnQuery
 	withServiceEntity *KnowledgeEntityQuery
+	withIntegration   *IntegrationQuery
 	modifiers         []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -164,6 +166,31 @@ func (_q *AgentProviderReadQuery) QueryServiceEntity() *KnowledgeEntityQuery {
 		)
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.KnowledgeEntity
+		step.Edge.Schema = schemaConfig.AgentProviderRead
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryIntegration chains the current query on the "integration" edge.
+func (_q *AgentProviderReadQuery) QueryIntegration() *IntegrationQuery {
+	query := (&IntegrationClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(agentproviderread.Table, agentproviderread.FieldID, selector),
+			sqlgraph.To(integration.Table, integration.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, agentproviderread.IntegrationTable, agentproviderread.IntegrationColumn),
+		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.Integration
 		step.Edge.Schema = schemaConfig.AgentProviderRead
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -367,6 +394,7 @@ func (_q *AgentProviderReadQuery) Clone() *AgentProviderReadQuery {
 		withAgentSession:  _q.withAgentSession.Clone(),
 		withAgentTurn:     _q.withAgentTurn.Clone(),
 		withServiceEntity: _q.withServiceEntity.Clone(),
+		withIntegration:   _q.withIntegration.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
@@ -414,6 +442,17 @@ func (_q *AgentProviderReadQuery) WithServiceEntity(opts ...func(*KnowledgeEntit
 		opt(query)
 	}
 	_q.withServiceEntity = query
+	return _q
+}
+
+// WithIntegration tells the query-builder to eager-load the nodes that are connected to
+// the "integration" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *AgentProviderReadQuery) WithIntegration(opts ...func(*IntegrationQuery)) *AgentProviderReadQuery {
+	query := (&IntegrationClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withIntegration = query
 	return _q
 }
 
@@ -501,11 +540,12 @@ func (_q *AgentProviderReadQuery) sqlAll(ctx context.Context, hooks ...queryHook
 	var (
 		nodes       = []*AgentProviderRead{}
 		_spec       = _q.querySpec()
-		loadedTypes = [4]bool{
+		loadedTypes = [5]bool{
 			_q.withTenant != nil,
 			_q.withAgentSession != nil,
 			_q.withAgentTurn != nil,
 			_q.withServiceEntity != nil,
+			_q.withIntegration != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -552,6 +592,12 @@ func (_q *AgentProviderReadQuery) sqlAll(ctx context.Context, hooks ...queryHook
 	if query := _q.withServiceEntity; query != nil {
 		if err := _q.loadServiceEntity(ctx, query, nodes, nil,
 			func(n *AgentProviderRead, e *KnowledgeEntity) { n.Edges.ServiceEntity = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withIntegration; query != nil {
+		if err := _q.loadIntegration(ctx, query, nodes, nil,
+			func(n *AgentProviderRead, e *Integration) { n.Edges.Integration = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -674,6 +720,38 @@ func (_q *AgentProviderReadQuery) loadServiceEntity(ctx context.Context, query *
 	}
 	return nil
 }
+func (_q *AgentProviderReadQuery) loadIntegration(ctx context.Context, query *IntegrationQuery, nodes []*AgentProviderRead, init func(*AgentProviderRead), assign func(*AgentProviderRead, *Integration)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*AgentProviderRead)
+	for i := range nodes {
+		if nodes[i].IntegrationID == nil {
+			continue
+		}
+		fk := *nodes[i].IntegrationID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(integration.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "integration_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
 
 func (_q *AgentProviderReadQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := _q.querySpec()
@@ -716,6 +794,9 @@ func (_q *AgentProviderReadQuery) querySpec() *sqlgraph.QuerySpec {
 		}
 		if _q.withServiceEntity != nil {
 			_spec.Node.AddColumnOnce(agentproviderread.FieldServiceEntityID)
+		}
+		if _q.withIntegration != nil {
+			_spec.Node.AddColumnOnce(agentproviderread.FieldIntegrationID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {

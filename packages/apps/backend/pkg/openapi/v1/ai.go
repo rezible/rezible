@@ -2,6 +2,7 @@ package v1
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"time"
@@ -14,6 +15,7 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/agentturn"
+	rezai "github.com/rezible/rezible/pkg/ai"
 	"github.com/rezible/rezible/pkg/openapi"
 )
 
@@ -105,6 +107,41 @@ type (
 		Content     []AgentMessagePart `json:"content,omitempty"`
 		Uri         *string            `json:"uri,omitempty"`
 		Custom      map[string]any     `json:"custom,omitempty"`
+	}
+
+	// AgentProviderRead is a provider read an agent made: for which service and range, the integration that ran
+	// it, the native query, a link opening it in the provider and the items the agent highlighted. A failed read
+	// has no query or link.
+	AgentProviderRead struct {
+		Id         uuid.UUID                   `json:"id"`
+		Attributes AgentProviderReadAttributes `json:"attributes"`
+	}
+
+	AgentProviderReadAttributes struct {
+		ToolName string `json:"toolName"`
+		// IntegrationProvider and IntegrationDisplayName are empty once the integration is deleted.
+		IntegrationProvider    string                  `json:"integrationProvider"`
+		IntegrationDisplayName string                  `json:"integrationDisplayName"`
+		ServiceName            string                  `json:"serviceName"`
+		Start                  time.Time               `json:"start"`
+		End                    time.Time               `json:"end"`
+		Query                  string                  `json:"query"`
+		Limits                 []string                `json:"limits"`
+		SourceUrl              string                  `json:"sourceUrl"`
+		Status                 string                  `json:"status" enum:"running,succeeded,failed"`
+		Highlight              []AgentProviderReadItem `json:"highlight" doc:"Items the agent cited, newest citation first"`
+	}
+
+	// AgentProviderReadItem is a log line with its text, or a counted point with its value.
+	AgentProviderReadItem struct {
+		Ref    string            `json:"ref"`
+		Time   time.Time         `json:"time" doc:"The newest repeat's time when count is above one"`
+		Text   string            `json:"text,omitempty"`
+		Value  *float64          `json:"value,omitempty"`
+		Labels map[string]string `json:"labels"`
+		Count  int               `json:"count" doc:"How many consecutive identical items this entry stands for"`
+		// Earliest is the oldest repeat's time; set when Count is above one.
+		Earliest *time.Time `json:"earliest,omitempty"`
 	}
 
 	AgentTurn struct {
@@ -324,6 +361,55 @@ func AgentArtifactFromEnt(artifact *ent.AgentArtifact) (*AgentArtifact, error) {
 		UpdatedAt:       artifact.UpdatedAt,
 	}
 	return &AgentArtifact{Id: artifact.ID, Attributes: attrs}, nil
+}
+
+// AgentProviderReadFromEnt takes the range from the read's input, which a read that failed also has, the query
+// and link from the read that ran, and the integration from its edge.
+func AgentProviderReadFromEnt(read *ent.AgentProviderRead) AgentProviderRead {
+	attrs := AgentProviderReadAttributes{
+		ToolName:  read.ToolName,
+		Limits:    []string{},
+		Status:    string(read.Status),
+		Highlight: make([]AgentProviderReadItem, len(read.Highlight)),
+	}
+	if service := read.Edges.ServiceEntity; service != nil {
+		attrs.ServiceName = service.State.DisplayName
+	}
+	if integration := read.Edges.Integration; integration != nil {
+		attrs.IntegrationProvider = integration.Provider
+		attrs.IntegrationDisplayName = integration.DisplayName
+	}
+	var input struct {
+		Start time.Time `json:"start"`
+		End   time.Time `json:"end"`
+	}
+	if json.Unmarshal(read.Input, &input) == nil {
+		attrs.Start, attrs.End = input.Start, input.End
+	}
+	var record rezai.ProviderReadRecord
+	if len(read.Read) > 0 && json.Unmarshal(read.Read, &record) == nil {
+		attrs.Query = record.Query
+		attrs.SourceUrl = record.SourceURL
+		if record.Limits != nil {
+			attrs.Limits = record.Limits
+		}
+	}
+	for index, item := range read.Highlight {
+		converted := AgentProviderReadItem{
+			Ref:      item.Ref,
+			Time:     item.Time,
+			Text:     item.Text,
+			Value:    item.Value,
+			Labels:   item.Labels,
+			Count:    max(item.Count, 1),
+			Earliest: item.Earliest,
+		}
+		if converted.Labels == nil {
+			converted.Labels = map[string]string{}
+		}
+		attrs.Highlight[index] = converted
+	}
+	return AgentProviderRead{Id: read.ID, Attributes: attrs}
 }
 
 func AgentTurnFromEnt(turn *ent.AgentTurn) AgentTurn {

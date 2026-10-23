@@ -961,11 +961,13 @@ func (s *InvestigationServiceSuite) TestOutputsCiteProviderReads() {
 	evidenceID := graph.latestEvidenceID(ctx, checkout.ProviderResourceRef)
 
 	reads := NewAgentProviderReadService(tdb, test.NewClock(time.Now()))
+	integrationID := createTestLogIntegration(ctx, s.Require(), tdb)
 	startRead := func(turn *ent.AgentTurn) uuid.UUID {
 		params := rez.StartAgentProviderReadParams{
 			AgentTurnID:     turn.ID,
 			ToolName:        rezai.SearchLogsTool.Name(),
 			ServiceEntityID: graph.entityID(ctx, payments),
+			IntegrationID:   integrationID,
 			Input:           []byte(`{}`),
 		}
 		read, _, startErr := reads.StartProviderRead(ctx, params)
@@ -974,15 +976,19 @@ func (s *InvestigationServiceSuite) TestOutputsCiteProviderReads() {
 	}
 	readID := startRead(turn)
 	finishParams := rez.FinishAgentProviderReadParams{
-		ID:     readID,
-		Read:   []byte(`{"query":"{service=\"payments-api\"}"}`),
-		Result: []byte(`{"lines":[]}`),
+		ID:   readID,
+		Read: []byte(`{"query":"{service=\"payments-api\"}"}`),
 	}
 	s.Require().NoError(reads.FinishProviderRead(ctx, finishParams))
 
+	item := func(ref string) schematypes.ProviderReadItem {
+		return schematypes.ProviderReadItem{Ref: ref, Time: time.Date(2026, 10, 15, 10, 0, 0, 0, time.UTC), Text: "line " + ref,
+			Labels: map[string]string{"service": "payments-api"}}
+	}
 	params := rez.PublishInvestigationReportParams{
 		Text:        "Payments ran out of connections.",
 		EvidenceIDs: []uuid.UUID{readID, evidenceID},
+		CitedItems:  map[uuid.UUID][]schematypes.ProviderReadItem{readID: {item("2")}},
 	}
 	report, publishErr := service.PublishInvestigationReport(ctx, turnScope, params)
 	s.Require().NoError(publishErr)
@@ -997,9 +1003,34 @@ func (s *InvestigationServiceSuite) TestOutputsCiteProviderReads() {
 			cited := reference.Edges.ProviderRead
 			s.Equal(graph.entityID(ctx, payments), cited.Edges.ServiceEntity.ID)
 			s.JSONEq(string(finishParams.Read), string(cited.Read), "the summary's record loads")
-			s.Empty(cited.Result, "the stored result does not load with outputs")
+			s.Equal(integrationID, cited.Edges.Integration.ID, "the integration loads")
+			s.Equal([]schematypes.ProviderReadItem{item("2")}, cited.Highlight, "the cited item is saved with the output")
 		}
 	}
+
+	hypothesis := rez.PublishInvestigationHypothesisParams{
+		Key:           "pool",
+		Title:         "The pool is too small",
+		Justification: "Connections ran out.",
+		Status:        investigationhypothesisversion.StatusSupported,
+		EvidenceIDs:   []uuid.UUID{readID},
+		CitedItems:    map[uuid.UUID][]schematypes.ProviderReadItem{readID: {item("5"), item("7")}},
+	}
+	_, hypothesisErr := service.PublishInvestigationHypothesis(ctx, turnScope, hypothesis)
+	s.Require().NoError(hypothesisErr)
+	finding := rez.PublishInvestigationFindingParams{
+		Key:         "pool",
+		Title:       "The pool ran out",
+		Body:        "Connections ran out.",
+		EvidenceIDs: []uuid.UUID{readID},
+		CitedItems:  map[uuid.UUID][]schematypes.ProviderReadItem{readID: {item("9"), item("7")}},
+	}
+	_, findingErr := service.PublishInvestigationFinding(ctx, turnScope, finding)
+	s.Require().NoError(findingErr)
+	merged, mergedErr := tdb.Client(ctx).AgentProviderRead.Get(ctx, readID)
+	s.Require().NoError(mergedErr)
+	s.Equal([]schematypes.ProviderReadItem{item("9"), item("7"), item("5")}, merged.Highlight,
+		"later outputs' items go in front, without repeating a ref, keeping three")
 	var analysisEntityIDs []uuid.UUID
 	queryEntities := tdb.Client(ctx).SystemAnalysisEntity.Query().
 		Where(sae.AnalysisID(investigation.SystemAnalysisID)).
@@ -1080,60 +1111,4 @@ func (s *InvestigationServiceSuite) TestInvestigationReportNextChecks() {
 		s.Require().NoError(plainErr)
 		s.Empty(plain.NextChecks)
 	})
-}
-
-func (s *InvestigationServiceSuite) TestGetCitedProviderRead() {
-	ctx, tdb := s.SetupTestDatabase()
-	jobService := mocks.NewMockJobService(s.T())
-	service, investigation, turn := s.outputFixture(ctx, tdb, jobService)
-	scope := rez.InvestigationPublicationScope{
-		InvestigationID: investigation.ID,
-		AgentTurnID:     turn.ID,
-	}
-	graph := newTestGraph(s.Require(), tdb)
-	payments := graph.entity(kne.CategoryContainer, "service", "provider-a", "payments-api")
-	graph.record(ctx, time.Now().UTC(), graph.observeEntity(payments, "payments-api"))
-
-	reads := NewAgentProviderReadService(tdb, test.NewClock(time.Now()))
-	recordRead := func(finish rez.FinishAgentProviderReadParams) uuid.UUID {
-		start := rez.StartAgentProviderReadParams{
-			AgentTurnID:     turn.ID,
-			ToolName:        rezai.SearchLogsTool.Name(),
-			ServiceEntityID: graph.entityID(ctx, payments),
-			Input:           []byte(`{}`),
-		}
-		read, _, startErr := reads.StartProviderRead(ctx, start)
-		s.Require().NoError(startErr)
-		finish.ID = read.ID
-		s.Require().NoError(reads.FinishProviderRead(ctx, finish))
-		return read.ID
-	}
-	citedID := recordRead(rez.FinishAgentProviderReadParams{
-		Read:   []byte(`{"query":"{service=\"payments-api\"}"}`),
-		Result: []byte(`{"lines":[{"time":"2026-10-15T10:00:00Z","line":"upstream timeout"}]}`),
-	})
-	failedID := recordRead(rez.FinishAgentProviderReadParams{Error: "provider said: connection refused"})
-	uncitedID := recordRead(rez.FinishAgentProviderReadParams{Result: []byte(`{"lines":[]}`)})
-	report := rez.PublishInvestigationReportParams{
-		Text:        "Payments timed out.",
-		EvidenceIDs: []uuid.UUID{citedID, failedID},
-	}
-	_, publishErr := service.PublishInvestigationReport(ctx, scope, report)
-	s.Require().NoError(publishErr)
-
-	cited, citedErr := service.GetCitedProviderRead(ctx, investigation.ID, citedID)
-	s.Require().NoError(citedErr)
-	s.JSONEq(`{"lines":[{"time":"2026-10-15T10:00:00Z","line":"upstream timeout"}]}`, string(cited.Result), "the stored result loads")
-	s.Equal("payments-api", cited.Edges.ServiceEntity.State.DisplayName)
-
-	failed, failedErr := service.GetCitedProviderRead(ctx, investigation.ID, failedID)
-	s.Require().NoError(failedErr)
-	s.Empty(failed.Result)
-
-	_, uncitedErr := service.GetCitedProviderRead(ctx, investigation.ID, uncitedID)
-	s.ErrorIs(uncitedErr, errs.ErrNotFound, "a read no output cites is not found")
-
-	_, otherInvestigation := s.createLifecycleInvestigation(ctx, tdb, jobService)
-	_, otherErr := service.GetCitedProviderRead(ctx, otherInvestigation.ID, citedID)
-	s.ErrorIs(otherErr, errs.ErrNotFound, "a read cited by another investigation is not found")
 }

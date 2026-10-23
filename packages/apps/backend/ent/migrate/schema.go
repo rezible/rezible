@@ -140,12 +140,13 @@ var (
 		{Name: "input", Type: field.TypeJSON, SchemaType: map[string]string{"postgres": "jsonb"}},
 		{Name: "status", Type: field.TypeEnum, Enums: []string{"running", "succeeded", "failed"}, Default: "running"},
 		{Name: "read", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
-		{Name: "result", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
+		{Name: "highlight", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
 		{Name: "error", Type: field.TypeString, Nullable: true},
 		{Name: "finished_at", Type: field.TypeTime, Nullable: true},
 		{Name: "tenant_id", Type: field.TypeInt},
 		{Name: "agent_session_id", Type: field.TypeUUID},
 		{Name: "service_entity_id", Type: field.TypeUUID},
+		{Name: "integration_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "agent_turn_id", Type: field.TypeUUID},
 	}
 	// AgentProviderReadsTable holds the schema information for the "agent_provider_reads" table.
@@ -173,8 +174,14 @@ var (
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "agent_provider_reads_agent_turns_provider_reads",
+				Symbol:     "agent_provider_reads_integrations_integration",
 				Columns:    []*schema.Column{AgentProviderReadsColumns[13]},
+				RefColumns: []*schema.Column{IntegrationsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "agent_provider_reads_agent_turns_provider_reads",
+				Columns:    []*schema.Column{AgentProviderReadsColumns[14]},
 				RefColumns: []*schema.Column{AgentTurnsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -188,7 +195,7 @@ var (
 			{
 				Name:    "agentproviderread_agent_turn_id",
 				Unique:  false,
-				Columns: []*schema.Column{AgentProviderReadsColumns[13]},
+				Columns: []*schema.Column{AgentProviderReadsColumns[14]},
 			},
 		},
 	}
@@ -5332,7 +5339,8 @@ func init() {
 	AgentProviderReadsTable.ForeignKeys[0].RefTable = TenantsTable
 	AgentProviderReadsTable.ForeignKeys[1].RefTable = AgentSessionsTable
 	AgentProviderReadsTable.ForeignKeys[2].RefTable = KnowledgeEntitiesTable
-	AgentProviderReadsTable.ForeignKeys[3].RefTable = AgentTurnsTable
+	AgentProviderReadsTable.ForeignKeys[3].RefTable = IntegrationsTable
+	AgentProviderReadsTable.ForeignKeys[4].RefTable = AgentTurnsTable
 	AgentSessionsTable.ForeignKeys[0].RefTable = TenantsTable
 	AgentSessionBindingsTable.ForeignKeys[0].RefTable = AgentSessionsTable
 	AgentSessionBindingsTable.ForeignKeys[1].RefTable = TenantsTable

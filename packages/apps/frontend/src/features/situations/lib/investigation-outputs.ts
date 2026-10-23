@@ -1,7 +1,7 @@
 import type {
+	AgentProviderRead,
 	InvestigationFinding,
 	InvestigationHypothesis,
-	InvestigationProviderReadSummary,
 	InvestigationReference,
 	InvestigationReportAttributes,
 } from "$lib/api";
@@ -22,15 +22,31 @@ export type CitationView = {
 export type ProviderReadView = {
 	label: string;
 	serviceName: string;
+	/** The integration that ran the read; empty once it is deleted. */
+	integration: string;
 	/** The range read, with its date: a read can start the day before the situation opened. */
 	range: string;
 	query: string;
 	limits: string[];
 	/** Undefined when the read failed before the provider ran it. */
-	exploreUrl: string | undefined;
+	sourceUrl: string | undefined;
 	/** Names the provider the link opens in. */
-	exploreLabel: string;
+	sourceLabel: string;
 	failed: boolean;
+	/** The items the investigation cited, newest citation first. */
+	highlight: ProviderReadItemView[];
+};
+
+/** A log line or a counted point, shown the same way. */
+export type ProviderReadItemView = {
+	key: string;
+	time: string;
+	/** The line's text, or the point's value. */
+	content: string;
+	/** The item's labels as `key=value`. */
+	labels: string[];
+	/** Shown when the item stands for repeats. */
+	repeats: string | undefined;
 };
 
 export type FindingView = {
@@ -126,26 +142,52 @@ export function referenceNumbers(references: { id: string }[]): Map<string, numb
 	return numbers;
 }
 
-export function providerReadView(summary: InvestigationProviderReadSummary): ProviderReadView {
-	let exploreUrl: string | undefined;
-	if (summary.exploreUrl) {
-		exploreUrl = summary.exploreUrl;
+function labelPairs(labels: Record<string, string>): string[] {
+	return Object.entries(labels)
+		.sort(([first], [second]) => first.localeCompare(second))
+		.map(([key, value]) => `${key}=${value}`);
+}
+
+export function providerReadView(read: AgentProviderRead): ProviderReadView {
+	const attributes = read.attributes;
+	const integration = attributes.integrationDisplayName || attributes.integrationProvider;
+	let sourceUrl: string | undefined;
+	if (attributes.sourceUrl) {
+		sourceUrl = attributes.sourceUrl;
 	}
 
-	let exploreLabel = "Open in provider";
-	if (summary.providerDisplayName) {
-		exploreLabel = `Open in ${summary.providerDisplayName}`;
+	let sourceLabel = "Open in provider";
+	if (integration) {
+		sourceLabel = `Open in ${integration}`;
 	}
 
 	return {
-		label: PROVIDER_READ_LABELS[summary.toolName] ?? summary.toolName,
-		serviceName: summary.serviceName,
-		range: providerReadRangeLabel(summary.start, summary.end),
-		query: summary.query,
-		limits: summary.limits,
-		exploreUrl,
-		exploreLabel,
-		failed: summary.status === "failed",
+		label: PROVIDER_READ_LABELS[attributes.toolName] ?? attributes.toolName,
+		serviceName: attributes.serviceName,
+		integration,
+		range: providerReadRangeLabel(attributes.start, attributes.end),
+		query: attributes.query,
+		limits: attributes.limits,
+		sourceUrl,
+		sourceLabel,
+		failed: attributes.status === "failed",
+		highlight: attributes.highlight.map((item) => {
+			let repeats: string | undefined;
+			if (item.count > 1) {
+				repeats = `×${item.count}`;
+			}
+			let content = item.text ?? "";
+			if (item.value !== undefined) {
+				content = String(item.value);
+			}
+			return {
+				key: item.ref,
+				time: item.time,
+				content,
+				labels: labelPairs(item.labels),
+				repeats,
+			};
+		}),
 	};
 }
 

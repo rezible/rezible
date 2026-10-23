@@ -175,10 +175,11 @@ var schemaGraph = func() *sqlgraph.Schema {
 			agentproviderread.FieldAgentTurnID:     {Type: field.TypeUUID, Column: agentproviderread.FieldAgentTurnID},
 			agentproviderread.FieldToolName:        {Type: field.TypeString, Column: agentproviderread.FieldToolName},
 			agentproviderread.FieldServiceEntityID: {Type: field.TypeUUID, Column: agentproviderread.FieldServiceEntityID},
+			agentproviderread.FieldIntegrationID:   {Type: field.TypeUUID, Column: agentproviderread.FieldIntegrationID},
 			agentproviderread.FieldInput:           {Type: field.TypeJSON, Column: agentproviderread.FieldInput},
 			agentproviderread.FieldStatus:          {Type: field.TypeEnum, Column: agentproviderread.FieldStatus},
 			agentproviderread.FieldRead:            {Type: field.TypeJSON, Column: agentproviderread.FieldRead},
-			agentproviderread.FieldResult:          {Type: field.TypeJSON, Column: agentproviderread.FieldResult},
+			agentproviderread.FieldHighlight:       {Type: field.TypeJSON, Column: agentproviderread.FieldHighlight},
 			agentproviderread.FieldError:           {Type: field.TypeString, Column: agentproviderread.FieldError},
 			agentproviderread.FieldFinishedAt:      {Type: field.TypeTime, Column: agentproviderread.FieldFinishedAt},
 		},
@@ -2243,6 +2244,18 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		"AgentProviderRead",
 		"KnowledgeEntity",
+	)
+	graph.MustAddE(
+		"integration",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   agentproviderread.IntegrationTable,
+			Columns: []string{agentproviderread.IntegrationColumn},
+			Bidi:    false,
+		},
+		"AgentProviderRead",
+		"Integration",
 	)
 	graph.MustAddE(
 		"tenant",
@@ -7250,6 +7263,11 @@ func (f *AgentProviderReadFilter) WhereServiceEntityID(p entql.ValueP) {
 	f.Where(p.Field(agentproviderread.FieldServiceEntityID))
 }
 
+// WhereIntegrationID applies the entql [16]byte predicate on the integration_id field.
+func (f *AgentProviderReadFilter) WhereIntegrationID(p entql.ValueP) {
+	f.Where(p.Field(agentproviderread.FieldIntegrationID))
+}
+
 // WhereInput applies the entql json.RawMessage predicate on the input field.
 func (f *AgentProviderReadFilter) WhereInput(p entql.BytesP) {
 	f.Where(p.Field(agentproviderread.FieldInput))
@@ -7265,9 +7283,9 @@ func (f *AgentProviderReadFilter) WhereRead(p entql.BytesP) {
 	f.Where(p.Field(agentproviderread.FieldRead))
 }
 
-// WhereResult applies the entql json.RawMessage predicate on the result field.
-func (f *AgentProviderReadFilter) WhereResult(p entql.BytesP) {
-	f.Where(p.Field(agentproviderread.FieldResult))
+// WhereHighlight applies the entql json.RawMessage predicate on the highlight field.
+func (f *AgentProviderReadFilter) WhereHighlight(p entql.BytesP) {
+	f.Where(p.Field(agentproviderread.FieldHighlight))
 }
 
 // WhereError applies the entql string predicate on the error field.
@@ -7330,6 +7348,20 @@ func (f *AgentProviderReadFilter) WhereHasServiceEntity() {
 // WhereHasServiceEntityWith applies a predicate to check if query has an edge service_entity with a given conditions (other predicates).
 func (f *AgentProviderReadFilter) WhereHasServiceEntityWith(preds ...predicate.KnowledgeEntity) {
 	f.Where(entql.HasEdgeWith("service_entity", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasIntegration applies a predicate to check if query has an edge integration.
+func (f *AgentProviderReadFilter) WhereHasIntegration() {
+	f.Where(entql.HasEdge("integration"))
+}
+
+// WhereHasIntegrationWith applies a predicate to check if query has an edge integration with a given conditions (other predicates).
+func (f *AgentProviderReadFilter) WhereHasIntegrationWith(preds ...predicate.Integration) {
+	f.Where(entql.HasEdgeWith("integration", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}

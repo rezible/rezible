@@ -161,6 +161,46 @@ export type AgentModelChunk = {
     role: string;
 };
 
+export type AgentProviderRead = {
+    attributes: AgentProviderReadAttributes;
+    id: string;
+};
+
+export type AgentProviderReadAttributes = {
+    end: string;
+    /**
+     * Items the agent cited, newest citation first
+     */
+    highlight: Array<AgentProviderReadItem>;
+    integrationDisplayName: string;
+    integrationProvider: string;
+    limits: Array<string>;
+    query: string;
+    serviceName: string;
+    sourceUrl: string;
+    start: string;
+    status: 'running' | 'succeeded' | 'failed';
+    toolName: string;
+};
+
+export type AgentProviderReadItem = {
+    /**
+     * How many consecutive identical items this entry stands for
+     */
+    count: number;
+    earliest?: string;
+    labels: {
+        [key: string]: string;
+    };
+    ref: string;
+    text?: string;
+    /**
+     * The newest repeat's time when count is above one
+     */
+    time: string;
+    value?: number;
+};
+
 export type AgentSession = {
     attributes: AgentSessionAttributes;
     id: string;
@@ -1513,14 +1553,6 @@ export type GetInvestigationHypothesisResponseBody = {
     data: InvestigationHypothesis;
 };
 
-export type GetInvestigationProviderReadResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: InvestigationProviderRead;
-};
-
 export type GetInvestigationReportResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
@@ -2227,33 +2259,10 @@ export type InvestigationNextCheck = {
     reason: string;
 };
 
-export type InvestigationProviderRead = {
-    attributes: InvestigationProviderReadAttributes;
-    id: string;
-};
-
-export type InvestigationProviderReadAttributes = {
-    logCount?: ProviderReadLogCountResult;
-    logSearch?: ProviderReadLogSearchResult;
-    summary: InvestigationProviderReadSummary;
-};
-
-export type InvestigationProviderReadSummary = {
-    end: string;
-    exploreUrl: string;
-    limits: Array<string>;
-    providerDisplayName: string;
-    query: string;
-    serviceName: string;
-    start: string;
-    status: 'running' | 'succeeded' | 'failed';
-    toolName: string;
-};
-
 export type InvestigationReference = {
     id: string;
     kind: 'knowledge_evidence' | 'provider_read';
-    providerRead?: InvestigationProviderReadSummary;
+    providerRead?: AgentProviderRead;
 };
 
 export type InvestigationReport = {
@@ -3118,48 +3127,6 @@ export type Playbook = {
 export type PlaybookAttributes = {
     content: string;
     title: string;
-};
-
-export type ProviderReadLogCountResult = {
-    points: Array<ProviderReadPoint>;
-    /**
-     * Seconds between points; zero when unknown
-     */
-    stepSeconds: number;
-};
-
-export type ProviderReadLogLine = {
-    /**
-     * How many consecutive identical lines this entry stands for
-     */
-    count: number;
-    earliest?: string;
-    /**
-     * This line's labels that are not shared by every line
-     */
-    labels: {
-        [key: string]: string;
-    };
-    line: string;
-    /**
-     * The newest repeat's time when count is above one
-     */
-    time: string;
-};
-
-export type ProviderReadLogSearchResult = {
-    labels: {
-        [key: string]: string;
-    };
-    /**
-     * Newest first
-     */
-    lines: Array<ProviderReadLogLine>;
-};
-
-export type ProviderReadPoint = {
-    time: string;
-    value: number;
 };
 
 export type ProviderResourceRef = {
@@ -9793,54 +9760,6 @@ export type GetInvestigationHypothesisResponses = {
 };
 
 export type GetInvestigationHypothesisResponse = GetInvestigationHypothesisResponses[keyof GetInvestigationHypothesisResponses];
-
-export type GetInvestigationProviderReadData = {
-    body?: never;
-    path: {
-        id: string;
-        readId: string;
-    };
-    query?: never;
-    url: '/investigations/{id}/provider-reads/{readId}';
-};
-
-export type GetInvestigationProviderReadErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type GetInvestigationProviderReadError = GetInvestigationProviderReadErrors[keyof GetInvestigationProviderReadErrors];
-
-export type GetInvestigationProviderReadResponses = {
-    /**
-     * OK
-     */
-    200: GetInvestigationProviderReadResponseBody;
-};
-
-export type GetInvestigationProviderReadResponse = GetInvestigationProviderReadResponses[keyof GetInvestigationProviderReadResponses];
 
 export type GetInvestigationReportData = {
     body?: never;

@@ -632,6 +632,7 @@ func (s *SituationBriefServiceSuite) TestReadersAfterServiceMerge() {
 		AgentTurnID:     turn.ID,
 		ToolName:        "search_logs",
 		ServiceEntityID: otherID,
+		IntegrationID:   createTestLogIntegration(ctx, s.Require(), tdb),
 		Input:           json.RawMessage(`{"service":"` + otherID.String() + `"}`),
 	}
 	providerRead, _, readErr := NewAgentProviderReadService(tdb, h.clock).StartProviderRead(ctx, readParams)

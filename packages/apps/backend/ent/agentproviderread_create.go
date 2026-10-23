@@ -17,7 +17,9 @@ import (
 	"github.com/rezible/rezible/ent/agentproviderread"
 	"github.com/rezible/rezible/ent/agentsession"
 	"github.com/rezible/rezible/ent/agentturn"
+	"github.com/rezible/rezible/ent/integration"
 	"github.com/rezible/rezible/ent/knowledgeentity"
+	"github.com/rezible/rezible/ent/schema/schematypes"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
@@ -87,6 +89,20 @@ func (_c *AgentProviderReadCreate) SetServiceEntityID(v uuid.UUID) *AgentProvide
 	return _c
 }
 
+// SetIntegrationID sets the "integration_id" field.
+func (_c *AgentProviderReadCreate) SetIntegrationID(v uuid.UUID) *AgentProviderReadCreate {
+	_c.mutation.SetIntegrationID(v)
+	return _c
+}
+
+// SetNillableIntegrationID sets the "integration_id" field if the given value is not nil.
+func (_c *AgentProviderReadCreate) SetNillableIntegrationID(v *uuid.UUID) *AgentProviderReadCreate {
+	if v != nil {
+		_c.SetIntegrationID(*v)
+	}
+	return _c
+}
+
 // SetInput sets the "input" field.
 func (_c *AgentProviderReadCreate) SetInput(v jsontext.Value) *AgentProviderReadCreate {
 	_c.mutation.SetInput(v)
@@ -113,9 +129,9 @@ func (_c *AgentProviderReadCreate) SetRead(v jsontext.Value) *AgentProviderReadC
 	return _c
 }
 
-// SetResult sets the "result" field.
-func (_c *AgentProviderReadCreate) SetResult(v jsontext.Value) *AgentProviderReadCreate {
-	_c.mutation.SetResult(v)
+// SetHighlight sets the "highlight" field.
+func (_c *AgentProviderReadCreate) SetHighlight(v []schematypes.ProviderReadItem) *AgentProviderReadCreate {
+	_c.mutation.SetHighlight(v)
 	return _c
 }
 
@@ -179,6 +195,11 @@ func (_c *AgentProviderReadCreate) SetAgentTurn(v *AgentTurn) *AgentProviderRead
 // SetServiceEntity sets the "service_entity" edge to the KnowledgeEntity entity.
 func (_c *AgentProviderReadCreate) SetServiceEntity(v *KnowledgeEntity) *AgentProviderReadCreate {
 	return _c.SetServiceEntityID(v.ID)
+}
+
+// SetIntegration sets the "integration" edge to the Integration entity.
+func (_c *AgentProviderReadCreate) SetIntegration(v *Integration) *AgentProviderReadCreate {
+	return _c.SetIntegrationID(v.ID)
 }
 
 // Mutation returns the AgentProviderReadMutation object of the builder.
@@ -358,9 +379,9 @@ func (_c *AgentProviderReadCreate) createSpec() (*AgentProviderRead, *sqlgraph.C
 		_spec.SetField(agentproviderread.FieldRead, field.TypeJSON, value)
 		_node.Read = value
 	}
-	if value, ok := _c.mutation.Result(); ok {
-		_spec.SetField(agentproviderread.FieldResult, field.TypeJSON, value)
-		_node.Result = value
+	if value, ok := _c.mutation.Highlight(); ok {
+		_spec.SetField(agentproviderread.FieldHighlight, field.TypeJSON, value)
+		_node.Highlight = value
 	}
 	if value, ok := _c.mutation.Error(); ok {
 		_spec.SetField(agentproviderread.FieldError, field.TypeString, value)
@@ -440,6 +461,24 @@ func (_c *AgentProviderReadCreate) createSpec() (*AgentProviderRead, *sqlgraph.C
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.ServiceEntityID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.IntegrationIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   agentproviderread.IntegrationTable,
+			Columns: []string{agentproviderread.IntegrationColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(integration.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.AgentProviderRead
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.IntegrationID = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
@@ -530,6 +569,24 @@ func (u *AgentProviderReadUpsert) UpdateServiceEntityID() *AgentProviderReadUpse
 	return u
 }
 
+// SetIntegrationID sets the "integration_id" field.
+func (u *AgentProviderReadUpsert) SetIntegrationID(v uuid.UUID) *AgentProviderReadUpsert {
+	u.Set(agentproviderread.FieldIntegrationID, v)
+	return u
+}
+
+// UpdateIntegrationID sets the "integration_id" field to the value that was provided on create.
+func (u *AgentProviderReadUpsert) UpdateIntegrationID() *AgentProviderReadUpsert {
+	u.SetExcluded(agentproviderread.FieldIntegrationID)
+	return u
+}
+
+// ClearIntegrationID clears the value of the "integration_id" field.
+func (u *AgentProviderReadUpsert) ClearIntegrationID() *AgentProviderReadUpsert {
+	u.SetNull(agentproviderread.FieldIntegrationID)
+	return u
+}
+
 // SetStatus sets the "status" field.
 func (u *AgentProviderReadUpsert) SetStatus(v agentproviderread.Status) *AgentProviderReadUpsert {
 	u.Set(agentproviderread.FieldStatus, v)
@@ -560,21 +617,21 @@ func (u *AgentProviderReadUpsert) ClearRead() *AgentProviderReadUpsert {
 	return u
 }
 
-// SetResult sets the "result" field.
-func (u *AgentProviderReadUpsert) SetResult(v jsontext.Value) *AgentProviderReadUpsert {
-	u.Set(agentproviderread.FieldResult, v)
+// SetHighlight sets the "highlight" field.
+func (u *AgentProviderReadUpsert) SetHighlight(v []schematypes.ProviderReadItem) *AgentProviderReadUpsert {
+	u.Set(agentproviderread.FieldHighlight, v)
 	return u
 }
 
-// UpdateResult sets the "result" field to the value that was provided on create.
-func (u *AgentProviderReadUpsert) UpdateResult() *AgentProviderReadUpsert {
-	u.SetExcluded(agentproviderread.FieldResult)
+// UpdateHighlight sets the "highlight" field to the value that was provided on create.
+func (u *AgentProviderReadUpsert) UpdateHighlight() *AgentProviderReadUpsert {
+	u.SetExcluded(agentproviderread.FieldHighlight)
 	return u
 }
 
-// ClearResult clears the value of the "result" field.
-func (u *AgentProviderReadUpsert) ClearResult() *AgentProviderReadUpsert {
-	u.SetNull(agentproviderread.FieldResult)
+// ClearHighlight clears the value of the "highlight" field.
+func (u *AgentProviderReadUpsert) ClearHighlight() *AgentProviderReadUpsert {
+	u.SetNull(agentproviderread.FieldHighlight)
 	return u
 }
 
@@ -719,6 +776,27 @@ func (u *AgentProviderReadUpsertOne) UpdateServiceEntityID() *AgentProviderReadU
 	})
 }
 
+// SetIntegrationID sets the "integration_id" field.
+func (u *AgentProviderReadUpsertOne) SetIntegrationID(v uuid.UUID) *AgentProviderReadUpsertOne {
+	return u.Update(func(s *AgentProviderReadUpsert) {
+		s.SetIntegrationID(v)
+	})
+}
+
+// UpdateIntegrationID sets the "integration_id" field to the value that was provided on create.
+func (u *AgentProviderReadUpsertOne) UpdateIntegrationID() *AgentProviderReadUpsertOne {
+	return u.Update(func(s *AgentProviderReadUpsert) {
+		s.UpdateIntegrationID()
+	})
+}
+
+// ClearIntegrationID clears the value of the "integration_id" field.
+func (u *AgentProviderReadUpsertOne) ClearIntegrationID() *AgentProviderReadUpsertOne {
+	return u.Update(func(s *AgentProviderReadUpsert) {
+		s.ClearIntegrationID()
+	})
+}
+
 // SetStatus sets the "status" field.
 func (u *AgentProviderReadUpsertOne) SetStatus(v agentproviderread.Status) *AgentProviderReadUpsertOne {
 	return u.Update(func(s *AgentProviderReadUpsert) {
@@ -754,24 +832,24 @@ func (u *AgentProviderReadUpsertOne) ClearRead() *AgentProviderReadUpsertOne {
 	})
 }
 
-// SetResult sets the "result" field.
-func (u *AgentProviderReadUpsertOne) SetResult(v jsontext.Value) *AgentProviderReadUpsertOne {
+// SetHighlight sets the "highlight" field.
+func (u *AgentProviderReadUpsertOne) SetHighlight(v []schematypes.ProviderReadItem) *AgentProviderReadUpsertOne {
 	return u.Update(func(s *AgentProviderReadUpsert) {
-		s.SetResult(v)
+		s.SetHighlight(v)
 	})
 }
 
-// UpdateResult sets the "result" field to the value that was provided on create.
-func (u *AgentProviderReadUpsertOne) UpdateResult() *AgentProviderReadUpsertOne {
+// UpdateHighlight sets the "highlight" field to the value that was provided on create.
+func (u *AgentProviderReadUpsertOne) UpdateHighlight() *AgentProviderReadUpsertOne {
 	return u.Update(func(s *AgentProviderReadUpsert) {
-		s.UpdateResult()
+		s.UpdateHighlight()
 	})
 }
 
-// ClearResult clears the value of the "result" field.
-func (u *AgentProviderReadUpsertOne) ClearResult() *AgentProviderReadUpsertOne {
+// ClearHighlight clears the value of the "highlight" field.
+func (u *AgentProviderReadUpsertOne) ClearHighlight() *AgentProviderReadUpsertOne {
 	return u.Update(func(s *AgentProviderReadUpsert) {
-		s.ClearResult()
+		s.ClearHighlight()
 	})
 }
 
@@ -1089,6 +1167,27 @@ func (u *AgentProviderReadUpsertBulk) UpdateServiceEntityID() *AgentProviderRead
 	})
 }
 
+// SetIntegrationID sets the "integration_id" field.
+func (u *AgentProviderReadUpsertBulk) SetIntegrationID(v uuid.UUID) *AgentProviderReadUpsertBulk {
+	return u.Update(func(s *AgentProviderReadUpsert) {
+		s.SetIntegrationID(v)
+	})
+}
+
+// UpdateIntegrationID sets the "integration_id" field to the value that was provided on create.
+func (u *AgentProviderReadUpsertBulk) UpdateIntegrationID() *AgentProviderReadUpsertBulk {
+	return u.Update(func(s *AgentProviderReadUpsert) {
+		s.UpdateIntegrationID()
+	})
+}
+
+// ClearIntegrationID clears the value of the "integration_id" field.
+func (u *AgentProviderReadUpsertBulk) ClearIntegrationID() *AgentProviderReadUpsertBulk {
+	return u.Update(func(s *AgentProviderReadUpsert) {
+		s.ClearIntegrationID()
+	})
+}
+
 // SetStatus sets the "status" field.
 func (u *AgentProviderReadUpsertBulk) SetStatus(v agentproviderread.Status) *AgentProviderReadUpsertBulk {
 	return u.Update(func(s *AgentProviderReadUpsert) {
@@ -1124,24 +1223,24 @@ func (u *AgentProviderReadUpsertBulk) ClearRead() *AgentProviderReadUpsertBulk {
 	})
 }
 
-// SetResult sets the "result" field.
-func (u *AgentProviderReadUpsertBulk) SetResult(v jsontext.Value) *AgentProviderReadUpsertBulk {
+// SetHighlight sets the "highlight" field.
+func (u *AgentProviderReadUpsertBulk) SetHighlight(v []schematypes.ProviderReadItem) *AgentProviderReadUpsertBulk {
 	return u.Update(func(s *AgentProviderReadUpsert) {
-		s.SetResult(v)
+		s.SetHighlight(v)
 	})
 }
 
-// UpdateResult sets the "result" field to the value that was provided on create.
-func (u *AgentProviderReadUpsertBulk) UpdateResult() *AgentProviderReadUpsertBulk {
+// UpdateHighlight sets the "highlight" field to the value that was provided on create.
+func (u *AgentProviderReadUpsertBulk) UpdateHighlight() *AgentProviderReadUpsertBulk {
 	return u.Update(func(s *AgentProviderReadUpsert) {
-		s.UpdateResult()
+		s.UpdateHighlight()
 	})
 }
 
-// ClearResult clears the value of the "result" field.
-func (u *AgentProviderReadUpsertBulk) ClearResult() *AgentProviderReadUpsertBulk {
+// ClearHighlight clears the value of the "highlight" field.
+func (u *AgentProviderReadUpsertBulk) ClearHighlight() *AgentProviderReadUpsertBulk {
 	return u.Update(func(s *AgentProviderReadUpsert) {
-		s.ClearResult()
+		s.ClearHighlight()
 	})
 }
 

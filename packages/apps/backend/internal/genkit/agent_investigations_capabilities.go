@@ -5,8 +5,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"maps"
 	"slices"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/firebase/genkit/go/ai"
@@ -46,6 +48,16 @@ type investigationInvocation struct {
 	hasAssignedQuestion bool
 	// providerReadWindow is set from the situation when the introduction is built; nil without a situation.
 	providerReadWindow *rezai.ProviderReadWindow
+
+	// readItems are the items of this invocation's provider reads by read ID, for citing them.
+	readItemsMu sync.Mutex
+	readItems   map[uuid.UUID]providerReadItems
+}
+
+// providerReadItems are a read's items and the labels they all share.
+type providerReadItems struct {
+	labels map[string]string
+	items  []rezai.ProviderReadItem
 }
 
 func (i *investigationInvocation) makeHooks(ctx context.Context, invCtx *agentInvocationContext) (*ai.Hooks, error) {
@@ -555,7 +567,7 @@ func (i *investigationInvocation) readOutput(ctx context.Context, input rezai.Re
 }
 
 func (i *investigationInvocation) publishReport(ctx context.Context, input rezai.PublishInvestigationReportToolInput) (*rezai.InvestigationReportToolResult, error) {
-	evidenceIDs, resolveErr := i.resolveRefs(input.EvidenceRefs)
+	evidenceIDs, citedItems, resolveErr := i.resolveEvidenceRefs(input.EvidenceRefs)
 	if resolveErr != nil {
 		return nil, fmt.Errorf("evidence_refs: %w", resolveErr)
 	}
@@ -567,6 +579,7 @@ func (i *investigationInvocation) publishReport(ctx context.Context, input rezai
 		Text:        input.Text,
 		Summary:     input.Summary,
 		EvidenceIDs: evidenceIDs,
+		CitedItems:  citedItems,
 		NextChecks:  nextChecks,
 	}
 	scope := rez.InvestigationPublicationScope{InvestigationID: i.investigationID, AgentTurnID: i.turnID}
@@ -578,7 +591,7 @@ func (i *investigationInvocation) publishReport(ctx context.Context, input rezai
 }
 
 func (i *investigationInvocation) publishFinding(ctx context.Context, input rezai.PublishInvestigationFindingToolInput) (*rezai.InvestigationFindingVersionToolResult, error) {
-	evidenceIDs, resolveErr := i.resolveRefs(input.EvidenceRefs)
+	evidenceIDs, citedItems, resolveErr := i.resolveEvidenceRefs(input.EvidenceRefs)
 	if resolveErr != nil {
 		return nil, fmt.Errorf("evidence_refs: %w", resolveErr)
 	}
@@ -591,6 +604,7 @@ func (i *investigationInvocation) publishFinding(ctx context.Context, input reza
 		Title:             input.Title,
 		Body:              input.Body,
 		EvidenceIDs:       evidenceIDs,
+		CitedItems:        citedItems,
 		FindingReferences: findingReferences,
 	}
 	scope := rez.InvestigationPublicationScope{InvestigationID: i.investigationID, AgentTurnID: i.turnID}
@@ -602,7 +616,7 @@ func (i *investigationInvocation) publishFinding(ctx context.Context, input reza
 }
 
 func (i *investigationInvocation) publishAnswer(ctx context.Context, input rezai.PublishInvestigationAnswerToolInput) (*rezai.InvestigationFindingVersionToolResult, error) {
-	evidenceIDs, resolveErr := i.resolveRefs(input.EvidenceRefs)
+	evidenceIDs, citedItems, resolveErr := i.resolveEvidenceRefs(input.EvidenceRefs)
 	if resolveErr != nil {
 		return nil, fmt.Errorf("evidence_refs: %w", resolveErr)
 	}
@@ -614,6 +628,7 @@ func (i *investigationInvocation) publishAnswer(ctx context.Context, input rezai
 		Title:             input.Title,
 		Body:              input.Body,
 		EvidenceIDs:       evidenceIDs,
+		CitedItems:        citedItems,
 		FindingReferences: findingReferences,
 	}
 	scope := rez.InvestigationPublicationScope{InvestigationID: i.investigationID, AgentTurnID: i.turnID}
@@ -625,7 +640,7 @@ func (i *investigationInvocation) publishAnswer(ctx context.Context, input rezai
 }
 
 func (i *investigationInvocation) publishHypothesis(ctx context.Context, input rezai.PublishInvestigationHypothesisToolInput) (*rezai.InvestigationHypothesisVersionToolResult, error) {
-	evidenceIDs, resolveErr := i.resolveRefs(input.EvidenceRefs)
+	evidenceIDs, citedItems, resolveErr := i.resolveEvidenceRefs(input.EvidenceRefs)
 	if resolveErr != nil {
 		return nil, fmt.Errorf("evidence_refs: %w", resolveErr)
 	}
@@ -639,6 +654,7 @@ func (i *investigationInvocation) publishHypothesis(ctx context.Context, input r
 		Justification: input.Justification,
 		Status:        invhv.Status(status),
 		EvidenceIDs:   evidenceIDs,
+		CitedItems:    citedItems,
 	}
 	scope := rez.InvestigationPublicationScope{InvestigationID: i.investigationID, AgentTurnID: i.turnID}
 	result, publishErr := i.outputs.PublishInvestigationHypothesis(ctx, scope, params)
@@ -815,16 +831,58 @@ func (i *investigationInvocation) resolveRef(ref string) (uuid.UUID, error) {
 	return id, nil
 }
 
-func (i *investigationInvocation) resolveRefs(refs []string) ([]uuid.UUID, error) {
+// resolveEvidenceRefs resolves evidence refs to the IDs they cite. A <provider_read_ref>#<item ref> cites the
+// read and names one of its items, with the read's shared labels merged in; an output may name up to
+// rezai.MaxProviderReadHighlight items of one read.
+func (i *investigationInvocation) resolveEvidenceRefs(refs []string) ([]uuid.UUID, map[uuid.UUID][]schematypes.ProviderReadItem, error) {
 	ids := make([]uuid.UUID, len(refs))
+	cited := make(map[uuid.UUID][]schematypes.ProviderReadItem)
 	for index, ref := range refs {
-		id, resolveErr := i.resolveRef(ref)
+		readRef, itemRef, isItem := strings.Cut(ref, "#")
+		id, resolveErr := i.resolveRef(readRef)
 		if resolveErr != nil {
-			return nil, fmt.Errorf("reference at index %d: %w", index, resolveErr)
+			return nil, nil, fmt.Errorf("reference at index %d: %w", index, resolveErr)
 		}
 		ids[index] = id
+		if !isItem {
+			continue
+		}
+		item, itemErr := i.readItem(id, itemRef)
+		if itemErr != nil {
+			return nil, nil, fmt.Errorf("reference at index %d: %w", index, itemErr)
+		}
+		if len(cited[id]) == rezai.MaxProviderReadHighlight {
+			return nil, nil, fmt.Errorf("%w: reference at index %d: at most %d items of one read can be cited", errs.ErrInvalidInput, index, rezai.MaxProviderReadHighlight)
+		}
+		cited[id] = append(cited[id], item)
 	}
-	return ids, nil
+	return ids, cited, nil
+}
+
+func (i *investigationInvocation) keepReadItems(readID uuid.UUID, labels map[string]string, items []rezai.ProviderReadItem) {
+	i.readItemsMu.Lock()
+	defer i.readItemsMu.Unlock()
+	i.readItems[readID] = providerReadItems{labels: labels, items: items}
+}
+
+func (i *investigationInvocation) readItem(readID uuid.UUID, itemRef string) (schematypes.ProviderReadItem, error) {
+	i.readItemsMu.Lock()
+	defer i.readItemsMu.Unlock()
+	read, found := i.readItems[readID]
+	if !found {
+		return schematypes.ProviderReadItem{}, fmt.Errorf("%w: %s is not a provider read made this turn, so its items cannot be cited", errs.ErrInvalidInput, i.formatRef(readID))
+	}
+	for _, item := range read.items {
+		if item.Ref != itemRef {
+			continue
+		}
+		labels := make(map[string]string, len(read.labels)+len(item.Labels))
+		maps.Copy(labels, read.labels)
+		maps.Copy(labels, item.Labels)
+		item.Labels = labels
+		return item, nil
+	}
+	return schematypes.ProviderReadItem{}, fmt.Errorf("%w: provider read %s has no item %q", errs.ErrInvalidInput, i.formatRef(readID), itemRef)
 }
 
 func (i *investigationInvocation) formatRef(id uuid.UUID) string {

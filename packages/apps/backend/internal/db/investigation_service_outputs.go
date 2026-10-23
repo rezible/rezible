@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"slices"
 	"sort"
 	"strings"
 	"time"
@@ -107,7 +108,7 @@ func (s *InvestigationService) PublishInvestigationReport(ctx context.Context, s
 			agentSessionID: current.AgentSessionID,
 			reportID:       &created.ID,
 		}
-		if referenceErr := s.saveInvestigationEvidenceIDs(ctx, reportRef, evidenceIDs); referenceErr != nil {
+		if referenceErr := s.saveInvestigationEvidenceIDs(ctx, reportRef, evidenceIDs, params.CitedItems); referenceErr != nil {
 			return nil, referenceErr
 		}
 		return s.getInvestigationReport(ctx, created.ID)
@@ -155,6 +156,7 @@ func (s *InvestigationService) PublishInvestigationFinding(ctx context.Context, 
 		Title:             strings.TrimSpace(input.Title),
 		Body:              strings.TrimSpace(input.Body),
 		EvidenceIDs:       s.normalizeInvestigationEvidenceIDs(input.EvidenceIDs),
+		CitedItems:        input.CitedItems,
 		FindingReferences: s.normalizeFindingVersionReferences(input.FindingReferences),
 	}
 	if investigationID == uuid.Nil || turnID == uuid.Nil || params.Key == "" || params.Title == "" || params.Body == "" {
@@ -215,7 +217,7 @@ func (s *InvestigationService) PublishInvestigationFinding(ctx context.Context, 
 			agentSessionID:   current.AgentSessionID,
 			findingVersionID: &created.ID,
 		}
-		if refErr := s.saveInvestigationEvidenceIDs(ctx, findingRef, params.EvidenceIDs); refErr != nil {
+		if refErr := s.saveInvestigationEvidenceIDs(ctx, findingRef, params.EvidenceIDs, params.CitedItems); refErr != nil {
 			return nil, refErr
 		}
 		if linkErr := s.saveFindingVersionReferences(ctx, created.ID, params.FindingReferences); linkErr != nil {
@@ -231,6 +233,7 @@ func (s *InvestigationService) PublishInvestigationAnswer(ctx context.Context, s
 		Title:             strings.TrimSpace(input.Title),
 		Body:              strings.TrimSpace(input.Body),
 		EvidenceIDs:       s.normalizeInvestigationEvidenceIDs(input.EvidenceIDs),
+		CitedItems:        input.CitedItems,
 		FindingReferences: s.normalizeFindingVersionReferences(input.FindingReferences),
 	}
 	if investigationID == uuid.Nil || turnID == uuid.Nil || params.Title == "" || params.Body == "" {
@@ -303,7 +306,7 @@ func (s *InvestigationService) PublishInvestigationAnswer(ctx context.Context, s
 			agentSessionID:   current.AgentSessionID,
 			findingVersionID: &created.ID,
 		}
-		if referenceErr := s.saveInvestigationEvidenceIDs(ctx, findingRef, params.EvidenceIDs); referenceErr != nil {
+		if referenceErr := s.saveInvestigationEvidenceIDs(ctx, findingRef, params.EvidenceIDs, params.CitedItems); referenceErr != nil {
 			return nil, referenceErr
 		}
 		if linkErr := s.saveFindingVersionReferences(ctx, created.ID, params.FindingReferences); linkErr != nil {
@@ -386,7 +389,7 @@ func (s *InvestigationService) PublishInvestigationHypothesis(ctx context.Contex
 			agentSessionID:      current.AgentSessionID,
 			hypothesisVersionID: &created.ID,
 		}
-		if refErr := s.saveInvestigationEvidenceIDs(ctx, hypRef, params.EvidenceIDs); refErr != nil {
+		if refErr := s.saveInvestigationEvidenceIDs(ctx, hypRef, params.EvidenceIDs, params.CitedItems); refErr != nil {
 			return nil, refErr
 		}
 		return s.getHypothesisVersion(ctx, current.ID, created.ID)
@@ -530,34 +533,8 @@ func (s *InvestigationService) ListInvestigationHypotheses(ctx context.Context, 
 	}, nil
 }
 
-func (s *InvestigationService) GetCitedProviderRead(ctx context.Context, investigationID, readID uuid.UUID) (*ent.AgentProviderRead, error) {
-	if investigationID == uuid.Nil || readID == uuid.Nil {
-		return nil, fmt.Errorf("%w: investigation and provider read IDs are required", errs.ErrInvalidInput)
-	}
-	lookupCitation := s.db.Client(ctx).InvestigationOutputReference.Query().
-		Where(
-			invor.AgentProviderReadID(readID),
-			invor.Or(
-				invor.HasReportWith(invr.InvestigationID(investigationID)),
-				invor.HasFindingVersionWith(invfv.HasFindingWith(invf.InvestigationID(investigationID))),
-				invor.HasHypothesisVersionWith(invhv.HasHypothesisWith(invh.InvestigationID(investigationID))),
-			),
-		)
-	isCited, citedErr := lookupCitation.Exist(ctx)
-	if citedErr != nil {
-		return nil, fmt.Errorf("check provider read citation: %w", citedErr)
-	}
-	if !isCited {
-		return nil, fmt.Errorf("%w: the investigation's outputs do not cite provider read %s", errs.ErrNotFound, readID)
-	}
-	queryRead := s.db.Client(ctx).AgentProviderRead.Query().
-		Where(apr.ID(readID)).
-		WithServiceEntity()
-	return queryRead.Only(ctx)
-}
-
-// orderOutputReferences orders references by what they cite, loading cited provider reads with their service.
-// A read's stored result can be large and no reader of an output needs it, so it is not selected.
+// orderOutputReferences orders references by what they cite, loading cited provider reads with their service
+// and integration.
 func (s *InvestigationService) orderOutputReferences(q *ent.InvestigationOutputReferenceQuery) {
 	q.Order(invor.ByKnowledgeEvidenceID(), invor.ByAgentProviderReadID()).
 		WithProviderRead(func(q *ent.AgentProviderReadQuery) {
@@ -567,9 +544,12 @@ func (s *InvestigationService) orderOutputReferences(q *ent.InvestigationOutputR
 				apr.FieldServiceEntityID,
 				apr.FieldInput,
 				apr.FieldStatus,
+				apr.FieldIntegrationID,
 				apr.FieldRead,
+				apr.FieldHighlight,
 			).
-				WithServiceEntity()
+				WithServiceEntity().
+				WithIntegration()
 		})
 }
 
@@ -839,9 +819,10 @@ type investigationOutputRef struct {
 }
 
 // saveInvestigationEvidenceIDs saves the citations. IDs that are provider reads of the investigation's agent
-// session cite those reads; every other ID must be knowledge evidence, whose subject is included in the
-// investigation's analysis. Provider reads are not graph subjects, so they add nothing to it.
-func (s *InvestigationService) saveInvestigationEvidenceIDs(ctx context.Context, ref investigationOutputRef, ids []uuid.UUID) error {
+// session cite those reads, and their cited items are merged into their highlights; every other ID must be
+// knowledge evidence, whose subject is included in the investigation's analysis. Provider reads are not graph
+// subjects, so they add nothing to it.
+func (s *InvestigationService) saveInvestigationEvidenceIDs(ctx context.Context, ref investigationOutputRef, ids []uuid.UUID, citedItems map[uuid.UUID][]schematypes.ProviderReadItem) error {
 	if len(ids) == 0 {
 		return nil
 	}
@@ -858,6 +839,23 @@ func (s *InvestigationService) saveInvestigationEvidenceIDs(ctx context.Context,
 			return fmt.Errorf("%w: provider read %s was made by another agent session", errs.ErrInvalidInput, read.ID)
 		}
 		providerReadIDs.Add(read.ID)
+		if items := citedItems[read.ID]; len(items) > 0 {
+			highlight := make([]schematypes.ProviderReadItem, 0, rezai.MaxProviderReadHighlight)
+			seen := mapset.NewSet[string]()
+			for _, item := range slices.Concat(items, read.Highlight) {
+				if len(highlight) == rezai.MaxProviderReadHighlight {
+					break
+				}
+				if seen.Add(item.Ref) {
+					highlight = append(highlight, item)
+				}
+			}
+			updateHighlight := client.AgentProviderRead.UpdateOne(read).
+				SetHighlight(highlight)
+			if updateErr := updateHighlight.Exec(ctx); updateErr != nil {
+				return fmt.Errorf("save provider read highlight: %w", updateErr)
+			}
+		}
 	}
 	evidenceIDs := make([]uuid.UUID, 0, len(ids))
 	for _, id := range ids {

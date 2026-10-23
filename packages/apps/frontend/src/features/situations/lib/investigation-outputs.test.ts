@@ -135,29 +135,35 @@ test("flags map to row badges", () => {
 });
 
 test("provider read citations carry what was read and where to open it", () => {
-	const summary = {
+	const attributes = {
 		toolName: "search_logs",
-		providerDisplayName: "Provider A",
+		integrationProvider: "provider-a",
+		integrationDisplayName: "Provider A",
 		serviceName: "payments-api",
 		start: "2026-05-14T04:00:00Z",
 		end: "2026-05-14T05:00:00Z",
 		query: '{service="payments-api"} |= "pool"',
 		limits: [],
-		exploreUrl: "https://example.com/explore",
+		sourceUrl: "https://example.com/explore",
 		status: "succeeded" as const,
+		highlight: [],
 	};
 	const references = [
 		ref("e1"),
-		{ id: "r1", kind: "provider_read" as const, providerRead: summary },
+		{ id: "r1", kind: "provider_read" as const, providerRead: { id: "r1", attributes } },
 		{
 			id: "r2",
 			kind: "provider_read" as const,
 			providerRead: {
-				...summary,
-				providerDisplayName: "",
-				query: "",
-				exploreUrl: "",
-				status: "failed" as const,
+				id: "r2",
+				attributes: {
+					...attributes,
+					integrationProvider: "",
+					integrationDisplayName: "",
+					query: "",
+					sourceUrl: "",
+					status: "failed" as const,
+				},
 			},
 		},
 	];
@@ -171,11 +177,11 @@ test("provider read citations carry what was read and where to open it", () => {
 
 	expect(evidence.providerRead).toBeUndefined();
 	expect(read.providerRead?.label).toBe("Log search");
-	expect(read.providerRead?.exploreUrl).toBe("https://example.com/explore");
-	expect(read.providerRead?.exploreLabel).toContain("Provider A");
+	expect(read.providerRead?.sourceUrl).toBe("https://example.com/explore");
+	expect(read.providerRead?.sourceLabel).toContain("Provider A");
 	expect(read.providerRead?.failed).toBe(false);
-	expect(failed.providerRead?.exploreUrl).toBeUndefined();
-	expect(failed.providerRead?.exploreLabel).toBe("Open in provider");
+	expect(failed.providerRead?.sourceUrl).toBeUndefined();
+	expect(failed.providerRead?.sourceLabel).toBe("Open in provider");
 	expect(failed.providerRead?.failed).toBe(true);
 });
 

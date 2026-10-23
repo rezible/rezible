@@ -1,6 +1,7 @@
 import { expect, test } from "bun:test";
 import type {
-	InvestigationProviderRead,
+	AgentProviderRead,
+	AgentProviderReadItem,
 	InvestigationReportAttributes,
 	SituationBrief,
 	SituationBriefDeployment,
@@ -10,7 +11,6 @@ import {
 	briefSections,
 	changesState,
 	checkedState,
-	providerReadResultView,
 	unseenState,
 	type BriefLoad,
 } from "./brief";
@@ -206,22 +206,40 @@ test("changesState: deployments link to their source, else their evidence, and s
 	expect(payments.deployments).toEqual([]);
 });
 
-test("checkedState lists the latest report's provider reads in citation order", () => {
-	const summary = {
-		toolName: "search_logs",
-		providerDisplayName: "Logs",
-		serviceName: "checkout-api",
-		start: "2026-10-15T09:00:00Z",
-		end: "2026-10-15T10:00:00Z",
-		query: '{service="checkout-api"}',
-		limits: [],
-		exploreUrl: "",
-		status: "succeeded" as const,
-	};
+test("checkedState lists the latest report's provider reads in citation order with their highlighted items", () => {
+	const read = (id: string, toolName: string, highlight: AgentProviderReadItem[]): AgentProviderRead => ({
+		id,
+		attributes: {
+			toolName,
+			integrationProvider: "provider-a",
+			integrationDisplayName: "Logs",
+			serviceName: "checkout-api",
+			start: "2026-10-15T09:00:00Z",
+			end: "2026-10-15T10:00:00Z",
+			query: '{service="checkout-api"}',
+			limits: [],
+			sourceUrl: "https://logs.example/explore",
+			status: "succeeded",
+			highlight,
+		},
+	});
+	const search = read("search", "search_logs", [
+		{
+			ref: "2",
+			time: "2026-10-15T09:59:00Z",
+			text: "upstream timeout",
+			labels: { service: "checkout-api", pod: "a" },
+			count: 3,
+		},
+	]);
+	const count = read("count", "count_logs", [
+		{ ref: "7", time: "2026-10-15T09:30:00Z", value: 12, labels: {}, count: 1 },
+	]);
 	const withReads = report({
 		references: [
 			{ id: "evidence", kind: "knowledge_evidence" },
-			{ id: "read", kind: "provider_read", providerRead: summary },
+			{ id: "search", kind: "provider_read", providerRead: search },
+			{ id: "count", kind: "provider_read", providerRead: count },
 		],
 	});
 
@@ -229,9 +247,47 @@ test("checkedState lists the latest report's provider reads in citation order", 
 	expect(checkedState(report({ references: [{ id: "evidence", kind: "knowledge_evidence" }] }))).toEqual({
 		kind: "none_cited",
 	});
+	const shared = {
+		serviceName: "checkout-api",
+		integration: "Logs",
+		range: expect.any(String),
+		query: '{service="checkout-api"}',
+		limits: [],
+		sourceUrl: "https://logs.example/explore",
+		sourceLabel: "Open in Logs",
+		failed: false,
+	};
 	const state = checkedState(withReads);
-	expect(state.kind === "reads" && state.reads.map((read) => [read.id, read.number])).toEqual([
-		["read", 2],
+	// The views carry nothing to expand: only what is shown.
+	expect(state.kind === "reads" && state.reads).toEqual([
+		{
+			id: "search",
+			number: 2,
+			read: {
+				...shared,
+				label: "Log search",
+				highlight: [
+					{
+						key: "2",
+						time: "2026-10-15T09:59:00Z",
+						content: "upstream timeout",
+						labels: ["pod=a", "service=checkout-api"],
+						repeats: "×3",
+					},
+				],
+			},
+		},
+		{
+			id: "count",
+			number: 3,
+			read: {
+				...shared,
+				label: expect.any(String),
+				highlight: [
+					{ key: "7", time: "2026-10-15T09:30:00Z", content: "12", labels: [], repeats: undefined },
+				],
+			},
+		},
 	]);
 });
 
@@ -250,56 +306,4 @@ test("unseenState lists every entry, and is unavailable when the brief is", () =
 		"not_read",
 	]);
 	expect(unseenState({ kind: "error" })).toEqual({ kind: "error" });
-});
-
-test("providerReadResultView: lines newest first, counts as bars, failed reads without their error", () => {
-	const read = (attributes: Partial<InvestigationProviderRead["attributes"]>, status = "succeeded") =>
-		({
-			id: "read",
-			attributes: {
-				summary: { start: "2026-10-15T09:00:00Z", end: "2026-10-15T10:00:00Z", status },
-				...attributes,
-			},
-		}) as InvestigationProviderRead;
-
-	const search = providerReadResultView(
-		read({
-			logSearch: {
-				labels: { service: "checkout-api" },
-				lines: [
-					{ time: "2026-10-15T09:50:00Z", line: "retrying", labels: {}, count: 1 },
-					{
-						time: "2026-10-15T09:59:00Z",
-						line: "upstream timeout",
-						labels: { pod: "a" },
-						count: 3,
-					},
-				],
-			},
-		})
-	);
-	expect(search.kind === "log_search" && search.lines.map((line) => [line.line, line.repeats])).toEqual([
-		["upstream timeout", "×3"],
-		["retrying", undefined],
-	]);
-
-	const count = providerReadResultView(
-		read({
-			logCount: {
-				points: [
-					{ time: "2026-10-15T09:55:00Z", value: 1 },
-					{ time: "2026-10-15T10:00:00Z", value: 100 },
-					{ time: "2026-10-15T10:05:00Z", value: 0 },
-				],
-				stepSeconds: 300,
-			},
-		})
-	);
-	expect(count.kind === "log_count" && count.points.map((point) => point.heightPercent)).toEqual([
-		4, 100, 0,
-	]);
-	expect(count.kind === "log_count" && count.step).toBe("5m");
-
-	expect(providerReadResultView(read({}, "failed"))).toEqual({ kind: "failed" });
-	expect(providerReadResultView(read({}))).toEqual({ kind: "unavailable" });
 });

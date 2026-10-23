@@ -60,6 +60,7 @@ func (s *AgentProviderReadService) StartProviderRead(ctx context.Context, params
 			SetAgentTurnID(turn.ID).
 			SetToolName(params.ToolName).
 			SetServiceEntityID(params.ServiceEntityID).
+			SetIntegrationID(params.IntegrationID).
 			SetInput(params.Input)
 		read, createErr := createRead.Save(ctx)
 		if createErr != nil {
@@ -83,9 +84,6 @@ func (s *AgentProviderReadService) FinishProviderRead(ctx context.Context, param
 		SetFinishedAt(s.clock.Now())
 	if len(params.Read) > 0 {
 		updateRead.SetRead(params.Read)
-	}
-	if len(params.Result) > 0 {
-		updateRead.SetResult(params.Result)
 	}
 	if params.Error != "" {
 		updateRead.SetError(params.Error)

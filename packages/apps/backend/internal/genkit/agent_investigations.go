@@ -118,6 +118,7 @@ func (m *investigationCapabilitiesMiddleware) New(ctx context.Context) (*ai.Hook
 		investigationDependencies: m.deps,
 		investigationID:           current.ID,
 		turnID:                    invCtx.Turn.ID,
+		readItems:                 make(map[uuid.UUID]providerReadItems),
 	}
 
 	return i.makeHooks(ctx, invCtx)

@@ -15,7 +15,9 @@ import (
 	"github.com/rezible/rezible/ent/agentproviderread"
 	"github.com/rezible/rezible/ent/agentsession"
 	"github.com/rezible/rezible/ent/agentturn"
+	"github.com/rezible/rezible/ent/integration"
 	"github.com/rezible/rezible/ent/knowledgeentity"
+	"github.com/rezible/rezible/ent/schema/schematypes"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
@@ -38,14 +40,16 @@ type AgentProviderRead struct {
 	ToolName string `json:"tool_name,omitempty"`
 	// ServiceEntityID holds the value of the "service_entity_id" field.
 	ServiceEntityID uuid.UUID `json:"service_entity_id,omitempty"`
+	// IntegrationID holds the value of the "integration_id" field.
+	IntegrationID *uuid.UUID `json:"integration_id,omitempty"`
 	// Input holds the value of the "input" field.
 	Input jsontext.Value `json:"input,omitempty"`
 	// Status holds the value of the "status" field.
 	Status agentproviderread.Status `json:"status,omitempty"`
 	// Read holds the value of the "read" field.
 	Read jsontext.Value `json:"read,omitempty"`
-	// Result holds the value of the "result" field.
-	Result jsontext.Value `json:"result,omitempty"`
+	// Highlight holds the value of the "highlight" field.
+	Highlight []schematypes.ProviderReadItem `json:"highlight,omitempty"`
 	// Error holds the value of the "error" field.
 	Error *string `json:"error,omitempty"`
 	// FinishedAt holds the value of the "finished_at" field.
@@ -66,9 +70,11 @@ type AgentProviderReadEdges struct {
 	AgentTurn *AgentTurn `json:"agent_turn,omitempty"`
 	// ServiceEntity holds the value of the service_entity edge.
 	ServiceEntity *KnowledgeEntity `json:"service_entity,omitempty"`
+	// Integration holds the value of the integration edge.
+	Integration *Integration `json:"integration,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [4]bool
+	loadedTypes [5]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -115,12 +121,25 @@ func (e AgentProviderReadEdges) ServiceEntityOrErr() (*KnowledgeEntity, error) {
 	return nil, &NotLoadedError{edge: "service_entity"}
 }
 
+// IntegrationOrErr returns the Integration value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e AgentProviderReadEdges) IntegrationOrErr() (*Integration, error) {
+	if e.Integration != nil {
+		return e.Integration, nil
+	} else if e.loadedTypes[4] {
+		return nil, &NotFoundError{label: integration.Label}
+	}
+	return nil, &NotLoadedError{edge: "integration"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*AgentProviderRead) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case agentproviderread.FieldInput, agentproviderread.FieldRead, agentproviderread.FieldResult:
+		case agentproviderread.FieldIntegrationID:
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
+		case agentproviderread.FieldInput, agentproviderread.FieldRead, agentproviderread.FieldHighlight:
 			values[i] = new([]byte)
 		case agentproviderread.FieldTenantID:
 			values[i] = new(sql.NullInt64)
@@ -193,6 +212,13 @@ func (_m *AgentProviderRead) assignValues(columns []string, values []any) error 
 			} else if value != nil {
 				_m.ServiceEntityID = *value
 			}
+		case agentproviderread.FieldIntegrationID:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field integration_id", values[i])
+			} else if value.Valid {
+				_m.IntegrationID = new(uuid.UUID)
+				*_m.IntegrationID = *value.S.(*uuid.UUID)
+			}
 		case agentproviderread.FieldInput:
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field input", values[i])
@@ -215,12 +241,12 @@ func (_m *AgentProviderRead) assignValues(columns []string, values []any) error 
 					return fmt.Errorf("unmarshal field read: %w", err)
 				}
 			}
-		case agentproviderread.FieldResult:
+		case agentproviderread.FieldHighlight:
 			if value, ok := values[i].(*[]byte); !ok {
-				return fmt.Errorf("unexpected type %T for field result", values[i])
+				return fmt.Errorf("unexpected type %T for field highlight", values[i])
 			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &_m.Result); err != nil {
-					return fmt.Errorf("unmarshal field result: %w", err)
+				if err := json.Unmarshal(*value, &_m.Highlight); err != nil {
+					return fmt.Errorf("unmarshal field highlight: %w", err)
 				}
 			}
 		case agentproviderread.FieldError:
@@ -270,6 +296,11 @@ func (_m *AgentProviderRead) QueryServiceEntity() *KnowledgeEntityQuery {
 	return NewAgentProviderReadClient(_m.config).QueryServiceEntity(_m)
 }
 
+// QueryIntegration queries the "integration" edge of the AgentProviderRead entity.
+func (_m *AgentProviderRead) QueryIntegration() *IntegrationQuery {
+	return NewAgentProviderReadClient(_m.config).QueryIntegration(_m)
+}
+
 // Update returns a builder for updating this AgentProviderRead.
 // Note that you need to call AgentProviderRead.Unwrap() before calling this method if this AgentProviderRead
 // was returned from a transaction, and the transaction was committed or rolled back.
@@ -314,6 +345,11 @@ func (_m *AgentProviderRead) String() string {
 	builder.WriteString("service_entity_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.ServiceEntityID))
 	builder.WriteString(", ")
+	if v := _m.IntegrationID; v != nil {
+		builder.WriteString("integration_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
 	builder.WriteString("input=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Input))
 	builder.WriteString(", ")
@@ -323,8 +359,8 @@ func (_m *AgentProviderRead) String() string {
 	builder.WriteString("read=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Read))
 	builder.WriteString(", ")
-	builder.WriteString("result=")
-	builder.WriteString(fmt.Sprintf("%v", _m.Result))
+	builder.WriteString("highlight=")
+	builder.WriteString(fmt.Sprintf("%v", _m.Highlight))
 	builder.WriteString(", ")
 	if v := _m.Error; v != nil {
 		builder.WriteString("error=")

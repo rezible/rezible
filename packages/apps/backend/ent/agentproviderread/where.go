@@ -92,6 +92,11 @@ func ServiceEntityID(v uuid.UUID) predicate.AgentProviderRead {
 	return predicate.AgentProviderRead(sql.FieldEQ(FieldServiceEntityID, v))
 }
 
+// IntegrationID applies equality check predicate on the "integration_id" field. It's identical to IntegrationIDEQ.
+func IntegrationID(v uuid.UUID) predicate.AgentProviderRead {
+	return predicate.AgentProviderRead(sql.FieldEQ(FieldIntegrationID, v))
+}
+
 // Error applies equality check predicate on the "error" field. It's identical to ErrorEQ.
 func Error(v string) predicate.AgentProviderRead {
 	return predicate.AgentProviderRead(sql.FieldEQ(FieldError, v))
@@ -327,6 +332,36 @@ func ServiceEntityIDNotIn(vs ...uuid.UUID) predicate.AgentProviderRead {
 	return predicate.AgentProviderRead(sql.FieldNotIn(FieldServiceEntityID, vs...))
 }
 
+// IntegrationIDEQ applies the EQ predicate on the "integration_id" field.
+func IntegrationIDEQ(v uuid.UUID) predicate.AgentProviderRead {
+	return predicate.AgentProviderRead(sql.FieldEQ(FieldIntegrationID, v))
+}
+
+// IntegrationIDNEQ applies the NEQ predicate on the "integration_id" field.
+func IntegrationIDNEQ(v uuid.UUID) predicate.AgentProviderRead {
+	return predicate.AgentProviderRead(sql.FieldNEQ(FieldIntegrationID, v))
+}
+
+// IntegrationIDIn applies the In predicate on the "integration_id" field.
+func IntegrationIDIn(vs ...uuid.UUID) predicate.AgentProviderRead {
+	return predicate.AgentProviderRead(sql.FieldIn(FieldIntegrationID, vs...))
+}
+
+// IntegrationIDNotIn applies the NotIn predicate on the "integration_id" field.
+func IntegrationIDNotIn(vs ...uuid.UUID) predicate.AgentProviderRead {
+	return predicate.AgentProviderRead(sql.FieldNotIn(FieldIntegrationID, vs...))
+}
+
+// IntegrationIDIsNil applies the IsNil predicate on the "integration_id" field.
+func IntegrationIDIsNil() predicate.AgentProviderRead {
+	return predicate.AgentProviderRead(sql.FieldIsNull(FieldIntegrationID))
+}
+
+// IntegrationIDNotNil applies the NotNil predicate on the "integration_id" field.
+func IntegrationIDNotNil() predicate.AgentProviderRead {
+	return predicate.AgentProviderRead(sql.FieldNotNull(FieldIntegrationID))
+}
+
 // StatusEQ applies the EQ predicate on the "status" field.
 func StatusEQ(v Status) predicate.AgentProviderRead {
 	return predicate.AgentProviderRead(sql.FieldEQ(FieldStatus, v))
@@ -357,14 +392,14 @@ func ReadNotNil() predicate.AgentProviderRead {
 	return predicate.AgentProviderRead(sql.FieldNotNull(FieldRead))
 }
 
-// ResultIsNil applies the IsNil predicate on the "result" field.
-func ResultIsNil() predicate.AgentProviderRead {
-	return predicate.AgentProviderRead(sql.FieldIsNull(FieldResult))
+// HighlightIsNil applies the IsNil predicate on the "highlight" field.
+func HighlightIsNil() predicate.AgentProviderRead {
+	return predicate.AgentProviderRead(sql.FieldIsNull(FieldHighlight))
 }
 
-// ResultNotNil applies the NotNil predicate on the "result" field.
-func ResultNotNil() predicate.AgentProviderRead {
-	return predicate.AgentProviderRead(sql.FieldNotNull(FieldResult))
+// HighlightNotNil applies the NotNil predicate on the "highlight" field.
+func HighlightNotNil() predicate.AgentProviderRead {
+	return predicate.AgentProviderRead(sql.FieldNotNull(FieldHighlight))
 }
 
 // ErrorEQ applies the EQ predicate on the "error" field.
@@ -599,6 +634,35 @@ func HasServiceEntityWith(preds ...predicate.KnowledgeEntity) predicate.AgentPro
 		step := newServiceEntityStep()
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.KnowledgeEntity
+		step.Edge.Schema = schemaConfig.AgentProviderRead
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasIntegration applies the HasEdge predicate on the "integration" edge.
+func HasIntegration() predicate.AgentProviderRead {
+	return predicate.AgentProviderRead(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, IntegrationTable, IntegrationColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Integration
+		step.Edge.Schema = schemaConfig.AgentProviderRead
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasIntegrationWith applies the HasEdge predicate on the "integration" edge with a given conditions (other predicates).
+func HasIntegrationWith(preds ...predicate.Integration) predicate.AgentProviderRead {
+	return predicate.AgentProviderRead(func(s *sql.Selector) {
+		step := newIntegrationStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Integration
 		step.Edge.Schema = schemaConfig.AgentProviderRead
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

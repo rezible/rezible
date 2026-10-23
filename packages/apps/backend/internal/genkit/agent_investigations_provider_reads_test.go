@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"reflect"
 	"sync"
 	"time"
 
@@ -48,6 +49,8 @@ type fakeLogReader struct {
 	readErr     error
 	// lines, when set, are what a search returns instead of one line at the range's end.
 	lines []integrations.LogLine
+	// points are what a count returns.
+	points []integrations.MetricPoint
 
 	mu       sync.Mutex
 	searches []integrations.LogSearchParams
@@ -116,7 +119,7 @@ func (f *fakeLogReader) CountLogs(_ context.Context, params integrations.LogCoun
 	service := f.serviceName(params.Service)
 	record := f.record(service, params.Start, params.End)
 	record.Step = time.Minute
-	return &integrations.LogCountResult{Service: service, Read: record}, nil
+	return &integrations.LogCountResult{Service: service, Points: f.points, Read: record}, nil
 }
 
 func (f *fakeLogReader) reads() int {
@@ -274,7 +277,7 @@ func (s *AiRuntimeSuite) TestProviderReadsOfAnyService() {
 
 	s.Equal(readID.String(), result.ProviderReadRef)
 	s.Equal(f.service.ID.String(), result.ServiceRef)
-	s.Len(result.Lines, 1)
+	s.Len(result.Items, 1)
 	s.Equal(rezai.MaxProviderReadsPerTurn-1, result.BudgetRemaining)
 }
 
@@ -303,7 +306,8 @@ func (s *AiRuntimeSuite) TestProviderReadsAreRecorded() {
 		f.h.providerReads.EXPECT().StartProviderRead(mock.Anything, mock.MatchedBy(func(params rez.StartAgentProviderReadParams) bool {
 			return params.AgentTurnID == f.h.invocation.turnID &&
 				params.ToolName == rezai.CountLogsTool.Name() &&
-				params.ServiceEntityID == f.service.ID
+				params.ServiceEntityID == f.service.ID &&
+				params.IntegrationID == f.reader.Integration().ID
 		})).Return(&ent.AgentProviderRead{ID: readID}, 4, nil)
 
 		input := rezai.CountLogsArgs{
@@ -334,13 +338,8 @@ func (s *AiRuntimeSuite) TestProviderReadsAreRecorded() {
 		s.Equal(`{service="checkout-api"}`, storedRecord.Query)
 		s.Equal(f.openedAt, storedRecord.Start)
 		s.Equal("1m0s", storedRecord.Step)
-		s.NotEmpty(storedRecord.ExploreURL, "the stored record keeps the Explore link")
+		s.NotEmpty(storedRecord.SourceURL, "the stored record keeps the source link")
 		s.NotEmpty(storedRecord.Limits)
-		s.Equal(f.reader.Integration().Provider, storedRecord.Provider, "the record names the reading installation's provider")
-		s.Equal(f.reader.Integration().Name, storedRecord.Integration, "and its integration")
-		var storedResult rezai.CountLogsToolResult
-		s.Require().NoError(json.Unmarshal(outcome.Result, &storedResult))
-		s.Equal(result, storedResult, "the result is stored as returned to the agent")
 	})
 
 	s.Run("search lines collapsed", func() {
@@ -371,21 +370,41 @@ func (s *AiRuntimeSuite) TestProviderReadsAreRecorded() {
 
 		s.Equal(map[string]string{"service": "checkout-api", "level": "ERROR"}, result.Labels, "shared labels are hoisted")
 		earliest := at(3)
-		s.Equal([]rezai.ProviderReadLogLine{
-			{Time: at(1), Line: "upstream timeout", Labels: map[string]string{"pod": "a"}, Count: 3, Earliest: &earliest},
-			{Time: at(4), Line: "upstream timeout", Labels: map[string]string{"pod": "b"}},
-			{Time: at(5), Line: "request completed", Labels: map[string]string{"pod": "b"}},
-			{Time: at(6), Line: "upstream timeout", Labels: map[string]string{"pod": "b"}},
-		}, result.Lines, "only consecutive identical lines merge")
+		s.Equal([]rezai.ProviderReadItem{
+			{Ref: "1", Time: at(1), Text: "upstream timeout", Labels: map[string]string{"pod": "a"}, Count: 3, Earliest: &earliest},
+			{Ref: "2", Time: at(4), Text: "upstream timeout", Labels: map[string]string{"pod": "b"}},
+			{Ref: "3", Time: at(5), Text: "request completed", Labels: map[string]string{"pod": "b"}},
+			{Ref: "4", Time: at(6), Text: "upstream timeout", Labels: map[string]string{"pod": "b"}},
+		}, result.Items, "only consecutive identical lines merge, and items get refs 1 to N in order")
 		s.Equal([]string{"reached the limit of 1 lines; more may exist"}, result.Limits)
 
 		s.Require().Len(*finished, 1)
-		var storedResult rezai.SearchLogsToolResult
-		s.Require().NoError(json.Unmarshal((*finished)[0].Result, &storedResult))
-		s.Equal(result, storedResult, "the result is stored as returned to the agent")
 		var storedRecord rezai.ProviderReadRecord
 		s.Require().NoError(json.Unmarshal((*finished)[0].Read, &storedRecord))
-		s.NotEmpty(storedRecord.ExploreURL, "the stored record keeps the Explore link")
+		s.NotEmpty(storedRecord.SourceURL, "the stored record keeps the source link")
+	})
+
+	s.Run("counted points as items", func() {
+		f := s.newProviderReadFixture()
+		f.reader.points = []integrations.MetricPoint{
+			{Time: f.openedAt, Value: 4},
+			{Time: f.openedAt.Add(time.Minute), Value: 0},
+		}
+		f.expectService("checkout-api")
+		f.expectRecorded(1)
+		input := rezai.CountLogsArgs{
+			ServiceRef: f.service.ID.String(),
+			Start:      f.openedAt.Format(time.RFC3339),
+			End:        f.openedAt.Add(time.Hour).Format(time.RFC3339),
+		}
+		var result rezai.CountLogsToolResult
+		s.runInvestigationToolResult(ctx, f.h, rezai.CountLogsTool.Name(), input, &result)
+
+		four, zero := 4.0, 0.0
+		s.Equal([]rezai.ProviderReadItem{
+			{Ref: "1", Time: f.openedAt, Value: &four},
+			{Ref: "2", Time: f.openedAt.Add(time.Minute), Value: &zero},
+		}, result.Items, "points get refs 1 to N in order")
 	})
 
 	s.Run("failed by the provider", func() {
@@ -401,7 +420,6 @@ func (s *AiRuntimeSuite) TestProviderReadsAreRecorded() {
 		s.Require().Len(*finished, 1)
 		s.Equal(readID, (*finished)[0].ID)
 		s.Contains((*finished)[0].Error, "503 Service Unavailable")
-		s.Empty((*finished)[0].Result)
 	})
 
 	s.Run("refused by a provider read limit", func() {
@@ -419,6 +437,52 @@ func (s *AiRuntimeSuite) TestProviderReadsAreRecorded() {
 		s.Zero(f.reader.reads())
 		// Not recorded: the provider read service mock expects no calls.
 	})
+}
+
+func (s *AiRuntimeSuite) TestCitingProviderReadItems() {
+	ctx := s.T().Context()
+	f := s.newProviderReadFixture()
+	end := f.openedAt.Add(time.Hour)
+	at := func(seconds int) time.Time { return end.Add(-time.Duration(seconds) * time.Second) }
+	f.reader.lines = []integrations.LogLine{
+		{Time: at(1), Line: "request completed", Labels: map[string]string{"service": "checkout-api", "pod": "a"}},
+		{Time: at(2), Line: "upstream timeout", Labels: map[string]string{"service": "checkout-api", "pod": "b"}},
+		{Time: at(3), Line: "retrying", Labels: map[string]string{"service": "checkout-api", "pod": "a"}},
+		{Time: at(4), Line: "upstream reset", Labels: map[string]string{"service": "checkout-api", "pod": "b"}},
+	}
+	f.expectService("checkout-api")
+	readID, _ := f.expectRecorded(1)
+	var searched rezai.SearchLogsToolResult
+	s.runInvestigationToolResult(ctx, f.h, rezai.SearchLogsTool.Name(), f.search(f.openedAt, end), &searched)
+	s.Require().Equal(readID.String(), searched.ProviderReadRef)
+
+	turn := &ent.AgentTurn{ID: f.h.invocation.turnID}
+	report := &ent.InvestigationReport{ID: uuid.New(), Edges: ent.InvestigationReportEdges{AgentTurn: turn}}
+	cited := map[uuid.UUID][]schematypes.ProviderReadItem{
+		readID: {{Ref: "2", Time: at(2), Text: "upstream timeout", Labels: map[string]string{"service": "checkout-api", "pod": "b"}}},
+	}
+	f.h.outputs.EXPECT().PublishInvestigationReport(mock.Anything, mock.Anything, mock.MatchedBy(func(params rez.PublishInvestigationReportParams) bool {
+		return len(params.EvidenceIDs) == 1 && params.EvidenceIDs[0] == readID && reflect.DeepEqual(params.CitedItems, cited)
+	})).Return(report, nil).Once()
+
+	var published map[string]any
+	publish := func(refs ...string) {
+		published = nil
+		input := rezai.PublishInvestigationReportToolInput{Text: "Checkout timed out.", Summary: "Checkout timed out.", EvidenceRefs: refs}
+		s.runInvestigationToolResult(ctx, f.h, rezai.PublishInvestigationReportTool.Name(), input, &published)
+	}
+	publish(searched.ProviderReadRef + "#2")
+	s.NotContains(published, "error", "the read is cited with its item and the shared labels")
+
+	publish(searched.ProviderReadRef + "#9")
+	s.requireErrorResult(published, "no item")
+
+	refs := make([]string, 4)
+	for index := range refs {
+		refs[index] = fmt.Sprintf("%s#%d", searched.ProviderReadRef, index+1)
+	}
+	publish(refs...)
+	s.requireErrorResult(published, "at most 3 items")
 }
 
 func (s *AiRuntimeSuite) TestProviderReadServiceIdentity() {

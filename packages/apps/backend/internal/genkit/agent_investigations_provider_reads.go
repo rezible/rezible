@@ -222,7 +222,7 @@ func (i *investigationInvocation) searchLogs(ctx context.Context, input rezai.Se
 		return nil, validateErr
 	}
 
-	run, startErr := i.startProviderRead(ctx, rezai.SearchLogsTool.Name(), target.service.ID, input)
+	run, startErr := i.startProviderRead(ctx, rezai.SearchLogsTool.Name(), target, input)
 	if startErr != nil {
 		return nil, startErr
 	}
@@ -230,23 +230,24 @@ func (i *investigationInvocation) searchLogs(ctx context.Context, input rezai.Se
 	if searchErr != nil {
 		return nil, i.failProviderRead(ctx, run, searchErr)
 	}
-	record := i.providerReadRecord(target.source, searched.Read)
-	labels, lines := i.collapseLogLines(searched.Lines)
+	record := i.providerReadRecord(searched.Read)
+	labels, items := i.collapseLogLines(searched.Lines)
 	result := &rezai.SearchLogsToolResult{
 		ProviderReadRef: i.formatRef(run.id),
 		ServiceRef:      i.formatRef(target.service.ID),
 		ServiceName:     searched.Service.Value,
 		Labels:          labels,
-		Lines:           lines,
+		Items:           items,
 		Limits:          searched.Read.Limits,
 		BudgetRemaining: run.budgetRemaining,
 	}
-	if len(result.Lines) == 0 {
+	if len(result.Items) == 0 {
 		result.Note = noLogsNote("lines", searched.Service)
 	}
-	if finishErr := i.finishProviderRead(ctx, run, record, result); finishErr != nil {
+	if finishErr := i.finishProviderRead(ctx, run, record); finishErr != nil {
 		return nil, finishErr
 	}
+	i.keepReadItems(run.id, labels, items)
 	return result, nil
 }
 
@@ -265,7 +266,7 @@ func (i *investigationInvocation) countLogs(ctx context.Context, input rezai.Cou
 		return nil, validateErr
 	}
 
-	run, startErr := i.startProviderRead(ctx, rezai.CountLogsTool.Name(), target.service.ID, input)
+	run, startErr := i.startProviderRead(ctx, rezai.CountLogsTool.Name(), target, input)
 	if startErr != nil {
 		return nil, startErr
 	}
@@ -277,29 +278,31 @@ func (i *investigationInvocation) countLogs(ctx context.Context, input rezai.Cou
 		ProviderReadRef: i.formatRef(run.id),
 		ServiceRef:      i.formatRef(target.service.ID),
 		ServiceName:     counted.Service.Value,
-		Points:          make([]rezai.ProviderReadPoint, len(counted.Points)),
+		Items:           make([]rezai.ProviderReadItem, len(counted.Points)),
 		Limits:          counted.Read.Limits,
 		BudgetRemaining: run.budgetRemaining,
 	}
 	hasLines := false
 	for index, point := range counted.Points {
-		result.Points[index] = rezai.ProviderReadPoint{Time: point.Time, Value: point.Value}
+		value := point.Value
+		result.Items[index] = rezai.ProviderReadItem{Ref: itemRef(index), Time: point.Time, Value: &value}
 		hasLines = hasLines || point.Value > 0
 	}
 	if !hasLines {
 		result.Note = noLogsNote("lines counted", counted.Service)
 	}
-	record := i.providerReadRecord(target.source, counted.Read)
-	if finishErr := i.finishProviderRead(ctx, run, record, result); finishErr != nil {
+	record := i.providerReadRecord(counted.Read)
+	if finishErr := i.finishProviderRead(ctx, run, record); finishErr != nil {
 		return nil, finishErr
 	}
+	i.keepReadItems(run.id, nil, result.Items)
 	return result, nil
 }
 
 // collapseLogLines returns the labels every line carries with the same value, and the lines, newest first, each
-// keeping only its other labels, with consecutive identical lines merged into one entry with their count.
-func (i *investigationInvocation) collapseLogLines(lines []integrations.LogLine) (map[string]string, []rezai.ProviderReadLogLine) {
-	collapsed := make([]rezai.ProviderReadLogLine, 0, len(lines))
+// keeping only its other labels, with consecutive identical lines merged into one item with their count.
+func (i *investigationInvocation) collapseLogLines(lines []integrations.LogLine) (map[string]string, []rezai.ProviderReadItem) {
+	collapsed := make([]rezai.ProviderReadItem, 0, len(lines))
 	if len(lines) == 0 {
 		return nil, collapsed
 	}
@@ -321,19 +324,24 @@ func (i *investigationInvocation) collapseLogLines(lines []integrations.LogLine)
 		}
 		if count := len(collapsed); count > 0 {
 			previous := &collapsed[count-1]
-			if previous.Line == line.Line && maps.Equal(previous.Labels, own) {
+			if previous.Text == line.Line && maps.Equal(previous.Labels, own) {
 				earliest := line.Time
 				previous.Count = max(previous.Count, 1) + 1
 				previous.Earliest = &earliest
 				continue
 			}
 		}
-		collapsed = append(collapsed, rezai.ProviderReadLogLine{Time: line.Time, Line: line.Line, Labels: own})
+		collapsed = append(collapsed, rezai.ProviderReadItem{Ref: itemRef(len(collapsed)), Time: line.Time, Text: line.Line, Labels: own})
 	}
 	if len(shared) == 0 {
 		shared = nil
 	}
 	return shared, collapsed
+}
+
+// itemRef is the ref of the item at the index of a read's items: 1 to N in the order returned.
+func itemRef(index int) string {
+	return strconv.Itoa(index + 1)
 }
 
 // noLogsNote says that the service had no lines, and why that may be when it was read by its display name.
@@ -433,7 +441,7 @@ type providerReadRun struct {
 	budgetRemaining int
 }
 
-func (i *investigationInvocation) startProviderRead(ctx context.Context, toolName string, serviceID uuid.UUID, input any) (*providerReadRun, error) {
+func (i *investigationInvocation) startProviderRead(ctx context.Context, toolName string, target *logRead, input any) (*providerReadRun, error) {
 	encodedInput, encodeErr := json.Marshal(input)
 	if encodeErr != nil {
 		return nil, fmt.Errorf("encode provider read input: %w", encodeErr)
@@ -441,7 +449,8 @@ func (i *investigationInvocation) startProviderRead(ctx context.Context, toolNam
 	params := rez.StartAgentProviderReadParams{
 		AgentTurnID:     i.turnID,
 		ToolName:        toolName,
-		ServiceEntityID: serviceID,
+		ServiceEntityID: target.service.ID,
+		IntegrationID:   target.source.Installation.ID,
 		Input:           encodedInput,
 	}
 	read, used, startErr := i.providerReads.StartProviderRead(ctx, params)
@@ -451,18 +460,14 @@ func (i *investigationInvocation) startProviderRead(ctx context.Context, toolNam
 	return &providerReadRun{id: read.ID, budgetRemaining: rezai.MaxProviderReadsPerTurn - used}, nil
 }
 
-func (i *investigationInvocation) finishProviderRead(ctx context.Context, run *providerReadRun, record rezai.ProviderReadRecord, result any) error {
+func (i *investigationInvocation) finishProviderRead(ctx context.Context, run *providerReadRun, record rezai.ProviderReadRecord) error {
 	encodedRecord, recordErr := json.Marshal(record)
 	if recordErr != nil {
 		return fmt.Errorf("encode provider read record: %w", recordErr)
 	}
-	encodedResult, resultErr := json.Marshal(result)
-	if resultErr != nil {
-		return fmt.Errorf("encode provider read result: %w", resultErr)
-	}
-	params := rez.FinishAgentProviderReadParams{ID: run.id, Read: encodedRecord, Result: encodedResult}
+	params := rez.FinishAgentProviderReadParams{ID: run.id, Read: encodedRecord}
 	if finishErr := i.providerReads.FinishProviderRead(ctx, params); finishErr != nil {
-		return fmt.Errorf("record provider read result: %w", finishErr)
+		return fmt.Errorf("record provider read: %w", finishErr)
 	}
 	return nil
 }
@@ -480,16 +485,13 @@ func (i *investigationInvocation) failProviderRead(ctx context.Context, run *pro
 	return fmt.Errorf("%w: the provider read failed: %w", rezai.ErrToolRefused, readErr)
 }
 
-func (i *investigationInvocation) providerReadRecord(source *integrations.LogSource, read integrations.ReadRecord) rezai.ProviderReadRecord {
+func (i *investigationInvocation) providerReadRecord(read integrations.ReadRecord) rezai.ProviderReadRecord {
 	record := rezai.ProviderReadRecord{
-		Provider:    source.Installation.Provider,
-		Integration: source.Installation.Name,
-		Query:       read.Query,
-		Start:       read.Start,
-		End:         read.End,
-		RanAt:       read.RanAt,
-		Limits:      read.Limits,
-		ExploreURL:  read.ExploreURL,
+		Query:     read.Query,
+		Start:     read.Start,
+		End:       read.End,
+		Limits:    read.Limits,
+		SourceURL: read.ExploreURL,
 	}
 	if record.Limits == nil {
 		record.Limits = []string{}

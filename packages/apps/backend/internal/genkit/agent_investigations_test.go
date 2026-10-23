@@ -60,6 +60,7 @@ func (s *AiRuntimeSuite) newInvestigationHarness() *investigationHarness {
 		investigationDependencies: deps,
 		investigationID:           uuid.New(),
 		turnID:                    uuid.New(),
+		readItems:                 make(map[uuid.UUID]providerReadItems),
 	}
 	return h
 }

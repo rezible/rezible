@@ -3,6 +3,8 @@ package ai
 import (
 	"errors"
 	"time"
+
+	"github.com/rezible/rezible/ent/schema/schematypes"
 )
 
 type ToolDefinition[I any, O any] struct {
@@ -30,6 +32,8 @@ var ErrToolRefused = errors.New("refused")
 const (
 	// MaxProviderReadsPerTurn is how many provider reads one agent turn may make, across all its attempts.
 	MaxProviderReadsPerTurn = 12
+	// MaxProviderReadHighlight is how many items of a read an output may cite, and its highlight keeps.
+	MaxProviderReadHighlight = 3
 	// ProviderReadLeadIn is how long before a situation opened its investigation may read, for a baseline.
 	ProviderReadLeadIn = 24 * time.Hour
 
@@ -42,18 +46,17 @@ const (
 
 // ProviderReadRecord describes the read that ran: what the agent and a person see of it.
 type ProviderReadRecord struct {
-	// Provider is the provider of the installation that ran the read.
-	Provider string `json:"provider"`
-	// Integration is the name of the integration that ran the read.
-	Integration string    `json:"integration"`
-	Query       string    `json:"query"`
-	Start       time.Time `json:"start"`
-	End         time.Time `json:"end"`
-	Step        string    `json:"step,omitempty"`
-	RanAt       time.Time `json:"ran_at"`
-	Limits      []string  `json:"limits"`
-	ExploreURL  string    `json:"explore_url,omitempty"`
+	Query  string    `json:"query"`
+	Start  time.Time `json:"start"`
+	End    time.Time `json:"end"`
+	Step   string    `json:"step,omitempty"`
+	Limits []string  `json:"limits"`
+	// SourceURL opens the same query and range in the provider.
+	SourceURL string `json:"source_url,omitempty"`
 }
+
+// ProviderReadItem is one citable item a provider read returned. It is also what a read's highlight stores.
+type ProviderReadItem = schematypes.ProviderReadItem
 
 type TextToolResult struct {
 	Text     string `json:"text"`
@@ -273,30 +276,19 @@ type (
 		// ServiceName is the name the service's logs were read by.
 		ServiceName string `json:"service_name"`
 		// Labels are the labels every returned line carries with the same value.
-		Labels map[string]string     `json:"labels,omitempty"`
-		Lines  []ProviderReadLogLine `json:"lines"`
+		Labels map[string]string `json:"labels,omitempty"`
+		// Items are the lines, newest first, consecutive identical lines collapsed into one.
+		Items []ProviderReadItem `json:"items"`
 		// Limits are the read's limits that applied, such as a truncated result.
 		Limits          []string `json:"limits,omitempty"`
 		Note            string   `json:"note,omitempty"`
 		BudgetRemaining int      `json:"budget_remaining"`
 	}
-
-	ProviderReadLogLine struct {
-		// Time is the newest line's time when Count is above one.
-		Time time.Time `json:"time"`
-		Line string    `json:"line"`
-		// Labels are this line's labels that are not in the result's Labels.
-		Labels map[string]string `json:"labels,omitempty"`
-		// Count is how many consecutive identical lines this entry stands for; omitted when one.
-		Count int `json:"count,omitempty"`
-		// Earliest is the oldest of those lines' times; omitted when Count is one.
-		Earliest *time.Time `json:"earliest,omitempty"`
-	}
 )
 
 var SearchLogsTool = defineTool[ToolDefinition[SearchLogsArgs, *SearchLogsToolResult]](
 	"search_logs",
-	"Provider read: search a service's log lines, newest first, optionally only those containing some text. Counts against the turn's provider read budget; cite its provider_read_ref.",
+	"Provider read: search a service's log lines, newest first, optionally only those containing some text. Counts against the turn's provider read budget; cite its provider_read_ref, or up to three of its items as <provider_read_ref>#<item ref>.",
 )
 
 type (
@@ -308,23 +300,19 @@ type (
 	}
 
 	CountLogsToolResult struct {
-		ProviderReadRef string              `json:"provider_read_ref"`
-		ServiceRef      string              `json:"service_ref"`
-		ServiceName     string              `json:"service_name"`
-		Points          []ProviderReadPoint `json:"points"`
+		ProviderReadRef string `json:"provider_read_ref"`
+		ServiceRef      string `json:"service_ref"`
+		ServiceName     string `json:"service_name"`
+		// Items are the counted points, each with its value.
+		Items []ProviderReadItem `json:"items"`
 		// Limits are the read's limits that applied, such as a raised step.
 		Limits          []string `json:"limits,omitempty"`
 		Note            string   `json:"note,omitempty"`
 		BudgetRemaining int      `json:"budget_remaining"`
 	}
-
-	ProviderReadPoint struct {
-		Time  time.Time `json:"time"`
-		Value float64   `json:"value"`
-	}
 )
 
 var CountLogsTool = defineTool[ToolDefinition[CountLogsArgs, *CountLogsToolResult]](
 	"count_logs",
-	"Provider read: count a service's log lines over time, optionally only those containing some text; the step is chosen for the range. Counts against the turn's provider read budget; cite its provider_read_ref.",
+	"Provider read: count a service's log lines over time, optionally only those containing some text; the step is chosen for the range. Counts against the turn's provider read budget; cite its provider_read_ref, or up to three of its items as <provider_read_ref>#<item ref>.",
 )

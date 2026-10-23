@@ -377,6 +377,7 @@ func (s *KnowledgeGraphIngestionServiceSuite) startProviderRead(ctx context.Cont
 		AgentTurnID:     turn.ID,
 		ToolName:        "search_logs",
 		ServiceEntityID: serviceID,
+		IntegrationID:   createTestLogIntegration(ctx, s.Require(), tdb),
 		Input:           json.RawMessage(`{}`),
 	}
 	read, _, startErr := NewAgentProviderReadService(tdb, test.NewClock(time.Now())).StartProviderRead(ctx, params)

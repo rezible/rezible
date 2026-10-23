@@ -1,6 +1,5 @@
 import type {
 	InvestigationNextCheck,
-	InvestigationProviderRead,
 	InvestigationReportAttributes,
 	SituationBrief,
 	SituationBriefDeployment,
@@ -96,7 +95,6 @@ export type UnseenState =
 	| { kind: "entries"; entries: { key: string; kind: string; text: string }[] };
 
 const MAX_NEXT_CHECKS = 3;
-const MIN_VISIBLE_BAR_PERCENT = 4;
 
 const MERGED_CHANGE_LINK_LABELS: Record<SituationBriefMergedChange["link"], string> = {
 	merge_commit: "Deployed commit",
@@ -275,94 +273,4 @@ export function unseenState(load: BriefLoad): UnseenState {
 		text: unseen.text,
 	}));
 	return { kind: "entries", entries };
-}
-
-export type ProviderReadLineView = {
-	key: string;
-	time: string;
-	line: string;
-	/** The line's own labels as `key=value`. */
-	labels: string[];
-	/** Shown when the entry stands for repeated lines. */
-	repeats: string | undefined;
-};
-
-export type ProviderReadPointView = { key: string; time: string; value: number; heightPercent: number };
-
-export type ProviderReadResultView =
-	| { kind: "failed" }
-	| { kind: "unavailable" }
-	| { kind: "log_search"; labels: string[]; lines: ProviderReadLineView[] }
-	| { kind: "log_count"; points: ProviderReadPointView[]; range: string; step: string | undefined };
-
-function labelPairs(labels: Record<string, string>): string[] {
-	return Object.entries(labels)
-		.sort(([first], [second]) => first.localeCompare(second))
-		.map(([key, value]) => `${key}=${value}`);
-}
-
-function stepLabel(seconds: number): string | undefined {
-	if (seconds <= 0) {
-		return undefined;
-	}
-	if (seconds % 3600 === 0) {
-		return `${seconds / 3600}h`;
-	}
-	if (seconds % 60 === 0) {
-		return `${seconds / 60}m`;
-	}
-	return `${seconds}s`;
-}
-
-/** What an expanded provider read shows: its lines newest first, or its counts over time. */
-export function providerReadResultView(read: InvestigationProviderRead): ProviderReadResultView {
-	const attributes = read.attributes;
-	if (attributes.summary.status === "failed") {
-		return { kind: "failed" };
-	}
-
-	const search = attributes.logSearch;
-	if (search) {
-		const lines = [...search.lines].sort(
-			(first, second) => Date.parse(second.time) - Date.parse(first.time)
-		);
-		return {
-			kind: "log_search",
-			labels: labelPairs(search.labels),
-			lines: lines.map((line, index) => {
-				let repeats: string | undefined;
-				if (line.count > 1) {
-					repeats = `×${line.count}`;
-				}
-				return {
-					key: `${index}:${line.time}`,
-					time: line.time,
-					line: line.line,
-					labels: labelPairs(line.labels),
-					repeats,
-				};
-			}),
-		};
-	}
-
-	const count = attributes.logCount;
-	if (count) {
-		const highest = Math.max(0, ...count.points.map((point) => point.value));
-		const points = count.points.map((point, index) => {
-			// A bar with any lines stays visible beside much larger ones.
-			let heightPercent = 0;
-			if (point.value > 0) {
-				heightPercent = Math.max(MIN_VISIBLE_BAR_PERCENT, Math.round((point.value / highest) * 100));
-			}
-			return { key: `${index}:${point.time}`, time: point.time, value: point.value, heightPercent };
-		});
-		return {
-			kind: "log_count",
-			points,
-			range: providerReadRangeLabel(attributes.summary.start, attributes.summary.end),
-			step: stepLabel(count.stepSeconds),
-		};
-	}
-
-	return { kind: "unavailable" };
 }

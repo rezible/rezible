@@ -31,14 +31,16 @@ const (
 	FieldToolName = "tool_name"
 	// FieldServiceEntityID holds the string denoting the service_entity_id field in the database.
 	FieldServiceEntityID = "service_entity_id"
+	// FieldIntegrationID holds the string denoting the integration_id field in the database.
+	FieldIntegrationID = "integration_id"
 	// FieldInput holds the string denoting the input field in the database.
 	FieldInput = "input"
 	// FieldStatus holds the string denoting the status field in the database.
 	FieldStatus = "status"
 	// FieldRead holds the string denoting the read field in the database.
 	FieldRead = "read"
-	// FieldResult holds the string denoting the result field in the database.
-	FieldResult = "result"
+	// FieldHighlight holds the string denoting the highlight field in the database.
+	FieldHighlight = "highlight"
 	// FieldError holds the string denoting the error field in the database.
 	FieldError = "error"
 	// FieldFinishedAt holds the string denoting the finished_at field in the database.
@@ -51,6 +53,8 @@ const (
 	EdgeAgentTurn = "agent_turn"
 	// EdgeServiceEntity holds the string denoting the service_entity edge name in mutations.
 	EdgeServiceEntity = "service_entity"
+	// EdgeIntegration holds the string denoting the integration edge name in mutations.
+	EdgeIntegration = "integration"
 	// Table holds the table name of the agentproviderread in the database.
 	Table = "agent_provider_reads"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -81,6 +85,13 @@ const (
 	ServiceEntityInverseTable = "knowledge_entities"
 	// ServiceEntityColumn is the table column denoting the service_entity relation/edge.
 	ServiceEntityColumn = "service_entity_id"
+	// IntegrationTable is the table that holds the integration relation/edge.
+	IntegrationTable = "agent_provider_reads"
+	// IntegrationInverseTable is the table name for the Integration entity.
+	// It exists in this package in order to avoid circular dependency with the "integration" package.
+	IntegrationInverseTable = "integrations"
+	// IntegrationColumn is the table column denoting the integration relation/edge.
+	IntegrationColumn = "integration_id"
 )
 
 // Columns holds all SQL columns for agentproviderread fields.
@@ -93,10 +104,11 @@ var Columns = []string{
 	FieldAgentTurnID,
 	FieldToolName,
 	FieldServiceEntityID,
+	FieldIntegrationID,
 	FieldInput,
 	FieldStatus,
 	FieldRead,
-	FieldResult,
+	FieldHighlight,
 	FieldError,
 	FieldFinishedAt,
 }
@@ -201,6 +213,11 @@ func ByServiceEntityID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldServiceEntityID, opts...).ToFunc()
 }
 
+// ByIntegrationID orders the results by the integration_id field.
+func ByIntegrationID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldIntegrationID, opts...).ToFunc()
+}
+
 // ByStatus orders the results by the status field.
 func ByStatus(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldStatus, opts...).ToFunc()
@@ -243,6 +260,13 @@ func ByServiceEntityField(field string, opts ...sql.OrderTermOption) OrderOption
 		sqlgraph.OrderByNeighborTerms(s, newServiceEntityStep(), sql.OrderByField(field, opts...))
 	}
 }
+
+// ByIntegrationField orders the results by integration field.
+func ByIntegrationField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newIntegrationStep(), sql.OrderByField(field, opts...))
+	}
+}
 func newTenantStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -269,6 +293,13 @@ func newServiceEntityStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(ServiceEntityInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, false, ServiceEntityTable, ServiceEntityColumn),
+	)
+}
+func newIntegrationStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(IntegrationInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, IntegrationTable, IntegrationColumn),
 	)
 }
 

@@ -2166,8 +2166,8 @@ type AgentProviderReadMutation struct {
 	status                *agentproviderread.Status
 	read                  *jsontext.Value
 	appendread            jsontext.Value
-	result                *jsontext.Value
-	appendresult          jsontext.Value
+	highlight             *[]schematypes.ProviderReadItem
+	appendhighlight       []schematypes.ProviderReadItem
 	error                 *string
 	finished_at           *time.Time
 	clearedFields         map[string]struct{}
@@ -2179,6 +2179,8 @@ type AgentProviderReadMutation struct {
 	clearedagent_turn     bool
 	service_entity        *uuid.UUID
 	clearedservice_entity bool
+	integration           *uuid.UUID
+	clearedintegration    bool
 	done                  bool
 	oldValue              func(context.Context) (*AgentProviderRead, error)
 	predicates            []predicate.AgentProviderRead
@@ -2540,6 +2542,55 @@ func (m *AgentProviderReadMutation) ResetServiceEntityID() {
 	m.service_entity = nil
 }
 
+// SetIntegrationID sets the "integration_id" field.
+func (m *AgentProviderReadMutation) SetIntegrationID(u uuid.UUID) {
+	m.integration = &u
+}
+
+// IntegrationID returns the value of the "integration_id" field in the mutation.
+func (m *AgentProviderReadMutation) IntegrationID() (r uuid.UUID, exists bool) {
+	v := m.integration
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldIntegrationID returns the old "integration_id" field's value of the AgentProviderRead entity.
+// If the AgentProviderRead object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AgentProviderReadMutation) OldIntegrationID(ctx context.Context) (v *uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldIntegrationID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldIntegrationID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldIntegrationID: %w", err)
+	}
+	return oldValue.IntegrationID, nil
+}
+
+// ClearIntegrationID clears the value of the "integration_id" field.
+func (m *AgentProviderReadMutation) ClearIntegrationID() {
+	m.integration = nil
+	m.clearedFields[agentproviderread.FieldIntegrationID] = struct{}{}
+}
+
+// IntegrationIDCleared returns if the "integration_id" field was cleared in this mutation.
+func (m *AgentProviderReadMutation) IntegrationIDCleared() bool {
+	_, ok := m.clearedFields[agentproviderread.FieldIntegrationID]
+	return ok
+}
+
+// ResetIntegrationID resets all changes to the "integration_id" field.
+func (m *AgentProviderReadMutation) ResetIntegrationID() {
+	m.integration = nil
+	delete(m.clearedFields, agentproviderread.FieldIntegrationID)
+}
+
 // SetInput sets the "input" field.
 func (m *AgentProviderReadMutation) SetInput(j jsontext.Value) {
 	m.input = &j
@@ -2692,69 +2743,69 @@ func (m *AgentProviderReadMutation) ResetRead() {
 	delete(m.clearedFields, agentproviderread.FieldRead)
 }
 
-// SetResult sets the "result" field.
-func (m *AgentProviderReadMutation) SetResult(j jsontext.Value) {
-	m.result = &j
-	m.appendresult = nil
+// SetHighlight sets the "highlight" field.
+func (m *AgentProviderReadMutation) SetHighlight(sri []schematypes.ProviderReadItem) {
+	m.highlight = &sri
+	m.appendhighlight = nil
 }
 
-// Result returns the value of the "result" field in the mutation.
-func (m *AgentProviderReadMutation) Result() (r jsontext.Value, exists bool) {
-	v := m.result
+// Highlight returns the value of the "highlight" field in the mutation.
+func (m *AgentProviderReadMutation) Highlight() (r []schematypes.ProviderReadItem, exists bool) {
+	v := m.highlight
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldResult returns the old "result" field's value of the AgentProviderRead entity.
+// OldHighlight returns the old "highlight" field's value of the AgentProviderRead entity.
 // If the AgentProviderRead object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AgentProviderReadMutation) OldResult(ctx context.Context) (v jsontext.Value, err error) {
+func (m *AgentProviderReadMutation) OldHighlight(ctx context.Context) (v []schematypes.ProviderReadItem, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldResult is only allowed on UpdateOne operations")
+		return v, errors.New("OldHighlight is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldResult requires an ID field in the mutation")
+		return v, errors.New("OldHighlight requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldResult: %w", err)
+		return v, fmt.Errorf("querying old value for OldHighlight: %w", err)
 	}
-	return oldValue.Result, nil
+	return oldValue.Highlight, nil
 }
 
-// AppendResult adds j to the "result" field.
-func (m *AgentProviderReadMutation) AppendResult(j jsontext.Value) {
-	m.appendresult = append(m.appendresult, j...)
+// AppendHighlight adds sri to the "highlight" field.
+func (m *AgentProviderReadMutation) AppendHighlight(sri []schematypes.ProviderReadItem) {
+	m.appendhighlight = append(m.appendhighlight, sri...)
 }
 
-// AppendedResult returns the list of values that were appended to the "result" field in this mutation.
-func (m *AgentProviderReadMutation) AppendedResult() (jsontext.Value, bool) {
-	if len(m.appendresult) == 0 {
+// AppendedHighlight returns the list of values that were appended to the "highlight" field in this mutation.
+func (m *AgentProviderReadMutation) AppendedHighlight() ([]schematypes.ProviderReadItem, bool) {
+	if len(m.appendhighlight) == 0 {
 		return nil, false
 	}
-	return m.appendresult, true
+	return m.appendhighlight, true
 }
 
-// ClearResult clears the value of the "result" field.
-func (m *AgentProviderReadMutation) ClearResult() {
-	m.result = nil
-	m.appendresult = nil
-	m.clearedFields[agentproviderread.FieldResult] = struct{}{}
+// ClearHighlight clears the value of the "highlight" field.
+func (m *AgentProviderReadMutation) ClearHighlight() {
+	m.highlight = nil
+	m.appendhighlight = nil
+	m.clearedFields[agentproviderread.FieldHighlight] = struct{}{}
 }
 
-// ResultCleared returns if the "result" field was cleared in this mutation.
-func (m *AgentProviderReadMutation) ResultCleared() bool {
-	_, ok := m.clearedFields[agentproviderread.FieldResult]
+// HighlightCleared returns if the "highlight" field was cleared in this mutation.
+func (m *AgentProviderReadMutation) HighlightCleared() bool {
+	_, ok := m.clearedFields[agentproviderread.FieldHighlight]
 	return ok
 }
 
-// ResetResult resets all changes to the "result" field.
-func (m *AgentProviderReadMutation) ResetResult() {
-	m.result = nil
-	m.appendresult = nil
-	delete(m.clearedFields, agentproviderread.FieldResult)
+// ResetHighlight resets all changes to the "highlight" field.
+func (m *AgentProviderReadMutation) ResetHighlight() {
+	m.highlight = nil
+	m.appendhighlight = nil
+	delete(m.clearedFields, agentproviderread.FieldHighlight)
 }
 
 // SetError sets the "error" field.
@@ -2963,6 +3014,33 @@ func (m *AgentProviderReadMutation) ResetServiceEntity() {
 	m.clearedservice_entity = false
 }
 
+// ClearIntegration clears the "integration" edge to the Integration entity.
+func (m *AgentProviderReadMutation) ClearIntegration() {
+	m.clearedintegration = true
+	m.clearedFields[agentproviderread.FieldIntegrationID] = struct{}{}
+}
+
+// IntegrationCleared reports if the "integration" edge to the Integration entity was cleared.
+func (m *AgentProviderReadMutation) IntegrationCleared() bool {
+	return m.IntegrationIDCleared() || m.clearedintegration
+}
+
+// IntegrationIDs returns the "integration" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// IntegrationID instead. It exists only for internal usage by the builders.
+func (m *AgentProviderReadMutation) IntegrationIDs() (ids []uuid.UUID) {
+	if id := m.integration; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetIntegration resets all changes to the "integration" edge.
+func (m *AgentProviderReadMutation) ResetIntegration() {
+	m.integration = nil
+	m.clearedintegration = false
+}
+
 // Where appends a list predicates to the AgentProviderReadMutation builder.
 func (m *AgentProviderReadMutation) Where(ps ...predicate.AgentProviderRead) {
 	m.predicates = append(m.predicates, ps...)
@@ -2997,7 +3075,7 @@ func (m *AgentProviderReadMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *AgentProviderReadMutation) Fields() []string {
-	fields := make([]string, 0, 13)
+	fields := make([]string, 0, 14)
 	if m.tenant != nil {
 		fields = append(fields, agentproviderread.FieldTenantID)
 	}
@@ -3019,6 +3097,9 @@ func (m *AgentProviderReadMutation) Fields() []string {
 	if m.service_entity != nil {
 		fields = append(fields, agentproviderread.FieldServiceEntityID)
 	}
+	if m.integration != nil {
+		fields = append(fields, agentproviderread.FieldIntegrationID)
+	}
 	if m.input != nil {
 		fields = append(fields, agentproviderread.FieldInput)
 	}
@@ -3028,8 +3109,8 @@ func (m *AgentProviderReadMutation) Fields() []string {
 	if m.read != nil {
 		fields = append(fields, agentproviderread.FieldRead)
 	}
-	if m.result != nil {
-		fields = append(fields, agentproviderread.FieldResult)
+	if m.highlight != nil {
+		fields = append(fields, agentproviderread.FieldHighlight)
 	}
 	if m.error != nil {
 		fields = append(fields, agentproviderread.FieldError)
@@ -3059,14 +3140,16 @@ func (m *AgentProviderReadMutation) Field(name string) (ent.Value, bool) {
 		return m.ToolName()
 	case agentproviderread.FieldServiceEntityID:
 		return m.ServiceEntityID()
+	case agentproviderread.FieldIntegrationID:
+		return m.IntegrationID()
 	case agentproviderread.FieldInput:
 		return m.Input()
 	case agentproviderread.FieldStatus:
 		return m.Status()
 	case agentproviderread.FieldRead:
 		return m.Read()
-	case agentproviderread.FieldResult:
-		return m.Result()
+	case agentproviderread.FieldHighlight:
+		return m.Highlight()
 	case agentproviderread.FieldError:
 		return m.Error()
 	case agentproviderread.FieldFinishedAt:
@@ -3094,14 +3177,16 @@ func (m *AgentProviderReadMutation) OldField(ctx context.Context, name string) (
 		return m.OldToolName(ctx)
 	case agentproviderread.FieldServiceEntityID:
 		return m.OldServiceEntityID(ctx)
+	case agentproviderread.FieldIntegrationID:
+		return m.OldIntegrationID(ctx)
 	case agentproviderread.FieldInput:
 		return m.OldInput(ctx)
 	case agentproviderread.FieldStatus:
 		return m.OldStatus(ctx)
 	case agentproviderread.FieldRead:
 		return m.OldRead(ctx)
-	case agentproviderread.FieldResult:
-		return m.OldResult(ctx)
+	case agentproviderread.FieldHighlight:
+		return m.OldHighlight(ctx)
 	case agentproviderread.FieldError:
 		return m.OldError(ctx)
 	case agentproviderread.FieldFinishedAt:
@@ -3164,6 +3249,13 @@ func (m *AgentProviderReadMutation) SetField(name string, value ent.Value) error
 		}
 		m.SetServiceEntityID(v)
 		return nil
+	case agentproviderread.FieldIntegrationID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetIntegrationID(v)
+		return nil
 	case agentproviderread.FieldInput:
 		v, ok := value.(jsontext.Value)
 		if !ok {
@@ -3185,12 +3277,12 @@ func (m *AgentProviderReadMutation) SetField(name string, value ent.Value) error
 		}
 		m.SetRead(v)
 		return nil
-	case agentproviderread.FieldResult:
-		v, ok := value.(jsontext.Value)
+	case agentproviderread.FieldHighlight:
+		v, ok := value.([]schematypes.ProviderReadItem)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetResult(v)
+		m.SetHighlight(v)
 		return nil
 	case agentproviderread.FieldError:
 		v, ok := value.(string)
@@ -3239,11 +3331,14 @@ func (m *AgentProviderReadMutation) AddField(name string, value ent.Value) error
 // mutation.
 func (m *AgentProviderReadMutation) ClearedFields() []string {
 	var fields []string
+	if m.FieldCleared(agentproviderread.FieldIntegrationID) {
+		fields = append(fields, agentproviderread.FieldIntegrationID)
+	}
 	if m.FieldCleared(agentproviderread.FieldRead) {
 		fields = append(fields, agentproviderread.FieldRead)
 	}
-	if m.FieldCleared(agentproviderread.FieldResult) {
-		fields = append(fields, agentproviderread.FieldResult)
+	if m.FieldCleared(agentproviderread.FieldHighlight) {
+		fields = append(fields, agentproviderread.FieldHighlight)
 	}
 	if m.FieldCleared(agentproviderread.FieldError) {
 		fields = append(fields, agentproviderread.FieldError)
@@ -3265,11 +3360,14 @@ func (m *AgentProviderReadMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *AgentProviderReadMutation) ClearField(name string) error {
 	switch name {
+	case agentproviderread.FieldIntegrationID:
+		m.ClearIntegrationID()
+		return nil
 	case agentproviderread.FieldRead:
 		m.ClearRead()
 		return nil
-	case agentproviderread.FieldResult:
-		m.ClearResult()
+	case agentproviderread.FieldHighlight:
+		m.ClearHighlight()
 		return nil
 	case agentproviderread.FieldError:
 		m.ClearError()
@@ -3306,6 +3404,9 @@ func (m *AgentProviderReadMutation) ResetField(name string) error {
 	case agentproviderread.FieldServiceEntityID:
 		m.ResetServiceEntityID()
 		return nil
+	case agentproviderread.FieldIntegrationID:
+		m.ResetIntegrationID()
+		return nil
 	case agentproviderread.FieldInput:
 		m.ResetInput()
 		return nil
@@ -3315,8 +3416,8 @@ func (m *AgentProviderReadMutation) ResetField(name string) error {
 	case agentproviderread.FieldRead:
 		m.ResetRead()
 		return nil
-	case agentproviderread.FieldResult:
-		m.ResetResult()
+	case agentproviderread.FieldHighlight:
+		m.ResetHighlight()
 		return nil
 	case agentproviderread.FieldError:
 		m.ResetError()
@@ -3330,7 +3431,7 @@ func (m *AgentProviderReadMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *AgentProviderReadMutation) AddedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.tenant != nil {
 		edges = append(edges, agentproviderread.EdgeTenant)
 	}
@@ -3342,6 +3443,9 @@ func (m *AgentProviderReadMutation) AddedEdges() []string {
 	}
 	if m.service_entity != nil {
 		edges = append(edges, agentproviderread.EdgeServiceEntity)
+	}
+	if m.integration != nil {
+		edges = append(edges, agentproviderread.EdgeIntegration)
 	}
 	return edges
 }
@@ -3366,13 +3470,17 @@ func (m *AgentProviderReadMutation) AddedIDs(name string) []ent.Value {
 		if id := m.service_entity; id != nil {
 			return []ent.Value{*id}
 		}
+	case agentproviderread.EdgeIntegration:
+		if id := m.integration; id != nil {
+			return []ent.Value{*id}
+		}
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *AgentProviderReadMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	return edges
 }
 
@@ -3384,7 +3492,7 @@ func (m *AgentProviderReadMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *AgentProviderReadMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.clearedtenant {
 		edges = append(edges, agentproviderread.EdgeTenant)
 	}
@@ -3396,6 +3504,9 @@ func (m *AgentProviderReadMutation) ClearedEdges() []string {
 	}
 	if m.clearedservice_entity {
 		edges = append(edges, agentproviderread.EdgeServiceEntity)
+	}
+	if m.clearedintegration {
+		edges = append(edges, agentproviderread.EdgeIntegration)
 	}
 	return edges
 }
@@ -3412,6 +3523,8 @@ func (m *AgentProviderReadMutation) EdgeCleared(name string) bool {
 		return m.clearedagent_turn
 	case agentproviderread.EdgeServiceEntity:
 		return m.clearedservice_entity
+	case agentproviderread.EdgeIntegration:
+		return m.clearedintegration
 	}
 	return false
 }
@@ -3432,6 +3545,9 @@ func (m *AgentProviderReadMutation) ClearEdge(name string) error {
 	case agentproviderread.EdgeServiceEntity:
 		m.ClearServiceEntity()
 		return nil
+	case agentproviderread.EdgeIntegration:
+		m.ClearIntegration()
+		return nil
 	}
 	return fmt.Errorf("unknown AgentProviderRead unique edge %s", name)
 }
@@ -3451,6 +3567,9 @@ func (m *AgentProviderReadMutation) ResetEdge(name string) error {
 		return nil
 	case agentproviderread.EdgeServiceEntity:
 		m.ResetServiceEntity()
+		return nil
+	case agentproviderread.EdgeIntegration:
+		m.ResetIntegration()
 		return nil
 	}
 	return fmt.Errorf("unknown AgentProviderRead edge %s", name)

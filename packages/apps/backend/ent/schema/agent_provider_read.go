@@ -9,6 +9,8 @@ import (
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
 	"github.com/google/uuid"
+
+	"github.com/rezible/rezible/ent/schema/schematypes"
 )
 
 // AgentProviderRead is one read an agent made of a connected provider's live data, with the native query that
@@ -32,6 +34,8 @@ func (AgentProviderRead) Fields() []ent.Field {
 		field.UUID("agent_turn_id", uuid.UUID{}).Immutable(),
 		field.String("tool_name").NotEmpty().Immutable(),
 		field.UUID("service_entity_id", uuid.UUID{}),
+		// IntegrationID is the installation that ran the read; nil once it is deleted.
+		field.UUID("integration_id", uuid.UUID{}).Optional().Nillable(),
 		// Input is the tool's input as the agent sent it.
 		field.JSON("input", json.RawMessage{}).
 			SchemaType(schemaTypeJsonB).
@@ -43,8 +47,8 @@ func (AgentProviderRead) Fields() []ent.Field {
 		field.JSON("read", json.RawMessage{}).
 			SchemaType(schemaTypeJsonB).
 			Optional(),
-		// Result is the tool result as returned to the agent.
-		field.JSON("result", json.RawMessage{}).
+		// Highlight is up to three of the read's items the investigation cited, newest citation first.
+		field.JSON("highlight", []schematypes.ProviderReadItem{}).
 			SchemaType(schemaTypeJsonB).
 			Optional(),
 		field.String("error").Optional().Nillable(),
@@ -70,6 +74,10 @@ func (AgentProviderRead) Edges() []ent.Edge {
 			Unique().
 			Field("service_entity_id").
 			Annotations(entsql.OnDelete(entsql.NoAction)),
+		edge.To("integration", Integration.Type).
+			Unique().
+			Field("integration_id").
+			Annotations(entsql.OnDelete(entsql.SetNull)),
 	}
 }
 
