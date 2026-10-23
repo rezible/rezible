@@ -39,26 +39,35 @@ export const slackIncidentSettings: IntegrationSettingsDefinition<SlackIncidentS
 	schema: slackIncidentSettingsSchema,
 
 	read: (userSettings) => {
-		const incidents = readSettingsObject(userSettings.Incidents);
+		const incidents = readSettingsObject(userSettings.incidents);
 		return {
 			AnnouncementChannelID: readString(
-				incidents.AnnouncementChannelID,
+				incidents.announcement_channel_id,
 				defaultSettings.AnnouncementChannelID
 			),
-			ChannelNamePattern: readString(incidents.ChannelNamePattern, defaultSettings.ChannelNamePattern),
+			ChannelNamePattern: readString(
+				incidents.channel_name_pattern,
+				defaultSettings.ChannelNamePattern
+			),
 			AutoCreateVideoConference: readBoolean(
-				incidents.AutoCreateVideoConference,
+				incidents.auto_create_video_conference,
 				defaultSettings.AutoCreateVideoConference
 			),
-			InviteMode: readInviteMode(incidents.InviteMode),
+			InviteMode: readInviteMode(incidents.invite_mode),
 		};
 	},
 
 	write: (values, userSettings) => {
-		const incidents = readSettingsObject(userSettings.Incidents);
+		const incidents = readSettingsObject(userSettings.incidents);
 		return {
 			...userSettings,
-			Incidents: { ...incidents, ...values },
+			incidents: {
+				...incidents,
+				announcement_channel_id: values.AnnouncementChannelID,
+				channel_name_pattern: values.ChannelNamePattern,
+				auto_create_video_conference: values.AutoCreateVideoConference,
+				invite_mode: values.InviteMode,
+			},
 		};
 	},
 };

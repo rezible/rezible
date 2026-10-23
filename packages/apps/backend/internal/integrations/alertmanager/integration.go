@@ -74,7 +74,7 @@ func (i *Integration) ValidateInstallationConfig([]byte) (rez.IntegrationInstall
 	return &InstallationConfig{installationRef: uuid.NewString()}, nil
 }
 
-func (i *Integration) ValidateUserSettings(settings map[string]any) error {
+func (i *Integration) ValidateUserSettings(settings []byte) error {
 	_, parseErr := parseInstallationSettings(settings)
 	return parseErr
 }

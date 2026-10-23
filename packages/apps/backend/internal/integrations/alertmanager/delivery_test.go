@@ -291,30 +291,29 @@ func (s *DeliverySuite) TestParseInstallationSettings() {
 	s.Require().NoError(missingErr)
 	s.Require().Equal(defaultServiceLabels, missing.serviceLabels)
 
-	other, otherErr := parseInstallationSettings(map[string]any{"other": true})
-	s.Require().NoError(otherErr)
-	s.Require().Equal(defaultServiceLabels, other.serviceLabels)
+	_, otherErr := parseInstallationSettings([]byte(`{"other": true}`))
+	s.Require().ErrorIs(otherErr, errs.ErrInvalidInput)
 
-	empty, emptyErr := parseInstallationSettings(map[string]any{"service_labels": []any{}})
+	empty, emptyErr := parseInstallationSettings([]byte(`{"service_labels": []}`))
 	s.Require().NoError(emptyErr)
 	s.Require().Empty(empty.serviceLabels)
 
-	custom, customErr := parseInstallationSettings(map[string]any{"service_labels": []any{"job", "service"}})
+	custom, customErr := parseInstallationSettings([]byte(`{"service_labels": ["job", "service"]}`))
 	s.Require().NoError(customErr)
 	s.Require().Equal([]string{"job", "service"}, custom.serviceLabels)
 
-	invalid := []any{
-		nil,
-		"service",
-		map[string]any{"service": true},
-		[]any{"service", 5},
-		[]any{""},
-		[]any{"  "},
-		[]any{"service", "service"},
+	invalid := []string{
+		`null`,
+		`"service"`,
+		`{"service": true}`,
+		`["service", 5]`,
+		`[""]`,
+		`["  "]`,
+		`["service", "service"]`,
 	}
 	for _, value := range invalid {
-		_, parseErr := parseInstallationSettings(map[string]any{"service_labels": value})
-		s.Require().ErrorIs(parseErr, errs.ErrInvalidInput, "%#v", value)
+		_, parseErr := parseInstallationSettings([]byte(`{"service_labels": ` + value + `}`))
+		s.Require().ErrorIs(parseErr, errs.ErrInvalidInput, value)
 	}
 }
 

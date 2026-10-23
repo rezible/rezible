@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"regexp"
 
-	"github.com/go-viper/mapstructure/v2"
 	"github.com/slack-go/slack"
 	"golang.org/x/oauth2"
 
@@ -97,10 +96,10 @@ func (i *Integration) ValidateInstallationConfig(cfg []byte) (rez.IntegrationIns
 	return i.appSvc.ValidateInstallationConfig(cfg)
 }
 
-func (i *Integration) ValidateUserSettings(m map[string]any) error {
-	settings, decodeErr := decodeUserSettings(m)
+func (i *Integration) ValidateUserSettings(m []byte) error {
+	settings, decodeErr := integrations.DecodeUserSettings[UserSettings](m)
 	if decodeErr != nil {
-		return fmt.Errorf("%w: %w", errs.ErrInvalidInput, decodeErr)
+		return decodeErr
 	}
 	if channelID := settings.SituationNoticeChannelID; channelID != "" && !channelIDPattern.MatchString(channelID) {
 		return fmt.Errorf("%w: situation notice channel %q is not a Slack channel ID", errs.ErrInvalidInput, channelID)
@@ -113,15 +112,7 @@ var channelIDPattern = regexp.MustCompile(`^[CG][A-Z0-9]{2,}$`)
 // UserSettings are an installation's settings, chosen by an admin.
 type UserSettings struct {
 	// SituationNoticeChannelID is where raised situations are announced; empty announces nothing.
-	SituationNoticeChannelID string `mapstructure:"situation_notice_channel_id"`
-}
-
-func decodeUserSettings(m map[string]any) (*UserSettings, error) {
-	var settings UserSettings
-	if decodeErr := mapstructure.Decode(m, &settings); decodeErr != nil {
-		return nil, fmt.Errorf("decode settings: %w", decodeErr)
-	}
-	return &settings, nil
+	SituationNoticeChannelID string `json:"situation_notice_channel_id"`
 }
 
 func (i *Integration) GetInstalledIntegration(intg *ent.Integration) (rez.InstalledIntegration, error) {

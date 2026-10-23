@@ -2,6 +2,7 @@ package v1
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
 	"time"
 
@@ -167,12 +168,18 @@ func InstallableIntegrationFromPackage(p rez.IntegrationDefinition) InstallableI
 
 func IntegrationInstallationFromRez(ii rez.InstalledIntegration) IntegrationInstallation {
 	intg := ii.Integration()
+	// Settings are validated before they are stored, so they decode unless absent or null.
+	var userSettings map[string]any
+	_ = json.Unmarshal(intg.UserSettings, &userSettings)
+	if userSettings == nil {
+		userSettings = map[string]any{}
+	}
 	attrs := IntegrationInstallationAttributes{
 		Provider:                intg.Provider,
 		Name:                    intg.Name,
 		DisplayName:             intg.DisplayName,
 		ProviderInstallationRef: intg.ProviderInstallationRef,
-		UserSettings:            intg.UserSettings,
+		UserSettings:            userSettings,
 		Capabilities:            ii.Capabilities(),
 		// Ent scans a NULL hash into an empty slice, not a nil pointer.
 		WebhookUrlIssued: intg.WebhookTokenHash != nil && len(*intg.WebhookTokenHash) > 0,

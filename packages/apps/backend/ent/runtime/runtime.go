@@ -930,10 +930,6 @@ func init() {
 	integrationDescProviderInstallationRef := integrationFields[4].Descriptor()
 	// integration.ProviderInstallationRefValidator is a validator for the "provider_installation_ref" field. It is called by the builders before save.
 	integration.ProviderInstallationRefValidator = integrationDescProviderInstallationRef.Validators[0].(func(string) error)
-	// integrationDescUserSettings is the schema descriptor for user_settings field.
-	integrationDescUserSettings := integrationFields[6].Descriptor()
-	// integration.DefaultUserSettings holds the default value on creation for the user_settings field.
-	integration.DefaultUserSettings = integrationDescUserSettings.Default.(map[string]interface{})
 	// integrationDescID is the schema descriptor for id field.
 	integrationDescID := integrationFields[0].Descriptor()
 	// integration.DefaultID holds the default value on creation for the id field.

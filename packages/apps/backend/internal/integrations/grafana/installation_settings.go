@@ -10,7 +10,6 @@ import (
 	"strings"
 
 	"github.com/go-playground/validator/v10"
-	"github.com/go-viper/mapstructure/v2"
 
 	"github.com/rezible/rezible/pkg/errs"
 	"github.com/rezible/rezible/pkg/integrations"
@@ -34,7 +33,7 @@ var settingsValidator = newSettingsValidator()
 func newSettingsValidator() *validator.Validate {
 	v := validator.New(validator.WithRequiredStructEnabled())
 	v.RegisterTagNameFunc(func(field reflect.StructField) string {
-		return field.Tag.Get("mapstructure")
+		return field.Tag.Get("json")
 	})
 	rules := map[string]*regexp.Regexp{
 		"grafanauid": dataSourceUIDPattern,
@@ -52,24 +51,16 @@ func newSettingsValidator() *validator.Validate {
 }
 
 type installationSettings struct {
-	LogsDataSourceUID    string `mapstructure:"logs_data_source_uid" validate:"omitempty,grafanauid"`
-	MetricsDataSourceUID string `mapstructure:"metrics_data_source_uid" validate:"omitempty,grafanauid"`
-	LogServiceLabel      string `mapstructure:"log_service_label" validate:"omitempty,labelname"`
-	MetricServiceLabel   string `mapstructure:"metric_service_label" validate:"omitempty,labelname"`
+	LogsDataSourceUID    string `json:"logs_data_source_uid" validate:"omitempty,grafanauid"`
+	MetricsDataSourceUID string `json:"metrics_data_source_uid" validate:"omitempty,grafanauid"`
+	LogServiceLabel      string `json:"log_service_label" validate:"omitempty,labelname"`
+	MetricServiceLabel   string `json:"metric_service_label" validate:"omitempty,labelname"`
 }
 
-func parseInstallationSettings(raw map[string]any) (*installationSettings, error) {
-	var settings installationSettings
-	decoderConfig := &mapstructure.DecoderConfig{
-		ErrorUnused: true,
-		Result:      &settings,
-	}
-	decoder, decoderErr := mapstructure.NewDecoder(decoderConfig)
-	if decoderErr != nil {
-		return nil, fmt.Errorf("settings decoder: %w", decoderErr)
-	}
-	if decodeErr := decoder.Decode(raw); decodeErr != nil {
-		return nil, fmt.Errorf("%w: invalid settings: %w", errs.ErrInvalidInput, decodeErr)
+func parseInstallationSettings(raw []byte) (*installationSettings, error) {
+	settings, decodeErr := integrations.DecodeUserSettings[installationSettings](raw)
+	if decodeErr != nil {
+		return nil, decodeErr
 	}
 	if validateErr := settingsValidator.Struct(settings); validateErr != nil {
 		var fieldErrs validator.ValidationErrors
@@ -86,7 +77,7 @@ func parseInstallationSettings(raw map[string]any) (*installationSettings, error
 	if settings.MetricServiceLabel == "" {
 		settings.MetricServiceLabel = defaultServiceLabel
 	}
-	return &settings, nil
+	return settings, nil
 }
 
 // logServiceName chooses the value a service's logs carry under the current log service label: the value in

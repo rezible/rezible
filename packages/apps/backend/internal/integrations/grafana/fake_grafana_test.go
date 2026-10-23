@@ -76,13 +76,15 @@ func (f *fakeGrafana) onlyRequest() *http.Request {
 func (f *fakeGrafana) install(settings map[string]any) *InstalledIntegration {
 	config, encodeErr := json.Marshal(InstallationConfig{URL: f.server.URL + "/", Token: testToken})
 	require.NoError(f.t, encodeErr)
+	userSettings, settingsErr := json.Marshal(settings)
+	require.NoError(f.t, settingsErr)
 	integration, makeErr := MakeIntegration(test.NewClock(testRanAt))
 	require.NoError(f.t, makeErr)
 
 	intg := &ent.Integration{
 		ID:                 uuid.New(),
 		InstallationConfig: config,
-		UserSettings:       settings,
+		UserSettings:       userSettings,
 	}
 	installed, installErr := integration.GetInstalledIntegration(intg)
 	require.NoError(f.t, installErr)

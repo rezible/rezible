@@ -629,7 +629,7 @@ type (
 		OAuthInstallRequired() bool
 		InstallationLinks() []IntegrationInstallationLink
 		ValidateInstallationConfig([]byte) (IntegrationInstallationConfig, error)
-		ValidateUserSettings(map[string]any) error
+		ValidateUserSettings([]byte) error
 		GetInstalledIntegration(*ent.Integration) (InstalledIntegration, error)
 	}
 

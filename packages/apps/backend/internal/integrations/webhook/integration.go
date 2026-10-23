@@ -10,6 +10,7 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/pkg/errs"
+	"github.com/rezible/rezible/pkg/integrations"
 )
 
 const (
@@ -82,11 +83,9 @@ func (i *Integration) ValidateInstallationConfig(raw []byte) (rez.IntegrationIns
 }
 
 // ValidateUserSettings rejects any setting: the webhook integration has none.
-func (i *Integration) ValidateUserSettings(settings map[string]any) error {
-	if len(settings) > 0 {
-		return fmt.Errorf("%w: the webhook integration has no settings", errs.ErrInvalidInput)
-	}
-	return nil
+func (i *Integration) ValidateUserSettings(settings []byte) error {
+	_, decodeErr := integrations.DecodeUserSettings[struct{}](settings)
+	return decodeErr
 }
 
 func (i *Integration) GetInstalledIntegration(intg *ent.Integration) (rez.InstalledIntegration, error) {

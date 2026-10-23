@@ -30976,7 +30976,8 @@ type IntegrationMutation struct {
 	provider_installation_ref *string
 	installation_config       *jsontext.Value
 	appendinstallation_config jsontext.Value
-	user_settings             *map[string]interface{}
+	user_settings             *jsontext.Value
+	appenduser_settings       jsontext.Value
 	webhook_token_hash        *[]byte
 	clearedFields             map[string]struct{}
 	tenant                    *int
@@ -31394,12 +31395,13 @@ func (m *IntegrationMutation) ResetInstallationConfig() {
 }
 
 // SetUserSettings sets the "user_settings" field.
-func (m *IntegrationMutation) SetUserSettings(value map[string]interface{}) {
-	m.user_settings = &value
+func (m *IntegrationMutation) SetUserSettings(j jsontext.Value) {
+	m.user_settings = &j
+	m.appenduser_settings = nil
 }
 
 // UserSettings returns the value of the "user_settings" field in the mutation.
-func (m *IntegrationMutation) UserSettings() (r map[string]interface{}, exists bool) {
+func (m *IntegrationMutation) UserSettings() (r jsontext.Value, exists bool) {
 	v := m.user_settings
 	if v == nil {
 		return
@@ -31410,7 +31412,7 @@ func (m *IntegrationMutation) UserSettings() (r map[string]interface{}, exists b
 // OldUserSettings returns the old "user_settings" field's value of the Integration entity.
 // If the Integration object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *IntegrationMutation) OldUserSettings(ctx context.Context) (v map[string]interface{}, err error) {
+func (m *IntegrationMutation) OldUserSettings(ctx context.Context) (v jsontext.Value, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldUserSettings is only allowed on UpdateOne operations")
 	}
@@ -31424,9 +31426,23 @@ func (m *IntegrationMutation) OldUserSettings(ctx context.Context) (v map[string
 	return oldValue.UserSettings, nil
 }
 
+// AppendUserSettings adds j to the "user_settings" field.
+func (m *IntegrationMutation) AppendUserSettings(j jsontext.Value) {
+	m.appenduser_settings = append(m.appenduser_settings, j...)
+}
+
+// AppendedUserSettings returns the list of values that were appended to the "user_settings" field in this mutation.
+func (m *IntegrationMutation) AppendedUserSettings() (jsontext.Value, bool) {
+	if len(m.appenduser_settings) == 0 {
+		return nil, false
+	}
+	return m.appenduser_settings, true
+}
+
 // ClearUserSettings clears the value of the "user_settings" field.
 func (m *IntegrationMutation) ClearUserSettings() {
 	m.user_settings = nil
+	m.appenduser_settings = nil
 	m.clearedFields[integration.FieldUserSettings] = struct{}{}
 }
 
@@ -31439,6 +31455,7 @@ func (m *IntegrationMutation) UserSettingsCleared() bool {
 // ResetUserSettings resets all changes to the "user_settings" field.
 func (m *IntegrationMutation) ResetUserSettings() {
 	m.user_settings = nil
+	m.appenduser_settings = nil
 	delete(m.clearedFields, integration.FieldUserSettings)
 }
 
@@ -31706,7 +31723,7 @@ func (m *IntegrationMutation) SetField(name string, value ent.Value) error {
 		m.SetInstallationConfig(v)
 		return nil
 	case integration.FieldUserSettings:
-		v, ok := value.(map[string]interface{})
+		v, ok := value.(jsontext.Value)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}

@@ -91,7 +91,7 @@ func (_c *IntegrationCreate) SetInstallationConfig(v jsontext.Value) *Integratio
 }
 
 // SetUserSettings sets the "user_settings" field.
-func (_c *IntegrationCreate) SetUserSettings(v map[string]interface{}) *IntegrationCreate {
+func (_c *IntegrationCreate) SetUserSettings(v jsontext.Value) *IntegrationCreate {
 	_c.mutation.SetUserSettings(v)
 	return _c
 }
@@ -171,10 +171,6 @@ func (_c *IntegrationCreate) defaults() error {
 		}
 		v := integration.DefaultUpdatedAt()
 		_c.mutation.SetUpdatedAt(v)
-	}
-	if _, ok := _c.mutation.UserSettings(); !ok {
-		v := integration.DefaultUserSettings
-		_c.mutation.SetUserSettings(v)
 	}
 	if _, ok := _c.mutation.ID(); !ok {
 		if integration.DefaultID == nil {
@@ -458,7 +454,7 @@ func (u *IntegrationUpsert) UpdateInstallationConfig() *IntegrationUpsert {
 }
 
 // SetUserSettings sets the "user_settings" field.
-func (u *IntegrationUpsert) SetUserSettings(v map[string]interface{}) *IntegrationUpsert {
+func (u *IntegrationUpsert) SetUserSettings(v jsontext.Value) *IntegrationUpsert {
 	u.Set(integration.FieldUserSettings, v)
 	return u
 }
@@ -643,7 +639,7 @@ func (u *IntegrationUpsertOne) UpdateInstallationConfig() *IntegrationUpsertOne 
 }
 
 // SetUserSettings sets the "user_settings" field.
-func (u *IntegrationUpsertOne) SetUserSettings(v map[string]interface{}) *IntegrationUpsertOne {
+func (u *IntegrationUpsertOne) SetUserSettings(v jsontext.Value) *IntegrationUpsertOne {
 	return u.Update(func(s *IntegrationUpsert) {
 		s.SetUserSettings(v)
 	})
@@ -1001,7 +997,7 @@ func (u *IntegrationUpsertBulk) UpdateInstallationConfig() *IntegrationUpsertBul
 }
 
 // SetUserSettings sets the "user_settings" field.
-func (u *IntegrationUpsertBulk) SetUserSettings(v map[string]interface{}) *IntegrationUpsertBulk {
+func (u *IntegrationUpsertBulk) SetUserSettings(v jsontext.Value) *IntegrationUpsertBulk {
 	return u.Update(func(s *IntegrationUpsert) {
 		s.SetUserSettings(v)
 	})

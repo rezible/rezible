@@ -1,10 +1,12 @@
 package integrations
 
 import (
+	"bytes"
 	"context"
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -206,4 +208,19 @@ func NewWebhookToken() (string, []byte, error) {
 func WebhookTokenHash(token string) []byte {
 	sum := sha256.Sum256([]byte(token))
 	return sum[:]
+}
+
+// DecodeUserSettings decodes an installation's user settings by the json tags of T. Unknown keys and mistyped
+// values are invalid input; missing settings decode to the zero value.
+func DecodeUserSettings[T any](userSettings []byte) (*T, error) {
+	var settings T
+	if len(userSettings) == 0 {
+		return &settings, nil
+	}
+	decoder := json.NewDecoder(bytes.NewReader(userSettings))
+	decoder.DisallowUnknownFields()
+	if decodeErr := decoder.Decode(&settings); decodeErr != nil {
+		return nil, fmt.Errorf("%w: invalid settings: %w", errs.ErrInvalidInput, decodeErr)
+	}
+	return &settings, nil
 }

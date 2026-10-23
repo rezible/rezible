@@ -77,7 +77,7 @@ func (i *Integration) ValidateInstallationConfig(raw []byte) (rez.IntegrationIns
 	return &cfg, nil
 }
 
-func (i *Integration) ValidateUserSettings(map[string]any) error {
+func (i *Integration) ValidateUserSettings([]byte) error {
 	return nil
 }
 

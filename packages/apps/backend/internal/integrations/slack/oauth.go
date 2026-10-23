@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	mapset "github.com/deckarep/golang-set/v2"
-	"github.com/go-viper/mapstructure/v2"
 	"github.com/stretchr/objx"
 	"golang.org/x/oauth2"
 )
@@ -52,14 +51,12 @@ func (h *oauthHandler) getTeamInfoFromTokenData(tokenData any) (*TeamInfo, error
 	if !ok {
 		return nil, fmt.Errorf("invalid token data")
 	}
-	var teamInfo TeamInfo
-	if decodeErr := mapstructure.Decode(data, &teamInfo); decodeErr != nil {
-		return nil, fmt.Errorf("failed to decode: %v", decodeErr)
-	}
-	if teamInfo.Id == "" {
+	id, _ := data["id"].(string)
+	if id == "" {
 		return nil, nil
 	}
-	return &teamInfo, nil
+	name, _ := data["name"].(string)
+	return &TeamInfo{Id: id, Name: name}, nil
 }
 
 func (h *oauthHandler) ExtractInstallationConfigFromToken(t *oauth2.Token) (*InstallationConfig, error) {

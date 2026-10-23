@@ -15,11 +15,11 @@ export const googleSettings: IntegrationSettingsDefinition<GoogleSettings> = {
 	schema: googleSettingsSchema,
 
 	read: (userSettings) => ({
-		EnableVideoConference: readBoolean(userSettings.EnableVideoConference, false),
+		EnableVideoConference: readBoolean(userSettings.enable_video_conference, false),
 	}),
 
 	write: (values, userSettings) => ({
 		...userSettings,
-		...values,
+		enable_video_conference: values.EnableVideoConference,
 	}),
 };

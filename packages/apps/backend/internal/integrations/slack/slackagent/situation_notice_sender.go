@@ -19,7 +19,7 @@ const maxNoticeErrorRunes = 200
 var _ integrations.SituationNoticeSender = (*InstalledIntegration)(nil)
 
 func (ii *InstalledIntegration) SituationNoticeChannel() string {
-	settings, settingsErr := decodeUserSettings(ii.intg.UserSettings)
+	settings, settingsErr := integrations.DecodeUserSettings[UserSettings](ii.intg.UserSettings)
 	if settingsErr != nil {
 		slog.Error("decode slack agent settings", "error", settingsErr, "integration_id", ii.intg.ID)
 		return ""

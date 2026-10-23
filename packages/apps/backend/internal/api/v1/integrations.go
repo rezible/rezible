@@ -80,8 +80,12 @@ func (h *integrationsHandler) GetIntegrationInstallation(ctx context.Context, re
 func (h *integrationsHandler) UpdateIntegrationInstallation(ctx context.Context, req *oapi.UpdateIntegrationInstallationRequest) (*oapi.UpdateIntegrationInstallationResponse, error) {
 	var resp oapi.UpdateIntegrationInstallationResponse
 
+	userSettings, encodeErr := json.Marshal(req.Body.Attributes.UserSettings)
+	if encodeErr != nil {
+		return nil, oapi.Error(ctx, "failed to encode settings", encodeErr)
+	}
 	setFn := func(m *ent.IntegrationMutation) {
-		m.SetUserSettings(req.Body.Attributes.UserSettings)
+		m.SetUserSettings(userSettings)
 	}
 	intg, setErr := h.integrations.UpdateInstallation(ctx, req.Id, setFn)
 	if setErr != nil {

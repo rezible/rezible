@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/go-viper/mapstructure/v2"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/pkg/integrations"
 	"google.golang.org/api/option"
 )
 
@@ -91,9 +91,9 @@ func (i *Integration) decodeValidateInstallationConfig(m []byte) (*InstallationC
 	return &c, c.Validate()
 }
 
-func (i *Integration) ValidateUserSettings(m map[string]any) error {
-	var settings UserSettings
-	return mapstructure.Decode(m, &settings)
+func (i *Integration) ValidateUserSettings(m []byte) error {
+	_, decodeErr := integrations.DecodeUserSettings[UserSettings](m)
+	return decodeErr
 }
 
 func (i *Integration) GetInstalledIntegration(intg *ent.Integration) (rez.InstalledIntegration, error) {
@@ -110,9 +110,11 @@ func (i *Integration) newInstalledIntegration(intg *ent.Integration) (*Installed
 		return nil, cfgErr
 	}
 	ii.config = cfg
-	if decErr := mapstructure.Decode(intg.UserSettings, &ii.settings); decErr != nil {
+	settings, decErr := integrations.DecodeUserSettings[UserSettings](intg.UserSettings)
+	if decErr != nil {
 		return nil, decErr
 	}
+	ii.settings = settings
 	return ii, nil
 }
 

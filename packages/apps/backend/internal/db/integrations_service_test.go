@@ -323,7 +323,7 @@ func (p *testIntegration) ValidateInstallationConfig(raw []byte) (rez.Integratio
 	return &cfg, nil
 }
 
-func (p *testIntegration) ValidateUserSettings(m map[string]any) error {
+func (p *testIntegration) ValidateUserSettings(m []byte) error {
 	return nil
 }
 

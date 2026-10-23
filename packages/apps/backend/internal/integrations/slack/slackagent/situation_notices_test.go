@@ -303,14 +303,14 @@ func (s *AppSuite) TestNoticeHeaderFitsSlackLimit() {
 func (s *AppSuite) TestValidateUserSettings() {
 	intg := &Integration{}
 
-	s.NoError(intg.ValidateUserSettings(map[string]any{}))
-	s.NoError(intg.ValidateUserSettings(map[string]any{"situation_notice_channel_id": ""}))
-	s.NoError(intg.ValidateUserSettings(map[string]any{"situation_notice_channel_id": "C0123ABC"}))
-	s.NoError(intg.ValidateUserSettings(map[string]any{"situation_notice_channel_id": "G0123ABC"}))
+	s.NoError(intg.ValidateUserSettings([]byte(`{}`)))
+	s.NoError(intg.ValidateUserSettings([]byte(`{"situation_notice_channel_id": ""}`)))
+	s.NoError(intg.ValidateUserSettings([]byte(`{"situation_notice_channel_id": "C0123ABC"}`)))
+	s.NoError(intg.ValidateUserSettings([]byte(`{"situation_notice_channel_id": "G0123ABC"}`)))
 
-	for _, invalid := range []any{"#incidents", "c0123abc", "U0123ABC", "C", 42} {
-		settings := map[string]any{"situation_notice_channel_id": invalid}
-		s.Error(intg.ValidateUserSettings(settings), "%v is not a channel ID", invalid)
+	for _, invalid := range []string{`"#incidents"`, `"c0123abc"`, `"U0123ABC"`, `"C"`, `42`} {
+		settings := []byte(`{"situation_notice_channel_id": ` + invalid + `}`)
+		s.Error(intg.ValidateUserSettings(settings), "%s is not a channel ID", invalid)
 	}
 }
 

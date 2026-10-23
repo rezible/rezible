@@ -1,12 +1,14 @@
 package alertmanager
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 
 	mapset "github.com/deckarep/golang-set/v2"
 
 	"github.com/rezible/rezible/pkg/errs"
+	"github.com/rezible/rezible/pkg/integrations"
 )
 
 const settingServiceLabels = "service_labels"
@@ -21,36 +23,31 @@ type installationSettings struct {
 	serviceLabels []string
 }
 
-func parseInstallationSettings(settings map[string]any) (*installationSettings, error) {
-	raw, present := settings[settingServiceLabels]
-	if !present {
+// storedSettings are the settings as an admin stores them; a nil ServiceLabels is an absent setting.
+type storedSettings struct {
+	ServiceLabels json.RawMessage `json:"service_labels"`
+}
+
+func parseInstallationSettings(settings []byte) (*installationSettings, error) {
+	stored, decodeErr := integrations.DecodeUserSettings[storedSettings](settings)
+	if decodeErr != nil {
+		return nil, decodeErr
+	}
+	if stored.ServiceLabels == nil {
 		return &installationSettings{serviceLabels: defaultServiceLabels}, nil
 	}
-	var values []any
-	switch typed := raw.(type) {
-	case []any:
-		values = typed
-	case []string:
-		for _, label := range typed {
-			values = append(values, label)
-		}
-	default:
+	var labels []string
+	if unmarshalErr := json.Unmarshal(stored.ServiceLabels, &labels); unmarshalErr != nil || labels == nil {
 		return nil, fmt.Errorf("%w: %s must be a list of label names", errs.ErrInvalidInput, settingServiceLabels)
 	}
-	labels := make([]string, 0, len(values))
 	seen := mapset.NewThreadUnsafeSet[string]()
-	for i, value := range values {
-		label, isString := value.(string)
-		if !isString {
-			return nil, fmt.Errorf("%w: %s[%d] must be a string", errs.ErrInvalidInput, settingServiceLabels, i)
-		}
+	for i, label := range labels {
 		if strings.TrimSpace(label) == "" {
 			return nil, fmt.Errorf("%w: %s[%d] must not be empty", errs.ErrInvalidInput, settingServiceLabels, i)
 		}
 		if !seen.Add(label) {
 			return nil, fmt.Errorf("%w: %s contains %q more than once", errs.ErrInvalidInput, settingServiceLabels, label)
 		}
-		labels = append(labels, label)
 	}
 	return &installationSettings{serviceLabels: labels}, nil
 }

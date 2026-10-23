@@ -94,8 +94,6 @@ var (
 	NameValidator func(string) error
 	// ProviderInstallationRefValidator is a validator for the "provider_installation_ref" field. It is called by the builders before save.
 	ProviderInstallationRefValidator func(string) error
-	// DefaultUserSettings holds the default value on creation for the "user_settings" field.
-	DefaultUserSettings map[string]interface{}
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )

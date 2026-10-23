@@ -78,7 +78,7 @@ func (i *Integration) ValidateInstallationConfig(raw []byte) (rez.IntegrationIns
 	return parseInstallationConfig(raw)
 }
 
-func (i *Integration) ValidateUserSettings(settings map[string]any) error {
+func (i *Integration) ValidateUserSettings(settings []byte) error {
 	_, parseErr := parseInstallationSettings(settings)
 	return parseErr
 }

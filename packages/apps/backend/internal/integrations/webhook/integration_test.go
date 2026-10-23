@@ -40,6 +40,6 @@ func (s *IntegrationSuite) TestUserSettingsCannotBeSet() {
 	i := &Integration{}
 
 	s.NoError(i.ValidateUserSettings(nil))
-	s.NoError(i.ValidateUserSettings(map[string]any{}))
-	s.ErrorIs(i.ValidateUserSettings(map[string]any{"preset": "incident"}), errs.ErrInvalidInput)
+	s.NoError(i.ValidateUserSettings([]byte(`{}`)))
+	s.ErrorIs(i.ValidateUserSettings([]byte(`{"preset": "incident"}`)), errs.ErrInvalidInput)
 }

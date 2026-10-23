@@ -99,7 +99,7 @@ func (i *Integration) decodeValidateInstallationConfig(raw []byte) (*Installatio
 	return &cfg, nil
 }
 
-func (i *Integration) ValidateUserSettings(settings map[string]any) error {
+func (i *Integration) ValidateUserSettings(settings []byte) error {
 	return nil
 }
 

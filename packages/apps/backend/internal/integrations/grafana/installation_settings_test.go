@@ -15,37 +15,37 @@ func TestValidateUserSettings(t *testing.T) {
 
 	for _, tc := range []struct {
 		name     string
-		settings map[string]any
+		settings string
 		contains string
 	}{
 		{
 			name:     "a non-string value",
-			settings: map[string]any{"logs_data_source_uid": 12},
+			settings: `{"logs_data_source_uid": 12}`,
 			contains: "logs_data_source_uid",
 		},
 		{
 			name:     "a label that would widen a selector",
-			settings: map[string]any{"log_service_label": `service_name=~".+",x`},
+			settings: `{"log_service_label": "service_name=~\".+\",x"}`,
 			contains: "log_service_label",
 		},
 		{
 			name:     "a UID with a slash",
-			settings: map[string]any{"metrics_data_source_uid": "prometheus/../admin"},
+			settings: `{"metrics_data_source_uid": "prometheus/../admin"}`,
 			contains: "metrics_data_source_uid",
 		},
 		{
 			name:     "a UID longer than 40 characters",
-			settings: map[string]any{"logs_data_source_uid": strings.Repeat("a", 41)},
+			settings: `{"logs_data_source_uid": "` + strings.Repeat("a", 41) + `"}`,
 			contains: "logs_data_source_uid",
 		},
 		{
 			name:     "an unknown setting",
-			settings: map[string]any{"logs_datasource_uid": "loki"},
+			settings: `{"logs_datasource_uid": "loki"}`,
 			contains: "logs_datasource_uid",
 		},
 	} {
 		t.Run("rejects "+tc.name, func(t *testing.T) {
-			validateErr := integration.ValidateUserSettings(tc.settings)
+			validateErr := integration.ValidateUserSettings([]byte(tc.settings))
 
 			require.ErrorIs(t, validateErr, errs.ErrInvalidInput)
 			require.ErrorContains(t, validateErr, tc.contains)
@@ -55,23 +55,13 @@ func TestValidateUserSettings(t *testing.T) {
 	t.Run("accepts empty values", func(t *testing.T) {
 		require.NoError(t, integration.ValidateUserSettings(nil))
 
-		empty := map[string]any{
-			"logs_data_source_uid":    "",
-			"metrics_data_source_uid": "",
-			"log_service_label":       "",
-			"metric_service_label":    "",
-		}
-		require.NoError(t, integration.ValidateUserSettings(empty))
+		empty := `{"logs_data_source_uid": "", "metrics_data_source_uid": "", "log_service_label": "", "metric_service_label": ""}`
+		require.NoError(t, integration.ValidateUserSettings([]byte(empty)))
 	})
 
 	t.Run("accepts valid values", func(t *testing.T) {
-		valid := map[string]any{
-			"logs_data_source_uid":    "loki",
-			"metrics_data_source_uid": "P1809F7CD0C75ACF3",
-			"log_service_label":       "service_name",
-			"metric_service_label":    "_app",
-		}
-		require.NoError(t, integration.ValidateUserSettings(valid))
+		valid := `{"logs_data_source_uid": "loki", "metrics_data_source_uid": "P1809F7CD0C75ACF3", "log_service_label": "service_name", "metric_service_label": "_app"}`
+		require.NoError(t, integration.ValidateUserSettings([]byte(valid)))
 	})
 }
 

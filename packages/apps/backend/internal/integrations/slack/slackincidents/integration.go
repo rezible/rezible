@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"slices"
 
-	"github.com/go-viper/mapstructure/v2"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/internal/integrations/slack"
@@ -105,8 +104,9 @@ func (i *Integration) CheckInstallRequirements(state *integrations.IntegrationIn
 	return nil
 }
 
-func (i *Integration) ValidateUserSettings(m map[string]any) error {
-	return nil
+func (i *Integration) ValidateUserSettings(m []byte) error {
+	_, decodeErr := integrations.DecodeUserSettings[UserSettings](m)
+	return decodeErr
 }
 
 func (i *Integration) GetInstalledIntegration(intg *ent.Integration) (rez.InstalledIntegration, error) {
@@ -118,11 +118,11 @@ func (i *Integration) makeInstalledIntegration(intg *ent.Integration) (*Installe
 	if cfgErr != nil {
 		return nil, cfgErr
 	}
-	ii := &InstalledIntegration{intg: intg, config: cfg, clientOptions: i.appSvc.App().clientOptions()}
-	if decErr := mapstructure.Decode(intg.UserSettings, &ii.settings); decErr != nil {
+	settings, decErr := integrations.DecodeUserSettings[UserSettings](intg.UserSettings)
+	if decErr != nil {
 		return nil, decErr
 	}
-	return ii, nil
+	return &InstalledIntegration{intg: intg, config: cfg, settings: settings, clientOptions: i.appSvc.App().clientOptions()}, nil
 }
 
 type InstalledIntegration struct {
@@ -155,14 +155,14 @@ func (ii *InstalledIntegration) ListChatChannels(ctx context.Context, params int
 }
 
 type UserSettings struct {
-	Incidents UserSettingsIncidents
+	Incidents UserSettingsIncidents `json:"incidents"`
 }
 
 type UserSettingsIncidents struct {
-	AnnouncementChannelID     string
-	ChannelNamePattern        string
-	AutoCreateVideoConference bool
-	InviteMode                string
+	AnnouncementChannelID     string `json:"announcement_channel_id"`
+	ChannelNamePattern        string `json:"channel_name_pattern"`
+	AutoCreateVideoConference bool   `json:"auto_create_video_conference"`
+	InviteMode                string `json:"invite_mode"`
 }
 
 var defaultIncidentPreferences = UserSettingsIncidents{

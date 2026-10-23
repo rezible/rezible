@@ -152,7 +152,7 @@ func (d *fakeDefinition) ValidateInstallationConfig([]byte) (rez.IntegrationInst
 	return nil, nil
 }
 
-func (d *fakeDefinition) ValidateUserSettings(map[string]any) error {
+func (d *fakeDefinition) ValidateUserSettings([]byte) error {
 	return nil
 }
 

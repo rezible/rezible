@@ -120,8 +120,14 @@ func (_u *IntegrationUpdate) AppendInstallationConfig(v jsontext.Value) *Integra
 }
 
 // SetUserSettings sets the "user_settings" field.
-func (_u *IntegrationUpdate) SetUserSettings(v map[string]interface{}) *IntegrationUpdate {
+func (_u *IntegrationUpdate) SetUserSettings(v jsontext.Value) *IntegrationUpdate {
 	_u.mutation.SetUserSettings(v)
+	return _u
+}
+
+// AppendUserSettings appends value to the "user_settings" field.
+func (_u *IntegrationUpdate) AppendUserSettings(v jsontext.Value) *IntegrationUpdate {
+	_u.mutation.AppendUserSettings(v)
 	return _u
 }
 
@@ -254,6 +260,11 @@ func (_u *IntegrationUpdate) sqlSave(ctx context.Context) (_node int, err error)
 	if value, ok := _u.mutation.UserSettings(); ok {
 		_spec.SetField(integration.FieldUserSettings, field.TypeJSON, value)
 	}
+	if value, ok := _u.mutation.AppendedUserSettings(); ok {
+		_spec.AddModifier(func(u *sql.UpdateBuilder) {
+			sqljson.Append(u, integration.FieldUserSettings, value)
+		})
+	}
 	if _u.mutation.UserSettingsCleared() {
 		_spec.ClearField(integration.FieldUserSettings, field.TypeJSON)
 	}
@@ -374,8 +385,14 @@ func (_u *IntegrationUpdateOne) AppendInstallationConfig(v jsontext.Value) *Inte
 }
 
 // SetUserSettings sets the "user_settings" field.
-func (_u *IntegrationUpdateOne) SetUserSettings(v map[string]interface{}) *IntegrationUpdateOne {
+func (_u *IntegrationUpdateOne) SetUserSettings(v jsontext.Value) *IntegrationUpdateOne {
 	_u.mutation.SetUserSettings(v)
+	return _u
+}
+
+// AppendUserSettings appends value to the "user_settings" field.
+func (_u *IntegrationUpdateOne) AppendUserSettings(v jsontext.Value) *IntegrationUpdateOne {
+	_u.mutation.AppendUserSettings(v)
 	return _u
 }
 
@@ -537,6 +554,11 @@ func (_u *IntegrationUpdateOne) sqlSave(ctx context.Context) (_node *Integration
 	}
 	if value, ok := _u.mutation.UserSettings(); ok {
 		_spec.SetField(integration.FieldUserSettings, field.TypeJSON, value)
+	}
+	if value, ok := _u.mutation.AppendedUserSettings(); ok {
+		_spec.AddModifier(func(u *sql.UpdateBuilder) {
+			sqljson.Append(u, integration.FieldUserSettings, value)
+		})
 	}
 	if _u.mutation.UserSettingsCleared() {
 		_spec.ClearField(integration.FieldUserSettings, field.TypeJSON)

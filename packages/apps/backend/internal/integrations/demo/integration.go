@@ -72,7 +72,7 @@ func (i *Integration) ValidateInstallationConfig(c []byte) (rez.IntegrationInsta
 	return &cfg, json.Unmarshal(c, &cfg)
 }
 
-func (i *Integration) ValidateUserSettings(settings map[string]any) error {
+func (i *Integration) ValidateUserSettings(settings []byte) error {
 	return nil
 }
 

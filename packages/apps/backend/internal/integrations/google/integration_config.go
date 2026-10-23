@@ -35,5 +35,5 @@ func (c *InstallationConfig) Validate() error {
 }
 
 type UserSettings struct {
-	EnableVideoConference bool
+	EnableVideoConference bool `json:"enable_video_conference"`
 }

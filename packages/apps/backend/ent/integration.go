@@ -38,7 +38,7 @@ type Integration struct {
 	// InstallationConfig holds the value of the "installation_config" field.
 	InstallationConfig jsontext.Value `json:"installation_config,omitempty"`
 	// UserSettings holds the value of the "user_settings" field.
-	UserSettings map[string]interface{} `json:"user_settings,omitempty"`
+	UserSettings jsontext.Value `json:"user_settings,omitempty"`
 	// WebhookTokenHash holds the value of the "webhook_token_hash" field.
 	WebhookTokenHash *[]byte `json:"-"`
 	// Edges holds the relations/edges for other nodes in the graph.
