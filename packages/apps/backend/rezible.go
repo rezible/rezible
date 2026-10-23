@@ -931,10 +931,6 @@ type (
 		GetConfigs() []AiAgentConfig
 		ValidateSessionInput(string, []byte) (ValidatingInput, error)
 		MakeInitialTurnInput(context.Context, *ent.AgentSession) (*AiAgentTurnInput, error)
-	}
-
-	AiAgentRuntime interface {
-		AgentCatalogue() AiAgentCatalogue
 		InvokeAgentTurn(context.Context, InvokeAiAgentTurnParams) (*AiAgentInvocationResult, error)
 	}
 

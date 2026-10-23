@@ -53,6 +53,7 @@ func (s *SituationSignalService) NotifySignalChanged(ctx context.Context, signal
 }
 
 type SituationService struct {
+	cfg            rez.SituationsConfig
 	db             rez.Database
 	clock          rez.Clock
 	jobs           rez.JobService
@@ -64,8 +65,12 @@ type SituationService struct {
 	signalSources  map[rez.SituationSignalKind]rez.SituationSignalSource
 }
 
-func NewSituationService(db rez.Database, clock rez.Clock, js rez.JobService, msgs rez.MessageQueue, investigations rez.InvestigationService, analyses rez.SystemAnalysisService, graph rez.KnowledgeGraphQueryService, judge rezai.JudgeSituationCandidateWorkflow, signalSources ...rez.SituationSignalSource) (*SituationService, error) {
+func NewSituationService(cfg rez.SituationsConfig, db rez.Database, clock rez.Clock, js rez.JobService, msgs rez.MessageQueue, investigations rez.InvestigationService, analyses rez.SystemAnalysisService, graph rez.KnowledgeGraphQueryService, judge rezai.JudgeSituationCandidateWorkflow, signalSources ...rez.SituationSignalSource) (*SituationService, error) {
+	if judge == nil {
+		return nil, fmt.Errorf("situation judge workflow is required")
+	}
 	s := &SituationService{
+		cfg:            cfg,
 		db:             db,
 		clock:          clock,
 		jobs:           js,

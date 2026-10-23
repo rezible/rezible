@@ -48,8 +48,8 @@ func applicationPackages(ctx context.Context) Package {
 }
 
 // AppProfile adjusts the application for one way of running it. It is a package of overrides, applied once when
-// the application is built and before anything is resolved. An override that changes a base provider's value
-// composes the named base provider rather than invoking the current value.
+// the application is built and before anything is resolved. An override that wraps a base service invokes its
+// concrete type, which the base wiring binds to the interface being overridden.
 type AppProfile = Package
 
 // override replaces the provider of T.
@@ -59,8 +59,25 @@ func override[T any](provider Provider[T]) AppProfile {
 	}
 }
 
+// overrideValue replaces the provider of T with a value.
+func overrideValue[T any](value T) AppProfile {
+	return func(i do.Injector) {
+		do.OverrideValue(i, value)
+	}
+}
+
 // testDatabaseProfile runs against a fresh, migrated database that is dropped when the application shuts down.
-var testDatabaseProfile = override(providePostgresTestDatabaseConfig)
+var testDatabaseProfile = do.Package(
+	do.Lazy(func(i do.Injector) (*pgtestdb.Database, error) {
+		return pgtestdb.New(do.MustInvoke[rez.Config](i).Postgres)
+	}),
+	override(func(i do.Injector) (rez.PostgresConfig, error) {
+		return do.MustInvoke[*pgtestdb.Database](i).Config(), nil
+	}),
+)
+
+// noPeriodicJobsProfile schedules no periodic jobs, so only the work a run causes happens.
+var noPeriodicJobsProfile = overrideValue[[]*jobs.PeriodicJob](nil)
 
 var basePackages = do.Package(
 	pkgClock,
@@ -73,6 +90,7 @@ var basePackages = do.Package(
 	pkgRedis,
 	pkgJobs,
 	pkgMessages,
+	pkgEvals,
 )
 
 func withEnvironmentConfig(ctx context.Context) func(do.Injector) {
@@ -89,10 +107,6 @@ func withPostgresDatabase(ctx context.Context) func(do.Injector) {
 	return do.Package(
 		do.Lazy(func(i do.Injector) (rez.PostgresConfig, error) {
 			return do.MustInvoke[rez.Config](i).Postgres, nil
-		}),
-
-		do.Lazy(func(i do.Injector) (*pgtestdb.Database, error) {
-			return pgtestdb.New(do.MustInvoke[rez.Config](i).Postgres)
 		}),
 
 		do.Lazy(func(i do.Injector) (*postgres.ConnectionPool, error) {
@@ -138,10 +152,6 @@ var pkgRiver = do.Package(
 	do.Bind[*river.JobService, jobs.Registrar](),
 )
 
-func providePostgresTestDatabaseConfig(i do.Injector) (rez.PostgresConfig, error) {
-	return do.MustInvoke[*pgtestdb.Database](i).Config(), nil
-}
-
 var pkgGenkit = do.Package(
 	do.Lazy(func(i do.Injector) (rezai.AiClassifyAgentThreadResponseWorkflow, error) {
 		builder := do.MustInvoke[*genkit.WorkflowBuilder](i)
@@ -149,9 +159,6 @@ var pkgGenkit = do.Package(
 	}),
 
 	do.Lazy(func(i do.Injector) (rezai.JudgeSituationCandidateWorkflow, error) {
-		if !do.MustInvoke[rez.Config](i).AI.SituationJudge.Enabled {
-			return nil, nil
-		}
 		builder := do.MustInvoke[*genkit.WorkflowBuilder](i)
 		return builder.DefinePromptWorkflow(rezai.JudgeSituationCandidateDefinition)
 	}),
@@ -163,15 +170,8 @@ var pkgGenkit = do.Package(
 		), nil
 	}),
 
-	do.Lazy(provideAiRuntimeOptions),
-
-	// Agents are registered after runtime init, since their services can depend on runtime-supplied workflows
-	do.Lazy(func(i do.Injector) (rez.AiAgentRuntime, error) {
-		runtime, runtimeErr := do.Invoke[*genkit.AiRuntime](i)
-		if runtimeErr != nil {
-			return nil, fmt.Errorf("runtime: %w", runtimeErr)
-		}
-		chatAgent := genkit.NewChatAgent()
+	do.Lazy(func(i do.Injector) (*genkit.AgentCatalogue, error) {
+		air := do.MustInvoke[*genkit.AiRuntime](i)
 		investigationAgent := genkit.NewInvestigationAgent(
 			do.MustInvoke[rez.Clock](i),
 			do.MustInvoke[rez.InvestigationService](i),
@@ -183,40 +183,20 @@ var pkgGenkit = do.Package(
 			do.MustInvoke[rez.AgentProviderReadService](i),
 			do.MustInvoke[rez.KnowledgeProposalService](i),
 		)
-		return runtime, runtime.RegisterAgents(
-			genkit.WithAgent(chatAgent),
-			genkit.WithAgent(investigationAgent),
+		return genkit.NewAgentCatalogue(
+			air,
+			genkit.NewChatAgent(),
+			investigationAgent,
 		)
 	}),
-
-	do.Lazy(func(i do.Injector) (rez.AiAgentCatalogue, error) {
-		return do.MustInvoke[rez.AiAgentRuntime](i).AgentCatalogue(), nil
-	}),
-
-	do.Lazy(func(i do.Injector) ([]evals.WorkflowTarget, error) {
-		judge := do.MustInvoke[rezai.JudgeSituationCandidateWorkflow](i)
-		if judge == nil {
-			// The judge is off in this configuration, but can still be evaluated.
-			builder := do.MustInvoke[*genkit.WorkflowBuilder](i)
-			defined, defineErr := builder.DefinePromptWorkflow(rezai.JudgeSituationCandidateDefinition)
-			if defineErr != nil {
-				return nil, fmt.Errorf("define %s: %w", rezai.JudgeSituationCandidateDefinition.Name, defineErr)
-			}
-			judge = defined
-		}
-		workflows := evals.Workflows{JudgeSituationCandidate: judge}
-		return workflows.Targets()
-	}),
+	do.Bind[*genkit.AgentCatalogue, rez.AiAgentCatalogue](),
 )
 
 func withGenkitAiRuntime(ctx context.Context) func(do.Injector) {
 	return do.Package(
 		do.Lazy(func(i do.Injector) (*genkit.AiRuntime, error) {
 			svc := genkit.NewAiRuntime(do.MustInvoke[rez.Config](i))
-			if initErr := svc.Init(ctx, do.MustInvoke[[]genkit.AiRuntimeOption](i)...); initErr != nil {
-				return nil, fmt.Errorf("init genkit runtime: %w", initErr)
-			}
-			return svc, nil
+			return svc, svc.Init(ctx)
 		}),
 	)
 }
@@ -239,23 +219,6 @@ var pkgWatermill = do.Package(
 )
 
 var pkgIntegrations = do.Package(
-	do.Lazy(func(i do.Injector) (*integrations.Registry, error) {
-		return integrations.NewRegistry(do.MustInvoke[[]rez.IntegrationDefinition](i)...)
-	}),
-
-	do.Lazy(provideProviderEventProcessors),
-
-	do.Lazy(func(i do.Injector) (rez.EventProjectionService, error) {
-		return eventprojection.NewProjectionService(
-			do.MustInvoke[rez.Database](i),
-			do.MustInvoke[rez.KnowledgeGraphIngestionService](i),
-			do.MustInvoke[rez.KnowledgeGraphQueryService](i),
-			do.MustInvoke[rez.UserService](i),
-			do.MustInvoke[rez.IncidentService](i),
-			do.MustInvoke[rez.AlertService](i),
-		)
-	}),
-
 	do.Lazy(func(i do.Injector) (*demoprovider.Integration, error) {
 		return demoprovider.MakeIntegration(
 			do.MustInvoke[rez.Config](i),
@@ -345,7 +308,48 @@ var pkgIntegrations = do.Package(
 		return app.MakeIntegration(deps)
 	}),
 
-	do.Lazy(provideIntegrationDefinitions),
+	do.Lazy(func(i do.Injector) ([]rez.IntegrationDefinition, error) {
+		return []rez.IntegrationDefinition{
+			do.MustInvoke[*alertmanager.Integration](i),
+			do.MustInvoke[*demoprovider.Integration](i),
+			do.MustInvoke[*google.Integration](i),
+			do.MustInvoke[*github.Integration](i),
+			do.MustInvoke[*grafana.Integration](i),
+			do.MustInvoke[*slackagent.Integration](i),
+			do.MustInvoke[*slackincidents.Integration](i),
+			do.MustInvoke[*webhook.Integration](i),
+			do.MustInvoke[*evals.Integration](i),
+		}, nil
+	}),
+
+	// Event processors have no dependencies, so the pipeline can be built before the integrations that use it.
+	do.Lazy(func(do.Injector) (rez.ProviderEventProcessorRegistry, error) {
+		return rez.ProviderEventProcessorRegistry{
+			alertmanager.ProviderName:     alertmanager.EventProcessor{},
+			demoprovider.ProviderName:     demoprovider.EventProcessor{},
+			github.ProviderName:           github.EventProcessor{},
+			grafana.ProviderName:          grafana.EventProcessor{},
+			slackintegration.ProviderName: slackagent.EventProcessor{},
+			webhook.ProviderName:          webhook.EventProcessor{},
+			evals.EvaluationProviderName:  evals.EventProcessor{},
+		}, nil
+	}),
+
+	do.Lazy(func(i do.Injector) (rez.EventProjectionService, error) {
+		return eventprojection.NewProjectionService(
+			do.MustInvoke[rez.Database](i),
+			do.MustInvoke[rez.KnowledgeGraphIngestionService](i),
+			do.MustInvoke[rez.KnowledgeGraphQueryService](i),
+			do.MustInvoke[rez.UserService](i),
+			do.MustInvoke[rez.IncidentService](i),
+			do.MustInvoke[rez.AlertService](i),
+		)
+	}),
+
+	do.Lazy(func(i do.Injector) (*integrations.Registry, error) {
+		intgDefs := do.MustInvoke[[]rez.IntegrationDefinition](i)
+		return integrations.NewRegistry(intgDefs...)
+	}),
 )
 
 var pkgDatabase = do.Package(
@@ -548,9 +552,10 @@ var pkgDatabase = do.Package(
 	}),
 	do.Bind[*db.AlertService, rez.AlertService](),
 
-	do.Lazy(func(i do.Injector) (rez.SituationSignalService, error) {
+	do.Lazy(func(i do.Injector) (*db.SituationSignalService, error) {
 		return db.NewSituationSignalService(do.MustInvoke[rez.JobService](i)), nil
 	}),
+	do.Bind[*db.SituationSignalService, rez.SituationSignalService](),
 
 	do.Lazy(func(i do.Injector) (rez.PlaybookService, error) {
 		return db.NewPlaybookService(do.MustInvoke[rez.Database](i))
@@ -593,26 +598,18 @@ var pkgDatabase = do.Package(
 			do.MustInvoke[rez.Config](i).AI,
 			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.MessageQueue](i),
-			do.MustInvoke[rez.AiAgentRuntime](i),
+			do.MustInvoke[rez.AiAgentCatalogue](i),
 			do.MustInvoke[rez.AiAgentSessionService](i),
 		)
 	}),
 
-	do.Lazy(func(i do.Injector) (*evals.AgentEvalService, error) {
-		return evals.NewAgentEvalService(
-			do.MustInvoke[rez.Database](i),
-			do.MustInvoke[rez.Clock](i),
-			do.MustInvoke[rez.AuthSessionService](i),
-			do.MustInvoke[rez.IntegrationService](i),
-			do.MustInvoke[rez.ProviderEventIngester](i),
-			do.MustInvoke[rez.EventProjectionService](i),
-			do.MustInvoke[rez.SituationService](i),
-			do.MustInvoke[rez.InvestigationService](i),
-		), nil
+	do.Lazy(func(i do.Injector) (rez.SituationsConfig, error) {
+		return do.MustInvoke[rez.Config](i).Situations, nil
 	}),
 
 	do.Lazy(func(i do.Injector) (*db.SituationService, error) {
 		return db.NewSituationService(
+			do.MustInvoke[rez.SituationsConfig](i),
 			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.Clock](i),
 			do.MustInvoke[rez.JobService](i),
@@ -868,36 +865,3 @@ var pkgMessages = do.Package(
 		return p.getDefinition()
 	}),
 )
-
-// Event processors have no dependencies, so the pipeline can be built before the integrations that use it.
-func provideProviderEventProcessors(do.Injector) (rez.ProviderEventProcessorRegistry, error) {
-	return rez.ProviderEventProcessorRegistry{
-		alertmanager.ProviderName:     alertmanager.EventProcessor{},
-		demoprovider.ProviderName:     demoprovider.EventProcessor{},
-		github.ProviderName:           github.EventProcessor{},
-		grafana.ProviderName:          grafana.EventProcessor{},
-		slackintegration.ProviderName: slackagent.EventProcessor{},
-		webhook.ProviderName:          webhook.EventProcessor{},
-	}, nil
-}
-
-func provideAiRuntimeOptions(i do.Injector) ([]genkit.AiRuntimeOption, error) {
-	aiCfg := do.MustInvoke[rez.Config](i).AI
-	return []genkit.AiRuntimeOption{
-		genkit.WithGeminiPlugin(aiCfg.Gemini),
-		genkit.WithAnthropicPlugin(aiCfg.Anthropic),
-	}, nil
-}
-
-func provideIntegrationDefinitions(i do.Injector) ([]rez.IntegrationDefinition, error) {
-	return []rez.IntegrationDefinition{
-		do.MustInvoke[*alertmanager.Integration](i),
-		do.MustInvoke[*demoprovider.Integration](i),
-		do.MustInvoke[*google.Integration](i),
-		do.MustInvoke[*github.Integration](i),
-		do.MustInvoke[*grafana.Integration](i),
-		do.MustInvoke[*slackagent.Integration](i),
-		do.MustInvoke[*slackincidents.Integration](i),
-		do.MustInvoke[*webhook.Integration](i),
-	}, nil
-}

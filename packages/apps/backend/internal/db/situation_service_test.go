@@ -96,7 +96,7 @@ func (s *SituationServiceSuite) newFixture(tdb rez.Database) *situationServiceFi
 		Return(nil).
 		Maybe()
 	investigations := NewInvestigationService(tdb, agentService, jobService, messageQueue, analysisService)
-	situationService, situationServiceErr := NewSituationService(tdb, h.clock, jobService, messageQueue, investigations, analysisService, knowledgeQuery, nil, alerts)
+	situationService, situationServiceErr := NewSituationService(rez.SituationsConfig{}, tdb, h.clock, jobService, messageQueue, investigations, analysisService, knowledgeQuery, offJudge{t: s.T()}, alerts)
 	s.Require().NoError(situationServiceErr)
 	h.alerts = alerts
 	h.situations = situationService

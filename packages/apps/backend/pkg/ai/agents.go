@@ -14,7 +14,6 @@ import (
 type AgentDefinition[SessionInput rez.ValidatingInput] struct {
 	Name              string
 	Description       string
-	Model             string
 	SystemPrompt      string
 	MaxToolIterations int
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"testing"
 	"time"
 
 	"github.com/google/uuid"
@@ -36,9 +37,20 @@ func (j *stubJudge) Run(ctx context.Context, input rezai.SituationJudgeInput) (r
 	return j.answer, j.fail
 }
 
+// offJudge is the judge workflow of a service whose model judge is off, so it never runs.
+type offJudge struct {
+	t *testing.T
+}
+
+func (j offJudge) Run(context.Context, rezai.SituationJudgeInput) (rezai.SituationJudgeOutput, error) {
+	j.t.Error("the model judge is off but ran")
+	return rezai.SituationJudgeOutput{}, nil
+}
+
 // persistentCandidate is a candidate whose one alert, about a checkout service, has been active long enough
 // to persist, so its outcome needs a decision. The collection window has passed.
 func (s *SituationServiceSuite) persistentCandidate(ctx context.Context, tdb rez.Database, h *situationServiceFixture, judge *stubJudge) *ent.Situation {
+	h.situations.cfg.ModelJudge = true
 	h.situations.judge = judge
 	signal := s.signal(ctx, tdb, h, "checkout-errors", 0, s.entityRef(kne.CategoryContainer, "checkout"))
 	candidate := s.create(ctx, h, map[string][]uuid.UUID{"Checkout": {signal}}, signal)
@@ -141,6 +153,7 @@ func (s *SituationServiceSuite) TestModelJudgeRaises() {
 func (s *SituationServiceSuite) TestModelJudgeRejectsMalformedAndInvalidAnswers() {
 	answers := map[string]*stubJudge{
 		"malformed": {fail: fmt.Errorf("%w: reasons is not an array", rezai.ErrWorkflowInvalidOutput)},
+		"no model":  {fail: rezai.ErrNoModel},
 		"invalid": {answer: rezai.SituationJudgeOutput{
 			Decision:    "raise",
 			Reasons:     []schematypes.SituationRaiseReason{schematypes.SituationRaiseReasonBreadth},

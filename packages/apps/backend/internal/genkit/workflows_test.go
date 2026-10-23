@@ -40,7 +40,7 @@ func (r *testWorkflowRunner) ExecuteWorkflow(ctx context.Context, name string, r
 	return run(ctx)
 }
 
-func (s *AiRuntimeSuite) makeWorkflowOutputModel(output *testWorkflowOutput) ModelDefinition[any] {
+func (s *AiRuntimeSuite) makeWorkflowOutputModel(output *testWorkflowOutput) testModel {
 	out, jsonErr := json.Marshal(output)
 	s.Require().NoError(jsonErr)
 	response := &gkai.ModelResponse{
@@ -53,12 +53,11 @@ func (s *AiRuntimeSuite) TestDefinePromptWorkflowValidatesInput() {
 	ctx := execution.NewSystemContext(s.T().Context())
 
 	model := s.makeWorkflowOutputModel(&testWorkflowOutput{OK: true})
-	svc := s.makeRuntime(ctx, WithDefinedModel(model))
+	svc := s.makeRuntime(ctx, model)
 	runner := &testWorkflowRunner{}
 	builder := NewWorkflowBuilder(svc, runner)
 	definition := rezai.AiPromptWorkflowDefinition[testWorkflowInput, testWorkflowOutput]{
-		Name:  "test_workflow_validation",
-		Model: model.Name,
+		Name: "test_workflow_validation",
 		Prompt: func(input testWorkflowInput) string {
 			return input.Message
 		},
@@ -76,12 +75,11 @@ func (s *AiRuntimeSuite) TestDefinePromptWorkflowRunsTypedOutput() {
 	ctx := execution.NewSystemContext(s.T().Context())
 
 	model := s.makeWorkflowOutputModel(&testWorkflowOutput{OK: true})
-	svc := s.makeRuntime(ctx, WithDefinedModel(model))
+	svc := s.makeRuntime(ctx, model)
 	runner := &testWorkflowRunner{}
 	builder := NewWorkflowBuilder(svc, runner)
 	definition := rezai.AiPromptWorkflowDefinition[testWorkflowInput, testWorkflowOutput]{
 		Name:         "test_workflow",
-		Model:        model.Name,
 		SystemPrompt: "Return JSON.",
 		Prompt: func(input testWorkflowInput) string {
 			return "Message: " + input.Message
@@ -106,7 +104,7 @@ func (s *AiRuntimeSuite) TestDefinePromptWorkflowCountsUsageWithTheDefaultModel(
 		Message: gkai.NewModelTextMessage(string(out)),
 		Usage:   &gkai.GenerationUsage{InputTokens: 120, OutputTokens: 8, ThoughtsTokens: 4},
 	})
-	svc := s.makeRuntime(ctx, WithDefinedModel(model))
+	svc := s.makeRuntime(ctx, model)
 	builder := NewWorkflowBuilder(svc, &testWorkflowRunner{})
 	// No model named: the workflow runs on the default.
 	definition := rezai.AiPromptWorkflowDefinition[testWorkflowInput, testWorkflowOutput]{
@@ -125,11 +123,56 @@ func (s *AiRuntimeSuite) TestDefinePromptWorkflowCountsUsageWithTheDefaultModel(
 	s.Equal(rezai.TurnUsage{Model: model.Name, InputTokens: 120, OutputTokens: 12}, totals())
 }
 
+func (s *AiRuntimeSuite) TestDefinePromptWorkflowRunsOnItsModelSetting() {
+	ctx := execution.NewSystemContext(s.T().Context())
+
+	out, jsonErr := json.Marshal(testWorkflowOutput{OK: true})
+	s.Require().NoError(jsonErr)
+	override := makeTestOutputModel(&gkai.ModelResponse{
+		Message: gkai.NewModelTextMessage(string(out)),
+		Usage:   &gkai.GenerationUsage{InputTokens: 10, OutputTokens: 2},
+	})
+	override.Name = "test/override"
+	cfg := s.Config()
+	cfg.AI.Models.Default = testModelName
+	cfg.AI.Models.ThreadClassifier = override.Name
+	svc := newTestRuntime(cfg, makeTestOutputModel(nil), override)
+	// The default model has no answer, so the workflow only succeeds on its setting's model.
+	s.Require().NoError(svc.Init(ctx))
+	builder := NewWorkflowBuilder(svc, &testWorkflowRunner{})
+	definition := rezai.AiPromptWorkflowDefinition[testWorkflowInput, testWorkflowOutput]{
+		Name: rezai.ClassifyAgentThreadResponseDefinition.Name,
+		Prompt: func(input testWorkflowInput) string {
+			return input.Message
+		},
+	}
+	workflow, workflowErr := builder.DefinePromptWorkflow(definition)
+	s.Require().NoError(workflowErr)
+
+	tallyCtx, totals := rezai.WithTurnUsage(ctx)
+	output, runErr := workflow.Run(tallyCtx, testWorkflowInput{Message: "hello"})
+	s.Require().NoError(runErr)
+	s.True(output.OK)
+	s.Equal(rezai.TurnUsage{Model: override.Name, InputTokens: 10, OutputTokens: 2}, totals())
+}
+
+func (s *AiRuntimeSuite) TestDefinePromptWorkflowFailsWithoutAModel() {
+	ctx := execution.NewSystemContext(s.T().Context())
+
+	svc := newTestRuntime(s.Config())
+	s.Require().NoError(svc.Init(ctx), "a runtime without a model starts")
+	workflow, workflowErr := NewWorkflowBuilder(svc, &testWorkflowRunner{}).DefinePromptWorkflow(rezai.ClassifyAgentThreadResponseDefinition)
+	s.Require().NoError(workflowErr, "a workflow without a model is defined")
+
+	_, runErr := workflow.Run(ctx, rezai.ClassifyAgentThreadResponseInput{PreviousMessages: []string{}, UserMessage: "hello"})
+	s.ErrorIs(runErr, rezai.ErrNoModel)
+}
+
 func (s *AiRuntimeSuite) TestDefineWorkflowRejectsDuplicateNames() {
 	ctx := execution.NewSystemContext(s.T().Context())
 
 	model := s.makeWorkflowOutputModel(&testWorkflowOutput{OK: true})
-	svc := s.makeRuntime(ctx, WithDefinedModel(model))
+	svc := s.makeRuntime(ctx, model)
 	builder := NewWorkflowBuilder(svc, &testWorkflowRunner{})
 	run := func(context.Context, testWorkflowInput) (testWorkflowOutput, error) {
 		return testWorkflowOutput{}, nil
@@ -177,7 +220,7 @@ func (s *AiRuntimeSuite) TestJudgeSituationCandidateWorkflowAcceptsFactsAndRejec
 	for _, answer := range answers {
 		s.Run(answer.name, func() {
 			response := &gkai.ModelResponse{Message: gkai.NewModelTextMessage(answer.response)}
-			svc := s.makeRuntime(ctx, WithDefinedModel(makeTestOutputModel(response)))
+			svc := s.makeRuntime(ctx, makeTestOutputModel(response))
 			builder := NewWorkflowBuilder(svc, &testWorkflowRunner{})
 			workflow, workflowErr := builder.DefinePromptWorkflow(rezai.JudgeSituationCandidateDefinition)
 			s.Require().NoError(workflowErr)

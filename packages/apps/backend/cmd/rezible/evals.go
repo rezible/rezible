@@ -13,43 +13,56 @@ import (
 	"github.com/rezible/rezible/internal/db"
 	"github.com/rezible/rezible/internal/db/evals"
 	rezai "github.com/rezible/rezible/pkg/ai"
-	"github.com/rezible/rezible/pkg/jobs"
 	"github.com/samber/do/v2"
 )
 
+// pkgEvals provides the evaluation integration, and the targets and services the evals commands run. It is part
+// of every run: the integration and its event processor are always registered, but only agentEvaluationProfile
+// makes the integration available.
+var pkgEvals = do.Package(
+	do.Lazy(func(i do.Injector) (*evals.Integration, error) {
+		return evals.NewIntegration(do.MustInvoke[rez.Clock](i), false), nil
+	}),
+
+	do.Lazy(func(i do.Injector) ([]evals.WorkflowTarget, error) {
+		workflows := evals.Workflows{
+			JudgeSituationCandidate: do.MustInvoke[rezai.JudgeSituationCandidateWorkflow](i),
+		}
+		return workflows.Targets()
+	}),
+
+	do.Lazy(func(i do.Injector) (*evals.AgentEvalService, error) {
+		return evals.NewAgentEvalService(
+			do.MustInvoke[rez.Database](i),
+			do.MustInvoke[rez.Clock](i),
+			do.MustInvoke[rez.AuthSessionService](i),
+			do.MustInvoke[rez.IntegrationService](i),
+			do.MustInvoke[rez.ProviderEventIngester](i),
+			do.MustInvoke[rez.EventProjectionService](i),
+			do.MustInvoke[rez.SituationService](i),
+			do.MustInvoke[rez.InvestigationService](i),
+		), nil
+	}),
+)
+
 // agentEvaluationProfile prepares the application for agent evaluation scenarios, on a test database: the
-// evaluation integration and its event processor beside the given integrations, a signal service that lets
-// setup events skip detection, and neither periodic jobs nor a model judge, since the scenario decides what the
-// agent faces.
-func agentEvaluationProfile(definitions Provider[[]rez.IntegrationDefinition]) Package {
-	return do.Package(
-		testDatabaseProfile,
-		override(func(i do.Injector) ([]rez.IntegrationDefinition, error) {
-			base, baseErr := definitions(i)
-			if baseErr != nil {
-				return nil, baseErr
-			}
-			return append(base, evals.NewIntegration(do.MustInvoke[rez.Clock](i))), nil
-		}),
-		override(func(i do.Injector) (rez.ProviderEventProcessorRegistry, error) {
-			registry, registryErr := provideProviderEventProcessors(i)
-			if registryErr != nil {
-				return nil, registryErr
-			}
-			registry[evals.EvaluationProviderName] = evals.EventProcessor{}
-			return registry, nil
-		}),
-		override(func(i do.Injector) (rez.SituationSignalService, error) {
-			return evals.NewSetupSignals(db.NewSituationSignalService(do.MustInvoke[rez.JobService](i))), nil
-		}),
-		override(func(do.Injector) ([]*jobs.PeriodicJob, error) {
-			return nil, nil
-		}),
-		override(func(do.Injector) (rezai.JudgeSituationCandidateWorkflow, error) {
-			return nil, nil
-		}),
-	)
-}
+// evaluation integration is available, setup events skip detection, and neither periodic jobs nor the model
+// judge run, since the scenario decides what the agent faces.
+var agentEvaluationProfile = do.Package(
+	testDatabaseProfile,
+	noPeriodicJobsProfile,
+	override(func(i do.Injector) (*evals.Integration, error) {
+		return evals.NewIntegration(do.MustInvoke[rez.Clock](i), true), nil
+	}),
+	override(func(i do.Injector) (rez.SituationSignalService, error) {
+		return evals.NewSetupSignals(do.MustInvoke[*db.SituationSignalService](i)), nil
+	}),
+	override(func(i do.Injector) (rez.SituationsConfig, error) {
+		situations := do.MustInvoke[rez.Config](i).Situations
+		situations.ModelJudge = false
+		return situations, nil
+	}),
+)
 
 func printEvalTargets(w io.Writer, app *Application) error {
 	return app.With(func(workflows []evals.WorkflowTarget) error {
@@ -89,7 +102,7 @@ func (r *evalRunner) run(ctx context.Context, w io.Writer) error {
 	var profiles []Package
 	if evals.HasScenario(r.target) {
 		runFn = r.runAgentScenario
-		profiles = []Package{agentEvaluationProfile(provideIntegrationDefinitions)}
+		profiles = append(profiles, agentEvaluationProfile)
 	}
 	return runApplication(ctx, func(ctx context.Context, app *Application) error {
 		result, runErr := runFn(ctx, app)

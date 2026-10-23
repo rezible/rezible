@@ -15,8 +15,8 @@ import (
 const (
 	// JudgeModel is the judge of decisions made by the judge_situation_candidate model workflow.
 	JudgeModel = "llm:judge_situation_candidate"
-	// JudgeModelRejected is the judge of holds recorded because the model's answer was malformed or invalid,
-	// so they are never presented as the model's own assessment.
+	// JudgeModelRejected is the judge of holds recorded because the model's answer was malformed or invalid, or
+	// because no model is configured, so they are never presented as the model's own assessment.
 	JudgeModelRejected = JudgeModel + ":rejected"
 	// JudgeUnavailable is the judge of holds recorded because the model failed or timed out. Nothing was
 	// decided on their facts, and the same facts are judged again after JudgeRetryAfter.
@@ -81,6 +81,17 @@ func RejectedJudgment(problem error) Judgment {
 		Decision:    sitjudg.DecisionHold,
 		Cited:       []schematypes.SituationRaiseReason{},
 		Explanation: fmt.Sprintf("Held: the model judge's answer was rejected (%s).", problem),
+		Judge:       JudgeModelRejected,
+	}
+}
+
+// NoModelJudgment holds because no model is configured for the model judge. A configuration error does not
+// pass, so unlike an unavailable model, the same facts are not judged again.
+func NoModelJudgment() Judgment {
+	return Judgment{
+		Decision:    sitjudg.DecisionHold,
+		Cited:       []schematypes.SituationRaiseReason{},
+		Explanation: "Held: no model is configured for the model judge, so nothing was decided on these facts.",
 		Judge:       JudgeModelRejected,
 	}
 }

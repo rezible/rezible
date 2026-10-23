@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/url"
 	"os"
+	"slices"
 	"time"
 )
 
@@ -28,9 +29,6 @@ func DefaultConfig() Config {
 			Agents: AiAgentsConfig{
 				MaxWorkers:    4,
 				WorkerTimeout: 15 * time.Minute,
-			},
-			Anthropic: AiProviderConfigAnthropic{
-				Model: "claude-haiku-5-5",
 			},
 		},
 		HttpServer: HttpServerConfig{
@@ -82,6 +80,7 @@ type Config struct {
 	MessageQueue MessageQueueConfig `cfg:"messagequeue"`
 	Postgres     PostgresConfig     `cfg:"postgres"`
 	Redis        RedisConfig        `cfg:"redis"`
+	Situations   SituationsConfig   `cfg:"situations"`
 	Telemetry    TelemetryConfig    `cfg:"telemetry"`
 }
 
@@ -124,29 +123,51 @@ type (
 
 type (
 	AiConfig struct {
-		Agents         AiAgentsConfig            `cfg:"agents"`
-		Gemini         AiProviderConfigGemini    `cfg:"gemini"`
-		Anthropic      AiProviderConfigAnthropic `cfg:"anthropic"`
-		SituationJudge AiSituationJudgeConfig    `cfg:"situation_judge"`
+		Providers AiProvidersConfig `cfg:"providers"`
+		Models    AiModelsConfig    `cfg:"models"`
+		Agents    AiAgentsConfig    `cfg:"agents"`
+	}
+	AiModelsConfig struct {
+		Default          string `cfg:"default"`
+		Investigation    string `cfg:"investigation"`
+		Chat             string `cfg:"chat"`
+		SituationJudge   string `cfg:"situation_judge"`
+		ThreadClassifier string `cfg:"thread_classifier"`
+	}
+	AiProvidersConfig struct {
+		GoogleAI  AiProviderConfigGoogleAI  `cfg:"googleai"`
+		Anthropic AiProviderConfigAnthropic `cfg:"anthropic"`
 	}
 	AiAgentsConfig struct {
 		MaxWorkers    int           `cfg:"max_workers" validate:"min=1"`
 		WorkerTimeout time.Duration `cfg:"worker_timeout" validate:"gt=0"`
 	}
-	AiSituationJudgeConfig struct {
-		// Enabled lets a model decide candidate situations that need a decision, instead of the rules. It is
-		// independent of enabling a model provider, and requires a default model.
-		Enabled bool `cfg:"enabled"`
-	}
-	AiProviderConfigGemini struct {
+	AiProviderConfigGoogleAI struct {
 		Enabled bool   `cfg:"enabled"`
 		APIKey  string `cfg:"api_key"`
 	}
 	AiProviderConfigAnthropic struct {
 		Enabled bool   `cfg:"enabled"`
 		APIKey  string `cfg:"api_key"`
-		// Model is the Claude model ID used as the default model.
-		Model string `cfg:"model" validate:"required_if=Enabled true"`
+	}
+)
+
+// Names lists each model the configuration names, without duplicates.
+func (c AiModelsConfig) Names() []string {
+	var names []string
+	for _, name := range []string{c.Default, c.Investigation, c.Chat, c.SituationJudge, c.ThreadClassifier} {
+		if name != "" {
+			names = append(names, name)
+		}
+	}
+	slices.Sort(names)
+	return slices.Compact(names)
+}
+
+type (
+	SituationsConfig struct {
+		// ModelJudge has a model decide the candidate situations the rules leave needing a decision.
+		ModelJudge bool `cfg:"model_judge"`
 	}
 )
 

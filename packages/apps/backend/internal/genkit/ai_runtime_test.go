@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/suite"
 
 	rez "github.com/rezible/rezible"
+	rezai "github.com/rezible/rezible/pkg/ai"
 	"github.com/rezible/rezible/test"
 )
 
@@ -21,35 +22,62 @@ func TestAiRuntimeSuite(t *testing.T) {
 	suite.Run(t, &AiRuntimeSuite{Suite: test.NewSuite()})
 }
 
-func (s *AiRuntimeSuite) makeRuntime(ctx context.Context, opts ...AiRuntimeOption) *AiRuntime {
-	svc := NewAiRuntime(s.Config())
-	var anyModels bool
-	for _, opt := range opts {
-		if opt.kind == AiRuntimeOptionKindModel {
-			anyModels = true
-			break
-		}
+// makeRuntime initializes a runtime serving models, with testModelName as the default model.
+func (s *AiRuntimeSuite) makeRuntime(ctx context.Context, models ...testModel) *AiRuntime {
+	if len(models) == 0 {
+		s.T().Log("adding default test model to runtime as none were given")
+		models = append(models, makeTestOutputModel(&gkai.ModelResponse{Message: gkai.NewModelTextMessage("foo")}))
 	}
-	if !anyModels {
-		s.T().Log("adding default test model to runtime init opts as none were defined")
-		response := &gkai.ModelResponse{Message: gkai.NewModelTextMessage("foo")}
-		opts = append(opts, WithDefinedModel(makeTestOutputModel(response)))
-	}
-	s.Require().NoError(svc.Init(ctx, opts...))
+	cfg := s.Config()
+	cfg.AI.Models.Default = testModelName
+	svc := newTestRuntime(cfg, models...)
+	s.Require().NoError(svc.Init(ctx))
 	return svc
 }
 
-func (s *AiRuntimeSuite) TestSituationJudgeRequiresADefaultModel() {
-	enabled := rez.AiConfig{SituationJudge: rez.AiSituationJudgeConfig{Enabled: true}}
-	s.Error((&AiRuntime{cfg: enabled}).validateConfig(), "enabling the judge without a default model fails")
-	s.NoError((&AiRuntime{cfg: enabled, defaultModel: "test/output"}).validateConfig())
-	s.NoError((&AiRuntime{}).validateConfig(), "the judge is disabled by default")
+func newTestRuntime(cfg rez.Config, models ...testModel) *AiRuntime {
+	actions := make([]*gkai.ModelAction, len(models))
+	for i, model := range models {
+		actions[i] = gkai.NewModelAction(model.Name, model.opts, model.fn)
+	}
+	return NewAiRuntime(cfg, actions...)
 }
 
-func makeTestOutputModel(response *gkai.ModelResponse) ModelDefinition[any] {
-	return ModelDefinition[any]{
-		Name:      "test/output",
-		IsDefault: true,
+func (s *AiRuntimeSuite) TestInitRejectsModelsWithoutAProvider() {
+	ctx := s.T().Context()
+	response := &gkai.ModelResponse{Message: gkai.NewModelTextMessage("foo")}
+
+	cfg := s.Config()
+	cfg.AI.Models.Default = testModelName
+	cfg.AI.Models.Investigation = "unconfigured/model"
+	initErr := newTestRuntime(cfg, makeTestOutputModel(response)).Init(ctx)
+	s.ErrorContains(initErr, `"unconfigured/model"`)
+}
+
+func (s *AiRuntimeSuite) TestInitDefaultsToTheOnlyEnabledProvidersModel() {
+	cfg := s.Config()
+	cfg.AI.Providers.Anthropic = rez.AiProviderConfigAnthropic{Enabled: true, APIKey: "test-key"}
+	svc := NewAiRuntime(cfg)
+	s.Require().NoError(svc.Init(s.T().Context()))
+	s.Equal("anthropic/claude-haiku-5-5", svc.modelFor(rezai.ChatAgent.Name))
+
+	cfg.AI.Providers.GoogleAI = rez.AiProviderConfigGoogleAI{Enabled: true, APIKey: "test-key"}
+	s.ErrorContains(NewAiRuntime(cfg).Init(s.T().Context()), "ai.models.default is required")
+}
+
+// testModelName is the model makeRuntime configures as the default.
+const testModelName = "test/output"
+
+// testModel is a stand-in model, which a test can adjust before a runtime serves it.
+type testModel struct {
+	Name string
+	opts *gkai.ModelOptions
+	fn   gkai.ModelActionFunc[any]
+}
+
+func makeTestOutputModel(response *gkai.ModelResponse) testModel {
+	return testModel{
+		Name: testModelName,
 		opts: &gkai.ModelOptions{
 			Supports: &gkai.ModelSupports{
 				Constrained: gkai.ConstrainedSupportAll,

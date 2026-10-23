@@ -95,13 +95,13 @@ type InvokeAgentTurnWorker struct {
 
 	db       rez.Database
 	msgs     rez.MessageQueue
-	agents   rez.AiAgentRuntime
+	agents   rez.AiAgentCatalogue
 	sessions rez.AiAgentSessionService
 	timeout  time.Duration
 	metrics  *agentTurnMetrics
 }
 
-func NewInvokeAgentTurnWorker(cfg rez.AiConfig, db rez.Database, msgs rez.MessageQueue, aiSvc rez.AiAgentRuntime, aiSess rez.AiAgentSessionService) (*InvokeAgentTurnWorker, error) {
+func NewInvokeAgentTurnWorker(cfg rez.AiConfig, db rez.Database, msgs rez.MessageQueue, aiSvc rez.AiAgentCatalogue, aiSess rez.AiAgentSessionService) (*InvokeAgentTurnWorker, error) {
 	metrics, metricsErr := newAgentTurnMetrics()
 	if metricsErr != nil {
 		return nil, fmt.Errorf("agent turn metrics: %w", metricsErr)

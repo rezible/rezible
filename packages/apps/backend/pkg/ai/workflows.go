@@ -18,10 +18,12 @@ import (
 // not match the workflow's output schema.
 var ErrWorkflowInvalidOutput = errors.New("workflow output does not match its schema")
 
+// ErrNoModel is returned by a workflow or agent turn when no model is configured for it.
+var ErrNoModel = errors.New("no model is configured: set ai.models.default or enable a provider under ai.providers")
+
 type AiPromptWorkflowDefinition[I rez.ValidatingInput, O any] struct {
 	Name         string
 	Description  string
-	Model        string
 	SystemPrompt string
 	Prompt       func(I) string
 }

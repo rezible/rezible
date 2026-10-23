@@ -19,14 +19,15 @@ const EvaluationProviderName = "evaluation"
 const deploymentsCapability = "deployments"
 
 // Integration is installed in each agent evaluation's tenant. Its event processor passes a scenario's events
-// into the pipeline, and an installation whose scenario has logs reads them. Only agent evaluation runs
-// register it.
+// into the pipeline, and an installation whose scenario has logs reads them.
 type Integration struct {
-	clock rez.Clock
+	clock     rez.Clock
+	available bool
 }
 
-func NewIntegration(clock rez.Clock) *Integration {
-	return &Integration{clock: clock}
+// NewIntegration makes the evaluation integration; only agent evaluation scenarios make it available.
+func NewIntegration(clock rez.Clock, available bool) *Integration {
+	return &Integration{clock: clock, available: available}
 }
 
 func (i *Integration) Name() string {
@@ -54,7 +55,7 @@ func (i *Integration) MaxInstalls() *int {
 }
 
 func (i *Integration) IsAvailable() (bool, error) {
-	return true, nil
+	return i.available, nil
 }
 
 func (i *Integration) OAuthInstallRequired() bool {

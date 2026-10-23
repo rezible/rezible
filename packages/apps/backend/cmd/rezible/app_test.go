@@ -24,7 +24,6 @@ import (
 	at "github.com/rezible/rezible/ent/agentturn"
 	"github.com/rezible/rezible/internal/genkit"
 	"github.com/rezible/rezible/internal/http"
-	demo "github.com/rezible/rezible/internal/integrations/demo"
 	"github.com/rezible/rezible/internal/postgres"
 	"github.com/rezible/rezible/pkg/jobs"
 	oapi "github.com/rezible/rezible/pkg/openapi"
@@ -97,29 +96,21 @@ func (s *BackendSuite) newAppHarness(options appTestOptions) *appHarness {
 		}
 	})
 
+	// applicationTestModel is the default model application tests generate with.
+	const applicationTestModel = "test/application"
+
 	testClock := test.NewClock(time.Now())
-	// Select the real demo integration without installing its unrelated sync jobs.
-	demoDefinitions := func(i do.Injector) ([]rez.IntegrationDefinition, error) {
-		integration, integrationErr := do.Invoke[*demo.Integration](i)
-		if integrationErr != nil {
-			return nil, fmt.Errorf("resolve demo integration: %w", integrationErr)
-		}
-		return []rez.IntegrationDefinition{integration}, nil
-	}
 	testProfile := do.Package(
 		testDatabaseProfile,
-		override(func(do.Injector) (rez.Config, error) {
-			return s.Config(), nil
-		}),
 		override(func(do.Injector) (rez.Clock, error) {
 			return testClock, nil
 		}),
-		override(demoDefinitions),
-		override(func(i do.Injector) ([]genkit.AiRuntimeOption, error) {
-			baseOpts, baseErr := provideAiRuntimeOptions(i)
-			if baseErr != nil {
-				return nil, baseErr
-			}
+		override(func(do.Injector) (rez.Config, error) {
+			cfg := s.Config()
+			cfg.AI.Models.Default = applicationTestModel
+			return cfg, nil
+		}),
+		override(func(i do.Injector) (*genkit.AiRuntime, error) {
 			modelOptions := &ai.ModelOptions{
 				Supports: &ai.ModelSupports{
 					Tools:      true,
@@ -127,13 +118,11 @@ func (s *BackendSuite) newAppHarness(options appTestOptions) *appHarness {
 					SystemRole: true,
 				},
 			}
-			model := genkit.NewModelDefinition("test/application", modelOptions, modelAction)
-			model.IsDefault = true
-			return append(baseOpts, genkit.WithDefinedModel(model)), nil
+			model := ai.NewModelAction(applicationTestModel, modelOptions, modelAction)
+			runtime := genkit.NewAiRuntime(do.MustInvoke[rez.Config](i), model)
+			return runtime, runtime.Init(ctx)
 		}),
-		override(func(do.Injector) ([]*jobs.PeriodicJob, error) {
-			return nil, nil
-		}),
+		noPeriodicJobsProfile,
 	)
 	app = NewApplication(testProfile)
 	_, initErr := app.Init(ctx, false)

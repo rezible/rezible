@@ -1,10 +1,9 @@
 package genkit
 
 import (
-	"cmp"
 	"context"
 	"fmt"
-	"slices"
+	"strings"
 
 	"github.com/firebase/genkit/go/ai"
 	gkapi "github.com/firebase/genkit/go/core/api"
@@ -12,199 +11,133 @@ import (
 	"github.com/firebase/genkit/go/plugins/anthropic"
 	"github.com/firebase/genkit/go/plugins/googlegenai"
 	rez "github.com/rezible/rezible"
-	"github.com/rezible/rezible/pkg/execution"
-	"google.golang.org/genai"
+	rezai "github.com/rezible/rezible/pkg/ai"
 )
 
 type AiRuntime struct {
-	cfg       rez.AiConfig
-	catalogue *agentCatalogue
-	gk        *genkit.Genkit
-	// defaultModel is the model generation uses when a request names none, or "".
-	defaultModel string
+	cfg         rez.AiConfig
+	extraModels []*ai.ModelAction
+	gk          *genkit.Genkit
 }
 
-func NewAiRuntime(cfg rez.Config) *AiRuntime {
+// NewAiRuntime creates a runtime serving the enabled providers' models and any extra models, which serve under
+// their own names.
+func NewAiRuntime(cfg rez.Config, extraModels ...*ai.ModelAction) *AiRuntime {
 	return &AiRuntime{
-		cfg:       cfg.AI,
-		catalogue: newAgentCatalogue(),
+		cfg:         cfg.AI,
+		extraModels: extraModels,
 	}
 }
 
-func (r *AiRuntime) Init(ctx context.Context, opts ...AiRuntimeOption) error {
-	gkOpts := []genkit.GenkitOption{
-		genkit.WithExperimental(),
+func (r *AiRuntime) Init(ctx context.Context) error {
+	providers := enabledProviders(r.cfg.Providers)
+	if r.cfg.Models.Default == "" {
+		switch len(providers) {
+		case 0:
+			// Without a provider there is no model, and the AI features need none.
+		case 1:
+			r.cfg.Models.Default = providers[0].defaultModel
+		default:
+			return fmt.Errorf("ai.models.default is required when more than one provider is enabled")
+		}
 	}
 
 	var plugins []gkapi.Plugin
-	for _, opt := range opts {
-		if len(opt.plugins) > 0 {
-			plugins = append(plugins, opt.plugins...)
-		}
-		if opt.defaultModel != "" {
-			if r.defaultModel != "" {
-				return fmt.Errorf("default model is set twice (%s and %s): enable one model provider", r.defaultModel, opt.defaultModel)
-			}
-			r.defaultModel = opt.defaultModel
-		}
-		for _, gkOpt := range opt.genkitOpts {
-			gkOpts = append(gkOpts, gkOpt)
-		}
+	if len(r.extraModels) > 0 {
+		plugins = append(plugins, extraModelsPlugin(r.extraModels))
 	}
-	gkOpts = append(gkOpts, genkit.WithPlugins(plugins...))
-
+	for _, provider := range providers {
+		plugins = append(plugins, provider.plugin(r.cfg.Models))
+	}
+	gkOpts := []genkit.GenkitOption{
+		genkit.WithExperimental(),
+		genkit.WithPlugins(plugins...),
+	}
+	if r.cfg.Models.Default != "" {
+		gkOpts = append(gkOpts, genkit.WithDefaultModel(r.cfg.Models.Default))
+	}
 	r.gk = genkit.Init(ctx, gkOpts...)
-
-	if optsErr := r.applyOptions(opts); optsErr != nil {
-		return fmt.Errorf("apply service options: %w", optsErr)
-	}
-
 	return r.validateConfig()
 }
 
-// DefaultModel is the name of the default model, or "" when none is configured.
-func (r *AiRuntime) DefaultModel() string {
-	return r.defaultModel
-}
-
-// validateConfig checks the AI configuration against the models the runtime has.
+// validateConfig checks that each configured model's provider is enabled. A provider can still reject a model
+// it does not serve, which surfaces when the model is called.
 func (r *AiRuntime) validateConfig() error {
-	if r.cfg.SituationJudge.Enabled && r.DefaultModel() == "" {
-		return fmt.Errorf("ai.situation_judge.enabled requires a default model: enable a model provider such as ai.gemini or ai.anthropic")
-	}
-	return nil
-}
-
-func (r *AiRuntime) applyOptions(opts []AiRuntimeOption) error {
-	slices.SortFunc(opts, func(a, b AiRuntimeOption) int {
-		return cmp.Compare(a.kind, b.kind)
-	})
-	for _, opt := range opts {
-		if opt.runtimeFn == nil {
-			continue
-		}
-		if optErr := opt.runtimeFn(r); optErr != nil {
-			return fmt.Errorf("service init option: %w", optErr)
+	for _, name := range r.cfg.Models.Names() {
+		if genkit.LookupModel(r.gk, name) == nil {
+			return fmt.Errorf("model %q has no enabled provider: name it as provider/model and enable its provider under ai.providers", name)
 		}
 	}
 	return nil
 }
 
-// RegisterAgents registers agents on the initialized runtime. Agents are registered after Init because their
-// services may depend on workflows defined on the runtime.
-func (r *AiRuntime) RegisterAgents(agents ...AiRuntimeOption) error {
-	if r.gk == nil {
-		return fmt.Errorf("AI runtime is not initialized")
-	}
-	for _, agent := range agents {
-		if agent.kind != AiRuntimeOptionKindAgent {
-			return fmt.Errorf("only agent options can be registered after init")
-		}
-	}
-	return r.applyOptions(agents)
+// modelFor is the model of the named agent or workflow.
+func (r *AiRuntime) modelFor(name string) string {
+	return rezai.ModelFor(r.cfg.Models, name)
 }
 
-func (r *AiRuntime) AgentCatalogue() rez.AiAgentCatalogue {
-	return r.catalogue
+// extraModelsPlugin serves models that come from no provider.
+type extraModelsPlugin []*ai.ModelAction
+
+func (p extraModelsPlugin) Name() string {
+	return "extra"
 }
 
-func (r *AiRuntime) InvokeAgentTurn(ctx context.Context, params rez.InvokeAiAgentTurnParams) (*rez.AiAgentInvocationResult, error) {
-	if params.Session == nil {
-		return nil, fmt.Errorf("agent session is required")
+func (p extraModelsPlugin) Init(context.Context) []gkapi.Action {
+	actions := make([]gkapi.Action, len(p))
+	for i, model := range p {
+		actions[i] = model
 	}
-	agent, agentErr := r.catalogue.getAgent(params.Session.AgentName)
-	if agentErr != nil {
-		return nil, agentErr
-	}
-	return agent.Invoke(execution.NewAiAgentContext(ctx, params.Session), params)
+	return actions
 }
 
-type AiRuntimeOption struct {
-	kind       AiRuntimeOptionKind
-	runtimeFn  func(*AiRuntime) error
-	genkitOpts []genkit.GenkitOption
-	plugins    []gkapi.Plugin
-	// defaultModel names the default model the option configures, if any.
+// modelProvider is an enabled model provider.
+type modelProvider struct {
+	// defaultModel is the model used when ai.models.default is empty and this is the only enabled provider.
 	defaultModel string
+	plugin       func(rez.AiModelsConfig) gkapi.Plugin
 }
 
-// TODO: remove these, don't use option kinds (just different functions eg `opt.agentFn`)
-type AiRuntimeOptionKind int
-
-const (
-	AiRuntimeOptionKindPlugin AiRuntimeOptionKind = iota
-	AiRuntimeOptionKindModel  AiRuntimeOptionKind = iota
-	AiRuntimeOptionKindTool   AiRuntimeOptionKind = iota
-	AiRuntimeOptionKindAgent  AiRuntimeOptionKind = iota
-)
-
-type ModelDefinition[Config any] struct {
-	Name      string
-	IsDefault bool
-	opts      *ai.ModelOptions
-	fn        ai.ModelActionFunc[Config]
-}
-
-// NewModelDefinition constructs a model option without exposing runtime internals.
-func NewModelDefinition[C any](name string, options *ai.ModelOptions, action ai.ModelActionFunc[C]) ModelDefinition[C] {
-	return ModelDefinition[C]{
-		Name: name,
-		opts: options,
-		fn:   action,
-	}
-}
-
-func WithDefinedModel[Config any](def ModelDefinition[Config]) AiRuntimeOption {
-	opt := AiRuntimeOption{
-		kind: AiRuntimeOptionKindModel,
-		runtimeFn: func(s *AiRuntime) error {
-			genkit.DefineModelAction(s.gk, def.Name, def.opts, def.fn)
-			return nil
-		},
-	}
-	if def.IsDefault {
-		opt.genkitOpts = append(opt.genkitOpts, genkit.WithDefaultModel(def.Name))
-		opt.defaultModel = def.Name
-	}
-	return opt
-}
-
-var geminiFlashModel = googlegenai.ModelRef("googleai/gemini-flash-latest", &genai.GenerateContentConfig{
-	ThinkingConfig: &genai.ThinkingConfig{ThinkingLevel: genai.ThinkingLevelMinimal},
-})
-
-func WithGeminiPlugin(cfg rez.AiProviderConfigGemini) AiRuntimeOption {
-	opt := AiRuntimeOption{kind: AiRuntimeOptionKindPlugin}
-	if cfg.Enabled {
-		opt.plugins = append(opt.plugins, &googlegenai.GoogleAI{APIKey: cfg.APIKey})
-
-		// TODO: don't hardcode
-		opt.genkitOpts = append(opt.genkitOpts, genkit.WithDefaultModel(geminiFlashModel.Name()))
-		opt.defaultModel = geminiFlashModel.Name()
-	}
-	return opt
-}
-
-func WithAnthropicPlugin(cfg rez.AiProviderConfigAnthropic) AiRuntimeOption {
-	opt := AiRuntimeOption{kind: AiRuntimeOptionKindPlugin}
-	if cfg.Enabled {
-		// The plugin only knows native structured output for the models it lists; current models support it.
-		structured := ai.ModelOptions{Supports: &ai.ModelSupports{
-			Multiturn:   true,
-			Tools:       true,
-			SystemRole:  true,
-			Media:       true,
-			Output:      []string{"text", "json"},
-			Constrained: ai.ConstrainedSupportAll,
-		}}
-		opt.plugins = append(opt.plugins, &anthropic.Anthropic{
-			APIKey: cfg.APIKey,
-			Models: map[string]ai.ModelOptions{cfg.Model: structured},
+func enabledProviders(cfg rez.AiProvidersConfig) []modelProvider {
+	var providers []modelProvider
+	if cfg.GoogleAI.Enabled {
+		providers = append(providers, modelProvider{
+			defaultModel: "googleai/gemini-flash-latest",
+			plugin: func(rez.AiModelsConfig) gkapi.Plugin {
+				return &googlegenai.GoogleAI{APIKey: cfg.GoogleAI.APIKey}
+			},
 		})
-
-		model := anthropic.ModelRef(cfg.Model, nil)
-		opt.genkitOpts = append(opt.genkitOpts, genkit.WithDefaultModel(model.Name()))
-		opt.defaultModel = model.Name()
 	}
-	return opt
+	if cfg.Anthropic.Enabled {
+		providers = append(providers, modelProvider{
+			defaultModel: "anthropic/claude-haiku-5-5",
+			plugin: func(models rez.AiModelsConfig) gkapi.Plugin {
+				return anthropicPlugin(cfg.Anthropic, models.Names())
+			},
+		})
+	}
+	return providers
+}
+
+// anthropicPlugin serves Claude models. The plugin only assumes native structured output for the models it lists,
+// so each configured model it serves is declared with it; current models support it.
+func anthropicPlugin(cfg rez.AiProviderConfigAnthropic, modelNames []string) *anthropic.Anthropic {
+	plugin := &anthropic.Anthropic{
+		APIKey: cfg.APIKey,
+		Models: make(map[string]ai.ModelOptions),
+	}
+	structured := ai.ModelOptions{Supports: &ai.ModelSupports{
+		Multiturn:   true,
+		Tools:       true,
+		SystemRole:  true,
+		Media:       true,
+		Output:      []string{"text", "json"},
+		Constrained: ai.ConstrainedSupportAll,
+	}}
+	for _, name := range modelNames {
+		if strings.HasPrefix(name, plugin.Name()+"/") {
+			plugin.Models[name] = structured
+		}
+	}
+	return plugin
 }

@@ -26,7 +26,8 @@ import (
 // judgeByModel asks the model judge to decide the captured candidate, outside any transaction, within
 // JudgeCallTimeout of real time and on the facts cut to its limits. A malformed or invalid answer becomes a
 // rejected hold, and a failed or timed-out call an unavailable hold; only cancellation of the evaluation
-// itself is an error. The model's outage never falls back to the rules.
+// itself is an error. Without a configured model the hold is final for these facts. The model's outage never
+// falls back to the rules.
 func (s *SituationService) judgeByModel(ctx context.Context, snapshot *candidateSnapshot) (situations.Judgment, error) {
 	facts, truncated := situations.JudgeFacts(snapshot.facts)
 	input := rezai.SituationJudgeInput{Facts: facts, Reasons: snapshot.reasons, Truncated: truncated}
@@ -37,6 +38,9 @@ func (s *SituationService) judgeByModel(ctx context.Context, snapshot *candidate
 		return situations.Judgment{}, fmt.Errorf("judge situation candidate: %w", ctxErr)
 	}
 	switch {
+	case errors.Is(runErr, rezai.ErrNoModel):
+		slog.WarnContext(ctx, "situation judge has no model", "situationId", snapshot.situationID)
+		return situations.NoModelJudgment(), nil
 	case errors.Is(runErr, rezai.ErrWorkflowInvalidOutput):
 		slog.WarnContext(ctx, "situation judge answer malformed", "situationId", snapshot.situationID, "error", runErr)
 		return situations.RejectedJudgment(situations.ErrMalformedAnswer), nil

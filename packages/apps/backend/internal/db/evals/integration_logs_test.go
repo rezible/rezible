@@ -71,7 +71,7 @@ func newLogsInstallation(t *testing.T, logs []ScenarioLog) (rez.InstalledIntegra
 	t.Helper()
 	config, encodeErr := json.Marshal(integrationConfig{Logs: logs})
 	require.NoError(t, encodeErr)
-	return NewIntegration(fixedClock{now: logsReferenceTime}).GetInstalledIntegration(&ent.Integration{InstallationConfig: config})
+	return NewIntegration(fixedClock{now: logsReferenceTime}, true).GetInstalledIntegration(&ent.Integration{InstallationConfig: config})
 }
 
 func TestInstalledLogs(t *testing.T) {

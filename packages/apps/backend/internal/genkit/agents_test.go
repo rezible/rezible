@@ -18,7 +18,7 @@ import (
 	"github.com/rezible/rezible/pkg/errs"
 )
 
-func (s *AiRuntimeSuite) makeAgentSession(ctx context.Context, svc *AiRuntime, tdb rez.Database, name string, sessInput rez.ValidatingInput) *ent.AgentSession {
+func (s *AiRuntimeSuite) makeAgentSession(ctx context.Context, svc *AgentCatalogue, tdb rez.Database, name string, sessInput rez.ValidatingInput) *ent.AgentSession {
 	sessInputJson, sessInputJsonErr := json.Marshal(sessInput)
 	s.Require().NoError(sessInputJsonErr)
 
@@ -32,7 +32,7 @@ func (s *AiRuntimeSuite) makeAgentSession(ctx context.Context, svc *AiRuntime, t
 		}
 		session := createdSession
 
-		turnInput, inputErr := svc.catalogue.MakeInitialTurnInput(ctx, createdSession)
+		turnInput, inputErr := svc.MakeInitialTurnInput(ctx, createdSession)
 		if inputErr != nil {
 			return nil, fmt.Errorf("initial agent turn input: %w", inputErr)
 		}
@@ -77,11 +77,11 @@ func (s *AiRuntimeSuite) makeAgentSession(ctx context.Context, svc *AiRuntime, t
 	return session
 }
 
-func withTestAgent[S any](agent *testAgent[S]) []AiRuntimeOption {
-	resp := &ai.ModelResponse{Message: ai.NewModelTextMessage("foo")}
-	model := makeTestOutputModel(resp)
-	agent.def.Model = model.Name
-	return []AiRuntimeOption{WithDefinedModel(model), WithAgent(agent)}
+// makeAgentCatalogue makes an empty catalogue on a runtime serving model, for tests to register agents.
+func (s *AiRuntimeSuite) makeAgentCatalogue(ctx context.Context, model testModel) *AgentCatalogue {
+	agents, agentsErr := newAgentCatalogue(s.makeRuntime(ctx, model))
+	s.Require().NoError(agentsErr)
+	return agents
 }
 
 func (s *AiRuntimeSuite) makeInvokeAgentSessionParams(sess *ent.AgentSession) rez.InvokeAiAgentTurnParams {
@@ -163,7 +163,8 @@ func (s *AiRuntimeSuite) TestClientManagedTurnStateAndResumeRoundTrip() {
 	middleware := func(string) ai.Middleware {
 		return &testToolsMiddleware{tools: []ai.Tool{interruptTool}}
 	}
-	svc := s.makeRuntime(ctx, WithDefinedModel(model), WithAgent(agent, middleware))
+	svc := s.makeAgentCatalogue(ctx, model)
+	s.Require().NoError(svc.register(agent, middleware))
 	sess := s.makeAgentSession(ctx, svc, tdb, agent.def.Name, testAgentInput{})
 
 	// The first invocation must stop at the confirmation tool.
@@ -288,11 +289,11 @@ func (s *AiRuntimeSuite) runFailAndResume(failSecond func(context.Context) error
 	model := makeTestOutputModel(nil)
 	model.opts.Supports.Tools = true
 	model.fn = script.generate
-	agent.def.Model = model.Name
 	middleware := func(string) ai.Middleware {
 		return &testToolsMiddleware{tools: []ai.Tool{script.checkTool}}
 	}
-	svc := s.makeRuntime(ctx, WithDefinedModel(model), WithAgent(agent, middleware))
+	svc := s.makeAgentCatalogue(ctx, model)
+	s.Require().NoError(svc.register(agent, middleware))
 	sess := s.makeAgentSession(ctx, svc, tdb, agent.def.Name, testAgentInput{})
 
 	first := s.makeInvokeAgentSessionParams(sess)
@@ -384,12 +385,12 @@ func (s *AiRuntimeSuite) TestToolIterationLimitFailsWithMaxTurnsError() {
 		call := &ai.ToolRequest{Name: checkTool.Name(), Ref: fmt.Sprintf("check-%d", step), Input: map[string]any{}}
 		return &ai.ModelResponse{Message: ai.NewModelMessage(ai.NewToolRequestPart(call))}, nil
 	}
-	agent.def.Model = model.Name
 
 	middleware := func(string) ai.Middleware {
 		return &testToolsMiddleware{tools: []ai.Tool{checkTool}}
 	}
-	svc := s.makeRuntime(ctx, WithDefinedModel(model), WithAgent(agent, middleware))
+	svc := s.makeAgentCatalogue(ctx, model)
+	s.Require().NoError(svc.register(agent, middleware))
 	sess := s.makeAgentSession(ctx, svc, tdb, agent.def.Name, testAgentInput{})
 
 	params := s.makeInvokeAgentSessionParams(sess)
@@ -436,12 +437,12 @@ func (s *AiRuntimeSuite) TestTurnUsageAddsEveryModelCall() {
 			Usage:        &ai.GenerationUsage{InputTokens: 200, CachedContentTokens: 120, OutputTokens: 20, ThoughtsTokens: 7},
 		}, nil
 	}
-	agent.def.Model = model.Name
 
 	middleware := func(string) ai.Middleware {
 		return &testToolsMiddleware{tools: []ai.Tool{checkTool}}
 	}
-	svc := s.makeRuntime(ctx, WithDefinedModel(model), WithAgent(agent, middleware))
+	svc := s.makeAgentCatalogue(ctx, model)
+	s.Require().NoError(svc.register(agent, middleware))
 	sess := s.makeAgentSession(ctx, svc, tdb, agent.def.Name, testAgentInput{})
 
 	params := s.makeInvokeAgentSessionParams(sess)

@@ -1,12 +1,12 @@
 package ai
 
 import (
-	"github.com/firebase/genkit/go/ai"
-	aix "github.com/firebase/genkit/go/ai/exp"
+	"cmp"
 	"time"
 
+	"github.com/firebase/genkit/go/ai"
+	aix "github.com/firebase/genkit/go/ai/exp"
 	"github.com/google/uuid"
-
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent/agentturn"
 )
@@ -63,4 +63,20 @@ func (EventOnAgentTurnChunk) MessageName() string {
 
 func (e EventOnAgentTurnChunk) MessageScopes() rez.MessageEventScopes {
 	return makeMessageEventScopes(e.AgentSessionId, e.AgentTurnId)
+}
+
+// ModelFor is the model configured for the named agent or workflow, or the default model; "" when neither is set.
+func ModelFor(models rez.AiModelsConfig, name string) string {
+	var model string
+	switch name {
+	case InvestigationAgent.Name:
+		model = models.Investigation
+	case ChatAgent.Name:
+		model = models.Chat
+	case JudgeSituationCandidateDefinition.Name:
+		model = models.SituationJudge
+	case ClassifyAgentThreadResponseDefinition.Name:
+		model = models.ThreadClassifier
+	}
+	return cmp.Or(model, models.Default)
 }

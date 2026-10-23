@@ -9,34 +9,44 @@ import (
 	"github.com/firebase/genkit/go/ai"
 	aix "github.com/firebase/genkit/go/ai/exp"
 	"github.com/firebase/genkit/go/core"
-	"github.com/firebase/genkit/go/genkit"
 	genkitx "github.com/firebase/genkit/go/genkit/exp"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	rezai "github.com/rezible/rezible/pkg/ai"
 	"github.com/rezible/rezible/pkg/errs"
+	"github.com/rezible/rezible/pkg/execution"
 )
 
-func WithAgent[I rez.ValidatingInput, S any](h agentHarness[I, S], mw ...AgentMiddlewareConstructorFn) AiRuntimeOption {
-	return AiRuntimeOption{
-		kind: AiRuntimeOptionKindAgent,
-		runtimeFn: func(s *AiRuntime) error {
-			return s.catalogue.register(s.gk, h, mw...)
-		},
+// AgentCatalogue holds the application's agents, defined on an initialized AiRuntime.
+type AgentCatalogue struct {
+	runtime *AiRuntime
+	agents  map[string]rez.AiAgentInvoker
+}
+
+// NewAgentCatalogue defines the application's agents. The AI runtime is initialized first because the agents'
+// services can depend on workflows defined on it.
+func NewAgentCatalogue(runtime *AiRuntime, chat *ChatAgent, investigation *InvestigationAgent) (*AgentCatalogue, error) {
+	c, catalogueErr := newAgentCatalogue(runtime)
+	if catalogueErr != nil {
+		return nil, catalogueErr
 	}
-}
-
-type agentCatalogue struct {
-	agents map[string]rez.AiAgentInvoker
-}
-
-func newAgentCatalogue() *agentCatalogue {
-	return &agentCatalogue{
-		agents: make(map[string]rez.AiAgentInvoker),
+	if registerErr := c.register(chat); registerErr != nil {
+		return nil, fmt.Errorf("register chat agent: %w", registerErr)
 	}
+	if registerErr := c.register(investigation); registerErr != nil {
+		return nil, fmt.Errorf("register investigation agent: %w", registerErr)
+	}
+	return c, nil
 }
 
-func (c *agentCatalogue) GetConfigs() []rez.AiAgentConfig {
+func newAgentCatalogue(runtime *AiRuntime) (*AgentCatalogue, error) {
+	if runtime.gk == nil {
+		return nil, fmt.Errorf("AI runtime is not initialized")
+	}
+	return &AgentCatalogue{runtime: runtime, agents: make(map[string]rez.AiAgentInvoker)}, nil
+}
+
+func (c *AgentCatalogue) GetConfigs() []rez.AiAgentConfig {
 	var agents []rez.AiAgentConfig
 	for _, agent := range c.agents {
 		agents = append(agents, agent.Config())
@@ -44,14 +54,14 @@ func (c *agentCatalogue) GetConfigs() []rez.AiAgentConfig {
 	return agents
 }
 
-func (c *agentCatalogue) getAgent(name string) (rez.AiAgentInvoker, error) {
+func (c *AgentCatalogue) getAgent(name string) (rez.AiAgentInvoker, error) {
 	if a, ok := c.agents[name]; ok {
 		return a, nil
 	}
 	return nil, fmt.Errorf("agent %q not found", name)
 }
 
-func (c *agentCatalogue) ValidateSessionInput(name string, input []byte) (rez.ValidatingInput, error) {
+func (c *AgentCatalogue) ValidateSessionInput(name string, input []byte) (rez.ValidatingInput, error) {
 	a, agentErr := c.getAgent(name)
 	if agentErr != nil {
 		return nil, agentErr
@@ -59,12 +69,23 @@ func (c *agentCatalogue) ValidateSessionInput(name string, input []byte) (rez.Va
 	return a.DecodeSessionInput(input)
 }
 
-func (c *agentCatalogue) MakeInitialTurnInput(ctx context.Context, sess *ent.AgentSession) (*rez.AiAgentTurnInput, error) {
+func (c *AgentCatalogue) MakeInitialTurnInput(ctx context.Context, sess *ent.AgentSession) (*rez.AiAgentTurnInput, error) {
 	wrapper, wrapperErr := c.getAgent(sess.AgentName)
 	if wrapperErr != nil {
 		return nil, wrapperErr
 	}
 	return wrapper.MakeInitialTurnInput(ctx, sess)
+}
+
+func (c *AgentCatalogue) InvokeAgentTurn(ctx context.Context, params rez.InvokeAiAgentTurnParams) (*rez.AiAgentInvocationResult, error) {
+	if params.Session == nil {
+		return nil, fmt.Errorf("agent session is required")
+	}
+	agent, agentErr := c.getAgent(params.Session.AgentName)
+	if agentErr != nil {
+		return nil, agentErr
+	}
+	return agent.Invoke(execution.NewAiAgentContext(ctx, params.Session), params)
 }
 
 type (
@@ -89,21 +110,15 @@ type (
 	}
 )
 
-func (c *agentCatalogue) register[SessionInput rez.ValidatingInput, State any](gk *genkit.Genkit, harness agentHarness[SessionInput, State], mwFuncs ...AgentMiddlewareConstructorFn) error {
+// register defines the agent on the model of its setting, which Init has checked; without one, its turns fail.
+func (c *AgentCatalogue) register[SessionInput rez.ValidatingInput, State any](harness agentHarness[SessionInput, State], mwFuncs ...AgentMiddlewareConstructorFn) error {
+	gk := c.runtime.gk
 	d := harness.agentDefinition()
+	modelName := c.runtime.modelFor(d.Name)
 	opts := []aix.AgentOption[State]{
 		aix.WithDescription[State](d.Description),
 		aix.WithStateTransform[State](harness.transformState),
 		aix.WithStreamTransform[State](harness.transformStreamChunk),
-	}
-
-	var modelName string
-	if d.Model != "" {
-		if model := genkit.LookupModel(gk, d.Model); model != nil {
-			modelName = model.Name()
-		} else {
-			return fmt.Errorf("invalid model '%s'", d.Model)
-		}
 	}
 
 	middleware := []ai.Middleware{
@@ -274,6 +289,9 @@ func getAgentInvocationContext(ctx context.Context) *agentInvocationContext {
 }
 
 func (w *wrappedAgent[SessionInput, State]) Invoke(ctx context.Context, params rez.InvokeAiAgentTurnParams) (*rez.AiAgentInvocationResult, error) {
+	if w.config.Model == "" {
+		return nil, rezai.ErrNoModel
+	}
 	invCtx := &agentInvocationContext{
 		Session: params.Session,
 		Turn:    params.Turn,

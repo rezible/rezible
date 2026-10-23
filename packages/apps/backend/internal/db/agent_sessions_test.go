@@ -544,7 +544,7 @@ func (s *AiAgentSessionServiceSuite) TestRequestAgentTurnValidatesInputAndComple
 
 func (s *AiAgentSessionServiceSuite) TestWorkerPersistsSuccessfulResultAndPublishesEvent() {
 	ctx, h := s.newAgentSessionFixture()
-	runtime := mocks.NewMockAiAgentRuntime(s.T())
+	runtime := mocks.NewMockAiAgentCatalogue(s.T())
 	worker, workerErr := NewInvokeAgentTurnWorker(rez.AiConfig{}, h.tdb, h.msgs, runtime, nil)
 	s.Require().NoError(workerErr)
 	session := s.createAgentSession(ctx, h.tdb, testAgentInput{
@@ -659,7 +659,7 @@ func (s *AiAgentSessionServiceSuite) TestWorkerPersistsSuccessfulResultAndPublis
 
 func (s *AiAgentSessionServiceSuite) TestWorkerFailsTurnWhenAgentReturnsNilResult() {
 	ctx, h := s.newAgentSessionFixture()
-	runtime := mocks.NewMockAiAgentRuntime(s.T())
+	runtime := mocks.NewMockAiAgentCatalogue(s.T())
 	worker, workerErr := NewInvokeAgentTurnWorker(rez.AiConfig{}, h.tdb, h.msgs, runtime, nil)
 	s.Require().NoError(workerErr)
 	session := s.createAgentSession(ctx, h.tdb, testAgentInput{})
@@ -708,7 +708,7 @@ func (s *AiAgentSessionServiceSuite) TestWorkerRecordsTurnSpan() {
 	metrics := test.RecordMetrics(s.T())
 
 	ctx, h := s.newAgentSessionFixture()
-	runtime := mocks.NewMockAiAgentRuntime(s.T())
+	runtime := mocks.NewMockAiAgentCatalogue(s.T())
 	worker, workerErr := NewInvokeAgentTurnWorker(rez.AiConfig{}, h.tdb, h.msgs, runtime, nil)
 	s.Require().NoError(workerErr)
 	// A session has one active turn, so each outcome has its own session.
@@ -914,7 +914,7 @@ func (s *AiAgentSessionServiceSuite) TestTurnAbortedDuringAttemptKeepsItsUsage()
 
 func (s *AiAgentSessionServiceSuite) TestWorkerDoesNotMutateConcurrentRunningDelivery() {
 	ctx, h := s.newAgentSessionFixture()
-	runtime := mocks.NewMockAiAgentRuntime(s.T())
+	runtime := mocks.NewMockAiAgentCatalogue(s.T())
 	worker, workerErr := NewInvokeAgentTurnWorker(rez.AiConfig{}, h.tdb, h.msgs, runtime, nil)
 	s.Require().NoError(workerErr)
 	session := s.createAgentSession(ctx, h.tdb, testAgentInput{})
@@ -1025,7 +1025,7 @@ func (s *AiAgentSessionServiceSuite) TestRetryAgentTurnRequeuesSameTurnAndClears
 // failedTurnFixture is a session with one completed turn and a queued turn whose input asks for a check.
 type failedTurnFixture struct {
 	worker   *InvokeAgentTurnWorker
-	runtime  *mocks.MockAiAgentRuntime
+	runtime  *mocks.MockAiAgentCatalogue
 	session  *ent.AgentSession
 	history  []*ai.Message
 	turn     *ent.AgentTurn
@@ -1035,7 +1035,7 @@ type failedTurnFixture struct {
 }
 
 func (s *AiAgentSessionServiceSuite) newFailedTurnFixture(ctx context.Context, h *agentSessionFixture, jobID int64) *failedTurnFixture {
-	runtime := mocks.NewMockAiAgentRuntime(s.T())
+	runtime := mocks.NewMockAiAgentCatalogue(s.T())
 	worker, workerErr := NewInvokeAgentTurnWorker(rez.AiConfig{}, h.tdb, h.msgs, runtime, nil)
 	s.Require().NoError(workerErr)
 	session := s.createAgentSession(ctx, h.tdb, testAgentInput{})
@@ -1248,7 +1248,7 @@ func (s *AiAgentSessionServiceSuite) TestToolIterationLimitIsNotRetriedAutomatic
 
 func (s *AiAgentSessionServiceSuite) TestRetryingOlderTurnKeepsSequencesAndHistoryOrder() {
 	ctx, h := s.newAgentSessionFixture()
-	runtime := mocks.NewMockAiAgentRuntime(s.T())
+	runtime := mocks.NewMockAiAgentCatalogue(s.T())
 	worker, workerErr := NewInvokeAgentTurnWorker(rez.AiConfig{}, h.tdb, h.msgs, runtime, nil)
 	s.Require().NoError(workerErr)
 	session := s.createAgentSession(ctx, h.tdb, testAgentInput{})
@@ -1342,7 +1342,7 @@ func (s *AiAgentSessionServiceSuite) TestRetryingOlderTurnKeepsSequencesAndHisto
 // while its small results, the current turn's own results and every stored message stay whole.
 func (s *AiAgentSessionServiceSuite) TestEarlierTurnsLargeToolResultsAreCompacted() {
 	ctx, h := s.newAgentSessionFixture()
-	runtime := mocks.NewMockAiAgentRuntime(s.T())
+	runtime := mocks.NewMockAiAgentCatalogue(s.T())
 	worker, workerErr := NewInvokeAgentTurnWorker(rez.AiConfig{}, h.tdb, h.msgs, runtime, nil)
 	s.Require().NoError(workerErr)
 	session := s.createAgentSession(ctx, h.tdb, testAgentInput{})

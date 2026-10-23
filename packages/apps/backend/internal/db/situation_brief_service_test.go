@@ -160,7 +160,7 @@ func (s *SituationBriefServiceSuite) newFixture(tdb rez.Database) *briefFixture 
 		Return(nil).
 		Maybe()
 	investigations := NewInvestigationService(tdb, agentSessions, jobService, messageQueue, analyses)
-	situations, situationsErr := NewSituationService(tdb, h.clock, jobService, messageQueue, investigations, analyses, knowledgeQuery, nil, alerts)
+	situations, situationsErr := NewSituationService(rez.SituationsConfig{}, tdb, h.clock, jobService, messageQueue, investigations, analyses, knowledgeQuery, offJudge{t: s.T()}, alerts)
 	s.Require().NoError(situationsErr)
 	knowledgeAliases, aliasesErr := NewKnowledgeEntityAliasService(tdb, nil)
 	s.Require().NoError(aliasesErr)

@@ -279,7 +279,7 @@ func (s *SituationService) snapshotCandidate(ctx context.Context, situation *ent
 	input.PriorOutcomes = outcomes
 	reasons := situations.CheckReasons(input.Facts())
 	outcome := reasons.Outcome()
-	if s.judge != nil && outcome == sitjudg.OutcomeNeedsDecision && !input.Collecting() {
+	if s.cfg.ModelJudge && outcome == sitjudg.OutcomeNeedsDecision && !input.Collecting() {
 		judgeContext, contextErr := s.loadJudgeContext(ctx, situation.ID, input)
 		if contextErr != nil {
 			return nil, contextErr
