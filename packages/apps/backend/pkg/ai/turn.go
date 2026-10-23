@@ -7,6 +7,8 @@ import (
 	"sync"
 
 	"github.com/firebase/genkit/go/ai"
+	aix "github.com/firebase/genkit/go/ai/exp"
+	"github.com/firebase/genkit/go/core/tracing"
 )
 
 // TurnUsage is what one attempt of an agent turn used.
@@ -26,7 +28,8 @@ type turnTally struct {
 
 type turnTallyKey struct{}
 
-// WithTurnUsage starts a tally for one attempt. totals returns what has been added so far.
+// WithTurnUsage starts a tally for one attempt. totals returns what has been added so far. Every model call made
+// under the returned context is added to it; thinking tokens are billed as output.
 func WithTurnUsage(ctx context.Context) (_ context.Context, totals func() TurnUsage) {
 	tally := &turnTally{}
 	totals = func() TurnUsage {
@@ -34,6 +37,17 @@ func WithTurnUsage(ctx context.Context) (_ context.Context, totals func() TurnUs
 		defer tally.mu.Unlock()
 		return tally.usage
 	}
+	countModelCall := func(callCtx context.Context, call *aix.ModelCall) {
+		// An enclosing tally's observer sees this tally's calls too, since scoped observers can't be removed. Only
+		// the innermost tally counts a call, as AddModelUsage does.
+		if inner, _ := callCtx.Value(turnTallyKey{}).(*turnTally); inner != tally {
+			return
+		}
+		if usage := call.Response.Usage; usage != nil {
+			AddModelUsage(callCtx, call.Model, usage.InputTokens, usage.CachedContentTokens, usage.OutputTokens+usage.ThoughtsTokens)
+		}
+	}
+	ctx = tracing.WithInstrumentation(ctx, aix.Observer{ModelDone: countModelCall})
 	return context.WithValue(ctx, turnTallyKey{}, tally), totals
 }
 

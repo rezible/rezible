@@ -124,7 +124,6 @@ func (c *AgentCatalogue) register[SessionInput rez.ValidatingInput, State any](h
 	middleware := []ai.Middleware{
 		&toolErrorResultMiddleware{},
 		&agentDebugMiddleware{},
-		&turnUsageMiddleware{},
 		&toolCallDisplayLabelMiddleware{},
 	}
 	for _, mwFn := range mwFuncs {

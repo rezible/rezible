@@ -7,9 +7,11 @@ import (
 
 	"github.com/firebase/genkit/go/ai"
 	gkapi "github.com/firebase/genkit/go/core/api"
+	"github.com/firebase/genkit/go/core/tracing"
 	"github.com/firebase/genkit/go/genkit"
 	"github.com/firebase/genkit/go/plugins/anthropic"
 	"github.com/firebase/genkit/go/plugins/googlegenai"
+	"github.com/firebase/genkit/go/plugins/otelgenai"
 	rez "github.com/rezible/rezible"
 	rezai "github.com/rezible/rezible/pkg/ai"
 )
@@ -18,14 +20,17 @@ type AiRuntime struct {
 	cfg         rez.AiConfig
 	extraModels []*ai.ModelAction
 	gk          *genkit.Genkit
+	// captureAiContent records prompts, tool results and provider data on Genkit's spans.
+	captureAiContent bool
 }
 
 // NewAiRuntime creates a runtime serving the enabled providers' models and any extra models, which serve under
 // their own names.
 func NewAiRuntime(cfg rez.Config, extraModels ...*ai.ModelAction) *AiRuntime {
 	return &AiRuntime{
-		cfg:         cfg.AI,
-		extraModels: extraModels,
+		cfg:              cfg.AI,
+		extraModels:      extraModels,
+		captureAiContent: cfg.Telemetry.Tracing.CaptureAiContent,
 	}
 }
 
@@ -56,6 +61,13 @@ func (r *AiRuntime) Init(ctx context.Context) error {
 	if r.cfg.Models.Default != "" {
 		gkOpts = append(gkOpts, genkit.WithDefaultModel(r.cfg.Models.Default))
 	}
+	// Genkit's spans follow the OpenTelemetry GenAI conventions, on the global tracer provider. Content is recorded
+	// on them only when it may be captured.
+	telemetry := &otelgenai.Options{ContentCapturingMode: otelgenai.NoContent}
+	if r.captureAiContent {
+		telemetry = &otelgenai.Options{ContentCapturingMode: otelgenai.SpanOnly, CaptureActionIO: true}
+	}
+	tracing.SetInstrumentation(otelgenai.New(telemetry))
 	r.gk = genkit.Init(ctx, gkOpts...)
 	return r.validateConfig()
 }

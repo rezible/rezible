@@ -195,8 +195,15 @@ func (s *AiRuntimeSuite) runInvestigationToolResult(ctx context.Context, h *inve
 		resp, runErr := hooks.WrapTool(ctx, params, func(ctx context.Context, params *ai.ToolParams) (*ai.MultipartToolResponse, error) {
 			return params.Tool.RunRawMultipart(ctx, params.Request.Input)
 		})
-		s.Require().NoError(runErr, "the turn continues")
-		encoded, encodeErr := json.Marshal(resp.Output)
+		var result any
+		if ai.IsToolFailError(runErr) {
+			// The tool loop answers a tool error with its message, as the agent sees it.
+			result = map[string]string{"error": runErr.Error()}
+		} else {
+			s.Require().NoError(runErr, "the turn continues")
+			result = resp.Output
+		}
+		encoded, encodeErr := json.Marshal(result)
 		s.Require().NoError(encodeErr)
 		s.Require().NoError(json.Unmarshal(encoded, output))
 		return

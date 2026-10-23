@@ -238,7 +238,7 @@ func (s *BackendSuite) requireTurnLinkedToRequest(spans *tracetest.SpanRecorder,
 
 	hasGenkitChild := false
 	for _, span := range spans.Ended() {
-		if span.InstrumentationScope().Name == "genkit-tracer" && slices.Contains(ancestors(span), turn) {
+		if span.InstrumentationScope().Name == "genkit-genai" && slices.Contains(ancestors(span), turn) {
 			s.Equal(turn.SpanContext().TraceID(), span.SpanContext().TraceID())
 			hasGenkitChild = true
 		}

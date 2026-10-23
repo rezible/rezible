@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/firebase/genkit/go/ai"
+	"github.com/firebase/genkit/go/ai/tool"
 	"github.com/firebase/genkit/go/core/status"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
@@ -86,9 +87,9 @@ func (m *agentDebugMiddleware) New(ctx context.Context) (*ai.Hooks, error) {
 	}, nil
 }
 
-// toolErrorResultMiddleware returns invalid input, missing records and refused calls to the agent as a result
-// carrying only the error, so the agent can correct the call or move on. It wraps Genkit's input schema validation
-// too. Other errors are Rezible's own failures and fail the turn.
+// toolErrorResultMiddleware returns invalid input, missing records and refused calls to the agent as a tool error
+// (tool.Fail), so the agent can correct the call or move on. It wraps Genkit's input schema validation too. Other
+// errors are Rezible's own failures and fail the turn.
 type toolErrorResultMiddleware struct{}
 
 func (m *toolErrorResultMiddleware) Name() string {
@@ -100,7 +101,7 @@ func (m *toolErrorResultMiddleware) New(ctx context.Context) (*ai.Hooks, error) 
 		WrapTool: func(ctx context.Context, params *ai.ToolParams, next ai.ToolNext) (*ai.MultipartToolResponse, error) {
 			resp, toolErr := next(ctx, params)
 			if toolErr != nil && m.isAgentError(toolErr) {
-				return &ai.MultipartToolResponse{Output: map[string]string{"error": toolErr.Error()}}, nil
+				return nil, tool.Fail(ctx, toolErr)
 			}
 			return resp, toolErr
 		},
@@ -113,34 +114,6 @@ func (m *toolErrorResultMiddleware) isAgentError(toolErr error) bool {
 		errors.Is(toolErr, errs.ErrNotFound) ||
 		errors.Is(toolErr, rezai.ErrToolRefused) ||
 		ent.IsNotFound(toolErr)
-}
-
-// turnUsageMiddleware adds each model call's tokens to the turn's tally. Thinking tokens are billed as output.
-// The tool loop runs later iterations inside WrapGenerate's next, so only WrapModel sees one call's own response;
-// WrapGenerate passes it the model name through the context.
-type turnUsageMiddleware struct{}
-
-type turnUsageModelKey struct{}
-
-func (m *turnUsageMiddleware) Name() string {
-	return "turn_usage"
-}
-
-func (m *turnUsageMiddleware) New(ctx context.Context) (*ai.Hooks, error) {
-	return &ai.Hooks{
-		WrapGenerate: func(ctx context.Context, params *ai.GenerateParams, next ai.GenerateNext) (*ai.ModelResponse, error) {
-			return next(context.WithValue(ctx, turnUsageModelKey{}, params.Options.Model), params)
-		},
-		WrapModel: func(ctx context.Context, params *ai.ModelParams, next ai.ModelNext) (*ai.ModelResponse, error) {
-			resp, respErr := next(ctx, params)
-			if resp != nil && resp.Usage != nil {
-				model, _ := ctx.Value(turnUsageModelKey{}).(string)
-				usage := resp.Usage
-				rezai.AddModelUsage(ctx, model, usage.InputTokens, usage.CachedContentTokens, usage.OutputTokens+usage.ThoughtsTokens)
-			}
-			return resp, respErr
-		},
-	}, nil
 }
 
 type toolCallDisplayLabelMiddleware struct{}

@@ -69,7 +69,6 @@ func NewOpenTelemetryService(ctx context.Context, cfg rez.Config) (*Service, err
 }
 
 // Init installs the service as the process-wide OpenTelemetry and slog default.
-// Genkit reads the global tracer provider and requires an SDK implementation.
 func (s *Service) Init() error {
 	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(
 		propagation.TraceContext{},
@@ -135,7 +134,7 @@ func (s *Service) initTracerProvider(ctx context.Context, r *sdkresource.Resourc
 		if traceExporterErr != nil {
 			return fmt.Errorf("otlp trace exporter: %w", traceExporterErr)
 		}
-		tpOpts = append(tpOpts, sdktrace.WithBatcher(withAiContentPolicy(traceExporter, cfg.CaptureAiContent)))
+		tpOpts = append(tpOpts, sdktrace.WithBatcher(traceExporter))
 	} else {
 		s.logger.Info("tracing disabled")
 	}

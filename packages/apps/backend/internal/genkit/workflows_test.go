@@ -123,6 +123,34 @@ func (s *AiRuntimeSuite) TestDefinePromptWorkflowCountsUsageWithTheDefaultModel(
 	s.Equal(rezai.TurnUsage{Model: model.Name, InputTokens: 120, OutputTokens: 12}, totals())
 }
 
+func (s *AiRuntimeSuite) TestNestedTurnUsageCountsInTheInnerTallyOnly() {
+	ctx := execution.NewSystemContext(s.T().Context())
+
+	out, jsonErr := json.Marshal(testWorkflowOutput{OK: true})
+	s.Require().NoError(jsonErr)
+	model := makeTestOutputModel(&gkai.ModelResponse{
+		Message: gkai.NewModelTextMessage(string(out)),
+		Usage:   &gkai.GenerationUsage{InputTokens: 120, OutputTokens: 8},
+	})
+	svc := s.makeRuntime(ctx, model)
+	definition := rezai.AiPromptWorkflowDefinition[testWorkflowInput, testWorkflowOutput]{
+		Name: "test_workflow_nested_usage",
+		Prompt: func(input testWorkflowInput) string {
+			return input.Message
+		},
+	}
+	workflow, workflowErr := NewWorkflowBuilder(svc, &testWorkflowRunner{}).DefinePromptWorkflow(definition)
+	s.Require().NoError(workflowErr)
+
+	outerCtx, outerTotals := rezai.WithTurnUsage(ctx)
+	innerCtx, innerTotals := rezai.WithTurnUsage(outerCtx)
+	_, runErr := workflow.Run(innerCtx, testWorkflowInput{Message: "hello"})
+	s.Require().NoError(runErr)
+
+	s.Equal(rezai.TurnUsage{Model: model.Name, InputTokens: 120, OutputTokens: 8}, innerTotals())
+	s.Equal(rezai.TurnUsage{}, outerTotals())
+}
+
 func (s *AiRuntimeSuite) TestDefinePromptWorkflowRunsOnItsModelSetting() {
 	ctx := execution.NewSystemContext(s.T().Context())
 
