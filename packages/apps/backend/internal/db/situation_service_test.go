@@ -90,8 +90,13 @@ func (s *SituationServiceSuite) newFixture(tdb rez.Database) *situationServiceFi
 	h.knowledge = knowledge
 	alerts, alertsErr := NewAlertService(rez.DefaultConfig().Alerts, h.clock, tdb, jobService, knowledge, NewSituationSignalService(jobService))
 	s.Require().NoError(alertsErr)
-	investigations := NewInvestigationService(tdb, agentService, jobService, analysisService)
-	situationService, situationServiceErr := NewSituationService(tdb, h.clock, jobService, investigations, analysisService, knowledgeQuery, nil, alerts)
+	messageQueue := mocks.NewMockMessageQueue(s.T())
+	messageQueue.EXPECT().
+		Publish(mock.Anything, mock.Anything).
+		Return(nil).
+		Maybe()
+	investigations := NewInvestigationService(tdb, agentService, jobService, messageQueue, analysisService)
+	situationService, situationServiceErr := NewSituationService(tdb, h.clock, jobService, messageQueue, investigations, analysisService, knowledgeQuery, nil, alerts)
 	s.Require().NoError(situationServiceErr)
 	h.alerts = alerts
 	h.situations = situationService

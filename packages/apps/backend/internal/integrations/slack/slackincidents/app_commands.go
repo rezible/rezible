@@ -30,7 +30,7 @@ func (a *App) handleIncidentCommand(ctx context.Context, ii *ent.Integration, cm
 		channelIncidentId = inc.ID
 	}
 
-	cw, cwErr := slackintegration.NewClientWrapper(ii)
+	cw, cwErr := a.newClientWrapper(ii)
 	if cwErr != nil {
 		return nil, fmt.Errorf("failed to create client wrapper: %w", cwErr)
 	}

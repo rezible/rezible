@@ -24,6 +24,7 @@ import {
 } from "$features/situations/lib/brief";
 import { isDefinitiveUnavailableError } from "$features/situations/lib/model";
 import type { InvestigationOffer } from "../controller.svelte";
+import { SituationNoticesController } from "./situationNotices.svelte";
 
 export type UnderstandingState =
 	| { kind: "loading" }
@@ -61,6 +62,10 @@ export class SituationOverviewController {
 	private pageController = useSituationController();
 
 	inspection = new SourceInspection();
+	notices = new SituationNoticesController(
+		() => this.pageController.situation,
+		(situation) => this.pageController.applySituation(situation)
+	);
 
 	situationAttributes = $derived(this.pageController.situation?.attributes);
 	headerFacts = $derived(this.getHeaderFacts());

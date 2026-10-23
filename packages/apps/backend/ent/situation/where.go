@@ -968,6 +968,64 @@ func HasActionsWith(preds ...predicate.SituationAction) predicate.Situation {
 	})
 }
 
+// HasNotices applies the HasEdge predicate on the "notices" edge.
+func HasNotices() predicate.Situation {
+	return predicate.Situation(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, NoticesTable, NoticesColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SituationNotice
+		step.Edge.Schema = schemaConfig.SituationNotice
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasNoticesWith applies the HasEdge predicate on the "notices" edge with a given conditions (other predicates).
+func HasNoticesWith(preds ...predicate.SituationNotice) predicate.Situation {
+	return predicate.Situation(func(s *sql.Selector) {
+		step := newNoticesStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SituationNotice
+		step.Edge.Schema = schemaConfig.SituationNotice
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasNoticeRatings applies the HasEdge predicate on the "notice_ratings" edge.
+func HasNoticeRatings() predicate.Situation {
+	return predicate.Situation(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, NoticeRatingsTable, NoticeRatingsColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SituationNoticeRating
+		step.Edge.Schema = schemaConfig.SituationNoticeRating
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasNoticeRatingsWith applies the HasEdge predicate on the "notice_ratings" edge with a given conditions (other predicates).
+func HasNoticeRatingsWith(preds ...predicate.SituationNoticeRating) predicate.Situation {
+	return predicate.Situation(func(s *sql.Selector) {
+		step := newNoticeRatingsStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SituationNoticeRating
+		step.Edge.Schema = schemaConfig.SituationNoticeRating
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // HasLatestJudgment applies the HasEdge predicate on the "latest_judgment" edge.
 func HasLatestJudgment() predicate.Situation {
 	return predicate.Situation(func(s *sql.Selector) {

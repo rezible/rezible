@@ -22,6 +22,8 @@ import (
 	"github.com/rezible/rezible/ent/situationinvestigation"
 	"github.com/rezible/rezible/ent/situationjudgment"
 	"github.com/rezible/rezible/ent/situationlink"
+	"github.com/rezible/rezible/ent/situationnotice"
+	"github.com/rezible/rezible/ent/situationnoticerating"
 	"github.com/rezible/rezible/ent/situationobservationgroup"
 	"github.com/rezible/rezible/ent/situationsignal"
 	"github.com/rezible/rezible/ent/tenant"
@@ -340,6 +342,36 @@ func (_c *SituationCreate) AddActions(v ...*SituationAction) *SituationCreate {
 		ids[i] = v[i].ID
 	}
 	return _c.AddActionIDs(ids...)
+}
+
+// AddNoticeIDs adds the "notices" edge to the SituationNotice entity by IDs.
+func (_c *SituationCreate) AddNoticeIDs(ids ...uuid.UUID) *SituationCreate {
+	_c.mutation.AddNoticeIDs(ids...)
+	return _c
+}
+
+// AddNotices adds the "notices" edges to the SituationNotice entity.
+func (_c *SituationCreate) AddNotices(v ...*SituationNotice) *SituationCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddNoticeIDs(ids...)
+}
+
+// AddNoticeRatingIDs adds the "notice_ratings" edge to the SituationNoticeRating entity by IDs.
+func (_c *SituationCreate) AddNoticeRatingIDs(ids ...uuid.UUID) *SituationCreate {
+	_c.mutation.AddNoticeRatingIDs(ids...)
+	return _c
+}
+
+// AddNoticeRatings adds the "notice_ratings" edges to the SituationNoticeRating entity.
+func (_c *SituationCreate) AddNoticeRatings(v ...*SituationNoticeRating) *SituationCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddNoticeRatingIDs(ids...)
 }
 
 // SetLatestJudgment sets the "latest_judgment" edge to the SituationJudgment entity.
@@ -684,6 +716,40 @@ func (_c *SituationCreate) createSpec() (*Situation, *sqlgraph.CreateSpec) {
 			},
 		}
 		edge.Schema = _c.schemaConfig.SituationAction
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.NoticesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   situation.NoticesTable,
+			Columns: []string{situation.NoticesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(situationnotice.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.SituationNotice
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.NoticeRatingsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   situation.NoticeRatingsTable,
+			Columns: []string{situation.NoticeRatingsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(situationnoticerating.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.SituationNoticeRating
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

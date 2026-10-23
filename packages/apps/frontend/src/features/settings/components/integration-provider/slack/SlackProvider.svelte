@@ -10,6 +10,7 @@
 	import IntegrationInstallTargetSelect from "../../integration-install-target-selection/IntegrationInstallTargetSelect.svelte";
 	import IntegrationOAuthInstall from "../../integration-oauth-install/IntegrationOAuthInstall.svelte";
 	import { useIntegrationProviderController } from "../controller.svelte";
+	import { slackAgentSettings } from "./slackAgentSettings";
 	import { slackIncidentSettings } from "./slackIncidentSettings";
 	import SlackWorkspaceCard from "./SlackWorkspaceCard.svelte";
 	import { groupSlackWorkspaces, slackAgentName, slackIncidentsName } from "./slackWorkspaces";
@@ -38,6 +39,7 @@
 		return undefined;
 	});
 
+	const agentForms = new IntegrationSettingsForms(slackAgentSettings, () => agentInstallations);
 	const incidentForms = new IntegrationSettingsForms(slackIncidentSettings, () => incidentInstallations);
 </script>
 
@@ -91,6 +93,7 @@
 			{#each workspaces as workspace (workspace.ref)}
 				<SlackWorkspaceCard
 					{workspace}
+					{agentForms}
 					{incidentForms}
 					{canAddAgent}
 					{canAddIncidents}

@@ -11,7 +11,6 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	in "github.com/rezible/rezible/ent/integration"
-	"github.com/rezible/rezible/ent/user"
 	"github.com/rezible/rezible/pkg/execution"
 	"github.com/rezible/rezible/pkg/messages"
 	"github.com/slack-go/slack"
@@ -186,27 +185,7 @@ func (s *AppService[A]) createInstallationContext(ctx context.Context, ids Insta
 	return intg, execution.NewTenantContext(ctx, intg.TenantID), nil
 }
 
-func (s *AppService[A]) LookupChatUser(ctx context.Context, userId string) (*ent.User, error) {
-	return s.users.Get(ctx, user.ChatID(userId))
-}
-
-func (s *AppService[A]) createUserContext(ctx context.Context, userId string) (context.Context, error) {
-	usr, usrErr := s.LookupChatUser(ctx, userId)
-	if usrErr != nil {
-		slog.ErrorContext(ctx, "failed to lookup chat user",
-			"error", usrErr,
-			"chat_id", userId,
-		)
-		return nil, fmt.Errorf("lookup user: %w", usrErr)
-	}
-	sess := &ent.UserAuthSession{
-		TenantID: usr.TenantID,
-		UserID:   usr.ID,
-	}
-	return execution.NewUserContext(ctx, sess), nil
-}
-
-func (s *AppService[A]) handleEventsApiCallbackEvent(baseCtx context.Context, ev *handleEventsApiCallbackEvent) error {
+func (s *AppService[A]) handleEventsApiCallbackEvent(baseCtx context.Context, ev *eventsApiCallbackEvent) error {
 	if s.integrationName != ev.IntegrationName {
 		return nil
 	}
@@ -214,7 +193,8 @@ func (s *AppService[A]) handleEventsApiCallbackEvent(baseCtx context.Context, ev
 	if parseErr != nil {
 		return fmt.Errorf("parse event: %w", parseErr)
 	}
-	intg, ctx, intgsErr := s.createInstallationContext(baseCtx, InstallationIds{TeamId: cb.TeamID, EnterpriseId: cb.EnterpriseID})
+	installIds := InstallationIds{TeamId: cb.TeamID, EnterpriseId: cb.EnterpriseID}
+	intg, ctx, intgsErr := s.createInstallationContext(baseCtx, installIds)
 	if intgsErr != nil {
 		return fmt.Errorf("lookup integration: %w", intgsErr)
 	}
@@ -244,10 +224,14 @@ func (s *AppService[A]) handleInteractionCallback(baseCtx context.Context, ev *i
 		return fmt.Errorf("lookup integration: %w", intgsErr)
 	}
 
-	var userErr error
-	ctx, userErr = s.createUserContext(ctx, ic.User.ID)
-	if userErr != nil {
+	// Slack users the member sync has not seen yet continue as the installation's tenant, with no user;
+	// handlers that need one check for it.
+	userCtx, userErr := LookupUserContext(ctx, s.users, ic.User.ID)
+	if userErr != nil && !errors.Is(userErr, ErrChatUserNotFound) {
 		return fmt.Errorf("lookup user: %w", userErr)
+	}
+	if userErr == nil {
+		ctx = userCtx
 	}
 
 	return handler(ctx, intg, &ic)
@@ -266,16 +250,20 @@ func (s *AppService[A]) handleSlashCommand(baseCtx context.Context, ev *slashCom
 	}
 
 	installIds := InstallationIds{TeamId: cmd.TeamID, EnterpriseId: cmd.EnterpriseID}
-	intg, ctx, intgsErr := s.createInstallationContext(baseCtx, installIds)
+	intg, installCtx, intgsErr := s.createInstallationContext(baseCtx, installIds)
 	if intgsErr != nil {
 		return fmt.Errorf("lookup integration: %w", intgsErr)
 	}
+	ctx := installCtx
 
-	var userErr error
-	ctx, userErr = s.createUserContext(ctx, cmd.UserID)
+	userCtx, userErr := LookupUserContext(ctx, s.users, cmd.UserID)
+	if errors.Is(userErr, ErrChatUserNotFound) {
+		return s.replyUnknownUser(ctx, &cmd)
+	}
 	if userErr != nil {
 		return fmt.Errorf("lookup user: %w", userErr)
 	}
+	ctx = userCtx
 
 	response, handlerErr := handler(ctx, intg, &cmd)
 	if handlerErr != nil {
@@ -286,6 +274,19 @@ func (s *AppService[A]) handleSlashCommand(baseCtx context.Context, ev *slashCom
 		//if msgErr != nil {
 		//	return fmt.Errorf("failed to post ephemeral message: %w", msgErr)
 		//}
+	}
+	return nil
+}
+
+// replyUnknownUser tells the Slack user who ran the command, and only them, that Rezible does not know them
+// yet.
+func (s *AppService[A]) replyUnknownUser(ctx context.Context, cmd *slack.SlashCommand) error {
+	reply := &slack.WebhookMessage{
+		Text:         UnknownUserText,
+		ResponseType: slack.ResponseTypeEphemeral,
+	}
+	if replyErr := slack.PostWebhookContext(ctx, cmd.ResponseURL, reply); replyErr != nil {
+		return fmt.Errorf("reply to unknown slack user: %w", replyErr)
 	}
 	return nil
 }

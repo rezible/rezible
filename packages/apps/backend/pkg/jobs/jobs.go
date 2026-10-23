@@ -256,3 +256,25 @@ func (a EvaluateSituation) InsertOpts() river.InsertOpts {
 	}
 	return river.InsertOpts{Queue: SituationsQueue, UniqueOpts: river.UniqueOpts{ByArgs: true}}
 }
+
+// SyncSituationNotices posts or edits a situation's chat notices at DueAt. DueAt is a delay after the change,
+// rounded up to the second, and the job is unique by args: changes within a second are one sync, and a
+// change while a sync runs schedules another rather than being dropped.
+type SyncSituationNotices struct {
+	SituationID uuid.UUID `json:"situation_id" river:"unique"`
+	DueAt       time.Time `json:"due_at" river:"unique"`
+}
+
+func (SyncSituationNotices) Kind() string {
+	return "sync-situation-notices"
+}
+
+func (SyncSituationNotices) InsertOpts() river.InsertOpts {
+	return river.InsertOpts{
+		MaxAttempts: 3,
+		UniqueOpts: river.UniqueOpts{
+			ByArgs:  true,
+			ByState: UniqueStateNonCompleted,
+		},
+	}
+}

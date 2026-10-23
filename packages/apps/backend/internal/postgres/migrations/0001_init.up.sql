@@ -532,6 +532,20 @@ CREATE TABLE "situation_links" ("id" uuid NOT NULL, "kind" character varying NOT
 CREATE INDEX "situationlink_tenant_id" ON "situation_links" ("tenant_id");
 -- create index "situationlink_tenant_id_situation_id_linked_situation_id_kind" to table: "situation_links"
 CREATE UNIQUE INDEX "situationlink_tenant_id_situation_id_linked_situation_id_kind" ON "situation_links" ("tenant_id", "situation_id", "linked_situation_id", "kind");
+-- create "situation_notices" table
+CREATE TABLE "situation_notices" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "channel_id" character varying NOT NULL, "channel_name" character varying NULL, "message_ref" character varying NULL, "permalink" character varying NULL, "status" character varying NOT NULL DEFAULT 'pending', "error" character varying NULL, "last_attempt_at" timestamptz NULL, "first_posted_at" timestamptz NULL, "situation_id" uuid NOT NULL, "tenant_id" bigint NOT NULL, "integration_id" uuid NOT NULL, PRIMARY KEY ("id"));
+-- create index "situationnotice_tenant_id" to table: "situation_notices"
+CREATE INDEX "situationnotice_tenant_id" ON "situation_notices" ("tenant_id");
+-- create index "situationnotice_situation_id_integration_id" to table: "situation_notices"
+CREATE UNIQUE INDEX "situationnotice_situation_id_integration_id" ON "situation_notices" ("situation_id", "integration_id");
+-- create index "situationnotice_integration_id_channel_id_first_posted_at" to table: "situation_notices"
+CREATE INDEX "situationnotice_integration_id_channel_id_first_posted_at" ON "situation_notices" ("integration_id", "channel_id", "first_posted_at");
+-- create "situation_notice_ratings" table
+CREATE TABLE "situation_notice_ratings" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "chat_user_id" character varying NOT NULL, "useful" boolean NOT NULL, "situation_id" uuid NOT NULL, "tenant_id" bigint NOT NULL, "user_id" uuid NULL, PRIMARY KEY ("id"));
+-- create index "situationnoticerating_tenant_id" to table: "situation_notice_ratings"
+CREATE INDEX "situationnoticerating_tenant_id" ON "situation_notice_ratings" ("tenant_id");
+-- create index "situationnoticerating_situation_id_chat_user_id" to table: "situation_notice_ratings"
+CREATE UNIQUE INDEX "situationnoticerating_situation_id_chat_user_id" ON "situation_notice_ratings" ("situation_id", "chat_user_id");
 -- create "situation_observation_groups" table
 CREATE TABLE "situation_observation_groups" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "title" character varying NOT NULL, "body" text NULL, "tenant_id" bigint NOT NULL, "situation_id" uuid NOT NULL, PRIMARY KEY ("id"));
 -- create index "situationobservationgroup_tenant_id" to table: "situation_observation_groups"
@@ -761,9 +775,9 @@ ALTER TABLE "incident_types" ADD CONSTRAINT "incident_types_tenants_tenant" FORE
 -- modify "integrations" table
 ALTER TABLE "integrations" ADD CONSTRAINT "integrations_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION;
 -- modify "integration_event_sync_cursors" table
-ALTER TABLE "integration_event_sync_cursors" ADD CONSTRAINT "integration_event_sync_cursors_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "integration_event_sync_cursors_integrations_integration" FOREIGN KEY ("integration_id") REFERENCES "integrations" ("id") ON DELETE NO ACTION;
+ALTER TABLE "integration_event_sync_cursors" ADD CONSTRAINT "integration_event_sync_cursors_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "integration_event_sync_cursors_integrations_integration" FOREIGN KEY ("integration_id") REFERENCES "integrations" ("id") ON DELETE CASCADE;
 -- modify "integration_event_sync_runs" table
-ALTER TABLE "integration_event_sync_runs" ADD CONSTRAINT "integration_event_sync_runs_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "integration_event_sync_runs_integrations_integration" FOREIGN KEY ("integration_id") REFERENCES "integrations" ("id") ON DELETE NO ACTION;
+ALTER TABLE "integration_event_sync_runs" ADD CONSTRAINT "integration_event_sync_runs_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "integration_event_sync_runs_integrations_integration" FOREIGN KEY ("integration_id") REFERENCES "integrations" ("id") ON DELETE CASCADE;
 -- modify "integration_user_install_states" table
 ALTER TABLE "integration_user_install_states" ADD CONSTRAINT "integration_user_install_states_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "integration_user_install_states_users_user" FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE NO ACTION;
 -- modify "investigations" table
@@ -852,6 +866,10 @@ ALTER TABLE "situation_investigations" ADD CONSTRAINT "situation_investigations_
 ALTER TABLE "situation_judgments" ADD CONSTRAINT "situation_judgments_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "situation_judgments_situations_situation" FOREIGN KEY ("situation_id") REFERENCES "situations" ("id") ON DELETE NO ACTION;
 -- modify "situation_links" table
 ALTER TABLE "situation_links" ADD CONSTRAINT "situation_links_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "situation_links_situations_situation" FOREIGN KEY ("situation_id") REFERENCES "situations" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "situation_links_situations_linked_situation" FOREIGN KEY ("linked_situation_id") REFERENCES "situations" ("id") ON DELETE NO ACTION;
+-- modify "situation_notices" table
+ALTER TABLE "situation_notices" ADD CONSTRAINT "situation_notices_situations_notices" FOREIGN KEY ("situation_id") REFERENCES "situations" ("id") ON DELETE CASCADE, ADD CONSTRAINT "situation_notices_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "situation_notices_integrations_integration" FOREIGN KEY ("integration_id") REFERENCES "integrations" ("id") ON DELETE CASCADE;
+-- modify "situation_notice_ratings" table
+ALTER TABLE "situation_notice_ratings" ADD CONSTRAINT "situation_notice_ratings_situations_notice_ratings" FOREIGN KEY ("situation_id") REFERENCES "situations" ("id") ON DELETE CASCADE, ADD CONSTRAINT "situation_notice_ratings_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "situation_notice_ratings_users_user" FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE SET NULL;
 -- modify "situation_observation_groups" table
 ALTER TABLE "situation_observation_groups" ADD CONSTRAINT "situation_observation_groups_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "situation_observation_groups_situations_situation" FOREIGN KEY ("situation_id") REFERENCES "situations" ("id") ON DELETE NO ACTION;
 -- modify "situation_signals" table

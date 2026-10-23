@@ -14,6 +14,7 @@
 	import CheckedSection from "./CheckedSection.svelte";
 	import UnseenSection from "./UnseenSection.svelte";
 	import BriefContext from "./BriefContext.svelte";
+	import SituationNotices from "./SituationNotices.svelte";
 
 	const controller = initSituationOverviewController();
 	const attributes = $derived(controller.situationAttributes);
@@ -68,6 +69,7 @@
 					</li>
 				{/each}
 			</ul>
+			<SituationNotices notices={controller.notices} />
 		</section>
 
 		{#each controller.sections as section (section.kind)}

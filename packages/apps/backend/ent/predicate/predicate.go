@@ -243,6 +243,12 @@ type SituationJudgment func(*sql.Selector)
 // SituationLink is the predicate function for situationlink builders.
 type SituationLink func(*sql.Selector)
 
+// SituationNotice is the predicate function for situationnotice builders.
+type SituationNotice func(*sql.Selector)
+
+// SituationNoticeRating is the predicate function for situationnoticerating builders.
+type SituationNoticeRating func(*sql.Selector)
+
 // SituationObservationGroup is the predicate function for situationobservationgroup builders.
 type SituationObservationGroup func(*sql.Selector)
 

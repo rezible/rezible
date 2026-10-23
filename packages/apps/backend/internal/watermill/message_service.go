@@ -12,6 +12,9 @@ import (
 	wotelfloss "github.com/dentech-floss/watermill-opentelemetry-go-extra/pkg/opentelemetry"
 	"github.com/google/uuid"
 	wotel "github.com/voi-oss/watermill-opentelemetry/pkg/opentelemetry"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/metric"
 	"golang.org/x/sync/errgroup"
 
 	"github.com/ThreeDotsLabs/watermill"
@@ -53,7 +56,14 @@ func NewMessageQueue(cfg rez.MessageQueueConfig, transport messages.Transport) (
 	if routerErr != nil {
 		return nil, fmt.Errorf("create router: %w", routerErr)
 	}
+	ms.router = router
+
+	poison, poisonErr := ms.makePoisonQueue()
+	if poisonErr != nil {
+		return nil, fmt.Errorf("poison queue: %w", poisonErr)
+	}
 	router.AddMiddleware(
+		poison,
 		ms.makeRetryMiddleware(),
 		ms.makeThrottleMiddleware(),
 		ms.attemptTimeout,
@@ -62,7 +72,6 @@ func NewMessageQueue(cfg rez.MessageQueueConfig, transport messages.Transport) (
 		wotel.Trace(),
 		middleware.Recoverer,
 	)
-	ms.router = router
 
 	proc, procErr := ms.makeEventProcessor()
 	if procErr != nil {
@@ -137,6 +146,38 @@ func (ms *MessageQueue) Run(ctx context.Context, ready chan<- struct{}) (runErr 
 
 func (ms *MessageQueue) Shutdown(ctx context.Context) error {
 	return errors.Join(ms.router.Close(), ms.transport.Close())
+}
+
+// makePoisonQueue sends a message whose handler still fails after its retries to the poison topic, where it
+// is logged and counted. The message is then acked: otherwise the transport would redeliver it forever.
+func (ms *MessageQueue) makePoisonQueue() (message.HandlerMiddleware, error) {
+	topic := ms.cfg.Namespace + ":poison"
+	poison, poisonErr := middleware.PoisonQueue(ms.transport.Publisher(), topic)
+	if poisonErr != nil {
+		return nil, fmt.Errorf("poison queue middleware: %w", poisonErr)
+	}
+
+	poisonSub, poisonSubErr := ms.transport.Subscriber("poison")
+	if poisonSubErr != nil {
+		return nil, fmt.Errorf("poison subscriber: %w", poisonSubErr)
+	}
+	poisoned, poisonedErr := otel.Meter("github.com/rezible/rezible").Int64Counter("backend.messages.poisoned",
+		metric.WithDescription("Watermill messages whose handler failed after its retries"))
+	if poisonedErr != nil {
+		return nil, fmt.Errorf("messages poisoned counter: %w", poisonedErr)
+	}
+	ms.router.AddConsumerHandler("PoisonQueueLogger", topic, poisonSub, func(msg *message.Message) error {
+		handler := msg.Metadata.Get(middleware.PoisonedHandlerKey)
+		poisoned.Add(msg.Context(), 1, metric.WithAttributes(attribute.String("handler", handler)))
+		slog.ErrorContext(msg.Context(), "message handler failed after its retries",
+			"handler", handler,
+			"topic", msg.Metadata.Get(middleware.PoisonedTopicKey),
+			"error", msg.Metadata.Get(middleware.ReasonForPoisonedKey),
+			"message_uuid", msg.UUID,
+		)
+		return nil
+	})
+	return poison, nil
 }
 
 func (ms *MessageQueue) eventTopic(eventName string) string {

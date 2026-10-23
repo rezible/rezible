@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"strings"
 	"time"
 
 	"github.com/firebase/genkit/go/ai"
@@ -91,15 +92,21 @@ func (s *BackendSuite) TestSituationDetection() {
 // demoAlertEvent is a demo provider notification of the definition's alert about the checkout service. The
 // alert fired at firedAt; a resolved notification ends it when delivered.
 func (s *BackendSuite) demoAlertEvent(definition string, firedAt, deliveredAt time.Time, resolved bool) rez.ProviderEvent {
-	checkout := projections.EntityObservation{
+	return s.demoServiceAlertEvent("Checkout", definition, firedAt, deliveredAt, resolved)
+}
+
+// demoServiceAlertEvent is a demo provider notification of the definition's alert about the named service.
+func (s *BackendSuite) demoServiceAlertEvent(service, definition string, firedAt, deliveredAt time.Time, resolved bool) rez.ProviderEvent {
+	serviceKey := strings.ToLower(service)
+	observed := projections.EntityObservation{
 		Ref: rez.ProviderResourceRef{
 			Provider:          "demo",
 			ProviderNamespace: "app-test",
-			ResourceRef:       "demo:component:checkout",
+			ResourceRef:       "demo:component:" + serviceKey,
 		},
 		Category:    kne.CategoryContainer,
 		Kind:        "service",
-		DisplayName: "Checkout",
+		DisplayName: service,
 	}
 	state := projections.AlertStateFiring
 	if resolved {
@@ -110,12 +117,12 @@ func (s *BackendSuite) demoAlertEvent(definition string, firedAt, deliveredAt ti
 		"definition_ref":    definition,
 		"title":             definition,
 		"state":             state,
-		"instance_id":       "checkout",
+		"instance_id":       serviceKey,
 		"severity":          "critical",
 		"started_at":        firedAt,
 		"occurred_at":       deliveredAt,
 		"notification_ref":  ref,
-		"observed_entities": []projections.EntityObservation{checkout},
+		"observed_entities": []projections.EntityObservation{observed},
 	}
 	if resolved {
 		payload["ended_at"] = deliveredAt

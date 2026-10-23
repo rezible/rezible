@@ -5,35 +5,44 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
-	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/suite"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/pkg/errs"
+	"github.com/rezible/rezible/test"
 )
 
-func TestAs(t *testing.T) {
+type IntegrationsSuite struct {
+	test.Suite
+}
+
+func TestIntegrationsSuite(t *testing.T) {
+	suite.Run(t, &IntegrationsSuite{Suite: test.NewSuite()})
+}
+
+func (s *IntegrationsSuite) TestAs() {
 	chat := &fakeChatInstallation{}
 	querier, supportedErr := As[ChatChannelQuerier](chat)
-	require.NoError(t, supportedErr)
-	require.Same(t, chat, querier)
+	s.Require().NoError(supportedErr)
+	s.Same(chat, querier)
 
 	plain := &fakeInstallation{}
 	_, unsupportedErr := As[ChatChannelQuerier](plain)
-	require.ErrorIs(t, unsupportedErr, ErrCapabilityNotSupported)
+	s.ErrorIs(unsupportedErr, ErrCapabilityNotSupported)
 }
 
-func TestLookupInstallationAs(t *testing.T) {
+func (s *IntegrationsSuite) TestLookupInstallationAs() {
 	chat := &fakeChatInstallation{}
 	found := fakeInstallationGetter{installed: chat}
-	querier, foundErr := LookupInstallationAs[ChatChannelQuerier](t.Context(), found, uuid.New())
-	require.NoError(t, foundErr)
-	require.Same(t, chat, querier)
+	querier, foundErr := LookupInstallationAs[ChatChannelQuerier](s.T().Context(), found, uuid.New())
+	s.Require().NoError(foundErr)
+	s.Same(chat, querier)
 
 	missing := fakeInstallationGetter{err: errs.ErrNotFound}
-	_, missingErr := LookupInstallationAs[ChatChannelQuerier](t.Context(), missing, uuid.New())
-	require.ErrorIs(t, missingErr, errs.ErrNotFound)
+	_, missingErr := LookupInstallationAs[ChatChannelQuerier](s.T().Context(), missing, uuid.New())
+	s.ErrorIs(missingErr, errs.ErrNotFound)
 }
 
 type fakeInstallationGetter struct {

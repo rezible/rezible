@@ -15,16 +15,24 @@ type ClientWrapper struct {
 	intg   *ent.Integration
 }
 
-func NewClientWrapper(intg *ent.Integration) (*ClientWrapper, error) {
+func NewClientWrapper(intg *ent.Integration, opts ...slack.Option) (*ClientWrapper, error) {
 	cfg, cfgErr := GetValidatedConfig(intg.InstallationConfig)
 	if cfgErr != nil {
 		return nil, fmt.Errorf("unable to decode integration config: %w", cfgErr)
 	}
 	cw := &ClientWrapper{
 		intg:   intg,
-		client: slack.New(cfg.AccessToken),
+		client: slack.New(cfg.AccessToken, opts...),
 	}
 	return cw, nil
+}
+
+// ClientOptions are the client options the Slack configuration asks for.
+func ClientOptions(cfg rez.IntegrationsConfigSlack) []slack.Option {
+	if cfg.ApiUrl == "" {
+		return nil
+	}
+	return []slack.Option{slack.OptionAPIURL(cfg.ApiUrl)}
 }
 
 func (w *ClientWrapper) Integration() *ent.Integration {
@@ -38,6 +46,26 @@ func (w *ClientWrapper) Client() *slack.Client {
 func (w *ClientWrapper) PostMessage(ctx context.Context, channelId string, msgOpts ...slack.MsgOption) (string, error) {
 	_, msgTs, msgErr := w.client.PostMessageContext(ctx, channelId, msgOpts...)
 	return msgTs, msgErr
+}
+
+func (w *ClientWrapper) UpdateMessage(ctx context.Context, channelId, messageTs string, msgOpts ...slack.MsgOption) error {
+	_, _, _, updateErr := w.client.UpdateMessageContext(ctx, channelId, messageTs, msgOpts...)
+	return updateErr
+}
+
+func (w *ClientWrapper) GetPermalink(ctx context.Context, channelId, messageTs string) (string, error) {
+	params := &slack.PermalinkParameters{Channel: channelId, Ts: messageTs}
+	return w.client.GetPermalinkContext(ctx, params)
+}
+
+// GetChannelName returns the channel's name, as conversations.info reports it.
+func (w *ClientWrapper) GetChannelName(ctx context.Context, channelId string) (string, error) {
+	input := &slack.GetConversationInfoInput{ChannelID: channelId}
+	channel, infoErr := w.client.GetConversationInfoContext(ctx, input)
+	if infoErr != nil {
+		return "", infoErr
+	}
+	return channel.Name, nil
 }
 
 func (w *ClientWrapper) PostEphemeralMessage(ctx context.Context, channelId, userId string, msgOpts ...slack.MsgOption) (string, error) {

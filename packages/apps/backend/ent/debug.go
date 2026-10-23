@@ -636,6 +636,22 @@ func (c *SituationLinkClient) Debug() *SituationLinkClient {
 	return &SituationLinkClient{config: cfg}
 }
 
+func (c *SituationNoticeClient) Debug() *SituationNoticeClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &SituationNoticeClient{config: cfg}
+}
+
+func (c *SituationNoticeRatingClient) Debug() *SituationNoticeRatingClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &SituationNoticeRatingClient{config: cfg}
+}
+
 func (c *SituationObservationGroupClient) Debug() *SituationObservationGroupClient {
 	if c.debug {
 		return c

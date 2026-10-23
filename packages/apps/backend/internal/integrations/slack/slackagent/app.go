@@ -8,6 +8,7 @@ import (
 	"github.com/rezible/rezible/ent"
 	asb "github.com/rezible/rezible/ent/agentsessionbinding"
 	"github.com/rezible/rezible/pkg/messages"
+	"github.com/slack-go/slack"
 	"github.com/slack-go/slack/slackevents"
 
 	rez "github.com/rezible/rezible"
@@ -117,7 +118,15 @@ func (a *App) GetIntegrationClientWrapper(ctx context.Context, preds ...predicat
 	if intgErr != nil {
 		return nil, fmt.Errorf("query slack agent integration: %w", intgErr)
 	}
-	return slackintegration.NewClientWrapper(intg)
+	return a.newClientWrapper(intg)
+}
+
+func (a *App) clientOptions() []slack.Option {
+	return slackintegration.ClientOptions(a.cfg.Integrations.Slack)
+}
+
+func (a *App) newClientWrapper(intg *ent.Integration) (*slackintegration.ClientWrapper, error) {
+	return slackintegration.NewClientWrapper(intg, a.clientOptions()...)
 }
 
 func (a *App) lookupAiAgentSessionBinding(ctx context.Context, sessionId uuid.UUID) (*ent.AgentSessionBinding, error) {

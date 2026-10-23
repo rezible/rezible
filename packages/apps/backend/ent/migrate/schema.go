@@ -1570,7 +1570,7 @@ var (
 				Symbol:     "integration_event_sync_cursors_integrations_integration",
 				Columns:    []*schema.Column{IntegrationEventSyncCursorsColumns[7]},
 				RefColumns: []*schema.Column{IntegrationsColumns[0]},
-				OnDelete:   schema.NoAction,
+				OnDelete:   schema.Cascade,
 			},
 		},
 		Indexes: []*schema.Index{
@@ -1617,7 +1617,7 @@ var (
 				Symbol:     "integration_event_sync_runs_integrations_integration",
 				Columns:    []*schema.Column{IntegrationEventSyncRunsColumns[11]},
 				RefColumns: []*schema.Column{IntegrationsColumns[0]},
-				OnDelete:   schema.NoAction,
+				OnDelete:   schema.Cascade,
 			},
 		},
 		Indexes: []*schema.Index{
@@ -3803,6 +3803,115 @@ var (
 			},
 		},
 	}
+	// SituationNoticesColumns holds the columns for the "situation_notices" table.
+	SituationNoticesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "channel_id", Type: field.TypeString},
+		{Name: "channel_name", Type: field.TypeString, Nullable: true},
+		{Name: "message_ref", Type: field.TypeString, Nullable: true},
+		{Name: "permalink", Type: field.TypeString, Nullable: true},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"pending", "posted", "failed", "skipped"}, Default: "pending"},
+		{Name: "error", Type: field.TypeString, Nullable: true},
+		{Name: "last_attempt_at", Type: field.TypeTime, Nullable: true},
+		{Name: "first_posted_at", Type: field.TypeTime, Nullable: true},
+		{Name: "situation_id", Type: field.TypeUUID},
+		{Name: "tenant_id", Type: field.TypeInt},
+		{Name: "integration_id", Type: field.TypeUUID},
+	}
+	// SituationNoticesTable holds the schema information for the "situation_notices" table.
+	SituationNoticesTable = &schema.Table{
+		Name:       "situation_notices",
+		Columns:    SituationNoticesColumns,
+		PrimaryKey: []*schema.Column{SituationNoticesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "situation_notices_situations_notices",
+				Columns:    []*schema.Column{SituationNoticesColumns[11]},
+				RefColumns: []*schema.Column{SituationsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "situation_notices_tenants_tenant",
+				Columns:    []*schema.Column{SituationNoticesColumns[12]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "situation_notices_integrations_integration",
+				Columns:    []*schema.Column{SituationNoticesColumns[13]},
+				RefColumns: []*schema.Column{IntegrationsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "situationnotice_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{SituationNoticesColumns[12]},
+			},
+			{
+				Name:    "situationnotice_situation_id_integration_id",
+				Unique:  true,
+				Columns: []*schema.Column{SituationNoticesColumns[11], SituationNoticesColumns[13]},
+			},
+			{
+				Name:    "situationnotice_integration_id_channel_id_first_posted_at",
+				Unique:  false,
+				Columns: []*schema.Column{SituationNoticesColumns[13], SituationNoticesColumns[3], SituationNoticesColumns[10]},
+			},
+		},
+	}
+	// SituationNoticeRatingsColumns holds the columns for the "situation_notice_ratings" table.
+	SituationNoticeRatingsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "chat_user_id", Type: field.TypeString},
+		{Name: "useful", Type: field.TypeBool},
+		{Name: "situation_id", Type: field.TypeUUID},
+		{Name: "tenant_id", Type: field.TypeInt},
+		{Name: "user_id", Type: field.TypeUUID, Nullable: true},
+	}
+	// SituationNoticeRatingsTable holds the schema information for the "situation_notice_ratings" table.
+	SituationNoticeRatingsTable = &schema.Table{
+		Name:       "situation_notice_ratings",
+		Columns:    SituationNoticeRatingsColumns,
+		PrimaryKey: []*schema.Column{SituationNoticeRatingsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "situation_notice_ratings_situations_notice_ratings",
+				Columns:    []*schema.Column{SituationNoticeRatingsColumns[5]},
+				RefColumns: []*schema.Column{SituationsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "situation_notice_ratings_tenants_tenant",
+				Columns:    []*schema.Column{SituationNoticeRatingsColumns[6]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "situation_notice_ratings_users_user",
+				Columns:    []*schema.Column{SituationNoticeRatingsColumns[7]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "situationnoticerating_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{SituationNoticeRatingsColumns[6]},
+			},
+			{
+				Name:    "situationnoticerating_situation_id_chat_user_id",
+				Unique:  true,
+				Columns: []*schema.Column{SituationNoticeRatingsColumns[5], SituationNoticeRatingsColumns[3]},
+			},
+		},
+	}
 	// SituationObservationGroupsColumns holds the columns for the "situation_observation_groups" table.
 	SituationObservationGroupsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -5176,6 +5285,8 @@ var (
 		SituationInvestigationsTable,
 		SituationJudgmentsTable,
 		SituationLinksTable,
+		SituationNoticesTable,
+		SituationNoticeRatingsTable,
 		SituationObservationGroupsTable,
 		SituationSignalsTable,
 		SituationSignalAttentionsTable,
@@ -5448,6 +5559,12 @@ func init() {
 	SituationLinksTable.ForeignKeys[0].RefTable = TenantsTable
 	SituationLinksTable.ForeignKeys[1].RefTable = SituationsTable
 	SituationLinksTable.ForeignKeys[2].RefTable = SituationsTable
+	SituationNoticesTable.ForeignKeys[0].RefTable = SituationsTable
+	SituationNoticesTable.ForeignKeys[1].RefTable = TenantsTable
+	SituationNoticesTable.ForeignKeys[2].RefTable = IntegrationsTable
+	SituationNoticeRatingsTable.ForeignKeys[0].RefTable = SituationsTable
+	SituationNoticeRatingsTable.ForeignKeys[1].RefTable = TenantsTable
+	SituationNoticeRatingsTable.ForeignKeys[2].RefTable = UsersTable
 	SituationObservationGroupsTable.ForeignKeys[0].RefTable = TenantsTable
 	SituationObservationGroupsTable.ForeignKeys[1].RefTable = SituationsTable
 	SituationSignalsTable.ForeignKeys[0].RefTable = TenantsTable

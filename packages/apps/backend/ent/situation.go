@@ -76,13 +76,17 @@ type SituationEdges struct {
 	Links []*SituationLink `json:"links,omitempty"`
 	// Actions holds the value of the actions edge.
 	Actions []*SituationAction `json:"actions,omitempty"`
+	// Notices holds the value of the notices edge.
+	Notices []*SituationNotice `json:"notices,omitempty"`
+	// NoticeRatings holds the value of the notice_ratings edge.
+	NoticeRatings []*SituationNoticeRating `json:"notice_ratings,omitempty"`
 	// LatestJudgment holds the value of the latest_judgment edge.
 	LatestJudgment *SituationJudgment `json:"latest_judgment,omitempty"`
 	// SeedEntity holds the value of the seed_entity edge.
 	SeedEntity *KnowledgeEntity `json:"seed_entity,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [11]bool
+	loadedTypes [13]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -170,12 +174,30 @@ func (e SituationEdges) ActionsOrErr() ([]*SituationAction, error) {
 	return nil, &NotLoadedError{edge: "actions"}
 }
 
+// NoticesOrErr returns the Notices value or an error if the edge
+// was not loaded in eager-loading.
+func (e SituationEdges) NoticesOrErr() ([]*SituationNotice, error) {
+	if e.loadedTypes[9] {
+		return e.Notices, nil
+	}
+	return nil, &NotLoadedError{edge: "notices"}
+}
+
+// NoticeRatingsOrErr returns the NoticeRatings value or an error if the edge
+// was not loaded in eager-loading.
+func (e SituationEdges) NoticeRatingsOrErr() ([]*SituationNoticeRating, error) {
+	if e.loadedTypes[10] {
+		return e.NoticeRatings, nil
+	}
+	return nil, &NotLoadedError{edge: "notice_ratings"}
+}
+
 // LatestJudgmentOrErr returns the LatestJudgment value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
 func (e SituationEdges) LatestJudgmentOrErr() (*SituationJudgment, error) {
 	if e.LatestJudgment != nil {
 		return e.LatestJudgment, nil
-	} else if e.loadedTypes[9] {
+	} else if e.loadedTypes[11] {
 		return nil, &NotFoundError{label: situationjudgment.Label}
 	}
 	return nil, &NotLoadedError{edge: "latest_judgment"}
@@ -186,7 +208,7 @@ func (e SituationEdges) LatestJudgmentOrErr() (*SituationJudgment, error) {
 func (e SituationEdges) SeedEntityOrErr() (*KnowledgeEntity, error) {
 	if e.SeedEntity != nil {
 		return e.SeedEntity, nil
-	} else if e.loadedTypes[10] {
+	} else if e.loadedTypes[12] {
 		return nil, &NotFoundError{label: knowledgeentity.Label}
 	}
 	return nil, &NotLoadedError{edge: "seed_entity"}
@@ -375,6 +397,16 @@ func (_m *Situation) QueryLinks() *SituationLinkQuery {
 // QueryActions queries the "actions" edge of the Situation entity.
 func (_m *Situation) QueryActions() *SituationActionQuery {
 	return NewSituationClient(_m.config).QueryActions(_m)
+}
+
+// QueryNotices queries the "notices" edge of the Situation entity.
+func (_m *Situation) QueryNotices() *SituationNoticeQuery {
+	return NewSituationClient(_m.config).QueryNotices(_m)
+}
+
+// QueryNoticeRatings queries the "notice_ratings" edge of the Situation entity.
+func (_m *Situation) QueryNoticeRatings() *SituationNoticeRatingQuery {
+	return NewSituationClient(_m.config).QueryNoticeRatings(_m)
 }
 
 // QueryLatestJudgment queries the "latest_judgment" edge of the Situation entity.

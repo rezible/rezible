@@ -177,6 +177,9 @@ type (
 		Google IntegrationsConfigGoogle `cfg:"google" validate:"omitempty"`
 	}
 	IntegrationsConfigSlack struct {
+		// ApiUrl is the Slack Web API base URL, ending in a slash. Empty uses Slack's own; set it for GovSlack
+		// or a local stand-in.
+		ApiUrl    string                     `cfg:"api_url" validate:"omitempty,url"`
 		Agent     IntegrationsConfigSlackApp `cfg:"agent" validate:"omitempty"`
 		Incidents IntegrationsConfigSlackApp `cfg:"incidents" validate:"omitempty"`
 	}

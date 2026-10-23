@@ -154,8 +154,13 @@ func (s *SituationBriefServiceSuite) newFixture(tdb rez.Database) *briefFixture 
 	alerts, alertsErr := NewAlertService(rez.DefaultConfig().Alerts, h.clock, tdb, jobService, knowledge, NewSituationSignalService(jobService))
 	s.Require().NoError(alertsErr)
 	agentSessions := &AiAgentSessionService{db: tdb, jobs: jobService}
-	investigations := NewInvestigationService(tdb, agentSessions, jobService, analyses)
-	situations, situationsErr := NewSituationService(tdb, h.clock, jobService, investigations, analyses, knowledgeQuery, nil, alerts)
+	messageQueue := mocks.NewMockMessageQueue(s.T())
+	messageQueue.EXPECT().
+		Publish(mock.Anything, mock.Anything).
+		Return(nil).
+		Maybe()
+	investigations := NewInvestigationService(tdb, agentSessions, jobService, messageQueue, analyses)
+	situations, situationsErr := NewSituationService(tdb, h.clock, jobService, messageQueue, investigations, analyses, knowledgeQuery, nil, alerts)
 	s.Require().NoError(situationsErr)
 	knowledgeAliases, aliasesErr := NewKnowledgeEntityAliasService(tdb, nil)
 	s.Require().NoError(aliasesErr)

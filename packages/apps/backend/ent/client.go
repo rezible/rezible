@@ -94,6 +94,8 @@ import (
 	"github.com/rezible/rezible/ent/situationinvestigation"
 	"github.com/rezible/rezible/ent/situationjudgment"
 	"github.com/rezible/rezible/ent/situationlink"
+	"github.com/rezible/rezible/ent/situationnotice"
+	"github.com/rezible/rezible/ent/situationnoticerating"
 	"github.com/rezible/rezible/ent/situationobservationgroup"
 	"github.com/rezible/rezible/ent/situationsignal"
 	"github.com/rezible/rezible/ent/situationsignalattention"
@@ -279,6 +281,10 @@ type Client struct {
 	SituationJudgment *SituationJudgmentClient
 	// SituationLink is the client for interacting with the SituationLink builders.
 	SituationLink *SituationLinkClient
+	// SituationNotice is the client for interacting with the SituationNotice builders.
+	SituationNotice *SituationNoticeClient
+	// SituationNoticeRating is the client for interacting with the SituationNoticeRating builders.
+	SituationNoticeRating *SituationNoticeRatingClient
 	// SituationObservationGroup is the client for interacting with the SituationObservationGroup builders.
 	SituationObservationGroup *SituationObservationGroupClient
 	// SituationSignal is the client for interacting with the SituationSignal builders.
@@ -405,6 +411,8 @@ func (c *Client) init() {
 	c.SituationInvestigation = NewSituationInvestigationClient(c.config)
 	c.SituationJudgment = NewSituationJudgmentClient(c.config)
 	c.SituationLink = NewSituationLinkClient(c.config)
+	c.SituationNotice = NewSituationNoticeClient(c.config)
+	c.SituationNoticeRating = NewSituationNoticeRatingClient(c.config)
 	c.SituationObservationGroup = NewSituationObservationGroupClient(c.config)
 	c.SituationSignal = NewSituationSignalClient(c.config)
 	c.SituationSignalAttention = NewSituationSignalAttentionClient(c.config)
@@ -597,6 +605,8 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		SituationInvestigation:          NewSituationInvestigationClient(cfg),
 		SituationJudgment:               NewSituationJudgmentClient(cfg),
 		SituationLink:                   NewSituationLinkClient(cfg),
+		SituationNotice:                 NewSituationNoticeClient(cfg),
+		SituationNoticeRating:           NewSituationNoticeRatingClient(cfg),
 		SituationObservationGroup:       NewSituationObservationGroupClient(cfg),
 		SituationSignal:                 NewSituationSignalClient(cfg),
 		SituationSignalAttention:        NewSituationSignalAttentionClient(cfg),
@@ -713,6 +723,8 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		SituationInvestigation:          NewSituationInvestigationClient(cfg),
 		SituationJudgment:               NewSituationJudgmentClient(cfg),
 		SituationLink:                   NewSituationLinkClient(cfg),
+		SituationNotice:                 NewSituationNoticeClient(cfg),
+		SituationNoticeRating:           NewSituationNoticeRatingClient(cfg),
 		SituationObservationGroup:       NewSituationObservationGroupClient(cfg),
 		SituationSignal:                 NewSituationSignalClient(cfg),
 		SituationSignalAttention:        NewSituationSignalAttentionClient(cfg),
@@ -784,12 +796,12 @@ func (c *Client) Use(hooks ...Hook) {
 		c.OrganizationPreferences, c.OrganizationRole, c.Playbook, c.Retrospective,
 		c.Review, c.Situation, c.SituationAction, c.SituationEntity,
 		c.SituationHazardAssessment, c.SituationInvestigation, c.SituationJudgment,
-		c.SituationLink, c.SituationObservationGroup, c.SituationSignal,
-		c.SituationSignalAttention, c.SystemAnalysis, c.SystemAnalysisEntity,
-		c.SystemAnalysisEntry, c.SystemAnalysisEntrySubject,
-		c.SystemAnalysisRelationship, c.SystemHazard, c.SystemHazardRiskAssessment,
-		c.Task, c.Team, c.TeamMembership, c.Tenant, c.Ticket, c.User,
-		c.UserAuthSession, c.VideoConference,
+		c.SituationLink, c.SituationNotice, c.SituationNoticeRating,
+		c.SituationObservationGroup, c.SituationSignal, c.SituationSignalAttention,
+		c.SystemAnalysis, c.SystemAnalysisEntity, c.SystemAnalysisEntry,
+		c.SystemAnalysisEntrySubject, c.SystemAnalysisRelationship, c.SystemHazard,
+		c.SystemHazardRiskAssessment, c.Task, c.Team, c.TeamMembership, c.Tenant,
+		c.Ticket, c.User, c.UserAuthSession, c.VideoConference,
 	} {
 		n.Use(hooks...)
 	}
@@ -823,12 +835,12 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 		c.OrganizationPreferences, c.OrganizationRole, c.Playbook, c.Retrospective,
 		c.Review, c.Situation, c.SituationAction, c.SituationEntity,
 		c.SituationHazardAssessment, c.SituationInvestigation, c.SituationJudgment,
-		c.SituationLink, c.SituationObservationGroup, c.SituationSignal,
-		c.SituationSignalAttention, c.SystemAnalysis, c.SystemAnalysisEntity,
-		c.SystemAnalysisEntry, c.SystemAnalysisEntrySubject,
-		c.SystemAnalysisRelationship, c.SystemHazard, c.SystemHazardRiskAssessment,
-		c.Task, c.Team, c.TeamMembership, c.Tenant, c.Ticket, c.User,
-		c.UserAuthSession, c.VideoConference,
+		c.SituationLink, c.SituationNotice, c.SituationNoticeRating,
+		c.SituationObservationGroup, c.SituationSignal, c.SituationSignalAttention,
+		c.SystemAnalysis, c.SystemAnalysisEntity, c.SystemAnalysisEntry,
+		c.SystemAnalysisEntrySubject, c.SystemAnalysisRelationship, c.SystemHazard,
+		c.SystemHazardRiskAssessment, c.Task, c.Team, c.TeamMembership, c.Tenant,
+		c.Ticket, c.User, c.UserAuthSession, c.VideoConference,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -993,6 +1005,10 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.SituationJudgment.mutate(ctx, m)
 	case *SituationLinkMutation:
 		return c.SituationLink.mutate(ctx, m)
+	case *SituationNoticeMutation:
+		return c.SituationNotice.mutate(ctx, m)
+	case *SituationNoticeRatingMutation:
+		return c.SituationNoticeRating.mutate(ctx, m)
 	case *SituationObservationGroupMutation:
 		return c.SituationObservationGroup.mutate(ctx, m)
 	case *SituationSignalMutation:
@@ -16110,6 +16126,44 @@ func (c *SituationClient) QueryActions(_m *Situation) *SituationActionQuery {
 	return query
 }
 
+// QueryNotices queries the notices edge of a Situation.
+func (c *SituationClient) QueryNotices(_m *Situation) *SituationNoticeQuery {
+	query := (&SituationNoticeClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(situation.Table, situation.FieldID, id),
+			sqlgraph.To(situationnotice.Table, situationnotice.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, situation.NoticesTable, situation.NoticesColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.SituationNotice
+		step.Edge.Schema = schemaConfig.SituationNotice
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryNoticeRatings queries the notice_ratings edge of a Situation.
+func (c *SituationClient) QueryNoticeRatings(_m *Situation) *SituationNoticeRatingQuery {
+	query := (&SituationNoticeRatingClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(situation.Table, situation.FieldID, id),
+			sqlgraph.To(situationnoticerating.Table, situationnoticerating.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, situation.NoticeRatingsTable, situation.NoticeRatingsColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.SituationNoticeRating
+		step.Edge.Schema = schemaConfig.SituationNoticeRating
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryLatestJudgment queries the latest_judgment edge of a Situation.
 func (c *SituationClient) QueryLatestJudgment(_m *Situation) *SituationJudgmentQuery {
 	query := (&SituationJudgmentClient{config: c.config}).Query()
@@ -17336,6 +17390,388 @@ func (c *SituationLinkClient) mutate(ctx context.Context, m *SituationLinkMutati
 		return (&SituationLinkDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown SituationLink mutation op: %q", m.Op())
+	}
+}
+
+// SituationNoticeClient is a client for the SituationNotice schema.
+type SituationNoticeClient struct {
+	config
+}
+
+// NewSituationNoticeClient returns a client for the SituationNotice from the given config.
+func NewSituationNoticeClient(c config) *SituationNoticeClient {
+	return &SituationNoticeClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `situationnotice.Hooks(f(g(h())))`.
+func (c *SituationNoticeClient) Use(hooks ...Hook) {
+	c.hooks.SituationNotice = append(c.hooks.SituationNotice, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `situationnotice.Intercept(f(g(h())))`.
+func (c *SituationNoticeClient) Intercept(interceptors ...Interceptor) {
+	c.inters.SituationNotice = append(c.inters.SituationNotice, interceptors...)
+}
+
+// Create returns a builder for creating a SituationNotice entity.
+func (c *SituationNoticeClient) Create() *SituationNoticeCreate {
+	mutation := newSituationNoticeMutation(c.config, OpCreate)
+	return &SituationNoticeCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of SituationNotice entities.
+func (c *SituationNoticeClient) CreateBulk(builders ...*SituationNoticeCreate) *SituationNoticeCreateBulk {
+	return &SituationNoticeCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *SituationNoticeClient) MapCreateBulk(slice any, setFunc func(*SituationNoticeCreate, int)) *SituationNoticeCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &SituationNoticeCreateBulk{err: fmt.Errorf("calling to SituationNoticeClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*SituationNoticeCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &SituationNoticeCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for SituationNotice.
+func (c *SituationNoticeClient) Update() *SituationNoticeUpdate {
+	mutation := newSituationNoticeMutation(c.config, OpUpdate)
+	return &SituationNoticeUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *SituationNoticeClient) UpdateOne(_m *SituationNotice) *SituationNoticeUpdateOne {
+	mutation := newSituationNoticeMutation(c.config, OpUpdateOne, withSituationNotice(_m))
+	return &SituationNoticeUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *SituationNoticeClient) UpdateOneID(id uuid.UUID) *SituationNoticeUpdateOne {
+	mutation := newSituationNoticeMutation(c.config, OpUpdateOne, withSituationNoticeID(id))
+	return &SituationNoticeUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for SituationNotice.
+func (c *SituationNoticeClient) Delete() *SituationNoticeDelete {
+	mutation := newSituationNoticeMutation(c.config, OpDelete)
+	return &SituationNoticeDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *SituationNoticeClient) DeleteOne(_m *SituationNotice) *SituationNoticeDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *SituationNoticeClient) DeleteOneID(id uuid.UUID) *SituationNoticeDeleteOne {
+	builder := c.Delete().Where(situationnotice.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &SituationNoticeDeleteOne{builder}
+}
+
+// Query returns a query builder for SituationNotice.
+func (c *SituationNoticeClient) Query() *SituationNoticeQuery {
+	return &SituationNoticeQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeSituationNotice},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a SituationNotice entity by its id.
+func (c *SituationNoticeClient) Get(ctx context.Context, id uuid.UUID) (*SituationNotice, error) {
+	return c.Query().Where(situationnotice.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *SituationNoticeClient) GetX(ctx context.Context, id uuid.UUID) *SituationNotice {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryTenant queries the tenant edge of a SituationNotice.
+func (c *SituationNoticeClient) QueryTenant(_m *SituationNotice) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(situationnotice.Table, situationnotice.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, situationnotice.TenantTable, situationnotice.TenantColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.SituationNotice
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QuerySituation queries the situation edge of a SituationNotice.
+func (c *SituationNoticeClient) QuerySituation(_m *SituationNotice) *SituationQuery {
+	query := (&SituationClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(situationnotice.Table, situationnotice.FieldID, id),
+			sqlgraph.To(situation.Table, situation.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, situationnotice.SituationTable, situationnotice.SituationColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.Situation
+		step.Edge.Schema = schemaConfig.SituationNotice
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryIntegration queries the integration edge of a SituationNotice.
+func (c *SituationNoticeClient) QueryIntegration(_m *SituationNotice) *IntegrationQuery {
+	query := (&IntegrationClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(situationnotice.Table, situationnotice.FieldID, id),
+			sqlgraph.To(integration.Table, integration.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, situationnotice.IntegrationTable, situationnotice.IntegrationColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.Integration
+		step.Edge.Schema = schemaConfig.SituationNotice
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *SituationNoticeClient) Hooks() []Hook {
+	hooks := c.hooks.SituationNotice
+	return append(hooks[:len(hooks):len(hooks)], situationnotice.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *SituationNoticeClient) Interceptors() []Interceptor {
+	return c.inters.SituationNotice
+}
+
+func (c *SituationNoticeClient) mutate(ctx context.Context, m *SituationNoticeMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&SituationNoticeCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&SituationNoticeUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&SituationNoticeUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&SituationNoticeDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown SituationNotice mutation op: %q", m.Op())
+	}
+}
+
+// SituationNoticeRatingClient is a client for the SituationNoticeRating schema.
+type SituationNoticeRatingClient struct {
+	config
+}
+
+// NewSituationNoticeRatingClient returns a client for the SituationNoticeRating from the given config.
+func NewSituationNoticeRatingClient(c config) *SituationNoticeRatingClient {
+	return &SituationNoticeRatingClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `situationnoticerating.Hooks(f(g(h())))`.
+func (c *SituationNoticeRatingClient) Use(hooks ...Hook) {
+	c.hooks.SituationNoticeRating = append(c.hooks.SituationNoticeRating, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `situationnoticerating.Intercept(f(g(h())))`.
+func (c *SituationNoticeRatingClient) Intercept(interceptors ...Interceptor) {
+	c.inters.SituationNoticeRating = append(c.inters.SituationNoticeRating, interceptors...)
+}
+
+// Create returns a builder for creating a SituationNoticeRating entity.
+func (c *SituationNoticeRatingClient) Create() *SituationNoticeRatingCreate {
+	mutation := newSituationNoticeRatingMutation(c.config, OpCreate)
+	return &SituationNoticeRatingCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of SituationNoticeRating entities.
+func (c *SituationNoticeRatingClient) CreateBulk(builders ...*SituationNoticeRatingCreate) *SituationNoticeRatingCreateBulk {
+	return &SituationNoticeRatingCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *SituationNoticeRatingClient) MapCreateBulk(slice any, setFunc func(*SituationNoticeRatingCreate, int)) *SituationNoticeRatingCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &SituationNoticeRatingCreateBulk{err: fmt.Errorf("calling to SituationNoticeRatingClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*SituationNoticeRatingCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &SituationNoticeRatingCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for SituationNoticeRating.
+func (c *SituationNoticeRatingClient) Update() *SituationNoticeRatingUpdate {
+	mutation := newSituationNoticeRatingMutation(c.config, OpUpdate)
+	return &SituationNoticeRatingUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *SituationNoticeRatingClient) UpdateOne(_m *SituationNoticeRating) *SituationNoticeRatingUpdateOne {
+	mutation := newSituationNoticeRatingMutation(c.config, OpUpdateOne, withSituationNoticeRating(_m))
+	return &SituationNoticeRatingUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *SituationNoticeRatingClient) UpdateOneID(id uuid.UUID) *SituationNoticeRatingUpdateOne {
+	mutation := newSituationNoticeRatingMutation(c.config, OpUpdateOne, withSituationNoticeRatingID(id))
+	return &SituationNoticeRatingUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for SituationNoticeRating.
+func (c *SituationNoticeRatingClient) Delete() *SituationNoticeRatingDelete {
+	mutation := newSituationNoticeRatingMutation(c.config, OpDelete)
+	return &SituationNoticeRatingDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *SituationNoticeRatingClient) DeleteOne(_m *SituationNoticeRating) *SituationNoticeRatingDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *SituationNoticeRatingClient) DeleteOneID(id uuid.UUID) *SituationNoticeRatingDeleteOne {
+	builder := c.Delete().Where(situationnoticerating.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &SituationNoticeRatingDeleteOne{builder}
+}
+
+// Query returns a query builder for SituationNoticeRating.
+func (c *SituationNoticeRatingClient) Query() *SituationNoticeRatingQuery {
+	return &SituationNoticeRatingQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeSituationNoticeRating},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a SituationNoticeRating entity by its id.
+func (c *SituationNoticeRatingClient) Get(ctx context.Context, id uuid.UUID) (*SituationNoticeRating, error) {
+	return c.Query().Where(situationnoticerating.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *SituationNoticeRatingClient) GetX(ctx context.Context, id uuid.UUID) *SituationNoticeRating {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryTenant queries the tenant edge of a SituationNoticeRating.
+func (c *SituationNoticeRatingClient) QueryTenant(_m *SituationNoticeRating) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(situationnoticerating.Table, situationnoticerating.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, situationnoticerating.TenantTable, situationnoticerating.TenantColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.SituationNoticeRating
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QuerySituation queries the situation edge of a SituationNoticeRating.
+func (c *SituationNoticeRatingClient) QuerySituation(_m *SituationNoticeRating) *SituationQuery {
+	query := (&SituationClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(situationnoticerating.Table, situationnoticerating.FieldID, id),
+			sqlgraph.To(situation.Table, situation.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, situationnoticerating.SituationTable, situationnoticerating.SituationColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.Situation
+		step.Edge.Schema = schemaConfig.SituationNoticeRating
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryUser queries the user edge of a SituationNoticeRating.
+func (c *SituationNoticeRatingClient) QueryUser(_m *SituationNoticeRating) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(situationnoticerating.Table, situationnoticerating.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, situationnoticerating.UserTable, situationnoticerating.UserColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.User
+		step.Edge.Schema = schemaConfig.SituationNoticeRating
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *SituationNoticeRatingClient) Hooks() []Hook {
+	hooks := c.hooks.SituationNoticeRating
+	return append(hooks[:len(hooks):len(hooks)], situationnoticerating.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *SituationNoticeRatingClient) Interceptors() []Interceptor {
+	return c.inters.SituationNoticeRating
+}
+
+func (c *SituationNoticeRatingClient) mutate(ctx context.Context, m *SituationNoticeRatingMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&SituationNoticeRatingCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&SituationNoticeRatingUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&SituationNoticeRatingUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&SituationNoticeRatingDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown SituationNoticeRating mutation op: %q", m.Op())
 	}
 }
 
@@ -21393,11 +21829,12 @@ type (
 		OncallShiftMetrics, Organization, OrganizationPreferences, OrganizationRole,
 		Playbook, Retrospective, Review, Situation, SituationAction, SituationEntity,
 		SituationHazardAssessment, SituationInvestigation, SituationJudgment,
-		SituationLink, SituationObservationGroup, SituationSignal,
-		SituationSignalAttention, SystemAnalysis, SystemAnalysisEntity,
-		SystemAnalysisEntry, SystemAnalysisEntrySubject, SystemAnalysisRelationship,
-		SystemHazard, SystemHazardRiskAssessment, Task, Team, TeamMembership, Tenant,
-		Ticket, User, UserAuthSession, VideoConference []ent.Hook
+		SituationLink, SituationNotice, SituationNoticeRating,
+		SituationObservationGroup, SituationSignal, SituationSignalAttention,
+		SystemAnalysis, SystemAnalysisEntity, SystemAnalysisEntry,
+		SystemAnalysisEntrySubject, SystemAnalysisRelationship, SystemHazard,
+		SystemHazardRiskAssessment, Task, Team, TeamMembership, Tenant, Ticket, User,
+		UserAuthSession, VideoConference []ent.Hook
 	}
 	inters struct {
 		AgentArtifact, AgentMessage, AgentProviderRead, AgentSession,
@@ -21422,11 +21859,12 @@ type (
 		OncallShiftHandover, OncallShiftMetrics, Organization, OrganizationPreferences,
 		OrganizationRole, Playbook, Retrospective, Review, Situation, SituationAction,
 		SituationEntity, SituationHazardAssessment, SituationInvestigation,
-		SituationJudgment, SituationLink, SituationObservationGroup, SituationSignal,
-		SituationSignalAttention, SystemAnalysis, SystemAnalysisEntity,
-		SystemAnalysisEntry, SystemAnalysisEntrySubject, SystemAnalysisRelationship,
-		SystemHazard, SystemHazardRiskAssessment, Task, Team, TeamMembership, Tenant,
-		Ticket, User, UserAuthSession, VideoConference []ent.Interceptor
+		SituationJudgment, SituationLink, SituationNotice, SituationNoticeRating,
+		SituationObservationGroup, SituationSignal, SituationSignalAttention,
+		SystemAnalysis, SystemAnalysisEntity, SystemAnalysisEntry,
+		SystemAnalysisEntrySubject, SystemAnalysisRelationship, SystemHazard,
+		SystemHazardRiskAssessment, Task, Team, TeamMembership, Tenant, Ticket, User,
+		UserAuthSession, VideoConference []ent.Interceptor
 	}
 )
 
@@ -21523,6 +21961,8 @@ var (
 		SituationInvestigation:                    tableSchemas[0],
 		SituationJudgment:                         tableSchemas[0],
 		SituationLink:                             tableSchemas[0],
+		SituationNotice:                           tableSchemas[0],
+		SituationNoticeRating:                     tableSchemas[0],
 		SituationObservationGroup:                 tableSchemas[0],
 		SituationSignal:                           tableSchemas[0],
 		SituationSignalAttention:                  tableSchemas[0],

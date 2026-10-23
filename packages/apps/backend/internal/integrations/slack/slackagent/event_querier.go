@@ -19,7 +19,7 @@ func (i *Integration) MakeProviderEventQuerier(intg *ent.Integration) (rez.Provi
 	if iiErr != nil {
 		return nil, fmt.Errorf("make installed integration: %w", iiErr)
 	}
-	return &eventQuerier{ii: ii, client: slack.New(ii.config.AccessToken)}, nil
+	return &eventQuerier{ii: ii, client: slack.New(ii.config.AccessToken, ii.clientOptions...)}, nil
 }
 
 type eventQuerier struct {

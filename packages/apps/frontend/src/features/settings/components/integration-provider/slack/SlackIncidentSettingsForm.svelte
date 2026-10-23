@@ -58,6 +58,7 @@
 						id="{idPrefix}-announcement"
 						installationId={installation.id}
 						bind:value={values.AnnouncementChannelID}
+						noneLabel="No announcement channel"
 						aria-invalid={!!errors.AnnouncementChannelID}
 					/>
 					<Field.Description>

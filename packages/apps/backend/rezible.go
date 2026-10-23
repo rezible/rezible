@@ -1241,6 +1241,8 @@ type (
 
 	SituationBriefService interface {
 		GetSituationBrief(ctx context.Context, situationID uuid.UUID) (*SituationBrief, error)
+		// ListBriefServices returns the services the situation's brief lists, in its order, without their changes.
+		ListBriefServices(ctx context.Context, situationID uuid.UUID) ([]*ent.KnowledgeEntity, error)
 		// LatestDeploymentBefore returns the newest deployment of the brief's services from
 		// BriefChangesLeadIn before the situation opened until it opened, of any status, or nil.
 		LatestDeploymentBefore(ctx context.Context, situationID uuid.UUID) (*SituationLatestDeployment, error)
@@ -1551,6 +1553,23 @@ type (
 		NotifySignalChanged(ctx context.Context, signalEntityID uuid.UUID) error
 	}
 )
+
+// SituationNoticeService posts a notice of each raised situation to the chat channel of every installation
+// that sends them, and edits it as the situation changes.
+type SituationNoticeService interface {
+	// RetrySituationNotices marks the situation's failed notices pending and asks for them to be delivered
+	// again.
+	RetrySituationNotices(ctx context.Context, situationID uuid.UUID) error
+}
+
+// EventOnSituationUpdated says that a situation, or what is shown about it, may have changed. It carries
+// only the ID: it is published inside the writing transaction and may be delivered before that commits, so
+// handlers read nothing from it and schedule work that reads the situation later.
+type EventOnSituationUpdated struct {
+	SituationID uuid.UUID
+}
+
+func (EventOnSituationUpdated) MessageName() string { return "situation.updated.v1" }
 
 const SignalKindAlertEpisode SituationSignalKind = "alert_episode"
 

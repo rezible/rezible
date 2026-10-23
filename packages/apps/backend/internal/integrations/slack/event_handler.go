@@ -42,7 +42,9 @@ type slashCommandEvent struct {
 	Command         slack.SlashCommand
 }
 
-func (slashCommandEvent) MessageName() string { return "slack.slash-command-received.v1" }
+func (slashCommandEvent) MessageName() string {
+	return "slack.slash-command-received.v1"
+}
 
 func (h *appEventHandler) OnSlashCommand(ctx context.Context, sc slack.SlashCommand) error {
 	return h.mq.Publish(ctx, &slashCommandEvent{
@@ -56,7 +58,9 @@ type interactionCallbackEvent struct {
 	Data            []byte
 }
 
-func (interactionCallbackEvent) MessageName() string { return "slack.interaction-received.v1" }
+func (interactionCallbackEvent) MessageName() string {
+	return "slack.interaction-received.v1"
+}
 
 func (h *appEventHandler) OnInteractionCallback(ctx context.Context, data []byte) error {
 	return h.mq.Publish(ctx, &interactionCallbackEvent{
@@ -65,12 +69,14 @@ func (h *appEventHandler) OnInteractionCallback(ctx context.Context, data []byte
 	})
 }
 
-type handleEventsApiCallbackEvent struct {
+type eventsApiCallbackEvent struct {
 	IntegrationName string
 	Data            []byte
 }
 
-func (handleEventsApiCallbackEvent) MessageName() string { return "slack.events-api-received.v1" }
+func (eventsApiCallbackEvent) MessageName() string {
+	return "slack.events-api-received.v1"
+}
 
 func (h *appEventHandler) OnEventsApiCallback(ctx context.Context, ev *slackevents.EventsAPICallbackEvent, data []byte) error {
 	if ev.InnerEvent == nil {
@@ -82,8 +88,7 @@ func (h *appEventHandler) OnEventsApiCallback(ctx context.Context, ev *slackeven
 	}
 	innerType := slackevents.EventsAPIType(inner.Type)
 	if h.respondEventTypes.Contains(innerType) {
-		fmt.Printf("handle callback event: %s\n", inner.Type)
-		cbEv := &handleEventsApiCallbackEvent{
+		cbEv := &eventsApiCallbackEvent{
 			IntegrationName: h.integrationName,
 			Data:            data,
 		}
@@ -92,7 +97,8 @@ func (h *appEventHandler) OnEventsApiCallback(ctx context.Context, ev *slackeven
 		}
 	}
 	if h.publishEventTypes.Contains(innerType) {
-		installationCtx, installationErr := h.createInstallationCtx(ctx, InstallationIds{TeamId: ev.TeamID, EnterpriseId: ev.EnterpriseID})
+		installIds := InstallationIds{TeamId: ev.TeamID, EnterpriseId: ev.EnterpriseID}
+		installationCtx, installationErr := h.createInstallationCtx(ctx, installIds)
 		if installationErr != nil {
 			return fmt.Errorf("lookup integration: %w", installationErr)
 		}

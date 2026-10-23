@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"entgo.io/ent"
+	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
@@ -43,7 +44,8 @@ func (IntegrationEventSyncCursor) Edges() []ent.Edge {
 		edge.To("integration", Integration.Type).
 			Unique().
 			Required().
-			Field("integration_id"),
+			Field("integration_id").
+			Annotations(entsql.OnDelete(entsql.Cascade)),
 	}
 }
 
@@ -86,6 +88,7 @@ func (IntegrationEventSyncRun) Edges() []ent.Edge {
 		edge.To("integration", Integration.Type).
 			Unique().
 			Required().
-			Field("integration_id"),
+			Field("integration_id").
+			Annotations(entsql.OnDelete(entsql.Cascade)),
 	}
 }

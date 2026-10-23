@@ -22,7 +22,10 @@ func (a *App) handleMessageActionInteraction(ctx context.Context, ii *ent.Integr
 }
 
 func (a *App) handleBlockActionsInteraction(ctx context.Context, ii *ent.Integration, ic *slack.InteractionCallback) error {
-	cw, cwErr := slackintegration.NewClientWrapper(ii)
+	if !slackintegration.HasUser(ctx) {
+		return nil
+	}
+	cw, cwErr := a.newClientWrapper(ii)
 	if cwErr != nil {
 		return fmt.Errorf("failed to create client wrapper: %w", cwErr)
 	}
@@ -43,6 +46,9 @@ func (a *App) handleBlockActionsInteraction(ctx context.Context, ii *ent.Integra
 }
 
 func (a *App) handleViewSubmissionInteraction(ctx context.Context, ii *ent.Integration, ic *slack.InteractionCallback) error {
+	if !slackintegration.HasUser(ctx) {
+		return nil
+	}
 	switch ic.View.CallbackID {
 	case viewCallbackIdIncidentDetailsModal:
 		return a.handleIncidentDetailsModalSubmission(ctx, ic)

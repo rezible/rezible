@@ -99,6 +99,14 @@ func (s *SituationBriefService) loadSituation(ctx context.Context, situationID u
 	return loaded, nil
 }
 
+func (s *SituationBriefService) ListBriefServices(ctx context.Context, situationID uuid.UUID) ([]*ent.KnowledgeEntity, error) {
+	loaded, loadErr := s.loadSituation(ctx, situationID)
+	if loadErr != nil {
+		return nil, loadErr
+	}
+	return loaded.services, nil
+}
+
 func (s *SituationBriefService) GetSituationBrief(ctx context.Context, situationID uuid.UUID) (*rez.SituationBrief, error) {
 	loaded, loadErr := s.loadSituation(ctx, situationID)
 	if loadErr != nil {

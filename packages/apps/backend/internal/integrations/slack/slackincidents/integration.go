@@ -11,6 +11,7 @@ import (
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/internal/integrations/slack"
 	"github.com/rezible/rezible/pkg/integrations"
+	"github.com/slack-go/slack"
 	"golang.org/x/oauth2"
 )
 
@@ -117,7 +118,7 @@ func (i *Integration) makeInstalledIntegration(intg *ent.Integration) (*Installe
 	if cfgErr != nil {
 		return nil, cfgErr
 	}
-	ii := &InstalledIntegration{intg: intg, config: cfg}
+	ii := &InstalledIntegration{intg: intg, config: cfg, clientOptions: i.appSvc.App().clientOptions()}
 	if decErr := mapstructure.Decode(intg.UserSettings, &ii.settings); decErr != nil {
 		return nil, decErr
 	}
@@ -125,9 +126,10 @@ func (i *Integration) makeInstalledIntegration(intg *ent.Integration) (*Installe
 }
 
 type InstalledIntegration struct {
-	intg     *ent.Integration
-	config   *slackintegration.InstallationConfig
-	settings *UserSettings
+	intg          *ent.Integration
+	config        *slackintegration.InstallationConfig
+	settings      *UserSettings
+	clientOptions []slack.Option
 }
 
 func (ii *InstalledIntegration) Integration() *ent.Integration {
@@ -145,7 +147,7 @@ func (ii *InstalledIntegration) Capabilities() []string {
 var _ integrations.ChatChannelQuerier = (*InstalledIntegration)(nil)
 
 func (ii *InstalledIntegration) ListChatChannels(ctx context.Context, params integrations.ListChatChannelsParams) (*integrations.ChatChannelPage, error) {
-	cw, clientErr := slackintegration.NewClientWrapper(ii.intg)
+	cw, clientErr := slackintegration.NewClientWrapper(ii.intg, ii.clientOptions...)
 	if clientErr != nil {
 		return nil, fmt.Errorf("create slack client: %w", clientErr)
 	}

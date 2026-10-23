@@ -91,6 +91,8 @@ import (
 	"github.com/rezible/rezible/ent/situationinvestigation"
 	"github.com/rezible/rezible/ent/situationjudgment"
 	"github.com/rezible/rezible/ent/situationlink"
+	"github.com/rezible/rezible/ent/situationnotice"
+	"github.com/rezible/rezible/ent/situationnoticerating"
 	"github.com/rezible/rezible/ent/situationobservationgroup"
 	"github.com/rezible/rezible/ent/situationsignal"
 	"github.com/rezible/rezible/ent/situationsignalattention"
@@ -248,6 +250,8 @@ func checkColumn(t, c string) error {
 			situationinvestigation.Table:          situationinvestigation.ValidColumn,
 			situationjudgment.Table:               situationjudgment.ValidColumn,
 			situationlink.Table:                   situationlink.ValidColumn,
+			situationnotice.Table:                 situationnotice.ValidColumn,
+			situationnoticerating.Table:           situationnoticerating.ValidColumn,
 			situationobservationgroup.Table:       situationobservationgroup.ValidColumn,
 			situationsignal.Table:                 situationsignal.ValidColumn,
 			situationsignalattention.Table:        situationsignalattention.ValidColumn,

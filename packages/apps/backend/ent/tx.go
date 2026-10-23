@@ -170,6 +170,10 @@ type Tx struct {
 	SituationJudgment *SituationJudgmentClient
 	// SituationLink is the client for interacting with the SituationLink builders.
 	SituationLink *SituationLinkClient
+	// SituationNotice is the client for interacting with the SituationNotice builders.
+	SituationNotice *SituationNoticeClient
+	// SituationNoticeRating is the client for interacting with the SituationNoticeRating builders.
+	SituationNoticeRating *SituationNoticeRatingClient
 	// SituationObservationGroup is the client for interacting with the SituationObservationGroup builders.
 	SituationObservationGroup *SituationObservationGroupClient
 	// SituationSignal is the client for interacting with the SituationSignal builders.
@@ -416,6 +420,8 @@ func (tx *Tx) init() {
 	tx.SituationInvestigation = NewSituationInvestigationClient(tx.config)
 	tx.SituationJudgment = NewSituationJudgmentClient(tx.config)
 	tx.SituationLink = NewSituationLinkClient(tx.config)
+	tx.SituationNotice = NewSituationNoticeClient(tx.config)
+	tx.SituationNoticeRating = NewSituationNoticeRatingClient(tx.config)
 	tx.SituationObservationGroup = NewSituationObservationGroupClient(tx.config)
 	tx.SituationSignal = NewSituationSignalClient(tx.config)
 	tx.SituationSignalAttention = NewSituationSignalAttentionClient(tx.config)

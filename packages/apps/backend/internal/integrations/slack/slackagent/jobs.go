@@ -10,7 +10,6 @@ import (
 	rez "github.com/rezible/rezible"
 	asb "github.com/rezible/rezible/ent/agentsessionbinding"
 	in "github.com/rezible/rezible/ent/integration"
-	slackintegration "github.com/rezible/rezible/internal/integrations/slack"
 	rezai "github.com/rezible/rezible/pkg/ai"
 	"github.com/rezible/rezible/pkg/jobs"
 	"github.com/riverqueue/river"
@@ -96,7 +95,7 @@ func (a *App) handleBoundAgentThreadMessagedJob(ctx context.Context, args Handle
 		return fmt.Errorf("no integration for binding: %w", intgErr)
 	}
 
-	cw, cwErr := slackintegration.NewClientWrapper(intg)
+	cw, cwErr := a.newClientWrapper(intg)
 	if cwErr != nil {
 		return fmt.Errorf("failed to create client wrapper: %w", cwErr)
 	}

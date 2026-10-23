@@ -48,7 +48,7 @@ func (a *App) lookupSlackThreadBinding(ctx context.Context, integrationID uuid.U
 	)
 }
 
-func (a *App) onAgentMentionedByUser(ctx context.Context, usr *ent.User, intg *ent.Integration, data *slackevents.AppMentionEvent) error {
+func (a *App) onAgentMentionedByUser(ctx context.Context, userID uuid.UUID, intg *ent.Integration, data *slackevents.AppMentionEvent) error {
 	res := &agentThreadBindingResource{ChannelId: data.Channel, ThreadTs: data.TimeStamp}
 	if data.ThreadTimeStamp != "" {
 		res.ThreadTs = data.ThreadTimeStamp
@@ -62,7 +62,7 @@ func (a *App) onAgentMentionedByUser(ctx context.Context, usr *ent.User, intg *e
 	cleanedText := strings.TrimSpace(mentionRe.ReplaceAllString(data.Text, ""))
 
 	if binding == nil {
-		return a.startBoundAgentThread(ctx, intg, usr.ID, res, cleanedText)
+		return a.startBoundAgentThread(ctx, intg, userID, res, cleanedText)
 	}
 
 	slog.Debug("continuing existing agent session in thread")

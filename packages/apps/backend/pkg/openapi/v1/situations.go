@@ -24,6 +24,7 @@ type SituationsHandler interface {
 	ListSituationJudgments(context.Context, *ListSituationJudgmentsRequest) (*ListSituationJudgmentsResponse, error)
 	CloseSituation(context.Context, *CloseSituationRequest) (*CloseSituationResponse, error)
 	MergeSituation(context.Context, *MergeSituationRequest) (*MergeSituationResponse, error)
+	RetrySituationNotice(context.Context, *RetrySituationNoticeRequest) (*RetrySituationNoticeResponse, error)
 
 	SetSituationMute(context.Context, *SetSituationMuteRequest) (*SetSituationMuteResponse, error)
 	ClearSituationMute(context.Context, *ClearSituationMuteRequest) (*ClearSituationMuteResponse, error)
@@ -43,6 +44,7 @@ func (o operations) RegisterSituations(api huma.API) {
 	huma.Register(api, ListSituationJudgments, o.ListSituationJudgments)
 	huma.Register(api, CloseSituation, o.CloseSituation)
 	huma.Register(api, MergeSituation, o.MergeSituation)
+	huma.Register(api, RetrySituationNotice, o.RetrySituationNotice)
 
 	huma.Register(api, SetSituationMute, o.SetSituationMute)
 	huma.Register(api, ClearSituationMute, o.ClearSituationMute)
@@ -82,6 +84,23 @@ type (
 		Links             []SituationLink             `json:"links"`
 		Entities          []SituationEntity           `json:"entities"`
 		LatestJudgment    *SituationJudgment          `json:"latestJudgment,omitempty"`
+		Notices           []SituationNotice           `json:"notices"`
+		NoticeRatings     SituationNoticeRatings      `json:"noticeRatings"`
+	}
+
+	// SituationNotice is the chat message announcing the situation in one installation's channel.
+	SituationNotice struct {
+		ChannelId     string     `json:"channelId"`
+		ChannelName   string     `json:"channelName,omitempty" doc:"The channel's name, once it is known"`
+		Status        string     `json:"status" enum:"pending,posted,failed,skipped"`
+		Permalink     string     `json:"permalink,omitempty"`
+		Error         string     `json:"error,omitempty" doc:"Why delivery failed, or why the notice was skipped"`
+		LastAttemptAt *time.Time `json:"lastAttemptAt,omitempty"`
+	}
+
+	SituationNoticeRatings struct {
+		Useful    int `json:"useful"`
+		NotUseful int `json:"notUseful"`
 	}
 
 	SituationRaisedBy struct {
@@ -280,7 +299,26 @@ func SituationFromEnt(s *ent.Situation) Situation {
 	if s.Edges.LatestJudgment != nil {
 		attrs.LatestJudgment = new(SituationJudgmentFromEnt(s.Edges.LatestJudgment))
 	}
+	attrs.Notices = ConvertSlice(s.Edges.Notices, SituationNoticeFromEnt)
+	for _, rating := range s.Edges.NoticeRatings {
+		if rating.Useful {
+			attrs.NoticeRatings.Useful++
+		} else {
+			attrs.NoticeRatings.NotUseful++
+		}
+	}
 	return Situation{Id: s.ID, Attributes: attrs}
+}
+
+func SituationNoticeFromEnt(n *ent.SituationNotice) SituationNotice {
+	return SituationNotice{
+		ChannelId:     n.ChannelID,
+		ChannelName:   n.ChannelName,
+		Status:        n.Status.String(),
+		Permalink:     n.Permalink,
+		Error:         n.Error,
+		LastAttemptAt: n.LastAttemptAt,
+	}
 }
 
 func SituationJudgmentFromEnt(j *ent.SituationJudgment) SituationJudgment {
@@ -661,6 +699,20 @@ type MergeSituationAttributes struct {
 }
 type MergeSituationRequest IdRequestWithBody[MergeSituationAttributes]
 type MergeSituationResponse ItemResponse[Situation]
+
+// RetrySituationNotice delivers the situation's failed notices again. Any member may: it only repeats what
+// the situation's state already asks for.
+var RetrySituationNotice = openapi.Operation{
+	OperationID: "retry-situation-notice",
+	Method:      http.MethodPost,
+	Path:        "/situations/{id}/notices/retry",
+	Summary:     "Retry Situation Notice",
+	Tags:        situationsTags,
+	Errors:      ErrorCodes(),
+}
+
+type RetrySituationNoticeRequest IdRequest
+type RetrySituationNoticeResponse ItemResponse[Situation]
 
 var ListSituationJudgments = openapi.Operation{
 	OperationID: "list-situation-judgments",

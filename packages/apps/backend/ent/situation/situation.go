@@ -63,6 +63,10 @@ const (
 	EdgeLinks = "links"
 	// EdgeActions holds the string denoting the actions edge name in mutations.
 	EdgeActions = "actions"
+	// EdgeNotices holds the string denoting the notices edge name in mutations.
+	EdgeNotices = "notices"
+	// EdgeNoticeRatings holds the string denoting the notice_ratings edge name in mutations.
+	EdgeNoticeRatings = "notice_ratings"
 	// EdgeLatestJudgment holds the string denoting the latest_judgment edge name in mutations.
 	EdgeLatestJudgment = "latest_judgment"
 	// EdgeSeedEntity holds the string denoting the seed_entity edge name in mutations.
@@ -130,6 +134,20 @@ const (
 	ActionsInverseTable = "situation_actions"
 	// ActionsColumn is the table column denoting the actions relation/edge.
 	ActionsColumn = "situation_id"
+	// NoticesTable is the table that holds the notices relation/edge.
+	NoticesTable = "situation_notices"
+	// NoticesInverseTable is the table name for the SituationNotice entity.
+	// It exists in this package in order to avoid circular dependency with the "situationnotice" package.
+	NoticesInverseTable = "situation_notices"
+	// NoticesColumn is the table column denoting the notices relation/edge.
+	NoticesColumn = "situation_id"
+	// NoticeRatingsTable is the table that holds the notice_ratings relation/edge.
+	NoticeRatingsTable = "situation_notice_ratings"
+	// NoticeRatingsInverseTable is the table name for the SituationNoticeRating entity.
+	// It exists in this package in order to avoid circular dependency with the "situationnoticerating" package.
+	NoticeRatingsInverseTable = "situation_notice_ratings"
+	// NoticeRatingsColumn is the table column denoting the notice_ratings relation/edge.
+	NoticeRatingsColumn = "situation_id"
 	// LatestJudgmentTable is the table that holds the latest_judgment relation/edge.
 	LatestJudgmentTable = "situations"
 	// LatestJudgmentInverseTable is the table name for the SituationJudgment entity.
@@ -439,6 +457,34 @@ func ByActions(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
+// ByNoticesCount orders the results by notices count.
+func ByNoticesCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newNoticesStep(), opts...)
+	}
+}
+
+// ByNotices orders the results by notices terms.
+func ByNotices(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newNoticesStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByNoticeRatingsCount orders the results by notice_ratings count.
+func ByNoticeRatingsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newNoticeRatingsStep(), opts...)
+	}
+}
+
+// ByNoticeRatings orders the results by notice_ratings terms.
+func ByNoticeRatings(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newNoticeRatingsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
 // ByLatestJudgmentField orders the results by latest_judgment field.
 func ByLatestJudgmentField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -513,6 +559,20 @@ func newActionsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(ActionsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, true, ActionsTable, ActionsColumn),
+	)
+}
+func newNoticesStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(NoticesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, NoticesTable, NoticesColumn),
+	)
+}
+func newNoticeRatingsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(NoticeRatingsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, NoticeRatingsTable, NoticeRatingsColumn),
 	)
 }
 func newLatestJudgmentStep() *sqlgraph.Step {

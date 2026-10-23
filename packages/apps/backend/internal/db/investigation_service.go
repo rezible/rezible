@@ -31,11 +31,12 @@ type InvestigationService struct {
 	db       rez.Database
 	agents   rez.AiAgentSessionService
 	jobs     rez.JobService
+	msgs     rez.MessageQueue
 	analyses rez.SystemAnalysisService
 }
 
-func NewInvestigationService(database rez.Database, agents rez.AiAgentSessionService, jobService rez.JobService, analyses rez.SystemAnalysisService) *InvestigationService {
-	return &InvestigationService{db: database, agents: agents, jobs: jobService, analyses: analyses}
+func NewInvestigationService(database rez.Database, agents rez.AiAgentSessionService, jobService rez.JobService, msgs rez.MessageQueue, analyses rez.SystemAnalysisService) *InvestigationService {
+	return &InvestigationService{db: database, agents: agents, jobs: jobService, msgs: msgs, analyses: analyses}
 }
 
 func (s *InvestigationService) MessageHandlers() []rez.MessageEventHandler {
@@ -49,7 +50,8 @@ func (s *InvestigationService) onAgentTurnUpdated(ctx context.Context, event *re
 		return nil
 	}
 	queryInvestigation := s.db.Client(ctx).Investigation.Query().
-		Where(inv.AgentSessionID(event.AgentSessionId))
+		Where(inv.AgentSessionID(event.AgentSessionId)).
+		WithSituations()
 	current, queryErr := queryInvestigation.Only(ctx)
 	if queryErr != nil {
 		if ent.IsNotFound(queryErr) {
@@ -59,6 +61,15 @@ func (s *InvestigationService) onAgentTurnUpdated(ctx context.Context, event *re
 	}
 	if requestErr := s.requestReconcile(ctx, current.ID); requestErr != nil {
 		return fmt.Errorf("queue investigation after terminal turn: %w", requestErr)
+	}
+	if event.Status != at.StatusCompleted {
+		return nil
+	}
+	// A completed turn may have written a new summary of the situation.
+	for _, link := range current.Edges.Situations {
+		if publishErr := s.msgs.Publish(ctx, rez.EventOnSituationUpdated{SituationID: link.SituationID}); publishErr != nil {
+			return fmt.Errorf("publish situation updated: %w", publishErr)
+		}
 	}
 	return nil
 }

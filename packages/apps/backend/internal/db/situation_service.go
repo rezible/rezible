@@ -21,6 +21,8 @@ import (
 	sha "github.com/rezible/rezible/ent/situationhazardassessment"
 	siti "github.com/rezible/rezible/ent/situationinvestigation"
 	sitjudg "github.com/rezible/rezible/ent/situationjudgment"
+	sitnot "github.com/rezible/rezible/ent/situationnotice"
+	sitnr "github.com/rezible/rezible/ent/situationnoticerating"
 	sitog "github.com/rezible/rezible/ent/situationobservationgroup"
 	sitsig "github.com/rezible/rezible/ent/situationsignal"
 	rezai "github.com/rezible/rezible/pkg/ai"
@@ -54,6 +56,7 @@ type SituationService struct {
 	db             rez.Database
 	clock          rez.Clock
 	jobs           rez.JobService
+	msgs           rez.MessageQueue
 	investigations rez.InvestigationService
 	analyses       rez.SystemAnalysisService
 	graph          rez.KnowledgeGraphQueryService
@@ -61,11 +64,12 @@ type SituationService struct {
 	signalSources  map[rez.SituationSignalKind]rez.SituationSignalSource
 }
 
-func NewSituationService(db rez.Database, clock rez.Clock, js rez.JobService, investigations rez.InvestigationService, analyses rez.SystemAnalysisService, graph rez.KnowledgeGraphQueryService, judge rezai.JudgeSituationCandidateWorkflow, signalSources ...rez.SituationSignalSource) (*SituationService, error) {
+func NewSituationService(db rez.Database, clock rez.Clock, js rez.JobService, msgs rez.MessageQueue, investigations rez.InvestigationService, analyses rez.SystemAnalysisService, graph rez.KnowledgeGraphQueryService, judge rezai.JudgeSituationCandidateWorkflow, signalSources ...rez.SituationSignalSource) (*SituationService, error) {
 	s := &SituationService{
 		db:             db,
 		clock:          clock,
 		jobs:           js,
+		msgs:           msgs,
 		investigations: investigations,
 		analyses:       analyses,
 		graph:          graph,
@@ -153,6 +157,12 @@ func (s *SituationService) GetSituation(ctx context.Context, id uuid.UUID) (*ent
 		WithIncidents().
 		WithActions(func(q *ent.SituationActionQuery) {
 			q.Order(sitact.ByID())
+		}).
+		WithNotices(func(q *ent.SituationNoticeQuery) {
+			q.Order(sitnot.ByCreatedAt(), sitnot.ByID())
+		}).
+		WithNoticeRatings(func(q *ent.SituationNoticeRatingQuery) {
+			q.Select(sitnr.FieldSituationID, sitnr.FieldUseful)
 		})
 	return query.Only(ctx)
 }
@@ -339,7 +349,8 @@ func (s *SituationService) lockSituations(ctx context.Context, ids ...uuid.UUID)
 	return byID, nil
 }
 
-// recordAction appends a lifecycle decision, attributed to the acting user when there is one.
+// recordAction appends a lifecycle decision, attributed to the acting user when there is one, and says that
+// the situation changed. Every lifecycle decision passes through here.
 func (s *SituationService) recordAction(ctx context.Context, situationID uuid.UUID, action sitact.Action, reason string, now time.Time) error {
 	createAction := s.db.Client(ctx).SituationAction.Create().
 		SetSituationID(situationID).
@@ -351,6 +362,9 @@ func (s *SituationService) recordAction(ctx context.Context, situationID uuid.UU
 	}
 	if createErr := createAction.Exec(ctx); createErr != nil {
 		return fmt.Errorf("record situation %s action: %w", action, createErr)
+	}
+	if publishErr := s.msgs.Publish(ctx, rez.EventOnSituationUpdated{SituationID: situationID}); publishErr != nil {
+		return fmt.Errorf("publish situation updated: %w", publishErr)
 	}
 	return nil
 }

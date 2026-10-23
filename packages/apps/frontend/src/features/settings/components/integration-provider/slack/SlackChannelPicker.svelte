@@ -14,10 +14,12 @@
 	type Props = {
 		installationId: string;
 		value: string;
+		/** What choosing no channel means, such as "No announcement channel". */
+		noneLabel: string;
 		id?: string;
 		"aria-invalid"?: boolean;
 	};
-	let { installationId, value = $bindable(), id, ...aria }: Props = $props();
+	let { installationId, value = $bindable(), noneLabel, id, ...aria }: Props = $props();
 
 	const CLEAR_VALUE = "__clear__";
 
@@ -45,7 +47,7 @@
 				role="combobox"
 				aria-expanded={picker.open}
 			>
-				<span class="truncate">{picker.labelFor(value)}</span>
+				<span class="truncate">{picker.labelFor(value, noneLabel)}</span>
 			</Button>
 		{/snippet}
 	</Popover.Trigger>
@@ -62,7 +64,7 @@
 						onSelect={() => select("")}
 					>
 						<RiCloseLine />
-						No announcement channel
+						{noneLabel}
 					</Command.Item>
 					{#each picker.channels as channel (channel.id)}
 						<Command.Item

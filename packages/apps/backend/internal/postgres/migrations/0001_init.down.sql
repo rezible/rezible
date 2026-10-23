@@ -60,6 +60,10 @@ ALTER TABLE "situation_signal_attentions" DROP CONSTRAINT "situation_signal_atte
 ALTER TABLE "situation_signals" DROP CONSTRAINT "situation_signals_knowledge_relationships_via_relationship", DROP CONSTRAINT "situation_signals_knowledge_entities_source_entity", DROP CONSTRAINT "situation_signals_knowledge_entities_knowledge_entity", DROP CONSTRAINT "situation_signals_situation_ob_7c144cc0858f0af8a955c45ef673e259", DROP CONSTRAINT "situation_signals_situations_situation", DROP CONSTRAINT "situation_signals_tenants_tenant";
 -- reverse: modify "situation_observation_groups" table
 ALTER TABLE "situation_observation_groups" DROP CONSTRAINT "situation_observation_groups_situations_situation", DROP CONSTRAINT "situation_observation_groups_tenants_tenant";
+-- reverse: modify "situation_notice_ratings" table
+ALTER TABLE "situation_notice_ratings" DROP CONSTRAINT "situation_notice_ratings_users_user", DROP CONSTRAINT "situation_notice_ratings_tenants_tenant", DROP CONSTRAINT "situation_notice_ratings_situations_notice_ratings";
+-- reverse: modify "situation_notices" table
+ALTER TABLE "situation_notices" DROP CONSTRAINT "situation_notices_integrations_integration", DROP CONSTRAINT "situation_notices_tenants_tenant", DROP CONSTRAINT "situation_notices_situations_notices";
 -- reverse: modify "situation_links" table
 ALTER TABLE "situation_links" DROP CONSTRAINT "situation_links_situations_linked_situation", DROP CONSTRAINT "situation_links_situations_situation", DROP CONSTRAINT "situation_links_tenants_tenant";
 -- reverse: modify "situation_judgments" table
@@ -380,6 +384,20 @@ DROP TABLE "situation_signals";
 DROP INDEX "situationobservationgroup_tenant_id";
 -- reverse: create "situation_observation_groups" table
 DROP TABLE "situation_observation_groups";
+-- reverse: create index "situationnoticerating_situation_id_chat_user_id" to table: "situation_notice_ratings"
+DROP INDEX "situationnoticerating_situation_id_chat_user_id";
+-- reverse: create index "situationnoticerating_tenant_id" to table: "situation_notice_ratings"
+DROP INDEX "situationnoticerating_tenant_id";
+-- reverse: create "situation_notice_ratings" table
+DROP TABLE "situation_notice_ratings";
+-- reverse: create index "situationnotice_integration_id_channel_id_first_posted_at" to table: "situation_notices"
+DROP INDEX "situationnotice_integration_id_channel_id_first_posted_at";
+-- reverse: create index "situationnotice_situation_id_integration_id" to table: "situation_notices"
+DROP INDEX "situationnotice_situation_id_integration_id";
+-- reverse: create index "situationnotice_tenant_id" to table: "situation_notices"
+DROP INDEX "situationnotice_tenant_id";
+-- reverse: create "situation_notices" table
+DROP TABLE "situation_notices";
 -- reverse: create index "situationlink_tenant_id_situation_id_linked_situation_id_kind" to table: "situation_links"
 DROP INDEX "situationlink_tenant_id_situation_id_linked_situation_id_kind";
 -- reverse: create index "situationlink_tenant_id" to table: "situation_links"

@@ -45,8 +45,6 @@ func TestBackendSuite(t *testing.T) {
 
 type appTestOptions struct {
 	ModelAction ai.ModelActionFunc[any]
-	// AgentEvaluation prepares the application for agent evaluation scenarios.
-	AgentEvaluation bool
 }
 
 type appHarness struct {
@@ -137,11 +135,7 @@ func (s *BackendSuite) newAppHarness(options appTestOptions) *appHarness {
 			return nil, nil
 		}),
 	)
-	profiles := []Package{testProfile}
-	if options.AgentEvaluation {
-		profiles = append(profiles, agentEvaluationProfile(demoDefinitions))
-	}
-	app = NewApplication(profiles...)
+	app = NewApplication(testProfile)
 	_, initErr := app.Init(ctx, false)
 	s.Require().NoError(initErr, "initialize application")
 

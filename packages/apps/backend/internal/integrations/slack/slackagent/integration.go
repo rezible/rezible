@@ -2,12 +2,20 @@ package slackagent
 
 import (
 	"context"
+	"fmt"
 	"net/http"
+	"regexp"
+
+	"github.com/go-viper/mapstructure/v2"
+	"github.com/slack-go/slack"
+	"golang.org/x/oauth2"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/internal/integrations/slack"
-	"golang.org/x/oauth2"
+	"github.com/rezible/rezible/pkg/errs"
+	"github.com/rezible/rezible/pkg/integrations"
+	"github.com/rezible/rezible/pkg/jobs"
 )
 
 const integrationName = "slack_agent"
@@ -47,6 +55,12 @@ func (i *Integration) MessageHandlers() []rez.MessageEventHandler {
 	return i.appSvc.MakeMessageHandlers()
 }
 
+var _ jobs.WorkerProvider = (*Integration)(nil)
+
+func (i *Integration) JobWorkers() []jobs.WorkerDefinition {
+	return i.appSvc.App().JobWorkers()
+}
+
 func (i *Integration) Capabilities() []string {
 	return []string{"chat_context"}
 }
@@ -84,7 +98,30 @@ func (i *Integration) ValidateInstallationConfig(cfg []byte) (rez.IntegrationIns
 }
 
 func (i *Integration) ValidateUserSettings(m map[string]any) error {
+	settings, decodeErr := decodeUserSettings(m)
+	if decodeErr != nil {
+		return fmt.Errorf("%w: %w", errs.ErrInvalidInput, decodeErr)
+	}
+	if channelID := settings.SituationNoticeChannelID; channelID != "" && !channelIDPattern.MatchString(channelID) {
+		return fmt.Errorf("%w: situation notice channel %q is not a Slack channel ID", errs.ErrInvalidInput, channelID)
+	}
 	return nil
+}
+
+var channelIDPattern = regexp.MustCompile(`^[CG][A-Z0-9]{2,}$`)
+
+// UserSettings are an installation's settings, chosen by an admin.
+type UserSettings struct {
+	// SituationNoticeChannelID is where raised situations are announced; empty announces nothing.
+	SituationNoticeChannelID string `mapstructure:"situation_notice_channel_id"`
+}
+
+func decodeUserSettings(m map[string]any) (*UserSettings, error) {
+	var settings UserSettings
+	if decodeErr := mapstructure.Decode(m, &settings); decodeErr != nil {
+		return nil, fmt.Errorf("decode settings: %w", decodeErr)
+	}
+	return &settings, nil
 }
 
 func (i *Integration) GetInstalledIntegration(intg *ent.Integration) (rez.InstalledIntegration, error) {
@@ -96,12 +133,13 @@ func (i *Integration) makeInstalledIntegration(intg *ent.Integration) (*Installe
 	if cfgErr != nil {
 		return nil, cfgErr
 	}
-	return &InstalledIntegration{intg: intg, config: cfg}, nil
+	return &InstalledIntegration{intg: intg, config: cfg, clientOptions: i.appSvc.App().clientOptions()}, nil
 }
 
 type InstalledIntegration struct {
-	intg   *ent.Integration
-	config *slackintegration.InstallationConfig
+	intg          *ent.Integration
+	config        *slackintegration.InstallationConfig
+	clientOptions []slack.Option
 }
 
 func (ii *InstalledIntegration) Integration() *ent.Integration {
@@ -118,4 +156,14 @@ func (ii *InstalledIntegration) Config() rez.IntegrationInstallationConfig {
 
 func (ii *InstalledIntegration) Capabilities() []string {
 	return []string{"chat_context"}
+}
+
+var _ integrations.ChatChannelQuerier = (*InstalledIntegration)(nil)
+
+func (ii *InstalledIntegration) ListChatChannels(ctx context.Context, params integrations.ListChatChannelsParams) (*integrations.ChatChannelPage, error) {
+	cw, clientErr := ii.clientWrapper()
+	if clientErr != nil {
+		return nil, clientErr
+	}
+	return slackintegration.ListChatChannels(ctx, cw.Client(), params)
 }

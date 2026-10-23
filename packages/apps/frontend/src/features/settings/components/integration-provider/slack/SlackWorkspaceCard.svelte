@@ -15,19 +15,28 @@
 	import { useIntegrationDataSyncController } from "../../integration-datasync-dialog/controller.svelte";
 	import IntegrationOAuthInstall from "../../integration-oauth-install/IntegrationOAuthInstall.svelte";
 	import { useIntegrationProviderController } from "../controller.svelte";
+	import type { SlackAgentSettings } from "./slackAgentSettings";
+	import SlackAgentSettingsForm from "./SlackAgentSettingsForm.svelte";
 	import type { SlackIncidentSettings } from "./slackIncidentSettings";
 	import SlackIncidentSettingsForm from "./SlackIncidentSettingsForm.svelte";
 	import { slackAgentName, slackIncidentsName, type SlackWorkspace } from "./slackWorkspaces";
 
 	type Props = {
 		workspace: SlackWorkspace;
+		agentForms: IntegrationSettingsForms<SlackAgentSettings>;
 		incidentForms: IntegrationSettingsForms<SlackIncidentSettings>;
 		canAddAgent: boolean;
 		canAddIncidents: boolean;
 		incidentManagementEnabled: boolean;
 	};
-	const { workspace, incidentForms, canAddAgent, canAddIncidents, incidentManagementEnabled }: Props =
-		$props();
+	const {
+		workspace,
+		agentForms,
+		incidentForms,
+		canAddAgent,
+		canAddIncidents,
+		incidentManagementEnabled,
+	}: Props = $props();
 
 	const ctrl = useIntegrationProviderController();
 	const sync = useIntegrationDataSyncController();
@@ -85,6 +94,10 @@
 	</div>
 {/snippet}
 
+{#snippet agentSettings(installation: IntegrationInstallation)}
+	<SlackAgentSettingsForm {installation} forms={agentForms} />
+{/snippet}
+
 {#snippet incidentSettings(installation: IntegrationInstallation)}
 	{#if incidentManagementEnabled}
 		<SlackIncidentSettingsForm {installation} forms={incidentForms} />
@@ -119,7 +132,8 @@
 			"Rezible Agent",
 			"Ask the Rezible agent questions and get investigation help in Slack.",
 			workspace.agent,
-			canAddAgent
+			canAddAgent,
+			agentSettings
 		)}
 
 		{#if showIncidents}

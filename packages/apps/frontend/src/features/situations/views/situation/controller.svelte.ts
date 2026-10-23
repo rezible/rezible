@@ -575,7 +575,7 @@ export class SituationController {
 	}
 
 	/** Stores the returned situation under its own ID, then refreshes every list and the Watching count. */
-	private async applySituation(situation: Situation) {
+	async applySituation(situation: Situation) {
 		const queryKey = getSituationQueryKey({ path: { id: situation.id } });
 		this.queryClient.setQueryData(queryKey, { data: situation });
 		await this.queryClient.invalidateQueries({ queryKey: listSituationsQueryKey() });

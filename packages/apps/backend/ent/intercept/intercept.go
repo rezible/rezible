@@ -88,6 +88,8 @@ import (
 	"github.com/rezible/rezible/ent/situationinvestigation"
 	"github.com/rezible/rezible/ent/situationjudgment"
 	"github.com/rezible/rezible/ent/situationlink"
+	"github.com/rezible/rezible/ent/situationnotice"
+	"github.com/rezible/rezible/ent/situationnoticerating"
 	"github.com/rezible/rezible/ent/situationobservationgroup"
 	"github.com/rezible/rezible/ent/situationsignal"
 	"github.com/rezible/rezible/ent/situationsignalattention"
@@ -2297,6 +2299,60 @@ func (f TraverseSituationLink) Traverse(ctx context.Context, q ent.Query) error 
 	return fmt.Errorf("unexpected query type %T. expect *ent.SituationLinkQuery", q)
 }
 
+// The SituationNoticeFunc type is an adapter to allow the use of ordinary function as a Querier.
+type SituationNoticeFunc func(context.Context, *ent.SituationNoticeQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f SituationNoticeFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.SituationNoticeQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.SituationNoticeQuery", q)
+}
+
+// The TraverseSituationNotice type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseSituationNotice func(context.Context, *ent.SituationNoticeQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseSituationNotice) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseSituationNotice) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.SituationNoticeQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.SituationNoticeQuery", q)
+}
+
+// The SituationNoticeRatingFunc type is an adapter to allow the use of ordinary function as a Querier.
+type SituationNoticeRatingFunc func(context.Context, *ent.SituationNoticeRatingQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f SituationNoticeRatingFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.SituationNoticeRatingQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.SituationNoticeRatingQuery", q)
+}
+
+// The TraverseSituationNoticeRating type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseSituationNoticeRating func(context.Context, *ent.SituationNoticeRatingQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseSituationNoticeRating) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseSituationNoticeRating) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.SituationNoticeRatingQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.SituationNoticeRatingQuery", q)
+}
+
 // The SituationObservationGroupFunc type is an adapter to allow the use of ordinary function as a Querier.
 type SituationObservationGroupFunc func(context.Context, *ent.SituationObservationGroupQuery) (ent.Value, error)
 
@@ -2944,6 +3000,10 @@ func NewQuery(q ent.Query) (Query, error) {
 		return &query[*ent.SituationJudgmentQuery, predicate.SituationJudgment, situationjudgment.OrderOption]{typ: ent.TypeSituationJudgment, tq: q}, nil
 	case *ent.SituationLinkQuery:
 		return &query[*ent.SituationLinkQuery, predicate.SituationLink, situationlink.OrderOption]{typ: ent.TypeSituationLink, tq: q}, nil
+	case *ent.SituationNoticeQuery:
+		return &query[*ent.SituationNoticeQuery, predicate.SituationNotice, situationnotice.OrderOption]{typ: ent.TypeSituationNotice, tq: q}, nil
+	case *ent.SituationNoticeRatingQuery:
+		return &query[*ent.SituationNoticeRatingQuery, predicate.SituationNoticeRating, situationnoticerating.OrderOption]{typ: ent.TypeSituationNoticeRating, tq: q}, nil
 	case *ent.SituationObservationGroupQuery:
 		return &query[*ent.SituationObservationGroupQuery, predicate.SituationObservationGroup, situationobservationgroup.OrderOption]{typ: ent.TypeSituationObservationGroup, tq: q}, nil
 	case *ent.SituationSignalQuery:

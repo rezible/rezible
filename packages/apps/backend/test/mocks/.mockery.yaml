@@ -28,3 +28,4 @@ packages:
       ChangesService: {}
       AgentProviderReadService: {}
       KnowledgeProposalService: {}
+      SituationBriefService: {}

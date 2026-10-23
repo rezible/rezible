@@ -23,6 +23,8 @@ import (
 	"github.com/rezible/rezible/ent/situationinvestigation"
 	"github.com/rezible/rezible/ent/situationjudgment"
 	"github.com/rezible/rezible/ent/situationlink"
+	"github.com/rezible/rezible/ent/situationnotice"
+	"github.com/rezible/rezible/ent/situationnoticerating"
 	"github.com/rezible/rezible/ent/situationobservationgroup"
 	"github.com/rezible/rezible/ent/situationsignal"
 )
@@ -386,6 +388,36 @@ func (_u *SituationUpdate) AddActions(v ...*SituationAction) *SituationUpdate {
 	return _u.AddActionIDs(ids...)
 }
 
+// AddNoticeIDs adds the "notices" edge to the SituationNotice entity by IDs.
+func (_u *SituationUpdate) AddNoticeIDs(ids ...uuid.UUID) *SituationUpdate {
+	_u.mutation.AddNoticeIDs(ids...)
+	return _u
+}
+
+// AddNotices adds the "notices" edges to the SituationNotice entity.
+func (_u *SituationUpdate) AddNotices(v ...*SituationNotice) *SituationUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddNoticeIDs(ids...)
+}
+
+// AddNoticeRatingIDs adds the "notice_ratings" edge to the SituationNoticeRating entity by IDs.
+func (_u *SituationUpdate) AddNoticeRatingIDs(ids ...uuid.UUID) *SituationUpdate {
+	_u.mutation.AddNoticeRatingIDs(ids...)
+	return _u
+}
+
+// AddNoticeRatings adds the "notice_ratings" edges to the SituationNoticeRating entity.
+func (_u *SituationUpdate) AddNoticeRatings(v ...*SituationNoticeRating) *SituationUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddNoticeRatingIDs(ids...)
+}
+
 // SetLatestJudgment sets the "latest_judgment" edge to the SituationJudgment entity.
 func (_u *SituationUpdate) SetLatestJudgment(v *SituationJudgment) *SituationUpdate {
 	return _u.SetLatestJudgmentID(v.ID)
@@ -552,6 +584,48 @@ func (_u *SituationUpdate) RemoveActions(v ...*SituationAction) *SituationUpdate
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveActionIDs(ids...)
+}
+
+// ClearNotices clears all "notices" edges to the SituationNotice entity.
+func (_u *SituationUpdate) ClearNotices() *SituationUpdate {
+	_u.mutation.ClearNotices()
+	return _u
+}
+
+// RemoveNoticeIDs removes the "notices" edge to SituationNotice entities by IDs.
+func (_u *SituationUpdate) RemoveNoticeIDs(ids ...uuid.UUID) *SituationUpdate {
+	_u.mutation.RemoveNoticeIDs(ids...)
+	return _u
+}
+
+// RemoveNotices removes "notices" edges to SituationNotice entities.
+func (_u *SituationUpdate) RemoveNotices(v ...*SituationNotice) *SituationUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveNoticeIDs(ids...)
+}
+
+// ClearNoticeRatings clears all "notice_ratings" edges to the SituationNoticeRating entity.
+func (_u *SituationUpdate) ClearNoticeRatings() *SituationUpdate {
+	_u.mutation.ClearNoticeRatings()
+	return _u
+}
+
+// RemoveNoticeRatingIDs removes the "notice_ratings" edge to SituationNoticeRating entities by IDs.
+func (_u *SituationUpdate) RemoveNoticeRatingIDs(ids ...uuid.UUID) *SituationUpdate {
+	_u.mutation.RemoveNoticeRatingIDs(ids...)
+	return _u
+}
+
+// RemoveNoticeRatings removes "notice_ratings" edges to SituationNoticeRating entities.
+func (_u *SituationUpdate) RemoveNoticeRatings(v ...*SituationNoticeRating) *SituationUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveNoticeRatingIDs(ids...)
 }
 
 // ClearLatestJudgment clears the "latest_judgment" edge to the SituationJudgment entity.
@@ -1067,6 +1141,102 @@ func (_u *SituationUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.NoticesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   situation.NoticesTable,
+			Columns: []string{situation.NoticesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(situationnotice.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SituationNotice
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedNoticesIDs(); len(nodes) > 0 && !_u.mutation.NoticesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   situation.NoticesTable,
+			Columns: []string{situation.NoticesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(situationnotice.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SituationNotice
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.NoticesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   situation.NoticesTable,
+			Columns: []string{situation.NoticesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(situationnotice.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SituationNotice
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.NoticeRatingsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   situation.NoticeRatingsTable,
+			Columns: []string{situation.NoticeRatingsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(situationnoticerating.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SituationNoticeRating
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedNoticeRatingsIDs(); len(nodes) > 0 && !_u.mutation.NoticeRatingsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   situation.NoticeRatingsTable,
+			Columns: []string{situation.NoticeRatingsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(situationnoticerating.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SituationNoticeRating
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.NoticeRatingsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   situation.NoticeRatingsTable,
+			Columns: []string{situation.NoticeRatingsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(situationnoticerating.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SituationNoticeRating
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _u.mutation.LatestJudgmentCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -1497,6 +1667,36 @@ func (_u *SituationUpdateOne) AddActions(v ...*SituationAction) *SituationUpdate
 	return _u.AddActionIDs(ids...)
 }
 
+// AddNoticeIDs adds the "notices" edge to the SituationNotice entity by IDs.
+func (_u *SituationUpdateOne) AddNoticeIDs(ids ...uuid.UUID) *SituationUpdateOne {
+	_u.mutation.AddNoticeIDs(ids...)
+	return _u
+}
+
+// AddNotices adds the "notices" edges to the SituationNotice entity.
+func (_u *SituationUpdateOne) AddNotices(v ...*SituationNotice) *SituationUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddNoticeIDs(ids...)
+}
+
+// AddNoticeRatingIDs adds the "notice_ratings" edge to the SituationNoticeRating entity by IDs.
+func (_u *SituationUpdateOne) AddNoticeRatingIDs(ids ...uuid.UUID) *SituationUpdateOne {
+	_u.mutation.AddNoticeRatingIDs(ids...)
+	return _u
+}
+
+// AddNoticeRatings adds the "notice_ratings" edges to the SituationNoticeRating entity.
+func (_u *SituationUpdateOne) AddNoticeRatings(v ...*SituationNoticeRating) *SituationUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddNoticeRatingIDs(ids...)
+}
+
 // SetLatestJudgment sets the "latest_judgment" edge to the SituationJudgment entity.
 func (_u *SituationUpdateOne) SetLatestJudgment(v *SituationJudgment) *SituationUpdateOne {
 	return _u.SetLatestJudgmentID(v.ID)
@@ -1663,6 +1863,48 @@ func (_u *SituationUpdateOne) RemoveActions(v ...*SituationAction) *SituationUpd
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveActionIDs(ids...)
+}
+
+// ClearNotices clears all "notices" edges to the SituationNotice entity.
+func (_u *SituationUpdateOne) ClearNotices() *SituationUpdateOne {
+	_u.mutation.ClearNotices()
+	return _u
+}
+
+// RemoveNoticeIDs removes the "notices" edge to SituationNotice entities by IDs.
+func (_u *SituationUpdateOne) RemoveNoticeIDs(ids ...uuid.UUID) *SituationUpdateOne {
+	_u.mutation.RemoveNoticeIDs(ids...)
+	return _u
+}
+
+// RemoveNotices removes "notices" edges to SituationNotice entities.
+func (_u *SituationUpdateOne) RemoveNotices(v ...*SituationNotice) *SituationUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveNoticeIDs(ids...)
+}
+
+// ClearNoticeRatings clears all "notice_ratings" edges to the SituationNoticeRating entity.
+func (_u *SituationUpdateOne) ClearNoticeRatings() *SituationUpdateOne {
+	_u.mutation.ClearNoticeRatings()
+	return _u
+}
+
+// RemoveNoticeRatingIDs removes the "notice_ratings" edge to SituationNoticeRating entities by IDs.
+func (_u *SituationUpdateOne) RemoveNoticeRatingIDs(ids ...uuid.UUID) *SituationUpdateOne {
+	_u.mutation.RemoveNoticeRatingIDs(ids...)
+	return _u
+}
+
+// RemoveNoticeRatings removes "notice_ratings" edges to SituationNoticeRating entities.
+func (_u *SituationUpdateOne) RemoveNoticeRatings(v ...*SituationNoticeRating) *SituationUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveNoticeRatingIDs(ids...)
 }
 
 // ClearLatestJudgment clears the "latest_judgment" edge to the SituationJudgment entity.
@@ -2203,6 +2445,102 @@ func (_u *SituationUpdateOne) sqlSave(ctx context.Context) (_node *Situation, er
 			},
 		}
 		edge.Schema = _u.schemaConfig.SituationAction
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.NoticesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   situation.NoticesTable,
+			Columns: []string{situation.NoticesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(situationnotice.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SituationNotice
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedNoticesIDs(); len(nodes) > 0 && !_u.mutation.NoticesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   situation.NoticesTable,
+			Columns: []string{situation.NoticesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(situationnotice.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SituationNotice
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.NoticesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   situation.NoticesTable,
+			Columns: []string{situation.NoticesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(situationnotice.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SituationNotice
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.NoticeRatingsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   situation.NoticeRatingsTable,
+			Columns: []string{situation.NoticeRatingsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(situationnoticerating.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SituationNoticeRating
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedNoticeRatingsIDs(); len(nodes) > 0 && !_u.mutation.NoticeRatingsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   situation.NoticeRatingsTable,
+			Columns: []string{situation.NoticeRatingsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(situationnoticerating.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SituationNoticeRating
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.NoticeRatingsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   situation.NoticeRatingsTable,
+			Columns: []string{situation.NoticeRatingsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(situationnoticerating.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SituationNoticeRating
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

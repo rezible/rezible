@@ -72,6 +72,7 @@ func NewHandler(
 	proposals rez.KnowledgeProposalService,
 	situations rez.SituationService,
 	situationBriefs rez.SituationBriefService,
+	situationNotices rez.SituationNoticeService,
 ) *Handler {
 	bh := &baseHandler{users: users}
 
@@ -99,7 +100,7 @@ func NewHandler(
 		retrospectivesHandler:   newRetrospectivesHandler(users, incidents, retros, documents),
 		systemAnalysisHandler:   newSystemAnalysisHandler(systemAnalysis),
 		knowledgeGraphHandler:   newKnowledgeGraphHandler(knowledge, knowledgeAliases, proposals),
-		situationsHandler:       newSituationsHandler(bh, situations, situationBriefs),
+		situationsHandler:       newSituationsHandler(bh, situations, situationBriefs, situationNotices),
 		discussionHandler:       newDiscussionHandler(discussions),
 		teamsHandler:            newTeamsHandler(db),
 		usersHandler:            newUsersHandler(users),

@@ -77,6 +77,10 @@ func (Situation) Edges() []ent.Edge {
 			Ref("situation"),
 		edge.From("actions", SituationAction.Type).
 			Ref("situation"),
+		edge.To("notices", SituationNotice.Type).
+			Annotations(entsql.OnDelete(entsql.Cascade)),
+		edge.To("notice_ratings", SituationNoticeRating.Type).
+			Annotations(entsql.OnDelete(entsql.Cascade)),
 		edge.To("latest_judgment", SituationJudgment.Type).
 			Field("latest_judgment_id").
 			Unique(),

@@ -2,6 +2,7 @@ package slackagent
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"regexp"
@@ -11,8 +12,8 @@ import (
 	"github.com/slack-go/slack/slackevents"
 
 	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/ent/user"
 	slackintegration "github.com/rezible/rezible/internal/integrations/slack"
+	"github.com/rezible/rezible/pkg/execution"
 )
 
 func (a *App) RespondEventTypes() []slackevents.EventsAPIType {
@@ -26,7 +27,7 @@ func (a *App) RespondEventTypes() []slackevents.EventsAPIType {
 
 func (a *App) EventsApiHandler() slackintegration.EventsApiHandler {
 	return func(ctx context.Context, ii *ent.Integration, ev *slackevents.EventsAPIEvent) error {
-		cw, cwErr := slackintegration.NewClientWrapper(ii)
+		cw, cwErr := a.newClientWrapper(ii)
 		if cwErr != nil {
 			return fmt.Errorf("failed to create client wrapper: %w", cwErr)
 		}
@@ -48,16 +49,53 @@ func (a *App) EventsApiHandler() slackintegration.EventsApiHandler {
 }
 
 func (a *App) onMentionEvent(ctx context.Context, cw *slackintegration.ClientWrapper, data *slackevents.AppMentionEvent) error {
-	usr, usrErr := a.users.Get(ctx, user.ChatID(data.User))
-	if usrErr != nil {
-		return fmt.Errorf("failed to lookup chat user: %w", usrErr)
+	userCtx, lookupErr := slackintegration.LookupUserContext(ctx, a.users, data.User)
+	if errors.Is(lookupErr, slackintegration.ErrChatUserNotFound) {
+		return a.replyUnknownMentioningUser(ctx, cw, data)
 	}
-	return a.onAgentMentionedByUser(ctx, usr, cw.Integration(), data)
+	if lookupErr != nil {
+		return fmt.Errorf("lookup mentioning user: %w", lookupErr)
+	}
+	userID, _ := execution.GetContext(userCtx).UserID()
+	return a.onAgentMentionedByUser(ctx, userID, cw.Integration(), data)
+}
+
+// replyUnknownMentioningUser tells the Slack user who mentioned the app, and only them, that Rezible does
+// not know them yet.
+func (a *App) replyUnknownMentioningUser(ctx context.Context, cw *slackintegration.ClientWrapper, data *slackevents.AppMentionEvent) error {
+	threadTs := data.ThreadTimeStamp
+	if threadTs == "" {
+		threadTs = data.TimeStamp
+	}
+	reply := []slack.MsgOption{
+		slack.MsgOptionText(slackintegration.UnknownUserText, false),
+		slack.MsgOptionTS(threadTs),
+	}
+	if _, replyErr := cw.PostEphemeralMessage(ctx, data.Channel, data.User, reply...); replyErr != nil {
+		return fmt.Errorf("reply to unknown mentioning user: %w", replyErr)
+	}
+	return nil
 }
 
 var mentionRe = regexp.MustCompile(`<@([^>]+)>`)
 
 func (a *App) onMessageEvent(ctx context.Context, cw *slackintegration.ClientWrapper, data *slackevents.MessageEvent) error {
+	switch data.ChannelType {
+	case slackevents.ChannelTypeIM:
+		return a.onDirectMessageEvent(ctx, cw, data)
+	case slackevents.ChannelTypeChannel:
+		return a.onChannelMessageEvent(ctx, cw, data)
+	default:
+		return nil
+	}
+}
+
+func (a *App) onDirectMessageEvent(ctx context.Context, cw *slackintegration.ClientWrapper, data *slackevents.MessageEvent) error {
+	fmt.Printf("direct message:\n%+v\n", data)
+	return nil
+}
+
+func (a *App) onChannelMessageEvent(ctx context.Context, cw *slackintegration.ClientWrapper, data *slackevents.MessageEvent) error {
 	if data.User == "" || data.BotID != "" || data.SubType != "" || data.ThreadTimeStamp == "" || data.ThreadTimeStamp == data.TimeStamp {
 		return nil
 	}
@@ -88,13 +126,13 @@ func (a *App) onMessageEvent(ctx context.Context, cw *slackintegration.ClientWra
 }
 
 func (a *App) onAssistantThreadStartedEvent(ctx context.Context, data *slackevents.AssistantThreadStartedEvent) error {
-	slog.Debug("assistant thread started")
+	fmt.Printf("assistant thread started\n")
 	return nil
 }
 
 func (a *App) onUserHomeOpenedEvent(ctx context.Context, cw *slackintegration.ClientWrapper, data *slackevents.AppHomeOpenedEvent) error {
-	homeView, viewErr := makeUserHomeViewRequest(ctx)
-	if viewErr != nil || homeView == nil {
+	homeView, viewErr := a.userHomeView(ctx, data.User)
+	if viewErr != nil {
 		return fmt.Errorf("failed to create user home view: %w", viewErr)
 	}
 

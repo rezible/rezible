@@ -3290,6 +3290,14 @@ export type RetrospectiveReportSection = {
     title: string;
 };
 
+export type RetrySituationNoticeResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Situation;
+};
+
 export type Review = {
     attributes: ReviewAttributes;
     id: string;
@@ -3470,6 +3478,8 @@ export type SituationAttributes = {
     links: Array<SituationLink>;
     muteReason?: 'not_noteworthy' | 'expected';
     mutedAt?: string;
+    noticeRatings: SituationNoticeRatings;
+    notices: Array<SituationNotice>;
     observationGroups: Array<SituationObservationGroup>;
     openedAt: string;
     raisedAt?: string;
@@ -3662,6 +3672,26 @@ export type SituationLink = {
     situationId: string;
     stage: 'candidate' | 'raised' | 'closed';
     title: string;
+};
+
+export type SituationNotice = {
+    channelId: string;
+    /**
+     * The channel's name, once it is known
+     */
+    channelName?: string;
+    /**
+     * Why delivery failed, or why the notice was skipped
+     */
+    error?: string;
+    lastAttemptAt?: string;
+    permalink?: string;
+    status: 'pending' | 'posted' | 'failed' | 'skipped';
+};
+
+export type SituationNoticeRatings = {
+    notUseful: number;
+    useful: number;
 };
 
 export type SituationObservationGroup = {
@@ -13631,6 +13661,53 @@ export type SetSituationMuteResponses = {
 };
 
 export type SetSituationMuteResponse = SetSituationMuteResponses[keyof SetSituationMuteResponses];
+
+export type RetrySituationNoticeData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/situations/{id}/notices/retry';
+};
+
+export type RetrySituationNoticeErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type RetrySituationNoticeError = RetrySituationNoticeErrors[keyof RetrySituationNoticeErrors];
+
+export type RetrySituationNoticeResponses = {
+    /**
+     * OK
+     */
+    200: RetrySituationNoticeResponseBody;
+};
+
+export type RetrySituationNoticeResponse = RetrySituationNoticeResponses[keyof RetrySituationNoticeResponses];
 
 export type RaiseSituationData = {
     body?: never;

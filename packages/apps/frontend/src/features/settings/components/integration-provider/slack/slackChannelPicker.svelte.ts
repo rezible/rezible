@@ -44,9 +44,9 @@ export class SlackChannelPickerController {
 	};
 
 	// A saved channel that is not among the loaded channels (including private channels) shows its raw ID.
-	labelFor(channelId: string) {
+	labelFor(channelId: string, noneLabel: string) {
 		if (!channelId) {
-			return "No announcement channel";
+			return noneLabel;
 		}
 
 		const channel = this.channels.find((ch) => ch.id === channelId);

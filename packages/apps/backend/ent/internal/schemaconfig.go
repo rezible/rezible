@@ -98,6 +98,8 @@ type SchemaConfig struct {
 	SituationInvestigation                    string // SituationInvestigation table.
 	SituationJudgment                         string // SituationJudgment table.
 	SituationLink                             string // SituationLink table.
+	SituationNotice                           string // SituationNotice table.
+	SituationNoticeRating                     string // SituationNoticeRating table.
 	SituationObservationGroup                 string // SituationObservationGroup table.
 	SituationSignal                           string // SituationSignal table.
 	SituationSignalAttention                  string // SituationSignalAttention table.

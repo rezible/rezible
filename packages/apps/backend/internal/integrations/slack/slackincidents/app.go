@@ -117,7 +117,15 @@ func (a *App) getEnabledIntegrationClient(ctx context.Context) (*slackintegratio
 	if len(intg) == 0 {
 		return nil, nil
 	}
-	return slackintegration.NewClientWrapper(intg[0])
+	return a.newClientWrapper(intg[0])
+}
+
+func (a *App) clientOptions() []slack.Option {
+	return slackintegration.ClientOptions(a.cfg.Integrations.Slack)
+}
+
+func (a *App) newClientWrapper(intg *ent.Integration) (*slackintegration.ClientWrapper, error) {
+	return slackintegration.NewClientWrapper(intg, a.clientOptions()...)
 }
 
 func (a *App) withIncidentUpdateProcessor(ctx context.Context, id uuid.UUID, fn func(*incidentUpdateProcessor) error) error {

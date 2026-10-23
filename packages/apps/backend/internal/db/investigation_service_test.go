@@ -51,7 +51,12 @@ func (s *InvestigationServiceSuite) newService(tdb rez.Database, jobService *moc
 	s.Require().NoError(knowledgeErr)
 	analyses, analysesErr := NewSystemAnalysisService(tdb, knowledge)
 	s.Require().NoError(analysesErr)
-	return NewInvestigationService(tdb, agentService, jobService, analyses)
+	messageQueue := mocks.NewMockMessageQueue(s.T())
+	messageQueue.EXPECT().
+		Publish(mock.Anything, mock.Anything).
+		Return(nil).
+		Maybe()
+	return NewInvestigationService(tdb, agentService, jobService, messageQueue, analyses)
 }
 
 func (s *InvestigationServiceSuite) expectStartJob(jobService *mocks.MockJobService, result *rivertype.JobInsertResult, insertErr error) {

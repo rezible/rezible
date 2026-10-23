@@ -11,10 +11,11 @@ type situationsHandler struct {
 	*baseHandler
 	situations rez.SituationService
 	briefs     rez.SituationBriefService
+	notices    rez.SituationNoticeService
 }
 
-func newSituationsHandler(bh *baseHandler, situations rez.SituationService, briefs rez.SituationBriefService) *situationsHandler {
-	return &situationsHandler{baseHandler: bh, situations: situations, briefs: briefs}
+func newSituationsHandler(bh *baseHandler, situations rez.SituationService, briefs rez.SituationBriefService, notices rez.SituationNoticeService) *situationsHandler {
+	return &situationsHandler{baseHandler: bh, situations: situations, briefs: briefs, notices: notices}
 }
 
 func (h *situationsHandler) ListSituations(ctx context.Context, request *oapi.ListSituationsRequest) (*oapi.ListSituationsResponse, error) {
@@ -161,6 +162,19 @@ func (h *situationsHandler) MergeSituation(ctx context.Context, request *oapi.Me
 	}
 	var response oapi.MergeSituationResponse
 	response.Body.Data = oapi.SituationFromEnt(updated)
+	return &response, nil
+}
+
+func (h *situationsHandler) RetrySituationNotice(ctx context.Context, request *oapi.RetrySituationNoticeRequest) (*oapi.RetrySituationNoticeResponse, error) {
+	if retryErr := h.notices.RetrySituationNotices(ctx, request.Id); retryErr != nil {
+		return nil, oapi.Error(ctx, "retry situation notice", retryErr)
+	}
+	situation, getErr := h.situations.GetSituation(ctx, request.Id)
+	if getErr != nil {
+		return nil, oapi.Error(ctx, "get situation", getErr)
+	}
+	var response oapi.RetrySituationNoticeResponse
+	response.Body.Data = oapi.SituationFromEnt(situation)
 	return &response, nil
 }
 

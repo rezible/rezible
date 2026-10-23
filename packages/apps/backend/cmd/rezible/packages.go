@@ -616,6 +616,7 @@ var pkgDatabase = do.Package(
 			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.Clock](i),
 			do.MustInvoke[rez.JobService](i),
+			do.MustInvoke[rez.MessageQueue](i),
 			do.MustInvoke[rez.InvestigationService](i),
 			do.MustInvoke[rez.SystemAnalysisService](i),
 			do.MustInvoke[rez.KnowledgeGraphQueryService](i),
@@ -629,11 +630,25 @@ var pkgDatabase = do.Package(
 			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.AiAgentSessionService](i),
 			do.MustInvoke[rez.JobService](i),
+			do.MustInvoke[rez.MessageQueue](i),
 			do.MustInvoke[rez.SystemAnalysisService](i),
 		), nil
 	}),
 	do.Bind[*db.InvestigationService, rez.InvestigationService](),
 	do.Bind[*db.InvestigationService, rez.InvestigationOutputService](),
+	do.Lazy(func(i do.Injector) (*db.SituationNoticeService, error) {
+		return db.NewSituationNoticeService(
+			do.MustInvoke[rez.Database](i),
+			do.MustInvoke[rez.Config](i),
+			do.MustInvoke[rez.Clock](i),
+			do.MustInvoke[rez.JobService](i),
+			do.MustInvoke[rez.MessageQueue](i),
+			do.MustInvoke[rez.SituationBriefService](i),
+			do.MustInvoke[rez.InvestigationOutputService](i),
+			do.MustInvoke[rez.IntegrationService](i),
+		), nil
+	}),
+	do.Bind[*db.SituationNoticeService, rez.SituationNoticeService](),
 	do.Lazy(func(i do.Injector) (jobs.Worker[jobs.ReconcileInvestigation], error) {
 		return db.NewReconcileInvestigationWorker(
 			do.MustInvoke[*db.InvestigationService](i),
@@ -694,6 +709,7 @@ var pkgOpenApiV1 = do.Package(
 			do.MustInvoke[rez.KnowledgeProposalService](i),
 			do.MustInvoke[rez.SituationService](i),
 			do.MustInvoke[rez.SituationBriefService](i),
+			do.MustInvoke[rez.SituationNoticeService](i),
 		), nil
 	}),
 
@@ -785,6 +801,7 @@ var pkgJobs = do.Package(
 		p.addInvokedProviderFunc(db.NewEnsureShiftHandoverReminderSentWorker)
 		p.addInvokedProviderFunc(db.NewGenerateShiftMetricsWorker)
 		p.addInvokedProviderFunc(db.NewSyncScheduledIntegrationSourcesWorker)
+		p.addInvokedProviderFunc(db.NewSyncSituationNoticesWorker)
 
 		for _, intgProv := range do.MustInvoke[*integrations.Registry](i).All[jobs.WorkerProvider]() {
 			p.add(intgProv.JobWorkers()...)
@@ -842,6 +859,7 @@ var pkgMessages = do.Package(
 		p := newMessagesDefinitionProvider(i)
 
 		p.addInvokedProvider[*db.InvestigationService]()
+		p.addInvokedProvider[*db.SituationNoticeService]()
 
 		for _, intgProv := range do.MustInvoke[*integrations.Registry](i).All[messages.MessageHandlerProvider]() {
 			p.add(intgProv.MessageHandlers()...)
