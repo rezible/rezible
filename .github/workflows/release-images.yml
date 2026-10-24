@@ -17,9 +17,11 @@ jobs:
       matrix:
         include:
           - image_name: backend
-            dockerfile: backend/Dockerfile
+            dockerfile: packages/apps/backend/Dockerfile
           - image_name: documents-server
-            dockerfile: documents-server/Dockerfile
+            dockerfile: packages/apps/documents-server/Dockerfile
+          - image_name: frontend
+            dockerfile: packages/apps/frontend/Dockerfile
 
     steps:
       - name: Check out repository

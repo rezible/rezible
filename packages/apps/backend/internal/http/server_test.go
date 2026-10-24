@@ -163,7 +163,7 @@ func (s *ServerSuite) TestRequestSpanReachesResponseAndLogs() {
 		HttpServer: rez.HttpServerConfig{BasePath: "/api"},
 	}
 	webhooks := WebhookHandlers{"webhook": rejectDelivery}
-	server, serverErr := NewServer(cfg, noUserAuth{}, api, webhooks, nil)
+	server, serverErr := NewServer(cfg, noUserAuth{}, api, webhooks, nil, nil)
 	s.Require().NoError(serverErr)
 	handler := server.Handler()
 
@@ -187,6 +187,24 @@ func (s *ServerSuite) TestRequestSpanReachesResponseAndLogs() {
 	s.Equal(http.StatusBadRequest, webhookRecorder.Code)
 	s.Len(spans.Ended(), 1)
 	s.Empty(webhookRecorder.Header().Get("traceparent"))
+}
+
+func (s *ServerSuite) TestReadyChecksDependencies() {
+	var pingErr error
+	ping := func(context.Context) map[string]error { return map[string]error{"*postgres.ConnectionPool": pingErr} }
+	server, serverErr := NewServer(rez.Config{}, noUserAuth{}, humago.New(http.NewServeMux(), huma.DefaultConfig("Test", "1")), WebhookHandlers{}, nil, ping)
+	s.Require().NoError(serverErr)
+	ready := func() int {
+		recorder := httptest.NewRecorder()
+		server.Handler().ServeHTTP(recorder, httptest.NewRequest(http.MethodGet, readinessCheckPath, nil))
+		return recorder.Code
+	}
+
+	s.Equal(http.StatusServiceUnavailable, ready(), "not ready before the listener is up")
+	server.listenerReady.Store(true)
+	s.Equal(http.StatusOK, ready())
+	pingErr = errors.New("connection refused")
+	s.Equal(http.StatusServiceUnavailable, ready(), "not ready while the database cannot be pinged")
 }
 
 type noUserAuth struct{}
@@ -264,7 +282,7 @@ func (s *ServerSuite) newFailingAPIServer(minLevel slog.Level) *failingAPIServer
 	cfg := rez.Config{
 		HttpServer: rez.HttpServerConfig{BasePath: "/api"},
 	}
-	server, serverErr := NewServer(cfg, noUserAuth{}, api, WebhookHandlers{}, nil)
+	server, serverErr := NewServer(cfg, noUserAuth{}, api, WebhookHandlers{}, nil, nil)
 	s.Require().NoError(serverErr)
 	return &failingAPIServer{server: server, logs: logs}
 }

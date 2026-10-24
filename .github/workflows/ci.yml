@@ -1,0 +1,62 @@
+name: CI
+
+# Disabled for now: runs only when started by hand.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install devbox
+        uses: jetify-com/devbox-install-action@v0.13.0
+        with:
+          enable-cache: true
+
+      # Devbox loads .env and the generated workspace environment into every command, as it does locally.
+      # The tests need only the generated ports and roles, so the workspace is not provisioned.
+      - name: Prepare environment
+        run: |
+          cp .env.example .env
+          devbox run -- bun --no-env-file devenv/scripts/workspace-env.ts
+
+      - name: Install dependencies
+        run: devbox run -- bash -c 'just backend::install && bun install --frozen-lockfile'
+
+      # Starts the devenv postgres-test instance for the backend tests.
+      - name: Test
+        run: devbox run -- just test
+
+  images:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - image_name: backend
+            dockerfile: packages/apps/backend/Dockerfile
+          - image_name: documents-server
+            dockerfile: packages/apps/documents-server/Dockerfile
+          - image_name: frontend
+            dockerfile: packages/apps/frontend/Dockerfile
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ${{ matrix.dockerfile }}
+          push: false
+          tags: ghcr.io/rezible/${{ matrix.image_name }}:ci

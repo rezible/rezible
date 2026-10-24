@@ -40,12 +40,18 @@ type (
 
 	WebhookHandlers map[string]http.Handler
 
-	HealthCheckFunc = func(context.Context) map[string]error
+	// CheckFunc reports each checked service by name, with a nil error for each healthy one.
+	CheckFunc = func(context.Context) map[string]error
+	// HealthCheckFunc checks every service the application has started.
+	HealthCheckFunc CheckFunc
+	// ReadyCheckFunc checks the services the server needs to serve requests.
+	ReadyCheckFunc CheckFunc
 )
 
 const (
 	healthCheckPath    = "/health"
 	readinessCheckPath = "/ready"
+	readyCheckTimeout  = 2 * time.Second
 
 	// Webhook URLs may carry a secret in their path, so the request logger skips them and the webhooks
 	// router logs each request without the path below the handler's name.
@@ -60,6 +66,7 @@ func NewServer(
 	v1Api oapiv1.API,
 	webhooks WebhookHandlers,
 	healthFn HealthCheckFunc,
+	readyFn ReadyCheckFunc,
 ) (*Server, error) {
 	s := &Server{
 		logger: slog.Default().With("component", "http"),
@@ -68,7 +75,7 @@ func NewServer(
 	router := chi.NewMux()
 
 	router.Get(healthCheckPath, s.makeHealthCheckHandler(healthFn))
-	router.Get(readinessCheckPath, s.makeReadyCheckHandler())
+	router.Get(readinessCheckPath, s.makeReadyCheckHandler(readyFn))
 
 	router.Mount(webhooksPath, s.makeWebhooksRouter(webhooks))
 
@@ -218,17 +225,9 @@ func (s *Server) makeRecoverPanicsMiddleware() func(http.Handler) http.Handler {
 	}
 }
 
-func (s *Server) makeHealthCheckHandler(hc HealthCheckFunc) http.HandlerFunc {
+func (s *Server) makeHealthCheckHandler(health HealthCheckFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// The injector reports every service it has created, with a nil error for each healthy one.
-		failures := make(map[string]error)
-		for service, checkErr := range hc(r.Context()) {
-			if checkErr != nil {
-				failures[service] = checkErr
-			}
-		}
-		if len(failures) > 0 {
-			s.logger.WarnContext(r.Context(), "health check failed", "failures", failures)
+		if !s.runCheck(r.Context(), "health", health) {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -236,14 +235,35 @@ func (s *Server) makeHealthCheckHandler(hc HealthCheckFunc) http.HandlerFunc {
 	}
 }
 
-func (s *Server) makeReadyCheckHandler() http.HandlerFunc {
+func (s *Server) makeReadyCheckHandler(ready ReadyCheckFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if !s.listenerReady.Load() {
 			http.Error(w, http.StatusText(http.StatusServiceUnavailable), http.StatusServiceUnavailable)
 			return
 		}
+		ctx, cancel := context.WithTimeout(r.Context(), readyCheckTimeout)
+		defer cancel()
+		if !s.runCheck(ctx, "ready", ready) {
+			http.Error(w, http.StatusText(http.StatusServiceUnavailable), http.StatusServiceUnavailable)
+			return
+		}
 		w.WriteHeader(http.StatusOK)
 	}
+}
+
+// runCheck reports whether every service the check reports is healthy, logging the failing ones.
+func (s *Server) runCheck(ctx context.Context, name string, check CheckFunc) bool {
+	failures := make(map[string]error)
+	for service, checkErr := range check(ctx) {
+		if checkErr != nil {
+			failures[service] = checkErr
+		}
+	}
+	if len(failures) > 0 {
+		s.logger.WarnContext(ctx, name+" check failed", "failures", failures)
+		return false
+	}
+	return true
 }
 
 func (s *Server) makeRequestLoggerMiddleware(concise bool, basePath string) func(http.Handler) http.Handler {

@@ -747,13 +747,27 @@ var pkgHttp = do.Package(
 		return do.MustInvoke[*integrations.Registry](i).GetAvailableWebhookHandlers(), nil
 	}),
 
+	do.Lazy(func(i do.Injector) (http.HealthCheckFunc, error) {
+		return i.HealthCheckWithContext, nil
+	}),
+
+	do.Lazy(func(i do.Injector) (http.ReadyCheckFunc, error) {
+		pool := do.MustInvoke[*postgres.ConnectionPool](i)
+		return func(ctx context.Context) map[string]error {
+			return map[string]error{
+				"postgres.ConnectionPool": pool.Ping(ctx),
+			}
+		}, nil
+	}),
+
 	do.Lazy(func(i do.Injector) (*http.Server, error) {
 		return http.NewServer(
 			do.MustInvoke[rez.Config](i),
 			do.MustInvoke[http.UserAuthProvider](i),
 			do.MustInvoke[oapiv1.API](i),
 			do.MustInvoke[http.WebhookHandlers](i),
-			i.HealthCheckWithContext,
+			do.MustInvoke[http.HealthCheckFunc](i),
+			do.MustInvoke[http.ReadyCheckFunc](i),
 		)
 	}),
 )

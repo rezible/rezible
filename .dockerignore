@@ -6,3 +6,7 @@ node_modules
 **/node_modules
 **/dist
 packages/apps/frontend/.svelte-kit
+.agents
+.devbox
+devenv
+**/.evals

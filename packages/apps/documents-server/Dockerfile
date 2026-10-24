@@ -1,30 +1,19 @@
 FROM oven/bun:1 AS base
 WORKDIR /usr/src/app
 
-FROM base AS install
-RUN mkdir -p /temp/dev
-COPY package.json bun.lock /temp/dev/
-COPY packages /temp/dev/packages
-RUN cd /temp/dev && bun install --filter=@rezible/documents-server --save-dev
-
-RUN mkdir -p /temp/prod
-COPY package.json bun.lock /temp/prod/
-COPY packages /temp/prod/packages
-RUN cd /temp/prod && bun install --filter=@rezible/documents-server --frozen-lockfile --production
-
-FROM base AS prerelease
-COPY --from=install /temp/dev/node_modules node_modules
+FROM base AS build
+# Bun's isolated installs link each workspace package's dependencies into its own node_modules, so the
+# build runs where the install did.
 COPY package.json bun.lock ./
 COPY packages packages
-
+RUN bun install --filter=@rezible/documents-server --frozen-lockfile
 ENV NODE_ENV=production
 RUN bun run --filter=@rezible/documents-server build
 
 FROM base AS release
 
-COPY --from=install /temp/prod/node_modules node_modules
-COPY --from=prerelease /usr/src/app/packages/apps/documents-server/dist/index.js .
-COPY --from=prerelease /usr/src/app/packages/apps/documents-server/package.json .
+# The build bundles every dependency into index.js.
+COPY --from=build /usr/src/app/packages/apps/documents-server/dist/index.js .
 
 ENV NODE_ENV=production
 ENV HOST=0.0.0.0
