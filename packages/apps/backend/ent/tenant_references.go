@@ -5,8 +5,6 @@ package ent
 import (
 	"context"
 
-	"entgo.io/ent/privacy"
-
 	"github.com/rezible/rezible/ent/agentartifact"
 	"github.com/rezible/rezible/ent/agentmessage"
 	"github.com/rezible/rezible/ent/agentproviderread"
@@ -104,5784 +102,2112 @@ import (
 )
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *AgentArtifactMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.AgentSessionIDs(); len(ids) > 0 {
-		query := m.Client().AgentSession.Query().
-			Where(agentsession.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, agentsession.Label, len(ids), m.Client().AgentSession.Query().Where(agentsession.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{agentsession.Label}
-			}
 		}
 	}
 	if ids := m.AgentTurnIDs(); len(ids) > 0 {
-		query := m.Client().AgentTurn.Query().
-			Where(agentturn.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, agentturn.Label, len(ids), m.Client().AgentTurn.Query().Where(agentturn.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{agentturn.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *AgentMessageMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.AgentSessionIDs(); len(ids) > 0 {
-		query := m.Client().AgentSession.Query().
-			Where(agentsession.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, agentsession.Label, len(ids), m.Client().AgentSession.Query().Where(agentsession.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{agentsession.Label}
-			}
 		}
 	}
 	if ids := m.AgentTurnIDs(); len(ids) > 0 {
-		query := m.Client().AgentTurn.Query().
-			Where(agentturn.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, agentturn.Label, len(ids), m.Client().AgentTurn.Query().Where(agentturn.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{agentturn.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *AgentProviderReadMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.AgentSessionIDs(); len(ids) > 0 {
-		query := m.Client().AgentSession.Query().
-			Where(agentsession.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, agentsession.Label, len(ids), m.Client().AgentSession.Query().Where(agentsession.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{agentsession.Label}
-			}
 		}
 	}
 	if ids := m.AgentTurnIDs(); len(ids) > 0 {
-		query := m.Client().AgentTurn.Query().
-			Where(agentturn.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, agentturn.Label, len(ids), m.Client().AgentTurn.Query().Where(agentturn.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{agentturn.Label}
-			}
 		}
 	}
 	if ids := m.ServiceEntityIDs(); len(ids) > 0 {
-		query := m.Client().KnowledgeEntity.Query().
-			Where(knowledgeentity.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, knowledgeentity.Label, len(ids), m.Client().KnowledgeEntity.Query().Where(knowledgeentity.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{knowledgeentity.Label}
-			}
 		}
 	}
 	if ids := m.IntegrationIDs(); len(ids) > 0 {
-		query := m.Client().Integration.Query().
-			Where(integration.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, integration.Label, len(ids), m.Client().Integration.Query().Where(integration.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{integration.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *AgentSessionMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.TurnsIDs(); len(ids) > 0 {
-		query := m.Client().AgentTurn.Query().
-			Where(agentturn.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, agentturn.Label, len(ids), m.Client().AgentTurn.Query().Where(agentturn.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{agentturn.Label}
-			}
 		}
 	}
 	if ids := m.MessagesIDs(); len(ids) > 0 {
-		query := m.Client().AgentMessage.Query().
-			Where(agentmessage.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, agentmessage.Label, len(ids), m.Client().AgentMessage.Query().Where(agentmessage.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{agentmessage.Label}
-			}
 		}
 	}
 	if ids := m.ArtifactsIDs(); len(ids) > 0 {
-		query := m.Client().AgentArtifact.Query().
-			Where(agentartifact.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, agentartifact.Label, len(ids), m.Client().AgentArtifact.Query().Where(agentartifact.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{agentartifact.Label}
-			}
 		}
 	}
 	if ids := m.BindingsIDs(); len(ids) > 0 {
-		query := m.Client().AgentSessionBinding.Query().
-			Where(agentsessionbinding.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, agentsessionbinding.Label, len(ids), m.Client().AgentSessionBinding.Query().Where(agentsessionbinding.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{agentsessionbinding.Label}
-			}
 		}
 	}
 	if ids := m.InvestigationIDs(); len(ids) > 0 {
-		query := m.Client().Investigation.Query().
-			Where(investigation.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, investigation.Label, len(ids), m.Client().Investigation.Query().Where(investigation.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{investigation.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *AgentSessionBindingMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.AgentSessionIDs(); len(ids) > 0 {
-		query := m.Client().AgentSession.Query().
-			Where(agentsession.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, agentsession.Label, len(ids), m.Client().AgentSession.Query().Where(agentsession.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{agentsession.Label}
-			}
 		}
 	}
 	if ids := m.IntegrationIDs(); len(ids) > 0 {
-		query := m.Client().Integration.Query().
-			Where(integration.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, integration.Label, len(ids), m.Client().Integration.Query().Where(integration.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{integration.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *AgentTurnMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.AgentSessionIDs(); len(ids) > 0 {
-		query := m.Client().AgentSession.Query().
-			Where(agentsession.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, agentsession.Label, len(ids), m.Client().AgentSession.Query().Where(agentsession.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{agentsession.Label}
-			}
 		}
 	}
 	if ids := m.InputMessageIDs(); len(ids) > 0 {
-		query := m.Client().AgentMessage.Query().
-			Where(agentmessage.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, agentmessage.Label, len(ids), m.Client().AgentMessage.Query().Where(agentmessage.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{agentmessage.Label}
-			}
 		}
 	}
 	if ids := m.MessagesIDs(); len(ids) > 0 {
-		query := m.Client().AgentMessage.Query().
-			Where(agentmessage.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, agentmessage.Label, len(ids), m.Client().AgentMessage.Query().Where(agentmessage.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{agentmessage.Label}
-			}
 		}
 	}
 	if ids := m.ArtifactsIDs(); len(ids) > 0 {
-		query := m.Client().AgentArtifact.Query().
-			Where(agentartifact.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, agentartifact.Label, len(ids), m.Client().AgentArtifact.Query().Where(agentartifact.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{agentartifact.Label}
-			}
 		}
 	}
 	if ids := m.ProviderReadsIDs(); len(ids) > 0 {
-		query := m.Client().AgentProviderRead.Query().
-			Where(agentproviderread.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, agentproviderread.Label, len(ids), m.Client().AgentProviderRead.Query().Where(agentproviderread.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{agentproviderread.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *AlertDefinitionMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.KnowledgeEntityIDs(); len(ids) > 0 {
-		query := m.Client().KnowledgeEntity.Query().
-			Where(knowledgeentity.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, knowledgeentity.Label, len(ids), m.Client().KnowledgeEntity.Query().Where(knowledgeentity.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{knowledgeentity.Label}
-			}
 		}
 	}
 	if ids := m.PlaybooksIDs(); len(ids) > 0 {
-		query := m.Client().Playbook.Query().
-			Where(playbook.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, playbook.Label, len(ids), m.Client().Playbook.Query().Where(playbook.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{playbook.Label}
-			}
 		}
 	}
 	if ids := m.EpisodesIDs(); len(ids) > 0 {
-		query := m.Client().AlertEpisode.Query().
-			Where(alertepisode.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, alertepisode.Label, len(ids), m.Client().AlertEpisode.Query().Where(alertepisode.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{alertepisode.Label}
-			}
 		}
 	}
 	if ids := m.SituationSignalAttentionIDs(); len(ids) > 0 {
-		query := m.Client().SituationSignalAttention.Query().
-			Where(situationsignalattention.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, situationsignalattention.Label, len(ids), m.Client().SituationSignalAttention.Query().Where(situationsignalattention.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{situationsignalattention.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *AlertEpisodeMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.KnowledgeEntityIDs(); len(ids) > 0 {
-		query := m.Client().KnowledgeEntity.Query().
-			Where(knowledgeentity.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, knowledgeentity.Label, len(ids), m.Client().KnowledgeEntity.Query().Where(knowledgeentity.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{knowledgeentity.Label}
-			}
 		}
 	}
 	if ids := m.AlertDefinitionIDs(); len(ids) > 0 {
-		query := m.Client().AlertDefinition.Query().
-			Where(alertdefinition.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, alertdefinition.Label, len(ids), m.Client().AlertDefinition.Query().Where(alertdefinition.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{alertdefinition.Label}
-			}
 		}
 	}
 	if ids := m.InstancesIDs(); len(ids) > 0 {
-		query := m.Client().AlertInstance.Query().
-			Where(alertinstance.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, alertinstance.Label, len(ids), m.Client().AlertInstance.Query().Where(alertinstance.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{alertinstance.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *AlertFeedbackMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.AlertInstanceIDs(); len(ids) > 0 {
-		query := m.Client().AlertInstance.Query().
-			Where(alertinstance.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, alertinstance.Label, len(ids), m.Client().AlertInstance.Query().Where(alertinstance.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{alertinstance.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *AlertInstanceMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.EpisodeIDs(); len(ids) > 0 {
-		query := m.Client().AlertEpisode.Query().
-			Where(alertepisode.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, alertepisode.Label, len(ids), m.Client().AlertEpisode.Query().Where(alertepisode.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{alertepisode.Label}
-			}
 		}
 	}
 	if ids := m.EventsIDs(); len(ids) > 0 {
-		query := m.Client().AlertInstanceEvent.Query().
-			Where(alertinstanceevent.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, alertinstanceevent.Label, len(ids), m.Client().AlertInstanceEvent.Query().Where(alertinstanceevent.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{alertinstanceevent.Label}
-			}
 		}
 	}
 	if ids := m.FeedbackIDs(); len(ids) > 0 {
-		query := m.Client().AlertFeedback.Query().
-			Where(alertfeedback.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, alertfeedback.Label, len(ids), m.Client().AlertFeedback.Query().Where(alertfeedback.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{alertfeedback.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *AlertInstanceEventMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.InstanceIDs(); len(ids) > 0 {
-		query := m.Client().AlertInstance.Query().
-			Where(alertinstance.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, alertinstance.Label, len(ids), m.Client().AlertInstance.Query().Where(alertinstance.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{alertinstance.Label}
-			}
 		}
 	}
 	if ids := m.EventIDs(); len(ids) > 0 {
-		query := m.Client().NormalizedEvent.Query().
-			Where(normalizedevent.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, normalizedevent.Label, len(ids), m.Client().NormalizedEvent.Query().Where(normalizedevent.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{normalizedevent.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *DiscussionCommentMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.ThreadIDs(); len(ids) > 0 {
-		query := m.Client().DiscussionThread.Query().
-			Where(discussionthread.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, discussionthread.Label, len(ids), m.Client().DiscussionThread.Query().Where(discussionthread.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{discussionthread.Label}
-			}
 		}
 	}
 	if ids := m.ParentIDs(); len(ids) > 0 {
-		query := m.Client().DiscussionComment.Query().
-			Where(discussioncomment.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, discussioncomment.Label, len(ids), m.Client().DiscussionComment.Query().Where(discussioncomment.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{discussioncomment.Label}
-			}
 		}
 	}
 	if ids := m.UserIDs(); len(ids) > 0 {
-		query := m.Client().User.Query().
-			Where(user.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, user.Label, len(ids), m.Client().User.Query().Where(user.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{user.Label}
-			}
 		}
 	}
 	if ids := m.RepliesIDs(); len(ids) > 0 {
-		query := m.Client().DiscussionComment.Query().
-			Where(discussioncomment.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, discussioncomment.Label, len(ids), m.Client().DiscussionComment.Query().Where(discussioncomment.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{discussioncomment.Label}
-			}
 		}
 	}
 	if ids := m.ReviewsIDs(); len(ids) > 0 {
-		query := m.Client().Review.Query().
-			Where(review.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, review.Label, len(ids), m.Client().Review.Query().Where(review.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{review.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *DiscussionThreadMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.AnalysisIDs(); len(ids) > 0 {
-		query := m.Client().SystemAnalysis.Query().
-			Where(systemanalysis.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, systemanalysis.Label, len(ids), m.Client().SystemAnalysis.Query().Where(systemanalysis.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{systemanalysis.Label}
-			}
 		}
 	}
 	if ids := m.RetrospectiveIDs(); len(ids) > 0 {
-		query := m.Client().Retrospective.Query().
-			Where(retrospective.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, retrospective.Label, len(ids), m.Client().Retrospective.Query().Where(retrospective.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{retrospective.Label}
-			}
 		}
 	}
 	if ids := m.UserIDs(); len(ids) > 0 {
-		query := m.Client().User.Query().
-			Where(user.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, user.Label, len(ids), m.Client().User.Query().Where(user.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{user.Label}
-			}
 		}
 	}
 	if ids := m.CommentsIDs(); len(ids) > 0 {
-		query := m.Client().DiscussionComment.Query().
-			Where(discussioncomment.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, discussioncomment.Label, len(ids), m.Client().DiscussionComment.Query().Where(discussioncomment.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{discussioncomment.Label}
-			}
 		}
 	}
 	if ids := m.TargetFindingIDs(); len(ids) > 0 {
-		query := m.Client().InvestigationFinding.Query().
-			Where(investigationfinding.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, investigationfinding.Label, len(ids), m.Client().InvestigationFinding.Query().Where(investigationfinding.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{investigationfinding.Label}
-			}
 		}
 	}
 	if ids := m.TargetEntryIDs(); len(ids) > 0 {
-		query := m.Client().SystemAnalysisEntry.Query().
-			Where(systemanalysisentry.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, systemanalysisentry.Label, len(ids), m.Client().SystemAnalysisEntry.Query().Where(systemanalysisentry.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{systemanalysisentry.Label}
-			}
 		}
 	}
 	if ids := m.TargetNormalizedEventIDs(); len(ids) > 0 {
-		query := m.Client().NormalizedEvent.Query().
-			Where(normalizedevent.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, normalizedevent.Label, len(ids), m.Client().NormalizedEvent.Query().Where(normalizedevent.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{normalizedevent.Label}
-			}
 		}
 	}
 	if ids := m.TargetKnowledgeEntityIDs(); len(ids) > 0 {
-		query := m.Client().KnowledgeEntity.Query().
-			Where(knowledgeentity.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, knowledgeentity.Label, len(ids), m.Client().KnowledgeEntity.Query().Where(knowledgeentity.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{knowledgeentity.Label}
-			}
 		}
 	}
 	if ids := m.TargetKnowledgeRelationshipIDs(); len(ids) > 0 {
-		query := m.Client().KnowledgeRelationship.Query().
-			Where(knowledgerelationship.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, knowledgerelationship.Label, len(ids), m.Client().KnowledgeRelationship.Query().Where(knowledgerelationship.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{knowledgerelationship.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *DocumentMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.AccessesIDs(); len(ids) > 0 {
-		query := m.Client().DocumentAccess.Query().
-			Where(documentaccess.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, documentaccess.Label, len(ids), m.Client().DocumentAccess.Query().Where(documentaccess.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{documentaccess.Label}
-			}
 		}
 	}
 	if ids := m.RetrospectiveIDs(); len(ids) > 0 {
-		query := m.Client().Retrospective.Query().
-			Where(retrospective.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, retrospective.Label, len(ids), m.Client().Retrospective.Query().Where(retrospective.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{retrospective.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *DocumentAccessMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.DocumentIDs(); len(ids) > 0 {
-		query := m.Client().Document.Query().
-			Where(document.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, document.Label, len(ids), m.Client().Document.Query().Where(document.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{document.Label}
-			}
 		}
 	}
 	if ids := m.UserIDs(); len(ids) > 0 {
-		query := m.Client().User.Query().
-			Where(user.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, user.Label, len(ids), m.Client().User.Query().Where(user.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{user.Label}
-			}
 		}
 	}
 	if ids := m.TeamIDs(); len(ids) > 0 {
-		query := m.Client().Team.Query().
-			Where(team.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, team.Label, len(ids), m.Client().Team.Query().Where(team.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{team.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *EventAnnotationMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.EventIDs(); len(ids) > 0 {
-		query := m.Client().NormalizedEvent.Query().
-			Where(normalizedevent.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, normalizedevent.Label, len(ids), m.Client().NormalizedEvent.Query().Where(normalizedevent.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{normalizedevent.Label}
-			}
 		}
 	}
 	if ids := m.CreatorIDs(); len(ids) > 0 {
-		query := m.Client().User.Query().
-			Where(user.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, user.Label, len(ids), m.Client().User.Query().Where(user.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{user.Label}
-			}
 		}
 	}
 	if ids := m.HandoversIDs(); len(ids) > 0 {
-		query := m.Client().OncallShiftHandover.Query().
-			Where(oncallshifthandover.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, oncallshifthandover.Label, len(ids), m.Client().OncallShiftHandover.Query().Where(oncallshifthandover.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{oncallshifthandover.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *IncidentMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.KnowledgeEntityIDs(); len(ids) > 0 {
-		query := m.Client().KnowledgeEntity.Query().
-			Where(knowledgeentity.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, knowledgeentity.Label, len(ids), m.Client().KnowledgeEntity.Query().Where(knowledgeentity.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{knowledgeentity.Label}
-			}
 		}
 	}
 	if ids := m.SeverityIDs(); len(ids) > 0 {
-		query := m.Client().IncidentSeverity.Query().
-			Where(incidentseverity.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, incidentseverity.Label, len(ids), m.Client().IncidentSeverity.Query().Where(incidentseverity.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{incidentseverity.Label}
-			}
 		}
 	}
 	if ids := m.TypeIDs(); len(ids) > 0 {
-		query := m.Client().IncidentType.Query().
-			Where(incidenttype.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, incidenttype.Label, len(ids), m.Client().IncidentType.Query().Where(incidenttype.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{incidenttype.Label}
-			}
 		}
 	}
 	if ids := m.DeclaredByIDs(); len(ids) > 0 {
-		query := m.Client().User.Query().
-			Where(user.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, user.Label, len(ids), m.Client().User.Query().Where(user.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{user.Label}
-			}
 		}
 	}
 	if ids := m.MilestonesIDs(); len(ids) > 0 {
-		query := m.Client().IncidentMilestone.Query().
-			Where(incidentmilestone.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, incidentmilestone.Label, len(ids), m.Client().IncidentMilestone.Query().Where(incidentmilestone.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{incidentmilestone.Label}
-			}
 		}
 	}
 	if ids := m.RetrospectiveIDs(); len(ids) > 0 {
-		query := m.Client().Retrospective.Query().
-			Where(retrospective.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, retrospective.Label, len(ids), m.Client().Retrospective.Query().Where(retrospective.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{retrospective.Label}
-			}
 		}
 	}
 	if ids := m.RoleAssignmentsIDs(); len(ids) > 0 {
-		query := m.Client().IncidentRoleAssignment.Query().
-			Where(incidentroleassignment.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, incidentroleassignment.Label, len(ids), m.Client().IncidentRoleAssignment.Query().Where(incidentroleassignment.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{incidentroleassignment.Label}
-			}
 		}
 	}
 	if ids := m.LinkedIncidentsIDs(); len(ids) > 0 {
-		query := m.Client().Incident.Query().
-			Where(incident.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, incident.Label, len(ids), m.Client().Incident.Query().Where(incident.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{incident.Label}
-			}
 		}
 	}
 	if ids := m.SituationsIDs(); len(ids) > 0 {
-		query := m.Client().Situation.Query().
-			Where(situation.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, situation.Label, len(ids), m.Client().Situation.Query().Where(situation.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{situation.Label}
-			}
 		}
 	}
 	if ids := m.FieldSelectionsIDs(); len(ids) > 0 {
-		query := m.Client().IncidentFieldOption.Query().
-			Where(incidentfieldoption.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, incidentfieldoption.Label, len(ids), m.Client().IncidentFieldOption.Query().Where(incidentfieldoption.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{incidentfieldoption.Label}
-			}
 		}
 	}
 	if ids := m.TagAssignmentsIDs(); len(ids) > 0 {
-		query := m.Client().IncidentTag.Query().
-			Where(incidenttag.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, incidenttag.Label, len(ids), m.Client().IncidentTag.Query().Where(incidenttag.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{incidenttag.Label}
-			}
 		}
 	}
 	if ids := m.ImpactsIDs(); len(ids) > 0 {
-		query := m.Client().IncidentImpact.Query().
-			Where(incidentimpact.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, incidentimpact.Label, len(ids), m.Client().IncidentImpact.Query().Where(incidentimpact.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{incidentimpact.Label}
-			}
 		}
 	}
 	if ids := m.DebriefsIDs(); len(ids) > 0 {
-		query := m.Client().IncidentDebrief.Query().
-			Where(incidentdebrief.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, incidentdebrief.Label, len(ids), m.Client().IncidentDebrief.Query().Where(incidentdebrief.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{incidentdebrief.Label}
-			}
 		}
 	}
 	if ids := m.VideoConferencesIDs(); len(ids) > 0 {
-		query := m.Client().VideoConference.Query().
-			Where(videoconference.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, videoconference.Label, len(ids), m.Client().VideoConference.Query().Where(videoconference.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{videoconference.Label}
-			}
 		}
 	}
 	if ids := m.IncidentLinksIDs(); len(ids) > 0 {
-		query := m.Client().IncidentLink.Query().
-			Where(incidentlink.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, incidentlink.Label, len(ids), m.Client().IncidentLink.Query().Where(incidentlink.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{incidentlink.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *IncidentDebriefMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.IncidentIDs(); len(ids) > 0 {
-		query := m.Client().Incident.Query().
-			Where(incident.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, incident.Label, len(ids), m.Client().Incident.Query().Where(incident.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{incident.Label}
-			}
 		}
 	}
 	if ids := m.UserIDs(); len(ids) > 0 {
-		query := m.Client().User.Query().
-			Where(user.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, user.Label, len(ids), m.Client().User.Query().Where(user.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{user.Label}
-			}
 		}
 	}
 	if ids := m.MessagesIDs(); len(ids) > 0 {
-		query := m.Client().IncidentDebriefMessage.Query().
-			Where(incidentdebriefmessage.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, incidentdebriefmessage.Label, len(ids), m.Client().IncidentDebriefMessage.Query().Where(incidentdebriefmessage.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{incidentdebriefmessage.Label}
-			}
 		}
 	}
 	if ids := m.SuggestionsIDs(); len(ids) > 0 {
-		query := m.Client().IncidentDebriefSuggestion.Query().
-			Where(incidentdebriefsuggestion.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, incidentdebriefsuggestion.Label, len(ids), m.Client().IncidentDebriefSuggestion.Query().Where(incidentdebriefsuggestion.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{incidentdebriefsuggestion.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *IncidentDebriefMessageMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.DebriefIDs(); len(ids) > 0 {
-		query := m.Client().IncidentDebrief.Query().
-			Where(incidentdebrief.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, incidentdebrief.Label, len(ids), m.Client().IncidentDebrief.Query().Where(incidentdebrief.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{incidentdebrief.Label}
-			}
 		}
 	}
 	if ids := m.FromQuestionIDs(); len(ids) > 0 {
-		query := m.Client().IncidentDebriefQuestion.Query().
-			Where(incidentdebriefquestion.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, incidentdebriefquestion.Label, len(ids), m.Client().IncidentDebriefQuestion.Query().Where(incidentdebriefquestion.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{incidentdebriefquestion.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *IncidentDebriefQuestionMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.MessagesIDs(); len(ids) > 0 {
-		query := m.Client().IncidentDebriefMessage.Query().
-			Where(incidentdebriefmessage.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, incidentdebriefmessage.Label, len(ids), m.Client().IncidentDebriefMessage.Query().Where(incidentdebriefmessage.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{incidentdebriefmessage.Label}
-			}
 		}
 	}
 	if ids := m.IncidentFieldsIDs(); len(ids) > 0 {
-		query := m.Client().IncidentField.Query().
-			Where(incidentfield.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, incidentfield.Label, len(ids), m.Client().IncidentField.Query().Where(incidentfield.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{incidentfield.Label}
-			}
 		}
 	}
 	if ids := m.IncidentRolesIDs(); len(ids) > 0 {
-		query := m.Client().IncidentRole.Query().
-			Where(incidentrole.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, incidentrole.Label, len(ids), m.Client().IncidentRole.Query().Where(incidentrole.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{incidentrole.Label}
-			}
 		}
 	}
 	if ids := m.IncidentSeveritiesIDs(); len(ids) > 0 {
-		query := m.Client().IncidentSeverity.Query().
-			Where(incidentseverity.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, incidentseverity.Label, len(ids), m.Client().IncidentSeverity.Query().Where(incidentseverity.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{incidentseverity.Label}
-			}
 		}
 	}
 	if ids := m.IncidentTagsIDs(); len(ids) > 0 {
-		query := m.Client().IncidentTag.Query().
-			Where(incidenttag.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, incidenttag.Label, len(ids), m.Client().IncidentTag.Query().Where(incidenttag.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{incidenttag.Label}
-			}
 		}
 	}
 	if ids := m.IncidentTypesIDs(); len(ids) > 0 {
-		query := m.Client().IncidentType.Query().
-			Where(incidenttype.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, incidenttype.Label, len(ids), m.Client().IncidentType.Query().Where(incidenttype.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{incidenttype.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *IncidentDebriefSuggestionMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.DebriefIDs(); len(ids) > 0 {
-		query := m.Client().IncidentDebrief.Query().
-			Where(incidentdebrief.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, incidentdebrief.Label, len(ids), m.Client().IncidentDebrief.Query().Where(incidentdebrief.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{incidentdebrief.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *IncidentFieldMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.OptionsIDs(); len(ids) > 0 {
-		query := m.Client().IncidentFieldOption.Query().
-			Where(incidentfieldoption.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, incidentfieldoption.Label, len(ids), m.Client().IncidentFieldOption.Query().Where(incidentfieldoption.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{incidentfieldoption.Label}
-			}
 		}
 	}
 	if ids := m.DebriefQuestionsIDs(); len(ids) > 0 {
-		query := m.Client().IncidentDebriefQuestion.Query().
-			Where(incidentdebriefquestion.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, incidentdebriefquestion.Label, len(ids), m.Client().IncidentDebriefQuestion.Query().Where(incidentdebriefquestion.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{incidentdebriefquestion.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *IncidentFieldOptionMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.IncidentFieldIDs(); len(ids) > 0 {
-		query := m.Client().IncidentField.Query().
-			Where(incidentfield.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, incidentfield.Label, len(ids), m.Client().IncidentField.Query().Where(incidentfield.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{incidentfield.Label}
-			}
 		}
 	}
 	if ids := m.IncidentsIDs(); len(ids) > 0 {
-		query := m.Client().Incident.Query().
-			Where(incident.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, incident.Label, len(ids), m.Client().Incident.Query().Where(incident.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{incident.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *IncidentImpactMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.IncidentIDs(); len(ids) > 0 {
-		query := m.Client().Incident.Query().
-			Where(incident.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, incident.Label, len(ids), m.Client().Incident.Query().Where(incident.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{incident.Label}
-			}
 		}
 	}
 	if ids := m.KnowledgeEntityIDs(); len(ids) > 0 {
-		query := m.Client().KnowledgeEntity.Query().
-			Where(knowledgeentity.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, knowledgeentity.Label, len(ids), m.Client().KnowledgeEntity.Query().Where(knowledgeentity.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{knowledgeentity.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *IncidentLinkMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.IncidentIDs(); len(ids) > 0 {
-		query := m.Client().Incident.Query().
-			Where(incident.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, incident.Label, len(ids), m.Client().Incident.Query().Where(incident.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{incident.Label}
-			}
 		}
 	}
 	if ids := m.LinkedIncidentIDs(); len(ids) > 0 {
-		query := m.Client().Incident.Query().
-			Where(incident.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, incident.Label, len(ids), m.Client().Incident.Query().Where(incident.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{incident.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *IncidentMilestoneMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.IncidentIDs(); len(ids) > 0 {
-		query := m.Client().Incident.Query().
-			Where(incident.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, incident.Label, len(ids), m.Client().Incident.Query().Where(incident.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{incident.Label}
-			}
 		}
 	}
 	if ids := m.UserIDs(); len(ids) > 0 {
-		query := m.Client().User.Query().
-			Where(user.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, user.Label, len(ids), m.Client().User.Query().Where(user.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{user.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *IncidentRoleMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.AssignmentsIDs(); len(ids) > 0 {
-		query := m.Client().IncidentRoleAssignment.Query().
-			Where(incidentroleassignment.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, incidentroleassignment.Label, len(ids), m.Client().IncidentRoleAssignment.Query().Where(incidentroleassignment.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{incidentroleassignment.Label}
-			}
 		}
 	}
 	if ids := m.DebriefQuestionsIDs(); len(ids) > 0 {
-		query := m.Client().IncidentDebriefQuestion.Query().
-			Where(incidentdebriefquestion.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, incidentdebriefquestion.Label, len(ids), m.Client().IncidentDebriefQuestion.Query().Where(incidentdebriefquestion.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{incidentdebriefquestion.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *IncidentRoleAssignmentMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.IncidentIDs(); len(ids) > 0 {
-		query := m.Client().Incident.Query().
-			Where(incident.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, incident.Label, len(ids), m.Client().Incident.Query().Where(incident.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{incident.Label}
-			}
 		}
 	}
 	if ids := m.UserIDs(); len(ids) > 0 {
-		query := m.Client().User.Query().
-			Where(user.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, user.Label, len(ids), m.Client().User.Query().Where(user.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{user.Label}
-			}
 		}
 	}
 	if ids := m.RoleIDs(); len(ids) > 0 {
-		query := m.Client().IncidentRole.Query().
-			Where(incidentrole.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, incidentrole.Label, len(ids), m.Client().IncidentRole.Query().Where(incidentrole.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{incidentrole.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *IncidentSeverityMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.IncidentsIDs(); len(ids) > 0 {
-		query := m.Client().Incident.Query().
-			Where(incident.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, incident.Label, len(ids), m.Client().Incident.Query().Where(incident.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{incident.Label}
-			}
 		}
 	}
 	if ids := m.DebriefQuestionsIDs(); len(ids) > 0 {
-		query := m.Client().IncidentDebriefQuestion.Query().
-			Where(incidentdebriefquestion.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, incidentdebriefquestion.Label, len(ids), m.Client().IncidentDebriefQuestion.Query().Where(incidentdebriefquestion.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{incidentdebriefquestion.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *IncidentTagMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.IncidentsIDs(); len(ids) > 0 {
-		query := m.Client().Incident.Query().
-			Where(incident.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, incident.Label, len(ids), m.Client().Incident.Query().Where(incident.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{incident.Label}
-			}
 		}
 	}
 	if ids := m.DebriefQuestionsIDs(); len(ids) > 0 {
-		query := m.Client().IncidentDebriefQuestion.Query().
-			Where(incidentdebriefquestion.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, incidentdebriefquestion.Label, len(ids), m.Client().IncidentDebriefQuestion.Query().Where(incidentdebriefquestion.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{incidentdebriefquestion.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *IncidentTypeMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.IncidentsIDs(); len(ids) > 0 {
-		query := m.Client().Incident.Query().
-			Where(incident.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, incident.Label, len(ids), m.Client().Incident.Query().Where(incident.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{incident.Label}
-			}
 		}
 	}
 	if ids := m.DebriefQuestionsIDs(); len(ids) > 0 {
-		query := m.Client().IncidentDebriefQuestion.Query().
-			Where(incidentdebriefquestion.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, incidentdebriefquestion.Label, len(ids), m.Client().IncidentDebriefQuestion.Query().Where(incidentdebriefquestion.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{incidentdebriefquestion.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *IntegrationMutation) CheckTenantReferences(ctx context.Context) error {
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *IntegrationEventSyncCursorMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.IntegrationIDs(); len(ids) > 0 {
-		query := m.Client().Integration.Query().
-			Where(integration.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, integration.Label, len(ids), m.Client().Integration.Query().Where(integration.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{integration.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *IntegrationEventSyncRunMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.IntegrationIDs(); len(ids) > 0 {
-		query := m.Client().Integration.Query().
-			Where(integration.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, integration.Label, len(ids), m.Client().Integration.Query().Where(integration.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{integration.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *IntegrationUserInstallStateMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.UserIDs(); len(ids) > 0 {
-		query := m.Client().User.Query().
-			Where(user.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, user.Label, len(ids), m.Client().User.Query().Where(user.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{user.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *InvestigationMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.AgentSessionIDs(); len(ids) > 0 {
-		query := m.Client().AgentSession.Query().
-			Where(agentsession.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, agentsession.Label, len(ids), m.Client().AgentSession.Query().Where(agentsession.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{agentsession.Label}
-			}
 		}
 	}
 	if ids := m.SystemAnalysisIDs(); len(ids) > 0 {
-		query := m.Client().SystemAnalysis.Query().
-			Where(systemanalysis.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, systemanalysis.Label, len(ids), m.Client().SystemAnalysis.Query().Where(systemanalysis.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{systemanalysis.Label}
-			}
 		}
 	}
 	if ids := m.SituationsIDs(); len(ids) > 0 {
-		query := m.Client().SituationInvestigation.Query().
-			Where(situationinvestigation.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, situationinvestigation.Label, len(ids), m.Client().SituationInvestigation.Query().Where(situationinvestigation.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{situationinvestigation.Label}
-			}
 		}
 	}
 	if ids := m.UserInputsIDs(); len(ids) > 0 {
-		query := m.Client().InvestigationUserInput.Query().
-			Where(investigationuserinput.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, investigationuserinput.Label, len(ids), m.Client().InvestigationUserInput.Query().Where(investigationuserinput.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{investigationuserinput.Label}
-			}
 		}
 	}
 	if ids := m.EvidenceRevisionsIDs(); len(ids) > 0 {
-		query := m.Client().InvestigationEvidenceRevision.Query().
-			Where(investigationevidencerevision.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, investigationevidencerevision.Label, len(ids), m.Client().InvestigationEvidenceRevision.Query().Where(investigationevidencerevision.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{investigationevidencerevision.Label}
-			}
 		}
 	}
 	if ids := m.HypothesesIDs(); len(ids) > 0 {
-		query := m.Client().InvestigationHypothesis.Query().
-			Where(investigationhypothesis.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, investigationhypothesis.Label, len(ids), m.Client().InvestigationHypothesis.Query().Where(investigationhypothesis.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{investigationhypothesis.Label}
-			}
 		}
 	}
 	if ids := m.FindingsIDs(); len(ids) > 0 {
-		query := m.Client().InvestigationFinding.Query().
-			Where(investigationfinding.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, investigationfinding.Label, len(ids), m.Client().InvestigationFinding.Query().Where(investigationfinding.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{investigationfinding.Label}
-			}
 		}
 	}
 	if ids := m.ReportsIDs(); len(ids) > 0 {
-		query := m.Client().InvestigationReport.Query().
-			Where(investigationreport.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, investigationreport.Label, len(ids), m.Client().InvestigationReport.Query().Where(investigationreport.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{investigationreport.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *InvestigationEvidenceRevisionMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.InvestigationIDs(); len(ids) > 0 {
-		query := m.Client().Investigation.Query().
-			Where(investigation.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, investigation.Label, len(ids), m.Client().Investigation.Query().Where(investigation.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{investigation.Label}
-			}
 		}
 	}
 	if ids := m.AgentTurnIDs(); len(ids) > 0 {
-		query := m.Client().AgentTurn.Query().
-			Where(agentturn.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, agentturn.Label, len(ids), m.Client().AgentTurn.Query().Where(agentturn.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{agentturn.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *InvestigationFindingMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.InvestigationIDs(); len(ids) > 0 {
-		query := m.Client().Investigation.Query().
-			Where(investigation.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, investigation.Label, len(ids), m.Client().Investigation.Query().Where(investigation.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{investigation.Label}
-			}
 		}
 	}
 	if ids := m.UserInputIDs(); len(ids) > 0 {
-		query := m.Client().InvestigationUserInput.Query().
-			Where(investigationuserinput.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, investigationuserinput.Label, len(ids), m.Client().InvestigationUserInput.Query().Where(investigationuserinput.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{investigationuserinput.Label}
-			}
 		}
 	}
 	if ids := m.VersionsIDs(); len(ids) > 0 {
-		query := m.Client().InvestigationFindingVersion.Query().
-			Where(investigationfindingversion.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, investigationfindingversion.Label, len(ids), m.Client().InvestigationFindingVersion.Query().Where(investigationfindingversion.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{investigationfindingversion.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *InvestigationFindingVersionMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.FindingIDs(); len(ids) > 0 {
-		query := m.Client().InvestigationFinding.Query().
-			Where(investigationfinding.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, investigationfinding.Label, len(ids), m.Client().InvestigationFinding.Query().Where(investigationfinding.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{investigationfinding.Label}
-			}
 		}
 	}
 	if ids := m.AgentTurnIDs(); len(ids) > 0 {
-		query := m.Client().AgentTurn.Query().
-			Where(agentturn.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, agentturn.Label, len(ids), m.Client().AgentTurn.Query().Where(agentturn.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{agentturn.Label}
-			}
 		}
 	}
 	if ids := m.OutputReferencesIDs(); len(ids) > 0 {
-		query := m.Client().InvestigationOutputReference.Query().
-			Where(investigationoutputreference.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, investigationoutputreference.Label, len(ids), m.Client().InvestigationOutputReference.Query().Where(investigationoutputreference.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{investigationoutputreference.Label}
-			}
 		}
 	}
 	if ids := m.OutgoingLinksIDs(); len(ids) > 0 {
-		query := m.Client().InvestigationFindingVersionLink.Query().
-			Where(investigationfindingversionlink.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, investigationfindingversionlink.Label, len(ids), m.Client().InvestigationFindingVersionLink.Query().Where(investigationfindingversionlink.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{investigationfindingversionlink.Label}
-			}
 		}
 	}
 	if ids := m.IncomingLinksIDs(); len(ids) > 0 {
-		query := m.Client().InvestigationFindingVersionLink.Query().
-			Where(investigationfindingversionlink.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, investigationfindingversionlink.Label, len(ids), m.Client().InvestigationFindingVersionLink.Query().Where(investigationfindingversionlink.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{investigationfindingversionlink.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *InvestigationFindingVersionLinkMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.SourceVersionIDs(); len(ids) > 0 {
-		query := m.Client().InvestigationFindingVersion.Query().
-			Where(investigationfindingversion.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, investigationfindingversion.Label, len(ids), m.Client().InvestigationFindingVersion.Query().Where(investigationfindingversion.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{investigationfindingversion.Label}
-			}
 		}
 	}
 	if ids := m.TargetVersionIDs(); len(ids) > 0 {
-		query := m.Client().InvestigationFindingVersion.Query().
-			Where(investigationfindingversion.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, investigationfindingversion.Label, len(ids), m.Client().InvestigationFindingVersion.Query().Where(investigationfindingversion.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{investigationfindingversion.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *InvestigationHypothesisMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.InvestigationIDs(); len(ids) > 0 {
-		query := m.Client().Investigation.Query().
-			Where(investigation.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, investigation.Label, len(ids), m.Client().Investigation.Query().Where(investigation.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{investigation.Label}
-			}
 		}
 	}
 	if ids := m.VersionsIDs(); len(ids) > 0 {
-		query := m.Client().InvestigationHypothesisVersion.Query().
-			Where(investigationhypothesisversion.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, investigationhypothesisversion.Label, len(ids), m.Client().InvestigationHypothesisVersion.Query().Where(investigationhypothesisversion.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{investigationhypothesisversion.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *InvestigationHypothesisVersionMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.HypothesisIDs(); len(ids) > 0 {
-		query := m.Client().InvestigationHypothesis.Query().
-			Where(investigationhypothesis.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, investigationhypothesis.Label, len(ids), m.Client().InvestigationHypothesis.Query().Where(investigationhypothesis.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{investigationhypothesis.Label}
-			}
 		}
 	}
 	if ids := m.AgentTurnIDs(); len(ids) > 0 {
-		query := m.Client().AgentTurn.Query().
-			Where(agentturn.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, agentturn.Label, len(ids), m.Client().AgentTurn.Query().Where(agentturn.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{agentturn.Label}
-			}
 		}
 	}
 	if ids := m.OutputReferencesIDs(); len(ids) > 0 {
-		query := m.Client().InvestigationOutputReference.Query().
-			Where(investigationoutputreference.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, investigationoutputreference.Label, len(ids), m.Client().InvestigationOutputReference.Query().Where(investigationoutputreference.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{investigationoutputreference.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *InvestigationOutputReferenceMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.ReportIDs(); len(ids) > 0 {
-		query := m.Client().InvestigationReport.Query().
-			Where(investigationreport.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, investigationreport.Label, len(ids), m.Client().InvestigationReport.Query().Where(investigationreport.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{investigationreport.Label}
-			}
 		}
 	}
 	if ids := m.FindingVersionIDs(); len(ids) > 0 {
-		query := m.Client().InvestigationFindingVersion.Query().
-			Where(investigationfindingversion.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, investigationfindingversion.Label, len(ids), m.Client().InvestigationFindingVersion.Query().Where(investigationfindingversion.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{investigationfindingversion.Label}
-			}
 		}
 	}
 	if ids := m.HypothesisVersionIDs(); len(ids) > 0 {
-		query := m.Client().InvestigationHypothesisVersion.Query().
-			Where(investigationhypothesisversion.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, investigationhypothesisversion.Label, len(ids), m.Client().InvestigationHypothesisVersion.Query().Where(investigationhypothesisversion.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{investigationhypothesisversion.Label}
-			}
 		}
 	}
 	if ids := m.KnowledgeEvidenceIDs(); len(ids) > 0 {
-		query := m.Client().KnowledgeEvidence.Query().
-			Where(knowledgeevidence.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, knowledgeevidence.Label, len(ids), m.Client().KnowledgeEvidence.Query().Where(knowledgeevidence.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{knowledgeevidence.Label}
-			}
 		}
 	}
 	if ids := m.ProviderReadIDs(); len(ids) > 0 {
-		query := m.Client().AgentProviderRead.Query().
-			Where(agentproviderread.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, agentproviderread.Label, len(ids), m.Client().AgentProviderRead.Query().Where(agentproviderread.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{agentproviderread.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *InvestigationReportMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.InvestigationIDs(); len(ids) > 0 {
-		query := m.Client().Investigation.Query().
-			Where(investigation.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, investigation.Label, len(ids), m.Client().Investigation.Query().Where(investigation.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{investigation.Label}
-			}
 		}
 	}
 	if ids := m.AgentTurnIDs(); len(ids) > 0 {
-		query := m.Client().AgentTurn.Query().
-			Where(agentturn.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, agentturn.Label, len(ids), m.Client().AgentTurn.Query().Where(agentturn.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{agentturn.Label}
-			}
 		}
 	}
 	if ids := m.OutputReferencesIDs(); len(ids) > 0 {
-		query := m.Client().InvestigationOutputReference.Query().
-			Where(investigationoutputreference.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, investigationoutputreference.Label, len(ids), m.Client().InvestigationOutputReference.Query().Where(investigationoutputreference.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{investigationoutputreference.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *InvestigationUserInputMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.InvestigationIDs(); len(ids) > 0 {
-		query := m.Client().Investigation.Query().
-			Where(investigation.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, investigation.Label, len(ids), m.Client().Investigation.Query().Where(investigation.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{investigation.Label}
-			}
 		}
 	}
 	if ids := m.AgentTurnIDs(); len(ids) > 0 {
-		query := m.Client().AgentTurn.Query().
-			Where(agentturn.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, agentturn.Label, len(ids), m.Client().AgentTurn.Query().Where(agentturn.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{agentturn.Label}
-			}
 		}
 	}
 	if ids := m.FindingsIDs(); len(ids) > 0 {
-		query := m.Client().InvestigationFinding.Query().
-			Where(investigationfinding.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, investigationfinding.Label, len(ids), m.Client().InvestigationFinding.Query().Where(investigationfinding.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{investigationfinding.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *KnowledgeEntityMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.AliasesIDs(); len(ids) > 0 {
-		query := m.Client().KnowledgeSubjectAlias.Query().
-			Where(knowledgesubjectalias.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, knowledgesubjectalias.Label, len(ids), m.Client().KnowledgeSubjectAlias.Query().Where(knowledgesubjectalias.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{knowledgesubjectalias.Label}
-			}
 		}
 	}
 	if ids := m.LinkingAttributesIDs(); len(ids) > 0 {
-		query := m.Client().KnowledgeEntityLinkingAttribute.Query().
-			Where(knowledgeentitylinkingattribute.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, knowledgeentitylinkingattribute.Label, len(ids), m.Client().KnowledgeEntityLinkingAttribute.Query().Where(knowledgeentitylinkingattribute.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{knowledgeentitylinkingattribute.Label}
-			}
 		}
 	}
 	if ids := m.SourceRelationshipsIDs(); len(ids) > 0 {
-		query := m.Client().KnowledgeRelationship.Query().
-			Where(knowledgerelationship.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, knowledgerelationship.Label, len(ids), m.Client().KnowledgeRelationship.Query().Where(knowledgerelationship.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{knowledgerelationship.Label}
-			}
 		}
 	}
 	if ids := m.TargetRelationshipsIDs(); len(ids) > 0 {
-		query := m.Client().KnowledgeRelationship.Query().
-			Where(knowledgerelationship.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, knowledgerelationship.Label, len(ids), m.Client().KnowledgeRelationship.Query().Where(knowledgerelationship.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{knowledgerelationship.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *KnowledgeEntityLinkingAttributeMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.EntityIDs(); len(ids) > 0 {
-		query := m.Client().KnowledgeEntity.Query().
-			Where(knowledgeentity.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, knowledgeentity.Label, len(ids), m.Client().KnowledgeEntity.Query().Where(knowledgeentity.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{knowledgeentity.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *KnowledgeEvidenceMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.EventIDs(); len(ids) > 0 {
-		query := m.Client().NormalizedEvent.Query().
-			Where(normalizedevent.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, normalizedevent.Label, len(ids), m.Client().NormalizedEvent.Query().Where(normalizedevent.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{normalizedevent.Label}
-			}
 		}
 	}
 	if ids := m.SubjectAliasIDs(); len(ids) > 0 {
-		query := m.Client().KnowledgeSubjectAlias.Query().
-			Where(knowledgesubjectalias.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, knowledgesubjectalias.Label, len(ids), m.Client().KnowledgeSubjectAlias.Query().Where(knowledgesubjectalias.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{knowledgesubjectalias.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *KnowledgeProposalMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.EvidenceIDs(); len(ids) > 0 {
-		query := m.Client().KnowledgeEvidence.Query().
-			Where(knowledgeevidence.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, knowledgeevidence.Label, len(ids), m.Client().KnowledgeEvidence.Query().Where(knowledgeevidence.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{knowledgeevidence.Label}
-			}
 		}
 	}
 	if ids := m.DecisionsIDs(); len(ids) > 0 {
-		query := m.Client().KnowledgeProposalDecision.Query().
-			Where(knowledgeproposaldecision.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, knowledgeproposaldecision.Label, len(ids), m.Client().KnowledgeProposalDecision.Query().Where(knowledgeproposaldecision.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{knowledgeproposaldecision.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *KnowledgeProposalDecisionMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.ProposalIDs(); len(ids) > 0 {
-		query := m.Client().KnowledgeProposal.Query().
-			Where(knowledgeproposal.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, knowledgeproposal.Label, len(ids), m.Client().KnowledgeProposal.Query().Where(knowledgeproposal.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{knowledgeproposal.Label}
-			}
 		}
 	}
 	if ids := m.UserIDs(); len(ids) > 0 {
-		query := m.Client().User.Query().
-			Where(user.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, user.Label, len(ids), m.Client().User.Query().Where(user.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{user.Label}
-			}
 		}
 	}
 	if ids := m.ImpliedByProposalIDs(); len(ids) > 0 {
-		query := m.Client().KnowledgeProposal.Query().
-			Where(knowledgeproposal.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, knowledgeproposal.Label, len(ids), m.Client().KnowledgeProposal.Query().Where(knowledgeproposal.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{knowledgeproposal.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *KnowledgeRelationshipMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.SourceEntityIDs(); len(ids) > 0 {
-		query := m.Client().KnowledgeEntity.Query().
-			Where(knowledgeentity.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, knowledgeentity.Label, len(ids), m.Client().KnowledgeEntity.Query().Where(knowledgeentity.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{knowledgeentity.Label}
-			}
 		}
 	}
 	if ids := m.TargetEntityIDs(); len(ids) > 0 {
-		query := m.Client().KnowledgeEntity.Query().
-			Where(knowledgeentity.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, knowledgeentity.Label, len(ids), m.Client().KnowledgeEntity.Query().Where(knowledgeentity.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{knowledgeentity.Label}
-			}
 		}
 	}
 	if ids := m.AliasesIDs(); len(ids) > 0 {
-		query := m.Client().KnowledgeSubjectAlias.Query().
-			Where(knowledgesubjectalias.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, knowledgesubjectalias.Label, len(ids), m.Client().KnowledgeSubjectAlias.Query().Where(knowledgesubjectalias.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{knowledgesubjectalias.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *KnowledgeSubjectAliasMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.EntityIDs(); len(ids) > 0 {
-		query := m.Client().KnowledgeEntity.Query().
-			Where(knowledgeentity.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, knowledgeentity.Label, len(ids), m.Client().KnowledgeEntity.Query().Where(knowledgeentity.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{knowledgeentity.Label}
-			}
 		}
 	}
 	if ids := m.RelationshipIDs(); len(ids) > 0 {
-		query := m.Client().KnowledgeRelationship.Query().
-			Where(knowledgerelationship.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, knowledgerelationship.Label, len(ids), m.Client().KnowledgeRelationship.Query().Where(knowledgerelationship.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{knowledgerelationship.Label}
-			}
 		}
 	}
 	if ids := m.MergedByProposalIDs(); len(ids) > 0 {
-		query := m.Client().KnowledgeProposal.Query().
-			Where(knowledgeproposal.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, knowledgeproposal.Label, len(ids), m.Client().KnowledgeProposal.Query().Where(knowledgeproposal.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{knowledgeproposal.Label}
-			}
 		}
 	}
 	if ids := m.EvidenceIDs(); len(ids) > 0 {
-		query := m.Client().KnowledgeEvidence.Query().
-			Where(knowledgeevidence.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, knowledgeevidence.Label, len(ids), m.Client().KnowledgeEvidence.Query().Where(knowledgeevidence.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{knowledgeevidence.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *MeetingScheduleMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.OwningTeamIDs(); len(ids) > 0 {
-		query := m.Client().Team.Query().
-			Where(team.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, team.Label, len(ids), m.Client().Team.Query().Where(team.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{team.Label}
-			}
 		}
 	}
 	if ids := m.SessionsIDs(); len(ids) > 0 {
-		query := m.Client().MeetingSession.Query().
-			Where(meetingsession.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, meetingsession.Label, len(ids), m.Client().MeetingSession.Query().Where(meetingsession.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{meetingsession.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *MeetingSessionMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.VideoConferenceIDs(); len(ids) > 0 {
-		query := m.Client().VideoConference.Query().
-			Where(videoconference.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, videoconference.Label, len(ids), m.Client().VideoConference.Query().Where(videoconference.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{videoconference.Label}
-			}
 		}
 	}
 	if ids := m.ScheduleIDs(); len(ids) > 0 {
-		query := m.Client().MeetingSchedule.Query().
-			Where(meetingschedule.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, meetingschedule.Label, len(ids), m.Client().MeetingSchedule.Query().Where(meetingschedule.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{meetingschedule.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *NormalizedEventMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.IntegrationIDs(); len(ids) > 0 {
-		query := m.Client().Integration.Query().
-			Where(integration.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, integration.Label, len(ids), m.Client().Integration.Query().Where(integration.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{integration.Label}
-			}
 		}
 	}
 	if ids := m.ProjectionIDs(); len(ids) > 0 {
-		query := m.Client().NormalizedEventProjection.Query().
-			Where(normalizedeventprojection.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, normalizedeventprojection.Label, len(ids), m.Client().NormalizedEventProjection.Query().Where(normalizedeventprojection.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{normalizedeventprojection.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *NormalizedEventProjectionMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.EventIDs(); len(ids) > 0 {
-		query := m.Client().NormalizedEvent.Query().
-			Where(normalizedevent.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, normalizedevent.Label, len(ids), m.Client().NormalizedEvent.Query().Where(normalizedevent.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{normalizedevent.Label}
-			}
 		}
 	}
 	if ids := m.ProjectionEntitiesIDs(); len(ids) > 0 {
-		query := m.Client().NormalizedEventProjectionEntity.Query().
-			Where(normalizedeventprojectionentity.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, normalizedeventprojectionentity.Label, len(ids), m.Client().NormalizedEventProjectionEntity.Query().Where(normalizedeventprojectionentity.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{normalizedeventprojectionentity.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *NormalizedEventProjectionEntityMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.ProjectionIDs(); len(ids) > 0 {
-		query := m.Client().NormalizedEventProjection.Query().
-			Where(normalizedeventprojection.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, normalizedeventprojection.Label, len(ids), m.Client().NormalizedEventProjection.Query().Where(normalizedeventprojection.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{normalizedeventprojection.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *OncallHandoverTemplateMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.RosterIDs(); len(ids) > 0 {
-		query := m.Client().OncallRoster.Query().
-			Where(oncallroster.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, oncallroster.Label, len(ids), m.Client().OncallRoster.Query().Where(oncallroster.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{oncallroster.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *OncallRosterMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.SchedulesIDs(); len(ids) > 0 {
-		query := m.Client().OncallSchedule.Query().
-			Where(oncallschedule.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, oncallschedule.Label, len(ids), m.Client().OncallSchedule.Query().Where(oncallschedule.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{oncallschedule.Label}
-			}
 		}
 	}
 	if ids := m.HandoverTemplateIDs(); len(ids) > 0 {
-		query := m.Client().OncallHandoverTemplate.Query().
-			Where(oncallhandovertemplate.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, oncallhandovertemplate.Label, len(ids), m.Client().OncallHandoverTemplate.Query().Where(oncallhandovertemplate.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{oncallhandovertemplate.Label}
-			}
 		}
 	}
 	if ids := m.TeamsIDs(); len(ids) > 0 {
-		query := m.Client().Team.Query().
-			Where(team.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, team.Label, len(ids), m.Client().Team.Query().Where(team.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{team.Label}
-			}
 		}
 	}
 	if ids := m.ShiftsIDs(); len(ids) > 0 {
-		query := m.Client().OncallShift.Query().
-			Where(oncallshift.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, oncallshift.Label, len(ids), m.Client().OncallShift.Query().Where(oncallshift.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{oncallshift.Label}
-			}
 		}
 	}
 	if ids := m.UserWatchersIDs(); len(ids) > 0 {
-		query := m.Client().User.Query().
-			Where(user.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, user.Label, len(ids), m.Client().User.Query().Where(user.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{user.Label}
-			}
 		}
 	}
 	if ids := m.MetricsIDs(); len(ids) > 0 {
-		query := m.Client().OncallRosterMetrics.Query().
-			Where(oncallrostermetrics.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, oncallrostermetrics.Label, len(ids), m.Client().OncallRosterMetrics.Query().Where(oncallrostermetrics.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{oncallrostermetrics.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *OncallRosterMetricsMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.RosterIDs(); len(ids) > 0 {
-		query := m.Client().OncallRoster.Query().
-			Where(oncallroster.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, oncallroster.Label, len(ids), m.Client().OncallRoster.Query().Where(oncallroster.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{oncallroster.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *OncallScheduleMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.ParticipantsIDs(); len(ids) > 0 {
-		query := m.Client().OncallScheduleParticipant.Query().
-			Where(oncallscheduleparticipant.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, oncallscheduleparticipant.Label, len(ids), m.Client().OncallScheduleParticipant.Query().Where(oncallscheduleparticipant.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{oncallscheduleparticipant.Label}
-			}
 		}
 	}
 	if ids := m.RosterIDs(); len(ids) > 0 {
-		query := m.Client().OncallRoster.Query().
-			Where(oncallroster.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, oncallroster.Label, len(ids), m.Client().OncallRoster.Query().Where(oncallroster.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{oncallroster.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *OncallScheduleParticipantMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.ScheduleIDs(); len(ids) > 0 {
-		query := m.Client().OncallSchedule.Query().
-			Where(oncallschedule.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, oncallschedule.Label, len(ids), m.Client().OncallSchedule.Query().Where(oncallschedule.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{oncallschedule.Label}
-			}
 		}
 	}
 	if ids := m.UserIDs(); len(ids) > 0 {
-		query := m.Client().User.Query().
-			Where(user.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, user.Label, len(ids), m.Client().User.Query().Where(user.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{user.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *OncallShiftMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.UserIDs(); len(ids) > 0 {
-		query := m.Client().User.Query().
-			Where(user.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, user.Label, len(ids), m.Client().User.Query().Where(user.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{user.Label}
-			}
 		}
 	}
 	if ids := m.RosterIDs(); len(ids) > 0 {
-		query := m.Client().OncallRoster.Query().
-			Where(oncallroster.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, oncallroster.Label, len(ids), m.Client().OncallRoster.Query().Where(oncallroster.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{oncallroster.Label}
-			}
 		}
 	}
 	if ids := m.PrimaryShiftIDs(); len(ids) > 0 {
-		query := m.Client().OncallShift.Query().
-			Where(oncallshift.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, oncallshift.Label, len(ids), m.Client().OncallShift.Query().Where(oncallshift.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{oncallshift.Label}
-			}
 		}
 	}
 	if ids := m.HandoverIDs(); len(ids) > 0 {
-		query := m.Client().OncallShiftHandover.Query().
-			Where(oncallshifthandover.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, oncallshifthandover.Label, len(ids), m.Client().OncallShiftHandover.Query().Where(oncallshifthandover.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{oncallshifthandover.Label}
-			}
 		}
 	}
 	if ids := m.MetricsIDs(); len(ids) > 0 {
-		query := m.Client().OncallShiftMetrics.Query().
-			Where(oncallshiftmetrics.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, oncallshiftmetrics.Label, len(ids), m.Client().OncallShiftMetrics.Query().Where(oncallshiftmetrics.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{oncallshiftmetrics.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *OncallShiftHandoverMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.ShiftIDs(); len(ids) > 0 {
-		query := m.Client().OncallShift.Query().
-			Where(oncallshift.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, oncallshift.Label, len(ids), m.Client().OncallShift.Query().Where(oncallshift.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{oncallshift.Label}
-			}
 		}
 	}
 	if ids := m.PinnedAnnotationsIDs(); len(ids) > 0 {
-		query := m.Client().EventAnnotation.Query().
-			Where(eventannotation.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, eventannotation.Label, len(ids), m.Client().EventAnnotation.Query().Where(eventannotation.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{eventannotation.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *OncallShiftMetricsMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.ShiftIDs(); len(ids) > 0 {
-		query := m.Client().OncallShift.Query().
-			Where(oncallshift.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, oncallshift.Label, len(ids), m.Client().OncallShift.Query().Where(oncallshift.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{oncallshift.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *OrganizationMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.RolesIDs(); len(ids) > 0 {
-		query := m.Client().OrganizationRole.Query().
-			Where(organizationrole.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, organizationrole.Label, len(ids), m.Client().OrganizationRole.Query().Where(organizationrole.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{organizationrole.Label}
-			}
 		}
 	}
 	if ids := m.PreferencesIDs(); len(ids) > 0 {
-		query := m.Client().OrganizationPreferences.Query().
-			Where(organizationpreferences.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, organizationpreferences.Label, len(ids), m.Client().OrganizationPreferences.Query().Where(organizationpreferences.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{organizationpreferences.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *OrganizationPreferencesMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.OrganizationIDs(); len(ids) > 0 {
-		query := m.Client().Organization.Query().
-			Where(organization.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, organization.Label, len(ids), m.Client().Organization.Query().Where(organization.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{organization.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *OrganizationRoleMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.OrganizationIDs(); len(ids) > 0 {
-		query := m.Client().Organization.Query().
-			Where(organization.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, organization.Label, len(ids), m.Client().Organization.Query().Where(organization.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{organization.Label}
-			}
 		}
 	}
 	if ids := m.UserIDs(); len(ids) > 0 {
-		query := m.Client().User.Query().
-			Where(user.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, user.Label, len(ids), m.Client().User.Query().Where(user.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{user.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *PlaybookMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.AlertDefinitionsIDs(); len(ids) > 0 {
-		query := m.Client().AlertDefinition.Query().
-			Where(alertdefinition.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, alertdefinition.Label, len(ids), m.Client().AlertDefinition.Query().Where(alertdefinition.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{alertdefinition.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *RetrospectiveMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.OwnerIDs(); len(ids) > 0 {
-		query := m.Client().User.Query().
-			Where(user.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, user.Label, len(ids), m.Client().User.Query().Where(user.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{user.Label}
-			}
 		}
 	}
 	if ids := m.ClosedByIDs(); len(ids) > 0 {
-		query := m.Client().User.Query().
-			Where(user.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, user.Label, len(ids), m.Client().User.Query().Where(user.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{user.Label}
-			}
 		}
 	}
 	if ids := m.IncidentIDs(); len(ids) > 0 {
-		query := m.Client().Incident.Query().
-			Where(incident.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, incident.Label, len(ids), m.Client().Incident.Query().Where(incident.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{incident.Label}
-			}
 		}
 	}
 	if ids := m.DocumentIDs(); len(ids) > 0 {
-		query := m.Client().Document.Query().
-			Where(document.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, document.Label, len(ids), m.Client().Document.Query().Where(document.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{document.Label}
-			}
 		}
 	}
 	if ids := m.DiscussionThreadsIDs(); len(ids) > 0 {
-		query := m.Client().DiscussionThread.Query().
-			Where(discussionthread.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, discussionthread.Label, len(ids), m.Client().DiscussionThread.Query().Where(discussionthread.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{discussionthread.Label}
-			}
 		}
 	}
 	if ids := m.ReviewsIDs(); len(ids) > 0 {
-		query := m.Client().Review.Query().
-			Where(review.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, review.Label, len(ids), m.Client().Review.Query().Where(review.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{review.Label}
-			}
 		}
 	}
 	if ids := m.SystemAnalysisIDs(); len(ids) > 0 {
-		query := m.Client().SystemAnalysis.Query().
-			Where(systemanalysis.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, systemanalysis.Label, len(ids), m.Client().SystemAnalysis.Query().Where(systemanalysis.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{systemanalysis.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *ReviewMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.RetrospectiveIDs(); len(ids) > 0 {
-		query := m.Client().Retrospective.Query().
-			Where(retrospective.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, retrospective.Label, len(ids), m.Client().Retrospective.Query().Where(retrospective.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{retrospective.Label}
-			}
 		}
 	}
 	if ids := m.AnalysisEntryIDs(); len(ids) > 0 {
-		query := m.Client().SystemAnalysisEntry.Query().
-			Where(systemanalysisentry.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, systemanalysisentry.Label, len(ids), m.Client().SystemAnalysisEntry.Query().Where(systemanalysisentry.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{systemanalysisentry.Label}
-			}
 		}
 	}
 	if ids := m.CommentIDs(); len(ids) > 0 {
-		query := m.Client().DiscussionComment.Query().
-			Where(discussioncomment.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, discussioncomment.Label, len(ids), m.Client().DiscussionComment.Query().Where(discussioncomment.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{discussioncomment.Label}
-			}
 		}
 	}
 	if ids := m.RequesterIDs(); len(ids) > 0 {
-		query := m.Client().User.Query().
-			Where(user.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, user.Label, len(ids), m.Client().User.Query().Where(user.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{user.Label}
-			}
 		}
 	}
 	if ids := m.ReviewerIDs(); len(ids) > 0 {
-		query := m.Client().User.Query().
-			Where(user.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, user.Label, len(ids), m.Client().User.Query().Where(user.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{user.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *SituationMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.InvestigationIDs(); len(ids) > 0 {
-		query := m.Client().SituationInvestigation.Query().
-			Where(situationinvestigation.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, situationinvestigation.Label, len(ids), m.Client().SituationInvestigation.Query().Where(situationinvestigation.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{situationinvestigation.Label}
-			}
 		}
 	}
 	if ids := m.HazardAssessmentsIDs(); len(ids) > 0 {
-		query := m.Client().SituationHazardAssessment.Query().
-			Where(situationhazardassessment.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, situationhazardassessment.Label, len(ids), m.Client().SituationHazardAssessment.Query().Where(situationhazardassessment.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{situationhazardassessment.Label}
-			}
 		}
 	}
 	if ids := m.ObservationGroupsIDs(); len(ids) > 0 {
-		query := m.Client().SituationObservationGroup.Query().
-			Where(situationobservationgroup.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, situationobservationgroup.Label, len(ids), m.Client().SituationObservationGroup.Query().Where(situationobservationgroup.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{situationobservationgroup.Label}
-			}
 		}
 	}
 	if ids := m.IncidentsIDs(); len(ids) > 0 {
-		query := m.Client().Incident.Query().
-			Where(incident.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, incident.Label, len(ids), m.Client().Incident.Query().Where(incident.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{incident.Label}
-			}
 		}
 	}
 	if ids := m.SignalsIDs(); len(ids) > 0 {
-		query := m.Client().SituationSignal.Query().
-			Where(situationsignal.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, situationsignal.Label, len(ids), m.Client().SituationSignal.Query().Where(situationsignal.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{situationsignal.Label}
-			}
 		}
 	}
 	if ids := m.EntitiesIDs(); len(ids) > 0 {
-		query := m.Client().SituationEntity.Query().
-			Where(situationentity.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, situationentity.Label, len(ids), m.Client().SituationEntity.Query().Where(situationentity.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{situationentity.Label}
-			}
 		}
 	}
 	if ids := m.LinksIDs(); len(ids) > 0 {
-		query := m.Client().SituationLink.Query().
-			Where(situationlink.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, situationlink.Label, len(ids), m.Client().SituationLink.Query().Where(situationlink.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{situationlink.Label}
-			}
 		}
 	}
 	if ids := m.ActionsIDs(); len(ids) > 0 {
-		query := m.Client().SituationAction.Query().
-			Where(situationaction.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, situationaction.Label, len(ids), m.Client().SituationAction.Query().Where(situationaction.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{situationaction.Label}
-			}
 		}
 	}
 	if ids := m.NoticesIDs(); len(ids) > 0 {
-		query := m.Client().SituationNotice.Query().
-			Where(situationnotice.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, situationnotice.Label, len(ids), m.Client().SituationNotice.Query().Where(situationnotice.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{situationnotice.Label}
-			}
 		}
 	}
 	if ids := m.NoticeRatingsIDs(); len(ids) > 0 {
-		query := m.Client().SituationNoticeRating.Query().
-			Where(situationnoticerating.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, situationnoticerating.Label, len(ids), m.Client().SituationNoticeRating.Query().Where(situationnoticerating.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{situationnoticerating.Label}
-			}
 		}
 	}
 	if ids := m.LatestJudgmentIDs(); len(ids) > 0 {
-		query := m.Client().SituationJudgment.Query().
-			Where(situationjudgment.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, situationjudgment.Label, len(ids), m.Client().SituationJudgment.Query().Where(situationjudgment.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{situationjudgment.Label}
-			}
 		}
 	}
 	if ids := m.SeedEntityIDs(); len(ids) > 0 {
-		query := m.Client().KnowledgeEntity.Query().
-			Where(knowledgeentity.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, knowledgeentity.Label, len(ids), m.Client().KnowledgeEntity.Query().Where(knowledgeentity.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{knowledgeentity.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *SituationActionMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.SituationIDs(); len(ids) > 0 {
-		query := m.Client().Situation.Query().
-			Where(situation.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, situation.Label, len(ids), m.Client().Situation.Query().Where(situation.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{situation.Label}
-			}
 		}
 	}
 	if ids := m.UserIDs(); len(ids) > 0 {
-		query := m.Client().User.Query().
-			Where(user.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, user.Label, len(ids), m.Client().User.Query().Where(user.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{user.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *SituationEntityMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.SituationIDs(); len(ids) > 0 {
-		query := m.Client().Situation.Query().
-			Where(situation.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, situation.Label, len(ids), m.Client().Situation.Query().Where(situation.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{situation.Label}
-			}
 		}
 	}
 	if ids := m.KnowledgeEntityIDs(); len(ids) > 0 {
-		query := m.Client().KnowledgeEntity.Query().
-			Where(knowledgeentity.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, knowledgeentity.Label, len(ids), m.Client().KnowledgeEntity.Query().Where(knowledgeentity.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{knowledgeentity.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *SituationHazardAssessmentMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.SituationIDs(); len(ids) > 0 {
-		query := m.Client().Situation.Query().
-			Where(situation.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, situation.Label, len(ids), m.Client().Situation.Query().Where(situation.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{situation.Label}
-			}
 		}
 	}
 	if ids := m.SystemHazardIDs(); len(ids) > 0 {
-		query := m.Client().SystemHazard.Query().
-			Where(systemhazard.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, systemhazard.Label, len(ids), m.Client().SystemHazard.Query().Where(systemhazard.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{systemhazard.Label}
-			}
 		}
 	}
 	if ids := m.UserIDs(); len(ids) > 0 {
-		query := m.Client().User.Query().
-			Where(user.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, user.Label, len(ids), m.Client().User.Query().Where(user.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{user.Label}
-			}
 		}
 	}
 	if ids := m.AgentTurnIDs(); len(ids) > 0 {
-		query := m.Client().AgentTurn.Query().
-			Where(agentturn.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, agentturn.Label, len(ids), m.Client().AgentTurn.Query().Where(agentturn.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{agentturn.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *SituationInvestigationMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.SituationIDs(); len(ids) > 0 {
-		query := m.Client().Situation.Query().
-			Where(situation.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, situation.Label, len(ids), m.Client().Situation.Query().Where(situation.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{situation.Label}
-			}
 		}
 	}
 	if ids := m.InvestigationIDs(); len(ids) > 0 {
-		query := m.Client().Investigation.Query().
-			Where(investigation.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, investigation.Label, len(ids), m.Client().Investigation.Query().Where(investigation.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{investigation.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *SituationJudgmentMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.SituationIDs(); len(ids) > 0 {
-		query := m.Client().Situation.Query().
-			Where(situation.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, situation.Label, len(ids), m.Client().Situation.Query().Where(situation.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{situation.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *SituationLinkMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.SituationIDs(); len(ids) > 0 {
-		query := m.Client().Situation.Query().
-			Where(situation.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, situation.Label, len(ids), m.Client().Situation.Query().Where(situation.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{situation.Label}
-			}
 		}
 	}
 	if ids := m.LinkedSituationIDs(); len(ids) > 0 {
-		query := m.Client().Situation.Query().
-			Where(situation.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, situation.Label, len(ids), m.Client().Situation.Query().Where(situation.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{situation.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *SituationNoticeMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.SituationIDs(); len(ids) > 0 {
-		query := m.Client().Situation.Query().
-			Where(situation.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, situation.Label, len(ids), m.Client().Situation.Query().Where(situation.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{situation.Label}
-			}
 		}
 	}
 	if ids := m.IntegrationIDs(); len(ids) > 0 {
-		query := m.Client().Integration.Query().
-			Where(integration.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, integration.Label, len(ids), m.Client().Integration.Query().Where(integration.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{integration.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *SituationNoticeRatingMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.SituationIDs(); len(ids) > 0 {
-		query := m.Client().Situation.Query().
-			Where(situation.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, situation.Label, len(ids), m.Client().Situation.Query().Where(situation.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{situation.Label}
-			}
 		}
 	}
 	if ids := m.UserIDs(); len(ids) > 0 {
-		query := m.Client().User.Query().
-			Where(user.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, user.Label, len(ids), m.Client().User.Query().Where(user.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{user.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *SituationObservationGroupMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.SituationIDs(); len(ids) > 0 {
-		query := m.Client().Situation.Query().
-			Where(situation.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, situation.Label, len(ids), m.Client().Situation.Query().Where(situation.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{situation.Label}
-			}
 		}
 	}
 	if ids := m.SignalsIDs(); len(ids) > 0 {
-		query := m.Client().SituationSignal.Query().
-			Where(situationsignal.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, situationsignal.Label, len(ids), m.Client().SituationSignal.Query().Where(situationsignal.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{situationsignal.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *SituationSignalMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.SituationIDs(); len(ids) > 0 {
-		query := m.Client().Situation.Query().
-			Where(situation.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, situation.Label, len(ids), m.Client().Situation.Query().Where(situation.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{situation.Label}
-			}
 		}
 	}
 	if ids := m.ObservationGroupIDs(); len(ids) > 0 {
-		query := m.Client().SituationObservationGroup.Query().
-			Where(situationobservationgroup.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, situationobservationgroup.Label, len(ids), m.Client().SituationObservationGroup.Query().Where(situationobservationgroup.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{situationobservationgroup.Label}
-			}
 		}
 	}
 	if ids := m.KnowledgeEntityIDs(); len(ids) > 0 {
-		query := m.Client().KnowledgeEntity.Query().
-			Where(knowledgeentity.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, knowledgeentity.Label, len(ids), m.Client().KnowledgeEntity.Query().Where(knowledgeentity.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{knowledgeentity.Label}
-			}
 		}
 	}
 	if ids := m.SourceEntityIDs(); len(ids) > 0 {
-		query := m.Client().KnowledgeEntity.Query().
-			Where(knowledgeentity.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, knowledgeentity.Label, len(ids), m.Client().KnowledgeEntity.Query().Where(knowledgeentity.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{knowledgeentity.Label}
-			}
 		}
 	}
 	if ids := m.ViaRelationshipIDs(); len(ids) > 0 {
-		query := m.Client().KnowledgeRelationship.Query().
-			Where(knowledgerelationship.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, knowledgerelationship.Label, len(ids), m.Client().KnowledgeRelationship.Query().Where(knowledgerelationship.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{knowledgerelationship.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *SituationSignalAttentionMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.SetByUserIDs(); len(ids) > 0 {
-		query := m.Client().User.Query().
-			Where(user.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, user.Label, len(ids), m.Client().User.Query().Where(user.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{user.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *SystemAnalysisMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.ScopeEntityIDs(); len(ids) > 0 {
-		query := m.Client().KnowledgeEntity.Query().
-			Where(knowledgeentity.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, knowledgeentity.Label, len(ids), m.Client().KnowledgeEntity.Query().Where(knowledgeentity.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{knowledgeentity.Label}
-			}
 		}
 	}
 	if ids := m.SubjectEntityIDs(); len(ids) > 0 {
-		query := m.Client().KnowledgeEntity.Query().
-			Where(knowledgeentity.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, knowledgeentity.Label, len(ids), m.Client().KnowledgeEntity.Query().Where(knowledgeentity.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{knowledgeentity.Label}
-			}
 		}
 	}
 	if ids := m.AnalysisEntitiesIDs(); len(ids) > 0 {
-		query := m.Client().SystemAnalysisEntity.Query().
-			Where(systemanalysisentity.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, systemanalysisentity.Label, len(ids), m.Client().SystemAnalysisEntity.Query().Where(systemanalysisentity.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{systemanalysisentity.Label}
-			}
 		}
 	}
 	if ids := m.AnalysisRelationshipsIDs(); len(ids) > 0 {
-		query := m.Client().SystemAnalysisRelationship.Query().
-			Where(systemanalysisrelationship.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, systemanalysisrelationship.Label, len(ids), m.Client().SystemAnalysisRelationship.Query().Where(systemanalysisrelationship.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{systemanalysisrelationship.Label}
-			}
 		}
 	}
 	if ids := m.EntriesIDs(); len(ids) > 0 {
-		query := m.Client().SystemAnalysisEntry.Query().
-			Where(systemanalysisentry.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, systemanalysisentry.Label, len(ids), m.Client().SystemAnalysisEntry.Query().Where(systemanalysisentry.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{systemanalysisentry.Label}
-			}
 		}
 	}
 	if ids := m.DiscussionThreadsIDs(); len(ids) > 0 {
-		query := m.Client().DiscussionThread.Query().
-			Where(discussionthread.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, discussionthread.Label, len(ids), m.Client().DiscussionThread.Query().Where(discussionthread.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{discussionthread.Label}
-			}
 		}
 	}
 	if ids := m.InvestigationIDs(); len(ids) > 0 {
-		query := m.Client().Investigation.Query().
-			Where(investigation.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, investigation.Label, len(ids), m.Client().Investigation.Query().Where(investigation.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{investigation.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *SystemAnalysisEntityMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.AnalysisIDs(); len(ids) > 0 {
-		query := m.Client().SystemAnalysis.Query().
-			Where(systemanalysis.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, systemanalysis.Label, len(ids), m.Client().SystemAnalysis.Query().Where(systemanalysis.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{systemanalysis.Label}
-			}
 		}
 	}
 	if ids := m.KnowledgeEntityIDs(); len(ids) > 0 {
-		query := m.Client().KnowledgeEntity.Query().
-			Where(knowledgeentity.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, knowledgeentity.Label, len(ids), m.Client().KnowledgeEntity.Query().Where(knowledgeentity.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{knowledgeentity.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *SystemAnalysisEntryMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.AnalysisIDs(); len(ids) > 0 {
-		query := m.Client().SystemAnalysis.Query().
-			Where(systemanalysis.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, systemanalysis.Label, len(ids), m.Client().SystemAnalysis.Query().Where(systemanalysis.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{systemanalysis.Label}
-			}
 		}
 	}
 	if ids := m.AuthorIDs(); len(ids) > 0 {
-		query := m.Client().User.Query().
-			Where(user.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, user.Label, len(ids), m.Client().User.Query().Where(user.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{user.Label}
-			}
 		}
 	}
 	if ids := m.SubjectsIDs(); len(ids) > 0 {
-		query := m.Client().SystemAnalysisEntrySubject.Query().
-			Where(systemanalysisentrysubject.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, systemanalysisentrysubject.Label, len(ids), m.Client().SystemAnalysisEntrySubject.Query().Where(systemanalysisentrysubject.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{systemanalysisentrysubject.Label}
-			}
 		}
 	}
 	if ids := m.OriginTasksIDs(); len(ids) > 0 {
-		query := m.Client().Task.Query().
-			Where(task.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, task.Label, len(ids), m.Client().Task.Query().Where(task.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{task.Label}
-			}
 		}
 	}
 	if ids := m.ReviewsIDs(); len(ids) > 0 {
-		query := m.Client().Review.Query().
-			Where(review.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, review.Label, len(ids), m.Client().Review.Query().Where(review.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{review.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *SystemAnalysisEntrySubjectMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.EntryIDs(); len(ids) > 0 {
-		query := m.Client().SystemAnalysisEntry.Query().
-			Where(systemanalysisentry.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, systemanalysisentry.Label, len(ids), m.Client().SystemAnalysisEntry.Query().Where(systemanalysisentry.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{systemanalysisentry.Label}
-			}
 		}
 	}
 	if ids := m.KnowledgeEntityIDs(); len(ids) > 0 {
-		query := m.Client().KnowledgeEntity.Query().
-			Where(knowledgeentity.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, knowledgeentity.Label, len(ids), m.Client().KnowledgeEntity.Query().Where(knowledgeentity.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{knowledgeentity.Label}
-			}
 		}
 	}
 	if ids := m.KnowledgeRelationshipIDs(); len(ids) > 0 {
-		query := m.Client().KnowledgeRelationship.Query().
-			Where(knowledgerelationship.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, knowledgerelationship.Label, len(ids), m.Client().KnowledgeRelationship.Query().Where(knowledgerelationship.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{knowledgerelationship.Label}
-			}
 		}
 	}
 	if ids := m.KnowledgeEvidenceIDs(); len(ids) > 0 {
-		query := m.Client().KnowledgeEvidence.Query().
-			Where(knowledgeevidence.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, knowledgeevidence.Label, len(ids), m.Client().KnowledgeEvidence.Query().Where(knowledgeevidence.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{knowledgeevidence.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *SystemAnalysisRelationshipMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.AnalysisIDs(); len(ids) > 0 {
-		query := m.Client().SystemAnalysis.Query().
-			Where(systemanalysis.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, systemanalysis.Label, len(ids), m.Client().SystemAnalysis.Query().Where(systemanalysis.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{systemanalysis.Label}
-			}
 		}
 	}
 	if ids := m.KnowledgeRelationshipIDs(); len(ids) > 0 {
-		query := m.Client().KnowledgeRelationship.Query().
-			Where(knowledgerelationship.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, knowledgerelationship.Label, len(ids), m.Client().KnowledgeRelationship.Query().Where(knowledgerelationship.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{knowledgerelationship.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *SystemHazardMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.KnowledgeEntityIDs(); len(ids) > 0 {
-		query := m.Client().KnowledgeEntity.Query().
-			Where(knowledgeentity.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, knowledgeentity.Label, len(ids), m.Client().KnowledgeEntity.Query().Where(knowledgeentity.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{knowledgeentity.Label}
-			}
 		}
 	}
 	if ids := m.RiskAssessmentsIDs(); len(ids) > 0 {
-		query := m.Client().SystemHazardRiskAssessment.Query().
-			Where(systemhazardriskassessment.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, systemhazardriskassessment.Label, len(ids), m.Client().SystemHazardRiskAssessment.Query().Where(systemhazardriskassessment.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{systemhazardriskassessment.Label}
-			}
 		}
 	}
 	if ids := m.SituationAssessmentsIDs(); len(ids) > 0 {
-		query := m.Client().SituationHazardAssessment.Query().
-			Where(situationhazardassessment.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, situationhazardassessment.Label, len(ids), m.Client().SituationHazardAssessment.Query().Where(situationhazardassessment.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{situationhazardassessment.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *SystemHazardRiskAssessmentMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.SystemHazardIDs(); len(ids) > 0 {
-		query := m.Client().SystemHazard.Query().
-			Where(systemhazard.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, systemhazard.Label, len(ids), m.Client().SystemHazard.Query().Where(systemhazard.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{systemhazard.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *TaskMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.TicketsIDs(); len(ids) > 0 {
-		query := m.Client().Ticket.Query().
-			Where(ticket.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, ticket.Label, len(ids), m.Client().Ticket.Query().Where(ticket.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{ticket.Label}
-			}
 		}
 	}
 	if ids := m.OriginEntryIDs(); len(ids) > 0 {
-		query := m.Client().SystemAnalysisEntry.Query().
-			Where(systemanalysisentry.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, systemanalysisentry.Label, len(ids), m.Client().SystemAnalysisEntry.Query().Where(systemanalysisentry.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{systemanalysisentry.Label}
-			}
 		}
 	}
 	if ids := m.IncidentIDs(); len(ids) > 0 {
-		query := m.Client().Incident.Query().
-			Where(incident.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, incident.Label, len(ids), m.Client().Incident.Query().Where(incident.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{incident.Label}
-			}
 		}
 	}
 	if ids := m.AssigneeIDs(); len(ids) > 0 {
-		query := m.Client().User.Query().
-			Where(user.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, user.Label, len(ids), m.Client().User.Query().Where(user.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{user.Label}
-			}
 		}
 	}
 	if ids := m.CreatorIDs(); len(ids) > 0 {
-		query := m.Client().User.Query().
-			Where(user.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, user.Label, len(ids), m.Client().User.Query().Where(user.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{user.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *TeamMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.KnowledgeEntityIDs(); len(ids) > 0 {
-		query := m.Client().KnowledgeEntity.Query().
-			Where(knowledgeentity.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, knowledgeentity.Label, len(ids), m.Client().KnowledgeEntity.Query().Where(knowledgeentity.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{knowledgeentity.Label}
-			}
 		}
 	}
 	if ids := m.UsersIDs(); len(ids) > 0 {
-		query := m.Client().User.Query().
-			Where(user.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, user.Label, len(ids), m.Client().User.Query().Where(user.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{user.Label}
-			}
 		}
 	}
 	if ids := m.OncallRostersIDs(); len(ids) > 0 {
-		query := m.Client().OncallRoster.Query().
-			Where(oncallroster.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, oncallroster.Label, len(ids), m.Client().OncallRoster.Query().Where(oncallroster.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{oncallroster.Label}
-			}
 		}
 	}
 	if ids := m.ScheduledMeetingsIDs(); len(ids) > 0 {
-		query := m.Client().MeetingSchedule.Query().
-			Where(meetingschedule.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, meetingschedule.Label, len(ids), m.Client().MeetingSchedule.Query().Where(meetingschedule.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{meetingschedule.Label}
-			}
 		}
 	}
 	if ids := m.DocumentAccessesIDs(); len(ids) > 0 {
-		query := m.Client().DocumentAccess.Query().
-			Where(documentaccess.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, documentaccess.Label, len(ids), m.Client().DocumentAccess.Query().Where(documentaccess.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{documentaccess.Label}
-			}
 		}
 	}
 	if ids := m.TeamMembershipsIDs(); len(ids) > 0 {
-		query := m.Client().TeamMembership.Query().
-			Where(teammembership.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, teammembership.Label, len(ids), m.Client().TeamMembership.Query().Where(teammembership.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{teammembership.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *TeamMembershipMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.KnowledgeRelationshipIDs(); len(ids) > 0 {
-		query := m.Client().KnowledgeRelationship.Query().
-			Where(knowledgerelationship.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, knowledgerelationship.Label, len(ids), m.Client().KnowledgeRelationship.Query().Where(knowledgerelationship.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{knowledgerelationship.Label}
-			}
 		}
 	}
 	if ids := m.TeamIDs(); len(ids) > 0 {
-		query := m.Client().Team.Query().
-			Where(team.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, team.Label, len(ids), m.Client().Team.Query().Where(team.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{team.Label}
-			}
 		}
 	}
 	if ids := m.UserIDs(); len(ids) > 0 {
-		query := m.Client().User.Query().
-			Where(user.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, user.Label, len(ids), m.Client().User.Query().Where(user.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{user.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *TicketMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.TasksIDs(); len(ids) > 0 {
-		query := m.Client().Task.Query().
-			Where(task.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, task.Label, len(ids), m.Client().Task.Query().Where(task.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{task.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *UserMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.KnowledgeEntityIDs(); len(ids) > 0 {
-		query := m.Client().KnowledgeEntity.Query().
-			Where(knowledgeentity.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, knowledgeentity.Label, len(ids), m.Client().KnowledgeEntity.Query().Where(knowledgeentity.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{knowledgeentity.Label}
-			}
 		}
 	}
 	if ids := m.OrganizationRoleIDs(); len(ids) > 0 {
-		query := m.Client().OrganizationRole.Query().
-			Where(organizationrole.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, organizationrole.Label, len(ids), m.Client().OrganizationRole.Query().Where(organizationrole.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{organizationrole.Label}
-			}
 		}
 	}
 	if ids := m.TeamsIDs(); len(ids) > 0 {
-		query := m.Client().Team.Query().
-			Where(team.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, team.Label, len(ids), m.Client().Team.Query().Where(team.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{team.Label}
-			}
 		}
 	}
 	if ids := m.WatchedOncallRostersIDs(); len(ids) > 0 {
-		query := m.Client().OncallRoster.Query().
-			Where(oncallroster.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, oncallroster.Label, len(ids), m.Client().OncallRoster.Query().Where(oncallroster.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{oncallroster.Label}
-			}
 		}
 	}
 	if ids := m.OncallSchedulesIDs(); len(ids) > 0 {
-		query := m.Client().OncallScheduleParticipant.Query().
-			Where(oncallscheduleparticipant.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, oncallscheduleparticipant.Label, len(ids), m.Client().OncallScheduleParticipant.Query().Where(oncallscheduleparticipant.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{oncallscheduleparticipant.Label}
-			}
 		}
 	}
 	if ids := m.OncallShiftsIDs(); len(ids) > 0 {
-		query := m.Client().OncallShift.Query().
-			Where(oncallshift.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, oncallshift.Label, len(ids), m.Client().OncallShift.Query().Where(oncallshift.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{oncallshift.Label}
-			}
 		}
 	}
 	if ids := m.EventAnnotationsIDs(); len(ids) > 0 {
-		query := m.Client().EventAnnotation.Query().
-			Where(eventannotation.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, eventannotation.Label, len(ids), m.Client().EventAnnotation.Query().Where(eventannotation.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{eventannotation.Label}
-			}
 		}
 	}
 	if ids := m.SituationHazardAssessmentsIDs(); len(ids) > 0 {
-		query := m.Client().SituationHazardAssessment.Query().
-			Where(situationhazardassessment.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, situationhazardassessment.Label, len(ids), m.Client().SituationHazardAssessment.Query().Where(situationhazardassessment.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{situationhazardassessment.Label}
-			}
 		}
 	}
 	if ids := m.IntegrationOauthStatesIDs(); len(ids) > 0 {
-		query := m.Client().IntegrationUserInstallState.Query().
-			Where(integrationuserinstallstate.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, integrationuserinstallstate.Label, len(ids), m.Client().IntegrationUserInstallState.Query().Where(integrationuserinstallstate.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{integrationuserinstallstate.Label}
-			}
 		}
 	}
 	if ids := m.IncidentMilestonesIDs(); len(ids) > 0 {
-		query := m.Client().IncidentMilestone.Query().
-			Where(incidentmilestone.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, incidentmilestone.Label, len(ids), m.Client().IncidentMilestone.Query().Where(incidentmilestone.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{incidentmilestone.Label}
-			}
 		}
 	}
 	if ids := m.IncidentDebriefsIDs(); len(ids) > 0 {
-		query := m.Client().IncidentDebrief.Query().
-			Where(incidentdebrief.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, incidentdebrief.Label, len(ids), m.Client().IncidentDebrief.Query().Where(incidentdebrief.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{incidentdebrief.Label}
-			}
 		}
 	}
 	if ids := m.ReviewRequestsIDs(); len(ids) > 0 {
-		query := m.Client().Review.Query().
-			Where(review.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, review.Label, len(ids), m.Client().Review.Query().Where(review.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{review.Label}
-			}
 		}
 	}
 	if ids := m.ReviewResponsesIDs(); len(ids) > 0 {
-		query := m.Client().Review.Query().
-			Where(review.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, review.Label, len(ids), m.Client().Review.Query().Where(review.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{review.Label}
-			}
 		}
 	}
 	if ids := m.DiscussionThreadsIDs(); len(ids) > 0 {
-		query := m.Client().DiscussionThread.Query().
-			Where(discussionthread.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, discussionthread.Label, len(ids), m.Client().DiscussionThread.Query().Where(discussionthread.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{discussionthread.Label}
-			}
 		}
 	}
 	if ids := m.DiscussionCommentsIDs(); len(ids) > 0 {
-		query := m.Client().DiscussionComment.Query().
-			Where(discussioncomment.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, discussioncomment.Label, len(ids), m.Client().DiscussionComment.Query().Where(discussioncomment.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{discussioncomment.Label}
-			}
 		}
 	}
 	if ids := m.DocumentAccessesIDs(); len(ids) > 0 {
-		query := m.Client().DocumentAccess.Query().
-			Where(documentaccess.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, documentaccess.Label, len(ids), m.Client().DocumentAccess.Query().Where(documentaccess.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{documentaccess.Label}
-			}
 		}
 	}
 	if ids := m.TeamMembershipsIDs(); len(ids) > 0 {
-		query := m.Client().TeamMembership.Query().
-			Where(teammembership.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, teammembership.Label, len(ids), m.Client().TeamMembership.Query().Where(teammembership.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{teammembership.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *UserAuthSessionMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.UserIDs(); len(ids) > 0 {
-		query := m.Client().User.Query().
-			Where(user.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, user.Label, len(ids), m.Client().User.Query().Where(user.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{user.Label}
-			}
 		}
 	}
 	if ids := m.OrganizationIDs(); len(ids) > 0 {
-		query := m.Client().Organization.Query().
-			Where(organization.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, organization.Label, len(ids), m.Client().Organization.Query().Where(organization.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{organization.Label}
-			}
 		}
 	}
 	return nil
 }
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that belongs to another tenant.
+// that is missing or belongs to another tenant.
 func (m *VideoConferenceMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.IncidentIDs(); len(ids) > 0 {
-		query := m.Client().Incident.Query().
-			Where(incident.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, incident.Label, len(ids), m.Client().Incident.Query().Where(incident.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{incident.Label}
-			}
 		}
 	}
 	if ids := m.MeetingSessionIDs(); len(ids) > 0 {
-		query := m.Client().MeetingSession.Query().
-			Where(meetingsession.IDIn(ids...))
-		count, err := query.Clone().Count(ctx)
-		if err != nil {
+		if err := checkTenantReference(ctx, meetingsession.Label, len(ids), m.Client().MeetingSession.Query().Where(meetingsession.IDIn(ids...))); err != nil {
 			return err
-		}
-		if count < len(ids) {
-			all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-			if err != nil {
-				return err
-			}
-			if all > count {
-				return &NotFoundError{meetingsession.Label}
-			}
 		}
 	}
 	return nil

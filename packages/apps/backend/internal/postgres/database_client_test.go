@@ -12,6 +12,7 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/schema"
 	"github.com/rezible/rezible/ent/team"
 	"github.com/rezible/rezible/ent/teammembership"
 	"github.com/rezible/rezible/ent/tenant"
@@ -455,6 +456,29 @@ func (s *DatabaseClientSuite) TestWriteReferencingAnotherTenantsRowIsNotFound() 
 
 	sameTenant := client.Incident.UpdateOneID(incident.ID).SetSeverityID(severity.ID)
 	s.Require().NoError(sameTenant.Exec(ctx))
+}
+
+func (s *DatabaseClientSuite) TestReportMissingReferencesLeavesAMissingRowToItsForeignKey() {
+	ctx, tdb := s.SetupTestDatabase()
+	otherCtx, _ := s.SetupTestDatabase()
+	client := tdb.Client(ctx)
+	incident := client.Incident.Create().SetSlug(uuid.NewString()).SetTitle("incident").SaveX(ctx)
+	otherSeverity := tdb.Client(otherCtx).IncidentSeverity.Create().SetName("sev").SetRank(1).SaveX(otherCtx)
+	reportCtx := schema.ReportMissingReferences(ctx)
+
+	checkErr := client.Incident.UpdateOneID(incident.ID).SetSeverityID(uuid.New()).Exec(ctx)
+	s.ErrorIs(checkErr, errs.ErrNotFound)
+	_, isPgErr := errors.AsType[*pgconn.PgError](checkErr)
+	s.False(isPgErr, "rejected before the write")
+
+	fkErr := client.Incident.UpdateOneID(incident.ID).SetSeverityID(uuid.New()).Exec(reportCtx)
+	s.ErrorIs(fkErr, errs.ErrNotFound)
+	pgErr, isPgErr := errors.AsType[*pgconn.PgError](fkErr)
+	s.Require().True(isPgErr, "rejected by the foreign key")
+	s.Equal("23503", pgErr.Code)
+
+	crossErr := client.Incident.UpdateOneID(incident.ID).SetSeverityID(otherSeverity.ID).Exec(reportCtx)
+	s.ErrorIs(crossErr, errs.ErrNotFound, "another tenant's row is still not found")
 }
 
 func (s *DatabaseClientSuite) TestDeletingAReferencedRowKeepsItsError() {

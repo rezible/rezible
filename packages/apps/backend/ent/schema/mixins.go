@@ -143,6 +143,13 @@ func IncludeArchived(parent context.Context) context.Context {
 	return context.WithValue(parent, includeArchivedContextKey, true)
 }
 
+// ReportMissingReferences makes a write that references a missing row fail with its foreign key violation,
+// which names the constraint, rather than the tenant reference check's not found. A row in another tenant is
+// still not found.
+func ReportMissingReferences(parent context.Context) context.Context {
+	return context.WithValue(parent, gen.ReportMissingReferencesKey{}, true)
+}
+
 func (d ArchiveMixin) Interceptors() []ent.Interceptor {
 	return []ent.Interceptor{
 		intercept.TraverseFunc(func(ctx context.Context, q intercept.Query) error {

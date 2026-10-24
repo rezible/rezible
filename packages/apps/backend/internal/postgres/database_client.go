@@ -233,8 +233,9 @@ func (dbc *DatabaseClient) ensureTenantIdSetHook() ent.Hook {
 	}
 }
 
-// tenantReferencesHook rejects a write that sets or adds an edge to a row in another tenant, before the write
-// runs. Archived rows count as present: archiving is not a tenant boundary.
+// tenantReferencesHook rejects a write that sets or adds an edge to a missing row or one in another tenant, before
+// the write runs. Under schema.ReportMissingReferences a missing row is left to the foreign key. Archived rows
+// count as present: archiving is not a tenant boundary.
 func (dbc *DatabaseClient) tenantReferencesHook() ent.Hook {
 	type tenantReferencesMutation interface {
 		CheckTenantReferences(context.Context) error
@@ -254,8 +255,8 @@ func (dbc *DatabaseClient) tenantReferencesHook() ent.Hook {
 	}, ent.OpCreate|ent.OpUpdate|ent.OpUpdateOne)
 }
 
-// missingReferenceHook reports a write that references a missing row as not found. The database rejects it with a
-// foreign key violation; a delete of a row still referenced keeps its error.
+// missingReferenceHook reports a foreign key violation on a write as not found, keeping the violation in the
+// chain; a delete of a row still referenced keeps its error.
 func (dbc *DatabaseClient) missingReferenceHook() ent.Hook {
 	return hook.On(func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {

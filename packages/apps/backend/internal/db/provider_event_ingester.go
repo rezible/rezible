@@ -14,6 +14,7 @@ import (
 	ne "github.com/rezible/rezible/ent/normalizedevent"
 	nep "github.com/rezible/rezible/ent/normalizedeventprojection"
 	nepe "github.com/rezible/rezible/ent/normalizedeventprojectionentity"
+	"github.com/rezible/rezible/ent/schema"
 )
 
 type ProviderEventIngester struct {
@@ -112,7 +113,9 @@ func (s *ProviderEventIngester) ProjectNormalizedEvent(ctx context.Context, even
 				err = fmt.Errorf("projector panic: %v", v)
 			}
 		}()
-		projectedEntities, err = projectorFunc(ctx, ev)
+		// A merge can delete a knowledge subject the projector resolved; its foreign key violation makes the
+		// job retry.
+		projectedEntities, err = projectorFunc(schema.ReportMissingReferences(ctx), ev)
 		return projectedEntities, err
 	}
 

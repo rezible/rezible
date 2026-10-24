@@ -47,8 +47,8 @@ var debugTemplate = gen.MustParse(gen.NewTemplate("debug").Parse(`
 
 // tenantReferencesTemplate generates CheckTenantReferences on the mutation of every tenant-owned type. It
 // counts the rows each set or added edge ID names through the mutation's client, whose privacy filter scopes
-// the query to the context's tenant. A shortfall is recounted across tenants: a target in another tenant is
-// reported as not found, and a missing one is left to its foreign key, whose violation names the constraint.
+// the query to the context's tenant, and reports a missing or cross-tenant target as not found. Under
+// schema.ReportMissingReferences, a missing target is left to its foreign key instead (checkTenantReference).
 var tenantReferencesTemplate = gen.MustParse(gen.NewTemplate("tenant_references").
 	Funcs(template.FuncMap{"hasTenantID": hasTenantID}).
 	Parse(`
@@ -56,8 +56,6 @@ var tenantReferencesTemplate = gen.MustParse(gen.NewTemplate("tenant_references"
 	{{ template "header" $ }}
 	import (
 		"context"
-
-		"entgo.io/ent/privacy"
 		{{ $seen := dict }}
 		{{- range $n := $.Nodes }}{{ if hasTenantID $n }}{{ range $e := $n.EdgesWithID }}
 			{{- if and (hasTenantID $e.Type) (not (hasKey $seen $e.Type.Name)) }}
@@ -69,24 +67,12 @@ var tenantReferencesTemplate = gen.MustParse(gen.NewTemplate("tenant_references"
 
 	{{ range $n := $.Nodes }}{{ if hasTenantID $n }}
 		// CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-		// that belongs to another tenant.
+		// that is missing or belongs to another tenant.
 		func (m *{{ $n.MutationName }}) CheckTenantReferences(ctx context.Context) error {
 			{{- range $e := $n.EdgesWithID }}{{ if hasTenantID $e.Type }}
 				if ids := m.{{ $e.StructField }}IDs(); len(ids) > 0 {
-					query := m.Client().{{ $e.Type.Name }}.Query().
-						Where({{ $e.Type.Package }}.IDIn(ids...))
-					count, err := query.Clone().Count(ctx)
-					if err != nil {
+					if err := checkTenantReference(ctx, {{ $e.Type.Package }}.Label, len(ids), m.Client().{{ $e.Type.Name }}.Query().Where({{ $e.Type.Package }}.IDIn(ids...))); err != nil {
 						return err
-					}
-					if count < len(ids) {
-						all, err := query.Count(privacy.DecisionContext(ctx, privacy.Allow))
-						if err != nil {
-							return err
-						}
-						if all > count {
-							return &NotFoundError{ {{- $e.Type.Package }}.Label}
-						}
 					}
 				}
 			{{- end }}{{ end }}

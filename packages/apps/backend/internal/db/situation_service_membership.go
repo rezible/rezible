@@ -16,6 +16,7 @@ import (
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
 	ksa "github.com/rezible/rezible/ent/knowledgesubjectalias"
 	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/schema"
 	sit "github.com/rezible/rezible/ent/situation"
 	sitent "github.com/rezible/rezible/ent/situationentity"
 	sitlink "github.com/rezible/rezible/ent/situationlink"
@@ -148,7 +149,8 @@ func (s *SituationService) createMemberships(ctx context.Context, situationID uu
 			SetNillableViaRelationshipID(membership.viaRelationshipID).
 			SetMatchExplanation(membership.explanation)
 	})
-	if createErr := createMembers.Exec(ctx); createErr != nil {
+	// A merge can delete a referenced knowledge subject; its foreign key violation makes the job retry.
+	if createErr := createMembers.Exec(schema.ReportMissingReferences(ctx)); createErr != nil {
 		if constraint, isUnique := s.db.IsConstraintError(createErr); isUnique && constraint == situationSignalMembershipIndex {
 			return fmt.Errorf("%w: a signal already belongs to a situation", errs.ErrConflict)
 		}
