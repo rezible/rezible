@@ -12,10 +12,13 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/team"
+	"github.com/rezible/rezible/ent/teammembership"
 	"github.com/rezible/rezible/ent/tenant"
 	"github.com/rezible/rezible/ent/user"
 	dbservices "github.com/rezible/rezible/internal/db"
 	"github.com/rezible/rezible/internal/postgres"
+	"github.com/rezible/rezible/pkg/errs"
 	"github.com/rezible/rezible/pkg/execution"
 	"github.com/rezible/rezible/test"
 	"github.com/stretchr/testify/suite"
@@ -334,4 +337,113 @@ func (s *DatabaseClientSuite) TestWithTxReturningNestedServiceRollback() {
 	exists, queryErr := queryUser.Exist(ctx)
 	s.Require().NoError(queryErr)
 	s.False(exists, "nested writes must be rolled back with the outer transaction")
+}
+
+func (s *DatabaseClientSuite) createTeam(ctx context.Context, tdb rez.Database) *ent.Team {
+	createTeam := tdb.Client(ctx).Team.Create().
+		SetSlug(uuid.NewString()).
+		SetName("team")
+	created, createErr := createTeam.Save(ctx)
+	s.Require().NoError(createErr)
+	return created
+}
+
+func (s *DatabaseClientSuite) TestCreateUsesTheContextTenant() {
+	ctx, tdb := s.SetupTestDatabase()
+	otherCtx, _ := s.SetupTestDatabase()
+	other := s.createTeam(otherCtx, tdb)
+
+	createInOther := tdb.Client(ctx).Team.Create().
+		SetTenantID(other.TenantID).
+		SetSlug(uuid.NewString()).
+		SetName("other")
+	s.ErrorIs(createInOther.Exec(ctx), errs.ErrTenantContextMissing)
+
+	systemCtx := execution.NewSystemContext(s.T().Context())
+	createWithoutTenant := tdb.Client(systemCtx).Team.Create().
+		SetTenantID(other.TenantID).
+		SetSlug(uuid.NewString()).
+		SetName("system")
+	s.ErrorIs(createWithoutTenant.Exec(systemCtx), errs.ErrTenantContextMissing)
+
+	count, countErr := tdb.Client(systemCtx).Team.Query().
+		Where(team.NameIn("other", "system")).
+		Count(systemCtx)
+	s.Require().NoError(countErr)
+	s.Zero(count)
+}
+
+func (s *DatabaseClientSuite) TestWriteReferencingAMissingRowIsNotFound() {
+	ctx, tdb := s.SetupTestDatabase()
+	client := tdb.Client(ctx)
+	owner, ownerErr := client.User.Query().Only(ctx)
+	s.Require().NoError(ownerErr)
+	existing := s.createTeam(ctx, tdb)
+	createIncident := client.Incident.Create().
+		SetSlug(uuid.NewString()).
+		SetTitle("incident")
+	incident, incidentErr := createIncident.Save(ctx)
+	s.Require().NoError(incidentErr)
+
+	createMembership := client.TeamMembership.Create().
+		SetTeamID(uuid.New()).
+		SetUserID(owner.ID)
+	s.ErrorIs(createMembership.Exec(ctx), errs.ErrNotFound, "required field")
+	setSeverity := client.Incident.UpdateOneID(incident.ID).SetSeverityID(uuid.New())
+	s.ErrorIs(setSeverity.Exec(ctx), errs.ErrNotFound, "optional field")
+	addRoster := client.Team.UpdateOneID(existing.ID).AddOncallRosterIDs(uuid.New())
+	s.ErrorIs(addRoster.Exec(ctx), errs.ErrNotFound, "many-to-many edge")
+	bulk := client.TeamMembership.CreateBulk(
+		client.TeamMembership.Create().SetTeamID(existing.ID).SetUserID(owner.ID),
+		client.TeamMembership.Create().SetTeamID(uuid.New()).SetUserID(owner.ID),
+	)
+	s.ErrorIs(bulk.Exec(ctx), errs.ErrNotFound, "bulk create")
+	upsert := client.TeamMembership.Create().
+		SetTeamID(uuid.New()).
+		SetUserID(owner.ID).
+		OnConflictColumns(teammembership.FieldTeamID, teammembership.FieldUserID).
+		UpdateNewValues()
+	s.ErrorIs(upsert.Exec(ctx), errs.ErrNotFound, "upsert")
+
+	memberships, membershipsErr := client.TeamMembership.Query().Count(ctx)
+	s.Require().NoError(membershipsErr)
+	s.Zero(memberships)
+	reloaded, reloadErr := client.Incident.Get(ctx, incident.ID)
+	s.Require().NoError(reloadErr)
+	s.Nil(reloaded.SeverityID)
+}
+
+func (s *DatabaseClientSuite) TestDeletingAReferencedRowKeepsItsError() {
+	ctx, tdb := s.SetupTestDatabase()
+	client := tdb.Client(ctx)
+	owner, ownerErr := client.User.Query().Only(ctx)
+	s.Require().NoError(ownerErr)
+	createMembership := client.TeamMembership.Create().
+		SetTeamID(s.createTeam(ctx, tdb).ID).
+		SetUserID(owner.ID)
+	s.Require().NoError(createMembership.Exec(ctx))
+
+	deleteErr := client.User.DeleteOneID(owner.ID).Exec(ctx)
+
+	s.True(ent.IsConstraintError(deleteErr), "%v", deleteErr)
+	s.NotErrorIs(deleteErr, errs.ErrNotFound)
+}
+
+func (s *DatabaseClientSuite) TestUpsertMatchingAnotherTenantsKeyInserts() {
+	ctx, tdb := s.SetupTestDatabase()
+	otherCtx, _ := s.SetupTestDatabase()
+	other := s.createTeam(otherCtx, tdb)
+
+	upsert := tdb.Client(ctx).Team.Create().
+		SetSlug(other.Slug).
+		SetName("upserted").
+		OnConflictColumns(team.FieldTenantID, team.FieldSlug).
+		UpdateName()
+	id, upsertErr := upsert.ID(ctx)
+	s.Require().NoError(upsertErr)
+
+	s.NotEqual(other.ID, id)
+	reloaded, reloadErr := tdb.Client(otherCtx).Team.Get(otherCtx, other.ID)
+	s.Require().NoError(reloadErr)
+	s.Equal(other.Name, reloaded.Name)
 }

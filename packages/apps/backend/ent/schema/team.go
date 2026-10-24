@@ -26,10 +26,18 @@ func (Team) Mixin() []ent.Mixin {
 func (Team) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.New()).Default(uuid.New),
-		field.String("slug").Unique(),
+		field.String("slug"),
 		field.String("name"),
 		field.String("chat_channel_id").Optional(),
 		field.String("timezone").Optional(),
+	}
+}
+
+func (Team) Indexes() []ent.Index {
+	return []ent.Index{
+		index.Fields("tenant_id", "slug").
+			Unique().
+			StorageKey("teams_slug_key"),
 	}
 }
 

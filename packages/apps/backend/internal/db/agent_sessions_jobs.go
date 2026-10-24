@@ -581,7 +581,7 @@ func (w *InvokeAgentTurnWorker) saveInvocationResult(ctx context.Context, job *r
 					ca.SetMetadata(art.Metadata)
 					ca.SetParts(art.Parts)
 				}).
-				OnConflictColumns(agta.FieldAgentSessionID, agta.FieldName).
+				OnConflictColumns(agta.FieldTenantID, agta.FieldAgentSessionID, agta.FieldName).
 				Update(func(u *ent.AgentArtifactUpsert) {
 					u.UpdateLastAgentTurnID()
 					u.UpdateMetadata()

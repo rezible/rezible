@@ -6,6 +6,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
+	"entgo.io/ent/schema/index"
 	"github.com/google/uuid"
 )
 
@@ -27,7 +28,7 @@ func (OncallRoster) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.String("name"),
-		field.String("slug").Unique(),
+		field.String("slug"),
 		field.String("timezone").Optional(),
 		field.String("chat_handle").Optional(),
 		field.String("chat_channel_id").Optional(),
@@ -36,7 +37,11 @@ func (OncallRoster) Fields() []ent.Field {
 }
 
 func (OncallRoster) Indexes() []ent.Index {
-	return []ent.Index{}
+	return []ent.Index{
+		index.Fields("tenant_id", "slug").
+			Unique().
+			StorageKey("oncall_rosters_slug_key"),
+	}
 }
 
 // Edges of the OncallRoster.

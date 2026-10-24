@@ -258,7 +258,7 @@ func (s *SituationNoticeService) createNotice(ctx context.Context, situationID, 
 		SetCreatedAt(now).
 		SetUpdatedAt(now)
 	upsertNotice := createNotice.
-		OnConflictColumns(sitnot.FieldSituationID, sitnot.FieldIntegrationID).
+		OnConflictColumns(sitnot.FieldTenantID, sitnot.FieldSituationID, sitnot.FieldIntegrationID).
 		DoNothing()
 	if createErr := upsertNotice.Exec(ctx); createErr != nil {
 		return fmt.Errorf("create situation notice: %w", createErr)

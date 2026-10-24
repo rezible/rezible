@@ -53,9 +53,9 @@ var (
 				Columns: []*schema.Column{AgentArtifactsColumns[6]},
 			},
 			{
-				Name:    "agentartifact_agent_session_id_name",
+				Name:    "agentartifact_tenant_id_agent_session_id_name",
 				Unique:  true,
-				Columns: []*schema.Column{AgentArtifactsColumns[7], AgentArtifactsColumns[3]},
+				Columns: []*schema.Column{AgentArtifactsColumns[6], AgentArtifactsColumns[7], AgentArtifactsColumns[3]},
 			},
 			{
 				Name:    "agentartifact_tenant_id_agent_session_id_created_at",
@@ -115,9 +115,9 @@ var (
 				Columns: []*schema.Column{AgentMessagesColumns[8]},
 			},
 			{
-				Name:    "agentmessage_agent_session_id_sequence",
+				Name:    "agentmessage_tenant_id_agent_session_id_sequence",
 				Unique:  true,
-				Columns: []*schema.Column{AgentMessagesColumns[9], AgentMessagesColumns[3]},
+				Columns: []*schema.Column{AgentMessagesColumns[8], AgentMessagesColumns[9], AgentMessagesColumns[3]},
 			},
 			{
 				Name:    "agentmessage_tenant_id_agent_session_id_created_at",
@@ -346,22 +346,22 @@ var (
 				Columns: []*schema.Column{AgentTurnsColumns[16]},
 			},
 			{
-				Name:    "agentturn_agent_session_id_sequence",
+				Name:    "agentturn_tenant_id_agent_session_id_sequence",
 				Unique:  true,
-				Columns: []*schema.Column{AgentTurnsColumns[15], AgentTurnsColumns[3]},
+				Columns: []*schema.Column{AgentTurnsColumns[16], AgentTurnsColumns[15], AgentTurnsColumns[3]},
 			},
 			{
 				Name:    "agent_turn_one_active_per_session",
 				Unique:  true,
-				Columns: []*schema.Column{AgentTurnsColumns[15]},
+				Columns: []*schema.Column{AgentTurnsColumns[16], AgentTurnsColumns[15]},
 				Annotation: &entsql.IndexAnnotation{
-					Where: "status IN ('queued', 'running')",
+					Where: "((status)::text = ANY (ARRAY[('queued'::character varying)::text, ('running'::character varying)::text]))",
 				},
 			},
 			{
 				Name:    "agent_turn_input_message_unique",
 				Unique:  true,
-				Columns: []*schema.Column{AgentTurnsColumns[17]},
+				Columns: []*schema.Column{AgentTurnsColumns[16], AgentTurnsColumns[17]},
 				Annotation: &entsql.IndexAnnotation{
 					Where: "input_message_id IS NOT NULL",
 				},
@@ -909,7 +909,7 @@ var (
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "archive_time", Type: field.TypeTime, Nullable: true},
-		{Name: "slug", Type: field.TypeString, Unique: true},
+		{Name: "slug", Type: field.TypeString},
 		{Name: "title", Type: field.TypeString},
 		{Name: "summary", Type: field.TypeString, Nullable: true},
 		{Name: "chat_channel_id", Type: field.TypeString, Nullable: true},
@@ -970,6 +970,11 @@ var (
 				Name:    "incident_tenant_id_knowledge_entity_id",
 				Unique:  true,
 				Columns: []*schema.Column{IncidentsColumns[12], IncidentsColumns[13]},
+			},
+			{
+				Name:    "incidents_slug_key",
+				Unique:  true,
+				Columns: []*schema.Column{IncidentsColumns[12], IncidentsColumns[4]},
 			},
 		},
 	}
@@ -1525,7 +1530,7 @@ var (
 		{Name: "provider_installation_ref", Type: field.TypeString},
 		{Name: "installation_config", Type: field.TypeJSON, SchemaType: map[string]string{"postgres": "jsonb"}},
 		{Name: "user_settings", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
-		{Name: "webhook_token_hash", Type: field.TypeBytes, Unique: true, Nullable: true},
+		{Name: "webhook_token_hash", Type: field.TypeBytes, Nullable: true},
 		{Name: "tenant_id", Type: field.TypeInt},
 	}
 	// IntegrationsTable holds the schema information for the "integrations" table.
@@ -1556,6 +1561,16 @@ var (
 				Name:    "integration_tenant_id_provider_name",
 				Unique:  false,
 				Columns: []*schema.Column{IntegrationsColumns[10], IntegrationsColumns[3], IntegrationsColumns[4]},
+			},
+			{
+				Name:    "integrations_webhook_token_hash_key",
+				Unique:  true,
+				Columns: []*schema.Column{IntegrationsColumns[10], IntegrationsColumns[9]},
+			},
+			{
+				Name:    "integration_webhook_token_hash",
+				Unique:  false,
+				Columns: []*schema.Column{IntegrationsColumns[9]},
 			},
 		},
 	}
@@ -1790,9 +1805,9 @@ var (
 				Columns: []*schema.Column{InvestigationEvidenceRevisionsColumns[5]},
 			},
 			{
-				Name:    "investigationevidencerevision_investigation_id_key",
+				Name:    "investigationevidencerevision_tenant_id_investigation_id_key",
 				Unique:  true,
-				Columns: []*schema.Column{InvestigationEvidenceRevisionsColumns[4], InvestigationEvidenceRevisionsColumns[3]},
+				Columns: []*schema.Column{InvestigationEvidenceRevisionsColumns[5], InvestigationEvidenceRevisionsColumns[4], InvestigationEvidenceRevisionsColumns[3]},
 			},
 			{
 				Name:    "investigationevidencerevision_investigation_id_agent_turn_id",
@@ -2234,14 +2249,14 @@ var (
 				Columns: []*schema.Column{InvestigationUserInputsColumns[6]},
 			},
 			{
-				Name:    "investigationuserinput_investigation_id_key",
+				Name:    "investigationuserinput_tenant_id_investigation_id_key",
 				Unique:  true,
-				Columns: []*schema.Column{InvestigationUserInputsColumns[5], InvestigationUserInputsColumns[4]},
+				Columns: []*schema.Column{InvestigationUserInputsColumns[6], InvestigationUserInputsColumns[5], InvestigationUserInputsColumns[4]},
 			},
 			{
-				Name:    "investigationuserinput_investigation_id_agent_turn_id",
+				Name:    "investigationuserinput_tenant_id_investigation_id_agent_turn_id",
 				Unique:  true,
-				Columns: []*schema.Column{InvestigationUserInputsColumns[5], InvestigationUserInputsColumns[7]},
+				Columns: []*schema.Column{InvestigationUserInputsColumns[6], InvestigationUserInputsColumns[5], InvestigationUserInputsColumns[7]},
 			},
 			{
 				Name:    "investigationuserinput_investigation_id_created_at_id",
@@ -2882,7 +2897,7 @@ var (
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "archive_time", Type: field.TypeTime, Nullable: true},
 		{Name: "name", Type: field.TypeString},
-		{Name: "slug", Type: field.TypeString, Unique: true},
+		{Name: "slug", Type: field.TypeString},
 		{Name: "timezone", Type: field.TypeString, Nullable: true},
 		{Name: "chat_handle", Type: field.TypeString, Nullable: true},
 		{Name: "chat_channel_id", Type: field.TypeString, Nullable: true},
@@ -2913,6 +2928,11 @@ var (
 				Name:    "oncallroster_tenant_id",
 				Unique:  false,
 				Columns: []*schema.Column{OncallRostersColumns[8]},
+			},
+			{
+				Name:    "oncall_rosters_slug_key",
+				Unique:  true,
+				Columns: []*schema.Column{OncallRostersColumns[8], OncallRostersColumns[3]},
 			},
 		},
 	}
@@ -3884,9 +3904,9 @@ var (
 				Columns: []*schema.Column{SituationNoticesColumns[12]},
 			},
 			{
-				Name:    "situationnotice_situation_id_integration_id",
+				Name:    "situationnotice_tenant_id_situation_id_integration_id",
 				Unique:  true,
-				Columns: []*schema.Column{SituationNoticesColumns[11], SituationNoticesColumns[13]},
+				Columns: []*schema.Column{SituationNoticesColumns[12], SituationNoticesColumns[11], SituationNoticesColumns[13]},
 			},
 			{
 				Name:    "situationnotice_integration_id_channel_id_first_posted_at",
@@ -3938,9 +3958,9 @@ var (
 				Columns: []*schema.Column{SituationNoticeRatingsColumns[6]},
 			},
 			{
-				Name:    "situationnoticerating_situation_id_chat_user_id",
+				Name:    "situationnoticerating_tenant_id_situation_id_chat_user_id",
 				Unique:  true,
-				Columns: []*schema.Column{SituationNoticeRatingsColumns[5], SituationNoticeRatingsColumns[3]},
+				Columns: []*schema.Column{SituationNoticeRatingsColumns[6], SituationNoticeRatingsColumns[5], SituationNoticeRatingsColumns[3]},
 			},
 		},
 	}
@@ -4589,7 +4609,7 @@ var (
 	TeamsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "archive_time", Type: field.TypeTime, Nullable: true},
-		{Name: "slug", Type: field.TypeString, Unique: true},
+		{Name: "slug", Type: field.TypeString},
 		{Name: "name", Type: field.TypeString},
 		{Name: "chat_channel_id", Type: field.TypeString, Nullable: true},
 		{Name: "timezone", Type: field.TypeString, Nullable: true},
@@ -4625,6 +4645,11 @@ var (
 				Name:    "team_tenant_id_knowledge_entity_id",
 				Unique:  true,
 				Columns: []*schema.Column{TeamsColumns[6], TeamsColumns[7]},
+			},
+			{
+				Name:    "teams_slug_key",
+				Unique:  true,
+				Columns: []*schema.Column{TeamsColumns[6], TeamsColumns[2]},
 			},
 		},
 	}
@@ -4773,9 +4798,9 @@ var (
 				Columns: []*schema.Column{UsersColumns[7], UsersColumns[8]},
 			},
 			{
-				Name:    "user_auth_provider_id",
+				Name:    "user_tenant_id_auth_provider_id",
 				Unique:  true,
-				Columns: []*schema.Column{UsersColumns[6]},
+				Columns: []*schema.Column{UsersColumns[7], UsersColumns[6]},
 			},
 			{
 				Name:    "user_tenant_id_email",

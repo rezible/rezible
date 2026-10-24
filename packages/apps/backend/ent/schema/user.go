@@ -68,7 +68,7 @@ func (User) Edges() []ent.Edge {
 
 func (User) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Fields("auth_provider_id").Unique(),
+		index.Fields("tenant_id", "auth_provider_id").Unique(),
 		index.Fields("tenant_id", "email").Unique(),
 	}
 }

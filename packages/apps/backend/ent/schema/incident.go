@@ -6,6 +6,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
+	"entgo.io/ent/schema/index"
 	"github.com/google/uuid"
 )
 
@@ -28,7 +29,7 @@ func (Incident) Mixin() []ent.Mixin {
 func (Incident) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.New()).Default(uuid.New),
-		field.String("slug").Unique(),
+		field.String("slug"),
 		field.String("title"),
 		field.UUID("severity_id", uuid.UUID{}).Optional().Nillable(),
 		field.UUID("type_id", uuid.UUID{}).Optional().Nillable(),
@@ -40,6 +41,14 @@ func (Incident) Fields() []ent.Field {
 		field.Enum("response_state").Values("started", "mitigated", "resolved").Default("started"),
 		field.Time("resolved_at").Optional().Nillable(),
 		field.UUID("declared_by_id", uuid.UUID{}).Optional().Nillable(),
+	}
+}
+
+func (Incident) Indexes() []ent.Index {
+	return []ent.Index{
+		index.Fields("tenant_id", "slug").
+			Unique().
+			StorageKey("incidents_slug_key"),
 	}
 }
 

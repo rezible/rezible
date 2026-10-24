@@ -41,7 +41,6 @@ func (Integration) Fields() []ent.Field {
 		field.Bytes("webhook_token_hash").
 			Optional().
 			Nillable().
-			Unique().
 			Sensitive(),
 	}
 }
@@ -50,6 +49,11 @@ func (Integration) Indexes() []ent.Index {
 	return []ent.Index{
 		index.Fields("tenant_id", "provider", "name", "provider_installation_ref").Unique(),
 		index.Fields("tenant_id", "provider", "name"),
+		index.Fields("tenant_id", "webhook_token_hash").
+			Unique().
+			StorageKey("integrations_webhook_token_hash_key"),
+		// A webhook delivery finds its integration by token alone.
+		index.Fields("webhook_token_hash"),
 	}
 }
 

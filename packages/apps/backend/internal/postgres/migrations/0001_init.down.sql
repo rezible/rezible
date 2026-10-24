@@ -266,8 +266,8 @@ DROP INDEX "userauthsession_tenant_id";
 DROP TABLE "user_auth_sessions";
 -- reverse: create index "user_tenant_id_email" to table: "users"
 DROP INDEX "user_tenant_id_email";
--- reverse: create index "user_auth_provider_id" to table: "users"
-DROP INDEX "user_auth_provider_id";
+-- reverse: create index "user_tenant_id_auth_provider_id" to table: "users"
+DROP INDEX "user_tenant_id_auth_provider_id";
 -- reverse: create index "user_tenant_id_knowledge_entity_id" to table: "users"
 DROP INDEX "user_tenant_id_knowledge_entity_id";
 -- reverse: create index "user_tenant_id" to table: "users"
@@ -288,12 +288,12 @@ DROP INDEX "teammembership_tenant_id_knowledge_relationship_id";
 DROP INDEX "teammembership_tenant_id";
 -- reverse: create "team_memberships" table
 DROP TABLE "team_memberships";
+-- reverse: create index "teams_slug_key" to table: "teams"
+DROP INDEX "teams_slug_key";
 -- reverse: create index "team_tenant_id_knowledge_entity_id" to table: "teams"
 DROP INDEX "team_tenant_id_knowledge_entity_id";
 -- reverse: create index "team_tenant_id" to table: "teams"
 DROP INDEX "team_tenant_id";
--- reverse: create index "teams_slug_key" to table: "teams"
-DROP INDEX "teams_slug_key";
 -- reverse: create "teams" table
 DROP TABLE "teams";
 -- reverse: create index "task_tenant_id" to table: "tasks"
@@ -386,16 +386,16 @@ DROP TABLE "situation_signals";
 DROP INDEX "situationobservationgroup_tenant_id";
 -- reverse: create "situation_observation_groups" table
 DROP TABLE "situation_observation_groups";
--- reverse: create index "situationnoticerating_situation_id_chat_user_id" to table: "situation_notice_ratings"
-DROP INDEX "situationnoticerating_situation_id_chat_user_id";
+-- reverse: create index "situationnoticerating_tenant_id_situation_id_chat_user_id" to table: "situation_notice_ratings"
+DROP INDEX "situationnoticerating_tenant_id_situation_id_chat_user_id";
 -- reverse: create index "situationnoticerating_tenant_id" to table: "situation_notice_ratings"
 DROP INDEX "situationnoticerating_tenant_id";
 -- reverse: create "situation_notice_ratings" table
 DROP TABLE "situation_notice_ratings";
 -- reverse: create index "situationnotice_integration_id_channel_id_first_posted_at" to table: "situation_notices"
 DROP INDEX "situationnotice_integration_id_channel_id_first_posted_at";
--- reverse: create index "situationnotice_situation_id_integration_id" to table: "situation_notices"
-DROP INDEX "situationnotice_situation_id_integration_id";
+-- reverse: create index "situationnotice_tenant_id_situation_id_integration_id" to table: "situation_notices"
+DROP INDEX "situationnotice_tenant_id_situation_id_integration_id";
 -- reverse: create index "situationnotice_tenant_id" to table: "situation_notices"
 DROP INDEX "situationnotice_tenant_id";
 -- reverse: create "situation_notices" table
@@ -524,10 +524,10 @@ DROP TABLE "oncall_schedules";
 DROP INDEX "oncallrostermetrics_tenant_id";
 -- reverse: create "oncall_roster_metrics" table
 DROP TABLE "oncall_roster_metrics";
--- reverse: create index "oncallroster_tenant_id" to table: "oncall_rosters"
-DROP INDEX "oncallroster_tenant_id";
 -- reverse: create index "oncall_rosters_slug_key" to table: "oncall_rosters"
 DROP INDEX "oncall_rosters_slug_key";
+-- reverse: create index "oncallroster_tenant_id" to table: "oncall_rosters"
+DROP INDEX "oncallroster_tenant_id";
 -- reverse: create "oncall_rosters" table
 DROP TABLE "oncall_rosters";
 -- reverse: create index "oncallhandovertemplate_tenant_id" to table: "oncall_handover_templates"
@@ -626,10 +626,10 @@ DROP INDEX "knowledgeentity_tenant_id";
 DROP TABLE "knowledge_entities";
 -- reverse: create index "investigationuserinput_investigation_id_created_at_id" to table: "investigation_user_inputs"
 DROP INDEX "investigationuserinput_investigation_id_created_at_id";
--- reverse: create index "investigationuserinput_investigation_id_agent_turn_id" to table: "investigation_user_inputs"
-DROP INDEX "investigationuserinput_investigation_id_agent_turn_id";
--- reverse: create index "investigationuserinput_investigation_id_key" to table: "investigation_user_inputs"
-DROP INDEX "investigationuserinput_investigation_id_key";
+-- reverse: create index "investigationuserinput_tenant_id_investigation_id_agent_turn_id" to table: "investigation_user_inputs"
+DROP INDEX "investigationuserinput_tenant_id_investigation_id_agent_turn_id";
+-- reverse: create index "investigationuserinput_tenant_id_investigation_id_key" to table: "investigation_user_inputs"
+DROP INDEX "investigationuserinput_tenant_id_investigation_id_key";
 -- reverse: create index "investigationuserinput_tenant_id" to table: "investigation_user_inputs"
 DROP INDEX "investigationuserinput_tenant_id";
 -- reverse: create "investigation_user_inputs" table
@@ -694,8 +694,8 @@ DROP TABLE "investigation_findings";
 DROP INDEX "investigationevidencerevision_investigation_id_created_at_id";
 -- reverse: create index "investigationevidencerevision_investigation_id_agent_turn_id" to table: "investigation_evidence_revisions"
 DROP INDEX "investigationevidencerevision_investigation_id_agent_turn_id";
--- reverse: create index "investigationevidencerevision_investigation_id_key" to table: "investigation_evidence_revisions"
-DROP INDEX "investigationevidencerevision_investigation_id_key";
+-- reverse: create index "investigationevidencerevision_tenant_id_investigation_id_key" to table: "investigation_evidence_revisions"
+DROP INDEX "investigationevidencerevision_tenant_id_investigation_id_key";
 -- reverse: create index "investigationevidencerevision_tenant_id" to table: "investigation_evidence_revisions"
 DROP INDEX "investigationevidencerevision_tenant_id";
 -- reverse: create "investigation_evidence_revisions" table
@@ -732,14 +732,16 @@ DROP INDEX "integrationeventsynccursor_ten_a26c037e9b0ef05d669054c1b2d81229";
 DROP INDEX "integrationeventsynccursor_tenant_id";
 -- reverse: create "integration_event_sync_cursors" table
 DROP TABLE "integration_event_sync_cursors";
+-- reverse: create index "integration_webhook_token_hash" to table: "integrations"
+DROP INDEX "integration_webhook_token_hash";
+-- reverse: create index "integrations_webhook_token_hash_key" to table: "integrations"
+DROP INDEX "integrations_webhook_token_hash_key";
 -- reverse: create index "integration_tenant_id_provider_name" to table: "integrations"
 DROP INDEX "integration_tenant_id_provider_name";
 -- reverse: create index "integration_tenant_id_provider_name_provider_installation_ref" to table: "integrations"
 DROP INDEX "integration_tenant_id_provider_name_provider_installation_ref";
 -- reverse: create index "integration_tenant_id" to table: "integrations"
 DROP INDEX "integration_tenant_id";
--- reverse: create index "integrations_webhook_token_hash_key" to table: "integrations"
-DROP INDEX "integrations_webhook_token_hash_key";
 -- reverse: create "integrations" table
 DROP TABLE "integrations";
 -- reverse: create index "incidenttype_tenant_id_name" to table: "incident_types"
@@ -812,12 +814,12 @@ DROP TABLE "incident_debrief_messages";
 DROP INDEX "incidentdebrief_tenant_id";
 -- reverse: create "incident_debriefs" table
 DROP TABLE "incident_debriefs";
+-- reverse: create index "incidents_slug_key" to table: "incidents"
+DROP INDEX "incidents_slug_key";
 -- reverse: create index "incident_tenant_id_knowledge_entity_id" to table: "incidents"
 DROP INDEX "incident_tenant_id_knowledge_entity_id";
 -- reverse: create index "incident_tenant_id" to table: "incidents"
 DROP INDEX "incident_tenant_id";
--- reverse: create index "incidents_slug_key" to table: "incidents"
-DROP INDEX "incidents_slug_key";
 -- reverse: create "incidents" table
 DROP TABLE "incidents";
 -- reverse: create index "eventannotation_tenant_id" to table: "event_annotations"
@@ -888,8 +890,8 @@ DROP INDEX "agentturn_tenant_id_agent_session_id_created_at";
 DROP INDEX "agent_turn_input_message_unique";
 -- reverse: create index "agent_turn_one_active_per_session" to table: "agent_turns"
 DROP INDEX "agent_turn_one_active_per_session";
--- reverse: create index "agentturn_agent_session_id_sequence" to table: "agent_turns"
-DROP INDEX "agentturn_agent_session_id_sequence";
+-- reverse: create index "agentturn_tenant_id_agent_session_id_sequence" to table: "agent_turns"
+DROP INDEX "agentturn_tenant_id_agent_session_id_sequence";
 -- reverse: create index "agentturn_tenant_id" to table: "agent_turns"
 DROP INDEX "agentturn_tenant_id";
 -- reverse: create "agent_turns" table
@@ -918,8 +920,8 @@ DROP TABLE "agent_provider_reads";
 DROP INDEX "agentmessage_tenant_id_agent_turn_id_sequence";
 -- reverse: create index "agentmessage_tenant_id_agent_session_id_created_at" to table: "agent_messages"
 DROP INDEX "agentmessage_tenant_id_agent_session_id_created_at";
--- reverse: create index "agentmessage_agent_session_id_sequence" to table: "agent_messages"
-DROP INDEX "agentmessage_agent_session_id_sequence";
+-- reverse: create index "agentmessage_tenant_id_agent_session_id_sequence" to table: "agent_messages"
+DROP INDEX "agentmessage_tenant_id_agent_session_id_sequence";
 -- reverse: create index "agentmessage_tenant_id" to table: "agent_messages"
 DROP INDEX "agentmessage_tenant_id";
 -- reverse: create "agent_messages" table
@@ -928,8 +930,8 @@ DROP TABLE "agent_messages";
 DROP INDEX "agentartifact_tenant_id_last_agent_turn_id";
 -- reverse: create index "agentartifact_tenant_id_agent_session_id_created_at" to table: "agent_artifacts"
 DROP INDEX "agentartifact_tenant_id_agent_session_id_created_at";
--- reverse: create index "agentartifact_agent_session_id_name" to table: "agent_artifacts"
-DROP INDEX "agentartifact_agent_session_id_name";
+-- reverse: create index "agentartifact_tenant_id_agent_session_id_name" to table: "agent_artifacts"
+DROP INDEX "agentartifact_tenant_id_agent_session_id_name";
 -- reverse: create index "agentartifact_tenant_id" to table: "agent_artifacts"
 DROP INDEX "agentartifact_tenant_id";
 -- reverse: create "agent_artifacts" table

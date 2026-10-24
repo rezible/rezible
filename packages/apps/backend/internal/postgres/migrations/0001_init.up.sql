@@ -2,8 +2,8 @@
 CREATE TABLE "agent_artifacts" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "name" character varying NOT NULL, "parts" jsonb NOT NULL, "metadata" jsonb NOT NULL, "tenant_id" bigint NOT NULL, "agent_session_id" uuid NOT NULL, "last_agent_turn_id" uuid NULL, PRIMARY KEY ("id"));
 -- create index "agentartifact_tenant_id" to table: "agent_artifacts"
 CREATE INDEX "agentartifact_tenant_id" ON "agent_artifacts" ("tenant_id");
--- create index "agentartifact_agent_session_id_name" to table: "agent_artifacts"
-CREATE UNIQUE INDEX "agentartifact_agent_session_id_name" ON "agent_artifacts" ("agent_session_id", "name");
+-- create index "agentartifact_tenant_id_agent_session_id_name" to table: "agent_artifacts"
+CREATE UNIQUE INDEX "agentartifact_tenant_id_agent_session_id_name" ON "agent_artifacts" ("tenant_id", "agent_session_id", "name");
 -- create index "agentartifact_tenant_id_agent_session_id_created_at" to table: "agent_artifacts"
 CREATE INDEX "agentartifact_tenant_id_agent_session_id_created_at" ON "agent_artifacts" ("tenant_id", "agent_session_id", "created_at");
 -- create index "agentartifact_tenant_id_last_agent_turn_id" to table: "agent_artifacts"
@@ -12,8 +12,8 @@ CREATE INDEX "agentartifact_tenant_id_last_agent_turn_id" ON "agent_artifacts" (
 CREATE TABLE "agent_messages" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "sequence" bigint NOT NULL, "role" character varying NOT NULL, "content" jsonb NOT NULL, "metadata" jsonb NOT NULL, "visible" boolean NOT NULL DEFAULT true, "tenant_id" bigint NOT NULL, "agent_session_id" uuid NOT NULL, "agent_turn_id" uuid NOT NULL, PRIMARY KEY ("id"));
 -- create index "agentmessage_tenant_id" to table: "agent_messages"
 CREATE INDEX "agentmessage_tenant_id" ON "agent_messages" ("tenant_id");
--- create index "agentmessage_agent_session_id_sequence" to table: "agent_messages"
-CREATE UNIQUE INDEX "agentmessage_agent_session_id_sequence" ON "agent_messages" ("agent_session_id", "sequence");
+-- create index "agentmessage_tenant_id_agent_session_id_sequence" to table: "agent_messages"
+CREATE UNIQUE INDEX "agentmessage_tenant_id_agent_session_id_sequence" ON "agent_messages" ("tenant_id", "agent_session_id", "sequence");
 -- create index "agentmessage_tenant_id_agent_session_id_created_at" to table: "agent_messages"
 CREATE INDEX "agentmessage_tenant_id_agent_session_id_created_at" ON "agent_messages" ("tenant_id", "agent_session_id", "created_at");
 -- create index "agentmessage_tenant_id_agent_turn_id_sequence" to table: "agent_messages"
@@ -42,12 +42,12 @@ CREATE UNIQUE INDEX "agentsessionbinding_tenant_id__b7df457d899c87ec57565071d896
 CREATE TABLE "agent_turns" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "sequence" bigint NOT NULL, "river_job_id" bigint NOT NULL, "input_tool_resume" jsonb NULL, "status" character varying NOT NULL, "started_at" timestamptz NULL, "finished_at" timestamptz NULL, "finish_reason" character varying NOT NULL DEFAULT '', "error" character varying NULL, "model" character varying NOT NULL DEFAULT '', "input_tokens" bigint NOT NULL DEFAULT 0, "cached_input_tokens" bigint NOT NULL DEFAULT 0, "output_tokens" bigint NOT NULL DEFAULT 0, "agent_session_id" uuid NOT NULL, "tenant_id" bigint NOT NULL, "input_message_id" uuid NULL, PRIMARY KEY ("id"));
 -- create index "agentturn_tenant_id" to table: "agent_turns"
 CREATE INDEX "agentturn_tenant_id" ON "agent_turns" ("tenant_id");
--- create index "agentturn_agent_session_id_sequence" to table: "agent_turns"
-CREATE UNIQUE INDEX "agentturn_agent_session_id_sequence" ON "agent_turns" ("agent_session_id", "sequence");
+-- create index "agentturn_tenant_id_agent_session_id_sequence" to table: "agent_turns"
+CREATE UNIQUE INDEX "agentturn_tenant_id_agent_session_id_sequence" ON "agent_turns" ("tenant_id", "agent_session_id", "sequence");
 -- create index "agent_turn_one_active_per_session" to table: "agent_turns"
-CREATE UNIQUE INDEX "agent_turn_one_active_per_session" ON "agent_turns" ("agent_session_id") WHERE status IN ('queued', 'running');
+CREATE UNIQUE INDEX "agent_turn_one_active_per_session" ON "agent_turns" ("tenant_id", "agent_session_id") WHERE ((status)::text = ANY (ARRAY[('queued'::character varying)::text, ('running'::character varying)::text]));
 -- create index "agent_turn_input_message_unique" to table: "agent_turns"
-CREATE UNIQUE INDEX "agent_turn_input_message_unique" ON "agent_turns" ("input_message_id") WHERE input_message_id IS NOT NULL;
+CREATE UNIQUE INDEX "agent_turn_input_message_unique" ON "agent_turns" ("tenant_id", "input_message_id") WHERE input_message_id IS NOT NULL;
 -- create index "agentturn_tenant_id_agent_session_id_created_at" to table: "agent_turns"
 CREATE INDEX "agentturn_tenant_id_agent_session_id_created_at" ON "agent_turns" ("tenant_id", "agent_session_id", "created_at");
 -- create "alert_definitions" table
@@ -114,12 +114,12 @@ CREATE TABLE "event_annotations" ("id" uuid NOT NULL, "created_at" timestamptz N
 CREATE INDEX "eventannotation_tenant_id" ON "event_annotations" ("tenant_id");
 -- create "incidents" table
 CREATE TABLE "incidents" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "archive_time" timestamptz NULL, "slug" character varying NOT NULL, "title" character varying NOT NULL, "summary" character varying NULL, "chat_channel_id" character varying NULL, "chat_details_message_id" character varying NULL, "opened_at" timestamptz NOT NULL, "response_state" character varying NOT NULL DEFAULT 'started', "resolved_at" timestamptz NULL, "tenant_id" bigint NOT NULL, "knowledge_entity_id" uuid NULL, "severity_id" uuid NULL, "type_id" uuid NULL, "declared_by_id" uuid NULL, PRIMARY KEY ("id"));
--- create index "incidents_slug_key" to table: "incidents"
-CREATE UNIQUE INDEX "incidents_slug_key" ON "incidents" ("slug");
 -- create index "incident_tenant_id" to table: "incidents"
 CREATE INDEX "incident_tenant_id" ON "incidents" ("tenant_id");
 -- create index "incident_tenant_id_knowledge_entity_id" to table: "incidents"
 CREATE UNIQUE INDEX "incident_tenant_id_knowledge_entity_id" ON "incidents" ("tenant_id", "knowledge_entity_id");
+-- create index "incidents_slug_key" to table: "incidents"
+CREATE UNIQUE INDEX "incidents_slug_key" ON "incidents" ("tenant_id", "slug");
 -- create "incident_debriefs" table
 CREATE TABLE "incident_debriefs" ("id" uuid NOT NULL, "required" boolean NOT NULL, "started" boolean NOT NULL, "incident_id" uuid NOT NULL, "tenant_id" bigint NOT NULL, "user_id" uuid NOT NULL, PRIMARY KEY ("id"));
 -- create index "incidentdebrief_tenant_id" to table: "incident_debriefs"
@@ -192,14 +192,16 @@ CREATE INDEX "incidenttype_tenant_id" ON "incident_types" ("tenant_id");
 CREATE UNIQUE INDEX "incidenttype_tenant_id_name" ON "incident_types" ("tenant_id", "name");
 -- create "integrations" table
 CREATE TABLE "integrations" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "provider" character varying NOT NULL, "name" character varying NOT NULL, "display_name" character varying NOT NULL, "provider_installation_ref" character varying NOT NULL, "installation_config" jsonb NOT NULL, "user_settings" jsonb NULL, "webhook_token_hash" bytea NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
--- create index "integrations_webhook_token_hash_key" to table: "integrations"
-CREATE UNIQUE INDEX "integrations_webhook_token_hash_key" ON "integrations" ("webhook_token_hash");
 -- create index "integration_tenant_id" to table: "integrations"
 CREATE INDEX "integration_tenant_id" ON "integrations" ("tenant_id");
 -- create index "integration_tenant_id_provider_name_provider_installation_ref" to table: "integrations"
 CREATE UNIQUE INDEX "integration_tenant_id_provider_name_provider_installation_ref" ON "integrations" ("tenant_id", "provider", "name", "provider_installation_ref");
 -- create index "integration_tenant_id_provider_name" to table: "integrations"
 CREATE INDEX "integration_tenant_id_provider_name" ON "integrations" ("tenant_id", "provider", "name");
+-- create index "integrations_webhook_token_hash_key" to table: "integrations"
+CREATE UNIQUE INDEX "integrations_webhook_token_hash_key" ON "integrations" ("tenant_id", "webhook_token_hash");
+-- create index "integration_webhook_token_hash" to table: "integrations"
+CREATE INDEX "integration_webhook_token_hash" ON "integrations" ("webhook_token_hash");
 -- create "integration_event_sync_cursors" table
 CREATE TABLE "integration_event_sync_cursors" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "provider_event_source" character varying NOT NULL, "cursor" character varying NULL, "last_synced_at" timestamptz NOT NULL, "tenant_id" bigint NOT NULL, "integration_id" uuid NOT NULL, PRIMARY KEY ("id"));
 -- create index "integrationeventsynccursor_tenant_id" to table: "integration_event_sync_cursors"
@@ -236,8 +238,8 @@ CREATE UNIQUE INDEX "investigation_tenant_id_system_analysis_id" ON "investigati
 CREATE TABLE "investigation_evidence_revisions" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "explanation" text NOT NULL, "key" character varying NOT NULL, "investigation_id" uuid NOT NULL, "tenant_id" bigint NOT NULL, "agent_turn_id" uuid NULL, PRIMARY KEY ("id"));
 -- create index "investigationevidencerevision_tenant_id" to table: "investigation_evidence_revisions"
 CREATE INDEX "investigationevidencerevision_tenant_id" ON "investigation_evidence_revisions" ("tenant_id");
--- create index "investigationevidencerevision_investigation_id_key" to table: "investigation_evidence_revisions"
-CREATE UNIQUE INDEX "investigationevidencerevision_investigation_id_key" ON "investigation_evidence_revisions" ("investigation_id", "key");
+-- create index "investigationevidencerevision_tenant_id_investigation_id_key" to table: "investigation_evidence_revisions"
+CREATE UNIQUE INDEX "investigationevidencerevision_tenant_id_investigation_id_key" ON "investigation_evidence_revisions" ("tenant_id", "investigation_id", "key");
 -- create index "investigationevidencerevision_investigation_id_agent_turn_id" to table: "investigation_evidence_revisions"
 CREATE INDEX "investigationevidencerevision_investigation_id_agent_turn_id" ON "investigation_evidence_revisions" ("investigation_id", "agent_turn_id");
 -- create index "investigationevidencerevision_investigation_id_created_at_id" to table: "investigation_evidence_revisions"
@@ -302,10 +304,10 @@ CREATE INDEX "investigationreport_tenant_id__96fa32c834dcde34e610dab6be684a51" O
 CREATE TABLE "investigation_user_inputs" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "user_id" uuid NOT NULL, "text" text NOT NULL, "key" character varying NOT NULL, "investigation_id" uuid NOT NULL, "tenant_id" bigint NOT NULL, "agent_turn_id" uuid NULL, PRIMARY KEY ("id"));
 -- create index "investigationuserinput_tenant_id" to table: "investigation_user_inputs"
 CREATE INDEX "investigationuserinput_tenant_id" ON "investigation_user_inputs" ("tenant_id");
--- create index "investigationuserinput_investigation_id_key" to table: "investigation_user_inputs"
-CREATE UNIQUE INDEX "investigationuserinput_investigation_id_key" ON "investigation_user_inputs" ("investigation_id", "key");
--- create index "investigationuserinput_investigation_id_agent_turn_id" to table: "investigation_user_inputs"
-CREATE UNIQUE INDEX "investigationuserinput_investigation_id_agent_turn_id" ON "investigation_user_inputs" ("investigation_id", "agent_turn_id");
+-- create index "investigationuserinput_tenant_id_investigation_id_key" to table: "investigation_user_inputs"
+CREATE UNIQUE INDEX "investigationuserinput_tenant_id_investigation_id_key" ON "investigation_user_inputs" ("tenant_id", "investigation_id", "key");
+-- create index "investigationuserinput_tenant_id_investigation_id_agent_turn_id" to table: "investigation_user_inputs"
+CREATE UNIQUE INDEX "investigationuserinput_tenant_id_investigation_id_agent_turn_id" ON "investigation_user_inputs" ("tenant_id", "investigation_id", "agent_turn_id");
 -- create index "investigationuserinput_investigation_id_created_at_id" to table: "investigation_user_inputs"
 CREATE INDEX "investigationuserinput_investigation_id_created_at_id" ON "investigation_user_inputs" ("investigation_id", "created_at", "id");
 -- create "knowledge_entities" table
@@ -404,10 +406,10 @@ CREATE TABLE "oncall_handover_templates" ("id" uuid NOT NULL, "created_at" times
 CREATE INDEX "oncallhandovertemplate_tenant_id" ON "oncall_handover_templates" ("tenant_id");
 -- create "oncall_rosters" table
 CREATE TABLE "oncall_rosters" ("id" uuid NOT NULL, "archive_time" timestamptz NULL, "name" character varying NOT NULL, "slug" character varying NOT NULL, "timezone" character varying NULL, "chat_handle" character varying NULL, "chat_channel_id" character varying NULL, "handover_template_id" uuid NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
--- create index "oncall_rosters_slug_key" to table: "oncall_rosters"
-CREATE UNIQUE INDEX "oncall_rosters_slug_key" ON "oncall_rosters" ("slug");
 -- create index "oncallroster_tenant_id" to table: "oncall_rosters"
 CREATE INDEX "oncallroster_tenant_id" ON "oncall_rosters" ("tenant_id");
+-- create index "oncall_rosters_slug_key" to table: "oncall_rosters"
+CREATE UNIQUE INDEX "oncall_rosters_slug_key" ON "oncall_rosters" ("tenant_id", "slug");
 -- create "oncall_roster_metrics" table
 CREATE TABLE "oncall_roster_metrics" ("id" uuid NOT NULL, "tenant_id" bigint NOT NULL, "roster_id" uuid NOT NULL, PRIMARY KEY ("id"));
 -- create index "oncallrostermetrics_tenant_id" to table: "oncall_roster_metrics"
@@ -536,16 +538,16 @@ CREATE UNIQUE INDEX "situationlink_tenant_id_situation_id_linked_situation_id_ki
 CREATE TABLE "situation_notices" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "channel_id" character varying NOT NULL, "channel_name" character varying NULL, "message_ref" character varying NULL, "permalink" character varying NULL, "status" character varying NOT NULL DEFAULT 'pending', "error" character varying NULL, "last_attempt_at" timestamptz NULL, "first_posted_at" timestamptz NULL, "situation_id" uuid NOT NULL, "tenant_id" bigint NOT NULL, "integration_id" uuid NOT NULL, PRIMARY KEY ("id"));
 -- create index "situationnotice_tenant_id" to table: "situation_notices"
 CREATE INDEX "situationnotice_tenant_id" ON "situation_notices" ("tenant_id");
--- create index "situationnotice_situation_id_integration_id" to table: "situation_notices"
-CREATE UNIQUE INDEX "situationnotice_situation_id_integration_id" ON "situation_notices" ("situation_id", "integration_id");
+-- create index "situationnotice_tenant_id_situation_id_integration_id" to table: "situation_notices"
+CREATE UNIQUE INDEX "situationnotice_tenant_id_situation_id_integration_id" ON "situation_notices" ("tenant_id", "situation_id", "integration_id");
 -- create index "situationnotice_integration_id_channel_id_first_posted_at" to table: "situation_notices"
 CREATE INDEX "situationnotice_integration_id_channel_id_first_posted_at" ON "situation_notices" ("integration_id", "channel_id", "first_posted_at");
 -- create "situation_notice_ratings" table
 CREATE TABLE "situation_notice_ratings" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "chat_user_id" character varying NOT NULL, "useful" boolean NOT NULL, "situation_id" uuid NOT NULL, "tenant_id" bigint NOT NULL, "user_id" uuid NULL, PRIMARY KEY ("id"));
 -- create index "situationnoticerating_tenant_id" to table: "situation_notice_ratings"
 CREATE INDEX "situationnoticerating_tenant_id" ON "situation_notice_ratings" ("tenant_id");
--- create index "situationnoticerating_situation_id_chat_user_id" to table: "situation_notice_ratings"
-CREATE UNIQUE INDEX "situationnoticerating_situation_id_chat_user_id" ON "situation_notice_ratings" ("situation_id", "chat_user_id");
+-- create index "situationnoticerating_tenant_id_situation_id_chat_user_id" to table: "situation_notice_ratings"
+CREATE UNIQUE INDEX "situationnoticerating_tenant_id_situation_id_chat_user_id" ON "situation_notice_ratings" ("tenant_id", "situation_id", "chat_user_id");
 -- create "situation_observation_groups" table
 CREATE TABLE "situation_observation_groups" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "title" character varying NOT NULL, "body" text NULL, "tenant_id" bigint NOT NULL, "situation_id" uuid NOT NULL, PRIMARY KEY ("id"));
 -- create index "situationobservationgroup_tenant_id" to table: "situation_observation_groups"
@@ -638,12 +640,12 @@ CREATE TABLE "tasks" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "up
 CREATE INDEX "task_tenant_id" ON "tasks" ("tenant_id");
 -- create "teams" table
 CREATE TABLE "teams" ("id" uuid NOT NULL, "archive_time" timestamptz NULL, "slug" character varying NOT NULL, "name" character varying NOT NULL, "chat_channel_id" character varying NULL, "timezone" character varying NULL, "tenant_id" bigint NOT NULL, "knowledge_entity_id" uuid NULL, PRIMARY KEY ("id"));
--- create index "teams_slug_key" to table: "teams"
-CREATE UNIQUE INDEX "teams_slug_key" ON "teams" ("slug");
 -- create index "team_tenant_id" to table: "teams"
 CREATE INDEX "team_tenant_id" ON "teams" ("tenant_id");
 -- create index "team_tenant_id_knowledge_entity_id" to table: "teams"
 CREATE UNIQUE INDEX "team_tenant_id_knowledge_entity_id" ON "teams" ("tenant_id", "knowledge_entity_id");
+-- create index "teams_slug_key" to table: "teams"
+CREATE UNIQUE INDEX "teams_slug_key" ON "teams" ("tenant_id", "slug");
 -- create "team_memberships" table
 CREATE TABLE "team_memberships" ("id" uuid NOT NULL, "role" character varying NOT NULL DEFAULT 'member', "tenant_id" bigint NOT NULL, "knowledge_relationship_id" uuid NULL, "team_id" uuid NOT NULL, "user_id" uuid NOT NULL, PRIMARY KEY ("id"));
 -- create index "teammembership_tenant_id" to table: "team_memberships"
@@ -664,8 +666,8 @@ CREATE TABLE "users" ("id" uuid NOT NULL, "email" character varying NOT NULL, "n
 CREATE INDEX "user_tenant_id" ON "users" ("tenant_id");
 -- create index "user_tenant_id_knowledge_entity_id" to table: "users"
 CREATE UNIQUE INDEX "user_tenant_id_knowledge_entity_id" ON "users" ("tenant_id", "knowledge_entity_id");
--- create index "user_auth_provider_id" to table: "users"
-CREATE UNIQUE INDEX "user_auth_provider_id" ON "users" ("auth_provider_id");
+-- create index "user_tenant_id_auth_provider_id" to table: "users"
+CREATE UNIQUE INDEX "user_tenant_id_auth_provider_id" ON "users" ("tenant_id", "auth_provider_id");
 -- create index "user_tenant_id_email" to table: "users"
 CREATE UNIQUE INDEX "user_tenant_id_email" ON "users" ("tenant_id", "email");
 -- create "user_auth_sessions" table

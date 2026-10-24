@@ -93,7 +93,7 @@ func (a *App) rateSituationNotice(ctx context.Context, ic *slack.InteractionCall
 		createRating.SetUserID(userID)
 	}
 	upsertRating := createRating.
-		OnConflictColumns(sitnr.FieldSituationID, sitnr.FieldChatUserID).
+		OnConflictColumns(sitnr.FieldTenantID, sitnr.FieldSituationID, sitnr.FieldChatUserID).
 		UpdateUseful().
 		UpdateUserID().
 		UpdateUpdatedAt()

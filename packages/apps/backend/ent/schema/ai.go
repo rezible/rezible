@@ -163,15 +163,16 @@ func (AgentTurn) Edges() []ent.Edge {
 
 func (AgentTurn) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Fields("agent_session_id", "sequence").
+		index.Fields("tenant_id", "agent_session_id", "sequence").
 			Unique(),
 
-		index.Fields("agent_session_id").
+		index.Fields("tenant_id", "agent_session_id").
 			Unique().
 			StorageKey("agent_turn_one_active_per_session").
-			Annotations(entsql.IndexWhere("status IN ('queued', 'running')")),
+			// status IN ('queued', 'running'), written as Atlas inspects it so that the schema diffs clean.
+			Annotations(entsql.IndexWhere("((status)::text = ANY (ARRAY[('queued'::character varying)::text, ('running'::character varying)::text]))")),
 
-		index.Fields("input_message_id").
+		index.Fields("tenant_id", "input_message_id").
 			Unique().
 			StorageKey("agent_turn_input_message_unique").
 			Annotations(entsql.IndexWhere("input_message_id IS NOT NULL")),
@@ -229,7 +230,7 @@ func (AgentMessage) Edges() []ent.Edge {
 
 func (AgentMessage) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Fields("agent_session_id", "sequence").Unique(),
+		index.Fields("tenant_id", "agent_session_id", "sequence").Unique(),
 		index.Fields("tenant_id", "agent_session_id", "created_at"),
 		index.Fields("tenant_id", "agent_turn_id", "sequence"),
 	}
@@ -282,7 +283,7 @@ func (AgentArtifact) Edges() []ent.Edge {
 
 func (AgentArtifact) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Fields("agent_session_id", "name").Unique(),
+		index.Fields("tenant_id", "agent_session_id", "name").Unique(),
 		index.Fields("tenant_id", "agent_session_id", "created_at"),
 		index.Fields("tenant_id", "last_agent_turn_id"),
 	}

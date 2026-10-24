@@ -17,10 +17,14 @@ import (
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/entpgx"
+	"github.com/rezible/rezible/ent/hook"
 	_ "github.com/rezible/rezible/ent/runtime"
 	"github.com/rezible/rezible/pkg/errs"
 	"github.com/rezible/rezible/pkg/execution"
 )
+
+// foreignKeyViolation is the SQLSTATE of a foreign key violation.
+const foreignKeyViolation = "23503"
 
 type DatabaseClient struct {
 	driver dialect.Driver
@@ -40,7 +44,7 @@ func NewStdDatabaseClient(db *sql.DB) *DatabaseClient {
 func newDatabaseClient(driver dialect.Driver) *DatabaseClient {
 	dbc := &DatabaseClient{driver: driver}
 	dbc.client = ent.NewClient(ent.Driver(driver))
-	dbc.client.Use(dbc.ensureTenantIdSetHook())
+	dbc.client.Use(dbc.ensureTenantIdSetHook(), dbc.missingReferenceHook())
 	dbc.client.Intercept(dbc.setTenantContextInterceptor())
 	return dbc
 }
@@ -109,7 +113,7 @@ func (dbc *DatabaseClient) IsConstraintError(err error) (string, bool) {
 // constraints.
 func (dbc *DatabaseClient) IsForeignKeyError(opErr error, constraints ...string) bool {
 	pgErr, ok := errors.AsType[*pgconn.PgError](opErr)
-	if !ok || pgErr.Code != "23503" {
+	if !ok || pgErr.Code != foreignKeyViolation {
 		return false
 	}
 	return slices.Contains(constraints, pgErr.ConstraintName)
@@ -214,15 +218,30 @@ func (dbc *DatabaseClient) ensureTenantIdSetHook() ent.Hook {
 	return func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if tm, ok := m.(tenantedMutation); ok {
-				if _, alreadySet := m.Field("tenant_id"); !alreadySet {
-					tenantId, tenantIdSet := execution.GetContext(ctx).TenantID()
-					if !tenantIdSet {
-						return nil, errs.ErrTenantContextMissing
-					}
-					tm.SetTenantID(tenantId)
+				tenantId, tenantIdSet := execution.GetContext(ctx).TenantID()
+				if !tenantIdSet {
+					return nil, errs.ErrTenantContextMissing
 				}
+				if setTenantId, alreadySet := m.Field("tenant_id"); alreadySet && setTenantId != tenantId {
+					return nil, errs.ErrTenantContextMissing
+				}
+				tm.SetTenantID(tenantId)
 			}
 			return next.Mutate(ctx, m)
 		})
 	}
+}
+
+// missingReferenceHook reports a write that references a missing row, or one in another tenant, as not found.
+// The database rejects both with a foreign key violation; a delete of a row still referenced keeps its error.
+func (dbc *DatabaseClient) missingReferenceHook() ent.Hook {
+	return hook.On(func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			value, mutateErr := next.Mutate(ctx, m)
+			if pgErr, ok := errors.AsType[*pgconn.PgError](mutateErr); ok && pgErr.Code == foreignKeyViolation {
+				return nil, fmt.Errorf("%w: %w", errs.ErrNotFound, pgErr)
+			}
+			return value, mutateErr
+		})
+	}, ent.OpCreate|ent.OpUpdate|ent.OpUpdateOne)
 }

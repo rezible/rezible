@@ -57,7 +57,10 @@ func (e *PgxpoolDriver) Query(ctx context.Context, query string, args, v any) er
 	if err != nil {
 		return err
 	}
-	columnScanner := &entPgxRows{pgxRows: pgxRows}
+	columnScanner, err := newEntPgxRows(pgxRows)
+	if err != nil {
+		return err
+	}
 	*vr = sql.Rows{
 		columnScanner,
 	}
@@ -173,7 +176,10 @@ func (e *PgxPoolTx) Query(ctx context.Context, query string, args, v any) error 
 	if err != nil {
 		return err
 	}
-	columnScanner := &entPgxRows{pgxRows: pgxRows}
+	columnScanner, err := newEntPgxRows(pgxRows)
+	if err != nil {
+		return err
+	}
 	*vr = sql.Rows{
 		columnScanner,
 	}
@@ -194,6 +200,18 @@ func (e *PgxPoolTx) PGXTransaction() pgx.Tx {
 
 type entPgxRows struct {
 	pgxRows pgx.Rows
+}
+
+// newEntPgxRows wraps pgxRows. A statement that failed before describing its result has no columns, and pgx reports
+// its error only once the rows are read, so they are read here rather than scanned as an empty result.
+func newEntPgxRows(pgxRows pgx.Rows) (*entPgxRows, error) {
+	if len(pgxRows.FieldDescriptions()) == 0 {
+		pgxRows.Close()
+		if err := pgxRows.Err(); err != nil {
+			return nil, err
+		}
+	}
+	return &entPgxRows{pgxRows: pgxRows}, nil
 }
 
 func (e entPgxRows) Close() error {

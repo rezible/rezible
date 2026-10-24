@@ -74,7 +74,7 @@ func (SituationNotice) Edges() []ent.Edge {
 
 func (SituationNotice) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Fields("situation_id", "integration_id").Unique(),
+		index.Fields("tenant_id", "situation_id", "integration_id").Unique(),
 		index.Fields("integration_id", "channel_id", "first_posted_at"),
 	}
 }
@@ -125,6 +125,6 @@ func (SituationNoticeRating) Edges() []ent.Edge {
 
 func (SituationNoticeRating) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Fields("situation_id", "chat_user_id").Unique(),
+		index.Fields("tenant_id", "situation_id", "chat_user_id").Unique(),
 	}
 }
