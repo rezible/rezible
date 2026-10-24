@@ -81,12 +81,18 @@ export class DocumentsServerExtension implements Extension<SessionContext> {
 	db: SQL;
 	database: Database;
 	sessionKey: string;
+	// Documents whose most recent store failed; Hocuspocus keeps them in memory.
+	failedStores = new Set<string>();
 	private expiryTimers = new Map<string, ReturnType<typeof setTimeout>>();
 
-	constructor({ dbUrl, sessionKey }: Config) {
+	constructor({ dbUrl, sessionKey }: Config, db: SQL = new SQL({ url: dbUrl })) {
 		this.sessionKey = sessionKey;
-		this.db = new SQL({ url: dbUrl });
+		this.db = db;
 		this.database = createDatabase(this.db);
+	}
+
+	async ping(): Promise<void> {
+		await this.db`SELECT 1`;
 	}
 
 	async onDestroy(data: onDestroyPayload): Promise<void> {
@@ -165,8 +171,13 @@ export class DocumentsServerExtension implements Extension<SessionContext> {
 	async onStoreDocument(data: onStoreDocumentPayload<SessionContext>) {
 		try {
 			await this.database.onStoreDocument(data);
+			this.failedStores.delete(data.documentName);
 		} catch (error) {
-			if (!(error instanceof DocumentClosedError)) throw error;
+			if (!(error instanceof DocumentClosedError)) {
+				this.failedStores.add(data.documentName);
+				throw error;
+			}
+			this.failedStores.delete(data.documentName);
 			data.instance.closeConnections(data.documentName);
 			throw new SkipFurtherHooksError();
 		}

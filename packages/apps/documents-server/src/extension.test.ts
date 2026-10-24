@@ -1,6 +1,6 @@
 import { expect, spyOn, test } from "bun:test";
 import type { onAuthenticatePayload } from "@hocuspocus/server";
-import { DocumentsServerExtension, type SessionContext } from "./server";
+import { DocumentsServerExtension, type SessionContext } from "./extension";
 
 const documentId = "13b89cc9-6544-44b6-a718-bdc8793b8bbc";
 const context: SessionContext = {

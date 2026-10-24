@@ -1,81 +1,19 @@
-import { Hocuspocus } from "@hocuspocus/server";
-import { Logger } from "@hocuspocus/extension-logger";
-import crossws from "crossws/adapters/bun";
-
+import { createDocumentsServer } from "./app";
 import { loadConfig } from "./config";
-import { DocumentsServerExtension } from "./server";
 
-const runServer = async () => {
-  const cfg = loadConfig();
-
-  const hocuspocus = new Hocuspocus({
-    name: cfg.name,
-    timeout: 30000,
-    debounce: 1000,
-    maxDebounce: 30000,
-    quiet: false,
-    extensions: [new Logger(), new DocumentsServerExtension(cfg)],
-  });
-
-  const ws = crossws({
-    hooks: {
-      open(peer) {
-        const wsLike = {
-          get readyState() {
-            return peer.websocket.readyState ?? 3; // 3 = CLOSED
-          },
-          send(data: any) {
-            peer.send(data);
-          },
-          close(code?: number, reason?: string) {
-            peer.close(code, reason);
-          },
-        };
-        (peer as any)._hocuspocus = hocuspocus.handleConnection(
-          wsLike,
-          peer.request,
-        );
-      },
-      message(peer, message) {
-        (peer as any)._hocuspocus?.handleMessage(message.uint8Array());
-      },
-      close(peer, { code, reason }) {
-        (peer as any)._hocuspocus?.handleClose({ code, reason });
-      },
-      error(peer, error) {
-        console.error("WebSocket error for peer:", peer.id);
-        console.error(error);
-      },
-    },
-  });
-  
-  const allowedOrigins = new Set(cfg.allowedOrigins);
-  Bun.serve({
-    hostname: cfg.host,
-    port: cfg.port,
-    websocket: ws.websocket,
-    fetch(request, server) {
-      if (new URL(request.url).pathname === "/health") {
-        return new Response(null, { status: 204 });
-      }
-      if (request.headers.get("upgrade") === "websocket") {
-        const origin = request.headers.get("origin");
-        if (!origin || !allowedOrigins.has(origin)) {
-          return new Response("Forbidden", { status: 403 });
-        }
-        return ws.handleUpgrade(request, server);
-      }
-      return new Response("Not Found", { status: 404 });
-    },
-  });
-
-  console.log(`running server on ${cfg.host}:${cfg.port}`);
-};
-
-runServer().catch((e: unknown) => {
+try {
+  const documentsServer = createDocumentsServer(loadConfig());
+  documentsServer.listen();
+  const onSignal = () => {
+    documentsServer.shutdown().then((code) => process.exit(code));
+  };
+  process.on("SIGTERM", onSignal);
+  process.on("SIGINT", onSignal);
+} catch (e: unknown) {
   if (e instanceof Error) {
     console.error("Failed to create server: %s", e.message);
   } else {
     console.error("Failed to create server: %s", e);
   }
-});
+  process.exit(1);
+}
