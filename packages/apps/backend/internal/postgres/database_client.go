@@ -19,6 +19,7 @@ import (
 	"github.com/rezible/rezible/ent/entpgx"
 	"github.com/rezible/rezible/ent/hook"
 	_ "github.com/rezible/rezible/ent/runtime"
+	"github.com/rezible/rezible/ent/schema"
 	"github.com/rezible/rezible/pkg/errs"
 	"github.com/rezible/rezible/pkg/execution"
 )
@@ -44,7 +45,7 @@ func NewStdDatabaseClient(db *sql.DB) *DatabaseClient {
 func newDatabaseClient(driver dialect.Driver) *DatabaseClient {
 	dbc := &DatabaseClient{driver: driver}
 	dbc.client = ent.NewClient(ent.Driver(driver))
-	dbc.client.Use(dbc.ensureTenantIdSetHook(), dbc.missingReferenceHook())
+	dbc.client.Use(dbc.ensureTenantIdSetHook(), dbc.tenantReferencesHook(), dbc.missingReferenceHook())
 	dbc.client.Intercept(dbc.setTenantContextInterceptor())
 	return dbc
 }
@@ -232,8 +233,29 @@ func (dbc *DatabaseClient) ensureTenantIdSetHook() ent.Hook {
 	}
 }
 
-// missingReferenceHook reports a write that references a missing row, or one in another tenant, as not found.
-// The database rejects both with a foreign key violation; a delete of a row still referenced keeps its error.
+// tenantReferencesHook rejects a write that sets or adds an edge to a row in another tenant, before the write
+// runs. Archived rows count as present: archiving is not a tenant boundary.
+func (dbc *DatabaseClient) tenantReferencesHook() ent.Hook {
+	type tenantReferencesMutation interface {
+		CheckTenantReferences(context.Context) error
+	}
+	return hook.On(func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if rm, ok := m.(tenantReferencesMutation); ok {
+				if checkErr := rm.CheckTenantReferences(schema.IncludeArchived(ctx)); checkErr != nil {
+					if ent.IsNotFound(checkErr) {
+						return nil, fmt.Errorf("%w: %w", errs.ErrNotFound, checkErr)
+					}
+					return nil, fmt.Errorf("check tenant references: %w", checkErr)
+				}
+			}
+			return next.Mutate(ctx, m)
+		})
+	}, ent.OpCreate|ent.OpUpdate|ent.OpUpdateOne)
+}
+
+// missingReferenceHook reports a write that references a missing row as not found. The database rejects it with a
+// foreign key violation; a delete of a row still referenced keeps its error.
 func (dbc *DatabaseClient) missingReferenceHook() ent.Hook {
 	return hook.On(func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {

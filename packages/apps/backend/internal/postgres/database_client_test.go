@@ -413,6 +413,50 @@ func (s *DatabaseClientSuite) TestWriteReferencingAMissingRowIsNotFound() {
 	s.Nil(reloaded.SeverityID)
 }
 
+// The test database's context is a tenant context with no user, as the provider webhook and chat handlers create.
+func (s *DatabaseClientSuite) TestWriteReferencingAnotherTenantsRowIsNotFound() {
+	ctx, tdb := s.SetupTestDatabase()
+	otherCtx, _ := s.SetupTestDatabase()
+	client := tdb.Client(ctx)
+	otherClient := tdb.Client(otherCtx)
+	owner, ownerErr := client.User.Query().Only(ctx)
+	s.Require().NoError(ownerErr)
+	team := s.createTeam(ctx, tdb)
+	otherTeam := s.createTeam(otherCtx, tdb)
+	severity := client.IncidentSeverity.Create().SetName("sev").SetRank(1).SaveX(ctx)
+	otherSeverity := otherClient.IncidentSeverity.Create().SetName("sev").SetRank(1).SaveX(otherCtx)
+	incident := client.Incident.Create().SetSlug(uuid.NewString()).SetTitle("incident").SaveX(ctx)
+	otherIncident := otherClient.Incident.Create().SetSlug(uuid.NewString()).SetTitle("other").SaveX(otherCtx)
+	otherRoster := otherClient.OncallRoster.Create().SetName("roster").SetSlug(uuid.NewString()).SaveX(otherCtx)
+
+	setSeverity := client.Incident.UpdateOneID(incident.ID).SetSeverityID(otherSeverity.ID)
+	s.ErrorIs(setSeverity.Exec(ctx), errs.ErrNotFound, "unique edge")
+	addIncident := client.IncidentSeverity.UpdateOneID(severity.ID).AddIncidentIDs(otherIncident.ID)
+	s.ErrorIs(addIncident.Exec(ctx), errs.ErrNotFound, "non-unique edge")
+	addRoster := client.Team.UpdateOneID(team.ID).AddOncallRosterIDs(otherRoster.ID)
+	s.ErrorIs(addRoster.Exec(ctx), errs.ErrNotFound, "many-to-many edge")
+	bulk := client.TeamMembership.CreateBulk(
+		client.TeamMembership.Create().SetTeamID(team.ID).SetUserID(owner.ID),
+		client.TeamMembership.Create().SetTeamID(otherTeam.ID).SetUserID(owner.ID),
+	)
+	s.ErrorIs(bulk.Exec(ctx), errs.ErrNotFound, "bulk create")
+	upsert := client.TeamMembership.Create().
+		SetTeamID(otherTeam.ID).
+		SetUserID(owner.ID).
+		OnConflictColumns(teammembership.FieldTeamID, teammembership.FieldUserID).
+		UpdateNewValues()
+	s.ErrorIs(upsert.Exec(ctx), errs.ErrNotFound, "upsert")
+
+	s.Zero(client.TeamMembership.Query().CountX(ctx))
+	s.Nil(client.Incident.GetX(ctx, incident.ID).SeverityID)
+	s.Nil(otherClient.Incident.GetX(otherCtx, otherIncident.ID).SeverityID)
+	systemCtx := execution.NewSystemContext(s.T().Context())
+	s.Zero(tdb.Client(systemCtx).OncallRoster.QueryTeams(otherRoster).CountX(systemCtx))
+
+	sameTenant := client.Incident.UpdateOneID(incident.ID).SetSeverityID(severity.ID)
+	s.Require().NoError(sameTenant.Exec(ctx))
+}
+
 func (s *DatabaseClientSuite) TestDeletingAReferencedRowKeepsItsError() {
 	ctx, tdb := s.SetupTestDatabase()
 	client := tdb.Client(ctx)

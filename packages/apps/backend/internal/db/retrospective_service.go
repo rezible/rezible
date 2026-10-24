@@ -19,7 +19,6 @@ import (
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/ent/review"
-	"github.com/rezible/rezible/ent/user"
 	"github.com/rezible/rezible/pkg/errs"
 	"github.com/rezible/rezible/pkg/execution"
 	"github.com/rezible/rezible/pkg/integrations"
@@ -146,19 +145,6 @@ func (s *RetrospectiveService) requireOwner(retro *ent.Retrospective, actor uuid
 	return nil
 }
 
-func (s *RetrospectiveService) requireMember(ctx context.Context, id uuid.UUID) error {
-	exists, queryErr := s.db.Client(ctx).User.Query().
-		Where(user.ID(id)).
-		Exist(ctx)
-	if queryErr != nil {
-		return queryErr
-	}
-	if !exists {
-		return errs.New(errs.CodeInvalidInput, "Choose a member of this organization.")
-	}
-	return nil
-}
-
 func (s *RetrospectiveService) requireState(retro *ent.Retrospective, state retrospective.State) error {
 	if retro.State == state {
 		return nil
@@ -179,9 +165,6 @@ func (s *RetrospectiveService) SetOwner(ctx context.Context, id, userID uuid.UUI
 		} else if ownerErr := s.requireOwner(retro, actor); ownerErr != nil {
 			return ownerErr
 		}
-		if memberErr := s.requireMember(ctx, userID); memberErr != nil {
-			return memberErr
-		}
 		for _, r := range retro.Edges.Reviews {
 			if r.ReviewerID == userID {
 				return errs.New(errs.CodeInvalidInput, "A reviewer can't own the retrospective they review.")
@@ -196,9 +179,6 @@ func (s *RetrospectiveService) SetOwner(ctx context.Context, id, userID uuid.UUI
 func (s *RetrospectiveService) createReview(ctx context.Context, tx *ent.Client, retro *ent.Retrospective, actor, reviewerID uuid.UUID) error {
 	if retro.OwnerID != nil && reviewerID == *retro.OwnerID {
 		return errs.New(errs.CodeInvalidInput, "The owner can't review their own retrospective.")
-	}
-	if memberErr := s.requireMember(ctx, reviewerID); memberErr != nil {
-		return memberErr
 	}
 	create := tx.Review.Create().
 		SetRetrospectiveID(retro.ID).
