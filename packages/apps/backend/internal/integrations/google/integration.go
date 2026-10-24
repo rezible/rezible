@@ -20,7 +20,7 @@ type Integration struct {
 	cfg           rez.IntegrationsConfigGoogle
 	users         rez.UserService
 	installations rez.IntegrationInstallationLookup
-	incidents     rez.IncidentService
+	incidents     rez.IncidentDetailsService
 	events        rez.EventsService
 }
 
@@ -28,7 +28,7 @@ func MakeIntegration(
 	cfg rez.Config,
 	users rez.UserService,
 	installations rez.IntegrationInstallationLookup,
-	incidents rez.IncidentService,
+	incidents rez.IncidentDetailsService,
 	events rez.EventsService,
 ) (*Integration, error) {
 	i := &Integration{
@@ -120,7 +120,7 @@ func (i *Integration) newInstalledIntegration(intg *ent.Integration) (*Installed
 
 type InstalledIntegration struct {
 	intg      *ent.Integration
-	incidents rez.IncidentService
+	incidents rez.IncidentDetailsService
 	config    *InstallationConfig
 	settings  *UserSettings
 }

@@ -11,6 +11,7 @@ import (
 	incsev "github.com/rezible/rezible/ent/incidentseverity"
 	"github.com/rezible/rezible/ent/incidenttype"
 	kne "github.com/rezible/rezible/ent/knowledgeentity"
+	"github.com/rezible/rezible/ent/schema"
 	"github.com/rezible/rezible/ent/schema/schematypes"
 	"github.com/rezible/rezible/pkg/projections"
 )
@@ -57,9 +58,12 @@ func (s *ProjectionService) handleIncidentEvent(ctx context.Context, e *projecti
 		}
 
 		queryExisting := tx.Incident.Query().Where(incident.KnowledgeEntityID(knowledgeEntityId))
-		existing, existingErr := queryExisting.Only(ctx)
+		existing, existingErr := queryExisting.Only(schema.IncludeArchived(ctx))
 		if existingErr != nil && !ent.IsNotFound(existingErr) {
 			return nil, fmt.Errorf("query existing incident: %w", existingErr)
+		}
+		if existing != nil && existing.ArchiveTime != nil {
+			return projected, nil
 		}
 
 		severityID, severityErr := s.saveProjectedIncidentSeverity(ctx, attrs)
@@ -72,43 +76,30 @@ func (s *ProjectionService) handleIncidentEvent(ctx context.Context, e *projecti
 			return nil, fmt.Errorf("upsert incident type: %w", typeErr)
 		}
 
-		id := uuid.Nil
-		if existing != nil {
-			if existing.Title == attrs.Title &&
-				existing.Summary == attrs.Summary &&
-				existing.SeverityID != nil && *existing.SeverityID == severityID &&
-				existing.TypeID != nil && *existing.TypeID == typeID &&
-				existing.OpenedAt.Equal(openedAt) &&
-				(attrs.ResponseState == "" || existing.ResponseState == incident.ResponseState(attrs.ResponseState)) &&
-				(attrs.ResolvedAt == nil || (existing.ResolvedAt != nil && existing.ResolvedAt.Equal(*attrs.ResolvedAt))) {
-				return projected, nil
-			}
-			id = existing.ID
+		if existing != nil &&
+			existing.Title == attrs.Title &&
+			existing.Summary == attrs.Summary &&
+			existing.SeverityID != nil && *existing.SeverityID == severityID &&
+			existing.TypeID != nil && *existing.TypeID == typeID &&
+			existing.OpenedAt.Equal(openedAt) {
+			return projected, nil
 		}
 
-		setFn := func(m *ent.IncidentMutation) {
-			m.SetKnowledgeEntityID(knowledgeEntityId)
-			m.SetTitle(attrs.Title)
-			m.SetSummary(attrs.Summary)
-			m.SetSeverityID(severityID)
-			m.SetTypeID(typeID)
-			if attrs.ResponseState != "" {
-				m.SetResponseState(incident.ResponseState(attrs.ResponseState))
-			}
-			if attrs.ResolvedAt != nil {
-				m.SetResolvedAt(*attrs.ResolvedAt)
-			}
-			if !openedAt.IsZero() {
-				m.SetOpenedAt(openedAt)
-			}
+		observeParams := rez.RecordObservedIncidentParams{
+			KnowledgeEntityID: knowledgeEntityId,
+			Title:             attrs.Title,
+			Summary:           attrs.Summary,
+			SeverityID:        severityID,
+			TypeID:            typeID,
+			OpenedAt:          openedAt,
 		}
-		inc, setErr := s.incidents.Set(ctx, id, setFn)
-		if setErr != nil {
-			return nil, fmt.Errorf("set incident: %w", setErr)
+		incidentID, observeErr := s.incidents.RecordObservedIncident(ctx, observeParams)
+		if observeErr != nil {
+			return nil, fmt.Errorf("observe incident: %w", observeErr)
 		}
 		projected = append(projected, rez.ProjectedEntityRef{
 			Kind: knowledgeEntityKindIncident,
-			Id:   inc.ID,
+			Id:   incidentID,
 		})
 
 		return projected, nil

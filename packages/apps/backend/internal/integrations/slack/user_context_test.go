@@ -2,9 +2,16 @@ package slackintegration
 
 import (
 	"context"
+	"crypto/hmac"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
+	"strconv"
+	"strings"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/slack-go/slack"
@@ -45,14 +52,9 @@ func (s *SlackIntegrationSuite) TestLookupUserContext() {
 	})
 }
 
-func (s *SlackIntegrationSuite) TestSlashCommandFromUnknownUserIsToldWhy() {
-	var replies []slack.WebhookMessage
-	responseURL := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var reply slack.WebhookMessage
-		s.NoError(json.NewDecoder(r.Body).Decode(&reply))
-		replies = append(replies, reply)
-	}))
-	s.T().Cleanup(responseURL.Close)
+func (s *SlackIntegrationSuite) TestSlashCommandReplyIsTheWebhookResponse() {
+	const signingSecret = "test-signing-secret"
+	known := &ent.User{ID: uuid.New(), TenantID: 7}
 
 	installations := mocks.NewMockIntegrationService(s.T())
 	installations.EXPECT().
@@ -61,10 +63,15 @@ func (s *SlackIntegrationSuite) TestSlashCommandFromUnknownUserIsToldWhy() {
 	users := mocks.NewMockUserService(s.T())
 	users.EXPECT().
 		Get(mock.Anything, mock.Anything).
-		Return(nil, &ent.NotFoundError{})
-	handler := func(context.Context, *ent.Integration, *slack.SlashCommand) (*slack.Blocks, error) {
-		s.Fail("the command runs only for known users")
-		return nil, nil
+		Return(known, nil).Once()
+	users.EXPECT().
+		Get(mock.Anything, mock.Anything).
+		Return(nil, &ent.NotFoundError{}).Once()
+	handler := func(ctx context.Context, _ *ent.Integration, _ *slack.SlashCommand) (*slack.Blocks, error) {
+		userID, hasUser := execution.GetContext(ctx).UserID()
+		s.True(hasUser)
+		s.Equal(known.ID, userID)
+		return CommandReply("Declared."), nil
 	}
 	service := &AppService[App]{
 		integrationName:      "slack_test",
@@ -72,20 +79,43 @@ func (s *SlackIntegrationSuite) TestSlashCommandFromUnknownUserIsToldWhy() {
 		users:                users,
 		slashCommandHandlers: map[string]SlashCommandHandler{"/rezible": handler},
 	}
-	command := &slashCommandEvent{
-		IntegrationName: "slack_test",
-		Command: slack.SlashCommand{
-			Command:     "/rezible",
-			TeamID:      "T1",
-			UserID:      "U2",
-			ResponseURL: responseURL.URL,
-		},
+	eventHandler := &appEventHandler{onCommand: service.handleSlashCommand}
+	webhooks := makeWebhookHandler(signingSecret, eventHandler)
+
+	runCommand := func(userID string) *slack.WebhookMessage {
+		form := url.Values{"command": {"/rezible"}, "team_id": {"T1"}, "user_id": {userID}}
+		body := form.Encode()
+		timestamp := strconv.FormatInt(time.Now().Unix(), 10)
+		signer := hmac.New(sha256.New, []byte(signingSecret))
+		signer.Write([]byte("v0:" + timestamp + ":" + body))
+		request := httptest.NewRequest(http.MethodPost, "/commands", strings.NewReader(body))
+		request = request.WithContext(execution.NewRootContext(s.T().Context(), execution.KindAnonymous, execution.SourceHTTP))
+		request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+		request.Header.Set("X-Slack-Request-Timestamp", timestamp)
+		request.Header.Set("X-Slack-Signature", "v0="+hex.EncodeToString(signer.Sum(nil)))
+		recorder := httptest.NewRecorder()
+
+		webhooks.ServeHTTP(recorder, request)
+
+		s.Require().Equal(http.StatusOK, recorder.Code)
+		var reply slack.WebhookMessage
+		s.Require().NoError(json.Unmarshal(recorder.Body.Bytes(), &reply))
+		return &reply
 	}
 
-	handleErr := service.handleSlashCommand(s.T().Context(), command)
+	s.Run("a member", func() {
+		reply := runCommand("U1")
 
-	s.Require().NoError(handleErr)
-	s.Require().Len(replies, 1)
-	s.Equal(UnknownUserText, replies[0].Text)
-	s.Equal(slack.ResponseTypeEphemeral, replies[0].ResponseType)
+		s.Equal(slack.ResponseTypeEphemeral, reply.ResponseType)
+		s.Require().NotNil(reply.Blocks)
+		s.Equal(CommandReply("Declared.").BlockSet, reply.Blocks.BlockSet)
+	})
+
+	s.Run("a Slack user the member sync has not seen", func() {
+		reply := runCommand("U2")
+
+		s.Equal(slack.ResponseTypeEphemeral, reply.ResponseType)
+		s.Require().NotNil(reply.Blocks)
+		s.Equal(CommandReply(UnknownUserText).BlockSet, reply.Blocks.BlockSet)
+	})
 }

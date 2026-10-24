@@ -26,7 +26,7 @@ class HomeController {
 		source: "local",
 		queryOptions: () =>
 			listIncidentsOptions({
-				query: { page: 1, pageSize: PREVIEW_PAGE_SIZE, responseStates: ["started", "mitigated"] },
+				query: { page: 1, pageSize: PREVIEW_PAGE_SIZE, resolved: false },
 			}),
 	});
 	incidentsQuery = $derived(this.incidentsPage.query);

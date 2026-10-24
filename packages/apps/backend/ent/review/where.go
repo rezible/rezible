@@ -102,6 +102,11 @@ func Feedback(v string) predicate.Review {
 	return predicate.Review(sql.FieldEQ(FieldFeedback, v))
 }
 
+// MessageFailedAt applies equality check predicate on the "message_failed_at" field. It's identical to MessageFailedAtEQ.
+func MessageFailedAt(v time.Time) predicate.Review {
+	return predicate.Review(sql.FieldEQ(FieldMessageFailedAt, v))
+}
+
 // TenantIDEQ applies the EQ predicate on the "tenant_id" field.
 func TenantIDEQ(v int) predicate.Review {
 	return predicate.Review(sql.FieldEQ(FieldTenantID, v))
@@ -425,6 +430,56 @@ func FeedbackEqualFold(v string) predicate.Review {
 // FeedbackContainsFold applies the ContainsFold predicate on the "feedback" field.
 func FeedbackContainsFold(v string) predicate.Review {
 	return predicate.Review(sql.FieldContainsFold(FieldFeedback, v))
+}
+
+// MessageFailedAtEQ applies the EQ predicate on the "message_failed_at" field.
+func MessageFailedAtEQ(v time.Time) predicate.Review {
+	return predicate.Review(sql.FieldEQ(FieldMessageFailedAt, v))
+}
+
+// MessageFailedAtNEQ applies the NEQ predicate on the "message_failed_at" field.
+func MessageFailedAtNEQ(v time.Time) predicate.Review {
+	return predicate.Review(sql.FieldNEQ(FieldMessageFailedAt, v))
+}
+
+// MessageFailedAtIn applies the In predicate on the "message_failed_at" field.
+func MessageFailedAtIn(vs ...time.Time) predicate.Review {
+	return predicate.Review(sql.FieldIn(FieldMessageFailedAt, vs...))
+}
+
+// MessageFailedAtNotIn applies the NotIn predicate on the "message_failed_at" field.
+func MessageFailedAtNotIn(vs ...time.Time) predicate.Review {
+	return predicate.Review(sql.FieldNotIn(FieldMessageFailedAt, vs...))
+}
+
+// MessageFailedAtGT applies the GT predicate on the "message_failed_at" field.
+func MessageFailedAtGT(v time.Time) predicate.Review {
+	return predicate.Review(sql.FieldGT(FieldMessageFailedAt, v))
+}
+
+// MessageFailedAtGTE applies the GTE predicate on the "message_failed_at" field.
+func MessageFailedAtGTE(v time.Time) predicate.Review {
+	return predicate.Review(sql.FieldGTE(FieldMessageFailedAt, v))
+}
+
+// MessageFailedAtLT applies the LT predicate on the "message_failed_at" field.
+func MessageFailedAtLT(v time.Time) predicate.Review {
+	return predicate.Review(sql.FieldLT(FieldMessageFailedAt, v))
+}
+
+// MessageFailedAtLTE applies the LTE predicate on the "message_failed_at" field.
+func MessageFailedAtLTE(v time.Time) predicate.Review {
+	return predicate.Review(sql.FieldLTE(FieldMessageFailedAt, v))
+}
+
+// MessageFailedAtIsNil applies the IsNil predicate on the "message_failed_at" field.
+func MessageFailedAtIsNil() predicate.Review {
+	return predicate.Review(sql.FieldIsNull(FieldMessageFailedAt))
+}
+
+// MessageFailedAtNotNil applies the NotNil predicate on the "message_failed_at" field.
+func MessageFailedAtNotNil() predicate.Review {
+	return predicate.Review(sql.FieldNotNull(FieldMessageFailedAt))
 }
 
 // HasTenant applies the HasEdge predicate on the "tenant" edge.

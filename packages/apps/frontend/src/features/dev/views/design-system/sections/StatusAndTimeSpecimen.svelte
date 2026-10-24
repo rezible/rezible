@@ -37,17 +37,11 @@
 		attributes: { name, rank, archived: false, color: "", description: "" },
 	});
 
-	const responseStates: IncidentAttributes["responseState"][] = [
-		"started",
-		"mitigated",
-		"resolved",
-		"unknown",
-	];
+	const responseStates: IncidentAttributes["responseState"][] = ["started", "mitigated", "resolved"];
 	const reviewStates: (RetrospectiveAttributes["state"] | undefined)[] = [
 		undefined,
 		"draft",
 		"in_review",
-		"meeting",
 		"closed",
 	];
 
@@ -79,7 +73,14 @@
 			statuses: ["open", "supported", "disproven", "inconclusive"].map(hypothesisStatus),
 		},
 		{ label: "Incident response", statuses: responseStates.map(incidentResponseStatus) },
-		{ label: "Review", statuses: reviewStates.map(retrospectiveStatus) },
+		{
+			label: "Review",
+			statuses: [
+				...reviewStates.map((state) => retrospectiveStatus(state)),
+				retrospectiveStatus("closed", "reviewed"),
+				retrospectiveStatus("closed", "skipped"),
+			],
+		},
 		{
 			label: "Severity",
 			statuses: [

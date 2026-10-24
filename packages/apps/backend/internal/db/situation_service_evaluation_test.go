@@ -9,6 +9,7 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	inc "github.com/rezible/rezible/ent/incident"
+	im "github.com/rezible/rezible/ent/incidentmilestone"
 	inver "github.com/rezible/rezible/ent/investigationevidencerevision"
 	kne "github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/schema/schematypes"
@@ -86,28 +87,25 @@ func (s *SituationServiceSuite) TestEvaluationExpiresCandidates() {
 func (s *SituationServiceSuite) TestEvaluationClosureWaitsForIncidentsHoldsAndAttachments() {
 	ctx, tdb := s.SetupTestDatabase()
 	h := s.newFixture(tdb)
-	incidents, newIncident := s.newIncidents(ctx, tdb, h)
+	incidents, management, declare := s.newIncidents(ctx, tdb, h)
 
 	// An unresolved incident holds a situation open until its resolution plus the quiet period.
 	signal := s.signal(ctx, tdb, h, "checkout-errors", 5)
 	s.resolve(ctx, tdb, h, "checkout-errors", 5, 10)
 	linked := s.create(ctx, h, map[string][]uuid.UUID{"Checkout": {signal}}, signal)
-	incident, linkErr := incidents.Set(ctx, uuid.Nil, func(m *ent.IncidentMutation) {
-		newIncident(m)
-		m.AddSituationIDs(linked.ID)
-	})
-	s.Require().NoError(linkErr)
+	incident := declare(linked.ID)
 	_, deadline := s.evaluate(ctx, h, linked.ID)
 	s.Nil(deadline, "nothing can close it while the incident is unresolved")
 
 	resolvedAt := h.clock.Now().Add(time.Hour)
 	h.evaluations = nil
-	_, resolveErr := incidents.Set(ctx, incident.ID, func(m *ent.IncidentMutation) {
-		m.SetResponseState(inc.ResponseStateResolved)
-		m.SetResolvedAt(resolvedAt)
-	})
+	resolution := rez.AddIncidentMilestoneParams{IncidentID: incident.ID, Kind: im.KindResolution, Timestamp: resolvedAt}
+	_, resolveErr := management.AddMilestone(ctx, resolution)
 	s.Require().NoError(resolveErr)
-	s.Contains(h.evaluations, jobs.EvaluateSituation{SituationID: linked.ID}, "an incident write requests evaluation")
+	s.Contains(h.evaluations, jobs.EvaluateSituation{SituationID: linked.ID}, "a milestone requests evaluation")
+	resolved, getErr := incidents.GetIncident(ctx, inc.ID(incident.ID))
+	s.Require().NoError(getErr)
+	s.NotNil(resolved.Edges.Retrospective, "resolving creates the retrospective")
 	_, deadline = s.evaluate(ctx, h, linked.ID)
 	s.Require().NotNil(deadline)
 	s.True(resolvedAt.Add(situations.SituationQuietPeriod).Equal(*deadline))
@@ -198,14 +196,10 @@ func (s *SituationServiceSuite) TestEvaluationLimitsAutomaticInvestigations() {
 	checkout := s.entityRef(kne.CategoryContainer, "checkout")
 
 	// An incident link made without a user raises with no user, but is not an automatic raise.
-	incidents, newIncident := s.newIncidents(ctx, tdb, h)
+	_, _, declare := s.newIncidents(ctx, tdb, h)
 	signal := s.signal(ctx, tdb, h, "payment-errors", 25)
 	linked := s.create(ctx, h, map[string][]uuid.UUID{"Payments": {signal}}, signal)
-	_, linkErr := incidents.Set(ctx, uuid.Nil, func(m *ent.IncidentMutation) {
-		newIncident(m)
-		m.AddSituationIDs(linked.ID)
-	})
-	s.Require().NoError(linkErr)
+	declare(linked.ID)
 	linkRaised, getErr := h.situations.GetSituation(ctx, linked.ID)
 	s.Require().NoError(getErr)
 	s.Equal(sitact.ActionRaised, s.lastAction(linkRaised).Action)
@@ -276,7 +270,7 @@ func (s *SituationServiceSuite) TestEvaluationRefreshesInvestigations() {
 func (s *SituationServiceSuite) TestEvaluationCountsPriorOutcomesOfSources() {
 	ctx, tdb := s.SetupTestDatabase()
 	h := s.newFixture(tdb)
-	incidents, newIncident := s.newIncidents(ctx, tdb, h)
+	_, _, declare := s.newIncidents(ctx, tdb, h)
 
 	// An episode in a raised situation opened before the lookback, which is not counted.
 	longAgo := -100 * 24 * 60
@@ -292,11 +286,7 @@ func (s *SituationServiceSuite) TestEvaluationCountsPriorOutcomesOfSources() {
 	second := s.signal(ctx, tdb, h, "checkout-errors", 10)
 	s.resolve(ctx, tdb, h, "checkout-errors", 10, 11)
 	linked := s.create(ctx, h, map[string][]uuid.UUID{"Checkout": {first, second}}, first)
-	_, linkErr := incidents.Set(ctx, uuid.Nil, func(m *ent.IncidentMutation) {
-		newIncident(m)
-		m.AddSituationIDs(linked.ID)
-	})
-	s.Require().NoError(linkErr)
+	declare(linked.ID)
 
 	// A third in a situation muted as not noteworthy.
 	third := s.signal(ctx, tdb, h, "checkout-errors", 20)

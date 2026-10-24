@@ -81,6 +81,44 @@ components:
       required:
         - data
       type: object
+    AddRetrospectiveReviewerAttributes:
+      additionalProperties: false
+      properties:
+        userId:
+          type: string
+      required:
+        - userId
+      type: object
+    AddRetrospectiveReviewerRequestBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/AddRetrospectiveReviewerRequestBody.json
+          format: uri
+          readOnly: true
+          type: string
+        attributes:
+          $ref: "#/components/schemas/AddRetrospectiveReviewerAttributes"
+      required:
+        - attributes
+      type: object
+    AddRetrospectiveReviewerResponseBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/AddRetrospectiveReviewerResponseBody.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          $ref: "#/components/schemas/Retrospective"
+      required:
+        - data
+      type: object
     AddSituationHazardAssessmentRequestBody:
       additionalProperties: false
       properties:
@@ -988,6 +1026,21 @@ components:
       required:
         - data
       type: object
+    CloseRetrospectiveResponseBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/CloseRetrospectiveResponseBody.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          $ref: "#/components/schemas/Retrospective"
+      required:
+        - data
+      type: object
     CloseSituationAttributes:
       additionalProperties: false
       properties:
@@ -1586,8 +1639,6 @@ components:
           type: string
       required:
         - title
-        - severityId
-        - typeId
       type: object
     CreateIncidentDebriefQuestionAttributes:
       additionalProperties: false
@@ -1689,6 +1740,40 @@ components:
       required:
         - data
       type: object
+    CreateIncidentMilestoneAttributes:
+      additionalProperties: false
+      properties:
+        description:
+          type: string
+        kind:
+          enum:
+            - impact
+            - detection
+            - investigation
+            - mitigation
+            - resolution
+          type: string
+        timestamp:
+          format: date-time
+          type: string
+      required:
+        - kind
+      type: object
+    CreateIncidentMilestoneRequestBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/CreateIncidentMilestoneRequestBody.json
+          format: uri
+          readOnly: true
+          type: string
+        attributes:
+          $ref: "#/components/schemas/CreateIncidentMilestoneAttributes"
+      required:
+        - attributes
+      type: object
     CreateIncidentRequestBody:
       additionalProperties: false
       properties:
@@ -1715,22 +1800,7 @@ components:
           readOnly: true
           type: string
         data:
-          $ref: "#/components/schemas/Incident"
-      required:
-        - data
-      type: object
-    CreateIncidentRetrospectiveResponseBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/CreateIncidentRetrospectiveResponseBody.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          $ref: "#/components/schemas/Retrospective"
+          $ref: "#/components/schemas/CreatedIncident"
       required:
         - data
       type: object
@@ -1760,31 +1830,19 @@ components:
       required:
         - attributes
       type: object
-    CreateIncidentRoleAssignmentResponseBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/CreateIncidentRoleAssignmentResponseBody.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          $ref: "#/components/schemas/IncidentUserRoleAssignment"
-      required:
-        - data
-      type: object
     CreateIncidentRoleAttributes:
       additionalProperties: false
       properties:
+        maxAssignees:
+          format: int64
+          minimum: 1
+          type:
+            - integer
+            - "null"
         name:
           type: string
-        required:
-          type: boolean
       required:
         - name
-        - required
       type: object
     CreateIncidentRoleRequestBody:
       additionalProperties: false
@@ -2180,60 +2238,6 @@ components:
       required:
         - data
       type: object
-    CreateReviewAttributes:
-      additionalProperties: false
-      properties:
-        analysisEntryId:
-          type: string
-        commentId:
-          type: string
-        requesterId:
-          type: string
-        retrospectiveId:
-          type: string
-        reviewerId:
-          type: string
-        state:
-          enum:
-            - waiting
-            - request_changes
-            - approved
-          type: string
-      required:
-        - requesterId
-        - reviewerId
-        - state
-      type: object
-    CreateReviewRequestBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/CreateReviewRequestBody.json
-          format: uri
-          readOnly: true
-          type: string
-        attributes:
-          $ref: "#/components/schemas/CreateReviewAttributes"
-      required:
-        - attributes
-      type: object
-    CreateReviewResponseBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/CreateReviewResponseBody.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          $ref: "#/components/schemas/Review"
-      required:
-        - data
-      type: object
     CreateSystemAnalysisEntryAttributes:
       additionalProperties: false
       properties:
@@ -2477,6 +2481,17 @@ components:
           $ref: "#/components/schemas/Team"
       required:
         - data
+      type: object
+    CreatedIncident:
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+        slug:
+          type: string
+      required:
+        - id
+        - slug
       type: object
     DeleteSystemAnalysisEntryAttributes:
       additionalProperties: false
@@ -3600,21 +3615,6 @@ components:
       required:
         - data
       type: object
-    GetReviewResponseBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/GetReviewResponseBody.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          $ref: "#/components/schemas/Review"
-      required:
-        - data
-      type: object
     GetSituationBriefResponseBody:
       additionalProperties: false
       properties:
@@ -3849,11 +3849,8 @@ components:
       properties:
         chatChannel:
           $ref: "#/components/schemas/IncidentChatChannel"
-        closedAt:
-          format: date-time
-          type:
-            - string
-            - "null"
+        declaredBy:
+          $ref: "#/components/schemas/ExpandableUserAttributes"
         externalTicket:
           $ref: "#/components/schemas/ExternalTicket"
         fieldSelections:
@@ -3884,7 +3881,6 @@ components:
             - "null"
         responseState:
           enum:
-            - unknown
             - started
             - mitigated
             - resolved
@@ -3931,7 +3927,6 @@ components:
         - responseState
         - openedAt
         - updatedAt
-        - closedAt
         - resolvedAt
         - milestones
         - tags
@@ -4264,14 +4259,14 @@ components:
           type: boolean
         description:
           type: string
+        maxAssignees:
+          format: int64
+          type: integer
         name:
           type: string
-        required:
-          type: boolean
       required:
         - name
         - archived
-        - required
         - description
       type: object
     IncidentSeverity:
@@ -4309,7 +4304,16 @@ components:
     IncidentSituation:
       additionalProperties: false
       properties:
+        closedAt:
+          format: date-time
+          type: string
         id:
+          type: string
+        stage:
+          enum:
+            - candidate
+            - raised
+            - closed
           type: string
         summary:
           type: string
@@ -4319,32 +4323,7 @@ components:
         - id
         - title
         - summary
-      type: object
-    IncidentSituationLink:
-      additionalProperties: false
-      properties:
-        attributes:
-          $ref: "#/components/schemas/IncidentSituationLinkAttributes"
-        id:
-          type: string
-      required:
-        - id
-        - attributes
-      type: object
-    IncidentSituationLinkAttributes:
-      additionalProperties: false
-      properties:
-        createdAt:
-          format: date-time
-          type: string
-        incidentId:
-          type: string
-        situationId:
-          type: string
-      required:
-        - incidentId
-        - situationId
-        - createdAt
+        - stage
       type: object
     IncidentTag:
       additionalProperties: false
@@ -5568,21 +5547,6 @@ components:
       required:
         - attributes
       type: object
-    LinkIncidentSituationResponseBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/LinkIncidentSituationResponseBody.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          $ref: "#/components/schemas/IncidentSituationLink"
-      required:
-        - data
-      type: object
     ListIntegrationChatChannelsResponseBody:
       additionalProperties: false
       properties:
@@ -6116,14 +6080,10 @@ components:
       properties:
         enableIncidentManagement:
           type: boolean
-        requiredReviewerCount:
-          format: int64
-          type: integer
         timezone:
           type: string
       required:
         - enableIncidentManagement
-        - requiredReviewerCount
         - timezone
       type: object
     PaginatedResponseBodyActivityRecord:
@@ -6726,46 +6686,6 @@ components:
         - data
         - pagination
       type: object
-    PaginatedResponseBodyRetrospective:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/PaginatedResponseBodyRetrospective.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          items:
-            $ref: "#/components/schemas/Retrospective"
-          type: array
-        pagination:
-          $ref: "#/components/schemas/Pagination"
-      required:
-        - data
-        - pagination
-      type: object
-    PaginatedResponseBodyReview:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/PaginatedResponseBodyReview.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          items:
-            $ref: "#/components/schemas/Review"
-          type: array
-        pagination:
-          $ref: "#/components/schemas/Pagination"
-      required:
-        - data
-        - pagination
-      type: object
     PaginatedResponseBodySituation:
       additionalProperties: false
       properties:
@@ -7093,6 +7013,21 @@ components:
       required:
         - data
       type: object
+    RemoveRetrospectiveReviewerResponseBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/RemoveRetrospectiveReviewerResponseBody.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          $ref: "#/components/schemas/Retrospective"
+      required:
+        - data
+      type: object
     RequestAgentTurnRequestAttributes:
       additionalProperties: false
       properties:
@@ -7172,12 +7107,12 @@ components:
     RequestRetrospectiveReviewAttributes:
       additionalProperties: false
       properties:
-        reviewMessage:
-          type: string
-        reviewerId:
-          type: string
+        reviewerIds:
+          items:
+            type: string
+          type: array
       required:
-        - reviewerId
+        - reviewerIds
       type: object
     RequestRetrospectiveReviewRequestBody:
       additionalProperties: false
@@ -7205,7 +7140,7 @@ components:
           readOnly: true
           type: string
         data:
-          $ref: "#/components/schemas/Review"
+          $ref: "#/components/schemas/Retrospective"
       required:
         - data
       type: object
@@ -7229,17 +7164,35 @@ components:
     RetrospectiveAttributes:
       additionalProperties: false
       properties:
+        closedAt:
+          format: date-time
+          type: string
+        closedBy:
+          $ref: "#/components/schemas/ExpandableUserAttributes"
         documentId:
           type: string
+        outcome:
+          enum:
+            - reviewed
+            - closed_without_review
+            - skipped
+          type: string
+        owner:
+          $ref: "#/components/schemas/ExpandableUserAttributes"
         reportSections:
           items:
             $ref: "#/components/schemas/RetrospectiveReportSection"
           type: array
+        reviews:
+          items:
+            $ref: "#/components/schemas/RetrospectiveReview"
+          type: array
+        skipReason:
+          type: string
         state:
           enum:
             - draft
             - in_review
-            - meeting
             - closed
           type: string
         systemAnalysisId:
@@ -7249,6 +7202,7 @@ components:
         - systemAnalysisId
         - state
         - reportSections
+        - reviews
       type: object
     RetrospectiveReportComposition:
       additionalProperties: false
@@ -7338,6 +7292,30 @@ components:
         - field
         - description
       type: object
+    RetrospectiveReview:
+      additionalProperties: false
+      properties:
+        feedback:
+          type: string
+        messageFailed:
+          type: boolean
+        reviewer:
+          $ref: "#/components/schemas/ExpandableUserAttributes"
+        state:
+          enum:
+            - waiting
+            - request_changes
+            - approved
+          type: string
+        updatedAt:
+          format: date-time
+          type: string
+      required:
+        - reviewer
+        - state
+        - updatedAt
+        - messageFailed
+      type: object
     RetrySituationNoticeResponseBody:
       additionalProperties: false
       properties:
@@ -7352,49 +7330,6 @@ components:
           $ref: "#/components/schemas/Situation"
       required:
         - data
-      type: object
-    Review:
-      additionalProperties: false
-      properties:
-        attributes:
-          $ref: "#/components/schemas/ReviewAttributes"
-        id:
-          type: string
-      required:
-        - id
-        - attributes
-      type: object
-    ReviewAttributes:
-      additionalProperties: false
-      properties:
-        analysisEntryId:
-          type: string
-        commentId:
-          type: string
-        createdAt:
-          format: date-time
-          type: string
-        requesterId:
-          type: string
-        retrospectiveId:
-          type: string
-        reviewerId:
-          type: string
-        state:
-          enum:
-            - waiting
-            - request_changes
-            - approved
-          type: string
-        updatedAt:
-          format: date-time
-          type: string
-      required:
-        - createdAt
-        - updatedAt
-        - requesterId
-        - reviewerId
-        - state
       type: object
     SelectKnowledgeGraphEntitiesResponseBody:
       additionalProperties: false
@@ -7526,6 +7461,44 @@ components:
       required:
         - data
       type: object
+    SetRetrospectiveOwnerAttributes:
+      additionalProperties: false
+      properties:
+        userId:
+          type: string
+      required:
+        - userId
+      type: object
+    SetRetrospectiveOwnerRequestBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/SetRetrospectiveOwnerRequestBody.json
+          format: uri
+          readOnly: true
+          type: string
+        attributes:
+          $ref: "#/components/schemas/SetRetrospectiveOwnerAttributes"
+      required:
+        - attributes
+      type: object
+    SetRetrospectiveOwnerResponseBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/SetRetrospectiveOwnerResponseBody.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          $ref: "#/components/schemas/Retrospective"
+      required:
+        - data
+      type: object
     SetRetrospectiveReportFindingSelectionRequestAttributes:
       additionalProperties: false
       properties:
@@ -7550,6 +7523,50 @@ components:
           $ref: "#/components/schemas/SetRetrospectiveReportFindingSelectionRequestAttributes"
       required:
         - attributes
+      type: object
+    SetRetrospectiveReviewDecisionAttributes:
+      additionalProperties: false
+      properties:
+        decision:
+          enum:
+            - approved
+            - request_changes
+          type: string
+        feedback:
+          maxLength: 4000
+          type: string
+      required:
+        - decision
+      type: object
+    SetRetrospectiveReviewDecisionRequestBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/SetRetrospectiveReviewDecisionRequestBody.json
+          format: uri
+          readOnly: true
+          type: string
+        attributes:
+          $ref: "#/components/schemas/SetRetrospectiveReviewDecisionAttributes"
+      required:
+        - attributes
+      type: object
+    SetRetrospectiveReviewDecisionResponseBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/SetRetrospectiveReviewDecisionResponseBody.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          $ref: "#/components/schemas/Retrospective"
+      required:
+        - data
       type: object
     SetSituationHoldAttributes:
       additionalProperties: false
@@ -8149,14 +8166,14 @@ components:
       properties:
         id:
           type: string
-        response_state:
+        resolved_at:
+          format: date-time
           type: string
         title:
           type: string
       required:
         - id
         - title
-        - response_state
       type: object
     SituationInvestigation:
       additionalProperties: false
@@ -8505,6 +8522,45 @@ components:
         - entityId
         - displayName
         - rationale
+      type: object
+    SkipRetrospectiveAttributes:
+      additionalProperties: false
+      properties:
+        reason:
+          maxLength: 4000
+          type: string
+      required:
+        - reason
+      type: object
+    SkipRetrospectiveRequestBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/SkipRetrospectiveRequestBody.json
+          format: uri
+          readOnly: true
+          type: string
+        attributes:
+          $ref: "#/components/schemas/SkipRetrospectiveAttributes"
+      required:
+        - attributes
+      type: object
+    SkipRetrospectiveResponseBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/SkipRetrospectiveResponseBody.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          $ref: "#/components/schemas/Retrospective"
+      required:
+        - data
       type: object
     StartIntegrationOAuthFlowResponseBody:
       additionalProperties: false
@@ -8900,21 +8956,6 @@ components:
         ref:
           type: string
       type: object
-    UnlinkIncidentSituationResponseBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/UnlinkIncidentSituationResponseBody.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          $ref: "#/components/schemas/IncidentSituationLink"
-      required:
-        - data
-      type: object
     UpdateDiscussionCommentAttributes:
       additionalProperties: false
       properties:
@@ -9031,6 +9072,32 @@ components:
           $ref: "#/components/schemas/EventAnnotation"
       required:
         - data
+      type: object
+    UpdateIncidentAttributes:
+      additionalProperties: false
+      properties:
+        fieldSelectionIds:
+          items:
+            type: string
+          type: array
+        severityId:
+          nullable: true
+          type:
+            - string
+            - "null"
+        summary:
+          type: string
+        tagIds:
+          items:
+            type: string
+          type: array
+        title:
+          type: string
+        typeId:
+          nullable: true
+          type:
+            - string
+            - "null"
       type: object
     UpdateIncidentDebriefAttributes:
       additionalProperties: false
@@ -9174,20 +9241,44 @@ components:
       required:
         - data
       type: object
-    UpdateIncidentResponseBody:
+    UpdateIncidentMilestoneAttributes:
+      additionalProperties: false
+      properties:
+        description:
+          type: string
+        timestamp:
+          format: date-time
+          type: string
+      type: object
+    UpdateIncidentMilestoneRequestBody:
       additionalProperties: false
       properties:
         $schema:
           description: A URL to the JSON Schema for this object.
           examples:
-            - /v1/schemas/UpdateIncidentResponseBody.json
+            - /v1/schemas/UpdateIncidentMilestoneRequestBody.json
           format: uri
           readOnly: true
           type: string
-        data:
-          $ref: "#/components/schemas/Incident"
+        attributes:
+          $ref: "#/components/schemas/UpdateIncidentMilestoneAttributes"
       required:
-        - data
+        - attributes
+      type: object
+    UpdateIncidentRequestBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/UpdateIncidentRequestBody.json
+          format: uri
+          readOnly: true
+          type: string
+        attributes:
+          $ref: "#/components/schemas/UpdateIncidentAttributes"
+      required:
+        - attributes
       type: object
     UpdateIncidentRoleAttributes:
       additionalProperties: false
@@ -9196,10 +9287,15 @@ components:
           type: boolean
         description:
           type: string
+        maxAssignees:
+          format: int64
+          minimum: 1
+          nullable: true
+          type:
+            - integer
+            - "null"
         name:
           type: string
-        required:
-          type: boolean
       type: object
     UpdateIncidentRoleRequestBody:
       additionalProperties: false
@@ -9559,10 +9655,6 @@ components:
       properties:
         enableIncidentManagement:
           type: boolean
-        requiredReviewerCount:
-          format: int64
-          minimum: 0
-          type: integer
         timezone:
           type: string
       type: object
@@ -9631,96 +9723,6 @@ components:
           type: string
         data:
           $ref: "#/components/schemas/Playbook"
-      required:
-        - data
-      type: object
-    UpdateRetrospectiveAttributes:
-      additionalProperties: false
-      properties:
-        kind:
-          enum:
-            - simple
-            - full
-          type: string
-        state:
-          enum:
-            - draft
-            - in_review
-            - meeting
-            - closed
-          type: string
-      type: object
-    UpdateRetrospectiveRequestBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/UpdateRetrospectiveRequestBody.json
-          format: uri
-          readOnly: true
-          type: string
-        attributes:
-          $ref: "#/components/schemas/UpdateRetrospectiveAttributes"
-      required:
-        - attributes
-      type: object
-    UpdateRetrospectiveResponseBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/UpdateRetrospectiveResponseBody.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          $ref: "#/components/schemas/Retrospective"
-      required:
-        - data
-      type: object
-    UpdateReviewAttributes:
-      additionalProperties: false
-      properties:
-        commentId:
-          nullable: true
-          type: string
-        state:
-          enum:
-            - waiting
-            - request_changes
-            - approved
-          nullable: true
-          type: string
-      type: object
-    UpdateReviewRequestBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/UpdateReviewRequestBody.json
-          format: uri
-          readOnly: true
-          type: string
-        attributes:
-          $ref: "#/components/schemas/UpdateReviewAttributes"
-      required:
-        - attributes
-      type: object
-    UpdateReviewResponseBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/UpdateReviewResponseBody.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          $ref: "#/components/schemas/Review"
       required:
         - data
       type: object
@@ -12981,6 +12983,63 @@ paths:
       summary: Get Event
       tags:
         - Events
+  /incident-milestones/{id}:
+    patch:
+      operationId: update-incident-milestone
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateIncidentMilestoneRequestBody"
+        required: true
+      responses:
+        "204":
+          description: No Content
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: Update an Incident Milestone
+      tags:
+        - Incidents
   /incident-role-assignments/{id}:
     delete:
       operationId: delete-incident-role-assignment
@@ -14852,16 +14911,9 @@ paths:
             type: string
         - explode: false
           in: query
-          name: responseStates
+          name: resolved
           schema:
-            items:
-              enum:
-                - unknown
-                - started
-                - mitigated
-                - resolved
-              type: string
-            type: array
+            type: boolean
         - explode: false
           in: query
           name: severityId
@@ -14964,13 +15016,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
-        "501":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Not Implemented
-      summary: Create an Incident
+      summary: Declare an Incident
       tags:
         - Incidents
   /incidents/{id}:
@@ -15086,13 +15132,15 @@ paths:
           required: true
           schema:
             type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateIncidentRequestBody"
+        required: true
       responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/UpdateIncidentResponseBody"
-          description: OK
+        "204":
+          description: No Content
         "400":
           content:
             application/problem+json:
@@ -15129,13 +15177,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
-        "501":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Not Implemented
-      summary: Update an Incident
+      summary: Update an Incident's Details
       tags:
         - Incidents
   /incidents/{id}/debrief:
@@ -15248,22 +15290,23 @@ paths:
       summary: List Milestones for Incident
       tags:
         - Incidents
-  /incidents/{id}/retrospective:
     post:
-      operationId: create-incident-retrospective
+      operationId: create-incident-milestone
       parameters:
         - in: path
           name: id
           required: true
           schema:
             type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateIncidentMilestoneRequestBody"
+        required: true
       responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/CreateIncidentRetrospectiveResponseBody"
-          description: OK
+        "204":
+          description: No Content
         "400":
           content:
             application/problem+json:
@@ -15288,12 +15331,6 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Not Found
-        "409":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Conflict
         "422":
           content:
             application/problem+json:
@@ -15306,9 +15343,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
-      summary: Start a retrospective for a resolved incident
+      summary: Record an Incident Milestone
       tags:
-        - Retrospectives
+        - Incidents
   /incidents/{id}/role-assignments:
     post:
       operationId: create-incident-role-assignment
@@ -15325,12 +15362,8 @@ paths:
               $ref: "#/components/schemas/CreateIncidentRoleAssignmentRequestBody"
         required: true
       responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/CreateIncidentRoleAssignmentResponseBody"
-          description: OK
+        "204":
+          description: No Content
         "400":
           content:
             application/problem+json:
@@ -15385,12 +15418,8 @@ paths:
           schema:
             type: string
       responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/UnlinkIncidentSituationResponseBody"
-          description: OK
+        "204":
+          description: No Content
         "400":
           content:
             application/problem+json:
@@ -15427,12 +15456,6 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
-        "501":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Not Implemented
       summary: Unlink Incident Situation
       tags:
         - Incidents
@@ -15451,12 +15474,8 @@ paths:
               $ref: "#/components/schemas/LinkIncidentSituationRequestBody"
         required: true
       responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/LinkIncidentSituationResponseBody"
-          description: OK
+        "204":
+          description: No Content
         "400":
           content:
             application/problem+json:
@@ -15493,12 +15512,6 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
-        "501":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Not Implemented
       summary: Link Incident Situation
       tags:
         - Incidents
@@ -20295,73 +20308,6 @@ paths:
       summary: Update a Playbook
       tags:
         - Playbooks
-  /retrospectives:
-    get:
-      operationId: list-retrospectives
-      parameters:
-        - explode: false
-          in: query
-          name: page
-          schema:
-            default: 1
-            format: int64
-            minimum: 1
-            type: integer
-        - explode: false
-          in: query
-          name: pageSize
-          schema:
-            default: 25
-            format: int64
-            maximum: 50
-            minimum: 1
-            type: integer
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/PaginatedResponseBodyRetrospective"
-          description: OK
-        "400":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Bad Request
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unauthorized
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Forbidden
-        "404":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Not Found
-        "422":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unprocessable Entity
-        "500":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Internal Server Error
-      summary: List Retrospectives
-      tags:
-        - Retrospectives
   /retrospectives/{id}:
     get:
       operationId: get-retrospective
@@ -20417,26 +20363,21 @@ paths:
       summary: Get a Retrospective
       tags:
         - Retrospectives
-    patch:
-      operationId: update-retrospective
+  /retrospectives/{id}/close:
+    post:
+      operationId: close-retrospective
       parameters:
         - in: path
           name: id
           required: true
           schema:
             type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/UpdateRetrospectiveRequestBody"
-        required: true
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UpdateRetrospectiveResponseBody"
+                $ref: "#/components/schemas/CloseRetrospectiveResponseBody"
           description: OK
         "400":
           content:
@@ -20462,6 +20403,12 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Not Found
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Conflict
         "422":
           content:
             application/problem+json:
@@ -20474,13 +20421,74 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
-        "501":
+      summary: CloseRetrospective
+      tags:
+        - Retrospectives
+  /retrospectives/{id}/owner:
+    put:
+      operationId: set-retrospective-owner
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SetRetrospectiveOwnerRequestBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SetRetrospectiveOwnerResponseBody"
+          description: OK
+        "400":
           content:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
-          description: Not Implemented
-      summary: Create an Incident Retrospective
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Conflict
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: SetRetrospectiveOwner
       tags:
         - Retrospectives
   /retrospectives/{id}/report:
@@ -20605,6 +20613,73 @@ paths:
       summary: Set Incident Report Selected Findings
       tags:
         - Retrospectives
+  /retrospectives/{id}/review-decision:
+    put:
+      operationId: set-retrospective-review-decision
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SetRetrospectiveReviewDecisionRequestBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SetRetrospectiveReviewDecisionResponseBody"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Conflict
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: SetRetrospectiveReviewDecision
+      tags:
+        - Retrospectives
   /retrospectives/{id}/review-request:
     post:
       operationId: request-retrospective-review
@@ -20669,100 +20744,30 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
-      summary: Request Retrospective Review
+      summary: RequestRetrospectiveReview
       tags:
         - Retrospectives
-  /reviews:
-    get:
-      operationId: list-reviews
-      parameters:
-        - explode: false
-          in: query
-          name: page
-          schema:
-            default: 1
-            format: int64
-            minimum: 1
-            type: integer
-        - explode: false
-          in: query
-          name: pageSize
-          schema:
-            default: 25
-            format: int64
-            maximum: 50
-            minimum: 1
-            type: integer
-        - explode: false
-          in: query
-          name: retrospectiveId
-          schema:
-            type: string
-        - explode: false
-          in: query
-          name: analysisEntryId
-          schema:
-            type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/PaginatedResponseBodyReview"
-          description: OK
-        "400":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Bad Request
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unauthorized
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Forbidden
-        "404":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Not Found
-        "422":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unprocessable Entity
-        "500":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Internal Server Error
-      summary: List Reviews
-      tags:
-        - Reviews
+  /retrospectives/{id}/reviewers:
     post:
-      operationId: create-review
+      operationId: add-retrospective-reviewer
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/CreateReviewRequestBody"
+              $ref: "#/components/schemas/AddRetrospectiveReviewerRequestBody"
         required: true
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/CreateReviewResponseBody"
+                $ref: "#/components/schemas/AddRetrospectiveReviewerResponseBody"
           description: OK
         "400":
           content:
@@ -20788,6 +20793,12 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Not Found
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Conflict
         "422":
           content:
             application/problem+json:
@@ -20800,77 +20811,20 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
-        "501":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Not Implemented
-      summary: Create Review
+      summary: AddRetrospectiveReviewer
       tags:
-        - Reviews
-  /reviews/{id}:
+        - Retrospectives
+  /retrospectives/{id}/reviewers/{userId}:
     delete:
-      operationId: archive-review
+      operationId: remove-retrospective-reviewer
       parameters:
         - in: path
           name: id
           required: true
           schema:
             type: string
-      responses:
-        "204":
-          description: No Content
-        "400":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Bad Request
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unauthorized
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Forbidden
-        "404":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Not Found
-        "422":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unprocessable Entity
-        "500":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Internal Server Error
-        "501":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Not Implemented
-      summary: Archive Review
-      tags:
-        - Reviews
-    get:
-      operationId: get-review
-      parameters:
         - in: path
-          name: id
+          name: userId
           required: true
           schema:
             type: string
@@ -20879,7 +20833,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/GetReviewResponseBody"
+                $ref: "#/components/schemas/RemoveRetrospectiveReviewerResponseBody"
           description: OK
         "400":
           content:
@@ -20905,6 +20859,12 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Not Found
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Conflict
         "422":
           content:
             application/problem+json:
@@ -20917,11 +20877,12 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
-      summary: Get Review
+      summary: RemoveRetrospectiveReviewer
       tags:
-        - Reviews
-    patch:
-      operationId: update-review
+        - Retrospectives
+  /retrospectives/{id}/skip:
+    post:
+      operationId: skip-retrospective
       parameters:
         - in: path
           name: id
@@ -20932,14 +20893,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/UpdateReviewRequestBody"
+              $ref: "#/components/schemas/SkipRetrospectiveRequestBody"
         required: true
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UpdateReviewResponseBody"
+                $ref: "#/components/schemas/SkipRetrospectiveResponseBody"
           description: OK
         "400":
           content:
@@ -20965,6 +20926,12 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Not Found
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Conflict
         "422":
           content:
             application/problem+json:
@@ -20977,15 +20944,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
-        "501":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Not Implemented
-      summary: Update Review
+      summary: SkipRetrospective
       tags:
-        - Reviews
+        - Retrospectives
   /situations:
     get:
       operationId: list-situations

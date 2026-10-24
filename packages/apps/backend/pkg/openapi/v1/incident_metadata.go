@@ -115,10 +115,10 @@ type (
 		Attributes IncidentRoleAttributes `json:"attributes"`
 	}
 	IncidentRoleAttributes struct {
-		Name        string `json:"name"`
-		Archived    bool   `json:"archived"`
-		Required    bool   `json:"required"`
-		Description string `json:"description"`
+		Name         string `json:"name"`
+		Archived     bool   `json:"archived"`
+		MaxAssignees *int   `json:"maxAssignees,omitempty"`
+		Description  string `json:"description"`
 	}
 
 	IncidentTag struct {
@@ -204,10 +204,10 @@ func IncidentRoleFromEnt(role *ent.IncidentRole) IncidentRole {
 	return IncidentRole{
 		Id: role.ID,
 		Attributes: IncidentRoleAttributes{
-			Name:        role.Name,
-			Archived:    isArchived(role.ArchiveTime),
-			Required:    role.Required,
-			Description: "",
+			Name:         role.Name,
+			Archived:     isArchived(role.ArchiveTime),
+			MaxAssignees: role.MaxAssignees,
+			Description:  "",
 		},
 	}
 }
@@ -459,8 +459,8 @@ var CreateIncidentRole = huma.Operation{
 }
 
 type CreateIncidentRoleAttributes struct {
-	Name     string `json:"name"`
-	Required bool   `json:"required"`
+	Name         string `json:"name"`
+	MaxAssignees *int   `json:"maxAssignees,omitempty" minimum:"1" nullable:"true"`
 }
 type CreateIncidentRoleRequest RequestWithBodyAttributes[CreateIncidentRoleAttributes]
 type CreateIncidentRoleResponse ItemResponse[IncidentRole]
@@ -475,10 +475,10 @@ var UpdateIncidentRole = huma.Operation{
 }
 
 type UpdateIncidentRoleAttributes struct {
-	Name        *string `json:"name,omitempty"`
-	Description *string `json:"description,omitempty"`
-	Required    *bool   `json:"required,omitempty"`
-	Archived    *bool   `json:"archived,omitempty"`
+	Name         *string                `json:"name,omitempty"`
+	Description  *string                `json:"description,omitempty"`
+	MaxAssignees OmittableNullable[int] `json:"maxAssignees,omitempty" minimum:"1" nullable:"true"`
+	Archived     *bool                  `json:"archived,omitempty"`
 }
 type UpdateIncidentRoleRequest IdRequestWithBody[UpdateIncidentRoleAttributes]
 type UpdateIncidentRoleResponse ItemResponse[IncidentRole]

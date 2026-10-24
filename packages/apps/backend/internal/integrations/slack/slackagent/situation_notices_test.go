@@ -188,9 +188,9 @@ func (s *AppSuite) TestNoticeWording() {
 			s.Contains(text, "Checkout errors")
 			s.Contains(text, stage.stage)
 			s.Contains(text, "Checkout, Payments")
-			s.Contains(text, slackDate(noticeTestOpenedAt))
+			s.Contains(text, slackintegration.SlackDate(noticeTestOpenedAt))
 			s.Contains(text, noticeTestSituationURL)
-			s.Contains(text, "Rezible's interpretation, as of "+slackDate(content.Report.CreatedAt)+":")
+			s.Contains(text, "Rezible's interpretation, as of "+slackintegration.SlackDate(content.Report.CreatedAt)+":")
 			s.Contains(text, "Errors began when the payments dependency started timing out.")
 			for _, claim := range []string{"healthy", "resolved", "fixed", "safe"} {
 				s.NotContains(strings.ToLower(text), claim)
@@ -225,7 +225,7 @@ func (s *AppSuite) TestNoticeWordingOfDeployments() {
 
 		text := s.renderedText(content)
 
-		expected := "Last deployment before it started: Checkout · production · v2.4.1 · " + slackDate(deployedAt)
+		expected := "Last deployment before it started: Checkout · production · v2.4.1 · " + slackintegration.SlackDate(deployedAt)
 		s.Contains(text, expected)
 		s.NotContains(text, "<http", "the deployment is not a link")
 	})

@@ -5,40 +5,14 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/stretchr/testify/mock"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/incident"
 	incsev "github.com/rezible/rezible/ent/incidentseverity"
 	inctype "github.com/rezible/rezible/ent/incidenttype"
-	"github.com/rezible/rezible/internal/db"
 	"github.com/rezible/rezible/pkg/projections"
-	"github.com/rezible/rezible/test/mocks"
 )
-
-func (s *ProjectionServiceSuite) incidentService(tdb rez.Database, events *[]rez.EventOnIncidentUpdated) rez.IncidentService {
-	messageService := mocks.NewMockMessageQueue(s.T())
-	messageService.EXPECT().
-		Publish(mock.Anything, mock.Anything).
-		Run(func(_ context.Context, event any) {
-			if updated, ok := event.(rez.EventOnIncidentUpdated); ok {
-				*events = append(*events, updated)
-			}
-		}).
-		Return(nil).
-		Maybe()
-	retrospectives, retrospectiveServiceErr := db.NewRetrospectiveService(tdb)
-	s.Require().NoError(retrospectiveServiceErr)
-
-	situations := mocks.NewMockSituationService(s.T())
-	situations.EXPECT().SyncIncidentLinks(mock.Anything, mock.Anything, mock.Anything).Return(nil).Maybe()
-
-	service, serviceErr := db.NewIncidentService(tdb, messageService, situations, retrospectives)
-	s.Require().NoError(serviceErr)
-
-	return service
-}
 
 func (s *ProjectionServiceSuite) createIncidentProjectionEvent(ctx context.Context, tdb rez.Database, subjectRef string, occurredAt time.Time, attrs projections.IncidentEventAttributes) *ent.NormalizedEvent {
 	encoded, encodedErr := projections.EncodeAttributes(attrs)
@@ -60,12 +34,10 @@ func (s *ProjectionServiceSuite) createIncidentProjectionEvent(ctx context.Conte
 	return event
 }
 
-func (s *ProjectionServiceSuite) TestIncidentProjectionPublishesCreateChangeAndSkipsIdenticalRepeat() {
+func (s *ProjectionServiceSuite) TestIncidentProjectionObservesCreateChangeAndRepeat() {
 	ctx, tdb := s.SetupTestDatabase()
 
 	projector := s.projectionService(tdb)
-	var events []rez.EventOnIncidentUpdated
-	projector.incidents = s.incidentService(tdb, &events)
 
 	openedAt := time.Date(2026, 6, 1, 10, 0, 0, 0, time.UTC)
 	sourceUpdatedAt := openedAt
@@ -81,8 +53,6 @@ func (s *ProjectionServiceSuite) TestIncidentProjectionPublishesCreateChangeAndS
 
 	_, projErr := runProjection(ctx, projector, first)
 	s.Require().NoError(projErr)
-	s.Require().Len(events, 1)
-	s.True(events[0].Created)
 
 	queryCreated := tdb.Client(ctx).Incident.Query().
 		Where(incident.Title(attrs.Title))
@@ -93,7 +63,6 @@ func (s *ProjectionServiceSuite) TestIncidentProjectionPublishesCreateChangeAndS
 
 	_, projErr = runProjection(ctx, projector, first)
 	s.Require().NoError(projErr)
-	s.Len(events, 1)
 
 	attrs.Title = "Search outage updated"
 	updatedSourceAt := sourceUpdatedAt.Add(time.Minute)
@@ -102,8 +71,11 @@ func (s *ProjectionServiceSuite) TestIncidentProjectionPublishesCreateChangeAndS
 
 	_, projSecondErr := runProjection(ctx, projector, second)
 	s.Require().NoError(projSecondErr)
-	s.Require().Len(events, 2)
-	s.False(events[1].Created)
+
+	observed, observedErr := tdb.Client(ctx).Incident.Query().Only(ctx)
+	s.Require().NoError(observedErr)
+	s.Equal(created.ID, observed.ID)
+	s.Equal(attrs.Title, observed.Title)
 
 	querySeverityCount := tdb.Client(ctx).IncidentSeverity.Query().
 		Where(incsev.Name("SEV-1"))

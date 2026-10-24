@@ -33,7 +33,9 @@ func SeedDemoData(
 	ctx context.Context,
 	db rez.Database,
 	knowledge rez.KnowledgeGraphQueryService,
-	incidents rez.IncidentService,
+	orgs rez.OrganizationService,
+	incidents rez.IncidentDetailsService,
+	management rez.IncidentManagementService,
 	retrospectives rez.RetrospectiveService,
 	systemAnalysis rez.SystemAnalysisService,
 	events rez.EventsService,
@@ -47,7 +49,9 @@ func SeedDemoData(
 		installation:   installation,
 		db:             db,
 		knowledge:      knowledge,
+		orgs:           orgs,
 		incidents:      incidents,
+		management:     management,
 		retrospectives: retrospectives,
 		systemAnalysis: systemAnalysis,
 		events:         events,
@@ -62,7 +66,9 @@ type dataSeeder struct {
 	installation   *ent.Integration
 	db             rez.Database
 	knowledge      rez.KnowledgeGraphQueryService
-	incidents      rez.IncidentService
+	orgs           rez.OrganizationService
+	incidents      rez.IncidentDetailsService
+	management     rez.IncidentManagementService
 	retrospectives rez.RetrospectiveService
 	systemAnalysis rez.SystemAnalysisService
 	events         rez.EventsService
@@ -71,11 +77,27 @@ type dataSeeder struct {
 }
 
 func (d *dataSeeder) seedData(ctx context.Context) error {
+	if enableErr := d.enableIncidentManagement(ctx); enableErr != nil {
+		return enableErr
+	}
 	if ingestErr := d.ingestEvents(ctx); ingestErr != nil {
 		return ingestErr
 	}
 
-	inc, lookupErr := d.lookupIncident(ctx)
+	for _, earlier := range earlierDemoIncidents {
+		earlierInc, earlierErr := d.lookupIncident(ctx, earlier.resourceID)
+		if earlierErr != nil {
+			return earlierErr
+		}
+		if earlierInc == nil {
+			return fmt.Errorf("demo source incident %s has not been imported", earlier.resourceID)
+		}
+		if milestonesErr := d.createMilestones(ctx, earlierInc, earlier.milestones); milestonesErr != nil {
+			return milestonesErr
+		}
+	}
+
+	inc, lookupErr := d.lookupIncident(ctx, "checkout-search-timeouts")
 	if lookupErr != nil {
 		return lookupErr
 	}
@@ -86,7 +108,7 @@ func (d *dataSeeder) seedData(ctx context.Context) error {
 	if assignmentsErr := d.createRoleAssignments(ctx, inc); assignmentsErr != nil {
 		return assignmentsErr
 	}
-	if milestonesErr := d.createMilestones(ctx, inc); milestonesErr != nil {
+	if milestonesErr := d.createMilestones(ctx, inc, checkoutIncidentMilestones); milestonesErr != nil {
 		return milestonesErr
 	}
 	if impactsErr := d.createImpacts(ctx, inc); impactsErr != nil {
@@ -100,6 +122,21 @@ func (d *dataSeeder) seedData(ctx context.Context) error {
 		return retrospectiveErr
 	}
 
+	return nil
+}
+
+// enableIncidentManagement turns incident management on, since the seeded incident is run in Rezible.
+func (d *dataSeeder) enableIncidentManagement(ctx context.Context) error {
+	orgID, orgErr := d.db.Client(ctx).Organization.Query().OnlyID(ctx)
+	if orgErr != nil {
+		return fmt.Errorf("query demo organization: %w", orgErr)
+	}
+	enable := func(m *ent.OrganizationPreferencesMutation) {
+		m.SetEnableIncidentManagement(true)
+	}
+	if _, setErr := d.orgs.SetPreferences(ctx, orgID, enable); setErr != nil {
+		return fmt.Errorf("enable incident management: %w", setErr)
+	}
 	return nil
 }
 
@@ -154,8 +191,8 @@ func (d *dataSeeder) lookupAlias(ctx context.Context, resourceRef string) (*ent.
 	return aliases.Data[0], nil
 }
 
-func (d *dataSeeder) lookupIncident(ctx context.Context) (*ent.Incident, error) {
-	alias, aliasErr := d.lookupAlias(ctx, "demo:incident:checkout-search-timeouts")
+func (d *dataSeeder) lookupIncident(ctx context.Context, resourceID string) (*ent.Incident, error) {
+	alias, aliasErr := d.lookupAlias(ctx, "demo:incident:"+resourceID)
 	if aliasErr != nil {
 		return nil, aliasErr
 	} else if alias == nil {
@@ -163,7 +200,7 @@ func (d *dataSeeder) lookupIncident(ctx context.Context) (*ent.Incident, error) 
 	} else if alias.SubjectKind != ksa.SubjectKindEntity || alias.EntityID == nil {
 		return nil, fmt.Errorf("demo incident alias does not reference an entity")
 	}
-	return d.incidents.Get(ctx, incident.KnowledgeEntityID(*alias.EntityID))
+	return d.incidents.GetIncident(ctx, incident.KnowledgeEntityID(*alias.EntityID))
 }
 
 func (d *dataSeeder) ensureIncidentRole(ctx context.Context, name string) (*ent.IncidentRole, error) {
@@ -191,27 +228,43 @@ func (d *dataSeeder) createRoleAssignments(ctx context.Context, inc *ent.Inciden
 	if commanderErr != nil {
 		return commanderErr
 	}
-	userParams := rez.SetIncidentRoleAssignmentParams{IncidentID: inc.ID, RoleID: commander.ID, UserID: userID}
-	if _, assignErr := d.incidents.SetIncidentRoleAssignment(ctx, uuid.Nil, userParams); assignErr != nil {
+	if _, assignErr := d.management.SetRoleAssignment(ctx, inc.ID, commander.ID, userID); assignErr != nil {
 		return fmt.Errorf("assign demo incident commander: %w", assignErr)
 	}
 	return nil
 }
 
-func (d *dataSeeder) createMilestones(ctx context.Context, inc *ent.Incident) error {
-	type milestoneItem struct {
-		kind        incidentmilestone.Kind
-		timestamp   time.Time
-		description string
-	}
-	items := []milestoneItem{
-		{kind: incidentmilestone.KindDetection, timestamp: inc.OpenedAt, description: "The first customer reports identified elevated checkout timeouts."},
-		{kind: incidentmilestone.KindInvestigation, timestamp: inc.OpenedAt.Add(8 * time.Minute), description: "The team isolated failures to optional search enrichment."},
-		{kind: incidentmilestone.KindMitigation, timestamp: inc.OpenedAt.Add(25 * time.Minute), description: "Optional search enrichment was disabled for checkout requests."},
-	}
-	if resolutionAt := inc.ResolvedAt; resolutionAt != nil {
-		items = append(items, milestoneItem{kind: incidentmilestone.KindResolution, timestamp: *resolutionAt, description: "Checkout requests returned to normal after mitigation."})
-	}
+// demoMilestone is a seeded milestone, timed from the incident's opening.
+type demoMilestone struct {
+	kind        incidentmilestone.Kind
+	after       time.Duration
+	description string
+}
+
+var checkoutIncidentMilestones = []demoMilestone{
+	{kind: incidentmilestone.KindDetection, description: "The first customer reports identified elevated checkout timeouts."},
+	{kind: incidentmilestone.KindInvestigation, after: 8 * time.Minute, description: "The team isolated failures to optional search enrichment."},
+	{kind: incidentmilestone.KindMitigation, after: 25 * time.Minute, description: "Optional search enrichment was disabled for checkout requests."},
+	{kind: incidentmilestone.KindResolution, after: 30 * time.Minute, description: "Checkout requests returned to normal after mitigation."},
+}
+
+// earlierDemoIncidents are the other demo incidents, seeded as resolved.
+var earlierDemoIncidents = []struct {
+	resourceID string
+	milestones []demoMilestone
+}{
+	{resourceID: "catalog-search-stale-results", milestones: []demoMilestone{
+		{kind: incidentmilestone.KindImpact, description: "Catalog search started returning results from before the nightly import."},
+		{kind: incidentmilestone.KindMitigation, after: 20 * time.Minute, description: "The search index refresh was run again."},
+		{kind: incidentmilestone.KindResolution, after: 35 * time.Minute, description: "Catalog search returned current results."},
+	}},
+	{resourceID: "search-admin-dashboard-degraded", milestones: []demoMilestone{
+		{kind: incidentmilestone.KindImpact, description: "Search administration views loaded slowly and intermittently failed."},
+		{kind: incidentmilestone.KindResolution, after: 40 * time.Minute, description: "Search administration views loaded normally."},
+	}},
+}
+
+func (d *dataSeeder) createMilestones(ctx context.Context, inc *ent.Incident, items []demoMilestone) error {
 	for _, item := range items {
 		present := false
 		for _, existing := range inc.Edges.Milestones {
@@ -223,14 +276,14 @@ func (d *dataSeeder) createMilestones(ctx context.Context, inc *ent.Incident) er
 		if present {
 			continue
 		}
-		setMilestone := func(m *ent.IncidentMilestoneMutation) {
-			m.SetIncidentID(inc.ID)
-			m.SetKind(item.kind)
-			m.SetSource("demo")
-			m.SetDescription(item.description)
-			m.SetTimestamp(item.timestamp)
+		milestoneParams := rez.AddIncidentMilestoneParams{
+			IncidentID:  inc.ID,
+			Kind:        item.kind,
+			Timestamp:   inc.OpenedAt.Add(item.after),
+			Description: item.description,
+			Source:      "demo",
 		}
-		if _, milestoneErr := d.incidents.SetIncidentMilestone(ctx, uuid.Nil, setMilestone); milestoneErr != nil {
+		if _, milestoneErr := d.management.AddMilestone(ctx, milestoneParams); milestoneErr != nil {
 			return fmt.Errorf("create demo incident %s milestone: %w", item.kind, milestoneErr)
 		}
 	}

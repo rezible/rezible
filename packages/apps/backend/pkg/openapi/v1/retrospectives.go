@@ -2,7 +2,9 @@ package v1
 
 import (
 	"context"
+	"github.com/rezible/rezible/ent/review"
 	"net/http"
+	"time"
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
@@ -12,24 +14,28 @@ import (
 )
 
 type RetrospectivesHandler interface {
-	CreateIncidentRetrospective(context.Context, *CreateIncidentRetrospectiveRequest) (*CreateIncidentRetrospectiveResponse, error)
-	ListRetrospectives(context.Context, *ListRetrospectivesRequest) (*ListRetrospectivesResponse, error)
-	GetRetrospective(context.Context, *GetRetrospectiveRequest) (*GetRetrospectiveResponse, error)
-	UpdateRetrospective(context.Context, *UpdateRetrospectiveRequest) (*UpdateRetrospectiveResponse, error)
-
+	SkipRetrospective(context.Context, *SkipRetrospectiveRequest) (*SkipRetrospectiveResponse, error)
+	CloseRetrospective(context.Context, *CloseRetrospectiveRequest) (*CloseRetrospectiveResponse, error)
+	SetRetrospectiveReviewDecision(context.Context, *SetRetrospectiveReviewDecisionRequest) (*SetRetrospectiveReviewDecisionResponse, error)
+	RemoveRetrospectiveReviewer(context.Context, *RemoveRetrospectiveReviewerRequest) (*RemoveRetrospectiveReviewerResponse, error)
+	AddRetrospectiveReviewer(context.Context, *AddRetrospectiveReviewerRequest) (*AddRetrospectiveReviewerResponse, error)
 	RequestRetrospectiveReview(context.Context, *RequestRetrospectiveReviewRequest) (*RequestRetrospectiveReviewResponse, error)
+	SetRetrospectiveOwner(context.Context, *SetRetrospectiveOwnerRequest) (*SetRetrospectiveOwnerResponse, error)
+	GetRetrospective(context.Context, *GetRetrospectiveRequest) (*GetRetrospectiveResponse, error)
 
 	GetRetrospectiveReportComposition(context.Context, *GetRetrospectiveReportCompositionRequest) (*GetRetrospectiveReportCompositionResponse, error)
 	SetRetrospectiveReportFindingSelection(context.Context, *SetRetrospectiveReportFindingSelectionRequest) (*SetRetrospectiveReportFindingSelectionResponse, error)
 }
 
 func (o operations) RegisterRetrospectives(api huma.API) {
-	huma.Register(api, CreateIncidentRetrospective, o.CreateIncidentRetrospective)
-	huma.Register(api, ListRetrospectives, o.ListRetrospectives)
-	huma.Register(api, GetRetrospective, o.GetRetrospective)
-	huma.Register(api, UpdateRetrospective, o.UpdateRetrospective)
-
+	huma.Register(api, SkipRetrospective, o.SkipRetrospective)
+	huma.Register(api, CloseRetrospective, o.CloseRetrospective)
+	huma.Register(api, SetRetrospectiveReviewDecision, o.SetRetrospectiveReviewDecision)
+	huma.Register(api, RemoveRetrospectiveReviewer, o.RemoveRetrospectiveReviewer)
+	huma.Register(api, AddRetrospectiveReviewer, o.AddRetrospectiveReviewer)
 	huma.Register(api, RequestRetrospectiveReview, o.RequestRetrospectiveReview)
+	huma.Register(api, SetRetrospectiveOwner, o.SetRetrospectiveOwner)
+	huma.Register(api, GetRetrospective, o.GetRetrospective)
 
 	huma.Register(api, GetRetrospectiveReportComposition, o.GetRetrospectiveReportComposition)
 	huma.Register(api, SetRetrospectiveReportFindingSelection, o.SetRetrospectiveReportFindingSelection)
@@ -56,6 +62,12 @@ type (
 		SystemAnalysisId uuid.UUID                    `json:"systemAnalysisId"`
 		State            retrospective.State          `json:"state"`
 		ReportSections   []RetrospectiveReportSection `json:"reportSections"`
+		Owner            *Expandable[UserAttributes]  `json:"owner,omitempty"`
+		ClosedAt         *time.Time                   `json:"closedAt,omitempty"`
+		ClosedBy         *Expandable[UserAttributes]  `json:"closedBy,omitempty"`
+		SkipReason       *string                      `json:"skipReason,omitempty"`
+		Outcome          string                       `json:"outcome,omitempty" enum:"reviewed,closed_without_review,skipped"`
+		Reviews          []RetrospectiveReview        `json:"reviews"`
 	}
 
 	RetrospectiveReportComposition struct {
@@ -86,6 +98,14 @@ type (
 		Description string `json:"description"`
 	}
 )
+
+type RetrospectiveReview struct {
+	Reviewer      Expandable[UserAttributes] `json:"reviewer"`
+	State         review.State               `json:"state" enum:"waiting,request_changes,approved"`
+	Feedback      *string                    `json:"feedback,omitempty"`
+	UpdatedAt     time.Time                  `json:"updatedAt"`
+	MessageFailed bool                       `json:"messageFailed"`
+}
 
 // TODO: load this somewhere
 var defaultReportSections = []RetrospectiveReportSection{
@@ -121,6 +141,37 @@ func RetrospectiveFromEnt(r *ent.Retrospective) Retrospective {
 		SystemAnalysisId: r.SystemAnalysisID,
 		State:            r.State,
 		ReportSections:   defaultReportSections,
+		ClosedAt:         r.ClosedAt, SkipReason: r.SkipReason,
+		Reviews: make([]RetrospectiveReview, 0, len(r.Edges.Reviews)),
+	}
+	if r.OwnerID != nil {
+		attrs.Owner = &Expandable[UserAttributes]{Id: *r.OwnerID}
+		if r.Edges.Owner != nil {
+			attrs.Owner.Attributes = new(UserFromEnt(r.Edges.Owner).Attributes)
+		}
+	}
+	if r.ClosedByID != nil {
+		attrs.ClosedBy = &Expandable[UserAttributes]{Id: *r.ClosedByID}
+		if r.Edges.ClosedBy != nil {
+			attrs.ClosedBy.Attributes = new(UserFromEnt(r.Edges.ClosedBy).Attributes)
+		}
+	}
+	for _, row := range r.Edges.Reviews {
+		reviewer := Expandable[UserAttributes]{Id: row.ReviewerID}
+		if row.Edges.Reviewer != nil {
+			reviewer.Attributes = new(UserFromEnt(row.Edges.Reviewer).Attributes)
+		}
+		attrs.Reviews = append(attrs.Reviews, RetrospectiveReview{Reviewer: reviewer, State: row.State, Feedback: row.Feedback, UpdatedAt: row.UpdatedAt, MessageFailed: row.MessageFailedAt != nil})
+	}
+	if r.State == retrospective.StateClosed {
+		switch {
+		case r.SkipReason != nil:
+			attrs.Outcome = "skipped"
+		case len(r.Edges.Reviews) > 0:
+			attrs.Outcome = "reviewed"
+		default:
+			attrs.Outcome = "closed_without_review"
+		}
 	}
 	return Retrospective{Id: r.ID, Attributes: attrs}
 }
@@ -133,20 +184,6 @@ func RetrospectiveReportCompositionFromRez(r *rez.RetrospectiveReportComposition
 
 var retrospectivesTags = []string{"Retrospectives"}
 
-var ListRetrospectives = huma.Operation{
-	OperationID: "list-retrospectives",
-	Method:      http.MethodGet,
-	Path:        "/retrospectives",
-	Summary:     "List Retrospectives",
-	Tags:        retrospectivesTags,
-	Errors:      ErrorCodes(),
-}
-
-type ListRetrospectivesRequest struct {
-	PaginationRequest
-}
-type ListRetrospectivesResponse PaginatedResponse[Retrospective]
-
 var GetRetrospective = huma.Operation{
 	OperationID: "get-retrospective",
 	Method:      http.MethodGet,
@@ -158,38 +195,6 @@ var GetRetrospective = huma.Operation{
 
 type GetRetrospectiveRequest IdRequest
 type GetRetrospectiveResponse ItemResponse[Retrospective]
-
-var UpdateRetrospective = huma.Operation{
-	OperationID: "update-retrospective",
-	Method:      http.MethodPatch,
-	Path:        "/retrospectives/{id}",
-	Summary:     "Create an Incident Retrospective",
-	Tags:        retrospectivesTags,
-	Errors:      ErrorCodes(http.StatusNotImplemented),
-}
-
-type UpdateRetrospectiveAttributes struct {
-	Kind  *string `json:"kind,omitempty" enum:"simple,full"`
-	State *string `json:"state,omitempty" enum:"draft,in_review,meeting,closed"`
-}
-type UpdateRetrospectiveRequest IdRequestWithBody[UpdateRetrospectiveAttributes]
-type UpdateRetrospectiveResponse ItemResponse[Retrospective]
-
-var RequestRetrospectiveReview = huma.Operation{
-	OperationID: "request-retrospective-review",
-	Method:      http.MethodPost,
-	Path:        "/retrospectives/{id}/review-request",
-	Summary:     "Request Retrospective Review",
-	Tags:        retrospectivesTags,
-	Errors:      ErrorCodes(http.StatusConflict),
-}
-
-type RequestRetrospectiveReviewAttributes struct {
-	ReviewerId    uuid.UUID `json:"reviewerId"`
-	ReviewMessage *string   `json:"reviewMessage,omitempty"`
-}
-type RequestRetrospectiveReviewRequest IdRequestWithBody[RequestRetrospectiveReviewAttributes]
-type RequestRetrospectiveReviewResponse ItemResponse[Review]
 
 var GetRetrospectiveReportComposition = huma.Operation{
 	OperationID: "get-retrospective-report-composition",
@@ -219,14 +224,77 @@ type SetRetrospectiveReportFindingSelectionRequestAttributes struct {
 type SetRetrospectiveReportFindingSelectionRequest IdRequestWithBody[SetRetrospectiveReportFindingSelectionRequestAttributes]
 type SetRetrospectiveReportFindingSelectionResponse CollectionResponse[SystemAnalysisEntry]
 
-var CreateIncidentRetrospective = huma.Operation{
-	OperationID: "create-incident-retrospective",
-	Method:      http.MethodPost,
-	Path:        "/incidents/{id}/retrospective",
-	Summary:     "Start a retrospective for a resolved incident",
-	Tags:        retrospectivesTags,
-	Errors:      ErrorCodes(http.StatusConflict),
+var SetRetrospectiveOwner = huma.Operation{
+	OperationID: "set-retrospective-owner", Method: "PUT", Path: "/retrospectives/{id}/owner",
+	Summary: "SetRetrospectiveOwner", Tags: retrospectivesTags, Errors: ErrorCodes(http.StatusConflict, http.StatusForbidden),
 }
 
-type CreateIncidentRetrospectiveRequest IdRequest
-type CreateIncidentRetrospectiveResponse ItemResponse[Retrospective]
+type SetRetrospectiveOwnerAttributes struct {
+	UserId uuid.UUID `json:"userId"`
+}
+type SetRetrospectiveOwnerRequest IdRequestWithBody[SetRetrospectiveOwnerAttributes]
+type SetRetrospectiveOwnerResponse ItemResponse[Retrospective]
+
+var RequestRetrospectiveReview = huma.Operation{
+	OperationID: "request-retrospective-review", Method: "POST", Path: "/retrospectives/{id}/review-request",
+	Summary: "RequestRetrospectiveReview", Tags: retrospectivesTags, Errors: ErrorCodes(http.StatusConflict, http.StatusForbidden),
+}
+
+type RequestRetrospectiveReviewAttributes struct {
+	ReviewerIds []uuid.UUID `json:"reviewerIds"`
+}
+type RequestRetrospectiveReviewRequest IdRequestWithBody[RequestRetrospectiveReviewAttributes]
+type RequestRetrospectiveReviewResponse ItemResponse[Retrospective]
+
+var AddRetrospectiveReviewer = huma.Operation{
+	OperationID: "add-retrospective-reviewer", Method: "POST", Path: "/retrospectives/{id}/reviewers",
+	Summary: "AddRetrospectiveReviewer", Tags: retrospectivesTags, Errors: ErrorCodes(http.StatusConflict, http.StatusForbidden),
+}
+
+type AddRetrospectiveReviewerAttributes struct {
+	UserId uuid.UUID `json:"userId"`
+}
+type AddRetrospectiveReviewerRequest IdRequestWithBody[AddRetrospectiveReviewerAttributes]
+type AddRetrospectiveReviewerResponse ItemResponse[Retrospective]
+
+var RemoveRetrospectiveReviewer = huma.Operation{
+	OperationID: "remove-retrospective-reviewer", Method: "DELETE", Path: "/retrospectives/{id}/reviewers/{userId}",
+	Summary: "RemoveRetrospectiveReviewer", Tags: retrospectivesTags, Errors: ErrorCodes(http.StatusConflict, http.StatusForbidden),
+}
+
+type RemoveRetrospectiveReviewerRequest struct {
+	Id     uuid.UUID `path:"id"`
+	UserId uuid.UUID `path:"userId"`
+}
+type RemoveRetrospectiveReviewerResponse ItemResponse[Retrospective]
+
+var SetRetrospectiveReviewDecision = huma.Operation{
+	OperationID: "set-retrospective-review-decision", Method: "PUT", Path: "/retrospectives/{id}/review-decision",
+	Summary: "SetRetrospectiveReviewDecision", Tags: retrospectivesTags, Errors: ErrorCodes(http.StatusConflict, http.StatusForbidden),
+}
+
+type SetRetrospectiveReviewDecisionAttributes struct {
+	Decision review.State `json:"decision" enum:"approved,request_changes"`
+	Feedback string       `json:"feedback,omitempty" maxLength:"4000"`
+}
+type SetRetrospectiveReviewDecisionRequest IdRequestWithBody[SetRetrospectiveReviewDecisionAttributes]
+type SetRetrospectiveReviewDecisionResponse ItemResponse[Retrospective]
+
+var CloseRetrospective = huma.Operation{
+	OperationID: "close-retrospective", Method: "POST", Path: "/retrospectives/{id}/close",
+	Summary: "CloseRetrospective", Tags: retrospectivesTags, Errors: ErrorCodes(http.StatusConflict, http.StatusForbidden),
+}
+
+type CloseRetrospectiveRequest IdRequest
+type CloseRetrospectiveResponse ItemResponse[Retrospective]
+
+var SkipRetrospective = huma.Operation{
+	OperationID: "skip-retrospective", Method: "POST", Path: "/retrospectives/{id}/skip",
+	Summary: "SkipRetrospective", Tags: retrospectivesTags, Errors: ErrorCodes(http.StatusConflict, http.StatusForbidden),
+}
+
+type SkipRetrospectiveAttributes struct {
+	Reason string `json:"reason" maxLength:"4000"`
+}
+type SkipRetrospectiveRequest IdRequestWithBody[SkipRetrospectiveAttributes]
+type SkipRetrospectiveResponse ItemResponse[Retrospective]

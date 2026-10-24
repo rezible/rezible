@@ -4,6 +4,7 @@
 	import { Spinner } from "$components/ui/spinner";
 	import Timestamp from "$components/common/timestamp/Timestamp.svelte";
 	import RiMoreLine from "remixicon-svelte/icons/more-line";
+	import { declareIncidentHref } from "$features/situations/lib/routes";
 	import type { SituationController } from "./controller.svelte";
 
 	type Props = { controller: SituationController };
@@ -38,6 +39,12 @@
 		<Timestamp value={controller.holdUntil} />
 	</span>
 	<Button size="sm" variant="outline" disabled={pending} onclick={controller.release}>Release</Button>
+{/if}
+
+{#if controller.canDeclareIncident}
+	<Button size="sm" variant="outline" href={declareIncidentHref(controller.situationId ?? "")}>
+		Declare incident
+	</Button>
 {/if}
 
 {#if hasMoreActions}

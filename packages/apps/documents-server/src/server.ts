@@ -10,6 +10,7 @@ import type {
 	storePayload,
 	fetchPayload
 } from "@hocuspocus/server";
+import { SkipFurtherHooksError } from "@hocuspocus/common";
 import { Database } from "@hocuspocus/extension-database";
 
 import { SQL } from "bun";
@@ -34,6 +35,31 @@ export type SessionContext = {
 	expiresAt: number;
 };
 
+// Keep equal to ClosedReviewGracePeriod in the backend retrospective service.
+export const CLOSED_REVIEW_GRACE_SECONDS = 60;
+
+class DocumentClosedError extends Error {
+	constructor() {
+		super("This review is closed. Its report can't be changed.");
+	}
+}
+
+async function storeDocument(db: SQL, { documentName, state, lastContext }: storePayload<SessionContext>) {
+	const rows = await db`UPDATE documents
+		SET content = ${state}::BYTEA
+		WHERE tenant_id = ${lastContext.tenantId}::INT AND id = ${documentName}::UUID
+			AND NOT EXISTS (
+				SELECT 1 FROM retrospectives r
+				WHERE r.document_id = documents.id AND r.tenant_id = documents.tenant_id
+					AND r.closed_at < now() - make_interval(secs => ${CLOSED_REVIEW_GRACE_SECONDS}::INT))
+		RETURNING id`;
+	if (rows.length > 0) return;
+	const existing = await db`SELECT id FROM documents
+		WHERE tenant_id = ${lastContext.tenantId}::INT AND id = ${documentName}::UUID`;
+	if (existing.length > 0) throw new DocumentClosedError();
+	throw new Error("document not found");
+}
+
 const createDatabase = (db: SQL): Database => {
 	return new Database({
 		fetch: async ({context, documentName}: fetchPayload<SessionContext>) => {
@@ -46,13 +72,7 @@ const createDatabase = (db: SQL): Database => {
 			if (!content || content.length === 0) return emptyDocument;
 			return new Uint8Array(content);
 		}, 
-		store: async ({documentName, state, lastContext}: storePayload<SessionContext>) => {
-			const rows = await db`UPDATE documents
-				SET content = ${state}::BYTEA
-				WHERE tenant_id = ${lastContext.tenantId}::INT AND id = ${documentName}::UUID
-				RETURNING id`;
-			if (rows.length === 0) throw new Error("document not found");
-		},
+		store: (payload) => storeDocument(db, payload),
 	});
 }
 
@@ -112,10 +132,7 @@ export class DocumentsServerExtension implements Extension<SessionContext> {
 	async onAuthenticate(data: onAuthenticatePayload<SessionContext>): Promise<SessionContext> {
 		const session = this.verifySessionToken(data.token, data.documentName);
 
-		data.connectionConfig = {
-			isAuthenticated: true,
-			readOnly: !session.canEdit,
-		};
+		data.connectionConfig.readOnly = !session.canEdit;
 
 		return session;
 	}
@@ -146,6 +163,12 @@ export class DocumentsServerExtension implements Extension<SessionContext> {
 	}
 
 	async onStoreDocument(data: onStoreDocumentPayload<SessionContext>) {
-		return this.database.onStoreDocument(data);
+		try {
+			await this.database.onStoreDocument(data);
+		} catch (error) {
+			if (!(error instanceof DocumentClosedError)) throw error;
+			data.instance.closeConnections(data.documentName);
+			throw new SkipFurtherHooksError();
+		}
 	}
 }

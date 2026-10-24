@@ -1,3 +1,4 @@
+import { reviewPanelModel } from "./review";
 import type {
 	ExpandableIncidentSeverityAttributes,
 	IncidentAttributes,
@@ -7,17 +8,12 @@ import type { StatusPresentation } from "$components/common/status-badge/status"
 
 import RiAlarmWarningLine from "remixicon-svelte/icons/alarm-warning-line";
 import RiCheckboxCircleLine from "remixicon-svelte/icons/checkbox-circle-line";
-import RiDraftLine from "remixicon-svelte/icons/draft-line";
-import RiEditLine from "remixicon-svelte/icons/edit-line";
 import RiErrorWarningLine from "remixicon-svelte/icons/error-warning-line";
-import RiEyeLine from "remixicon-svelte/icons/eye-line";
 import RiFireLine from "remixicon-svelte/icons/fire-line";
 import RiInformationLine from "remixicon-svelte/icons/information-line";
-import RiQuestionLine from "remixicon-svelte/icons/question-line";
 import RiShieldCheckLine from "remixicon-svelte/icons/shield-check-line";
-import RiTeamLine from "remixicon-svelte/icons/team-line";
 
-const responseDescription = "Incident response state from the incident tool";
+const responseDescription = "Incident response state, from its milestones";
 const reviewDescription = "Rezible review stage";
 
 export function incidentResponseStatus(state: IncidentAttributes["responseState"]): StatusPresentation {
@@ -38,51 +34,18 @@ export function incidentResponseStatus(state: IncidentAttributes["responseState"
 				icon: RiCheckboxCircleLine,
 				description: responseDescription,
 			};
-		default:
-			return {
-				label: "Unknown",
-				tone: "neutral",
-				icon: RiQuestionLine,
-				description: responseDescription,
-			};
 	}
 }
 
-export function retrospectiveStatus(state?: RetrospectiveAttributes["state"]): StatusPresentation {
-	switch (state) {
-		case undefined:
-			return {
-				label: "Not started",
-				tone: "neutral",
-				icon: RiDraftLine,
-				description: reviewDescription,
-			};
-		case "draft":
-			return { label: "Retrospective", tone: "info", icon: RiEditLine, description: reviewDescription };
-		case "in_review":
-			return { label: "In review", tone: "warning", icon: RiEyeLine, description: reviewDescription };
-		case "meeting":
-			return {
-				label: "Review meeting",
-				tone: "warning",
-				icon: RiTeamLine,
-				description: reviewDescription,
-			};
-		case "closed":
-			return {
-				label: "Closed",
-				tone: "success",
-				icon: RiCheckboxCircleLine,
-				description: reviewDescription,
-			};
-		default:
-			return {
-				label: "Unknown",
-				tone: "neutral",
-				icon: RiQuestionLine,
-				description: reviewDescription,
-			};
-	}
+export function retrospectiveStatus(
+	state?: RetrospectiveAttributes["state"],
+	outcome?: RetrospectiveAttributes["outcome"]
+): StatusPresentation {
+	return reviewPanelModel(
+		state
+			? { state, outcome, reviews: [], documentId: "", systemAnalysisId: "", reportSections: [] }
+			: undefined
+	).status;
 }
 
 export function incidentSeverityStatus(severity?: ExpandableIncidentSeverityAttributes): StatusPresentation {

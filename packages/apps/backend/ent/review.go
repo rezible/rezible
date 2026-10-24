@@ -43,6 +43,8 @@ type Review struct {
 	State review.State `json:"state,omitempty"`
 	// Feedback holds the value of the "feedback" field.
 	Feedback *string `json:"feedback,omitempty"`
+	// MessageFailedAt holds the value of the "message_failed_at" field.
+	MessageFailedAt *time.Time `json:"message_failed_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ReviewQuery when eager-loading is set.
 	Edges        ReviewEdges `json:"edges"`
@@ -145,7 +147,7 @@ func (*Review) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullInt64)
 		case review.FieldState, review.FieldFeedback:
 			values[i] = new(sql.NullString)
-		case review.FieldCreatedAt, review.FieldUpdatedAt:
+		case review.FieldCreatedAt, review.FieldUpdatedAt, review.FieldMessageFailedAt:
 			values[i] = new(sql.NullTime)
 		case review.FieldID, review.FieldRequesterID, review.FieldReviewerID:
 			values[i] = new(uuid.UUID)
@@ -233,6 +235,13 @@ func (_m *Review) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.Feedback = new(string)
 				*_m.Feedback = value.String
+			}
+		case review.FieldMessageFailedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field message_failed_at", values[i])
+			} else if value.Valid {
+				_m.MessageFailedAt = new(time.Time)
+				*_m.MessageFailedAt = value.Time
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -336,6 +345,11 @@ func (_m *Review) String() string {
 	if v := _m.Feedback; v != nil {
 		builder.WriteString("feedback=")
 		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.MessageFailedAt; v != nil {
+		builder.WriteString("message_failed_at=")
+		builder.WriteString(v.Format(time.ANSIC))
 	}
 	builder.WriteByte(')')
 	return builder.String()

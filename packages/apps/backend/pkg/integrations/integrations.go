@@ -33,6 +33,8 @@ type (
 	IntegrationInstallState struct {
 		Installed   []rez.InstalledIntegration
 		Preferences *ent.OrganizationPreferences
+		// Target is the new installation's target, or nil when it isn't known yet.
+		Target *rez.ProviderResourceRef
 	}
 
 	// IntegrationWithInstallRequirements is implemented by integrations that can only be newly installed in some tenant states.

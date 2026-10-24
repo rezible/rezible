@@ -27,6 +27,7 @@ import (
 	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/ent/situation"
 	"github.com/rezible/rezible/ent/tenant"
+	"github.com/rezible/rezible/ent/user"
 	"github.com/rezible/rezible/ent/videoconference"
 )
 
@@ -68,6 +69,20 @@ func (_c *IncidentCreate) SetUpdatedAt(v time.Time) *IncidentCreate {
 func (_c *IncidentCreate) SetNillableUpdatedAt(v *time.Time) *IncidentCreate {
 	if v != nil {
 		_c.SetUpdatedAt(*v)
+	}
+	return _c
+}
+
+// SetArchiveTime sets the "archive_time" field.
+func (_c *IncidentCreate) SetArchiveTime(v time.Time) *IncidentCreate {
+	_c.mutation.SetArchiveTime(v)
+	return _c
+}
+
+// SetNillableArchiveTime sets the "archive_time" field if the given value is not nil.
+func (_c *IncidentCreate) SetNillableArchiveTime(v *time.Time) *IncidentCreate {
+	if v != nil {
+		_c.SetArchiveTime(*v)
 	}
 	return _c
 }
@@ -154,16 +169,16 @@ func (_c *IncidentCreate) SetNillableChatChannelID(v *string) *IncidentCreate {
 	return _c
 }
 
-// SetResponseState sets the "response_state" field.
-func (_c *IncidentCreate) SetResponseState(v incident.ResponseState) *IncidentCreate {
-	_c.mutation.SetResponseState(v)
+// SetChatDetailsMessageID sets the "chat_details_message_id" field.
+func (_c *IncidentCreate) SetChatDetailsMessageID(v string) *IncidentCreate {
+	_c.mutation.SetChatDetailsMessageID(v)
 	return _c
 }
 
-// SetNillableResponseState sets the "response_state" field if the given value is not nil.
-func (_c *IncidentCreate) SetNillableResponseState(v *incident.ResponseState) *IncidentCreate {
+// SetNillableChatDetailsMessageID sets the "chat_details_message_id" field if the given value is not nil.
+func (_c *IncidentCreate) SetNillableChatDetailsMessageID(v *string) *IncidentCreate {
 	if v != nil {
-		_c.SetResponseState(*v)
+		_c.SetChatDetailsMessageID(*v)
 	}
 	return _c
 }
@@ -182,6 +197,20 @@ func (_c *IncidentCreate) SetNillableOpenedAt(v *time.Time) *IncidentCreate {
 	return _c
 }
 
+// SetResponseState sets the "response_state" field.
+func (_c *IncidentCreate) SetResponseState(v incident.ResponseState) *IncidentCreate {
+	_c.mutation.SetResponseState(v)
+	return _c
+}
+
+// SetNillableResponseState sets the "response_state" field if the given value is not nil.
+func (_c *IncidentCreate) SetNillableResponseState(v *incident.ResponseState) *IncidentCreate {
+	if v != nil {
+		_c.SetResponseState(*v)
+	}
+	return _c
+}
+
 // SetResolvedAt sets the "resolved_at" field.
 func (_c *IncidentCreate) SetResolvedAt(v time.Time) *IncidentCreate {
 	_c.mutation.SetResolvedAt(v)
@@ -192,6 +221,20 @@ func (_c *IncidentCreate) SetResolvedAt(v time.Time) *IncidentCreate {
 func (_c *IncidentCreate) SetNillableResolvedAt(v *time.Time) *IncidentCreate {
 	if v != nil {
 		_c.SetResolvedAt(*v)
+	}
+	return _c
+}
+
+// SetDeclaredByID sets the "declared_by_id" field.
+func (_c *IncidentCreate) SetDeclaredByID(v uuid.UUID) *IncidentCreate {
+	_c.mutation.SetDeclaredByID(v)
+	return _c
+}
+
+// SetNillableDeclaredByID sets the "declared_by_id" field if the given value is not nil.
+func (_c *IncidentCreate) SetNillableDeclaredByID(v *uuid.UUID) *IncidentCreate {
+	if v != nil {
+		_c.SetDeclaredByID(*v)
 	}
 	return _c
 }
@@ -228,6 +271,11 @@ func (_c *IncidentCreate) SetSeverity(v *IncidentSeverity) *IncidentCreate {
 // SetType sets the "type" edge to the IncidentType entity.
 func (_c *IncidentCreate) SetType(v *IncidentType) *IncidentCreate {
 	return _c.SetTypeID(v.ID)
+}
+
+// SetDeclaredBy sets the "declared_by" edge to the User entity.
+func (_c *IncidentCreate) SetDeclaredBy(v *User) *IncidentCreate {
+	return _c.SetDeclaredByID(v.ID)
 }
 
 // AddMilestoneIDs adds the "milestones" edge to the IncidentMilestone entity by IDs.
@@ -450,16 +498,16 @@ func (_c *IncidentCreate) defaults() error {
 		v := incident.DefaultUpdatedAt()
 		_c.mutation.SetUpdatedAt(v)
 	}
-	if _, ok := _c.mutation.ResponseState(); !ok {
-		v := incident.DefaultResponseState
-		_c.mutation.SetResponseState(v)
-	}
 	if _, ok := _c.mutation.OpenedAt(); !ok {
 		if incident.DefaultOpenedAt == nil {
 			return fmt.Errorf("ent: uninitialized incident.DefaultOpenedAt (forgotten import ent/runtime?)")
 		}
 		v := incident.DefaultOpenedAt()
 		_c.mutation.SetOpenedAt(v)
+	}
+	if _, ok := _c.mutation.ResponseState(); !ok {
+		v := incident.DefaultResponseState
+		_c.mutation.SetResponseState(v)
 	}
 	if _, ok := _c.mutation.ID(); !ok {
 		if incident.DefaultID == nil {
@@ -488,6 +536,9 @@ func (_c *IncidentCreate) check() error {
 	if _, ok := _c.mutation.Title(); !ok {
 		return &ValidationError{Name: "title", err: errors.New(`ent: missing required field "Incident.title"`)}
 	}
+	if _, ok := _c.mutation.OpenedAt(); !ok {
+		return &ValidationError{Name: "opened_at", err: errors.New(`ent: missing required field "Incident.opened_at"`)}
+	}
 	if _, ok := _c.mutation.ResponseState(); !ok {
 		return &ValidationError{Name: "response_state", err: errors.New(`ent: missing required field "Incident.response_state"`)}
 	}
@@ -495,9 +546,6 @@ func (_c *IncidentCreate) check() error {
 		if err := incident.ResponseStateValidator(v); err != nil {
 			return &ValidationError{Name: "response_state", err: fmt.Errorf(`ent: validator failed for field "Incident.response_state": %w`, err)}
 		}
-	}
-	if _, ok := _c.mutation.OpenedAt(); !ok {
-		return &ValidationError{Name: "opened_at", err: errors.New(`ent: missing required field "Incident.opened_at"`)}
 	}
 	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "Incident.tenant"`)}
@@ -547,6 +595,10 @@ func (_c *IncidentCreate) createSpec() (*Incident, *sqlgraph.CreateSpec) {
 		_spec.SetField(incident.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
 	}
+	if value, ok := _c.mutation.ArchiveTime(); ok {
+		_spec.SetField(incident.FieldArchiveTime, field.TypeTime, value)
+		_node.ArchiveTime = &value
+	}
 	if value, ok := _c.mutation.Slug(); ok {
 		_spec.SetField(incident.FieldSlug, field.TypeString, value)
 		_node.Slug = value
@@ -563,13 +615,17 @@ func (_c *IncidentCreate) createSpec() (*Incident, *sqlgraph.CreateSpec) {
 		_spec.SetField(incident.FieldChatChannelID, field.TypeString, value)
 		_node.ChatChannelID = value
 	}
-	if value, ok := _c.mutation.ResponseState(); ok {
-		_spec.SetField(incident.FieldResponseState, field.TypeEnum, value)
-		_node.ResponseState = value
+	if value, ok := _c.mutation.ChatDetailsMessageID(); ok {
+		_spec.SetField(incident.FieldChatDetailsMessageID, field.TypeString, value)
+		_node.ChatDetailsMessageID = value
 	}
 	if value, ok := _c.mutation.OpenedAt(); ok {
 		_spec.SetField(incident.FieldOpenedAt, field.TypeTime, value)
 		_node.OpenedAt = value
+	}
+	if value, ok := _c.mutation.ResponseState(); ok {
+		_spec.SetField(incident.FieldResponseState, field.TypeEnum, value)
+		_node.ResponseState = value
 	}
 	if value, ok := _c.mutation.ResolvedAt(); ok {
 		_spec.SetField(incident.FieldResolvedAt, field.TypeTime, value)
@@ -645,6 +701,24 @@ func (_c *IncidentCreate) createSpec() (*Incident, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.TypeID = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.DeclaredByIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   incident.DeclaredByTable,
+			Columns: []string{incident.DeclaredByColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.Incident
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.DeclaredByID = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := _c.mutation.MilestonesIDs(); len(nodes) > 0 {
@@ -910,6 +984,24 @@ func (u *IncidentUpsert) UpdateUpdatedAt() *IncidentUpsert {
 	return u
 }
 
+// SetArchiveTime sets the "archive_time" field.
+func (u *IncidentUpsert) SetArchiveTime(v time.Time) *IncidentUpsert {
+	u.Set(incident.FieldArchiveTime, v)
+	return u
+}
+
+// UpdateArchiveTime sets the "archive_time" field to the value that was provided on create.
+func (u *IncidentUpsert) UpdateArchiveTime() *IncidentUpsert {
+	u.SetExcluded(incident.FieldArchiveTime)
+	return u
+}
+
+// ClearArchiveTime clears the value of the "archive_time" field.
+func (u *IncidentUpsert) ClearArchiveTime() *IncidentUpsert {
+	u.SetNull(incident.FieldArchiveTime)
+	return u
+}
+
 // SetKnowledgeEntityID sets the "knowledge_entity_id" field.
 func (u *IncidentUpsert) SetKnowledgeEntityID(v uuid.UUID) *IncidentUpsert {
 	u.Set(incident.FieldKnowledgeEntityID, v)
@@ -1024,15 +1116,21 @@ func (u *IncidentUpsert) ClearChatChannelID() *IncidentUpsert {
 	return u
 }
 
-// SetResponseState sets the "response_state" field.
-func (u *IncidentUpsert) SetResponseState(v incident.ResponseState) *IncidentUpsert {
-	u.Set(incident.FieldResponseState, v)
+// SetChatDetailsMessageID sets the "chat_details_message_id" field.
+func (u *IncidentUpsert) SetChatDetailsMessageID(v string) *IncidentUpsert {
+	u.Set(incident.FieldChatDetailsMessageID, v)
 	return u
 }
 
-// UpdateResponseState sets the "response_state" field to the value that was provided on create.
-func (u *IncidentUpsert) UpdateResponseState() *IncidentUpsert {
-	u.SetExcluded(incident.FieldResponseState)
+// UpdateChatDetailsMessageID sets the "chat_details_message_id" field to the value that was provided on create.
+func (u *IncidentUpsert) UpdateChatDetailsMessageID() *IncidentUpsert {
+	u.SetExcluded(incident.FieldChatDetailsMessageID)
+	return u
+}
+
+// ClearChatDetailsMessageID clears the value of the "chat_details_message_id" field.
+func (u *IncidentUpsert) ClearChatDetailsMessageID() *IncidentUpsert {
+	u.SetNull(incident.FieldChatDetailsMessageID)
 	return u
 }
 
@@ -1045,6 +1143,18 @@ func (u *IncidentUpsert) SetOpenedAt(v time.Time) *IncidentUpsert {
 // UpdateOpenedAt sets the "opened_at" field to the value that was provided on create.
 func (u *IncidentUpsert) UpdateOpenedAt() *IncidentUpsert {
 	u.SetExcluded(incident.FieldOpenedAt)
+	return u
+}
+
+// SetResponseState sets the "response_state" field.
+func (u *IncidentUpsert) SetResponseState(v incident.ResponseState) *IncidentUpsert {
+	u.Set(incident.FieldResponseState, v)
+	return u
+}
+
+// UpdateResponseState sets the "response_state" field to the value that was provided on create.
+func (u *IncidentUpsert) UpdateResponseState() *IncidentUpsert {
+	u.SetExcluded(incident.FieldResponseState)
 	return u
 }
 
@@ -1063,6 +1173,24 @@ func (u *IncidentUpsert) UpdateResolvedAt() *IncidentUpsert {
 // ClearResolvedAt clears the value of the "resolved_at" field.
 func (u *IncidentUpsert) ClearResolvedAt() *IncidentUpsert {
 	u.SetNull(incident.FieldResolvedAt)
+	return u
+}
+
+// SetDeclaredByID sets the "declared_by_id" field.
+func (u *IncidentUpsert) SetDeclaredByID(v uuid.UUID) *IncidentUpsert {
+	u.Set(incident.FieldDeclaredByID, v)
+	return u
+}
+
+// UpdateDeclaredByID sets the "declared_by_id" field to the value that was provided on create.
+func (u *IncidentUpsert) UpdateDeclaredByID() *IncidentUpsert {
+	u.SetExcluded(incident.FieldDeclaredByID)
+	return u
+}
+
+// ClearDeclaredByID clears the value of the "declared_by_id" field.
+func (u *IncidentUpsert) ClearDeclaredByID() *IncidentUpsert {
+	u.SetNull(incident.FieldDeclaredByID)
 	return u
 }
 
@@ -1142,6 +1270,27 @@ func (u *IncidentUpsertOne) SetUpdatedAt(v time.Time) *IncidentUpsertOne {
 func (u *IncidentUpsertOne) UpdateUpdatedAt() *IncidentUpsertOne {
 	return u.Update(func(s *IncidentUpsert) {
 		s.UpdateUpdatedAt()
+	})
+}
+
+// SetArchiveTime sets the "archive_time" field.
+func (u *IncidentUpsertOne) SetArchiveTime(v time.Time) *IncidentUpsertOne {
+	return u.Update(func(s *IncidentUpsert) {
+		s.SetArchiveTime(v)
+	})
+}
+
+// UpdateArchiveTime sets the "archive_time" field to the value that was provided on create.
+func (u *IncidentUpsertOne) UpdateArchiveTime() *IncidentUpsertOne {
+	return u.Update(func(s *IncidentUpsert) {
+		s.UpdateArchiveTime()
+	})
+}
+
+// ClearArchiveTime clears the value of the "archive_time" field.
+func (u *IncidentUpsertOne) ClearArchiveTime() *IncidentUpsertOne {
+	return u.Update(func(s *IncidentUpsert) {
+		s.ClearArchiveTime()
 	})
 }
 
@@ -1278,17 +1427,24 @@ func (u *IncidentUpsertOne) ClearChatChannelID() *IncidentUpsertOne {
 	})
 }
 
-// SetResponseState sets the "response_state" field.
-func (u *IncidentUpsertOne) SetResponseState(v incident.ResponseState) *IncidentUpsertOne {
+// SetChatDetailsMessageID sets the "chat_details_message_id" field.
+func (u *IncidentUpsertOne) SetChatDetailsMessageID(v string) *IncidentUpsertOne {
 	return u.Update(func(s *IncidentUpsert) {
-		s.SetResponseState(v)
+		s.SetChatDetailsMessageID(v)
 	})
 }
 
-// UpdateResponseState sets the "response_state" field to the value that was provided on create.
-func (u *IncidentUpsertOne) UpdateResponseState() *IncidentUpsertOne {
+// UpdateChatDetailsMessageID sets the "chat_details_message_id" field to the value that was provided on create.
+func (u *IncidentUpsertOne) UpdateChatDetailsMessageID() *IncidentUpsertOne {
 	return u.Update(func(s *IncidentUpsert) {
-		s.UpdateResponseState()
+		s.UpdateChatDetailsMessageID()
+	})
+}
+
+// ClearChatDetailsMessageID clears the value of the "chat_details_message_id" field.
+func (u *IncidentUpsertOne) ClearChatDetailsMessageID() *IncidentUpsertOne {
+	return u.Update(func(s *IncidentUpsert) {
+		s.ClearChatDetailsMessageID()
 	})
 }
 
@@ -1303,6 +1459,20 @@ func (u *IncidentUpsertOne) SetOpenedAt(v time.Time) *IncidentUpsertOne {
 func (u *IncidentUpsertOne) UpdateOpenedAt() *IncidentUpsertOne {
 	return u.Update(func(s *IncidentUpsert) {
 		s.UpdateOpenedAt()
+	})
+}
+
+// SetResponseState sets the "response_state" field.
+func (u *IncidentUpsertOne) SetResponseState(v incident.ResponseState) *IncidentUpsertOne {
+	return u.Update(func(s *IncidentUpsert) {
+		s.SetResponseState(v)
+	})
+}
+
+// UpdateResponseState sets the "response_state" field to the value that was provided on create.
+func (u *IncidentUpsertOne) UpdateResponseState() *IncidentUpsertOne {
+	return u.Update(func(s *IncidentUpsert) {
+		s.UpdateResponseState()
 	})
 }
 
@@ -1324,6 +1494,27 @@ func (u *IncidentUpsertOne) UpdateResolvedAt() *IncidentUpsertOne {
 func (u *IncidentUpsertOne) ClearResolvedAt() *IncidentUpsertOne {
 	return u.Update(func(s *IncidentUpsert) {
 		s.ClearResolvedAt()
+	})
+}
+
+// SetDeclaredByID sets the "declared_by_id" field.
+func (u *IncidentUpsertOne) SetDeclaredByID(v uuid.UUID) *IncidentUpsertOne {
+	return u.Update(func(s *IncidentUpsert) {
+		s.SetDeclaredByID(v)
+	})
+}
+
+// UpdateDeclaredByID sets the "declared_by_id" field to the value that was provided on create.
+func (u *IncidentUpsertOne) UpdateDeclaredByID() *IncidentUpsertOne {
+	return u.Update(func(s *IncidentUpsert) {
+		s.UpdateDeclaredByID()
+	})
+}
+
+// ClearDeclaredByID clears the value of the "declared_by_id" field.
+func (u *IncidentUpsertOne) ClearDeclaredByID() *IncidentUpsertOne {
+	return u.Update(func(s *IncidentUpsert) {
+		s.ClearDeclaredByID()
 	})
 }
 
@@ -1573,6 +1764,27 @@ func (u *IncidentUpsertBulk) UpdateUpdatedAt() *IncidentUpsertBulk {
 	})
 }
 
+// SetArchiveTime sets the "archive_time" field.
+func (u *IncidentUpsertBulk) SetArchiveTime(v time.Time) *IncidentUpsertBulk {
+	return u.Update(func(s *IncidentUpsert) {
+		s.SetArchiveTime(v)
+	})
+}
+
+// UpdateArchiveTime sets the "archive_time" field to the value that was provided on create.
+func (u *IncidentUpsertBulk) UpdateArchiveTime() *IncidentUpsertBulk {
+	return u.Update(func(s *IncidentUpsert) {
+		s.UpdateArchiveTime()
+	})
+}
+
+// ClearArchiveTime clears the value of the "archive_time" field.
+func (u *IncidentUpsertBulk) ClearArchiveTime() *IncidentUpsertBulk {
+	return u.Update(func(s *IncidentUpsert) {
+		s.ClearArchiveTime()
+	})
+}
+
 // SetKnowledgeEntityID sets the "knowledge_entity_id" field.
 func (u *IncidentUpsertBulk) SetKnowledgeEntityID(v uuid.UUID) *IncidentUpsertBulk {
 	return u.Update(func(s *IncidentUpsert) {
@@ -1706,17 +1918,24 @@ func (u *IncidentUpsertBulk) ClearChatChannelID() *IncidentUpsertBulk {
 	})
 }
 
-// SetResponseState sets the "response_state" field.
-func (u *IncidentUpsertBulk) SetResponseState(v incident.ResponseState) *IncidentUpsertBulk {
+// SetChatDetailsMessageID sets the "chat_details_message_id" field.
+func (u *IncidentUpsertBulk) SetChatDetailsMessageID(v string) *IncidentUpsertBulk {
 	return u.Update(func(s *IncidentUpsert) {
-		s.SetResponseState(v)
+		s.SetChatDetailsMessageID(v)
 	})
 }
 
-// UpdateResponseState sets the "response_state" field to the value that was provided on create.
-func (u *IncidentUpsertBulk) UpdateResponseState() *IncidentUpsertBulk {
+// UpdateChatDetailsMessageID sets the "chat_details_message_id" field to the value that was provided on create.
+func (u *IncidentUpsertBulk) UpdateChatDetailsMessageID() *IncidentUpsertBulk {
 	return u.Update(func(s *IncidentUpsert) {
-		s.UpdateResponseState()
+		s.UpdateChatDetailsMessageID()
+	})
+}
+
+// ClearChatDetailsMessageID clears the value of the "chat_details_message_id" field.
+func (u *IncidentUpsertBulk) ClearChatDetailsMessageID() *IncidentUpsertBulk {
+	return u.Update(func(s *IncidentUpsert) {
+		s.ClearChatDetailsMessageID()
 	})
 }
 
@@ -1731,6 +1950,20 @@ func (u *IncidentUpsertBulk) SetOpenedAt(v time.Time) *IncidentUpsertBulk {
 func (u *IncidentUpsertBulk) UpdateOpenedAt() *IncidentUpsertBulk {
 	return u.Update(func(s *IncidentUpsert) {
 		s.UpdateOpenedAt()
+	})
+}
+
+// SetResponseState sets the "response_state" field.
+func (u *IncidentUpsertBulk) SetResponseState(v incident.ResponseState) *IncidentUpsertBulk {
+	return u.Update(func(s *IncidentUpsert) {
+		s.SetResponseState(v)
+	})
+}
+
+// UpdateResponseState sets the "response_state" field to the value that was provided on create.
+func (u *IncidentUpsertBulk) UpdateResponseState() *IncidentUpsertBulk {
+	return u.Update(func(s *IncidentUpsert) {
+		s.UpdateResponseState()
 	})
 }
 
@@ -1752,6 +1985,27 @@ func (u *IncidentUpsertBulk) UpdateResolvedAt() *IncidentUpsertBulk {
 func (u *IncidentUpsertBulk) ClearResolvedAt() *IncidentUpsertBulk {
 	return u.Update(func(s *IncidentUpsert) {
 		s.ClearResolvedAt()
+	})
+}
+
+// SetDeclaredByID sets the "declared_by_id" field.
+func (u *IncidentUpsertBulk) SetDeclaredByID(v uuid.UUID) *IncidentUpsertBulk {
+	return u.Update(func(s *IncidentUpsert) {
+		s.SetDeclaredByID(v)
+	})
+}
+
+// UpdateDeclaredByID sets the "declared_by_id" field to the value that was provided on create.
+func (u *IncidentUpsertBulk) UpdateDeclaredByID() *IncidentUpsertBulk {
+	return u.Update(func(s *IncidentUpsert) {
+		s.UpdateDeclaredByID()
+	})
+}
+
+// ClearDeclaredByID clears the value of the "declared_by_id" field.
+func (u *IncidentUpsertBulk) ClearDeclaredByID() *IncidentUpsertBulk {
+	return u.Update(func(s *IncidentUpsert) {
+		s.ClearDeclaredByID()
 	})
 }
 

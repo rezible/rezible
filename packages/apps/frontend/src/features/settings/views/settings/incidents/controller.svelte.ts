@@ -46,20 +46,19 @@ export class IncidentSettingsController {
 	error = $derived(this.metadataQuery.error as ApiError | null);
 	saveError = $state<ApiError>();
 
-	incidentIntegrationInstalled = $derived(
-		this.integrations.installed.some((intg) =>
-			intg.attributes.capabilities.includes("incident_management")
-		)
-	);
-	canEdit = $derived(this.session.isAdmin && !this.incidentIntegrationInstalled);
-	showEnableToggle = $derived(this.session.isAdmin && !this.incidentIntegrationInstalled);
-	incidentManagementEnabled = $derived(
-		Boolean(this.session.orgPreferences?.enableIncidentManagement) || this.incidentIntegrationInstalled
+	toggleError = $state<ApiError>();
+
+	canEdit = $derived(this.session.isAdmin);
+	showEnableToggle = $derived(this.session.isAdmin);
+	incidentManagementEnabled = $derived(Boolean(this.session.orgPreferences?.enableIncidentManagement));
+	showIntegrationsStayInstalled = $derived(
+		!this.incidentManagementEnabled && this.integrations.installedCapabilities.has("incident_management")
 	);
 
 	newSeverity = new SettingsDraft({ name: "", rank: 1, color: "#ef4444", description: "" });
 	newType = new SettingsDraft("");
-	newRole = new SettingsDraft({ name: "", required: false });
+	newRole = new SettingsDraft<{ name: string; maxAssignees?: number }>({ name: "" });
+	newRoleLimitError = $derived(this.roleLimitError(this.newRole.value.maxAssignees));
 	newTag = new SettingsDraft("");
 	newField = new SettingsDraft({ name: "", options: "" });
 	fieldOptionTextEdits = new SvelteMap<string, string>();
@@ -117,13 +116,13 @@ export class IncidentSettingsController {
 	private updateOrgPrefsMut = createMutation(() => ({
 		...updateOrganizationPreferencesMutation(),
 		onSuccess: async () => {
-			this.saveError = undefined;
+			this.toggleError = undefined;
 			toast.success("Settings saved.");
 			await this.queryClient.invalidateQueries({ queryKey: getUserSessionOptions().queryKey });
 			this.session.refetch();
 		},
 		onError: (err) => {
-			this.saveError = err;
+			this.toggleError = err;
 		},
 	}));
 
@@ -155,7 +154,7 @@ export class IncidentSettingsController {
 	private createRoleMut = createMutation(() => ({
 		...createIncidentRoleMutation(),
 		...this.mutationOptions(this.roles, () => {
-			this.newRole.accept({ name: "", required: false });
+			this.newRole.accept({ name: "" });
 		}),
 	}));
 	private updateRoleMut = createMutation(() => ({
@@ -236,23 +235,32 @@ export class IncidentSettingsController {
 		});
 	}
 
+	// An empty limit means any number of people.
+	roleLimitError(maxAssignees: number | null | undefined) {
+		if (maxAssignees === null || maxAssignees === undefined || maxAssignees >= 1) {
+			return undefined;
+		}
+		return "Enter 1 or more, or leave empty for any";
+	}
+
 	createRole() {
-		if (this.saving || !this.canEdit || !this.newRole.value.name.trim()) return;
+		const { name, maxAssignees } = this.newRole.value;
+		if (this.saving || !this.canEdit || !name.trim() || this.newRoleLimitError) return;
 		this.createRoleMut.mutate({
 			body: {
-				attributes: { name: this.newRole.value.name.trim(), required: this.newRole.value.required },
+				attributes: { name: name.trim(), maxAssignees: maxAssignees ?? null },
 			},
 		});
 	}
 
 	updateRole(item: IncidentRole) {
-		if (this.saving || !this.canEdit) return;
+		if (this.saving || !this.canEdit || this.roleLimitError(item.attributes.maxAssignees)) return;
 		this.updateRoleMut.mutate({
 			path: { id: item.id },
 			body: {
 				attributes: {
 					name: item.attributes.name,
-					required: item.attributes.required,
+					maxAssignees: item.attributes.maxAssignees ?? null,
 					archived: item.attributes.archived,
 				},
 			},

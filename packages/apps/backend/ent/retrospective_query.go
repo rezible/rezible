@@ -24,6 +24,7 @@ import (
 	"github.com/rezible/rezible/ent/review"
 	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/tenant"
+	"github.com/rezible/rezible/ent/user"
 )
 
 // RetrospectiveQuery is the builder for querying Retrospective entities.
@@ -34,6 +35,8 @@ type RetrospectiveQuery struct {
 	inters                []Interceptor
 	predicates            []predicate.Retrospective
 	withTenant            *TenantQuery
+	withOwner             *UserQuery
+	withClosedBy          *UserQuery
 	withIncident          *IncidentQuery
 	withDocument          *DocumentQuery
 	withDiscussionThreads *DiscussionThreadQuery
@@ -94,6 +97,56 @@ func (_q *RetrospectiveQuery) QueryTenant() *TenantQuery {
 		)
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.Retrospective
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryOwner chains the current query on the "owner" edge.
+func (_q *RetrospectiveQuery) QueryOwner() *UserQuery {
+	query := (&UserClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(retrospective.Table, retrospective.FieldID, selector),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, retrospective.OwnerTable, retrospective.OwnerColumn),
+		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.User
+		step.Edge.Schema = schemaConfig.Retrospective
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryClosedBy chains the current query on the "closed_by" edge.
+func (_q *RetrospectiveQuery) QueryClosedBy() *UserQuery {
+	query := (&UserClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(retrospective.Table, retrospective.FieldID, selector),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, retrospective.ClosedByTable, retrospective.ClosedByColumn),
+		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.User
 		step.Edge.Schema = schemaConfig.Retrospective
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -419,6 +472,8 @@ func (_q *RetrospectiveQuery) Clone() *RetrospectiveQuery {
 		inters:                append([]Interceptor{}, _q.inters...),
 		predicates:            append([]predicate.Retrospective{}, _q.predicates...),
 		withTenant:            _q.withTenant.Clone(),
+		withOwner:             _q.withOwner.Clone(),
+		withClosedBy:          _q.withClosedBy.Clone(),
 		withIncident:          _q.withIncident.Clone(),
 		withDocument:          _q.withDocument.Clone(),
 		withDiscussionThreads: _q.withDiscussionThreads.Clone(),
@@ -438,6 +493,28 @@ func (_q *RetrospectiveQuery) WithTenant(opts ...func(*TenantQuery)) *Retrospect
 		opt(query)
 	}
 	_q.withTenant = query
+	return _q
+}
+
+// WithOwner tells the query-builder to eager-load the nodes that are connected to
+// the "owner" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *RetrospectiveQuery) WithOwner(opts ...func(*UserQuery)) *RetrospectiveQuery {
+	query := (&UserClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withOwner = query
+	return _q
+}
+
+// WithClosedBy tells the query-builder to eager-load the nodes that are connected to
+// the "closed_by" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *RetrospectiveQuery) WithClosedBy(opts ...func(*UserQuery)) *RetrospectiveQuery {
+	query := (&UserClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withClosedBy = query
 	return _q
 }
 
@@ -580,8 +657,10 @@ func (_q *RetrospectiveQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([
 	var (
 		nodes       = []*Retrospective{}
 		_spec       = _q.querySpec()
-		loadedTypes = [6]bool{
+		loadedTypes = [8]bool{
 			_q.withTenant != nil,
+			_q.withOwner != nil,
+			_q.withClosedBy != nil,
 			_q.withIncident != nil,
 			_q.withDocument != nil,
 			_q.withDiscussionThreads != nil,
@@ -615,6 +694,18 @@ func (_q *RetrospectiveQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([
 	if query := _q.withTenant; query != nil {
 		if err := _q.loadTenant(ctx, query, nodes, nil,
 			func(n *Retrospective, e *Tenant) { n.Edges.Tenant = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withOwner; query != nil {
+		if err := _q.loadOwner(ctx, query, nodes, nil,
+			func(n *Retrospective, e *User) { n.Edges.Owner = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withClosedBy; query != nil {
+		if err := _q.loadClosedBy(ctx, query, nodes, nil,
+			func(n *Retrospective, e *User) { n.Edges.ClosedBy = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -677,6 +768,70 @@ func (_q *RetrospectiveQuery) loadTenant(ctx context.Context, query *TenantQuery
 		nodes, ok := nodeids[n.ID]
 		if !ok {
 			return fmt.Errorf(`unexpected foreign-key "tenant_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (_q *RetrospectiveQuery) loadOwner(ctx context.Context, query *UserQuery, nodes []*Retrospective, init func(*Retrospective), assign func(*Retrospective, *User)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*Retrospective)
+	for i := range nodes {
+		if nodes[i].OwnerID == nil {
+			continue
+		}
+		fk := *nodes[i].OwnerID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(user.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "owner_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (_q *RetrospectiveQuery) loadClosedBy(ctx context.Context, query *UserQuery, nodes []*Retrospective, init func(*Retrospective), assign func(*Retrospective, *User)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*Retrospective)
+	for i := range nodes {
+		if nodes[i].ClosedByID == nil {
+			continue
+		}
+		fk := *nodes[i].ClosedByID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(user.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "closed_by_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -870,6 +1025,12 @@ func (_q *RetrospectiveQuery) querySpec() *sqlgraph.QuerySpec {
 		}
 		if _q.withTenant != nil {
 			_spec.Node.AddColumnOnce(retrospective.FieldTenantID)
+		}
+		if _q.withOwner != nil {
+			_spec.Node.AddColumnOnce(retrospective.FieldOwnerID)
+		}
+		if _q.withClosedBy != nil {
+			_spec.Node.AddColumnOnce(retrospective.FieldClosedByID)
 		}
 		if _q.withIncident != nil {
 			_spec.Node.AddColumnOnce(retrospective.FieldIncidentID)

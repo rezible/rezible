@@ -37,6 +37,8 @@ const (
 	FieldState = "state"
 	// FieldFeedback holds the string denoting the feedback field in the database.
 	FieldFeedback = "feedback"
+	// FieldMessageFailedAt holds the string denoting the message_failed_at field in the database.
+	FieldMessageFailedAt = "message_failed_at"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
 	// EdgeRetrospective holds the string denoting the retrospective edge name in mutations.
@@ -108,6 +110,7 @@ var Columns = []string{
 	FieldReviewerID,
 	FieldState,
 	FieldFeedback,
+	FieldMessageFailedAt,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -218,6 +221,11 @@ func ByState(opts ...sql.OrderTermOption) OrderOption {
 // ByFeedback orders the results by the feedback field.
 func ByFeedback(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldFeedback, opts...).ToFunc()
+}
+
+// ByMessageFailedAt orders the results by the message_failed_at field.
+func ByMessageFailedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldMessageFailedAt, opts...).ToFunc()
 }
 
 // ByTenantField orders the results by tenant field.

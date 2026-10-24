@@ -7,7 +7,6 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/organization"
-	"github.com/rezible/rezible/pkg/errs"
 	oapi "github.com/rezible/rezible/pkg/openapi/v1"
 )
 
@@ -52,15 +51,9 @@ func (h *organizationsHandler) UpdateOrganizationPreferences(ctx context.Context
 	var resp oapi.UpdateOrganizationPreferencesResponse
 
 	attrs := req.Body.Attributes
-	if attrs.RequiredReviewerCount != nil && *attrs.RequiredReviewerCount < 0 {
-		return nil, oapi.Error(ctx, "required reviewer count must be nonnegative", errs.ErrInvalidInput)
-	}
 	setFn := func(m *ent.OrganizationPreferencesMutation) {
 		if attrs.EnableIncidentManagement != nil {
 			m.SetEnableIncidentManagement(*attrs.EnableIncidentManagement)
-		}
-		if attrs.RequiredReviewerCount != nil {
-			m.SetRequiredReviewerCount(*attrs.RequiredReviewerCount)
 		}
 		if attrs.Timezone != nil {
 			timezone := strings.TrimSpace(*attrs.Timezone)

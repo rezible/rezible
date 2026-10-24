@@ -42,8 +42,6 @@ type (
 		PlaybooksHandler
 		MeetingsHandler
 
-		ReviewsHandler
-
 		EventsHandler
 		EventAnnotationsHandler
 

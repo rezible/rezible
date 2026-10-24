@@ -18,7 +18,8 @@ packages:
       AiAgentSessionService: {}
       AiAgentCatalogue: {}
       IntegrationService: {}
-      IncidentService: {}
+      IncidentDetailsService: {}
+      IncidentManagementService: {}
       KnowledgeGraphQueryService: {}
       KnowledgeEntityAliasService: {}
       SystemAnalysisService: {}

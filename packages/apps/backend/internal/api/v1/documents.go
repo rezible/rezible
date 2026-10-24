@@ -4,7 +4,6 @@ import (
 	"context"
 
 	rez "github.com/rezible/rezible"
-	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/pkg/errs"
 	oapi "github.com/rezible/rezible/pkg/openapi/v1"
 )
@@ -48,34 +47,6 @@ func (h *documentsHandler) GetDocumentSession(ctx context.Context, request *oapi
 		User:   oapi.UserFromEnt(usr),
 		Access: oapi.DocumentAccessFromEnt(docAccess),
 	}
-
-	return &resp, nil
-}
-
-func (h *documentsHandler) LoadDocument(ctx context.Context, req *oapi.LoadDocumentRequest) (*oapi.LoadDocumentResponse, error) {
-	var resp oapi.LoadDocumentResponse
-
-	doc, docErr := h.documents.GetDocument(ctx, req.Id)
-	if docErr != nil {
-		return nil, oapi.Error(ctx, "failed to load document", docErr)
-	}
-	resp.Body.Data = oapi.DocumentFromEnt(doc)
-
-	return &resp, nil
-}
-
-func (h *documentsHandler) UpdateDocument(ctx context.Context, req *oapi.UpdateDocumentRequest) (*oapi.UpdateDocumentResponse, error) {
-	var resp oapi.UpdateDocumentResponse
-
-	attr := req.Body.Attributes
-	updateFn := func(m *ent.DocumentMutation) {
-		m.SetContent(attr.Content)
-	}
-	doc, docErr := h.documents.SetDocument(ctx, req.Id, updateFn)
-	if docErr != nil {
-		return nil, oapi.Error(ctx, "failed to update document", docErr)
-	}
-	resp.Body.Data = oapi.DocumentFromEnt(doc)
 
 	return &resp, nil
 }

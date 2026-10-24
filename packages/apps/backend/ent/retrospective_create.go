@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
@@ -19,6 +20,7 @@ import (
 	"github.com/rezible/rezible/ent/review"
 	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/tenant"
+	"github.com/rezible/rezible/ent/user"
 )
 
 // RetrospectiveCreate is the builder for creating a Retrospective entity.
@@ -59,6 +61,62 @@ func (_c *RetrospectiveCreate) SetState(v retrospective.State) *RetrospectiveCre
 	return _c
 }
 
+// SetOwnerID sets the "owner_id" field.
+func (_c *RetrospectiveCreate) SetOwnerID(v uuid.UUID) *RetrospectiveCreate {
+	_c.mutation.SetOwnerID(v)
+	return _c
+}
+
+// SetNillableOwnerID sets the "owner_id" field if the given value is not nil.
+func (_c *RetrospectiveCreate) SetNillableOwnerID(v *uuid.UUID) *RetrospectiveCreate {
+	if v != nil {
+		_c.SetOwnerID(*v)
+	}
+	return _c
+}
+
+// SetClosedAt sets the "closed_at" field.
+func (_c *RetrospectiveCreate) SetClosedAt(v time.Time) *RetrospectiveCreate {
+	_c.mutation.SetClosedAt(v)
+	return _c
+}
+
+// SetNillableClosedAt sets the "closed_at" field if the given value is not nil.
+func (_c *RetrospectiveCreate) SetNillableClosedAt(v *time.Time) *RetrospectiveCreate {
+	if v != nil {
+		_c.SetClosedAt(*v)
+	}
+	return _c
+}
+
+// SetClosedByID sets the "closed_by_id" field.
+func (_c *RetrospectiveCreate) SetClosedByID(v uuid.UUID) *RetrospectiveCreate {
+	_c.mutation.SetClosedByID(v)
+	return _c
+}
+
+// SetNillableClosedByID sets the "closed_by_id" field if the given value is not nil.
+func (_c *RetrospectiveCreate) SetNillableClosedByID(v *uuid.UUID) *RetrospectiveCreate {
+	if v != nil {
+		_c.SetClosedByID(*v)
+	}
+	return _c
+}
+
+// SetSkipReason sets the "skip_reason" field.
+func (_c *RetrospectiveCreate) SetSkipReason(v string) *RetrospectiveCreate {
+	_c.mutation.SetSkipReason(v)
+	return _c
+}
+
+// SetNillableSkipReason sets the "skip_reason" field if the given value is not nil.
+func (_c *RetrospectiveCreate) SetNillableSkipReason(v *string) *RetrospectiveCreate {
+	if v != nil {
+		_c.SetSkipReason(*v)
+	}
+	return _c
+}
+
 // SetID sets the "id" field.
 func (_c *RetrospectiveCreate) SetID(v uuid.UUID) *RetrospectiveCreate {
 	_c.mutation.SetID(v)
@@ -76,6 +134,16 @@ func (_c *RetrospectiveCreate) SetNillableID(v *uuid.UUID) *RetrospectiveCreate 
 // SetTenant sets the "tenant" edge to the Tenant entity.
 func (_c *RetrospectiveCreate) SetTenant(v *Tenant) *RetrospectiveCreate {
 	return _c.SetTenantID(v.ID)
+}
+
+// SetOwner sets the "owner" edge to the User entity.
+func (_c *RetrospectiveCreate) SetOwner(v *User) *RetrospectiveCreate {
+	return _c.SetOwnerID(v.ID)
+}
+
+// SetClosedBy sets the "closed_by" edge to the User entity.
+func (_c *RetrospectiveCreate) SetClosedBy(v *User) *RetrospectiveCreate {
+	return _c.SetClosedByID(v.ID)
 }
 
 // SetIncident sets the "incident" edge to the Incident entity.
@@ -245,6 +313,14 @@ func (_c *RetrospectiveCreate) createSpec() (*Retrospective, *sqlgraph.CreateSpe
 		_spec.SetField(retrospective.FieldState, field.TypeEnum, value)
 		_node.State = value
 	}
+	if value, ok := _c.mutation.ClosedAt(); ok {
+		_spec.SetField(retrospective.FieldClosedAt, field.TypeTime, value)
+		_node.ClosedAt = &value
+	}
+	if value, ok := _c.mutation.SkipReason(); ok {
+		_spec.SetField(retrospective.FieldSkipReason, field.TypeString, value)
+		_node.SkipReason = &value
+	}
 	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -261,6 +337,42 @@ func (_c *RetrospectiveCreate) createSpec() (*Retrospective, *sqlgraph.CreateSpe
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.TenantID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.OwnerIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   retrospective.OwnerTable,
+			Columns: []string{retrospective.OwnerColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.Retrospective
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.OwnerID = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.ClosedByIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   retrospective.ClosedByTable,
+			Columns: []string{retrospective.ClosedByColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.Retrospective
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.ClosedByID = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := _c.mutation.IncidentIDs(); len(nodes) > 0 {
@@ -451,6 +563,78 @@ func (u *RetrospectiveUpsert) UpdateState() *RetrospectiveUpsert {
 	return u
 }
 
+// SetOwnerID sets the "owner_id" field.
+func (u *RetrospectiveUpsert) SetOwnerID(v uuid.UUID) *RetrospectiveUpsert {
+	u.Set(retrospective.FieldOwnerID, v)
+	return u
+}
+
+// UpdateOwnerID sets the "owner_id" field to the value that was provided on create.
+func (u *RetrospectiveUpsert) UpdateOwnerID() *RetrospectiveUpsert {
+	u.SetExcluded(retrospective.FieldOwnerID)
+	return u
+}
+
+// ClearOwnerID clears the value of the "owner_id" field.
+func (u *RetrospectiveUpsert) ClearOwnerID() *RetrospectiveUpsert {
+	u.SetNull(retrospective.FieldOwnerID)
+	return u
+}
+
+// SetClosedAt sets the "closed_at" field.
+func (u *RetrospectiveUpsert) SetClosedAt(v time.Time) *RetrospectiveUpsert {
+	u.Set(retrospective.FieldClosedAt, v)
+	return u
+}
+
+// UpdateClosedAt sets the "closed_at" field to the value that was provided on create.
+func (u *RetrospectiveUpsert) UpdateClosedAt() *RetrospectiveUpsert {
+	u.SetExcluded(retrospective.FieldClosedAt)
+	return u
+}
+
+// ClearClosedAt clears the value of the "closed_at" field.
+func (u *RetrospectiveUpsert) ClearClosedAt() *RetrospectiveUpsert {
+	u.SetNull(retrospective.FieldClosedAt)
+	return u
+}
+
+// SetClosedByID sets the "closed_by_id" field.
+func (u *RetrospectiveUpsert) SetClosedByID(v uuid.UUID) *RetrospectiveUpsert {
+	u.Set(retrospective.FieldClosedByID, v)
+	return u
+}
+
+// UpdateClosedByID sets the "closed_by_id" field to the value that was provided on create.
+func (u *RetrospectiveUpsert) UpdateClosedByID() *RetrospectiveUpsert {
+	u.SetExcluded(retrospective.FieldClosedByID)
+	return u
+}
+
+// ClearClosedByID clears the value of the "closed_by_id" field.
+func (u *RetrospectiveUpsert) ClearClosedByID() *RetrospectiveUpsert {
+	u.SetNull(retrospective.FieldClosedByID)
+	return u
+}
+
+// SetSkipReason sets the "skip_reason" field.
+func (u *RetrospectiveUpsert) SetSkipReason(v string) *RetrospectiveUpsert {
+	u.Set(retrospective.FieldSkipReason, v)
+	return u
+}
+
+// UpdateSkipReason sets the "skip_reason" field to the value that was provided on create.
+func (u *RetrospectiveUpsert) UpdateSkipReason() *RetrospectiveUpsert {
+	u.SetExcluded(retrospective.FieldSkipReason)
+	return u
+}
+
+// ClearSkipReason clears the value of the "skip_reason" field.
+func (u *RetrospectiveUpsert) ClearSkipReason() *RetrospectiveUpsert {
+	u.SetNull(retrospective.FieldSkipReason)
+	return u
+}
+
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
@@ -555,6 +739,90 @@ func (u *RetrospectiveUpsertOne) SetState(v retrospective.State) *RetrospectiveU
 func (u *RetrospectiveUpsertOne) UpdateState() *RetrospectiveUpsertOne {
 	return u.Update(func(s *RetrospectiveUpsert) {
 		s.UpdateState()
+	})
+}
+
+// SetOwnerID sets the "owner_id" field.
+func (u *RetrospectiveUpsertOne) SetOwnerID(v uuid.UUID) *RetrospectiveUpsertOne {
+	return u.Update(func(s *RetrospectiveUpsert) {
+		s.SetOwnerID(v)
+	})
+}
+
+// UpdateOwnerID sets the "owner_id" field to the value that was provided on create.
+func (u *RetrospectiveUpsertOne) UpdateOwnerID() *RetrospectiveUpsertOne {
+	return u.Update(func(s *RetrospectiveUpsert) {
+		s.UpdateOwnerID()
+	})
+}
+
+// ClearOwnerID clears the value of the "owner_id" field.
+func (u *RetrospectiveUpsertOne) ClearOwnerID() *RetrospectiveUpsertOne {
+	return u.Update(func(s *RetrospectiveUpsert) {
+		s.ClearOwnerID()
+	})
+}
+
+// SetClosedAt sets the "closed_at" field.
+func (u *RetrospectiveUpsertOne) SetClosedAt(v time.Time) *RetrospectiveUpsertOne {
+	return u.Update(func(s *RetrospectiveUpsert) {
+		s.SetClosedAt(v)
+	})
+}
+
+// UpdateClosedAt sets the "closed_at" field to the value that was provided on create.
+func (u *RetrospectiveUpsertOne) UpdateClosedAt() *RetrospectiveUpsertOne {
+	return u.Update(func(s *RetrospectiveUpsert) {
+		s.UpdateClosedAt()
+	})
+}
+
+// ClearClosedAt clears the value of the "closed_at" field.
+func (u *RetrospectiveUpsertOne) ClearClosedAt() *RetrospectiveUpsertOne {
+	return u.Update(func(s *RetrospectiveUpsert) {
+		s.ClearClosedAt()
+	})
+}
+
+// SetClosedByID sets the "closed_by_id" field.
+func (u *RetrospectiveUpsertOne) SetClosedByID(v uuid.UUID) *RetrospectiveUpsertOne {
+	return u.Update(func(s *RetrospectiveUpsert) {
+		s.SetClosedByID(v)
+	})
+}
+
+// UpdateClosedByID sets the "closed_by_id" field to the value that was provided on create.
+func (u *RetrospectiveUpsertOne) UpdateClosedByID() *RetrospectiveUpsertOne {
+	return u.Update(func(s *RetrospectiveUpsert) {
+		s.UpdateClosedByID()
+	})
+}
+
+// ClearClosedByID clears the value of the "closed_by_id" field.
+func (u *RetrospectiveUpsertOne) ClearClosedByID() *RetrospectiveUpsertOne {
+	return u.Update(func(s *RetrospectiveUpsert) {
+		s.ClearClosedByID()
+	})
+}
+
+// SetSkipReason sets the "skip_reason" field.
+func (u *RetrospectiveUpsertOne) SetSkipReason(v string) *RetrospectiveUpsertOne {
+	return u.Update(func(s *RetrospectiveUpsert) {
+		s.SetSkipReason(v)
+	})
+}
+
+// UpdateSkipReason sets the "skip_reason" field to the value that was provided on create.
+func (u *RetrospectiveUpsertOne) UpdateSkipReason() *RetrospectiveUpsertOne {
+	return u.Update(func(s *RetrospectiveUpsert) {
+		s.UpdateSkipReason()
+	})
+}
+
+// ClearSkipReason clears the value of the "skip_reason" field.
+func (u *RetrospectiveUpsertOne) ClearSkipReason() *RetrospectiveUpsertOne {
+	return u.Update(func(s *RetrospectiveUpsert) {
+		s.ClearSkipReason()
 	})
 }
 
@@ -829,6 +1097,90 @@ func (u *RetrospectiveUpsertBulk) SetState(v retrospective.State) *Retrospective
 func (u *RetrospectiveUpsertBulk) UpdateState() *RetrospectiveUpsertBulk {
 	return u.Update(func(s *RetrospectiveUpsert) {
 		s.UpdateState()
+	})
+}
+
+// SetOwnerID sets the "owner_id" field.
+func (u *RetrospectiveUpsertBulk) SetOwnerID(v uuid.UUID) *RetrospectiveUpsertBulk {
+	return u.Update(func(s *RetrospectiveUpsert) {
+		s.SetOwnerID(v)
+	})
+}
+
+// UpdateOwnerID sets the "owner_id" field to the value that was provided on create.
+func (u *RetrospectiveUpsertBulk) UpdateOwnerID() *RetrospectiveUpsertBulk {
+	return u.Update(func(s *RetrospectiveUpsert) {
+		s.UpdateOwnerID()
+	})
+}
+
+// ClearOwnerID clears the value of the "owner_id" field.
+func (u *RetrospectiveUpsertBulk) ClearOwnerID() *RetrospectiveUpsertBulk {
+	return u.Update(func(s *RetrospectiveUpsert) {
+		s.ClearOwnerID()
+	})
+}
+
+// SetClosedAt sets the "closed_at" field.
+func (u *RetrospectiveUpsertBulk) SetClosedAt(v time.Time) *RetrospectiveUpsertBulk {
+	return u.Update(func(s *RetrospectiveUpsert) {
+		s.SetClosedAt(v)
+	})
+}
+
+// UpdateClosedAt sets the "closed_at" field to the value that was provided on create.
+func (u *RetrospectiveUpsertBulk) UpdateClosedAt() *RetrospectiveUpsertBulk {
+	return u.Update(func(s *RetrospectiveUpsert) {
+		s.UpdateClosedAt()
+	})
+}
+
+// ClearClosedAt clears the value of the "closed_at" field.
+func (u *RetrospectiveUpsertBulk) ClearClosedAt() *RetrospectiveUpsertBulk {
+	return u.Update(func(s *RetrospectiveUpsert) {
+		s.ClearClosedAt()
+	})
+}
+
+// SetClosedByID sets the "closed_by_id" field.
+func (u *RetrospectiveUpsertBulk) SetClosedByID(v uuid.UUID) *RetrospectiveUpsertBulk {
+	return u.Update(func(s *RetrospectiveUpsert) {
+		s.SetClosedByID(v)
+	})
+}
+
+// UpdateClosedByID sets the "closed_by_id" field to the value that was provided on create.
+func (u *RetrospectiveUpsertBulk) UpdateClosedByID() *RetrospectiveUpsertBulk {
+	return u.Update(func(s *RetrospectiveUpsert) {
+		s.UpdateClosedByID()
+	})
+}
+
+// ClearClosedByID clears the value of the "closed_by_id" field.
+func (u *RetrospectiveUpsertBulk) ClearClosedByID() *RetrospectiveUpsertBulk {
+	return u.Update(func(s *RetrospectiveUpsert) {
+		s.ClearClosedByID()
+	})
+}
+
+// SetSkipReason sets the "skip_reason" field.
+func (u *RetrospectiveUpsertBulk) SetSkipReason(v string) *RetrospectiveUpsertBulk {
+	return u.Update(func(s *RetrospectiveUpsert) {
+		s.SetSkipReason(v)
+	})
+}
+
+// UpdateSkipReason sets the "skip_reason" field to the value that was provided on create.
+func (u *RetrospectiveUpsertBulk) UpdateSkipReason() *RetrospectiveUpsertBulk {
+	return u.Update(func(s *RetrospectiveUpsert) {
+		s.UpdateSkipReason()
+	})
+}
+
+// ClearSkipReason clears the value of the "skip_reason" field.
+func (u *RetrospectiveUpsertBulk) ClearSkipReason() *RetrospectiveUpsertBulk {
+	return u.Update(func(s *RetrospectiveUpsert) {
+		s.ClearSkipReason()
 	})
 }
 

@@ -15,6 +15,7 @@ import (
 	kev "github.com/rezible/rezible/ent/knowledgeevidence"
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
 	ksa "github.com/rezible/rezible/ent/knowledgesubjectalias"
+	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/ent/schema/schematypes"
 	saentity "github.com/rezible/rezible/ent/systemanalysisentity"
 	sae "github.com/rezible/rezible/ent/systemanalysisentry"
@@ -498,4 +499,104 @@ func (s *SystemAnalysisServiceSuite) TestSetSystemAnalysisEntryCreatesSubjectsAt
 	second, secondErr := svc.SetSystemAnalysisEntry(ctx, uuid.Nil, params)
 	s.Require().NoError(secondErr)
 	s.Equal(2, second.Sequence)
+}
+
+// closeReview attaches a retrospective that closed secondsAgo by the database clock.
+func (s *SystemAnalysisServiceSuite) closeReview(ctx context.Context, tdb rez.Database, analysisID uuid.UUID, secondsAgo int) {
+	client := tdb.Client(ctx)
+	createIncident := client.Incident.Create().
+		SetSlug(uuid.NewString()).
+		SetTitle("Checkout outage")
+	inc, incidentErr := createIncident.Save(ctx)
+	s.Require().NoError(incidentErr)
+	doc, documentErr := client.Document.Create().SetContent([]byte{}).Save(ctx)
+	s.Require().NoError(documentErr)
+	createRetro := client.Retrospective.Create().
+		SetIncidentID(inc.ID).
+		SetDocumentID(doc.ID).
+		SetSystemAnalysisID(analysisID).
+		SetState(retrospective.StateClosed).
+		SetClosedAt(time.Now())
+	retro, retroErr := createRetro.Save(ctx)
+	s.Require().NoError(retroErr)
+	s.Require().NoError(tdb.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+		return ent.ExecTx(ctx, "UPDATE retrospectives SET closed_at = now() - make_interval(secs => $1) WHERE id = $2", secondsAgo, retro.ID)
+	}))
+}
+
+func (s *SystemAnalysisServiceSuite) TestAnalysisWithoutRetrospectiveIsWritable() {
+	ctx, tdb := s.SetupTestDatabase()
+	analysis := s.createAnalysis(ctx, tdb)
+	_, writeErr := s.service(tdb, nil).SetSystemAnalysis(ctx, analysis.ID, func(m *ent.SystemAnalysisMutation) { m.SetReferenceTime(time.Now()) })
+	s.Require().NoError(writeErr)
+}
+
+func (s *SystemAnalysisServiceSuite) TestClosedReviewGracePeriod() {
+	for _, tc := range []struct {
+		name       string
+		secondsAgo int
+		rejected   bool
+	}{
+		{"within grace", 30, false}, {"past grace", 120, true},
+	} {
+		s.Run(tc.name, func() {
+			ctx, tdb := s.SetupTestDatabase()
+			analysis := s.createAnalysis(ctx, tdb)
+			s.closeReview(ctx, tdb, analysis.ID, tc.secondsAgo)
+			svc := s.service(tdb, nil)
+			_, writeErr := svc.SetSystemAnalysis(ctx, analysis.ID, func(m *ent.SystemAnalysisMutation) { m.SetReferenceTime(time.Now()) })
+			if tc.rejected {
+				s.Equal(errs.CodeConflict, errs.CodeOf(writeErr))
+			} else {
+				s.Require().NoError(writeErr)
+			}
+		})
+	}
+}
+
+func (s *SystemAnalysisServiceSuite) TestClosedReviewGuardsEveryAnalysisWrite() {
+	ctx, tdb := s.SetupTestDatabase()
+	svc := s.service(tdb, nil)
+	analysis := s.createAnalysis(ctx, tdb)
+	graph := s.createGraphFixture(ctx, tdb)
+	relationship, relationshipErr := svc.SetSystemAnalysisRelationship(ctx, uuid.Nil, func(m *ent.SystemAnalysisRelationshipMutation) {
+		m.SetAnalysisID(analysis.ID)
+		m.SetKnowledgeRelationshipID(graph.Relationship.ID)
+	})
+	s.Require().NoError(relationshipErr)
+	params := rez.SetSystemAnalysisEntryParams{AnalysisID: analysis.ID, Kind: sae.KindObservation, Title: "Timeline"}
+	entry, entryErr := svc.SetSystemAnalysisEntry(ctx, uuid.Nil, params)
+	s.Require().NoError(entryErr)
+	subject, subjectErr := svc.SetSystemAnalysisEntrySubject(ctx, uuid.Nil, func(m *ent.SystemAnalysisEntrySubjectMutation) {
+		m.SetEntryID(entry.ID)
+		m.SetKnowledgeEntityID(graph.Source.ID)
+		m.SetRole("affected")
+	})
+	s.Require().NoError(subjectErr)
+	s.closeReview(ctx, tdb, analysis.ID, 120)
+	cases := []struct {
+		name  string
+		write func() error
+	}{
+		{"create by analysis", func() error {
+			_, writeErr := svc.SetSystemAnalysisEntity(ctx, uuid.Nil, func(m *ent.SystemAnalysisEntityMutation) {
+				m.SetAnalysisID(analysis.ID)
+				m.SetKnowledgeEntityID(graph.Source.ID)
+			})
+			return writeErr
+		}},
+		{"update child", func() error {
+			_, writeErr := svc.SetSystemAnalysisRelationship(ctx, relationship.ID, func(*ent.SystemAnalysisRelationshipMutation) {})
+			return writeErr
+		}},
+		{"delete child", func() error { return svc.DeleteSystemAnalysisEntry(ctx, entry.ID) }},
+		{"entry subject", func() error {
+			_, writeErr := svc.SetSystemAnalysisEntrySubject(ctx, subject.ID, func(m *ent.SystemAnalysisEntrySubjectMutation) { m.SetRole("affected") })
+			return writeErr
+		}},
+	}
+	for _, tc := range cases {
+		s.Run(tc.name, func() { s.Equal(errs.CodeConflict, errs.CodeOf(tc.write())) })
+	}
+	s.Equal(1, tdb.Client(ctx).SystemAnalysisEntry.Query().CountX(ctx))
 }

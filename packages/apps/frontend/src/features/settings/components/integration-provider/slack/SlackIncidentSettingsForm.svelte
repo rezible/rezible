@@ -4,14 +4,13 @@
 	import InlineAlert from "$components/layout/error-alert/ErrorAlert.svelte";
 	import * as Field from "$components/ui/field";
 	import { Input } from "$components/ui/input";
-	import * as NativeSelect from "$components/ui/native-select";
 	import { Switch } from "$components/ui/switch";
 
 	import SettingsFormActions from "$features/settings/components/settings-form-actions/SettingsFormActions.svelte";
 	import type { IntegrationSettingsForms } from "$features/settings/lib/integrationSettingsForms.svelte";
 
 	import SlackChannelPicker from "./SlackChannelPicker.svelte";
-	import { inviteModeOptions, type SlackIncidentSettings } from "./slackIncidentSettings";
+	import type { SlackIncidentSettings } from "./slackIncidentSettings";
 
 	type Props = {
 		installation: IntegrationInstallation;
@@ -42,12 +41,12 @@
 						aria-invalid={!!errors.ChannelNamePattern}
 					/>
 					<Field.Description>
-						Use <code>{"{slug}"}</code>
-						,
+						Include <code>{"{slug}"}</code>
+						or
 						<code>{"{id}"}</code>
-						, or
+						, so each incident gets its own channel.
 						<code>{"{title}"}</code>
-						to include incident details.
+						adds the incident's title.
 					</Field.Description>
 					<Field.Error>{errors.ChannelNamePattern}</Field.Error>
 				</Field.Field>
@@ -58,24 +57,14 @@
 						id="{idPrefix}-announcement"
 						installationId={installation.id}
 						bind:value={values.AnnouncementChannelID}
-						noneLabel="No announcement channel"
+						noneLabel="Channel chosen at install"
 						aria-invalid={!!errors.AnnouncementChannelID}
 					/>
 					<Field.Description>
-						Optional. New incidents are announced in this channel. Only public channels are
-						listed.
+						New incidents are announced in this channel, or in the channel chosen when the app was
+						added. Only public channels are listed.
 					</Field.Description>
 					<Field.Error>{errors.AnnouncementChannelID}</Field.Error>
-				</Field.Field>
-
-				<Field.Field data-invalid={!!errors.InviteMode}>
-					<Field.Label for="{idPrefix}-invite">Invite to incident channels</Field.Label>
-					<NativeSelect.Root id="{idPrefix}-invite" class="w-full" bind:value={values.InviteMode}>
-						{#each inviteModeOptions as option (option.value)}
-							<NativeSelect.Option value={option.value}>{option.label}</NativeSelect.Option>
-						{/each}
-					</NativeSelect.Root>
-					<Field.Error>{errors.InviteMode}</Field.Error>
 				</Field.Field>
 
 				<Field.Field orientation="horizontal">

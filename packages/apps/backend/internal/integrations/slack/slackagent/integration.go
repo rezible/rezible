@@ -2,6 +2,7 @@ package slackagent
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"regexp"
@@ -157,4 +158,31 @@ func (ii *InstalledIntegration) ListChatChannels(ctx context.Context, params int
 		return nil, clientErr
 	}
 	return slackintegration.ListChatChannels(ctx, cw.Client(), params)
+}
+
+var _ integrations.DirectMessageSender = (*InstalledIntegration)(nil)
+
+func (ii *InstalledIntegration) SendDirectMessage(ctx context.Context, recipient *ent.User, message *integrations.DirectMessage) error {
+	if recipient.ChatID == "" {
+		return integrations.ErrNoRecipient
+	}
+	client, clientErr := ii.clientWrapper()
+	if clientErr != nil {
+		return clientErr
+	}
+	text := slackintegration.EscapeText(message.Text)
+	if message.LinkURL != "" {
+		text += "\n<" + message.LinkURL + "|" + slackintegration.EscapeText(message.LinkLabel) + ">"
+	}
+	block := slack.NewSectionBlock(slack.NewTextBlockObject(slack.MarkdownType, text, false, true), nil, nil)
+	_, sendErr := client.PostMessage(ctx, recipient.ChatID,
+		slack.MsgOptionBlocks(block),
+		slack.MsgOptionText(text, false),
+		slack.MsgOptionDisableLinkUnfurl(),
+		slack.MsgOptionParse(false))
+	var apiErr slack.SlackErrorResponse
+	if errors.As(sendErr, &apiErr) && (apiErr.Err == "user_not_found" || apiErr.Err == "channel_not_found") {
+		return integrations.ErrNoRecipient
+	}
+	return sendErr
 }

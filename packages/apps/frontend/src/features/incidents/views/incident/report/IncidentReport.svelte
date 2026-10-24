@@ -1,4 +1,6 @@
 <script lang="ts">
+	import ClosedReviewBanner from "../review/ClosedReviewBanner.svelte";
+	import ReviewPanel from "../review/ReviewPanel.svelte";
 	import RetrospectiveEmptyState from "../retrospective-empty-state/RetrospectiveEmptyState.svelte";
 	import "./styles.css";
 	import { useIncidentView } from "$features/incidents/views/incident";
@@ -35,6 +37,7 @@
 	<LoadingQueryWrapper query={incident.retrospectiveQuery}>
 		{#snippet view()}
 			<div class="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-6">
+				<ClosedReviewBanner content="report" />
 				{#if !incident.retrospectiveDocumentId}
 					{@render errorWithRetry(
 						"The report document is unavailable.",
@@ -55,7 +58,7 @@
 					{#if docSessionQuery.isError}
 						{@render errorWithRetry("Report access refresh failed.", docSessionQuery.refetch)}
 					{/if}
-					<div class="grid min-h-0 gap-6 lg:grid-cols-[minmax(0,1fr)_260px]">
+					<div class="grid min-h-0 gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
 						<div class="min-w-0 rounded-lg border border-border bg-card p-6">
 							<div class="flex w-full flex-col gap-4">
 								{#if !incident.retrospective}
@@ -97,10 +100,7 @@
 						</div>
 
 						<aside class="rounded-lg border border-border bg-card p-5">
-							<h2 class="font-semibold">Retrospective</h2>
-							<p class="mt-3 text-sm text-muted-foreground">
-								{incident.retrospective?.attributes.state}
-							</p>
+							<ReviewPanel />
 							<h2 class="mt-6 font-semibold">In this report</h2>
 							<nav class="mt-4 flex flex-col gap-3">
 								{#each report.sections as section (section.field)}

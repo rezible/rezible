@@ -7,16 +7,16 @@ import {
 	readString,
 } from "$features/settings/lib/integrationSettingsForms.svelte";
 
-export const inviteModeOptions = [
-	{ value: "assigned_users", label: "Assigned users" },
-	{ value: "all_users", label: "All users" },
-] as const;
-
 const slackIncidentSettingsSchema = z.object({
 	AnnouncementChannelID: z.string().trim(),
-	ChannelNamePattern: z.string().trim().min(1, "Enter a channel name pattern."),
+	ChannelNamePattern: z
+		.string()
+		.trim()
+		.min(1, "Enter a channel name pattern.")
+		.refine((pattern) => pattern.includes("{slug}") || pattern.includes("{id}"), {
+			error: "Include {slug} or {id}, so each incident gets its own channel.",
+		}),
 	AutoCreateVideoConference: z.boolean(),
-	InviteMode: z.enum(["assigned_users", "all_users"], { error: "Choose who to invite." }),
 });
 
 export type SlackIncidentSettings = z.infer<typeof slackIncidentSettingsSchema>;
@@ -25,14 +25,6 @@ const defaultSettings: SlackIncidentSettings = {
 	AnnouncementChannelID: "",
 	ChannelNamePattern: "incident-{slug}",
 	AutoCreateVideoConference: false,
-	InviteMode: "assigned_users",
-};
-
-const readInviteMode = (value: unknown): SlackIncidentSettings["InviteMode"] => {
-	if (value === "assigned_users" || value === "all_users") {
-		return value;
-	}
-	return defaultSettings.InviteMode;
 };
 
 export const slackIncidentSettings: IntegrationSettingsDefinition<SlackIncidentSettings> = {
@@ -53,20 +45,17 @@ export const slackIncidentSettings: IntegrationSettingsDefinition<SlackIncidentS
 				incidents.auto_create_video_conference,
 				defaultSettings.AutoCreateVideoConference
 			),
-			InviteMode: readInviteMode(incidents.invite_mode),
 		};
 	},
 
+	// The incidents settings are written whole: the backend rejects keys it doesn't know.
 	write: (values, userSettings) => {
-		const incidents = readSettingsObject(userSettings.incidents);
 		return {
 			...userSettings,
 			incidents: {
-				...incidents,
 				announcement_channel_id: values.AnnouncementChannelID,
 				channel_name_pattern: values.ChannelNamePattern,
 				auto_create_video_conference: values.AutoCreateVideoConference,
-				invite_mode: values.InviteMode,
 			},
 		};
 	},

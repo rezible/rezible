@@ -9,6 +9,7 @@ import (
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/organization"
 	"github.com/rezible/rezible/ent/organizationpreferences"
 	"github.com/rezible/rezible/ent/predicate"
@@ -130,8 +131,10 @@ func (s *OrganizationService) SetPreferences(ctx context.Context, orgId uuid.UUI
 		}
 		m := mutator.Mutation()
 		setFn(m)
-		if requiredReviewerCount, changed := m.RequiredReviewerCount(); changed && requiredReviewerCount < 0 {
-			return nil, fmt.Errorf("%w: required reviewer count cannot be negative", errs.ErrInvalidInput)
+		if enabled, changed := m.EnableIncidentManagement(); changed {
+			if checkErr := s.checkIncidentManagementChange(ctx, tx, orgId, enabled); checkErr != nil {
+				return nil, checkErr
+			}
 		}
 
 		updated, saveErr := mutator.Save(ctx)
@@ -143,11 +146,41 @@ func (s *OrganizationService) SetPreferences(ctx context.Context, orgId uuid.UUI
 	})
 }
 
-func (s *OrganizationService) SetRequiredReviewerCount(ctx context.Context, orgId uuid.UUID, count int) (*ent.OrganizationPreferences, error) {
-	if count < 0 {
-		return nil, fmt.Errorf("%w: required reviewer count cannot be negative", errs.ErrInvalidInput)
+// IsIncidentManagementEnabled reads the preference without a lock. A missing preferences row means off.
+func (s *OrganizationService) IsIncidentManagementEnabled(ctx context.Context) (bool, error) {
+	prefs, queryErr := s.db.Client(ctx).OrganizationPreferences.Query().Only(ctx)
+	if queryErr != nil {
+		if ent.IsNotFound(queryErr) {
+			return false, nil
+		}
+		return false, fmt.Errorf("query organization preferences: %w", queryErr)
 	}
-	return s.SetPreferences(ctx, orgId, func(m *ent.OrganizationPreferencesMutation) {
-		m.SetRequiredReviewerCount(count)
-	})
+	return prefs.EnableIncidentManagement, nil
+}
+
+// checkIncidentManagementChange serializes a change of the preference with declaring incidents, which takes the
+// same lock, and rejects turning it off while an incident is unresolved. The preferences row may not exist yet,
+// so it cannot be the lock.
+func (s *OrganizationService) checkIncidentManagementChange(ctx context.Context, tx *ent.Client, orgId uuid.UUID, enabled bool) error {
+	if lockErr := s.db.AcquireTxLocks(ctx, "incident_management", orgId.String()); lockErr != nil {
+		return fmt.Errorf("lock incident management: %w", lockErr)
+	}
+	if enabled {
+		return nil
+	}
+
+	queryUnresolved := tx.Incident.Query().
+		Where(incident.ResponseStateNEQ(incident.ResponseStateResolved))
+	unresolved, countErr := queryUnresolved.Count(ctx)
+	if countErr != nil {
+		return fmt.Errorf("count unresolved incidents: %w", countErr)
+	}
+	if unresolved == 0 {
+		return nil
+	}
+	message := fmt.Sprintf("Incident management can't be turned off while %d incidents are unresolved. Resolve them first.", unresolved)
+	if unresolved == 1 {
+		message = "Incident management can't be turned off while 1 incident is unresolved. Resolve it first."
+	}
+	return errs.New(errs.CodeConflict, message)
 }

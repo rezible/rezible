@@ -77,7 +77,11 @@ type SituationNoticeContent struct {
 	// SituationURL links to the situation, and MergedIntoURL to the one it was merged into, if any.
 	SituationURL  string
 	MergedIntoURL string
-	Now           time.Time
+	// IncidentURL links to the newest unresolved incident the situation is part of, if any. Otherwise
+	// DeclareIncidentURL opens the declare dialog for the situation, when declaring is possible.
+	IncidentURL        string
+	DeclareIncidentURL string
+	Now                time.Time
 }
 
 // MergedInto is the situation's link to the one it was merged into, or nil.
@@ -363,3 +367,16 @@ func MeasureRead(ctx context.Context, provider, operation string, read func(cont
 	}
 	return readErr
 }
+
+// DirectMessageSender renders and sends plain text to a member's chat account.
+type DirectMessageSender interface {
+	SendDirectMessage(context.Context, *ent.User, *DirectMessage) error
+}
+
+type DirectMessage struct {
+	Text      string
+	LinkURL   string
+	LinkLabel string
+}
+
+var ErrNoRecipient = errors.New("no chat recipient")

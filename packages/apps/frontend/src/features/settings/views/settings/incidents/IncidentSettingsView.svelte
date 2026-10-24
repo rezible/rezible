@@ -28,346 +28,377 @@
 
 	<Card.Root>
 		<Card.Header>
-			<Card.Title>Incident Management</Card.Title>
+			<Card.Title>Incident management</Card.Title>
 			<Card.Action>
-				{#if controller.incidentIntegrationInstalled}
-					<Badge>Managed by integration</Badge>
-				{:else if controller.incidentManagementEnabled}
-					<Badge>Enabled</Badge>
+				{#if controller.incidentManagementEnabled}
+					<Badge>On</Badge>
 				{:else}
-					<Badge variant="outline">Disabled</Badge>
+					<Badge variant="outline">Off</Badge>
 				{/if}
 			</Card.Action>
 		</Card.Header>
-		<Card.Content>
-			{#if controller.showEnableToggle}
-				<div class="flex items-center justify-between gap-4">
-					<Label for="incident-management-enabled">Enable incidents</Label>
+		<Card.Content class="grid gap-3">
+			{#if controller.toggleError}
+				<InlineAlert bind:error={controller.toggleError} />
+				<a class="text-sm underline" href={resolve("/incidents") + "?status=active"}>
+					View unresolved incidents
+				</a>
+			{/if}
+			<div class="flex items-start justify-between gap-4">
+				<div class="grid gap-1">
+					<Label for="incident-management-enabled">Run incidents in Rezible</Label>
+					<p class="text-sm text-muted-foreground">
+						Declare incidents, record milestones and assign roles, on the web and through incident
+						integrations. Incidents and their reviews are always available.
+					</p>
+				</div>
+				{#if controller.showEnableToggle}
 					<Switch
 						id="incident-management-enabled"
-						checked={controller.incidentManagementEnabled}
+						bind:checked={
+							() => controller.incidentManagementEnabled,
+							(checked) => controller.setIncidentManagementEnabled(checked)
+						}
 						disabled={controller.saving}
-						onCheckedChange={(checked) => controller.setIncidentManagementEnabled(checked)}
 					/>
-				</div>
-			{:else}
-				<div class="text-sm text-muted-foreground">
-					{controller.incidentIntegrationInstalled
-						? "Incident management is controlled by the installed incident integration."
-						: "Incident settings are read-only."}
-				</div>
+				{/if}
+			</div>
+			{#if controller.showIntegrationsStayInstalled}
+				<p class="text-sm text-muted-foreground">
+					Incident integrations stay installed and reply that incident management is off.
+				</p>
 			{/if}
 		</Card.Content>
 	</Card.Root>
 
 	<LoadingQueryWrapper query={controller.metadataQuery}>
 		{#snippet view()}
-			{#if controller.incidentIntegrationInstalled || controller.incidentManagementEnabled}
-				<fieldset disabled={controller.saving} class="flex min-w-0 flex-col gap-4">
-					<Card.Root>
-						<Card.Header><Card.Title>Severities</Card.Title></Card.Header>
-						<Card.Content class="grid gap-3">
-							{#if controller.canEdit}
+			<fieldset disabled={controller.saving} class="flex min-w-0 flex-col gap-4">
+				<Card.Root>
+					<Card.Header><Card.Title>Severities</Card.Title></Card.Header>
+					<Card.Content class="grid gap-3">
+						{#if controller.canEdit}
+							<div class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_5rem_6rem_auto] gap-2">
+								<Input
+									aria-label="Name"
+									bind:value={controller.newSeverity.value.name}
+									placeholder="Name"
+								/>
+								<Input
+									type="number"
+									aria-label="Rank"
+									bind:value={controller.newSeverity.value.rank}
+								/>
+								<Input
+									type="color"
+									aria-label="Color"
+									bind:value={controller.newSeverity.value.color}
+								/>
+								<SettingsFormActions
+									onSave={() => controller.createSeverity()}
+									onCancel={controller.newSeverity.cancel}
+									dirty={controller.newSeverity.dirty}
+									pending={controller.saving}
+									saveLabel="Add"
+								/>
+							</div>
+							<Textarea
+								aria-label="Description"
+								bind:value={controller.newSeverity.value.description}
+								placeholder="Description"
+							/>
+						{/if}
+						{#each controller.severities.items as severity (severity.id)}
+							<div class="grid gap-2 border-t pt-3">
 								<div
-									class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_5rem_6rem_auto] gap-2"
+									class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_5rem_6rem_auto_auto] items-center gap-2"
 								>
 									<Input
 										aria-label="Name"
-										bind:value={controller.newSeverity.value.name}
-										placeholder="Name"
+										bind:value={severity.attributes.name}
+										disabled={!controller.canEdit}
 									/>
 									<Input
 										type="number"
 										aria-label="Rank"
-										bind:value={controller.newSeverity.value.rank}
+										bind:value={severity.attributes.rank}
+										disabled={!controller.canEdit}
 									/>
 									<Input
 										type="color"
 										aria-label="Color"
-										bind:value={controller.newSeverity.value.color}
+										bind:value={severity.attributes.color}
+										disabled={!controller.canEdit}
 									/>
+									<label class="flex items-center gap-2 text-sm">
+										<Checkbox
+											bind:checked={severity.attributes.archived}
+											disabled={!controller.canEdit}
+										/>
+										Archive
+									</label>
 									<SettingsFormActions
-										onSave={() => controller.createSeverity()}
-										onCancel={controller.newSeverity.cancel}
-										dirty={controller.newSeverity.dirty}
+										onSave={() => controller.updateSeverity(severity)}
+										onCancel={controller.severities.get(severity.id).cancel}
+										dirty={controller.severities.get(severity.id).dirty}
 										pending={controller.saving}
-										saveLabel="Add"
+										disabled={!controller.canEdit}
 									/>
 								</div>
 								<Textarea
 									aria-label="Description"
-									bind:value={controller.newSeverity.value.description}
-									placeholder="Description"
+									bind:value={severity.attributes.description}
+									disabled={!controller.canEdit}
 								/>
-							{/if}
-							{#each controller.severities.items as severity (severity.id)}
-								<div class="grid gap-2 border-t pt-3">
-									<div
-										class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_5rem_6rem_auto_auto] items-center gap-2"
-									>
-										<Input
-											aria-label="Name"
-											bind:value={severity.attributes.name}
-											disabled={!controller.canEdit}
-										/>
-										<Input
-											type="number"
-											aria-label="Rank"
-											bind:value={severity.attributes.rank}
-											disabled={!controller.canEdit}
-										/>
-										<Input
-											type="color"
-											aria-label="Color"
-											bind:value={severity.attributes.color}
-											disabled={!controller.canEdit}
-										/>
-										<label class="flex items-center gap-2 text-sm">
-											<Checkbox
-												bind:checked={severity.attributes.archived}
-												disabled={!controller.canEdit}
-											/>
-											Archive
-										</label>
-										<SettingsFormActions
-											onSave={() => controller.updateSeverity(severity)}
-											onCancel={controller.severities.get(severity.id).cancel}
-											dirty={controller.severities.get(severity.id).dirty}
-											pending={controller.saving}
-											disabled={!controller.canEdit}
-										/>
-									</div>
-									<Textarea
-										aria-label="Description"
-										bind:value={severity.attributes.description}
-										disabled={!controller.canEdit}
-									/>
-								</div>
-							{/each}
-						</Card.Content>
-					</Card.Root>
+							</div>
+						{/each}
+					</Card.Content>
+				</Card.Root>
 
-					<Card.Root>
-						<Card.Header><Card.Title>Types</Card.Title></Card.Header>
-						<Card.Content class="grid gap-3">
-							{#if controller.canEdit}
-								<div class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_auto] gap-2">
-									<Input
-										aria-label="Name"
-										bind:value={controller.newType.value}
-										placeholder="Type name"
-									/>
-									<SettingsFormActions
-										onSave={() => controller.createType()}
-										onCancel={controller.newType.cancel}
-										dirty={controller.newType.dirty}
-										pending={controller.saving}
-										saveLabel="Add"
-									/>
-								</div>
-							{/if}
-							{#each controller.types.items as type (type.id)}
-								<div
-									class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-2 border-t pt-3"
-								>
-									<Input
-										aria-label="Name"
-										bind:value={type.attributes.name}
+				<Card.Root>
+					<Card.Header><Card.Title>Types</Card.Title></Card.Header>
+					<Card.Content class="grid gap-3">
+						{#if controller.canEdit}
+							<div class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_auto] gap-2">
+								<Input
+									aria-label="Name"
+									bind:value={controller.newType.value}
+									placeholder="Type name"
+								/>
+								<SettingsFormActions
+									onSave={() => controller.createType()}
+									onCancel={controller.newType.cancel}
+									dirty={controller.newType.dirty}
+									pending={controller.saving}
+									saveLabel="Add"
+								/>
+							</div>
+						{/if}
+						{#each controller.types.items as type (type.id)}
+							<div
+								class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-2 border-t pt-3"
+							>
+								<Input
+									aria-label="Name"
+									bind:value={type.attributes.name}
+									disabled={!controller.canEdit}
+								/>
+								<label class="flex items-center gap-2 text-sm">
+									<Checkbox
+										bind:checked={type.attributes.archived}
 										disabled={!controller.canEdit}
 									/>
-									<label class="flex items-center gap-2 text-sm">
-										<Checkbox
-											bind:checked={type.attributes.archived}
-											disabled={!controller.canEdit}
-										/>
-										Archive
-									</label>
-									<SettingsFormActions
-										onSave={() => controller.updateType(type)}
-										onCancel={controller.types.get(type.id).cancel}
-										dirty={controller.types.get(type.id).dirty}
-										pending={controller.saving}
-										disabled={!controller.canEdit}
-									/>
-								</div>
-							{/each}
-						</Card.Content>
-					</Card.Root>
+									Archive
+								</label>
+								<SettingsFormActions
+									onSave={() => controller.updateType(type)}
+									onCancel={controller.types.get(type.id).cancel}
+									dirty={controller.types.get(type.id).dirty}
+									pending={controller.saving}
+									disabled={!controller.canEdit}
+								/>
+							</div>
+						{/each}
+					</Card.Content>
+				</Card.Root>
 
-					<Card.Root>
-						<Card.Header><Card.Title>Roles</Card.Title></Card.Header>
-						<Card.Content class="grid gap-3">
-							{#if controller.canEdit}
-								<div
-									class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-2"
-								>
+				<Card.Root>
+					<Card.Header><Card.Title>Roles</Card.Title></Card.Header>
+					<Card.Content class="grid gap-3">
+						{#if controller.canEdit}
+							<div
+								class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-2"
+							>
+								<Input
+									aria-label="Name"
+									bind:value={controller.newRole.value.name}
+									placeholder="Role name"
+								/>
+								<div class="grid w-56 gap-1">
 									<Input
-										aria-label="Name"
-										bind:value={controller.newRole.value.name}
-										placeholder="Role name"
+										type="number"
+										aria-label="Limit"
+										placeholder="Any"
+										bind:value={
+											() => controller.newRole.value.maxAssignees,
+											(value) =>
+												(controller.newRole.value.maxAssignees = value ?? undefined)
+										}
 									/>
-									<label class="flex items-center gap-2 text-sm">
-										<Checkbox bind:checked={controller.newRole.value.required} />
-										Required
-									</label>
-									<SettingsFormActions
-										onSave={() => controller.createRole()}
-										onCancel={controller.newRole.cancel}
-										dirty={controller.newRole.dirty}
-										pending={controller.saving}
-										saveLabel="Add"
-									/>
+									<span class="text-xs text-muted-foreground">
+										How many people can hold this role in one incident
+									</span>
+									{#if controller.newRoleLimitError}
+										<span class="text-xs text-destructive">
+											{controller.newRoleLimitError}
+										</span>
+									{/if}
 								</div>
-							{/if}
-							{#each controller.roles.items as role (role.id)}
-								<div
-									class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_auto_auto_auto] items-center gap-2 border-t pt-3"
-								>
+								<SettingsFormActions
+									onSave={() => controller.createRole()}
+									onCancel={controller.newRole.cancel}
+									dirty={controller.newRole.dirty}
+									pending={controller.saving}
+									saveDisabled={!!controller.newRoleLimitError}
+									saveLabel="Add"
+								/>
+							</div>
+						{/if}
+						{#each controller.roles.items as role (role.id)}
+							{@const limitError = controller.roleLimitError(role.attributes.maxAssignees)}
+							<div
+								class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_auto_auto_auto] items-center gap-2 border-t pt-3"
+							>
+								<Input
+									aria-label="Name"
+									bind:value={role.attributes.name}
+									disabled={!controller.canEdit}
+								/>
+								<div class="grid w-28 gap-1">
 									<Input
-										aria-label="Name"
-										bind:value={role.attributes.name}
+										type="number"
+										aria-label="Limit"
+										placeholder="Any"
+										bind:value={
+											() => role.attributes.maxAssignees,
+											(value) => (role.attributes.maxAssignees = value ?? undefined)
+										}
 										disabled={!controller.canEdit}
 									/>
-									<label class="flex items-center gap-2 text-sm">
-										<Checkbox
-											bind:checked={role.attributes.required}
-											disabled={!controller.canEdit}
-										/>
-										Required
-									</label>
-									<label class="flex items-center gap-2 text-sm">
-										<Checkbox
-											bind:checked={role.attributes.archived}
-											disabled={!controller.canEdit}
-										/>
-										Archive
-									</label>
-									<SettingsFormActions
-										onSave={() => controller.updateRole(role)}
-										onCancel={controller.roles.get(role.id).cancel}
-										dirty={controller.roles.get(role.id).dirty}
-										pending={controller.saving}
+									{#if limitError}
+										<span class="text-xs text-destructive">{limitError}</span>
+									{/if}
+								</div>
+								<label class="flex items-center gap-2 text-sm">
+									<Checkbox
+										bind:checked={role.attributes.archived}
 										disabled={!controller.canEdit}
 									/>
-								</div>
-							{/each}
-						</Card.Content>
-					</Card.Root>
+									Archive
+								</label>
+								<SettingsFormActions
+									onSave={() => controller.updateRole(role)}
+									onCancel={controller.roles.get(role.id).cancel}
+									dirty={controller.roles.get(role.id).dirty}
+									pending={controller.saving}
+									disabled={!controller.canEdit}
+									saveDisabled={!!limitError}
+								/>
+							</div>
+						{/each}
+					</Card.Content>
+				</Card.Root>
 
-					<Card.Root>
-						<Card.Header><Card.Title>Tags</Card.Title></Card.Header>
-						<Card.Content class="grid gap-3">
-							{#if controller.canEdit}
-								<div class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_auto] gap-2">
-									<Input
-										aria-label="Name"
-										bind:value={controller.newTag.value}
-										placeholder="Tag value"
-									/>
-									<SettingsFormActions
-										onSave={() => controller.createTag()}
-										onCancel={controller.newTag.cancel}
-										dirty={controller.newTag.dirty}
-										pending={controller.saving}
-										saveLabel="Add"
-									/>
-								</div>
-							{/if}
-							{#each controller.tags.items as tag (tag.id)}
-								<div
-									class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-2 border-t pt-3"
-								>
-									<Input
-										aria-label="Tag"
-										bind:value={tag.attributes.value}
+				<Card.Root>
+					<Card.Header><Card.Title>Tags</Card.Title></Card.Header>
+					<Card.Content class="grid gap-3">
+						{#if controller.canEdit}
+							<div class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_auto] gap-2">
+								<Input
+									aria-label="Name"
+									bind:value={controller.newTag.value}
+									placeholder="Tag value"
+								/>
+								<SettingsFormActions
+									onSave={() => controller.createTag()}
+									onCancel={controller.newTag.cancel}
+									dirty={controller.newTag.dirty}
+									pending={controller.saving}
+									saveLabel="Add"
+								/>
+							</div>
+						{/if}
+						{#each controller.tags.items as tag (tag.id)}
+							<div
+								class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-2 border-t pt-3"
+							>
+								<Input
+									aria-label="Tag"
+									bind:value={tag.attributes.value}
+									disabled={!controller.canEdit}
+								/>
+								<label class="flex items-center gap-2 text-sm">
+									<Checkbox
+										bind:checked={tag.attributes.archived}
 										disabled={!controller.canEdit}
 									/>
-									<label class="flex items-center gap-2 text-sm">
-										<Checkbox
-											bind:checked={tag.attributes.archived}
-											disabled={!controller.canEdit}
-										/>
-										Archive
-									</label>
-									<SettingsFormActions
-										onSave={() => controller.updateTag(tag)}
-										onCancel={controller.tags.get(tag.id).cancel}
-										dirty={controller.tags.get(tag.id).dirty}
-										pending={controller.saving}
-										disabled={!controller.canEdit}
-									/>
-								</div>
-							{/each}
-						</Card.Content>
-					</Card.Root>
+									Archive
+								</label>
+								<SettingsFormActions
+									onSave={() => controller.updateTag(tag)}
+									onCancel={controller.tags.get(tag.id).cancel}
+									dirty={controller.tags.get(tag.id).dirty}
+									pending={controller.saving}
+									disabled={!controller.canEdit}
+								/>
+							</div>
+						{/each}
+					</Card.Content>
+				</Card.Root>
 
-					<Card.Root>
-						<Card.Header><Card.Title>Fields</Card.Title></Card.Header>
-						<Card.Content class="grid gap-3">
-							{#if controller.canEdit}
-								<div
-									class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)_auto] gap-2"
-								>
-									<Input
-										aria-label="Name"
-										bind:value={controller.newField.value.name}
-										placeholder="Field name"
-									/>
-									<Input
-										aria-label="Name"
-										bind:value={controller.newField.value.options}
-										placeholder="Options, comma separated"
-									/>
-									<SettingsFormActions
-										onSave={() => controller.createField()}
-										onCancel={controller.newField.cancel}
-										dirty={controller.newField.dirty}
-										pending={controller.saving}
-										saveLabel="Add"
-									/>
-								</div>
-							{/if}
-							{#each controller.fields.items as field (field.id)}
-								<div
-									class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)_auto_auto] items-center gap-2 border-t pt-3"
-								>
-									<Input
-										aria-label="Name"
-										bind:value={field.attributes.name}
+				<Card.Root>
+					<Card.Header><Card.Title>Fields</Card.Title></Card.Header>
+					<Card.Content class="grid gap-3">
+						{#if controller.canEdit}
+							<div
+								class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)_auto] gap-2"
+							>
+								<Input
+									aria-label="Name"
+									bind:value={controller.newField.value.name}
+									placeholder="Field name"
+								/>
+								<Input
+									aria-label="Options, comma separated"
+									bind:value={controller.newField.value.options}
+									placeholder="Options, comma separated"
+								/>
+								<SettingsFormActions
+									onSave={() => controller.createField()}
+									onCancel={controller.newField.cancel}
+									dirty={controller.newField.dirty}
+									pending={controller.saving}
+									saveLabel="Add"
+								/>
+							</div>
+						{/if}
+						{#each controller.fields.items as field (field.id)}
+							<div
+								class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)_auto_auto] items-center gap-2 border-t pt-3"
+							>
+								<Input
+									aria-label="Name"
+									bind:value={field.attributes.name}
+									disabled={!controller.canEdit}
+								/>
+								<Input
+									aria-label="Options, comma separated"
+									value={controller.fieldOptionsText(field)}
+									disabled={!controller.canEdit}
+									oninput={(event) =>
+										controller.setFieldOptionsText(field.id, event.currentTarget.value)}
+								/>
+								<label class="flex items-center gap-2 text-sm">
+									<Checkbox
+										bind:checked={field.attributes.archived}
 										disabled={!controller.canEdit}
 									/>
-									<Input
-										aria-label="Options, comma separated"
-										value={controller.fieldOptionsText(field)}
-										disabled={!controller.canEdit}
-										oninput={(event) =>
-											controller.setFieldOptionsText(
-												field.id,
-												event.currentTarget.value
-											)}
-									/>
-									<label class="flex items-center gap-2 text-sm">
-										<Checkbox
-											bind:checked={field.attributes.archived}
-											disabled={!controller.canEdit}
-										/>
-										Archive
-									</label>
-									<SettingsFormActions
-										onSave={() =>
-											controller.updateField(field, controller.fieldOptionsText(field))}
-										onCancel={() => controller.cancelField(field.id)}
-										dirty={controller.fields.get(field.id).dirty ||
-											controller.fieldOptionTextEdits.has(field.id)}
-										pending={controller.saving}
-										disabled={!controller.canEdit}
-									/>
-								</div>
-							{/each}
-						</Card.Content>
-					</Card.Root>
-				</fieldset>
-			{/if}
+									Archive
+								</label>
+								<SettingsFormActions
+									onSave={() =>
+										controller.updateField(field, controller.fieldOptionsText(field))}
+									onCancel={() => controller.cancelField(field.id)}
+									dirty={controller.fields.get(field.id).dirty ||
+										controller.fieldOptionTextEdits.has(field.id)}
+									pending={controller.saving}
+									disabled={!controller.canEdit}
+								/>
+							</div>
+						{/each}
+					</Card.Content>
+				</Card.Root>
+			</fieldset>
 		{/snippet}
 	</LoadingQueryWrapper>
 </div>

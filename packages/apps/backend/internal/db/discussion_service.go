@@ -11,7 +11,6 @@ import (
 	dc "github.com/rezible/rezible/ent/discussioncomment"
 	dt "github.com/rezible/rezible/ent/discussionthread"
 	"github.com/rezible/rezible/ent/predicate"
-	"github.com/rezible/rezible/ent/review"
 	"github.com/rezible/rezible/pkg/errs"
 )
 
@@ -122,27 +121,6 @@ func (s *DiscussionService) CreateComment(ctx context.Context, params rez.Create
 }
 
 func (s *DiscussionService) UpdateComment(ctx context.Context, u uuid.UUID, params rez.UpdateDiscussionCommentParams) (*ent.DiscussionComment, error) {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (s *DiscussionService) ListReviews(ctx context.Context, params rez.ListReviewsParams) (*ent.ListResult[ent.Review], error) {
-	query := s.db.Client(ctx).Review.Query()
-	if params.RetrospectiveID != uuid.Nil {
-		query = query.Where(review.RetrospectiveID(params.RetrospectiveID))
-	}
-	if params.AnalysisEntryID != uuid.Nil {
-		query = query.Where(review.AnalysisEntryID(params.AnalysisEntryID))
-	}
-	query = query.Order(review.ByCreatedAt(), review.ByID())
-	return ent.DoListQuery[ent.Review, *ent.ReviewQuery](ctx, query, params.ListParams)
-}
-
-func (s *DiscussionService) GetReview(ctx context.Context, id uuid.UUID) (*ent.Review, error) {
-	return s.db.Client(ctx).Review.Get(ctx, id)
-}
-
-func (s *DiscussionService) CreateReviewRequest(ctx context.Context, params rez.CreateReviewRequestParams) (*ent.Review, error) {
 	//TODO implement me
 	panic("implement me")
 }

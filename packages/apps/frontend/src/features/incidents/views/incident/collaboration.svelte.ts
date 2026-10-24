@@ -27,8 +27,17 @@ export class IncidentCollaborationController {
 	initialSynced = $state(false);
 	unsyncedChanges = $state(0);
 
-	constructor(idFn: Getter<string | undefined>) {
+	constructor(
+		idFn: Getter<string | undefined>,
+		readOnlyFn: Getter<boolean>,
+		private refetchRetrospective: () => void
+	) {
 		watch(idFn, (id) => void this.connect(id));
+		watch(readOnlyFn, (readOnly, previous) => {
+			if (readOnly && previous === false && this.canEdit && this.documentId) {
+				this.reconnectReadOnly(this.documentId);
+			}
+		});
 		onMount(() => () => this.cleanup());
 	}
 
@@ -72,7 +81,14 @@ export class IncidentCollaborationController {
 			onAuthenticated: ({ scope }) => {
 				if (!current()) return;
 				this.error = undefined;
+				const lostEditAccess = this.canEdit && scope === "readonly";
 				this.canEdit = scope === "read-write";
+				if (lostEditAccess) {
+					// The documents server closed the connection after the review's deadline.
+					this.refetchRetrospective();
+					// A fresh Y.Doc discards local updates the server refused to persist.
+					this.reconnectReadOnly(auth.name);
+				}
 			},
 			onAuthenticationFailed: ({ reason }) => {
 				if (!current()) return;
@@ -134,6 +150,11 @@ export class IncidentCollaborationController {
 		}
 	};
 
+	private reconnectReadOnly(id: string) {
+		this.cleanup();
+		void this.connect(id);
+	}
+
 	cleanup() {
 		this.generation += 1;
 		const provider = this.provider;
@@ -155,6 +176,9 @@ export class IncidentCollaborationController {
 }
 
 const ctx = new Context<IncidentCollaborationController>("IncidentCollaborationController");
-export const initIncidentCollaborationController = (docIdFn: Getter<string | undefined>) =>
-	ctx.set(new IncidentCollaborationController(docIdFn));
+export const initIncidentCollaborationController = (
+	docIdFn: Getter<string | undefined>,
+	readOnlyFn: Getter<boolean>,
+	refetchRetrospective: () => void
+) => ctx.set(new IncidentCollaborationController(docIdFn, readOnlyFn, refetchRetrospective));
 export const useIncidentCollaboration = () => ctx.get();

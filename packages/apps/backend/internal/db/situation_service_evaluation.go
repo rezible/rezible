@@ -158,18 +158,13 @@ func (s *SituationService) loadEvaluationInput(ctx context.Context, situation *e
 	}
 
 	queryIncidents := client.Situation.QueryIncidents(situation).
-		Select(inc.FieldID, inc.FieldTitle, inc.FieldResponseState, inc.FieldResolvedAt)
+		Select(inc.FieldID, inc.FieldTitle, inc.FieldResolvedAt)
 	incidents, incidentsErr := queryIncidents.All(ctx)
 	if incidentsErr != nil {
 		return input, nil, fmt.Errorf("query situation incidents: %w", incidentsErr)
 	}
 	for _, incident := range incidents {
-		linked := situations.LinkedIncident{
-			ID:            incident.ID,
-			Title:         incident.Title,
-			ResponseState: incident.ResponseState,
-			ResolvedAt:    incident.ResolvedAt,
-		}
+		linked := situations.LinkedIncident{ID: incident.ID, Title: incident.Title, ResolvedAt: incident.ResolvedAt}
 		input.Incidents = append(input.Incidents, linked)
 	}
 	if !input.Raised && !input.Muted && situation.LatestJudgmentID != nil {

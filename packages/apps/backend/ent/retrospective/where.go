@@ -3,6 +3,8 @@
 package retrospective
 
 import (
+	"time"
+
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
@@ -73,6 +75,26 @@ func DocumentID(v uuid.UUID) predicate.Retrospective {
 // SystemAnalysisID applies equality check predicate on the "system_analysis_id" field. It's identical to SystemAnalysisIDEQ.
 func SystemAnalysisID(v uuid.UUID) predicate.Retrospective {
 	return predicate.Retrospective(sql.FieldEQ(FieldSystemAnalysisID, v))
+}
+
+// OwnerID applies equality check predicate on the "owner_id" field. It's identical to OwnerIDEQ.
+func OwnerID(v uuid.UUID) predicate.Retrospective {
+	return predicate.Retrospective(sql.FieldEQ(FieldOwnerID, v))
+}
+
+// ClosedAt applies equality check predicate on the "closed_at" field. It's identical to ClosedAtEQ.
+func ClosedAt(v time.Time) predicate.Retrospective {
+	return predicate.Retrospective(sql.FieldEQ(FieldClosedAt, v))
+}
+
+// ClosedByID applies equality check predicate on the "closed_by_id" field. It's identical to ClosedByIDEQ.
+func ClosedByID(v uuid.UUID) predicate.Retrospective {
+	return predicate.Retrospective(sql.FieldEQ(FieldClosedByID, v))
+}
+
+// SkipReason applies equality check predicate on the "skip_reason" field. It's identical to SkipReasonEQ.
+func SkipReason(v string) predicate.Retrospective {
+	return predicate.Retrospective(sql.FieldEQ(FieldSkipReason, v))
 }
 
 // TenantIDEQ applies the EQ predicate on the "tenant_id" field.
@@ -175,6 +197,191 @@ func StateNotIn(vs ...State) predicate.Retrospective {
 	return predicate.Retrospective(sql.FieldNotIn(FieldState, vs...))
 }
 
+// OwnerIDEQ applies the EQ predicate on the "owner_id" field.
+func OwnerIDEQ(v uuid.UUID) predicate.Retrospective {
+	return predicate.Retrospective(sql.FieldEQ(FieldOwnerID, v))
+}
+
+// OwnerIDNEQ applies the NEQ predicate on the "owner_id" field.
+func OwnerIDNEQ(v uuid.UUID) predicate.Retrospective {
+	return predicate.Retrospective(sql.FieldNEQ(FieldOwnerID, v))
+}
+
+// OwnerIDIn applies the In predicate on the "owner_id" field.
+func OwnerIDIn(vs ...uuid.UUID) predicate.Retrospective {
+	return predicate.Retrospective(sql.FieldIn(FieldOwnerID, vs...))
+}
+
+// OwnerIDNotIn applies the NotIn predicate on the "owner_id" field.
+func OwnerIDNotIn(vs ...uuid.UUID) predicate.Retrospective {
+	return predicate.Retrospective(sql.FieldNotIn(FieldOwnerID, vs...))
+}
+
+// OwnerIDIsNil applies the IsNil predicate on the "owner_id" field.
+func OwnerIDIsNil() predicate.Retrospective {
+	return predicate.Retrospective(sql.FieldIsNull(FieldOwnerID))
+}
+
+// OwnerIDNotNil applies the NotNil predicate on the "owner_id" field.
+func OwnerIDNotNil() predicate.Retrospective {
+	return predicate.Retrospective(sql.FieldNotNull(FieldOwnerID))
+}
+
+// ClosedAtEQ applies the EQ predicate on the "closed_at" field.
+func ClosedAtEQ(v time.Time) predicate.Retrospective {
+	return predicate.Retrospective(sql.FieldEQ(FieldClosedAt, v))
+}
+
+// ClosedAtNEQ applies the NEQ predicate on the "closed_at" field.
+func ClosedAtNEQ(v time.Time) predicate.Retrospective {
+	return predicate.Retrospective(sql.FieldNEQ(FieldClosedAt, v))
+}
+
+// ClosedAtIn applies the In predicate on the "closed_at" field.
+func ClosedAtIn(vs ...time.Time) predicate.Retrospective {
+	return predicate.Retrospective(sql.FieldIn(FieldClosedAt, vs...))
+}
+
+// ClosedAtNotIn applies the NotIn predicate on the "closed_at" field.
+func ClosedAtNotIn(vs ...time.Time) predicate.Retrospective {
+	return predicate.Retrospective(sql.FieldNotIn(FieldClosedAt, vs...))
+}
+
+// ClosedAtGT applies the GT predicate on the "closed_at" field.
+func ClosedAtGT(v time.Time) predicate.Retrospective {
+	return predicate.Retrospective(sql.FieldGT(FieldClosedAt, v))
+}
+
+// ClosedAtGTE applies the GTE predicate on the "closed_at" field.
+func ClosedAtGTE(v time.Time) predicate.Retrospective {
+	return predicate.Retrospective(sql.FieldGTE(FieldClosedAt, v))
+}
+
+// ClosedAtLT applies the LT predicate on the "closed_at" field.
+func ClosedAtLT(v time.Time) predicate.Retrospective {
+	return predicate.Retrospective(sql.FieldLT(FieldClosedAt, v))
+}
+
+// ClosedAtLTE applies the LTE predicate on the "closed_at" field.
+func ClosedAtLTE(v time.Time) predicate.Retrospective {
+	return predicate.Retrospective(sql.FieldLTE(FieldClosedAt, v))
+}
+
+// ClosedAtIsNil applies the IsNil predicate on the "closed_at" field.
+func ClosedAtIsNil() predicate.Retrospective {
+	return predicate.Retrospective(sql.FieldIsNull(FieldClosedAt))
+}
+
+// ClosedAtNotNil applies the NotNil predicate on the "closed_at" field.
+func ClosedAtNotNil() predicate.Retrospective {
+	return predicate.Retrospective(sql.FieldNotNull(FieldClosedAt))
+}
+
+// ClosedByIDEQ applies the EQ predicate on the "closed_by_id" field.
+func ClosedByIDEQ(v uuid.UUID) predicate.Retrospective {
+	return predicate.Retrospective(sql.FieldEQ(FieldClosedByID, v))
+}
+
+// ClosedByIDNEQ applies the NEQ predicate on the "closed_by_id" field.
+func ClosedByIDNEQ(v uuid.UUID) predicate.Retrospective {
+	return predicate.Retrospective(sql.FieldNEQ(FieldClosedByID, v))
+}
+
+// ClosedByIDIn applies the In predicate on the "closed_by_id" field.
+func ClosedByIDIn(vs ...uuid.UUID) predicate.Retrospective {
+	return predicate.Retrospective(sql.FieldIn(FieldClosedByID, vs...))
+}
+
+// ClosedByIDNotIn applies the NotIn predicate on the "closed_by_id" field.
+func ClosedByIDNotIn(vs ...uuid.UUID) predicate.Retrospective {
+	return predicate.Retrospective(sql.FieldNotIn(FieldClosedByID, vs...))
+}
+
+// ClosedByIDIsNil applies the IsNil predicate on the "closed_by_id" field.
+func ClosedByIDIsNil() predicate.Retrospective {
+	return predicate.Retrospective(sql.FieldIsNull(FieldClosedByID))
+}
+
+// ClosedByIDNotNil applies the NotNil predicate on the "closed_by_id" field.
+func ClosedByIDNotNil() predicate.Retrospective {
+	return predicate.Retrospective(sql.FieldNotNull(FieldClosedByID))
+}
+
+// SkipReasonEQ applies the EQ predicate on the "skip_reason" field.
+func SkipReasonEQ(v string) predicate.Retrospective {
+	return predicate.Retrospective(sql.FieldEQ(FieldSkipReason, v))
+}
+
+// SkipReasonNEQ applies the NEQ predicate on the "skip_reason" field.
+func SkipReasonNEQ(v string) predicate.Retrospective {
+	return predicate.Retrospective(sql.FieldNEQ(FieldSkipReason, v))
+}
+
+// SkipReasonIn applies the In predicate on the "skip_reason" field.
+func SkipReasonIn(vs ...string) predicate.Retrospective {
+	return predicate.Retrospective(sql.FieldIn(FieldSkipReason, vs...))
+}
+
+// SkipReasonNotIn applies the NotIn predicate on the "skip_reason" field.
+func SkipReasonNotIn(vs ...string) predicate.Retrospective {
+	return predicate.Retrospective(sql.FieldNotIn(FieldSkipReason, vs...))
+}
+
+// SkipReasonGT applies the GT predicate on the "skip_reason" field.
+func SkipReasonGT(v string) predicate.Retrospective {
+	return predicate.Retrospective(sql.FieldGT(FieldSkipReason, v))
+}
+
+// SkipReasonGTE applies the GTE predicate on the "skip_reason" field.
+func SkipReasonGTE(v string) predicate.Retrospective {
+	return predicate.Retrospective(sql.FieldGTE(FieldSkipReason, v))
+}
+
+// SkipReasonLT applies the LT predicate on the "skip_reason" field.
+func SkipReasonLT(v string) predicate.Retrospective {
+	return predicate.Retrospective(sql.FieldLT(FieldSkipReason, v))
+}
+
+// SkipReasonLTE applies the LTE predicate on the "skip_reason" field.
+func SkipReasonLTE(v string) predicate.Retrospective {
+	return predicate.Retrospective(sql.FieldLTE(FieldSkipReason, v))
+}
+
+// SkipReasonContains applies the Contains predicate on the "skip_reason" field.
+func SkipReasonContains(v string) predicate.Retrospective {
+	return predicate.Retrospective(sql.FieldContains(FieldSkipReason, v))
+}
+
+// SkipReasonHasPrefix applies the HasPrefix predicate on the "skip_reason" field.
+func SkipReasonHasPrefix(v string) predicate.Retrospective {
+	return predicate.Retrospective(sql.FieldHasPrefix(FieldSkipReason, v))
+}
+
+// SkipReasonHasSuffix applies the HasSuffix predicate on the "skip_reason" field.
+func SkipReasonHasSuffix(v string) predicate.Retrospective {
+	return predicate.Retrospective(sql.FieldHasSuffix(FieldSkipReason, v))
+}
+
+// SkipReasonIsNil applies the IsNil predicate on the "skip_reason" field.
+func SkipReasonIsNil() predicate.Retrospective {
+	return predicate.Retrospective(sql.FieldIsNull(FieldSkipReason))
+}
+
+// SkipReasonNotNil applies the NotNil predicate on the "skip_reason" field.
+func SkipReasonNotNil() predicate.Retrospective {
+	return predicate.Retrospective(sql.FieldNotNull(FieldSkipReason))
+}
+
+// SkipReasonEqualFold applies the EqualFold predicate on the "skip_reason" field.
+func SkipReasonEqualFold(v string) predicate.Retrospective {
+	return predicate.Retrospective(sql.FieldEqualFold(FieldSkipReason, v))
+}
+
+// SkipReasonContainsFold applies the ContainsFold predicate on the "skip_reason" field.
+func SkipReasonContainsFold(v string) predicate.Retrospective {
+	return predicate.Retrospective(sql.FieldContainsFold(FieldSkipReason, v))
+}
+
 // HasTenant applies the HasEdge predicate on the "tenant" edge.
 func HasTenant() predicate.Retrospective {
 	return predicate.Retrospective(func(s *sql.Selector) {
@@ -195,6 +402,64 @@ func HasTenantWith(preds ...predicate.Tenant) predicate.Retrospective {
 		step := newTenantStep()
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.Retrospective
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasOwner applies the HasEdge predicate on the "owner" edge.
+func HasOwner() predicate.Retrospective {
+	return predicate.Retrospective(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, OwnerTable, OwnerColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.User
+		step.Edge.Schema = schemaConfig.Retrospective
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasOwnerWith applies the HasEdge predicate on the "owner" edge with a given conditions (other predicates).
+func HasOwnerWith(preds ...predicate.User) predicate.Retrospective {
+	return predicate.Retrospective(func(s *sql.Selector) {
+		step := newOwnerStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.User
+		step.Edge.Schema = schemaConfig.Retrospective
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasClosedBy applies the HasEdge predicate on the "closed_by" edge.
+func HasClosedBy() predicate.Retrospective {
+	return predicate.Retrospective(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, ClosedByTable, ClosedByColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.User
+		step.Edge.Schema = schemaConfig.Retrospective
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasClosedByWith applies the HasEdge predicate on the "closed_by" edge with a given conditions (other predicates).
+func HasClosedByWith(preds ...predicate.User) predicate.Retrospective {
+	return predicate.Retrospective(func(s *sql.Selector) {
+		step := newClosedByStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.User
 		step.Edge.Schema = schemaConfig.Retrospective
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

@@ -53,16 +53,16 @@ func (_c *IncidentRoleCreate) SetName(v string) *IncidentRoleCreate {
 	return _c
 }
 
-// SetRequired sets the "required" field.
-func (_c *IncidentRoleCreate) SetRequired(v bool) *IncidentRoleCreate {
-	_c.mutation.SetRequired(v)
+// SetMaxAssignees sets the "max_assignees" field.
+func (_c *IncidentRoleCreate) SetMaxAssignees(v int) *IncidentRoleCreate {
+	_c.mutation.SetMaxAssignees(v)
 	return _c
 }
 
-// SetNillableRequired sets the "required" field if the given value is not nil.
-func (_c *IncidentRoleCreate) SetNillableRequired(v *bool) *IncidentRoleCreate {
+// SetNillableMaxAssignees sets the "max_assignees" field if the given value is not nil.
+func (_c *IncidentRoleCreate) SetNillableMaxAssignees(v *int) *IncidentRoleCreate {
 	if v != nil {
-		_c.SetRequired(*v)
+		_c.SetMaxAssignees(*v)
 	}
 	return _c
 }
@@ -153,10 +153,6 @@ func (_c *IncidentRoleCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (_c *IncidentRoleCreate) defaults() error {
-	if _, ok := _c.mutation.Required(); !ok {
-		v := incidentrole.DefaultRequired
-		_c.mutation.SetRequired(v)
-	}
 	if _, ok := _c.mutation.ID(); !ok {
 		if incidentrole.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized incidentrole.DefaultID (forgotten import ent/runtime?)")
@@ -174,9 +170,6 @@ func (_c *IncidentRoleCreate) check() error {
 	}
 	if _, ok := _c.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "IncidentRole.name"`)}
-	}
-	if _, ok := _c.mutation.Required(); !ok {
-		return &ValidationError{Name: "required", err: errors.New(`ent: missing required field "IncidentRole.required"`)}
 	}
 	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "IncidentRole.tenant"`)}
@@ -226,9 +219,9 @@ func (_c *IncidentRoleCreate) createSpec() (*IncidentRole, *sqlgraph.CreateSpec)
 		_spec.SetField(incidentrole.FieldName, field.TypeString, value)
 		_node.Name = value
 	}
-	if value, ok := _c.mutation.Required(); ok {
-		_spec.SetField(incidentrole.FieldRequired, field.TypeBool, value)
-		_node.Required = value
+	if value, ok := _c.mutation.MaxAssignees(); ok {
+		_spec.SetField(incidentrole.FieldMaxAssignees, field.TypeInt, value)
+		_node.MaxAssignees = &value
 	}
 	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -364,15 +357,27 @@ func (u *IncidentRoleUpsert) UpdateName() *IncidentRoleUpsert {
 	return u
 }
 
-// SetRequired sets the "required" field.
-func (u *IncidentRoleUpsert) SetRequired(v bool) *IncidentRoleUpsert {
-	u.Set(incidentrole.FieldRequired, v)
+// SetMaxAssignees sets the "max_assignees" field.
+func (u *IncidentRoleUpsert) SetMaxAssignees(v int) *IncidentRoleUpsert {
+	u.Set(incidentrole.FieldMaxAssignees, v)
 	return u
 }
 
-// UpdateRequired sets the "required" field to the value that was provided on create.
-func (u *IncidentRoleUpsert) UpdateRequired() *IncidentRoleUpsert {
-	u.SetExcluded(incidentrole.FieldRequired)
+// UpdateMaxAssignees sets the "max_assignees" field to the value that was provided on create.
+func (u *IncidentRoleUpsert) UpdateMaxAssignees() *IncidentRoleUpsert {
+	u.SetExcluded(incidentrole.FieldMaxAssignees)
+	return u
+}
+
+// AddMaxAssignees adds v to the "max_assignees" field.
+func (u *IncidentRoleUpsert) AddMaxAssignees(v int) *IncidentRoleUpsert {
+	u.Add(incidentrole.FieldMaxAssignees, v)
+	return u
+}
+
+// ClearMaxAssignees clears the value of the "max_assignees" field.
+func (u *IncidentRoleUpsert) ClearMaxAssignees() *IncidentRoleUpsert {
+	u.SetNull(incidentrole.FieldMaxAssignees)
 	return u
 }
 
@@ -462,17 +467,31 @@ func (u *IncidentRoleUpsertOne) UpdateName() *IncidentRoleUpsertOne {
 	})
 }
 
-// SetRequired sets the "required" field.
-func (u *IncidentRoleUpsertOne) SetRequired(v bool) *IncidentRoleUpsertOne {
+// SetMaxAssignees sets the "max_assignees" field.
+func (u *IncidentRoleUpsertOne) SetMaxAssignees(v int) *IncidentRoleUpsertOne {
 	return u.Update(func(s *IncidentRoleUpsert) {
-		s.SetRequired(v)
+		s.SetMaxAssignees(v)
 	})
 }
 
-// UpdateRequired sets the "required" field to the value that was provided on create.
-func (u *IncidentRoleUpsertOne) UpdateRequired() *IncidentRoleUpsertOne {
+// AddMaxAssignees adds v to the "max_assignees" field.
+func (u *IncidentRoleUpsertOne) AddMaxAssignees(v int) *IncidentRoleUpsertOne {
 	return u.Update(func(s *IncidentRoleUpsert) {
-		s.UpdateRequired()
+		s.AddMaxAssignees(v)
+	})
+}
+
+// UpdateMaxAssignees sets the "max_assignees" field to the value that was provided on create.
+func (u *IncidentRoleUpsertOne) UpdateMaxAssignees() *IncidentRoleUpsertOne {
+	return u.Update(func(s *IncidentRoleUpsert) {
+		s.UpdateMaxAssignees()
+	})
+}
+
+// ClearMaxAssignees clears the value of the "max_assignees" field.
+func (u *IncidentRoleUpsertOne) ClearMaxAssignees() *IncidentRoleUpsertOne {
+	return u.Update(func(s *IncidentRoleUpsert) {
+		s.ClearMaxAssignees()
 	})
 }
 
@@ -729,17 +748,31 @@ func (u *IncidentRoleUpsertBulk) UpdateName() *IncidentRoleUpsertBulk {
 	})
 }
 
-// SetRequired sets the "required" field.
-func (u *IncidentRoleUpsertBulk) SetRequired(v bool) *IncidentRoleUpsertBulk {
+// SetMaxAssignees sets the "max_assignees" field.
+func (u *IncidentRoleUpsertBulk) SetMaxAssignees(v int) *IncidentRoleUpsertBulk {
 	return u.Update(func(s *IncidentRoleUpsert) {
-		s.SetRequired(v)
+		s.SetMaxAssignees(v)
 	})
 }
 
-// UpdateRequired sets the "required" field to the value that was provided on create.
-func (u *IncidentRoleUpsertBulk) UpdateRequired() *IncidentRoleUpsertBulk {
+// AddMaxAssignees adds v to the "max_assignees" field.
+func (u *IncidentRoleUpsertBulk) AddMaxAssignees(v int) *IncidentRoleUpsertBulk {
 	return u.Update(func(s *IncidentRoleUpsert) {
-		s.UpdateRequired()
+		s.AddMaxAssignees(v)
+	})
+}
+
+// UpdateMaxAssignees sets the "max_assignees" field to the value that was provided on create.
+func (u *IncidentRoleUpsertBulk) UpdateMaxAssignees() *IncidentRoleUpsertBulk {
+	return u.Update(func(s *IncidentRoleUpsert) {
+		s.UpdateMaxAssignees()
+	})
+}
+
+// ClearMaxAssignees clears the value of the "max_assignees" field.
+func (u *IncidentRoleUpsertBulk) ClearMaxAssignees() *IncidentRoleUpsertBulk {
+	return u.Update(func(s *IncidentRoleUpsert) {
+		s.ClearMaxAssignees()
 	})
 }
 

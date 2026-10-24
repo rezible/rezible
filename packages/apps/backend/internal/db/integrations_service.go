@@ -138,18 +138,20 @@ func (s *IntegrationsService) checkInstallRequirements(p rez.IntegrationDefiniti
 		return nil
 	}
 	if requirementsErr := ri.CheckInstallRequirements(state); requirementsErr != nil {
-		return fmt.Errorf("%w: %w", errs.ErrConflict, requirementsErr)
+		// A requirement's own public message, when it has one, comes before the generic conflict.
+		return fmt.Errorf("%w: %w", requirementsErr, errs.ErrConflict)
 	}
 	return nil
 }
 
-// checkCanInstallNew applies installation limits and requirements to a new installation.
+// checkCanInstallNew applies installation limits and requirements to a new installation for the target.
 // Updating an existing installation for the same provider target is always allowed.
-func (s *IntegrationsService) checkCanInstallNew(ctx context.Context, p rez.IntegrationDefinition) error {
+func (s *IntegrationsService) checkCanInstallNew(ctx context.Context, p rez.IntegrationDefinition, target rez.ProviderResourceRef) error {
 	state, stateErr := s.getInstallState(ctx)
 	if stateErr != nil {
 		return fmt.Errorf("get install state: %w", stateErr)
 	}
+	state.Target = &target
 
 	if maxInstalls := p.MaxInstalls(); maxInstalls != nil {
 		installCount := 0
@@ -288,7 +290,7 @@ func (s *IntegrationsService) InstallFromTarget(ctx context.Context, target rez.
 		return nil, fmt.Errorf("query existing installation: %w", queryExistingErr)
 	}
 	if ent.IsNotFound(queryExistingErr) {
-		if installErr := s.checkCanInstallNew(ctx, p); installErr != nil {
+		if installErr := s.checkCanInstallNew(ctx, p, ref); installErr != nil {
 			return nil, fmt.Errorf("check can install: %w", installErr)
 		}
 	}

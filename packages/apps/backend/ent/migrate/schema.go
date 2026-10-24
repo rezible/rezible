@@ -908,17 +908,20 @@ var (
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "archive_time", Type: field.TypeTime, Nullable: true},
 		{Name: "slug", Type: field.TypeString, Unique: true},
 		{Name: "title", Type: field.TypeString},
 		{Name: "summary", Type: field.TypeString, Nullable: true},
 		{Name: "chat_channel_id", Type: field.TypeString, Nullable: true},
-		{Name: "response_state", Type: field.TypeEnum, Enums: []string{"unknown", "started", "mitigated", "resolved"}, Default: "unknown"},
+		{Name: "chat_details_message_id", Type: field.TypeString, Nullable: true},
 		{Name: "opened_at", Type: field.TypeTime},
+		{Name: "response_state", Type: field.TypeEnum, Enums: []string{"started", "mitigated", "resolved"}, Default: "started"},
 		{Name: "resolved_at", Type: field.TypeTime, Nullable: true},
 		{Name: "tenant_id", Type: field.TypeInt},
 		{Name: "knowledge_entity_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "severity_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "type_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "declared_by_id", Type: field.TypeUUID, Nullable: true},
 	}
 	// IncidentsTable holds the schema information for the "incidents" table.
 	IncidentsTable = &schema.Table{
@@ -928,26 +931,32 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "incidents_tenants_tenant",
-				Columns:    []*schema.Column{IncidentsColumns[10]},
+				Columns:    []*schema.Column{IncidentsColumns[12]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "incidents_knowledge_entities_knowledge_entity",
-				Columns:    []*schema.Column{IncidentsColumns[11]},
+				Columns:    []*schema.Column{IncidentsColumns[13]},
 				RefColumns: []*schema.Column{KnowledgeEntitiesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "incidents_incident_severities_severity",
-				Columns:    []*schema.Column{IncidentsColumns[12]},
+				Columns:    []*schema.Column{IncidentsColumns[14]},
 				RefColumns: []*schema.Column{IncidentSeveritiesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "incidents_incident_types_type",
-				Columns:    []*schema.Column{IncidentsColumns[13]},
+				Columns:    []*schema.Column{IncidentsColumns[15]},
 				RefColumns: []*schema.Column{IncidentTypesColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "incidents_users_declared_by",
+				Columns:    []*schema.Column{IncidentsColumns[16]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 		},
@@ -955,12 +964,12 @@ var (
 			{
 				Name:    "incident_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{IncidentsColumns[10]},
+				Columns: []*schema.Column{IncidentsColumns[12]},
 			},
 			{
 				Name:    "incident_tenant_id_knowledge_entity_id",
 				Unique:  true,
-				Columns: []*schema.Column{IncidentsColumns[10], IncidentsColumns[11]},
+				Columns: []*schema.Column{IncidentsColumns[12], IncidentsColumns[13]},
 			},
 		},
 	}
@@ -1331,7 +1340,7 @@ var (
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "archive_time", Type: field.TypeTime, Nullable: true},
 		{Name: "name", Type: field.TypeString},
-		{Name: "required", Type: field.TypeBool, Default: false},
+		{Name: "max_assignees", Type: field.TypeInt, Nullable: true},
 		{Name: "tenant_id", Type: field.TypeInt},
 	}
 	// IncidentRolesTable holds the schema information for the "incident_roles" table.
@@ -1401,9 +1410,9 @@ var (
 				Columns: []*schema.Column{IncidentRoleAssignmentsColumns[1]},
 			},
 			{
-				Name:    "incidentroleassignment_tenant_id_incident_id_user_id",
+				Name:    "incidentroleassignment_tenant_id_incident_id_user_id_role_id",
 				Unique:  true,
-				Columns: []*schema.Column{IncidentRoleAssignmentsColumns[1], IncidentRoleAssignmentsColumns[2], IncidentRoleAssignmentsColumns[3]},
+				Columns: []*schema.Column{IncidentRoleAssignmentsColumns[1], IncidentRoleAssignmentsColumns[2], IncidentRoleAssignmentsColumns[3], IncidentRoleAssignmentsColumns[4]},
 			},
 		},
 	}
@@ -3190,7 +3199,6 @@ var (
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "initial_setup_at", Type: field.TypeTime, Nullable: true},
 		{Name: "enable_incident_management", Type: field.TypeBool, Default: false},
-		{Name: "required_reviewer_count", Type: field.TypeInt, Default: 0},
 		{Name: "timezone", Type: field.TypeString, Nullable: true},
 		{Name: "organization_id", Type: field.TypeUUID, Unique: true},
 		{Name: "tenant_id", Type: field.TypeInt},
@@ -3203,13 +3211,13 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "organization_preferences_organizations_preferences",
-				Columns:    []*schema.Column{OrganizationPreferencesColumns[5]},
+				Columns:    []*schema.Column{OrganizationPreferencesColumns[4]},
 				RefColumns: []*schema.Column{OrganizationsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "organization_preferences_tenants_tenant",
-				Columns:    []*schema.Column{OrganizationPreferencesColumns[6]},
+				Columns:    []*schema.Column{OrganizationPreferencesColumns[5]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -3218,7 +3226,7 @@ var (
 			{
 				Name:    "organizationpreferences_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{OrganizationPreferencesColumns[6]},
+				Columns: []*schema.Column{OrganizationPreferencesColumns[5]},
 			},
 		},
 	}
@@ -3299,10 +3307,14 @@ var (
 	// RetrospectivesColumns holds the columns for the "retrospectives" table.
 	RetrospectivesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
-		{Name: "state", Type: field.TypeEnum, Enums: []string{"draft", "in_review", "meeting", "closed"}},
+		{Name: "state", Type: field.TypeEnum, Enums: []string{"draft", "in_review", "closed"}},
+		{Name: "closed_at", Type: field.TypeTime, Nullable: true},
+		{Name: "skip_reason", Type: field.TypeString, Nullable: true, Size: 2147483647},
 		{Name: "document_id", Type: field.TypeUUID, Unique: true},
 		{Name: "incident_id", Type: field.TypeUUID, Unique: true},
 		{Name: "tenant_id", Type: field.TypeInt},
+		{Name: "owner_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "closed_by_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "system_analysis_id", Type: field.TypeUUID},
 	}
 	// RetrospectivesTable holds the schema information for the "retrospectives" table.
@@ -3313,25 +3325,37 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "retrospectives_documents_retrospective",
-				Columns:    []*schema.Column{RetrospectivesColumns[2]},
+				Columns:    []*schema.Column{RetrospectivesColumns[4]},
 				RefColumns: []*schema.Column{DocumentsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "retrospectives_incidents_retrospective",
-				Columns:    []*schema.Column{RetrospectivesColumns[3]},
+				Columns:    []*schema.Column{RetrospectivesColumns[5]},
 				RefColumns: []*schema.Column{IncidentsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "retrospectives_tenants_tenant",
-				Columns:    []*schema.Column{RetrospectivesColumns[4]},
+				Columns:    []*schema.Column{RetrospectivesColumns[6]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
+				Symbol:     "retrospectives_users_owner",
+				Columns:    []*schema.Column{RetrospectivesColumns[7]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "retrospectives_users_closed_by",
+				Columns:    []*schema.Column{RetrospectivesColumns[8]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
 				Symbol:     "retrospectives_system_analyses_system_analysis",
-				Columns:    []*schema.Column{RetrospectivesColumns[5]},
+				Columns:    []*schema.Column{RetrospectivesColumns[9]},
 				RefColumns: []*schema.Column{SystemAnalysesColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -3340,7 +3364,7 @@ var (
 			{
 				Name:    "retrospective_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{RetrospectivesColumns[4]},
+				Columns: []*schema.Column{RetrospectivesColumns[6]},
 			},
 		},
 	}
@@ -3351,6 +3375,7 @@ var (
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "state", Type: field.TypeEnum, Enums: []string{"waiting", "request_changes", "approved"}},
 		{Name: "feedback", Type: field.TypeString, Nullable: true, Size: 2147483647},
+		{Name: "message_failed_at", Type: field.TypeTime, Nullable: true},
 		{Name: "tenant_id", Type: field.TypeInt},
 		{Name: "retrospective_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "analysis_entry_id", Type: field.TypeUUID, Nullable: true},
@@ -3366,37 +3391,37 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "reviews_tenants_tenant",
-				Columns:    []*schema.Column{ReviewsColumns[5]},
+				Columns:    []*schema.Column{ReviewsColumns[6]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "reviews_retrospectives_retrospective",
-				Columns:    []*schema.Column{ReviewsColumns[6]},
+				Columns:    []*schema.Column{ReviewsColumns[7]},
 				RefColumns: []*schema.Column{RetrospectivesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "reviews_system_analysis_entries_analysis_entry",
-				Columns:    []*schema.Column{ReviewsColumns[7]},
+				Columns:    []*schema.Column{ReviewsColumns[8]},
 				RefColumns: []*schema.Column{SystemAnalysisEntriesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "reviews_discussion_comments_comment",
-				Columns:    []*schema.Column{ReviewsColumns[8]},
+				Columns:    []*schema.Column{ReviewsColumns[9]},
 				RefColumns: []*schema.Column{DiscussionCommentsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "reviews_users_requester",
-				Columns:    []*schema.Column{ReviewsColumns[9]},
+				Columns:    []*schema.Column{ReviewsColumns[10]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "reviews_users_reviewer",
-				Columns:    []*schema.Column{ReviewsColumns[10]},
+				Columns:    []*schema.Column{ReviewsColumns[11]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -3405,12 +3430,12 @@ var (
 			{
 				Name:    "review_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{ReviewsColumns[5]},
+				Columns: []*schema.Column{ReviewsColumns[6]},
 			},
 			{
 				Name:    "review_tenant_id_retrospective_id_reviewer_id",
 				Unique:  true,
-				Columns: []*schema.Column{ReviewsColumns[5], ReviewsColumns[6], ReviewsColumns[10]},
+				Columns: []*schema.Column{ReviewsColumns[6], ReviewsColumns[7], ReviewsColumns[11]},
 			},
 		},
 	}
@@ -5391,6 +5416,7 @@ func init() {
 	IncidentsTable.ForeignKeys[1].RefTable = KnowledgeEntitiesTable
 	IncidentsTable.ForeignKeys[2].RefTable = IncidentSeveritiesTable
 	IncidentsTable.ForeignKeys[3].RefTable = IncidentTypesTable
+	IncidentsTable.ForeignKeys[4].RefTable = UsersTable
 	IncidentDebriefsTable.ForeignKeys[0].RefTable = IncidentsTable
 	IncidentDebriefsTable.ForeignKeys[1].RefTable = TenantsTable
 	IncidentDebriefsTable.ForeignKeys[2].RefTable = UsersTable
@@ -5529,7 +5555,9 @@ func init() {
 	RetrospectivesTable.ForeignKeys[0].RefTable = DocumentsTable
 	RetrospectivesTable.ForeignKeys[1].RefTable = IncidentsTable
 	RetrospectivesTable.ForeignKeys[2].RefTable = TenantsTable
-	RetrospectivesTable.ForeignKeys[3].RefTable = SystemAnalysesTable
+	RetrospectivesTable.ForeignKeys[3].RefTable = UsersTable
+	RetrospectivesTable.ForeignKeys[4].RefTable = UsersTable
+	RetrospectivesTable.ForeignKeys[5].RefTable = SystemAnalysesTable
 	ReviewsTable.ForeignKeys[0].RefTable = TenantsTable
 	ReviewsTable.ForeignKeys[1].RefTable = RetrospectivesTable
 	ReviewsTable.ForeignKeys[2].RefTable = SystemAnalysisEntriesTable

@@ -19,11 +19,10 @@ func (Incident) Mixin() []ent.Mixin {
 		BaseMixin{},
 		TenantMixin{},
 		TimestampsMixin{},
+		ArchiveMixin{},
 		KnowledgeEntityLinkMixin{},
 	}
 }
-
-var incidentResponseStates = []string{"unknown", "started", "mitigated", "resolved"}
 
 // Fields of the Incident.
 func (Incident) Fields() []ent.Field {
@@ -35,9 +34,12 @@ func (Incident) Fields() []ent.Field {
 		field.UUID("type_id", uuid.UUID{}).Optional().Nillable(),
 		field.String("summary").Optional(),
 		field.String("chat_channel_id").Optional(),
-		field.Enum("response_state").Values(incidentResponseStates...).Default("unknown"),
+		// chat_details_message_id is the message in the response channel that shows the incident's details.
+		field.String("chat_details_message_id").Optional(),
 		field.Time("opened_at").Default(time.Now),
+		field.Enum("response_state").Values("started", "mitigated", "resolved").Default("started"),
 		field.Time("resolved_at").Optional().Nillable(),
+		field.UUID("declared_by_id", uuid.UUID{}).Optional().Nillable(),
 	}
 }
 
@@ -50,6 +52,9 @@ func (Incident) Edges() []ent.Edge {
 		edge.To("type", IncidentType.Type).
 			Unique().
 			Field("type_id"),
+		edge.To("declared_by", User.Type).
+			Unique().
+			Field("declared_by_id"),
 
 		edge.To("milestones", IncidentMilestone.Type),
 

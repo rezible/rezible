@@ -16,7 +16,7 @@ import (
 	ale "github.com/rezible/rezible/ent/alertepisode"
 	ali "github.com/rezible/rezible/ent/alertinstance"
 	aie "github.com/rezible/rezible/ent/alertinstanceevent"
-	"github.com/rezible/rezible/ent/incident"
+	im "github.com/rezible/rezible/ent/incidentmilestone"
 	kne "github.com/rezible/rezible/ent/knowledgeentity"
 	knev "github.com/rezible/rezible/ent/knowledgeevidence"
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
@@ -25,10 +25,12 @@ import (
 	sitact "github.com/rezible/rezible/ent/situationaction"
 	sitha "github.com/rezible/rezible/ent/situationhazardassessment"
 	sitlink "github.com/rezible/rezible/ent/situationlink"
+	sitnot "github.com/rezible/rezible/ent/situationnotice"
 	sitsig "github.com/rezible/rezible/ent/situationsignal"
 	sae "github.com/rezible/rezible/ent/systemanalysisentry"
 	saes "github.com/rezible/rezible/ent/systemanalysisentrysubject"
 	"github.com/rezible/rezible/pkg/errs"
+	"github.com/rezible/rezible/pkg/integrations"
 	"github.com/rezible/rezible/pkg/jobs"
 	"github.com/rezible/rezible/pkg/situations"
 	"github.com/rezible/rezible/test"
@@ -56,6 +58,8 @@ type situationServiceFixture struct {
 	notified []uuid.UUID
 	// evaluations are the captured evaluate-situation jobs, in order.
 	evaluations []jobs.EvaluateSituation
+	// situationUpdates are the published situation updates, not yet delivered.
+	situationUpdates []rez.EventOnSituationUpdated
 }
 
 func (s *SituationServiceSuite) newFixture(tdb rez.Database) *situationServiceFixture {
@@ -93,7 +97,12 @@ func (s *SituationServiceSuite) newFixture(tdb rez.Database) *situationServiceFi
 	messageQueue := mocks.NewMockMessageQueue(s.T())
 	messageQueue.EXPECT().
 		Publish(mock.Anything, mock.Anything).
-		Return(nil).
+		RunAndReturn(func(_ context.Context, msg any) error {
+			if update, isUpdate := msg.(rez.EventOnSituationUpdated); isUpdate {
+				h.situationUpdates = append(h.situationUpdates, update)
+			}
+			return nil
+		}).
 		Maybe()
 	investigations := NewInvestigationService(tdb, agentService, jobService, messageQueue, analysisService)
 	situationService, situationServiceErr := NewSituationService(rez.SituationsConfig{}, tdb, h.clock, jobService, messageQueue, investigations, analysisService, knowledgeQuery, offJudge{t: s.T()}, alerts)
@@ -374,71 +383,222 @@ func (s *SituationServiceSuite) actions(situation *ent.Situation) []sitact.Actio
 	return actions
 }
 
-// newIncidents returns an incident service over the fixture's situations, and a mutation that fills a new
-// incident's required fields.
-func (s *SituationServiceSuite) newIncidents(ctx context.Context, tdb rez.Database, h *situationServiceFixture) (*IncidentService, func(*ent.IncidentMutation)) {
+// newIncidents returns the incident services over the fixture's situations, with incident management on, and a
+// function that declares an incident linking the given situations.
+func (s *SituationServiceSuite) newIncidents(ctx context.Context, tdb rez.Database, h *situationServiceFixture) (*IncidentDetailsService, *IncidentManagementService, func(...uuid.UUID) *ent.Incident) {
 	msgs := mocks.NewMockMessageQueue(s.T())
-	msgs.EXPECT().Publish(mock.Anything, mock.Anything).Return(nil).Maybe()
-	retrospectives, retrospectivesErr := NewRetrospectiveService(tdb)
+	msgs.EXPECT().
+		Publish(mock.Anything, mock.Anything).
+		RunAndReturn(func(_ context.Context, msg any) error {
+			if update, isUpdate := msg.(rez.EventOnSituationUpdated); isUpdate {
+				h.situationUpdates = append(h.situationUpdates, update)
+			}
+			return nil
+		}).
+		Maybe()
+	retrospectives, retrospectivesErr := NewRetrospectiveService(tdb, nil)
 	s.Require().NoError(retrospectivesErr)
-	incidents, incidentsErr := NewIncidentService(tdb, msgs, h.situations, retrospectives)
-	s.Require().NoError(incidentsErr)
-	createSeverity := tdb.Client(ctx).IncidentSeverity.Create().
-		SetName("SEV-1").
-		SetRank(1)
-	severity, severityErr := createSeverity.Save(ctx)
-	s.Require().NoError(severityErr)
-	createType := tdb.Client(ctx).IncidentType.Create().
-		SetName("Outage")
-	incidentType, typeErr := createType.Save(ctx)
-	s.Require().NoError(typeErr)
-	newIncident := func(m *ent.IncidentMutation) {
-		m.SetTitle("Checkout outage")
-		m.SetSeverityID(severity.ID)
-		m.SetTypeID(incidentType.ID)
+	details, detailsErr := NewIncidentDetailsService(tdb, msgs, h.situations)
+	s.Require().NoError(detailsErr)
+	orgs, orgsErr := NewOrganizationService(tdb, mocks.NewMockJobService(s.T()))
+	s.Require().NoError(orgsErr)
+	management, managementErr := NewIncidentManagementService(tdb, msgs, orgs, h.situations, retrospectives, details)
+	s.Require().NoError(managementErr)
+
+	client := tdb.Client(ctx)
+	organizationID, organizationErr := client.Organization.Query().OnlyID(ctx)
+	s.Require().NoError(organizationErr)
+	_, enableErr := orgs.SetPreferences(ctx, organizationID, func(m *ent.OrganizationPreferencesMutation) {
+		m.SetEnableIncidentManagement(true)
+	})
+	s.Require().NoError(enableErr)
+	declarerID, declarerErr := client.User.Query().FirstID(ctx)
+	s.Require().NoError(declarerErr)
+
+	declare := func(situationIDs ...uuid.UUID) *ent.Incident {
+		params := rez.DeclareIncidentParams{
+			Title:        "Checkout outage",
+			SituationIDs: situationIDs,
+			DeclaredByID: declarerID,
+		}
+		declared, declareErr := management.Declare(ctx, params)
+		s.Require().NoError(declareErr)
+		return declared
 	}
-	return incidents, newIncident
+	return details, management, declare
 }
 
 func (s *SituationServiceSuite) TestIncidentLinks() {
 	ctx, tdb := s.SetupTestDatabase()
 	h := s.newFixture(tdb)
-	incidents, newIncident := s.newIncidents(ctx, tdb, h)
+	incidents, _, declare := s.newIncidents(ctx, tdb, h)
 
 	signal := s.signal(ctx, tdb, h, "checkout-errors", 5)
 	candidate := s.create(ctx, h, map[string][]uuid.UUID{"Checkout": {signal}}, signal)
-	linked, linkErr := incidents.Set(ctx, uuid.Nil, func(m *ent.IncidentMutation) {
-		newIncident(m)
-		m.AddSituationIDs(candidate.ID)
-	})
-	s.Require().NoError(linkErr)
+	linked := declare(candidate.ID)
 	raised, getErr := h.situations.GetSituation(ctx, candidate.ID)
 	s.Require().NoError(getErr)
 	s.NotNil(raised.RaisedAt)
 	s.NotNil(raised.Edges.Investigation, "linking an incident starts the investigation")
 	s.Equal(linked.ID, raised.Edges.Incidents[0].ID)
 
-	other := s.signal(ctx, tdb, h, "payment-errors", 5)
-	closed := s.create(ctx, h, map[string][]uuid.UUID{"Payments": {other}}, other)
-	_, closeErr := h.situations.CloseSituation(ctx, closed.ID, rez.CloseSituationParams{})
-	s.Require().NoError(closeErr)
-	_, closedErr := incidents.Set(ctx, linked.ID, func(m *ent.IncidentMutation) {
-		m.SetTitle("Renamed")
-		m.AddSituationIDs(closed.ID)
-	})
-	s.ErrorIs(closedErr, errs.ErrConflict)
-	unchanged, incidentErr := incidents.Get(ctx, incident.ID(linked.ID))
-	s.Require().NoError(incidentErr)
-	s.Equal("Checkout outage", unchanged.Title, "the incident write rolls back")
+	s.Require().NoError(incidents.UnlinkSituation(ctx, linked.ID, candidate.ID))
+	unlinked, unlinkedErr := h.situations.GetSituation(ctx, candidate.ID)
+	s.Require().NoError(unlinkedErr)
+	s.Empty(unlinked.Edges.Incidents)
+	s.NotNil(unlinked.RaisedAt, "unlinking changes no stage")
+}
 
-	_, clearErr := incidents.Set(ctx, linked.ID, func(m *ent.IncidentMutation) {
-		m.ClearSituations()
+func (s *SituationServiceSuite) TestLinkingAClosedSituationRecordsTheLinkOnly() {
+	ctx, tdb := s.SetupTestDatabase()
+	h := s.newFixture(tdb)
+	incidents, _, declare := s.newIncidents(ctx, tdb, h)
+
+	signal := s.signal(ctx, tdb, h, "payment-errors", 5)
+	closed := s.create(ctx, h, map[string][]uuid.UUID{"Payments": {signal}}, signal)
+	before, closeErr := h.situations.CloseSituation(ctx, closed.ID, rez.CloseSituationParams{})
+	s.Require().NoError(closeErr)
+	linked := declare()
+
+	s.Require().NoError(incidents.LinkSituation(ctx, linked.ID, closed.ID))
+	after, getErr := h.situations.GetSituation(ctx, closed.ID)
+	s.Require().NoError(getErr)
+	s.Require().Len(after.Edges.Incidents, 1)
+	s.Equal(linked.ID, after.Edges.Incidents[0].ID)
+	s.Nil(after.RaisedAt)
+	s.Equal(before.CloseReason, after.CloseReason)
+	s.True(before.ClosedAt.Equal(*after.ClosedAt))
+	s.Nil(after.Edges.Investigation)
+	s.Equal(s.actions(before), s.actions(after))
+}
+
+func (s *SituationServiceSuite) TestArchivingAnIncidentUnlinksItsSituations() {
+	ctx, tdb := s.SetupTestDatabase()
+	h := s.newFixture(tdb)
+	incidents, _, declare := s.newIncidents(ctx, tdb, h)
+
+	signal := s.signal(ctx, tdb, h, "checkout-errors", 5)
+	situation := s.create(ctx, h, map[string][]uuid.UUID{"Checkout": {signal}}, signal)
+	archived := declare(situation.ID)
+	kept := declare()
+
+	h.evaluations = nil
+	s.Require().NoError(incidents.ArchiveIncident(ctx, archived.ID))
+	s.Contains(h.evaluations, jobs.EvaluateSituation{SituationID: situation.ID}, "its situations re-evaluate")
+	unlinked, getErr := h.situations.GetSituation(ctx, situation.ID)
+	s.Require().NoError(getErr)
+	s.Empty(unlinked.Edges.Incidents)
+	listed, listErr := incidents.ListIncidents(ctx, rez.ListIncidentsParams{})
+	s.Require().NoError(listErr)
+	s.Require().Len(listed.Data, 1)
+	s.Equal(kept.ID, listed.Data[0].ID)
+}
+
+func (s *SituationServiceSuite) TestIncidentChangesSyncSituationNotices() {
+	ctx, tdb := s.SetupTestDatabase()
+	h := s.newFixture(tdb)
+	incidents, management, declare := s.newIncidents(ctx, tdb, h)
+
+	sender := &recordingNoticeSender{sent: map[uuid.UUID]*integrations.SituationNoticeContent{}}
+	installations := mocks.NewMockIntegrationService(s.T())
+	installations.EXPECT().ListInstallations(mock.Anything).Return(nil, nil).Maybe()
+	installations.EXPECT().ListAllInstalled(mock.Anything).Return(nil, nil).Maybe()
+	installations.EXPECT().AsInstalledIntegration(mock.Anything).Return(sender, nil).Maybe()
+	briefs := mocks.NewMockSituationBriefService(s.T())
+	briefs.EXPECT().ListBriefServices(mock.Anything, mock.Anything).Return(nil, nil).Maybe()
+	var syncs []jobs.SyncSituationNotices
+	noticeJobs := mocks.NewMockJobService(s.T())
+	noticeJobs.EXPECT().
+		Insert(mock.Anything, mock.Anything, mock.Anything).
+		RunAndReturn(func(_ context.Context, args river.JobArgs, _ *river.InsertOpts) (*rivertype.JobInsertResult, error) {
+			syncs = append(syncs, args.(jobs.SyncSituationNotices))
+			return &rivertype.JobInsertResult{Job: &rivertype.JobRow{}}, nil
+		}).
+		Maybe()
+	outputs := mocks.NewMockInvestigationOutputService(s.T())
+	outputs.EXPECT().GetInvestigationReport(mock.Anything, mock.Anything).Return(nil, nil).Maybe()
+	notices := NewSituationNoticeService(tdb, s.Config(), h.clock, noticeJobs, nil, briefs, outputs, installations, &OrganizationService{db: tdb})
+
+	// deliverUpdates delivers the published situation updates, as the message queue would, and runs the notice
+	// syncs they schedule.
+	deliverUpdates := func() {
+		for _, update := range h.situationUpdates {
+			s.Require().NoError(notices.onSituationUpdated(ctx, &update))
+		}
+		h.situationUpdates = nil
+		for _, sync := range syncs {
+			s.Require().NoError(notices.sync(ctx, sync.SituationID, false))
+		}
+		syncs = nil
+	}
+	noticed := func(name string) *ent.Situation {
+		signal := s.signal(ctx, tdb, h, name, 5)
+		situation := s.create(ctx, h, map[string][]uuid.UUID{name: {signal}}, signal)
+		raised, raiseErr := h.situations.RaiseSituation(ctx, situation.ID, rez.RaiseSituationParams{})
+		s.Require().NoError(raiseErr)
+		client := tdb.Client(ctx)
+		createInstallation := client.Integration.Create().
+			SetProvider("chat").
+			SetName("chat").
+			SetDisplayName(name).
+			SetProviderInstallationRef(name).
+			SetInstallationConfig([]byte(`{}`))
+		installation, installationErr := createInstallation.Save(ctx)
+		s.Require().NoError(installationErr)
+		createNotice := client.SituationNotice.Create().
+			SetSituationID(situation.ID).
+			SetIntegrationID(installation.ID).
+			SetChannelID("channel-1").
+			SetChannelName("incidents").
+			SetStatus(sitnot.StatusPosted).
+			SetMessageRef("message-" + name).
+			SetPermalink("https://chat.test/" + name)
+		s.Require().NoError(createNotice.Exec(ctx))
+		return raised
+	}
+
+	s.Run("linking a raised situation offers its incident", func() {
+		situation := noticed("checkout-errors")
+		incident := declare()
+		h.situationUpdates = nil
+
+		s.Require().NoError(incidents.LinkSituation(ctx, incident.ID, situation.ID))
+		deliverUpdates()
+
+		content := sender.sent[situation.ID]
+		s.Require().NotNil(content, "the notice was synced")
+		s.Contains(content.IncidentURL, incident.Slug)
+		s.Empty(content.DeclareIncidentURL)
 	})
-	s.Require().NoError(clearErr)
-	cleared, clearedErr := h.situations.GetSituation(ctx, candidate.ID)
-	s.Require().NoError(clearedErr)
-	s.Empty(cleared.Edges.Incidents, "clearing an incident's situations unlinks them")
-	s.NotNil(cleared.RaisedAt, "unlinking changes no stage")
+
+	s.Run("resolving an incident linked to a closed situation offers declaring again", func() {
+		situation := noticed("payment-errors")
+		_, closeErr := h.situations.CloseSituation(ctx, situation.ID, rez.CloseSituationParams{})
+		s.Require().NoError(closeErr)
+		incident := declare(situation.ID)
+		deliverUpdates()
+		s.Require().NotEmpty(sender.sent[situation.ID].IncidentURL)
+
+		resolution := rez.AddIncidentMilestoneParams{IncidentID: incident.ID, Kind: im.KindResolution, Source: "web"}
+		_, resolveErr := management.AddMilestone(ctx, resolution)
+		s.Require().NoError(resolveErr)
+		deliverUpdates()
+
+		content := sender.sent[situation.ID]
+		s.Empty(content.IncidentURL)
+		s.Contains(content.DeclareIncidentURL, situation.ID.String()+"?declare=incident")
+	})
+}
+
+// recordingNoticeSender keeps the content of each situation's latest notice edit.
+type recordingNoticeSender struct {
+	noticeSender
+	sent map[uuid.UUID]*integrations.SituationNoticeContent
+}
+
+func (r *recordingNoticeSender) UpdateSituationNotice(_ context.Context, _, _ string, content *integrations.SituationNoticeContent) error {
+	r.sent[content.Situation.ID] = content
+	return nil
 }
 
 func (s *SituationServiceSuite) TestListAlertEpisodesOfASituation() {

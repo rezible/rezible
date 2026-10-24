@@ -19,6 +19,8 @@ type IncidentsHandler interface {
 	ArchiveIncident(context.Context, *ArchiveIncidentRequest) (*ArchiveIncidentResponse, error)
 
 	ListIncidentMilestones(context.Context, *ListIncidentMilestonesRequest) (*ListIncidentMilestonesResponse, error)
+	CreateIncidentMilestone(context.Context, *CreateIncidentMilestoneRequest) (*CreateIncidentMilestoneResponse, error)
+	UpdateIncidentMilestone(context.Context, *UpdateIncidentMilestoneRequest) (*UpdateIncidentMilestoneResponse, error)
 
 	CreateIncidentRoleAssignment(context.Context, *CreateIncidentRoleAssignmentRequest) (*CreateIncidentRoleAssignmentResponse, error)
 	DeleteIncidentRoleAssignment(context.Context, *DeleteIncidentRoleAssignmentRequest) (*DeleteIncidentRoleAssignmentResponse, error)
@@ -38,6 +40,8 @@ func (o operations) RegisterIncidents(api huma.API) {
 	huma.Register(api, ArchiveIncident, o.ArchiveIncident)
 
 	huma.Register(api, ListIncidentMilestones, o.ListIncidentMilestones)
+	huma.Register(api, CreateIncidentMilestone, o.CreateIncidentMilestone)
+	huma.Register(api, UpdateIncidentMilestone, o.UpdateIncidentMilestone)
 
 	huma.Register(api, CreateIncidentRoleAssignment, o.CreateIncidentRoleAssignment)
 	huma.Register(api, DeleteIncidentRoleAssignment, o.DeleteIncidentRoleAssignment)
@@ -62,8 +66,8 @@ type (
 		ResponseState incident.ResponseState                  `json:"responseState"`
 		OpenedAt      time.Time                               `json:"openedAt"`
 		UpdatedAt     time.Time                               `json:"updatedAt"`
-		ClosedAt      *time.Time                              `json:"closedAt"`
 		ResolvedAt    *time.Time                              `json:"resolvedAt"`
+		DeclaredBy    *Expandable[UserAttributes]             `json:"declaredBy,omitempty"`
 		Milestones    []IncidentMilestone                     `json:"milestones"`
 		Severity      *Expandable[IncidentSeverityAttributes] `json:"severity,omitempty"`
 		Type          *Expandable[IncidentTypeAttributes]     `json:"type,omitempty"`
@@ -133,9 +137,11 @@ type (
 	}
 
 	IncidentSituation struct {
-		Id      uuid.UUID `json:"id"`
-		Title   string    `json:"title"`
-		Summary string    `json:"summary"`
+		Id       uuid.UUID  `json:"id"`
+		Title    string     `json:"title"`
+		Summary  string     `json:"summary"`
+		Stage    string     `json:"stage" enum:"candidate,raised,closed"`
+		ClosedAt *time.Time `json:"closedAt,omitempty"`
 	}
 
 	IncidentImpact struct {
@@ -143,17 +149,6 @@ type (
 		KnowledgeEntity Expandable[KnowledgeGraphEntityAttributes] `json:"knowledgeEntity"`
 		Source          string                                     `json:"source"`
 		Note            string                                     `json:"note"`
-	}
-
-	IncidentSituationLink struct {
-		Id         uuid.UUID                       `json:"id"`
-		Attributes IncidentSituationLinkAttributes `json:"attributes"`
-	}
-
-	IncidentSituationLinkAttributes struct {
-		IncidentId  uuid.UUID `json:"incidentId"`
-		SituationId uuid.UUID `json:"situationId"`
-		CreatedAt   time.Time `json:"createdAt"`
 	}
 )
 
@@ -172,11 +167,8 @@ func IncidentFromEnt(inc *ent.Incident) Incident {
 		Title:           inc.Title,
 		Summary:         inc.Summary,
 		Slug:            inc.Slug,
-		ResponseState:   inc.ResponseState,
 		OpenedAt:        inc.OpenedAt,
 		UpdatedAt:       inc.UpdatedAt,
-		ClosedAt:        inc.ResolvedAt,
-		ResolvedAt:      inc.ResolvedAt,
 		Milestones:      make([]IncidentMilestone, 0),
 		Tags:            make([]IncidentTag, 0),
 		Situations:      make([]IncidentSituation, 0),
@@ -187,8 +179,15 @@ func IncidentFromEnt(inc *ent.Incident) Incident {
 		Tasks:           make([]Task, 0),
 	}
 
-	if milestones, milestonesErr := inc.Edges.MilestonesOrErr(); milestonesErr == nil {
-		attr.Milestones = ConvertSlice(milestones, IncidentMilestoneFromEnt)
+	attr.ResponseState = inc.ResponseState
+	attr.ResolvedAt = inc.ResolvedAt
+	attr.Milestones = ConvertSlice(inc.Edges.Milestones, IncidentMilestoneFromEnt)
+
+	if inc.DeclaredByID != nil {
+		attr.DeclaredBy = &Expandable[UserAttributes]{Id: *inc.DeclaredByID}
+		if declarer := inc.Edges.DeclaredBy; declarer != nil {
+			attr.DeclaredBy.Attributes = new(UserFromEnt(declarer).Attributes)
+		}
 	}
 
 	if retro := inc.Edges.Retrospective; retro != nil {
@@ -213,9 +212,11 @@ func IncidentFromEnt(inc *ent.Incident) Incident {
 		attr.Situations = make([]IncidentSituation, len(sits))
 		for i, s := range sits {
 			attr.Situations[i] = IncidentSituation{
-				Id:      s.ID,
-				Title:   s.Title,
-				Summary: s.Summary,
+				Id:       s.ID,
+				Title:    s.Title,
+				Summary:  s.Summary,
+				Stage:    situationStage(s),
+				ClosedAt: s.ClosedAt,
 			}
 		}
 	}
@@ -321,9 +322,9 @@ var ListIncidents = huma.Operation{
 
 type ListIncidentsRequest struct {
 	PaginationRequest
-	Search         string                   `query:"search" required:"false" nullable:"false"`
-	ResponseStates []incident.ResponseState `query:"responseStates" required:"false"`
-	SeverityId     uuid.UUID                `query:"severityId" required:"false"`
+	Search     string              `query:"search" required:"false" nullable:"false"`
+	Resolved   OptionalParam[bool] `query:"resolved" required:"false"`
+	SeverityId uuid.UUID           `query:"severityId" required:"false"`
 }
 
 type ListIncidentsResponse PaginatedResponse[Incident]
@@ -332,23 +333,29 @@ var CreateIncident = huma.Operation{
 	OperationID: "create-incident",
 	Method:      http.MethodPost,
 	Path:        "/incidents",
-	Summary:     "Create an Incident",
+	Summary:     "Declare an Incident",
 	Tags:        incidentsTags,
-	Errors:      ErrorCodes(http.StatusNotImplemented),
+	Errors:      ErrorCodes(),
 }
 
 type CreateIncidentAttributes struct {
 	Title             string      `json:"title"`
 	Summary           *string     `json:"summary,omitempty" required:"false"`
-	SeverityId        uuid.UUID   `json:"severityId"`
-	TypeId            uuid.UUID   `json:"typeId"`
+	SeverityId        *uuid.UUID  `json:"severityId,omitempty" required:"false"`
+	TypeId            *uuid.UUID  `json:"typeId,omitempty" required:"false"`
 	TagIds            []uuid.UUID `json:"tagIds,omitempty"`
 	FieldSelectionIds []uuid.UUID `json:"fieldSelectionIds,omitempty"`
 	SituationIds      []uuid.UUID `json:"situationIds,omitempty"`
 }
 
+// CreatedIncident identifies a newly declared incident, so its page can be opened.
+type CreatedIncident struct {
+	Id   uuid.UUID `json:"id"`
+	Slug string    `json:"slug"`
+}
+
 type CreateIncidentRequest RequestWithBodyAttributes[CreateIncidentAttributes]
-type CreateIncidentResponse ItemResponse[Incident]
+type CreateIncidentResponse ItemResponse[CreatedIncident]
 
 var GetIncident = huma.Operation{
 	OperationID: "get-incident",
@@ -366,13 +373,23 @@ var UpdateIncident = huma.Operation{
 	OperationID: "update-incident",
 	Method:      http.MethodPatch,
 	Path:        "/incidents/{id}",
-	Summary:     "Update an Incident",
+	Summary:     "Update an Incident's Details",
 	Tags:        incidentsTags,
-	Errors:      ErrorCodes(http.StatusNotImplemented),
+	Errors:      ErrorCodes(),
 }
 
-type UpdateIncidentRequest IdRequest
-type UpdateIncidentResponse ItemResponse[Incident]
+// UpdateIncidentAttributes replaces each attribute that is present. A null severity or type clears it.
+type UpdateIncidentAttributes struct {
+	Title             *string                      `json:"title,omitempty" required:"false"`
+	Summary           *string                      `json:"summary,omitempty" required:"false"`
+	SeverityId        OmittableNullable[uuid.UUID] `json:"severityId,omitempty" required:"false" nullable:"true"`
+	TypeId            OmittableNullable[uuid.UUID] `json:"typeId,omitempty" required:"false" nullable:"true"`
+	TagIds            *[]uuid.UUID                 `json:"tagIds,omitempty" required:"false"`
+	FieldSelectionIds *[]uuid.UUID                 `json:"fieldSelectionIds,omitempty" required:"false"`
+}
+
+type UpdateIncidentRequest IdRequestWithBody[UpdateIncidentAttributes]
+type UpdateIncidentResponse EmptyResponse
 
 var ArchiveIncident = huma.Operation{
 	OperationID: "archive-incident",
@@ -398,6 +415,43 @@ var ListIncidentMilestones = huma.Operation{
 type ListIncidentMilestonesRequest IdRequest
 type ListIncidentMilestonesResponse CollectionResponse[IncidentMilestone]
 
+var CreateIncidentMilestone = huma.Operation{
+	OperationID: "create-incident-milestone",
+	Method:      http.MethodPost,
+	Path:        "/incidents/{id}/milestones",
+	Summary:     "Record an Incident Milestone",
+	Tags:        incidentsTags,
+	Errors:      ErrorCodes(),
+}
+
+type CreateIncidentMilestoneAttributes struct {
+	Kind string `json:"kind" enum:"impact,detection,investigation,mitigation,resolution"`
+	// Timestamp defaults to now.
+	Timestamp   *time.Time `json:"timestamp,omitempty" required:"false"`
+	Description *string    `json:"description,omitempty" required:"false"`
+}
+
+type CreateIncidentMilestoneRequest IdRequestWithBody[CreateIncidentMilestoneAttributes]
+type CreateIncidentMilestoneResponse EmptyResponse
+
+var UpdateIncidentMilestone = huma.Operation{
+	OperationID: "update-incident-milestone",
+	Method:      http.MethodPatch,
+	Path:        "/incident-milestones/{id}",
+	Summary:     "Update an Incident Milestone",
+	Tags:        incidentsTags,
+	Errors:      ErrorCodes(),
+}
+
+// UpdateIncidentMilestoneAttributes changes a milestone's time or description; its kind never changes.
+type UpdateIncidentMilestoneAttributes struct {
+	Timestamp   *time.Time `json:"timestamp,omitempty" required:"false"`
+	Description *string    `json:"description,omitempty" required:"false"`
+}
+
+type UpdateIncidentMilestoneRequest IdRequestWithBody[UpdateIncidentMilestoneAttributes]
+type UpdateIncidentMilestoneResponse EmptyResponse
+
 var CreateIncidentRoleAssignment = huma.Operation{
 	OperationID: "create-incident-role-assignment",
 	Method:      http.MethodPost,
@@ -413,7 +467,7 @@ type CreateIncidentRoleAssignmentAttributes struct {
 }
 
 type CreateIncidentRoleAssignmentRequest IdRequestWithBody[CreateIncidentRoleAssignmentAttributes]
-type CreateIncidentRoleAssignmentResponse ItemResponse[IncidentUserRoleAssignment]
+type CreateIncidentRoleAssignmentResponse EmptyResponse
 
 var DeleteIncidentRoleAssignment = huma.Operation{
 	OperationID: "delete-incident-role-assignment",
@@ -433,7 +487,7 @@ var LinkIncidentSituation = huma.Operation{
 	Path:        "/incidents/{id}/situations",
 	Summary:     "Link Incident Situation",
 	Tags:        incidentsTags,
-	Errors:      ErrorCodes(http.StatusNotImplemented),
+	Errors:      ErrorCodes(),
 }
 
 type LinkIncidentSituationRequestAttributes struct {
@@ -441,7 +495,7 @@ type LinkIncidentSituationRequestAttributes struct {
 }
 
 type LinkIncidentSituationRequest IdRequestWithBody[LinkIncidentSituationRequestAttributes]
-type LinkIncidentSituationResponse ItemResponse[IncidentSituationLink]
+type LinkIncidentSituationResponse EmptyResponse
 
 var UnlinkIncidentSituation = huma.Operation{
 	OperationID: "unlink-incident-situation",
@@ -449,7 +503,7 @@ var UnlinkIncidentSituation = huma.Operation{
 	Path:        "/incidents/{id}/situations",
 	Summary:     "Unlink Incident Situation",
 	Tags:        incidentsTags,
-	Errors:      ErrorCodes(http.StatusNotImplemented),
+	Errors:      ErrorCodes(),
 }
 
 type UnlinkIncidentSituationRequest struct {
@@ -457,7 +511,7 @@ type UnlinkIncidentSituationRequest struct {
 	SituationId uuid.UUID `query:"situationId"`
 }
 
-type UnlinkIncidentSituationResponse ItemResponse[IncidentSituationLink]
+type UnlinkIncidentSituationResponse EmptyResponse
 
 var ListIncidentUpdates = huma.Operation{
 	OperationID: "list-incident-updates",

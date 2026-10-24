@@ -14,12 +14,12 @@ import (
 
 type oncallRostersHandler struct {
 	*baseHandler
-	incidents rez.IncidentService
+	incidents rez.IncidentDetailsService
 	rosters   rez.OncallRostersService
 	shifts    rez.OncallShiftsService
 }
 
-func newOncallRostersHandler(bh *baseHandler, inc rez.IncidentService, rosters rez.OncallRostersService, shifts rez.OncallShiftsService) *oncallRostersHandler {
+func newOncallRostersHandler(bh *baseHandler, inc rez.IncidentDetailsService, rosters rez.OncallRostersService, shifts rez.OncallShiftsService) *oncallRostersHandler {
 	return &oncallRostersHandler{bh, inc, rosters, shifts}
 }
 

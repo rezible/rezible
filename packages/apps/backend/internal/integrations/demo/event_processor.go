@@ -330,8 +330,6 @@ func (p *eventProcessor) processIncident() (ent.NormalizedEvents, error) {
 		SeverityRef:     payload.SeverityRef,
 		TypeRef:         payload.TypeRef,
 		OpenedAt:        occurredAt,
-		ResponseState:   payload.ResponseState,
-		ResolvedAt:      payload.ResolvedAt,
 		SourceUpdatedAt: sourceUpdatedAt,
 		SourceURL:       sourceURL,
 	}

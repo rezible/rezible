@@ -13,7 +13,6 @@
 	type IncidentStatus = IncidentAttributes["responseState"];
 
 	const statusLabels: Record<IncidentStatus, string> = {
-		unknown: "Unknown",
 		started: "Started",
 		mitigated: "Mitigated",
 		resolved: "Resolved",
@@ -21,10 +20,6 @@
 
 	const query = createQuery(() => getIncidentOptions({ path: { id: entity.entityId } }));
 	const incident = $derived(query.data?.data);
-
-	function normalizeStatus(value: string | undefined): IncidentStatus {
-		return value && value in statusLabels ? (value as IncidentStatus) : "unknown";
-	}
 </script>
 
 {#if query.isLoading}
@@ -33,13 +28,12 @@
 	<span>invalid incident</span>
 {:else}
 	{@const attrs = incident.attributes}
-	{@const status = normalizeStatus(attrs.responseState)}
 	<a
 		href={resolve("/incidents/[slug]/[[view=incidentView]]", { slug: attrs.slug || incident.id })}
 		class="grid gap-2 rounded-md border bg-muted/20 p-3 transition hover:border-primary/40 hover:bg-muted/40"
 	>
 		<div class="flex flex-wrap items-center gap-2">
-			<Badge variant="outline">{statusLabels[status]}</Badge>
+			<Badge variant="outline">{statusLabels[attrs.responseState]}</Badge>
 			{#if attrs.severity?.attributes?.name}
 				<Badge variant="secondary">{attrs.severity.attributes.name}</Badge>
 			{/if}

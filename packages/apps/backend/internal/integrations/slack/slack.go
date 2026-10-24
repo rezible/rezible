@@ -57,15 +57,33 @@ func LogSlackViewErrorResponse(logger *slog.Logger, err error, resp *slack.ViewR
 	logger.Error("slack view response error", args...)
 }
 
-func CommandErrorResponse(message string) *slack.Blocks {
-	return &slack.Blocks{
-		BlockSet: []slack.Block{
-			&slack.SectionBlock{
-				Type: slack.MBTSection,
-				Text: PlainTextBlock(fmt.Sprintf("❌ %s", message)),
-			},
-		},
+// CommandReply is a command's reply: one section of mrkdwn, shown verbatim.
+func CommandReply(text string) *slack.Blocks {
+	return &slack.Blocks{BlockSet: []slack.Block{slack.NewSectionBlock(MarkdownBlock(text), nil, nil)}}
+}
+
+// slackTextEscaper escapes the characters Slack reads as markup, so text from people and sources cannot
+// form mentions or links.
+var slackTextEscaper = strings.NewReplacer("&", "&amp;", "<", "&lt;", ">", "&gt;")
+
+// EscapeText escapes text Rezible did not write for use in mrkdwn.
+func EscapeText(text string) string {
+	return slackTextEscaper.Replace(text)
+}
+
+// SlackDate is a date token, which Slack shows in each reader's time zone.
+func SlackDate(at time.Time) string {
+	fallback := at.UTC().Format("2006-01-02 15:04 UTC")
+	return fmt.Sprintf("<!date^%d^{date_short_pretty} at {time}|%s>", at.Unix(), fallback)
+}
+
+// TruncateRunes shortens text to at most limit runes, ending it with an ellipsis when cut.
+func TruncateRunes(text string, limit int) string {
+	runes := []rune(text)
+	if len(runes) <= limit {
+		return text
 	}
+	return string(runes[:limit-1]) + "…"
 }
 
 func ConvertSlackTs(ts string) time.Time {

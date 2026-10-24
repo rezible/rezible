@@ -5,6 +5,7 @@ package ent
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
@@ -14,6 +15,7 @@ import (
 	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/tenant"
+	"github.com/rezible/rezible/ent/user"
 )
 
 // Retrospective is the model entity for the Retrospective schema.
@@ -31,6 +33,14 @@ type Retrospective struct {
 	SystemAnalysisID uuid.UUID `json:"system_analysis_id,omitempty"`
 	// State holds the value of the "state" field.
 	State retrospective.State `json:"state,omitempty"`
+	// OwnerID holds the value of the "owner_id" field.
+	OwnerID *uuid.UUID `json:"owner_id,omitempty"`
+	// ClosedAt holds the value of the "closed_at" field.
+	ClosedAt *time.Time `json:"closed_at,omitempty"`
+	// ClosedByID holds the value of the "closed_by_id" field.
+	ClosedByID *uuid.UUID `json:"closed_by_id,omitempty"`
+	// SkipReason holds the value of the "skip_reason" field.
+	SkipReason *string `json:"skip_reason,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the RetrospectiveQuery when eager-loading is set.
 	Edges        RetrospectiveEdges `json:"edges"`
@@ -41,6 +51,10 @@ type Retrospective struct {
 type RetrospectiveEdges struct {
 	// Tenant holds the value of the tenant edge.
 	Tenant *Tenant `json:"tenant,omitempty"`
+	// Owner holds the value of the owner edge.
+	Owner *User `json:"owner,omitempty"`
+	// ClosedBy holds the value of the closed_by edge.
+	ClosedBy *User `json:"closed_by,omitempty"`
 	// Incident holds the value of the incident edge.
 	Incident *Incident `json:"incident,omitempty"`
 	// Document holds the value of the document edge.
@@ -53,7 +67,7 @@ type RetrospectiveEdges struct {
 	SystemAnalysis *SystemAnalysis `json:"system_analysis,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [6]bool
+	loadedTypes [8]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -67,12 +81,34 @@ func (e RetrospectiveEdges) TenantOrErr() (*Tenant, error) {
 	return nil, &NotLoadedError{edge: "tenant"}
 }
 
+// OwnerOrErr returns the Owner value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e RetrospectiveEdges) OwnerOrErr() (*User, error) {
+	if e.Owner != nil {
+		return e.Owner, nil
+	} else if e.loadedTypes[1] {
+		return nil, &NotFoundError{label: user.Label}
+	}
+	return nil, &NotLoadedError{edge: "owner"}
+}
+
+// ClosedByOrErr returns the ClosedBy value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e RetrospectiveEdges) ClosedByOrErr() (*User, error) {
+	if e.ClosedBy != nil {
+		return e.ClosedBy, nil
+	} else if e.loadedTypes[2] {
+		return nil, &NotFoundError{label: user.Label}
+	}
+	return nil, &NotLoadedError{edge: "closed_by"}
+}
+
 // IncidentOrErr returns the Incident value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
 func (e RetrospectiveEdges) IncidentOrErr() (*Incident, error) {
 	if e.Incident != nil {
 		return e.Incident, nil
-	} else if e.loadedTypes[1] {
+	} else if e.loadedTypes[3] {
 		return nil, &NotFoundError{label: incident.Label}
 	}
 	return nil, &NotLoadedError{edge: "incident"}
@@ -83,7 +119,7 @@ func (e RetrospectiveEdges) IncidentOrErr() (*Incident, error) {
 func (e RetrospectiveEdges) DocumentOrErr() (*Document, error) {
 	if e.Document != nil {
 		return e.Document, nil
-	} else if e.loadedTypes[2] {
+	} else if e.loadedTypes[4] {
 		return nil, &NotFoundError{label: document.Label}
 	}
 	return nil, &NotLoadedError{edge: "document"}
@@ -92,7 +128,7 @@ func (e RetrospectiveEdges) DocumentOrErr() (*Document, error) {
 // DiscussionThreadsOrErr returns the DiscussionThreads value or an error if the edge
 // was not loaded in eager-loading.
 func (e RetrospectiveEdges) DiscussionThreadsOrErr() ([]*DiscussionThread, error) {
-	if e.loadedTypes[3] {
+	if e.loadedTypes[5] {
 		return e.DiscussionThreads, nil
 	}
 	return nil, &NotLoadedError{edge: "discussion_threads"}
@@ -101,7 +137,7 @@ func (e RetrospectiveEdges) DiscussionThreadsOrErr() ([]*DiscussionThread, error
 // ReviewsOrErr returns the Reviews value or an error if the edge
 // was not loaded in eager-loading.
 func (e RetrospectiveEdges) ReviewsOrErr() ([]*Review, error) {
-	if e.loadedTypes[4] {
+	if e.loadedTypes[6] {
 		return e.Reviews, nil
 	}
 	return nil, &NotLoadedError{edge: "reviews"}
@@ -112,7 +148,7 @@ func (e RetrospectiveEdges) ReviewsOrErr() ([]*Review, error) {
 func (e RetrospectiveEdges) SystemAnalysisOrErr() (*SystemAnalysis, error) {
 	if e.SystemAnalysis != nil {
 		return e.SystemAnalysis, nil
-	} else if e.loadedTypes[5] {
+	} else if e.loadedTypes[7] {
 		return nil, &NotFoundError{label: systemanalysis.Label}
 	}
 	return nil, &NotLoadedError{edge: "system_analysis"}
@@ -123,10 +159,14 @@ func (*Retrospective) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case retrospective.FieldOwnerID, retrospective.FieldClosedByID:
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case retrospective.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case retrospective.FieldState:
+		case retrospective.FieldState, retrospective.FieldSkipReason:
 			values[i] = new(sql.NullString)
+		case retrospective.FieldClosedAt:
+			values[i] = new(sql.NullTime)
 		case retrospective.FieldID, retrospective.FieldIncidentID, retrospective.FieldDocumentID, retrospective.FieldSystemAnalysisID:
 			values[i] = new(uuid.UUID)
 		default:
@@ -180,6 +220,34 @@ func (_m *Retrospective) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.State = retrospective.State(value.String)
 			}
+		case retrospective.FieldOwnerID:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field owner_id", values[i])
+			} else if value.Valid {
+				_m.OwnerID = new(uuid.UUID)
+				*_m.OwnerID = *value.S.(*uuid.UUID)
+			}
+		case retrospective.FieldClosedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field closed_at", values[i])
+			} else if value.Valid {
+				_m.ClosedAt = new(time.Time)
+				*_m.ClosedAt = value.Time
+			}
+		case retrospective.FieldClosedByID:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field closed_by_id", values[i])
+			} else if value.Valid {
+				_m.ClosedByID = new(uuid.UUID)
+				*_m.ClosedByID = *value.S.(*uuid.UUID)
+			}
+		case retrospective.FieldSkipReason:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field skip_reason", values[i])
+			} else if value.Valid {
+				_m.SkipReason = new(string)
+				*_m.SkipReason = value.String
+			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
 		}
@@ -196,6 +264,16 @@ func (_m *Retrospective) Value(name string) (ent.Value, error) {
 // QueryTenant queries the "tenant" edge of the Retrospective entity.
 func (_m *Retrospective) QueryTenant() *TenantQuery {
 	return NewRetrospectiveClient(_m.config).QueryTenant(_m)
+}
+
+// QueryOwner queries the "owner" edge of the Retrospective entity.
+func (_m *Retrospective) QueryOwner() *UserQuery {
+	return NewRetrospectiveClient(_m.config).QueryOwner(_m)
+}
+
+// QueryClosedBy queries the "closed_by" edge of the Retrospective entity.
+func (_m *Retrospective) QueryClosedBy() *UserQuery {
+	return NewRetrospectiveClient(_m.config).QueryClosedBy(_m)
 }
 
 // QueryIncident queries the "incident" edge of the Retrospective entity.
@@ -260,6 +338,26 @@ func (_m *Retrospective) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("state=")
 	builder.WriteString(fmt.Sprintf("%v", _m.State))
+	builder.WriteString(", ")
+	if v := _m.OwnerID; v != nil {
+		builder.WriteString("owner_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	if v := _m.ClosedAt; v != nil {
+		builder.WriteString("closed_at=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
+	builder.WriteString(", ")
+	if v := _m.ClosedByID; v != nil {
+		builder.WriteString("closed_by_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	if v := _m.SkipReason; v != nil {
+		builder.WriteString("skip_reason=")
+		builder.WriteString(*v)
+	}
 	builder.WriteByte(')')
 	return builder.String()
 }

@@ -22,10 +22,10 @@ import (
 
 type incidentMetadataHandler struct {
 	db        rez.Database
-	incidents rez.IncidentService
+	incidents rez.IncidentDetailsService
 }
 
-func newIncidentMetadataHandler(db rez.Database, incidents rez.IncidentService) *incidentMetadataHandler {
+func newIncidentMetadataHandler(db rez.Database, incidents rez.IncidentDetailsService) *incidentMetadataHandler {
 	return &incidentMetadataHandler{
 		db:        db,
 		incidents: incidents,
@@ -249,7 +249,7 @@ func (h *incidentMetadataHandler) CreateIncidentRole(ctx context.Context, reques
 
 	query := h.db.Client(ctx).IncidentRole.Create().
 		SetName(attr.Name).
-		SetRequired(attr.Required)
+		SetNillableMaxAssignees(attr.MaxAssignees)
 
 	role, createErr := query.Save(ctx)
 	if createErr != nil {
@@ -278,8 +278,15 @@ func (h *incidentMetadataHandler) UpdateIncidentRole(ctx context.Context, reques
 
 	attr := request.Body.Attributes
 	query := h.db.Client(ctx).IncidentRole.UpdateOneID(request.Id).
-		SetNillableName(attr.Name).
-		SetNillableRequired(attr.Required)
+		SetNillableName(attr.Name)
+
+	if attr.MaxAssignees.Sent {
+		if attr.MaxAssignees.Null {
+			query.ClearMaxAssignees()
+		} else {
+			query.SetMaxAssignees(attr.MaxAssignees.Value)
+		}
+	}
 
 	if attr.Archived != nil {
 		if *attr.Archived {

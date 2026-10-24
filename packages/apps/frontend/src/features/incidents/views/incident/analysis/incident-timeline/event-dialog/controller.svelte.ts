@@ -110,7 +110,12 @@ export class IncidentEventDialogController {
 				this.open = false;
 			}
 		} catch (error) {
-			if (analysisId === this.analysis.analysisId) this.error = error as ApiError;
+			if (analysisId === this.analysis.analysisId) {
+				this.error = error as ApiError;
+				if (this.error.code === "conflict") {
+					void this.incident.retrospectiveQuery.refetch();
+				}
+			}
 		}
 	};
 }

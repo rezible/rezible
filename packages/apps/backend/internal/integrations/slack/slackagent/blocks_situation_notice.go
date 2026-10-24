@@ -3,11 +3,11 @@ package slackagent
 import (
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/slack-go/slack"
 
 	sit "github.com/rezible/rezible/ent/situation"
+	slackintegration "github.com/rezible/rezible/internal/integrations/slack"
 	"github.com/rezible/rezible/pkg/integrations"
 	"github.com/rezible/rezible/pkg/projections"
 )
@@ -16,6 +16,9 @@ const (
 	actionIdSituationNoticeUseful    = "situation_notice_useful"
 	actionIdSituationNoticeNotUseful = "situation_notice_not_useful"
 	actionIdSituationNoticeOpen      = "situation_notice_open"
+	// The incident buttons open their URLs: declaring an incident in Rezible, or the incident it is part of.
+	actionIdSituationNoticeDeclareIncident = "situation_notice_declare_incident"
+	actionIdSituationNoticeOpenIncident    = "situation_notice_open_incident"
 
 	// maxNoticeSummaryRunes bounds the interpretation shown in a notice.
 	maxNoticeSummaryRunes = 600
@@ -27,28 +30,6 @@ const (
 // noticeContent is a notice's content, rendered as a Slack message.
 type noticeContent integrations.SituationNoticeContent
 
-// slackTextEscaper escapes the characters Slack reads as markup, so text from sources cannot form mentions
-// or links.
-var slackTextEscaper = strings.NewReplacer("&", "&amp;", "<", "&lt;", ">", "&gt;")
-
-func escapeSlackText(text string) string {
-	return slackTextEscaper.Replace(text)
-}
-
-func truncateRunes(text string, limit int) string {
-	runes := []rune(text)
-	if len(runes) <= limit {
-		return text
-	}
-	return string(runes[:limit-1]) + "…"
-}
-
-// slackDate is a date token, which Slack shows in each reader's time zone.
-func slackDate(at time.Time) string {
-	fallback := at.UTC().Format("2006-01-02 15:04 UTC")
-	return fmt.Sprintf("<!date^%d^{date_short_pretty} at {time}|%s>", at.Unix(), fallback)
-}
-
 // stageText says where the situation stands, without claiming that the problem is over.
 func (c *noticeContent) stageText() string {
 	situation := c.Situation
@@ -59,7 +40,7 @@ func (c *noticeContent) stageText() string {
 				if link.Edges.LinkedSituation != nil {
 					title = link.Edges.LinkedSituation.Title
 				}
-				return fmt.Sprintf("Merged into <%s|%s>", c.MergedIntoURL, escapeSlackText(title))
+				return fmt.Sprintf("Merged into <%s|%s>", c.MergedIntoURL, slackintegration.EscapeText(title))
 			}
 			return "Merged into another situation"
 		}
@@ -72,7 +53,7 @@ func (c *noticeContent) stageText() string {
 		return "Muted (not noteworthy)"
 	}
 	if situation.HoldUntil != nil && situation.HoldUntil.After(c.Now) {
-		return "Held until " + slackDate(*situation.HoldUntil)
+		return "Held until " + slackintegration.SlackDate(*situation.HoldUntil)
 	}
 	return "Raised"
 }
@@ -97,7 +78,7 @@ func (c *noticeContent) servicesText() string {
 	}
 	names := make([]string, len(c.Services))
 	for i, service := range c.Services {
-		names[i] = escapeSlackText(service.State.DisplayName)
+		names[i] = slackintegration.EscapeText(service.State.DisplayName)
 	}
 	return strings.Join(names, ", ")
 }
@@ -108,20 +89,20 @@ func (c *noticeContent) deploymentText() string {
 	deployment := c.Deployment
 	parts := make([]string, 0, 5)
 	if deployment.Service != nil {
-		parts = append(parts, escapeSlackText(deployment.Service.State.DisplayName))
+		parts = append(parts, slackintegration.EscapeText(deployment.Service.State.DisplayName))
 	}
 	if deployment.Environment != "" {
-		parts = append(parts, escapeSlackText(deployment.Environment))
+		parts = append(parts, slackintegration.EscapeText(deployment.Environment))
 	}
 	if deployment.Version != "" {
-		parts = append(parts, escapeSlackText(deployment.Version))
+		parts = append(parts, slackintegration.EscapeText(deployment.Version))
 	} else if sha := deployment.Sha; sha != "" {
-		parts = append(parts, escapeSlackText(sha[:min(len(sha), shortShaLength)]))
+		parts = append(parts, slackintegration.EscapeText(sha[:min(len(sha), shortShaLength)]))
 	}
 	if deployment.Status != "" && deployment.Status != projections.DeploymentStatusSucceeded {
-		parts = append(parts, escapeSlackText(deployment.Status))
+		parts = append(parts, slackintegration.EscapeText(deployment.Status))
 	}
-	parts = append(parts, slackDate(deployment.DeployedAt))
+	parts = append(parts, slackintegration.SlackDate(deployment.DeployedAt))
 	return "Last deployment before it started: " + strings.Join(parts, " · ")
 }
 
@@ -133,23 +114,23 @@ func (c *noticeContent) interpretationText() string {
 	if summary == "" {
 		summary = strings.TrimSpace(c.Report.Text)
 	}
-	summary = escapeSlackText(truncateRunes(summary, maxNoticeSummaryRunes))
-	return fmt.Sprintf("*Rezible's interpretation, as of %s:*\n%s", slackDate(c.Report.CreatedAt), summary)
+	summary = slackintegration.EscapeText(slackintegration.TruncateRunes(summary, maxNoticeSummaryRunes))
+	return fmt.Sprintf("*Rezible's interpretation, as of %s:*\n%s", slackintegration.SlackDate(c.Report.CreatedAt), summary)
 }
 
 // fallbackText is the message's plain text, shown in notifications.
 func (c *noticeContent) fallbackText() string {
-	return fmt.Sprintf("%s · %s", escapeSlackText(c.Situation.Title), c.stageText())
+	return fmt.Sprintf("%s · %s", slackintegration.EscapeText(c.Situation.Title), c.stageText())
 }
 
 func (c *noticeContent) blocks() []slack.Block {
 	// Plain text cannot form mentions or links, so the header is not escaped.
-	title := truncateRunes(c.Situation.Title, maxNoticeTitleRunes)
+	title := slackintegration.TruncateRunes(c.Situation.Title, maxNoticeTitleRunes)
 	header := slack.NewHeaderBlock(slack.NewTextBlockObject(slack.PlainTextType, title, false, false))
 
 	fields := []*slack.TextBlockObject{
 		markdownText("*Stage*\n" + c.stageText()),
-		markdownText("*Started*\n" + slackDate(c.Situation.OpenedAt)),
+		markdownText("*Started*\n" + slackintegration.SlackDate(c.Situation.OpenedAt)),
 		markdownText("*Services*\n" + c.servicesText()),
 	}
 	blocks := []slack.Block{
@@ -167,11 +148,24 @@ func (c *noticeContent) blocks() []slack.Block {
 	open := slack.NewButtonBlockElement(actionIdSituationNoticeOpen, situationID,
 		slack.NewTextBlockObject(slack.PlainTextType, "Open in Rezible", false, false))
 	open.URL = c.SituationURL
+	actions := []slack.BlockElement{open}
+	if c.IncidentURL != "" {
+		openIncident := slack.NewButtonBlockElement(actionIdSituationNoticeOpenIncident, situationID,
+			slack.NewTextBlockObject(slack.PlainTextType, "Open incident", false, false))
+		openIncident.URL = c.IncidentURL
+		actions = append(actions, openIncident)
+	} else if c.DeclareIncidentURL != "" {
+		declare := slack.NewButtonBlockElement(actionIdSituationNoticeDeclareIncident, situationID,
+			slack.NewTextBlockObject(slack.PlainTextType, "Declare incident", false, false))
+		declare.URL = c.DeclareIncidentURL
+		actions = append(actions, declare)
+	}
 	useful := slack.NewButtonBlockElement(actionIdSituationNoticeUseful, situationID,
 		slack.NewTextBlockObject(slack.PlainTextType, "Useful", false, false))
 	notUseful := slack.NewButtonBlockElement(actionIdSituationNoticeNotUseful, situationID,
 		slack.NewTextBlockObject(slack.PlainTextType, "Not useful", false, false))
-	blocks = append(blocks, slack.NewActionBlock("situation_notice_actions", open, useful, notUseful))
+	actions = append(actions, useful, notUseful)
+	blocks = append(blocks, slack.NewActionBlock("situation_notice_actions", actions...))
 	return blocks
 }
 

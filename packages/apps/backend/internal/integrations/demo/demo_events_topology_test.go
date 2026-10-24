@@ -88,12 +88,11 @@ func TestIncidentProcessorLeavesUnknownOptionalDatesNull(t *testing.T) {
 	receivedAt := time.Date(2026, 6, 1, 11, 0, 0, 0, time.UTC)
 	openedAt := time.Date(2026, 6, 1, 10, 0, 0, 0, time.UTC)
 	payload, marshalErr := json.Marshal(incidentObservedPayload{
-		ResourceID:    "unknown-dates",
-		Title:         "Unknown incident dates",
-		SeverityRef:   "SEV-3",
-		TypeRef:       "Internal Tooling",
-		ResponseState: "resolved",
-		OccurredAt:    openedAt,
+		ResourceID:  "unknown-dates",
+		Title:       "Unknown incident dates",
+		SeverityRef: "SEV-3",
+		TypeRef:     "Internal Tooling",
+		OccurredAt:  openedAt,
 	})
 	if marshalErr != nil {
 		t.Fatalf("marshal demo incident: %v", marshalErr)
@@ -115,9 +114,6 @@ func TestIncidentProcessorLeavesUnknownOptionalDatesNull(t *testing.T) {
 	decoded, decodeErr := projections.DecodeIncidentEvent(events[0])
 	if decodeErr != nil {
 		t.Fatalf("decode projected incident: %v", decodeErr)
-	}
-	if decoded.Attributes.ResolvedAt != nil {
-		t.Fatalf("resolved_at = %v, want null", decoded.Attributes.ResolvedAt)
 	}
 	if decoded.Attributes.SourceUpdatedAt != nil {
 		t.Fatalf("source_updated_at = %v, want null", decoded.Attributes.SourceUpdatedAt)

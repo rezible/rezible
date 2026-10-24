@@ -81,7 +81,7 @@ ALTER TABLE "situations" DROP CONSTRAINT "situations_knowledge_entities_seed_ent
 -- reverse: modify "reviews" table
 ALTER TABLE "reviews" DROP CONSTRAINT "reviews_users_reviewer", DROP CONSTRAINT "reviews_users_requester", DROP CONSTRAINT "reviews_discussion_comments_comment", DROP CONSTRAINT "reviews_system_analysis_entries_analysis_entry", DROP CONSTRAINT "reviews_retrospectives_retrospective", DROP CONSTRAINT "reviews_tenants_tenant";
 -- reverse: modify "retrospectives" table
-ALTER TABLE "retrospectives" DROP CONSTRAINT "retrospectives_system_analyses_system_analysis", DROP CONSTRAINT "retrospectives_tenants_tenant", DROP CONSTRAINT "retrospectives_incidents_retrospective", DROP CONSTRAINT "retrospectives_documents_retrospective";
+ALTER TABLE "retrospectives" DROP CONSTRAINT "retrospectives_system_analyses_system_analysis", DROP CONSTRAINT "retrospectives_users_closed_by", DROP CONSTRAINT "retrospectives_users_owner", DROP CONSTRAINT "retrospectives_tenants_tenant", DROP CONSTRAINT "retrospectives_incidents_retrospective", DROP CONSTRAINT "retrospectives_documents_retrospective";
 -- reverse: modify "playbooks" table
 ALTER TABLE "playbooks" DROP CONSTRAINT "playbooks_tenants_tenant";
 -- reverse: modify "organization_roles" table
@@ -187,7 +187,7 @@ ALTER TABLE "incident_debrief_messages" DROP CONSTRAINT "incident_debrief_messag
 -- reverse: modify "incident_debriefs" table
 ALTER TABLE "incident_debriefs" DROP CONSTRAINT "incident_debriefs_users_incident_debriefs", DROP CONSTRAINT "incident_debriefs_tenants_tenant", DROP CONSTRAINT "incident_debriefs_incidents_debriefs";
 -- reverse: modify "incidents" table
-ALTER TABLE "incidents" DROP CONSTRAINT "incidents_incident_types_type", DROP CONSTRAINT "incidents_incident_severities_severity", DROP CONSTRAINT "incidents_knowledge_entities_knowledge_entity", DROP CONSTRAINT "incidents_tenants_tenant";
+ALTER TABLE "incidents" DROP CONSTRAINT "incidents_users_declared_by", DROP CONSTRAINT "incidents_incident_types_type", DROP CONSTRAINT "incidents_incident_severities_severity", DROP CONSTRAINT "incidents_knowledge_entities_knowledge_entity", DROP CONSTRAINT "incidents_tenants_tenant";
 -- reverse: modify "event_annotations" table
 ALTER TABLE "event_annotations" DROP CONSTRAINT "event_annotations_users_creator", DROP CONSTRAINT "event_annotations_normalized_events_event", DROP CONSTRAINT "event_annotations_tenants_tenant";
 -- reverse: modify "document_accesses" table
@@ -758,8 +758,8 @@ DROP INDEX "incidentseverity_tenant_id_name";
 DROP INDEX "incidentseverity_tenant_id";
 -- reverse: create "incident_severities" table
 DROP TABLE "incident_severities";
--- reverse: create index "incidentroleassignment_tenant_id_incident_id_user_id" to table: "incident_role_assignments"
-DROP INDEX "incidentroleassignment_tenant_id_incident_id_user_id";
+-- reverse: create index "incidentroleassignment_tenant_id_incident_id_user_id_role_id" to table: "incident_role_assignments"
+DROP INDEX "incidentroleassignment_tenant_id_incident_id_user_id_role_id";
 -- reverse: create index "incidentroleassignment_tenant_id" to table: "incident_role_assignments"
 DROP INDEX "incidentroleassignment_tenant_id";
 -- reverse: create "incident_role_assignments" table

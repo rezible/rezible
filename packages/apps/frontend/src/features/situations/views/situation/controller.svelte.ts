@@ -55,6 +55,10 @@ import {
 import type { BriefLoad } from "$features/situations/lib/brief";
 import type { WhyOrigin } from "$features/situations/lib/why";
 import { incidentResponseStatus } from "$features/incidents/lib/status";
+import {
+	declareSituationFrom,
+	useIncidentCreateDialog,
+} from "$features/incidents/components/create-incident-dialog";
 import type { PageRelatedLink } from "$lib/app-shell.svelte";
 import RiFireLine from "remixicon-svelte/icons/fire-line";
 
@@ -85,12 +89,27 @@ export type InvestigationOffer = "raise" | "start" | "muted" | "closed";
 
 export class SituationController {
 	private queryClient = useQueryClient();
+	private incidentDialog = useIncidentCreateDialog();
 	situationId = $state<string>();
 
 	constructor(idFn: Getter<string>) {
 		watch(idFn, (id) => {
 			this.situationId = id;
 		});
+		// ?declare=incident, the target of the notice's button, opens the declare dialog for this situation once
+		// it has loaded. The parameter is cleared straight away, so going back or a refetch doesn't reopen it.
+		watch(
+			() => [this.declareRequested, this.loadedSituationId] as const,
+			([requested, loadedId]) => {
+				if (!requested || !loadedId) {
+					return;
+				}
+				if (this.canDeclareIncident) {
+					this.declareIncident();
+				}
+				this.incidentDialog.clearDeclareParam();
+			}
+		);
 		watch(
 			() => [this.episodesQuery.hasNextPage, this.episodesQuery.isFetching] as const,
 			([hasNextPage, isFetching]) => {
@@ -189,6 +208,18 @@ export class SituationController {
 			status: incidentResponseStatus(incident.attributes.responseState),
 		}))
 	);
+
+	private declareRequested = $derived(page.url.searchParams.get("declare") === "incident");
+	private loadedSituationId = $derived(this.situation?.id);
+	/** Open and closed situations can both start an incident. */
+	canDeclareIncident = $derived(this.incidentDialog.enabled);
+
+	private declareIncident() {
+		if (!this.situation) {
+			return;
+		}
+		this.incidentDialog.openCreate({ situation: declareSituationFrom(this.situation) });
+	}
 
 	situationInvestigation = $derived(this.situation?.attributes.investigation);
 	investigationId = $derived(this.situationInvestigation?.investigation.id);

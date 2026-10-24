@@ -1,15 +1,20 @@
 <script lang="ts">
 	import { Button } from "$components/ui/button";
 	import { Skeleton } from "$components/ui/skeleton";
-	import { Spinner } from "$components/ui/spinner";
 	import * as Avatar from "$components/ui/avatar";
 	import EntityAvatar from "$components/common/entity-avatar/EntityAvatar.svelte";
 	import SectionHeading from "$components/common/section-heading/SectionHeading.svelte";
 	import StatusBadge from "$components/common/status-badge/StatusBadge.svelte";
+	import * as Tooltip from "$components/ui/tooltip";
+	import MemberPicker from "$components/common/member-picker/MemberPicker.svelte";
+	import RiCloseLine from "remixicon-svelte/icons/close-line";
 	import RiExternalLinkLine from "remixicon-svelte/icons/external-link-line";
+	import { resolve } from "$app/paths";
+	import { useIncidentResponse } from "../response.svelte";
 	import { useIncidentOverviewController } from "./controller.svelte";
 
 	const overview = useIncidentOverviewController();
+	const response = useIncidentResponse();
 	const review = $derived(overview.review);
 </script>
 
@@ -28,6 +33,9 @@
 			<StatusBadge status={review.status} />
 		</div>
 		<p class="text-sm text-muted-foreground">{review.explanation}</p>
+		{#if review.ownerName}
+			<p class="text-sm">Owner: {review.ownerName}</p>
+		{/if}
 		{#if review.reportHref}
 			<div>
 				<Button
@@ -38,45 +46,85 @@
 					Open report
 				</Button>
 			</div>
-		{:else if review.canStart}
-			<div>
-				<Button
-					size="sm"
-					disabled={overview.startRetrospectivePending}
-					onclick={overview.startRetrospective}
-				>
-					{#if overview.startRetrospectivePending}
-						<Spinner data-icon="inline-start" />
-						Starting…
-					{:else}
-						Start retrospective
-					{/if}
-				</Button>
-			</div>
 		{/if}
 	{/if}
 </section>
 
-{#if overview.roles.length}
-	<section aria-labelledby="roles-title" class="flex flex-col gap-3">
-		<SectionHeading id="roles-title" title="Roles" level={3} />
-		<ul class="flex flex-col gap-3">
-			{#each overview.roles as role (role.id)}
-				<li class="flex items-center gap-3">
-					{#if role.userId}
-						<Avatar.Root class="size-7 shrink-0 [&_svg]:size-7!" loadingStatus="loaded">
-							<EntityAvatar kind="user" id={role.userId} size={28} />
-						</Avatar.Root>
+<section aria-labelledby="roles-title" class="flex flex-col gap-3">
+	<SectionHeading id="roles-title" title="Roles" level={3} />
+	{#if response.hasRoles}
+		{#each response.roleGroups as group (group.roleId)}
+			{@const holderIds = group.holders.map((holder) => holder.userId)}
+			<div class="flex flex-col gap-2">
+				<div class="flex items-center justify-between gap-2">
+					<span class="text-sm font-medium">
+						{group.name}
+						<span class="font-normal text-muted-foreground tabular-nums">{group.countLabel}</span>
+						{#if group.archived}
+							<span class="font-normal text-muted-foreground">· archived</span>
+						{/if}
+					</span>
+					{#if response.enabled && !group.archived}
+						{#if group.full}
+							<Tooltip.Root>
+								<Tooltip.Trigger>
+									{#snippet child({ props })}
+										<span {...props}>
+											<Button variant="link" size="inline" disabled>Assign</Button>
+										</span>
+									{/snippet}
+								</Tooltip.Trigger>
+								<Tooltip.Content class="max-w-64">{group.fullReason}</Tooltip.Content>
+							</Tooltip.Root>
+						{:else}
+							<MemberPicker
+								excludeIds={holderIds}
+								onSelect={(user) => response.assignRole(group.roleId, user.id)}
+							>
+								{#snippet trigger(props)}
+									<Button {...props} variant="link" size="inline">Assign</Button>
+								{/snippet}
+							</MemberPicker>
+						{/if}
 					{/if}
-					<div class="flex min-w-0 flex-col">
-						<span class="truncate text-sm font-medium">{role.userName}</span>
-						<span class="text-xs text-muted-foreground">{role.roleName}</span>
-					</div>
-				</li>
-			{/each}
-		</ul>
-	</section>
-{/if}
+				</div>
+				{#if group.holders.length}
+					<ul class="flex flex-col gap-2">
+						{#each group.holders as holder (holder.assignmentId)}
+							<li class="group flex items-center gap-3">
+								<Avatar.Root class="size-7 shrink-0 [&_svg]:size-7!" loadingStatus="loaded">
+									<EntityAvatar kind="user" id={holder.userId} size={28} />
+								</Avatar.Root>
+								<span class="min-w-0 flex-1 truncate text-sm">{holder.name}</span>
+								{#if response.enabled}
+									<Button
+										variant="ghost"
+										size="icon-sm"
+										class="opacity-0 group-hover:opacity-100 focus-visible:opacity-100"
+										aria-label="Remove {holder.name} as {group.name}"
+										onclick={() => response.unassignRole(holder.assignmentId)}
+									>
+										<RiCloseLine />
+									</Button>
+								{/if}
+							</li>
+						{/each}
+					</ul>
+				{/if}
+			</div>
+		{/each}
+	{:else}
+		<p class="text-sm text-muted-foreground">
+			No roles configured
+			{#if response.isAdmin}
+				·
+				<a class="underline underline-offset-4" href={resolve("/settings/incidents")}>
+					Add them in settings
+				</a>
+			{/if}
+		</p>
+	{/if}
+</section>
 
 {#if overview.teams.length}
 	<section aria-labelledby="teams-title" class="flex flex-col gap-2">

@@ -26,7 +26,7 @@ func (IncidentRole) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.String("name"),
-		field.Bool("required").Default(false),
+		field.Int("max_assignees").Optional().Nillable(),
 	}
 }
 
@@ -61,7 +61,7 @@ func (IncidentRoleAssignment) Fields() []ent.Field {
 
 func (IncidentRoleAssignment) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Fields("tenant_id", "incident_id", "user_id").Unique(),
+		index.Fields("tenant_id", "incident_id", "user_id", "role_id").Unique(),
 	}
 }
 

@@ -14,6 +14,7 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	da "github.com/rezible/rezible/ent/documentaccess"
+	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/pkg/errs"
 	"github.com/rezible/rezible/pkg/execution"
 )
@@ -98,7 +99,7 @@ func (s *DocumentsService) GetUserDocumentAccess(ctx context.Context, docId uuid
 			CanEdit:    true,
 			CanManage:  true,
 		}
-		return defaultAccess, nil
+		return s.closedReviewAccess(ctx, docId, defaultAccess)
 	}
 	/*
 		for _, scope := range execAuth.Scopes {
@@ -121,7 +122,7 @@ func (s *DocumentsService) GetUserDocumentAccess(ctx context.Context, docId uuid
 	if accessesErr != nil {
 		return nil, fmt.Errorf("failed to get document accesses: %w", accessesErr)
 	}
-	return bestAccess, nil
+	return s.closedReviewAccess(ctx, docId, bestAccess)
 }
 
 func (s *DocumentsService) getBestDocumentAccess(ctx context.Context, docId uuid.UUID, userId uuid.UUID) (*ent.DocumentAccess, error) {
@@ -181,21 +182,19 @@ func (s *DocumentsService) GetDocument(ctx context.Context, id uuid.UUID) (*ent.
 	return s.db.Client(ctx).Document.Get(ctx, id)
 }
 
-func (s *DocumentsService) SetDocument(ctx context.Context, id uuid.UUID, setFn func(*ent.DocumentMutation)) (*ent.Document, error) {
-	var mutator ent.EntityMutator[*ent.Document, *ent.DocumentMutation]
-	if id == uuid.Nil {
-		mutator = s.db.Client(ctx).Document.Create().SetID(uuid.New())
-	} else {
-		mutator = s.db.Client(ctx).Document.UpdateOneID(id)
+// Closed reviews retain viewing permission but never issue another writable session.
+func (s *DocumentsService) closedReviewAccess(ctx context.Context, docID uuid.UUID, access *ent.DocumentAccess) (*ent.DocumentAccess, error) {
+	if access == nil {
+		return nil, nil
 	}
-
-	mut := mutator.Mutation()
-	setFn(mut)
-
-	updated, saveErr := mutator.Save(ctx)
-	if saveErr != nil {
-		return nil, fmt.Errorf("save incident: %w", saveErr)
+	query := s.db.Client(ctx).Retrospective.Query().Where(retrospective.DocumentID(docID), retrospective.ClosedAtNotNil())
+	closed, queryErr := query.Exist(ctx)
+	if queryErr != nil {
+		return nil, queryErr
 	}
-
-	return updated, nil
+	if closed {
+		access.CanEdit = false
+		access.CanManage = false
+	}
+	return access, nil
 }

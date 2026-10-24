@@ -40,15 +40,8 @@ func (s *ProjectionServiceSuite) projectionService(tdb rez.Database) *Projection
 	users, usersErr := db.NewUserService(tdb, mocks.NewMockOrganizationService(s.T()))
 	s.Require().NoError(usersErr)
 
-	messageService := mocks.NewMockMessageQueue(s.T())
-
-	retrospectives, retrospectivesErr := db.NewRetrospectiveService(tdb)
-	s.Require().NoError(retrospectivesErr)
-
-	situations := mocks.NewMockSituationService(s.T())
-	situations.EXPECT().SyncIncidentLinks(mock.Anything, mock.Anything, mock.Anything).Return(nil).Maybe()
-
-	incidents, incidentsErr := db.NewIncidentService(tdb, messageService, situations, retrospectives)
+	// Observing an incident publishes nothing and touches no situation.
+	incidents, incidentsErr := db.NewIncidentDetailsService(tdb, mocks.NewMockMessageQueue(s.T()), mocks.NewMockSituationService(s.T()))
 	s.Require().NoError(incidentsErr)
 
 	knowledge, knowledgeErr := db.NewKnowledgeGraphIngestionService(tdb)

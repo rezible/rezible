@@ -2,17 +2,14 @@
 	import RiAddLine from "remixicon-svelte/icons/add-line";
 	import { Button } from "$components/ui/button";
 
-	// import { useIncidentCreateDialog } from "$features/incidents/components/create-incident-dialog";
-	// const incidentDialog = useIncidentCreateDialog();
+	import { useIncidentCreateDialog } from "$features/incidents/components/create-incident-dialog";
+
+	const incidentDialog = useIncidentCreateDialog();
 </script>
 
-<div class="flex gap-2">
-	<Button
-		onclick={() => {
-			// incidentDialog.openCreate();
-		}}
-	>
-		Create Incident
-		<RiAddLine class="" aria-hidden="true" />
+{#if incidentDialog.enabled}
+	<Button onclick={() => incidentDialog.openCreate()}>
+		<RiAddLine aria-hidden="true" />
+		Declare incident
 	</Button>
-</div>
+{/if}

@@ -1,24 +1,30 @@
 package ent
 
 import (
+	"bytes"
+	"slices"
+
 	"github.com/firebase/genkit/go/ai"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/incidentmilestone"
 	invfvl "github.com/rezible/rezible/ent/investigationfindingversionlink"
 	vc "github.com/rezible/rezible/ent/videoconference"
 )
 
-func (ims IncidentMilestones) GetLatest() *IncidentMilestone {
+// GetLatest returns the newest milestone of the given kinds, or of any kind when none are given. Equal
+// timestamps are ordered by ID.
+func (ims IncidentMilestones) GetLatest(kinds ...incidentmilestone.Kind) *IncidentMilestone {
 	var latest *IncidentMilestone
 	for _, im := range ims {
-		if latest == nil || latest.Timestamp.IsZero() || im.Timestamp.After(latest.Timestamp) {
+		if len(kinds) > 0 && !slices.Contains(kinds, im.Kind) {
+			continue
+		}
+		if latest == nil || im.Timestamp.After(latest.Timestamp) ||
+			(im.Timestamp.Equal(latest.Timestamp) && bytes.Compare(im.ID[:], latest.ID[:]) > 0) {
 			latest = im
 		}
 	}
 	return latest
-}
-
-func (ie IncidentEdges) GetLatestMilestone() *IncidentMilestone {
-	return IncidentMilestones(ie.Milestones).GetLatest()
 }
 
 func (vcs VideoConferences) GetPrimary() *VideoConference {

@@ -278,3 +278,10 @@ func (SyncSituationNotices) InsertOpts() river.InsertOpts {
 		},
 	}
 }
+
+type SendReviewRequestMessage struct{ ReviewID uuid.UUID }
+
+func (SendReviewRequestMessage) Kind() string { return "send-review-request-message" }
+func (SendReviewRequestMessage) InsertOpts() river.InsertOpts {
+	return river.InsertOpts{MaxAttempts: 3, UniqueOpts: river.UniqueOpts{ByArgs: true}}
+}

@@ -232,9 +232,8 @@ func TestOutcomeAndRuleJudge(t *testing.T) {
 
 func TestFingerprint(t *testing.T) {
 	incident := schematypes.SituationIncidentFacts{
-		ID:            uuid.New(),
-		Title:         "Checkout outage",
-		ResponseState: "started",
+		ID:    uuid.New(),
+		Title: "Checkout outage",
 	}
 	base := schematypes.SituationFacts{
 		AsOf:            evaluationNow,
@@ -267,7 +266,7 @@ func TestFingerprint(t *testing.T) {
 			})
 		}, false},
 		{"an incident title", func(facts *schematypes.SituationFacts) { facts.LinkedIncidents[0].Title = "Renamed" }, false},
-		{"an incident response state", func(facts *schematypes.SituationFacts) { facts.LinkedIncidents[0].ResponseState = "resolved" }, true},
+		{"an incident resolution", func(facts *schematypes.SituationFacts) { facts.LinkedIncidents[0].ResolvedAt = new(evaluationNow) }, true},
 		{"a finished signal", func(facts *schematypes.SituationFacts) { facts.Signals[0].FinishedAt = new(evaluationNow) }, true},
 		{"a changed attention level", func(facts *schematypes.SituationFacts) {
 			facts.Signals[1] = withAttention(facts.Signals[1], ssa.LevelWatchOnly)

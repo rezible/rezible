@@ -294,7 +294,7 @@ func (r Reasons) Fingerprint(facts schematypes.SituationFacts) (string, error) {
 		inputs.Signals = append(inputs.Signals, selected)
 	}
 	for _, incident := range facts.LinkedIncidents {
-		inputs.LinkedIncidents = append(inputs.LinkedIncidents, decisionIncident{ID: incident.ID, ResponseState: incident.ResponseState})
+		inputs.LinkedIncidents = append(inputs.LinkedIncidents, decisionIncident{ID: incident.ID, ResolvedAt: incident.ResolvedAt})
 	}
 	slices.SortFunc(inputs.Signals, func(a, b decisionSignal) int {
 		return bytes.Compare(a.EntityID[:], b.EntityID[:])
@@ -349,8 +349,8 @@ type decisionAlert struct {
 }
 
 type decisionIncident struct {
-	ID            uuid.UUID `json:"id"`
-	ResponseState string    `json:"response_state"`
+	ID         uuid.UUID  `json:"id"`
+	ResolvedAt *time.Time `json:"resolved_at"`
 }
 
 type decisionReason struct {

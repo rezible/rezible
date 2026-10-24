@@ -5,14 +5,17 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"net/url"
 	"time"
 
+	"entgo.io/ent/dialect/sql"
 	mapset "github.com/deckarep/golang-set/v2"
 	"github.com/google/uuid"
 	"github.com/riverqueue/river"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/incident"
 	in "github.com/rezible/rezible/ent/integration"
 	sit "github.com/rezible/rezible/ent/situation"
 	sitnot "github.com/rezible/rezible/ent/situationnotice"
@@ -49,9 +52,10 @@ type SituationNoticeService struct {
 	briefs       rez.SituationBriefService
 	outputs      rez.InvestigationOutputService
 	integrations rez.IntegrationService
+	orgs         rez.OrganizationService
 }
 
-func NewSituationNoticeService(db rez.Database, cfg rez.Config, clock rez.Clock, jobService rez.JobService, msgs rez.MessageQueue, briefs rez.SituationBriefService, outputs rez.InvestigationOutputService, integrationService rez.IntegrationService) *SituationNoticeService {
+func NewSituationNoticeService(db rez.Database, cfg rez.Config, clock rez.Clock, jobService rez.JobService, msgs rez.MessageQueue, briefs rez.SituationBriefService, outputs rez.InvestigationOutputService, integrationService rez.IntegrationService, orgs rez.OrganizationService) *SituationNoticeService {
 	return &SituationNoticeService{
 		db:           db,
 		cfg:          cfg,
@@ -61,6 +65,7 @@ func NewSituationNoticeService(db rez.Database, cfg rez.Config, clock rez.Clock,
 		briefs:       briefs,
 		outputs:      outputs,
 		integrations: integrationService,
+		orgs:         orgs,
 	}
 }
 
@@ -313,6 +318,10 @@ func (s *SituationNoticeService) readContent(ctx context.Context, situationID uu
 		content.MergedIntoURL = mergedURL.String()
 	}
 
+	if incidentErr := s.readIncidentLinks(ctx, content); incidentErr != nil {
+		return nil, incidentErr
+	}
+
 	services, servicesErr := s.briefs.ListBriefServices(ctx, situation.ID)
 	if servicesErr != nil {
 		return nil, fmt.Errorf("list situation services: %w", servicesErr)
@@ -349,6 +358,49 @@ func (s *SituationNoticeService) readContent(ctx context.Context, situationID uu
 type noticeDelivery struct {
 	notice *ent.SituationNotice
 	err    error
+}
+
+// readIncidentLinks offers the newest unresolved incident the situation is part of, or else declaring one, when
+// incident management is on and the situation was not merged into another.
+func (s *SituationNoticeService) readIncidentLinks(ctx context.Context, content *integrations.SituationNoticeContent) error {
+	client := s.db.Client(ctx)
+	queryIncident := client.Incident.Query().
+		Where(
+			incident.HasSituationsWith(sit.ID(content.Situation.ID)),
+			incident.ResponseStateNEQ(incident.ResponseStateResolved),
+		).
+		Order(incident.ByOpenedAt(sql.OrderDesc()), incident.ByID(sql.OrderDesc()))
+	unresolved, incidentErr := queryIncident.First(ctx)
+	if incidentErr != nil && !ent.IsNotFound(incidentErr) {
+		return fmt.Errorf("query unresolved incident: %w", incidentErr)
+	}
+	if unresolved != nil {
+		incidentURL, urlErr := s.cfg.App.GetFrontendUrl("incidents", unresolved.Slug)
+		if urlErr != nil {
+			return fmt.Errorf("incident url: %w", urlErr)
+		}
+		content.IncidentURL = incidentURL.String()
+		return nil
+	}
+
+	situation := content.Situation
+	if situation.CloseReason != nil && *situation.CloseReason == sit.CloseReasonMerged {
+		return nil
+	}
+	enabled, enabledErr := s.orgs.IsIncidentManagementEnabled(ctx)
+	if enabledErr != nil {
+		return fmt.Errorf("read incident management: %w", enabledErr)
+	}
+	if !enabled {
+		return nil
+	}
+	declareURL, urlErr := s.cfg.App.GetFrontendUrl("situations", situation.ID.String())
+	if urlErr != nil {
+		return fmt.Errorf("declare incident url: %w", urlErr)
+	}
+	declareURL.RawQuery = url.Values{"declare": {"incident"}}.Encode()
+	content.DeclareIncidentURL = declareURL.String()
+	return nil
 }
 
 // deliver posts the notice, or edits it once posted, then fills in its link and channel name. A notice whose

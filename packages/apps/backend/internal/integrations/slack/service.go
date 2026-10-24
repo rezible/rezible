@@ -11,19 +11,27 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	in "github.com/rezible/rezible/ent/integration"
+	"github.com/rezible/rezible/pkg/errs"
 	"github.com/rezible/rezible/pkg/execution"
 	"github.com/rezible/rezible/pkg/messages"
 	"github.com/slack-go/slack"
 	"github.com/slack-go/slack/slackevents"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/oauth2"
 	"golang.org/x/sync/errgroup"
 )
 
 type (
-	SlashCommandHandler        func(context.Context, *ent.Integration, *slack.SlashCommand) (*slack.Blocks, error)
-	EventsApiHandler           func(context.Context, *ent.Integration, *slackevents.EventsAPIEvent) error
-	InteractionCallbackHandler func(context.Context, *ent.Integration, *slack.InteractionCallback) error
+	// SlashCommandHandler returns the blocks to reply with privately, or nil for no reply.
+	SlashCommandHandler func(context.Context, *ent.Integration, *slack.SlashCommand) (*slack.Blocks, error)
+	EventsApiHandler    func(context.Context, *ent.Integration, *slackevents.EventsAPIEvent) error
+	// InteractionCallbackHandler may return errors to show on a submitted modal, which then stays open.
+	InteractionCallbackHandler func(context.Context, *ent.Integration, *slack.InteractionCallback) (ViewErrors, error)
 )
+
+// ViewErrors are messages shown under a submitted modal's blocks, by block ID.
+type ViewErrors map[string]string
 
 type App interface {
 	IntegrationName() string
@@ -87,7 +95,8 @@ func NewAppService[A App](app A, d *AppServiceDependencies) (*AppService[A], err
 			_, instCtx, lookupErr := s.createInstallationContext(ctx, ids)
 			return instCtx, lookupErr
 		}
-		eventHandler := makeAppEventHandler(app, d.MessageQueue, d.ProviderEventPipelineService, instCtxFn)
+		eventHandler := makeAppEventHandler(app, d.MessageQueue, d.ProviderEventPipelineService, instCtxFn,
+			s.handleSlashCommand, s.handleInteractionCallback)
 
 		if cfg.EnableSocketMode {
 			socketModeClient := slack.New(cfg.BotToken, slack.OptionAppLevelToken(cfg.AppToken))
@@ -146,8 +155,6 @@ func (s *AppService[A]) Config() rez.IntegrationsConfigSlackApp {
 
 func (s *AppService[A]) MakeMessageHandlers() []rez.MessageEventHandler {
 	return append(s.app.MakeMessageHandlers(),
-		messages.NewEventHandler(s.integrationName+".slash_command", s.handleSlashCommand),
-		messages.NewEventHandler(s.integrationName+".interaction_callback", s.handleInteractionCallback),
 		messages.NewEventHandler(s.integrationName+".events_api_callback", s.handleEventsApiCallbackEvent),
 	)
 }
@@ -201,92 +208,143 @@ func (s *AppService[A]) handleEventsApiCallbackEvent(baseCtx context.Context, ev
 	return s.eventsApiHandler(ctx, intg, &cb)
 }
 
-func (s *AppService[A]) handleInteractionCallback(baseCtx context.Context, ev *interactionCallbackEvent) error {
-	if s.integrationName != ev.IntegrationName {
-		return nil
-	}
-
+// handleInteractionCallback runs the interaction's handler while Slack waits. A submitted modal shows errors
+// on its blocks; any other interaction's error is replied to privately.
+func (s *AppService[A]) handleInteractionCallback(ctx context.Context, data []byte) (*slack.ViewSubmissionResponse, error) {
 	var ic slack.InteractionCallback
-	if err := ic.UnmarshalJSON(ev.Data); err != nil {
-		return fmt.Errorf("invalid interaction payload: %w", err)
+	if jsonErr := ic.UnmarshalJSON(data); jsonErr != nil {
+		return nil, fmt.Errorf("invalid interaction payload: %w", jsonErr)
 	}
-
 	handler, ok := s.interactionCallbackHandlers[ic.Type]
 	if !ok {
-		// log unhandled
-		slog.Warn("unhandled interaction type")
-		return nil
+		slog.WarnContext(ctx, "unhandled slack interaction type", "type", string(ic.Type))
+		return nil, nil
 	}
 
+	var response *slack.ViewSubmissionResponse
+	_ = execution.Do(ctx, "slack.interaction", func(ctx context.Context) error {
+		viewErrors, handleErr := s.runInteraction(ctx, handler, &ic)
+		if handleErr != nil {
+			text := errorReplyText(ctx, "slack interaction failed", handleErr)
+			if ic.Type == slack.InteractionTypeViewSubmission {
+				viewErrors = ViewErrors{firstInputBlockID(ic.View): text}
+			} else {
+				replyPrivately(ctx, ic.ResponseURL, text)
+			}
+		}
+		if len(viewErrors) > 0 {
+			response = slack.NewErrorsViewSubmissionResponse(viewErrors)
+		}
+		// Only internal errors mark the span; refusals with public text are expected.
+		if errs.CodeOf(handleErr) != errs.CodeInternal {
+			return nil
+		}
+		return handleErr
+	}, attribute.String("slack_interaction", string(ic.Type)))
+	return response, nil
+}
+
+func (s *AppService[A]) runInteraction(ctx context.Context, handler InteractionCallbackHandler, ic *slack.InteractionCallback) (ViewErrors, error) {
 	installIds := InstallationIds{TeamId: ic.Team.ID, EnterpriseId: ic.Enterprise.ID}
-	intg, ctx, intgsErr := s.createInstallationContext(baseCtx, installIds)
+	intg, installCtx, intgsErr := s.createInstallationContext(ctx, installIds)
 	if intgsErr != nil {
-		return fmt.Errorf("lookup integration: %w", intgsErr)
+		return nil, fmt.Errorf("lookup integration: %w", intgsErr)
 	}
+	ctx = installCtx
 
 	// Slack users the member sync has not seen yet continue as the installation's tenant, with no user;
 	// handlers that need one check for it.
 	userCtx, userErr := LookupUserContext(ctx, s.users, ic.User.ID)
 	if userErr != nil && !errors.Is(userErr, ErrChatUserNotFound) {
-		return fmt.Errorf("lookup user: %w", userErr)
+		return nil, fmt.Errorf("lookup user: %w", userErr)
 	}
 	if userErr == nil {
 		ctx = userCtx
 	}
 
-	return handler(ctx, intg, &ic)
+	return handler(ctx, intg, ic)
 }
 
-func (s *AppService[A]) handleSlashCommand(baseCtx context.Context, ev *slashCommandEvent) error {
-	if s.integrationName != ev.IntegrationName {
-		return nil
-	}
-
-	cmd := ev.Command
+// handleSlashCommand runs the command's handler while Slack waits, and returns its reply, shown only to the
+// person who ran it.
+func (s *AppService[A]) handleSlashCommand(ctx context.Context, cmd slack.SlashCommand) *slack.WebhookMessage {
 	handler, hasHandler := s.slashCommandHandlers[cmd.Command]
 	if !hasHandler {
-		slog.Debug("unknown slack command, ignoring", "command", cmd.Command)
+		slog.DebugContext(ctx, "unknown slack command, ignoring", "command", cmd.Command)
 		return nil
 	}
 
-	installIds := InstallationIds{TeamId: cmd.TeamID, EnterpriseId: cmd.EnterpriseID}
-	intg, installCtx, intgsErr := s.createInstallationContext(baseCtx, installIds)
-	if intgsErr != nil {
-		return fmt.Errorf("lookup integration: %w", intgsErr)
+	var reply *slack.Blocks
+	_ = execution.Do(ctx, "slack.command", func(ctx context.Context) error {
+		blocks, commandErr := s.runSlashCommand(ctx, handler, &cmd)
+		if commandErr != nil {
+			blocks = CommandReply(errorReplyText(ctx, "slack command failed", commandErr))
+		}
+		reply = blocks
+		// Only internal errors mark the span; refusals with public text are expected.
+		if errs.CodeOf(commandErr) != errs.CodeInternal {
+			return nil
+		}
+		return commandErr
+	}, attribute.String("slack_command", cmd.Command))
+	if reply == nil {
+		return nil
 	}
-	ctx := installCtx
-
-	userCtx, userErr := LookupUserContext(ctx, s.users, cmd.UserID)
-	if errors.Is(userErr, ErrChatUserNotFound) {
-		return s.replyUnknownUser(ctx, &cmd)
-	}
-	if userErr != nil {
-		return fmt.Errorf("lookup user: %w", userErr)
-	}
-	ctx = userCtx
-
-	response, handlerErr := handler(ctx, intg, &cmd)
-	if handlerErr != nil {
-		return fmt.Errorf("handling command: %w", handlerErr)
-	}
-	if response != nil {
-		//_, msgErr := s.postEphemeralMessage(ctx, cmd.ChannelID, cmd.UserID, slack.MsgOptionBlocks(response.BlockSet...))
-		//if msgErr != nil {
-		//	return fmt.Errorf("failed to post ephemeral message: %w", msgErr)
-		//}
-	}
-	return nil
+	return &slack.WebhookMessage{ResponseType: slack.ResponseTypeEphemeral, Blocks: reply}
 }
 
-// replyUnknownUser tells the Slack user who ran the command, and only them, that Rezible does not know them
-// yet.
-func (s *AppService[A]) replyUnknownUser(ctx context.Context, cmd *slack.SlashCommand) error {
+func (s *AppService[A]) runSlashCommand(ctx context.Context, handler SlashCommandHandler, cmd *slack.SlashCommand) (*slack.Blocks, error) {
+	installIds := InstallationIds{TeamId: cmd.TeamID, EnterpriseId: cmd.EnterpriseID}
+	intg, installCtx, intgsErr := s.createInstallationContext(ctx, installIds)
+	if intgsErr != nil {
+		return nil, fmt.Errorf("lookup integration: %w", intgsErr)
+	}
+
+	userCtx, userErr := LookupUserContext(installCtx, s.users, cmd.UserID)
+	if errors.Is(userErr, ErrChatUserNotFound) {
+		return CommandReply(UnknownUserText), nil
+	}
+	if userErr != nil {
+		return nil, fmt.Errorf("lookup user: %w", userErr)
+	}
+	return handler(userCtx, intg, cmd)
+}
+
+// errorReplyText logs a handler's error once and returns what to tell the person: its public message, or a
+// reference to the trace when it has none.
+func errorReplyText(ctx context.Context, msg string, handlerErr error) string {
+	if errs.CodeOf(handlerErr) != errs.CodeInternal {
+		slog.DebugContext(ctx, msg, "error", handlerErr)
+		return errs.PublicMessage(handlerErr)
+	}
+	slog.ErrorContext(ctx, msg, "error", handlerErr)
+	if spanContext := trace.SpanContextFromContext(ctx); spanContext.HasTraceID() {
+		return "Something went wrong. Reference: " + spanContext.TraceID().String()
+	}
+	return "Something went wrong."
+}
+
+// firstInputBlockID is the block a modal's error is shown on when it concerns no block in particular.
+func firstInputBlockID(view slack.View) string {
+	for _, block := range view.Blocks.BlockSet {
+		if input, isInput := block.(*slack.InputBlock); isInput {
+			return input.BlockID
+		}
+	}
+	return ""
+}
+
+// replyPrivately tells the person who acted, and only them, through the interaction's response URL. Actions
+// inside a modal have none, so their errors are only logged.
+func replyPrivately(ctx context.Context, responseURL string, text string) {
+	if responseURL == "" {
+		return
+	}
 	reply := &slack.WebhookMessage{
-		Text:         UnknownUserText,
+		Text:         text,
 		ResponseType: slack.ResponseTypeEphemeral,
 	}
-	if replyErr := slack.PostWebhookContext(ctx, cmd.ResponseURL, reply); replyErr != nil {
-		return fmt.Errorf("reply to unknown slack user: %w", replyErr)
+	if replyErr := slack.PostWebhookContext(ctx, responseURL, reply); replyErr != nil {
+		slog.ErrorContext(ctx, "reply to slack interaction", "error", replyErr)
 	}
-	return nil
 }

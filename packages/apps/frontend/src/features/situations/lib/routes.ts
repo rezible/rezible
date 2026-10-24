@@ -8,3 +8,8 @@ export function situationHref(id: string, view?: SituationViewParam, search = ""
 export function investigationHref(situationId: string, search = "") {
 	return situationHref(situationId, "investigation", search);
 }
+
+/** Opens the situation with the declare incident dialog, prefilled with it. */
+export function declareIncidentHref(situationId: string) {
+	return situationHref(situationId, undefined, "?declare=incident");
+}

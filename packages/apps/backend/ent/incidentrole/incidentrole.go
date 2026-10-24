@@ -20,8 +20,8 @@ const (
 	FieldArchiveTime = "archive_time"
 	// FieldName holds the string denoting the name field in the database.
 	FieldName = "name"
-	// FieldRequired holds the string denoting the required field in the database.
-	FieldRequired = "required"
+	// FieldMaxAssignees holds the string denoting the max_assignees field in the database.
+	FieldMaxAssignees = "max_assignees"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
 	// EdgeAssignments holds the string denoting the assignments edge name in mutations.
@@ -57,7 +57,7 @@ var Columns = []string{
 	FieldTenantID,
 	FieldArchiveTime,
 	FieldName,
-	FieldRequired,
+	FieldMaxAssignees,
 }
 
 var (
@@ -85,8 +85,6 @@ var (
 	Hooks        [2]ent.Hook
 	Interceptors [1]ent.Interceptor
 	Policy       ent.Policy
-	// DefaultRequired holds the default value on creation for the "required" field.
-	DefaultRequired bool
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
@@ -114,9 +112,9 @@ func ByName(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldName, opts...).ToFunc()
 }
 
-// ByRequired orders the results by the required field.
-func ByRequired(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldRequired, opts...).ToFunc()
+// ByMaxAssignees orders the results by the max_assignees field.
+func ByMaxAssignees(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldMaxAssignees, opts...).ToFunc()
 }
 
 // ByTenantField orders the results by tenant field.

@@ -31,6 +31,7 @@ import (
 	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/ent/situation"
 	"github.com/rezible/rezible/ent/tenant"
+	"github.com/rezible/rezible/ent/user"
 	"github.com/rezible/rezible/ent/videoconference"
 )
 
@@ -45,6 +46,7 @@ type IncidentQuery struct {
 	withKnowledgeEntity  *KnowledgeEntityQuery
 	withSeverity         *IncidentSeverityQuery
 	withType             *IncidentTypeQuery
+	withDeclaredBy       *UserQuery
 	withMilestones       *IncidentMilestoneQuery
 	withRetrospective    *RetrospectiveQuery
 	withRoleAssignments  *IncidentRoleAssignmentQuery
@@ -186,6 +188,31 @@ func (_q *IncidentQuery) QueryType() *IncidentTypeQuery {
 		)
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.IncidentType
+		step.Edge.Schema = schemaConfig.Incident
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryDeclaredBy chains the current query on the "declared_by" edge.
+func (_q *IncidentQuery) QueryDeclaredBy() *UserQuery {
+	query := (&UserClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incident.Table, incident.FieldID, selector),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, incident.DeclaredByTable, incident.DeclaredByColumn),
+		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.User
 		step.Edge.Schema = schemaConfig.Incident
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -664,6 +691,7 @@ func (_q *IncidentQuery) Clone() *IncidentQuery {
 		withKnowledgeEntity:  _q.withKnowledgeEntity.Clone(),
 		withSeverity:         _q.withSeverity.Clone(),
 		withType:             _q.withType.Clone(),
+		withDeclaredBy:       _q.withDeclaredBy.Clone(),
 		withMilestones:       _q.withMilestones.Clone(),
 		withRetrospective:    _q.withRetrospective.Clone(),
 		withRoleAssignments:  _q.withRoleAssignments.Clone(),
@@ -722,6 +750,17 @@ func (_q *IncidentQuery) WithType(opts ...func(*IncidentTypeQuery)) *IncidentQue
 		opt(query)
 	}
 	_q.withType = query
+	return _q
+}
+
+// WithDeclaredBy tells the query-builder to eager-load the nodes that are connected to
+// the "declared_by" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *IncidentQuery) WithDeclaredBy(opts ...func(*UserQuery)) *IncidentQuery {
+	query := (&UserClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withDeclaredBy = query
 	return _q
 }
 
@@ -930,11 +969,12 @@ func (_q *IncidentQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Inc
 	var (
 		nodes       = []*Incident{}
 		_spec       = _q.querySpec()
-		loadedTypes = [15]bool{
+		loadedTypes = [16]bool{
 			_q.withTenant != nil,
 			_q.withKnowledgeEntity != nil,
 			_q.withSeverity != nil,
 			_q.withType != nil,
+			_q.withDeclaredBy != nil,
 			_q.withMilestones != nil,
 			_q.withRetrospective != nil,
 			_q.withRoleAssignments != nil,
@@ -992,6 +1032,12 @@ func (_q *IncidentQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Inc
 	if query := _q.withType; query != nil {
 		if err := _q.loadType(ctx, query, nodes, nil,
 			func(n *Incident, e *IncidentType) { n.Edges.Type = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withDeclaredBy; query != nil {
+		if err := _q.loadDeclaredBy(ctx, query, nodes, nil,
+			func(n *Incident, e *User) { n.Edges.DeclaredBy = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -1196,6 +1242,38 @@ func (_q *IncidentQuery) loadType(ctx context.Context, query *IncidentTypeQuery,
 		nodes, ok := nodeids[n.ID]
 		if !ok {
 			return fmt.Errorf(`unexpected foreign-key "type_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (_q *IncidentQuery) loadDeclaredBy(ctx context.Context, query *UserQuery, nodes []*Incident, init func(*Incident), assign func(*Incident, *User)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*Incident)
+	for i := range nodes {
+		if nodes[i].DeclaredByID == nil {
+			continue
+		}
+		fk := *nodes[i].DeclaredByID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(user.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "declared_by_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -1703,6 +1781,9 @@ func (_q *IncidentQuery) querySpec() *sqlgraph.QuerySpec {
 		}
 		if _q.withType != nil {
 			_spec.Node.AddColumnOnce(incident.FieldTypeID)
+		}
+		if _q.withDeclaredBy != nil {
+			_spec.Node.AddColumnOnce(incident.FieldDeclaredByID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {

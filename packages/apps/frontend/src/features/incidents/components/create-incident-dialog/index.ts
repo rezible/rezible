@@ -1,2 +1,6 @@
 export { default } from "./CreateIncidentDialog.svelte";
-export { initIncidentCreateDialogController, useIncidentCreateDialog } from "./controller.svelte";
+export {
+	initIncidentCreateDialogController,
+	useIncidentCreateDialog,
+	declareSituationFrom,
+} from "./controller.svelte";

@@ -66,17 +66,30 @@ func (_u *IncidentRoleUpdate) SetNillableName(v *string) *IncidentRoleUpdate {
 	return _u
 }
 
-// SetRequired sets the "required" field.
-func (_u *IncidentRoleUpdate) SetRequired(v bool) *IncidentRoleUpdate {
-	_u.mutation.SetRequired(v)
+// SetMaxAssignees sets the "max_assignees" field.
+func (_u *IncidentRoleUpdate) SetMaxAssignees(v int) *IncidentRoleUpdate {
+	_u.mutation.ResetMaxAssignees()
+	_u.mutation.SetMaxAssignees(v)
 	return _u
 }
 
-// SetNillableRequired sets the "required" field if the given value is not nil.
-func (_u *IncidentRoleUpdate) SetNillableRequired(v *bool) *IncidentRoleUpdate {
+// SetNillableMaxAssignees sets the "max_assignees" field if the given value is not nil.
+func (_u *IncidentRoleUpdate) SetNillableMaxAssignees(v *int) *IncidentRoleUpdate {
 	if v != nil {
-		_u.SetRequired(*v)
+		_u.SetMaxAssignees(*v)
 	}
+	return _u
+}
+
+// AddMaxAssignees adds value to the "max_assignees" field.
+func (_u *IncidentRoleUpdate) AddMaxAssignees(v int) *IncidentRoleUpdate {
+	_u.mutation.AddMaxAssignees(v)
+	return _u
+}
+
+// ClearMaxAssignees clears the value of the "max_assignees" field.
+func (_u *IncidentRoleUpdate) ClearMaxAssignees() *IncidentRoleUpdate {
+	_u.mutation.ClearMaxAssignees()
 	return _u
 }
 
@@ -213,8 +226,14 @@ func (_u *IncidentRoleUpdate) sqlSave(ctx context.Context) (_node int, err error
 	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(incidentrole.FieldName, field.TypeString, value)
 	}
-	if value, ok := _u.mutation.Required(); ok {
-		_spec.SetField(incidentrole.FieldRequired, field.TypeBool, value)
+	if value, ok := _u.mutation.MaxAssignees(); ok {
+		_spec.SetField(incidentrole.FieldMaxAssignees, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedMaxAssignees(); ok {
+		_spec.AddField(incidentrole.FieldMaxAssignees, field.TypeInt, value)
+	}
+	if _u.mutation.MaxAssigneesCleared() {
+		_spec.ClearField(incidentrole.FieldMaxAssignees, field.TypeInt)
 	}
 	if _u.mutation.AssignmentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -368,17 +387,30 @@ func (_u *IncidentRoleUpdateOne) SetNillableName(v *string) *IncidentRoleUpdateO
 	return _u
 }
 
-// SetRequired sets the "required" field.
-func (_u *IncidentRoleUpdateOne) SetRequired(v bool) *IncidentRoleUpdateOne {
-	_u.mutation.SetRequired(v)
+// SetMaxAssignees sets the "max_assignees" field.
+func (_u *IncidentRoleUpdateOne) SetMaxAssignees(v int) *IncidentRoleUpdateOne {
+	_u.mutation.ResetMaxAssignees()
+	_u.mutation.SetMaxAssignees(v)
 	return _u
 }
 
-// SetNillableRequired sets the "required" field if the given value is not nil.
-func (_u *IncidentRoleUpdateOne) SetNillableRequired(v *bool) *IncidentRoleUpdateOne {
+// SetNillableMaxAssignees sets the "max_assignees" field if the given value is not nil.
+func (_u *IncidentRoleUpdateOne) SetNillableMaxAssignees(v *int) *IncidentRoleUpdateOne {
 	if v != nil {
-		_u.SetRequired(*v)
+		_u.SetMaxAssignees(*v)
 	}
+	return _u
+}
+
+// AddMaxAssignees adds value to the "max_assignees" field.
+func (_u *IncidentRoleUpdateOne) AddMaxAssignees(v int) *IncidentRoleUpdateOne {
+	_u.mutation.AddMaxAssignees(v)
+	return _u
+}
+
+// ClearMaxAssignees clears the value of the "max_assignees" field.
+func (_u *IncidentRoleUpdateOne) ClearMaxAssignees() *IncidentRoleUpdateOne {
+	_u.mutation.ClearMaxAssignees()
 	return _u
 }
 
@@ -545,8 +577,14 @@ func (_u *IncidentRoleUpdateOne) sqlSave(ctx context.Context) (_node *IncidentRo
 	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(incidentrole.FieldName, field.TypeString, value)
 	}
-	if value, ok := _u.mutation.Required(); ok {
-		_spec.SetField(incidentrole.FieldRequired, field.TypeBool, value)
+	if value, ok := _u.mutation.MaxAssignees(); ok {
+		_spec.SetField(incidentrole.FieldMaxAssignees, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedMaxAssignees(); ok {
+		_spec.AddField(incidentrole.FieldMaxAssignees, field.TypeInt, value)
+	}
+	if _u.mutation.MaxAssigneesCleared() {
+		_spec.ClearField(incidentrole.FieldMaxAssignees, field.TypeInt)
 	}
 	if _u.mutation.AssignmentsCleared() {
 		edge := &sqlgraph.EdgeSpec{

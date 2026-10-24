@@ -57,7 +57,7 @@ func (s *SituationNoticeServiceSuite) TestBuildFailure() {
 		RunAndReturn(func(installation *ent.Integration) (rez.InstalledIntegration, error) {
 			return &noticeSender{installation: installation}, nil
 		})
-	notices := NewSituationNoticeService(tdb, s.Config(), test.NewClock(now), nil, nil, briefs, nil, installations)
+	notices := NewSituationNoticeService(tdb, s.Config(), test.NewClock(now), nil, nil, briefs, nil, installations, &OrganizationService{db: tdb})
 
 	s.Run("an attempt that is not the last stores nothing", func() {
 		syncErr := notices.sync(ctx, situation.ID, false)
@@ -98,7 +98,7 @@ func (s *SituationNoticeServiceSuite) TestFailingDeploymentLookupOmitsDeployment
 	installations.EXPECT().
 		ListAllInstalled(mock.Anything).
 		Return([]rez.InstalledIntegration{&noticeSender{capabilities: []string{integrations.CapabilityDeployments}}}, nil)
-	notices := NewSituationNoticeService(tdb, s.Config(), test.NewClock(noticeTestOpenedAt), nil, nil, briefs, nil, installations)
+	notices := NewSituationNoticeService(tdb, s.Config(), test.NewClock(noticeTestOpenedAt), nil, nil, briefs, nil, installations, &OrganizationService{db: tdb})
 
 	content, readErr := notices.readContent(ctx, situation.ID)
 

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import ClosedReviewBanner from "../review/ClosedReviewBanner.svelte";
 	import RetrospectiveEmptyState from "../retrospective-empty-state/RetrospectiveEmptyState.svelte";
 	import { Button } from "$components/ui/button";
 	import ErrorAlert from "$components/layout/error-alert/ErrorAlert.svelte";
@@ -16,6 +17,7 @@
 </script>
 
 <div class="flex h-full min-h-0 min-w-0 flex-col gap-3 overflow-hidden">
+	<ClosedReviewBanner content="analysis" />
 	{#if incAttrs?.retrospective?.id && viewController.retrospectiveQuery.isPending}
 		<p role="status" class="p-6 text-sm text-muted-foreground">Loading analysis...</p>
 	{:else if retroQuery.error && !viewController.retrospective}

@@ -16,6 +16,7 @@ import (
 	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/ent/tenant"
+	"github.com/rezible/rezible/ent/user"
 )
 
 // Incident is the model entity for the Incident schema.
@@ -29,6 +30,8 @@ type Incident struct {
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
+	// ArchiveTime holds the value of the "archive_time" field.
+	ArchiveTime *time.Time `json:"archive_time,omitempty"`
 	// KnowledgeEntityID holds the value of the "knowledge_entity_id" field.
 	KnowledgeEntityID *uuid.UUID `json:"knowledge_entity_id,omitempty"`
 	// Slug holds the value of the "slug" field.
@@ -43,12 +46,16 @@ type Incident struct {
 	Summary string `json:"summary,omitempty"`
 	// ChatChannelID holds the value of the "chat_channel_id" field.
 	ChatChannelID string `json:"chat_channel_id,omitempty"`
-	// ResponseState holds the value of the "response_state" field.
-	ResponseState incident.ResponseState `json:"response_state,omitempty"`
+	// ChatDetailsMessageID holds the value of the "chat_details_message_id" field.
+	ChatDetailsMessageID string `json:"chat_details_message_id,omitempty"`
 	// OpenedAt holds the value of the "opened_at" field.
 	OpenedAt time.Time `json:"opened_at,omitempty"`
+	// ResponseState holds the value of the "response_state" field.
+	ResponseState incident.ResponseState `json:"response_state,omitempty"`
 	// ResolvedAt holds the value of the "resolved_at" field.
 	ResolvedAt *time.Time `json:"resolved_at,omitempty"`
+	// DeclaredByID holds the value of the "declared_by_id" field.
+	DeclaredByID *uuid.UUID `json:"declared_by_id,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the IncidentQuery when eager-loading is set.
 	Edges        IncidentEdges `json:"edges"`
@@ -65,6 +72,8 @@ type IncidentEdges struct {
 	Severity *IncidentSeverity `json:"severity,omitempty"`
 	// Type holds the value of the type edge.
 	Type *IncidentType `json:"type,omitempty"`
+	// DeclaredBy holds the value of the declared_by edge.
+	DeclaredBy *User `json:"declared_by,omitempty"`
 	// Milestones holds the value of the milestones edge.
 	Milestones []*IncidentMilestone `json:"milestones,omitempty"`
 	// Retrospective holds the value of the retrospective edge.
@@ -89,7 +98,7 @@ type IncidentEdges struct {
 	IncidentLinks []*IncidentLink `json:"incident_links,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [15]bool
+	loadedTypes [16]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -136,10 +145,21 @@ func (e IncidentEdges) TypeOrErr() (*IncidentType, error) {
 	return nil, &NotLoadedError{edge: "type"}
 }
 
+// DeclaredByOrErr returns the DeclaredBy value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e IncidentEdges) DeclaredByOrErr() (*User, error) {
+	if e.DeclaredBy != nil {
+		return e.DeclaredBy, nil
+	} else if e.loadedTypes[4] {
+		return nil, &NotFoundError{label: user.Label}
+	}
+	return nil, &NotLoadedError{edge: "declared_by"}
+}
+
 // MilestonesOrErr returns the Milestones value or an error if the edge
 // was not loaded in eager-loading.
 func (e IncidentEdges) MilestonesOrErr() ([]*IncidentMilestone, error) {
-	if e.loadedTypes[4] {
+	if e.loadedTypes[5] {
 		return e.Milestones, nil
 	}
 	return nil, &NotLoadedError{edge: "milestones"}
@@ -150,7 +170,7 @@ func (e IncidentEdges) MilestonesOrErr() ([]*IncidentMilestone, error) {
 func (e IncidentEdges) RetrospectiveOrErr() (*Retrospective, error) {
 	if e.Retrospective != nil {
 		return e.Retrospective, nil
-	} else if e.loadedTypes[5] {
+	} else if e.loadedTypes[6] {
 		return nil, &NotFoundError{label: retrospective.Label}
 	}
 	return nil, &NotLoadedError{edge: "retrospective"}
@@ -159,7 +179,7 @@ func (e IncidentEdges) RetrospectiveOrErr() (*Retrospective, error) {
 // RoleAssignmentsOrErr returns the RoleAssignments value or an error if the edge
 // was not loaded in eager-loading.
 func (e IncidentEdges) RoleAssignmentsOrErr() ([]*IncidentRoleAssignment, error) {
-	if e.loadedTypes[6] {
+	if e.loadedTypes[7] {
 		return e.RoleAssignments, nil
 	}
 	return nil, &NotLoadedError{edge: "role_assignments"}
@@ -168,7 +188,7 @@ func (e IncidentEdges) RoleAssignmentsOrErr() ([]*IncidentRoleAssignment, error)
 // LinkedIncidentsOrErr returns the LinkedIncidents value or an error if the edge
 // was not loaded in eager-loading.
 func (e IncidentEdges) LinkedIncidentsOrErr() ([]*Incident, error) {
-	if e.loadedTypes[7] {
+	if e.loadedTypes[8] {
 		return e.LinkedIncidents, nil
 	}
 	return nil, &NotLoadedError{edge: "linked_incidents"}
@@ -177,7 +197,7 @@ func (e IncidentEdges) LinkedIncidentsOrErr() ([]*Incident, error) {
 // SituationsOrErr returns the Situations value or an error if the edge
 // was not loaded in eager-loading.
 func (e IncidentEdges) SituationsOrErr() ([]*Situation, error) {
-	if e.loadedTypes[8] {
+	if e.loadedTypes[9] {
 		return e.Situations, nil
 	}
 	return nil, &NotLoadedError{edge: "situations"}
@@ -186,7 +206,7 @@ func (e IncidentEdges) SituationsOrErr() ([]*Situation, error) {
 // FieldSelectionsOrErr returns the FieldSelections value or an error if the edge
 // was not loaded in eager-loading.
 func (e IncidentEdges) FieldSelectionsOrErr() ([]*IncidentFieldOption, error) {
-	if e.loadedTypes[9] {
+	if e.loadedTypes[10] {
 		return e.FieldSelections, nil
 	}
 	return nil, &NotLoadedError{edge: "field_selections"}
@@ -195,7 +215,7 @@ func (e IncidentEdges) FieldSelectionsOrErr() ([]*IncidentFieldOption, error) {
 // TagAssignmentsOrErr returns the TagAssignments value or an error if the edge
 // was not loaded in eager-loading.
 func (e IncidentEdges) TagAssignmentsOrErr() ([]*IncidentTag, error) {
-	if e.loadedTypes[10] {
+	if e.loadedTypes[11] {
 		return e.TagAssignments, nil
 	}
 	return nil, &NotLoadedError{edge: "tag_assignments"}
@@ -204,7 +224,7 @@ func (e IncidentEdges) TagAssignmentsOrErr() ([]*IncidentTag, error) {
 // ImpactsOrErr returns the Impacts value or an error if the edge
 // was not loaded in eager-loading.
 func (e IncidentEdges) ImpactsOrErr() ([]*IncidentImpact, error) {
-	if e.loadedTypes[11] {
+	if e.loadedTypes[12] {
 		return e.Impacts, nil
 	}
 	return nil, &NotLoadedError{edge: "impacts"}
@@ -213,7 +233,7 @@ func (e IncidentEdges) ImpactsOrErr() ([]*IncidentImpact, error) {
 // DebriefsOrErr returns the Debriefs value or an error if the edge
 // was not loaded in eager-loading.
 func (e IncidentEdges) DebriefsOrErr() ([]*IncidentDebrief, error) {
-	if e.loadedTypes[12] {
+	if e.loadedTypes[13] {
 		return e.Debriefs, nil
 	}
 	return nil, &NotLoadedError{edge: "debriefs"}
@@ -222,7 +242,7 @@ func (e IncidentEdges) DebriefsOrErr() ([]*IncidentDebrief, error) {
 // VideoConferencesOrErr returns the VideoConferences value or an error if the edge
 // was not loaded in eager-loading.
 func (e IncidentEdges) VideoConferencesOrErr() ([]*VideoConference, error) {
-	if e.loadedTypes[13] {
+	if e.loadedTypes[14] {
 		return e.VideoConferences, nil
 	}
 	return nil, &NotLoadedError{edge: "video_conferences"}
@@ -231,7 +251,7 @@ func (e IncidentEdges) VideoConferencesOrErr() ([]*VideoConference, error) {
 // IncidentLinksOrErr returns the IncidentLinks value or an error if the edge
 // was not loaded in eager-loading.
 func (e IncidentEdges) IncidentLinksOrErr() ([]*IncidentLink, error) {
-	if e.loadedTypes[14] {
+	if e.loadedTypes[15] {
 		return e.IncidentLinks, nil
 	}
 	return nil, &NotLoadedError{edge: "incident_links"}
@@ -242,13 +262,13 @@ func (*Incident) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case incident.FieldKnowledgeEntityID, incident.FieldSeverityID, incident.FieldTypeID:
+		case incident.FieldKnowledgeEntityID, incident.FieldSeverityID, incident.FieldTypeID, incident.FieldDeclaredByID:
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case incident.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case incident.FieldSlug, incident.FieldTitle, incident.FieldSummary, incident.FieldChatChannelID, incident.FieldResponseState:
+		case incident.FieldSlug, incident.FieldTitle, incident.FieldSummary, incident.FieldChatChannelID, incident.FieldChatDetailsMessageID, incident.FieldResponseState:
 			values[i] = new(sql.NullString)
-		case incident.FieldCreatedAt, incident.FieldUpdatedAt, incident.FieldOpenedAt, incident.FieldResolvedAt:
+		case incident.FieldCreatedAt, incident.FieldUpdatedAt, incident.FieldArchiveTime, incident.FieldOpenedAt, incident.FieldResolvedAt:
 			values[i] = new(sql.NullTime)
 		case incident.FieldID:
 			values[i] = new(uuid.UUID)
@@ -290,6 +310,13 @@ func (_m *Incident) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
 			} else if value.Valid {
 				_m.UpdatedAt = value.Time
+			}
+		case incident.FieldArchiveTime:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field archive_time", values[i])
+			} else if value.Valid {
+				_m.ArchiveTime = new(time.Time)
+				*_m.ArchiveTime = value.Time
 			}
 		case incident.FieldKnowledgeEntityID:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
@@ -336,11 +363,11 @@ func (_m *Incident) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.ChatChannelID = value.String
 			}
-		case incident.FieldResponseState:
+		case incident.FieldChatDetailsMessageID:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field response_state", values[i])
+				return fmt.Errorf("unexpected type %T for field chat_details_message_id", values[i])
 			} else if value.Valid {
-				_m.ResponseState = incident.ResponseState(value.String)
+				_m.ChatDetailsMessageID = value.String
 			}
 		case incident.FieldOpenedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -348,12 +375,25 @@ func (_m *Incident) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.OpenedAt = value.Time
 			}
+		case incident.FieldResponseState:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field response_state", values[i])
+			} else if value.Valid {
+				_m.ResponseState = incident.ResponseState(value.String)
+			}
 		case incident.FieldResolvedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field resolved_at", values[i])
 			} else if value.Valid {
 				_m.ResolvedAt = new(time.Time)
 				*_m.ResolvedAt = value.Time
+			}
+		case incident.FieldDeclaredByID:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field declared_by_id", values[i])
+			} else if value.Valid {
+				_m.DeclaredByID = new(uuid.UUID)
+				*_m.DeclaredByID = *value.S.(*uuid.UUID)
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -386,6 +426,11 @@ func (_m *Incident) QuerySeverity() *IncidentSeverityQuery {
 // QueryType queries the "type" edge of the Incident entity.
 func (_m *Incident) QueryType() *IncidentTypeQuery {
 	return NewIncidentClient(_m.config).QueryType(_m)
+}
+
+// QueryDeclaredBy queries the "declared_by" edge of the Incident entity.
+func (_m *Incident) QueryDeclaredBy() *UserQuery {
+	return NewIncidentClient(_m.config).QueryDeclaredBy(_m)
 }
 
 // QueryMilestones queries the "milestones" edge of the Incident entity.
@@ -475,6 +520,11 @@ func (_m *Incident) String() string {
 	builder.WriteString("updated_at=")
 	builder.WriteString(_m.UpdatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
+	if v := _m.ArchiveTime; v != nil {
+		builder.WriteString("archive_time=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
+	builder.WriteString(", ")
 	if v := _m.KnowledgeEntityID; v != nil {
 		builder.WriteString("knowledge_entity_id=")
 		builder.WriteString(fmt.Sprintf("%v", *v))
@@ -502,15 +552,23 @@ func (_m *Incident) String() string {
 	builder.WriteString("chat_channel_id=")
 	builder.WriteString(_m.ChatChannelID)
 	builder.WriteString(", ")
-	builder.WriteString("response_state=")
-	builder.WriteString(fmt.Sprintf("%v", _m.ResponseState))
+	builder.WriteString("chat_details_message_id=")
+	builder.WriteString(_m.ChatDetailsMessageID)
 	builder.WriteString(", ")
 	builder.WriteString("opened_at=")
 	builder.WriteString(_m.OpenedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
+	builder.WriteString("response_state=")
+	builder.WriteString(fmt.Sprintf("%v", _m.ResponseState))
+	builder.WriteString(", ")
 	if v := _m.ResolvedAt; v != nil {
 		builder.WriteString("resolved_at=")
 		builder.WriteString(v.Format(time.ANSIC))
+	}
+	builder.WriteString(", ")
+	if v := _m.DeclaredByID; v != nil {
+		builder.WriteString("declared_by_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
 	}
 	builder.WriteByte(')')
 	return builder.String()

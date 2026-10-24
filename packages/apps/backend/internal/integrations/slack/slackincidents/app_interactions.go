@@ -8,194 +8,170 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	slackintegration "github.com/rezible/rezible/internal/integrations/slack"
-	"github.com/rezible/rezible/pkg/execution"
 	"github.com/slack-go/slack"
 
+	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/incident"
-	"github.com/rezible/rezible/ent/incidentmilestone"
+	slackintegration "github.com/rezible/rezible/internal/integrations/slack"
+	"github.com/rezible/rezible/pkg/execution"
 )
 
-func (a *App) handleMessageActionInteraction(ctx context.Context, ii *ent.Integration, ic *slack.InteractionCallback) error {
-	return fmt.Errorf("unknown message actions: %s", ic.CallbackID)
+func (a *App) handleMessageActionInteraction(ctx context.Context, ii *ent.Integration, ic *slack.InteractionCallback) (slackintegration.ViewErrors, error) {
+	return nil, fmt.Errorf("unknown message actions: %s", ic.CallbackID)
 }
 
-func (a *App) handleBlockActionsInteraction(ctx context.Context, ii *ent.Integration, ic *slack.InteractionCallback) error {
+// handleBlockActionsInteraction opens the modal a button asks for. The incident is the button's value.
+func (a *App) handleBlockActionsInteraction(ctx context.Context, ii *ent.Integration, ic *slack.InteractionCallback) (slackintegration.ViewErrors, error) {
+	for _, action := range ic.ActionCallback.BlockActions {
+		switch action.ActionID {
+		case actionCallbackIdIncidentOpen:
+			// The button opens its URL in the browser; Slack still reports the click.
+			return nil, nil
+		case actionCallbackIdIncidentDetailsModalButton:
+			return nil, a.openIncidentModalFromButton(ctx, ii, ic, action, a.makeButtonDetailsModalView)
+		case actionCallbackIdIncidentMilestoneModalButton:
+			return nil, a.openIncidentModalFromButton(ctx, ii, ic, action, a.makeButtonMilestoneModalView)
+		default:
+			return nil, fmt.Errorf("unknown block action id: %s", action.ActionID)
+		}
+	}
+	return nil, fmt.Errorf("no block actions: %s", ic.CallbackID)
+}
+
+func (a *App) openIncidentModalFromButton(ctx context.Context, ii *ent.Integration, ic *slack.InteractionCallback, action *slack.BlockAction, makeView func(context.Context, uuid.UUID) (*slack.ModalViewRequest, error)) error {
 	if !slackintegration.HasUser(ctx) {
-		return nil
+		return errUnknownUser
+	}
+	incidentID, parseErr := uuid.Parse(action.Value)
+	if parseErr != nil {
+		return fmt.Errorf("parse incident id: %w", parseErr)
+	}
+	view, viewErr := makeView(ctx, incidentID)
+	if viewErr != nil {
+		return viewErr
 	}
 	cw, cwErr := a.newClientWrapper(ii)
 	if cwErr != nil {
-		return fmt.Errorf("failed to create client wrapper: %w", cwErr)
+		return fmt.Errorf("create client wrapper: %w", cwErr)
 	}
-
-	for _, action := range ic.ActionCallback.BlockActions {
-		switch action.ActionID {
-		case actionCallbackIdIncidentDetailsModalButton:
-			return a.handleIncidentDetailsModalInteraction(ctx, cw, ic)
-		case actionCallbackIdIncidentMilestoneModalButton:
-			return a.handleIncidentMilestoneModalInteraction(ctx, cw, ic)
-		default:
-			return fmt.Errorf("unknown block action id: %s", action.ActionID)
+	// A button inside a modal pushes onto it; one on a message opens a new modal.
+	if ic.View.ID != "" {
+		resp, pushErr := cw.Client().PushViewContext(ctx, ic.TriggerID, *view)
+		if pushErr != nil {
+			slackintegration.LogSlackViewErrorResponse(slog.Default(), pushErr, resp)
+			return fmt.Errorf("push modal: %w", pushErr)
 		}
+		return nil
 	}
-	slog.Debug("interaction callback", "ic", ic)
-
-	return fmt.Errorf("unknown block actions: %s", ic.CallbackID)
+	return cw.OpenModalView(ctx, ic.TriggerID, *view)
 }
 
-func (a *App) handleViewSubmissionInteraction(ctx context.Context, ii *ent.Integration, ic *slack.InteractionCallback) error {
-	if !slackintegration.HasUser(ctx) {
-		return nil
+func (a *App) makeButtonDetailsModalView(ctx context.Context, incidentID uuid.UUID) (*slack.ModalViewRequest, error) {
+	return a.makeIncidentDetailsModalView(ctx, &incidentDetailsModalViewMetadata{IncidentId: incidentID})
+}
+
+func (a *App) makeButtonMilestoneModalView(ctx context.Context, incidentID uuid.UUID) (*slack.ModalViewRequest, error) {
+	inc, incErr := a.incidents.GetIncident(ctx, incident.ID(incidentID))
+	if incErr != nil {
+		return nil, fmt.Errorf("get incident: %w", incErr)
+	}
+	return makeIncidentMilestoneModalView(inc)
+}
+
+// handleViewSubmissionInteraction saves a submitted modal. Errors are shown on the modal, which stays open.
+func (a *App) handleViewSubmissionInteraction(ctx context.Context, ii *ent.Integration, ic *slack.InteractionCallback) (slackintegration.ViewErrors, error) {
+	userID, hasUser := execution.GetContext(ctx).UserID()
+	if !hasUser {
+		return nil, errUnknownUser
+	}
+	if ic.View.State == nil {
+		return nil, fmt.Errorf("missing view state")
 	}
 	switch ic.View.CallbackID {
 	case viewCallbackIdIncidentDetailsModal:
-		return a.handleIncidentDetailsModalSubmission(ctx, ic)
+		return nil, a.handleIncidentDetailsModalSubmission(ctx, ii, ic, userID)
 	case viewCallbackIdIncidentMilestoneModal:
-		return a.handleIncidentMilestoneModalSubmission(ctx, ic)
+		return nil, a.handleIncidentMilestoneModalSubmission(ctx, ic, userID)
 	}
-	return fmt.Errorf("unknown view submission: %s", ic.View.CallbackID)
+	return nil, fmt.Errorf("unknown view submission: %s", ic.View.CallbackID)
 }
 
-func (a *App) getIncidentModalViewMetadata(ctx context.Context, ic *slack.InteractionCallback) (*incidentDetailsModalViewMetadata, error) {
+func (a *App) handleIncidentDetailsModalSubmission(ctx context.Context, ii *ent.Integration, ic *slack.InteractionCallback, userID uuid.UUID) error {
 	var meta incidentDetailsModalViewMetadata
-	if ic.Type == slack.InteractionTypeBlockActions {
-		inc, incErr := a.incidents.Get(ctx, incident.ChatChannelID(ic.Channel.ID))
-		if incErr != nil {
-			return nil, fmt.Errorf("unable to get incident by channel: %w", incErr)
-		}
-		meta = incidentDetailsModalViewMetadata{
-			UserId:     ic.User.ID,
-			IncidentId: inc.ID,
-		}
-	} else {
-		if ic.View.PrivateMetadata == "" {
-			return nil, fmt.Errorf("no view metadata provided")
-		}
-		if jsonErr := json.Unmarshal([]byte(ic.View.PrivateMetadata), &meta); jsonErr != nil {
-			return nil, fmt.Errorf("failed to unmarshal incident modal metadata: %w", jsonErr)
-		}
-	}
-	return &meta, nil
-}
-
-func (a *App) handleIncidentDetailsModalInteraction(ctx context.Context, cw *slackintegration.ClientWrapper, ic *slack.InteractionCallback) error {
-	meta, metaErr := a.getIncidentModalViewMetadata(ctx, ic)
-	if metaErr != nil {
-		return fmt.Errorf("getting modal view metadata: %w", metaErr)
-	}
-	// TODO: load these from configured integration
-	prefs := UserSettingsIncidents{}
-	view, viewErr := a.makeIncidentDetailsModalView(ctx, prefs, meta)
-	if viewErr != nil || view == nil {
-		return fmt.Errorf("failed to create incident view: %w", viewErr)
-	}
-	return cw.OpenOrUpdateModal(ctx, ic, view)
-}
-
-func (a *App) handleIncidentMilestoneModalInteraction(ctx context.Context, cw *slackintegration.ClientWrapper, ic *slack.InteractionCallback) error {
-	meta, metaErr := a.getIncidentMilestoneModalViewMetadata(ctx, ic)
-	if metaErr != nil {
-		return fmt.Errorf("getting modal view metadata: %w", metaErr)
-	}
-	view, viewErr := a.makeIncidentMilestoneModalView(ctx, meta)
-	if viewErr != nil || view == nil {
-		return fmt.Errorf("failed to create incident view: %w", viewErr)
-	}
-	return cw.OpenOrUpdateModal(ctx, ic, view)
-}
-
-func (a *App) handleIncidentDetailsModalSubmission(ctx context.Context, ic *slack.InteractionCallback) error {
-	meta, metaErr := a.getIncidentModalViewMetadata(ctx, ic)
-	if metaErr != nil {
-		return fmt.Errorf("getting modal view metadata: %w", metaErr)
+	if jsonErr := json.Unmarshal([]byte(ic.View.PrivateMetadata), &meta); jsonErr != nil {
+		return fmt.Errorf("unmarshal incident details modal metadata: %w", jsonErr)
 	}
 
-	state := ic.View.State
-	if state == nil {
-		return fmt.Errorf("missing incident details modal view state")
-	}
-
-	userId, ok := execution.GetContext(ctx).UserID()
-	if !ok {
-		return fmt.Errorf("missing user context")
-	}
-
-	return a.db.WithTx(ctx, func(ctx context.Context, client *ent.Client) error {
-		inc, incErr := a.incidents.Set(ctx, meta.IncidentId, func(m *ent.IncidentMutation) {
-			setIncidentDetailsModalInputMutationFields(m, state)
-		})
-		if incErr != nil {
-			return fmt.Errorf("upsert incident from modal data: %w", incErr)
-		}
-		if inc.ID == meta.IncidentId { // updated existing
-			return nil
-		}
-		_, msErr := a.incidents.SetIncidentMilestone(ctx, uuid.Nil, func(m *ent.IncidentMilestoneMutation) {
-			m.SetKind(incidentmilestone.KindDetection)
-			m.SetDescription("Incident declared via slack")
-			m.SetTimestamp(time.Now())
-			m.SetSource(integrationName)
-			m.SetIncidentID(inc.ID)
-			m.SetUserID(userId)
-			m.SetMetadata(map[string]string{
-				"channel_id": meta.CommandChannelId,
-				"user_id":    meta.UserId,
-			})
-		})
-		if msErr != nil {
-			return fmt.Errorf("incident milestone create: %w", msErr)
+	details := incidentDetailsModalInput(ic.View.State)
+	if meta.IncidentId != uuid.Nil {
+		if _, updateErr := a.incidents.UpdateIncident(ctx, meta.IncidentId, details); updateErr != nil {
+			return fmt.Errorf("update incident details: %w", updateErr)
 		}
 		return nil
-	})
-}
-
-func (a *App) getIncidentMilestoneModalViewMetadata(ctx context.Context, ic *slack.InteractionCallback) (*incidentMilestoneModalViewMetadata, error) {
-	var meta incidentMilestoneModalViewMetadata
-	if ic.View.PrivateMetadata != "" {
-		if jsonErr := json.Unmarshal([]byte(ic.View.PrivateMetadata), &meta); jsonErr != nil {
-			return nil, fmt.Errorf("failed to unmarshal incident modal metadata: %w", jsonErr)
-		}
-	} else {
-		inc, incErr := a.incidents.Get(ctx, incident.ChatChannelID(ic.Channel.ID))
-		if incErr != nil {
-			return nil, fmt.Errorf("unable to get incident by channel: %w", incErr)
-		}
-		meta = incidentMilestoneModalViewMetadata{
-			UserId:     ic.User.ID,
-			IncidentId: inc.ID,
-		}
 	}
-	return &meta, nil
+
+	declareParams := rez.DeclareIncidentParams{
+		Title:        *details.Title,
+		Summary:      *details.Summary,
+		SeverityID:   details.SeverityID,
+		TypeID:       details.TypeID,
+		DeclaredByID: userID,
+	}
+	if details.FieldOptionIDs != nil {
+		declareParams.FieldOptionIDs = *details.FieldOptionIDs
+	}
+	if details.TagIDs != nil {
+		declareParams.TagIDs = *details.TagIDs
+	}
+	inc, declareErr := a.management.Declare(ctx, declareParams)
+	if declareErr != nil {
+		return fmt.Errorf("declare incident: %w", declareErr)
+	}
+	a.confirmDeclared(ctx, ii, meta.CommandChannelId, ic.User.ID, inc)
+	return nil
 }
 
-func (a *App) handleIncidentMilestoneModalSubmission(ctx context.Context, ic *slack.InteractionCallback) error {
-	meta, metaErr := a.getIncidentModalViewMetadata(ctx, ic)
+// confirmDeclared tells the declarer, privately in the channel where they ran the command, that the incident
+// was declared. The command may have run where the app can't post, such as a DM, so a failure is only logged.
+func (a *App) confirmDeclared(ctx context.Context, ii *ent.Integration, channelID string, slackUserID string, inc *ent.Incident) {
+	incUrl, urlErr := a.cfg.App.GetFrontendUrl("incidents", inc.Slug)
+	if urlErr != nil {
+		slog.ErrorContext(ctx, "incident url", "error", urlErr, "incident_id", inc.ID.String())
+		return
+	}
+	text := fmt.Sprintf(":white_check_mark: Incident declared: *%s* · <%s|Open in Rezible>. You'll be invited to its channel.",
+		escaped(inc.Title, maxTitleRunes), incUrl)
+	cw, cwErr := a.newClientWrapper(ii)
+	if cwErr != nil {
+		slog.ErrorContext(ctx, "create client wrapper", "error", cwErr)
+		return
+	}
+	section := slack.NewSectionBlock(slackintegration.MarkdownBlock(text), nil, nil)
+	msgOpts := []slack.MsgOption{
+		slack.MsgOptionText("Incident declared: "+escaped(inc.Title, maxTitleRunes), false),
+		slack.MsgOptionParse(false),
+		slack.MsgOptionBlocks(section),
+	}
+	if _, postErr := cw.PostEphemeralMessage(ctx, channelID, slackUserID, msgOpts...); postErr != nil {
+		slog.WarnContext(ctx, "failed to confirm incident declaration", "error", postErr, "incident_id", inc.ID.String())
+	}
+}
+
+// handleIncidentMilestoneModalSubmission records the chosen status. A rejected milestone is shown on the
+// status block, the modal's first.
+func (a *App) handleIncidentMilestoneModalSubmission(ctx context.Context, ic *slack.InteractionCallback, userID uuid.UUID) error {
+	meta, metaErr := getIncidentMilestoneModalViewMetadata(ic.View)
 	if metaErr != nil {
-		return fmt.Errorf("getting modal view metadata: %w", metaErr)
+		return metaErr
 	}
-
-	userId, ok := execution.GetContext(ctx).UserID()
-	if !ok {
-		return fmt.Errorf("missing user context")
-	}
-
-	state := ic.View.State
-	if state == nil {
-		return fmt.Errorf("invalid incident milestone modal view state")
-	}
-
-	setFn := func(m *ent.IncidentMilestoneMutation) {
-		m.SetIncidentID(meta.IncidentId)
-		m.SetSource(integrationName)
-		m.SetTimestamp(time.Now())
-		m.SetUserID(userId)
-		setIncidentMilestoneModalInputMutationFields(m, state)
-	}
-	_, incErr := a.incidents.SetIncidentMilestone(ctx, uuid.Nil, setFn)
-	if incErr != nil {
-		return fmt.Errorf("set milestone from modal data: %w", incErr)
+	params := incidentMilestoneModalInput(ic.View.State)
+	params.IncidentID = meta.IncidentId
+	params.Timestamp = time.Now()
+	params.UserID = &userID
+	params.Source = slackintegration.ProviderName
+	if _, addErr := a.management.AddMilestone(ctx, params); addErr != nil {
+		return fmt.Errorf("add milestone: %w", addErr)
 	}
 	return nil
 }

@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -19,6 +20,7 @@ import (
 	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/ent/review"
 	"github.com/rezible/rezible/ent/systemanalysis"
+	"github.com/rezible/rezible/ent/user"
 )
 
 // RetrospectiveUpdate is the builder for updating Retrospective entities.
@@ -90,6 +92,96 @@ func (_u *RetrospectiveUpdate) SetNillableState(v *retrospective.State) *Retrosp
 	return _u
 }
 
+// SetOwnerID sets the "owner_id" field.
+func (_u *RetrospectiveUpdate) SetOwnerID(v uuid.UUID) *RetrospectiveUpdate {
+	_u.mutation.SetOwnerID(v)
+	return _u
+}
+
+// SetNillableOwnerID sets the "owner_id" field if the given value is not nil.
+func (_u *RetrospectiveUpdate) SetNillableOwnerID(v *uuid.UUID) *RetrospectiveUpdate {
+	if v != nil {
+		_u.SetOwnerID(*v)
+	}
+	return _u
+}
+
+// ClearOwnerID clears the value of the "owner_id" field.
+func (_u *RetrospectiveUpdate) ClearOwnerID() *RetrospectiveUpdate {
+	_u.mutation.ClearOwnerID()
+	return _u
+}
+
+// SetClosedAt sets the "closed_at" field.
+func (_u *RetrospectiveUpdate) SetClosedAt(v time.Time) *RetrospectiveUpdate {
+	_u.mutation.SetClosedAt(v)
+	return _u
+}
+
+// SetNillableClosedAt sets the "closed_at" field if the given value is not nil.
+func (_u *RetrospectiveUpdate) SetNillableClosedAt(v *time.Time) *RetrospectiveUpdate {
+	if v != nil {
+		_u.SetClosedAt(*v)
+	}
+	return _u
+}
+
+// ClearClosedAt clears the value of the "closed_at" field.
+func (_u *RetrospectiveUpdate) ClearClosedAt() *RetrospectiveUpdate {
+	_u.mutation.ClearClosedAt()
+	return _u
+}
+
+// SetClosedByID sets the "closed_by_id" field.
+func (_u *RetrospectiveUpdate) SetClosedByID(v uuid.UUID) *RetrospectiveUpdate {
+	_u.mutation.SetClosedByID(v)
+	return _u
+}
+
+// SetNillableClosedByID sets the "closed_by_id" field if the given value is not nil.
+func (_u *RetrospectiveUpdate) SetNillableClosedByID(v *uuid.UUID) *RetrospectiveUpdate {
+	if v != nil {
+		_u.SetClosedByID(*v)
+	}
+	return _u
+}
+
+// ClearClosedByID clears the value of the "closed_by_id" field.
+func (_u *RetrospectiveUpdate) ClearClosedByID() *RetrospectiveUpdate {
+	_u.mutation.ClearClosedByID()
+	return _u
+}
+
+// SetSkipReason sets the "skip_reason" field.
+func (_u *RetrospectiveUpdate) SetSkipReason(v string) *RetrospectiveUpdate {
+	_u.mutation.SetSkipReason(v)
+	return _u
+}
+
+// SetNillableSkipReason sets the "skip_reason" field if the given value is not nil.
+func (_u *RetrospectiveUpdate) SetNillableSkipReason(v *string) *RetrospectiveUpdate {
+	if v != nil {
+		_u.SetSkipReason(*v)
+	}
+	return _u
+}
+
+// ClearSkipReason clears the value of the "skip_reason" field.
+func (_u *RetrospectiveUpdate) ClearSkipReason() *RetrospectiveUpdate {
+	_u.mutation.ClearSkipReason()
+	return _u
+}
+
+// SetOwner sets the "owner" edge to the User entity.
+func (_u *RetrospectiveUpdate) SetOwner(v *User) *RetrospectiveUpdate {
+	return _u.SetOwnerID(v.ID)
+}
+
+// SetClosedBy sets the "closed_by" edge to the User entity.
+func (_u *RetrospectiveUpdate) SetClosedBy(v *User) *RetrospectiveUpdate {
+	return _u.SetClosedByID(v.ID)
+}
+
 // SetIncident sets the "incident" edge to the Incident entity.
 func (_u *RetrospectiveUpdate) SetIncident(v *Incident) *RetrospectiveUpdate {
 	return _u.SetIncidentID(v.ID)
@@ -138,6 +230,18 @@ func (_u *RetrospectiveUpdate) SetSystemAnalysis(v *SystemAnalysis) *Retrospecti
 // Mutation returns the RetrospectiveMutation object of the builder.
 func (_u *RetrospectiveUpdate) Mutation() *RetrospectiveMutation {
 	return _u.mutation
+}
+
+// ClearOwner clears the "owner" edge to the User entity.
+func (_u *RetrospectiveUpdate) ClearOwner() *RetrospectiveUpdate {
+	_u.mutation.ClearOwner()
+	return _u
+}
+
+// ClearClosedBy clears the "closed_by" edge to the User entity.
+func (_u *RetrospectiveUpdate) ClearClosedBy() *RetrospectiveUpdate {
+	_u.mutation.ClearClosedBy()
+	return _u
 }
 
 // ClearIncident clears the "incident" edge to the Incident entity.
@@ -263,6 +367,80 @@ func (_u *RetrospectiveUpdate) sqlSave(ctx context.Context) (_node int, err erro
 	}
 	if value, ok := _u.mutation.State(); ok {
 		_spec.SetField(retrospective.FieldState, field.TypeEnum, value)
+	}
+	if value, ok := _u.mutation.ClosedAt(); ok {
+		_spec.SetField(retrospective.FieldClosedAt, field.TypeTime, value)
+	}
+	if _u.mutation.ClosedAtCleared() {
+		_spec.ClearField(retrospective.FieldClosedAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.SkipReason(); ok {
+		_spec.SetField(retrospective.FieldSkipReason, field.TypeString, value)
+	}
+	if _u.mutation.SkipReasonCleared() {
+		_spec.ClearField(retrospective.FieldSkipReason, field.TypeString)
+	}
+	if _u.mutation.OwnerCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   retrospective.OwnerTable,
+			Columns: []string{retrospective.OwnerColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.Retrospective
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.OwnerIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   retrospective.OwnerTable,
+			Columns: []string{retrospective.OwnerColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.Retrospective
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.ClosedByCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   retrospective.ClosedByTable,
+			Columns: []string{retrospective.ClosedByColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.Retrospective
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ClosedByIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   retrospective.ClosedByTable,
+			Columns: []string{retrospective.ClosedByColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.Retrospective
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if _u.mutation.IncidentCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -531,6 +709,96 @@ func (_u *RetrospectiveUpdateOne) SetNillableState(v *retrospective.State) *Retr
 	return _u
 }
 
+// SetOwnerID sets the "owner_id" field.
+func (_u *RetrospectiveUpdateOne) SetOwnerID(v uuid.UUID) *RetrospectiveUpdateOne {
+	_u.mutation.SetOwnerID(v)
+	return _u
+}
+
+// SetNillableOwnerID sets the "owner_id" field if the given value is not nil.
+func (_u *RetrospectiveUpdateOne) SetNillableOwnerID(v *uuid.UUID) *RetrospectiveUpdateOne {
+	if v != nil {
+		_u.SetOwnerID(*v)
+	}
+	return _u
+}
+
+// ClearOwnerID clears the value of the "owner_id" field.
+func (_u *RetrospectiveUpdateOne) ClearOwnerID() *RetrospectiveUpdateOne {
+	_u.mutation.ClearOwnerID()
+	return _u
+}
+
+// SetClosedAt sets the "closed_at" field.
+func (_u *RetrospectiveUpdateOne) SetClosedAt(v time.Time) *RetrospectiveUpdateOne {
+	_u.mutation.SetClosedAt(v)
+	return _u
+}
+
+// SetNillableClosedAt sets the "closed_at" field if the given value is not nil.
+func (_u *RetrospectiveUpdateOne) SetNillableClosedAt(v *time.Time) *RetrospectiveUpdateOne {
+	if v != nil {
+		_u.SetClosedAt(*v)
+	}
+	return _u
+}
+
+// ClearClosedAt clears the value of the "closed_at" field.
+func (_u *RetrospectiveUpdateOne) ClearClosedAt() *RetrospectiveUpdateOne {
+	_u.mutation.ClearClosedAt()
+	return _u
+}
+
+// SetClosedByID sets the "closed_by_id" field.
+func (_u *RetrospectiveUpdateOne) SetClosedByID(v uuid.UUID) *RetrospectiveUpdateOne {
+	_u.mutation.SetClosedByID(v)
+	return _u
+}
+
+// SetNillableClosedByID sets the "closed_by_id" field if the given value is not nil.
+func (_u *RetrospectiveUpdateOne) SetNillableClosedByID(v *uuid.UUID) *RetrospectiveUpdateOne {
+	if v != nil {
+		_u.SetClosedByID(*v)
+	}
+	return _u
+}
+
+// ClearClosedByID clears the value of the "closed_by_id" field.
+func (_u *RetrospectiveUpdateOne) ClearClosedByID() *RetrospectiveUpdateOne {
+	_u.mutation.ClearClosedByID()
+	return _u
+}
+
+// SetSkipReason sets the "skip_reason" field.
+func (_u *RetrospectiveUpdateOne) SetSkipReason(v string) *RetrospectiveUpdateOne {
+	_u.mutation.SetSkipReason(v)
+	return _u
+}
+
+// SetNillableSkipReason sets the "skip_reason" field if the given value is not nil.
+func (_u *RetrospectiveUpdateOne) SetNillableSkipReason(v *string) *RetrospectiveUpdateOne {
+	if v != nil {
+		_u.SetSkipReason(*v)
+	}
+	return _u
+}
+
+// ClearSkipReason clears the value of the "skip_reason" field.
+func (_u *RetrospectiveUpdateOne) ClearSkipReason() *RetrospectiveUpdateOne {
+	_u.mutation.ClearSkipReason()
+	return _u
+}
+
+// SetOwner sets the "owner" edge to the User entity.
+func (_u *RetrospectiveUpdateOne) SetOwner(v *User) *RetrospectiveUpdateOne {
+	return _u.SetOwnerID(v.ID)
+}
+
+// SetClosedBy sets the "closed_by" edge to the User entity.
+func (_u *RetrospectiveUpdateOne) SetClosedBy(v *User) *RetrospectiveUpdateOne {
+	return _u.SetClosedByID(v.ID)
+}
+
 // SetIncident sets the "incident" edge to the Incident entity.
 func (_u *RetrospectiveUpdateOne) SetIncident(v *Incident) *RetrospectiveUpdateOne {
 	return _u.SetIncidentID(v.ID)
@@ -579,6 +847,18 @@ func (_u *RetrospectiveUpdateOne) SetSystemAnalysis(v *SystemAnalysis) *Retrospe
 // Mutation returns the RetrospectiveMutation object of the builder.
 func (_u *RetrospectiveUpdateOne) Mutation() *RetrospectiveMutation {
 	return _u.mutation
+}
+
+// ClearOwner clears the "owner" edge to the User entity.
+func (_u *RetrospectiveUpdateOne) ClearOwner() *RetrospectiveUpdateOne {
+	_u.mutation.ClearOwner()
+	return _u
+}
+
+// ClearClosedBy clears the "closed_by" edge to the User entity.
+func (_u *RetrospectiveUpdateOne) ClearClosedBy() *RetrospectiveUpdateOne {
+	_u.mutation.ClearClosedBy()
+	return _u
 }
 
 // ClearIncident clears the "incident" edge to the Incident entity.
@@ -734,6 +1014,80 @@ func (_u *RetrospectiveUpdateOne) sqlSave(ctx context.Context) (_node *Retrospec
 	}
 	if value, ok := _u.mutation.State(); ok {
 		_spec.SetField(retrospective.FieldState, field.TypeEnum, value)
+	}
+	if value, ok := _u.mutation.ClosedAt(); ok {
+		_spec.SetField(retrospective.FieldClosedAt, field.TypeTime, value)
+	}
+	if _u.mutation.ClosedAtCleared() {
+		_spec.ClearField(retrospective.FieldClosedAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.SkipReason(); ok {
+		_spec.SetField(retrospective.FieldSkipReason, field.TypeString, value)
+	}
+	if _u.mutation.SkipReasonCleared() {
+		_spec.ClearField(retrospective.FieldSkipReason, field.TypeString)
+	}
+	if _u.mutation.OwnerCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   retrospective.OwnerTable,
+			Columns: []string{retrospective.OwnerColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.Retrospective
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.OwnerIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   retrospective.OwnerTable,
+			Columns: []string{retrospective.OwnerColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.Retrospective
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.ClosedByCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   retrospective.ClosedByTable,
+			Columns: []string{retrospective.ClosedByColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.Retrospective
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ClosedByIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   retrospective.ClosedByTable,
+			Columns: []string{retrospective.ClosedByColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.Retrospective
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if _u.mutation.IncidentCleared() {
 		edge := &sqlgraph.EdgeSpec{

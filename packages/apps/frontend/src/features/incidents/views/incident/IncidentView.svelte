@@ -4,10 +4,12 @@
 	import { incidentResponseStatus } from "$features/incidents/lib/status";
 	import { initIncidentViewController } from "./controller.svelte";
 	import { initIncidentCollaborationController } from "./collaboration.svelte";
+	import { initIncidentResponseController } from "./response.svelte";
 
 	import LoadingQueryWrapper from "$components/layout/loading-query-wrapper/LoadingQueryWrapper.svelte";
 	import FeatureNavigationRail from "$components/layout/feature-navigation-rail/FeatureNavigationRail.svelte";
 	import IncidentPageActions from "./PageActions.svelte";
+	import IncidentResponseDialogs from "./IncidentResponseDialogs.svelte";
 	import IncidentOverview from "./overview/IncidentOverview.svelte";
 	import IncidentAnalysis from "./analysis/IncidentAnalysis.svelte";
 	import IncidentReport from "./report/IncidentReport.svelte";
@@ -22,7 +24,12 @@
 	const { slug }: Props = $props();
 
 	const view = initIncidentViewController(() => slug);
-	initIncidentCollaborationController(() => view.retrospectiveDocumentId);
+	initIncidentCollaborationController(
+		() => view.retrospectiveDocumentId,
+		() => view.reviewClosed,
+		view.refetchRetrospective
+	);
+	const response = initIncidentResponseController();
 
 	registerPageDescriptor(() => ({
 		title: view.incident?.attributes.title ?? "Incident",
@@ -35,12 +42,13 @@
 </script>
 
 {#snippet actions()}
-	<IncidentPageActions controller={view} />
+	<IncidentPageActions controller={view} {response} />
 {/snippet}
 
 <LoadingQueryWrapper query={view.incidentQuery} feedbackOnly />
 
 {#if view.incident}
+	<IncidentResponseDialogs />
 	<FeatureNavigationRail
 		route="/incidents/[slug]/[[view=incidentView]]"
 		label="Incident"

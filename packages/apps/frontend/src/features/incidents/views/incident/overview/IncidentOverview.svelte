@@ -7,13 +7,19 @@
 	import SectionHeading from "$components/common/section-heading/SectionHeading.svelte";
 	import StatusBadge from "$components/common/status-badge/StatusBadge.svelte";
 	import Timestamp from "$components/common/timestamp/Timestamp.svelte";
-	import Timeline from "$components/common/timeline/Timeline.svelte";
+	import * as Popover from "$components/ui/popover";
+	import RiAddLine from "remixicon-svelte/icons/add-line";
 	import RiArrowRightLine from "remixicon-svelte/icons/arrow-right-line";
+	import RiCloseLine from "remixicon-svelte/icons/close-line";
+	import RiPencilLine from "remixicon-svelte/icons/pencil-line";
 	import RiServerLine from "remixicon-svelte/icons/server-line";
+	import SituationCombobox from "$features/situations/components/situation-combobox/SituationCombobox.svelte";
+	import { useIncidentResponse } from "../response.svelte";
 	import { initIncidentOverviewController } from "./controller.svelte";
 	import IncidentOverviewContext from "./IncidentOverviewContext.svelte";
 
 	const overview = initIncidentOverviewController();
+	const response = useIncidentResponse();
 </script>
 
 {#snippet context()}
@@ -29,6 +35,12 @@
 	<PageCanvas {context} contextLabel="Incident context">
 		<header class="flex flex-col gap-3">
 			<h1 class="text-[28px] leading-9 font-semibold tracking-tight wrap-anywhere">{overview.title}</h1>
+			{#if overview.declaredBy}
+				<p class="text-sm text-muted-foreground">
+					Declared by {overview.declaredBy} ·
+					<Timestamp value={overview.attributes.openedAt} format="absolute" />
+				</p>
+			{/if}
 			{#if overview.summary}
 				<p
 					class="max-w-[72ch] text-[15px] leading-6 whitespace-pre-wrap text-muted-foreground wrap-anywhere"
@@ -100,6 +112,78 @@
 			{/if}
 		</section>
 
+		<section aria-labelledby="linked-situations-title" class="flex flex-col gap-3">
+			<SectionHeading
+				id="linked-situations-title"
+				title="Linked situations"
+				count={overview.situationLinks.length}
+			>
+				{#snippet actions()}
+					<SituationCombobox
+						linkedIds={response.linkedSituationIds}
+						onSelect={response.linkSituation}
+					>
+						{#snippet trigger(props)}
+							<Button {...props} variant="outline" size="sm">
+								<RiAddLine />
+								Link situation
+							</Button>
+						{/snippet}
+					</SituationCombobox>
+				{/snippet}
+			</SectionHeading>
+			{#if overview.situationLinks.length}
+				<ul class="divide-y rounded-lg border bg-card">
+					{#each overview.situationLinks as situation (situation.id)}
+						<li class="flex min-h-12 items-center gap-2 px-4 py-2">
+							<a
+								class="min-w-0 truncate text-sm font-medium hover:underline focus-visible:outline-2 focus-visible:outline-ring"
+								href={situation.href}
+							>
+								{situation.title}
+							</a>
+							<StatusBadge status={situation.status} variant="inline" />
+							{#if situation.closedAt}
+								<span class="text-xs text-muted-foreground">
+									closed <Timestamp value={situation.closedAt} format="absolute" />
+								</span>
+							{/if}
+							<Popover.Root>
+								<Popover.Trigger>
+									{#snippet child({ props })}
+										<Button
+											{...props}
+											variant="ghost"
+											size="icon-sm"
+											class="ml-auto"
+											aria-label="Unlink {situation.title}"
+										>
+											<RiCloseLine />
+										</Button>
+									{/snippet}
+								</Popover.Trigger>
+								<Popover.Content class="flex w-64 flex-col gap-3" align="end">
+									<p class="text-sm">
+										Unlink this situation? It will be re-evaluated and may close.
+									</p>
+									<Button
+										size="sm"
+										variant="outline"
+										class="self-end"
+										onclick={() => response.unlinkSituation(situation.id)}
+									>
+										Unlink
+									</Button>
+								</Popover.Content>
+							</Popover.Root>
+						</li>
+					{/each}
+				</ul>
+			{:else}
+				<p class="text-sm text-muted-foreground">No situations are linked to this incident.</p>
+			{/if}
+		</section>
+
 		<section aria-labelledby="understanding-title" class="flex flex-col gap-3">
 			<div class="flex flex-col gap-1">
 				<SectionHeading id="understanding-title" title="Current understanding" />
@@ -150,14 +234,69 @@
 					</p>
 				{/if}
 			{:else}
-				<p class="text-sm text-muted-foreground">No situations are linked to this incident.</p>
+				<p class="text-sm text-muted-foreground">
+					Link a situation to see its investigation's conclusions.
+				</p>
 			{/if}
 		</section>
 
 		<section aria-labelledby="milestones-title" class="flex flex-col gap-3">
-			<SectionHeading id="milestones-title" title="Milestones" count={overview.milestones.length} />
+			<SectionHeading id="milestones-title" title="Milestones" count={overview.milestones.length}>
+				{#snippet actions()}
+					{#if response.enabled}
+						<Button variant="outline" size="sm" onclick={response.openRecordMilestone}>
+							Record milestone
+						</Button>
+					{/if}
+				{/snippet}
+			</SectionHeading>
 			{#if overview.milestones.length}
-				<Timeline entries={overview.milestones} label="Incident milestones" timeFormat="absolute" />
+				<ol aria-label="Incident milestones" class="flex flex-col">
+					{#each overview.milestones as entry (entry.id)}
+						<li
+							class="group relative grid grid-cols-[12px_minmax(0,1fr)_auto] gap-x-3 pb-5 before:absolute before:top-4 before:bottom-0 before:left-[5.5px] before:w-px before:bg-border last:pb-0 last:before:hidden"
+						>
+							<span
+								class="mt-1.5 size-2 justify-self-center rounded-full {entry.marker}"
+								aria-hidden="true"
+							></span>
+							<div class="flex min-w-0 flex-col gap-0.5">
+								<span class="flex items-baseline gap-2 text-sm font-medium">
+									{entry.label}
+									{#if entry.caption}
+										<span class="text-xs font-normal text-muted-foreground">
+											{entry.caption}
+										</span>
+									{/if}
+								</span>
+								<Timestamp
+									value={entry.at}
+									format="absolute"
+									class="self-start text-xs text-muted-foreground"
+								/>
+								{#if entry.description}
+									<p class="text-sm whitespace-pre-wrap text-muted-foreground">
+										{entry.description}
+									</p>
+								{/if}
+								{#if entry.meta}
+									<span class="text-xs text-muted-foreground">{entry.meta}</span>
+								{/if}
+							</div>
+							{#if response.enabled}
+								<Button
+									variant="ghost"
+									size="icon-sm"
+									class="opacity-0 group-hover:opacity-100 focus-visible:opacity-100"
+									aria-label="Edit {entry.label} milestone"
+									onclick={() => response.openEditMilestone(entry.milestone)}
+								>
+									<RiPencilLine />
+								</Button>
+							{/if}
+						</li>
+					{/each}
+				</ol>
 			{:else}
 				<p class="text-sm text-muted-foreground">No milestones recorded.</p>
 			{/if}

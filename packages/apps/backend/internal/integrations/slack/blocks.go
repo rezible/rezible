@@ -16,11 +16,13 @@ func PlainTextBlock(text string) *slack.TextBlockObject {
 	return slack.NewTextBlockObject(slack.PlainTextType, text, true, false)
 }
 
+// MarkdownBlock is mrkdwn that Slack shows verbatim, so escaped text cannot become a link or mention through
+// Slack's automatic parsing, while links and mentions Rezible builds still work.
 func MarkdownBlock(text string) *slack.TextBlockObject {
 	if text == "" {
 		return nil
 	}
-	return slack.NewTextBlockObject(slack.MarkdownType, text, false, false)
+	return slack.NewTextBlockObject(slack.MarkdownType, text, false, true)
 }
 
 func GetViewStateBlockAction(state *slack.ViewState, ids BlockActionIds) *slack.BlockAction {

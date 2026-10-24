@@ -1,78 +1,81 @@
 import { goto } from "$app/navigation";
+import { resolve } from "$app/paths";
+import { page } from "$app/state";
 import {
 	createIncidentMutation,
 	getIncidentMetadataOptions,
-	getIncidentMetadataQueryKey,
+	getIncidentOptions,
+	getSituationQueryKey,
 	listIncidentsQueryKey,
 	type ApiError,
 	type Incident,
-	type IncidentField,
-	type IncidentSeverity,
-	type IncidentType,
+	type Situation,
 } from "$lib/api";
-import { createMutation, createQuery, useQueryClient } from "@tanstack/svelte-query";
-import { Context, watch } from "runed";
-import { CreateIncidentFormSchema, getEmptyCreateIncidentForm, type CreateIncidentFormState } from "./form";
+import { useUserSessionState } from "$lib/user-session.svelte";
+import { createMutation, createQueries, createQuery, useQueryClient } from "@tanstack/svelte-query";
+import { Context } from "runed";
 
-const getNamedLabel = (
-	items: IncidentSeverity[] | IncidentType[],
-	id: string | undefined,
-	fallback: string
-) => {
-	return !id ? fallback : (items.find((item) => item.id === id)?.attributes.name ?? fallback);
-};
+import {
+	CreateIncidentFormSchema,
+	getEmptyCreateIncidentForm,
+	type CreateIncidentFormState,
+	type DeclareSituation,
+} from "./form";
 
+const DECLARE_PARAM = "declare";
+
+export type ExistingIncident = { title: string; href: string };
+
+export const declareSituationFrom = (situation: Situation): DeclareSituation => ({
+	id: situation.id,
+	title: situation.attributes.title,
+	stage: situation.attributes.stage,
+	linkedIncidentIds: situation.attributes.linkedIncidentIds,
+});
+
+/** The declare incident dialog, mounted once in the app shell. */
 export class IncidentCreateDialogController {
 	private queryClient = useQueryClient();
+	private session = useUserSessionState();
+
+	enabled = $derived(!!this.session.orgPreferences?.enableIncidentManagement);
+	isAdmin = $derived(this.session.isAdmin);
 
 	open = $state(false);
 	error = $state<ApiError>();
 	form = $state<CreateIncidentFormState>(getEmptyCreateIncidentForm());
+	private submitted = $state(false);
 
 	metadataQuery = createQuery(() => ({
 		...getIncidentMetadataOptions(),
 		enabled: this.open,
 	}));
-	private metadata = $derived(this.metadataQuery.data?.data);
-	loading = $derived(this.metadataQuery.isLoading);
+	metadata = $derived(this.metadataQuery.data?.data);
+	metadataError = $derived(this.metadataQuery.error as ApiError | null);
 
-	severities = $derived(
-		(this.metadata?.severities ?? []).sort((a, b) => a.attributes.rank - b.attributes.rank)
-	);
-	types = $derived(this.metadata?.types ?? []);
-	tags = $derived(this.metadata?.tags ?? []);
-	fields = $derived(this.metadata?.fields ?? []);
+	private parsedForm = $derived(this.open ? CreateIncidentFormSchema.safeParse(this.form) : null);
+	titleError = $derived(this.getTitleError());
 
-	constructor() {
-		watch(
-			() => this.metadata,
-			(md) => {
-				if (!md) return;
-				// set default form
-			}
-		);
-	}
-
-	parsedForm = $derived(this.open ? CreateIncidentFormSchema.safeParse(this.form) : null);
-
-	fieldErrors = $derived(
-		this.parsedForm && !this.parsedForm.success ? this.parsedForm.error.flatten().fieldErrors : {}
-	);
-
-	private async onIncidentCreated(incident: Incident) {
-		this.error = undefined;
-		await Promise.all([
-			this.queryClient.invalidateQueries({ queryKey: listIncidentsQueryKey() }),
-			this.queryClient.invalidateQueries({ queryKey: getIncidentMetadataQueryKey() }),
-		]);
-		this.setOpen(false);
-		await goto(`/incidents/${incident.attributes.slug}`);
-	}
+	// Incidents the chosen situations are already part of, to point out an unresolved one.
+	private linkedIncidentIds = $derived([
+		...new Set(this.form.situations.flatMap((situation) => situation.linkedIncidentIds)),
+	]);
+	private linkedIncidentQueries = createQueries(() => ({
+		queries: this.linkedIncidentIds.map((id) => getIncidentOptions({ path: { id } })),
+	}));
 
 	createMut = createMutation(() => ({
 		...createIncidentMutation(),
 		onSuccess: async ({ data }) => {
-			await this.onIncidentCreated(data);
+			await this.queryClient.invalidateQueries({ queryKey: listIncidentsQueryKey() });
+			for (const situation of this.form.situations) {
+				await this.queryClient.invalidateQueries({
+					queryKey: getSituationQueryKey({ path: { id: situation.id } }),
+				});
+			}
+			this.open = false;
+			this.reset();
+			await goto(resolve("/incidents/[slug]/[[view=incidentView]]", { slug: data.slug }));
 		},
 		onError: (err) => {
 			this.error = err as ApiError;
@@ -80,70 +83,98 @@ export class IncidentCreateDialogController {
 	}));
 
 	isPending = $derived(this.createMut.isPending);
-	canSubmit = $derived(!!this.parsedForm?.success && !this.isPending && !this.metadataQuery.isLoading);
 
-	openCreate = () => {
-		this.error = undefined;
+	/** Opens the dialog, prefilled with the situation when one is given. */
+	openCreate = (options?: { situation?: DeclareSituation }) => {
+		this.reset();
+		const situation = options?.situation;
+		if (situation) {
+			this.form.title = situation.title;
+			this.form.situations = [situation];
+		}
 		this.open = true;
 	};
 
 	setOpen = (open: boolean) => {
 		this.open = open;
-		if (!open) this.reset();
-	};
-
-	reset = () => {
-		this.form = getEmptyCreateIncidentForm();
-		this.error = undefined;
-	};
-
-	toggleTag = (tagId: string) => {
-		const tagIds = new Set(this.form.tagIds);
-		if (tagIds.has(tagId)) {
-			tagIds.delete(tagId);
-		} else {
-			tagIds.add(tagId);
+		if (!open) {
+			this.reset();
+			this.clearDeclareParam();
 		}
-		this.form.tagIds = [...tagIds];
 	};
 
-	setFieldSelection = (fieldId: string, optionId: string) => {
-		if (!optionId) {
-			const { [fieldId]: _, ...rest } = this.form.fieldSelections;
-			this.form.fieldSelections = rest;
+	/** Removes the parameter that asked for the dialog, so it doesn't open again. */
+	clearDeclareParam = async () => {
+		if (!page.url.searchParams.has(DECLARE_PARAM)) {
 			return;
 		}
-
-		this.form.fieldSelections = {
-			...this.form.fieldSelections,
-			[fieldId]: optionId,
-		};
+		const url = new URL(page.url);
+		url.searchParams.delete(DECLARE_PARAM);
+		await goto(url, { replaceState: true, noScroll: true, keepFocus: true });
 	};
 
-	getFieldSelection = (fieldId: string) => this.form.fieldSelections[fieldId] ?? "";
-
-	getFieldSelectionLabel = (field: IncidentField) => {
-		const selectedId = this.getFieldSelection(field.id);
-		if (!selectedId) return "Select an option";
-		return (
-			field.attributes.options.find((option) => option.id === selectedId)?.attributes.value ??
-			"Select an option"
-		);
+	addSituation = (situation: Situation) => {
+		if (this.form.situations.some((chosen) => chosen.id === situation.id)) {
+			return;
+		}
+		this.form.situations = [...this.form.situations, declareSituationFrom(situation)];
 	};
 
-	hasTag = (tagId: string) => this.form.tagIds.includes(tagId);
+	removeSituation = (situationId: string) => {
+		this.form.situations = this.form.situations.filter((situation) => situation.id !== situationId);
+	};
+
+	/** The newest unresolved incident the situation is already part of, if any. Equal open times are ordered by ID. */
+	existingIncidentFor(situation: DeclareSituation): ExistingIncident | undefined {
+		let newest: Incident | undefined;
+		for (const query of this.linkedIncidentQueries) {
+			const incident = query.data?.data;
+			if (!incident || incident.attributes.responseState === "resolved") {
+				continue;
+			}
+			if (!situation.linkedIncidentIds.includes(incident.id)) {
+				continue;
+			}
+			if (!newest || this.openedLater(incident, newest)) {
+				newest = incident;
+			}
+		}
+		if (!newest) {
+			return undefined;
+		}
+		const href = resolve("/incidents/[slug]/[[view=incidentView]]", { slug: newest.attributes.slug });
+		return { title: newest.attributes.title, href };
+	}
+
+	private openedLater(incident: Incident, than: Incident) {
+		const byTime = Date.parse(incident.attributes.openedAt) - Date.parse(than.attributes.openedAt);
+		if (byTime !== 0) {
+			return byTime > 0;
+		}
+		return incident.id > than.id;
+	}
 
 	submit = () => {
-		if (!this.parsedForm?.success) return;
-		this.createMut.mutate({
-			body: {
-				attributes: this.parsedForm.data,
-			},
-		});
+		this.error = undefined;
+		this.submitted = true;
+		if (!this.parsedForm?.success) {
+			return;
+		}
+		this.createMut.mutate({ body: { attributes: this.parsedForm.data } });
 	};
 
-	getSeverityLabel = (severityId?: string) => getNamedLabel(this.severities, severityId, "Select severity");
-	getTypeLabel = (typeId?: string) => getNamedLabel(this.types, typeId, "Select type");
+	private reset() {
+		this.form = getEmptyCreateIncidentForm();
+		this.error = undefined;
+		this.submitted = false;
+	}
+
+	private getTitleError() {
+		if (!this.submitted || !this.parsedForm || this.parsedForm.success) {
+			return undefined;
+		}
+		return this.parsedForm.error.flatten().fieldErrors.title?.[0];
+	}
 }
 
 const ctx = new Context<IncidentCreateDialogController>("IncidentCreateDialogController");

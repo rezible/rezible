@@ -176,6 +176,26 @@ func (_u *ReviewUpdate) ClearFeedback() *ReviewUpdate {
 	return _u
 }
 
+// SetMessageFailedAt sets the "message_failed_at" field.
+func (_u *ReviewUpdate) SetMessageFailedAt(v time.Time) *ReviewUpdate {
+	_u.mutation.SetMessageFailedAt(v)
+	return _u
+}
+
+// SetNillableMessageFailedAt sets the "message_failed_at" field if the given value is not nil.
+func (_u *ReviewUpdate) SetNillableMessageFailedAt(v *time.Time) *ReviewUpdate {
+	if v != nil {
+		_u.SetMessageFailedAt(*v)
+	}
+	return _u
+}
+
+// ClearMessageFailedAt clears the value of the "message_failed_at" field.
+func (_u *ReviewUpdate) ClearMessageFailedAt() *ReviewUpdate {
+	_u.mutation.ClearMessageFailedAt()
+	return _u
+}
+
 // SetRetrospective sets the "retrospective" edge to the Retrospective entity.
 func (_u *ReviewUpdate) SetRetrospective(v *Retrospective) *ReviewUpdate {
 	return _u.SetRetrospectiveID(v.ID)
@@ -323,6 +343,12 @@ func (_u *ReviewUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if _u.mutation.FeedbackCleared() {
 		_spec.ClearField(review.FieldFeedback, field.TypeString)
+	}
+	if value, ok := _u.mutation.MessageFailedAt(); ok {
+		_spec.SetField(review.FieldMessageFailedAt, field.TypeTime, value)
+	}
+	if _u.mutation.MessageFailedAtCleared() {
+		_spec.ClearField(review.FieldMessageFailedAt, field.TypeTime)
 	}
 	if _u.mutation.RetrospectiveCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -643,6 +669,26 @@ func (_u *ReviewUpdateOne) ClearFeedback() *ReviewUpdateOne {
 	return _u
 }
 
+// SetMessageFailedAt sets the "message_failed_at" field.
+func (_u *ReviewUpdateOne) SetMessageFailedAt(v time.Time) *ReviewUpdateOne {
+	_u.mutation.SetMessageFailedAt(v)
+	return _u
+}
+
+// SetNillableMessageFailedAt sets the "message_failed_at" field if the given value is not nil.
+func (_u *ReviewUpdateOne) SetNillableMessageFailedAt(v *time.Time) *ReviewUpdateOne {
+	if v != nil {
+		_u.SetMessageFailedAt(*v)
+	}
+	return _u
+}
+
+// ClearMessageFailedAt clears the value of the "message_failed_at" field.
+func (_u *ReviewUpdateOne) ClearMessageFailedAt() *ReviewUpdateOne {
+	_u.mutation.ClearMessageFailedAt()
+	return _u
+}
+
 // SetRetrospective sets the "retrospective" edge to the Retrospective entity.
 func (_u *ReviewUpdateOne) SetRetrospective(v *Retrospective) *ReviewUpdateOne {
 	return _u.SetRetrospectiveID(v.ID)
@@ -820,6 +866,12 @@ func (_u *ReviewUpdateOne) sqlSave(ctx context.Context) (_node *Review, err erro
 	}
 	if _u.mutation.FeedbackCleared() {
 		_spec.ClearField(review.FieldFeedback, field.TypeString)
+	}
+	if value, ok := _u.mutation.MessageFailedAt(); ok {
+		_spec.SetField(review.FieldMessageFailedAt, field.TypeTime, value)
+	}
+	if _u.mutation.MessageFailedAtCleared() {
+		_spec.ClearField(review.FieldMessageFailedAt, field.TypeTime)
 	}
 	if _u.mutation.RetrospectiveCleared() {
 		edge := &sqlgraph.EdgeSpec{

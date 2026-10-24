@@ -7,6 +7,9 @@
 	import { cn } from "$lib/utils";
 
 	import * as Sidebar from "$components/ui/sidebar";
+	import CreateIncidentDialog, {
+		initIncidentCreateDialogController,
+	} from "$features/incidents/components/create-incident-dialog";
 	import { Spinner } from "$components/ui/spinner";
 	import AppSidebar from "./app-sidebar/AppSidebar.svelte";
 	import PageHeader from "./PageHeader.svelte";
@@ -15,6 +18,8 @@
 
 	const shell = initAppShell();
 	const sess = initUserSessionState();
+	// Declaring an incident is offered from several pages, so its dialog is shared.
+	initIncidentCreateDialogController();
 
 	// TODO: remove this
 	initUserOncallInformationState();
@@ -47,6 +52,9 @@
 			</div>
 		</main>
 	</Sidebar.Provider>
+	{#if sess.isSetup}
+		<CreateIncidentDialog />
+	{/if}
 {:else}
 	<div class="w-full h-dvh grid place-items-center">
 		<Spinner />

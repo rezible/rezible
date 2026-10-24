@@ -26,8 +26,20 @@ const (
 	FieldSystemAnalysisID = "system_analysis_id"
 	// FieldState holds the string denoting the state field in the database.
 	FieldState = "state"
+	// FieldOwnerID holds the string denoting the owner_id field in the database.
+	FieldOwnerID = "owner_id"
+	// FieldClosedAt holds the string denoting the closed_at field in the database.
+	FieldClosedAt = "closed_at"
+	// FieldClosedByID holds the string denoting the closed_by_id field in the database.
+	FieldClosedByID = "closed_by_id"
+	// FieldSkipReason holds the string denoting the skip_reason field in the database.
+	FieldSkipReason = "skip_reason"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
+	// EdgeOwner holds the string denoting the owner edge name in mutations.
+	EdgeOwner = "owner"
+	// EdgeClosedBy holds the string denoting the closed_by edge name in mutations.
+	EdgeClosedBy = "closed_by"
 	// EdgeIncident holds the string denoting the incident edge name in mutations.
 	EdgeIncident = "incident"
 	// EdgeDocument holds the string denoting the document edge name in mutations.
@@ -47,6 +59,20 @@ const (
 	TenantInverseTable = "tenants"
 	// TenantColumn is the table column denoting the tenant relation/edge.
 	TenantColumn = "tenant_id"
+	// OwnerTable is the table that holds the owner relation/edge.
+	OwnerTable = "retrospectives"
+	// OwnerInverseTable is the table name for the User entity.
+	// It exists in this package in order to avoid circular dependency with the "user" package.
+	OwnerInverseTable = "users"
+	// OwnerColumn is the table column denoting the owner relation/edge.
+	OwnerColumn = "owner_id"
+	// ClosedByTable is the table that holds the closed_by relation/edge.
+	ClosedByTable = "retrospectives"
+	// ClosedByInverseTable is the table name for the User entity.
+	// It exists in this package in order to avoid circular dependency with the "user" package.
+	ClosedByInverseTable = "users"
+	// ClosedByColumn is the table column denoting the closed_by relation/edge.
+	ClosedByColumn = "closed_by_id"
 	// IncidentTable is the table that holds the incident relation/edge.
 	IncidentTable = "retrospectives"
 	// IncidentInverseTable is the table name for the Incident entity.
@@ -92,6 +118,10 @@ var Columns = []string{
 	FieldDocumentID,
 	FieldSystemAnalysisID,
 	FieldState,
+	FieldOwnerID,
+	FieldClosedAt,
+	FieldClosedByID,
+	FieldSkipReason,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -123,7 +153,6 @@ type State string
 const (
 	StateDraft    State = "draft"
 	StateInReview State = "in_review"
-	StateMeeting  State = "meeting"
 	StateClosed   State = "closed"
 )
 
@@ -134,7 +163,7 @@ func (s State) String() string {
 // StateValidator is a validator for the "state" field enum values. It is called by the builders before save.
 func StateValidator(s State) error {
 	switch s {
-	case StateDraft, StateInReview, StateMeeting, StateClosed:
+	case StateDraft, StateInReview, StateClosed:
 		return nil
 	default:
 		return fmt.Errorf("retrospective: invalid enum value for state field: %q", s)
@@ -174,10 +203,44 @@ func ByState(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldState, opts...).ToFunc()
 }
 
+// ByOwnerID orders the results by the owner_id field.
+func ByOwnerID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldOwnerID, opts...).ToFunc()
+}
+
+// ByClosedAt orders the results by the closed_at field.
+func ByClosedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldClosedAt, opts...).ToFunc()
+}
+
+// ByClosedByID orders the results by the closed_by_id field.
+func ByClosedByID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldClosedByID, opts...).ToFunc()
+}
+
+// BySkipReason orders the results by the skip_reason field.
+func BySkipReason(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldSkipReason, opts...).ToFunc()
+}
+
 // ByTenantField orders the results by tenant field.
 func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newTenantStep(), sql.OrderByField(field, opts...))
+	}
+}
+
+// ByOwnerField orders the results by owner field.
+func ByOwnerField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newOwnerStep(), sql.OrderByField(field, opts...))
+	}
+}
+
+// ByClosedByField orders the results by closed_by field.
+func ByClosedByField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newClosedByStep(), sql.OrderByField(field, opts...))
 	}
 }
 
@@ -236,6 +299,20 @@ func newTenantStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
 	)
 }
+func newOwnerStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(OwnerInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, OwnerTable, OwnerColumn),
+	)
+}
+func newClosedByStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ClosedByInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, ClosedByTable, ClosedByColumn),
+	)
+}
 func newIncidentStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -276,6 +353,5 @@ func newSystemAnalysisStep() *sqlgraph.Step {
 var StateValues = []string{
 	"draft",
 	"in_review",
-	"meeting",
 	"closed",
 }

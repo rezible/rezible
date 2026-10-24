@@ -2,6 +2,7 @@ package slackincidents
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"net/url"
@@ -12,144 +13,242 @@ import (
 	"github.com/gosimple/slug"
 	"github.com/slack-go/slack"
 
-	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/incident"
-	im "github.com/rezible/rezible/ent/incidentmilestone"
+	"github.com/rezible/rezible/ent/schema"
 	"github.com/rezible/rezible/internal/integrations/slack"
 )
 
-type incidentUpdateProcessor struct {
-	logger *slog.Logger
+const (
+	// maxTopicRunes is Slack's limit on a channel topic.
+	maxTopicRunes = 250
+	// maxChannelNameRunes is Slack's limit on a channel name.
+	maxChannelNameRunes = 80
+)
 
-	db        rez.Database
-	incidents rez.IncidentService
-	mq        rez.MessageQueue
-	jobs      rez.JobService
+const bookmarkTitleIncident = "Open in Rezible"
 
+// incidentChannel is an incident with the installation that runs its response channel.
+type incidentChannel struct {
 	inc         *ent.Incident
 	incidentUrl *url.URL
-	prefs       UserSettingsIncidents
 	client      *slackintegration.ClientWrapper
+	config      *slackintegration.InstallationConfig
+	settings    *UserSettingsIncidents
 }
 
-func (a *App) newUpdateProcessor(ctx context.Context, client *slackintegration.ClientWrapper, incidentId uuid.UUID) (*incidentUpdateProcessor, error) {
-	inc, incErr := a.incidents.Get(ctx, incident.ID(incidentId))
-	if incErr != nil {
-		return nil, fmt.Errorf("get incident: %w", incErr)
+// loadIncidentChannel reads the incident and the installation as they are now. It returns nil when there is no
+// channel work to do: the incident was archived or has no declarer (it was observed, not run in Rezible),
+// incident management is off, or the app is not installed.
+func (a *App) loadIncidentChannel(ctx context.Context, incidentID uuid.UUID) (*incidentChannel, error) {
+	inc, getErr := a.incidents.GetIncident(ctx, incident.ID(incidentID))
+	if getErr != nil {
+		if !ent.IsNotFound(getErr) {
+			return nil, fmt.Errorf("get incident: %w", getErr)
+		}
+		archived, archivedErr := a.incidents.GetIncident(schema.IncludeArchived(ctx), incident.ID(incidentID))
+		if archivedErr != nil {
+			return nil, fmt.Errorf("get archived incident: %w", archivedErr)
+		}
+		if archived.ArchiveTime == nil {
+			return nil, fmt.Errorf("incident %s not found", incidentID)
+		}
+		return nil, nil
 	}
-
+	if inc.DeclaredByID == nil {
+		return nil, nil
+	}
+	enabled, enabledErr := a.orgs.IsIncidentManagementEnabled(ctx)
+	if enabledErr != nil {
+		return nil, fmt.Errorf("check incident management: %w", enabledErr)
+	}
+	if !enabled {
+		return nil, nil
+	}
+	client, clientErr := a.getEnabledIntegrationClient(ctx)
+	if clientErr != nil {
+		return nil, fmt.Errorf("get slack incidents client: %w", clientErr)
+	}
+	if client == nil {
+		return nil, nil
+	}
+	config, configErr := slackintegration.GetValidatedConfig(client.Integration().InstallationConfig)
+	if configErr != nil {
+		return nil, fmt.Errorf("slack incidents config: %w", configErr)
+	}
+	settings, settingsErr := readIncidentSettings(client.Integration())
+	if settingsErr != nil {
+		return nil, settingsErr
+	}
 	incUrl, incUrlErr := a.cfg.App.GetFrontendUrl("incidents", inc.Slug)
 	if incUrlErr != nil {
 		return nil, fmt.Errorf("incident url: %w", incUrlErr)
 	}
-
-	return &incidentUpdateProcessor{
-		inc:         inc,
-		logger:      slog.Default().With("service", "slack.incident_updates"),
-		incidentUrl: incUrl,
-		db:          a.db,
-		incidents:   a.incidents,
-		mq:          a.mq,
-		jobs:        a.jobs,
-		client:      client,
-		prefs:       defaultIncidentPreferences,
-	}, nil
+	return &incidentChannel{inc: inc, incidentUrl: incUrl, client: client, config: config, settings: settings}, nil
 }
 
-func (p *incidentUpdateProcessor) processIncidentUpdate(ctx context.Context) error {
-	if p.inc.ChatChannelID == "" {
-		args := createIncidentChannelJobArgs{IncidentId: p.inc.ID}
-		if _, jobErr := p.jobs.Insert(ctx, args, nil); jobErr != nil {
-			return fmt.Errorf("create incident job: %w", jobErr)
+// syncIncidentChannel requests the incident's channel when it has none, and otherwise brings the channel up
+// to date. Each step runs even when another fails; the job fails at the end so River retries.
+func (a *App) syncIncidentChannel(ctx context.Context, incidentID uuid.UUID) error {
+	c, loadErr := a.loadIncidentChannel(ctx, incidentID)
+	if loadErr != nil || c == nil {
+		return loadErr
+	}
+	if c.inc.ChatChannelID == "" || c.inc.ChatDetailsMessageID == "" {
+		args := createIncidentChannelJobArgs{IncidentId: c.inc.ID}
+		if _, jobErr := a.jobs.Insert(ctx, args, nil); jobErr != nil {
+			return fmt.Errorf("insert create incident channel job: %w", jobErr)
 		}
 	}
-	return p.updateIncidentChannel(ctx)
-}
-
-func (p *incidentUpdateProcessor) processIncidentMilestoneUpdate(ctx context.Context, msId uuid.UUID) error {
-	// TODO: check if we care about this milestone kind
-	args := sendMilestoneMessageJobArgs{IncidentId: p.inc.ID, MilestoneId: msId}
-	if _, jobErr := p.jobs.Insert(ctx, args, nil); jobErr != nil {
-		return fmt.Errorf("send milestone message job: %w", jobErr)
-	}
-	return nil
-}
-
-func (p *incidentUpdateProcessor) sendIncidentMilestoneMessage(ctx context.Context, milestoneId uuid.UUID) error {
-	if p.inc.ChatChannelID == "" {
-		// just created, don't send milestone update
+	if c.inc.ChatChannelID == "" {
 		return nil
 	}
-	ms, msErr := p.incidents.GetIncidentMilestone(ctx, milestoneId)
-	if msErr != nil {
-		return fmt.Errorf("failed to get milestone: %w", msErr)
-	}
 
-	userTag := "Somebody"
-	if msUser := ms.Edges.User; msUser != nil {
-		if msUser.ChatID != "" {
-			userTag = fmt.Sprintf("<@%s>", msUser.ChatID)
-		} else {
-			userTag = msUser.Name
+	steps := []struct {
+		name string
+		run  func(context.Context) error
+	}{
+		{"update details message", c.updateDetailsMessage},
+		{"update channel topic", c.updateTopic},
+		{"add channel bookmark", c.ensureBookmark},
+		{"invite people", c.inviteMembers},
+	}
+	var stepErrs []error
+	for _, step := range steps {
+		if stepErr := step.run(ctx); stepErr != nil {
+			slog.WarnContext(ctx, "incident channel sync step failed",
+				"step", step.name,
+				"error", stepErr,
+				"incident_id", c.inc.ID.String(),
+				"channel_id", c.inc.ChatChannelID,
+			)
+			stepErrs = append(stepErrs, fmt.Errorf("%s: %w", step.name, stepErr))
 		}
 	}
+	return errors.Join(stepErrs...)
+}
 
-	verb := "updated"
-	label := strings.ToUpper(ms.Kind.String())
-	switch ms.Kind {
-	case im.KindImpact:
-		verb = "reported"
-	case im.KindMitigation:
-		verb = "marked"
-	case im.KindResolution:
-		verb = "resolved"
+// createIncidentChannel creates the response channel when there is none, and posts and pins its details
+// message when there is none. Only this job, unique by incident, posts the details message, so concurrent
+// syncs cannot post it twice. The channel is stored last: that publishes an incident update, and its sync
+// edits the stored details message with anything that changed meanwhile. Then it announces the incident.
+func (a *App) createIncidentChannel(ctx context.Context, incidentID uuid.UUID) error {
+	c, loadErr := a.loadIncidentChannel(ctx, incidentID)
+	if loadErr != nil || c == nil {
+		return loadErr
+	}
+	created := c.inc.ChatChannelID == ""
+	if created {
+		channelID, createErr := c.createChannel(ctx)
+		if createErr != nil {
+			return createErr
+		}
+		c.inc.ChatChannelID = channelID
+	}
+	if c.inc.ChatDetailsMessageID == "" {
+		messageID, postErr := c.postDetailsMessage(ctx)
+		if postErr != nil {
+			return postErr
+		}
+		if setErr := a.incidents.SetChatDetailsMessage(ctx, c.inc.ID, messageID); setErr != nil {
+			return fmt.Errorf("set incident details message: %w", setErr)
+		}
+	}
+	if !created {
+		return nil
 	}
 
-	bodyText := fmt.Sprintf("%s %s the incident as *%s*", userTag, verb, label)
-	blocks := []slack.Block{
-		slack.NewSectionBlock(slack.NewTextBlockObject("mrkdwn", bodyText, false, false), nil, nil),
+	if setErr := a.incidents.SetChatChannel(ctx, c.inc.ID, c.inc.ChatChannelID); setErr != nil {
+		return fmt.Errorf("set incident chat channel: %w", setErr)
 	}
-	if ms.Description != "" {
-		blocks = append(blocks, slack.NewContextBlock(
-			"",
-			slack.NewTextBlockObject("mrkdwn", fmt.Sprintf("Note: %s", ms.Description), false, false),
-		))
+	if announceErr := c.postAnnouncement(ctx); announceErr != nil {
+		slog.WarnContext(ctx, "failed to post incident announcement",
+			"error", announceErr,
+			"incident_id", c.inc.ID.String(),
+		)
 	}
-	msgTs, msgErr := p.client.PostMessage(ctx, p.inc.ChatChannelID, slack.MsgOptionBlocks(blocks...))
-	if msgErr != nil {
-		return fmt.Errorf("failed to post announcement message: %w", msgErr)
-	}
-	if ms.Metadata == nil {
-		ms.Metadata = map[string]string{}
-	}
-	ms.Metadata["msg_ts"] = msgTs
-	if updateErr := ms.Update().SetMetadata(ms.Metadata).Exec(ctx); updateErr != nil {
-		return fmt.Errorf("failed to update metadata: %w", updateErr)
-	}
-
 	return nil
 }
 
-func (p *incidentUpdateProcessor) getIncidentChannelName() string {
-	namePattern := p.prefs.ChannelNamePattern
-	if namePattern == "" {
-		namePattern = "incident-{slug}"
+// createChannel creates the response channel, or finds the one a failed attempt created.
+func (c *incidentChannel) createChannel(ctx context.Context) (string, error) {
+	channelName := c.channelName()
+	createParams := slack.CreateConversationParams{
+		ChannelName: channelName,
+		IsPrivate:   false,
 	}
-	name := strings.ReplaceAll(namePattern, "{id}", p.inc.ID.String())
-	name = strings.ReplaceAll(name, "{slug}", p.inc.Slug)
-	name = strings.ReplaceAll(name, "{title}", slug.Make(p.inc.Title))
-	return name
+	channel, createErr := c.client.Client().CreateConversationContext(ctx, createParams)
+	if createErr != nil {
+		if !strings.Contains(createErr.Error(), "name_taken") {
+			return "", fmt.Errorf("create channel: %w", createErr)
+		}
+		slog.WarnContext(ctx, "slack incident channel already exists, attempting relink",
+			"error", createErr,
+			"incident_id", c.inc.ID.String(),
+			"channel_name", channelName,
+		)
+		existingChannel, lookupErr := c.findConversationByName(ctx, channelName)
+		if lookupErr != nil {
+			return "", fmt.Errorf("lookup existing channel after name_taken: %w", lookupErr)
+		}
+		if existingChannel == nil {
+			return "", fmt.Errorf("slack reported name_taken but no conversation named %q was found", channelName)
+		}
+		channel = existingChannel
+	}
+	return channel.ID, nil
 }
 
-func (p *incidentUpdateProcessor) findConversationByName(ctx context.Context, channelName string) (*slack.Channel, error) {
+// postIncidentMilestone posts the milestone to the response channel, once. Before the channel exists there is
+// nothing to post to: the details message created with the channel shows the latest update.
+func (a *App) postIncidentMilestone(ctx context.Context, incidentID uuid.UUID, milestoneID uuid.UUID) error {
+	c, loadErr := a.loadIncidentChannel(ctx, incidentID)
+	if loadErr != nil || c == nil || c.inc.ChatChannelID == "" {
+		return loadErr
+	}
+	ms, msErr := a.incidents.GetMilestone(ctx, milestoneID)
+	if msErr != nil {
+		return fmt.Errorf("get milestone: %w", msErr)
+	}
+	if ms.Metadata["msg_ts"] != "" {
+		return nil
+	}
+
+	message := incidentMessages{inc: c.inc, incidentUrl: c.incidentUrl}
+	msgOpts := message.milestoneMessageOptions(ms)
+	msgTs, postErr := c.client.PostMessage(ctx, c.inc.ChatChannelID, msgOpts...)
+	if postErr != nil {
+		return fmt.Errorf("post milestone message: %w", postErr)
+	}
+	metadata := map[string]string{"msg_ts": msgTs}
+	for key, value := range ms.Metadata {
+		if key != "msg_ts" {
+			metadata[key] = value
+		}
+	}
+	if updateErr := a.incidents.SetMilestoneMetadata(ctx, ms.ID, metadata); updateErr != nil {
+		return fmt.Errorf("store milestone message: %w", updateErr)
+	}
+	return nil
+}
+
+// channelName fills the pattern, in lowercase and within Slack's limit on channel names.
+func (c *incidentChannel) channelName() string {
+	name := strings.ReplaceAll(c.settings.ChannelNamePattern, "{id}", c.inc.ID.String())
+	name = strings.ReplaceAll(name, "{slug}", c.inc.Slug)
+	name = strings.ReplaceAll(name, "{title}", slug.Make(c.inc.Title))
+	runes := []rune(strings.ToLower(name))
+	return string(runes[:min(len(runes), maxChannelNameRunes)])
+}
+
+func (c *incidentChannel) findConversationByName(ctx context.Context, channelName string) (*slack.Channel, error) {
 	params := &slack.GetConversationsParameters{
 		ExcludeArchived: true,
 		Limit:           200,
 		Types:           []string{"public_channel"},
 	}
 	for {
-		channels, cursor, listErr := p.client.Client().GetConversationsContext(ctx, params)
+		channels, cursor, listErr := c.client.Client().GetConversationsContext(ctx, params)
 		if listErr != nil {
 			return nil, fmt.Errorf("list conversations: %w", listErr)
 		}
@@ -165,333 +264,127 @@ func (p *incidentUpdateProcessor) findConversationByName(ctx context.Context, ch
 	}
 }
 
-func (p *incidentUpdateProcessor) linkIncidentChannel(ctx context.Context, channelID string) error {
-	setFn := func(m *ent.IncidentMutation) {
-		m.SetChatChannelID(channelID)
+func (c *incidentChannel) postAnnouncement(ctx context.Context) error {
+	channelID := c.settings.announcementChannel(c.config)
+	if channelID == "" {
+		return fmt.Errorf("no announcement channel")
 	}
-	if _, updateErr := p.incidents.Set(ctx, p.inc.ID, setFn); updateErr != nil {
-		return fmt.Errorf("set incident chatChannelID: %w", updateErr)
-	}
-	p.inc.ChatChannelID = channelID
-	return nil
-}
-
-func (p *incidentUpdateProcessor) createIncidentChannel(ctx context.Context) error {
-	channelName := p.getIncidentChannelName()
-
-	createParams := slack.CreateConversationParams{
-		ChannelName: channelName,
-		TeamID:      "",
-		IsPrivate:   false,
-	}
-
-	channel, createErr := p.client.Client().CreateConversationContext(ctx, createParams)
-	if createErr != nil {
-		nameAlreadyTaken := strings.Contains(createErr.Error(), "name_taken")
-		if !nameAlreadyTaken {
-			return fmt.Errorf("creating channel: %w", createErr)
-		}
-		p.logger.Warn("slack incident channel already exists, attempting relink",
-			"error", createErr,
-			"incident_id", p.inc.ID.String(),
-			"channel_name", channelName,
-		)
-
-		existingChannel, lookupErr := p.findConversationByName(ctx, channelName)
-		if lookupErr != nil {
-			return fmt.Errorf("lookup existing channel after name_taken: %w", lookupErr)
-		}
-		if existingChannel == nil {
-			return fmt.Errorf("slack reported name_taken but no conversation named %q was found", channelName)
-		}
-		channel = existingChannel
-	}
-
-	if linkErr := p.linkIncidentChannel(ctx, channel.ID); linkErr != nil {
-		p.logger.Error("failed to persist slack incident channel link",
-			"error", linkErr,
-			"incident_id", p.inc.ID.String(),
-			"channel_id", channel.ID,
-			"channel_name", channelName,
-		)
-		return linkErr
-	}
-
-	if msgErr := p.sendUserCreatedChannelMessage(ctx); msgErr != nil {
-		p.logger.Warn("failed to send user incident creation message",
-			"error", msgErr,
-			"incident_id", p.inc.ID.String(),
-			"channel_id", p.inc.ChatChannelID,
-		)
-	}
-
-	if annoErr := p.postIncidentAnnouncement(ctx); annoErr != nil {
-		p.logger.Warn("failed to post incident announcement",
-			"error", annoErr,
-			"incident_id", p.inc.ID.String(),
-			"channel_id", p.inc.ChatChannelID,
-		)
-	}
-
-	return nil
-}
-
-func (p *incidentUpdateProcessor) getSlackIncidentCreateMilestone(ctx context.Context) (*ent.IncidentMilestone, error) {
-	msQuery := p.inc.QueryMilestones().Where(im.KindEQ(im.KindDetection))
-	ms, msErr := msQuery.First(ctx)
-	if msErr != nil && !ent.IsNotFound(msErr) {
-		return nil, fmt.Errorf("query milestones: %w", msErr)
-	}
-	return ms, nil
-}
-
-func (p *incidentUpdateProcessor) sendUserCreatedChannelMessage(ctx context.Context) error {
-	ms, msErr := p.getSlackIncidentCreateMilestone(ctx)
-	if msErr != nil {
-		return msErr
-	}
-	if ms == nil || ms.Metadata == nil {
-		return nil
-	}
-	userId, userOk := ms.Metadata["user_id"]
-	channelId, channelOk := ms.Metadata["channel_id"]
-	if !userOk || !channelOk {
-		p.logger.Warn("invalid slack incident declaration milestone metadata", "metadata", ms.Metadata)
-		return nil
-	}
-	// send message to user that created incident
-	msgText := fmt.Sprintf("Incident created: <#%s>", p.inc.ChatChannelID)
-	_, sendErr := p.client.PostEphemeralMessage(ctx, channelId, userId, slack.MsgOptionText(msgText, false))
-	if sendErr != nil {
-		return fmt.Errorf("failed to send confirmation message: %w", sendErr)
+	message := incidentMessages{inc: c.inc, incidentUrl: c.incidentUrl}
+	if _, postErr := c.client.PostMessage(ctx, channelID, message.announcementMessageOptions()...); postErr != nil {
+		return fmt.Errorf("post announcement: %w", postErr)
 	}
 	return nil
 }
 
-func (p *incidentUpdateProcessor) getIncidentAnnouncementChannelId() (string, error) {
-	channelId := p.prefs.AnnouncementChannelID
-	if channelId != "" {
-		return channelId, nil
-	}
-	return "", fmt.Errorf("no announcementChannelId configured")
-}
-
-func (p *incidentUpdateProcessor) postIncidentAnnouncement(ctx context.Context) error {
-	announcementChannelId, chanErr := p.getIncidentAnnouncementChannelId()
-	if chanErr != nil {
-		return fmt.Errorf("failed to get announcement channel: %w", chanErr)
-	}
-
-	builder := newIncidentAnnouncementMessageBuilder(p.inc, p.incidentUrl)
-	msgBlocks := slack.MsgOptionBlocks(builder.build()...)
-
-	_, postErr := p.client.PostMessage(ctx, announcementChannelId, msgBlocks)
+// postDetailsMessage posts and pins the details message, and returns its timestamp. A failed pin is logged
+// rather than returned, so a retry does not post the message again.
+func (c *incidentChannel) postDetailsMessage(ctx context.Context) (string, error) {
+	message := incidentMessages{inc: c.inc, incidentUrl: c.incidentUrl}
+	msgTs, postErr := c.client.PostMessage(ctx, c.inc.ChatChannelID, message.detailsMessageOptions()...)
 	if postErr != nil {
-		return fmt.Errorf("failed to post announcement message: %w", postErr)
+		return "", fmt.Errorf("post details message: %w", postErr)
 	}
-
-	return nil
+	pinRef := slack.ItemRef{Channel: c.inc.ChatChannelID, Timestamp: msgTs}
+	if pinErr := c.client.Client().AddPinContext(ctx, c.inc.ChatChannelID, pinRef); pinErr != nil {
+		slog.WarnContext(ctx, "failed to pin incident details message",
+			"error", pinErr,
+			"incident_id", c.inc.ID.String(),
+		)
+	}
+	return msgTs, nil
 }
 
-func (p *incidentUpdateProcessor) updateIncidentChannel(ctx context.Context) error {
-	if detailsErr := p.updateIncidentChannelPinnedDetailsMessage(ctx); detailsErr != nil {
-		p.logger.Warn("failed to update incident details message", "error", detailsErr)
-	}
-
-	if topicErr := p.updateIncidentChannelTopic(ctx); topicErr != nil {
-		p.logger.Warn("failed to update incident channel topic", "error", topicErr)
-	}
-
-	conferenceAdded, bookmarksErr := p.ensureIncidentChannelBookmarks(ctx)
-	if bookmarksErr != nil {
-		p.logger.Warn("failed to update incident channel bookmarks", "error", bookmarksErr)
-	}
-	if conferenceAdded {
-		if msgErr := p.postIncidentConferenceMessage(ctx); msgErr != nil {
-			p.logger.Warn("failed to post incident conference message", "error", msgErr)
-		}
-	}
-
-	if usersErr := p.ensureIncidentChannelUsersAdded(ctx); usersErr != nil {
-		p.logger.Warn("failed to add users to incident channel", "error", usersErr)
-	}
-
-	return nil
-}
-
-func (p *incidentUpdateProcessor) updateIncidentChannelPinnedDetailsMessage(ctx context.Context) error {
-	client := p.client.Client()
-	pins, _, pinsErr := client.ListPinsContext(ctx, p.inc.ChatChannelID)
-	if pinsErr != nil {
-		return fmt.Errorf("failed to list pins: %w", pinsErr)
-	}
-
-	builder := newIncidentDetailsMessageBuilder(p.inc, p.incidentUrl)
-	var existingMsgTs string
-	for _, pin := range pins {
-		if pin.Message != nil && builder.isDetailsMessage(pin.Message) {
-			existingMsgTs = pin.Message.Timestamp
-			break
-		}
-	}
-	msgOpts := builder.makeMessageBlocks()
-
-	if existingMsgTs != "" {
-		_, _, _, updateErr := client.UpdateMessageContext(ctx, p.inc.ChatChannelID, existingMsgTs, msgOpts)
-		if updateErr != nil {
-			return fmt.Errorf("update message: %w", updateErr)
-		}
+// updateDetailsMessage edits the stored details message. Until one is stored, the channel job posts it.
+func (c *incidentChannel) updateDetailsMessage(ctx context.Context) error {
+	if c.inc.ChatDetailsMessageID == "" {
 		return nil
 	}
-
-	_, msgTs, postErr := client.PostMessageContext(ctx, p.inc.ChatChannelID, msgOpts)
-	if postErr != nil {
-		return fmt.Errorf("post message: %w", postErr)
-	}
-	pinItemRef := slack.ItemRef{
-		Channel:   p.inc.ChatChannelID,
-		Timestamp: msgTs,
-	}
-	if pinErr := client.AddPinContext(ctx, p.inc.ChatChannelID, pinItemRef); pinErr != nil {
-		return fmt.Errorf("pin message: %w", pinErr)
-	}
-
-	return nil
+	message := incidentMessages{inc: c.inc, incidentUrl: c.incidentUrl}
+	return c.client.UpdateMessage(ctx, c.inc.ChatChannelID, c.inc.ChatDetailsMessageID, message.detailsMessageOptions()...)
 }
 
-func (p *incidentUpdateProcessor) updateIncidentChannelTopic(ctx context.Context) error {
-	client := p.client.Client()
-	info, infoErr := client.GetConversationInfoContext(ctx, &slack.GetConversationInfoInput{
-		ChannelID:     p.inc.ChatChannelID,
-		IncludeLocale: true,
-	})
+func (c *incidentChannel) updateTopic(ctx context.Context) error {
+	client := c.client.Client()
+	info, infoErr := client.GetConversationInfoContext(ctx, &slack.GetConversationInfoInput{ChannelID: c.inc.ChatChannelID})
 	if infoErr != nil {
-		return fmt.Errorf("failed to get current channel info: %w", infoErr)
+		return fmt.Errorf("get channel info: %w", infoErr)
 	}
-
-	topic := fmt.Sprintf("[%s] %s", p.inc.Edges.Severity.Name, p.inc.Title)
-	if info.Topic.Value != topic {
-		_, setErr := client.SetTopicOfConversationContext(ctx, p.inc.ChatChannelID, topic)
-		if setErr != nil {
-			return fmt.Errorf("failed to set channel topic: %w", setErr)
-		}
+	topic := c.inc.Title
+	if sev := c.inc.Edges.Severity; sev != nil {
+		topic = fmt.Sprintf("[%s] %s", sev.Name, topic)
 	}
-
+	topic = slackintegration.TruncateRunes(topic, maxTopicRunes)
+	escapedTopic := slackintegration.TruncateRunes(slackintegration.EscapeText(topic), maxTopicRunes)
+	// The topic is sent escaped. Slack may return it as sent or unescaped, so either means it is current.
+	if info.Topic.Value == escapedTopic || info.Topic.Value == topic {
+		return nil
+	}
+	topic = escapedTopic
+	if _, setErr := client.SetTopicOfConversationContext(ctx, c.inc.ChatChannelID, topic); setErr != nil {
+		return fmt.Errorf("set channel topic: %w", setErr)
+	}
 	return nil
 }
 
-func (p *incidentUpdateProcessor) ensureIncidentChannelBookmarks(ctx context.Context) (bool, error) {
-	client := p.client.Client()
-	bookmarks, listErr := client.ListBookmarksContext(ctx, p.inc.ChatChannelID)
+func (c *incidentChannel) ensureBookmark(ctx context.Context) error {
+	client := c.client.Client()
+	bookmarks, listErr := client.ListBookmarksContext(ctx, c.inc.ChatChannelID)
 	if listErr != nil {
-		return false, fmt.Errorf("failed to list bookmarks: %w", listErr)
+		return fmt.Errorf("list bookmarks: %w", listErr)
 	}
-
-	detailsTitle := "View Incident Details"
-	conferenceTitle := "Join Video Conference"
-	hasDetails := false
-	confBookmarkIndex := -1
-	for i, bookmark := range bookmarks {
-		switch bookmark.Title {
-		case detailsTitle:
-			hasDetails = true
-		case conferenceTitle:
-			confBookmarkIndex = i
+	for _, bookmark := range bookmarks {
+		if bookmark.Title == bookmarkTitleIncident {
+			return nil
 		}
 	}
-
-	if !hasDetails {
-		_, addErr := client.AddBookmark(p.inc.ChatChannelID, slack.AddBookmarkParameters{
-			Title: detailsTitle,
-			Link:  p.incidentUrl.String(),
-			Type:  "link",
-		})
-		if addErr != nil {
-			return false, fmt.Errorf("failed to add bookmark: %w", addErr)
-		}
+	params := slack.AddBookmarkParameters{
+		Title: bookmarkTitleIncident,
+		Link:  c.incidentUrl.String(),
+		Type:  "link",
 	}
-
-	conferenceUpdated := false
-	primaryConf := p.inc.Edges.GetPrimaryVideoConference()
-	if primaryConf != nil {
-		if confBookmarkIndex == -1 {
-			_, addErr := client.AddBookmark(p.inc.ChatChannelID, slack.AddBookmarkParameters{
-				Title: conferenceTitle,
-				Link:  primaryConf.JoinURL,
-				Emoji: ":video_camera:",
-				Type:  "link",
-			})
-			if addErr != nil {
-				return false, fmt.Errorf("failed to add conference bookmark: %w", addErr)
-			}
-			conferenceUpdated = true
-		} else if bm := bookmarks[confBookmarkIndex]; bm.Link != primaryConf.JoinURL {
-			_, editErr := client.EditBookmark(p.inc.ChatChannelID, bm.ID, slack.EditBookmarkParameters{
-				Link: primaryConf.JoinURL,
-			})
-			if editErr != nil {
-				return false, fmt.Errorf("failed to edit conference bookmark: %w", editErr)
-			}
-		}
+	if _, addErr := client.AddBookmarkContext(ctx, c.inc.ChatChannelID, params); addErr != nil {
+		return fmt.Errorf("add bookmark: %w", addErr)
 	}
-	return conferenceUpdated, nil
+	return nil
 }
 
-func (p *incidentUpdateProcessor) postIncidentConferenceMessage(ctx context.Context) error {
-	primaryConf := p.inc.Edges.GetPrimaryVideoConference()
-	if primaryConf == nil {
-		return nil
+// inviteMembers invites the declarer and everyone holding a role who isn't in the channel yet. Members are
+// found in Slack by the chat ID the Slack agent's member sync sets.
+func (c *incidentChannel) inviteMembers(ctx context.Context) error {
+	people := make([]*ent.User, 0, len(c.inc.Edges.RoleAssignments)+1)
+	if declarer := c.inc.Edges.DeclaredBy; declarer != nil {
+		people = append(people, declarer)
 	}
-	textBlock := slack.NewTextBlockObject(
-		slack.MarkdownType,
-		fmt.Sprintf(":video_camera: Incident video conference: %s", primaryConf.JoinURL),
-		false,
-		false,
-	)
-	_, msgErr := p.client.PostMessage(ctx, p.inc.ChatChannelID,
-		slack.MsgOptionBlocks(slack.NewSectionBlock(textBlock, nil, nil)))
-	return msgErr
-}
-
-func (p *incidentUpdateProcessor) ensureIncidentChannelUsersAdded(ctx context.Context) error {
-	currIds, idsErr := slackintegration.GetAllUsersInConversation(ctx, p.client, p.inc.ChatChannelID)
-	if idsErr != nil {
-		return fmt.Errorf("failed to get current users in conversation: %w", idsErr)
-	}
-	excludeIds := mapset.NewSet(currIds...)
-	addIds := mapset.NewSet[string]()
-
-	ms, msErr := p.getSlackIncidentCreateMilestone(ctx)
-	if msErr == nil && ms != nil && ms.Metadata != nil {
-		if userId, userOk := ms.Metadata["user_id"]; userOk {
-			addIds.Add(userId)
+	for _, assignment := range c.inc.Edges.RoleAssignments {
+		if assignment.Edges.User != nil {
+			people = append(people, assignment.Edges.User)
 		}
 	}
-	for _, assignment := range p.inc.Edges.RoleAssignments {
-		if assignment == nil || assignment.Edges.User == nil {
-			continue
-		}
-		if assignment.Edges.User.ChatID == "" {
-			p.logger.Warn("skipping incident channel invite for user without slack mapping",
-				"incident_id", p.inc.ID.String(),
-				"user_id", assignment.Edges.User.ID.String(),
+	invite := mapset.NewSet[string]()
+	for _, person := range people {
+		if person.ChatID == "" {
+			slog.InfoContext(ctx, "not inviting a member without a slack account to the incident channel",
+				"incident_id", c.inc.ID.String(),
+				"user_id", person.ID.String(),
 			)
 			continue
 		}
-		addIds.Add(assignment.Edges.User.ChatID)
+		invite.Add(person.ChatID)
 	}
-
-	missingIds := addIds.Difference(excludeIds)
-	if missingIds.IsEmpty() {
-		p.logger.Debug("no users to add to incident channel")
+	if invite.IsEmpty() {
 		return nil
 	}
 
-	_, invErr := p.client.Client().InviteUsersToConversationContext(ctx, p.inc.ChatChannelID, missingIds.ToSlice()...)
-	if invErr != nil {
-		p.logger.Error("failed to add users to incident channel", "error", invErr)
-		return invErr
+	currentIds, idsErr := slackintegration.GetAllUsersInConversation(ctx, c.client, c.inc.ChatChannelID)
+	if idsErr != nil {
+		return fmt.Errorf("list channel members: %w", idsErr)
 	}
-
+	missing := invite.Difference(mapset.NewSet(currentIds...))
+	if missing.IsEmpty() {
+		return nil
+	}
+	if _, inviteErr := c.client.Client().InviteUsersToConversationContext(ctx, c.inc.ChatChannelID, missing.ToSlice()...); inviteErr != nil {
+		return fmt.Errorf("invite to channel: %w", inviteErr)
+	}
 	return nil
 }

@@ -7,22 +7,20 @@ test("incidentResponseStatus labels", () => {
 		["started", "Active", "danger"],
 		["mitigated", "Mitigated", "warning"],
 		["resolved", "Resolved", "success"],
-		["unknown", "Unknown", "neutral"],
 	] as const;
 	for (const [state, label, tone] of cases) {
 		const status = incidentResponseStatus(state);
 		expect([status.label, status.tone]).toEqual([label, tone]);
-		expect(status.description).toBe("Incident response state from the incident tool");
+		expect(status.description).toBe("Incident response state, from its milestones");
 	}
 });
 
 test("retrospectiveStatus labels", () => {
 	const cases = [
 		[undefined, "Not started", "neutral"],
-		["draft", "Retrospective", "info"],
+		["draft", "Draft", "neutral"],
 		["in_review", "In review", "warning"],
-		["meeting", "Review meeting", "warning"],
-		["closed", "Closed", "success"],
+		["closed", "Closed without review", "neutral"],
 	] as const;
 	for (const [state, label, tone] of cases) {
 		const status = retrospectiveStatus(state);

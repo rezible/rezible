@@ -72,9 +72,9 @@ func Name(v string) predicate.IncidentRole {
 	return predicate.IncidentRole(sql.FieldEQ(FieldName, v))
 }
 
-// Required applies equality check predicate on the "required" field. It's identical to RequiredEQ.
-func Required(v bool) predicate.IncidentRole {
-	return predicate.IncidentRole(sql.FieldEQ(FieldRequired, v))
+// MaxAssignees applies equality check predicate on the "max_assignees" field. It's identical to MaxAssigneesEQ.
+func MaxAssignees(v int) predicate.IncidentRole {
+	return predicate.IncidentRole(sql.FieldEQ(FieldMaxAssignees, v))
 }
 
 // TenantIDEQ applies the EQ predicate on the "tenant_id" field.
@@ -212,14 +212,54 @@ func NameContainsFold(v string) predicate.IncidentRole {
 	return predicate.IncidentRole(sql.FieldContainsFold(FieldName, v))
 }
 
-// RequiredEQ applies the EQ predicate on the "required" field.
-func RequiredEQ(v bool) predicate.IncidentRole {
-	return predicate.IncidentRole(sql.FieldEQ(FieldRequired, v))
+// MaxAssigneesEQ applies the EQ predicate on the "max_assignees" field.
+func MaxAssigneesEQ(v int) predicate.IncidentRole {
+	return predicate.IncidentRole(sql.FieldEQ(FieldMaxAssignees, v))
 }
 
-// RequiredNEQ applies the NEQ predicate on the "required" field.
-func RequiredNEQ(v bool) predicate.IncidentRole {
-	return predicate.IncidentRole(sql.FieldNEQ(FieldRequired, v))
+// MaxAssigneesNEQ applies the NEQ predicate on the "max_assignees" field.
+func MaxAssigneesNEQ(v int) predicate.IncidentRole {
+	return predicate.IncidentRole(sql.FieldNEQ(FieldMaxAssignees, v))
+}
+
+// MaxAssigneesIn applies the In predicate on the "max_assignees" field.
+func MaxAssigneesIn(vs ...int) predicate.IncidentRole {
+	return predicate.IncidentRole(sql.FieldIn(FieldMaxAssignees, vs...))
+}
+
+// MaxAssigneesNotIn applies the NotIn predicate on the "max_assignees" field.
+func MaxAssigneesNotIn(vs ...int) predicate.IncidentRole {
+	return predicate.IncidentRole(sql.FieldNotIn(FieldMaxAssignees, vs...))
+}
+
+// MaxAssigneesGT applies the GT predicate on the "max_assignees" field.
+func MaxAssigneesGT(v int) predicate.IncidentRole {
+	return predicate.IncidentRole(sql.FieldGT(FieldMaxAssignees, v))
+}
+
+// MaxAssigneesGTE applies the GTE predicate on the "max_assignees" field.
+func MaxAssigneesGTE(v int) predicate.IncidentRole {
+	return predicate.IncidentRole(sql.FieldGTE(FieldMaxAssignees, v))
+}
+
+// MaxAssigneesLT applies the LT predicate on the "max_assignees" field.
+func MaxAssigneesLT(v int) predicate.IncidentRole {
+	return predicate.IncidentRole(sql.FieldLT(FieldMaxAssignees, v))
+}
+
+// MaxAssigneesLTE applies the LTE predicate on the "max_assignees" field.
+func MaxAssigneesLTE(v int) predicate.IncidentRole {
+	return predicate.IncidentRole(sql.FieldLTE(FieldMaxAssignees, v))
+}
+
+// MaxAssigneesIsNil applies the IsNil predicate on the "max_assignees" field.
+func MaxAssigneesIsNil() predicate.IncidentRole {
+	return predicate.IncidentRole(sql.FieldIsNull(FieldMaxAssignees))
+}
+
+// MaxAssigneesNotNil applies the NotNil predicate on the "max_assignees" field.
+func MaxAssigneesNotNil() predicate.IncidentRole {
+	return predicate.IncidentRole(sql.FieldNotNull(FieldMaxAssignees))
 }
 
 // HasTenant applies the HasEdge predicate on the "tenant" edge.

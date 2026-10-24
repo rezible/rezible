@@ -10,7 +10,6 @@ import (
 	"github.com/google/uuid"
 
 	rez "github.com/rezible/rezible"
-	inc "github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/schema/schematypes"
 	sit "github.com/rezible/rezible/ent/situation"
 	sitjudg "github.com/rezible/rezible/ent/situationjudgment"
@@ -60,11 +59,11 @@ type Member struct {
 	MatchKind  sitsig.MatchKind
 }
 
+// LinkedIncident is an incident linked to the situation. It is resolved once it has a resolution time.
 type LinkedIncident struct {
-	ID            uuid.UUID
-	Title         string
-	ResponseState inc.ResponseState
-	ResolvedAt    *time.Time
+	ID         uuid.UUID
+	Title      string
+	ResolvedAt *time.Time
 }
 
 // CloseableAt is the earliest time the situation may close given its data, even if already past. It is nil
@@ -73,12 +72,10 @@ type LinkedIncident struct {
 func (in *EvaluationInput) CloseableAt() *time.Time {
 	var latest time.Time
 	for _, incident := range in.Incidents {
-		if incident.ResponseState != inc.ResponseStateResolved {
+		if incident.ResolvedAt == nil {
 			return nil
 		}
-		if incident.ResolvedAt != nil {
-			latest = later(latest, *incident.ResolvedAt)
-		}
+		latest = later(latest, *incident.ResolvedAt)
 	}
 	var closeableAt time.Time
 	if in.finished() {
@@ -226,9 +223,9 @@ func (in *EvaluationInput) Facts() schematypes.SituationFacts {
 	}
 	for _, incident := range in.Incidents {
 		incidentFacts := schematypes.SituationIncidentFacts{
-			ID:            incident.ID,
-			Title:         incident.Title,
-			ResponseState: string(incident.ResponseState),
+			ID:         incident.ID,
+			Title:      incident.Title,
+			ResolvedAt: incident.ResolvedAt,
 		}
 		facts.LinkedIncidents = append(facts.LinkedIncidents, incidentFacts)
 	}

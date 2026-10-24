@@ -30,6 +30,23 @@ function setup(
 	})
 ) {
 	const providers: FakeProvider[] = [];
+	let readOnly = false;
+	// Runs a watch callback when its getter's value changes after setReadOnly.
+	const watchers: {
+		getter: () => unknown;
+		callback: (value: unknown, previous: unknown) => void;
+		value: unknown;
+	}[] = [];
+	const setReadOnly = (value: boolean) => {
+		readOnly = value;
+		for (const watcher of watchers) {
+			const previous = watcher.value;
+			watcher.value = watcher.getter();
+			if (watcher.value !== previous) {
+				watcher.callback(watcher.value, previous);
+			}
+		}
+	};
 	let retry!: (count: number, error: Pick<ApiError, "code">) => boolean;
 	let unmount!: () => void;
 	class FakeProvider {
@@ -56,7 +73,9 @@ function setup(
 		FakeProvider,
 		{ Disconnected: "disconnected" },
 		Doc,
-		() => {},
+		(getter: () => unknown, callback: (value: unknown, previous: unknown) => void) => {
+			watchers.push({ getter, callback, value: getter() });
+		},
 		(mount: () => () => void) => {
 			unmount = mount();
 		},
@@ -66,8 +85,13 @@ function setup(
 		},
 		() => ({})
 	) as typeof IncidentCollaborationController;
-	const controller = new Controller(() => undefined);
-	return { controller, providers, retry, unmount: () => unmount() };
+	const refetchRetrospective = mock(() => {});
+	const controller = new Controller(
+		() => undefined,
+		() => readOnly,
+		refetchRetrospective
+	);
+	return { controller, providers, retry, refetchRetrospective, setReadOnly, unmount: () => unmount() };
 }
 
 function deferredAuth() {
@@ -81,6 +105,16 @@ function deferredAuth() {
 const auth = (name: string): Auth => ({ data: { name, serverUrl: "ws://localhost", token: name } });
 
 describe("incident collaboration lifecycle", () => {
+	test("a readonly first connection neither refetches nor reconnects", async () => {
+		const { controller, providers, refetchRetrospective, unmount } = setup();
+		await controller.connect("A");
+		providers[0].config.onAuthenticated?.({ scope: "readonly" });
+		expect(refetchRetrospective).not.toHaveBeenCalled();
+		expect(controller.canEdit).toBe(false);
+		expect(providers).toHaveLength(1);
+		unmount();
+	});
+
 	test("retries only transient auth errors, with a two-retry limit", () => {
 		const { retry, unmount } = setup();
 		for (const code of ["unavailable", "rate_limited", "internal"] as const) {
@@ -139,9 +173,11 @@ describe("incident collaboration lifecycle", () => {
 
 	test("reconnects with fresh credentials while preserving document edits", async () => {
 		let tokens = 0;
-		const { controller, providers, unmount } = setup(async ({ path }) => ({
-			data: { ...auth(path.id).data, token: String(++tokens) },
-		}));
+		const { controller, providers, refetchRetrospective, setReadOnly, unmount } = setup(
+			async ({ path }) => ({
+				data: { ...auth(path.id).data, token: String(++tokens) },
+			})
+		);
 		await controller.connect("A");
 		const provider = providers[0];
 		const getToken = provider.config.token as () => Promise<string>;
@@ -158,6 +194,16 @@ describe("incident collaboration lifecycle", () => {
 		expect(provider.configuration.websocketProvider.connect).toHaveBeenCalledTimes(1);
 		provider.config.onAuthenticated?.({ scope: "readonly" });
 		expect(controller.canEdit).toBe(false);
+		expect(refetchRetrospective).toHaveBeenCalledTimes(1);
+		await Promise.resolve();
+		expect(document.isDestroyed).toBe(true);
+		expect(providers).toHaveLength(2);
+		expect(providers[1].config.document).not.toBe(document);
+		expect(providers[1].config.document!.getText("summary").toString()).toBe("");
+		// The refetched retrospective turning closed does not reconnect a read-only connection again.
+		setReadOnly(true);
+		expect(providers[1].destroy).not.toHaveBeenCalled();
+		expect(providers).toHaveLength(2);
 		unmount();
 	});
 });

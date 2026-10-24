@@ -13,31 +13,23 @@ import RiTeamLine from "remixicon-svelte/icons/team-line";
 import RiAlarmWarningLine from "remixicon-svelte/icons/alarm-warning-line";
 
 const orgPaths = ["/settings/organization", "/settings/integrations", "/settings/incidents"];
-const isOrgPath = (currPath: string) => orgPaths.some(p => currPath.startsWith(p));
+const isOrgPath = (currPath: string) => orgPaths.some((p) => currPath.startsWith(p));
 
-const makeSettingsSidebar = (isAdmin: boolean, hasIncidentManagement: boolean): AppSidebarModel => {
+const makeSettingsSidebar = (isAdmin: boolean): AppSidebarModel => {
 	const personalItems: AppSidebarItem[] = [
 		{ label: "Preferences", href: "/settings/user", icon: RiUserSettingsLine },
 		{ label: "Notifications", href: "/settings/user/notifications", icon: RiNotification3Line },
 	];
 
-	let groups: AppSidebarModel["groups"] = [
-		{ label: "Personal", items: personalItems },
-	]
+	let groups: AppSidebarModel["groups"] = [{ label: "Personal", items: personalItems }];
 
 	if (isAdmin) {
 		const organizationItems: AppSidebarItem[] = [
 			{ label: "Preferences", href: "/settings/organization", icon: RiBuilding2Line },
 			{ label: "Members", href: "/settings/organization/members", icon: RiTeamLine },
 			{ label: "Integrations", href: "/settings/integrations", icon: RiPlugLine },
+			{ label: "Incident management", href: "/settings/incidents", icon: RiAlarmWarningLine },
 		];
-		if (hasIncidentManagement) {
-			organizationItems.push({
-				label: "Incident management",
-				href: "/settings/incidents",
-				icon: RiAlarmWarningLine,
-			});
-		}
 		groups.push({ label: "Organization", items: organizationItems });
 	}
 
@@ -57,9 +49,8 @@ export class SettingsViewController {
 	provider = $derived(page.params.provider);
 	isOrganizationRoute = $derived(isOrgPath(page.url.pathname));
 	showAccessDenied = $derived(this.session.ready && this.isOrganizationRoute && !this.session.isAdmin);
-	hasIncidentManagement = $derived(this.integrations.installedCapabilities.has("incident_management"));
 
-	sidebar = $derived(makeSettingsSidebar(this.session.isAdmin, this.hasIncidentManagement));
+	sidebar = $derived(makeSettingsSidebar(this.session.isAdmin));
 
 	constructor() {
 		watch(

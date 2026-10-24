@@ -499,19 +499,22 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "Incident",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			incident.FieldTenantID:          {Type: field.TypeInt, Column: incident.FieldTenantID},
-			incident.FieldCreatedAt:         {Type: field.TypeTime, Column: incident.FieldCreatedAt},
-			incident.FieldUpdatedAt:         {Type: field.TypeTime, Column: incident.FieldUpdatedAt},
-			incident.FieldKnowledgeEntityID: {Type: field.TypeUUID, Column: incident.FieldKnowledgeEntityID},
-			incident.FieldSlug:              {Type: field.TypeString, Column: incident.FieldSlug},
-			incident.FieldTitle:             {Type: field.TypeString, Column: incident.FieldTitle},
-			incident.FieldSeverityID:        {Type: field.TypeUUID, Column: incident.FieldSeverityID},
-			incident.FieldTypeID:            {Type: field.TypeUUID, Column: incident.FieldTypeID},
-			incident.FieldSummary:           {Type: field.TypeString, Column: incident.FieldSummary},
-			incident.FieldChatChannelID:     {Type: field.TypeString, Column: incident.FieldChatChannelID},
-			incident.FieldResponseState:     {Type: field.TypeEnum, Column: incident.FieldResponseState},
-			incident.FieldOpenedAt:          {Type: field.TypeTime, Column: incident.FieldOpenedAt},
-			incident.FieldResolvedAt:        {Type: field.TypeTime, Column: incident.FieldResolvedAt},
+			incident.FieldTenantID:             {Type: field.TypeInt, Column: incident.FieldTenantID},
+			incident.FieldCreatedAt:            {Type: field.TypeTime, Column: incident.FieldCreatedAt},
+			incident.FieldUpdatedAt:            {Type: field.TypeTime, Column: incident.FieldUpdatedAt},
+			incident.FieldArchiveTime:          {Type: field.TypeTime, Column: incident.FieldArchiveTime},
+			incident.FieldKnowledgeEntityID:    {Type: field.TypeUUID, Column: incident.FieldKnowledgeEntityID},
+			incident.FieldSlug:                 {Type: field.TypeString, Column: incident.FieldSlug},
+			incident.FieldTitle:                {Type: field.TypeString, Column: incident.FieldTitle},
+			incident.FieldSeverityID:           {Type: field.TypeUUID, Column: incident.FieldSeverityID},
+			incident.FieldTypeID:               {Type: field.TypeUUID, Column: incident.FieldTypeID},
+			incident.FieldSummary:              {Type: field.TypeString, Column: incident.FieldSummary},
+			incident.FieldChatChannelID:        {Type: field.TypeString, Column: incident.FieldChatChannelID},
+			incident.FieldChatDetailsMessageID: {Type: field.TypeString, Column: incident.FieldChatDetailsMessageID},
+			incident.FieldOpenedAt:             {Type: field.TypeTime, Column: incident.FieldOpenedAt},
+			incident.FieldResponseState:        {Type: field.TypeEnum, Column: incident.FieldResponseState},
+			incident.FieldResolvedAt:           {Type: field.TypeTime, Column: incident.FieldResolvedAt},
+			incident.FieldDeclaredByID:         {Type: field.TypeUUID, Column: incident.FieldDeclaredByID},
 		},
 	}
 	graph.Nodes[18] = &sqlgraph.Node{
@@ -686,10 +689,10 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "IncidentRole",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			incidentrole.FieldTenantID:    {Type: field.TypeInt, Column: incidentrole.FieldTenantID},
-			incidentrole.FieldArchiveTime: {Type: field.TypeTime, Column: incidentrole.FieldArchiveTime},
-			incidentrole.FieldName:        {Type: field.TypeString, Column: incidentrole.FieldName},
-			incidentrole.FieldRequired:    {Type: field.TypeBool, Column: incidentrole.FieldRequired},
+			incidentrole.FieldTenantID:     {Type: field.TypeInt, Column: incidentrole.FieldTenantID},
+			incidentrole.FieldArchiveTime:  {Type: field.TypeTime, Column: incidentrole.FieldArchiveTime},
+			incidentrole.FieldName:         {Type: field.TypeString, Column: incidentrole.FieldName},
+			incidentrole.FieldMaxAssignees: {Type: field.TypeInt, Column: incidentrole.FieldMaxAssignees},
 		},
 	}
 	graph.Nodes[28] = &sqlgraph.Node{
@@ -1472,7 +1475,6 @@ var schemaGraph = func() *sqlgraph.Schema {
 			organizationpreferences.FieldOrganizationID:           {Type: field.TypeUUID, Column: organizationpreferences.FieldOrganizationID},
 			organizationpreferences.FieldInitialSetupAt:           {Type: field.TypeTime, Column: organizationpreferences.FieldInitialSetupAt},
 			organizationpreferences.FieldEnableIncidentManagement: {Type: field.TypeBool, Column: organizationpreferences.FieldEnableIncidentManagement},
-			organizationpreferences.FieldRequiredReviewerCount:    {Type: field.TypeInt, Column: organizationpreferences.FieldRequiredReviewerCount},
 			organizationpreferences.FieldTimezone:                 {Type: field.TypeString, Column: organizationpreferences.FieldTimezone},
 		},
 	}
@@ -1525,6 +1527,10 @@ var schemaGraph = func() *sqlgraph.Schema {
 			retrospective.FieldDocumentID:       {Type: field.TypeUUID, Column: retrospective.FieldDocumentID},
 			retrospective.FieldSystemAnalysisID: {Type: field.TypeUUID, Column: retrospective.FieldSystemAnalysisID},
 			retrospective.FieldState:            {Type: field.TypeEnum, Column: retrospective.FieldState},
+			retrospective.FieldOwnerID:          {Type: field.TypeUUID, Column: retrospective.FieldOwnerID},
+			retrospective.FieldClosedAt:         {Type: field.TypeTime, Column: retrospective.FieldClosedAt},
+			retrospective.FieldClosedByID:       {Type: field.TypeUUID, Column: retrospective.FieldClosedByID},
+			retrospective.FieldSkipReason:       {Type: field.TypeString, Column: retrospective.FieldSkipReason},
 		},
 	}
 	graph.Nodes[71] = &sqlgraph.Node{
@@ -1548,6 +1554,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			review.FieldReviewerID:      {Type: field.TypeUUID, Column: review.FieldReviewerID},
 			review.FieldState:           {Type: field.TypeEnum, Column: review.FieldState},
 			review.FieldFeedback:        {Type: field.TypeString, Column: review.FieldFeedback},
+			review.FieldMessageFailedAt: {Type: field.TypeTime, Column: review.FieldMessageFailedAt},
 		},
 	}
 	graph.Nodes[72] = &sqlgraph.Node{
@@ -3024,6 +3031,18 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		"Incident",
 		"IncidentType",
+	)
+	graph.MustAddE(
+		"declared_by",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   incident.DeclaredByTable,
+			Columns: []string{incident.DeclaredByColumn},
+			Bidi:    false,
+		},
+		"Incident",
+		"User",
 	)
 	graph.MustAddE(
 		"milestones",
@@ -5316,6 +5335,30 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		"Retrospective",
 		"Tenant",
+	)
+	graph.MustAddE(
+		"owner",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   retrospective.OwnerTable,
+			Columns: []string{retrospective.OwnerColumn},
+			Bidi:    false,
+		},
+		"Retrospective",
+		"User",
+	)
+	graph.MustAddE(
+		"closed_by",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   retrospective.ClosedByTable,
+			Columns: []string{retrospective.ClosedByColumn},
+			Bidi:    false,
+		},
+		"Retrospective",
+		"User",
 	)
 	graph.MustAddE(
 		"incident",
@@ -9433,6 +9476,11 @@ func (f *IncidentFilter) WhereUpdatedAt(p entql.TimeP) {
 	f.Where(p.Field(incident.FieldUpdatedAt))
 }
 
+// WhereArchiveTime applies the entql time.Time predicate on the archive_time field.
+func (f *IncidentFilter) WhereArchiveTime(p entql.TimeP) {
+	f.Where(p.Field(incident.FieldArchiveTime))
+}
+
 // WhereKnowledgeEntityID applies the entql [16]byte predicate on the knowledge_entity_id field.
 func (f *IncidentFilter) WhereKnowledgeEntityID(p entql.ValueP) {
 	f.Where(p.Field(incident.FieldKnowledgeEntityID))
@@ -9468,9 +9516,9 @@ func (f *IncidentFilter) WhereChatChannelID(p entql.StringP) {
 	f.Where(p.Field(incident.FieldChatChannelID))
 }
 
-// WhereResponseState applies the entql string predicate on the response_state field.
-func (f *IncidentFilter) WhereResponseState(p entql.StringP) {
-	f.Where(p.Field(incident.FieldResponseState))
+// WhereChatDetailsMessageID applies the entql string predicate on the chat_details_message_id field.
+func (f *IncidentFilter) WhereChatDetailsMessageID(p entql.StringP) {
+	f.Where(p.Field(incident.FieldChatDetailsMessageID))
 }
 
 // WhereOpenedAt applies the entql time.Time predicate on the opened_at field.
@@ -9478,9 +9526,19 @@ func (f *IncidentFilter) WhereOpenedAt(p entql.TimeP) {
 	f.Where(p.Field(incident.FieldOpenedAt))
 }
 
+// WhereResponseState applies the entql string predicate on the response_state field.
+func (f *IncidentFilter) WhereResponseState(p entql.StringP) {
+	f.Where(p.Field(incident.FieldResponseState))
+}
+
 // WhereResolvedAt applies the entql time.Time predicate on the resolved_at field.
 func (f *IncidentFilter) WhereResolvedAt(p entql.TimeP) {
 	f.Where(p.Field(incident.FieldResolvedAt))
+}
+
+// WhereDeclaredByID applies the entql [16]byte predicate on the declared_by_id field.
+func (f *IncidentFilter) WhereDeclaredByID(p entql.ValueP) {
+	f.Where(p.Field(incident.FieldDeclaredByID))
 }
 
 // WhereHasTenant applies a predicate to check if query has an edge tenant.
@@ -9533,6 +9591,20 @@ func (f *IncidentFilter) WhereHasType() {
 // WhereHasTypeWith applies a predicate to check if query has an edge type with a given conditions (other predicates).
 func (f *IncidentFilter) WhereHasTypeWith(preds ...predicate.IncidentType) {
 	f.Where(entql.HasEdgeWith("type", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasDeclaredBy applies a predicate to check if query has an edge declared_by.
+func (f *IncidentFilter) WhereHasDeclaredBy() {
+	f.Where(entql.HasEdge("declared_by"))
+}
+
+// WhereHasDeclaredByWith applies a predicate to check if query has an edge declared_by with a given conditions (other predicates).
+func (f *IncidentFilter) WhereHasDeclaredByWith(preds ...predicate.User) {
+	f.Where(entql.HasEdgeWith("declared_by", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}
@@ -10776,9 +10848,9 @@ func (f *IncidentRoleFilter) WhereName(p entql.StringP) {
 	f.Where(p.Field(incidentrole.FieldName))
 }
 
-// WhereRequired applies the entql bool predicate on the required field.
-func (f *IncidentRoleFilter) WhereRequired(p entql.BoolP) {
-	f.Where(p.Field(incidentrole.FieldRequired))
+// WhereMaxAssignees applies the entql int predicate on the max_assignees field.
+func (f *IncidentRoleFilter) WhereMaxAssignees(p entql.IntP) {
+	f.Where(p.Field(incidentrole.FieldMaxAssignees))
 }
 
 // WhereHasTenant applies a predicate to check if query has an edge tenant.
@@ -15651,11 +15723,6 @@ func (f *OrganizationPreferencesFilter) WhereEnableIncidentManagement(p entql.Bo
 	f.Where(p.Field(organizationpreferences.FieldEnableIncidentManagement))
 }
 
-// WhereRequiredReviewerCount applies the entql int predicate on the required_reviewer_count field.
-func (f *OrganizationPreferencesFilter) WhereRequiredReviewerCount(p entql.IntP) {
-	f.Where(p.Field(organizationpreferences.FieldRequiredReviewerCount))
-}
-
 // WhereTimezone applies the entql string predicate on the timezone field.
 func (f *OrganizationPreferencesFilter) WhereTimezone(p entql.StringP) {
 	f.Where(p.Field(organizationpreferences.FieldTimezone))
@@ -15939,6 +16006,26 @@ func (f *RetrospectiveFilter) WhereState(p entql.StringP) {
 	f.Where(p.Field(retrospective.FieldState))
 }
 
+// WhereOwnerID applies the entql [16]byte predicate on the owner_id field.
+func (f *RetrospectiveFilter) WhereOwnerID(p entql.ValueP) {
+	f.Where(p.Field(retrospective.FieldOwnerID))
+}
+
+// WhereClosedAt applies the entql time.Time predicate on the closed_at field.
+func (f *RetrospectiveFilter) WhereClosedAt(p entql.TimeP) {
+	f.Where(p.Field(retrospective.FieldClosedAt))
+}
+
+// WhereClosedByID applies the entql [16]byte predicate on the closed_by_id field.
+func (f *RetrospectiveFilter) WhereClosedByID(p entql.ValueP) {
+	f.Where(p.Field(retrospective.FieldClosedByID))
+}
+
+// WhereSkipReason applies the entql string predicate on the skip_reason field.
+func (f *RetrospectiveFilter) WhereSkipReason(p entql.StringP) {
+	f.Where(p.Field(retrospective.FieldSkipReason))
+}
+
 // WhereHasTenant applies a predicate to check if query has an edge tenant.
 func (f *RetrospectiveFilter) WhereHasTenant() {
 	f.Where(entql.HasEdge("tenant"))
@@ -15947,6 +16034,34 @@ func (f *RetrospectiveFilter) WhereHasTenant() {
 // WhereHasTenantWith applies a predicate to check if query has an edge tenant with a given conditions (other predicates).
 func (f *RetrospectiveFilter) WhereHasTenantWith(preds ...predicate.Tenant) {
 	f.Where(entql.HasEdgeWith("tenant", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasOwner applies a predicate to check if query has an edge owner.
+func (f *RetrospectiveFilter) WhereHasOwner() {
+	f.Where(entql.HasEdge("owner"))
+}
+
+// WhereHasOwnerWith applies a predicate to check if query has an edge owner with a given conditions (other predicates).
+func (f *RetrospectiveFilter) WhereHasOwnerWith(preds ...predicate.User) {
+	f.Where(entql.HasEdgeWith("owner", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasClosedBy applies a predicate to check if query has an edge closed_by.
+func (f *RetrospectiveFilter) WhereHasClosedBy() {
+	f.Where(entql.HasEdge("closed_by"))
+}
+
+// WhereHasClosedByWith applies a predicate to check if query has an edge closed_by with a given conditions (other predicates).
+func (f *RetrospectiveFilter) WhereHasClosedByWith(preds ...predicate.User) {
+	f.Where(entql.HasEdgeWith("closed_by", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}
@@ -16111,6 +16226,11 @@ func (f *ReviewFilter) WhereState(p entql.StringP) {
 // WhereFeedback applies the entql string predicate on the feedback field.
 func (f *ReviewFilter) WhereFeedback(p entql.StringP) {
 	f.Where(p.Field(review.FieldFeedback))
+}
+
+// WhereMessageFailedAt applies the entql time.Time predicate on the message_failed_at field.
+func (f *ReviewFilter) WhereMessageFailedAt(p entql.TimeP) {
+	f.Where(p.Field(review.FieldMessageFailedAt))
 }
 
 // WhereHasTenant applies a predicate to check if query has an edge tenant.

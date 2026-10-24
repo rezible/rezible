@@ -249,7 +249,7 @@ func (o OmittableNullable[T]) NillableValue() *T {
 	return &o.Value
 }
 
-func (o OmittableNullable[T]) UnmarshalJSON(b []byte) error {
+func (o *OmittableNullable[T]) UnmarshalJSON(b []byte) error {
 	if len(b) > 0 {
 		o.Sent = true
 		if bytes.Equal(b, []byte("null")) {

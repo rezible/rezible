@@ -2,90 +2,128 @@ package slackincidents
 
 import (
 	"context"
+	"errors"
 	"fmt"
-	"log/slog"
 	"strings"
 
 	"github.com/google/uuid"
+	"github.com/slack-go/slack"
 
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/internal/integrations/slack"
-	"github.com/slack-go/slack"
+	"github.com/rezible/rezible/pkg/errs"
+)
+
+const (
+	textIncidentManagementOff = "Incident management is off for this organization."
+	textAgentMissing          = "Add the Rezible Slack agent to this workspace first. `/incident` uses it to know who you are."
 )
 
 var (
-	supportedIncidentSubcommands = []string{"new", "update", "status", "help"}
-	incidentCommandsFormatted    = strings.Join(supportedIncidentSubcommands, ", ")
+	errIncidentResolved = errs.New(errs.CodeConflict, "This incident is resolved. Its response can't change.")
+	errUnknownUser      = errs.New(errs.CodeForbidden, slackintegration.UnknownUserText)
 )
 
+// handleIncidentCommand answers /incident. The shared service has already replied to Slack users Rezible
+// hasn't seen.
 func (a *App) handleIncidentCommand(ctx context.Context, ii *ent.Integration, cmd *slack.SlashCommand) (*slack.Blocks, error) {
-	// are we currently in an incident channel?
-	var channelIncidentId uuid.UUID
-	inc, incErr := a.incidents.Get(ctx, incident.ChatChannelID(cmd.ChannelID))
-	if incErr != nil && !ent.IsNotFound(incErr) {
-		slog.Error("unable to get incident by channel", "error", incErr)
-		return slackintegration.CommandErrorResponse(incErr.Error()), nil
-	} else if inc != nil {
-		channelIncidentId = inc.ID
+	enabled, enabledErr := a.orgs.IsIncidentManagementEnabled(ctx)
+	if enabledErr != nil {
+		return nil, fmt.Errorf("check incident management: %w", enabledErr)
+	}
+	if !enabled {
+		return slackintegration.CommandReply(textIncidentManagementOff), nil
+	}
+	hasAgent, agentErr := a.hasAgent(ctx, ii)
+	if agentErr != nil {
+		return nil, fmt.Errorf("check slack agent installation: %w", agentErr)
+	}
+	if !hasAgent {
+		return slackintegration.CommandReply(textAgentMissing), nil
 	}
 
+	channelInc, channelErr := a.channelIncident(ctx, cmd.ChannelID)
+	if channelErr != nil {
+		return nil, channelErr
+	}
+
+	text := strings.TrimSpace(cmd.Text)
+	switch text {
+	case "":
+		if channelInc != nil {
+			return nil, a.openIncidentDetailsModal(ctx, ii, cmd, channelInc.ID)
+		}
+		return nil, a.openIncidentDetailsModal(ctx, ii, cmd, uuid.Nil)
+	case "new":
+		return nil, a.openIncidentDetailsModal(ctx, ii, cmd, uuid.Nil)
+	case "update":
+		if channelInc == nil {
+			return slackintegration.CommandReply("Run `/incident update` in an incident's channel."), nil
+		}
+		return nil, a.openIncidentDetailsModal(ctx, ii, cmd, channelInc.ID)
+	case "status":
+		if channelInc == nil {
+			return slackintegration.CommandReply("Run `/incident status` in an incident's channel."), nil
+		}
+		view, viewErr := makeIncidentMilestoneModalView(channelInc)
+		if errors.Is(viewErr, errIncidentResolved) {
+			return slackintegration.CommandReply(errs.PublicMessage(viewErr)), nil
+		}
+		if viewErr != nil {
+			return nil, viewErr
+		}
+		return nil, a.openModal(ctx, ii, cmd.TriggerID, view)
+	case "help":
+		return slackintegration.CommandReply(a.helpText()), nil
+	}
+	unknown := fmt.Sprintf("Unknown command `%s`.\n%s", slackintegration.EscapeText(text), a.helpText())
+	return slackintegration.CommandReply(unknown), nil
+}
+
+// channelIncident is the incident whose response channel this is, or nil when it is not a response channel.
+func (a *App) channelIncident(ctx context.Context, channelID string) (*ent.Incident, error) {
+	inc, incErr := a.incidents.GetIncident(ctx, incident.ChatChannelID(channelID))
+	if incErr != nil {
+		if ent.IsNotFound(incErr) {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("get incident by channel: %w", incErr)
+	}
+	return inc, nil
+}
+
+func (a *App) openIncidentDetailsModal(ctx context.Context, ii *ent.Integration, cmd *slack.SlashCommand, incidentID uuid.UUID) error {
+	meta := &incidentDetailsModalViewMetadata{CommandChannelId: cmd.ChannelID, IncidentId: incidentID}
+	view, viewErr := a.makeIncidentDetailsModalView(ctx, meta)
+	if viewErr != nil {
+		return fmt.Errorf("make incident details modal: %w", viewErr)
+	}
+	return a.openModal(ctx, ii, cmd.TriggerID, view)
+}
+
+func (a *App) openModal(ctx context.Context, ii *ent.Integration, triggerID string, view *slack.ModalViewRequest) error {
 	cw, cwErr := a.newClientWrapper(ii)
 	if cwErr != nil {
-		return nil, fmt.Errorf("failed to create client wrapper: %w", cwErr)
+		return fmt.Errorf("create client wrapper: %w", cwErr)
 	}
-
-	subcmd := ""
-	if args := strings.Split(cmd.Text, " "); len(args) > 0 {
-		subcmd = args[0]
-		slog.Debug("incident command", "text", cmd.Text, "subcmd", subcmd)
+	if openErr := cw.OpenModalView(ctx, triggerID, *view); openErr != nil {
+		return fmt.Errorf("open modal: %w", openErr)
 	}
+	return nil
+}
 
-	if subcmd == "" || subcmd == "update" || subcmd == "new" {
-		meta := incidentDetailsModalViewMetadata{
-			CommandChannelId: cmd.ChannelID,
-			UserId:           cmd.UserID,
-			IncidentId:       channelIncidentId,
-		}
-		if subcmd == "new" {
-			meta.IncidentId = uuid.Nil
-		}
-		if subcmd == "update" && inc == nil {
-			return slackintegration.CommandErrorResponse("Not in an incident channel"), nil
-		}
-		// TODO: load these properly
-		prefs := UserSettingsIncidents{}
-		view, viewErr := a.makeIncidentDetailsModalView(ctx, prefs, &meta)
-		if viewErr != nil {
-			slog.Error("failed creating incident details view", "error", viewErr)
-			return slackintegration.CommandErrorResponse("Failed to create incident details modal"), viewErr
-		}
-		if openModalErr := cw.OpenModalView(ctx, cmd.TriggerID, *view); openModalErr != nil {
-			return slackintegration.CommandErrorResponse("Failed to open incident details modal"), openModalErr
-		}
-	} else if subcmd == "status" {
-		if inc == nil {
-			return slackintegration.CommandErrorResponse("Not in an incident channel. Supported subcommands: " + incidentCommandsFormatted), nil
-		}
-		meta := incidentMilestoneModalViewMetadata{
-			UserId:     cmd.UserID,
-			IncidentId: channelIncidentId,
-		}
-		view, viewErr := a.makeIncidentMilestoneModalView(ctx, &meta)
-		if viewErr != nil {
-			slog.Error("failed creating incident milestone view", "error", viewErr)
-			return slackintegration.CommandErrorResponse("Failed to create incident milestone view"), viewErr
-		}
-		if openModalErr := cw.OpenModalView(ctx, cmd.TriggerID, *view); openModalErr != nil {
-			return slackintegration.CommandErrorResponse("Failed to open incident milestone view"), openModalErr
-		}
-	} else if subcmd == "help" {
-		// TODO
-	} else {
-		return slackintegration.CommandErrorResponse(
-			fmt.Sprintf("Invalid incident command '%s'. Supported subcommands: %s", subcmd, incidentCommandsFormatted),
-		), nil
+func (a *App) helpText() string {
+	lines := []string{
+		"*Rezible incidents*",
+		"`/incident new` · declare an incident",
+		"`/incident update` · edit this incident's details (in its channel)",
+		"`/incident status` · record that it is still impacted, mitigated or resolved (in its channel)",
+		"`/incident help` · show this",
 	}
-
-	return nil, nil
+	webLine := "Roles and linked situations are edited in Rezible."
+	if incidentsUrl, urlErr := a.cfg.App.GetFrontendUrl("incidents"); urlErr == nil {
+		webLine = fmt.Sprintf("Roles and linked situations are edited in Rezible: <%s|Open incidents>", incidentsUrl)
+	}
+	return strings.Join(append(lines, webLine), "\n")
 }

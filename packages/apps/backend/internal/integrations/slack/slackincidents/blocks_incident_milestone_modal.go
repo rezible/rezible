@@ -1,16 +1,15 @@
 package slackincidents
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
-	"log/slog"
 
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/incident"
 	"github.com/slack-go/slack"
 
+	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/incident"
 	im "github.com/rezible/rezible/ent/incidentmilestone"
 	"github.com/rezible/rezible/internal/integrations/slack"
 )
@@ -18,51 +17,25 @@ import (
 const viewCallbackIdIncidentMilestoneModal = "incident_milestone_modal"
 
 type incidentMilestoneModalViewMetadata struct {
-	UserId     string    `json:"uid"`
 	IncidentId uuid.UUID `json:"iid"`
 }
 
-func (a *App) makeIncidentMilestoneModalView(ctx context.Context, meta *incidentMilestoneModalViewMetadata) (*slack.ModalViewRequest, error) {
-	inc, incErr := a.incidents.Get(ctx, incident.ID(meta.IncidentId))
-	if incErr != nil && !ent.IsNotFound(incErr) {
-		return nil, incErr
-	}
-
-	builder := &incidentMilestoneModalViewBuilder{
-		incident: inc,
-		metadata: meta,
-	}
-	blockSet := builder.Build()
-
-	jsonMetadata, jsonErr := json.Marshal(meta)
-	if jsonErr != nil {
-		return nil, fmt.Errorf("failed to marshal metadata: %w", jsonErr)
-	}
-
-	view := &slack.ModalViewRequest{
-		Type:            "modal",
-		CallbackID:      viewCallbackIdIncidentMilestoneModal,
-		Title:           slackintegration.PlainTextBlock("Update Incident Status"),
-		Submit:          slackintegration.PlainTextBlock("Save"),
-		Close:           slackintegration.PlainTextBlock("Cancel"),
-		PrivateMetadata: string(jsonMetadata),
-		Blocks:          blockSet,
-	}
-
-	return view, nil
+type statusOption struct {
+	label string
+	kind  im.Kind
 }
 
-type incidentMilestoneModalViewBuilder struct {
-	blocks   []slack.Block
-	incident *ent.Incident
-	metadata *incidentMilestoneModalViewMetadata
-}
-
-func (b *incidentMilestoneModalViewBuilder) Build() slack.Blocks {
-	b.blocks = make([]slack.Block, 0)
-	b.makeMilestoneSelect()
-	b.makeNotesInput()
-	return slack.Blocks{BlockSet: b.blocks}
+// statusOptions are the changes that can be recorded from each response state. A resolved incident has none.
+var statusOptions = map[incident.ResponseState][]statusOption{
+	incident.ResponseStateStarted: {
+		{label: "Still impacted", kind: im.KindImpact},
+		{label: "Mitigated", kind: im.KindMitigation},
+		{label: "Resolved", kind: im.KindResolution},
+	},
+	incident.ResponseStateMitigated: {
+		{label: "Mitigation failed", kind: im.KindImpact},
+		{label: "Resolved", kind: im.KindResolution},
+	},
 }
 
 var (
@@ -70,36 +43,52 @@ var (
 	incidentMilestoneModalNotesIds = slackintegration.BlockActionIds{Block: "incident_milestone_notes", Input: "notes_input"}
 )
 
-func setIncidentMilestoneModalInputMutationFields(m *ent.IncidentMilestoneMutation, state *slack.ViewState) {
-	m.SetDescription(incidentMilestoneModalNotesIds.GetStateValue(state))
-
-	kindOpt := incidentMilestoneModalKindIds.GetStateSelectedValue(state)
-	kind := im.Kind(kindOpt)
-	if kindErr := im.KindValidator(kind); kindErr != nil {
-		slog.Debug("invalid kind", "kindOpt", kindOpt)
-	} else {
-		m.SetKind(kind)
-	}
-}
-
-func (b *incidentMilestoneModalViewBuilder) makeMilestoneSelect() {
-	kindsOptions := []*slack.OptionBlockObject{
-		slack.NewOptionBlockObject(im.KindImpact.String(), slackintegration.PlainTextBlock("Impact"), nil),
-		slack.NewOptionBlockObject(im.KindMitigation.String(), slackintegration.PlainTextBlock("Mitigated"), nil),
-		slack.NewOptionBlockObject(im.KindResolution.String(), slackintegration.PlainTextBlock("Resolved"), nil),
+// makeIncidentMilestoneModalView builds the status modal for a started or mitigated incident.
+func makeIncidentMilestoneModalView(inc *ent.Incident) (*slack.ModalViewRequest, error) {
+	options := statusOptions[inc.ResponseState]
+	if len(options) == 0 {
+		return nil, errIncidentResolved
 	}
 
-	kindsSelect := slack.NewOptionsSelectBlockElement(slack.OptTypeStatic, nil, incidentMilestoneModalKindIds.Input, kindsOptions...)
+	radioOptions := make([]*slack.OptionBlockObject, len(options))
+	for i, option := range options {
+		radioOptions[i] = slack.NewOptionBlockObject(option.kind.String(), slackintegration.PlainTextBlock(option.label), nil)
+	}
+	kindInput := slack.NewRadioButtonsBlockElement(incidentMilestoneModalKindIds.Input, radioOptions...)
+	notesInput := slack.NewPlainTextInputBlockElement(nil, incidentMilestoneModalNotesIds.Input).WithMultiline(true)
+	notesBlock := slack.NewInputBlock(incidentMilestoneModalNotesIds.Block, slackintegration.PlainTextBlock("Notes"), nil, notesInput)
+	blocks := []slack.Block{
+		slack.NewInputBlock(incidentMilestoneModalKindIds.Block, slackintegration.PlainTextBlock("What changed?"), nil, kindInput),
+		notesBlock.WithOptional(true),
+	}
 
-	initialOpt := kindsOptions[0]
-	kindsSelect.WithInitialOption(initialOpt)
-
-	b.blocks = append(b.blocks,
-		slack.NewInputBlock(incidentMilestoneModalKindIds.Block, slackintegration.PlainTextBlock("Incident Status"), nil, kindsSelect))
+	jsonMetadata, jsonErr := json.Marshal(incidentMilestoneModalViewMetadata{IncidentId: inc.ID})
+	if jsonErr != nil {
+		return nil, fmt.Errorf("marshal metadata: %w", jsonErr)
+	}
+	view := &slack.ModalViewRequest{
+		Type:            slack.VTModal,
+		CallbackID:      viewCallbackIdIncidentMilestoneModal,
+		Title:           slackintegration.PlainTextBlock("Record status"),
+		Submit:          slackintegration.PlainTextBlock("Save"),
+		Close:           slackintegration.PlainTextBlock("Cancel"),
+		PrivateMetadata: string(jsonMetadata),
+		Blocks:          slack.Blocks{BlockSet: blocks},
+	}
+	return view, nil
 }
 
-func (b *incidentMilestoneModalViewBuilder) makeNotesInput() {
-	notesInput := slack.NewPlainTextInputBlockElement(nil, incidentMilestoneModalNotesIds.Input)
-	b.blocks = append(b.blocks,
-		slack.NewInputBlock(incidentMilestoneModalNotesIds.Block, slackintegration.PlainTextBlock("Notes"), nil, notesInput))
+func getIncidentMilestoneModalViewMetadata(view slack.View) (*incidentMilestoneModalViewMetadata, error) {
+	var meta incidentMilestoneModalViewMetadata
+	if jsonErr := json.Unmarshal([]byte(view.PrivateMetadata), &meta); jsonErr != nil {
+		return nil, fmt.Errorf("unmarshal incident milestone modal metadata: %w", jsonErr)
+	}
+	return &meta, nil
+}
+
+func incidentMilestoneModalInput(state *slack.ViewState) rez.AddIncidentMilestoneParams {
+	return rez.AddIncidentMilestoneParams{
+		Kind:        im.Kind(incidentMilestoneModalKindIds.GetStateSelectedValue(state)),
+		Description: incidentMilestoneModalNotesIds.GetStateValue(state),
+	}
 }

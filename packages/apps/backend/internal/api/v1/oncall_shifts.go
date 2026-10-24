@@ -15,11 +15,11 @@ import (
 
 type oncallShiftsHandler struct {
 	users     rez.UserService
-	incidents rez.IncidentService
+	incidents rez.IncidentDetailsService
 	shifts    rez.OncallShiftsService
 }
 
-func newOncallShiftsHandler(users rez.UserService, inc rez.IncidentService, shifts rez.OncallShiftsService) *oncallShiftsHandler {
+func newOncallShiftsHandler(users rez.UserService, inc rez.IncidentDetailsService, shifts rez.OncallShiftsService) *oncallShiftsHandler {
 	return &oncallShiftsHandler{users: users, incidents: inc, shifts: shifts}
 }
 

@@ -4757,6 +4757,25 @@ func (c *IncidentClient) QueryType(_m *Incident) *IncidentTypeQuery {
 	return query
 }
 
+// QueryDeclaredBy queries the declared_by edge of a Incident.
+func (c *IncidentClient) QueryDeclaredBy(_m *Incident) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incident.Table, incident.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, incident.DeclaredByTable, incident.DeclaredByColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.User
+		step.Edge.Schema = schemaConfig.Incident
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryMilestones queries the milestones edge of a Incident.
 func (c *IncidentClient) QueryMilestones(_m *Incident) *IncidentMilestoneQuery {
 	query := (&IncidentMilestoneClient{config: c.config}).Query()
@@ -4974,7 +4993,8 @@ func (c *IncidentClient) Hooks() []Hook {
 
 // Interceptors returns the client interceptors.
 func (c *IncidentClient) Interceptors() []Interceptor {
-	return c.inters.Incident
+	inters := c.inters.Incident
+	return append(inters[:len(inters):len(inters)], incident.Interceptors[:]...)
 }
 
 func (c *IncidentClient) mutate(ctx context.Context, m *IncidentMutation) (Value, error) {
@@ -15490,6 +15510,44 @@ func (c *RetrospectiveClient) QueryTenant(_m *Retrospective) *TenantQuery {
 		)
 		schemaConfig := _m.schemaConfig
 		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.Retrospective
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryOwner queries the owner edge of a Retrospective.
+func (c *RetrospectiveClient) QueryOwner(_m *Retrospective) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(retrospective.Table, retrospective.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, retrospective.OwnerTable, retrospective.OwnerColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.User
+		step.Edge.Schema = schemaConfig.Retrospective
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryClosedBy queries the closed_by edge of a Retrospective.
+func (c *RetrospectiveClient) QueryClosedBy(_m *Retrospective) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(retrospective.Table, retrospective.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, retrospective.ClosedByTable, retrospective.ClosedByColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.User
 		step.Edge.Schema = schemaConfig.Retrospective
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil

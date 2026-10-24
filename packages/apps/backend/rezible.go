@@ -23,13 +23,14 @@ import (
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/schema/schematypes"
 
-	"github.com/rezible/rezible/ent/incident"
+	"github.com/rezible/rezible/ent/incidentmilestone"
 	ifvl "github.com/rezible/rezible/ent/investigationfindingversionlink"
 	ihv "github.com/rezible/rezible/ent/investigationhypothesisversion"
 	kne "github.com/rezible/rezible/ent/knowledgeentity"
 	ke "github.com/rezible/rezible/ent/knowledgeevidence"
 	kp "github.com/rezible/rezible/ent/knowledgeproposal"
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
+	"github.com/rezible/rezible/ent/review"
 	"github.com/rezible/rezible/ent/situation"
 	sha "github.com/rezible/rezible/ent/situationhazardassessment"
 	"github.com/rezible/rezible/ent/situationsignalattention"
@@ -784,6 +785,7 @@ type (
 		Get(context.Context, predicate.Organization) (*ent.Organization, error)
 		Set(context.Context, uuid.UUID, func(*ent.OrganizationMutation)) (*ent.Organization, error)
 		SetPreferences(context.Context, uuid.UUID, func(*ent.OrganizationPreferencesMutation)) (*ent.OrganizationPreferences, error)
+		IsIncidentManagementEnabled(context.Context) (bool, error)
 		CompleteOrgSetup(context.Context, uuid.UUID, CompleteOrgSetupParams) (*ent.Organization, error)
 	}
 )
@@ -859,7 +861,6 @@ type (
 
 	DocumentsService interface {
 		GetDocument(context.Context, uuid.UUID) (*ent.Document, error)
-		SetDocument(context.Context, uuid.UUID, func(*ent.DocumentMutation)) (*ent.Document, error)
 		GetUserDocumentAccess(ctx context.Context, docId uuid.UUID, userId uuid.UUID) (*ent.DocumentAccess, error)
 		CreateDocumentEditorSessionAuth(ctx context.Context, docId uuid.UUID, userId uuid.UUID) (*DocumentSessionAuth, error)
 	}
@@ -1633,31 +1634,42 @@ type (
 		Tags       ent.IncidentTags
 	}
 
-	SetIncidentRoleAssignmentParams struct {
-		IncidentID uuid.UUID
-		RoleID     uuid.UUID
-		UserID     uuid.UUID
-	}
-
 	ListIncidentsParams struct {
 		ent.ListParams
-		ResponseStates []incident.ResponseState
-		SeverityId     uuid.UUID
-		UserId         uuid.UUID
-		OpenedAfter    time.Time
-		OpenedBefore   time.Time
+		// Resolved filters by whether the incident has a resolution milestone.
+		Resolved     *bool
+		SeverityId   uuid.UUID
+		UserId       uuid.UUID
+		OpenedAfter  time.Time
+		OpenedBefore time.Time
 	}
 
-	IncidentService interface {
-		ListIncidents(context.Context, ListIncidentsParams) (*ent.ListResult[ent.Incident], error)
-		Query(context.Context, predicate.Incident, func(*ent.IncidentQuery)) (*ent.Incident, error)
-		Get(context.Context, predicate.Incident) (*ent.Incident, error)
-		Set(context.Context, uuid.UUID, func(*ent.IncidentMutation)) (*ent.Incident, error)
-		Archive(context.Context, uuid.UUID) error
+	// UpdateIncidentParams leaves a nil value unchanged and replaces a set one.
+	UpdateIncidentParams struct {
+		Title          *string
+		Summary        *string
+		SeverityID     *uuid.UUID
+		ClearSeverity  bool
+		TypeID         *uuid.UUID
+		ClearType      bool
+		FieldOptionIDs *[]uuid.UUID
+		TagIDs         *[]uuid.UUID
+	}
 
-		ListMilestonesForIncident(context.Context, uuid.UUID) (ent.IncidentMilestones, error)
-		GetIncidentMilestone(context.Context, uuid.UUID) (*ent.IncidentMilestone, error)
-		SetIncidentMilestone(context.Context, uuid.UUID, func(*ent.IncidentMilestoneMutation)) (*ent.IncidentMilestone, error)
+	// RecordObservedIncidentParams describe an incident observed from a provider, identified by its knowledge entity.
+	RecordObservedIncidentParams struct {
+		KnowledgeEntityID uuid.UUID
+		Title             string
+		Summary           string
+		SeverityID        uuid.UUID
+		TypeID            uuid.UUID
+		OpenedAt          time.Time
+	}
+
+	// IncidentDetailsService reads incidents and writes what does not depend on incident management being on.
+	IncidentDetailsService interface {
+		GetIncident(context.Context, predicate.Incident) (*ent.Incident, error)
+		ListIncidents(context.Context, ListIncidentsParams) (*ent.ListResult[ent.Incident], error)
 
 		GetIncidentMetadata(context.Context) (*IncidentMetadata, error)
 		ListIncidentTypes(context.Context) (ent.IncidentTypes, error)
@@ -1665,11 +1677,55 @@ type (
 		ListIncidentSeverities(context.Context) (ent.IncidentSeverities, error)
 		ListIncidentRoles(context.Context) (ent.IncidentRoles, error)
 
-		GetIncidentSeverity(context.Context, uuid.UUID) (*ent.IncidentSeverity, error)
+		ListMilestones(ctx context.Context, incidentID uuid.UUID) (ent.IncidentMilestones, error)
+		GetMilestone(context.Context, uuid.UUID) (*ent.IncidentMilestone, error)
+		SetMilestoneMetadata(ctx context.Context, id uuid.UUID, metadata map[string]string) error
 
-		SetIncidentRoleAssignment(context.Context, uuid.UUID, SetIncidentRoleAssignmentParams) (*ent.IncidentRoleAssignment, error)
-		GetIncidentRoleAssignment(context.Context, uuid.UUID) (*ent.IncidentRoleAssignment, error)
-		DeleteIncidentRoleAssignment(context.Context, uuid.UUID) error
+		UpdateIncident(context.Context, uuid.UUID, UpdateIncidentParams) (*ent.Incident, error)
+		LinkSituation(ctx context.Context, incidentID uuid.UUID, situationID uuid.UUID) error
+		UnlinkSituation(ctx context.Context, incidentID uuid.UUID, situationID uuid.UUID) error
+		ArchiveIncident(context.Context, uuid.UUID) error
+		SetChatChannel(ctx context.Context, id uuid.UUID, channelID string) error
+		SetChatDetailsMessage(ctx context.Context, id uuid.UUID, messageID string) error
+		RecordObservedIncident(context.Context, RecordObservedIncidentParams) (uuid.UUID, error)
+	}
+
+	DeclareIncidentParams struct {
+		Title          string
+		Summary        string
+		SeverityID     *uuid.UUID
+		TypeID         *uuid.UUID
+		FieldOptionIDs []uuid.UUID
+		TagIDs         []uuid.UUID
+		SituationIDs   []uuid.UUID
+		DeclaredByID   uuid.UUID
+	}
+
+	AddIncidentMilestoneParams struct {
+		IncidentID uuid.UUID
+		Kind       incidentmilestone.Kind
+		// Timestamp defaults to now.
+		Timestamp   time.Time
+		Description string
+		// UserID is nil for a milestone recorded by Rezible.
+		UserID *uuid.UUID
+		// Source is where the milestone was recorded, such as web.
+		Source string
+	}
+
+	// UpdateIncidentMilestoneParams leaves a nil value unchanged. A milestone's kind never changes.
+	UpdateIncidentMilestoneParams struct {
+		Timestamp   *time.Time
+		Description *string
+	}
+
+	// IncidentManagementService runs incident response. Every write needs incident management to be on.
+	IncidentManagementService interface {
+		Declare(context.Context, DeclareIncidentParams) (*ent.Incident, error)
+		AddMilestone(context.Context, AddIncidentMilestoneParams) (*ent.IncidentMilestone, error)
+		UpdateMilestone(context.Context, uuid.UUID, UpdateIncidentMilestoneParams) (*ent.IncidentMilestone, error)
+		SetRoleAssignment(ctx context.Context, incidentID uuid.UUID, roleID uuid.UUID, userID uuid.UUID) (*ent.IncidentRoleAssignment, error)
+		RemoveRoleAssignment(ctx context.Context, assignmentID uuid.UUID) error
 	}
 
 	EventOnIncidentUpdated struct {
@@ -1749,8 +1805,6 @@ type (
 		GetComment(context.Context, uuid.UUID) (*ent.DiscussionComment, error)
 		CreateComment(context.Context, CreateDiscussionCommentParams) (*ent.DiscussionComment, error)
 		UpdateComment(context.Context, uuid.UUID, UpdateDiscussionCommentParams) (*ent.DiscussionComment, error)
-
-		ReviewService
 	}
 )
 
@@ -1771,25 +1825,6 @@ var DiscussionThreadTargetKinds = []DiscussionThreadTargetKind{
 }
 
 type (
-	ListReviewsParams struct {
-		ent.ListParams
-		RetrospectiveID uuid.UUID
-		AnalysisEntryID uuid.UUID
-	}
-
-	CreateReviewRequestParams struct {
-		ReviewerID uuid.UUID
-		Message    *string
-	}
-
-	ReviewService interface {
-		ListReviews(context.Context, ListReviewsParams) (*ent.ListResult[ent.Review], error)
-		GetReview(context.Context, uuid.UUID) (*ent.Review, error)
-		CreateReviewRequest(context.Context, CreateReviewRequestParams) (*ent.Review, error)
-	}
-)
-
-type (
 	RetrospectiveReportComposition struct {
 		SelectedFindingEntries ent.SystemAnalysisEntries
 		Tasks                  ent.Tasks
@@ -1803,9 +1838,21 @@ type (
 		SelectedFindingEntryIDs []uuid.UUID
 	}
 
+	SetReviewDecisionParams struct {
+		ReviewerID uuid.UUID
+		Decision   review.State
+		Feedback   string
+	}
+
 	RetrospectiveService interface {
-		Get(context.Context, predicate.Retrospective) (*ent.Retrospective, error)
-		Set(context.Context, uuid.UUID, func(*ent.RetrospectiveMutation)) (*ent.Retrospective, error)
+		GetRetrospective(context.Context, predicate.Retrospective) (*ent.Retrospective, error)
+		SetOwner(ctx context.Context, id, userID uuid.UUID) (*ent.Retrospective, error)
+		RequestReview(ctx context.Context, id uuid.UUID, reviewerIDs []uuid.UUID) (*ent.Retrospective, error)
+		AddReviewer(ctx context.Context, id, userID uuid.UUID) (*ent.Retrospective, error)
+		RemoveReviewer(ctx context.Context, id, userID uuid.UUID) (*ent.Retrospective, error)
+		SetReviewDecision(ctx context.Context, id uuid.UUID, params SetReviewDecisionParams) (*ent.Retrospective, error)
+		CloseReview(ctx context.Context, id uuid.UUID) (*ent.Retrospective, error)
+		SkipReview(ctx context.Context, id uuid.UUID, reason string) (*ent.Retrospective, error)
 		CreateForIncident(context.Context, uuid.UUID) (*ent.Retrospective, error)
 
 		GetReportComposition(context.Context, uuid.UUID) (*RetrospectiveReportComposition, error)

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 
+	"entgo.io/ent/dialect/sql"
 	mapset "github.com/deckarep/golang-set/v2"
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
@@ -12,6 +13,7 @@ import (
 	kne "github.com/rezible/rezible/ent/knowledgeentity"
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/retrospective"
 	sa "github.com/rezible/rezible/ent/systemanalysis"
 	saent "github.com/rezible/rezible/ent/systemanalysisentity"
 	sae "github.com/rezible/rezible/ent/systemanalysisentry"
@@ -78,6 +80,9 @@ func (s *SystemAnalysisService) SetSystemAnalysis(ctx context.Context, id uuid.U
 		if id == uuid.Nil {
 			mutator = tx.SystemAnalysis.Create()
 		} else {
+			if writableErr := s.ensureAnalysisWritable(ctx, sa.ID(id)); writableErr != nil {
+				return nil, writableErr
+			}
 			mutator = tx.SystemAnalysis.UpdateOneID(id)
 		}
 
@@ -101,6 +106,9 @@ func (s *SystemAnalysisService) SetSystemAnalysis(ctx context.Context, id uuid.U
 func (s *SystemAnalysisService) validateSystemAnalysisTarget(ctx context.Context, tx *ent.Client, analysisID uuid.UUID) error {
 	if analysisID == uuid.Nil {
 		return fmt.Errorf("%w: system analysis ID is required", errs.ErrInvalidInput)
+	}
+	if writableErr := s.ensureAnalysisWritable(ctx, sa.ID(analysisID)); writableErr != nil {
+		return writableErr
 	}
 	accessible, queryErr := tx.SystemAnalysis.Query().Where(sa.ID(analysisID)).Exist(ctx)
 	if queryErr != nil {
@@ -236,6 +244,9 @@ func (s *SystemAnalysisService) SetSystemAnalysisEntity(ctx context.Context, id 
 		if id == uuid.Nil {
 			mutator = tx.SystemAnalysisEntity.Create()
 		} else {
+			if writableErr := s.ensureAnalysisWritable(ctx, sa.HasAnalysisEntitiesWith(saent.ID(id))); writableErr != nil {
+				return nil, writableErr
+			}
 			mutator = tx.SystemAnalysisEntity.UpdateOneID(id)
 		}
 
@@ -269,6 +280,9 @@ func (s *SystemAnalysisService) DeleteSystemAnalysisEntity(ctx context.Context, 
 		entity, queryErr := tx.SystemAnalysisEntity.Get(ctx, id)
 		if queryErr != nil {
 			return fmt.Errorf("get system analysis entity: %w", queryErr)
+		}
+		if writableErr := s.ensureAnalysisWritable(ctx, sa.ID(entity.AnalysisID)); writableErr != nil {
+			return writableErr
 		}
 		deleteRelationships := tx.SystemAnalysisRelationship.Delete().Where(
 			sarel.AnalysisID(entity.AnalysisID),
@@ -304,6 +318,9 @@ func (s *SystemAnalysisService) SetSystemAnalysisRelationship(ctx context.Contex
 		if isCreate {
 			mutator = tx.SystemAnalysisRelationship.Create()
 		} else {
+			if writableErr := s.ensureAnalysisWritable(ctx, sa.HasAnalysisRelationshipsWith(sarel.ID(id))); writableErr != nil {
+				return nil, writableErr
+			}
 			mutator = tx.SystemAnalysisRelationship.UpdateOneID(id)
 		}
 
@@ -344,7 +361,12 @@ func (s *SystemAnalysisService) SetSystemAnalysisRelationship(ctx context.Contex
 }
 
 func (s *SystemAnalysisService) DeleteSystemAnalysisRelationship(ctx context.Context, id uuid.UUID) error {
-	return s.db.Client(ctx).SystemAnalysisRelationship.DeleteOneID(id).Exec(ctx)
+	return s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+		if writableErr := s.ensureAnalysisWritable(ctx, sa.HasAnalysisRelationshipsWith(sarel.ID(id))); writableErr != nil {
+			return writableErr
+		}
+		return tx.SystemAnalysisRelationship.DeleteOneID(id).Exec(ctx)
+	})
 }
 
 func (s *SystemAnalysisService) ListSystemAnalysisEntries(ctx context.Context, params rez.ListSystemAnalysisEntriesParams) (*ent.ListResult[ent.SystemAnalysisEntry], error) {
@@ -383,11 +405,17 @@ func (s *SystemAnalysisService) SetSystemAnalysisEntry(ctx context.Context, id u
 			if params.Reference != nil && (current.Reference == nil || *current.Reference != *params.Reference) {
 				return nil, fmt.Errorf("%w: reference cannot be changed", errs.ErrInvalidInput)
 			}
+			if writableErr := s.ensureAnalysisWritable(ctx, sa.ID(current.AnalysisID)); writableErr != nil {
+				return nil, writableErr
+			}
 			mutator = tx.SystemAnalysisEntry.UpdateOneID(id)
 		}
 
 		mut := mutator.Mutation()
 		if isCreate {
+			if writableErr := s.ensureAnalysisWritable(ctx, sa.ID(params.AnalysisID)); writableErr != nil {
+				return nil, writableErr
+			}
 			mut.SetAnalysisID(params.AnalysisID)
 			if params.Reference != nil {
 				mut.SetReference(*params.Reference)
@@ -490,7 +518,12 @@ func (s *SystemAnalysisService) LookupSystemAnalysisEntry(ctx context.Context, p
 
 func (s *SystemAnalysisService) DeleteSystemAnalysisEntry(ctx context.Context, id uuid.UUID) error {
 	// cascade delete
-	return s.db.Client(ctx).SystemAnalysisEntry.DeleteOneID(id).Exec(ctx)
+	return s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+		if writableErr := s.ensureAnalysisWritable(ctx, sa.HasEntriesWith(sae.ID(id))); writableErr != nil {
+			return writableErr
+		}
+		return tx.SystemAnalysisEntry.DeleteOneID(id).Exec(ctx)
+	})
 }
 
 func (s *SystemAnalysisService) SetSystemAnalysisEntrySubject(ctx context.Context, id uuid.UUID, setFn func(*ent.SystemAnalysisEntrySubjectMutation)) (*ent.SystemAnalysisEntrySubject, error) {
@@ -508,6 +541,17 @@ func (s *SystemAnalysisService) SetSystemAnalysisEntrySubject(ctx context.Contex
 
 		if validErr := s.validateEntrySubjectMutation(mut); validErr != nil {
 			return nil, validErr
+		}
+
+		var analysisPred predicate.SystemAnalysis
+		if isCreate {
+			entryID, _ := mut.EntryID()
+			analysisPred = sa.HasEntriesWith(sae.ID(entryID))
+		} else {
+			analysisPred = sa.HasEntriesWith(sae.HasSubjectsWith(saes.ID(id)))
+		}
+		if writableErr := s.ensureAnalysisWritable(ctx, analysisPred); writableErr != nil {
+			return nil, writableErr
 		}
 
 		saved, saveErr := mutator.Save(ctx)
@@ -556,5 +600,32 @@ func (s *SystemAnalysisService) mutateEntrySubjectWithParams(m *ent.SystemAnalys
 }
 
 func (s *SystemAnalysisService) DeleteSystemAnalysisEntrySubject(ctx context.Context, id uuid.UUID) error {
-	return s.db.Client(ctx).SystemAnalysisEntrySubject.DeleteOneID(id).Exec(ctx)
+	return s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+		if writableErr := s.ensureAnalysisWritable(ctx, sa.HasEntriesWith(sae.HasSubjectsWith(saes.ID(id)))); writableErr != nil {
+			return writableErr
+		}
+		return tx.SystemAnalysisEntrySubject.DeleteOneID(id).Exec(ctx)
+	})
+}
+
+// This pre-write check uses the transaction's database clock, matching document persistence.
+func (s *SystemAnalysisService) ensureAnalysisWritable(ctx context.Context, analysis predicate.SystemAnalysis) error {
+	closedPastGrace := func(selector *sql.Selector) {
+		selector.Where(sql.P(func(b *sql.Builder) {
+			b.WriteString(selector.C(retrospective.FieldClosedAt)).
+				WriteString(" < now() - make_interval(secs => ").
+				Arg(ClosedReviewGracePeriod.Seconds()).
+				WriteString(")")
+		}))
+	}
+	query := s.db.Client(ctx).Retrospective.Query().
+		Where(retrospective.HasSystemAnalysisWith(analysis), closedPastGrace)
+	closed, queryErr := query.Exist(ctx)
+	if queryErr != nil {
+		return fmt.Errorf("check closed review: %w", queryErr)
+	}
+	if closed {
+		return errs.New(errs.CodeConflict, "This review is closed. Its analysis can't be changed.")
+	}
+	return nil
 }

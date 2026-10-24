@@ -3,6 +3,7 @@ package slackincidents
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
@@ -10,25 +11,28 @@ import (
 	"github.com/rezible/rezible/ent/integration"
 	slackintegration "github.com/rezible/rezible/internal/integrations/slack"
 	"github.com/rezible/rezible/pkg/messages"
+	"github.com/riverqueue/river"
 	"github.com/slack-go/slack"
 	"github.com/slack-go/slack/slackevents"
 )
 
 type App struct {
-	cfg       rez.Config
-	db        rez.Database
-	mq        rez.MessageQueue
-	jobs      rez.JobService
-	incidents rez.IncidentService
+	cfg        rez.Config
+	db         rez.Database
+	jobs       rez.JobService
+	orgs       rez.OrganizationService
+	incidents  rez.IncidentDetailsService
+	management rez.IncidentManagementService
 }
 
-func MakeApp(cfg rez.Config, db rez.Database, mq rez.MessageQueue, js rez.JobService, incidents rez.IncidentService) *App {
+func MakeApp(cfg rez.Config, db rez.Database, js rez.JobService, orgs rez.OrganizationService, incidents rez.IncidentDetailsService, management rez.IncidentManagementService) *App {
 	return &App{
-		cfg:       cfg,
-		db:        db,
-		mq:        mq,
-		jobs:      js,
-		incidents: incidents,
+		cfg:        cfg,
+		db:         db,
+		jobs:       js,
+		orgs:       orgs,
+		incidents:  incidents,
+		management: management,
 	}
 }
 
@@ -105,19 +109,19 @@ func (a *App) InteractionCallbackHandlers() map[slack.InteractionType]slackinteg
 	}
 }
 
+// getEnabledIntegrationClient returns a client for the organization's installation, or nil when there is none.
+// An organization has at most one incident integration, so the first installation is the only one.
 func (a *App) getEnabledIntegrationClient(ctx context.Context) (*slackintegration.ClientWrapper, error) {
-	// TODO: cache?
 	queryInstall := a.db.Client(ctx).Integration.Query().
 		Where(integration.Name(integrationName))
-	intg, intgErr := queryInstall.All(ctx)
-	if intgErr != nil && !ent.IsNotFound(intgErr) {
-		return nil, fmt.Errorf("failed to query: %w", intgErr)
+	intg, intgErr := queryInstall.First(ctx)
+	if intgErr != nil {
+		if ent.IsNotFound(intgErr) {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("query slack incidents installation: %w", intgErr)
 	}
-	// TODO: check preferences for workspace
-	if len(intg) == 0 {
-		return nil, nil
-	}
-	return a.newClientWrapper(intg[0])
+	return a.newClientWrapper(intg)
 }
 
 func (a *App) clientOptions() []slack.Option {
@@ -128,28 +132,31 @@ func (a *App) newClientWrapper(intg *ent.Integration) (*slackintegration.ClientW
 	return slackintegration.NewClientWrapper(intg, a.clientOptions()...)
 }
 
-func (a *App) withIncidentUpdateProcessor(ctx context.Context, id uuid.UUID, fn func(*incidentUpdateProcessor) error) error {
-	client, clientErr := a.getEnabledIntegrationClient(ctx)
-	if clientErr != nil {
-		return fmt.Errorf("get incident management client: %w", clientErr)
-	} else if client == nil {
-		return nil
-	}
-	p, procErr := a.newUpdateProcessor(ctx, client, id)
-	if procErr != nil {
-		return fmt.Errorf("creating incident update processor: %w", procErr)
-	}
-	return fn(p)
+// hasAgent is whether the Slack agent is installed in the same workspace as the installation.
+func (a *App) hasAgent(ctx context.Context, intg *ent.Integration) (bool, error) {
+	return a.db.Client(ctx).Integration.Query().
+		Where(integration.Name(agentIntegrationName), integration.ProviderInstallationRef(intg.ProviderInstallationRef)).
+		Exist(ctx)
 }
 
+// onIncidentUpdated decides nothing: it schedules a sync, which reads the incident when it runs.
 func (a *App) onIncidentUpdated(ctx context.Context, ev *rez.EventOnIncidentUpdated) error {
-	return a.withIncidentUpdateProcessor(ctx, ev.IncidentId, func(p *incidentUpdateProcessor) error {
-		return p.processIncidentUpdate(ctx)
-	})
+	return a.insertChannelSync(ctx, ev.IncidentId)
 }
 
 func (a *App) onIncidentMilestoneUpdated(ctx context.Context, ev *rez.EventOnIncidentMilestoneUpdated) error {
-	return a.withIncidentUpdateProcessor(ctx, ev.IncidentId, func(p *incidentUpdateProcessor) error {
-		return p.processIncidentMilestoneUpdate(ctx, ev.MilestoneId)
-	})
+	args := postIncidentMilestoneJobArgs{IncidentID: ev.IncidentId, MilestoneID: ev.MilestoneId}
+	if _, insertErr := a.jobs.Insert(ctx, args, nil); insertErr != nil {
+		return fmt.Errorf("insert incident milestone message job: %w", insertErr)
+	}
+	return a.insertChannelSync(ctx, ev.IncidentId)
+}
+
+func (a *App) insertChannelSync(ctx context.Context, incidentID uuid.UUID) error {
+	dueAt := time.Now().Truncate(time.Second).Add(time.Second)
+	args := syncIncidentChannelJobArgs{IncidentID: incidentID, DueAt: dueAt}
+	if _, insertErr := a.jobs.Insert(ctx, args, &river.InsertOpts{ScheduledAt: dueAt}); insertErr != nil {
+		return fmt.Errorf("insert incident channel sync job: %w", insertErr)
+	}
+	return nil
 }

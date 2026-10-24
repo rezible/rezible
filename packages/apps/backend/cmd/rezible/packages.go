@@ -256,7 +256,7 @@ var pkgIntegrations = do.Package(
 			do.MustInvoke[rez.Config](i),
 			do.MustInvoke[rez.UserService](i),
 			do.MustInvoke[rez.IntegrationInstallationLookup](i),
-			do.MustInvoke[rez.IncidentService](i),
+			do.MustInvoke[rez.IncidentDetailsService](i),
 			do.MustInvoke[rez.EventsService](i),
 		)
 	}),
@@ -293,9 +293,10 @@ var pkgIntegrations = do.Package(
 		return slackincidents.MakeApp(
 			do.MustInvoke[rez.Config](i),
 			do.MustInvoke[rez.Database](i),
-			do.MustInvoke[rez.MessageQueue](i),
 			do.MustInvoke[rez.JobService](i),
-			do.MustInvoke[rez.IncidentService](i),
+			do.MustInvoke[rez.OrganizationService](i),
+			do.MustInvoke[rez.IncidentDetailsService](i),
+			do.MustInvoke[rez.IncidentManagementService](i),
 		), nil
 	}),
 
@@ -338,7 +339,7 @@ var pkgIntegrations = do.Package(
 			do.MustInvoke[rez.KnowledgeGraphIngestionService](i),
 			do.MustInvoke[rez.KnowledgeGraphQueryService](i),
 			do.MustInvoke[rez.UserService](i),
-			do.MustInvoke[rez.IncidentService](i),
+			do.MustInvoke[rez.IncidentDetailsService](i),
 			do.MustInvoke[rez.AlertService](i),
 		)
 	}),
@@ -433,12 +434,22 @@ var pkgDatabase = do.Package(
 		)
 	}),
 
-	do.Lazy(func(i do.Injector) (rez.IncidentService, error) {
-		return db.NewIncidentService(
+	do.Lazy(func(i do.Injector) (rez.IncidentDetailsService, error) {
+		return db.NewIncidentDetailsService(
 			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.MessageQueue](i),
 			do.MustInvoke[rez.SituationService](i),
+		)
+	}),
+
+	do.Lazy(func(i do.Injector) (rez.IncidentManagementService, error) {
+		return db.NewIncidentManagementService(
+			do.MustInvoke[rez.Database](i),
+			do.MustInvoke[rez.MessageQueue](i),
+			do.MustInvoke[rez.OrganizationService](i),
+			do.MustInvoke[rez.SituationService](i),
 			do.MustInvoke[rez.RetrospectiveService](i),
+			do.MustInvoke[rez.IncidentDetailsService](i),
 		)
 	}),
 
@@ -523,11 +534,13 @@ var pkgDatabase = do.Package(
 	}),
 	do.Bind[*db.DebriefService, rez.DebriefService](),
 
-	do.Lazy(func(i do.Injector) (rez.RetrospectiveService, error) {
+	do.Lazy(func(i do.Injector) (*db.RetrospectiveService, error) {
 		return db.NewRetrospectiveService(
 			do.MustInvoke[rez.Database](i),
+			do.MustInvoke[rez.JobService](i),
 		)
 	}),
+	do.Bind[*db.RetrospectiveService, rez.RetrospectiveService](),
 
 	do.Lazy(func(i do.Injector) (rez.TaskService, error) {
 		return db.NewTaskService(do.MustInvoke[rez.Database](i))
@@ -640,6 +653,7 @@ var pkgDatabase = do.Package(
 			do.MustInvoke[rez.SituationBriefService](i),
 			do.MustInvoke[rez.InvestigationOutputService](i),
 			do.MustInvoke[rez.IntegrationService](i),
+			do.MustInvoke[rez.OrganizationService](i),
 		), nil
 	}),
 	do.Bind[*db.SituationNoticeService, rez.SituationNoticeService](),
@@ -685,7 +699,8 @@ var pkgOpenApiV1 = do.Package(
 			do.MustInvoke[rez.UserService](i),
 			do.MustInvoke[rez.DocumentsService](i),
 			do.MustInvoke[rez.DebriefService](i),
-			do.MustInvoke[rez.IncidentService](i),
+			do.MustInvoke[rez.IncidentDetailsService](i),
+			do.MustInvoke[rez.IncidentManagementService](i),
 			do.MustInvoke[rez.IntegrationService](i),
 			do.MustInvoke[rez.InvestigationService](i),
 			do.MustInvoke[rez.InvestigationOutputService](i),
@@ -796,6 +811,11 @@ var pkgJobs = do.Package(
 		p.addInvokedProviderFunc(db.NewGenerateShiftMetricsWorker)
 		p.addInvokedProviderFunc(db.NewSyncScheduledIntegrationSourcesWorker)
 		p.addInvokedProviderFunc(db.NewSyncSituationNoticesWorker)
+		p.add(db.NewSendReviewRequestMessageWorker(
+			do.MustInvoke[rez.Database](i),
+			do.MustInvoke[rez.Config](i),
+			do.MustInvoke[rez.IntegrationService](i),
+		))
 
 		for _, intgProv := range do.MustInvoke[*integrations.Registry](i).All[jobs.WorkerProvider]() {
 			p.add(intgProv.JobWorkers()...)

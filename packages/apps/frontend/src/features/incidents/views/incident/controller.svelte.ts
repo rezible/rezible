@@ -1,11 +1,7 @@
-import {
-	createIncidentRetrospectiveMutation,
-	getDocumentSessionOptions,
-	getIncidentOptions,
-	getRetrospectiveOptions,
-} from "$lib/api";
+import { closedReviewLine } from "$features/incidents/lib/review";
+import { getDocumentSessionOptions, getIncidentOptions, getRetrospectiveOptions } from "$lib/api";
 import { getLocalTimeZone } from "@internationalized/date";
-import { createMutation, createQuery } from "@tanstack/svelte-query";
+import { createQuery } from "@tanstack/svelte-query";
 import { Context, watch, type Getter } from "runed";
 import { page } from "$app/state";
 import { resolve } from "$app/paths";
@@ -21,7 +17,6 @@ export class IncidentViewController {
 		this.slug = slugFn();
 		watch(slugFn, (slug) => {
 			this.slug = slug;
-			this.startRetrospectiveMutation.reset();
 		});
 	}
 
@@ -55,24 +50,6 @@ export class IncidentViewController {
 	retrospective = $derived(this.retrospectiveQuery.data?.data);
 	retrospectiveId = $derived(this.retrospective?.id);
 
-	canStartRetrospective = $derived(
-		this.incident?.attributes.responseState === "resolved" && !this.incidentRetrospectiveId
-	);
-	startRetrospectiveMutation = createMutation(() => ({
-		...createIncidentRetrospectiveMutation(),
-		onSuccess: async (_response, variables) => {
-			if (variables.path.id === this.incidentId) {
-				await this.incidentQuery.refetch();
-			}
-		},
-	}));
-	startRetrospective = () => {
-		if (!this.canStartRetrospective || this.startRetrospectiveMutation.isPending) {
-			return;
-		}
-		this.startRetrospectiveMutation.mutate({ path: { id: this.incidentId } });
-	};
-
 	retrospectiveDocumentId = $derived(this.retrospective?.attributes.documentId);
 	retrospectiveDocumentSessionQuery = createQuery(() => ({
 		...getDocumentSessionOptions({ path: { id: this.retrospectiveDocumentId ?? "" } }),
@@ -80,7 +57,21 @@ export class IncidentViewController {
 	}));
 	retrospectiveDocument = $derived(this.retrospectiveDocumentSessionQuery.data?.data);
 
-	documentAccess = $derived(this.retrospectiveDocument?.access);
+	reviewClosed = $derived(this.retrospective?.attributes.state === "closed");
+	closedReviewLine = $derived(closedReviewLine(this.retrospective?.attributes));
+	documentAccess = $derived(this.closedDocumentAccess());
+
+	refetchRetrospective = () => {
+		void this.retrospectiveQuery.refetch();
+	};
+
+	private closedDocumentAccess() {
+		const access = this.retrospectiveDocument?.access;
+		if (!access || !this.reviewClosed) {
+			return access;
+		}
+		return { ...access, canEdit: false, canManage: false };
+	}
 
 	systemAnalysisId = $derived(this.retrospective?.attributes.systemAnalysisId);
 

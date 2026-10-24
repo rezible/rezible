@@ -23,6 +23,8 @@ const (
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
+	// FieldArchiveTime holds the string denoting the archive_time field in the database.
+	FieldArchiveTime = "archive_time"
 	// FieldKnowledgeEntityID holds the string denoting the knowledge_entity_id field in the database.
 	FieldKnowledgeEntityID = "knowledge_entity_id"
 	// FieldSlug holds the string denoting the slug field in the database.
@@ -37,12 +39,16 @@ const (
 	FieldSummary = "summary"
 	// FieldChatChannelID holds the string denoting the chat_channel_id field in the database.
 	FieldChatChannelID = "chat_channel_id"
-	// FieldResponseState holds the string denoting the response_state field in the database.
-	FieldResponseState = "response_state"
+	// FieldChatDetailsMessageID holds the string denoting the chat_details_message_id field in the database.
+	FieldChatDetailsMessageID = "chat_details_message_id"
 	// FieldOpenedAt holds the string denoting the opened_at field in the database.
 	FieldOpenedAt = "opened_at"
+	// FieldResponseState holds the string denoting the response_state field in the database.
+	FieldResponseState = "response_state"
 	// FieldResolvedAt holds the string denoting the resolved_at field in the database.
 	FieldResolvedAt = "resolved_at"
+	// FieldDeclaredByID holds the string denoting the declared_by_id field in the database.
+	FieldDeclaredByID = "declared_by_id"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
 	// EdgeKnowledgeEntity holds the string denoting the knowledge_entity edge name in mutations.
@@ -51,6 +57,8 @@ const (
 	EdgeSeverity = "severity"
 	// EdgeType holds the string denoting the type edge name in mutations.
 	EdgeType = "type"
+	// EdgeDeclaredBy holds the string denoting the declared_by edge name in mutations.
+	EdgeDeclaredBy = "declared_by"
 	// EdgeMilestones holds the string denoting the milestones edge name in mutations.
 	EdgeMilestones = "milestones"
 	// EdgeRetrospective holds the string denoting the retrospective edge name in mutations.
@@ -103,6 +111,13 @@ const (
 	TypeInverseTable = "incident_types"
 	// TypeColumn is the table column denoting the type relation/edge.
 	TypeColumn = "type_id"
+	// DeclaredByTable is the table that holds the declared_by relation/edge.
+	DeclaredByTable = "incidents"
+	// DeclaredByInverseTable is the table name for the User entity.
+	// It exists in this package in order to avoid circular dependency with the "user" package.
+	DeclaredByInverseTable = "users"
+	// DeclaredByColumn is the table column denoting the declared_by relation/edge.
+	DeclaredByColumn = "declared_by_id"
 	// MilestonesTable is the table that holds the milestones relation/edge.
 	MilestonesTable = "incident_milestones"
 	// MilestonesInverseTable is the table name for the IncidentMilestone entity.
@@ -177,6 +192,7 @@ var Columns = []string{
 	FieldTenantID,
 	FieldCreatedAt,
 	FieldUpdatedAt,
+	FieldArchiveTime,
 	FieldKnowledgeEntityID,
 	FieldSlug,
 	FieldTitle,
@@ -184,9 +200,11 @@ var Columns = []string{
 	FieldTypeID,
 	FieldSummary,
 	FieldChatChannelID,
-	FieldResponseState,
+	FieldChatDetailsMessageID,
 	FieldOpenedAt,
+	FieldResponseState,
 	FieldResolvedAt,
+	FieldDeclaredByID,
 }
 
 var (
@@ -220,8 +238,9 @@ func ValidColumn(column string) bool {
 //
 //	import _ "github.com/rezible/rezible/ent/runtime"
 var (
-	Hooks  [1]ent.Hook
-	Policy ent.Policy
+	Hooks        [2]ent.Hook
+	Interceptors [1]ent.Interceptor
+	Policy       ent.Policy
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() time.Time
 	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.
@@ -237,12 +256,11 @@ var (
 // ResponseState defines the type for the "response_state" enum field.
 type ResponseState string
 
-// ResponseStateUnknown is the default value of the ResponseState enum.
-const DefaultResponseState = ResponseStateUnknown
+// ResponseStateStarted is the default value of the ResponseState enum.
+const DefaultResponseState = ResponseStateStarted
 
 // ResponseState values.
 const (
-	ResponseStateUnknown   ResponseState = "unknown"
 	ResponseStateStarted   ResponseState = "started"
 	ResponseStateMitigated ResponseState = "mitigated"
 	ResponseStateResolved  ResponseState = "resolved"
@@ -255,7 +273,7 @@ func (rs ResponseState) String() string {
 // ResponseStateValidator is a validator for the "response_state" field enum values. It is called by the builders before save.
 func ResponseStateValidator(rs ResponseState) error {
 	switch rs {
-	case ResponseStateUnknown, ResponseStateStarted, ResponseStateMitigated, ResponseStateResolved:
+	case ResponseStateStarted, ResponseStateMitigated, ResponseStateResolved:
 		return nil
 	default:
 		return fmt.Errorf("incident: invalid enum value for response_state field: %q", rs)
@@ -283,6 +301,11 @@ func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
 // ByUpdatedAt orders the results by the updated_at field.
 func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
+}
+
+// ByArchiveTime orders the results by the archive_time field.
+func ByArchiveTime(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldArchiveTime, opts...).ToFunc()
 }
 
 // ByKnowledgeEntityID orders the results by the knowledge_entity_id field.
@@ -320,9 +343,9 @@ func ByChatChannelID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldChatChannelID, opts...).ToFunc()
 }
 
-// ByResponseState orders the results by the response_state field.
-func ByResponseState(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldResponseState, opts...).ToFunc()
+// ByChatDetailsMessageID orders the results by the chat_details_message_id field.
+func ByChatDetailsMessageID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldChatDetailsMessageID, opts...).ToFunc()
 }
 
 // ByOpenedAt orders the results by the opened_at field.
@@ -330,9 +353,19 @@ func ByOpenedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldOpenedAt, opts...).ToFunc()
 }
 
+// ByResponseState orders the results by the response_state field.
+func ByResponseState(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldResponseState, opts...).ToFunc()
+}
+
 // ByResolvedAt orders the results by the resolved_at field.
 func ByResolvedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldResolvedAt, opts...).ToFunc()
+}
+
+// ByDeclaredByID orders the results by the declared_by_id field.
+func ByDeclaredByID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldDeclaredByID, opts...).ToFunc()
 }
 
 // ByTenantField orders the results by tenant field.
@@ -360,6 +393,13 @@ func BySeverityField(field string, opts ...sql.OrderTermOption) OrderOption {
 func ByTypeField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newTypeStep(), sql.OrderByField(field, opts...))
+	}
+}
+
+// ByDeclaredByField orders the results by declared_by field.
+func ByDeclaredByField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newDeclaredByStep(), sql.OrderByField(field, opts...))
 	}
 }
 
@@ -537,6 +577,13 @@ func newTypeStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.M2O, false, TypeTable, TypeColumn),
 	)
 }
+func newDeclaredByStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(DeclaredByInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, DeclaredByTable, DeclaredByColumn),
+	)
+}
 func newMilestonesStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -617,7 +664,6 @@ func newIncidentLinksStep() *sqlgraph.Step {
 
 // ResponseStateValues contains all permitted values. Treat this slice as read-only.
 var ResponseStateValues = []string{
-	"unknown",
 	"started",
 	"mitigated",
 	"resolved",

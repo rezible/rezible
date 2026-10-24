@@ -23,29 +23,19 @@
 	const workspaces = $derived(groupSlackWorkspaces(agentInstallations, incidentInstallations));
 
 	const canAddAgent = $derived(ctrl.integrations.canInstall(slackAgentName));
-	// Incident management is only installable while Rezible incident management is enabled
-	// and no other integration manages incidents.
+	// Incident management is only installable while Rezible incident management is enabled, the agent is in
+	// a workspace, and no other integration manages incidents.
 	const canAddIncidents = $derived(ctrl.integrations.canInstall(slackIncidentsName));
 	const incidentManagementEnabled = $derived(!!session.orgPreferences?.enableIncidentManagement);
-
-	// A new workspace starts with the agent, or with incident management when only that is offered.
-	const newWorkspaceIntegration = $derived.by(() => {
-		if (canAddAgent) {
-			return slackAgentName;
-		}
-		if (canAddIncidents) {
-			return slackIncidentsName;
-		}
-		return undefined;
-	});
 
 	const agentForms = new IntegrationSettingsForms(slackAgentSettings, () => agentInstallations);
 	const incidentForms = new IntegrationSettingsForms(slackIncidentSettings, () => incidentInstallations);
 </script>
 
 {#snippet addWorkspace()}
-	{#if newWorkspaceIntegration}
-		<IntegrationOAuthInstall name={newWorkspaceIntegration} origin="new-workspace" label="Add to Slack">
+	<!-- A new workspace always starts with the agent; incident management is added to a workspace that has it. -->
+	{#if canAddAgent}
+		<IntegrationOAuthInstall name={slackAgentName} origin="new-workspace" label="Add to Slack">
 			{#snippet icon()}
 				<RiSlackFill />
 			{/snippet}

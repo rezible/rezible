@@ -25,8 +25,8 @@ type IncidentRole struct {
 	ArchiveTime *time.Time `json:"archive_time,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
-	// Required holds the value of the "required" field.
-	Required bool `json:"required,omitempty"`
+	// MaxAssignees holds the value of the "max_assignees" field.
+	MaxAssignees *int `json:"max_assignees,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the IncidentRoleQuery when eager-loading is set.
 	Edges        IncidentRoleEdges `json:"edges"`
@@ -80,9 +80,7 @@ func (*IncidentRole) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case incidentrole.FieldRequired:
-			values[i] = new(sql.NullBool)
-		case incidentrole.FieldTenantID:
+		case incidentrole.FieldTenantID, incidentrole.FieldMaxAssignees:
 			values[i] = new(sql.NullInt64)
 		case incidentrole.FieldName:
 			values[i] = new(sql.NullString)
@@ -130,11 +128,12 @@ func (_m *IncidentRole) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.Name = value.String
 			}
-		case incidentrole.FieldRequired:
-			if value, ok := values[i].(*sql.NullBool); !ok {
-				return fmt.Errorf("unexpected type %T for field required", values[i])
+		case incidentrole.FieldMaxAssignees:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field max_assignees", values[i])
 			} else if value.Valid {
-				_m.Required = value.Bool
+				_m.MaxAssignees = new(int)
+				*_m.MaxAssignees = int(value.Int64)
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -198,8 +197,10 @@ func (_m *IncidentRole) String() string {
 	builder.WriteString("name=")
 	builder.WriteString(_m.Name)
 	builder.WriteString(", ")
-	builder.WriteString("required=")
-	builder.WriteString(fmt.Sprintf("%v", _m.Required))
+	if v := _m.MaxAssignees; v != nil {
+		builder.WriteString("max_assignees=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
 	builder.WriteByte(')')
 	return builder.String()
 }

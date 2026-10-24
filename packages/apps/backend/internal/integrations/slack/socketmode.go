@@ -58,11 +58,23 @@ func (l *socketModeListener) onEvent(ctx context.Context, evt *socketmode.Event)
 		return
 	}
 
+	// Commands and interactions are answered in the acknowledgement, which Slack waits for.
+	var payload any
 	var handleErr error
 	if evt.Type == socketmode.EventTypeInteractive {
-		handleErr = l.eventHandler.OnInteractionCallback(ctx, evt.Request.Payload)
+		response, interactionErr := l.eventHandler.OnInteractionCallback(ctx, evt.Request.Payload)
+		if response != nil {
+			payload = response
+		}
+		handleErr = interactionErr
 	} else if evt.Type == socketmode.EventTypeSlashCommand {
-		handleErr = l.onSlashCommand(ctx, evt)
+		if cmd, isCommand := evt.Data.(slack.SlashCommand); isCommand {
+			if reply := l.eventHandler.OnSlashCommand(ctx, cmd); reply != nil {
+				payload = reply
+			}
+		} else {
+			handleErr = fmt.Errorf("invalid SlashCommand data")
+		}
 	} else if evt.Type == socketmode.EventTypeEventsAPI {
 		handleErr = l.onEventsApi(ctx, evt)
 	} else {
@@ -74,16 +86,9 @@ func (l *socketModeListener) onEvent(ctx context.Context, evt *socketmode.Event)
 			"event_type", string(evt.Type),
 		)
 	}
-	if ackErr := l.client.AckCtx(ctx, evt.Request.EnvelopeID, nil); ackErr != nil && ctx.Err() == nil {
+	if ackErr := l.client.AckCtx(ctx, evt.Request.EnvelopeID, payload); ackErr != nil && ctx.Err() == nil {
 		slog.Error("Error acking socket mode event", "error", ackErr)
 	}
-}
-
-func (l *socketModeListener) onSlashCommand(ctx context.Context, e *socketmode.Event) error {
-	if cmd, ok := e.Data.(slack.SlashCommand); ok {
-		return l.eventHandler.OnSlashCommand(ctx, cmd)
-	}
-	return fmt.Errorf("invalid SlashCommand data")
 }
 
 func (l *socketModeListener) onEventsApi(ctx context.Context, e *socketmode.Event) error {

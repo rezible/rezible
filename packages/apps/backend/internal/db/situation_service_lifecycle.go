@@ -204,14 +204,21 @@ func (s *SituationService) closeLocked(ctx context.Context, situation *ent.Situa
 
 // SyncIncidentLinks applies an incident write's link changes, in the incident's transaction, and requests
 // evaluation of the incident's unclosed situations and those it unlinked: any incident write, such as its
-// resolution, can change whether they may close. Linking raises the situation and starts its
-// investigation; linking a closed situation is a conflict. Unlinking changes no stage.
+// resolution, can change whether they may close. Linking an open situation raises it and starts its
+// investigation; linking a closed situation records the link only. Unlinking changes no stage.
 func (s *SituationService) SyncIncidentLinks(ctx context.Context, incidentID uuid.UUID, changes rez.IncidentSituationLinkChanges) error {
 	added := mapset.NewSet(changes.Added...)
 	removed := mapset.NewSet(changes.Removed...).Difference(added)
 	return s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
 		if linkErr := s.applyIncidentLinks(ctx, incidentID, added, removed); linkErr != nil {
 			return linkErr
+		}
+		// Evaluation alone may publish nothing, for example for a closed situation, so what is shown about
+		// each linked or unlinked situation, such as its notices' incident buttons, is refreshed here.
+		for situationID := range added.Union(removed).Iter() {
+			if publishErr := s.msgs.Publish(ctx, rez.EventOnSituationUpdated{SituationID: situationID}); publishErr != nil {
+				return fmt.Errorf("publish situation updated: %w", publishErr)
+			}
 		}
 		queryAffected := tx.Situation.Query().
 			Where(
@@ -265,10 +272,9 @@ func (s *SituationService) applyIncidentLinks(ctx context.Context, incidentID uu
 	return nil
 }
 
+// linkIncidentLocked links the situation to the incident. Only a newly linked open situation is raised; a
+// closed one keeps its stage, close reason, times and investigation.
 func (s *SituationService) linkIncidentLocked(ctx context.Context, situation *ent.Situation, incidentID uuid.UUID, now time.Time) error {
-	if situation.ClosedAt != nil {
-		return fmt.Errorf("%w: a closed situation cannot be linked to an incident", errs.ErrConflict)
-	}
 	client := s.db.Client(ctx)
 	queryLinked := client.Situation.Query().
 		Where(sit.ID(situation.ID), sit.HasIncidentsWith(inc.ID(incidentID)))
@@ -276,12 +282,16 @@ func (s *SituationService) linkIncidentLocked(ctx context.Context, situation *en
 	if linkedErr != nil {
 		return fmt.Errorf("check situation incident link: %w", linkedErr)
 	}
-	if !linked {
-		linkIncident := client.Situation.UpdateOneID(situation.ID).
-			AddIncidentIDs(incidentID)
-		if linkErr := linkIncident.Exec(ctx); linkErr != nil {
-			return fmt.Errorf("link situation incident: %w", linkErr)
-		}
+	if linked {
+		return nil
+	}
+	linkIncident := client.Situation.UpdateOneID(situation.ID).
+		AddIncidentIDs(incidentID)
+	if linkErr := linkIncident.Exec(ctx); linkErr != nil {
+		return fmt.Errorf("link situation incident: %w", linkErr)
+	}
+	if situation.ClosedAt != nil {
+		return nil
 	}
 	raiseParams := rez.RaiseSituationParams{StartInvestigation: true, Reason: situationIncidentRaiseReason}
 	return s.raiseLocked(ctx, situation, raiseParams, now)

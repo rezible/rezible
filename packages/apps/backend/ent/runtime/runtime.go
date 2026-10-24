@@ -604,6 +604,11 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
+	incidentMixinHooks3 := incidentMixin[3].Hooks()
+
+	incident.Hooks[1] = incidentMixinHooks3[0]
+	incidentMixinInters3 := incidentMixin[3].Interceptors()
+	incident.Interceptors[0] = incidentMixinInters3[0]
 	incidentMixinFields2 := incidentMixin[2].Fields()
 	_ = incidentMixinFields2
 	incidentFields := schema.Incident{}.Fields()
@@ -807,10 +812,6 @@ func init() {
 	incidentrole.Interceptors[0] = incidentroleMixinInters2[0]
 	incidentroleFields := schema.IncidentRole{}.Fields()
 	_ = incidentroleFields
-	// incidentroleDescRequired is the schema descriptor for required field.
-	incidentroleDescRequired := incidentroleFields[2].Descriptor()
-	// incidentrole.DefaultRequired holds the default value on creation for the required field.
-	incidentrole.DefaultRequired = incidentroleDescRequired.Default.(bool)
 	// incidentroleDescID is the schema descriptor for id field.
 	incidentroleDescID := incidentroleFields[0].Descriptor()
 	// incidentrole.DefaultID holds the default value on creation for the id field.
@@ -1897,12 +1898,6 @@ func init() {
 	organizationpreferencesDescEnableIncidentManagement := organizationpreferencesFields[3].Descriptor()
 	// organizationpreferences.DefaultEnableIncidentManagement holds the default value on creation for the enable_incident_management field.
 	organizationpreferences.DefaultEnableIncidentManagement = organizationpreferencesDescEnableIncidentManagement.Default.(bool)
-	// organizationpreferencesDescRequiredReviewerCount is the schema descriptor for required_reviewer_count field.
-	organizationpreferencesDescRequiredReviewerCount := organizationpreferencesFields[4].Descriptor()
-	// organizationpreferences.DefaultRequiredReviewerCount holds the default value on creation for the required_reviewer_count field.
-	organizationpreferences.DefaultRequiredReviewerCount = organizationpreferencesDescRequiredReviewerCount.Default.(int)
-	// organizationpreferences.RequiredReviewerCountValidator is a validator for the "required_reviewer_count" field. It is called by the builders before save.
-	organizationpreferences.RequiredReviewerCountValidator = organizationpreferencesDescRequiredReviewerCount.Validators[0].(func(int) error)
 	// organizationpreferencesDescID is the schema descriptor for id field.
 	organizationpreferencesDescID := organizationpreferencesFields[0].Descriptor()
 	// organizationpreferences.DefaultID holds the default value on creation for the id field.

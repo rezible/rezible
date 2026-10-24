@@ -137,6 +137,20 @@ func (_c *ReviewCreate) SetNillableFeedback(v *string) *ReviewCreate {
 	return _c
 }
 
+// SetMessageFailedAt sets the "message_failed_at" field.
+func (_c *ReviewCreate) SetMessageFailedAt(v time.Time) *ReviewCreate {
+	_c.mutation.SetMessageFailedAt(v)
+	return _c
+}
+
+// SetNillableMessageFailedAt sets the "message_failed_at" field if the given value is not nil.
+func (_c *ReviewCreate) SetNillableMessageFailedAt(v *time.Time) *ReviewCreate {
+	if v != nil {
+		_c.SetMessageFailedAt(*v)
+	}
+	return _c
+}
+
 // SetID sets the "id" field.
 func (_c *ReviewCreate) SetID(v uuid.UUID) *ReviewCreate {
 	_c.mutation.SetID(v)
@@ -328,6 +342,10 @@ func (_c *ReviewCreate) createSpec() (*Review, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.Feedback(); ok {
 		_spec.SetField(review.FieldFeedback, field.TypeString, value)
 		_node.Feedback = &value
+	}
+	if value, ok := _c.mutation.MessageFailedAt(); ok {
+		_spec.SetField(review.FieldMessageFailedAt, field.TypeTime, value)
+		_node.MessageFailedAt = &value
 	}
 	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -621,6 +639,24 @@ func (u *ReviewUpsert) ClearFeedback() *ReviewUpsert {
 	return u
 }
 
+// SetMessageFailedAt sets the "message_failed_at" field.
+func (u *ReviewUpsert) SetMessageFailedAt(v time.Time) *ReviewUpsert {
+	u.Set(review.FieldMessageFailedAt, v)
+	return u
+}
+
+// UpdateMessageFailedAt sets the "message_failed_at" field to the value that was provided on create.
+func (u *ReviewUpsert) UpdateMessageFailedAt() *ReviewUpsert {
+	u.SetExcluded(review.FieldMessageFailedAt)
+	return u
+}
+
+// ClearMessageFailedAt clears the value of the "message_failed_at" field.
+func (u *ReviewUpsert) ClearMessageFailedAt() *ReviewUpsert {
+	u.SetNull(review.FieldMessageFailedAt)
+	return u
+}
+
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
@@ -823,6 +859,27 @@ func (u *ReviewUpsertOne) UpdateFeedback() *ReviewUpsertOne {
 func (u *ReviewUpsertOne) ClearFeedback() *ReviewUpsertOne {
 	return u.Update(func(s *ReviewUpsert) {
 		s.ClearFeedback()
+	})
+}
+
+// SetMessageFailedAt sets the "message_failed_at" field.
+func (u *ReviewUpsertOne) SetMessageFailedAt(v time.Time) *ReviewUpsertOne {
+	return u.Update(func(s *ReviewUpsert) {
+		s.SetMessageFailedAt(v)
+	})
+}
+
+// UpdateMessageFailedAt sets the "message_failed_at" field to the value that was provided on create.
+func (u *ReviewUpsertOne) UpdateMessageFailedAt() *ReviewUpsertOne {
+	return u.Update(func(s *ReviewUpsert) {
+		s.UpdateMessageFailedAt()
+	})
+}
+
+// ClearMessageFailedAt clears the value of the "message_failed_at" field.
+func (u *ReviewUpsertOne) ClearMessageFailedAt() *ReviewUpsertOne {
+	return u.Update(func(s *ReviewUpsert) {
+		s.ClearMessageFailedAt()
 	})
 }
 
@@ -1195,6 +1252,27 @@ func (u *ReviewUpsertBulk) UpdateFeedback() *ReviewUpsertBulk {
 func (u *ReviewUpsertBulk) ClearFeedback() *ReviewUpsertBulk {
 	return u.Update(func(s *ReviewUpsert) {
 		s.ClearFeedback()
+	})
+}
+
+// SetMessageFailedAt sets the "message_failed_at" field.
+func (u *ReviewUpsertBulk) SetMessageFailedAt(v time.Time) *ReviewUpsertBulk {
+	return u.Update(func(s *ReviewUpsert) {
+		s.SetMessageFailedAt(v)
+	})
+}
+
+// UpdateMessageFailedAt sets the "message_failed_at" field to the value that was provided on create.
+func (u *ReviewUpsertBulk) UpdateMessageFailedAt() *ReviewUpsertBulk {
+	return u.Update(func(s *ReviewUpsert) {
+		s.UpdateMessageFailedAt()
+	})
+}
+
+// ClearMessageFailedAt clears the value of the "message_failed_at" field.
+func (u *ReviewUpsertBulk) ClearMessageFailedAt() *ReviewUpsertBulk {
+	return u.Update(func(s *ReviewUpsert) {
+		s.ClearMessageFailedAt()
 	})
 }
 

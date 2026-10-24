@@ -137,9 +137,10 @@ type SituationSignalFacts struct {
 
 // SituationIncidentFacts describe one linked incident.
 type SituationIncidentFacts struct {
-	ID            uuid.UUID `json:"id"`
-	Title         string    `json:"title"`
-	ResponseState string    `json:"response_state"`
+	ID    uuid.UUID `json:"id"`
+	Title string    `json:"title"`
+	// ResolvedAt is when the incident was resolved, if it has been.
+	ResolvedAt *time.Time `json:"resolved_at,omitempty"`
 }
 
 // SituationEntityFacts describe one of a situation's runtime entities from its knowledge entity state.

@@ -320,8 +320,6 @@ type (
 		SeverityRef     string     `json:"severity_ref" validate:"required"`
 		TypeRef         string     `json:"type_ref" validate:"required"`
 		OpenedAt        time.Time  `json:"opened_at"`
-		ResponseState   string     `json:"response_state"`
-		ResolvedAt      *time.Time `json:"resolved_at,omitempty"`
 		SourceUpdatedAt *time.Time `json:"source_updated_at,omitempty"`
 		SourceURL       *string    `json:"source_url,omitempty"`
 	}

@@ -79,9 +79,9 @@ var slackTokenPattern = regexp.MustCompile(`xox[a-z]-[A-Za-z0-9-]+`)
 // noticeDeliveryError gives Slack's error code as the reason when it gave one, otherwise the error's message
 // without any token.
 func noticeDeliveryError(deliveryErr error) error {
-	reason := truncateRunes(slackTokenPattern.ReplaceAllString(deliveryErr.Error(), "[token]"), maxNoticeErrorRunes)
+	reason := slackintegration.TruncateRunes(slackTokenPattern.ReplaceAllString(deliveryErr.Error(), "[token]"), maxNoticeErrorRunes)
 	if slackErr, isSlackErr := errors.AsType[slack.SlackErrorResponse](deliveryErr); isSlackErr {
-		reason = truncateRunes(slackErr.Err, maxNoticeErrorRunes)
+		reason = slackintegration.TruncateRunes(slackErr.Err, maxNoticeErrorRunes)
 	}
 	if _, isRateLimited := errors.AsType[*slack.RateLimitedError](deliveryErr); isRateLimited {
 		reason = "rate_limited"

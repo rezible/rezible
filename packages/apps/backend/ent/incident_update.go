@@ -27,6 +27,7 @@ import (
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/ent/situation"
+	"github.com/rezible/rezible/ent/user"
 	"github.com/rezible/rezible/ent/videoconference"
 )
 
@@ -60,6 +61,26 @@ func (_u *IncidentUpdate) SetNillableCreatedAt(v *time.Time) *IncidentUpdate {
 // SetUpdatedAt sets the "updated_at" field.
 func (_u *IncidentUpdate) SetUpdatedAt(v time.Time) *IncidentUpdate {
 	_u.mutation.SetUpdatedAt(v)
+	return _u
+}
+
+// SetArchiveTime sets the "archive_time" field.
+func (_u *IncidentUpdate) SetArchiveTime(v time.Time) *IncidentUpdate {
+	_u.mutation.SetArchiveTime(v)
+	return _u
+}
+
+// SetNillableArchiveTime sets the "archive_time" field if the given value is not nil.
+func (_u *IncidentUpdate) SetNillableArchiveTime(v *time.Time) *IncidentUpdate {
+	if v != nil {
+		_u.SetArchiveTime(*v)
+	}
+	return _u
+}
+
+// ClearArchiveTime clears the value of the "archive_time" field.
+func (_u *IncidentUpdate) ClearArchiveTime() *IncidentUpdate {
+	_u.mutation.ClearArchiveTime()
 	return _u
 }
 
@@ -191,17 +212,23 @@ func (_u *IncidentUpdate) ClearChatChannelID() *IncidentUpdate {
 	return _u
 }
 
-// SetResponseState sets the "response_state" field.
-func (_u *IncidentUpdate) SetResponseState(v incident.ResponseState) *IncidentUpdate {
-	_u.mutation.SetResponseState(v)
+// SetChatDetailsMessageID sets the "chat_details_message_id" field.
+func (_u *IncidentUpdate) SetChatDetailsMessageID(v string) *IncidentUpdate {
+	_u.mutation.SetChatDetailsMessageID(v)
 	return _u
 }
 
-// SetNillableResponseState sets the "response_state" field if the given value is not nil.
-func (_u *IncidentUpdate) SetNillableResponseState(v *incident.ResponseState) *IncidentUpdate {
+// SetNillableChatDetailsMessageID sets the "chat_details_message_id" field if the given value is not nil.
+func (_u *IncidentUpdate) SetNillableChatDetailsMessageID(v *string) *IncidentUpdate {
 	if v != nil {
-		_u.SetResponseState(*v)
+		_u.SetChatDetailsMessageID(*v)
 	}
+	return _u
+}
+
+// ClearChatDetailsMessageID clears the value of the "chat_details_message_id" field.
+func (_u *IncidentUpdate) ClearChatDetailsMessageID() *IncidentUpdate {
+	_u.mutation.ClearChatDetailsMessageID()
 	return _u
 }
 
@@ -215,6 +242,20 @@ func (_u *IncidentUpdate) SetOpenedAt(v time.Time) *IncidentUpdate {
 func (_u *IncidentUpdate) SetNillableOpenedAt(v *time.Time) *IncidentUpdate {
 	if v != nil {
 		_u.SetOpenedAt(*v)
+	}
+	return _u
+}
+
+// SetResponseState sets the "response_state" field.
+func (_u *IncidentUpdate) SetResponseState(v incident.ResponseState) *IncidentUpdate {
+	_u.mutation.SetResponseState(v)
+	return _u
+}
+
+// SetNillableResponseState sets the "response_state" field if the given value is not nil.
+func (_u *IncidentUpdate) SetNillableResponseState(v *incident.ResponseState) *IncidentUpdate {
+	if v != nil {
+		_u.SetResponseState(*v)
 	}
 	return _u
 }
@@ -239,6 +280,26 @@ func (_u *IncidentUpdate) ClearResolvedAt() *IncidentUpdate {
 	return _u
 }
 
+// SetDeclaredByID sets the "declared_by_id" field.
+func (_u *IncidentUpdate) SetDeclaredByID(v uuid.UUID) *IncidentUpdate {
+	_u.mutation.SetDeclaredByID(v)
+	return _u
+}
+
+// SetNillableDeclaredByID sets the "declared_by_id" field if the given value is not nil.
+func (_u *IncidentUpdate) SetNillableDeclaredByID(v *uuid.UUID) *IncidentUpdate {
+	if v != nil {
+		_u.SetDeclaredByID(*v)
+	}
+	return _u
+}
+
+// ClearDeclaredByID clears the value of the "declared_by_id" field.
+func (_u *IncidentUpdate) ClearDeclaredByID() *IncidentUpdate {
+	_u.mutation.ClearDeclaredByID()
+	return _u
+}
+
 // SetKnowledgeEntity sets the "knowledge_entity" edge to the KnowledgeEntity entity.
 func (_u *IncidentUpdate) SetKnowledgeEntity(v *KnowledgeEntity) *IncidentUpdate {
 	return _u.SetKnowledgeEntityID(v.ID)
@@ -252,6 +313,11 @@ func (_u *IncidentUpdate) SetSeverity(v *IncidentSeverity) *IncidentUpdate {
 // SetType sets the "type" edge to the IncidentType entity.
 func (_u *IncidentUpdate) SetType(v *IncidentType) *IncidentUpdate {
 	return _u.SetTypeID(v.ID)
+}
+
+// SetDeclaredBy sets the "declared_by" edge to the User entity.
+func (_u *IncidentUpdate) SetDeclaredBy(v *User) *IncidentUpdate {
+	return _u.SetDeclaredByID(v.ID)
 }
 
 // AddMilestoneIDs adds the "milestones" edge to the IncidentMilestone entity by IDs.
@@ -443,6 +509,12 @@ func (_u *IncidentUpdate) ClearSeverity() *IncidentUpdate {
 // ClearType clears the "type" edge to the IncidentType entity.
 func (_u *IncidentUpdate) ClearType() *IncidentUpdate {
 	_u.mutation.ClearType()
+	return _u
+}
+
+// ClearDeclaredBy clears the "declared_by" edge to the User entity.
+func (_u *IncidentUpdate) ClearDeclaredBy() *IncidentUpdate {
+	_u.mutation.ClearDeclaredBy()
 	return _u
 }
 
@@ -735,6 +807,12 @@ func (_u *IncidentUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(incident.FieldUpdatedAt, field.TypeTime, value)
 	}
+	if value, ok := _u.mutation.ArchiveTime(); ok {
+		_spec.SetField(incident.FieldArchiveTime, field.TypeTime, value)
+	}
+	if _u.mutation.ArchiveTimeCleared() {
+		_spec.ClearField(incident.FieldArchiveTime, field.TypeTime)
+	}
 	if value, ok := _u.mutation.Slug(); ok {
 		_spec.SetField(incident.FieldSlug, field.TypeString, value)
 	}
@@ -753,11 +831,17 @@ func (_u *IncidentUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if _u.mutation.ChatChannelIDCleared() {
 		_spec.ClearField(incident.FieldChatChannelID, field.TypeString)
 	}
-	if value, ok := _u.mutation.ResponseState(); ok {
-		_spec.SetField(incident.FieldResponseState, field.TypeEnum, value)
+	if value, ok := _u.mutation.ChatDetailsMessageID(); ok {
+		_spec.SetField(incident.FieldChatDetailsMessageID, field.TypeString, value)
+	}
+	if _u.mutation.ChatDetailsMessageIDCleared() {
+		_spec.ClearField(incident.FieldChatDetailsMessageID, field.TypeString)
 	}
 	if value, ok := _u.mutation.OpenedAt(); ok {
 		_spec.SetField(incident.FieldOpenedAt, field.TypeTime, value)
+	}
+	if value, ok := _u.mutation.ResponseState(); ok {
+		_spec.SetField(incident.FieldResponseState, field.TypeEnum, value)
 	}
 	if value, ok := _u.mutation.ResolvedAt(); ok {
 		_spec.SetField(incident.FieldResolvedAt, field.TypeTime, value)
@@ -850,6 +934,37 @@ func (_u *IncidentUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(incidenttype.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.Incident
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.DeclaredByCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   incident.DeclaredByTable,
+			Columns: []string{incident.DeclaredByColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.Incident
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.DeclaredByIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   incident.DeclaredByTable,
+			Columns: []string{incident.DeclaredByColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _u.schemaConfig.Incident
@@ -1411,6 +1526,26 @@ func (_u *IncidentUpdateOne) SetUpdatedAt(v time.Time) *IncidentUpdateOne {
 	return _u
 }
 
+// SetArchiveTime sets the "archive_time" field.
+func (_u *IncidentUpdateOne) SetArchiveTime(v time.Time) *IncidentUpdateOne {
+	_u.mutation.SetArchiveTime(v)
+	return _u
+}
+
+// SetNillableArchiveTime sets the "archive_time" field if the given value is not nil.
+func (_u *IncidentUpdateOne) SetNillableArchiveTime(v *time.Time) *IncidentUpdateOne {
+	if v != nil {
+		_u.SetArchiveTime(*v)
+	}
+	return _u
+}
+
+// ClearArchiveTime clears the value of the "archive_time" field.
+func (_u *IncidentUpdateOne) ClearArchiveTime() *IncidentUpdateOne {
+	_u.mutation.ClearArchiveTime()
+	return _u
+}
+
 // SetKnowledgeEntityID sets the "knowledge_entity_id" field.
 func (_u *IncidentUpdateOne) SetKnowledgeEntityID(v uuid.UUID) *IncidentUpdateOne {
 	_u.mutation.SetKnowledgeEntityID(v)
@@ -1539,17 +1674,23 @@ func (_u *IncidentUpdateOne) ClearChatChannelID() *IncidentUpdateOne {
 	return _u
 }
 
-// SetResponseState sets the "response_state" field.
-func (_u *IncidentUpdateOne) SetResponseState(v incident.ResponseState) *IncidentUpdateOne {
-	_u.mutation.SetResponseState(v)
+// SetChatDetailsMessageID sets the "chat_details_message_id" field.
+func (_u *IncidentUpdateOne) SetChatDetailsMessageID(v string) *IncidentUpdateOne {
+	_u.mutation.SetChatDetailsMessageID(v)
 	return _u
 }
 
-// SetNillableResponseState sets the "response_state" field if the given value is not nil.
-func (_u *IncidentUpdateOne) SetNillableResponseState(v *incident.ResponseState) *IncidentUpdateOne {
+// SetNillableChatDetailsMessageID sets the "chat_details_message_id" field if the given value is not nil.
+func (_u *IncidentUpdateOne) SetNillableChatDetailsMessageID(v *string) *IncidentUpdateOne {
 	if v != nil {
-		_u.SetResponseState(*v)
+		_u.SetChatDetailsMessageID(*v)
 	}
+	return _u
+}
+
+// ClearChatDetailsMessageID clears the value of the "chat_details_message_id" field.
+func (_u *IncidentUpdateOne) ClearChatDetailsMessageID() *IncidentUpdateOne {
+	_u.mutation.ClearChatDetailsMessageID()
 	return _u
 }
 
@@ -1563,6 +1704,20 @@ func (_u *IncidentUpdateOne) SetOpenedAt(v time.Time) *IncidentUpdateOne {
 func (_u *IncidentUpdateOne) SetNillableOpenedAt(v *time.Time) *IncidentUpdateOne {
 	if v != nil {
 		_u.SetOpenedAt(*v)
+	}
+	return _u
+}
+
+// SetResponseState sets the "response_state" field.
+func (_u *IncidentUpdateOne) SetResponseState(v incident.ResponseState) *IncidentUpdateOne {
+	_u.mutation.SetResponseState(v)
+	return _u
+}
+
+// SetNillableResponseState sets the "response_state" field if the given value is not nil.
+func (_u *IncidentUpdateOne) SetNillableResponseState(v *incident.ResponseState) *IncidentUpdateOne {
+	if v != nil {
+		_u.SetResponseState(*v)
 	}
 	return _u
 }
@@ -1587,6 +1742,26 @@ func (_u *IncidentUpdateOne) ClearResolvedAt() *IncidentUpdateOne {
 	return _u
 }
 
+// SetDeclaredByID sets the "declared_by_id" field.
+func (_u *IncidentUpdateOne) SetDeclaredByID(v uuid.UUID) *IncidentUpdateOne {
+	_u.mutation.SetDeclaredByID(v)
+	return _u
+}
+
+// SetNillableDeclaredByID sets the "declared_by_id" field if the given value is not nil.
+func (_u *IncidentUpdateOne) SetNillableDeclaredByID(v *uuid.UUID) *IncidentUpdateOne {
+	if v != nil {
+		_u.SetDeclaredByID(*v)
+	}
+	return _u
+}
+
+// ClearDeclaredByID clears the value of the "declared_by_id" field.
+func (_u *IncidentUpdateOne) ClearDeclaredByID() *IncidentUpdateOne {
+	_u.mutation.ClearDeclaredByID()
+	return _u
+}
+
 // SetKnowledgeEntity sets the "knowledge_entity" edge to the KnowledgeEntity entity.
 func (_u *IncidentUpdateOne) SetKnowledgeEntity(v *KnowledgeEntity) *IncidentUpdateOne {
 	return _u.SetKnowledgeEntityID(v.ID)
@@ -1600,6 +1775,11 @@ func (_u *IncidentUpdateOne) SetSeverity(v *IncidentSeverity) *IncidentUpdateOne
 // SetType sets the "type" edge to the IncidentType entity.
 func (_u *IncidentUpdateOne) SetType(v *IncidentType) *IncidentUpdateOne {
 	return _u.SetTypeID(v.ID)
+}
+
+// SetDeclaredBy sets the "declared_by" edge to the User entity.
+func (_u *IncidentUpdateOne) SetDeclaredBy(v *User) *IncidentUpdateOne {
+	return _u.SetDeclaredByID(v.ID)
 }
 
 // AddMilestoneIDs adds the "milestones" edge to the IncidentMilestone entity by IDs.
@@ -1791,6 +1971,12 @@ func (_u *IncidentUpdateOne) ClearSeverity() *IncidentUpdateOne {
 // ClearType clears the "type" edge to the IncidentType entity.
 func (_u *IncidentUpdateOne) ClearType() *IncidentUpdateOne {
 	_u.mutation.ClearType()
+	return _u
+}
+
+// ClearDeclaredBy clears the "declared_by" edge to the User entity.
+func (_u *IncidentUpdateOne) ClearDeclaredBy() *IncidentUpdateOne {
+	_u.mutation.ClearDeclaredBy()
 	return _u
 }
 
@@ -2113,6 +2299,12 @@ func (_u *IncidentUpdateOne) sqlSave(ctx context.Context) (_node *Incident, err 
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(incident.FieldUpdatedAt, field.TypeTime, value)
 	}
+	if value, ok := _u.mutation.ArchiveTime(); ok {
+		_spec.SetField(incident.FieldArchiveTime, field.TypeTime, value)
+	}
+	if _u.mutation.ArchiveTimeCleared() {
+		_spec.ClearField(incident.FieldArchiveTime, field.TypeTime)
+	}
 	if value, ok := _u.mutation.Slug(); ok {
 		_spec.SetField(incident.FieldSlug, field.TypeString, value)
 	}
@@ -2131,11 +2323,17 @@ func (_u *IncidentUpdateOne) sqlSave(ctx context.Context) (_node *Incident, err 
 	if _u.mutation.ChatChannelIDCleared() {
 		_spec.ClearField(incident.FieldChatChannelID, field.TypeString)
 	}
-	if value, ok := _u.mutation.ResponseState(); ok {
-		_spec.SetField(incident.FieldResponseState, field.TypeEnum, value)
+	if value, ok := _u.mutation.ChatDetailsMessageID(); ok {
+		_spec.SetField(incident.FieldChatDetailsMessageID, field.TypeString, value)
+	}
+	if _u.mutation.ChatDetailsMessageIDCleared() {
+		_spec.ClearField(incident.FieldChatDetailsMessageID, field.TypeString)
 	}
 	if value, ok := _u.mutation.OpenedAt(); ok {
 		_spec.SetField(incident.FieldOpenedAt, field.TypeTime, value)
+	}
+	if value, ok := _u.mutation.ResponseState(); ok {
+		_spec.SetField(incident.FieldResponseState, field.TypeEnum, value)
 	}
 	if value, ok := _u.mutation.ResolvedAt(); ok {
 		_spec.SetField(incident.FieldResolvedAt, field.TypeTime, value)
@@ -2228,6 +2426,37 @@ func (_u *IncidentUpdateOne) sqlSave(ctx context.Context) (_node *Incident, err 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(incidenttype.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.Incident
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.DeclaredByCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   incident.DeclaredByTable,
+			Columns: []string{incident.DeclaredByColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.Incident
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.DeclaredByIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   incident.DeclaredByTable,
+			Columns: []string{incident.DeclaredByColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _u.schemaConfig.Incident

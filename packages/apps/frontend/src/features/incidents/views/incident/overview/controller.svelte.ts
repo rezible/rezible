@@ -1,17 +1,23 @@
+import { reviewPanelModel } from "$features/incidents/lib/review";
 import { Context } from "runed";
 import { createQueries } from "@tanstack/svelte-query";
 import { resolve } from "$app/paths";
-import { getSituationOptions, type IncidentAttributes, type IncidentMilestoneAttributes } from "$lib/api";
+import {
+	getSituationOptions,
+	type IncidentAttributes,
+	type IncidentMilestone,
+	type IncidentMilestoneAttributes,
+} from "$lib/api";
 import type { StatusPresentation } from "$components/common/status-badge/status";
 import { formatDuration, isValidTime } from "$lib/time";
 import { safeExternalUrl } from "$lib/utils";
-import type { TimelineEntry } from "$components/common/timeline/Timeline.svelte";
-import { situationStatus } from "$features/situations/lib/status";
+import { situationStageStatus, situationStatus } from "$features/situations/lib/status";
 import type { SituationConclusion } from "$features/situations/lib/model";
 import { createInvestigationConclusions } from "$features/situations/lib/conclusions.svelte";
 import { incidentServiceImpacts } from "$features/incidents/lib/impacts";
 import { investigationHref } from "$features/situations/lib/routes";
 import { incidentSeverityStatus, retrospectiveStatus } from "$features/incidents/lib/status";
+import { failedMitigationIds, orderedMilestones } from "$features/incidents/lib/response";
 import { useIncidentView } from "../controller.svelte";
 
 export type IncidentFact =
@@ -35,26 +41,47 @@ export type IncidentReviewState =
 			kind: "ready";
 			status: StatusPresentation;
 			explanation: string;
+			ownerName?: string;
 			reportHref: string | undefined;
 			primaryAction: boolean;
-			canStart: boolean;
 	  };
 
-export type IncidentRoleView = {
+export type IncidentMilestoneView = {
 	id: string;
-	userId: string | undefined;
-	userName: string;
-	roleName: string;
+	label: string;
+	marker: string;
+	at: string;
+	description: string | undefined;
+	meta: string | undefined;
+	/** Set on an impact recorded while mitigated. */
+	caption: string | undefined;
+	milestone: IncidentMilestone;
+};
+
+export type LinkedSituationView = {
+	id: string;
+	title: string;
+	href: string;
+	status: StatusPresentation;
+	closedAt: string | undefined;
 };
 
 const UNDERSTANDING_LIMIT = 3;
 
 const milestoneLabels = {
-	impact: "Impact started",
-	detection: "Detected",
-	investigation: "Investigation began",
-	mitigation: "Mitigated",
-	resolution: "Resolved",
+	impact: "Impact",
+	detection: "Detection",
+	investigation: "Investigation",
+	mitigation: "Mitigation",
+	resolution: "Resolution",
+} satisfies Record<IncidentMilestoneAttributes["kind"], string>;
+
+const milestoneMarkers = {
+	impact: "bg-status-danger-foreground",
+	detection: "bg-border",
+	investigation: "bg-border",
+	mitigation: "bg-status-warning-foreground",
+	resolution: "bg-status-neutral-foreground",
 } satisfies Record<IncidentMilestoneAttributes["kind"], string>;
 
 class IncidentOverviewController {
@@ -84,8 +111,9 @@ class IncidentOverviewController {
 	understanding = $derived(this.buildUnderstanding());
 
 	milestones = $derived(this.buildMilestones());
+	situationLinks = $derived(this.buildSituationLinks());
+	declaredBy = $derived(this.attributes?.declaredBy?.attributes?.name);
 	review = $derived(this.buildReview());
-	roles = $derived(this.buildRoles());
 	teams = $derived(
 		(this.attributes?.teams ?? []).map((link) => ({ id: link.team.id, name: link.team.attributes.name }))
 	);
@@ -96,14 +124,6 @@ class IncidentOverviewController {
 		}))
 	);
 	ticket = $derived(this.buildTicket());
-
-	startRetrospective = () => {
-		this.view.startRetrospective();
-	};
-
-	get startRetrospectivePending() {
-		return this.view.startRetrospectiveMutation.isPending;
-	}
 
 	private buildFacts(attributes: IncidentAttributes): IncidentFact[] {
 		let duration = formatDuration(attributes.openedAt, attributes.resolvedAt);
@@ -189,25 +209,45 @@ class IncidentOverviewController {
 		});
 	}
 
-	private buildMilestones(): TimelineEntry[] {
-		const milestones = [...(this.attributes?.milestones ?? [])].sort(
-			(left, right) => Date.parse(left.attributes.timestamp) - Date.parse(right.attributes.timestamp)
-		);
-		return milestones.map((milestone) => {
+	private buildMilestones(): IncidentMilestoneView[] {
+		const milestones = this.attributes?.milestones ?? [];
+		const failed = failedMitigationIds(milestones);
+		return orderedMilestones(milestones).map((milestone) => {
+			const kind = milestone.attributes.kind;
 			// The API returns null for milestones without a user, despite the generated type.
 			const userName = milestone.attributes.user?.attributes?.name;
+			const source = milestone.attributes.source;
 			let meta: string | undefined;
 			if (userName) {
 				meta = `by ${userName}`;
+			} else if (source) {
+				meta = `from ${source.charAt(0).toUpperCase()}${source.slice(1)}`;
+			}
+			let caption: string | undefined;
+			if (failed.has(milestone.id)) {
+				caption = "Mitigation failed";
 			}
 			return {
-				key: milestone.id,
-				label: milestoneLabels[milestone.attributes.kind] ?? "Milestone",
+				id: milestone.id,
+				label: milestoneLabels[kind] ?? "Milestone",
+				marker: milestoneMarkers[kind] ?? "bg-border",
 				at: milestone.attributes.timestamp,
 				description: milestone.attributes.description.trim() || undefined,
 				meta,
+				caption,
+				milestone,
 			};
 		});
+	}
+
+	private buildSituationLinks(): LinkedSituationView[] {
+		return (this.attributes?.situations ?? []).map((situation) => ({
+			id: situation.id,
+			title: situation.title,
+			href: resolve("/situations/[id]/[[view=situationView]]", { id: situation.id }),
+			status: situationStageStatus(situation.stage),
+			closedAt: situation.closedAt,
+		}));
 	}
 
 	private buildReview(): IncidentReviewState {
@@ -215,17 +255,12 @@ class IncidentOverviewController {
 		const incidentSlug = this.attributes?.slug;
 
 		if (!view.incidentRetrospectiveId) {
-			let explanation = "A retrospective is created when the response ends.";
-			if (view.canStartRetrospective) {
-				explanation = "The response has ended. Start the retrospective to begin the review.";
-			}
 			return {
 				kind: "ready",
 				status: retrospectiveStatus(undefined),
-				explanation,
+				explanation: reviewPanelModel().explanation,
 				reportHref: undefined,
 				primaryAction: false,
-				canStart: view.canStartRetrospective,
 			};
 		}
 
@@ -253,36 +288,12 @@ class IncidentOverviewController {
 
 		return {
 			kind: "ready",
-			status: retrospectiveStatus(state),
-			explanation: this.reviewExplanation(state),
+			status: reviewPanelModel(retrospective.attributes).status,
+			explanation: reviewPanelModel(retrospective.attributes).explanation,
+			ownerName: retrospective.attributes.owner?.attributes?.name,
 			reportHref,
 			primaryAction: state !== "closed",
-			canStart: false,
 		};
-	}
-
-	private reviewExplanation(state: string) {
-		switch (state) {
-			case "draft":
-				return "The team is writing the retrospective.";
-			case "in_review":
-				return "The retrospective is in review.";
-			case "meeting":
-				return "The review meeting is being held.";
-			case "closed":
-				return "The review is closed. The account is frozen.";
-			default:
-				return "The review stage is unknown.";
-		}
-	}
-
-	private buildRoles(): IncidentRoleView[] {
-		return (this.attributes?.roles ?? []).map(({ id, attributes }) => ({
-			id,
-			userId: attributes.user.attributes ? attributes.user.id : undefined,
-			userName: attributes.user.attributes?.name ?? "Unknown user",
-			roleName: attributes.role.attributes?.name ?? "Unknown role",
-		}));
 	}
 
 	private buildTicket() {

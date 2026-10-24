@@ -5,6 +5,7 @@ devenv/simulations/.mode
 devenv/simulations/.deployments-url
 devenv/.alertmanager/
 .agents/
+.claude/
 .devbox/
 .idea/
 .vscode/

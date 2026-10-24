@@ -41,7 +41,9 @@
 	const ctrl = useIntegrationProviderController();
 	const sync = useIntegrationDataSyncController();
 
-	const showIncidents = $derived(!!workspace.incidents || canAddIncidents);
+	// Incident management needs the agent in the same workspace.
+	const canAddIncidentsHere = $derived(!!workspace.agent && canAddIncidents);
+	const showIncidents = $derived(!!workspace.incidents || canAddIncidentsHere);
 </script>
 
 {#snippet appRow(
@@ -50,6 +52,7 @@
 	description: string,
 	installation: IntegrationInstallation | undefined,
 	canAdd: boolean,
+	addLabel: string,
 	body?: Snippet<[IntegrationInstallation]>
 )}
 	<div class="flex flex-col gap-4 p-4">
@@ -81,7 +84,7 @@
 				<IntegrationOAuthInstall
 					{name}
 					origin="{name}:{workspace.ref}"
-					label="Add to workspace"
+					label={addLabel}
 					variant="outline"
 					size="sm"
 				/>
@@ -133,6 +136,7 @@
 			"Ask the Rezible agent questions and get investigation help in Slack.",
 			workspace.agent,
 			canAddAgent,
+			"Add to workspace",
 			agentSettings
 		)}
 
@@ -142,7 +146,8 @@
 				"Incident Management",
 				"Create a Slack channel for each incident and keep it updated from Rezible.",
 				workspace.incidents,
-				canAddIncidents,
+				canAddIncidentsHere,
+				"Add incident management",
 				incidentSettings
 			)}
 		{/if}

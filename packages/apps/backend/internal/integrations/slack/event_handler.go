@@ -18,6 +18,8 @@ type appEventHandler struct {
 	integrationName string
 
 	createInstallationCtx createInstallationCtxFunc
+	onCommand             commandFunc
+	onInteraction         interactionFunc
 
 	pipeline          rez.ProviderEventPipelineService
 	publishEventTypes mapset.Set[slackevents.EventsAPIType]
@@ -26,10 +28,12 @@ type appEventHandler struct {
 	respondEventTypes mapset.Set[slackevents.EventsAPIType]
 }
 
-func makeAppEventHandler(app App, mq rez.MessageQueue, pipeline rez.ProviderEventPipelineService, ctxFn createInstallationCtxFunc) *appEventHandler {
+func makeAppEventHandler(app App, mq rez.MessageQueue, pipeline rez.ProviderEventPipelineService, ctxFn createInstallationCtxFunc, onCommand commandFunc, onInteraction interactionFunc) *appEventHandler {
 	return &appEventHandler{
 		integrationName:       app.IntegrationName(),
 		createInstallationCtx: ctxFn,
+		onCommand:             onCommand,
+		onInteraction:         onInteraction,
 		mq:                    mq,
 		pipeline:              pipeline,
 		publishEventTypes:     mapset.NewSet(app.PublishEventTypes()...),
@@ -37,36 +41,20 @@ func makeAppEventHandler(app App, mq rez.MessageQueue, pipeline rez.ProviderEven
 	}
 }
 
-type slashCommandEvent struct {
-	IntegrationName string
-	Command         slack.SlashCommand
+// commandFunc answers a slash command with the reply to send in the response, or nil for none.
+type commandFunc func(context.Context, slack.SlashCommand) *slack.WebhookMessage
+
+// interactionFunc answers an interaction with the response to send, or nil for an empty one.
+type interactionFunc func(context.Context, []byte) (*slack.ViewSubmissionResponse, error)
+
+// OnSlashCommand answers the command while Slack waits, so a modal opens before its trigger ID expires.
+func (h *appEventHandler) OnSlashCommand(ctx context.Context, sc slack.SlashCommand) *slack.WebhookMessage {
+	return h.onCommand(ctx, sc)
 }
 
-func (slashCommandEvent) MessageName() string {
-	return "slack.slash-command-received.v1"
-}
-
-func (h *appEventHandler) OnSlashCommand(ctx context.Context, sc slack.SlashCommand) error {
-	return h.mq.Publish(ctx, &slashCommandEvent{
-		IntegrationName: h.integrationName,
-		Command:         sc,
-	})
-}
-
-type interactionCallbackEvent struct {
-	IntegrationName string
-	Data            []byte
-}
-
-func (interactionCallbackEvent) MessageName() string {
-	return "slack.interaction-received.v1"
-}
-
-func (h *appEventHandler) OnInteractionCallback(ctx context.Context, data []byte) error {
-	return h.mq.Publish(ctx, &interactionCallbackEvent{
-		IntegrationName: h.integrationName,
-		Data:            data,
-	})
+// OnInteractionCallback answers the interaction while Slack waits, so a submitted modal can show errors.
+func (h *appEventHandler) OnInteractionCallback(ctx context.Context, data []byte) (*slack.ViewSubmissionResponse, error) {
+	return h.onInteraction(ctx, data)
 }
 
 type eventsApiCallbackEvent struct {

@@ -22,7 +22,7 @@ func (Retrospective) Mixin() []ent.Mixin {
 	}
 }
 
-var retrospectiveStates = []string{"draft", "in_review", "meeting", "closed"}
+var retrospectiveStates = []string{"draft", "in_review", "closed"}
 
 // Fields of the Retrospective.
 func (Retrospective) Fields() []ent.Field {
@@ -32,12 +32,18 @@ func (Retrospective) Fields() []ent.Field {
 		field.UUID("document_id", uuid.UUID{}),
 		field.UUID("system_analysis_id", uuid.UUID{}),
 		field.Enum("state").Values(retrospectiveStates...),
+		field.UUID("owner_id", uuid.UUID{}).Optional().Nillable(),
+		field.Time("closed_at").Optional().Nillable(),
+		field.UUID("closed_by_id", uuid.UUID{}).Optional().Nillable(),
+		field.Text("skip_reason").Optional().Nillable(),
 	}
 }
 
 // Edges of the Retrospective.
 func (Retrospective) Edges() []ent.Edge {
 	return []ent.Edge{
+		edge.To("owner", User.Type).Field("owner_id").Unique(),
+		edge.To("closed_by", User.Type).Field("closed_by_id").Unique(),
 		edge.From("incident", Incident.Type).
 			Ref("retrospective").
 			Field("incident_id").
@@ -221,6 +227,7 @@ func (Review) Fields() []ent.Field {
 		field.UUID("reviewer_id", uuid.UUID{}),
 		field.Enum("state").Values("waiting", "request_changes", "approved"),
 		field.Text("feedback").Optional().Nillable(),
+		field.Time("message_failed_at").Optional().Nillable(),
 	}
 }
 

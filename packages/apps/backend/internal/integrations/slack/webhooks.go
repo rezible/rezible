@@ -99,12 +99,7 @@ func (l *webhookHandler) onCommands(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	if handlerErr := l.eventHandler.OnSlashCommand(r.Context(), cmd); handlerErr != nil {
-		slog.Error("failed to handle command event", "error", handlerErr)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-	w.WriteHeader(http.StatusOK)
+	writeResponse(w, l.eventHandler.OnSlashCommand(r.Context(), cmd))
 }
 
 func (l *webhookHandler) onInteraction(w http.ResponseWriter, r *http.Request) {
@@ -114,12 +109,31 @@ func (l *webhookHandler) onInteraction(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	if handlerErr := l.eventHandler.OnInteractionCallback(r.Context(), []byte(payload)); handlerErr != nil {
-		slog.Error("failed to handle interaction event message", "error", handlerErr)
+	response, handlerErr := l.eventHandler.OnInteractionCallback(r.Context(), []byte(payload))
+	if handlerErr != nil {
+		slog.ErrorContext(r.Context(), "failed to handle interaction", "error", handlerErr)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	w.WriteHeader(http.StatusOK)
+	writeResponse(w, response)
+}
+
+// writeResponse sends the response as the JSON body, or an empty 200 when there is none.
+func writeResponse[T any](w http.ResponseWriter, response *T) {
+	if response == nil {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+	body, encodeErr := json.Marshal(response)
+	if encodeErr != nil {
+		slog.Error("failed to encode slack response", "error", encodeErr)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	if _, writeErr := w.Write(body); writeErr != nil {
+		slog.Error("failed to write slack response", "error", writeErr)
+	}
 }
 
 func (l *webhookHandler) onOptions(w http.ResponseWriter, r *http.Request) {

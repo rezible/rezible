@@ -8,7 +8,6 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	rez "github.com/rezible/rezible"
-	inc "github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/schema/schematypes"
 	sit "github.com/rezible/rezible/ent/situation"
 	ssa "github.com/rezible/rezible/ent/situationsignalattention"
@@ -40,8 +39,8 @@ func member(attached int, finished *int, activeMinutes int) Member {
 }
 
 func TestCloseableAt(t *testing.T) {
-	resolved := LinkedIncident{ResponseState: inc.ResponseStateResolved, ResolvedAt: new(at(-5))}
-	open := LinkedIncident{ResponseState: inc.ResponseStateStarted}
+	resolved := LinkedIncident{ResolvedAt: new(at(-5))}
+	open := LinkedIncident{}
 
 	cases := []struct {
 		name       string

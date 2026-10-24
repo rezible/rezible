@@ -17,11 +17,17 @@ func TestCheckInstallRequirements(t *testing.T) {
 		EnableIncidentManagement: false,
 	}
 	chatIntegration := &fakeInstalledIntegration{
+		name:         agentIntegrationName,
+		ref:          "team:T1",
 		capabilities: []string{"chat_context"},
 	}
 	incidentIntegration := &fakeInstalledIntegration{
+		name:         integrationName,
+		ref:          "team:T2",
 		capabilities: []string{incidentManagementCapability},
 	}
+	agentWorkspace := &rez.ProviderResourceRef{Provider: "slack", ProviderNamespace: integrationName, ResourceRef: "team:T1"}
+	otherWorkspace := &rez.ProviderResourceRef{Provider: "slack", ProviderNamespace: integrationName, ResourceRef: "team:T3"}
 
 	testCases := []struct {
 		name        string
@@ -49,6 +55,31 @@ func TestCheckInstallRequirements(t *testing.T) {
 			installable: true,
 		},
 		{
+			name: "the Slack agent in the same workspace",
+			state: &integrations.IntegrationInstallState{
+				Preferences: enabledPrefs,
+				Installed:   []rez.InstalledIntegration{chatIntegration},
+				Target:      agentWorkspace,
+			},
+			installable: true,
+		},
+		{
+			name: "without the Slack agent",
+			state: &integrations.IntegrationInstallState{
+				Preferences: enabledPrefs,
+			},
+			installable: false,
+		},
+		{
+			name: "the Slack agent in another workspace",
+			state: &integrations.IntegrationInstallState{
+				Preferences: enabledPrefs,
+				Installed:   []rez.InstalledIntegration{chatIntegration},
+				Target:      otherWorkspace,
+			},
+			installable: false,
+		},
+		{
 			name: "incident management provider already installed",
 			state: &integrations.IntegrationInstallState{
 				Preferences: enabledPrefs,
@@ -73,11 +104,13 @@ func TestCheckInstallRequirements(t *testing.T) {
 }
 
 type fakeInstalledIntegration struct {
+	name         string
+	ref          string
 	capabilities []string
 }
 
 func (f *fakeInstalledIntegration) Integration() *ent.Integration {
-	return &ent.Integration{}
+	return &ent.Integration{Name: f.name, ProviderInstallationRef: f.ref}
 }
 
 func (f *fakeInstalledIntegration) Config() rez.IntegrationInstallationConfig {

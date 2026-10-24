@@ -18017,12 +18017,14 @@ type IncidentMutation struct {
 	id                       *uuid.UUID
 	created_at               *time.Time
 	updated_at               *time.Time
+	archive_time             *time.Time
 	slug                     *string
 	title                    *string
 	summary                  *string
 	chat_channel_id          *string
-	response_state           *incident.ResponseState
+	chat_details_message_id  *string
 	opened_at                *time.Time
+	response_state           *incident.ResponseState
 	resolved_at              *time.Time
 	clearedFields            map[string]struct{}
 	tenant                   *int
@@ -18033,6 +18035,8 @@ type IncidentMutation struct {
 	clearedseverity          bool
 	_type                    *uuid.UUID
 	cleared_type             bool
+	declared_by              *uuid.UUID
+	cleareddeclared_by       bool
 	milestones               map[uuid.UUID]struct{}
 	removedmilestones        map[uuid.UUID]struct{}
 	clearedmilestones        bool
@@ -18280,6 +18284,55 @@ func (m *IncidentMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err e
 // ResetUpdatedAt resets all changes to the "updated_at" field.
 func (m *IncidentMutation) ResetUpdatedAt() {
 	m.updated_at = nil
+}
+
+// SetArchiveTime sets the "archive_time" field.
+func (m *IncidentMutation) SetArchiveTime(t time.Time) {
+	m.archive_time = &t
+}
+
+// ArchiveTime returns the value of the "archive_time" field in the mutation.
+func (m *IncidentMutation) ArchiveTime() (r time.Time, exists bool) {
+	v := m.archive_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldArchiveTime returns the old "archive_time" field's value of the Incident entity.
+// If the Incident object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *IncidentMutation) OldArchiveTime(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldArchiveTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldArchiveTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldArchiveTime: %w", err)
+	}
+	return oldValue.ArchiveTime, nil
+}
+
+// ClearArchiveTime clears the value of the "archive_time" field.
+func (m *IncidentMutation) ClearArchiveTime() {
+	m.archive_time = nil
+	m.clearedFields[incident.FieldArchiveTime] = struct{}{}
+}
+
+// ArchiveTimeCleared returns if the "archive_time" field was cleared in this mutation.
+func (m *IncidentMutation) ArchiveTimeCleared() bool {
+	_, ok := m.clearedFields[incident.FieldArchiveTime]
+	return ok
+}
+
+// ResetArchiveTime resets all changes to the "archive_time" field.
+func (m *IncidentMutation) ResetArchiveTime() {
+	m.archive_time = nil
+	delete(m.clearedFields, incident.FieldArchiveTime)
 }
 
 // SetKnowledgeEntityID sets the "knowledge_entity_id" field.
@@ -18599,40 +18652,53 @@ func (m *IncidentMutation) ResetChatChannelID() {
 	delete(m.clearedFields, incident.FieldChatChannelID)
 }
 
-// SetResponseState sets the "response_state" field.
-func (m *IncidentMutation) SetResponseState(is incident.ResponseState) {
-	m.response_state = &is
+// SetChatDetailsMessageID sets the "chat_details_message_id" field.
+func (m *IncidentMutation) SetChatDetailsMessageID(s string) {
+	m.chat_details_message_id = &s
 }
 
-// ResponseState returns the value of the "response_state" field in the mutation.
-func (m *IncidentMutation) ResponseState() (r incident.ResponseState, exists bool) {
-	v := m.response_state
+// ChatDetailsMessageID returns the value of the "chat_details_message_id" field in the mutation.
+func (m *IncidentMutation) ChatDetailsMessageID() (r string, exists bool) {
+	v := m.chat_details_message_id
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldResponseState returns the old "response_state" field's value of the Incident entity.
+// OldChatDetailsMessageID returns the old "chat_details_message_id" field's value of the Incident entity.
 // If the Incident object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *IncidentMutation) OldResponseState(ctx context.Context) (v incident.ResponseState, err error) {
+func (m *IncidentMutation) OldChatDetailsMessageID(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldResponseState is only allowed on UpdateOne operations")
+		return v, errors.New("OldChatDetailsMessageID is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldResponseState requires an ID field in the mutation")
+		return v, errors.New("OldChatDetailsMessageID requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldResponseState: %w", err)
+		return v, fmt.Errorf("querying old value for OldChatDetailsMessageID: %w", err)
 	}
-	return oldValue.ResponseState, nil
+	return oldValue.ChatDetailsMessageID, nil
 }
 
-// ResetResponseState resets all changes to the "response_state" field.
-func (m *IncidentMutation) ResetResponseState() {
-	m.response_state = nil
+// ClearChatDetailsMessageID clears the value of the "chat_details_message_id" field.
+func (m *IncidentMutation) ClearChatDetailsMessageID() {
+	m.chat_details_message_id = nil
+	m.clearedFields[incident.FieldChatDetailsMessageID] = struct{}{}
+}
+
+// ChatDetailsMessageIDCleared returns if the "chat_details_message_id" field was cleared in this mutation.
+func (m *IncidentMutation) ChatDetailsMessageIDCleared() bool {
+	_, ok := m.clearedFields[incident.FieldChatDetailsMessageID]
+	return ok
+}
+
+// ResetChatDetailsMessageID resets all changes to the "chat_details_message_id" field.
+func (m *IncidentMutation) ResetChatDetailsMessageID() {
+	m.chat_details_message_id = nil
+	delete(m.clearedFields, incident.FieldChatDetailsMessageID)
 }
 
 // SetOpenedAt sets the "opened_at" field.
@@ -18669,6 +18735,42 @@ func (m *IncidentMutation) OldOpenedAt(ctx context.Context) (v time.Time, err er
 // ResetOpenedAt resets all changes to the "opened_at" field.
 func (m *IncidentMutation) ResetOpenedAt() {
 	m.opened_at = nil
+}
+
+// SetResponseState sets the "response_state" field.
+func (m *IncidentMutation) SetResponseState(is incident.ResponseState) {
+	m.response_state = &is
+}
+
+// ResponseState returns the value of the "response_state" field in the mutation.
+func (m *IncidentMutation) ResponseState() (r incident.ResponseState, exists bool) {
+	v := m.response_state
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldResponseState returns the old "response_state" field's value of the Incident entity.
+// If the Incident object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *IncidentMutation) OldResponseState(ctx context.Context) (v incident.ResponseState, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldResponseState is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldResponseState requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldResponseState: %w", err)
+	}
+	return oldValue.ResponseState, nil
+}
+
+// ResetResponseState resets all changes to the "response_state" field.
+func (m *IncidentMutation) ResetResponseState() {
+	m.response_state = nil
 }
 
 // SetResolvedAt sets the "resolved_at" field.
@@ -18718,6 +18820,55 @@ func (m *IncidentMutation) ResolvedAtCleared() bool {
 func (m *IncidentMutation) ResetResolvedAt() {
 	m.resolved_at = nil
 	delete(m.clearedFields, incident.FieldResolvedAt)
+}
+
+// SetDeclaredByID sets the "declared_by_id" field.
+func (m *IncidentMutation) SetDeclaredByID(u uuid.UUID) {
+	m.declared_by = &u
+}
+
+// DeclaredByID returns the value of the "declared_by_id" field in the mutation.
+func (m *IncidentMutation) DeclaredByID() (r uuid.UUID, exists bool) {
+	v := m.declared_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeclaredByID returns the old "declared_by_id" field's value of the Incident entity.
+// If the Incident object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *IncidentMutation) OldDeclaredByID(ctx context.Context) (v *uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDeclaredByID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDeclaredByID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeclaredByID: %w", err)
+	}
+	return oldValue.DeclaredByID, nil
+}
+
+// ClearDeclaredByID clears the value of the "declared_by_id" field.
+func (m *IncidentMutation) ClearDeclaredByID() {
+	m.declared_by = nil
+	m.clearedFields[incident.FieldDeclaredByID] = struct{}{}
+}
+
+// DeclaredByIDCleared returns if the "declared_by_id" field was cleared in this mutation.
+func (m *IncidentMutation) DeclaredByIDCleared() bool {
+	_, ok := m.clearedFields[incident.FieldDeclaredByID]
+	return ok
+}
+
+// ResetDeclaredByID resets all changes to the "declared_by_id" field.
+func (m *IncidentMutation) ResetDeclaredByID() {
+	m.declared_by = nil
+	delete(m.clearedFields, incident.FieldDeclaredByID)
 }
 
 // ClearTenant clears the "tenant" edge to the Tenant entity.
@@ -18826,6 +18977,33 @@ func (m *IncidentMutation) TypeIDs() (ids []uuid.UUID) {
 func (m *IncidentMutation) ResetType() {
 	m._type = nil
 	m.cleared_type = false
+}
+
+// ClearDeclaredBy clears the "declared_by" edge to the User entity.
+func (m *IncidentMutation) ClearDeclaredBy() {
+	m.cleareddeclared_by = true
+	m.clearedFields[incident.FieldDeclaredByID] = struct{}{}
+}
+
+// DeclaredByCleared reports if the "declared_by" edge to the User entity was cleared.
+func (m *IncidentMutation) DeclaredByCleared() bool {
+	return m.DeclaredByIDCleared() || m.cleareddeclared_by
+}
+
+// DeclaredByIDs returns the "declared_by" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// DeclaredByID instead. It exists only for internal usage by the builders.
+func (m *IncidentMutation) DeclaredByIDs() (ids []uuid.UUID) {
+	if id := m.declared_by; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetDeclaredBy resets all changes to the "declared_by" edge.
+func (m *IncidentMutation) ResetDeclaredBy() {
+	m.declared_by = nil
+	m.cleareddeclared_by = false
 }
 
 // AddMilestoneIDs adds the "milestones" edge to the IncidentMilestone entity by ids.
@@ -19441,7 +19619,7 @@ func (m *IncidentMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *IncidentMutation) Fields() []string {
-	fields := make([]string, 0, 13)
+	fields := make([]string, 0, 16)
 	if m.tenant != nil {
 		fields = append(fields, incident.FieldTenantID)
 	}
@@ -19450,6 +19628,9 @@ func (m *IncidentMutation) Fields() []string {
 	}
 	if m.updated_at != nil {
 		fields = append(fields, incident.FieldUpdatedAt)
+	}
+	if m.archive_time != nil {
+		fields = append(fields, incident.FieldArchiveTime)
 	}
 	if m.knowledge_entity != nil {
 		fields = append(fields, incident.FieldKnowledgeEntityID)
@@ -19472,14 +19653,20 @@ func (m *IncidentMutation) Fields() []string {
 	if m.chat_channel_id != nil {
 		fields = append(fields, incident.FieldChatChannelID)
 	}
-	if m.response_state != nil {
-		fields = append(fields, incident.FieldResponseState)
+	if m.chat_details_message_id != nil {
+		fields = append(fields, incident.FieldChatDetailsMessageID)
 	}
 	if m.opened_at != nil {
 		fields = append(fields, incident.FieldOpenedAt)
 	}
+	if m.response_state != nil {
+		fields = append(fields, incident.FieldResponseState)
+	}
 	if m.resolved_at != nil {
 		fields = append(fields, incident.FieldResolvedAt)
+	}
+	if m.declared_by != nil {
+		fields = append(fields, incident.FieldDeclaredByID)
 	}
 	return fields
 }
@@ -19495,6 +19682,8 @@ func (m *IncidentMutation) Field(name string) (ent.Value, bool) {
 		return m.CreatedAt()
 	case incident.FieldUpdatedAt:
 		return m.UpdatedAt()
+	case incident.FieldArchiveTime:
+		return m.ArchiveTime()
 	case incident.FieldKnowledgeEntityID:
 		return m.KnowledgeEntityID()
 	case incident.FieldSlug:
@@ -19509,12 +19698,16 @@ func (m *IncidentMutation) Field(name string) (ent.Value, bool) {
 		return m.Summary()
 	case incident.FieldChatChannelID:
 		return m.ChatChannelID()
-	case incident.FieldResponseState:
-		return m.ResponseState()
+	case incident.FieldChatDetailsMessageID:
+		return m.ChatDetailsMessageID()
 	case incident.FieldOpenedAt:
 		return m.OpenedAt()
+	case incident.FieldResponseState:
+		return m.ResponseState()
 	case incident.FieldResolvedAt:
 		return m.ResolvedAt()
+	case incident.FieldDeclaredByID:
+		return m.DeclaredByID()
 	}
 	return nil, false
 }
@@ -19530,6 +19723,8 @@ func (m *IncidentMutation) OldField(ctx context.Context, name string) (ent.Value
 		return m.OldCreatedAt(ctx)
 	case incident.FieldUpdatedAt:
 		return m.OldUpdatedAt(ctx)
+	case incident.FieldArchiveTime:
+		return m.OldArchiveTime(ctx)
 	case incident.FieldKnowledgeEntityID:
 		return m.OldKnowledgeEntityID(ctx)
 	case incident.FieldSlug:
@@ -19544,12 +19739,16 @@ func (m *IncidentMutation) OldField(ctx context.Context, name string) (ent.Value
 		return m.OldSummary(ctx)
 	case incident.FieldChatChannelID:
 		return m.OldChatChannelID(ctx)
-	case incident.FieldResponseState:
-		return m.OldResponseState(ctx)
+	case incident.FieldChatDetailsMessageID:
+		return m.OldChatDetailsMessageID(ctx)
 	case incident.FieldOpenedAt:
 		return m.OldOpenedAt(ctx)
+	case incident.FieldResponseState:
+		return m.OldResponseState(ctx)
 	case incident.FieldResolvedAt:
 		return m.OldResolvedAt(ctx)
+	case incident.FieldDeclaredByID:
+		return m.OldDeclaredByID(ctx)
 	}
 	return nil, fmt.Errorf("unknown Incident field %s", name)
 }
@@ -19579,6 +19778,13 @@ func (m *IncidentMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetUpdatedAt(v)
+		return nil
+	case incident.FieldArchiveTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetArchiveTime(v)
 		return nil
 	case incident.FieldKnowledgeEntityID:
 		v, ok := value.(uuid.UUID)
@@ -19629,12 +19835,12 @@ func (m *IncidentMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetChatChannelID(v)
 		return nil
-	case incident.FieldResponseState:
-		v, ok := value.(incident.ResponseState)
+	case incident.FieldChatDetailsMessageID:
+		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetResponseState(v)
+		m.SetChatDetailsMessageID(v)
 		return nil
 	case incident.FieldOpenedAt:
 		v, ok := value.(time.Time)
@@ -19643,12 +19849,26 @@ func (m *IncidentMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetOpenedAt(v)
 		return nil
+	case incident.FieldResponseState:
+		v, ok := value.(incident.ResponseState)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetResponseState(v)
+		return nil
 	case incident.FieldResolvedAt:
 		v, ok := value.(time.Time)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetResolvedAt(v)
+		return nil
+	case incident.FieldDeclaredByID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDeclaredByID(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Incident field %s", name)
@@ -19683,6 +19903,9 @@ func (m *IncidentMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *IncidentMutation) ClearedFields() []string {
 	var fields []string
+	if m.FieldCleared(incident.FieldArchiveTime) {
+		fields = append(fields, incident.FieldArchiveTime)
+	}
 	if m.FieldCleared(incident.FieldKnowledgeEntityID) {
 		fields = append(fields, incident.FieldKnowledgeEntityID)
 	}
@@ -19698,8 +19921,14 @@ func (m *IncidentMutation) ClearedFields() []string {
 	if m.FieldCleared(incident.FieldChatChannelID) {
 		fields = append(fields, incident.FieldChatChannelID)
 	}
+	if m.FieldCleared(incident.FieldChatDetailsMessageID) {
+		fields = append(fields, incident.FieldChatDetailsMessageID)
+	}
 	if m.FieldCleared(incident.FieldResolvedAt) {
 		fields = append(fields, incident.FieldResolvedAt)
+	}
+	if m.FieldCleared(incident.FieldDeclaredByID) {
+		fields = append(fields, incident.FieldDeclaredByID)
 	}
 	return fields
 }
@@ -19715,6 +19944,9 @@ func (m *IncidentMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *IncidentMutation) ClearField(name string) error {
 	switch name {
+	case incident.FieldArchiveTime:
+		m.ClearArchiveTime()
+		return nil
 	case incident.FieldKnowledgeEntityID:
 		m.ClearKnowledgeEntityID()
 		return nil
@@ -19730,8 +19962,14 @@ func (m *IncidentMutation) ClearField(name string) error {
 	case incident.FieldChatChannelID:
 		m.ClearChatChannelID()
 		return nil
+	case incident.FieldChatDetailsMessageID:
+		m.ClearChatDetailsMessageID()
+		return nil
 	case incident.FieldResolvedAt:
 		m.ClearResolvedAt()
+		return nil
+	case incident.FieldDeclaredByID:
+		m.ClearDeclaredByID()
 		return nil
 	}
 	return fmt.Errorf("unknown Incident nullable field %s", name)
@@ -19749,6 +19987,9 @@ func (m *IncidentMutation) ResetField(name string) error {
 		return nil
 	case incident.FieldUpdatedAt:
 		m.ResetUpdatedAt()
+		return nil
+	case incident.FieldArchiveTime:
+		m.ResetArchiveTime()
 		return nil
 	case incident.FieldKnowledgeEntityID:
 		m.ResetKnowledgeEntityID()
@@ -19771,14 +20012,20 @@ func (m *IncidentMutation) ResetField(name string) error {
 	case incident.FieldChatChannelID:
 		m.ResetChatChannelID()
 		return nil
-	case incident.FieldResponseState:
-		m.ResetResponseState()
+	case incident.FieldChatDetailsMessageID:
+		m.ResetChatDetailsMessageID()
 		return nil
 	case incident.FieldOpenedAt:
 		m.ResetOpenedAt()
 		return nil
+	case incident.FieldResponseState:
+		m.ResetResponseState()
+		return nil
 	case incident.FieldResolvedAt:
 		m.ResetResolvedAt()
+		return nil
+	case incident.FieldDeclaredByID:
+		m.ResetDeclaredByID()
 		return nil
 	}
 	return fmt.Errorf("unknown Incident field %s", name)
@@ -19786,7 +20033,7 @@ func (m *IncidentMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *IncidentMutation) AddedEdges() []string {
-	edges := make([]string, 0, 15)
+	edges := make([]string, 0, 16)
 	if m.tenant != nil {
 		edges = append(edges, incident.EdgeTenant)
 	}
@@ -19798,6 +20045,9 @@ func (m *IncidentMutation) AddedEdges() []string {
 	}
 	if m._type != nil {
 		edges = append(edges, incident.EdgeType)
+	}
+	if m.declared_by != nil {
+		edges = append(edges, incident.EdgeDeclaredBy)
 	}
 	if m.milestones != nil {
 		edges = append(edges, incident.EdgeMilestones)
@@ -19853,6 +20103,10 @@ func (m *IncidentMutation) AddedIDs(name string) []ent.Value {
 		}
 	case incident.EdgeType:
 		if id := m._type; id != nil {
+			return []ent.Value{*id}
+		}
+	case incident.EdgeDeclaredBy:
+		if id := m.declared_by; id != nil {
 			return []ent.Value{*id}
 		}
 	case incident.EdgeMilestones:
@@ -19925,7 +20179,7 @@ func (m *IncidentMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *IncidentMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 15)
+	edges := make([]string, 0, 16)
 	if m.removedmilestones != nil {
 		edges = append(edges, incident.EdgeMilestones)
 	}
@@ -20029,7 +20283,7 @@ func (m *IncidentMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *IncidentMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 15)
+	edges := make([]string, 0, 16)
 	if m.clearedtenant {
 		edges = append(edges, incident.EdgeTenant)
 	}
@@ -20041,6 +20295,9 @@ func (m *IncidentMutation) ClearedEdges() []string {
 	}
 	if m.cleared_type {
 		edges = append(edges, incident.EdgeType)
+	}
+	if m.cleareddeclared_by {
+		edges = append(edges, incident.EdgeDeclaredBy)
 	}
 	if m.clearedmilestones {
 		edges = append(edges, incident.EdgeMilestones)
@@ -20090,6 +20347,8 @@ func (m *IncidentMutation) EdgeCleared(name string) bool {
 		return m.clearedseverity
 	case incident.EdgeType:
 		return m.cleared_type
+	case incident.EdgeDeclaredBy:
+		return m.cleareddeclared_by
 	case incident.EdgeMilestones:
 		return m.clearedmilestones
 	case incident.EdgeRetrospective:
@@ -20132,6 +20391,9 @@ func (m *IncidentMutation) ClearEdge(name string) error {
 	case incident.EdgeType:
 		m.ClearType()
 		return nil
+	case incident.EdgeDeclaredBy:
+		m.ClearDeclaredBy()
+		return nil
 	case incident.EdgeRetrospective:
 		m.ClearRetrospective()
 		return nil
@@ -20154,6 +20416,9 @@ func (m *IncidentMutation) ResetEdge(name string) error {
 		return nil
 	case incident.EdgeType:
 		m.ResetType()
+		return nil
+	case incident.EdgeDeclaredBy:
+		m.ResetDeclaredBy()
 		return nil
 	case incident.EdgeMilestones:
 		m.ResetMilestones()
@@ -27311,7 +27576,8 @@ type IncidentRoleMutation struct {
 	id                       *uuid.UUID
 	archive_time             *time.Time
 	name                     *string
-	required                 *bool
+	max_assignees            *int
+	addmax_assignees         *int
 	clearedFields            map[string]struct{}
 	tenant                   *int
 	clearedtenant            bool
@@ -27551,40 +27817,74 @@ func (m *IncidentRoleMutation) ResetName() {
 	m.name = nil
 }
 
-// SetRequired sets the "required" field.
-func (m *IncidentRoleMutation) SetRequired(b bool) {
-	m.required = &b
+// SetMaxAssignees sets the "max_assignees" field.
+func (m *IncidentRoleMutation) SetMaxAssignees(i int) {
+	m.max_assignees = &i
+	m.addmax_assignees = nil
 }
 
-// Required returns the value of the "required" field in the mutation.
-func (m *IncidentRoleMutation) Required() (r bool, exists bool) {
-	v := m.required
+// MaxAssignees returns the value of the "max_assignees" field in the mutation.
+func (m *IncidentRoleMutation) MaxAssignees() (r int, exists bool) {
+	v := m.max_assignees
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldRequired returns the old "required" field's value of the IncidentRole entity.
+// OldMaxAssignees returns the old "max_assignees" field's value of the IncidentRole entity.
 // If the IncidentRole object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *IncidentRoleMutation) OldRequired(ctx context.Context) (v bool, err error) {
+func (m *IncidentRoleMutation) OldMaxAssignees(ctx context.Context) (v *int, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldRequired is only allowed on UpdateOne operations")
+		return v, errors.New("OldMaxAssignees is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldRequired requires an ID field in the mutation")
+		return v, errors.New("OldMaxAssignees requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldRequired: %w", err)
+		return v, fmt.Errorf("querying old value for OldMaxAssignees: %w", err)
 	}
-	return oldValue.Required, nil
+	return oldValue.MaxAssignees, nil
 }
 
-// ResetRequired resets all changes to the "required" field.
-func (m *IncidentRoleMutation) ResetRequired() {
-	m.required = nil
+// AddMaxAssignees adds i to the "max_assignees" field.
+func (m *IncidentRoleMutation) AddMaxAssignees(i int) {
+	if m.addmax_assignees != nil {
+		*m.addmax_assignees += i
+	} else {
+		m.addmax_assignees = &i
+	}
+}
+
+// AddedMaxAssignees returns the value that was added to the "max_assignees" field in this mutation.
+func (m *IncidentRoleMutation) AddedMaxAssignees() (r int, exists bool) {
+	v := m.addmax_assignees
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearMaxAssignees clears the value of the "max_assignees" field.
+func (m *IncidentRoleMutation) ClearMaxAssignees() {
+	m.max_assignees = nil
+	m.addmax_assignees = nil
+	m.clearedFields[incidentrole.FieldMaxAssignees] = struct{}{}
+}
+
+// MaxAssigneesCleared returns if the "max_assignees" field was cleared in this mutation.
+func (m *IncidentRoleMutation) MaxAssigneesCleared() bool {
+	_, ok := m.clearedFields[incidentrole.FieldMaxAssignees]
+	return ok
+}
+
+// ResetMaxAssignees resets all changes to the "max_assignees" field.
+func (m *IncidentRoleMutation) ResetMaxAssignees() {
+	m.max_assignees = nil
+	m.addmax_assignees = nil
+	delete(m.clearedFields, incidentrole.FieldMaxAssignees)
 }
 
 // ClearTenant clears the "tenant" edge to the Tenant entity.
@@ -27766,8 +28066,8 @@ func (m *IncidentRoleMutation) Fields() []string {
 	if m.name != nil {
 		fields = append(fields, incidentrole.FieldName)
 	}
-	if m.required != nil {
-		fields = append(fields, incidentrole.FieldRequired)
+	if m.max_assignees != nil {
+		fields = append(fields, incidentrole.FieldMaxAssignees)
 	}
 	return fields
 }
@@ -27783,8 +28083,8 @@ func (m *IncidentRoleMutation) Field(name string) (ent.Value, bool) {
 		return m.ArchiveTime()
 	case incidentrole.FieldName:
 		return m.Name()
-	case incidentrole.FieldRequired:
-		return m.Required()
+	case incidentrole.FieldMaxAssignees:
+		return m.MaxAssignees()
 	}
 	return nil, false
 }
@@ -27800,8 +28100,8 @@ func (m *IncidentRoleMutation) OldField(ctx context.Context, name string) (ent.V
 		return m.OldArchiveTime(ctx)
 	case incidentrole.FieldName:
 		return m.OldName(ctx)
-	case incidentrole.FieldRequired:
-		return m.OldRequired(ctx)
+	case incidentrole.FieldMaxAssignees:
+		return m.OldMaxAssignees(ctx)
 	}
 	return nil, fmt.Errorf("unknown IncidentRole field %s", name)
 }
@@ -27832,12 +28132,12 @@ func (m *IncidentRoleMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetName(v)
 		return nil
-	case incidentrole.FieldRequired:
-		v, ok := value.(bool)
+	case incidentrole.FieldMaxAssignees:
+		v, ok := value.(int)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetRequired(v)
+		m.SetMaxAssignees(v)
 		return nil
 	}
 	return fmt.Errorf("unknown IncidentRole field %s", name)
@@ -27847,6 +28147,9 @@ func (m *IncidentRoleMutation) SetField(name string, value ent.Value) error {
 // this mutation.
 func (m *IncidentRoleMutation) AddedFields() []string {
 	var fields []string
+	if m.addmax_assignees != nil {
+		fields = append(fields, incidentrole.FieldMaxAssignees)
+	}
 	return fields
 }
 
@@ -27855,6 +28158,8 @@ func (m *IncidentRoleMutation) AddedFields() []string {
 // was not set, or was not defined in the schema.
 func (m *IncidentRoleMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
+	case incidentrole.FieldMaxAssignees:
+		return m.AddedMaxAssignees()
 	}
 	return nil, false
 }
@@ -27864,6 +28169,13 @@ func (m *IncidentRoleMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *IncidentRoleMutation) AddField(name string, value ent.Value) error {
 	switch name {
+	case incidentrole.FieldMaxAssignees:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddMaxAssignees(v)
+		return nil
 	}
 	return fmt.Errorf("unknown IncidentRole numeric field %s", name)
 }
@@ -27874,6 +28186,9 @@ func (m *IncidentRoleMutation) ClearedFields() []string {
 	var fields []string
 	if m.FieldCleared(incidentrole.FieldArchiveTime) {
 		fields = append(fields, incidentrole.FieldArchiveTime)
+	}
+	if m.FieldCleared(incidentrole.FieldMaxAssignees) {
+		fields = append(fields, incidentrole.FieldMaxAssignees)
 	}
 	return fields
 }
@@ -27892,6 +28207,9 @@ func (m *IncidentRoleMutation) ClearField(name string) error {
 	case incidentrole.FieldArchiveTime:
 		m.ClearArchiveTime()
 		return nil
+	case incidentrole.FieldMaxAssignees:
+		m.ClearMaxAssignees()
+		return nil
 	}
 	return fmt.Errorf("unknown IncidentRole nullable field %s", name)
 }
@@ -27909,8 +28227,8 @@ func (m *IncidentRoleMutation) ResetField(name string) error {
 	case incidentrole.FieldName:
 		m.ResetName()
 		return nil
-	case incidentrole.FieldRequired:
-		m.ResetRequired()
+	case incidentrole.FieldMaxAssignees:
+		m.ResetMaxAssignees()
 		return nil
 	}
 	return fmt.Errorf("unknown IncidentRole field %s", name)
@@ -62867,8 +63185,6 @@ type OrganizationPreferencesMutation struct {
 	id                         *uuid.UUID
 	initial_setup_at           *time.Time
 	enable_incident_management *bool
-	required_reviewer_count    *int
-	addrequired_reviewer_count *int
 	timezone                   *string
 	clearedFields              map[string]struct{}
 	tenant                     *int
@@ -63141,62 +63457,6 @@ func (m *OrganizationPreferencesMutation) ResetEnableIncidentManagement() {
 	m.enable_incident_management = nil
 }
 
-// SetRequiredReviewerCount sets the "required_reviewer_count" field.
-func (m *OrganizationPreferencesMutation) SetRequiredReviewerCount(i int) {
-	m.required_reviewer_count = &i
-	m.addrequired_reviewer_count = nil
-}
-
-// RequiredReviewerCount returns the value of the "required_reviewer_count" field in the mutation.
-func (m *OrganizationPreferencesMutation) RequiredReviewerCount() (r int, exists bool) {
-	v := m.required_reviewer_count
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldRequiredReviewerCount returns the old "required_reviewer_count" field's value of the OrganizationPreferences entity.
-// If the OrganizationPreferences object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *OrganizationPreferencesMutation) OldRequiredReviewerCount(ctx context.Context) (v int, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldRequiredReviewerCount is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldRequiredReviewerCount requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldRequiredReviewerCount: %w", err)
-	}
-	return oldValue.RequiredReviewerCount, nil
-}
-
-// AddRequiredReviewerCount adds i to the "required_reviewer_count" field.
-func (m *OrganizationPreferencesMutation) AddRequiredReviewerCount(i int) {
-	if m.addrequired_reviewer_count != nil {
-		*m.addrequired_reviewer_count += i
-	} else {
-		m.addrequired_reviewer_count = &i
-	}
-}
-
-// AddedRequiredReviewerCount returns the value that was added to the "required_reviewer_count" field in this mutation.
-func (m *OrganizationPreferencesMutation) AddedRequiredReviewerCount() (r int, exists bool) {
-	v := m.addrequired_reviewer_count
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// ResetRequiredReviewerCount resets all changes to the "required_reviewer_count" field.
-func (m *OrganizationPreferencesMutation) ResetRequiredReviewerCount() {
-	m.required_reviewer_count = nil
-	m.addrequired_reviewer_count = nil
-}
-
 // SetTimezone sets the "timezone" field.
 func (m *OrganizationPreferencesMutation) SetTimezone(s string) {
 	m.timezone = &s
@@ -63334,7 +63594,7 @@ func (m *OrganizationPreferencesMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *OrganizationPreferencesMutation) Fields() []string {
-	fields := make([]string, 0, 6)
+	fields := make([]string, 0, 5)
 	if m.tenant != nil {
 		fields = append(fields, organizationpreferences.FieldTenantID)
 	}
@@ -63346,9 +63606,6 @@ func (m *OrganizationPreferencesMutation) Fields() []string {
 	}
 	if m.enable_incident_management != nil {
 		fields = append(fields, organizationpreferences.FieldEnableIncidentManagement)
-	}
-	if m.required_reviewer_count != nil {
-		fields = append(fields, organizationpreferences.FieldRequiredReviewerCount)
 	}
 	if m.timezone != nil {
 		fields = append(fields, organizationpreferences.FieldTimezone)
@@ -63369,8 +63626,6 @@ func (m *OrganizationPreferencesMutation) Field(name string) (ent.Value, bool) {
 		return m.InitialSetupAt()
 	case organizationpreferences.FieldEnableIncidentManagement:
 		return m.EnableIncidentManagement()
-	case organizationpreferences.FieldRequiredReviewerCount:
-		return m.RequiredReviewerCount()
 	case organizationpreferences.FieldTimezone:
 		return m.Timezone()
 	}
@@ -63390,8 +63645,6 @@ func (m *OrganizationPreferencesMutation) OldField(ctx context.Context, name str
 		return m.OldInitialSetupAt(ctx)
 	case organizationpreferences.FieldEnableIncidentManagement:
 		return m.OldEnableIncidentManagement(ctx)
-	case organizationpreferences.FieldRequiredReviewerCount:
-		return m.OldRequiredReviewerCount(ctx)
 	case organizationpreferences.FieldTimezone:
 		return m.OldTimezone(ctx)
 	}
@@ -63431,13 +63684,6 @@ func (m *OrganizationPreferencesMutation) SetField(name string, value ent.Value)
 		}
 		m.SetEnableIncidentManagement(v)
 		return nil
-	case organizationpreferences.FieldRequiredReviewerCount:
-		v, ok := value.(int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetRequiredReviewerCount(v)
-		return nil
 	case organizationpreferences.FieldTimezone:
 		v, ok := value.(string)
 		if !ok {
@@ -63453,9 +63699,6 @@ func (m *OrganizationPreferencesMutation) SetField(name string, value ent.Value)
 // this mutation.
 func (m *OrganizationPreferencesMutation) AddedFields() []string {
 	var fields []string
-	if m.addrequired_reviewer_count != nil {
-		fields = append(fields, organizationpreferences.FieldRequiredReviewerCount)
-	}
 	return fields
 }
 
@@ -63464,8 +63707,6 @@ func (m *OrganizationPreferencesMutation) AddedFields() []string {
 // was not set, or was not defined in the schema.
 func (m *OrganizationPreferencesMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
-	case organizationpreferences.FieldRequiredReviewerCount:
-		return m.AddedRequiredReviewerCount()
 	}
 	return nil, false
 }
@@ -63475,13 +63716,6 @@ func (m *OrganizationPreferencesMutation) AddedField(name string) (ent.Value, bo
 // type.
 func (m *OrganizationPreferencesMutation) AddField(name string, value ent.Value) error {
 	switch name {
-	case organizationpreferences.FieldRequiredReviewerCount:
-		v, ok := value.(int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.AddRequiredReviewerCount(v)
-		return nil
 	}
 	return fmt.Errorf("unknown OrganizationPreferences numeric field %s", name)
 }
@@ -63535,9 +63769,6 @@ func (m *OrganizationPreferencesMutation) ResetField(name string) error {
 		return nil
 	case organizationpreferences.FieldEnableIncidentManagement:
 		m.ResetEnableIncidentManagement()
-		return nil
-	case organizationpreferences.FieldRequiredReviewerCount:
-		m.ResetRequiredReviewerCount()
 		return nil
 	case organizationpreferences.FieldTimezone:
 		m.ResetTimezone()
@@ -64870,9 +65101,15 @@ type RetrospectiveMutation struct {
 	typ                       string
 	id                        *uuid.UUID
 	state                     *retrospective.State
+	closed_at                 *time.Time
+	skip_reason               *string
 	clearedFields             map[string]struct{}
 	tenant                    *int
 	clearedtenant             bool
+	owner                     *uuid.UUID
+	clearedowner              bool
+	closed_by                 *uuid.UUID
+	clearedclosed_by          bool
 	incident                  *uuid.UUID
 	clearedincident           bool
 	document                  *uuid.UUID
@@ -65174,6 +65411,202 @@ func (m *RetrospectiveMutation) ResetState() {
 	m.state = nil
 }
 
+// SetOwnerID sets the "owner_id" field.
+func (m *RetrospectiveMutation) SetOwnerID(u uuid.UUID) {
+	m.owner = &u
+}
+
+// OwnerID returns the value of the "owner_id" field in the mutation.
+func (m *RetrospectiveMutation) OwnerID() (r uuid.UUID, exists bool) {
+	v := m.owner
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldOwnerID returns the old "owner_id" field's value of the Retrospective entity.
+// If the Retrospective object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RetrospectiveMutation) OldOwnerID(ctx context.Context) (v *uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldOwnerID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldOwnerID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldOwnerID: %w", err)
+	}
+	return oldValue.OwnerID, nil
+}
+
+// ClearOwnerID clears the value of the "owner_id" field.
+func (m *RetrospectiveMutation) ClearOwnerID() {
+	m.owner = nil
+	m.clearedFields[retrospective.FieldOwnerID] = struct{}{}
+}
+
+// OwnerIDCleared returns if the "owner_id" field was cleared in this mutation.
+func (m *RetrospectiveMutation) OwnerIDCleared() bool {
+	_, ok := m.clearedFields[retrospective.FieldOwnerID]
+	return ok
+}
+
+// ResetOwnerID resets all changes to the "owner_id" field.
+func (m *RetrospectiveMutation) ResetOwnerID() {
+	m.owner = nil
+	delete(m.clearedFields, retrospective.FieldOwnerID)
+}
+
+// SetClosedAt sets the "closed_at" field.
+func (m *RetrospectiveMutation) SetClosedAt(t time.Time) {
+	m.closed_at = &t
+}
+
+// ClosedAt returns the value of the "closed_at" field in the mutation.
+func (m *RetrospectiveMutation) ClosedAt() (r time.Time, exists bool) {
+	v := m.closed_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldClosedAt returns the old "closed_at" field's value of the Retrospective entity.
+// If the Retrospective object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RetrospectiveMutation) OldClosedAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldClosedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldClosedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldClosedAt: %w", err)
+	}
+	return oldValue.ClosedAt, nil
+}
+
+// ClearClosedAt clears the value of the "closed_at" field.
+func (m *RetrospectiveMutation) ClearClosedAt() {
+	m.closed_at = nil
+	m.clearedFields[retrospective.FieldClosedAt] = struct{}{}
+}
+
+// ClosedAtCleared returns if the "closed_at" field was cleared in this mutation.
+func (m *RetrospectiveMutation) ClosedAtCleared() bool {
+	_, ok := m.clearedFields[retrospective.FieldClosedAt]
+	return ok
+}
+
+// ResetClosedAt resets all changes to the "closed_at" field.
+func (m *RetrospectiveMutation) ResetClosedAt() {
+	m.closed_at = nil
+	delete(m.clearedFields, retrospective.FieldClosedAt)
+}
+
+// SetClosedByID sets the "closed_by_id" field.
+func (m *RetrospectiveMutation) SetClosedByID(u uuid.UUID) {
+	m.closed_by = &u
+}
+
+// ClosedByID returns the value of the "closed_by_id" field in the mutation.
+func (m *RetrospectiveMutation) ClosedByID() (r uuid.UUID, exists bool) {
+	v := m.closed_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldClosedByID returns the old "closed_by_id" field's value of the Retrospective entity.
+// If the Retrospective object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RetrospectiveMutation) OldClosedByID(ctx context.Context) (v *uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldClosedByID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldClosedByID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldClosedByID: %w", err)
+	}
+	return oldValue.ClosedByID, nil
+}
+
+// ClearClosedByID clears the value of the "closed_by_id" field.
+func (m *RetrospectiveMutation) ClearClosedByID() {
+	m.closed_by = nil
+	m.clearedFields[retrospective.FieldClosedByID] = struct{}{}
+}
+
+// ClosedByIDCleared returns if the "closed_by_id" field was cleared in this mutation.
+func (m *RetrospectiveMutation) ClosedByIDCleared() bool {
+	_, ok := m.clearedFields[retrospective.FieldClosedByID]
+	return ok
+}
+
+// ResetClosedByID resets all changes to the "closed_by_id" field.
+func (m *RetrospectiveMutation) ResetClosedByID() {
+	m.closed_by = nil
+	delete(m.clearedFields, retrospective.FieldClosedByID)
+}
+
+// SetSkipReason sets the "skip_reason" field.
+func (m *RetrospectiveMutation) SetSkipReason(s string) {
+	m.skip_reason = &s
+}
+
+// SkipReason returns the value of the "skip_reason" field in the mutation.
+func (m *RetrospectiveMutation) SkipReason() (r string, exists bool) {
+	v := m.skip_reason
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSkipReason returns the old "skip_reason" field's value of the Retrospective entity.
+// If the Retrospective object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RetrospectiveMutation) OldSkipReason(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSkipReason is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSkipReason requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSkipReason: %w", err)
+	}
+	return oldValue.SkipReason, nil
+}
+
+// ClearSkipReason clears the value of the "skip_reason" field.
+func (m *RetrospectiveMutation) ClearSkipReason() {
+	m.skip_reason = nil
+	m.clearedFields[retrospective.FieldSkipReason] = struct{}{}
+}
+
+// SkipReasonCleared returns if the "skip_reason" field was cleared in this mutation.
+func (m *RetrospectiveMutation) SkipReasonCleared() bool {
+	_, ok := m.clearedFields[retrospective.FieldSkipReason]
+	return ok
+}
+
+// ResetSkipReason resets all changes to the "skip_reason" field.
+func (m *RetrospectiveMutation) ResetSkipReason() {
+	m.skip_reason = nil
+	delete(m.clearedFields, retrospective.FieldSkipReason)
+}
+
 // ClearTenant clears the "tenant" edge to the Tenant entity.
 func (m *RetrospectiveMutation) ClearTenant() {
 	m.clearedtenant = true
@@ -65199,6 +65632,60 @@ func (m *RetrospectiveMutation) TenantIDs() (ids []int) {
 func (m *RetrospectiveMutation) ResetTenant() {
 	m.tenant = nil
 	m.clearedtenant = false
+}
+
+// ClearOwner clears the "owner" edge to the User entity.
+func (m *RetrospectiveMutation) ClearOwner() {
+	m.clearedowner = true
+	m.clearedFields[retrospective.FieldOwnerID] = struct{}{}
+}
+
+// OwnerCleared reports if the "owner" edge to the User entity was cleared.
+func (m *RetrospectiveMutation) OwnerCleared() bool {
+	return m.OwnerIDCleared() || m.clearedowner
+}
+
+// OwnerIDs returns the "owner" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// OwnerID instead. It exists only for internal usage by the builders.
+func (m *RetrospectiveMutation) OwnerIDs() (ids []uuid.UUID) {
+	if id := m.owner; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetOwner resets all changes to the "owner" edge.
+func (m *RetrospectiveMutation) ResetOwner() {
+	m.owner = nil
+	m.clearedowner = false
+}
+
+// ClearClosedBy clears the "closed_by" edge to the User entity.
+func (m *RetrospectiveMutation) ClearClosedBy() {
+	m.clearedclosed_by = true
+	m.clearedFields[retrospective.FieldClosedByID] = struct{}{}
+}
+
+// ClosedByCleared reports if the "closed_by" edge to the User entity was cleared.
+func (m *RetrospectiveMutation) ClosedByCleared() bool {
+	return m.ClosedByIDCleared() || m.clearedclosed_by
+}
+
+// ClosedByIDs returns the "closed_by" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ClosedByID instead. It exists only for internal usage by the builders.
+func (m *RetrospectiveMutation) ClosedByIDs() (ids []uuid.UUID) {
+	if id := m.closed_by; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetClosedBy resets all changes to the "closed_by" edge.
+func (m *RetrospectiveMutation) ResetClosedBy() {
+	m.closed_by = nil
+	m.clearedclosed_by = false
 }
 
 // ClearIncident clears the "incident" edge to the Incident entity.
@@ -65424,7 +65911,7 @@ func (m *RetrospectiveMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *RetrospectiveMutation) Fields() []string {
-	fields := make([]string, 0, 5)
+	fields := make([]string, 0, 9)
 	if m.tenant != nil {
 		fields = append(fields, retrospective.FieldTenantID)
 	}
@@ -65439,6 +65926,18 @@ func (m *RetrospectiveMutation) Fields() []string {
 	}
 	if m.state != nil {
 		fields = append(fields, retrospective.FieldState)
+	}
+	if m.owner != nil {
+		fields = append(fields, retrospective.FieldOwnerID)
+	}
+	if m.closed_at != nil {
+		fields = append(fields, retrospective.FieldClosedAt)
+	}
+	if m.closed_by != nil {
+		fields = append(fields, retrospective.FieldClosedByID)
+	}
+	if m.skip_reason != nil {
+		fields = append(fields, retrospective.FieldSkipReason)
 	}
 	return fields
 }
@@ -65458,6 +65957,14 @@ func (m *RetrospectiveMutation) Field(name string) (ent.Value, bool) {
 		return m.SystemAnalysisID()
 	case retrospective.FieldState:
 		return m.State()
+	case retrospective.FieldOwnerID:
+		return m.OwnerID()
+	case retrospective.FieldClosedAt:
+		return m.ClosedAt()
+	case retrospective.FieldClosedByID:
+		return m.ClosedByID()
+	case retrospective.FieldSkipReason:
+		return m.SkipReason()
 	}
 	return nil, false
 }
@@ -65477,6 +65984,14 @@ func (m *RetrospectiveMutation) OldField(ctx context.Context, name string) (ent.
 		return m.OldSystemAnalysisID(ctx)
 	case retrospective.FieldState:
 		return m.OldState(ctx)
+	case retrospective.FieldOwnerID:
+		return m.OldOwnerID(ctx)
+	case retrospective.FieldClosedAt:
+		return m.OldClosedAt(ctx)
+	case retrospective.FieldClosedByID:
+		return m.OldClosedByID(ctx)
+	case retrospective.FieldSkipReason:
+		return m.OldSkipReason(ctx)
 	}
 	return nil, fmt.Errorf("unknown Retrospective field %s", name)
 }
@@ -65521,6 +66036,34 @@ func (m *RetrospectiveMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetState(v)
 		return nil
+	case retrospective.FieldOwnerID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetOwnerID(v)
+		return nil
+	case retrospective.FieldClosedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetClosedAt(v)
+		return nil
+	case retrospective.FieldClosedByID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetClosedByID(v)
+		return nil
+	case retrospective.FieldSkipReason:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSkipReason(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Retrospective field %s", name)
 }
@@ -65553,7 +66096,20 @@ func (m *RetrospectiveMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *RetrospectiveMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(retrospective.FieldOwnerID) {
+		fields = append(fields, retrospective.FieldOwnerID)
+	}
+	if m.FieldCleared(retrospective.FieldClosedAt) {
+		fields = append(fields, retrospective.FieldClosedAt)
+	}
+	if m.FieldCleared(retrospective.FieldClosedByID) {
+		fields = append(fields, retrospective.FieldClosedByID)
+	}
+	if m.FieldCleared(retrospective.FieldSkipReason) {
+		fields = append(fields, retrospective.FieldSkipReason)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -65566,6 +66122,20 @@ func (m *RetrospectiveMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *RetrospectiveMutation) ClearField(name string) error {
+	switch name {
+	case retrospective.FieldOwnerID:
+		m.ClearOwnerID()
+		return nil
+	case retrospective.FieldClosedAt:
+		m.ClearClosedAt()
+		return nil
+	case retrospective.FieldClosedByID:
+		m.ClearClosedByID()
+		return nil
+	case retrospective.FieldSkipReason:
+		m.ClearSkipReason()
+		return nil
+	}
 	return fmt.Errorf("unknown Retrospective nullable field %s", name)
 }
 
@@ -65588,15 +66158,33 @@ func (m *RetrospectiveMutation) ResetField(name string) error {
 	case retrospective.FieldState:
 		m.ResetState()
 		return nil
+	case retrospective.FieldOwnerID:
+		m.ResetOwnerID()
+		return nil
+	case retrospective.FieldClosedAt:
+		m.ResetClosedAt()
+		return nil
+	case retrospective.FieldClosedByID:
+		m.ResetClosedByID()
+		return nil
+	case retrospective.FieldSkipReason:
+		m.ResetSkipReason()
+		return nil
 	}
 	return fmt.Errorf("unknown Retrospective field %s", name)
 }
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *RetrospectiveMutation) AddedEdges() []string {
-	edges := make([]string, 0, 6)
+	edges := make([]string, 0, 8)
 	if m.tenant != nil {
 		edges = append(edges, retrospective.EdgeTenant)
+	}
+	if m.owner != nil {
+		edges = append(edges, retrospective.EdgeOwner)
+	}
+	if m.closed_by != nil {
+		edges = append(edges, retrospective.EdgeClosedBy)
 	}
 	if m.incident != nil {
 		edges = append(edges, retrospective.EdgeIncident)
@@ -65622,6 +66210,14 @@ func (m *RetrospectiveMutation) AddedIDs(name string) []ent.Value {
 	switch name {
 	case retrospective.EdgeTenant:
 		if id := m.tenant; id != nil {
+			return []ent.Value{*id}
+		}
+	case retrospective.EdgeOwner:
+		if id := m.owner; id != nil {
+			return []ent.Value{*id}
+		}
+	case retrospective.EdgeClosedBy:
+		if id := m.closed_by; id != nil {
 			return []ent.Value{*id}
 		}
 	case retrospective.EdgeIncident:
@@ -65654,7 +66250,7 @@ func (m *RetrospectiveMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *RetrospectiveMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 6)
+	edges := make([]string, 0, 8)
 	if m.removeddiscussion_threads != nil {
 		edges = append(edges, retrospective.EdgeDiscussionThreads)
 	}
@@ -65686,9 +66282,15 @@ func (m *RetrospectiveMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *RetrospectiveMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 6)
+	edges := make([]string, 0, 8)
 	if m.clearedtenant {
 		edges = append(edges, retrospective.EdgeTenant)
+	}
+	if m.clearedowner {
+		edges = append(edges, retrospective.EdgeOwner)
+	}
+	if m.clearedclosed_by {
+		edges = append(edges, retrospective.EdgeClosedBy)
 	}
 	if m.clearedincident {
 		edges = append(edges, retrospective.EdgeIncident)
@@ -65714,6 +66316,10 @@ func (m *RetrospectiveMutation) EdgeCleared(name string) bool {
 	switch name {
 	case retrospective.EdgeTenant:
 		return m.clearedtenant
+	case retrospective.EdgeOwner:
+		return m.clearedowner
+	case retrospective.EdgeClosedBy:
+		return m.clearedclosed_by
 	case retrospective.EdgeIncident:
 		return m.clearedincident
 	case retrospective.EdgeDocument:
@@ -65735,6 +66341,12 @@ func (m *RetrospectiveMutation) ClearEdge(name string) error {
 	case retrospective.EdgeTenant:
 		m.ClearTenant()
 		return nil
+	case retrospective.EdgeOwner:
+		m.ClearOwner()
+		return nil
+	case retrospective.EdgeClosedBy:
+		m.ClearClosedBy()
+		return nil
 	case retrospective.EdgeIncident:
 		m.ClearIncident()
 		return nil
@@ -65754,6 +66366,12 @@ func (m *RetrospectiveMutation) ResetEdge(name string) error {
 	switch name {
 	case retrospective.EdgeTenant:
 		m.ResetTenant()
+		return nil
+	case retrospective.EdgeOwner:
+		m.ResetOwner()
+		return nil
+	case retrospective.EdgeClosedBy:
+		m.ResetClosedBy()
 		return nil
 	case retrospective.EdgeIncident:
 		m.ResetIncident()
@@ -65784,6 +66402,7 @@ type ReviewMutation struct {
 	updated_at            *time.Time
 	state                 *review.State
 	feedback              *string
+	message_failed_at     *time.Time
 	clearedFields         map[string]struct{}
 	tenant                *int
 	clearedtenant         bool
@@ -66318,6 +66937,55 @@ func (m *ReviewMutation) ResetFeedback() {
 	delete(m.clearedFields, review.FieldFeedback)
 }
 
+// SetMessageFailedAt sets the "message_failed_at" field.
+func (m *ReviewMutation) SetMessageFailedAt(t time.Time) {
+	m.message_failed_at = &t
+}
+
+// MessageFailedAt returns the value of the "message_failed_at" field in the mutation.
+func (m *ReviewMutation) MessageFailedAt() (r time.Time, exists bool) {
+	v := m.message_failed_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMessageFailedAt returns the old "message_failed_at" field's value of the Review entity.
+// If the Review object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ReviewMutation) OldMessageFailedAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldMessageFailedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldMessageFailedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMessageFailedAt: %w", err)
+	}
+	return oldValue.MessageFailedAt, nil
+}
+
+// ClearMessageFailedAt clears the value of the "message_failed_at" field.
+func (m *ReviewMutation) ClearMessageFailedAt() {
+	m.message_failed_at = nil
+	m.clearedFields[review.FieldMessageFailedAt] = struct{}{}
+}
+
+// MessageFailedAtCleared returns if the "message_failed_at" field was cleared in this mutation.
+func (m *ReviewMutation) MessageFailedAtCleared() bool {
+	_, ok := m.clearedFields[review.FieldMessageFailedAt]
+	return ok
+}
+
+// ResetMessageFailedAt resets all changes to the "message_failed_at" field.
+func (m *ReviewMutation) ResetMessageFailedAt() {
+	m.message_failed_at = nil
+	delete(m.clearedFields, review.FieldMessageFailedAt)
+}
+
 // ClearTenant clears the "tenant" edge to the Tenant entity.
 func (m *ReviewMutation) ClearTenant() {
 	m.clearedtenant = true
@@ -66514,7 +67182,7 @@ func (m *ReviewMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ReviewMutation) Fields() []string {
-	fields := make([]string, 0, 10)
+	fields := make([]string, 0, 11)
 	if m.tenant != nil {
 		fields = append(fields, review.FieldTenantID)
 	}
@@ -66545,6 +67213,9 @@ func (m *ReviewMutation) Fields() []string {
 	if m.feedback != nil {
 		fields = append(fields, review.FieldFeedback)
 	}
+	if m.message_failed_at != nil {
+		fields = append(fields, review.FieldMessageFailedAt)
+	}
 	return fields
 }
 
@@ -66573,6 +67244,8 @@ func (m *ReviewMutation) Field(name string) (ent.Value, bool) {
 		return m.State()
 	case review.FieldFeedback:
 		return m.Feedback()
+	case review.FieldMessageFailedAt:
+		return m.MessageFailedAt()
 	}
 	return nil, false
 }
@@ -66602,6 +67275,8 @@ func (m *ReviewMutation) OldField(ctx context.Context, name string) (ent.Value, 
 		return m.OldState(ctx)
 	case review.FieldFeedback:
 		return m.OldFeedback(ctx)
+	case review.FieldMessageFailedAt:
+		return m.OldMessageFailedAt(ctx)
 	}
 	return nil, fmt.Errorf("unknown Review field %s", name)
 }
@@ -66681,6 +67356,13 @@ func (m *ReviewMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetFeedback(v)
 		return nil
+	case review.FieldMessageFailedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMessageFailedAt(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Review field %s", name)
 }
@@ -66726,6 +67408,9 @@ func (m *ReviewMutation) ClearedFields() []string {
 	if m.FieldCleared(review.FieldFeedback) {
 		fields = append(fields, review.FieldFeedback)
 	}
+	if m.FieldCleared(review.FieldMessageFailedAt) {
+		fields = append(fields, review.FieldMessageFailedAt)
+	}
 	return fields
 }
 
@@ -66751,6 +67436,9 @@ func (m *ReviewMutation) ClearField(name string) error {
 		return nil
 	case review.FieldFeedback:
 		m.ClearFeedback()
+		return nil
+	case review.FieldMessageFailedAt:
+		m.ClearMessageFailedAt()
 		return nil
 	}
 	return fmt.Errorf("unknown Review nullable field %s", name)
@@ -66789,6 +67477,9 @@ func (m *ReviewMutation) ResetField(name string) error {
 		return nil
 	case review.FieldFeedback:
 		m.ResetFeedback()
+		return nil
+	case review.FieldMessageFailedAt:
+		m.ResetMessageFailedAt()
 		return nil
 	}
 	return fmt.Errorf("unknown Review field %s", name)

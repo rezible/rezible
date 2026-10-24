@@ -9,7 +9,7 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/discussionthread"
-	"github.com/rezible/rezible/ent/incident"
+	incidentpkg "github.com/rezible/rezible/ent/incident"
 	kne "github.com/rezible/rezible/ent/knowledgeentity"
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/systemanalysis"
@@ -43,9 +43,10 @@ func (s *DiscussionSuite) createIncident(client *ent.Client, ctx context.Context
 	createIncident := client.Incident.Create().
 		SetSlug(uuid.NewString()).
 		SetTitle("outage").
-		SetResponseState(incident.ResponseStateResolved).
 		SetSeverity(severity).
-		SetType(kind)
+		SetType(kind).
+		SetResponseState(incidentpkg.ResponseStateResolved).
+		SetResolvedAt(time.Now())
 	incident, incidentErr := createIncident.Save(ctx)
 	s.Require().NoError(incidentErr)
 
@@ -62,7 +63,7 @@ func (s *DiscussionSuite) TestThreadRequiresExactlyOneOwnerAndReverseEdges() {
 	s.Require().NoError(analysisErr)
 
 	incident := s.createIncident(client, ctx)
-	retrospectives, retrospectiveServiceErr := NewRetrospectiveService(db)
+	retrospectives, retrospectiveServiceErr := NewRetrospectiveService(db, nil)
 	s.Require().NoError(retrospectiveServiceErr)
 
 	retro, retroErr := retrospectives.CreateForIncident(ctx, incident.ID)

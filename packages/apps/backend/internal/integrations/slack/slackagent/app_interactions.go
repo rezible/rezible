@@ -32,39 +32,39 @@ const (
 	createAnnotationActionCallbackID = "create_annotation"
 )
 
-func (a *App) handleMessageActionInteraction(ctx context.Context, ii *ent.Integration, ic *slack.InteractionCallback) error {
+func (a *App) handleMessageActionInteraction(ctx context.Context, ii *ent.Integration, ic *slack.InteractionCallback) (slackintegration.ViewErrors, error) {
 	if !slackintegration.HasUser(ctx) {
-		return nil
+		return nil, nil
 	}
 	cw, cwErr := a.newClientWrapper(ii)
 	if cwErr != nil {
-		return fmt.Errorf("failed to create client wrapper: %w", cwErr)
+		return nil, fmt.Errorf("failed to create client wrapper: %w", cwErr)
 	}
 
 	switch ic.CallbackID {
 	case createAnnotationActionCallbackID:
-		return a.handleAnnotationModalInteraction(ctx, cw, ic)
+		return nil, a.handleAnnotationModalInteraction(ctx, cw, ic)
 	}
-	return fmt.Errorf("unknown message actions: %s", ic.CallbackID)
+	return nil, fmt.Errorf("unknown message actions: %s", ic.CallbackID)
 }
 
-func (a *App) handleBlockActionsInteraction(ctx context.Context, ii *ent.Integration, ic *slack.InteractionCallback) error {
+func (a *App) handleBlockActionsInteraction(ctx context.Context, ii *ent.Integration, ic *slack.InteractionCallback) (slackintegration.ViewErrors, error) {
 	for _, action := range ic.ActionCallback.BlockActions {
 		switch action.ActionID {
 		case actionIdSituationNoticeUseful:
-			return a.rateSituationNotice(ctx, ic, action, true)
+			return nil, a.rateSituationNotice(ctx, ic, action, true)
 		case actionIdSituationNoticeNotUseful:
-			return a.rateSituationNotice(ctx, ic, action, false)
-		case actionIdSituationNoticeOpen:
+			return nil, a.rateSituationNotice(ctx, ic, action, false)
+		case actionIdSituationNoticeOpen, actionIdSituationNoticeDeclareIncident, actionIdSituationNoticeOpenIncident:
 			// The button opens its URL in the browser; Slack still reports the click.
-			return nil
+			return nil, nil
 		default:
-			return fmt.Errorf("unknown block action id: %s", action.ActionID)
+			return nil, fmt.Errorf("unknown block action id: %s", action.ActionID)
 		}
 	}
 	slog.Debug("interaction callback", "ic", ic)
 
-	return fmt.Errorf("unknown block actions: %s", ic.CallbackID)
+	return nil, fmt.Errorf("unknown block actions: %s", ic.CallbackID)
 }
 
 // rateSituationNotice records the Slack user's rating of a situation's notice, replacing an earlier one,
@@ -116,15 +116,15 @@ func (a *App) rateSituationNotice(ctx context.Context, ic *slack.InteractionCall
 	return nil
 }
 
-func (a *App) handleViewSubmissionInteraction(ctx context.Context, ii *ent.Integration, ic *slack.InteractionCallback) error {
+func (a *App) handleViewSubmissionInteraction(ctx context.Context, ii *ent.Integration, ic *slack.InteractionCallback) (slackintegration.ViewErrors, error) {
 	if !slackintegration.HasUser(ctx) {
-		return nil
+		return nil, nil
 	}
 	switch ic.View.CallbackID {
 	case viewCallbackIdAnnotationModal:
-		return a.handleAnnotationModalSubmission(ctx, ic)
+		return nil, a.handleAnnotationModalSubmission(ctx, ic)
 	}
-	return fmt.Errorf("unknown view submission: %s", ic.View.CallbackID)
+	return nil, fmt.Errorf("unknown view submission: %s", ic.View.CallbackID)
 }
 
 func (a *App) handleAnnotationModalInteraction(ctx context.Context, cw *slackintegration.ClientWrapper, ic *slack.InteractionCallback) error {
