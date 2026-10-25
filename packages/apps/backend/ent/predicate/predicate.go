@@ -232,9 +232,6 @@ type Organization func(*sql.Selector)
 // OrganizationPreferences is the predicate function for organizationpreferences builders.
 type OrganizationPreferences func(*sql.Selector)
 
-// OrganizationRole is the predicate function for organizationrole builders.
-type OrganizationRole func(*sql.Selector)
-
 // Playbook is the predicate function for playbook builders.
 type Playbook func(*sql.Selector)
 

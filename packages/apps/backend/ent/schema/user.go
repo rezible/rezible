@@ -31,14 +31,15 @@ func (User) Fields() []ent.Field {
 		field.String("timezone").Optional(),
 		field.JSON("notification_preferences", map[string]bool{}).Optional(),
 		field.String("auth_provider_id").Optional(),
+		field.Enum("role").
+			Values("admin", "member").
+			Default("member"),
 	}
 }
 
 // Edges of the User.
 func (User) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("organization_role", OrganizationRole.Type).Unique(),
-
 		edge.To("teams", Team.Type).
 			Through("team_memberships", TeamMembership.Type),
 

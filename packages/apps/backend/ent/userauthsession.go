@@ -3,7 +3,6 @@
 package ent
 
 import (
-	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -30,8 +29,8 @@ type UserAuthSession struct {
 	OrganizationID uuid.UUID `json:"organization_id,omitempty"`
 	// ExpiresAt holds the value of the "expires_at" field.
 	ExpiresAt time.Time `json:"expires_at,omitempty"`
-	// Scopes holds the value of the "scopes" field.
-	Scopes []string `json:"scopes,omitempty"`
+	// Role holds the value of the "role" field.
+	Role userauthsession.Role `json:"role,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the UserAuthSessionQuery when eager-loading is set.
 	Edges        UserAuthSessionEdges `json:"edges"`
@@ -89,10 +88,10 @@ func (*UserAuthSession) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case userauthsession.FieldScopes:
-			values[i] = new([]byte)
 		case userauthsession.FieldTenantID:
 			values[i] = new(sql.NullInt64)
+		case userauthsession.FieldRole:
+			values[i] = new(sql.NullString)
 		case userauthsession.FieldExpiresAt:
 			values[i] = new(sql.NullTime)
 		case userauthsession.FieldID, userauthsession.FieldUserID, userauthsession.FieldOrganizationID:
@@ -142,13 +141,11 @@ func (_m *UserAuthSession) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.ExpiresAt = value.Time
 			}
-		case userauthsession.FieldScopes:
-			if value, ok := values[i].(*[]byte); !ok {
-				return fmt.Errorf("unexpected type %T for field scopes", values[i])
-			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &_m.Scopes); err != nil {
-					return fmt.Errorf("unmarshal field scopes: %w", err)
-				}
+		case userauthsession.FieldRole:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field role", values[i])
+			} else if value.Valid {
+				_m.Role = userauthsession.Role(value.String)
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -213,8 +210,8 @@ func (_m *UserAuthSession) String() string {
 	builder.WriteString("expires_at=")
 	builder.WriteString(_m.ExpiresAt.Format(time.ANSIC))
 	builder.WriteString(", ")
-	builder.WriteString("scopes=")
-	builder.WriteString(fmt.Sprintf("%v", _m.Scopes))
+	builder.WriteString("role=")
+	builder.WriteString(fmt.Sprintf("%v", _m.Role))
 	builder.WriteByte(')')
 	return builder.String()
 }

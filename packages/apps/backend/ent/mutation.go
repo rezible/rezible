@@ -81,7 +81,6 @@ const (
 	TypeOncallShiftMetrics              = "OncallShiftMetrics"
 	TypeOrganization                    = "Organization"
 	TypeOrganizationPreferences         = "OrganizationPreferences"
-	TypeOrganizationRole                = "OrganizationRole"
 	TypePlaybook                        = "Playbook"
 	TypeRetrospective                   = "Retrospective"
 	TypeReview                          = "Review"

@@ -249,35 +249,6 @@ func HasTenantWith(preds ...predicate.Tenant) predicate.Organization {
 	})
 }
 
-// HasRoles applies the HasEdge predicate on the "roles" edge.
-func HasRoles() predicate.Organization {
-	return predicate.Organization(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, RolesTable, RolesColumn),
-		)
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.OrganizationRole
-		step.Edge.Schema = schemaConfig.OrganizationRole
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasRolesWith applies the HasEdge predicate on the "roles" edge with a given conditions (other predicates).
-func HasRolesWith(preds ...predicate.OrganizationRole) predicate.Organization {
-	return predicate.Organization(func(s *sql.Selector) {
-		step := newRolesStep()
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.OrganizationRole
-		step.Edge.Schema = schemaConfig.OrganizationRole
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
 // HasPreferences applies the HasEdge predicate on the "preferences" edge.
 func HasPreferences() predicate.Organization {
 	return predicate.Organization(func(s *sql.Selector) {

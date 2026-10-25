@@ -23,7 +23,6 @@ import (
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallscheduleparticipant"
 	"github.com/rezible/rezible/ent/oncallshift"
-	"github.com/rezible/rezible/ent/organizationrole"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/review"
 	"github.com/rezible/rezible/ent/situationhazardassessment"
@@ -165,28 +164,23 @@ func (_u *UserUpdate) ClearAuthProviderID() *UserUpdate {
 	return _u
 }
 
-// SetKnowledgeEntity sets the "knowledge_entity" edge to the KnowledgeEntity entity.
-func (_u *UserUpdate) SetKnowledgeEntity(v *KnowledgeEntity) *UserUpdate {
-	return _u.SetKnowledgeEntityID(v.ID)
-}
-
-// SetOrganizationRoleID sets the "organization_role" edge to the OrganizationRole entity by ID.
-func (_u *UserUpdate) SetOrganizationRoleID(id uuid.UUID) *UserUpdate {
-	_u.mutation.SetOrganizationRoleID(id)
+// SetRole sets the "role" field.
+func (_u *UserUpdate) SetRole(v user.Role) *UserUpdate {
+	_u.mutation.SetRole(v)
 	return _u
 }
 
-// SetNillableOrganizationRoleID sets the "organization_role" edge to the OrganizationRole entity by ID if the given value is not nil.
-func (_u *UserUpdate) SetNillableOrganizationRoleID(id *uuid.UUID) *UserUpdate {
-	if id != nil {
-		_u = _u.SetOrganizationRoleID(*id)
+// SetNillableRole sets the "role" field if the given value is not nil.
+func (_u *UserUpdate) SetNillableRole(v *user.Role) *UserUpdate {
+	if v != nil {
+		_u.SetRole(*v)
 	}
 	return _u
 }
 
-// SetOrganizationRole sets the "organization_role" edge to the OrganizationRole entity.
-func (_u *UserUpdate) SetOrganizationRole(v *OrganizationRole) *UserUpdate {
-	return _u.SetOrganizationRoleID(v.ID)
+// SetKnowledgeEntity sets the "knowledge_entity" edge to the KnowledgeEntity entity.
+func (_u *UserUpdate) SetKnowledgeEntity(v *KnowledgeEntity) *UserUpdate {
+	return _u.SetKnowledgeEntityID(v.ID)
 }
 
 // AddTeamIDs adds the "teams" edge to the Team entity by IDs.
@@ -422,12 +416,6 @@ func (_u *UserUpdate) Mutation() *UserMutation {
 // ClearKnowledgeEntity clears the "knowledge_entity" edge to the KnowledgeEntity entity.
 func (_u *UserUpdate) ClearKnowledgeEntity() *UserUpdate {
 	_u.mutation.ClearKnowledgeEntity()
-	return _u
-}
-
-// ClearOrganizationRole clears the "organization_role" edge to the OrganizationRole entity.
-func (_u *UserUpdate) ClearOrganizationRole() *UserUpdate {
-	_u.mutation.ClearOrganizationRole()
 	return _u
 }
 
@@ -775,6 +763,11 @@ func (_u *UserUpdate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *UserUpdate) check() error {
+	if v, ok := _u.mutation.Role(); ok {
+		if err := user.RoleValidator(v); err != nil {
+			return &ValidationError{Name: "role", err: fmt.Errorf(`ent: validator failed for field "User.role": %w`, err)}
+		}
+	}
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "User.tenant"`)
 	}
@@ -823,6 +816,9 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if _u.mutation.AuthProviderIDCleared() {
 		_spec.ClearField(user.FieldAuthProviderID, field.TypeString)
 	}
+	if value, ok := _u.mutation.Role(); ok {
+		_spec.SetField(user.FieldRole, field.TypeEnum, value)
+	}
 	if _u.mutation.KnowledgeEntityCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -849,37 +845,6 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			},
 		}
 		edge.Schema = _u.schemaConfig.User
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.OrganizationRoleCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
-			Inverse: false,
-			Table:   user.OrganizationRoleTable,
-			Columns: []string{user.OrganizationRoleColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(organizationrole.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.OrganizationRole
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.OrganizationRoleIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
-			Inverse: false,
-			Table:   user.OrganizationRoleTable,
-			Columns: []string{user.OrganizationRoleColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(organizationrole.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.OrganizationRole
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -1768,28 +1733,23 @@ func (_u *UserUpdateOne) ClearAuthProviderID() *UserUpdateOne {
 	return _u
 }
 
-// SetKnowledgeEntity sets the "knowledge_entity" edge to the KnowledgeEntity entity.
-func (_u *UserUpdateOne) SetKnowledgeEntity(v *KnowledgeEntity) *UserUpdateOne {
-	return _u.SetKnowledgeEntityID(v.ID)
-}
-
-// SetOrganizationRoleID sets the "organization_role" edge to the OrganizationRole entity by ID.
-func (_u *UserUpdateOne) SetOrganizationRoleID(id uuid.UUID) *UserUpdateOne {
-	_u.mutation.SetOrganizationRoleID(id)
+// SetRole sets the "role" field.
+func (_u *UserUpdateOne) SetRole(v user.Role) *UserUpdateOne {
+	_u.mutation.SetRole(v)
 	return _u
 }
 
-// SetNillableOrganizationRoleID sets the "organization_role" edge to the OrganizationRole entity by ID if the given value is not nil.
-func (_u *UserUpdateOne) SetNillableOrganizationRoleID(id *uuid.UUID) *UserUpdateOne {
-	if id != nil {
-		_u = _u.SetOrganizationRoleID(*id)
+// SetNillableRole sets the "role" field if the given value is not nil.
+func (_u *UserUpdateOne) SetNillableRole(v *user.Role) *UserUpdateOne {
+	if v != nil {
+		_u.SetRole(*v)
 	}
 	return _u
 }
 
-// SetOrganizationRole sets the "organization_role" edge to the OrganizationRole entity.
-func (_u *UserUpdateOne) SetOrganizationRole(v *OrganizationRole) *UserUpdateOne {
-	return _u.SetOrganizationRoleID(v.ID)
+// SetKnowledgeEntity sets the "knowledge_entity" edge to the KnowledgeEntity entity.
+func (_u *UserUpdateOne) SetKnowledgeEntity(v *KnowledgeEntity) *UserUpdateOne {
+	return _u.SetKnowledgeEntityID(v.ID)
 }
 
 // AddTeamIDs adds the "teams" edge to the Team entity by IDs.
@@ -2025,12 +1985,6 @@ func (_u *UserUpdateOne) Mutation() *UserMutation {
 // ClearKnowledgeEntity clears the "knowledge_entity" edge to the KnowledgeEntity entity.
 func (_u *UserUpdateOne) ClearKnowledgeEntity() *UserUpdateOne {
 	_u.mutation.ClearKnowledgeEntity()
-	return _u
-}
-
-// ClearOrganizationRole clears the "organization_role" edge to the OrganizationRole entity.
-func (_u *UserUpdateOne) ClearOrganizationRole() *UserUpdateOne {
-	_u.mutation.ClearOrganizationRole()
 	return _u
 }
 
@@ -2391,6 +2345,11 @@ func (_u *UserUpdateOne) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *UserUpdateOne) check() error {
+	if v, ok := _u.mutation.Role(); ok {
+		if err := user.RoleValidator(v); err != nil {
+			return &ValidationError{Name: "role", err: fmt.Errorf(`ent: validator failed for field "User.role": %w`, err)}
+		}
+	}
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "User.tenant"`)
 	}
@@ -2456,6 +2415,9 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 	if _u.mutation.AuthProviderIDCleared() {
 		_spec.ClearField(user.FieldAuthProviderID, field.TypeString)
 	}
+	if value, ok := _u.mutation.Role(); ok {
+		_spec.SetField(user.FieldRole, field.TypeEnum, value)
+	}
 	if _u.mutation.KnowledgeEntityCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -2482,37 +2444,6 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 			},
 		}
 		edge.Schema = _u.schemaConfig.User
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.OrganizationRoleCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
-			Inverse: false,
-			Table:   user.OrganizationRoleTable,
-			Columns: []string{user.OrganizationRoleColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(organizationrole.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.OrganizationRole
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.OrganizationRoleIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
-			Inverse: false,
-			Table:   user.OrganizationRoleTable,
-			Columns: []string{user.OrganizationRoleColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(organizationrole.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.OrganizationRole
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

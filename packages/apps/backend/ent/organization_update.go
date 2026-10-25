@@ -14,7 +14,6 @@ import (
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/organization"
 	"github.com/rezible/rezible/ent/organizationpreferences"
-	"github.com/rezible/rezible/ent/organizationrole"
 	"github.com/rezible/rezible/ent/predicate"
 )
 
@@ -59,21 +58,6 @@ func (_u *OrganizationUpdate) SetNillableName(v *string) *OrganizationUpdate {
 	return _u
 }
 
-// AddRoleIDs adds the "roles" edge to the OrganizationRole entity by IDs.
-func (_u *OrganizationUpdate) AddRoleIDs(ids ...uuid.UUID) *OrganizationUpdate {
-	_u.mutation.AddRoleIDs(ids...)
-	return _u
-}
-
-// AddRoles adds the "roles" edges to the OrganizationRole entity.
-func (_u *OrganizationUpdate) AddRoles(v ...*OrganizationRole) *OrganizationUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddRoleIDs(ids...)
-}
-
 // SetPreferencesID sets the "preferences" edge to the OrganizationPreferences entity by ID.
 func (_u *OrganizationUpdate) SetPreferencesID(id uuid.UUID) *OrganizationUpdate {
 	_u.mutation.SetPreferencesID(id)
@@ -96,27 +80,6 @@ func (_u *OrganizationUpdate) SetPreferences(v *OrganizationPreferences) *Organi
 // Mutation returns the OrganizationMutation object of the builder.
 func (_u *OrganizationUpdate) Mutation() *OrganizationMutation {
 	return _u.mutation
-}
-
-// ClearRoles clears all "roles" edges to the OrganizationRole entity.
-func (_u *OrganizationUpdate) ClearRoles() *OrganizationUpdate {
-	_u.mutation.ClearRoles()
-	return _u
-}
-
-// RemoveRoleIDs removes the "roles" edge to OrganizationRole entities by IDs.
-func (_u *OrganizationUpdate) RemoveRoleIDs(ids ...uuid.UUID) *OrganizationUpdate {
-	_u.mutation.RemoveRoleIDs(ids...)
-	return _u
-}
-
-// RemoveRoles removes "roles" edges to OrganizationRole entities.
-func (_u *OrganizationUpdate) RemoveRoles(v ...*OrganizationRole) *OrganizationUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveRoleIDs(ids...)
 }
 
 // ClearPreferences clears the "preferences" edge to the OrganizationPreferences entity.
@@ -177,54 +140,6 @@ func (_u *OrganizationUpdate) sqlSave(ctx context.Context) (_node int, err error
 	}
 	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(organization.FieldName, field.TypeString, value)
-	}
-	if _u.mutation.RolesCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   organization.RolesTable,
-			Columns: []string{organization.RolesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(organizationrole.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.OrganizationRole
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedRolesIDs(); len(nodes) > 0 && !_u.mutation.RolesCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   organization.RolesTable,
-			Columns: []string{organization.RolesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(organizationrole.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.OrganizationRole
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RolesIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   organization.RolesTable,
-			Columns: []string{organization.RolesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(organizationrole.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.OrganizationRole
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if _u.mutation.PreferencesCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -307,21 +222,6 @@ func (_u *OrganizationUpdateOne) SetNillableName(v *string) *OrganizationUpdateO
 	return _u
 }
 
-// AddRoleIDs adds the "roles" edge to the OrganizationRole entity by IDs.
-func (_u *OrganizationUpdateOne) AddRoleIDs(ids ...uuid.UUID) *OrganizationUpdateOne {
-	_u.mutation.AddRoleIDs(ids...)
-	return _u
-}
-
-// AddRoles adds the "roles" edges to the OrganizationRole entity.
-func (_u *OrganizationUpdateOne) AddRoles(v ...*OrganizationRole) *OrganizationUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddRoleIDs(ids...)
-}
-
 // SetPreferencesID sets the "preferences" edge to the OrganizationPreferences entity by ID.
 func (_u *OrganizationUpdateOne) SetPreferencesID(id uuid.UUID) *OrganizationUpdateOne {
 	_u.mutation.SetPreferencesID(id)
@@ -344,27 +244,6 @@ func (_u *OrganizationUpdateOne) SetPreferences(v *OrganizationPreferences) *Org
 // Mutation returns the OrganizationMutation object of the builder.
 func (_u *OrganizationUpdateOne) Mutation() *OrganizationMutation {
 	return _u.mutation
-}
-
-// ClearRoles clears all "roles" edges to the OrganizationRole entity.
-func (_u *OrganizationUpdateOne) ClearRoles() *OrganizationUpdateOne {
-	_u.mutation.ClearRoles()
-	return _u
-}
-
-// RemoveRoleIDs removes the "roles" edge to OrganizationRole entities by IDs.
-func (_u *OrganizationUpdateOne) RemoveRoleIDs(ids ...uuid.UUID) *OrganizationUpdateOne {
-	_u.mutation.RemoveRoleIDs(ids...)
-	return _u
-}
-
-// RemoveRoles removes "roles" edges to OrganizationRole entities.
-func (_u *OrganizationUpdateOne) RemoveRoles(v ...*OrganizationRole) *OrganizationUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveRoleIDs(ids...)
 }
 
 // ClearPreferences clears the "preferences" edge to the OrganizationPreferences entity.
@@ -455,54 +334,6 @@ func (_u *OrganizationUpdateOne) sqlSave(ctx context.Context) (_node *Organizati
 	}
 	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(organization.FieldName, field.TypeString, value)
-	}
-	if _u.mutation.RolesCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   organization.RolesTable,
-			Columns: []string{organization.RolesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(organizationrole.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.OrganizationRole
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedRolesIDs(); len(nodes) > 0 && !_u.mutation.RolesCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   organization.RolesTable,
-			Columns: []string{organization.RolesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(organizationrole.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.OrganizationRole
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RolesIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   organization.RolesTable,
-			Columns: []string{organization.RolesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(organizationrole.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.OrganizationRole
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if _u.mutation.PreferencesCleared() {
 		edge := &sqlgraph.EdgeSpec{

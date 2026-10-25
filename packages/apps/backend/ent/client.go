@@ -83,7 +83,6 @@ import (
 	"github.com/rezible/rezible/ent/oncallshiftmetrics"
 	"github.com/rezible/rezible/ent/organization"
 	"github.com/rezible/rezible/ent/organizationpreferences"
-	"github.com/rezible/rezible/ent/organizationrole"
 	"github.com/rezible/rezible/ent/playbook"
 	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/ent/review"
@@ -259,8 +258,6 @@ type Client struct {
 	Organization *OrganizationClient
 	// OrganizationPreferences is the client for interacting with the OrganizationPreferences builders.
 	OrganizationPreferences *OrganizationPreferencesClient
-	// OrganizationRole is the client for interacting with the OrganizationRole builders.
-	OrganizationRole *OrganizationRoleClient
 	// Playbook is the client for interacting with the Playbook builders.
 	Playbook *PlaybookClient
 	// Retrospective is the client for interacting with the Retrospective builders.
@@ -400,7 +397,6 @@ func (c *Client) init() {
 	c.OncallShiftMetrics = NewOncallShiftMetricsClient(c.config)
 	c.Organization = NewOrganizationClient(c.config)
 	c.OrganizationPreferences = NewOrganizationPreferencesClient(c.config)
-	c.OrganizationRole = NewOrganizationRoleClient(c.config)
 	c.Playbook = NewPlaybookClient(c.config)
 	c.Retrospective = NewRetrospectiveClient(c.config)
 	c.Review = NewReviewClient(c.config)
@@ -594,7 +590,6 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		OncallShiftMetrics:              NewOncallShiftMetricsClient(cfg),
 		Organization:                    NewOrganizationClient(cfg),
 		OrganizationPreferences:         NewOrganizationPreferencesClient(cfg),
-		OrganizationRole:                NewOrganizationRoleClient(cfg),
 		Playbook:                        NewPlaybookClient(cfg),
 		Retrospective:                   NewRetrospectiveClient(cfg),
 		Review:                          NewReviewClient(cfg),
@@ -712,7 +707,6 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		OncallShiftMetrics:              NewOncallShiftMetricsClient(cfg),
 		Organization:                    NewOrganizationClient(cfg),
 		OrganizationPreferences:         NewOrganizationPreferencesClient(cfg),
-		OrganizationRole:                NewOrganizationRoleClient(cfg),
 		Playbook:                        NewPlaybookClient(cfg),
 		Retrospective:                   NewRetrospectiveClient(cfg),
 		Review:                          NewReviewClient(cfg),
@@ -793,15 +787,15 @@ func (c *Client) Use(hooks ...Hook) {
 		c.NormalizedEventProjectionEntity, c.OncallHandoverTemplate, c.OncallRoster,
 		c.OncallRosterMetrics, c.OncallSchedule, c.OncallScheduleParticipant,
 		c.OncallShift, c.OncallShiftHandover, c.OncallShiftMetrics, c.Organization,
-		c.OrganizationPreferences, c.OrganizationRole, c.Playbook, c.Retrospective,
-		c.Review, c.Situation, c.SituationAction, c.SituationEntity,
-		c.SituationHazardAssessment, c.SituationInvestigation, c.SituationJudgment,
-		c.SituationLink, c.SituationNotice, c.SituationNoticeRating,
-		c.SituationObservationGroup, c.SituationSignal, c.SituationSignalAttention,
-		c.SystemAnalysis, c.SystemAnalysisEntity, c.SystemAnalysisEntry,
-		c.SystemAnalysisEntrySubject, c.SystemAnalysisRelationship, c.SystemHazard,
-		c.SystemHazardRiskAssessment, c.Task, c.Team, c.TeamMembership, c.Tenant,
-		c.Ticket, c.User, c.UserAuthSession, c.VideoConference,
+		c.OrganizationPreferences, c.Playbook, c.Retrospective, c.Review, c.Situation,
+		c.SituationAction, c.SituationEntity, c.SituationHazardAssessment,
+		c.SituationInvestigation, c.SituationJudgment, c.SituationLink,
+		c.SituationNotice, c.SituationNoticeRating, c.SituationObservationGroup,
+		c.SituationSignal, c.SituationSignalAttention, c.SystemAnalysis,
+		c.SystemAnalysisEntity, c.SystemAnalysisEntry, c.SystemAnalysisEntrySubject,
+		c.SystemAnalysisRelationship, c.SystemHazard, c.SystemHazardRiskAssessment,
+		c.Task, c.Team, c.TeamMembership, c.Tenant, c.Ticket, c.User,
+		c.UserAuthSession, c.VideoConference,
 	} {
 		n.Use(hooks...)
 	}
@@ -832,15 +826,15 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 		c.NormalizedEventProjectionEntity, c.OncallHandoverTemplate, c.OncallRoster,
 		c.OncallRosterMetrics, c.OncallSchedule, c.OncallScheduleParticipant,
 		c.OncallShift, c.OncallShiftHandover, c.OncallShiftMetrics, c.Organization,
-		c.OrganizationPreferences, c.OrganizationRole, c.Playbook, c.Retrospective,
-		c.Review, c.Situation, c.SituationAction, c.SituationEntity,
-		c.SituationHazardAssessment, c.SituationInvestigation, c.SituationJudgment,
-		c.SituationLink, c.SituationNotice, c.SituationNoticeRating,
-		c.SituationObservationGroup, c.SituationSignal, c.SituationSignalAttention,
-		c.SystemAnalysis, c.SystemAnalysisEntity, c.SystemAnalysisEntry,
-		c.SystemAnalysisEntrySubject, c.SystemAnalysisRelationship, c.SystemHazard,
-		c.SystemHazardRiskAssessment, c.Task, c.Team, c.TeamMembership, c.Tenant,
-		c.Ticket, c.User, c.UserAuthSession, c.VideoConference,
+		c.OrganizationPreferences, c.Playbook, c.Retrospective, c.Review, c.Situation,
+		c.SituationAction, c.SituationEntity, c.SituationHazardAssessment,
+		c.SituationInvestigation, c.SituationJudgment, c.SituationLink,
+		c.SituationNotice, c.SituationNoticeRating, c.SituationObservationGroup,
+		c.SituationSignal, c.SituationSignalAttention, c.SystemAnalysis,
+		c.SystemAnalysisEntity, c.SystemAnalysisEntry, c.SystemAnalysisEntrySubject,
+		c.SystemAnalysisRelationship, c.SystemHazard, c.SystemHazardRiskAssessment,
+		c.Task, c.Team, c.TeamMembership, c.Tenant, c.Ticket, c.User,
+		c.UserAuthSession, c.VideoConference,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -983,8 +977,6 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Organization.mutate(ctx, m)
 	case *OrganizationPreferencesMutation:
 		return c.OrganizationPreferences.mutate(ctx, m)
-	case *OrganizationRoleMutation:
-		return c.OrganizationRole.mutate(ctx, m)
 	case *PlaybookMutation:
 		return c.Playbook.mutate(ctx, m)
 	case *RetrospectiveMutation:
@@ -14791,25 +14783,6 @@ func (c *OrganizationClient) QueryTenant(_m *Organization) *TenantQuery {
 	return query
 }
 
-// QueryRoles queries the roles edge of a Organization.
-func (c *OrganizationClient) QueryRoles(_m *Organization) *OrganizationRoleQuery {
-	query := (&OrganizationRoleClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(organization.Table, organization.FieldID, id),
-			sqlgraph.To(organizationrole.Table, organizationrole.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, organization.RolesTable, organization.RolesColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.OrganizationRole
-		step.Edge.Schema = schemaConfig.OrganizationRole
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // QueryPreferences queries the preferences edge of a Organization.
 func (c *OrganizationClient) QueryPreferences(_m *Organization) *OrganizationPreferencesQuery {
 	query := (&OrganizationPreferencesClient{config: c.config}).Query()
@@ -15024,197 +14997,6 @@ func (c *OrganizationPreferencesClient) mutate(ctx context.Context, m *Organizat
 		return (&OrganizationPreferencesDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown OrganizationPreferences mutation op: %q", m.Op())
-	}
-}
-
-// OrganizationRoleClient is a client for the OrganizationRole schema.
-type OrganizationRoleClient struct {
-	config
-}
-
-// NewOrganizationRoleClient returns a client for the OrganizationRole from the given config.
-func NewOrganizationRoleClient(c config) *OrganizationRoleClient {
-	return &OrganizationRoleClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `organizationrole.Hooks(f(g(h())))`.
-func (c *OrganizationRoleClient) Use(hooks ...Hook) {
-	c.hooks.OrganizationRole = append(c.hooks.OrganizationRole, hooks...)
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `organizationrole.Intercept(f(g(h())))`.
-func (c *OrganizationRoleClient) Intercept(interceptors ...Interceptor) {
-	c.inters.OrganizationRole = append(c.inters.OrganizationRole, interceptors...)
-}
-
-// Create returns a builder for creating a OrganizationRole entity.
-func (c *OrganizationRoleClient) Create() *OrganizationRoleCreate {
-	mutation := newOrganizationRoleMutation(c.config, OpCreate)
-	return &OrganizationRoleCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of OrganizationRole entities.
-func (c *OrganizationRoleClient) CreateBulk(builders ...*OrganizationRoleCreate) *OrganizationRoleCreateBulk {
-	return &OrganizationRoleCreateBulk{config: c.config, builders: builders}
-}
-
-// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
-// a builder and applies setFunc on it.
-func (c *OrganizationRoleClient) MapCreateBulk(slice any, setFunc func(*OrganizationRoleCreate, int)) *OrganizationRoleCreateBulk {
-	rv := reflect.ValueOf(slice)
-	if rv.Kind() != reflect.Slice {
-		return &OrganizationRoleCreateBulk{err: fmt.Errorf("calling to OrganizationRoleClient.MapCreateBulk with wrong type %T, need slice", slice)}
-	}
-	builders := make([]*OrganizationRoleCreate, rv.Len())
-	for i := 0; i < rv.Len(); i++ {
-		builders[i] = c.Create()
-		setFunc(builders[i], i)
-	}
-	return &OrganizationRoleCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for OrganizationRole.
-func (c *OrganizationRoleClient) Update() *OrganizationRoleUpdate {
-	mutation := newOrganizationRoleMutation(c.config, OpUpdate)
-	return &OrganizationRoleUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *OrganizationRoleClient) UpdateOne(_m *OrganizationRole) *OrganizationRoleUpdateOne {
-	mutation := newOrganizationRoleMutation(c.config, OpUpdateOne, withOrganizationRole(_m))
-	return &OrganizationRoleUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *OrganizationRoleClient) UpdateOneID(id uuid.UUID) *OrganizationRoleUpdateOne {
-	mutation := newOrganizationRoleMutation(c.config, OpUpdateOne, withOrganizationRoleID(id))
-	return &OrganizationRoleUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for OrganizationRole.
-func (c *OrganizationRoleClient) Delete() *OrganizationRoleDelete {
-	mutation := newOrganizationRoleMutation(c.config, OpDelete)
-	return &OrganizationRoleDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *OrganizationRoleClient) DeleteOne(_m *OrganizationRole) *OrganizationRoleDeleteOne {
-	return c.DeleteOneID(_m.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *OrganizationRoleClient) DeleteOneID(id uuid.UUID) *OrganizationRoleDeleteOne {
-	builder := c.Delete().Where(organizationrole.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &OrganizationRoleDeleteOne{builder}
-}
-
-// Query returns a query builder for OrganizationRole.
-func (c *OrganizationRoleClient) Query() *OrganizationRoleQuery {
-	return &OrganizationRoleQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypeOrganizationRole},
-		inters: c.Interceptors(),
-	}
-}
-
-// Get returns a OrganizationRole entity by its id.
-func (c *OrganizationRoleClient) Get(ctx context.Context, id uuid.UUID) (*OrganizationRole, error) {
-	return c.Query().Where(organizationrole.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *OrganizationRoleClient) GetX(ctx context.Context, id uuid.UUID) *OrganizationRole {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryTenant queries the tenant edge of a OrganizationRole.
-func (c *OrganizationRoleClient) QueryTenant(_m *OrganizationRole) *TenantQuery {
-	query := (&TenantClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(organizationrole.Table, organizationrole.FieldID, id),
-			sqlgraph.To(tenant.Table, tenant.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, organizationrole.TenantTable, organizationrole.TenantColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.Tenant
-		step.Edge.Schema = schemaConfig.OrganizationRole
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryOrganization queries the organization edge of a OrganizationRole.
-func (c *OrganizationRoleClient) QueryOrganization(_m *OrganizationRole) *OrganizationQuery {
-	query := (&OrganizationClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(organizationrole.Table, organizationrole.FieldID, id),
-			sqlgraph.To(organization.Table, organization.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, organizationrole.OrganizationTable, organizationrole.OrganizationColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.Organization
-		step.Edge.Schema = schemaConfig.OrganizationRole
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryUser queries the user edge of a OrganizationRole.
-func (c *OrganizationRoleClient) QueryUser(_m *OrganizationRole) *UserQuery {
-	query := (&UserClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(organizationrole.Table, organizationrole.FieldID, id),
-			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, true, organizationrole.UserTable, organizationrole.UserColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.User
-		step.Edge.Schema = schemaConfig.OrganizationRole
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *OrganizationRoleClient) Hooks() []Hook {
-	hooks := c.hooks.OrganizationRole
-	return append(hooks[:len(hooks):len(hooks)], organizationrole.Hooks[:]...)
-}
-
-// Interceptors returns the client interceptors.
-func (c *OrganizationRoleClient) Interceptors() []Interceptor {
-	return c.inters.OrganizationRole
-}
-
-func (c *OrganizationRoleClient) mutate(ctx context.Context, m *OrganizationRoleMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&OrganizationRoleCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&OrganizationRoleUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&OrganizationRoleUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&OrganizationRoleDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("ent: unknown OrganizationRole mutation op: %q", m.Op())
 	}
 }
 
@@ -21169,25 +20951,6 @@ func (c *UserClient) QueryKnowledgeEntity(_m *User) *KnowledgeEntityQuery {
 	return query
 }
 
-// QueryOrganizationRole queries the organization_role edge of a User.
-func (c *UserClient) QueryOrganizationRole(_m *User) *OrganizationRoleQuery {
-	query := (&OrganizationRoleClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(user.Table, user.FieldID, id),
-			sqlgraph.To(organizationrole.Table, organizationrole.FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, false, user.OrganizationRoleTable, user.OrganizationRoleColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.OrganizationRole
-		step.Edge.Schema = schemaConfig.OrganizationRole
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // QueryTeams queries the teams edge of a User.
 func (c *UserClient) QueryTeams(_m *User) *TeamQuery {
 	query := (&TeamClient{config: c.config}).Query()
@@ -21903,8 +21666,8 @@ type (
 		NormalizedEventProjection, NormalizedEventProjectionEntity,
 		OncallHandoverTemplate, OncallRoster, OncallRosterMetrics, OncallSchedule,
 		OncallScheduleParticipant, OncallShift, OncallShiftHandover,
-		OncallShiftMetrics, Organization, OrganizationPreferences, OrganizationRole,
-		Playbook, Retrospective, Review, Situation, SituationAction, SituationEntity,
+		OncallShiftMetrics, Organization, OrganizationPreferences, Playbook,
+		Retrospective, Review, Situation, SituationAction, SituationEntity,
 		SituationHazardAssessment, SituationInvestigation, SituationJudgment,
 		SituationLink, SituationNotice, SituationNoticeRating,
 		SituationObservationGroup, SituationSignal, SituationSignalAttention,
@@ -21934,9 +21697,9 @@ type (
 		NormalizedEventProjectionEntity, OncallHandoverTemplate, OncallRoster,
 		OncallRosterMetrics, OncallSchedule, OncallScheduleParticipant, OncallShift,
 		OncallShiftHandover, OncallShiftMetrics, Organization, OrganizationPreferences,
-		OrganizationRole, Playbook, Retrospective, Review, Situation, SituationAction,
-		SituationEntity, SituationHazardAssessment, SituationInvestigation,
-		SituationJudgment, SituationLink, SituationNotice, SituationNoticeRating,
+		Playbook, Retrospective, Review, Situation, SituationAction, SituationEntity,
+		SituationHazardAssessment, SituationInvestigation, SituationJudgment,
+		SituationLink, SituationNotice, SituationNoticeRating,
 		SituationObservationGroup, SituationSignal, SituationSignalAttention,
 		SystemAnalysis, SystemAnalysisEntity, SystemAnalysisEntry,
 		SystemAnalysisEntrySubject, SystemAnalysisRelationship, SystemHazard,
@@ -22026,7 +21789,6 @@ var (
 		OncallShiftMetrics:                        tableSchemas[0],
 		Organization:                              tableSchemas[0],
 		OrganizationPreferences:                   tableSchemas[0],
-		OrganizationRole:                          tableSchemas[0],
 		Playbook:                                  tableSchemas[0],
 		PlaybookAlertDefinitions:                  tableSchemas[0],
 		Retrospective:                             tableSchemas[0],

@@ -70,7 +70,6 @@ import (
 	"github.com/rezible/rezible/ent/oncallshiftmetrics"
 	"github.com/rezible/rezible/ent/organization"
 	"github.com/rezible/rezible/ent/organizationpreferences"
-	"github.com/rezible/rezible/ent/organizationrole"
 	"github.com/rezible/rezible/ent/playbook"
 	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/ent/review"
@@ -1449,11 +1448,6 @@ func (m *OncallShiftMetricsMutation) CheckTenantReferences(ctx context.Context) 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
 // that is missing or belongs to another tenant.
 func (m *OrganizationMutation) CheckTenantReferences(ctx context.Context) error {
-	if ids := m.RolesIDs(); len(ids) > 0 {
-		if err := checkTenantReference(ctx, organizationrole.Label, len(ids), m.Client().OrganizationRole.Query().Where(organizationrole.IDIn(ids...))); err != nil {
-			return err
-		}
-	}
 	if ids := m.PreferencesIDs(); len(ids) > 0 {
 		if err := checkTenantReference(ctx, organizationpreferences.Label, len(ids), m.Client().OrganizationPreferences.Query().Where(organizationpreferences.IDIn(ids...))); err != nil {
 			return err
@@ -1467,22 +1461,6 @@ func (m *OrganizationMutation) CheckTenantReferences(ctx context.Context) error 
 func (m *OrganizationPreferencesMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.OrganizationIDs(); len(ids) > 0 {
 		if err := checkTenantReference(ctx, organization.Label, len(ids), m.Client().Organization.Query().Where(organization.IDIn(ids...))); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-// CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that is missing or belongs to another tenant.
-func (m *OrganizationRoleMutation) CheckTenantReferences(ctx context.Context) error {
-	if ids := m.OrganizationIDs(); len(ids) > 0 {
-		if err := checkTenantReference(ctx, organization.Label, len(ids), m.Client().Organization.Query().Where(organization.IDIn(ids...))); err != nil {
-			return err
-		}
-	}
-	if ids := m.UserIDs(); len(ids) > 0 {
-		if err := checkTenantReference(ctx, user.Label, len(ids), m.Client().User.Query().Where(user.IDIn(ids...))); err != nil {
 			return err
 		}
 	}
@@ -2095,11 +2073,6 @@ func (m *TicketMutation) CheckTenantReferences(ctx context.Context) error {
 func (m *UserMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.KnowledgeEntityIDs(); len(ids) > 0 {
 		if err := checkTenantReference(ctx, knowledgeentity.Label, len(ids), m.Client().KnowledgeEntity.Query().Where(knowledgeentity.IDIn(ids...))); err != nil {
-			return err
-		}
-	}
-	if ids := m.OrganizationRoleIDs(); len(ids) > 0 {
-		if err := checkTenantReference(ctx, organizationrole.Label, len(ids), m.Client().OrganizationRole.Query().Where(organizationrole.IDIn(ids...))); err != nil {
 			return err
 		}
 	}

@@ -8,7 +8,7 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/organization"
-	"github.com/rezible/rezible/ent/organizationrole"
+	"github.com/rezible/rezible/ent/user"
 	"github.com/rezible/rezible/pkg/execution"
 )
 
@@ -32,6 +32,7 @@ func makeDevelopmentAuthSession() *rez.UserAuthProviderSession {
 			Name:           "Dev Org",
 			AuthProviderID: "dev-org",
 		},
+		Role:      user.RoleAdmin,
 		ExpiresAt: time.Now().Add(time.Hour),
 	}
 }
@@ -56,29 +57,6 @@ func seedDevelopmentIdentity(ctx context.Context, a *Application) error {
 	}
 
 	client := a.mustInvoke[rez.Database]().Client(ctx)
-
-	queryOrgRole := client.OrganizationRole.Query().
-		Where(organizationrole.OrganizationID(org.ID), organizationrole.UserID(sess.UserID))
-	orgRole, queryOrgRoleErr := queryOrgRole.Only(ctx)
-	if queryOrgRoleErr != nil && !ent.IsNotFound(queryOrgRoleErr) {
-		return fmt.Errorf("load development admin role: %w", queryOrgRoleErr)
-	}
-
-	var roleErr error
-	if orgRole == nil {
-		roleErr = client.OrganizationRole.Create().
-			SetOrganizationID(org.ID).
-			SetUserID(sess.UserID).
-			SetRole(organizationrole.RoleAdmin).
-			Exec(ctx)
-	} else if orgRole.Role != organizationrole.RoleAdmin {
-		roleErr = orgRole.Update().
-			SetRole(organizationrole.RoleAdmin).
-			Exec(ctx)
-	}
-	if roleErr != nil {
-		return fmt.Errorf("set development admin role: %w", roleErr)
-	}
 
 	var prefsErr error
 	if org.Edges.Preferences == nil {

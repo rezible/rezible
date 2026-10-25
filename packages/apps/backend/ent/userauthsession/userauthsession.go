@@ -3,6 +3,8 @@
 package userauthsession
 
 import (
+	"fmt"
+
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -22,8 +24,8 @@ const (
 	FieldOrganizationID = "organization_id"
 	// FieldExpiresAt holds the string denoting the expires_at field in the database.
 	FieldExpiresAt = "expires_at"
-	// FieldScopes holds the string denoting the scopes field in the database.
-	FieldScopes = "scopes"
+	// FieldRole holds the string denoting the role field in the database.
+	FieldRole = "role"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
 	// EdgeUser holds the string denoting the user edge name in mutations.
@@ -62,7 +64,7 @@ var Columns = []string{
 	FieldUserID,
 	FieldOrganizationID,
 	FieldExpiresAt,
-	FieldScopes,
+	FieldRole,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -86,6 +88,32 @@ var (
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
+
+// Role defines the type for the "role" enum field.
+type Role string
+
+// RoleMember is the default value of the Role enum.
+const DefaultRole = RoleMember
+
+// Role values.
+const (
+	RoleAdmin  Role = "admin"
+	RoleMember Role = "member"
+)
+
+func (r Role) String() string {
+	return string(r)
+}
+
+// RoleValidator is a validator for the "role" field enum values. It is called by the builders before save.
+func RoleValidator(r Role) error {
+	switch r {
+	case RoleAdmin, RoleMember:
+		return nil
+	default:
+		return fmt.Errorf("userauthsession: invalid enum value for role field: %q", r)
+	}
+}
 
 // OrderOption defines the ordering options for the UserAuthSession queries.
 type OrderOption func(*sql.Selector)
@@ -113,6 +141,11 @@ func ByOrganizationID(opts ...sql.OrderTermOption) OrderOption {
 // ByExpiresAt orders the results by the expires_at field.
 func ByExpiresAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldExpiresAt, opts...).ToFunc()
+}
+
+// ByRole orders the results by the role field.
+func ByRole(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldRole, opts...).ToFunc()
 }
 
 // ByTenantField orders the results by tenant field.
@@ -155,4 +188,10 @@ func newOrganizationStep() *sqlgraph.Step {
 		sqlgraph.To(OrganizationInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, false, OrganizationTable, OrganizationColumn),
 	)
+}
+
+// RoleValues contains all permitted values. Treat this slice as read-only.
+var RoleValues = []string{
+	"admin",
+	"member",
 }

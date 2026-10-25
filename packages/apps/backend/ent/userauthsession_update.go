@@ -10,7 +10,6 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
-	"entgo.io/ent/dialect/sql/sqljson"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/internal"
@@ -75,21 +74,17 @@ func (_u *UserAuthSessionUpdate) SetNillableExpiresAt(v *time.Time) *UserAuthSes
 	return _u
 }
 
-// SetScopes sets the "scopes" field.
-func (_u *UserAuthSessionUpdate) SetScopes(v []string) *UserAuthSessionUpdate {
-	_u.mutation.SetScopes(v)
+// SetRole sets the "role" field.
+func (_u *UserAuthSessionUpdate) SetRole(v userauthsession.Role) *UserAuthSessionUpdate {
+	_u.mutation.SetRole(v)
 	return _u
 }
 
-// AppendScopes appends value to the "scopes" field.
-func (_u *UserAuthSessionUpdate) AppendScopes(v []string) *UserAuthSessionUpdate {
-	_u.mutation.AppendScopes(v)
-	return _u
-}
-
-// ClearScopes clears the value of the "scopes" field.
-func (_u *UserAuthSessionUpdate) ClearScopes() *UserAuthSessionUpdate {
-	_u.mutation.ClearScopes()
+// SetNillableRole sets the "role" field if the given value is not nil.
+func (_u *UserAuthSessionUpdate) SetNillableRole(v *userauthsession.Role) *UserAuthSessionUpdate {
+	if v != nil {
+		_u.SetRole(*v)
+	}
 	return _u
 }
 
@@ -149,6 +144,11 @@ func (_u *UserAuthSessionUpdate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *UserAuthSessionUpdate) check() error {
+	if v, ok := _u.mutation.Role(); ok {
+		if err := userauthsession.RoleValidator(v); err != nil {
+			return &ValidationError{Name: "role", err: fmt.Errorf(`ent: validator failed for field "UserAuthSession.role": %w`, err)}
+		}
+	}
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "UserAuthSession.tenant"`)
 	}
@@ -176,16 +176,8 @@ func (_u *UserAuthSessionUpdate) sqlSave(ctx context.Context) (_node int, err er
 	if value, ok := _u.mutation.ExpiresAt(); ok {
 		_spec.SetField(userauthsession.FieldExpiresAt, field.TypeTime, value)
 	}
-	if value, ok := _u.mutation.Scopes(); ok {
-		_spec.SetField(userauthsession.FieldScopes, field.TypeJSON, value)
-	}
-	if value, ok := _u.mutation.AppendedScopes(); ok {
-		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, userauthsession.FieldScopes, value)
-		})
-	}
-	if _u.mutation.ScopesCleared() {
-		_spec.ClearField(userauthsession.FieldScopes, field.TypeJSON)
+	if value, ok := _u.mutation.Role(); ok {
+		_spec.SetField(userauthsession.FieldRole, field.TypeEnum, value)
 	}
 	if _u.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -313,21 +305,17 @@ func (_u *UserAuthSessionUpdateOne) SetNillableExpiresAt(v *time.Time) *UserAuth
 	return _u
 }
 
-// SetScopes sets the "scopes" field.
-func (_u *UserAuthSessionUpdateOne) SetScopes(v []string) *UserAuthSessionUpdateOne {
-	_u.mutation.SetScopes(v)
+// SetRole sets the "role" field.
+func (_u *UserAuthSessionUpdateOne) SetRole(v userauthsession.Role) *UserAuthSessionUpdateOne {
+	_u.mutation.SetRole(v)
 	return _u
 }
 
-// AppendScopes appends value to the "scopes" field.
-func (_u *UserAuthSessionUpdateOne) AppendScopes(v []string) *UserAuthSessionUpdateOne {
-	_u.mutation.AppendScopes(v)
-	return _u
-}
-
-// ClearScopes clears the value of the "scopes" field.
-func (_u *UserAuthSessionUpdateOne) ClearScopes() *UserAuthSessionUpdateOne {
-	_u.mutation.ClearScopes()
+// SetNillableRole sets the "role" field if the given value is not nil.
+func (_u *UserAuthSessionUpdateOne) SetNillableRole(v *userauthsession.Role) *UserAuthSessionUpdateOne {
+	if v != nil {
+		_u.SetRole(*v)
+	}
 	return _u
 }
 
@@ -400,6 +388,11 @@ func (_u *UserAuthSessionUpdateOne) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *UserAuthSessionUpdateOne) check() error {
+	if v, ok := _u.mutation.Role(); ok {
+		if err := userauthsession.RoleValidator(v); err != nil {
+			return &ValidationError{Name: "role", err: fmt.Errorf(`ent: validator failed for field "UserAuthSession.role": %w`, err)}
+		}
+	}
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "UserAuthSession.tenant"`)
 	}
@@ -444,16 +437,8 @@ func (_u *UserAuthSessionUpdateOne) sqlSave(ctx context.Context) (_node *UserAut
 	if value, ok := _u.mutation.ExpiresAt(); ok {
 		_spec.SetField(userauthsession.FieldExpiresAt, field.TypeTime, value)
 	}
-	if value, ok := _u.mutation.Scopes(); ok {
-		_spec.SetField(userauthsession.FieldScopes, field.TypeJSON, value)
-	}
-	if value, ok := _u.mutation.AppendedScopes(); ok {
-		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, userauthsession.FieldScopes, value)
-		})
-	}
-	if _u.mutation.ScopesCleared() {
-		_spec.ClearField(userauthsession.FieldScopes, field.TypeJSON)
+	if value, ok := _u.mutation.Role(); ok {
+		_spec.SetField(userauthsession.FieldRole, field.TypeEnum, value)
 	}
 	if _u.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{

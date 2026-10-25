@@ -11,7 +11,6 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/knowledgeentity"
-	"github.com/rezible/rezible/ent/organizationrole"
 	"github.com/rezible/rezible/ent/tenant"
 	"github.com/rezible/rezible/ent/user"
 )
@@ -37,6 +36,8 @@ type User struct {
 	NotificationPreferences map[string]bool `json:"notification_preferences,omitempty"`
 	// AuthProviderID holds the value of the "auth_provider_id" field.
 	AuthProviderID string `json:"auth_provider_id,omitempty"`
+	// Role holds the value of the "role" field.
+	Role user.Role `json:"role,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the UserQuery when eager-loading is set.
 	Edges        UserEdges `json:"edges"`
@@ -49,8 +50,6 @@ type UserEdges struct {
 	Tenant *Tenant `json:"tenant,omitempty"`
 	// KnowledgeEntity holds the value of the knowledge_entity edge.
 	KnowledgeEntity *KnowledgeEntity `json:"knowledge_entity,omitempty"`
-	// OrganizationRole holds the value of the organization_role edge.
-	OrganizationRole *OrganizationRole `json:"organization_role,omitempty"`
 	// Teams holds the value of the teams edge.
 	Teams []*Team `json:"teams,omitempty"`
 	// WatchedOncallRosters holds the value of the watched_oncall_rosters edge.
@@ -83,7 +82,7 @@ type UserEdges struct {
 	TeamMemberships []*TeamMembership `json:"team_memberships,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [18]bool
+	loadedTypes [17]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -108,21 +107,10 @@ func (e UserEdges) KnowledgeEntityOrErr() (*KnowledgeEntity, error) {
 	return nil, &NotLoadedError{edge: "knowledge_entity"}
 }
 
-// OrganizationRoleOrErr returns the OrganizationRole value or an error if the edge
-// was not loaded in eager-loading, or loaded but was not found.
-func (e UserEdges) OrganizationRoleOrErr() (*OrganizationRole, error) {
-	if e.OrganizationRole != nil {
-		return e.OrganizationRole, nil
-	} else if e.loadedTypes[2] {
-		return nil, &NotFoundError{label: organizationrole.Label}
-	}
-	return nil, &NotLoadedError{edge: "organization_role"}
-}
-
 // TeamsOrErr returns the Teams value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) TeamsOrErr() ([]*Team, error) {
-	if e.loadedTypes[3] {
+	if e.loadedTypes[2] {
 		return e.Teams, nil
 	}
 	return nil, &NotLoadedError{edge: "teams"}
@@ -131,7 +119,7 @@ func (e UserEdges) TeamsOrErr() ([]*Team, error) {
 // WatchedOncallRostersOrErr returns the WatchedOncallRosters value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) WatchedOncallRostersOrErr() ([]*OncallRoster, error) {
-	if e.loadedTypes[4] {
+	if e.loadedTypes[3] {
 		return e.WatchedOncallRosters, nil
 	}
 	return nil, &NotLoadedError{edge: "watched_oncall_rosters"}
@@ -140,7 +128,7 @@ func (e UserEdges) WatchedOncallRostersOrErr() ([]*OncallRoster, error) {
 // OncallSchedulesOrErr returns the OncallSchedules value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) OncallSchedulesOrErr() ([]*OncallScheduleParticipant, error) {
-	if e.loadedTypes[5] {
+	if e.loadedTypes[4] {
 		return e.OncallSchedules, nil
 	}
 	return nil, &NotLoadedError{edge: "oncall_schedules"}
@@ -149,7 +137,7 @@ func (e UserEdges) OncallSchedulesOrErr() ([]*OncallScheduleParticipant, error) 
 // OncallShiftsOrErr returns the OncallShifts value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) OncallShiftsOrErr() ([]*OncallShift, error) {
-	if e.loadedTypes[6] {
+	if e.loadedTypes[5] {
 		return e.OncallShifts, nil
 	}
 	return nil, &NotLoadedError{edge: "oncall_shifts"}
@@ -158,7 +146,7 @@ func (e UserEdges) OncallShiftsOrErr() ([]*OncallShift, error) {
 // EventAnnotationsOrErr returns the EventAnnotations value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) EventAnnotationsOrErr() ([]*EventAnnotation, error) {
-	if e.loadedTypes[7] {
+	if e.loadedTypes[6] {
 		return e.EventAnnotations, nil
 	}
 	return nil, &NotLoadedError{edge: "event_annotations"}
@@ -167,7 +155,7 @@ func (e UserEdges) EventAnnotationsOrErr() ([]*EventAnnotation, error) {
 // SituationHazardAssessmentsOrErr returns the SituationHazardAssessments value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) SituationHazardAssessmentsOrErr() ([]*SituationHazardAssessment, error) {
-	if e.loadedTypes[8] {
+	if e.loadedTypes[7] {
 		return e.SituationHazardAssessments, nil
 	}
 	return nil, &NotLoadedError{edge: "situation_hazard_assessments"}
@@ -176,7 +164,7 @@ func (e UserEdges) SituationHazardAssessmentsOrErr() ([]*SituationHazardAssessme
 // IntegrationOauthStatesOrErr returns the IntegrationOauthStates value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) IntegrationOauthStatesOrErr() ([]*IntegrationUserInstallState, error) {
-	if e.loadedTypes[9] {
+	if e.loadedTypes[8] {
 		return e.IntegrationOauthStates, nil
 	}
 	return nil, &NotLoadedError{edge: "integration_oauth_states"}
@@ -185,7 +173,7 @@ func (e UserEdges) IntegrationOauthStatesOrErr() ([]*IntegrationUserInstallState
 // IncidentMilestonesOrErr returns the IncidentMilestones value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) IncidentMilestonesOrErr() ([]*IncidentMilestone, error) {
-	if e.loadedTypes[10] {
+	if e.loadedTypes[9] {
 		return e.IncidentMilestones, nil
 	}
 	return nil, &NotLoadedError{edge: "incident_milestones"}
@@ -194,7 +182,7 @@ func (e UserEdges) IncidentMilestonesOrErr() ([]*IncidentMilestone, error) {
 // IncidentDebriefsOrErr returns the IncidentDebriefs value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) IncidentDebriefsOrErr() ([]*IncidentDebrief, error) {
-	if e.loadedTypes[11] {
+	if e.loadedTypes[10] {
 		return e.IncidentDebriefs, nil
 	}
 	return nil, &NotLoadedError{edge: "incident_debriefs"}
@@ -203,7 +191,7 @@ func (e UserEdges) IncidentDebriefsOrErr() ([]*IncidentDebrief, error) {
 // ReviewRequestsOrErr returns the ReviewRequests value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) ReviewRequestsOrErr() ([]*Review, error) {
-	if e.loadedTypes[12] {
+	if e.loadedTypes[11] {
 		return e.ReviewRequests, nil
 	}
 	return nil, &NotLoadedError{edge: "review_requests"}
@@ -212,7 +200,7 @@ func (e UserEdges) ReviewRequestsOrErr() ([]*Review, error) {
 // ReviewResponsesOrErr returns the ReviewResponses value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) ReviewResponsesOrErr() ([]*Review, error) {
-	if e.loadedTypes[13] {
+	if e.loadedTypes[12] {
 		return e.ReviewResponses, nil
 	}
 	return nil, &NotLoadedError{edge: "review_responses"}
@@ -221,7 +209,7 @@ func (e UserEdges) ReviewResponsesOrErr() ([]*Review, error) {
 // DiscussionThreadsOrErr returns the DiscussionThreads value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) DiscussionThreadsOrErr() ([]*DiscussionThread, error) {
-	if e.loadedTypes[14] {
+	if e.loadedTypes[13] {
 		return e.DiscussionThreads, nil
 	}
 	return nil, &NotLoadedError{edge: "discussion_threads"}
@@ -230,7 +218,7 @@ func (e UserEdges) DiscussionThreadsOrErr() ([]*DiscussionThread, error) {
 // DiscussionCommentsOrErr returns the DiscussionComments value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) DiscussionCommentsOrErr() ([]*DiscussionComment, error) {
-	if e.loadedTypes[15] {
+	if e.loadedTypes[14] {
 		return e.DiscussionComments, nil
 	}
 	return nil, &NotLoadedError{edge: "discussion_comments"}
@@ -239,7 +227,7 @@ func (e UserEdges) DiscussionCommentsOrErr() ([]*DiscussionComment, error) {
 // DocumentAccessesOrErr returns the DocumentAccesses value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) DocumentAccessesOrErr() ([]*DocumentAccess, error) {
-	if e.loadedTypes[16] {
+	if e.loadedTypes[15] {
 		return e.DocumentAccesses, nil
 	}
 	return nil, &NotLoadedError{edge: "document_accesses"}
@@ -248,7 +236,7 @@ func (e UserEdges) DocumentAccessesOrErr() ([]*DocumentAccess, error) {
 // TeamMembershipsOrErr returns the TeamMemberships value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) TeamMembershipsOrErr() ([]*TeamMembership, error) {
-	if e.loadedTypes[17] {
+	if e.loadedTypes[16] {
 		return e.TeamMemberships, nil
 	}
 	return nil, &NotLoadedError{edge: "team_memberships"}
@@ -265,7 +253,7 @@ func (*User) scanValues(columns []string) ([]any, error) {
 			values[i] = new([]byte)
 		case user.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case user.FieldEmail, user.FieldName, user.FieldChatID, user.FieldTimezone, user.FieldAuthProviderID:
+		case user.FieldEmail, user.FieldName, user.FieldChatID, user.FieldTimezone, user.FieldAuthProviderID, user.FieldRole:
 			values[i] = new(sql.NullString)
 		case user.FieldID:
 			values[i] = new(uuid.UUID)
@@ -341,6 +329,12 @@ func (_m *User) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.AuthProviderID = value.String
 			}
+		case user.FieldRole:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field role", values[i])
+			} else if value.Valid {
+				_m.Role = user.Role(value.String)
+			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
 		}
@@ -362,11 +356,6 @@ func (_m *User) QueryTenant() *TenantQuery {
 // QueryKnowledgeEntity queries the "knowledge_entity" edge of the User entity.
 func (_m *User) QueryKnowledgeEntity() *KnowledgeEntityQuery {
 	return NewUserClient(_m.config).QueryKnowledgeEntity(_m)
-}
-
-// QueryOrganizationRole queries the "organization_role" edge of the User entity.
-func (_m *User) QueryOrganizationRole() *OrganizationRoleQuery {
-	return NewUserClient(_m.config).QueryOrganizationRole(_m)
 }
 
 // QueryTeams queries the "teams" edge of the User entity.
@@ -492,6 +481,9 @@ func (_m *User) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("auth_provider_id=")
 	builder.WriteString(_m.AuthProviderID)
+	builder.WriteString(", ")
+	builder.WriteString("role=")
+	builder.WriteString(fmt.Sprintf("%v", _m.Role))
 	builder.WriteByte(')')
 	return builder.String()
 }

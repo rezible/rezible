@@ -9,7 +9,6 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/organization"
-	"github.com/rezible/rezible/ent/organizationrole"
 	"github.com/rezible/rezible/pkg/errs"
 	oapi "github.com/rezible/rezible/pkg/openapi/v1"
 )
@@ -45,18 +44,11 @@ func (h *userSessionsHandler) GetUserSession(ctx context.Context, req *oapi.GetU
 		return nil, oapi.Error(ctx, "failed to get organization", orgErr)
 	}
 
-	userOrgRole := organizationrole.RoleMember
-	orgRole, queryOrgRoleErr := u.QueryOrganizationRole().Only(ctx)
-	if queryOrgRoleErr != nil && !ent.IsNotFound(queryOrgRoleErr) {
-		return nil, oapi.Error(ctx, "failed to query user org role", queryOrgRoleErr)
-	} else if orgRole != nil {
-		userOrgRole = orgRole.Role
-	}
-
+	// The session's own role, which another sign-in does not change.
 	resp.Body.Data = oapi.UserSession{
 		User:             oapi.UserFromEnt(u),
 		Organization:     oapi.OrganizationFromEnt(org),
-		OrganizationRole: userOrgRole,
+		OrganizationRole: auth.Role,
 		ExpiresAt:        expiresAt,
 	}
 

@@ -18,7 +18,6 @@ import (
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/organization"
 	"github.com/rezible/rezible/ent/organizationpreferences"
-	"github.com/rezible/rezible/ent/organizationrole"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/tenant"
 )
@@ -31,7 +30,6 @@ type OrganizationQuery struct {
 	inters          []Interceptor
 	predicates      []predicate.Organization
 	withTenant      *TenantQuery
-	withRoles       *OrganizationRoleQuery
 	withPreferences *OrganizationPreferencesQuery
 	modifiers       []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
@@ -89,31 +87,6 @@ func (_q *OrganizationQuery) QueryTenant() *TenantQuery {
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.Tenant
 		step.Edge.Schema = schemaConfig.Organization
-		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryRoles chains the current query on the "roles" edge.
-func (_q *OrganizationQuery) QueryRoles() *OrganizationRoleQuery {
-	query := (&OrganizationRoleClient{config: _q.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := _q.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := _q.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(organization.Table, organization.FieldID, selector),
-			sqlgraph.To(organizationrole.Table, organizationrole.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, organization.RolesTable, organization.RolesColumn),
-		)
-		schemaConfig := _q.schemaConfig
-		step.To.Schema = schemaConfig.OrganizationRole
-		step.Edge.Schema = schemaConfig.OrganizationRole
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -338,7 +311,6 @@ func (_q *OrganizationQuery) Clone() *OrganizationQuery {
 		inters:          append([]Interceptor{}, _q.inters...),
 		predicates:      append([]predicate.Organization{}, _q.predicates...),
 		withTenant:      _q.withTenant.Clone(),
-		withRoles:       _q.withRoles.Clone(),
 		withPreferences: _q.withPreferences.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
@@ -354,17 +326,6 @@ func (_q *OrganizationQuery) WithTenant(opts ...func(*TenantQuery)) *Organizatio
 		opt(query)
 	}
 	_q.withTenant = query
-	return _q
-}
-
-// WithRoles tells the query-builder to eager-load the nodes that are connected to
-// the "roles" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *OrganizationQuery) WithRoles(opts ...func(*OrganizationRoleQuery)) *OrganizationQuery {
-	query := (&OrganizationRoleClient{config: _q.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	_q.withRoles = query
 	return _q
 }
 
@@ -463,9 +424,8 @@ func (_q *OrganizationQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]
 	var (
 		nodes       = []*Organization{}
 		_spec       = _q.querySpec()
-		loadedTypes = [3]bool{
+		loadedTypes = [2]bool{
 			_q.withTenant != nil,
-			_q.withRoles != nil,
 			_q.withPreferences != nil,
 		}
 	)
@@ -495,13 +455,6 @@ func (_q *OrganizationQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]
 	if query := _q.withTenant; query != nil {
 		if err := _q.loadTenant(ctx, query, nodes, nil,
 			func(n *Organization, e *Tenant) { n.Edges.Tenant = e }); err != nil {
-			return nil, err
-		}
-	}
-	if query := _q.withRoles; query != nil {
-		if err := _q.loadRoles(ctx, query, nodes,
-			func(n *Organization) { n.Edges.Roles = []*OrganizationRole{} },
-			func(n *Organization, e *OrganizationRole) { n.Edges.Roles = append(n.Edges.Roles, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -540,36 +493,6 @@ func (_q *OrganizationQuery) loadTenant(ctx context.Context, query *TenantQuery,
 		for i := range nodes {
 			assign(nodes[i], n)
 		}
-	}
-	return nil
-}
-func (_q *OrganizationQuery) loadRoles(ctx context.Context, query *OrganizationRoleQuery, nodes []*Organization, init func(*Organization), assign func(*Organization, *OrganizationRole)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*Organization)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
-	}
-	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(organizationrole.FieldOrganizationID)
-	}
-	query.Where(predicate.OrganizationRole(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(organization.RolesColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		fk := n.OrganizationID
-		node, ok := nodeids[fk]
-		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "organization_id" returned %v for node %v`, fk, n.ID)
-		}
-		assign(node, n)
 	}
 	return nil
 }

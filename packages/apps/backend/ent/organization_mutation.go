@@ -26,9 +26,6 @@ type OrganizationMutation struct {
 	clearedFields      map[string]struct{}
 	tenant             *int
 	clearedtenant      bool
-	roles              map[uuid.UUID]struct{}
-	removedroles       map[uuid.UUID]struct{}
-	clearedroles       bool
 	preferences        *uuid.UUID
 	clearedpreferences bool
 	done               bool
@@ -275,60 +272,6 @@ func (m *OrganizationMutation) ResetTenant() {
 	m.clearedtenant = false
 }
 
-// AddRoleIDs adds the "roles" edge to the OrganizationRole entity by ids.
-func (m *OrganizationMutation) AddRoleIDs(ids ...uuid.UUID) {
-	if m.roles == nil {
-		m.roles = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.roles[ids[i]] = struct{}{}
-	}
-}
-
-// ClearRoles clears the "roles" edge to the OrganizationRole entity.
-func (m *OrganizationMutation) ClearRoles() {
-	m.clearedroles = true
-}
-
-// RolesCleared reports if the "roles" edge to the OrganizationRole entity was cleared.
-func (m *OrganizationMutation) RolesCleared() bool {
-	return m.clearedroles
-}
-
-// RemoveRoleIDs removes the "roles" edge to the OrganizationRole entity by IDs.
-func (m *OrganizationMutation) RemoveRoleIDs(ids ...uuid.UUID) {
-	if m.removedroles == nil {
-		m.removedroles = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.roles, ids[i])
-		m.removedroles[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedRoles returns the removed IDs of the "roles" edge to the OrganizationRole entity.
-func (m *OrganizationMutation) RemovedRolesIDs() (ids []uuid.UUID) {
-	for id := range m.removedroles {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// RolesIDs returns the "roles" edge IDs in the mutation.
-func (m *OrganizationMutation) RolesIDs() (ids []uuid.UUID) {
-	for id := range m.roles {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetRoles resets all changes to the "roles" edge.
-func (m *OrganizationMutation) ResetRoles() {
-	m.roles = nil
-	m.clearedroles = false
-	m.removedroles = nil
-}
-
 // SetPreferencesID sets the "preferences" edge to the OrganizationPreferences entity by id.
 func (m *OrganizationMutation) SetPreferencesID(id uuid.UUID) {
 	m.preferences = &id
@@ -538,12 +481,9 @@ func (m *OrganizationMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *OrganizationMutation) AddedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 2)
 	if m.tenant != nil {
 		edges = append(edges, organization.EdgeTenant)
-	}
-	if m.roles != nil {
-		edges = append(edges, organization.EdgeRoles)
 	}
 	if m.preferences != nil {
 		edges = append(edges, organization.EdgePreferences)
@@ -559,12 +499,6 @@ func (m *OrganizationMutation) AddedIDs(name string) []ent.Value {
 		if id := m.tenant; id != nil {
 			return []ent.Value{*id}
 		}
-	case organization.EdgeRoles:
-		ids := make([]ent.Value, 0, len(m.roles))
-		for id := range m.roles {
-			ids = append(ids, id)
-		}
-		return ids
 	case organization.EdgePreferences:
 		if id := m.preferences; id != nil {
 			return []ent.Value{*id}
@@ -575,35 +509,21 @@ func (m *OrganizationMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *OrganizationMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 3)
-	if m.removedroles != nil {
-		edges = append(edges, organization.EdgeRoles)
-	}
+	edges := make([]string, 0, 2)
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *OrganizationMutation) RemovedIDs(name string) []ent.Value {
-	switch name {
-	case organization.EdgeRoles:
-		ids := make([]ent.Value, 0, len(m.removedroles))
-		for id := range m.removedroles {
-			ids = append(ids, id)
-		}
-		return ids
-	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *OrganizationMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 2)
 	if m.clearedtenant {
 		edges = append(edges, organization.EdgeTenant)
-	}
-	if m.clearedroles {
-		edges = append(edges, organization.EdgeRoles)
 	}
 	if m.clearedpreferences {
 		edges = append(edges, organization.EdgePreferences)
@@ -617,8 +537,6 @@ func (m *OrganizationMutation) EdgeCleared(name string) bool {
 	switch name {
 	case organization.EdgeTenant:
 		return m.clearedtenant
-	case organization.EdgeRoles:
-		return m.clearedroles
 	case organization.EdgePreferences:
 		return m.clearedpreferences
 	}
@@ -645,9 +563,6 @@ func (m *OrganizationMutation) ResetEdge(name string) error {
 	switch name {
 	case organization.EdgeTenant:
 		m.ResetTenant()
-		return nil
-	case organization.EdgeRoles:
-		m.ResetRoles()
 		return nil
 	case organization.EdgePreferences:
 		m.ResetPreferences()

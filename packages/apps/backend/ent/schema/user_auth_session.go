@@ -24,7 +24,10 @@ func (UserAuthSession) Fields() []ent.Field {
 		field.UUID("user_id", uuid.New()),
 		field.UUID("organization_id", uuid.New()),
 		field.Time("expires_at"),
-		field.Strings("scopes").Optional(),
+		// Role is the user's role for this session, taken from the user when the session is created.
+		field.Enum("role").
+			Values("admin", "member").
+			Default("member"),
 	}
 }
 

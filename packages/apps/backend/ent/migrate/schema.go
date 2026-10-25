@@ -3250,52 +3250,6 @@ var (
 			},
 		},
 	}
-	// OrganizationRolesColumns holds the columns for the "organization_roles" table.
-	OrganizationRolesColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID},
-		{Name: "role", Type: field.TypeEnum, Enums: []string{"admin", "member"}},
-		{Name: "tenant_id", Type: field.TypeInt},
-		{Name: "organization_id", Type: field.TypeUUID},
-		{Name: "user_id", Type: field.TypeUUID, Unique: true},
-	}
-	// OrganizationRolesTable holds the schema information for the "organization_roles" table.
-	OrganizationRolesTable = &schema.Table{
-		Name:       "organization_roles",
-		Columns:    OrganizationRolesColumns,
-		PrimaryKey: []*schema.Column{OrganizationRolesColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "organization_roles_tenants_tenant",
-				Columns:    []*schema.Column{OrganizationRolesColumns[2]},
-				RefColumns: []*schema.Column{TenantsColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-			{
-				Symbol:     "organization_roles_organizations_organization",
-				Columns:    []*schema.Column{OrganizationRolesColumns[3]},
-				RefColumns: []*schema.Column{OrganizationsColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-			{
-				Symbol:     "organization_roles_users_organization_role",
-				Columns:    []*schema.Column{OrganizationRolesColumns[4]},
-				RefColumns: []*schema.Column{UsersColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-		},
-		Indexes: []*schema.Index{
-			{
-				Name:    "organizationrole_tenant_id",
-				Unique:  false,
-				Columns: []*schema.Column{OrganizationRolesColumns[2]},
-			},
-			{
-				Name:    "organizationrole_tenant_id_organization_id_user_id",
-				Unique:  true,
-				Columns: []*schema.Column{OrganizationRolesColumns[2], OrganizationRolesColumns[3], OrganizationRolesColumns[4]},
-			},
-		},
-	}
 	// PlaybooksColumns holds the columns for the "playbooks" table.
 	PlaybooksColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -4764,6 +4718,7 @@ var (
 		{Name: "timezone", Type: field.TypeString, Nullable: true},
 		{Name: "notification_preferences", Type: field.TypeJSON, Nullable: true},
 		{Name: "auth_provider_id", Type: field.TypeString, Nullable: true},
+		{Name: "role", Type: field.TypeEnum, Enums: []string{"admin", "member"}, Default: "member"},
 		{Name: "tenant_id", Type: field.TypeInt},
 		{Name: "knowledge_entity_id", Type: field.TypeUUID, Nullable: true},
 	}
@@ -4775,13 +4730,13 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "users_tenants_tenant",
-				Columns:    []*schema.Column{UsersColumns[7]},
+				Columns:    []*schema.Column{UsersColumns[8]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "users_knowledge_entities_knowledge_entity",
-				Columns:    []*schema.Column{UsersColumns[8]},
+				Columns:    []*schema.Column{UsersColumns[9]},
 				RefColumns: []*schema.Column{KnowledgeEntitiesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -4790,22 +4745,22 @@ var (
 			{
 				Name:    "user_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{UsersColumns[7]},
+				Columns: []*schema.Column{UsersColumns[8]},
 			},
 			{
 				Name:    "user_tenant_id_knowledge_entity_id",
 				Unique:  true,
-				Columns: []*schema.Column{UsersColumns[7], UsersColumns[8]},
+				Columns: []*schema.Column{UsersColumns[8], UsersColumns[9]},
 			},
 			{
 				Name:    "user_tenant_id_auth_provider_id",
 				Unique:  true,
-				Columns: []*schema.Column{UsersColumns[7], UsersColumns[6]},
+				Columns: []*schema.Column{UsersColumns[8], UsersColumns[6]},
 			},
 			{
 				Name:    "user_tenant_id_email",
 				Unique:  true,
-				Columns: []*schema.Column{UsersColumns[7], UsersColumns[1]},
+				Columns: []*schema.Column{UsersColumns[8], UsersColumns[1]},
 			},
 		},
 	}
@@ -4813,7 +4768,7 @@ var (
 	UserAuthSessionsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "expires_at", Type: field.TypeTime},
-		{Name: "scopes", Type: field.TypeJSON, Nullable: true},
+		{Name: "role", Type: field.TypeEnum, Enums: []string{"admin", "member"}, Default: "member"},
 		{Name: "tenant_id", Type: field.TypeInt},
 		{Name: "user_id", Type: field.TypeUUID},
 		{Name: "organization_id", Type: field.TypeUUID},
@@ -5331,7 +5286,6 @@ var (
 		OncallShiftMetricsTable,
 		OrganizationsTable,
 		OrganizationPreferencesTable,
-		OrganizationRolesTable,
 		PlaybooksTable,
 		RetrospectivesTable,
 		ReviewsTable,
@@ -5573,9 +5527,6 @@ func init() {
 	OrganizationsTable.ForeignKeys[0].RefTable = TenantsTable
 	OrganizationPreferencesTable.ForeignKeys[0].RefTable = OrganizationsTable
 	OrganizationPreferencesTable.ForeignKeys[1].RefTable = TenantsTable
-	OrganizationRolesTable.ForeignKeys[0].RefTable = TenantsTable
-	OrganizationRolesTable.ForeignKeys[1].RefTable = OrganizationsTable
-	OrganizationRolesTable.ForeignKeys[2].RefTable = UsersTable
 	PlaybooksTable.ForeignKeys[0].RefTable = TenantsTable
 	RetrospectivesTable.ForeignKeys[0].RefTable = DocumentsTable
 	RetrospectivesTable.ForeignKeys[1].RefTable = IncidentsTable

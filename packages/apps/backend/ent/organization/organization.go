@@ -22,8 +22,6 @@ const (
 	FieldName = "name"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
-	// EdgeRoles holds the string denoting the roles edge name in mutations.
-	EdgeRoles = "roles"
 	// EdgePreferences holds the string denoting the preferences edge name in mutations.
 	EdgePreferences = "preferences"
 	// Table holds the table name of the organization in the database.
@@ -35,13 +33,6 @@ const (
 	TenantInverseTable = "tenants"
 	// TenantColumn is the table column denoting the tenant relation/edge.
 	TenantColumn = "tenant_id"
-	// RolesTable is the table that holds the roles relation/edge.
-	RolesTable = "organization_roles"
-	// RolesInverseTable is the table name for the OrganizationRole entity.
-	// It exists in this package in order to avoid circular dependency with the "organizationrole" package.
-	RolesInverseTable = "organization_roles"
-	// RolesColumn is the table column denoting the roles relation/edge.
-	RolesColumn = "organization_id"
 	// PreferencesTable is the table that holds the preferences relation/edge.
 	PreferencesTable = "organization_preferences"
 	// PreferencesInverseTable is the table name for the OrganizationPreferences entity.
@@ -111,20 +102,6 @@ func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
 	}
 }
 
-// ByRolesCount orders the results by roles count.
-func ByRolesCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newRolesStep(), opts...)
-	}
-}
-
-// ByRoles orders the results by roles terms.
-func ByRoles(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newRolesStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
-
 // ByPreferencesField orders the results by preferences field.
 func ByPreferencesField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -136,13 +113,6 @@ func newTenantStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(TenantInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
-	)
-}
-func newRolesStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(RolesInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, RolesTable, RolesColumn),
 	)
 }
 func newPreferencesStep() *sqlgraph.Step {

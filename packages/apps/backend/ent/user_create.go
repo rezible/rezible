@@ -23,7 +23,6 @@ import (
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallscheduleparticipant"
 	"github.com/rezible/rezible/ent/oncallshift"
-	"github.com/rezible/rezible/ent/organizationrole"
 	"github.com/rezible/rezible/ent/review"
 	"github.com/rezible/rezible/ent/situationhazardassessment"
 	"github.com/rezible/rezible/ent/team"
@@ -128,6 +127,20 @@ func (_c *UserCreate) SetNillableAuthProviderID(v *string) *UserCreate {
 	return _c
 }
 
+// SetRole sets the "role" field.
+func (_c *UserCreate) SetRole(v user.Role) *UserCreate {
+	_c.mutation.SetRole(v)
+	return _c
+}
+
+// SetNillableRole sets the "role" field if the given value is not nil.
+func (_c *UserCreate) SetNillableRole(v *user.Role) *UserCreate {
+	if v != nil {
+		_c.SetRole(*v)
+	}
+	return _c
+}
+
 // SetID sets the "id" field.
 func (_c *UserCreate) SetID(v uuid.UUID) *UserCreate {
 	_c.mutation.SetID(v)
@@ -150,25 +163,6 @@ func (_c *UserCreate) SetTenant(v *Tenant) *UserCreate {
 // SetKnowledgeEntity sets the "knowledge_entity" edge to the KnowledgeEntity entity.
 func (_c *UserCreate) SetKnowledgeEntity(v *KnowledgeEntity) *UserCreate {
 	return _c.SetKnowledgeEntityID(v.ID)
-}
-
-// SetOrganizationRoleID sets the "organization_role" edge to the OrganizationRole entity by ID.
-func (_c *UserCreate) SetOrganizationRoleID(id uuid.UUID) *UserCreate {
-	_c.mutation.SetOrganizationRoleID(id)
-	return _c
-}
-
-// SetNillableOrganizationRoleID sets the "organization_role" edge to the OrganizationRole entity by ID if the given value is not nil.
-func (_c *UserCreate) SetNillableOrganizationRoleID(id *uuid.UUID) *UserCreate {
-	if id != nil {
-		_c = _c.SetOrganizationRoleID(*id)
-	}
-	return _c
-}
-
-// SetOrganizationRole sets the "organization_role" edge to the OrganizationRole entity.
-func (_c *UserCreate) SetOrganizationRole(v *OrganizationRole) *UserCreate {
-	return _c.SetOrganizationRoleID(v.ID)
 }
 
 // AddTeamIDs adds the "teams" edge to the Team entity by IDs.
@@ -437,6 +431,10 @@ func (_c *UserCreate) defaults() error {
 		v := user.DefaultName
 		_c.mutation.SetName(v)
 	}
+	if _, ok := _c.mutation.Role(); !ok {
+		v := user.DefaultRole
+		_c.mutation.SetRole(v)
+	}
 	if _, ok := _c.mutation.ID(); !ok {
 		if user.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized user.DefaultID (forgotten import ent/runtime?)")
@@ -457,6 +455,14 @@ func (_c *UserCreate) check() error {
 	}
 	if _, ok := _c.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "User.name"`)}
+	}
+	if _, ok := _c.mutation.Role(); !ok {
+		return &ValidationError{Name: "role", err: errors.New(`ent: missing required field "User.role"`)}
+	}
+	if v, ok := _c.mutation.Role(); ok {
+		if err := user.RoleValidator(v); err != nil {
+			return &ValidationError{Name: "role", err: fmt.Errorf(`ent: validator failed for field "User.role": %w`, err)}
+		}
 	}
 	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "User.tenant"`)}
@@ -522,6 +528,10 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		_spec.SetField(user.FieldAuthProviderID, field.TypeString, value)
 		_node.AuthProviderID = value
 	}
+	if value, ok := _c.mutation.Role(); ok {
+		_spec.SetField(user.FieldRole, field.TypeEnum, value)
+		_node.Role = value
+	}
 	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -556,23 +566,6 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.KnowledgeEntityID = &nodes[0]
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := _c.mutation.OrganizationRoleIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
-			Inverse: false,
-			Table:   user.OrganizationRoleTable,
-			Columns: []string{user.OrganizationRoleColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(organizationrole.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _c.schemaConfig.OrganizationRole
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := _c.mutation.TeamsIDs(); len(nodes) > 0 {
@@ -1003,6 +996,18 @@ func (u *UserUpsert) ClearAuthProviderID() *UserUpsert {
 	return u
 }
 
+// SetRole sets the "role" field.
+func (u *UserUpsert) SetRole(v user.Role) *UserUpsert {
+	u.Set(user.FieldRole, v)
+	return u
+}
+
+// UpdateRole sets the "role" field to the value that was provided on create.
+func (u *UserUpsert) UpdateRole() *UserUpsert {
+	u.SetExcluded(user.FieldRole)
+	return u
+}
+
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
@@ -1184,6 +1189,20 @@ func (u *UserUpsertOne) UpdateAuthProviderID() *UserUpsertOne {
 func (u *UserUpsertOne) ClearAuthProviderID() *UserUpsertOne {
 	return u.Update(func(s *UserUpsert) {
 		s.ClearAuthProviderID()
+	})
+}
+
+// SetRole sets the "role" field.
+func (u *UserUpsertOne) SetRole(v user.Role) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.SetRole(v)
+	})
+}
+
+// UpdateRole sets the "role" field to the value that was provided on create.
+func (u *UserUpsertOne) UpdateRole() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateRole()
 	})
 }
 
@@ -1535,6 +1554,20 @@ func (u *UserUpsertBulk) UpdateAuthProviderID() *UserUpsertBulk {
 func (u *UserUpsertBulk) ClearAuthProviderID() *UserUpsertBulk {
 	return u.Update(func(s *UserUpsert) {
 		s.ClearAuthProviderID()
+	})
+}
+
+// SetRole sets the "role" field.
+func (u *UserUpsertBulk) SetRole(v user.Role) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.SetRole(v)
+	})
+}
+
+// UpdateRole sets the "role" field to the value that was provided on create.
+func (u *UserUpsertBulk) UpdateRole() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateRole()
 	})
 }
 

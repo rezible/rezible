@@ -813,18 +813,6 @@ func (f OrganizationPreferencesFunc) Mutate(ctx context.Context, m ent.Mutation)
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.OrganizationPreferencesMutation", m)
 }
 
-// The OrganizationRoleFunc type is an adapter to allow the use of ordinary
-// function as OrganizationRole mutator.
-type OrganizationRoleFunc func(context.Context, *ent.OrganizationRoleMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f OrganizationRoleFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.OrganizationRoleMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.OrganizationRoleMutation", m)
-}
-
 // The PlaybookFunc type is an adapter to allow the use of ordinary
 // function as Playbook mutator.
 type PlaybookFunc func(context.Context, *ent.PlaybookMutation) (ent.Value, error)

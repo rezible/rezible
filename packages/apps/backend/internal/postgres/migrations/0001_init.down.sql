@@ -84,8 +84,6 @@ ALTER TABLE "reviews" DROP CONSTRAINT "reviews_users_reviewer", DROP CONSTRAINT 
 ALTER TABLE "retrospectives" DROP CONSTRAINT "retrospectives_system_analyses_system_analysis", DROP CONSTRAINT "retrospectives_users_closed_by", DROP CONSTRAINT "retrospectives_users_owner", DROP CONSTRAINT "retrospectives_tenants_tenant", DROP CONSTRAINT "retrospectives_incidents_retrospective", DROP CONSTRAINT "retrospectives_documents_retrospective";
 -- reverse: modify "playbooks" table
 ALTER TABLE "playbooks" DROP CONSTRAINT "playbooks_tenants_tenant";
--- reverse: modify "organization_roles" table
-ALTER TABLE "organization_roles" DROP CONSTRAINT "organization_roles_users_organization_role", DROP CONSTRAINT "organization_roles_organizations_organization", DROP CONSTRAINT "organization_roles_tenants_tenant";
 -- reverse: modify "organization_preferences" table
 ALTER TABLE "organization_preferences" DROP CONSTRAINT "organization_preferences_tenants_tenant", DROP CONSTRAINT "organization_preferences_organizations_preferences";
 -- reverse: modify "organizations" table
@@ -474,14 +472,6 @@ DROP TABLE "retrospectives";
 DROP INDEX "playbook_tenant_id";
 -- reverse: create "playbooks" table
 DROP TABLE "playbooks";
--- reverse: create index "organizationrole_tenant_id_organization_id_user_id" to table: "organization_roles"
-DROP INDEX "organizationrole_tenant_id_organization_id_user_id";
--- reverse: create index "organizationrole_tenant_id" to table: "organization_roles"
-DROP INDEX "organizationrole_tenant_id";
--- reverse: create index "organization_roles_user_id_key" to table: "organization_roles"
-DROP INDEX "organization_roles_user_id_key";
--- reverse: create "organization_roles" table
-DROP TABLE "organization_roles";
 -- reverse: create index "organizationpreferences_tenant_id" to table: "organization_preferences"
 DROP INDEX "organizationpreferences_tenant_id";
 -- reverse: create index "organization_preferences_organization_id_key" to table: "organization_preferences"

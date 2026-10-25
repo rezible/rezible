@@ -22,6 +22,7 @@ import (
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/schema/schematypes"
+	"github.com/rezible/rezible/ent/user"
 
 	"github.com/rezible/rezible/ent/incidentmilestone"
 	ifvl "github.com/rezible/rezible/ent/investigationfindingversionlink"
@@ -813,6 +814,7 @@ type (
 	UserAuthProviderSession struct {
 		User      ent.User
 		Org       ent.Organization
+		Role      user.Role
 		ExpiresAt time.Time
 	}
 

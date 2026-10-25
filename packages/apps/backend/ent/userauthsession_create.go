@@ -51,9 +51,17 @@ func (_c *UserAuthSessionCreate) SetExpiresAt(v time.Time) *UserAuthSessionCreat
 	return _c
 }
 
-// SetScopes sets the "scopes" field.
-func (_c *UserAuthSessionCreate) SetScopes(v []string) *UserAuthSessionCreate {
-	_c.mutation.SetScopes(v)
+// SetRole sets the "role" field.
+func (_c *UserAuthSessionCreate) SetRole(v userauthsession.Role) *UserAuthSessionCreate {
+	_c.mutation.SetRole(v)
+	return _c
+}
+
+// SetNillableRole sets the "role" field if the given value is not nil.
+func (_c *UserAuthSessionCreate) SetNillableRole(v *userauthsession.Role) *UserAuthSessionCreate {
+	if v != nil {
+		_c.SetRole(*v)
+	}
 	return _c
 }
 
@@ -123,6 +131,10 @@ func (_c *UserAuthSessionCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (_c *UserAuthSessionCreate) defaults() error {
+	if _, ok := _c.mutation.Role(); !ok {
+		v := userauthsession.DefaultRole
+		_c.mutation.SetRole(v)
+	}
 	if _, ok := _c.mutation.ID(); !ok {
 		if userauthsession.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized userauthsession.DefaultID (forgotten import ent/runtime?)")
@@ -146,6 +158,14 @@ func (_c *UserAuthSessionCreate) check() error {
 	}
 	if _, ok := _c.mutation.ExpiresAt(); !ok {
 		return &ValidationError{Name: "expires_at", err: errors.New(`ent: missing required field "UserAuthSession.expires_at"`)}
+	}
+	if _, ok := _c.mutation.Role(); !ok {
+		return &ValidationError{Name: "role", err: errors.New(`ent: missing required field "UserAuthSession.role"`)}
+	}
+	if v, ok := _c.mutation.Role(); ok {
+		if err := userauthsession.RoleValidator(v); err != nil {
+			return &ValidationError{Name: "role", err: fmt.Errorf(`ent: validator failed for field "UserAuthSession.role": %w`, err)}
+		}
 	}
 	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "UserAuthSession.tenant"`)}
@@ -197,9 +217,9 @@ func (_c *UserAuthSessionCreate) createSpec() (*UserAuthSession, *sqlgraph.Creat
 		_spec.SetField(userauthsession.FieldExpiresAt, field.TypeTime, value)
 		_node.ExpiresAt = value
 	}
-	if value, ok := _c.mutation.Scopes(); ok {
-		_spec.SetField(userauthsession.FieldScopes, field.TypeJSON, value)
-		_node.Scopes = value
+	if value, ok := _c.mutation.Role(); ok {
+		_spec.SetField(userauthsession.FieldRole, field.TypeEnum, value)
+		_node.Role = value
 	}
 	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -343,21 +363,15 @@ func (u *UserAuthSessionUpsert) UpdateExpiresAt() *UserAuthSessionUpsert {
 	return u
 }
 
-// SetScopes sets the "scopes" field.
-func (u *UserAuthSessionUpsert) SetScopes(v []string) *UserAuthSessionUpsert {
-	u.Set(userauthsession.FieldScopes, v)
+// SetRole sets the "role" field.
+func (u *UserAuthSessionUpsert) SetRole(v userauthsession.Role) *UserAuthSessionUpsert {
+	u.Set(userauthsession.FieldRole, v)
 	return u
 }
 
-// UpdateScopes sets the "scopes" field to the value that was provided on create.
-func (u *UserAuthSessionUpsert) UpdateScopes() *UserAuthSessionUpsert {
-	u.SetExcluded(userauthsession.FieldScopes)
-	return u
-}
-
-// ClearScopes clears the value of the "scopes" field.
-func (u *UserAuthSessionUpsert) ClearScopes() *UserAuthSessionUpsert {
-	u.SetNull(userauthsession.FieldScopes)
+// UpdateRole sets the "role" field to the value that was provided on create.
+func (u *UserAuthSessionUpsert) UpdateRole() *UserAuthSessionUpsert {
+	u.SetExcluded(userauthsession.FieldRole)
 	return u
 }
 
@@ -454,24 +468,17 @@ func (u *UserAuthSessionUpsertOne) UpdateExpiresAt() *UserAuthSessionUpsertOne {
 	})
 }
 
-// SetScopes sets the "scopes" field.
-func (u *UserAuthSessionUpsertOne) SetScopes(v []string) *UserAuthSessionUpsertOne {
+// SetRole sets the "role" field.
+func (u *UserAuthSessionUpsertOne) SetRole(v userauthsession.Role) *UserAuthSessionUpsertOne {
 	return u.Update(func(s *UserAuthSessionUpsert) {
-		s.SetScopes(v)
+		s.SetRole(v)
 	})
 }
 
-// UpdateScopes sets the "scopes" field to the value that was provided on create.
-func (u *UserAuthSessionUpsertOne) UpdateScopes() *UserAuthSessionUpsertOne {
+// UpdateRole sets the "role" field to the value that was provided on create.
+func (u *UserAuthSessionUpsertOne) UpdateRole() *UserAuthSessionUpsertOne {
 	return u.Update(func(s *UserAuthSessionUpsert) {
-		s.UpdateScopes()
-	})
-}
-
-// ClearScopes clears the value of the "scopes" field.
-func (u *UserAuthSessionUpsertOne) ClearScopes() *UserAuthSessionUpsertOne {
-	return u.Update(func(s *UserAuthSessionUpsert) {
-		s.ClearScopes()
+		s.UpdateRole()
 	})
 }
 
@@ -735,24 +742,17 @@ func (u *UserAuthSessionUpsertBulk) UpdateExpiresAt() *UserAuthSessionUpsertBulk
 	})
 }
 
-// SetScopes sets the "scopes" field.
-func (u *UserAuthSessionUpsertBulk) SetScopes(v []string) *UserAuthSessionUpsertBulk {
+// SetRole sets the "role" field.
+func (u *UserAuthSessionUpsertBulk) SetRole(v userauthsession.Role) *UserAuthSessionUpsertBulk {
 	return u.Update(func(s *UserAuthSessionUpsert) {
-		s.SetScopes(v)
+		s.SetRole(v)
 	})
 }
 
-// UpdateScopes sets the "scopes" field to the value that was provided on create.
-func (u *UserAuthSessionUpsertBulk) UpdateScopes() *UserAuthSessionUpsertBulk {
+// UpdateRole sets the "role" field to the value that was provided on create.
+func (u *UserAuthSessionUpsertBulk) UpdateRole() *UserAuthSessionUpsertBulk {
 	return u.Update(func(s *UserAuthSessionUpsert) {
-		s.UpdateScopes()
-	})
-}
-
-// ClearScopes clears the value of the "scopes" field.
-func (u *UserAuthSessionUpsertBulk) ClearScopes() *UserAuthSessionUpsertBulk {
-	return u.Update(func(s *UserAuthSessionUpsert) {
-		s.ClearScopes()
+		s.UpdateRole()
 	})
 }
 

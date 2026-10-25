@@ -8,6 +8,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/user"
 )
 
 type (
@@ -22,6 +23,7 @@ type (
 		TenantID            *int       `json:"tenant_id,omitempty"`
 		Scopes              []string   `json:"scopes,omitempty"`
 		UserID              *uuid.UUID `json:"user_id,omitempty"`
+		Role                user.Role  `json:"role,omitempty"`
 		AgentSessionID      *uuid.UUID `json:"agent_session_id,omitempty"`
 		ImpersonatingUserID *uuid.UUID `json:"impersonating_user_id,omitempty"`
 		ExpiresAt           *time.Time `json:"exp,omitempty"`
@@ -161,6 +163,7 @@ func NewUserContext(ctx context.Context, sess *ent.UserAuthSession) context.Cont
 	c.Auth = Auth{
 		TenantID:  &sess.TenantID,
 		UserID:    &sess.UserID,
+		Role:      user.Role(sess.Role),
 		ExpiresAt: &sess.ExpiresAt,
 	}
 	return SetContext(ctx, c)
@@ -187,7 +190,7 @@ func (c Context) validate() error {
 		if c.Auth.TenantID == nil {
 			return fmt.Errorf("tenant actor missing tenant id")
 		}
-		if c.Auth.UserID != nil || c.Auth.AgentSessionID != nil || c.Auth.ImpersonatingUserID != nil || c.Auth.ExpiresAt != nil || len(c.Auth.Scopes) > 0 {
+		if c.Auth.UserID != nil || c.Auth.AgentSessionID != nil || c.Auth.ImpersonatingUserID != nil || c.Auth.ExpiresAt != nil || c.Auth.Role != "" || len(c.Auth.Scopes) > 0 {
 			return fmt.Errorf("tenant actor cannot carry user or agent auth")
 		}
 	case KindUser:

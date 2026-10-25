@@ -177,14 +177,24 @@ func ExpiresAtLTE(v time.Time) predicate.UserAuthSession {
 	return predicate.UserAuthSession(sql.FieldLTE(FieldExpiresAt, v))
 }
 
-// ScopesIsNil applies the IsNil predicate on the "scopes" field.
-func ScopesIsNil() predicate.UserAuthSession {
-	return predicate.UserAuthSession(sql.FieldIsNull(FieldScopes))
+// RoleEQ applies the EQ predicate on the "role" field.
+func RoleEQ(v Role) predicate.UserAuthSession {
+	return predicate.UserAuthSession(sql.FieldEQ(FieldRole, v))
 }
 
-// ScopesNotNil applies the NotNil predicate on the "scopes" field.
-func ScopesNotNil() predicate.UserAuthSession {
-	return predicate.UserAuthSession(sql.FieldNotNull(FieldScopes))
+// RoleNEQ applies the NEQ predicate on the "role" field.
+func RoleNEQ(v Role) predicate.UserAuthSession {
+	return predicate.UserAuthSession(sql.FieldNEQ(FieldRole, v))
+}
+
+// RoleIn applies the In predicate on the "role" field.
+func RoleIn(vs ...Role) predicate.UserAuthSession {
+	return predicate.UserAuthSession(sql.FieldIn(FieldRole, vs...))
+}
+
+// RoleNotIn applies the NotIn predicate on the "role" field.
+func RoleNotIn(vs ...Role) predicate.UserAuthSession {
+	return predicate.UserAuthSession(sql.FieldNotIn(FieldRole, vs...))
 }
 
 // HasTenant applies the HasEdge predicate on the "tenant" edge.

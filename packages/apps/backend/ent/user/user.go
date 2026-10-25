@@ -3,6 +3,8 @@
 package user
 
 import (
+	"fmt"
+
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -30,12 +32,12 @@ const (
 	FieldNotificationPreferences = "notification_preferences"
 	// FieldAuthProviderID holds the string denoting the auth_provider_id field in the database.
 	FieldAuthProviderID = "auth_provider_id"
+	// FieldRole holds the string denoting the role field in the database.
+	FieldRole = "role"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
 	// EdgeKnowledgeEntity holds the string denoting the knowledge_entity edge name in mutations.
 	EdgeKnowledgeEntity = "knowledge_entity"
-	// EdgeOrganizationRole holds the string denoting the organization_role edge name in mutations.
-	EdgeOrganizationRole = "organization_role"
 	// EdgeTeams holds the string denoting the teams edge name in mutations.
 	EdgeTeams = "teams"
 	// EdgeWatchedOncallRosters holds the string denoting the watched_oncall_rosters edge name in mutations.
@@ -82,13 +84,6 @@ const (
 	KnowledgeEntityInverseTable = "knowledge_entities"
 	// KnowledgeEntityColumn is the table column denoting the knowledge_entity relation/edge.
 	KnowledgeEntityColumn = "knowledge_entity_id"
-	// OrganizationRoleTable is the table that holds the organization_role relation/edge.
-	OrganizationRoleTable = "organization_roles"
-	// OrganizationRoleInverseTable is the table name for the OrganizationRole entity.
-	// It exists in this package in order to avoid circular dependency with the "organizationrole" package.
-	OrganizationRoleInverseTable = "organization_roles"
-	// OrganizationRoleColumn is the table column denoting the organization_role relation/edge.
-	OrganizationRoleColumn = "user_id"
 	// TeamsTable is the table that holds the teams relation/edge. The primary key declared below.
 	TeamsTable = "team_memberships"
 	// TeamsInverseTable is the table name for the Team entity.
@@ -203,6 +198,7 @@ var Columns = []string{
 	FieldTimezone,
 	FieldNotificationPreferences,
 	FieldAuthProviderID,
+	FieldRole,
 }
 
 var (
@@ -237,6 +233,32 @@ var (
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
+
+// Role defines the type for the "role" enum field.
+type Role string
+
+// RoleMember is the default value of the Role enum.
+const DefaultRole = RoleMember
+
+// Role values.
+const (
+	RoleAdmin  Role = "admin"
+	RoleMember Role = "member"
+)
+
+func (r Role) String() string {
+	return string(r)
+}
+
+// RoleValidator is a validator for the "role" field enum values. It is called by the builders before save.
+func RoleValidator(r Role) error {
+	switch r {
+	case RoleAdmin, RoleMember:
+		return nil
+	default:
+		return fmt.Errorf("user: invalid enum value for role field: %q", r)
+	}
+}
 
 // OrderOption defines the ordering options for the User queries.
 type OrderOption func(*sql.Selector)
@@ -281,6 +303,11 @@ func ByAuthProviderID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldAuthProviderID, opts...).ToFunc()
 }
 
+// ByRole orders the results by the role field.
+func ByRole(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldRole, opts...).ToFunc()
+}
+
 // ByTenantField orders the results by tenant field.
 func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -292,13 +319,6 @@ func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
 func ByKnowledgeEntityField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newKnowledgeEntityStep(), sql.OrderByField(field, opts...))
-	}
-}
-
-// ByOrganizationRoleField orders the results by organization_role field.
-func ByOrganizationRoleField(field string, opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newOrganizationRoleStep(), sql.OrderByField(field, opts...))
 	}
 }
 
@@ -525,13 +545,6 @@ func newKnowledgeEntityStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.M2O, false, KnowledgeEntityTable, KnowledgeEntityColumn),
 	)
 }
-func newOrganizationRoleStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(OrganizationRoleInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2O, false, OrganizationRoleTable, OrganizationRoleColumn),
-	)
-}
 func newTeamsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -636,4 +649,10 @@ func newTeamMembershipsStep() *sqlgraph.Step {
 		sqlgraph.To(TeamMembershipsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, true, TeamMembershipsTable, TeamMembershipsColumn),
 	)
+}
+
+// RoleValues contains all permitted values. Treat this slice as read-only.
+var RoleValues = []string{
+	"admin",
+	"member",
 }

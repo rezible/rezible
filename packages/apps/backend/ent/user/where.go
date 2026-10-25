@@ -505,6 +505,26 @@ func AuthProviderIDContainsFold(v string) predicate.User {
 	return predicate.User(sql.FieldContainsFold(FieldAuthProviderID, v))
 }
 
+// RoleEQ applies the EQ predicate on the "role" field.
+func RoleEQ(v Role) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldRole, v))
+}
+
+// RoleNEQ applies the NEQ predicate on the "role" field.
+func RoleNEQ(v Role) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldRole, v))
+}
+
+// RoleIn applies the In predicate on the "role" field.
+func RoleIn(vs ...Role) predicate.User {
+	return predicate.User(sql.FieldIn(FieldRole, vs...))
+}
+
+// RoleNotIn applies the NotIn predicate on the "role" field.
+func RoleNotIn(vs ...Role) predicate.User {
+	return predicate.User(sql.FieldNotIn(FieldRole, vs...))
+}
+
 // HasTenant applies the HasEdge predicate on the "tenant" edge.
 func HasTenant() predicate.User {
 	return predicate.User(func(s *sql.Selector) {
@@ -555,35 +575,6 @@ func HasKnowledgeEntityWith(preds ...predicate.KnowledgeEntity) predicate.User {
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.KnowledgeEntity
 		step.Edge.Schema = schemaConfig.User
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasOrganizationRole applies the HasEdge predicate on the "organization_role" edge.
-func HasOrganizationRole() predicate.User {
-	return predicate.User(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, false, OrganizationRoleTable, OrganizationRoleColumn),
-		)
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.OrganizationRole
-		step.Edge.Schema = schemaConfig.OrganizationRole
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasOrganizationRoleWith applies the HasEdge predicate on the "organization_role" edge with a given conditions (other predicates).
-func HasOrganizationRoleWith(preds ...predicate.OrganizationRole) predicate.User {
-	return predicate.User(func(s *sql.Selector) {
-		step := newOrganizationRoleStep()
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.OrganizationRole
-		step.Edge.Schema = schemaConfig.OrganizationRole
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

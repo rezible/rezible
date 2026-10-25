@@ -86,7 +86,6 @@ type SchemaConfig struct {
 	OncallShiftMetrics                        string // OncallShiftMetrics table.
 	Organization                              string // Organization table.
 	OrganizationPreferences                   string // OrganizationPreferences table.
-	OrganizationRole                          string // OrganizationRole table.
 	Playbook                                  string // Playbook table.
 	PlaybookAlertDefinitions                  string // Playbook-alert_definitions->AlertDefinition table.
 	Retrospective                             string // Retrospective table.

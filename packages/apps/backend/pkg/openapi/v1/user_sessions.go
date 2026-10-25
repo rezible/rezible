@@ -9,7 +9,7 @@ import (
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/ent/organizationrole"
+	"github.com/rezible/rezible/ent/user"
 )
 
 type UserSessionsHandler interface {
@@ -37,15 +37,15 @@ func (o operations) RegisterUserSessions(api huma.API) {
 }
 
 func (o operations) RegisterUserSessionEnums(api huma.API) {
-	registerEnumAlias[organizationrole.Role, orgRoleSchema](api)
+	registerEnumAlias[user.Role, userRoleSchema](api)
 }
 
 type (
 	UserSession struct {
-		User             User                  `json:"user"`
-		Organization     Organization          `json:"organization"`
-		OrganizationRole organizationrole.Role `json:"organizationRole"`
-		ExpiresAt        time.Time             `json:"expiresAt"`
+		User             User         `json:"user"`
+		Organization     Organization `json:"organization"`
+		OrganizationRole user.Role    `json:"organizationRole"`
+		ExpiresAt        time.Time    `json:"expiresAt"`
 	}
 
 	UserNotification struct {
@@ -102,10 +102,10 @@ type (
 	}
 )
 
-type orgRoleSchema organizationrole.Role
+type userRoleSchema user.Role
 
-func (orgRoleSchema) Schema(huma.Registry) *huma.Schema {
-	return makeEnumStringSchema(organizationrole.RoleValues)
+func (userRoleSchema) Schema(huma.Registry) *huma.Schema {
+	return makeEnumStringSchema(user.RoleValues)
 }
 
 func UserSessionPreferencesFromEnt(user *ent.User) UserSessionPreferences {

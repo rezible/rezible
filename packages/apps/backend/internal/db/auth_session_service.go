@@ -9,8 +9,8 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/organization"
-	"github.com/rezible/rezible/ent/organizationrole"
 	"github.com/rezible/rezible/ent/user"
+	"github.com/rezible/rezible/ent/userauthsession"
 	"github.com/rezible/rezible/pkg/errs"
 	"github.com/rezible/rezible/pkg/execution"
 )
@@ -35,24 +35,15 @@ func (s *AuthSessionService) CreateFromUserAuthResponse(ctx context.Context, ps 
 		}
 		ctx = execution.NewTenantContext(ctx, org.TenantID)
 
-		usr, userErr := s.syncAuthProviderUser(ctx, &ps.User)
+		usr, userErr := s.syncAuthProviderUser(ctx, &ps.User, ps.Role, isNewOrg)
 		if userErr != nil {
 			return nil, fmt.Errorf("sync user: %w", userErr)
-		}
-
-		if isNewOrg {
-			createAdminRole := tx.OrganizationRole.Create().
-				SetUserID(usr.ID).
-				SetOrganizationID(org.ID).
-				SetRole(organizationrole.RoleAdmin)
-			if roleErr := createAdminRole.Exec(ctx); roleErr != nil {
-				return nil, fmt.Errorf("create admin role: %w", roleErr)
-			}
 		}
 
 		create := tx.UserAuthSession.Create().
 			SetUserID(usr.ID).
 			SetOrganizationID(org.ID).
+			SetRole(userauthsession.Role(usr.Role)).
 			SetExpiresAt(time.Now().Add(time.Hour))
 		created, createErr := create.Save(ctx)
 		if createErr != nil {
@@ -91,15 +82,29 @@ func (s *AuthSessionService) syncAuthProviderOrg(ctx context.Context, c *ent.Cli
 	return org, isCreate, nil
 }
 
-func (s *AuthSessionService) syncAuthProviderUser(ctx context.Context, pu *ent.User) (*ent.User, error) {
+// syncAuthProviderUser creates or updates the organization's user for the provider's user. A role the provider
+// states is the user's role. Without one, an existing user keeps theirs, the user who creates the organization is
+// its admin, and anyone else is a member.
+func (s *AuthSessionService) syncAuthProviderUser(ctx context.Context, pu *ent.User, role user.Role, isNewOrg bool) (*ent.User, error) {
 	existing, lookupErr := s.users.Get(ctx, user.AuthProviderID(pu.AuthProviderID))
 	if lookupErr != nil && !ent.IsNotFound(lookupErr) {
 		return nil, fmt.Errorf("lookup user: %w", lookupErr)
 	}
 
+	if role == "" {
+		switch {
+		case existing != nil:
+			role = existing.Role
+		case isNewOrg:
+			role = user.RoleAdmin
+		default:
+			role = user.RoleMember
+		}
+	}
+
 	var userId uuid.UUID
 	if existing != nil {
-		isEqual := pu.Name == existing.Name && pu.Email == existing.Email
+		isEqual := pu.Name == existing.Name && pu.Email == existing.Email && role == existing.Role
 		if isEqual {
 			return existing, nil
 		}
@@ -110,6 +115,7 @@ func (s *AuthSessionService) syncAuthProviderUser(ctx context.Context, pu *ent.U
 		m.SetAuthProviderID(pu.AuthProviderID)
 		m.SetName(pu.Name)
 		m.SetEmail(pu.Email)
+		m.SetRole(role)
 	}
 	return s.users.Set(ctx, userId, setFn)
 }

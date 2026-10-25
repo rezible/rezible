@@ -14,7 +14,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/organization"
 	"github.com/rezible/rezible/ent/organizationpreferences"
-	"github.com/rezible/rezible/ent/organizationrole"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
@@ -61,21 +60,6 @@ func (_c *OrganizationCreate) SetNillableID(v *uuid.UUID) *OrganizationCreate {
 // SetTenant sets the "tenant" edge to the Tenant entity.
 func (_c *OrganizationCreate) SetTenant(v *Tenant) *OrganizationCreate {
 	return _c.SetTenantID(v.ID)
-}
-
-// AddRoleIDs adds the "roles" edge to the OrganizationRole entity by IDs.
-func (_c *OrganizationCreate) AddRoleIDs(ids ...uuid.UUID) *OrganizationCreate {
-	_c.mutation.AddRoleIDs(ids...)
-	return _c
-}
-
-// AddRoles adds the "roles" edges to the OrganizationRole entity.
-func (_c *OrganizationCreate) AddRoles(v ...*OrganizationRole) *OrganizationCreate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _c.AddRoleIDs(ids...)
 }
 
 // SetPreferencesID sets the "preferences" edge to the OrganizationPreferences entity by ID.
@@ -219,23 +203,6 @@ func (_c *OrganizationCreate) createSpec() (*Organization, *sqlgraph.CreateSpec)
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.TenantID = nodes[0]
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := _c.mutation.RolesIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   organization.RolesTable,
-			Columns: []string{organization.RolesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(organizationrole.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _c.schemaConfig.OrganizationRole
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := _c.mutation.PreferencesIDs(); len(nodes) > 0 {

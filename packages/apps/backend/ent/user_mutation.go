@@ -27,13 +27,12 @@ type UserMutation struct {
 	timezone                            *string
 	notification_preferences            *map[string]bool
 	auth_provider_id                    *string
+	role                                *user.Role
 	clearedFields                       map[string]struct{}
 	tenant                              *int
 	clearedtenant                       bool
 	knowledge_entity                    *uuid.UUID
 	clearedknowledge_entity             bool
-	organization_role                   *uuid.UUID
-	clearedorganization_role            bool
 	teams                               map[uuid.UUID]struct{}
 	removedteams                        map[uuid.UUID]struct{}
 	clearedteams                        bool
@@ -541,6 +540,42 @@ func (m *UserMutation) ResetAuthProviderID() {
 	delete(m.clearedFields, user.FieldAuthProviderID)
 }
 
+// SetRole sets the "role" field.
+func (m *UserMutation) SetRole(u user.Role) {
+	m.role = &u
+}
+
+// Role returns the value of the "role" field in the mutation.
+func (m *UserMutation) Role() (r user.Role, exists bool) {
+	v := m.role
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRole returns the old "role" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldRole(ctx context.Context) (v user.Role, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRole is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRole requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRole: %w", err)
+	}
+	return oldValue.Role, nil
+}
+
+// ResetRole resets all changes to the "role" field.
+func (m *UserMutation) ResetRole() {
+	m.role = nil
+}
+
 // ClearTenant clears the "tenant" edge to the Tenant entity.
 func (m *UserMutation) ClearTenant() {
 	m.clearedtenant = true
@@ -593,45 +628,6 @@ func (m *UserMutation) KnowledgeEntityIDs() (ids []uuid.UUID) {
 func (m *UserMutation) ResetKnowledgeEntity() {
 	m.knowledge_entity = nil
 	m.clearedknowledge_entity = false
-}
-
-// SetOrganizationRoleID sets the "organization_role" edge to the OrganizationRole entity by id.
-func (m *UserMutation) SetOrganizationRoleID(id uuid.UUID) {
-	m.organization_role = &id
-}
-
-// ClearOrganizationRole clears the "organization_role" edge to the OrganizationRole entity.
-func (m *UserMutation) ClearOrganizationRole() {
-	m.clearedorganization_role = true
-}
-
-// OrganizationRoleCleared reports if the "organization_role" edge to the OrganizationRole entity was cleared.
-func (m *UserMutation) OrganizationRoleCleared() bool {
-	return m.clearedorganization_role
-}
-
-// OrganizationRoleID returns the "organization_role" edge ID in the mutation.
-func (m *UserMutation) OrganizationRoleID() (id uuid.UUID, exists bool) {
-	if m.organization_role != nil {
-		return *m.organization_role, true
-	}
-	return
-}
-
-// OrganizationRoleIDs returns the "organization_role" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// OrganizationRoleID instead. It exists only for internal usage by the builders.
-func (m *UserMutation) OrganizationRoleIDs() (ids []uuid.UUID) {
-	if id := m.organization_role; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetOrganizationRole resets all changes to the "organization_role" edge.
-func (m *UserMutation) ResetOrganizationRole() {
-	m.organization_role = nil
-	m.clearedorganization_role = false
 }
 
 // AddTeamIDs adds the "teams" edge to the Team entity by ids.
@@ -1478,7 +1474,7 @@ func (m *UserMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *UserMutation) Fields() []string {
-	fields := make([]string, 0, 8)
+	fields := make([]string, 0, 9)
 	if m.tenant != nil {
 		fields = append(fields, user.FieldTenantID)
 	}
@@ -1502,6 +1498,9 @@ func (m *UserMutation) Fields() []string {
 	}
 	if m.auth_provider_id != nil {
 		fields = append(fields, user.FieldAuthProviderID)
+	}
+	if m.role != nil {
+		fields = append(fields, user.FieldRole)
 	}
 	return fields
 }
@@ -1527,6 +1526,8 @@ func (m *UserMutation) Field(name string) (ent.Value, bool) {
 		return m.NotificationPreferences()
 	case user.FieldAuthProviderID:
 		return m.AuthProviderID()
+	case user.FieldRole:
+		return m.Role()
 	}
 	return nil, false
 }
@@ -1552,6 +1553,8 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldNotificationPreferences(ctx)
 	case user.FieldAuthProviderID:
 		return m.OldAuthProviderID(ctx)
+	case user.FieldRole:
+		return m.OldRole(ctx)
 	}
 	return nil, fmt.Errorf("unknown User field %s", name)
 }
@@ -1616,6 +1619,13 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetAuthProviderID(v)
+		return nil
+	case user.FieldRole:
+		v, ok := value.(user.Role)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRole(v)
 		return nil
 	}
 	return fmt.Errorf("unknown User field %s", name)
@@ -1726,21 +1736,21 @@ func (m *UserMutation) ResetField(name string) error {
 	case user.FieldAuthProviderID:
 		m.ResetAuthProviderID()
 		return nil
+	case user.FieldRole:
+		m.ResetRole()
+		return nil
 	}
 	return fmt.Errorf("unknown User field %s", name)
 }
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *UserMutation) AddedEdges() []string {
-	edges := make([]string, 0, 18)
+	edges := make([]string, 0, 17)
 	if m.tenant != nil {
 		edges = append(edges, user.EdgeTenant)
 	}
 	if m.knowledge_entity != nil {
 		edges = append(edges, user.EdgeKnowledgeEntity)
-	}
-	if m.organization_role != nil {
-		edges = append(edges, user.EdgeOrganizationRole)
 	}
 	if m.teams != nil {
 		edges = append(edges, user.EdgeTeams)
@@ -1800,10 +1810,6 @@ func (m *UserMutation) AddedIDs(name string) []ent.Value {
 		}
 	case user.EdgeKnowledgeEntity:
 		if id := m.knowledge_entity; id != nil {
-			return []ent.Value{*id}
-		}
-	case user.EdgeOrganizationRole:
-		if id := m.organization_role; id != nil {
 			return []ent.Value{*id}
 		}
 	case user.EdgeTeams:
@@ -1902,7 +1908,7 @@ func (m *UserMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *UserMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 18)
+	edges := make([]string, 0, 17)
 	if m.removedteams != nil {
 		edges = append(edges, user.EdgeTeams)
 	}
@@ -2051,15 +2057,12 @@ func (m *UserMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *UserMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 18)
+	edges := make([]string, 0, 17)
 	if m.clearedtenant {
 		edges = append(edges, user.EdgeTenant)
 	}
 	if m.clearedknowledge_entity {
 		edges = append(edges, user.EdgeKnowledgeEntity)
-	}
-	if m.clearedorganization_role {
-		edges = append(edges, user.EdgeOrganizationRole)
 	}
 	if m.clearedteams {
 		edges = append(edges, user.EdgeTeams)
@@ -2117,8 +2120,6 @@ func (m *UserMutation) EdgeCleared(name string) bool {
 		return m.clearedtenant
 	case user.EdgeKnowledgeEntity:
 		return m.clearedknowledge_entity
-	case user.EdgeOrganizationRole:
-		return m.clearedorganization_role
 	case user.EdgeTeams:
 		return m.clearedteams
 	case user.EdgeWatchedOncallRosters:
@@ -2163,9 +2164,6 @@ func (m *UserMutation) ClearEdge(name string) error {
 	case user.EdgeKnowledgeEntity:
 		m.ClearKnowledgeEntity()
 		return nil
-	case user.EdgeOrganizationRole:
-		m.ClearOrganizationRole()
-		return nil
 	}
 	return fmt.Errorf("unknown User unique edge %s", name)
 }
@@ -2179,9 +2177,6 @@ func (m *UserMutation) ResetEdge(name string) error {
 		return nil
 	case user.EdgeKnowledgeEntity:
 		m.ResetKnowledgeEntity()
-		return nil
-	case user.EdgeOrganizationRole:
-		m.ResetOrganizationRole()
 		return nil
 	case user.EdgeTeams:
 		m.ResetTeams()

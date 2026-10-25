@@ -23,8 +23,7 @@ type UserAuthSessionMutation struct {
 	typ                 string
 	id                  *uuid.UUID
 	expires_at          *time.Time
-	scopes              *[]string
-	appendscopes        []string
+	role                *userauthsession.Role
 	clearedFields       map[string]struct{}
 	tenant              *int
 	clearedtenant       bool
@@ -285,69 +284,40 @@ func (m *UserAuthSessionMutation) ResetExpiresAt() {
 	m.expires_at = nil
 }
 
-// SetScopes sets the "scopes" field.
-func (m *UserAuthSessionMutation) SetScopes(s []string) {
-	m.scopes = &s
-	m.appendscopes = nil
+// SetRole sets the "role" field.
+func (m *UserAuthSessionMutation) SetRole(u userauthsession.Role) {
+	m.role = &u
 }
 
-// Scopes returns the value of the "scopes" field in the mutation.
-func (m *UserAuthSessionMutation) Scopes() (r []string, exists bool) {
-	v := m.scopes
+// Role returns the value of the "role" field in the mutation.
+func (m *UserAuthSessionMutation) Role() (r userauthsession.Role, exists bool) {
+	v := m.role
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldScopes returns the old "scopes" field's value of the UserAuthSession entity.
+// OldRole returns the old "role" field's value of the UserAuthSession entity.
 // If the UserAuthSession object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserAuthSessionMutation) OldScopes(ctx context.Context) (v []string, err error) {
+func (m *UserAuthSessionMutation) OldRole(ctx context.Context) (v userauthsession.Role, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldScopes is only allowed on UpdateOne operations")
+		return v, errors.New("OldRole is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldScopes requires an ID field in the mutation")
+		return v, errors.New("OldRole requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldScopes: %w", err)
+		return v, fmt.Errorf("querying old value for OldRole: %w", err)
 	}
-	return oldValue.Scopes, nil
+	return oldValue.Role, nil
 }
 
-// AppendScopes adds s to the "scopes" field.
-func (m *UserAuthSessionMutation) AppendScopes(s []string) {
-	m.appendscopes = append(m.appendscopes, s...)
-}
-
-// AppendedScopes returns the list of values that were appended to the "scopes" field in this mutation.
-func (m *UserAuthSessionMutation) AppendedScopes() ([]string, bool) {
-	if len(m.appendscopes) == 0 {
-		return nil, false
-	}
-	return m.appendscopes, true
-}
-
-// ClearScopes clears the value of the "scopes" field.
-func (m *UserAuthSessionMutation) ClearScopes() {
-	m.scopes = nil
-	m.appendscopes = nil
-	m.clearedFields[userauthsession.FieldScopes] = struct{}{}
-}
-
-// ScopesCleared returns if the "scopes" field was cleared in this mutation.
-func (m *UserAuthSessionMutation) ScopesCleared() bool {
-	_, ok := m.clearedFields[userauthsession.FieldScopes]
-	return ok
-}
-
-// ResetScopes resets all changes to the "scopes" field.
-func (m *UserAuthSessionMutation) ResetScopes() {
-	m.scopes = nil
-	m.appendscopes = nil
-	delete(m.clearedFields, userauthsession.FieldScopes)
+// ResetRole resets all changes to the "role" field.
+func (m *UserAuthSessionMutation) ResetRole() {
+	m.role = nil
 }
 
 // ClearTenant clears the "tenant" edge to the Tenant entity.
@@ -478,8 +448,8 @@ func (m *UserAuthSessionMutation) Fields() []string {
 	if m.expires_at != nil {
 		fields = append(fields, userauthsession.FieldExpiresAt)
 	}
-	if m.scopes != nil {
-		fields = append(fields, userauthsession.FieldScopes)
+	if m.role != nil {
+		fields = append(fields, userauthsession.FieldRole)
 	}
 	return fields
 }
@@ -497,8 +467,8 @@ func (m *UserAuthSessionMutation) Field(name string) (ent.Value, bool) {
 		return m.OrganizationID()
 	case userauthsession.FieldExpiresAt:
 		return m.ExpiresAt()
-	case userauthsession.FieldScopes:
-		return m.Scopes()
+	case userauthsession.FieldRole:
+		return m.Role()
 	}
 	return nil, false
 }
@@ -516,8 +486,8 @@ func (m *UserAuthSessionMutation) OldField(ctx context.Context, name string) (en
 		return m.OldOrganizationID(ctx)
 	case userauthsession.FieldExpiresAt:
 		return m.OldExpiresAt(ctx)
-	case userauthsession.FieldScopes:
-		return m.OldScopes(ctx)
+	case userauthsession.FieldRole:
+		return m.OldRole(ctx)
 	}
 	return nil, fmt.Errorf("unknown UserAuthSession field %s", name)
 }
@@ -555,12 +525,12 @@ func (m *UserAuthSessionMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetExpiresAt(v)
 		return nil
-	case userauthsession.FieldScopes:
-		v, ok := value.([]string)
+	case userauthsession.FieldRole:
+		v, ok := value.(userauthsession.Role)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetScopes(v)
+		m.SetRole(v)
 		return nil
 	}
 	return fmt.Errorf("unknown UserAuthSession field %s", name)
@@ -594,11 +564,7 @@ func (m *UserAuthSessionMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *UserAuthSessionMutation) ClearedFields() []string {
-	var fields []string
-	if m.FieldCleared(userauthsession.FieldScopes) {
-		fields = append(fields, userauthsession.FieldScopes)
-	}
-	return fields
+	return nil
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -611,11 +577,6 @@ func (m *UserAuthSessionMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *UserAuthSessionMutation) ClearField(name string) error {
-	switch name {
-	case userauthsession.FieldScopes:
-		m.ClearScopes()
-		return nil
-	}
 	return fmt.Errorf("unknown UserAuthSession nullable field %s", name)
 }
 
@@ -635,8 +596,8 @@ func (m *UserAuthSessionMutation) ResetField(name string) error {
 	case userauthsession.FieldExpiresAt:
 		m.ResetExpiresAt()
 		return nil
-	case userauthsession.FieldScopes:
-		m.ResetScopes()
+	case userauthsession.FieldRole:
+		m.ResetRole()
 		return nil
 	}
 	return fmt.Errorf("unknown UserAuthSession field %s", name)

@@ -452,14 +452,6 @@ CREATE TABLE "organization_preferences" ("id" uuid NOT NULL, "initial_setup_at" 
 CREATE UNIQUE INDEX "organization_preferences_organization_id_key" ON "organization_preferences" ("organization_id");
 -- create index "organizationpreferences_tenant_id" to table: "organization_preferences"
 CREATE INDEX "organizationpreferences_tenant_id" ON "organization_preferences" ("tenant_id");
--- create "organization_roles" table
-CREATE TABLE "organization_roles" ("id" uuid NOT NULL, "role" character varying NOT NULL, "tenant_id" bigint NOT NULL, "organization_id" uuid NOT NULL, "user_id" uuid NOT NULL, PRIMARY KEY ("id"));
--- create index "organization_roles_user_id_key" to table: "organization_roles"
-CREATE UNIQUE INDEX "organization_roles_user_id_key" ON "organization_roles" ("user_id");
--- create index "organizationrole_tenant_id" to table: "organization_roles"
-CREATE INDEX "organizationrole_tenant_id" ON "organization_roles" ("tenant_id");
--- create index "organizationrole_tenant_id_organization_id_user_id" to table: "organization_roles"
-CREATE UNIQUE INDEX "organizationrole_tenant_id_organization_id_user_id" ON "organization_roles" ("tenant_id", "organization_id", "user_id");
 -- create "playbooks" table
 CREATE TABLE "playbooks" ("id" uuid NOT NULL, "title" character varying NOT NULL, "content" bytea NOT NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
 -- create index "playbook_tenant_id" to table: "playbooks"
@@ -661,7 +653,7 @@ CREATE TABLE "tickets" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "
 -- create index "ticket_tenant_id" to table: "tickets"
 CREATE INDEX "ticket_tenant_id" ON "tickets" ("tenant_id");
 -- create "users" table
-CREATE TABLE "users" ("id" uuid NOT NULL, "email" character varying NOT NULL, "name" character varying NOT NULL DEFAULT '', "chat_id" character varying NULL, "timezone" character varying NULL, "notification_preferences" jsonb NULL, "auth_provider_id" character varying NULL, "tenant_id" bigint NOT NULL, "knowledge_entity_id" uuid NULL, PRIMARY KEY ("id"));
+CREATE TABLE "users" ("id" uuid NOT NULL, "email" character varying NOT NULL, "name" character varying NOT NULL DEFAULT '', "chat_id" character varying NULL, "timezone" character varying NULL, "notification_preferences" jsonb NULL, "auth_provider_id" character varying NULL, "role" character varying NOT NULL DEFAULT 'member', "tenant_id" bigint NOT NULL, "knowledge_entity_id" uuid NULL, PRIMARY KEY ("id"));
 -- create index "user_tenant_id" to table: "users"
 CREATE INDEX "user_tenant_id" ON "users" ("tenant_id");
 -- create index "user_tenant_id_knowledge_entity_id" to table: "users"
@@ -671,7 +663,7 @@ CREATE UNIQUE INDEX "user_tenant_id_auth_provider_id" ON "users" ("tenant_id", "
 -- create index "user_tenant_id_email" to table: "users"
 CREATE UNIQUE INDEX "user_tenant_id_email" ON "users" ("tenant_id", "email");
 -- create "user_auth_sessions" table
-CREATE TABLE "user_auth_sessions" ("id" uuid NOT NULL, "expires_at" timestamptz NOT NULL, "scopes" jsonb NULL, "tenant_id" bigint NOT NULL, "user_id" uuid NOT NULL, "organization_id" uuid NOT NULL, PRIMARY KEY ("id"));
+CREATE TABLE "user_auth_sessions" ("id" uuid NOT NULL, "expires_at" timestamptz NOT NULL, "role" character varying NOT NULL DEFAULT 'member', "tenant_id" bigint NOT NULL, "user_id" uuid NOT NULL, "organization_id" uuid NOT NULL, PRIMARY KEY ("id"));
 -- create index "userauthsession_tenant_id" to table: "user_auth_sessions"
 CREATE INDEX "userauthsession_tenant_id" ON "user_auth_sessions" ("tenant_id");
 -- create "video_conferences" table
@@ -848,8 +840,6 @@ ALTER TABLE "oncall_shift_metrics" ADD CONSTRAINT "oncall_shift_metrics_oncall_s
 ALTER TABLE "organizations" ADD CONSTRAINT "organizations_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION;
 -- modify "organization_preferences" table
 ALTER TABLE "organization_preferences" ADD CONSTRAINT "organization_preferences_organizations_preferences" FOREIGN KEY ("organization_id") REFERENCES "organizations" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "organization_preferences_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION;
--- modify "organization_roles" table
-ALTER TABLE "organization_roles" ADD CONSTRAINT "organization_roles_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "organization_roles_organizations_organization" FOREIGN KEY ("organization_id") REFERENCES "organizations" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "organization_roles_users_organization_role" FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE NO ACTION;
 -- modify "playbooks" table
 ALTER TABLE "playbooks" ADD CONSTRAINT "playbooks_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION;
 -- modify "retrospectives" table
