@@ -812,15 +812,22 @@ type (
 	}
 
 	UserAuthProviderSession struct {
-		User      ent.User
-		Org       ent.Organization
-		Role      user.Role
-		ExpiresAt time.Time
+		User ent.User
+		Org  ent.Organization
+		Role user.Role
+		// RefreshToken refreshes the session with the provider. Empty when the provider issued none.
+		RefreshToken string
+		ExpiresAt    time.Time
 	}
+
+	// AuthSessionRefreshExchange sends a refresh token to the provider and returns the refreshed provider session.
+	// It returns errs.ErrAuthSessionInvalid when the provider refuses the token.
+	AuthSessionRefreshExchange func(ctx context.Context, refreshToken string) (*UserAuthProviderSession, error)
 
 	AuthSessionService interface {
 		CreateFromUserAuthResponse(context.Context, *UserAuthProviderSession) (*ent.UserAuthSession, error)
 		CreateForToken(context.Context, string) (*ent.UserAuthSession, error)
+		Refresh(context.Context, uuid.UUID, AuthSessionRefreshExchange) (*ent.UserAuthSession, error)
 		LookupSession(context.Context, uuid.UUID) (*ent.UserAuthSession, error)
 		DeleteSession(context.Context, uuid.UUID) error
 	}

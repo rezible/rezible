@@ -19,21 +19,22 @@ import (
 // UserAuthSessionMutation represents an operation that mutates the UserAuthSession nodes in the graph.
 type UserAuthSessionMutation struct {
 	config
-	op                  Op
-	typ                 string
-	id                  *uuid.UUID
-	expires_at          *time.Time
-	role                *userauthsession.Role
-	clearedFields       map[string]struct{}
-	tenant              *int
-	clearedtenant       bool
-	user                *uuid.UUID
-	cleareduser         bool
-	organization        *uuid.UUID
-	clearedorganization bool
-	done                bool
-	oldValue            func(context.Context) (*UserAuthSession, error)
-	predicates          []predicate.UserAuthSession
+	op                     Op
+	typ                    string
+	id                     *uuid.UUID
+	expires_at             *time.Time
+	role                   *userauthsession.Role
+	provider_refresh_token *[]byte
+	clearedFields          map[string]struct{}
+	tenant                 *int
+	clearedtenant          bool
+	user                   *uuid.UUID
+	cleareduser            bool
+	organization           *uuid.UUID
+	clearedorganization    bool
+	done                   bool
+	oldValue               func(context.Context) (*UserAuthSession, error)
+	predicates             []predicate.UserAuthSession
 }
 
 var _ ent.Mutation = (*UserAuthSessionMutation)(nil)
@@ -320,6 +321,55 @@ func (m *UserAuthSessionMutation) ResetRole() {
 	m.role = nil
 }
 
+// SetProviderRefreshToken sets the "provider_refresh_token" field.
+func (m *UserAuthSessionMutation) SetProviderRefreshToken(b []byte) {
+	m.provider_refresh_token = &b
+}
+
+// ProviderRefreshToken returns the value of the "provider_refresh_token" field in the mutation.
+func (m *UserAuthSessionMutation) ProviderRefreshToken() (r []byte, exists bool) {
+	v := m.provider_refresh_token
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldProviderRefreshToken returns the old "provider_refresh_token" field's value of the UserAuthSession entity.
+// If the UserAuthSession object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserAuthSessionMutation) OldProviderRefreshToken(ctx context.Context) (v []byte, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldProviderRefreshToken is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldProviderRefreshToken requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldProviderRefreshToken: %w", err)
+	}
+	return oldValue.ProviderRefreshToken, nil
+}
+
+// ClearProviderRefreshToken clears the value of the "provider_refresh_token" field.
+func (m *UserAuthSessionMutation) ClearProviderRefreshToken() {
+	m.provider_refresh_token = nil
+	m.clearedFields[userauthsession.FieldProviderRefreshToken] = struct{}{}
+}
+
+// ProviderRefreshTokenCleared returns if the "provider_refresh_token" field was cleared in this mutation.
+func (m *UserAuthSessionMutation) ProviderRefreshTokenCleared() bool {
+	_, ok := m.clearedFields[userauthsession.FieldProviderRefreshToken]
+	return ok
+}
+
+// ResetProviderRefreshToken resets all changes to the "provider_refresh_token" field.
+func (m *UserAuthSessionMutation) ResetProviderRefreshToken() {
+	m.provider_refresh_token = nil
+	delete(m.clearedFields, userauthsession.FieldProviderRefreshToken)
+}
+
 // ClearTenant clears the "tenant" edge to the Tenant entity.
 func (m *UserAuthSessionMutation) ClearTenant() {
 	m.clearedtenant = true
@@ -435,7 +485,7 @@ func (m *UserAuthSessionMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *UserAuthSessionMutation) Fields() []string {
-	fields := make([]string, 0, 5)
+	fields := make([]string, 0, 6)
 	if m.tenant != nil {
 		fields = append(fields, userauthsession.FieldTenantID)
 	}
@@ -450,6 +500,9 @@ func (m *UserAuthSessionMutation) Fields() []string {
 	}
 	if m.role != nil {
 		fields = append(fields, userauthsession.FieldRole)
+	}
+	if m.provider_refresh_token != nil {
+		fields = append(fields, userauthsession.FieldProviderRefreshToken)
 	}
 	return fields
 }
@@ -469,6 +522,8 @@ func (m *UserAuthSessionMutation) Field(name string) (ent.Value, bool) {
 		return m.ExpiresAt()
 	case userauthsession.FieldRole:
 		return m.Role()
+	case userauthsession.FieldProviderRefreshToken:
+		return m.ProviderRefreshToken()
 	}
 	return nil, false
 }
@@ -488,6 +543,8 @@ func (m *UserAuthSessionMutation) OldField(ctx context.Context, name string) (en
 		return m.OldExpiresAt(ctx)
 	case userauthsession.FieldRole:
 		return m.OldRole(ctx)
+	case userauthsession.FieldProviderRefreshToken:
+		return m.OldProviderRefreshToken(ctx)
 	}
 	return nil, fmt.Errorf("unknown UserAuthSession field %s", name)
 }
@@ -532,6 +589,13 @@ func (m *UserAuthSessionMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetRole(v)
 		return nil
+	case userauthsession.FieldProviderRefreshToken:
+		v, ok := value.([]byte)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetProviderRefreshToken(v)
+		return nil
 	}
 	return fmt.Errorf("unknown UserAuthSession field %s", name)
 }
@@ -564,7 +628,11 @@ func (m *UserAuthSessionMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *UserAuthSessionMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(userauthsession.FieldProviderRefreshToken) {
+		fields = append(fields, userauthsession.FieldProviderRefreshToken)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -577,6 +645,11 @@ func (m *UserAuthSessionMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *UserAuthSessionMutation) ClearField(name string) error {
+	switch name {
+	case userauthsession.FieldProviderRefreshToken:
+		m.ClearProviderRefreshToken()
+		return nil
+	}
 	return fmt.Errorf("unknown UserAuthSession nullable field %s", name)
 }
 
@@ -598,6 +671,9 @@ func (m *UserAuthSessionMutation) ResetField(name string) error {
 		return nil
 	case userauthsession.FieldRole:
 		m.ResetRole()
+		return nil
+	case userauthsession.FieldProviderRefreshToken:
+		m.ResetProviderRefreshToken()
 		return nil
 	}
 	return fmt.Errorf("unknown UserAuthSession field %s", name)

@@ -65,6 +65,12 @@ func (_c *UserAuthSessionCreate) SetNillableRole(v *userauthsession.Role) *UserA
 	return _c
 }
 
+// SetProviderRefreshToken sets the "provider_refresh_token" field.
+func (_c *UserAuthSessionCreate) SetProviderRefreshToken(v []byte) *UserAuthSessionCreate {
+	_c.mutation.SetProviderRefreshToken(v)
+	return _c
+}
+
 // SetID sets the "id" field.
 func (_c *UserAuthSessionCreate) SetID(v uuid.UUID) *UserAuthSessionCreate {
 	_c.mutation.SetID(v)
@@ -183,7 +189,10 @@ func (_c *UserAuthSessionCreate) sqlSave(ctx context.Context) (*UserAuthSession,
 	if err := _c.check(); err != nil {
 		return nil, err
 	}
-	_node, _spec := _c.createSpec()
+	_node, _spec, err := _c.createSpec()
+	if err != nil {
+		return nil, err
+	}
 	if err := sqlgraph.CreateNode(ctx, _c.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
@@ -202,7 +211,7 @@ func (_c *UserAuthSessionCreate) sqlSave(ctx context.Context) (*UserAuthSession,
 	return _node, nil
 }
 
-func (_c *UserAuthSessionCreate) createSpec() (*UserAuthSession, *sqlgraph.CreateSpec) {
+func (_c *UserAuthSessionCreate) createSpec() (*UserAuthSession, *sqlgraph.CreateSpec, error) {
 	var (
 		_node = &UserAuthSession{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(userauthsession.Table, sqlgraph.NewFieldSpec(userauthsession.FieldID, field.TypeUUID))
@@ -220,6 +229,14 @@ func (_c *UserAuthSessionCreate) createSpec() (*UserAuthSession, *sqlgraph.Creat
 	if value, ok := _c.mutation.Role(); ok {
 		_spec.SetField(userauthsession.FieldRole, field.TypeEnum, value)
 		_node.Role = value
+	}
+	if value, ok := _c.mutation.ProviderRefreshToken(); ok {
+		vv, err := userauthsession.ValueScanner.ProviderRefreshToken.Value(value)
+		if err != nil {
+			return nil, nil, err
+		}
+		_spec.SetField(userauthsession.FieldProviderRefreshToken, field.TypeBytes, vv)
+		_node.ProviderRefreshToken = value
 	}
 	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -275,7 +292,7 @@ func (_c *UserAuthSessionCreate) createSpec() (*UserAuthSession, *sqlgraph.Creat
 		_node.OrganizationID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	return _node, _spec
+	return _node, _spec, nil
 }
 
 // OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
@@ -372,6 +389,24 @@ func (u *UserAuthSessionUpsert) SetRole(v userauthsession.Role) *UserAuthSession
 // UpdateRole sets the "role" field to the value that was provided on create.
 func (u *UserAuthSessionUpsert) UpdateRole() *UserAuthSessionUpsert {
 	u.SetExcluded(userauthsession.FieldRole)
+	return u
+}
+
+// SetProviderRefreshToken sets the "provider_refresh_token" field.
+func (u *UserAuthSessionUpsert) SetProviderRefreshToken(v []byte) *UserAuthSessionUpsert {
+	u.Set(userauthsession.FieldProviderRefreshToken, v)
+	return u
+}
+
+// UpdateProviderRefreshToken sets the "provider_refresh_token" field to the value that was provided on create.
+func (u *UserAuthSessionUpsert) UpdateProviderRefreshToken() *UserAuthSessionUpsert {
+	u.SetExcluded(userauthsession.FieldProviderRefreshToken)
+	return u
+}
+
+// ClearProviderRefreshToken clears the value of the "provider_refresh_token" field.
+func (u *UserAuthSessionUpsert) ClearProviderRefreshToken() *UserAuthSessionUpsert {
+	u.SetNull(userauthsession.FieldProviderRefreshToken)
 	return u
 }
 
@@ -482,6 +517,27 @@ func (u *UserAuthSessionUpsertOne) UpdateRole() *UserAuthSessionUpsertOne {
 	})
 }
 
+// SetProviderRefreshToken sets the "provider_refresh_token" field.
+func (u *UserAuthSessionUpsertOne) SetProviderRefreshToken(v []byte) *UserAuthSessionUpsertOne {
+	return u.Update(func(s *UserAuthSessionUpsert) {
+		s.SetProviderRefreshToken(v)
+	})
+}
+
+// UpdateProviderRefreshToken sets the "provider_refresh_token" field to the value that was provided on create.
+func (u *UserAuthSessionUpsertOne) UpdateProviderRefreshToken() *UserAuthSessionUpsertOne {
+	return u.Update(func(s *UserAuthSessionUpsert) {
+		s.UpdateProviderRefreshToken()
+	})
+}
+
+// ClearProviderRefreshToken clears the value of the "provider_refresh_token" field.
+func (u *UserAuthSessionUpsertOne) ClearProviderRefreshToken() *UserAuthSessionUpsertOne {
+	return u.Update(func(s *UserAuthSessionUpsert) {
+		s.ClearProviderRefreshToken()
+	})
+}
+
 // Exec executes the query.
 func (u *UserAuthSessionUpsertOne) Exec(ctx context.Context) error {
 	if len(u.create.conflict) == 0 {
@@ -550,7 +606,10 @@ func (_c *UserAuthSessionCreateBulk) Save(ctx context.Context) ([]*UserAuthSessi
 				}
 				builder.mutation = mutation
 				var err error
-				nodes[i], specs[i] = builder.createSpec()
+				nodes[i], specs[i], err = builder.createSpec()
+				if err != nil {
+					return nil, err
+				}
 				if i < len(mutators)-1 {
 					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
@@ -753,6 +812,27 @@ func (u *UserAuthSessionUpsertBulk) SetRole(v userauthsession.Role) *UserAuthSes
 func (u *UserAuthSessionUpsertBulk) UpdateRole() *UserAuthSessionUpsertBulk {
 	return u.Update(func(s *UserAuthSessionUpsert) {
 		s.UpdateRole()
+	})
+}
+
+// SetProviderRefreshToken sets the "provider_refresh_token" field.
+func (u *UserAuthSessionUpsertBulk) SetProviderRefreshToken(v []byte) *UserAuthSessionUpsertBulk {
+	return u.Update(func(s *UserAuthSessionUpsert) {
+		s.SetProviderRefreshToken(v)
+	})
+}
+
+// UpdateProviderRefreshToken sets the "provider_refresh_token" field to the value that was provided on create.
+func (u *UserAuthSessionUpsertBulk) UpdateProviderRefreshToken() *UserAuthSessionUpsertBulk {
+	return u.Update(func(s *UserAuthSessionUpsert) {
+		s.UpdateProviderRefreshToken()
+	})
+}
+
+// ClearProviderRefreshToken clears the value of the "provider_refresh_token" field.
+func (u *UserAuthSessionUpsertBulk) ClearProviderRefreshToken() *UserAuthSessionUpsertBulk {
+	return u.Update(func(s *UserAuthSessionUpsert) {
+		s.ClearProviderRefreshToken()
 	})
 }
 

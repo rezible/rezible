@@ -8,6 +8,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 )
 
@@ -26,6 +27,8 @@ const (
 	FieldExpiresAt = "expires_at"
 	// FieldRole holds the string denoting the role field in the database.
 	FieldRole = "role"
+	// FieldProviderRefreshToken holds the string denoting the provider_refresh_token field in the database.
+	FieldProviderRefreshToken = "provider_refresh_token"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
 	// EdgeUser holds the string denoting the user edge name in mutations.
@@ -65,6 +68,7 @@ var Columns = []string{
 	FieldOrganizationID,
 	FieldExpiresAt,
 	FieldRole,
+	FieldProviderRefreshToken,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -87,6 +91,10 @@ var (
 	Policy ent.Policy
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
+	// ValueScanner of all UserAuthSession fields.
+	ValueScanner struct {
+		ProviderRefreshToken field.TypeValueScanner[[]byte]
+	}
 )
 
 // Role defines the type for the "role" enum field.

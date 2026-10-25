@@ -77,6 +77,12 @@ func ExpiresAt(v time.Time) predicate.UserAuthSession {
 	return predicate.UserAuthSession(sql.FieldEQ(FieldExpiresAt, v))
 }
 
+// ProviderRefreshToken applies equality check predicate on the "provider_refresh_token" field. It's identical to ProviderRefreshTokenEQ.
+func ProviderRefreshToken(v []byte) predicate.UserAuthSession {
+	vc, err := ValueScanner.ProviderRefreshToken.Value(v)
+	return predicate.UserAuthSessionOrErr(sql.FieldEQ(FieldProviderRefreshToken, vc), err)
+}
+
 // TenantIDEQ applies the EQ predicate on the "tenant_id" field.
 func TenantIDEQ(v int) predicate.UserAuthSession {
 	return predicate.UserAuthSession(sql.FieldEQ(FieldTenantID, v))
@@ -195,6 +201,80 @@ func RoleIn(vs ...Role) predicate.UserAuthSession {
 // RoleNotIn applies the NotIn predicate on the "role" field.
 func RoleNotIn(vs ...Role) predicate.UserAuthSession {
 	return predicate.UserAuthSession(sql.FieldNotIn(FieldRole, vs...))
+}
+
+// ProviderRefreshTokenEQ applies the EQ predicate on the "provider_refresh_token" field.
+func ProviderRefreshTokenEQ(v []byte) predicate.UserAuthSession {
+	vc, err := ValueScanner.ProviderRefreshToken.Value(v)
+	return predicate.UserAuthSessionOrErr(sql.FieldEQ(FieldProviderRefreshToken, vc), err)
+}
+
+// ProviderRefreshTokenNEQ applies the NEQ predicate on the "provider_refresh_token" field.
+func ProviderRefreshTokenNEQ(v []byte) predicate.UserAuthSession {
+	vc, err := ValueScanner.ProviderRefreshToken.Value(v)
+	return predicate.UserAuthSessionOrErr(sql.FieldNEQ(FieldProviderRefreshToken, vc), err)
+}
+
+// ProviderRefreshTokenIn applies the In predicate on the "provider_refresh_token" field.
+func ProviderRefreshTokenIn(vs ...[]byte) predicate.UserAuthSession {
+	var (
+		err error
+		v   = make([]any, len(vs))
+	)
+	for i := range v {
+		if v[i], err = ValueScanner.ProviderRefreshToken.Value(vs[i]); err != nil {
+			break
+		}
+	}
+	return predicate.UserAuthSessionOrErr(sql.FieldIn(FieldProviderRefreshToken, v...), err)
+}
+
+// ProviderRefreshTokenNotIn applies the NotIn predicate on the "provider_refresh_token" field.
+func ProviderRefreshTokenNotIn(vs ...[]byte) predicate.UserAuthSession {
+	var (
+		err error
+		v   = make([]any, len(vs))
+	)
+	for i := range v {
+		if v[i], err = ValueScanner.ProviderRefreshToken.Value(vs[i]); err != nil {
+			break
+		}
+	}
+	return predicate.UserAuthSessionOrErr(sql.FieldNotIn(FieldProviderRefreshToken, v...), err)
+}
+
+// ProviderRefreshTokenGT applies the GT predicate on the "provider_refresh_token" field.
+func ProviderRefreshTokenGT(v []byte) predicate.UserAuthSession {
+	vc, err := ValueScanner.ProviderRefreshToken.Value(v)
+	return predicate.UserAuthSessionOrErr(sql.FieldGT(FieldProviderRefreshToken, vc), err)
+}
+
+// ProviderRefreshTokenGTE applies the GTE predicate on the "provider_refresh_token" field.
+func ProviderRefreshTokenGTE(v []byte) predicate.UserAuthSession {
+	vc, err := ValueScanner.ProviderRefreshToken.Value(v)
+	return predicate.UserAuthSessionOrErr(sql.FieldGTE(FieldProviderRefreshToken, vc), err)
+}
+
+// ProviderRefreshTokenLT applies the LT predicate on the "provider_refresh_token" field.
+func ProviderRefreshTokenLT(v []byte) predicate.UserAuthSession {
+	vc, err := ValueScanner.ProviderRefreshToken.Value(v)
+	return predicate.UserAuthSessionOrErr(sql.FieldLT(FieldProviderRefreshToken, vc), err)
+}
+
+// ProviderRefreshTokenLTE applies the LTE predicate on the "provider_refresh_token" field.
+func ProviderRefreshTokenLTE(v []byte) predicate.UserAuthSession {
+	vc, err := ValueScanner.ProviderRefreshToken.Value(v)
+	return predicate.UserAuthSessionOrErr(sql.FieldLTE(FieldProviderRefreshToken, vc), err)
+}
+
+// ProviderRefreshTokenIsNil applies the IsNil predicate on the "provider_refresh_token" field.
+func ProviderRefreshTokenIsNil() predicate.UserAuthSession {
+	return predicate.UserAuthSession(sql.FieldIsNull(FieldProviderRefreshToken))
+}
+
+// ProviderRefreshTokenNotNil applies the NotNil predicate on the "provider_refresh_token" field.
+func ProviderRefreshTokenNotNil() predicate.UserAuthSession {
+	return predicate.UserAuthSession(sql.FieldNotNull(FieldProviderRefreshToken))
 }
 
 // HasTenant applies the HasEdge predicate on the "tenant" edge.

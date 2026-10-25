@@ -2653,6 +2653,9 @@ func init() {
 	}
 	userauthsessionFields := schema.UserAuthSession{}.Fields()
 	_ = userauthsessionFields
+	// userauthsessionDescProviderRefreshToken is the schema descriptor for provider_refresh_token field.
+	userauthsessionDescProviderRefreshToken := userauthsessionFields[5].Descriptor()
+	userauthsession.ValueScanner.ProviderRefreshToken = userauthsessionDescProviderRefreshToken.ValueScanner.(field.TypeValueScanner[[]byte])
 	// userauthsessionDescID is the schema descriptor for id field.
 	userauthsessionDescID := userauthsessionFields[0].Descriptor()
 	// userauthsession.DefaultID holds the default value on creation for the id field.

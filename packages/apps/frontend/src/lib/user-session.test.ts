@@ -28,7 +28,8 @@ type SessionQuery = {
 	refetch: () => Promise<void>;
 };
 
-function setup() {
+function setup(refreshStatus = 204) {
+	const fetchRefresh = mock(async (..._args: Parameters<typeof fetch>) => new Response(null, { status: refreshStatus }));
 	const query: SessionQuery = runtime.proxy({
 		data: undefined,
 		error: null,
@@ -58,6 +59,7 @@ function setup() {
 		"goto",
 		"resolve",
 		"setInterval",
+		"fetch",
 		`${stateCode}\nreturn UserSessionState;`
 	)(
 		runtime,
@@ -74,7 +76,8 @@ function setup() {
 		(path: string) => path,
 		(callback: () => void) => {
 			checkExpiry = callback;
-		}
+		},
+		(...args: Parameters<typeof fetch>) => fetchRefresh(...args)
 	) as new () => UserSessionState;
 
 	let state!: UserSessionState;
@@ -101,7 +104,7 @@ function setup() {
 		runtime.flush();
 	};
 
-	return { state, query, load, fail, checkExpiry: () => checkExpiry(), destroy };
+	return { state, query, load, fail, fetchRefresh, checkExpiry: () => checkExpiry(), destroy };
 }
 
 const inAnHour = () => new Date(Date.now() + 60 * 60 * 1000);
@@ -143,6 +146,37 @@ describe("UserSessionState", () => {
 		load(new Date(Date.now() - 1000));
 		checkExpiry();
 		expect(query.refetch).toHaveBeenCalledTimes(1);
+		destroy();
+	});
+
+	test("a session in its last five minutes is refreshed and refetched", async () => {
+		const { query, load, fetchRefresh, checkExpiry, destroy } = setup();
+
+		load(new Date(Date.now() + 10 * 60 * 1000));
+		checkExpiry();
+		expect(fetchRefresh).not.toHaveBeenCalled();
+
+		load(new Date(Date.now() + 4 * 60 * 1000));
+		checkExpiry();
+		checkExpiry();
+		expect(fetchRefresh).toHaveBeenCalledTimes(1);
+		expect(fetchRefresh.mock.calls[0]).toEqual(["/api/auth/refresh", { method: "POST", credentials: "include" }]);
+		await Promise.resolve();
+		await Promise.resolve();
+		expect(query.refetch).toHaveBeenCalledTimes(1);
+		destroy();
+	});
+
+	test("a failed refresh is retried on the next check without refetching", async () => {
+		const { query, load, fetchRefresh, checkExpiry, destroy } = setup(503);
+
+		load(new Date(Date.now() + 4 * 60 * 1000));
+		checkExpiry();
+		await Promise.resolve();
+		await Promise.resolve();
+		expect(query.refetch).not.toHaveBeenCalled();
+		checkExpiry();
+		expect(fetchRefresh).toHaveBeenCalledTimes(2);
 		destroy();
 	});
 });

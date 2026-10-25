@@ -2081,11 +2081,12 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "UserAuthSession",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			userauthsession.FieldTenantID:       {Type: field.TypeInt, Column: userauthsession.FieldTenantID},
-			userauthsession.FieldUserID:         {Type: field.TypeUUID, Column: userauthsession.FieldUserID},
-			userauthsession.FieldOrganizationID: {Type: field.TypeUUID, Column: userauthsession.FieldOrganizationID},
-			userauthsession.FieldExpiresAt:      {Type: field.TypeTime, Column: userauthsession.FieldExpiresAt},
-			userauthsession.FieldRole:           {Type: field.TypeEnum, Column: userauthsession.FieldRole},
+			userauthsession.FieldTenantID:             {Type: field.TypeInt, Column: userauthsession.FieldTenantID},
+			userauthsession.FieldUserID:               {Type: field.TypeUUID, Column: userauthsession.FieldUserID},
+			userauthsession.FieldOrganizationID:       {Type: field.TypeUUID, Column: userauthsession.FieldOrganizationID},
+			userauthsession.FieldExpiresAt:            {Type: field.TypeTime, Column: userauthsession.FieldExpiresAt},
+			userauthsession.FieldRole:                 {Type: field.TypeEnum, Column: userauthsession.FieldRole},
+			userauthsession.FieldProviderRefreshToken: {Type: field.TypeBytes, Column: userauthsession.FieldProviderRefreshToken},
 		},
 	}
 	graph.Nodes[97] = &sqlgraph.Node{
@@ -19846,6 +19847,11 @@ func (f *UserAuthSessionFilter) WhereExpiresAt(p entql.TimeP) {
 // WhereRole applies the entql string predicate on the role field.
 func (f *UserAuthSessionFilter) WhereRole(p entql.StringP) {
 	f.Where(p.Field(userauthsession.FieldRole))
+}
+
+// WhereProviderRefreshToken applies the entql []byte predicate on the provider_refresh_token field.
+func (f *UserAuthSessionFilter) WhereProviderRefreshToken(p entql.BytesP) {
+	f.Where(p.Field(userauthsession.FieldProviderRefreshToken))
 }
 
 // WhereHasTenant applies a predicate to check if query has an edge tenant.

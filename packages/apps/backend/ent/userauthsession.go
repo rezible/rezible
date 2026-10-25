@@ -31,6 +31,8 @@ type UserAuthSession struct {
 	ExpiresAt time.Time `json:"expires_at,omitempty"`
 	// Role holds the value of the "role" field.
 	Role userauthsession.Role `json:"role,omitempty"`
+	// ProviderRefreshToken holds the value of the "provider_refresh_token" field.
+	ProviderRefreshToken []byte `json:"-"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the UserAuthSessionQuery when eager-loading is set.
 	Edges        UserAuthSessionEdges `json:"edges"`
@@ -96,6 +98,8 @@ func (*UserAuthSession) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullTime)
 		case userauthsession.FieldID, userauthsession.FieldUserID, userauthsession.FieldOrganizationID:
 			values[i] = new(uuid.UUID)
+		case userauthsession.FieldProviderRefreshToken:
+			values[i] = userauthsession.ValueScanner.ProviderRefreshToken.ScanValue()
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -146,6 +150,12 @@ func (_m *UserAuthSession) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field role", values[i])
 			} else if value.Valid {
 				_m.Role = userauthsession.Role(value.String)
+			}
+		case userauthsession.FieldProviderRefreshToken:
+			if value, err := userauthsession.ValueScanner.ProviderRefreshToken.FromValue(values[i]); err != nil {
+				return err
+			} else {
+				_m.ProviderRefreshToken = value
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -212,6 +222,8 @@ func (_m *UserAuthSession) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("role=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Role))
+	builder.WriteString(", ")
+	builder.WriteString("provider_refresh_token=<sensitive>")
 	builder.WriteByte(')')
 	return builder.String()
 }

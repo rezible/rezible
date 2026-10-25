@@ -88,6 +88,18 @@ func (_u *UserAuthSessionUpdate) SetNillableRole(v *userauthsession.Role) *UserA
 	return _u
 }
 
+// SetProviderRefreshToken sets the "provider_refresh_token" field.
+func (_u *UserAuthSessionUpdate) SetProviderRefreshToken(v []byte) *UserAuthSessionUpdate {
+	_u.mutation.SetProviderRefreshToken(v)
+	return _u
+}
+
+// ClearProviderRefreshToken clears the value of the "provider_refresh_token" field.
+func (_u *UserAuthSessionUpdate) ClearProviderRefreshToken() *UserAuthSessionUpdate {
+	_u.mutation.ClearProviderRefreshToken()
+	return _u
+}
+
 // SetUser sets the "user" edge to the User entity.
 func (_u *UserAuthSessionUpdate) SetUser(v *User) *UserAuthSessionUpdate {
 	return _u.SetUserID(v.ID)
@@ -178,6 +190,16 @@ func (_u *UserAuthSessionUpdate) sqlSave(ctx context.Context) (_node int, err er
 	}
 	if value, ok := _u.mutation.Role(); ok {
 		_spec.SetField(userauthsession.FieldRole, field.TypeEnum, value)
+	}
+	if value, ok := _u.mutation.ProviderRefreshToken(); ok {
+		vv, err := userauthsession.ValueScanner.ProviderRefreshToken.Value(value)
+		if err != nil {
+			return 0, err
+		}
+		_spec.SetField(userauthsession.FieldProviderRefreshToken, field.TypeBytes, vv)
+	}
+	if _u.mutation.ProviderRefreshTokenCleared() {
+		_spec.ClearField(userauthsession.FieldProviderRefreshToken, field.TypeBytes)
 	}
 	if _u.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -319,6 +341,18 @@ func (_u *UserAuthSessionUpdateOne) SetNillableRole(v *userauthsession.Role) *Us
 	return _u
 }
 
+// SetProviderRefreshToken sets the "provider_refresh_token" field.
+func (_u *UserAuthSessionUpdateOne) SetProviderRefreshToken(v []byte) *UserAuthSessionUpdateOne {
+	_u.mutation.SetProviderRefreshToken(v)
+	return _u
+}
+
+// ClearProviderRefreshToken clears the value of the "provider_refresh_token" field.
+func (_u *UserAuthSessionUpdateOne) ClearProviderRefreshToken() *UserAuthSessionUpdateOne {
+	_u.mutation.ClearProviderRefreshToken()
+	return _u
+}
+
 // SetUser sets the "user" edge to the User entity.
 func (_u *UserAuthSessionUpdateOne) SetUser(v *User) *UserAuthSessionUpdateOne {
 	return _u.SetUserID(v.ID)
@@ -439,6 +473,16 @@ func (_u *UserAuthSessionUpdateOne) sqlSave(ctx context.Context) (_node *UserAut
 	}
 	if value, ok := _u.mutation.Role(); ok {
 		_spec.SetField(userauthsession.FieldRole, field.TypeEnum, value)
+	}
+	if value, ok := _u.mutation.ProviderRefreshToken(); ok {
+		vv, err := userauthsession.ValueScanner.ProviderRefreshToken.Value(value)
+		if err != nil {
+			return nil, err
+		}
+		_spec.SetField(userauthsession.FieldProviderRefreshToken, field.TypeBytes, vv)
+	}
+	if _u.mutation.ProviderRefreshTokenCleared() {
+		_spec.ClearField(userauthsession.FieldProviderRefreshToken, field.TypeBytes)
 	}
 	if _u.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{

@@ -319,5 +319,16 @@ type User func(*sql.Selector)
 // UserAuthSession is the predicate function for userauthsession builders.
 type UserAuthSession func(*sql.Selector)
 
+// UserAuthSessionOrErr calls the predicate only if the error is not nit.
+func UserAuthSessionOrErr(p UserAuthSession, err error) UserAuthSession {
+	return func(s *sql.Selector) {
+		if err != nil {
+			s.AddError(err)
+			return
+		}
+		p(s)
+	}
+}
+
 // VideoConference is the predicate function for videoconference builders.
 type VideoConference func(*sql.Selector)

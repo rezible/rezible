@@ -5,6 +5,8 @@ import (
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+
+	"github.com/rezible/rezible/ent/schema/schematypes"
 )
 
 type UserAuthSession struct {
@@ -28,6 +30,11 @@ func (UserAuthSession) Fields() []ent.Field {
 		field.Enum("role").
 			Values("admin", "member").
 			Default("member"),
+		// ProviderRefreshToken refreshes the session with the identity provider.
+		field.Bytes("provider_refresh_token").
+			Optional().
+			ValueScanner(schematypes.EncryptedBytes[[]byte]{}).
+			Sensitive(),
 	}
 }
 

@@ -165,17 +165,32 @@ export class UserSessionState {
 
 	ready = $derived(this.loaded && !this.signingOut && !this.redirectTo);
 
+	private refreshing = false;
+	// Refetching after a refresh loads the new expiry, or ends the session when the refresh was refused (401).
+	// Any other failure is retried by the next check.
+	private async refreshSession() {
+		this.refreshing = true;
+		try {
+			const response = await fetch("/api/auth/refresh", { method: "POST", credentials: "include" });
+			if (response.status === 204 || response.status === 401) {
+				await this.refetch();
+			}
+		} catch {
+		} finally {
+			this.refreshing = false;
+		}
+	}
+
 	private startSessionExpiryCheck() {
 		const CheckIntervalMs = 10_000;
+		const RefreshWindowMs = 5 * 60_000;
 		const checkExpiry = () => {
-			// if (!this.session || this.refreshSessionMut.isPending) return;
 			if (!this.sessionExpiresAt) return;
 			const timeLeft = this.sessionExpiresAt.valueOf() - Date.now();
 			if (timeLeft <= 0) {
 				this.refetch();
-			} else if (timeLeft <= CheckIntervalMs * 100) {
-				console.log("auth session expiring soon", timeLeft);
-				// this.refreshSessionMut.mutate({});
+			} else if (timeLeft <= RefreshWindowMs && !this.refreshing) {
+				this.refreshSession();
 			}
 		};
 		onMount(() => {

@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -199,6 +200,7 @@ func (h *oidcHandler) doCallbackExchange(w http.ResponseWriter, r *http.Request)
 	if sessErr != nil {
 		return nil, sessErr
 	}
+	sess.RefreshToken = token.RefreshToken
 	return &callbackExchangeResult{Session: sess, ReturnTo: as.ReturnTo}, nil
 }
 
@@ -229,7 +231,9 @@ func (h *oidcHandler) readAndClearAuthFlowCookie(w http.ResponseWriter, r *http.
 	return &as, nil
 }
 
-func (h *oidcHandler) refreshToken(ctx context.Context, refreshToken string) (*oauth2.Token, error) {
+// refreshSession sends the refresh grant and builds the session from the new access token, checked as at sign-in.
+// The identity is the access token's subject; a refresh response need not carry an ID token.
+func (h *oidcHandler) refreshSession(ctx context.Context, refreshToken string) (*rez.UserAuthProviderSession, error) {
 	if cfgErr := h.ensureProvider(ctx); cfgErr != nil {
 		return nil, cfgErr
 	}
@@ -237,7 +241,31 @@ func (h *oidcHandler) refreshToken(ctx context.Context, refreshToken string) (*o
 		RefreshToken: refreshToken,
 		Expiry:       time.Now().Add(-time.Second), // set expired to force a refresh request
 	})
-	return expiredTokenSource.Token()
+	token, refreshErr := expiredTokenSource.Token()
+	if refreshErr != nil {
+		if retrieveErr, isRetrieveErr := errors.AsType[*oauth2.RetrieveError](refreshErr); isRetrieveErr && retrieveErr.ErrorCode == "invalid_grant" {
+			return nil, fmt.Errorf("%w: %w", errs.ErrAuthSessionInvalid, refreshErr)
+		}
+		return nil, fmt.Errorf("refresh grant: %w", refreshErr)
+	}
+
+	at, atErr := h.accessTokenVerifier.Verify(ctx, token.AccessToken)
+	if atErr != nil {
+		return nil, fmt.Errorf("verify token: %w", atErr)
+	}
+	claims := VerifiedProviderAuthClaims{
+		ExpiresAt:      at.Expiry,
+		IdentityClaims: ProviderIdentityTokenClaims{Sub: at.Subject},
+	}
+	if atClaimsErr := at.Claims(&claims.AccessClaims); atClaimsErr != nil {
+		return nil, fmt.Errorf("parse claims: %w", atClaimsErr)
+	}
+	sess, sessErr := claims.makeSession(h.multiTenant)
+	if sessErr != nil {
+		return nil, sessErr
+	}
+	sess.RefreshToken = token.RefreshToken
+	return sess, nil
 }
 
 func (h *oidcHandler) doLogout(ctx context.Context) error {
