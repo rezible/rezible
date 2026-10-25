@@ -29,7 +29,7 @@
 
 	<Card.Action>
 		<div class="flex justify-end px-1">
-			<Button href={resolve("/meetings/sessions/[id]", session)}>View</Button>
+			<Button href={resolve("/(hidden)/meetings/sessions/[id]", session)}>View</Button>
 		</div>
 	</Card.Action>
 </Card.Root>

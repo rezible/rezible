@@ -26,7 +26,7 @@
 {/snippet}
 
 <TabbedViewContainer
-	route="/oncall/shifts/[id]/[[view=oncallShiftView]]"
+	route="/(hidden)/oncall/shifts/[id]/[[view=oncallShiftView]]"
 	tabs={[
 		{ label: "Overview", component: ShiftOverview, params: { id } },
 		{ label: "Handover", component: ShiftHandover, params: { id, view: "handover" } },

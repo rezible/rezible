@@ -38,13 +38,10 @@
 			<div class="flex flex-col gap-2 border p-2 h-fit">
 				<span class="uppercase font-semibold text-foreground/90">Roster</span>
 
-				<a
-					href="/rosters/{roster.id}"
-					class="flex items-center gap-2 bg-card rounded-lg hover:bg-primary-800/40 p-1 px-3"
-				>
+				<div class="flex items-center gap-2 bg-card rounded-lg p-1 px-3">
 					<Avatar kind="roster" size={24} id={roster.id} />
 					<span class="text-lg">{roster.attributes?.name}</span>
-				</a>
+				</div>
 			</div>
 		{/if}
 	</div>

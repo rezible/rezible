@@ -16,7 +16,6 @@ const defaultDateRange = () => {
 export class AlertEventsViewController {
 	view = useAlertViewController();
 
-	rosterId = $state<string>();
 	eventKind = $state<EventKind>();
 	dateRange = $state(defaultDateRange());
 

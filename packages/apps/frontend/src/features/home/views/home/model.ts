@@ -99,9 +99,6 @@ function incidentHref(slugOrId: string, view?: "report") {
 export function inboxItemHref(item: InboxItem): string | undefined {
 	const attributes = item.attributes;
 
-	if (attributes.targetKind === "task" && attributes.targetId) {
-		return resolve("/tasks/[id]", { id: attributes.targetId });
-	}
 	if (attributes.targetKind === "normalized-event" && attributes.targetId) {
 		return resolve("/events/[id]", { id: attributes.targetId });
 	}

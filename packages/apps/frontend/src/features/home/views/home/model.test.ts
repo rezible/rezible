@@ -41,8 +41,7 @@ const activity = (attributes: Partial<ActivityRecord["attributes"]>): ActivityRe
 });
 
 test("inboxItemHref maps each target kind", () => {
-	expect(inboxItemHref(inboxItem({ targetKind: "task", targetId: "t1" }))).toBe("/tasks/t1");
-	expect(inboxItemHref(inboxItem({ targetKind: "task" }))).toBeUndefined();
+	expect(inboxItemHref(inboxItem({ targetKind: "task", targetId: "t1" }))).toBeUndefined();
 	expect(inboxItemHref(inboxItem({ targetKind: "normalized-event", targetId: "e1" }))).toBe("/events/e1");
 	expect(inboxItemHref(inboxItem({ targetKind: "discussion-thread", incidentId: "i1" }))).toBe(
 		"/incidents/i1/report"
@@ -52,7 +51,10 @@ test("inboxItemHref maps each target kind", () => {
 });
 
 test("inbox rows only offer an action with a destination", () => {
-	expect(inboxRow(inboxItem({ targetKind: "task", targetId: "t1" }), now).actionLabel).toBe("Open task");
+	expect(
+		inboxRow(inboxItem({ kind: "question", targetKind: "normalized-event", targetId: "e1" }), now)
+			.actionLabel
+	).toBe("Answer");
 	expect(inboxRow(inboxItem({ targetKind: "maintenance-request" }), now).actionLabel).toBeUndefined();
 });
 

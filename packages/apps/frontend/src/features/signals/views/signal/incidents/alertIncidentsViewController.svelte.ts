@@ -14,7 +14,6 @@ const defaultDateRange = () => {
 export class AlertIncidentsViewController {
 	view = useAlertViewController();
 
-	rosterId = $state<string>();
 	dateRange = $state(defaultDateRange());
 
 	query = createQuery(() => listAlertIncidentLinksOptions({ path: { id: this.view.alertId } }));

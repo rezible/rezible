@@ -32,7 +32,7 @@
 {/snippet}
 
 <TabbedViewContainer
-	route="/oncall/rosters/[slug]/[[view=oncallRosterView]]"
+	route="/(hidden)/oncall/rosters/[slug]/[[view=oncallRosterView]]"
 	{infoBar}
 	tabs={[
 		{ label: "Overview", component: RosterOverview, params: { slug } },

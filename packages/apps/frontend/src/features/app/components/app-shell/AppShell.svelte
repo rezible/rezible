@@ -3,7 +3,6 @@
 
 	import { initAppShell } from "$lib/app-shell.svelte";
 	import { initUserSessionState } from "$lib/user-session.svelte";
-	import { initUserOncallInformationState } from "$lib/userOncall.svelte";
 	import { cn } from "$lib/utils";
 
 	import * as Sidebar from "$components/ui/sidebar";
@@ -20,9 +19,6 @@
 	const sess = initUserSessionState();
 	// Declaring an incident is offered from several pages, so its dialog is shared.
 	initIncidentCreateDialogController();
-
-	// TODO: remove this
-	initUserOncallInformationState();
 
 	const pageDescriptor = $derived(shell.pageDescriptor);
 	const featureRailActive = $derived(shell.featureRail);

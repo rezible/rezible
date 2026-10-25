@@ -18,7 +18,7 @@
 </script>
 
 <TabbedViewContainer
-	route="/teams/[slug]/[[view=teamView]]"
+	route="/(hidden)/teams/[slug]/[[view=teamView]]"
 	tabs={[
 		{ label: "Overview", component: TeamOverview, params: { slug } },
 		{ label: "Backlog", component: TeamBacklogView, params: { slug, view: "backlog" } },
