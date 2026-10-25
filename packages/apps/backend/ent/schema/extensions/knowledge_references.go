@@ -1,8 +1,4 @@
-// Package knowledgerefs is the Ent code generation extension that lists every column referring to a knowledge
-// entity or relationship, so an entity merge can re-point them. Generation fails on a foreign key to a knowledge
-// subject that the list does not cover, on a reference shape the merge cannot re-point, and on an
-// annotations.EntityMergeDeletesDuplicates the merge would not use.
-package knowledgerefs
+package extensions
 
 import (
 	"cmp"
@@ -18,36 +14,38 @@ import (
 	"github.com/rezible/rezible/ent/schema/annotations"
 )
 
-// Extension generates ent/knowledge_references.go. Use one per generation run: its hook collects the references
-// the template then writes.
-type Extension struct {
+type knowledgeReferences struct {
 	entc.DefaultExtension
 	refs *references
 }
 
-// NewExtension returns the extension for one generation run.
-func NewExtension() *Extension {
-	return &Extension{}
+// KnowledgeReferences generates ent/knowledge_references.go, which lists every column referring to a knowledge
+// entity or relationship, so an entity merge can re-point them. Generation fails on a foreign key to a knowledge
+// subject that the list does not cover, on a reference shape the merge cannot re-point, and on an
+// annotations.EntityMergeDeletesDuplicates the merge would not use. Use one per generation run: its hook
+// collects the references the template then writes.
+func KnowledgeReferences() entc.Extension {
+	return &knowledgeReferences{}
 }
 
 // Hooks implements entc.Extension.
-func (e *Extension) Hooks() []gen.Hook {
+func (e *knowledgeReferences) Hooks() []gen.Hook {
 	return []gen.Hook{e.collectHook}
 }
 
-func (e *Extension) getReferences() *references {
-	return e.refs
-}
-
 // Templates implements entc.Extension.
-func (e *Extension) Templates() []*gen.Template {
-	refsFuncs := template.FuncMap{"knowledgeReferences": e.getReferences}
-	return []*gen.Template{
-		gen.MustParse(gen.NewTemplate("knowledge_references").Funcs(refsFuncs).Parse(referencesTemplate)),
-	}
+func (e *knowledgeReferences) Templates() []*gen.Template {
+	refsTemplate := gen.MustParse(gen.NewTemplate("knowledge_references").
+		Funcs(template.FuncMap{
+			"knowledgeReferences": func() *references {
+				return e.refs
+			},
+		}).
+		Parse(referencesTemplate))
+	return []*gen.Template{refsTemplate}
 }
 
-func (e *Extension) collectHook(next gen.Generator) gen.Generator {
+func (e *knowledgeReferences) collectHook(next gen.Generator) gen.Generator {
 	return gen.GenerateFunc(func(g *gen.Graph) error {
 		refs, collectErr := collect(g, coreColumns)
 		if collectErr != nil {
@@ -66,9 +64,14 @@ var subjectTypes = map[string]string{
 }
 
 // column is a column by its storage names.
-type column struct{ table, column string }
+type column struct {
+	table  string
+	column string
+}
 
-func (c column) String() string { return c.table + "." + c.column }
+func (c column) String() string {
+	return c.table + "." + c.column
+}
 
 // coreColumns are the knowledge graph's own references to its subjects, which an entity merge moves in steps of
 // its own rather than through generated descriptors.
@@ -332,7 +335,7 @@ const referencesTemplate = `
 	)
 
 	// KnowledgeReference is a column, outside the knowledge graph's own, that holds the ID of a knowledge entity or
-	// relationship under a foreign key. Generated from the reference edges by ent/schema/knowledgerefs.
+	// relationship under a foreign key. Generated from the reference edges by ent/schema/extensions.
 	type KnowledgeReference struct {
 		// Table and Column are storage names.
 		Table  string

@@ -1,4 +1,4 @@
-package knowledgerefs
+package extensions
 
 import (
 	"testing"

@@ -12,7 +12,7 @@ import (
 )
 
 // KnowledgeReference is a column, outside the knowledge graph's own, that holds the ID of a knowledge entity or
-// relationship under a foreign key. Generated from the reference edges by ent/schema/knowledgerefs.
+// relationship under a foreign key. Generated from the reference edges by ent/schema/extensions.
 type KnowledgeReference struct {
 	// Table and Column are storage names.
 	Table  string
