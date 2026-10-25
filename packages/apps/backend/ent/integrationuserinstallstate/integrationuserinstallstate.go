@@ -6,6 +6,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 )
 
@@ -81,6 +82,10 @@ var (
 	DefaultUserID func() uuid.UUID
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
+	// ValueScanner of all IntegrationUserInstallState fields.
+	ValueScanner struct {
+		InstallationTargetConfigs field.TypeValueScanner[[]byte]
+	}
 )
 
 // OrderOption defines the ordering options for the IntegrationUserInstallState queries.

@@ -11,9 +11,15 @@ import (
 )
 
 type (
-	JobArgs                   = river.JobArgs
-	Job[A JobArgs]            = river.Job[A]
-	PeriodicJob               = river.PeriodicJob
+	JobArgs        = river.JobArgs
+	Job[A JobArgs] = river.Job[A]
+
+	PeriodicJob     = river.PeriodicJob
+	PeriodicJobOpts = river.PeriodicJobOpts
+
+	InsertOpts       = river.InsertOpts
+	InsertManyParams = river.InsertManyParams
+
 	Worker[A JobArgs]         = river.Worker[A]
 	WorkerDefaults[A JobArgs] = river.WorkerDefaults[A]
 
@@ -72,11 +78,15 @@ func DefineWorkerFunc[A river.JobArgs](work func(context.Context, A) error) Work
 	}))
 }
 
-var ErrRetryable = errors.New("retryable job failure")
+func MakePeriodicIntervalJob[A JobArgs](interval time.Duration, opts *PeriodicJobOpts) *PeriodicJob {
+	constructor := func() (JobArgs, *InsertOpts) {
+		var args A
+		return args, nil
+	}
+	return river.NewPeriodicJob(river.PeriodicInterval(interval), constructor, opts)
+}
 
-// DefaultWorkerTimeout is a sane default for workers that do not derive their
-// timeout from configuration.
-const DefaultWorkerTimeout = 15 * time.Minute
+var ErrRetryable = errors.New("retryable job failure")
 
 func MarkRetryableError(err error) error {
 	if err == nil {

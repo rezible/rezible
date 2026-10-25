@@ -31412,7 +31412,6 @@ type IntegrationMutation struct {
 	display_name              *string
 	provider_installation_ref *string
 	installation_config       *jsontext.Value
-	appendinstallation_config jsontext.Value
 	user_settings             *jsontext.Value
 	appenduser_settings       jsontext.Value
 	webhook_token_hash        *[]byte
@@ -31783,7 +31782,6 @@ func (m *IntegrationMutation) ResetProviderInstallationRef() {
 // SetInstallationConfig sets the "installation_config" field.
 func (m *IntegrationMutation) SetInstallationConfig(j jsontext.Value) {
 	m.installation_config = &j
-	m.appendinstallation_config = nil
 }
 
 // InstallationConfig returns the value of the "installation_config" field in the mutation.
@@ -31812,23 +31810,9 @@ func (m *IntegrationMutation) OldInstallationConfig(ctx context.Context) (v json
 	return oldValue.InstallationConfig, nil
 }
 
-// AppendInstallationConfig adds j to the "installation_config" field.
-func (m *IntegrationMutation) AppendInstallationConfig(j jsontext.Value) {
-	m.appendinstallation_config = append(m.appendinstallation_config, j...)
-}
-
-// AppendedInstallationConfig returns the list of values that were appended to the "installation_config" field in this mutation.
-func (m *IntegrationMutation) AppendedInstallationConfig() (jsontext.Value, bool) {
-	if len(m.appendinstallation_config) == 0 {
-		return nil, false
-	}
-	return m.appendinstallation_config, true
-}
-
 // ResetInstallationConfig resets all changes to the "installation_config" field.
 func (m *IntegrationMutation) ResetInstallationConfig() {
 	m.installation_config = nil
-	m.appendinstallation_config = nil
 }
 
 // SetUserSettings sets the "user_settings" field.
@@ -34272,7 +34256,7 @@ type IntegrationUserInstallStateMutation struct {
 	integration_name            *string
 	expires_at                  *time.Time
 	oauth_state                 *string
-	installation_target_configs *map[string]jsontext.Value
+	installation_target_configs *[]byte
 	clearedFields               map[string]struct{}
 	tenant                      *int
 	clearedtenant               bool
@@ -34581,12 +34565,12 @@ func (m *IntegrationUserInstallStateMutation) ResetOauthState() {
 }
 
 // SetInstallationTargetConfigs sets the "installation_target_configs" field.
-func (m *IntegrationUserInstallStateMutation) SetInstallationTargetConfigs(value map[string]jsontext.Value) {
-	m.installation_target_configs = &value
+func (m *IntegrationUserInstallStateMutation) SetInstallationTargetConfigs(b []byte) {
+	m.installation_target_configs = &b
 }
 
 // InstallationTargetConfigs returns the value of the "installation_target_configs" field in the mutation.
-func (m *IntegrationUserInstallStateMutation) InstallationTargetConfigs() (r map[string]jsontext.Value, exists bool) {
+func (m *IntegrationUserInstallStateMutation) InstallationTargetConfigs() (r []byte, exists bool) {
 	v := m.installation_target_configs
 	if v == nil {
 		return
@@ -34597,7 +34581,7 @@ func (m *IntegrationUserInstallStateMutation) InstallationTargetConfigs() (r map
 // OldInstallationTargetConfigs returns the old "installation_target_configs" field's value of the IntegrationUserInstallState entity.
 // If the IntegrationUserInstallState object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *IntegrationUserInstallStateMutation) OldInstallationTargetConfigs(ctx context.Context) (v map[string]jsontext.Value, err error) {
+func (m *IntegrationUserInstallStateMutation) OldInstallationTargetConfigs(ctx context.Context) (v []byte, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldInstallationTargetConfigs is only allowed on UpdateOne operations")
 	}
@@ -34822,7 +34806,7 @@ func (m *IntegrationUserInstallStateMutation) SetField(name string, value ent.Va
 		m.SetOauthState(v)
 		return nil
 	case integrationuserinstallstate.FieldInstallationTargetConfigs:
-		v, ok := value.(map[string]jsontext.Value)
+		v, ok := value.([]byte)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}

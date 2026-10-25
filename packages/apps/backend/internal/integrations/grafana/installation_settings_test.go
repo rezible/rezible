@@ -10,7 +10,7 @@ import (
 )
 
 func TestValidateUserSettings(t *testing.T) {
-	integration, makeErr := MakeIntegration(nil)
+	integration, makeErr := MakeIntegration(nil, nil)
 	require.NoError(t, makeErr)
 
 	for _, tc := range []struct {
@@ -66,7 +66,7 @@ func TestValidateUserSettings(t *testing.T) {
 }
 
 func TestInstallationConfig(t *testing.T) {
-	integration, makeErr := MakeIntegration(nil)
+	integration, makeErr := MakeIntegration(nil, nil)
 	require.NoError(t, makeErr)
 
 	t.Run("the URL is normalised and identifies the installation", func(t *testing.T) {

@@ -36,7 +36,7 @@ type Integration struct {
 	// ProviderInstallationRef holds the value of the "provider_installation_ref" field.
 	ProviderInstallationRef string `json:"provider_installation_ref,omitempty"`
 	// InstallationConfig holds the value of the "installation_config" field.
-	InstallationConfig jsontext.Value `json:"installation_config,omitempty"`
+	InstallationConfig jsontext.Value `json:"-"`
 	// UserSettings holds the value of the "user_settings" field.
 	UserSettings jsontext.Value `json:"user_settings,omitempty"`
 	// WebhookTokenHash holds the value of the "webhook_token_hash" field.
@@ -72,7 +72,7 @@ func (*Integration) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case integration.FieldInstallationConfig, integration.FieldUserSettings, integration.FieldWebhookTokenHash:
+		case integration.FieldUserSettings, integration.FieldWebhookTokenHash:
 			values[i] = new([]byte)
 		case integration.FieldTenantID:
 			values[i] = new(sql.NullInt64)
@@ -82,6 +82,8 @@ func (*Integration) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullTime)
 		case integration.FieldID:
 			values[i] = new(uuid.UUID)
+		case integration.FieldInstallationConfig:
+			values[i] = integration.ValueScanner.InstallationConfig.ScanValue()
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -146,12 +148,10 @@ func (_m *Integration) assignValues(columns []string, values []any) error {
 				_m.ProviderInstallationRef = value.String
 			}
 		case integration.FieldInstallationConfig:
-			if value, ok := values[i].(*[]byte); !ok {
-				return fmt.Errorf("unexpected type %T for field installation_config", values[i])
-			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &_m.InstallationConfig); err != nil {
-					return fmt.Errorf("unmarshal field installation_config: %w", err)
-				}
+			if value, err := integration.ValueScanner.InstallationConfig.FromValue(values[i]); err != nil {
+				return err
+			} else {
+				_m.InstallationConfig = value
 			}
 		case integration.FieldUserSettings:
 			if value, ok := values[i].(*[]byte); !ok {
@@ -229,8 +229,7 @@ func (_m *Integration) String() string {
 	builder.WriteString("provider_installation_ref=")
 	builder.WriteString(_m.ProviderInstallationRef)
 	builder.WriteString(", ")
-	builder.WriteString("installation_config=")
-	builder.WriteString(fmt.Sprintf("%v", _m.InstallationConfig))
+	builder.WriteString("installation_config=<sensitive>")
 	builder.WriteString(", ")
 	builder.WriteString("user_settings=")
 	builder.WriteString(fmt.Sprintf("%v", _m.UserSettings))

@@ -466,9 +466,13 @@ func (s *IntegrationsService) updateUserInstallationStateWithOptions(ctx context
 		}
 		targets[opt.DisplayName] = cfg
 	}
+	encodedTargets, encodeErr := json.Marshal(targets)
+	if encodeErr != nil {
+		return fmt.Errorf("encode installation targets: %w", encodeErr)
+	}
 
 	update := s.db.Client(ctx).IntegrationUserInstallState.UpdateOneID(id).
-		SetInstallationTargetConfigs(targets).
+		SetInstallationTargetConfigs(encodedTargets).
 		SetExpiresAt(time.Now().Add(time.Minute * 10))
 	if updateErr := update.Exec(ctx); updateErr != nil {
 		return fmt.Errorf("update installation state: %w", updateErr)
@@ -583,8 +587,14 @@ func (s *IntegrationsService) CompleteOAuth2Flow(ctx context.Context, integratio
 }
 
 func (s *IntegrationsService) decodeStateInstallationTargets(state *ent.IntegrationUserInstallState) ([]rez.IntegrationInstallationTarget, error) {
-	targets := make([]rez.IntegrationInstallationTarget, 0, len(state.InstallationTargetConfigs))
-	for displayName, rawCfg := range state.InstallationTargetConfigs {
+	var targetConfigs map[string]json.RawMessage
+	if len(state.InstallationTargetConfigs) > 0 {
+		if decodeErr := json.Unmarshal(state.InstallationTargetConfigs, &targetConfigs); decodeErr != nil {
+			return nil, fmt.Errorf("decode installation targets: %w", decodeErr)
+		}
+	}
+	targets := make([]rez.IntegrationInstallationTarget, 0, len(targetConfigs))
+	for displayName, rawCfg := range targetConfigs {
 		p, pErr := s.registry.Get(state.IntegrationName)
 		if pErr != nil {
 			return nil, fmt.Errorf("get integration: %w", pErr)

@@ -4,7 +4,6 @@ package ent
 
 import (
 	"context"
-	"encoding/json/jsontext"
 	"errors"
 	"fmt"
 	"time"
@@ -95,7 +94,7 @@ func (_u *IntegrationUserInstallStateUpdate) ClearOauthState() *IntegrationUserI
 }
 
 // SetInstallationTargetConfigs sets the "installation_target_configs" field.
-func (_u *IntegrationUserInstallStateUpdate) SetInstallationTargetConfigs(v map[string]jsontext.Value) *IntegrationUserInstallStateUpdate {
+func (_u *IntegrationUserInstallStateUpdate) SetInstallationTargetConfigs(v []byte) *IntegrationUserInstallStateUpdate {
 	_u.mutation.SetInstallationTargetConfigs(v)
 	return _u
 }
@@ -185,10 +184,14 @@ func (_u *IntegrationUserInstallStateUpdate) sqlSave(ctx context.Context) (_node
 		_spec.ClearField(integrationuserinstallstate.FieldOauthState, field.TypeString)
 	}
 	if value, ok := _u.mutation.InstallationTargetConfigs(); ok {
-		_spec.SetField(integrationuserinstallstate.FieldInstallationTargetConfigs, field.TypeJSON, value)
+		vv, err := integrationuserinstallstate.ValueScanner.InstallationTargetConfigs.Value(value)
+		if err != nil {
+			return 0, err
+		}
+		_spec.SetField(integrationuserinstallstate.FieldInstallationTargetConfigs, field.TypeBytes, vv)
 	}
 	if _u.mutation.InstallationTargetConfigsCleared() {
-		_spec.ClearField(integrationuserinstallstate.FieldInstallationTargetConfigs, field.TypeJSON)
+		_spec.ClearField(integrationuserinstallstate.FieldInstallationTargetConfigs, field.TypeBytes)
 	}
 	if _u.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -306,7 +309,7 @@ func (_u *IntegrationUserInstallStateUpdateOne) ClearOauthState() *IntegrationUs
 }
 
 // SetInstallationTargetConfigs sets the "installation_target_configs" field.
-func (_u *IntegrationUserInstallStateUpdateOne) SetInstallationTargetConfigs(v map[string]jsontext.Value) *IntegrationUserInstallStateUpdateOne {
+func (_u *IntegrationUserInstallStateUpdateOne) SetInstallationTargetConfigs(v []byte) *IntegrationUserInstallStateUpdateOne {
 	_u.mutation.SetInstallationTargetConfigs(v)
 	return _u
 }
@@ -426,10 +429,14 @@ func (_u *IntegrationUserInstallStateUpdateOne) sqlSave(ctx context.Context) (_n
 		_spec.ClearField(integrationuserinstallstate.FieldOauthState, field.TypeString)
 	}
 	if value, ok := _u.mutation.InstallationTargetConfigs(); ok {
-		_spec.SetField(integrationuserinstallstate.FieldInstallationTargetConfigs, field.TypeJSON, value)
+		vv, err := integrationuserinstallstate.ValueScanner.InstallationTargetConfigs.Value(value)
+		if err != nil {
+			return nil, err
+		}
+		_spec.SetField(integrationuserinstallstate.FieldInstallationTargetConfigs, field.TypeBytes, vv)
 	}
 	if _u.mutation.InstallationTargetConfigsCleared() {
-		_spec.ClearField(integrationuserinstallstate.FieldInstallationTargetConfigs, field.TypeJSON)
+		_spec.ClearField(integrationuserinstallstate.FieldInstallationTargetConfigs, field.TypeBytes)
 	}
 	if _u.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{

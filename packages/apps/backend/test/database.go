@@ -78,6 +78,14 @@ func (s *Suite) SetupTestPool() *postgres.ConnectionPool {
 	return s.createPool(s.T())
 }
 
+// EncryptionKey returns the configured key for encrypted database fields.
+func (s *Suite) EncryptionKey() []byte {
+	s.T().Helper()
+	key, keyErr := s.Config().Postgres.FieldEncryptionKey()
+	s.Require().NoError(keyErr)
+	return key
+}
+
 // createDatabase creates a migrated database owned by owner: the pool is opened
 // with owner's context and cleanup is registered on owner.
 func (s *Suite) createDatabase(owner *testing.T) rez.Database {
@@ -85,7 +93,7 @@ func (s *Suite) createDatabase(owner *testing.T) rez.Database {
 	start := time.Now()
 	pool := s.createPool(owner)
 
-	db, dbErr := postgres.NewPgxPoolDatabaseClient(pool)
+	db, dbErr := postgres.NewPgxPoolDatabaseClient(pool, s.EncryptionKey())
 	s.Require().NoError(dbErr)
 	owner.Cleanup(func() {
 		assert.NoError(owner, db.Shutdown())

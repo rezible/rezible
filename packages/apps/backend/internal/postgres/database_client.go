@@ -20,6 +20,7 @@ import (
 	"github.com/rezible/rezible/ent/hook"
 	_ "github.com/rezible/rezible/ent/runtime"
 	"github.com/rezible/rezible/ent/schema"
+	"github.com/rezible/rezible/ent/schema/schematypes"
 	"github.com/rezible/rezible/pkg/errs"
 	"github.com/rezible/rezible/pkg/execution"
 )
@@ -34,20 +35,25 @@ type DatabaseClient struct {
 
 type PgxPool = pgxpool.Pool
 
-func NewPgxPoolDatabaseClient(pool *ConnectionPool) (*DatabaseClient, error) {
-	return newDatabaseClient(entpgx.NewPgxPoolDriver(pool.Pool)), nil
+// NewPgxPoolDatabaseClient opens a client whose encrypted fields use encryptionKey.
+func NewPgxPoolDatabaseClient(pool *ConnectionPool, encryptionKey []byte) (*DatabaseClient, error) {
+	return newDatabaseClient(entpgx.NewPgxPoolDriver(pool.Pool), encryptionKey)
 }
 
-func NewStdDatabaseClient(db *sql.DB) *DatabaseClient {
-	return newDatabaseClient(entsql.OpenDB("postgres", db))
+// NewStdDatabaseClient opens a client whose encrypted fields use encryptionKey.
+func NewStdDatabaseClient(db *sql.DB, encryptionKey []byte) (*DatabaseClient, error) {
+	return newDatabaseClient(entsql.OpenDB("postgres", db), encryptionKey)
 }
 
-func newDatabaseClient(driver dialect.Driver) *DatabaseClient {
+func newDatabaseClient(driver dialect.Driver, encryptionKey []byte) (*DatabaseClient, error) {
+	if keyErr := schematypes.SetFieldEncryptionKey(encryptionKey); keyErr != nil {
+		return nil, fmt.Errorf("set encryption key: %w", keyErr)
+	}
 	dbc := &DatabaseClient{driver: driver}
 	dbc.client = ent.NewClient(ent.Driver(driver))
 	dbc.client.Use(dbc.ensureTenantIdSetHook(), dbc.tenantReferencesHook(), dbc.missingReferenceHook())
 	dbc.client.Intercept(dbc.setTenantContextInterceptor())
-	return dbc
+	return dbc, nil
 }
 
 func (dbc *DatabaseClient) Client(ctx context.Context) *ent.Client {

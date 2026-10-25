@@ -782,7 +782,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			integration.FieldName:                    {Type: field.TypeString, Column: integration.FieldName},
 			integration.FieldDisplayName:             {Type: field.TypeString, Column: integration.FieldDisplayName},
 			integration.FieldProviderInstallationRef: {Type: field.TypeString, Column: integration.FieldProviderInstallationRef},
-			integration.FieldInstallationConfig:      {Type: field.TypeJSON, Column: integration.FieldInstallationConfig},
+			integration.FieldInstallationConfig:      {Type: field.TypeBytes, Column: integration.FieldInstallationConfig},
 			integration.FieldUserSettings:            {Type: field.TypeJSON, Column: integration.FieldUserSettings},
 			integration.FieldWebhookTokenHash:        {Type: field.TypeBytes, Column: integration.FieldWebhookTokenHash},
 		},
@@ -847,7 +847,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			integrationuserinstallstate.FieldIntegrationName:           {Type: field.TypeString, Column: integrationuserinstallstate.FieldIntegrationName},
 			integrationuserinstallstate.FieldExpiresAt:                 {Type: field.TypeTime, Column: integrationuserinstallstate.FieldExpiresAt},
 			integrationuserinstallstate.FieldOauthState:                {Type: field.TypeString, Column: integrationuserinstallstate.FieldOauthState},
-			integrationuserinstallstate.FieldInstallationTargetConfigs: {Type: field.TypeJSON, Column: integrationuserinstallstate.FieldInstallationTargetConfigs},
+			integrationuserinstallstate.FieldInstallationTargetConfigs: {Type: field.TypeBytes, Column: integrationuserinstallstate.FieldInstallationTargetConfigs},
 		},
 	}
 	graph.Nodes[36] = &sqlgraph.Node{
@@ -11397,7 +11397,7 @@ func (f *IntegrationFilter) WhereProviderInstallationRef(p entql.StringP) {
 	f.Where(p.Field(integration.FieldProviderInstallationRef))
 }
 
-// WhereInstallationConfig applies the entql json.RawMessage predicate on the installation_config field.
+// WhereInstallationConfig applies the entql []byte predicate on the installation_config field.
 func (f *IntegrationFilter) WhereInstallationConfig(p entql.BytesP) {
 	f.Where(p.Field(integration.FieldInstallationConfig))
 }
@@ -11717,7 +11717,7 @@ func (f *IntegrationUserInstallStateFilter) WhereOauthState(p entql.StringP) {
 	f.Where(p.Field(integrationuserinstallstate.FieldOauthState))
 }
 
-// WhereInstallationTargetConfigs applies the entql json.RawMessage predicate on the installation_target_configs field.
+// WhereInstallationTargetConfigs applies the entql []byte predicate on the installation_target_configs field.
 func (f *IntegrationUserInstallStateFilter) WhereInstallationTargetConfigs(p entql.BytesP) {
 	f.Where(p.Field(integrationuserinstallstate.FieldInstallationTargetConfigs))
 }

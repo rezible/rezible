@@ -58,6 +58,11 @@ func loadConfig(ctx context.Context, overrides map[string]any) (rez.Config, erro
 		"documents.server_url":      "https://documents.invalid",
 		"documents.session_key_hex": strings.Repeat("ab", 32),
 
+		"postgres.field_encryption_key_hex": strings.Repeat("cd", 32),
+
+		// Provider fakes listen on loopback.
+		"integrations.allow_private_provider_urls": true,
+
 		"telemetry.service_name":            "rezible-test",
 		"telemetry.logging.console.enabled": false,
 

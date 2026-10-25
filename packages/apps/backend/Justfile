@@ -27,11 +27,9 @@ export HTTP__AUTH__ENABLE_DEV_SKIP_MODE := env("SKIP_AUTH", "")
       POSTGRES__DATABASE="${POSTGRES_TEST_DB}" \
       go test "$@"
 
-exclude_test_packages_pattern := "/ent/"
-
 [positional-arguments]
 @test-all *ARGS:
-    just test "$@" $(go list ./... | grep -v '{{ exclude_test_packages_pattern }}')
+    just test "$@" $(go list -f '{{ "{{" }}if or .TestGoFiles .XTestGoFiles{{ "}}" }}{{ "{{" }}.ImportPath{{ "}}" }}{{ "{{" }}end{{ "}}" }}' ./...)
 
 [positional-arguments]
 @test-selection *ARGS:
@@ -42,7 +40,7 @@ exclude_test_packages_pattern := "/ent/"
     just test "$@"
 
 @test-pattern PATTERN:
-    just test $(go list ./... | grep -v '{{ exclude_test_packages_pattern }}') -run {{ quote(PATTERN) }}
+    just test-all -run {{ quote(PATTERN) }}
 
 [doc("Run an AI evaluation target several times; results are written under .evals/")]
 @eval TARGET RUNS="3":

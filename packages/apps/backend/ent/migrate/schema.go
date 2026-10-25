@@ -1528,7 +1528,7 @@ var (
 		{Name: "name", Type: field.TypeString},
 		{Name: "display_name", Type: field.TypeString},
 		{Name: "provider_installation_ref", Type: field.TypeString},
-		{Name: "installation_config", Type: field.TypeJSON, SchemaType: map[string]string{"postgres": "jsonb"}},
+		{Name: "installation_config", Type: field.TypeBytes},
 		{Name: "user_settings", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
 		{Name: "webhook_token_hash", Type: field.TypeBytes, Nullable: true},
 		{Name: "tenant_id", Type: field.TypeInt},
@@ -1675,7 +1675,7 @@ var (
 		{Name: "integration_name", Type: field.TypeString},
 		{Name: "expires_at", Type: field.TypeTime},
 		{Name: "oauth_state", Type: field.TypeString, Nullable: true},
-		{Name: "installation_target_configs", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
+		{Name: "installation_target_configs", Type: field.TypeBytes, Nullable: true},
 		{Name: "tenant_id", Type: field.TypeInt},
 		{Name: "user_id", Type: field.TypeUUID},
 	}

@@ -68,7 +68,7 @@ func (outboxTestEvent) MessageName() string { return "test.outbox.v1" }
 
 func (s *MessageQueueSuite) TestPublishDeliveredOnlyOnCommit() {
 	pool := s.SetupTestPool()
-	db, dbErr := postgres.NewPgxPoolDatabaseClient(pool)
+	db, dbErr := postgres.NewPgxPoolDatabaseClient(pool, s.EncryptionKey())
 	s.Require().NoError(dbErr)
 
 	type delivery struct {

@@ -3,11 +3,13 @@
 package integration
 
 import (
+	"encoding/json/jsontext"
 	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 )
 
@@ -96,6 +98,10 @@ var (
 	ProviderInstallationRefValidator func(string) error
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
+	// ValueScanner of all Integration fields.
+	ValueScanner struct {
+		InstallationConfig field.TypeValueScanner[jsontext.Value]
+	}
 )
 
 // OrderOption defines the ordering options for the Integration queries.

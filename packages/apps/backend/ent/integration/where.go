@@ -3,6 +3,7 @@
 package integration
 
 import (
+	"encoding/json/jsontext"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
@@ -90,6 +91,12 @@ func DisplayName(v string) predicate.Integration {
 // ProviderInstallationRef applies equality check predicate on the "provider_installation_ref" field. It's identical to ProviderInstallationRefEQ.
 func ProviderInstallationRef(v string) predicate.Integration {
 	return predicate.Integration(sql.FieldEQ(FieldProviderInstallationRef, v))
+}
+
+// InstallationConfig applies equality check predicate on the "installation_config" field. It's identical to InstallationConfigEQ.
+func InstallationConfig(v jsontext.Value) predicate.Integration {
+	vc, err := ValueScanner.InstallationConfig.Value(v)
+	return predicate.IntegrationOrErr(sql.FieldEQ(FieldInstallationConfig, vc), err)
 }
 
 // WebhookTokenHash applies equality check predicate on the "webhook_token_hash" field. It's identical to WebhookTokenHashEQ.
@@ -455,6 +462,70 @@ func ProviderInstallationRefEqualFold(v string) predicate.Integration {
 // ProviderInstallationRefContainsFold applies the ContainsFold predicate on the "provider_installation_ref" field.
 func ProviderInstallationRefContainsFold(v string) predicate.Integration {
 	return predicate.Integration(sql.FieldContainsFold(FieldProviderInstallationRef, v))
+}
+
+// InstallationConfigEQ applies the EQ predicate on the "installation_config" field.
+func InstallationConfigEQ(v jsontext.Value) predicate.Integration {
+	vc, err := ValueScanner.InstallationConfig.Value(v)
+	return predicate.IntegrationOrErr(sql.FieldEQ(FieldInstallationConfig, vc), err)
+}
+
+// InstallationConfigNEQ applies the NEQ predicate on the "installation_config" field.
+func InstallationConfigNEQ(v jsontext.Value) predicate.Integration {
+	vc, err := ValueScanner.InstallationConfig.Value(v)
+	return predicate.IntegrationOrErr(sql.FieldNEQ(FieldInstallationConfig, vc), err)
+}
+
+// InstallationConfigIn applies the In predicate on the "installation_config" field.
+func InstallationConfigIn(vs ...jsontext.Value) predicate.Integration {
+	var (
+		err error
+		v   = make([]any, len(vs))
+	)
+	for i := range v {
+		if v[i], err = ValueScanner.InstallationConfig.Value(vs[i]); err != nil {
+			break
+		}
+	}
+	return predicate.IntegrationOrErr(sql.FieldIn(FieldInstallationConfig, v...), err)
+}
+
+// InstallationConfigNotIn applies the NotIn predicate on the "installation_config" field.
+func InstallationConfigNotIn(vs ...jsontext.Value) predicate.Integration {
+	var (
+		err error
+		v   = make([]any, len(vs))
+	)
+	for i := range v {
+		if v[i], err = ValueScanner.InstallationConfig.Value(vs[i]); err != nil {
+			break
+		}
+	}
+	return predicate.IntegrationOrErr(sql.FieldNotIn(FieldInstallationConfig, v...), err)
+}
+
+// InstallationConfigGT applies the GT predicate on the "installation_config" field.
+func InstallationConfigGT(v jsontext.Value) predicate.Integration {
+	vc, err := ValueScanner.InstallationConfig.Value(v)
+	return predicate.IntegrationOrErr(sql.FieldGT(FieldInstallationConfig, vc), err)
+}
+
+// InstallationConfigGTE applies the GTE predicate on the "installation_config" field.
+func InstallationConfigGTE(v jsontext.Value) predicate.Integration {
+	vc, err := ValueScanner.InstallationConfig.Value(v)
+	return predicate.IntegrationOrErr(sql.FieldGTE(FieldInstallationConfig, vc), err)
+}
+
+// InstallationConfigLT applies the LT predicate on the "installation_config" field.
+func InstallationConfigLT(v jsontext.Value) predicate.Integration {
+	vc, err := ValueScanner.InstallationConfig.Value(v)
+	return predicate.IntegrationOrErr(sql.FieldLT(FieldInstallationConfig, vc), err)
+}
+
+// InstallationConfigLTE applies the LTE predicate on the "installation_config" field.
+func InstallationConfigLTE(v jsontext.Value) predicate.Integration {
+	vc, err := ValueScanner.InstallationConfig.Value(v)
+	return predicate.IntegrationOrErr(sql.FieldLTE(FieldInstallationConfig, vc), err)
 }
 
 // UserSettingsIsNil applies the IsNil predicate on the "user_settings" field.

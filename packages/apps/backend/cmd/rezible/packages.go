@@ -5,10 +5,16 @@ import (
 	"fmt"
 	"time"
 
-	riverqueue "github.com/riverqueue/river"
 	"github.com/samber/do/v2"
 
 	rez "github.com/rezible/rezible"
+	rezai "github.com/rezible/rezible/pkg/ai"
+	"github.com/rezible/rezible/pkg/integrations"
+	"github.com/rezible/rezible/pkg/jobs"
+	"github.com/rezible/rezible/pkg/messages"
+	"github.com/rezible/rezible/pkg/openapi"
+	oapiv1 "github.com/rezible/rezible/pkg/openapi/v1"
+
 	apiv1 "github.com/rezible/rezible/internal/api/v1"
 	"github.com/rezible/rezible/internal/db"
 	"github.com/rezible/rezible/internal/db/evals"
@@ -30,13 +36,6 @@ import (
 	"github.com/rezible/rezible/internal/postgres/pgtestdb"
 	"github.com/rezible/rezible/internal/postgres/river"
 	"github.com/rezible/rezible/internal/watermill"
-
-	rezai "github.com/rezible/rezible/pkg/ai"
-	"github.com/rezible/rezible/pkg/integrations"
-	"github.com/rezible/rezible/pkg/jobs"
-	"github.com/rezible/rezible/pkg/messages"
-	"github.com/rezible/rezible/pkg/openapi"
-	oapiv1 "github.com/rezible/rezible/pkg/openapi/v1"
 )
 
 func applicationPackages(ctx context.Context) Package {
@@ -121,8 +120,15 @@ func withPostgresDatabase(ctx context.Context) func(do.Injector) {
 			return postgres.NewMigrationService(mgPool)
 		}),
 
+		do.LazyNamed("db_field_encryption_key", func(i do.Injector) ([]byte, error) {
+			return do.MustInvoke[rez.PostgresConfig](i).FieldEncryptionKey()
+		}),
+
 		do.Lazy(func(i do.Injector) (rez.Database, error) {
-			return postgres.NewPgxPoolDatabaseClient(do.MustInvoke[*postgres.ConnectionPool](i))
+			return postgres.NewPgxPoolDatabaseClient(
+				do.MustInvoke[*postgres.ConnectionPool](i),
+				do.MustInvokeNamed[[]byte](i, "db_field_encryption_key"),
+			)
 		}),
 	)
 }
@@ -216,6 +222,11 @@ var pkgWatermill = do.Package(
 )
 
 var pkgIntegrations = do.Package(
+	do.Lazy(func(i do.Injector) (*integrations.ProviderHttpClient, error) {
+		cfg := do.MustInvoke[rez.Config](i)
+		return integrations.NewProviderHTTPClient(cfg.Integrations.AllowPrivateProviderUrls), nil
+	}),
+
 	do.Lazy(func(i do.Injector) (*demoprovider.Integration, error) {
 		return demoprovider.MakeIntegration(
 			do.MustInvoke[rez.Config](i),
@@ -240,7 +251,10 @@ var pkgIntegrations = do.Package(
 	}),
 
 	do.Lazy(func(i do.Injector) (*grafana.Integration, error) {
-		return grafana.MakeIntegration(do.MustInvoke[rez.Clock](i))
+		return grafana.MakeIntegration(
+			do.MustInvoke[rez.Clock](i),
+			do.MustInvoke[*integrations.ProviderHttpClient](i),
+		)
 	}),
 
 	do.Lazy(func(i do.Injector) (*github.Integration, error) {
@@ -840,11 +854,7 @@ var pkgJobs = do.Package(
 
 	do.Lazy(func(i do.Injector) ([]*jobs.PeriodicJob, error) {
 		periodicJobs := []*jobs.PeriodicJob{
-			riverqueue.NewPeriodicJob(
-				riverqueue.PeriodicInterval(time.Hour),
-				func() (jobs.JobArgs, *riverqueue.InsertOpts) { return jobs.SyncScheduledIntegrationSources{}, nil },
-				nil,
-			),
+			jobs.MakePeriodicIntervalJob[jobs.SyncScheduledIntegrationSources](time.Hour, nil),
 		}
 		return periodicJobs, nil
 	}),

@@ -1,6 +1,7 @@
 package test
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -85,4 +86,16 @@ func TestConfigValidatesOverrides(t *testing.T) {
 	_, configErr := loadConfig(t.Context(), overrides)
 
 	require.ErrorContains(t, configErr, "FrontendDomain")
+}
+
+func TestConfigRequiresHexEncryptionKey(t *testing.T) {
+	for _, key := range []string{"", strings.Repeat("zz", 32)} {
+		overrides := map[string]any{
+			"postgres.field_encryption_key_hex": key,
+		}
+
+		_, configErr := loadConfig(t.Context(), overrides)
+
+		require.ErrorContains(t, configErr, "EncryptionKeyHex")
+	}
 }

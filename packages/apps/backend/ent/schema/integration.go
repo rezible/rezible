@@ -8,6 +8,8 @@ import (
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
 	"github.com/google/uuid"
+
+	"github.com/rezible/rezible/ent/schema/schematypes"
 )
 
 // Integration holds the schema definition for the Integration entity.
@@ -31,8 +33,10 @@ func (Integration) Fields() []ent.Field {
 		field.String("name").NotEmpty(),
 		field.String("display_name"),
 		field.String("provider_installation_ref").NotEmpty(),
-		field.JSON("installation_config", json.RawMessage{}).
-			SchemaType(schemaTypeJsonB),
+		field.Bytes("installation_config").
+			GoType(json.RawMessage{}).
+			ValueScanner(schematypes.EncryptedBytes[json.RawMessage]{}).
+			Sensitive(),
 		field.JSON("user_settings", json.RawMessage{}).
 			Optional().
 			SchemaType(schemaTypeJsonB),
@@ -76,9 +80,11 @@ func (IntegrationUserInstallState) Fields() []ent.Field {
 		field.Time("expires_at"),
 		field.String("oauth_state").
 			Optional(),
-		field.JSON("installation_target_configs", map[string]json.RawMessage{}).
+		// InstallationTargetConfigs is the JSON-encoded map of target display names to installation configs.
+		field.Bytes("installation_target_configs").
 			Optional().
-			SchemaType(schemaTypeJsonB),
+			ValueScanner(schematypes.EncryptedBytes[[]byte]{}).
+			Sensitive(),
 	}
 }
 

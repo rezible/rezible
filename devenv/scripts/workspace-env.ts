@@ -17,15 +17,22 @@ const getWorkspaceId = (branch: string) => {
     return `${slug}-${hash}`;
 };
 
+const generateRandomHexKey = () => randomBytes(32).toString("hex");
+
 const generateWorkspaceEnv = async () => {
   const workspaceFile = Bun.file(new URL("../.workspace-env.sh", import.meta.url));
   const previous: Record<string, string> = {};
   if (await workspaceFile.exists()) {
     const contents = await workspaceFile.text();
-    for (const name of ["WORKSPACE_ID", "POSTGRES_APP_DB", "OIDC_CLIENT_ID", "OIDC_CLIENT_SECRET"]) {
+    for (const name of [
+      "WORKSPACE_ID",
+      "POSTGRES_APP_DB",
+      "OIDC_CLIENT_ID",
+      "OIDC_CLIENT_SECRET",
+      "POSTGRES__FIELD_ENCRYPTION_KEY_HEX",
+    ]) {
       const match = contents.match(new RegExp(`^export ${name}='([^']+)'$`, "m"));
-      if (!match) throw new Error(`Missing ${name} in workspace environment`);
-      previous[name] = match[1];
+      if (match) previous[name] = match[1];
     }
   }
 
@@ -64,7 +71,6 @@ const generateWorkspaceEnv = async () => {
     OTEL_EXPORTER_OTLP_ENDPOINT: "http://localhost:4317",
     OTEL_EXPORTER_OTLP_PROTOCOL: "grpc",
     OTEL_SERVICE_NAME: "rezible-backend",
-    // Agent harnesses can strip OTEL_* variables from tool processes, so the backend also reads its own.
     TELEMETRY__SERVICE_NAME: "rezible-backend",
     TELEMETRY__OTLP_ENDPOINT: "http://localhost:4317",
     TELEMETRY__TRACING__ENABLED: "true",
@@ -72,6 +78,7 @@ const generateWorkspaceEnv = async () => {
     TELEMETRY__METRICS__ENABLED: "true",
     APP__DEBUG_MODE: "true",
     APP__SINGLETENANT__ENABLED: "true",
+    INTEGRATIONS__ALLOW_PRIVATE_PROVIDER_URLS: "true",
     DOCUMENTS__ALLOWED_ORIGINS: `https://${appDomain}`,
     HTTP__BASE_PATH: "",
     HTTP__AUTH__SESSION_SECRET: "superduuuuuuuuuuuuuuuuupersecret",
@@ -97,7 +104,8 @@ const generateWorkspaceEnv = async () => {
     POSTGRES__ROLE_ADMIN__PASSWORD: postgresAdminUser,
     POSTGRES__ROLE_APP__NAME: postgresAppUser,
     POSTGRES__ROLE_APP__PASSWORD: postgresAppUser,
-    DOCUMENTS__SESSION_KEY_HEX: randomBytes(32).toString("hex"),
+    DOCUMENTS__SESSION_KEY_HEX: generateRandomHexKey(),
+    POSTGRES__FIELD_ENCRYPTION_KEY_HEX: previous.POSTGRES__FIELD_ENCRYPTION_KEY_HEX ?? generateRandomHexKey(),
   };
 
   const fileContents = Object.entries(values)

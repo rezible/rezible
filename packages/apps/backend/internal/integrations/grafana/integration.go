@@ -24,13 +24,7 @@ type Integration struct {
 	httpClient *http.Client
 }
 
-func MakeIntegration(clock rez.Clock) (*Integration, error) {
-	httpClient := &http.Client{
-		// A redirect would send the read somewhere the admin did not configure; report it instead.
-		CheckRedirect: func(*http.Request, []*http.Request) error {
-			return http.ErrUseLastResponse
-		},
-	}
+func MakeIntegration(clock rez.Clock, httpClient *http.Client) (*Integration, error) {
 	i := &Integration{
 		clock:      clock,
 		httpClient: httpClient,

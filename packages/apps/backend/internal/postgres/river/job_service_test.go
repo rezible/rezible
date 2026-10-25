@@ -124,7 +124,7 @@ func (s *JobServiceSuite) SetupTest() {
 		s.NoError(pool.Shutdown())
 	})
 	s.pool = pool
-	database, databaseErr := postgres.NewPgxPoolDatabaseClient(pool)
+	database, databaseErr := postgres.NewPgxPoolDatabaseClient(pool, s.EncryptionKey())
 	s.Require().NoError(databaseErr)
 	s.T().Cleanup(func() {
 		s.NoError(database.Shutdown())

@@ -4,7 +4,6 @@ package ent
 
 import (
 	"context"
-	"encoding/json/jsontext"
 	"errors"
 	"fmt"
 	"time"
@@ -74,7 +73,7 @@ func (_c *IntegrationUserInstallStateCreate) SetNillableOauthState(v *string) *I
 }
 
 // SetInstallationTargetConfigs sets the "installation_target_configs" field.
-func (_c *IntegrationUserInstallStateCreate) SetInstallationTargetConfigs(v map[string]jsontext.Value) *IntegrationUserInstallStateCreate {
+func (_c *IntegrationUserInstallStateCreate) SetInstallationTargetConfigs(v []byte) *IntegrationUserInstallStateCreate {
 	_c.mutation.SetInstallationTargetConfigs(v)
 	return _c
 }
@@ -184,7 +183,10 @@ func (_c *IntegrationUserInstallStateCreate) sqlSave(ctx context.Context) (*Inte
 	if err := _c.check(); err != nil {
 		return nil, err
 	}
-	_node, _spec := _c.createSpec()
+	_node, _spec, err := _c.createSpec()
+	if err != nil {
+		return nil, err
+	}
 	if err := sqlgraph.CreateNode(ctx, _c.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
@@ -203,7 +205,7 @@ func (_c *IntegrationUserInstallStateCreate) sqlSave(ctx context.Context) (*Inte
 	return _node, nil
 }
 
-func (_c *IntegrationUserInstallStateCreate) createSpec() (*IntegrationUserInstallState, *sqlgraph.CreateSpec) {
+func (_c *IntegrationUserInstallStateCreate) createSpec() (*IntegrationUserInstallState, *sqlgraph.CreateSpec, error) {
 	var (
 		_node = &IntegrationUserInstallState{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(integrationuserinstallstate.Table, sqlgraph.NewFieldSpec(integrationuserinstallstate.FieldID, field.TypeUUID))
@@ -227,7 +229,11 @@ func (_c *IntegrationUserInstallStateCreate) createSpec() (*IntegrationUserInsta
 		_node.OauthState = value
 	}
 	if value, ok := _c.mutation.InstallationTargetConfigs(); ok {
-		_spec.SetField(integrationuserinstallstate.FieldInstallationTargetConfigs, field.TypeJSON, value)
+		vv, err := integrationuserinstallstate.ValueScanner.InstallationTargetConfigs.Value(value)
+		if err != nil {
+			return nil, nil, err
+		}
+		_spec.SetField(integrationuserinstallstate.FieldInstallationTargetConfigs, field.TypeBytes, vv)
 		_node.InstallationTargetConfigs = value
 	}
 	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
@@ -266,7 +272,7 @@ func (_c *IntegrationUserInstallStateCreate) createSpec() (*IntegrationUserInsta
 		_node.UserID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	return _node, _spec
+	return _node, _spec, nil
 }
 
 // OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
@@ -373,7 +379,7 @@ func (u *IntegrationUserInstallStateUpsert) ClearOauthState() *IntegrationUserIn
 }
 
 // SetInstallationTargetConfigs sets the "installation_target_configs" field.
-func (u *IntegrationUserInstallStateUpsert) SetInstallationTargetConfigs(v map[string]jsontext.Value) *IntegrationUserInstallStateUpsert {
+func (u *IntegrationUserInstallStateUpsert) SetInstallationTargetConfigs(v []byte) *IntegrationUserInstallStateUpsert {
 	u.Set(integrationuserinstallstate.FieldInstallationTargetConfigs, v)
 	return u
 }
@@ -505,7 +511,7 @@ func (u *IntegrationUserInstallStateUpsertOne) ClearOauthState() *IntegrationUse
 }
 
 // SetInstallationTargetConfigs sets the "installation_target_configs" field.
-func (u *IntegrationUserInstallStateUpsertOne) SetInstallationTargetConfigs(v map[string]jsontext.Value) *IntegrationUserInstallStateUpsertOne {
+func (u *IntegrationUserInstallStateUpsertOne) SetInstallationTargetConfigs(v []byte) *IntegrationUserInstallStateUpsertOne {
 	return u.Update(func(s *IntegrationUserInstallStateUpsert) {
 		s.SetInstallationTargetConfigs(v)
 	})
@@ -593,7 +599,10 @@ func (_c *IntegrationUserInstallStateCreateBulk) Save(ctx context.Context) ([]*I
 				}
 				builder.mutation = mutation
 				var err error
-				nodes[i], specs[i] = builder.createSpec()
+				nodes[i], specs[i], err = builder.createSpec()
+				if err != nil {
+					return nil, err
+				}
 				if i < len(mutators)-1 {
 					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
@@ -807,7 +816,7 @@ func (u *IntegrationUserInstallStateUpsertBulk) ClearOauthState() *IntegrationUs
 }
 
 // SetInstallationTargetConfigs sets the "installation_target_configs" field.
-func (u *IntegrationUserInstallStateUpsertBulk) SetInstallationTargetConfigs(v map[string]jsontext.Value) *IntegrationUserInstallStateUpsertBulk {
+func (u *IntegrationUserInstallStateUpsertBulk) SetInstallationTargetConfigs(v []byte) *IntegrationUserInstallStateUpsertBulk {
 	return u.Update(func(s *IntegrationUserInstallStateUpsert) {
 		s.SetInstallationTargetConfigs(v)
 	})

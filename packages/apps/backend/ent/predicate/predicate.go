@@ -105,6 +105,17 @@ type IncidentType func(*sql.Selector)
 // Integration is the predicate function for integration builders.
 type Integration func(*sql.Selector)
 
+// IntegrationOrErr calls the predicate only if the error is not nit.
+func IntegrationOrErr(p Integration, err error) Integration {
+	return func(s *sql.Selector) {
+		if err != nil {
+			s.AddError(err)
+			return
+		}
+		p(s)
+	}
+}
+
 // IntegrationEventSyncCursor is the predicate function for integrationeventsynccursor builders.
 type IntegrationEventSyncCursor func(*sql.Selector)
 
@@ -113,6 +124,17 @@ type IntegrationEventSyncRun func(*sql.Selector)
 
 // IntegrationUserInstallState is the predicate function for integrationuserinstallstate builders.
 type IntegrationUserInstallState func(*sql.Selector)
+
+// IntegrationUserInstallStateOrErr calls the predicate only if the error is not nit.
+func IntegrationUserInstallStateOrErr(p IntegrationUserInstallState, err error) IntegrationUserInstallState {
+	return func(s *sql.Selector) {
+		if err != nil {
+			s.AddError(err)
+			return
+		}
+		p(s)
+	}
+}
 
 // Investigation is the predicate function for investigation builders.
 type Investigation func(*sql.Selector)

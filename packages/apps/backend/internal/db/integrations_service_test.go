@@ -11,6 +11,8 @@ import (
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	in "github.com/rezible/rezible/ent/integration"
+	iuis "github.com/rezible/rezible/ent/integrationuserinstallstate"
 	"github.com/rezible/rezible/pkg/errs"
 	"github.com/rezible/rezible/pkg/execution"
 	"github.com/rezible/rezible/pkg/integrations"
@@ -179,6 +181,70 @@ func (s *IntegrationsServiceSuite) TestIssueWebhookTokenReplacesEarlierToken() {
 
 	_, missingErr := svc.IssueWebhookToken(ctx, uuid.New())
 	s.ErrorIs(missingErr, errs.ErrNotFound)
+}
+
+func (s *IntegrationsServiceSuite) TestInstallationConfigIsEncryptedAtRest() {
+	ctx, tdb := s.SetupTestDatabase()
+
+	i := &testIntegration{}
+	svc := s.newService(tdb, s.newRegistry(i))
+	id := s.installTestIntegration(ctx, svc, i, "secret-target").Integration().ID
+
+	storedConfig := func() []byte {
+		var rows []struct {
+			InstallationConfig []byte `json:"installation_config"`
+		}
+		query := tdb.Client(ctx).Integration.Query().
+			Where(in.ID(id)).
+			Select(in.FieldInstallationConfig)
+		s.Require().NoError(query.Scan(ctx, &rows))
+		s.Require().Len(rows, 1)
+		return rows[0].InstallationConfig
+	}
+	first := storedConfig()
+	s.NotContains(string(first), "secret-target")
+
+	s.installTestIntegration(ctx, svc, i, "secret-target")
+	s.NotEqual(first, storedConfig(), "each write uses a fresh nonce")
+
+	installed, getErr := svc.GetInstalledIntegration(ctx, id)
+	s.Require().NoError(getErr)
+	s.Equal("secret-target", installed.Config().InstallationTargetRef().ResourceRef)
+}
+
+func (s *IntegrationsServiceSuite) TestUserInstallationTargetsAreEncryptedAtRest() {
+	_, tdb := s.SetupTestDatabase()
+	ctx, identity := s.NewIdentity(tdb, "installer")
+
+	i := &testIntegration{}
+	installations, installationsErr := NewIntegrationInstallationsService(tdb)
+	s.Require().NoError(installationsErr)
+	svc, serviceErr := NewIntegrationsService(s.Config(), tdb, mocks.NewMockJobService(s.T()), installations, s.newRegistry(i))
+	s.Require().NoError(serviceErr)
+	_, stateErr := svc.makeUserOAuthInstallationState(ctx, identity.Session.UserID, i.Name())
+	s.Require().NoError(stateErr)
+	state, lookupErr := svc.lookupUserInstallationState(ctx, identity.Session.UserID, i.Name())
+	s.Require().NoError(lookupErr)
+
+	options := []rez.IntegrationInstallationTarget{
+		{DisplayName: "Workspace A", Config: &testInstalledIntegrationConfig{TestRef: "secret-a", ProviderNamespace: i.Name()}},
+		{DisplayName: "Workspace B", Config: &testInstalledIntegrationConfig{TestRef: "secret-b", ProviderNamespace: i.Name()}},
+	}
+	s.Require().NoError(svc.updateUserInstallationStateWithOptions(ctx, state.ID, options))
+
+	var rows []struct {
+		InstallationTargetConfigs []byte `json:"installation_target_configs"`
+	}
+	query := tdb.Client(ctx).IntegrationUserInstallState.Query().
+		Where(iuis.ID(state.ID)).
+		Select(iuis.FieldInstallationTargetConfigs)
+	s.Require().NoError(query.Scan(ctx, &rows))
+	s.Require().Len(rows, 1)
+	s.NotContains(string(rows[0].InstallationTargetConfigs), "secret-a")
+
+	targets, listErr := svc.ListUserInstallationTargets(ctx)
+	s.Require().NoError(listErr)
+	s.ElementsMatch(options, targets)
 }
 
 func (s *IntegrationsServiceSuite) TestInstallRequirementsUseOrganizationPreferences() {

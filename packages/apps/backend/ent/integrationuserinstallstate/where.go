@@ -82,6 +82,12 @@ func OauthState(v string) predicate.IntegrationUserInstallState {
 	return predicate.IntegrationUserInstallState(sql.FieldEQ(FieldOauthState, v))
 }
 
+// InstallationTargetConfigs applies equality check predicate on the "installation_target_configs" field. It's identical to InstallationTargetConfigsEQ.
+func InstallationTargetConfigs(v []byte) predicate.IntegrationUserInstallState {
+	vc, err := ValueScanner.InstallationTargetConfigs.Value(v)
+	return predicate.IntegrationUserInstallStateOrErr(sql.FieldEQ(FieldInstallationTargetConfigs, vc), err)
+}
+
 // TenantIDEQ applies the EQ predicate on the "tenant_id" field.
 func TenantIDEQ(v int) predicate.IntegrationUserInstallState {
 	return predicate.IntegrationUserInstallState(sql.FieldEQ(FieldTenantID, v))
@@ -300,6 +306,70 @@ func OauthStateEqualFold(v string) predicate.IntegrationUserInstallState {
 // OauthStateContainsFold applies the ContainsFold predicate on the "oauth_state" field.
 func OauthStateContainsFold(v string) predicate.IntegrationUserInstallState {
 	return predicate.IntegrationUserInstallState(sql.FieldContainsFold(FieldOauthState, v))
+}
+
+// InstallationTargetConfigsEQ applies the EQ predicate on the "installation_target_configs" field.
+func InstallationTargetConfigsEQ(v []byte) predicate.IntegrationUserInstallState {
+	vc, err := ValueScanner.InstallationTargetConfigs.Value(v)
+	return predicate.IntegrationUserInstallStateOrErr(sql.FieldEQ(FieldInstallationTargetConfigs, vc), err)
+}
+
+// InstallationTargetConfigsNEQ applies the NEQ predicate on the "installation_target_configs" field.
+func InstallationTargetConfigsNEQ(v []byte) predicate.IntegrationUserInstallState {
+	vc, err := ValueScanner.InstallationTargetConfigs.Value(v)
+	return predicate.IntegrationUserInstallStateOrErr(sql.FieldNEQ(FieldInstallationTargetConfigs, vc), err)
+}
+
+// InstallationTargetConfigsIn applies the In predicate on the "installation_target_configs" field.
+func InstallationTargetConfigsIn(vs ...[]byte) predicate.IntegrationUserInstallState {
+	var (
+		err error
+		v   = make([]any, len(vs))
+	)
+	for i := range v {
+		if v[i], err = ValueScanner.InstallationTargetConfigs.Value(vs[i]); err != nil {
+			break
+		}
+	}
+	return predicate.IntegrationUserInstallStateOrErr(sql.FieldIn(FieldInstallationTargetConfigs, v...), err)
+}
+
+// InstallationTargetConfigsNotIn applies the NotIn predicate on the "installation_target_configs" field.
+func InstallationTargetConfigsNotIn(vs ...[]byte) predicate.IntegrationUserInstallState {
+	var (
+		err error
+		v   = make([]any, len(vs))
+	)
+	for i := range v {
+		if v[i], err = ValueScanner.InstallationTargetConfigs.Value(vs[i]); err != nil {
+			break
+		}
+	}
+	return predicate.IntegrationUserInstallStateOrErr(sql.FieldNotIn(FieldInstallationTargetConfigs, v...), err)
+}
+
+// InstallationTargetConfigsGT applies the GT predicate on the "installation_target_configs" field.
+func InstallationTargetConfigsGT(v []byte) predicate.IntegrationUserInstallState {
+	vc, err := ValueScanner.InstallationTargetConfigs.Value(v)
+	return predicate.IntegrationUserInstallStateOrErr(sql.FieldGT(FieldInstallationTargetConfigs, vc), err)
+}
+
+// InstallationTargetConfigsGTE applies the GTE predicate on the "installation_target_configs" field.
+func InstallationTargetConfigsGTE(v []byte) predicate.IntegrationUserInstallState {
+	vc, err := ValueScanner.InstallationTargetConfigs.Value(v)
+	return predicate.IntegrationUserInstallStateOrErr(sql.FieldGTE(FieldInstallationTargetConfigs, vc), err)
+}
+
+// InstallationTargetConfigsLT applies the LT predicate on the "installation_target_configs" field.
+func InstallationTargetConfigsLT(v []byte) predicate.IntegrationUserInstallState {
+	vc, err := ValueScanner.InstallationTargetConfigs.Value(v)
+	return predicate.IntegrationUserInstallStateOrErr(sql.FieldLT(FieldInstallationTargetConfigs, vc), err)
+}
+
+// InstallationTargetConfigsLTE applies the LTE predicate on the "installation_target_configs" field.
+func InstallationTargetConfigsLTE(v []byte) predicate.IntegrationUserInstallState {
+	vc, err := ValueScanner.InstallationTargetConfigs.Value(v)
+	return predicate.IntegrationUserInstallStateOrErr(sql.FieldLTE(FieldInstallationTargetConfigs, vc), err)
 }
 
 // InstallationTargetConfigsIsNil applies the IsNil predicate on the "installation_target_configs" field.

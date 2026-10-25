@@ -191,7 +191,7 @@ CREATE INDEX "incidenttype_tenant_id" ON "incident_types" ("tenant_id");
 -- create index "incidenttype_tenant_id_name" to table: "incident_types"
 CREATE UNIQUE INDEX "incidenttype_tenant_id_name" ON "incident_types" ("tenant_id", "name");
 -- create "integrations" table
-CREATE TABLE "integrations" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "provider" character varying NOT NULL, "name" character varying NOT NULL, "display_name" character varying NOT NULL, "provider_installation_ref" character varying NOT NULL, "installation_config" jsonb NOT NULL, "user_settings" jsonb NULL, "webhook_token_hash" bytea NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
+CREATE TABLE "integrations" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "provider" character varying NOT NULL, "name" character varying NOT NULL, "display_name" character varying NOT NULL, "provider_installation_ref" character varying NOT NULL, "installation_config" bytea NOT NULL, "user_settings" jsonb NULL, "webhook_token_hash" bytea NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
 -- create index "integration_tenant_id" to table: "integrations"
 CREATE INDEX "integration_tenant_id" ON "integrations" ("tenant_id");
 -- create index "integration_tenant_id_provider_name_provider_installation_ref" to table: "integrations"
@@ -217,7 +217,7 @@ CREATE INDEX "integrationeventsyncrun_tenant_id_integration_id_started_at" ON "i
 -- create index "integrationeventsyncrun_tenant_id_status_started_at" to table: "integration_event_sync_runs"
 CREATE INDEX "integrationeventsyncrun_tenant_id_status_started_at" ON "integration_event_sync_runs" ("tenant_id", "status", "started_at");
 -- create "integration_user_install_states" table
-CREATE TABLE "integration_user_install_states" ("id" uuid NOT NULL, "integration_name" character varying NOT NULL, "expires_at" timestamptz NOT NULL, "oauth_state" character varying NULL, "installation_target_configs" jsonb NULL, "tenant_id" bigint NOT NULL, "user_id" uuid NOT NULL, PRIMARY KEY ("id"));
+CREATE TABLE "integration_user_install_states" ("id" uuid NOT NULL, "integration_name" character varying NOT NULL, "expires_at" timestamptz NOT NULL, "oauth_state" character varying NULL, "installation_target_configs" bytea NULL, "tenant_id" bigint NOT NULL, "user_id" uuid NOT NULL, PRIMARY KEY ("id"));
 -- create index "integrationuserinstallstate_tenant_id" to table: "integration_user_install_states"
 CREATE INDEX "integrationuserinstallstate_tenant_id" ON "integration_user_install_states" ("tenant_id");
 -- create index "integrationuserinstallstate_tenant_id_user_id_integration_name" to table: "integration_user_install_states"

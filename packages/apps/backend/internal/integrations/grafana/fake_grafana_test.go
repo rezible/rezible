@@ -13,6 +13,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/pkg/integrations"
 	"github.com/rezible/rezible/test"
 )
 
@@ -78,7 +79,7 @@ func (f *fakeGrafana) install(settings map[string]any) *InstalledIntegration {
 	require.NoError(f.t, encodeErr)
 	userSettings, settingsErr := json.Marshal(settings)
 	require.NoError(f.t, settingsErr)
-	integration, makeErr := MakeIntegration(test.NewClock(testRanAt))
+	integration, makeErr := MakeIntegration(test.NewClock(testRanAt), integrations.NewProviderHTTPClient(true))
 	require.NoError(f.t, makeErr)
 
 	intg := &ent.Integration{

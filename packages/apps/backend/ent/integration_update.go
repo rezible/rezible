@@ -113,12 +113,6 @@ func (_u *IntegrationUpdate) SetInstallationConfig(v jsontext.Value) *Integratio
 	return _u
 }
 
-// AppendInstallationConfig appends value to the "installation_config" field.
-func (_u *IntegrationUpdate) AppendInstallationConfig(v jsontext.Value) *IntegrationUpdate {
-	_u.mutation.AppendInstallationConfig(v)
-	return _u
-}
-
 // SetUserSettings sets the "user_settings" field.
 func (_u *IntegrationUpdate) SetUserSettings(v jsontext.Value) *IntegrationUpdate {
 	_u.mutation.SetUserSettings(v)
@@ -250,12 +244,11 @@ func (_u *IntegrationUpdate) sqlSave(ctx context.Context) (_node int, err error)
 		_spec.SetField(integration.FieldProviderInstallationRef, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.InstallationConfig(); ok {
-		_spec.SetField(integration.FieldInstallationConfig, field.TypeJSON, value)
-	}
-	if value, ok := _u.mutation.AppendedInstallationConfig(); ok {
-		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, integration.FieldInstallationConfig, value)
-		})
+		vv, err := integration.ValueScanner.InstallationConfig.Value(value)
+		if err != nil {
+			return 0, err
+		}
+		_spec.SetField(integration.FieldInstallationConfig, field.TypeBytes, vv)
 	}
 	if value, ok := _u.mutation.UserSettings(); ok {
 		_spec.SetField(integration.FieldUserSettings, field.TypeJSON, value)
@@ -375,12 +368,6 @@ func (_u *IntegrationUpdateOne) SetNillableProviderInstallationRef(v *string) *I
 // SetInstallationConfig sets the "installation_config" field.
 func (_u *IntegrationUpdateOne) SetInstallationConfig(v jsontext.Value) *IntegrationUpdateOne {
 	_u.mutation.SetInstallationConfig(v)
-	return _u
-}
-
-// AppendInstallationConfig appends value to the "installation_config" field.
-func (_u *IntegrationUpdateOne) AppendInstallationConfig(v jsontext.Value) *IntegrationUpdateOne {
-	_u.mutation.AppendInstallationConfig(v)
 	return _u
 }
 
@@ -545,12 +532,11 @@ func (_u *IntegrationUpdateOne) sqlSave(ctx context.Context) (_node *Integration
 		_spec.SetField(integration.FieldProviderInstallationRef, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.InstallationConfig(); ok {
-		_spec.SetField(integration.FieldInstallationConfig, field.TypeJSON, value)
-	}
-	if value, ok := _u.mutation.AppendedInstallationConfig(); ok {
-		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, integration.FieldInstallationConfig, value)
-		})
+		vv, err := integration.ValueScanner.InstallationConfig.Value(value)
+		if err != nil {
+			return nil, err
+		}
+		_spec.SetField(integration.FieldInstallationConfig, field.TypeBytes, vv)
 	}
 	if value, ok := _u.mutation.UserSettings(); ok {
 		_spec.SetField(integration.FieldUserSettings, field.TypeJSON, value)

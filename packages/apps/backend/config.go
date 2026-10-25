@@ -2,6 +2,7 @@ package rez
 
 import (
 	"cmp"
+	"encoding/hex"
 	"fmt"
 	"net/url"
 	"os"
@@ -153,6 +154,15 @@ type (
 )
 
 // Names lists each model the configuration names, without duplicates.
+// FieldEncryptionKey decodes FieldEncryptionKeyHex.
+func (c PostgresConfig) FieldEncryptionKey() ([]byte, error) {
+	key, keyErr := hex.DecodeString(c.FieldEncryptionKeyHex)
+	if keyErr != nil {
+		return nil, fmt.Errorf("decode field encryption key: %w", keyErr)
+	}
+	return key, nil
+}
+
 func (c AiModelsConfig) Names() []string {
 	var names []string
 	for _, name := range []string{c.Default, c.Investigation, c.Chat, c.SituationJudge, c.ThreadClassifier} {
@@ -203,6 +213,9 @@ type (
 
 type (
 	IntegrationsConfig struct {
+		// AllowPrivateProviderUrls lets admin-supplied provider URLs reach loopback and private networks.
+		AllowPrivateProviderUrls bool `cfg:"allow_private_provider_urls"`
+
 		Slack  IntegrationsConfigSlack  `cfg:"slack" validate:"omitempty"`
 		Github IntegrationsConfigGithub `cfg:"github" validate:"omitempty"`
 		Google IntegrationsConfigGoogle `cfg:"google" validate:"omitempty"`
@@ -266,6 +279,9 @@ type (
 		AdminRole    PostgresRoleConfig `cfg:"role_admin"`
 		SSLMode      string             `cfg:"sslmode"`
 		PoolMaxConns int32              `cfg:"pool_max_conns"`
+		// FieldEncryptionKeyHex is the 32-byte key, hex-encoded, that sensitive database fields such as
+		// provider installation configs are encrypted at rest under.
+		FieldEncryptionKeyHex string `cfg:"field_encryption_key_hex" validate:"required,len=64,hexadecimal"`
 	}
 	PostgresRoleConfig struct {
 		Name     string `cfg:"name"`

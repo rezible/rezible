@@ -3,8 +3,6 @@
 package ent
 
 import (
-	"encoding/json"
-	"encoding/json/jsontext"
 	"fmt"
 	"strings"
 	"time"
@@ -33,7 +31,7 @@ type IntegrationUserInstallState struct {
 	// OauthState holds the value of the "oauth_state" field.
 	OauthState string `json:"oauth_state,omitempty"`
 	// InstallationTargetConfigs holds the value of the "installation_target_configs" field.
-	InstallationTargetConfigs map[string]jsontext.Value `json:"installation_target_configs,omitempty"`
+	InstallationTargetConfigs []byte `json:"-"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the IntegrationUserInstallStateQuery when eager-loading is set.
 	Edges        IntegrationUserInstallStateEdges `json:"edges"`
@@ -78,8 +76,6 @@ func (*IntegrationUserInstallState) scanValues(columns []string) ([]any, error) 
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case integrationuserinstallstate.FieldInstallationTargetConfigs:
-			values[i] = new([]byte)
 		case integrationuserinstallstate.FieldTenantID:
 			values[i] = new(sql.NullInt64)
 		case integrationuserinstallstate.FieldIntegrationName, integrationuserinstallstate.FieldOauthState:
@@ -88,6 +84,8 @@ func (*IntegrationUserInstallState) scanValues(columns []string) ([]any, error) 
 			values[i] = new(sql.NullTime)
 		case integrationuserinstallstate.FieldID, integrationuserinstallstate.FieldUserID:
 			values[i] = new(uuid.UUID)
+		case integrationuserinstallstate.FieldInstallationTargetConfigs:
+			values[i] = integrationuserinstallstate.ValueScanner.InstallationTargetConfigs.ScanValue()
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -140,12 +138,10 @@ func (_m *IntegrationUserInstallState) assignValues(columns []string, values []a
 				_m.OauthState = value.String
 			}
 		case integrationuserinstallstate.FieldInstallationTargetConfigs:
-			if value, ok := values[i].(*[]byte); !ok {
-				return fmt.Errorf("unexpected type %T for field installation_target_configs", values[i])
-			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &_m.InstallationTargetConfigs); err != nil {
-					return fmt.Errorf("unmarshal field installation_target_configs: %w", err)
-				}
+			if value, err := integrationuserinstallstate.ValueScanner.InstallationTargetConfigs.FromValue(values[i]); err != nil {
+				return err
+			} else {
+				_m.InstallationTargetConfigs = value
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -208,8 +204,7 @@ func (_m *IntegrationUserInstallState) String() string {
 	builder.WriteString("oauth_state=")
 	builder.WriteString(_m.OauthState)
 	builder.WriteString(", ")
-	builder.WriteString("installation_target_configs=")
-	builder.WriteString(fmt.Sprintf("%v", _m.InstallationTargetConfigs))
+	builder.WriteString("installation_target_configs=<sensitive>")
 	builder.WriteByte(')')
 	return builder.String()
 }

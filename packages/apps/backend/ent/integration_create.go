@@ -233,7 +233,10 @@ func (_c *IntegrationCreate) sqlSave(ctx context.Context) (*Integration, error) 
 	if err := _c.check(); err != nil {
 		return nil, err
 	}
-	_node, _spec := _c.createSpec()
+	_node, _spec, err := _c.createSpec()
+	if err != nil {
+		return nil, err
+	}
 	if err := sqlgraph.CreateNode(ctx, _c.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
@@ -252,7 +255,7 @@ func (_c *IntegrationCreate) sqlSave(ctx context.Context) (*Integration, error) 
 	return _node, nil
 }
 
-func (_c *IntegrationCreate) createSpec() (*Integration, *sqlgraph.CreateSpec) {
+func (_c *IntegrationCreate) createSpec() (*Integration, *sqlgraph.CreateSpec, error) {
 	var (
 		_node = &Integration{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(integration.Table, sqlgraph.NewFieldSpec(integration.FieldID, field.TypeUUID))
@@ -288,7 +291,11 @@ func (_c *IntegrationCreate) createSpec() (*Integration, *sqlgraph.CreateSpec) {
 		_node.ProviderInstallationRef = value
 	}
 	if value, ok := _c.mutation.InstallationConfig(); ok {
-		_spec.SetField(integration.FieldInstallationConfig, field.TypeJSON, value)
+		vv, err := integration.ValueScanner.InstallationConfig.Value(value)
+		if err != nil {
+			return nil, nil, err
+		}
+		_spec.SetField(integration.FieldInstallationConfig, field.TypeBytes, vv)
 		_node.InstallationConfig = value
 	}
 	if value, ok := _c.mutation.UserSettings(); ok {
@@ -317,7 +324,7 @@ func (_c *IntegrationCreate) createSpec() (*Integration, *sqlgraph.CreateSpec) {
 		_node.TenantID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	return _node, _spec
+	return _node, _spec, nil
 }
 
 // OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
@@ -748,7 +755,10 @@ func (_c *IntegrationCreateBulk) Save(ctx context.Context) ([]*Integration, erro
 				}
 				builder.mutation = mutation
 				var err error
-				nodes[i], specs[i] = builder.createSpec()
+				nodes[i], specs[i], err = builder.createSpec()
+				if err != nil {
+					return nil, err
+				}
 				if i < len(mutators)-1 {
 					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {

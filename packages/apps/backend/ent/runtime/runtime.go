@@ -4,6 +4,7 @@ package runtime
 
 import (
 	"context"
+	"encoding/json/jsontext"
 	"time"
 
 	"github.com/google/uuid"
@@ -110,6 +111,7 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/privacy"
+	"entgo.io/ent/schema/field"
 )
 
 // The init function reads all schema descriptors with runtime code
@@ -931,6 +933,9 @@ func init() {
 	integrationDescProviderInstallationRef := integrationFields[4].Descriptor()
 	// integration.ProviderInstallationRefValidator is a validator for the "provider_installation_ref" field. It is called by the builders before save.
 	integration.ProviderInstallationRefValidator = integrationDescProviderInstallationRef.Validators[0].(func(string) error)
+	// integrationDescInstallationConfig is the schema descriptor for installation_config field.
+	integrationDescInstallationConfig := integrationFields[5].Descriptor()
+	integration.ValueScanner.InstallationConfig = integrationDescInstallationConfig.ValueScanner.(field.TypeValueScanner[jsontext.Value])
 	// integrationDescID is the schema descriptor for id field.
 	integrationDescID := integrationFields[0].Descriptor()
 	// integration.DefaultID holds the default value on creation for the id field.
@@ -1023,6 +1028,9 @@ func init() {
 	integrationuserinstallstateDescUserID := integrationuserinstallstateFields[1].Descriptor()
 	// integrationuserinstallstate.DefaultUserID holds the default value on creation for the user_id field.
 	integrationuserinstallstate.DefaultUserID = integrationuserinstallstateDescUserID.Default.(func() uuid.UUID)
+	// integrationuserinstallstateDescInstallationTargetConfigs is the schema descriptor for installation_target_configs field.
+	integrationuserinstallstateDescInstallationTargetConfigs := integrationuserinstallstateFields[5].Descriptor()
+	integrationuserinstallstate.ValueScanner.InstallationTargetConfigs = integrationuserinstallstateDescInstallationTargetConfigs.ValueScanner.(field.TypeValueScanner[[]byte])
 	// integrationuserinstallstateDescID is the schema descriptor for id field.
 	integrationuserinstallstateDescID := integrationuserinstallstateFields[0].Descriptor()
 	// integrationuserinstallstate.DefaultID holds the default value on creation for the id field.

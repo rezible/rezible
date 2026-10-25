@@ -27,7 +27,7 @@ func (s *DatabaseSuite) TestCreatesAndRemovesMigratedDatabase() {
 
 	pool, poolErr := postgres.MakePgxPool(s.T().Context(), database.Config(), false)
 	s.Require().NoError(poolErr)
-	client, clientErr := postgres.NewPgxPoolDatabaseClient(pool)
+	client, clientErr := postgres.NewPgxPoolDatabaseClient(pool, s.EncryptionKey())
 	s.Require().NoError(clientErr)
 
 	ctx := execution.NewSystemContext(s.T().Context())
