@@ -19,6 +19,7 @@ import (
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/ent/review"
+	"github.com/rezible/rezible/ent/userauthsession"
 	"github.com/rezible/rezible/pkg/errs"
 	"github.com/rezible/rezible/pkg/execution"
 	"github.com/rezible/rezible/pkg/integrations"
@@ -140,6 +141,12 @@ func (s *RetrospectiveServiceSuite) TestCreationRollsBackWithTransaction() {
 	s.Zero(client.SystemAnalysis.Query().CountX(ctx))
 }
 
+// adminContext acts as an admin who is not the retrospective's owner.
+func (s *RetrospectiveServiceSuite) adminContext(ctx context.Context, userID uuid.UUID) context.Context {
+	tenant, _ := execution.GetContext(ctx).TenantID()
+	return execution.NewUserContext(ctx, &ent.UserAuthSession{UserID: userID, TenantID: tenant, Role: userauthsession.RoleAdmin})
+}
+
 func (s *RetrospectiveServiceSuite) TestReviewTransitions() {
 	cases := []struct {
 		name    string
@@ -203,6 +210,45 @@ func (s *RetrospectiveServiceSuite) TestReviewTransitions() {
 				return fmt.Errorf("assigning another member: %w", assignErr)
 			}
 			_, actionErr := svc.SetOwner(otherCtx, r.ID, reviewer)
+			return actionErr
+		}, "", retrospective.StateDraft, ""},
+		{"admin closes another member's review", func(ctx context.Context, svc *RetrospectiveService, r *ent.Retrospective, owner, reviewer uuid.UUID) error {
+			_, actionErr := svc.CloseReview(s.adminContext(ctx, reviewer), r.ID)
+			return actionErr
+		}, "", retrospective.StateClosed, ""},
+		{"admin skips another member's review", func(ctx context.Context, svc *RetrospectiveService, r *ent.Retrospective, owner, reviewer uuid.UUID) error {
+			_, actionErr := svc.SkipReview(s.adminContext(ctx, reviewer), r.ID, "Duplicate")
+			return actionErr
+		}, "", retrospective.StateClosed, ""},
+		{"admin hands over another member's review", func(ctx context.Context, svc *RetrospectiveService, r *ent.Retrospective, owner, reviewer uuid.UUID) error {
+			createUser := svc.db.Client(ctx).User.Create().
+				SetName("New owner").
+				SetEmail(uuid.NewString() + "@example.com")
+			newOwner, createErr := createUser.Save(ctx)
+			if createErr != nil {
+				return createErr
+			}
+			updated, actionErr := svc.SetOwner(s.adminContext(ctx, reviewer), r.ID, newOwner.ID)
+			if actionErr != nil {
+				return actionErr
+			}
+			if *updated.OwnerID != newOwner.ID {
+				return fmt.Errorf("owner is %s, want %s", *updated.OwnerID, newOwner.ID)
+			}
+			return nil
+		}, "", retrospective.StateDraft, ""},
+		{"admin assigns an owner before closing an unowned review", func(ctx context.Context, svc *RetrospectiveService, r *ent.Retrospective, owner, reviewer uuid.UUID) error {
+			if clearErr := svc.db.Client(ctx).Retrospective.UpdateOneID(r.ID).ClearOwner().Exec(ctx); clearErr != nil {
+				return clearErr
+			}
+			adminCtx := s.adminContext(ctx, reviewer)
+			if _, closeErr := svc.CloseReview(adminCtx, r.ID); errs.CodeOf(closeErr) != errs.CodeConflict {
+				return fmt.Errorf("closing unowned review: %w", closeErr)
+			}
+			if _, skipErr := svc.SkipReview(adminCtx, r.ID, "Duplicate"); errs.CodeOf(skipErr) != errs.CodeConflict {
+				return fmt.Errorf("skipping unowned review: %w", skipErr)
+			}
+			_, actionErr := svc.SetOwner(adminCtx, r.ID, owner)
 			return actionErr
 		}, "", retrospective.StateDraft, ""},
 		{"decision only for self", func(ctx context.Context, svc *RetrospectiveService, r *ent.Retrospective, owner, reviewer uuid.UUID) error {

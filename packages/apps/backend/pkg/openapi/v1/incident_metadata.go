@@ -305,6 +305,7 @@ var CreateIncidentSeverity = huma.Operation{
 	Summary:     "Create a Severity",
 	Tags:        incidentSeveritiesTags,
 	Errors:      ErrorCodes(),
+	Security:    ManageOrganizationSecurity,
 }
 
 type CreateIncidentSeverityAttributes struct {
@@ -323,6 +324,7 @@ var UpdateIncidentSeverity = huma.Operation{
 	Summary:     "Update a Severity",
 	Tags:        incidentSeveritiesTags,
 	Errors:      ErrorCodes(),
+	Security:    ManageOrganizationSecurity,
 }
 
 type UpdateIncidentSeverityAttributes struct {
@@ -342,6 +344,7 @@ var ArchiveIncidentSeverity = huma.Operation{
 	Summary:     "Archive a Severity",
 	Tags:        incidentSeveritiesTags,
 	Errors:      ErrorCodes(),
+	Security:    ManageOrganizationSecurity,
 }
 
 type ArchiveIncidentSeverityRequest IdRequest
@@ -386,6 +389,7 @@ var CreateIncidentType = huma.Operation{
 	Summary:     "Create an Incident Type",
 	Tags:        incidentTypesTags,
 	Errors:      ErrorCodes(),
+	Security:    ManageOrganizationSecurity,
 }
 
 type CreateIncidentTypeAttributes struct {
@@ -401,6 +405,7 @@ var UpdateIncidentType = huma.Operation{
 	Summary:     "Update an Incident Type",
 	Tags:        incidentTypesTags,
 	Errors:      ErrorCodes(),
+	Security:    ManageOrganizationSecurity,
 }
 
 type UpdateIncidentTypeAttributes struct {
@@ -417,6 +422,7 @@ var ArchiveIncidentType = huma.Operation{
 	Summary:     "Archive an Incident Type",
 	Tags:        incidentTypesTags,
 	Errors:      ErrorCodes(),
+	Security:    ManageOrganizationSecurity,
 }
 
 type ArchiveIncidentTypeRequest IdRequest
@@ -456,6 +462,7 @@ var CreateIncidentRole = huma.Operation{
 	Summary:     "Create an Incident Role",
 	Tags:        incidentRolesTags,
 	Errors:      ErrorCodes(),
+	Security:    ManageOrganizationSecurity,
 }
 
 type CreateIncidentRoleAttributes struct {
@@ -472,6 +479,7 @@ var UpdateIncidentRole = huma.Operation{
 	Summary:     "Update an Incident Role",
 	Tags:        incidentRolesTags,
 	Errors:      ErrorCodes(),
+	Security:    ManageOrganizationSecurity,
 }
 
 type UpdateIncidentRoleAttributes struct {
@@ -490,6 +498,7 @@ var ArchiveIncidentRole = huma.Operation{
 	Summary:     "Archive an Incident Role",
 	Tags:        incidentRolesTags,
 	Errors:      ErrorCodes(),
+	Security:    ManageOrganizationSecurity,
 }
 
 type ArchiveIncidentRoleRequest IdRequest
@@ -534,6 +543,7 @@ var CreateIncidentTag = huma.Operation{
 	Summary:     "Create an Incident Tag",
 	Tags:        incidentTagsTags,
 	Errors:      ErrorCodes(),
+	Security:    ManageOrganizationSecurity,
 }
 
 type CreateIncidentTagAttributes struct {
@@ -549,6 +559,7 @@ var UpdateIncidentTag = huma.Operation{
 	Summary:     "Update an Incident Tag",
 	Tags:        incidentTagsTags,
 	Errors:      ErrorCodes(),
+	Security:    ManageOrganizationSecurity,
 }
 
 type UpdateIncidentTagAttributes struct {
@@ -565,6 +576,7 @@ var ArchiveIncidentTag = huma.Operation{
 	Summary:     "Archive an Incident Tag",
 	Tags:        incidentTagsTags,
 	Errors:      ErrorCodes(),
+	Security:    ManageOrganizationSecurity,
 }
 
 type ArchiveIncidentTagRequest IdRequest
@@ -607,6 +619,7 @@ var CreateIncidentField = huma.Operation{
 	Summary:     "Create an Incident Field",
 	Tags:        incidentFieldsTags,
 	Errors:      ErrorCodes(),
+	Security:    ManageOrganizationSecurity,
 }
 
 type CreateIncidentFieldAttributes struct {
@@ -629,6 +642,7 @@ var UpdateIncidentField = huma.Operation{
 	Summary:     "Update an Incident Field",
 	Tags:        incidentFieldsTags,
 	Errors:      ErrorCodes(),
+	Security:    ManageOrganizationSecurity,
 }
 
 type UpdateIncidentFieldAttributes struct {
@@ -654,6 +668,7 @@ var ArchiveIncidentField = huma.Operation{
 	Summary:     "Archive an Incident Field",
 	Tags:        incidentFieldsTags,
 	Errors:      ErrorCodes(),
+	Security:    ManageOrganizationSecurity,
 }
 
 type ArchiveIncidentFieldRequest IdRequest

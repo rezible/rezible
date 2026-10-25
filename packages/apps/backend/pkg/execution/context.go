@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"slices"
 	"time"
 
 	"github.com/google/uuid"
@@ -49,6 +50,18 @@ const (
 	SourceCLI      SourceKind = "cli"
 	SourceInternal SourceKind = "internal"
 )
+
+const ScopeOrganizationManage = "organization:manage"
+
+// roleScopes are the scopes each user role grants.
+var roleScopes = map[user.Role][]string{
+	user.RoleAdmin:  {ScopeOrganizationManage},
+	user.RoleMember: nil,
+}
+
+func (c Context) HasScope(scope string) bool {
+	return slices.Contains(c.Auth.Scopes, scope)
+}
 
 func (c Context) IsAnonymous() bool {
 	return c.ActorKind == KindAnonymous
@@ -164,6 +177,7 @@ func NewUserContext(ctx context.Context, sess *ent.UserAuthSession) context.Cont
 		TenantID:  &sess.TenantID,
 		UserID:    &sess.UserID,
 		Role:      user.Role(sess.Role),
+		Scopes:    roleScopes[user.Role(sess.Role)],
 		ExpiresAt: &sess.ExpiresAt,
 	}
 	return SetContext(ctx, c)

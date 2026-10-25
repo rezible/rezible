@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 
@@ -13,6 +14,7 @@ import (
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/userauthsession"
 	oapi "github.com/rezible/rezible/pkg/openapi/v1"
 )
 
@@ -86,6 +88,55 @@ func TestSecurityProviderRejectedSessions(t *testing.T) {
 			require.Equal(t, oapi.AppAuthSessionCookieName, cookies[0].Name)
 			require.Empty(t, cookies[0].Value)
 			require.Negative(t, cookies[0].MaxAge)
+		})
+	}
+}
+
+// scopedHandler answers an admin-only operation and a default one once the security middleware lets them through.
+type scopedHandler struct {
+	securedHandler
+}
+
+func (h scopedHandler) CompleteOrgSetup(context.Context, *oapi.CompleteOrgSetupRequest) (*oapi.CompleteOrgSetupResponse, error) {
+	return &oapi.CompleteOrgSetupResponse{}, nil
+}
+
+func (h scopedHandler) GetDocumentSession(context.Context, *oapi.GetDocumentSessionRequest) (*oapi.GetDocumentSessionResponse, error) {
+	return &oapi.GetDocumentSessionResponse{}, nil
+}
+
+func TestSecurityProviderOperationScopes(t *testing.T) {
+	tenantID := 1
+	session := func(role userauthsession.Role) *ent.UserAuthSession {
+		return &ent.UserAuthSession{ID: uuid.New(), TenantID: tenantID, UserID: uuid.New(), Role: role, ExpiresAt: time.Now().Add(time.Hour)}
+	}
+	admin, member := session(userauthsession.RoleAdmin), session(userauthsession.RoleMember)
+	sessions := storedSessions{sessions: map[uuid.UUID]*ent.UserAuthSession{admin.ID: admin, member.ID: member}}
+	provider := NewRequestSecurityProvider(sessions, oapi.NewAppAuthSessionCookie("/api"))
+	api := oapi.MakeApi(scopedHandler{securedHandler{provider: provider}})
+
+	setupPath := oapi.VersionPrefix + "/organizations/" + uuid.NewString() + "/setup"
+	documentSessionPath := oapi.VersionPrefix + "/documents/" + uuid.NewString() + "/session"
+	for _, tc := range []struct {
+		name    string
+		session *ent.UserAuthSession
+		method  string
+		path    string
+		status  int
+	}{
+		{"member on admin operation", member, http.MethodPost, setupPath, http.StatusForbidden},
+		{"admin on admin operation", admin, http.MethodPost, setupPath, http.StatusOK},
+		{"member on document session", member, http.MethodGet, documentSessionPath, http.StatusOK},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			request := httptest.NewRequest(tc.method, tc.path, strings.NewReader(`{"attributes":{"name":"Org"}}`))
+			request.Header.Set("Content-Type", "application/json")
+			request.AddCookie(&http.Cookie{Name: oapi.AppAuthSessionCookieName, Value: tc.session.ID.String()})
+			recorder := httptest.NewRecorder()
+
+			api.Adapter().ServeHTTP(recorder, request)
+
+			require.Equal(t, tc.status, recorder.Code, recorder.Body.String())
 		})
 	}
 }

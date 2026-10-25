@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"slices"
 	"strings"
 	"time"
 
@@ -87,6 +88,7 @@ func (v *SecurityProvider) extractRequestSession(r *http.Request) (*ent.UserAuth
 	return nil, errs.ErrAuthSessionMissing
 }
 
+// VerifyRequestSecurity passes when the identity has every scope one of the operation's options requires.
 func (v *SecurityProvider) VerifyRequestSecurity(ctx context.Context, opts oapi.OperationSecurityOptions) error {
 	ec := execution.GetContext(ctx)
 
@@ -94,27 +96,25 @@ func (v *SecurityProvider) VerifyRequestSecurity(ctx context.Context, opts oapi.
 		return errs.ErrAuthSessionMissing
 	}
 
-	if len(ec.Auth.Scopes) > 0 {
-		var scopesSatisfied bool
-		for _, methodOpts := range opts {
-			for method, methodScopes := range methodOpts {
-				if v.scopesSatisfied(ec.Auth.Scopes, methodScopes) {
-					scopesSatisfied = true
-					slog.Debug("method scopes satisfied", "method", method)
-					break
-				}
+	if len(opts) == 0 {
+		return nil
+	}
+	for _, methodOpts := range opts {
+		for _, methodScopes := range methodOpts {
+			if v.scopesSatisfied(methodScopes, ec.Auth.Scopes) {
+				return nil
 			}
 		}
-		if !scopesSatisfied {
-			return errs.ErrAuthSessionInvalid
-		}
 	}
-
-	return nil
+	return errs.ErrForbidden
 }
 
 func (v *SecurityProvider) scopesSatisfied(requiredScopes []string, authScopes []string) bool {
-	// TODO
+	for _, scope := range requiredScopes {
+		if !slices.Contains(authScopes, scope) {
+			return false
+		}
+	}
 	return true
 }
 

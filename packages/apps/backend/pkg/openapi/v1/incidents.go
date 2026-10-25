@@ -398,6 +398,7 @@ var ArchiveIncident = huma.Operation{
 	Summary:     "Archive an Incident",
 	Tags:        incidentsTags,
 	Errors:      ErrorCodes(),
+	Security:    ManageOrganizationSecurity,
 }
 
 type ArchiveIncidentRequest IdRequest

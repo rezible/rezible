@@ -93,6 +93,8 @@ func (s *AuthSessionServiceSuite) TestSigningInTakesTheProviderRole() {
 	loaded, err := sessions.LookupSession(s.T().Context(), asAdmin.ID)
 	s.Require().NoError(err)
 	s.Equal(userauthsession.RoleAdmin, loaded.Role)
+	s.True(execution.GetContext(execution.NewUserContext(s.T().Context(), loaded)).HasScope(execution.ScopeOrganizationManage))
+	s.False(execution.GetContext(execution.NewUserContext(s.T().Context(), asMember)).HasScope(execution.ScopeOrganizationManage))
 
 	// The same provider user in another organization has its own role.
 	otherOrg := s.signIn(sessions, "org-b", "person", user.RoleAdmin)

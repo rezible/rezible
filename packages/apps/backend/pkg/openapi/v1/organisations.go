@@ -76,7 +76,6 @@ var GetOrganization = huma.Operation{
 type GetOrganizationRequest IdRequest
 type GetOrganizationResponse ItemResponse[Organization]
 
-// TODO: require organization admin authorization.
 var CompleteOrgSetup = huma.Operation{
 	OperationID: "complete-org-setup",
 	Method:      http.MethodPost,
@@ -84,6 +83,7 @@ var CompleteOrgSetup = huma.Operation{
 	Summary:     "Complete Organization Setup",
 	Tags:        organizationsTags,
 	Errors:      ErrorCodes(http.StatusConflict),
+	Security:    ManageOrganizationSecurity,
 }
 
 type CompleteOrgSetupRequestAttributes struct {
@@ -100,6 +100,7 @@ var UpdateOrganizationPreferences = huma.Operation{
 	Summary:     "Update Organization Preferences",
 	Tags:        organizationsTags,
 	Errors:      ErrorCodes(),
+	Security:    ManageOrganizationSecurity,
 }
 
 type UpdateOrganizationPreferencesRequestAttributes struct {

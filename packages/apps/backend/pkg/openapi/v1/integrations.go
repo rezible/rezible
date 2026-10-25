@@ -262,6 +262,7 @@ var InstallIntegration = huma.Operation{
 	Summary:     "Install an Integration",
 	Tags:        integrationsTags,
 	Errors:      ErrorCodes(),
+	Security:    ManageOrganizationSecurity,
 }
 
 type InstallIntegrationRequestAttributes struct {
@@ -277,6 +278,7 @@ var ListIntegrationInstallTargets = huma.Operation{
 	Summary:     "List integration installation targets requiring selection",
 	Tags:        integrationsTags,
 	Errors:      ErrorCodes(),
+	Security:    ManageOrganizationSecurity,
 }
 
 type ListIntegrationInstallTargetsRequest EmptyRequest
@@ -289,6 +291,7 @@ var InstallIntegrationFromTargets = huma.Operation{
 	Summary:     "Select installation targets for an Integration",
 	Tags:        integrationsTags,
 	Errors:      ErrorCodes(),
+	Security:    ManageOrganizationSecurity,
 }
 
 type InstallIntegrationFromTargetsRequestAttributes struct {
@@ -304,6 +307,7 @@ var StartIntegrationOAuthFlow = huma.Operation{
 	Summary:     "Start OAuth flow for an Integration",
 	Tags:        integrationsTags,
 	Errors:      ErrorCodes(),
+	Security:    ManageOrganizationSecurity,
 }
 
 type StartIntegrationOAuthFlowRequest EmptyNameRequest
@@ -316,6 +320,7 @@ var CompleteIntegrationOAuthFlow = huma.Operation{
 	Summary:     "Complete OAuth flow for an Integration",
 	Tags:        integrationsTags,
 	Errors:      ErrorCodes(),
+	Security:    ManageOrganizationSecurity,
 }
 
 type CompleteIntegrationOAuthFlowRequestAttributes struct {
@@ -357,6 +362,7 @@ var UpdateIntegrationInstallation = huma.Operation{
 	Summary:     "Update an installed Integration",
 	Tags:        integrationsTags,
 	Errors:      ErrorCodes(),
+	Security:    ManageOrganizationSecurity,
 }
 
 type UpdateIntegrationInstallationRequestAttributes struct {
@@ -372,6 +378,7 @@ var DeleteIntegrationInstallation = huma.Operation{
 	Summary:     "Delete an Integration",
 	Tags:        integrationsTags,
 	Errors:      ErrorCodes(),
+	Security:    ManageOrganizationSecurity,
 }
 
 type DeleteIntegrationInstallationRequest IdRequest
@@ -385,6 +392,7 @@ var IssueIntegrationWebhookToken = huma.Operation{
 	Description: "Issues a new webhook token for the installation, replacing any earlier one, and returns the full webhook URL. The URL is not stored and cannot be retrieved again.",
 	Tags:        integrationsTags,
 	Errors:      ErrorCodes(),
+	Security:    ManageOrganizationSecurity,
 }
 
 type IssueIntegrationWebhookTokenRequest IdRequest
@@ -402,6 +410,7 @@ var RequestIntegrationEventSync = huma.Operation{
 	Summary:     "Request a manual event sync for an integration",
 	Tags:        integrationsTags,
 	Errors:      ErrorCodes(),
+	Security:    ManageOrganizationSecurity,
 }
 
 type RequestIntegrationEventSyncRequestAttributes struct {
@@ -430,6 +439,7 @@ var ListIntegrationChatChannels = huma.Operation{
 	Description: "Reads one page of public channels from the provider. Results are not stored.",
 	Tags:        integrationsTags,
 	Errors:      ErrorCodes(http.StatusTooManyRequests),
+	Security:    ManageOrganizationSecurity,
 }
 
 type ListIntegrationChatChannelsRequest struct {
@@ -447,6 +457,7 @@ var CheckIntegrationHealth = huma.Operation{
 	Description: "Checks whether the installation can currently reach its provider. A failed check is a successful response with ok false.",
 	Tags:        integrationsTags,
 	Errors:      ErrorCodes(),
+	Security:    ManageOrganizationSecurity,
 }
 
 type CheckIntegrationHealthRequest IdRequest

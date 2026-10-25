@@ -1,12 +1,15 @@
 package oidc
 
 import (
+	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
 	"net/url"
 
 	"github.com/go-chi/chi/v5"
+	"golang.org/x/oauth2"
+
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 )
@@ -83,7 +86,11 @@ func (s *UserAuthProvider) handleLogin(w http.ResponseWriter, r *http.Request) (
 func (s *UserAuthProvider) handleCallback(w http.ResponseWriter, r *http.Request) (string, error) {
 	res, callbackErr := s.oidc.doCallbackExchange(w, r)
 	if callbackErr != nil {
-		slog.Debug("callback exchange", "error", callbackErr)
+		attrs := []any{"error", callbackErr}
+		if retrieveErr, isRetrieveErr := errors.AsType[*oauth2.RetrieveError](callbackErr); isRetrieveErr {
+			attrs = append(attrs, "oauth_error", retrieveErr.ErrorCode, "oauth_error_description", retrieveErr.ErrorDescription)
+		}
+		slog.WarnContext(r.Context(), "Sign-in refused", attrs...)
 		return "", errCallbackExchange
 	}
 

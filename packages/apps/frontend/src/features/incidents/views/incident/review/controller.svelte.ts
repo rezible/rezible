@@ -22,7 +22,7 @@ export class ReviewPanelController {
 	private view = useIncidentView();
 	private session = useUserSessionState();
 	private queryClient = useQueryClient();
-	model = $derived(reviewPanelModel(this.view.retrospective?.attributes, this.session.user?.id));
+	model = $derived(reviewPanelModel(this.view.retrospective?.attributes, this.session.user?.id, this.session.isAdmin));
 	skipReason = $derived(this.view.retrospective?.attributes.skipReason);
 	dialog = $state<ReviewDialog>();
 	selected = $state<User[]>([]);

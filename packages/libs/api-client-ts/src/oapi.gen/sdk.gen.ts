@@ -607,7 +607,11 @@ export const createDiscussionComment = <ThrowOnError extends boolean = false>(op
  */
 export const getDocumentSession = <ThrowOnError extends boolean = false>(options: Options<GetDocumentSessionData, ThrowOnError>): RequestResult<GetDocumentSessionResponses, GetDocumentSessionErrors, ThrowOnError> => (options.client ?? client).get<GetDocumentSessionResponses, GetDocumentSessionErrors, ThrowOnError>({
     security: [{
-            key: 'scoped-session-token',
+            key: 'app-cookie',
+            scheme: 'bearer',
+            type: 'http'
+        }, {
+            key: 'api-token',
             scheme: 'bearer',
             type: 'http'
         }],
@@ -915,10 +919,6 @@ export const createIncidentField = <ThrowOnError extends boolean = false>(option
             key: 'app-cookie',
             scheme: 'bearer',
             type: 'http'
-        }, {
-            key: 'api-token',
-            scheme: 'bearer',
-            type: 'http'
         }],
     url: '/incident_metadata/fields',
     ...options,
@@ -934,10 +934,6 @@ export const createIncidentField = <ThrowOnError extends boolean = false>(option
 export const archiveIncidentField = <ThrowOnError extends boolean = false>(options: Options<ArchiveIncidentFieldData, ThrowOnError>): RequestResult<ArchiveIncidentFieldResponses, ArchiveIncidentFieldErrors, ThrowOnError> => (options.client ?? client).delete<ArchiveIncidentFieldResponses, ArchiveIncidentFieldErrors, ThrowOnError>({
     security: [{
             key: 'app-cookie',
-            scheme: 'bearer',
-            type: 'http'
-        }, {
-            key: 'api-token',
             scheme: 'bearer',
             type: 'http'
         }],
@@ -968,10 +964,6 @@ export const getIncidentField = <ThrowOnError extends boolean = false>(options: 
 export const updateIncidentField = <ThrowOnError extends boolean = false>(options: Options<UpdateIncidentFieldData, ThrowOnError>): RequestResult<UpdateIncidentFieldResponses, UpdateIncidentFieldErrors, ThrowOnError> => (options.client ?? client).patch<UpdateIncidentFieldResponses, UpdateIncidentFieldErrors, ThrowOnError>({
     security: [{
             key: 'app-cookie',
-            scheme: 'bearer',
-            type: 'http'
-        }, {
-            key: 'api-token',
             scheme: 'bearer',
             type: 'http'
         }],
@@ -1008,10 +1000,6 @@ export const createIncidentRole = <ThrowOnError extends boolean = false>(options
             key: 'app-cookie',
             scheme: 'bearer',
             type: 'http'
-        }, {
-            key: 'api-token',
-            scheme: 'bearer',
-            type: 'http'
         }],
     url: '/incident_metadata/roles',
     ...options,
@@ -1027,10 +1015,6 @@ export const createIncidentRole = <ThrowOnError extends boolean = false>(options
 export const archiveIncidentRole = <ThrowOnError extends boolean = false>(options: Options<ArchiveIncidentRoleData, ThrowOnError>): RequestResult<ArchiveIncidentRoleResponses, ArchiveIncidentRoleErrors, ThrowOnError> => (options.client ?? client).delete<ArchiveIncidentRoleResponses, ArchiveIncidentRoleErrors, ThrowOnError>({
     security: [{
             key: 'app-cookie',
-            scheme: 'bearer',
-            type: 'http'
-        }, {
-            key: 'api-token',
             scheme: 'bearer',
             type: 'http'
         }],
@@ -1061,10 +1045,6 @@ export const getIncidentRole = <ThrowOnError extends boolean = false>(options: O
 export const updateIncidentRole = <ThrowOnError extends boolean = false>(options: Options<UpdateIncidentRoleData, ThrowOnError>): RequestResult<UpdateIncidentRoleResponses, UpdateIncidentRoleErrors, ThrowOnError> => (options.client ?? client).patch<UpdateIncidentRoleResponses, UpdateIncidentRoleErrors, ThrowOnError>({
     security: [{
             key: 'app-cookie',
-            scheme: 'bearer',
-            type: 'http'
-        }, {
-            key: 'api-token',
             scheme: 'bearer',
             type: 'http'
         }],
@@ -1101,10 +1081,6 @@ export const createIncidentSeverity = <ThrowOnError extends boolean = false>(opt
             key: 'app-cookie',
             scheme: 'bearer',
             type: 'http'
-        }, {
-            key: 'api-token',
-            scheme: 'bearer',
-            type: 'http'
         }],
     url: '/incident_metadata/severities',
     ...options,
@@ -1120,10 +1096,6 @@ export const createIncidentSeverity = <ThrowOnError extends boolean = false>(opt
 export const archiveIncidentSeverity = <ThrowOnError extends boolean = false>(options: Options<ArchiveIncidentSeverityData, ThrowOnError>): RequestResult<ArchiveIncidentSeverityResponses, ArchiveIncidentSeverityErrors, ThrowOnError> => (options.client ?? client).delete<ArchiveIncidentSeverityResponses, ArchiveIncidentSeverityErrors, ThrowOnError>({
     security: [{
             key: 'app-cookie',
-            scheme: 'bearer',
-            type: 'http'
-        }, {
-            key: 'api-token',
             scheme: 'bearer',
             type: 'http'
         }],
@@ -1154,10 +1126,6 @@ export const getIncidentSeverity = <ThrowOnError extends boolean = false>(option
 export const updateIncidentSeverity = <ThrowOnError extends boolean = false>(options: Options<UpdateIncidentSeverityData, ThrowOnError>): RequestResult<UpdateIncidentSeverityResponses, UpdateIncidentSeverityErrors, ThrowOnError> => (options.client ?? client).patch<UpdateIncidentSeverityResponses, UpdateIncidentSeverityErrors, ThrowOnError>({
     security: [{
             key: 'app-cookie',
-            scheme: 'bearer',
-            type: 'http'
-        }, {
-            key: 'api-token',
             scheme: 'bearer',
             type: 'http'
         }],
@@ -1194,10 +1162,6 @@ export const createIncidentTag = <ThrowOnError extends boolean = false>(options:
             key: 'app-cookie',
             scheme: 'bearer',
             type: 'http'
-        }, {
-            key: 'api-token',
-            scheme: 'bearer',
-            type: 'http'
         }],
     url: '/incident_metadata/tags',
     ...options,
@@ -1213,10 +1177,6 @@ export const createIncidentTag = <ThrowOnError extends boolean = false>(options:
 export const archiveIncidentTag = <ThrowOnError extends boolean = false>(options: Options<ArchiveIncidentTagData, ThrowOnError>): RequestResult<ArchiveIncidentTagResponses, ArchiveIncidentTagErrors, ThrowOnError> => (options.client ?? client).delete<ArchiveIncidentTagResponses, ArchiveIncidentTagErrors, ThrowOnError>({
     security: [{
             key: 'app-cookie',
-            scheme: 'bearer',
-            type: 'http'
-        }, {
-            key: 'api-token',
             scheme: 'bearer',
             type: 'http'
         }],
@@ -1247,10 +1207,6 @@ export const getIncidentTag = <ThrowOnError extends boolean = false>(options: Op
 export const updateIncidentTag = <ThrowOnError extends boolean = false>(options: Options<UpdateIncidentTagData, ThrowOnError>): RequestResult<UpdateIncidentTagResponses, UpdateIncidentTagErrors, ThrowOnError> => (options.client ?? client).patch<UpdateIncidentTagResponses, UpdateIncidentTagErrors, ThrowOnError>({
     security: [{
             key: 'app-cookie',
-            scheme: 'bearer',
-            type: 'http'
-        }, {
-            key: 'api-token',
             scheme: 'bearer',
             type: 'http'
         }],
@@ -1287,10 +1243,6 @@ export const createIncidentType = <ThrowOnError extends boolean = false>(options
             key: 'app-cookie',
             scheme: 'bearer',
             type: 'http'
-        }, {
-            key: 'api-token',
-            scheme: 'bearer',
-            type: 'http'
         }],
     url: '/incident_metadata/types',
     ...options,
@@ -1306,10 +1258,6 @@ export const createIncidentType = <ThrowOnError extends boolean = false>(options
 export const archiveIncidentType = <ThrowOnError extends boolean = false>(options: Options<ArchiveIncidentTypeData, ThrowOnError>): RequestResult<ArchiveIncidentTypeResponses, ArchiveIncidentTypeErrors, ThrowOnError> => (options.client ?? client).delete<ArchiveIncidentTypeResponses, ArchiveIncidentTypeErrors, ThrowOnError>({
     security: [{
             key: 'app-cookie',
-            scheme: 'bearer',
-            type: 'http'
-        }, {
-            key: 'api-token',
             scheme: 'bearer',
             type: 'http'
         }],
@@ -1340,10 +1288,6 @@ export const getIncidentType = <ThrowOnError extends boolean = false>(options: O
 export const updateIncidentType = <ThrowOnError extends boolean = false>(options: Options<UpdateIncidentTypeData, ThrowOnError>): RequestResult<UpdateIncidentTypeResponses, UpdateIncidentTypeErrors, ThrowOnError> => (options.client ?? client).patch<UpdateIncidentTypeResponses, UpdateIncidentTypeErrors, ThrowOnError>({
     security: [{
             key: 'app-cookie',
-            scheme: 'bearer',
-            type: 'http'
-        }, {
-            key: 'api-token',
             scheme: 'bearer',
             type: 'http'
         }],
@@ -1399,10 +1343,6 @@ export const createIncident = <ThrowOnError extends boolean = false>(options: Op
 export const archiveIncident = <ThrowOnError extends boolean = false>(options: Options<ArchiveIncidentData, ThrowOnError>): RequestResult<ArchiveIncidentResponses, ArchiveIncidentErrors, ThrowOnError> => (options.client ?? client).delete<ArchiveIncidentResponses, ArchiveIncidentErrors, ThrowOnError>({
     security: [{
             key: 'app-cookie',
-            scheme: 'bearer',
-            type: 'http'
-        }, {
-            key: 'api-token',
             scheme: 'bearer',
             type: 'http'
         }],
@@ -1627,10 +1567,6 @@ export const installIntegration = <ThrowOnError extends boolean = false>(options
             key: 'app-cookie',
             scheme: 'bearer',
             type: 'http'
-        }, {
-            key: 'api-token',
-            scheme: 'bearer',
-            type: 'http'
         }],
     url: '/integrations/install/{name}',
     ...options,
@@ -1646,10 +1582,6 @@ export const installIntegration = <ThrowOnError extends boolean = false>(options
 export const completeIntegrationOauthFlow = <ThrowOnError extends boolean = false>(options: Options<CompleteIntegrationOauthFlowData, ThrowOnError>): RequestResult<CompleteIntegrationOauthFlowResponses, CompleteIntegrationOauthFlowErrors, ThrowOnError> => (options.client ?? client).post<CompleteIntegrationOauthFlowResponses, CompleteIntegrationOauthFlowErrors, ThrowOnError>({
     security: [{
             key: 'app-cookie',
-            scheme: 'bearer',
-            type: 'http'
-        }, {
-            key: 'api-token',
             scheme: 'bearer',
             type: 'http'
         }],
@@ -1669,10 +1601,6 @@ export const startIntegrationOauthFlow = <ThrowOnError extends boolean = false>(
             key: 'app-cookie',
             scheme: 'bearer',
             type: 'http'
-        }, {
-            key: 'api-token',
-            scheme: 'bearer',
-            type: 'http'
         }],
     url: '/integrations/install/{name}/oauth/start',
     ...options
@@ -1684,10 +1612,6 @@ export const startIntegrationOauthFlow = <ThrowOnError extends boolean = false>(
 export const installIntegrationFromTargets = <ThrowOnError extends boolean = false>(options: Options<InstallIntegrationFromTargetsData, ThrowOnError>): RequestResult<InstallIntegrationFromTargetsResponses, InstallIntegrationFromTargetsErrors, ThrowOnError> => (options.client ?? client).post<InstallIntegrationFromTargetsResponses, InstallIntegrationFromTargetsErrors, ThrowOnError>({
     security: [{
             key: 'app-cookie',
-            scheme: 'bearer',
-            type: 'http'
-        }, {
-            key: 'api-token',
             scheme: 'bearer',
             type: 'http'
         }],
@@ -1705,10 +1629,6 @@ export const installIntegrationFromTargets = <ThrowOnError extends boolean = fal
 export const listIntegrationInstallTargets = <ThrowOnError extends boolean = false>(options?: Options<ListIntegrationInstallTargetsData, ThrowOnError>): RequestResult<ListIntegrationInstallTargetsResponses, ListIntegrationInstallTargetsErrors, ThrowOnError> => (options?.client ?? client).get<ListIntegrationInstallTargetsResponses, ListIntegrationInstallTargetsErrors, ThrowOnError>({
     security: [{
             key: 'app-cookie',
-            scheme: 'bearer',
-            type: 'http'
-        }, {
-            key: 'api-token',
             scheme: 'bearer',
             type: 'http'
         }],
@@ -1741,10 +1661,6 @@ export const deleteIntegrationInstallation = <ThrowOnError extends boolean = fal
             key: 'app-cookie',
             scheme: 'bearer',
             type: 'http'
-        }, {
-            key: 'api-token',
-            scheme: 'bearer',
-            type: 'http'
         }],
     url: '/integrations/installations/{id}',
     ...options
@@ -1775,10 +1691,6 @@ export const updateIntegrationInstallation = <ThrowOnError extends boolean = fal
             key: 'app-cookie',
             scheme: 'bearer',
             type: 'http'
-        }, {
-            key: 'api-token',
-            scheme: 'bearer',
-            type: 'http'
         }],
     url: '/integrations/installations/{id}',
     ...options,
@@ -1798,10 +1710,6 @@ export const listIntegrationChatChannels = <ThrowOnError extends boolean = false
             key: 'app-cookie',
             scheme: 'bearer',
             type: 'http'
-        }, {
-            key: 'api-token',
-            scheme: 'bearer',
-            type: 'http'
         }],
     url: '/integrations/installations/{id}/chat-channels',
     ...options
@@ -1815,10 +1723,6 @@ export const listIntegrationChatChannels = <ThrowOnError extends boolean = false
 export const checkIntegrationHealth = <ThrowOnError extends boolean = false>(options: Options<CheckIntegrationHealthData, ThrowOnError>): RequestResult<CheckIntegrationHealthResponses, CheckIntegrationHealthErrors, ThrowOnError> => (options.client ?? client).post<CheckIntegrationHealthResponses, CheckIntegrationHealthErrors, ThrowOnError>({
     security: [{
             key: 'app-cookie',
-            scheme: 'bearer',
-            type: 'http'
-        }, {
-            key: 'api-token',
             scheme: 'bearer',
             type: 'http'
         }],
@@ -1851,10 +1755,6 @@ export const requestIntegrationEventSync = <ThrowOnError extends boolean = false
             key: 'app-cookie',
             scheme: 'bearer',
             type: 'http'
-        }, {
-            key: 'api-token',
-            scheme: 'bearer',
-            type: 'http'
         }],
     url: '/integrations/installations/{id}/sync/start',
     ...options,
@@ -1872,10 +1772,6 @@ export const requestIntegrationEventSync = <ThrowOnError extends boolean = false
 export const issueIntegrationWebhookToken = <ThrowOnError extends boolean = false>(options: Options<IssueIntegrationWebhookTokenData, ThrowOnError>): RequestResult<IssueIntegrationWebhookTokenResponses, IssueIntegrationWebhookTokenErrors, ThrowOnError> => (options.client ?? client).post<IssueIntegrationWebhookTokenResponses, IssueIntegrationWebhookTokenErrors, ThrowOnError>({
     security: [{
             key: 'app-cookie',
-            scheme: 'bearer',
-            type: 'http'
-        }, {
-            key: 'api-token',
             scheme: 'bearer',
             type: 'http'
         }],
@@ -2852,10 +2748,6 @@ export const updateOrganizationPreferences = <ThrowOnError extends boolean = fal
             key: 'app-cookie',
             scheme: 'bearer',
             type: 'http'
-        }, {
-            key: 'api-token',
-            scheme: 'bearer',
-            type: 'http'
         }],
     url: '/organizations/{id}/preferences',
     ...options,
@@ -2871,10 +2763,6 @@ export const updateOrganizationPreferences = <ThrowOnError extends boolean = fal
 export const completeOrgSetup = <ThrowOnError extends boolean = false>(options: Options<CompleteOrgSetupData, ThrowOnError>): RequestResult<CompleteOrgSetupResponses, CompleteOrgSetupErrors, ThrowOnError> => (options.client ?? client).post<CompleteOrgSetupResponses, CompleteOrgSetupErrors, ThrowOnError>({
     security: [{
             key: 'app-cookie',
-            scheme: 'bearer',
-            type: 'http'
-        }, {
-            key: 'api-token',
             scheme: 'bearer',
             type: 'http'
         }],

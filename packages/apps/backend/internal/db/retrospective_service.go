@@ -135,11 +135,12 @@ func (s *RetrospectiveService) transition(ctx context.Context, id uuid.UUID, cha
 	})
 }
 
-func (s *RetrospectiveService) requireOwner(retro *ent.Retrospective, actor uuid.UUID) error {
+// requireOwner permits the retrospective's owner and admins.
+func (s *RetrospectiveService) requireOwner(ctx context.Context, retro *ent.Retrospective, actor uuid.UUID) error {
 	if retro.OwnerID == nil {
 		return errs.New(errs.CodeConflict, "This retrospective has no owner. Take ownership first.")
 	}
-	if *retro.OwnerID != actor {
+	if *retro.OwnerID != actor && !execution.GetContext(ctx).HasScope(execution.ScopeOrganizationManage) {
 		return errs.New(errs.CodeForbidden, "Only the retrospective's owner can do this.")
 	}
 	return nil
@@ -155,14 +156,15 @@ func (s *RetrospectiveService) requireState(retro *ent.Retrospective, state retr
 	return errs.New(errs.CodeConflict, "This retrospective is "+strings.ReplaceAll(string(retro.State), "_", " ")+".")
 }
 
-// SetOwner hands the retrospective to userID. While it has no owner, a member can only make themselves the owner.
+// SetOwner hands the retrospective to userID. While it has no owner, a member can only make themselves the owner
+// and an admin can make anyone the owner.
 func (s *RetrospectiveService) SetOwner(ctx context.Context, id, userID uuid.UUID) (*ent.Retrospective, error) {
 	return s.transition(ctx, id, func(ctx context.Context, tx *ent.Client, retro *ent.Retrospective, actor uuid.UUID) error {
 		if retro.OwnerID == nil {
-			if userID != actor {
+			if userID != actor && !execution.GetContext(ctx).HasScope(execution.ScopeOrganizationManage) {
 				return errs.New(errs.CodeForbidden, "Take ownership yourself before handing it to someone else.")
 			}
-		} else if ownerErr := s.requireOwner(retro, actor); ownerErr != nil {
+		} else if ownerErr := s.requireOwner(ctx, retro, actor); ownerErr != nil {
 			return ownerErr
 		}
 		for _, r := range retro.Edges.Reviews {
@@ -195,7 +197,7 @@ func (s *RetrospectiveService) createReview(ctx context.Context, tx *ent.Client,
 
 func (s *RetrospectiveService) RequestReview(ctx context.Context, id uuid.UUID, reviewerIDs []uuid.UUID) (*ent.Retrospective, error) {
 	return s.transition(ctx, id, func(ctx context.Context, tx *ent.Client, retro *ent.Retrospective, actor uuid.UUID) error {
-		if ownerErr := s.requireOwner(retro, actor); ownerErr != nil {
+		if ownerErr := s.requireOwner(ctx, retro, actor); ownerErr != nil {
 			return ownerErr
 		}
 		if stateErr := s.requireState(retro, retrospective.StateDraft); stateErr != nil {
@@ -218,7 +220,7 @@ func (s *RetrospectiveService) RequestReview(ctx context.Context, id uuid.UUID, 
 
 func (s *RetrospectiveService) AddReviewer(ctx context.Context, id, userID uuid.UUID) (*ent.Retrospective, error) {
 	return s.transition(ctx, id, func(ctx context.Context, tx *ent.Client, retro *ent.Retrospective, actor uuid.UUID) error {
-		if ownerErr := s.requireOwner(retro, actor); ownerErr != nil {
+		if ownerErr := s.requireOwner(ctx, retro, actor); ownerErr != nil {
 			return ownerErr
 		}
 		if stateErr := s.requireState(retro, retrospective.StateInReview); stateErr != nil {
@@ -235,7 +237,7 @@ func (s *RetrospectiveService) AddReviewer(ctx context.Context, id, userID uuid.
 
 func (s *RetrospectiveService) RemoveReviewer(ctx context.Context, id, userID uuid.UUID) (*ent.Retrospective, error) {
 	return s.transition(ctx, id, func(ctx context.Context, tx *ent.Client, retro *ent.Retrospective, actor uuid.UUID) error {
-		if ownerErr := s.requireOwner(retro, actor); ownerErr != nil {
+		if ownerErr := s.requireOwner(ctx, retro, actor); ownerErr != nil {
 			return ownerErr
 		}
 		if stateErr := s.requireState(retro, retrospective.StateInReview); stateErr != nil {
@@ -287,7 +289,7 @@ func (s *RetrospectiveService) SetReviewDecision(ctx context.Context, id uuid.UU
 
 func (s *RetrospectiveService) CloseReview(ctx context.Context, id uuid.UUID) (*ent.Retrospective, error) {
 	return s.transition(ctx, id, func(ctx context.Context, tx *ent.Client, retro *ent.Retrospective, actor uuid.UUID) error {
-		if ownerErr := s.requireOwner(retro, actor); ownerErr != nil {
+		if ownerErr := s.requireOwner(ctx, retro, actor); ownerErr != nil {
 			return ownerErr
 		}
 		waiting := 0
@@ -309,7 +311,7 @@ func (s *RetrospectiveService) CloseReview(ctx context.Context, id uuid.UUID) (*
 
 func (s *RetrospectiveService) SkipReview(ctx context.Context, id uuid.UUID, reason string) (*ent.Retrospective, error) {
 	return s.transition(ctx, id, func(ctx context.Context, tx *ent.Client, retro *ent.Retrospective, actor uuid.UUID) error {
-		if ownerErr := s.requireOwner(retro, actor); ownerErr != nil {
+		if ownerErr := s.requireOwner(ctx, retro, actor); ownerErr != nil {
 			return ownerErr
 		}
 		reason = strings.TrimSpace(reason)

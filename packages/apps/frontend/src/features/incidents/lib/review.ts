@@ -7,11 +7,13 @@ import RiEyeLine from "remixicon-svelte/icons/eye-line";
 import RiCheckboxCircleLine from "remixicon-svelte/icons/checkbox-circle-line";
 import RiSkipForwardLine from "remixicon-svelte/icons/skip-forward-line";
 
-export function reviewPanelModel(retrospective?: RetrospectiveAttributes, currentUserId?: string) {
+// An admin can act as the owner, and can assign an owner to a review that has none.
+export function reviewPanelModel(retrospective?: RetrospectiveAttributes, currentUserId?: string, isAdmin = false) {
 	const reviews = retrospective?.reviews ?? [];
 	const owner = retrospective?.owner;
 	const closed = retrospective?.state === "closed";
 	const isOwner = !!currentUserId && owner?.id === currentUserId;
+	const actsAsOwner = isOwner || (isAdmin && !!owner);
 	const ownReview = reviews.find((row) => row.reviewer.id === currentUserId);
 	const waiting = reviews.filter((row) => row.state !== "approved");
 	let status: StatusPresentation = {
@@ -59,13 +61,13 @@ export function reviewPanelModel(retrospective?: RetrospectiveAttributes, curren
 		}),
 		actions: {
 			takeOwnership: !!retrospective && !closed && !owner,
-			setOwner: isOwner && !closed,
-			requestReview: isOwner && retrospective?.state === "draft",
-			changeReviewers: isOwner && retrospective?.state === "in_review",
+			setOwner: (isOwner || isAdmin) && !!retrospective && !closed,
+			requestReview: actsAsOwner && retrospective?.state === "draft",
+			changeReviewers: actsAsOwner && retrospective?.state === "in_review",
 			decide: !!ownReview && retrospective?.state === "in_review",
-			close: isOwner && !closed,
-			canClose: isOwner && !closed && waiting.length === 0,
-			skip: isOwner && !closed,
+			close: actsAsOwner && !closed,
+			canClose: actsAsOwner && !closed && waiting.length === 0,
+			skip: actsAsOwner && !closed,
 		},
 		closeLabel: retrospective?.state === "draft" ? "Close without review" : "Close",
 		closeReason: waiting.length

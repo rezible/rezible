@@ -26,9 +26,8 @@ type (
 )
 
 const (
-	SecurityMethodAppCookie          SecurityMethodKind = "app-cookie"
-	SecurityMethodApiToken           SecurityMethodKind = "api-token"
-	SecurityMethodScopedSessionToken SecurityMethodKind = "scoped-session-token"
+	SecurityMethodAppCookie SecurityMethodKind = "app-cookie"
+	SecurityMethodApiToken  SecurityMethodKind = "api-token"
 
 	AppAuthSessionCookieName = "rez_auth_session"
 )
@@ -36,6 +35,11 @@ const (
 var DefaultOperationSecurityMethodOptions = OperationSecurityOptions{
 	{SecurityMethodAppCookie: {}},
 	{SecurityMethodApiToken: {}},
+}
+
+// ManageOrganizationSecurity restricts an operation to admins.
+var ManageOrganizationSecurity = OperationSecurityOptions{
+	{SecurityMethodAppCookie: {execution.ScopeOrganizationManage}},
 }
 
 func MethodSecuritySchemes() map[string]*SecurityScheme {
@@ -49,11 +53,6 @@ func MethodSecuritySchemes() map[string]*SecurityScheme {
 			Type:         "http",
 			Scheme:       "bearer",
 			BearerFormat: "JWT",
-		},
-		SecurityMethodScopedSessionToken: {
-			Type:         "http",
-			Scheme:       "bearer",
-			BearerFormat: "paseto",
 		},
 	}
 }

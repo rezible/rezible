@@ -10353,10 +10353,6 @@ components:
       in: cookie
       name: rez_auth_session
       type: openIdConnect
-    scoped-session-token:
-      bearerFormat: paseto
-      scheme: bearer
-      type: http
 info:
   description: Rezible API
   title: Rezible API
@@ -12504,9 +12500,6 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
-      security:
-        - scoped-session-token:
-            - documents:*
       summary: Get document session
       tags:
         - documents
@@ -13556,6 +13549,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
+      security:
+        - app-cookie:
+            - organization:manage
       summary: Create an Incident Field
       tags:
         - Incident Fields
@@ -13607,6 +13603,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
+      security:
+        - app-cookie:
+            - organization:manage
       summary: Archive an Incident Field
       tags:
         - Incident Fields
@@ -13721,6 +13720,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
+      security:
+        - app-cookie:
+            - organization:manage
       summary: Update an Incident Field
       tags:
         - Incident Fields
@@ -13824,6 +13826,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
+      security:
+        - app-cookie:
+            - organization:manage
       summary: Create an Incident Role
       tags:
         - Incident Roles
@@ -13875,6 +13880,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
+      security:
+        - app-cookie:
+            - organization:manage
       summary: Archive an Incident Role
       tags:
         - Incident Roles
@@ -13989,6 +13997,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
+      security:
+        - app-cookie:
+            - organization:manage
       summary: Update an Incident Role
       tags:
         - Incident Roles
@@ -14121,6 +14132,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
+      security:
+        - app-cookie:
+            - organization:manage
       summary: Create a Severity
       tags:
         - Incident Severities
@@ -14172,6 +14186,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
+      security:
+        - app-cookie:
+            - organization:manage
       summary: Archive a Severity
       tags:
         - Incident Severities
@@ -14286,6 +14303,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
+      security:
+        - app-cookie:
+            - organization:manage
       summary: Update a Severity
       tags:
         - Incident Severities
@@ -14418,6 +14438,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
+      security:
+        - app-cookie:
+            - organization:manage
       summary: Create an Incident Tag
       tags:
         - Incident Tags
@@ -14469,6 +14492,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
+      security:
+        - app-cookie:
+            - organization:manage
       summary: Archive an Incident Tag
       tags:
         - Incident Tags
@@ -14583,6 +14609,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
+      security:
+        - app-cookie:
+            - organization:manage
       summary: Update an Incident Tag
       tags:
         - Incident Tags
@@ -14715,6 +14744,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
+      security:
+        - app-cookie:
+            - organization:manage
       summary: Create an Incident Type
       tags:
         - Incident Types
@@ -14766,6 +14798,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
+      security:
+        - app-cookie:
+            - organization:manage
       summary: Archive an Incident Type
       tags:
         - Incident Types
@@ -14880,6 +14915,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
+      security:
+        - app-cookie:
+            - organization:manage
       summary: Update an Incident Type
       tags:
         - Incident Types
@@ -15067,6 +15105,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
+      security:
+        - app-cookie:
+            - organization:manage
       summary: Archive an Incident
       tags:
         - Incidents
@@ -15761,6 +15802,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
+      security:
+        - app-cookie:
+            - organization:manage
       summary: Install an Integration
       tags:
         - Integrations
@@ -15822,6 +15866,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
+      security:
+        - app-cookie:
+            - organization:manage
       summary: Complete OAuth flow for an Integration
       tags:
         - Integrations
@@ -15877,6 +15924,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
+      security:
+        - app-cookie:
+            - organization:manage
       summary: Start OAuth flow for an Integration
       tags:
         - Integrations
@@ -15938,6 +15988,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
+      security:
+        - app-cookie:
+            - organization:manage
       summary: Select installation targets for an Integration
       tags:
         - Integrations
@@ -15987,6 +16040,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
+      security:
+        - app-cookie:
+            - organization:manage
       summary: List integration installation targets requiring selection
       tags:
         - Integrations
@@ -16087,6 +16143,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
+      security:
+        - app-cookie:
+            - organization:manage
       summary: Delete an Integration
       tags:
         - Integrations
@@ -16201,6 +16260,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
+      security:
+        - app-cookie:
+            - organization:manage
       summary: Update an installed Integration
       tags:
         - Integrations
@@ -16279,6 +16341,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
+      security:
+        - app-cookie:
+            - organization:manage
       summary: List chat channels for an integration
       tags:
         - Integrations
@@ -16335,6 +16400,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
+      security:
+        - app-cookie:
+            - organization:manage
       summary: Check an integration's connection
       tags:
         - Integrations
@@ -16447,6 +16515,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
+      security:
+        - app-cookie:
+            - organization:manage
       summary: Request a manual event sync for an integration
       tags:
         - Integrations
@@ -16507,6 +16578,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
+      security:
+        - app-cookie:
+            - organization:manage
       summary: Issue a webhook URL for an installed Integration
       tags:
         - Integrations
@@ -19942,6 +20016,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
+      security:
+        - app-cookie:
+            - organization:manage
       summary: Update Organization Preferences
       tags:
         - Organizations
@@ -20009,6 +20086,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
+      security:
+        - app-cookie:
+            - organization:manage
       summary: Complete Organization Setup
       tags:
         - Organizations

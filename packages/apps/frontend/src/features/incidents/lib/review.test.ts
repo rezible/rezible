@@ -35,6 +35,21 @@ test("review actions follow ownership, reviewer membership and pending decisions
 	expect(reviewPanelModel(approved, "owner").actions.canClose).toBe(true);
 });
 
+test("an admin acts as the owner of another member's review", () => {
+	const admin = reviewPanelModel(retrospective, "admin", true);
+	expect(admin.isOwner).toBe(false);
+	expect(admin.actions.setOwner).toBe(true);
+	expect(admin.actions.changeReviewers).toBe(true);
+	expect(admin.actions.close).toBe(true);
+	expect(admin.actions.skip).toBe(true);
+	expect(admin.actions.decide).toBe(false);
+
+	const ownerless = reviewPanelModel({ ...retrospective, owner: undefined }, "admin", true);
+	expect(ownerless.actions.setOwner).toBe(true);
+	expect(ownerless.actions.close).toBe(false);
+	expect(ownerless.actions.skip).toBe(false);
+});
+
 test("closed reviews have no actions and preserve the closure outcome", () => {
 	for (const outcome of ["reviewed", "closed_without_review", "skipped"] as const) {
 		const model = reviewPanelModel({ ...retrospective, state: "closed", outcome }, "owner");

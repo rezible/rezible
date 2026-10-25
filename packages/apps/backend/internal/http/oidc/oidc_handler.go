@@ -15,22 +15,25 @@ import (
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/user"
 	"github.com/rezible/rezible/pkg/errs"
 )
 
 const (
-	orgScope = "organization"
+	orgScope = "org"
 )
 
 type oidcHandler struct {
 	oidcIssuer          string
 	authStateCookiePath string
+	multiTenant         bool
 
 	codec *cookieCodec
 
-	resourceOption oauth2.AuthCodeOption
-	provider       *oidc.Provider
-	oauthCfg       *oauth2.Config
+	// resourceOptions name the API as the access token's resource; empty in single-tenant mode.
+	resourceOptions []oauth2.AuthCodeOption
+	provider        *oidc.Provider
+	oauthCfg        *oauth2.Config
 
 	accessTokenCfg      *oidc.Config
 	accessTokenVerifier *oidc.IDTokenVerifier
@@ -54,11 +57,15 @@ func newOidcHandler(cfg rez.Config) (*oidcHandler, error) {
 		return nil, fmt.Errorf("cookie codec: %w", codecErr)
 	}
 
-	accessTokenClientId := cfg.HttpServer.Auth.Oidc.ClientID
+	multiTenant := !cfg.App.SingleTenant.Enabled
+	accessTokenAudience := cfg.HttpServer.Auth.Oidc.ClientID
 	scopes := []string{oidc.ScopeOpenID, oidc.ScopeOfflineAccess, "profile", "email"}
-	if !cfg.App.SingleTenant.Enabled {
-		accessTokenClientId = cfg.App.ApiDomain
+	var resourceOptions []oauth2.AuthCodeOption
+	if multiTenant {
+		apiResource := "https://" + cfg.App.ApiDomain
+		accessTokenAudience = apiResource
 		scopes = append(scopes, orgScope)
+		resourceOptions = append(resourceOptions, oauth2.SetAuthURLParam("resource", apiResource))
 	}
 
 	oauthCfg := &oauth2.Config{
@@ -69,12 +76,13 @@ func newOidcHandler(cfg rez.Config) (*oidcHandler, error) {
 	}
 
 	return &oidcHandler{
-		codec:          codec,
-		oauthCfg:       oauthCfg,
-		oidcIssuer:     cfg.HttpServer.Auth.Oidc.Issuer,
-		accessTokenCfg: &oidc.Config{ClientID: accessTokenClientId},
-		idTokenCfg:     &oidc.Config{ClientID: oauthCfg.ClientID},
-		resourceOption: oauth2.SetAuthURLParam("resource", cfg.App.ApiDomain),
+		codec:           codec,
+		oauthCfg:        oauthCfg,
+		oidcIssuer:      cfg.HttpServer.Auth.Oidc.Issuer,
+		multiTenant:     multiTenant,
+		accessTokenCfg:  &oidc.Config{ClientID: accessTokenAudience},
+		idTokenCfg:      &oidc.Config{ClientID: oauthCfg.ClientID},
+		resourceOptions: resourceOptions,
 	}, nil
 }
 
@@ -85,7 +93,11 @@ func (h *oidcHandler) ensureProvider(ctx context.Context) error {
 			return fmt.Errorf("create oidc provider: %w", provErr)
 		}
 		h.provider = prov
-		h.oauthCfg.Endpoint = h.provider.Endpoint()
+		// Basic only: the library otherwise retries a refused request with the secret in the body, which hides the
+		// provider's original error.
+		endpoint := h.provider.Endpoint()
+		endpoint.AuthStyle = oauth2.AuthStyleInHeader
+		h.oauthCfg.Endpoint = endpoint
 		h.accessTokenVerifier = h.provider.VerifierContext(ctx, h.accessTokenCfg)
 		h.idTokenVerifier = h.provider.VerifierContext(ctx, h.idTokenCfg)
 	}
@@ -142,8 +154,8 @@ func (h *oidcHandler) createAuthRedirect(w http.ResponseWriter, r *http.Request)
 	opts := []oauth2.AuthCodeOption{
 		oidc.Nonce(nonce),
 		oauth2.S256ChallengeOption(verifier),
-		h.resourceOption,
 	}
+	opts = append(opts, h.resourceOptions...)
 	return h.oauthCfg.AuthCodeURL(state, opts...), nil
 }
 
@@ -172,7 +184,8 @@ func (h *oidcHandler) doCallbackExchange(w http.ResponseWriter, r *http.Request)
 		return nil, cfgErr
 	}
 
-	token, exchangeErr := h.oauthCfg.Exchange(ctx, code, oauth2.VerifierOption(as.CodeVerifier), h.resourceOption)
+	exchangeOpts := append([]oauth2.AuthCodeOption{oauth2.VerifierOption(as.CodeVerifier)}, h.resourceOptions...)
+	token, exchangeErr := h.oauthCfg.Exchange(ctx, code, exchangeOpts...)
 	if exchangeErr != nil {
 		return nil, fmt.Errorf("token exchange failed: %w", exchangeErr)
 	}
@@ -182,7 +195,11 @@ func (h *oidcHandler) doCallbackExchange(w http.ResponseWriter, r *http.Request)
 		return nil, fmt.Errorf("token session: %w", vcErr)
 	}
 
-	return &callbackExchangeResult{Session: vc.makeSession(), ReturnTo: as.ReturnTo}, nil
+	sess, sessErr := vc.makeSession(h.multiTenant)
+	if sessErr != nil {
+		return nil, sessErr
+	}
+	return &callbackExchangeResult{Session: sess, ReturnTo: as.ReturnTo}, nil
 }
 
 const authFlowCookieName = "rez_auth_flow"
@@ -274,17 +291,15 @@ func (h *oidcHandler) extractVerifiedClaims(ctx context.Context, t *oauth2.Token
 
 type (
 	ProviderAccessTokenClaims struct {
-		Scopes           []string `json:"scopes"`
-		OrganizationId   string   `json:"rez-org-id"`
-		OrganizationName string   `json:"rez-org-name"`
+		OrgId   string    `json:"org_id"`
+		OrgName string    `json:"org_name"`
+		OrgRole user.Role `json:"org_role"`
 	}
 
 	ProviderIdentityTokenClaims struct {
-		Sub     string `json:"sub"`
-		Email   string `json:"email"`
-		Name    string `json:"name"`
-		OrgId   string `json:"org_id"`
-		OrgName string `json:"org_name"`
+		Sub   string `json:"sub"`
+		Email string `json:"email"`
+		Name  string `json:"name"`
 	}
 
 	VerifiedProviderAuthClaims struct {
@@ -294,7 +309,19 @@ type (
 	}
 )
 
-func (s *VerifiedProviderAuthClaims) makeSession() *rez.UserAuthProviderSession {
+// makeSession builds the provider session. In multi-tenant mode the access token must name the organization and
+// the user's role in it; otherwise the organization comes from configuration and the role is left to sign-in.
+func (s *VerifiedProviderAuthClaims) makeSession(multiTenant bool) (*rez.UserAuthProviderSession, error) {
+	var role user.Role
+	if multiTenant {
+		if s.AccessClaims.OrgId == "" {
+			return nil, fmt.Errorf("access token has no org_id claim")
+		}
+		if roleErr := user.RoleValidator(s.AccessClaims.OrgRole); roleErr != nil {
+			return nil, fmt.Errorf("access token org_role claim: %w", roleErr)
+		}
+		role = s.AccessClaims.OrgRole
+	}
 	return &rez.UserAuthProviderSession{
 		User: ent.User{
 			AuthProviderID: s.IdentityClaims.Sub,
@@ -302,9 +329,10 @@ func (s *VerifiedProviderAuthClaims) makeSession() *rez.UserAuthProviderSession 
 			Name:           s.IdentityClaims.Name,
 		},
 		Org: ent.Organization{
-			AuthProviderID: s.AccessClaims.OrganizationId,
-			Name:           s.AccessClaims.OrganizationName,
+			AuthProviderID: s.AccessClaims.OrgId,
+			Name:           s.AccessClaims.OrgName,
 		},
+		Role:      role,
 		ExpiresAt: s.ExpiresAt,
-	}
+	}, nil
 }
