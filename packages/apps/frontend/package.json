@@ -8,6 +8,7 @@
 		"build": "vite build",
 		"preview": "vite preview",
 		"sync": "svelte-kit sync",
+		"user-journeys": "bun run sync && tsc --project scripts/user-journeys/tsconfig.json && bun scripts/user-journeys/run.ts",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --incremental --tsgo",
 		"test": "bun test --conditions svelte",
 		"lint": "eslint --cache --cache-strategy content --cache-location .cache/eslint/",

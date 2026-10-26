@@ -24,3 +24,8 @@ set shell := ["bash", "-uc"]
 
 @run *ARGS:
     bun run {{ ARGS }}
+
+[doc("Run named browser journeys against APP_URL, or all journeys when omitted.")]
+[positional-arguments]
+@user-journeys *NAMES:
+    bun run user-journeys "$@"
