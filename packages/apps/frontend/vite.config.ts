@@ -24,6 +24,7 @@ export default defineConfig(({ command }) => {
 	return {
 		plugins,
 		server: {
+			watch: { ignored: ["**/scripts/user-journeys/**"] },
 			host: "127.0.0.1",
 			port: Number(process.env.APP_PORT),
 			strictPort: true,

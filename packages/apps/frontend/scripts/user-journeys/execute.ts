@@ -3,12 +3,12 @@ import type { JourneyPlan, Step } from "./types";
 
 type WaitForState = "visible" | "absent";
 const waitForStateEvals: Record<WaitForState, string> = {
-	"visible": `if (elements.length > 1) throw new Error("Selector matches multiple elements");
+	visible: `if (elements.length > 1) throw new Error("Selector matches multiple elements");
 		return !!elements[0] && elements[0].checkVisibility({ checkOpacity: true, checkVisibilityCSS: true });`,
-	"absent": "return elements.length === 0;",
-}
+	absent: "return elements.length === 0;",
+};
 async function waitFor(view: Bun.WebView, selector: string, state: WaitForState) {
-	const queryElements = `const elements = document.querySelectorAll(${JSON.stringify(selector)});`
+	const queryElements = `const elements = document.querySelectorAll(${JSON.stringify(selector)});`;
 	const evalElementsState = waitForStateEvals[state];
 	const evalScript = `(() => {${queryElements} ${evalElementsState}})()`;
 	while (true) {
@@ -86,7 +86,13 @@ async function captureFailure(view: Bun.WebView, output: string) {
 	}
 }
 
-export async function execute(name: string, plan: JourneyPlan, appUrl: URL, output: string) {
+export async function execute(
+	name: string,
+	plan: JourneyPlan,
+	appUrl: URL,
+	output: string,
+	profileDirectory: string
+) {
 	const report = {
 		name,
 		description: plan.description,
@@ -117,7 +123,12 @@ export async function execute(name: string, plan: JourneyPlan, appUrl: URL, outp
 	try {
 		await save();
 		view = new Bun.WebView({
-			backend: { type: "chrome", url: false },
+			// Fresh Chrome processes can refresh their verifier during startup and abort
+			// HTTP/2 script requests with ERR_CERT_VERIFIER_CHANGED. Keep TLS validation
+			// enabled and use HTTP/1.1 for these local development walkthroughs.
+			backend: { type: "chrome", argv: ["--disable-http2"] },
+			// Bun never removes Chrome's temporary profile; the parent process owns this one.
+			dataStore: { directory: profileDirectory },
 			...plan.viewport,
 			console: (type, ...args) => {
 				if (type === "error" || type === "warn") {
@@ -128,6 +139,8 @@ export async function execute(name: string, plan: JourneyPlan, appUrl: URL, outp
 		// Establish the CDP session before navigating to the application.
 		timer = setTimeout(onTimeout, plan.timeoutMs ?? 10000);
 		await view.navigate("about:blank");
+		// Chrome applies the constructor size to the window, not the viewport. Resize to correct it.
+		await view.resize(plan.viewport.width, plan.viewport.height);
 		report.browser = await view.cdp("Browser.getVersion");
 		view.addEventListener("Network.responseReceived", (event) => {
 			const { data } = event as unknown as MessageEvent<{ response: { status: number; url: string } }>;

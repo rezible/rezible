@@ -1,4 +1,5 @@
-import { mkdir, rm } from "node:fs/promises";
+import { exists, mkdir, mkdtemp, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { JourneyPlan } from "./types";
 import { execute } from "./execute";
@@ -83,20 +84,39 @@ const main = async () => {
 			throw new Error("--execute requires exactly one plan");
 		}
 		const name = names[0];
+		const profileDirectory = process.env.JOURNEY_PROFILE_DIR;
+		if (!profileDirectory) {
+			throw new Error("--execute requires JOURNEY_PROFILE_DIR");
+		}
 		const output = join(directory, "output", name);
 		await rm(output, { recursive: true, force: true });
 		await mkdir(output, { recursive: true });
-		await execute(name, plans.get(name)!, appUrl, output);
+		try {
+			await execute(name, plans.get(name)!, appUrl, output, profileDirectory);
+		} finally {
+			Bun.WebView.closeAll();
+		}
 		return;
 	}
 	for (const name of names) {
-		const childProcess = Bun.spawn([process.execPath, import.meta.path, "--execute", name], {
-			stdin: "ignore",
-			stdout: "inherit",
-			stderr: "inherit",
-		});
-		if ((await childProcess.exited) !== 0) {
-			throw new Error(`Journey ${name} failed; remaining plans were not run`);
+		// Chrome holds its profile directory until the child exits, so the parent removes it.
+		const profileDirectory = await mkdtemp(join(tmpdir(), "rezible-journey-"));
+		try {
+			const childProcess = Bun.spawn([process.execPath, import.meta.path, "--execute", name], {
+				stdin: "ignore",
+				stdout: "inherit",
+				stderr: "inherit",
+				env: { ...process.env, JOURNEY_PROFILE_DIR: profileDirectory },
+			});
+			if ((await childProcess.exited) !== 0) {
+				throw new Error(`Journey ${name} failed; remaining plans were not run`);
+			}
+		} finally {
+			// Chrome's helper processes can still write to the profile briefly after the child exits.
+			do {
+				await rm(profileDirectory, { recursive: true, force: true });
+				await Bun.sleep(250);
+			} while (await exists(profileDirectory));
 		}
 	}
 }
