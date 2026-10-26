@@ -5,19 +5,65 @@ import (
 	"fmt"
 	"net/http"
 	"testing"
+	"time"
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/danielgtaylor/huma/v2/humatest"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/suite"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/knowledgeentity"
+	"github.com/rezible/rezible/internal/db"
 	"github.com/rezible/rezible/pkg/errs"
+	"github.com/rezible/rezible/pkg/execution"
 	oapi "github.com/rezible/rezible/pkg/openapi/v1"
+	"github.com/rezible/rezible/test"
 	"github.com/rezible/rezible/test/mocks"
 )
+
+type SituationsHandlerSuite struct {
+	test.Suite
+}
+
+func TestSituationsHandlerSuite(t *testing.T) {
+	suite.Run(t, &SituationsHandlerSuite{Suite: test.NewSuite()})
+}
+
+func (s *SituationsHandlerSuite) TestGetSituationByReference() {
+	_, tdb := s.SetupTestDatabase()
+	ctx, identity := s.NewIdentity(tdb, "a")
+	client := tdb.Client(ctx)
+	seed := client.KnowledgeEntity.Create().SetCategory(knowledgeentity.CategoryContainer).SetKind("service").SaveX(ctx)
+	for number, title := range map[int]string{1: "First", 2: "Second"} {
+		createSituation := client.Situation.Create().
+			SetNumber(number).
+			SetTitle(title).
+			SetOpenedAt(time.Now()).
+			SetSeedEntityID(seed.ID)
+		createSituation.ExecX(ctx)
+	}
+	situations, situationsErr := db.NewSituationService(rez.SituationsConfig{}, tdb, test.NewClock(time.Now()), nil, nil, nil, nil, nil, noJudge{t: s.T()})
+	s.Require().NoError(situationsErr)
+
+	_, api := humatest.New(s.T())
+	api.UseMiddleware(func(hctx huma.Context, next func(huma.Context)) {
+		next(huma.WithContext(hctx, execution.NewUserContext(hctx.Context(), identity.Session)))
+	})
+	huma.Register(api, oapi.GetSituation, newSituationsHandler(nil, situations, nil, nil).GetSituation)
+
+	for _, key := range []string{"SIT-2", "sit-2", "2"} {
+		response := api.Get("/situations/" + key)
+		s.Require().Equal(http.StatusOK, response.Code, "%s: %s", key, response.Body.String())
+		s.Contains(response.Body.String(), `"reference":"SIT-2"`, key)
+	}
+	for _, key := range []string{"SIT-x", "SIT-3", "INC-2"} {
+		s.Equal(http.StatusNotFound, api.Get("/situations/"+key).Code, key)
+	}
+}
 
 func TestRaiseSituationErrorMapping(t *testing.T) {
 	for _, tc := range []struct {

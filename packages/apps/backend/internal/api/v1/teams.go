@@ -62,8 +62,8 @@ func (h *teamsHandler) GetTeam(ctx context.Context, request *oapi.GetTeamRequest
 	var resp oapi.GetTeamResponse
 
 	pred := entteam.ID(request.Id.UUID)
-	if request.Id.IsSlug {
-		pred = entteam.Slug(request.Id.Slug)
+	if request.Id.IsKey {
+		pred = entteam.Slug(request.Id.Key)
 	}
 	team, queryErr := h.db.Client(ctx).Team.Query().Where(pred).Only(ctx)
 	if queryErr != nil {

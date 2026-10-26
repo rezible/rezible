@@ -317,7 +317,7 @@ export class IncidentResponseController {
 		};
 		this.linkMut.mutate(variables, {
 			onSuccess: async () => {
-				await this.refreshSituation(situation.id);
+				await this.refreshSituation();
 				if (situation.attributes.stage === "closed") {
 					toast.success("Linked. The situation stays closed.");
 				}
@@ -331,7 +331,7 @@ export class IncidentResponseController {
 		}
 		const variables = { path: { id: this.view.incidentId }, query: { situationId } };
 		this.unlinkMut.mutate(variables, {
-			onSuccess: () => this.refreshSituation(situationId),
+			onSuccess: () => this.refreshSituation(),
 		});
 	};
 
@@ -373,15 +373,17 @@ export class IncidentResponseController {
 
 	private async refreshIncident() {
 		await this.queryClient.invalidateQueries({
-			queryKey: getIncidentQueryKey({ path: { id: this.view.slug } }),
+			queryKey: getIncidentQueryKey({ path: { id: this.view.ref } }),
 		});
 	}
 
-	private async refreshSituation(situationId: string) {
+	private async refreshSituation() {
 		await Promise.all([
 			this.refreshIncident(),
+			// The ID-less key matches every cached situation: a situation's own page caches it under its URL
+			// value, which this page does not know.
 			this.queryClient.invalidateQueries({
-				queryKey: getSituationQueryKey({ path: { id: situationId } }),
+				queryKey: getSituationQueryKey({} as Parameters<typeof getSituationQueryKey>[0]),
 			}),
 		]);
 	}

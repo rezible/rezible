@@ -1552,6 +1552,12 @@ func (m *ReviewMutation) CheckTenantReferences(ctx context.Context) error {
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
 // that is missing or belongs to another tenant.
+func (m *SequenceCounterMutation) CheckTenantReferences(ctx context.Context) error {
+	return nil
+}
+
+// CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
+// that is missing or belongs to another tenant.
 func (m *SituationMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.InvestigationIDs(); len(ids) > 0 {
 		if err := checkTenantReference(ctx, situationinvestigation.Label, len(ids), m.Client().SituationInvestigation.Query().Where(situationinvestigation.IDIn(ids...))); err != nil {

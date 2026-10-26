@@ -101,9 +101,9 @@ func (_c *IncidentCreate) SetNillableKnowledgeEntityID(v *uuid.UUID) *IncidentCr
 	return _c
 }
 
-// SetSlug sets the "slug" field.
-func (_c *IncidentCreate) SetSlug(v string) *IncidentCreate {
-	_c.mutation.SetSlug(v)
+// SetNumber sets the "number" field.
+func (_c *IncidentCreate) SetNumber(v int) *IncidentCreate {
+	_c.mutation.SetNumber(v)
 	return _c
 }
 
@@ -530,8 +530,13 @@ func (_c *IncidentCreate) check() error {
 	if _, ok := _c.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "Incident.updated_at"`)}
 	}
-	if _, ok := _c.mutation.Slug(); !ok {
-		return &ValidationError{Name: "slug", err: errors.New(`ent: missing required field "Incident.slug"`)}
+	if _, ok := _c.mutation.Number(); !ok {
+		return &ValidationError{Name: "number", err: errors.New(`ent: missing required field "Incident.number"`)}
+	}
+	if v, ok := _c.mutation.Number(); ok {
+		if err := incident.NumberValidator(v); err != nil {
+			return &ValidationError{Name: "number", err: fmt.Errorf(`ent: validator failed for field "Incident.number": %w`, err)}
+		}
 	}
 	if _, ok := _c.mutation.Title(); !ok {
 		return &ValidationError{Name: "title", err: errors.New(`ent: missing required field "Incident.title"`)}
@@ -599,9 +604,9 @@ func (_c *IncidentCreate) createSpec() (*Incident, *sqlgraph.CreateSpec) {
 		_spec.SetField(incident.FieldArchiveTime, field.TypeTime, value)
 		_node.ArchiveTime = &value
 	}
-	if value, ok := _c.mutation.Slug(); ok {
-		_spec.SetField(incident.FieldSlug, field.TypeString, value)
-		_node.Slug = value
+	if value, ok := _c.mutation.Number(); ok {
+		_spec.SetField(incident.FieldNumber, field.TypeInt, value)
+		_node.Number = value
 	}
 	if value, ok := _c.mutation.Title(); ok {
 		_spec.SetField(incident.FieldTitle, field.TypeString, value)
@@ -1020,18 +1025,6 @@ func (u *IncidentUpsert) ClearKnowledgeEntityID() *IncidentUpsert {
 	return u
 }
 
-// SetSlug sets the "slug" field.
-func (u *IncidentUpsert) SetSlug(v string) *IncidentUpsert {
-	u.Set(incident.FieldSlug, v)
-	return u
-}
-
-// UpdateSlug sets the "slug" field to the value that was provided on create.
-func (u *IncidentUpsert) UpdateSlug() *IncidentUpsert {
-	u.SetExcluded(incident.FieldSlug)
-	return u
-}
-
 // SetTitle sets the "title" field.
 func (u *IncidentUpsert) SetTitle(v string) *IncidentUpsert {
 	u.Set(incident.FieldTitle, v)
@@ -1214,6 +1207,9 @@ func (u *IncidentUpsertOne) UpdateNewValues() *IncidentUpsertOne {
 		if _, exists := u.create.mutation.TenantID(); exists {
 			s.SetIgnore(incident.FieldTenantID)
 		}
+		if _, exists := u.create.mutation.Number(); exists {
+			s.SetIgnore(incident.FieldNumber)
+		}
 	}))
 	return u
 }
@@ -1312,20 +1308,6 @@ func (u *IncidentUpsertOne) UpdateKnowledgeEntityID() *IncidentUpsertOne {
 func (u *IncidentUpsertOne) ClearKnowledgeEntityID() *IncidentUpsertOne {
 	return u.Update(func(s *IncidentUpsert) {
 		s.ClearKnowledgeEntityID()
-	})
-}
-
-// SetSlug sets the "slug" field.
-func (u *IncidentUpsertOne) SetSlug(v string) *IncidentUpsertOne {
-	return u.Update(func(s *IncidentUpsert) {
-		s.SetSlug(v)
-	})
-}
-
-// UpdateSlug sets the "slug" field to the value that was provided on create.
-func (u *IncidentUpsertOne) UpdateSlug() *IncidentUpsertOne {
-	return u.Update(func(s *IncidentUpsert) {
-		s.UpdateSlug()
 	})
 }
 
@@ -1704,6 +1686,9 @@ func (u *IncidentUpsertBulk) UpdateNewValues() *IncidentUpsertBulk {
 			if _, exists := b.mutation.TenantID(); exists {
 				s.SetIgnore(incident.FieldTenantID)
 			}
+			if _, exists := b.mutation.Number(); exists {
+				s.SetIgnore(incident.FieldNumber)
+			}
 		}
 	}))
 	return u
@@ -1803,20 +1788,6 @@ func (u *IncidentUpsertBulk) UpdateKnowledgeEntityID() *IncidentUpsertBulk {
 func (u *IncidentUpsertBulk) ClearKnowledgeEntityID() *IncidentUpsertBulk {
 	return u.Update(func(s *IncidentUpsert) {
 		s.ClearKnowledgeEntityID()
-	})
-}
-
-// SetSlug sets the "slug" field.
-func (u *IncidentUpsertBulk) SetSlug(v string) *IncidentUpsertBulk {
-	return u.Update(func(s *IncidentUpsert) {
-		s.SetSlug(v)
-	})
-}
-
-// UpdateSlug sets the "slug" field to the value that was provided on create.
-func (u *IncidentUpsertBulk) UpdateSlug() *IncidentUpsertBulk {
-	return u.Update(func(s *IncidentUpsert) {
-		s.UpdateSlug()
 	})
 }
 

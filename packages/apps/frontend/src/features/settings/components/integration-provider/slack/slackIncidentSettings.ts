@@ -13,8 +13,8 @@ const slackIncidentSettingsSchema = z.object({
 		.string()
 		.trim()
 		.min(1, "Enter a channel name pattern.")
-		.refine((pattern) => pattern.includes("{slug}") || pattern.includes("{id}"), {
-			error: "Include {slug} or {id}, so each incident gets its own channel.",
+		.refine((pattern) => pattern.includes("{number}") || pattern.includes("{id}"), {
+			error: "Include {number} or {id}, so each incident gets its own channel.",
 		}),
 	AutoCreateVideoConference: z.boolean(),
 });
@@ -23,7 +23,7 @@ export type SlackIncidentSettings = z.infer<typeof slackIncidentSettingsSchema>;
 
 const defaultSettings: SlackIncidentSettings = {
 	AnnouncementChannelID: "",
-	ChannelNamePattern: "incident-{slug}",
+	ChannelNamePattern: "inc-{number}",
 	AutoCreateVideoConference: false,
 };
 

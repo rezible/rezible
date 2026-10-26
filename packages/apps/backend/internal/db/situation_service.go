@@ -16,6 +16,7 @@ import (
 	"github.com/rezible/rezible/ent"
 	kne "github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/sequencecounter"
 	sit "github.com/rezible/rezible/ent/situation"
 	sitact "github.com/rezible/rezible/ent/situationaction"
 	sha "github.com/rezible/rezible/ent/situationhazardassessment"
@@ -119,7 +120,11 @@ func (s *SituationService) ListSituations(ctx context.Context, params rez.ListSi
 	query := s.withSituationMembership(s.db.Client(ctx).Situation.Query()).
 		Order(sit.ByOpenedAt(params.GetOrder()), sit.ByID(params.GetOrder()))
 	if search := strings.TrimSpace(params.Search); search != "" {
-		query.Where(sit.TitleContainsFold(search))
+		matches := []predicate.Situation{sit.TitleContainsFold(search)}
+		if number, isReference := ent.ParseSituationReference(search); isReference {
+			matches = append(matches, sit.Number(number))
+		}
+		query.Where(sit.Or(matches...))
 	}
 	if len(params.Stages) > 0 {
 		stagePredicates := make([]predicate.Situation, 0, len(params.Stages))
@@ -153,9 +158,9 @@ func (s *SituationService) ListSituations(ctx context.Context, params rez.ListSi
 	return ent.DoListQuery[ent.Situation, *ent.SituationQuery](ctx, query, params.ListParams)
 }
 
-func (s *SituationService) GetSituation(ctx context.Context, id uuid.UUID) (*ent.Situation, error) {
+func (s *SituationService) GetSituation(ctx context.Context, pred predicate.Situation) (*ent.Situation, error) {
 	query := s.withSituationMembership(s.db.Client(ctx).Situation.Query()).
-		Where(sit.ID(id)).
+		Where(pred).
 		WithLinks(func(q *ent.SituationLinkQuery) {
 			q.WithLinkedSituation()
 		}).
@@ -199,7 +204,12 @@ func (s *SituationService) CreateSituation(ctx context.Context, params rez.Creat
 		if loadErr != nil {
 			return nil, loadErr
 		}
+		number, numberErr := tx.SequenceCounter.Next(ctx, sequencecounter.KindSituation)
+		if numberErr != nil {
+			return nil, fmt.Errorf("allocate situation number: %w", numberErr)
+		}
 		createSituation := tx.Situation.Create().
+			SetNumber(number).
 			SetTitle(title).
 			SetOpenedAt(s.earliestStart(signals)).
 			SetSeedEntityID(params.SeedEntityID).
@@ -244,7 +254,7 @@ func (s *SituationService) CreateSituation(ctx context.Context, params rez.Creat
 		if evaluateErr := s.requestEvaluation(ctx, created.ID); evaluateErr != nil {
 			return nil, evaluateErr
 		}
-		return s.GetSituation(ctx, created.ID)
+		return s.GetSituation(ctx, sit.ID(created.ID))
 	})
 }
 

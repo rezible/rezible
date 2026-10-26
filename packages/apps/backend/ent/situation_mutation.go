@@ -24,6 +24,8 @@ type SituationMutation struct {
 	id                        *uuid.UUID
 	created_at                *time.Time
 	updated_at                *time.Time
+	number                    *int
+	addnumber                 *int
 	title                     *string
 	summary                   *string
 	opened_at                 *time.Time
@@ -284,6 +286,62 @@ func (m *SituationMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err 
 // ResetUpdatedAt resets all changes to the "updated_at" field.
 func (m *SituationMutation) ResetUpdatedAt() {
 	m.updated_at = nil
+}
+
+// SetNumber sets the "number" field.
+func (m *SituationMutation) SetNumber(i int) {
+	m.number = &i
+	m.addnumber = nil
+}
+
+// Number returns the value of the "number" field in the mutation.
+func (m *SituationMutation) Number() (r int, exists bool) {
+	v := m.number
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldNumber returns the old "number" field's value of the Situation entity.
+// If the Situation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SituationMutation) OldNumber(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldNumber is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldNumber requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldNumber: %w", err)
+	}
+	return oldValue.Number, nil
+}
+
+// AddNumber adds i to the "number" field.
+func (m *SituationMutation) AddNumber(i int) {
+	if m.addnumber != nil {
+		*m.addnumber += i
+	} else {
+		m.addnumber = &i
+	}
+}
+
+// AddedNumber returns the value that was added to the "number" field in this mutation.
+func (m *SituationMutation) AddedNumber() (r int, exists bool) {
+	v := m.addnumber
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetNumber resets all changes to the "number" field.
+func (m *SituationMutation) ResetNumber() {
+	m.number = nil
+	m.addnumber = nil
 }
 
 // SetTitle sets the "title" field.
@@ -1426,7 +1484,7 @@ func (m *SituationMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *SituationMutation) Fields() []string {
-	fields := make([]string, 0, 14)
+	fields := make([]string, 0, 15)
 	if m.tenant != nil {
 		fields = append(fields, situation.FieldTenantID)
 	}
@@ -1435,6 +1493,9 @@ func (m *SituationMutation) Fields() []string {
 	}
 	if m.updated_at != nil {
 		fields = append(fields, situation.FieldUpdatedAt)
+	}
+	if m.number != nil {
+		fields = append(fields, situation.FieldNumber)
 	}
 	if m.title != nil {
 		fields = append(fields, situation.FieldTitle)
@@ -1483,6 +1544,8 @@ func (m *SituationMutation) Field(name string) (ent.Value, bool) {
 		return m.CreatedAt()
 	case situation.FieldUpdatedAt:
 		return m.UpdatedAt()
+	case situation.FieldNumber:
+		return m.Number()
 	case situation.FieldTitle:
 		return m.Title()
 	case situation.FieldSummary:
@@ -1520,6 +1583,8 @@ func (m *SituationMutation) OldField(ctx context.Context, name string) (ent.Valu
 		return m.OldCreatedAt(ctx)
 	case situation.FieldUpdatedAt:
 		return m.OldUpdatedAt(ctx)
+	case situation.FieldNumber:
+		return m.OldNumber(ctx)
 	case situation.FieldTitle:
 		return m.OldTitle(ctx)
 	case situation.FieldSummary:
@@ -1571,6 +1636,13 @@ func (m *SituationMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetUpdatedAt(v)
+		return nil
+	case situation.FieldNumber:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetNumber(v)
 		return nil
 	case situation.FieldTitle:
 		v, ok := value.(string)
@@ -1657,6 +1729,9 @@ func (m *SituationMutation) SetField(name string, value ent.Value) error {
 // this mutation.
 func (m *SituationMutation) AddedFields() []string {
 	var fields []string
+	if m.addnumber != nil {
+		fields = append(fields, situation.FieldNumber)
+	}
 	return fields
 }
 
@@ -1665,6 +1740,8 @@ func (m *SituationMutation) AddedFields() []string {
 // was not set, or was not defined in the schema.
 func (m *SituationMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
+	case situation.FieldNumber:
+		return m.AddedNumber()
 	}
 	return nil, false
 }
@@ -1674,6 +1751,13 @@ func (m *SituationMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *SituationMutation) AddField(name string, value ent.Value) error {
 	switch name {
+	case situation.FieldNumber:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddNumber(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Situation numeric field %s", name)
 }
@@ -1760,6 +1844,9 @@ func (m *SituationMutation) ResetField(name string) error {
 		return nil
 	case situation.FieldUpdatedAt:
 		m.ResetUpdatedAt()
+		return nil
+	case situation.FieldNumber:
+		m.ResetNumber()
 		return nil
 	case situation.FieldTitle:
 		m.ResetTitle()

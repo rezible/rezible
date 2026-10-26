@@ -228,6 +228,7 @@ func (s *KnowledgeGraphIngestionServiceSuite) TestConfirmMergesEntities() {
 
 	// A situation holding both services, matching only through the other.
 	createSituation := client.Situation.Create().
+		SetNumber(1).
 		SetTitle("Checkout errors").
 		SetOpenedAt(start).
 		SetSeedEntityID(otherID)

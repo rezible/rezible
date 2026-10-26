@@ -50,7 +50,7 @@ func (s *RetrospectiveServiceSuite) createIncident(ctx context.Context, client *
 	s.Require().NoError(err)
 
 	inc, err := client.Incident.Create().
-		SetSlug("incident-" + uuid.NewString()).
+		SetNumber(1).
 		SetTitle("API outage").
 		SetSeverityID(severity.ID).
 		SetTypeID(incidentType.ID).
@@ -348,7 +348,7 @@ func (s *RetrospectiveServiceSuite) TestReviewerMessages() {
 	s.Require().NoError(worker.Work(ctx, job))
 	s.Equal(reviewer.ID, sender.recipient)
 	s.Contains(sender.message.Text, owner.Name)
-	s.Contains(sender.message.LinkURL, inc.Slug)
+	s.Contains(sender.message.LinkURL, inc.Reference())
 	sender.sendErr = errors.New("chat unavailable")
 	s.Require().NoError(worker.Work(ctx, job))
 	s.Equal(reviewer.ID, fallback.recipient)

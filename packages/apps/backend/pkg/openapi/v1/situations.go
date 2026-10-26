@@ -63,6 +63,7 @@ type (
 	}
 
 	SituationAttributes struct {
+		Reference         string                      `json:"reference"`
 		Title             string                      `json:"title"`
 		Summary           string                      `json:"summary"`
 		Stage             string                      `json:"stage" enum:"candidate,raised,closed"`
@@ -136,10 +137,11 @@ type (
 	}
 
 	SituationLink struct {
-		Kind        string    `json:"kind" enum:"recurrence_of,merged_into"`
-		SituationId uuid.UUID `json:"situationId"`
-		Title       string    `json:"title"`
-		Stage       string    `json:"stage" enum:"candidate,raised,closed"`
+		Kind               string    `json:"kind" enum:"recurrence_of,merged_into"`
+		SituationId        uuid.UUID `json:"situationId"`
+		SituationReference string    `json:"situationReference"`
+		Title              string    `json:"title"`
+		Stage              string    `json:"stage" enum:"candidate,raised,closed"`
 	}
 
 	SituationEntity struct {
@@ -234,6 +236,7 @@ func SituationEntityFromEnt(e *ent.SituationEntity) SituationEntity {
 func SituationLinkFromEnt(l *ent.SituationLink) SituationLink {
 	link := SituationLink{Kind: l.Kind.String(), SituationId: l.LinkedSituationID}
 	if linked := l.Edges.LinkedSituation; linked != nil {
+		link.SituationReference = linked.Reference()
 		link.Title = linked.Title
 		link.Stage = situationStage(linked)
 	}
@@ -257,6 +260,7 @@ func SituationHazardAssessmentFromEnt(a *ent.SituationHazardAssessment) Situatio
 
 func SituationFromEnt(s *ent.Situation) Situation {
 	attrs := SituationAttributes{
+		Reference:         s.Reference(),
 		Title:             s.Title,
 		Summary:           s.Summary,
 		Stage:             situationStage(s),
@@ -389,7 +393,7 @@ var GetSituation = openapi.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type GetSituationRequest IdRequest
+type GetSituationRequest = FlexibleIdRequest
 type GetSituationResponse ItemResponse[Situation]
 
 // GetSituationBrief returns what Rezible states about a situation: its services, the changes before and after

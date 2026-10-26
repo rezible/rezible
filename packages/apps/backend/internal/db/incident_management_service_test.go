@@ -14,6 +14,7 @@ import (
 	"github.com/rezible/rezible/ent/incident"
 	ifo "github.com/rezible/rezible/ent/incidentfieldoption"
 	im "github.com/rezible/rezible/ent/incidentmilestone"
+	kne "github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/pkg/errs"
 	"github.com/rezible/rezible/test"
 	"github.com/rezible/rezible/test/mocks"
@@ -116,6 +117,32 @@ func (s *IncidentManagementServiceSuite) TestDeclareRecordsDetailsAndDeclarer() 
 	s.Require().Len(declared.Edges.FieldSelections, 1)
 	s.Equal(option.ID, declared.Edges.FieldSelections[0].ID)
 	s.Equal(incident.ResponseStateStarted, declared.ResponseState)
+}
+
+func (s *IncidentManagementServiceSuite) TestDeclaredAndObservedIncidentsShareOneSequence() {
+	ctx, tdb := s.SetupTestDatabase()
+	s.enable(ctx, tdb)
+	svc := s.newService(tdb)
+	client := tdb.Client(ctx)
+
+	s.Equal("INC-1", s.declare(ctx, tdb, svc).Reference())
+	s.Equal("INC-2", s.declare(ctx, tdb, svc).Reference())
+
+	createEntity := client.KnowledgeEntity.Create().
+		SetCategory(kne.CategoryEvent).
+		SetKind("incident")
+	entity, entityErr := createEntity.Save(ctx)
+	s.Require().NoError(entityErr)
+	params := rez.RecordObservedIncidentParams{
+		KnowledgeEntityID: entity.ID,
+		Title:             "Search outage",
+		SeverityID:        client.IncidentSeverity.Create().SetName("SEV-1").SetRank(1).SaveX(ctx).ID,
+		TypeID:            client.IncidentType.Create().SetName("Customer Impact").SaveX(ctx).ID,
+		OpenedAt:          time.Now(),
+	}
+	observedID, recordErr := svc.details.RecordObservedIncident(ctx, params)
+	s.Require().NoError(recordErr)
+	s.Equal("INC-3", client.Incident.GetX(ctx, observedID).Reference())
 }
 
 func (s *IncidentManagementServiceSuite) TestResponseState() {

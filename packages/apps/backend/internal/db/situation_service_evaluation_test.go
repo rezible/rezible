@@ -26,7 +26,7 @@ import (
 func (s *SituationServiceSuite) evaluate(ctx context.Context, h *situationServiceFixture, id uuid.UUID) (*ent.Situation, *time.Time) {
 	h.evaluations = nil
 	s.Require().NoError(h.situations.EvaluateSituation(ctx, id))
-	situation, getErr := h.situations.GetSituation(ctx, id)
+	situation, getErr := h.situations.GetSituation(ctx, sit.ID(id))
 	s.Require().NoError(getErr)
 	var deadline *time.Time
 	for _, evaluation := range h.evaluations {
@@ -200,7 +200,7 @@ func (s *SituationServiceSuite) TestEvaluationLimitsAutomaticInvestigations() {
 	signal := s.signal(ctx, tdb, h, "payment-errors", 25)
 	linked := s.create(ctx, h, map[string][]uuid.UUID{"Payments": {signal}}, signal)
 	declare(linked.ID)
-	linkRaised, getErr := h.situations.GetSituation(ctx, linked.ID)
+	linkRaised, getErr := h.situations.GetSituation(ctx, sit.ID(linked.ID))
 	s.Require().NoError(getErr)
 	s.Equal(sitact.ActionRaised, s.lastAction(linkRaised).Action)
 	s.Nil(s.lastAction(linkRaised).UserID)

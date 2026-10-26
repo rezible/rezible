@@ -12,13 +12,14 @@
 	import SituationPageActions from "./SituationPageActions.svelte";
 	import SituationActionDialogs from "./SituationActionDialogs.svelte";
 
-	type Props = { id: string };
-	const { id }: Props = $props();
+	type Props = { ref: string };
+	const { ref }: Props = $props();
 
-	const controller = initSituationController(() => id);
+	const controller = initSituationController(() => ref);
 
 	registerPageDescriptor(() => ({
 		title: controller.situation?.attributes.title || "Situation",
+		reference: controller.reference,
 		status: controller.situation ? situationStatus(controller.situation.attributes) : undefined,
 		parents: [{ label: "Situations", path: resolve("/situations") }],
 		related: controller.relatedLinks,
@@ -33,17 +34,17 @@
 
 <FeatureNavigationRail
 	label="Situation views"
-	route="/situations/[id]/[[view=situationView]]"
+	route="/situations/[ref]/[[view=situationView]]"
 	entries={[
 		{
 			label: "Brief",
-			params: { id },
+			params: { ref },
 			icon: RiFileTextLine,
 			component: SituationOverviewView,
 		},
 		{
 			label: "Investigation",
-			params: { id, view: "investigation" },
+			params: { ref, view: "investigation" },
 			icon: RiSearchLine,
 			component: SituationInvestigationView,
 		},

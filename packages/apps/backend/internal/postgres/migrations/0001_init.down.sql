@@ -78,6 +78,8 @@ ALTER TABLE "situation_entities" DROP CONSTRAINT "situation_entities_knowledge_e
 ALTER TABLE "situation_actions" DROP CONSTRAINT "situation_actions_users_user", DROP CONSTRAINT "situation_actions_situations_situation", DROP CONSTRAINT "situation_actions_tenants_tenant";
 -- reverse: modify "situations" table
 ALTER TABLE "situations" DROP CONSTRAINT "situations_knowledge_entities_seed_entity", DROP CONSTRAINT "situations_situation_judgments_latest_judgment", DROP CONSTRAINT "situations_tenants_tenant";
+-- reverse: modify "sequence_counters" table
+ALTER TABLE "sequence_counters" DROP CONSTRAINT "sequence_counters_tenants_tenant";
 -- reverse: modify "reviews" table
 ALTER TABLE "reviews" DROP CONSTRAINT "reviews_users_reviewer", DROP CONSTRAINT "reviews_users_requester", DROP CONSTRAINT "reviews_discussion_comments_comment", DROP CONSTRAINT "reviews_system_analysis_entries_analysis_entry", DROP CONSTRAINT "reviews_retrospectives_retrospective", DROP CONSTRAINT "reviews_tenants_tenant";
 -- reverse: modify "retrospectives" table
@@ -450,10 +452,18 @@ DROP INDEX "situation_tenant_id_seed_entity_id";
 DROP INDEX "situation_tenant_id_closed_at";
 -- reverse: create index "situation_tenant_id_opened_at" to table: "situations"
 DROP INDEX "situation_tenant_id_opened_at";
+-- reverse: create index "situations_number_key" to table: "situations"
+DROP INDEX "situations_number_key";
 -- reverse: create index "situation_tenant_id" to table: "situations"
 DROP INDEX "situation_tenant_id";
 -- reverse: create "situations" table
 DROP TABLE "situations";
+-- reverse: create index "sequence_counters_kind_key" to table: "sequence_counters"
+DROP INDEX "sequence_counters_kind_key";
+-- reverse: create index "sequencecounter_tenant_id" to table: "sequence_counters"
+DROP INDEX "sequencecounter_tenant_id";
+-- reverse: create "sequence_counters" table
+DROP TABLE "sequence_counters";
 -- reverse: create index "review_tenant_id_retrospective_id_reviewer_id" to table: "reviews"
 DROP INDEX "review_tenant_id_retrospective_id_reviewer_id";
 -- reverse: create index "review_tenant_id" to table: "reviews"
@@ -804,8 +814,8 @@ DROP TABLE "incident_debrief_messages";
 DROP INDEX "incidentdebrief_tenant_id";
 -- reverse: create "incident_debriefs" table
 DROP TABLE "incident_debriefs";
--- reverse: create index "incidents_slug_key" to table: "incidents"
-DROP INDEX "incidents_slug_key";
+-- reverse: create index "incidents_number_key" to table: "incidents"
+DROP INDEX "incidents_number_key";
 -- reverse: create index "incident_tenant_id_knowledge_entity_id" to table: "incidents"
 DROP INDEX "incident_tenant_id_knowledge_entity_id";
 -- reverse: create index "incident_tenant_id" to table: "incidents"

@@ -190,12 +190,12 @@ func GetCalendarDateWindow(from, to CalendarDate) (time.Time, time.Time, error) 
 	return parsedFrom, parsedTo, errors.Join(fromErr, toErr)
 }
 
-// FlexibleId is a field which can be either a UUID or a slug
+// FlexibleId is a field which can be either a UUID, or a key: a slug or a reference
 type FlexibleId struct {
 	IsUUID bool
 	UUID   uuid.UUID
-	IsSlug bool
-	Slug   string
+	IsKey  bool
+	Key    string
 }
 
 func (i *FlexibleIdRequest) Resolve(ctx huma.Context) []error {
@@ -203,9 +203,8 @@ func (i *FlexibleIdRequest) Resolve(ctx huma.Context) []error {
 	uid, parseErr := uuid.Parse(idParam)
 	if parseErr == nil {
 		i.Id = FlexibleId{IsUUID: true, UUID: uid}
-	} else if len(idParam) > 1 {
-		// TODO: min slug length
-		i.Id = FlexibleId{IsSlug: true, Slug: idParam}
+	} else if idParam != "" {
+		i.Id = FlexibleId{IsKey: true, Key: idParam}
 	} else {
 		return []error{fmt.Errorf("invalid id param")}
 	}

@@ -14,7 +14,7 @@
 
 	const task = $derived(controller.task);
 	const incident = $derived(controller.incident);
-	const incidentHref = $derived(`/incidents/${incident?.attributes.slug}`);
+	const incidentHref = $derived(`/incidents/${incident?.attributes.reference}`);
 </script>
 
 <div class="min-h-0 flex-1 overflow-y-auto p-6">

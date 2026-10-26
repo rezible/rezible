@@ -305,13 +305,13 @@ func (s *SituationNoticeService) readContent(ctx context.Context, situationID uu
 	}
 	content := &integrations.SituationNoticeContent{Situation: situation, Now: s.clock.Now()}
 
-	situationURL, urlErr := s.cfg.App.GetFrontendUrl("situations", situation.ID.String())
+	situationURL, urlErr := s.cfg.App.GetFrontendUrl("situations", situation.Reference())
 	if urlErr != nil {
 		return nil, fmt.Errorf("situation url: %w", urlErr)
 	}
 	content.SituationURL = situationURL.String()
 	if link := content.MergedInto(); link != nil {
-		mergedURL, mergedErr := s.cfg.App.GetFrontendUrl("situations", link.LinkedSituationID.String())
+		mergedURL, mergedErr := s.cfg.App.GetFrontendUrl("situations", link.Edges.LinkedSituation.Reference())
 		if mergedErr != nil {
 			return nil, fmt.Errorf("merged situation url: %w", mergedErr)
 		}
@@ -375,7 +375,7 @@ func (s *SituationNoticeService) readIncidentLinks(ctx context.Context, content 
 		return fmt.Errorf("query unresolved incident: %w", incidentErr)
 	}
 	if unresolved != nil {
-		incidentURL, urlErr := s.cfg.App.GetFrontendUrl("incidents", unresolved.Slug)
+		incidentURL, urlErr := s.cfg.App.GetFrontendUrl("incidents", unresolved.Reference())
 		if urlErr != nil {
 			return fmt.Errorf("incident url: %w", urlErr)
 		}
@@ -394,7 +394,7 @@ func (s *SituationNoticeService) readIncidentLinks(ctx context.Context, content 
 	if !enabled {
 		return nil
 	}
-	declareURL, urlErr := s.cfg.App.GetFrontendUrl("situations", situation.ID.String())
+	declareURL, urlErr := s.cfg.App.GetFrontendUrl("situations", situation.Reference())
 	if urlErr != nil {
 		return fmt.Errorf("declare incident url: %w", urlErr)
 	}

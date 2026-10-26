@@ -24,8 +24,9 @@
 
 <li class="flex min-w-0 flex-col gap-1 px-4 py-3">
 	<div class="flex flex-wrap items-center gap-x-2 gap-y-1">
+		<span class="shrink-0 text-sm whitespace-nowrap text-muted-foreground">{attributes.reference}</span>
 		<a
-			href={situationHref(situation.id)}
+			href={situationHref(attributes.reference)}
 			class="min-w-0 rounded-sm text-[15px] leading-[22px] font-medium wrap-anywhere hover:underline focus-visible:outline-2 focus-visible:outline-ring"
 		>
 			{attributes.title}

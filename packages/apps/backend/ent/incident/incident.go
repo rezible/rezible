@@ -27,8 +27,8 @@ const (
 	FieldArchiveTime = "archive_time"
 	// FieldKnowledgeEntityID holds the string denoting the knowledge_entity_id field in the database.
 	FieldKnowledgeEntityID = "knowledge_entity_id"
-	// FieldSlug holds the string denoting the slug field in the database.
-	FieldSlug = "slug"
+	// FieldNumber holds the string denoting the number field in the database.
+	FieldNumber = "number"
 	// FieldTitle holds the string denoting the title field in the database.
 	FieldTitle = "title"
 	// FieldSeverityID holds the string denoting the severity_id field in the database.
@@ -194,7 +194,7 @@ var Columns = []string{
 	FieldUpdatedAt,
 	FieldArchiveTime,
 	FieldKnowledgeEntityID,
-	FieldSlug,
+	FieldNumber,
 	FieldTitle,
 	FieldSeverityID,
 	FieldTypeID,
@@ -247,6 +247,8 @@ var (
 	DefaultUpdatedAt func() time.Time
 	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
 	UpdateDefaultUpdatedAt func() time.Time
+	// NumberValidator is a validator for the "number" field. It is called by the builders before save.
+	NumberValidator func(int) error
 	// DefaultOpenedAt holds the default value on creation for the "opened_at" field.
 	DefaultOpenedAt func() time.Time
 	// DefaultID holds the default value on creation for the "id" field.
@@ -313,9 +315,9 @@ func ByKnowledgeEntityID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldKnowledgeEntityID, opts...).ToFunc()
 }
 
-// BySlug orders the results by the slug field.
-func BySlug(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldSlug, opts...).ToFunc()
+// ByNumber orders the results by the number field.
+func ByNumber(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldNumber, opts...).ToFunc()
 }
 
 // ByTitle orders the results by the title field.

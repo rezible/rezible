@@ -9,7 +9,6 @@ import (
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/danielgtaylor/huma/v2/humatest"
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
 
 	rez "github.com/rezible/rezible"
@@ -44,12 +43,38 @@ func (j noJudge) Run(context.Context, rezai.SituationJudgeInput) (rezai.Situatio
 func (s *IncidentsHandlerSuite) createResolvedIncident(ctx context.Context, client *ent.Client) *ent.Incident {
 	severity := client.IncidentSeverity.Create().SetName("SEV-1").SetRank(1).SaveX(ctx)
 	return client.Incident.Create().
-		SetSlug(uuid.NewString()).
+		SetNumber(1).
 		SetTitle("API outage").
 		SetSeverityID(severity.ID).
 		SetResponseState(incident.ResponseStateResolved).
 		SetResolvedAt(time.Now()).
 		SaveX(ctx)
+}
+
+func (s *IncidentsHandlerSuite) TestGetIncidentByReference() {
+	_, tdb := s.SetupTestDatabase()
+	ctx, identity := s.NewIdentity(tdb, "a")
+	client := tdb.Client(ctx)
+	client.Incident.Create().SetNumber(1).SetTitle("First").ExecX(ctx)
+	second := client.Incident.Create().SetNumber(2).SetTitle("Second").SaveX(ctx)
+	details, detailsErr := db.NewIncidentDetailsService(tdb, mocks.NewMockMessageQueue(s.T()), mocks.NewMockSituationService(s.T()))
+	s.Require().NoError(detailsErr)
+
+	_, api := humatest.New(s.T())
+	api.UseMiddleware(func(hctx huma.Context, next func(huma.Context)) {
+		next(huma.WithContext(hctx, execution.NewUserContext(hctx.Context(), identity.Session)))
+	})
+	huma.Register(api, oapi.GetIncident, newIncidentsHandler(nil, details, nil).GetIncident)
+
+	for _, key := range []string{"INC-2", "inc-2", "2", second.ID.String()} {
+		response := api.Get("/incidents/" + key)
+		s.Require().Equal(http.StatusOK, response.Code, "%s: %s", key, response.Body.String())
+		s.Contains(response.Body.String(), second.ID.String(), key)
+		s.Contains(response.Body.String(), `"reference":"INC-2"`, key)
+	}
+	for _, key := range []string{"INC-x", "INC-3", "SIT-2"} {
+		s.Equal(http.StatusNotFound, api.Get("/incidents/"+key).Code, key)
+	}
 }
 
 func (s *IncidentsHandlerSuite) TestReferencesToAnotherTenantAreNotFound() {
@@ -87,7 +112,7 @@ func (s *IncidentsHandlerSuite) TestReferencesToAnotherTenantAreNotFound() {
 	otherInc := s.createResolvedIncident(otherCtx, otherClient)
 	otherSeverity := otherClient.IncidentSeverity.Create().SetName("SEV-2").SetRank(2).SaveX(otherCtx)
 	seed := otherClient.KnowledgeEntity.Create().SetCategory(knowledgeentity.CategoryContainer).SetKind("service").SaveX(otherCtx)
-	otherSituation := otherClient.Situation.Create().SetTitle("errors").SetOpenedAt(time.Now()).SetSeedEntityID(seed.ID).SaveX(otherCtx)
+	otherSituation := otherClient.Situation.Create().SetNumber(1).SetTitle("errors").SetOpenedAt(time.Now()).SetSeedEntityID(seed.ID).SaveX(otherCtx)
 	otherUserID := otherIdentity.Session.UserID
 
 	_, api := humatest.New(s.T())

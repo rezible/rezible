@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"aidanwoods.dev/go-paseto"
-	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/test"
 	"github.com/stretchr/testify/suite"
@@ -28,7 +27,7 @@ func (s *DocumentsServiceSuite) TestClosedReviewSessionIsReadOnly() {
 	analysis, analysisErr := client.SystemAnalysis.Create().Save(ctx)
 	s.Require().NoError(analysisErr)
 	createIncident := client.Incident.Create().
-		SetSlug(uuid.NewString()).
+		SetNumber(1).
 		SetTitle("Checkout outage")
 	inc, incidentErr := createIncident.Save(ctx)
 	s.Require().NoError(incidentErr)

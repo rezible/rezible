@@ -25,7 +25,8 @@ type IncidentMutation struct {
 	created_at               *time.Time
 	updated_at               *time.Time
 	archive_time             *time.Time
-	slug                     *string
+	number                   *int
+	addnumber                *int
 	title                    *string
 	summary                  *string
 	chat_channel_id          *string
@@ -391,40 +392,60 @@ func (m *IncidentMutation) ResetKnowledgeEntityID() {
 	delete(m.clearedFields, incident.FieldKnowledgeEntityID)
 }
 
-// SetSlug sets the "slug" field.
-func (m *IncidentMutation) SetSlug(s string) {
-	m.slug = &s
+// SetNumber sets the "number" field.
+func (m *IncidentMutation) SetNumber(i int) {
+	m.number = &i
+	m.addnumber = nil
 }
 
-// Slug returns the value of the "slug" field in the mutation.
-func (m *IncidentMutation) Slug() (r string, exists bool) {
-	v := m.slug
+// Number returns the value of the "number" field in the mutation.
+func (m *IncidentMutation) Number() (r int, exists bool) {
+	v := m.number
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldSlug returns the old "slug" field's value of the Incident entity.
+// OldNumber returns the old "number" field's value of the Incident entity.
 // If the Incident object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *IncidentMutation) OldSlug(ctx context.Context) (v string, err error) {
+func (m *IncidentMutation) OldNumber(ctx context.Context) (v int, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldSlug is only allowed on UpdateOne operations")
+		return v, errors.New("OldNumber is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldSlug requires an ID field in the mutation")
+		return v, errors.New("OldNumber requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldSlug: %w", err)
+		return v, fmt.Errorf("querying old value for OldNumber: %w", err)
 	}
-	return oldValue.Slug, nil
+	return oldValue.Number, nil
 }
 
-// ResetSlug resets all changes to the "slug" field.
-func (m *IncidentMutation) ResetSlug() {
-	m.slug = nil
+// AddNumber adds i to the "number" field.
+func (m *IncidentMutation) AddNumber(i int) {
+	if m.addnumber != nil {
+		*m.addnumber += i
+	} else {
+		m.addnumber = &i
+	}
+}
+
+// AddedNumber returns the value that was added to the "number" field in this mutation.
+func (m *IncidentMutation) AddedNumber() (r int, exists bool) {
+	v := m.addnumber
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetNumber resets all changes to the "number" field.
+func (m *IncidentMutation) ResetNumber() {
+	m.number = nil
+	m.addnumber = nil
 }
 
 // SetTitle sets the "title" field.
@@ -1642,8 +1663,8 @@ func (m *IncidentMutation) Fields() []string {
 	if m.knowledge_entity != nil {
 		fields = append(fields, incident.FieldKnowledgeEntityID)
 	}
-	if m.slug != nil {
-		fields = append(fields, incident.FieldSlug)
+	if m.number != nil {
+		fields = append(fields, incident.FieldNumber)
 	}
 	if m.title != nil {
 		fields = append(fields, incident.FieldTitle)
@@ -1693,8 +1714,8 @@ func (m *IncidentMutation) Field(name string) (ent.Value, bool) {
 		return m.ArchiveTime()
 	case incident.FieldKnowledgeEntityID:
 		return m.KnowledgeEntityID()
-	case incident.FieldSlug:
-		return m.Slug()
+	case incident.FieldNumber:
+		return m.Number()
 	case incident.FieldTitle:
 		return m.Title()
 	case incident.FieldSeverityID:
@@ -1734,8 +1755,8 @@ func (m *IncidentMutation) OldField(ctx context.Context, name string) (ent.Value
 		return m.OldArchiveTime(ctx)
 	case incident.FieldKnowledgeEntityID:
 		return m.OldKnowledgeEntityID(ctx)
-	case incident.FieldSlug:
-		return m.OldSlug(ctx)
+	case incident.FieldNumber:
+		return m.OldNumber(ctx)
 	case incident.FieldTitle:
 		return m.OldTitle(ctx)
 	case incident.FieldSeverityID:
@@ -1800,12 +1821,12 @@ func (m *IncidentMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetKnowledgeEntityID(v)
 		return nil
-	case incident.FieldSlug:
-		v, ok := value.(string)
+	case incident.FieldNumber:
+		v, ok := value.(int)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetSlug(v)
+		m.SetNumber(v)
 		return nil
 	case incident.FieldTitle:
 		v, ok := value.(string)
@@ -1885,6 +1906,9 @@ func (m *IncidentMutation) SetField(name string, value ent.Value) error {
 // this mutation.
 func (m *IncidentMutation) AddedFields() []string {
 	var fields []string
+	if m.addnumber != nil {
+		fields = append(fields, incident.FieldNumber)
+	}
 	return fields
 }
 
@@ -1893,6 +1917,8 @@ func (m *IncidentMutation) AddedFields() []string {
 // was not set, or was not defined in the schema.
 func (m *IncidentMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
+	case incident.FieldNumber:
+		return m.AddedNumber()
 	}
 	return nil, false
 }
@@ -1902,6 +1928,13 @@ func (m *IncidentMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *IncidentMutation) AddField(name string, value ent.Value) error {
 	switch name {
+	case incident.FieldNumber:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddNumber(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Incident numeric field %s", name)
 }
@@ -2001,8 +2034,8 @@ func (m *IncidentMutation) ResetField(name string) error {
 	case incident.FieldKnowledgeEntityID:
 		m.ResetKnowledgeEntityID()
 		return nil
-	case incident.FieldSlug:
-		m.ResetSlug()
+	case incident.FieldNumber:
+		m.ResetNumber()
 		return nil
 	case incident.FieldTitle:
 		m.ResetTitle()

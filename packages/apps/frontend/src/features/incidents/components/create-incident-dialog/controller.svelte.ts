@@ -68,14 +68,16 @@ export class IncidentCreateDialogController {
 		...createIncidentMutation(),
 		onSuccess: async ({ data }) => {
 			await this.queryClient.invalidateQueries({ queryKey: listIncidentsQueryKey() });
-			for (const situation of this.form.situations) {
+			if (this.form.situations.length > 0) {
+				// The ID-less key matches every cached situation: a situation's own page caches it under its
+				// URL value, which this dialog does not know.
 				await this.queryClient.invalidateQueries({
-					queryKey: getSituationQueryKey({ path: { id: situation.id } }),
+					queryKey: getSituationQueryKey({} as Parameters<typeof getSituationQueryKey>[0]),
 				});
 			}
 			this.open = false;
 			this.reset();
-			await goto(resolve("/incidents/[slug]/[[view=incidentView]]", { slug: data.slug }));
+			await goto(resolve("/incidents/[ref]/[[view=incidentView]]", { ref: data.reference }));
 		},
 		onError: (err) => {
 			this.error = err as ApiError;
@@ -142,7 +144,7 @@ export class IncidentCreateDialogController {
 		if (!newest) {
 			return undefined;
 		}
-		const href = resolve("/incidents/[slug]/[[view=incidentView]]", { slug: newest.attributes.slug });
+		const href = resolve("/incidents/[ref]/[[view=incidentView]]", { ref: newest.attributes.reference });
 		return { title: newest.attributes.title, href };
 	}
 

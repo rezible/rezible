@@ -38,7 +38,7 @@
 					Its signals moved to
 					<a
 						class="font-medium text-foreground hover:underline"
-						href={situationHref(mergedInto.id)}
+						href={situationHref(mergedInto.reference)}
 					>
 						{mergedInto.title}
 					</a>

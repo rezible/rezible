@@ -62,7 +62,7 @@ type (
 	IncidentAttributes struct {
 		Title         string                                  `json:"title"`
 		Summary       string                                  `json:"summary"`
-		Slug          string                                  `json:"slug"`
+		Reference     string                                  `json:"reference"`
 		ResponseState incident.ResponseState                  `json:"responseState"`
 		OpenedAt      time.Time                               `json:"openedAt"`
 		UpdatedAt     time.Time                               `json:"updatedAt"`
@@ -166,7 +166,7 @@ func IncidentFromEnt(inc *ent.Incident) Incident {
 	attr := IncidentAttributes{
 		Title:           inc.Title,
 		Summary:         inc.Summary,
-		Slug:            inc.Slug,
+		Reference:       inc.Reference(),
 		OpenedAt:        inc.OpenedAt,
 		UpdatedAt:       inc.UpdatedAt,
 		Milestones:      make([]IncidentMilestone, 0),
@@ -350,8 +350,8 @@ type CreateIncidentAttributes struct {
 
 // CreatedIncident identifies a newly declared incident, so its page can be opened.
 type CreatedIncident struct {
-	Id   uuid.UUID `json:"id"`
-	Slug string    `json:"slug"`
+	Id        uuid.UUID `json:"id"`
+	Reference string    `json:"reference"`
 }
 
 type CreateIncidentRequest RequestWithBodyAttributes[CreateIncidentAttributes]

@@ -55,7 +55,7 @@ export type WhyClosure = {
 	at: string;
 	reasonLabel?: string;
 	/** The `merged_into` target of a merged source; its signals moved there. */
-	mergedInto?: { id: string; title: string };
+	mergedInto?: { reference: string; title: string };
 };
 
 type WhyBase = { heading: string; origin?: WhyOrigin };
@@ -156,7 +156,7 @@ function whyClosure(attributes: SituationAttributes, closedAt: string): WhyClosu
 	if (attributes.closeReason === "merged") {
 		const target = attributes.links.find((link) => link.kind === "merged_into");
 		if (target) {
-			closure.mergedInto = { id: target.situationId, title: target.title };
+			closure.mergedInto = { reference: target.situationReference, title: target.title };
 		}
 	}
 	return closure;

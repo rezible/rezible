@@ -41,7 +41,7 @@ func (s *DiscussionSuite) createIncident(client *ent.Client, ctx context.Context
 	s.Require().NoError(kindErr)
 
 	createIncident := client.Incident.Create().
-		SetSlug(uuid.NewString()).
+		SetNumber(1).
 		SetTitle("outage").
 		SetSeverity(severity).
 		SetType(kind).

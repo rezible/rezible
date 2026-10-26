@@ -47,8 +47,8 @@ func (h *oncallRostersHandler) GetOncallRoster(ctx context.Context, request *oap
 
 	var roster *ent.OncallRoster
 	var rosterErr error
-	if request.Id.IsSlug {
-		roster, rosterErr = h.rosters.GetRosterBySlug(ctx, request.Id.Slug)
+	if request.Id.IsKey {
+		roster, rosterErr = h.rosters.GetRosterBySlug(ctx, request.Id.Key)
 	} else {
 		roster, rosterErr = h.rosters.GetRosterByID(ctx, request.Id.UUID)
 	}

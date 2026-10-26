@@ -88,7 +88,7 @@ test("incident rows dedupe and limit service names", () => {
 	const incident = {
 		id: "incident",
 		attributes: {
-			slug: "inc",
+			reference: "INC-1",
 			title: "Incident",
 			summary: " Summary ",
 			responseState: "started",

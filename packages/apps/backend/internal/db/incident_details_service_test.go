@@ -2,6 +2,8 @@ package db
 
 import (
 	"context"
+	"strconv"
+	"strings"
 	"testing"
 	"time"
 
@@ -18,6 +20,7 @@ import (
 
 type IncidentDetailsServiceSuite struct {
 	test.Suite
+	incidentNumber int
 }
 
 func TestIncidentDetailsServiceSuite(t *testing.T) {
@@ -36,14 +39,31 @@ func (s *IncidentDetailsServiceSuite) createIncident(ctx context.Context, client
 		SetRank(1)
 	severity, severityErr := createSeverity.Save(ctx)
 	s.Require().NoError(severityErr)
+	s.incidentNumber++
 	createIncident := client.Incident.Create().
-		SetSlug("incident-" + uuid.NewString()).
+		SetNumber(s.incidentNumber).
 		SetTitle(title).
 		SetSeverityID(severity.ID).
 		SetOpenedAt(openedAt)
 	inc, incidentErr := createIncident.Save(ctx)
 	s.Require().NoError(incidentErr)
 	return inc
+}
+
+func (s *IncidentDetailsServiceSuite) TestListIncidentsFindsAReference() {
+	ctx, tdb := s.SetupTestDatabase()
+	svc := s.newService(tdb)
+	client := tdb.Client(ctx)
+	s.createIncident(ctx, client, "Checkout outage", time.Now())
+	target := s.createIncident(ctx, client, "Search outage", time.Now())
+	s.createIncident(ctx, client, "Billing outage", time.Now())
+
+	for _, search := range []string{target.Reference(), strings.ToLower(target.Reference()), strconv.Itoa(target.Number)} {
+		found, listErr := svc.ListIncidents(ctx, rez.ListIncidentsParams{Search: search})
+		s.Require().NoError(listErr)
+		s.Require().Len(found.Data, 1, search)
+		s.Equal(target.ID, found.Data[0].ID, search)
+	}
 }
 
 func (s *IncidentDetailsServiceSuite) TestListIncidentsUsesFilteredTotalsAndStablePages() {

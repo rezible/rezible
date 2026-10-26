@@ -505,7 +505,7 @@ func (s *SystemAnalysisServiceSuite) TestSetSystemAnalysisEntryCreatesSubjectsAt
 func (s *SystemAnalysisServiceSuite) closeReview(ctx context.Context, tdb rez.Database, analysisID uuid.UUID, secondsAgo int) {
 	client := tdb.Client(ctx)
 	createIncident := client.Incident.Create().
-		SetSlug(uuid.NewString()).
+		SetNumber(1).
 		SetTitle("Checkout outage")
 	inc, incidentErr := createIncident.Save(ctx)
 	s.Require().NoError(incidentErr)

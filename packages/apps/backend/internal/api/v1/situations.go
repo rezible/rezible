@@ -4,6 +4,10 @@ import (
 	"context"
 
 	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/situation"
+	"github.com/rezible/rezible/pkg/errs"
 	oapi "github.com/rezible/rezible/pkg/openapi/v1"
 )
 
@@ -16,6 +20,17 @@ type situationsHandler struct {
 
 func newSituationsHandler(bh *baseHandler, situations rez.SituationService, briefs rez.SituationBriefService, notices rez.SituationNoticeService) *situationsHandler {
 	return &situationsHandler{baseHandler: bh, situations: situations, briefs: briefs, notices: notices}
+}
+
+func situationIdPredicate(id oapi.FlexibleId) (predicate.Situation, error) {
+	if !id.IsKey {
+		return situation.ID(id.UUID), nil
+	}
+	number, isReference := ent.ParseSituationReference(id.Key)
+	if !isReference {
+		return nil, errs.ErrNotFound
+	}
+	return situation.Number(number), nil
 }
 
 func (h *situationsHandler) ListSituations(ctx context.Context, request *oapi.ListSituationsRequest) (*oapi.ListSituationsResponse, error) {
@@ -39,7 +54,11 @@ func (h *situationsHandler) ListSituations(ctx context.Context, request *oapi.Li
 
 func (h *situationsHandler) GetSituation(ctx context.Context, request *oapi.GetSituationRequest) (*oapi.GetSituationResponse, error) {
 	var response oapi.GetSituationResponse
-	s, getErr := h.situations.GetSituation(ctx, request.Id)
+	pred, predErr := situationIdPredicate(request.Id)
+	if predErr != nil {
+		return nil, oapi.Error(ctx, "failed to get situation", predErr)
+	}
+	s, getErr := h.situations.GetSituation(ctx, pred)
 	if getErr != nil {
 		return nil, oapi.Error(ctx, "failed to get situation", getErr)
 	}
@@ -169,12 +188,12 @@ func (h *situationsHandler) RetrySituationNotice(ctx context.Context, request *o
 	if retryErr := h.notices.RetrySituationNotices(ctx, request.Id); retryErr != nil {
 		return nil, oapi.Error(ctx, "retry situation notice", retryErr)
 	}
-	situation, getErr := h.situations.GetSituation(ctx, request.Id)
+	updated, getErr := h.situations.GetSituation(ctx, situation.ID(request.Id))
 	if getErr != nil {
 		return nil, oapi.Error(ctx, "get situation", getErr)
 	}
 	var response oapi.RetrySituationNoticeResponse
-	response.Body.Data = oapi.SituationFromEnt(situation)
+	response.Body.Data = oapi.SituationFromEnt(updated)
 	return &response, nil
 }
 

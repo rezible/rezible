@@ -23,6 +23,8 @@ const (
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
+	// FieldNumber holds the string denoting the number field in the database.
+	FieldNumber = "number"
 	// FieldTitle holds the string denoting the title field in the database.
 	FieldTitle = "title"
 	// FieldSummary holds the string denoting the summary field in the database.
@@ -170,6 +172,7 @@ var Columns = []string{
 	FieldTenantID,
 	FieldCreatedAt,
 	FieldUpdatedAt,
+	FieldNumber,
 	FieldTitle,
 	FieldSummary,
 	FieldOpenedAt,
@@ -213,6 +216,8 @@ var (
 	DefaultUpdatedAt func() time.Time
 	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
 	UpdateDefaultUpdatedAt func() time.Time
+	// NumberValidator is a validator for the "number" field. It is called by the builders before save.
+	NumberValidator func(int) error
 	// TitleValidator is a validator for the "title" field. It is called by the builders before save.
 	TitleValidator func(string) error
 	// DefaultID holds the default value on creation for the "id" field.
@@ -288,6 +293,11 @@ func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
 // ByUpdatedAt orders the results by the updated_at field.
 func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
+}
+
+// ByNumber orders the results by the number field.
+func ByNumber(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldNumber, opts...).ToFunc()
 }
 
 // ByTitle orders the results by the title field.

@@ -29,7 +29,7 @@ func (Incident) Mixin() []ent.Mixin {
 func (Incident) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.New()).Default(uuid.New),
-		field.String("slug"),
+		field.Int("number").Positive().Immutable(),
 		field.String("title"),
 		field.UUID("severity_id", uuid.UUID{}).Optional().Nillable(),
 		field.UUID("type_id", uuid.UUID{}).Optional().Nillable(),
@@ -46,9 +46,9 @@ func (Incident) Fields() []ent.Field {
 
 func (Incident) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Fields("tenant_id", "slug").
+		index.Fields("tenant_id", "number").
 			Unique().
-			StorageKey("incidents_slug_key"),
+			StorageKey("incidents_number_key"),
 	}
 }
 

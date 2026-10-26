@@ -13,6 +13,7 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/schema"
+	"github.com/rezible/rezible/ent/sequencecounter"
 	"github.com/rezible/rezible/ent/team"
 	"github.com/rezible/rezible/ent/teammembership"
 	"github.com/rezible/rezible/ent/tenant"
@@ -381,7 +382,7 @@ func (s *DatabaseClientSuite) TestWriteReferencingAMissingRowIsNotFound() {
 	s.Require().NoError(ownerErr)
 	existing := s.createTeam(ctx, tdb)
 	createIncident := client.Incident.Create().
-		SetSlug(uuid.NewString()).
+		SetNumber(1).
 		SetTitle("incident")
 	incident, incidentErr := createIncident.Save(ctx)
 	s.Require().NoError(incidentErr)
@@ -426,8 +427,8 @@ func (s *DatabaseClientSuite) TestWriteReferencingAnotherTenantsRowIsNotFound() 
 	otherTeam := s.createTeam(otherCtx, tdb)
 	severity := client.IncidentSeverity.Create().SetName("sev").SetRank(1).SaveX(ctx)
 	otherSeverity := otherClient.IncidentSeverity.Create().SetName("sev").SetRank(1).SaveX(otherCtx)
-	incident := client.Incident.Create().SetSlug(uuid.NewString()).SetTitle("incident").SaveX(ctx)
-	otherIncident := otherClient.Incident.Create().SetSlug(uuid.NewString()).SetTitle("other").SaveX(otherCtx)
+	incident := client.Incident.Create().SetNumber(1).SetTitle("incident").SaveX(ctx)
+	otherIncident := otherClient.Incident.Create().SetNumber(1).SetTitle("other").SaveX(otherCtx)
 	otherRoster := otherClient.OncallRoster.Create().SetName("roster").SetSlug(uuid.NewString()).SaveX(otherCtx)
 
 	setSeverity := client.Incident.UpdateOneID(incident.ID).SetSeverityID(otherSeverity.ID)
@@ -462,7 +463,7 @@ func (s *DatabaseClientSuite) TestReportMissingReferencesLeavesAMissingRowToItsF
 	ctx, tdb := s.SetupTestDatabase()
 	otherCtx, _ := s.SetupTestDatabase()
 	client := tdb.Client(ctx)
-	incident := client.Incident.Create().SetSlug(uuid.NewString()).SetTitle("incident").SaveX(ctx)
+	incident := client.Incident.Create().SetNumber(1).SetTitle("incident").SaveX(ctx)
 	otherSeverity := tdb.Client(otherCtx).IncidentSeverity.Create().SetName("sev").SetRank(1).SaveX(otherCtx)
 	reportCtx := schema.ReportMissingReferences(ctx)
 
@@ -514,4 +515,20 @@ func (s *DatabaseClientSuite) TestUpsertMatchingAnotherTenantsKeyInserts() {
 	reloaded, reloadErr := tdb.Client(otherCtx).Team.Get(otherCtx, other.ID)
 	s.Require().NoError(reloadErr)
 	s.Equal(other.Name, reloaded.Name)
+}
+
+func (s *DatabaseClientSuite) TestSequenceCounterNextCountsPerTenantAndKind() {
+	ctx, tdb := s.SetupTestDatabase()
+	otherCtx, _ := s.SetupTestDatabase()
+	next := func(ctx context.Context, kind sequencecounter.Kind) int {
+		n, nextErr := tdb.Client(ctx).SequenceCounter.Next(ctx, kind)
+		s.Require().NoError(nextErr)
+		return n
+	}
+
+	s.Equal(1, next(ctx, sequencecounter.KindIncident))
+	s.Equal(2, next(ctx, sequencecounter.KindIncident))
+	s.Equal(1, next(ctx, sequencecounter.KindSituation), "kinds count separately")
+	s.Equal(1, next(otherCtx, sequencecounter.KindIncident), "another tenant starts at 1")
+	s.Equal(3, next(ctx, sequencecounter.KindIncident))
 }

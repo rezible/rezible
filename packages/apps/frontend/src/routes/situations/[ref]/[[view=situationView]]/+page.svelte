@@ -5,6 +5,6 @@
 	const { params }: Props = $props();
 </script>
 
-{#key params.id}
-	<SituationView id={params.id} />
+{#key params.ref}
+	<SituationView ref={params.ref} />
 {/key}

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/url"
+	"strconv"
 	"strings"
 
 	mapset "github.com/deckarep/golang-set/v2"
@@ -80,7 +81,7 @@ func (a *App) loadIncidentChannel(ctx context.Context, incidentID uuid.UUID) (*i
 	if settingsErr != nil {
 		return nil, settingsErr
 	}
-	incUrl, incUrlErr := a.cfg.App.GetFrontendUrl("incidents", inc.Slug)
+	incUrl, incUrlErr := a.cfg.App.GetFrontendUrl("incidents", inc.Reference())
 	if incUrlErr != nil {
 		return nil, fmt.Errorf("incident url: %w", incUrlErr)
 	}
@@ -235,7 +236,7 @@ func (a *App) postIncidentMilestone(ctx context.Context, incidentID uuid.UUID, m
 // channelName fills the pattern, in lowercase and within Slack's limit on channel names.
 func (c *incidentChannel) channelName() string {
 	name := strings.ReplaceAll(c.settings.ChannelNamePattern, "{id}", c.inc.ID.String())
-	name = strings.ReplaceAll(name, "{slug}", c.inc.Slug)
+	name = strings.ReplaceAll(name, "{number}", strconv.Itoa(c.inc.Number))
 	name = strings.ReplaceAll(name, "{title}", slug.Make(c.inc.Title))
 	runes := []rune(strings.ToLower(name))
 	return string(runes[:min(len(runes), maxChannelNameRunes)])
@@ -309,7 +310,7 @@ func (c *incidentChannel) updateTopic(ctx context.Context) error {
 	if infoErr != nil {
 		return fmt.Errorf("get channel info: %w", infoErr)
 	}
-	topic := c.inc.Title
+	topic := c.inc.Reference() + " · " + c.inc.Title
 	if sev := c.inc.Edges.Severity; sev != nil {
 		topic = fmt.Sprintf("[%s] %s", sev.Name, topic)
 	}

@@ -1803,6 +1803,30 @@ func (f ReviewMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.ReviewMutation", m)
 }
 
+// The SequenceCounterQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type SequenceCounterQueryRuleFunc func(context.Context, *ent.SequenceCounterQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f SequenceCounterQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.SequenceCounterQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.SequenceCounterQuery", q)
+}
+
+// The SequenceCounterMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type SequenceCounterMutationRuleFunc func(context.Context, *ent.SequenceCounterMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f SequenceCounterMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.SequenceCounterMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.SequenceCounterMutation", m)
+}
+
 // The SituationQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
 type SituationQueryRuleFunc func(context.Context, *ent.SituationQuery) error
@@ -2628,6 +2652,8 @@ func queryFilter(q ent.Query) (Filter, error) {
 		return q.Filter(), nil
 	case *ent.ReviewQuery:
 		return q.Filter(), nil
+	case *ent.SequenceCounterQuery:
+		return q.Filter(), nil
 	case *ent.SituationQuery:
 		return q.Filter(), nil
 	case *ent.SituationActionQuery:
@@ -2828,6 +2854,8 @@ func mutationFilter(m ent.Mutation) (Filter, error) {
 	case *ent.RetrospectiveMutation:
 		return m.Filter(), nil
 	case *ent.ReviewMutation:
+		return m.Filter(), nil
+	case *ent.SequenceCounterMutation:
 		return m.Filter(), nil
 	case *ent.SituationMutation:
 		return m.Filter(), nil

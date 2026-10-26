@@ -19,11 +19,11 @@
 	import RiDashboardLine from "remixicon-svelte/icons/dashboard-horizontal-line";
 
 	type Props = {
-		slug: string;
+		ref: string;
 	};
-	const { slug }: Props = $props();
+	const { ref }: Props = $props();
 
-	const view = initIncidentViewController(() => slug);
+	const view = initIncidentViewController(() => ref);
 	initIncidentCollaborationController(
 		() => view.retrospectiveDocumentId,
 		() => view.reviewClosed,
@@ -33,6 +33,7 @@
 
 	registerPageDescriptor(() => ({
 		title: view.incident?.attributes.title ?? "Incident",
+		reference: view.reference,
 		status: view.incident ? incidentResponseStatus(view.incident.attributes.responseState) : undefined,
 		parents: [{ label: "Incidents", path: resolve("/incidents") }],
 		related: view.relatedLinks,
@@ -50,26 +51,26 @@
 {#if view.incident}
 	<IncidentResponseDialogs />
 	<FeatureNavigationRail
-		route="/incidents/[slug]/[[view=incidentView]]"
+		route="/incidents/[ref]/[[view=incidentView]]"
 		label="Incident"
 		entries={[
 			{
 				label: "Overview",
 				icon: RiDashboardLine,
 				component: IncidentOverview,
-				params: { slug },
+				params: { ref },
 			},
 			{
 				label: "Analysis",
 				icon: RiBarChartLine,
 				component: IncidentAnalysis,
-				params: { slug, view: "analysis" },
+				params: { ref, view: "analysis" },
 			},
 			{
 				label: "Report",
 				icon: RiArticleLine,
 				component: IncidentReport,
-				params: { slug, view: "report" },
+				params: { ref, view: "report" },
 			},
 		]}
 	/>

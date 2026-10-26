@@ -43,6 +43,8 @@ export type PageRelatedLink = {
 
 export type PageDescriptor = {
 	title: string;
+	/** The page object's reference, such as INC-12. Shown before the title. */
+	reference?: string;
 	/** The page object's primary status. Rendered once, in the header. */
 	status?: StatusPresentation;
 	parents?: readonly PageBreadcrumb[];

@@ -22,7 +22,7 @@ import (
 
 var noticeTestOpenedAt = time.Date(2026, 10, 16, 9, 30, 0, 0, time.UTC)
 
-const noticeTestSituationURL = "https://rezible.test/situations/1"
+const noticeTestSituationURL = "https://rezible.test/situations/SIT-12"
 
 func (s *AppSuite) noticeService(name string) *ent.KnowledgeEntity {
 	return &ent.KnowledgeEntity{
@@ -35,6 +35,7 @@ func (s *AppSuite) noticeService(name string) *ent.KnowledgeEntity {
 func (s *AppSuite) noticeContent() *noticeContent {
 	situation := &ent.Situation{
 		ID:       uuid.New(),
+		Number:   12,
 		Title:    "Checkout errors",
 		OpenedAt: noticeTestOpenedAt,
 		RaisedAt: new(noticeTestOpenedAt.Add(10 * time.Minute)),
@@ -118,7 +119,7 @@ func (s *AppSuite) headerText(content *noticeContent) *slack.TextBlockObject {
 
 func (s *AppSuite) TestNoticeWording() {
 	survivorID := uuid.New()
-	survivorURL := "https://rezible.test/situations/" + survivorID.String()
+	survivorURL := "https://rezible.test/situations/SIT-7"
 	stages := []struct {
 		name  string
 		setup func(content *noticeContent)
@@ -169,13 +170,13 @@ func (s *AppSuite) TestNoticeWording() {
 					Kind:              sitlink.KindMergedInto,
 					LinkedSituationID: survivorID,
 					Edges: ent.SituationLinkEdges{
-						LinkedSituation: &ent.Situation{ID: survivorID, Title: "Payments timeouts"},
+						LinkedSituation: &ent.Situation{ID: survivorID, Number: 7, Title: "Payments timeouts"},
 					},
 				}
 				content.Situation.Edges.Links = []*ent.SituationLink{link}
 				content.MergedIntoURL = survivorURL
 			},
-			stage: "Merged into <" + survivorURL + "|Payments timeouts>",
+			stage: "Merged into <" + survivorURL + "|SIT-7 · Payments timeouts>",
 		},
 	}
 	for _, stage := range stages {
@@ -185,7 +186,7 @@ func (s *AppSuite) TestNoticeWording() {
 
 			text := s.renderedText(content)
 
-			s.Contains(text, "Checkout errors")
+			s.Contains(text, "SIT-12 · Checkout errors · "+stage.stage, "the notification text leads with the reference")
 			s.Contains(text, stage.stage)
 			s.Contains(text, "Checkout, Payments")
 			s.Contains(text, slackintegration.SlackDate(noticeTestOpenedAt))
@@ -287,7 +288,7 @@ func (s *AppSuite) TestNoticeEscapesForeignText() {
 
 	header := s.headerText(content)
 	s.Equal(slack.PlainTextType, header.Type, "plain text cannot form mentions or links")
-	s.Equal("Checkout "+foreign, header.Text)
+	s.Equal("SIT-12 · Checkout "+foreign, header.Text)
 }
 
 func (s *AppSuite) TestNoticeHeaderFitsSlackLimit() {
@@ -297,6 +298,7 @@ func (s *AppSuite) TestNoticeHeaderFitsSlackLimit() {
 	header := s.headerText(content)
 
 	s.Len([]rune(header.Text), 150)
+	s.True(strings.HasPrefix(header.Text, "SIT-12 · "), "cutting the title keeps the reference")
 	s.True(strings.HasSuffix(header.Text, "…"))
 }
 

@@ -52,6 +52,11 @@
 					/>
 				{/each}
 				<Breadcrumb.Item class="min-w-0">
+					{#if descriptor.reference}
+						<span class="shrink-0 text-sm whitespace-nowrap text-muted-foreground">
+							{descriptor.reference}
+						</span>
+					{/if}
 					{#if descriptor.contentHeading}
 						<span
 							bind:this={currentCrumb}

@@ -29,7 +29,7 @@
 {:else}
 	{@const attrs = incident.attributes}
 	<a
-		href={resolve("/incidents/[slug]/[[view=incidentView]]", { slug: attrs.slug || incident.id })}
+		href={resolve("/incidents/[ref]/[[view=incidentView]]", { ref: attrs.reference })}
 		class="grid gap-2 rounded-md border bg-muted/20 p-3 transition hover:border-primary/40 hover:bg-muted/40"
 	>
 		<div class="flex flex-wrap items-center gap-2">

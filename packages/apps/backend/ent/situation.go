@@ -28,6 +28,8 @@ type Situation struct {
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
+	// Number holds the value of the "number" field.
+	Number int `json:"number,omitempty"`
 	// Title holds the value of the "title" field.
 	Title string `json:"title,omitempty"`
 	// Summary holds the value of the "summary" field.
@@ -221,7 +223,7 @@ func (*Situation) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case situation.FieldLatestJudgmentID:
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case situation.FieldTenantID:
+		case situation.FieldTenantID, situation.FieldNumber:
 			values[i] = new(sql.NullInt64)
 		case situation.FieldTitle, situation.FieldSummary, situation.FieldMuteReason, situation.FieldCloseReason:
 			values[i] = new(sql.NullString)
@@ -267,6 +269,12 @@ func (_m *Situation) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
 			} else if value.Valid {
 				_m.UpdatedAt = value.Time
+			}
+		case situation.FieldNumber:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field number", values[i])
+			} else if value.Valid {
+				_m.Number = int(value.Int64)
 			}
 		case situation.FieldTitle:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -450,6 +458,9 @@ func (_m *Situation) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("updated_at=")
 	builder.WriteString(_m.UpdatedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("number=")
+	builder.WriteString(fmt.Sprintf("%v", _m.Number))
 	builder.WriteString(", ")
 	builder.WriteString("title=")
 	builder.WriteString(_m.Title)

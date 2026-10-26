@@ -189,7 +189,7 @@ func (s *DebriefService) prepareUserDebrief(ctx context.Context, user *ent.User,
 
 	// TODO: convert this to content node
 	/*
-		incFmt := inc.Slug
+		incFmt := inc.Reference()
 		if inc.ChatChannelID != "" {
 			incFmt = fmt.Sprintf("<#%s>", inc.ChatChannelID)
 		}

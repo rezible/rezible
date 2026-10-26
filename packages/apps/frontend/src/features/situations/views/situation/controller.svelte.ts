@@ -29,6 +29,7 @@ import {
 	listSituationAlertEpisodesQueryKey,
 	listSituationsQueryKey,
 	mergeSituationMutation,
+	type GetSituationResponse,
 	raiseSituationMutation,
 	retryAgentTurnMutation,
 	type SetSituationMuteAttributes,
@@ -46,6 +47,7 @@ import {
 	type ReportState,
 } from "$features/situations/lib/model";
 import { situationHref } from "$features/situations/lib/routes";
+import { referenceUrl } from "$lib/reference-url";
 import {
 	activeHoldUntil,
 	investigationRunStatus,
@@ -90,18 +92,30 @@ export type InvestigationOffer = "raise" | "start" | "muted" | "closed";
 export class SituationController {
 	private queryClient = useQueryClient();
 	private incidentDialog = useIncidentCreateDialog();
-	situationId = $state<string>();
 
-	constructor(idFn: Getter<string>) {
-		watch(idFn, (id) => {
-			this.situationId = id;
+	/** The URL value: the situation's reference, or another value the API resolves, such as its UUID. */
+	ref = $state("");
+
+	constructor(refFn: Getter<string>) {
+		this.ref = refFn();
+		watch(refFn, (ref) => {
+			this.ref = ref;
 		});
-		// ?declare=incident, the target of the notice's button, opens the declare dialog for this situation once
-		// it has loaded. The parameter is cleared straight away, so going back or a refetch doesn't reopen it.
 		watch(
-			() => [this.declareRequested, this.loadedSituationId] as const,
-			([requested, loadedId]) => {
-				if (!requested || !loadedId) {
+			() => this.situationQuery.data,
+			(response) => {
+				if (response) {
+					this.useReferenceUrl(response);
+				}
+			}
+		);
+		// ?declare=incident, the target of the notice's button, opens the declare dialog for this situation once
+		// it has loaded at its reference URL, so switching the address doesn't bring the parameter back. The
+		// parameter is cleared straight away, so going back or a refetch doesn't reopen it.
+		watch(
+			() => [this.declareRequested, this.reference === this.ref] as const,
+			([requested, atReferenceUrl]) => {
+				if (!requested || !atReferenceUrl) {
 					return;
 				}
 				if (this.canDeclareIncident) {
@@ -157,8 +171,8 @@ export class SituationController {
 	}
 
 	situationQuery = createQuery(() => ({
-		...getSituationOptions({ path: idPath(this.situationId) }),
-		enabled: !!this.situationId,
+		...getSituationOptions({ path: { id: this.ref } }),
+		enabled: !!this.ref,
 		refetchInterval: SITUATION_POLL_INTERVAL_MS,
 		refetchIntervalInBackground: false,
 		retry: (failureCount, error) => !isDefinitiveUnavailableError(error) && failureCount < 2,
@@ -168,6 +182,11 @@ export class SituationController {
 		isDefinitiveUnavailableError(this.situationQuery.error) ? undefined : this.situationQuery.data?.data
 	);
 	situationUnavailable = $derived(isDefinitiveUnavailableError(this.situationQuery.error));
+	/** The loaded situation's UUID, which every other request uses. */
+	situationId = $derived(this.situation?.id);
+	reference = $derived(this.situation?.attributes.reference);
+	/** The value links to this situation use: its reference once loaded, until then the URL value. */
+	linkRef = $derived(this.reference ?? this.ref);
 	/** Presentation time for holds and the long-running marker; never used for detection. */
 	now = $state(Date.now());
 
@@ -204,13 +223,12 @@ export class SituationController {
 			kind: "Incident",
 			icon: RiFireLine,
 			label: incident.attributes.title,
-			path: resolve("/incidents/[slug]/[[view=incidentView]]", { slug: incident.attributes.slug }),
+			path: resolve("/incidents/[ref]/[[view=incidentView]]", { ref: incident.attributes.reference }),
 			status: incidentResponseStatus(incident.attributes.responseState),
 		}))
 	);
 
 	private declareRequested = $derived(page.url.searchParams.get("declare") === "incident");
-	private loadedSituationId = $derived(this.situation?.id);
 	/** Open and closed situations can both start an incident. */
 	canDeclareIncident = $derived(this.incidentDialog.enabled);
 
@@ -223,7 +241,7 @@ export class SituationController {
 
 	situationInvestigation = $derived(this.situation?.attributes.investigation);
 	investigationId = $derived(this.situationInvestigation?.investigation.id);
-	investigationHref = $derived(situationHref(this.situationId ?? "", "investigation", page.url.search));
+	investigationHref = $derived(situationHref(this.linkRef, "investigation", page.url.search));
 
 	investigationQuery = createQuery(() => ({
 		...getInvestigationOptions({ path: idPath(this.investigationId) }),
@@ -337,15 +355,19 @@ export class SituationController {
 			this.mergeDialogOpen = false;
 			const sourceId = variables.path.id;
 			const targetId = response.data.id;
-			await this.applySituation(response.data);
-			await Promise.all(
-				[sourceId, targetId].flatMap((id) => [
-					this.queryClient.invalidateQueries({ queryKey: getSituationQueryKey({ path: { id } }) }),
+			await Promise.all([
+				// The ID-less key matches both situations: this page caches the source under its URL value, and
+				// other pages cache a situation under its UUID.
+				this.queryClient.invalidateQueries({
+					queryKey: getSituationQueryKey({} as Parameters<typeof getSituationQueryKey>[0]),
+				}),
+				this.queryClient.invalidateQueries({ queryKey: listSituationsQueryKey() }),
+				...[sourceId, targetId].map((id) =>
 					this.queryClient.invalidateQueries({
 						queryKey: listSituationAlertEpisodesQueryKey({ path: { id } }),
-					}),
-				])
-			);
+					})
+				),
+			]);
 			if (this.situationId === sourceId) {
 				await goto(situationHref(targetId));
 			}
@@ -605,11 +627,25 @@ export class SituationController {
 		return { kind: "loading" };
 	}
 
-	/** Stores the returned situation under its own ID, then refreshes every list and the Watching count. */
+	/** Stores the returned situation under this page's key, then refreshes every list and the Watching count. */
 	async applySituation(situation: Situation) {
-		const queryKey = getSituationQueryKey({ path: { id: situation.id } });
+		const queryKey = getSituationQueryKey({ path: { id: this.ref } });
 		this.queryClient.setQueryData(queryKey, { data: situation });
 		await this.queryClient.invalidateQueries({ queryKey: listSituationsQueryKey() });
+	}
+
+	/** Replaces a URL that names the situation another way with its reference URL, caching the response first. */
+	private useReferenceUrl(response: GetSituationResponse) {
+		const reference = response.data.attributes.reference;
+		if (reference === this.ref) {
+			return;
+		}
+		this.queryClient.setQueryData(getSituationQueryKey({ path: { id: reference } }), response);
+		void goto(referenceUrl(page.url, this.ref, reference), {
+			replaceState: true,
+			noScroll: true,
+			keepFocus: true,
+		});
 	}
 
 	private notifyError(title: string, error: ApiError) {
@@ -710,5 +746,5 @@ export class SituationController {
 }
 
 const ctx = new Context<SituationController>("SituationController");
-export const initSituationController = (idFn: Getter<string>) => ctx.set(new SituationController(idFn));
+export const initSituationController = (refFn: Getter<string>) => ctx.set(new SituationController(refFn));
 export const useSituationController = () => ctx.get();

@@ -34,8 +34,8 @@ type Incident struct {
 	ArchiveTime *time.Time `json:"archive_time,omitempty"`
 	// KnowledgeEntityID holds the value of the "knowledge_entity_id" field.
 	KnowledgeEntityID *uuid.UUID `json:"knowledge_entity_id,omitempty"`
-	// Slug holds the value of the "slug" field.
-	Slug string `json:"slug,omitempty"`
+	// Number holds the value of the "number" field.
+	Number int `json:"number,omitempty"`
 	// Title holds the value of the "title" field.
 	Title string `json:"title,omitempty"`
 	// SeverityID holds the value of the "severity_id" field.
@@ -264,9 +264,9 @@ func (*Incident) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case incident.FieldKnowledgeEntityID, incident.FieldSeverityID, incident.FieldTypeID, incident.FieldDeclaredByID:
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case incident.FieldTenantID:
+		case incident.FieldTenantID, incident.FieldNumber:
 			values[i] = new(sql.NullInt64)
-		case incident.FieldSlug, incident.FieldTitle, incident.FieldSummary, incident.FieldChatChannelID, incident.FieldChatDetailsMessageID, incident.FieldResponseState:
+		case incident.FieldTitle, incident.FieldSummary, incident.FieldChatChannelID, incident.FieldChatDetailsMessageID, incident.FieldResponseState:
 			values[i] = new(sql.NullString)
 		case incident.FieldCreatedAt, incident.FieldUpdatedAt, incident.FieldArchiveTime, incident.FieldOpenedAt, incident.FieldResolvedAt:
 			values[i] = new(sql.NullTime)
@@ -325,11 +325,11 @@ func (_m *Incident) assignValues(columns []string, values []any) error {
 				_m.KnowledgeEntityID = new(uuid.UUID)
 				*_m.KnowledgeEntityID = *value.S.(*uuid.UUID)
 			}
-		case incident.FieldSlug:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field slug", values[i])
+		case incident.FieldNumber:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field number", values[i])
 			} else if value.Valid {
-				_m.Slug = value.String
+				_m.Number = int(value.Int64)
 			}
 		case incident.FieldTitle:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -530,8 +530,8 @@ func (_m *Incident) String() string {
 		builder.WriteString(fmt.Sprintf("%v", *v))
 	}
 	builder.WriteString(", ")
-	builder.WriteString("slug=")
-	builder.WriteString(_m.Slug)
+	builder.WriteString("number=")
+	builder.WriteString(fmt.Sprintf("%v", _m.Number))
 	builder.WriteString(", ")
 	builder.WriteString("title=")
 	builder.WriteString(_m.Title)

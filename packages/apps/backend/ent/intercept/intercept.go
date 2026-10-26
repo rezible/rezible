@@ -80,6 +80,7 @@ import (
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/ent/review"
+	"github.com/rezible/rezible/ent/sequencecounter"
 	"github.com/rezible/rezible/ent/situation"
 	"github.com/rezible/rezible/ent/situationaction"
 	"github.com/rezible/rezible/ent/situationentity"
@@ -2082,6 +2083,33 @@ func (f TraverseReview) Traverse(ctx context.Context, q ent.Query) error {
 	return fmt.Errorf("unexpected query type %T. expect *ent.ReviewQuery", q)
 }
 
+// The SequenceCounterFunc type is an adapter to allow the use of ordinary function as a Querier.
+type SequenceCounterFunc func(context.Context, *ent.SequenceCounterQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f SequenceCounterFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.SequenceCounterQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.SequenceCounterQuery", q)
+}
+
+// The TraverseSequenceCounter type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseSequenceCounter func(context.Context, *ent.SequenceCounterQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseSequenceCounter) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseSequenceCounter) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.SequenceCounterQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.SequenceCounterQuery", q)
+}
+
 // The SituationFunc type is an adapter to allow the use of ordinary function as a Querier.
 type SituationFunc func(context.Context, *ent.SituationQuery) (ent.Value, error)
 
@@ -2956,6 +2984,8 @@ func NewQuery(q ent.Query) (Query, error) {
 		return &query[*ent.RetrospectiveQuery, predicate.Retrospective, retrospective.OrderOption]{typ: ent.TypeRetrospective, tq: q}, nil
 	case *ent.ReviewQuery:
 		return &query[*ent.ReviewQuery, predicate.Review, review.OrderOption]{typ: ent.TypeReview, tq: q}, nil
+	case *ent.SequenceCounterQuery:
+		return &query[*ent.SequenceCounterQuery, predicate.SequenceCounter, sequencecounter.OrderOption]{typ: ent.TypeSequenceCounter, tq: q}, nil
 	case *ent.SituationQuery:
 		return &query[*ent.SituationQuery, predicate.Situation, situation.OrderOption]{typ: ent.TypeSituation, tq: q}, nil
 	case *ent.SituationActionQuery:

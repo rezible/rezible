@@ -45,6 +45,7 @@ var testInstallationConfig = fmt.Sprintf(`{"AccessToken": "xoxb-test", "BotUserI
 // fakeSlack records the Web API calls the app makes. It cannot list pins, so a call to list them fails.
 type fakeSlack struct {
 	mu       sync.Mutex
+	channels []string
 	posts    []url.Values
 	updates  []url.Values
 	pinned   []string
@@ -61,6 +62,7 @@ func (f *fakeSlack) serve(w http.ResponseWriter, r *http.Request) {
 	response := map[string]any{"ok": true}
 	switch strings.TrimPrefix(r.URL.Path, "/") {
 	case "conversations.create":
+		f.channels = append(f.channels, r.PostForm.Get("name"))
 		response["channel"] = map[string]any{"id": "C0RESP", "name": r.PostForm.Get("name")}
 	case "chat.postMessage", "chat.postEphemeral":
 		f.posts = append(f.posts, r.PostForm)
@@ -114,10 +116,24 @@ func (s *AppSuite) newApp(db rez.Database, jobs rez.JobService, orgs rez.Organiz
 	return MakeApp(cfg, db, jobs, orgs, incidents, management), fake
 }
 
+func (s *AppSuite) TestMessagesKeepTheReferenceOfALongTitle() {
+	inc := &ent.Incident{ID: uuid.New(), Number: 12, Title: strings.Repeat("Checkout errors ", 100)}
+	messages := incidentMessages{inc: inc, incidentUrl: &url.URL{Scheme: "https", Host: "app.test"}}
+	for prefix, options := range map[string][]slack.MsgOption{
+		"Incident declared: INC-12 · Checkout errors": messages.announcementMessageOptions(),
+		"Incident details: INC-12 · Checkout errors":  messages.detailsMessageOptions(),
+	} {
+		_, values, applyErr := slack.UnsafeApplyMsgOptions("", "C1", "", options...)
+		s.Require().NoError(applyErr, prefix)
+		s.True(strings.HasPrefix(values.Get("text"), prefix), values.Get("text"))
+		s.Less(len([]rune(values.Get("text"))), len([]rune(inc.Title)), "the title is cut")
+	}
+}
+
 func (s *AppSuite) TestDetailsModalDeclaresWithoutSeverityOrType() {
 	userID := uuid.New()
 	ctx := execution.NewUserContext(s.T().Context(), &ent.UserAuthSession{TenantID: 7, UserID: userID})
-	declared := &ent.Incident{ID: uuid.New(), Slug: "251023-calm-river", Title: "Checkout errors"}
+	declared := &ent.Incident{ID: uuid.New(), Number: 12, Title: "Checkout errors"}
 
 	management := mocks.NewMockIncidentManagementService(s.T())
 	management.EXPECT().
@@ -166,7 +182,7 @@ func (s *AppSuite) TestIncidentEventCreatesChannelAndPinsDetails() {
 	declarerID := uuid.New()
 	inc := &ent.Incident{
 		ID:           uuid.New(),
-		Slug:         "251023-calm-river",
+		Number:       12,
 		Title:        "Checkout errors after deploy",
 		DeclaredByID: &declarerID,
 		Edges:        ent.IncidentEdges{DeclaredBy: &ent.User{ID: declarerID, Name: "Ava", ChatID: "U0AVA"}},
@@ -211,6 +227,7 @@ func (s *AppSuite) TestIncidentEventCreatesChannelAndPinsDetails() {
 	s.Equal(createIncidentChannelJobArgs{IncidentId: inc.ID}, inserted[1], "an incident without a channel gets one")
 
 	s.Require().NoError(app.createIncidentChannel(ctx, inc.ID))
+	s.Equal([]string{"inc-12"}, fake.channels, "the default pattern names the channel by number")
 	s.Len(fake.postsTo(testInstallChannel), 1, "the announcement goes to the channel chosen at install")
 	s.Require().Len(fake.postsTo("C0RESP"), 1, "the channel job posts the details message")
 	s.Equal([]string{inc.ChatDetailsMessageID}, fake.pinned, "the details message is pinned and stored")

@@ -59,7 +59,7 @@ func (s *ProjectionServiceSuite) TestIncidentProjectionObservesCreateChangeAndRe
 	created, createdErr := queryCreated.Only(ctx)
 	s.Require().NoError(createdErr)
 	s.True(created.OpenedAt.Equal(openedAt))
-	s.Contains(created.Slug, "260601-")
+	s.Equal("INC-1", created.Reference())
 
 	_, projErr = runProjection(ctx, projector, first)
 	s.Require().NoError(projErr)

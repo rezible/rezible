@@ -8733,8 +8733,8 @@ func (_c *MockSituationService_CreateSituation_Call) RunAndReturn(run func(conte
 }
 
 // GetSituation provides a mock function for the type MockSituationService
-func (_mock *MockSituationService) GetSituation(context1 context.Context, uUID uuid.UUID) (*ent.Situation, error) {
-	ret := _mock.Called(context1, uUID)
+func (_mock *MockSituationService) GetSituation(context1 context.Context, situation predicate.Situation) (*ent.Situation, error) {
+	ret := _mock.Called(context1, situation)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetSituation")
@@ -8742,18 +8742,18 @@ func (_mock *MockSituationService) GetSituation(context1 context.Context, uUID u
 
 	var r0 *ent.Situation
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) (*ent.Situation, error)); ok {
-		return returnFunc(context1, uUID)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, predicate.Situation) (*ent.Situation, error)); ok {
+		return returnFunc(context1, situation)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) *ent.Situation); ok {
-		r0 = returnFunc(context1, uUID)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, predicate.Situation) *ent.Situation); ok {
+		r0 = returnFunc(context1, situation)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*ent.Situation)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID) error); ok {
-		r1 = returnFunc(context1, uUID)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, predicate.Situation) error); ok {
+		r1 = returnFunc(context1, situation)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -8767,20 +8767,20 @@ type MockSituationService_GetSituation_Call struct {
 
 // GetSituation is a helper method to define mock.On call
 //   - context1 context.Context
-//   - uUID uuid.UUID
-func (_e *MockSituationService_Expecter) GetSituation(context1 interface{}, uUID interface{}) *MockSituationService_GetSituation_Call {
-	return &MockSituationService_GetSituation_Call{Call: _e.mock.On("GetSituation", context1, uUID)}
+//   - situation predicate.Situation
+func (_e *MockSituationService_Expecter) GetSituation(context1 interface{}, situation interface{}) *MockSituationService_GetSituation_Call {
+	return &MockSituationService_GetSituation_Call{Call: _e.mock.On("GetSituation", context1, situation)}
 }
 
-func (_c *MockSituationService_GetSituation_Call) Run(run func(context1 context.Context, uUID uuid.UUID)) *MockSituationService_GetSituation_Call {
+func (_c *MockSituationService_GetSituation_Call) Run(run func(context1 context.Context, situation predicate.Situation)) *MockSituationService_GetSituation_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 uuid.UUID
+		var arg1 predicate.Situation
 		if args[1] != nil {
-			arg1 = args[1].(uuid.UUID)
+			arg1 = args[1].(predicate.Situation)
 		}
 		run(
 			arg0,
@@ -8790,12 +8790,12 @@ func (_c *MockSituationService_GetSituation_Call) Run(run func(context1 context.
 	return _c
 }
 
-func (_c *MockSituationService_GetSituation_Call) Return(situation *ent.Situation, err error) *MockSituationService_GetSituation_Call {
-	_c.Call.Return(situation, err)
+func (_c *MockSituationService_GetSituation_Call) Return(situation1 *ent.Situation, err error) *MockSituationService_GetSituation_Call {
+	_c.Call.Return(situation1, err)
 	return _c
 }
 
-func (_c *MockSituationService_GetSituation_Call) RunAndReturn(run func(context1 context.Context, uUID uuid.UUID) (*ent.Situation, error)) *MockSituationService_GetSituation_Call {
+func (_c *MockSituationService_GetSituation_Call) RunAndReturn(run func(context1 context.Context, situation predicate.Situation) (*ent.Situation, error)) *MockSituationService_GetSituation_Call {
 	_c.Call.Return(run)
 	return _c
 }

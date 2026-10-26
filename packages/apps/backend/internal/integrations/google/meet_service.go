@@ -75,7 +75,7 @@ func (s *meetService) CreateIncidentVideoConference(ctx context.Context, inc *en
 	}
 
 	// TODO
-	confName := inc.Title
+	confName := inc.Reference() + " · " + inc.Title
 	url, confErr := s.CreateVideoConference(ctx, confName)
 	if confErr != nil {
 		return confErr

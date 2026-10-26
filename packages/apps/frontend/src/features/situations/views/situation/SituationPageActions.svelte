@@ -42,7 +42,7 @@
 {/if}
 
 {#if controller.canDeclareIncident}
-	<Button size="sm" variant="outline" href={declareIncidentHref(controller.situationId ?? "")}>
+	<Button size="sm" variant="outline" href={declareIncidentHref(controller.linkRef)}>
 		Declare incident
 	</Button>
 {/if}

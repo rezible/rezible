@@ -40,7 +40,7 @@ func (s *SituationService) changeSituation(ctx context.Context, id uuid.UUID, ve
 		if evaluateErr := s.requestEvaluation(ctx, id); evaluateErr != nil {
 			return nil, evaluateErr
 		}
-		return s.GetSituation(ctx, id)
+		return s.GetSituation(ctx, sit.ID(id))
 	})
 }
 
@@ -174,13 +174,13 @@ func (s *SituationService) CloseSituation(ctx context.Context, id uuid.UUID, par
 			if *situation.CloseReason != reason {
 				return nil, fmt.Errorf("%w: situation is already closed as %s", errs.ErrConflict, *situation.CloseReason)
 			}
-			return s.GetSituation(ctx, id)
+			return s.GetSituation(ctx, sit.ID(id))
 		}
 		now := s.clock.Now()
 		if closeErr := s.closeLocked(ctx, situation, reason, params.Note, now, now); closeErr != nil {
 			return nil, closeErr
 		}
-		return s.GetSituation(ctx, id)
+		return s.GetSituation(ctx, sit.ID(id))
 	})
 }
 

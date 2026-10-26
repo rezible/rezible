@@ -2,12 +2,17 @@ package ent
 
 import (
 	"bytes"
+	"context"
+	"fmt"
 	"slices"
+	"strconv"
+	"strings"
 
 	"github.com/firebase/genkit/go/ai"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/incidentmilestone"
 	invfvl "github.com/rezible/rezible/ent/investigationfindingversionlink"
+	"github.com/rezible/rezible/ent/sequencecounter"
 	vc "github.com/rezible/rezible/ent/videoconference"
 )
 
@@ -133,4 +138,65 @@ func (ui *InvestigationUserInput) CurrentAnswerVersion() *InvestigationFindingVe
 		}
 	}
 	return nil
+}
+
+// Next returns the next number in the current tenant's sequence of the kind. Call it inside the transaction
+// that creates the numbered entity: the upsert holds the counter row's lock until that transaction ends, so
+// numbers are handed out one at a time per tenant and kind, and a rolled back create leaves no gap.
+func (c *SequenceCounterClient) Next(ctx context.Context, kind sequencecounter.Kind) (int, error) {
+	increment := c.Create().
+		SetKind(kind).
+		SetValue(1).
+		OnConflictColumns(sequencecounter.FieldTenantID, sequencecounter.FieldKind).
+		AddValue(1)
+	id, upsertErr := increment.ID(ctx)
+	if upsertErr != nil {
+		return 0, fmt.Errorf("increment sequence counter: %w", upsertErr)
+	}
+	counter, getErr := c.Get(ctx, id)
+	if getErr != nil {
+		return 0, fmt.Errorf("read sequence counter: %w", getErr)
+	}
+	return counter.Value, nil
+}
+
+// formatReference returns the reference of the numbered entity, such as INC-12.
+func formatReference(prefix string, n int) string {
+	return prefix + "-" + strconv.Itoa(n)
+}
+
+// parseReference returns the number of a reference with the prefix in any letter case, or of a bare number.
+func parseReference(prefix, s string) (int, bool) {
+	digits := strings.TrimSpace(s)
+	if len(digits) > len(prefix)+1 && strings.EqualFold(digits[:len(prefix)+1], prefix+"-") {
+		digits = digits[len(prefix)+1:]
+	}
+	if digits == "" || strings.TrimLeft(digits, "0123456789") != "" {
+		return 0, false
+	}
+	n, parseErr := strconv.Atoi(digits)
+	if parseErr != nil || n <= 0 {
+		return 0, false
+	}
+	return n, true
+}
+
+// Reference returns the incident's reference, such as INC-12.
+func (i *Incident) Reference() string {
+	return formatReference("INC", i.Number)
+}
+
+// ParseIncidentReference returns the number of an incident reference, such as INC-12, inc-12 or 12.
+func ParseIncidentReference(s string) (int, bool) {
+	return parseReference("INC", s)
+}
+
+// Reference returns the situation's reference, such as SIT-12.
+func (s *Situation) Reference() string {
+	return formatReference("SIT", s.Number)
+}
+
+// ParseSituationReference returns the number of a situation reference, such as SIT-12, sit-12 or 12.
+func ParseSituationReference(s string) (int, bool) {
+	return parseReference("SIT", s)
 }

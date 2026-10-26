@@ -141,8 +141,8 @@ func (i *Integration) ValidateUserSettings(m []byte) error {
 	if pattern == "" {
 		return fmt.Errorf("%w: a channel name pattern is required", errs.ErrInvalidInput)
 	}
-	if !strings.Contains(pattern, "{slug}") && !strings.Contains(pattern, "{id}") {
-		return fmt.Errorf("%w: the channel name pattern needs {slug} or {id}, so each incident's channel has its own name", errs.ErrInvalidInput)
+	if !strings.Contains(pattern, "{number}") && !strings.Contains(pattern, "{id}") {
+		return fmt.Errorf("%w: the channel name pattern needs {number} or {id}, so each incident's channel has its own name", errs.ErrInvalidInput)
 	}
 	return nil
 }
@@ -205,7 +205,7 @@ type UserSettingsIncidents struct {
 }
 
 var defaultIncidentPreferences = UserSettingsIncidents{
-	ChannelNamePattern: "incident-{slug}",
+	ChannelNamePattern: "inc-{number}",
 }
 
 // readIncidentSettings decodes the installation's settings, with the defaults for missing keys.

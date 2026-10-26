@@ -83,6 +83,7 @@ import (
 	"github.com/rezible/rezible/ent/playbook"
 	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/ent/review"
+	"github.com/rezible/rezible/ent/sequencecounter"
 	"github.com/rezible/rezible/ent/situation"
 	"github.com/rezible/rezible/ent/situationaction"
 	"github.com/rezible/rezible/ent/situationentity"
@@ -241,6 +242,7 @@ func checkColumn(t, c string) error {
 			playbook.Table:                        playbook.ValidColumn,
 			retrospective.Table:                   retrospective.ValidColumn,
 			review.Table:                          review.ValidColumn,
+			sequencecounter.Table:                 sequencecounter.ValidColumn,
 			situation.Table:                       situation.ValidColumn,
 			situationaction.Table:                 situationaction.ValidColumn,
 			situationentity.Table:                 situationentity.ValidColumn,

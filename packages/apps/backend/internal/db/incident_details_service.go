@@ -3,14 +3,10 @@ package db
 import (
 	"context"
 	"fmt"
-	"log/slog"
-	"math/rand"
 	"strings"
-	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/gosimple/slug"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/incident"
@@ -21,6 +17,7 @@ import (
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/ent/schema"
+	"github.com/rezible/rezible/ent/sequencecounter"
 	"github.com/rezible/rezible/ent/situation"
 )
 
@@ -61,7 +58,11 @@ func (s *IncidentDetailsService) allQueryEdges(q *ent.IncidentQuery) {
 func (s *IncidentDetailsService) ListIncidents(ctx context.Context, params rez.ListIncidentsParams) (*ent.ListResult[ent.Incident], error) {
 	query := s.db.Client(ctx).Incident.Query()
 	if search := strings.TrimSpace(params.Search); search != "" {
-		query.Where(incident.Or(incident.TitleContainsFold(search), incident.SummaryContainsFold(search), incident.SlugContainsFold(search)))
+		matches := []predicate.Incident{incident.TitleContainsFold(search), incident.SummaryContainsFold(search)}
+		if number, isReference := ent.ParseIncidentReference(search); isReference {
+			matches = append(matches, incident.Number(number))
+		}
+		query.Where(incident.Or(matches...))
 	}
 	if params.SeverityId != uuid.Nil {
 		query.Where(incident.SeverityID(params.SeverityId))
@@ -236,12 +237,12 @@ func (s *IncidentDetailsService) RecordObservedIncident(ctx context.Context, par
 			return existing.ID, nil
 		}
 
-		incidentSlug, slugErr := generateIncidentSlug(ctx, tx, params.OpenedAt)
-		if slugErr != nil {
-			return uuid.Nil, fmt.Errorf("generate unique slug: %w", slugErr)
+		number, numberErr := tx.SequenceCounter.Next(ctx, sequencecounter.KindIncident)
+		if numberErr != nil {
+			return uuid.Nil, fmt.Errorf("allocate incident number: %w", numberErr)
 		}
 		create := tx.Incident.Create().
-			SetSlug(incidentSlug).
+			SetNumber(number).
 			SetKnowledgeEntityID(params.KnowledgeEntityID).
 			SetTitle(params.Title).
 			SetSummary(params.Summary).
@@ -261,53 +262,6 @@ func (s *IncidentDetailsService) publishUpdated(ctx context.Context, id uuid.UUI
 		return fmt.Errorf("publish incident update: %w", publishErr)
 	}
 	return nil
-}
-
-// TODO: load these from somewhere
-var (
-	slugAdjectives = []string{
-		"quick", "bright", "calm", "wise", "bold", "clear", "fair", "grand", "kind", "noble",
-		"quiet", "swift", "warm", "young", "crisp", "fresh", "light", "solid", "steady", "vital",
-		"active", "clever", "direct", "eager", "gentle", "honest", "lively", "modest", "polite", "prompt",
-		"secure", "simple", "smooth", "stable", "strong", "subtle", "tender", "upbeat", "useful", "valid",
-		"aware", "brief", "civil", "exact", "frank", "happy", "ideal", "joint", "loose", "lucky",
-	}
-	slugNouns = []string{
-		"cloud", "river", "mountain", "forest", "ocean", "valley", "meadow", "harbor", "prairie", "canyon",
-		"desert", "glacier", "island", "plateau", "summit", "delta", "fjord", "lagoon", "marsh", "oasis",
-		"ridge", "stream", "tundra", "basin", "beacon", "bridge", "castle", "garden", "haven", "portal",
-		"quest", "refuge", "signal", "tower", "voyage", "anchor", "compass", "horizon", "journey", "path",
-		"storm", "sunrise", "tide", "wave", "wind", "crystal", "ember", "flame", "prism", "spark",
-	}
-)
-
-// generateIncidentSlug is shared by the two incident services, which both create incidents.
-func generateIncidentSlug(ctx context.Context, client *ent.Client, openedAt time.Time) (string, error) {
-	datePrefix := openedAt.Format("060102")
-	const maxRetries = 3
-	for range maxRetries {
-		adj := slugAdjectives[rand.Intn(len(slugAdjectives))]
-		noun := slugNouns[rand.Intn(len(slugNouns))]
-		candidate := slug.Make(fmt.Sprintf("%s-%s-%s", datePrefix, adj, noun))
-
-		querySlug := client.Incident.Query().
-			Where(incident.Slug(candidate))
-		exists, queryErr := querySlug.Exist(ctx)
-		if queryErr != nil {
-			return "", fmt.Errorf("failed to check slug uniqueness: %w", queryErr)
-		}
-		if !exists {
-			return candidate, nil
-		}
-	}
-
-	// fallback - use uuid as suffix
-	adj := slugAdjectives[rand.Intn(len(slugAdjectives))]
-	noun := slugNouns[rand.Intn(len(slugNouns))]
-	shortUUID := uuid.New().String()[:8]
-	uuidSlug := slug.Make(fmt.Sprintf("%s-%s-%s-%s", datePrefix, adj, noun, shortUUID))
-	slog.WarnContext(ctx, "falling back to uuid incident slug", "slug", uuidSlug)
-	return uuidSlug, nil
 }
 
 func (s *IncidentDetailsService) ListIncidentRoles(ctx context.Context) (ent.IncidentRoles, error) {

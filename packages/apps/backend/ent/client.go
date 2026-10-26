@@ -86,6 +86,7 @@ import (
 	"github.com/rezible/rezible/ent/playbook"
 	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/ent/review"
+	"github.com/rezible/rezible/ent/sequencecounter"
 	"github.com/rezible/rezible/ent/situation"
 	"github.com/rezible/rezible/ent/situationaction"
 	"github.com/rezible/rezible/ent/situationentity"
@@ -264,6 +265,8 @@ type Client struct {
 	Retrospective *RetrospectiveClient
 	// Review is the client for interacting with the Review builders.
 	Review *ReviewClient
+	// SequenceCounter is the client for interacting with the SequenceCounter builders.
+	SequenceCounter *SequenceCounterClient
 	// Situation is the client for interacting with the Situation builders.
 	Situation *SituationClient
 	// SituationAction is the client for interacting with the SituationAction builders.
@@ -400,6 +403,7 @@ func (c *Client) init() {
 	c.Playbook = NewPlaybookClient(c.config)
 	c.Retrospective = NewRetrospectiveClient(c.config)
 	c.Review = NewReviewClient(c.config)
+	c.SequenceCounter = NewSequenceCounterClient(c.config)
 	c.Situation = NewSituationClient(c.config)
 	c.SituationAction = NewSituationActionClient(c.config)
 	c.SituationEntity = NewSituationEntityClient(c.config)
@@ -593,6 +597,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		Playbook:                        NewPlaybookClient(cfg),
 		Retrospective:                   NewRetrospectiveClient(cfg),
 		Review:                          NewReviewClient(cfg),
+		SequenceCounter:                 NewSequenceCounterClient(cfg),
 		Situation:                       NewSituationClient(cfg),
 		SituationAction:                 NewSituationActionClient(cfg),
 		SituationEntity:                 NewSituationEntityClient(cfg),
@@ -710,6 +715,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		Playbook:                        NewPlaybookClient(cfg),
 		Retrospective:                   NewRetrospectiveClient(cfg),
 		Review:                          NewReviewClient(cfg),
+		SequenceCounter:                 NewSequenceCounterClient(cfg),
 		Situation:                       NewSituationClient(cfg),
 		SituationAction:                 NewSituationActionClient(cfg),
 		SituationEntity:                 NewSituationEntityClient(cfg),
@@ -787,15 +793,15 @@ func (c *Client) Use(hooks ...Hook) {
 		c.NormalizedEventProjectionEntity, c.OncallHandoverTemplate, c.OncallRoster,
 		c.OncallRosterMetrics, c.OncallSchedule, c.OncallScheduleParticipant,
 		c.OncallShift, c.OncallShiftHandover, c.OncallShiftMetrics, c.Organization,
-		c.OrganizationPreferences, c.Playbook, c.Retrospective, c.Review, c.Situation,
-		c.SituationAction, c.SituationEntity, c.SituationHazardAssessment,
-		c.SituationInvestigation, c.SituationJudgment, c.SituationLink,
-		c.SituationNotice, c.SituationNoticeRating, c.SituationObservationGroup,
-		c.SituationSignal, c.SituationSignalAttention, c.SystemAnalysis,
-		c.SystemAnalysisEntity, c.SystemAnalysisEntry, c.SystemAnalysisEntrySubject,
-		c.SystemAnalysisRelationship, c.SystemHazard, c.SystemHazardRiskAssessment,
-		c.Task, c.Team, c.TeamMembership, c.Tenant, c.Ticket, c.User,
-		c.UserAuthSession, c.VideoConference,
+		c.OrganizationPreferences, c.Playbook, c.Retrospective, c.Review,
+		c.SequenceCounter, c.Situation, c.SituationAction, c.SituationEntity,
+		c.SituationHazardAssessment, c.SituationInvestigation, c.SituationJudgment,
+		c.SituationLink, c.SituationNotice, c.SituationNoticeRating,
+		c.SituationObservationGroup, c.SituationSignal, c.SituationSignalAttention,
+		c.SystemAnalysis, c.SystemAnalysisEntity, c.SystemAnalysisEntry,
+		c.SystemAnalysisEntrySubject, c.SystemAnalysisRelationship, c.SystemHazard,
+		c.SystemHazardRiskAssessment, c.Task, c.Team, c.TeamMembership, c.Tenant,
+		c.Ticket, c.User, c.UserAuthSession, c.VideoConference,
 	} {
 		n.Use(hooks...)
 	}
@@ -826,15 +832,15 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 		c.NormalizedEventProjectionEntity, c.OncallHandoverTemplate, c.OncallRoster,
 		c.OncallRosterMetrics, c.OncallSchedule, c.OncallScheduleParticipant,
 		c.OncallShift, c.OncallShiftHandover, c.OncallShiftMetrics, c.Organization,
-		c.OrganizationPreferences, c.Playbook, c.Retrospective, c.Review, c.Situation,
-		c.SituationAction, c.SituationEntity, c.SituationHazardAssessment,
-		c.SituationInvestigation, c.SituationJudgment, c.SituationLink,
-		c.SituationNotice, c.SituationNoticeRating, c.SituationObservationGroup,
-		c.SituationSignal, c.SituationSignalAttention, c.SystemAnalysis,
-		c.SystemAnalysisEntity, c.SystemAnalysisEntry, c.SystemAnalysisEntrySubject,
-		c.SystemAnalysisRelationship, c.SystemHazard, c.SystemHazardRiskAssessment,
-		c.Task, c.Team, c.TeamMembership, c.Tenant, c.Ticket, c.User,
-		c.UserAuthSession, c.VideoConference,
+		c.OrganizationPreferences, c.Playbook, c.Retrospective, c.Review,
+		c.SequenceCounter, c.Situation, c.SituationAction, c.SituationEntity,
+		c.SituationHazardAssessment, c.SituationInvestigation, c.SituationJudgment,
+		c.SituationLink, c.SituationNotice, c.SituationNoticeRating,
+		c.SituationObservationGroup, c.SituationSignal, c.SituationSignalAttention,
+		c.SystemAnalysis, c.SystemAnalysisEntity, c.SystemAnalysisEntry,
+		c.SystemAnalysisEntrySubject, c.SystemAnalysisRelationship, c.SystemHazard,
+		c.SystemHazardRiskAssessment, c.Task, c.Team, c.TeamMembership, c.Tenant,
+		c.Ticket, c.User, c.UserAuthSession, c.VideoConference,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -983,6 +989,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Retrospective.mutate(ctx, m)
 	case *ReviewMutation:
 		return c.Review.mutate(ctx, m)
+	case *SequenceCounterMutation:
+		return c.SequenceCounter.mutate(ctx, m)
 	case *SituationMutation:
 		return c.Situation.mutate(ctx, m)
 	case *SituationActionMutation:
@@ -15706,6 +15714,159 @@ func (c *ReviewClient) mutate(ctx context.Context, m *ReviewMutation) (Value, er
 	}
 }
 
+// SequenceCounterClient is a client for the SequenceCounter schema.
+type SequenceCounterClient struct {
+	config
+}
+
+// NewSequenceCounterClient returns a client for the SequenceCounter from the given config.
+func NewSequenceCounterClient(c config) *SequenceCounterClient {
+	return &SequenceCounterClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `sequencecounter.Hooks(f(g(h())))`.
+func (c *SequenceCounterClient) Use(hooks ...Hook) {
+	c.hooks.SequenceCounter = append(c.hooks.SequenceCounter, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `sequencecounter.Intercept(f(g(h())))`.
+func (c *SequenceCounterClient) Intercept(interceptors ...Interceptor) {
+	c.inters.SequenceCounter = append(c.inters.SequenceCounter, interceptors...)
+}
+
+// Create returns a builder for creating a SequenceCounter entity.
+func (c *SequenceCounterClient) Create() *SequenceCounterCreate {
+	mutation := newSequenceCounterMutation(c.config, OpCreate)
+	return &SequenceCounterCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of SequenceCounter entities.
+func (c *SequenceCounterClient) CreateBulk(builders ...*SequenceCounterCreate) *SequenceCounterCreateBulk {
+	return &SequenceCounterCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *SequenceCounterClient) MapCreateBulk(slice any, setFunc func(*SequenceCounterCreate, int)) *SequenceCounterCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &SequenceCounterCreateBulk{err: fmt.Errorf("calling to SequenceCounterClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*SequenceCounterCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &SequenceCounterCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for SequenceCounter.
+func (c *SequenceCounterClient) Update() *SequenceCounterUpdate {
+	mutation := newSequenceCounterMutation(c.config, OpUpdate)
+	return &SequenceCounterUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *SequenceCounterClient) UpdateOne(_m *SequenceCounter) *SequenceCounterUpdateOne {
+	mutation := newSequenceCounterMutation(c.config, OpUpdateOne, withSequenceCounter(_m))
+	return &SequenceCounterUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *SequenceCounterClient) UpdateOneID(id uuid.UUID) *SequenceCounterUpdateOne {
+	mutation := newSequenceCounterMutation(c.config, OpUpdateOne, withSequenceCounterID(id))
+	return &SequenceCounterUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for SequenceCounter.
+func (c *SequenceCounterClient) Delete() *SequenceCounterDelete {
+	mutation := newSequenceCounterMutation(c.config, OpDelete)
+	return &SequenceCounterDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *SequenceCounterClient) DeleteOne(_m *SequenceCounter) *SequenceCounterDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *SequenceCounterClient) DeleteOneID(id uuid.UUID) *SequenceCounterDeleteOne {
+	builder := c.Delete().Where(sequencecounter.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &SequenceCounterDeleteOne{builder}
+}
+
+// Query returns a query builder for SequenceCounter.
+func (c *SequenceCounterClient) Query() *SequenceCounterQuery {
+	return &SequenceCounterQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeSequenceCounter},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a SequenceCounter entity by its id.
+func (c *SequenceCounterClient) Get(ctx context.Context, id uuid.UUID) (*SequenceCounter, error) {
+	return c.Query().Where(sequencecounter.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *SequenceCounterClient) GetX(ctx context.Context, id uuid.UUID) *SequenceCounter {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryTenant queries the tenant edge of a SequenceCounter.
+func (c *SequenceCounterClient) QueryTenant(_m *SequenceCounter) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(sequencecounter.Table, sequencecounter.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, sequencecounter.TenantTable, sequencecounter.TenantColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.SequenceCounter
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *SequenceCounterClient) Hooks() []Hook {
+	hooks := c.hooks.SequenceCounter
+	return append(hooks[:len(hooks):len(hooks)], sequencecounter.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *SequenceCounterClient) Interceptors() []Interceptor {
+	return c.inters.SequenceCounter
+}
+
+func (c *SequenceCounterClient) mutate(ctx context.Context, m *SequenceCounterMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&SequenceCounterCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&SequenceCounterUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&SequenceCounterUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&SequenceCounterDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown SequenceCounter mutation op: %q", m.Op())
+	}
+}
+
 // SituationClient is a client for the Situation schema.
 type SituationClient struct {
 	config
@@ -21667,9 +21828,9 @@ type (
 		OncallHandoverTemplate, OncallRoster, OncallRosterMetrics, OncallSchedule,
 		OncallScheduleParticipant, OncallShift, OncallShiftHandover,
 		OncallShiftMetrics, Organization, OrganizationPreferences, Playbook,
-		Retrospective, Review, Situation, SituationAction, SituationEntity,
-		SituationHazardAssessment, SituationInvestigation, SituationJudgment,
-		SituationLink, SituationNotice, SituationNoticeRating,
+		Retrospective, Review, SequenceCounter, Situation, SituationAction,
+		SituationEntity, SituationHazardAssessment, SituationInvestigation,
+		SituationJudgment, SituationLink, SituationNotice, SituationNoticeRating,
 		SituationObservationGroup, SituationSignal, SituationSignalAttention,
 		SystemAnalysis, SystemAnalysisEntity, SystemAnalysisEntry,
 		SystemAnalysisEntrySubject, SystemAnalysisRelationship, SystemHazard,
@@ -21697,9 +21858,9 @@ type (
 		NormalizedEventProjectionEntity, OncallHandoverTemplate, OncallRoster,
 		OncallRosterMetrics, OncallSchedule, OncallScheduleParticipant, OncallShift,
 		OncallShiftHandover, OncallShiftMetrics, Organization, OrganizationPreferences,
-		Playbook, Retrospective, Review, Situation, SituationAction, SituationEntity,
-		SituationHazardAssessment, SituationInvestigation, SituationJudgment,
-		SituationLink, SituationNotice, SituationNoticeRating,
+		Playbook, Retrospective, Review, SequenceCounter, Situation, SituationAction,
+		SituationEntity, SituationHazardAssessment, SituationInvestigation,
+		SituationJudgment, SituationLink, SituationNotice, SituationNoticeRating,
 		SituationObservationGroup, SituationSignal, SituationSignalAttention,
 		SystemAnalysis, SystemAnalysisEntity, SystemAnalysisEntry,
 		SystemAnalysisEntrySubject, SystemAnalysisRelationship, SystemHazard,
@@ -21793,6 +21954,7 @@ var (
 		PlaybookAlertDefinitions:                  tableSchemas[0],
 		Retrospective:                             tableSchemas[0],
 		Review:                                    tableSchemas[0],
+		SequenceCounter:                           tableSchemas[0],
 		Situation:                                 tableSchemas[0],
 		SituationAction:                           tableSchemas[0],
 		SituationEntity:                           tableSchemas[0],

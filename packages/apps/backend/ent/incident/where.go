@@ -82,9 +82,9 @@ func KnowledgeEntityID(v uuid.UUID) predicate.Incident {
 	return predicate.Incident(sql.FieldEQ(FieldKnowledgeEntityID, v))
 }
 
-// Slug applies equality check predicate on the "slug" field. It's identical to SlugEQ.
-func Slug(v string) predicate.Incident {
-	return predicate.Incident(sql.FieldEQ(FieldSlug, v))
+// Number applies equality check predicate on the "number" field. It's identical to NumberEQ.
+func Number(v int) predicate.Incident {
+	return predicate.Incident(sql.FieldEQ(FieldNumber, v))
 }
 
 // Title applies equality check predicate on the "title" field. It's identical to TitleEQ.
@@ -312,69 +312,44 @@ func KnowledgeEntityIDNotNil() predicate.Incident {
 	return predicate.Incident(sql.FieldNotNull(FieldKnowledgeEntityID))
 }
 
-// SlugEQ applies the EQ predicate on the "slug" field.
-func SlugEQ(v string) predicate.Incident {
-	return predicate.Incident(sql.FieldEQ(FieldSlug, v))
+// NumberEQ applies the EQ predicate on the "number" field.
+func NumberEQ(v int) predicate.Incident {
+	return predicate.Incident(sql.FieldEQ(FieldNumber, v))
 }
 
-// SlugNEQ applies the NEQ predicate on the "slug" field.
-func SlugNEQ(v string) predicate.Incident {
-	return predicate.Incident(sql.FieldNEQ(FieldSlug, v))
+// NumberNEQ applies the NEQ predicate on the "number" field.
+func NumberNEQ(v int) predicate.Incident {
+	return predicate.Incident(sql.FieldNEQ(FieldNumber, v))
 }
 
-// SlugIn applies the In predicate on the "slug" field.
-func SlugIn(vs ...string) predicate.Incident {
-	return predicate.Incident(sql.FieldIn(FieldSlug, vs...))
+// NumberIn applies the In predicate on the "number" field.
+func NumberIn(vs ...int) predicate.Incident {
+	return predicate.Incident(sql.FieldIn(FieldNumber, vs...))
 }
 
-// SlugNotIn applies the NotIn predicate on the "slug" field.
-func SlugNotIn(vs ...string) predicate.Incident {
-	return predicate.Incident(sql.FieldNotIn(FieldSlug, vs...))
+// NumberNotIn applies the NotIn predicate on the "number" field.
+func NumberNotIn(vs ...int) predicate.Incident {
+	return predicate.Incident(sql.FieldNotIn(FieldNumber, vs...))
 }
 
-// SlugGT applies the GT predicate on the "slug" field.
-func SlugGT(v string) predicate.Incident {
-	return predicate.Incident(sql.FieldGT(FieldSlug, v))
+// NumberGT applies the GT predicate on the "number" field.
+func NumberGT(v int) predicate.Incident {
+	return predicate.Incident(sql.FieldGT(FieldNumber, v))
 }
 
-// SlugGTE applies the GTE predicate on the "slug" field.
-func SlugGTE(v string) predicate.Incident {
-	return predicate.Incident(sql.FieldGTE(FieldSlug, v))
+// NumberGTE applies the GTE predicate on the "number" field.
+func NumberGTE(v int) predicate.Incident {
+	return predicate.Incident(sql.FieldGTE(FieldNumber, v))
 }
 
-// SlugLT applies the LT predicate on the "slug" field.
-func SlugLT(v string) predicate.Incident {
-	return predicate.Incident(sql.FieldLT(FieldSlug, v))
+// NumberLT applies the LT predicate on the "number" field.
+func NumberLT(v int) predicate.Incident {
+	return predicate.Incident(sql.FieldLT(FieldNumber, v))
 }
 
-// SlugLTE applies the LTE predicate on the "slug" field.
-func SlugLTE(v string) predicate.Incident {
-	return predicate.Incident(sql.FieldLTE(FieldSlug, v))
-}
-
-// SlugContains applies the Contains predicate on the "slug" field.
-func SlugContains(v string) predicate.Incident {
-	return predicate.Incident(sql.FieldContains(FieldSlug, v))
-}
-
-// SlugHasPrefix applies the HasPrefix predicate on the "slug" field.
-func SlugHasPrefix(v string) predicate.Incident {
-	return predicate.Incident(sql.FieldHasPrefix(FieldSlug, v))
-}
-
-// SlugHasSuffix applies the HasSuffix predicate on the "slug" field.
-func SlugHasSuffix(v string) predicate.Incident {
-	return predicate.Incident(sql.FieldHasSuffix(FieldSlug, v))
-}
-
-// SlugEqualFold applies the EqualFold predicate on the "slug" field.
-func SlugEqualFold(v string) predicate.Incident {
-	return predicate.Incident(sql.FieldEqualFold(FieldSlug, v))
-}
-
-// SlugContainsFold applies the ContainsFold predicate on the "slug" field.
-func SlugContainsFold(v string) predicate.Incident {
-	return predicate.Incident(sql.FieldContainsFold(FieldSlug, v))
+// NumberLTE applies the LTE predicate on the "number" field.
+func NumberLTE(v int) predicate.Incident {
+	return predicate.Incident(sql.FieldLTE(FieldNumber, v))
 }
 
 // TitleEQ applies the EQ predicate on the "title" field.

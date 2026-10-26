@@ -14,6 +14,7 @@ import (
 	kne "github.com/rezible/rezible/ent/knowledgeentity"
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/schema/schematypes"
+	sit "github.com/rezible/rezible/ent/situation"
 	sitlink "github.com/rezible/rezible/ent/situationlink"
 	sitsig "github.com/rezible/rezible/ent/situationsignal"
 	"github.com/rezible/rezible/pkg/errs"
@@ -63,7 +64,7 @@ func (s *SituationServiceSuite) placed(ctx context.Context, tdb rez.Database, h 
 			continue
 		}
 		s.Require().NoError(queryErr)
-		situation, getErr := h.situations.GetSituation(ctx, membership.SituationID)
+		situation, getErr := h.situations.GetSituation(ctx, sit.ID(membership.SituationID))
 		s.Require().NoError(getErr)
 		placed[i] = situation
 	}

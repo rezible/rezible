@@ -154,6 +154,8 @@ type Tx struct {
 	Retrospective *RetrospectiveClient
 	// Review is the client for interacting with the Review builders.
 	Review *ReviewClient
+	// SequenceCounter is the client for interacting with the SequenceCounter builders.
+	SequenceCounter *SequenceCounterClient
 	// Situation is the client for interacting with the Situation builders.
 	Situation *SituationClient
 	// SituationAction is the client for interacting with the SituationAction builders.
@@ -410,6 +412,7 @@ func (tx *Tx) init() {
 	tx.Playbook = NewPlaybookClient(tx.config)
 	tx.Retrospective = NewRetrospectiveClient(tx.config)
 	tx.Review = NewReviewClient(tx.config)
+	tx.SequenceCounter = NewSequenceCounterClient(tx.config)
 	tx.Situation = NewSituationClient(tx.config)
 	tx.SituationAction = NewSituationActionClient(tx.config)
 	tx.SituationEntity = NewSituationEntityClient(tx.config)

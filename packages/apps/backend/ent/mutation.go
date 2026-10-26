@@ -84,6 +84,7 @@ const (
 	TypePlaybook                        = "Playbook"
 	TypeRetrospective                   = "Retrospective"
 	TypeReview                          = "Review"
+	TypeSequenceCounter                 = "SequenceCounter"
 	TypeSituation                       = "Situation"
 	TypeSituationAction                 = "SituationAction"
 	TypeSituationEntity                 = "SituationEntity"

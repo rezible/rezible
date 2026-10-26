@@ -13,6 +13,7 @@ import (
 	"github.com/rezible/rezible/ent"
 	kne "github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/schema/schematypes"
+	sit "github.com/rezible/rezible/ent/situation"
 	sitjudg "github.com/rezible/rezible/ent/situationjudgment"
 	rezai "github.com/rezible/rezible/pkg/ai"
 	"github.com/rezible/rezible/pkg/jobs"
@@ -126,7 +127,7 @@ func (s *SituationServiceSuite) TestConcurrentEvaluationsCallJudgeTwiceButRecord
 	s.Require().NoError(<-done)
 
 	// The second evaluation committed first; apply discards the first call's now-redundant answer.
-	final, getErr := h.situations.GetSituation(ctx, candidate.ID)
+	final, getErr := h.situations.GetSituation(ctx, sit.ID(candidate.ID))
 	s.Require().NoError(getErr)
 	s.Nil(final.RaisedAt)
 	s.Equal(judgmentID, *final.LatestJudgmentID)

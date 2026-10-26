@@ -194,14 +194,14 @@ class IncidentOverviewController {
 			}
 
 			let reportHref: string | undefined;
-			if (conclusion.kind === "text") {
-				reportHref = investigationHref(situation.id);
+			if (loaded && conclusion.kind === "text") {
+				reportHref = investigationHref(loaded.attributes.reference);
 			}
 
 			return {
 				id: situation.id,
 				title: situation.title,
-				href: resolve("/situations/[id]/[[view=situationView]]", { id: situation.id }),
+				href: resolve("/situations/[ref]/[[view=situationView]]", { ref: situation.id }),
 				status,
 				conclusion,
 				reportHref,
@@ -244,7 +244,7 @@ class IncidentOverviewController {
 		return (this.attributes?.situations ?? []).map((situation) => ({
 			id: situation.id,
 			title: situation.title,
-			href: resolve("/situations/[id]/[[view=situationView]]", { id: situation.id }),
+			href: resolve("/situations/[ref]/[[view=situationView]]", { ref: situation.id }),
 			status: situationStageStatus(situation.stage),
 			closedAt: situation.closedAt,
 		}));
@@ -252,7 +252,7 @@ class IncidentOverviewController {
 
 	private buildReview(): IncidentReviewState {
 		const view = this.view;
-		const incidentSlug = this.attributes?.slug;
+		const incidentReference = this.attributes?.reference;
 
 		if (!view.incidentRetrospectiveId) {
 			return {
@@ -279,9 +279,9 @@ class IncidentOverviewController {
 
 		const state = retrospective.attributes.state;
 		let reportHref: string | undefined;
-		if (incidentSlug) {
-			reportHref = resolve("/incidents/[slug]/[[view=incidentView]]", {
-				slug: incidentSlug,
+		if (incidentReference) {
+			reportHref = resolve("/incidents/[ref]/[[view=incidentView]]", {
+				ref: incidentReference,
 				view: "report",
 			});
 		}

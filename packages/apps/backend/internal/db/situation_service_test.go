@@ -280,7 +280,7 @@ func (s *SituationServiceSuite) TestCreateAndAttach() {
 		MatchKind:       sitsig.MatchKindSharedEntity,
 	}
 	s.Require().NoError(h.situations.AttachSituationSignals(ctx, attach))
-	attached, getErr := h.situations.GetSituation(ctx, created.ID)
+	attached, getErr := h.situations.GetSituation(ctx, sit.ID(created.ID))
 	s.Require().NoError(getErr)
 	s.Len(attached.Edges.ObservationGroups, 2, "the group with the same title is reused")
 	s.Len(s.members(attached), 3)
@@ -314,7 +314,7 @@ func (s *SituationServiceSuite) TestMerge() {
 	s.True(situationTestStart.Add(2 * time.Minute).Equal(merged.OpenedAt))
 	s.True(s.entities(merged)[s.entityID(ctx, h, payments)])
 
-	closed, getErr := h.situations.GetSituation(ctx, source.ID)
+	closed, getErr := h.situations.GetSituation(ctx, sit.ID(source.ID))
 	s.Require().NoError(getErr)
 	s.Equal(sit.CloseReasonMerged, *closed.CloseReason)
 	s.Equal(source.SeedEntityID, closed.SeedEntityID)
@@ -436,14 +436,14 @@ func (s *SituationServiceSuite) TestIncidentLinks() {
 	signal := s.signal(ctx, tdb, h, "checkout-errors", 5)
 	candidate := s.create(ctx, h, map[string][]uuid.UUID{"Checkout": {signal}}, signal)
 	linked := declare(candidate.ID)
-	raised, getErr := h.situations.GetSituation(ctx, candidate.ID)
+	raised, getErr := h.situations.GetSituation(ctx, sit.ID(candidate.ID))
 	s.Require().NoError(getErr)
 	s.NotNil(raised.RaisedAt)
 	s.NotNil(raised.Edges.Investigation, "linking an incident starts the investigation")
 	s.Equal(linked.ID, raised.Edges.Incidents[0].ID)
 
 	s.Require().NoError(incidents.UnlinkSituation(ctx, linked.ID, candidate.ID))
-	unlinked, unlinkedErr := h.situations.GetSituation(ctx, candidate.ID)
+	unlinked, unlinkedErr := h.situations.GetSituation(ctx, sit.ID(candidate.ID))
 	s.Require().NoError(unlinkedErr)
 	s.Empty(unlinked.Edges.Incidents)
 	s.NotNil(unlinked.RaisedAt, "unlinking changes no stage")
@@ -461,7 +461,7 @@ func (s *SituationServiceSuite) TestLinkingAClosedSituationRecordsTheLinkOnly() 
 	linked := declare()
 
 	s.Require().NoError(incidents.LinkSituation(ctx, linked.ID, closed.ID))
-	after, getErr := h.situations.GetSituation(ctx, closed.ID)
+	after, getErr := h.situations.GetSituation(ctx, sit.ID(closed.ID))
 	s.Require().NoError(getErr)
 	s.Require().Len(after.Edges.Incidents, 1)
 	s.Equal(linked.ID, after.Edges.Incidents[0].ID)
@@ -485,7 +485,7 @@ func (s *SituationServiceSuite) TestArchivingAnIncidentUnlinksItsSituations() {
 	h.evaluations = nil
 	s.Require().NoError(incidents.ArchiveIncident(ctx, archived.ID))
 	s.Contains(h.evaluations, jobs.EvaluateSituation{SituationID: situation.ID}, "its situations re-evaluate")
-	unlinked, getErr := h.situations.GetSituation(ctx, situation.ID)
+	unlinked, getErr := h.situations.GetSituation(ctx, sit.ID(situation.ID))
 	s.Require().NoError(getErr)
 	s.Empty(unlinked.Edges.Incidents)
 	listed, listErr := incidents.ListIncidents(ctx, rez.ListIncidentsParams{})
@@ -567,7 +567,7 @@ func (s *SituationServiceSuite) TestIncidentChangesSyncSituationNotices() {
 
 		content := sender.sent[situation.ID]
 		s.Require().NotNil(content, "the notice was synced")
-		s.Contains(content.IncidentURL, incident.Slug)
+		s.Contains(content.IncidentURL, incident.Reference())
 		s.Empty(content.DeclareIncidentURL)
 	})
 
@@ -586,7 +586,7 @@ func (s *SituationServiceSuite) TestIncidentChangesSyncSituationNotices() {
 
 		content := sender.sent[situation.ID]
 		s.Empty(content.IncidentURL)
-		s.Contains(content.DeclareIncidentURL, situation.ID.String()+"?declare=incident")
+		s.Contains(content.DeclareIncidentURL, situation.Reference()+"?declare=incident")
 	})
 }
 
@@ -648,6 +648,22 @@ func (s *SituationServiceSuite) TestListSituationsByStageAndMute() {
 	open := rez.ListSituationsParams{Stages: []rez.SituationStage{rez.SituationStageRaised, rez.SituationStageClosed}}
 	s.ElementsMatch([]uuid.UUID{ids["raised"], ids["closed"]}, list(open))
 	s.ElementsMatch([]uuid.UUID{ids["muted"]}, list(rez.ListSituationsParams{Muted: new(true)}))
+}
+
+func (s *SituationServiceSuite) TestSituationsAreNumberedAndSearchableByReference() {
+	ctx, tdb := s.SetupTestDatabase()
+	h := s.newFixture(tdb)
+	firstSignal := s.signal(ctx, tdb, h, "checkout-errors", 5)
+	secondSignal := s.signal(ctx, tdb, h, "payment-errors", 5)
+	first := s.create(ctx, h, map[string][]uuid.UUID{"Checkout": {firstSignal}}, firstSignal)
+	second := s.create(ctx, h, map[string][]uuid.UUID{"Payments": {secondSignal}}, secondSignal)
+	s.Equal("SIT-1", first.Reference())
+	s.Equal("SIT-2", second.Reference())
+
+	listed, listErr := h.situations.ListSituations(ctx, rez.ListSituationsParams{Search: "SIT-2"})
+	s.Require().NoError(listErr)
+	s.Require().Len(listed.Data, 1)
+	s.Equal(second.ID, listed.Data[0].ID)
 }
 
 func (s *SituationServiceSuite) TestInvestigationReadsItsSituation() {

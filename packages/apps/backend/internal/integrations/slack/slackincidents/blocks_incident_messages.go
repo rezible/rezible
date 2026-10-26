@@ -43,8 +43,9 @@ type incidentMessages struct {
 	incidentUrl *url.URL
 }
 
+// title leads with the reference, so cutting the title never loses it.
 func (m incidentMessages) title() string {
-	return escaped(m.inc.Title, maxTitleRunes)
+	return m.inc.Reference() + " · " + escaped(m.inc.Title, maxTitleRunes)
 }
 
 func (m incidentMessages) severityText() string {
@@ -134,7 +135,7 @@ func (m incidentMessages) openButton() *slack.ButtonBlockElement {
 }
 
 func (m incidentMessages) detailsMessageOptions() []slack.MsgOption {
-	header := slack.NewHeaderBlock(slackintegration.PlainTextBlock(slackintegration.TruncateRunes(m.inc.Title, maxHeaderRunes)))
+	header := slack.NewHeaderBlock(slackintegration.PlainTextBlock(slackintegration.TruncateRunes(m.inc.Reference()+" · "+m.inc.Title, maxHeaderRunes)))
 	fields := []*slack.TextBlockObject{
 		slackintegration.MarkdownBlock("*Status*\n" + m.statusText()),
 		slackintegration.MarkdownBlock("*Severity*\n" + m.severityText()),

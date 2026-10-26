@@ -909,7 +909,7 @@ var (
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "archive_time", Type: field.TypeTime, Nullable: true},
-		{Name: "slug", Type: field.TypeString},
+		{Name: "number", Type: field.TypeInt},
 		{Name: "title", Type: field.TypeString},
 		{Name: "summary", Type: field.TypeString, Nullable: true},
 		{Name: "chat_channel_id", Type: field.TypeString, Nullable: true},
@@ -972,7 +972,7 @@ var (
 				Columns: []*schema.Column{IncidentsColumns[12], IncidentsColumns[13]},
 			},
 			{
-				Name:    "incidents_slug_key",
+				Name:    "incidents_number_key",
 				Unique:  true,
 				Columns: []*schema.Column{IncidentsColumns[12], IncidentsColumns[4]},
 			},
@@ -3413,11 +3413,45 @@ var (
 			},
 		},
 	}
+	// SequenceCountersColumns holds the columns for the "sequence_counters" table.
+	SequenceCountersColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "kind", Type: field.TypeEnum, Enums: []string{"incident", "situation"}},
+		{Name: "value", Type: field.TypeInt},
+		{Name: "tenant_id", Type: field.TypeInt},
+	}
+	// SequenceCountersTable holds the schema information for the "sequence_counters" table.
+	SequenceCountersTable = &schema.Table{
+		Name:       "sequence_counters",
+		Columns:    SequenceCountersColumns,
+		PrimaryKey: []*schema.Column{SequenceCountersColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "sequence_counters_tenants_tenant",
+				Columns:    []*schema.Column{SequenceCountersColumns[3]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "sequencecounter_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{SequenceCountersColumns[3]},
+			},
+			{
+				Name:    "sequence_counters_kind_key",
+				Unique:  true,
+				Columns: []*schema.Column{SequenceCountersColumns[3], SequenceCountersColumns[1]},
+			},
+		},
+	}
 	// SituationsColumns holds the columns for the "situations" table.
 	SituationsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "number", Type: field.TypeInt},
 		{Name: "title", Type: field.TypeString},
 		{Name: "summary", Type: field.TypeString, Nullable: true, Size: 2147483647},
 		{Name: "opened_at", Type: field.TypeTime},
@@ -3439,19 +3473,19 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "situations_tenants_tenant",
-				Columns:    []*schema.Column{SituationsColumns[12]},
+				Columns:    []*schema.Column{SituationsColumns[13]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "situations_situation_judgments_latest_judgment",
-				Columns:    []*schema.Column{SituationsColumns[13]},
+				Columns:    []*schema.Column{SituationsColumns[14]},
 				RefColumns: []*schema.Column{SituationJudgmentsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "situations_knowledge_entities_seed_entity",
-				Columns:    []*schema.Column{SituationsColumns[14]},
+				Columns:    []*schema.Column{SituationsColumns[15]},
 				RefColumns: []*schema.Column{KnowledgeEntitiesColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -3460,22 +3494,27 @@ var (
 			{
 				Name:    "situation_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{SituationsColumns[12]},
+				Columns: []*schema.Column{SituationsColumns[13]},
+			},
+			{
+				Name:    "situations_number_key",
+				Unique:  true,
+				Columns: []*schema.Column{SituationsColumns[13], SituationsColumns[3]},
 			},
 			{
 				Name:    "situation_tenant_id_opened_at",
 				Unique:  false,
-				Columns: []*schema.Column{SituationsColumns[12], SituationsColumns[5]},
+				Columns: []*schema.Column{SituationsColumns[13], SituationsColumns[6]},
 			},
 			{
 				Name:    "situation_tenant_id_closed_at",
 				Unique:  false,
-				Columns: []*schema.Column{SituationsColumns[12], SituationsColumns[10]},
+				Columns: []*schema.Column{SituationsColumns[13], SituationsColumns[11]},
 			},
 			{
 				Name:    "situation_tenant_id_seed_entity_id",
 				Unique:  false,
-				Columns: []*schema.Column{SituationsColumns[12], SituationsColumns[14]},
+				Columns: []*schema.Column{SituationsColumns[13], SituationsColumns[15]},
 			},
 		},
 	}
@@ -5290,6 +5329,7 @@ var (
 		PlaybooksTable,
 		RetrospectivesTable,
 		ReviewsTable,
+		SequenceCountersTable,
 		SituationsTable,
 		SituationActionsTable,
 		SituationEntitiesTable,
@@ -5545,6 +5585,7 @@ func init() {
 	ReviewsTable.Annotation.Checks = map[string]string{
 		"review_exactly_one_subject": "num_nonnulls(retrospective_id, analysis_entry_id) = 1",
 	}
+	SequenceCountersTable.ForeignKeys[0].RefTable = TenantsTable
 	SituationsTable.ForeignKeys[0].RefTable = TenantsTable
 	SituationsTable.ForeignKeys[1].RefTable = SituationJudgmentsTable
 	SituationsTable.ForeignKeys[2].RefTable = KnowledgeEntitiesTable

@@ -13,11 +13,11 @@
 </script>
 
 <div class="min-w-0 basis-60">
-	<label for={`${id}-search`} class="sr-only">Search situation titles</label>
+	<label for={`${id}-search`} class="sr-only">Search situations</label>
 	<Input
 		id={`${id}-search`}
 		type="search"
-		placeholder="Search situation titles"
+		placeholder="Search situations"
 		value={filters.search}
 		oninput={(event) => onchange({ search: event.currentTarget.value })}
 	/>

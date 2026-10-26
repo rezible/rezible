@@ -104,20 +104,6 @@ func (_u *IncidentUpdate) ClearKnowledgeEntityID() *IncidentUpdate {
 	return _u
 }
 
-// SetSlug sets the "slug" field.
-func (_u *IncidentUpdate) SetSlug(v string) *IncidentUpdate {
-	_u.mutation.SetSlug(v)
-	return _u
-}
-
-// SetNillableSlug sets the "slug" field if the given value is not nil.
-func (_u *IncidentUpdate) SetNillableSlug(v *string) *IncidentUpdate {
-	if v != nil {
-		_u.SetSlug(*v)
-	}
-	return _u
-}
-
 // SetTitle sets the "title" field.
 func (_u *IncidentUpdate) SetTitle(v string) *IncidentUpdate {
 	_u.mutation.SetTitle(v)
@@ -812,9 +798,6 @@ func (_u *IncidentUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if _u.mutation.ArchiveTimeCleared() {
 		_spec.ClearField(incident.FieldArchiveTime, field.TypeTime)
-	}
-	if value, ok := _u.mutation.Slug(); ok {
-		_spec.SetField(incident.FieldSlug, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.Title(); ok {
 		_spec.SetField(incident.FieldTitle, field.TypeString, value)
@@ -1566,20 +1549,6 @@ func (_u *IncidentUpdateOne) ClearKnowledgeEntityID() *IncidentUpdateOne {
 	return _u
 }
 
-// SetSlug sets the "slug" field.
-func (_u *IncidentUpdateOne) SetSlug(v string) *IncidentUpdateOne {
-	_u.mutation.SetSlug(v)
-	return _u
-}
-
-// SetNillableSlug sets the "slug" field if the given value is not nil.
-func (_u *IncidentUpdateOne) SetNillableSlug(v *string) *IncidentUpdateOne {
-	if v != nil {
-		_u.SetSlug(*v)
-	}
-	return _u
-}
-
 // SetTitle sets the "title" field.
 func (_u *IncidentUpdateOne) SetTitle(v string) *IncidentUpdateOne {
 	_u.mutation.SetTitle(v)
@@ -2304,9 +2273,6 @@ func (_u *IncidentUpdateOne) sqlSave(ctx context.Context) (_node *Incident, err 
 	}
 	if _u.mutation.ArchiveTimeCleared() {
 		_spec.ClearField(incident.FieldArchiveTime, field.TypeTime)
-	}
-	if value, ok := _u.mutation.Slug(); ok {
-		_spec.SetField(incident.FieldSlug, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.Title(); ok {
 		_spec.SetField(incident.FieldTitle, field.TypeString, value)

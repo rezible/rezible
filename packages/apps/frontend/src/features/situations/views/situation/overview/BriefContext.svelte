@@ -18,8 +18,8 @@
 				<li class="flex flex-col gap-1.5">
 					<a
 						class="text-sm font-medium wrap-anywhere hover:underline focus-visible:outline-2 focus-visible:outline-ring rounded-sm"
-						href={resolve("/incidents/[slug]/[[view=incidentView]]", {
-							slug: incident.attributes.slug,
+						href={resolve("/incidents/[ref]/[[view=incidentView]]", {
+							ref: incident.attributes.reference,
 						})}
 					>
 						{incident.attributes.title}

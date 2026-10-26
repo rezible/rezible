@@ -116,6 +116,7 @@ func (s *SituationNoticeServiceSuite) createRaisedSituation(ctx context.Context,
 	s.Require().NoError(seedErr)
 
 	createSituation := client.Situation.Create().
+		SetNumber(1).
 		SetTitle("Checkout errors").
 		SetOpenedAt(noticeTestOpenedAt).
 		SetRaisedAt(noticeTestOpenedAt).

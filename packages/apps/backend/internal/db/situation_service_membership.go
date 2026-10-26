@@ -316,7 +316,7 @@ func (s *SituationService) MergeSituations(ctx context.Context, params rez.Merge
 		if evaluateErr := s.requestEvaluation(ctx, target.ID); evaluateErr != nil {
 			return nil, evaluateErr
 		}
-		return s.GetSituation(ctx, target.ID)
+		return s.GetSituation(ctx, sit.ID(target.ID))
 	})
 }
 

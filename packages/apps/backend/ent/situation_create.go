@@ -71,6 +71,12 @@ func (_c *SituationCreate) SetNillableUpdatedAt(v *time.Time) *SituationCreate {
 	return _c
 }
 
+// SetNumber sets the "number" field.
+func (_c *SituationCreate) SetNumber(v int) *SituationCreate {
+	_c.mutation.SetNumber(v)
+	return _c
+}
+
 // SetTitle sets the "title" field.
 func (_c *SituationCreate) SetTitle(v string) *SituationCreate {
 	_c.mutation.SetTitle(v)
@@ -456,6 +462,14 @@ func (_c *SituationCreate) check() error {
 	if _, ok := _c.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "Situation.updated_at"`)}
 	}
+	if _, ok := _c.mutation.Number(); !ok {
+		return &ValidationError{Name: "number", err: errors.New(`ent: missing required field "Situation.number"`)}
+	}
+	if v, ok := _c.mutation.Number(); ok {
+		if err := situation.NumberValidator(v); err != nil {
+			return &ValidationError{Name: "number", err: fmt.Errorf(`ent: validator failed for field "Situation.number": %w`, err)}
+		}
+	}
 	if _, ok := _c.mutation.Title(); !ok {
 		return &ValidationError{Name: "title", err: errors.New(`ent: missing required field "Situation.title"`)}
 	}
@@ -530,6 +544,10 @@ func (_c *SituationCreate) createSpec() (*Situation, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.UpdatedAt(); ok {
 		_spec.SetField(situation.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
+	}
+	if value, ok := _c.mutation.Number(); ok {
+		_spec.SetField(situation.FieldNumber, field.TypeInt, value)
+		_node.Number = value
 	}
 	if value, ok := _c.mutation.Title(); ok {
 		_spec.SetField(situation.FieldTitle, field.TypeString, value)
@@ -1067,6 +1085,9 @@ func (u *SituationUpsertOne) UpdateNewValues() *SituationUpsertOne {
 		if _, exists := u.create.mutation.TenantID(); exists {
 			s.SetIgnore(situation.FieldTenantID)
 		}
+		if _, exists := u.create.mutation.Number(); exists {
+			s.SetIgnore(situation.FieldNumber)
+		}
 	}))
 	return u
 }
@@ -1521,6 +1542,9 @@ func (u *SituationUpsertBulk) UpdateNewValues() *SituationUpsertBulk {
 			}
 			if _, exists := b.mutation.TenantID(); exists {
 				s.SetIgnore(situation.FieldTenantID)
+			}
+			if _, exists := b.mutation.Number(); exists {
+				s.SetIgnore(situation.FieldNumber)
 			}
 		}
 	}))

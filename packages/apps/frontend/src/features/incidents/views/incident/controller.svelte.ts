@@ -1,31 +1,65 @@
 import { closedReviewLine } from "$features/incidents/lib/review";
-import { getDocumentSessionOptions, getIncidentOptions, getRetrospectiveOptions } from "$lib/api";
+import {
+	getDocumentSessionOptions,
+	getIncidentOptions,
+	getIncidentQueryKey,
+	getRetrospectiveOptions,
+	type GetIncidentResponse,
+} from "$lib/api";
 import { getLocalTimeZone } from "@internationalized/date";
-import { createQuery } from "@tanstack/svelte-query";
+import { createQuery, useQueryClient } from "@tanstack/svelte-query";
 import { Context, watch, type Getter } from "runed";
 import { page } from "$app/state";
+import { goto } from "$app/navigation";
 import { resolve } from "$app/paths";
+import { referenceUrl } from "$lib/reference-url";
 import { toast } from "svelte-sonner";
 import type { PageRelatedLink } from "$lib/app-shell.svelte";
 import { convertIncidentViewParam } from "$src/params/incidentView";
 import RiArticleLine from "remixicon-svelte/icons/article-line";
 
 export class IncidentViewController {
-	slug = $state("");
+	private queryClient = useQueryClient();
 
-	constructor(slugFn: Getter<string>) {
-		this.slug = slugFn();
-		watch(slugFn, (slug) => {
-			this.slug = slug;
+	/** The URL value: the incident's reference, or another value the API resolves, such as its UUID. */
+	ref = $state("");
+
+	constructor(refFn: Getter<string>) {
+		this.ref = refFn();
+		watch(refFn, (ref) => {
+			this.ref = ref;
 		});
+		watch(
+			() => this.incidentQuery.data,
+			(response) => {
+				if (response) {
+					this.useReferenceUrl(response);
+				}
+			}
+		);
 	}
 
 	incidentQuery = createQuery(() => ({
-		...getIncidentOptions({ path: { id: this.slug } }),
-		enabled: !!this.slug,
+		...getIncidentOptions({ path: { id: this.ref } }),
+		enabled: !!this.ref,
 	}));
 	incident = $derived(this.incidentQuery.data?.data);
 	incidentId = $derived(this.incident?.id ?? "");
+	reference = $derived(this.incident?.attributes.reference);
+
+	/** Replaces a URL that names the incident another way with its reference URL, caching the response first. */
+	private useReferenceUrl(response: GetIncidentResponse) {
+		const reference = response.data.attributes.reference;
+		if (reference === this.ref) {
+			return;
+		}
+		this.queryClient.setQueryData(getIncidentQueryKey({ path: { id: reference } }), response);
+		void goto(referenceUrl(page.url, this.ref, reference), {
+			replaceState: true,
+			noScroll: true,
+			keepFocus: true,
+		});
+	}
 
 	situations = $derived(this.incident?.attributes.situations ?? []);
 	relatedLinks = $derived<PageRelatedLink[]>(
@@ -34,7 +68,7 @@ export class IncidentViewController {
 			kind: "Situation",
 			icon: RiArticleLine,
 			label: situation.title,
-			path: resolve("/situations/[id]/[[view=situationView]]", { id: situation.id }),
+			path: resolve("/situations/[ref]/[[view=situationView]]", { ref: situation.id }),
 		}))
 	);
 
@@ -86,6 +120,6 @@ export class IncidentViewController {
 }
 
 const ctx = new Context<IncidentViewController>("IncidentViewController");
-export const initIncidentViewController = (slugFn: Getter<string>) =>
-	ctx.set(new IncidentViewController(slugFn));
+export const initIncidentViewController = (refFn: Getter<string>) =>
+	ctx.set(new IncidentViewController(refFn));
 export const useIncidentView = () => ctx.get();

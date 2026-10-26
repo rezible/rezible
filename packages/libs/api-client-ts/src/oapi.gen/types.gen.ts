@@ -1146,7 +1146,7 @@ export type CreateTeamResponseBody = {
 
 export type CreatedIncident = {
     id: string;
-    slug: string;
+    reference: string;
 };
 
 export type DeleteSystemAnalysisEntryAttributes = {
@@ -1839,13 +1839,13 @@ export type IncidentAttributes = {
     milestones: Array<IncidentMilestone>;
     openedAt: string;
     primaryVideoConference?: VideoConference;
+    reference: string;
     resolvedAt: string | null;
     responseState: 'started' | 'mitigated' | 'resolved';
     retrospective?: ExpandableRetrospectiveAttributes;
     roles: Array<IncidentUserRoleAssignment>;
     severity?: ExpandableIncidentSeverityAttributes;
     situations: Array<IncidentSituation>;
-    slug: string;
     summary: string;
     tags: Array<IncidentTag>;
     tasks: Array<Task>;
@@ -3459,6 +3459,7 @@ export type SituationAttributes = {
     openedAt: string;
     raisedAt?: string;
     raisedBy?: SituationRaisedBy;
+    reference: string;
     seedEntityId: string;
     signalCount: number;
     stage: 'candidate' | 'raised' | 'closed';
@@ -3645,6 +3646,7 @@ export type SituationJudgmentHistoryItem = {
 export type SituationLink = {
     kind: 'recurrence_of' | 'merged_into';
     situationId: string;
+    situationReference: string;
     stage: 'candidate' | 'raised' | 'closed';
     title: string;
 };

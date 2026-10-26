@@ -80,6 +80,7 @@ import (
 	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/ent/review"
 	"github.com/rezible/rezible/ent/schema"
+	"github.com/rezible/rezible/ent/sequencecounter"
 	"github.com/rezible/rezible/ent/situation"
 	"github.com/rezible/rezible/ent/situationaction"
 	"github.com/rezible/rezible/ent/situationentity"
@@ -624,6 +625,10 @@ func init() {
 	incident.DefaultUpdatedAt = incidentDescUpdatedAt.Default.(func() time.Time)
 	// incident.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	incident.UpdateDefaultUpdatedAt = incidentDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// incidentDescNumber is the schema descriptor for number field.
+	incidentDescNumber := incidentFields[1].Descriptor()
+	// incident.NumberValidator is a validator for the "number" field. It is called by the builders before save.
+	incident.NumberValidator = incidentDescNumber.Validators[0].(func(int) error)
 	// incidentDescOpenedAt is the schema descriptor for opened_at field.
 	incidentDescOpenedAt := incidentFields[8].Descriptor()
 	// incident.DefaultOpenedAt holds the default value on creation for the opened_at field.
@@ -1969,6 +1974,26 @@ func init() {
 	reviewDescID := reviewFields[0].Descriptor()
 	// review.DefaultID holds the default value on creation for the id field.
 	review.DefaultID = reviewDescID.Default.(func() uuid.UUID)
+	sequencecounterMixin := schema.SequenceCounter{}.Mixin()
+	sequencecounter.Policy = privacy.NewPolicies(sequencecounterMixin[0], sequencecounterMixin[1], schema.SequenceCounter{})
+	sequencecounter.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := sequencecounter.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	sequencecounterFields := schema.SequenceCounter{}.Fields()
+	_ = sequencecounterFields
+	// sequencecounterDescValue is the schema descriptor for value field.
+	sequencecounterDescValue := sequencecounterFields[2].Descriptor()
+	// sequencecounter.ValueValidator is a validator for the "value" field. It is called by the builders before save.
+	sequencecounter.ValueValidator = sequencecounterDescValue.Validators[0].(func(int) error)
+	// sequencecounterDescID is the schema descriptor for id field.
+	sequencecounterDescID := sequencecounterFields[0].Descriptor()
+	// sequencecounter.DefaultID holds the default value on creation for the id field.
+	sequencecounter.DefaultID = sequencecounterDescID.Default.(func() uuid.UUID)
 	situationMixin := schema.Situation{}.Mixin()
 	situation.Policy = privacy.NewPolicies(situationMixin[0], situationMixin[1], schema.Situation{})
 	situation.Hooks[0] = func(next ent.Mutator) ent.Mutator {
@@ -1993,8 +2018,12 @@ func init() {
 	situation.DefaultUpdatedAt = situationDescUpdatedAt.Default.(func() time.Time)
 	// situation.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	situation.UpdateDefaultUpdatedAt = situationDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// situationDescNumber is the schema descriptor for number field.
+	situationDescNumber := situationFields[1].Descriptor()
+	// situation.NumberValidator is a validator for the "number" field. It is called by the builders before save.
+	situation.NumberValidator = situationDescNumber.Validators[0].(func(int) error)
 	// situationDescTitle is the schema descriptor for title field.
-	situationDescTitle := situationFields[1].Descriptor()
+	situationDescTitle := situationFields[2].Descriptor()
 	// situation.TitleValidator is a validator for the "title" field. It is called by the builders before save.
 	situation.TitleValidator = situationDescTitle.Validators[0].(func(string) error)
 	// situationDescID is the schema descriptor for id field.

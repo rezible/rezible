@@ -28,6 +28,7 @@ func (Situation) Mixin() []ent.Mixin {
 func (Situation) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
+		field.Int("number").Positive().Immutable(),
 		field.String("title").NotEmpty(),
 		field.Text("summary").Optional(),
 		field.Time("opened_at").
@@ -96,6 +97,9 @@ func (Situation) Edges() []ent.Edge {
 
 func (Situation) Indexes() []ent.Index {
 	return []ent.Index{
+		index.Fields("tenant_id", "number").
+			Unique().
+			StorageKey("situations_number_key"),
 		index.Fields("tenant_id", "opened_at"),
 		index.Fields("tenant_id", "closed_at"),
 		index.Fields("tenant_id", "seed_entity_id"),

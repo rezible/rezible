@@ -37,8 +37,8 @@ func (c *noticeContent) stageText() string {
 		if situation.CloseReason != nil && *situation.CloseReason == sit.CloseReasonMerged {
 			if link := (*integrations.SituationNoticeContent)(c).MergedInto(); link != nil && c.MergedIntoURL != "" {
 				title := "another situation"
-				if link.Edges.LinkedSituation != nil {
-					title = link.Edges.LinkedSituation.Title
+				if linked := link.Edges.LinkedSituation; linked != nil {
+					title = linked.Reference() + " · " + linked.Title
 				}
 				return fmt.Sprintf("Merged into <%s|%s>", c.MergedIntoURL, slackintegration.EscapeText(title))
 			}
@@ -120,12 +120,13 @@ func (c *noticeContent) interpretationText() string {
 
 // fallbackText is the message's plain text, shown in notifications.
 func (c *noticeContent) fallbackText() string {
-	return fmt.Sprintf("%s · %s", slackintegration.EscapeText(c.Situation.Title), c.stageText())
+	return fmt.Sprintf("%s · %s · %s", c.Situation.Reference(), slackintegration.EscapeText(c.Situation.Title), c.stageText())
 }
 
 func (c *noticeContent) blocks() []slack.Block {
-	// Plain text cannot form mentions or links, so the header is not escaped.
-	title := slackintegration.TruncateRunes(c.Situation.Title, maxNoticeTitleRunes)
+	// Plain text cannot form mentions or links, so the header is not escaped. It leads with the reference, so
+	// cutting the title never loses it.
+	title := slackintegration.TruncateRunes(c.Situation.Reference()+" · "+c.Situation.Title, maxNoticeTitleRunes)
 	header := slack.NewHeaderBlock(slack.NewTextBlockObject(slack.PlainTextType, title, false, false))
 
 	fields := []*slack.TextBlockObject{

@@ -21,11 +21,20 @@
 	initIncidentCreateDialogController();
 
 	const pageDescriptor = $derived(shell.pageDescriptor);
+	const documentTitle = $derived.by(() => {
+		if (!pageDescriptor) {
+			return "Rezible";
+		}
+		if (pageDescriptor.reference) {
+			return `Rezible - ${pageDescriptor.reference} · ${pageDescriptor.title}`;
+		}
+		return `Rezible - ${pageDescriptor.title}`;
+	});
 	const featureRailActive = $derived(shell.featureRail);
 </script>
 
 <svelte:head>
-	<title>{pageDescriptor ? `Rezible - ${pageDescriptor.title}` : "Rezible"}</title>
+	<title>{documentTitle}</title>
 </svelte:head>
 
 <ModeWatcher />

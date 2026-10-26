@@ -241,6 +241,9 @@ type Retrospective func(*sql.Selector)
 // Review is the predicate function for review builders.
 type Review func(*sql.Selector)
 
+// SequenceCounter is the predicate function for sequencecounter builders.
+type SequenceCounter func(*sql.Selector)
+
 // Situation is the predicate function for situation builders.
 type Situation func(*sql.Selector)
 

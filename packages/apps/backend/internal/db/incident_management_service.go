@@ -13,6 +13,7 @@ import (
 	im "github.com/rezible/rezible/ent/incidentmilestone"
 	ira "github.com/rezible/rezible/ent/incidentroleassignment"
 	"github.com/rezible/rezible/ent/schema"
+	"github.com/rezible/rezible/ent/sequencecounter"
 	"github.com/rezible/rezible/ent/situation"
 	"github.com/rezible/rezible/pkg/errs"
 )
@@ -79,18 +80,17 @@ func (s *IncidentManagementService) Declare(ctx context.Context, params rez.Decl
 			return uuid.Nil, enabledErr
 		}
 
-		openedAt := time.Now()
-		incidentSlug, slugErr := generateIncidentSlug(ctx, tx, openedAt)
-		if slugErr != nil {
-			return uuid.Nil, fmt.Errorf("generate unique slug: %w", slugErr)
+		number, numberErr := tx.SequenceCounter.Next(ctx, sequencecounter.KindIncident)
+		if numberErr != nil {
+			return uuid.Nil, fmt.Errorf("allocate incident number: %w", numberErr)
 		}
 		create := tx.Incident.Create().
-			SetSlug(incidentSlug).
+			SetNumber(number).
 			SetTitle(title).
 			SetSummary(params.Summary).
 			SetNillableSeverityID(params.SeverityID).
 			SetNillableTypeID(params.TypeID).
-			SetOpenedAt(openedAt).
+			SetOpenedAt(time.Now()).
 			SetDeclaredByID(params.DeclaredByID).
 			AddFieldSelectionIDs(params.FieldOptionIDs...).
 			AddTagAssignmentIDs(params.TagIDs...)

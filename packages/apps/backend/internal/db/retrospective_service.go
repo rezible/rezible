@@ -386,13 +386,13 @@ func (w *sendReviewRequestMessageWorker) send(ctx context.Context, args jobs.Sen
 		slog.DebugContext(ctx, "incident archived, not sending review request", "review_id", r.ID)
 		return nil
 	}
-	link, linkErr := w.cfg.App.GetFrontendUrl("incidents", inc.Slug, "report")
+	link, linkErr := w.cfg.App.GetFrontendUrl("incidents", inc.Reference(), "report")
 	if linkErr != nil {
 		return linkErr
 	}
 	message := integrations.DirectMessage{
 		// Attribute the request to the person who made it, even after an ownership handover.
-		Text:    fmt.Sprintf("%s asked you to review the retrospective for %q.", r.Edges.Requester.Name, inc.Title),
+		Text:    fmt.Sprintf("%s asked you to review the retrospective for %s %q.", r.Edges.Requester.Name, inc.Reference(), inc.Title),
 		LinkURL: link.String(), LinkLabel: "Open the review",
 	}
 	installations, listErr := w.integrations.ListInstallations(ctx)

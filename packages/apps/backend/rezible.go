@@ -1530,7 +1530,7 @@ type (
 
 	SituationService interface {
 		ListSituations(context.Context, ListSituationsParams) (*ent.ListResult[ent.Situation], error)
-		GetSituation(context.Context, uuid.UUID) (*ent.Situation, error)
+		GetSituation(context.Context, predicate.Situation) (*ent.Situation, error)
 		CreateSituation(context.Context, CreateSituationParams) (*ent.Situation, error)
 
 		RaiseSituation(context.Context, uuid.UUID, RaiseSituationParams) (*ent.Situation, error)

@@ -2487,11 +2487,11 @@ components:
       properties:
         id:
           type: string
-        slug:
+        reference:
           type: string
       required:
         - id
-        - slug
+        - reference
       type: object
     DeleteSystemAnalysisEntryAttributes:
       additionalProperties: false
@@ -3874,6 +3874,8 @@ components:
           type: string
         primaryVideoConference:
           $ref: "#/components/schemas/VideoConference"
+        reference:
+          type: string
         resolvedAt:
           format: date-time
           type:
@@ -3897,8 +3899,6 @@ components:
           items:
             $ref: "#/components/schemas/IncidentSituation"
           type: array
-        slug:
-          type: string
         summary:
           type: string
         tags:
@@ -3923,7 +3923,7 @@ components:
       required:
         - title
         - summary
-        - slug
+        - reference
         - responseState
         - openedAt
         - updatedAt
@@ -7785,6 +7785,8 @@ components:
           type: string
         raisedBy:
           $ref: "#/components/schemas/SituationRaisedBy"
+        reference:
+          type: string
         seedEntityId:
           type: string
         signalCount:
@@ -7804,6 +7806,7 @@ components:
           format: date-time
           type: string
       required:
+        - reference
         - title
         - summary
         - stage
@@ -8283,6 +8286,8 @@ components:
           type: string
         situationId:
           type: string
+        situationReference:
+          type: string
         stage:
           enum:
             - candidate
@@ -8294,6 +8299,7 @@ components:
       required:
         - kind
         - situationId
+        - situationReference
         - title
         - stage
       type: object

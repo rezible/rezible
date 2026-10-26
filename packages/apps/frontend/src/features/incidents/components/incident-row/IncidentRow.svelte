@@ -15,7 +15,7 @@
 </script>
 
 <a
-	href={resolve("/incidents/[slug]/[[view=incidentView]]", { slug: attrs.slug })}
+	href={resolve("/incidents/[ref]/[[view=incidentView]]", { ref: attrs.reference })}
 	class="block min-w-0 space-y-1 border-b border-border px-3 py-3 last:border-b-0 hover:bg-muted/50 focus-visible:outline-primary"
 >
 	<div class="flex flex-wrap items-center gap-2">
@@ -26,7 +26,7 @@
 		{/if}
 	</div>
 	<div class="flex flex-wrap justify-between gap-x-3 text-xs text-muted-foreground">
-		<span>{attrs.slug}</span>
+		<span>{attrs.reference}</span>
 		<time datetime={attrs.openedAt}>Opened {new Date(attrs.openedAt).toLocaleString()}</time>
 	</div>
 </a>

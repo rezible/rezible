@@ -2,7 +2,9 @@
 	import type { PageProps } from "./$types";
 	import IncidentView from "$features/incidents/views/incident";
 
-	const { data }: PageProps = $props();
+	const { params }: PageProps = $props();
 </script>
 
-<IncidentView slug={data.slug} />
+{#key params.ref}
+	<IncidentView ref={params.ref} />
+{/key}

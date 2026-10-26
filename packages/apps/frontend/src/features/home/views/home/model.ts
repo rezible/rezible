@@ -92,8 +92,8 @@ const activityIcons = {
 
 const MAX_SERVICES = 3;
 
-function incidentHref(slugOrId: string, view?: "report") {
-	return resolve("/incidents/[slug]/[[view=incidentView]]", { slug: slugOrId, view });
+function incidentHref(ref: string, view?: "report") {
+	return resolve("/incidents/[ref]/[[view=incidentView]]", { ref, view });
 }
 
 export function inboxItemHref(item: InboxItem): string | undefined {
@@ -185,7 +185,7 @@ export function incidentRow(incident: Incident): HomeIncidentRow {
 		id: incident.id,
 		title: attributes.title,
 		summary: attributes.summary.trim(),
-		href: incidentHref(attributes.slug),
+		href: incidentHref(attributes.reference),
 		severity: incidentSeverityStatus(attributes.severity),
 		response: incidentResponseStatus(attributes.responseState),
 		accent: severityAccent(incident),
@@ -203,7 +203,7 @@ export function situationRow(situation: Situation, conclusion: SituationConclusi
 		id: situation.id,
 		title: attributes.title,
 		summary: attributes.summary.trim(),
-		href: resolve("/situations/[id]/[[view=situationView]]", { id: situation.id }),
+		href: resolve("/situations/[ref]/[[view=situationView]]", { ref: attributes.reference }),
 		status: situationStatus(attributes),
 		openedAt: attributes.openedAt,
 		sourceCount: attributes.signalCount,

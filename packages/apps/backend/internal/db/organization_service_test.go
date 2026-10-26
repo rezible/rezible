@@ -4,7 +4,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/organization"
@@ -64,7 +63,7 @@ func (s *OrganizationsServiceSuite) TestTurningOffIncidentManagementNeedsNoUnres
 	s.Require().NoError(enableErr)
 
 	createIncident := client.Incident.Create().
-		SetSlug("unresolved-" + uuid.NewString()).
+		SetNumber(1).
 		SetTitle("Checkout errors")
 	unresolved, createErr := createIncident.Save(tenantCtx)
 	s.Require().NoError(createErr)

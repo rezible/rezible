@@ -131,12 +131,13 @@ test("a merged source links to its target with or without a judgment and without
 			{
 				kind: "merged_into" as const,
 				situationId: "target",
+				situationReference: "SIT-7",
 				title: "Checkout outage",
 				stage: "raised" as const,
 			},
 		],
 	};
-	const mergedInto = { id: "target", title: "Checkout outage" };
+	const mergedInto = { reference: "SIT-7", title: "Checkout outage" };
 
 	const unassessed = whyPanelState(situation(merged));
 	expect(unassessed).toMatchObject({ kind: "closed-unassessed", closure: { mergedInto } });

@@ -90,6 +90,7 @@ type SchemaConfig struct {
 	PlaybookAlertDefinitions                  string // Playbook-alert_definitions->AlertDefinition table.
 	Retrospective                             string // Retrospective table.
 	Review                                    string // Review table.
+	SequenceCounter                           string // SequenceCounter table.
 	Situation                                 string // Situation table.
 	SituationAction                           string // SituationAction table.
 	SituationEntity                           string // SituationEntity table.

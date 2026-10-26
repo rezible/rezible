@@ -135,13 +135,14 @@ func (a *App) handleIncidentDetailsModalSubmission(ctx context.Context, ii *ent.
 // confirmDeclared tells the declarer, privately in the channel where they ran the command, that the incident
 // was declared. The command may have run where the app can't post, such as a DM, so a failure is only logged.
 func (a *App) confirmDeclared(ctx context.Context, ii *ent.Integration, channelID string, slackUserID string, inc *ent.Incident) {
-	incUrl, urlErr := a.cfg.App.GetFrontendUrl("incidents", inc.Slug)
+	incUrl, urlErr := a.cfg.App.GetFrontendUrl("incidents", inc.Reference())
 	if urlErr != nil {
 		slog.ErrorContext(ctx, "incident url", "error", urlErr, "incident_id", inc.ID.String())
 		return
 	}
+	title := inc.Reference() + " · " + escaped(inc.Title, maxTitleRunes)
 	text := fmt.Sprintf(":white_check_mark: Incident declared: *%s* · <%s|Open in Rezible>. You'll be invited to its channel.",
-		escaped(inc.Title, maxTitleRunes), incUrl)
+		title, incUrl)
 	cw, cwErr := a.newClientWrapper(ii)
 	if cwErr != nil {
 		slog.ErrorContext(ctx, "create client wrapper", "error", cwErr)
@@ -149,7 +150,7 @@ func (a *App) confirmDeclared(ctx context.Context, ii *ent.Integration, channelI
 	}
 	section := slack.NewSectionBlock(slackintegration.MarkdownBlock(text), nil, nil)
 	msgOpts := []slack.MsgOption{
-		slack.MsgOptionText("Incident declared: "+escaped(inc.Title, maxTitleRunes), false),
+		slack.MsgOptionText("Incident declared: "+title, false),
 		slack.MsgOptionParse(false),
 		slack.MsgOptionBlocks(section),
 	}

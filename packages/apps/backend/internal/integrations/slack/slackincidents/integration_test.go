@@ -1,13 +1,32 @@
 package slackincidents
 
 import (
+	"fmt"
 	"testing"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/pkg/errs"
 	"github.com/rezible/rezible/pkg/integrations"
 	"github.com/stretchr/testify/require"
 )
+
+func TestValidateUserSettingsNeedsAChannelPlaceholder(t *testing.T) {
+	integration := &Integration{}
+	for pattern, valid := range map[string]bool{
+		"inc-{number}":     true,
+		"incident-{id}":    true,
+		"incident-{title}": false,
+	} {
+		settings := fmt.Sprintf(`{"incidents": {"channel_name_pattern": %q}}`, pattern)
+		validateErr := integration.ValidateUserSettings([]byte(settings))
+		if valid {
+			require.NoError(t, validateErr, pattern)
+		} else {
+			require.ErrorIs(t, validateErr, errs.ErrInvalidInput, pattern)
+		}
+	}
+}
 
 func TestCheckInstallRequirements(t *testing.T) {
 	enabledPrefs := &ent.OrganizationPreferences{

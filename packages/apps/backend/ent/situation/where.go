@@ -72,6 +72,11 @@ func UpdatedAt(v time.Time) predicate.Situation {
 	return predicate.Situation(sql.FieldEQ(FieldUpdatedAt, v))
 }
 
+// Number applies equality check predicate on the "number" field. It's identical to NumberEQ.
+func Number(v int) predicate.Situation {
+	return predicate.Situation(sql.FieldEQ(FieldNumber, v))
+}
+
 // Title applies equality check predicate on the "title" field. It's identical to TitleEQ.
 func Title(v string) predicate.Situation {
 	return predicate.Situation(sql.FieldEQ(FieldTitle, v))
@@ -215,6 +220,46 @@ func UpdatedAtLT(v time.Time) predicate.Situation {
 // UpdatedAtLTE applies the LTE predicate on the "updated_at" field.
 func UpdatedAtLTE(v time.Time) predicate.Situation {
 	return predicate.Situation(sql.FieldLTE(FieldUpdatedAt, v))
+}
+
+// NumberEQ applies the EQ predicate on the "number" field.
+func NumberEQ(v int) predicate.Situation {
+	return predicate.Situation(sql.FieldEQ(FieldNumber, v))
+}
+
+// NumberNEQ applies the NEQ predicate on the "number" field.
+func NumberNEQ(v int) predicate.Situation {
+	return predicate.Situation(sql.FieldNEQ(FieldNumber, v))
+}
+
+// NumberIn applies the In predicate on the "number" field.
+func NumberIn(vs ...int) predicate.Situation {
+	return predicate.Situation(sql.FieldIn(FieldNumber, vs...))
+}
+
+// NumberNotIn applies the NotIn predicate on the "number" field.
+func NumberNotIn(vs ...int) predicate.Situation {
+	return predicate.Situation(sql.FieldNotIn(FieldNumber, vs...))
+}
+
+// NumberGT applies the GT predicate on the "number" field.
+func NumberGT(v int) predicate.Situation {
+	return predicate.Situation(sql.FieldGT(FieldNumber, v))
+}
+
+// NumberGTE applies the GTE predicate on the "number" field.
+func NumberGTE(v int) predicate.Situation {
+	return predicate.Situation(sql.FieldGTE(FieldNumber, v))
+}
+
+// NumberLT applies the LT predicate on the "number" field.
+func NumberLT(v int) predicate.Situation {
+	return predicate.Situation(sql.FieldLT(FieldNumber, v))
+}
+
+// NumberLTE applies the LTE predicate on the "number" field.
+func NumberLTE(v int) predicate.Situation {
+	return predicate.Situation(sql.FieldLTE(FieldNumber, v))
 }
 
 // TitleEQ applies the EQ predicate on the "title" field.

@@ -4,6 +4,7 @@ import (
 	"context"
 
 	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/incidentmilestone"
 	"github.com/rezible/rezible/ent/predicate"
@@ -22,11 +23,15 @@ func newIncidentsHandler(base *baseHandler, incidents rez.IncidentDetailsService
 	return &incidentsHandler{baseHandler: base, incidents: incidents, management: management}
 }
 
-func incidentIdPredicate(id oapi.FlexibleId) predicate.Incident {
-	if id.IsSlug {
-		return incident.Slug(id.Slug)
+func incidentIdPredicate(id oapi.FlexibleId) (predicate.Incident, error) {
+	if !id.IsKey {
+		return incident.ID(id.UUID), nil
 	}
-	return incident.ID(id.UUID)
+	number, isReference := ent.ParseIncidentReference(id.Key)
+	if !isReference {
+		return nil, errs.ErrNotFound
+	}
+	return incident.Number(number), nil
 }
 
 func (h *incidentsHandler) ListIncidents(ctx context.Context, req *oapi.ListIncidentsRequest) (*oapi.ListIncidentsResponse, error) {
@@ -52,7 +57,11 @@ func (h *incidentsHandler) ListIncidents(ctx context.Context, req *oapi.ListInci
 func (h *incidentsHandler) GetIncident(ctx context.Context, input *oapi.GetIncidentRequest) (*oapi.GetIncidentResponse, error) {
 	var resp oapi.GetIncidentResponse
 
-	inc, incErr := h.incidents.GetIncident(ctx, incidentIdPredicate(input.Id))
+	pred, predErr := incidentIdPredicate(input.Id)
+	if predErr != nil {
+		return nil, oapi.Error(ctx, "get incident", predErr)
+	}
+	inc, incErr := h.incidents.GetIncident(ctx, pred)
 	if incErr != nil {
 		return nil, oapi.Error(ctx, "get incident", incErr)
 	}
@@ -84,7 +93,7 @@ func (h *incidentsHandler) CreateIncident(ctx context.Context, input *oapi.Creat
 		return nil, oapi.Error(ctx, "declare incident", declareErr)
 	}
 	var resp oapi.CreateIncidentResponse
-	resp.Body.Data = oapi.CreatedIncident{Id: inc.ID, Slug: inc.Slug}
+	resp.Body.Data = oapi.CreatedIncident{Id: inc.ID, Reference: inc.Reference()}
 	return &resp, nil
 }
 

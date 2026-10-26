@@ -849,6 +849,18 @@ func (f ReviewFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, erro
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ReviewMutation", m)
 }
 
+// The SequenceCounterFunc type is an adapter to allow the use of ordinary
+// function as SequenceCounter mutator.
+type SequenceCounterFunc func(context.Context, *ent.SequenceCounterMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f SequenceCounterFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.SequenceCounterMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SequenceCounterMutation", m)
+}
+
 // The SituationFunc type is an adapter to allow the use of ordinary
 // function as Situation mutator.
 type SituationFunc func(context.Context, *ent.SituationMutation) (ent.Value, error)

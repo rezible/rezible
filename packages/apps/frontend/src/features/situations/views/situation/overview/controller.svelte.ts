@@ -218,7 +218,7 @@ export class SituationOverviewController {
 			key: `${link.kind}:${link.situationId}`,
 			kindLabel: situationLinkKindLabel(link.kind),
 			title: link.title,
-			href: situationHref(link.situationId),
+			href: situationHref(link.situationReference),
 			status: situationStageStatus(link.stage),
 		}));
 	}

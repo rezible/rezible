@@ -41,7 +41,7 @@
 						aria-invalid={!!errors.ChannelNamePattern}
 					/>
 					<Field.Description>
-						Include <code>{"{slug}"}</code>
+						Include <code>{"{number}"}</code>
 						or
 						<code>{"{id}"}</code>
 						, so each incident gets its own channel.
