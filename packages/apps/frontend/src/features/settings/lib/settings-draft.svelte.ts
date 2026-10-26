@@ -5,7 +5,7 @@ const copy = <T>(value: T): T => JSON.parse(JSON.stringify(value));
 
 export class SettingsDraft<T> {
 	value: T = $state() as T;
-	private saved: T = $state.raw() as T;
+	saved: T = $state.raw() as T;
 	dirty = $derived(JSON.stringify(this.value) !== JSON.stringify(this.saved));
 
 	constructor(initial: T) {
@@ -29,6 +29,7 @@ export class SettingsDraft<T> {
 export class SettingsDraftList<T extends { id: string }> {
 	private forms = $state.raw(new SvelteMap<string, SettingsDraft<T>>());
 	items = $derived(Array.from(this.forms.values(), (form) => form.value));
+	savedItems = $derived(Array.from(this.forms.values(), (form) => form.saved));
 	dirty = $derived(Array.from(this.forms.values()).some((form) => form.dirty));
 
 	receive(items: T[]) {

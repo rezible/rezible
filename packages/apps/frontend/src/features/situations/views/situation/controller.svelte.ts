@@ -274,10 +274,11 @@ export class SituationController {
 		retry: (failureCount, error) => !isDefinitiveUnavailableError(error) && failureCount < 2,
 	}));
 
+	/** The latest report; undefined while none is published or it is not readable. */
 	report = $derived(
 		this.investigationUnavailable || isDefinitiveUnavailableError(this.reportQuery.error)
 			? undefined
-			: this.reportQuery.data?.data
+			: (this.reportQuery.data?.data ?? undefined)
 	);
 	reportAccessLost = $derived([401, 403].includes(this.reportQuery.error?.status ?? 0));
 
@@ -530,7 +531,7 @@ export class SituationController {
 		try {
 			await this.retryMutation.mutateAsync({ path: { id: latestTurn.id } });
 			accepted = true;
-			this.retryMessage = "Retry requested for the same turn.";
+			this.retryMessage = "Retry requested.";
 		} catch (error) {
 			const apiError = error as ApiError;
 			conflict = apiError.code === "conflict";
@@ -727,7 +728,7 @@ export class SituationController {
 		if (this.reportQuery.isPending) {
 			return { kind: "loading" };
 		}
-		if (this.reportQuery.isError && this.reportQuery.error?.status !== 404) {
+		if (this.reportQuery.isError) {
 			return { kind: "error" };
 		}
 		return { kind: "none" };

@@ -1,6 +1,6 @@
-import { formatDate } from "date-fns";
 import type { RetrospectiveAttributes } from "$lib/api";
 import type { StatusPresentation } from "$components/common/status-badge/status";
+import { formatTime } from "$lib/time";
 import RiDraftLine from "remixicon-svelte/icons/draft-line";
 import RiEditLine from "remixicon-svelte/icons/edit-line";
 import RiEyeLine from "remixicon-svelte/icons/eye-line";
@@ -8,7 +8,11 @@ import RiCheckboxCircleLine from "remixicon-svelte/icons/checkbox-circle-line";
 import RiSkipForwardLine from "remixicon-svelte/icons/skip-forward-line";
 
 // An admin can act as the owner, and can assign an owner to a review that has none.
-export function reviewPanelModel(retrospective?: RetrospectiveAttributes, currentUserId?: string, isAdmin = false) {
+export function reviewPanelModel(
+	retrospective?: RetrospectiveAttributes,
+	currentUserId?: string,
+	isAdmin = false
+) {
 	const reviews = retrospective?.reviews ?? [];
 	const owner = retrospective?.owner;
 	const closed = retrospective?.state === "closed";
@@ -25,22 +29,29 @@ export function reviewPanelModel(retrospective?: RetrospectiveAttributes, curren
 	let explanation = "The retrospective starts when the incident is resolved.";
 	if (retrospective?.state === "draft") {
 		status = { ...status, label: "Draft", icon: RiEditLine };
-		explanation = "The owner is writing the retrospective.";
+		if (owner) {
+			explanation = "The owner is writing the retrospective.";
+		} else {
+			explanation = "No owner yet. Take ownership to start the retrospective.";
+		}
 	} else if (retrospective?.state === "in_review") {
 		status = { ...status, label: "In review", tone: "warning", icon: RiEyeLine };
 		const noun = reviews.length === 1 ? "reviewer" : "reviewers";
 		explanation = `Waiting on ${waiting.length} of ${reviews.length} ${noun}.`;
 	} else if (closed) {
 		const closer = retrospective.closedBy?.attributes?.name ?? "a member";
-		const date = retrospective.closedAt ? formatDate(retrospective.closedAt, "d MMM") : "";
+		let closedOn = "";
+		if (retrospective.closedAt) {
+			closedOn = ` on ${formatTime(retrospective.closedAt).absolute}`;
+		}
 		status = { ...status, label: "Closed without review", icon: RiCheckboxCircleLine };
-		explanation = `Closed by ${closer} on ${date} without review.`;
+		explanation = `Closed by ${closer}${closedOn} without review.`;
 		if (retrospective.outcome === "reviewed") {
 			status = { ...status, label: "Reviewed", tone: "success" };
-			explanation = `Closed by ${closer} on ${date}, after review.`;
+			explanation = `Closed by ${closer}${closedOn}, after review.`;
 		} else if (retrospective.outcome === "skipped") {
 			status = { ...status, label: "Skipped", icon: RiSkipForwardLine };
-			explanation = `Skipped by ${closer} on ${date}.`;
+			explanation = `Skipped by ${closer}${closedOn}.`;
 		}
 	}
 	return {
@@ -89,7 +100,7 @@ export function closedReviewLine(retrospective?: RetrospectiveAttributes) {
 		line = `Skipped by ${closer}`;
 	}
 	if (retrospective.closedAt) {
-		line += ` · ${formatDate(retrospective.closedAt, "EEE d MMM, HH:mm")}`;
+		line += ` · ${formatTime(retrospective.closedAt).absolute}`;
 	}
 	if (retrospective.outcome === "skipped" && retrospective.skipReason) {
 		line += `: ${retrospective.skipReason}`;

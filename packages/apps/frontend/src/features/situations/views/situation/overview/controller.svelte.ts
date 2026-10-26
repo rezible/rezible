@@ -11,7 +11,14 @@ import {
 	type SourceRecord,
 } from "$features/situations/lib/model";
 import { situationHref } from "$features/situations/lib/routes";
-import { closeReasonLabel, muteReasonLabel, situationStageStatus } from "$features/situations/lib/status";
+import {
+	closeReasonLabel,
+	FIRST_SIGNAL_LABEL,
+	muteReasonLabel,
+	RAISED_LABEL,
+	situationStageStatus,
+	WATCHING_SINCE_LABEL,
+} from "$features/situations/lib/status";
 import { SourceInspection } from "$features/situations/lib/sourceInspection.svelte";
 import { whyPanelState } from "$features/situations/lib/why";
 import { briefSections } from "$features/situations/lib/brief";
@@ -185,10 +192,12 @@ export class SituationOverviewController {
 			return [];
 		}
 
-		const facts: HeaderFact[] = [{ key: "first-signal", label: "First signal", at: attributes.openedAt }];
-		facts.push({ key: "watching", label: "Watching since", at: attributes.createdAt });
+		const facts: HeaderFact[] = [
+			{ key: "first-signal", label: FIRST_SIGNAL_LABEL, at: attributes.openedAt },
+		];
+		facts.push({ key: "watching", label: WATCHING_SINCE_LABEL, at: attributes.createdAt });
 		if (attributes.raisedAt) {
-			facts.push({ key: "raised", label: "Raised", at: attributes.raisedAt });
+			facts.push({ key: "raised", label: RAISED_LABEL, at: attributes.raisedAt });
 		}
 		if (attributes.mutedAt) {
 			facts.push({
@@ -254,13 +263,10 @@ export class SituationOverviewController {
 		};
 	}
 
+	/** The run notice already says why a failed or stopped investigation has no report. */
 	private getNoReportMessage() {
-		const page = this.pageController;
-		if (page.investigationAttributes?.activeTurn) {
+		if (this.pageController.investigationAttributes?.activeTurn) {
 			return "The investigation is running. Its report will appear here.";
-		}
-		if (page.runStatus.description) {
-			return page.runStatus.description;
 		}
 		return "No report has been published yet.";
 	}
@@ -272,7 +278,7 @@ export class SituationOverviewController {
 		const candidates: TimelineEntry[] = [];
 
 		if (attributes) {
-			candidates.push({ key: "opened", label: "First signal", at: attributes.openedAt });
+			candidates.push({ key: "opened", label: FIRST_SIGNAL_LABEL, at: attributes.openedAt });
 		}
 		if (attributes?.raisedAt) {
 			candidates.push({ key: "raised", label: "Situation raised", at: attributes.raisedAt });

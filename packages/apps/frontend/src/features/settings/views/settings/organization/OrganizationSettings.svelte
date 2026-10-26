@@ -7,8 +7,11 @@
 	const view = initOrganizationSettingsViewController();
 
 	registerPageDescriptor(() => ({
-		title: "Organization",
-		parents: [{ label: "Settings", path: resolve("/settings") }],
+		title: "Preferences",
+		parents: [
+			{ label: "Settings", path: resolve("/settings") },
+			{ label: "Organization", path: resolve("/settings/organization") },
+		],
 	}));
 </script>
 

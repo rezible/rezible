@@ -138,8 +138,9 @@ export function aliasViews(aliases: KnowledgeGraphEntityAlias[], now = Date.now(
 			integration:
 				alias.integrationDisplayName || alias.provider || alias.attributes.resourceRef.provider,
 			name: alias.name || alias.attributes.resourceRef.resourceRef,
-			lastRecorded: `last recorded ${recorded.relative}`,
-			lastRecordedTitle: recorded.absolute,
+			// One absolute format keeps the column comparable; the relative time is on hover.
+			lastRecorded: `last recorded ${recorded.absolute}`,
+			lastRecordedTitle: recorded.relative,
 		};
 		if (!alias.lastRecordedAt) {
 			view.lastRecorded = "nothing recorded";

@@ -4,7 +4,7 @@ import type { ActivityRecord, InboxItem, Incident, Situation } from "$lib/api";
 import type { StatusPresentation } from "$components/common/status-badge/status";
 import { formatDuration, formatTime } from "$lib/time";
 import { investigationHref } from "$features/situations/lib/routes";
-import { situationStatus } from "$features/situations/lib/status";
+import { situationStatus, situationSummaryTimes, type SituationTime } from "$features/situations/lib/status";
 import { incidentServiceImpacts } from "$features/incidents/lib/impacts";
 import type { SituationConclusion } from "$features/situations/lib/model";
 import { incidentResponseStatus, incidentSeverityStatus } from "$features/incidents/lib/status";
@@ -54,7 +54,7 @@ export type HomeSituationRow = {
 	summary: string;
 	href: string;
 	status: StatusPresentation;
-	openedAt: string;
+	times: SituationTime[];
 	sourceCount: number;
 	linkedIncidentCount: number;
 	conclusion: SituationConclusion;
@@ -205,7 +205,7 @@ export function situationRow(situation: Situation, conclusion: SituationConclusi
 		summary: attributes.summary.trim(),
 		href: resolve("/situations/[ref]/[[view=situationView]]", { ref: attributes.reference }),
 		status: situationStatus(attributes),
-		openedAt: attributes.openedAt,
+		times: situationSummaryTimes(attributes),
 		sourceCount: attributes.signalCount,
 		linkedIncidentCount: attributes.linkedIncidentIds.length,
 		conclusion,

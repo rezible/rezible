@@ -1,10 +1,14 @@
 <script lang="ts">
 	import type { Situation } from "$lib/api";
 	import StatusBadge from "$components/common/status-badge/StatusBadge.svelte";
-	import Timestamp from "$components/common/timestamp/Timestamp.svelte";
+	import SituationTimes from "$features/situations/components/situation-times/SituationTimes.svelte";
 	import { situationSourceCount } from "$features/situations/lib/model";
 	import { situationHref } from "$features/situations/lib/routes";
-	import { longRunningStatus, situationStateTime, situationStatus } from "$features/situations/lib/status";
+	import {
+		longRunningStatus,
+		situationStatus,
+		situationSummaryTimes,
+	} from "$features/situations/lib/status";
 
 	type Props = {
 		situation: Situation;
@@ -19,7 +23,7 @@
 	const longRunning = $derived(longRunningStatus(attributes, now));
 	const sourceCount = $derived(situationSourceCount(attributes));
 	const sourceLabel = $derived(sourceCount === 1 ? "source" : "sources");
-	const stateTime = $derived(situationStateTime(attributes));
+	const times = $derived(situationSummaryTimes(attributes));
 </script>
 
 <li class="flex min-w-0 flex-col gap-1 px-4 py-3">
@@ -40,12 +44,8 @@
 		<p class="line-clamp-2 text-sm text-muted-foreground wrap-anywhere">{attributes.summary}</p>
 	{/if}
 	<p class="flex flex-wrap items-center gap-x-1.5 text-xs text-muted-foreground">
-		<span class="tabular-nums">{sourceCount} {sourceLabel}</span>
+		<SituationTimes {times} />
 		<span aria-hidden="true">·</span>
-		<span>{stateTime.label}</span>
-		<Timestamp value={stateTime.at} />
-		{#if stateTime.reason}
-			<span>· {stateTime.reason}</span>
-		{/if}
+		<span class="tabular-nums">{sourceCount} {sourceLabel}</span>
 	</p>
 </li>

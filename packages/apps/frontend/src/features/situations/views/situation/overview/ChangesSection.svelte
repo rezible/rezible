@@ -14,14 +14,17 @@
 	const controller = useSituationOverviewController();
 </script>
 
-{#snippet serviceNames(services: BriefServiceView[])}
-	<ul class="flex flex-col gap-1">
-		{#each services as service (service.id)}
-			<li>
-				<BriefServiceName {service} />
-			</li>
-		{/each}
-	</ul>
+{#snippet serviceNames(label: string, services: BriefServiceView[])}
+	<div class="flex flex-col gap-1">
+		<h3 class="text-xs text-muted-foreground">{label}</h3>
+		<ul class="flex flex-col gap-1">
+			{#each services as service (service.id)}
+				<li>
+					<BriefServiceName {service} />
+				</li>
+			{/each}
+		</ul>
+	</div>
 {/snippet}
 
 {#snippet deploymentLink(deployment: DeploymentView)}
@@ -116,12 +119,12 @@
 		<p class="text-sm text-muted-foreground">
 			No integration reports deployments, so changes cannot be listed.
 		</p>
-		{@render serviceNames(state.services)}
+		{@render serviceNames("Services in this situation", state.services)}
 	{:else if state.kind === "nothing_found"}
 		<p class="text-sm text-muted-foreground">
 			No deployments of these services were reported from {state.window.label}.
 		</p>
-		{@render serviceNames(state.services)}
+		{@render serviceNames("Services checked", state.services)}
 	{:else}
 		<p class="text-xs text-muted-foreground">Deployments from {state.window.label}.</p>
 		<ul class="flex flex-col gap-4">

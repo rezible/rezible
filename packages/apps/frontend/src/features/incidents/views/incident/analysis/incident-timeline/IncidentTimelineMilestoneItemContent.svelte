@@ -8,7 +8,11 @@
 </script>
 
 <script lang="ts">
+	import { milestoneLabels } from "$features/incidents/lib/status";
+
 	let { milestone, selected, onSelect }: Props = $props();
+
+	const label = $derived(milestone ? milestoneLabels[milestone.attributes.kind] : "");
 </script>
 
 <button
@@ -22,5 +26,5 @@
 		if (milestone) onSelect?.(milestone.id, event.currentTarget);
 	}}
 >
-	{milestone?.attributes.kind}
+	{label}
 </button>

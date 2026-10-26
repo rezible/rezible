@@ -3,6 +3,7 @@
 	import type { Incident } from "$lib/api";
 	import { Badge } from "$components/ui/badge";
 	import StatusBadge from "$components/common/status-badge/StatusBadge.svelte";
+	import Timestamp from "$components/common/timestamp/Timestamp.svelte";
 	import { incidentSeverityStatus } from "$features/incidents/lib/status";
 
 	type Props = {
@@ -27,6 +28,6 @@
 	</div>
 	<div class="flex flex-wrap justify-between gap-x-3 text-xs text-muted-foreground">
 		<span>{attrs.reference}</span>
-		<time datetime={attrs.openedAt}>Opened {new Date(attrs.openedAt).toLocaleString()}</time>
+		<span>Opened <Timestamp value={attrs.openedAt} format="absolute" /></span>
 	</div>
 </a>

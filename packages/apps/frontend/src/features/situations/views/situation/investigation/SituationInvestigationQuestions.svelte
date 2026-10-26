@@ -33,9 +33,7 @@
 					aria-invalid={controller.questionValidationError}
 					oninput={(event) => controller.updateQuestionDraft(event.currentTarget.value)}
 				/>
-				<Field.FieldDescription>
-					Ask about the investigation's current report. Whitespace-only questions are not accepted.
-				</Field.FieldDescription>
+				<Field.FieldDescription>Ask about the investigation's current report.</Field.FieldDescription>
 				{#if controller.questionValidationError}
 					<Field.FieldError>Enter a question before submitting.</Field.FieldError>
 				{/if}

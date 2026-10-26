@@ -11,7 +11,7 @@
 	let { view }: Props = $props();
 
 	const controller = initSystemViewController(() => view);
-	registerPageDescriptor(() => ({ title: controller.title }));
+	registerPageDescriptor(() => ({ title: controller.title, parents: controller.parents }));
 </script>
 
 <FeatureNavigationRail

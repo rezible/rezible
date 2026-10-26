@@ -22,12 +22,19 @@
 			aria-hidden="true"
 		/>
 		<div class="flex min-w-0 flex-1 flex-col gap-3 text-sm">
-			<p>
-				{notice.message}
-				{#if notice.at}
-					<Timestamp value={notice.at} format="clock" />
+			<div class="flex flex-col gap-1">
+				<p>
+					{notice.message}
+					{#if notice.at}
+						<Timestamp value={notice.at} format="clock" />
+					{/if}
+				</p>
+				{#if notice.failedAt}
+					<p class="text-muted-foreground">
+						Failed <Timestamp value={notice.failedAt} format="absolute" />
+					</p>
 				{/if}
-			</p>
+			</div>
 			{#if notice.pendingMessage}
 				<p class="text-muted-foreground">{notice.pendingMessage}</p>
 			{/if}
@@ -52,47 +59,6 @@
 							Update now
 						{/if}
 					</Button>
-				</div>
-			{/if}
-			{#if controller.retryMessage}
-				<p class="text-muted-foreground">{controller.retryMessage}</p>
-			{/if}
-			{#if controller.retryError}
-				<Alert.Root variant="destructive">
-					<Alert.Title>Retry status needs attention</Alert.Title>
-					<Alert.Description>{controller.retryError}</Alert.Description>
-				</Alert.Root>
-			{/if}
-			{#if controller.retryAvailable}
-				<div>
-					{#if controller.retryNeedsRefresh}
-						<Button
-							variant="outline"
-							size="sm"
-							disabled={controller.retryReconciling}
-							onclick={controller.refreshRetryStatus}
-						>
-							{#if controller.retryReconciling}
-								<Spinner data-icon="inline-start" />
-								Refreshing status
-							{:else}
-								Refresh status
-							{/if}
-						</Button>
-					{:else}
-						<Button
-							size="sm"
-							disabled={controller.retryDisabled}
-							onclick={controller.retryLatestFailedTurn}
-						>
-							{#if controller.retryMutation.isPending || controller.retryReconciling}
-								<Spinner data-icon="inline-start" />
-								Retrying
-							{:else}
-								Retry failed turn
-							{/if}
-						</Button>
-					{/if}
 				</div>
 			{/if}
 		</div>

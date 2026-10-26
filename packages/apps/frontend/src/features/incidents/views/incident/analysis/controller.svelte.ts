@@ -10,6 +10,7 @@ import { createQuery } from "@tanstack/svelte-query";
 import { Context } from "runed";
 import { page } from "$app/state";
 import { goto } from "$app/navigation";
+import { formatTime } from "$lib/time";
 import { initSystemAnalysisController, type GraphInteraction } from "$components/system-analysis";
 import type { MapHighlights, MapSelection } from "$features/system/lib/system-map/presentation";
 import { useIncidentView } from "../controller.svelte";
@@ -201,12 +202,12 @@ export class IncidentAnalysisController {
 			return {
 				kind: "entry",
 				attrs,
-				occurredAtLabel: attrs.occurredAt ? new Date(attrs.occurredAt).toLocaleString() : undefined,
+				occurredAtLabel: attrs.occurredAt ? formatTime(attrs.occurredAt).absolute : undefined,
 			};
 		}
 		if (this.selectedMilestone) {
 			const attrs = this.selectedMilestone.attributes;
-			return { kind: "milestone", attrs, occurredAtLabel: new Date(attrs.timestamp).toLocaleString() };
+			return { kind: "milestone", attrs, occurredAtLabel: formatTime(attrs.timestamp).absolute };
 		}
 		if (this.selectedEntryId || this.selectedMilestoneId) return undefined;
 		if (this.selectedEntity) {

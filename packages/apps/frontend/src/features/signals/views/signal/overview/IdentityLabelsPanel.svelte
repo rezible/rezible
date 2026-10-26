@@ -11,7 +11,7 @@
 	const labels = $derived(view.identityGroupLabels);
 </script>
 
-<section aria-labelledby="identity-labels-title" class="flex flex-col gap-3 rounded-lg border bg-card p-4">
+<section aria-labelledby="identity-labels-title" class="flex flex-col gap-3">
 	<h2 id="identity-labels-title" class="region-label">Identity group labels</h2>
 
 	{#if labels.length}

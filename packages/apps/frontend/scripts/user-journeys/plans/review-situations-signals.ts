@@ -81,7 +81,7 @@ export default {
 		},
 		{
 			action: "waitFor",
-			selector: 'a[href^="/signals/"]:first-of-type',
+			selector: 'li:first-child > a[href^="/signals/"]',
 			state: "visible",
 		},
 		{
@@ -91,16 +91,16 @@ export default {
 		},
 		{
 			action: "click",
-			selector: 'a[href^="/signals/"]:first-of-type',
+			selector: 'li:first-child > a[href^="/signals/"]',
 		},
 		{
 			action: "waitFor",
-			selector: 'a[href^="/signals/"][href$="/events"]',
+			selector: '[data-slot="feature-navigation-link"][href$="/events"]',
 			state: "visible",
 		},
 		{
 			action: "waitFor",
-			selector: "input",
+			selector: "#scroll-body h1",
 			state: "visible",
 		},
 		{
@@ -111,11 +111,11 @@ export default {
 		},
 		{
 			action: "click",
-			selector: 'a[href^="/signals/"][href$="/events"]',
+			selector: '[data-slot="feature-navigation-link"][href$="/events"]',
 		},
 		{
 			action: "waitFor",
-			selector: 'a[href^="/signals/"][href$="/events"][data-active="true"]',
+			selector: '[data-slot="feature-navigation-link"][href$="/events"][aria-current="page"]',
 			state: "visible",
 		},
 		{
@@ -125,11 +125,11 @@ export default {
 		},
 		{
 			action: "click",
-			selector: 'a[href^="/signals/"][href$="/incidents"]',
+			selector: '[data-slot="feature-navigation-link"][href$="/incidents"]',
 		},
 		{
 			action: "waitFor",
-			selector: 'a[href^="/signals/"][href$="/incidents"][data-active="true"]',
+			selector: '[data-slot="feature-navigation-link"][href$="/incidents"][aria-current="page"]',
 			state: "visible",
 		},
 		{

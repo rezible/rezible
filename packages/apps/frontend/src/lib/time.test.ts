@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { formatDuration, formatTime } from "./time";
+import { formatDuration, formatTime, setDisplayTimeZone } from "./time";
 
 const now = Date.parse("2026-05-14T12:00:00Z");
 const before = (ms: number) => new Date(now - ms).toISOString();
@@ -52,4 +52,22 @@ test("formatDuration rejects invalid ranges and defaults end to now", () => {
 	expect(formatDuration(undefined, undefined, now)).toBeUndefined();
 	expect(formatDuration("2026-05-14T12:00:00Z", "2026-05-14T11:00:00Z")).toBeUndefined();
 	expect(formatDuration(before(30 * MINUTE), null, now)).toBe("30 min");
+});
+
+test("formatTime uses the display timezone and ignores invalid zones", () => {
+	setDisplayTimeZone("Asia/Tokyo");
+	const tokyoClock = new Intl.DateTimeFormat(undefined, {
+		hour: "2-digit",
+		minute: "2-digit",
+		timeZone: "Asia/Tokyo",
+	}).format(new Date("2026-05-14T04:45:00Z"));
+	expect(formatTime("2026-05-14T04:45:00Z", now).clock).toBe(tokyoClock);
+
+	setDisplayTimeZone("Not/AZone");
+	const browserClock = new Intl.DateTimeFormat(undefined, { hour: "2-digit", minute: "2-digit" }).format(
+		new Date("2026-05-14T04:45:00Z")
+	);
+	expect(formatTime("2026-05-14T04:45:00Z", now).clock).toBe(browserClock);
+
+	setDisplayTimeZone(undefined);
 });

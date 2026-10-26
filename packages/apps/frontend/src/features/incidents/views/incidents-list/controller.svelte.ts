@@ -6,6 +6,7 @@ import { listIncidentsOptions, getIncidentMetadataOptions } from "$lib/api";
 import { createPaginatedQuery } from "$lib/api/queryPaginator.svelte";
 import {
 	incidentFilterSchema,
+	incidentFiltersChanged,
 	incidentQueryFilters,
 	type IncidentFilters,
 } from "$features/incidents/lib/filters";
@@ -42,6 +43,7 @@ class IncidentsListViewController {
 	});
 
 	filters = $derived(incidentFilterSchema.parse(this.params));
+	filtersChanged = $derived(incidentFiltersChanged(this.filters));
 	private committed = $derived(incidentFilterSchema.parse(Object.fromEntries(page.url.searchParams)));
 	private filterKey = $derived(JSON.stringify(this.committed));
 

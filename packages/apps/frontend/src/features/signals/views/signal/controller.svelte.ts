@@ -8,6 +8,7 @@ import {
 	setAlertSituationSignalAttentionMutation,
 } from "$lib/api";
 import { createMutation, createQuery, useQueryClient } from "@tanstack/svelte-query";
+import { page } from "$app/state";
 import { Context, watch, type Getter } from "runed";
 import { toast } from "svelte-sonner";
 import type { AttentionLevel } from "$features/signals/lib/attention";
@@ -20,6 +21,9 @@ export class AlertViewController {
 	private queryClient = useQueryClient();
 
 	alertId = $state<string>(null!);
+
+	/** Undefined on the overview; the child view's route segment otherwise. */
+	activeView = $derived(page.params.view);
 
 	alertQuery = createQuery(() => getAlertOptions({ path: { id: this.alertId } }));
 	alert = $derived(this.alertQuery.data?.data);

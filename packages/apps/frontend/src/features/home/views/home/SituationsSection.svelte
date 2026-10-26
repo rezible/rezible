@@ -3,7 +3,7 @@
 	import { Skeleton } from "$components/ui/skeleton";
 	import SectionHeading from "$components/common/section-heading/SectionHeading.svelte";
 	import StatusBadge from "$components/common/status-badge/StatusBadge.svelte";
-	import Timestamp from "$components/common/timestamp/Timestamp.svelte";
+	import SituationTimes from "$features/situations/components/situation-times/SituationTimes.svelte";
 	import LoadingQueryWrapper from "$components/layout/loading-query-wrapper/LoadingQueryWrapper.svelte";
 	import ListSkeleton from "$components/layout/list-skeleton/ListSkeleton.svelte";
 	import { useHomeController } from "./controller.svelte";
@@ -59,8 +59,7 @@
 							<p class="line-clamp-1 text-sm text-muted-foreground">{row.summary}</p>
 						{/if}
 						<p class="flex flex-wrap items-center gap-x-1.5 text-xs text-muted-foreground">
-							<span>Opened</span>
-							<Timestamp value={row.openedAt} />
+							<SituationTimes times={row.times} />
 							{#if row.sourceCount > 0}
 								<span class="tabular-nums">
 									· {row.sourceCount}

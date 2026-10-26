@@ -2,6 +2,10 @@
 	import { ModeWatcher } from "mode-watcher";
 
 	import { initAppShell } from "$lib/app-shell.svelte";
+	import { createQuery } from "@tanstack/svelte-query";
+
+	import { getUserSessionPreferencesOptions } from "$lib/api";
+	import { setDisplayTimeZone } from "$lib/time";
 	import { initUserSessionState } from "$lib/user-session.svelte";
 	import { cn } from "$lib/utils";
 
@@ -19,6 +23,20 @@
 	const sess = initUserSessionState();
 	// Declaring an incident is offered from several pages, so its dialog is shared.
 	initIncidentCreateDialogController();
+
+	const preferencesQuery = createQuery(() => ({
+		...getUserSessionPreferencesOptions(),
+		enabled: sess.isAuthenticated,
+	}));
+	const preferencesSettled = $derived(!sess.isAuthenticated || !preferencesQuery.isPending);
+
+	// The user's timezone wins, then the organization default; otherwise the browser's applies.
+	const displayTimeZone = $derived(
+		preferencesQuery.data?.data.timezone || sess.orgPreferences?.timezone || undefined
+	);
+	$effect.pre(() => {
+		setDisplayTimeZone(displayTimeZone);
+	});
 
 	const pageDescriptor = $derived(shell.pageDescriptor);
 	const documentTitle = $derived.by(() => {
@@ -39,7 +57,7 @@
 
 <ModeWatcher />
 
-{#if sess.ready}
+{#if sess.ready && preferencesSettled}
 	<Sidebar.Provider collapsed={featureRailActive}>
 		{#if sess.isSetup}
 			<AppSidebar variant="sidebar" />
@@ -53,7 +71,10 @@
 				id="scroll-body"
 				class={cn("flex min-h-0 flex-1", featureRailActive ? "overflow-hidden" : "overflow-y-auto")}
 			>
-				{@render children()}
+				<!-- Formatted times are computed once per render, so a timezone change remounts the page. -->
+				{#key displayTimeZone}
+					{@render children()}
+				{/key}
 			</div>
 		</main>
 	</Sidebar.Provider>

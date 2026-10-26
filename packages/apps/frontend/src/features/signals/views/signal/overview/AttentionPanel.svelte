@@ -11,7 +11,7 @@
 	const setAt = $derived(view.attention?.setAt);
 </script>
 
-<section aria-labelledby="attention-title" class="flex flex-col gap-3 rounded-lg border bg-card p-4">
+<section aria-labelledby="attention-title" class="flex flex-col gap-3">
 	<div class="flex items-center gap-2">
 		<h2 id="attention-title" class="region-label">Signal attention</h2>
 		{#if pending}

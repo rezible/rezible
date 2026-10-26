@@ -5,6 +5,7 @@ import {
 	type UserSessionNotificationPreferences,
 	updateUserSessionPreferencesMutation,
 } from "$lib/api";
+import { browserTimeZone } from "$lib/time";
 import { useUserSessionState } from "$lib/user-session.svelte";
 import { createMutation, createQuery, useQueryClient } from "@tanstack/svelte-query";
 import { Context, watch } from "runed";
@@ -56,7 +57,8 @@ export class UserSettingsController {
 				if (!preferences) return;
 				this.name = preferences.profile.name;
 				this.email = preferences.profile.email;
-				this.timezone = preferences.timezone || "UTC";
+				this.timezone =
+					preferences.timezone || this.session.orgPreferences?.timezone || browserTimeZone();
 				this.notifications = { ...defaultNotifications, ...preferences.notifications };
 			}
 		);

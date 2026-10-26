@@ -11,12 +11,11 @@ import {
 import type { StatusPresentation } from "$components/common/status-badge/status";
 import { formatDuration, isValidTime } from "$lib/time";
 import { safeExternalUrl } from "$lib/utils";
-import { situationStageStatus, situationStatus } from "$features/situations/lib/status";
-import type { SituationConclusion } from "$features/situations/lib/model";
+import { situationStageStatus } from "$features/situations/lib/status";
 import { createInvestigationConclusions } from "$features/situations/lib/conclusions.svelte";
 import { incidentServiceImpacts } from "$features/incidents/lib/impacts";
 import { investigationHref } from "$features/situations/lib/routes";
-import { incidentSeverityStatus, retrospectiveStatus } from "$features/incidents/lib/status";
+import { incidentSeverityStatus, milestoneLabels, retrospectiveStatus } from "$features/incidents/lib/status";
 import { failedMitigationIds, orderedMilestones } from "$features/incidents/lib/response";
 import { useIncidentView } from "../controller.svelte";
 
@@ -24,15 +23,6 @@ export type IncidentFact =
 	| { key: string; label: string; kind: "status"; status: StatusPresentation }
 	| { key: string; label: string; kind: "time"; value: string | undefined; fallback: string }
 	| { key: string; label: string; kind: "text"; text: string };
-
-export type IncidentUnderstandingItem = {
-	id: string;
-	title: string;
-	href: string;
-	status: StatusPresentation | undefined;
-	conclusion: SituationConclusion;
-	reportHref: string | undefined;
-};
 
 export type IncidentReviewState =
 	| { kind: "loading" }
@@ -64,17 +54,13 @@ export type LinkedSituationView = {
 	href: string;
 	status: StatusPresentation;
 	closedAt: string | undefined;
+	/** The latest investigation conclusion, when one exists. */
+	conclusion: string | undefined;
+	reportHref: string | undefined;
 };
 
-const UNDERSTANDING_LIMIT = 3;
-
-const milestoneLabels = {
-	impact: "Impact",
-	detection: "Detection",
-	investigation: "Investigation",
-	mitigation: "Mitigation",
-	resolution: "Resolution",
-} satisfies Record<IncidentMilestoneAttributes["kind"], string>;
+// Conclusions are loaded for the first few linked situations only.
+const CONCLUSION_LIMIT = 3;
 
 const milestoneMarkers = {
 	impact: "bg-status-danger-foreground",
@@ -94,12 +80,9 @@ class IncidentOverviewController {
 	facts = $derived(this.attributes ? this.buildFacts(this.attributes) : []);
 	services = $derived(this.attributes ? incidentServiceImpacts(this.attributes) : []);
 
-	private linkedSituations = $derived((this.attributes?.situations ?? []).slice(0, UNDERSTANDING_LIMIT));
-	moreLinkedSituations = $derived(
-		Math.max(0, (this.attributes?.situations.length ?? 0) - UNDERSTANDING_LIMIT)
-	);
+	private conclusionSituations = $derived((this.attributes?.situations ?? []).slice(0, CONCLUSION_LIMIT));
 	private situationQueries = createQueries(() => ({
-		queries: this.linkedSituations.map((situation) => ({
+		queries: this.conclusionSituations.map((situation) => ({
 			...getSituationOptions({ path: { id: situation.id } }),
 			retry: false,
 		})),
@@ -108,7 +91,6 @@ class IncidentOverviewController {
 		this.situationQueries.map((query) => query.data?.data.attributes.investigation?.investigation.id)
 	);
 	private conclusions = createInvestigationConclusions(() => this.investigationIds);
-	understanding = $derived(this.buildUnderstanding());
 
 	milestones = $derived(this.buildMilestones());
 	situationLinks = $derived(this.buildSituationLinks());
@@ -179,36 +161,6 @@ class IncidentOverviewController {
 		return undefined;
 	}
 
-	private buildUnderstanding(): IncidentUnderstandingItem[] {
-		return this.linkedSituations.map((situation, index) => {
-			const situationQuery = this.situationQueries[index];
-			const loaded = situationQuery?.data?.data;
-
-			let conclusion: SituationConclusion = { kind: "loading" };
-			let status: StatusPresentation | undefined;
-			if (loaded) {
-				conclusion = this.conclusions.conclusionFor(this.investigationIds[index]);
-				status = situationStatus(loaded.attributes);
-			} else if (!situationQuery?.isPending) {
-				conclusion = { kind: "none" };
-			}
-
-			let reportHref: string | undefined;
-			if (loaded && conclusion.kind === "text") {
-				reportHref = investigationHref(loaded.attributes.reference);
-			}
-
-			return {
-				id: situation.id,
-				title: situation.title,
-				href: resolve("/situations/[ref]/[[view=situationView]]", { ref: situation.id }),
-				status,
-				conclusion,
-				reportHref,
-			};
-		});
-	}
-
 	private buildMilestones(): IncidentMilestoneView[] {
 		const milestones = this.attributes?.milestones ?? [];
 		const failed = failedMitigationIds(milestones);
@@ -241,13 +193,28 @@ class IncidentOverviewController {
 	}
 
 	private buildSituationLinks(): LinkedSituationView[] {
-		return (this.attributes?.situations ?? []).map((situation) => ({
-			id: situation.id,
-			title: situation.title,
-			href: resolve("/situations/[ref]/[[view=situationView]]", { ref: situation.id }),
-			status: situationStageStatus(situation.stage),
-			closedAt: situation.closedAt,
-		}));
+		return (this.attributes?.situations ?? []).map((situation, index) => {
+			let conclusion: string | undefined;
+			let reportHref: string | undefined;
+			if (index < CONCLUSION_LIMIT) {
+				const situationConclusion = this.conclusions.conclusionFor(this.investigationIds[index]);
+				const situationReference = this.situationQueries[index]?.data?.data.attributes.reference;
+				if (situationConclusion.kind === "text" && situationReference) {
+					conclusion = situationConclusion.text;
+					reportHref = investigationHref(situationReference);
+				}
+			}
+
+			return {
+				id: situation.id,
+				title: situation.title,
+				href: resolve("/situations/[ref]/[[view=situationView]]", { ref: situation.id }),
+				status: situationStageStatus(situation.stage),
+				closedAt: situation.closedAt,
+				conclusion,
+				reportHref,
+			};
+		});
 	}
 
 	private buildReview(): IncidentReviewState {
@@ -286,10 +253,11 @@ class IncidentOverviewController {
 			});
 		}
 
+		const reviewModel = reviewPanelModel(retrospective.attributes);
 		return {
 			kind: "ready",
-			status: reviewPanelModel(retrospective.attributes).status,
-			explanation: reviewPanelModel(retrospective.attributes).explanation,
+			status: reviewModel.status,
+			explanation: reviewModel.explanation,
 			ownerName: retrospective.attributes.owner?.attributes?.name,
 			reportHref,
 			primaryAction: state !== "closed",

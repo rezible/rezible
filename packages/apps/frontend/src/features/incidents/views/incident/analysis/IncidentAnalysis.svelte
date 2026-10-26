@@ -2,6 +2,8 @@
 	import ClosedReviewBanner from "../review/ClosedReviewBanner.svelte";
 	import RetrospectiveEmptyState from "../retrospective-empty-state/RetrospectiveEmptyState.svelte";
 	import { Button } from "$components/ui/button";
+	import * as Tooltip from "$components/ui/tooltip";
+	import SectionHeading from "$components/common/section-heading/SectionHeading.svelte";
 	import ErrorAlert from "$components/layout/error-alert/ErrorAlert.svelte";
 	import { initIncidentAnalysisController } from "./controller.svelte";
 	import { SystemAnalysis } from "$components/system-analysis";
@@ -34,19 +36,40 @@
 			<ErrorAlert error={retroQuery.error} />
 			<Button variant="outline" onclick={() => retroQuery.refetch()}>Retry analysis</Button>
 		{/if}
-		<div class="flex shrink-0 flex-wrap items-center gap-2">
-			<Button variant="outline" size="sm" onclick={controller.systemAnalysis.refreshAll}>
-				Refresh analysis
-			</Button>
-			<Button
-				variant="outline"
-				size="sm"
-				bind:ref={controller.fallbackFocus}
-				onclick={controller.openInspector}
-			>
-				Inventory
-			</Button>
-		</div>
+		<SectionHeading id="analysis-title" title="Analysis" class="shrink-0 px-4 pt-3">
+			{#snippet actions()}
+				<Tooltip.Root>
+					<Tooltip.Trigger onclick={controller.systemAnalysis.refreshAll}>
+						{#snippet child({ props })}
+							<Button {...props} variant="outline" size="sm">Refresh analysis</Button>
+						{/snippet}
+					</Tooltip.Trigger>
+					<Tooltip.Content>Reload the map and timeline entries</Tooltip.Content>
+				</Tooltip.Root>
+				<Tooltip.Root>
+					<Tooltip.Trigger onclick={controller.openInspector}>
+						{#snippet child({ props })}
+							<Button
+								{...props}
+								variant="outline"
+								size="sm"
+								bind:ref={controller.fallbackFocus}
+							>
+								Map inventory
+							</Button>
+						{/snippet}
+					</Tooltip.Trigger>
+					<Tooltip.Content class="max-w-64">
+						List the components and relationships in this analysis, with details of the selection
+					</Tooltip.Content>
+				</Tooltip.Root>
+				{#if controller.entryEditor.canEdit}
+					<Button variant="outline" size="sm" onclick={() => controller.entryEditor.setCreating()}>
+						Add timeline entry
+					</Button>
+				{/if}
+			{/snippet}
+		</SectionHeading>
 
 		<div class="min-h-0 flex-1">
 			<SystemAnalysis>

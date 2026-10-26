@@ -40,6 +40,11 @@ export class IntegrationProviderController {
 	loading = $derived(this.integrations.loading);
 	error = $derived(this.integrations.error);
 
+	// The page shows the provider's own heading once the provider has loaded and has a settings view.
+	showsProvider = $derived(
+		!this.loading && !this.error && this.provider !== undefined && this.ProviderComponent !== undefined
+	);
+
 	constructor(providerNameFn: Getter<string>) {
 		watch(providerNameFn, (name) => {
 			this.providerName = name;

@@ -1,4 +1,5 @@
 import { describe, expect, test } from "bun:test";
+import { formatTime } from "$lib/time";
 import type {
 	KnowledgeGraphEntity,
 	KnowledgeGraphEntityAlias,
@@ -132,7 +133,7 @@ describe("aliases", () => {
 		const [merged, unrecorded] = aliasViews(aliases, now);
 
 		expect(merged.integration).toBe("webhook");
-		expect(merged.lastRecorded).toBe("last recorded 5 minutes ago");
+		expect(merged.lastRecorded).toBe(`last recorded ${formatTime("2026-10-16T11:55:00Z").absolute}`);
 		expect(merged.mergedNote).toContain("Ana");
 		expect(unrecorded.lastRecorded).toBe("nothing recorded");
 		expect(unrecorded.mergedNote).toBeUndefined();

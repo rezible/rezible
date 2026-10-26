@@ -1,0 +1,45 @@
+import type { JourneyPlan } from "../types";
+
+export default {
+	description: "Switch to the dark theme (browser-local only) and revisit the main surfaces.",
+	prerequisites: [
+		"Running dev stack with auth skipped; setup-demo completed. Theme is stored in this journey's fresh browser storage; no settings are saved.",
+	],
+	viewport: {
+		width: 1440,
+		height: 900,
+	},
+	steps: [
+		{ action: "navigate", path: "/settings/user" },
+		{ action: "waitFor", selector: "#user-theme", state: "visible" },
+		{ action: "click", selector: "#user-theme" },
+		{ action: "press", key: "End" },
+		{ action: "press", key: "Enter" },
+		{ action: "waitFor", selector: "html.dark", state: "visible" },
+		{
+			action: "screenshot",
+			name: "01-preferences",
+			caption: "Personal preferences in the dark theme, immediately after choosing Dark.",
+		},
+		{ action: "navigate", path: "/" },
+		{ action: "waitFor", selector: "#home-situations", state: "visible" },
+		{ action: "waitFor", selector: '[aria-label="Loading open situations"]', state: "absent" },
+		{ action: "screenshot", name: "02-home", caption: "Home in the dark theme." },
+		{ action: "navigate", path: "/incidents" },
+		{ action: "waitFor", selector: 'a[href^="/incidents/"]:first-of-type', state: "visible" },
+		{ action: "screenshot", name: "03-incidents", caption: "Incidents list in the dark theme." },
+		{ action: "navigate", path: "/situations" },
+		{ action: "waitFor", selector: 'a[href^="/situations/"]', state: "visible" },
+		{ action: "click", selector: 'a[href^="/situations/"]' },
+		{ action: "waitFor", selector: "#changes-title", state: "visible" },
+		{ action: "screenshot", name: "04-brief", caption: "Situation brief in the dark theme." },
+		{ action: "navigate", path: "/signals" },
+		{ action: "waitFor", selector: 'li:first-child > a[href^="/signals/"]', state: "visible" },
+		{ action: "click", selector: 'li:first-child > a[href^="/signals/"]' },
+		{ action: "waitFor", selector: "#scroll-body h1", state: "visible" },
+		{ action: "screenshot", name: "05-signal", caption: "Signal overview in the dark theme." },
+		{ action: "navigate", path: "/system/catalogue" },
+		{ action: "waitFor", selector: "#scroll-body table, #scroll-body ul", state: "visible" },
+		{ action: "screenshot", name: "06-catalogue", caption: "System catalogue in the dark theme." },
+	],
+} satisfies JourneyPlan;

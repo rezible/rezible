@@ -113,6 +113,7 @@ func (s *BackendSuite) TestInvestigation() {
 		Selection: "completed",
 	}
 	reportResponse := getReport.Call(requestCtx, reportRequest)
+	s.Require().NotNil(reportResponse.Body.Data)
 	report := reportResponse.Body.Data.Attributes
 	s.Equal(investigationReportText, report.Text)
 	s.Equal(firstTurn.ID, report.AgentTurnId)

@@ -3326,7 +3326,9 @@ components:
           readOnly: true
           type: string
         data:
-          $ref: "#/components/schemas/InvestigationReport"
+          anyOf:
+            - $ref: "#/components/schemas/InvestigationReport"
+            - type: "null"
       required:
         - data
       type: object

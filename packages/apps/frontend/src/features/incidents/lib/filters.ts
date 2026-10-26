@@ -18,6 +18,17 @@ export const incidentFilterSchema = z.object({
 
 export type IncidentFilters = z.infer<typeof incidentFilterSchema>;
 
+const defaultIncidentFilters = incidentFilterSchema.parse({});
+
+/** True when any filter differs from its default. */
+export function incidentFiltersChanged(filters: IncidentFilters) {
+	return (
+		filters.search !== defaultIncidentFilters.search ||
+		filters.status !== defaultIncidentFilters.status ||
+		filters.severityId !== defaultIncidentFilters.severityId
+	);
+}
+
 export const incidentQueryFilters = ({
 	search,
 	status,

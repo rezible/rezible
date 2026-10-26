@@ -49,11 +49,12 @@ func (h *investigationsHandler) GetInvestigationReport(ctx context.Context, req 
 	report, readErr := h.outputs.GetInvestigationReport(ctx, params)
 	if readErr != nil {
 		return nil, oapi.Error(ctx, "get investigation report", readErr)
-	} else if report == nil {
-		return nil, oapi.Error(ctx, "get investigation report", errs.ErrNotFound)
 	}
 	var resp oapi.GetInvestigationReportResponse
-	resp.Body.Data = oapi.InvestigationReportFromEnt(report)
+	if report != nil {
+		data := oapi.InvestigationReportFromEnt(report)
+		resp.Body.Data = &data
+	}
 	return &resp, nil
 }
 

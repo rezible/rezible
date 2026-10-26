@@ -23,8 +23,11 @@
 	] as const;
 
 	registerPageDescriptor(() => ({
-		title: "User",
-		parents: [{ label: "Settings", path: resolve("/settings") }],
+		title: "Preferences",
+		parents: [
+			{ label: "Settings", path: resolve("/settings") },
+			{ label: "Personal", path: resolve("/settings/user") },
+		],
 	}));
 </script>
 

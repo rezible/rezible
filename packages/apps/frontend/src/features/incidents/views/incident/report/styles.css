@@ -36,3 +36,12 @@ span.collaboration-cursor__caret {
 	background-color: var(--accent);
 	/* @apply bg-accent-400 border text-accent-content; */
 }
+
+/* prompt shown in an empty report section */
+.ProseMirror p.is-editor-empty:first-child::before {
+	content: attr(data-placeholder);
+	float: left;
+	height: 0;
+	pointer-events: none;
+	color: var(--muted-foreground);
+}

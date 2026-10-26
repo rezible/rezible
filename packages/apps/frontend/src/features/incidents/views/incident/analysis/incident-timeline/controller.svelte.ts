@@ -13,6 +13,7 @@ import { createQuery } from "@tanstack/svelte-query";
 import { Context, watch } from "runed";
 
 import { listIncidentMilestonesOptions, type Incident, type IncidentMilestone } from "$lib/api";
+import { milestoneLabels, milestonePhaseTones } from "$features/incidents/lib/status";
 import { useIncidentView } from "$features/incidents/views/incident";
 import { useIncidentAnalysis } from "../controller.svelte";
 
@@ -92,33 +93,20 @@ const getMilestoneIds = (id: string) => {
 	return [id + "_bg", id + "_box"];
 };
 
-const getBackgroundColorForMilestoneKind = (kind: IncidentMilestone["attributes"]["kind"]) => {
-	switch (kind) {
-		case "impact":
-			return "background-color: #f6ad55;";
-		case "detection":
-			return "background-color:rgb(74, 163, 144);";
-		case "investigation":
-			return "background-color:rgb(107, 39, 149);";
-		case "mitigation":
-			return "background-color:rgb(136, 186, 61);";
-		case "resolution":
-			return "background-color: #48bb78;";
-	}
-};
-
+// Each band is labelled and coloured by the phase its milestone starts.
 const createMilestoneTimelineItems = (el: TimelineMilestoneElement, ms: IncidentMilestone, endTime: Date) => {
 	const start = new Date(ms.attributes.timestamp);
-
-	const bgStyles = "opacity: 0.15;" + getBackgroundColorForMilestoneKind(ms.attributes.kind);
+	const kind = ms.attributes.kind;
+	const label = milestoneLabels[kind] ?? "Milestone";
 
 	const [bgId, boxId] = getMilestoneIds(ms.id);
 
 	const bgItem: TimelineItem = {
 		id: bgId,
 		type: "background",
-		content: "",
-		style: bgStyles,
+		content: label,
+		title: label,
+		className: `milestone-band milestone-band-${milestonePhaseTones[kind] ?? "neutral"}`,
 		start,
 		end: endTime,
 	};
@@ -127,7 +115,7 @@ const createMilestoneTimelineItems = (el: TimelineMilestoneElement, ms: Incident
 		id: boxId,
 		type: "point",
 		group: MilestonesGroup,
-		title: ms.attributes.kind,
+		title: label,
 		content: el.ref,
 		align: "left",
 		start,
@@ -144,7 +132,7 @@ const createIncidentWindowTimelineItems = (r: TimelineRange, closed: boolean) =>
 		end: r.end,
 		type: "background",
 		content: "",
-		style: "background-color:rgba(74, 163, 144, 0.1);",
+		className: "incident-window",
 	};
 	const windowStartPoint: TimelineItem = {
 		id: `${windowKey}-start`,
@@ -260,12 +248,14 @@ class TimelineMilestoneElement {
 	props = $state<TimelineMilestoneComponentProps>({ selected: false });
 	ref = document.createElement("div");
 	component: ReturnType<typeof mount> | undefined;
+	/** Resolves once the label is rendered, so the timeline can measure it. */
+	mounted: Promise<void>;
 
 	constructor(milestone: IncidentMilestone, onSelect: TimelineMilestoneComponentProps["onSelect"]) {
 		this.props.onSelect = onSelect;
 		this.ref.setAttribute("milestone-id", $state.snapshot(milestone.id));
 		this.props.milestone = milestone;
-		tick().then(() => {
+		this.mounted = tick().then(() => {
 			this.component = mount(IncidentTimelineMilestoneItemContent, {
 				target: this.ref,
 				props: this.props,
@@ -351,6 +341,14 @@ class TimelineMilestonesState {
 		const endDate = nextMs ? new Date(nextMs.attributes.timestamp) : this.incidentEnd;
 		const msItems = createMilestoneTimelineItems(el, ms, endDate);
 		this.items.update(msItems);
+
+		// The timeline measures labels when an item updates, and stacks overlapping labels onto
+		// separate rows. Update again once the label has rendered so it is measured at full width.
+		void el.mounted.then(() => {
+			if (this.items.get(msItems[1].id)) {
+				this.items.update(msItems[1]);
+			}
+		});
 	}
 
 	setSelected(id: string, selected: boolean) {
@@ -452,6 +450,7 @@ export class IncidentTimelineController {
 				);
 				this.applyEntrySelection();
 			},
+			stack: true,
 			zoomMin: 1000 * 60,
 			zoomMax: 1000 * 60 * 60 * 24 * 7,
 			showCurrentTime: false,

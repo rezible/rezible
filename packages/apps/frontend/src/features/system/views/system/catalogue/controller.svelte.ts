@@ -156,8 +156,14 @@ export class CatalogueController {
 
 	entitiesQuery = $derived(this.entities.query);
 
+	filtered = $derived(this.committedSearch !== "");
+
+	clearFilter = () => {
+		this.search = "";
+	};
+
 	emptyEntitiesMessage = $derived.by(() => {
-		if (this.committedSearch) {
+		if (this.filtered) {
 			return "Nothing matches the filter.";
 		}
 		if (this.committed.tab === "repositories") {
@@ -165,6 +171,7 @@ export class CatalogueController {
 		}
 		return "No services yet.";
 	});
+
 	private pageEntityIds = $derived((this.entitiesQuery.data?.data ?? []).map((entity) => entity.id));
 
 	// One request finds the pending proposals naming any entity on the page.

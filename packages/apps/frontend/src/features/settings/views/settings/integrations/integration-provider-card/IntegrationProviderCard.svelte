@@ -59,7 +59,7 @@
 		{/if}
 		<Button
 			size="sm"
-			variant={installed ? "outline" : "default"}
+			variant="outline"
 			{href}
 			aria-label="{actionLabel} {provider.displayName}"
 			class="after:absolute after:inset-0"

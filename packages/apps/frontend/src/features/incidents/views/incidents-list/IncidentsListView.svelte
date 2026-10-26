@@ -23,7 +23,9 @@
 			onchange={controller.setFilters}
 			severities={controller.metadataQuery.data?.data.severities}
 		/>
-		<Button variant="ghost" size="sm" onclick={controller.resetFilters}>Reset filters</Button>
+		{#if controller.filtersChanged}
+			<Button variant="ghost" size="sm" onclick={controller.resetFilters}>Reset filters</Button>
+		{/if}
 	</div>
 	<LoadingQueryWrapper query={controller.query} feedbackOnly />
 	<PaginatedQueryListBox {...controller.paginatedIncidentsQuery}>

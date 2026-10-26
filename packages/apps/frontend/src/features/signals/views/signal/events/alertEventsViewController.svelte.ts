@@ -1,34 +1,19 @@
-import { useAlertViewController } from "$features/signals/views/signal";
-import { listEventsOptions, type ListEventsData, type EventAttributes } from "$lib/api";
+import { listEventsOptions } from "$lib/api";
 import { createPaginatedQuery } from "$lib/api/queryPaginator.svelte";
-import { getLocalTimeZone, now } from "@internationalized/date";
-
-export type EventKind = EventAttributes["kind"];
-
-const defaultDateRange = () => {
-	return {
-		from: now(getLocalTimeZone()).subtract({ days: 7 }).toDate(),
-		to: now(getLocalTimeZone()).toDate(),
-		periodType: "day",
-	};
-};
+import { eventRowPresentation } from "$features/signals/lib/events";
 
 export class AlertEventsViewController {
-	view = useAlertViewController();
-
-	eventKind = $state<EventKind>();
-	dateRange = $state(defaultDateRange());
-
-	queryParams = $derived<ListEventsData["query"]>({
-		// alertId: this.viewState.alertId,
-	});
 	paginatedEventsQuery = createPaginatedQuery({
-		queryOptions: (pagination) =>
-			listEventsOptions({
-				query: {
-					...this.queryParams,
-					...pagination,
-				},
-			}),
+		queryOptions: (pagination) => listEventsOptions({ query: { ...pagination } }),
+	});
+
+	query = $derived(this.paginatedEventsQuery.query);
+
+	rows = $derived.by(() => {
+		const events = this.query.data?.data;
+		if (!events) {
+			return undefined;
+		}
+		return events.map(eventRowPresentation);
 	});
 }

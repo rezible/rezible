@@ -26,6 +26,7 @@ import { createMutation, createQuery, useQueryClient } from "@tanstack/svelte-qu
 import { Context, watch } from "runed";
 import { toast } from "svelte-sonner";
 import { SettingsDraft, SettingsDraftList } from "$features/settings/lib/settings-draft.svelte";
+import { sortSeveritiesByRank } from "$features/settings/lib/incidentSeverities";
 import { SvelteMap } from "svelte/reactivity";
 
 export class IncidentSettingsController {
@@ -57,6 +58,15 @@ export class IncidentSettingsController {
 
 	newSeverity = new SettingsDraft({ name: "", rank: 1, color: "#ef4444", description: "" });
 	newType = new SettingsDraft("");
+
+	// Saved values order the list, so a row does not move while its rank is being edited.
+	severityRows = $derived(sortSeveritiesByRank(this.severities.savedItems));
+
+	// One severity and one type row are open for editing at a time. Adding opens its own form.
+	editingSeverityId = $state<string>();
+	addingSeverity = $state(false);
+	editingTypeId = $state<string>();
+	addingType = $state(false);
 	newRole = new SettingsDraft<{ name: string; maxAssignees?: number }>({ name: "" });
 	newRoleLimitError = $derived(this.roleLimitError(this.newRole.value.maxAssignees));
 	newTag = new SettingsDraft("");
@@ -129,6 +139,7 @@ export class IncidentSettingsController {
 	private createSeverityMut = createMutation(() => ({
 		...createIncidentSeverityMutation(),
 		...this.mutationOptions(this.severities, () => {
+			this.addingSeverity = false;
 			this.newSeverity.accept({
 				name: "",
 				rank: this.newSeverity.value.rank + 1,
@@ -139,17 +150,22 @@ export class IncidentSettingsController {
 	}));
 	private updateSeverityMut = createMutation(() => ({
 		...updateIncidentSeverityMutation(),
-		...this.mutationOptions(this.severities),
+		...this.mutationOptions(this.severities, () => {
+			this.editingSeverityId = undefined;
+		}),
 	}));
 	private createTypeMut = createMutation(() => ({
 		...createIncidentTypeMutation(),
 		...this.mutationOptions(this.types, () => {
+			this.addingType = false;
 			this.newType.accept("");
 		}),
 	}));
 	private updateTypeMut = createMutation(() => ({
 		...updateIncidentTypeMutation(),
-		...this.mutationOptions(this.types),
+		...this.mutationOptions(this.types, () => {
+			this.editingTypeId = undefined;
+		}),
 	}));
 	private createRoleMut = createMutation(() => ({
 		...createIncidentRoleMutation(),
@@ -207,6 +223,27 @@ export class IncidentSettingsController {
 		});
 	}
 
+	editSeverity = (id: string) => {
+		this.closeSeverityEditor();
+		this.editingSeverityId = id;
+	};
+
+	closeSeverityEditor = () => {
+		if (this.editingSeverityId) {
+			this.severities.get(this.editingSeverityId).cancel();
+		}
+		this.editingSeverityId = undefined;
+	};
+
+	openNewSeverity = () => {
+		this.addingSeverity = true;
+	};
+
+	closeNewSeverity = () => {
+		this.newSeverity.cancel();
+		this.addingSeverity = false;
+	};
+
 	createSeverity() {
 		if (this.saving || !this.canEdit || !this.newSeverity.value.name.trim()) return;
 		this.createSeverityMut.mutate({
@@ -221,6 +258,27 @@ export class IncidentSettingsController {
 			body: { attributes: { ...item.attributes } },
 		});
 	}
+
+	editType = (id: string) => {
+		this.closeTypeEditor();
+		this.editingTypeId = id;
+	};
+
+	closeTypeEditor = () => {
+		if (this.editingTypeId) {
+			this.types.get(this.editingTypeId).cancel();
+		}
+		this.editingTypeId = undefined;
+	};
+
+	openNewType = () => {
+		this.addingType = true;
+	};
+
+	closeNewType = () => {
+		this.newType.cancel();
+		this.addingType = false;
+	};
 
 	createType() {
 		if (this.saving || !this.canEdit || !this.newType.value.trim()) return;

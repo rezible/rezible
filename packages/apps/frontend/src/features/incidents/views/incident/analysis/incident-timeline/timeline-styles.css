@@ -58,3 +58,44 @@
 .vis-foreground .vis-group {
 	border-bottom: none;
 }
+
+/* incident open-to-resolved window */
+.vis-item.vis-background.incident-window {
+	background-color: color-mix(in srgb, var(--foreground) 4%, transparent);
+}
+
+/* response phase bands, labelled at the top and truncated to the band width */
+.vis-item.vis-background.milestone-band .vis-item-content {
+	max-width: 100%;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	padding: 4px 6px;
+	font-size: 12px;
+	line-height: 16px;
+	font-weight: 500;
+}
+
+.vis-item.vis-background.milestone-band-danger {
+	background-color: color-mix(in srgb, var(--status-danger) 70%, transparent);
+	color: var(--status-danger-foreground);
+}
+
+.vis-item.vis-background.milestone-band-warning {
+	background-color: color-mix(in srgb, var(--status-warning) 70%, transparent);
+	color: var(--status-warning-foreground);
+}
+
+.vis-item.vis-background.milestone-band-info {
+	background-color: color-mix(in srgb, var(--status-info) 70%, transparent);
+	color: var(--status-info-foreground);
+}
+
+.vis-item.vis-background.milestone-band-neutral {
+	background-color: color-mix(in srgb, var(--status-neutral) 70%, transparent);
+	color: var(--status-neutral-foreground);
+}
+
+.vis-item.vis-background.milestone-band-success {
+	background-color: color-mix(in srgb, var(--status-success) 70%, transparent);
+	color: var(--status-success-foreground);
+}

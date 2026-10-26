@@ -339,7 +339,14 @@ type GetInvestigationReportRequest struct {
 	Id        uuid.UUID `path:"id"`
 	Selection string    `query:"selection" enum:"latest,completed" default:"latest" required:"false"`
 }
-type GetInvestigationReportResponse ItemResponse[InvestigationReport]
+type GetInvestigationReportResponse struct {
+	Body GetInvestigationReportResponseBody
+}
+
+// GetInvestigationReportResponseBody holds a null report when none has been published for the selection.
+type GetInvestigationReportResponseBody struct {
+	Data *InvestigationReport `json:"data"`
+}
 
 var ListInvestigationFindings = openapi.Operation{
 	OperationID: "list-investigation-findings",
@@ -464,6 +471,14 @@ func (InvestigationAttributes) TransformSchema(_ huma.Registry, schema *huma.Sch
 func (InvestigationUserInputAttributes) TransformSchema(_ huma.Registry, schema *huma.Schema) *huma.Schema {
 	schema.Properties["agentTurn"] = &huma.Schema{AnyOf: []*huma.Schema{
 		schema.Properties["agentTurn"],
+		{Type: "null"},
+	}}
+	return schema
+}
+
+func (GetInvestigationReportResponseBody) TransformSchema(_ huma.Registry, schema *huma.Schema) *huma.Schema {
+	schema.Properties["data"] = &huma.Schema{AnyOf: []*huma.Schema{
+		schema.Properties["data"],
 		{Type: "null"},
 	}}
 	return schema

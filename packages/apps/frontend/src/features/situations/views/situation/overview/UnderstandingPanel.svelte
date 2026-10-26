@@ -7,6 +7,7 @@
 	import { followUpPendingStatus, provisionalStatus } from "$features/situations/lib/status";
 	import type { NextCheckView } from "$features/situations/lib/brief";
 	import RiArrowRightLine from "remixicon-svelte/icons/arrow-right-line";
+	import InvestigationRetry from "../InvestigationRetry.svelte";
 	import InvestigationRunNotice from "../InvestigationRunNotice.svelte";
 	import { useSituationOverviewController } from "./controller.svelte";
 
@@ -24,11 +25,14 @@
 	</div>
 {/snippet}
 
-{#snippet investigationLink(href: string)}
-	<Button variant="link" size="inline" {href}>
-		View investigation
-		<RiArrowRightLine aria-hidden="true" />
-	</Button>
+{#snippet investigationActions(href: string)}
+	<div class="flex flex-wrap items-start gap-3">
+		<Button size="sm" {href}>
+			View investigation
+			<RiArrowRightLine aria-hidden="true" />
+		</Button>
+		<InvestigationRetry />
+	</div>
 {/snippet}
 
 {#snippet raiseButton(label: string)}
@@ -112,7 +116,7 @@
 		{@render retryLine("The investigation could not be loaded.", controller.retryInvestigation)}
 	{:else}
 		{@const report = understanding.report}
-		<InvestigationRunNotice class="border-0 bg-muted/50 p-3" />
+		<InvestigationRunNotice class="border-0 bg-transparent p-0" />
 		{#if report.kind === "published"}
 			{#if report.summary}
 				<p class="max-w-[65ch] text-lg leading-7 font-medium">{report.summary}</p>
@@ -146,17 +150,18 @@
 				{#if understanding.pendingFollowUp}
 					<StatusBadge status={followUpPendingStatus} variant="inline" />
 				{/if}
+				<InvestigationRetry />
 			</div>
 		{:else if report.kind === "loading"}
 			{@render skeletonLines()}
 		{:else if report.kind === "unavailable"}
 			<p class="text-sm text-muted-foreground">The latest report is unavailable.</p>
-			<div>{@render investigationLink(understanding.href)}</div>
+			{@render investigationActions(understanding.href)}
 		{:else if report.kind === "error"}
 			{@render retryLine("The latest report could not be loaded.", controller.retryReport)}
 		{:else}
 			<p class="text-sm text-muted-foreground">{understanding.noReportMessage}</p>
-			<div>{@render investigationLink(understanding.href)}</div>
+			{@render investigationActions(understanding.href)}
 		{/if}
 	{/if}
 </section>

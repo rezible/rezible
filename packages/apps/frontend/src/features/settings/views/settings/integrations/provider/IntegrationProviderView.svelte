@@ -21,6 +21,7 @@
 
 	registerPageDescriptor(() => ({
 		title: ctrl.provider?.displayName ?? "Integration",
+		contentHeading: ctrl.showsProvider,
 		parents: [
 			{ label: "Settings", path: resolve("/settings") },
 			{ label: "Organization", path: resolve("/settings/organization") },

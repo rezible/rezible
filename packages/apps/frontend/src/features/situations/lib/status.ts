@@ -115,20 +115,45 @@ export function activeHoldUntil(attributes: SituationAttributes, now: number): s
 	return attributes.holdUntil;
 }
 
-export type SituationStateTime = { label: string; at: string; reason?: string };
+export type SituationTime = { key: string; label: string; at: string; reason?: string };
 
-/** The one time that describes the situation's current state, with the reason for a mute or close. */
-export function situationStateTime(attributes: SituationAttributes): SituationStateTime {
+export const FIRST_SIGNAL_LABEL = "First signal";
+export const RAISED_LABEL = "Raised";
+export const WATCHING_SINCE_LABEL = "Watching since";
+
+/**
+ * The times a situation summary shows, in the brief's order: its first signal, then the one time that
+ * describes its current state, with the reason for a mute or close.
+ */
+export function situationSummaryTimes(attributes: SituationAttributes): SituationTime[] {
+	const firstSignal: SituationTime = {
+		key: "first-signal",
+		label: FIRST_SIGNAL_LABEL,
+		at: attributes.openedAt,
+	};
+
+	let state: SituationTime;
 	if (attributes.closedAt) {
-		return { label: "Closed", at: attributes.closedAt, reason: closeReasonLabel(attributes.closeReason) };
+		state = {
+			key: "closed",
+			label: "Closed",
+			at: attributes.closedAt,
+			reason: closeReasonLabel(attributes.closeReason),
+		};
+	} else if (attributes.mutedAt) {
+		state = {
+			key: "muted",
+			label: "Muted",
+			at: attributes.mutedAt,
+			reason: muteReasonLabel(attributes.muteReason),
+		};
+	} else if (attributes.raisedAt) {
+		state = { key: "raised", label: RAISED_LABEL, at: attributes.raisedAt };
+	} else {
+		state = { key: "watching", label: WATCHING_SINCE_LABEL, at: attributes.createdAt };
 	}
-	if (attributes.mutedAt) {
-		return { label: "Muted", at: attributes.mutedAt, reason: muteReasonLabel(attributes.muteReason) };
-	}
-	if (attributes.raisedAt) {
-		return { label: "Raised", at: attributes.raisedAt };
-	}
-	return { label: "Watching since", at: attributes.createdAt };
+
+	return [firstSignal, state];
 }
 
 export function investigationRunStatus(attributes?: InvestigationAttributes): StatusPresentation {
@@ -147,14 +172,14 @@ export function investigationRunStatus(attributes?: InvestigationAttributes): St
 				label: "Failed",
 				tone: "danger",
 				icon: RiErrorWarningLine,
-				description: "The investigation turn could not finish.",
+				description: "The investigation could not finish.",
 			};
 		case "aborted":
 			return {
 				label: "Stopped",
 				tone: "neutral",
 				icon: RiStopCircleLine,
-				description: "The investigation turn was stopped.",
+				description: "The investigation was stopped.",
 			};
 		default:
 			return { label: "Not started", tone: "neutral", icon: RiTimeLine };
@@ -166,6 +191,8 @@ export type InvestigationUpdateNotice = {
 	message: string;
 	/** Shown after the message, as a time. */
 	at?: string;
+	/** When the last update failed, shown under the message. */
+	failedAt?: string;
 	/** Pending evidence changes, shown under a failed or stopped headline. */
 	pendingMessage?: string;
 	offerUpdate: boolean;
@@ -214,19 +241,16 @@ export function investigationUpdateNotice(
 	const offerUpdate = pendingMessage !== undefined;
 	const latestTurn = attributes.latestTurn;
 	if (latestTurn?.status === "failed") {
-		if (latestTurn.finishedAt) {
-			return {
-				status: run,
-				message: "The last update failed at",
-				at: latestTurn.finishedAt,
-				pendingMessage,
-				offerUpdate,
-			};
-		}
-		return { status: run, message: "The last update failed.", pendingMessage, offerUpdate };
+		return {
+			status: run,
+			message: "The investigation could not finish.",
+			failedAt: latestTurn.finishedAt,
+			pendingMessage,
+			offerUpdate,
+		};
 	}
 	if (latestTurn?.status === "aborted") {
-		return { status: run, message: "The last update was stopped.", pendingMessage, offerUpdate };
+		return { status: run, message: "The investigation was stopped.", pendingMessage, offerUpdate };
 	}
 
 	if (pendingMessage) {

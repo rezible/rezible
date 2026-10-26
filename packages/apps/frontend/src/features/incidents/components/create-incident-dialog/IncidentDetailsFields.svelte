@@ -22,6 +22,9 @@
 	};
 	const { form, metadata, titleError, isAdmin, idPrefix }: Props = $props();
 
+	// An empty value shows as a muted placeholder in the select trigger.
+	const unsetLabel = "Not set";
+
 	const severities = $derived(
 		(metadata?.severities ?? [])
 			.filter((severity) => !severity.attributes.archived)
@@ -33,9 +36,9 @@
 	const hasMoreDetails = $derived(tags.length > 0 || fields.length > 0);
 
 	const severityLabel = $derived(
-		severities.find((severity) => severity.id === form.severityId)?.attributes.name ?? "None"
+		severities.find((severity) => severity.id === form.severityId)?.attributes.name ?? unsetLabel
 	);
-	const typeLabel = $derived(types.find((type) => type.id === form.typeId)?.attributes.name ?? "None");
+	const typeLabel = $derived(types.find((type) => type.id === form.typeId)?.attributes.name ?? unsetLabel);
 
 	const toggleTag = (tagId: string) => {
 		if (form.tagIds.includes(tagId)) {
@@ -58,7 +61,7 @@
 	const fieldSelectionLabel = (field: IncidentField) => {
 		const selectedId = form.fieldSelections[field.id];
 		const option = field.attributes.options.find((candidate) => candidate.id === selectedId);
-		return option?.attributes.value ?? "None";
+		return option?.attributes.value ?? unsetLabel;
 	};
 </script>
 
@@ -105,7 +108,7 @@
 				<Select.Root type="single" bind:value={form.severityId}>
 					<Select.Trigger id="{idPrefix}-severity" class="w-full">{severityLabel}</Select.Trigger>
 					<Select.Content>
-						<Select.Item value="" label="None">None</Select.Item>
+						<Select.Item value="" label={unsetLabel}>{unsetLabel}</Select.Item>
 						{#each severities as severity (severity.id)}
 							<Select.Item value={severity.id} label={severity.attributes.name}>
 								<span
@@ -129,7 +132,7 @@
 				<Select.Root type="single" bind:value={form.typeId}>
 					<Select.Trigger id="{idPrefix}-type" class="w-full">{typeLabel}</Select.Trigger>
 					<Select.Content>
-						<Select.Item value="" label="None">None</Select.Item>
+						<Select.Item value="" label={unsetLabel}>{unsetLabel}</Select.Item>
 						{#each types as type (type.id)}
 							<Select.Item value={type.id} label={type.attributes.name}>
 								{type.attributes.name}
@@ -183,7 +186,7 @@
 										{fieldSelectionLabel(field)}
 									</Select.Trigger>
 									<Select.Content>
-										<Select.Item value="" label="None">None</Select.Item>
+										<Select.Item value="" label={unsetLabel}>{unsetLabel}</Select.Item>
 										{#each field.attributes.options as option (option.id)}
 											<Select.Item value={option.id} label={option.attributes.value}>
 												{option.attributes.value}

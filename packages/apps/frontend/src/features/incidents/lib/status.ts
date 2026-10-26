@@ -2,9 +2,10 @@ import { reviewPanelModel } from "./review";
 import type {
 	ExpandableIncidentSeverityAttributes,
 	IncidentAttributes,
+	IncidentMilestoneAttributes,
 	RetrospectiveAttributes,
 } from "$lib/api";
-import type { StatusPresentation } from "$components/common/status-badge/status";
+import type { StatusPresentation, StatusTone } from "$components/common/status-badge/status";
 
 import RiAlarmWarningLine from "remixicon-svelte/icons/alarm-warning-line";
 import RiCheckboxCircleLine from "remixicon-svelte/icons/checkbox-circle-line";
@@ -12,6 +13,23 @@ import RiErrorWarningLine from "remixicon-svelte/icons/error-warning-line";
 import RiFireLine from "remixicon-svelte/icons/fire-line";
 import RiInformationLine from "remixicon-svelte/icons/information-line";
 import RiShieldCheckLine from "remixicon-svelte/icons/shield-check-line";
+
+export const milestoneLabels = {
+	impact: "Impact",
+	detection: "Detection",
+	investigation: "Investigation",
+	mitigation: "Mitigation",
+	resolution: "Resolution",
+} satisfies Record<IncidentMilestoneAttributes["kind"], string>;
+
+/** The status tone of the response phase that starts at each milestone kind. */
+export const milestonePhaseTones = {
+	impact: "danger",
+	detection: "warning",
+	investigation: "info",
+	mitigation: "neutral",
+	resolution: "success",
+} satisfies Record<IncidentMilestoneAttributes["kind"], StatusTone>;
 
 const responseDescription = "Incident response state, from its milestones";
 const reviewDescription = "Rezible review stage";

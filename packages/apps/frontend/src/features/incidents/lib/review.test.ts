@@ -1,5 +1,6 @@
 import { expect, test } from "bun:test";
 import type { RetrospectiveAttributes } from "$lib/api";
+import { formatTime } from "$lib/time";
 import { closedReviewLine, reviewPanelModel } from "./review";
 
 const retrospective: RetrospectiveAttributes = {
@@ -58,6 +59,12 @@ test("closed reviews have no actions and preserve the closure outcome", () => {
 	}
 });
 
+test("a draft without an owner asks someone to take ownership", () => {
+	const draft = { ...retrospective, state: "draft" as const };
+	expect(reviewPanelModel({ ...draft, owner: undefined }).explanation).toContain("Take ownership");
+	expect(reviewPanelModel(draft).explanation).not.toContain("Take ownership");
+});
+
 test("the closed banner line names the closer, time and outcome", () => {
 	const closed: RetrospectiveAttributes = {
 		...retrospective,
@@ -69,13 +76,14 @@ test("the closed banner line names the closer, time and outcome", () => {
 		closedAt: new Date(2026, 9, 6, 14, 32).toISOString(),
 		skipReason: "Duplicate of INC-12",
 	};
+	const time = formatTime(closed.closedAt).absolute;
 	expect(closedReviewLine({ ...closed, outcome: "reviewed" })).toBe(
-		"Closed by Ava Patel after review · Tue 6 Oct, 14:32"
+		`Closed by Ava Patel after review · ${time}`
 	);
 	expect(closedReviewLine({ ...closed, outcome: "closed_without_review" })).toBe(
-		"Closed without review by Ava Patel · Tue 6 Oct, 14:32"
+		`Closed without review by Ava Patel · ${time}`
 	);
 	expect(closedReviewLine({ ...closed, outcome: "skipped" })).toBe(
-		"Skipped by Ava Patel · Tue 6 Oct, 14:32: Duplicate of INC-12"
+		`Skipped by Ava Patel · ${time}: Duplicate of INC-12`
 	);
 });

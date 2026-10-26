@@ -2,6 +2,7 @@
 	import LoadingQueryWrapper from "$components/layout/loading-query-wrapper/LoadingQueryWrapper.svelte";
 	import ListSkeleton from "$components/layout/list-skeleton/ListSkeleton.svelte";
 	import PaginatedQueryListBox from "$components/layout/paginated-query-listbox/PaginatedQueryListBox.svelte";
+	import { Button } from "$components/ui/button";
 	import { Input } from "$components/ui/input";
 	import { Label } from "$components/ui/label";
 	import { Switch } from "$components/ui/switch";
@@ -100,32 +101,41 @@
 				<Tabs.Trigger value="repositories">Repositories</Tabs.Trigger>
 			</Tabs.List>
 			<div class="grid w-full max-w-xs gap-1">
-				<Label for="catalogue-search" class="sr-only">Filter by name</Label>
-				<Input id="catalogue-search" bind:value={controller.search} placeholder="Filter by name" />
+				<Label for="catalogue-search" class="text-xs text-muted-foreground">Filter by name</Label>
+				<Input id="catalogue-search" type="search" bind:value={controller.search} />
 			</div>
 		</div>
 
 		<Tabs.Content value={controller.tab} class="flex min-h-0 flex-1 flex-col">
-			<PaginatedQueryListBox {...controller.entities}>
-				<LoadingQueryWrapper
-					query={controller.entitiesQuery}
-					isEmpty={(entities) => entities.length === 0}
-				>
-					{#snippet loading()}
-						<ListSkeleton label="Loading the catalogue" />
-					{/snippet}
-					{#snippet empty()}
-						<p class="p-6 text-sm text-muted-foreground">{controller.emptyEntitiesMessage}</p>
-					{/snippet}
-					{#snippet view()}
+			<LoadingQueryWrapper
+				query={controller.entitiesQuery}
+				isEmpty={(entities) => entities.length === 0}
+			>
+				{#snippet loading()}
+					<ListSkeleton label="Loading the catalogue" />
+				{/snippet}
+				{#snippet empty()}
+					<div
+						class="flex flex-wrap items-center justify-between gap-2 rounded-lg border bg-card px-4 py-3 text-sm text-muted-foreground"
+					>
+						<p>{controller.emptyEntitiesMessage}</p>
+						{#if controller.filtered}
+							<Button variant="outline" size="sm" onclick={controller.clearFilter}>
+								Clear filter
+							</Button>
+						{/if}
+					</div>
+				{/snippet}
+				{#snippet view()}
+					<PaginatedQueryListBox {...controller.entities}>
 						<ul class="divide-y rounded-lg border bg-card">
 							{#each controller.entityRows as entity (entity.id)}
 								<EntityRow {entity} />
 							{/each}
 						</ul>
-					{/snippet}
-				</LoadingQueryWrapper>
-			</PaginatedQueryListBox>
+					</PaginatedQueryListBox>
+				{/snippet}
+			</LoadingQueryWrapper>
 		</Tabs.Content>
 	</Tabs.Root>
 </section>

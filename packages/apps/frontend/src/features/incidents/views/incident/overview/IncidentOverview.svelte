@@ -15,7 +15,7 @@
 	import RiServerLine from "remixicon-svelte/icons/server-line";
 	import SituationCombobox from "$features/situations/components/situation-combobox/SituationCombobox.svelte";
 	import { useIncidentResponse } from "../response.svelte";
-	import { initIncidentOverviewController } from "./controller.svelte";
+	import { initIncidentOverviewController, type LinkedSituationView } from "./controller.svelte";
 	import IncidentOverviewContext from "./IncidentOverviewContext.svelte";
 
 	const overview = initIncidentOverviewController();
@@ -24,6 +24,35 @@
 
 {#snippet context()}
 	<IncidentOverviewContext />
+{/snippet}
+
+{#snippet unlinkSituation(situation: LinkedSituationView)}
+	<Popover.Root>
+		<Popover.Trigger>
+			{#snippet child({ props })}
+				<Button
+					{...props}
+					variant="ghost"
+					size="icon-sm"
+					class="ml-auto"
+					aria-label="Unlink {situation.title}"
+				>
+					<RiCloseLine />
+				</Button>
+			{/snippet}
+		</Popover.Trigger>
+		<Popover.Content class="flex w-64 flex-col gap-3" align="end">
+			<p class="text-sm">Unlink this situation? It will be re-evaluated and may close.</p>
+			<Button
+				size="sm"
+				variant="outline"
+				class="self-end"
+				onclick={() => response.unlinkSituation(situation.id)}
+			>
+				Unlink
+			</Button>
+		</Popover.Content>
+	</Popover.Root>
 {/snippet}
 
 {#snippet servicePill(name: string)}
@@ -135,108 +164,44 @@
 			{#if overview.situationLinks.length}
 				<ul class="divide-y rounded-lg border bg-card">
 					{#each overview.situationLinks as situation (situation.id)}
-						<li class="flex min-h-12 items-center gap-2 px-4 py-2">
-							<a
-								class="min-w-0 truncate text-sm font-medium hover:underline focus-visible:outline-2 focus-visible:outline-ring"
-								href={situation.href}
-							>
-								{situation.title}
-							</a>
-							<StatusBadge status={situation.status} variant="inline" />
-							{#if situation.closedAt}
-								<span class="text-xs text-muted-foreground">
-									closed <Timestamp value={situation.closedAt} format="absolute" />
-								</span>
-							{/if}
-							<Popover.Root>
-								<Popover.Trigger>
-									{#snippet child({ props })}
+						<li class="flex min-h-12 flex-col justify-center gap-2 px-4 py-2">
+							<div class="flex items-center gap-2">
+								<a
+									class="min-w-0 truncate text-sm font-medium hover:underline focus-visible:outline-2 focus-visible:outline-ring"
+									href={situation.href}
+								>
+									{situation.title}
+								</a>
+								<StatusBadge status={situation.status} variant="inline" />
+								{#if situation.closedAt}
+									<span class="text-xs text-muted-foreground">
+										closed <Timestamp value={situation.closedAt} format="absolute" />
+									</span>
+								{/if}
+								{@render unlinkSituation(situation)}
+							</div>
+							{#if situation.conclusion}
+								<div class="flex flex-col gap-1 pb-1">
+									<span class="text-xs text-muted-foreground">Current understanding</span>
+									<p class="max-w-[65ch] text-[15px] leading-6">{situation.conclusion}</p>
+									{#if situation.reportHref}
 										<Button
-											{...props}
-											variant="ghost"
-											size="icon-sm"
-											class="ml-auto"
-											aria-label="Unlink {situation.title}"
+											variant="link"
+											size="inline"
+											class="self-start"
+											href={situation.reportHref}
 										>
-											<RiCloseLine />
+											Read report
+											<RiArrowRightLine aria-hidden="true" />
 										</Button>
-									{/snippet}
-								</Popover.Trigger>
-								<Popover.Content class="flex w-64 flex-col gap-3" align="end">
-									<p class="text-sm">
-										Unlink this situation? It will be re-evaluated and may close.
-									</p>
-									<Button
-										size="sm"
-										variant="outline"
-										class="self-end"
-										onclick={() => response.unlinkSituation(situation.id)}
-									>
-										Unlink
-									</Button>
-								</Popover.Content>
-							</Popover.Root>
+									{/if}
+								</div>
+							{/if}
 						</li>
 					{/each}
 				</ul>
 			{:else}
 				<p class="text-sm text-muted-foreground">No situations are linked to this incident.</p>
-			{/if}
-		</section>
-
-		<section aria-labelledby="understanding-title" class="flex flex-col gap-3">
-			<div class="flex flex-col gap-1">
-				<SectionHeading id="understanding-title" title="Current understanding" />
-				<p class="text-sm text-muted-foreground">
-					Latest conclusions from investigations on linked situations.
-				</p>
-			</div>
-			{#if overview.understanding.length}
-				<ul class="divide-y rounded-lg border bg-card">
-					{#each overview.understanding as item (item.id)}
-						<li class="flex min-h-[60px] flex-col gap-2 px-4 py-3">
-							<div class="flex flex-wrap items-center gap-x-2 gap-y-1">
-								<a
-									class="rounded-sm text-[15px] leading-[22px] font-medium wrap-anywhere hover:underline focus-visible:outline-2 focus-visible:outline-ring"
-									href={item.href}
-								>
-									{item.title}
-								</a>
-								{#if item.status}
-									<StatusBadge status={item.status} variant="inline" />
-								{/if}
-							</div>
-							{#if item.conclusion.kind === "loading"}
-								<Skeleton class="h-4 w-3/4" />
-							{:else if item.conclusion.kind === "text"}
-								<p class="max-w-[65ch] text-[15px] leading-6">{item.conclusion.text}</p>
-							{:else}
-								<p class="text-sm text-muted-foreground">No investigation conclusion yet.</p>
-							{/if}
-							{#if item.reportHref}
-								<Button
-									variant="link"
-									size="inline"
-									class="self-start"
-									href={item.reportHref}
-								>
-									Read report
-									<RiArrowRightLine aria-hidden="true" />
-								</Button>
-							{/if}
-						</li>
-					{/each}
-				</ul>
-				{#if overview.moreLinkedSituations > 0}
-					<p class="text-sm text-muted-foreground">
-						{overview.moreLinkedSituations} more linked
-						{overview.moreLinkedSituations === 1 ? "situation" : "situations"}
-					</p>
-				{/if}
-			{:else}
-				<p class="text-sm text-muted-foreground">
-					Link a situation to see its investigation's conclusions.
-				</p>
 			{/if}
 		</section>
 

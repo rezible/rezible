@@ -8,7 +8,6 @@
 	import { fromAbsolute } from "@internationalized/date";
 	import type { TimelineItem } from "vis-timeline";
 
-	import IncidentTimelineActionsBar from "./IncidentTimelineActionsBar.svelte";
 	import IncidentTimelineMinimap from "./IncidentTimelineMinimap.svelte";
 	import IncidentTimelineContextMenu from "./IncidentTimelineContextMenu.svelte";
 	import { useIncidentAnalysis } from "../controller.svelte";
@@ -72,21 +71,22 @@
 	};
 </script>
 
-<div
-	id="timeline-minimap-container"
-	class="w-full h-full overflow-hidden border relative"
-	role="presentation"
-	oncontextmenu={onContextMenu}
-	onclickcapture={closeContextMenu}
->
-	<div class="w-full" style="height: 95%" bind:this={containerRef}></div>
-	<div class="w-full border-t" style="height: 5%">
-		<IncidentTimelineMinimap />
+<div class="flex h-full w-full flex-col">
+	<p class="shrink-0 px-2 py-1 text-right text-xs text-muted-foreground">
+		Times in {controller.view.timezone}
+	</p>
+	<div
+		id="timeline-minimap-container"
+		class="relative min-h-0 w-full flex-1 overflow-hidden border"
+		role="presentation"
+		oncontextmenu={onContextMenu}
+		onclickcapture={closeContextMenu}
+	>
+		<div class="w-full" style="height: 95%" bind:this={containerRef}></div>
+		<div class="w-full border-t" style="height: 5%">
+			<IncidentTimelineMinimap />
+		</div>
 	</div>
-</div>
-
-<div class="absolute top-2 right-2 w-fit mx-auto">
-	<IncidentTimelineActionsBar />
 </div>
 
 {#if !!analysis.contextMenu.timeline}

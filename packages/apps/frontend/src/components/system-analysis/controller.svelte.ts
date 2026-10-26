@@ -8,6 +8,7 @@ import {
 	type SystemAnalysisNode,
 } from "$lib/api";
 import { getNextPageParam } from "$lib/api/utils";
+import { formatTime } from "$lib/time";
 import { reconcileSelection } from "$features/system/lib/system-map/selection";
 import type { MapHighlights, MapSelection } from "$features/system/lib/system-map/presentation";
 import { buildAnalysisGraph, flattenPages, mapEntryAttachments, type AnalysisGraph } from "./lib";
@@ -176,9 +177,7 @@ export class SystemAnalysisController {
 				title: attributes.title,
 				body: attributes.body,
 				kind: attributes.kind,
-				occurredAt: attributes.occurredAt
-					? new Date(attributes.occurredAt).toLocaleString()
-					: undefined,
+				occurredAt: attributes.occurredAt ? formatTime(attributes.occurredAt).absolute : undefined,
 			})),
 		};
 	});

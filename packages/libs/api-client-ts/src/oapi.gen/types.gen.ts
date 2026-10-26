@@ -1564,7 +1564,7 @@ export type GetInvestigationReportResponseBody = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: InvestigationReport;
+    data: InvestigationReport | null;
 };
 
 export type GetInvestigationResponseBody = {

@@ -9,6 +9,7 @@
 	} from "@rezible/tiptap-extensions";
 	import Collaboration from "@tiptap/extension-collaboration";
 	import CollaborationCaret from "@tiptap/extension-collaboration-caret";
+	import { Placeholder } from "@tiptap/extensions";
 
 	import type { RetrospectiveReportSection } from "$lib/api";
 	import { useUserSessionState } from "$lib/user-session.svelte";
@@ -17,6 +18,8 @@
 	import { activeAnnotation, activeEditor } from "../activeEditor.svelte";
 	import { useIncidentView } from "../../controller.svelte";
 	import { useIncidentCollaboration } from "../../collaboration.svelte";
+	import SectionHeading from "$components/common/section-heading/SectionHeading.svelte";
+	import { emptyReadOnlySectionText, reportSectionPrompt } from "../controller.svelte";
 	import MenuBar from "./MenuBar.svelte";
 	import { watch } from "runed";
 
@@ -44,6 +47,15 @@
 			configureDraftDiscussionHighlightExtension(session.user?.id),
 			Collaboration.configure({ document: provider.document, field }),
 			CollaborationCaret.configure({ provider, user }),
+			Placeholder.configure({
+				showOnlyWhenEditable: false,
+				placeholder: ({ editor }) => {
+					if (editor.isEditable) {
+						return reportSectionPrompt(section);
+					}
+					return emptyReadOnlySectionText;
+				},
+			}),
 		];
 	};
 
@@ -91,16 +103,13 @@
 	focusEditor = onEditorContainerFocused;
 </script>
 
-<div class="flex h-8">
-	<div class="flex-1 flex h-8 items-end">
-		<span class="text-lg text-foreground/80">{section.title}</span>
-	</div>
-	<div class="">
+<SectionHeading id="{section.field}-title" title={section.title}>
+	{#snippet actions()}
 		{#if isEditable && activeEditor.field === section.field}
 			<MenuBar />
 		{/if}
-	</div>
-</div>
+	{/snippet}
+</SectionHeading>
 
 <div
 	class="border-t border-border py-4 first:border-t-0"

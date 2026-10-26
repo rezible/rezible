@@ -396,7 +396,8 @@ func (s *InvestigationService) PublishInvestigationHypothesis(ctx context.Contex
 	})
 }
 
-// GetInvestigationReport returns the newest report eligible for the selection, or nil when none is.
+// GetInvestigationReport returns the newest report eligible for the selection, or nil when none is. A missing
+// investigation is not found.
 func (s *InvestigationService) GetInvestigationReport(ctx context.Context, params rez.GetInvestigationReportParams) (*ent.InvestigationReport, error) {
 	selection := params.Selection
 	if selection == "" {
@@ -423,6 +424,10 @@ func (s *InvestigationService) GetInvestigationReport(ctx context.Context, param
 		return s.outputPublicationNewer(eligible[i].Edges.AgentTurn, eligible[i].CreatedAt, eligible[i].ID, eligible[j].Edges.AgentTurn, eligible[j].CreatedAt, eligible[j].ID)
 	})
 	if len(eligible) == 0 {
+		// No report is an answer only for an investigation the caller can read.
+		if _, parentErr := s.db.Client(ctx).Investigation.Get(ctx, params.InvestigationID); parentErr != nil {
+			return nil, fmt.Errorf("get investigation for report: %w", parentErr)
+		}
 		return nil, nil
 	}
 	return eligible[0], nil

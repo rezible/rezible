@@ -2,6 +2,7 @@
 	import SectionHeading from "$components/common/section-heading/SectionHeading.svelte";
 	import StatusBadge from "$components/common/status-badge/StatusBadge.svelte";
 	import Timestamp from "$components/common/timestamp/Timestamp.svelte";
+	import InvestigationRetry from "../InvestigationRetry.svelte";
 	import { useSituationInvestigationController } from "./controller.svelte";
 
 	const controller = useSituationInvestigationController();
@@ -24,7 +25,10 @@
 	<SectionHeading id="investigation-run-title" title="Run" level={3} />
 	<dl class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm">
 		<dt class="text-muted-foreground">Status</dt>
-		<dd><StatusBadge status={controller.run} variant="inline" /></dd>
+		<dd class="flex flex-col items-start gap-2">
+			<StatusBadge status={controller.run} variant="inline" />
+			<InvestigationRetry />
+		</dd>
 		<dt class="text-muted-foreground">Started</dt>
 		<dd><Timestamp value={attributes?.createdAt} /></dd>
 		<dt class="text-muted-foreground">Last updated</dt>

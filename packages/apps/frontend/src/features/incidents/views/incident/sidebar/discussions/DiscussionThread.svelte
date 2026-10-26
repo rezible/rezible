@@ -5,6 +5,7 @@
 		discussionCommentContent,
 	} from "$features/incidents/views/incident/discussions.svelte";
 	import type { DiscussionThread as DiscussionThreadType } from "$lib/api";
+	import Timestamp from "$components/common/timestamp/Timestamp.svelte";
 	import TiptapEditor, { Editor as SvelteEditor } from "$src/components/tiptap-editor/TiptapEditor.svelte";
 	import { createDiscussionEditor } from "$src/components/tiptap-editor/editors";
 
@@ -36,9 +37,11 @@
 >
 	<div class="flex flex-col">
 		<span class="font-medium">{discussion.attributes.userId}</span>
-		<span class="text-sm text-muted-foreground">
-			{new Date(discussion.attributes.createdAt).toLocaleString()}
-		</span>
+		<Timestamp
+			value={discussion.attributes.createdAt}
+			format="absolute"
+			class="text-sm text-muted-foreground"
+		/>
 	</div>
 
 	{#if commentsController.query.isPending}

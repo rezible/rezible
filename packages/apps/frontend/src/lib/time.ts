@@ -15,6 +15,30 @@ const MINUTE_MS = 60 * SECOND_MS;
 const HOUR_MS = 60 * MINUTE_MS;
 const DAY_MS = 24 * HOUR_MS;
 
+let displayTimeZone: string | undefined;
+
+/**
+ * Sets the IANA timezone used for every formatted time. Undefined uses the browser's timezone.
+ * Invalid zones are ignored so a bad preference cannot break rendering.
+ */
+export function setDisplayTimeZone(timeZone: string | undefined) {
+	if (!timeZone) {
+		displayTimeZone = undefined;
+		return;
+	}
+
+	try {
+		new Intl.DateTimeFormat(undefined, { timeZone });
+		displayTimeZone = timeZone;
+	} catch {
+		displayTimeZone = undefined;
+	}
+}
+
+export function browserTimeZone() {
+	return Intl.DateTimeFormat().resolvedOptions().timeZone;
+}
+
 const unavailableTime: FormattedTime = {
 	absolute: "Time unavailable",
 	clock: "—",
@@ -43,7 +67,9 @@ function relativeLabel(date: Date, now: number) {
 	}
 
 	if (distance >= 30 * DAY_MS) {
-		return new Intl.DateTimeFormat(undefined, { dateStyle: "medium" }).format(date);
+		return new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeZone: displayTimeZone }).format(
+			date
+		);
 	}
 
 	const formatter = new Intl.RelativeTimeFormat(undefined, { numeric: "auto" });
@@ -73,13 +99,20 @@ export function formatTime(value: string | null | undefined, now = Date.now()): 
 		hour: "2-digit",
 		minute: "2-digit",
 		timeZoneName: "short",
+		timeZone: displayTimeZone,
+	}).format(date);
+
+	const clock = new Intl.DateTimeFormat(undefined, {
+		hour: "2-digit",
+		minute: "2-digit",
+		timeZone: displayTimeZone,
 	}).format(date);
 
 	return {
 		epochMs: date.getTime(),
 		iso: date.toISOString(),
 		absolute,
-		clock: date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+		clock,
 		relative: relativeLabel(date, now),
 	};
 }

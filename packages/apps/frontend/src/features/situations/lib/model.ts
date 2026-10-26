@@ -184,7 +184,8 @@ export type SituationConclusion = { kind: "loading" } | { kind: "none" } | { kin
 type ReportQueryState = {
 	isPending: boolean;
 	isError: boolean;
-	data?: { data: InvestigationReport };
+	/** A null report means none has been published. */
+	data?: { data: InvestigationReport | null };
 };
 
 /** Maps a report query (or its absence, when there is no investigation) to a conclusion. */

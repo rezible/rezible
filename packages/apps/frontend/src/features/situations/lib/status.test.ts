@@ -7,6 +7,7 @@ import {
 	investigationUpdateNotice,
 	longRunningStatus,
 	situationStatus,
+	situationSummaryTimes,
 } from "./status";
 
 const at = "2026-05-14T04:45:00Z";
@@ -83,6 +84,19 @@ test("activeHoldUntil protects only before the deadline", () => {
 	expect(activeHoldUntil(situation({ holdUntil: later, closedAt: at }), now)).toBeUndefined();
 });
 
+test("situationSummaryTimes: first signal, then closed, muted, raised or watching", () => {
+	const cases: [Partial<SituationAttributes>, string][] = [
+		[{ closedAt: at, mutedAt: at, raisedAt: at }, "closed"],
+		[{ mutedAt: at, raisedAt: at }, "muted"],
+		[{ raisedAt: at }, "raised"],
+		[{}, "watching"],
+	];
+	for (const [attributes, state] of cases) {
+		const times = situationSummaryTimes(situation({ openedAt: at, createdAt: at, ...attributes }));
+		expect(times.map((time) => time.key)).toEqual(["first-signal", state]);
+	}
+});
+
 test("investigationRunStatus prefers the active turn", () => {
 	const cases: [Partial<InvestigationAttributes> | undefined, string, string][] = [
 		[{ activeTurn: turn("queued"), latestTurn: turn("failed") }, "Queued", "neutral"],
@@ -97,9 +111,6 @@ test("investigationRunStatus prefers the active turn", () => {
 		const status = investigationRunStatus(attributes ? investigation(attributes) : undefined);
 		expect([status.label, status.tone]).toEqual([label, tone]);
 	}
-	expect(investigationRunStatus(investigation({ latestTurn: turn("failed") })).description).toBe(
-		"The investigation turn could not finish."
-	);
 });
 
 test("investigationUpdateNotice: updating, failed or stopped, paused, pending, then up to date", () => {
@@ -135,7 +146,7 @@ test("investigationUpdateNotice: updating, failed or stopped, paused, pending, t
 	const failed = investigationUpdateNotice(
 		investigation({ activeTurn: null, latestTurn: failedTurn, pendingEvidenceRevisions: 0 })
 	);
-	expect([failed?.at, failed?.pendingMessage]).toEqual([at, undefined]);
+	expect([failed?.failedAt, failed?.pendingMessage]).toEqual([at, undefined]);
 
 	const failedWithPending = investigationUpdateNotice(
 		investigation({ activeTurn: null, latestTurn: failedTurn, pendingEvidenceRevisions: 3 })

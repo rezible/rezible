@@ -1,30 +1,37 @@
 <script lang="ts">
-	import LoadingQueryWrapper from "$src/components/layout/loading-query-wrapper/LoadingQueryWrapper.svelte";
-	import { AlertIncidentsViewController } from "./alertIncidentsViewController.svelte";
-	import type { AlertIncidentLink } from "$lib/api";
 	import { resolve } from "$app/paths";
+	import type { AlertIncidentLink } from "$lib/api";
+	import PageCanvas from "$components/layout/page-canvas/PageCanvas.svelte";
+	import LoadingQueryWrapper from "$components/layout/loading-query-wrapper/LoadingQueryWrapper.svelte";
+	import { AlertIncidentsViewController } from "./alertIncidentsViewController.svelte";
 
-	const incState = new AlertIncidentsViewController();
+	const incidents = new AlertIncidentsViewController();
 </script>
 
-{#snippet incidentListItem(link: AlertIncidentLink)}
-	<a href={resolve(`/incidents/${link.attributes.incidentId}`)}>
-		<span>{link.attributes.description || link.attributes.incidentId}</span>
-	</a>
+{#snippet incidentList(links: AlertIncidentLink[])}
+	<ul class="divide-y rounded-lg border bg-card">
+		{#each links as link (link.id)}
+			<li>
+				<a
+					href={resolve(`/incidents/${link.attributes.incidentId}`)}
+					class="block px-4 py-3 text-sm font-medium wrap-anywhere hover:bg-muted/50 focus-visible:outline-2 focus-visible:outline-ring"
+				>
+					{link.attributes.description || link.attributes.incidentId}
+				</a>
+			</li>
+		{/each}
+	</ul>
 {/snippet}
 
-<div class="w-full h-full flex flex-col gap-2">
-	<div class="flex-1 flex flex-col gap-1 border">
-		<LoadingQueryWrapper query={incState.query}>
-			{#snippet view(links: AlertIncidentLink[])}
-				{#each links as link (link.id)}
-					{@render incidentListItem(link)}
-				{:else}
-					<div class="p-2">
-						<span>No results</span>
-					</div>
-				{/each}
-			{/snippet}
-		</LoadingQueryWrapper>
-	</div>
-</div>
+{#snippet noIncidents()}
+	<p class="text-sm text-muted-foreground">No incidents linked to this signal.</p>
+{/snippet}
+
+<PageCanvas width="reading">
+	<LoadingQueryWrapper
+		query={incidents.query}
+		view={incidentList}
+		empty={noIncidents}
+		isEmpty={(links) => links.length === 0}
+	/>
+</PageCanvas>

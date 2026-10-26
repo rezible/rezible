@@ -5,13 +5,13 @@ import { Context } from "runed";
 
 export class MembersSettingsController {
 	session = useUserSessionState();
-	search = $state("");
+	search = $state<string>();
 
 	paginatedUsersQuery = createPaginatedQuery({
 		queryOptions: (pagination) => ({
 			...listUsersOptions({
 				query: {
-					search: this.search.trim() || undefined,
+					search: this.search,
 					...pagination,
 				},
 			}),
