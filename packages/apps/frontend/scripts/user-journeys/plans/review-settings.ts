@@ -115,8 +115,14 @@ export default {
 			selector: 'a[aria-label="Manage Demo"]',
 		},
 		{
+			// The integrations list also has an h1; wait for it to unmount first.
 			action: "waitFor",
-			selector: "h1",
+			selector: 'a[aria-label="Manage Demo"]',
+			state: "absent",
+		},
+		{
+			action: "waitFor",
+			selector: "#scroll-body h1",
 			state: "visible",
 		},
 		{
