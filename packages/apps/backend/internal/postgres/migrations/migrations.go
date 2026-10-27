@@ -19,13 +19,13 @@ import (
 	"entgo.io/ent/dialect"
 	entsql "entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/schema"
+	"entgo.io/ent/schema/field"
 	mapset "github.com/deckarep/golang-set/v2"
 	"github.com/pressly/goose/v3"
 	"github.com/pressly/goose/v3/database"
 	"github.com/pressly/goose/v3/lock"
 
 	schemamigrate "github.com/rezible/rezible/ent/migrate"
-	"github.com/rezible/rezible/internal/watermill"
 )
 
 //go:embed *.sql
@@ -37,10 +37,24 @@ const (
 
 	versionTableName = "goose_db_version"
 	versionTable     = SchemaName + "." + versionTableName
+
+	OutboxTableName = "message_outbox"
 )
 
+// outboxTable matches watermill's PostgreSQL queue schema, so the message outbox can use it without initializing it.
+var outboxTable = schema.NewTable(OutboxTableName).
+	AddPrimary(&schema.Column{Name: "offset", Type: field.TypeInt64, Increment: true}).
+	AddColumn(&schema.Column{Name: "uuid", Type: field.TypeString, Size: 36}).
+	AddColumn(&schema.Column{Name: "payload", Type: field.TypeJSON, Nullable: true,
+		SchemaType: map[string]string{dialect.Postgres: "json"}}).
+	AddColumn(&schema.Column{Name: "metadata", Type: field.TypeJSON, Nullable: true,
+		SchemaType: map[string]string{dialect.Postgres: "json"}}).
+	AddColumn(&schema.Column{Name: "acked", Type: field.TypeBool, Default: false}).
+	AddColumn(&schema.Column{Name: "created_at", Type: field.TypeTime,
+		Default: schema.Expr("CURRENT_TIMESTAMP")})
+
 // infraTables are the tables outside the Ent schema that the migrations also own.
-var infraTables = []*schema.Table{watermill.OutboxTable}
+var infraTables = []*schema.Table{outboxTable}
 
 func newStore() (database.Store, error) {
 	return database.NewStore(goose.DialectPostgres, versionTable)

@@ -5,34 +5,18 @@ import (
 	"fmt"
 	"time"
 
-	"entgo.io/ent/dialect"
-	"entgo.io/ent/dialect/sql/schema"
-	"entgo.io/ent/schema/field"
 	wsql "github.com/ThreeDotsLabs/watermill-sql/v4/pkg/sql"
 	"github.com/ThreeDotsLabs/watermill/message"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/metric"
 
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/internal/postgres/migrations"
 )
-
-const outboxTableName = "message_outbox"
-
-// OutboxTable matches watermill's PostgreSQL queue schema, so it is created by the schema migration.
-var OutboxTable = schema.NewTable(outboxTableName).
-	AddPrimary(&schema.Column{Name: "offset", Type: field.TypeInt64, Increment: true}).
-	AddColumn(&schema.Column{Name: "uuid", Type: field.TypeString, Size: 36}).
-	AddColumn(&schema.Column{Name: "payload", Type: field.TypeJSON, Nullable: true,
-		SchemaType: map[string]string{dialect.Postgres: "json"}}).
-	AddColumn(&schema.Column{Name: "metadata", Type: field.TypeJSON, Nullable: true,
-		SchemaType: map[string]string{dialect.Postgres: "json"}}).
-	AddColumn(&schema.Column{Name: "acked", Type: field.TypeBool, Default: false}).
-	AddColumn(&schema.Column{Name: "created_at", Type: field.TypeTime,
-		Default: schema.Expr("CURRENT_TIMESTAMP")})
 
 // The table is unqualified, so the connection's search path resolves its schema, as for the ent tables.
 func generateOutboxTableName(topic string) string {
-	return fmt.Sprintf("\"%s\"", outboxTableName)
+	return fmt.Sprintf("\"%s\"", migrations.OutboxTableName)
 }
 
 var (
