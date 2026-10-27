@@ -10,7 +10,6 @@ import (
 	"strings"
 	"time"
 
-	"entgo.io/ent/dialect/sql/schema"
 	"github.com/firebase/genkit/go/ai"
 	aix "github.com/firebase/genkit/go/ai/exp"
 	"github.com/google/uuid"
@@ -62,21 +61,6 @@ type (
 		// IsForeignKeyError reports whether an error violates one of the named foreign key constraints.
 		IsForeignKeyError(error, ...string) bool
 		Shutdown() error
-	}
-
-	MigrationDirection string
-
-	MigrationService interface {
-		GetCurrentStatus(context.Context) (*MigrationStatus, error)
-		CreateSchemaMigration(ctx context.Context, name string, infraTables ...*schema.Table) error
-		Run(context.Context, MigrationDirection) error
-		UpdateChecksum() error
-	}
-
-	MigrationStatus struct {
-		CurrentVersion uint
-		LatestVersion  uint
-		Dirty          bool
 	}
 )
 

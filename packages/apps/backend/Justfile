@@ -71,16 +71,19 @@ gen-schema: (generate "./ent")
 
 gen-mocks: (generate "./test/mocks")
 
+[doc("Regenerate Ent and write the next migration from the schema diff")]
 @gen-migration NAME:
+    just gen-schema
     just run migrations create '{{ NAME }}'
 
+[doc("Apply pending migrations to this workspace's database")]
 @apply-migrations:
     just run migrations apply
 
-[working-directory(".")]
-@create-initial-migration:
-    rm -f ./internal/postgres/migrations/0001_init*.sql
-    rm -f ./internal/postgres/migrations/atlas.sum
+[doc("Rewrite atlas.sum after editing a migration file")]
+@migrations-checksum:
     just run migrations update-checksum
-    just run migrations create init
-    just run migrations update-checksum
+
+[doc("Show applied and pending migrations")]
+@migrations-status:
+    just run migrations status

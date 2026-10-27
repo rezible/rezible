@@ -5,23 +5,20 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"runtime/debug"
 	"strconv"
 	"sync"
 
 	"github.com/jackc/pgx/v5"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/peterldowns/pgtestdb"
-	"github.com/peterldowns/pgtestdb/migrators/golangmigrator"
+	"github.com/peterldowns/pgtestdb/migrators/common"
 
 	rez "github.com/rezible/rezible"
-	"github.com/rezible/rezible/internal/postgres"
 	"github.com/rezible/rezible/internal/postgres/migrations"
 	"github.com/rezible/rezible/internal/postgres/river"
 )
 
 const (
-	riverModulePath = "github.com/riverqueue/river"
 	setupSchemasSQL = `
 		CREATE SCHEMA IF NOT EXISTS %[1]s;
 		CREATE SCHEMA IF NOT EXISTS %[2]s;
@@ -47,7 +44,7 @@ func New(cfg rez.PostgresConfig) (*Database, error) {
 			Host:       cfg.Host,
 			Port:       strconv.FormatUint(uint64(cfg.Port), 10),
 			Database:   cfg.Database,
-			Options:    fmt.Sprintf("sslmode=%s&search_path=%s,%s", cfg.SSLMode, postgres.SchemaName, river.SchemaName),
+			Options:    fmt.Sprintf("sslmode=%s&search_path=%s,%s", cfg.SSLMode, migrations.SchemaName, river.SchemaName),
 			User:       cfg.AdminRole.Name,
 			Password:   cfg.AdminRole.Password,
 			TestRole: &pgtestdb.Role{
@@ -55,7 +52,7 @@ func New(cfg rez.PostgresConfig) (*Database, error) {
 				Password: cfg.AppRole.Password,
 			},
 		}
-		testConfig = pgtestdb.Custom(lifecycle, tdbCfg, newMigrator(cfg.SSLMode))
+		testConfig = pgtestdb.Custom(lifecycle, tdbCfg, &migrator{})
 	})
 	if createErr != nil {
 		return nil, errors.Join(createErr, lifecycle.shutdown())
@@ -91,62 +88,21 @@ func makePostgresConfig(base rez.PostgresConfig, cfg pgtestdb.Config) (rez.Postg
 	return base, nil
 }
 
-type migrator struct {
-	schema  *golangmigrator.GolangMigrator
-	sslMode string
-}
-
-func newMigrator(sslMode string) *migrator {
-	return &migrator{
-		schema:  golangmigrator.New(migrations.EmbedFSDir, golangmigrator.WithFS(migrations.FS)),
-		sslMode: sslMode,
-	}
-}
+type migrator struct{}
 
 func (m *migrator) Hash() (string, error) {
-	schemaHash, hashErr := m.schema.Hash()
-	if hashErr != nil {
-		return "", hashErr
-	}
-	return schemaHash + ":river:" + riverVersion(), nil
-}
-
-func riverVersion() string {
-	if buildInfo, ok := debug.ReadBuildInfo(); ok {
-		for _, dependency := range buildInfo.Deps {
-			if dependency.Path == riverModulePath {
-				if dependency.Replace != nil {
-					return dependency.Replace.Path + "@" + dependency.Replace.Version
-				}
-				return dependency.Version
-			}
-		}
-	}
-	return "unknown"
+	return common.HashDirs(migrations.FS, "*.sql", migrations.EmbedFSDir)
 }
 
 func (m *migrator) Migrate(ctx context.Context, db *sql.DB, cfg pgtestdb.Config) error {
-	applicationSchema := pgx.Identifier{postgres.SchemaName}.Sanitize()
+	applicationSchema := pgx.Identifier{migrations.SchemaName}.Sanitize()
 	jobsSchema := pgx.Identifier{river.SchemaName}.Sanitize()
 	applicationRole := pgx.Identifier{cfg.TestRole.Username}.Sanitize()
 	setupQuery := fmt.Sprintf(setupSchemasSQL, applicationSchema, jobsSchema, applicationRole)
 	if _, setupErr := db.ExecContext(ctx, setupQuery); setupErr != nil {
 		return fmt.Errorf("setup test database schema: %w", setupErr)
 	}
-	if migrationErr := m.schema.Migrate(ctx, db, cfg); migrationErr != nil {
-		return migrationErr
-	}
-
-	riverConfig, configErr := makePostgresConfig(rez.PostgresConfig{SSLMode: m.sslMode}, cfg)
-	if configErr != nil {
-		return configErr
-	}
-	pool, poolErr := postgres.MakePgxPool(ctx, riverConfig, false)
-	if poolErr != nil {
-		return fmt.Errorf("connect for river migrations: %w", poolErr)
-	}
-	defer pool.Shutdown()
-	return river.RunMigration(ctx, pool.Pool, "up")
+	return migrations.Apply(ctx, db)
 }
 
 // testLifecycle adapts pgtestdb's testing interface for non-test callers. The

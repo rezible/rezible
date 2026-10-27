@@ -9,18 +9,20 @@ import (
 	"log/slog"
 	"slices"
 	"sort"
+	"strings"
 
 	"entgo.io/ent/dialect"
 	entsql "entgo.io/ent/dialect/sql"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
-	_ "github.com/jackc/pgx/v5/stdlib"
+	"github.com/jackc/pgx/v5/stdlib"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/entpgx"
 	"github.com/rezible/rezible/ent/hook"
 	_ "github.com/rezible/rezible/ent/runtime"
 	"github.com/rezible/rezible/ent/schema"
 	"github.com/rezible/rezible/ent/schema/schematypes"
+	"github.com/rezible/rezible/internal/postgres/migrations"
 	"github.com/rezible/rezible/pkg/errs"
 	"github.com/rezible/rezible/pkg/execution"
 )
@@ -29,27 +31,26 @@ import (
 const foreignKeyViolation = "23503"
 
 type DatabaseClient struct {
-	driver dialect.Driver
 	client *ent.Client
+	pool   *ConnectionPool
 }
 
 type PgxPool = pgxpool.Pool
 
 // NewPgxPoolDatabaseClient opens a client whose encrypted fields use encryptionKey.
 func NewPgxPoolDatabaseClient(pool *ConnectionPool, encryptionKey []byte) (*DatabaseClient, error) {
-	return newDatabaseClient(entpgx.NewPgxPoolDriver(pool.Pool), encryptionKey)
-}
-
-// NewStdDatabaseClient opens a client whose encrypted fields use encryptionKey.
-func NewStdDatabaseClient(db *sql.DB, encryptionKey []byte) (*DatabaseClient, error) {
-	return newDatabaseClient(entsql.OpenDB("postgres", db), encryptionKey)
+	client, clientErr := newDatabaseClient(entpgx.NewPgxPoolDriver(pool.Pool), encryptionKey)
+	if clientErr == nil {
+		client.pool = pool
+	}
+	return client, clientErr
 }
 
 func newDatabaseClient(driver dialect.Driver, encryptionKey []byte) (*DatabaseClient, error) {
 	if keyErr := schematypes.SetFieldEncryptionKey(encryptionKey); keyErr != nil {
 		return nil, fmt.Errorf("set encryption key: %w", keyErr)
 	}
-	dbc := &DatabaseClient{driver: driver}
+	dbc := &DatabaseClient{}
 	dbc.client = ent.NewClient(ent.Driver(driver))
 	dbc.client.Use(dbc.ensureTenantIdSetHook(), dbc.tenantReferencesHook(), dbc.missingReferenceHook())
 	dbc.client.Intercept(dbc.setTenantContextInterceptor())
@@ -180,17 +181,14 @@ func applyTxOptions(tx *ent.Tx, opts ...ent.TxOption) {
 }
 
 func (dbc *DatabaseClient) RequireUpToDateMigrations(ctx context.Context) error {
-	ms := &MigrationService{driver: dbc.driver}
-	status, statusErr := ms.GetCurrentStatus(ctx)
+	db := stdlib.OpenDBFromPool(dbc.pool.Pool)
+	defer closeDatabaseResource("migration startup check", db)
+	_, pending, statusErr := migrations.Status(ctx, db)
 	if statusErr != nil {
-		return fmt.Errorf("get current migration status: %w", statusErr)
+		return fmt.Errorf("get migration status: %w", statusErr)
 	}
-	fmtStatus := fmt.Sprintf("[current=%d latest=%d]", status.CurrentVersion, status.LatestVersion)
-	if status.Dirty {
-		return fmt.Errorf("database migrations status is dirty: %s", fmtStatus)
-	}
-	if status.CurrentVersion < status.LatestVersion {
-		return fmt.Errorf("database migrations status is pending: %s", fmtStatus)
+	if len(pending) > 0 {
+		return fmt.Errorf("database migrations pending: %s", strings.Join(pending, ", "))
 	}
 	return nil
 }

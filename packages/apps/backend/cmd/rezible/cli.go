@@ -13,7 +13,7 @@ import (
 	"github.com/rezible/rezible/internal/db"
 	"github.com/rezible/rezible/internal/http"
 	demoprovider "github.com/rezible/rezible/internal/integrations/demo"
-	"github.com/rezible/rezible/internal/watermill"
+	"github.com/rezible/rezible/internal/postgres/migrations"
 	"github.com/rezible/rezible/pkg/execution"
 	oapiv1 "github.com/rezible/rezible/pkg/openapi/v1"
 	"github.com/urfave/cli/v3"
@@ -153,14 +153,6 @@ var setupDemoCommand = &cli.Command{
 	},
 }
 
-func withMigrations(ctx context.Context, fn func(context.Context, rez.MigrationService) error) error {
-	return runApplication(ctx, func(ctx context.Context, app *Application) error {
-		return app.With(func(ms rez.MigrationService) error {
-			return fn(ctx, ms)
-		})
-	})
-}
-
 var migrationsCommands = &cli.Command{
 	Name:  "migrations",
 	Usage: "database migrations control",
@@ -168,16 +160,11 @@ var migrationsCommands = &cli.Command{
 		{
 			Name:  "apply",
 			Usage: "Apply pending database migrations",
-			Arguments: []cli.Argument{&cli.StringArg{
-				Name:      "direction",
-				Value:     "up",
-				UsageText: "direction to migrate",
-				Config:    cli.StringConfig{TrimSpace: true},
-			}},
 			Action: func(ctx context.Context, cmd *cli.Command) error {
-				return withMigrations(ctx, func(ctx context.Context, ms rez.MigrationService) error {
-					return ms.Run(ctx, rez.MigrationDirection(cmd.StringArg("direction")))
-				})
+				if cmd.Args().Len() != 0 {
+					return fmt.Errorf("migrations apply takes no arguments")
+				}
+				return withMigrationDatabase(ctx, migrations.Apply)
 			},
 		},
 		{
@@ -189,18 +176,29 @@ var migrationsCommands = &cli.Command{
 				Config:    cli.StringConfig{TrimSpace: true},
 			}},
 			Action: func(ctx context.Context, cmd *cli.Command) error {
-				return withMigrations(ctx, func(ctx context.Context, ms rez.MigrationService) error {
-					return ms.CreateSchemaMigration(ctx, cmd.StringArg("name"), watermill.OutboxTable)
+				name := cmd.StringArg("name")
+				if !migrationName.MatchString(name) {
+					return fmt.Errorf("invalid migration name %q: use lowercase snake_case", name)
+				}
+				return runApplication(ctx, func(ctx context.Context, app *Application) error {
+					return app.With(func(cfg rez.PostgresConfig) error {
+						return createMigration(ctx, cfg, name, cmd.Writer)
+					})
 				})
+			},
+		},
+		{
+			Name:  "status",
+			Usage: "Show applied and pending migrations",
+			Action: func(ctx context.Context, cmd *cli.Command) error {
+				return outputMigrationStatus(ctx, cmd.Writer)
 			},
 		},
 		{
 			Name:  "update-checksum",
 			Usage: "Update the database migrations checksum file",
 			Action: func(ctx context.Context, cmd *cli.Command) error {
-				return withMigrations(ctx, func(ctx context.Context, ms rez.MigrationService) error {
-					return ms.UpdateChecksum()
-				})
+				return migrations.UpdateChecksum()
 			},
 		},
 	},

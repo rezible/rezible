@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/samber/do/v2"
@@ -112,23 +111,22 @@ func withPostgresDatabase(ctx context.Context) func(do.Injector) {
 			return postgres.MakePgxPool(ctx, do.MustInvoke[rez.PostgresConfig](i), false)
 		}),
 
-		do.Lazy(func(i do.Injector) (rez.MigrationService, error) {
-			mgPool, mgPoolErr := postgres.MakePgxPool(ctx, do.MustInvoke[rez.PostgresConfig](i), true)
-			if mgPoolErr != nil {
-				return nil, fmt.Errorf("admin pgx pool: %w", mgPoolErr)
-			}
-			return postgres.NewMigrationService(mgPool)
-		}),
-
 		do.LazyNamed("db_field_encryption_key", func(i do.Injector) ([]byte, error) {
 			return do.MustInvoke[rez.PostgresConfig](i).FieldEncryptionKey()
 		}),
 
 		do.Lazy(func(i do.Injector) (rez.Database, error) {
-			return postgres.NewPgxPoolDatabaseClient(
+			client, clientErr := postgres.NewPgxPoolDatabaseClient(
 				do.MustInvoke[*postgres.ConnectionPool](i),
 				do.MustInvokeNamed[[]byte](i, "db_field_encryption_key"),
 			)
+			if clientErr != nil {
+				return nil, clientErr
+			}
+			if checkErr := client.RequireUpToDateMigrations(ctx); checkErr != nil {
+				return nil, checkErr
+			}
+			return client, nil
 		}),
 	)
 }

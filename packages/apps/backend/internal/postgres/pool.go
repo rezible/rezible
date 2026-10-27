@@ -8,6 +8,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/internal/postgres/migrations"
 	"github.com/rezible/rezible/internal/postgres/river"
 )
 
@@ -52,7 +53,7 @@ func MakePgxPool(ctx context.Context, cfg rez.PostgresConfig, admin bool) (*Conn
 		return nil, fmt.Errorf("parse: %w", parseErr)
 	}
 	parsedCfg.AfterConnect = func(ctx context.Context, conn *pgx.Conn) error {
-		_, err := conn.Exec(ctx, fmt.Sprintf("SET search_path TO %s, %s", SchemaName, river.SchemaName))
+		_, err := conn.Exec(ctx, fmt.Sprintf("SET search_path TO %s, %s", migrations.SchemaName, river.SchemaName))
 		return err
 	}
 	pool, poolErr := pgxpool.NewWithConfig(ctx, parsedCfg)

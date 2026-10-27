@@ -25,10 +25,3 @@ mod packages 'packages'
 @codegen:
     just backend::codegen
     bun run --filter=@rezible/api-client-ts build
-
-[doc("Regenerate Ent and the initial migration, then recreate this workspace's database")]
-@regenerate-and-apply-db-schema:
-    just backend::gen-schema
-    just dev::setup-database --force --no-migrate
-    just backend::create-initial-migration
-    just backend::apply-migrations
