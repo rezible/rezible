@@ -6936,6 +6936,8 @@ components:
         data: {}
         kind:
           format: int32
+          maximum: 127
+          minimum: -128
           type: integer
         metadata:
           additionalProperties: {}
@@ -10731,7 +10733,9 @@ paths:
                           type: string
                         id:
                           description: The event ID.
-                          type: integer
+                          oneOf:
+                            - type: integer
+                            - type: string
                         retry:
                           description: The retry time in milliseconds.
                           type: integer
@@ -10749,7 +10753,9 @@ paths:
                           type: string
                         id:
                           description: The event ID.
-                          type: integer
+                          oneOf:
+                            - type: integer
+                            - type: string
                         retry:
                           description: The retry time in milliseconds.
                           type: integer
