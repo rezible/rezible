@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { Badge } from "$components/ui/badge";
-	import { Button } from "$components/ui/button";
 	import * as Collapsible from "$components/ui/collapsible";
 	import * as ToggleGroup from "$components/ui/toggle-group";
 	import { useSystemMapFixtureController } from "./controller.svelte";
@@ -9,7 +8,7 @@
 </script>
 
 <div class="bg-card border-border flex shrink-0 flex-col gap-2 rounded-md border p-2">
-	<div class="flex flex-wrap items-center justify-between gap-2">
+	<div class="flex flex-wrap items-center gap-2">
 		<ToggleGroup.Root
 			type="single"
 			value={controller.scenario}
@@ -19,24 +18,26 @@
 			size="sm"
 			class="max-w-full flex-wrap"
 		>
-			<ToggleGroup.Item value="shared">Shared membership</ToggleGroup.Item>
+			<ToggleGroup.Item value="terrain">Terrain</ToggleGroup.Item>
+			<ToggleGroup.Item value="large">Large</ToggleGroup.Item>
 			<ToggleGroup.Item value="empty">Empty graph</ToggleGroup.Item>
-			<ToggleGroup.Item value="sparse-positions">Sparse positions</ToggleGroup.Item>
 		</ToggleGroup.Root>
 
-		<div class="flex items-center gap-2">
-			<Button
-				variant={controller.dragEnabled ? "secondary" : "outline"}
-				size="sm"
-				aria-pressed={controller.dragEnabled}
-				onclick={() => controller.setDragEnabled(!controller.dragEnabled)}
-			>
-				Dragging {controller.dragEnabled ? "enabled" : "disabled"}
-			</Button>
-			{#if controller.partial}
-				<Badge variant="secondary">Partial supplied subset</Badge>
-			{/if}
-		</div>
+		<ToggleGroup.Root
+			type="single"
+			value={controller.mapView}
+			onValueChange={controller.setMapView}
+			aria-label="Map view"
+			variant="outline"
+			size="sm"
+		>
+			<ToggleGroup.Item value="structure">Structure</ToggleGroup.Item>
+			<ToggleGroup.Item value="deployment">Deployment</ToggleGroup.Item>
+		</ToggleGroup.Root>
+
+		{#if controller.partial}
+			<Badge variant="secondary" class="ml-auto">Partial supplied subset</Badge>
+		{/if}
 	</div>
 
 	<Collapsible.Root class="border-border border-t pt-2 text-xs">
@@ -52,7 +53,6 @@
 				<Badge variant="outline">
 					{controller.unresolvedRelationshipCount} unresolved relationships
 				</Badge>
-				<Badge variant="outline">{Object.keys(controller.positions).length} supplied positions</Badge>
 				<Badge variant="outline">enumeration: {controller.graph.enumeration.stopReason}</Badge>
 			</div>
 		</Collapsible.Content>

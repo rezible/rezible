@@ -63,6 +63,7 @@ function retainEntities(
 			id: entity.id,
 			category: entity.category,
 			kind: entity.kind,
+			name: entity.displayName,
 		});
 		if (retained.has(record.id)) {
 			retained.set(record.id, record);

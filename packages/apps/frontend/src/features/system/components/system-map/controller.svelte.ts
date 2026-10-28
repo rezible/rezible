@@ -1,52 +1,56 @@
-import { onMount, tick } from "svelte";
-import { watch } from "runed";
-import type { NodeEvents } from "@xyflow/svelte";
+import { onMount } from "svelte";
+import { Context, watch } from "runed";
+import {
+	detailBandFromZoom,
+	resolveDetailBand,
+	runtimeThreshold,
+	type DetailBand,
+	type DetailMode,
+} from "$features/system/lib/system-map/detail";
+import type { Box } from "$features/system/lib/system-map/geometry";
+import type { RelationshipMode } from "$features/system/lib/system-map/rollup";
 import type { GraphSubset } from "$features/system/lib/system-map/graph";
-import type { Point } from "$features/system/lib/system-map/geometry";
 import type { MapHighlights, MapSelection } from "$features/system/lib/system-map/presentation";
-import { selectedEntityIds } from "$features/system/lib/system-map/selection";
-import { SystemMapLayoutEngine } from "./layout-engine";
-import { applyInteractionState } from "./interaction-state";
-import { graphToFlow, validPosition, type FlowNode, type FlowEdge } from "./flow-graph-model";
+import { selectedEntityIds, selectedRelationshipIds } from "$features/system/lib/system-map/selection";
+import { applyMapState, projectMap, type FlowEdge, type FlowNode, type MapProjection } from "./projection";
 
 type Options = {
 	graph: () => GraphSubset;
-	positions: () => Readonly<Partial<Record<string, Point>>> | undefined;
 	selection: () => MapSelection | undefined;
 	highlights: () => MapHighlights | undefined;
 	onSelectionChange: (selection: MapSelection | undefined, trigger?: HTMLElement) => void;
-	onNodeMove: () => ((entityId: string, position: Point) => void) | undefined;
+	onExploreDeployment: () => ((targetId: string) => void) | undefined;
 };
-
-type DragEvent = Parameters<NonNullable<NodeEvents<FlowNode>["onnodedragstop"]>>[0];
 
 export type MapViewportFitOptions = {
 	preserveZoom?: boolean;
+	/** The least zoom the fit may choose, so that the band showing the targets is reached. */
+	minZoom?: number;
 };
 export type MapViewportApi = {
 	fit: (ids?: readonly string[], options?: MapViewportFitOptions) => Promise<void>;
 };
 
-/** Owns graph synchronization and user commands. Svelte Flow owns live node geometry. */
+/** Projects the graph once per publication and applies interaction state over the fixed geometry. */
 export class SystemMapController {
 	nodes = $state.raw<FlowNode[]>([]);
 	edges = $state.raw<FlowEdge[]>([]);
-	loading = $state(false);
-	error = $state<string>();
-	showLabels = $state(false);
 
+	detailMode = $state<DetailMode>("auto");
+	relationshipMode = $state<RelationshipMode>("focused");
+	band = $state<DetailBand>("landscape");
+	/** The viewport zoom, for drawing labels at a constant size on screen. */
+	zoom = $state(1);
+	/** The extent of the drawn map; undefined while nothing is drawn. */
+	bounds = $state.raw<Box>();
+	/** The zoom at which the whole map fits; the runtime threshold is relative to it. */
+	private fitZoom = 1;
+	private autoBand: DetailBand = "landscape";
+	private projection?: MapProjection;
 	private viewportApi?: MapViewportApi;
-
-	private layoutEngine = new SystemMapLayoutEngine();
 	private hoveredEdgeId?: string;
 	private mounted = false;
-	private revision = 0;
-	private dragStart?: { id: string; position: Point };
 	private options: Options;
-
-	get nodesDraggable() {
-		return Boolean(this.options.onNodeMove());
-	}
 
 	constructor(options: Options) {
 		this.options = options;
@@ -57,27 +61,8 @@ export class SystemMapController {
 		);
 
 		watch(
-			() => this.options.positions(),
-			(positions, previous) => {
-				this.nodes = this.nodes.map((node) => {
-					const point = positions?.[node.id];
-					const old = previous?.[node.id];
-					if (!validPosition(point)) {
-						return node;
-					}
-
-					if (point.x === old?.x && point.y === old?.y) {
-						return node;
-					}
-
-					return { ...node, position: { ...point } };
-				});
-			}
-		);
-
-		watch(
 			() => [this.options.selection(), this.options.highlights()] as const,
-			() => this.syncInteractionState()
+			() => this.syncMapState()
 		);
 
 		onMount(() => {
@@ -86,116 +71,75 @@ export class SystemMapController {
 
 			return () => {
 				this.mounted = false;
-				this.cancelLayout();
-				this.layoutEngine.dispose();
 			};
 		});
 	}
-
-	private cancelLayout() {
-		this.revision += 1;
-		this.loading = false;
-	}
-
-	private buildModel = () => graphToFlow(this.options.graph(), this.nodes, this.options.positions());
 
 	private syncGraph() {
 		if (!this.mounted) {
 			return;
 		}
 
-		this.cancelLayout();
-
-		const model = this.buildModel();
-		if (this.nodes.length === 0 && model.nodes.length > 0) {
-			// Keep staging positions off screen while the worker places the initial graph.
-			void this.runLayout(model);
-			return;
-		}
-
-		this.nodes = model.nodes;
-		this.edges = model.edges;
+		this.projection = projectMap(this.options.graph());
 		this.hoveredEdgeId = undefined;
-		this.syncInteractionState();
-	}
+		this.syncMapState();
 
-	private async runLayout(model = this.buildModel()) {
-		if (model.nodes.length === 0 || !this.mounted) {
-			return;
-		}
-
-		this.revision += 1;
-		const revision = this.revision;
-
-		this.loading = true;
-		this.error = undefined;
-
-		try {
-			// Layout runs once for the initial graph. Pan and zoom only change the viewport.
-			const positions = await this.layoutEngine.layout(model.nodes, model.edges);
-			if (!this.mounted || revision !== this.revision) {
-				return;
-			}
-
-			this.nodes = model.nodes.map((node) => {
-				const suppliedPosition = this.options.positions()?.[node.id];
-				let position = positions.get(node.id);
-				if (validPosition(suppliedPosition)) {
-					position = suppliedPosition;
-				}
-
-				if (!position) {
-					return node;
-				}
-
-				return { ...node, position };
-			});
-
-			this.edges = model.edges;
-			this.hoveredEdgeId = undefined;
-			this.syncInteractionState();
-			await tick();
-
-			if (this.mounted && revision === this.revision) {
-				await this.viewportApi?.fit();
-				await tick();
-			}
-		} catch (error) {
-			if (revision !== this.revision) {
-				return;
-			}
-
-			// A failed worker still leaves an inspectable graph and an explicit retry.
-			this.nodes = model.nodes;
-			this.edges = model.edges;
-			this.hoveredEdgeId = undefined;
-			this.syncInteractionState();
-			this.error = "Layout failed";
-			if (error instanceof Error) {
-				this.error = error.message;
-			}
-		} finally {
-			if (revision === this.revision) {
-				this.loading = false;
-			}
+		if (this.projection.nodes.length > 0) {
+			this.bounds = this.projection.bounds;
+		} else {
+			this.bounds = undefined;
 		}
 	}
 
-	private syncInteractionState() {
-		const updated = applyInteractionState(this.nodes, this.edges, {
+	private syncMapState() {
+		if (!this.projection) return;
+		const updated = applyMapState(this.projection, {
 			graph: this.options.graph(),
+			band: this.band,
+			relationshipMode: this.relationshipMode,
 			selection: this.options.selection(),
 			highlights: this.options.highlights(),
 			hoveredEdgeId: this.hoveredEdgeId,
-			showLabels: this.showLabels,
 		});
 		this.nodes = updated.nodes;
 		this.edges = updated.edges;
 	}
 
+	setRelationshipMode = (mode: RelationshipMode) => {
+		this.relationshipMode = mode;
+		this.hoveredEdgeId = undefined;
+		this.syncMapState();
+	};
+
+	setDetailMode = (mode: DetailMode) => {
+		this.detailMode = mode;
+		this.syncDetailBand();
+	};
+
+	viewportZoom = (zoom: number) => {
+		this.zoom = zoom;
+		this.autoBand = detailBandFromZoom(zoom, this.fitZoom, this.autoBand);
+		this.syncDetailBand();
+	};
+
+	/** Records the whole-map fit zoom, which moves the runtime threshold with it. */
+	setFitZoom = (fitZoom: number) => {
+		this.fitZoom = fitZoom;
+		this.autoBand = detailBandFromZoom(this.zoom, fitZoom, this.autoBand);
+		this.syncDetailBand();
+	};
+
+	private syncDetailBand() {
+		const band = resolveDetailBand(this.detailMode, this.autoBand);
+		if (band === this.band) return;
+		this.band = band;
+		this.hoveredEdgeId = undefined;
+		this.syncMapState();
+	}
+
 	hoverEdge = (id: string | undefined) => {
 		this.hoveredEdgeId = id;
-		this.syncInteractionState();
+		this.syncMapState();
 	};
 
 	setViewportApi = (api: MapViewportApi | undefined) => {
@@ -206,13 +150,29 @@ export class SystemMapController {
 		this.viewportApi?.fit();
 	};
 
-	private visibleSelectionIds(selection: MapSelection | undefined) {
+	/**
+	 * The nodes that stand for a selection, hidden or not: the endpoints of the connections drawn for its
+	 * relationships, else its canonical endpoints or entity.
+	 */
+	private targetNodeIds(selection: MapSelection | undefined): string[] {
+		const relationshipIds = new Set(selectedRelationshipIds(selection));
+		const endpoints = new Set<string>();
+		for (const edge of this.edges) {
+			if (edge.data!.connection.relationshipIds.some((id) => relationshipIds.has(id))) {
+				endpoints.add(edge.source);
+				endpoints.add(edge.target);
+			}
+		}
+		if (endpoints.size > 0) {
+			return [...endpoints];
+		}
+
 		const ids = selectedEntityIds(this.options.graph(), selection);
 		return ids.filter((id) => this.nodes.some((node) => node.id === id));
 	}
 
 	recenter = () => {
-		const ids = this.visibleSelectionIds(this.options.selection());
+		const ids = this.targetNodeIds(this.options.selection());
 		if (ids.length > 0) {
 			this.viewportApi?.fit(ids, { preserveZoom: true });
 			return;
@@ -221,19 +181,33 @@ export class SystemMapController {
 	};
 
 	reveal = (selection: MapSelection) => {
-		const ids = this.visibleSelectionIds(selection);
-		if (ids.length > 0) {
-			this.viewportApi?.fit(ids);
+		const ids = this.targetNodeIds(selection);
+		if (ids.length === 0) {
+			return;
 		}
+
+		// Cards show from the runtime band, so revealing one zooms in past its threshold unless a band is pinned.
+		const revealsCard = this.nodes.some(
+			(node) => ids.includes(node.id) && node.type === "system-map-card"
+		);
+		if (revealsCard && this.detailMode === "auto") {
+			this.viewportApi?.fit(ids, { minZoom: runtimeThreshold(this.fitZoom) * 1.05 });
+			return;
+		}
+		this.viewportApi?.fit(ids);
 	};
 
-	retry = () => {
-		void this.runLayout();
+	/** Whether the host offers a deployment view to explore a placement target in. */
+	get canExploreDeployment(): boolean {
+		return this.options.onExploreDeployment() !== undefined;
+	}
+
+	exploreDeployment = (targetId: string) => {
+		this.options.onExploreDeployment()?.(targetId);
 	};
 
-	toggleLabels = () => {
-		this.showLabels = !this.showLabels;
-		this.syncInteractionState();
+	selectEntity = (entityId: string) => {
+		this.options.onSelectionChange({ kind: "entity", entityId });
 	};
 
 	selectNode = (id: string, event: Event) => {
@@ -266,46 +240,19 @@ export class SystemMapController {
 		this.options.onSelectionChange(selection, trigger);
 	}
 
-	onNodeDragStart = ({ targetNode }: DragEvent) => {
-		this.cancelLayout();
-		if (!targetNode) {
-			return;
-		}
-
-		this.dragStart = {
-			id: targetNode.id,
-			position: { ...targetNode.position },
-		};
-	};
-
-	onNodeDragStop = ({ targetNode }: DragEvent) => {
-		const start = this.dragStart;
-		this.dragStart = undefined;
-
-		if (!targetNode || !start || targetNode.id !== start.id) {
-			return;
-		}
-
-		const nodeStillExists = this.nodes.some((node) => node.id === targetNode.id);
-		if (!nodeStillExists) {
-			return;
-		}
-
-		const position = { ...targetNode.position };
-		const moved = position.x !== start.position.x || position.y !== start.position.y;
-		if (moved) {
-			this.options.onNodeMove()?.(targetNode.id, position);
-		}
-	};
-
 	keydown = (event: KeyboardEvent) => {
+		// Escape clears the selection from buttons on the canvas, such as a chip whose popover just closed.
 		if (event.target instanceof Element) {
-			const input = event.target.closest("input, textarea, select, button, [contenteditable=true]");
-			if (input) return;
+			const textInput = event.target.closest("input, textarea, select, [contenteditable=true]");
+			if (textInput) return;
 		}
 
 		if (event.key === "Escape") {
 			this.clearSelection();
+			return;
+		}
+
+		if (event.target instanceof Element && event.target.closest("button")) {
 			return;
 		}
 
@@ -328,3 +275,8 @@ export class SystemMapController {
 		}
 	};
 }
+
+const ctx = new Context<SystemMapController>("SystemMapController");
+export const setSystemMapController = (controller: SystemMapController) => ctx.set(controller);
+/** For node components, which Svelte Flow renders inside the map. */
+export const useSystemMapController = () => ctx.get();

@@ -1,22 +1,18 @@
 import { describe, expect, test } from "bun:test";
-import { nodePresentationForEntity } from "$features/system/components/system-map/map-node/presentation";
+import { entityCategoryLabel, entityLabel } from "../labels";
 
 describe("system map labels", () => {
-	test("shows the category and kind once each on nodes", () => {
+	test("labels entities by display name and preserves unrecognized categories", () => {
 		expect(
-			nodePresentationForEntity({ id: "entity-42", category: "system_function", kind: "payments" })
-		).toMatchObject({
-			label: "payments",
-			categoryLabel: "Function",
-		});
-		expect(
-			nodePresentationForEntity({ id: "unknown-42", category: "future_domain", kind: "custom" })
-		).toMatchObject({ label: "custom", categoryLabel: "future_domain" });
-		expect(
-			nodePresentationForEntity({ id: "code-42", category: "code", kind: "worker.ts" })
-		).toMatchObject({
-			label: "worker.ts",
-			categoryLabel: "Code",
-		});
+			entityLabel({ id: "entity-42", category: "container", kind: "service", name: "checkout-api" })
+		).toBe("checkout-api");
+		expect(entityCategoryLabel("container")).toBe("Container");
+		expect(entityCategoryLabel("future_domain")).toBe("future_domain");
+	});
+
+	test("falls back to the kind when the entity is unnamed", () => {
+		expect(entityLabel({ id: "code-42", category: "code", kind: "worker.ts", name: "" })).toBe(
+			"worker.ts"
+		);
 	});
 });

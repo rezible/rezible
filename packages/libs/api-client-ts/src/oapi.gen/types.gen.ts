@@ -2335,6 +2335,7 @@ export type KnowledgeGraphEntityAttributes = {
 
 export type KnowledgeGraphEntitySummary = {
     category: 'system_function' | 'actor' | 'system' | 'container' | 'infrastructure' | 'component' | 'code' | 'process' | 'concern' | 'decision' | 'event' | 'signal';
+    displayName: string;
     id: string;
     kind: string;
 };

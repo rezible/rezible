@@ -5141,6 +5141,8 @@ components:
             - event
             - signal
           type: string
+        displayName:
+          type: string
         id:
           type: string
         kind:
@@ -5149,6 +5151,7 @@ components:
         - id
         - category
         - kind
+        - displayName
       type: object
     KnowledgeGraphEvidence:
       additionalProperties: false

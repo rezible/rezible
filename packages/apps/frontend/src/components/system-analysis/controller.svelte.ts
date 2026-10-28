@@ -42,7 +42,6 @@ export class SystemAnalysisController {
 
 	publishedAnalysis = $state.raw<PublishedSystemAnalysis>();
 	graph = $derived(this.publishedAnalysis?.graph);
-	positions = $derived(this.publishedAnalysis?.positions);
 	hasGraph = $derived(this.publishedAnalysis?.analysisId === this.analysisId && !!this.analysisId);
 
 	constructor(idFn: Getter<string | undefined>, optionsFn: Getter<SystemAnalysisOptions> = () => ({})) {

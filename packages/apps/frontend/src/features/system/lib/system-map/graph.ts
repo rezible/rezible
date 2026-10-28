@@ -3,6 +3,8 @@ export type GraphEntity = {
 	readonly id: string;
 	readonly category: string;
 	readonly kind: string;
+	/** Display name from the entity's state; empty when no source has named it. */
+	readonly name: string;
 };
 
 /** One canonical directed relationship. IDs are unique across both relationship arrays in a subset. */

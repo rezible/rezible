@@ -2,20 +2,41 @@
 	import { Button } from "$components/ui/button";
 	import * as Checkbox from "$components/ui/checkbox";
 	import * as Popover from "$components/ui/popover";
+	import * as ToggleGroup from "$components/ui/toggle-group";
 	import { getMapCategoryDisplay } from "$features/system/lib/system-map/category";
-	import type { SystemMapHandle } from "$features/system/components/system-map";
-	import { systemMapCategoryOptions, useSystemMapViewController } from "../../controller.svelte";
-
-	type Props = { map: SystemMapHandle | undefined };
-	let { map }: Props = $props();
+	import {
+		systemMapCategoryOptions,
+		useSystemMapViewController,
+		type MapViewKind,
+	} from "../../controller.svelte";
 
 	const view = useSystemMapViewController();
+	const map = $derived(view.mapView === "structure" ? view.mapHandle : undefined);
 	let categoriesOpen = $state(false);
 	let kindsOpen = $state(false);
+
+	/** Pressing the active item again would deselect it; the view stays as it is. */
+	function mapViewChanged(value: string) {
+		if (value) {
+			view.setMapView(value as MapViewKind);
+		}
+	}
 </script>
 
 <header class="border-border flex shrink-0 flex-wrap items-center justify-between gap-2 border-b px-3 py-2">
 	<div class="flex min-w-0 flex-wrap items-center gap-2">
+		<ToggleGroup.Root
+			type="single"
+			value={view.mapView}
+			onValueChange={mapViewChanged}
+			aria-label="Map view"
+			variant="outline"
+			size="sm"
+		>
+			<ToggleGroup.Item value="structure">Structure</ToggleGroup.Item>
+			<ToggleGroup.Item value="deployment">Deployment</ToggleGroup.Item>
+		</ToggleGroup.Root>
+
 		<Popover.Root bind:open={categoriesOpen}>
 			<Popover.Trigger>
 				{#snippet child({ props })}

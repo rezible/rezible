@@ -3,8 +3,8 @@ import type { GraphEntity } from "./graph";
 
 const knownCategories = new Set<string>(Object.values(MapCategory));
 
-/** Canvas entity text follows the canonical kind without adding identity or inferred names. */
-export const entityLabel = (entity: GraphEntity): string => entity.kind;
+/** Entity text is the display name, falling back to the canonical kind when the entity is unnamed. */
+export const entityLabel = (entity: GraphEntity): string => entity.name || entity.kind;
 
 /** Uses the existing readable category name while preserving unrecognized source values. */
 export const entityCategoryLabel = (category: string): string =>

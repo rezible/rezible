@@ -1,5 +1,4 @@
 import type { SystemAnalysisEdge, SystemAnalysisEntry, SystemAnalysisNode } from "$lib/api";
-import type { Point } from "$features/system/lib/system-map/geometry";
 import type { GraphEntity, GraphRelationship, GraphSubset } from "$features/system/lib/system-map/graph";
 import type { ResponsePage } from "$lib/api/utils";
 
@@ -15,7 +14,6 @@ export function flattenPages<T extends { id: string }>(pages: ResponsePage<T>[] 
 
 export type AnalysisGraph = {
 	graph: GraphSubset;
-	positions: Readonly<Partial<Record<string, Point>>>;
 	nodeByEntityId: ReadonlyMap<string, SystemAnalysisNode>;
 	edgeByRelationshipId: ReadonlyMap<string, SystemAnalysisEdge>;
 	duplicateEntityIds: readonly string[];
@@ -32,6 +30,7 @@ function canonicalNodeEntity(node: SystemAnalysisNode): GraphEntity {
 		id: entity.id,
 		category: entity.attributes.category,
 		kind: entity.attributes.kind,
+		name: entity.attributes.displayName,
 	};
 }
 
@@ -80,9 +79,6 @@ export function buildAnalysisGraph(
 		.sort(([left], [right]) => (left < right ? -1 : left > right ? 1 : 0))
 		.map(([, node]) => canonicalNodeEntity(node));
 	const entityIds = new Set(nodeByEntityId.keys());
-	const positions = Object.fromEntries(
-		[...nodeByEntityId].map(([entityId, node]) => [entityId, { ...node.attributes.position }])
-	) as Partial<Record<string, Point>>;
 
 	const relationships = [...edgeByRelationshipId.entries()]
 		.sort(([left], [right]) => (left < right ? -1 : left > right ? 1 : 0))
@@ -104,7 +100,6 @@ export function buildAnalysisGraph(
 			unresolvedRelationships,
 			enumeration: { scope: "analysis", stopReason: "exhausted" },
 		},
-		positions,
 		nodeByEntityId,
 		edgeByRelationshipId,
 		duplicateEntityIds: [...duplicateEntityIds].sort(),

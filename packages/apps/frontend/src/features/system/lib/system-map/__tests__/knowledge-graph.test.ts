@@ -18,7 +18,7 @@ const graph = (
 describe("neutral host selection helpers", () => {
 	test("availability includes unresolved source relationships", () => {
 		const source = graph(
-			[{ id: "present", category: "system", kind: "system" }],
+			[{ id: "present", category: "system", kind: "system", name: "present" }],
 			[],
 			[{ id: "unresolved", source: "present", target: "missing", predicate: "contains" }]
 		);
@@ -32,8 +32,8 @@ describe("neutral host selection helpers", () => {
 	test("summary reconciliation retains every original ID while any contributor remains", () => {
 		const source = graph(
 			[
-				{ id: "a", category: "system", kind: "A" },
-				{ id: "b", category: "system", kind: "B" },
+				{ id: "a", category: "system", kind: "A", name: "a" },
+				{ id: "b", category: "system", kind: "B", name: "b" },
 			],
 			[{ id: "still-present", source: "a", target: "b", predicate: "calls" }]
 		);

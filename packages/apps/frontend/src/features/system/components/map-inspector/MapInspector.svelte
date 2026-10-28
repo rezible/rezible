@@ -85,6 +85,37 @@
 						<dt class="text-muted-foreground">Kind</dt>
 						<dd class="wrap-anywhere">{inspectionView.entity.kind}</dd>
 					</dl>
+					{#if inspectionView.structureFacts.length > 0}
+						<ul class="flex flex-col gap-1 text-xs" aria-label="Structure">
+							{#each inspectionView.structureFacts as fact (fact)}
+								<li>{fact}</li>
+							{/each}
+						</ul>
+					{/if}
+					{#if inspectionView.placementUnknown}
+						<div class="flex flex-col gap-1">
+							<h4 class="text-xs font-medium uppercase">Runs on</h4>
+							<p class="text-muted-foreground text-xs">Placement unknown</p>
+						</div>
+					{:else if inspectionView.runsOn.length > 0}
+						<div class="flex flex-col gap-1">
+							<h4 class="text-xs font-medium uppercase">Runs on</h4>
+							<ul class="flex flex-col gap-1 text-xs">
+								{#each inspectionView.runsOn as target (target.id)}
+									<li>
+										<Button
+											variant="link"
+											size="xs"
+											class="h-auto max-w-full justify-start whitespace-normal px-0 text-left"
+											onclick={(event) => selectEntity(target.id, event)}
+										>
+											{target.text}
+										</Button>
+									</li>
+								{/each}
+							</ul>
+						</div>
+					{/if}
 					{#if inspectionView.incidentRelationships.length > 0}
 						<div class="flex flex-col gap-1">
 							<h4 class="text-xs font-medium uppercase">Incident relationships</h4>

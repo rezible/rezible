@@ -155,9 +155,10 @@ type (
 	}
 
 	KnowledgeGraphEntitySummary struct {
-		ID       uuid.UUID    `json:"id"`
-		Category kne.Category `json:"category"`
-		Kind     string       `json:"kind"`
+		ID          uuid.UUID    `json:"id"`
+		Category    kne.Category `json:"category"`
+		Kind        string       `json:"kind"`
+		DisplayName string       `json:"displayName"`
 	}
 
 	KnowledgeGraphRelationshipsPage struct {
@@ -252,9 +253,10 @@ func KnowledgeGraphEntityAliasFromRez(alias rez.KnowledgeEntityAlias) KnowledgeG
 
 func KnowledgeGraphEntitySummaryFromEnt(entity *ent.KnowledgeEntity) KnowledgeGraphEntitySummary {
 	return KnowledgeGraphEntitySummary{
-		ID:       entity.ID,
-		Category: entity.Category,
-		Kind:     entity.Kind,
+		ID:          entity.ID,
+		Category:    entity.Category,
+		Kind:        entity.Kind,
+		DisplayName: entity.State.DisplayName,
 	}
 }
 

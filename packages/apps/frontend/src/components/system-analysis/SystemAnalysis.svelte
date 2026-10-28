@@ -77,7 +77,6 @@
 					{#key controller.analysisId}
 						<SystemMap
 							graph={controller.graph}
-							positions={controller.positions}
 							selection={controller.selection}
 							highlights={controller.highlights}
 							onSelectionChange={controller.onSelected}

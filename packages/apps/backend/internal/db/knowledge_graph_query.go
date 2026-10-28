@@ -440,7 +440,7 @@ func (s *KnowledgeGraphQueryService) SelectGraphEntities(ctx context.Context, pa
 	}
 
 	selectEntitySummaryFields := s.selectedEntitiesQuery(ctx, selection, +1).
-		Select(kne.FieldID, kne.FieldCategory, kne.FieldKind)
+		Select(kne.FieldID, kne.FieldCategory, kne.FieldKind, kne.FieldState)
 	entities, queryErr := selectEntitySummaryFields.All(ctx)
 	if queryErr != nil {
 		return nil, fmt.Errorf("select knowledge graph entities: %w", queryErr)

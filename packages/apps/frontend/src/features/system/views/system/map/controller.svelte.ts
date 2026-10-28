@@ -1,13 +1,13 @@
 import { Context, watch } from "runed";
 import { useSearchParams } from "runed/kit";
-import { onDestroy } from "svelte";
+import { onDestroy, tick } from "svelte";
 import { useQueryClient } from "@tanstack/svelte-query";
 import { z } from "zod";
 
 import { type KnowledgeGraphEntitySummary } from "$lib/api";
+import type { SystemMapHandle } from "$features/system/components/system-map";
 import { getMapCategoryDisplay, isArchitectureCategory } from "$features/system/lib/system-map/category";
 import type { GraphSubset } from "$features/system/lib/system-map/graph";
-import type { Point } from "$features/system/lib/system-map/geometry";
 import type { MapSelection } from "$features/system/lib/system-map/presentation";
 import { reconcileSelection } from "$features/system/lib/system-map/selection";
 import { GraphQueryController, type PublishedGraph, type StandaloneGraphQuery } from "./loader.svelte";
@@ -32,7 +32,11 @@ export const systemMapCategoryOptions = [
 const filterSchema = z.object({
 	categories: z.array(z.enum(systemMapCategoryOptions)).default([]).catch([]),
 	kinds: z.array(z.string()).default([]).catch([]),
+	/** Structure is the default and leaves the URL; the back button returns to it from deployment. */
+	view: z.enum(["structure", "deployment"]).default("structure").catch("structure"),
 });
+
+export type MapViewKind = z.infer<typeof filterSchema>["view"];
 
 const emptyGraph: GraphSubset = {
 	entities: [],
@@ -52,9 +56,7 @@ const queryDescription = (query: StandaloneGraphQuery): string => {
 	const categories = query.categories.length
 		? query.categories.map((category) => getMapCategoryDisplay(category).categoryLabel).join(", ")
 		: "all categories";
-	const kinds = query.kinds.length 
-		? query.kinds.join(", ") 
-		: "all kinds";
+	const kinds = query.kinds.length ? query.kinds.join(", ") : "all kinds";
 	return `${categories}; ${kinds}`;
 };
 
@@ -81,8 +83,11 @@ export class SystemMapViewController {
 		this.graph.entities.some((entity) => isArchitectureCategory(entity.category))
 	);
 	selection = $state<MapSelection>();
-	positions = $state.raw<Partial<Record<string, Point>>>({});
 	inspectorOpen = $state(true);
+	mapView = $derived(this.filters.view);
+	/** The placement target the deployment view opens at, from Explore deployment. */
+	deploymentFocusTargetId = $state<string>();
+	mapHandle = $state<SystemMapHandle>();
 
 	availableKinds = $derived.by(() => {
 		const kinds = new Set(this.filters.kinds);
@@ -153,18 +158,30 @@ export class SystemMapViewController {
 	toggleInspector = () => (this.inspectorOpen = !this.inspectorOpen);
 	setSelection = (selection: MapSelection | undefined) => (this.selection = selection);
 
-	moveNode = (entityId: string, position: Point) => {
-		this.positions = { ...this.positions, [entityId]: position };
+	setMapView = (view: MapViewKind) => {
+		this.deploymentFocusTargetId = undefined;
+		this.params.update({ view });
+	};
+
+	exploreDeployment = (targetId: string) => {
+		this.deploymentFocusTargetId = targetId;
+		this.params.update({ view: "deployment" });
+	};
+
+	/** Shows the structure map, then moves its viewport to the entity once the map is visible again. */
+	showInStructure = async (entityId: string) => {
+		this.setMapView("structure");
+		// The hidden map has no size until the frame after it is shown measures it.
+		await tick();
+		await new Promise((resolve) => requestAnimationFrame(resolve));
+		await new Promise((resolve) => requestAnimationFrame(resolve));
+		this.mapHandle?.reveal({ kind: "entity", entityId });
 	};
 
 	private acceptPublication(published: PublishedGraph | undefined): void {
 		if (!published) return;
 
 		this.selection = reconcileSelection(published.graph, this.selection);
-		const entityIds = new Set(published.graph.entities.map((entity) => entity.id));
-		this.positions = Object.fromEntries(
-			Object.entries(this.positions).filter(([entityId]) => entityIds.has(entityId))
-		);
 	}
 
 	dispose(): void {

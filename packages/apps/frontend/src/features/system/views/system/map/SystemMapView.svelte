@@ -3,17 +3,17 @@
 	import { Badge } from "$components/ui/badge";
 	import { Spinner } from "$components/ui/spinner";
 	import ErrorAlert from "$components/layout/error-alert/ErrorAlert.svelte";
+	import { DeploymentView } from "$features/system/components/deployment-view";
 	import { MapInspector } from "$features/system/components/map-inspector";
-	import { SystemMap, type SystemMapHandle } from "$features/system/components/system-map";
+	import { SystemMap } from "$features/system/components/system-map";
 	import { initSystemMapViewController } from "./controller.svelte";
 	import MapToolbar from "./components/map-toolbar/MapToolbar.svelte";
 
 	const view = initSystemMapViewController();
-	let mapHandle = $state<SystemMapHandle>();
 </script>
 
 <section class="flex h-full min-h-0 min-w-0 flex-1 flex-col overflow-hidden" aria-label="System map">
-	<MapToolbar map={mapHandle} />
+	<MapToolbar />
 
 	{#if view.showingPriorQuery}
 		<div
@@ -75,16 +75,27 @@
 		{/if}
 
 		<div class="flex min-h-0 min-w-0 flex-1">
-			<div class="min-h-0 min-w-0 flex-1">
+			<!-- Hidden rather than unmounted, so its viewport survives a visit to the deployment view. -->
+			<div class="min-h-0 min-w-0 flex-1" class:hidden={view.mapView === "deployment"}>
 				<SystemMap
-					bind:this={mapHandle}
+					bind:this={view.mapHandle}
 					graph={view.graph}
-					positions={view.positions}
 					selection={view.selection}
 					onSelectionChange={view.setSelection}
-					onNodeMove={view.moveNode}
+					onExploreDeployment={view.exploreDeployment}
 				/>
 			</div>
+			{#if view.mapView === "deployment"}
+				<div class="min-h-0 min-w-0 flex-1">
+					<DeploymentView
+						graph={view.graph}
+						selection={view.selection}
+						onSelectionChange={view.setSelection}
+						focusTargetId={view.deploymentFocusTargetId}
+						onShowInStructure={view.showInStructure}
+					/>
+				</div>
+			{/if}
 			{#if view.inspectorOpen}
 				<MapInspector
 					graph={view.graph}

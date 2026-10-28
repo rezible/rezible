@@ -131,6 +131,23 @@ func (s *KnowledgeGraphQueryServiceSuite) TestEntityFiltersAndNormalization() {
 	s.Equal(nilFilterPage.EntitySelectionRef, emptyFilterPage.EntitySelectionRef)
 }
 
+func (s *KnowledgeGraphQueryServiceSuite) TestEntitySummariesCarryDisplayName() {
+	ctx, database, service := s.newService()
+	named, createErr := database.Client(ctx).KnowledgeEntity.Create().
+		SetID(queryTestUUID(1)).
+		SetCategory(kne.CategoryContainer).
+		SetKind("service").
+		SetState(schematypes.KnowledgeGraphSubjectState{DisplayName: "checkout-api"}).
+		Save(ctx)
+	s.Require().NoError(createErr)
+	unnamed := s.createEntity(ctx, database, queryTestUUID(2), kne.CategoryContainer, "service")
+
+	page := s.selectEntities(ctx, service, rez.SelectKnowledgeGraphEntitiesParams{})
+	s.Require().Equal([]uuid.UUID{named.ID, unnamed.ID}, entityPageIDs(page))
+	s.Equal("checkout-api", page.Entities[0].State.DisplayName)
+	s.Empty(page.Entities[1].State.DisplayName)
+}
+
 func (s *KnowledgeGraphQueryServiceSuite) TestEntityKeysetPaginationAndPageReferences() {
 	ctx, database, service := s.newService()
 	first := s.createEntity(ctx, database, queryTestUUID(1), kne.CategoryActor, "user")

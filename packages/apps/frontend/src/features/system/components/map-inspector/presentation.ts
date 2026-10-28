@@ -2,7 +2,12 @@ import type { GraphEntity } from "$features/system/lib/system-map/graph";
 import { entityLabel, relationshipPredicateLabel } from "$features/system/lib/system-map/labels";
 import type { MapSelection } from "$features/system/lib/system-map/presentation";
 import { selectedRelationshipIds } from "$features/system/lib/system-map/selection";
-import type { InspectedRelationship, MapInspection, MapInspectorItem } from "./inspection";
+import type {
+	InspectedRelationship,
+	InspectedStructure,
+	MapInspection,
+	MapInspectorItem,
+} from "./inspection";
 
 export type InspectorEndpointView = {
 	id: string;
@@ -27,6 +32,12 @@ export type InspectorViewData = {
 		missingRelationshipIds: readonly string[];
 		distinctContributorCount: number;
 	};
+	/** "2 systems", "4 runtime entities", "8 implementation entities grouped". */
+	structureFacts: readonly string[];
+	/** Where a runtime entity runs. */
+	runsOn: readonly InspectorEndpointView[];
+	/** A container with no loaded placement reads "Placement unknown" under Runs on. */
+	placementUnknown: boolean;
 	incidentRelationships: readonly InspectorRelationshipView[];
 	selectionAvailable: boolean;
 };
@@ -54,6 +65,40 @@ const relationshipView = ({
 	};
 };
 
+const plural = (count: number, singular: string, pluralForm: string) =>
+	`${count} ${count === 1 ? singular : pluralForm}`;
+
+function structureFacts(structure: InspectedStructure | undefined): string[] {
+	if (!structure) {
+		return [];
+	}
+	if (structure.level === "landscape") {
+		return [
+			plural(structure.systemCount, "system", "systems"),
+			plural(structure.runtimeCount, "runtime entity", "runtime entities"),
+		];
+	}
+	if (structure.level === "system") {
+		return [plural(structure.runtimeCount, "runtime entity", "runtime entities")];
+	}
+	if (structure.implementationCount > 0) {
+		const count = plural(
+			structure.implementationCount,
+			"implementation entity",
+			"implementation entities"
+		);
+		return [`${count} grouped`];
+	}
+	return [];
+}
+
+function runsOnViews(structure: InspectedStructure | undefined): InspectorEndpointView[] {
+	if (structure?.level !== "runtime") {
+		return [];
+	}
+	return structure.runsOn.map((target) => endpointView(target.id, target));
+}
+
 export const buildInspectionViewData = (inspection: MapInspection): InspectorViewData | undefined => {
 	if (!inspection.selection) return undefined;
 
@@ -74,6 +119,9 @@ export const buildInspectionViewData = (inspection: MapInspection): InspectorVie
 		entity,
 		relationship,
 		summary,
+		structureFacts: structureFacts(inspection.structure),
+		runsOn: runsOnViews(inspection.structure),
+		placementUnknown: inspection.structure?.level === "runtime" && inspection.structure.placementUnknown,
 		incidentRelationships: inspection.incidentRelationships.map(relationshipView),
 		selectionAvailable: inspection.available,
 	};
