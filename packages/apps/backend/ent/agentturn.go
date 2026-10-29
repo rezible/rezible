@@ -57,6 +57,10 @@ type AgentTurn struct {
 	CachedInputTokens int `json:"cached_input_tokens,omitempty"`
 	// OutputTokens holds the value of the "output_tokens" field.
 	OutputTokens int `json:"output_tokens,omitempty"`
+	// ModelCalls holds the value of the "model_calls" field.
+	ModelCalls int `json:"model_calls,omitempty"`
+	// PeakInputTokens holds the value of the "peak_input_tokens" field.
+	PeakInputTokens int `json:"peak_input_tokens,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the AgentTurnQuery when eager-loading is set.
 	Edges        AgentTurnEdges `json:"edges"`
@@ -151,7 +155,7 @@ func (*AgentTurn) scanValues(columns []string) ([]any, error) {
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case agentturn.FieldInputToolResume:
 			values[i] = new([]byte)
-		case agentturn.FieldTenantID, agentturn.FieldSequence, agentturn.FieldRiverJobID, agentturn.FieldInputTokens, agentturn.FieldCachedInputTokens, agentturn.FieldOutputTokens:
+		case agentturn.FieldTenantID, agentturn.FieldSequence, agentturn.FieldRiverJobID, agentturn.FieldInputTokens, agentturn.FieldCachedInputTokens, agentturn.FieldOutputTokens, agentturn.FieldModelCalls, agentturn.FieldPeakInputTokens:
 			values[i] = new(sql.NullInt64)
 		case agentturn.FieldStatus, agentturn.FieldFinishReason, agentturn.FieldError, agentturn.FieldModel:
 			values[i] = new(sql.NullString)
@@ -288,6 +292,18 @@ func (_m *AgentTurn) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.OutputTokens = int(value.Int64)
 			}
+		case agentturn.FieldModelCalls:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field model_calls", values[i])
+			} else if value.Valid {
+				_m.ModelCalls = int(value.Int64)
+			}
+		case agentturn.FieldPeakInputTokens:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field peak_input_tokens", values[i])
+			} else if value.Valid {
+				_m.PeakInputTokens = int(value.Int64)
+			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
 		}
@@ -412,6 +428,12 @@ func (_m *AgentTurn) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("output_tokens=")
 	builder.WriteString(fmt.Sprintf("%v", _m.OutputTokens))
+	builder.WriteString(", ")
+	builder.WriteString("model_calls=")
+	builder.WriteString(fmt.Sprintf("%v", _m.ModelCalls))
+	builder.WriteString(", ")
+	builder.WriteString("peak_input_tokens=")
+	builder.WriteString(fmt.Sprintf("%v", _m.PeakInputTokens))
 	builder.WriteByte(')')
 	return builder.String()
 }

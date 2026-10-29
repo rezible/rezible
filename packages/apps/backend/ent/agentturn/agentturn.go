@@ -50,6 +50,10 @@ const (
 	FieldCachedInputTokens = "cached_input_tokens"
 	// FieldOutputTokens holds the string denoting the output_tokens field in the database.
 	FieldOutputTokens = "output_tokens"
+	// FieldModelCalls holds the string denoting the model_calls field in the database.
+	FieldModelCalls = "model_calls"
+	// FieldPeakInputTokens holds the string denoting the peak_input_tokens field in the database.
+	FieldPeakInputTokens = "peak_input_tokens"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
 	// EdgeAgentSession holds the string denoting the agent_session edge name in mutations.
@@ -128,6 +132,8 @@ var Columns = []string{
 	FieldInputTokens,
 	FieldCachedInputTokens,
 	FieldOutputTokens,
+	FieldModelCalls,
+	FieldPeakInputTokens,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -172,6 +178,14 @@ var (
 	DefaultOutputTokens int
 	// OutputTokensValidator is a validator for the "output_tokens" field. It is called by the builders before save.
 	OutputTokensValidator func(int) error
+	// DefaultModelCalls holds the default value on creation for the "model_calls" field.
+	DefaultModelCalls int
+	// ModelCallsValidator is a validator for the "model_calls" field. It is called by the builders before save.
+	ModelCallsValidator func(int) error
+	// DefaultPeakInputTokens holds the default value on creation for the "peak_input_tokens" field.
+	DefaultPeakInputTokens int
+	// PeakInputTokensValidator is a validator for the "peak_input_tokens" field. It is called by the builders before save.
+	PeakInputTokensValidator func(int) error
 )
 
 // Status defines the type for the "status" enum field.
@@ -286,6 +300,16 @@ func ByCachedInputTokens(opts ...sql.OrderTermOption) OrderOption {
 // ByOutputTokens orders the results by the output_tokens field.
 func ByOutputTokens(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldOutputTokens, opts...).ToFunc()
+}
+
+// ByModelCalls orders the results by the model_calls field.
+func ByModelCalls(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldModelCalls, opts...).ToFunc()
+}
+
+// ByPeakInputTokens orders the results by the peak_input_tokens field.
+func ByPeakInputTokens(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldPeakInputTokens, opts...).ToFunc()
 }
 
 // ByTenantField orders the results by tenant field.

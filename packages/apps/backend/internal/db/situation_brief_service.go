@@ -156,7 +156,7 @@ func (s *SituationBriefService) changesWindow(situation *ent.Situation) changesW
 	if situation.ClosedAt != nil {
 		window.end = *situation.ClosedAt
 	}
-	if earliest := window.end.Add(-changesMaxWindow); window.afterStart.Before(earliest) {
+	if earliest := window.end.Add(-rez.MaxServiceChangesWindow); window.afterStart.Before(earliest) {
 		window.afterStart = earliest
 		window.afterStartMoved = true
 	}

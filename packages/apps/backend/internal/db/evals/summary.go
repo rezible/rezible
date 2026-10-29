@@ -45,6 +45,8 @@ type TurnSummary struct {
 	CachedInputTokens    IntRange `json:"cached_input_tokens"`
 	OutputTokens         IntRange `json:"output_tokens"`
 	Reads                IntRange `json:"reads"`
+	ModelCalls           IntRange `json:"model_calls"`
+	PeakInputTokens      IntRange `json:"peak_input_tokens"`
 	DurationMilliseconds IntRange `json:"duration_ms"`
 }
 
@@ -145,6 +147,8 @@ func Summarize(result RunResult) Summary {
 					CachedInputTokens:    rangeOf(int64(turn.CachedInputTokens)),
 					OutputTokens:         rangeOf(int64(turn.OutputTokens)),
 					Reads:                rangeOf(int64(turn.Reads)),
+					ModelCalls:           rangeOf(int64(turn.ModelCalls)),
+					PeakInputTokens:      rangeOf(int64(turn.PeakInputTokens)),
 					DurationMilliseconds: rangeOf(turn.DurationMilliseconds),
 				})
 				continue
@@ -155,6 +159,8 @@ func Summarize(result RunResult) Summary {
 			turnSummary.CachedInputTokens = turnSummary.CachedInputTokens.widen(int64(turn.CachedInputTokens))
 			turnSummary.OutputTokens = turnSummary.OutputTokens.widen(int64(turn.OutputTokens))
 			turnSummary.Reads = turnSummary.Reads.widen(int64(turn.Reads))
+			turnSummary.ModelCalls = turnSummary.ModelCalls.widen(int64(turn.ModelCalls))
+			turnSummary.PeakInputTokens = turnSummary.PeakInputTokens.widen(int64(turn.PeakInputTokens))
 			turnSummary.DurationMilliseconds = turnSummary.DurationMilliseconds.widen(turn.DurationMilliseconds)
 		}
 	}
@@ -177,12 +183,14 @@ func (s Summary) Write(w io.Writer) error {
 		}
 	}
 	for _, turn := range s.Turns {
-		fmt.Fprintf(table, "turn %d\tinput %s (cached %s)\toutput %s\treads %s\t%s\n",
+		fmt.Fprintf(table, "turn %d\tinput %s (cached %s)\toutput %s\treads %s\tcalls %s\tpeak %s\t%s\n",
 			turn.Sequence,
 			formatRange(turn.InputTokens, formatTokens),
 			formatRange(turn.CachedInputTokens, formatTokens),
 			formatRange(turn.OutputTokens, formatTokens),
 			formatRange(turn.Reads, func(value int64) string { return fmt.Sprint(value) }),
+			formatRange(turn.ModelCalls, func(value int64) string { return fmt.Sprint(value) }),
+			formatRange(turn.PeakInputTokens, formatTokens),
 			formatRange(turn.DurationMilliseconds, formatMilliseconds))
 	}
 	return table.Flush()

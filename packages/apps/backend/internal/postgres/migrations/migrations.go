@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io/fs"
 	"log/slog"
+	"os"
 	"path"
 	"path/filepath"
 	"runtime"
@@ -171,26 +172,8 @@ func Plan(ctx context.Context, replayed *sql.DB, dirPath, name string) ([]string
 	if versionErr != nil {
 		return nil, versionErr
 	}
-	nameTemplate := template.Must(template.New("name").Parse(fmt.Sprintf("%04d", latest+1) + "{{ with .Name }}_{{ . }}{{ end }}.sql"))
-	contentTemplate := template.Must(template.New("content").Parse("-- +goose Up\n{{ range .Changes }}{{ with .Comment }}-- {{ println . }}{{ end }}{{ printf \"%s;\\n\" .Cmd }}{{ end }}"))
-	formatter, formatErr := migrate.NewTemplateFormatter(nameTemplate, contentTemplate)
-	if formatErr != nil {
-		return nil, formatErr
-	}
-	// Ent's defaults filter column and index drops out of the plan, which would hide a removed field or index.
-	mig, migrateErr := schema.NewMigrate(entsql.OpenDB(dialect.Postgres, replayed),
-		schema.WithDialect(dialect.Postgres),
-		schema.WithMigrationMode(schema.ModeInspect),
-		schema.WithDropColumn(true),
-		schema.WithDropIndex(true),
-		schema.WithDir(dir),
-		schema.WithFormatter(formatter),
-	)
-	if migrateErr != nil {
-		return nil, fmt.Errorf("create schema planner: %w", migrateErr)
-	}
-	if diffErr := mig.NamedDiff(ctx, name, tables...); diffErr != nil {
-		return nil, fmt.Errorf("plan migration: %w", diffErr)
+	if diffErr := diff(ctx, replayed, dir, latest+1, name, tables); diffErr != nil {
+		return nil, diffErr
 	}
 	after, afterErr := dir.Files()
 	if afterErr != nil {
@@ -203,6 +186,93 @@ func Plan(ctx context.Context, replayed *sql.DB, dirPath, name string) ([]string
 		}
 	}
 	return written, nil
+}
+
+// diff writes the changes from db to tables into dir as the goose migration with the given version.
+func diff(ctx context.Context, db *sql.DB, dir migrate.Dir, version uint, name string, tables []*schema.Table) error {
+	nameTemplate := template.Must(template.New("name").Parse(fmt.Sprintf("%04d", version) + "{{ with .Name }}_{{ . }}{{ end }}.sql"))
+	contentTemplate := template.Must(template.New("content").Parse("-- +goose Up\n{{ range .Changes }}{{ with .Comment }}-- {{ println . }}{{ end }}{{ printf \"%s;\\n\" .Cmd }}{{ end }}"))
+	formatter, formatErr := migrate.NewTemplateFormatter(nameTemplate, contentTemplate)
+	if formatErr != nil {
+		return formatErr
+	}
+	// Ent's defaults filter column and index drops out of the plan, which would hide a removed field or index.
+	mig, migrateErr := schema.NewMigrate(entsql.OpenDB(dialect.Postgres, db),
+		schema.WithDialect(dialect.Postgres),
+		schema.WithMigrationMode(schema.ModeInspect),
+		schema.WithDropColumn(true),
+		schema.WithDropIndex(true),
+		schema.WithDir(dir),
+		schema.WithFormatter(formatter),
+	)
+	if migrateErr != nil {
+		return fmt.Errorf("create schema planner: %w", migrateErr)
+	}
+	if diffErr := mig.NamedDiff(ctx, name, tables...); diffErr != nil {
+		return fmt.Errorf("plan migration: %w", diffErr)
+	}
+	return nil
+}
+
+const (
+	initFile = "0001_init.sql"
+	// initHeader acknowledges the DROP statements in River's bundled versions.
+	initHeader = "-- +goose Up\n-- destructive: River baseline replaces its migration bookkeeping and removes unused internal tables.\n"
+	// riverMarker starts the River section of initFile, which is carried over unchanged.
+	riverMarker = "\n-- River 001_"
+)
+
+// RegenerateInit replaces every migration in the source tree with a single initFile: the Ent schema and
+// infrastructure tables planned against empty, a database whose application schema has no tables, followed by
+// the River section of the current initFile. Existing databases must be recreated afterwards.
+func RegenerateInit(ctx context.Context, empty *sql.DB) error {
+	dirPath, pathErr := LocalDir()
+	if pathErr != nil {
+		return pathErr
+	}
+	current, readErr := os.ReadFile(filepath.Join(dirPath, initFile))
+	if readErr != nil {
+		return readErr
+	}
+	riverStart := strings.Index(string(current), riverMarker)
+	if riverStart < 0 {
+		return fmt.Errorf("%s has no River section starting %q", initFile, strings.TrimSpace(riverMarker))
+	}
+	planDir, planDirErr := os.MkdirTemp("", "rezible-init-migration")
+	if planDirErr != nil {
+		return planDirErr
+	}
+	defer os.RemoveAll(planDir)
+	dir, dirErr := sqltool.NewGooseDir(planDir)
+	if dirErr != nil {
+		return dirErr
+	}
+	tables := append(append([]*schema.Table{}, schemamigrate.Tables...), infraTables...)
+	if diffErr := diff(ctx, empty, dir, 1, "init", tables); diffErr != nil {
+		return diffErr
+	}
+	planned, plannedErr := os.ReadFile(filepath.Join(planDir, initFile))
+	if plannedErr != nil {
+		return fmt.Errorf("read planned schema: %w", plannedErr)
+	}
+	body, ok := strings.CutPrefix(string(planned), "-- +goose Up\n")
+	if !ok {
+		return fmt.Errorf("planned schema has no goose header")
+	}
+	existing, globErr := filepath.Glob(filepath.Join(dirPath, "*.sql"))
+	if globErr != nil {
+		return globErr
+	}
+	for _, file := range existing {
+		if removeErr := os.Remove(file); removeErr != nil {
+			return removeErr
+		}
+	}
+	content := initHeader + body + string(current[riverStart:])
+	if writeErr := os.WriteFile(filepath.Join(dirPath, initFile), []byte(content), 0o644); writeErr != nil {
+		return writeErr
+	}
+	return UpdateChecksum()
 }
 
 // LocalDir is the migration directory in the source tree, which Plan and UpdateChecksum write to.

@@ -188,6 +188,17 @@ var migrationsCommands = &cli.Command{
 			},
 		},
 		{
+			Name:  "regenerate-init",
+			Usage: "Replace every migration with a single 0001_init.sql planned from the schema",
+			Action: func(ctx context.Context, cmd *cli.Command) error {
+				return runApplication(ctx, func(ctx context.Context, app *Application) error {
+					return app.With(func(cfg rez.PostgresConfig) error {
+						return regenerateInitMigration(ctx, cfg)
+					})
+				})
+			},
+		},
+		{
 			Name:  "status",
 			Usage: "Show applied and pending migrations",
 			Action: func(ctx context.Context, cmd *cli.Command) error {

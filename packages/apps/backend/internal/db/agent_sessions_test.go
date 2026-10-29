@@ -774,6 +774,8 @@ func (s *AiAgentSessionServiceSuite) TestWorkerRecordsTurnSpan() {
 		attribute.Int("input_tokens", 100),
 		attribute.Int("cached_input_tokens", 60),
 		attribute.Int("output_tokens", 20),
+		attribute.Int("model_calls", 1),
+		attribute.Int("peak_input_tokens", 100),
 		attribute.Int("read_count", 2),
 	})
 	s.Equal(codes.Unset, completedSpan.Status().Code)
@@ -882,6 +884,10 @@ func (s *AiAgentSessionServiceSuite) TestRetriedTurnKeepsEarlierUsage() {
 		Once()
 	s.Require().NoError(f.worker.Work(ctx, makeAgentTurnJob(retried, 1)))
 	s.requireTurnUsage(ctx, h.tdb, f.turn.ID, "test/model", 150, 90, 15)
+	finished, finishedErr := h.tdb.Client(ctx).AgentTurn.Get(ctx, f.turn.ID)
+	s.Require().NoError(finishedErr)
+	s.Equal(2, finished.ModelCalls, "model calls add across attempts")
+	s.Equal(100, finished.PeakInputTokens, "the peak is the largest call of any attempt")
 }
 
 func (s *AiAgentSessionServiceSuite) TestTurnAbortedDuringAttemptKeepsItsUsage() {

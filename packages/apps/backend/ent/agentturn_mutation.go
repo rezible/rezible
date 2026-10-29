@@ -42,6 +42,10 @@ type AgentTurnMutation struct {
 	addcached_input_tokens *int
 	output_tokens          *int
 	addoutput_tokens       *int
+	model_calls            *int
+	addmodel_calls         *int
+	peak_input_tokens      *int
+	addpeak_input_tokens   *int
 	clearedFields          map[string]struct{}
 	tenant                 *int
 	clearedtenant          bool
@@ -944,6 +948,118 @@ func (m *AgentTurnMutation) ResetOutputTokens() {
 	m.addoutput_tokens = nil
 }
 
+// SetModelCalls sets the "model_calls" field.
+func (m *AgentTurnMutation) SetModelCalls(i int) {
+	m.model_calls = &i
+	m.addmodel_calls = nil
+}
+
+// ModelCalls returns the value of the "model_calls" field in the mutation.
+func (m *AgentTurnMutation) ModelCalls() (r int, exists bool) {
+	v := m.model_calls
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldModelCalls returns the old "model_calls" field's value of the AgentTurn entity.
+// If the AgentTurn object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AgentTurnMutation) OldModelCalls(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldModelCalls is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldModelCalls requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldModelCalls: %w", err)
+	}
+	return oldValue.ModelCalls, nil
+}
+
+// AddModelCalls adds i to the "model_calls" field.
+func (m *AgentTurnMutation) AddModelCalls(i int) {
+	if m.addmodel_calls != nil {
+		*m.addmodel_calls += i
+	} else {
+		m.addmodel_calls = &i
+	}
+}
+
+// AddedModelCalls returns the value that was added to the "model_calls" field in this mutation.
+func (m *AgentTurnMutation) AddedModelCalls() (r int, exists bool) {
+	v := m.addmodel_calls
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetModelCalls resets all changes to the "model_calls" field.
+func (m *AgentTurnMutation) ResetModelCalls() {
+	m.model_calls = nil
+	m.addmodel_calls = nil
+}
+
+// SetPeakInputTokens sets the "peak_input_tokens" field.
+func (m *AgentTurnMutation) SetPeakInputTokens(i int) {
+	m.peak_input_tokens = &i
+	m.addpeak_input_tokens = nil
+}
+
+// PeakInputTokens returns the value of the "peak_input_tokens" field in the mutation.
+func (m *AgentTurnMutation) PeakInputTokens() (r int, exists bool) {
+	v := m.peak_input_tokens
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPeakInputTokens returns the old "peak_input_tokens" field's value of the AgentTurn entity.
+// If the AgentTurn object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AgentTurnMutation) OldPeakInputTokens(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPeakInputTokens is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPeakInputTokens requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPeakInputTokens: %w", err)
+	}
+	return oldValue.PeakInputTokens, nil
+}
+
+// AddPeakInputTokens adds i to the "peak_input_tokens" field.
+func (m *AgentTurnMutation) AddPeakInputTokens(i int) {
+	if m.addpeak_input_tokens != nil {
+		*m.addpeak_input_tokens += i
+	} else {
+		m.addpeak_input_tokens = &i
+	}
+}
+
+// AddedPeakInputTokens returns the value that was added to the "peak_input_tokens" field in this mutation.
+func (m *AgentTurnMutation) AddedPeakInputTokens() (r int, exists bool) {
+	v := m.addpeak_input_tokens
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetPeakInputTokens resets all changes to the "peak_input_tokens" field.
+func (m *AgentTurnMutation) ResetPeakInputTokens() {
+	m.peak_input_tokens = nil
+	m.addpeak_input_tokens = nil
+}
+
 // ClearTenant clears the "tenant" edge to the Tenant entity.
 func (m *AgentTurnMutation) ClearTenant() {
 	m.clearedtenant = true
@@ -1221,7 +1337,7 @@ func (m *AgentTurnMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *AgentTurnMutation) Fields() []string {
-	fields := make([]string, 0, 17)
+	fields := make([]string, 0, 19)
 	if m.tenant != nil {
 		fields = append(fields, agentturn.FieldTenantID)
 	}
@@ -1273,6 +1389,12 @@ func (m *AgentTurnMutation) Fields() []string {
 	if m.output_tokens != nil {
 		fields = append(fields, agentturn.FieldOutputTokens)
 	}
+	if m.model_calls != nil {
+		fields = append(fields, agentturn.FieldModelCalls)
+	}
+	if m.peak_input_tokens != nil {
+		fields = append(fields, agentturn.FieldPeakInputTokens)
+	}
 	return fields
 }
 
@@ -1315,6 +1437,10 @@ func (m *AgentTurnMutation) Field(name string) (ent.Value, bool) {
 		return m.CachedInputTokens()
 	case agentturn.FieldOutputTokens:
 		return m.OutputTokens()
+	case agentturn.FieldModelCalls:
+		return m.ModelCalls()
+	case agentturn.FieldPeakInputTokens:
+		return m.PeakInputTokens()
 	}
 	return nil, false
 }
@@ -1358,6 +1484,10 @@ func (m *AgentTurnMutation) OldField(ctx context.Context, name string) (ent.Valu
 		return m.OldCachedInputTokens(ctx)
 	case agentturn.FieldOutputTokens:
 		return m.OldOutputTokens(ctx)
+	case agentturn.FieldModelCalls:
+		return m.OldModelCalls(ctx)
+	case agentturn.FieldPeakInputTokens:
+		return m.OldPeakInputTokens(ctx)
 	}
 	return nil, fmt.Errorf("unknown AgentTurn field %s", name)
 }
@@ -1486,6 +1616,20 @@ func (m *AgentTurnMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetOutputTokens(v)
 		return nil
+	case agentturn.FieldModelCalls:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetModelCalls(v)
+		return nil
+	case agentturn.FieldPeakInputTokens:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPeakInputTokens(v)
+		return nil
 	}
 	return fmt.Errorf("unknown AgentTurn field %s", name)
 }
@@ -1509,6 +1653,12 @@ func (m *AgentTurnMutation) AddedFields() []string {
 	if m.addoutput_tokens != nil {
 		fields = append(fields, agentturn.FieldOutputTokens)
 	}
+	if m.addmodel_calls != nil {
+		fields = append(fields, agentturn.FieldModelCalls)
+	}
+	if m.addpeak_input_tokens != nil {
+		fields = append(fields, agentturn.FieldPeakInputTokens)
+	}
 	return fields
 }
 
@@ -1527,6 +1677,10 @@ func (m *AgentTurnMutation) AddedField(name string) (ent.Value, bool) {
 		return m.AddedCachedInputTokens()
 	case agentturn.FieldOutputTokens:
 		return m.AddedOutputTokens()
+	case agentturn.FieldModelCalls:
+		return m.AddedModelCalls()
+	case agentturn.FieldPeakInputTokens:
+		return m.AddedPeakInputTokens()
 	}
 	return nil, false
 }
@@ -1570,6 +1724,20 @@ func (m *AgentTurnMutation) AddField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.AddOutputTokens(v)
+		return nil
+	case agentturn.FieldModelCalls:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddModelCalls(v)
+		return nil
+	case agentturn.FieldPeakInputTokens:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddPeakInputTokens(v)
 		return nil
 	}
 	return fmt.Errorf("unknown AgentTurn numeric field %s", name)
@@ -1681,6 +1849,12 @@ func (m *AgentTurnMutation) ResetField(name string) error {
 		return nil
 	case agentturn.FieldOutputTokens:
 		m.ResetOutputTokens()
+		return nil
+	case agentturn.FieldModelCalls:
+		m.ResetModelCalls()
+		return nil
+	case agentturn.FieldPeakInputTokens:
+		m.ResetPeakInputTokens()
 		return nil
 	}
 	return fmt.Errorf("unknown AgentTurn field %s", name)

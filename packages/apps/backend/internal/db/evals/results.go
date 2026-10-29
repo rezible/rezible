@@ -80,6 +80,8 @@ type (
 		CachedInputTokens    int    `json:"cached_input_tokens"`
 		OutputTokens         int    `json:"output_tokens"`
 		Reads                int    `json:"reads"`
+		ModelCalls           int    `json:"model_calls"`
+		PeakInputTokens      int    `json:"peak_input_tokens"`
 		DurationMilliseconds int64  `json:"duration_ms"`
 	}
 

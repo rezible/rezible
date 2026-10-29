@@ -132,6 +132,16 @@ func OutputTokens(v int) predicate.AgentTurn {
 	return predicate.AgentTurn(sql.FieldEQ(FieldOutputTokens, v))
 }
 
+// ModelCalls applies equality check predicate on the "model_calls" field. It's identical to ModelCallsEQ.
+func ModelCalls(v int) predicate.AgentTurn {
+	return predicate.AgentTurn(sql.FieldEQ(FieldModelCalls, v))
+}
+
+// PeakInputTokens applies equality check predicate on the "peak_input_tokens" field. It's identical to PeakInputTokensEQ.
+func PeakInputTokens(v int) predicate.AgentTurn {
+	return predicate.AgentTurn(sql.FieldEQ(FieldPeakInputTokens, v))
+}
+
 // TenantIDEQ applies the EQ predicate on the "tenant_id" field.
 func TenantIDEQ(v int) predicate.AgentTurn {
 	return predicate.AgentTurn(sql.FieldEQ(FieldTenantID, v))
@@ -815,6 +825,86 @@ func OutputTokensLT(v int) predicate.AgentTurn {
 // OutputTokensLTE applies the LTE predicate on the "output_tokens" field.
 func OutputTokensLTE(v int) predicate.AgentTurn {
 	return predicate.AgentTurn(sql.FieldLTE(FieldOutputTokens, v))
+}
+
+// ModelCallsEQ applies the EQ predicate on the "model_calls" field.
+func ModelCallsEQ(v int) predicate.AgentTurn {
+	return predicate.AgentTurn(sql.FieldEQ(FieldModelCalls, v))
+}
+
+// ModelCallsNEQ applies the NEQ predicate on the "model_calls" field.
+func ModelCallsNEQ(v int) predicate.AgentTurn {
+	return predicate.AgentTurn(sql.FieldNEQ(FieldModelCalls, v))
+}
+
+// ModelCallsIn applies the In predicate on the "model_calls" field.
+func ModelCallsIn(vs ...int) predicate.AgentTurn {
+	return predicate.AgentTurn(sql.FieldIn(FieldModelCalls, vs...))
+}
+
+// ModelCallsNotIn applies the NotIn predicate on the "model_calls" field.
+func ModelCallsNotIn(vs ...int) predicate.AgentTurn {
+	return predicate.AgentTurn(sql.FieldNotIn(FieldModelCalls, vs...))
+}
+
+// ModelCallsGT applies the GT predicate on the "model_calls" field.
+func ModelCallsGT(v int) predicate.AgentTurn {
+	return predicate.AgentTurn(sql.FieldGT(FieldModelCalls, v))
+}
+
+// ModelCallsGTE applies the GTE predicate on the "model_calls" field.
+func ModelCallsGTE(v int) predicate.AgentTurn {
+	return predicate.AgentTurn(sql.FieldGTE(FieldModelCalls, v))
+}
+
+// ModelCallsLT applies the LT predicate on the "model_calls" field.
+func ModelCallsLT(v int) predicate.AgentTurn {
+	return predicate.AgentTurn(sql.FieldLT(FieldModelCalls, v))
+}
+
+// ModelCallsLTE applies the LTE predicate on the "model_calls" field.
+func ModelCallsLTE(v int) predicate.AgentTurn {
+	return predicate.AgentTurn(sql.FieldLTE(FieldModelCalls, v))
+}
+
+// PeakInputTokensEQ applies the EQ predicate on the "peak_input_tokens" field.
+func PeakInputTokensEQ(v int) predicate.AgentTurn {
+	return predicate.AgentTurn(sql.FieldEQ(FieldPeakInputTokens, v))
+}
+
+// PeakInputTokensNEQ applies the NEQ predicate on the "peak_input_tokens" field.
+func PeakInputTokensNEQ(v int) predicate.AgentTurn {
+	return predicate.AgentTurn(sql.FieldNEQ(FieldPeakInputTokens, v))
+}
+
+// PeakInputTokensIn applies the In predicate on the "peak_input_tokens" field.
+func PeakInputTokensIn(vs ...int) predicate.AgentTurn {
+	return predicate.AgentTurn(sql.FieldIn(FieldPeakInputTokens, vs...))
+}
+
+// PeakInputTokensNotIn applies the NotIn predicate on the "peak_input_tokens" field.
+func PeakInputTokensNotIn(vs ...int) predicate.AgentTurn {
+	return predicate.AgentTurn(sql.FieldNotIn(FieldPeakInputTokens, vs...))
+}
+
+// PeakInputTokensGT applies the GT predicate on the "peak_input_tokens" field.
+func PeakInputTokensGT(v int) predicate.AgentTurn {
+	return predicate.AgentTurn(sql.FieldGT(FieldPeakInputTokens, v))
+}
+
+// PeakInputTokensGTE applies the GTE predicate on the "peak_input_tokens" field.
+func PeakInputTokensGTE(v int) predicate.AgentTurn {
+	return predicate.AgentTurn(sql.FieldGTE(FieldPeakInputTokens, v))
+}
+
+// PeakInputTokensLT applies the LT predicate on the "peak_input_tokens" field.
+func PeakInputTokensLT(v int) predicate.AgentTurn {
+	return predicate.AgentTurn(sql.FieldLT(FieldPeakInputTokens, v))
+}
+
+// PeakInputTokensLTE applies the LTE predicate on the "peak_input_tokens" field.
+func PeakInputTokensLTE(v int) predicate.AgentTurn {
+	return predicate.AgentTurn(sql.FieldLTE(FieldPeakInputTokens, v))
 }
 
 // HasTenant applies the HasEdge predicate on the "tenant" edge.

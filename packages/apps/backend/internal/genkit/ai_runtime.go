@@ -1,10 +1,15 @@
 package genkit
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
 	"strings"
 
+	"github.com/anthropics/anthropic-sdk-go/option"
 	"github.com/firebase/genkit/go/ai"
 	gkapi "github.com/firebase/genkit/go/core/api"
 	"github.com/firebase/genkit/go/core/tracing"
@@ -136,6 +141,7 @@ func enabledProviders(cfg rez.AiProvidersConfig) []modelProvider {
 func anthropicPlugin(cfg rez.AiProviderConfigAnthropic, modelNames []string) *anthropic.Anthropic {
 	plugin := &anthropic.Anthropic{
 		APIKey: cfg.APIKey,
+		Opts:   []option.RequestOption{option.WithMiddleware(cacheAnthropicMessages)},
 		Models: make(map[string]ai.ModelOptions),
 	}
 	structured := ai.ModelOptions{Supports: &ai.ModelSupports{
@@ -152,4 +158,29 @@ func anthropicPlugin(cfg rez.AiProviderConfigAnthropic, modelNames []string) *an
 		}
 	}
 	return plugin
+}
+
+// cacheAnthropicMessages turns on the API's automatic prompt caching for each Messages request, so a tool loop's
+// later calls read the conversation so far from the cache. The plugin sets no cache control of its own.
+func cacheAnthropicMessages(req *http.Request, next option.MiddlewareNext) (*http.Response, error) {
+	if req.Method != http.MethodPost || !strings.HasSuffix(req.URL.Path, "/v1/messages") || req.Body == nil {
+		return next(req)
+	}
+	body, readErr := io.ReadAll(req.Body)
+	if readErr != nil {
+		return nil, fmt.Errorf("read anthropic request body: %w", readErr)
+	}
+	fields := map[string]json.RawMessage{}
+	if decodeErr := json.Unmarshal(body, &fields); decodeErr == nil {
+		if _, set := fields["cache_control"]; !set {
+			fields["cache_control"] = json.RawMessage(`{"type":"ephemeral"}`)
+			if encoded, encodeErr := json.Marshal(fields); encodeErr == nil {
+				body = encoded
+			}
+		}
+	}
+	req.Body = io.NopCloser(bytes.NewReader(body))
+	req.ContentLength = int64(len(body))
+	req.GetBody = func() (io.ReadCloser, error) { return io.NopCloser(bytes.NewReader(body)), nil }
+	return next(req)
 }

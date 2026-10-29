@@ -340,6 +340,8 @@ func (r *agentRun) collect(ctx context.Context) error {
 			CachedInputTokens: turn.CachedInputTokens,
 			OutputTokens:      turn.OutputTokens,
 			Reads:             len(turn.Edges.ProviderReads),
+			ModelCalls:        turn.ModelCalls,
+			PeakInputTokens:   turn.PeakInputTokens,
 		}
 		if turn.FinishedAt != nil {
 			recorded.DurationMilliseconds = turn.FinishedAt.Sub(turn.CreatedAt).Milliseconds()

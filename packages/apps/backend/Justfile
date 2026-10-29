@@ -76,6 +76,11 @@ gen-mocks: (generate "./test/mocks")
     just gen-schema
     just run migrations create '{{ NAME }}'
 
+[doc("Pre-release only: replace every migration with 0001_init.sql regenerated from the schema")]
+@regenerate-init-migration:
+    just gen-schema
+    just run migrations regenerate-init
+
 [doc("Apply pending migrations to this workspace's database")]
 @apply-migrations:
     just run migrations apply

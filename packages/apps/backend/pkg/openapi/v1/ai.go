@@ -139,7 +139,7 @@ type (
 		Text   string            `json:"text,omitempty"`
 		Value  *float64          `json:"value,omitempty"`
 		Labels map[string]string `json:"labels"`
-		Count  int               `json:"count" doc:"How many consecutive identical items this entry stands for"`
+		Count  int               `json:"count" doc:"How many lines this entry stands for, identical or differing only in identifiers"`
 		// Earliest is the oldest repeat's time; set when Count is above one.
 		Earliest *time.Time `json:"earliest,omitempty"`
 	}

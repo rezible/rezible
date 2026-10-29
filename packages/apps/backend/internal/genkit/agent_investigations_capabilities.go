@@ -18,12 +18,14 @@ import (
 	"github.com/rezible/rezible/pkg/errs"
 
 	"github.com/rezible/rezible/ent"
+	agtm "github.com/rezible/rezible/ent/agentmessage"
 	at "github.com/rezible/rezible/ent/agentturn"
 	inv "github.com/rezible/rezible/ent/investigation"
 	invfvl "github.com/rezible/rezible/ent/investigationfindingversionlink"
 	invhv "github.com/rezible/rezible/ent/investigationhypothesisversion"
 	invui "github.com/rezible/rezible/ent/investigationuserinput"
 	kne "github.com/rezible/rezible/ent/knowledgeentity"
+	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/schema/schematypes"
 	rezai "github.com/rezible/rezible/pkg/ai"
 	"github.com/rezible/rezible/pkg/projections"
@@ -37,21 +39,28 @@ const (
 	investigationIntroductionTag = "investigation-introduction"
 	analysisToolTruncationMarker = "\n[truncated: complete tool result is limited to 12,000 characters]"
 	introductionListLimit        = 25
+	// introductionReadLimit is how many of the introduction's entities carry their first read.
+	introductionReadLimit = 8
+	// storedReadItemsPageSize is how many stored tool messages are loaded at a time to find earlier reads' items.
+	storedReadItemsPageSize = 100
 )
 
 type investigationInvocation struct {
 	investigationDependencies
 
 	investigationID uuid.UUID
+	sessionID       uuid.UUID
 	turnID          uuid.UUID
 
 	hasAssignedQuestion bool
 	// providerReadWindow is set from the situation when the introduction is built; nil without a situation.
 	providerReadWindow *rezai.ProviderReadWindow
 
-	// readItems are the items of this invocation's provider reads by read ID, for citing them.
-	readItemsMu sync.Mutex
-	readItems   map[uuid.UUID]providerReadItems
+	// readItems are the items of the session's provider reads by read ID, for citing them: this invocation's
+	// reads as they run, and earlier reads once loadStoredReadItems has run.
+	readItemsMu           sync.Mutex
+	readItems             map[uuid.UUID]providerReadItems
+	storedReadItemsLoaded bool
 }
 
 // providerReadItems are a read's items and the labels they all share.
@@ -101,7 +110,8 @@ func (i *investigationInvocation) makeIntroduction(
 	turnInput *rez.AiAgentTurnInput,
 	turnSequence int,
 ) (string, error) {
-	situation, situationErr := i.introduceSituation(ctx)
+	sources := i.introduceSources(ctx)
+	situation, situationErr := i.introduceSituation(ctx, sources.Changes.Available)
 	if situationErr != nil {
 		return "", situationErr
 	}
@@ -113,7 +123,6 @@ func (i *investigationInvocation) makeIntroduction(
 	if countErr != nil {
 		return "", countErr
 	}
-	sources := i.introduceSources(ctx)
 
 	assignedWork := "Initial investigation"
 	if turnSequence > 1 {
@@ -138,7 +147,7 @@ func (i *investigationInvocation) makeIntroduction(
 	})
 }
 
-func (i *investigationInvocation) introduceSituation(ctx context.Context) (*rezai.InvestigationSituation, error) {
+func (i *investigationInvocation) introduceSituation(ctx context.Context, changesAvailable bool) (*rezai.InvestigationSituation, error) {
 	listParams := rez.ListSituationsParams{
 		PageSize:        1,
 		InvestigationID: i.investigationID,
@@ -214,7 +223,7 @@ func (i *investigationInvocation) introduceSituation(ctx context.Context) (*reza
 	if matchesErr != nil {
 		return nil, matchesErr
 	}
-	for _, entity := range entities {
+	for index, entity := range entities {
 		introducedEntity := rezai.InvestigationEntity{
 			Ref:      i.formatRef(entity.ID),
 			Name:     limitedAnalysisDescription(entity.State.DisplayName),
@@ -227,9 +236,48 @@ func (i *investigationInvocation) introduceSituation(ctx context.Context) (*reza
 				Value: limitedAnalysisDescription(match.Value),
 			})
 		}
+		if index < introductionReadLimit {
+			if readErr := i.introduceEntityReads(ctx, entity, changesAvailable, &introducedEntity); readErr != nil {
+				return nil, readErr
+			}
+		}
 		introduced.Entities = append(introduced.Entities, introducedEntity)
 	}
 	return introduced, nil
+}
+
+// introduceEntityReads adds what read_entity returns for the entity's first page and, for a service when changes
+// can be read, what list_changes returns over the provider read window.
+func (i *investigationInvocation) introduceEntityReads(ctx context.Context, entity *ent.KnowledgeEntity, changesAvailable bool, introduced *rezai.InvestigationEntity) error {
+	read, readErr := i.readEntity(ctx, rezai.ReadEntityArgs{Ref: introduced.Ref})
+	if readErr != nil {
+		return fmt.Errorf("read situation entity: %w", readErr)
+	}
+	introduced.Read, introduced.ReadHasMore = read.Text, read.HasMore
+
+	isService := entity.Category == kne.CategoryContainer && entity.Kind == projections.EntityKindService
+	if !isService || !changesAvailable {
+		return nil
+	}
+	end := i.clock.Now().UTC()
+	if i.providerReadWindow.End != nil {
+		end = *i.providerReadWindow.End
+	}
+	start := i.providerReadWindow.Start
+	if earliest := end.Add(-rez.MaxServiceChangesWindow); start.Before(earliest) {
+		start = earliest
+	}
+	changesArgs := rezai.ListChangesArgs{
+		Service: introduced.Ref,
+		Start:   start.Format(time.RFC3339Nano),
+		End:     end.Format(time.RFC3339Nano),
+	}
+	changes, changesErr := i.listChanges(ctx, changesArgs)
+	if changesErr != nil {
+		return fmt.Errorf("list situation service changes: %w", changesErr)
+	}
+	introduced.Changes = changes.Text
+	return nil
 }
 
 // unconfirmedServiceMatches returns the pending proposals naming each of the entities that is a service.
@@ -567,7 +615,7 @@ func (i *investigationInvocation) readOutput(ctx context.Context, input rezai.Re
 }
 
 func (i *investigationInvocation) publishReport(ctx context.Context, input rezai.PublishInvestigationReportToolInput) (*rezai.InvestigationReportToolResult, error) {
-	evidenceIDs, citedItems, resolveErr := i.resolveEvidenceRefs(input.EvidenceRefs)
+	evidenceIDs, citedItems, resolveErr := i.resolveEvidenceRefs(ctx, input.EvidenceRefs)
 	if resolveErr != nil {
 		return nil, fmt.Errorf("evidence_refs: %w", resolveErr)
 	}
@@ -591,7 +639,7 @@ func (i *investigationInvocation) publishReport(ctx context.Context, input rezai
 }
 
 func (i *investigationInvocation) publishFinding(ctx context.Context, input rezai.PublishInvestigationFindingToolInput) (*rezai.InvestigationFindingVersionToolResult, error) {
-	evidenceIDs, citedItems, resolveErr := i.resolveEvidenceRefs(input.EvidenceRefs)
+	evidenceIDs, citedItems, resolveErr := i.resolveEvidenceRefs(ctx, input.EvidenceRefs)
 	if resolveErr != nil {
 		return nil, fmt.Errorf("evidence_refs: %w", resolveErr)
 	}
@@ -616,7 +664,7 @@ func (i *investigationInvocation) publishFinding(ctx context.Context, input reza
 }
 
 func (i *investigationInvocation) publishAnswer(ctx context.Context, input rezai.PublishInvestigationAnswerToolInput) (*rezai.InvestigationFindingVersionToolResult, error) {
-	evidenceIDs, citedItems, resolveErr := i.resolveEvidenceRefs(input.EvidenceRefs)
+	evidenceIDs, citedItems, resolveErr := i.resolveEvidenceRefs(ctx, input.EvidenceRefs)
 	if resolveErr != nil {
 		return nil, fmt.Errorf("evidence_refs: %w", resolveErr)
 	}
@@ -640,7 +688,7 @@ func (i *investigationInvocation) publishAnswer(ctx context.Context, input rezai
 }
 
 func (i *investigationInvocation) publishHypothesis(ctx context.Context, input rezai.PublishInvestigationHypothesisToolInput) (*rezai.InvestigationHypothesisVersionToolResult, error) {
-	evidenceIDs, citedItems, resolveErr := i.resolveEvidenceRefs(input.EvidenceRefs)
+	evidenceIDs, citedItems, resolveErr := i.resolveEvidenceRefs(ctx, input.EvidenceRefs)
 	if resolveErr != nil {
 		return nil, fmt.Errorf("evidence_refs: %w", resolveErr)
 	}
@@ -834,7 +882,7 @@ func (i *investigationInvocation) resolveRef(ref string) (uuid.UUID, error) {
 // resolveEvidenceRefs resolves evidence refs to the IDs they cite. A <provider_read_ref>#<item ref> cites the
 // read and names one of its items, with the read's shared labels merged in; an output may name up to
 // rezai.MaxProviderReadHighlight items of one read.
-func (i *investigationInvocation) resolveEvidenceRefs(refs []string) ([]uuid.UUID, map[uuid.UUID][]schematypes.ProviderReadItem, error) {
+func (i *investigationInvocation) resolveEvidenceRefs(ctx context.Context, refs []string) ([]uuid.UUID, map[uuid.UUID][]schematypes.ProviderReadItem, error) {
 	ids := make([]uuid.UUID, len(refs))
 	cited := make(map[uuid.UUID][]schematypes.ProviderReadItem)
 	for index, ref := range refs {
@@ -847,7 +895,7 @@ func (i *investigationInvocation) resolveEvidenceRefs(refs []string) ([]uuid.UUI
 		if !isItem {
 			continue
 		}
-		item, itemErr := i.readItem(id, itemRef)
+		item, itemErr := i.readItem(ctx, id, itemRef)
 		if itemErr != nil {
 			return nil, nil, fmt.Errorf("reference at index %d: %w", index, itemErr)
 		}
@@ -865,12 +913,22 @@ func (i *investigationInvocation) keepReadItems(readID uuid.UUID, labels map[str
 	i.readItems[readID] = providerReadItems{labels: labels, items: items}
 }
 
-func (i *investigationInvocation) readItem(readID uuid.UUID, itemRef string) (schematypes.ProviderReadItem, error) {
+// readItem returns the read's item, with the read's shared labels merged in. A read not made by this invocation
+// is looked up in the session's stored messages.
+func (i *investigationInvocation) readItem(ctx context.Context, readID uuid.UUID, itemRef string) (schematypes.ProviderReadItem, error) {
+	// Held through the stored-message load so concurrent tool calls load it once per invocation and never see
+	// the map half filled.
 	i.readItemsMu.Lock()
 	defer i.readItemsMu.Unlock()
 	read, found := i.readItems[readID]
+	if !found && !i.storedReadItemsLoaded {
+		if loadErr := i.loadStoredReadItems(ctx); loadErr != nil {
+			return schematypes.ProviderReadItem{}, loadErr
+		}
+		read, found = i.readItems[readID]
+	}
 	if !found {
-		return schematypes.ProviderReadItem{}, fmt.Errorf("%w: %s is not a provider read made this turn, so its items cannot be cited", errs.ErrInvalidInput, i.formatRef(readID))
+		return schematypes.ProviderReadItem{}, fmt.Errorf("%w: %s is not a provider read of this investigation, so its items cannot be cited", errs.ErrInvalidInput, i.formatRef(readID))
 	}
 	for _, item := range read.items {
 		if item.Ref != itemRef {
@@ -883,6 +941,72 @@ func (i *investigationInvocation) readItem(readID uuid.UUID, itemRef string) (sc
 		return item, nil
 	}
 	return schematypes.ProviderReadItem{}, fmt.Errorf("%w: provider read %s has no item %q", errs.ErrInvalidInput, i.formatRef(readID), itemRef)
+}
+
+// loadStoredReadItems keeps the items of the provider reads in the session's stored tool responses, from earlier
+// turns and earlier attempts of this turn, without replacing reads already kept. The caller holds readItemsMu.
+func (i *investigationInvocation) loadStoredReadItems(ctx context.Context) error {
+	params := rez.ListAiAgentMessagesParams{
+		ListParams: ent.ListParams{Page: 1, PageSize: storedReadItemsPageSize},
+		Predicates: []predicate.AgentMessage{
+			agtm.AgentSessionID(i.sessionID),
+			agtm.RoleEQ(agtm.RoleTool),
+		},
+	}
+	for {
+		listed, listErr := i.sessions.ListAgentMessages(ctx, params)
+		if listErr != nil {
+			return fmt.Errorf("list session tool messages: %w", listErr)
+		}
+		for _, message := range listed.Data {
+			for _, part := range message.Content {
+				i.keepStoredReadItems(part)
+			}
+		}
+		if len(listed.Data) == 0 || params.Page*params.PageSize >= listed.Total {
+			break
+		}
+		params.Page++
+	}
+	i.storedReadItemsLoaded = true
+	return nil
+}
+
+// keepStoredReadItems keeps the items of a stored search_logs or count_logs response. A response that does not
+// decode to a read, such as a failed read's error, is skipped.
+func (i *investigationInvocation) keepStoredReadItems(part *ai.Part) {
+	if part == nil || !part.IsToolResponse() || part.ToolResponse == nil {
+		return
+	}
+	encoded, encodeErr := json.Marshal(part.ToolResponse.Output)
+	if encodeErr != nil {
+		return
+	}
+	var readRef string
+	var read providerReadItems
+	switch part.ToolResponse.Name {
+	case rezai.SearchLogsTool.Name():
+		var result rezai.SearchLogsToolResult
+		if json.Unmarshal(encoded, &result) != nil {
+			return
+		}
+		readRef, read = result.ProviderReadRef, providerReadItems{labels: result.Labels, items: result.Items}
+	case rezai.CountLogsTool.Name():
+		var result rezai.CountLogsToolResult
+		if json.Unmarshal(encoded, &result) != nil {
+			return
+		}
+		readRef, read = result.ProviderReadRef, providerReadItems{items: result.Items}
+	default:
+		return
+	}
+	readID, parseErr := uuid.Parse(readRef)
+	if parseErr != nil || readID == uuid.Nil {
+		return
+	}
+	if _, kept := i.readItems[readID]; !kept {
+		i.readItems[readID] = read
+	}
 }
 
 func (i *investigationInvocation) formatRef(id uuid.UUID) string {

@@ -34,6 +34,8 @@ const (
 	MaxProviderReadsPerTurn = 12
 	// MaxProviderReadHighlight is how many items of a read an output may cite, and its highlight keeps.
 	MaxProviderReadHighlight = 3
+	// MaxCountLogsPoints is the most points a count_logs result returns; the step is chosen for it.
+	MaxCountLogsPoints = 60
 	// ProviderReadLeadIn is how long before a situation opened its investigation may read, for a baseline.
 	ProviderReadLeadIn = 24 * time.Hour
 
@@ -69,8 +71,8 @@ type TextToolResult struct {
 type (
 	ReadEntityArgs struct {
 		Ref      string `json:"ref" jsonschema:"description=Opaque entity ref from the introduction or a tool result"`
-		Page     int    `json:"page" jsonschema:"description=One-based relationship page number; zero uses the default,minimum=0"`
-		PageSize int    `json:"page_size" jsonschema:"description=Relationship page size from 1 to 50; zero uses the default,minimum=0,maximum=50"`
+		Page     int    `json:"page" jsonschema:"description=One-based relationship page number; zero uses the default"`
+		PageSize int    `json:"page_size" jsonschema:"description=Relationship page size from 1 to 50; zero uses the default"`
 	}
 )
 
@@ -84,8 +86,8 @@ type (
 		Ref      string `json:"ref" jsonschema:"description=Opaque entity ref"`
 		Start    string `json:"start,omitempty" jsonschema:"description=Optional RFC 3339 earliest effective time"`
 		End      string `json:"end,omitempty" jsonschema:"description=Optional RFC 3339 latest effective time"`
-		Page     int    `json:"page" jsonschema:"description=One-based page number; zero uses the default,minimum=0"`
-		PageSize int    `json:"page_size" jsonschema:"description=Page size from 1 to 50; zero uses the default,minimum=0,maximum=50"`
+		Page     int    `json:"page" jsonschema:"description=One-based page number; zero uses the default"`
+		PageSize int    `json:"page_size" jsonschema:"description=Page size from 1 to 50; zero uses the default"`
 	}
 )
 
@@ -110,7 +112,7 @@ type (
 		Text         string                   `json:"text"`
 		Summary      string                   `json:"summary" jsonschema:"description=One or two plain sentences stating the current conclusion and how certain it is; no Markdown; at most 400 characters"`
 		EvidenceRefs []string                 `json:"evidence_refs" jsonschema:"description=Knowledge-evidence and provider read refs cited by this report; may be empty"`
-		NextChecks   []InvestigationNextCheck `json:"next_checks,omitempty" jsonschema:"description=Up to 3 things a responder can look at next, most useful first; may be empty,maxItems=3"`
+		NextChecks   []InvestigationNextCheck `json:"next_checks,omitempty" jsonschema:"description=Up to 3 things a responder can look at next, most useful first; may be empty"`
 	}
 
 	InvestigationNextCheck struct {
@@ -237,19 +239,19 @@ var ReadInvestigationOutputTool = defineTool[ToolDefinition[ReadInvestigationOut
 type (
 	ListServicesArgs struct {
 		Name     string `json:"name,omitempty" jsonschema:"description=Optional text the service name must contain, compared after normalizing case and separators, for example a name from a log line; empty lists every service"`
-		Page     int    `json:"page" jsonschema:"description=One-based page number; zero uses the default,minimum=0"`
-		PageSize int    `json:"page_size" jsonschema:"description=Page size from 1 to 50; zero uses the default,minimum=0,maximum=50"`
+		Page     int    `json:"page" jsonschema:"description=One-based page number; zero uses the default"`
+		PageSize int    `json:"page_size" jsonschema:"description=Page size from 1 to 50; zero uses the default"`
 	}
 )
 
 var ListServicesTool = defineTool[ToolDefinition[ListServicesArgs, *TextToolResult]](
 	"list_services",
-	"List the organization's services with their refs for other tools, optionally only those whose name contains some text. Use it to find a service named in a log line, or to see which services exist.",
+	"List the organization's services with their refs for other tools, optionally only those whose name contains some text. Use it to see which services exist.",
 )
 
 type (
 	ListChangesArgs struct {
-		ServiceRef  string `json:"service_ref" jsonschema:"description=Opaque ref of a service entity"`
+		Service     string `json:"service" jsonschema:"description=A service's ref from the introduction or a tool result\\, or its name\\, for example one named in a log line\\, matched like list_services and required to match one service"`
 		Start       string `json:"start" jsonschema:"description=RFC 3339 start of the window; at most 7 days before end"`
 		End         string `json:"end" jsonschema:"description=RFC 3339 end of the window"`
 		Environment string `json:"environment,omitempty" jsonschema:"description=Optional environment; empty lists every environment"`
@@ -263,11 +265,11 @@ var ListChangesTool = defineTool[ToolDefinition[ListChangesArgs, *TextToolResult
 
 type (
 	SearchLogsArgs struct {
-		ServiceRef string `json:"service_ref" jsonschema:"description=Opaque ref of a service entity; any service can be read"`
-		Start      string `json:"start" jsonschema:"description=RFC 3339 start; within the provider read window and at most 6 hours before end"`
-		End        string `json:"end" jsonschema:"description=RFC 3339 end; within the provider read window"`
-		Contains   string `json:"contains,omitempty" jsonschema:"description=Optional literal text each line must contain"`
-		Limit      int    `json:"limit,omitempty" jsonschema:"description=Lines to return from 1 to 200; zero uses 50,minimum=0,maximum=200"`
+		Service  string `json:"service" jsonschema:"description=A service's ref from the introduction or a tool result\\, or its name\\, for example one named in a log line\\, matched like list_services and required to match one service"`
+		Start    string `json:"start" jsonschema:"description=RFC 3339 start; within the provider read window and at most 6 hours before end"`
+		End      string `json:"end" jsonschema:"description=RFC 3339 end; within the provider read window"`
+		Contains string `json:"contains,omitempty" jsonschema:"description=Optional literal text each line must contain"`
+		Limit    int    `json:"limit,omitempty" jsonschema:"description=Lines to return from 1 to 200; zero uses 50"`
 	}
 
 	SearchLogsToolResult struct {
@@ -277,7 +279,7 @@ type (
 		ServiceName string `json:"service_name"`
 		// Labels are the labels every returned line carries with the same value.
 		Labels map[string]string `json:"labels,omitempty"`
-		// Items are the lines, newest first, consecutive identical lines collapsed into one.
+		// Items are the lines, newest first, lines identical or differing only in identifiers grouped into one.
 		Items []ProviderReadItem `json:"items"`
 		// Limits are the read's limits that applied, such as a truncated result.
 		Limits          []string `json:"limits,omitempty"`
@@ -288,15 +290,15 @@ type (
 
 var SearchLogsTool = defineTool[ToolDefinition[SearchLogsArgs, *SearchLogsToolResult]](
 	"search_logs",
-	"Provider read: search a service's log lines, newest first, optionally only those containing some text. Counts against the turn's provider read budget; cite its provider_read_ref, or up to three of its items as <provider_read_ref>#<item ref>.",
+	"Provider read: search a service's log lines, newest first, optionally only those containing some text; any service can be read, by ref or by name. Counts against the turn's provider read budget; cite its provider_read_ref, or up to three of its items as <provider_read_ref>#<item ref>.",
 )
 
 type (
 	CountLogsArgs struct {
-		ServiceRef string `json:"service_ref" jsonschema:"description=Opaque ref of a service entity; any service can be read"`
-		Start      string `json:"start" jsonschema:"description=RFC 3339 start; within the provider read window and at most 6 hours before end"`
-		End        string `json:"end" jsonschema:"description=RFC 3339 end; within the provider read window"`
-		Contains   string `json:"contains,omitempty" jsonschema:"description=Optional literal text each counted line must contain"`
+		Service  string `json:"service" jsonschema:"description=A service's ref from the introduction or a tool result\\, or its name\\, for example one named in a log line\\, matched like list_services and required to match one service"`
+		Start    string `json:"start" jsonschema:"description=RFC 3339 start; within the provider read window and at most 6 hours before end"`
+		End      string `json:"end" jsonschema:"description=RFC 3339 end; within the provider read window"`
+		Contains string `json:"contains,omitempty" jsonschema:"description=Optional literal text each counted line must contain"`
 	}
 
 	CountLogsToolResult struct {
@@ -314,5 +316,5 @@ type (
 
 var CountLogsTool = defineTool[ToolDefinition[CountLogsArgs, *CountLogsToolResult]](
 	"count_logs",
-	"Provider read: count a service's log lines over time, optionally only those containing some text; the step is chosen for the range. Counts against the turn's provider read budget; cite its provider_read_ref, or up to three of its items as <provider_read_ref>#<item ref>.",
+	"Provider read: count a service's log lines over time, optionally only those containing some text; any service can be read, by ref or by name. The step is chosen for the range. Counts against the turn's provider read budget; cite its provider_read_ref, or up to three of its items as <provider_read_ref>#<item ref>.",
 )

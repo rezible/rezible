@@ -11,8 +11,8 @@ func TestSummarize(t *testing.T) {
 	check := func(id string, passed bool) Check {
 		return Check{ID: id, Passed: passed}
 	}
-	turn := func(sequence, input, cached, output, reads int, duration int64) Turn {
-		return Turn{Sequence: sequence, InputTokens: input, CachedInputTokens: cached, OutputTokens: output, Reads: reads, DurationMilliseconds: duration}
+	turn := func(sequence, input, cached, output, reads, calls, peak int, duration int64) Turn {
+		return Turn{Sequence: sequence, InputTokens: input, CachedInputTokens: cached, OutputTokens: output, Reads: reads, ModelCalls: calls, PeakInputTokens: peak, DurationMilliseconds: duration}
 	}
 	workflow := Target{Name: "judge", Kind: TargetKindWorkflow}
 	agent := Target{Name: "checkout", Kind: TargetKindAgent}
@@ -43,17 +43,17 @@ func TestSummarize(t *testing.T) {
 		},
 		{
 			name:    "an errored agent repetition records only the checks it reached, and turns become ranges",
-			printed: "input 40k–52k (cached 30k–44k)",
+			printed: "calls 4–5   peak 14k–16k",
 			result: RunResult{Target: agent, Repetitions: []Repetition{
 				{
 					Index: 1, Status: RunStatusPassed,
 					Checks: []Check{check("report_published", true), check("answer_published", true)},
-					Turns:  []Turn{turn(1, 40_000, 30_000, 3_000, 6, 48_000), turn(2, 45_000, 32_000, 1_000, 1, 25_000)},
+					Turns:  []Turn{turn(1, 40_000, 30_000, 3_000, 6, 4, 14_000, 48_000), turn(2, 45_000, 32_000, 1_000, 1, 2, 23_000, 25_000)},
 				},
 				{
 					Index: 2, Status: RunStatusError, Error: stepError,
 					Checks: []Check{check("report_published", false)},
-					Turns:  []Turn{turn(1, 52_000, 44_000, 5_000, 11, 71_000)},
+					Turns:  []Turn{turn(1, 52_000, 44_000, 5_000, 11, 5, 16_000, 71_000)},
 				},
 			}},
 			want: Summary{
@@ -73,6 +73,8 @@ func TestSummarize(t *testing.T) {
 						CachedInputTokens:    IntRange{Min: 30_000, Max: 44_000},
 						OutputTokens:         IntRange{Min: 3_000, Max: 5_000},
 						Reads:                IntRange{Min: 6, Max: 11},
+						ModelCalls:           IntRange{Min: 4, Max: 5},
+						PeakInputTokens:      IntRange{Min: 14_000, Max: 16_000},
 						DurationMilliseconds: IntRange{Min: 48_000, Max: 71_000},
 					},
 					{
@@ -81,6 +83,8 @@ func TestSummarize(t *testing.T) {
 						CachedInputTokens:    IntRange{Min: 32_000, Max: 32_000},
 						OutputTokens:         IntRange{Min: 1_000, Max: 1_000},
 						Reads:                IntRange{Min: 1, Max: 1},
+						ModelCalls:           IntRange{Min: 2, Max: 2},
+						PeakInputTokens:      IntRange{Min: 23_000, Max: 23_000},
 						DurationMilliseconds: IntRange{Min: 25_000, Max: 25_000},
 					},
 				},

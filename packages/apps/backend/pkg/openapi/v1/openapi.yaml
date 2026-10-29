@@ -446,7 +446,7 @@ components:
       additionalProperties: false
       properties:
         count:
-          description: How many consecutive identical items this entry stands for
+          description: How many lines this entry stands for, identical or differing only in identifiers
           format: int64
           type: integer
         earliest:

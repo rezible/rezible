@@ -120,7 +120,7 @@ func (s *AiRuntimeSuite) TestDefinePromptWorkflowCountsUsageWithTheDefaultModel(
 	_, runErr := workflow.Run(tallyCtx, testWorkflowInput{Message: "hello"})
 	s.Require().NoError(runErr)
 
-	s.Equal(rezai.TurnUsage{Model: model.Name, InputTokens: 120, OutputTokens: 12}, totals())
+	s.Equal(rezai.TurnUsage{Model: model.Name, InputTokens: 120, OutputTokens: 12, ModelCalls: 1, PeakInputTokens: 120}, totals())
 }
 
 func (s *AiRuntimeSuite) TestNestedTurnUsageCountsInTheInnerTallyOnly() {
@@ -147,7 +147,7 @@ func (s *AiRuntimeSuite) TestNestedTurnUsageCountsInTheInnerTallyOnly() {
 	_, runErr := workflow.Run(innerCtx, testWorkflowInput{Message: "hello"})
 	s.Require().NoError(runErr)
 
-	s.Equal(rezai.TurnUsage{Model: model.Name, InputTokens: 120, OutputTokens: 8}, innerTotals())
+	s.Equal(rezai.TurnUsage{Model: model.Name, InputTokens: 120, OutputTokens: 8, ModelCalls: 1, PeakInputTokens: 120}, innerTotals())
 	s.Equal(rezai.TurnUsage{}, outerTotals())
 }
 
@@ -181,7 +181,7 @@ func (s *AiRuntimeSuite) TestDefinePromptWorkflowRunsOnItsModelSetting() {
 	output, runErr := workflow.Run(tallyCtx, testWorkflowInput{Message: "hello"})
 	s.Require().NoError(runErr)
 	s.True(output.OK)
-	s.Equal(rezai.TurnUsage{Model: override.Name, InputTokens: 10, OutputTokens: 2}, totals())
+	s.Equal(rezai.TurnUsage{Model: override.Name, InputTokens: 10, OutputTokens: 2, ModelCalls: 1, PeakInputTokens: 10}, totals())
 }
 
 func (s *AiRuntimeSuite) TestDefinePromptWorkflowFailsWithoutAModel() {

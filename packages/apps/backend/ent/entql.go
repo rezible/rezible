@@ -255,6 +255,8 @@ var schemaGraph = func() *sqlgraph.Schema {
 			agentturn.FieldInputTokens:       {Type: field.TypeInt, Column: agentturn.FieldInputTokens},
 			agentturn.FieldCachedInputTokens: {Type: field.TypeInt, Column: agentturn.FieldCachedInputTokens},
 			agentturn.FieldOutputTokens:      {Type: field.TypeInt, Column: agentturn.FieldOutputTokens},
+			agentturn.FieldModelCalls:        {Type: field.TypeInt, Column: agentturn.FieldModelCalls},
+			agentturn.FieldPeakInputTokens:   {Type: field.TypeInt, Column: agentturn.FieldPeakInputTokens},
 		},
 	}
 	graph.Nodes[6] = &sqlgraph.Node{
@@ -7779,6 +7781,16 @@ func (f *AgentTurnFilter) WhereCachedInputTokens(p entql.IntP) {
 // WhereOutputTokens applies the entql int predicate on the output_tokens field.
 func (f *AgentTurnFilter) WhereOutputTokens(p entql.IntP) {
 	f.Where(p.Field(agentturn.FieldOutputTokens))
+}
+
+// WhereModelCalls applies the entql int predicate on the model_calls field.
+func (f *AgentTurnFilter) WhereModelCalls(p entql.IntP) {
+	f.Where(p.Field(agentturn.FieldModelCalls))
+}
+
+// WherePeakInputTokens applies the entql int predicate on the peak_input_tokens field.
+func (f *AgentTurnFilter) WherePeakInputTokens(p entql.IntP) {
+	f.Where(p.Field(agentturn.FieldPeakInputTokens))
 }
 
 // WhereHasTenant applies a predicate to check if query has an edge tenant.

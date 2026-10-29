@@ -354,6 +354,18 @@ func init() {
 	agentturn.DefaultOutputTokens = agentturnDescOutputTokens.Default.(int)
 	// agentturn.OutputTokensValidator is a validator for the "output_tokens" field. It is called by the builders before save.
 	agentturn.OutputTokensValidator = agentturnDescOutputTokens.Validators[0].(func(int) error)
+	// agentturnDescModelCalls is the schema descriptor for model_calls field.
+	agentturnDescModelCalls := agentturnFields[15].Descriptor()
+	// agentturn.DefaultModelCalls holds the default value on creation for the model_calls field.
+	agentturn.DefaultModelCalls = agentturnDescModelCalls.Default.(int)
+	// agentturn.ModelCallsValidator is a validator for the "model_calls" field. It is called by the builders before save.
+	agentturn.ModelCallsValidator = agentturnDescModelCalls.Validators[0].(func(int) error)
+	// agentturnDescPeakInputTokens is the schema descriptor for peak_input_tokens field.
+	agentturnDescPeakInputTokens := agentturnFields[16].Descriptor()
+	// agentturn.DefaultPeakInputTokens holds the default value on creation for the peak_input_tokens field.
+	agentturn.DefaultPeakInputTokens = agentturnDescPeakInputTokens.Default.(int)
+	// agentturn.PeakInputTokensValidator is a validator for the "peak_input_tokens" field. It is called by the builders before save.
+	agentturn.PeakInputTokensValidator = agentturnDescPeakInputTokens.Validators[0].(func(int) error)
 	alertdefinitionMixin := schema.AlertDefinition{}.Mixin()
 	alertdefinition.Policy = privacy.NewPolicies(alertdefinitionMixin[0], alertdefinitionMixin[1], schema.AlertDefinition{})
 	alertdefinition.Hooks[0] = func(next ent.Mutator) ent.Mutator {

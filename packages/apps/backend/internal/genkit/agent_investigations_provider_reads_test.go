@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"math"
 	"reflect"
 	"sync"
 	"time"
@@ -176,9 +177,9 @@ func (f *providerReadFixture) expectRecorded(used int) (uuid.UUID, *[]rez.Finish
 
 func (f *providerReadFixture) search(start, end time.Time) rezai.SearchLogsArgs {
 	return rezai.SearchLogsArgs{
-		ServiceRef: f.service.ID.String(),
-		Start:      start.Format(time.RFC3339),
-		End:        end.Format(time.RFC3339),
+		Service: f.service.ID.String(),
+		Start:   start.Format(time.RFC3339),
+		End:     end.Format(time.RFC3339),
 	}
 }
 
@@ -288,6 +289,62 @@ func (s *AiRuntimeSuite) TestProviderReadsOfAnyService() {
 	s.Equal(rezai.MaxProviderReadsPerTurn-1, result.BudgetRemaining)
 }
 
+func (s *AiRuntimeSuite) TestProviderReadsByServiceName() {
+	ctx := s.T().Context()
+	byName := func(f *providerReadFixture, name string) rezai.SearchLogsArgs {
+		input := f.search(f.openedAt, f.openedAt.Add(time.Hour))
+		input.Service = name
+		return input
+	}
+	expectNamed := func(f *providerReadFixture, matches ...*ent.KnowledgeEntity) {
+		params := rez.ListKnowledgeEntitiesParams{
+			ListParams:           ent.ListParams{PageSize: analysisToolMaxPageSize},
+			Categories:           []kne.Category{kne.CategoryContainer},
+			LinkingAttribute:     projections.LinkingAttributeServiceName,
+			LinkingValueContains: "checkout",
+		}
+		f.h.knowledge.EXPECT().ListEntities(mock.Anything, params).
+			Return(&ent.ListResult[ent.KnowledgeEntity]{Data: matches, Total: len(matches)}, nil)
+	}
+
+	s.Run("one match is read", func() {
+		f := s.newProviderReadFixture()
+		expectNamed(f, f.service)
+		f.h.integrations.EXPECT().ListAllInstalled(mock.Anything).Return([]rez.InstalledIntegration{f.reader}, nil)
+		f.h.knowledge.EXPECT().ListSubjectAliases(mock.Anything, mock.Anything).Return(&ent.ListResult[ent.KnowledgeSubjectAlias]{}, nil)
+		f.expectRecorded(1)
+		var result rezai.SearchLogsToolResult
+		s.runInvestigationToolResult(ctx, f.h, rezai.SearchLogsTool.Name(), byName(f, "Checkout"), &result)
+		s.Equal(f.service.ID.String(), result.ServiceRef)
+		s.Equal(1, f.reader.reads())
+	})
+
+	s.Run("several matches are refused with their refs", func() {
+		f := s.newProviderReadFixture()
+		worker := &ent.KnowledgeEntity{
+			ID:       uuid.New(),
+			Category: kne.CategoryContainer,
+			Kind:     "service",
+			State:    schematypes.KnowledgeGraphSubjectState{DisplayName: "checkout-worker"},
+		}
+		expectNamed(f, f.service, worker)
+		var result map[string]any
+		s.runInvestigationToolResult(ctx, f.h, rezai.SearchLogsTool.Name(), byName(f, "checkout"), &result)
+		s.requireErrorResult(result, "Several services")
+		s.requireErrorResult(result, f.service.ID.String())
+		s.requireErrorResult(result, worker.ID.String())
+	})
+
+	s.Run("no match is refused", func() {
+		f := s.newProviderReadFixture()
+		expectNamed(f)
+		var result map[string]any
+		s.runInvestigationToolResult(ctx, f.h, rezai.CountLogsTool.Name(), byName(f, "checkout"), &result)
+		s.requireErrorResult(result, `No service's name contains "checkout".`)
+	})
+	// Neither refusal recorded a read: the provider read service mocks expect no calls.
+}
+
 func (s *AiRuntimeSuite) TestProviderReadBudgetRefusalSkipsTheProvider() {
 	ctx := s.T().Context()
 	f := s.newProviderReadFixture()
@@ -318,10 +375,10 @@ func (s *AiRuntimeSuite) TestProviderReadsAreRecorded() {
 		})).Return(&ent.AgentProviderRead{ID: readID}, 4, nil)
 
 		input := rezai.CountLogsArgs{
-			ServiceRef: f.service.ID.String(),
-			Start:      f.openedAt.Format(time.RFC3339),
-			End:        f.openedAt.Add(time.Hour).Format(time.RFC3339),
-			Contains:   "timeout",
+			Service:  f.service.ID.String(),
+			Start:    f.openedAt.Format(time.RFC3339),
+			End:      f.openedAt.Add(time.Hour).Format(time.RFC3339),
+			Contains: "timeout",
 		}
 		var raw map[string]any
 		s.runInvestigationToolResult(ctx, f.h, rezai.CountLogsTool.Name(), input, &raw)
@@ -357,12 +414,12 @@ func (s *AiRuntimeSuite) TestProviderReadsAreRecorded() {
 			return map[string]string{"service": "checkout-api", "level": "ERROR", "pod": pod}
 		}
 		f.reader.lines = []integrations.LogLine{
-			{Time: at(1), Line: "upstream timeout", Labels: labels("a")},
-			{Time: at(2), Line: "upstream timeout", Labels: labels("a")},
-			{Time: at(3), Line: "upstream timeout", Labels: labels("a")},
-			{Time: at(4), Line: "upstream timeout", Labels: labels("b")},
-			{Time: at(5), Line: "request completed", Labels: labels("b")},
-			{Time: at(6), Line: "upstream timeout", Labels: labels("b")},
+			{Time: at(1), Line: "charge failed request=0d7c3e0a-1b2c-4d5e-8f90-123456789abc trace=4bf92f3577b34da6", Labels: labels("a")},
+			{Time: at(2), Line: "GET /pay 200 in 18ms", Labels: labels("b")},
+			{Time: at(3), Line: "charge failed request=7a1e9c44-0b6d-4f2a-9e31-fedcba987654 trace=a3ce929d0e0e4736", Labels: labels("a")},
+			{Time: at(4), Line: "GET /pay 502 in 3020ms", Labels: labels("b")},
+			{Time: at(5), Line: "GET /pay 200 in 18ms", Labels: labels("b")},
+			{Time: at(6), Line: "charge failed request=5e2f8a10-3c4d-4e5f-a617-0123456789ab trace=00f067aa0ba902b7", Labels: labels("b")},
 		}
 		f.expectService("checkout-api")
 		_, finished := f.expectRecorded(1)
@@ -376,13 +433,13 @@ func (s *AiRuntimeSuite) TestProviderReadsAreRecorded() {
 		s.Require().NoError(json.Unmarshal(encoded, &result))
 
 		s.Equal(map[string]string{"service": "checkout-api", "level": "ERROR"}, result.Labels, "shared labels are hoisted")
-		earliest := at(3)
+		chargeEarliest, okEarliest := at(3), at(5)
 		s.Equal([]rezai.ProviderReadItem{
-			{Ref: "1", Time: at(1), Text: "upstream timeout", Labels: map[string]string{"pod": "a"}, Count: 3, Earliest: &earliest},
-			{Ref: "2", Time: at(4), Text: "upstream timeout", Labels: map[string]string{"pod": "b"}},
-			{Ref: "3", Time: at(5), Text: "request completed", Labels: map[string]string{"pod": "b"}},
-			{Ref: "4", Time: at(6), Text: "upstream timeout", Labels: map[string]string{"pod": "b"}},
-		}, result.Items, "only consecutive identical lines merge, and items get refs 1 to N in order")
+			{Ref: "1", Time: at(1), Text: "charge failed request=0d7c3e0a-1b2c-4d5e-8f90-123456789abc trace=4bf92f3577b34da6", Labels: map[string]string{"pod": "a"}, Count: 2, Earliest: &chargeEarliest},
+			{Ref: "2", Time: at(2), Text: "GET /pay 200 in 18ms", Labels: map[string]string{"pod": "b"}, Count: 2, Earliest: &okEarliest},
+			{Ref: "3", Time: at(4), Text: "GET /pay 502 in 3020ms", Labels: map[string]string{"pod": "b"}},
+			{Ref: "4", Time: at(6), Text: "charge failed request=5e2f8a10-3c4d-4e5f-a617-0123456789ab trace=00f067aa0ba902b7", Labels: map[string]string{"pod": "b"}},
+		}, result.Items, "repeats merge wherever they are, identifiers do not keep lines apart, status codes and other labels do")
 		s.Equal([]string{"reached the limit of 1 lines; more may exist"}, result.Limits)
 
 		s.Require().Len(*finished, 1)
@@ -399,13 +456,19 @@ func (s *AiRuntimeSuite) TestProviderReadsAreRecorded() {
 		}
 		f.expectService("checkout-api")
 		f.expectRecorded(1)
+		readRange := time.Hour + 30*time.Second
 		input := rezai.CountLogsArgs{
-			ServiceRef: f.service.ID.String(),
-			Start:      f.openedAt.Format(time.RFC3339),
-			End:        f.openedAt.Add(time.Hour).Format(time.RFC3339),
+			Service: f.service.ID.String(),
+			Start:   f.openedAt.Format(time.RFC3339),
+			End:     f.openedAt.Add(readRange).Format(time.RFC3339),
 		}
 		var result rezai.CountLogsToolResult
 		s.runInvestigationToolResult(ctx, f.h, rezai.CountLogsTool.Name(), input, &result)
+
+		s.Require().Len(f.reader.counts, 1)
+		step := f.reader.counts[0].Step
+		s.Require().Positive(step)
+		s.LessOrEqual(int(math.Ceil(float64(readRange)/float64(step))), rezai.MaxCountLogsPoints, "the step keeps the read within the points a count returns")
 
 		four, zero := 4.0, 0.0
 		s.Equal([]rezai.ProviderReadItem{
@@ -470,7 +533,7 @@ func (s *AiRuntimeSuite) TestCitingProviderReadItems() {
 	}
 	f.h.outputs.EXPECT().PublishInvestigationReport(mock.Anything, mock.Anything, mock.MatchedBy(func(params rez.PublishInvestigationReportParams) bool {
 		return len(params.EvidenceIDs) == 1 && params.EvidenceIDs[0] == readID && reflect.DeepEqual(params.CitedItems, cited)
-	})).Return(report, nil).Once()
+	})).Return(report, nil).Twice()
 
 	var published map[string]any
 	publish := func(refs ...string) {
@@ -490,6 +553,26 @@ func (s *AiRuntimeSuite) TestCitingProviderReadItems() {
 	}
 	publish(refs...)
 	s.requireErrorResult(published, "at most 3 items")
+
+	// A later invocation finds the read's items in the session's stored tool response, loading it once.
+	f.h.invocation.readItems = make(map[uuid.UUID]providerReadItems)
+	var output map[string]any
+	encoded, encodeErr := json.Marshal(searched)
+	s.Require().NoError(encodeErr)
+	s.Require().NoError(json.Unmarshal(encoded, &output))
+	stored := &ent.AgentMessage{Content: []*ai.Part{ai.NewToolResponsePart(&ai.ToolResponse{Name: rezai.SearchLogsTool.Name(), Output: output})}}
+	f.h.sessions.EXPECT().ListAgentMessages(mock.Anything, mock.Anything).
+		Return(&ent.ListResult[ent.AgentMessage]{Data: []*ent.AgentMessage{stored}, Total: 1}, nil).
+		Once()
+
+	publish(searched.ProviderReadRef + "#2")
+	s.NotContains(published, "error", "an earlier read is cited with its item and the shared labels")
+
+	publish(searched.ProviderReadRef + "#9")
+	s.requireErrorResult(published, "no item")
+
+	publish(uuid.NewString() + "#1")
+	s.requireErrorResult(published, "not a provider read of this investigation")
 }
 
 func (s *AiRuntimeSuite) TestProviderReadServiceIdentity() {
@@ -497,9 +580,9 @@ func (s *AiRuntimeSuite) TestProviderReadServiceIdentity() {
 	count := func(f *providerReadFixture) rezai.CountLogsToolResult {
 		f.expectRecorded(1)
 		input := rezai.CountLogsArgs{
-			ServiceRef: f.service.ID.String(),
-			Start:      f.openedAt.Format(time.RFC3339),
-			End:        f.openedAt.Add(time.Hour).Format(time.RFC3339),
+			Service: f.service.ID.String(),
+			Start:   f.openedAt.Format(time.RFC3339),
+			End:     f.openedAt.Add(time.Hour).Format(time.RFC3339),
 		}
 		var result rezai.CountLogsToolResult
 		s.runInvestigationToolResult(ctx, f.h, rezai.CountLogsTool.Name(), input, &result)
@@ -559,6 +642,8 @@ func (s *AiRuntimeSuite) TestListChanges() {
 		State:    schematypes.KnowledgeGraphSubjectState{DisplayName: "Shrink the payments pool"},
 	}
 	serviceID := uuid.New()
+	service := &ent.KnowledgeEntity{ID: serviceID, Category: kne.CategoryContainer, Kind: "service"}
+	h.knowledge.EXPECT().GetEntity(mock.Anything, serviceID, rez.KnowledgeEntityExpand{}).Return(service, nil)
 	params := rez.ListServiceChangesParams{
 		ServiceEntityID: serviceID,
 		Start:           deployedAt.Add(-time.Hour),
@@ -597,9 +682,9 @@ func (s *AiRuntimeSuite) TestListChanges() {
 	h.knowledge.EXPECT().SummarizeEvidence(mock.Anything, mock.Anything).Return(summaries, nil)
 
 	input := rezai.ListChangesArgs{
-		ServiceRef: serviceID.String(),
-		Start:      params.Start.Format(time.RFC3339),
-		End:        params.End.Format(time.RFC3339),
+		Service: serviceID.String(),
+		Start:   params.Start.Format(time.RFC3339),
+		End:     params.End.Format(time.RFC3339),
 	}
 	var result rezai.TextToolResult
 	s.runInvestigationToolResult(ctx, h, rezai.ListChangesTool.Name(), input, &result)

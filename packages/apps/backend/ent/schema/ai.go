@@ -139,6 +139,8 @@ func (AgentTurn) Fields() []ent.Field {
 		field.Int("input_tokens").Default(0).NonNegative(),
 		field.Int("cached_input_tokens").Default(0).NonNegative(),
 		field.Int("output_tokens").Default(0).NonNegative(),
+		field.Int("model_calls").Default(0).NonNegative(),
+		field.Int("peak_input_tokens").Default(0).NonNegative(),
 	}
 }
 

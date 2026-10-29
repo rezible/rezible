@@ -6,6 +6,8 @@ import (
 	"errors"
 	"fmt"
 	"maps"
+	"math"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -65,16 +67,16 @@ func (i *investigationInvocation) listServices(ctx context.Context, input rezai.
 }
 
 func (i *investigationInvocation) listChanges(ctx context.Context, input rezai.ListChangesArgs) (*rezai.TextToolResult, error) {
-	serviceID, resolveErr := i.resolveRef(input.ServiceRef)
+	service, resolveErr := i.resolveService(ctx, input.Service)
 	if resolveErr != nil {
-		return nil, fmt.Errorf("service_ref: %w", resolveErr)
+		return nil, resolveErr
 	}
 	start, end, rangeErr := i.parseRange(input.Start, input.End)
 	if rangeErr != nil {
 		return nil, rangeErr
 	}
 	params := rez.ListServiceChangesParams{
-		ServiceEntityID: serviceID,
+		ServiceEntityID: service.ID,
 		Start:           start,
 		End:             end,
 		Environment:     input.Environment,
@@ -207,7 +209,7 @@ type logRead struct {
 }
 
 func (i *investigationInvocation) searchLogs(ctx context.Context, input rezai.SearchLogsArgs) (*rezai.SearchLogsToolResult, error) {
-	target, prepareErr := i.prepareLogRead(ctx, input.ServiceRef, input.Start, input.End)
+	target, prepareErr := i.prepareLogRead(ctx, input.Service, input.Start, input.End)
 	if prepareErr != nil {
 		return nil, prepareErr
 	}
@@ -252,7 +254,7 @@ func (i *investigationInvocation) searchLogs(ctx context.Context, input rezai.Se
 }
 
 func (i *investigationInvocation) countLogs(ctx context.Context, input rezai.CountLogsArgs) (*rezai.CountLogsToolResult, error) {
-	target, prepareErr := i.prepareLogRead(ctx, input.ServiceRef, input.Start, input.End)
+	target, prepareErr := i.prepareLogRead(ctx, input.Service, input.Start, input.End)
 	if prepareErr != nil {
 		return nil, prepareErr
 	}
@@ -261,6 +263,7 @@ func (i *investigationInvocation) countLogs(ctx context.Context, input rezai.Cou
 		Start:    target.start,
 		End:      target.end,
 		Contains: input.Contains,
+		Step:     time.Duration(max(0, math.Ceil(target.end.Sub(target.start).Seconds()/rezai.MaxCountLogsPoints))) * time.Second,
 	}
 	if validateErr := params.Validate(); validateErr != nil {
 		return nil, validateErr
@@ -300,7 +303,8 @@ func (i *investigationInvocation) countLogs(ctx context.Context, input rezai.Cou
 }
 
 // collapseLogLines returns the labels every line carries with the same value, and the lines, newest first, each
-// keeping only its other labels, with consecutive identical lines merged into one item with their count.
+// keeping only its other labels. Lines with the same other labels and the same text once identifiers are masked
+// are grouped into one item, at the place of its newest line, with that line's text and the group's count.
 func (i *investigationInvocation) collapseLogLines(lines []integrations.LogLine) (map[string]string, []rezai.ProviderReadItem) {
 	collapsed := make([]rezai.ProviderReadItem, 0, len(lines))
 	if len(lines) == 0 {
@@ -313,6 +317,8 @@ func (i *investigationInvocation) collapseLogLines(lines []integrations.LogLine)
 			return !present || lineValue != value
 		})
 	}
+	type groupKey struct{ labels, text string }
+	groups := make(map[groupKey]int, len(lines))
 	for _, line := range lines {
 		own := maps.Clone(line.Labels)
 		maps.DeleteFunc(own, func(key, _ string) bool {
@@ -322,15 +328,16 @@ func (i *investigationInvocation) collapseLogLines(lines []integrations.LogLine)
 		if len(own) == 0 {
 			own = nil
 		}
-		if count := len(collapsed); count > 0 {
-			previous := &collapsed[count-1]
-			if previous.Text == line.Line && maps.Equal(previous.Labels, own) {
-				earliest := line.Time
-				previous.Count = max(previous.Count, 1) + 1
-				previous.Earliest = &earliest
-				continue
-			}
+		encodedLabels, _ := json.Marshal(own)
+		key := groupKey{labels: string(encodedLabels), text: logLineIdentifiers.ReplaceAllString(line.Line, "#")}
+		if index, seen := groups[key]; seen {
+			group := &collapsed[index]
+			earliest := line.Time
+			group.Count = max(group.Count, 1) + 1
+			group.Earliest = &earliest
+			continue
 		}
+		groups[key] = len(collapsed)
 		collapsed = append(collapsed, rezai.ProviderReadItem{Ref: itemRef(len(collapsed)), Time: line.Time, Text: line.Line, Labels: own})
 	}
 	if len(shared) == 0 {
@@ -338,6 +345,10 @@ func (i *investigationInvocation) collapseLogLines(lines []integrations.LogLine)
 	}
 	return shared, collapsed
 }
+
+// logLineIdentifiers matches the identifiers masked when grouping log lines: UUIDs, runs of 8 or more hex digits
+// and runs of 6 or more decimal digits. Durations and status codes are shorter and stay distinct.
+var logLineIdentifiers = regexp.MustCompile(`[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}|[0-9a-fA-F]{8,}|[0-9]{6,}`)
 
 // itemRef is the ref of the item at the index of a read's items: 1 to N in the order returned.
 func itemRef(index int) string {
@@ -355,21 +366,14 @@ func noLogsNote(what string, service integrations.LogServiceName) string {
 
 // prepareLogRead validates a log read before it is recorded: the service, the window and the log source. A
 // refusal here does not count against the budget.
-func (i *investigationInvocation) prepareLogRead(ctx context.Context, serviceRef, rawStart, rawEnd string) (*logRead, error) {
-	serviceID, resolveErr := i.resolveRef(serviceRef)
+func (i *investigationInvocation) prepareLogRead(ctx context.Context, serviceValue, rawStart, rawEnd string) (*logRead, error) {
+	service, resolveErr := i.resolveService(ctx, serviceValue)
 	if resolveErr != nil {
-		return nil, fmt.Errorf("service_ref: %w", resolveErr)
+		return nil, resolveErr
 	}
 	start, end, rangeErr := i.parseRange(rawStart, rawEnd)
 	if rangeErr != nil {
 		return nil, rangeErr
-	}
-	service, serviceErr := i.knowledge.GetEntity(ctx, serviceID, rez.KnowledgeEntityExpand{})
-	if serviceErr != nil {
-		return nil, fmt.Errorf("read service: %w", serviceErr)
-	}
-	if service.Category != kne.CategoryContainer {
-		return nil, fmt.Errorf("%w: service_ref %s is a %s/%s, not a service", errs.ErrInvalidInput, serviceRef, service.Category, service.Kind)
 	}
 	if windowErr := i.checkProviderReadWindow(start, end); windowErr != nil {
 		return nil, windowErr
@@ -389,6 +393,51 @@ func (i *investigationInvocation) prepareLogRead(ctx context.Context, serviceRef
 	}
 	identity := integrations.LogService{DisplayName: service.State.DisplayName, Aliases: aliases}
 	return &logRead{service: service, source: source, identity: identity, start: start, end: end}, nil
+}
+
+// resolveService returns the service a tool names by ref or by name. A value that parses as a UUID is a ref;
+// anything else is a name, matched like listServices and required to match exactly one service.
+func (i *investigationInvocation) resolveService(ctx context.Context, value string) (*ent.KnowledgeEntity, error) {
+	if _, parseErr := uuid.Parse(value); parseErr == nil {
+		serviceID, resolveErr := i.resolveRef(value)
+		if resolveErr != nil {
+			return nil, fmt.Errorf("service: %w", resolveErr)
+		}
+		service, serviceErr := i.knowledge.GetEntity(ctx, serviceID, rez.KnowledgeEntityExpand{})
+		if serviceErr != nil {
+			return nil, fmt.Errorf("read service: %w", serviceErr)
+		}
+		if service.Category != kne.CategoryContainer {
+			return nil, fmt.Errorf("%w: service %s is a %s/%s, not a service", errs.ErrInvalidInput, value, service.Category, service.Kind)
+		}
+		return service, nil
+	}
+
+	name := projections.NormalizeServiceName(value)
+	if name == "" {
+		return nil, fmt.Errorf("%w: service %q is not a ref and has no name once normalized", errs.ErrInvalidInput, value)
+	}
+	params := rez.ListKnowledgeEntitiesParams{
+		ListParams:           ent.ListParams{PageSize: analysisToolMaxPageSize},
+		Categories:           []kne.Category{kne.CategoryContainer},
+		LinkingAttribute:     projections.LinkingAttributeServiceName,
+		LinkingValueContains: name,
+	}
+	services, listErr := i.knowledge.ListEntities(ctx, params)
+	if listErr != nil {
+		return nil, fmt.Errorf("list services: %w", listErr)
+	}
+	switch len(services.Data) {
+	case 0:
+		return nil, fmt.Errorf("%w: No service's name contains %q.", errs.ErrInvalidInput, name)
+	case 1:
+		return services.Data[0], nil
+	}
+	lines := make([]string, len(services.Data))
+	for index, service := range services.Data {
+		lines[index] = i.renderEntityLine(service)
+	}
+	return nil, fmt.Errorf("%w: Several services' names contain %q; call again with one of their refs:\n%s", errs.ErrInvalidInput, name, strings.Join(lines, "\n"))
 }
 
 // logSourceAliases returns the resource refs of the service's aliases from the log source's installation, for

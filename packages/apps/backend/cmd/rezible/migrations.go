@@ -8,6 +8,7 @@ import (
 	"io"
 	"regexp"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/stdlib"
 
 	rez "github.com/rezible/rezible"
@@ -67,6 +68,23 @@ func createMigration(ctx context.Context, cfg rez.PostgresConfig, name string, w
 		return nil
 	})
 	return errors.Join(planErr, scratch.Shutdown())
+}
+
+// regenerateInitMigration plans 0001_init.sql against a scratch database whose application schema has been
+// emptied, so the plan creates every table.
+func regenerateInitMigration(ctx context.Context, cfg rez.PostgresConfig) error {
+	scratch, scratchErr := pgtestdb.New(cfg)
+	if scratchErr != nil {
+		return fmt.Errorf("create scratch database: %w", scratchErr)
+	}
+	regenerateErr := withSQLDatabase(ctx, scratch.Config(), true, func(db *sql.DB) error {
+		schemaName := pgx.Identifier{migrations.SchemaName}.Sanitize()
+		if _, emptyErr := db.ExecContext(ctx, fmt.Sprintf("DROP SCHEMA %[1]s CASCADE; CREATE SCHEMA %[1]s", schemaName)); emptyErr != nil {
+			return fmt.Errorf("empty scratch schema: %w", emptyErr)
+		}
+		return migrations.RegenerateInit(ctx, db)
+	})
+	return errors.Join(regenerateErr, scratch.Shutdown())
 }
 
 func outputMigrationStatus(ctx context.Context, w io.Writer) error {

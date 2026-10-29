@@ -32,6 +32,7 @@ type investigationHarness struct {
 	integrations  *mocks.MockIntegrationService
 	providerReads *mocks.MockAgentProviderReadService
 	proposals     *mocks.MockKnowledgeProposalService
+	sessions      *mocks.MockAiAgentSessionService
 	invocation    *investigationInvocation
 }
 
@@ -45,6 +46,7 @@ func (s *AiRuntimeSuite) newInvestigationHarness() *investigationHarness {
 		integrations:  mocks.NewMockIntegrationService(s.T()),
 		providerReads: mocks.NewMockAgentProviderReadService(s.T()),
 		proposals:     mocks.NewMockKnowledgeProposalService(s.T()),
+		sessions:      mocks.NewMockAiAgentSessionService(s.T()),
 	}
 	deps := investigationDependencies{
 		clock:         h.clock,
@@ -55,10 +57,12 @@ func (s *AiRuntimeSuite) newInvestigationHarness() *investigationHarness {
 		integrations:  h.integrations,
 		providerReads: h.providerReads,
 		proposals:     h.proposals,
+		sessions:      h.sessions,
 	}
 	h.invocation = &investigationInvocation{
 		investigationDependencies: deps,
 		investigationID:           uuid.New(),
+		sessionID:                 uuid.New(),
 		turnID:                    uuid.New(),
 		readItems:                 make(map[uuid.UUID]providerReadItems),
 	}
@@ -151,7 +155,8 @@ func (s *AiRuntimeSuite) runInvestigationTool(ctx context.Context, h *investigat
 func (s *AiRuntimeSuite) TestInvestigationIntroduction() {
 	ctx := s.T().Context()
 	h := s.newInvestigationHarness()
-	openedAt := time.Date(2026, 6, 1, 10, 0, 0, 0, time.UTC)
+	// Opened more than the 7 days list_changes allows before the turn.
+	openedAt := h.clock.Now().Add(-8 * 24 * time.Hour)
 	situation := &ent.Situation{
 		Title:    "Checkout errors",
 		Summary:  "Checkout is failing requests.",
@@ -168,6 +173,37 @@ func (s *AiRuntimeSuite) TestInvestigationIntroduction() {
 		situation.Edges.Entities = append(situation.Edges.Entities, member)
 	}
 	firstListed := situation.Edges.Entities[29].Edges.KnowledgeEntity
+	entitiesByID := make(map[uuid.UUID]*ent.KnowledgeEntity)
+	for _, member := range situation.Edges.Entities {
+		entitiesByID[member.Edges.KnowledgeEntity.ID] = member.Edges.KnowledgeEntity
+	}
+	// The introduction reads its entities with their linking attributes, and list_changes reads its service.
+	h.knowledge.EXPECT().GetEntity(mock.Anything, mock.Anything, mock.Anything).
+		RunAndReturn(func(_ context.Context, entityID uuid.UUID, _ rez.KnowledgeEntityExpand) (*ent.KnowledgeEntity, error) {
+			return entitiesByID[entityID], nil
+		})
+	// The first listed entity has more relationships than its first page.
+	h.knowledge.EXPECT().ListRelationships(mock.Anything, mock.Anything).
+		RunAndReturn(func(_ context.Context, params rez.ListKnowledgeRelationshipsParams) (*ent.ListResult[ent.KnowledgeRelationship], error) {
+			listed := &ent.ListResult[ent.KnowledgeRelationship]{}
+			if params.EntityID == firstListed.ID && len(params.NeighbourCategories) == 0 {
+				listed.Total = analysisToolDefaultPageSize + 1
+			}
+			return listed, nil
+		})
+	h.knowledge.EXPECT().SummarizeEvidence(mock.Anything, mock.Anything).Return(&ent.ListResult[rez.KnowledgeEvidenceSummary]{}, nil)
+	h.knowledge.EXPECT().ListSubjectAliases(mock.Anything, mock.Anything).Return(&ent.ListResult[ent.KnowledgeSubjectAlias]{}, nil)
+	deployment := &ent.KnowledgeEntity{ID: uuid.New(), Category: kne.CategoryEvent, Kind: "deployment"}
+	var changesParams []rez.ListServiceChangesParams
+	h.changes.EXPECT().ListServiceChanges(mock.Anything, mock.Anything).
+		RunAndReturn(func(_ context.Context, params rez.ListServiceChangesParams) (*rez.ServiceChanges, error) {
+			changesParams = append(changesParams, params)
+			listed := &rez.ServiceChanges{}
+			if params.ServiceEntityID == firstListed.ID {
+				listed.Deployments = []rez.ServiceDeployment{{Deployment: deployment, DeployedAt: openedAt}}
+			}
+			return listed, nil
+		})
 	otherName := &ent.KnowledgeEntity{
 		ID:    uuid.New(),
 		State: schematypes.KnowledgeGraphSubjectState{DisplayName: "checkout"},
@@ -241,6 +277,20 @@ func (s *AiRuntimeSuite) TestInvestigationIntroduction() {
 	unconfirmed := []rezai.InvestigationUnconfirmedMatch{{Ref: otherName.ID.String(), Value: "checkout"}}
 	s.Equal(unconfirmed, introduction.Situation.Entities[0].UnconfirmedMatches)
 	s.Empty(introduction.Situation.Entities[1].UnconfirmedMatches)
+
+	var firstRead rezai.TextToolResult
+	s.runInvestigationTool(ctx, h, rezai.ReadEntityTool.Name(), rezai.ReadEntityArgs{Ref: firstListed.ID.String()}, &firstRead)
+	s.Equal(firstRead.Text, introduction.Situation.Entities[0].Read, "the entity carries read_entity's first page")
+	s.True(introduction.Situation.Entities[0].ReadHasMore)
+	s.Contains(introduction.Situation.Entities[0].Changes, deployment.ID.String(), "a service carries its deployments")
+	s.NotEmpty(introduction.Situation.Entities[introductionReadLimit-1].Read)
+	s.False(introduction.Situation.Entities[introductionReadLimit-1].ReadHasMore)
+	pastLimit := introduction.Situation.Entities[introductionReadLimit]
+	s.Empty(pastLimit.Read, "an entity past the read limit is not read")
+	s.Empty(pastLimit.Changes)
+	s.Require().Len(changesParams, introductionReadLimit, "changes are listed for the read services")
+	s.Equal(h.clock.Now().Add(-rez.MaxServiceChangesWindow), changesParams[0].Start, "the window starts at most 7 days before its end")
+	s.Equal(h.clock.Now(), changesParams[0].End, "an open situation's window ends now")
 
 	s.Require().NotNil(introduction.Outputs.Report)
 	s.Equal(report.ID.String(), introduction.Outputs.Report.VersionRef)

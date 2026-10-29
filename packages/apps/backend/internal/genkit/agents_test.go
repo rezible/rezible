@@ -452,7 +452,7 @@ func (s *AiRuntimeSuite) TestTurnUsageAddsEveryModelCall() {
 	s.Require().NoError(invokeErr)
 	s.Require().NoError(result.Error)
 
-	s.Equal(rezai.TurnUsage{Model: model.Name, InputTokens: 300, CachedInputTokens: 180, OutputTokens: 42}, totals())
+	s.Equal(rezai.TurnUsage{Model: model.Name, InputTokens: 300, CachedInputTokens: 180, OutputTokens: 42, ModelCalls: 2, PeakInputTokens: 200}, totals())
 }
 
 func makeTestAgent[S any](msg *ai.Message) *testAgent[S] {

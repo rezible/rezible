@@ -21,7 +21,6 @@ import (
 )
 
 const (
-	changesMaxWindow               = 7 * 24 * time.Hour
 	changesMaxDeployments          = 20
 	changesMaxMergedChanges        = 20
 	changesLookbackWithoutPrevious = 7 * 24 * time.Hour
@@ -45,7 +44,7 @@ func (s *ChangesService) ListServiceChanges(ctx context.Context, params rez.List
 	if !params.End.After(params.Start) {
 		return nil, fmt.Errorf("%w: end must be after start", errs.ErrInvalidInput)
 	}
-	if params.End.Sub(params.Start) > changesMaxWindow {
+	if params.End.Sub(params.Start) > rez.MaxServiceChangesWindow {
 		return nil, fmt.Errorf("%w: the window is longer than the 7 day limit", errs.ErrInvalidInput)
 	}
 	environment := ""

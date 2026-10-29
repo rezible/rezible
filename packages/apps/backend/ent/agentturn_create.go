@@ -220,6 +220,34 @@ func (_c *AgentTurnCreate) SetNillableOutputTokens(v *int) *AgentTurnCreate {
 	return _c
 }
 
+// SetModelCalls sets the "model_calls" field.
+func (_c *AgentTurnCreate) SetModelCalls(v int) *AgentTurnCreate {
+	_c.mutation.SetModelCalls(v)
+	return _c
+}
+
+// SetNillableModelCalls sets the "model_calls" field if the given value is not nil.
+func (_c *AgentTurnCreate) SetNillableModelCalls(v *int) *AgentTurnCreate {
+	if v != nil {
+		_c.SetModelCalls(*v)
+	}
+	return _c
+}
+
+// SetPeakInputTokens sets the "peak_input_tokens" field.
+func (_c *AgentTurnCreate) SetPeakInputTokens(v int) *AgentTurnCreate {
+	_c.mutation.SetPeakInputTokens(v)
+	return _c
+}
+
+// SetNillablePeakInputTokens sets the "peak_input_tokens" field if the given value is not nil.
+func (_c *AgentTurnCreate) SetNillablePeakInputTokens(v *int) *AgentTurnCreate {
+	if v != nil {
+		_c.SetPeakInputTokens(*v)
+	}
+	return _c
+}
+
 // SetID sets the "id" field.
 func (_c *AgentTurnCreate) SetID(v uuid.UUID) *AgentTurnCreate {
 	_c.mutation.SetID(v)
@@ -357,6 +385,14 @@ func (_c *AgentTurnCreate) defaults() error {
 		v := agentturn.DefaultOutputTokens
 		_c.mutation.SetOutputTokens(v)
 	}
+	if _, ok := _c.mutation.ModelCalls(); !ok {
+		v := agentturn.DefaultModelCalls
+		_c.mutation.SetModelCalls(v)
+	}
+	if _, ok := _c.mutation.PeakInputTokens(); !ok {
+		v := agentturn.DefaultPeakInputTokens
+		_c.mutation.SetPeakInputTokens(v)
+	}
 	return nil
 }
 
@@ -421,6 +457,22 @@ func (_c *AgentTurnCreate) check() error {
 	if v, ok := _c.mutation.OutputTokens(); ok {
 		if err := agentturn.OutputTokensValidator(v); err != nil {
 			return &ValidationError{Name: "output_tokens", err: fmt.Errorf(`ent: validator failed for field "AgentTurn.output_tokens": %w`, err)}
+		}
+	}
+	if _, ok := _c.mutation.ModelCalls(); !ok {
+		return &ValidationError{Name: "model_calls", err: errors.New(`ent: missing required field "AgentTurn.model_calls"`)}
+	}
+	if v, ok := _c.mutation.ModelCalls(); ok {
+		if err := agentturn.ModelCallsValidator(v); err != nil {
+			return &ValidationError{Name: "model_calls", err: fmt.Errorf(`ent: validator failed for field "AgentTurn.model_calls": %w`, err)}
+		}
+	}
+	if _, ok := _c.mutation.PeakInputTokens(); !ok {
+		return &ValidationError{Name: "peak_input_tokens", err: errors.New(`ent: missing required field "AgentTurn.peak_input_tokens"`)}
+	}
+	if v, ok := _c.mutation.PeakInputTokens(); ok {
+		if err := agentturn.PeakInputTokensValidator(v); err != nil {
+			return &ValidationError{Name: "peak_input_tokens", err: fmt.Errorf(`ent: validator failed for field "AgentTurn.peak_input_tokens": %w`, err)}
 		}
 	}
 	if len(_c.mutation.TenantIDs()) == 0 {
@@ -521,6 +573,14 @@ func (_c *AgentTurnCreate) createSpec() (*AgentTurn, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.OutputTokens(); ok {
 		_spec.SetField(agentturn.FieldOutputTokens, field.TypeInt, value)
 		_node.OutputTokens = value
+	}
+	if value, ok := _c.mutation.ModelCalls(); ok {
+		_spec.SetField(agentturn.FieldModelCalls, field.TypeInt, value)
+		_node.ModelCalls = value
+	}
+	if value, ok := _c.mutation.PeakInputTokens(); ok {
+		_spec.SetField(agentturn.FieldPeakInputTokens, field.TypeInt, value)
+		_node.PeakInputTokens = value
 	}
 	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -901,6 +961,42 @@ func (u *AgentTurnUpsert) AddOutputTokens(v int) *AgentTurnUpsert {
 	return u
 }
 
+// SetModelCalls sets the "model_calls" field.
+func (u *AgentTurnUpsert) SetModelCalls(v int) *AgentTurnUpsert {
+	u.Set(agentturn.FieldModelCalls, v)
+	return u
+}
+
+// UpdateModelCalls sets the "model_calls" field to the value that was provided on create.
+func (u *AgentTurnUpsert) UpdateModelCalls() *AgentTurnUpsert {
+	u.SetExcluded(agentturn.FieldModelCalls)
+	return u
+}
+
+// AddModelCalls adds v to the "model_calls" field.
+func (u *AgentTurnUpsert) AddModelCalls(v int) *AgentTurnUpsert {
+	u.Add(agentturn.FieldModelCalls, v)
+	return u
+}
+
+// SetPeakInputTokens sets the "peak_input_tokens" field.
+func (u *AgentTurnUpsert) SetPeakInputTokens(v int) *AgentTurnUpsert {
+	u.Set(agentturn.FieldPeakInputTokens, v)
+	return u
+}
+
+// UpdatePeakInputTokens sets the "peak_input_tokens" field to the value that was provided on create.
+func (u *AgentTurnUpsert) UpdatePeakInputTokens() *AgentTurnUpsert {
+	u.SetExcluded(agentturn.FieldPeakInputTokens)
+	return u
+}
+
+// AddPeakInputTokens adds v to the "peak_input_tokens" field.
+func (u *AgentTurnUpsert) AddPeakInputTokens(v int) *AgentTurnUpsert {
+	u.Add(agentturn.FieldPeakInputTokens, v)
+	return u
+}
+
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
@@ -1214,6 +1310,48 @@ func (u *AgentTurnUpsertOne) AddOutputTokens(v int) *AgentTurnUpsertOne {
 func (u *AgentTurnUpsertOne) UpdateOutputTokens() *AgentTurnUpsertOne {
 	return u.Update(func(s *AgentTurnUpsert) {
 		s.UpdateOutputTokens()
+	})
+}
+
+// SetModelCalls sets the "model_calls" field.
+func (u *AgentTurnUpsertOne) SetModelCalls(v int) *AgentTurnUpsertOne {
+	return u.Update(func(s *AgentTurnUpsert) {
+		s.SetModelCalls(v)
+	})
+}
+
+// AddModelCalls adds v to the "model_calls" field.
+func (u *AgentTurnUpsertOne) AddModelCalls(v int) *AgentTurnUpsertOne {
+	return u.Update(func(s *AgentTurnUpsert) {
+		s.AddModelCalls(v)
+	})
+}
+
+// UpdateModelCalls sets the "model_calls" field to the value that was provided on create.
+func (u *AgentTurnUpsertOne) UpdateModelCalls() *AgentTurnUpsertOne {
+	return u.Update(func(s *AgentTurnUpsert) {
+		s.UpdateModelCalls()
+	})
+}
+
+// SetPeakInputTokens sets the "peak_input_tokens" field.
+func (u *AgentTurnUpsertOne) SetPeakInputTokens(v int) *AgentTurnUpsertOne {
+	return u.Update(func(s *AgentTurnUpsert) {
+		s.SetPeakInputTokens(v)
+	})
+}
+
+// AddPeakInputTokens adds v to the "peak_input_tokens" field.
+func (u *AgentTurnUpsertOne) AddPeakInputTokens(v int) *AgentTurnUpsertOne {
+	return u.Update(func(s *AgentTurnUpsert) {
+		s.AddPeakInputTokens(v)
+	})
+}
+
+// UpdatePeakInputTokens sets the "peak_input_tokens" field to the value that was provided on create.
+func (u *AgentTurnUpsertOne) UpdatePeakInputTokens() *AgentTurnUpsertOne {
+	return u.Update(func(s *AgentTurnUpsert) {
+		s.UpdatePeakInputTokens()
 	})
 }
 
@@ -1697,6 +1835,48 @@ func (u *AgentTurnUpsertBulk) AddOutputTokens(v int) *AgentTurnUpsertBulk {
 func (u *AgentTurnUpsertBulk) UpdateOutputTokens() *AgentTurnUpsertBulk {
 	return u.Update(func(s *AgentTurnUpsert) {
 		s.UpdateOutputTokens()
+	})
+}
+
+// SetModelCalls sets the "model_calls" field.
+func (u *AgentTurnUpsertBulk) SetModelCalls(v int) *AgentTurnUpsertBulk {
+	return u.Update(func(s *AgentTurnUpsert) {
+		s.SetModelCalls(v)
+	})
+}
+
+// AddModelCalls adds v to the "model_calls" field.
+func (u *AgentTurnUpsertBulk) AddModelCalls(v int) *AgentTurnUpsertBulk {
+	return u.Update(func(s *AgentTurnUpsert) {
+		s.AddModelCalls(v)
+	})
+}
+
+// UpdateModelCalls sets the "model_calls" field to the value that was provided on create.
+func (u *AgentTurnUpsertBulk) UpdateModelCalls() *AgentTurnUpsertBulk {
+	return u.Update(func(s *AgentTurnUpsert) {
+		s.UpdateModelCalls()
+	})
+}
+
+// SetPeakInputTokens sets the "peak_input_tokens" field.
+func (u *AgentTurnUpsertBulk) SetPeakInputTokens(v int) *AgentTurnUpsertBulk {
+	return u.Update(func(s *AgentTurnUpsert) {
+		s.SetPeakInputTokens(v)
+	})
+}
+
+// AddPeakInputTokens adds v to the "peak_input_tokens" field.
+func (u *AgentTurnUpsertBulk) AddPeakInputTokens(v int) *AgentTurnUpsertBulk {
+	return u.Update(func(s *AgentTurnUpsert) {
+		s.AddPeakInputTokens(v)
+	})
+}
+
+// UpdatePeakInputTokens sets the "peak_input_tokens" field to the value that was provided on create.
+func (u *AgentTurnUpsertBulk) UpdatePeakInputTokens() *AgentTurnUpsertBulk {
+	return u.Update(func(s *AgentTurnUpsert) {
+		s.UpdatePeakInputTokens()
 	})
 }
 

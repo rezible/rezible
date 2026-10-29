@@ -30,6 +30,7 @@ type investigationDependencies struct {
 	integrations   rez.InstalledIntegrationGetter
 	providerReads  rez.AgentProviderReadService
 	proposals      rez.KnowledgeProposalService
+	sessions       rez.AiAgentSessionService
 }
 
 func NewInvestigationAgent(
@@ -42,6 +43,7 @@ func NewInvestigationAgent(
 	integrations rez.InstalledIntegrationGetter,
 	providerReads rez.AgentProviderReadService,
 	proposals rez.KnowledgeProposalService,
+	sessions rez.AiAgentSessionService,
 ) *InvestigationAgent {
 	deps := investigationDependencies{
 		clock:          clock,
@@ -53,6 +55,7 @@ func NewInvestigationAgent(
 		integrations:   integrations,
 		providerReads:  providerReads,
 		proposals:      proposals,
+		sessions:       sessions,
 	}
 	return &InvestigationAgent{deps: deps}
 }
@@ -117,6 +120,7 @@ func (m *investigationCapabilitiesMiddleware) New(ctx context.Context) (*ai.Hook
 	i := &investigationInvocation{
 		investigationDependencies: m.deps,
 		investigationID:           current.ID,
+		sessionID:                 invCtx.Session.ID,
 		turnID:                    invCtx.Turn.ID,
 		readItems:                 make(map[uuid.UUID]providerReadItems),
 	}

@@ -205,7 +205,7 @@ export type AgentProviderReadAttributes = {
 
 export type AgentProviderReadItem = {
     /**
-     * How many consecutive identical items this entry stands for
+     * How many lines this entry stands for, identical or differing only in identifiers
      */
     count: number;
     earliest?: string;

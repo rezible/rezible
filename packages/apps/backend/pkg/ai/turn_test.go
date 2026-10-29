@@ -15,7 +15,8 @@ func TestAddModelUsage(t *testing.T) {
 	ctx, totals := WithTurnUsage(t.Context())
 	AddModelUsage(ctx, "test/model", 100, 60, 10)
 	AddModelUsage(ctx, "test/model", 200, 120, 20)
-	require.Equal(t, TurnUsage{Model: "test/model", InputTokens: 300, CachedInputTokens: 180, OutputTokens: 30}, totals())
+	AddModelUsage(ctx, "test/model", 150, 0, 5)
+	require.Equal(t, TurnUsage{Model: "test/model", InputTokens: 450, CachedInputTokens: 180, OutputTokens: 35, ModelCalls: 3, PeakInputTokens: 200}, totals())
 }
 
 func TestCompactPriorTurnMessages(t *testing.T) {

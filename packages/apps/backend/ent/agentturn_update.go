@@ -272,6 +272,48 @@ func (_u *AgentTurnUpdate) AddOutputTokens(v int) *AgentTurnUpdate {
 	return _u
 }
 
+// SetModelCalls sets the "model_calls" field.
+func (_u *AgentTurnUpdate) SetModelCalls(v int) *AgentTurnUpdate {
+	_u.mutation.ResetModelCalls()
+	_u.mutation.SetModelCalls(v)
+	return _u
+}
+
+// SetNillableModelCalls sets the "model_calls" field if the given value is not nil.
+func (_u *AgentTurnUpdate) SetNillableModelCalls(v *int) *AgentTurnUpdate {
+	if v != nil {
+		_u.SetModelCalls(*v)
+	}
+	return _u
+}
+
+// AddModelCalls adds value to the "model_calls" field.
+func (_u *AgentTurnUpdate) AddModelCalls(v int) *AgentTurnUpdate {
+	_u.mutation.AddModelCalls(v)
+	return _u
+}
+
+// SetPeakInputTokens sets the "peak_input_tokens" field.
+func (_u *AgentTurnUpdate) SetPeakInputTokens(v int) *AgentTurnUpdate {
+	_u.mutation.ResetPeakInputTokens()
+	_u.mutation.SetPeakInputTokens(v)
+	return _u
+}
+
+// SetNillablePeakInputTokens sets the "peak_input_tokens" field if the given value is not nil.
+func (_u *AgentTurnUpdate) SetNillablePeakInputTokens(v *int) *AgentTurnUpdate {
+	if v != nil {
+		_u.SetPeakInputTokens(*v)
+	}
+	return _u
+}
+
+// AddPeakInputTokens adds value to the "peak_input_tokens" field.
+func (_u *AgentTurnUpdate) AddPeakInputTokens(v int) *AgentTurnUpdate {
+	_u.mutation.AddPeakInputTokens(v)
+	return _u
+}
+
 // SetInputMessage sets the "input_message" edge to the AgentMessage entity.
 func (_u *AgentTurnUpdate) SetInputMessage(v *AgentMessage) *AgentTurnUpdate {
 	return _u.SetInputMessageID(v.ID)
@@ -460,6 +502,16 @@ func (_u *AgentTurnUpdate) check() error {
 			return &ValidationError{Name: "output_tokens", err: fmt.Errorf(`ent: validator failed for field "AgentTurn.output_tokens": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.ModelCalls(); ok {
+		if err := agentturn.ModelCallsValidator(v); err != nil {
+			return &ValidationError{Name: "model_calls", err: fmt.Errorf(`ent: validator failed for field "AgentTurn.model_calls": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.PeakInputTokens(); ok {
+		if err := agentturn.PeakInputTokensValidator(v); err != nil {
+			return &ValidationError{Name: "peak_input_tokens", err: fmt.Errorf(`ent: validator failed for field "AgentTurn.peak_input_tokens": %w`, err)}
+		}
+	}
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "AgentTurn.tenant"`)
 	}
@@ -543,6 +595,18 @@ func (_u *AgentTurnUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if value, ok := _u.mutation.AddedOutputTokens(); ok {
 		_spec.AddField(agentturn.FieldOutputTokens, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.ModelCalls(); ok {
+		_spec.SetField(agentturn.FieldModelCalls, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedModelCalls(); ok {
+		_spec.AddField(agentturn.FieldModelCalls, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.PeakInputTokens(); ok {
+		_spec.SetField(agentturn.FieldPeakInputTokens, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedPeakInputTokens(); ok {
+		_spec.AddField(agentturn.FieldPeakInputTokens, field.TypeInt, value)
 	}
 	if _u.mutation.InputMessageCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -979,6 +1043,48 @@ func (_u *AgentTurnUpdateOne) AddOutputTokens(v int) *AgentTurnUpdateOne {
 	return _u
 }
 
+// SetModelCalls sets the "model_calls" field.
+func (_u *AgentTurnUpdateOne) SetModelCalls(v int) *AgentTurnUpdateOne {
+	_u.mutation.ResetModelCalls()
+	_u.mutation.SetModelCalls(v)
+	return _u
+}
+
+// SetNillableModelCalls sets the "model_calls" field if the given value is not nil.
+func (_u *AgentTurnUpdateOne) SetNillableModelCalls(v *int) *AgentTurnUpdateOne {
+	if v != nil {
+		_u.SetModelCalls(*v)
+	}
+	return _u
+}
+
+// AddModelCalls adds value to the "model_calls" field.
+func (_u *AgentTurnUpdateOne) AddModelCalls(v int) *AgentTurnUpdateOne {
+	_u.mutation.AddModelCalls(v)
+	return _u
+}
+
+// SetPeakInputTokens sets the "peak_input_tokens" field.
+func (_u *AgentTurnUpdateOne) SetPeakInputTokens(v int) *AgentTurnUpdateOne {
+	_u.mutation.ResetPeakInputTokens()
+	_u.mutation.SetPeakInputTokens(v)
+	return _u
+}
+
+// SetNillablePeakInputTokens sets the "peak_input_tokens" field if the given value is not nil.
+func (_u *AgentTurnUpdateOne) SetNillablePeakInputTokens(v *int) *AgentTurnUpdateOne {
+	if v != nil {
+		_u.SetPeakInputTokens(*v)
+	}
+	return _u
+}
+
+// AddPeakInputTokens adds value to the "peak_input_tokens" field.
+func (_u *AgentTurnUpdateOne) AddPeakInputTokens(v int) *AgentTurnUpdateOne {
+	_u.mutation.AddPeakInputTokens(v)
+	return _u
+}
+
 // SetInputMessage sets the "input_message" edge to the AgentMessage entity.
 func (_u *AgentTurnUpdateOne) SetInputMessage(v *AgentMessage) *AgentTurnUpdateOne {
 	return _u.SetInputMessageID(v.ID)
@@ -1180,6 +1286,16 @@ func (_u *AgentTurnUpdateOne) check() error {
 			return &ValidationError{Name: "output_tokens", err: fmt.Errorf(`ent: validator failed for field "AgentTurn.output_tokens": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.ModelCalls(); ok {
+		if err := agentturn.ModelCallsValidator(v); err != nil {
+			return &ValidationError{Name: "model_calls", err: fmt.Errorf(`ent: validator failed for field "AgentTurn.model_calls": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.PeakInputTokens(); ok {
+		if err := agentturn.PeakInputTokensValidator(v); err != nil {
+			return &ValidationError{Name: "peak_input_tokens", err: fmt.Errorf(`ent: validator failed for field "AgentTurn.peak_input_tokens": %w`, err)}
+		}
+	}
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "AgentTurn.tenant"`)
 	}
@@ -1280,6 +1396,18 @@ func (_u *AgentTurnUpdateOne) sqlSave(ctx context.Context) (_node *AgentTurn, er
 	}
 	if value, ok := _u.mutation.AddedOutputTokens(); ok {
 		_spec.AddField(agentturn.FieldOutputTokens, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.ModelCalls(); ok {
+		_spec.SetField(agentturn.FieldModelCalls, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedModelCalls(); ok {
+		_spec.AddField(agentturn.FieldModelCalls, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.PeakInputTokens(); ok {
+		_spec.SetField(agentturn.FieldPeakInputTokens, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedPeakInputTokens(); ok {
+		_spec.AddField(agentturn.FieldPeakInputTokens, field.TypeInt, value)
 	}
 	if _u.mutation.InputMessageCleared() {
 		edge := &sqlgraph.EdgeSpec{

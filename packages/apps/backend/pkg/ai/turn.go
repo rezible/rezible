@@ -18,6 +18,9 @@ type TurnUsage struct {
 	CachedInputTokens int
 	OutputTokens      int
 	Reads             int
+	// ModelCalls is how many model calls the attempt made; PeakInputTokens is the largest input of any one.
+	ModelCalls      int
+	PeakInputTokens int
 }
 
 // turnTally collects one attempt's usage. Tool calls run concurrently, so it is locked.
@@ -69,6 +72,8 @@ func AddModelUsage(ctx context.Context, model string, inputTokens, cachedInputTo
 		u.InputTokens += inputTokens
 		u.CachedInputTokens += cachedInputTokens
 		u.OutputTokens += outputTokens
+		u.ModelCalls++
+		u.PeakInputTokens = max(u.PeakInputTokens, inputTokens)
 	})
 }
 

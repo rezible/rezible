@@ -182,6 +182,7 @@ var pkgGenkit = do.Package(
 			do.MustInvoke[rez.IntegrationService](i),
 			do.MustInvoke[rez.AgentProviderReadService](i),
 			do.MustInvoke[rez.KnowledgeProposalService](i),
+			do.MustInvoke[rez.AiAgentSessionService](i),
 		)
 		return genkit.NewAgentCatalogue(
 			air,

@@ -19,7 +19,7 @@ type ProviderReadItem struct {
 	Value *float64  `json:"value,omitempty"`
 	// Labels are the item's labels; in a search result, those not shared by every item.
 	Labels map[string]string `json:"labels,omitempty"`
-	// Count is how many consecutive identical items this entry stands for; omitted when one.
+	// Count is how many lines this entry stands for, identical or differing only in identifiers; omitted when one.
 	Count int `json:"count,omitempty"`
 	// Earliest is the oldest repeat's time; omitted when Count is one.
 	Earliest *time.Time `json:"earliest,omitempty"`

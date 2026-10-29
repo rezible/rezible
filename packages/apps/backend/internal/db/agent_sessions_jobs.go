@@ -216,6 +216,8 @@ func (w *InvokeAgentTurnWorker) runClaimedTurn(ctx context.Context, job *river.J
 		attribute.Int("input_tokens", usage.InputTokens),
 		attribute.Int("cached_input_tokens", usage.CachedInputTokens),
 		attribute.Int("output_tokens", usage.OutputTokens),
+		attribute.Int("model_calls", usage.ModelCalls),
+		attribute.Int("peak_input_tokens", usage.PeakInputTokens),
 		attribute.Int("read_count", usage.Reads),
 	)
 	w.metrics.record(ctx, claim.session.AgentName, model, outcome, usage, duration)
@@ -507,7 +509,7 @@ func (w *InvokeAgentTurnWorker) saveInvocationResult(ctx context.Context, job *r
 				if claim == nil {
 					return turn, nil
 				}
-				addAbortedUsage := w.addAttemptUsage(tx.AgentTurn.UpdateOne(turn), usage)
+				addAbortedUsage := w.addAttemptUsage(tx, turn, usage)
 				return addAbortedUsage.Save(ctx)
 			case agtt.StatusCompleted, agtt.StatusFailed:
 				return turn, nil
@@ -515,7 +517,7 @@ func (w *InvokeAgentTurnWorker) saveInvocationResult(ctx context.Context, job *r
 			return nil, fmt.Errorf("agent turn is %s, expected running", turn.Status)
 		}
 
-		u := w.addAttemptUsage(tx.AgentTurn.UpdateOne(turn), usage).
+		u := w.addAttemptUsage(tx, turn, usage).
 			SetFinishedAt(time.Now().UTC())
 
 		setErrorFn := func(msg string, retryable bool) {
@@ -617,12 +619,19 @@ func (w *InvokeAgentTurnWorker) saveInvocationResult(ctx context.Context, job *r
 	return saved, nil
 }
 
-// addAttemptUsage adds one attempt's tokens to the turn, and its model when it called one.
-func (w *InvokeAgentTurnWorker) addAttemptUsage(u *ent.AgentTurnUpdateOne, usage rezai.TurnUsage) *ent.AgentTurnUpdateOne {
+// addAttemptUsage adds one attempt's tokens and model calls to the turn, raises its peak input to the attempt's,
+// and sets its model when the attempt called one.
+func (w *InvokeAgentTurnWorker) addAttemptUsage(tx *ent.Client, turn *ent.AgentTurn, usage rezai.TurnUsage) *ent.AgentTurnUpdateOne {
+	u := tx.AgentTurn.UpdateOne(turn).
+		AddInputTokens(usage.InputTokens).
+		AddCachedInputTokens(usage.CachedInputTokens).
+		AddOutputTokens(usage.OutputTokens).
+		AddModelCalls(usage.ModelCalls).
+		SetPeakInputTokens(max(turn.PeakInputTokens, usage.PeakInputTokens))
 	if usage.Model != "" {
 		u.SetModel(usage.Model)
 	}
-	return u.AddInputTokens(usage.InputTokens).AddCachedInputTokens(usage.CachedInputTokens).AddOutputTokens(usage.OutputTokens)
+	return u
 }
 
 // replaceTurnOutputMessages replaces the turn's messages other than its input message. A resumed attempt's

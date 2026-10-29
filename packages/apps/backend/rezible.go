@@ -1082,6 +1082,9 @@ type (
 	}
 )
 
+// MaxServiceChangesWindow is the longest window ListServiceChanges accepts.
+const MaxServiceChangesWindow = 7 * 24 * time.Hour
+
 type (
 	ListServiceChangesParams struct {
 		// ServiceEntityID is a container/service entity.
